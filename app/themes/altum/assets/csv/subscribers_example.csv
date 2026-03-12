@@ -1,0 +1,4 @@
+endpoint,p256dh,auth,ip,city_name,country_code,continent_code,os_name,browser_name,browser_language,subscribed_on_url,datetime,custom_parameters[name]
+https://example.com/push/abc123,BA1vX8f9N0uL3JhO2vWpM4A1pE3KxC8b1sQ2R9t7U6zT,0wXfD7vG8kL2mN3pQ4rS5tU6vW7xY8zZ,192.168.1.10,Berlin,DE,EU,Windows,Chrome,de-DE,https://example.com/newsletter,2025-11-10 12:34:56,PremiumUser
+https://example.com/push/def456,BB9kT2c3L4d5A6b7G8h9J0k1L2m3N4o5P6q7R8s9T0u,1a2b3c4d5e6f7g8h9i0j1k2l3m4n5o6p,172.16.5.22,New York,US,NA,macOS,Safari,en-US,https://example.com/signup,2025-11-09 08:15:22,TrialUser
+https://example.com/push/ghi789,BC8dE9f0G1h2I3j4K5l6M7n8O9p0Q1r2S3t4U5v6W7x,9z8y7x6w5v4u3t2s1r0q9p8o7n6m5l4k,10.0.0.55,Tokyo,JP,AS,Android,Firefox,ja-JP,https://example.com/promo,2025-11-08 21:05:44,NewsletterOnly

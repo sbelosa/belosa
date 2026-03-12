@@ -1,0 +1,7 @@
+*
+!.gitignore
+!app/
+!app/**
+!themes/
+!themes/**
+**/.DS_Store

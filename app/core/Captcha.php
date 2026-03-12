@@ -1,0 +1,241 @@
+<?php
+/*
+ * Copyright (c) 2025 AltumCode (https://altumcode.com/)
+ *
+ * This software is licensed exclusively by AltumCode and is sold only via https://altumcode.com/.
+ * Unauthorized distribution, modification, or use of this software without a valid license is not permitted and may be subject to applicable legal actions.
+ *
+ * 🌍 View all other existing AltumCode projects via https://altumcode.com/
+ * 📧 Get in touch for support or general queries via https://altumcode.com/contact
+ * 📤 Download the latest version via https://altumcode.com/downloads
+ *
+ * 🐦 X/Twitter: https://x.com/AltumCode
+ * 📘 Facebook: https://facebook.com/altumcode
+ * 📸 Instagram: https://instagram.com/altumcode
+ */
+
+namespace Altum;
+
+defined('ALTUMCODE') || die();
+
+class Captcha {
+
+    /* Configuration Variables */
+    private $image_width = 160;
+    private $image_height = 50;
+    private $text_length = 6;
+    private $lines = 8;
+    private $font_size = 20;
+    private $font_path = ASSETS_PATH . 'fonts/Inter-Bold.ttf';
+    private $charset = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
+
+    public function __construct() {
+        /* :) */
+    }
+
+
+    /* Custom valid function for both the normal captcha and the recaptcha */
+    public function is_valid() {
+
+        if(settings()->captcha->type == 'recaptcha' && settings()->captcha->recaptcha_public_key && settings()->captcha->recaptcha_private_key) {
+
+            $recaptcha = new \ReCaptcha\ReCaptcha(settings()->captcha->recaptcha_private_key);
+            $response = $recaptcha->verify($_POST['g-recaptcha-response'], $_SERVER['REMOTE_ADDR']);
+
+            return ($response->isSuccess());
+
+        }
+
+        else if(settings()->captcha->type == 'hcaptcha' && settings()->captcha->hcaptcha_site_key && settings()->captcha->hcaptcha_secret_key) {
+
+            $response = \Unirest\Request::post('https://hcaptcha.com/siteverify', [], [
+                'secret' => settings()->captcha->hcaptcha_secret_key,
+                'response' => $_POST['h-captcha-response'],
+            ]);
+
+            return isset($response->body) && isset($response->body->success) && $response->body->success;
+
+        }
+
+        else if(settings()->captcha->type == 'turnstile' && settings()->captcha->turnstile_site_key && settings()->captcha->turnstile_secret_key) {
+
+            $response = \Unirest\Request::post('https://challenges.cloudflare.com/turnstile/v0/siteverify', [], [
+                'secret' => settings()->captcha->turnstile_secret_key,
+                'response' => $_POST['cf-turnstile-response'],
+                'remoteip' => get_ip(),
+            ]);
+
+            return isset($response->body) && isset($response->body->success) && $response->body->success;
+
+        }
+
+        else {
+
+            $captcha = session_get('captcha');
+
+            if(!$captcha || $captcha['expires'] < time()) {
+                return false;
+            }
+
+            if($captcha['ua'] !== hash('sha256', $_SERVER['HTTP_USER_AGENT'] ?? '')) {
+                return false;
+            }
+
+            $input = hash('sha256', strtolower(trim($_POST['captcha'] ?? '')));
+
+            session_unset_key('captcha');
+
+            return hash_equals($captcha['value'], $input);
+
+        }
+    }
+
+    /* Display function based on the captcha settings ( normal captcha or recaptcha ) */
+    public function display() {
+        $data_size = get_this_device_type() == 'desktop' ? 'normal' : 'compact';
+
+        if(settings()->captcha->type == 'recaptcha' && settings()->captcha->recaptcha_public_key && settings()->captcha->recaptcha_private_key) {
+            echo '<style>
+            .g-recaptcha {
+                overflow:hidden;
+                width: 158px;
+                height: 138px;
+                border-radius: var(--border-radius);
+            }
+            @media (min-width: 992px) {
+                .g-recaptcha {
+                    width: 302px;
+                    height: 76px;
+                }
+            }
+            </style>';
+            echo '<div class="d-flex justify-content-center">';
+            echo '<div class="g-recaptcha" data-size="' . $data_size . '" data-sitekey="' . settings()->captcha->recaptcha_public_key . '" data-theme="' . \Altum\ThemeStyle::get() . '"></div>';
+            echo '<input type="hidden" name="captcha" class="form-control ' . (\Altum\Alerts::has_field_errors('captcha') ? 'is-invalid' : null) . '">';
+            echo \Altum\Alerts::output_field_error('captcha');
+            echo '</div>';
+
+            if(!\Altum\Event::exists_content_type_key('javascript', 'captcha')) {
+                ob_start();
+                echo '<script src="https://www.google.com/recaptcha/api.js?hl=' . Language::$code . '" async defer></script>';
+                \Altum\Event::add_content(ob_get_clean(), 'javascript', 'captcha');
+            }
+        }
+
+        else if(settings()->captcha->type == 'hcaptcha' && settings()->captcha->hcaptcha_site_key && settings()->captcha->hcaptcha_secret_key) {
+            echo '<style>
+            .h-captcha {
+                overflow:hidden;
+                width: 302px;
+                height: 76px;
+                border-radius: var(--border-radius);
+            }
+            </style>';
+            echo '<div class="d-flex justify-content-center">';
+            echo '<div class="h-captcha" data-size="' . $data_size . '" data-sitekey="' . settings()->captcha->hcaptcha_site_key . '" data-theme="' . \Altum\ThemeStyle::get() . '"></div>';
+            echo '<input type="hidden" name="captcha" class="form-control ' . (\Altum\Alerts::has_field_errors('captcha') ? 'is-invalid' : null) . '">';
+            echo \Altum\Alerts::output_field_error('captcha');
+            echo '</div>';
+
+            if(!\Altum\Event::exists_content_type_key('javascript', 'captcha')) {
+                ob_start();
+                echo '<script src="https://hcaptcha.com/1/api.js?hl=' . Language::$code . '" async defer></script>';
+                \Altum\Event::add_content(ob_get_clean(), 'javascript', 'captcha');
+            }
+        }
+
+        else if(settings()->captcha->type == 'turnstile' && settings()->captcha->turnstile_site_key && settings()->captcha->turnstile_secret_key) {
+            echo '<div class="cf-turnstile d-flex justify-content-center" data-size="' . $data_size . '" data-sitekey="' . settings()->captcha->turnstile_site_key . '" data-theme="' . \Altum\ThemeStyle::get() . '"></div>';
+            echo '<input type="hidden" name="captcha" class="form-control ' . (\Altum\Alerts::has_field_errors('captcha') ? 'is-invalid' : null) . '">';
+            echo \Altum\Alerts::output_field_error('captcha');
+
+            if(!\Altum\Event::exists_content_type_key('javascript', 'captcha')) {
+                ob_start();
+                echo '<script src="https://challenges.cloudflare.com/turnstile/v0/api.js?hl=' . Language::$code . '" async defer></script>';
+                \Altum\Event::add_content(ob_get_clean(), 'javascript', 'captcha');
+            }
+        }
+
+        else {
+            echo '
+            <img src="data:image/png;base64,' . base64_encode($this->create_simple_captcha()) . '" class="mb-2 rounded" id="captcha" alt="' . l('global.accessibility.captcha_alt') . '" />
+            <input type="text" name="captcha" class="form-control ' . (\Altum\Alerts::has_field_errors('captcha') ? 'is-invalid' : null) . '" placeholder="' . l('global.captcha_placeholder') . '" aria-label="' . l('global.accessibility.captcha_input') . '" required="required" autocomplete="off" />
+            ' . \Altum\Alerts::output_field_error('captcha') . '
+            ';
+        }
+
+    }
+
+    /* Generating the captcha image */
+    public function create_simple_captcha() {
+
+        $text = null;
+
+        for($i = 0; $i < $this->text_length; $i++) {
+            $text .= $this->charset[random_int(0, strlen($this->charset) - 1)];
+        }
+
+        session_set('captcha', [
+            'value' => hash('sha256', strtolower($text)),
+            'expires' => time() + 300,
+            'ua' => hash('sha256', $_SERVER['HTTP_USER_AGENT'] ?? ''),
+        ]);
+
+        $image = imagecreatetruecolor($this->image_width, $this->image_height);
+
+        imageantialias($image, true);
+
+        $bg_color = imagecolorallocate($image, 245, 247, 250);
+        imagefill($image, 0, 0, $bg_color);
+
+        /* Noise dots */
+        for($i = 0; $i < 150; $i++) {
+            imagesetpixel(
+                $image,
+                random_int(0, $this->image_width),
+                random_int(0, $this->image_height),
+                imagecolorallocate($image, random_int(150, 200), random_int(150, 200), random_int(150, 200))
+            );
+        }
+
+        /* Curved / random lines */
+        for($i = 0; $i < $this->lines; $i++) {
+            imageline(
+                $image,
+                random_int(0, $this->image_width),
+                random_int(0, $this->image_height),
+                random_int(0, $this->image_width),
+                random_int(0, $this->image_height),
+                imagecolorallocate($image, random_int(80, 120), random_int(80, 120), random_int(80, 120))
+            );
+        }
+
+        /* Draw text */
+        $x = 15;
+        for($i = 0; $i < strlen($text); $i++) {
+            $angle = random_int(-25, 25);
+            $y = random_int(32, 40);
+
+            imagettftext(
+                $image,
+                $this->font_size,
+                $angle,
+                $x,
+                $y,
+                imagecolorallocate($image, 40, 40, 40),
+                $this->font_path,
+                $text[$i]
+            );
+
+            $x += random_int(20, 24);
+        }
+
+        ob_start();
+        imagepng($image);
+        imagedestroy($image);
+
+        return ob_get_clean();
+    }
+
+
+}

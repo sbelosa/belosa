@@ -1,0 +1,2543 @@
+<?php defined('ALTUMCODE') || die() ?>
+
+<?php ob_start() ?>
+<script src="<?= ASSETS_FULL_URL . 'js/libraries/sortable.js?v=' . PRODUCT_CODE ?>"></script>
+<?php \Altum\Event::add_content(ob_get_clean(), 'javascript') ?>
+
+<?php /* Custom code: FC-2026-02-27: premium biolink editor styling */ ?>
+<?php ob_start() ?>
+<style>
+    .biolink-editor-toolbar {
+        border: 1px solid var(--gray-200);
+        box-shadow: 0 0.4rem 1.1rem rgba(0, 0, 0, 0.06);
+    }
+
+    .biolink-switch-buttons {
+        background: #eef2f7;
+        border: 1px solid #d7e0ea;
+        border-radius: .75rem;
+        padding: .25rem;
+        gap: .25rem;
+    }
+
+    .biolink-switch-buttons .nav-link {
+        border-radius: .6rem;
+        color: #3d4a5d;
+        font-weight: 600;
+        padding: .48rem .9rem;
+        transition: background-color .15s ease, color .15s ease, box-shadow .15s ease;
+    }
+
+    .biolink-switch-buttons .nav-link:not(.active):hover {
+        background: rgba(255, 255, 255, .72);
+        color: #243042;
+    }
+
+    .biolink-switch-buttons .nav-link.active {
+        background: #ffffff;
+        color: #111827;
+        box-shadow: 0 .25rem .65rem rgba(15, 23, 42, .15);
+    }
+
+    #settings.tab-pane > .card {
+        border: 1px solid #dbe3ed;
+        box-shadow: 0 .35rem 1rem rgba(15, 23, 42, .08);
+    }
+
+    #biolink_blocks.tab-pane {
+        background: linear-gradient(180deg, #f5f8fc 0%, #f0f4fa 100%);
+        border: 1px dashed #cad5e3;
+        border-radius: .9rem;
+        padding: 1rem;
+    }
+
+    #biolink_blocks .biolink-editor-block.card,
+    #biolink_blocks .biolink_block.card {
+        position: relative;
+        z-index: 1;
+        overflow: visible;
+        border: 1px solid var(--gray-300);
+        border-radius: .85rem;
+        background: linear-gradient(135deg, #ffffff, #f6f8fc);
+        box-shadow: 0 0.35rem 1rem rgba(17, 24, 39, 0.08);
+        transition: transform .15s ease, box-shadow .15s ease;
+    }
+
+    #biolink_blocks .biolink-editor-block.card::before,
+    #biolink_blocks .biolink_block.card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, var(--primary), transparent);
+        opacity: .45;
+    }
+
+    #biolink_blocks .biolink-editor-block.card:hover,
+    #biolink_blocks .biolink_block.card:hover {
+        z-index: 2;
+        transform: translateY(-1px);
+        border-color: var(--primary);
+        box-shadow: 0 0.5rem 1.25rem rgba(17, 24, 39, 0.13);
+    }
+
+    #biolink_blocks .biolink-editor-block.card:focus-within,
+    #biolink_blocks .biolink_block.card:focus-within {
+        z-index: 1100;
+    }
+
+    #biolink_blocks .biolink-editor-block.card .dropdown-menu,
+    #biolink_blocks .biolink_block.card .dropdown-menu {
+        z-index: 1110;
+    }
+
+    #biolink_blocks .biolink-editor-block.card .card-body,
+    #biolink_blocks .biolink_block.card .card-body {
+        padding-top: 1.1rem;
+        padding-bottom: 1.1rem;
+    }
+
+    #biolink_blocks .biolink-editor-block.card .biolink-editor-expanded,
+    #biolink_blocks .biolink_block.card .biolink-editor-expanded {
+        border-top: 1px solid var(--gray-200);
+        margin-top: 1rem;
+        padding-top: 1rem;
+    }
+
+    #biolink_blocks .biolink_block.card.custom-row-inactive {
+        background: linear-gradient(135deg, #eef2f7, #e8edf5);
+        border-color: #d4dde8;
+    }
+
+    #biolink_blocks .biolink_block.card .font-weight-500,
+    #biolink_blocks .biolink_block.card a,
+    #biolink_blocks .biolink_block.card .small,
+    #biolink_blocks .biolink_block.card .text-truncate {
+        color: #1f2937 !important;
+    }
+
+    #biolink_blocks .biolink_block.card .text-muted {
+        color: #5b6472 !important;
+    }
+
+    #biolink_blocks .biolink_block.card .custom-row-side-controller {
+        z-index: 3;
+    }
+
+    body[data-theme-style='dark'] .biolink-editor-toolbar.card,
+    body[data-theme-style='dark'] #biolink_blocks .biolink-editor-block.card,
+    body[data-theme-style='dark'] #biolink_blocks .biolink_block.card {
+        background: linear-gradient(135deg, #1b2330, #232d3d) !important;
+        border-color: #3b4a60 !important;
+        box-shadow: 0 0.45rem 1.2rem rgba(0, 0, 0, 0.33) !important;
+    }
+
+    body[data-theme-style='dark'] .biolink-switch-buttons {
+        background: #1a2330;
+        border-color: #33445b;
+    }
+
+    body[data-theme-style='dark'] .biolink-switch-buttons .nav-link {
+        color: #bdc9d9;
+    }
+
+    body[data-theme-style='dark'] .biolink-switch-buttons .nav-link:not(.active):hover {
+        background: rgba(255, 255, 255, .06);
+        color: #e6edf8;
+    }
+
+    body[data-theme-style='dark'] .biolink-switch-buttons .nav-link.active {
+        background: #2a374a;
+        color: #f3f7fd;
+        box-shadow: 0 .25rem .7rem rgba(0, 0, 0, .33);
+    }
+
+    body[data-theme-style='dark'] #settings.tab-pane > .card {
+        border-color: #3b4a60;
+        box-shadow: 0 .45rem 1.2rem rgba(0, 0, 0, .32);
+    }
+
+    body[data-theme-style='dark'] #biolink_blocks.tab-pane {
+        background: linear-gradient(180deg, #182231 0%, #1f2a3a 100%);
+        border-color: #3b4a60;
+    }
+
+    body[data-theme-style='dark'] #biolink_blocks .biolink-editor-block.card:hover,
+    body[data-theme-style='dark'] #biolink_blocks .biolink_block.card:hover {
+        border-color: var(--primary) !important;
+        box-shadow: 0 0.55rem 1.35rem rgba(0, 0, 0, 0.4) !important;
+    }
+
+    body[data-theme-style='dark'] #biolink_blocks .biolink_block.card.custom-row-inactive {
+        background: linear-gradient(135deg, #2a3342, #313d4f) !important;
+        border-color: #485870 !important;
+    }
+
+    body[data-theme-style='dark'] #biolink_blocks .biolink_block.card .font-weight-500,
+    body[data-theme-style='dark'] #biolink_blocks .biolink_block.card a,
+    body[data-theme-style='dark'] #biolink_blocks .biolink_block.card .small,
+    body[data-theme-style='dark'] #biolink_blocks .biolink_block.card .text-truncate {
+        color: #f3f6fb !important;
+    }
+
+    body[data-theme-style='dark'] #biolink_blocks .biolink_block.card .text-muted,
+    body[data-theme-style='dark'] .biolink-editor-toolbar .nav-link:not(.active) {
+        color: #b4c0d3 !important;
+    }
+
+    button[data-target="#verified_container"],
+    #verified_container,
+    button[data-target="#branding_container"],
+    #branding_container,
+    button[data-target="#branded_button_container"],
+    #branded_button_container,
+    button[data-target="#advanced_container"],
+    #advanced_container {
+        display: none !important;
+    }
+
+    body[data-theme-style='dark'] #biolink_blocks .biolink-editor-block .biolink-editor-expanded,
+    body[data-theme-style='dark'] #biolink_blocks .biolink_block.card .biolink-editor-expanded {
+        border-top-color: #3b4a60;
+    }
+</style>
+<?php \Altum\Event::add_content(ob_get_clean(), 'head') ?>
+<?php /* /Custom code: FC-2026-02-27 */ ?>
+
+<?php ob_start() ?>
+<?php if($this->user->plan_settings->biolink_blocks_limit != -1 && $data->link_links_result->num_rows > $this->user->plan_settings->biolink_blocks_limit): ?>
+    <div class="alert alert-danger">
+        <i class="fas fa-fw fa-times-circle text-danger mr-2"></i> <?= sprintf(settings()->payment->is_enabled ? l('global.info_message.plan_feature_limit_removal_with_upgrade') : l('global.info_message.plan_feature_limit_removal'), '<strong>' . $data->link_links_result->num_rows - $this->user->plan_settings->biolink_blocks_limit, mb_strtolower(l('biolinks_blocks.title')) . '</strong>', '<a href="' . url('plan') . '" class="font-weight-bold text-reset">' . l('global.info_message.plan_upgrade') . '</a>') ?>
+    </div>
+<?php endif ?>
+
+<div class="row">
+    <div class="col-12 col-xl-6">
+
+		<?php
+		$active_tab = settings()->links->biolinks_default_active_tab ?? 'settings';
+		if(isset($_GET['tab']) && in_array($_GET['tab'], ['settings', 'blocks'])) {
+			$active_tab = $_GET['tab'];
+		}
+
+        /* Custom code: FC-2026-03-03: keep sections in DOM for JS stability; hidden via CSS for all users */
+        $show_admin_only_biolink_sections = true;
+		?>
+
+        <!-- Custom code: FC-2026-02-27: premium toolbar for biolink editor -->
+        <div class="card biolink-editor-toolbar mb-4">
+            <div class="card-body py-3">
+                <div class="d-flex flex-column flex-sm-row justify-content-sm-between align-items-sm-center">
+                    <ul class="nav nav-pills biolink-switch-buttons mb-3 mb-sm-0" id="pills-tab" role="tablist">
+                        <li class="nav-item">
+                            <a class="nav-link <?= $active_tab == 'settings' ? 'active' : null ?>" id="settings-tab" data-toggle="pill" href="#settings" role="tab" aria-controls="settings" aria-selected="true">
+                                <i class="fas fa-fw fa-wrench fa-sm mr-1"></i> <?= l('link.header.settings_tab') ?>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link <?= $active_tab == 'blocks' ? 'active' : null ?>" id="blocks-tab" data-toggle="pill" href="#biolink_blocks" role="tab" aria-controls="links" aria-selected="false">
+                                <i class="fas fa-fw fa-th-large fa-sm mr-1"></i> <?= l('link.header.blocks_tab') ?>
+                            </a>
+                        </li>
+                    </ul>
+
+                    <div>
+                        <button type="button" data-toggle="modal" data-target="#biolink_link_create_modal" class="btn btn-primary"><i class="fas fa-fw fa-plus-circle fa-sm mr-1"></i> <?= l('links.create_biolink_block') ?></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- /Custom code: FC-2026-02-27 -->
+
+        <div class="tab-content">
+            <div class="tab-pane fade <?= $active_tab == 'settings' ? 'show active' : null ?>" id="settings" role="tabpanel" aria-labelledby="settings-tab">
+                <div class="card">
+                    <div class="card-body">                        
+                        <form id="update_biolink" name="update_biolink" action="" method="post" role="form" enctype="multipart/form-data">
+                            <input type="hidden" name="token" value="<?= \Altum\Csrf::get() ?>" />
+                            <input type="hidden" name="request_type" value="update" />
+                            <input type="hidden" name="type" value="biolink" />
+                            <input type="hidden" name="link_id" value="<?= $data->link->link_id ?>" />
+
+                            <div class="notification-container"></div>
+
+                            <div class="form-group">
+                                <label for="url"><i class="fas fa-fw fa-bolt fa-sm text-muted mr-1"></i> <?= l('link.settings.url') ?></label>
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+										<?php if (!empty($data->domains)): ?>
+                                            <select name="domain_id" class="appearance-none custom-select form-control input-group-text">
+												<?php if(settings()->links->main_domain_is_enabled || \Altum\Authentication::is_admin()): ?>
+                                                    <option value=" " <?= $data->link->domain ? 'selected="selected"' : null ?> data-full-url="<?= SITE_URL ?>"><?= remove_url_protocol_from_url(SITE_URL) ?></option>
+												<?php endif ?>
+
+												<?php foreach($data->domains as $row): ?>
+                                                    <option value="<?= $row->domain_id ?>" <?= $data->link->domain && $row->domain_id == $data->link->domain->domain_id ? 'selected="selected"' : null ?>  data-full-url="<?= $row->url ?>" data-type="<?= $row->type ?>"><?= remove_url_protocol_from_url($row->url) ?></option>
+												<?php endforeach ?>
+                                            </select>
+										<?php else: ?>
+                                            <span class="input-group-text"><?= remove_url_protocol_from_url(SITE_URL) ?></span>
+										<?php endif ?>
+                                    </div>
+                                    <!-- Custom code -->
+                                    <input
+                                            id="url"
+                                            type="text"
+                                            class="form-control"
+                                            name="url"
+                                            placeholder="<?= l('global.url_slug_placeholder') ?>"
+                                            value="<?= $data->link->url ?>"
+                                            maxlength="256"
+                                            onchange="update_this_value(this, get_slug)"
+                                            onkeyup="update_this_value(this, get_slug)"
+										<?= !$this->user->plan_settings->custom_url || ($data->biolink_main && $data->biolink_main->biolink_id == $data->link->link_id) ? 'readonly="readonly"' : null ?>
+										<?= $this->user->plan_settings->custom_url ? null : get_plan_feature_disabled_info() ?>
+                                    />
+                                    <!-- /Custom code -->
+                                </div>
+                                <small class="form-text text-muted"><?= l('link.settings.url_help') ?></small>
+                            </div>
+
+							<?php if (!empty($data->domains)): ?>
+                                <div id="is_main_link_wrapper" class="form-group custom-control custom-switch <?= $data->link->domain_id && $data->domains[$data->link->domain_id]->type == '0' ? null : 'd-none' ?>">
+                                    <input id="is_main_link" name="is_main_link" type="checkbox" class="custom-control-input" <?= $data->link->domain_id && $data->domains[$data->link->domain_id]->link_id == $data->link->link_id ? 'checked="checked"' : null ?>>
+                                    <label class="custom-control-label" for="is_main_link"><?= l('link.settings.is_main_link') ?></label>
+                                    <small class="form-text text-muted"><?= l('link.settings.is_main_link_help') ?></small>
+                                </div>
+							<?php endif ?>
+
+							<?php if(settings()->links->biolinks_themes_is_enabled): ?>
+                                <button class="btn btn-block btn-gray-200 font-size-little-small font-weight-450 my-4" type="button" data-toggle="modal" data-target="#biolink_themes_modal" aria-expanded="false" aria-controls="theme_container">
+                                    <i class="fas fa-fw fa-palette fa-sm mr-1"></i> <?= l('link.settings.theme_header') ?>
+                                </button>
+
+                                <!-- Custom code: FC-2026-03-06: factory reset button for biolink template -->
+                                <button id="reset_biolink_factory_btn" class="btn btn-block btn-outline-danger font-size-little-small font-weight-450 mb-4" type="button" data-link-id="<?= $data->link->link_id ?>">
+                                    <i class="fas fa-fw fa-undo-alt fa-sm mr-1"></i> <?= l('global.reset') ?> Forever Card Aplikaciju
+                                </button>
+                                <small class="form-text text-muted mt-n3 mb-3">Ova radnja briše trenutni sadržaj i vraća početni izgled Forever Card Aplikacije.</small>
+                                <!-- /Custom code: FC-2026-03-06 -->
+
+                                <div class="collapse" data-parent="#settings" id="theme_container">
+                                    <div class="form-group">
+                                        <label><i class="fas fa-fw fa-palette fa-sm text-muted mr-1"></i> <?= l('biolink_themes.id') ?></label>
+                                        <input type="hidden" id="biolink_theme_id" name="biolink_theme_id" class="form-control" value="<?= $data->link->biolink_theme_id ?? null ?>" />
+                                    </div>
+                                </div>
+							<?php endif ?>
+
+                            <button class="btn btn-block btn-gray-200 font-size-little-small font-weight-450 my-4" type="button" data-toggle="collapse" data-target="#customizations_container" aria-expanded="false" aria-controls="customizations_container">
+                                <i class="fas fa-fw fa-paint-brush fa-sm mr-1"></i> <?= l('link.settings.customization_header') ?>
+                            </button>
+
+                            <div class="collapse" data-parent="#settings" id="customizations_container">
+                                <div class="form-group">
+                                    <label for="settings_background_type"><i class="fas fa-fw fa-fill fa-sm text-muted mr-1"></i> <?= l('link.settings.background_type') ?></label>
+                                    <select id="settings_background_type" name="background_type" class="custom-select">
+										<?php foreach($biolink_backgrounds as $key => $value): ?>
+                                            <option value="<?= $key ?>" <?= $data->link->settings->background_type == $key ? 'selected="selected"' : null?>><?= l('link.settings.background_type_' . $key) ?></option>
+										<?php endforeach ?>
+                                    </select>
+                                </div>
+
+                                <div id="background_type_preset" class="row form-group" style="margin-right: -7px; margin-left: -7px;">
+									<?php foreach($biolink_backgrounds['preset'] as $key => $value): ?>
+                                        <label for="settings_background_type_preset_<?= $key ?>" class="m-0 col-3 p-2">
+                                            <input type="radio" name="background" value="<?= $key ?>" id="settings_background_type_preset_<?= $key ?>" class="d-none" <?= $data->link->settings->background_type == 'preset' && $data->link->settings->background == $key ? 'checked="checked"' : null ?>/>
+                                            <div class="link-background-type-preset" style="<?= $value ?>"></div>
+                                        </label>
+									<?php endforeach ?>
+                                </div>
+
+                                <div id="background_type_preset_abstract" class="row form-group" style="margin-right: -7px; margin-left: -7px;">
+									<?php foreach($biolink_backgrounds['preset_abstract'] as $key => $value): ?>
+                                        <label for="settings_background_type_preset_abstract_<?= $key ?>" class="m-0 col-3 p-2">
+                                            <input type="radio" name="background" value="<?= $key ?>" id="settings_background_type_preset_abstract_<?= $key ?>" class="d-none" <?= $data->link->settings->background_type == 'preset_abstract' && $data->link->settings->background == $key ? 'checked="checked"' : null ?>/>
+                                            <div class="link-background-type-preset" style="<?= $value ?>"></div>
+                                        </label>
+									<?php endforeach ?>
+                                </div>
+
+                                <div id="background_type_gradient">
+                                    <div class="form-group">
+                                        <label for="settings_background_type_gradient_color_one"><?= l('link.settings.background_type_gradient_color_one') ?></label>
+                                        <input type="hidden" id="settings_background_type_gradient_color_one" name="background_color_one" class="form-control" value="<?= $data->link->settings->background_color_one ?? '#000000' ?>" />
+                                        <div id="settings_background_type_gradient_color_one_pickr"></div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="settings_background_type_gradient_color_two"><?= l('link.settings.background_type_gradient_color_two') ?></label>
+                                        <input type="hidden" id="settings_background_type_gradient_color_two" name="background_color_two" class="form-control" value="<?= $data->link->settings->background_color_two ?? '#000000' ?>" />
+                                        <div id="settings_background_type_gradient_color_two_pickr"></div>
+                                    </div>
+                                </div>
+
+                                <div id="background_type_color">
+                                    <div class="form-group">
+                                        <label for="settings_background_type_color"><?= l('link.settings.background_type_color') ?></label>
+                                        <input type="hidden" id="settings_background_type_color" name="background" class="form-control" value="<?= is_string($data->link->settings->background) ? $data->link->settings->background : '#000000' ?>" />
+                                        <div id="settings_background_type_color_pickr"></div>
+                                    </div>
+                                </div>
+
+                                <div id="background_type_image" data-image-container="background">
+                                    <div class="form-group">
+                                        <div class="row">
+                                            <div class="col">
+                                                <input id="background_type_image_input" type="file" name="background" accept="<?= \Altum\Uploads::get_whitelisted_file_extensions_accept('biolink_background') ?>" class="form-control-file altum-file-input" />
+                                            </div>
+
+											<?php if($data->link->settings->background_type == 'image' && is_string($data->link->settings->background) && !string_ends_with('.mp4', $data->link->settings->background)): ?>
+                                                <div class="col-3 d-flex justify-content-center align-items-center">
+                                                    <a href="<?= \Altum\Uploads::get_full_url('backgrounds') . $data->link->settings->background ?>" target="_blank" data-toggle="tooltip" title="<?= l('global.view') ?>" data-tooltip-hide-on-click>
+                                                        <img id="background_type_image_preview" src="<?= \Altum\Uploads::get_full_url('backgrounds') . $data->link->settings->background ?>" data-default-src="<?= \Altum\Uploads::get_full_url('backgrounds') . $data->link->settings->background ?>" class="altum-file-input-preview rounded" loading="lazy" />
+                                                    </a>
+                                                </div>
+											<?php endif ?>
+                                        </div>
+                                        <small class="form-text text-muted"><?= sprintf(l('global.accessibility.whitelisted_file_extensions'), \Altum\Uploads::get_whitelisted_file_extensions_accept('biolink_background')) . ' ' . sprintf(l('global.accessibility.file_size_limit'), settings()->links->background_size_limit) ?></small>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="background_attachment"><i class="fas fa-fw fa-print fa-sm text-muted mr-1"></i> <?= l('link.settings.background_attachment') ?></label>
+                                    <div class="row btn-group-toggle m-n2" data-toggle="buttons">
+										<?php foreach(['scroll', 'fixed'] as $background_attachment): ?>
+                                            <div class="p-2 col-6">
+                                                <label class="btn btn-light btn-block font-size-small mb-0 text-truncate <?= $data->link->settings->background_attachment == $background_attachment ? 'active"' : null?>">
+                                                    <input type="radio" name="background_attachment" value="<?= $background_attachment ?>" class="custom-control-input" <?= ($data->link->settings->background_attachment ?? null) == $background_attachment ? 'checked="checked"' : null?> />
+													<?= l('link.settings.background_attachment.' . $background_attachment) ?>
+                                                </label>
+                                            </div>
+										<?php endforeach ?>
+                                    </div>
+                                </div>
+
+                                <div class="form-group" data-range-counter data-range-counter-suffix="px">
+                                    <label for="background_blur"><i class="fas fa-fw fa-low-vision fa-sm text-muted mr-1"></i> <?= l('link.settings.background_blur') ?></label>
+                                    <input id="background_blur" type="range"  min="0" max="30" class="form-control-range" name="background_blur" value="<?= $data->link->settings->background_blur ?? 0 ?>" />
+                                </div>
+
+                                <div class="form-group" data-range-counter data-range-counter-suffix="%">
+                                    <label for="background_brightness"><i class="fas fa-fw fa-sun fa-sm text-muted mr-1"></i> <?= l('link.settings.background_brightness') ?></label>
+                                    <input id="background_brightness" type="range"  min="0" max="150" class="form-control-range" name="background_brightness" value="<?= $data->link->settings->background_brightness ?? 100 ?>" />
+                                </div>
+
+                                <div class="form-group" data-file-image-input-wrapper data-file-input-wrapper-size-limit="<?= settings()->links->favicon_size_limit ?>" data-file-input-wrapper-size-limit-error="<?= sprintf(l('global.error_message.file_size_limit'), settings()->links->favicon_size_limit) ?>">
+                                    <label for="favicon"><i class="fas fa-fw fa-image fa-sm text-muted mr-1"></i> <?= l('link.settings.favicon') ?></label>
+									<?= include_view(THEME_PATH . 'views/partials/custom_file_image_input.php', ['uploads_file_key' => 'favicons', 'file_key' => 'favicon', 'already_existing_image' => $data->link->settings->favicon, 'image_container' => 'favicon', 'input_data' => 'data-crop data-aspect-ratio="1"']) ?>
+									<?= \Altum\Alerts::output_field_error('favicon') ?>
+                                    <small class="form-text text-muted"><?= sprintf(l('global.accessibility.whitelisted_file_extensions'), \Altum\Uploads::get_whitelisted_file_extensions_accept('favicons')) . ' ' . sprintf(l('global.accessibility.file_size_limit'), settings()->links->favicon_size_limit) ?></small>
+                                </div>
+
+                                <div <?= $this->user->plan_settings->fonts ? null : get_plan_feature_disabled_info() ?>>
+                                    <div class="<?= $this->user->plan_settings->fonts ? null : 'container-disabled' ?>">
+
+										<?php foreach(settings()->links->biolinks_fonts as $font_key => $font): ?>
+											<?php if($font->css_url): ?>
+												<?php ob_start() ?>
+                                                <link href="<?= $font->css_url ?>" rel="stylesheet">
+												<?php \Altum\Event::add_content(ob_get_clean(), 'head') ?>
+											<?php endif ?>
+										<?php endforeach ?>
+
+                                        <div class="form-group">
+                                            <label for="settings_font"><i class="fas fa-fw fa-pen-nib fa-sm text-muted mr-1"></i> <?= l('link.settings.font') ?></label>
+                                            <div class="row btn-group-toggle m-n2" data-toggle="buttons">
+												<?php foreach(settings()->links->biolinks_fonts as $font_key => $font): ?>
+                                                    <div class="p-2 col-6 col-lg-4 p-2 h-100">
+                                                        <label class="btn btn-light btn-block font-size-small mb-0 text-truncate mb-0 <?= ($data->link->settings->font ?? 'default') == $font_key ? 'active"' : null?>" style="font-family: <?= $font->font_family ?> !important;">
+                                                            <input type="radio" name="font" value="<?= $font_key ?>" class="custom-control-input" <?= ($data->link->settings->font ?? 'default') == $font_key ? 'checked="checked"' : null?> required="required" data-font-family="<?= $font->font_family ?>" data-font-css-url="<?= $font->css_url ?>" />
+															<?= $font->name ?>
+                                                        </label>
+                                                    </div>
+												<?php endforeach ?>
+                                            </div>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label for="settings_font_size"><i class="fas fa-fw fa-font fa-sm text-muted mr-1"></i> <?= l('link.settings.font_size') ?></label>
+                                            <div class="input-group">
+                                                <input id="settings_font_size" type="number" min="12" max="22" name="font_size" class="form-control" value="<?= $data->link->settings->font_size ?>" />
+                                                <div class="input-group-append">
+                                                    <span class="input-group-text">px</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="settings_width"><i class="fas fa-fw fa-arrows-left-right fa-sm text-muted mr-1"></i> <?= l('link.settings.width') ?></label>
+                                    <div class="row btn-group-toggle m-n2" data-toggle="buttons">
+										<?php foreach(['6', '8', '10', '12'] as $key): ?>
+                                            <div class="p-2 col-12 col-lg-4 p-2 h-100">
+                                                <label class="btn btn-light btn-block font-size-small mb-0 text-truncate mb-0 <?= ($data->link->settings->width ?? '8') == $key ? 'active"' : null?>">
+                                                    <input type="radio" name="width" value="<?= $key ?>" class="custom-control-input" <?= ($data->link->settings->width ?? '8') == $key ? 'checked="checked"' : null?> required="required" />
+													<?= l('link.settings.width.' . $key) ?>
+                                                </label>
+                                            </div>
+										<?php endforeach ?>
+                                    </div>
+                                    <small class="form-text text-muted"><?= l('link.settings.width_help') ?></small>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="settings_block_spacing"><i class="fas fa-fw fa-arrows-up-down fa-sm text-muted mr-1"></i> <?= l('link.settings.block_spacing') ?></label>
+                                    <div class="row btn-group-toggle m-n2" data-toggle="buttons">
+										<?php foreach(['1', '2', '3',] as $key): ?>
+                                            <div class="p-2 col-12 col-lg-4 p-2 h-100">
+                                                <label class="btn btn-light btn-block font-size-small mb-0 text-truncate mb-0 <?= ($data->link->settings->block_spacing ?? '2') == $key ? 'active"' : null?>">
+                                                    <input type="radio" name="block_spacing" value="<?= $key ?>" class="custom-control-input" <?= ($data->link->settings->block_spacing ?? '2') == $key ? 'checked="checked"' : null?> required="required" />
+													<?= l('link.settings.block_spacing.' . $key) ?>
+                                                </label>
+                                            </div>
+										<?php endforeach ?>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="settings_hover_animation"><i class="fas fa-fw fa-arrow-pointer fa-sm text-muted mr-1"></i> <?= l('link.settings.hover_animation') ?></label>
+                                    <div class="row btn-group-toggle m-n2" data-toggle="buttons">
+                                        <div class="p-2 col-12 col-lg-4 p-2 h-100">
+                                            <label class="btn btn-light btn-block font-size-small mb-0 text-truncate mb-0 <?= ($data->link->settings->hover_animation ?? 'smooth') == 'false' ? 'active"' : null?>">
+                                                <input type="radio" name="hover_animation" value="false" class="custom-control-input" <?= ($data->link->settings->hover_animation ?? 'smooth') == 'false' ? 'checked="checked"' : null?> required="required" />
+												<?= l('global.none') ?>
+                                            </label>
+                                        </div>
+
+										<?php foreach(['smooth', 'instant',] as $key): ?>
+                                            <div class="col-12 col-lg-4 p-2 h-100">
+                                                <label class="btn btn-light btn-block text-truncate mb-0 <?= ($data->link->settings->hover_animation ?? 'smooth') == $key ? 'active"' : null?>">
+                                                    <input type="radio" name="hover_animation" value="<?= $key ?>" class="custom-control-input" <?= ($data->link->settings->hover_animation ?? 'smooth') == $key ? 'checked="checked"' : null?> required="required" />
+													<?= l('link.settings.hover_animation.' . $key) ?>
+                                                </label>
+                                            </div>
+										<?php endforeach ?>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                            <?php if($show_admin_only_biolink_sections): ?>
+                            <button class="btn btn-block btn-gray-200 font-size-little-small font-weight-450 my-4" type="button" data-toggle="collapse" data-target="#verified_container" aria-expanded="false" aria-controls="verified_container">
+                                <i class="fas fa-fw fa-check-circle fa-sm mr-1"></i> <?= l('link.settings.verified_header') ?>
+                            </button>
+
+                            <div class="collapse" data-parent="#settings" id="verified_container">
+								<?php if(!$data->link->is_verified): ?>
+                                    <div class="alert alert-info">
+                                        <i class="fas fa-fw fa-info-circle mr-1"></i>
+										<?php if(settings()->email_notifications->contact && !empty(settings()->email_notifications->emails)): ?>
+											<?= sprintf(l('link.settings.verified_help'), '<a href="' . url('contact') . '" class="font-weight-bold" target="_blank">', '</a>') ?>
+										<?php else: ?>
+											<?= sprintf(l('link.settings.verified_help'), '', '') ?>
+										<?php endif ?>
+                                    </div>
+								<?php endif ?>
+
+                                <div <?= $data->link->is_verified ? null : get_plan_feature_disabled_info(false) ?>>
+                                    <div class="<?= $data->link->is_verified ? null : 'container-disabled' ?>">
+
+                                        <div class="form-group">
+                                            <label for="settings_verified_location"><i class="fas fa-fw fa-check-circle fa-sm text-muted mr-1"></i> <?= l('link.settings.verified_location') ?></label>
+                                            <div class="row btn-group-toggle m-n2" data-toggle="buttons">
+                                                <div class="col-12 col-lg-4 p-2 h-100">
+                                                    <label class="btn btn-light btn-block font-size-small mb-0 text-truncate mb-0 <?= $data->link->settings->verified_location == '' ? 'active"' : null?>">
+                                                        <input type="radio" name="verified_location" value="" class="custom-control-input" <?= $data->link->settings->verified_location == 'false' ? 'checked="checked"' : null?> />
+														<?= l('global.none') ?>
+                                                    </label>
+                                                </div>
+
+												<?php foreach(['top', 'bottom',] as $key): ?>
+                                                    <div class="col-12 col-lg-4 p-2 h-100">
+                                                        <label class="btn btn-light btn-block text-truncate mb-0 <?= $data->link->settings->verified_location == $key ? 'active"' : null?>">
+                                                            <input type="radio" name="verified_location" value="<?= $key ?>" class="custom-control-input" <?= $data->link->settings->verified_location == $key ? 'checked="checked"' : null?> />
+															<?= l('link.settings.verified_location.' . $key) ?>
+                                                        </label>
+                                                    </div>
+												<?php endforeach ?>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+                            <?php endif ?>
+
+                            <?php if($show_admin_only_biolink_sections): ?>
+                            <button class="btn btn-block btn-gray-200 font-size-little-small font-weight-450 my-4" type="button" data-toggle="collapse" data-target="#branding_container" aria-expanded="false" aria-controls="branding_container">
+                                <i class="fas fa-fw fa-random fa-sm mr-1"></i> <?= l('link.settings.branding_header') ?>
+                            </button>
+
+                            <div class="collapse" data-parent="#settings" id="branding_container">
+                                <div <?= $this->user->plan_settings->removable_branding ? null : get_plan_feature_disabled_info() ?>>
+                                    <div class="<?= $this->user->plan_settings->removable_branding ? null : 'container-disabled' ?>">
+                                        <div class="form-group custom-control custom-switch">
+                                            <input
+                                                    type="checkbox"
+                                                    class="custom-control-input"
+                                                    id="display_branding"
+                                                    name="display_branding"
+												<?= !$this->user->plan_settings->removable_branding ? 'disabled="disabled"': null ?>
+												<?= $data->link->settings->display_branding ? 'checked="checked"' : null ?>
+                                            >
+                                            <label class="custom-control-label" for="display_branding"><?= l('link.settings.display_branding') ?></label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div <?= $this->user->plan_settings->custom_branding ? null : get_plan_feature_disabled_info() ?>>
+                                    <div class="<?= $this->user->plan_settings->custom_branding ? null : 'container-disabled' ?>">
+                                        <div class="form-group">
+                                            <label for="branding_name"><i class="fas fa-fw fa-random fa-sm text-muted mr-1"></i> <?= l('link.settings.branding.name') ?></label>
+                                            <input id="branding_name" type="text" class="form-control" name="branding_name" value="<?= $data->link->settings->branding->name ?? '' ?>" maxlength="128" />
+                                            <small class="form-text text-muted"><?= l('link.settings.branding.name_help') ?></small>
+                                        </div>
+
+                                        <div id="branding_url_text_color" class="<?= $data->link->settings->branding->name ? null : 'container-disabled' ?>">
+                                            <div class="form-group">
+                                                <label for="branding_url"><i class="fas fa-fw fa-link fa-sm text-muted mr-1"></i> <?= l('link.settings.branding.url') ?></label>
+                                                <input id="branding_url" type="text" class="form-control" name="branding_url" value="<?= $data->link->settings->branding->url ?? '' ?>" maxlength="2048" placeholder="<?= l('global.url_placeholder') ?>" />
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label for="settings_text_color"><i class="fas fa-fw fa-paint-brush fa-sm text-muted mr-1"></i> <?= l('link.settings.text_color') ?></label>
+                                                <input type="hidden" id="settings_text_color" name="text_color" class="form-control" value="<?= $data->link->settings->text_color ?>" required="required" />
+                                                <div id="settings_text_color_pickr"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <?php endif ?>
+
+							<?php if(settings()->links->pixels_is_enabled): ?>
+                                <button class="btn btn-block btn-gray-200 font-size-little-small font-weight-450 my-4" type="button" data-toggle="collapse" data-target="#pixels_container" aria-expanded="false" aria-controls="pixels_container">
+                                    <i class="fas fa-fw fa-adjust fa-sm mr-1"></i> <?= l('link.settings.pixels_header') ?>
+                                </button>
+
+                                <div class="collapse" data-parent="#settings" id="pixels_container">
+                                    <div class="form-group">
+                                        <div class="d-flex flex-wrap flex-row justify-content-between">
+                                            <label><i class="fas fa-fw fa-sm fa-adjust text-muted mr-1"></i> <?= l('link.settings.pixels_ids') ?></label>
+                                            <a href="<?= url('pixel-create') ?>" target="_blank" class="small mb-2"><i class="fas fa-fw fa-sm fa-plus mr-1"></i> <?= l('pixels.create') ?></a>
+                                        </div>
+
+                                        <div class="row">
+											<?php $available_pixels = require APP_PATH . 'includes/pixels.php'; ?>
+											<?php foreach($data->pixels as $pixel): ?>
+                                                <div class="col-12 col-lg-6">
+                                                    <div class="custom-control custom-checkbox my-2">
+                                                        <input id="pixel_id_<?= $pixel->pixel_id ?>" name="pixels_ids[]" value="<?= $pixel->pixel_id ?>" type="checkbox" class="custom-control-input" <?= in_array($pixel->pixel_id, $data->link->pixels_ids) ? 'checked="checked"' : null ?>>
+                                                        <label class="custom-control-label d-flex align-items-center" for="pixel_id_<?= $pixel->pixel_id ?>">
+                                                            <span class="text-truncate" title="<?= $pixel->name ?>"><?= $pixel->name ?></span>
+                                                            <small class="badge badge-light ml-1" data-toggle="tooltip" title="<?= $available_pixels[$pixel->type]['name'] ?>">
+                                                                <i class="<?= $available_pixels[$pixel->type]['icon'] ?> fa-fw fa-sm" style="color: <?= $available_pixels[$pixel->type]['color'] ?>"></i>
+                                                            </small>
+                                                        </label>
+                                                    </div>
+                                                </div>
+											<?php endforeach ?>
+                                        </div>
+                                    </div>
+                                </div>
+							<?php endif ?>
+
+                            <button class="btn btn-block btn-gray-200 font-size-little-small font-weight-450 my-4" type="button" data-toggle="collapse" data-target="#utm_container" aria-expanded="false" aria-controls="utm_container">
+                                <i class="fas fa-fw fa-keyboard fa-sm mr-1"></i> <?= l('link.settings.utm_header') ?>
+                            </button>
+
+                            <div class="collapse" data-parent="#settings" id="utm_container">
+                                <div <?= $this->user->plan_settings->utm ? null : get_plan_feature_disabled_info() ?>>
+                                    <div class="<?= $this->user->plan_settings->utm ? null : 'container-disabled' ?>">
+                                        <div class="form-group">
+                                            <label for="utm_source"><i class="fas fa-fw fa-sitemap fa-sm text-muted mr-1"></i> <?= l('link.settings.utm_source') ?></label>
+                                            <input id="utm_source" type="text" class="form-control" name="utm_source" value="<?= $data->link->settings->utm->source ?? '' ?>" maxlength="128" placeholder="<?= l('link.settings.utm_source_placeholder') ?>" />
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label for="utm_medium"><i class="fas fa-fw fa-inbox fa-sm text-muted mr-1"></i> <?= l('link.settings.utm_medium') ?></label>
+                                            <input id="utm_medium" type="text" class="form-control" name="utm_medium" value="<?= $data->link->settings->utm->medium ?? '' ?>" maxlength="128" placeholder="<?= l('link.settings.utm_medium_placeholder') ?>" />
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label for="utm_campaign"><i class="fas fa-fw fa-bullhorn fa-sm text-muted mr-1"></i> <?= l('link.settings.utm_campaign') ?></label>
+                                            <input id="utm_campaign" type="text" class="form-control" name="utm_campaign" value="<?= l('link.settings.utm_campaign_placeholder_automatic') ?>" maxlength="128" readonly="readonly" />
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label for="utm_preview"><i class="fas fa-fw fa-eye fa-sm text-muted mr-1"></i> <?= l('link.settings.utm_preview') ?></label>
+                                            <input id="utm_preview" type="text" class="form-control-plaintext" name="utm_preview" readonly="readonly" />
+                                            <small class="form-text text-muted"><?= l('link.settings.utm_preview_help') ?></small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button class="btn btn-block btn-gray-200 font-size-little-small font-weight-450 my-4" type="button" data-toggle="collapse" data-target="#protection_container" aria-expanded="false" aria-controls="protection_container">
+                                <i class="fas fa-fw fa-user-shield fa-sm mr-1"></i> <?= l('link.settings.protection_header') ?>
+                            </button>
+
+                            <div class="collapse" data-parent="#settings" id="protection_container">
+
+                                <div <?= $this->user->plan_settings->password ? null : get_plan_feature_disabled_info() ?>>
+                                    <div class="<?= $this->user->plan_settings->password ? null : 'container-disabled' ?>">
+                                        <div class="form-group" data-password-toggle-view data-password-toggle-view-show="<?= l('global.show') ?>" data-password-toggle-view-hide="<?= l('global.hide') ?>">
+                                            <label for="qweasdzxc"><i class="fas fa-fw fa-key fa-sm text-muted mr-1"></i> <?= l('global.password') ?></label>
+                                            <input id="qweasdzxc" type="password" class="form-control" name="qweasdzxc" value="<?= $data->link->settings->password ?>" autocomplete="new-password" <?= !$this->user->plan_settings->password ? 'disabled="disabled"': null ?> />
+                                            <small class="form-text text-muted"><?= l('link.settings.password_help') ?></small>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div <?= $this->user->plan_settings->sensitive_content ? null : get_plan_feature_disabled_info() ?>>
+                                    <div class="<?= $this->user->plan_settings->sensitive_content ? null : 'container-disabled' ?>">
+                                        <div class="form-group custom-control custom-switch">
+                                            <input
+                                                    type="checkbox"
+                                                    class="custom-control-input"
+                                                    id="sensitive_content"
+                                                    name="sensitive_content"
+												<?= !$this->user->plan_settings->sensitive_content ? 'disabled="disabled"': null ?>
+												<?= $data->link->settings->sensitive_content ? 'checked="checked"' : null ?>
+                                            >
+                                            <label class="custom-control-label" for="sensitive_content"><?= l('link.settings.sensitive_content') ?></label>
+                                            <small class="form-text text-muted"><?= l('link.settings.sensitive_content_help') ?></small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button class="btn btn-block btn-gray-200 font-size-little-small font-weight-450 my-4" type="button" data-toggle="collapse" data-target="#seo_container" aria-expanded="false" aria-controls="seo_container">
+                                <i class="fas fa-fw fa-search-plus fa-sm mr-1"></i> <?= l('link.settings.seo_header') ?>
+                            </button>
+
+                            <div class="collapse" data-parent="#settings" id="seo_container">
+                                <div <?= $this->user->plan_settings->seo ? null : get_plan_feature_disabled_info() ?>>
+                                    <div class="<?= $this->user->plan_settings->seo ? null : 'container-disabled' ?>">
+                                        <div class="form-group custom-control custom-switch">
+                                            <input id="seo_block" name="seo_block" type="checkbox" class="custom-control-input" <?= $data->link->settings->seo->block ? 'checked="checked"' : null ?>>
+                                            <label class="custom-control-label" for="seo_block"><?= l('link.settings.seo_block') ?></label>
+                                            <small class="form-text text-muted"><?= l('link.settings.seo_block_help') ?></small>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label for="seo_title"><i class="fas fa-fw fa-heading fa-sm text-muted mr-1"></i> <?= l('link.settings.seo_title') ?></label>
+                                            <input id="seo_title" type="text" class="form-control" name="seo_title" value="<?= $data->link->settings->seo->title ?? '' ?>" maxlength="70" />
+                                            <small class="form-text text-muted"><?= l('link.settings.seo_title_help') ?></small>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label for="seo_meta_description"><i class="fas fa-fw fa-paragraph fa-sm text-muted mr-1"></i> <?= l('link.settings.seo_meta_description') ?></label>
+                                            <input id="seo_meta_description" type="text" class="form-control" name="seo_meta_description" value="<?= $data->link->settings->seo->meta_description ?? '' ?>" maxlength="160" />
+                                            <small class="form-text text-muted"><?= l('link.settings.seo_meta_description_help') ?></small>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label for="seo_meta_keywords"><i class="fas fa-fw fa-file-word fa-sm text-muted mr-1"></i> <?= l('link.settings.seo_meta_keywords') ?></label>
+                                            <input id="seo_meta_keywords" type="text" class="form-control" name="seo_meta_keywords" value="<?= $data->link->settings->seo->meta_keywords ?? '' ?>" maxlength="160" />
+                                        </div>
+
+                                        <div class="form-group" data-file-image-input-wrapper data-file-input-wrapper-size-limit="<?= settings()->links->seo_image_size_limit ?>" data-file-input-wrapper-size-limit-error="<?= sprintf(l('global.error_message.file_size_limit'), settings()->links->seo_image_size_limit) ?>">
+                                            <label for="seo_image"><i class="fas fa-fw fa-image fa-sm text-muted mr-1"></i> <?= l('link.settings.seo_image') ?></label>
+											<?= include_view(THEME_PATH . 'views/partials/custom_file_image_input.php', ['uploads_file_key' => 'biolink_seo_image', 'file_key' => 'seo_image', 'already_existing_image' => $data->link->settings->seo->image, 'image_container' => 'seo_image', 'input_data' => 'data-crop data-aspect-ratio="1.91"']) ?>
+											<?= \Altum\Alerts::output_field_error('seo_image') ?>
+                                            <small class="form-text text-muted"><?= sprintf(l('global.accessibility.whitelisted_file_extensions'), \Altum\Uploads::get_whitelisted_file_extensions_accept('biolink_seo_image')) . ' ' . sprintf(l('global.accessibility.file_size_limit'), settings()->links->seo_image_size_limit) ?></small>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label for="language_code"><i class="fas fa-fw fa-sm fa-language text-muted mr-1"></i> <?= l('link.settings.language_code') ?></label>
+                                            <select id="language_code" name="language_code" class="custom-select">
+                                                <?php foreach(get_locale_languages_array() as $locale => $language): ?>
+                                                    <option value="<?= $locale ?>" <?= ($data->link->settings->language_code ?? (isset($_SERVER['HTTP_ACCEPT_LANGUAGE']) ? mb_substr($_SERVER['HTTP_ACCEPT_LANGUAGE'], 0, 2) : \Altum\Language::$default_code)) == $locale ? 'selected="selected"' : null?>><?= $language ?></option>
+                                                <?php endforeach ?>
+                                            </select>
+                                            <small class="form-text text-muted"><?= l('link.settings.language_code_help') ?></small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+							<?php if(\Altum\Plugin::is_active('pwa') && settings()->pwa->is_enabled): ?>
+                                <button class="btn btn-block btn-gray-200 font-size-little-small font-weight-450 my-4" type="button" data-toggle="collapse" data-target="#pwa_container" aria-expanded="false" aria-controls="pwa_container">
+                                    <i class="fas fa-fw fa-mobile-alt fa-sm mr-1"></i> <?= l('link.settings.pwa_header') ?>
+                                </button>
+
+                                <div class="collapse" data-parent="#settings" id="pwa_container">
+                                    <div class="alert alert-info">
+                                        <i class="fas fa-fw fa-info-circle mr-1"></i> <?= l('link.settings.pwa_help') ?>
+                                    </div>
+
+                                    <div <?= !$this->user->plan_settings->custom_pwa_is_enabled ? get_plan_feature_disabled_info() : null ?>>
+                                        <div class="<?= !$this->user->plan_settings->custom_pwa_is_enabled ? 'container-disabled' : null ?>">
+
+                                            <div class="form-group custom-control custom-switch">
+                                                <input
+                                                        type="checkbox"
+                                                        class="custom-control-input"
+                                                        id="pwa_is_enabled"
+                                                        name="pwa_is_enabled"
+													<?= $data->link->settings->pwa_is_enabled ? 'checked="checked"' : null ?>
+													<?= !$this->user->plan_settings->custom_pwa_is_enabled ? 'disabled="disabled"' : null ?>
+                                                >
+                                                <label class="custom-control-label" for="pwa_is_enabled"><?= l('link.settings.pwa_is_enabled') ?></label>
+                                            </div>
+
+                                            <div class="form-group custom-control custom-switch">
+                                                <input
+                                                        type="checkbox"
+                                                        class="custom-control-input"
+                                                        id="pwa_display_install_bar"
+                                                        name="pwa_display_install_bar"
+													<?= $data->link->settings->pwa_display_install_bar ? 'checked="checked"' : null ?>
+													<?= !$this->user->plan_settings->custom_pwa_is_enabled ? 'disabled="disabled"' : null ?>
+                                                >
+                                                <label class="custom-control-label" for="pwa_display_install_bar"><?= l('link.settings.pwa_display_install_bar') ?></label>
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label for="pwa_display_install_bar_delay"><i class="fas fa-fw fa-bars fa-sm text-muted mr-1"></i> <?= l('link.settings.pwa_display_install_bar_delay') ?></label>
+                                                <div class="input-group">
+                                                    <input id="pwa_display_install_bar_delay" type="number" min="0" class="form-control" name="pwa_display_install_bar_delay" value="<?= $data->link->settings->pwa_display_install_bar_delay ?? 3 ?>" />
+                                                    <div class="input-group-append">
+                                                        <span class="input-group-text"><?= l('global.date.seconds') ?></span>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="form-group" data-file-image-input-wrapper data-file-input-wrapper-size-limit="<?= settings()->links->pwa_icon_size_limit ?>" data-file-input-wrapper-size-limit-error="<?= sprintf(l('global.error_message.file_size_limit'), settings()->links->pwa_icon_size_limit) ?>">
+                                                <label for="pwa_icon"><i class="fas fa-fw fa-image fa-sm text-muted mr-1"></i> <?= l('link.settings.pwa_icon') ?></label>
+												<?= include_view(THEME_PATH . 'views/partials/custom_file_image_input.php', ['uploads_file_key' => 'app_icon', 'file_key' => 'pwa_icon', 'already_existing_image' => $data->link->settings->pwa_icon, 'image_container' => 'pwa_icon']) ?>
+												<?= \Altum\Alerts::output_field_error('pwa_icon') ?>
+                                                <small class="form-text text-muted"><?= l('link.settings.pwa_icon_help') ?><?= sprintf(l('global.accessibility.whitelisted_file_extensions'), \Altum\Uploads::get_whitelisted_file_extensions_accept('app_icon')) . ' ' . sprintf(l('global.accessibility.file_size_limit'), settings()->links->pwa_icon_size_limit) ?></small>
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label for="pwa_theme_color"><i class="fas fa-fw fa-paint-brush fa-sm text-muted mr-1"></i> <?= l('link.settings.pwa_theme_color') ?></label>
+                                                <input type="hidden" id="pwa_theme_color" name="pwa_theme_color" class="form-control" value="<?= $data->link->settings->pwa_theme_color ?? '#000000' ?>" required="required" data-color-picker />
+                                                <div id="settings_pwa_theme_color_pickr"></div>
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                </div>
+							<?php endif ?>
+
+                            <?php if($show_admin_only_biolink_sections): ?>
+                            <button class="btn btn-block btn-gray-200 font-size-little-small font-weight-450 my-4" type="button" data-toggle="collapse" data-target="#branded_button_container" aria-expanded="false" aria-controls="branded_button_container">
+                                <i class="fas fa-fw fa-circle fa-sm mr-1"></i> <?= l('link.settings.branded_button_header') ?>
+                            </button>
+
+                            <div class="collapse" data-parent="#settings" id="branded_button_container">
+                                <div <?= !$this->user->plan_settings->branded_button_is_enabled ? get_plan_feature_disabled_info() : null ?>>
+                                    <div class="<?= !$this->user->plan_settings->branded_button_is_enabled ? 'container-disabled' : null ?>">
+                                        <div class="form-group custom-control custom-switch">
+                                            <input
+                                                    type="checkbox"
+                                                    class="custom-control-input"
+                                                    id="branded_button_is_enabled"
+                                                    name="branded_button_is_enabled"
+												<?= $data->link->settings->branded_button_is_enabled ? 'checked="checked"' : null ?>
+												<?= !$this->user->plan_settings->branded_button_is_enabled ? 'disabled="disabled"' : null ?>
+                                            >
+                                            <label class="custom-control-label" for="branded_button_is_enabled"><?= l('link.settings.branded_button_is_enabled') ?></label>
+                                        </div>
+
+                                        <div class="form-group" data-file-image-input-wrapper data-file-input-wrapper-size-limit="<?= settings()->links->favicon_size_limit ?>" data-file-input-wrapper-size-limit-error="<?= sprintf(l('global.error_message.file_size_limit'), settings()->links->favicon_size_limit) ?>">
+                                            <label for="branded_button_icon"><i class="fas fa-fw fa-image fa-sm text-muted mr-1"></i> <?= l('link.settings.branded_button_icon') ?></label>
+											<?= include_view(THEME_PATH . 'views/partials/custom_file_image_input.php', ['uploads_file_key' => 'branded_button_icon', 'file_key' => 'branded_button_icon', 'already_existing_image' => $data->link->settings->branded_button_icon, 'image_container' => 'branded_button_icon']) ?>
+											<?= \Altum\Alerts::output_field_error('branded_button_icon') ?>
+                                            <small class="form-text text-muted"><?= l('link.settings.branded_button_icon_help') ?><?= sprintf(l('global.accessibility.whitelisted_file_extensions'), \Altum\Uploads::get_whitelisted_file_extensions_accept('branded_button_icon')) . ' ' . sprintf(l('global.accessibility.file_size_limit'), settings()->links->favicon_size_limit) ?></small>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label for="branded_button_title"><i class="fas fa-fw fa-heading fa-sm text-muted mr-1"></i> <?= l('link.settings.branded_button_title') ?></label>
+                                            <input id="branded_button_title" type="text" class="form-control" name="branded_button_title" value="<?= $data->link->settings->branded_button_title ?? '' ?>" maxlength="64" />
+                                        </div>
+
+                                        <div class="form-group" data-character-counter="textarea">
+                                            <label for="branded_button_content" class="d-flex justify-content-between align-items-center">
+                                                <span><i class="fab fa-fw fa-sm fa-html5 text-muted mr-1"></i> <?= l('link.settings.branded_button_content') ?></span>
+                                                <small class="text-muted" data-character-counter-wrapper></small>
+                                            </label>
+                                            <textarea id="branded_button_content" class="form-control" name="branded_button_content" maxlength="10000"><?= $data->link->settings->branded_button_content ?></textarea>
+                                            <small class="form-text text-muted"><?= l('link.settings.branded_button_content_help') ?></small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <?php endif ?>
+
+                            <?php if($show_admin_only_biolink_sections): ?>
+                            <button class="btn btn-block btn-gray-200 font-size-little-small font-weight-450 my-4" type="button" data-toggle="collapse" data-target="#advanced_container" aria-expanded="false" aria-controls="advanced_container">
+                                <i class="fas fa-fw fa-user-tie fa-sm mr-1"></i> <?= l('link.settings.advanced_header') ?>
+                            </button>
+
+                            <div class="collapse" data-parent="#settings" id="advanced_container">
+								<?php if(settings()->links->email_reports_is_enabled): ?>
+                                    <div <?= $this->user->plan_settings->email_reports_is_enabled ? null : get_plan_feature_disabled_info() ?>>
+                                        <div class="form-group <?= $this->user->plan_settings->email_reports_is_enabled ? null : 'container-disabled' ?>">
+                                            <div class="d-flex flex-wrap flex-row flex-xl-row justify-content-between">
+                                                <label><i class="fas fa-fw fa-sm fa-bell text-muted mr-1"></i> <?= l('global.plan_settings.email_reports_is_enabled_' . settings()->links->email_reports_is_enabled) ?></label>
+                                                <a href="<?= url('notification-handler-create') ?>" target="_blank" class="small mb-2"><i class="fas fa-fw fa-sm fa-plus mr-1"></i> <?= l('notification_handlers.create') ?></a>
+                                            </div>
+                                            <div class="mb-2"><small class="text-muted"><?= l('link.settings.email_reports_is_enabled_help') ?></small></div>
+
+                                            <div class="row">
+												<?php foreach($data->notification_handlers as $notification_handler): ?>
+													<?php if($notification_handler->type != 'email') continue ?>
+                                                    <div class="col-12 col-lg-6">
+                                                        <div class="custom-control custom-checkbox my-2">
+                                                            <input id="<?= 'email_reports_' . $notification_handler->notification_handler_id ?>" name="email_reports[]" value="<?= $notification_handler->notification_handler_id ?>" type="checkbox" class="custom-control-input" <?= in_array($notification_handler->notification_handler_id, $data->link->email_reports) ? 'checked="checked"' : null ?>>
+                                                            <label class="custom-control-label" for="<?= 'email_reports_' . $notification_handler->notification_handler_id ?>">
+                                                                <span class="mr-1"><?= $notification_handler->name ?></span>
+                                                                <small class="badge badge-light badge-pill"><?= l('notification_handlers.type_' . $notification_handler->type) ?></small>
+                                                            </label>
+                                                        </div>
+                                                    </div>
+												<?php endforeach ?>
+                                            </div>
+                                        </div>
+                                    </div>
+								<?php endif ?>
+
+                                <div class="form-group custom-control custom-switch">
+                                    <input
+                                            type="checkbox"
+                                            class="custom-control-input"
+                                            id="share_is_enabled"
+                                            name="share_is_enabled"
+										<?= $data->link->settings->share_is_enabled ? 'checked="checked"' : null ?>
+                                    >
+                                    <label class="custom-control-label" for="share_is_enabled"><?= l('link.settings.share_is_enabled') ?></label>
+                                    <small class="form-text text-muted"><?= l('link.settings.share_is_enabled_help') ?></small>
+                                </div>
+
+                                <div class="form-group custom-control custom-switch">
+                                    <input
+                                            type="checkbox"
+                                            class="custom-control-input"
+                                            id="scroll_buttons_is_enabled"
+                                            name="scroll_buttons_is_enabled"
+										<?= $data->link->settings->scroll_buttons_is_enabled ? 'checked="checked"' : null ?>
+                                    >
+                                    <label class="custom-control-label" for="scroll_buttons_is_enabled"><?= l('link.settings.scroll_buttons_is_enabled') ?></label>
+                                    <small class="form-text text-muted"><?= l('link.settings.scroll_buttons_is_enabled_help') ?></small>
+                                </div>
+
+								<?php if(settings()->links->directory_is_enabled): ?>
+									<?php $directory_has_link = false ?>
+									<?php if(settings()->email_notifications->contact && !empty(settings()->email_notifications->emails) && settings()->links->directory_display != 'all' && !$data->link->is_verified): ?>
+										<?php $directory_has_link = true ?>
+									<?php endif ?>
+
+                                    <div <?= settings()->links->directory_display != 'all' && !$data->link->is_verified ? 'data-toggle="tooltip" data-html="true" title="' . l('link.settings.verified_required') . '<br />' . sprintf(l('link.settings.verified_help'), '', '') . '"' : null ?> <?= $directory_has_link ? 'class="cursor-pointer" onclick="window.location.href=\'' . url('contact') . '\'"' : null ?>>
+                                        <div class="<?= settings()->links->directory_display != 'all' && !$data->link->is_verified ? 'container-disabled' : null ?>">
+                                            <div class="form-group custom-control custom-switch">
+                                                <input
+                                                        type="checkbox"
+                                                        class="custom-control-input"
+                                                        id="directory_is_enabled"
+                                                        name="directory_is_enabled"
+													<?= $data->link->directory_is_enabled ? 'checked="checked"' : null ?>
+                                                >
+                                                <label class="custom-control-label" for="directory_is_enabled"><?= l('link.settings.directory_is_enabled') ?></label>
+                                                <small class="form-text text-muted"><?= sprintf(l('link.settings.directory_is_enabled_help'), '<a href="' . url('directory') . '">' . l('directory.menu') . '</a>') ?></small>
+                                            </div>
+                                        </div>
+                                    </div>
+								<?php endif ?>
+
+								<?php if(settings()->links->projects_is_enabled): ?>
+                                    <div class="form-group">
+                                        <div class="d-flex flex-wrap flex-row justify-content-between">
+                                            <label for="project_id"><i class="fas fa-fw fa-sm fa-project-diagram text-muted mr-1"></i> <?= l('projects.project_id') ?></label>
+                                            <a href="<?= url('project-create') ?>" target="_blank" class="small mb-2"><i class="fas fa-fw fa-sm fa-plus mr-1"></i> <?= l('projects.create') ?></a>
+                                        </div>
+                                        <select id="project_id" name="project_id" class="custom-select">
+                                            <option value=" "><?= l('global.none') ?></option>
+											<?php foreach($data->projects as $row): ?>
+                                                <option value="<?= $row->project_id ?>" <?= $data->link->project_id == $row->project_id ? 'selected="selected"' : null?>><?= $row->name ?></option>
+											<?php endforeach ?>
+                                        </select>
+                                    </div>
+								<?php endif ?>
+
+								<?php if(settings()->links->splash_page_is_enabled): ?>
+                                    <div <?= $this->user->plan_settings->splash_pages_limit ? null : get_plan_feature_disabled_info() ?>>
+                                        <div class="<?= $this->user->plan_settings->splash_pages_limit ? null : 'container-disabled' ?>">
+                                            <div class="form-group">
+                                                <div class="d-flex flex-wrap flex-row justify-content-between">
+                                                    <label for="splash_page_id"><i class="fas fa-fw fa-sm fa-droplet text-muted mr-1"></i> <?= l('splash_pages.splash_page_id') ?></label>
+                                                    <a href="<?= url('splash-pages') ?>" target="_blank" class="small mb-2"><i class="fas fa-fw fa-sm fa-plus mr-1"></i> <?= l('splash_pages.create') ?></a>
+                                                </div>
+                                                <select id="splash_page_id" name="splash_page_id" class="custom-select">
+                                                    <option value=" "><?= l('global.none') ?></option>
+													<?php foreach($data->splash_pages as $row): ?>
+                                                        <option value="<?= $row->splash_page_id ?>" <?= $data->link->splash_page_id == $row->splash_page_id ? 'selected="selected"' : null?>><?= $row->name ?></option>
+													<?php endforeach ?>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+								<?php endif ?>
+
+                                <div <?= $this->user->plan_settings->leap_link ? null : get_plan_feature_disabled_info() ?>>
+                                    <div class="<?= $this->user->plan_settings->leap_link ? null : 'container-disabled' ?>">
+                                        <div class="form-group">
+                                            <label for="leap_link"><i class="fas fa-fw fa-forward fa-sm text-muted mr-1"></i> <?= l('link.settings.leap_link') ?></label>
+                                            <input id="leap_link" type="url" class="form-control" name="leap_link" value="<?= $data->link->settings->leap_link ?>" maxlength="2048" <?= !$this->user->plan_settings->leap_link ? 'disabled="disabled"': null ?> placeholder="<?= l('global.url_placeholder') ?>" autocomplete="off" />
+                                            <small class="form-text text-muted"><?= l('link.settings.leap_link_help') ?></small>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div <?= $this->user->plan_settings->custom_css_is_enabled ? null : get_plan_feature_disabled_info() ?>>
+                                    <div class="form-group <?= $this->user->plan_settings->custom_css_is_enabled ? null : 'container-disabled' ?>" data-character-counter="textarea">
+                                        <label for="custom_css" class="d-flex justify-content-between align-items-center">
+                                            <span><i class="fab fa-fw fa-sm fa-css3 text-muted mr-1"></i> <?= l('global.custom_css') ?></span>
+                                            <small class="text-muted" data-character-counter-wrapper></small>
+                                        </label>
+                                        <textarea id="custom_css" class="form-control" name="custom_css" maxlength="10000" placeholder="<?= l('global.custom_css_placeholder') ?>"><?= $data->link->settings->custom_css ?></textarea>
+                                        <small class="form-text text-muted"><?= l('global.custom_css_help') ?></small>
+                                    </div>
+                                </div>
+
+                                <div <?= $this->user->plan_settings->custom_js_is_enabled ? null : get_plan_feature_disabled_info() ?>>
+                                    <div class="form-group <?= $this->user->plan_settings->custom_js_is_enabled ? null : 'container-disabled' ?>" data-character-counter="textarea">
+                                        <label for="custom_js" class="d-flex justify-content-between align-items-center">
+                                            <span><i class="fab fa-fw fa-sm fa-js-square text-muted mr-1"></i> <?= l('global.custom_js') ?></span>
+                                            <small class="text-muted" data-character-counter-wrapper></small>
+                                        </label>
+                                        <textarea id="custom_js" class="form-control" name="custom_js" maxlength="10000" placeholder="<?= l('global.custom_js_placeholder') ?>"><?= $data->link->settings->custom_js ?></textarea>
+                                        <small class="form-text text-muted"><?= l('global.custom_js_help') ?></small>
+                                    </div>
+                                </div>
+
+								<?php if(settings()->links->sixsixpusher_is_enabled): ?>
+                                    <div class="form-group" data-file-input-wrapper-size-limit="<?= get_max_upload() ?>" data-file-input-wrapper-size-limit-error="<?= sprintf(l('global.error_message.file_size_limit'), settings()->links->sixsixpusher_service_worker_size_limit) ?>">
+                                        <label for="service_worker"><i class="fas fa-fw fa-sm fa-file text-muted mr-1"></i> <?= l('link.settings.service_worker') ?></label>
+										<?= include_view(THEME_PATH . 'views/partials/file_input.php', ['uploads_file_key' => 'service_workers', 'file_key' => 'service_worker', 'already_existing_file' => $data->link->settings->service_worker ?? null, 'custom_file_full_url' => $data->link->full_url . settings()->links->sixsixpusher_service_worker_file_name . '.js']) ?>
+                                        <small class="form-text text-muted"><?= l('link.settings.service_worker_help') ?></small>
+                                        <small class="form-text text-muted"><?= sprintf(l('global.accessibility.whitelisted_file_extensions'), \Altum\Uploads::get_whitelisted_file_extensions_accept('service_workers')) . ' ' . sprintf(l('global.accessibility.file_size_limit'), settings()->links->sixsixpusher_service_worker_size_limit) ?></small>
+                                    </div>
+								<?php endif ?>
+                            </div>
+                                <?php endif ?>
+
+                            <div class="text-center mt-4">
+                                <button type="submit" name="submit" class="btn btn-block btn-primary" data-is-ajax><?= l('global.update') ?></button>
+                            </div>
+                        </form>
+
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-pane fade <?= $active_tab == 'blocks' ? 'show active' : null ?>" id="biolink_blocks" role="tabpanel" aria-labelledby="blocks-tab">
+
+				<?php if($data->link_links_result->num_rows): ?>
+					<?php while($row = $data->link_links_result->fetch_object()): ?>
+						<?php if(!isset($data->biolink_blocks[$row->type])) continue; ?>
+
+						<?php $row->settings = (object) json_decode($row->settings) ?>
+						<?php
+						$row->settings->border_shadow_style = $row->settings->border_shadow_style ?? 'subtle';
+						$row->settings->border_shadow_color = $row->settings->border_shadow_color ?? '#00000010';
+						?>
+
+                        <?php /* Custom code: FC-2026-02-27: premium biolink block cards */ ?>
+                        <div class="biolink_block biolink-editor-block card <?= $row->is_enabled ? null : 'custom-row-inactive' ?> mb-4" data-biolink-block-id="<?= $row->biolink_block_id ?>">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center">
+                                    <div class="custom-row-side-controller">
+                                        <span data-toggle="tooltip" title="<?= l('link.biolink_blocks.link_sort') ?>">
+                                            <i class="fas fa-fw fa-bars fa-sm text-muted custom-row-side-controller-grab drag"></i>
+                                        </span>
+                                    </div>
+
+                                    <div class="col-1 mr-2 p-0 d-none d-lg-block">
+                                        <?php if($row->type == 'custom_html_chatbot'): ?>
+                                            <img
+                                                src="<?= SITE_URL . 'themes/altum/assets/images/sovica.png' ?>"
+                                                alt=""
+                                                data-toggle="tooltip"
+                                                title="<?= l('link.biolink.blocks.' . $row->type) ?>"
+                                                style="width: 28px; height: 28px; object-fit: contain;"
+                                                onerror="this.onerror=null;this.src='<?= SITE_URL . UPLOADS_URL_PATH . 'ai-chat/sovica.png' ?>';"
+                                                loading="lazy"
+                                                decoding="async"
+                                            />
+                                        <?php elseif($row->type == 'custom_html_chatbot_pets'): ?>
+                                            <span class="fa-stack" style="font-size: 1.08rem;" data-toggle="tooltip" title="<?= l('link.biolink.blocks.' . $row->type) ?>">
+                                                <i class="fas fa-circle fa-stack-2x" style="color: #5f3dc4"></i>
+                                                <i class="fas fa-paw fa-stack-1x fa-inverse"></i>
+                                            </span>
+                                        <?php else: ?>
+                                            <span class="fa-stack fa-1x" data-toggle="tooltip" title="<?= l('link.biolink.blocks.' . $row->type) ?>">
+                                                <i class="fas fa-circle fa-stack-2x" style="color: <?= $data->biolink_blocks[$row->type]['color'] ?>"></i>
+                                                <i class="<?= $data->biolink_blocks[$row->type]['icon'] ?> fa-stack-1x fa-inverse"></i>
+                                            </span>
+                                        <?php endif ?>
+                                    </div>
+
+                                    <div class="col-6 col-md-5">
+                                        <div class="d-flex flex-column text-truncate">
+                                            <div class="text-truncate">
+                                                <a href="#"
+                                                   data-toggle="collapse"
+                                                   data-target="#biolink_block_expanded_content_<?= $row->biolink_block_id ?>"
+                                                   aria-expanded="false"
+                                                   aria-controls="biolink_block_expanded_content_<?= $row->biolink_block_id ?>"
+                                                   class="text-truncate"
+                                                >
+													<?php if($row->type == 'paragraph'): ?>
+														<?php $display_dynamic_name = strip_tags($row->settings->{$data->biolink_blocks[$row->type]['display_dynamic_name']}); ?>
+                                                        <span class="font-weight-500"><?= $display_dynamic_name ?: l('link.biolink.blocks.' . $row->type) ?></span>
+													<?php else: ?>
+                                                        <span class="font-weight-500"><?= $data->biolink_blocks[$row->type]['display_dynamic_name'] ? ($row->settings->{$data->biolink_blocks[$row->type]['display_dynamic_name']} ? string_truncate($row->settings->{$data->biolink_blocks[$row->type]['display_dynamic_name']}, 32) : l('link.biolink.blocks.' . $row->type)) : l('link.biolink.blocks.' . $row->type) ?></span>
+													<?php endif ?>
+                                                </a>
+                                            </div>
+
+                                            <span class="d-flex align-items-center">
+												<?php if(!empty($row->location_url)): ?>
+													<?php if($parsed_host = parse_url($row->location_url, PHP_URL_HOST)): ?>
+                                                        <img referrerpolicy="no-referrer" src="<?= get_favicon_url_from_domain($parsed_host) ?>" class="img-fluid icon-favicon-small mr-1" loading="lazy" />
+													<?php endif ?>
+
+                                                    <span class="d-inline-block text-truncate">
+                                                        <a href="<?= $row->location_url ?>" class="text-muted small" title="<?= $row->location_url ?>" target="_blank" rel="noreferrer"><?= $row->location_url ?></a>
+                                                    </span>
+												<?php elseif(!empty($row->url)): ?>
+                                                    <img referrerpolicy="no-referrer" src="<?= get_favicon_url_from_domain(parse_url(url($row->url))['host']) ?>" class="img-fluid icon-favicon-small mr-1" loading="lazy" />
+
+                                                    <span class="d-inline-block text-truncate">
+                                                        <a href="<?= url($row->url) ?>" class="text-muted small" title="<?= url($row->url) ?>" target="_blank" rel="noreferrer"><?= url($row->url) ?></a>
+                                                    </span>
+												<?php endif ?>
+                                            </span>
+
+                                        </div>
+                                    </div>
+
+                                    <div class="d-none d-md-flex col-md-3 justify-content-end flex-wrap">
+										<?php if($data->biolink_blocks[$row->type]['has_statistics']): ?>
+                                            <a href="<?= url('biolink-block/' . $row->biolink_block_id . '/statistics') ?>">
+                                                <span data-toggle="tooltip" title="<?= l('links.clicks') ?>" class="badge badge-light"><i class="fas fa-fw fa-sm fa-chart-bar mr-1"></i> <?= nr($row->clicks) ?></span>
+                                            </a>
+										<?php endif ?>
+										<?php if($data->biolink_blocks[$row->type]['type'] == 'payment'): ?>
+                                            <a href="<?= url('guests-payments?biolink_block_id=' . $row->biolink_block_id) ?>" class="btn btn-sm btn-link text-secondary" data-toggle="tooltip" title="<?= l('guests_payments.link') ?>">
+                                                <i class="fas fa-fw fa-sm fa-coins"></i>
+                                            </a>
+                                            <a href="<?= url('guests-payments-statistics?biolink_block_id=' . $row->biolink_block_id) ?>" class="btn btn-sm btn-link text-secondary" data-toggle="tooltip" title="<?= l('guests_payments_statistics.link') ?>">
+                                                <i class="fas fa-fw fa-sm fa-chart-pie"></i>
+                                            </a>
+										<?php endif ?>
+                                    </div>
+
+                                    <div class="col-5 col-md d-flex align-items-center justify-content-end">
+                                        <div class="custom-control custom-switch" data-toggle="tooltip" title="<?= l('link.biolink_blocks.is_enabled_tooltip') ?>">
+                                            <input
+                                                    type="checkbox"
+                                                    class="custom-control-input"
+                                                    id="biolink_block_is_enabled_<?= $row->biolink_block_id ?>"
+                                                    data-row-id="<?= $row->biolink_block_id ?>"
+												<?= $row->is_enabled ? 'checked="checked"' : null ?>
+                                            >
+                                            <label class="custom-control-label" for="biolink_block_is_enabled_<?= $row->biolink_block_id ?>"></label>
+                                        </div>
+
+                                        <div class="dropdown">
+                                            <button type="button" class="btn btn-link text-secondary dropdown-toggle dropdown-toggle-simple" data-toggle="dropdown" data-boundary="viewport">
+                                                <i class="fas fa-fw fa-ellipsis-v"></i>
+                                            </button>
+
+                                            <div class="dropdown-menu dropdown-menu-right">
+                                                <a href="#"
+                                                   class="dropdown-item"
+                                                   data-toggle="collapse"
+                                                   data-target="#biolink_block_expanded_content_<?= $row->biolink_block_id ?>"
+                                                   aria-expanded="false"
+                                                   aria-controls="biolink_block_expanded_content_<?= $row->biolink_block_id ?>"
+                                                >
+                                                    <i class="fas fa-fw fa-sm fa-pencil-alt mr-2"></i> <?= l('global.edit') ?>
+                                                </a>
+
+												<?php if($data->biolink_blocks[$row->type]['has_statistics']): ?>
+                                                    <a href="<?= url('biolink-block/' . $row->biolink_block_id . '/statistics') ?>" class="dropdown-item"><i class="fas fa-fw fa-sm fa-chart-bar mr-2"></i> <?= l('link.statistics.link') ?></a>
+												<?php endif ?>
+
+												<?php if($data->biolink_blocks[$row->type]['type'] == 'payment'): ?>
+                                                    <a href="<?= url('guests-payments?biolink_block_id=' . $row->biolink_block_id) ?>" class="dropdown-item"><i class="fas fa-fw fa-sm fa-coins mr-2"></i> <?= l('guests_payments.link') ?></a>
+                                                    <a href="<?= url('guests-payments-statistics?biolink_block_id=' . $row->biolink_block_id) ?>" class="dropdown-item"><i class="fas fa-fw fa-sm fa-chart-pie mr-2"></i> <?= l('guests_payments_statistics.link') ?></a>
+												<?php endif ?>
+
+												<?php if(in_array($row->type, ['email_collector', 'phone_collector', 'contact_collector'])): ?>
+                                                    <a href="<?= url('data?biolink_block_id=' . $row->biolink_block_id) ?>" class="dropdown-item"><i class="fas fa-fw fa-sm fa-database mr-2"></i> <?= l('data.link') ?></a>
+												<?php endif ?>
+
+                                                <a href="<?= $data->link->full_url . '#biolink_block_id_' . $row->biolink_block_id ?>" target="_blank" class="dropdown-item" data-biolink-block-id="<?= $row->biolink_block_id ?>"><i class="fas fa-fw fa-sm fa-external-link-alt mr-2"></i> <?= l('global.view') ?></a>
+
+                                                <a href="#" data-toggle="modal" data-target="#biolink_block_duplicate_modal" class="dropdown-item" data-biolink-block-id="<?= $row->biolink_block_id ?>"><i class="fas fa-fw fa-sm fa-clone mr-2"></i> <?= l('global.duplicate') ?></a>
+
+                                                <a href="#" data-toggle="modal" data-target="#biolink_block_delete_modal" class="dropdown-item" data-biolink-block-id="<?= $row->biolink_block_id ?>"><i class="fas fa-fw fa-sm fa-trash-alt mr-2"></i> <?= l('global.delete') ?></a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="collapse biolink-editor-expanded <?= isset($_GET['biolink_block_id']) && $_GET['biolink_block_id'] == $row->biolink_block_id ? 'show' : null ?>" id="biolink_block_expanded_content_<?= $row->biolink_block_id ?>" data-link-type="<?= $row->type ?>" data-parent="#biolink_blocks">
+									<?php require THEME_PATH . 'views/link/settings/biolink_blocks/' . $row->type . '/' . $row->type . '_update_form.php' ?>
+                                </div>
+                            </div>
+                        </div>
+						<?php /* /Custom code: FC-2026-02-27 */ ?>
+
+					<?php endwhile ?>
+				<?php else: ?>
+
+					<?= include_view(THEME_PATH . 'views/partials/no_data.php', [
+						'filters_get' => $data->filters->get ?? [],
+						'name' => 'link.biolink_blocks',
+						'has_secondary_text' => true,
+					]); ?>
+
+				<?php endif ?>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-xl-6 mt-5 mt-xl-0 d-flex justify-content-center justify-content-xl-end">
+        <div class="biolink-preview-container">
+            <div class="biolink-preview sticky">
+                <div class="biolink-preview-iframe-container">
+                    <div id="biolink_preview_iframe_loading" class="biolink-preview-iframe-loading d-none"><div class="spinner-border bg-primary" role="status"></div></div>
+                    <iframe id="biolink_preview_iframe" class="biolink-preview-iframe" src="<?= SITE_URL . 'l/link?link_id=' . $data->link->link_id . '&preview=' . md5($data->link->user_id) ?>"></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<?php if(settings()->links->available_biolink_blocks->vcard): ?>
+    <template id="template_vcard_social">
+        <div class="mb-4">
+            <div class="form-group">
+                <label for=""><i class="fas fa-fw fa-bookmark fa-sm text-muted mr-1"></i> <?= l('biolink_vcard.vcard_social_label') ?></label>
+                <input id="" type="text" name="vcard_social_label[]" class="form-control" maxlength="<?= $data->biolink_blocks['vcard']['fields']['social_label']['max_length'] ?>" required="required" />
+            </div>
+
+            <div class="form-group">
+                <label for=""><i class="fas fa-fw fa-link fa-sm text-muted mr-1"></i> <?= l('biolink_vcard.vcard_social_value') ?></label>
+                <input id="" type="url" name="vcard_social_value[]" class="form-control" maxlength="<?= $data->biolink_blocks['vcard']['fields']['social_value']['max_length'] ?>" required="required" />
+            </div>
+
+            <button type="button" data-remove="vcard_social" class="btn btn-sm btn-block btn-outline-danger"><i class="fas fa-fw fa-times"></i> <?= l('global.delete') ?></button>
+        </div>
+    </template>
+
+    <template id="template_vcard_phone_numbers">
+        <div class="mb-4">
+            <div class="form-group">
+                <label for=""><i class="fas fa-fw fa-bookmark fa-sm text-muted mr-1"></i> <?= l('biolink_vcard.vcard_phone_number_label') ?></label>
+                <input id="" type="text" name="vcard_phone_number_label[]" class="form-control" maxlength="<?= $data->links_types['vcard']['fields']['phone_number_label']['max_length'] ?>" />
+                <small class="form-text text-muted"><?= l('biolink_vcard.vcard_phone_number_label_help') ?></small>
+            </div>
+
+            <div class="form-group">
+                <label for=""><i class="fas fa-fw fa-phone-square-alt fa-sm text-muted mr-1"></i> <?= l('biolink_vcard.vcard_phone_number_value') ?></label>
+                <input id="" type="text" name="vcard_phone_number_value[]" class="form-control" maxlength="<?= $data->links_types['vcard']['fields']['phone_number_value']['max_length'] ?>" required="required" />
+            </div>
+
+            <button type="button" data-remove="vcard_phone_numbers" class="btn btn-sm btn-block btn-outline-danger"><i class="fas fa-fw fa-times"></i> <?= l('global.delete') ?></button>
+        </div>
+    </template>
+<?php endif ?>
+
+<?php $html = ob_get_clean() ?>
+
+
+<?php ob_start() ?>
+<script src="<?= ASSETS_FULL_URL . 'js/libraries/pickr.min.js?v=' . PRODUCT_CODE ?>"></script>
+<script src="<?= ASSETS_FULL_URL . 'js/libraries/fontawesome-iconpicker.min.js?v=' . PRODUCT_CODE ?>"></script>
+<script>
+    'use strict';
+
+    /* Initiate the color picker */
+    let pickr_options = {
+        comparison: false,
+
+        components: {
+            preview: true,
+            opacity: true,
+            hue: true,
+            comparison: false,
+            interaction: {
+                hex: true,
+                rgba: false,
+                hsla: false,
+                hsva: false,
+                cmyk: false,
+                input: true,
+                clear: false,
+                save: false
+            }
+        }
+    };
+
+    /* UTM */
+    let process_utm = () => {
+
+        let utm_source = document.querySelector('input[name="utm_source"]').value;
+        let utm_medium = document.querySelector('input[name="utm_medium"]').value;
+        let utm_campaign = 'UTM_CAMPAIGN';
+        let utm_preview = <?= json_encode(l('global.none')) ?>;
+
+        if(utm_source || utm_medium) {
+            let link = new URL(<?= json_encode(SITE_URL) ?>);
+
+            if(utm_source) link.searchParams.set('utm_source', utm_source.trim());
+            if(utm_medium) link.searchParams.set('utm_medium', utm_medium.trim());
+            if(utm_campaign) link.searchParams.set('utm_campaign', utm_campaign.trim());
+
+            utm_preview = '?' + link.searchParams.toString();
+        }
+
+        document.querySelector('input[name="utm_preview"]').value = utm_preview;
+    }
+
+    document.querySelectorAll('input[name="utm_source"], input[name="utm_medium"], input[name="utm_campaign"]').forEach(element => {
+        ['change', 'paste', 'keyup'].forEach(event_type => {
+            element.addEventListener(event_type, process_utm);
+        });
+    })
+
+    process_utm();
+
+    /* Switching themes & previewing */
+    let biolink_theme_preview = () => {
+        return new Promise((resolve) => {
+            let biolink_theme_id = document.querySelector('#biolink_theme_id').value;
+
+            /* Add loader */
+            document.querySelector('#biolink_preview_iframe_loading').classList.remove('d-none');
+
+            /* Refresh iframe */
+            let biolink_preview_iframe = document.querySelector('#biolink_preview_iframe');
+
+            /* Remove any existing onload */
+            biolink_preview_iframe.onload = null;
+
+            setTimeout(() => {
+                let biolink_preview_iframe_url = new URL(biolink_preview_iframe.getAttribute('src'));
+
+                if(biolink_theme_id) {
+                    biolink_preview_iframe_url.searchParams.set('biolink_theme_id', biolink_theme_id);
+                } else {
+                    biolink_preview_iframe_url.searchParams.delete('biolink_theme_id');
+                }
+
+                biolink_preview_iframe_url.search = biolink_preview_iframe_url.searchParams.toString();
+                biolink_preview_iframe.setAttribute('src', biolink_preview_iframe_url.toString());
+
+                biolink_preview_iframe.onload = () => {
+                    document.querySelector('#biolink_preview_iframe').dispatchEvent(new Event('refreshed'));
+                    document.querySelector('#biolink_preview_iframe_loading').classList.add('d-none');
+                    resolve();
+
+                }
+            }, 750);
+        });
+    }
+
+    /* Custom code: FC-2026-03-06: reset to factory template action */
+    document.querySelector('#reset_biolink_factory_btn')?.addEventListener('click', event => {
+        if(!window.confirm('Jeste li sigurni? Ova radnja će obrisati trenutni sadržaj i vratiti početni izgled Forever Card Aplikacije.')) {
+            return;
+        }
+
+        let form = document.querySelector('form[name="update_biolink"]');
+        let notification_container = form?.querySelector('.notification-container');
+        if(notification_container) {
+            notification_container.innerHTML = '';
+        }
+
+        $.ajax({
+            type: 'POST',
+            url: `${url}link-ajax`,
+            dataType: 'json',
+            data: {
+                token: form?.querySelector('input[name="token"]')?.value,
+                request_type: 'reset_biolink_factory',
+                link_id: event.currentTarget.getAttribute('data-link-id')
+            },
+            success: (data) => {
+                if(notification_container) {
+                    display_notifications(data.message, data.status, notification_container);
+                    notification_container.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+
+                if(data.status === 'success') {
+                    window.location.reload();
+                }
+            },
+            error: () => {
+                if(notification_container) {
+                    display_notifications(<?= json_encode(l('global.error_message.basic')) ?>, 'error', notification_container);
+                }
+            }
+        });
+    });
+    /* /Custom code: FC-2026-03-06 */
+
+    /* Function to switch theme to custom */
+    let set_biolink_theme_id_null = async () => {
+        $('input[name="biolink_theme_id"][type="radio"]').prop('checked', false);
+        $('input[name="biolink_theme_id"][type="radio"][value=""]').prop('checked', true);
+        document.querySelector('#biolink_theme_id').value = '';
+
+        //await biolink_theme_preview();
+    }
+
+    /* Display verified */
+    let display_verified = () => {
+        let verified_location = document.querySelector('input[name="verified_location"]:checked').value;
+        let biolink_preview_iframe = $('#biolink_preview_iframe');
+
+        switch(verified_location) {
+            case 'top':
+                biolink_preview_iframe.contents().find(`#link-verified-wrapper-top`).show();
+                biolink_preview_iframe.contents().find(`#link-verified-wrapper-bottom`).hide();
+                break;
+
+            case 'bottom':
+                biolink_preview_iframe.contents().find(`#link-verified-wrapper-top`).hide();
+                biolink_preview_iframe.contents().find(`#link-verified-wrapper-bottom`).show();
+                break;
+
+            case '':
+                biolink_preview_iframe.contents().find(`#link-verified-wrapper-top`).hide();
+                biolink_preview_iframe.contents().find(`#link-verified-wrapper-bottom`).hide();
+                break;
+        }
+    }
+
+    document.querySelector('input[name="verified_location"]') && document.querySelectorAll('input[name="verified_location"]').forEach(element => element.addEventListener('change', display_verified));
+
+    /* Text Color Handler */
+    let settings_text_color_pickr = Pickr.create({
+        el: '#settings_text_color_pickr',
+        default: $('#settings_text_color').val(),
+        ...pickr_options
+    });
+
+    settings_text_color_pickr.on('change', async hsva => {
+        await set_biolink_theme_id_null();
+
+        $('#settings_text_color').val(hsva.toHEXA().toString());
+        $('#biolink_preview_iframe').contents().find('#branding').css('color', hsva.toHEXA().toString());
+        if($('#biolink_preview_iframe').contents().find('#branding a')) {
+            $('#biolink_preview_iframe').contents().find('#branding a').css('color', hsva.toHEXA().toString());
+        }
+    });
+
+    /* Background blur */
+    document.querySelector('#background_blur').addEventListener('change', event => {
+        let blur = document.querySelector('#background_blur').value;
+        let brightness = document.querySelector('#background_brightness').value;
+        $('#biolink_preview_iframe').contents().find('.link-body-backdrop').css('backdrop-filter', `blur(${blur}px) brightness(${brightness}%)`);
+        $('#biolink_preview_iframe').contents().find('.link-body-backdrop').css('-webkit-backdrop-filter', `blur(${blur}px) brightness(${brightness}%)`);
+    });
+
+    /* Background brightness */
+    document.querySelector('#background_brightness').addEventListener('change', event => {
+        let blur = document.querySelector('#background_blur').value;
+        let brightness = document.querySelector('#background_brightness').value;
+        $('#biolink_preview_iframe').contents().find('.link-body-backdrop').css('backdrop-filter', `blur(${blur}px) brightness(${brightness}%)`);
+        $('#biolink_preview_iframe').contents().find('.link-body-backdrop').css('-webkit-backdrop-filter', `blur(${blur}px) brightness(${brightness}%)`);
+    });
+
+    /* Fonts size */
+    document.querySelector('#settings_font_size').addEventListener('change', async event => {
+        let font_size = event.currentTarget.value;
+        const iframe_body = $('#biolink_preview_iframe').contents();
+        iframe_body.find('html').get(0).style.setProperty('font-size', `${font_size}px`, 'important');
+        await set_biolink_theme_id_null();
+    });
+
+    /* Font family */
+    document.querySelectorAll('input[name="font"]').forEach(element => element.addEventListener('change', async event => {
+        let font_key = event.currentTarget.value;
+        let font_family = event.currentTarget.getAttribute('data-font-family');
+        let font_css_url = event.currentTarget.getAttribute('data-font-css-url');
+        if(!font_family) font_family = 'inherit';
+
+        if(font_css_url) {
+            let font_css_link = document.querySelector('#biolink_preview_iframe').contentDocument.createElement('link');
+
+            if(!document.querySelector('#biolink_preview_iframe').contentDocument.head.querySelector(`link[id="${font_key}"]`)) {
+                font_css_link.rel = 'stylesheet';
+                font_css_link.href = font_css_url;
+                font_css_link.id = font_key;
+                document.querySelector('#biolink_preview_iframe').contentDocument.head.appendChild(font_css_link);
+            }
+        }
+
+        document.querySelector('#biolink_preview_iframe').contentDocument.querySelector('body').style.setProperty('font-family', `${font_family}`, 'important');
+
+        await set_biolink_theme_id_null();
+    }));
+
+    /* Background Type Handler */
+    let background_type_handler = () => {
+        let type = $('#settings_background_type').find(':selected').val();
+
+        /* Show only the active background type */
+        $(`div[id="background_type_${type}"]`).show();
+        $(`div[id="background_type_${type}"]`).find('[name^="background"]').removeAttr('disabled');
+
+        /* Disable the other possible types so they dont get submitted */
+        let background_type_containers = $(`div[id^="background_type_"]:not(div[id$="_${type}"])`);
+
+        background_type_containers.hide();
+        background_type_containers.find('[name^="background"]').attr('disabled', 'disabled');
+    };
+
+    background_type_handler();
+
+    $('#settings_background_type').on('change', background_type_handler);
+
+    /* Preset background preview */
+    $('#background_type_preset input[name="background"]').on('change', async event => {
+        await set_biolink_theme_id_null();
+
+        let preset_style = $(event.currentTarget).parent().find('.link-background-type-preset')[0].getAttribute('style');
+        $('#biolink_preview_iframe').contents().find('body').attr('style', preset_style);
+        $('#biolink_preview_iframe').contents().find('.link-video-background')[0].classList.add('d-none');
+    });
+
+    /* Preset background preview */
+    $('#background_type_preset_abstract input[name="background"]').on('change', async event => {
+        await set_biolink_theme_id_null();
+
+        let preset_abstract_style = $(event.currentTarget).parent().find('.link-background-type-preset')[0].getAttribute('style');
+        $('#biolink_preview_iframe').contents().find('body').attr('style', preset_abstract_style);
+        $('#biolink_preview_iframe').contents().find('.link-video-background')[0].classList.add('d-none');
+    });
+
+    /* Gradient Background */
+    let settings_background_type_gradient_color_one_pickr = Pickr.create({
+        el: '#settings_background_type_gradient_color_one_pickr',
+        default: $('#settings_background_type_gradient_color_one').val(),
+        ...pickr_options
+    });
+
+    settings_background_type_gradient_color_one_pickr.on('change', async hsva => {
+        await set_biolink_theme_id_null();
+
+        $('#settings_background_type_gradient_color_one').val(hsva.toHEXA().toString());
+
+        let color_one = $('#settings_background_type_gradient_color_one').val();
+        let color_two = $('#settings_background_type_gradient_color_two').val();
+
+        $('#biolink_preview_iframe').contents().find('body').attr('class', 'link-body').attr('style', `background-image: linear-gradient(135deg, ${color_one} 10%, ${color_two} 100%);`);
+        $('#biolink_preview_iframe').contents().find('.link-video-background')[0].classList.add('d-none');
+    });
+
+    let settings_background_type_gradient_color_two_pickr = Pickr.create({
+        el: '#settings_background_type_gradient_color_two_pickr',
+        default: $('#settings_background_type_gradient_color_two').val(),
+        ...pickr_options
+    });
+
+    settings_background_type_gradient_color_two_pickr.on('change', async hsva => {
+        await set_biolink_theme_id_null();
+
+        $('#settings_background_type_gradient_color_two').val(hsva.toHEXA().toString());
+
+        let color_one = $('#settings_background_type_gradient_color_one').val();
+        let color_two = $('#settings_background_type_gradient_color_two').val();
+
+        $('#biolink_preview_iframe').contents().find('body').attr('class', 'link-body').attr('style', `background-image: linear-gradient(135deg, ${color_one} 10%, ${color_two} 100%);`);
+        $('#biolink_preview_iframe').contents().find('.link-video-background')[0].classList.add('d-none');
+    });
+
+    /* Color Background */
+    let settings_background_type_color_pickr = Pickr.create({
+        el: '#settings_background_type_color_pickr',
+        default: $('#settings_background_type_color').val(),
+        ...pickr_options
+    });
+
+    settings_background_type_color_pickr.on('change', async hsva => {
+        await set_biolink_theme_id_null();
+
+        $('#settings_background_type_color').val(hsva.toHEXA().toString());
+
+        $('#biolink_preview_iframe').contents().find('body').attr('class', 'link-body').attr('style', `background: ${hsva.toHEXA().toString()};`);
+        $('#biolink_preview_iframe').contents().find('.link-video-background')[0].classList.add('d-none');
+    });
+
+    /* Image Background */
+    function generate_background_preview(input) {
+        if(input.files && input.files[0]) {
+            let reader = new FileReader();
+
+            reader.onload = event => {
+                $('#background_type_image_preview').attr('src', event.target.result);
+                $('#biolink_preview_iframe').contents().find('body').attr('class', 'link-body').attr('style', `background: url(${event.target.result});`);
+            };
+
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    $('#background_type_image_input').on('change', async event => {
+        await set_biolink_theme_id_null();
+
+        generate_background_preview(event.currentTarget);
+    });
+
+    /* Display branding switcher */
+    $('#display_branding').on('change', event => {
+        if($(event.currentTarget).is(':checked')) {
+            $('#biolink_preview_iframe').contents().find('#branding').show();
+        } else {
+            $('#biolink_preview_iframe').contents().find('#branding').hide();
+        }
+    });
+
+    /* Branding change */
+    $('#branding_name').on('change paste keyup', event => {
+        let branding_name = event.currentTarget.value.trim();
+
+        if(branding_name != '') {
+            $('#biolink_preview_iframe').contents().find('#branding').text(branding_name);
+            document.querySelector('#branding_url_text_color').classList.remove('container-disabled');
+        } else {
+            document.querySelector('#branding_url_text_color').classList.add('container-disabled');
+        }
+    });
+
+    /* Form handling update */
+    $('form[name="update_biolink"],form[name="update_biolink_"]').on('submit', (event, autosave_data) => {
+        event.preventDefault();
+
+        /* Check if autosave or manual */
+        let is_autosave = autosave_data && autosave_data.is_autosave === true;
+
+        let form = $(event.currentTarget)[0];
+        let data = new FormData(form);
+        let notification_container = event.currentTarget.querySelector('.notification-container');
+        if(!notification_container) {
+            notification_container = document.createElement('div');
+            notification_container.className = 'notification-container';
+            event.currentTarget.prepend(notification_container);
+        }
+        notification_container.innerHTML = '';
+
+        pause_submit_button(event.currentTarget.querySelector('[type="submit"][name="submit"]'));
+
+        $.ajax({
+            type: 'POST',
+            enctype: 'multipart/form-data',
+            processData: false,
+            contentType: false,
+            cache: false,
+            url: event.currentTarget.getAttribute('name') == 'update_biolink_' ? `${url}biolink-block-ajax` : `${url}link-ajax`,
+            data: data,
+            dataType: 'json',
+            success: (data) => {
+                if(notification_container) {
+                    display_notifications(data.message, data.status, notification_container);
+                }
+
+                /* Auto scroll to notification */
+                if(!is_autosave) {
+                    notification_container?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+
+                enable_submit_button(event.currentTarget.querySelector('[type="submit"][name="submit"]'))
+
+                /* Update image previews for some link types */
+                if(event.currentTarget.getAttribute('name') == 'update_biolink_') {
+                    if(data.details.images) {
+                        for(const [key, value] of Object.entries(data.details.images)) {
+                            event.currentTarget.querySelector(`input[name="${key}"]`).value = null;
+
+                            if(event.currentTarget.querySelector(`[name="${key}_remove"]`) && event.currentTarget.querySelector(`[name="${key}_remove"]`).checked) {
+                                event.currentTarget.querySelector(`[name="${key}_remove"]`).click();
+                            }
+
+                            if(value) {
+                                event.currentTarget.querySelector(`[data-image-container="${key}"] img`).setAttribute('src', value);
+                                event.currentTarget.querySelector(`[data-image-container="${key}"] img`).setAttribute('data-src', value);
+                                event.currentTarget.querySelector(`[data-image-container="${key}"] img`).classList.remove('d-none');
+                                event.currentTarget.querySelector(`[data-image-container="${key}"] a`).setAttribute('href', value);
+                                event.currentTarget.querySelector(`[data-image-container="${key}"] a`).classList.remove('d-none');
+                                event.currentTarget.querySelectorAll(`[data-image-container="${key}"]`).forEach(element => element.classList.remove('d-none'));
+                                event.currentTarget.querySelector(`[id*="_remove_selected_file_wrapper"]`).classList.add('d-none');
+                            } else {
+                                if(event.currentTarget.querySelector(`[data-image-container="${key}"] img`)) {
+                                    event.currentTarget.querySelector(`[data-image-container="${key}"] img`).setAttribute('src', '');
+                                    event.currentTarget.querySelector(`[data-image-container="${key}"] img`).classList.add('d-none');
+                                    event.currentTarget.querySelector(`[data-image-container="${key}"] img`).removeAttribute('data-src');
+                                }
+                                event.currentTarget.querySelectorAll(`[data-image-container="${key}"]`).forEach(element => element.classList.add('d-none'));
+                            }
+                        }
+                    }
+                }
+
+                if(event.currentTarget.getAttribute('name') == 'update_biolink') {
+                    if(data.status == 'success') {
+                        update_main_url(data.details.url);
+                    }
+
+                    if(data.details?.images) {
+                        for(const [key, value] of Object.entries(data.details.images)) {
+                            event.currentTarget.querySelector(`input[name="${key}"]`).value = null;
+
+                            if(event.currentTarget.querySelector(`[name="${key}_remove"]`) && event.currentTarget.querySelector(`[name="${key}_remove"]`).checked) {
+                                event.currentTarget.querySelector(`[name="${key}_remove"]`).click();
+                            }
+
+                            if(value) {
+                                event.currentTarget.querySelector(`[data-image-container="${key}"] img`)?.setAttribute('src', value);
+                                event.currentTarget.querySelector(`[data-image-container="${key}"] img`)?.classList.remove('d-none');
+                                event.currentTarget.querySelector(`[data-image-container="${key}"] a`)?.setAttribute('href', value);
+                                event.currentTarget.querySelector(`[data-image-container="${key}"] a`)?.classList.remove('d-none');
+                                event.currentTarget.querySelectorAll(`[data-image-container="${key}"]`)?.forEach(element => element.classList.remove('d-none'));
+                            } else {
+                                event.currentTarget.querySelector(`[data-image-container="${key}"] img`)?.setAttribute('src', '');
+                                event.currentTarget.querySelector(`[data-image-container="${key}"] img`)?.classList.add('d-none');
+                                event.currentTarget.querySelector(`[data-image-container="${key}"] a`)?.setAttribute('href', '');
+                                event.currentTarget.querySelector(`[data-image-container="${key}"] a`)?.classList.add('d-none');
+                                event.currentTarget.querySelectorAll(`[data-image-container="${key}"]`)?.forEach(element => element.classList.add('d-none'));
+                            }
+
+                            if(key == 'background') {
+                                event.currentTarget.querySelector('#background_type_image_input').value = '';
+                            } else {
+                                event.currentTarget.querySelector(`#${key}`).value = '';
+                            }
+                        }
+                    }
+                }
+
+                /* Refresh iframe */
+                refresh_biolink_preview();
+
+            },
+            error: () => {
+                enable_submit_button(event.currentTarget.querySelector('[type="submit"][name="submit"]'));
+                if(notification_container) {
+                    display_notifications(<?= json_encode(l('global.error_message.basic')) ?>, 'error', notification_container);
+                }
+            },
+        });
+    })
+
+    /* Form handling create */
+    $('form[name^="create_biolink_"]').on('submit', event => {
+        event.preventDefault();
+
+        let form = $(event.currentTarget)[0];
+        let data = new FormData(form);
+        if(typeof global_token !== 'undefined' && !data.has('global_token')) {
+            data.append('global_token', global_token);
+        }
+        pause_submit_button(event.currentTarget.querySelector('[type="submit"][name="submit"]'));
+
+        $.ajax({
+            type: 'POST',
+            enctype: 'multipart/form-data',
+            processData: false,
+            contentType: false,
+            cache: false,
+            url: `${url}biolink-block-ajax`,
+            data: data,
+            dataType: 'json',
+            success: (data) => {
+                let notification_container = event.currentTarget.querySelector('.notification-container');
+                if(!notification_container) {
+                    notification_container = document.createElement('div');
+                    notification_container.className = 'notification-container';
+                    event.currentTarget.prepend(notification_container);
+                }
+                notification_container.innerHTML = '';
+                enable_submit_button(event.currentTarget.querySelector('[type="submit"][name="submit"]'));
+
+                if(data.status == 'error') {
+                    display_notifications(data.message, 'error', notification_container);
+                }
+
+                else if(data.status == 'success') {
+
+                    /* Redirect */
+                    redirect(data.details.url, true);
+
+                }
+            },
+            error: () => {
+                let notification_container = event.currentTarget.querySelector('.notification-container');
+                if(!notification_container) {
+                    notification_container = document.createElement('div');
+                    notification_container.className = 'notification-container';
+                    event.currentTarget.prepend(notification_container);
+                }
+                notification_container.innerHTML = '';
+                enable_submit_button(event.currentTarget.querySelector('[type="submit"][name="submit"]'));
+                display_notifications(<?= json_encode(l('global.error_message.basic')) ?>, 'error', notification_container);
+            },
+        });
+    })
+
+    /* Daterangepicker */
+    let locale = <?= json_encode(require APP_PATH . 'includes/daterangepicker_translations.php') ?>;
+    $('[data-daterangepicker]').daterangepicker({
+        minDate: "<?= (new \DateTime('', new \DateTimeZone(\Altum\Date::$default_timezone)))->setTimezone(new \DateTimeZone($this->user->timezone))->format('Y-m-d H:i:s'); ?>",
+        alwaysShowCalendars: true,
+        singleCalendar: true,
+        singleDatePicker: true,
+        locale: {...locale, format: 'YYYY-MM-DD HH:mm:ss'},
+        timePicker: true,
+        timePicker24Hour: true,
+        timePickerSeconds: true,
+    }, (start, end, label) => {});
+</script>
+
+<script>
+    'use strict';
+
+    /* Links tab sortable */
+    let sortable = Sortable.create(document.getElementById('biolink_blocks'), {
+        animation: 150,
+        handle: '.drag',
+        onUpdate: event => {
+
+            let biolink_blocks = [];
+            $('#biolink_blocks > .biolink_block').each((i, elm) => {
+                biolink_blocks.push({
+                    biolink_block_id: $(elm).data('biolink-block-id'),
+                    order: i
+                });
+            });
+
+            $.ajax({
+                type: 'POST',
+                url: `${url}biolink-block-ajax`,
+                dataType: 'json',
+                data: {
+                    request_type: 'order',
+                    biolink_blocks,
+                    global_token
+                },
+            });
+
+            /* Refresh iframe */
+            refresh_biolink_preview();
+
+            /* Refresh tooltips */
+            tooltips_initiate();
+        }
+    });
+
+    /* Status change handler for the links */
+    $('[id^="biolink_block_is_enabled_"]').on('change', event => {
+        ajax_call_helper(event, 'biolink-block-ajax', 'is_enabled_toggle', () => {
+
+            $(event.currentTarget).closest('.biolink_block').toggleClass('custom-row-inactive');
+
+            /* Refresh iframe */
+            refresh_biolink_preview();
+        });
+    });
+
+    /* When an expanding happens for a link settings */
+    $('[id^="biolink_block_expanded_content"]').on('shown.bs.collapse', event => {
+        let update_form_content = event.currentTarget;
+        let link_type = $(update_form_content).data('link-type');
+        let biolink_block_id = $(update_form_content.querySelector('input[name="biolink_block_id"]')).val();
+        let biolink_link = $('#biolink_preview_iframe').contents().find(`div[data-biolink-block-id="${biolink_block_id}"]`);
+
+        $('#biolink_preview_iframe').off().on('refreshed', event => {
+            setTimeout(() => {
+                biolink_link = $('#biolink_preview_iframe').contents().find(`div[data-biolink-block-id="${biolink_block_id}"]`);
+                block_expanded_content_init();
+            }, 900)
+        })
+
+        let extra_updating_and_potentially_color_inputs = [];
+
+        let block_expanded_content_init = () => {
+            type_handler(`#biolink_block_expanded_content_${biolink_block_id} select[name="animation"]`, 'data-animation', '*=');
+            update_form_content.querySelector(`#biolink_block_expanded_content_${biolink_block_id} select[name="animation"]`) && update_form_content.querySelectorAll(`#biolink_block_expanded_content_${biolink_block_id} select[name="animation"]`).forEach(element => element.addEventListener('change', () => { type_handler(`#biolink_block_expanded_content_${biolink_block_id} select[name="animation"]`, 'data-animation', '*='); }));
+
+            switch (link_type) {
+                case 'link':
+                case 'file':
+                case 'cta':
+                case 'share':
+                case 'pdf_document':
+                case 'powerpoint_presentation':
+                case 'excel_spreadsheet':
+                case 'email_collector':
+                case 'phone_collector':
+                case 'paypal':
+                case 'vcard':
+                case 'donation':
+                case 'service':
+                case 'product':
+                case 'rss_feed':
+                case 'youtube_feed':
+                    extra_updating_and_potentially_color_inputs = ['name'];
+                    break;
+
+                case 'custom_html_whatsapp':
+                    extra_updating_and_potentially_color_inputs = ['title'];
+                    break;
+
+                case 'alert':
+                    extra_updating_and_potentially_color_inputs = ['text'];
+                    break;
+
+                case 'weather':
+                    extra_updating_and_potentially_color_inputs = ['text', 'description'];
+                    break;
+
+                case 'review':
+                    extra_updating_and_potentially_color_inputs = ['title', 'description', 'author_name', 'author_description', 'stars'];
+                    break;
+
+                case 'business_hours':
+                    extra_updating_and_potentially_color_inputs = ['title', 'description', 'icon'];
+                    break;
+
+                case 'external_item':
+                    extra_updating_and_potentially_color_inputs = ['name', 'description', 'price'];
+                    break;
+
+                case 'timeline':
+                    extra_updating_and_potentially_color_inputs = ['title', 'description', 'date'];
+
+                    let line_color_pickr = update_form_content.querySelector(`.line_color_pickr`);
+                    let line_color_input = update_form_content.querySelector(`input[name="line_color"]`);
+
+                    if(line_color_pickr) {
+                        let color_pickr = Pickr.create({
+                            el: line_color_pickr,
+                            default: line_color_input.value,
+                            ...pickr_options
+                        });
+
+                        color_pickr.off().on('change', hsva => {
+                            line_color_input.value = hsva.toHEXA().toString();
+
+                            biolink_link.find(`[data-line-background-color]`).css('background-color', hsva.toHEXA().toString());
+                            biolink_link.find(`[data-line-border-color]`).css('border-color', hsva.toHEXA().toString());
+                        });
+                    }
+
+                    break;
+
+                case 'heading':
+                    extra_updating_and_potentially_color_inputs = ['text'];
+
+                    $(update_form_content.querySelectorAll('input[name="heading_type"]')).off().on('change', event => {
+                        biolink_link.find('[data-text]').removeClass('h1 h2 h3 h4 h5 h6').addClass(event.currentTarget.value);
+                    });
+
+                    break;
+
+                case 'counter':
+                    extra_updating_and_potentially_color_inputs = ['number', 'description', 'number_prefix', 'number_suffix'];
+                    break;
+
+                case 'loading':
+                    extra_updating_and_potentially_color_inputs = ['description', 'number_prefix', 'number_suffix'];
+
+                    let number_color_pickr = update_form_content.querySelector(`.number_color_pickr`);
+                    let number_color_input = update_form_content.querySelector(`input[name="number_color"]`);
+
+                    if(number_color_pickr) {
+                        let color_pickr = Pickr.create({
+                            el: number_color_pickr,
+                            default: number_color_input.value,
+                            ...pickr_options
+                        });
+
+                        color_pickr.off().on('change', hsva => {
+                            number_color_input.value = hsva.toHEXA().toString();
+                            biolink_link.find(`[data-number-color]`).css('background-color', hsva.toHEXA().toString());
+                        });
+                    }
+
+                    $(update_form_content.querySelector('input[name="number"]')).off().on('change paste keyup', event => {
+                        let number = event.currentTarget.value;
+                        biolink_link.find('.progress-bar').css('width', number + '%');
+                        biolink_link.find('[data-number]').text(number);
+                    });
+
+                    $(update_form_content.querySelector('input[name="bar_height"]')).off().on('change paste keyup', event => {
+                        let height = event.currentTarget.value;
+                        biolink_link.find('[data-bar-height]').css('height', height + 'px');
+                    });
+
+                    $(update_form_content.querySelector('input[name="bar_is_striped"]')).off().on('change paste keyup', event => {
+                        let is_checked = event.currentTarget.checked;
+
+                        if(is_checked) {
+                            biolink_link.find('.progress-bar')[0].classList.add('progress-bar-striped');
+                        } else {
+                            biolink_link.find('.progress-bar')[0].classList.remove('progress-bar-striped');
+                        }
+                    });
+
+                    $(update_form_content.querySelector('input[name="bar_is_animated"]')).off().on('change paste keyup', event => {
+                        let is_checked = event.currentTarget.checked;
+
+                        if(is_checked) {
+                            biolink_link.find('.progress-bar')[0].classList.add('progress-bar-animated');
+                        } else {
+                            biolink_link.find('.progress-bar')[0].classList.remove('progress-bar-animated');
+                        }
+                    });
+
+                    let bar_color_pickr = update_form_content.querySelector(`.bar_color_pickr`);
+                    let bar_color_input = update_form_content.querySelector(`input[name="bar_color"]`);
+
+                    if(bar_color_pickr) {
+                        let color_pickr = Pickr.create({
+                            el: bar_color_pickr,
+                            default: bar_color_input.value,
+                            ...pickr_options
+                        });
+
+                        color_pickr.off().on('change', hsva => {
+                            bar_color_input.value = hsva.toHEXA().toString();
+                            biolink_link.find(`[data-bar-color]`).css('background-color', hsva.toHEXA().toString());
+                        });
+                    }
+
+                    break;
+
+                case 'paragraph':
+                case 'markdown':
+                    extra_updating_and_potentially_color_inputs = ['text'];
+                    break;
+
+                case 'avatar':
+                    extra_updating_and_potentially_color_inputs = [];
+
+                    $(update_form_content.querySelectorAll('input[name="border_radius"]')).off().on('change', event => {
+                        let border_radius = event.currentTarget.value;
+
+                        switch (border_radius) {
+                            case 'straight':
+                                biolink_link.find('[data-border-avatar-radius]').removeClass('link-avatar-round link-avatar-rounded').addClass('link-avatar-straight');
+                                break;
+
+                            case 'round':
+                                biolink_link.find('[data-border-avatar-radius]').removeClass('link-avatar-rounded link-avatar-straight').addClass('link-avatar-round');
+                                break;
+
+                            case 'rounded':
+                                biolink_link.find('[data-border-avatar-radius]').removeClass('link-avatar-round link-avatar-straight').addClass('link-avatar-rounded');
+                                break;
+                        }
+                    });
+
+                    $(update_form_content.querySelector('select[name="size"]')).off().on('change paste keyup', event => {
+                        let size = event.currentTarget.value;
+                        biolink_link.find('[data-avatar]').css('width', size + 'px').css('height', size + 'px');
+                    });
+
+                    $(update_form_content.querySelectorAll('input[name="object_fit"]')).off().on('change paste keyup', event => {
+                        let object_fit = document.querySelector(`input[name="object_fit"]:checked`).value;
+                        biolink_link.find('[data-avatar]').css('object-fit', object_fit);
+                    });
+
+                    break;
+
+                case 'header':
+                    extra_updating_and_potentially_color_inputs = [];
+
+                    $(update_form_content.querySelectorAll('input[name="border_radius"]')).off().on('change', event => {
+                        let border_radius = event.currentTarget.value;
+
+                        switch (border_radius) {
+                            case 'straight':
+                                biolink_link.find('[data-border-avatar-radius]').removeClass('link-avatar-round link-avatar-rounded').addClass('link-avatar-straight');
+                                break;
+
+                            case 'round':
+                                biolink_link.find('[data-border-avatar-radius]').removeClass('link-avatar-rounded link-avatar-straight').addClass('link-avatar-round');
+                                break;
+
+                            case 'rounded':
+                                biolink_link.find('[data-border-avatar-radius]').removeClass('link-avatar-round link-avatar-straight').addClass('link-avatar-rounded');
+                                break;
+                        }
+                    });
+
+                    $(update_form_content.querySelector('select[name="avatar_size"]')).off().on('change paste keyup', event => {
+                        let size = event.currentTarget.value;
+                        biolink_link.find('[data-avatar]').css('width', size + 'px').css('height', size + 'px');
+                    });
+
+                    $(update_form_content.querySelectorAll('input[name="object_fit"]')).off().on('change paste keyup', event => {
+                        let object_fit = document.querySelector(`input[name="object_fit"]:checked`).value;
+                        biolink_link.find('[data-avatar]').css('object-fit', object_fit);
+                    });
+
+                    break;
+
+                case 'big_link':
+                    extra_updating_and_potentially_color_inputs = ['name', 'description'];
+                    break;
+
+                case 'countdown':
+                    extra_updating_and_potentially_color_inputs = ['name', 'description'];
+                    break;
+
+                case 'socials':
+                    extra_updating_and_potentially_color_inputs = [];
+
+                    let item_color_pickr = update_form_content.querySelector(`.color_pickr`);
+                    let item_color_input = update_form_content.querySelector(`input[name="color"]`);
+
+                    if(item_color_pickr) {
+                        let color_pickr = Pickr.create({
+                            el: item_color_pickr,
+                            default: item_color_input.value,
+                            ...pickr_options
+                        });
+
+                        color_pickr.off().on('change', hsva => {
+                            item_color_input.value = hsva.toHEXA().toString();
+
+                            if(biolink_link.find(`[data-color]`).length) {
+                                biolink_link.find(`[data-color]`).css('color', hsva.toHEXA().toString());
+                            }
+                        });
+                    }
+
+                    break;
+
+
+
+            }
+
+            /* Extra colored inputs */
+            extra_updating_and_potentially_color_inputs.forEach(item => {
+                let item_input = update_form_content.querySelector(`[name="${item}"]`);
+                let item_color_pickr = update_form_content.querySelector(`.${item}_color_pickr`);
+                let item_color_input = update_form_content.querySelector(`input[name="${item}_color"]`);
+
+                if(item_color_pickr) {
+                    let color_pickr = Pickr.create({
+                        el: item_color_pickr,
+                        default: item_color_input.value,
+                        ...pickr_options
+                    });
+
+                    color_pickr.off().on('change', hsva => {
+                        item_color_input.value = hsva.toHEXA().toString();
+
+                        if(biolink_link.find(`[data-${item}-color]`).length) {
+                            biolink_link.find(`[data-${item}-color]`).css('color', hsva.toHEXA().toString());
+                        }
+
+                        if(biolink_link.find(`[data-${item}-background-color]`).length) {
+                            biolink_link.find(`[data-${item}-background-color]`).css('background-color', hsva.toHEXA().toString());
+                        }
+                    });
+                }
+
+                if(item_input) {
+                    $(item_input).off().on('change paste keyup', event => {
+                        if(biolink_link.find(`[data-${item}]`).length) {
+                            biolink_link.find(`[data-${item}]`).text($(event.currentTarget).val());
+                        }
+
+                        if(update_form_content.querySelector('input[name="icon"]')) {
+                            $(update_form_content.querySelector('input[name="icon"]')).trigger('change');
+                        }
+
+                        /* Set the name in the form title */
+                        if(item == 'name' || item == 'title') {
+                            $(`[data-target="#biolink_block_expanded_content_${biolink_block_id}"] > span`).text(item_input.value);
+                        }
+                    });
+                }
+            });
+
+            /* Iconpicker + icon */
+            if(update_form_content.querySelector('input[name="icon"]')) {
+                /* Delete previous instances */
+                if(update_form_content.querySelector('input[name="icon"]').classList.contains('iconpicker-input')) {
+                    $.iconpicker.batch(update_form_content.querySelector('input[name="icon"]'), 'destroy');
+                }
+
+                setTimeout(() => {
+                    $(update_form_content.querySelector('input[name="icon"]')).iconpicker({
+                        animation: false,
+                        templates: {
+                            popover: '<div class="iconpicker-popover popover"><div class="popover-title"></div><div class="popover-content"></div></div>',
+                            search: '<input type="search" class="form-control iconpicker-search" placeholder="<?= l('global.search') ?>" />',
+                            iconpicker: '<div class="iconpicker"><div class="iconpicker-items"></div></div>',
+                            iconpickerItem: '<a role="button" href="javascript:;" class="iconpicker-item"><i></i></a>'
+                        }
+                    });
+
+                }, 500);
+
+                $(update_form_content.querySelector('input[name="icon"]')).off().on('change paste keyup iconpickerSelected', event => {
+                    let icon = $(event.currentTarget).val();
+
+                    if(biolink_link.find('[data-icon]').length) {
+                        if(!icon) {
+                            biolink_link.find('svg').remove();
+                        } else {
+                            biolink_link.find('svg,i').remove();
+                            biolink_link.find('[data-icon]').html(`<i class="${icon} mr-1"></i>`);
+                        }
+                    }
+                });
+            }
+
+            /* Border width */
+            if(update_form_content.querySelector('input[name="border_width"]') && biolink_link.find('[data-border-width]').length) {
+                $(update_form_content.querySelector('input[name="border_width"]')).off().on('change paste keyup', event => {
+                    let border_width = $(event.currentTarget).val();
+                    biolink_link.find('[data-border-width]').css('border-width', border_width + 'px');
+                });
+            }
+
+            /* Generate box shadow values for the preview */
+            let generate_box_shadow = () => {
+                let element = biolink_link.find('[data-border-shadow]');
+                if(!element.length) return;
+
+                let border_shadow_style_input = update_form_content.querySelector('input[name="border_shadow_style"]:checked');
+                let border_shadow_style = border_shadow_style_input ? border_shadow_style_input.value : 'subtle';
+                let border_shadow_color = update_form_content.querySelector('input[name="border_shadow_color"]').value;
+
+                let shadow_presets = {
+                    none: 'none',
+                    subtle: `1px 2px 4px rgba(0,0,0,0.04), 1px 2px 5px ${border_shadow_color}`,
+                    strong: `1px 10px 15px -3px rgba(0,0,0,0.1), 1px 4px 10px -2px ${border_shadow_color}`,
+                    hard: `4px 4px 0 2px ${border_shadow_color}`
+                };
+
+                let shadow_value = shadow_presets[border_shadow_style] || shadow_presets.none;
+
+                element.css('box-shadow', shadow_value);
+            };
+
+            /* Border shadow color */
+            let border_shadow_color_pickr_element = update_form_content.querySelector('.border_shadow_color_pickr');
+
+            if(border_shadow_color_pickr_element) {
+                let border_shadow_color = update_form_content.querySelector('input[name="border_shadow_color"]');
+
+                /* text color handler */
+                let color_pickr = Pickr.create({
+                    el: border_shadow_color_pickr_element,
+                    default: $(border_shadow_color).val(),
+                    ...pickr_options
+                });
+
+                color_pickr.off().on('change', hsva => {
+                    $(border_shadow_color).val(hsva.toHEXA().toString());
+                    generate_box_shadow()
+                });
+            }
+
+            $(update_form_content.querySelectorAll('input[name^="border_shadow_"]')).off().on('change', event => {
+                generate_box_shadow();
+            });
+
+            /* Border color */
+            let border_color_pickr_element = update_form_content.querySelector('.border_color_pickr');
+
+            if(border_color_pickr_element) {
+                let color_input = update_form_content.querySelector('input[name="border_color"]');
+
+                /* text color handler */
+                let color_pickr = Pickr.create({
+                    el: border_color_pickr_element,
+                    default: $(color_input).val(),
+                    ...pickr_options
+                });
+
+                color_pickr.off().on('change', hsva => {
+                    $(color_input).val(hsva.toHEXA().toString());
+
+                    if(biolink_link.find('[data-border-color]').length) {
+                        biolink_link.find('[data-border-color]').css('border-color', hsva.toHEXA().toString());
+                    }
+                });
+            }
+
+            /* Border radius */
+            if(update_form_content.querySelector('input[name="border_radius"]') && biolink_link.find('[data-border-radius]').length) {
+                $(update_form_content.querySelectorAll('input[name="border_radius"]')).off().on('change', event => {
+                    let border_radius = event.currentTarget.value;
+
+                    switch (border_radius) {
+                        case 'straight':
+                            biolink_link.find('[data-border-radius]').removeClass('link-btn-round link-btn-rounded').addClass('link-btn-straight');
+                            break;
+
+                        case 'round':
+                            biolink_link.find('[data-border-radius]').removeClass('link-btn-rounded link-btn-straight').addClass('link-btn-round');
+                            break;
+
+                        case 'rounded':
+                            biolink_link.find('[data-border-radius]').removeClass('link-btn-round link-btn-straight').addClass('link-btn-rounded');
+                            break;
+                    }
+                });
+            }
+
+            /* Border style */
+            if(update_form_content.querySelector('input[name="border_style"]') && biolink_link.find('[data-border-style]').length) {
+                $(update_form_content.querySelectorAll('input[name="border_style"]')).off().on('change', event => {
+                    biolink_link.find('[data-border-style]').css('border-style', event.currentTarget.value);
+                });
+            }
+
+            /* Animation */
+            if(update_form_content.querySelector('select[name="animation"]')) {
+                let current_animation = update_form_content.querySelector('select[name="animation"]').value;
+
+                $(update_form_content.querySelector('select[name="animation"]')).off().on('change', event => {
+                    let animation = $(event.currentTarget).find(':selected').val();
+
+                    switch (animation) {
+                        case 'false':
+                            biolink_link.find('[data-animation]').removeClass(`animated ${current_animation}`);
+                            current_animation = false;
+                            break;
+
+                        default:
+                            biolink_link.find('[data-animation]').removeClass(`animated ${current_animation}`).addClass(`animated ${animation}`);
+                            current_animation = animation;
+                            break;
+                    }
+                });
+            }
+
+            /* Text alignment */
+            if(update_form_content.querySelectorAll('input[name="text_alignment"]').length) {
+                $(update_form_content.querySelectorAll('input[name="text_alignment"]')).off().on('change', event => {
+                    biolink_link.find('[data-text-alignment]').css('text-align', event.currentTarget.value);
+                });
+            }
+
+            /* Text color */
+            let text_color_pickr_element = update_form_content.querySelector('.text_color_pickr');
+
+            if(text_color_pickr_element) {
+                let color_input = update_form_content.querySelector('input[name="text_color"]');
+
+                /* text color handler */
+                let color_pickr = Pickr.create({
+                    el: text_color_pickr_element,
+                    default: $(color_input).val(),
+                    ...pickr_options
+                });
+
+                color_pickr.off().on('change', hsva => {
+                    $(color_input).val(hsva.toHEXA().toString());
+                    biolink_link.find('[data-text-color]').css('color', hsva.toHEXA().toString());
+                });
+            }
+
+            /* Background color */
+            let background_color_pickr_element = update_form_content.querySelector('.background_color_pickr');
+
+            if(background_color_pickr_element) {
+                let color_input = update_form_content.querySelector('input[name="background_color"]');
+
+                /* background color handler */
+                let color_pickr = Pickr.create({
+                    el: background_color_pickr_element,
+                    default: $(color_input).val(),
+                    ...pickr_options
+                });
+
+                color_pickr.off().on('change', hsva => {
+                    $(color_input).val(hsva.toHEXA().toString());
+                    biolink_link.find('[data-background-color]').css('background-color', hsva.toHEXA().toString());
+                });
+            }
+
+            /* Schedule Handler */
+            let schedule_handler = () => {
+                if($(update_form_content.querySelector('input[name="schedule"]')).is(':checked')) {
+                    $(update_form_content.querySelector('.schedule_container')).show();
+                } else {
+                    $(update_form_content.querySelector('.schedule_container')).hide();
+                }
+            };
+            $(update_form_content.querySelector('input[name="schedule"]')).off().on('change', schedule_handler);
+            schedule_handler();
+
+            /* Custom select implementation */
+            $(update_form_content).find('select:not([multiple="multiple"]):not([class="input-group-text"]):not([class="custom-select custom-select-sm"]):not([class^="ql"]):not([data-is-not-custom-select])').each(function() {
+                let $select = $(this);
+                $select.select2({
+                    placeholder: <?= json_encode(l('global.no_data')) ?>,
+                    dir: <?= json_encode(l('direction')) ?>,
+                    minimumResultsForSearch: 5,
+                });
+
+                /* Make sure to trigger the select when the label is clicked as well */
+                let selectId = $select.attr('id');
+                if(selectId) {
+                    $('label[for="' + selectId + '"]').on('click', function(event) {
+                        event.preventDefault();
+                        $select.select2('open');
+                    });
+                }
+            });
+        }
+
+        block_expanded_content_init();
+    })
+
+</script>
+
+<?php if(settings()->links->available_biolink_blocks->vcard): ?>
+    <script>
+        'use strict';
+
+        /* Vcard Social Script */
+        'use strict';
+
+        /* add new */
+        let vcard_social_add = event => {
+            let biolink_block_id = event.currentTarget.getAttribute('data-biolink-block-id');
+            let clone = document.querySelector(`#template_vcard_social`).content.cloneNode(true);
+            let count = document.querySelectorAll(`[id="vcard_socials_${biolink_block_id}"] .mb-4`).length;
+
+            if(count >= 20) return;
+
+            clone.querySelector(`input[name="vcard_social_label[]"`).setAttribute('name', `vcard_social_label[${count}]`);
+            clone.querySelector(`input[name="vcard_social_value[]"`).setAttribute('name', `vcard_social_value[${count}]`);
+
+            document.querySelector(`[id="vcard_socials_${biolink_block_id}"]`).appendChild(clone);
+
+            vcard_social_remove_initiator();
+        };
+
+        document.querySelectorAll('[data-add="vcard_social"]').forEach(element => {
+            element.addEventListener('click', vcard_social_add);
+        })
+
+        /* remove */
+        let vcard_social_remove = event => {
+            event.currentTarget.closest('.mb-4').remove();
+        };
+
+        let vcard_social_remove_initiator = () => {
+            document.querySelectorAll('[id^="vcard_socials_"] [data-remove]').forEach(element => {
+                element.removeEventListener('click', vcard_social_remove);
+                element.addEventListener('click', vcard_social_remove)
+            })
+        };
+
+        vcard_social_remove_initiator();
+    </script>
+
+    <script>
+        'use strict';
+        /* Vcard Phone Numbers */
+
+        /* add new */
+        let vcard_phone_number_add = event => {
+            let biolink_block_id = event.currentTarget.getAttribute('data-biolink-block-id');
+            let clone = document.querySelector(`#template_vcard_phone_numbers`).content.cloneNode(true);
+            let count = document.querySelectorAll(`[id="vcard_phone_numbers_${biolink_block_id}"] .mb-4`).length;
+
+            if(count >= 20) return;
+
+            clone.querySelector(`input[name="vcard_phone_number_label[]"`).setAttribute('name', `vcard_phone_number_label[${count}]`);
+            clone.querySelector(`input[name="vcard_phone_number_value[]"`).setAttribute('name', `vcard_phone_number_value[${count}]`);
+
+            document.querySelector(`[id="vcard_phone_numbers_${biolink_block_id}"]`).appendChild(clone);
+
+            vcard_phone_number_remove_initiator();
+        };
+
+        document.querySelectorAll('[data-add="vcard_phone_numbers"]').forEach(element => {
+            element.addEventListener('click', vcard_phone_number_add);
+        })
+
+        /* remove */
+        let vcard_phone_number_remove = event => {
+            event.currentTarget.closest('.mb-4').remove();
+        };
+
+        let vcard_phone_number_remove_initiator = () => {
+            document.querySelectorAll('[id^="vcard_phone_numbers_"] [data-remove]').forEach(element => {
+                element.removeEventListener('click', vcard_phone_number_remove);
+                element.addEventListener('click', vcard_phone_number_remove)
+            })
+        };
+
+        vcard_phone_number_remove_initiator();
+    </script>
+<?php endif ?>
+
+<script>
+    /* Live block highlighting */
+    'use strict';
+
+    let biolink_blocks = document.querySelectorAll('.biolink_block');
+
+    biolink_blocks.forEach(block => {
+        block.addEventListener('mouseenter', event => {
+            if(block.classList.contains('custom-row-inactive')) return;
+
+            let block_id = block.getAttribute('data-biolink-block-id');
+            let iframe_contents = $('#biolink_preview_iframe').contents();
+            let target_element = iframe_contents.find(`[data-biolink-block-id='${block_id}']`);
+
+            if(target_element.length) {
+                target_element.addClass('preview-highlight');
+
+                let scrollable = iframe_contents.find('html, body');
+                let element_top = target_element.offset().top;
+
+                scrollable.stop().animate({
+                    scrollTop: element_top - 100
+                }, 150);
+            }
+        });
+
+        block.addEventListener('mouseleave', event => {
+            let block_id = block.getAttribute('data-biolink-block-id');
+            let target_element = $('#biolink_preview_iframe').contents().find(`[data-biolink-block-id='${block_id}']`);
+
+            if(target_element.length) {
+                target_element.removeClass('preview-highlight');
+            }
+        });
+    });
+</script>
+
+<?php include_view(THEME_PATH . 'views/partials/js_cropper.php') ?>
+<?php $javascript = ob_get_clean() ?>
+
+<?php return (object) ['html' => $html, 'javascript' => $javascript] ?>
+
