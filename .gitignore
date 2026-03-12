@@ -8,3 +8,6 @@
 !themes/
 !themes/**
 **/.DS_Store
+**/__MACOSX/
+**/.AppleDouble
+**/._*
