@@ -179,15 +179,7 @@
                                     $forever_id = '';
                                 }
 
-                                /* Custom code: FC-2026-03-05: enforce BIH-only forever living block URL */
-                                if($row->type == 'link_forever_living_bih') {
-                                    $row->location_url = 'https://www.flpshop.ba/?id=' . $forever_id;
-                                }
-                                else if(in_array($row->type, ['link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo'])) {
-                                    $row->location_url = !empty($forever_id) ? 'https://www.foreveralbania.com/?id=' . $forever_id : 'https://www.foreveralbania.com/';
-                                }
-                                /* /Custom code: FC-2026-03-05 */
-                                else if (isset($country_code)) {
+                                if (isset($country_code)) {
                                     switch ($country_code) {
                                         /*case 'HR':
                                             $url = 'https://www.foreverliving.hr/?id=' . $forever_id;
@@ -215,7 +207,7 @@
                                         */
 
                                         default:
-                                            $url = 'https://www.foreverliving.com/?fboId=' . $forever_id;
+                                            $url = 'https://www.foreverliving.com/welcome?fboId=' . $forever_id;
                                             break;
                                     }
                                 } else if (isset($browser_language)) {
@@ -246,11 +238,11 @@
                                         */
                                         
                                         default:
-                                            $url = 'https://www.foreverliving.com/?fboId=' . $forever_id;
+                                            $url = 'https://www.foreverliving.com/welcome?fboId=' . $forever_id;
                                             break; 
                                     }
                                 } else {
-                                    $url = 'https://www.foreverliving.com/?fboId=' . $forever_id;
+                                    $url = 'https://www.foreverliving.com/welcome?fboId=' . $forever_id;
                                 }
 
                                 if($row->type != 'link_forever_living_bih' && !in_array($row->type, ['link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo'])) {
@@ -361,7 +353,7 @@
 
                                     if (isset($discount_type) && isset($unique_uid) && isset($refferal_uid) && isset($fbo_id)) {
                                         $country_code = strtolower($country_code);                                        
-                                        $destination_url = 'https://' . $host . '?fboId=' . $fbo_id . '&discountConfigType=' . $discount_type . '&uniqueExtRefID=' . $unique_uid . '&referralUuid=' . $refferal_uid;                                        
+                                        $destination_url = 'https://' . $host . '/shop?fboId=' . $fbo_id . '&discountConfigType=' . $discount_type . '&uniqueExtRefID=' . $unique_uid . '&referralUuid=' . $refferal_uid;                                        
 
                                         $row->location_url = $destination_url;
                                     }
