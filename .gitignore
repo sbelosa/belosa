@@ -1,5 +1,8 @@
 *
 !.gitignore
+!.github/
+!.github/workflows/
+!.github/workflows/**
 !app/
 !app/**
 !themes/
