@@ -1,0 +1,60 @@
+name: Sync live app/themes to GitHub
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync-live:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install lftp
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y lftp
+
+      - name: Download live app/themes from FTP
+        run: |
+          rm -rf live_snapshot
+          mkdir -p live_snapshot/app live_snapshot/themes
+
+          lftp -e "
+          set ftp:ssl-allow true;
+          set ssl:verify-certificate no;
+          open -p ${FTP_PORT} -u ${FTP_USERNAME},${FTP_PASSWORD} ${FTP_SERVER};
+          mirror --verbose --only-newer /public_html/app live_snapshot/app;
+          mirror --verbose --only-newer /public_html/themes live_snapshot/themes;
+          bye
+          "
+        env:
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+          FTP_PORT: ${{ secrets.FTP_PORT }}
+
+      - name: Apply snapshot to repo folders
+        run: |
+          rsync -a --delete live_snapshot/app/ app/
+          rsync -a --delete live_snapshot/themes/ themes/
+          rm -rf live_snapshot
+
+      - name: Create pull request with live changes
+        uses: peter-evans/create-pull-request@v6
+        with:
+          commit-message: "Sync live app/themes snapshot"
+          title: "Sync live app/themes snapshot"
+          body: |
+            Automated sync from live FTP into repository `app/` and `themes/`.
+            Review this PR, then merge if changes are correct.
+          branch: sync/live-to-github-${{ github.run_id }}
+          delete-branch: true
+
