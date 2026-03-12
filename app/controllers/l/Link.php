@@ -1534,9 +1534,9 @@ class Link extends Controller {
 		$timezone = new \DateTimeZone($timezone_string);
 		$utc_timezone = new \DateTimeZone('UTC');
 
-		$durations = $biolink_block->settings->durations ?? [['value' => 30, 'type' => 'minutes']];
-		$duration_value = (int) $durations[0]->value;
-		$duration_type = $durations[0]->type;
+		$durations = !empty($biolink_block->settings->durations) ? $biolink_block->settings->durations : [(object) ['value' => 30, 'type' => 'minutes']];
+		$duration_value = isset($durations[0]->value) ? (int) $durations[0]->value : 30;
+		$duration_type = isset($durations[0]->type) && in_array($durations[0]->type, ['minutes', 'hours', 'days']) ? $durations[0]->type : 'minutes';
 
 		$minimum_notice_value = $biolink_block->settings->minimum_notice_period_value ?? 0;
 		$minimum_notice_type = $biolink_block->settings->minimum_notice_period_type ?? 'minutes';

@@ -6023,6 +6023,22 @@ class BiolinkBlockAjax extends Controller {
             'animation' => false,
             'animation_runs' => 'repeat-1',
             'icon' => '',
+            'allowed_scheduling_days_ahead' => 7,
+            'available_times' => [
+                'monday' => [],
+                'tuesday' => [],
+                'wednesday' => [],
+                'thursday' => [],
+                'friday' => [],
+                'saturday' => [],
+                'sunday' => [],
+            ],
+            'minimum_notice_period_value' => 30,
+            'minimum_notice_period_type' => 'minutes',
+            'durations' => [
+                ['value' => 30, 'type' => 'minutes']
+            ],
+            'timezone' => \Altum\Date::$default_timezone,
             'phone_placeholder' => l('biolink_appointment_calendar.phone_placeholder_default'),
             'name_placeholder' => l('biolink_appointment_calendar.name_placeholder_default'),
             'message_placeholder' => l('biolink_appointment_calendar.message_placeholder_default'),
@@ -6119,6 +6135,13 @@ class BiolinkBlockAjax extends Controller {
             $durations[] = [
                 'value' => (int) $trimmed_value,
                 'type' => $type,
+            ];
+        }
+
+        if(empty($durations)) {
+            $durations[] = [
+                'value' => 30,
+                'type' => 'minutes',
             ];
         }
 

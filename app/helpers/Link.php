@@ -349,7 +349,7 @@ class Link {
                 if($link->type == 'appointment_calendar') {
                     $available_slots = [];
 
-                    $durations = $link->settings->durations ?? [['value' => 30, 'type' => 'minutes']];
+                    $durations = !empty($link->settings->durations) ? $link->settings->durations : [(object) ['value' => 30, 'type' => 'minutes']];
                     $minimum_notice_period = $link->settings->minimum_notice_period_value ?? 0;
                     $minimum_notice_unit = $link->settings->minimum_notice_period_type ?? 'minutes';
                     $allowed_days = $link->settings->allowed_scheduling_days_ahead ?? 7;

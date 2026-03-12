@@ -566,6 +566,11 @@
     let appointment_calendar_duration_remove = event => {
         let parent_element = event.currentTarget.closest('[id^="appointment_calendar_durations_"]');
         let biolink_block_id = parent_element.getAttribute('id').replace('appointment_calendar_durations_', '');
+        let duration_rows = parent_element.querySelectorAll('.mb-4');
+
+        if(duration_rows.length <= 1) {
+            return;
+        }
 
         event.currentTarget.closest('.mb-4').remove();
         rebind_duration_inputs_for_biolink(biolink_block_id);
