@@ -29,7 +29,7 @@ class FeaturedApps extends Controller {
 
         $featured_apps = [];
 
-        $qualified_users_result = database()->query("SELECT `track_links`.`user_id`, `users`.`name`, `users`.`email`, `users`.`avatar`, COUNT(*) AS `shop_clicks` FROM `track_links` LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id` LEFT JOIN `users` ON `track_links`.`user_id` = `users`.`user_id` WHERE `track_links`.`datetime` >= '{$period_start_datetime}' AND `track_links`.`is_unique` = 1 AND `biolinks_blocks`.`type` IN ({$forever_shop_block_types_sql}) AND `users`.`type` = 0 GROUP BY `track_links`.`user_id` HAVING `shop_clicks` >= {$min_qualified_clicks} ORDER BY `shop_clicks` DESC, `users`.`name` ASC");
+        $qualified_users_result = database()->query("SELECT `track_links`.`user_id`, `users`.`name`, `users`.`email`, `users`.`avatar`, COUNT(*) AS `shop_clicks` FROM `track_links` LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id` LEFT JOIN `users` ON `track_links`.`user_id` = `users`.`user_id` WHERE `track_links`.`datetime` >= '{$period_start_datetime}' AND `track_links`.`is_unique` = 1 AND `biolinks_blocks`.`type` IN ({$forever_shop_block_types_sql}) GROUP BY `track_links`.`user_id` HAVING `shop_clicks` >= {$min_qualified_clicks} ORDER BY `shop_clicks` DESC, `users`.`name` ASC");
 
         while($row = $qualified_users_result->fetch_object()) {
             $user_id = (int) ($row->user_id ?? 0);
