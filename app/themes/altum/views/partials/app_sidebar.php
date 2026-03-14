@@ -235,6 +235,15 @@ $show_admin_only_sidebar_items = false;
                 <div class="divider-wrapper">
                     <div class="divider"></div>
                 </div>
+                <li class="small text-uppercase font-weight-bold px-3 mt-2 mb-1" style="letter-spacing: 0.08em; color: #5ebdb5;">FCC zona</li>
+                <?php /* Custom code: FC-2026-03-14: FCC results sidebar menu entry moved above forever education */ ?>
+                <?php $fcc_results_sidebar_is_active = \Altum\Router::$controller == 'FccResults'; ?>
+                <li class="<?= $fcc_results_sidebar_is_active ? 'active' : null ?>" style="margin: 0.2rem 0 0.45rem;">
+                    <a href="<?= url('fcc-results') ?>" style="<?= $fcc_results_sidebar_is_active ? 'background: linear-gradient(135deg, #c9f4ec 0%, #a7e7de 100%); color: #0f2d2a; border-radius: 12px; box-shadow: 0 8px 22px rgba(127, 215, 208, 0.16); font-weight: 700;' : 'background: rgba(127, 215, 208, 0.08); color: #9ae8df; border: 1px solid rgba(127, 215, 208, 0.22); border-radius: 12px; font-weight: 700;'; ?>">
+                        <i class="fas fa-fw fa-sm fa-trophy mr-2"></i> <?= l('fcc_results.menu') ?>
+                    </a>
+                </li>
+                <?php /* /Custom code: FC-2026-03-14 */ ?>
                 <li class="<?= \Altum\Router::$controller == 'FccEducation' ? 'active' : null ?>">
                     <a href="<?= url('fcc-education?video=last') ?>" style="color: #7fd7d0;"><i class="fas fa-fw fa-sm fa-graduation-cap mr-2"></i> FOREVER EDUKACIJA</a>
                 </li>

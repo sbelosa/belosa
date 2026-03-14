@@ -98,6 +98,26 @@ class Router {
                 ]
             ],
 
+            /* Custom code: FC-2026-03-14: FCC results page route */
+            'fcc-results' => [
+                'controller' => 'FccResults',
+                'settings' => [
+                    'wrapper' => 'app_wrapper',
+                    'ads' => true,
+                ]
+            ],
+            /* /Custom code: FC-2026-03-14 */
+
+            /* Custom code: FC-2026-03-14: Featured FCC apps public page route */
+            'featured-apps' => [
+                'controller' => 'FeaturedApps',
+                'settings' => [
+                    'wrapper' => 'wrapper',
+                    'ads' => true,
+                ]
+            ],
+            /* /Custom code: FC-2026-03-14 */
+
             /* Custom code: FC-2026-02-24: FCC core education page */
             'fcc-education' => [
                 'controller' => 'FccEducation',

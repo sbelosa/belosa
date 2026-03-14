@@ -993,6 +993,7 @@ class AdminIndex extends Controller {
         $forever_shop_block_types_sql = "'" . implode("', '", $forever_shop_block_types) . "'";
         $forever_registration_block_types_sql = "'" . implode("', '", $forever_registration_block_types) . "'";
         $forever_all_block_types_sql = "'" . implode("', '", $forever_all_block_types) . "'";
+        $unique_track_links_condition = " AND `track_links`.`is_unique` = 1";
         /* /Custom code: FC-2026-03-08 */
 
         $biolink_analytics_clicks_today = (int) db()->where('datetime', $today_start_datetime, '>=')->getValue('track_links', 'COUNT(*)');
@@ -1002,7 +1003,7 @@ class AdminIndex extends Controller {
         $biolink_analytics_forever_shop_clicks_30d = 0;
         $biolink_analytics_forever_registration_clicks_30d = 0;
 
-        $forever_clicks_30d_result = database()->query("SELECT `biolinks_blocks`.`type`, COUNT(*) AS `total` FROM `track_links` LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id` WHERE `track_links`.`datetime` >= '{$thirty_days_start_datetime}' AND `biolinks_blocks`.`type` IN ({$forever_all_block_types_sql}) GROUP BY `biolinks_blocks`.`type`");
+        $forever_clicks_30d_result = database()->query("SELECT `biolinks_blocks`.`type`, COUNT(*) AS `total` FROM `track_links` LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id` WHERE `track_links`.`datetime` >= '{$thirty_days_start_datetime}' {$unique_track_links_condition} AND `biolinks_blocks`.`type` IN ({$forever_all_block_types_sql}) GROUP BY `biolinks_blocks`.`type`");
         while($row = $forever_clicks_30d_result->fetch_object()) {
             if(in_array((string) $row->type, $forever_shop_block_types, true)) {
                 $biolink_analytics_forever_shop_clicks_30d += (int) $row->total;
@@ -1014,7 +1015,7 @@ class AdminIndex extends Controller {
         }
 
         $top_countries = [];
-        $top_countries_result = database()->query("SELECT `track_links`.`country_code`, COUNT(*) AS `total` FROM `track_links` LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id` WHERE `track_links`.`datetime` >= '{$thirty_days_start_datetime}' AND `track_links`.`country_code` IS NOT NULL AND `track_links`.`country_code` != '' AND `biolinks_blocks`.`type` IN ({$forever_shop_block_types_sql}) GROUP BY `track_links`.`country_code` ORDER BY `total` DESC LIMIT 7");
+        $top_countries_result = database()->query("SELECT `track_links`.`country_code`, COUNT(*) AS `total` FROM `track_links` LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id` WHERE `track_links`.`datetime` >= '{$thirty_days_start_datetime}' {$unique_track_links_condition} AND `track_links`.`country_code` IS NOT NULL AND `track_links`.`country_code` != '' AND `biolinks_blocks`.`type` IN ({$forever_shop_block_types_sql}) GROUP BY `track_links`.`country_code` ORDER BY `total` DESC LIMIT 7");
         while($row = $top_countries_result->fetch_object()) {
             $top_countries[] = [
                 'country_code' => (string) ($row->country_code ?? ''),
@@ -1023,7 +1024,7 @@ class AdminIndex extends Controller {
         }
 
         $leaderboard = [];
-        $leaderboard_result = database()->query("SELECT `track_links`.`user_id`, `users`.`name`, COUNT(*) AS `total` FROM `track_links` LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id` LEFT JOIN `users` ON `track_links`.`user_id` = `users`.`user_id` WHERE `track_links`.`datetime` >= '{$thirty_days_start_datetime}' AND `biolinks_blocks`.`type` IN ({$forever_shop_block_types_sql}) GROUP BY `track_links`.`user_id` ORDER BY `total` DESC LIMIT 15");
+        $leaderboard_result = database()->query("SELECT `track_links`.`user_id`, `users`.`name`, COUNT(*) AS `total` FROM `track_links` LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id` LEFT JOIN `users` ON `track_links`.`user_id` = `users`.`user_id` WHERE `track_links`.`datetime` >= '{$thirty_days_start_datetime}' {$unique_track_links_condition} AND `biolinks_blocks`.`type` IN ({$forever_shop_block_types_sql}) GROUP BY `track_links`.`user_id` ORDER BY `total` DESC LIMIT 15");
         while($row = $leaderboard_result->fetch_object()) {
             $leaderboard[] = [
                 'user_id' => (int) ($row->user_id ?? 0),
@@ -1041,7 +1042,7 @@ class AdminIndex extends Controller {
         $periods = [];
         foreach($period_start_map as $period_key => $period_start_datetime) {
             $period_top_countries = [];
-            $period_top_countries_result = database()->query("SELECT `track_links`.`country_code`, COUNT(*) AS `total` FROM `track_links` LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id` WHERE `track_links`.`datetime` >= '{$period_start_datetime}' AND `track_links`.`country_code` IS NOT NULL AND `track_links`.`country_code` != '' AND `biolinks_blocks`.`type` IN ({$forever_shop_block_types_sql}) GROUP BY `track_links`.`country_code` ORDER BY `total` DESC LIMIT 7");
+            $period_top_countries_result = database()->query("SELECT `track_links`.`country_code`, COUNT(*) AS `total` FROM `track_links` LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id` WHERE `track_links`.`datetime` >= '{$period_start_datetime}' {$unique_track_links_condition} AND `track_links`.`country_code` IS NOT NULL AND `track_links`.`country_code` != '' AND `biolinks_blocks`.`type` IN ({$forever_shop_block_types_sql}) GROUP BY `track_links`.`country_code` ORDER BY `total` DESC LIMIT 7");
             while($period_country_row = $period_top_countries_result->fetch_object()) {
                 $period_top_countries[] = [
                     'country_code' => (string) ($period_country_row->country_code ?? ''),
@@ -1051,7 +1052,7 @@ class AdminIndex extends Controller {
 
             $period_forever_shop_clicks = 0;
             $period_forever_registration_clicks = 0;
-            $period_forever_clicks_result = database()->query("SELECT `biolinks_blocks`.`type`, COUNT(*) AS `total` FROM `track_links` LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id` WHERE `track_links`.`datetime` >= '{$period_start_datetime}' AND `biolinks_blocks`.`type` IN ({$forever_all_block_types_sql}) GROUP BY `biolinks_blocks`.`type`");
+            $period_forever_clicks_result = database()->query("SELECT `biolinks_blocks`.`type`, COUNT(*) AS `total` FROM `track_links` LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id` WHERE `track_links`.`datetime` >= '{$period_start_datetime}' {$unique_track_links_condition} AND `biolinks_blocks`.`type` IN ({$forever_all_block_types_sql}) GROUP BY `biolinks_blocks`.`type`");
             while($period_forever_click_row = $period_forever_clicks_result->fetch_object()) {
                 if(in_array((string) $period_forever_click_row->type, $forever_shop_block_types, true)) {
                     $period_forever_shop_clicks += (int) $period_forever_click_row->total;
@@ -1063,7 +1064,7 @@ class AdminIndex extends Controller {
             }
 
             $period_leaderboard = [];
-            $period_leaderboard_result = database()->query("SELECT `track_links`.`user_id`, `users`.`name`, COUNT(*) AS `total` FROM `track_links` LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id` LEFT JOIN `users` ON `track_links`.`user_id` = `users`.`user_id` WHERE `track_links`.`datetime` >= '{$period_start_datetime}' AND `biolinks_blocks`.`type` IN ({$forever_shop_block_types_sql}) GROUP BY `track_links`.`user_id` ORDER BY `total` DESC LIMIT 15");
+            $period_leaderboard_result = database()->query("SELECT `track_links`.`user_id`, `users`.`name`, COUNT(*) AS `total` FROM `track_links` LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id` LEFT JOIN `users` ON `track_links`.`user_id` = `users`.`user_id` WHERE `track_links`.`datetime` >= '{$period_start_datetime}' {$unique_track_links_condition} AND `biolinks_blocks`.`type` IN ({$forever_shop_block_types_sql}) GROUP BY `track_links`.`user_id` ORDER BY `total` DESC LIMIT 15");
             while($period_leaderboard_row = $period_leaderboard_result->fetch_object()) {
                 $period_leaderboard[] = [
                     'user_id' => (int) ($period_leaderboard_row->user_id ?? 0),
@@ -1075,10 +1076,10 @@ class AdminIndex extends Controller {
             $period_source_label_sql = "CASE WHEN `track_links`.`utm_source` IS NOT NULL AND `track_links`.`utm_source` != '' THEN CONCAT('utm:', `track_links`.`utm_source`) WHEN `track_links`.`referrer_host` IS NOT NULL AND `track_links`.`referrer_host` != '' THEN `track_links`.`referrer_host` ELSE '(direct)' END";
 
             /* Custom code: FC-2026-03-05: normalize source channels for admin period analytics */
-            $period_top_shop_sources_result = database()->query("SELECT {$period_source_label_sql} AS `source`, COUNT(*) AS `total` FROM `track_links` LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id` WHERE `track_links`.`datetime` >= '{$period_start_datetime}' AND `biolinks_blocks`.`type` IN ({$forever_shop_block_types_sql}) GROUP BY `source` ORDER BY `total` DESC LIMIT 100");
+            $period_top_shop_sources_result = database()->query("SELECT {$period_source_label_sql} AS `source`, COUNT(*) AS `total` FROM `track_links` LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id` WHERE `track_links`.`datetime` >= '{$period_start_datetime}' {$unique_track_links_condition} AND `biolinks_blocks`.`type` IN ({$forever_shop_block_types_sql}) GROUP BY `source` ORDER BY `total` DESC LIMIT 100");
             $period_top_shop_sources = $this->normalize_and_rank_traffic_sources($period_top_shop_sources_result, 7);
 
-            $period_top_registration_sources_result = database()->query("SELECT {$period_source_label_sql} AS `source`, COUNT(*) AS `total` FROM `track_links` LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id` WHERE `track_links`.`datetime` >= '{$period_start_datetime}' AND `biolinks_blocks`.`type` IN ({$forever_registration_block_types_sql}) GROUP BY `source` ORDER BY `total` DESC LIMIT 100");
+            $period_top_registration_sources_result = database()->query("SELECT {$period_source_label_sql} AS `source`, COUNT(*) AS `total` FROM `track_links` LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id` WHERE `track_links`.`datetime` >= '{$period_start_datetime}' {$unique_track_links_condition} AND `biolinks_blocks`.`type` IN ({$forever_registration_block_types_sql}) GROUP BY `source` ORDER BY `total` DESC LIMIT 100");
             $period_top_registration_sources = $this->normalize_and_rank_traffic_sources($period_top_registration_sources_result, 7);
             /* /Custom code: FC-2026-03-05 */
 
@@ -1089,7 +1090,7 @@ class AdminIndex extends Controller {
 
                     $period_user_forever_shop_clicks = 0;
                     $period_user_forever_registration_clicks = 0;
-                    $period_user_forever_clicks_result = database()->query("SELECT `biolinks_blocks`.`type`, COUNT(*) AS `total` FROM `track_links` LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id` WHERE `track_links`.`datetime` >= '{$period_start_datetime}' AND `track_links`.`user_id` = {$leaderboard_user_id} AND `biolinks_blocks`.`type` IN ({$forever_all_block_types_sql}) GROUP BY `biolinks_blocks`.`type`");
+                    $period_user_forever_clicks_result = database()->query("SELECT `biolinks_blocks`.`type`, COUNT(*) AS `total` FROM `track_links` LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id` WHERE `track_links`.`datetime` >= '{$period_start_datetime}' {$unique_track_links_condition} AND `track_links`.`user_id` = {$leaderboard_user_id} AND `biolinks_blocks`.`type` IN ({$forever_all_block_types_sql}) GROUP BY `biolinks_blocks`.`type`");
                     while($period_user_forever_click_row = $period_user_forever_clicks_result->fetch_object()) {
                         if(in_array((string) $period_user_forever_click_row->type, $forever_shop_block_types, true)) {
                             $period_user_forever_shop_clicks += (int) $period_user_forever_click_row->total;
@@ -1101,7 +1102,7 @@ class AdminIndex extends Controller {
                     }
 
                     $period_user_top_countries = [];
-                    $period_user_top_countries_result = database()->query("SELECT `track_links`.`country_code`, COUNT(*) AS `total` FROM `track_links` LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id` WHERE `track_links`.`datetime` >= '{$period_start_datetime}' AND `track_links`.`user_id` = {$leaderboard_user_id} AND `track_links`.`country_code` IS NOT NULL AND `track_links`.`country_code` != '' AND `biolinks_blocks`.`type` IN ({$forever_shop_block_types_sql}) GROUP BY `track_links`.`country_code` ORDER BY `total` DESC LIMIT 5");
+                    $period_user_top_countries_result = database()->query("SELECT `track_links`.`country_code`, COUNT(*) AS `total` FROM `track_links` LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id` WHERE `track_links`.`datetime` >= '{$period_start_datetime}' {$unique_track_links_condition} AND `track_links`.`user_id` = {$leaderboard_user_id} AND `track_links`.`country_code` IS NOT NULL AND `track_links`.`country_code` != '' AND `biolinks_blocks`.`type` IN ({$forever_shop_block_types_sql}) GROUP BY `track_links`.`country_code` ORDER BY `total` DESC LIMIT 5");
                     while($period_user_country_row = $period_user_top_countries_result->fetch_object()) {
                         $period_user_top_countries[] = [
                             'country_code' => (string) ($period_user_country_row->country_code ?? ''),
@@ -1140,7 +1141,7 @@ class AdminIndex extends Controller {
 
                 $forever_shop_clicks_30d = 0;
                 $forever_registration_clicks_30d = 0;
-                $user_forever_clicks_result = database()->query("SELECT `biolinks_blocks`.`type`, COUNT(*) AS `total` FROM `track_links` LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id` WHERE `track_links`.`datetime` >= '{$thirty_days_start_datetime}' AND `track_links`.`user_id` = {$leaderboard_user_id} AND `biolinks_blocks`.`type` IN ({$forever_all_block_types_sql}) GROUP BY `biolinks_blocks`.`type`");
+                $user_forever_clicks_result = database()->query("SELECT `biolinks_blocks`.`type`, COUNT(*) AS `total` FROM `track_links` LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id` WHERE `track_links`.`datetime` >= '{$thirty_days_start_datetime}' {$unique_track_links_condition} AND `track_links`.`user_id` = {$leaderboard_user_id} AND `biolinks_blocks`.`type` IN ({$forever_all_block_types_sql}) GROUP BY `biolinks_blocks`.`type`");
                 while($user_forever_click_row = $user_forever_clicks_result->fetch_object()) {
                     if(in_array((string) $user_forever_click_row->type, $forever_shop_block_types, true)) {
                         $forever_shop_clicks_30d += (int) $user_forever_click_row->total;
@@ -1152,7 +1153,7 @@ class AdminIndex extends Controller {
                 }
 
                 $user_top_countries = [];
-                $user_top_countries_result = database()->query("SELECT `track_links`.`country_code`, COUNT(*) AS `total` FROM `track_links` LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id` WHERE `track_links`.`datetime` >= '{$thirty_days_start_datetime}' AND `track_links`.`user_id` = {$leaderboard_user_id} AND `track_links`.`country_code` IS NOT NULL AND `track_links`.`country_code` != '' AND `biolinks_blocks`.`type` IN ({$forever_shop_block_types_sql}) GROUP BY `track_links`.`country_code` ORDER BY `total` DESC LIMIT 5");
+                $user_top_countries_result = database()->query("SELECT `track_links`.`country_code`, COUNT(*) AS `total` FROM `track_links` LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id` WHERE `track_links`.`datetime` >= '{$thirty_days_start_datetime}' {$unique_track_links_condition} AND `track_links`.`user_id` = {$leaderboard_user_id} AND `track_links`.`country_code` IS NOT NULL AND `track_links`.`country_code` != '' AND `biolinks_blocks`.`type` IN ({$forever_shop_block_types_sql}) GROUP BY `track_links`.`country_code` ORDER BY `total` DESC LIMIT 5");
                 while($user_country_row = $user_top_countries_result->fetch_object()) {
                     $user_top_countries[] = [
                         'country_code' => (string) ($user_country_row->country_code ?? ''),

@@ -183,6 +183,10 @@
                 <li class="mb-2 mr-lg-3"><a href="<?= url('blog') ?>"><?= l('blog.menu') ?></a></li>
             <?php endif ?>
 
+            <?php /* Custom code: FC-2026-03-14: featured apps public page footer link */ ?>
+            <li class="mb-2 mr-lg-3"><a href="<?= url('featured-apps') ?>" style="color: #7fd7d0;"><?= l('featured_apps.menu') ?></a></li>
+            <?php /* /Custom code: FC-2026-03-14 */ ?>
+
             <?php if(settings()->payment->is_enabled): ?>
                 <?php if(\Altum\Plugin::is_active('affiliate') && settings()->affiliate->is_enabled): ?>
                     <li class="mb-2 mr-lg-3"><a href="<?= url('affiliate') ?>"><?= l('affiliate.menu') ?></a></li>
