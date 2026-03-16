@@ -140,6 +140,10 @@
 
 					<?php foreach(require APP_PATH . 'includes/enabled_biolink_blocks.php' as $key => $value): ?>
 
+                        <?php /* Custom code: FC-2026-03-16: hide deprecated Forever regional blocks from create modal */ ?>
+                        <?php if(in_array($key, ['link_forever_living_bih', 'link_forever_living_alb_kosovo'])) continue ?>
+                        <?php /* /Custom code: FC-2026-03-16 */ ?>
+
 						<?php if($value['category'] != $biolink_block_category_key) continue ?>
 
                         <?php ob_start() ?>
