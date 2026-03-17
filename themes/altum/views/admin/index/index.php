@@ -277,6 +277,49 @@
 </div>
 <!-- /Custom code: FC-2026-03-04 -->
 
+<!-- Custom code: FC-2026-03-17: billing risk dashboard panel -->
+<div class="mb-5 mt-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between mb-3">
+        <h1 class="h3 mb-3 mb-md-0 text-truncate"><i class="fas fa-fw fa-xs fa-triangle-exclamation text-primary-900 mr-2"></i> <?= l('admin_index.billing_risk.header') ?></h1>
+        <a href="<?= url('admin/billing-risk') ?>" class="btn btn-outline-primary btn-sm"><?= l('admin_index.billing_risk.view_all') ?></a>
+    </div>
+
+    <p class="text-muted mb-3"><?= l('admin_index.billing_risk.subheader') ?></p>
+
+    <div class="row mb-2">
+        <div class="col-12 col-md-6 col-xl-2 p-2">
+            <div class="card h-100"><div class="card-body"><small class="text-muted d-block mb-1"><?= l('admin_billing_risk.state_past_due') ?></small><div class="h5 mb-0" id="billing_risk_past_due"><span class="spinner-border spinner-border-sm" role="status"></span></div></div></div>
+        </div>
+        <div class="col-12 col-md-6 col-xl-2 p-2">
+            <div class="card h-100"><div class="card-body"><small class="text-muted d-block mb-1"><?= l('admin_billing_risk.state_past_due_critical') ?></small><div class="h5 mb-0" id="billing_risk_critical"><span class="spinner-border spinner-border-sm" role="status"></span></div></div></div>
+        </div>
+        <div class="col-12 col-md-6 col-xl-2 p-2">
+            <div class="card h-100"><div class="card-body"><small class="text-muted d-block mb-1"><?= l('admin_billing_risk.state_access_revoked') ?></small><div class="h5 mb-0" id="billing_risk_revoked"><span class="spinner-border spinner-border-sm" role="status"></span></div></div></div>
+        </div>
+        <div class="col-12 col-md-6 col-xl-3 p-2">
+            <div class="card h-100"><div class="card-body"><small class="text-muted d-block mb-1"><?= l('admin_index.billing_risk.expiring_24h') ?></small><div class="h5 mb-0" id="billing_risk_expiring"><span class="spinner-border spinner-border-sm" role="status"></span></div></div></div>
+        </div>
+        <div class="col-12 col-md-6 col-xl-3 p-2">
+            <div class="card h-100"><div class="card-body"><small class="text-muted d-block mb-1"><?= l('admin_index.billing_risk.recovered_7d') ?></small><div class="h5 mb-0" id="billing_risk_recovered"><span class="spinner-border spinner-border-sm" role="status"></span></div></div></div>
+        </div>
+    </div>
+
+    <div class="row mt-2">
+        <div class="col-12 p-2">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h3 class="h6 mb-2"><?= l('admin_index.billing_risk.users_header') ?> <span class="text-muted" id="billing_risk_users_count"></span></h3>
+                    <p class="small text-muted mb-3"><?= l('admin_index.billing_risk.users_subheader') ?></p>
+                    <div id="billing_risk_users" class="small text-muted">
+                        <span class="spinner-border spinner-border-sm" role="status"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- /Custom code: FC-2026-03-17 -->
+
 <!-- Custom code: FC-2026-03-04: phase 4 biolink traffic and collaborator analytics panel -->
 <div class="mb-5 mt-4">
     <div class="d-flex flex-column flex-md-row justify-content-between mb-3">
@@ -1548,6 +1591,61 @@
     };
     /* /Custom code: FC-2026-03-04 */
 
+    /* Custom code: FC-2026-03-17: billing risk dashboard rendering */
+    const render_billing_risk = billing_risk => {
+        const counts = billing_risk.counts ?? {};
+        const state_badges = {
+            past_due: 'warning',
+            past_due_critical: 'danger',
+            access_revoked: 'secondary',
+            healthy: 'success',
+        };
+
+        document.querySelector('#billing_risk_past_due').innerText = nr(counts.past_due ?? 0);
+        document.querySelector('#billing_risk_critical').innerText = nr(counts.past_due_critical ?? 0);
+        document.querySelector('#billing_risk_revoked').innerText = nr(counts.access_revoked ?? 0);
+        document.querySelector('#billing_risk_expiring').innerText = nr(counts.expiring_24h ?? 0);
+        document.querySelector('#billing_risk_recovered').innerText = nr(counts.recovered_7d ?? 0);
+
+        const users = billing_risk.risk_users ?? [];
+        const items = users.map(item => {
+            const state_label = {
+                past_due: `<?= l('admin_billing_risk.state_past_due') ?>`,
+                past_due_critical: `<?= l('admin_billing_risk.state_past_due_critical') ?>`,
+                access_revoked: `<?= l('admin_billing_risk.state_access_revoked') ?>`,
+                healthy: `<?= l('admin_billing_risk.state_healthy') ?>`,
+            };
+
+            const notification_label = {
+                warning_first: `<?= l('admin_billing_risk.notification_warning_first') ?>`,
+                warning_second: `<?= l('admin_billing_risk.notification_warning_second') ?>`,
+                recovered: `<?= l('admin_billing_risk.notification_recovered') ?>`,
+                revoked: `<?= l('admin_billing_risk.notification_revoked') ?>`,
+            };
+
+            return `
+                <div class="border-bottom py-2">
+                    <div class="d-flex flex-column flex-lg-row justify-content-between">
+                        <div class="mr-3">
+                            <div><a href="${url}admin/user-view/${item.user_id}">${escape_html(item.name || '<?= l('global.unknown') ?>')}</a></div>
+                            <div class="text-muted">${escape_html(item.email || '')}</div>
+                            <div class="text-muted">${escape_html(item.last_failed_reason_text || '<?= l('global.none') ?>')}</div>
+                        </div>
+                        <div class="text-lg-right mt-2 mt-lg-0">
+                            <div><span class="badge badge-${state_badges[item.billing_state] || 'light'}">${state_label[item.billing_state] || item.billing_state || '<?= l('global.unknown') ?>'}</span></div>
+                            <div class="text-muted mt-1"><?= l('admin_billing_risk.grace_until') ?>: ${escape_html(item.grace_until || '<?= l('global.none') ?>')}</div>
+                            <div class="text-muted"><?= l('admin_billing_risk.last_notification') ?>: ${escape_html(notification_label[item.last_notification_stage] || '<?= l('global.none') ?>')}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+
+        document.querySelector('#billing_risk_users_count').innerText = `(${nr(users.length)})`;
+        render_compact_list('#billing_risk_users', items, 7);
+    };
+    /* /Custom code: FC-2026-03-17 */
+
     /* Custom code: FC-2026-03-04: phase 4 biolink analytics rendering */
     const period_labels = {
         today: '<?= l('admin_index.analytics_phase1.period.today') ?>',
@@ -1754,6 +1852,7 @@
                 render_charts(data.details.admin_analytics.charts ?? {});
                 render_sales_subscriptions(data.details.admin_analytics.sales_subscriptions ?? {}, data.details.admin_analytics.charts ?? {});
                 render_action_center(data.details.admin_analytics.action_center ?? {});
+                render_billing_risk(data.details.admin_analytics.billing_risk ?? {});
                 render_biolink_analytics(data.details.admin_analytics.biolink_analytics ?? {});
             }
             /* /Custom code: FC-2026-03-04 */

@@ -2669,4 +2669,27 @@ Lijep pozdrav, <br />
 	'fcc_education.banner_button' => 'Započni edukaciju',
 	'fcc.core_gate.biolinks_disabled' => 'Dovršite FCC edukaciju kako bi se biolinkovi aktivirali.',
 
+	/* Custom code: FC-2026-03-17: billing risk emails and notifications */
+	'global.emails.billing_warning_first.subject' => 'Nismo uspjeli obnoviti vaš plan {{PLAN_NAME}}',
+	'global.emails.billing_warning_first.body' => 'Pozdrav {{NAME}},<br /><br />Nismo uspjeli naplatiti zadnju obnovu za plan {{PLAN_NAME}}.<br /><br />Razlog: {{FAILURE_REASON}}<br />Sljedeći pokušaj naplate: {{NEXT_PAYMENT_ATTEMPT}}<br />Grace pristup traje do: {{GRACE_UNTIL}}<br /><br />Molimo provjerite način plaćanja ovdje: <a href="{{USER_PLAN_LINK}}">{{USER_PLAN_LINK}}</a><br /><br />Pregled uplata dostupan je ovdje: <a href="{{USER_PAYMENTS_LINK}}">{{USER_PAYMENTS_LINK}}</a>',
+	'global.emails.billing_warning_second.subject' => 'Hitno: vaš plaćeni pristup uskoro se gasi',
+	'global.emails.billing_warning_second.body' => 'Pozdrav {{NAME}},<br /><br />Još uvijek nismo uspjeli obnoviti vaš plan {{PLAN_NAME}}.<br /><br />Razlog: {{FAILURE_REASON}}<br />Sljedeći pokušaj naplate: {{NEXT_PAYMENT_ATTEMPT}}<br />Grace pristup traje do: {{GRACE_UNTIL}}<br /><br />Ako uplata ne bude uspješno naplaćena do tada, račun će biti prebačen na {{FALLBACK_PLAN_NAME}}.<br /><br />Ažurirajte podatke za naplatu ovdje: <a href="{{USER_PLAN_LINK}}">{{USER_PLAN_LINK}}</a>',
+	'global.emails.billing_recovered.subject' => 'Vaš plaćeni pristup je ponovno aktivan',
+	'global.emails.billing_recovered.body' => 'Pozdrav {{NAME}},<br /><br />Naplata je uspješno oporavljena i vaš plan {{PLAN_NAME}} ponovno je aktivan.<br /><br />Oporavljeno: {{RECOVERED_AT}}<br />Pretplata: {{STRIPE_SUBSCRIPTION_ID}}<br />Invoice: {{STRIPE_INVOICE_ID}}',
+	'global.emails.billing_revoked.subject' => 'Vaš plaćeni pristup je ugašen',
+	'global.emails.billing_revoked.body' => 'Pozdrav {{NAME}},<br /><br />Nismo uspjeli oporaviti naplatu za plan {{PLAN_NAME}} unutar grace perioda pa je pristup ugašen.<br /><br />Ugašeno: {{REVOKED_AT}}<br />Razlog: {{FAILURE_REASON}}<br />Trenutni fallback plan: {{FALLBACK_PLAN_NAME}}<br /><br />Ponovno aktiviranje dostupno je ovdje: <a href="{{USER_PLAN_LINK}}">{{USER_PLAN_LINK}}</a>',
+
+	'global.notifications.billing_warning_first.title' => 'Zabilježen problem s naplatom za {{PLAN_NAME}}',
+	'global.notifications.billing_warning_first.description' => 'Obnova plaćenog plana nije uspjela. Grace pristup aktivan je do {{GRACE_UNTIL}}.',
+	'global.notifications.billing_warning_second.title' => 'Hitno billing upozorenje',
+	'global.notifications.billing_warning_second.description' => 'Plaćeni pristup je ugrožen. Ako uplata ne bude uspješna do {{GRACE_UNTIL}}, račun će biti downgradean.',
+	'global.notifications.billing_recovered.title' => 'Naplata je oporavljena',
+	'global.notifications.billing_recovered.description' => 'Vaš plaćeni plan ponovno je aktivan od {{RECOVERED_AT}}.',
+	'global.notifications.billing_revoked.title' => 'Plaćeni pristup je downgradean',
+	'global.notifications.billing_revoked.description' => 'Grace period je završio i račun je prebačen na {{FALLBACK_PLAN_NAME}} dana {{REVOKED_AT}}.',
+	'global.notifications.billing_admin_critical.title' => 'Kritičan problem s ponavljajućom naplatom',
+	'global.notifications.billing_admin_critical.description' => '%1$s (%2$s) i dalje ima neriješen billing problem: %3$s',
+	'global.notifications.billing_admin_revoked.title' => 'Pristup ugašen nakon neuspjelih obnova',
+	'global.notifications.billing_admin_revoked.description' => '%1$s (%2$s) je downgradean nakon isteka grace perioda. Razlog: %3$s',
+	/* /Custom code: FC-2026-03-17 */
 ];

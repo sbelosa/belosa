@@ -17,6 +17,7 @@
 namespace Altum\Controllers;
 
 use Altum\Logger;
+use Altum\Models\Billing;
 use Altum\Models\User;
 
 defined('ALTUMCODE') || die();
@@ -82,6 +83,10 @@ class Cron extends Controller {
 
         $this->users_plan_expiry_reminder();
 
+        /* Custom code: FC-2026-03-17: billing risk grace period escalation and revoke */
+        $this->billing_risk_monitor();
+        /* /Custom code: FC-2026-03-17 */
+
         $this->statistics_cleanup();
 
         /* Make sure the reset date month is different than the current one to avoid double resetting */
@@ -112,6 +117,24 @@ class Cron extends Controller {
 
         $this->update_cron_execution_datetimes('cron_datetime');
     }
+
+    /* Custom code: FC-2026-03-17: monitor Stripe failed-payment grace periods */
+    private function billing_risk_monitor() {
+        if(!in_array(settings()->license->type, ['Extended License', 'extended'])) {
+            return;
+        }
+
+        if(!settings()->payment->is_enabled || empty(settings()->stripe->is_enabled)) {
+            return;
+        }
+
+        $result = (new Billing())->process_grace_periods();
+
+        if(DEBUG && (($result['escalated'] ?? 0) > 0 || ($result['revoked'] ?? 0) > 0)) {
+            echo sprintf('billing_risk_monitor() -> escalated %s, revoked %s', $result['escalated'] ?? 0, $result['revoked'] ?? 0);
+        }
+    }
+    /* /Custom code: FC-2026-03-17 */
 
     private function users_plan_expiry_checker() {
         if(!settings()->payment->user_plan_expiry_checker_is_enabled) {

@@ -16,6 +16,7 @@
 
 namespace Altum\Controllers;
 
+use Altum\Models\Billing;
 use Altum\Models\Plan;
 
 defined('ALTUMCODE') || die();
@@ -138,6 +139,12 @@ class AdminUserView extends Controller {
         $user->billing = json_decode($user->billing ?? '');
         $preferences  = json_decode($user->preferences  ?? ''); /* Custom code */
 
+        /* Custom code: FC-2026-03-17: billing risk summary and audit timeline for support */
+        $billing_model = new Billing();
+        $billing_summary = $billing_model->get_user_billing_summary($user_id);
+        $billing_events = $billing_model->get_user_billing_events($user_id, 50);
+        /* /Custom code: FC-2026-03-17 */
+
         /* Main View */
         $data = [
             'user' => $user,
@@ -161,6 +168,10 @@ class AdminUserView extends Controller {
             'chats' => $chats ?? null,
             'user_analytics' => $user_analytics,
             'user_meta' => $preferences->meta ?? null, /* Custom code */
+            /* Custom code: FC-2026-03-17: expose billing risk summary and events to admin user profile */
+            'billing_summary' => $billing_summary,
+            'billing_events' => $billing_events,
+            /* /Custom code: FC-2026-03-17 */
         ];
 
         $view = new \Altum\View('admin/user-view/index', (array) $this);

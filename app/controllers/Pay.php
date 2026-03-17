@@ -37,6 +37,121 @@ class Pay extends Controller {
     public $code = null;
     public $payment_extra_data = null;
 
+    /* Custom code: FC-2026-03-17: safely reuse canonical Stripe customer ids */
+    private function decode_extra($extra): object {
+        if(is_string($extra)) {
+            $extra = json_decode($extra);
+        }
+
+        if(is_array($extra)) {
+            $extra = (object) $extra;
+        }
+
+        if(!is_object($extra)) {
+            $extra = (object) [];
+        }
+
+        return $extra;
+    }
+
+    private function persist_stripe_customer_id(int $user_id, ?string $stripe_customer_id): void {
+        if(!$stripe_customer_id || !str_starts_with($stripe_customer_id, 'cus_')) {
+            return;
+        }
+
+        $user = db()->where('user_id', $user_id)->getOne('users', ['extra']);
+        if(!$user) {
+            return;
+        }
+
+        $extra = $this->decode_extra($user->extra ?? null);
+
+        if(($extra->stripe_customer_id ?? null) === $stripe_customer_id) {
+            return;
+        }
+
+        $extra->stripe_customer_id = $stripe_customer_id;
+
+        db()->where('user_id', $user_id)->update('users', [
+            'extra' => json_encode($extra),
+        ]);
+
+        cache()->deleteItemsByTag('user_id=' . $user_id);
+    }
+
+    private function get_reusable_stripe_customer_id(): ?string {
+        $extra = $this->decode_extra($this->user->extra ?? null);
+        $stored_customer_id = $extra->stripe_customer_id ?? null;
+
+        if($stored_customer_id && str_starts_with($stored_customer_id, 'cus_')) {
+            try {
+                \Stripe\Customer::retrieve($stored_customer_id);
+                return $stored_customer_id;
+            } catch(\Exception $exception) {
+                /* Fall through to other safe detection strategies. */
+            }
+        }
+
+        $subscription_id = trim((string) ($this->user->payment_subscription_id ?? ''));
+        if(($this->user->payment_processor ?? null) === 'stripe' && $subscription_id && str_starts_with($subscription_id, 'sub_')) {
+            try {
+                $subscription = \Stripe\Subscription::retrieve($subscription_id);
+                $customer_id = is_string($subscription->customer ?? null) ? $subscription->customer : null;
+
+                if($customer_id) {
+                    $this->persist_stripe_customer_id($this->user->user_id, $customer_id);
+                    return $customer_id;
+                }
+            } catch(\Exception $exception) {
+                /* Keep existing checkout behavior if the stored subscription is no longer retrievable. */
+            }
+        }
+
+        try {
+            $customers = \Stripe\Customer::all([
+                'email' => $this->user->email,
+                'limit' => 10,
+            ]);
+
+            if(count($customers->data) === 1) {
+                $customer_id = $customers->data[0]->id ?? null;
+
+                if($customer_id) {
+                    $this->persist_stripe_customer_id($this->user->user_id, $customer_id);
+                    return $customer_id;
+                }
+            }
+
+            $active_customer_ids = [];
+
+            foreach($customers->data as $customer) {
+                $subscriptions = \Stripe\Subscription::all([
+                    'customer' => $customer->id,
+                    'status' => 'all',
+                    'limit' => 10,
+                ]);
+
+                foreach($subscriptions->data as $subscription) {
+                    if(in_array($subscription->status ?? '', ['active', 'trialing', 'past_due', 'unpaid'], true)) {
+                        $active_customer_ids[$customer->id] = $customer->id;
+                        break;
+                    }
+                }
+            }
+
+            if(count($active_customer_ids) === 1) {
+                $customer_id = array_values($active_customer_ids)[0];
+                $this->persist_stripe_customer_id($this->user->user_id, $customer_id);
+                return $customer_id;
+            }
+        } catch(\Exception $exception) {
+            /* Keep the legacy customer_email checkout behavior if customer lookup fails. */
+        }
+
+        return null;
+    }
+    /* /Custom code: FC-2026-03-17 */
+
     public function index() {
 
         \Altum\Authentication::guard();
@@ -811,13 +926,22 @@ class Pay extends Controller {
         /* Build the Stripe session payload */
         $stripe_session_data = [
             'mode' => $_POST['payment_type'] === 'recurring' ? 'subscription' : 'payment',
-            'customer_email' => $this->user->email,
             'currency' => currency(),
             'line_items' => [ $stripe_line_item ],
             'metadata' => $stripe_metadata,
             'success_url' => url('pay/' . $this->plan_id . $this->return_url_parameters('success', $base_amount, $formatted_price, $code, $discount_amount)),
             'cancel_url' => url('pay/' . $this->plan_id . $this->return_url_parameters('cancel', $base_amount, $formatted_price, $code, $discount_amount)),
         ];
+
+        /* Custom code: FC-2026-03-17: reuse canonical Stripe customer when it is safely known */
+        $reusable_stripe_customer_id = $this->get_reusable_stripe_customer_id();
+
+        if($reusable_stripe_customer_id) {
+            $stripe_session_data['customer'] = $reusable_stripe_customer_id;
+        } else {
+            $stripe_session_data['customer_email'] = $this->user->email;
+        }
+        /* /Custom code: FC-2026-03-17 */
 
         /* Add subscription data if payment is recurring */
         if($_POST['payment_type'] === 'recurring') {
@@ -835,6 +959,12 @@ class Pay extends Controller {
         /* Generate and redirect to Stripe session */
         try {
             $stripe_session = \Stripe\Checkout\Session::create($stripe_session_data);
+
+            /* Custom code: FC-2026-03-17: persist the Stripe customer chosen for this checkout */
+            if(!empty($stripe_session->customer)) {
+                $this->persist_stripe_customer_id($this->user->user_id, $stripe_session->customer);
+            }
+            /* /Custom code: FC-2026-03-17 */
         } catch (\Exception $exception) {
 
             /* Prepare redirect query parameters */

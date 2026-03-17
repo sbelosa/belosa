@@ -1644,6 +1644,12 @@ class Router {
                 'controller' => 'AdminPayments'
             ],
 
+            /* Custom code: FC-2026-03-17: admin billing risk investigation screen */
+            'billing-risk' => [
+                'controller' => 'AdminBillingRisk'
+            ],
+            /* /Custom code: FC-2026-03-17 */
+
             'payment-create' => [
                 'controller' => 'AdminPaymentCreate',
             ],

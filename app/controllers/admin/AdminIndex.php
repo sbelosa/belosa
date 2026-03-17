@@ -16,6 +16,7 @@
 
 namespace Altum\Controllers;
 
+use Altum\Models\Billing;
 use Altum\Response;
 
 defined('ALTUMCODE') || die();
@@ -982,6 +983,10 @@ class AdminIndex extends Controller {
         ];
         /* /Custom code: FC-2026-03-04 */
 
+        /* Custom code: FC-2026-03-17: billing risk dashboard payload */
+        $billing_risk = (new Billing())->get_dashboard_payload();
+        /* /Custom code: FC-2026-03-17 */
+
         /* Custom code: FC-2026-03-04: phase 4 biolink geo and block analytics */
         $today_start_datetime = date('Y-m-d 00:00:00');
         $week_start_datetime = (new \DateTime())->modify('-6 days')->format('Y-m-d 00:00:00');
@@ -1206,6 +1211,9 @@ class AdminIndex extends Controller {
             'sales_subscriptions' => $sales_subscriptions,
             'biolink_analytics' => $biolink_analytics,
             'action_center' => $action_center,
+            /* Custom code: FC-2026-03-17: include billing risk analytics payload */
+            'billing_risk' => $billing_risk,
+            /* /Custom code: FC-2026-03-17 */
         ];
         /* /Custom code: FC-2026-03-04 */
 

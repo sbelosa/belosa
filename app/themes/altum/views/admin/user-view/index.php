@@ -25,6 +25,28 @@
 
 <?php //ALTUMCODE:DEMO if(DEMO) {$data->user->email = 'hidden@demo.com'; $data->user->name = $data->user->ip = $data->user->api_key = 'hidden on demo';} ?>
 
+<?php
+/* Custom code: FC-2026-03-17: billing risk state presentation */
+$billing_state_badges = [
+    'healthy' => 'success',
+    'past_due' => 'warning',
+    'past_due_critical' => 'danger',
+    'access_revoked' => 'secondary',
+    'recovered' => 'success',
+];
+
+$billing_event_icons = [
+    'payment_failed' => 'fa-circle-exclamation text-warning',
+    'grace_period_escalated' => 'fa-triangle-exclamation text-danger',
+    'notification_sent' => 'fa-envelope text-primary',
+    'subscription_status_changed' => 'fa-arrows-rotate text-info',
+    'payment_recovered' => 'fa-heart-circle-check text-success',
+    'payment_confirmed' => 'fa-circle-check text-success',
+    'access_revoked' => 'fa-ban text-secondary',
+];
+/* /Custom code: FC-2026-03-17 */
+?>
+
 <!-- Custom code: FC-2026-03-04: admin user performance overview -->
 <div class="mb-4">
     <div class="d-flex flex-column flex-md-row justify-content-between mb-3">
@@ -174,6 +196,80 @@
     </div>
 </div>
 <!-- /Custom code: FC-2026-03-04 -->
+
+<!-- Custom code: FC-2026-03-17: admin user billing risk panel -->
+<div class="mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between mb-3">
+        <h2 class="h5 mb-2 mb-md-0"><i class="fas fa-fw fa-sm fa-triangle-exclamation text-primary mr-1"></i> <?= l('admin_user_view.billing_risk.header') ?></h2>
+        <small class="text-muted"><?= l('admin_user_view.billing_risk.subheader') ?></small>
+    </div>
+
+    <div class="row mb-2">
+        <div class="col-12 col-md-6 col-xl-3 p-2">
+            <div class="card h-100"><div class="card-body"><small class="text-muted d-block mb-1"><?= l('admin_user_view.billing_risk.current_state') ?></small><div class="h5 mb-0"><span class="badge badge-<?= $billing_state_badges[$data->billing_summary['billing_state']] ?? 'light' ?>"><?= l('admin_billing_risk.state_' . $data->billing_summary['billing_state']) ?></span></div></div></div>
+        </div>
+        <div class="col-12 col-md-6 col-xl-3 p-2">
+            <div class="card h-100"><div class="card-body"><small class="text-muted d-block mb-1"><?= l('admin_user_view.billing_risk.stripe_status') ?></small><div class="h5 mb-0"><?= $data->billing_summary['stripe_status'] ?: l('global.none') ?></div></div></div>
+        </div>
+        <div class="col-12 col-md-6 col-xl-3 p-2">
+            <div class="card h-100"><div class="card-body"><small class="text-muted d-block mb-1"><?= l('admin_user_view.billing_risk.failed_attempts') ?></small><div class="h5 mb-0"><?= nr($data->billing_summary['failed_attempts']) ?></div></div></div>
+        </div>
+        <div class="col-12 col-md-6 col-xl-3 p-2">
+            <div class="card h-100"><div class="card-body"><small class="text-muted d-block mb-1"><?= l('admin_user_view.billing_risk.last_notification') ?></small><div class="h6 mb-0"><?= $data->billing_summary['last_notification_stage'] ? l('admin_billing_risk.notification_' . $data->billing_summary['last_notification_stage']) : l('global.none') ?></div><small class="text-muted d-block mt-1"><?= !empty($data->billing_summary['last_notification_at']) ? \Altum\Date::get($data->billing_summary['last_notification_at'], 2) : l('global.none') ?></small></div></div>
+        </div>
+    </div>
+
+    <div class="row mt-2">
+        <div class="col-12 col-xl-5 p-2">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h3 class="h6 mb-3"><?= l('admin_user_view.billing_risk.summary') ?></h3>
+                    <div class="d-flex justify-content-between border-bottom py-2 small"><span><?= l('admin_billing_risk.reason') ?></span><strong class="text-right ml-3"><?= $data->billing_summary['last_failed_reason_text'] ?: l('global.none') ?></strong></div>
+                    <div class="d-flex justify-content-between border-bottom py-2 small"><span><?= l('admin_user_view.billing_risk.reason_code') ?></span><strong><?= $data->billing_summary['last_failed_reason_code'] ?: l('global.none') ?></strong></div>
+                    <div class="d-flex justify-content-between border-bottom py-2 small"><span><?= l('admin_user_view.billing_risk.last_failed_at') ?></span><strong><?= !empty($data->billing_summary['last_failed_at']) ? \Altum\Date::get($data->billing_summary['last_failed_at'], 2) : l('global.none') ?></strong></div>
+                    <div class="d-flex justify-content-between border-bottom py-2 small"><span><?= l('admin_billing_risk.grace_until') ?></span><strong><?= !empty($data->billing_summary['grace_until']) ? \Altum\Date::get($data->billing_summary['grace_until'], 2) : l('global.none') ?></strong></div>
+                    <div class="d-flex justify-content-between border-bottom py-2 small"><span><?= l('admin_billing_risk.next_retry_at') ?></span><strong><?= !empty($data->billing_summary['next_retry_at']) ? \Altum\Date::get($data->billing_summary['next_retry_at'], 2) : l('global.none') ?></strong></div>
+                    <div class="d-flex justify-content-between border-bottom py-2 small"><span><?= l('admin_user_view.billing_risk.current_period_end') ?></span><strong><?= !empty($data->billing_summary['current_period_end']) ? \Altum\Date::get($data->billing_summary['current_period_end'], 2) : l('global.none') ?></strong></div>
+                    <div class="d-flex justify-content-between border-bottom py-2 small"><span><?= l('admin_user_view.billing_risk.last_invoice_id') ?></span><strong><?= $data->billing_summary['last_invoice_id'] ?: l('global.none') ?></strong></div>
+                    <div class="d-flex justify-content-between py-2 small"><span><?= l('admin_user_view.billing_risk.last_payment_intent_id') ?></span><strong><?= $data->billing_summary['last_payment_intent_id'] ?: l('global.none') ?></strong></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-xl-7 p-2">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h3 class="h6 mb-3"><?= l('admin_user_view.billing_risk.timeline') ?></h3>
+                    <?php if(empty($data->billing_events)): ?>
+                        <div class="text-muted small"><?= l('global.no_data') ?></div>
+                    <?php else: ?>
+                        <?php foreach($data->billing_events as $event): ?>
+                            <div class="d-flex border-bottom py-3 small">
+                                <div class="mr-3 mt-1 text-center" style="width: 24px;">
+                                    <i class="fas <?= $billing_event_icons[$event['event_type']] ?? 'fa-clock text-muted' ?>"></i>
+                                </div>
+                                <div class="flex-fill">
+                                    <div class="d-flex flex-column flex-lg-row justify-content-between">
+                                        <strong><?= l('admin_user_view.billing_risk.event_type_' . $event['event_type']) ?></strong>
+                                        <span class="text-muted"><?= !empty($event['occurred_at']) ? \Altum\Date::get($event['occurred_at'], 2) : l('global.none') ?></span>
+                                    </div>
+                                    <div class="text-muted mt-1"><?= $event['reason_text'] ?: ($event['notification_stage'] ? l('admin_billing_risk.notification_' . $event['notification_stage']) : l('global.none')) ?></div>
+                                    <div class="text-muted mt-1">
+                                        <?= l('admin_user_view.billing_risk.timeline_meta') ?>:
+                                        <?= $event['stripe_status'] ?: l('global.none') ?>
+                                        · <?= $event['stripe_invoice_id'] ?: l('global.none') ?>
+                                        · <?= $event['stripe_subscription_id'] ?: l('global.none') ?>
+                                    </div>
+                                </div>
+                            </div>
+                        <?php endforeach ?>
+                    <?php endif ?>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- /Custom code: FC-2026-03-17 -->
 
 <div class="row">
     <div class="col-xl-4 mb-4">

@@ -16,11 +16,116 @@
 
 namespace Altum\Controllers;
 
+use Altum\Models\Billing;
 use Altum\Models\Payments;
 
 defined('ALTUMCODE') || die();
 
 class WebhookStripe extends Controller {
+
+    /* Custom code: FC-2026-03-17: Stripe billing risk helpers */
+    private function decode_extra($extra): object {
+        if(is_string($extra)) {
+            $extra = json_decode($extra);
+        }
+
+        if(is_array($extra)) {
+            $extra = (object) $extra;
+        }
+
+        if(!is_object($extra)) {
+            $extra = (object) [];
+        }
+
+        return $extra;
+    }
+
+    private function extract_metadata($object): object {
+        $metadata = $object->metadata ?? null;
+
+        if(!$metadata && isset($object->lines->data[0]->metadata)) {
+            $metadata = $object->lines->data[0]->metadata;
+        }
+
+        if(!$metadata && isset($object->parent->subscription_details->metadata)) {
+            $metadata = $object->parent->subscription_details->metadata;
+        }
+
+        if(is_array($metadata)) {
+            $metadata = (object) $metadata;
+        }
+
+        return is_object($metadata) ? $metadata : (object) [];
+    }
+
+    private function extract_subscription_id($object): ?string {
+        return $object->subscription
+            ?? ($object->parent->subscription_details->subscription ?? null)
+            ?? ($object->lines->data[0]->parent->subscription_item_details->subscription ?? null)
+            ?? null;
+    }
+
+    private function get_payment_intent_details($payment_intent_id): array {
+        if(!$payment_intent_id) {
+            return [
+                'reason_code' => null,
+                'reason_text' => null,
+            ];
+        }
+
+        try {
+            $payment_intent = \Stripe\PaymentIntent::retrieve($payment_intent_id);
+
+            return [
+                'reason_code' => $payment_intent->last_payment_error->decline_code ?? $payment_intent->last_payment_error->code ?? null,
+                'reason_text' => $payment_intent->last_payment_error->message ?? null,
+            ];
+        } catch(\Exception $exception) {
+            return [
+                'reason_code' => null,
+                'reason_text' => $exception->getMessage(),
+            ];
+        }
+    }
+
+    private function persist_stripe_customer_id(?int $user_id, ?string $stripe_customer_id, ?string $stripe_subscription_id = null, ?string $email = null): void {
+        if(!$stripe_customer_id || !str_starts_with($stripe_customer_id, 'cus_')) {
+            return;
+        }
+
+        $user = null;
+
+        if($user_id) {
+            $user = db()->where('user_id', $user_id)->getOne('users', ['user_id', 'extra']);
+        }
+
+        if(!$user && $stripe_subscription_id) {
+            $user = db()->where('payment_subscription_id', $stripe_subscription_id)->getOne('users', ['user_id', 'extra']);
+        }
+
+        if(!$user && $email) {
+            $user = db()->where('email', $email)->getOne('users', ['user_id', 'extra']);
+        }
+
+        if(!$user) {
+            return;
+        }
+
+        $extra = $this->decode_extra($user->extra ?? null);
+
+        if(($extra->stripe_customer_id ?? null) === $stripe_customer_id) {
+            return;
+        }
+
+        $extra->stripe_customer_id = $stripe_customer_id;
+
+        db()->where('user_id', $user->user_id)->update('users', [
+            'extra' => json_encode($extra),
+        ]);
+
+        cache()->deleteItemsByTag('user_id=' . $user->user_id);
+    }
+    /* /Custom code: FC-2026-03-17 */
 
     public function index() {
 
@@ -57,12 +162,22 @@ class WebhookStripe extends Controller {
             echo $exception->getMessage(); http_response_code(400); die();
         }
 
-        if(!in_array($event->type, ['invoice.paid', 'checkout.session.completed', 'customer.subscription.created'])) {
+        /* Custom code: FC-2026-03-17: process Stripe billing risk and lifecycle events */
+        $billing = new Billing();
+
+        if($billing->has_processed_stripe_event($event->id ?? null)) {
+            die('Event already processed.');
+        }
+
+        if(!in_array($event->type, ['invoice.paid', 'invoice.payment_failed', 'checkout.session.completed', 'customer.subscription.created', 'customer.subscription.updated', 'customer.subscription.deleted'])) {
             die('Event type not needed to be handled, returning ok.');
         }
+        /* /Custom code: FC-2026-03-17 */
 
         $session = $event->data->object;
         $external_payment_id = $session->id;
+        $event_occurred_at = date('Y-m-d H:i:s', (int) ($event->created ?? time()));
+        $stripe_customer_id = is_string($session->customer ?? null) ? $session->customer : null;
 
         switch($event->type) {
             /* Handle trial start */
@@ -92,6 +207,21 @@ class WebhookStripe extends Controller {
 
                 }
 
+                $billing->sync_subscription_status([
+                    'processor' => 'stripe',
+                    'user_id' => $user_id ?? null,
+                    'email' => null,
+                    'plan_id' => $plan_id ?? null,
+                    'stripe_event_id' => $event->id ?? null,
+                    'stripe_subscription_id' => $session->id ?? null,
+                    'stripe_status' => $session->status ?? 'trialing',
+                    'current_period_end' => !empty($session->current_period_end) ? date('Y-m-d H:i:s', (int) $session->current_period_end) : null,
+                    'occurred_at' => $event_occurred_at,
+                    'payload_snapshot' => $payload,
+                ]);
+
+                $this->persist_stripe_customer_id($user_id ?? null, $stripe_customer_id, $session->id ?? null, null);
+
                 break;
 
             /* Handling recurring payments */
@@ -116,13 +246,73 @@ class WebhookStripe extends Controller {
 
                 /* Vars */
                 $payment_subscription_id =
-                    $session->subscription ??
-                    ($session->parent->subscription_details->subscription ?? null) ??
-                    ($session->lines->data[0]->parent->subscription_item_details->subscription ?? null);
+                    $this->extract_subscription_id($session);
 
                 $payment_type = $payment_subscription_id ? 'recurring' : 'one_time';
 
                 break;
+
+            case 'invoice.payment_failed':
+
+                $metadata = $this->extract_metadata($session);
+
+                $user_id = (int) ($metadata->user_id ?? 0);
+                $plan_id = (int) ($metadata->plan_id ?? 0);
+                $payment_frequency = $metadata->payment_frequency ?? 'monthly';
+                $payment_subscription_id = $this->extract_subscription_id($session);
+                $payment_intent_id = is_object($session->payment_intent ?? null) ? $session->payment_intent->id : ($session->payment_intent ?? null);
+                $payment_failure = $this->get_payment_intent_details($payment_intent_id);
+
+                $billing->handle_payment_failed([
+                    'processor' => 'stripe',
+                    'user_id' => $user_id,
+                    'plan_id' => $plan_id,
+                    'email' => $session->customer_email ?? null,
+                    'amount' => in_array(mb_strtoupper($session->currency ?? ''), get_zero_decimal_currencies_array()) ? ($session->amount_due ?? 0) : (($session->amount_due ?? 0) / 100),
+                    'currency' => mb_strtoupper($session->currency ?? settings()->payment->default_currency),
+                    'reason_code' => $payment_failure['reason_code'] ?? null,
+                    'reason_text' => $payment_failure['reason_text'] ?? ($session->last_finalization_error->message ?? null),
+                    'stripe_event_id' => $event->id ?? null,
+                    'stripe_subscription_id' => $payment_subscription_id,
+                    'stripe_invoice_id' => $session->id ?? null,
+                    'stripe_payment_intent_id' => $payment_intent_id,
+                    'stripe_status' => 'past_due',
+                    'current_period_end' => !empty($session->lines->data[0]->period->end) ? date('Y-m-d H:i:s', (int) $session->lines->data[0]->period->end) : null,
+                    'next_retry_at' => !empty($session->next_payment_attempt) ? date('Y-m-d H:i:s', (int) $session->next_payment_attempt) : null,
+                    'occurred_at' => $event_occurred_at,
+                    'payload_snapshot' => $payload,
+                ]);
+
+                $this->persist_stripe_customer_id($user_id, $stripe_customer_id, $payment_subscription_id, $session->customer_email ?? null);
+
+                echo 'successful';
+                return;
+
+            case 'customer.subscription.updated':
+            case 'customer.subscription.deleted':
+
+                $metadata = $this->extract_metadata($session);
+
+                $billing->sync_subscription_status([
+                    'processor' => 'stripe',
+                    'user_id' => (int) ($metadata->user_id ?? 0),
+                    'plan_id' => (int) ($metadata->plan_id ?? 0),
+                    'email' => null,
+                    'stripe_event_id' => $event->id ?? null,
+                    'stripe_subscription_id' => $session->id ?? null,
+                    'stripe_status' => $session->status ?? null,
+                    'current_period_end' => !empty($session->current_period_end) ? date('Y-m-d H:i:s', (int) $session->current_period_end) : null,
+                    'next_retry_at' => !empty($session->next_pending_invoice_item_invoice) ? date('Y-m-d H:i:s', (int) $session->next_pending_invoice_item_invoice) : null,
+                    'reason_code' => 'stripe_subscription_' . ($session->status ?? 'updated'),
+                    'reason_text' => 'Stripe subscription status changed to ' . ($session->status ?? 'unknown'),
+                    'occurred_at' => $event_occurred_at,
+                    'payload_snapshot' => $payload,
+                ]);
+
+                $this->persist_stripe_customer_id((int) ($metadata->user_id ?? 0), $stripe_customer_id, $session->id ?? null, null);
+
+                echo 'successful';
+                return;
 
             /* Handling one time payments */
             case 'checkout.session.completed':
@@ -173,6 +363,31 @@ class WebhookStripe extends Controller {
             $payer_email,
             $payer_name
         );
+
+        /* Custom code: FC-2026-03-17: persist canonical Stripe customer after successful payment flows */
+        $this->persist_stripe_customer_id($user_id ?? null, $stripe_customer_id, $payment_subscription_id ?? null, $payer_email ?? null);
+        /* /Custom code: FC-2026-03-17 */
+
+        /* Custom code: FC-2026-03-17: clear billing risk after successful recurring Stripe charge */
+        if(!empty($payment_subscription_id)) {
+            $payment_intent_id = is_object($session->payment_intent ?? null) ? $session->payment_intent->id : ($session->payment_intent ?? null);
+
+            $billing->handle_successful_payment([
+                'processor' => 'stripe',
+                'user_id' => $user_id,
+                'plan_id' => $plan_id,
+                'email' => $payer_email,
+                'amount' => $payment_total,
+                'currency' => $payment_currency,
+                'stripe_event_id' => $event->id ?? null,
+                'stripe_subscription_id' => $payment_subscription_id,
+                'stripe_invoice_id' => $external_payment_id,
+                'stripe_payment_intent_id' => $payment_intent_id,
+                'stripe_status' => 'active',
+                'occurred_at' => $event_occurred_at,
+            ]);
+        }
+        /* /Custom code: FC-2026-03-17 */
 
         echo 'successful';
 

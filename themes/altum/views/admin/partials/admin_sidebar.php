@@ -181,6 +181,14 @@ try {
                     </a>
                 </li>
 
+                <!-- Custom code: FC-2026-03-17: admin billing risk navigation -->
+                <li class="<?= \Altum\Router::$controller == 'AdminBillingRisk' ? 'active' : null ?>">
+                    <a class="nav-link text-truncate" href="<?= url('admin/billing-risk') ?>">
+                        <i class="fas fa-fw fa-sm fa-triangle-exclamation mr-2"></i> <?= l('admin_billing_risk.menu') ?>
+                    </a>
+                </li>
+                <!-- /Custom code: FC-2026-03-17 -->
+
                 <?php if(\Altum\Plugin::is_active('affiliate')): ?>
                     <li class="<?= \Altum\Router::$controller == 'AdminAffiliatesWithdrawals' ? 'active' : null ?>">
                         <a class="nav-link text-truncate" href="<?= url('admin/affiliates-withdrawals') ?>">

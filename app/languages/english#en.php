@@ -4370,4 +4370,27 @@ return [
 	'fcc_education.banner_button' => 'Start education',
 	'fcc.core_gate.biolinks_disabled' => 'Complete FCC education to activate biolinks.',
 
+	/* Custom code: FC-2026-03-17: billing risk emails and notifications */
+	'global.emails.billing_warning_first.subject' => 'We could not renew your {{PLAN_NAME}} plan',
+	'global.emails.billing_warning_first.body' => 'Hello {{NAME}},<br /><br />We could not process your latest renewal for the {{PLAN_NAME}} plan.<br /><br />Reason: {{FAILURE_REASON}}<br />Next payment attempt: {{NEXT_PAYMENT_ATTEMPT}}<br />Grace access until: {{GRACE_UNTIL}}<br /><br />Please review your billing method here: <a href="{{USER_PLAN_LINK}}">{{USER_PLAN_LINK}}</a><br /><br />You can also review your invoices here: <a href="{{USER_PAYMENTS_LINK}}">{{USER_PAYMENTS_LINK}}</a>',
+	'global.emails.billing_warning_second.subject' => 'Urgent: your paid access is close to being downgraded',
+	'global.emails.billing_warning_second.body' => 'Hello {{NAME}},<br /><br />We still could not renew your {{PLAN_NAME}} plan.<br /><br />Reason: {{FAILURE_REASON}}<br />Next payment attempt: {{NEXT_PAYMENT_ATTEMPT}}<br />Grace access until: {{GRACE_UNTIL}}<br /><br />If payment is not recovered before that moment, your access will move to {{FALLBACK_PLAN_NAME}}.<br /><br />Update your billing details here: <a href="{{USER_PLAN_LINK}}">{{USER_PLAN_LINK}}</a>',
+	'global.emails.billing_recovered.subject' => 'Your paid access has been restored',
+	'global.emails.billing_recovered.body' => 'Hello {{NAME}},<br /><br />Your payment was successfully recovered and your {{PLAN_NAME}} plan is active again.<br /><br />Recovered at: {{RECOVERED_AT}}<br />Subscription: {{STRIPE_SUBSCRIPTION_ID}}<br />Invoice: {{STRIPE_INVOICE_ID}}',
+	'global.emails.billing_revoked.subject' => 'Your paid access has been downgraded',
+	'global.emails.billing_revoked.body' => 'Hello {{NAME}},<br /><br />We were unable to recover payment for your {{PLAN_NAME}} plan within the grace period, so your access was downgraded.<br /><br />Downgraded at: {{REVOKED_AT}}<br />Reason: {{FAILURE_REASON}}<br />Current fallback plan: {{FALLBACK_PLAN_NAME}}<br /><br />You can reactivate here: <a href="{{USER_PLAN_LINK}}">{{USER_PLAN_LINK}}</a>',
+
+	'global.notifications.billing_warning_first.title' => 'Payment issue detected for {{PLAN_NAME}}',
+	'global.notifications.billing_warning_first.description' => 'We could not renew your paid plan. Grace access is active until {{GRACE_UNTIL}}.',
+	'global.notifications.billing_warning_second.title' => 'Urgent billing warning',
+	'global.notifications.billing_warning_second.description' => 'Your paid access is at risk. If payment is not recovered by {{GRACE_UNTIL}}, your account will be downgraded.',
+	'global.notifications.billing_recovered.title' => 'Payment recovered',
+	'global.notifications.billing_recovered.description' => 'Your paid plan is active again as of {{RECOVERED_AT}}.',
+	'global.notifications.billing_revoked.title' => 'Paid access downgraded',
+	'global.notifications.billing_revoked.description' => 'Your grace period ended and your account was moved to {{FALLBACK_PLAN_NAME}} on {{REVOKED_AT}}.',
+	'global.notifications.billing_admin_critical.title' => 'Critical recurring billing issue',
+	'global.notifications.billing_admin_critical.description' => '%1$s (%2$s) still has an unresolved billing issue: %3$s',
+	'global.notifications.billing_admin_revoked.title' => 'Access revoked after failed renewals',
+	'global.notifications.billing_admin_revoked.description' => '%1$s (%2$s) was downgraded after grace period expiry. Reason: %3$s',
+	/* /Custom code: FC-2026-03-17 */
 ];
