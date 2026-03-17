@@ -76,11 +76,20 @@ class Payments extends Model {
                 try {
                     (new User())->cancel_subscription($user_id);
                 } catch (\Exception $exception) {
-                    if(DEBUG) {
-                        error_log($exception->getMessage());
-                    }
-                    echo $exception->getMessage();
-                    http_response_code(400); die();
+                    /* Custom code: FC-2026-03-17: do not block paid plan activation when old subscription cancellation fails */
+                    $webhook_context = sprintf(
+                        '[Payments::webhook_process_payment] previous subscription cancellation failed for user_id=%s old_processor=%s old_subscription=%s new_processor=%s new_subscription=%s error=%s',
+                        $user_id,
+                        $stored_processor,
+                        $stored_subscription_id,
+                        $payment_processor,
+                        $payment_subscription_id,
+                        $exception->getMessage()
+                    );
+
+                    error_log($webhook_context);
+                    debug_log($webhook_context);
+                    /* /Custom code: FC-2026-03-17 */
                 }
             }
             /* /Custom code: FC-2026-02-26 */
@@ -144,7 +153,7 @@ class Payments extends Model {
         }
 
         if(empty($payer_name)) {
-            $payer_email = $user->name;
+            $payer_name = $user->name;
         }
 
         $payment_datetime = get_date();
