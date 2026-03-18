@@ -2503,11 +2503,29 @@ class AdminSettings extends Controller {
                 true
             );
 
-            if($result->ErrorInfo == '') {
+            $is_success = false;
+            $error_info = '';
+            $debug_messages = [];
+
+            if(is_bool($result)) {
+                $is_success = $result;
+                $error_info = $result ? '' : 'Mail transport returned false.';
+            } elseif(is_object($result)) {
+                $is_success = empty($result->ErrorInfo) && (($result->success ?? null) !== false);
+                $error_info = $result->ErrorInfo ?? '';
+                $debug_messages = $result->errors ?? [];
+            } else {
+                $error_info = 'Unexpected mail transport response.';
+            }
+
+            if($is_success) {
                 Alerts::add_success(l('admin_settings_send_test_email_modal.success_message'));
             } else {
-                Alerts::add_error(sprintf(l('admin_settings_send_test_email_modal.error_message'), $result->ErrorInfo));
-                Alerts::add_info(implode('<br />', $result->errors));
+                Alerts::add_error(sprintf(l('admin_settings_send_test_email_modal.error_message'), $error_info ?: 'Unknown error.'));
+
+                if(!empty($debug_messages)) {
+                    Alerts::add_info(implode('<br />', $debug_messages));
+                }
             }
 
         }
