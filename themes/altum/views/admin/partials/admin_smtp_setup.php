@@ -3,6 +3,10 @@
 <?php
 /* check if smtp is configured by user */
 function is_smtp_configured_by_user($smtp_settings) {
+    if(($smtp_settings->transport ?? null) === 'brevo_api' && !empty($smtp_settings->brevo_api_key)) {
+        return true;
+    }
+
     $fields_to_check = [
         'from_name',
         'from',

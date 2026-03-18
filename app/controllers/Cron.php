@@ -732,7 +732,7 @@ class Cron extends Controller {
                 );
 
                 /* Custom code: FC-2026-03-18: avoid recipient reply-to on automation emails */
-                $is_sent = send_mail($user->email, $email_template->subject, $email_template->body, ['anti_phishing_code' => $user->anti_phishing_code, 'language' => $user->language]);
+                $is_sent = send_automation_mail($user->email, $email_template->subject, $email_template->body, ['anti_phishing_code' => $user->anti_phishing_code, 'language' => $user->language]);
                 /* /Custom code: FC-2026-03-18 */
 
                 if($is_sent) {

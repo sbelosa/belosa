@@ -1205,9 +1205,11 @@ class AdminSettings extends Controller {
             //ALTUMCODE:DEMO if(DEMO) Alerts::add_error('This command is blocked on the demo.');
 
             /* :) */
+            $_POST['transport'] = in_array($_POST['transport'] ?? 'smtp', ['mail', 'smtp', 'brevo_api']) ? $_POST['transport'] : 'smtp';
             $_POST['auth'] = (int) isset($_POST['auth']);
             $_POST['username'] = input_clean($_POST['username'] ?? '');
             $_POST['password'] = $_POST['password'] ?? '';
+            $_POST['brevo_api_key'] = trim($_POST['brevo_api_key'] ?? '');
             $_POST['cc'] = str_replace(' ', '', $_POST['cc']);
             $_POST['bcc'] = str_replace(' ', '', $_POST['bcc']);
             $_POST['button_background_color'] = !verify_hex_color($_POST['button_background_color']) ? '#000000' : $_POST['button_background_color'];
@@ -1216,6 +1218,7 @@ class AdminSettings extends Controller {
             $_POST['main_container_border_radius'] = (int) $_POST['main_container_border_radius'];
 
             $value = json_encode([
+                'transport' => $_POST['transport'],
                 'from_name' => $_POST['from_name'],
                 'from' => $_POST['from'],
 
@@ -1231,6 +1234,7 @@ class AdminSettings extends Controller {
                 'auth' => $_POST['auth'],
                 'username' => $_POST['username'],
                 'password' => $_POST['password'],
+                'brevo_api_key' => $_POST['brevo_api_key'],
                 'display_socials' => isset($_POST['display_socials']),
                 'company_details' => $_POST['company_details'],
 

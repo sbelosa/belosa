@@ -1,6 +1,18 @@
 <?php defined('ALTUMCODE') || die() ?>
 
+<?php $mail_transport = settings()->smtp->transport ?? 'smtp' ?>
+
 <div>
+    <div class="form-group">
+        <label for="transport"><i class="fas fa-fw fa-sm fa-random text-muted mr-1"></i> <?= l('admin_settings.smtp.transport') ?></label>
+        <select id="transport" name="transport" class="custom-select" autocomplete="off">
+            <option value="mail" <?= $mail_transport == 'mail' ? 'selected="selected"' : null ?>><?= l('admin_settings.smtp.transport.mail') ?></option>
+            <option value="smtp" <?= $mail_transport == 'smtp' ? 'selected="selected"' : null ?>><?= l('admin_settings.smtp.transport.smtp') ?></option>
+            <option value="brevo_api" <?= $mail_transport == 'brevo_api' ? 'selected="selected"' : null ?>><?= l('admin_settings.smtp.transport.brevo_api') ?></option>
+        </select>
+        <small class="form-text text-muted"><?= l('admin_settings.smtp.transport_help') ?></small>
+    </div>
+
     <div class="form-row">
         <div class="form-group col-lg-6">
             <label for="from_name"><i class="fas fa-fw fa-sm fa-signature text-muted mr-1"></i> <?= l('admin_settings.smtp.from_name') ?></label>
@@ -41,13 +53,19 @@
         <small class="form-text text-muted"><?= l('admin_settings.smtp.bcc_help') ?></small>
     </div>
 
-    <div class="form-group">
+    <div class="form-group" data-brevo-field>
+        <label for="brevo_api_key"><i class="fas fa-fw fa-sm fa-key text-muted mr-1"></i> <?= l('admin_settings.smtp.brevo_api_key') ?></label>
+        <input id="brevo_api_key" type="password" name="brevo_api_key" class="form-control" value="<?= settings()->smtp->brevo_api_key ?? '' ?>" autocomplete="off" />
+        <small class="form-text text-muted"><?= l('admin_settings.smtp.brevo_api_key_help') ?></small>
+    </div>
+
+    <div class="form-group" data-smtp-field>
         <label for="host"><i class="fas fa-fw fa-sm fa-server text-muted mr-1"></i> <?= l('admin_settings.smtp.host') ?></label>
         <input id="host" type="text" name="host" class="form-control" value="<?= settings()->smtp->host ?>" autocomplete="off" />
         <small class="form-text text-muted"><?= l('admin_settings.smtp.host_help') ?></small>
     </div>
 
-    <div class="row">
+    <div class="row" data-smtp-field>
         <div class="col-md-3">
             <div class="form-group">
                 <label for="encryption"><i class="fas fa-fw fa-sm fa-user-shield text-muted mr-1"></i> <?= l('admin_settings.smtp.encryption') ?></label>
@@ -67,17 +85,17 @@
         </div>
     </div>
 
-    <div class="form-group custom-control custom-switch">
+    <div class="form-group custom-control custom-switch" data-smtp-field>
         <input id="auth" name="auth" type="checkbox" class="custom-control-input" <?= settings()->smtp->auth ? 'checked="checked"' : null ?> autocomplete="off">
         <label class="custom-control-label" for="auth"><i class="fas fa-fw fa-sm fa-lock text-muted mr-1"></i> <?= l('admin_settings.smtp.auth') ?></label>
     </div>
 
-    <div class="form-group">
+    <div class="form-group" data-smtp-field>
         <label for="username"><i class="fas fa-fw fa-sm fa-signature text-muted mr-1"></i> <?= l('admin_settings.smtp.username') ?></label>
         <input id="username" type="text" name="username" class="form-control" value="<?= settings()->smtp->username ?>" autocomplete="off" />
     </div>
 
-    <div class="form-group" data-password-toggle-view data-password-toggle-view-show="<?= l('global.show') ?>" data-password-toggle-view-hide="<?= l('global.hide') ?>">
+    <div class="form-group" data-smtp-field data-password-toggle-view data-password-toggle-view-show="<?= l('global.show') ?>" data-password-toggle-view-hide="<?= l('global.hide') ?>">
         <label for="password"><i class="fas fa-fw fa-sm fa-key text-muted mr-1"></i> <?= l('admin_settings.smtp.password') ?></label>
         <input id="password" type="password" name="password" class="form-control" value="<?= settings()->smtp->password ?>" autocomplete="off" />
     </div>
@@ -132,6 +150,18 @@
     'use strict';
     
 /* SMTP */
+    let transport_handler = () => {
+        let transport = document.querySelector('select[name="transport"]').value;
+
+        document.querySelectorAll('[data-smtp-field]').forEach(element => {
+            element.style.display = transport === 'smtp' ? '' : 'none';
+        });
+
+        document.querySelectorAll('[data-brevo-field]').forEach(element => {
+            element.style.display = transport === 'brevo_api' ? '' : 'none';
+        });
+    }
+
     let auth_handler = () => {
         if(document.querySelector('input[name="auth"]').checked) {
             document.querySelector('input[name="username"]').removeAttribute('readonly');
@@ -141,6 +171,9 @@
             document.querySelector('input[name="password"]').setAttribute('readonly', 'readonly');
         }
     }
+
+    transport_handler();
+    document.querySelector('select[name="transport"]').addEventListener('change', transport_handler);
 
     auth_handler();
     document.querySelector('input[name="auth"]').addEventListener('change', auth_handler);

@@ -117,12 +117,119 @@ function send_server_mail($to, $from, $title, $content, $reply_to = null) {
     return mail($to, $title, $content, $headers);
 }
 
+/* Custom code: FC-2026-03-18: Brevo API transport for automation emails */
+function get_mail_transport(): string {
+    $transport = settings()->smtp->transport ?? null;
+
+    if(in_array($transport, ['mail', 'smtp', 'brevo_api'], true)) {
+        return $transport;
+    }
+
+    return !empty(settings()->smtp->host) ? 'smtp' : 'mail';
+}
+
+function get_brevo_api_key(): string {
+    return settings()->smtp->brevo_api_key ?? BREVO_API_KEY;
+}
+
+function brevo_is_configured(): bool {
+    return get_mail_transport() === 'brevo_api' && !empty(get_brevo_api_key());
+}
+
+function send_brevo_mail($to, $title, $content, $data = [], $reply_to = null, $debug = false) {
+
+    extract(process_send_mail_template($title, $content, $data));
+
+    $to_addresses = is_array($to) ? $to : [$to];
+    $to_payload = [];
+
+    foreach($to_addresses as $address) {
+        $address = trim((string) $address);
+
+        if($address === '') {
+            continue;
+        }
+
+        $to_payload[] = ['email' => $address];
+    }
+
+    if(empty($to_payload)) {
+        return $debug ? ['success' => false, 'error' => 'Missing recipient email.'] : false;
+    }
+
+    $payload = [
+        'sender' => [
+            'name' => settings()->smtp->from_name,
+            'email' => settings()->smtp->from,
+        ],
+        'to' => $to_payload,
+        'subject' => $title,
+        'htmlContent' => $email_template,
+        'textContent' => strip_tags($email_template),
+    ];
+
+    if($reply_to) {
+        $payload['replyTo'] = ['email' => $reply_to];
+    } elseif(!empty(settings()->smtp->reply_to)) {
+        $payload['replyTo'] = [
+            'email' => settings()->smtp->reply_to,
+            'name' => settings()->smtp->reply_to_name ?: settings()->smtp->from_name,
+        ];
+    }
+
+    $curl_handle = curl_init(BREVO_API_BASE_URL . '/smtp/email');
+
+    curl_setopt_array($curl_handle, [
+        CURLOPT_POST => true,
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_HTTPHEADER => [
+            'accept: application/json',
+            'api-key: ' . get_brevo_api_key(),
+            'content-type: application/json',
+        ],
+        CURLOPT_POSTFIELDS => json_encode($payload),
+        CURLOPT_TIMEOUT => 15,
+        CURLOPT_CONNECTTIMEOUT => 10,
+    ]);
+
+    $response_body = curl_exec($curl_handle);
+    $response_code = (int) curl_getinfo($curl_handle, CURLINFO_HTTP_CODE);
+    $curl_error = curl_error($curl_handle);
+    curl_close($curl_handle);
+
+    $is_success = empty($curl_error) && $response_code >= 200 && $response_code < 300;
+
+    if($debug) {
+        $result = new \stdClass();
+        $result->success = $is_success;
+        $result->status_code = $response_code;
+        $result->response_body = $response_body;
+        $result->curl_error = $curl_error;
+        $result->payload = $payload;
+        $result->ErrorInfo = $is_success ? '' : trim('Brevo API request failed. HTTP ' . $response_code . ' ' . $curl_error);
+        $result->errors = array_values(array_filter([$curl_error, $response_body]));
+
+        return $result;
+    }
+
+    return $is_success;
+}
+
+function send_automation_mail($to, $title, $content, $data = [], $reply_to = null, $debug = false) {
+    return send_mail($to, $title, $content, $data, $reply_to, $debug);
+}
+/* /Custom code: FC-2026-03-18 */
+
 function send_mail($to, $title, $content, $data = [], $reply_to = null, $debug = false) {
+
+    if(get_mail_transport() === 'brevo_api' && !empty(get_brevo_api_key())) {
+        return send_brevo_mail($to, $title, $content, $data, $reply_to, $debug);
+    }
 
     extract(process_send_mail_template($title, $content, $data));
 
     /* Use sendmail from server */
-    if(empty(settings()->smtp->host)) {
+    if(get_mail_transport() === 'mail' || empty(settings()->smtp->host)) {
         return send_server_mail($to, settings()->smtp->from, $title, $email_template, $reply_to);
     }
 

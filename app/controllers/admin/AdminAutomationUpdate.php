@@ -108,7 +108,7 @@ class AdminAutomationUpdate extends Controller {
                             );
 
                             /* Custom code: FC-2026-03-18: avoid recipient reply-to on automation previews */
-                            send_mail($_POST['preview_email'], $email_template->subject, $email_template->body, ['is_system_email' => true, 'anti_phishing_code' => $this->user->anti_phishing_code, 'language' => $this->user->language]);
+                            send_automation_mail($_POST['preview_email'], $email_template->subject, $email_template->body, ['is_system_email' => true, 'anti_phishing_code' => $this->user->anti_phishing_code, 'language' => $this->user->language]);
                             /* /Custom code: FC-2026-03-18 */
                         }
 
@@ -123,7 +123,7 @@ class AdminAutomationUpdate extends Controller {
                         );
 
                         /* Custom code: FC-2026-03-18: avoid recipient reply-to on automation previews */
-                        send_mail($_POST['preview_email'], $email_template->subject, $email_template->body, ['is_system_email' => true, 'anti_phishing_code' => $this->user->anti_phishing_code, 'language' => $this->user->language]);
+                        send_automation_mail($_POST['preview_email'], $email_template->subject, $email_template->body, ['is_system_email' => true, 'anti_phishing_code' => $this->user->anti_phishing_code, 'language' => $this->user->language]);
                         /* /Custom code: FC-2026-03-18 */
 
                         Alerts::add_success(sprintf(l('admin_automation_update.success_message.preview'), '<strong>' . $_POST['preview_email'] . '</strong>'));
