@@ -83,6 +83,11 @@ class Cron extends Controller {
 
         $this->users_plan_expiry_reminder();
 
+        /* Custom code: FC-2026-03-18: live email automations sync and send */
+        $this->email_automations_sync();
+        $this->email_automations_send();
+        /* /Custom code: FC-2026-03-18 */
+
         /* Custom code: FC-2026-03-17: billing risk grace period escalation and revoke */
         $this->billing_risk_monitor();
         /* /Custom code: FC-2026-03-17 */
@@ -564,6 +569,206 @@ class Cron extends Controller {
 
         $this->update_cron_execution_datetimes('email_reports_datetime');
     }
+
+    /* Custom code: FC-2026-03-18: live email automations sync */
+    private function email_automations_sync() {
+        fc_ensure_email_automation_tables();
+        fc_seed_default_email_automation();
+
+        $automations = db()->where('status', 'active')->get('email_automations') ?? [];
+
+        foreach($automations as $automation) {
+            $settings = fc_get_email_automation_settings($automation->settings ?? null);
+            $eligible_users = fc_get_automation_segment_users($automation->segment);
+            $eligible_user_ids = array_map('intval', array_keys($eligible_users));
+
+            $enrollments = db()->where('automation_id', $automation->automation_id)->get('email_automation_enrollments') ?? [];
+            $enrollments_by_user_id = [];
+
+            foreach($enrollments as $enrollment) {
+                $enrollments_by_user_id[(int) $enrollment->user_id] = $enrollment;
+            }
+
+            foreach($eligible_users as $user_id => $user) {
+                if(!isset($enrollments_by_user_id[$user_id])) {
+                    $enrollment_id = db()->insert('email_automation_enrollments', [
+                        'automation_id' => $automation->automation_id,
+                        'user_id' => $user_id,
+                        'status' => 'active',
+                        'current_step' => 1,
+                        'entered_datetime' => get_date(),
+                        'next_action_datetime' => get_date(),
+                        'last_evaluated_datetime' => get_date(),
+                    ]);
+
+                    fc_insert_email_automation_log((int) $automation->automation_id, (int) $enrollment_id, null, (int) $user_id, 'entered', ['message' => 'User entered the live automation segment.']);
+                    continue;
+                }
+
+                $existing_enrollment = $enrollments_by_user_id[$user_id];
+
+                if($settings->reentry_is_enabled && in_array($existing_enrollment->status, ['completed', 'exited'])) {
+                    db()->where('automation_enrollment_id', $existing_enrollment->automation_enrollment_id)->update('email_automation_enrollments', [
+                        'status' => 'active',
+                        'current_step' => 1,
+                        'entered_datetime' => get_date(),
+                        'next_action_datetime' => get_date(),
+                        'last_evaluated_datetime' => get_date(),
+                        'completed_datetime' => null,
+                        'exit_datetime' => null,
+                        'exit_reason' => null,
+                        'last_datetime' => get_date(),
+                    ]);
+
+                    fc_insert_email_automation_log((int) $automation->automation_id, (int) $existing_enrollment->automation_enrollment_id, null, (int) $user_id, 'reentered', ['message' => 'User re-entered the live automation segment.']);
+                } elseif($existing_enrollment->status == 'active') {
+                    db()->where('automation_enrollment_id', $existing_enrollment->automation_enrollment_id)->update('email_automation_enrollments', [
+                        'last_evaluated_datetime' => get_date(),
+                        'last_datetime' => get_date(),
+                    ]);
+                }
+            }
+
+            foreach($enrollments as $enrollment) {
+                if($enrollment->status !== 'active') {
+                    continue;
+                }
+
+                if(in_array((int) $enrollment->user_id, $eligible_user_ids, true)) {
+                    continue;
+                }
+
+                db()->where('automation_enrollment_id', $enrollment->automation_enrollment_id)->update('email_automation_enrollments', [
+                    'status' => 'exited',
+                    'next_action_datetime' => null,
+                    'last_evaluated_datetime' => get_date(),
+                    'exit_datetime' => get_date(),
+                    'exit_reason' => 'condition_resolved',
+                    'last_datetime' => get_date(),
+                ]);
+
+                fc_insert_email_automation_log((int) $automation->automation_id, (int) $enrollment->automation_enrollment_id, null, (int) $enrollment->user_id, 'exited', ['message' => 'User exited because the segment condition is no longer true.', 'exit_reason' => 'condition_resolved']);
+            }
+        }
+    }
+    /* /Custom code: FC-2026-03-18 */
+
+    /* Custom code: FC-2026-03-18: live email automations sender */
+    private function email_automations_send() {
+        fc_ensure_email_automation_tables();
+
+        $automations = db()->where('status', 'active')->get('email_automations') ?? [];
+
+        foreach($automations as $automation) {
+            $settings = fc_get_email_automation_settings($automation->settings ?? null);
+            $steps = fc_get_email_automation_steps((int) $automation->automation_id);
+
+            if(empty($steps)) {
+                continue;
+            }
+
+            $steps_map = [];
+            foreach($steps as $step) {
+                $steps_map[(int) $step->step_order] = $step;
+            }
+
+            $due_enrollments = db()
+                ->where('automation_id', $automation->automation_id)
+                ->where('status', 'active')
+                ->where('next_action_datetime', get_date(), '<=')
+                ->orderBy('next_action_datetime', 'ASC')
+                ->get('email_automation_enrollments', $settings->batch_size) ?? [];
+
+            if(empty($due_enrollments)) {
+                continue;
+            }
+
+            $user_ids = array_map(static function($enrollment) {
+                return (int) $enrollment->user_id;
+            }, $due_enrollments);
+
+            $users = db()->where('user_id', $user_ids, 'IN')->get('users', null, ['user_id', 'name', 'email', 'language', 'anti_phishing_code', 'status']) ?? [];
+            $users_map = [];
+            foreach($users as $user) {
+                $users_map[(int) $user->user_id] = $user;
+            }
+
+            foreach($due_enrollments as $enrollment) {
+                $user = $users_map[(int) $enrollment->user_id] ?? null;
+
+                if(!$user || !fc_is_user_in_automation_segment($automation->segment, (int) $enrollment->user_id)) {
+                    db()->where('automation_enrollment_id', $enrollment->automation_enrollment_id)->update('email_automation_enrollments', [
+                        'status' => 'exited',
+                        'next_action_datetime' => null,
+                        'exit_datetime' => get_date(),
+                        'exit_reason' => 'condition_resolved',
+                        'last_datetime' => get_date(),
+                    ]);
+
+                    fc_insert_email_automation_log((int) $automation->automation_id, (int) $enrollment->automation_enrollment_id, null, (int) $enrollment->user_id, 'exited', ['message' => 'Enrollment skipped because the user is no longer eligible.', 'exit_reason' => 'condition_resolved']);
+                    continue;
+                }
+
+                $current_step = $steps_map[(int) $enrollment->current_step] ?? null;
+
+                if(!$current_step) {
+                    db()->where('automation_enrollment_id', $enrollment->automation_enrollment_id)->update('email_automation_enrollments', [
+                        'status' => 'completed',
+                        'next_action_datetime' => null,
+                        'completed_datetime' => get_date(),
+                        'last_datetime' => get_date(),
+                    ]);
+
+                    fc_insert_email_automation_log((int) $automation->automation_id, (int) $enrollment->automation_enrollment_id, null, (int) $enrollment->user_id, 'completed', ['message' => 'Enrollment completed because there are no more steps.']);
+                    continue;
+                }
+
+                $vars = fc_get_email_automation_user_variables($user, $settings);
+                $email_template = get_email_template(
+                    $vars,
+                    htmlspecialchars_decode($current_step->subject),
+                    $vars,
+                    $current_step->content
+                );
+
+                $is_sent = send_mail($user->email, $email_template->subject, $email_template->body, ['anti_phishing_code' => $user->anti_phishing_code, 'language' => $user->language], $user->email);
+
+                if($is_sent) {
+                    $next_step = fc_get_next_email_automation_step($steps, (int) $current_step->step_order);
+                    $enrollment_update = [
+                        'last_sent_email_datetime' => get_date(),
+                        'last_datetime' => get_date(),
+                    ];
+
+                    if($next_step) {
+                        $enrollment_update['current_step'] = (int) $next_step->step_order;
+                        $enrollment_update['next_action_datetime'] = (new \DateTime())->modify('+' . (int) $next_step->delay_minutes . ' minutes')->format('Y-m-d H:i:s');
+                    } else {
+                        $enrollment_update['status'] = 'completed';
+                        $enrollment_update['next_action_datetime'] = null;
+                        $enrollment_update['completed_datetime'] = get_date();
+                    }
+
+                    db()->where('automation_enrollment_id', $enrollment->automation_enrollment_id)->update('email_automation_enrollments', $enrollment_update);
+                    database()->query("UPDATE `email_automations` SET `total_sent_emails` = `total_sent_emails` + 1, `last_sent_email_datetime` = '" . get_date() . "', `last_datetime` = '" . get_date() . "' WHERE `automation_id` = {$automation->automation_id}");
+
+                    fc_insert_email_automation_log((int) $automation->automation_id, (int) $enrollment->automation_enrollment_id, (int) $current_step->automation_step_id, (int) $user->user_id, 'email_sent', ['message' => 'Automation step email sent successfully.']);
+
+                    if(DEBUG) {
+                        echo sprintf('email_automations_send() -> automation_id %s sent step %s to user_id %s', $automation->automation_id, $current_step->step_order, $user->user_id);
+                    }
+                } else {
+                    db()->where('automation_enrollment_id', $enrollment->automation_enrollment_id)->update('email_automation_enrollments', [
+                        'next_action_datetime' => (new \DateTime())->modify('+60 minutes')->format('Y-m-d H:i:s'),
+                        'last_datetime' => get_date(),
+                    ]);
+
+                    fc_insert_email_automation_log((int) $automation->automation_id, (int) $enrollment->automation_enrollment_id, (int) $current_step->automation_step_id, (int) $user->user_id, 'send_failed', ['message' => 'Automation step email failed and will retry in 60 minutes.']);
+                }
+            }
+        }
+    }
+    /* /Custom code: FC-2026-03-18 */
 
     private function users_plan_expiry_reminder() {
         if(!settings()->payment->user_plan_expiry_reminder) {

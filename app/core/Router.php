@@ -1721,6 +1721,16 @@ class Router {
                 'controller' => 'AdminBroadcastUpdate',
             ],
 
+            /* Custom code: FC-2026-03-18: admin live email automations routes */
+            'automations' => [
+                'controller' => 'AdminAutomations',
+            ],
+
+            'automation-update' => [
+                'controller' => 'AdminAutomationUpdate',
+            ],
+            /* /Custom code: FC-2026-03-18 */
+
             'internal-notifications' => [
                 'controller' => 'AdminInternalNotifications',
             ],

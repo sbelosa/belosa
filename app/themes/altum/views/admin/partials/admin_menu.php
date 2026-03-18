@@ -33,7 +33,12 @@
             <?php endif ?>
         </div>
 
-        <ul class="navbar-nav ml-auto">
+        <ul class="navbar-nav ml-auto align-items-center">
+            <!-- Custom code: FC-2026-03-18: top bar shortcut for live email automations -->
+            <a href="<?= url('admin/automations') ?>" class="btn btn-sm btn-gray-300 mr-2 text-nowrap" data-toggle="tooltip" title="<?= l('admin_automations.menu') ?>">
+                <i class="fas fa-fw fa-wave-square mr-lg-1"></i><span class="d-none d-lg-inline"><?= l('admin_automations.menu') ?></span>
+            </a>
+            <!-- /Custom code: FC-2026-03-18 -->
             <button class="btn navbar-custom-toggler" type="button" id="admin_menu_toggler" aria-controls="main_navbar" aria-expanded="false" aria-label="<?= l('global.accessibility.toggle_navigation') ?>">
                 <i class="fas fa-fw fa-bars"></i>
             </button>

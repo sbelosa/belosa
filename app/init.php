@@ -90,6 +90,9 @@ require_once APP_PATH . 'helpers/others.php';
 require_once APP_PATH . 'helpers/links.php';
 require_once APP_PATH . 'helpers/strings.php';
 require_once APP_PATH . 'helpers/email.php';
+/* Custom code: FC-2026-03-18: live email automations helpers */
+require_once APP_PATH . 'helpers/automations.php';
+/* /Custom code: FC-2026-03-18 */
 require_once APP_PATH . 'helpers/66uptime.php';
 
 /* Autoload for vendor */

@@ -72,6 +72,14 @@
                 </a>
             </li>
 
+            <!-- Custom code: FC-2026-03-18: admin live email automations navigation -->
+            <li class="<?= in_array(\Altum\Router::$controller, ['AdminAutomations', 'AdminAutomationUpdate']) ? 'active' : null ?>">
+                <a class="nav-link text-truncate" href="<?= url('admin/automations') ?>">
+                    <i class="fas fa-fw fa-sm fa-wave-square mr-2"></i> <?= l('admin_automations.menu') ?>
+                </a>
+            </li>
+            <!-- /Custom code: FC-2026-03-18 -->
+
             <li class="<?= in_array(\Altum\Router::$controller, ['AdminInternalNotifications', 'AdminInternalNotificationCreate']) ? 'active' : null ?>">
                 <a class="nav-link text-truncate" href="<?= url('admin/internal-notifications') ?>">
                     <i class="fas fa-fw fa-sm fa-bell mr-2"></i> <?= l('admin_internal_notifications.menu') ?>
