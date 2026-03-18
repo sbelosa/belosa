@@ -193,6 +193,25 @@ class AdminAutomationUpdate extends Controller {
             $log->details = json_decode($log->details ?? '');
         }
 
+        /* Custom code: FC-2026-03-18: hydrate activity logs with user name and email */
+        $log_user_ids = array_values(array_unique(array_filter(array_map(static function($log) {
+            return (int) ($log->user_id ?? 0);
+        }, $logs))));
+        $log_users = [];
+
+        if(!empty($log_user_ids)) {
+            $log_users_result = db()->where('user_id', $log_user_ids, 'IN')->get('users', null, ['user_id', 'name', 'email']) ?? [];
+
+            foreach($log_users_result as $log_user) {
+                $log_users[(int) $log_user->user_id] = $log_user;
+            }
+        }
+
+        foreach($logs as $log) {
+            $log->user = $log_users[(int) ($log->user_id ?? 0)] ?? null;
+        }
+        /* /Custom code: FC-2026-03-18 */
+
         $view = new \Altum\View('admin/automation-update/index', (array) $this);
         $this->add_view_content('content', $view->run([
             'automation' => $automation,

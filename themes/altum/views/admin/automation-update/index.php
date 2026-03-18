@@ -189,7 +189,18 @@
                     <tr>
                         <td class="text-nowrap"><?= \Altum\Date::get($log->datetime, 2) ?></td>
                         <td class="text-nowrap"><span class="badge badge-light"><?= l('admin_automation_update.log_action.' . $log->action) ?></span></td>
-                        <td class="text-nowrap"><?= $log->user_id ? '#' . $log->user_id : '-' ?></td>
+                        <td class="text-nowrap">
+                            <!-- Custom code: FC-2026-03-18: show user name and email in activity list -->
+                            <?php if($log->user): ?>
+                                <div class="font-weight-bold"><?= e($log->user->name ?: ('#' . $log->user_id)) ?></div>
+                                <div class="small text-muted"><?= e($log->user->email) ?></div>
+                            <?php elseif($log->user_id): ?>
+                                <div class="font-weight-bold">#<?= $log->user_id ?></div>
+                            <?php else: ?>
+                                -
+                            <?php endif ?>
+                            <!-- /Custom code: FC-2026-03-18 -->
+                        </td>
                         <td class="small text-muted"><?= isset($log->details->message) ? e($log->details->message) : (isset($log->details->exit_reason) ? e($log->details->exit_reason) : '-') ?></td>
                     </tr>
                 <?php endforeach ?>
