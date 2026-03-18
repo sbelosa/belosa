@@ -37,7 +37,9 @@ class FeaturedApps extends Controller {
                 continue;
             }
 
-            $biolink_result = database()->query("SELECT `links`.`link_id`, `links`.`url`, `links`.`domain_id`, `domains`.`scheme`, `domains`.`host`, `domains`.`link_id` AS `domain_link_id` FROM `links` LEFT JOIN `domains` ON `links`.`domain_id` = `domains`.`domain_id` WHERE `links`.`user_id` = {$user_id} AND `links`.`type` = 'biolink' AND `links`.`is_enabled` = 1 ORDER BY `links`.`last_datetime` DESC, `links`.`datetime` DESC, `links`.`link_id` DESC LIMIT 1");
+            /* Custom code: FC-2026-03-18: featured apps should use locked main biolink only */
+            $biolink_result = database()->query("SELECT `links`.`link_id`, `links`.`url`, `links`.`domain_id`, `domains`.`scheme`, `domains`.`host`, `domains`.`link_id` AS `domain_link_id` FROM `links` LEFT JOIN `users_biolinks` ON `links`.`link_id` = `users_biolinks`.`biolink_id` LEFT JOIN `domains` ON `links`.`domain_id` = `domains`.`domain_id` WHERE `links`.`user_id` = {$user_id} AND `links`.`type` = 'biolink' AND `links`.`is_enabled` = 1 AND `users_biolinks`.`biolink_id` IS NOT NULL ORDER BY `links`.`datetime` ASC, `links`.`link_id` ASC LIMIT 1");
+            /* /Custom code: FC-2026-03-18 */
             $biolink = $biolink_result ? $biolink_result->fetch_object() : null;
 
             if(!$biolink || empty($biolink->url)) {
