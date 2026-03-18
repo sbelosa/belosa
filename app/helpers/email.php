@@ -138,6 +138,23 @@ function brevo_is_configured(): bool {
 
 function send_brevo_mail($to, $title, $content, $data = [], $reply_to = null, $debug = false) {
 
+    if(!function_exists('curl_init')) {
+        if($debug) {
+            $result = new \stdClass();
+            $result->success = false;
+            $result->status_code = 0;
+            $result->response_body = null;
+            $result->curl_error = 'PHP curl extension is not available.';
+            $result->payload = null;
+            $result->ErrorInfo = 'PHP curl extension is not available.';
+            $result->errors = ['PHP curl extension is not available on this server.'];
+
+            return $result;
+        }
+
+        return false;
+    }
+
     extract(process_send_mail_template($title, $content, $data));
 
     $to_addresses = is_array($to) ? $to : [$to];
@@ -177,6 +194,25 @@ function send_brevo_mail($to, $title, $content, $data = [], $reply_to = null, $d
         ];
     }
 
+    $json_payload = json_encode($payload);
+
+    if($json_payload === false) {
+        if($debug) {
+            $result = new \stdClass();
+            $result->success = false;
+            $result->status_code = 0;
+            $result->response_body = null;
+            $result->curl_error = 'Failed to encode Brevo payload as JSON.';
+            $result->payload = $payload;
+            $result->ErrorInfo = 'Failed to encode Brevo payload as JSON.';
+            $result->errors = ['Failed to encode Brevo payload as JSON.'];
+
+            return $result;
+        }
+
+        return false;
+    }
+
     $curl_handle = curl_init(BREVO_API_BASE_URL . '/smtp/email');
 
     curl_setopt_array($curl_handle, [
@@ -187,7 +223,7 @@ function send_brevo_mail($to, $title, $content, $data = [], $reply_to = null, $d
             'api-key: ' . get_brevo_api_key(),
             'content-type: application/json',
         ],
-        CURLOPT_POSTFIELDS => json_encode($payload),
+        CURLOPT_POSTFIELDS => $json_payload,
         CURLOPT_TIMEOUT => 15,
         CURLOPT_CONNECTTIMEOUT => 10,
     ]);
