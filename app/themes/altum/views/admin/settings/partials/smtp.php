@@ -6,9 +6,10 @@
     <div class="form-group">
         <label for="transport"><i class="fas fa-fw fa-sm fa-random text-muted mr-1"></i> <?= l('admin_settings.smtp.transport') ?></label>
         <select id="transport" name="transport" class="custom-select" autocomplete="off">
-            <option value="mail" <?= $mail_transport == 'mail' ? 'selected="selected"' : null ?>><?= l('admin_settings.smtp.transport.mail') ?></option>
+            <!-- Custom code: FC-2026-03-19: show only supported mail transports -->
             <option value="smtp" <?= $mail_transport == 'smtp' ? 'selected="selected"' : null ?>><?= l('admin_settings.smtp.transport.smtp') ?></option>
             <option value="brevo_api" <?= $mail_transport == 'brevo_api' ? 'selected="selected"' : null ?>><?= l('admin_settings.smtp.transport.brevo_api') ?></option>
+            <!-- /Custom code: FC-2026-03-19 -->
         </select>
         <small class="form-text text-muted"><?= l('admin_settings.smtp.transport_help') ?></small>
     </div>

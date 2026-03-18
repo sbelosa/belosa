@@ -121,11 +121,21 @@ function send_server_mail($to, $from, $title, $content, $reply_to = null) {
 function get_mail_transport(): string {
     $transport = settings()->smtp->transport ?? null;
 
-    if(in_array($transport, ['mail', 'smtp', 'brevo_api'], true)) {
+    if(in_array($transport, ['smtp', 'brevo_api'], true)) {
         return $transport;
     }
 
-    return !empty(settings()->smtp->host) ? 'smtp' : 'mail';
+    return 'smtp';
+}
+
+function fc_log_mail_transport_error(string $transport, string $message, array $context = []): void {
+    $payload = [
+        'transport' => $transport,
+        'message' => $message,
+        'context' => $context,
+    ];
+
+    error_log('[Mail Transport] ' . json_encode($payload, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
 }
 
 function get_brevo_api_key(): string {
@@ -139,6 +149,10 @@ function brevo_is_configured(): bool {
 function send_brevo_mail($to, $title, $content, $data = [], $reply_to = null, $debug = false) {
 
     if(!function_exists('curl_init')) {
+        fc_log_mail_transport_error('brevo_api', 'PHP curl extension is not available.', [
+            'has_curl_init' => false,
+        ]);
+
         if($debug) {
             $result = new \stdClass();
             $result->success = false;
@@ -171,7 +185,25 @@ function send_brevo_mail($to, $title, $content, $data = [], $reply_to = null, $d
     }
 
     if(empty($to_payload)) {
-        return $debug ? ['success' => false, 'error' => 'Missing recipient email.'] : false;
+        fc_log_mail_transport_error('brevo_api', 'Missing recipient email.', [
+            'to' => $to,
+            'subject' => $title,
+        ]);
+
+        if($debug) {
+            $result = new \stdClass();
+            $result->success = false;
+            $result->status_code = 0;
+            $result->response_body = null;
+            $result->curl_error = 'Missing recipient email.';
+            $result->payload = null;
+            $result->ErrorInfo = 'Missing recipient email.';
+            $result->errors = ['Missing recipient email.'];
+
+            return $result;
+        }
+
+        return false;
     }
 
     $payload = [
@@ -197,6 +229,11 @@ function send_brevo_mail($to, $title, $content, $data = [], $reply_to = null, $d
     $json_payload = json_encode($payload);
 
     if($json_payload === false) {
+        fc_log_mail_transport_error('brevo_api', 'Failed to encode Brevo payload as JSON.', [
+            'subject' => $title,
+            'json_last_error' => function_exists('json_last_error_msg') ? json_last_error_msg() : 'Unknown JSON error',
+        ]);
+
         if($debug) {
             $result = new \stdClass();
             $result->success = false;
@@ -235,6 +272,16 @@ function send_brevo_mail($to, $title, $content, $data = [], $reply_to = null, $d
 
     $is_success = empty($curl_error) && $response_code >= 200 && $response_code < 300;
 
+    if(!$is_success) {
+        fc_log_mail_transport_error('brevo_api', 'Brevo API request failed.', [
+            'status_code' => $response_code,
+            'curl_error' => $curl_error,
+            'response_body' => $response_body,
+            'subject' => $title,
+            'to' => $to_payload,
+        ]);
+    }
+
     if($debug) {
         $result = new \stdClass();
         $result->success = $is_success;
@@ -264,9 +311,13 @@ function send_mail($to, $title, $content, $data = [], $reply_to = null, $debug =
 
     extract(process_send_mail_template($title, $content, $data));
 
-    /* Use sendmail from server */
-    if(get_mail_transport() === 'mail' || empty(settings()->smtp->host)) {
-        return send_server_mail($to, settings()->smtp->from, $title, $email_template, $reply_to);
+    if(empty(settings()->smtp->host)) {
+        fc_log_mail_transport_error('smtp', 'SMTP host is missing.', [
+            'subject' => $title,
+            'to' => $to,
+        ]);
+
+        return false;
     }
 
     /* Use phpmailer SMTP */
@@ -356,8 +407,23 @@ function send_mail($to, $title, $content, $data = [], $reply_to = null, $debug =
             $mail->errors = $errors;
         }
 
+        if(!$send) {
+            fc_log_mail_transport_error('smtp', 'PHPMailer send returned false.', [
+                'subject' => $title,
+                'to' => $to,
+                'error_info' => $mail->ErrorInfo,
+                'debug_errors' => $errors,
+            ]);
+        }
+
         return $debug ? $mail : $send;
     } catch (Exception $e) {
+        fc_log_mail_transport_error('smtp', 'PHPMailer exception thrown.', [
+            'subject' => $title,
+            'to' => $to,
+            'exception_message' => $e->getMessage(),
+        ]);
+
         return $debug ? $mail : false;
     }
 

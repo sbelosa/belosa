@@ -1204,8 +1204,9 @@ class AdminSettings extends Controller {
         if(!empty($_POST)) {
             //ALTUMCODE:DEMO if(DEMO) Alerts::add_error('This command is blocked on the demo.');
 
-            /* :) */
-            $_POST['transport'] = in_array($_POST['transport'] ?? 'smtp', ['mail', 'smtp', 'brevo_api']) ? $_POST['transport'] : 'smtp';
+            /* Custom code: FC-2026-03-19: limit mail transports to SMTP and Brevo */
+            $_POST['transport'] = in_array($_POST['transport'] ?? 'smtp', ['smtp', 'brevo_api']) ? $_POST['transport'] : 'smtp';
+            /* /Custom code: FC-2026-03-19 */
             $_POST['auth'] = (int) isset($_POST['auth']);
             $_POST['username'] = input_clean($_POST['username'] ?? '');
             $_POST['password'] = $_POST['password'] ?? '';
