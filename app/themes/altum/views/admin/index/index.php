@@ -2,8 +2,38 @@
 
 <h1 class="h3 mb-4 text-truncate"><?= sprintf(l('admin_index.header'), $this->user->name) ?></h1>
 
+<!-- Custom code: FC-2026-03-18: grouped admin dashboard layout -->
+<div class="d-flex flex-column">
+    <div class="mb-3" style="order: 10;">
+        <div class="border-bottom pb-2">
+            <h2 class="h4 mb-1"><?= l('admin_index.dashboard_sections.priority.header') ?></h2>
+            <p class="text-muted mb-0"><?= l('admin_index.dashboard_sections.priority.subheader') ?></p>
+        </div>
+    </div>
+
+    <div class="mb-3 mt-2" style="order: 20;">
+        <div class="border-bottom pb-2">
+            <h2 class="h4 mb-1"><?= l('admin_index.dashboard_sections.revenue.header') ?></h2>
+            <p class="text-muted mb-0"><?= l('admin_index.dashboard_sections.revenue.subheader') ?></p>
+        </div>
+    </div>
+
+    <div class="mb-3 mt-2" style="order: 30;">
+        <div class="border-bottom pb-2">
+            <h2 class="h4 mb-1"><?= l('admin_index.dashboard_sections.forever.header') ?></h2>
+            <p class="text-muted mb-0"><?= l('admin_index.dashboard_sections.forever.subheader') ?></p>
+        </div>
+    </div>
+
+    <div class="mb-3 mt-2" style="order: 40;">
+        <div class="border-bottom pb-2">
+            <h2 class="h4 mb-1"><?= l('admin_index.dashboard_sections.platform.header') ?></h2>
+            <p class="text-muted mb-0"><?= l('admin_index.dashboard_sections.platform.subheader') ?></p>
+        </div>
+    </div>
+
 <!-- Custom code: FC-2026-03-04: admin dashboard phase 1 analytics layout -->
-<div class="mb-5">
+<div class="mb-5" style="order: 41;">
     <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center mb-3">
         <h2 class="h4 mb-3 mb-lg-0"><?= l('admin_index.analytics_phase1.header') ?></h2>
 
@@ -143,7 +173,7 @@
 <!-- /Custom code: FC-2026-03-04 -->
 
 <!-- Custom code: FC-2026-03-04: phase 2 sales and subscriptions panel -->
-<div class="mb-5 mt-4">
+<div class="mb-5 mt-4" style="order: 21;">
     <div class="d-flex flex-column flex-md-row justify-content-between mb-3">
         <h1 class="h3 mb-3 mb-md-0 text-truncate"><i class="fas fa-fw fa-xs fa-credit-card text-primary-900 mr-2"></i> <?= l('admin_index.sales_subscriptions.header') ?></h1>
     </div>
@@ -199,7 +229,7 @@
 <!-- /Custom code: FC-2026-03-04 -->
 
 <!-- Custom code: FC-2026-03-04: phase 5 action center panel -->
-<div class="mb-5 mt-4">
+<div class="mb-5 mt-4" style="order: 11;">
     <div class="d-flex flex-column flex-md-row justify-content-between mb-3">
         <h1 class="h3 mb-3 mb-md-0 text-truncate"><i class="fas fa-fw fa-xs fa-bolt text-primary-900 mr-2"></i> <?= l('admin_index.action_center.header') ?></h1>
     </div>
@@ -248,7 +278,7 @@
 <!-- /Custom code: FC-2026-03-04 -->
 
 <!-- Custom code: FC-2026-03-17: billing risk dashboard panel -->
-<div class="mb-5 mt-4">
+<div class="mb-5 mt-4" style="order: 12;">
     <div class="d-flex flex-column flex-md-row justify-content-between mb-3">
         <h1 class="h3 mb-3 mb-md-0 text-truncate"><i class="fas fa-fw fa-xs fa-triangle-exclamation text-primary-900 mr-2"></i> <?= l('admin_index.billing_risk.header') ?></h1>
         <a href="<?= url('admin/billing-risk') ?>" class="btn btn-outline-primary btn-sm"><?= l('admin_index.billing_risk.view_all') ?></a>
@@ -291,7 +321,7 @@
 <!-- /Custom code: FC-2026-03-17 -->
 
 <!-- Custom code: FC-2026-03-04: phase 4 biolink traffic and collaborator analytics panel -->
-<div class="mb-5 mt-4">
+<div class="mb-5 mt-4" style="order: 33;">
     <div class="d-flex flex-column flex-md-row justify-content-between mb-3">
         <h1 class="h3 mb-3 mb-md-0 text-truncate"><i class="fas fa-fw fa-xs fa-globe-europe text-primary-900 mr-2"></i> <?= l('admin_index.biolink_analytics.header') ?></h1>
 
@@ -304,23 +334,34 @@
 
     <p class="text-muted mb-3"><?= l('admin_index.biolink_analytics.subheader') ?></p>
 
+    <!-- Custom code: FC-2026-03-18: three responsive KPI cards driven by selected biolink period -->
     <div class="row mb-2">
-        <div class="col-12 col-md-6 col-xl-3 p-2">
-            <div class="card h-100"><div class="card-body"><small class="text-muted d-block mb-1"><?= l('admin_index.biolink_analytics.clicks_today') ?></small><div class="h5 mb-0" id="biolink_clicks_today"><span class="spinner-border spinner-border-sm" role="status"></span></div></div></div>
+        <div class="col-12 col-lg-4 p-2">
+            <div class="card h-100">
+                <div class="card-body">
+                    <small class="text-muted d-block mb-1" id="biolink_period_total_label"><?= l('admin_index.biolink_analytics.clicks_selected_period') ?> (<?= l('admin_index.analytics_phase1.period.30d') ?>)</small>
+                    <div class="h4 mb-0" id="biolink_period_total_clicks"><span class="spinner-border spinner-border-sm" role="status"></span></div>
+                </div>
+            </div>
         </div>
-        <div class="col-12 col-md-6 col-xl-3 p-2">
-            <div class="card h-100"><div class="card-body"><small class="text-muted d-block mb-1"><?= l('admin_index.biolink_analytics.clicks_7d') ?></small><div class="h5 mb-0" id="biolink_clicks_7d"><span class="spinner-border spinner-border-sm" role="status"></span></div></div></div>
+        <div class="col-12 col-lg-4 p-2">
+            <div class="card h-100">
+                <div class="card-body">
+                    <small class="text-muted d-block mb-1" id="biolink_period_shop_label"><?= l('admin_index.biolink_analytics.forever_shop_clicks_selected_period') ?> (<?= l('admin_index.analytics_phase1.period.30d') ?>)</small>
+                    <div class="h4 mb-0" id="biolink_period_shop_clicks"><span class="spinner-border spinner-border-sm" role="status"></span></div>
+                </div>
+            </div>
         </div>
-        <div class="col-12 col-md-6 col-xl-3 p-2">
-            <div class="card h-100"><div class="card-body"><small class="text-muted d-block mb-1"><?= l('admin_index.biolink_analytics.clicks_30d') ?></small><div class="h5 mb-0" id="biolink_clicks_30d"><span class="spinner-border spinner-border-sm" role="status"></span></div></div></div>
-        </div>
-        <div class="col-12 col-md-6 col-xl-3 p-2">
-            <div class="card h-100"><div class="card-body"><small class="text-muted d-block mb-1"><?= l('admin_index.biolink_analytics.forever_shop_clicks_30d') ?></small><div class="h5 mb-0" id="biolink_forever_shop_clicks_30d"><span class="spinner-border spinner-border-sm" role="status"></span></div></div></div>
-        </div>
-        <div class="col-12 col-md-6 col-xl-3 p-2">
-            <div class="card h-100"><div class="card-body"><small class="text-muted d-block mb-1"><?= l('admin_index.biolink_analytics.forever_registration_clicks_30d') ?></small><div class="h5 mb-0" id="biolink_forever_registration_clicks_30d"><span class="spinner-border spinner-border-sm" role="status"></span></div></div></div>
+        <div class="col-12 col-lg-4 p-2">
+            <div class="card h-100">
+                <div class="card-body">
+                    <small class="text-muted d-block mb-1" id="biolink_period_registration_label"><?= l('admin_index.biolink_analytics.forever_registration_clicks_selected_period') ?> (<?= l('admin_index.analytics_phase1.period.30d') ?>)</small>
+                    <div class="h4 mb-0" id="biolink_period_registration_clicks"><span class="spinner-border spinner-border-sm" role="status"></span></div>
+                </div>
+            </div>
         </div>
     </div>
+    <!-- /Custom code: FC-2026-03-18 -->
 
     <div class="row mt-2">
         <div class="col-12 col-xl-4 p-2">
@@ -370,7 +411,7 @@
 <!-- /Custom code: FC-2026-03-04 -->
 
 <!-- Custom code: FC-2026-03-04: trial users monitoring panel -->
-<div class="mb-5 mt-4">
+<div class="mb-5 mt-4" style="order: 13;">
     <div class="d-flex flex-column flex-md-row justify-content-between mb-3">
         <h1 class="h3 mb-3 mb-md-0 text-truncate"><i class="fas fa-fw fa-xs fa-hourglass-half text-primary-900 mr-2"></i> <?= l('admin_index.trial_monitoring.header') ?></h1>
 
@@ -387,6 +428,7 @@
             <div class="d-flex align-items-center mb-2 mb-lg-0">
                 <label for="trial_filter" class="mr-2 mb-0 text-muted"><?= l('admin_index.trial_monitoring.filter_label') ?></label>
                 <select id="trial_filter" name="trial_filter" class="form-control form-control-sm" style="width: 240px;">
+                    <option value="attention" <?= $data->trial_filter == 'attention' ? 'selected="selected"' : null ?>><?= l('admin_index.trial_monitoring.filter.attention') ?></option>
                     <option value="all" <?= $data->trial_filter == 'all' ? 'selected="selected"' : null ?>><?= l('admin_index.trial_monitoring.filter.all') ?></option>
                     <option value="cancelled" <?= $data->trial_filter == 'cancelled' ? 'selected="selected"' : null ?>><?= l('admin_index.trial_monitoring.filter.cancelled') ?></option>
                     <option value="active" <?= $data->trial_filter == 'active' ? 'selected="selected"' : null ?>><?= l('admin_index.trial_monitoring.filter.active') ?></option>
@@ -406,10 +448,11 @@
         </div>
     </form>
 
-    <?php if(empty($data->active_trial_users)): ?>
+    <?php if(empty($data->active_trial_users_filtered)): ?>
         <div class="alert alert-info mb-0"><?= l('admin_index.trial_monitoring.empty') ?></div>
     <?php else: ?>
-        <div class="table-responsive table-custom-container">
+        <!-- Custom code: FC-2026-03-18: compact and prioritized trial monitoring rows -->
+        <div class="table-responsive table-custom-container mb-3">
             <table class="table table-custom">
                 <thead>
                 <tr>
@@ -420,9 +463,9 @@
                     <th></th>
                 </tr>
                 </thead>
-                <tbody>
-                <?php foreach($data->active_trial_users as $trial_user): ?>
-                    <tr>
+                <tbody id="trial_monitoring_table_body">
+                <?php foreach($data->active_trial_users_filtered as $trial_user): ?>
+                    <tr class="trial-monitoring-row">
                         <td class="text-nowrap">
                             <div class="d-flex flex-column">
                                 <a href="<?= url('admin/user-view/' . $trial_user->user_id) ?>"><?= $trial_user->name ?></a>
@@ -458,11 +501,13 @@
                 </tbody>
             </table>
         </div>
+        <div id="trial_monitoring_table_toggle" class="mb-3"></div>
+        <!-- /Custom code: FC-2026-03-18 -->
     <?php endif ?>
 </div>
 <!-- /Custom code: FC-2026-03-04 -->
 
-<div class="mb-5 row justify-content-between">
+<div class="mb-5 row justify-content-between" style="order: 42;">
     <div class="col-12 col-sm-6 col-xl-3 p-3 position-relative">
         <div class="card d-flex flex-row h-100 overflow-hidden">
             <div class="card-body">
@@ -729,7 +774,7 @@
     </div>
 </div>
 
-<div class="mb-5">
+<div class="mb-5" style="order: 43;">
     <div class="d-flex flex-column flex-md-row justify-content-between mb-4">
         <h1 class="h3 mb-3 mb-md-0 text-truncate"><i class="fas fa-fw fa-xs fa-users text-primary-900 mr-2"></i> <?= l('admin_index.users') ?></h1>
 
@@ -854,6 +899,7 @@
 
 <?php if(settings()->internal_notifications->admins_is_enabled): ?>
     <?php if($data->internal_notifications): ?>
+        <div style="order: 44;">
         <h1 class="h3 mb-4"><i class="fas fa-fw fa-xs fa-bell text-primary-900 mr-2"></i> <?= l('admin_index.admins_notifications') ?></h1>
 
         <div class="card mb-5">
@@ -891,6 +937,7 @@
                 </div>
             </div>
         </div>
+        </div>
     <?php endif ?>
 <?php endif ?>
 
@@ -899,7 +946,7 @@
     <?php $result = database()->query("SELECT `payments`.*, `users`.`name` AS `user_name`, `users`.`email` AS `user_email`, `users`.`avatar` AS `user_avatar` FROM `payments` LEFT JOIN `users` ON `payments`.`user_id` = `users`.`user_id` ORDER BY `id` DESC LIMIT 5"); ?>
 
     <?php if($result->num_rows): ?>
-        <div class="mb-5">
+        <div class="mb-5" style="order: 22;">
             <h1 class="h3 mb-4"><i class="fas fa-fw fa-xs fa-credit-card text-primary-900 mr-2"></i> <?= l('admin_index.payments') ?></h1>
 
             <div class="table-responsive table-custom-container">
@@ -1026,7 +1073,7 @@
     <?php endif ?>
 <?php endif ?>
 
-<div class="mb-5 mt-4">
+<div class="mb-5 mt-4" style="order: 31;">
     <div class="d-flex flex-column flex-md-row justify-content-between mb-4">
         <h1 class="h3 mb-3 mb-md-0 text-truncate"><i class="fas fa-fw fa-xs fa-graduation-cap text-primary-900 mr-2"></i> <?= l('admin_index.fcc_pending.header') ?></h1>
 
@@ -1096,7 +1143,7 @@
     <?php endif ?>
 </div>
 
-<div class="mb-5 mt-4">
+<div class="mb-5 mt-4" style="order: 32;">
     <div class="d-flex flex-column flex-md-row justify-content-between mb-4">
         <h1 class="h3 mb-3 mb-md-0 text-truncate"><i class="fas fa-fw fa-xs fa-store text-primary-900 mr-2"></i> <?= l('admin_index.sales_link_missing.header') ?></h1>
 
@@ -1165,6 +1212,9 @@
         <?= include_view(THEME_PATH . 'views/partials/admin_pagination.php', ['paginator' => $data->missing_sales_link_paginator]) ?>
     <?php endif ?>
 </div>
+
+</div>
+<!-- /Custom code: FC-2026-03-18 -->
 
 <?php require THEME_PATH . 'views/partials/js_chart_defaults.php' ?>
 
@@ -1618,6 +1668,13 @@
         const period_data = biolink_analytics_payload.periods?.[biolink_analytics_period] || {};
         const selected_period_label = period_labels[biolink_analytics_period] || period_labels['30d'];
 
+        document.querySelector('#biolink_period_total_label').innerText = `<?= l('admin_index.biolink_analytics.clicks_selected_period') ?> (${selected_period_label})`;
+        document.querySelector('#biolink_period_shop_label').innerText = `<?= l('admin_index.biolink_analytics.forever_shop_clicks_selected_period') ?> (${selected_period_label})`;
+        document.querySelector('#biolink_period_registration_label').innerText = `<?= l('admin_index.biolink_analytics.forever_registration_clicks_selected_period') ?> (${selected_period_label})`;
+        document.querySelector('#biolink_period_total_clicks').innerText = nr(period_data.clicks_total ?? 0);
+        document.querySelector('#biolink_period_shop_clicks').innerText = nr(period_data.forever_shop_clicks ?? 0);
+        document.querySelector('#biolink_period_registration_clicks').innerText = nr(period_data.forever_registration_clicks ?? 0);
+
         document.querySelector('#biolink_top_countries_label').innerText = `<?= l('admin_index.biolink_analytics.top_countries_header') ?> (${selected_period_label})`;
         document.querySelector('#biolink_leaderboard_label').innerText = `<?= l('admin_index.biolink_analytics.leaderboard_header') ?> (${selected_period_label})`;
         document.querySelector('#biolink_user_clicks_total_label').innerText = `<?= l('admin_index.biolink_analytics.clicks_selected_period') ?> (${selected_period_label})`;
@@ -1669,12 +1726,6 @@
     const render_biolink_analytics = biolink_analytics => {
         biolink_analytics_payload = biolink_analytics ?? {};
 
-        document.querySelector('#biolink_clicks_today').innerText = nr(biolink_analytics_payload.clicks_today ?? 0);
-        document.querySelector('#biolink_clicks_7d').innerText = nr(biolink_analytics_payload.clicks_7d ?? 0);
-        document.querySelector('#biolink_clicks_30d').innerText = nr(biolink_analytics_payload.clicks_30d ?? 0);
-        document.querySelector('#biolink_forever_shop_clicks_30d').innerText = nr(biolink_analytics_payload.forever_shop_clicks_30d ?? 0);
-        document.querySelector('#biolink_forever_registration_clicks_30d').innerText = nr(biolink_analytics_payload.forever_registration_clicks_30d ?? 0);
-
         render_biolink_period();
     };
     /* /Custom code: FC-2026-03-04 */
@@ -1703,6 +1754,7 @@
 
     init_compact_table_rows('#fcc_pending_table_body .fcc-pending-row', '#fcc_pending_table_toggle', 5);
     init_compact_table_rows('#sales_link_missing_table_body .sales-link-missing-row', '#sales_link_missing_table_toggle', 5);
+    init_compact_table_rows('#trial_monitoring_table_body .trial-monitoring-row', '#trial_monitoring_table_toggle', 5);
     /* /Custom code: FC-2026-03-04 */
 
     (async function fetch_statistics() {

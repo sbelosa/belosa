@@ -151,6 +151,139 @@ class AdminIndex extends Controller {
         return strpos($url, 'https://thealoeveraco.shop/') === 0;
     }
 
+    /* Custom code: FC-2026-03-18: shared biolink analytics helpers for aggregate and collaborator drill-down */
+    private function get_biolink_block_type_sets(): array {
+        $forever_shop_block_types = ['link_discount', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo'];
+        $forever_registration_block_types = ['link_forever_shop'];
+        $forever_all_block_types = array_merge($forever_shop_block_types, $forever_registration_block_types);
+
+        return [
+            'forever_shop_block_types' => $forever_shop_block_types,
+            'forever_registration_block_types' => $forever_registration_block_types,
+            'forever_all_block_types' => $forever_all_block_types,
+            'forever_shop_block_types_sql' => "'" . implode("', '", $forever_shop_block_types) . "'",
+            'forever_registration_block_types_sql' => "'" . implode("', '", $forever_registration_block_types) . "'",
+            'forever_all_block_types_sql' => "'" . implode("', '", $forever_all_block_types) . "'",
+            'unique_track_links_condition' => " AND `track_links`.`is_unique` = 1",
+        ];
+    }
+
+    private function get_biolink_period_start_map(): array {
+        return [
+            'today' => date('Y-m-d 00:00:00'),
+            '7d' => (new \DateTime())->modify('-6 days')->format('Y-m-d 00:00:00'),
+            '30d' => $this->get_period_start_datetime(30),
+            '90d' => $this->get_period_start_datetime(90),
+        ];
+    }
+
+    private function get_biolink_chart_series(string $period_key, string $period_start_datetime, array $biolink_sets, ?int $user_id = null): array {
+        $period_chart_bucket_expression = $period_key === 'today'
+            ? "DATE_FORMAT(`track_links`.`datetime`, '%Y-%m-%d %H:00:00')"
+            : "DATE(`track_links`.`datetime`)";
+        $period_chart_points = $period_key === 'today' ? 24 : ($period_key === '7d' ? 7 : ($period_key === '30d' ? 30 : 90));
+        $period_chart_start = new \DateTimeImmutable($period_start_datetime);
+        $period_chart_interval = new \DateInterval($period_key === 'today' ? 'PT1H' : 'P1D');
+        $user_condition = $user_id ? " AND `track_links`.`user_id` = {$user_id}" : '';
+
+        $period_total_clicks_series_map = $this->get_daily_series_map(
+            "SELECT {$period_chart_bucket_expression} AS `formatted_date`, COUNT(*) AS `metric` FROM `track_links` WHERE `datetime` >= '{$period_start_datetime}'" . ($user_id ? " AND `user_id` = {$user_id}" : '') . " GROUP BY `formatted_date` ORDER BY `formatted_date` ASC",
+            'metric'
+        );
+
+        $period_forever_shop_clicks_series_map = $this->get_daily_series_map(
+            "SELECT {$period_chart_bucket_expression} AS `formatted_date`, COUNT(*) AS `metric` FROM `track_links` LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id` WHERE `track_links`.`datetime` >= '{$period_start_datetime}'{$user_condition}{$biolink_sets['unique_track_links_condition']} AND `biolinks_blocks`.`type` IN ({$biolink_sets['forever_shop_block_types_sql']}) GROUP BY `formatted_date` ORDER BY `formatted_date` ASC",
+            'metric'
+        );
+
+        $period_forever_registration_clicks_series_map = $this->get_daily_series_map(
+            "SELECT {$period_chart_bucket_expression} AS `formatted_date`, COUNT(*) AS `metric` FROM `track_links` LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id` WHERE `track_links`.`datetime` >= '{$period_start_datetime}'{$user_condition}{$biolink_sets['unique_track_links_condition']} AND `biolinks_blocks`.`type` IN ({$biolink_sets['forever_registration_block_types_sql']}) GROUP BY `formatted_date` ORDER BY `formatted_date` ASC",
+            'metric'
+        );
+
+        $period_chart_labels = [];
+        $period_chart_total_clicks_series = [];
+        $period_chart_forever_shop_clicks_series = [];
+        $period_chart_forever_registration_clicks_series = [];
+
+        for($period_chart_index = 0; $period_chart_index < $period_chart_points; $period_chart_index++) {
+            $period_chart_key = $period_key === 'today'
+                ? $period_chart_start->format('Y-m-d H:00:00')
+                : $period_chart_start->format('Y-m-d');
+
+            $period_chart_labels[] = $period_chart_start->format($period_key === 'today' ? 'H:i' : 'd.m.');
+            $period_chart_total_clicks_series[] = (int) ($period_total_clicks_series_map[$period_chart_key] ?? 0);
+            $period_chart_forever_shop_clicks_series[] = (int) ($period_forever_shop_clicks_series_map[$period_chart_key] ?? 0);
+            $period_chart_forever_registration_clicks_series[] = (int) ($period_forever_registration_clicks_series_map[$period_chart_key] ?? 0);
+
+            $period_chart_start = $period_chart_start->add($period_chart_interval);
+        }
+
+        return [
+            'labels' => $period_chart_labels,
+            'clicks_total_series' => $period_chart_total_clicks_series,
+            'forever_shop_clicks_series' => $period_chart_forever_shop_clicks_series,
+            'forever_registration_clicks_series' => $period_chart_forever_registration_clicks_series,
+        ];
+    }
+
+    private function get_biolink_collaborator_period_payload(int $user_id, string $period_key, string $period_start_datetime, array $biolink_sets): array {
+        $clicks_total = (int) db()->where('user_id', $user_id)->where('datetime', $period_start_datetime, '>=')->getValue('track_links', 'COUNT(*)');
+
+        $forever_shop_clicks = 0;
+        $forever_registration_clicks = 0;
+        $forever_clicks_result = database()->query("SELECT `biolinks_blocks`.`type`, COUNT(*) AS `total` FROM `track_links` LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id` WHERE `track_links`.`datetime` >= '{$period_start_datetime}'{$biolink_sets['unique_track_links_condition']} AND `track_links`.`user_id` = {$user_id} AND `biolinks_blocks`.`type` IN ({$biolink_sets['forever_all_block_types_sql']}) GROUP BY `biolinks_blocks`.`type`");
+        while($forever_click_row = $forever_clicks_result->fetch_object()) {
+            if(in_array((string) $forever_click_row->type, $biolink_sets['forever_shop_block_types'], true)) {
+                $forever_shop_clicks += (int) $forever_click_row->total;
+            }
+
+            if(in_array((string) $forever_click_row->type, $biolink_sets['forever_registration_block_types'], true)) {
+                $forever_registration_clicks += (int) $forever_click_row->total;
+            }
+        }
+
+        $top_countries = [];
+        $top_countries_result = database()->query("SELECT `track_links`.`country_code`, COUNT(*) AS `total` FROM `track_links` LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id` WHERE `track_links`.`datetime` >= '{$period_start_datetime}'{$biolink_sets['unique_track_links_condition']} AND `track_links`.`user_id` = {$user_id} AND `track_links`.`country_code` IS NOT NULL AND `track_links`.`country_code` != '' AND `biolinks_blocks`.`type` IN ({$biolink_sets['forever_shop_block_types_sql']}) GROUP BY `track_links`.`country_code` ORDER BY `total` DESC LIMIT 5");
+        while($country_row = $top_countries_result->fetch_object()) {
+            $top_countries[] = [
+                'country_code' => (string) ($country_row->country_code ?? ''),
+                'total' => (int) ($country_row->total ?? 0),
+            ];
+        }
+
+        return [
+            'clicks_total' => $clicks_total,
+            'forever_shop_clicks' => $forever_shop_clicks,
+            'forever_registration_clicks' => $forever_registration_clicks,
+            'top_countries' => $top_countries,
+            'chart' => $this->get_biolink_chart_series($period_key, $period_start_datetime, $biolink_sets, $user_id),
+        ];
+    }
+
+    private function get_biolink_collaborator_payload(int $user_id): ?array {
+        $collaborator = db()->where('user_id', $user_id)->where('type', 0)->getOne('users', ['user_id', 'name', 'email']);
+
+        if(!$collaborator) {
+            return null;
+        }
+
+        $biolink_sets = $this->get_biolink_block_type_sets();
+        $periods = [];
+
+        foreach($this->get_biolink_period_start_map() as $period_key => $period_start_datetime) {
+            $periods[$period_key] = $this->get_biolink_collaborator_period_payload((int) $collaborator->user_id, $period_key, $period_start_datetime, $biolink_sets);
+        }
+
+        return [
+            'user_id' => (int) $collaborator->user_id,
+            'name' => (string) ($collaborator->name ?? l('global.unknown')),
+            'email' => (string) ($collaborator->email ?? ''),
+            'periods' => $periods,
+        ];
+    }
+    /* /Custom code: FC-2026-03-18 */
+
     /* Custom code: FC-2026-03-04: admin dashboard phase 1 analytics helpers */
     private function get_period_start_datetime(int $days): string {
         $days = max(1, $days);
@@ -357,7 +490,27 @@ class AdminIndex extends Controller {
     /* /Custom code: FC-2026-03-05 */
     /* /Custom code: FC-2026-03-04 */
 
+    /* Custom code: FC-2026-03-18: dedicated sensitive admin dashboard view */
+    public function sensitive_dashboard() {
+        $_GET['dashboard_mode'] = 'sensitive';
+
+        return $this->index();
+    }
+    /* /Custom code: FC-2026-03-18 */
+
     public function index() {
+
+        $dashboard_mode = input_clean($_GET['dashboard_mode'] ?? 'main', 32);
+        if(!in_array($dashboard_mode, ['main', 'sensitive'], true)) {
+            $dashboard_mode = 'main';
+        }
+
+        $dashboard_page_url = $dashboard_mode === 'sensitive'
+            ? url('admin/index/sensitive-dashboard')
+            : url('admin');
+        $dashboard_toggle_url = $dashboard_mode === 'sensitive'
+            ? url('admin')
+            : url('admin/index/sensitive-dashboard');
 
         if(settings()->internal_notifications->admins_is_enabled) {
             $internal_notifications = db()->where('for_who', 'admin')->orderBy('internal_notification_id', 'DESC')->get('internal_notifications', 5);
@@ -429,13 +582,42 @@ class AdminIndex extends Controller {
             $active_trial_total = count($active_trial_users);
         }
 
-        $trial_filter = input_clean($_GET['trial_filter'] ?? 'all', 32);
-        $allowed_trial_filters = ['all', 'cancelled', 'active', 'no_subscription'];
+        /* Custom code: FC-2026-03-18: prioritize actionable trial billing statuses in dashboard */
+        $trial_status_priority = static function(object $user): int {
+            if($user->is_cancelled_billing_during_trial) {
+                return 0;
+            }
+
+            if(!$user->has_active_subscription) {
+                return 1;
+            }
+
+            return 2;
+        };
+
+        usort($active_trial_users, static function(object $a, object $b) use($trial_status_priority) {
+            $priority_comparison = $trial_status_priority($a) <=> $trial_status_priority($b);
+
+            if($priority_comparison !== 0) {
+                return $priority_comparison;
+            }
+
+            return strcmp((string) $a->plan_expiration_date, (string) $b->plan_expiration_date);
+        });
+        /* /Custom code: FC-2026-03-18 */
+
+        /* Custom code: FC-2026-03-18: default trial dashboard filter focuses on actionable cases */
+        $trial_filter = input_clean($_GET['trial_filter'] ?? 'attention', 32);
+        $allowed_trial_filters = ['attention', 'all', 'cancelled', 'active', 'no_subscription'];
         if(!in_array($trial_filter, $allowed_trial_filters, true)) {
-            $trial_filter = 'all';
+            $trial_filter = 'attention';
         }
 
         $active_trial_users_filtered = array_values(array_filter($active_trial_users, function($user) use($trial_filter) {
+            if($trial_filter == 'attention') {
+                return (bool) $user->is_cancelled_billing_during_trial || !(bool) $user->has_active_subscription;
+            }
+
             if($trial_filter == 'cancelled') {
                 return (bool) $user->is_cancelled_billing_during_trial;
             }
@@ -450,8 +632,70 @@ class AdminIndex extends Controller {
 
             return true;
         }));
+        /* /Custom code: FC-2026-03-18 */
+
+        /* Custom code: FC-2026-03-18: keep filtered trial rows in the same priority order */
+        usort($active_trial_users_filtered, static function(object $a, object $b) use($trial_status_priority) {
+            $priority_comparison = $trial_status_priority($a) <=> $trial_status_priority($b);
+
+            if($priority_comparison !== 0) {
+                return $priority_comparison;
+            }
+
+            return strcmp((string) $a->plan_expiration_date, (string) $b->plan_expiration_date);
+        });
+        /* /Custom code: FC-2026-03-18 */
 
         $active_trial_filtered_total = count($active_trial_users_filtered);
+
+        /* Custom code: FC-2026-03-18: upcoming subscription charges queue for private dashboard */
+        $upcoming_charge_users = [];
+        $upcoming_charge_total = 0;
+        $upcoming_charge_next_7d_total = 0;
+        $upcoming_charge_next_30d_total = 0;
+
+        $upcoming_charge_users_rows = db()
+            ->where('type', 0)
+            ->where('status', 1)
+            ->where('payment_subscription_id', '', '!=')
+            ->where('plan_expiration_date', '', '!=')
+            ->where('plan_expiration_date', get_date(), '>=')
+            ->orderBy('plan_expiration_date', 'ASC')
+            ->get('users', null, ['user_id', 'name', 'email', 'plan_id', 'plan_expiration_date', 'payment_subscription_id', 'plan_trial_done']);
+
+        $today = new \DateTimeImmutable(get_date());
+
+        foreach($upcoming_charge_users_rows as $user) {
+            $charge_date = !empty($user->plan_expiration_date) ? new \DateTimeImmutable($user->plan_expiration_date) : null;
+
+            if(!$charge_date) {
+                continue;
+            }
+
+            $days_until_charge = max(0, (int) $today->diff($charge_date)->format('%r%a'));
+
+            if($days_until_charge <= 7) {
+                $upcoming_charge_next_7d_total++;
+            }
+
+            if($days_until_charge <= 30) {
+                $upcoming_charge_next_30d_total++;
+            }
+
+            $upcoming_charge_users[] = (object) [
+                'user_id' => (int) $user->user_id,
+                'name' => (string) ($user->name ?? ''),
+                'email' => (string) ($user->email ?? ''),
+                'plan_name' => $plans[$user->plan_id]->name ?? (string) $user->plan_id,
+                'plan_expiration_date' => (string) ($user->plan_expiration_date ?? ''),
+                'days_until_charge' => $days_until_charge,
+                'is_trial_charge' => (bool) ((int) ($user->plan_trial_done ?? 0) === 1),
+            ];
+        }
+
+        $upcoming_charge_total = count($upcoming_charge_users);
+        $upcoming_charge_users = array_slice($upcoming_charge_users, 0, 8);
+        /* /Custom code: FC-2026-03-18 */
 
         if(isset($_GET['trial_export']) && $_GET['trial_export'] == 'csv') {
             header('Content-Disposition: attachment; filename="trial-monitoring.csv";');
@@ -597,6 +841,9 @@ class AdminIndex extends Controller {
             'plans' => $plans,
             'internal_notifications' => $internal_notifications ?? [],
             'payment_processors' => require APP_PATH . 'includes/payment_processors.php',
+            'dashboard_mode' => $dashboard_mode,
+            'dashboard_page_url' => $dashboard_page_url,
+            'dashboard_toggle_url' => $dashboard_toggle_url,
             'fcc_pending_education_users' => $fcc_pending_education_users,
             'fcc_pending_education_total' => $fcc_pending_education_total,
             'fcc_pending_education_paginator' => $fcc_pending_education_paginator,
@@ -612,6 +859,12 @@ class AdminIndex extends Controller {
             'active_trial_filtered_total' => $active_trial_filtered_total,
             'active_trial_cancelled_total' => $active_trial_cancelled_total,
             'trial_filter' => $trial_filter,
+            /* Custom code: FC-2026-03-18: private dashboard upcoming charges data */
+            'upcoming_charge_users' => $upcoming_charge_users,
+            'upcoming_charge_total' => $upcoming_charge_total,
+            'upcoming_charge_next_7d_total' => $upcoming_charge_next_7d_total,
+            'upcoming_charge_next_30d_total' => $upcoming_charge_next_30d_total,
+            /* /Custom code: FC-2026-03-18 */
             /* /Custom code: FC-2026-03-04 */
         ];
 
@@ -659,6 +912,7 @@ class AdminIndex extends Controller {
         /* Get currently active users */
         $fifteen_minutes_ago_datetime = (new \DateTime())->modify('-15 minutes')->format('Y-m-d H:i:s');
         $active_users = db()->where('last_activity', $fifteen_minutes_ago_datetime, '>=')->getValue('users', 'COUNT(*)');
+        $active_collaborators = db()->where('last_activity', $fifteen_minutes_ago_datetime, '>=')->where('type', 0)->getValue('users', 'COUNT(*)');
 
         /* Custom code: FC-2026-03-04: admin dashboard phase 1 analytics data */
         $kpi = [
@@ -681,54 +935,79 @@ class AdminIndex extends Controller {
         );
 
         $active_users_series_map = $this->get_daily_series_map(
-            "SELECT DATE(`datetime`) AS `formatted_date`, COUNT(DISTINCT `user_id`) AS `metric` FROM `users_logs` WHERE `datetime` >= '{$chart_start_datetime}' GROUP BY `formatted_date` ORDER BY `formatted_date` ASC",
+            "SELECT DATE(`users_logs`.`datetime`) AS `formatted_date`, COUNT(DISTINCT `users_logs`.`user_id`) AS `metric` FROM `users_logs` LEFT JOIN `users` ON `users_logs`.`user_id` = `users`.`user_id` WHERE `users_logs`.`datetime` >= '{$chart_start_datetime}' AND `users`.`type` = 0 GROUP BY `formatted_date` ORDER BY `formatted_date` ASC",
             'metric'
         );
 
-        $new_subscriptions_series_map = [];
-        $cancelled_subscriptions_series_map = [];
-
-        $billing_markers_users = db()->where('extra', '%billing_trial_started_at%', 'LIKE')->get('users', null, ['user_id', 'extra']);
-        foreach($billing_markers_users as $billing_user) {
-            $extra = $this->decode_user_extra($billing_user->extra ?? null);
-
-            $trial_started_at = $this->get_extra_datetime($extra, 'billing_trial_started_at');
-            if($trial_started_at && $trial_started_at >= $chart_start_datetime) {
-                $series_date = (new \DateTime($trial_started_at))->format('Y-m-d');
-                $new_subscriptions_series_map[$series_date] = ($new_subscriptions_series_map[$series_date] ?? 0) + 1;
+        $plans = (new \Altum\Models\Plan())->get_plans();
+        $trial_plan_ids = [];
+        $pro_plan_ids = [];
+        foreach($plans as $plan_id => $plan) {
+            if((int) ($plan->trial_days ?? 0) > 0) {
+                $trial_plan_ids[] = (string) $plan_id;
             }
 
-            $cancelled_during_trial = (int) ($extra->billing_subscription_cancelled_during_trial ?? 0) === 1;
-            $cancelled_at = $this->get_extra_datetime($extra, 'billing_subscription_cancelled_at');
-            if($cancelled_during_trial && $cancelled_at && $cancelled_at >= $chart_start_datetime) {
-                $series_date = (new \DateTime($cancelled_at))->format('Y-m-d');
-                $cancelled_subscriptions_series_map[$series_date] = ($cancelled_subscriptions_series_map[$series_date] ?? 0) + 1;
+            if(stripos((string) ($plan->name ?? ''), 'pro') !== false) {
+                $pro_plan_ids[] = (string) $plan_id;
             }
         }
+
+        $pro_plan_ids_sql = !empty($pro_plan_ids)
+            ? "'" . implode("', '", array_map(fn($plan_id) => database()->real_escape_string($plan_id), $pro_plan_ids)) . "'"
+            : "''";
+        $trial_plan_ids_sql = !empty($trial_plan_ids)
+            ? "'" . implode("', '", array_map(fn($plan_id) => database()->real_escape_string($plan_id), $trial_plan_ids)) . "'"
+            : "''";
+
+        $billing_markers_users = db()->where('extra', '%billing_trial_started_at%', 'LIKE')->get('users', null, ['user_id', 'extra']);
 
         $chart_labels = [];
         $revenue_series = [];
         $new_users_series = [];
         $active_users_series = [];
-        $new_subscriptions_series = [];
-        $cancelled_subscriptions_series = [];
+        $active_pro_packages_series = [];
+        $active_trials_series = [];
 
         for($day = $chart_days - 1; $day >= 0; $day--) {
             $date = (new \DateTime())->modify('-' . $day . ' days');
             $formatted_date = $date->format('Y-m-d');
+            $snapshot_datetime = $day === 0 ? get_date() : $date->format('Y-m-d 23:59:59');
+
+            $active_pro_packages_snapshot = (int) database()->query("SELECT COUNT(*) AS `total` FROM `users` WHERE `type` = 0 AND `status` = 1 AND `plan_id` IN ({$pro_plan_ids_sql}) AND `datetime` <= '{$snapshot_datetime}' AND `plan_expiration_date` >= '{$snapshot_datetime}' AND (`plan_trial_done` = 0 OR `plan_trial_done` IS NULL)")->fetch_object()->total;
+            $active_trials_snapshot = (int) database()->query("SELECT COUNT(*) AS `total` FROM `users` WHERE `type` = 0 AND `status` = 1 AND `plan_id` IN ({$pro_plan_ids_sql}) AND `plan_id` IN ({$trial_plan_ids_sql}) AND `datetime` <= '{$snapshot_datetime}' AND `plan_expiration_date` >= '{$snapshot_datetime}' AND `plan_trial_done` = 1")->fetch_object()->total;
 
             $chart_labels[] = $date->format('d.m');
             $revenue_series[] = round((float) ($revenue_series_map[$formatted_date] ?? 0), 2);
             $new_users_series[] = (int) ($new_users_series_map[$formatted_date] ?? 0);
             $active_users_series[] = (int) ($active_users_series_map[$formatted_date] ?? 0);
-            $new_subscriptions_series[] = (int) ($new_subscriptions_series_map[$formatted_date] ?? 0);
-            $cancelled_subscriptions_series[] = (int) ($cancelled_subscriptions_series_map[$formatted_date] ?? 0);
+            $active_pro_packages_series[] = $active_pro_packages_snapshot;
+            $active_trials_series[] = $active_trials_snapshot;
         }
+
+        /* Custom code: FC-2026-03-18: 90-day sales subscriptions chart payload */
+        $sales_subscriptions_chart_days = 90;
+        $sales_subscriptions_chart_labels = [];
+        $sales_subscriptions_active_pro_packages_series = [];
+        $sales_subscriptions_active_trials_series = [];
+
+        for($day = $sales_subscriptions_chart_days - 1; $day >= 0; $day--) {
+            $date = (new \DateTime())->modify('-' . $day . ' days');
+            $snapshot_datetime = $day === 0 ? get_date() : $date->format('Y-m-d 23:59:59');
+
+            $active_pro_packages_snapshot = (int) database()->query("SELECT COUNT(*) AS `total` FROM `users` WHERE `type` = 0 AND `status` = 1 AND `plan_id` IN ({$pro_plan_ids_sql}) AND `datetime` <= '{$snapshot_datetime}' AND `plan_expiration_date` >= '{$snapshot_datetime}' AND (`plan_trial_done` = 0 OR `plan_trial_done` IS NULL)")->fetch_object()->total;
+            $active_trials_snapshot = (int) database()->query("SELECT COUNT(*) AS `total` FROM `users` WHERE `type` = 0 AND `status` = 1 AND `plan_id` IN ({$pro_plan_ids_sql}) AND `plan_id` IN ({$trial_plan_ids_sql}) AND `datetime` <= '{$snapshot_datetime}' AND `plan_expiration_date` >= '{$snapshot_datetime}' AND `plan_trial_done` = 1")->fetch_object()->total;
+
+            $sales_subscriptions_chart_labels[] = $date->format('d.m');
+            $sales_subscriptions_active_pro_packages_series[] = $active_pro_packages_snapshot;
+            $sales_subscriptions_active_trials_series[] = $active_trials_snapshot;
+        }
+        /* /Custom code: FC-2026-03-18 */
 
         $recent_logins = [];
         /* Custom code: FC-2026-03-05: restrict realtime recent logins to last 24h */
         $recent_logins_start_datetime = $this->get_period_start_datetime(1);
-        $recent_logins_result = database()->query("SELECT `users_logs`.`user_id`, `users_logs`.`datetime`, `users`.`name`, `users`.`plan_id`, `users`.`total_logins` FROM `users_logs` LEFT JOIN `users` ON `users_logs`.`user_id` = `users`.`user_id` WHERE `users_logs`.`type` = 'login.success' AND `users_logs`.`datetime` >= '{$recent_logins_start_datetime}' ORDER BY `users_logs`.`id` DESC LIMIT 5");
+        $recent_collaborator_logins_total = (int) database()->query("SELECT COUNT(*) AS `total` FROM `users_logs` LEFT JOIN `users` ON `users_logs`.`user_id` = `users`.`user_id` WHERE `users_logs`.`type` = 'login.success' AND `users_logs`.`datetime` >= '{$recent_logins_start_datetime}' AND `users`.`type` = 0")->fetch_object()->total;
+        $recent_logins_result = database()->query("SELECT `users_logs`.`user_id`, `users_logs`.`datetime`, `users`.`name`, `users`.`plan_id`, `users`.`total_logins` FROM `users_logs` LEFT JOIN `users` ON `users_logs`.`user_id` = `users`.`user_id` WHERE `users_logs`.`type` = 'login.success' AND `users_logs`.`datetime` >= '{$recent_logins_start_datetime}' AND `users`.`type` = 0 ORDER BY `users_logs`.`id` DESC LIMIT 5");
         /* /Custom code: FC-2026-03-05 */
         while($row = $recent_logins_result->fetch_object()) {
             $recent_logins[] = [
@@ -742,7 +1021,7 @@ class AdminIndex extends Controller {
 
         /* Custom code: FC-2026-03-08: provide online users list for realtime modal */
         $online_users_list = [];
-        $online_users_result = db()->where('last_activity', $fifteen_minutes_ago_datetime, '>=')->orderBy('last_activity', 'DESC')->get('users', 100, ['user_id', 'name', 'last_activity']);
+        $online_users_result = db()->where('last_activity', $fifteen_minutes_ago_datetime, '>=')->where('type', 0)->orderBy('last_activity', 'DESC')->get('users', 100, ['user_id', 'name', 'last_activity']);
         foreach($online_users_result as $online_user) {
             $online_users_list[] = [
                 'user_id' => (int) ($online_user->user_id ?? 0),
@@ -782,11 +1061,22 @@ class AdminIndex extends Controller {
 
         $recurring_revenue_current_month = (float) (db()->where('status', 'paid')->where('type', 'recurring')->where('datetime', $first_day_current_month, '>=')->getValue('payments', 'SUM(`total_amount_default_currency`)') ?? 0);
 
-        $active_paid_subscriptions = (int) db()
-            ->where('status', 1)
-            ->where('plan_id', '5')
-            ->where('plan_expiration_date', get_date(), '>=')
-            ->getValue('users', 'COUNT(`user_id`)');
+        $active_paid_subscriptions = (int) database()->query("SELECT COUNT(*) AS `total` FROM `users` WHERE `type` = 0 AND `status` = 1 AND `plan_id` = '5' AND `plan_expiration_date` >= '" . get_date() . "' AND (`plan_trial_done` = 0 OR `plan_trial_done` IS NULL)")->fetch_object()->total;
+        /* Custom code: FC-2026-03-18: total active Forever Pro collaborators KPI */
+        $active_total_pro_collaborators = (int) database()->query("SELECT COUNT(*) AS `total` FROM `users` WHERE `type` = 0 AND `status` = 1 AND `plan_id` = '5' AND `plan_expiration_date` >= '" . get_date() . "'")->fetch_object()->total;
+        /* /Custom code: FC-2026-03-18 */
+        /* Custom code: FC-2026-03-18: cancelled subscriptions in last 30 days KPI */
+        $cancelled_billing_30d = 0;
+        $cancelled_billing_users = db()->where('extra', '%billing_subscription_cancelled_at%', 'LIKE')->get('users', null, ['user_id', 'extra']);
+        foreach($cancelled_billing_users as $cancelled_billing_user) {
+            $extra = $this->decode_user_extra($cancelled_billing_user->extra ?? null);
+            $cancelled_at = $this->get_extra_datetime($extra, 'billing_subscription_cancelled_at');
+
+            if($this->is_datetime_within_last_days($cancelled_at, 30)) {
+                $cancelled_billing_30d++;
+            }
+        }
+        /* /Custom code: FC-2026-03-18 */
 
         $new_subscriptions_30d = 0;
         $cancelled_subscriptions_30d = 0;
@@ -813,14 +1103,6 @@ class AdminIndex extends Controller {
 
         $plan_changes_30d = (int) database()->query("SELECT COUNT(*) AS total FROM (SELECT `user_id` FROM `payments` WHERE `status` = 'paid' AND `datetime` >= '{$thirty_days_start_datetime}' GROUP BY `user_id` HAVING COUNT(DISTINCT `plan_id`) > 1) AS `plan_changes`")->fetch_object()->total;
 
-        $trial_plan_ids = [];
-        $plans = (new \Altum\Models\Plan())->get_plans();
-        foreach($plans as $plan_id => $plan) {
-            if((int) ($plan->trial_days ?? 0) > 0) {
-                $trial_plan_ids[] = (string) $plan_id;
-            }
-        }
-
         $at_risk_trial_users = [];
         if(!empty($trial_plan_ids)) {
             $risk_end_datetime = (new \DateTime())->modify('+7 days')->format('Y-m-d H:i:s');
@@ -836,13 +1118,6 @@ class AdminIndex extends Controller {
                 ->get('users', 20, ['user_id', 'name', 'email', 'plan_expiration_date', 'extra']);
 
             foreach($at_risk_rows as $user) {
-                $extra = $this->decode_user_extra($user->extra ?? null);
-                $trial_started_at = $this->get_extra_datetime($extra, 'billing_trial_started_at');
-
-                if(!$trial_started_at) {
-                    continue;
-                }
-
                 $at_risk_trial_users[] = [
                     'user_id' => (int) $user->user_id,
                     'name' => (string) ($user->name ?? l('global.unknown')),
@@ -859,11 +1134,20 @@ class AdminIndex extends Controller {
         $sales_subscriptions = [
             'recurring_revenue_current_month' => round($recurring_revenue_current_month, 2),
             'active_paid_subscriptions' => $active_paid_subscriptions,
+            'active_total_pro_collaborators' => $active_total_pro_collaborators,
+            'cancelled_billing_30d' => $cancelled_billing_30d,
             'new_subscriptions_30d' => $new_subscriptions_30d,
             'cancelled_subscriptions_30d' => $cancelled_subscriptions_30d,
             'failed_payments_30d' => $failed_payments_30d,
             'plan_changes_30d' => $plan_changes_30d,
             'at_risk_trial_users' => $at_risk_trial_users,
+            /* Custom code: FC-2026-03-18: chart period data for 30/60/90 toggle */
+            'chart' => [
+                'labels' => $sales_subscriptions_chart_labels,
+                'active_pro_packages_series' => $sales_subscriptions_active_pro_packages_series,
+                'active_trials_series' => $sales_subscriptions_active_trials_series,
+            ],
+            /* /Custom code: FC-2026-03-18 */
         ];
         /* /Custom code: FC-2026-03-04 */
 
@@ -1042,10 +1326,55 @@ class AdminIndex extends Controller {
             'today' => $today_start_datetime,
             '7d' => $week_start_datetime,
             '30d' => $thirty_days_start_datetime,
+            '90d' => $this->get_period_start_datetime(90),
         ];
 
         $periods = [];
         foreach($period_start_map as $period_key => $period_start_datetime) {
+            /* Custom code: FC-2026-03-18: include selected-period total clicks for biolink KPI cards */
+            $period_total_clicks = (int) db()->where('datetime', $period_start_datetime, '>=')->getValue('track_links', 'COUNT(*)');
+
+            $period_chart_bucket_expression = $period_key === 'today'
+                ? "DATE_FORMAT(`track_links`.`datetime`, '%Y-%m-%d %H:00:00')"
+                : "DATE(`track_links`.`datetime`)";
+            $period_chart_points = $period_key === 'today' ? 24 : ($period_key === '7d' ? 7 : ($period_key === '30d' ? 30 : 90));
+            $period_chart_start = new \DateTimeImmutable($period_start_datetime);
+            $period_chart_interval = new \DateInterval($period_key === 'today' ? 'PT1H' : 'P1D');
+            $period_chart_label_format = $period_key === 'today' ? 'H:i' : 'd.m.';
+
+            $period_total_clicks_series_map = $this->get_daily_series_map(
+                "SELECT {$period_chart_bucket_expression} AS `formatted_date`, COUNT(*) AS `metric` FROM `track_links` WHERE `datetime` >= '{$period_start_datetime}' GROUP BY `formatted_date` ORDER BY `formatted_date` ASC",
+                'metric'
+            );
+
+            $period_forever_shop_clicks_series_map = $this->get_daily_series_map(
+                "SELECT {$period_chart_bucket_expression} AS `formatted_date`, COUNT(*) AS `metric` FROM `track_links` LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id` WHERE `track_links`.`datetime` >= '{$period_start_datetime}' {$unique_track_links_condition} AND `biolinks_blocks`.`type` IN ({$forever_shop_block_types_sql}) GROUP BY `formatted_date` ORDER BY `formatted_date` ASC",
+                'metric'
+            );
+
+            $period_forever_registration_clicks_series_map = $this->get_daily_series_map(
+                "SELECT {$period_chart_bucket_expression} AS `formatted_date`, COUNT(*) AS `metric` FROM `track_links` LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id` WHERE `track_links`.`datetime` >= '{$period_start_datetime}' {$unique_track_links_condition} AND `biolinks_blocks`.`type` IN ({$forever_registration_block_types_sql}) GROUP BY `formatted_date` ORDER BY `formatted_date` ASC",
+                'metric'
+            );
+
+            $period_chart_labels = [];
+            $period_chart_total_clicks_series = [];
+            $period_chart_forever_shop_clicks_series = [];
+            $period_chart_forever_registration_clicks_series = [];
+
+            for($period_chart_index = 0; $period_chart_index < $period_chart_points; $period_chart_index++) {
+                $period_chart_key = $period_key === 'today'
+                    ? $period_chart_start->format('Y-m-d H:00:00')
+                    : $period_chart_start->format('Y-m-d');
+
+                $period_chart_labels[] = $period_chart_start->format($period_chart_label_format);
+                $period_chart_total_clicks_series[] = (int) ($period_total_clicks_series_map[$period_chart_key] ?? 0);
+                $period_chart_forever_shop_clicks_series[] = (int) ($period_forever_shop_clicks_series_map[$period_chart_key] ?? 0);
+                $period_chart_forever_registration_clicks_series[] = (int) ($period_forever_registration_clicks_series_map[$period_chart_key] ?? 0);
+
+                $period_chart_start = $period_chart_start->add($period_chart_interval);
+            }
+
             $period_top_countries = [];
             $period_top_countries_result = database()->query("SELECT `track_links`.`country_code`, COUNT(*) AS `total` FROM `track_links` LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id` WHERE `track_links`.`datetime` >= '{$period_start_datetime}' {$unique_track_links_condition} AND `track_links`.`country_code` IS NOT NULL AND `track_links`.`country_code` != '' AND `biolinks_blocks`.`type` IN ({$forever_shop_block_types_sql}) GROUP BY `track_links`.`country_code` ORDER BY `total` DESC LIMIT 7");
             while($period_country_row = $period_top_countries_result->fetch_object()) {
@@ -1091,7 +1420,7 @@ class AdminIndex extends Controller {
             $period_user_details = [];
             if(!empty($period_leaderboard)) {
                 foreach(array_map(fn($entry) => (int) $entry['user_id'], $period_leaderboard) as $leaderboard_user_id) {
-                    $period_clicks_total = (int) db()->where('user_id', $leaderboard_user_id)->where('datetime', $period_start_datetime, '>=')->getValue('track_links', 'COUNT(*)');
+                    $period_user_clicks_total = (int) db()->where('user_id', $leaderboard_user_id)->where('datetime', $period_start_datetime, '>=')->getValue('track_links', 'COUNT(*)');
 
                     $period_user_forever_shop_clicks = 0;
                     $period_user_forever_registration_clicks = 0;
@@ -1116,7 +1445,7 @@ class AdminIndex extends Controller {
                     }
 
                     $period_user_details[(string) $leaderboard_user_id] = [
-                        'clicks_total' => $period_clicks_total,
+                        'clicks_total' => $period_user_clicks_total,
                         'forever_shop_clicks' => $period_user_forever_shop_clicks,
                         'forever_registration_clicks' => $period_user_forever_registration_clicks,
                         'top_countries' => $period_user_top_countries,
@@ -1125,14 +1454,22 @@ class AdminIndex extends Controller {
             }
 
             $periods[$period_key] = [
+                'clicks_total' => $period_total_clicks,
                 'forever_shop_clicks' => $period_forever_shop_clicks,
                 'forever_registration_clicks' => $period_forever_registration_clicks,
+                'chart' => [
+                    'labels' => $period_chart_labels,
+                    'clicks_total_series' => $period_chart_total_clicks_series,
+                    'forever_shop_clicks_series' => $period_chart_forever_shop_clicks_series,
+                    'forever_registration_clicks_series' => $period_chart_forever_registration_clicks_series,
+                ],
                 'top_countries' => $period_top_countries,
                 'top_shop_sources' => $period_top_shop_sources,
                 'top_registration_sources' => $period_top_registration_sources,
                 'leaderboard' => $period_leaderboard,
                 'user_details' => $period_user_details,
             ];
+            /* /Custom code: FC-2026-03-18 */
         }
 
         $user_details = [];
@@ -1197,12 +1534,13 @@ class AdminIndex extends Controller {
                 'revenue_series' => $revenue_series,
                 'new_users_series' => $new_users_series,
                 'active_users_series' => $active_users_series,
-                'new_subscriptions_series' => $new_subscriptions_series,
-                'cancelled_subscriptions_series' => $cancelled_subscriptions_series,
+                'active_pro_packages_series' => $active_pro_packages_series,
+                'active_trials_series' => $active_trials_series,
             ],
             'realtime' => [
-                'online_users' => (int) $active_users,
-                'active_sessions' => (int) $active_users,
+                'online_users' => (int) $active_collaborators,
+                'active_sessions' => (int) $active_collaborators,
+                'recent_logins_total' => $recent_collaborator_logins_total,
                 'recent_logins' => $recent_logins,
                 'online_users_list' => $online_users_list,
                 'online_collaborators' => $online_collaborators,
@@ -1248,5 +1586,60 @@ class AdminIndex extends Controller {
         Response::json('', 'success', $data);
 
     }
+
+    /* Custom code: FC-2026-03-18: search collaborators for biolink analytics drill-down */
+    public function search_biolink_collaborators_ajax() {
+
+        session_write_close();
+
+        if($_SERVER['REQUEST_METHOD'] !== 'GET') {
+            throw_404();
+        }
+
+        $query = trim((string) ($_GET['query'] ?? ''));
+        if(mb_strlen($query) < 2) {
+            Response::json('', 'success', ['results' => []]);
+        }
+
+        $escaped_query = database()->real_escape_string($query);
+        $results = [];
+        $search_result = database()->query("SELECT `user_id`, `name`, `email` FROM `users` WHERE `type` = 0 AND (`name` LIKE '%{$escaped_query}%' OR `email` LIKE '%{$escaped_query}%') ORDER BY `name` ASC LIMIT 15");
+
+        while($row = $search_result->fetch_object()) {
+            $results[] = [
+                'user_id' => (int) ($row->user_id ?? 0),
+                'name' => (string) ($row->name ?? l('global.unknown')),
+                'email' => (string) ($row->email ?? ''),
+            ];
+        }
+
+        Response::json('', 'success', ['results' => $results]);
+
+    }
+    /* /Custom code: FC-2026-03-18 */
+
+    /* Custom code: FC-2026-03-18: fetch collaborator-specific biolink analytics */
+    public function get_biolink_collaborator_stats_ajax() {
+
+        session_write_close();
+
+        if($_SERVER['REQUEST_METHOD'] !== 'GET') {
+            throw_404();
+        }
+
+        $user_id = (int) ($_GET['user_id'] ?? 0);
+        if(!$user_id) {
+            Response::json('Invalid collaborator.', 'error');
+        }
+
+        $collaborator = $this->get_biolink_collaborator_payload($user_id);
+        if(!$collaborator) {
+            Response::json('Collaborator not found.', 'error');
+        }
+
+        Response::json('', 'success', ['collaborator' => $collaborator]);
+
+    }
+    /* /Custom code: FC-2026-03-18 */
 
 }

@@ -1,77 +1,295 @@
 <?php defined('ALTUMCODE') || die() ?>
 
-<h1 class="h3 mb-4 text-truncate"><?= sprintf(l('admin_index.header'), $this->user->name) ?></h1>
+<?php
+/* Custom code: FC-2026-03-18: split safe and sensitive admin dashboard views */
+$dashboard_mode = in_array(($data->dashboard_mode ?? 'main'), ['main', 'sensitive'], true) ? $data->dashboard_mode : 'main';
+$is_sensitive_dashboard = $dashboard_mode === 'sensitive';
+$dashboard_page_url = $data->dashboard_page_url ?? ($is_sensitive_dashboard ? url('admin/index/sensitive-dashboard') : url('admin'));
+$dashboard_toggle_url = $data->dashboard_toggle_url ?? ($is_sensitive_dashboard ? url('admin') : url('admin/index/sensitive-dashboard'));
+/* /Custom code: FC-2026-03-18 */
+?>
 
-<!-- Custom code: FC-2026-03-04: admin dashboard phase 1 analytics layout -->
-<div class="mb-5">
-    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center mb-3">
-        <h2 class="h4 mb-3 mb-lg-0"><?= l('admin_index.analytics_phase1.header') ?></h2>
+<?php if($is_sensitive_dashboard): ?>
+<!-- Custom code: FC-2026-03-18: private dashboard visual polish -->
+<style>
+    .private-dashboard-shell {
+        border: 1px solid rgba(148, 163, 184, 0.14);
+        border-radius: 1.15rem;
+        background: linear-gradient(180deg, rgba(17, 24, 39, 0.96) 0%, rgba(10, 15, 28, 0.98) 100%);
+        box-shadow: 0 1.5rem 3rem rgba(2, 6, 23, 0.32);
+        overflow: hidden;
+    }
 
-        <div class="btn-group btn-group-sm" role="group" aria-label="KPI period">
-            <button type="button" class="btn btn-outline-primary active" data-kpi-period="today"><?= l('admin_index.analytics_phase1.period.today') ?></button>
-            <button type="button" class="btn btn-outline-primary" data-kpi-period="7d"><?= l('admin_index.analytics_phase1.period.7d') ?></button>
-            <button type="button" class="btn btn-outline-primary" data-kpi-period="30d"><?= l('admin_index.analytics_phase1.period.30d') ?></button>
-        </div>
+    .private-dashboard-shell .card-body {
+        padding: 1.1rem;
+    }
+
+    .private-dashboard-shell,
+    .private-dashboard-shell h1,
+    .private-dashboard-shell h2,
+    .private-dashboard-shell h3,
+    .private-dashboard-shell h4,
+    .private-dashboard-shell .h1,
+    .private-dashboard-shell .h2,
+    .private-dashboard-shell .h3,
+    .private-dashboard-shell .h4,
+    .private-dashboard-shell .h5,
+    .private-dashboard-shell .h6 {
+        color: #ecf3ff;
+    }
+
+    .private-dashboard-kpi {
+        height: 100%;
+        padding: 1rem 1.05rem;
+        border-radius: 1rem;
+        border: 1px solid rgba(96, 165, 250, 0.14);
+        background: linear-gradient(180deg, rgba(20, 29, 47, 0.92) 0%, rgba(11, 19, 34, 0.94) 100%);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
+    }
+
+    .private-dashboard-kpi .text-muted,
+    .private-dashboard-panel .text-muted,
+    .private-dashboard-list-item .text-muted,
+    .private-dashboard-shell .text-muted,
+    .private-dashboard-table .text-muted {
+        color: rgba(191, 211, 238, 0.72) !important;
+    }
+
+    .private-dashboard-panel {
+        height: 100%;
+        border-radius: 1rem;
+        border: 1px solid rgba(148, 163, 184, 0.12);
+        background: rgba(11, 18, 32, 0.72);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
+    }
+
+    .private-dashboard-panel .card-body {
+        padding: 1rem;
+    }
+
+    .private-dashboard-list-item {
+        border: 1px solid rgba(148, 163, 184, 0.12);
+        border-radius: 1rem;
+        background: linear-gradient(180deg, rgba(18, 27, 45, 0.86) 0%, rgba(11, 19, 34, 0.92) 100%);
+        padding: 0.72rem 0.85rem;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
+    }
+
+    .private-dashboard-list-item .font-weight-bold {
+        line-height: 1.2;
+    }
+
+    .private-dashboard-microcopy {
+        font-size: 0.78rem;
+        line-height: 1.35;
+    }
+
+    .private-dashboard-stack > * + * {
+        margin-top: 0.75rem;
+    }
+
+    .private-dashboard-section-title {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .private-dashboard-icon {
+        width: 2.65rem;
+        height: 2.65rem;
+        border-radius: 999px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: radial-gradient(circle at top, rgba(59, 130, 246, 0.22), rgba(37, 99, 235, 0.08));
+        border: 1px solid rgba(96, 165, 250, 0.14);
+        color: #7cc8ff;
+        flex-shrink: 0;
+    }
+
+    .private-dashboard-alert {
+        border-radius: 0.95rem;
+        border: 1px solid rgba(148, 163, 184, 0.12);
+        background: rgba(11, 18, 32, 0.72);
+        color: #e5edf8;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
+    }
+
+    .private-dashboard-pill {
+        border-radius: 999px;
+        border: 1px solid rgba(148, 163, 184, 0.16);
+        background: rgba(15, 23, 42, 0.72);
+        color: #d8e7ff;
+        padding: 0.45rem 0.75rem;
+    }
+
+    .private-dashboard-platform-grid .card,
+    .private-dashboard-payments-shell,
+    .private-dashboard-notifications-shell {
+        border: 1px solid rgba(148, 163, 184, 0.14);
+        background: linear-gradient(180deg, rgba(17, 24, 39, 0.96) 0%, rgba(10, 15, 28, 0.98) 100%);
+        box-shadow: 0 1rem 2.5rem rgba(2, 6, 23, 0.24);
+    }
+
+    .private-dashboard-platform-grid .card-body,
+    .private-dashboard-payments-shell .card-body,
+    .private-dashboard-notifications-shell .card-body {
+        color: #ecf3ff;
+    }
+
+    .private-dashboard-platform-grid .bg-primary-100 {
+        background: rgba(59, 130, 246, 0.12) !important;
+    }
+
+    .private-dashboard-platform-grid .text-primary,
+    .private-dashboard-platform-grid .text-reset,
+    .private-dashboard-shell a,
+    .private-dashboard-notifications-shell a,
+    .private-dashboard-payments-shell a {
+        color: #7cc8ff !important;
+    }
+
+    .private-dashboard-table {
+        border: 1px solid rgba(148, 163, 184, 0.12);
+        border-radius: 1rem;
+        background: rgba(9, 15, 28, 0.72);
+        overflow: hidden;
+    }
+
+    .private-dashboard-table .table {
+        margin-bottom: 0;
+    }
+
+    .private-dashboard-table .table thead th {
+        border-bottom-color: rgba(148, 163, 184, 0.12);
+        color: rgba(191, 211, 238, 0.8);
+        background: rgba(255, 255, 255, 0.015);
+    }
+
+    .private-dashboard-table .table td,
+    .private-dashboard-table .table th {
+        border-top-color: rgba(148, 163, 184, 0.1);
+        background: transparent;
+    }
+
+    .private-dashboard-shell .badge-light,
+    .private-dashboard-notifications-shell .badge-light,
+    .private-dashboard-payments-shell .badge-light {
+        background: rgba(15, 23, 42, 0.82);
+        color: #dceaff;
+        border: 1px solid rgba(148, 163, 184, 0.16);
+    }
+
+    @media (max-width: 767.98px) {
+        .private-dashboard-shell .card-body {
+            padding: 0.95rem;
+        }
+
+        .private-dashboard-panel .card-body {
+            padding: 1rem;
+        }
+    }
+</style>
+<!-- /Custom code: FC-2026-03-18 -->
+<?php endif ?>
+
+<!-- Custom code: FC-2026-03-18: remove admin welcome heading -->
+<!-- /Custom code: FC-2026-03-18 -->
+
+<!-- Custom code: FC-2026-03-18: dashboard mode switcher -->
+<div class="d-flex justify-content-between align-items-start mb-3">
+    <div>
+        <?php if($is_sensitive_dashboard): ?>
+            <h1 class="h3 mb-1"><?= l('admin_index.sensitive_dashboard.header') ?></h1>
+            <p class="text-muted mb-0"><?= l('admin_index.sensitive_dashboard.subheader') ?></p>
+        <?php endif ?>
     </div>
 
-    <div class="row">
-        <div class="col-12 col-md-6 col-xl-2 p-2">
-            <div class="card h-100">
+    <a href="<?= $dashboard_toggle_url ?>" class="btn btn-outline-secondary btn-sm ml-3">
+        <?= $is_sensitive_dashboard ? l('admin_index.sensitive_dashboard.back_to_main') : l('admin_index.sensitive_dashboard.open') ?>
+    </a>
+</div>
+<!-- /Custom code: FC-2026-03-18 -->
+
+<!-- Custom code: FC-2026-03-18: shared realtime online users modal -->
+<div class="modal fade" id="realtime_online_users_modal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><?= l('admin_index.analytics_phase1.realtime.online_users') ?></h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="<?= l('global.close') ?>">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="realtime_online_users_list" class="small text-muted">
+                    <span class="spinner-border spinner-border-sm" role="status"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- /Custom code: FC-2026-03-18 -->
+
+<!-- Custom code: FC-2026-03-18: grouped admin dashboard layout -->
+<div class="d-flex flex-column">
+    <!-- Custom code: FC-2026-03-18: remove priority section intro -->
+    <!-- /Custom code: FC-2026-03-18 -->
+
+    <!-- Custom code: FC-2026-03-18: remove revenue section intro -->
+    <!-- /Custom code: FC-2026-03-18 -->
+
+    <!-- Custom code: FC-2026-03-18: remove forever section intro -->
+    <!-- /Custom code: FC-2026-03-18 -->
+
+    <?php if($is_sensitive_dashboard): ?>
+        <div class="mb-3 mt-2" style="order: 31;">
+            <div class="border-bottom pb-2">
+                <h2 class="h4 mb-1"><?= l('admin_index.dashboard_sections.platform.header') ?></h2>
+                <p class="text-muted mb-0"><?= l('admin_index.dashboard_sections.platform.subheader') ?></p>
+            </div>
+        </div>
+    <?php endif ?>
+
+<?php if(!$is_sensitive_dashboard): ?>
+<!-- Custom code: FC-2026-03-18: active collaborators first dashboard section -->
+<div class="mb-5" style="order: 11;">
+    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-end mb-3">
+        <div>
+            <h2 class="h4 mb-1"><?= l('admin_index.analytics_phase1.header') ?></h2>
+            <p class="text-muted mb-0"><?= l('admin_index.analytics_phase1.subheader') ?></p>
+        </div>
+
+        <button type="button" class="btn btn-link p-0 font-weight-bold mt-3 mt-lg-0 text-left text-lg-right" data-toggle="modal" data-target="#realtime_online_users_modal">
+            <small class="text-muted d-block"><?= l('admin_index.analytics_phase1.realtime.online_users') ?></small>
+            <span class="h4 mb-0" id="realtime_online_users"><span class="spinner-border spinner-border-sm" role="status"></span></span>
+        </button>
+    </div>
+
+    <div class="row mb-2">
+        <div class="col-12 col-md-6 col-xl-4 p-2">
+            <div class="card h-100 border-0 shadow-sm">
                 <div class="card-body">
-                    <small class="text-muted d-block mb-1"><?= l('admin_index.analytics_phase1.kpi.payments') ?></small>
-                    <div class="h5 mb-0" id="kpi_payments_count"><span class="spinner-border spinner-border-sm" role="status"></span></div>
+                    <small class="text-muted d-block mb-2"><?= l('admin_index.analytics_phase1.realtime.online_users') ?></small>
+                    <div class="h3 mb-0" id="realtime_online_users_card"><span class="spinner-border spinner-border-sm" role="status"></span></div>
                 </div>
             </div>
         </div>
 
-        <div class="col-12 col-md-6 col-xl-2 p-2">
-            <div class="card h-100">
+        <div class="col-12 col-md-6 col-xl-4 p-2">
+            <div class="card h-100 border-0 shadow-sm">
                 <div class="card-body">
-                    <small class="text-muted d-block mb-1"><?= l('admin_index.analytics_phase1.kpi.net_earnings') ?></small>
-                    <div class="h5 mb-0"><span id="kpi_net_earnings"><span class="spinner-border spinner-border-sm" role="status"></span></span> <small><?= settings()->payment->default_currency ?></small></div>
+                    <small class="text-muted d-block mb-2"><?= l('admin_index.analytics_phase1.realtime.active_sessions') ?></small>
+                    <div class="h3 mb-0" id="realtime_active_sessions"><span class="spinner-border spinner-border-sm" role="status"></span></div>
                 </div>
             </div>
         </div>
 
-        <div class="col-12 col-md-6 col-xl-2 p-2">
-            <div class="card h-100">
+        <div class="col-12 col-md-6 col-xl-4 p-2">
+            <div class="card h-100 border-0 shadow-sm">
                 <div class="card-body">
-                    <small class="text-muted d-block mb-1"><?= l('admin_index.analytics_phase1.kpi.new_users') ?></small>
-                    <div class="h5 mb-0" id="kpi_new_users"><span class="spinner-border spinner-border-sm" role="status"></span></div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-12 col-md-6 col-xl-2 p-2">
-            <div class="card h-100">
-                <div class="card-body">
-                    <!-- Custom code: FC-2026-03-05: active pro KPI criteria tooltip -->
-                    <small class="text-muted d-block mb-1">
-                        <?= l('admin_index.analytics_phase1.kpi.active_pro') ?>
-                        <span class="text-muted" data-toggle="tooltip" title="<?= l('admin_index.analytics_phase1.kpi.active_pro_tooltip') ?>">
-                            <i class="fas fa-fw fa-xs fa-info-circle"></i>
-                        </span>
-                    </small>
-                    <!-- /Custom code: FC-2026-03-05 -->
-                    <div class="h5 mb-0" id="kpi_active_pro_packages"><span class="spinner-border spinner-border-sm" role="status"></span></div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-12 col-md-6 col-xl-2 p-2">
-            <div class="card h-100">
-                <div class="card-body">
-                    <small class="text-muted d-block mb-1"><?= l('admin_index.analytics_phase1.kpi.churn') ?></small>
-                    <div class="h5 mb-0"><span id="kpi_churn_rate"><span class="spinner-border spinner-border-sm" role="status"></span></span>%</div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-12 col-md-6 col-xl-2 p-2">
-            <div class="card h-100">
-                <div class="card-body">
-                    <small class="text-muted d-block mb-1"><?= l('admin_index.analytics_phase1.kpi.arpu') ?></small>
-                    <div class="h5 mb-0"><span id="kpi_arpu"><span class="spinner-border spinner-border-sm" role="status"></span></span> <small><?= settings()->payment->default_currency ?></small></div>
+                    <small class="text-muted d-block mb-2"><?= l('admin_index.analytics_phase1.realtime.recent_logins_total') ?></small>
+                    <div class="h3 mb-0" id="realtime_recent_logins_total"><span class="spinner-border spinner-border-sm" role="status"></span></div>
                 </div>
             </div>
         </div>
@@ -79,249 +297,244 @@
 
     <div class="row mt-2">
         <div class="col-12 col-xl-8 p-2">
-            <div class="card mb-3">
+            <div class="card h-100 border-0 shadow-sm">
                 <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h3 class="h6 mb-0"><?= l('admin_index.analytics_phase1.charts.revenue') ?></h3>
-                    </div>
-                    <div class="chart-container" style="height: 220px;">
-                        <canvas id="dashboard_revenue_chart"></canvas>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card mb-3">
-                <div class="card-body">
-                    <h3 class="h6 mb-3"><?= l('admin_index.analytics_phase1.charts.users') ?></h3>
-                    <div class="chart-container" style="height: 220px;">
+                    <h3 class="h6 mb-1"><?= l('admin_index.analytics_phase1.charts.users') ?></h3>
+                    <p class="small text-muted mb-3"><?= l('admin_index.analytics_phase1.charts.users_subheader') ?></p>
+                    <div class="chart-container" style="height: 260px;">
                         <canvas id="dashboard_users_chart"></canvas>
                     </div>
                 </div>
             </div>
-
         </div>
 
         <div class="col-12 col-xl-4 p-2">
-            <div class="card mb-3">
+            <div class="card h-100 border-0 shadow-sm">
                 <div class="card-body">
                     <h3 class="h6 mb-3"><?= l('admin_index.analytics_phase1.realtime.header') ?></h3>
-                    <div class="d-flex justify-content-between mb-2">
-                        <span class="text-muted"><?= l('admin_index.analytics_phase1.realtime.online_users') ?></span>
-                        <!-- Custom code: FC-2026-03-08: open online users list from realtime metric -->
-                        <button type="button" class="btn btn-link p-0 font-weight-bold" data-toggle="modal" data-target="#realtime_online_users_modal">
-                            <span id="realtime_online_users"><span class="spinner-border spinner-border-sm" role="status"></span></span>
-                        </button>
-                        <!-- /Custom code: FC-2026-03-08 -->
-                    </div>
-                    <div class="d-flex justify-content-between mb-3">
-                        <span class="text-muted"><?= l('admin_index.analytics_phase1.realtime.active_sessions') ?></span>
-                        <strong id="realtime_active_sessions"><span class="spinner-border spinner-border-sm" role="status"></span></strong>
-                    </div>
 
-                    <h4 class="h6 mt-4 mb-2"><?= l('admin_index.analytics_phase1.realtime.recent_logins') ?></h4>
-                    <div id="realtime_recent_logins" class="small text-muted">
+                    <h4 class="h6 mb-2"><?= l('admin_index.analytics_phase1.realtime.recent_logins') ?></h4>
+                    <div id="realtime_recent_logins" class="small text-muted mb-4">
                         <span class="spinner-border spinner-border-sm" role="status"></span>
                     </div>
 
-                    <h4 class="h6 mt-4 mb-2"><?= l('admin_index.analytics_phase1.realtime.online_collaborators') ?></h4>
+                    <h4 class="h6 mb-2"><?= l('admin_index.analytics_phase1.realtime.online_collaborators') ?></h4>
                     <div id="realtime_online_collaborators" class="small text-muted">
                         <span class="spinner-border spinner-border-sm" role="status"></span>
                     </div>
                 </div>
             </div>
-
-            <div class="card">
-                <div class="card-body">
-                    <h3 class="h6 mb-3"><?= l('admin_index.analytics_phase1.alerts.header') ?></h3>
-                    <div class="mb-2" id="alert_failed_payments">
-                        <span class="spinner-border spinner-border-sm" role="status"></span>
-                    </div>
-                    <div id="alert_churn_spike">
-                        <span class="spinner-border spinner-border-sm" role="status"></span>
-                    </div>
-                </div>
-            </div>
         </div>
     </div>
 
-    <div class="row mt-2">
-        <div class="col-12 col-xl-6 p-2">
-            <div class="card h-100">
-                <div class="card-body">
-                    <h3 class="h6 mb-2"><span id="biolink_top_shop_sources_label"><?= l('admin_index.biolink_analytics.top_shop_sources_header') ?></span> <span class="text-muted" id="biolink_top_shop_sources_count"></span></h3>
-                    <p class="small text-muted mb-3"><?= l('admin_index.biolink_analytics.top_shop_sources_subheader') ?></p>
-                    <div id="biolink_top_shop_sources" class="small text-muted">
-                        <span class="spinner-border spinner-border-sm" role="status"></span>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-12 col-xl-6 p-2">
-            <div class="card h-100">
-                <div class="card-body">
-                    <h3 class="h6 mb-2"><span id="biolink_top_registration_sources_label"><?= l('admin_index.biolink_analytics.top_registration_sources_header') ?></span> <span class="text-muted" id="biolink_top_registration_sources_count"></span></h3>
-                    <p class="small text-muted mb-3"><?= l('admin_index.biolink_analytics.top_registration_sources_subheader') ?></p>
-                    <div id="biolink_top_registration_sources" class="small text-muted">
-                        <span class="spinner-border spinner-border-sm" role="status"></span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
 </div>
 <!-- /Custom code: FC-2026-03-04 -->
+<?php endif ?>
 
-<!-- Custom code: FC-2026-03-04: phase 2 sales and subscriptions panel -->
-<div class="mb-5 mt-4">
-    <div class="d-flex flex-column flex-md-row justify-content-between mb-3">
-        <h1 class="h3 mb-3 mb-md-0 text-truncate"><i class="fas fa-fw fa-xs fa-credit-card text-primary-900 mr-2"></i> <?= l('admin_index.sales_subscriptions.header') ?></h1>
-    </div>
-
-    <p class="text-muted mb-3"><?= l('admin_index.sales_subscriptions.subheader') ?></p>
-
-    <div class="row mb-2">
-        <div class="col-12 col-md-6 col-xl-2 p-2">
-            <div class="card h-100"><div class="card-body"><small class="text-muted d-block mb-1"><?= l('admin_index.sales_subscriptions.recurring_revenue_current_month') ?></small><div class="h5 mb-0"><span id="sales_recurring_revenue_current_month"><span class="spinner-border spinner-border-sm" role="status"></span></span> <small><?= settings()->payment->default_currency ?></small></div></div></div>
-        </div>
-        <div class="col-12 col-md-6 col-xl-2 p-2">
-            <div class="card h-100"><div class="card-body"><small class="text-muted d-block mb-1"><?= l('admin_index.sales_subscriptions.active_paid_subscriptions') ?></small><div class="h5 mb-0" id="sales_active_paid_subscriptions"><span class="spinner-border spinner-border-sm" role="status"></span></div></div></div>
-        </div>
-        <div class="col-12 col-md-6 col-xl-2 p-2">
-            <div class="card h-100"><div class="card-body"><small class="text-muted d-block mb-1"><?= l('admin_index.sales_subscriptions.new_subscriptions_30d') ?></small><div class="h5 mb-0" id="sales_new_subscriptions_30d"><span class="spinner-border spinner-border-sm" role="status"></span></div></div></div>
-        </div>
-        <div class="col-12 col-md-6 col-xl-2 p-2">
-            <div class="card h-100"><div class="card-body"><small class="text-muted d-block mb-1"><?= l('admin_index.sales_subscriptions.cancelled_subscriptions_30d') ?></small><div class="h5 mb-0" id="sales_cancelled_subscriptions_30d"><span class="spinner-border spinner-border-sm" role="status"></span></div></div></div>
-        </div>
-        <div class="col-12 col-md-6 col-xl-2 p-2">
-            <div class="card h-100"><div class="card-body"><small class="text-muted d-block mb-1"><?= l('admin_index.sales_subscriptions.failed_payments_30d') ?></small><div class="h5 mb-0" id="sales_failed_payments_30d"><span class="spinner-border spinner-border-sm" role="status"></span></div></div></div>
-        </div>
-        <div class="col-12 col-md-6 col-xl-2 p-2">
-            <div class="card h-100"><div class="card-body"><small class="text-muted d-block mb-1"><?= l('admin_index.sales_subscriptions.plan_changes_30d') ?></small><div class="h5 mb-0" id="sales_plan_changes_30d"><span class="spinner-border spinner-border-sm" role="status"></span></div></div></div>
-        </div>
-    </div>
-
-    <div class="row mt-2">
-        <div class="col-12 col-xl-8 p-2">
-            <div class="card">
-                <div class="card-body">
-                    <h3 class="h6 mb-3"><?= l('admin_index.sales_subscriptions.chart_header') ?></h3>
-                    <div class="chart-container" style="height: 230px;">
-                        <canvas id="sales_subscriptions_chart"></canvas>
+<?php if($is_sensitive_dashboard): ?>
+<!-- Custom code: FC-2026-03-18: private sales and subscriptions panel redesign -->
+<div class="mb-5 mt-4" style="order: 23;">
+    <div class="card private-dashboard-shell">
+        <div class="card-body">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-start mb-3">
+                <div>
+                    <div class="private-dashboard-section-title mb-2">
+                        <span class="private-dashboard-icon"><i class="fas fa-fw fa-credit-card"></i></span>
+                        <h2 class="h3 mb-0 text-truncate"><?= l('admin_index.sales_subscriptions.header') ?></h2>
                     </div>
+                    <p class="text-muted mb-0"><?= l('admin_index.sales_subscriptions.subheader') ?></p>
                 </div>
             </div>
-        </div>
 
-        <div class="col-12 col-xl-4 p-2">
-            <div class="card">
-                <div class="card-body">
-                    <h3 class="h6 mb-2"><?= l('admin_index.sales_subscriptions.at_risk_header') ?></h3>
-                    <p class="small text-muted mb-3"><?= l('admin_index.sales_subscriptions.at_risk_subheader') ?></p>
-                    <div id="sales_at_risk_trial_users" class="small text-muted">
-                        <span class="spinner-border spinner-border-sm" role="status"></span>
-                    </div>
+            <div class="row mb-2">
+                <div class="col-12 col-md-6 col-xl-3 p-2">
+                    <div class="private-dashboard-kpi"><small class="text-muted d-block mb-1"><?= l('admin_index.sales_subscriptions.recurring_revenue_current_month') ?></small><div class="h5 mb-0"><span id="sales_recurring_revenue_current_month"><span class="spinner-border spinner-border-sm" role="status"></span></span> <small><?= settings()->payment->default_currency ?></small></div></div>
+                </div>
+                <div class="col-12 col-md-6 col-xl-3 p-2">
+                    <div class="private-dashboard-kpi"><small class="text-muted d-block mb-1"><?= l('admin_index.sales_subscriptions.active_paid_subscriptions') ?></small><div class="h5 mb-0" id="sales_active_paid_subscriptions"><span class="spinner-border spinner-border-sm" role="status"></span></div></div>
+                </div>
+                <!-- Custom code: FC-2026-03-18: total active Forever Pro collaborators KPI card -->
+                <div class="col-12 col-md-6 col-xl-3 p-2">
+                    <div class="private-dashboard-kpi"><small class="text-muted d-block mb-1"><?= l('admin_index.sales_subscriptions.active_total_pro_collaborators') ?></small><div class="h5 mb-0" id="sales_active_total_pro_collaborators"><span class="spinner-border spinner-border-sm" role="status"></span></div></div>
+                </div>
+                <!-- /Custom code: FC-2026-03-18 -->
+                <!-- Custom code: FC-2026-03-18: cancelled subscriptions KPI card -->
+                <div class="col-12 col-md-6 col-xl-3 p-2">
+                    <div class="private-dashboard-kpi"><small class="text-muted d-block mb-1"><?= l('admin_index.sales_subscriptions.cancelled_billing_30d') ?></small><div class="h5 mb-0" id="sales_cancelled_billing_30d"><span class="spinner-border spinner-border-sm" role="status"></span></div></div>
+                </div>
+                <!-- /Custom code: FC-2026-03-18 -->
+            </div>
+
+            <div class="row mb-2">
+                <div class="col-12 col-md-6 col-xl-3 p-2">
+                    <div class="private-dashboard-kpi"><small class="text-muted d-block mb-1"><?= l('admin_index.sales_subscriptions.new_subscriptions_30d') ?></small><div class="h5 mb-0" id="sales_new_subscriptions_30d"><span class="spinner-border spinner-border-sm" role="status"></span></div></div>
+                </div>
+                <div class="col-12 col-md-6 col-xl-3 p-2">
+                    <div class="private-dashboard-kpi"><small class="text-muted d-block mb-1"><?= l('admin_index.sales_subscriptions.cancelled_subscriptions_30d') ?></small><div class="h5 mb-0" id="sales_cancelled_subscriptions_30d"><span class="spinner-border spinner-border-sm" role="status"></span></div></div>
+                </div>
+                <div class="col-12 col-md-6 col-xl-3 p-2">
+                    <div class="private-dashboard-kpi"><small class="text-muted d-block mb-1"><?= l('admin_index.sales_subscriptions.failed_payments_30d') ?></small><div class="h5 mb-0" id="sales_failed_payments_30d"><span class="spinner-border spinner-border-sm" role="status"></span></div></div>
+                </div>
+                <div class="col-12 col-md-6 col-xl-3 p-2">
+                    <div class="private-dashboard-kpi"><small class="text-muted d-block mb-1"><?= l('admin_index.sales_subscriptions.plan_changes_30d') ?></small><div class="h5 mb-0" id="sales_plan_changes_30d"><span class="spinner-border spinner-border-sm" role="status"></span></div></div>
                 </div>
             </div>
-        </div>
-    </div>
-</div>
-<!-- /Custom code: FC-2026-03-04 -->
 
-<!-- Custom code: FC-2026-03-04: phase 5 action center panel -->
-<div class="mb-5 mt-4">
-    <div class="d-flex flex-column flex-md-row justify-content-between mb-3">
-        <h1 class="h3 mb-3 mb-md-0 text-truncate"><i class="fas fa-fw fa-xs fa-bolt text-primary-900 mr-2"></i> <?= l('admin_index.action_center.header') ?></h1>
-    </div>
+            <div class="row mt-2">
+                <div class="col-12 col-xl-8 p-2">
+                    <div class="private-dashboard-panel h-100">
+                        <div class="card-body">
+                            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-start mb-3">
+                                <div>
+                                    <h3 class="h6 mb-1"><?= l('admin_index.sales_subscriptions.chart_header') ?></h3>
+                                    <p class="small text-muted mb-0"><?= l('admin_index.sales_subscriptions.chart_subheader') ?></p>
+                                </div>
 
-    <p class="text-muted mb-3"><?= l('admin_index.action_center.subheader') ?></p>
-
-    <div class="row mb-2">
-        <div class="col-12 col-md-6 p-2">
-            <div id="action_warning_trials" class="alert alert-light mb-0">
-                <span class="spinner-border spinner-border-sm" role="status"></span>
-            </div>
-        </div>
-        <div class="col-12 col-md-6 p-2">
-            <div id="action_warning_collaborators" class="alert alert-light mb-0">
-                <span class="spinner-border spinner-border-sm" role="status"></span>
-            </div>
-        </div>
-    </div>
-
-    <div class="row mt-2">
-        <div class="col-12 col-xl-6 p-2">
-            <div class="card h-100">
-                <div class="card-body">
-                    <h3 class="h6 mb-2"><?= l('admin_index.action_center.urgent_trials_header') ?> <span class="text-muted" id="action_urgent_trials_count"></span></h3>
-                    <p class="small text-muted mb-3"><?= l('admin_index.action_center.urgent_trials_subheader') ?></p>
-                    <div id="action_urgent_trials" class="small text-muted">
-                        <span class="spinner-border spinner-border-sm" role="status"></span>
+                                <!-- Custom code: FC-2026-03-18: sales chart 30/60/90 period toggle -->
+                                <div class="btn-group btn-group-sm mt-3 mt-md-0" role="group" aria-label="<?= l('admin_index.sales_subscriptions.chart_period_label') ?>">
+                                    <button type="button" class="btn btn-outline-primary active" data-sales-subscriptions-period="30">30d</button>
+                                    <button type="button" class="btn btn-outline-primary" data-sales-subscriptions-period="60">60d</button>
+                                    <button type="button" class="btn btn-outline-primary" data-sales-subscriptions-period="90">90d</button>
+                                </div>
+                                <!-- /Custom code: FC-2026-03-18 -->
+                            </div>
+                            <div class="chart-container" style="height: 230px;">
+                                <canvas id="sales_subscriptions_chart"></canvas>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </div>
 
-        <div class="col-12 col-xl-6 p-2">
-            <div class="card h-100">
-                <div class="card-body">
-                    <h3 class="h6 mb-2"><?= l('admin_index.action_center.collaborator_opportunities_header') ?> <span class="text-muted" id="action_collaborator_opportunities_count"></span></h3>
-                    <p class="small text-muted mb-3"><?= l('admin_index.action_center.collaborator_opportunities_subheader') ?></p>
-                    <div id="action_collaborator_opportunities" class="small text-muted">
-                        <span class="spinner-border spinner-border-sm" role="status"></span>
+                <div class="col-12 col-xl-4 p-2">
+                    <div class="private-dashboard-panel h-100">
+                        <div class="card-body">
+                            <h3 class="h6 mb-2"><?= l('admin_index.sales_subscriptions.at_risk_header') ?></h3>
+                            <p class="small text-muted mb-3"><?= l('admin_index.sales_subscriptions.at_risk_subheader') ?></p>
+                            <div id="sales_at_risk_trial_users" class="small text-muted">
+                                <span class="spinner-border spinner-border-sm" role="status"></span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
-<!-- /Custom code: FC-2026-03-04 -->
+<!-- /Custom code: FC-2026-03-18 -->
+<?php endif ?>
 
-<!-- Custom code: FC-2026-03-17: billing risk dashboard panel -->
-<div class="mb-5 mt-4">
-    <div class="d-flex flex-column flex-md-row justify-content-between mb-3">
-        <h1 class="h3 mb-3 mb-md-0 text-truncate"><i class="fas fa-fw fa-xs fa-triangle-exclamation text-primary-900 mr-2"></i> <?= l('admin_index.billing_risk.header') ?></h1>
-        <a href="<?= url('admin/billing-risk') ?>" class="btn btn-outline-primary btn-sm"><?= l('admin_index.billing_risk.view_all') ?></a>
-    </div>
+<?php if($is_sensitive_dashboard): ?>
+<!-- Custom code: FC-2026-03-18: private action center panel redesign -->
+<div class="mb-5 mt-4" style="order: 22;">
+    <div class="card private-dashboard-shell">
+        <div class="card-body">
+            <div class="private-dashboard-section-title mb-2">
+                <span class="private-dashboard-icon"><i class="fas fa-fw fa-bolt"></i></span>
+                <h2 class="h3 mb-0 text-truncate"><?= l('admin_index.action_center.header') ?></h2>
+            </div>
 
-    <p class="text-muted mb-3"><?= l('admin_index.billing_risk.subheader') ?></p>
+            <p class="text-muted mb-3"><?= l('admin_index.action_center.subheader') ?></p>
 
-    <div class="row mb-2">
-        <div class="col-12 col-md-6 col-xl-2 p-2">
-            <div class="card h-100"><div class="card-body"><small class="text-muted d-block mb-1"><?= l('admin_billing_risk.state_past_due') ?></small><div class="h5 mb-0" id="billing_risk_past_due"><span class="spinner-border spinner-border-sm" role="status"></span></div></div></div>
-        </div>
-        <div class="col-12 col-md-6 col-xl-2 p-2">
-            <div class="card h-100"><div class="card-body"><small class="text-muted d-block mb-1"><?= l('admin_billing_risk.state_past_due_critical') ?></small><div class="h5 mb-0" id="billing_risk_critical"><span class="spinner-border spinner-border-sm" role="status"></span></div></div></div>
-        </div>
-        <div class="col-12 col-md-6 col-xl-2 p-2">
-            <div class="card h-100"><div class="card-body"><small class="text-muted d-block mb-1"><?= l('admin_billing_risk.state_access_revoked') ?></small><div class="h5 mb-0" id="billing_risk_revoked"><span class="spinner-border spinner-border-sm" role="status"></span></div></div></div>
-        </div>
-        <div class="col-12 col-md-6 col-xl-3 p-2">
-            <div class="card h-100"><div class="card-body"><small class="text-muted d-block mb-1"><?= l('admin_index.billing_risk.expiring_24h') ?></small><div class="h5 mb-0" id="billing_risk_expiring"><span class="spinner-border spinner-border-sm" role="status"></span></div></div></div>
-        </div>
-        <div class="col-12 col-md-6 col-xl-3 p-2">
-            <div class="card h-100"><div class="card-body"><small class="text-muted d-block mb-1"><?= l('admin_index.billing_risk.recovered_7d') ?></small><div class="h5 mb-0" id="billing_risk_recovered"><span class="spinner-border spinner-border-sm" role="status"></span></div></div></div>
-        </div>
-    </div>
-
-    <div class="row mt-2">
-        <div class="col-12 p-2">
-            <div class="card h-100">
-                <div class="card-body">
-                    <h3 class="h6 mb-2"><?= l('admin_index.billing_risk.users_header') ?> <span class="text-muted" id="billing_risk_users_count"></span></h3>
-                    <p class="small text-muted mb-3"><?= l('admin_index.billing_risk.users_subheader') ?></p>
-                    <div id="billing_risk_users" class="small text-muted">
+            <div class="row mb-2">
+                <div class="col-12 col-md-6 p-2">
+                    <div id="action_warning_trials" class="private-dashboard-alert mb-0">
                         <span class="spinner-border spinner-border-sm" role="status"></span>
+                    </div>
+                </div>
+                <div class="col-12 col-md-6 p-2">
+                    <div id="action_warning_collaborators" class="private-dashboard-alert mb-0">
+                        <span class="spinner-border spinner-border-sm" role="status"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mt-2">
+                <div class="col-12 col-xl-6 p-2">
+                    <div class="private-dashboard-panel h-100">
+                        <div class="card-body">
+                            <h3 class="h6 mb-2"><?= l('admin_index.action_center.urgent_trials_header') ?> <span class="text-muted" id="action_urgent_trials_count"></span></h3>
+                            <p class="small text-muted mb-3"><?= l('admin_index.action_center.urgent_trials_subheader') ?></p>
+                            <div id="action_urgent_trials" class="small text-muted">
+                                <span class="spinner-border spinner-border-sm" role="status"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 col-xl-6 p-2">
+                    <div class="private-dashboard-panel h-100">
+                        <div class="card-body">
+                            <h3 class="h6 mb-2"><?= l('admin_index.action_center.collaborator_opportunities_header') ?> <span class="text-muted" id="action_collaborator_opportunities_count"></span></h3>
+                            <p class="small text-muted mb-3"><?= l('admin_index.action_center.collaborator_opportunities_subheader') ?></p>
+                            <div id="action_collaborator_opportunities" class="small text-muted">
+                                <span class="spinner-border spinner-border-sm" role="status"></span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
-<!-- /Custom code: FC-2026-03-17 -->
+<!-- /Custom code: FC-2026-03-18 -->
+<?php endif ?>
 
+<?php if($is_sensitive_dashboard): ?>
+<!-- Custom code: FC-2026-03-18: private billing risk panel redesign -->
+<div class="mb-5 mt-2" style="order: 21;">
+    <div class="card private-dashboard-shell">
+        <div class="card-body">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-start mb-3">
+                <div>
+                    <div class="private-dashboard-section-title mb-2">
+                        <span class="private-dashboard-icon"><i class="fas fa-fw fa-triangle-exclamation"></i></span>
+                        <h2 class="h3 mb-0 text-truncate"><?= l('admin_index.billing_risk.header') ?></h2>
+                    </div>
+                    <p class="text-muted mb-0"><?= l('admin_index.billing_risk.subheader') ?></p>
+                </div>
+                <a href="<?= url('admin/billing-risk') ?>" class="btn btn-outline-primary btn-sm mt-3 mt-md-0"><?= l('admin_index.billing_risk.view_all') ?></a>
+            </div>
+
+            <div class="row mb-2">
+                <div class="col-12 col-md-6 col-xl-2 p-2">
+                    <div class="private-dashboard-kpi"><small class="text-muted d-block mb-1"><?= l('admin_billing_risk.state_past_due') ?></small><div class="h5 mb-0" id="billing_risk_past_due"><span class="spinner-border spinner-border-sm" role="status"></span></div></div>
+                </div>
+                <div class="col-12 col-md-6 col-xl-2 p-2">
+                    <div class="private-dashboard-kpi"><small class="text-muted d-block mb-1"><?= l('admin_billing_risk.state_past_due_critical') ?></small><div class="h5 mb-0" id="billing_risk_critical"><span class="spinner-border spinner-border-sm" role="status"></span></div></div>
+                </div>
+                <div class="col-12 col-md-6 col-xl-2 p-2">
+                    <div class="private-dashboard-kpi"><small class="text-muted d-block mb-1"><?= l('admin_billing_risk.state_access_revoked') ?></small><div class="h5 mb-0" id="billing_risk_revoked"><span class="spinner-border spinner-border-sm" role="status"></span></div></div>
+                </div>
+                <div class="col-12 col-md-6 col-xl-3 p-2">
+                    <div class="private-dashboard-kpi"><small class="text-muted d-block mb-1"><?= l('admin_index.billing_risk.expiring_24h') ?></small><div class="h5 mb-0" id="billing_risk_expiring"><span class="spinner-border spinner-border-sm" role="status"></span></div></div>
+                </div>
+                <div class="col-12 col-md-6 col-xl-3 p-2">
+                    <div class="private-dashboard-kpi"><small class="text-muted d-block mb-1"><?= l('admin_index.billing_risk.recovered_7d') ?></small><div class="h5 mb-0" id="billing_risk_recovered"><span class="spinner-border spinner-border-sm" role="status"></span></div></div>
+                </div>
+            </div>
+
+            <div class="row mt-2">
+                <div class="col-12 p-2">
+                    <div class="private-dashboard-panel h-100">
+                        <div class="card-body">
+                            <h3 class="h6 mb-2"><?= l('admin_index.billing_risk.users_header') ?> <span class="text-muted" id="billing_risk_users_count"></span></h3>
+                            <p class="small text-muted mb-3"><?= l('admin_index.billing_risk.users_subheader') ?></p>
+                            <div id="billing_risk_users" class="small text-muted">
+                                <span class="spinner-border spinner-border-sm" role="status"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- /Custom code: FC-2026-03-18 -->
+<?php endif ?>
+
+<?php if(!$is_sensitive_dashboard): ?>
 <!-- Custom code: FC-2026-03-04: phase 4 biolink traffic and collaborator analytics panel -->
-<div class="mb-5 mt-4">
+<div class="mb-5 mt-4" style="order: 12;">
     <div class="d-flex flex-column flex-md-row justify-content-between mb-3">
         <h1 class="h3 mb-3 mb-md-0 text-truncate"><i class="fas fa-fw fa-xs fa-globe-europe text-primary-900 mr-2"></i> <?= l('admin_index.biolink_analytics.header') ?></h1>
 
@@ -329,28 +542,87 @@
             <button type="button" class="btn btn-outline-primary" data-biolink-period="today"><?= l('admin_index.analytics_phase1.period.today') ?></button>
             <button type="button" class="btn btn-outline-primary" data-biolink-period="7d"><?= l('admin_index.analytics_phase1.period.7d') ?></button>
             <button type="button" class="btn btn-outline-primary active" data-biolink-period="30d"><?= l('admin_index.analytics_phase1.period.30d') ?></button>
+            <button type="button" class="btn btn-outline-primary" data-biolink-period="90d"><?= l('admin_index.analytics_phase1.period.90d') ?></button>
         </div>
     </div>
 
     <p class="text-muted mb-3"><?= l('admin_index.biolink_analytics.subheader') ?></p>
 
+    <!-- Custom code: FC-2026-03-18: collaborator search and selected collaborator state -->
     <div class="row mb-2">
-        <div class="col-12 col-md-6 col-xl-3 p-2">
-            <div class="card h-100"><div class="card-body"><small class="text-muted d-block mb-1"><?= l('admin_index.biolink_analytics.clicks_today') ?></small><div class="h5 mb-0" id="biolink_clicks_today"><span class="spinner-border spinner-border-sm" role="status"></span></div></div></div>
+        <div class="col-12 col-xl-8 p-2">
+            <div class="card h-100">
+                <div class="card-body">
+                    <label for="biolink_collaborator_search" class="small text-muted d-block mb-2"><?= l('admin_index.biolink_analytics.search_label') ?></label>
+                    <div id="biolink_collaborator_search_wrapper" class="position-relative">
+                        <input type="search" id="biolink_collaborator_search" class="form-control" placeholder="<?= l('admin_index.biolink_analytics.search_placeholder') ?>" autocomplete="off" />
+                        <div id="biolink_collaborator_search_results" class="position-absolute w-100 shadow-sm d-none overflow-auto" style="z-index: 20; top: calc(100% + .5rem); max-height: 320px;"></div>
+                    </div>
+                    <small class="text-muted d-block mt-2"><?= l('admin_index.biolink_analytics.search_hint') ?></small>
+                </div>
+            </div>
         </div>
-        <div class="col-12 col-md-6 col-xl-3 p-2">
-            <div class="card h-100"><div class="card-body"><small class="text-muted d-block mb-1"><?= l('admin_index.biolink_analytics.clicks_7d') ?></small><div class="h5 mb-0" id="biolink_clicks_7d"><span class="spinner-border spinner-border-sm" role="status"></span></div></div></div>
-        </div>
-        <div class="col-12 col-md-6 col-xl-3 p-2">
-            <div class="card h-100"><div class="card-body"><small class="text-muted d-block mb-1"><?= l('admin_index.biolink_analytics.clicks_30d') ?></small><div class="h5 mb-0" id="biolink_clicks_30d"><span class="spinner-border spinner-border-sm" role="status"></span></div></div></div>
-        </div>
-        <div class="col-12 col-md-6 col-xl-3 p-2">
-            <div class="card h-100"><div class="card-body"><small class="text-muted d-block mb-1"><?= l('admin_index.biolink_analytics.forever_shop_clicks_30d') ?></small><div class="h5 mb-0" id="biolink_forever_shop_clicks_30d"><span class="spinner-border spinner-border-sm" role="status"></span></div></div></div>
-        </div>
-        <div class="col-12 col-md-6 col-xl-3 p-2">
-            <div class="card h-100"><div class="card-body"><small class="text-muted d-block mb-1"><?= l('admin_index.biolink_analytics.forever_registration_clicks_30d') ?></small><div class="h5 mb-0" id="biolink_forever_registration_clicks_30d"><span class="spinner-border spinner-border-sm" role="status"></span></div></div></div>
+
+        <div class="col-12 col-xl-4 p-2">
+            <div class="card h-100">
+                <div class="card-body d-flex flex-column flex-sm-row justify-content-between align-items-sm-center">
+                    <div class="mb-3 mb-sm-0">
+                        <small class="text-muted d-block mb-1"><?= l('admin_index.biolink_analytics.selection_label') ?></small>
+                        <div class="font-weight-bold" id="biolink_selected_collaborator_label"><?= l('admin_index.biolink_analytics.selection_all') ?></div>
+                    </div>
+
+                    <button type="button" class="btn btn-outline-secondary btn-sm" id="biolink_selection_reset" disabled="disabled"><?= l('global.reset') ?></button>
+                </div>
+            </div>
         </div>
     </div>
+    <!-- /Custom code: FC-2026-03-18 -->
+
+    <!-- Custom code: FC-2026-03-18: three responsive KPI cards driven by selected biolink period -->
+    <div class="row mb-2">
+        <div class="col-12 col-lg-4 p-2">
+            <div class="card h-100">
+                <div class="card-body">
+                    <small class="text-muted d-block mb-1" id="biolink_period_total_label"><?= l('admin_index.biolink_analytics.clicks_selected_period') ?> (<?= l('admin_index.analytics_phase1.period.30d') ?>)</small>
+                    <div class="h4 mb-0" id="biolink_period_total_clicks"><span class="spinner-border spinner-border-sm" role="status"></span></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-lg-4 p-2">
+            <div class="card h-100">
+                <div class="card-body">
+                    <small class="text-muted d-block mb-1" id="biolink_period_shop_label"><?= l('admin_index.biolink_analytics.forever_shop_clicks_selected_period') ?> (<?= l('admin_index.analytics_phase1.period.30d') ?>)</small>
+                    <div class="h4 mb-0" id="biolink_period_shop_clicks"><span class="spinner-border spinner-border-sm" role="status"></span></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-lg-4 p-2">
+            <div class="card h-100">
+                <div class="card-body">
+                    <small class="text-muted d-block mb-1" id="biolink_period_registration_label"><?= l('admin_index.biolink_analytics.forever_registration_clicks_selected_period') ?> (<?= l('admin_index.analytics_phase1.period.30d') ?>)</small>
+                    <div class="h4 mb-0" id="biolink_period_registration_clicks"><span class="spinner-border spinner-border-sm" role="status"></span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- /Custom code: FC-2026-03-18 -->
+
+    <!-- Custom code: FC-2026-03-18: selected-period biolink trend chart -->
+    <div class="row mt-2">
+        <div class="col-12 p-2">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h3 class="h6 mb-1" id="biolink_chart_label"><?= l('admin_index.biolink_analytics.chart_header') ?> (<?= l('admin_index.analytics_phase1.period.30d') ?>)</h3>
+                    <p class="small text-muted mb-3"><?= l('admin_index.biolink_analytics.chart_subheader') ?></p>
+
+                    <div class="chart-container" style="height: 260px;">
+                        <canvas id="biolink_analytics_chart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- /Custom code: FC-2026-03-18 -->
 
     <div class="row mt-2">
         <div class="col-12 col-xl-4 p-2">
@@ -396,105 +668,213 @@
             </div>
         </div>
     </div>
-</div>
-<!-- /Custom code: FC-2026-03-04 -->
 
-<!-- Custom code: FC-2026-03-04: trial users monitoring panel -->
-<div class="mb-5 mt-4">
-    <div class="d-flex flex-column flex-md-row justify-content-between mb-3">
-        <h1 class="h3 mb-3 mb-md-0 text-truncate"><i class="fas fa-fw fa-xs fa-hourglass-half text-primary-900 mr-2"></i> <?= l('admin_index.trial_monitoring.header') ?></h1>
+    <div class="row mt-2">
+        <div class="col-12 col-xl-6 p-2">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h3 class="h6 mb-2"><span id="biolink_top_shop_sources_label"><?= l('admin_index.biolink_analytics.top_shop_sources_header') ?></span> <span class="text-muted" id="biolink_top_shop_sources_count"></span></h3>
+                    <p class="small text-muted mb-3"><?= l('admin_index.biolink_analytics.top_shop_sources_subheader') ?></p>
+                    <div id="biolink_top_shop_sources" class="small text-muted">
+                        <span class="spinner-border spinner-border-sm" role="status"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-        <div class="d-flex align-items-center">
-            <span class="badge badge-primary mr-2"><?= sprintf(l('admin_index.trial_monitoring.total'), nr($data->active_trial_total)) ?></span>
-            <span class="badge badge-danger"><?= sprintf(l('admin_index.trial_monitoring.cancelled_total'), nr($data->active_trial_cancelled_total)) ?></span>
+        <div class="col-12 col-xl-6 p-2">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h3 class="h6 mb-2"><span id="biolink_top_registration_sources_label"><?= l('admin_index.biolink_analytics.top_registration_sources_header') ?></span> <span class="text-muted" id="biolink_top_registration_sources_count"></span></h3>
+                    <p class="small text-muted mb-3"><?= l('admin_index.biolink_analytics.top_registration_sources_subheader') ?></p>
+                    <div id="biolink_top_registration_sources" class="small text-muted">
+                        <span class="spinner-border spinner-border-sm" role="status"></span>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-
-    <p class="text-muted mb-3"><?= l('admin_index.trial_monitoring.subheader') ?></p>
-
-    <form method="get" action="<?= url('admin') ?>" class="mb-3">
-        <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-lg-between">
-            <div class="d-flex align-items-center mb-2 mb-lg-0">
-                <label for="trial_filter" class="mr-2 mb-0 text-muted"><?= l('admin_index.trial_monitoring.filter_label') ?></label>
-                <select id="trial_filter" name="trial_filter" class="form-control form-control-sm" style="width: 240px;">
-                    <option value="all" <?= $data->trial_filter == 'all' ? 'selected="selected"' : null ?>><?= l('admin_index.trial_monitoring.filter.all') ?></option>
-                    <option value="cancelled" <?= $data->trial_filter == 'cancelled' ? 'selected="selected"' : null ?>><?= l('admin_index.trial_monitoring.filter.cancelled') ?></option>
-                    <option value="active" <?= $data->trial_filter == 'active' ? 'selected="selected"' : null ?>><?= l('admin_index.trial_monitoring.filter.active') ?></option>
-                    <option value="no_subscription" <?= $data->trial_filter == 'no_subscription' ? 'selected="selected"' : null ?>><?= l('admin_index.trial_monitoring.filter.no_subscription') ?></option>
-                </select>
-
-                <button type="submit" class="btn btn-sm btn-outline-primary ml-2"><?= l('global.search') ?></button>
-                <a href="<?= url('admin') ?>" class="btn btn-sm btn-outline-secondary ml-2"><?= l('global.reset') ?></a>
-            </div>
-
-            <div class="d-flex align-items-center">
-                <small class="text-muted mr-2"><?= sprintf(l('admin_index.trial_monitoring.shown_total'), nr($data->active_trial_filtered_total)) ?></small>
-                <a href="<?= url('admin?trial_filter=' . $data->trial_filter . '&trial_export=csv') ?>" class="btn btn-sm btn-outline-success">
-                    <i class="fas fa-fw fa-sm fa-file-csv mr-1"></i><?= l('admin_index.trial_monitoring.export_csv') ?>
-                </a>
-            </div>
-        </div>
-    </form>
-
-    <!-- Custom code: FC-2026-03-06: show filtered trial rows only -->
-    <?php if(empty($data->active_trial_users_filtered)): ?>
-        <div class="alert alert-info mb-0"><?= l('admin_index.trial_monitoring.empty') ?></div>
-    <?php else: ?>
-        <div class="table-responsive table-custom-container">
-            <table class="table table-custom">
-                <thead>
-                <tr>
-                    <th><?= l('global.user') ?></th>
-                    <th><?= l('admin_users.plan_id') ?></th>
-                    <th><?= l('admin_index.trial_monitoring.trial_until') ?></th>
-                    <th><?= l('admin_index.trial_monitoring.billing_status') ?></th>
-                    <th></th>
-                </tr>
-                </thead>
-                <tbody>
-                <?php foreach($data->active_trial_users_filtered as $trial_user): ?>
-                    <tr>
-                        <td class="text-nowrap">
-                            <div class="d-flex flex-column">
-                                <a href="<?= url('admin/user-view/' . $trial_user->user_id) ?>"><?= $trial_user->name ?></a>
-                                <small class="text-muted"><?= $trial_user->email ?></small>
-                            </div>
-                        </td>
-
-                        <td class="text-nowrap">
-                            <span class="badge badge-light"><?= $trial_user->plan_name ?></span>
-                        </td>
-
-                        <td class="text-nowrap">
-                            <?= \Altum\Date::get($trial_user->plan_expiration_date, 2) ?>
-                        </td>
-
-                        <td class="text-nowrap">
-                            <?php if($trial_user->is_cancelled_billing_during_trial): ?>
-                                <span class="badge badge-danger"><?= l('admin_index.trial_monitoring.billing_cancelled') ?></span>
-                            <?php elseif($trial_user->has_active_subscription): ?>
-                                <span class="badge badge-success"><?= l('admin_index.trial_monitoring.billing_active') ?></span>
-                            <?php else: ?>
-                                <span class="badge badge-warning"><?= l('admin_index.trial_monitoring.billing_no_subscription') ?></span>
-                            <?php endif ?>
-                        </td>
-
-                        <td class="text-nowrap">
-                            <div class="d-flex justify-content-end">
-                                <a href="<?= url('admin/user-view/' . $trial_user->user_id) ?>" class="btn btn-sm btn-outline-primary"><?= l('global.view') ?></a>
-                            </div>
-                        </td>
-                    </tr>
-                <?php endforeach ?>
-                </tbody>
-            </table>
-        </div>
-    <?php endif ?>
-    <!-- /Custom code: FC-2026-03-06 -->
 </div>
 <!-- /Custom code: FC-2026-03-04 -->
+<?php endif ?>
 
-<div class="mb-5 row justify-content-between">
+<?php if($is_sensitive_dashboard): ?>
+<!-- Custom code: FC-2026-03-18: side by side trial and upcoming charges panels -->
+<div class="mb-5 mt-4" style="order: 24;">
+    <div class="row">
+        <div class="col-12 col-xl-6 p-2">
+            <div class="card private-dashboard-shell h-100">
+                <div class="card-body">
+                    <div class="d-flex flex-column flex-md-row justify-content-between mb-3">
+                        <div>
+                            <div class="private-dashboard-section-title mb-2">
+                                <span class="private-dashboard-icon"><i class="fas fa-fw fa-hourglass-half"></i></span>
+                                <h2 class="h3 mb-0 text-truncate"><?= l('admin_index.trial_monitoring.header') ?></h2>
+                            </div>
+                            <p class="text-muted mb-0"><?= l('admin_index.trial_monitoring.subheader') ?></p>
+                        </div>
+
+                        <div class="d-flex align-items-center mt-3 mt-md-0">
+                            <span class="badge badge-primary mr-2"><?= sprintf(l('admin_index.trial_monitoring.total'), nr($data->active_trial_total)) ?></span>
+                            <span class="badge badge-danger"><?= sprintf(l('admin_index.trial_monitoring.cancelled_total'), nr($data->active_trial_cancelled_total)) ?></span>
+                        </div>
+                    </div>
+
+                    <form method="get" action="<?= $dashboard_page_url ?>" class="mb-3">
+                        <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-lg-between">
+                            <div class="d-flex align-items-center mb-2 mb-lg-0">
+                                <label for="trial_filter" class="mr-2 mb-0 text-muted"><?= l('admin_index.trial_monitoring.filter_label') ?></label>
+                                <select id="trial_filter" name="trial_filter" class="form-control form-control-sm" style="width: 240px;">
+                                    <option value="attention" <?= $data->trial_filter == 'attention' ? 'selected="selected"' : null ?>><?= l('admin_index.trial_monitoring.filter.attention') ?></option>
+                                    <option value="all" <?= $data->trial_filter == 'all' ? 'selected="selected"' : null ?>><?= l('admin_index.trial_monitoring.filter.all') ?></option>
+                                    <option value="cancelled" <?= $data->trial_filter == 'cancelled' ? 'selected="selected"' : null ?>><?= l('admin_index.trial_monitoring.filter.cancelled') ?></option>
+                                    <option value="active" <?= $data->trial_filter == 'active' ? 'selected="selected"' : null ?>><?= l('admin_index.trial_monitoring.filter.active') ?></option>
+                                    <option value="no_subscription" <?= $data->trial_filter == 'no_subscription' ? 'selected="selected"' : null ?>><?= l('admin_index.trial_monitoring.filter.no_subscription') ?></option>
+                                </select>
+
+                                <button type="submit" class="btn btn-sm btn-outline-primary ml-2"><?= l('global.search') ?></button>
+                                <a href="<?= $dashboard_page_url ?>" class="btn btn-sm btn-outline-secondary ml-2"><?= l('global.reset') ?></a>
+                            </div>
+
+                            <div class="d-flex align-items-center">
+                                <small class="text-muted mr-2"><?= sprintf(l('admin_index.trial_monitoring.shown_total'), nr($data->active_trial_filtered_total)) ?></small>
+                                <a href="<?= $dashboard_page_url . '?trial_filter=' . $data->trial_filter . '&trial_export=csv' ?>" class="btn btn-sm btn-outline-success">
+                                    <i class="fas fa-fw fa-sm fa-file-csv mr-1"></i><?= l('admin_index.trial_monitoring.export_csv') ?>
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+
+                    <?php if(empty($data->active_trial_users_filtered)): ?>
+                        <div class="alert alert-info mb-0"><?= l('admin_index.trial_monitoring.empty') ?></div>
+                    <?php else: ?>
+                        <div class="table-responsive table-custom-container private-dashboard-table mb-3">
+                            <table class="table table-custom mb-0">
+                                <thead>
+                                <tr>
+                                    <th><?= l('global.user') ?></th>
+                                    <th><?= l('admin_users.plan_id') ?></th>
+                                    <th><?= l('admin_index.trial_monitoring.trial_until') ?></th>
+                                    <th><?= l('admin_index.trial_monitoring.billing_status') ?></th>
+                                    <th></th>
+                                </tr>
+                                </thead>
+                                <tbody id="trial_monitoring_table_body">
+                                <?php foreach($data->active_trial_users_filtered as $trial_user): ?>
+                                    <tr class="trial-monitoring-row">
+                                        <td class="text-nowrap">
+                                            <div class="d-flex flex-column">
+                                                <a href="<?= url('admin/user-view/' . $trial_user->user_id) ?>"><?= $trial_user->name ?></a>
+                                                <small class="text-muted"><?= $trial_user->email ?></small>
+                                            </div>
+                                        </td>
+
+                                        <td class="text-nowrap">
+                                            <span class="badge badge-light"><?= $trial_user->plan_name ?></span>
+                                        </td>
+
+                                        <td class="text-nowrap">
+                                            <?= \Altum\Date::get($trial_user->plan_expiration_date, 2) ?>
+                                        </td>
+
+                                        <td class="text-nowrap">
+                                            <?php if($trial_user->is_cancelled_billing_during_trial): ?>
+                                                <span class="badge badge-danger"><?= l('admin_index.trial_monitoring.billing_cancelled') ?></span>
+                                            <?php elseif($trial_user->has_active_subscription): ?>
+                                                <span class="badge badge-success"><?= l('admin_index.trial_monitoring.billing_active') ?></span>
+                                            <?php else: ?>
+                                                <span class="badge badge-warning"><?= l('admin_index.trial_monitoring.billing_no_subscription') ?></span>
+                                            <?php endif ?>
+                                        </td>
+
+                                        <td class="text-nowrap">
+                                            <div class="d-flex justify-content-end">
+                                                <a href="<?= url('admin/user-view/' . $trial_user->user_id) ?>" class="btn btn-sm btn-outline-primary"><?= l('global.view') ?></a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                <?php endforeach ?>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div id="trial_monitoring_table_toggle"></div>
+                    <?php endif ?>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-xl-6 p-2">
+            <!-- Custom code: FC-2026-03-18: upcoming charges section -->
+            <div class="card private-dashboard-shell h-100">
+                <div class="card-body d-flex flex-column">
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-start mb-3">
+                        <div>
+                            <div class="private-dashboard-section-title mb-2">
+                                <span class="private-dashboard-icon"><i class="fas fa-fw fa-calendar-check"></i></span>
+                                <h2 class="h3 mb-0 text-truncate"><?= l('admin_index.upcoming_charges.header') ?></h2>
+                            </div>
+                            <p class="text-muted mb-0"><?= l('admin_index.upcoming_charges.subheader') ?></p>
+                        </div>
+
+                        <div class="mt-3 mt-md-0">
+                            <span class="private-dashboard-pill"><?= sprintf(l('admin_index.upcoming_charges.total'), nr($data->upcoming_charge_total)) ?></span>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-12 col-md-6 p-2">
+                            <div class="private-dashboard-kpi">
+                                <small class="text-muted d-block mb-1"><?= l('admin_index.upcoming_charges.next_7d') ?></small>
+                                <div class="h4 mb-0"><?= nr($data->upcoming_charge_next_7d_total) ?></div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6 p-2">
+                            <div class="private-dashboard-kpi">
+                                <small class="text-muted d-block mb-1"><?= l('admin_index.upcoming_charges.next_30d') ?></small>
+                                <div class="h4 mb-0"><?= nr($data->upcoming_charge_next_30d_total) ?></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <?php if(empty($data->upcoming_charge_users)): ?>
+                        <div class="alert alert-info mb-0"><?= l('admin_index.upcoming_charges.empty') ?></div>
+                    <?php else: ?>
+                        <div id="upcoming_charges_list" class="private-dashboard-stack mt-1 flex-grow-1">
+                            <?php foreach($data->upcoming_charge_users as $upcoming_charge_user): ?>
+                                <div class="private-dashboard-list-item upcoming-charge-item">
+                                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-start">
+                                        <div class="pr-md-3">
+                                            <div class="font-weight-bold mb-1"><a href="<?= url('admin/user-view/' . $upcoming_charge_user->user_id) ?>"><?= $upcoming_charge_user->name ?></a></div>
+                                            <div class="small text-muted private-dashboard-microcopy mb-0"><?= $upcoming_charge_user->email ?> <span class="mx-1">&middot;</span> <?= $upcoming_charge_user->plan_name ?></div>
+                                        </div>
+
+                                        <div class="mt-2 mt-md-0 text-md-right">
+                                            <span class="badge <?= $upcoming_charge_user->is_trial_charge ? 'badge-warning' : 'badge-primary' ?>">
+                                                <?= $upcoming_charge_user->is_trial_charge ? l('admin_index.upcoming_charges.trial') : l('admin_index.upcoming_charges.subscription') ?>
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center mt-2">
+                                        <div class="small text-muted private-dashboard-microcopy mb-2 mb-sm-0"><?= l('admin_index.upcoming_charges.charge_on') ?>: <?= \Altum\Date::get($upcoming_charge_user->plan_expiration_date, 2) ?></div>
+                                        <span class="private-dashboard-pill"><?= sprintf(l('admin_index.upcoming_charges.days_left'), nr($upcoming_charge_user->days_until_charge)) ?></span>
+                                    </div>
+                                </div>
+                            <?php endforeach ?>
+                        </div>
+                        <div id="upcoming_charges_toggle" class="mt-3"></div>
+                    <?php endif ?>
+                </div>
+            </div>
+            <!-- /Custom code: FC-2026-03-18 -->
+        </div>
+    </div>
+</div>
+<!-- /Custom code: FC-2026-03-18 -->
+<?php endif ?>
+
+<?php if($is_sensitive_dashboard): ?>
+<div class="mb-5 row justify-content-between private-dashboard-platform-grid" style="order: 32;">
     <div class="col-12 col-sm-6 col-xl-3 p-3 position-relative">
         <div class="card d-flex flex-row h-100 overflow-hidden">
             <div class="card-body">
@@ -760,201 +1140,86 @@
         </div>
     </div>
 </div>
+<?php endif ?>
 
-<div class="mb-5">
-    <div class="d-flex flex-column flex-md-row justify-content-between mb-4">
-        <h1 class="h3 mb-3 mb-md-0 text-truncate"><i class="fas fa-fw fa-xs fa-users text-primary-900 mr-2"></i> <?= l('admin_index.users') ?></h1>
-
-        <div>
-
-        <!-- Custom code: FC-2026-03-08: realtime online users modal -->
-        <div class="modal fade" id="realtime_online_users_modal" tabindex="-1" role="dialog" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-scrollable" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title"><?= l('admin_index.analytics_phase1.realtime.online_users') ?></h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="<?= l('global.close') ?>">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                    <div class="modal-body">
-                        <div id="realtime_online_users_list" class="small text-muted">
-                            <span class="spinner-border spinner-border-sm" role="status"></span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <!-- /Custom code: FC-2026-03-08 -->
-            <span class="badge badge-success" data-toggle="tooltip" title="<?= l('admin_index.active_users_tooltip') ?>">
-                <i class="fas fa-xs fa-fw fa-circle fa-fade mr-1"></i>
-                <span id="active_users" data-translation="<?= l('admin_index.active_users') ?>"><?= l('global.loading') ?></span>
-            </span>
-        </div>
-    </div>
-
-    <?php $result = database()->query("SELECT * FROM `users` ORDER BY `user_id` DESC LIMIT 5"); ?>
-    <div class="table-responsive table-custom-container">
-        <table class="table table-custom">
-            <thead>
-            <tr>
-                <th><?= l('global.user') ?></th>
-                <th><?= l('global.status') ?></th>
-                <th><?= l('admin_users.plan_id') ?></th>
-                <th><?= l('global.details') ?></th>
-                <th></th>
-            </tr>
-            </thead>
-            <tbody>
-            <?php while($row = $result->fetch_object()): ?>
-                <?php //ALTUMCODE:DEMO if(DEMO) {$row->email = 'hidden@demo.com'; $row->name = 'hidden on demo';} ?>
-                <?php if(!isset($data->plans[$row->plan_id])) $data->plans[$row->plan_id] = (new \Altum\Models\Plan())->get_plan_by_id($row->plan_id) ?>
-                <tr>
-                    <td class="text-nowrap">
-                        <div class="d-flex">
-                            <a href="<?= url('admin/user-view/' . $row->user_id) ?>">
-                                <img src="<?= get_user_avatar($row->avatar, $row->email) ?>" class="user-avatar rounded-circle mr-3" alt="" />
-                            </a>
-
-                            <div class="d-flex flex-column">
-                                <div>
-                                    <a href="<?= url('admin/user-view/' . $row->user_id) ?>" <?= $row->type == 1 ? 'class="font-weight-bold" data-toggle="tooltip" title="' . l('admin_users.type_admin') . '"' : null ?>><?= $row->name ?></a>
-                                </div>
-
-                                <span class="small text-muted"><?= $row->email ?></span>
-                            </div>
-                        </div>
-                    </td>
-                    <td class="text-nowrap">
-                        <?php if($row->status == 0): ?>
-                            <a href="<?= url('admin/users?status=0') ?>" class="badge badge-warning"><i class="fas fa-fw fa-sm fa-eye-slash mr-1"></i> <?= l('admin_users.status_unconfirmed') ?></a>
-                        <?php elseif($row->status == 1): ?>
-                            <a href="<?= url('admin/users?status=1') ?>" class="badge badge-success"><i class="fas fa-fw fa-sm fa-check mr-1"></i> <?= l('admin_users.status_active') ?></a>
-                        <?php elseif($row->status == 2): ?>
-                            <a href="<?= url('admin/users?status=2') ?>" class="badge badge-light"><i class="fas fa-fw fa-sm fa-times mr-1"></i> <?= l('admin_users.status_disabled') ?></a>
-                        <?php endif ?>
-                    </td>
-                    <td class="text-nowrap">
-                        <div class="d-flex flex-column">
-                            <div>
-                                <a href="<?= url('admin/plan-update/' . $row->plan_id) ?>" class="badge badge-light"><?= $data->plans[$row->plan_id]->name ?></a>
-                            </div>
-
-                            <?php if($row->plan_id != 'free'): ?>
-                                <div>
-                                    <small class="text-muted" data-toggle="tooltip" title="<?= l('admin_users.plan_expiration_date') ?>"><?= \Altum\Date::get($row->plan_expiration_date, 1) ?></small>
-                                </div>
-                            <?php endif ?>
-                        </div>
-                    </td>
-                    <td class="text-nowrap">
-                        <div class="d-flex align-items-center">
-                            <span class="mr-2" data-toggle="tooltip" data-html="true" title="<?= l('admin_users.datetime') . '<br />' . \Altum\Date::get($row->datetime, 2) . '<br /><small>' . \Altum\Date::get($row->datetime, 3) . '</small>' . '<br /><small>(' . \Altum\Date::get_timeago($row->datetime) . ')</small>' ?>">
-                                <i class="fas fa-fw fa-calendar text-muted"></i>
-                            </span>
-
-                            <a href="<?= url('admin/users?source=' . $row->source) ?>" class="mr-2" data-toggle="tooltip" title="<?= l('admin_users.source.' . $row->source) ?>">
-                                <i class="fas fa-fw fa-sign-in-alt text-muted"></i>
-                            </a>
-
-                            <span class="mr-2" data-toggle="tooltip" data-html="true" title="<?= l('admin_users.last_activity') . '<br />' . \Altum\Date::get($row->last_activity, 2) . '<br /><small>' . \Altum\Date::get($row->last_activity, 3) . '</small>' . '<br /><small>(' . \Altum\Date::get_timeago($row->last_activity) . ')</small>' ?>">
-                                <i class="fas fa-fw fa-history text-muted"></i>
-                            </span>
-
-                            <span class="mr-2" data-toggle="tooltip" title="<?= sprintf(l('admin_users.table.total_logins'), nr($row->total_logins)) ?>">
-                                <i class="fas fa-fw fa-user-clock text-muted"></i>
-                            </span>
-
-                            <a href="<?= url('admin/users?continent_code=' . $row->continent_code) ?>" class="mr-2" data-toggle="tooltip" title="<?= get_continent_from_continent_code($row->continent_code ?? l('global.unknown')) ?>">
-                                <i class="fas fa-fw fa-globe-europe text-muted"></i>
-                            </a>
-
-                            <a href="<?= url('admin/users?country=' . $row->country) ?>">
-                                <?php if($row->country): ?>
-                                    <img src="<?= ASSETS_FULL_URL . 'images/countries/' . mb_strtolower($row->country) . '.svg' ?>" class="icon-favicon mr-2" data-toggle="tooltip" title="<?= get_country_from_country_code($row->country) ?>" />
-                                <?php else: ?>
-                                    <span class="mr-2" data-toggle="tooltip" title="<?= l('global.unknown') ?>">
-                                    <i class="fas fa-fw fa-flag text-muted"></i>
-                                </span>
-                                <?php endif ?>
-                            </a>
-
-                            <a href="<?= url('admin/users?city_name=' . $row->city_name) ?>" class="mr-2" data-toggle="tooltip" title="<?= $row->city_name ?? l('global.unknown') ?>">
-                                <i class="fas fa-fw fa-city text-muted"></i>
-                            </a>
-                        </div>
-                    </td>
-                    <td>
-                        <div class="d-flex justify-content-end">
-                            <?= include_view(THEME_PATH . 'views/admin/users/admin_user_dropdown_button.php', ['id' => $row->user_id, 'resource_name' => $row->name]) ?>
-                        </div>
-                    </td>
-                </tr>
-            <?php endwhile ?>
-
-            <tr>
-                <td colspan="5">
-                    <a href="<?= url('admin/users') ?>" class="text-muted text-decoration-none small">
-                        <i class="fas fa-angle-right fa-sm fa-fw mr-1"></i> <?= l('global.view_more') ?>
-                    </a>
-                </td>
-            </tr>
-            </tbody>
-        </table>
-    </div>
-</div>
-
+<?php if($is_sensitive_dashboard): ?>
 <?php if(settings()->internal_notifications->admins_is_enabled): ?>
     <?php if($data->internal_notifications): ?>
-        <h1 class="h3 mb-4"><i class="fas fa-fw fa-xs fa-bell text-primary-900 mr-2"></i> <?= l('admin_index.admins_notifications') ?></h1>
-
-        <div class="card mb-5">
-            <div class="card-body py-2">
+        <!-- Custom code: FC-2026-03-18: redesigned private admin notifications section -->
+        <div class="mb-5" style="order: 33;">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-3">
                 <div>
-                    <?php foreach($data->internal_notifications as $notification): ?>
-                        <?php //ALTUMCODE:DEMO if(DEMO) {$notification->title = $notification->description = 'hidden on demo';} ?>
+                    <h1 class="h3 mb-1"><i class="fas fa-fw fa-xs fa-bell text-primary-900 mr-2"></i> <?= l('admin_index.admins_notifications') ?></h1>
+                    <p class="text-muted mb-0"><?= \Altum\Date::get_timeago($data->internal_notifications[0]->datetime) ?> · <?= nr(count($data->internal_notifications)) ?></p>
+                </div>
 
-                        <div class="bg-gray-100 p-3 my-3 rounded <?= $notification->is_read ? null : 'border border-info' ?> position-relative">
-                            <div class="d-flex align-items-center">
-                                <div class="p-3 bg-gray-50 mr-3 rounded">
-                                    <i class="<?= $notification->icon ?> fa-fw fa-lg text-primary-900"></i>
-                                </div>
+                <div class="mt-3 mt-md-0">
+                    <span class="private-dashboard-pill"><?= nr(count($data->internal_notifications)) ?></span>
+                </div>
+            </div>
 
-                                <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-lg-between flex-fill">
-                                    <div class="d-flex flex-column">
-                                        <div class="font-weight-bold mb-1">
-                                            <?php if($notification->url): ?>
-                                                <a href="<?= $notification->url ?>" class="stretched-link text-decoration-none text-body"><?= $notification->title ?></a>
-                                            <?php else: ?>
-                                                <?= $notification->title ?>
-                                            <?php endif ?>
+            <div class="card border-0 shadow-sm overflow-hidden private-dashboard-notifications-shell">
+                <div class="card-body p-3 p-lg-4">
+                    <div class="d-flex flex-column">
+                        <?php foreach($data->internal_notifications as $notification): ?>
+                            <?php //ALTUMCODE:DEMO if(DEMO) {$notification->title = $notification->description = 'hidden on demo';} ?>
+
+                            <div class="private-dashboard-list-item mb-3 <?= !$notification->is_read ? 'border-info' : null ?> position-relative">
+                                <div class="card-body py-3 px-3 px-lg-4">
+                                    <div class="d-flex align-items-start">
+                                        <div class="d-flex align-items-center justify-content-center rounded-circle mr-3 flex-shrink-0" style="width: 3rem; height: 3rem; background: rgba(13, 110, 253, 0.08);">
+                                            <i class="<?= $notification->icon ?> fa-fw fa-lg text-primary-900"></i>
                                         </div>
 
-                                        <small class="text-muted"><?= $notification->description ?></small>
-                                    </div>
+                                        <div class="d-flex flex-column flex-lg-row align-items-lg-start justify-content-lg-between flex-fill min-width-0">
+                                            <div class="d-flex flex-column pr-lg-4 min-width-0">
+                                                <div class="d-flex align-items-center flex-wrap mb-1">
+                                                    <div class="font-weight-bold mr-2 text-break">
+                                                        <?php if($notification->url): ?>
+                                                            <a href="<?= $notification->url ?>" class="stretched-link text-decoration-none"><?= $notification->title ?></a>
+                                                        <?php else: ?>
+                                                            <?= $notification->title ?>
+                                                        <?php endif ?>
+                                                    </div>
 
-                                    <div>
-                                        <small class="text-muted" data-toggle="tooltip" title="<?= \Altum\Date::get($notification->datetime, 1) ?>"><?= \Altum\Date::get_timeago($notification->datetime) ?></small>
+                                                    <?php if(!$notification->is_read): ?>
+                                                        <span class="badge badge-info"><i class="fas fa-circle fa-xs"></i></span>
+                                                    <?php endif ?>
+                                                </div>
+
+                                                <small class="text-muted text-break"><?= $notification->description ?></small>
+                                            </div>
+
+                                            <div class="mt-3 mt-lg-0 text-lg-right flex-shrink-0">
+                                                <div class="small font-weight-bold"><?= \Altum\Date::get_timeago($notification->datetime) ?></div>
+                                                <div class="small text-muted" data-toggle="tooltip" title="<?= \Altum\Date::get($notification->datetime, 1) ?>"><?= \Altum\Date::get($notification->datetime, 2) ?></div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    <?php endforeach ?>
+                        <?php endforeach ?>
+                    </div>
                 </div>
             </div>
         </div>
+        <!-- /Custom code: FC-2026-03-18 -->
     <?php endif ?>
+<?php endif ?>
 <?php endif ?>
 
 
+<?php if($is_sensitive_dashboard): ?>
 <?php if(in_array(settings()->license->type, ['SPECIAL', 'Extended License', 'extended'])): ?>
     <?php $result = database()->query("SELECT `payments`.*, `users`.`name` AS `user_name`, `users`.`email` AS `user_email`, `users`.`avatar` AS `user_avatar` FROM `payments` LEFT JOIN `users` ON `payments`.`user_id` = `users`.`user_id` ORDER BY `id` DESC LIMIT 5"); ?>
 
     <?php if($result->num_rows): ?>
-        <div class="mb-5">
+        <div class="mb-5" style="order: 34;">
             <h1 class="h3 mb-4"><i class="fas fa-fw fa-xs fa-credit-card text-primary-900 mr-2"></i> <?= l('admin_index.payments') ?></h1>
 
-            <div class="table-responsive table-custom-container">
+            <div class="card private-dashboard-payments-shell border-0 shadow-sm overflow-hidden">
+                <div class="card-body p-0">
+                    <div class="table-responsive table-custom-container private-dashboard-table">
                 <table class="table table-custom">
                     <thead>
                     <tr>
@@ -1073,150 +1338,168 @@
                     </tr>
                     </tbody>
                 </table>
+                    </div>
+                </div>
             </div>
         </div>
     <?php endif ?>
 <?php endif ?>
+<?php endif ?>
 
-<div class="mb-5 mt-4">
-    <div class="d-flex flex-column flex-md-row justify-content-between mb-4">
-        <h1 class="h3 mb-3 mb-md-0 text-truncate"><i class="fas fa-fw fa-xs fa-graduation-cap text-primary-900 mr-2"></i> <?= l('admin_index.fcc_pending.header') ?></h1>
+<?php if(!$is_sensitive_dashboard): ?>
+<div class="row align-items-start" style="order: 13;">
+    <div class="col-12 col-xl-6 p-2">
+        <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex flex-column flex-md-row justify-content-between mb-4">
+                    <h1 class="h3 mb-3 mb-md-0 text-truncate"><i class="fas fa-fw fa-xs fa-store text-primary-900 mr-2"></i> <?= l('admin_index.sales_link_missing.header') ?></h1>
 
-        <div>
-            <span class="badge badge-warning">
-                <?= sprintf(l('admin_index.fcc_pending.total'), nr($data->fcc_pending_education_total)) ?>
-            </span>
+                    <div>
+                        <span class="badge badge-warning">
+                            <?= sprintf(l('admin_index.sales_link_missing.total'), nr($data->missing_sales_link_total)) ?>
+                        </span>
+                    </div>
+                </div>
+
+                <p class="text-muted mb-3"><?= l('admin_index.sales_link_missing.subheader') ?></p>
+
+                <form method="get" action="<?= url('admin') ?>" class="mb-3">
+                    <input type="hidden" name="sales_page" value="1" />
+                    <div class="input-group">
+                        <input
+                            type="search"
+                            name="sales_search"
+                            class="form-control"
+                            value="<?= $data->missing_sales_link_search ?>"
+                            placeholder="<?= l('admin_index.sales_link_missing.search_placeholder') ?>"
+                        />
+                        <div class="input-group-append">
+                            <button type="submit" class="btn btn-outline-primary"><?= l('global.search') ?></button>
+                            <a href="<?= url('admin') ?>" class="btn btn-outline-secondary"><?= l('global.reset') ?></a>
+                        </div>
+                    </div>
+                </form>
+
+                <?php if($data->missing_sales_link_total == 0 && empty($data->missing_sales_link_search)): ?>
+                    <div class="alert alert-success mb-0"><?= l('admin_index.sales_link_missing.empty') ?></div>
+                <?php elseif(empty($data->missing_sales_link_users)): ?>
+                    <div class="alert alert-info mb-0"><?= l('admin_index.sales_link_missing.no_results') ?></div>
+                <?php else: ?>
+                    <div class="table-responsive table-custom-container mb-3" id="sales_link_missing_table_container">
+                        <table class="table table-custom">
+                            <thead>
+                            <tr>
+                                <th><?= l('global.user') ?></th>
+                                <th><?= l('admin_index.sales_link_missing.forever_id') ?></th>
+                                <th></th>
+                            </tr>
+                            </thead>
+                            <tbody id="sales_link_missing_table_body">
+                            <?php foreach($data->missing_sales_link_users as $pending_user): ?>
+                                <tr class="sales-link-missing-row">
+                                    <td class="text-nowrap">
+                                        <a href="<?= url('admin/user-view/' . $pending_user->user_id) ?>"><?= $pending_user->name ?></a>
+                                    </td>
+                                    <td class="text-nowrap">
+                                        <span class="badge badge-light"><?= $pending_user->forever_id ?></span>
+                                    </td>
+                                    <td class="text-nowrap">
+                                        <div class="d-flex justify-content-end">
+                                            <a href="<?= url('admin/user-view/' . $pending_user->user_id) ?>" class="btn btn-sm btn-outline-primary"><?= l('global.view') ?></a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            <?php endforeach ?>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div id="sales_link_missing_table_toggle" class="mb-3"></div>
+
+                    <?= include_view(THEME_PATH . 'views/partials/admin_pagination.php', ['paginator' => $data->missing_sales_link_paginator]) ?>
+                <?php endif ?>
+            </div>
         </div>
     </div>
 
-    <p class="text-muted mb-3"><?= l('admin_index.fcc_pending.subheader') ?></p>
+    <div class="col-12 col-xl-6 p-2">
+        <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex flex-column flex-md-row justify-content-between mb-4">
+                    <h1 class="h3 mb-3 mb-md-0 text-truncate"><i class="fas fa-fw fa-xs fa-graduation-cap text-primary-900 mr-2"></i> <?= l('admin_index.fcc_pending.header') ?></h1>
 
-    <form method="get" action="<?= url('admin') ?>" class="mb-3">
-        <input type="hidden" name="fcc_page" value="1" />
-        <div class="input-group">
-            <input
-                type="search"
-                name="fcc_search"
-                class="form-control"
-                value="<?= $data->fcc_pending_education_search ?>"
-                placeholder="<?= l('admin_index.fcc_pending.search_placeholder') ?>"
-            />
-            <div class="input-group-append">
-                <button type="submit" class="btn btn-outline-primary"><?= l('global.search') ?></button>
-                <a href="<?= url('admin') ?>" class="btn btn-outline-secondary"><?= l('global.reset') ?></a>
+                    <div>
+                        <span class="badge badge-warning">
+                            <?= sprintf(l('admin_index.fcc_pending.total'), nr($data->fcc_pending_education_total)) ?>
+                        </span>
+                    </div>
+                </div>
+
+                <p class="text-muted mb-3"><?= l('admin_index.fcc_pending.subheader') ?></p>
+
+                <form method="get" action="<?= url('admin') ?>" class="mb-3">
+                    <input type="hidden" name="fcc_page" value="1" />
+                    <div class="input-group">
+                        <input
+                            type="search"
+                            name="fcc_search"
+                            class="form-control"
+                            value="<?= $data->fcc_pending_education_search ?>"
+                            placeholder="<?= l('admin_index.fcc_pending.search_placeholder') ?>"
+                        />
+                        <div class="input-group-append">
+                            <button type="submit" class="btn btn-outline-primary"><?= l('global.search') ?></button>
+                            <a href="<?= url('admin') ?>" class="btn btn-outline-secondary"><?= l('global.reset') ?></a>
+                        </div>
+                    </div>
+                </form>
+
+                <?php if($data->fcc_pending_education_total == 0 && empty($data->fcc_pending_education_search)): ?>
+                    <div class="alert alert-success mb-0"><?= l('admin_index.fcc_pending.empty') ?></div>
+                <?php elseif(empty($data->fcc_pending_education_users)): ?>
+                    <div class="alert alert-info mb-0"><?= l('admin_index.fcc_pending.no_results') ?></div>
+                <?php else: ?>
+                    <div class="table-responsive table-custom-container mb-3" id="fcc_pending_table_container">
+                        <table class="table table-custom">
+                            <thead>
+                            <tr>
+                                <th><?= l('global.user') ?></th>
+                                <th><?= l('admin_index.fcc_pending.forever_id') ?></th>
+                                <th></th>
+                            </tr>
+                            </thead>
+                            <tbody id="fcc_pending_table_body">
+                            <?php foreach($data->fcc_pending_education_users as $pending_user): ?>
+                                <tr class="fcc-pending-row">
+                                    <td class="text-nowrap">
+                                        <a href="<?= url('admin/user-view/' . $pending_user->user_id) ?>"><?= $pending_user->name ?></a>
+                                    </td>
+                                    <td class="text-nowrap">
+                                        <span class="badge badge-light"><?= $pending_user->forever_id ?></span>
+                                    </td>
+                                    <td class="text-nowrap">
+                                        <div class="d-flex justify-content-end">
+                                            <a href="<?= url('admin/user-view/' . $pending_user->user_id) ?>" class="btn btn-sm btn-outline-primary"><?= l('global.view') ?></a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            <?php endforeach ?>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div id="fcc_pending_table_toggle" class="mb-3"></div>
+
+                    <?= include_view(THEME_PATH . 'views/partials/admin_pagination.php', ['paginator' => $data->fcc_pending_education_paginator]) ?>
+                <?php endif ?>
             </div>
-        </div>
-    </form>
-
-    <?php if($data->fcc_pending_education_total == 0 && empty($data->fcc_pending_education_search)): ?>
-        <div class="alert alert-success mb-0"><?= l('admin_index.fcc_pending.empty') ?></div>
-    <?php elseif(empty($data->fcc_pending_education_users)): ?>
-        <div class="alert alert-info mb-0"><?= l('admin_index.fcc_pending.no_results') ?></div>
-    <?php else: ?>
-        <div class="table-responsive table-custom-container mb-3" id="fcc_pending_table_container">
-            <table class="table table-custom">
-                <thead>
-                <tr>
-                    <th><?= l('global.user') ?></th>
-                    <th><?= l('admin_index.fcc_pending.forever_id') ?></th>
-                    <th></th>
-                </tr>
-                </thead>
-                <tbody id="fcc_pending_table_body">
-                <?php foreach($data->fcc_pending_education_users as $pending_user): ?>
-                    <tr class="fcc-pending-row">
-                        <td class="text-nowrap">
-                            <a href="<?= url('admin/user-view/' . $pending_user->user_id) ?>"><?= $pending_user->name ?></a>
-                        </td>
-                        <td class="text-nowrap">
-                            <span class="badge badge-light"><?= $pending_user->forever_id ?></span>
-                        </td>
-                        <td class="text-nowrap">
-                            <div class="d-flex justify-content-end">
-                                <a href="<?= url('admin/user-view/' . $pending_user->user_id) ?>" class="btn btn-sm btn-outline-primary"><?= l('global.view') ?></a>
-                            </div>
-                        </td>
-                    </tr>
-                <?php endforeach ?>
-                </tbody>
-            </table>
-        </div>
-
-        <div id="fcc_pending_table_toggle" class="mb-3"></div>
-
-        <?= include_view(THEME_PATH . 'views/partials/admin_pagination.php', ['paginator' => $data->fcc_pending_education_paginator]) ?>
-    <?php endif ?>
-</div>
-
-<div class="mb-5 mt-4">
-    <div class="d-flex flex-column flex-md-row justify-content-between mb-4">
-        <h1 class="h3 mb-3 mb-md-0 text-truncate"><i class="fas fa-fw fa-xs fa-store text-primary-900 mr-2"></i> <?= l('admin_index.sales_link_missing.header') ?></h1>
-
-        <div>
-            <span class="badge badge-warning">
-                <?= sprintf(l('admin_index.sales_link_missing.total'), nr($data->missing_sales_link_total)) ?>
-            </span>
         </div>
     </div>
-
-    <p class="text-muted mb-3"><?= l('admin_index.sales_link_missing.subheader') ?></p>
-
-    <form method="get" action="<?= url('admin') ?>" class="mb-3">
-        <input type="hidden" name="sales_page" value="1" />
-        <div class="input-group">
-            <input
-                type="search"
-                name="sales_search"
-                class="form-control"
-                value="<?= $data->missing_sales_link_search ?>"
-                placeholder="<?= l('admin_index.sales_link_missing.search_placeholder') ?>"
-            />
-            <div class="input-group-append">
-                <button type="submit" class="btn btn-outline-primary"><?= l('global.search') ?></button>
-                <a href="<?= url('admin') ?>" class="btn btn-outline-secondary"><?= l('global.reset') ?></a>
-            </div>
-        </div>
-    </form>
-
-    <?php if($data->missing_sales_link_total == 0 && empty($data->missing_sales_link_search)): ?>
-        <div class="alert alert-success mb-0"><?= l('admin_index.sales_link_missing.empty') ?></div>
-    <?php elseif(empty($data->missing_sales_link_users)): ?>
-        <div class="alert alert-info mb-0"><?= l('admin_index.sales_link_missing.no_results') ?></div>
-    <?php else: ?>
-        <div class="table-responsive table-custom-container mb-3" id="sales_link_missing_table_container">
-            <table class="table table-custom">
-                <thead>
-                <tr>
-                    <th><?= l('global.user') ?></th>
-                    <th><?= l('admin_index.sales_link_missing.forever_id') ?></th>
-                    <th></th>
-                </tr>
-                </thead>
-                <tbody id="sales_link_missing_table_body">
-                <?php foreach($data->missing_sales_link_users as $pending_user): ?>
-                    <tr class="sales-link-missing-row">
-                        <td class="text-nowrap">
-                            <a href="<?= url('admin/user-view/' . $pending_user->user_id) ?>"><?= $pending_user->name ?></a>
-                        </td>
-                        <td class="text-nowrap">
-                            <span class="badge badge-light"><?= $pending_user->forever_id ?></span>
-                        </td>
-                        <td class="text-nowrap">
-                            <div class="d-flex justify-content-end">
-                                <a href="<?= url('admin/user-view/' . $pending_user->user_id) ?>" class="btn btn-sm btn-outline-primary"><?= l('global.view') ?></a>
-                            </div>
-                        </td>
-                    </tr>
-                <?php endforeach ?>
-                </tbody>
-            </table>
-        </div>
-
-        <div id="sales_link_missing_table_toggle" class="mb-3"></div>
-
-        <?= include_view(THEME_PATH . 'views/partials/admin_pagination.php', ['paginator' => $data->missing_sales_link_paginator]) ?>
-    <?php endif ?>
 </div>
+<?php endif ?>
+
+</div>
+<!-- /Custom code: FC-2026-03-18 -->
 
 <?php require THEME_PATH . 'views/partials/js_chart_defaults.php' ?>
 
@@ -1229,10 +1512,17 @@
     let dashboard_kpi_payload = {};
     let biolink_analytics_payload = {};
     let biolink_analytics_period = '30d';
+    let sales_subscriptions_chart_payload = {};
+    let sales_subscriptions_chart_period = 30;
+    let biolink_selected_collaborator = null;
+    let biolink_search_timeout = null;
+    let biolink_search_request_id = 0;
+    const biolink_collaborator_cache = {};
     let dashboard_charts = {
         revenue: null,
         users: null,
         sales_subscriptions: null,
+        biolink_analytics: null,
     };
 
     const escape_html = value => {
@@ -1330,6 +1620,67 @@
         }
     };
 
+    const compact_items_state = {};
+    const init_compact_items = (items_selector, toggle_selector, visible_limit = 4) => {
+        const items = [...document.querySelectorAll(items_selector)];
+        const toggle_container = document.querySelector(toggle_selector);
+
+        if(!items.length || !toggle_container) {
+            return;
+        }
+
+        if(items.length <= visible_limit) {
+            toggle_container.innerHTML = '';
+            return;
+        }
+
+        if(compact_items_state[items_selector] === undefined) {
+            compact_items_state[items_selector] = false;
+        }
+
+        const is_expanded = compact_items_state[items_selector];
+        items.forEach((item, index) => {
+            item.classList.toggle('d-none', !is_expanded && index >= visible_limit);
+        });
+
+        toggle_container.innerHTML = `
+            <button type="button" class="btn btn-sm btn-outline-secondary" data-items-toggle="${escape_html(items_selector)}">
+                ${is_expanded ? '<?= l('admin_index.compact_list.show_less') ?>' : '<?= l('global.view_more') ?>'}
+            </button>
+        `;
+
+        const toggle_button = toggle_container.querySelector('[data-items-toggle]');
+        if(toggle_button) {
+            toggle_button.addEventListener('click', () => {
+                compact_items_state[items_selector] = !compact_items_state[items_selector];
+                init_compact_items(items_selector, toggle_selector, visible_limit);
+            });
+        }
+    };
+
+    /* Custom code: FC-2026-03-18: guard dashboard rendering across split views */
+    const get_element = selector => document.querySelector(selector);
+    const set_text_if_present = (selector, value) => {
+        const element = get_element(selector);
+
+        if(element) {
+            element.innerText = value;
+        }
+
+        return element;
+    };
+
+    const set_html_if_present = (selector, value) => {
+        const element = get_element(selector);
+
+        if(element) {
+            element.innerHTML = value;
+        }
+
+        return element;
+    };
+    /* /Custom code: FC-2026-03-18 */
+
     const render_kpi = period => {
         if(!dashboard_kpi_payload[period]) {
             return;
@@ -1346,8 +1697,14 @@
     };
 
     const render_realtime = realtime => {
-        document.querySelector('#realtime_online_users').innerText = nr(realtime.online_users ?? 0);
-        document.querySelector('#realtime_active_sessions').innerText = nr(realtime.active_sessions ?? 0);
+        if(!get_element('#realtime_online_users') && !get_element('#realtime_online_users_card')) {
+            return;
+        }
+
+        set_text_if_present('#realtime_online_users', nr(realtime.online_users ?? 0));
+        set_text_if_present('#realtime_online_users_card', nr(realtime.online_users ?? 0));
+        set_text_if_present('#realtime_active_sessions', nr(realtime.active_sessions ?? 0));
+        set_text_if_present('#realtime_recent_logins_total', nr(realtime.recent_logins_total ?? 0));
 
         /* Custom code: FC-2026-03-08: render online users modal list */
         const online_users_list_html = (realtime.online_users_list ?? []).map(online_user => {
@@ -1362,7 +1719,7 @@
             `;
         }).join('');
 
-        document.querySelector('#realtime_online_users_list').innerHTML = online_users_list_html || `<span class="text-muted"><?= l('global.no_data') ?></span>`;
+        set_html_if_present('#realtime_online_users_list', online_users_list_html || `<span class="text-muted"><?= l('global.no_data') ?></span>`);
         /* /Custom code: FC-2026-03-08 */
 
         const recent_logins_html = (realtime.recent_logins ?? []).map(login => {
@@ -1377,7 +1734,7 @@
             `;
         }).join('');
 
-        document.querySelector('#realtime_recent_logins').innerHTML = recent_logins_html || `<span class="text-muted"><?= l('global.no_data') ?></span>`;
+        set_html_if_present('#realtime_recent_logins', recent_logins_html || `<span class="text-muted"><?= l('global.no_data') ?></span>`);
 
         const online_collaborators_html = (realtime.online_collaborators ?? []).map(collaborator => {
             const last_activity_date = collaborator.last_activity ? new Date(collaborator.last_activity.replace(' ', 'T')) : null;
@@ -1391,46 +1748,16 @@
             `;
         }).join('');
 
-        document.querySelector('#realtime_online_collaborators').innerHTML = online_collaborators_html || `<span class="text-muted"><?= l('global.no_data') ?></span>`;
-    };
-
-    const render_alerts = alerts => {
-        const failed_payments_class = alerts.failed_payments_warning ? 'alert alert-warning mb-2' : 'alert alert-success mb-2';
-        const churn_class = alerts.churn_spike ? 'alert alert-danger mb-0' : 'alert alert-success mb-0';
-
-        document.querySelector('#alert_failed_payments').className = failed_payments_class;
-        document.querySelector('#alert_failed_payments').innerText = `<?= l('admin_index.analytics_phase1.alerts.failed_payments_7d') ?>: ${nr(alerts.failed_payments_7d ?? 0)}`;
-
-        document.querySelector('#alert_churn_spike').className = churn_class;
-        document.querySelector('#alert_churn_spike').innerText = alerts.churn_spike
-            ? `<?= l('admin_index.analytics_phase1.alerts.churn_spike_on') ?> (${nr(alerts.churn_7d ?? 0)}%)`
-            : `<?= l('admin_index.analytics_phase1.alerts.churn_spike_off') ?> (${nr(alerts.churn_7d ?? 0)}%)`;
+        set_html_if_present('#realtime_online_collaborators', online_collaborators_html || `<span class="text-muted"><?= l('global.no_data') ?></span>`);
     };
 
     const render_charts = charts => {
-        const revenue_chart_context = document.getElementById('dashboard_revenue_chart').getContext('2d');
-        const users_chart_context = document.getElementById('dashboard_users_chart').getContext('2d');
-
-        if(!dashboard_charts.revenue) {
-            dashboard_charts.revenue = new Chart(revenue_chart_context, {
-                type: 'line',
-                data: {
-                    labels: charts.labels ?? [],
-                    datasets: [{
-                        label: '<?= l('admin_index.analytics_phase1.charts.revenue_dataset') ?>',
-                        data: charts.revenue_series ?? [],
-                        borderColor: chart_css.getPropertyValue('--primary'),
-                        backgroundColor: set_hex_opacity(chart_css.getPropertyValue('--primary'), 0.08),
-                        fill: true
-                    }]
-                },
-                options: chart_options
-            });
-        } else {
-            dashboard_charts.revenue.data.labels = charts.labels ?? [];
-            dashboard_charts.revenue.data.datasets[0].data = charts.revenue_series ?? [];
-            dashboard_charts.revenue.update();
+        const users_chart_canvas = document.getElementById('dashboard_users_chart');
+        if(!users_chart_canvas) {
+            return;
         }
+
+        const users_chart_context = users_chart_canvas.getContext('2d');
 
         if(!dashboard_charts.users) {
             dashboard_charts.users = new Chart(users_chart_context, {
@@ -1438,17 +1765,12 @@
                 data: {
                     labels: charts.labels ?? [],
                     datasets: [{
-                        label: '<?= l('admin_index.analytics_phase1.charts.new_users_dataset') ?>',
-                        data: charts.new_users_series ?? [],
-                        borderColor: chart_css.getPropertyValue('--success'),
-                        backgroundColor: set_hex_opacity(chart_css.getPropertyValue('--success'), 0.08),
-                        fill: true
-                    }, {
                         label: '<?= l('admin_index.analytics_phase1.charts.active_users_dataset') ?>',
                         data: charts.active_users_series ?? [],
                         borderColor: chart_css.getPropertyValue('--info'),
                         backgroundColor: set_hex_opacity(chart_css.getPropertyValue('--info'), 0.08),
-                        fill: true
+                        fill: true,
+                        tension: 0.35
                     }]
                 },
                 options: {
@@ -1464,53 +1786,48 @@
             });
         } else {
             dashboard_charts.users.data.labels = charts.labels ?? [];
-            dashboard_charts.users.data.datasets[0].data = charts.new_users_series ?? [];
-            dashboard_charts.users.data.datasets[1].data = charts.active_users_series ?? [];
+            dashboard_charts.users.data.datasets[0].data = charts.active_users_series ?? [];
             dashboard_charts.users.update();
         }
 
     };
 
-    const render_sales_subscriptions = (sales_subscriptions, charts) => {
-        document.querySelector('#sales_recurring_revenue_current_month').innerText = nr(sales_subscriptions.recurring_revenue_current_month ?? 0);
-        document.querySelector('#sales_active_paid_subscriptions').innerText = nr(sales_subscriptions.active_paid_subscriptions ?? 0);
-        document.querySelector('#sales_new_subscriptions_30d').innerText = nr(sales_subscriptions.new_subscriptions_30d ?? 0);
-        document.querySelector('#sales_cancelled_subscriptions_30d').innerText = nr(sales_subscriptions.cancelled_subscriptions_30d ?? 0);
-        document.querySelector('#sales_failed_payments_30d').innerText = nr(sales_subscriptions.failed_payments_30d ?? 0);
-        document.querySelector('#sales_plan_changes_30d').innerText = nr(sales_subscriptions.plan_changes_30d ?? 0);
+    /* Custom code: FC-2026-03-18: sales subscriptions chart period slicing */
+    const get_sales_subscriptions_chart_slice = () => {
+        const period = Number(sales_subscriptions_chart_period) || 30;
 
-        const at_risk_html = (sales_subscriptions.at_risk_trial_users ?? []).map(user => {
-            const plan_expiration_date = user.plan_expiration_date ? new Date(user.plan_expiration_date.replace(' ', 'T')) : null;
-            const plan_expiration_label = plan_expiration_date && !isNaN(plan_expiration_date) ? plan_expiration_date.toLocaleDateString() : '-';
+        return {
+            labels: (sales_subscriptions_chart_payload.labels ?? []).slice(-period),
+            active_pro_packages_series: (sales_subscriptions_chart_payload.active_pro_packages_series ?? []).slice(-period),
+            active_trials_series: (sales_subscriptions_chart_payload.active_trials_series ?? []).slice(-period),
+        };
+    };
 
-            return `
-                <div class="border-bottom py-2">
-                    <div><a href="${url}admin/user-view/${user.user_id}">${escape_html(user.name)}</a></div>
-                    <div class="text-muted">${escape_html(user.email)}</div>
-                    <div class="text-muted"><?= l('admin_index.sales_subscriptions.at_risk_until') ?>: ${escape_html(plan_expiration_label)}</div>
-                </div>
-            `;
-        }).join('');
+    const update_sales_subscriptions_chart = () => {
+        const sales_subscriptions_chart_canvas = document.getElementById('sales_subscriptions_chart');
+        if(!sales_subscriptions_chart_canvas) {
+            return;
+        }
 
-        document.querySelector('#sales_at_risk_trial_users').innerHTML = at_risk_html || `<span class="text-muted"><?= l('global.no_data') ?></span>`;
+        const chart_data = get_sales_subscriptions_chart_slice();
+        const sales_subscriptions_chart_context = sales_subscriptions_chart_canvas.getContext('2d');
 
-        const sales_subscriptions_chart_context = document.getElementById('sales_subscriptions_chart').getContext('2d');
         if(!dashboard_charts.sales_subscriptions) {
             dashboard_charts.sales_subscriptions = new Chart(sales_subscriptions_chart_context, {
                 type: 'line',
                 data: {
-                    labels: charts.labels ?? [],
+                    labels: chart_data.labels,
                     datasets: [{
-                        label: '<?= l('admin_index.sales_subscriptions.chart_new_subscriptions') ?>',
-                        data: charts.new_subscriptions_series ?? [],
+                        label: '<?= l('admin_index.sales_subscriptions.chart_active_pro_packages') ?>',
+                        data: chart_data.active_pro_packages_series,
                         borderColor: chart_css.getPropertyValue('--success'),
                         backgroundColor: set_hex_opacity(chart_css.getPropertyValue('--success'), 0.08),
                         fill: true
                     }, {
-                        label: '<?= l('admin_index.sales_subscriptions.chart_cancelled_subscriptions') ?>',
-                        data: charts.cancelled_subscriptions_series ?? [],
-                        borderColor: chart_css.getPropertyValue('--danger'),
-                        backgroundColor: set_hex_opacity(chart_css.getPropertyValue('--danger'), 0.08),
+                        label: '<?= l('admin_index.sales_subscriptions.chart_active_trials') ?>',
+                        data: chart_data.active_trials_series,
+                        borderColor: chart_css.getPropertyValue('--primary'),
+                        backgroundColor: set_hex_opacity(chart_css.getPropertyValue('--primary'), 0.08),
                         fill: true
                     }]
                 },
@@ -1526,15 +1843,53 @@
                 }
             });
         } else {
-            dashboard_charts.sales_subscriptions.data.labels = charts.labels ?? [];
-            dashboard_charts.sales_subscriptions.data.datasets[0].data = charts.new_subscriptions_series ?? [];
-            dashboard_charts.sales_subscriptions.data.datasets[1].data = charts.cancelled_subscriptions_series ?? [];
+            dashboard_charts.sales_subscriptions.data.labels = chart_data.labels;
+            dashboard_charts.sales_subscriptions.data.datasets[0].data = chart_data.active_pro_packages_series;
+            dashboard_charts.sales_subscriptions.data.datasets[1].data = chart_data.active_trials_series;
             dashboard_charts.sales_subscriptions.update();
         }
+    };
+    /* /Custom code: FC-2026-03-18 */
+
+    const render_sales_subscriptions = sales_subscriptions => {
+        if(!get_element('#sales_recurring_revenue_current_month')) {
+            return;
+        }
+
+        set_text_if_present('#sales_recurring_revenue_current_month', nr(sales_subscriptions.recurring_revenue_current_month ?? 0));
+        set_text_if_present('#sales_active_paid_subscriptions', nr(sales_subscriptions.active_paid_subscriptions ?? 0));
+        set_text_if_present('#sales_active_total_pro_collaborators', nr(sales_subscriptions.active_total_pro_collaborators ?? 0));
+        set_text_if_present('#sales_cancelled_billing_30d', nr(sales_subscriptions.cancelled_billing_30d ?? 0));
+        set_text_if_present('#sales_new_subscriptions_30d', nr(sales_subscriptions.new_subscriptions_30d ?? 0));
+        set_text_if_present('#sales_cancelled_subscriptions_30d', nr(sales_subscriptions.cancelled_subscriptions_30d ?? 0));
+        set_text_if_present('#sales_failed_payments_30d', nr(sales_subscriptions.failed_payments_30d ?? 0));
+        set_text_if_present('#sales_plan_changes_30d', nr(sales_subscriptions.plan_changes_30d ?? 0));
+        sales_subscriptions_chart_payload = sales_subscriptions.chart ?? {};
+
+        const at_risk_html = (sales_subscriptions.at_risk_trial_users ?? []).map(user => {
+            const plan_expiration_date = user.plan_expiration_date ? new Date(user.plan_expiration_date.replace(' ', 'T')) : null;
+            const plan_expiration_label = plan_expiration_date && !isNaN(plan_expiration_date) ? plan_expiration_date.toLocaleDateString() : '-';
+
+            return `
+                <div class="border-bottom py-2">
+                    <div><a href="${url}admin/user-view/${user.user_id}">${escape_html(user.name)}</a></div>
+                    <div class="text-muted">${escape_html(user.email)}</div>
+                    <div class="text-muted"><?= l('admin_index.sales_subscriptions.at_risk_until') ?>: ${escape_html(plan_expiration_label)}</div>
+                </div>
+            `;
+        }).join('');
+
+        set_html_if_present('#sales_at_risk_trial_users', at_risk_html || `<span class="text-muted"><?= l('global.no_data') ?></span>`);
+
+        update_sales_subscriptions_chart();
     };
 
     /* Custom code: FC-2026-03-04: phase 5 action center rendering */
     const render_action_center = action_center => {
+        if(!get_element('#action_warning_trials')) {
+            return;
+        }
+
         const warnings_map = {};
         (action_center.warnings ?? []).forEach(item => {
             warnings_map[item.key] = item;
@@ -1543,13 +1898,13 @@
         const trials_warning = warnings_map.trials_expiring_without_subscription || {is_active: false, value: 0};
         const collaborators_warning = warnings_map.high_collaborator_clicks_no_billing || {is_active: false, value: 0};
 
-        document.querySelector('#action_warning_trials').className = trials_warning.is_active ? 'alert alert-danger mb-0' : 'alert alert-success mb-0';
-        document.querySelector('#action_warning_trials').innerText = trials_warning.is_active
+        get_element('#action_warning_trials').className = trials_warning.is_active ? 'alert alert-danger mb-0' : 'alert alert-success mb-0';
+        get_element('#action_warning_trials').innerText = trials_warning.is_active
             ? `<?= l('admin_index.action_center.warning_trials_active') ?> (${nr(trials_warning.value ?? 0)})`
             : `<?= l('admin_index.action_center.warning_trials_stable') ?> (${nr(trials_warning.value ?? 0)})`;
 
-        document.querySelector('#action_warning_collaborators').className = collaborators_warning.is_active ? 'alert alert-warning mb-0' : 'alert alert-success mb-0';
-        document.querySelector('#action_warning_collaborators').innerText = collaborators_warning.is_active
+        get_element('#action_warning_collaborators').className = collaborators_warning.is_active ? 'alert alert-warning mb-0' : 'alert alert-success mb-0';
+        get_element('#action_warning_collaborators').innerText = collaborators_warning.is_active
             ? `<?= l('admin_index.action_center.warning_collaborators_active') ?> (${nr(collaborators_warning.value ?? 0)})`
             : `<?= l('admin_index.action_center.warning_collaborators_stable') ?> (${nr(collaborators_warning.value ?? 0)})`;
 
@@ -1569,7 +1924,7 @@
             `;
         });
 
-        document.querySelector('#action_urgent_trials_count').innerText = `(${nr(urgent_trials_items.length)})`;
+        set_text_if_present('#action_urgent_trials_count', `(${nr(urgent_trials_items.length)})`);
         render_compact_list('#action_urgent_trials', urgent_trials_items, 5);
 
         const collaborator_opportunities_items = (action_center.collaborator_opportunities ?? []).map(item => {
@@ -1586,13 +1941,17 @@
             `;
         });
 
-        document.querySelector('#action_collaborator_opportunities_count').innerText = `(${nr(collaborator_opportunities_items.length)})`;
+        set_text_if_present('#action_collaborator_opportunities_count', `(${nr(collaborator_opportunities_items.length)})`);
         render_compact_list('#action_collaborator_opportunities', collaborator_opportunities_items, 5);
     };
     /* /Custom code: FC-2026-03-04 */
 
     /* Custom code: FC-2026-03-17: billing risk dashboard rendering */
     const render_billing_risk = billing_risk => {
+        if(!get_element('#billing_risk_past_due')) {
+            return;
+        }
+
         const counts = billing_risk.counts ?? {};
         const state_badges = {
             past_due: 'warning',
@@ -1601,11 +1960,11 @@
             healthy: 'success',
         };
 
-        document.querySelector('#billing_risk_past_due').innerText = nr(counts.past_due ?? 0);
-        document.querySelector('#billing_risk_critical').innerText = nr(counts.past_due_critical ?? 0);
-        document.querySelector('#billing_risk_revoked').innerText = nr(counts.access_revoked ?? 0);
-        document.querySelector('#billing_risk_expiring').innerText = nr(counts.expiring_24h ?? 0);
-        document.querySelector('#billing_risk_recovered').innerText = nr(counts.recovered_7d ?? 0);
+        set_text_if_present('#billing_risk_past_due', nr(counts.past_due ?? 0));
+        set_text_if_present('#billing_risk_critical', nr(counts.past_due_critical ?? 0));
+        set_text_if_present('#billing_risk_revoked', nr(counts.access_revoked ?? 0));
+        set_text_if_present('#billing_risk_expiring', nr(counts.expiring_24h ?? 0));
+        set_text_if_present('#billing_risk_recovered', nr(counts.recovered_7d ?? 0));
 
         const users = billing_risk.risk_users ?? [];
         const items = users.map(item => {
@@ -1641,7 +2000,7 @@
             `;
         });
 
-        document.querySelector('#billing_risk_users_count').innerText = `(${nr(users.length)})`;
+        set_text_if_present('#billing_risk_users_count', `(${nr(users.length)})`);
         render_compact_list('#billing_risk_users', items, 7);
     };
     /* /Custom code: FC-2026-03-17 */
@@ -1651,6 +2010,24 @@
         today: '<?= l('admin_index.analytics_phase1.period.today') ?>',
         '7d': '<?= l('admin_index.analytics_phase1.period.7d') ?>',
         '30d': '<?= l('admin_index.analytics_phase1.period.30d') ?>',
+        '90d': '<?= l('admin_index.analytics_phase1.period.90d') ?>',
+    };
+
+    const render_biolink_selected_collaborator_state = () => {
+        const selected_label = document.querySelector('#biolink_selected_collaborator_label');
+        const reset_button = document.querySelector('#biolink_selection_reset');
+
+        if(!selected_label || !reset_button) {
+            return;
+        }
+
+        if(biolink_selected_collaborator) {
+            selected_label.innerText = biolink_selected_collaborator.name || '<?= l('global.unknown') ?>';
+            reset_button.removeAttribute('disabled');
+        } else {
+            selected_label.innerText = '<?= l('admin_index.biolink_analytics.selection_all') ?>';
+            reset_button.setAttribute('disabled', 'disabled');
+        }
     };
 
     const render_biolink_user_details = user_id => {
@@ -1682,9 +2059,106 @@
         render_compact_list('#biolink_user_top_countries', user_top_countries_items, 5);
     };
 
+    const render_biolink_collaborator_details = collaborator => {
+        const period_data = collaborator?.periods?.[biolink_analytics_period] || {};
+
+        document.querySelector('#biolink_user_details_title').innerText = collaborator?.name
+            ? `<?= l('admin_index.biolink_analytics.user_details_for') ?> ${collaborator.name}`
+            : `<?= l('admin_index.biolink_analytics.user_details_default_title') ?>`;
+
+        document.querySelector('#biolink_user_clicks_total').innerText = nr(period_data.clicks_total ?? 0);
+        document.querySelector('#biolink_user_forever_shop_clicks').innerText = nr(period_data.forever_shop_clicks ?? 0);
+        document.querySelector('#biolink_user_forever_registration_clicks').innerText = nr(period_data.forever_registration_clicks ?? 0);
+
+        const user_top_countries_items = (period_data.top_countries ?? []).map(country => `
+            <div class="d-flex justify-content-between border-bottom py-1">
+                <span>${escape_html(country.country_code || '-')}</span>
+                <span>${nr(country.total ?? 0)}</span>
+            </div>
+        `);
+
+        document.querySelector('#biolink_user_top_countries_count').innerText = `(${nr(user_top_countries_items.length)})`;
+        render_compact_list('#biolink_user_top_countries', user_top_countries_items, 5);
+    };
+
+    const render_biolink_chart = (chart_data, selected_period_label, collaborator_name = null) => {
+        const biolink_chart_context = document.getElementById('biolink_analytics_chart')?.getContext('2d');
+        if(!biolink_chart_context) {
+            return;
+        }
+
+        document.querySelector('#biolink_chart_label').innerText = collaborator_name
+            ? `<?= l('admin_index.biolink_analytics.chart_header') ?> · ${collaborator_name} (${selected_period_label})`
+            : `<?= l('admin_index.biolink_analytics.chart_header') ?> (${selected_period_label})`;
+
+        const biolink_chart_datasets = [{
+            label: '<?= l('admin_index.biolink_analytics.clicks_selected_period') ?>',
+            data: chart_data.clicks_total_series ?? [],
+            borderColor: chart_css.getPropertyValue('--primary'),
+            backgroundColor: set_hex_opacity(chart_css.getPropertyValue('--primary'), 0.08),
+            fill: true,
+            tension: 0.35
+        }, {
+            label: '<?= l('admin_index.biolink_analytics.forever_shop_clicks_selected_period') ?>',
+            data: chart_data.forever_shop_clicks_series ?? [],
+            borderColor: chart_css.getPropertyValue('--success'),
+            backgroundColor: set_hex_opacity(chart_css.getPropertyValue('--success'), 0.08),
+            fill: true,
+            tension: 0.35
+        }, {
+            label: '<?= l('admin_index.biolink_analytics.forever_registration_clicks_selected_period') ?>',
+            data: chart_data.forever_registration_clicks_series ?? [],
+            borderColor: chart_css.getPropertyValue('--warning'),
+            backgroundColor: set_hex_opacity(chart_css.getPropertyValue('--warning'), 0.08),
+            fill: true,
+            tension: 0.35
+        }];
+
+        if(!dashboard_charts.biolink_analytics) {
+            dashboard_charts.biolink_analytics = new Chart(biolink_chart_context, {
+                type: 'line',
+                data: {
+                    labels: chart_data.labels ?? [],
+                    datasets: biolink_chart_datasets,
+                },
+                options: {
+                    ...chart_options,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    plugins: {
+                        ...chart_options.plugins,
+                        legend: {
+                            display: true,
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        } else {
+            dashboard_charts.biolink_analytics.data.labels = chart_data.labels ?? [];
+            dashboard_charts.biolink_analytics.data.datasets = biolink_chart_datasets;
+            dashboard_charts.biolink_analytics.update();
+        }
+    };
+
     const render_biolink_period = () => {
+        if(!get_element('#biolink_period_total_clicks')) {
+            return;
+        }
+
         const period_data = biolink_analytics_payload.periods?.[biolink_analytics_period] || {};
         const selected_period_label = period_labels[biolink_analytics_period] || period_labels['30d'];
+        const selected_collaborator_period_data = biolink_selected_collaborator?.periods?.[biolink_analytics_period] || null;
+
+        document.querySelector('#biolink_period_total_label').innerText = `<?= l('admin_index.biolink_analytics.clicks_selected_period') ?> (${selected_period_label})`;
+        document.querySelector('#biolink_period_shop_label').innerText = `<?= l('admin_index.biolink_analytics.forever_shop_clicks_selected_period') ?> (${selected_period_label})`;
+        document.querySelector('#biolink_period_registration_label').innerText = `<?= l('admin_index.biolink_analytics.forever_registration_clicks_selected_period') ?> (${selected_period_label})`;
+        document.querySelector('#biolink_period_total_clicks').innerText = nr(period_data.clicks_total ?? 0);
+        document.querySelector('#biolink_period_shop_clicks').innerText = nr(period_data.forever_shop_clicks ?? 0);
+        document.querySelector('#biolink_period_registration_clicks').innerText = nr(period_data.forever_registration_clicks ?? 0);
+        render_biolink_selected_collaborator_state();
 
         document.querySelector('#biolink_top_countries_label').innerText = `<?= l('admin_index.biolink_analytics.top_countries_header') ?> (${selected_period_label})`;
         document.querySelector('#biolink_leaderboard_label').innerText = `<?= l('admin_index.biolink_analytics.leaderboard_header') ?> (${selected_period_label})`;
@@ -1694,7 +2168,11 @@
         document.querySelector('#biolink_top_shop_sources_label').innerText = `<?= l('admin_index.biolink_analytics.top_shop_sources_header') ?> (${selected_period_label})`;
         document.querySelector('#biolink_top_registration_sources_label').innerText = `<?= l('admin_index.biolink_analytics.top_registration_sources_header') ?> (${selected_period_label})`;
 
-        const top_countries_items = (period_data.top_countries ?? []).map(country => `
+        document.querySelector('#biolink_top_countries_label').innerText = biolink_selected_collaborator
+            ? `<?= l('admin_index.biolink_analytics.user_top_countries_header') ?> (${selected_period_label})`
+            : `<?= l('admin_index.biolink_analytics.top_countries_header') ?> (${selected_period_label})`;
+
+        const top_countries_items = ((selected_collaborator_period_data?.top_countries ?? period_data.top_countries) || []).map(country => `
             <div class="d-flex justify-content-between border-bottom py-2">
                 <span>${escape_html(country.country_code || '-')}</span>
                 <span>${nr(country.total ?? 0)}</span>
@@ -1717,22 +2195,28 @@
                     const user_id = event.currentTarget.getAttribute('data-user-id');
                     const user_name = event.currentTarget.getAttribute('data-user-name') || '';
 
-                    document.querySelector('#biolink_user_details_title').innerText = user_name
-                        ? `<?= l('admin_index.biolink_analytics.user_details_for') ?> ${user_name}`
-                        : `<?= l('admin_index.biolink_analytics.user_details_default_title') ?>`;
+                    const search_input = document.querySelector('#biolink_collaborator_search');
+                    if(search_input) {
+                        search_input.value = user_name;
+                    }
 
-                    render_biolink_user_details(user_id);
+                    load_biolink_collaborator(user_id, user_name);
                 });
             });
         });
 
-        if((period_data.leaderboard ?? []).length) {
+        if(biolink_selected_collaborator) {
+            render_biolink_collaborator_details(biolink_selected_collaborator);
+            render_biolink_chart(biolink_selected_collaborator.periods?.[biolink_analytics_period]?.chart ?? {}, selected_period_label, biolink_selected_collaborator.name || null);
+        } else if((period_data.leaderboard ?? []).length) {
             const first_user = period_data.leaderboard[0];
             document.querySelector('#biolink_user_details_title').innerText = `<?= l('admin_index.biolink_analytics.user_details_for') ?> ${first_user.name ?? ''}`;
             render_biolink_user_details(String(first_user.user_id ?? ''));
+            render_biolink_chart(period_data.chart ?? {}, selected_period_label);
         } else {
             document.querySelector('#biolink_user_details_title').innerText = `<?= l('admin_index.biolink_analytics.user_details_default_title') ?>`;
             render_biolink_user_details(null);
+            render_biolink_chart(period_data.chart ?? {}, selected_period_label);
         }
 
         const top_shop_sources_items = (period_data.top_shop_sources ?? []).map(item => `
@@ -1757,28 +2241,154 @@
     };
 
     const render_biolink_analytics = biolink_analytics => {
-        biolink_analytics_payload = biolink_analytics ?? {};
+        if(!get_element('#biolink_period_total_clicks')) {
+            return;
+        }
 
-        document.querySelector('#biolink_clicks_today').innerText = nr(biolink_analytics_payload.clicks_today ?? 0);
-        document.querySelector('#biolink_clicks_7d').innerText = nr(biolink_analytics_payload.clicks_7d ?? 0);
-        document.querySelector('#biolink_clicks_30d').innerText = nr(biolink_analytics_payload.clicks_30d ?? 0);
-        document.querySelector('#biolink_forever_shop_clicks_30d').innerText = nr(biolink_analytics_payload.forever_shop_clicks_30d ?? 0);
-        document.querySelector('#biolink_forever_registration_clicks_30d').innerText = nr(biolink_analytics_payload.forever_registration_clicks_30d ?? 0);
+        biolink_analytics_payload = biolink_analytics ?? {};
 
         render_biolink_period();
     };
-    /* /Custom code: FC-2026-03-04 */
 
-    document.querySelectorAll('[data-kpi-period]').forEach(button => {
-        button.addEventListener('click', event => {
-            dashboard_kpi_period = event.currentTarget.getAttribute('data-kpi-period');
+    const hide_biolink_search_results = () => {
+        const results_container = document.querySelector('#biolink_collaborator_search_results');
+        if(!results_container) {
+            return;
+        }
 
-            document.querySelectorAll('[data-kpi-period]').forEach(item => item.classList.remove('active'));
-            event.currentTarget.classList.add('active');
+        results_container.classList.add('d-none');
+        results_container.innerHTML = '';
+    };
 
-            render_kpi(dashboard_kpi_period);
+    const render_biolink_search_results = results => {
+        const results_container = document.querySelector('#biolink_collaborator_search_results');
+        if(!results_container) {
+            return;
+        }
+
+        if(!Array.isArray(results) || !results.length) {
+            results_container.classList.remove('d-none');
+            results_container.innerHTML = `<div class="card border-0"><div class="card-body small text-muted py-3 px-3"><?= l('admin_index.biolink_analytics.search_no_results') ?></div></div>`;
+            return;
+        }
+
+        results_container.classList.remove('d-none');
+        results_container.innerHTML = `
+            <div class="card border-0 overflow-hidden">
+                <div class="list-group list-group-flush">
+                    ${results.map(result => `
+                        <button type="button" class="list-group-item list-group-item-action biolink-search-result py-3 px-3" data-user-id="${result.user_id}" data-user-name="${escape_html(result.name || '')}">
+                            <div class="d-flex align-items-start justify-content-between">
+                                <div class="pr-3 text-left">
+                                    <div class="font-weight-bold mb-1">${escape_html(result.name || '<?= l('global.unknown') ?>')}</div>
+                                    <div class="small text-muted text-break">${escape_html(result.email || '')}</div>
+                                </div>
+                                <div class="text-muted small mt-1">
+                                    <i class="fas fa-angle-right"></i>
+                                </div>
+                            </div>
+                        </button>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+
+        results_container.querySelectorAll('.biolink-search-result').forEach(button => {
+            button.addEventListener('click', event => {
+                const user_id = event.currentTarget.getAttribute('data-user-id');
+                const user_name = event.currentTarget.getAttribute('data-user-name') || '';
+                const search_input = document.querySelector('#biolink_collaborator_search');
+                if(search_input) {
+                    search_input.value = user_name;
+                }
+
+                hide_biolink_search_results();
+                load_biolink_collaborator(user_id, user_name);
+            });
         });
-    });
+    };
+
+    const search_biolink_collaborators = async query => {
+        const request_id = ++biolink_search_request_id;
+        const results_container = document.querySelector('#biolink_collaborator_search_results');
+        if(results_container) {
+            results_container.classList.remove('d-none');
+            results_container.innerHTML = `<div class="list-group-item small text-muted"><?= l('global.loading') ?></div>`;
+        }
+
+        const response = await fetch(`${url}admin/index/search_biolink_collaborators_ajax?query=${encodeURIComponent(query)}`, {
+            method: 'get',
+        });
+
+        let data = null;
+        try {
+            data = await response.json();
+        } catch(error) {
+            hide_biolink_search_results();
+            return;
+        }
+
+        if(request_id !== biolink_search_request_id) {
+            return;
+        }
+
+        if(!response.ok || data?.status !== 'success') {
+            hide_biolink_search_results();
+            return;
+        }
+
+        render_biolink_search_results(data.details?.results ?? []);
+    };
+
+    const load_biolink_collaborator = async (user_id, fallback_name = '') => {
+        const collaborator_id = parseInt(user_id, 10);
+        if(!collaborator_id) {
+            return;
+        }
+
+        if(biolink_collaborator_cache[collaborator_id]) {
+            biolink_selected_collaborator = biolink_collaborator_cache[collaborator_id];
+            render_biolink_period();
+            return;
+        }
+
+        biolink_selected_collaborator = {
+            name: fallback_name || '<?= l('global.loading') ?>',
+            periods: {},
+        };
+        render_biolink_selected_collaborator_state();
+
+        const response = await fetch(`${url}admin/index/get_biolink_collaborator_stats_ajax?user_id=${collaborator_id}`, {
+            method: 'get',
+        });
+
+        let data = null;
+        try {
+            data = await response.json();
+        } catch(error) {
+            biolink_selected_collaborator = null;
+            render_biolink_period();
+            return;
+        }
+
+        if(!response.ok || data?.status !== 'success') {
+            biolink_selected_collaborator = null;
+            render_biolink_period();
+            return;
+        }
+
+        const collaborator = data.details?.collaborator ?? null;
+        if(!collaborator) {
+            biolink_selected_collaborator = null;
+            render_biolink_period();
+            return;
+        }
+
+        biolink_collaborator_cache[collaborator_id] = collaborator;
+        biolink_selected_collaborator = collaborator;
+        render_biolink_period();
+    };
+    /* /Custom code: FC-2026-03-04 */
 
     document.querySelectorAll('[data-biolink-period]').forEach(button => {
         button.addEventListener('click', event => {
@@ -1791,8 +2401,56 @@
         });
     });
 
+    /* Custom code: FC-2026-03-18: sales subscriptions chart period buttons */
+    document.querySelectorAll('[data-sales-subscriptions-period]').forEach(button => {
+        button.addEventListener('click', event => {
+            sales_subscriptions_chart_period = Number(event.currentTarget.getAttribute('data-sales-subscriptions-period') || 30);
+
+            document.querySelectorAll('[data-sales-subscriptions-period]').forEach(item => item.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+
+            update_sales_subscriptions_chart();
+        });
+    });
+    /* /Custom code: FC-2026-03-18 */
+
+    document.querySelector('#biolink_selection_reset')?.addEventListener('click', () => {
+        biolink_selected_collaborator = null;
+
+        const search_input = document.querySelector('#biolink_collaborator_search');
+        if(search_input) {
+            search_input.value = '';
+        }
+
+        hide_biolink_search_results();
+        render_biolink_period();
+    });
+
+    document.querySelector('#biolink_collaborator_search')?.addEventListener('input', event => {
+        const query = event.currentTarget.value.trim();
+
+        clearTimeout(biolink_search_timeout);
+        if(query.length < 2) {
+            hide_biolink_search_results();
+            return;
+        }
+
+        biolink_search_timeout = setTimeout(() => {
+            search_biolink_collaborators(query);
+        }, 250);
+    });
+
+    document.addEventListener('click', event => {
+        const search_wrapper = document.querySelector('#biolink_collaborator_search_wrapper');
+        if(search_wrapper && !search_wrapper.contains(event.target)) {
+            hide_biolink_search_results();
+        }
+    });
+
     init_compact_table_rows('#fcc_pending_table_body .fcc-pending-row', '#fcc_pending_table_toggle', 5);
     init_compact_table_rows('#sales_link_missing_table_body .sales-link-missing-row', '#sales_link_missing_table_toggle', 5);
+    init_compact_table_rows('#trial_monitoring_table_body .trial-monitoring-row', '#trial_monitoring_table_toggle', 5);
+    init_compact_items('#upcoming_charges_list .upcoming-charge-item', '#upcoming_charges_toggle', 4);
     /* /Custom code: FC-2026-03-04 */
 
     (async function fetch_statistics() {
@@ -1815,42 +2473,41 @@
         if(data.status == 'error') {
             /* :)  */
         } else if(data.status == 'success') {
-            document.querySelector('#biolink_links').innerHTML = data.details.biolink_links ? nr(data.details.biolink_links) : 0;
-            document.querySelector('#biolink_links_current_month').innerHTML = data.details.biolink_links_current_month ? nr(data.details.biolink_links_current_month) : 0;
+            set_html_if_present('#biolink_links', data.details.biolink_links ? nr(data.details.biolink_links) : 0);
+            set_html_if_present('#biolink_links_current_month', data.details.biolink_links_current_month ? nr(data.details.biolink_links_current_month) : 0);
 
-            document.querySelector('#shortened_links').innerHTML = data.details.shortened_links ? nr(data.details.shortened_links) : 0;
-            document.querySelector('#shortened_links_current_month').innerHTML = data.details.shortened_links_current_month ? nr(data.details.shortened_links_current_month) : 0;
+            set_html_if_present('#shortened_links', data.details.shortened_links ? nr(data.details.shortened_links) : 0);
+            set_html_if_present('#shortened_links_current_month', data.details.shortened_links_current_month ? nr(data.details.shortened_links_current_month) : 0);
 
-            document.querySelector('#track_links').innerHTML = data.details.track_links ? nr(data.details.track_links) : 0;
-            document.querySelector('#track_links_current_month').innerHTML = data.details.track_links_current_month ? nr(data.details.track_links_current_month) : 0;
+            set_html_if_present('#track_links', data.details.track_links ? nr(data.details.track_links) : 0);
+            set_html_if_present('#track_links_current_month', data.details.track_links_current_month ? nr(data.details.track_links_current_month) : 0);
 
-            document.querySelector('#qr_codes').innerHTML = data.details.qr_codes ? nr(data.details.qr_codes) : 0;
-            document.querySelector('#qr_codes_current_month').innerHTML = data.details.qr_codes_current_month ? nr(data.details.qr_codes_current_month) : 0;
+            set_html_if_present('#qr_codes', data.details.qr_codes ? nr(data.details.qr_codes) : 0);
+            set_html_if_present('#qr_codes_current_month', data.details.qr_codes_current_month ? nr(data.details.qr_codes_current_month) : 0);
 
-            document.querySelector('#domains').innerHTML = data.details.domains ? nr(data.details.domains) : 0;
-            document.querySelector('#domains_current_month').innerHTML = data.details.domains_current_month ? nr(data.details.domains_current_month) : 0;
+            set_html_if_present('#domains', data.details.domains ? nr(data.details.domains) : 0);
+            set_html_if_present('#domains_current_month', data.details.domains_current_month ? nr(data.details.domains_current_month) : 0);
 
-            document.querySelector('#payments_total_amount').innerHTML = data.details.payments_total_amount ? nr(data.details.payments_total_amount) : 0;
-            document.querySelector('#users_current_month').innerHTML = data.details.users_current_month ? nr(data.details.users_current_month) : 0;
+            set_html_if_present('#payments_total_amount', data.details.payments_total_amount ? nr(data.details.payments_total_amount) : 0);
+            set_html_if_present('#users_current_month', data.details.users_current_month ? nr(data.details.users_current_month) : 0);
 
-            document.querySelector('#users').innerHTML = data.details.users ? nr(data.details.users) : 0;
-            document.querySelector('#payments_current_month').innerHTML = data.details.payments_current_month ? nr(data.details.payments_current_month) : 0;
+            set_html_if_present('#users', data.details.users ? nr(data.details.users) : 0);
+            set_html_if_present('#payments_current_month', data.details.payments_current_month ? nr(data.details.payments_current_month) : 0);
 
-            document.querySelector('#payments').innerHTML = data.details.payments ? nr(data.details.payments) : 0;
-            document.querySelector('#payments_amount_current_month').innerHTML = data.details.payments_amount_current_month ? nr(data.details.payments_amount_current_month) : 0;
+            set_html_if_present('#payments', data.details.payments ? nr(data.details.payments) : 0);
+            set_html_if_present('#payments_amount_current_month', data.details.payments_amount_current_month ? nr(data.details.payments_amount_current_month) : 0);
 
             let active_users = data.details.active_users ? nr(data.details.active_users) : 0;
-            document.querySelector('#active_users').innerHTML = document.querySelector('#active_users').getAttribute('data-translation').replace('%s', active_users);
+            const active_users_element = get_element('#active_users');
+            if(active_users_element) {
+                active_users_element.innerHTML = active_users_element.getAttribute('data-translation').replace('%s', active_users);
+            }
 
             /* Custom code: FC-2026-03-04: bind phase 1 analytics payload */
             if(data.details.admin_analytics) {
-                dashboard_kpi_payload = data.details.admin_analytics.kpi ?? {};
-                render_kpi(dashboard_kpi_period);
-
                 render_realtime(data.details.admin_analytics.realtime ?? {});
-                render_alerts(data.details.admin_analytics.alerts ?? {});
                 render_charts(data.details.admin_analytics.charts ?? {});
-                render_sales_subscriptions(data.details.admin_analytics.sales_subscriptions ?? {}, data.details.admin_analytics.charts ?? {});
+                render_sales_subscriptions(data.details.admin_analytics.sales_subscriptions ?? {});
                 render_action_center(data.details.admin_analytics.action_center ?? {});
                 render_billing_risk(data.details.admin_analytics.billing_risk ?? {});
                 render_biolink_analytics(data.details.admin_analytics.biolink_analytics ?? {});
