@@ -139,7 +139,11 @@ function fc_log_mail_transport_error(string $transport, string $message, array $
 }
 
 function get_brevo_api_key(): string {
-    return settings()->smtp->brevo_api_key ?? BREVO_API_KEY;
+    return settings()->smtp->brevo_api_key ?? (defined('BREVO_API_KEY') ? BREVO_API_KEY : '');
+}
+
+function get_brevo_api_base_url(): string {
+    return defined('BREVO_API_BASE_URL') ? BREVO_API_BASE_URL : 'https://api.brevo.com/v3';
 }
 
 function brevo_is_configured(): bool {
@@ -250,7 +254,7 @@ function send_brevo_mail($to, $title, $content, $data = [], $reply_to = null, $d
         return false;
     }
 
-    $curl_handle = curl_init(BREVO_API_BASE_URL . '/smtp/email');
+    $curl_handle = curl_init(get_brevo_api_base_url() . '/smtp/email');
 
     curl_setopt_array($curl_handle, [
         CURLOPT_POST => true,
