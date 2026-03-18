@@ -108,20 +108,20 @@ function fc_get_default_email_automation_steps(): array {
         [
             'step_order' => 1,
             'delay_minutes' => 0,
-            'subject' => 'Imas 3 minute za besplatan korak koji moze donijeti rezultat.',
-            'content' => '<p>Bok {{USER:NAME}},</p><p>zelimo te potaknuti da iskoristis jednu jednostavnu mogucnost koju sada imas na svojoj FCC aplikaciji.</p><p>Na svoju Forever Card aplikaciju mozes potpuno besplatno postaviti linkove za <strong>popust</strong> i <strong>preporuku Forever proizvoda</strong>, a zatim link svoje aplikacije ubaciti i u biolink opis na svojim drustvenim mrezama.</p><p>Ovo je:</p><ul><li>besplatna opcija</li><li>i ne zahtjeva Pro paket</li><li>uzima ti oko 3 minute</li><li>moze ti donijeti pasivnu zaradu i preporuke</li></ul><p>Upravo je napravljen novi FCC update i dodano je puno novih stvari, ali za ovaj dio ti ne treba nikakav dodatni paket. Dovoljno je samo da aktiviras ono sto ti je vec dostupno.</p><p>Ako jos nisi pogledao video, vodi te korak po korak:<br /><a href="{{FCC_VIDEO_URL}}">{{FCC_VIDEO_URL}}</a></p><p>Postavljanje odradi ovdje:<br /><a href="{{SALES_LINKS_PAGE}}">{{SALES_LINKS_PAGE}}</a></p><p>Nemoj cekati savrsen trenutak. Ovo je mali korak koji ti moze otvoriti dodatne preporuke i narudzbe.</p><p>{{WEBSITE_TITLE}}</p>',
+            'subject' => 'FCC upute: aktivacija Forever prodajnog linka',
+            'content' => '<p>Bok {{USER:NAME}},</p><p>saljemo ti ovu poruku jer na svom FCC racunu jos nemas aktiviran Forever prodajni link.</p><p>U FCC aplikaciji mozes bez dodatne naplate dodati link za popust i preporuku Forever proizvoda, a zatim link svoje aplikacije koristiti u biolinku ili opisu profila na drustvenim mrezama.</p><p>Za postavljanje obicno treba samo nekoliko minuta.</p><p>1. pogledaj kratke upute:<br /><a href="{{FCC_VIDEO_URL}}">{{FCC_VIDEO_URL}}</a></p><p>2. otvori stranicu za postavljanje:<br /><a href="{{SALES_LINKS_PAGE}}">{{SALES_LINKS_PAGE}}</a></p><p>Ako ti treba pomoc oko postavljanja, slobodno odgovori na ovaj email.</p><p>Ovu poruku si primio jer imas korisnicki racun na {{WEBSITE_TITLE}} i jos nemas aktiviran Forever prodajni link.</p><p>{{WEBSITE_TITLE}}</p>',
         ],
         [
             'step_order' => 2,
             'delay_minutes' => 2880,
-            'subject' => 'Besplatno je, brzo je i steta je da ti stoji neiskoristeno.',
-            'content' => '<p>Bok {{USER:NAME}},</p><p>samo kratki podsjetnik, jer jos uvijek ne vidimo aktivirane Forever linkove na tvojoj FCC aplikaciji.</p><p>Ovo je:</p><ul><li>besplatna opcija</li><li>i ne zahtjeva Pro paket</li><li>uzima ti oko 3 minute</li><li>moze ti donijeti pasivnu zaradu i preporuke</li></ul><p>Kad na aplikaciji postavis link za popust i preporuku Forever proizvoda, dovoljno je da svoj link od aplikacije postavis u biolink u opisu na svojim drustvenim mrezama. Tako ljudi mogu samostalno kliknuti i naruciti proizvode s tvojom preporukom.</p><p>Ako jos nisi pogledao video, vodi te korak po korak:<br /><a href="{{FCC_VIDEO_URL}}">{{FCC_VIDEO_URL}}</a></p><p>Postavljanje odradi ovdje:<br /><a href="{{SALES_LINKS_PAGE}}">{{SALES_LINKS_PAGE}}</a></p><p>Nemoj cekati savrsen trenutak, ovo je mali korak koji realno moze donijeti ogroman rezultat.</p><p>{{WEBSITE_TITLE}}</p>',
+            'subject' => 'FCC podsjetnik: Forever prodajni link jos nije postavljen',
+            'content' => '<p>Bok {{USER:NAME}},</p><p>ovo je kratki podsjetnik da na tvom FCC racunu jos uvijek nije aktiviran Forever prodajni link.</p><p>Kada ga postavis, svoj FCC link mozes koristiti u biolinku ili opisu profila kako bi posjetitelji lakse otvorili tvoju aplikaciju i vidjeli preporucene proizvode.</p><p>Upute za postavljanje:<br /><a href="{{FCC_VIDEO_URL}}">{{FCC_VIDEO_URL}}</a></p><p>Stranica za aktivaciju:<br /><a href="{{SALES_LINKS_PAGE}}">{{SALES_LINKS_PAGE}}</a></p><p>Ako si link vec postavio u meduvremenu, ovu poruku mozes zanemariti.</p><p>Ovu poruku si primio jer imas korisnicki racun na {{WEBSITE_TITLE}} i jos nemas aktiviran Forever prodajni link.</p><p>{{WEBSITE_TITLE}}</p>',
         ],
         [
             'step_order' => 3,
             'delay_minutes' => 10080,
-            'subject' => 'Vrijedi aktivirati ovo sada, dok ti je sve vec spremno.',
-            'content' => '<p>Bok {{USER:NAME}},</p><p>ovo je jos jedan kratki podsjetnik, jer bi bilo steta da ne iskoristis ovu mogucnost koju vec imas unutar svoje FCC aplikacije.</p><p>Za postavljanje linkova za popust i preporuku Forever proizvoda ne treba ti Pro paket, ne placas nista dodatno i sve mozes odraditi za par minuta.</p><p>Ovo je:</p><ul><li>besplatna opcija</li><li>i ne zahtjeva Pro paket</li><li>uzima ti oko 3 minute</li><li>moze ti donijeti pasivnu zaradu i preporuke</li></ul><p>Kada to postavis na svoju aplikaciju i link aplikacije stavis u biolink opis na drustvenim mrezama, ljudima olaksavas da sami kliknu, pogledaju i kupe preko tvoje preporuke.</p><p>Ako jos nisi pogledao video, vodi te korak po korak:<br /><a href="{{FCC_VIDEO_URL}}">{{FCC_VIDEO_URL}}</a></p><p>Postavljanje odradi ovdje:<br /><a href="{{SALES_LINKS_PAGE}}">{{SALES_LINKS_PAGE}}</a></p><p>Napravis li to sada, mozes vec danas imati aktivan alat koji radi za tebe bez dodatnog troska.</p><p>{{WEBSITE_TITLE}}</p>',
+            'subject' => 'FCC podsjetnik: dovrsi postavljanje Forever prodajnog linka',
+            'content' => '<p>Bok {{USER:NAME}},</p><p>jos jednom te podsjecamo da je na tvom FCC racunu i dalje dostupan korak za aktivaciju Forever prodajnog linka.</p><p>Ako to zelis postaviti sada, sve potrebno je vec spremno:</p><p>Video upute:<br /><a href="{{FCC_VIDEO_URL}}">{{FCC_VIDEO_URL}}</a></p><p>Stranica za postavljanje:<br /><a href="{{SALES_LINKS_PAGE}}">{{SALES_LINKS_PAGE}}</a></p><p>Ako ti treba pomoc ili zelis da provjerimo postavke, slobodno odgovori na ovaj email.</p><p>Ovu poruku si primio jer imas korisnicki racun na {{WEBSITE_TITLE}} i jos nemas aktiviran Forever prodajni link.</p><p>{{WEBSITE_TITLE}}</p>',
         ],
     ];
 }
@@ -138,7 +138,7 @@ function fc_seed_default_email_automation() {
         'exit_when_condition_met' => 1,
         'reentry_is_enabled' => 1,
         'video_url' => url('fcc-education'),
-        'template_version' => 3,
+        'template_version' => 4,
     ];
 
     $steps = fc_get_default_email_automation_steps();
@@ -146,11 +146,11 @@ function fc_seed_default_email_automation() {
     if($automation) {
         $automation_settings = fc_get_email_automation_settings($automation->settings ?? null);
 
-        if($automation_settings->template_version < 3) {
+        if($automation_settings->template_version < 4) {
             db()->where('automation_id', $automation->automation_id)->update('email_automations', [
                 'settings' => json_encode(array_merge((array) $automation_settings, [
                     'video_url' => $automation_settings->video_url ?: url('fcc-education'),
-                    'template_version' => 3,
+                    'template_version' => 4,
                 ])),
                 'last_datetime' => get_date(),
             ]);
@@ -309,6 +309,22 @@ function fc_get_email_automation_user_variables($user, $automation_settings = nu
         '{{WEBSITE_TITLE}}' => settings()->main->title,
     ];
 }
+
+/* Custom code: FC-2026-03-18: consistent footer for FCC automation emails */
+function fc_append_email_automation_footer(string $content): string {
+    $footer_marker = 'Ovu poruku primili ste jer imate aktivnu Forever Card aplikaciju.';
+
+    if(stripos($content, $footer_marker) !== false) {
+        return $content;
+    }
+
+    $footer_html = '<hr style="border:0;border-top:1px solid #e5e7eb;margin:24px 0;">'
+        . '<p style="margin:0 0 8px 0;color:#6b7280;font-size:14px;line-height:1.6;">' . $footer_marker . '</p>'
+        . '<p style="margin:0;color:#6b7280;font-size:14px;line-height:1.6;">Forever Card Club<br>info@forevercard.club</p>';
+
+    return rtrim($content) . $footer_html;
+}
+/* /Custom code: FC-2026-03-18 */
 
 function fc_insert_email_automation_log(int $automation_id, ?int $enrollment_id, ?int $step_id, ?int $user_id, string $action, array $details = []) {
     db()->insert('email_automation_logs', [

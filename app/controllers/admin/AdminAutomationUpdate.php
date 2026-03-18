@@ -104,7 +104,7 @@ class AdminAutomationUpdate extends Controller {
                                 $vars,
                                 htmlspecialchars_decode($submitted_step['subject']),
                                 $vars,
-                                $submitted_step['content']
+                                fc_append_email_automation_footer($submitted_step['content'])
                             );
 
                             /* Custom code: FC-2026-03-18: avoid recipient reply-to on automation previews */
@@ -119,7 +119,7 @@ class AdminAutomationUpdate extends Controller {
                             $vars,
                             htmlspecialchars_decode($preview_step['subject']),
                             $vars,
-                            $preview_step['content']
+                            fc_append_email_automation_footer($preview_step['content'])
                         );
 
                         /* Custom code: FC-2026-03-18: avoid recipient reply-to on automation previews */

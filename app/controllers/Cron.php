@@ -728,7 +728,7 @@ class Cron extends Controller {
                     $vars,
                     htmlspecialchars_decode($current_step->subject),
                     $vars,
-                    $current_step->content
+                    fc_append_email_automation_footer($current_step->content)
                 );
 
                 /* Custom code: FC-2026-03-18: avoid recipient reply-to on automation emails */
