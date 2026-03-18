@@ -108,7 +108,9 @@ class AdminBroadcastUpdate extends Controller {
                         convert_editorjs_json_to_html($_POST['content'])
                     );
 
-                    send_mail($_POST['preview_email'], $email_template->subject, $email_template->body, ['is_broadcast' => true, 'is_system_email' => $_POST['is_system_email'], 'anti_phishing_code' => $this->user->anti_phishing_code, 'language' => $this->user->language], $_POST['preview_email']);
+                    /* Custom code: FC-2026-03-18: avoid recipient reply-to on broadcast previews */
+                    send_mail($_POST['preview_email'], $email_template->subject, $email_template->body, ['is_broadcast' => true, 'is_system_email' => $_POST['is_system_email'], 'anti_phishing_code' => $this->user->anti_phishing_code, 'language' => $this->user->language]);
+                    /* /Custom code: FC-2026-03-18 */
 
                     /* Set a nice success message */
                     Alerts::add_success(sprintf(l('admin_broadcast_create.success_message.preview'), '<strong>' . $_POST['preview_email'] . '</strong>'));
