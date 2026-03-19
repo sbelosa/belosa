@@ -12,7 +12,12 @@ class AdminAutomations extends Controller {
 
         $hub = fc_get_email_hub_analytics();
 
-        $broadcasts = db()->orderBy('broadcast_id', 'DESC')->get('broadcasts') ?? [];
+        /* Custom code: FC-2026-03-19: limit broadcast list size on automations hub */
+        $broadcasts_total = (int) db()->getValue('broadcasts', 'COUNT(*)');
+        $broadcasts_display_limit = 10;
+        $broadcasts = db()->orderBy('broadcast_id', 'DESC')->get('broadcasts', $broadcasts_display_limit) ?? [];
+        /* /Custom code: FC-2026-03-19 */
+
         foreach($broadcasts as $broadcast) {
             $broadcast->settings = json_decode($broadcast->settings ?? '{}');
             $broadcast->analytics = fc_get_email_resource_analytics('broadcast', (int) $broadcast->broadcast_id);
@@ -40,6 +45,8 @@ class AdminAutomations extends Controller {
         $this->add_view_content('content', $view->run([
             'automations' => $automations,
             'broadcasts' => $broadcasts,
+            'broadcasts_total' => $broadcasts_total,
+            'broadcasts_display_limit' => $broadcasts_display_limit,
             'hub' => $hub,
         ]));
     }

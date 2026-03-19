@@ -38,7 +38,10 @@
 <div class="card mb-4">
     <div class="card-body">
         <div class="d-flex justify-content-between align-items-center mb-3">
-            <h2 class="h5 mb-0">Mailovi</h2>
+            <div>
+                <h2 class="h5 mb-1">Mailovi</h2>
+                <div class="small text-muted">Prikazano zadnjih <?= nr($data->broadcasts_display_limit) ?> mailova<?php if(($data->broadcasts_total ?? 0) > $data->broadcasts_display_limit): ?> od ukupno <?= nr($data->broadcasts_total) ?><?php endif ?>.</div>
+            </div>
             <a href="<?= url('admin/broadcast-create') ?>" class="btn btn-sm btn-primary">Dodaj mail</a>
         </div>
 
