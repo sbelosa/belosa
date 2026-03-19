@@ -310,21 +310,11 @@ function fc_get_email_automation_user_variables($user, $automation_settings = nu
     ];
 }
 
-/* Custom code: FC-2026-03-18: consistent footer for FCC automation emails */
+/* Custom code: FC-2026-03-19: disable automatic automation email footer */
 function fc_append_email_automation_footer(string $content): string {
-    $footer_marker = 'Ovu poruku primili ste jer imate aktivnu Forever Card aplikaciju.';
-
-    if(stripos($content, $footer_marker) !== false) {
-        return $content;
-    }
-
-    $footer_html = '<hr style="border:0;border-top:1px solid #e5e7eb;margin:24px 0;">'
-        . '<p style="margin:0 0 8px 0;color:#6b7280;font-size:14px;line-height:1.6;">' . $footer_marker . '</p>'
-        . '<p style="margin:0;color:#6b7280;font-size:14px;line-height:1.6;">Forever Card Club<br>info@forevercard.club</p>';
-
-    return rtrim($content) . $footer_html;
+    return $content;
 }
-/* /Custom code: FC-2026-03-18 */
+/* /Custom code: FC-2026-03-19 */
 
 function fc_insert_email_automation_log(int $automation_id, ?int $enrollment_id, ?int $step_id, ?int $user_id, string $action, array $details = []) {
     db()->insert('email_automation_logs', [
