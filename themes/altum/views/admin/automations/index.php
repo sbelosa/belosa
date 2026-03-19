@@ -40,9 +40,19 @@
         <div class="d-flex justify-content-between align-items-center mb-3">
             <div>
                 <h2 class="h5 mb-1">Mailovi</h2>
-                <div class="small text-muted">Prikazano zadnjih <?= nr($data->broadcasts_display_limit) ?> mailova<?php if(($data->broadcasts_total ?? 0) > $data->broadcasts_display_limit): ?> od ukupno <?= nr($data->broadcasts_total) ?><?php endif ?>.</div>
+                <div class="small text-muted">Prikazano <?= nr(count($data->broadcasts)) ?> mailova<?php if(($data->broadcasts_total ?? 0) > count($data->broadcasts)): ?> od ukupno <?= nr($data->broadcasts_total) ?><?php endif ?>.</div>
             </div>
-            <a href="<?= url('admin/broadcast-create') ?>" class="btn btn-sm btn-primary">Dodaj mail</a>
+            <div class="d-flex align-items-center">
+                <?php if(($data->broadcasts_total ?? 0) > ($data->broadcasts_default_display_limit ?? 5)): ?>
+                    <?php if(!empty($data->show_all_broadcasts)): ?>
+                        <a href="<?= url('admin/automations') ?>" class="btn btn-sm btn-outline-secondary mr-2">Sakrij starije</a>
+                    <?php else: ?>
+                        <a href="<?= url('admin/automations?show_all_broadcasts=1') ?>" class="btn btn-sm btn-outline-secondary mr-2">Prikaži sve</a>
+                    <?php endif ?>
+                <?php endif ?>
+
+                <a href="<?= url('admin/broadcast-create') ?>" class="btn btn-sm btn-primary">Dodaj mail</a>
+            </div>
         </div>
 
         <div class="table-responsive table-custom-container">

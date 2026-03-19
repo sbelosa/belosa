@@ -1440,7 +1440,13 @@ function fc_get_email_resource_messages(string $message_type, int $resource_id, 
         $query->where('automation_id', $resource_id);
     }
 
-    $messages = $query->orderBy('automation_message_id', 'DESC')->get('email_automation_messages', $limit) ?? [];
+    $query->orderBy('automation_message_id', 'DESC');
+
+    if($limit > 0) {
+        $messages = $query->get('email_automation_messages', $limit) ?? [];
+    } else {
+        $messages = $query->get('email_automation_messages') ?? [];
+    }
 
     if(!$status_filter || $status_filter === 'all') {
         return $messages;
@@ -1600,28 +1606,24 @@ function fc_get_email_automation_analytics(int $automation_id): array {
         }
 
         if(!empty($message->delivered_datetime)) {
-            $summary['delivered']++;
             if(isset($per_step[$step_id])) {
                 $per_step[$step_id]['delivered']++;
             }
         }
 
         if(!empty($message->first_open_datetime)) {
-            $summary['opened']++;
             if(isset($per_step[$step_id])) {
                 $per_step[$step_id]['opened']++;
             }
         }
 
         if(!empty($message->first_click_datetime)) {
-            $summary['clicked']++;
             if(isset($per_step[$step_id])) {
                 $per_step[$step_id]['clicked']++;
             }
         }
 
         if(!empty($message->goal_completed_datetime)) {
-            $summary['goal_completed']++;
             if(isset($per_step[$step_id])) {
                 $per_step[$step_id]['goal_completed']++;
             }

@@ -14,8 +14,10 @@ class AdminAutomations extends Controller {
 
         /* Custom code: FC-2026-03-19: limit broadcast list size on automations hub */
         $broadcasts_total = (int) db()->getValue('broadcasts', 'COUNT(*)');
-        $broadcasts_display_limit = 10;
-        $broadcasts = db()->orderBy('broadcast_id', 'DESC')->get('broadcasts', $broadcasts_display_limit) ?? [];
+        $broadcasts_default_display_limit = 5;
+        $show_all_broadcasts = isset($_GET['show_all_broadcasts']) && $_GET['show_all_broadcasts'] === '1';
+        $broadcasts_display_limit = $show_all_broadcasts ? $broadcasts_total : $broadcasts_default_display_limit;
+        $broadcasts = db()->orderBy('broadcast_id', 'DESC')->get('broadcasts', $broadcasts_display_limit ?: 1) ?? [];
         /* /Custom code: FC-2026-03-19 */
 
         foreach($broadcasts as $broadcast) {
@@ -47,6 +49,8 @@ class AdminAutomations extends Controller {
             'broadcasts' => $broadcasts,
             'broadcasts_total' => $broadcasts_total,
             'broadcasts_display_limit' => $broadcasts_display_limit,
+            'broadcasts_default_display_limit' => $broadcasts_default_display_limit,
+            'show_all_broadcasts' => $show_all_broadcasts,
             'hub' => $hub,
         ]));
     }
