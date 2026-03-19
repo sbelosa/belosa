@@ -142,10 +142,27 @@ class User extends Model {
                 $was_auto_disabled = (bool) ($link_settings->plan_auto_disabled ?? false);
                 $is_enabled = (int) $link->is_enabled === 1;
                 $can_be_enabled = $limit == -1 || $enabled_slots_used < max($limit, 0);
+                /* Custom code: FC-2026-03-19: keep default biolink/vcard enabled after downgrade */
+                $is_default_link = ($type == 'biolink' && $default_biolink_id && (int) $link->link_id === $default_biolink_id)
+                    || ($type == 'vcard' && $default_vcard_id && (int) $link->link_id === $default_vcard_id);
+                /* /Custom code: FC-2026-03-19 */
 
                 $new_is_enabled = $is_enabled;
                 $settings_changed = false;
                 $status_changed = false;
+
+                /* Custom code: FC-2026-03-19: revive the protected default link when a slot exists */
+                if($is_default_link && !$is_enabled && $can_be_enabled) {
+                    $new_is_enabled = true;
+                    $status_changed = true;
+                    $enabled_slots_used++;
+
+                    if($was_auto_disabled) {
+                        $link_settings->plan_auto_disabled = false;
+                        $settings_changed = true;
+                    }
+                } else
+                /* /Custom code: FC-2026-03-19 */
 
                 if($is_enabled) {
                     if($can_be_enabled) {

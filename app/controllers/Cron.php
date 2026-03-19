@@ -200,6 +200,10 @@ class Cron extends Controller {
                 'payment_currency' => '',
             ]);
 
+            /* Custom code: FC-2026-03-19: enforce link limits immediately after expiry downgrade */
+            (new \Altum\Models\User())->sync_links_with_plan($user->user_id);
+            /* /Custom code: FC-2026-03-19 */
+
             /* Prepare the email */
             $email_template = get_email_template(
                 [],

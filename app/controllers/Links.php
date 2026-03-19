@@ -27,6 +27,10 @@ class Links extends Controller {
 
         \Altum\Authentication::guard();
 
+        /* Custom code: FC-2026-03-19: self-heal link states after plan downgrades */
+        (new \Altum\Models\User())->sync_links_with_plan($this->user->user_id);
+        /* /Custom code: FC-2026-03-19 */
+
         /* Check for the plan limit */
         $total_links = [];
         $total_links_result = database()->query("SELECT COUNT(`type`) AS `total`, `type` FROM `links` WHERE `user_id` = {$this->user->user_id} GROUP BY `type`");

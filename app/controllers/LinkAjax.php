@@ -140,6 +140,21 @@ class LinkAjax extends Controller {
 		if($link) {
 			$new_is_enabled = (int) !$link->is_enabled;
 
+			/* Custom code: FC-2026-03-19: keep the default biolink/vcard always available on limited plans */
+			$default_biolink_id = (int) (db()->where('user_id', $this->user->user_id)->getValue('users_biolinks', 'biolink_id') ?? 0);
+			$default_vcard_id = (int) (db()->where('user_id', $this->user->user_id)->getValue('users_vcards', 'vcard_id') ?? 0);
+			$is_protected_default_link = ($link->type == 'biolink' && $default_biolink_id && (int) $link->link_id === $default_biolink_id)
+				|| ($link->type == 'vcard' && $default_vcard_id && (int) $link->link_id === $default_vcard_id);
+
+			if(!$new_is_enabled && $is_protected_default_link) {
+				Response::json(l('link_delete_modal.error_message.main_biolink_locked'), 'error');
+			}
+
+			if($new_is_enabled && $link->type == 'biolink' && $default_biolink_id && (int) $link->link_id !== $default_biolink_id && (int) ($this->user->plan_settings->biolinks_limit ?? -1) === 1) {
+				Response::json(l('global.info_message.plan_feature_limit'), 'error');
+			}
+			/* /Custom code: FC-2026-03-19 */
+
 			if($new_is_enabled && !$this->can_enable_link_by_plan($link->type, $link->link_id)) {
 				Response::json(l('global.info_message.plan_feature_limit'), 'error');
 			}

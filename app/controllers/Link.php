@@ -70,6 +70,10 @@ class Link extends Controller {
 
         \Altum\Authentication::guard();
 
+        /* Custom code: FC-2026-03-19: self-heal link states before opening editor */
+        (new \Altum\Models\User())->sync_links_with_plan($this->user->user_id);
+        /* /Custom code: FC-2026-03-19 */
+
         $link_id = isset($this->params[0]) ? (int) $this->params[0] : null;
         $method = isset($this->params[1]) && in_array($this->params[1], ['settings', 'statistics', 'download']) ? $this->params[1] : 'settings';
 
@@ -94,12 +98,16 @@ class Link extends Controller {
             'event' => 'events_limit',
             'static' => 'static_limit',
         };
-        /* Custom code: FC-2026-03-06: enforce limit check on enabled links to allow editing primary link after downgrade */
+        /* Custom code: FC-2026-03-19: allow editing the protected default biolink/vcard after downgrade */
+        $default_biolink_id = (int) (db()->where('user_id', $this->user->user_id)->getValue('users_biolinks', 'biolink_id') ?? 0);
+        $default_vcard_id = (int) (db()->where('user_id', $this->user->user_id)->getValue('users_vcards', 'vcard_id') ?? 0);
+        $is_protected_default_link = ($this->link->type == 'biolink' && $default_biolink_id && (int) $this->link->link_id === $default_biolink_id)
+            || ($this->link->type == 'vcard' && $default_vcard_id && (int) $this->link->link_id === $default_vcard_id);
         $total_rows = database()->query("SELECT COUNT(*) AS `total` FROM `links` WHERE `user_id` = {$this->user->user_id} AND `type` = '{$this->link->type}' AND `is_enabled` = 1")->fetch_object()->total ?? 0;
-        if($this->user->plan_settings->{$plan_limit} != -1 && $total_rows > $this->user->plan_settings->{$plan_limit}) {
+        if($this->user->plan_settings->{$plan_limit} != -1 && $total_rows > $this->user->plan_settings->{$plan_limit} && !$is_protected_default_link) {
             redirect('links?type=' . $this->link->type);
         }
-        /* /Custom code: FC-2026-03-06 */
+        /* /Custom code: FC-2026-03-19 */
 
         /* Get the current domain if needed */
         $this->link->domain = $this->link->domain_id ? (new Domain())->get_domain_by_domain_id($this->link->domain_id) : null;
