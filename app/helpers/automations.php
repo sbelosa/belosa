@@ -640,6 +640,10 @@ function fc_find_email_message_by_unsubscribe_context(array $context) {
 }
 
 function fc_process_email_unsubscribe(array $context): array {
+    /* Custom code: FC-2026-03-19: ensure shared mail analytics schema exists before unsubscribe lookups */
+    fc_ensure_email_automation_tables();
+    /* /Custom code: FC-2026-03-19 */
+
     $context['recipient_email'] = trim((string) ($context['recipient_email'] ?? ''));
     $context['user_id'] = (int) ($context['user_id'] ?? 0);
     $message = fc_find_email_message_by_unsubscribe_context($context);
