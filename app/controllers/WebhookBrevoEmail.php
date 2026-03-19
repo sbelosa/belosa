@@ -8,6 +8,7 @@ class WebhookBrevoEmail extends Controller {
 
     public function index() {
         header('Cache-Control: no-store');
+        fc_ensure_email_automation_tables();
 
         if((strtoupper($_SERVER['REQUEST_METHOD']) != 'POST')) {
             throw_404();

@@ -34,7 +34,9 @@ class AdminBroadcastView extends Controller {
         $broadcast->users_ids = implode(',', json_decode($broadcast->users_ids));
         $status_filter = in_array($_GET['status_filter'] ?? 'all', ['all', 'sent', 'delivered', 'opened', 'clicked', 'deferred', 'soft_bounce', 'hard_bounce', 'blocked', 'invalid', 'spam', 'unsubscribed', 'send_failed']) ? $_GET['status_filter'] : 'all';
         $analytics = fc_get_email_resource_analytics('broadcast', (int) $broadcast->broadcast_id);
-        $filtered_messages = fc_get_email_resource_messages('broadcast', (int) $broadcast->broadcast_id, $status_filter, 200);
+        $messages_display_limit = 25;
+        $filtered_messages = fc_get_email_resource_messages('broadcast', (int) $broadcast->broadcast_id, $status_filter, $messages_display_limit);
+        $filtered_messages_total = $status_filter === 'all' ? (int) ($analytics['summary']['total'] ?? 0) : (int) ($analytics['summary'][$status_filter] ?? 0);
 
         $start_date = (new \DateTime($_GET['start_date'] ?? $broadcast->datetime))->format('Y-m-d');
         $datetime = \Altum\Date::get_start_end_dates_new($start_date);
@@ -140,6 +142,8 @@ class AdminBroadcastView extends Controller {
             'users' => $users,
             'analytics' => $analytics,
             'filtered_messages' => $filtered_messages,
+            'filtered_messages_total' => $filtered_messages_total,
+            'messages_display_limit' => $messages_display_limit,
             'status_filter' => $status_filter,
         ];
 

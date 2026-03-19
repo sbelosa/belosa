@@ -296,7 +296,9 @@ class AdminAutomationUpdate extends Controller {
         /* Custom code: FC-2026-03-19: attach analytics summary and recent sent messages */
         $analytics = fc_get_email_automation_analytics((int) $automation->automation_id);
         $status_filter = in_array($_GET['status_filter'] ?? 'all', ['all', 'sent', 'delivered', 'opened', 'clicked', 'goal_completed', 'deferred', 'soft_bounce', 'hard_bounce', 'blocked', 'invalid', 'spam', 'unsubscribed', 'send_failed']) ? $_GET['status_filter'] : 'all';
-        $filtered_messages = fc_get_email_resource_messages('automation', (int) $automation->automation_id, $status_filter, 200);
+        $messages_display_limit = 25;
+        $filtered_messages = fc_get_email_resource_messages('automation', (int) $automation->automation_id, $status_filter, $messages_display_limit);
+        $filtered_messages_total = $status_filter === 'all' ? (int) ($analytics['summary']['total'] ?? 0) : (int) ($analytics['summary'][$status_filter] ?? 0);
 
         $recent_message_user_ids = array_values(array_unique(array_filter(array_map(static function($message) {
             return (int) ($message->user_id ?? 0);
@@ -341,6 +343,8 @@ class AdminAutomationUpdate extends Controller {
             'logs' => $logs,
             'analytics' => $analytics,
             'filtered_messages' => $filtered_messages,
+            'filtered_messages_total' => $filtered_messages_total,
+            'messages_display_limit' => $messages_display_limit,
             'status_filter' => $status_filter,
             'segment_options' => fc_get_email_automation_segment_options(),
             'plans' => $plans,

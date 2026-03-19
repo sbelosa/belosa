@@ -77,7 +77,7 @@
         <a href="<?= $base_url . '?status_filter=all' ?>" class="card h-100 text-decoration-none <?= $data->status_filter === 'all' ? 'border-primary' : '' ?>">
             <div class="card-body">
                 <div class="text-muted small text-uppercase mb-1">Svi zapisi</div>
-                <div class="h3 mb-0 text-body"><?= nr(count($data->filtered_messages)) ?></div>
+                <div class="h3 mb-0 text-body"><?= nr($data->analytics['summary']['total'] ?? 0) ?></div>
             </div>
         </a>
     </div>
@@ -85,6 +85,10 @@
 
 <div class="card mb-4">
     <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="small text-muted">Prikazano zadnjih <?= nr($data->messages_display_limit) ?> zapisa<?php if(($data->filtered_messages_total ?? 0) > $data->messages_display_limit): ?> od ukupno <?= nr($data->filtered_messages_total) ?><?php endif ?>.</div>
+            <div class="small text-muted">Filter: <?= e($data->status_filter) ?></div>
+        </div>
         <div class="table-responsive table-custom-container">
             <table class="table table-custom mb-0">
                 <thead>

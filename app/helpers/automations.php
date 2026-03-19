@@ -1192,6 +1192,7 @@ function fc_calculate_email_automation_rates(array $summary): array {
 
 function fc_get_email_messages_summary(array $messages): array {
     $summary = [
+        'total' => 0,
         'sent' => 0,
         'delivered' => 0,
         'opened' => 0,
@@ -1208,6 +1209,8 @@ function fc_get_email_messages_summary(array $messages): array {
     ];
 
     foreach($messages as $message) {
+        $summary['total']++;
+
         if(($message->status ?? '') !== 'send_failed') {
             $summary['sent']++;
         } else {
@@ -1282,7 +1285,7 @@ function fc_does_email_message_match_status($message, ?string $status_filter = n
     }
 }
 
-function fc_get_email_resource_messages(string $message_type, int $resource_id, ?string $status_filter = null, int $limit = 1000): array {
+function fc_get_email_resource_messages(string $message_type, int $resource_id, ?string $status_filter = null, int $limit = 50): array {
     $query = db()->where('message_type', $message_type);
 
     if($message_type === 'broadcast') {

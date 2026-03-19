@@ -350,6 +350,10 @@ function send_mail($to, $title, $content, $data = [], $reply_to = null, $debug =
         return send_brevo_mail($to, $title, $content, $data, $reply_to, $debug);
     }
 
+    /* Custom code: FC-2026-03-19: optionally return structured SMTP transport result */
+    $should_return_transport_result = $debug || !empty($data['return_transport_result']);
+    /* /Custom code: FC-2026-03-19 */
+
     extract(process_send_mail_template($title, $content, $data));
 
     if(empty(settings()->smtp->host)) {
@@ -464,6 +468,24 @@ function send_mail($to, $title, $content, $data = [], $reply_to = null, $debug =
             ]);
         }
 
+        if($should_return_transport_result) {
+            $result = new \stdClass();
+            $result->success = (bool) $send;
+            $result->status_code = $send ? 250 : 0;
+            $result->response_body = $mail->ErrorInfo ?: null;
+            $result->response_json = null;
+            $result->curl_error = null;
+            $result->payload = [
+                'to' => $to,
+                'subject' => $title,
+            ];
+            $result->message_id = fc_normalize_brevo_message_id($mail->getLastMessageID());
+            $result->ErrorInfo = $mail->ErrorInfo ?? '';
+            $result->errors = $errors;
+
+            return $result;
+        }
+
         return $debug ? $mail : $send;
     } catch (Exception $e) {
         fc_log_mail_transport_error('smtp', 'PHPMailer exception thrown.', [
@@ -471,6 +493,24 @@ function send_mail($to, $title, $content, $data = [], $reply_to = null, $debug =
             'to' => $to,
             'exception_message' => $e->getMessage(),
         ]);
+
+        if($should_return_transport_result) {
+            $result = new \stdClass();
+            $result->success = false;
+            $result->status_code = 0;
+            $result->response_body = $e->getMessage();
+            $result->response_json = null;
+            $result->curl_error = null;
+            $result->payload = [
+                'to' => $to,
+                'subject' => $title,
+            ];
+            $result->message_id = null;
+            $result->ErrorInfo = $e->getMessage();
+            $result->errors = [$e->getMessage()];
+
+            return $result;
+        }
 
         return $debug ? $mail : false;
     }
