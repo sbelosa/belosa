@@ -23,6 +23,33 @@ class AdminAutomations extends Controller {
         foreach($broadcasts as $broadcast) {
             $broadcast->settings = json_decode($broadcast->settings ?? '{}');
             $broadcast->analytics = fc_get_email_resource_analytics('broadcast', (int) $broadcast->broadcast_id);
+
+            /* Custom code: FC-2026-03-19: attach unsubscribed recipients for hub modal */
+            $broadcast->unsubscribed_messages_limit = 100;
+            $broadcast->unsubscribed_messages = [];
+
+            if((int) ($broadcast->analytics['summary']['unsubscribed'] ?? 0) > 0) {
+                $broadcast->unsubscribed_messages = fc_get_email_resource_messages('broadcast', (int) $broadcast->broadcast_id, 'unsubscribed', $broadcast->unsubscribed_messages_limit);
+
+                $broadcast_unsubscribed_user_ids = array_values(array_unique(array_filter(array_map(static function($message) {
+                    return (int) ($message->user_id ?? 0);
+                }, $broadcast->unsubscribed_messages))));
+
+                $broadcast_unsubscribed_users = [];
+
+                if(!empty($broadcast_unsubscribed_user_ids)) {
+                    $broadcast_unsubscribed_users_result = db()->where('user_id', $broadcast_unsubscribed_user_ids, 'IN')->get('users', null, ['user_id', 'name', 'email']) ?? [];
+
+                    foreach($broadcast_unsubscribed_users_result as $broadcast_unsubscribed_user) {
+                        $broadcast_unsubscribed_users[(int) $broadcast_unsubscribed_user->user_id] = $broadcast_unsubscribed_user;
+                    }
+                }
+
+                foreach($broadcast->unsubscribed_messages as $unsubscribed_message) {
+                    $unsubscribed_message->user = $broadcast_unsubscribed_users[(int) ($unsubscribed_message->user_id ?? 0)] ?? null;
+                }
+            }
+            /* /Custom code: FC-2026-03-19 */
         }
 
         $automations = db()->orderBy('automation_id', 'ASC')->get('email_automations') ?? [];
@@ -40,6 +67,33 @@ class AdminAutomations extends Controller {
 
             /* Custom code: FC-2026-03-19: show Brevo funnel stats on the automation list */
             $automation->analytics = fc_get_email_automation_analytics((int) $automation->automation_id);
+            /* /Custom code: FC-2026-03-19 */
+
+            /* Custom code: FC-2026-03-19: attach unsubscribed recipients for hub modal */
+            $automation->unsubscribed_messages_limit = 100;
+            $automation->unsubscribed_messages = [];
+
+            if((int) ($automation->analytics['summary']['unsubscribed'] ?? 0) > 0) {
+                $automation->unsubscribed_messages = fc_get_email_resource_messages('automation', (int) $automation->automation_id, 'unsubscribed', $automation->unsubscribed_messages_limit);
+
+                $automation_unsubscribed_user_ids = array_values(array_unique(array_filter(array_map(static function($message) {
+                    return (int) ($message->user_id ?? 0);
+                }, $automation->unsubscribed_messages))));
+
+                $automation_unsubscribed_users = [];
+
+                if(!empty($automation_unsubscribed_user_ids)) {
+                    $automation_unsubscribed_users_result = db()->where('user_id', $automation_unsubscribed_user_ids, 'IN')->get('users', null, ['user_id', 'name', 'email']) ?? [];
+
+                    foreach($automation_unsubscribed_users_result as $automation_unsubscribed_user) {
+                        $automation_unsubscribed_users[(int) $automation_unsubscribed_user->user_id] = $automation_unsubscribed_user;
+                    }
+                }
+
+                foreach($automation->unsubscribed_messages as $unsubscribed_message) {
+                    $unsubscribed_message->user = $automation_unsubscribed_users[(int) ($unsubscribed_message->user_id ?? 0)] ?? null;
+                }
+            }
             /* /Custom code: FC-2026-03-19 */
         }
 

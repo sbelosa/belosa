@@ -82,7 +82,13 @@
                         <td class="text-nowrap"><?= nr($broadcast_summary['delivered']) ?></td>
                         <td class="text-nowrap"><?= nr($broadcast_summary['opened']) ?></td>
                         <td class="text-nowrap"><?= nr($broadcast_summary['clicked']) ?></td>
-                        <td class="text-nowrap"><?= nr($broadcast_summary['unsubscribed']) ?></td>
+                        <td class="text-nowrap">
+                            <?php if((int) ($broadcast_summary['unsubscribed'] ?? 0) > 0): ?>
+                                <a href="#" data-toggle="modal" data-target="#broadcast_unsubscribed_modal_<?= $broadcast->broadcast_id ?>"><?= nr($broadcast_summary['unsubscribed']) ?></a>
+                            <?php else: ?>
+                                <?= nr($broadcast_summary['unsubscribed']) ?>
+                            <?php endif ?>
+                        </td>
                         <td class="text-nowrap text-right"><a href="<?= $broadcast_link ?>" class="btn btn-sm btn-outline-primary">Otvori</a></td>
                     </tr>
                 <?php endforeach ?>
@@ -129,7 +135,13 @@
                         <td class="text-nowrap"><?= nr($automation_summary['delivered']) ?></td>
                         <td class="text-nowrap"><?= nr($automation_summary['opened']) ?></td>
                         <td class="text-nowrap"><?= nr($automation_summary['clicked']) ?></td>
-                        <td class="text-nowrap"><?= nr($automation_summary['unsubscribed']) ?></td>
+                        <td class="text-nowrap">
+                            <?php if((int) ($automation_summary['unsubscribed'] ?? 0) > 0): ?>
+                                <a href="#" data-toggle="modal" data-target="#automation_unsubscribed_modal_<?= $automation->automation_id ?>"><?= nr($automation_summary['unsubscribed']) ?></a>
+                            <?php else: ?>
+                                <?= nr($automation_summary['unsubscribed']) ?>
+                            <?php endif ?>
+                        </td>
                         <td class="text-nowrap"><?= nr($automation_summary['goal_completed']) ?></td>
                         <td class="text-nowrap text-right"><a href="<?= url('admin/automation-update/' . $automation->automation_id) ?>" class="btn btn-sm btn-outline-primary">Otvori</a></td>
                     </tr>
@@ -140,3 +152,91 @@
         </div>
     </div>
 </div>
+
+<?php foreach($data->broadcasts as $broadcast): ?>
+    <?php if((int) (($broadcast->analytics['summary']['unsubscribed'] ?? 0)) > 0): ?>
+        <div class="modal fade" id="broadcast_unsubscribed_modal_<?= $broadcast->broadcast_id ?>" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-scrollable" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Odjavljeni korisnici: <?= e($broadcast->name) ?></h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="small text-muted mb-3">Prikazano zadnjih <?= nr($broadcast->unsubscribed_messages_limit) ?> odjava<?php if((int) ($broadcast->analytics['summary']['unsubscribed'] ?? 0) > (int) $broadcast->unsubscribed_messages_limit): ?> od ukupno <?= nr($broadcast->analytics['summary']['unsubscribed']) ?><?php endif ?>.</div>
+                        <div class="table-responsive table-custom-container">
+                            <table class="table table-custom mb-0">
+                                <thead>
+                                <tr>
+                                    <th>Korisnik</th>
+                                    <th>Email</th>
+                                    <th>Vrijeme odjave</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <?php foreach($broadcast->unsubscribed_messages as $message): ?>
+                                    <tr>
+                                        <td class="text-nowrap"><?= e($message->user->name ?? ('#' . (int) ($message->user_id ?? 0))) ?></td>
+                                        <td class="text-nowrap"><?= e($message->user->email ?? $message->recipient_email) ?></td>
+                                        <td class="text-nowrap"><?= $message->unsubscribe_datetime ? \Altum\Date::get($message->unsubscribe_datetime, 2) : '-' ?></td>
+                                    </tr>
+                                <?php endforeach ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <a href="<?= in_array($broadcast->status, ['sent', 'processing']) ? url('admin/broadcast-view/' . $broadcast->broadcast_id . '?status_filter=unsubscribed') : url('admin/broadcast-update/' . $broadcast->broadcast_id) ?>" class="btn btn-outline-primary">Otvori detalje</a>
+                        <button type="button" class="btn btn-gray-300" data-dismiss="modal">Zatvori</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    <?php endif ?>
+<?php endforeach ?>
+
+<?php foreach($data->automations as $automation): ?>
+    <?php if((int) (($automation->analytics['summary']['unsubscribed'] ?? 0)) > 0): ?>
+        <div class="modal fade" id="automation_unsubscribed_modal_<?= $automation->automation_id ?>" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-scrollable" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Odjavljeni korisnici: <?= e($automation->name) ?></h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="small text-muted mb-3">Prikazano zadnjih <?= nr($automation->unsubscribed_messages_limit) ?> odjava<?php if((int) ($automation->analytics['summary']['unsubscribed'] ?? 0) > (int) $automation->unsubscribed_messages_limit): ?> od ukupno <?= nr($automation->analytics['summary']['unsubscribed']) ?><?php endif ?>.</div>
+                        <div class="table-responsive table-custom-container">
+                            <table class="table table-custom mb-0">
+                                <thead>
+                                <tr>
+                                    <th>Korisnik</th>
+                                    <th>Email</th>
+                                    <th>Vrijeme odjave</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <?php foreach($automation->unsubscribed_messages as $message): ?>
+                                    <tr>
+                                        <td class="text-nowrap"><?= e($message->user->name ?? ('#' . (int) ($message->user_id ?? 0))) ?></td>
+                                        <td class="text-nowrap"><?= e($message->user->email ?? $message->recipient_email) ?></td>
+                                        <td class="text-nowrap"><?= $message->unsubscribe_datetime ? \Altum\Date::get($message->unsubscribe_datetime, 2) : '-' ?></td>
+                                    </tr>
+                                <?php endforeach ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <a href="<?= url('admin/automation-update/' . $automation->automation_id . '?status_filter=unsubscribed') ?>" class="btn btn-outline-primary">Otvori detalje</a>
+                        <button type="button" class="btn btn-gray-300" data-dismiss="modal">Zatvori</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    <?php endif ?>
+<?php endforeach ?>
