@@ -52,6 +52,19 @@ class WebhookBrevoEmail extends Controller {
 
             $event_type = fc_normalize_brevo_event_type((string) $event_payload->event);
             $message = fc_find_email_automation_message_for_brevo_event($event_payload);
+
+            if(!$message) {
+                debug_log('[' . 
+                    \Altum\Router::$controller .
+                    '] Unmatched Brevo event: ' . print_r([
+                        'event_type' => $event_type,
+                        'message_id' => fc_get_brevo_event_message_id($event_payload),
+                        'email' => fc_get_brevo_event_recipient_email($event_payload),
+                        'tags' => fc_get_brevo_event_tags($event_payload),
+                    ], true)
+                );
+            }
+
             $is_new_event = fc_store_email_automation_message_event($message, $event_type, $event_payload);
 
             if(!$is_new_event) {

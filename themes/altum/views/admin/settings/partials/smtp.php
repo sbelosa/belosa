@@ -82,23 +82,6 @@
                 <small class="form-text text-muted"><?= l('admin_settings.smtp.brevo_webhook_url_help') ?></small>
             </div>
 
-            <div class="row">
-                <div class="col-lg-6">
-                    <div class="form-group">
-                        <label for="brevo_webhook_header_name"><i class="fas fa-fw fa-sm fa-heading text-muted mr-1"></i> <?= l('admin_settings.smtp.brevo_webhook_header_name') ?></label>
-                        <input id="brevo_webhook_header_name" type="text" class="form-control" value="X-FC-Brevo-Secret" readonly="readonly" onclick="this.select();" />
-                    </div>
-                </div>
-
-                <div class="col-lg-6">
-                    <div class="form-group">
-                        <label for="brevo_webhook_header_value"><i class="fas fa-fw fa-sm fa-key text-muted mr-1"></i> <?= l('admin_settings.smtp.brevo_webhook_header_value') ?></label>
-                        <input id="brevo_webhook_header_value" type="text" class="form-control" value="<?= $brevo_webhook_secret ?>" readonly="readonly" onclick="this.select();" />
-                        <small class="form-text text-muted"><?= l('admin_settings.smtp.brevo_webhook_header_value_help') ?></small>
-                    </div>
-                </div>
-            </div>
-
             <div class="small text-muted">
                 <?= l('admin_settings.smtp.brevo_webhook_brevo_help') ?>
             </div>
@@ -127,6 +110,13 @@
                     </div>
                 </div>
             </div>
+
+            <?php if(!empty($brevo_webhook_health['unmatched_events'])): ?>
+                <div class="alert alert-warning mt-4 mb-0">
+                    <div class="font-weight-bold mb-1"><?= l('admin_settings.smtp.brevo_webhook_unmatched_title') ?></div>
+                    <div><?= sprintf(l('admin_settings.smtp.brevo_webhook_unmatched_body'), nr($brevo_webhook_health['unmatched_events']), !empty($brevo_webhook_health['latest_unmatched_event']->event_type) ? e($brevo_webhook_health['latest_unmatched_event']->event_type) : l('global.none')) ?></div>
+                </div>
+            <?php endif ?>
         </div>
     </div>
     <!-- /Custom code: FC-2026-03-19 -->

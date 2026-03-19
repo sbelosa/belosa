@@ -753,6 +753,112 @@ function fc_normalize_brevo_message_id($message_id): ?string {
     return trim($message_id, '<>');
 }
 
+/* Custom code: FC-2026-03-19: normalize Brevo webhook payload identifiers across variants */
+function fc_get_brevo_event_message_id($payload): ?string {
+    foreach(['message-id', 'messageId', 'message_id', 'Message-Id', 'Message-ID'] as $property) {
+        if(isset($payload->{$property})) {
+            return fc_normalize_brevo_message_id($payload->{$property});
+        }
+    }
+
+    return null;
+}
+
+function fc_get_brevo_event_recipient_email($payload): string {
+    foreach(['email', 'recipient', 'recipient_email'] as $property) {
+        $value = trim((string) ($payload->{$property} ?? ''));
+
+        if($value !== '') {
+            return $value;
+        }
+    }
+
+    if(!empty($payload->to) && is_array($payload->to)) {
+        foreach($payload->to as $entry) {
+            if(is_object($entry) && !empty($entry->email)) {
+                return trim((string) $entry->email);
+            }
+
+            if(is_string($entry) && trim($entry) !== '') {
+                return trim($entry);
+            }
+        }
+    }
+
+    return '';
+}
+
+function fc_find_recent_email_message_for_recipient(string $email, array $context, string $event_datetime) {
+    $candidates = db()
+        ->where('provider', 'brevo')
+        ->where('recipient_email', $email)
+        ->where('status', 'send_failed', '!=')
+        ->orderBy('automation_message_id', 'DESC')
+        ->get('email_automation_messages', 25) ?? [];
+
+    if(empty($candidates)) {
+        return null;
+    }
+
+    $event_timestamp = strtotime($event_datetime) ?: time();
+    $best_candidate = null;
+    $best_score = PHP_INT_MIN;
+
+    foreach($candidates as $candidate) {
+        $score = 0;
+
+        if(!empty($context['broadcast_id'])) {
+            $score += ($candidate->message_type ?? null) === 'broadcast' ? 40 : -80;
+            $score += (int) ($candidate->broadcast_id ?? 0) === (int) $context['broadcast_id'] ? 120 : -30;
+        }
+
+        if(!empty($context['automation_id'])) {
+            $score += ($candidate->message_type ?? null) === 'automation' ? 40 : -80;
+            $score += (int) ($candidate->automation_id ?? 0) === (int) $context['automation_id'] ? 90 : -25;
+        }
+
+        if(!empty($context['automation_enrollment_id'])) {
+            $score += (int) ($candidate->automation_enrollment_id ?? 0) === (int) $context['automation_enrollment_id'] ? 70 : -20;
+        }
+
+        if(!empty($context['automation_step_id'])) {
+            $score += (int) ($candidate->automation_step_id ?? 0) === (int) $context['automation_step_id'] ? 60 : -15;
+        }
+
+        if(!empty($context['user_id'])) {
+            $score += (int) ($candidate->user_id ?? 0) === (int) $context['user_id'] ? 50 : -10;
+        }
+
+        $sent_timestamp = strtotime((string) ($candidate->sent_datetime ?? '')) ?: 0;
+
+        if($sent_timestamp > 0) {
+            $time_diff = abs($event_timestamp - $sent_timestamp);
+
+            if($sent_timestamp <= $event_timestamp) {
+                $score += 35;
+            }
+
+            if($time_diff <= 3600) {
+                $score += 35;
+            } elseif($time_diff <= 86400) {
+                $score += 20;
+            } elseif($time_diff <= 604800) {
+                $score += 5;
+            } else {
+                $score -= 25;
+            }
+        }
+
+        if($score > $best_score) {
+            $best_score = $score;
+            $best_candidate = $candidate;
+        }
+    }
+
+    return $best_score >= 0 ? $best_candidate : null;
+}
+/* /Custom code: FC-2026-03-19 */
+
 function fc_get_email_automation_message_tags(int $automation_id, int $enrollment_id, int $step_id, int $user_id): array {
     return [
         'fc_automation',
@@ -930,7 +1036,7 @@ function fc_get_brevo_event_tags($payload): array {
 }
 
 function fc_find_email_automation_message_for_brevo_event($payload) {
-    $brevo_message_id = fc_normalize_brevo_message_id($payload->{'message-id'} ?? ($payload->messageId ?? null));
+    $brevo_message_id = fc_get_brevo_event_message_id($payload);
 
     if($brevo_message_id) {
         $message = db()->where('brevo_message_id', $brevo_message_id)->getOne('email_automation_messages');
@@ -942,7 +1048,8 @@ function fc_find_email_automation_message_for_brevo_event($payload) {
 
     $tags = fc_get_brevo_event_tags($payload);
     $context = fc_extract_automation_context_from_tags($tags);
-    $email = trim((string) ($payload->email ?? ''));
+    $email = fc_get_brevo_event_recipient_email($payload);
+    $event_datetime = fc_get_brevo_event_datetime($payload);
 
     $query = db()->where('provider', 'brevo');
 
@@ -983,14 +1090,14 @@ function fc_find_email_automation_message_for_brevo_event($payload) {
         return null;
     }
 
-    return db()->where('recipient_email', $email)->orderBy('automation_message_id', 'DESC')->getOne('email_automation_messages');
+    return fc_find_recent_email_message_for_recipient($email, $context, $event_datetime);
 }
 
 function fc_get_brevo_event_hash($payload, string $event_type): string {
     return sha1(json_encode([
         'event_type' => $event_type,
-        'message_id' => fc_normalize_brevo_message_id($payload->{'message-id'} ?? ($payload->messageId ?? null)),
-        'email' => $payload->email ?? null,
+        'message_id' => fc_get_brevo_event_message_id($payload),
+        'email' => fc_get_brevo_event_recipient_email($payload),
         'ts_epoch' => $payload->ts_epoch ?? null,
         'ts_event' => $payload->ts_event ?? null,
         'url' => $payload->url ?? ($payload->link ?? null),
@@ -1373,10 +1480,13 @@ function fc_get_email_webhook_health_summary(): array {
     fc_ensure_email_automation_tables();
 
     $latest_event = db()->orderBy('automation_message_event_id', 'DESC')->getOne('email_automation_message_events');
+    $latest_unmatched_event = db()->where('automation_message_id', null, 'IS')->orderBy('automation_message_event_id', 'DESC')->getOne('email_automation_message_events');
 
     return [
         'total_events' => (int) db()->getValue('email_automation_message_events', 'COUNT(*)'),
         'latest_event' => $latest_event,
+        'unmatched_events' => (int) db()->where('automation_message_id', null, 'IS')->getValue('email_automation_message_events', 'COUNT(*)'),
+        'latest_unmatched_event' => $latest_unmatched_event,
     ];
 }
 
