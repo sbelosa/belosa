@@ -3,7 +3,7 @@
 <?php $mail_transport = settings()->smtp->transport ?? 'smtp' ?>
 <?php /* Custom code: FC-2026-03-19: Brevo webhook admin setup values */ ?>
 <?php $brevo_webhook_secret = settings()->smtp->brevo_webhook_secret ?? '' ?>
-<?php $brevo_webhook_url = url('webhook-brevo-email') ?>
+<?php $brevo_webhook_url = fc_get_brevo_webhook_url() ?>
 <?php /* /Custom code: FC-2026-03-19 */ ?>
 
 <div>

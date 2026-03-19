@@ -20,7 +20,7 @@ class WebhookBrevoEmail extends Controller {
         debug_log('[' . \Altum\Router::$controller . '] ' . print_r(['headers' => $headers, 'payload' => $payload], true));
 
         $configured_secret = fc_get_brevo_webhook_secret();
-        $received_secret = $headers['X-FC-Brevo-Secret'] ?? $headers['x-fc-brevo-secret'] ?? null;
+        $received_secret = $headers['X-FC-Brevo-Secret'] ?? $headers['x-fc-brevo-secret'] ?? ($_GET['secret'] ?? null);
 
         if(!$configured_secret || !$received_secret || !hash_equals($configured_secret, $received_secret)) {
             echo 'Invalid webhook secret';

@@ -732,6 +732,17 @@ function fc_get_brevo_webhook_secret(): string {
     /* /Custom code: FC-2026-03-19 */
 }
 
+function fc_get_brevo_webhook_url(): string {
+    $url = url('webhook-brevo-email');
+    $secret = fc_get_brevo_webhook_secret();
+
+    if($secret === '') {
+        return $url;
+    }
+
+    return $url . '?' . http_build_query(['secret' => $secret]);
+}
+
 function fc_normalize_brevo_message_id($message_id): ?string {
     $message_id = trim((string) $message_id);
 
@@ -1173,16 +1184,28 @@ function fc_normalize_brevo_event_type(string $event_type): string {
         'delivered' => 'delivered',
         'deferred' => 'deferred',
         'opened' => 'opened',
+        'firstOpening' => 'opened',
+        'first_opening' => 'opened',
         'uniqueOpened' => 'opened',
+        'unique_opened' => 'opened',
         'proxyOpen' => 'opened',
+        'proxy_open' => 'opened',
         'uniqueProxyOpen' => 'opened',
+        'unique_proxy_open' => 'opened',
         'click' => 'clicked',
         'clicked' => 'clicked',
+        'Click' => 'clicked',
         'softBounce' => 'soft_bounce',
+        'soft_bounced' => 'soft_bounce',
+        'soft bounced' => 'soft_bounce',
         'hardBounce' => 'hard_bounce',
+        'hard_bounced' => 'hard_bounce',
+        'hard bounced' => 'hard_bounce',
         'blocked' => 'blocked',
         'invalid' => 'invalid',
+        'invalid_email' => 'invalid',
         'error' => 'blocked',
+        'complaint' => 'spam',
         'spam' => 'spam',
         'unsubscribed' => 'unsubscribed',
     ];
