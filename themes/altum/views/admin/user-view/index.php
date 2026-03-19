@@ -445,6 +445,37 @@ $billing_event_icons = [
                     <label for="is_newsletter_subscribed" class="font-weight-bold"><i class="fas fa-fw fa-sm fa-mail-bulk text-muted mr-1"></i> <?= l('admin_users.is_newsletter_subscribed') ?></label>
                     <input id="is_newsletter_subscribed" type="text" class="form-control-plaintext" value="<?= $data->user->is_newsletter_subscribed ? l('global.yes') : l('global.no') ?>" readonly />
                 </div>
+
+                <?php if(!empty($data->user_email_unsubscribe)): ?>
+                    <!-- Custom code: FC-2026-03-19: show latest unsubscribe details on admin user profile -->
+                    <hr class="my-4" />
+
+                    <div class="form-group">
+                        <label for="email_unsubscribe_datetime" class="font-weight-bold"><i class="fas fa-fw fa-sm fa-user-minus text-muted mr-1"></i> <?= l('admin_user_view.email_unsubscribe.header') ?></label>
+                        <input id="email_unsubscribe_datetime" type="text" class="form-control-plaintext" value="<?= !empty($data->user_email_unsubscribe->datetime) ? \Altum\Date::get($data->user_email_unsubscribe->datetime, 1) : l('global.none') ?>" readonly />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email_unsubscribe_source" class="font-weight-bold"><i class="fas fa-fw fa-sm fa-link text-muted mr-1"></i> <?= l('admin_user_view.email_unsubscribe.source') ?></label>
+                        <input id="email_unsubscribe_source" type="text" class="form-control-plaintext" value="<?= !empty($data->user_email_unsubscribe->source) ? e($data->user_email_unsubscribe->source) : l('global.none') ?>" readonly />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email_unsubscribe_type" class="font-weight-bold"><i class="fas fa-fw fa-sm fa-envelope text-muted mr-1"></i> <?= l('admin_user_view.email_unsubscribe.message_type') ?></label>
+                        <input id="email_unsubscribe_type" type="text" class="form-control-plaintext" value="<?= !empty($data->user_email_unsubscribe->message_type) ? e($data->user_email_unsubscribe->message_type) : l('global.none') ?>" readonly />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email_unsubscribe_recipient" class="font-weight-bold"><i class="fas fa-fw fa-sm fa-at text-muted mr-1"></i> <?= l('admin_user_view.email_unsubscribe.recipient_email') ?></label>
+                        <input id="email_unsubscribe_recipient" type="text" class="form-control-plaintext" value="<?= !empty($data->user_email_unsubscribe->recipient_email) ? e($data->user_email_unsubscribe->recipient_email) : l('global.none') ?>" readonly />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email_unsubscribe_resource" class="font-weight-bold"><i class="fas fa-fw fa-sm fa-diagram-project text-muted mr-1"></i> <?= l('admin_user_view.email_unsubscribe.resource') ?></label>
+                        <input id="email_unsubscribe_resource" type="text" class="form-control-plaintext" value="<?= !empty($data->user_email_unsubscribe->message_type) && $data->user_email_unsubscribe->message_type === 'automation' ? ('automation #' . (int) ($data->user_email_unsubscribe->automation_id ?? 0) . ' / step #' . (int) ($data->user_email_unsubscribe->automation_step_id ?? 0)) : ('broadcast #' . (int) ($data->user_email_unsubscribe->broadcast_id ?? 0)) ?>" readonly />
+                    </div>
+                    <!-- /Custom code: FC-2026-03-19 -->
+                <?php endif ?>
             </div>
         </div>
     </div>

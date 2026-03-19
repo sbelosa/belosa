@@ -176,6 +176,7 @@ class AdminUserView extends Controller {
             'chats' => $chats ?? null,
             'user_analytics' => $user_analytics,
             'user_meta' => $preferences->meta ?? null, /* Custom code */
+            'user_email_unsubscribe' => $preferences->email_unsubscribe ?? null,
             /* Custom code: FC-2026-03-17: expose billing risk summary and events to admin user profile */
             'billing_summary' => $billing_summary,
             'billing_events' => $billing_events,

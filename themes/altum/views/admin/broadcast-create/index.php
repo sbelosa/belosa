@@ -613,21 +613,47 @@
     let quill = null;
 
     if(usersSearch && usersSelect) {
-        usersSearch.addEventListener('input', event => {
-            const search = event.currentTarget.value.trim().toLowerCase();
+        const allUsersOptions = Array.from(usersSelect.options).map(option => ({
+            value: option.value,
+            text: option.text,
+            selected: option.selected,
+        }));
 
-            Array.from(usersSelect.options).forEach(option => {
-                option.hidden = search !== '' && !option.text.toLowerCase().includes(search);
+        const renderUsersOptions = search => {
+            const normalizedSearch = search.trim().toLowerCase();
+            const selectedValues = new Set(Array.from(usersSelect.selectedOptions).map(option => option.value));
+
+            usersSelect.innerHTML = '';
+
+            allUsersOptions.forEach(optionData => {
+                const isSelected = selectedValues.has(optionData.value) || optionData.selected;
+                const matchesSearch = normalizedSearch === '' || optionData.text.toLowerCase().includes(normalizedSearch);
+
+                if(!matchesSearch && !isSelected) {
+                    return;
+                }
+
+                const option = document.createElement('option');
+                option.value = optionData.value;
+                option.text = optionData.text;
+                option.selected = isSelected;
+                usersSelect.appendChild(option);
+            });
+        };
+
+        usersSelect.addEventListener('change', () => {
+            const selectedValues = new Set(Array.from(usersSelect.selectedOptions).map(option => option.value));
+
+            allUsersOptions.forEach(optionData => {
+                optionData.selected = selectedValues.has(optionData.value);
             });
         });
 
-        if(window.jQuery && window.jQuery.fn && window.jQuery.fn.select2) {
-            window.jQuery(usersSelect).select2({
-                dir: document.querySelector('html').dir,
-                width: '100%',
-                placeholder: usersSelect.dataset.placeholder || '',
-            });
-        }
+        usersSearch.addEventListener('input', event => {
+            renderUsersOptions(event.currentTarget.value);
+        });
+
+        renderUsersOptions(usersSearch.value);
     }
 
     if(window.Quill) {

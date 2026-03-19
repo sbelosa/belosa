@@ -1856,6 +1856,11 @@ return [
 	'admin_user_view.email_activity.action_clicked' => 'Klik',
 	'admin_user_view.email_activity.action_unsubscribed' => 'Odjava',
 	'admin_user_view.email_activity.no_data' => 'Ovaj korisnik još nema spremljenih mail analytics zapisa.',
+	'admin_user_view.email_unsubscribe.header' => 'Zadnja email odjava',
+	'admin_user_view.email_unsubscribe.source' => 'Izvor odjave',
+	'admin_user_view.email_unsubscribe.message_type' => 'Tip poruke',
+	'admin_user_view.email_unsubscribe.recipient_email' => 'Email kontakt',
+	'admin_user_view.email_unsubscribe.resource' => 'Kampanja / automatizacija',
 	/* /Custom code: FC-2026-03-19 */
 	/* /Custom code: FC-2026-03-04 */
 

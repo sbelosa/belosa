@@ -822,6 +822,11 @@ return [
     'admin_user_view.email_activity.action_clicked' => 'Clicked',
     'admin_user_view.email_activity.action_unsubscribed' => 'Unsubscribed',
     'admin_user_view.email_activity.no_data' => 'This user does not have saved email analytics activity yet.',
+    'admin_user_view.email_unsubscribe.header' => 'Latest email unsubscribe',
+    'admin_user_view.email_unsubscribe.source' => 'Unsubscribe source',
+    'admin_user_view.email_unsubscribe.message_type' => 'Message type',
+    'admin_user_view.email_unsubscribe.recipient_email' => 'Recipient email',
+    'admin_user_view.email_unsubscribe.resource' => 'Broadcast / automation',
     /* /Custom code: FC-2026-03-19 */
     /* /Custom code: FC-2026-03-04 */
 

@@ -32,7 +32,11 @@ class EmailUnsubscribe extends Controller {
             $result = fc_process_email_unsubscribe($context);
         }
         catch(\Throwable $exception) {
-            error_log('Email unsubscribe failed: ' . $exception->getMessage());
+            error_log('Email unsubscribe failed: ' . json_encode([
+                'message' => $exception->getMessage(),
+                'context' => $context,
+                'trace' => $exception->getTraceAsString(),
+            ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
 
             http_response_code(200);
             echo '<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Unsubscribe</title></head><body style="font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Arial,sans-serif;background:linear-gradient(180deg,#f8fafc 0%,#eef2ff 100%);color:#111827;padding:32px;"><div style="max-width:640px;margin:0 auto;background:#fff;border-radius:24px;padding:36px;box-shadow:0 24px 70px rgba(15,23,42,.1)"><div style="display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;background:#fff7ed;color:#9a3412;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;">Email preference</div><h1 style="margin:18px 0 12px;font-size:32px;line-height:1.15;">Odjavu trenutno nismo mogli dovršiti</h1><p style="margin:0;color:#4b5563;line-height:1.7;">Poveznica je otvorena, ali je došlo do tehničke greške tijekom obrade odjave. Pokušaj ponovno kroz isti email za nekoliko minuta ili nam javi email adresu kako bismo odjavu ručno dovršili.</p></div></body></html>';

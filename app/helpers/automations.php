@@ -647,14 +647,30 @@ function fc_process_email_unsubscribe(array $context): array {
     $context['recipient_email'] = trim((string) ($context['recipient_email'] ?? ''));
     $context['user_id'] = (int) ($context['user_id'] ?? 0);
     $message = fc_find_email_message_by_unsubscribe_context($context);
-    $user = $context['user_id'] ? db()->where('user_id', $context['user_id'])->getOne('users', ['user_id', 'name', 'email', 'is_newsletter_subscribed']) : null;
+    $user = $context['user_id'] ? db()->where('user_id', $context['user_id'])->getOne('users', ['user_id', 'name', 'email', 'is_newsletter_subscribed', 'preferences']) : null;
     $already_unsubscribed = $user ? !(bool) ($user->is_newsletter_subscribed ?? 0) : false;
 
     if($user) {
+        $preferences = json_decode($user->preferences ?? '') ?: (object) [];
+        $preferences->email_unsubscribe = (object) [
+            'source' => 'one_click_link',
+            'message_type' => $context['message_type'] ?? 'broadcast',
+            'broadcast_id' => (int) ($context['broadcast_id'] ?? 0),
+            'automation_id' => (int) ($context['automation_id'] ?? 0),
+            'automation_enrollment_id' => (int) ($context['automation_enrollment_id'] ?? 0),
+            'automation_step_id' => (int) ($context['automation_step_id'] ?? 0),
+            'recipient_email' => $context['recipient_email'] ?: ($user->email ?? ''),
+            'ip' => get_ip(),
+            'user_agent' => substr((string) ($_SERVER['HTTP_USER_AGENT'] ?? ''), 0, 255),
+            'datetime' => get_date(),
+        ];
+
         db()->where('user_id', $user->user_id)->update('users', [
             'is_newsletter_subscribed' => 0,
-            'last_datetime' => get_date(),
+            'preferences' => json_encode($preferences, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
         ]);
+
+        $user->preferences = json_encode($preferences, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
     }
 
     if($message) {
