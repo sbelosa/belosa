@@ -25,6 +25,13 @@
 
 <?= \Altum\Alerts::output_alerts() ?>
 
+<?php if(!empty($data->needs_webhook_attention)): ?>
+    <div class="alert alert-warning mb-4">
+        <div class="font-weight-bold mb-1"><?= l('admin_settings.smtp.brevo_webhook_warning_title') ?></div>
+        <div><?= l('admin_settings.smtp.brevo_webhook_warning_body') ?></div>
+    </div>
+<?php endif ?>
+
 <div class="row mb-4">
     <div class="col-6 col-xl-2 mb-3"><div class="card h-100"><div class="card-body"><div class="text-muted small text-uppercase mb-1">Status</div><div class="h5 mb-0"><?php if($data->broadcast->status == 'draft'): ?>Draft<?php elseif($data->broadcast->status == 'processing'): ?>Processing<?php else: ?>Sent<?php endif ?></div></div></div></div>
     <?php foreach(['sent' => 'Poslano', 'delivered' => 'Isporučeno', 'opened' => 'Otvoreno', 'clicked' => 'Kliknuto', 'bounced' => 'Bounce', 'unsubscribed' => 'Odjavljeno'] as $status_key => $status_label): ?>

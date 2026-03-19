@@ -295,6 +295,7 @@ class AdminAutomationUpdate extends Controller {
 
         /* Custom code: FC-2026-03-19: attach analytics summary and recent sent messages */
         $analytics = fc_get_email_automation_analytics((int) $automation->automation_id);
+        $webhook_events_count = fc_get_email_resource_webhook_event_count('automation', (int) $automation->automation_id);
         $status_filter = in_array($_GET['status_filter'] ?? 'all', ['all', 'sent', 'delivered', 'opened', 'clicked', 'goal_completed', 'deferred', 'soft_bounce', 'hard_bounce', 'blocked', 'invalid', 'spam', 'unsubscribed', 'send_failed']) ? $_GET['status_filter'] : 'all';
         $messages_display_limit = 25;
         $filtered_messages = fc_get_email_resource_messages('automation', (int) $automation->automation_id, $status_filter, $messages_display_limit);
@@ -342,6 +343,8 @@ class AdminAutomationUpdate extends Controller {
             'stats' => $stats,
             'logs' => $logs,
             'analytics' => $analytics,
+            'webhook_events_count' => $webhook_events_count,
+            'needs_webhook_attention' => (int) ($analytics['summary']['sent'] ?? 0) > 0 && $webhook_events_count === 0,
             'filtered_messages' => $filtered_messages,
             'filtered_messages_total' => $filtered_messages_total,
             'messages_display_limit' => $messages_display_limit,

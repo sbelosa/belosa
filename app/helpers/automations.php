@@ -1355,6 +1355,31 @@ function fc_get_email_resource_analytics(string $message_type, int $resource_id)
     ];
 }
 
+function fc_get_email_resource_webhook_event_count(string $message_type, int $resource_id): int {
+    fc_ensure_email_automation_tables();
+
+    $query = db()->where('message_type', $message_type);
+
+    if($message_type === 'broadcast') {
+        $query->where('broadcast_id', $resource_id);
+    } else {
+        $query->where('automation_id', $resource_id);
+    }
+
+    return (int) $query->getValue('email_automation_message_events', 'COUNT(*)');
+}
+
+function fc_get_email_webhook_health_summary(): array {
+    fc_ensure_email_automation_tables();
+
+    $latest_event = db()->orderBy('automation_message_event_id', 'DESC')->getOne('email_automation_message_events');
+
+    return [
+        'total_events' => (int) db()->getValue('email_automation_message_events', 'COUNT(*)'),
+        'latest_event' => $latest_event,
+    ];
+}
+
 /* Custom code: FC-2026-03-19: per-user email activity analytics for admin profile */
 function fc_get_user_email_activity(int $user_id, int $limit = 100): array {
     fc_ensure_email_automation_tables();

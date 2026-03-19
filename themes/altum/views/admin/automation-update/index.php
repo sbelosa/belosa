@@ -32,6 +32,13 @@
 
 <?= \Altum\Alerts::output_alerts() ?>
 
+<?php if(!empty($data->needs_webhook_attention)): ?>
+    <div class="alert alert-warning mb-4">
+        <div class="font-weight-bold mb-1"><?= l('admin_settings.smtp.brevo_webhook_warning_title') ?></div>
+        <div><?= l('admin_settings.smtp.brevo_webhook_warning_body') ?></div>
+    </div>
+<?php endif ?>
+
 <!-- Custom code: FC-2026-03-19: mail studio update layout -->
 <div class="mail-studio-page">
     <div class="card mail-studio-hero mb-4">

@@ -34,6 +34,7 @@ class AdminBroadcastView extends Controller {
         $broadcast->users_ids = implode(',', json_decode($broadcast->users_ids));
         $status_filter = in_array($_GET['status_filter'] ?? 'all', ['all', 'sent', 'delivered', 'opened', 'clicked', 'deferred', 'soft_bounce', 'hard_bounce', 'blocked', 'invalid', 'spam', 'unsubscribed', 'send_failed']) ? $_GET['status_filter'] : 'all';
         $analytics = fc_get_email_resource_analytics('broadcast', (int) $broadcast->broadcast_id);
+        $webhook_events_count = fc_get_email_resource_webhook_event_count('broadcast', (int) $broadcast->broadcast_id);
         $messages_display_limit = 25;
         $filtered_messages = fc_get_email_resource_messages('broadcast', (int) $broadcast->broadcast_id, $status_filter, $messages_display_limit);
         $filtered_messages_total = $status_filter === 'all' ? (int) ($analytics['summary']['total'] ?? 0) : (int) ($analytics['summary'][$status_filter] ?? 0);
@@ -141,6 +142,8 @@ class AdminBroadcastView extends Controller {
             'clicks' => $clicks,
             'users' => $users,
             'analytics' => $analytics,
+            'webhook_events_count' => $webhook_events_count,
+            'needs_webhook_attention' => (int) ($analytics['summary']['sent'] ?? 0) > 0 && $webhook_events_count === 0,
             'filtered_messages' => $filtered_messages,
             'filtered_messages_total' => $filtered_messages_total,
             'messages_display_limit' => $messages_display_limit,

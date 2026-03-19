@@ -4,6 +4,7 @@
 <?php /* Custom code: FC-2026-03-19: Brevo webhook admin setup values */ ?>
 <?php $brevo_webhook_secret = settings()->smtp->brevo_webhook_secret ?? '' ?>
 <?php $brevo_webhook_url = fc_get_brevo_webhook_url() ?>
+<?php $brevo_webhook_health = fc_get_email_webhook_health_summary() ?>
 <?php /* /Custom code: FC-2026-03-19 */ ?>
 
 <div>
@@ -100,6 +101,31 @@
 
             <div class="small text-muted">
                 <?= l('admin_settings.smtp.brevo_webhook_brevo_help') ?>
+            </div>
+
+            <hr class="my-4" />
+
+            <div class="row">
+                <div class="col-lg-4">
+                    <div class="form-group mb-lg-0">
+                        <label class="small text-uppercase text-muted mb-2 d-block"><?= l('admin_settings.smtp.brevo_webhook_health_total') ?></label>
+                        <div class="h4 mb-0"><?= nr($brevo_webhook_health['total_events']) ?></div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4">
+                    <div class="form-group mb-lg-0">
+                        <label class="small text-uppercase text-muted mb-2 d-block"><?= l('admin_settings.smtp.brevo_webhook_health_last_event') ?></label>
+                        <div class="font-weight-bold mb-0"><?= !empty($brevo_webhook_health['latest_event']->event_type) ? e($brevo_webhook_health['latest_event']->event_type) : l('global.none') ?></div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4">
+                    <div class="form-group mb-0">
+                        <label class="small text-uppercase text-muted mb-2 d-block"><?= l('admin_settings.smtp.brevo_webhook_health_last_seen') ?></label>
+                        <div class="font-weight-bold mb-0"><?= !empty($brevo_webhook_health['latest_event']->event_datetime) ? \Altum\Date::get($brevo_webhook_health['latest_event']->event_datetime, 2) : l('global.none') ?></div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
