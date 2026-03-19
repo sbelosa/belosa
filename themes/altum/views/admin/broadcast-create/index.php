@@ -105,7 +105,8 @@
             <!-- Custom code: FC-2026-03-19: searchable custom broadcast recipient picker -->
             <div class="form-group" data-segment="custom">
                 <label for="users_ids"><i class="fas fa-fw fa-sm fa-users text-muted mr-1"></i> <?= l('admin_broadcasts.users_ids') ?></label>
-                <select id="users_ids" name="users_ids[]" class="custom-select <?= \Altum\Alerts::has_field_errors('users_ids') ? 'is-invalid' : null ?>" multiple="multiple" data-placeholder="<?= l('admin_broadcasts.users_ids_placeholder') ?>" required="required">
+                <input type="text" id="users_ids_search" class="form-control mb-2" placeholder="<?= l('admin_broadcasts.users_ids_placeholder') ?>" autocomplete="off" />
+                <select id="users_ids" name="users_ids[]" class="form-control broadcast-users-select <?= \Altum\Alerts::has_field_errors('users_ids') ? 'is-invalid' : null ?>" multiple="multiple" data-placeholder="<?= l('admin_broadcasts.users_ids_placeholder') ?>" required="required" size="8">
                     <?php foreach($data->available_users as $available_user): ?>
                         <?php $available_user_label = trim(($available_user->name ?: '') . ' ' . ($available_user->email ? '(' . $available_user->email . ')' : '')) ?: ('#' . $available_user->user_id) ?>
                         <option value="<?= $available_user->user_id ?>" <?= in_array($available_user->user_id, $data->values['users_ids']) ? 'selected="selected"' : null ?>><?= e($available_user_label) ?></option>
@@ -287,7 +288,7 @@
                     </div>
                     <div id="quill_broadcast_editor" class="border rounded-bottom bg-transparent"></div>
                 </div>
-                <textarea name="content" id="content" class="form-control d-none <?= \Altum\Alerts::has_field_errors('content') ? 'is-invalid' : null ?>"><?= e($broadcast_editor_content) ?></textarea>
+                <textarea name="content" id="content" class="form-control mail-editor-fallback <?= \Altum\Alerts::has_field_errors('content') ? 'is-invalid' : null ?>"><?= e($broadcast_editor_content) ?></textarea>
                 <?= \Altum\Alerts::output_field_error('content') ?>
                 <small class="form-text text-muted"><?= l('global.spintax_help') ?></small>
             </div>
@@ -420,6 +421,31 @@
         transform: translateY(-1px);
         border-color: rgba(151, 176, 255, 0.48);
         background: rgba(92, 126, 255, 0.16);
+    }
+
+    .broadcast-users-select {
+        min-height: 13rem;
+        background: rgba(10, 16, 28, 0.92);
+        color: #dfe7ff;
+        border: 1px solid rgba(96, 119, 199, 0.2);
+    }
+
+    .broadcast-users-select option {
+        padding: .45rem .65rem;
+    }
+
+    .mail-editor-fallback {
+        min-height: 16rem;
+        margin-top: 1rem;
+        background: linear-gradient(180deg, rgba(14, 22, 36, 0.98), rgba(11, 17, 28, 0.98));
+        color: #e6eeff;
+        border: 1px solid rgba(96, 119, 199, 0.2);
+        border-radius: 1rem;
+        padding: 1rem 1.1rem;
+    }
+
+    .mail-editor-fallback.is-enhanced {
+        display: none;
     }
 
     .mail-editor-shell {
@@ -581,31 +607,54 @@
 
 <script>
     'use strict';
-    $('#users_ids').select2({
-        dir: document.querySelector('html').dir,
-        width: '100%',
-        placeholder: document.querySelector('#users_ids')?.dataset.placeholder || '',
-    });
+    const usersSearch = document.querySelector('#users_ids_search');
+    const usersSelect = document.querySelector('#users_ids');
+    const contentTextarea = document.querySelector('#content');
+    let quill = null;
 
-    let quill = new Quill('#quill_broadcast_editor', {
-        theme: 'snow',
-        modules: {
-            toolbar: [
-                [{ header: [1, 2, 3, false] }],
-                ['bold', 'italic', 'underline', 'strike'],
-                [{ color: [] }, { background: [] }],
-                [{ list: 'ordered' }, { list: 'bullet' }],
-                [{ align: [] }],
-                ['link', 'blockquote', 'code-block'],
-                ['clean']
-            ]
+    if(usersSearch && usersSelect) {
+        usersSearch.addEventListener('input', event => {
+            const search = event.currentTarget.value.trim().toLowerCase();
+
+            Array.from(usersSelect.options).forEach(option => {
+                option.hidden = search !== '' && !option.text.toLowerCase().includes(search);
+            });
+        });
+
+        if(window.jQuery && window.jQuery.fn && window.jQuery.fn.select2) {
+            window.jQuery(usersSelect).select2({
+                dir: document.querySelector('html').dir,
+                width: '100%',
+                placeholder: usersSelect.dataset.placeholder || '',
+            });
         }
-    });
-    quill.root.innerHTML = document.querySelector('#content').value;
+    }
+
+    if(window.Quill) {
+        quill = new Quill('#quill_broadcast_editor', {
+            theme: 'snow',
+            modules: {
+                toolbar: [
+                    [{ header: [1, 2, 3, false] }],
+                    ['bold', 'italic', 'underline', 'strike'],
+                    [{ color: [] }, { background: [] }],
+                    [{ list: 'ordered' }, { list: 'bullet' }],
+                    [{ align: [] }],
+                    ['link', 'blockquote', 'code-block'],
+                    ['clean']
+                ]
+            }
+        });
+
+        quill.root.innerHTML = contentTextarea.value;
+        contentTextarea.classList.add('is-enhanced');
+    }
 
     /* Handle form submission with the editor */
     document.querySelector('#broadcast_create_form').addEventListener('submit', event => {
-        document.querySelector('textarea[name="content"]').value = quill.root.innerHTML;
+        if(quill) {
+            document.querySelector('textarea[name="content"]').value = quill.root.innerHTML;
+        }
     });
 </script>
 <?php \Altum\Event::add_content(ob_get_clean(), 'javascript') ?>
