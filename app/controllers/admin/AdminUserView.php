@@ -32,6 +32,10 @@ class AdminUserView extends Controller {
             redirect('admin/users');
         }
 
+        /* Custom code: FC-2026-03-19: ensure email analytics tables exist for admin profile mail activity */
+        fc_ensure_email_automation_tables();
+        /* /Custom code: FC-2026-03-19 */
+
         /* Get widget stats */
         $biolink_links = db()->where('user_id', $user_id)->where('type', 'biolink')->getValue('links', 'count(`link_id`)');
         $shortened_links = db()->where('user_id', $user_id)->where('type', 'link')->getValue('links', 'count(`link_id`)');
@@ -145,6 +149,10 @@ class AdminUserView extends Controller {
         $billing_events = $billing_model->get_user_billing_events($user_id, 50);
         /* /Custom code: FC-2026-03-17 */
 
+        /* Custom code: FC-2026-03-19: per-user mail activity summary for admin user profile */
+        $email_activity = fc_get_user_email_activity($user_id, 100);
+        /* /Custom code: FC-2026-03-19 */
+
         /* Main View */
         $data = [
             'user' => $user,
@@ -172,6 +180,9 @@ class AdminUserView extends Controller {
             'billing_summary' => $billing_summary,
             'billing_events' => $billing_events,
             /* /Custom code: FC-2026-03-17 */
+            /* Custom code: FC-2026-03-19: expose user email activity to admin profile */
+            'email_activity' => $email_activity,
+            /* /Custom code: FC-2026-03-19 */
         ];
 
         $view = new \Altum\View('admin/user-view/index', (array) $this);

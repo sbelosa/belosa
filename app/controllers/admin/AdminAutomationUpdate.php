@@ -12,6 +12,8 @@ class AdminAutomationUpdate extends Controller {
         fc_ensure_email_automation_tables();
         fc_seed_default_email_automation();
 
+        $plans = (new \Altum\Models\Plan())->get_plans();
+
         $automation_id = isset($this->params[0]) ? (int) $this->params[0] : 0;
         $automation = db()->where('automation_id', $automation_id)->getOne('email_automations');
 
@@ -26,8 +28,17 @@ class AdminAutomationUpdate extends Controller {
             $_POST['status'] = in_array($_POST['status'] ?? '', ['active', 'paused']) ? input_clean($_POST['status']) : 'paused';
             $_POST['batch_size'] = max(1, min(200, (int) ($_POST['batch_size'] ?? 20)));
             $_POST['video_url'] = !empty($_POST['video_url']) ? input_clean($_POST['video_url'], 2048) : url('fcc-education');
+            $_POST['segment'] = array_key_exists($_POST['segment'] ?? '', fc_get_email_automation_segment_options()) ? input_clean($_POST['segment']) : 'missing_forever_sales_link';
+            $_POST['segment_label'] = input_clean($_POST['segment_label'] ?? '', 128);
+            $_POST['reentry_is_enabled'] = (int) isset($_POST['reentry_is_enabled']);
+            $_POST['exit_when_condition_met'] = (int) isset($_POST['exit_when_condition_met']);
+            $_POST['filters_plans'] = array_values(array_unique(array_filter(array_map('strval', $_POST['filters_plans'] ?? []))));
+            /* Custom code: FC-2026-03-19: allow adding new automation steps from update screen */
+            $_POST['active_new_steps_count'] = max(0, min(5, (int) ($_POST['active_new_steps_count'] ?? 0)));
 
             $submitted_steps = [];
+            $new_steps = [];
+            /* /Custom code: FC-2026-03-19 */
 
             if(!\Altum\Csrf::check()) {
                 Alerts::add_error(l('global.error_message.invalid_csrf_token'));
@@ -49,6 +60,27 @@ class AdminAutomationUpdate extends Controller {
                     'delay_key' => $delay_key,
                     'subject' => $_POST[$subject_key],
                     'content' => $_POST[$content_key],
+                    'prepared_content' => quilljs_to_bootstrap($_POST[$content_key]),
+                    'delay_minutes' => $_POST[$delay_key],
+                ];
+            }
+
+            for($new_step_index = 1; $new_step_index <= $_POST['active_new_steps_count']; $new_step_index++) {
+                $subject_key = 'new_subject_' . $new_step_index;
+                $content_key = 'new_content_' . $new_step_index;
+                $delay_key = 'new_delay_minutes_' . $new_step_index;
+
+                $_POST[$subject_key] = input_clean($_POST[$subject_key] ?? '', 128);
+                $_POST[$content_key] = $_POST[$content_key] ?? '';
+                $_POST[$delay_key] = max(0, (int) ($_POST[$delay_key] ?? 0));
+
+                $new_steps[$new_step_index] = [
+                    'subject_key' => $subject_key,
+                    'content_key' => $content_key,
+                    'delay_key' => $delay_key,
+                    'subject' => $_POST[$subject_key],
+                    'content' => $_POST[$content_key],
+                    'prepared_content' => quilljs_to_bootstrap($_POST[$content_key]),
                     'delay_minutes' => $_POST[$delay_key],
                 ];
             }
@@ -74,8 +106,18 @@ class AdminAutomationUpdate extends Controller {
                             Alerts::add_field_error($submitted_step['subject_key'], l('global.error_message.empty_field'));
                         }
 
-                        if(trim($submitted_step['content']) === '') {
+                        if(trim(strip_tags($submitted_step['content'])) === '') {
                             Alerts::add_field_error($submitted_step['content_key'], l('global.error_message.empty_field'));
+                        }
+                    }
+
+                    foreach($new_steps as $new_step) {
+                        if($new_step['subject'] === '') {
+                            Alerts::add_field_error($new_step['subject_key'], l('global.error_message.empty_field'));
+                        }
+
+                        if(trim(strip_tags($new_step['content'])) === '') {
+                            Alerts::add_field_error($new_step['content_key'], l('global.error_message.empty_field'));
                         }
                     }
                 }
@@ -87,7 +129,7 @@ class AdminAutomationUpdate extends Controller {
                         Alerts::add_field_error($preview_step['subject_key'], l('global.error_message.empty_field'));
                     }
 
-                    if(trim($preview_step['content']) === '') {
+                    if(trim(strip_tags($preview_step['content'])) === '') {
                         Alerts::add_field_error($preview_step['content_key'], l('global.error_message.empty_field'));
                     }
                 }
@@ -104,7 +146,7 @@ class AdminAutomationUpdate extends Controller {
                                 $vars,
                                 htmlspecialchars_decode($submitted_step['subject']),
                                 $vars,
-                                fc_append_email_automation_footer($submitted_step['content'])
+                                fc_append_email_automation_footer($submitted_step['prepared_content'])
                             );
 
                             /* Custom code: FC-2026-03-18: avoid recipient reply-to on automation previews */
@@ -119,7 +161,7 @@ class AdminAutomationUpdate extends Controller {
                             $vars,
                             htmlspecialchars_decode($preview_step['subject']),
                             $vars,
-                            fc_append_email_automation_footer($preview_step['content'])
+                            fc_append_email_automation_footer($preview_step['prepared_content'])
                         );
 
                         /* Custom code: FC-2026-03-18: avoid recipient reply-to on automation previews */
@@ -136,13 +178,27 @@ class AdminAutomationUpdate extends Controller {
                     Alerts::add_field_error('name', l('global.error_message.empty_field'));
                 }
 
+                if($_POST['segment'] === 'plan_users' && empty($_POST['filters_plans'])) {
+                    Alerts::add_field_error('segment', l('global.error_message.empty_field'));
+                }
+
                 foreach($submitted_steps as $submitted_step) {
                     if($submitted_step['subject'] === '') {
                         Alerts::add_field_error($submitted_step['subject_key'], l('global.error_message.empty_field'));
                     }
 
-                    if(trim($submitted_step['content']) === '') {
+                    if(trim(strip_tags($submitted_step['content'])) === '') {
                         Alerts::add_field_error($submitted_step['content_key'], l('global.error_message.empty_field'));
+                    }
+                }
+
+                foreach($new_steps as $new_step) {
+                    if($new_step['subject'] === '') {
+                        Alerts::add_field_error($new_step['subject_key'], l('global.error_message.empty_field'));
+                    }
+
+                    if(trim(strip_tags($new_step['content'])) === '') {
+                        Alerts::add_field_error($new_step['content_key'], l('global.error_message.empty_field'));
                     }
                 }
             }
@@ -152,9 +208,14 @@ class AdminAutomationUpdate extends Controller {
                 $settings->batch_size = $_POST['batch_size'];
                 $settings->video_url = $_POST['video_url'];
                 $settings->template_version = max(2, (int) ($settings->template_version ?? 0));
+                $settings->segment_label = $_POST['segment_label'] ?: fc_get_email_automation_segment_label($_POST['segment'], (object) ['segment_label' => '', 'filters_plans' => $_POST['filters_plans']]);
+                $settings->reentry_is_enabled = $_POST['reentry_is_enabled'];
+                $settings->exit_when_condition_met = $_POST['exit_when_condition_met'];
+                $settings->filters_plans = $_POST['filters_plans'];
 
                 db()->where('automation_id', $automation->automation_id)->update('email_automations', [
                     'name' => $_POST['name'],
+                    'segment' => $_POST['segment'],
                     'status' => $_POST['status'],
                     'settings' => json_encode($settings),
                     'last_datetime' => get_date(),
@@ -163,10 +224,29 @@ class AdminAutomationUpdate extends Controller {
                 foreach($submitted_steps as $automation_step_id => $submitted_step) {
                     db()->where('automation_step_id', $automation_step_id)->update('email_automation_steps', [
                         'subject' => $submitted_step['subject'],
-                        'content' => $submitted_step['content'],
+                        'content' => $submitted_step['prepared_content'],
                         'delay_minutes' => $submitted_step['delay_minutes'],
                         'last_datetime' => get_date(),
                     ]);
+                }
+
+                if(!empty($new_steps)) {
+                    $next_step_order = count($steps) + 1;
+
+                    foreach($new_steps as $new_step) {
+                        db()->insert('email_automation_steps', [
+                            'automation_id' => $automation->automation_id,
+                            'step_order' => $next_step_order,
+                            'subject' => $new_step['subject'],
+                            'content' => $new_step['prepared_content'],
+                            'delay_minutes' => $new_step['delay_minutes'],
+                            'settings' => json_encode([]),
+                            'datetime' => get_date(),
+                            'last_datetime' => get_date(),
+                        ]);
+
+                        $next_step_order++;
+                    }
                 }
 
                 Alerts::add_success(l('admin_automation_update.success_message'));
@@ -176,11 +256,12 @@ class AdminAutomationUpdate extends Controller {
 
         $automation = db()->where('automation_id', $automation->automation_id)->getOne('email_automations');
         $automation->settings = fc_get_email_automation_settings($automation->settings ?? null);
+        $automation->segment_label = fc_get_email_automation_segment_label($automation->segment, $automation->settings);
         $steps = fc_get_email_automation_steps((int) $automation->automation_id);
         $now = get_date();
 
         $stats = [
-            'segment_count' => fc_get_automation_segment_count($automation->segment),
+            'segment_count' => fc_get_automation_segment_count($automation->segment, $automation->settings),
             'steps_total' => count($steps),
             'active_enrollments' => (int) db()->where('automation_id', $automation->automation_id)->where('status', 'active')->getValue('email_automation_enrollments', 'COUNT(*)'),
             'completed_enrollments' => (int) db()->where('automation_id', $automation->automation_id)->where('status', 'completed')->getValue('email_automation_enrollments', 'COUNT(*)'),
@@ -212,15 +293,61 @@ class AdminAutomationUpdate extends Controller {
         }
         /* /Custom code: FC-2026-03-18 */
 
+        /* Custom code: FC-2026-03-19: attach analytics summary and recent sent messages */
+        $analytics = fc_get_email_automation_analytics((int) $automation->automation_id);
+        $status_filter = in_array($_GET['status_filter'] ?? 'all', ['all', 'sent', 'delivered', 'opened', 'clicked', 'goal_completed', 'deferred', 'soft_bounce', 'hard_bounce', 'blocked', 'invalid', 'spam', 'unsubscribed', 'send_failed']) ? $_GET['status_filter'] : 'all';
+        $filtered_messages = fc_get_email_resource_messages('automation', (int) $automation->automation_id, $status_filter, 200);
+
+        $recent_message_user_ids = array_values(array_unique(array_filter(array_map(static function($message) {
+            return (int) ($message->user_id ?? 0);
+        }, $analytics['recent_messages']))));
+        $filtered_message_user_ids = array_values(array_unique(array_filter(array_map(static function($message) {
+            return (int) ($message->user_id ?? 0);
+        }, $filtered_messages))));
+        $recent_message_users = [];
+        $filtered_message_users = [];
+
+        if(!empty($recent_message_user_ids)) {
+            $recent_message_users_result = db()->where('user_id', $recent_message_user_ids, 'IN')->get('users', null, ['user_id', 'name', 'email']) ?? [];
+
+            foreach($recent_message_users_result as $recent_message_user) {
+                $recent_message_users[(int) $recent_message_user->user_id] = $recent_message_user;
+            }
+        }
+
+        if(!empty($filtered_message_user_ids)) {
+            $filtered_message_users_result = db()->where('user_id', $filtered_message_user_ids, 'IN')->get('users', null, ['user_id', 'name', 'email']) ?? [];
+
+            foreach($filtered_message_users_result as $filtered_message_user) {
+                $filtered_message_users[(int) $filtered_message_user->user_id] = $filtered_message_user;
+            }
+        }
+
+        foreach($analytics['recent_messages'] as $recent_message) {
+            $recent_message->user = $recent_message_users[(int) ($recent_message->user_id ?? 0)] ?? null;
+            $recent_message->tags = json_decode($recent_message->tags ?? '[]');
+        }
+
+        foreach($filtered_messages as $filtered_message) {
+            $filtered_message->user = $filtered_message_users[(int) ($filtered_message->user_id ?? 0)] ?? null;
+        }
+        /* /Custom code: FC-2026-03-19 */
+
         $view = new \Altum\View('admin/automation-update/index', (array) $this);
         $this->add_view_content('content', $view->run([
             'automation' => $automation,
             'steps' => $steps,
             'stats' => $stats,
             'logs' => $logs,
+            'analytics' => $analytics,
+            'filtered_messages' => $filtered_messages,
+            'status_filter' => $status_filter,
+            'segment_options' => fc_get_email_automation_segment_options(),
+            'plans' => $plans,
             'preview_email' => $_POST['preview_email'] ?? $this->user->email,
             'preview_step_id' => (int) ($_POST['preview_step_id'] ?? ($steps[0]->automation_step_id ?? 0)),
             'video_url' => $_POST['video_url'] ?? $automation->settings->video_url,
+            'active_new_steps_count' => (int) ($_POST['active_new_steps_count'] ?? 0),
         ]));
     }
 }

@@ -579,7 +579,7 @@ class Cron extends Controller {
 
         foreach($automations as $automation) {
             $settings = fc_get_email_automation_settings($automation->settings ?? null);
-            $eligible_users = fc_get_automation_segment_users($automation->segment);
+            $eligible_users = fc_get_automation_segment_users($automation->segment, $settings);
             $eligible_user_ids = array_map('intval', array_keys($eligible_users));
 
             $enrollments = db()->where('automation_id', $automation->automation_id)->get('email_automation_enrollments') ?? [];
@@ -647,6 +647,10 @@ class Cron extends Controller {
                     'last_datetime' => get_date(),
                 ]);
 
+                /* Custom code: FC-2026-03-19: mark goal completion when the user resolves the segment condition */
+                fc_mark_email_automation_goal_completed((int) $automation->automation_id, (int) $enrollment->automation_enrollment_id, (int) $enrollment->user_id);
+                /* /Custom code: FC-2026-03-19 */
+
                 fc_insert_email_automation_log((int) $automation->automation_id, (int) $enrollment->automation_enrollment_id, null, (int) $enrollment->user_id, 'exited', ['message' => 'User exited because the segment condition is no longer true.', 'exit_reason' => 'condition_resolved']);
             }
         }
@@ -696,7 +700,7 @@ class Cron extends Controller {
             foreach($due_enrollments as $enrollment) {
                 $user = $users_map[(int) $enrollment->user_id] ?? null;
 
-                if(!$user || !fc_is_user_in_automation_segment($automation->segment, (int) $enrollment->user_id)) {
+                if(!$user || !fc_is_user_in_automation_segment($automation->segment, (int) $enrollment->user_id, $settings)) {
                     db()->where('automation_enrollment_id', $enrollment->automation_enrollment_id)->update('email_automation_enrollments', [
                         'status' => 'exited',
                         'next_action_datetime' => null,
@@ -704,6 +708,10 @@ class Cron extends Controller {
                         'exit_reason' => 'condition_resolved',
                         'last_datetime' => get_date(),
                     ]);
+
+                    /* Custom code: FC-2026-03-19: mark goal completion when the user no longer needs automation */
+                    fc_mark_email_automation_goal_completed((int) $automation->automation_id, (int) $enrollment->automation_enrollment_id, (int) $enrollment->user_id);
+                    /* /Custom code: FC-2026-03-19 */
 
                     fc_insert_email_automation_log((int) $automation->automation_id, (int) $enrollment->automation_enrollment_id, null, (int) $enrollment->user_id, 'exited', ['message' => 'Enrollment skipped because the user is no longer eligible.', 'exit_reason' => 'condition_resolved']);
                     continue;
@@ -731,9 +739,25 @@ class Cron extends Controller {
                     fc_append_email_automation_footer($current_step->content)
                 );
 
+                /* Custom code: FC-2026-03-19: attach Brevo automation tags and capture transport result */
+                $automation_tags = fc_get_email_automation_message_tags((int) $automation->automation_id, (int) $enrollment->automation_enrollment_id, (int) $current_step->automation_step_id, (int) $user->user_id);
+                /* /Custom code: FC-2026-03-19 */
+
                 /* Custom code: FC-2026-03-18: avoid recipient reply-to on automation emails */
-                $is_sent = send_automation_mail($user->email, $email_template->subject, $email_template->body, ['anti_phishing_code' => $user->anti_phishing_code, 'language' => $user->language]);
+                /* Custom code: FC-2026-03-19: embed signed unsubscribe link into automation sends */
+                $automation_unsubscribe_url = fc_get_email_unsubscribe_url([
+                    'message_type' => 'automation',
+                    'automation_id' => (int) $automation->automation_id,
+                    'automation_enrollment_id' => (int) $enrollment->automation_enrollment_id,
+                    'automation_step_id' => (int) $current_step->automation_step_id,
+                    'user_id' => (int) $user->user_id,
+                    'recipient_email' => $user->email,
+                ]);
+                $send_result = send_automation_mail($user->email, $email_template->subject, $email_template->body, ['is_system_email' => false, 'anti_phishing_code' => $user->anti_phishing_code, 'language' => $user->language, 'brevo_tags' => $automation_tags, 'unsubscribe_url' => $automation_unsubscribe_url, 'return_transport_result' => true]);
+                /* /Custom code: FC-2026-03-19 */
                 /* /Custom code: FC-2026-03-18 */
+
+                $is_sent = is_object($send_result) ? (bool) ($send_result->success ?? false) : (bool) $send_result;
 
                 if($is_sent) {
                     $next_step = fc_get_next_email_automation_step($steps, (int) $current_step->step_order);
@@ -753,6 +777,10 @@ class Cron extends Controller {
 
                     db()->where('automation_enrollment_id', $enrollment->automation_enrollment_id)->update('email_automation_enrollments', $enrollment_update);
                     database()->query("UPDATE `email_automations` SET `total_sent_emails` = `total_sent_emails` + 1, `last_sent_email_datetime` = '" . get_date() . "', `last_datetime` = '" . get_date() . "' WHERE `automation_id` = {$automation->automation_id}");
+
+                    /* Custom code: FC-2026-03-19: persist sent messages for webhook analytics */
+                    fc_store_email_automation_message((int) $automation->automation_id, (int) $enrollment->automation_enrollment_id, (int) $current_step->automation_step_id, (int) $user->user_id, $user->email, $email_template->subject, $automation_tags, $send_result);
+                    /* /Custom code: FC-2026-03-19 */
 
                     fc_insert_email_automation_log((int) $automation->automation_id, (int) $enrollment->automation_enrollment_id, (int) $current_step->automation_step_id, (int) $user->user_id, 'email_sent', ['message' => 'Automation step email sent successfully.']);
 
@@ -873,6 +901,7 @@ class Cron extends Controller {
     public function broadcasts() {
 
         $this->initiate();
+        fc_ensure_email_automation_tables();
 
         /* We'll send up to X emails per run */
         $max_batch_size = settings()->content->broadcasts_emails_per_cron ?? 40;
@@ -940,68 +969,21 @@ class Cron extends Controller {
 
         /* Send emails only for existing users */
         if(!empty($users)) {
-
-            /* Initialize PHPMailer once for this batch */
-            $mail = new \PHPMailer\PHPMailer\PHPMailer();
-            $mail->CharSet = 'UTF-8';
-            $mail->isSMTP();
-            $mail->isHTML(true);
-
-            /* SMTP connection settings */
-            $mail->SMTPAuth = settings()->smtp->auth;
-            $mail->Host = settings()->smtp->host;
-            $mail->Port = settings()->smtp->port;
-            $mail->Username = settings()->smtp->username;
-            $mail->Password = settings()->smtp->password;
-
-            if(settings()->smtp->encryption != '0') {
-                $mail->SMTPSecure = settings()->smtp->encryption;
-            }
-
-            /* Keep the SMTP connection alive */
-            $mail->SMTPKeepAlive = true;
-
-            /* Set From / Reply-to */
-            $mail->setFrom(settings()->smtp->from, settings()->smtp->from_name);
-            if(!empty(settings()->smtp->reply_to) && !empty(settings()->smtp->reply_to_name)) {
-                $mail->addReplyTo(settings()->smtp->reply_to, settings()->smtp->reply_to_name);
-            } else {
-                $mail->addReplyTo(settings()->smtp->from, settings()->smtp->from_name);
-            }
-
-            /* Optional CC/BCC */
-            if(settings()->smtp->cc) {
-                foreach (explode(',', settings()->smtp->cc) as $cc_email) {
-                    $mail->addCC(trim($cc_email));
-                }
-            }
-            if(settings()->smtp->bcc) {
-                foreach (explode(',', settings()->smtp->bcc) as $bcc_email) {
-                    $mail->addBCC(trim($bcc_email));
-                }
-            }
-
             /* Loop through users and send */
             foreach($users as $user) {
 
                 /* Prepare placeholders and the final template */
-                $vars = [
-                    '{{USER:NAME}}'             => $user->name,
-                    '{{USER:EMAIL}}'            => $user->email,
-                    '{{USER:CONTINENT_NAME}}'   => get_continent_from_continent_code($user->continent_code),
-                    '{{USER:COUNTRY_NAME}}'     => get_country_from_country_code($user->country),
-                    '{{USER:CITY_NAME}}'        => $user->city_name,
-                    '{{USER:DEVICE_TYPE}}'      => l('global.device.' . $user->device_type),
-                    '{{USER:OS_NAME}}'          => $user->os_name,
-                    '{{USER:BROWSER_NAME}}'     => $user->browser_name,
-                    '{{USER:BROWSER_LANGUAGE}}' => get_language_from_locale($user->browser_language),
-                ];
+                /* Custom code: FC-2026-03-19: reuse broadcast variables including Forever Card application URL */
+                $vars = fc_get_broadcast_user_variables($user);
+                /* /Custom code: FC-2026-03-19 */
 
                 $email_template = get_email_template(
                     $vars,
                     htmlspecialchars_decode($broadcast->subject),
                     $vars,
-                    convert_editorjs_json_to_html($broadcast->content)
+                    /* Custom code: FC-2026-03-19: support both legacy EditorJS and new Quill html broadcasts */
+                    json_decode($broadcast->content) ? convert_editorjs_json_to_html($broadcast->content) : $broadcast->content
+                    /* /Custom code: FC-2026-03-19 */
                 );
 
                 /* Optional: tracking pixel & link rewriting */
@@ -1015,40 +997,31 @@ class Cron extends Controller {
                     );
                 }
 
-                /* Clear addresses from previous iteration */
-                $mail->clearAddresses();
-                $mail->clearCCs();
-                $mail->clearBCCs();
-
-                /* Add new email address */
-                $mail->addAddress($user->email);
-
-                /* Process the email title, template and body */
-                extract(process_send_mail_template(
-                    $email_template->subject,
-                    $email_template->body,
-                    [
-                        'is_broadcast'       => true,
-                        'is_system_email'    => $broadcast->settings->is_system_email,
-                        'anti_phishing_code' => $user->anti_phishing_code,
-                        'language'           => $user->language
-                    ]
-                ));
-
-                /* Set subject/body, then send */
-                $mail->Subject = $title;
-                $mail->Body = $email_template;
-                $mail->AltBody = strip_tags($mail->Body);
-
-                /* SEND (count as sent even if it fails) */
-                $mail->send();
+                /* Custom code: FC-2026-03-19: attach Brevo broadcast tags and capture transport result */
+                $broadcast_tags = fc_get_email_broadcast_message_tags((int) $broadcast->broadcast_id, (int) $user->user_id);
+                /* Custom code: FC-2026-03-19: embed signed unsubscribe link into broadcast sends */
+                $broadcast_unsubscribe_url = fc_get_email_unsubscribe_url([
+                    'message_type' => 'broadcast',
+                    'broadcast_id' => (int) $broadcast->broadcast_id,
+                    'user_id' => (int) $user->user_id,
+                    'recipient_email' => $user->email,
+                ]);
+                $send_result = send_mail($user->email, $email_template->subject, $email_template->body, [
+                    'is_broadcast' => true,
+                    'is_system_email' => $broadcast->settings->is_system_email,
+                    'anti_phishing_code' => $user->anti_phishing_code,
+                    'language' => $user->language,
+                    'brevo_tags' => $broadcast_tags,
+                    'unsubscribe_url' => $broadcast_unsubscribe_url,
+                    'return_transport_result' => true,
+                ]);
+                /* /Custom code: FC-2026-03-19 */
+                fc_store_broadcast_message((int) $broadcast->broadcast_id, (int) $user->user_id, $user->email, $email_template->subject, $broadcast_tags, $send_result);
+                /* /Custom code: FC-2026-03-19 */
 
                 /* Track who we just processed (sent or attempted) */
                 $broadcast->sent_users_ids[] = $user->user_id;
             }
-
-            /* Close this SMTP connection for the batch */
-            $mail->smtpClose();
         }
 
         /* Total "sent" (processed) */

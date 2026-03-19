@@ -26,18 +26,33 @@ class AdminBroadcastCreate extends Controller {
 
         $plans = (new \Altum\Models\Plan())->get_plans();
 
+        /* Custom code: FC-2026-03-19: load admin-selectable broadcast recipients */
+        $available_users = db()->orderBy('name', 'ASC')->get('users', null, ['user_id', 'name', 'email']) ?? [];
+        /* /Custom code: FC-2026-03-19 */
+
         if(!empty($_POST)) {
+            /* Custom code: FC-2026-03-19: normalize broadcast editor html before preview/save */
             /* Filter some of the variables */
             $_POST['name'] = input_clean($_POST['name'], 64);
             $_POST['subject'] = input_clean($_POST['subject'], 128);
             $_POST['segment'] = in_array($_POST['segment'], ['all', 'subscribers', 'custom', 'filter']) ? input_clean($_POST['segment']) : 'subscribers';
             $_POST['is_system_email'] = (int) isset($_POST['is_system_email']);
+            $_POST['content'] = $_POST['content'] ?? '';
+            $prepared_content = quilljs_to_bootstrap($_POST['content']);
+            /* /Custom code: FC-2026-03-19 */
 
+            /* Custom code: FC-2026-03-19: accept custom broadcast recipients from select input or legacy CSV */
             /* Users ids */
-            $_POST['users_ids'] = trim($_POST['users_ids'] ?? '');
-            $_POST['users_ids'] = array_filter(array_map('intval', explode(',', $_POST['users_ids'])));
+            if(isset($_POST['users_ids']) && is_array($_POST['users_ids'])) {
+                $_POST['users_ids'] = array_filter(array_map('intval', $_POST['users_ids']));
+            }
+            else {
+                $_POST['users_ids'] = trim($_POST['users_ids'] ?? '');
+                $_POST['users_ids'] = array_filter(array_map('intval', explode(',', $_POST['users_ids'])));
+            }
             $_POST['users_ids'] = array_values(array_unique($_POST['users_ids']));
             $_POST['users_ids'] = $_POST['users_ids'] ?: [0];
+            /* /Custom code: FC-2026-03-19 */
 
             //ALTUMCODE:DEMO if(DEMO) Alerts::add_error('This command is blocked on the demo.');
 
@@ -75,23 +90,15 @@ class AdminBroadcastCreate extends Controller {
 
                 /* Preview email */
                 if(isset($_POST['preview'])) {
-                    $vars = [
-                        '{{USER:NAME}}' => $this->user->name,
-                        '{{USER:EMAIL}}' => $this->user->email,
-                        '{{USER:CONTINENT_NAME}}' => get_continent_from_continent_code($this->user->continent_code),
-                        '{{USER:COUNTRY_NAME}}' => get_country_from_country_code($this->user->country),
-                        '{{USER:CITY_NAME}}' => $this->user->city_name,
-                        '{{USER:DEVICE_TYPE}}' => l('global.device.' . $this->user->device_type),
-                        '{{USER:OS_NAME}}' => $this->user->os_name,
-                        '{{USER:BROWSER_NAME}}' => $this->user->browser_name,
-                        '{{USER:BROWSER_LANGUAGE}}' => get_language_from_locale($this->user->browser_language),
-                    ];
+                    /* Custom code: FC-2026-03-19: preview broadcast variables include Forever Card application URL */
+                    $vars = fc_get_broadcast_user_variables($this->user);
+                    /* /Custom code: FC-2026-03-19 */
 
                     $email_template = get_email_template(
                         $vars,
                         htmlspecialchars_decode($_POST['subject']),
                         $vars,
-                        convert_editorjs_json_to_html($_POST['content'])
+                        $prepared_content
                     );
 
                     /* Custom code: FC-2026-03-18: avoid recipient reply-to on broadcast previews */
@@ -250,7 +257,9 @@ class AdminBroadcastCreate extends Controller {
                     $broadcast_id = db()->insert('broadcasts', [
                         'name' => $_POST['name'],
                         'subject' => $_POST['subject'],
-                        'content' => $_POST['content'],
+                        /* Custom code: FC-2026-03-19: persist Quill html content for broadcasts */
+                        'content' => $prepared_content,
+                        /* /Custom code: FC-2026-03-19 */
                         'segment' => $_POST['segment'],
                         'settings' => json_encode($settings),
                         'users_ids' => json_encode($users_ids),
@@ -279,17 +288,14 @@ class AdminBroadcastCreate extends Controller {
             'subject' => $_POST['subject'] ?? null,
             'is_system_email' => $_POST['is_system_email'] ?? false,
             'segment' => $_POST['segment'] ?? 'all',
-            'users_ids' => implode(',', $_POST['users_ids'] ?? []),
+                /* Custom code: FC-2026-03-19: preserve selected custom broadcast recipients */
+                'users_ids' => $_POST['users_ids'] ?? [],
+                /* /Custom code: FC-2026-03-19 */
             'content' => $_POST['content'] ?? json_encode([
-                    'blocks' => [
-                        [
-                            'type' => 'paragraph',
-                            'data' => [
-                                'text' => l('admin_broadcast_create.content_placeholder')
-                            ]
-                        ]
-                    ]
-                ]),
+                    /* Custom code: FC-2026-03-19: default broadcast content for Quill editor */
+                    'blocks' => [],
+                    /* /Custom code: FC-2026-03-19 */
+                ]) ?: '<p>Upiši sadržaj e-maila ovdje.</p>',
             'preview_email' => $_POST['preview_email'] ?? $this->user->email,
             'filters_is_newsletter_subscribed' => $_POST['filters_is_newsletter_subscribed'] ?? [],
             'filters_plans' => $_POST['filters_plans'] ?? [],
@@ -309,6 +315,9 @@ class AdminBroadcastCreate extends Controller {
         $data = [
             'values' => $values,
             'plans' => $plans,
+            /* Custom code: FC-2026-03-19: provide searchable custom broadcast recipients */
+            'available_users' => $available_users,
+            /* /Custom code: FC-2026-03-19 */
         ];
 
         $view = new \Altum\View('admin/broadcast-create/index', (array) $this);

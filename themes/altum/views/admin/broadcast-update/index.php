@@ -1,5 +1,11 @@
 <?php defined('ALTUMCODE') || die() ?>
 
+<?php /* Custom code: FC-2026-03-19: prepare broadcast content for Quill editor */ ?>
+<?php $broadcast_editor_content = isset($_POST['content']) ? $_POST['content'] : (json_decode($data->broadcast->content) ? bootstrap_to_quilljs(convert_editorjs_json_to_html($data->broadcast->content)) : bootstrap_to_quilljs($data->broadcast->content)) ?>
+<?php $broadcast_editor_content = $broadcast_editor_content ?: '<p>Upiši sadržaj e-maila ovdje.</p>' ?>
+<?php $broadcast_shortcodes = ['{{WEBSITE_TITLE}}', '{{USER:NAME}}', '{{USER:EMAIL}}', '{{FOREVER_CARD_APPLICATION_URL}}', '{{USER:CONTINENT_NAME}}', '{{USER:COUNTRY_NAME}}', '{{USER:CITY_NAME}}', '{{USER:DEVICE_TYPE}}', '{{USER:OS_NAME}}', '{{USER:BROWSER_NAME}}', '{{USER:BROWSER_LANGUAGE}}']; ?>
+<?php /* /Custom code: FC-2026-03-19 */ ?>
+
 <?php if(settings()->main->breadcrumbs_is_enabled): ?>
     <nav aria-label="breadcrumb">
         <ol class="custom-breadcrumbs small">
@@ -19,11 +25,50 @@
 
 <?= \Altum\Alerts::output_alerts() ?>
 
-<div class="card <?= \Altum\Alerts::has_field_errors() ? 'border-danger' : null ?>">
+<!-- Custom code: FC-2026-03-19: broadcast update studio layout -->
+<div class="mail-studio-page">
+<div class="card mail-studio-hero mb-4">
+    <div class="card-body">
+        <div class="row align-items-center">
+            <div class="col-lg-7 mb-3 mb-lg-0">
+                <span class="mail-studio-eyebrow">Broadcast campaign</span>
+                <h2 class="mail-studio-title mb-2">Pregled, uređivanje i slanje u istom mirnijem campaign layoutu.</h2>
+                <p class="text-muted mb-0">Poruka, publika i preview sada su raspoređeni kao campaign composer umjesto klasičnog admin obrasca.</p>
+            </div>
+            <div class="col-lg-5">
+                <div class="mail-studio-hero__stats">
+                    <div class="mail-studio-stat"><span class="mail-studio-stat__label">Status</span><strong class="mail-studio-stat__value"><?= $data->broadcast->status == 'sent' ? 'Poslano' : 'Draft' ?></strong></div>
+                    <div class="mail-studio-stat"><span class="mail-studio-stat__label">Publika</span><strong class="mail-studio-stat__value"><?= $data->broadcast->status == 'sent' ? nr($data->broadcast->total_emails) . ' kontakta' : 'Segmentirana' ?></strong></div>
+                    <div class="mail-studio-stat"><span class="mail-studio-stat__label">Editor</span><strong class="mail-studio-stat__value">Mail builder</strong></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mail-studio-card <?= \Altum\Alerts::has_field_errors() ? 'border-danger' : null ?>">
     <div class="card-body">
 
         <form id="broadcast_update_form" action="" method="post" role="form">
             <input type="hidden" name="token" value="<?= \Altum\Csrf::get() ?>" />
+
+            <div class="card mb-4 mail-builder-shortcodes-card">
+                <div class="card-body">
+                    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center mb-3">
+                        <div>
+                            <h2 class="h5 mb-1">Shortkodovi za mail</h2>
+                            <p class="text-muted mb-0">Koristi ih u predmetu i sadržaju kako bi mail ostao personaliziran bez ručnog uređivanja.</p>
+                        </div>
+                        <div class="small text-muted mt-2 mt-lg-0">Klik na kod za kopiranje</div>
+                    </div>
+
+                    <div class="mail-shortcodes-grid">
+                        <?php foreach($broadcast_shortcodes as $shortcode): ?>
+                            <code class="mail-shortcode-tag" data-copy><?= e($shortcode) ?></code>
+                        <?php endforeach ?>
+                    </div>
+                </div>
+            </div>
 
             <div class="form-group">
                 <label for="name"><i class="fas fa-fw fa-sm fa-signature text-muted mr-1"></i> <?= l('global.name') ?></label>
@@ -59,12 +104,19 @@
                 <small class="form-text text-muted"><?= l('admin_broadcasts.segment_help2') ?></small>
             </div>
 
+            <!-- Custom code: FC-2026-03-19: searchable custom broadcast recipient picker -->
             <div class="form-group" data-segment="custom">
                 <label for="users_ids"><i class="fas fa-fw fa-sm fa-users text-muted mr-1"></i> <?= l('admin_broadcasts.users_ids') ?></label>
-                <input type="text" id="users_ids" name="users_ids" value="<?= $data->broadcast->users_ids ?>" class="form-control <?= \Altum\Alerts::has_field_errors('users_ids') ? 'is-invalid' : null ?>" placeholder="<?= l('admin_broadcasts.users_ids_placeholder') ?>" required="required" <?= $data->broadcast->status == 'sent' ? 'readonly="readonly"' : null ?> />
+                <select id="users_ids" name="users_ids[]" class="custom-select <?= \Altum\Alerts::has_field_errors('users_ids') ? 'is-invalid' : null ?>" multiple="multiple" data-placeholder="<?= l('admin_broadcasts.users_ids_placeholder') ?>" required="required" <?= $data->broadcast->status == 'sent' ? 'disabled="disabled"' : null ?>>
+                    <?php foreach($data->available_users as $available_user): ?>
+                        <?php $available_user_label = trim(($available_user->name ?: '') . ' ' . ($available_user->email ? '(' . $available_user->email . ')' : '')) ?: ('#' . $available_user->user_id) ?>
+                        <option value="<?= $available_user->user_id ?>" <?= in_array($available_user->user_id, $data->broadcast->selected_users_ids) ? 'selected="selected"' : null ?>><?= e($available_user_label) ?></option>
+                    <?php endforeach ?>
+                </select>
                 <?= \Altum\Alerts::output_field_error('users_ids') ?>
                 <small class="form-text text-muted"><?= l('admin_broadcasts.users_ids_help') ?></small>
             </div>
+            <!-- /Custom code: FC-2026-03-19 -->
 
             <div class="form-group custom-control custom-switch" data-segment="filter">
                 <input id="<?= 'filters_is_newsletter_subscribed' ?>" name="filters_is_newsletter_subscribed" type="checkbox" class="custom-control-input" <?= isset($data->broadcast->settings->filters_is_newsletter_subscribed) ? 'checked="checked"' : null ?>>
@@ -225,24 +277,22 @@
 
             <div class="form-group">
                 <label for="content"><i class="fas fa-fw fa-sm fa-paragraph text-muted mr-1"></i> <?= l('admin_broadcasts.content') ?></label>
-                <div class="bg-gray-100 rounded p-3 <?= $data->broadcast->status == 'sent' ? 'container-disabled' : null ?>" id="editorjs">
-                    <?php if(!json_decode($data->broadcast->content)): ?>
-                        <div class="row justify-content-center">
-                            <div class="col-lg-6">
-                                <?= $data->broadcast->content ?>
-                            </div>
-                        </div>
-                    <?php endif ?>
+                <div class="mail-editor-shell">
+                    <div class="mail-editor-shell__header">
+                        <div class="mail-editor-shell__title">Email builder</div>
+                        <div class="mail-editor-shell__meta">Uredi poruku kao pravi newsletter ili sistemski email, s jasnim CTA-om i kratkim blokovima.</div>
+                    </div>
+                    <div class="mail-editor-shell__canvas-meta">
+                        <span class="mail-editor-shell__pill">Personalizacija</span>
+                        <span class="mail-editor-shell__pill">Jasna struktura poruke</span>
+                        <span class="mail-editor-shell__pill">Footer odjave ide automatski</span>
+                    </div>
+                    <div id="quill_broadcast_editor" class="border rounded-bottom bg-transparent <?= $data->broadcast->status == 'sent' ? 'container-disabled' : null ?>"></div>
                 </div>
-                <textarea name="content" id="content" class="form-control d-none <?= \Altum\Alerts::has_field_errors('content') ? 'is-invalid' : null ?>"><?= e($data->broadcast->content) ?></textarea>
+                <textarea name="content" id="content" class="form-control d-none <?= \Altum\Alerts::has_field_errors('content') ? 'is-invalid' : null ?>"><?= e($broadcast_editor_content) ?></textarea>
                 <?= \Altum\Alerts::output_field_error('content') ?>
-                <small class="form-text text-muted"><?= sprintf(l('global.variables'), '<code data-copy>' . implode('</code> , <code data-copy>',  ['{{WEBSITE_TITLE}}', '{{USER:NAME}}', '{{USER:EMAIL}}', '{{USER:CONTINENT_NAME}}', '{{USER:COUNTRY_NAME}}', '{{USER:CITY_NAME}}', '{{USER:DEVICE_TYPE}}', '{{USER:OS_NAME}}', '{{USER:BROWSER_NAME}}', '{{USER:BROWSER_LANGUAGE}}']) . '</code>') ?></small>
                 <small class="form-text text-muted"><?= l('global.spintax_help') ?></small>
             </div>
-
-            <div class="alert alert-info" role="alert"><?= l('admin_broadcast_create.info1') ?></div>
-            <div class="alert alert-info" role="alert"><?= l('admin_broadcast_create.info2') ?></div>
-            <div class="alert alert-info" role="alert"><?= l('admin_broadcast_create.info3') ?></div>
 
             <div class="form-group">
                 <div class="input-group">
@@ -254,96 +304,320 @@
                 <?= \Altum\Alerts::output_field_error('preview_email') ?>
             </div>
 
-            <?php if($data->broadcast->status == 'sent'): ?>
-                <button type="submit" name="save" class="btn btn-block btn-outline-primary mt-3"><?= l('global.update') ?></button>
-            <?php else: ?>
-                <button type="submit" name="save" class="btn btn-block btn-outline-primary mt-3"><?= l('admin_broadcast_create.save_draft') ?></button>
-                <button type="submit" name="send" class="btn btn-lg btn-block btn-primary mt-3"><?= l('admin_broadcast_create.send_broadcast') ?></button>
-            <?php endif ?>
+            <div class="card mail-studio-submit-card mt-4">
+                <div class="card-body d-flex flex-column flex-lg-row justify-content-between align-items-lg-center">
+                    <div class="mb-3 mb-lg-0">
+                        <h2 class="h5 mb-1"><?= $data->broadcast->status == 'sent' ? 'Ažuriranje kampanje' : 'Draft ili slanje' ?></h2>
+                        <p class="text-muted mb-0"><?= $data->broadcast->status == 'sent' ? 'Već poslanu kampanju još možeš administrativno ažurirati i pregledati.' : 'Spremi draft za kasnije ili pošalji odmah odabranom segmentu.' ?></p>
+                    </div>
+                    <div class="d-flex flex-column flex-md-row gap-3 w-100 w-lg-auto">
+                        <?php if($data->broadcast->status == 'sent'): ?>
+                            <button type="submit" name="save" class="btn btn-outline-primary mt-0"><?= l('global.update') ?></button>
+                        <?php else: ?>
+                            <button type="submit" name="save" class="btn btn-outline-primary mt-0 mr-md-3"><?= l('admin_broadcast_create.save_draft') ?></button>
+                            <button type="submit" name="send" class="btn btn-lg btn-primary mt-0"><?= l('admin_broadcast_create.send_broadcast') ?></button>
+                        <?php endif ?>
+                    </div>
+                </div>
+            </div>
         </form>
 
     </div>
 </div>
+<!-- /Custom code: FC-2026-03-19 -->
+</div>
 
 <?php ob_start() ?>
+<link href="<?= ASSETS_FULL_URL . 'css/libraries/quill.snow.css?v=' . PRODUCT_CODE ?>" rel="stylesheet" media="screen,print">
 <style>
-    .codex-editor__redactor {
-        padding-bottom: 0 !important;
+    .mail-studio-page {
+        display: grid;
+        gap: 1.5rem;
+    }
+
+    .mail-studio-hero,
+    .mail-studio-card,
+    .mail-studio-submit-card,
+    .mail-builder-shortcodes-card {
+        border: 1px solid rgba(83, 110, 255, 0.14);
+        box-shadow: 0 18px 45px rgba(6, 18, 56, 0.12);
+        border-radius: 1.1rem;
+        overflow: hidden;
+    }
+
+    .mail-studio-hero {
+        background: radial-gradient(circle at top left, rgba(88, 128, 255, 0.22), transparent 38%), linear-gradient(135deg, rgba(13, 18, 32, 0.96), rgba(19, 30, 52, 0.92));
+    }
+
+    .mail-studio-eyebrow {
+        display: inline-flex;
+        padding: .35rem .7rem;
+        border-radius: 999px;
+        background: rgba(92, 126, 255, 0.14);
+        color: #8fb1ff;
+        font-size: .74rem;
+        font-weight: 700;
+        letter-spacing: .08em;
+        text-transform: uppercase;
+        margin-bottom: .85rem;
+    }
+
+    .mail-studio-title {
+        font-size: 1.9rem;
+        line-height: 1.15;
+        color: #f5f7ff;
+        max-width: 14ch;
+    }
+
+    .mail-studio-hero .text-muted {
+        color: rgba(226, 232, 255, 0.7) !important;
+    }
+
+    .mail-studio-hero__stats {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: .75rem;
+    }
+
+    .mail-studio-stat {
+        padding: 1rem;
+        border-radius: .95rem;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        background: rgba(255, 255, 255, 0.06);
+        backdrop-filter: blur(12px);
+    }
+
+    .mail-studio-stat__label {
+        display: block;
+        margin-bottom: .35rem;
+        font-size: .74rem;
+        text-transform: uppercase;
+        letter-spacing: .08em;
+        color: rgba(226, 232, 255, 0.62);
+    }
+
+    .mail-studio-stat__value {
+        color: #fff;
+        font-size: 1rem;
+        font-weight: 700;
+    }
+
+    .mail-builder-shortcodes-card {
+        background: linear-gradient(135deg, rgba(17, 27, 46, 0.95), rgba(14, 17, 27, 0.96));
+    }
+
+    .mail-shortcodes-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .75rem;
+    }
+
+    .mail-shortcode-tag {
+        padding: .7rem .9rem;
+        border-radius: .8rem;
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(120, 147, 255, 0.24);
+        color: #dfe7ff;
+        font-size: .82rem;
+        cursor: pointer;
+        transition: all .2s ease;
+    }
+
+    .mail-shortcode-tag:hover {
+        transform: translateY(-1px);
+        border-color: rgba(151, 176, 255, 0.48);
+        background: rgba(92, 126, 255, 0.16);
+    }
+
+    .mail-editor-shell {
+        position: relative;
+        border-radius: 1.15rem;
+        overflow: hidden;
+        border: 1px solid rgba(96, 119, 199, 0.2);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03), 0 24px 55px rgba(4, 13, 38, 0.28);
+        background: radial-gradient(circle at top, rgba(118, 149, 255, 0.1), transparent 34%), linear-gradient(180deg, #101827 0%, #0b1220 100%);
+    }
+
+    .mail-editor-shell__header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        gap: 1rem;
+        padding: 1rem 1.1rem;
+        background: linear-gradient(135deg, rgba(9, 18, 36, 0.96), rgba(27, 43, 78, 0.92));
+        border-bottom: 1px solid rgba(96, 119, 199, 0.16);
+    }
+
+    .mail-editor-shell__title {
+        font-weight: 700;
+        color: #f4f7ff;
+    }
+
+    .mail-editor-shell__meta {
+        font-size: .85rem;
+        color: rgba(220, 228, 255, 0.72);
+        margin-top: .15rem;
+    }
+
+    .mail-editor-shell__canvas-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .55rem;
+        padding: .9rem 1.1rem;
+        background: rgba(11, 20, 36, 0.92);
+        border-bottom: 1px solid rgba(96, 119, 199, 0.18);
+    }
+
+    .mail-editor-shell__pill {
+        display: inline-flex;
+        align-items: center;
+        padding: .45rem .75rem;
+        border-radius: 999px;
+        border: 1px solid rgba(120, 145, 214, 0.18);
+        background: rgba(255, 255, 255, 0.04);
+        color: #c9d7f8;
+        font-size: .76rem;
+        font-weight: 600;
+        letter-spacing: .01em;
+    }
+
+    .mail-studio-submit-card {
+        background: linear-gradient(135deg, rgba(14, 18, 30, 0.98), rgba(18, 31, 56, 0.96));
+    }
+
+    #quill_broadcast_editor {
+        background: transparent;
+    }
+
+    #quill_broadcast_editor .ql-toolbar.ql-snow {
+        position: sticky;
+        top: 0;
+        z-index: 2;
+        border: 0;
+        border-bottom: 1px solid rgba(96, 119, 199, 0.18);
+        padding: .85rem 1rem;
+        background: rgba(10, 18, 33, 0.96);
+        backdrop-filter: blur(12px);
+    }
+
+    #quill_broadcast_editor .ql-toolbar.ql-snow button,
+    #quill_broadcast_editor .ql-toolbar.ql-snow .ql-picker {
+        color: #dbe7ff;
+    }
+
+    #quill_broadcast_editor .ql-toolbar.ql-snow .ql-stroke {
+        stroke: #dbe7ff;
+    }
+
+    #quill_broadcast_editor .ql-toolbar.ql-snow .ql-fill {
+        fill: #dbe7ff;
+    }
+
+    #quill_broadcast_editor .ql-toolbar.ql-snow .ql-picker-options {
+        background: #162036;
+        border-color: rgba(96, 119, 199, 0.24);
+        color: #dbe7ff;
+    }
+
+    #quill_broadcast_editor .ql-editor {
+        min-height: 20rem;
+        width: min(100%, 980px);
+        max-width: none;
+        margin: 0 auto;
+        padding: 2rem 2rem 2.5rem;
+        font-size: 1rem;
+        line-height: 1.8;
+        background: linear-gradient(180deg, rgba(14, 22, 36, 0.98), rgba(11, 17, 28, 0.98));
+        color: #e6eeff;
+        border: 1px solid rgba(96, 119, 199, 0.2);
+        border-radius: 1.15rem;
+        box-shadow: 0 30px 70px rgba(2, 6, 18, 0.34);
+    }
+
+    #quill_broadcast_editor .ql-editor a {
+        color: #8eb5ff;
+    }
+
+    #quill_broadcast_editor .ql-editor.ql-blank::before {
+        left: 2rem;
+        right: 2rem;
+        color: #7083ab;
+        font-style: normal;
+    }
+
+    #quill_broadcast_editor .ql-container.ql-snow {
+        border: 0;
+        padding: 1.25rem clamp(1rem, 3vw, 2rem) 2.25rem;
+        background: linear-gradient(90deg, rgba(91, 117, 201, 0.05) 0, rgba(91, 117, 201, 0.05) 1px, transparent 1px, transparent 100%), linear-gradient(180deg, rgba(9, 16, 29, 0.98), rgba(13, 20, 35, 0.92));
+    }
+
+    @media (max-width: 991.98px) {
+        .mail-studio-hero__stats {
+            grid-template-columns: 1fr;
+        }
+
+        .mail-editor-shell__header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .mail-editor-shell__canvas-meta {
+            padding: .8rem .9rem;
+        }
+
+        #quill_broadcast_editor .ql-container.ql-snow {
+            padding: .85rem .75rem 1.25rem;
+        }
+
+        #quill_broadcast_editor .ql-editor {
+            width: 100%;
+            min-height: 16rem;
+            padding: 1.35rem 1rem 1.6rem;
+        }
+
+        #quill_broadcast_editor .ql-editor.ql-blank::before {
+            left: 1rem;
+            right: 1rem;
+        }
     }
 </style>
 <?php \Altum\Event::add_content(ob_get_clean(), 'head') ?>
 
-<?php if(json_decode($data->broadcast->content)): ?>
-    <?php ob_start() ?>
-    <script src="<?= ASSETS_FULL_URL . 'js/libraries/editorjs/colorpicker.js?v=' . PRODUCT_CODE ?>"></script>
-    <script src="<?= ASSETS_FULL_URL . 'js/libraries/editorjs/header.js?v=' . PRODUCT_CODE ?>"></script>
-    <script src="<?= ASSETS_FULL_URL . 'js/libraries/editorjs/simple-image.js?v=' . PRODUCT_CODE ?>"></script>
-    <script src="<?= ASSETS_FULL_URL . 'js/libraries/editorjs/list.js?v=' . PRODUCT_CODE ?>"></script>
-    <script src="<?= ASSETS_FULL_URL . 'js/libraries/editorjs/link.js?v=' . PRODUCT_CODE ?>"></script>
-    <script src="<?= ASSETS_FULL_URL . 'js/libraries/editorjs/code.js?v=' . PRODUCT_CODE ?>"></script>
-    <script src="<?= ASSETS_FULL_URL . 'js/libraries/editorjs/raw.js?v=' . PRODUCT_CODE ?>"></script>
-    <script src="<?= ASSETS_FULL_URL . 'js/libraries/editorjs/editorjs.js?v=' . PRODUCT_CODE ?>"></script>
+<?php ob_start() ?>
+<script src="<?= ASSETS_FULL_URL . 'js/libraries/quill.min.js?v=' . PRODUCT_CODE ?>"></script>
 
-    <script>
-        'use strict';
+<script>
+    'use strict';
 
-        const is_valid_json = (str) => {
-            try {
-                JSON.parse(str);
-                return true;
-            } catch {
-                return false;
-            }
-        };
+    let quill = new Quill('#quill_broadcast_editor', {
+        theme: 'snow',
+        readOnly: <?= $data->broadcast->status == 'sent' ? 'true' : 'false' ?>,
+        modules: {
+            toolbar: <?= $data->broadcast->status == 'sent' ? 'false' : json_encode([
+                [['header' => [1, 2, 3, false]]],
+                ['bold', 'italic', 'underline', 'strike'],
+                [['color' => []], ['background' => []]],
+                [['list' => 'ordered'], ['list' => 'bullet']],
+                [['align' => []]],
+                ['link', 'blockquote', 'code-block'],
+                ['clean']
+            ]) ?>
+        }
+    });
 
-        /* EditorJS initiatilization */
-        let editorjs = new EditorJS({
-            readOnly: false,
-            holder: 'editorjs',
+    quill.root.innerHTML = document.querySelector('#content').value;
 
-            /* Data */
-            data: is_valid_json(document.querySelector('#content').value) ? JSON.parse(document.querySelector('#content').value) : {},
+    document.querySelector('#broadcast_update_form').addEventListener('submit', event => {
+        document.querySelector('textarea[name="content"]').value = quill.root.innerHTML;
+    });
+</script>
+<?php \Altum\Event::add_content(ob_get_clean(), 'javascript') ?>
+    $('#users_ids').select2({
+        dir: document.querySelector('html').dir,
+        width: '100%',
+        placeholder: document.querySelector('#users_ids')?.dataset.placeholder || '',
+    });
 
-            /* Tolls */
-            tools: {
-                ColorPicker: {
-                    class: ColorPicker.default,
-                },
-
-                header: {
-                    class: Header,
-                    inlineToolbar: true,
-                },
-
-                list: {
-                    class: List,
-                    inlineToolbar: true,
-                },
-
-                image: SimpleImage,
-
-                code: CodeTool,
-
-                raw: RawTool,
-            },
-        });
-
-        (async () => {
-            try {
-                await editorjs.isReady;
-            } catch (reason) {
-                console.log(`Editor.js initialization failed because of ${reason}`)
-            }
-        })();
-
-        /* Handle form submission with the editor */
-        document.querySelector('#broadcast_update_form').addEventListener('submit', async event => {
-            let data = await editorjs.save();
-            document.querySelector('textarea[name="content"]').innerHTML = JSON.stringify(data);
-        });
-    </script>
-    <?php \Altum\Event::add_content(ob_get_clean(), 'javascript') ?>
-<?php endif ?>
 
 <?php ob_start() ?>
 <script>
@@ -370,7 +644,8 @@ document.querySelector('#segment').addEventListener('change', async event => {
         let segment = document.querySelector('#segment').value;
 
         if(segment == 'custom') {
-            document.querySelector('#segment_count').innerHTML = ``;
+            const selectedCount = Array.from(document.querySelector('#users_ids')?.selectedOptions || []).length;
+            document.querySelector('#segment_count').innerHTML = selectedCount ? `(${selectedCount})` : ``;
             return;
         }
 
@@ -408,6 +683,10 @@ document.querySelector('#segment').addEventListener('change', async event => {
             document.querySelector('#segment_count').innerHTML = `(${data.details.count})`;
         }
     }
+
+    document.querySelector('#users_ids')?.addEventListener('change', async () => {
+        await get_segment_count();
+    });
 
     get_segment_count();
 </script>

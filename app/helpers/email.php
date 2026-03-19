@@ -67,6 +67,9 @@ function process_send_mail_template($title, $content, $data = []) {
     $email_template = include_view(THEME_PATH . 'views/partials/email_wrapper.php', [
         'is_broadcast' => $data['is_broadcast'] ?? null,
         'is_system_email' => $data['is_system_email'] ?? true,
+        /* Custom code: FC-2026-03-19: render one-click unsubscribe footer in shared wrapper */
+        'unsubscribe_url' => $data['unsubscribe_url'] ?? null,
+        /* /Custom code: FC-2026-03-19 */
         'anti_phishing_code' => $data['anti_phishing_code'] ?? null,
         'language' => $data['language'] ?? settings()->main->default_language,
         'content' => $content,
@@ -152,18 +155,24 @@ function brevo_is_configured(): bool {
 
 function send_brevo_mail($to, $title, $content, $data = [], $reply_to = null, $debug = false) {
 
+    /* Custom code: FC-2026-03-19: optionally return a structured transport result */
+    $should_return_transport_result = $debug || !empty($data['return_transport_result']);
+    /* /Custom code: FC-2026-03-19 */
+
     if(!function_exists('curl_init')) {
         fc_log_mail_transport_error('brevo_api', 'PHP curl extension is not available.', [
             'has_curl_init' => false,
         ]);
 
-        if($debug) {
+        if($should_return_transport_result) {
             $result = new \stdClass();
             $result->success = false;
             $result->status_code = 0;
             $result->response_body = null;
+            $result->response_json = null;
             $result->curl_error = 'PHP curl extension is not available.';
             $result->payload = null;
+            $result->message_id = null;
             $result->ErrorInfo = 'PHP curl extension is not available.';
             $result->errors = ['PHP curl extension is not available on this server.'];
 
@@ -194,13 +203,15 @@ function send_brevo_mail($to, $title, $content, $data = [], $reply_to = null, $d
             'subject' => $title,
         ]);
 
-        if($debug) {
+        if($should_return_transport_result) {
             $result = new \stdClass();
             $result->success = false;
             $result->status_code = 0;
             $result->response_body = null;
+            $result->response_json = null;
             $result->curl_error = 'Missing recipient email.';
             $result->payload = null;
+            $result->message_id = null;
             $result->ErrorInfo = 'Missing recipient email.';
             $result->errors = ['Missing recipient email.'];
 
@@ -221,6 +232,25 @@ function send_brevo_mail($to, $title, $content, $data = [], $reply_to = null, $d
         'textContent' => strip_tags($email_template),
     ];
 
+    /* Custom code: FC-2026-03-19: support Brevo tags and transport response metadata */
+    if(!empty($data['brevo_tags']) && is_array($data['brevo_tags'])) {
+        $payload['tags'] = array_values(array_filter(array_map('strval', $data['brevo_tags'])));
+    }
+
+    if(!empty($data['brevo_headers']) && is_array($data['brevo_headers'])) {
+        $payload['headers'] = $data['brevo_headers'];
+    }
+
+    /* Custom code: FC-2026-03-19: expose unsubscribe route in provider headers as well */
+    if(!empty($data['unsubscribe_url'])) {
+        $payload['headers'] = array_merge($payload['headers'] ?? [], [
+            'List-Unsubscribe' => '<' . $data['unsubscribe_url'] . '>',
+            'List-Unsubscribe-Post' => 'List-Unsubscribe=One-Click',
+        ]);
+    }
+    /* /Custom code: FC-2026-03-19 */
+    /* /Custom code: FC-2026-03-19 */
+
     if($reply_to) {
         $payload['replyTo'] = ['email' => $reply_to];
     } elseif(!empty(settings()->smtp->reply_to)) {
@@ -238,13 +268,15 @@ function send_brevo_mail($to, $title, $content, $data = [], $reply_to = null, $d
             'json_last_error' => function_exists('json_last_error_msg') ? json_last_error_msg() : 'Unknown JSON error',
         ]);
 
-        if($debug) {
+        if($should_return_transport_result) {
             $result = new \stdClass();
             $result->success = false;
             $result->status_code = 0;
             $result->response_body = null;
+            $result->response_json = null;
             $result->curl_error = 'Failed to encode Brevo payload as JSON.';
             $result->payload = $payload;
+            $result->message_id = null;
             $result->ErrorInfo = 'Failed to encode Brevo payload as JSON.';
             $result->errors = ['Failed to encode Brevo payload as JSON.'];
 
@@ -274,6 +306,9 @@ function send_brevo_mail($to, $title, $content, $data = [], $reply_to = null, $d
     $curl_error = curl_error($curl_handle);
     curl_close($curl_handle);
 
+    $response_json = json_decode($response_body ?? '');
+    $message_id = is_object($response_json) ? fc_normalize_brevo_message_id($response_json->messageId ?? null) : null;
+
     $is_success = empty($curl_error) && $response_code >= 200 && $response_code < 300;
 
     if(!$is_success) {
@@ -286,13 +321,15 @@ function send_brevo_mail($to, $title, $content, $data = [], $reply_to = null, $d
         ]);
     }
 
-    if($debug) {
+    if($should_return_transport_result) {
         $result = new \stdClass();
         $result->success = $is_success;
         $result->status_code = $response_code;
         $result->response_body = $response_body;
+        $result->response_json = $response_json;
         $result->curl_error = $curl_error;
         $result->payload = $payload;
+        $result->message_id = $message_id;
         $result->ErrorInfo = $is_success ? '' : trim('Brevo API request failed. HTTP ' . $response_code . ' ' . $curl_error);
         $result->errors = array_values(array_filter([$curl_error, $response_body]));
 
@@ -363,6 +400,13 @@ function send_mail($to, $title, $content, $data = [], $reply_to = null, $debug =
                 $mail->addReplyTo(settings()->smtp->from, settings()->smtp->from_name);
             }
         }
+
+        /* Custom code: FC-2026-03-19: add one-click unsubscribe headers for SMTP sends */
+        if(!empty($data['unsubscribe_url'])) {
+            $mail->addCustomHeader('List-Unsubscribe', '<' . $data['unsubscribe_url'] . '>');
+            $mail->addCustomHeader('List-Unsubscribe-Post', 'List-Unsubscribe=One-Click');
+        }
+        /* /Custom code: FC-2026-03-19 */
 
         /* Sent to multiple addresses if $to variable is array of emails */
         if(is_array($to)) {

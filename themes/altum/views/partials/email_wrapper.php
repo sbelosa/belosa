@@ -289,12 +289,13 @@
                                 </tr>
                             </table>
 
-                            <?php if($data->is_broadcast && !$data->is_system_email): ?>
+                            <?php if(!empty($data->unsubscribe_url) && !$data->is_system_email): ?>
                                 <hr />
                                 <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
                                     <tr>
                                         <td class="note align-center">
-                                            <small><?= sprintf(l('global.emails.is_broadcast', $data->language), '<a href="' . url('account') . '">', '</a>') ?></small>
+                                            <?php $unsubscribe_copy = fc_get_email_unsubscribe_footer_copy($data->language ?? null); ?>
+                                            <small><?= e($unsubscribe_copy['text']) ?> <a href="<?= $data->unsubscribe_url ?>"><?= e($unsubscribe_copy['link']) ?></a></small>
                                         </td>
                                     </tr>
                                 </table>

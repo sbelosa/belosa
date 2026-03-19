@@ -271,6 +271,90 @@ $billing_event_icons = [
 </div>
 <!-- /Custom code: FC-2026-03-17 -->
 
+<?php /* Custom code: FC-2026-03-19: admin per-user email activity panel */ ?>
+<div class="mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between mb-3">
+        <h2 class="h5 mb-2 mb-md-0"><i class="fas fa-fw fa-sm fa-envelope-open-text text-primary mr-1"></i> <?= l('admin_user_view.email_activity.header') ?></h2>
+        <small class="text-muted"><?= l('admin_user_view.email_activity.subheader') ?></small>
+    </div>
+
+    <div class="row mb-2">
+        <div class="col-12 col-md-6 col-xl-3 p-2">
+            <div class="card h-100"><div class="card-body"><small class="text-muted d-block mb-1"><?= l('admin_user_view.email_activity.total_sent') ?></small><div class="h5 mb-0"><?= nr($data->email_activity['summary']['sent']) ?></div><small class="text-muted d-block mt-1"><?= l('admin_user_view.email_activity.broadcasts') ?>: <?= nr($data->email_activity['summary_by_type']['broadcast']) ?></small></div></div>
+        </div>
+        <div class="col-12 col-md-6 col-xl-3 p-2">
+            <div class="card h-100"><div class="card-body"><small class="text-muted d-block mb-1"><?= l('admin_user_view.email_activity.opened') ?></small><div class="h5 mb-0"><?= nr($data->email_activity['summary']['opened']) ?></div><small class="text-muted d-block mt-1"><?= l('admin_user_view.email_activity.open_rate') ?>: <?= nr($data->email_activity['rates']['open_rate']) ?>%</small></div></div>
+        </div>
+        <div class="col-12 col-md-6 col-xl-3 p-2">
+            <div class="card h-100"><div class="card-body"><small class="text-muted d-block mb-1"><?= l('admin_user_view.email_activity.clicked') ?></small><div class="h5 mb-0"><?= nr($data->email_activity['summary']['clicked']) ?></div><small class="text-muted d-block mt-1"><?= l('admin_user_view.email_activity.click_rate') ?>: <?= nr($data->email_activity['rates']['click_rate']) ?>%</small></div></div>
+        </div>
+        <div class="col-12 col-md-6 col-xl-3 p-2">
+            <div class="card h-100"><div class="card-body"><small class="text-muted d-block mb-1"><?= l('admin_user_view.email_activity.unsubscribed') ?></small><div class="h5 mb-0"><?= nr($data->email_activity['summary']['unsubscribed']) ?></div><small class="text-muted d-block mt-1"><?= l('admin_user_view.email_activity.automations') ?>: <?= nr($data->email_activity['summary_by_type']['automation']) ?></small></div></div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive table-custom-container">
+                <table class="table table-custom mb-0">
+                    <thead>
+                    <tr>
+                        <th><?= l('admin_user_view.email_activity.type') ?></th>
+                        <th><?= l('admin_user_view.email_activity.resource') ?></th>
+                        <th><?= l('admin_user_view.email_activity.subject') ?></th>
+                        <th><?= l('admin_user_view.email_activity.sent') ?></th>
+                        <th><?= l('admin_user_view.email_activity.actions') ?></th>
+                        <th><?= l('admin_user_view.email_activity.timeline') ?></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <?php foreach($data->email_activity['recent_messages'] as $message): ?>
+                        <?php $message_type = ($message->message_type ?? 'automation') === 'broadcast' ? 'broadcast' : 'automation'; ?>
+                        <tr>
+                            <td class="text-nowrap"><span class="badge badge-light"><?= l('admin_user_view.email_activity.type_' . $message_type) ?></span></td>
+                            <td>
+                                <?php if(!empty($message->resource_url)): ?>
+                                    <a href="<?= $message->resource_url ?>"><?= e($message->resource_name) ?></a>
+                                <?php else: ?>
+                                    <?= e($message->resource_name) ?>
+                                <?php endif ?>
+                            </td>
+                            <td>
+                                <div class="font-weight-bold"><?= e($message->subject) ?></div>
+                                <div class="small text-muted"><?= e($message->recipient_email) ?></div>
+                            </td>
+                            <td class="text-nowrap"><?= !empty($message->sent_datetime) ? 
+                                \Altum\Date::get($message->sent_datetime, 2) : '-' ?></td>
+                            <td>
+                                <div class="d-flex flex-wrap">
+                                    <span class="badge badge-light mr-1 mb-1"><?= e(str_replace('_', ' ', $message->status ?? 'sent')) ?></span>
+                                    <?php if(!empty($message->delivered_datetime)): ?><span class="badge badge-success mr-1 mb-1"><?= l('admin_user_view.email_activity.action_delivered') ?></span><?php endif ?>
+                                    <?php if(!empty($message->first_open_datetime)): ?><span class="badge badge-info mr-1 mb-1"><?= l('admin_user_view.email_activity.action_opened') ?></span><?php endif ?>
+                                    <?php if(!empty($message->first_click_datetime)): ?><span class="badge badge-primary mr-1 mb-1"><?= l('admin_user_view.email_activity.action_clicked') ?></span><?php endif ?>
+                                    <?php if(!empty($message->unsubscribe_datetime) || ($message->status ?? '') === 'unsubscribed'): ?><span class="badge badge-warning mr-1 mb-1"><?= l('admin_user_view.email_activity.action_unsubscribed') ?></span><?php endif ?>
+                                </div>
+                            </td>
+                            <td class="small text-muted text-nowrap">
+                                <div>D <?= !empty($message->delivered_datetime) ? \Altum\Date::get($message->delivered_datetime, 2) : '-' ?></div>
+                                <div>O <?= !empty($message->first_open_datetime) ? \Altum\Date::get($message->first_open_datetime, 2) : '-' ?></div>
+                                <div>C <?= !empty($message->first_click_datetime) ? \Altum\Date::get($message->first_click_datetime, 2) : '-' ?></div>
+                                <div>U <?= !empty($message->unsubscribe_datetime) ? \Altum\Date::get($message->unsubscribe_datetime, 2) : '-' ?></div>
+                            </td>
+                        </tr>
+                    <?php endforeach ?>
+                    <?php if(empty($data->email_activity['recent_messages'])): ?>
+                        <tr>
+                            <td colspan="6" class="text-center text-muted py-4"><?= l('admin_user_view.email_activity.no_data') ?></td>
+                        </tr>
+                    <?php endif ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<?php /* /Custom code: FC-2026-03-19 */ ?>
+
 <div class="row">
     <div class="col-xl-4 mb-4">
         <div class="card h-100">

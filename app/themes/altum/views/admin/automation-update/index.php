@@ -1,5 +1,10 @@
 <?php defined('ALTUMCODE') || die() ?>
 
+<?php /* Custom code: FC-2026-03-19: expose Brevo admin setup state in analytics view */ ?>
+<?php $brevo_webhook_secret = fc_get_brevo_webhook_secret() ?>
+<?php $brevo_settings_url = url('admin/settings/smtp') ?>
+<?php /* /Custom code: FC-2026-03-19 */ ?>
+
 <?php /* Custom code: FC-2026-03-18: admin live email automation update */ ?>
 <?php if(settings()->main->breadcrumbs_is_enabled): ?>
     <nav aria-label="breadcrumb">
@@ -17,7 +22,12 @@
         <h1 class="h3 mb-2 mb-md-1 text-truncate"><i class="fas fa-fw fa-xs fa-wave-square text-primary-900 mr-2"></i> <?= l('admin_automation_update.header') ?></h1>
         <p class="text-muted mb-0"><?= l('admin_automation_update.subheader') ?></p>
     </div>
-    <a href="<?= url('admin/automations') ?>" class="btn btn-gray-300 mt-3 mt-md-0"><?= l('admin_automation_update.back') ?></a>
+    <!-- Custom code: FC-2026-03-19: quick actions for automation analytics and Brevo settings -->
+    <div class="d-flex flex-column flex-md-row mt-3 mt-md-0">
+        <a href="<?= $brevo_settings_url ?>" class="btn btn-outline-primary mb-2 mb-md-0 mr-md-2">Brevo postavke</a>
+        <a href="<?= url('admin/automations') ?>" class="btn btn-gray-300"><?= l('admin_automation_update.back') ?></a>
+    </div>
+    <!-- /Custom code: FC-2026-03-19 -->
 </div>
 
 <?= \Altum\Alerts::output_alerts() ?>
@@ -36,6 +46,149 @@
         <div class="card h-100"><div class="card-body"><div class="text-muted small text-uppercase mb-1"><?= l('admin_automations.sent_emails') ?></div><div class="h3 mb-0"><?= nr($data->automation->total_sent_emails) ?></div></div></div>
     </div>
 </div>
+
+<?php /* Custom code: FC-2026-03-19: Brevo analytics overview */ ?>
+<div class="row mb-4">
+    <div class="col-6 col-xl-3 mb-3">
+        <div class="card h-100"><div class="card-body"><div class="text-muted small text-uppercase mb-1">Delivered</div><div class="h3 mb-0"><?= nr($data->analytics['summary']['delivered']) ?></div><div class="small text-muted mt-2"><?= $data->analytics['rates']['delivery_rate'] ?>% delivery rate</div></div></div>
+    </div>
+    <div class="col-6 col-xl-3 mb-3">
+        <div class="card h-100"><div class="card-body"><div class="text-muted small text-uppercase mb-1">Unique opens</div><div class="h3 mb-0"><?= nr($data->analytics['summary']['opened']) ?></div><div class="small text-muted mt-2"><?= $data->analytics['rates']['open_rate'] ?>% open rate</div></div></div>
+    </div>
+    <div class="col-6 col-xl-3 mb-3">
+        <div class="card h-100"><div class="card-body"><div class="text-muted small text-uppercase mb-1">Unique clicks</div><div class="h3 mb-0"><?= nr($data->analytics['summary']['clicked']) ?></div><div class="small text-muted mt-2"><?= $data->analytics['rates']['click_rate'] ?>% click rate</div></div></div>
+    </div>
+    <div class="col-6 col-xl-3 mb-3">
+        <div class="card h-100"><div class="card-body"><div class="text-muted small text-uppercase mb-1">Goal completed</div><div class="h3 mb-0"><?= nr($data->analytics['summary']['goal_completed']) ?></div><div class="small text-muted mt-2"><?= $data->analytics['rates']['goal_rate'] ?>% conversion rate</div></div></div>
+    </div>
+</div>
+
+<div class="card mb-4 border-primary">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-start flex-column flex-lg-row">
+            <div class="mb-3 mb-lg-0">
+                <h2 class="h5 mb-2">Brevo webhook setup</h2>
+                <div class="text-muted small mb-2">Webhook URL</div>
+                <div><code data-copy><?= url('webhook-brevo-email') ?></code></div>
+                <div class="text-muted small mt-3 mb-2">Authentication method in Brevo</div>
+                <div class="small">No authentication</div>
+                <div class="text-muted small mt-3 mb-2">Tracked events</div>
+                <div class="small">sent, delivered, deferred, opened, click, softBounce, hardBounce, blocked, invalid, spam, unsubscribed</div>
+            </div>
+            <div class="bg-gray-100 rounded p-3">
+                <div class="text-muted small text-uppercase mb-2">Server config</div>
+                <div class="small mb-1"><code data-copy>BREVO_API_KEY</code></div>
+                <div class="small mb-1">Header name: <code data-copy>X-FC-Brevo-Secret</code></div>
+                <div class="small mb-1">Header value: <?php if($brevo_webhook_secret !== ''): ?><code data-copy><?= e($brevo_webhook_secret) ?></code><?php else: ?><span class="text-warning">nije postavljeno</span><?php endif ?></div>
+                <div class="small text-muted">Webhook mora poslati isti header i istu tajnu vrijednost. Uredi u <a href="<?= $brevo_settings_url ?>">Admin Settings &raquo; SMTP</a>.</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2 class="h5 mb-0">Brevo funnel by step</h2>
+            <div class="small text-muted">CTOR <?= $data->analytics['rates']['click_to_open_rate'] ?>%</div>
+        </div>
+
+        <div class="table-responsive table-custom-container">
+            <table class="table table-custom mb-0">
+                <thead>
+                <tr>
+                    <th>Step</th>
+                    <th>Sent</th>
+                    <th>Delivered</th>
+                    <th>Opened</th>
+                    <th>Clicked</th>
+                    <th>Goal completed</th>
+                    <th>Rates</th>
+                </tr>
+                </thead>
+                <tbody>
+                <?php foreach($data->analytics['per_step'] as $step_analytics): ?>
+                    <tr>
+                        <td class="text-nowrap">
+                            <div class="font-weight-bold">Step <?= (int) $step_analytics['step']->step_order ?></div>
+                            <div class="small text-muted"><?= e($step_analytics['step']->subject) ?></div>
+                        </td>
+                        <td class="text-nowrap"><?= nr($step_analytics['sent']) ?></td>
+                        <td class="text-nowrap"><?= nr($step_analytics['delivered']) ?></td>
+                        <td class="text-nowrap"><?= nr($step_analytics['opened']) ?></td>
+                        <td class="text-nowrap"><?= nr($step_analytics['clicked']) ?></td>
+                        <td class="text-nowrap"><?= nr($step_analytics['goal_completed']) ?></td>
+                        <td class="text-nowrap small">
+                            <div>D <?= $step_analytics['rates']['delivery_rate'] ?>%</div>
+                            <div>O <?= $step_analytics['rates']['open_rate'] ?>%</div>
+                            <div>C <?= $step_analytics['rates']['click_rate'] ?>%</div>
+                            <div>Goal <?= $step_analytics['rates']['goal_rate'] ?>%</div>
+                        </td>
+                    </tr>
+                <?php endforeach ?>
+                <?php if(empty($data->analytics['per_step'])): ?>
+                    <tr>
+                        <td colspan="7" class="text-center text-muted py-4">Još nema poslanih automation poruka za Brevo analitiku.</td>
+                    </tr>
+                <?php endif ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2 class="h5 mb-0">Recent message statuses</h2>
+            <div class="small text-muted">Posljednjih 10 poruka</div>
+        </div>
+
+        <div class="table-responsive table-custom-container">
+            <table class="table table-custom mb-0">
+                <thead>
+                <tr>
+                    <th><?= l('global.user') ?></th>
+                    <th>Step</th>
+                    <th>Status</th>
+                    <th>Brevo message ID</th>
+                    <th>Timeline</th>
+                </tr>
+                </thead>
+                <tbody>
+                <?php foreach($data->analytics['recent_messages'] as $message): ?>
+                    <tr>
+                        <td class="text-nowrap">
+                            <?php if($message->user): ?>
+                                <div class="font-weight-bold"><?= e($message->user->name ?: ('#' . $message->user_id)) ?></div>
+                                <div class="small text-muted"><?= e($message->user->email) ?></div>
+                            <?php else: ?>
+                                <div class="font-weight-bold">#<?= (int) $message->user_id ?></div>
+                                <div class="small text-muted"><?= e($message->recipient_email) ?></div>
+                            <?php endif ?>
+                        </td>
+                        <td class="text-nowrap">#<?= (int) $message->automation_step_id ?></td>
+                        <td class="text-nowrap"><span class="badge badge-light"><?= e(str_replace('_', ' ', $message->status)) ?></span></td>
+                        <td class="text-nowrap small"><?php if($message->brevo_message_id): ?><code data-copy><?= e($message->brevo_message_id) ?></code><?php else: ?>-<?php endif ?></td>
+                        <td class="small text-muted text-nowrap">
+                            <div>Sent <?= \Altum\Date::get($message->sent_datetime, 2) ?></div>
+                            <div>Last <?= $message->last_event_datetime ? \Altum\Date::get($message->last_event_datetime, 2) : '-' ?></div>
+                            <div>Open <?= $message->first_open_datetime ? \Altum\Date::get($message->first_open_datetime, 2) : '-' ?></div>
+                            <div>Click <?= $message->first_click_datetime ? \Altum\Date::get($message->first_click_datetime, 2) : '-' ?></div>
+                        </td>
+                    </tr>
+                <?php endforeach ?>
+                <?php if(empty($data->analytics['recent_messages'])): ?>
+                    <tr>
+                        <td colspan="5" class="text-center text-muted py-4">Još nema spremljenih Brevo poruka za ovu automatizaciju.</td>
+                    </tr>
+                <?php endif ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<?php /* /Custom code: FC-2026-03-19 */ ?>
 
 <form action="" method="post" role="form">
     <input type="hidden" name="token" value="<?= \Altum\Csrf::get() ?>" />
@@ -145,7 +298,7 @@
                 <?php foreach($data->logs as $log): ?>
                     <tr>
                         <td class="text-nowrap"><?= \Altum\Date::get($log->datetime, 2) ?></td>
-                        <td class="text-nowrap"><span class="badge badge-light"><?= l('admin_automation_update.log_action.' . $log->action) ?></span></td>
+                        <td class="text-nowrap"><span class="badge badge-light"><?php $log_action_label = l('admin_automation_update.log_action.' . $log->action); echo strpos($log_action_label, 'admin_automation_update.log_action.') === 0 ? e(ucwords(str_replace('_', ' ', $log->action))) : $log_action_label; ?></span></td>
                         <td class="text-nowrap">
                             <!-- Custom code: FC-2026-03-18: show user name and email in activity list -->
                             <?php if($log->user): ?>

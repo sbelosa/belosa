@@ -1211,6 +1211,9 @@ class AdminSettings extends Controller {
             $_POST['username'] = input_clean($_POST['username'] ?? '');
             $_POST['password'] = $_POST['password'] ?? '';
             $_POST['brevo_api_key'] = trim($_POST['brevo_api_key'] ?? '');
+            /* Custom code: FC-2026-03-19: persist Brevo webhook secret from admin settings */
+            $_POST['brevo_webhook_secret'] = trim($_POST['brevo_webhook_secret'] ?? '');
+            /* /Custom code: FC-2026-03-19 */
             $_POST['cc'] = str_replace(' ', '', $_POST['cc']);
             $_POST['bcc'] = str_replace(' ', '', $_POST['bcc']);
             $_POST['button_background_color'] = !verify_hex_color($_POST['button_background_color']) ? '#000000' : $_POST['button_background_color'];
@@ -1236,6 +1239,9 @@ class AdminSettings extends Controller {
                 'username' => $_POST['username'],
                 'password' => $_POST['password'],
                 'brevo_api_key' => $_POST['brevo_api_key'],
+                /* Custom code: FC-2026-03-19: store Brevo webhook secret in settings */
+                'brevo_webhook_secret' => $_POST['brevo_webhook_secret'],
+                /* /Custom code: FC-2026-03-19 */
                 'display_socials' => isset($_POST['display_socials']),
                 'company_details' => $_POST['company_details'],
 

@@ -1130,6 +1130,32 @@ class Router {
                 ]
             ],
 
+            /* Custom code: FC-2026-03-19: Brevo email analytics webhook */
+            'webhook-brevo-email' => [
+                'controller' => 'WebhookBrevoEmail',
+                'settings' => [
+                    'no_authentication_check' => true,
+                    'has_view' => false,
+                    'no_browser_language_detection' => true,
+                    'allow_indexing' => false,
+                    'allow_sessions' => false,
+                ]
+            ],
+            /* /Custom code: FC-2026-03-19 */
+
+            /* Custom code: FC-2026-03-19: public one-click email unsubscribe route */
+            'email-unsubscribe' => [
+                'controller' => 'EmailUnsubscribe',
+                'settings' => [
+                    'no_authentication_check' => true,
+                    'has_view' => false,
+                    'no_browser_language_detection' => true,
+                    'allow_indexing' => false,
+                    'allow_sessions' => false,
+                ]
+            ],
+            /* /Custom code: FC-2026-03-19 */
+
             'webhook-plisio' => [
                 'controller' => 'WebhookPlisio',
                 'settings' => [
@@ -1724,6 +1750,10 @@ class Router {
             /* Custom code: FC-2026-03-18: admin live email automations routes */
             'automations' => [
                 'controller' => 'AdminAutomations',
+            ],
+
+            'automation-create' => [
+                'controller' => 'AdminAutomationCreate',
             ],
 
             'automation-update' => [

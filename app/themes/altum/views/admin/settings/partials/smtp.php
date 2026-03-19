@@ -1,6 +1,10 @@
 <?php defined('ALTUMCODE') || die() ?>
 
 <?php $mail_transport = settings()->smtp->transport ?? 'smtp' ?>
+<?php /* Custom code: FC-2026-03-19: Brevo webhook admin setup values */ ?>
+<?php $brevo_webhook_secret = settings()->smtp->brevo_webhook_secret ?? '' ?>
+<?php $brevo_webhook_url = url('webhook-brevo-email') ?>
+<?php /* /Custom code: FC-2026-03-19 */ ?>
 
 <div>
     <div class="form-group">
@@ -59,6 +63,47 @@
         <input id="brevo_api_key" type="password" name="brevo_api_key" class="form-control" value="<?= settings()->smtp->brevo_api_key ?? '' ?>" autocomplete="off" />
         <small class="form-text text-muted"><?= l('admin_settings.smtp.brevo_api_key_help') ?></small>
     </div>
+
+    <!-- Custom code: FC-2026-03-19: Brevo webhook admin setup section -->
+    <div class="card mb-4 border-primary" data-brevo-field>
+        <div class="card-body">
+            <h2 class="h5 mb-3"><?= l('admin_settings.smtp.brevo_webhook') ?></h2>
+
+            <div class="form-group" data-password-toggle-view data-password-toggle-view-show="<?= l('global.show') ?>" data-password-toggle-view-hide="<?= l('global.hide') ?>">
+                <label for="brevo_webhook_secret"><i class="fas fa-fw fa-sm fa-shield-alt text-muted mr-1"></i> <?= l('admin_settings.smtp.brevo_webhook_secret') ?></label>
+                <input id="brevo_webhook_secret" type="password" name="brevo_webhook_secret" class="form-control" value="<?= $brevo_webhook_secret ?>" autocomplete="off" />
+                <small class="form-text text-muted"><?= l('admin_settings.smtp.brevo_webhook_secret_help') ?></small>
+            </div>
+
+            <div class="form-group">
+                <label for="brevo_webhook_url"><i class="fas fa-fw fa-sm fa-link text-muted mr-1"></i> <?= l('admin_settings.smtp.brevo_webhook_url') ?></label>
+                <input id="brevo_webhook_url" type="text" class="form-control" value="<?= $brevo_webhook_url ?>" readonly="readonly" onclick="this.select();" />
+                <small class="form-text text-muted"><?= l('admin_settings.smtp.brevo_webhook_url_help') ?></small>
+            </div>
+
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="form-group">
+                        <label for="brevo_webhook_header_name"><i class="fas fa-fw fa-sm fa-heading text-muted mr-1"></i> <?= l('admin_settings.smtp.brevo_webhook_header_name') ?></label>
+                        <input id="brevo_webhook_header_name" type="text" class="form-control" value="X-FC-Brevo-Secret" readonly="readonly" onclick="this.select();" />
+                    </div>
+                </div>
+
+                <div class="col-lg-6">
+                    <div class="form-group">
+                        <label for="brevo_webhook_header_value"><i class="fas fa-fw fa-sm fa-key text-muted mr-1"></i> <?= l('admin_settings.smtp.brevo_webhook_header_value') ?></label>
+                        <input id="brevo_webhook_header_value" type="text" class="form-control" value="<?= $brevo_webhook_secret ?>" readonly="readonly" onclick="this.select();" />
+                        <small class="form-text text-muted"><?= l('admin_settings.smtp.brevo_webhook_header_value_help') ?></small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="small text-muted">
+                <?= l('admin_settings.smtp.brevo_webhook_brevo_help') ?>
+            </div>
+        </div>
+    </div>
+    <!-- /Custom code: FC-2026-03-19 -->
 
     <div class="form-group" data-smtp-field>
         <label for="host"><i class="fas fa-fw fa-sm fa-server text-muted mr-1"></i> <?= l('admin_settings.smtp.host') ?></label>

@@ -14,6 +14,13 @@
         <h1 class="h3 mb-2 mb-md-1 text-truncate"><i class="fas fa-fw fa-xs fa-wave-square text-primary-900 mr-2"></i> <?= l('admin_automations.header') ?></h1>
         <p class="text-muted mb-0"><?= l('admin_automations.subheader') ?></p>
     </div>
+    <!-- Custom code: FC-2026-03-19: direct Brevo settings access from automation list -->
+    <div class="mt-3 mt-md-0">
+        <a href="<?= url('admin/settings/smtp') ?>" class="btn btn-outline-primary">
+            <i class="fas fa-fw fa-sm fa-mail-bulk mr-1"></i> Brevo postavke i webhook
+        </a>
+    </div>
+    <!-- /Custom code: FC-2026-03-19 -->
 </div>
 
 <?= \Altum\Alerts::output_alerts() ?>
@@ -51,6 +58,21 @@
     </div>
 </div>
 
+<!-- Custom code: FC-2026-03-19: explain where Brevo analytics and settings live -->
+<div class="alert alert-info">
+    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center">
+        <div class="mb-3 mb-lg-0">
+            <div class="font-weight-bold mb-1">Gdje su Brevo webhook postavke i analitika</div>
+            <div class="small mb-1">Webhook postavke: <a href="<?= url('admin/settings/smtp') ?>">Postavke &raquo; SMTP</a></div>
+            <div class="small">Detaljna analitika: klik na <strong>Configure</strong> uz željenu automatizaciju.</div>
+        </div>
+        <div>
+            <a href="<?= url('admin/settings/smtp') ?>" class="btn btn-sm btn-primary">Otvori SMTP / Brevo</a>
+        </div>
+    </div>
+</div>
+<!-- /Custom code: FC-2026-03-19 -->
+
 <div class="table-responsive table-custom-container">
     <table class="table table-custom">
         <thead>
@@ -61,6 +83,7 @@
             <th><?= l('admin_automations.active_enrollments') ?></th>
             <th><?= l('admin_automations.due_now') ?></th>
             <th><?= l('admin_automations.sent_emails') ?></th>
+            <th>Brevo funnel</th>
             <th><?= l('global.status') ?></th>
             <th></th>
         </tr>
@@ -82,6 +105,14 @@
                 </td>
                 <td class="text-nowrap"><span class="badge badge-info"><?= nr($automation->due_enrollments) ?></span></td>
                 <td class="text-nowrap"><span class="badge badge-light"><i class="fas fa-fw fa-envelope mr-1"></i> <?= nr($automation->total_sent_emails) ?></span></td>
+                <td class="text-nowrap">
+                    <?php $summary = $automation->analytics['summary']; ?>
+                    <?php $rates = $automation->analytics['rates']; ?>
+                    <div class="small"><strong>D:</strong> <?= nr($summary['delivered']) ?> / <?= nr($summary['sent']) ?> (<?= $rates['delivery_rate'] ?>%)</div>
+                    <div class="small"><strong>O:</strong> <?= nr($summary['opened']) ?> (<?= $rates['open_rate'] ?>%)</div>
+                    <div class="small"><strong>C:</strong> <?= nr($summary['clicked']) ?> (<?= $rates['click_rate'] ?>%)</div>
+                    <div class="small"><strong>Goal:</strong> <?= nr($summary['goal_completed']) ?> (<?= $rates['goal_rate'] ?>%)</div>
+                </td>
                 <td class="text-nowrap">
                     <?php if($automation->status == 'active'): ?>
                         <span class="badge badge-success"><i class="fas fa-fw fa-check mr-1"></i> <?= l('admin_automations.status.active') ?></span>
