@@ -27,9 +27,16 @@ class AdminAutomations extends Controller {
             /* Custom code: FC-2026-03-19: attach unsubscribed recipients for hub modal */
             $broadcast->unsubscribed_messages_limit = 100;
             $broadcast->unsubscribed_messages = [];
+            $broadcast->unsubscribed_unique_total = 0;
 
             if((int) ($broadcast->analytics['summary']['unsubscribed'] ?? 0) > 0) {
-                $broadcast->unsubscribed_messages = fc_get_email_resource_messages('broadcast', (int) $broadcast->broadcast_id, 'unsubscribed', $broadcast->unsubscribed_messages_limit);
+                $broadcast->unsubscribed_messages = fc_get_email_resource_messages('broadcast', (int) $broadcast->broadcast_id, 'unsubscribed', 0);
+                $broadcast->unsubscribed_messages = fc_get_unique_email_messages_by_recipient($broadcast->unsubscribed_messages);
+                $broadcast->unsubscribed_unique_total = count($broadcast->unsubscribed_messages);
+
+                if($broadcast->unsubscribed_messages_limit > 0) {
+                    $broadcast->unsubscribed_messages = array_slice($broadcast->unsubscribed_messages, 0, $broadcast->unsubscribed_messages_limit);
+                }
 
                 $broadcast_unsubscribed_user_ids = array_values(array_unique(array_filter(array_map(static function($message) {
                     return (int) ($message->user_id ?? 0);
@@ -72,9 +79,16 @@ class AdminAutomations extends Controller {
             /* Custom code: FC-2026-03-19: attach unsubscribed recipients for hub modal */
             $automation->unsubscribed_messages_limit = 100;
             $automation->unsubscribed_messages = [];
+            $automation->unsubscribed_unique_total = 0;
 
             if((int) ($automation->analytics['summary']['unsubscribed'] ?? 0) > 0) {
-                $automation->unsubscribed_messages = fc_get_email_resource_messages('automation', (int) $automation->automation_id, 'unsubscribed', $automation->unsubscribed_messages_limit);
+                $automation->unsubscribed_messages = fc_get_email_resource_messages('automation', (int) $automation->automation_id, 'unsubscribed', 0);
+                $automation->unsubscribed_messages = fc_get_unique_email_messages_by_recipient($automation->unsubscribed_messages);
+                $automation->unsubscribed_unique_total = count($automation->unsubscribed_messages);
+
+                if($automation->unsubscribed_messages_limit > 0) {
+                    $automation->unsubscribed_messages = array_slice($automation->unsubscribed_messages, 0, $automation->unsubscribed_messages_limit);
+                }
 
                 $automation_unsubscribed_user_ids = array_values(array_unique(array_filter(array_map(static function($message) {
                     return (int) ($message->user_id ?? 0);

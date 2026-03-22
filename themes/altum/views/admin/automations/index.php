@@ -165,7 +165,7 @@
                         </button>
                     </div>
                     <div class="modal-body">
-                        <div class="small text-muted mb-3">Prikazano zadnjih <?= nr($broadcast->unsubscribed_messages_limit) ?> odjava<?php if((int) ($broadcast->analytics['summary']['unsubscribed'] ?? 0) > (int) $broadcast->unsubscribed_messages_limit): ?> od ukupno <?= nr($broadcast->analytics['summary']['unsubscribed']) ?><?php endif ?>.</div>
+                        <div class="small text-muted mb-3">Prikazano zadnjih <?= nr($broadcast->unsubscribed_messages_limit) ?> jedinstvenih odjavljenih korisnika<?php if((int) ($broadcast->unsubscribed_unique_total ?? 0) > (int) $broadcast->unsubscribed_messages_limit): ?> od ukupno <?= nr($broadcast->unsubscribed_unique_total) ?><?php endif ?>. Ukupno odjava poruka: <?= nr($broadcast->analytics['summary']['unsubscribed'] ?? 0) ?>.</div>
                         <div class="table-responsive table-custom-container">
                             <table class="table table-custom mb-0">
                                 <thead>
@@ -209,7 +209,7 @@
                         </button>
                     </div>
                     <div class="modal-body">
-                        <div class="small text-muted mb-3">Prikazano zadnjih <?= nr($automation->unsubscribed_messages_limit) ?> odjava<?php if((int) ($automation->analytics['summary']['unsubscribed'] ?? 0) > (int) $automation->unsubscribed_messages_limit): ?> od ukupno <?= nr($automation->analytics['summary']['unsubscribed']) ?><?php endif ?>.</div>
+                        <div class="small text-muted mb-3">Prikazano zadnjih <?= nr($automation->unsubscribed_messages_limit) ?> jedinstvenih odjavljenih korisnika<?php if((int) ($automation->unsubscribed_unique_total ?? 0) > (int) $automation->unsubscribed_messages_limit): ?> od ukupno <?= nr($automation->unsubscribed_unique_total) ?><?php endif ?>. Ukupno odjava poruka: <?= nr($automation->analytics['summary']['unsubscribed'] ?? 0) ?>.</div>
                         <div class="table-responsive table-custom-container">
                             <table class="table table-custom mb-0">
                                 <thead>

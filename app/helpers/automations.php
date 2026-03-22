@@ -1480,20 +1480,54 @@ function fc_get_email_resource_messages(string $message_type, int $resource_id, 
 
     $query->orderBy('automation_message_id', 'DESC');
 
-    if($limit > 0) {
+    /* Custom code: FC-2026-03-22: filter statuses before applying display limits so older unsubscribes remain visible */
+    $should_limit_in_query = !$status_filter || $status_filter === 'all';
+
+    if($should_limit_in_query && $limit > 0) {
         $messages = $query->get('email_automation_messages', $limit) ?? [];
     } else {
         $messages = $query->get('email_automation_messages') ?? [];
     }
+    /* /Custom code: FC-2026-03-22 */
 
     if(!$status_filter || $status_filter === 'all') {
         return $messages;
     }
 
-    return array_values(array_filter($messages, static function($message) use ($status_filter) {
+    $messages = array_values(array_filter($messages, static function($message) use ($status_filter) {
         return fc_does_email_message_match_status($message, $status_filter);
     }));
+
+    /* Custom code: FC-2026-03-22: enforce the requested display limit after status filtering */
+    if($limit > 0) {
+        $messages = array_slice($messages, 0, $limit);
+    }
+    /* /Custom code: FC-2026-03-22 */
+
+    return $messages;
 }
+
+/* Custom code: FC-2026-03-22: collapse duplicate unsubscribe rows to the latest recipient entry */
+function fc_get_unique_email_messages_by_recipient(array $messages): array {
+    $unique_messages = [];
+
+    foreach($messages as $message) {
+        $user_id = (int) ($message->user_id ?? 0);
+        $recipient_email = mb_strtolower(trim((string) ($message->recipient_email ?? '')));
+        $unique_key = $user_id > 0 ? 'user:' . $user_id : 'email:' . $recipient_email;
+
+        if($unique_key === 'email:') {
+            $unique_key = 'message:' . (int) ($message->automation_message_id ?? 0);
+        }
+
+        if(!isset($unique_messages[$unique_key])) {
+            $unique_messages[$unique_key] = $message;
+        }
+    }
+
+    return array_values($unique_messages);
+}
+/* /Custom code: FC-2026-03-22 */
 
 function fc_get_email_resource_analytics(string $message_type, int $resource_id): array {
     $messages = fc_get_email_resource_messages($message_type, $resource_id, null, 0);
