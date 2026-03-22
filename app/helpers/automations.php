@@ -1035,6 +1035,30 @@ function fc_get_brevo_event_tags($payload): array {
     }, $candidates)));
 }
 
+/* Custom code: FC-2026-03-22: structured Brevo webhook diagnostics context */
+function fc_get_brevo_webhook_debug_context($payload, ?string $event_type = null, $message = null): array {
+    $tags = fc_get_brevo_event_tags($payload);
+    $context = fc_extract_automation_context_from_tags($tags);
+
+    return [
+        'raw_event_type' => trim((string) ($payload->event ?? '')),
+        'normalized_event_type' => $event_type,
+        'message_id' => fc_get_brevo_event_message_id($payload),
+        'recipient_email' => fc_get_brevo_event_recipient_email($payload),
+        'event_datetime' => fc_get_brevo_event_datetime($payload),
+        'tags' => $tags,
+        'context' => $context,
+        'matched_message_id' => $message->automation_message_id ?? null,
+        'matched_message_type' => $message->message_type ?? null,
+        'matched_automation_id' => $message->automation_id ?? null,
+        'matched_broadcast_id' => $message->broadcast_id ?? null,
+        'matched_step_id' => $message->automation_step_id ?? null,
+        'matched_user_id' => $message->user_id ?? null,
+        'matched_status' => $message->status ?? null,
+    ];
+}
+/* /Custom code: FC-2026-03-22 */
+
 function fc_find_email_automation_message_for_brevo_event($payload) {
     $brevo_message_id = fc_get_brevo_event_message_id($payload);
 
