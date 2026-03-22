@@ -229,9 +229,11 @@ class Payments extends Model {
         cache()->deleteItemsByTag('user_id=' . $user_id);
 
         /* Send notification to the user */
+        /* Custom code: FC-2026-03-22: localize payment confirmation emails */
+        $language = fc_resolve_language_name($user->language ?? null);
         $email_template = get_email_template(
             [],
-            l('global.emails.user_payment.subject'),
+            l('global.emails.user_payment.subject', $language),
             [
                 '{{PAYMENT_ID}}' => $payment_id,
                 '{{NAME}}' => $user->name,
@@ -240,10 +242,11 @@ class Payments extends Model {
                 '{{USER_PLAN_LINK}}' => url('account-plan'),
                 '{{USER_PAYMENTS_LINK}}' => url('account-payments'),
             ],
-            l('global.emails.user_payment.body')
+            l('global.emails.user_payment.body', $language)
         );
 
-        send_mail($user->email, $email_template->subject, $email_template->body, ['anti_phishing_code' => $user->anti_phishing_code, 'language' => $user->language]);
+        send_mail($user->email, $email_template->subject, $email_template->body, ['anti_phishing_code' => $user->anti_phishing_code, 'language' => $language]);
+        /* /Custom code: FC-2026-03-22 */
 
         /* Send notification to admin if needed */
         if(settings()->email_notifications->new_payment && !empty(settings()->email_notifications->emails)) {

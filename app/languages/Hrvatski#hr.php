@@ -30,6 +30,12 @@ return [
 	'global.na' => 'N/A',
 	'global.unknown' => 'Nepoznato',
 	'global.none' => 'Ništa',
+	/* Custom code: FC-2026-03-22: Croatian billing payment emails */
+	'global.emails.user_payment.subject' => 'Uplata je zaprimljena - {{WEBSITE_TITLE}}',
+	'global.emails.user_payment.body' => 'Pozdrav, <strong>{{NAME}}</strong>,<br /><br />Ovo je potvrda da smo uspješno zaprimili vašu uplatu (#{{PAYMENT_ID}}).<br /><br />Plan <strong>{{PLAN_NAME}}</strong> aktivan vam je do <strong>{{PLAN_EXPIRATION_DATE}}</strong>.<br /><br />Sve svoje <a href="{{USER_PAYMENTS_LINK}}">uplate</a> možete pregledati, <a href="{{USER_PLAN_LINK}}">promijeniti plan</a> ili ga <a href="{{USER_PLAN_LINK}}">otkazati</a>.<br /><br />Lijep pozdrav,<br />Tim {{WEBSITE_TITLE}}.',
+	'global.emails.user_payment_cancelled.subject' => 'Uplata je otkazana - {{WEBSITE_TITLE}}',
+	'global.emails.user_payment_cancelled.body' => 'Pozdrav, <strong>{{NAME}}</strong>,<br /><br />Ovo je obavijest da je vaša uplata (#{{PAYMENT_ID}}) otkazana.<br /><br />Uplata nije dovršena pa plan nije aktiviran na vašem računu.<br /><br />Možete pregledati sve svoje <a href="{{USER_PAYMENTS_LINK}}">uplate</a> ili u bilo kojem trenutku odabrati <a href="{{USER_PAYMENTS_LINK}}">novi plan</a>.<br /><br />Lijep pozdrav,<br />Tim {{WEBSITE_TITLE}}.',
+	/* /Custom code: FC-2026-03-22 */
 	'global.yes' => 'Da',
 	'global.no' => 'Ne',
 	'global.status' => 'Status',

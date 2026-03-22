@@ -217,24 +217,26 @@ class Billing extends Model {
         ]);
     }
 
-    private function build_notification_context(object $user, array $context): array {
+    private function build_notification_context(object $user, array $context, ?string $language = null): array {
         $plan = !empty($context['plan_id']) ? db()->where('plan_id', $context['plan_id'])->getOne('plans', ['plan_id', 'name']) : null;
         $fallback_plan = db()->where('plan_id', 2)->getOne('plans', ['plan_id', 'name']);
 
         return [
             'NAME' => $user->name,
-            'PLAN_NAME' => $plan->name ?? l('global.none'),
-            'FAILURE_REASON' => $context['reason_text'] ?? l('global.unknown'),
-            'FAILURE_CODE' => $context['reason_code'] ?? l('global.none'),
-            'GRACE_UNTIL' => !empty($context['grace_until']) ? \Altum\Date::get($context['grace_until'], 2) : l('global.none'),
-            'NEXT_PAYMENT_ATTEMPT' => !empty($context['next_retry_at']) ? \Altum\Date::get($context['next_retry_at'], 2) : l('global.none'),
+            /* Custom code: FC-2026-03-22: localize billing placeholders */
+            'PLAN_NAME' => $plan->name ?? l('global.none', $language),
+            'FAILURE_REASON' => $context['reason_text'] ?? l('global.unknown', $language),
+            'FAILURE_CODE' => $context['reason_code'] ?? l('global.none', $language),
+            'GRACE_UNTIL' => !empty($context['grace_until']) ? \Altum\Date::get($context['grace_until'], 2) : l('global.none', $language),
+            'NEXT_PAYMENT_ATTEMPT' => !empty($context['next_retry_at']) ? \Altum\Date::get($context['next_retry_at'], 2) : l('global.none', $language),
             'USER_PLAN_LINK' => url('account-plan'),
             'USER_PAYMENTS_LINK' => url('account-payments'),
-            'RECOVERED_AT' => !empty($context['recovered_at']) ? \Altum\Date::get($context['recovered_at'], 2) : l('global.none'),
-            'REVOKED_AT' => !empty($context['revoked_at']) ? \Altum\Date::get($context['revoked_at'], 2) : l('global.none'),
-            'FALLBACK_PLAN_NAME' => $fallback_plan->name ?? l('global.none'),
-            'STRIPE_SUBSCRIPTION_ID' => $context['stripe_subscription_id'] ?? l('global.none'),
-            'STRIPE_INVOICE_ID' => $context['stripe_invoice_id'] ?? l('global.none'),
+            'RECOVERED_AT' => !empty($context['recovered_at']) ? \Altum\Date::get($context['recovered_at'], 2) : l('global.none', $language),
+            'REVOKED_AT' => !empty($context['revoked_at']) ? \Altum\Date::get($context['revoked_at'], 2) : l('global.none', $language),
+            'FALLBACK_PLAN_NAME' => $fallback_plan->name ?? l('global.none', $language),
+            'STRIPE_SUBSCRIPTION_ID' => $context['stripe_subscription_id'] ?? l('global.none', $language),
+            'STRIPE_INVOICE_ID' => $context['stripe_invoice_id'] ?? l('global.none', $language),
+            /* /Custom code: FC-2026-03-22 */
         ];
     }
 
@@ -270,8 +272,10 @@ class Billing extends Model {
             return;
         }
 
-        $language = $user->language ?? \Altum\Language::$default_name ?? 'english';
-        $placeholders = $this->build_notification_context($user, $context);
+        /* Custom code: FC-2026-03-22: normalize legacy language aliases */
+        $language = fc_resolve_language_name($user->language ?? \Altum\Language::$default_name ?? 'english');
+        $placeholders = $this->build_notification_context($user, $context, $language);
+        /* /Custom code: FC-2026-03-22 */
         $email_template = get_email_template(
             [],
             l($stage_map[$stage]['email_subject'], $language),

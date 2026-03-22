@@ -63,6 +63,10 @@ function process_send_mail_template($title, $content, $data = []) {
     $title = process_spintax($title);
     $content = process_spintax($content);
 
+    /* Custom code: FC-2026-03-22: normalize legacy language aliases */
+    $email_language = fc_resolve_language_name($data['language'] ?? settings()->main->default_language);
+    /* /Custom code: FC-2026-03-22 */
+
     /* Get the email template */
     $email_template = include_view(THEME_PATH . 'views/partials/email_wrapper.php', [
         'is_broadcast' => $data['is_broadcast'] ?? null,
@@ -71,7 +75,9 @@ function process_send_mail_template($title, $content, $data = []) {
         'unsubscribe_url' => $data['unsubscribe_url'] ?? null,
         /* /Custom code: FC-2026-03-19 */
         'anti_phishing_code' => $data['anti_phishing_code'] ?? null,
-        'language' => $data['language'] ?? settings()->main->default_language,
+        /* Custom code: FC-2026-03-22: normalize legacy language aliases */
+        'language' => $email_language,
+        /* /Custom code: FC-2026-03-22 */
         'content' => $content,
     ]);
 

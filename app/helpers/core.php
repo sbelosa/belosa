@@ -68,12 +68,37 @@ function database() {
     return \Altum\Database::$database;
 }
 
+/* Custom code: FC-2026-03-22: normalize legacy language aliases */
+function fc_resolve_language_name($language = null) {
+    if(!$language) {
+        return $language;
+    }
+
+    static $language_aliases = [
+        'croatian' => 'Hrvatski',
+        'hrvatski' => 'Hrvatski',
+        'english' => 'english',
+    ];
+
+    $normalized_language = trim((string) $language);
+    $normalized_language_key = mb_strtolower($normalized_language);
+
+    return $language_aliases[$normalized_language_key] ?? $normalized_language;
+}
+/* /Custom code: FC-2026-03-22 */
+
 function language($language = null) {
-    return \Altum\Language::get($language);
+    /* Custom code: FC-2026-03-22: normalize legacy language aliases */
+    return \Altum\Language::get(fc_resolve_language_name($language));
+    /* /Custom code: FC-2026-03-22 */
 }
 
 function l($key, $language = null, $null_coalesce = false) {
     /* Custom code: FC-2026-02-24: language fallback */
+    /* Custom code: FC-2026-03-22: normalize legacy language aliases */
+    $language = fc_resolve_language_name($language);
+    /* /Custom code: FC-2026-03-22 */
+
     $current_language = \Altum\Language::get($language);
     if(isset($current_language[$key])) {
         return $current_language[$key];
