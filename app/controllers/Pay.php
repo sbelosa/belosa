@@ -150,6 +150,28 @@ class Pay extends Controller {
 
         return null;
     }
+
+    /* Custom code: FC-2026-03-22: block duplicate recurring Stripe checkout while an active Stripe subscription already exists */
+    private function has_active_stripe_subscription(): bool {
+        $subscription_id = trim((string) ($this->user->payment_subscription_id ?? ''));
+
+        if(
+            ($this->user->payment_processor ?? null) !== 'stripe'
+            || !$subscription_id
+            || !str_starts_with($subscription_id, 'sub_')
+        ) {
+            return false;
+        }
+
+        try {
+            $subscription = \Stripe\Subscription::retrieve($subscription_id);
+
+            return in_array($subscription->status ?? '', ['active', 'trialing', 'past_due', 'unpaid'], true);
+        } catch(\Exception $exception) {
+            return false;
+        }
+    }
+    /* /Custom code: FC-2026-03-22 */
     /* /Custom code: FC-2026-03-17 */
 
     public function index() {
@@ -872,6 +894,13 @@ class Pay extends Controller {
         /* Initiate Stripe configuration */
         \Stripe\Stripe::setApiKey(settings()->stripe->secret_key);
         \Stripe\Stripe::setApiVersion('2023-10-16');
+
+        /* Custom code: FC-2026-03-22: stop creating a second Stripe subscription for the same active plan */
+        if($_POST['payment_type'] === 'recurring' && $this->has_active_stripe_subscription()) {
+            Alerts::add_error(l('account.billing.subscription_id_active'));
+            redirect('account-plan');
+        }
+        /* /Custom code: FC-2026-03-22 */
 
         /* Trial */
         $trial_days = 0;

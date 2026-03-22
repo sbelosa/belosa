@@ -88,6 +88,36 @@ class Billing extends Model {
         return date('Y-m-d H:i:s', (int) $timestamp);
     }
 
+    /* Custom code: FC-2026-03-22: avoid false billing-failure emails for transient Stripe authentication flows */
+    private function should_defer_first_failure_notification(array $context, int $failed_attempts): bool {
+        if($failed_attempts >= 2) {
+            return false;
+        }
+
+        $reason_code = mb_strtolower(trim((string) ($context['reason_code'] ?? '')));
+        $reason_text = mb_strtolower(trim((string) ($context['reason_text'] ?? '')));
+        $recoverable_fragments = ['authentication', 'requires_action', 'requires action', 'verification', 'verify', '3d secure', '3d_secure', 'sca'];
+
+        foreach($recoverable_fragments as $fragment) {
+            if(($reason_code !== '' && mb_strpos($reason_code, $fragment) !== false) || ($reason_text !== '' && mb_strpos($reason_text, $fragment) !== false)) {
+                return true;
+            }
+        }
+
+        if(!empty($context['next_retry_at']) && !empty($context['occurred_at'])) {
+            try {
+                $occurred_at = new \DateTime((string) $context['occurred_at']);
+                $next_retry_at = new \DateTime((string) $context['next_retry_at']);
+
+                return ($next_retry_at->getTimestamp() - $occurred_at->getTimestamp()) <= 1800;
+            } catch(\Exception $exception) {
+            }
+        }
+
+        return false;
+    }
+    /* /Custom code: FC-2026-03-22 */
+
     private function get_user(?int $user_id = null, ?string $subscription_id = null, ?string $email = null): ?object {
         if($user_id) {
             $user = db()->where('user_id', $user_id)->getOne('users');
@@ -403,6 +433,29 @@ class Billing extends Model {
             'payload_snapshot' => $context['payload_snapshot'] ?? null,
         ]);
 
+        /* Custom code: FC-2026-03-22: do not email immediately when Stripe failure is likely to self-recover */
+        $should_defer_first_notification = $this->should_defer_first_failure_notification($context, (int) ($extra->billing_failed_attempts ?? 0));
+        if($should_defer_first_notification) {
+            $this->log_event($user->user_id, [
+                'event_type' => 'payment_failed_notification_deferred',
+                'processor' => $context['processor'] ?? 'stripe',
+                'billing_state_before' => $previous_state,
+                'billing_state_after' => $new_state,
+                'failed_attempts' => (int) ($extra->billing_failed_attempts ?? 0),
+                'reason_code' => $context['reason_code'] ?? null,
+                'reason_text' => $context['reason_text'] ?? null,
+                'stripe_status' => $context['stripe_status'] ?? 'past_due',
+                'stripe_event_id' => $context['stripe_event_id'] ?? null,
+                'stripe_subscription_id' => $context['stripe_subscription_id'] ?? null,
+                'stripe_invoice_id' => $context['stripe_invoice_id'] ?? null,
+                'stripe_payment_intent_id' => $context['stripe_payment_intent_id'] ?? null,
+                'grace_until' => $extra->billing_grace_until,
+                'next_retry_at' => $context['next_retry_at'] ?? null,
+                'occurred_at' => $context['occurred_at'] ?? get_date(),
+            ]);
+        }
+        /* /Custom code: FC-2026-03-22 */
+
         if(($extra->billing_failed_attempts ?? 0) >= 2) {
             if(($extra->billing_last_notification_stage ?? null) !== self::NOTIFICATION_WARNING_SECOND) {
                 $this->send_notification($user, self::NOTIFICATION_WARNING_SECOND, $context + ['grace_until' => $extra->billing_grace_until]);
@@ -416,7 +469,7 @@ class Billing extends Model {
         }
 
         else {
-            if(($extra->billing_last_notification_stage ?? null) !== self::NOTIFICATION_WARNING_FIRST) {
+            if(!$should_defer_first_notification && ($extra->billing_last_notification_stage ?? null) !== self::NOTIFICATION_WARNING_FIRST) {
                 $this->send_notification($user, self::NOTIFICATION_WARNING_FIRST, $context + ['grace_until' => $extra->billing_grace_until]);
             }
         }
