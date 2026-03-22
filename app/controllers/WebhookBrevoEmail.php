@@ -24,7 +24,7 @@ class WebhookBrevoEmail extends Controller {
 
         if(!$configured_secret || !$received_secret || !hash_equals($configured_secret, $received_secret)) {
             /* Custom code: FC-2026-03-22: log webhook auth failures without exposing the secret value */
-            debug_log('[' . \\Altum\\Router::$controller . '] Brevo webhook authentication failed: ' . json_encode([
+            debug_log('[' . \Altum\Router::$controller . '] Brevo webhook authentication failed: ' . json_encode([
                 'configured_secret_present' => (int) ($configured_secret !== ''),
                 'received_secret_present' => (int) (!empty($received_secret)),
                 'header_names' => array_keys((array) $headers),
@@ -37,7 +37,7 @@ class WebhookBrevoEmail extends Controller {
 
         if($payload === '') {
             /* Custom code: FC-2026-03-22: log empty Brevo webhook payloads */
-            debug_log('[' . \\Altum\\Router::$controller . '] Brevo webhook rejected empty payload');
+            debug_log('[' . \Altum\Router::$controller . '] Brevo webhook rejected empty payload');
             /* /Custom code: FC-2026-03-22 */
             echo 'Missing payload';
             http_response_code(400);
@@ -48,7 +48,7 @@ class WebhookBrevoEmail extends Controller {
 
         if(!$data) {
             /* Custom code: FC-2026-03-22: log invalid Brevo webhook JSON payloads */
-            debug_log('[' . \\Altum\\Router::$controller . '] Brevo webhook invalid JSON: ' . json_encode([
+            debug_log('[' . \Altum\Router::$controller . '] Brevo webhook invalid JSON: ' . json_encode([
                 'json_error' => function_exists('json_last_error_msg') ? json_last_error_msg() : 'Unknown JSON error',
                 'payload_preview' => mb_substr($payload, 0, 1000),
             ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
@@ -76,7 +76,7 @@ class WebhookBrevoEmail extends Controller {
             if(!is_object($event_payload) || empty($event_payload->event)) {
                 /* Custom code: FC-2026-03-22: log skipped payloads missing the event marker */
                 $diagnostics['skipped_events']++;
-                debug_log('[' . \\Altum\\Router::$controller . '] Brevo webhook skipped payload without event: ' . json_encode([
+                debug_log('[' . \Altum\Router::$controller . '] Brevo webhook skipped payload without event: ' . json_encode([
                     'payload' => $event_payload,
                 ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
                 /* /Custom code: FC-2026-03-22 */
@@ -94,7 +94,7 @@ class WebhookBrevoEmail extends Controller {
                 /* Custom code: FC-2026-03-22: log unmatched events with extracted matching context */
                 $diagnostics['unmatched_events']++;
                 debug_log('[' . 
-                    \\Altum\\Router::$controller .
+                    \Altum\Router::$controller .
                     '] Unmatched Brevo event: ' . json_encode($event_debug_context, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)
                 );
                 /* /Custom code: FC-2026-03-22 */
@@ -109,7 +109,7 @@ class WebhookBrevoEmail extends Controller {
             if(!$is_new_event) {
                 /* Custom code: FC-2026-03-22: log duplicate events to separate retries from parser failures */
                 $diagnostics['duplicate_events']++;
-                debug_log('[' . \\Altum\\Router::$controller . '] Duplicate Brevo event ignored: ' . json_encode($event_debug_context, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
+                debug_log('[' . \Altum\Router::$controller . '] Duplicate Brevo event ignored: ' . json_encode($event_debug_context, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
                 /* /Custom code: FC-2026-03-22 */
                 continue;
             }
@@ -119,7 +119,7 @@ class WebhookBrevoEmail extends Controller {
                 fc_log_email_automation_provider_event($message, $event_type, $event_payload);
                 /* Custom code: FC-2026-03-22: log successfully applied message updates */
                 $diagnostics['applied_events']++;
-                debug_log('[' . \\Altum\\Router::$controller . '] Applied Brevo event: ' . json_encode($event_debug_context, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
+                debug_log('[' . \Altum\Router::$controller . '] Applied Brevo event: ' . json_encode($event_debug_context, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
                 /* /Custom code: FC-2026-03-22 */
             }
 
@@ -130,7 +130,7 @@ class WebhookBrevoEmail extends Controller {
         }
 
         /* Custom code: FC-2026-03-22: write a concise end-of-request webhook summary */
-        debug_log('[' . \\Altum\\Router::$controller . '] Brevo webhook summary: ' . json_encode($diagnostics, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
+        debug_log('[' . \Altum\Router::$controller . '] Brevo webhook summary: ' . json_encode($diagnostics, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
         /* /Custom code: FC-2026-03-22 */
 
         echo 'Processed ' . $processed_events . ' events';
