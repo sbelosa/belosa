@@ -996,9 +996,23 @@ function fc_extract_automation_context_from_tags($tags): array {
 }
 
 function fc_get_brevo_event_datetime($payload): string {
-    if(isset($payload->ts_epoch) && is_numeric($payload->ts_epoch)) {
-        return date('Y-m-d H:i:s', (int) $payload->ts_epoch);
+    /* Custom code: FC-2026-03-22: normalize numeric Brevo webhook timestamps before DateTime parsing */
+    foreach(['ts_epoch', 'ts_event', 'ts'] as $property) {
+        if(!isset($payload->{$property}) || !is_numeric($payload->{$property})) {
+            continue;
+        }
+
+        $timestamp = (int) $payload->{$property};
+
+        if($timestamp > 9999999999) {
+            $timestamp = (int) floor($timestamp / 1000);
+        }
+
+        if($timestamp > 0) {
+            return date('Y-m-d H:i:s', $timestamp);
+        }
     }
+    /* /Custom code: FC-2026-03-22 */
 
     foreach(['ts_event', 'date'] as $property) {
         if(empty($payload->{$property})) {
