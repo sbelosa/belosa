@@ -188,6 +188,34 @@
                 <?php $features = ((array) (settings()->payment->plan_features ?? [])) + array_fill_keys(require APP_PATH . 'includes/available_plan_features.php', true) ?>
                 <?php $index = 0; ?>
                 <?php foreach($features as $feature => $is_enabled): ?>
+                    <?php /* Custom code: FC-2026-03-23: readable labels for synced FCC and Forever plan features */ ?>
+                    <?php
+                    $feature_label = l('admin_plans.plan.' . $feature, null, true) ?? $feature;
+
+                    $forever_plan_feature_labels = [
+                        'enabled_biolink_block__lead_funnel' => l('plan_features.forever.label.lead_funnel'),
+                        'enabled_biolink_block__link_app_switcher' => l('plan_features.forever.label.link_app_switcher'),
+                        'enabled_biolink_block__link_forever_shop' => l('plan_features.forever.label.link_forever_shop'),
+                        'enabled_biolink_block__link_forever_product' => l('plan_features.forever.label.link_forever_product'),
+                        'enabled_biolink_block__link_discount' => l('plan_features.forever.label.link_discount'),
+                        'enabled_biolink_block__link_save_contact' => l('plan_features.forever.label.link_save_contact'),
+                        'enabled_biolink_block__link_homescreen_android' => l('plan_features.forever.label.link_homescreen_android'),
+                        'enabled_biolink_block__custom_html_whatsapp' => l('plan_features.forever.label.custom_html_whatsapp'),
+                        'enabled_biolink_block__custom_html_chatbot' => l('plan_features.forever.label.custom_html_chatbot'),
+                        'enabled_biolink_block__custom_html_chatbot_pets' => l('plan_features.forever.label.custom_html_chatbot_pets'),
+                        'enabled_biolink_block__link_back' => l('plan_features.forever.label.link_back'),
+                        'funnels_analytics_is_enabled' => l('plan_features.forever.label.funnels_analytics_is_enabled'),
+                    ];
+
+                    if(strpos($feature, 'enabled_biolink_block__') === 0) {
+                        $feature_label = $forever_plan_feature_labels[$feature] ?? $feature_label;
+                    }
+
+                    if($feature === 'funnels_analytics_is_enabled') {
+                        $feature_label = $forever_plan_feature_labels[$feature] ?? l('funnels_analytics.menu');
+                    }
+                    ?>
+                    <?php /* /Custom code: FC-2026-03-23 */ ?>
                     <div class="d-flex">
                         <span class="cursor-grab drag mr-3" data-toggle="tooltip" title="<?= l('global.drag_and_drop') ?>">
                             <i class="fas fa-fw fa-sm fa-bars text-muted"></i>
@@ -195,7 +223,7 @@
 
                         <div class="form-group custom-control custom-checkbox" data-plan-feature>
                             <input id="<?= 'plan_' . $feature ?>" name="plan_features[<?= $index++ ?>]" value="<?= $feature ?>" type="checkbox" class="custom-control-input" <?= $is_enabled ? 'checked="checked"' : null ?>>
-                            <label class="custom-control-label" for="<?= 'plan_' . $feature ?>"><?= l('admin_plans.plan.' . $feature, null, true) ?? $feature ?></label>
+                            <label class="custom-control-label" for="<?= 'plan_' . $feature ?>"><?= $feature_label ?></label>
                         </div>
                     </div>
                 <?php endforeach ?>

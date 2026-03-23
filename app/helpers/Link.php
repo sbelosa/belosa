@@ -271,6 +271,9 @@ class Link {
             case 'appointment_calendar':
             case 'email_collector':
             case 'contact_collector':
+            /* Custom code: FC-2026-03-23: lead funnel block phase 1 */
+            case 'lead_funnel':
+            /* /Custom code: FC-2026-03-23 */
             case 'rss_feed':
             case 'vcard':
             case 'file':
@@ -306,6 +309,12 @@ class Link {
                         $link->utm_query = $separator . $append_query;
                     }
                 }
+
+                /* Custom code: FC-2026-03-23: lead funnel page url */
+                if($link->type == 'lead_funnel') {
+                    $link->full_url = url('l/link?biolink_block_id=' . $link->biolink_block_id);
+                }
+                /* /Custom code: FC-2026-03-23 */
 
                 /* Call to action custom link */
                 if($link->type == 'cta') {

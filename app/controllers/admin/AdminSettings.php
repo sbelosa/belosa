@@ -1484,6 +1484,7 @@ class AdminSettings extends Controller {
                 'links_static' => ['pathname' => '/links', 'searchIncludes' => 'type=static', 'title' => 'Static sites'],
                 'link_editor' => ['pathname_prefix' => '/link/', 'searchIncludes' => null, 'title' => 'Biolink editor'],
                 'links_statistics' => ['pathname' => '/links-statistics', 'searchIncludes' => null, 'title' => 'Links statistics'],
+                'funnels_analytics' => ['pathname' => '/funnels-analytics', 'searchIncludes' => null, 'title' => 'Funnels analytics'],
                 'qr_codes' => ['pathname' => '/qr-codes', 'searchIncludes' => null, 'title' => 'QR codes'],
                 'domains' => ['pathname' => '/domains', 'searchIncludes' => null, 'title' => 'Custom domains'],
                 'notification_handlers' => ['pathname' => '/notification-handlers', 'searchIncludes' => null, 'title' => 'Notification handlers'],

@@ -136,6 +136,15 @@ class Spotlight extends Controller {
                 ];
             }
 
+            /* Custom code: FC-2026-03-23: central lead funnel analytics page */
+            if(settings()->links->biolinks_is_enabled) {
+                $available_pages[] = [
+                    'name' => l('funnels_analytics.title'),
+                    'url'  => 'funnels-analytics'
+                ];
+            }
+            /* /Custom code: FC-2026-03-23 */
+
             if(settings()->links->projects_is_enabled) {
                 $available_pages[] = [
                     'name' => l('projects.title'),

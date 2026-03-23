@@ -133,6 +133,20 @@ $default_blocks = [
         'category' => 'advanced',
     ],
 
+    /* Custom code: FC-2026-03-23: lead funnel block phase 1 */
+    'lead_funnel' => [
+        'type' => 'default',
+        'icon' => 'fas fa-filter',
+        'color' => '#d97706',
+        'has_statistics' => true,
+        'themable' => false,
+        'display_dynamic_name' => 'name',
+        'whitelisted_thumbnail_image_extensions' => ['jpg', 'jpeg', 'png', 'svg', 'gif', 'webp', 'avif'],
+        'whitelisted_file_extensions' => ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt', 'zip', 'rar', 'csv', 'epub'],
+        'category' => 'forever',
+    ],
+    /* /Custom code: FC-2026-03-23 */
+
     'modal_text' => [
         'type' => 'default',
         'icon' => 'fas fa-book-open',

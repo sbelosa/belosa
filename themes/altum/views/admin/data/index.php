@@ -61,7 +61,7 @@
                             </label>
                             <select name="type" id="type" class="custom-select custom-select-sm">
                                 <option value=""><?= l('global.all') ?></option>
-                                <?php foreach(['email_collector', 'phone_collector', 'contact_collector'] as $value): ?>
+                                <?php foreach(['email_collector', 'phone_collector', 'contact_collector', 'lead_funnel'] as $value): ?>
                                     <option value="<?= $value ?>" <?= isset($data->filters->filters['type']) && $data->filters->filters['type'] == $value ? 'selected="selected"' : null ?>><?= l('link.biolink.blocks.' . $value) ?></option>
                                 <?php endforeach ?>
                             </select>

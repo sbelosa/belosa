@@ -15,6 +15,11 @@ if(is_logged_in()) {
     } catch(\Throwable $exception) {
         $user_feedback_replies_count = 0;
     }
+
+    /* Custom code: FC-2026-03-23: sync funnels analytics sidebar access with lead funnel plan availability */
+    $enabled_biolink_blocks = (object) ($this->user->plan_settings->enabled_biolink_blocks ?? []);
+    $has_lead_funnel_access = (bool) ($enabled_biolink_blocks->lead_funnel ?? false);
+    /* /Custom code: FC-2026-03-23 */
 }
 /* /Custom code: FC-2026-03-08 */
 ?>
@@ -101,6 +106,12 @@ if(is_logged_in()) {
                 <?php if(settings()->links->biolinks_is_enabled || settings()->links->shortener_is_enabled || settings()->links->files_is_enabled || settings()->links->vcards_is_enabled || settings()->links->events_is_enabled || settings()->links->static_is_enabled): ?>
                     <li class="<?= in_array(\Altum\Router::$controller, ['LinksStatistics']) ? 'active' : null ?>">
                         <a href="<?= url('links-statistics') ?>"><i class="fas fa-fw fa-sm fa-chart-bar mr-2"></i> <?= l('links_statistics.menu') ?></a>
+                    </li>
+                <?php endif ?>
+
+                <?php if(settings()->links->biolinks_is_enabled): ?>
+                    <li class="<?= in_array(\Altum\Router::$controller, ['FunnelsAnalytics']) ? 'active' : null ?>">
+                        <a href="<?= url('funnels-analytics') ?>" class="<?= $has_lead_funnel_access ? null : 'disabled pointer-events-all' ?>" <?= $has_lead_funnel_access ? null : get_plan_feature_disabled_info() ?>><i class="fas fa-fw fa-sm fa-filter mr-2"></i> <?= l('funnels_analytics.menu') ?></a>
                     </li>
                 <?php endif ?>
 

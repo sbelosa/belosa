@@ -113,7 +113,9 @@ class Link extends Controller {
 			$this->link->full_url = $domain_id && !isset($_GET['link_id']) ? \Altum\Router::$data['domain']->scheme . \Altum\Router::$data['domain']->host . '/' . (\Altum\Router::$data['domain']->link_id == $this->link->link_id ? null : $this->link->url) : SITE_URL . $this->link->url;
 		/* /Custom code */
 		} else {
-			$this->link->full_url = SITE_URL . 'l/link?biolink_block_id=' . $this->link->biolink_block_id;
+			/* Custom code: FC-2026-03-23: lead funnel page url */
+			$this->link->full_url = url('l/link?biolink_block_id=' . $this->link->biolink_block_id);
+			/* /Custom code: FC-2026-03-23 */
 		}
 
 		/* Static links need the / for proper asset pathing */
@@ -297,6 +299,11 @@ class Link extends Controller {
 					$this->process_link();
 				} elseif($this->link->type == 'vcard') {
 					$this->process_vcard();
+				/* Custom code: FC-2026-03-23: lead funnel page mode */
+				} elseif($this->link->type == 'lead_funnel') {
+					$this->process_lead_funnel_page();
+					return;
+				/* /Custom code: FC-2026-03-23 */
 				}
 			}
 
@@ -362,6 +369,59 @@ class Link extends Controller {
 		}
 
 	}
+
+	/* Custom code: FC-2026-03-23: lead funnel page mode */
+	private function process_lead_funnel_page() {
+		$biolink = db()->where('link_id', $this->link->link_id)->where('type', 'biolink')->getOne('links');
+
+		if(!$biolink) {
+			throw_404();
+		}
+
+		$biolink->additional = json_decode($biolink->additional ?? '');
+		$biolink->settings = json_decode($biolink->settings ?? '');
+		$biolink->pixels_ids = json_decode($biolink->pixels_ids ?? '[]');
+		$biolink->full_url = url($biolink->url, null, $biolink->domain_id);
+		$biolink->design = new \StdClass();
+		$biolink->design->background_class = '';
+		$biolink->design->background_style = \Altum\Link::get_processed_background_style($biolink->settings);
+		$biolink->design->backdrop_style = \Altum\Link::get_processed_backdrop_style($biolink->settings);
+		$biolink->design->text_style = 'color: ' . ($biolink->settings->text_color ?? '#000000');
+
+		/* Custom code: FC-2026-03-23: sanitize lead funnel seo description */
+		$lead_funnel_meta_description = trim(html_entity_decode(strip_tags($this->link->settings->description ?? ''), ENT_QUOTES | ENT_HTML5, 'UTF-8'));
+		$lead_funnel_meta_description = preg_replace('/\s+/u', ' ', $lead_funnel_meta_description);
+		/* /Custom code: FC-2026-03-23 */
+
+		Title::set($this->link->settings->popup_title ?? $this->link->settings->name ?? $biolink->url);
+		Meta::set_description(string_truncate($lead_funnel_meta_description, 160));
+
+		$pixels_view = null;
+		if(count($biolink->pixels_ids)) {
+			$pixels = (new \Altum\Models\Pixel())->get_pixels_by_pixels_ids_and_user_id($biolink->pixels_ids, $biolink->user_id);
+			$pixels_view = (new \Altum\View('l/partials/pixels'))->run(['pixels' => $pixels, 'type' => 'biolink']);
+		}
+
+		$view = new \Altum\View('l/partials/lead_funnel_page', (array) $this);
+		$this->add_view_content('content', $view->run([
+			'link' => $biolink,
+			'block' => $this->link,
+			'user' => $this->user,
+			'pixels' => $pixels_view,
+		]));
+
+		$biolink_wrapper = new \Altum\View('l/biolink_wrapper', [
+			'link' => $biolink,
+			'user' => $this->user,
+			'is_preview' => $this->is_preview,
+			'views' => $this->views,
+			'biolink_theme' => $this->biolink_theme,
+			'biolinks_themes' => $this->biolinks_themes,
+		]);
+
+		echo $biolink_wrapper->run();
+	}
+	/* /Custom code: FC-2026-03-23 */
 
 	private function create_statistics() {
 
@@ -1494,6 +1554,188 @@ class Link extends Controller {
 
 		Response::json($biolink_block->settings->success_text, 'success', ['thank_you_url' => $biolink_block->settings->thank_you_url]);
 	}
+
+	/* Custom code: FC-2026-03-23: lead funnel block phase 1 */
+	public function lead_funnel() {
+		if(empty($_POST)) {
+			die();
+		}
+
+		$_POST['biolink_block_id'] = (int) ($_POST['biolink_block_id'] ?? 0);
+		$_POST['phone'] = input_clean($_POST['phone'] ?? '', 32);
+		$_POST['name'] = input_clean($_POST['name'] ?? '', 64);
+		$_POST['email'] = input_clean_email($_POST['email'] ?? '');
+		$_POST['message'] = input_clean($_POST['message'] ?? '', 512);
+
+		if(settings()->captcha->biolink_is_enabled && settings()->captcha->type != 'basic' && !(new Captcha())->is_valid()) {
+			Response::json(l('global.error_message.invalid_captcha'), 'error');
+		}
+
+		$biolink_block = db()->where('biolink_block_id', $_POST['biolink_block_id'])->where('type', 'lead_funnel')->getOne('biolinks_blocks', ['biolink_block_id', 'link_id', 'type', 'settings']);
+
+		if(!$biolink_block) {
+			die();
+		}
+
+		$biolink_block->settings = json_decode($biolink_block->settings ?? '');
+
+		if($biolink_block->settings->show_agreement && empty($_POST['agreement'])) {
+			Response::json(l('global.error_message.empty_fields'), 'error');
+		}
+
+		$data = [];
+
+		if(!empty($biolink_block->settings->show_name)) {
+			if(!empty($biolink_block->settings->require_name) && empty($_POST['name'])) {
+				Response::json(l('global.error_message.empty_fields'), 'error');
+			}
+
+			$data['name'] = $_POST['name'];
+		}
+
+		if(!empty($biolink_block->settings->show_email)) {
+			if(!empty($biolink_block->settings->require_email) && empty($_POST['email'])) {
+				Response::json(l('global.error_message.empty_fields'), 'error');
+			}
+
+			$data['email'] = $_POST['email'];
+		}
+
+		if(!empty($biolink_block->settings->show_phone)) {
+			if(!empty($biolink_block->settings->require_phone) && empty($_POST['phone'])) {
+				Response::json(l('global.error_message.empty_fields'), 'error');
+			}
+
+			$data['phone'] = $_POST['phone'];
+		}
+
+		if(!empty($biolink_block->settings->show_message)) {
+			if(!empty($biolink_block->settings->require_message) && empty($_POST['message'])) {
+				Response::json(l('global.error_message.empty_fields'), 'error');
+			}
+
+			$data['message'] = $_POST['message'];
+		}
+
+		if(empty(array_filter($data))) {
+			Response::json(l('global.error_message.empty_fields'), 'error');
+		}
+
+		$link = db()->where('link_id', $biolink_block->link_id)->getOne('links');
+		$user = db()->where('user_id', $link->user_id)->getOne('users');
+
+		$datum_id = db()->insert('data', [
+			'biolink_block_id' => $biolink_block->biolink_block_id,
+			'link_id' => $link->link_id,
+			'project_id' => $link->project_id,
+			'user_id' => $link->user_id,
+			'type' => $biolink_block->type,
+			'data' => json_encode($data),
+			'datetime' => get_date(),
+		]);
+
+		if(count($biolink_block->settings->notifications ?? [])) {
+			$notification_handlers = (new \Altum\Models\NotificationHandlers())->get_notification_handlers_by_user_id($user->user_id);
+
+			$notification_data = [
+				'link_id' => $link->link_id,
+				'biolink_block_id' => $biolink_block->biolink_block_id,
+				'phone' => $data['phone'] ?? '',
+				'name' => $data['name'] ?? '',
+				'email' => $data['email'] ?? '',
+				'message' => $data['message'] ?? '',
+				'url' => url('data?datum_id=' . $datum_id),
+			];
+
+			$dynamic_message_data = \Altum\NotificationHandlers::build_dynamic_message_data($notification_data);
+
+			$notification_message = sprintf(
+				l('biolink_block.simple_notification', $user->language),
+				$biolink_block->settings->name ?? '',
+				$link->url,
+				$dynamic_message_data,
+				$notification_data['url']
+			);
+
+			$email_template = get_email_template(
+				[
+					'{{BLOCK_TITLE}}' => $biolink_block->settings->name
+				],
+				l('global.emails.user_data_collected.subject', $user->language),
+				[
+					'{{NAME}}' => $user->name,
+					'{{DATA_PHONE}}' => $data['phone'] ?? '',
+					'{{DATA_NAME}}' => $data['name'] ?? '',
+					'{{DATA_EMAIL}}' => $data['email'] ?? '',
+					'{{DATA_MESSAGE}}' => $data['message'] ?? '',
+					'{{DATA_LINK}}' => $notification_data['url'],
+				],
+				l('global.emails.user_data_collected_contact_collector.body', $user->language)
+			);
+
+			$context = [
+				'user' => $user,
+				'email_template' => $email_template,
+				'message' => $notification_message,
+				'push_title' => l('biolink_block.push_notification.title', $user->language),
+				'push_description' => sprintf(
+					l('biolink_block.push_notification.description', $user->language),
+					$biolink_block->settings->name ?? '',
+					$link->url
+				),
+				'whatsapp_template' => 'caught_data',
+				'whatsapp_parameters' => [
+					$biolink_block->settings->name ?? '',
+					$link->url,
+					$notification_data['url'],
+				],
+				'twilio_call_url' => SITE_URL .
+					'twiml/biolink_block.simple_notification?param1=' .
+					urlencode($biolink_block->settings->name ?? '') .
+					'&param2=' . urlencode($link->url) .
+					'&param3=&param4=' . urlencode($notification_data['url']),
+				'internal_icon' => 'fas fa-database',
+				'discord_color' => '2664261',
+				'slack_emoji' => ':large_green_circle:'
+			];
+
+			\Altum\NotificationHandlers::process(
+				$notification_handlers,
+				$biolink_block->settings->notifications,
+				$notification_data,
+				$context
+			);
+		}
+
+		$redirect_url = null;
+		$download_url = null;
+
+		if(($biolink_block->settings->thank_you_type ?? 'message') == 'external_url' && !empty($biolink_block->settings->thank_you_url)) {
+			$redirect_url = $biolink_block->settings->thank_you_url;
+		}
+
+		if(($biolink_block->settings->thank_you_type ?? 'message') == 'biolink_redirect' && !empty($biolink_block->settings->thank_you_biolink_id)) {
+			$thank_you_biolink = db()->where('link_id', (int) $biolink_block->settings->thank_you_biolink_id)->where('user_id', $link->user_id)->where('type', 'biolink')->getOne('links', ['url', 'domain_id']);
+
+			if($thank_you_biolink) {
+				$redirect_url = url($thank_you_biolink->url, null, $thank_you_biolink->domain_id);
+			}
+		}
+
+		if(($biolink_block->settings->thank_you_type ?? 'message') == 'file_download' && !empty($biolink_block->settings->thank_you_file)) {
+			$download_url = \Altum\Uploads::get_full_url('files') . $biolink_block->settings->thank_you_file;
+		}
+
+		Response::json($biolink_block->settings->success_text, 'success', [
+			'thank_you_type' => $biolink_block->settings->thank_you_type ?? 'message',
+			'thank_you_title' => $biolink_block->settings->thank_you_title ?? '',
+			'thank_you_text' => $biolink_block->settings->thank_you_text ?? '',
+			'thank_you_button_text' => $biolink_block->settings->thank_you_button_text ?? '',
+			'redirect_url' => $redirect_url,
+			'download_url' => $download_url,
+		]);
+	}
+	/* /Custom code: FC-2026-03-23 */
 
 	public function appointment_calendar() {
 		if(empty($_POST)) {

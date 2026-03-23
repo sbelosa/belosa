@@ -24,6 +24,41 @@ if(settings()->links->biolinks_is_enabled) {
     $features[] = 'biolink_blocks_limit';
     $features[] = 'enabled_biolink_blocks';
 
+    /* Custom code: FC-2026-03-23: visible synced FCC and Forever block plan features */
+    $visible_synced_biolink_feature_blocks = array_filter(require APP_PATH . 'includes/biolink_blocks.php', function($value, $type) {
+        if(in_array($type, ['link_forever_living_bih', 'link_forever_living_alb_kosovo'], true)) {
+            return false;
+        }
+
+        return ($value['category'] ?? null) === 'forever' || $type === 'lead_funnel';
+    }, ARRAY_FILTER_USE_BOTH);
+
+    $visible_synced_biolink_feature_order = [
+        'lead_funnel',
+        'link_app_switcher',
+        'link_forever_shop',
+        'link_forever_product',
+        'link_discount',
+        'link_save_contact',
+        'link_homescreen_android',
+        'custom_html_whatsapp',
+        'custom_html_chatbot',
+        'custom_html_chatbot_pets',
+        'link_back',
+    ];
+
+    $visible_synced_biolink_feature_blocks = array_values(array_unique(array_merge(
+        array_values(array_intersect($visible_synced_biolink_feature_order, array_keys($visible_synced_biolink_feature_blocks))),
+        array_keys($visible_synced_biolink_feature_blocks)
+    )));
+
+    foreach($visible_synced_biolink_feature_blocks as $type) {
+        $features[] = 'enabled_biolink_block__' . $type;
+    }
+
+    $features[] = 'funnels_analytics_is_enabled';
+    /* /Custom code: FC-2026-03-23 */
+
     /* Biolinks extras */
     if(settings()->links->biolinks_themes_is_enabled) {
         $features[] = 'biolinks_themes';

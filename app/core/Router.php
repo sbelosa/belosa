@@ -330,6 +330,16 @@ class Router {
                 ]
             ],
 
+            /* Custom code: FC-2026-03-23: central lead funnel analytics page */
+            'funnels-analytics' => [
+                'controller' => 'FunnelsAnalytics',
+                'settings' => [
+                    'wrapper' => 'app_wrapper',
+                    'ads' => true,
+                ]
+            ],
+            /* /Custom code: FC-2026-03-23 */
+
             'link' => [
                 'controller' => 'Link',
                 'settings' => [

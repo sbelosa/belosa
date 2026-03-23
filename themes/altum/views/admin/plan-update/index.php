@@ -810,10 +810,20 @@
 
                 <div class="row">
                     <?php foreach(require APP_PATH . 'includes/biolink_blocks.php' as $key => $value): ?>
+                        <?php
+                        $biolink_block_label = l('link.biolink.blocks.' . mb_strtolower($key));
+
+                        if(strpos($key, 'link_') === 0 || strpos($key, 'custom_html_') === 0 || $key === 'lead_funnel') {
+                            $friendly_label = l('plan_features.forever.label.' . $key, null, true);
+                            if($friendly_label) {
+                                $biolink_block_label = $friendly_label;
+                            }
+                        }
+                        ?>
                         <div class="col-6 mb-3">
                             <div class="custom-control custom-checkbox">
                                 <input id="enabled_biolink_blocks_<?= $key ?>" name="enabled_biolink_blocks[]" value="<?= $key ?>" type="checkbox" class="custom-control-input" <?= $data->plan->settings->enabled_biolink_blocks->{$key} ? 'checked="checked"' : null ?>>
-                                <label class="custom-control-label" for="enabled_biolink_blocks_<?= $key ?>"><?= l('link.biolink.blocks.' . mb_strtolower($key)) ?></label>
+                                <label class="custom-control-label" for="enabled_biolink_blocks_<?= $key ?>"><?= $biolink_block_label ?></label>
                             </div>
                         </div>
                     <?php endforeach ?>

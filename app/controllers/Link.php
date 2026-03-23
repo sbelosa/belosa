@@ -161,6 +161,9 @@ class Link extends Controller {
 
                     /* Get the links available for the biolink */
                     $link_links_result = database()->query("SELECT * FROM `biolinks_blocks` WHERE `link_id` = {$this->link->link_id} ORDER BY `order` ASC");
+                    /* Custom code: FC-2026-03-23: lead funnel block phase 1 */
+                    $user_biolinks = db()->where('user_id', $this->user->user_id)->where('type', 'biolink')->orderBy('url', 'ASC')->get('links', null, ['link_id', 'url']);
+                    /* /Custom code: FC-2026-03-23 */
 
                     /* Add the modals for creating the links inside the biolink */
                     foreach($biolink_blocks as $key => $value) {
@@ -170,6 +173,9 @@ class Link extends Controller {
                             'biolink_blocks' => $biolink_blocks,
 							'default_whatsapp_phone' => $default_whatsapp_phone,
                             'blog_products' => $blog_products,
+                            /* Custom code: FC-2026-03-23: lead funnel block phase 1 */
+                            'user_biolinks' => $user_biolinks,
+                            /* /Custom code: FC-2026-03-23 */
                         ];
 
                         /* Custom code */
@@ -242,6 +248,9 @@ class Link extends Controller {
                     'links_types'       => $links_types,
                     'notification_handlers' => $notification_handlers ?? null,
                     'blog_products'     => $blog_products ?? [],
+                    /* Custom code: FC-2026-03-23: lead funnel block phase 1 */
+                    'user_biolinks'     => $user_biolinks ?? [],
+                    /* /Custom code: FC-2026-03-23 */
                      /* Custom code */
                     'vcard_main' => $vcard_main ?? null,
                     'biolink_main' => $biolink_main ?? null,

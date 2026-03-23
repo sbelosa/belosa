@@ -36,6 +36,12 @@ class BiolinkBlock extends Model {
             'link' => [['path' => 'block_thumbnail_images', 'uploaded_file_key' => 'image']],
             'big_link' => [['path' => 'block_thumbnail_images', 'uploaded_file_key' => 'image']],
             'email_collector' => [['path' => 'block_thumbnail_images', 'uploaded_file_key' => 'image']],
+            /* Custom code: FC-2026-03-23: lead funnel block phase 1 */
+            'lead_funnel' => [
+                ['path' => 'block_thumbnail_images', 'uploaded_file_key' => 'image'],
+                ['path' => 'files', 'uploaded_file_key' => 'thank_you_file'],
+            ],
+            /* /Custom code: FC-2026-03-23 */
             'vcard' => [
                 ['path' => 'block_thumbnail_images', 'uploaded_file_key' => 'image'],
                 ['path' => 'avatars', 'uploaded_file_key' => 'vcard_avatar'],

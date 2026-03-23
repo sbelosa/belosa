@@ -16,11 +16,77 @@ $hidden_subscription_plan_features = [
     'branded_button_is_enabled',
     'email_reports_is_enabled',
 ];
+
+/* Custom code: FC-2026-03-23: synced FCC and Forever plan feature states */
+$enabled_biolink_blocks_raw = (array) ($data->plan_settings->enabled_biolink_blocks ?? []);
+$enabled_biolink_blocks = (object) $enabled_biolink_blocks_raw;
+$enabled_biolink_blocks_list = array_filter($enabled_biolink_blocks_raw);
+$enabled_biolink_block_keys = array_keys($enabled_biolink_blocks_list);
+
+$forever_plan_feature_keys = [
+    'enabled_biolink_block__lead_funnel',
+    'enabled_biolink_block__link_app_switcher',
+    'enabled_biolink_block__link_forever_shop',
+    'enabled_biolink_block__link_forever_product',
+    'enabled_biolink_block__link_discount',
+    'enabled_biolink_block__link_save_contact',
+    'enabled_biolink_block__link_homescreen_android',
+    'enabled_biolink_block__custom_html_whatsapp',
+    'enabled_biolink_block__custom_html_chatbot',
+    'enabled_biolink_block__custom_html_chatbot_pets',
+    'enabled_biolink_block__link_back',
+    'funnels_analytics_is_enabled',
+];
+
+$forever_plan_feature_labels = [
+    'enabled_biolink_block__lead_funnel' => l('plan_features.forever.label.lead_funnel'),
+    'enabled_biolink_block__link_app_switcher' => l('plan_features.forever.label.link_app_switcher'),
+    'enabled_biolink_block__link_forever_shop' => l('plan_features.forever.label.link_forever_shop'),
+    'enabled_biolink_block__link_forever_product' => l('plan_features.forever.label.link_forever_product'),
+    'enabled_biolink_block__link_discount' => l('plan_features.forever.label.link_discount'),
+    'enabled_biolink_block__link_save_contact' => l('plan_features.forever.label.link_save_contact'),
+    'enabled_biolink_block__link_homescreen_android' => l('plan_features.forever.label.link_homescreen_android'),
+    'enabled_biolink_block__custom_html_whatsapp' => l('plan_features.forever.label.custom_html_whatsapp'),
+    'enabled_biolink_block__custom_html_chatbot' => l('plan_features.forever.label.custom_html_chatbot'),
+    'enabled_biolink_block__custom_html_chatbot_pets' => l('plan_features.forever.label.custom_html_chatbot_pets'),
+    'enabled_biolink_block__link_back' => l('plan_features.forever.label.link_back'),
+    'funnels_analytics_is_enabled' => l('plan_features.forever.label.funnels_analytics_is_enabled'),
+];
+
+$forever_plan_feature_help = [
+    'enabled_biolink_block__lead_funnel' => l('plan_features.forever.help.lead_funnel'),
+    'enabled_biolink_block__link_app_switcher' => l('plan_features.forever.help.link_app_switcher'),
+    'enabled_biolink_block__link_forever_shop' => l('plan_features.forever.help.link_forever_shop'),
+    'enabled_biolink_block__link_forever_product' => l('plan_features.forever.help.link_forever_product'),
+    'enabled_biolink_block__link_discount' => l('plan_features.forever.help.link_discount'),
+    'enabled_biolink_block__link_save_contact' => l('plan_features.forever.help.link_save_contact'),
+    'enabled_biolink_block__link_homescreen_android' => l('plan_features.forever.help.link_homescreen_android'),
+    'enabled_biolink_block__custom_html_whatsapp' => l('plan_features.forever.help.custom_html_whatsapp'),
+    'enabled_biolink_block__custom_html_chatbot' => l('plan_features.forever.help.custom_html_chatbot'),
+    'enabled_biolink_block__custom_html_chatbot_pets' => l('plan_features.forever.help.custom_html_chatbot_pets'),
+    'enabled_biolink_block__link_back' => l('plan_features.forever.help.link_back'),
+    'funnels_analytics_is_enabled' => l('plan_features.forever.help.funnels_analytics_is_enabled'),
+];
+
+$has_rendered_forever_plan_feature_group = false;
+/* /Custom code: FC-2026-03-23 */
 ?>
 
 <ul class="pricing-features">
     <?php foreach($features as $feature => $is_enabled): ?>
         <?php if(in_array($feature, $hidden_subscription_plan_features, true)) continue; ?>
+
+        <?php /* Custom code: FC-2026-03-23: group FCC and Forever plan features in pricing */ ?>
+        <?php if(!$has_rendered_forever_plan_feature_group && $is_enabled && settings()->links->biolinks_is_enabled && in_array($feature, $forever_plan_feature_keys, true)): ?>
+            <?php $has_rendered_forever_plan_feature_group = true; ?>
+            <li class="pt-1 pb-1">
+                <div class="small text-uppercase text-muted font-weight-bold">
+                    <?= l('plan_features.forever.group') ?>
+                </div>
+                <span></span>
+            </li>
+        <?php endif ?>
+        <?php /* /Custom code: FC-2026-03-23 */ ?>
 
         <?php if($is_enabled && $feature == 'biolinks_limit' && settings()->links->biolinks_is_enabled): ?>
             <li>
@@ -41,12 +107,11 @@ $hidden_subscription_plan_features = [
         <?php endif ?>
 
         <?php if($is_enabled && $feature == 'enabled_biolink_blocks' && settings()->links->biolinks_is_enabled): ?>
-            <?php $enabled_biolink_blocks = array_filter((array) $data->plan_settings->enabled_biolink_blocks) ?>
-            <?php $enabled_biolink_blocks_count = count($enabled_biolink_blocks) ?>
+            <?php $enabled_biolink_blocks_count = count($enabled_biolink_blocks_list) ?>
             <?php
             $enabled_biolink_blocks_string = implode(', ', array_map(function($key) {
                 return l('link.biolink.blocks.' . mb_strtolower($key));
-            }, array_keys($enabled_biolink_blocks)));
+            }, array_keys($enabled_biolink_blocks_list)));
             ?>
             <li>
                 <div class="<?= $enabled_biolink_blocks_count ? null : 'text-muted' ?>">
@@ -61,6 +126,35 @@ $hidden_subscription_plan_features = [
                 </div>
             </li>
         <?php endif ?>
+
+        <?php /* Custom code: FC-2026-03-23: visible synced FCC and Forever block features */ ?>
+        <?php if($is_enabled && strpos($feature, 'enabled_biolink_block__') === 0 && settings()->links->biolinks_is_enabled): ?>
+            <?php $block_key = substr($feature, strlen('enabled_biolink_block__')); ?>
+            <?php $is_block_enabled = in_array($block_key, $enabled_biolink_block_keys, true); ?>
+            <li>
+                <div class="<?= $is_block_enabled ? null : 'text-muted' ?>">
+                    <?= $forever_plan_feature_labels[$feature] ?? l('link.biolink.blocks.' . $block_key) ?>
+                    <?php if(!empty($forever_plan_feature_help[$feature])): ?>
+                        <span class="ml-1" data-toggle="tooltip" title="<?= $forever_plan_feature_help[$feature] ?>"><i class="fas fa-fw fa-xs fa-circle-question text-gray-500"></i></span>
+                    <?php endif ?>
+                </div>
+                <i class="fas fa-fw fa-sm <?= $is_block_enabled ? 'fa-check-circle text-success' : 'fa-times-circle text-muted' ?>"></i>
+            </li>
+        <?php endif ?>
+
+        <?php if($is_enabled && $feature == 'funnels_analytics_is_enabled' && settings()->links->biolinks_is_enabled): ?>
+            <?php $has_funnels_analytics_access = in_array('lead_funnel', $enabled_biolink_block_keys, true); ?>
+            <li>
+                <div class="<?= $has_funnels_analytics_access ? null : 'text-muted' ?>">
+                    <?= $forever_plan_feature_labels[$feature] ?? l('funnels_analytics.menu') ?>
+                    <?php if(!empty($forever_plan_feature_help[$feature])): ?>
+                        <span class="ml-1" data-toggle="tooltip" title="<?= $forever_plan_feature_help[$feature] ?>"><i class="fas fa-fw fa-xs fa-circle-question text-gray-500"></i></span>
+                    <?php endif ?>
+                </div>
+                <i class="fas fa-fw fa-sm <?= $has_funnels_analytics_access ? 'fa-check-circle text-success' : 'fa-times-circle text-muted' ?>"></i>
+            </li>
+        <?php endif ?>
+        <?php /* /Custom code: FC-2026-03-23 */ ?>
 
         <?php if($is_enabled && $feature == 'links_limit' && settings()->links->shortener_is_enabled): ?>
             <li>

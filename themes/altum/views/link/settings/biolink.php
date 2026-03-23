@@ -1130,6 +1130,11 @@
                                                 <span data-toggle="tooltip" title="<?= l('links.clicks') ?>" class="badge badge-light"><i class="fas fa-fw fa-sm fa-chart-bar mr-1"></i> <?= nr($row->clicks) ?></span>
                                             </a>
 										<?php endif ?>
+									<?php if($row->type == 'lead_funnel'): ?>
+                                            <a href="<?= url('funnels-analytics?biolink_block_id=' . $row->biolink_block_id) ?>" class="btn btn-sm btn-link text-secondary" data-toggle="tooltip" title="<?= l('funnels_analytics.link') ?>">
+                                                <i class="fas fa-fw fa-sm fa-filter"></i>
+                                            </a>
+									<?php endif ?>
 										<?php if($data->biolink_blocks[$row->type]['type'] == 'payment'): ?>
                                             <a href="<?= url('guests-payments?biolink_block_id=' . $row->biolink_block_id) ?>" class="btn btn-sm btn-link text-secondary" data-toggle="tooltip" title="<?= l('guests_payments.link') ?>">
                                                 <i class="fas fa-fw fa-sm fa-coins"></i>
@@ -1172,12 +1177,16 @@
                                                     <a href="<?= url('biolink-block/' . $row->biolink_block_id . '/statistics') ?>" class="dropdown-item"><i class="fas fa-fw fa-sm fa-chart-bar mr-2"></i> <?= l('link.statistics.link') ?></a>
 												<?php endif ?>
 
+                                                <?php if($row->type == 'lead_funnel'): ?>
+                                                            <a href="<?= url('funnels-analytics?biolink_block_id=' . $row->biolink_block_id) ?>" class="dropdown-item"><i class="fas fa-fw fa-sm fa-filter mr-2"></i> <?= l('funnels_analytics.link') ?></a>
+                                                <?php endif ?>
+
 												<?php if($data->biolink_blocks[$row->type]['type'] == 'payment'): ?>
                                                     <a href="<?= url('guests-payments?biolink_block_id=' . $row->biolink_block_id) ?>" class="dropdown-item"><i class="fas fa-fw fa-sm fa-coins mr-2"></i> <?= l('guests_payments.link') ?></a>
                                                     <a href="<?= url('guests-payments-statistics?biolink_block_id=' . $row->biolink_block_id) ?>" class="dropdown-item"><i class="fas fa-fw fa-sm fa-chart-pie mr-2"></i> <?= l('guests_payments_statistics.link') ?></a>
 												<?php endif ?>
 
-												<?php if(in_array($row->type, ['email_collector', 'phone_collector', 'contact_collector'])): ?>
+                                                <?php if(in_array($row->type, ['email_collector', 'phone_collector', 'contact_collector', 'lead_funnel'])): ?>
                                                     <a href="<?= url('data?biolink_block_id=' . $row->biolink_block_id) ?>" class="dropdown-item"><i class="fas fa-fw fa-sm fa-database mr-2"></i> <?= l('data.link') ?></a>
 												<?php endif ?>
 
@@ -1633,7 +1642,19 @@
         let is_autosave = autosave_data && autosave_data.is_autosave === true;
 
         let form = $(event.currentTarget)[0];
+
+        if(form?.getAttribute('data-type') === 'lead_funnel' && window.syncLeadFunnelRichTextEditors) {
+            window.syncLeadFunnelRichTextEditors(form);
+        }
+
         let data = new FormData(form);
+
+        if(form?.getAttribute('data-type') === 'lead_funnel' && window.getLeadFunnelRichTextValues) {
+            Object.entries(window.getLeadFunnelRichTextValues(form)).forEach(([name, value]) => {
+                data.set(name, value);
+            });
+        }
+
         let notification_container = event.currentTarget.querySelector('.notification-container');
         if(!notification_container) {
             notification_container = document.createElement('div');
@@ -1897,7 +1918,491 @@
                 case 'product':
                 case 'rss_feed':
                 case 'youtube_feed':
+                case 'lead_funnel':
                     extra_updating_and_potentially_color_inputs = ['name'];
+
+                    window.initLeadFunnelRichTextEditors && window.initLeadFunnelRichTextEditors(update_form_content);
+
+                    let lead_funnel_open_mode_handler = () => {
+                        let open_mode_select = update_form_content.querySelector('select[name="open_mode"]');
+                        let lead_funnel_button = biolink_link.find('a.link-btn');
+
+                        if(!open_mode_select || !lead_funnel_button.length) {
+                            return;
+                        }
+
+                        let page_url = `${url}l/link?biolink_block_id=${biolink_block_id}`;
+
+                        if(open_mode_select.value === 'page') {
+                            lead_funnel_button.attr('href', page_url);
+                            lead_funnel_button.removeAttr('data-toggle');
+                            lead_funnel_button.removeAttr('data-target');
+                        } else {
+                            lead_funnel_button.attr('href', '#');
+                            lead_funnel_button.attr('data-toggle', 'modal');
+                            lead_funnel_button.attr('data-target', `#lead_funnel_${biolink_block_id}`);
+                        }
+
+                        update_form_content.querySelectorAll('[data-lead-funnel-open-mode-setting]').forEach(element => {
+                            let allowed_modes = (element.getAttribute('data-lead-funnel-open-mode-setting') || '').split(',');
+                            element.classList.toggle('d-none', !allowed_modes.includes(open_mode_select.value));
+                        });
+
+                        lead_funnel_apply_primary_preview_mode();
+                    };
+
+                    /* Custom code: FC-2026-03-23: popup design pickers */
+                    let lead_funnel_popup_container = $('#biolink_preview_iframe').contents().find(`#lead_funnel_${biolink_block_id} [data-lead-funnel-container]`);
+                    let lead_funnel_apply_primary_preview_mode = () => {
+                        let mini_preview = update_form_content.querySelector('[data-lead-funnel-popup-mini-preview]');
+                        let open_mode_select = update_form_content.querySelector('select[name="open_mode"]');
+
+                        if(!mini_preview || !open_mode_select) {
+                            return;
+                        }
+
+                        let mode = open_mode_select.value || 'popup';
+                        let mode_prefix = mode === 'page' ? 'page' : 'popup';
+                        let back_link = mini_preview.querySelector('[data-lead-funnel-preview-back-link]');
+                        let close_button = mini_preview.querySelector('[data-lead-funnel-preview-close]');
+
+                        mini_preview.style.setProperty('--lead-funnel-background-color', update_form_content.querySelector(`input[name="${mode_prefix}_background_color"]`)?.value || '#ffffff');
+                        mini_preview.style.setProperty('--lead-funnel-text-color', update_form_content.querySelector(`input[name="${mode_prefix}_text_color"]`)?.value || '#212529');
+                        mini_preview.style.setProperty('--lead-funnel-button-background-color', update_form_content.querySelector(`input[name="${mode_prefix}_button_background_color"]`)?.value || '#007bff');
+                        mini_preview.style.setProperty('--lead-funnel-button-text-color', update_form_content.querySelector(`input[name="${mode_prefix}_button_text_color"]`)?.value || '#ffffff');
+
+                        if(back_link) {
+                            back_link.classList.toggle('d-none', mode !== 'page');
+                        }
+
+                        if(close_button) {
+                            close_button.classList.toggle('d-none', mode === 'page');
+                        }
+                    };
+
+                    let bind_lead_funnel_popup_pickr = (pickr_selector, input_name, css_variable) => {
+                        let pickr_element = update_form_content.querySelector(pickr_selector);
+                        let color_input = update_form_content.querySelector(`input[name="${input_name}"]`);
+
+                        if(!pickr_element || !color_input) {
+                            return;
+                        }
+
+                        let color_pickr = Pickr.create({
+                            el: pickr_element,
+                            default: $(color_input).val(),
+                            ...pickr_options
+                        });
+
+                        color_pickr.off().on('change', hsva => {
+                            let color = hsva.toHEXA().toString();
+                            $(color_input).val(color);
+
+                            if(lead_funnel_popup_container.length) {
+                                lead_funnel_popup_container.get(0).style.setProperty(css_variable, color);
+                            }
+
+                            let mini_preview = update_form_content.querySelector('[data-lead-funnel-popup-mini-preview]');
+                            if(mini_preview) {
+                                mini_preview.style.setProperty(css_variable, color);
+                            }
+
+                            lead_funnel_apply_primary_preview_mode();
+                        });
+                    };
+
+                    bind_lead_funnel_popup_pickr('.lead_funnel_popup_background_color_pickr', 'popup_background_color', '--lead-funnel-background-color');
+                    bind_lead_funnel_popup_pickr('.lead_funnel_popup_text_color_pickr', 'popup_text_color', '--lead-funnel-text-color');
+                    bind_lead_funnel_popup_pickr('.lead_funnel_popup_button_background_color_pickr', 'popup_button_background_color', '--lead-funnel-button-background-color');
+                    bind_lead_funnel_popup_pickr('.lead_funnel_popup_button_text_color_pickr', 'popup_button_text_color', '--lead-funnel-button-text-color');
+
+                    let bind_lead_funnel_page_pickr = (pickr_selector, input_name) => {
+                        let pickr_element = update_form_content.querySelector(pickr_selector);
+                        let color_input = update_form_content.querySelector(`input[name="${input_name}"]`);
+
+                        if(!pickr_element || !color_input) {
+                            return;
+                        }
+
+                        let color_pickr = Pickr.create({
+                            el: pickr_element,
+                            default: $(color_input).val(),
+                            ...pickr_options
+                        });
+
+                        color_pickr.off().on('change', hsva => {
+                            let color = hsva.toHEXA().toString();
+                            $(color_input).val(color);
+
+                            lead_funnel_apply_primary_preview_mode();
+                        });
+                    };
+
+                    bind_lead_funnel_page_pickr('.lead_funnel_page_background_color_pickr', 'page_background_color');
+                    bind_lead_funnel_page_pickr('.lead_funnel_page_text_color_pickr', 'page_text_color');
+                    bind_lead_funnel_page_pickr('.lead_funnel_page_button_background_color_pickr', 'page_button_background_color');
+                    bind_lead_funnel_page_pickr('.lead_funnel_page_button_text_color_pickr', 'page_button_text_color');
+
+                    let lead_funnel_sanitize_preview_html = raw_html => {
+                        let template = document.createElement('template');
+                        template.innerHTML = raw_html || '';
+
+                        let allowed_tags = new Set(['A', 'B', 'BLOCKQUOTE', 'BR', 'EM', 'I', 'LI', 'OL', 'P', 'S', 'SPAN', 'STRONG', 'U', 'UL']);
+                        let allowed_classes = ['ql-align-', 'ql-font-', 'ql-size-'];
+                        let allowed_style_properties = ['background-color', 'color', 'text-align'];
+
+                        let sanitize_node = node => {
+                            [...node.childNodes].forEach(child => {
+                                if(child.nodeType === Node.TEXT_NODE) {
+                                    return;
+                                }
+
+                                if(child.nodeType !== Node.ELEMENT_NODE) {
+                                    child.remove();
+                                    return;
+                                }
+
+                                if(!allowed_tags.has(child.tagName)) {
+                                    let fragment = document.createDocumentFragment();
+                                    while(child.firstChild) {
+                                        fragment.appendChild(child.firstChild);
+                                    }
+                                    child.replaceWith(fragment);
+                                    sanitize_node(node);
+                                    return;
+                                }
+
+                                [...child.attributes].forEach(attribute => {
+                                    let attribute_name = attribute.name.toLowerCase();
+
+                                    if(attribute_name === 'class') {
+                                        child.className = [...child.classList].filter(class_name => allowed_classes.some(prefix => class_name.startsWith(prefix))).join(' ');
+                                        if(!child.className) {
+                                            child.removeAttribute('class');
+                                        }
+                                        return;
+                                    }
+
+                                    if(attribute_name === 'href' && child.tagName === 'A') {
+                                        return;
+                                    }
+
+                                    if((attribute_name === 'target' || attribute_name === 'rel') && child.tagName === 'A') {
+                                        return;
+                                    }
+
+                                    if(attribute_name === 'data-list' && child.tagName === 'LI') {
+                                        return;
+                                    }
+
+                                    if(attribute_name === 'style') {
+                                        let sanitized_style = attribute.value
+                                            .split(';')
+                                            .map(style_rule => style_rule.trim())
+                                            .filter(style_rule => {
+                                                let [property_name, property_value] = style_rule.split(':');
+
+                                                property_name = property_name?.trim().toLowerCase();
+                                                property_value = property_value?.trim().toLowerCase() || '';
+
+                                                if(!property_name || !allowed_style_properties.includes(property_name)) {
+                                                    return false;
+                                                }
+
+                                                /* Keep preview text readable on light funnel previews by ignoring white-ish text colors. */
+                                                if(property_name === 'color' && ['#fff', '#ffffff', 'white', 'rgb(255,255,255)', 'rgb(255, 255, 255)'].includes(property_value.replace(/\s+/g, ''))) {
+                                                    return false;
+                                                }
+
+                                                return true;
+                                            })
+                                            .join('; ');
+
+                                        if(sanitized_style) {
+                                            child.setAttribute('style', sanitized_style);
+                                        } else {
+                                            child.removeAttribute('style');
+                                        }
+
+                                        return;
+                                    }
+
+                                    child.removeAttribute(attribute.name);
+                                });
+
+                                if(child.tagName === 'A') {
+                                    child.setAttribute('target', '_blank');
+                                    child.setAttribute('rel', 'noopener noreferrer nofollow');
+                                }
+
+                                sanitize_node(child);
+                            });
+                        };
+
+                        sanitize_node(template.content);
+
+                        return template.innerHTML;
+                    };
+
+                    let lead_funnel_render_rich_preview = (element, html) => {
+                        if(!element) {
+                            return;
+                        }
+
+                        let normalized_html = lead_funnel_sanitize_preview_html((html || '').trim());
+                        let is_empty = !normalized_html || normalized_html === '<p><br></p>';
+
+                        element.innerHTML = normalized_html;
+                        element.style.display = is_empty ? 'none' : '';
+                    };
+
+                    let lead_funnel_get_video_embed_url = (provider, video_url) => {
+                        provider = provider || 'youtube';
+                        video_url = (video_url || '').trim();
+
+                        if(!video_url) {
+                            return null;
+                        }
+
+                        if(provider === 'vimeo') {
+                            let vimeo_match = video_url.match(/vimeo\.com\/(?:video\/)?([0-9]+)/i);
+                            return vimeo_match ? `https://player.vimeo.com/video/${vimeo_match[1]}` : null;
+                        }
+
+                        let youtube_match = video_url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([A-Za-z0-9_-]{6,})/i);
+                        return youtube_match ? `https://www.youtube.com/embed/${youtube_match[1]}` : null;
+                    };
+
+                    let lead_funnel_set_popup_preview_screen = screen => {
+                        update_form_content.querySelectorAll('[data-lead-funnel-popup-preview-screen]').forEach(element => {
+                            element.classList.toggle('d-none', element.getAttribute('data-lead-funnel-popup-preview-screen') !== screen);
+                        });
+
+                        update_form_content.querySelectorAll('[data-lead-funnel-popup-preview-screen-toggle]').forEach(element => {
+                            element.classList.toggle('active', element.getAttribute('data-lead-funnel-popup-preview-screen-toggle') === screen);
+                        });
+                    };
+
+                    let lead_funnel_popup_mini_preview_handler = () => {
+                        let mini_preview = update_form_content.querySelector('[data-lead-funnel-popup-mini-preview]');
+
+                        if(!mini_preview) {
+                            return;
+                        }
+
+                        let name_input = update_form_content.querySelector('input[name="name"]');
+                        let title_input = update_form_content.querySelector('input[name="popup_title"]');
+                        let subtitle_input = update_form_content.querySelector('textarea[name="popup_subtitle"]');
+                        let description_input = update_form_content.querySelector('textarea[name="description"]');
+                        let agreement_text_input = update_form_content.querySelector('textarea[name="agreement_text"]');
+                        let agreement_url_input = update_form_content.querySelector('input[name="agreement_url"]');
+                        let button_text_input = update_form_content.querySelector('input[name="button_text"]');
+                        let thank_you_title_input = update_form_content.querySelector('textarea[name="thank_you_title"]');
+                        let thank_you_text_input = update_form_content.querySelector('textarea[name="thank_you_text"]');
+                        let thank_you_type_input = update_form_content.querySelector('select[name="thank_you_type"]');
+                        let thank_you_button_text_input = update_form_content.querySelector('input[name="thank_you_button_text"]');
+                        let video_provider_input = update_form_content.querySelector('select[name="video_provider"]');
+                        let video_url_input = update_form_content.querySelector('input[name="video_url"]');
+                        let image_input = update_form_content.querySelector('input[name="image"]');
+                        let image_remove_input = update_form_content.querySelector('input[name="image_remove"]');
+
+                        let preview_title = mini_preview.querySelector('[data-lead-funnel-popup-mini-preview-title]');
+                        let preview_subtitle = mini_preview.querySelector('[data-lead-funnel-popup-mini-preview-subtitle]');
+                        let preview_description = mini_preview.querySelector('[data-lead-funnel-popup-mini-preview-description]');
+                        let preview_button = mini_preview.querySelector('[data-lead-funnel-popup-mini-preview-button]');
+                        let preview_video_wrapper = mini_preview.querySelector('[data-lead-funnel-popup-mini-preview-video-wrapper]');
+                        let preview_video_label = mini_preview.querySelector('[data-lead-funnel-popup-mini-preview-video-label]');
+                        let preview_video_iframe = mini_preview.querySelector('[data-lead-funnel-popup-mini-preview-video-iframe]');
+                        let preview_video_placeholder = mini_preview.querySelector('[data-lead-funnel-popup-mini-preview-video-placeholder]');
+                        let preview_image_wrapper = mini_preview.querySelector('[data-lead-funnel-popup-mini-preview-image-wrapper]');
+                        let preview_image = mini_preview.querySelector('[data-lead-funnel-popup-mini-preview-image]');
+                        let preview_agreement_wrapper = mini_preview.querySelector('[data-lead-funnel-popup-preview-agreement-wrapper]');
+                        let preview_agreement_text = mini_preview.querySelector('[data-lead-funnel-popup-preview-agreement-text]');
+                        let preview_agreement_link_wrapper = mini_preview.querySelector('[data-lead-funnel-popup-preview-agreement-link-wrapper]');
+                        let preview_thank_you_title = mini_preview.querySelector('[data-lead-funnel-popup-preview-thank-you-title]');
+                        let preview_thank_you_text = mini_preview.querySelector('[data-lead-funnel-popup-preview-thank-you-text]');
+                        let preview_thank_you_button = mini_preview.querySelector('[data-lead-funnel-popup-preview-thank-you-button]');
+
+                        let title = (title_input?.value || '').trim() || (name_input?.value || '').trim();
+                        let button_text = (button_text_input?.value || '').trim() || <?= json_encode(l('biolink_lead_funnel.button_text_default')) ?>;
+                        let subtitle_html = subtitle_input?.value || '';
+                        let description_html = description_input?.value || '';
+                        let agreement_text_html = agreement_text_input?.value || '';
+                        let thank_you_title_html = thank_you_title_input?.value || '';
+                        let thank_you_text_html = thank_you_text_input?.value || '';
+                        let preview_video_embed_url = lead_funnel_get_video_embed_url(video_provider_input?.value, video_url_input?.value);
+                        let has_video = !!(video_url_input?.value || '').trim().length;
+                        let preview_image_source = '';
+
+                        if(image_input?.files?.length) {
+                            preview_image_source = URL.createObjectURL(image_input.files[0]);
+                        } else {
+                            preview_image_source = mini_preview.getAttribute('data-initial-image-src') || preview_image?.getAttribute('src') || '';
+                        }
+
+                        if(image_remove_input?.checked) {
+                            preview_image_source = '';
+                        }
+
+                        if(preview_title) {
+                            preview_title.textContent = title;
+                        }
+
+                        lead_funnel_render_rich_preview(preview_subtitle, subtitle_html);
+                        lead_funnel_render_rich_preview(preview_description, description_html);
+
+                        if(preview_button) {
+                            preview_button.textContent = button_text;
+                        }
+
+                        if(preview_image_wrapper && preview_image) {
+                            preview_image_wrapper.classList.toggle('d-none', !preview_image_source);
+                            if(preview_image_source) {
+                                preview_image.setAttribute('src', preview_image_source);
+                            }
+                        }
+
+                        if(preview_video_wrapper) {
+                            preview_video_wrapper.classList.toggle('d-none', !has_video);
+                        }
+
+                        if(preview_video_label) {
+                            preview_video_label.textContent = ((video_provider_input?.value || 'youtube') + '').toUpperCase();
+                        }
+
+                        if(preview_video_iframe) {
+                            preview_video_iframe.setAttribute('src', preview_video_embed_url || 'about:blank');
+                        }
+
+                        if(preview_video_placeholder) {
+                            preview_video_placeholder.classList.toggle('d-none', !!preview_video_embed_url);
+                        }
+
+                        update_form_content.querySelectorAll('[data-lead-funnel-popup-preview-field]').forEach(element => {
+                            let field = element.getAttribute('data-lead-funnel-popup-preview-field');
+                            let toggle = update_form_content.querySelector(`input[name="show_${field}"]`);
+                            element.classList.toggle('d-none', !toggle?.checked);
+                        });
+
+                        ['email', 'phone', 'name', 'message'].forEach(field => {
+                            let placeholder_input = update_form_content.querySelector(`input[name="${field}_placeholder"]`);
+                            let preview_placeholder = mini_preview.querySelector(`[data-lead-funnel-popup-preview-placeholder="${field}"]`);
+                            if(preview_placeholder) {
+                                preview_placeholder.setAttribute('placeholder', placeholder_input?.value || '');
+                            }
+                        });
+
+                        if(preview_agreement_wrapper) {
+                            preview_agreement_wrapper.classList.toggle('d-none', !update_form_content.querySelector('input[name="show_agreement"]')?.checked);
+                        }
+
+                        lead_funnel_render_rich_preview(preview_agreement_text, agreement_text_html);
+
+                        if(preview_agreement_link_wrapper) {
+                            preview_agreement_link_wrapper.classList.toggle('d-none', !(agreement_url_input?.value || '').trim());
+                        }
+
+                        lead_funnel_render_rich_preview(preview_thank_you_title, thank_you_title_html);
+                        lead_funnel_render_rich_preview(preview_thank_you_text, thank_you_text_html);
+
+                        if(preview_thank_you_button) {
+                            preview_thank_you_button.textContent = (thank_you_button_text_input?.value || '').trim() || <?= json_encode(l('biolink_lead_funnel.thank_you_button_text_default')) ?>;
+                            preview_thank_you_button.classList.toggle('d-none', (thank_you_type_input?.value || 'message') !== 'file_download');
+                        }
+
+                        if(lead_funnel_popup_container.length) {
+                            lead_funnel_popup_container.find('[data-lead-funnel-popup-title]').text(title);
+
+                            let popup_subtitle = lead_funnel_popup_container.find('[data-lead-funnel-popup-subtitle]');
+                            if(popup_subtitle.length) {
+                                let safe_subtitle_html = lead_funnel_sanitize_preview_html(subtitle_html);
+
+                                if((safe_subtitle_html || '').trim() && (safe_subtitle_html || '').trim() !== '<p><br></p>') {
+                                    popup_subtitle.html(safe_subtitle_html).show();
+                                } else {
+                                    popup_subtitle.hide();
+                                }
+                            }
+
+                            let popup_description = lead_funnel_popup_container.find('[data-lead-funnel-popup-description]');
+                            if(popup_description.length) {
+                                let safe_description_html = lead_funnel_sanitize_preview_html(description_html);
+
+                                if((safe_description_html || '').trim() && (safe_description_html || '').trim() !== '<p><br></p>') {
+                                    popup_description.html(safe_description_html).show();
+                                } else {
+                                    popup_description.hide();
+                                }
+                            }
+
+                            lead_funnel_popup_container.find('[data-lead-funnel-submit-button]').text(button_text);
+
+                            let agreement_text = lead_funnel_popup_container.find('[data-lead-funnel-agreement-text]');
+                            if(agreement_text.length) {
+                                let safe_agreement_html = lead_funnel_sanitize_preview_html(agreement_text_html);
+
+                                if((safe_agreement_html || '').trim() && (safe_agreement_html || '').trim() !== '<p><br></p>') {
+                                    agreement_text.html(safe_agreement_html);
+                                } else {
+                                    agreement_text.text('');
+                                }
+                            }
+
+                            let thank_you_title = lead_funnel_popup_container.find('[data-lead-funnel-thank-you-title]');
+                            if(thank_you_title.length) {
+                                let safe_thank_you_title_html = lead_funnel_sanitize_preview_html(thank_you_title_html);
+
+                                if((safe_thank_you_title_html || '').trim() && (safe_thank_you_title_html || '').trim() !== '<p><br></p>') {
+                                    thank_you_title.html(safe_thank_you_title_html).show();
+                                } else {
+                                    thank_you_title.hide();
+                                }
+                            }
+
+                            let thank_you_text = lead_funnel_popup_container.find('[data-lead-funnel-thank-you-text]');
+                            if(thank_you_text.length) {
+                                let safe_thank_you_text_html = lead_funnel_sanitize_preview_html(thank_you_text_html);
+
+                                if((safe_thank_you_text_html || '').trim() && (safe_thank_you_text_html || '').trim() !== '<p><br></p>') {
+                                    thank_you_text.html(safe_thank_you_text_html).show();
+                                } else {
+                                    thank_you_text.hide();
+                                }
+                            }
+
+                            lead_funnel_popup_container.find('[data-thank-you-button]').text((thank_you_button_text_input?.value || '').trim() || <?= json_encode(l('biolink_lead_funnel.thank_you_button_text_default')) ?>);
+                        }
+                    };
+
+                    $(update_form_content.querySelectorAll('input[name="name"], input[name="popup_title"], textarea[name="popup_subtitle"], textarea[name="description"], textarea[name="agreement_text"], input[name="agreement_url"], input[name="button_text"], textarea[name="thank_you_title"], textarea[name="thank_you_text"], input[name="thank_you_button_text"], select[name="thank_you_type"], input[name="video_url"], select[name="video_provider"], input[name="show_name"], input[name="show_email"], input[name="show_phone"], input[name="show_message"], input[name="show_agreement"], input[name="email_placeholder"], input[name="phone_placeholder"], input[name="name_placeholder"], input[name="message_placeholder"], input[name="image"], input[name="image_remove"]')).off().on('input change paste keyup', lead_funnel_popup_mini_preview_handler);
+                    $(update_form_content.querySelectorAll('[data-lead-funnel-popup-preview-screen-toggle]')).off().on('click', event => {
+                        lead_funnel_set_popup_preview_screen(event.currentTarget.getAttribute('data-lead-funnel-popup-preview-screen-toggle'));
+                    });
+                    lead_funnel_set_popup_preview_screen('form');
+                    lead_funnel_apply_primary_preview_mode();
+                    lead_funnel_popup_mini_preview_handler();
+                    /* /Custom code: FC-2026-03-23 */
+
+                    /* Custom code: FC-2026-03-23: conditional thank you settings */
+                    let lead_funnel_thank_you_type_handler = () => {
+                        let thank_you_type_select = update_form_content.querySelector('select[name="thank_you_type"]');
+
+                        if(!thank_you_type_select) {
+                            return;
+                        }
+
+                        update_form_content.querySelectorAll('[data-lead-funnel-thank-you-setting]').forEach(element => {
+                            element.classList.toggle('d-none', element.getAttribute('data-lead-funnel-thank-you-setting') !== thank_you_type_select.value);
+                        });
+                    };
+
+                    $(update_form_content.querySelector('select[name="thank_you_type"]')).off().on('change', lead_funnel_thank_you_type_handler);
+                    lead_funnel_thank_you_type_handler();
+                    /* /Custom code: FC-2026-03-23 */
+
+                    $(update_form_content.querySelector('select[name="open_mode"]')).off().on('change', lead_funnel_open_mode_handler);
+                    lead_funnel_open_mode_handler();
+
                     break;
 
                 case 'custom_html_whatsapp':

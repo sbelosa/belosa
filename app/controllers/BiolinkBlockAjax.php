@@ -30,7 +30,7 @@ class BiolinkBlockAjax extends Controller {
     public $biolink_block = null;
     public $total_biolink_blocks = 0;
     /* Custom code: FC-2026-03-06: remove legacy albania_kosovo alias block from available block types */
-    public $individual_blocks = ['link_app_switcher', 'link_back', 'link_forever_shop', 'link_forever_product', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_discount', 'link_homescreen_android', 'link_homescreen_ios', 'link_save_contact', 'custom_html_chatbot', 'custom_html_chatbot_pets', 'custom_html_whatsapp', 'link', 'featured_link', 'heading', 'big_link', 'paragraph', 'business_hours', 'markdown', 'avatar', 'socials', 'email_collector', 'rss_feed', 'custom_html', 'vcard', 'image', 'image_grid', 'divider', 'list', 'alert', 'faq', 'timeline', 'review', 'image_slider', 'discord', 'countdown', 'cta', 'external_item', 'share', 'coupon', 'youtube_feed', 'paypal', 'phone_collector', 'contact_collector', 'donation', 'product', 'service', 'map', 'iframe', 'header', 'appointment_calendar', 'modal_text', 'image_comparison', 'weather', 'code', 'counter', 'loading'];
+    public $individual_blocks = ['link_app_switcher', 'link_back', 'link_forever_shop', 'link_forever_product', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_discount', 'link_homescreen_android', 'link_homescreen_ios', 'link_save_contact', 'custom_html_chatbot', 'custom_html_chatbot_pets', 'custom_html_whatsapp', 'link', 'featured_link', 'heading', 'big_link', 'paragraph', 'business_hours', 'markdown', 'avatar', 'socials', 'email_collector', 'rss_feed', 'custom_html', 'vcard', 'image', 'image_grid', 'divider', 'list', 'alert', 'faq', 'timeline', 'review', 'image_slider', 'discord', 'countdown', 'cta', 'external_item', 'share', 'coupon', 'youtube_feed', 'paypal', 'phone_collector', 'contact_collector', 'lead_funnel', 'donation', 'product', 'service', 'map', 'iframe', 'header', 'appointment_calendar', 'modal_text', 'image_comparison', 'weather', 'code', 'counter', 'loading'];
     /* /Custom code: FC-2026-03-06 */
     /* Custom code: FC-2026-03-09: restore embeddable block types for Vimeo and other embeds */
     public $embeddable_blocks = ['telegram', 'anchor', 'applemusic', 'soundcloud', 'threads', 'snapchat', 'spotify', 'tidal', 'mixcloud', 'kick', 'tiktok_video', 'vk_video', 'typeform', 'calendly', 'tiktok_profile', 'twitch', 'twitter_tweet', 'twitter_video', 'twitter_profile', 'pinterest_profile', 'vimeo', 'youtube', 'instagram_media', 'facebook', 'reddit', 'rumble', 'tumblr_post', 'bluesky_post', 'canva', 'google_form'];
@@ -199,6 +199,13 @@ class BiolinkBlockAjax extends Controller {
                     }
 
                     break;
+
+                /* Custom code: FC-2026-03-23: lead funnel block phase 1 */
+                case 'lead_funnel':
+                    $biolink_block->settings->image = \Altum\Uploads::copy_uploaded_file($biolink_block->settings->image, 'block_thumbnail_images/', 'block_thumbnail_images/', 'json_error');
+                    $biolink_block->settings->thank_you_file = \Altum\Uploads::copy_uploaded_file($biolink_block->settings->thank_you_file, 'files/', 'files/', 'json_error');
+                    break;
+                /* /Custom code: FC-2026-03-23 */
 
                 default:
                     $biolink_block->settings->image = \Altum\Uploads::copy_uploaded_file($biolink_block->settings->image, 'block_thumbnail_images/', 'block_thumbnail_images/', 'json_error');
@@ -5998,6 +6005,370 @@ class BiolinkBlockAjax extends Controller {
 
         Response::json(l('global.success_message.update2'), 'success', ['images' => ['image' => $image_url]]);
     }
+
+    /* Custom code: FC-2026-03-23: lead funnel block phase 1 */
+    private function create_biolink_lead_funnel() {
+        $_POST['link_id'] = (int) $_POST['link_id'];
+        $_POST['name'] = mb_substr(query_clean($_POST['name']), 0, 128);
+
+        if(!$link = db()->where('link_id', $_POST['link_id'])->where('user_id', $this->user->user_id)->getOne('links')) {
+            die();
+        }
+
+        $type = 'lead_funnel';
+        $settings = json_encode([
+            'name' => $_POST['name'],
+            'image' => '',
+            'text_color' => '#000000',
+            'text_alignment' => 'center',
+            'background_color' => '#ffffff',
+            'border_shadow_style' => 'subtle',
+            'border_shadow_color' => '#00000010',
+            'border_width' => 0,
+            'border_style' => 'solid',
+            'border_color' => '#ffffff',
+            'border_radius' => 'rounded',
+            'animation' => false,
+            'animation_runs' => 'repeat-1',
+            'icon' => '',
+            'open_mode' => 'popup',
+            'popup_background_color' => '#ffffff',
+            'popup_text_color' => '#212529',
+            'popup_button_background_color' => '#007bff',
+            'popup_button_text_color' => '#ffffff',
+            'page_background_color' => '#ffffff',
+            'page_text_color' => '#212529',
+            'page_button_background_color' => '#007bff',
+            'page_button_text_color' => '#ffffff',
+            'popup_title' => $_POST['name'],
+            'popup_subtitle' => '',
+            'description' => '',
+            'video_provider' => 'youtube',
+            'video_url' => '',
+            'show_name' => true,
+            'show_email' => true,
+            'show_phone' => true,
+            'show_message' => true,
+            'require_name' => true,
+            'require_email' => true,
+            'require_phone' => false,
+            'require_message' => false,
+            'email_placeholder' => l('biolink_lead_funnel.email_placeholder_default'),
+            'phone_placeholder' => l('biolink_lead_funnel.phone_placeholder_default'),
+            'name_placeholder' => l('biolink_lead_funnel.name_placeholder_default'),
+            'message_placeholder' => l('biolink_lead_funnel.message_placeholder_default'),
+            'button_text' => l('biolink_lead_funnel.button_text_default'),
+            'success_text' => l('biolink_lead_funnel.success_text_default'),
+            'show_agreement' => false,
+            'agreement_url' => '',
+            'agreement_text' => '',
+            'thank_you_type' => 'message',
+            'thank_you_title' => l('biolink_lead_funnel.thank_you_title_default'),
+            'thank_you_text' => l('biolink_lead_funnel.thank_you_text_default'),
+            'thank_you_url' => '',
+            'thank_you_biolink_id' => null,
+            'thank_you_file' => '',
+            'thank_you_button_text' => l('biolink_lead_funnel.thank_you_button_text_default'),
+            'notifications' => [],
+            'columns' => 1,
+
+            /* Display settings */
+            'display_continents' => [],
+            'display_countries' => [],
+            'display_cities' => [],
+            'display_devices' => [],
+            'display_languages' => [],
+            'display_operating_systems' => [],
+            'display_browsers' => [],
+        ]);
+
+        $settings = $this->process_biolink_theme_id_settings($link, $settings, $type);
+
+        db()->insert('biolinks_blocks', [
+            'user_id' => $this->user->user_id,
+            'link_id' => $_POST['link_id'],
+            'type' => $type,
+            'settings' => $settings,
+            'order' => settings()->links->biolinks_new_blocks_position == 'top' ? -$this->total_biolink_blocks : $this->total_biolink_blocks,
+            'datetime' => get_date(),
+        ]);
+
+        cache()->deleteItem('biolink_blocks?link_id=' . $_POST['link_id']);
+
+        Response::json('', 'success', ['url' => url('link/' . $_POST['link_id'] . '?tab=blocks')]);
+    }
+
+    private function update_biolink_lead_funnel() {
+        $_POST['biolink_block_id'] = (int) $_POST['biolink_block_id'];
+        $_POST['name'] = mb_substr(query_clean($_POST['name']), 0, 128);
+        $_POST['popup_title'] = mb_substr(input_clean($_POST['popup_title'] ?? ''), 0, 128);
+        /* Custom code: FC-2026-03-23: lead funnel rich text sanitizer */
+        $lead_funnel_rich_text_sanitizer = function($content, $max_length = 10000) {
+            $content = quilljs_to_bootstrap($content ?? '');
+
+            /* Custom code: FC-2026-03-23: preserve Quill rich text styles on live lead funnel render */
+            $lead_funnel_class_style_map = [
+                'ql-align-center' => 'text-align:center',
+                'ql-align-right' => 'text-align:right',
+                'ql-align-justify' => 'text-align:justify',
+                'ql-size-small' => 'font-size:0.75em',
+                'ql-size-large' => 'font-size:1.5em',
+                'ql-size-huge' => 'font-size:2.5em',
+                'ql-font-segoe-ui' => 'font-family:\'Segoe UI\',sans-serif',
+                'ql-font-roboto' => 'font-family:\'Roboto\',sans-serif',
+                'ql-font-scriptorama' => 'font-family:\'Scriptorama\',sans-serif',
+                'ql-font-helvetica-neue-medium' => 'font-family:\'Helvetica Neue Medium\',sans-serif',
+                'ql-font-helvetica-neue-lt' => 'font-family:\'Helvetica Neue LT\',sans-serif',
+            ];
+
+            $content = preg_replace_callback('/<([a-z0-9]+)([^>]*)class="([^"]*)"([^>]*)>/i', function($matches) use ($lead_funnel_class_style_map) {
+                $tag = $matches[1];
+                $before = $matches[2];
+                $class_attribute = $matches[3];
+                $after = $matches[4];
+
+                $styles = [];
+
+                foreach($lead_funnel_class_style_map as $class_name => $style_rule) {
+                    if(strpos(' ' . $class_attribute . ' ', ' ' . $class_name . ' ') !== false) {
+                        $styles[] = $style_rule;
+                    }
+                }
+
+                if(empty($styles)) {
+                    return $matches[0];
+                }
+
+                $attributes = $before . 'class="' . $class_attribute . '"' . $after;
+
+                if(preg_match('/style="([^"]*)"/i', $attributes, $style_matches)) {
+                    $merged_styles = rtrim(trim($style_matches[1]), ';');
+                    if($merged_styles !== '') {
+                        $merged_styles .= ';';
+                    }
+
+                    $merged_styles .= implode(';', $styles);
+
+                    $attributes = preg_replace('/style="[^"]*"/i', 'style="' . $merged_styles . '"', $attributes, 1);
+                } else {
+                    $attributes .= ' style="' . implode(';', $styles) . '"';
+                }
+
+                return '<' . $tag . $attributes . '>';
+            }, $content);
+            /* /Custom code: FC-2026-03-23 */
+
+            $lead_funnel_allowed_classes = [
+                'ql-align-center',
+                'ql-align-right',
+                'ql-align-justify',
+                'ql-size-small',
+                'ql-size-large',
+                'ql-size-huge',
+                'ql-font-segoe-ui',
+                'ql-font-roboto',
+                'ql-font-scriptorama',
+                'ql-font-helvetica-neue-medium',
+                'ql-font-helvetica-neue-lt',
+                'ql-color-white',
+            ];
+
+            $config = \HTMLPurifier_Config::createDefault();
+            $config->set('HTML.Allowed', 's[style|class],p[style|class],b[style|class],strong[style|class],i[style|class],em[style|class],u[style|class],strike[style|class],blockquote[style|class],code[style|class],pre[style|class],ul[style|class],ol[style|class],li[style|class],a[href|style|class|target|rel],span[style|class],div[style|class],br');
+            $config->set('CSS.AllowedProperties', [
+                'color',
+                'background-color',
+                'text-align',
+                'font-size',
+                'font-family',
+            ]);
+            $config->set('HTML.AllowedAttributes', 's.class,s.style,p.class,p.style,b.class,b.style,strong.class,strong.style,i.class,i.style,em.class,em.style,u.class,u.style,strike.class,strike.style,blockquote.class,blockquote.style,code.class,code.style,pre.class,pre.style,span.class,span.style,div.class,div.style,li.class,li.style,ul.class,ul.style,ol.class,ol.style,a.href,a.style,a.class,a.target,a.rel');
+            $config->set('Attr.AllowedClasses', $lead_funnel_allowed_classes);
+            $config->set('AutoFormat.AutoParagraph', false);
+            $config->set('AutoFormat.Linkify', true);
+
+            $purifier = new \HTMLPurifier($config);
+            $content = @$purifier->purify($content);
+
+            return mb_substr($content, 0, $max_length);
+        };
+
+        $lead_funnel_inline_rich_text_sanitizer = function($content, $max_length = 10000) use ($lead_funnel_rich_text_sanitizer) {
+            $content = $lead_funnel_rich_text_sanitizer($content, $max_length);
+            $content = preg_replace('/<\/p>\s*<p[^>]*>/i', '<br>', $content);
+            $content = preg_replace('/<p[^>]*>/i', '', $content);
+            $content = preg_replace('/<\/p>/i', '', $content);
+
+            return mb_substr($content, 0, $max_length);
+        };
+
+        $_POST['popup_subtitle'] = $lead_funnel_rich_text_sanitizer($_POST['popup_subtitle'] ?? '');
+        $_POST['description'] = $lead_funnel_rich_text_sanitizer($_POST['description'] ?? '');
+        /* /Custom code: FC-2026-03-23 */
+        $_POST['video_provider'] = in_array($_POST['video_provider'] ?? '', ['youtube', 'vimeo']) ? query_clean($_POST['video_provider']) : 'youtube';
+        $_POST['video_url'] = get_url($_POST['video_url'] ?? '');
+        $_POST['open_mode'] = in_array($_POST['open_mode'] ?? '', ['popup', 'page']) ? query_clean($_POST['open_mode']) : 'popup';
+        $_POST['popup_background_color'] = !verify_hex_color($_POST['popup_background_color'] ?? null) ? '#ffffff' : $_POST['popup_background_color'];
+        $_POST['popup_text_color'] = !verify_hex_color($_POST['popup_text_color'] ?? null) ? '#212529' : $_POST['popup_text_color'];
+        $_POST['popup_button_background_color'] = !verify_hex_color($_POST['popup_button_background_color'] ?? null) ? '#007bff' : $_POST['popup_button_background_color'];
+        $_POST['popup_button_text_color'] = !verify_hex_color($_POST['popup_button_text_color'] ?? null) ? '#ffffff' : $_POST['popup_button_text_color'];
+        $_POST['page_background_color'] = !verify_hex_color($_POST['page_background_color'] ?? null) ? '#ffffff' : $_POST['page_background_color'];
+        $_POST['page_text_color'] = !verify_hex_color($_POST['page_text_color'] ?? null) ? '#212529' : $_POST['page_text_color'];
+        $_POST['page_button_background_color'] = !verify_hex_color($_POST['page_button_background_color'] ?? null) ? '#007bff' : $_POST['page_button_background_color'];
+        $_POST['page_button_text_color'] = !verify_hex_color($_POST['page_button_text_color'] ?? null) ? '#ffffff' : $_POST['page_button_text_color'];
+        $_POST['border_radius'] = in_array($_POST['border_radius'], ['straight', 'round', 'rounded']) ? query_clean($_POST['border_radius']) : 'rounded';
+        $_POST['border_width'] = in_array($_POST['border_width'], [0, 1, 2, 3, 4, 5]) ? (int) $_POST['border_width'] : 0;
+        $_POST['border_style'] = in_array($_POST['border_style'], ['solid', 'dashed', 'double', 'inset', 'outset']) ? query_clean($_POST['border_style']) : 'solid';
+        $_POST['border_color'] = !verify_hex_color($_POST['border_color']) ? '#000000' : $_POST['border_color'];
+        $_POST['border_shadow_style'] = in_array($_POST['border_shadow_style'], ['none', 'subtle', 'strong', 'hard']) ? query_clean($_POST['border_shadow_style']) : 'none';
+        $_POST['border_shadow_color'] = !verify_hex_color($_POST['border_shadow_color']) ? '#000000' : $_POST['border_shadow_color'];
+        $_POST['animation'] = in_array($_POST['animation'], require APP_PATH . 'includes/biolink_animations.php') || $_POST['animation'] == 'false' ? query_clean($_POST['animation']) : false;
+        $_POST['animation_runs'] = isset($_POST['animation_runs']) && in_array($_POST['animation_runs'], ['repeat-1', 'repeat-2', 'repeat-3', 'infinite']) ? query_clean($_POST['animation_runs']) : false;
+        $_POST['icon'] = query_clean($_POST['icon']);
+        $_POST['text_color'] = !verify_hex_color($_POST['text_color']) ? '#000000' : $_POST['text_color'];
+        $_POST['text_alignment'] = in_array($_POST['text_alignment'], ['center', 'left', 'right', 'justify']) ? query_clean($_POST['text_alignment']) : 'center';
+        $_POST['background_color'] = !verify_hex_color($_POST['background_color']) ? '#ffffff' : $_POST['background_color'];
+        $_POST['name_placeholder'] = mb_substr(query_clean($_POST['name_placeholder'] ?? ''), 0, 64);
+        $_POST['email_placeholder'] = mb_substr(query_clean($_POST['email_placeholder'] ?? ''), 0, 64);
+        $_POST['phone_placeholder'] = mb_substr(query_clean($_POST['phone_placeholder'] ?? ''), 0, 64);
+        $_POST['message_placeholder'] = mb_substr(query_clean($_POST['message_placeholder'] ?? ''), 0, 128);
+        $_POST['button_text'] = input_clean($_POST['button_text'] ?? '', 64);
+        $_POST['success_text'] = mb_substr(query_clean($_POST['success_text'] ?? ''), 0, 256);
+        $_POST['show_name'] = (int) isset($_POST['show_name']);
+        $_POST['show_email'] = (int) isset($_POST['show_email']);
+        $_POST['show_phone'] = (int) isset($_POST['show_phone']);
+        $_POST['show_message'] = (int) isset($_POST['show_message']);
+        $_POST['require_name'] = (int) isset($_POST['require_name']);
+        $_POST['require_email'] = (int) isset($_POST['require_email']);
+        $_POST['require_phone'] = (int) isset($_POST['require_phone']);
+        $_POST['require_message'] = (int) isset($_POST['require_message']);
+        $_POST['show_agreement'] = (int) isset($_POST['show_agreement']);
+        $_POST['agreement_url'] = get_url($_POST['agreement_url'] ?? '');
+        $_POST['agreement_text'] = $lead_funnel_inline_rich_text_sanitizer($_POST['agreement_text'] ?? '');
+        $_POST['thank_you_type'] = in_array($_POST['thank_you_type'] ?? '', ['message', 'external_url', 'biolink_redirect', 'file_download']) ? query_clean($_POST['thank_you_type']) : 'message';
+        $_POST['thank_you_title'] = $lead_funnel_inline_rich_text_sanitizer($_POST['thank_you_title'] ?? '');
+        $_POST['thank_you_text'] = $lead_funnel_rich_text_sanitizer($_POST['thank_you_text'] ?? '');
+        $_POST['thank_you_url'] = get_url($_POST['thank_you_url'] ?? '');
+        $_POST['thank_you_biolink_id'] = !empty($_POST['thank_you_biolink_id']) ? (int) $_POST['thank_you_biolink_id'] : null;
+        $_POST['thank_you_button_text'] = input_clean($_POST['thank_you_button_text'] ?? '', 64);
+        $_POST['columns'] = isset($_POST['columns']) && in_array($_POST['columns'], [1, 2]) ? (int) $_POST['columns'] : 1;
+
+        if(!($_POST['show_name'] || $_POST['show_email'] || $_POST['show_phone'] || $_POST['show_message'])) {
+            Response::json(l('global.error_message.empty_fields'), 'error');
+        }
+
+        if($_POST['thank_you_type'] == 'external_url' && empty($_POST['thank_you_url'])) {
+            Response::json(l('global.error_message.empty_fields'), 'error');
+        }
+
+        if($_POST['thank_you_type'] == 'biolink_redirect') {
+            $selected_biolink = $_POST['thank_you_biolink_id']
+                ? db()->where('link_id', $_POST['thank_you_biolink_id'])->where('user_id', $this->user->user_id)->where('type', 'biolink')->getOne('links', ['link_id'])
+                : null;
+
+            if(!$selected_biolink) {
+                Response::json(l('global.error_message.empty_fields'), 'error');
+            }
+        }
+
+        $notification_handlers = (new \Altum\Models\NotificationHandlers())->get_notification_handlers_by_user_id($this->user->user_id);
+        $_POST['notifications'] = array_map(
+            'intval',
+            array_filter($_POST['notifications'] ?? [], function($notification_handler_id) use($notification_handlers) {
+                return array_key_exists($notification_handler_id, $notification_handlers);
+            })
+        );
+
+        $this->process_display_settings();
+
+        $biolink_block = $this->biolink_block;
+        $db_image = $this->handle_image_upload($biolink_block->settings->image, 'block_thumbnail_images/', settings()->links->thumbnail_image_size_limit);
+        $db_file = $this->handle_file_upload($biolink_block->settings->thank_you_file ?? null, 'thank_you_file', 'thank_you_file_remove', $this->biolink_blocks['lead_funnel']['whitelisted_file_extensions'], 'files/', settings()->links->file_size_limit);
+
+        if($_POST['thank_you_type'] == 'file_download' && empty($db_file)) {
+            Response::json(l('global.error_message.empty_fields'), 'error');
+        }
+
+        $image_url = $db_image ? \Altum\Uploads::get_full_url('block_thumbnail_images') . $db_image : null;
+
+        $settings = json_encode([
+            'name' => $_POST['name'],
+            'image' => $db_image,
+            'text_color' => $_POST['text_color'],
+            'text_alignment' => $_POST['text_alignment'],
+            'background_color' => $_POST['background_color'],
+            'border_radius' => $_POST['border_radius'],
+            'border_width' => $_POST['border_width'],
+            'border_style' => $_POST['border_style'],
+            'border_color' => $_POST['border_color'],
+            'border_shadow_style' => $_POST['border_shadow_style'],
+            'border_shadow_color' => $_POST['border_shadow_color'],
+            'animation' => $_POST['animation'],
+            'animation_runs' => $_POST['animation_runs'],
+            'icon' => $_POST['icon'],
+            'open_mode' => $_POST['open_mode'],
+            'popup_background_color' => $_POST['popup_background_color'],
+            'popup_text_color' => $_POST['popup_text_color'],
+            'popup_button_background_color' => $_POST['popup_button_background_color'],
+            'popup_button_text_color' => $_POST['popup_button_text_color'],
+            'page_background_color' => $_POST['page_background_color'],
+            'page_text_color' => $_POST['page_text_color'],
+            'page_button_background_color' => $_POST['page_button_background_color'],
+            'page_button_text_color' => $_POST['page_button_text_color'],
+            'popup_title' => $_POST['popup_title'] ?: $_POST['name'],
+            'popup_subtitle' => $_POST['popup_subtitle'],
+            'description' => $_POST['description'],
+            'video_provider' => $_POST['video_provider'],
+            'video_url' => $_POST['video_url'],
+            'show_name' => $_POST['show_name'],
+            'show_email' => $_POST['show_email'],
+            'show_phone' => $_POST['show_phone'],
+            'show_message' => $_POST['show_message'],
+            'require_name' => $_POST['require_name'],
+            'require_email' => $_POST['require_email'],
+            'require_phone' => $_POST['require_phone'],
+            'require_message' => $_POST['require_message'],
+            'name_placeholder' => $_POST['name_placeholder'],
+            'email_placeholder' => $_POST['email_placeholder'],
+            'phone_placeholder' => $_POST['phone_placeholder'],
+            'message_placeholder' => $_POST['message_placeholder'],
+            'button_text' => $_POST['button_text'],
+            'success_text' => $_POST['success_text'],
+            'show_agreement' => $_POST['show_agreement'],
+            'agreement_url' => $_POST['agreement_url'],
+            'agreement_text' => $_POST['agreement_text'],
+            'thank_you_type' => $_POST['thank_you_type'],
+            'thank_you_title' => $_POST['thank_you_title'],
+            'thank_you_text' => $_POST['thank_you_text'],
+            'thank_you_url' => $_POST['thank_you_url'],
+            'thank_you_biolink_id' => $_POST['thank_you_biolink_id'],
+            'thank_you_file' => $db_file,
+            'thank_you_button_text' => $_POST['thank_you_button_text'],
+            'notifications' => $_POST['notifications'],
+            'columns' => $_POST['columns'],
+
+            /* Display settings */
+            'display_continents' => $_POST['display_continents'],
+            'display_countries' => $_POST['display_countries'],
+            'display_cities' => $_POST['display_cities'],
+            'display_devices' => $_POST['display_devices'],
+            'display_languages' => $_POST['display_languages'],
+            'display_operating_systems' => $_POST['display_operating_systems'],
+            'display_browsers' => $_POST['display_browsers'],
+        ]);
+
+        db()->where('biolink_block_id', $_POST['biolink_block_id'])->update('biolinks_blocks', [
+            'settings' => $settings,
+            'start_date' => $_POST['start_date'],
+            'end_date' => $_POST['end_date'],
+            'last_datetime' => get_date(),
+        ]);
+
+        cache()->deleteItem('biolink_blocks?link_id=' . $biolink_block->link_id);
+
+        Response::json(l('global.success_message.update2'), 'success', ['images' => ['image' => $image_url]]);
+    }
+    /* /Custom code: FC-2026-03-23 */
 
     private function create_biolink_appointment_calendar() {
         $_POST['link_id'] = (int) $_POST['link_id'];
