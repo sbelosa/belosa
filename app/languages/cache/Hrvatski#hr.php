@@ -904,7 +904,7 @@ return [
 	'funnels_analytics.analytics_moved_help' => 'Lead funnel analitika sada živi na zasebnoj stranici kako bi svi sadašnji i budući funneli bili na jednom mjestu.',
 	'funnels_analytics.open_page' => 'Otvori stranicu funnels analitike',
 	'plan_features.forever.group' => 'FCC i Forever alati',
-	'plan_features.forever.label.lead_funnel' => 'FCC Funnel obrasci',
+	'plan_features.forever.label.lead_funnel' => 'FCC Funnel sistem',
 	'plan_features.forever.help.lead_funnel' => 'Kreirajte funnel stranice i popup obrasce za prikupljanje leadova unutar FCC aplikacija.',
 	'plan_features.forever.label.funnels_analytics_is_enabled' => 'Funnels analitika',
 	'plan_features.forever.help.funnels_analytics_is_enabled' => 'Centralni pregled prijava, izvora prometa i performansi za sve vaše FCC Funnel blokove.',
