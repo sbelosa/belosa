@@ -960,7 +960,7 @@ return [
 	/* /Custom code: FC-2026-03-23 */
 	/* Custom code: FC-2026-03-23: pricing labels and help for FCC and Forever plan features */
 	'plan_features.forever.group' => 'FCC i Forever alati',
-	'plan_features.forever.label.lead_funnel' => 'FCC Funnel obrasci',
+	'plan_features.forever.label.lead_funnel' => 'FCC Funnel sistem',
 	'plan_features.forever.help.lead_funnel' => 'Kreirajte funnel stranice i popup obrasce za prikupljanje leadova unutar FCC aplikacija.',
 	'plan_features.forever.label.funnels_analytics_is_enabled' => 'Funnels analitika',
 	'plan_features.forever.help.funnels_analytics_is_enabled' => 'Centralni pregled prijava, izvora prometa i performansi za sve vaše FCC Funnel blokove.',
