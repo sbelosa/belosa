@@ -115,6 +115,37 @@
     </div>
 </div>
 
+<?php if(!empty($data->homepage_semantics)): ?>
+    <!-- Custom code: FC-2026-03-24: homepage semantic summary -->
+    <div class="container mt-6">
+        <section class="card index-highly-rounded border-0 bg-gray-900 fcc-home-summary" data-aos="fade-up">
+            <div class="card-body fcc-home-summary__inner py-5 py-lg-5">
+                <div class="fcc-home-summary__copy">
+                    <div class="index-icon-container mb-3">
+                        <i class="fas fa-fw fa-id-card fa-sm"></i>
+                    </div>
+                    <div class="fcc-home-summary__eyebrow"><?= $data->homepage_semantics['term_name'] ?></div>
+                    <h2><?= $data->homepage_semantics['hero_heading'] ?></h2>
+                    <p><?= $data->homepage_semantics['hero_summary'] ?></p>
+                </div>
+
+                <div class="fcc-home-summary__facts">
+                    <?php foreach($data->homepage_semantics['facts'] as $fact): ?>
+                        <div class="fcc-home-summary__fact"><?= $fact ?></div>
+                    <?php endforeach ?>
+                </div>
+
+                <div class="fcc-home-summary__links">
+                    <?php foreach($data->homepage_semantics['hub_pages'] as $hub_page): ?>
+                        <a href="<?= $hub_page['url'] ?>" class="fcc-home-summary__link"><?= $hub_page['name'] ?></a>
+                    <?php endforeach ?>
+                </div>
+            </div>
+        </section>
+    </div>
+    <!-- /Custom code: FC-2026-03-24 -->
+<?php endif ?>
+
 <!-- Custom code: FC-2026-02-27: restore smaller presentation header icons -->
 <?php if(settings()->links->biolinks_is_enabled): ?>
     <div class="container mt-6">
@@ -1106,6 +1137,130 @@
 
 <?php ob_start() ?>
 <link rel="stylesheet" href="<?= ASSETS_FULL_URL . 'css/libraries/aos.min.css?v=' . PRODUCT_CODE ?>">
+<style>
+    .fcc-home-summary {
+        position: relative;
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        background:
+            radial-gradient(circle at top left, rgba(63, 216, 161, 0.08), transparent 26%),
+            radial-gradient(circle at bottom right, rgba(74, 167, 255, 0.12), transparent 24%),
+            linear-gradient(180deg, rgba(20, 21, 25, 0.98) 0%, rgba(13, 14, 18, 0.98) 100%);
+        box-shadow: 0 1.25rem 3rem rgba(0, 0, 0, 0.26);
+    }
+
+    .fcc-home-summary::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background:
+            linear-gradient(135deg, rgba(255, 255, 255, 0.03), transparent 36%),
+            linear-gradient(315deg, rgba(255, 255, 255, 0.02), transparent 34%);
+        pointer-events: none;
+    }
+
+    .fcc-home-summary__inner {
+        position: relative;
+        display: grid;
+        gap: 1.5rem;
+    }
+
+    .fcc-home-summary__eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.85rem;
+        color: rgba(104, 232, 188, 0.92);
+        font-size: 0.8rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+    }
+
+    .fcc-home-summary__copy h2 {
+        margin-bottom: 0.85rem;
+        color: #f7f9fc;
+        font-size: clamp(1.7rem, 3vw, 2.4rem);
+        line-height: 1.15;
+    }
+
+    .fcc-home-summary__copy p {
+        max-width: 52rem;
+        margin-bottom: 0;
+        color: rgba(214, 220, 232, 0.78);
+        font-size: 1rem;
+        line-height: 1.75;
+    }
+
+    .fcc-home-summary__facts {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 0.85rem;
+    }
+
+    .fcc-home-summary__fact {
+        padding: 1rem 1.1rem;
+        border-radius: 1rem;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        color: rgba(244, 247, 252, 0.92);
+        font-weight: 500;
+        line-height: 1.6;
+        backdrop-filter: blur(6px);
+    }
+
+    .fcc-home-summary__links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+    }
+
+    .fcc-home-summary__link {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 2.75rem;
+        padding: 0.75rem 1rem;
+        border-radius: 999px;
+        border: 1px solid rgba(255, 255, 255, 0.09);
+        background: rgba(255, 255, 255, 0.04);
+        color: #f7f9fc !important;
+        font-weight: 600;
+        text-decoration: none !important;
+        transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+    }
+
+    .fcc-home-summary__link:hover,
+    .fcc-home-summary__link:focus {
+        transform: translateY(-1px);
+        border-color: rgba(104, 232, 188, 0.34);
+        background: rgba(104, 232, 188, 0.12);
+        box-shadow: 0 0.75rem 2rem rgba(0, 0, 0, 0.2);
+    }
+
+    .fcc-home-summary .index-icon-container {
+        background: rgba(104, 232, 188, 0.14);
+        color: rgba(104, 232, 188, 0.96);
+    }
+
+    @media (max-width: 767px) {
+        .fcc-home-summary__inner {
+            gap: 1rem;
+        }
+
+        .fcc-home-summary__facts {
+            grid-template-columns: 1fr;
+        }
+
+        .fcc-home-summary__links {
+            flex-direction: column;
+        }
+
+        .fcc-home-summary__link {
+            width: 100%;
+        }
+    }
+</style>
 <?php \Altum\Event::add_content(ob_get_clean(), 'head') ?>
 
 <?php ob_start() ?>
@@ -1189,13 +1344,60 @@
     <?php if(settings()->main->{'logo_' . \Altum\ThemeStyle::get()}): ?>
         "logo": "<?= settings()->main->{'logo_' . \Altum\ThemeStyle::get() . '_full_url'} ?>",
         <?php endif ?>
-    "slogan": "<?= l('index.header') ?>",
+    "slogan": "<?= $data->homepage_semantics['hero_heading'] ?? l('index.header') ?>",
         "contactPoint": {
             "@type": "ContactPoint",
             "url": "<?= url('contact') ?>",
             "contactType": "Contact us"
         }
     }
+</script>
+
+<script type="application/ld+json">
+    <?php
+    $homepage_schema = [
+        '@context' => 'https://schema.org',
+        '@type' => 'WebPage',
+        'name' => $data->homepage_semantics['title'] ?? l('index.title'),
+        'description' => $data->homepage_semantics['description'] ?? l('index.meta_description'),
+        'url' => url(),
+        'inLanguage' => \Altum\Language::$name,
+    ];
+
+    if(!empty($data->homepage_semantics)) {
+        $homepage_schema['about'] = [
+            '@type' => 'DefinedTerm',
+            'name' => $data->homepage_semantics['term_name'],
+            'alternateName' => $data->homepage_semantics['term_alternate_names'],
+            'description' => $data->homepage_semantics['term_description'],
+            'inDefinedTermSet' => url('pages/foreverclub'),
+        ];
+    }
+    ?>
+    <?= json_encode($homepage_schema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?>
+</script>
+
+<script type="application/ld+json">
+    <?php
+    $homepage_item_list = [
+        '@context' => 'https://schema.org',
+        '@type' => 'ItemList',
+        'name' => $data->homepage_semantics['term_name'] ?? settings()->main->title,
+        'itemListElement' => [],
+    ];
+
+    if(!empty($data->homepage_semantics['hub_pages'])) {
+        foreach($data->homepage_semantics['hub_pages'] as $index => $hub_page) {
+            $homepage_item_list['itemListElement'][] = [
+                '@type' => 'ListItem',
+                'position' => $index + 1,
+                'name' => $hub_page['name'],
+                'url' => $hub_page['url'],
+            ];
+        }
+    }
+    ?>
+    <?= json_encode($homepage_item_list, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?>
 </script>
 
 <script type="application/ld+json">
@@ -1206,11 +1408,11 @@
             {
                 "@type": "ListItem",
                 "position": 1,
-                "name": "<?= l('index.title') ?>",
-                    "item": "<?= url() ?>"
-                }
-            ]
-        }
+                "name": "<?= $data->homepage_semantics['title'] ?? l('index.title') ?>",
+                "item": "<?= url() ?>"
+            }
+        ]
+    }
 </script>
 
 <?php if(settings()->main->display_index_faq): ?>
