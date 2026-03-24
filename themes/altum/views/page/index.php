@@ -72,6 +72,23 @@ $fcc_info_note = $fcc_is_hr
         </section>
     <?php endif ?>
 
+    <?php if(!empty($data->is_foreverclub_page) && !empty($data->foreverclub_semantics)): ?>
+        <!-- Custom code: FC-2026-03-24: foreverclub semantic summary block -->
+        <section class="fcc-page-summary">
+            <div class="fcc-page-summary__inner">
+                <h2><?= $data->foreverclub_semantics['heading'] ?></h2>
+                <p><?= $data->foreverclub_semantics['summary'] ?></p>
+
+                <ul>
+                    <?php foreach($data->foreverclub_semantics['facts'] as $fact): ?>
+                        <li><?= $fact ?></li>
+                    <?php endforeach ?>
+                </ul>
+            </div>
+        </section>
+        <!-- /Custom code: FC-2026-03-24 -->
+    <?php endif ?>
+
     <section class="fcc-page-content">
         <div class="fcc-page-content__inner <?= $data->page->editor == 'wysiwyg' ? 'ql-content' : null ?>">
             <?= $data->page->content ?>
@@ -108,6 +125,32 @@ $fcc_info_note = $fcc_is_hr
                 </div>
             </div>
         </section>
+    <?php endif ?>
+
+    <?php if(!empty($data->is_foreverclub_page) && !empty($data->related_pages)): ?>
+        <!-- Custom code: FC-2026-03-24: foreverclub related pages cluster -->
+        <section class="fcc-related-pages">
+            <div class="fcc-related-pages__head">
+                <h2><?= $fcc_is_hr ? 'Povezane stranice' : 'Related pages' ?></h2>
+                <p><?= $fcc_is_hr ? 'Dodatna objašnjenja i vodiči unutar Forever Card Club kategorije.' : 'Additional guides and explanations inside the Forever Card Club category.' ?></p>
+            </div>
+
+            <div class="fcc-related-grid">
+                <?php foreach($data->related_pages as $row): ?>
+                    <?php $row_url = $row->type == 'internal' ? SITE_URL . ($row->language ? \Altum\Language::$active_languages[$row->language] . '/' : null) . 'page/' . $row->url : $row->url; ?>
+                    <a href="<?= $row_url ?>" class="fcc-related-card">
+                        <div>
+                            <h3><?= $row->title ?></h3>
+                            <?php if(!empty($row->description)): ?>
+                                <p><?= $row->description ?></p>
+                            <?php endif ?>
+                        </div>
+                        <span><?= $fcc_is_hr ? 'Otvori' : 'Open' ?></span>
+                    </a>
+                <?php endforeach ?>
+            </div>
+        </section>
+        <!-- /Custom code: FC-2026-03-24 -->
     <?php endif ?>
     <!-- /Custom code: FC-2026-02-25 -->
 </div>
@@ -219,6 +262,94 @@ $fcc_info_note = $fcc_is_hr
 
     .fcc-page-share {
         margin-top: 22px;
+    }
+
+    .fcc-page-summary {
+        margin-top: 24px;
+    }
+
+    .fcc-page-summary__inner {
+        background: linear-gradient(160deg, rgba(20, 26, 38, 0.96), rgba(10, 14, 20, 0.98));
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 20px;
+        padding: 24px 28px;
+        box-shadow: 0 16px 36px rgba(0, 0, 0, 0.34);
+    }
+
+    .fcc-page-summary__inner h2 {
+        color: #f5f7ff;
+        margin-bottom: 10px;
+    }
+
+    .fcc-page-summary__inner p,
+    .fcc-page-summary__inner li {
+        color: rgba(228, 233, 243, 0.82);
+        line-height: 1.7;
+    }
+
+    .fcc-page-summary__inner ul {
+        margin: 14px 0 0;
+        padding-left: 18px;
+    }
+
+    .fcc-related-pages {
+        margin-top: 24px;
+    }
+
+    .fcc-related-pages__head h2 {
+        color: rgba(255, 255, 255, 0.94);
+        margin-bottom: 6px;
+    }
+
+    .fcc-related-pages__head p {
+        color: rgba(219, 225, 238, 0.68);
+        margin-bottom: 16px;
+    }
+
+    .fcc-related-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 18px;
+    }
+
+    .fcc-related-card {
+        background: linear-gradient(160deg, rgba(18, 24, 34, 0.96), rgba(10, 14, 20, 0.98));
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 18px;
+        padding: 18px 20px;
+        text-decoration: none;
+        color: inherit;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        min-height: 180px;
+        transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .fcc-related-card:hover {
+        transform: translateY(-4px);
+        border-color: rgba(255, 198, 0, 0.35);
+        box-shadow: 0 14px 32px rgba(0, 0, 0, 0.35);
+    }
+
+    .fcc-related-card h3 {
+        color: #f4f7ff;
+        font-size: 1.05rem;
+        margin-bottom: 8px;
+    }
+
+    .fcc-related-card p {
+        color: rgba(216, 222, 236, 0.7);
+        line-height: 1.6;
+        margin: 0;
+    }
+
+    .fcc-related-card span {
+        margin-top: auto;
+        color: #ffc600;
+        text-transform: uppercase;
+        letter-spacing: 0.18em;
+        font-size: 0.78rem;
     }
 
     .fcc-page-share__inner {

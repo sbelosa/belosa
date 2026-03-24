@@ -52,6 +52,23 @@ $fcc_pages_category_cta = $fcc_is_hr_language ? 'Saznaj više' : 'Learn more';
         </div>
     </section>
 
+    <?php if(!empty($data->foreverclub_semantics)): ?>
+        <!-- Custom code: FC-2026-03-24: foreverclub semantic summary block -->
+        <section class="fcc-pages-summary">
+            <div class="fcc-pages-summary__inner">
+                <h2><?= $data->foreverclub_semantics['heading'] ?></h2>
+                <p><?= $data->foreverclub_semantics['summary'] ?></p>
+
+                <ul>
+                    <?php foreach($data->foreverclub_semantics['facts'] as $fact): ?>
+                        <li><?= $fact ?></li>
+                    <?php endforeach ?>
+                </ul>
+            </div>
+        </section>
+        <!-- /Custom code: FC-2026-03-24 -->
+    <?php endif ?>
+
     <?php if (!empty($data->pages)): ?>
         <div class="fcc-pages-grid">
             <?php foreach($data->pages as $row): ?>
@@ -181,6 +198,34 @@ $fcc_pages_category_cta = $fcc_is_hr_language ? 'Saznaj više' : 'Learn more';
         gap: 22px;
     }
 
+    .fcc-pages-summary {
+        margin-bottom: 28px;
+    }
+
+    .fcc-pages-summary__inner {
+        background: linear-gradient(160deg, rgba(18, 24, 34, 0.96), rgba(10, 14, 22, 0.98));
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 20px;
+        padding: 24px 28px;
+        box-shadow: 0 16px 36px rgba(0, 0, 0, 0.36);
+    }
+
+    .fcc-pages-summary__inner h2 {
+        color: #f5f7ff;
+        margin-bottom: 10px;
+    }
+
+    .fcc-pages-summary__inner p,
+    .fcc-pages-summary__inner li {
+        color: rgba(223, 228, 240, 0.8);
+        line-height: 1.7;
+    }
+
+    .fcc-pages-summary__inner ul {
+        margin: 14px 0 0;
+        padding-left: 18px;
+    }
+
     .fcc-page-card {
         background: linear-gradient(160deg, rgba(22, 28, 40, 0.95), rgba(12, 16, 24, 0.98));
         border: 1px solid rgba(255, 255, 255, 0.06);
@@ -298,4 +343,39 @@ $fcc_pages_category_cta = $fcc_is_hr_language ? 'Saznaj više' : 'Learn more';
             ]
         }
 </script>
+<?php \Altum\Event::add_content(ob_get_clean(), 'javascript') ?>
+
+<?php ob_start() ?>
+<!-- Custom code: FC-2026-03-24: pages category ItemList schema -->
+<script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "CollectionPage",
+        "name": <?= json_encode($data->pages_category->title) ?>,
+        "description": <?= json_encode($data->pages_category->description ?: $fcc_pages_category_subtitle_fallback) ?>,
+        "url": <?= json_encode($data->pages_category_url) ?>,
+        <?php if(!empty($data->foreverclub_semantics)): ?>
+        "about": {
+            "@type": "DefinedTerm",
+            "name": <?= json_encode($data->foreverclub_semantics['term_name']) ?>,
+            "alternateName": <?= json_encode($data->foreverclub_semantics['term_alternate_names']) ?>,
+            "description": <?= json_encode($data->foreverclub_semantics['term_description']) ?>
+        },
+        <?php endif ?>
+        "hasPart": {
+            "@type": "ItemList",
+            "itemListElement": [
+                <?php foreach(array_values($data->pages ?? []) as $index => $row): ?>
+                {
+                    "@type": "ListItem",
+                    "position": <?= $index + 1 ?>,
+                    "url": <?= json_encode($row->type == 'internal' ? SITE_URL . ($row->language ? \Altum\Language::$active_languages[$row->language] . '/' : null) . 'page/' . $row->url : $row->url) ?>,
+                    "name": <?= json_encode($row->title) ?>
+                }<?= $index + 1 < count($data->pages ?? []) ? ',' : null ?>
+                <?php endforeach ?>
+            ]
+        }
+    }
+</script>
+<!-- /Custom code: FC-2026-03-24 -->
 <?php \Altum\Event::add_content(ob_get_clean(), 'javascript') ?>

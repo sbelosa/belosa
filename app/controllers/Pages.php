@@ -114,19 +114,91 @@ class Pages extends Controller {
                 }
             }
 
+            /* Custom code: FC-2026-03-24: strengthen category SEO metadata for content hubs */
+            $pages = array_values($pages);
+
+            $pages_category_url = SITE_URL . ($pages_category->language ? ((\Altum\Language::$active_languages[$pages_category->language] ?? null) ? \Altum\Language::$active_languages[$pages_category->language] . '/' : null) : null) . 'pages/' . $pages_category->url;
+            $meta_title = $pages_category->title;
+            $meta_description = $pages_category->description ?: 'Browse all articles and resources from this content hub.';
+            $meta_keywords = null;
+            $social_image = null;
+            $foreverclub_semantics = null;
+
+            foreach($pages as $page) {
+                if(!empty($page->image_url)) {
+                    $social_image = $page->image_url;
+                    break;
+                }
+            }
+
+            if($pages_category->url === 'foreverclub') {
+                if(\Altum\Language::$code === 'hr') {
+                    $meta_title = 'Forever Card Club vodiči, FAQ i kako sustav radi';
+                    $meta_description = 'Saznaj što je Forever Card Club, kako sustav radi i pronađi vodiče, FAQ i objašnjenja za pametne linkove, edukaciju, AI podršku i online razvoj Forever poslovanja.';
+                    $meta_keywords = 'Forever Card Club, što je Forever Card Club, kako radi Forever Card Club, FAQ Forever Card Club, Forever poslovanje online, smart linkovi Forever, AI alati za Forever';
+                    $foreverclub_semantics = [
+                        'heading' => 'Što je Forever Card Club?',
+                        'summary' => 'Forever Card Club je neovisni digitalni sustav za Forever partnere koji spaja osobnu aplikaciju, pametne linkove, AI podršku, edukaciju, analitiku i fizičku NFC karticu u jedan poslovni proces.',
+                        'facts' => [
+                            'Forever Card Club nije službena stranica kompanije Forever Living Products, nego neovisni sustav za partnere.',
+                            'Forever Card označava partnerovu personaliziranu aplikaciju i povezanu fizičku NFC karticu koja vodi na isti digitalni sustav.',
+                            'Kupnja proizvoda odvija se preko službenog Forever web shopa u državi kupca.',
+                            'Sustav je namijenjen za online i offline prezentaciju proizvoda, preporuke i razvoj Forever poslovanja.'
+                        ],
+                        'term_name' => 'Forever Card Club',
+                        'term_alternate_names' => ['FCC', 'Forever Card', 'Forever Card aplikacija'],
+                        'term_description' => 'Forever Card Club je neovisni digitalni sustav za Forever partnere koji uključuje osobnu aplikaciju, pametne linkove, AI alate, edukaciju, analitiku i fizičku NFC karticu povezanu s partnerovim sadržajem i preporukama.'
+                    ];
+                } else {
+                    $meta_title = 'Forever Card Club Guides, FAQ and How It Works';
+                    $meta_description = 'Learn what Forever Card Club is, how the system works, and explore guides, FAQs, smart links, education, AI support, and online business tools for Forever partners.';
+                    $meta_keywords = 'Forever Card Club, what is Forever Card Club, how Forever Card Club works, Forever Card Club FAQ, Forever business tools, smart links Forever, AI tools for Forever partners';
+                    $foreverclub_semantics = [
+                        'heading' => 'What Is Forever Card Club?',
+                        'summary' => 'Forever Card Club is an independent digital system for Forever partners that combines a personal app, smart links, AI support, education, analytics, and a physical NFC card into one business workflow.',
+                        'facts' => [
+                            'Forever Card Club is not an official Forever Living Products website or store, but an independent system for partners.',
+                            'Forever Card refers to the partner\'s personalized app and the connected physical NFC card that lead to the same digital system.',
+                            'Product purchases are completed through the official Forever web shop in the customer\'s country.',
+                            'The system is designed for online and offline product presentation, recommendations, and Forever business growth.'
+                        ],
+                        'term_name' => 'Forever Card Club',
+                        'term_alternate_names' => ['FCC', 'Forever Card', 'Forever Card app'],
+                        'term_description' => 'Forever Card Club is an independent digital system for Forever partners that includes a personal app, smart referral links, AI tools, education, analytics, and a physical NFC card connected to the partner\'s content and recommendations.'
+                    ];
+                }
+            }
+            /* /Custom code: FC-2026-03-24 */
+
             /* Prepare the view */
             $data = [
                 'pages_category' => $pages_category,
-                'pages' => $pages
+                'pages' => $pages,
+                /* Custom code: FC-2026-03-24: strengthen category SEO metadata for content hubs */
+                'foreverclub_semantics' => $foreverclub_semantics,
+                'pages_category_url' => $pages_category_url,
+                /* /Custom code: FC-2026-03-24 */
             ];
 
             $view = new \Altum\View('pages/pages_category', (array) $this);
 
             /* Set a custom title */
-            Title::set($pages_category->title);
+            /* Custom code: FC-2026-03-24: strengthen category SEO metadata for content hubs */
+            Title::set($meta_title);
+            /* /Custom code: FC-2026-03-24 */
 
             /* Meta */
-            Meta::set_description($pages_category->description);
+            /* Custom code: FC-2026-03-24: strengthen category SEO metadata for content hubs */
+            Meta::set_description(string_truncate($meta_description, 160));
+            if($meta_keywords) {
+                Meta::set_keywords(string_truncate($meta_keywords, 255));
+            }
+            if($social_image) {
+                Meta::set_social_image($social_image);
+            }
+            Meta::set_canonical_url($pages_category_url);
+            Meta::set_robots('index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1');
+            /* /Custom code: FC-2026-03-24 */
 
             /* Disable automated link language alternate */
             Meta::set_link_alternate(false);

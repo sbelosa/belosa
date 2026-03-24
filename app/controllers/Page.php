@@ -79,6 +79,128 @@ class Page extends Controller {
             return db()->where('pages_category_id', $page->pages_category_id)->getOne('pages_categories');
         }) : null;
 
+        /* Custom code: FC-2026-03-24: strengthen foreverclub page hub SEO and internal linking */
+        $page_url = SITE_URL . ($page->language ? ((\Altum\Language::$active_languages[$page->language] ?? null) ? \Altum\Language::$active_languages[$page->language] . '/' : null) : null) . 'page/' . $page->url;
+        $is_foreverclub_page = $pages_category && $pages_category->url === 'foreverclub';
+        $related_pages = [];
+        $foreverclub_semantics = null;
+        $page_meta_override = null;
+
+        if($is_foreverclub_page) {
+            $related_pages_query = "
+                SELECT `url`, `title`, `description`, `type`, `language`, `image`, `image_description`
+                FROM `pages`
+                WHERE `pages_category_id` = {$page->pages_category_id} AND `page_id` != {$page->page_id} AND (`language` = '{$language}' OR `language` IS NULL) AND `is_published` = 1
+                ORDER BY `order` ASC, `total_views` DESC
+            ";
+
+            $related_pages = \Altum\Cache::cache_function_result('pages_related?hash=' . md5($related_pages_query), 'pages', function() use ($related_pages_query) {
+                $related_pages_result = database()->query($related_pages_query);
+
+                if($related_pages_result === false) {
+                    $fallback_query = preg_replace('/, `image`, `image_description`/', '', $related_pages_query);
+                    $related_pages_result = database()->query($fallback_query);
+                }
+
+                if($related_pages_result === false) {
+                    return [];
+                }
+
+                $related_pages = [];
+
+                while($row = $related_pages_result->fetch_object()) {
+                    $row->image_url = !empty($row->image) ? \Altum\Uploads::get_full_url('pages') . $row->image : null;
+                    $related_pages[] = $row;
+                }
+
+                return $related_pages;
+            });
+
+            if(\Altum\Language::$code === 'hr') {
+                $page_meta_map = [
+                    'forever-card-club' => [
+                        'title' => 'Što je Forever Card Club? Aplikacija, AI alati i NFC kartica',
+                        'description' => 'Saznaj što je Forever Card Club i kako osobna aplikacija, pametni linkovi, AI alati i NFC kartica pomažu Forever partnerima u online i offline poslovanju.',
+                        'keywords' => 'Forever Card Club, što je Forever Card Club, Forever Card aplikacija, Forever Card, AI alati za Forever, pametni linkovi Forever, NFC kartica Forever, online Forever poslovanje'
+                    ],
+                    'how-it-works' => [
+                        'title' => 'Kako funkcionira Forever Card Club: aplikacija, linkovi i AI',
+                        'description' => 'Pogledaj kako funkcionira Forever Card Club: osobna aplikacija partnera, pametni linkovi, AI savjetnik, NFC kartica i povezivanje sa službenim Forever web shopom.',
+                        'keywords' => 'kako funkcionira Forever Card Club, Forever Card sustav, pametni linkovi Forever, AI savjetnik Forever, NFC kartica Forever, Forever web shop, referal sustav Forever'
+                    ],
+                    'faq' => [
+                        'title' => 'Forever Card Club FAQ: česta pitanja i odgovori',
+                        'description' => 'Odgovori na najčešća pitanja o Forever Card Clubu, osobnoj aplikaciji, pametnim linkovima, AI alatima, pristupu sustavu i službenom Forever web shopu.',
+                        'keywords' => 'Forever Card Club FAQ, pitanja i odgovori Forever Card Club, osobna Forever Card aplikacija, AI alati Forever, pametni linkovi Forever, pristup Forever Card Clubu'
+                    ],
+                    'about' => [
+                        'title' => 'O Forever Card Clubu: digitalni sustav za Forever partnere',
+                        'description' => 'Upoznaj Forever Card Club kao neovisni digitalni sustav za Forever partnere koji objedinjuje aplikaciju, edukaciju, AI alate, pametne linkove i analitiku.',
+                        'keywords' => 'o Forever Card Clubu, Forever digitalni sustav, Forever partneri, Forever aplikacija, edukacija za Forever, AI alati za Forever, pametni linkovi Forever'
+                    ],
+                    'independent-disclaimer' => [
+                        'title' => 'Pravna napomena i neovisnost Forever Card Cluba',
+                        'description' => 'Pročitaj pravnu napomenu o Forever Card Clubu, njegovoj neovisnosti od Forever Living Productsa i načinu naručivanja preko službenog Forever web shopa.',
+                        'keywords' => 'Forever Card Club pravna napomena, Forever Card Club neovisnost, službeni Forever web shop, Forever Living Products napomena'
+                    ],
+                ];
+
+                $foreverclub_semantics = [
+                    'heading' => 'Kratko objašnjenje',
+                    'summary' => 'Forever Card Club je neovisni digitalni sustav za Forever partnere. Forever Card označava personaliziranu aplikaciju partnera i povezanu fizičku NFC karticu koja korisnika vodi na isti poslovni sustav.',
+                    'facts' => [
+                        'Namijenjen je neovisnim Forever partnerima koji žele graditi poslovanje online i offline.',
+                        'Uključuje osobnu aplikaciju, pametne linkove, AI podršku, edukaciju i analitiku.',
+                        'Kupnja proizvoda odvija se preko službenog Forever web shopa u državi kupca.',
+                        'Forever Card Club nije službena stranica kompanije Forever Living Products.'
+                    ],
+                    'term_name' => 'Forever Card Club',
+                    'term_alternate_names' => ['FCC', 'Forever Card', 'Forever Card aplikacija'],
+                    'term_description' => 'Forever Card Club je neovisni digitalni sustav za Forever partnere koji spaja osobnu aplikaciju, pametne linkove, AI podršku, edukaciju, analitiku i fizičku NFC karticu u jedan poslovni proces.'
+                ];
+            } else {
+                $page_meta_map = [
+                    'forever-card-club' => [
+                        'title' => 'What Is Forever Card Club? App, AI Tools and NFC Card',
+                        'description' => 'Learn what Forever Card Club is and how the personal app, smart links, AI tools, and NFC card help Forever partners grow online and offline.',
+                        'keywords' => 'what is Forever Card Club, Forever Card Club, Forever Card app, Forever Card, AI tools for Forever, smart links Forever, NFC card Forever, Forever business tools'
+                    ],
+                    'how-it-works' => [
+                        'title' => 'How Forever Card Club Works: App, Smart Links and AI',
+                        'description' => 'See how Forever Card Club works through the partner app, smart links, AI assistance, NFC card, and official Forever webshop routing.',
+                        'keywords' => 'how Forever Card Club works, Forever Card system, smart links Forever, AI assistant Forever, NFC card Forever, Forever webshop routing, referral system Forever'
+                    ],
+                    'faq' => [
+                        'title' => 'Forever Card Club FAQ: Common Questions Answered',
+                        'description' => 'Find clear answers about Forever Card Club, the personal app, smart links, AI tools, access requirements, and the official Forever webshop flow.',
+                        'keywords' => 'Forever Card Club FAQ, Forever Card Club questions, Forever Card app questions, AI tools for Forever, smart links Forever, access to Forever Card Club'
+                    ],
+                    'about' => [
+                        'title' => 'About Forever Card Club: Digital System for Forever Partners',
+                        'description' => 'Discover Forever Card Club as an independent digital system for Forever partners built around apps, education, AI tools, smart links, and analytics.',
+                        'keywords' => 'about Forever Card Club, Forever digital system, Forever partner platform, Forever app, education for Forever partners, AI tools for Forever, smart links Forever'
+                    ],
+                ];
+
+                $foreverclub_semantics = [
+                    'heading' => 'Quick Explanation',
+                    'summary' => 'Forever Card Club is an independent digital system for Forever partners. Forever Card refers to the partner\'s personalized app and the connected physical NFC card that bring visitors into the same business system.',
+                    'facts' => [
+                        'It is designed for independent Forever partners who want to build online and offline business.',
+                        'It includes a personal app, smart links, AI support, education, and analytics.',
+                        'Product purchases happen through the official Forever webshop in the customer\'s country.',
+                        'Forever Card Club is not an official Forever Living Products website.'
+                    ],
+                    'term_name' => 'Forever Card Club',
+                    'term_alternate_names' => ['FCC', 'Forever Card', 'Forever Card app'],
+                    'term_description' => 'Forever Card Club is an independent digital system for Forever partners that combines a personal app, smart referral links, AI support, education, analytics, and a physical NFC card in one business workflow.'
+                ];
+            }
+
+            $page_meta_override = $page_meta_map[$page->url] ?? null;
+        }
+        /* /Custom code: FC-2026-03-24 */
+
         /* Add a new view to the page */
         $cookie_name = 'page_view_' . $page->page_id;
         if(!isset($_COOKIE[$cookie_name])) {
@@ -117,6 +239,12 @@ class Page extends Controller {
             'page'  => $page,
             'pages_category' => $pages_category,
             'collaborator_contact' => $collaborator_contact,
+            /* Custom code: FC-2026-03-24: strengthen foreverclub page hub SEO and internal linking */
+            'is_foreverclub_page' => $is_foreverclub_page,
+            'foreverclub_semantics' => $foreverclub_semantics,
+            'related_pages' => $related_pages,
+            'page_url' => $page_url,
+            /* /Custom code: FC-2026-03-24 */
         ];
 
         $view = new \Altum\View('page/index', (array) $this);
@@ -124,12 +252,20 @@ class Page extends Controller {
         $this->add_view_content('content', $view->run($data));
 
         /* Set a custom title */
-        Title::set($page->title);
+        /* Custom code: FC-2026-03-24: strengthen foreverclub page hub SEO and internal linking */
+        Title::set($page_meta_override['title'] ?? $page->title);
+        /* /Custom code: FC-2026-03-24 */
 
         /* Meta */
 
-        Meta::set_description($page->description);
-        Meta::set_keywords($page->keywords);
+        /* Custom code: FC-2026-03-24: strengthen foreverclub page hub SEO and internal linking */
+        Meta::set_description(string_truncate($page_meta_override['description'] ?? $page->description, 160));
+        Meta::set_keywords(string_truncate($page_meta_override['keywords'] ?? $page->keywords, 255));
+        Meta::set_canonical_url($page_url);
+        if($is_foreverclub_page) {
+            Meta::set_robots('index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1');
+        }
+        /* /Custom code: FC-2026-03-24 */
 
         /* Custom code: FC-2026-02-25: page social image */
         if(!empty($page->image)) {
