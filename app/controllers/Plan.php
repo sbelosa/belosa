@@ -29,6 +29,10 @@ class Plan extends Controller {
             throw_404();
         }
 
+        /* Custom code: FC-2026-03-24: restrict plan visibility to logged in account owners */
+        \Altum\Authentication::guard();
+        /* /Custom code: FC-2026-03-24 */
+
         $type = isset($this->params[0]) && in_array($this->params[0], ['renew', 'upgrade', 'new']) ? $this->params[0] : 'new';
 
         /* If the user is not logged in when trying to upgrade or renew, make sure to redirect them */

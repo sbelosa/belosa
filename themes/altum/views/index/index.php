@@ -954,7 +954,8 @@
     <!-- /Custom code: FC-2026-02-25 -->
 <?php endif ?>
 
-<?php if(settings()->main->display_index_plans): ?>
+<!-- Custom code: FC-2026-03-24: restrict plan visibility to logged in account owners -->
+<?php if(settings()->main->display_index_plans && is_logged_in()): ?>
     <div class="py-3"></div>
 
     <div id="plans" class="container mt-8">
@@ -965,6 +966,7 @@
         <?= $this->views['plans'] ?>
     </div>
 <?php endif ?>
+<!-- /Custom code: FC-2026-03-24 -->
 
 <?php if(settings()->main->display_index_faq): ?>
     <div class="py-3"></div>

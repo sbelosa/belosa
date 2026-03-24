@@ -790,6 +790,9 @@ class Router {
             'plan' => [
                 'controller' => 'Plan',
                 'settings' => [
+                    /* Custom code: FC-2026-03-24: restrict plan visibility to logged in account owners */
+                    'allow_team_access' => false,
+                    /* /Custom code: FC-2026-03-24 */
                     'currency_switcher' => true,
                 ],
             ],
