@@ -161,6 +161,9 @@ class Cron extends Controller {
                 `users`
             WHERE 
                 `plan_id` <> 'free'
+				/* Custom code: FC-2026-03-24: prevent false expiry downgrades for recurring subscriptions */
+				AND (`payment_subscription_id` IS NULL OR `payment_subscription_id` = '')
+				/* /Custom code: FC-2026-03-24 */
 				AND `plan_expiration_date` < '{$date}' 
             LIMIT 25
         ");

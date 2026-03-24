@@ -87,6 +87,24 @@ function fc_resolve_language_name($language = null) {
 }
 /* /Custom code: FC-2026-03-22 */
 
+/* Custom code: FC-2026-03-24: force Croatian translations for outbound emails */
+function fc_resolve_email_language_name($language = null) {
+    $language = fc_resolve_language_name($language);
+
+    if($language === null || $language === '') {
+        return 'Hrvatski';
+    }
+
+    $normalized_language = mb_strtolower(trim((string) $language));
+
+    if(in_array($normalized_language, ['english', 'en', 'croatian', 'hrvatski', 'hr'], true)) {
+        return 'Hrvatski';
+    }
+
+    return $language;
+}
+/* /Custom code: FC-2026-03-24 */
+
 function language($language = null) {
     /* Custom code: FC-2026-03-22: normalize legacy language aliases */
     return \Altum\Language::get(fc_resolve_language_name($language));
@@ -99,14 +117,15 @@ function l($key, $language = null, $null_coalesce = false) {
     $language = fc_resolve_language_name($language);
     /* /Custom code: FC-2026-03-22 */
 
+    /* Custom code: FC-2026-03-24: force Croatian translations for outbound emails */
+    if(str_starts_with((string) $key, 'global.emails.')) {
+        $language = fc_resolve_email_language_name($language);
+    }
+    /* /Custom code: FC-2026-03-24 */
+
     $current_language = \Altum\Language::get($language);
     if(isset($current_language[$key])) {
         return $current_language[$key];
-    }
-
-    $main_language = \Altum\Language::get(\Altum\Language::$main_name);
-    if(isset($main_language[$key])) {
-        return $main_language[$key];
     }
 
     /* Fallback to original language files if cache is stale. */
@@ -132,6 +151,11 @@ function l($key, $language = null, $null_coalesce = false) {
         if(isset($candidate_language[$key])) {
             return $candidate_language[$key];
         }
+    }
+
+    $main_language = \Altum\Language::get(\Altum\Language::$main_name);
+    if(isset($main_language[$key])) {
+        return $main_language[$key];
     }
     /* /Custom code: FC-2026-02-24 */
 

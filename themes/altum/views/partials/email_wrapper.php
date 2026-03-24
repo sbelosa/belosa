@@ -72,9 +72,10 @@
         }
 
         .logo {
-            height: 40px;
-            max-height: 40px;
-            width: auto;
+            width: 180px;
+            max-width: 180px;
+            height: auto;
+            max-height: 56px;
             margin-bottom: 20px;
         }
 
@@ -268,7 +269,9 @@
                 <div class="header align-center">
                     <a href="<?= url() ?>">
                         <?php if(!empty(settings()->main->logo_email)): ?>
-                            <img src="<?= \Altum\Uploads::get_full_url('logo_email') . settings()->main->logo_email ?>" class="logo" alt="<?= settings()->main->title ?>" />
+                            <!-- Custom code: FC-2026-03-24: reduce email logo size across all mail clients -->
+                            <img src="<?= \Altum\Uploads::get_full_url('logo_email') . settings()->main->logo_email ?>" class="logo" alt="<?= settings()->main->title ?>" width="180" style="display:inline-block;width:180px;max-width:180px;height:auto;max-height:56px;" />
+                            <!-- /Custom code: FC-2026-03-24 -->
                         <?php else: ?>
                             <h1><?= settings()->main->title ?></h1>
                         <?php endif ?>
