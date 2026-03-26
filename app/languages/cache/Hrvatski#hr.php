@@ -748,6 +748,7 @@ return [
 	'index.presentation1.feature3' => 'AI savjetnik za preporuku proizvoda',
 	'index.presentation1.feature4' => 'Proizvodi s opisima i naručivanjem',
 	'index.presentation1.feature5' => 'Kontakt i WhatsApp gumb',
+	'index.presentation1.cta' => 'Saznaj više o aplikaciji',
 	'index.presentation2.header' => 'Pametni referral linkovi (globalno)',
 	'index.presentation2.subheader' => 'Jedan link radi globalno: sustav prepoznaje državu posjetitelja i spaja ga na službeni Forever web shop u njegovoj zemlji – s preporukom partnera.',
 	'index.presentation2.feature1' => 'Automatska detekcija države',

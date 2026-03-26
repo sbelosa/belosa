@@ -68,7 +68,7 @@ class Pages extends Controller {
                 SELECT `url`, `title`, `description`, `total_views`, `type`, `language`, `plans_ids`, `image`, `image_description` 
                 FROM `pages` 
                 WHERE `pages_category_id` = {$pages_category->pages_category_id} AND (`language` = '{$pages_language}' OR `language` IS NULL) AND `is_published` = 1
-                ORDER BY `total_views` DESC
+                ORDER BY `order` ASC, `total_views` DESC
             ";
             /* /Custom code: FC-2026-02-24 */
 
@@ -80,7 +80,7 @@ class Pages extends Controller {
                         SELECT `url`, `title`, `description`, `total_views`, `type`, `language`, `plans_ids`
                         FROM `pages`
                         WHERE `pages_category_id` = {$pages_category->pages_category_id} AND (`language` = '{$pages_language}' OR `language` IS NULL) AND `is_published` = 1
-                        ORDER BY `total_views` DESC
+                        ORDER BY `order` ASC, `total_views` DESC
                     ";
                     $pages_result = database()->query($fallback_query);
                 }

@@ -118,6 +118,11 @@ class Page extends Controller {
 
             if(\Altum\Language::$code === 'hr') {
                 $page_meta_map = [
+                    'forever-card-app' => [
+                        'title' => 'Forever Card Aplikacija: kako pomaže u prodaji, preporukama i izgradnji tima',
+                        'description' => 'Saznaj što je Forever Card Aplikacija, kako pomaže u prikupljanju kontakata, preporuci proizvoda, komunikaciji i razvoju Forever Living poslovanja.',
+                        'keywords' => 'Forever Card Aplikacija, FCC aplikacija, Forever Card Club aplikacija, digitalna aplikacija za Forever partnere, Forever poslovanje online, alati za Forever Living'
+                    ],
                     'forever-card-club' => [
                         'title' => 'Što je Forever Card Club? Aplikacija, AI alati i NFC kartica',
                         'description' => 'Saznaj što je Forever Card Club i kako osobna aplikacija, pametni linkovi, AI alati i NFC kartica pomažu Forever partnerima u online i offline poslovanju.',
@@ -145,6 +150,22 @@ class Page extends Controller {
                     ],
                 ];
 
+                $foreverclub_semantics_map = [
+                    'forever-card-app' => [
+                        'heading' => 'Zašto je ova aplikacija važna?',
+                        'summary' => 'Forever Card Aplikacija je partnerova osobna digitalna baza za predstavljanje proizvoda, preporuka, edukacije i kontakta. Pomaže da svaka preporuka izgleda ozbiljnije, brže vodi do razgovora i lakše se pretvara u konkretan posao.',
+                        'facts' => [
+                            'Na jednom mjestu spaja predstavljanje partnera, proizvoda, kontakta i poziva na akciju.',
+                            'Pomaže da zainteresirana osoba lakše ostavi kontakt i brže dobije prave informacije.',
+                            'Olakšava dijeljenje aplikacije preko društvenih mreža, poruka, QR koda i NFC kartice.',
+                            'Partner jasnije vidi što radi najbolje i lakše gradi svoj sustav preporuka i praćenja.'
+                        ],
+                        'term_name' => 'Forever Card Aplikacija',
+                        'term_alternate_names' => ['FCC aplikacija', 'Forever Card app', 'Forever Card Club aplikacija'],
+                        'term_description' => 'Forever Card Aplikacija je personalizirana digitalna aplikacija partnera unutar Forever Card Club sustava, namijenjena predstavljanju proizvoda, prikupljanju kontakata, preporukama i razvoju Forever Living poslovanja.'
+                    ],
+                ];
+
                 $foreverclub_semantics = [
                     'heading' => 'Kratko objašnjenje',
                     'summary' => 'Forever Card Club je neovisni digitalni sustav za Forever partnere. Forever Card označava personaliziranu aplikaciju partnera i povezanu fizičku NFC karticu koja korisnika vodi na isti poslovni sustav.',
@@ -160,6 +181,11 @@ class Page extends Controller {
                 ];
             } else {
                 $page_meta_map = [
+                    'forever-card-app' => [
+                        'title' => 'Forever Card App: how it helps with leads, product sharing and team growth',
+                        'description' => 'Learn what the Forever Card App is and how it helps with contacts, product recommendations, follow-up, and building a stronger Forever Living business.',
+                        'keywords' => 'Forever Card App, FCC app, Forever Card Club app, app for Forever partners, Forever business tools, Forever Living digital app'
+                    ],
                     'forever-card-club' => [
                         'title' => 'What Is Forever Card Club? App, AI Tools and NFC Card',
                         'description' => 'Learn what Forever Card Club is and how the personal app, smart links, AI tools, and NFC card help Forever partners grow online and offline.',
@@ -182,6 +208,22 @@ class Page extends Controller {
                     ],
                 ];
 
+                $foreverclub_semantics_map = [
+                    'forever-card-app' => [
+                        'heading' => 'Why does this app matter?',
+                        'summary' => 'The Forever Card App gives each partner one clear digital place to present products, answer common questions, collect contacts, and move conversations toward real business outcomes.',
+                        'facts' => [
+                            'It brings product presentation, contact actions, and guidance into one simple experience.',
+                            'It helps interested visitors get information faster and choose an easy next step.',
+                            'It can be shared through social media, direct messages, QR codes, and NFC cards.',
+                            'It gives partners a more professional image and a stronger business follow-up process.'
+                        ],
+                        'term_name' => 'Forever Card App',
+                        'term_alternate_names' => ['FCC app', 'Forever Card application', 'Forever Card Club app'],
+                        'term_description' => 'The Forever Card App is a personalized partner application inside the Forever Card Club system used for product presentation, contact collection, recommendations, and structured Forever Living business growth.'
+                    ],
+                ];
+
                 $foreverclub_semantics = [
                     'heading' => 'Quick Explanation',
                     'summary' => 'Forever Card Club is an independent digital system for Forever partners. Forever Card refers to the partner\'s personalized app and the connected physical NFC card that bring visitors into the same business system.',
@@ -198,6 +240,7 @@ class Page extends Controller {
             }
 
             $page_meta_override = $page_meta_map[$page->url] ?? null;
+            $foreverclub_semantics = $foreverclub_semantics_map[$page->url] ?? $foreverclub_semantics;
         }
         /* /Custom code: FC-2026-03-24 */
 
@@ -278,5 +321,4 @@ class Page extends Controller {
     }
 
 }
-
 

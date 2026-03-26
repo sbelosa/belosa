@@ -1272,6 +1272,7 @@ return [
 	'index.presentation1.feature3' => 'Company & business intro video',
 	'index.presentation1.feature4' => 'Products with details and ordering',
 	'index.presentation1.feature5' => 'Contact and WhatsApp button',
+	'index.presentation1.cta' => 'Learn more about the app',
 	'index.presentation2.header' => 'Global smart referral links',
 	'index.presentation2.subheader' => 'One link works globally: the system detects the visitor’s country and connects them to the official Forever web shop in their country with the partner’s referral.',
 	'index.presentation2.feature1' => 'Automatic country detection',

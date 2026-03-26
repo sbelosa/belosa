@@ -184,6 +184,12 @@
                                 <div><?= l('index.presentation1.feature5') ?></div>
                             </li>
                         </ul>
+
+                        <div class="mt-4">
+                            <a href="<?= url('page/forever-card-app') ?>" class="btn btn-primary index-button">
+                                <?= l('index.presentation1.cta') ?>
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
