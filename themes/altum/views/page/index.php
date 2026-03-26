@@ -545,10 +545,88 @@ if(!empty($data->is_foreverclub_page) && !empty($data->foreverclub_semantics)) {
 $fcc_page_schema = array_filter($fcc_page_schema, static function($value) {
     return $value !== null && $value !== '';
 });
+
+$fcc_faq_schema = null;
+
+if(!empty($data->is_foreverclub_page) && !empty($data->page->content) && class_exists('DOMDocument')) {
+    $faq_items = [];
+    $dom = new \DOMDocument();
+    $previous_state = libxml_use_internal_errors(true);
+
+    if($dom->loadHTML('<?xml encoding="utf-8" ?>' . $data->page->content, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD)) {
+        $in_faq_section = false;
+
+        foreach($dom->childNodes as $node) {
+            if(!in_array($node->nodeName, ['h2', 'h3', 'p'], true)) {
+                continue;
+            }
+
+            $node_text = trim(html_entity_decode(strip_tags($dom->saveHTML($node)), ENT_QUOTES | ENT_HTML5, 'UTF-8'));
+
+            if($node->nodeName === 'h2') {
+                $normalized_heading = function_exists('mb_strtolower') ? mb_strtolower($node_text, 'UTF-8') : strtolower($node_text);
+                $in_faq_section = in_array($normalized_heading, ['česta pitanja', 'frequently asked questions'], true);
+                continue;
+            }
+
+            if(!$in_faq_section) {
+                continue;
+            }
+
+            if($node->nodeName === 'h3') {
+                $faq_items[] = [
+                    'question' => $node_text,
+                    'answer' => '',
+                ];
+                continue;
+            }
+
+            if($node->nodeName === 'p' && !empty($faq_items)) {
+                $last_index = array_key_last($faq_items);
+
+                if($last_index !== null && $faq_items[$last_index]['answer'] === '') {
+                    $faq_items[$last_index]['answer'] = $node_text;
+                }
+            }
+        }
+    }
+
+    libxml_clear_errors();
+    libxml_use_internal_errors($previous_state);
+
+    $faq_items = array_values(array_filter($faq_items, static function($item) {
+        return !empty($item['question']) && !empty($item['answer']);
+    }));
+
+    if(!empty($faq_items)) {
+        $fcc_faq_schema = [
+            '@context' => 'https://schema.org',
+            '@type' => 'FAQPage',
+            'mainEntity' => array_map(static function($item) {
+                return [
+                    '@type' => 'Question',
+                    'name' => $item['question'],
+                    'acceptedAnswer' => [
+                        '@type' => 'Answer',
+                        'text' => $item['answer'],
+                    ],
+                ];
+            }, $faq_items),
+        ];
+    }
+}
 ?>
 <?php ob_start() ?>
 <script type="application/ld+json">
     <?= json_encode($fcc_page_schema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) ?>
 </script>
 <?php \Altum\Event::add_content(ob_get_clean(), 'javascript') ?>
+
+<?php if($fcc_faq_schema): ?>
+<?php ob_start() ?>
+<script type="application/ld+json">
+    <?= json_encode($fcc_faq_schema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) ?>
+</script>
+<?php \Altum\Event::add_content(ob_get_clean(), 'javascript') ?>
+<?php endif ?>
 <?php endif ?>
