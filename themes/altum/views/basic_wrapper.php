@@ -38,6 +38,8 @@
         <meta name="robots" content="<?= \Altum\Meta::$robots ?>">
     <?php endif ?>
 
+    <meta name="p:domain_verify" content="2eb854cf4f28f9daf96e4b41ba8de418"/>
+
     <link rel="alternate" href="<?= SITE_URL . \Altum\Router::$original_request ?>" hreflang="x-default" />
     <?php if(count(\Altum\Language::$active_languages) > 1): ?>
         <?php foreach(\Altum\Language::$active_languages as $language_name => $language_code): ?>
