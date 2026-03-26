@@ -151,7 +151,7 @@ class Sitemap extends Controller {
             /* Sitemap index */
             case null:
 
-                /* Get the total amount of links */
+                /* Get the total amount of sitemap-eligible main-domain links */
                 $total_links = database()->query("
                     SELECT
                         COUNT(`links`.`link_id`) AS `total` 
@@ -192,7 +192,7 @@ class Sitemap extends Controller {
 
                 $limit_start = ($page - 1) * $pagination;
 
-                /* Get the external users list */
+                /* Get the sitemap-eligible main-domain links */
                 $result = database()->query("
                     SELECT
                         `links`.`url`,
@@ -204,7 +204,7 @@ class Sitemap extends Controller {
                     WHERE
                         `users`.`status` = 1
                         AND `links`.`is_enabled` = 1
-                        AND `links`.`type` = 'biolink'
+                        AND `links`.`type` IN ('biolink','static')
                         AND `links`.`domain_id` = 0
                     LIMIT 
                         {$limit_start}, {$pagination}
