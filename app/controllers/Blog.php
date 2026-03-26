@@ -87,12 +87,16 @@ class Blog extends Controller {
                 setcookie($cookie_name, (int) true, time()+60*60*24*1);
             }
 
+            $blog_post_url = SITE_URL . ($blog_post->language ? ((\Altum\Language::$active_languages[$blog_post->language] ?? null) ? \Altum\Language::$active_languages[$blog_post->language] . '/' : null) : null) . 'blog/' . $blog_post->url;
+
             /* Set a custom title */
             Title::set(sprintf(l('blog.blog_post.title'), $blog_post->title));
 
             /* Meta */
-            Meta::set_description($blog_post->description);
+            Meta::set_description(string_truncate($blog_post->description ?: strip_tags($blog_post->title), 160));
             Meta::set_keywords($blog_post->keywords);
+            Meta::set_canonical_url($blog_post_url);
+            Meta::set_robots('index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1');
             if($blog_post->image) {
                 Meta::set_social_image(\Altum\Uploads::get_full_url('blog') . $blog_post->image);
             }
@@ -276,7 +280,8 @@ class Blog extends Controller {
                 'referral' => $referral,
                 'private_display' => isset($private_display) ? $private_display : null,
                 'private' => isset($private) ? $private : null,
-                'webshop_link' => isset($webshop_link) && !empty($webshop_link) ? $webshop_link : null
+                'webshop_link' => isset($webshop_link) && !empty($webshop_link) ? $webshop_link : null,
+                'blog_post_url' => $blog_post_url,
             ];
             /* /Custom code */
 
@@ -418,11 +423,26 @@ class Blog extends Controller {
             /* Get popular posts */
             $blog_posts_popular = settings()->content->blog_popular_widget_is_enabled ? (new BlogPosts())->get_popular_blog_posts_by_language($language) : [];
 
+            $blog_posts_category_url = SITE_URL . ($blog_posts_category->language ? ((\Altum\Language::$active_languages[$blog_posts_category->language] ?? null) ? \Altum\Language::$active_languages[$blog_posts_category->language] . '/' : null) : null) . 'blog/category/' . $blog_posts_category->url;
+
+            $social_image = null;
+            foreach($blog_posts as $blog_post_item) {
+                if(!empty($blog_post_item->image)) {
+                    $social_image = \Altum\Uploads::get_full_url('blog') . $blog_post_item->image;
+                    break;
+                }
+            }
+
             /* Set a custom title */
             Title::set(sprintf(l('blog.blog_posts_category.title'), $blog_posts_category->title));
 
             /* Meta */
-            Meta::set_description($blog_posts_category->description);
+            Meta::set_description(string_truncate($blog_posts_category->description ?: $blog_posts_category->title, 160));
+            Meta::set_canonical_url($blog_posts_category_url);
+            Meta::set_robots('index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1');
+            if($social_image) {
+                Meta::set_social_image($social_image);
+            }
 
             /* Disable automated link language alternate */
             Meta::set_link_alternate(false);
@@ -436,7 +456,8 @@ class Blog extends Controller {
                 /* Custom code */
                 'blog_posts_main_categories' => $blog_posts_main_categories,
                 'blog_posts_parents' => $blog_posts_parent_categories,
-                'blog_posts_subcategories' => $blog_posts_subcategories    
+                'blog_posts_subcategories' => $blog_posts_subcategories,
+                'blog_posts_category_url' => $blog_posts_category_url,
                 /* /Custom code */
             ];
 

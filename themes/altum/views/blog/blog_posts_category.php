@@ -363,9 +363,34 @@ $fcc_blog_home_url = url('blog');
                 "@type": "ListItem",
                 "position": 3,
                 "name": "<?= $data->blog_posts_category->title ?>",
-                "item": "<?= SITE_URL . ($data->blog_posts_category->language ? \Altum\Language::$active_languages[$data->blog_posts_category->language] . '/' : null) . 'blog/' . $data->blog_posts_category->url ?>"
+                "item": "<?= $data->blog_posts_category_url ?? (SITE_URL . ($data->blog_posts_category->language ? \Altum\Language::$active_languages[$data->blog_posts_category->language] . '/' : null) . 'blog/category/' . $data->blog_posts_category->url) ?>"
             }
         ]
+    }
+</script>
+<?php \Altum\Event::add_content(ob_get_clean(), 'javascript') ?>
+
+<?php ob_start() ?>
+<script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "CollectionPage",
+        "name": <?= json_encode($data->blog_posts_category->title) ?>,
+        "description": <?= json_encode($data->blog_posts_category->description ?: $data->blog_posts_category->title) ?>,
+        "url": <?= json_encode($data->blog_posts_category_url ?? (SITE_URL . ($data->blog_posts_category->language ? \Altum\Language::$active_languages[$data->blog_posts_category->language] . '/' : null) . 'blog/category/' . $data->blog_posts_category->url)) ?>,
+        "hasPart": {
+            "@type": "ItemList",
+            "itemListElement": [
+                <?php foreach(array_values($data->blog_posts ?? []) as $index => $blog_post): ?>
+                {
+                    "@type": "ListItem",
+                    "position": <?= $index + 1 ?>,
+                    "url": <?= json_encode(SITE_URL . ($blog_post->language ? \Altum\Language::$active_languages[$blog_post->language] . '/' : null) . 'blog/' . $blog_post->url) ?>,
+                    "name": <?= json_encode($blog_post->title) ?>
+                }<?= $index + 1 < count($data->blog_posts ?? []) ? ',' : null ?>
+                <?php endforeach ?>
+            ]
+        }
     }
 </script>
 <?php \Altum\Event::add_content(ob_get_clean(), 'javascript') ?>

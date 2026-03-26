@@ -4,8 +4,55 @@
 /* Custom code: FC-2026-02-26: EN/HR widget titles */
 $fcc_blog_categories_title = \Altum\Language::$code == 'hr' ? 'Kategorije' : 'Categories';
 $fcc_blog_popular_title = \Altum\Language::$code == 'hr' ? 'Popularni postovi' : 'Popular posts';
+$fcc_blog_post_url = $data->blog_post_url ?? (SITE_URL . ($data->blog_post->language ? \Altum\Language::$active_languages[$data->blog_post->language] . '/' : null) . 'blog/' . $data->blog_post->url);
 /* /Custom code: FC-2026-02-26 */
 ?>
+
+<?php ob_start() ?>
+<style>
+    .fcc-blog-post-content .ql-content h2,
+    .fcc-blog-post-content .ql-content h3,
+    .fcc-blog-post-content .ql-content h4,
+    .fcc-blog-post-content .ql-content h5,
+    .fcc-blog-post-content .ql-content h6 {
+        color: #6ef2d0;
+        font-family: "Space Grotesk", sans-serif;
+        line-height: 1.25;
+        margin-top: 1.9rem;
+        margin-bottom: 0.85rem;
+    }
+
+    .fcc-blog-post-content .ql-content h2 {
+        font-size: clamp(1.4rem, 2vw, 1.8rem);
+    }
+
+    .fcc-blog-post-content .ql-content h3 {
+        font-size: clamp(1.1rem, 1.5vw, 1.35rem);
+    }
+
+    .fcc-blog-post-content .ql-content a {
+        color: #7cf7c7;
+        text-decoration: underline;
+        text-decoration-color: rgba(124, 247, 199, 0.45);
+        text-underline-offset: 0.18em;
+        transition: color 0.2s ease, text-decoration-color 0.2s ease;
+    }
+
+    .fcc-blog-post-content .ql-content a:hover {
+        color: #a7ffe0;
+        text-decoration-color: rgba(167, 255, 224, 0.9);
+    }
+
+    .fcc-blog-post-content .ql-content ul,
+    .fcc-blog-post-content .ql-content ol {
+        padding-left: 1.3rem;
+    }
+
+    .fcc-blog-post-content .ql-content li + li {
+        margin-top: 0.45rem;
+    }
+</style>
+<?php \Altum\Event::add_content(ob_get_clean(), 'head') ?>
 
 <!-- Custom code: FC-2026-02-26: FCC premium blog post layout -->
 <div class="fcc-blog-page-bg">
@@ -363,13 +410,85 @@ $fcc_blog_popular_title = \Altum\Language::$code == 'hr' ? 'Popularni postovi' :
         }
 </script>
 
+<?php
+$fcc_blog_faq_schema = null;
+
+if(!empty($data->blog_post->content) && class_exists('DOMDocument')) {
+    $faq_items = [];
+    $dom = new \DOMDocument();
+    $previous_state = libxml_use_internal_errors(true);
+
+    if($dom->loadHTML('<?xml encoding="utf-8" ?>' . $data->blog_post->content, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD)) {
+        $in_faq_section = false;
+
+        foreach($dom->childNodes as $node) {
+            if(!in_array($node->nodeName, ['h2', 'h3', 'p'], true)) {
+                continue;
+            }
+
+            $node_text = trim(html_entity_decode(strip_tags($dom->saveHTML($node)), ENT_QUOTES | ENT_HTML5, 'UTF-8'));
+
+            if($node->nodeName === 'h2') {
+                $normalized_heading = function_exists('mb_strtolower') ? mb_strtolower($node_text, 'UTF-8') : strtolower($node_text);
+                $in_faq_section = in_array($normalized_heading, ['česta pitanja', 'frequently asked questions'], true);
+                continue;
+            }
+
+            if(!$in_faq_section) {
+                continue;
+            }
+
+            if($node->nodeName === 'h3') {
+                $faq_items[] = [
+                    'question' => $node_text,
+                    'answer' => '',
+                ];
+                continue;
+            }
+
+            if($node->nodeName === 'p' && !empty($faq_items)) {
+                $last_index = array_key_last($faq_items);
+
+                if($last_index !== null && $faq_items[$last_index]['answer'] === '') {
+                    $faq_items[$last_index]['answer'] = $node_text;
+                }
+            }
+        }
+    }
+
+    libxml_clear_errors();
+    libxml_use_internal_errors($previous_state);
+
+    $faq_items = array_values(array_filter($faq_items, static function($item) {
+        return !empty($item['question']) && !empty($item['answer']);
+    }));
+
+    if(!empty($faq_items)) {
+        $fcc_blog_faq_schema = [
+            '@context' => 'https://schema.org',
+            '@type' => 'FAQPage',
+            'mainEntity' => array_map(static function($item) {
+                return [
+                    '@type' => 'Question',
+                    'name' => $item['question'],
+                    'acceptedAnswer' => [
+                        '@type' => 'Answer',
+                        'text' => $item['answer'],
+                    ],
+                ];
+            }, $faq_items),
+        ];
+    }
+}
+?>
+
 <script type="application/ld+json">
     {
         "@context": "https://schema.org",
         "@type": "BlogPosting",
         "headline": "<?= $data->blog_post->title ?>",
         "description": "<?= $data->blog_post->description ?>",
-        "url": "<?= SITE_URL . ($data->blog_post->language ? \Altum\Language::$active_languages[$data->blog_post->language] . '/' : null) . 'blog/' . $data->blog_post->url ?>",
+        "url": "<?= $fcc_blog_post_url ?>",
     <?php if($data->blog_post->image): ?>
         "image": "<?= \Altum\Uploads::get_full_url('blog') . $data->blog_post->image ?>",
         <?php endif ?>
@@ -407,10 +526,16 @@ $fcc_blog_popular_title = \Altum\Language::$code == 'hr' ? 'Popularni postovi' :
         "wordCount": "<?= str_word_count($data->blog_post->content ?? '') ?>",
         "mainEntityOfPage": {
             "@type": "WebPage",
-            "@id": "<?= SITE_URL . ($data->blog_post->language ? \Altum\Language::$active_languages[$data->blog_post->language] . '/' : null) ?>"
+            "@id": "<?= $fcc_blog_post_url ?>"
         }
     }
 </script>
+
+<?php if($fcc_blog_faq_schema): ?>
+<script type="application/ld+json">
+    <?= json_encode($fcc_blog_faq_schema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) ?>
+</script>
+<?php endif ?>
 
 <script>
     'use strict';
