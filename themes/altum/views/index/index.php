@@ -329,7 +329,7 @@
             <div class="card-body">
                 <div class="row">
                     <div class="col-auto col-lg-5 mb-4 mb-lg-0">
-                        <img src="<?= get_custom_image_if_any('index/bio-link.webp') ?>" class="inverse-colors-animation index-card-image index-highly-rounded" loading="lazy" alt="<?= l('index.biolink_image_alt') ?>" />
+                        <img src="<?= SITE_URL . 'uploads/main/ai_asistenti_za_preporuku.png' ?>" class="inverse-colors-animation index-card-image index-highly-rounded" loading="lazy" alt="<?= l('index.presentation6.header') ?>" />
                     </div>
                     <div class="col ml-3">
                         <div class="index-icon-container mb-2">
