@@ -473,6 +473,24 @@
         border-radius: .8rem;
     }
 
+    .funnels-analytics-outline-cta {
+        color: #eafffb;
+        background: rgba(73, 227, 207, 0.12);
+        border: 1px solid rgba(73, 227, 207, 0.42);
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 10px 24px rgba(0, 0, 0, 0.18);
+        font-weight: 700;
+        transition: background .2s ease, border-color .2s ease, color .2s ease, transform .2s ease, box-shadow .2s ease;
+    }
+
+    .funnels-analytics-outline-cta:hover,
+    .funnels-analytics-outline-cta:focus {
+        color: #ffffff;
+        background: rgba(73, 227, 207, 0.2);
+        border-color: rgba(73, 227, 207, 0.72);
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 14px 30px rgba(0, 0, 0, 0.24);
+        transform: translateY(-1px);
+    }
+
     .funnels-analytics-contact-action {
         display: inline-flex;
         align-items: center;
@@ -1085,7 +1103,7 @@
                                 <div class="funnels-analytics-title"><?= l('funnels_analytics.performance_table') ?></div>
                                 <div class="funnels-analytics-help mb-0"><?= l('funnels_analytics.performance_table_help_simple') ?></div>
                             </div>
-                            <button type="button" class="btn btn-sm btn-outline-light" data-toggle="modal" data-target="#funnels-all-blocks-modal">
+                            <button type="button" class="btn btn-sm funnels-analytics-outline-cta" data-toggle="modal" data-target="#funnels-all-blocks-modal">
                                 <?= l('funnels_analytics.total_funnels') ?>
                             </button>
                         </div>
