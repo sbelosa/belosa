@@ -39,8 +39,6 @@
             <link rel="canonical" href="<?= \Altum\Meta::$canonical ?>" />
         <?php endif ?>
 
-        <meta name="p:domain_verify" content="2eb854cf4f28f9daf96e4b41ba8de418"/>
-
         <?php
         /* Block search engine indexing if the user wants, and if the system viewing links (for preview) are used */
         if($this->link->settings->seo->block ?? null || \Altum\Router::$original_request == 'l/link'):
