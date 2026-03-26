@@ -55,7 +55,6 @@
         <?= $this->views['admin_menu'] ?>
 
         <div class="p-3 p-lg-5 position-relative">
-            <?= include_view(THEME_PATH . 'views/admin/partials/admin_version_updates_bar.php') ?>
             <?= include_view(THEME_PATH . 'views/admin/partials/admin_support_bar.php') ?>
             <?= include_view(THEME_PATH . 'views/admin/partials/admin_smtp_setup.php') ?>
 
