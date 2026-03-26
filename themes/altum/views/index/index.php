@@ -323,6 +323,46 @@
     </div>
 <?php endif ?>
 
+<?php if(settings()->links->biolinks_is_enabled): ?>
+    <div class="container mt-6">
+        <div class="card index-highly-rounded border-0" data-aos="fade-up">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-auto col-lg-5 mb-4 mb-lg-0">
+                        <img src="<?= get_custom_image_if_any('index/bio-link.webp') ?>" class="inverse-colors-animation index-card-image index-highly-rounded" loading="lazy" alt="<?= l('index.biolink_image_alt') ?>" />
+                    </div>
+                    <div class="col ml-3">
+                        <div class="index-icon-container mb-2">
+                            <i class="fas fa-fw fa-robot fa-sm"></i>
+                        </div>
+                        <h2 class="mt-0"><?= l('index.presentation6.header') ?></h2>
+                        <p class="h6 mt-3 text-muted"><?= l('index.presentation6.subheader') ?></p>
+
+                        <ul class="list-style-none mt-4 font-size-small">
+                            <li class="d-flex align-items-center mb-2">
+                                <i class="fas fa-fw fa-sm fa-check-circle text-success mr-3"></i>
+                                <div><?= l('index.presentation6.feature1') ?></div>
+                            </li>
+                            <li class="d-flex align-items-center mb-2">
+                                <i class="fas fa-fw fa-sm fa-check-circle text-success mr-3"></i>
+                                <div><?= l('index.presentation6.feature2') ?></div>
+                            </li>
+                            <li class="d-flex align-items-center mb-2">
+                                <i class="fas fa-fw fa-sm fa-check-circle text-success mr-3"></i>
+                                <div><?= l('index.presentation6.feature3') ?></div>
+                            </li>
+                            <li class="d-flex align-items-center mb-2">
+                                <i class="fas fa-fw fa-sm fa-check-circle text-success mr-3"></i>
+                                <div><?= l('index.presentation6.feature4') ?></div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+<?php endif ?>
+
 <?php if(settings()->links->biolinks_is_enabled ||settings()->links->shortener_is_enabled ||settings()->links->files_is_enabled ||settings()->links->vcards_is_enabled ||settings()->links->events_is_enabled ||settings()->links->static_is_enabled): ?>
 <div class="container mt-6">
     <div class="card index-highly-rounded border-0" data-aos="fade-up">
