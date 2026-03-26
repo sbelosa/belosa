@@ -90,7 +90,7 @@ $fcc_info_note = $fcc_is_hr
     <?php endif ?>
 
     <section class="fcc-page-content">
-        <div class="fcc-page-content__inner <?= $data->page->editor == 'wysiwyg' ? 'ql-content' : null ?>">
+        <div class="fcc-page-content__inner <?= !empty($data->is_foreverclub_page) ? 'fcc-page-content__inner--foreverclub' : null ?> <?= $data->page->editor == 'wysiwyg' ? 'ql-content' : null ?>">
             <?= $data->page->content ?>
         </div>
     </section>
@@ -258,6 +258,48 @@ $fcc_info_note = $fcc_is_hr
         color: rgba(230, 236, 247, 0.85);
         line-height: 1.7;
         font-size: 1rem;
+    }
+
+    .fcc-page-content__inner--foreverclub h2,
+    .fcc-page-content__inner--foreverclub h3,
+    .fcc-page-content__inner--foreverclub h4,
+    .fcc-page-content__inner--foreverclub h5,
+    .fcc-page-content__inner--foreverclub h6 {
+        color: #6ef2d0;
+        font-family: "Space Grotesk", sans-serif;
+        line-height: 1.25;
+        margin-top: 1.9rem;
+        margin-bottom: 0.85rem;
+    }
+
+    .fcc-page-content__inner--foreverclub h2 {
+        font-size: clamp(1.4rem, 2vw, 1.8rem);
+    }
+
+    .fcc-page-content__inner--foreverclub h3 {
+        font-size: clamp(1.1rem, 1.5vw, 1.35rem);
+    }
+
+    .fcc-page-content__inner--foreverclub a {
+        color: #7cf7c7;
+        text-decoration: underline;
+        text-decoration-color: rgba(124, 247, 199, 0.45);
+        text-underline-offset: 0.18em;
+        transition: color 0.2s ease, text-decoration-color 0.2s ease;
+    }
+
+    .fcc-page-content__inner--foreverclub a:hover {
+        color: #a7ffe0;
+        text-decoration-color: rgba(167, 255, 224, 0.9);
+    }
+
+    .fcc-page-content__inner--foreverclub ul,
+    .fcc-page-content__inner--foreverclub ol {
+        padding-left: 1.3rem;
+    }
+
+    .fcc-page-content__inner--foreverclub li + li {
+        margin-top: 0.45rem;
     }
 
     .fcc-page-share {
