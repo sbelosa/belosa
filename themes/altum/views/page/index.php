@@ -440,3 +440,73 @@ $fcc_info_note = $fcc_is_hr
         }
 </script>
 <?php \Altum\Event::add_content(ob_get_clean(), 'javascript') ?>
+
+<?php if(!$fcc_is_contact_page): ?>
+<?php
+$fcc_page_schema = [
+    '@context' => 'https://schema.org',
+    '@type' => 'Article',
+    'headline' => $data->page->title,
+    'name' => $data->page->title,
+    'description' => $data->page->description ?: strip_tags($data->page->title),
+    'url' => $data->page_url ?? (SITE_URL . ($data->page->language ? \Altum\Language::$active_languages[$data->page->language] . '/' : null) . 'page/' . $data->page->url),
+    'datePublished' => !empty($data->page->datetime) ? date(DATE_ATOM, strtotime($data->page->datetime)) : null,
+    'dateModified' => !empty($data->page->last_datetime) ? date(DATE_ATOM, strtotime($data->page->last_datetime)) : (!empty($data->page->datetime) ? date(DATE_ATOM, strtotime($data->page->datetime)) : null),
+    'inLanguage' => \Altum\Language::$code,
+    'mainEntityOfPage' => [
+        '@type' => 'WebPage',
+        '@id' => $data->page_url ?? (SITE_URL . ($data->page->language ? \Altum\Language::$active_languages[$data->page->language] . '/' : null) . 'page/' . $data->page->url),
+    ],
+    'author' => [
+        '@type' => 'Organization',
+        'name' => 'Forever Card Club',
+        'url' => SITE_URL,
+    ],
+    'publisher' => [
+        '@type' => 'Organization',
+        'name' => 'Forever Card Club',
+        'url' => SITE_URL,
+        'logo' => [
+            '@type' => 'ImageObject',
+            'url' => !empty(settings()->main->logo_dark_full_url) ? settings()->main->logo_dark_full_url : (!empty(settings()->main->logo_light_full_url) ? settings()->main->logo_light_full_url : (!empty(settings()->main->favicon_full_url) ? settings()->main->favicon_full_url : null)),
+        ],
+    ],
+];
+
+if(!empty($data->page->image_url)) {
+    $fcc_page_schema['image'] = [
+        '@type' => 'ImageObject',
+        'url' => $data->page->image_url,
+    ];
+}
+
+if(!empty($data->pages_category->title)) {
+    $fcc_page_schema['articleSection'] = $data->pages_category->title;
+}
+
+if(!empty($data->is_foreverclub_page) && !empty($data->foreverclub_semantics)) {
+    $fcc_page_schema['about'] = [
+        '@type' => 'DefinedTerm',
+        'name' => $data->foreverclub_semantics['term_name'],
+        'alternateName' => $data->foreverclub_semantics['term_alternate_names'],
+        'description' => $data->foreverclub_semantics['term_description'],
+    ];
+    $fcc_page_schema['isPartOf'] = [
+        '@type' => 'CollectionPage',
+        'name' => $data->pages_category->title ?? 'Forever Card Club',
+        'url' => !empty($data->pages_category)
+            ? SITE_URL . ($data->pages_category->language ? \Altum\Language::$active_languages[$data->pages_category->language] . '/' : null) . 'pages/' . $data->pages_category->url
+            : SITE_URL . 'pages/foreverclub',
+    ];
+}
+
+$fcc_page_schema = array_filter($fcc_page_schema, static function($value) {
+    return $value !== null && $value !== '';
+});
+?>
+<?php ob_start() ?>
+<script type="application/ld+json">
+    <?= json_encode($fcc_page_schema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) ?>
+</script>
+<?php \Altum\Event::add_content(ob_get_clean(), 'javascript') ?>
+<?php endif ?>
