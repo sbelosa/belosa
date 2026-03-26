@@ -1,5 +1,34 @@
 <?php defined('ALTUMCODE') || die() ?>
 
+<?php
+$contact_country_options = get_contact_phone_country_options_array();
+$contact_channel_options = [
+    'whatsapp' => 'WhatsApp',
+    'viber' => 'Viber',
+    'sms' => 'SMS',
+];
+?>
+
+<?php if(!\Altum\Event::exists_content_type_key('head', 'fcc_contact_capture_styles')): ?>
+    <?php ob_start() ?>
+    <style>
+        .fcc-contact-capture {margin-bottom: 1rem; padding: .9rem; border-radius: 1.2rem; background: rgba(15, 23, 42, .04); border: 1px solid rgba(15, 23, 42, .08);}
+        .fcc-contact-capture .custom-select,
+        .fcc-contact-capture .form-control {border: 0; border-radius: .9rem; min-height: 3.15rem; box-shadow: none;}
+        .fcc-contact-capture .custom-select {padding-left: 1rem; padding-right: 2.4rem; font-weight: 600; background-color: #fff;}
+        .fcc-contact-capture .input-group-text {border: 0; border-radius: .9rem 0 0 .9rem; background: rgba(255,255,255,.98); color: #b99a44;}
+        .fcc-contact-capture .form-control {background: rgba(255,255,255,.98);}
+        .fcc-contact-capture .input-group .form-control {border-radius: 0 .9rem .9rem 0;}
+        .fcc-contact-capture-row + .fcc-contact-capture-row {margin-top: .75rem;}
+        .fcc-contact-capture-channels {display: flex; flex-wrap: wrap; gap: .5rem;}
+        .fcc-contact-capture-radio {position: absolute; opacity: 0; pointer-events: none;}
+        .fcc-contact-capture-chip {display: inline-flex; align-items: center; justify-content: center; min-width: 5.5rem; padding: .55rem .9rem; border-radius: 999px; border: 1px solid rgba(15,23,42,.12); background: rgba(255,255,255,.92); color: #23313f; font-size: .9rem; font-weight: 700; cursor: pointer; transition: all .2s ease;}
+        .fcc-contact-capture-radio:checked + .fcc-contact-capture-chip {background: #2ed3c6; border-color: #2ed3c6; color: #05292c; box-shadow: 0 .5rem 1.2rem rgba(46, 211, 198, .2);}
+        .fcc-contact-capture-radio:focus + .fcc-contact-capture-chip {outline: 0; box-shadow: 0 0 0 .2rem rgba(46, 211, 198, .2);}
+    </style>
+    <?php \Altum\Event::add_content(ob_get_clean(), 'head', 'fcc_contact_capture_styles') ?>
+<?php endif ?>
+
 <div id="<?= 'biolink_block_id_' . $data->link->biolink_block_id ?>" data-biolink-block-id="<?= $data->link->biolink_block_id ?>" data-biolink-block-type="<?= $data->link->type ?>" class="col-12 col-lg-<?= ($data->link->settings->columns ?? 1) == 1 ? '12' : '6' ?> my-<?= $data->biolink->settings->block_spacing ?? '2' ?>">
     <a href="#" data-toggle="modal" data-target="<?= '#contact_collector_' . $data->link->biolink_block_id ?>" class="btn btn-block btn-primary link-btn <?= ($data->biolink->settings->hover_animation ?? 'smooth') != 'false' ? 'link-hover-animation-' . ($data->biolink->settings->hover_animation ?? 'smooth') : null ?> <?= 'link-btn-' . $data->link->settings->border_radius ?> <?= $data->link->design->link_class ?>" style="<?= $data->link->design->link_style ?>" data-text-color data-border-width data-border-radius data-border-style data-border-color data-border-shadow data-animation data-background-color data-text-alignment>
         <div class="link-btn-image-wrapper <?= 'link-btn-' . $data->link->settings->border_radius ?>" <?= $data->link->settings->image ? null : 'style="display: none;"' ?>>
@@ -44,12 +73,31 @@
                         </div>
                     </div>
 
-                    <div class="form-group">
-                        <div class="input-group">
-                            <div class="input-group-prepend">
-                                <div class="input-group-text bg-gray-50"><i class="fas fa-fw fa-phone-square-alt"></i></div>
+                    <div class="fcc-contact-capture">
+                        <div class="fcc-contact-capture-row">
+                            <select class="custom-select" name="phone_country_code" required="required" aria-label="Država i pozivni broj">
+                                <?php foreach($contact_country_options as $country_code => $country_label): ?>
+                                    <option value="<?= $country_code ?>" <?= $country_code == 'HR' ? 'selected="selected"' : null ?>><?= $country_label ?></option>
+                                <?php endforeach ?>
+                            </select>
+                        </div>
+                        <div class="fcc-contact-capture-row">
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <div class="input-group-text"><i class="fas fa-fw fa-phone-square-alt"></i></div>
+                                </div>
+                                <input type="tel" inputmode="tel" class="form-control" name="phone" maxlength="32" required="required" placeholder="<?= $data->link->settings->phone_placeholder ?>" aria-label="<?= $data->link->settings->phone_placeholder ?>" />
                             </div>
-                            <input type="text" class="form-control" name="phone" maxlength="32" required="required" placeholder="<?= $data->link->settings->phone_placeholder ?>" aria-label="<?= $data->link->settings->phone_placeholder ?>" />
+                        </div>
+                        <div class="fcc-contact-capture-row">
+                            <div class="fcc-contact-capture-channels" role="radiogroup" aria-label="Najbrži kanal kontakta">
+                                <?php foreach($contact_channel_options as $channel_key => $channel_label): ?>
+                                    <label class="mb-0">
+                                        <input type="radio" class="fcc-contact-capture-radio" name="preferred_contact_channel" value="<?= $channel_key ?>" <?= $channel_key == 'whatsapp' ? 'checked="checked"' : null ?> />
+                                        <span class="fcc-contact-capture-chip"><?= $channel_label ?></span>
+                                    </label>
+                                <?php endforeach ?>
+                            </div>
                         </div>
                     </div>
 
@@ -176,4 +224,3 @@
     </script>
     <?php \Altum\Event::add_content(ob_get_clean(), 'javascript', 'contact_collector') ?>
 <?php endif ?>
-

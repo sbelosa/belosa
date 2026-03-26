@@ -329,6 +329,172 @@ $dashboard_toggle_url = $data->dashboard_toggle_url ?? ($is_sensitive_dashboard 
 
 </div>
 <!-- /Custom code: FC-2026-03-04 -->
+
+<!-- Custom code: FC-2026-03-26: admin funnel analytics panel -->
+<div class="mb-5 mt-4" style="order: 13;">
+    <div class="d-flex flex-column flex-md-row justify-content-between mb-3">
+        <h1 class="h3 mb-3 mb-md-0 text-truncate"><i class="fas fa-fw fa-xs fa-filter text-primary-900 mr-2"></i> <?= l('admin_index.funnels_analytics.header') ?></h1>
+
+        <div class="btn-group btn-group-sm" role="group" aria-label="<?= l('admin_index.funnels_analytics.period_label') ?>">
+            <button type="button" class="btn btn-outline-primary" data-funnels-period="today"><?= l('admin_index.analytics_phase1.period.today') ?></button>
+            <button type="button" class="btn btn-outline-primary" data-funnels-period="7d"><?= l('admin_index.analytics_phase1.period.7d') ?></button>
+            <button type="button" class="btn btn-outline-primary active" data-funnels-period="30d"><?= l('admin_index.analytics_phase1.period.30d') ?></button>
+            <button type="button" class="btn btn-outline-primary" data-funnels-period="90d"><?= l('admin_index.analytics_phase1.period.90d') ?></button>
+        </div>
+    </div>
+
+    <p class="text-muted mb-3"><?= l('admin_index.funnels_analytics.subheader') ?></p>
+
+    <div class="btn-group btn-group-sm mb-3 flex-wrap" role="group" aria-label="<?= l('admin_index.funnels_analytics.filter_label') ?>">
+        <button type="button" class="btn btn-outline-secondary active" data-funnels-filter="all"><?= l('admin_index.funnels_analytics.filter_all') ?></button>
+        <button type="button" class="btn btn-outline-secondary" data-funnels-filter="open_mode:popup"><?= l('biolink_lead_funnel.open_mode_popup') ?></button>
+        <button type="button" class="btn btn-outline-secondary" data-funnels-filter="open_mode:page"><?= l('biolink_lead_funnel.open_mode_page') ?></button>
+        <button type="button" class="btn btn-outline-secondary" data-funnels-filter="thank_you_type:message"><?= l('biolink_lead_funnel.thank_you_type_message') ?></button>
+        <button type="button" class="btn btn-outline-secondary" data-funnels-filter="thank_you_type:external_url"><?= l('biolink_lead_funnel.thank_you_type_external_url') ?></button>
+        <button type="button" class="btn btn-outline-secondary" data-funnels-filter="thank_you_type:biolink_redirect"><?= l('biolink_lead_funnel.thank_you_type_biolink_redirect') ?></button>
+        <button type="button" class="btn btn-outline-secondary" data-funnels-filter="thank_you_type:file_download"><?= l('biolink_lead_funnel.thank_you_type_file_download') ?></button>
+    </div>
+
+    <div class="row mb-2">
+        <div class="col-12 col-md-6 col-xl-2 p-2">
+            <div class="card h-100"><div class="card-body"><small class="text-muted d-block mb-1" id="funnels_total_funnels_label"><?= l('admin_index.funnels_analytics.total_funnels') ?></small><div class="h4 mb-0" id="funnels_total_funnels"><span class="spinner-border spinner-border-sm" role="status"></span></div></div></div>
+        </div>
+        <div class="col-12 col-md-6 col-xl-2 p-2">
+            <div class="card h-100"><div class="card-body"><small class="text-muted d-block mb-1" id="funnels_active_funnels_label"><?= l('admin_index.funnels_analytics.active_funnels') ?></small><div class="h4 mb-0" id="funnels_active_funnels"><span class="spinner-border spinner-border-sm" role="status"></span></div></div></div>
+        </div>
+        <div class="col-12 col-md-6 col-xl-2 p-2">
+            <div class="card h-100"><div class="card-body"><small class="text-muted d-block mb-1" id="funnels_active_collaborators_label"><?= l('admin_index.funnels_analytics.active_collaborators') ?></small><div class="h4 mb-0" id="funnels_active_collaborators"><span class="spinner-border spinner-border-sm" role="status"></span></div></div></div>
+        </div>
+        <div class="col-12 col-md-6 col-xl-2 p-2">
+            <div class="card h-100"><div class="card-body"><small class="text-muted d-block mb-1" id="funnels_unique_clicks_label"><?= l('admin_index.funnels_analytics.unique_clicks') ?></small><div class="h4 mb-0" id="funnels_unique_clicks"><span class="spinner-border spinner-border-sm" role="status"></span></div></div></div>
+        </div>
+        <div class="col-12 col-md-6 col-xl-2 p-2">
+            <div class="card h-100"><div class="card-body"><small class="text-muted d-block mb-1" id="funnels_leads_label"><?= l('admin_index.funnels_analytics.leads') ?></small><div class="h4 mb-0" id="funnels_leads"><span class="spinner-border spinner-border-sm" role="status"></span></div></div></div>
+        </div>
+        <div class="col-12 col-md-6 col-xl-2 p-2">
+            <div class="card h-100"><div class="card-body"><small class="text-muted d-block mb-1" id="funnels_conversion_rate_label"><?= l('admin_index.funnels_analytics.conversion_rate') ?></small><div class="h4 mb-0" id="funnels_conversion_rate"><span class="spinner-border spinner-border-sm" role="status"></span></div></div></div>
+        </div>
+    </div>
+
+    <div class="row mb-2">
+        <div class="col-12 col-md-6 col-xl-3 p-2">
+            <div class="card h-100"><div class="card-body"><small class="text-muted d-block mb-1" id="funnels_flow_entry_points_label"><?= l('admin_index.funnels_analytics.flow_entry_points') ?></small><div class="h4 mb-0" id="funnels_flow_entry_points"><span class="spinner-border spinner-border-sm" role="status"></span></div></div></div>
+        </div>
+        <div class="col-12 col-md-6 col-xl-3 p-2">
+            <div class="card h-100"><div class="card-body"><small class="text-muted d-block mb-1" id="funnels_flow_starts_label"><?= l('admin_index.funnels_analytics.flow_form_starts') ?></small><div class="h4 mb-0" id="funnels_flow_starts"><span class="spinner-border spinner-border-sm" role="status"></span></div><small class="text-muted d-block mt-1" id="funnels_flow_starts_meta"><?= l('admin_index.funnels_analytics.flow_entry_to_start') ?></small></div></div>
+        </div>
+        <div class="col-12 col-md-6 col-xl-3 p-2">
+            <div class="card h-100"><div class="card-body"><small class="text-muted d-block mb-1" id="funnels_flow_success_label"><?= l('admin_index.funnels_analytics.flow_submit_success') ?></small><div class="h4 mb-0" id="funnels_flow_success"><span class="spinner-border spinner-border-sm" role="status"></span></div><small class="text-muted d-block mt-1" id="funnels_flow_success_meta"><?= l('admin_index.funnels_analytics.flow_start_to_success') ?></small></div></div>
+        </div>
+        <div class="col-12 col-md-6 col-xl-3 p-2">
+            <div class="card h-100"><div class="card-body"><small class="text-muted d-block mb-1" id="funnels_flow_cta_label"><?= l('admin_index.funnels_analytics.flow_cta_clicks') ?></small><div class="h4 mb-0" id="funnels_flow_cta"><span class="spinner-border spinner-border-sm" role="status"></span></div><small class="text-muted d-block mt-1" id="funnels_flow_cta_meta"><?= l('admin_index.funnels_analytics.flow_success_to_cta') ?></small></div></div>
+        </div>
+    </div>
+
+    <div class="row mt-2">
+        <div class="col-12 col-xl-6 p-2">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h3 class="h6 mb-2" id="funnels_flow_panel_label"><?= l('admin_index.funnels_analytics.flow_header') ?></h3>
+                    <p class="small text-muted mb-3"><?= l('admin_index.funnels_analytics.flow_subheader') ?></p>
+                    <div id="funnels_flow_summary" class="small text-muted"><span class="spinner-border spinner-border-sm" role="status"></span></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-xl-6 p-2">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h3 class="h6 mb-2" id="funnels_flow_opportunities_label"><?= l('admin_index.funnels_analytics.flow_opportunities_header') ?></h3>
+                    <p class="small text-muted mb-3"><?= l('admin_index.funnels_analytics.flow_opportunities_subheader') ?></p>
+                    <div id="funnels_flow_opportunities" class="small text-muted"><span class="spinner-border spinner-border-sm" role="status"></span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-2">
+        <div class="col-12 p-2">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h3 class="h6 mb-1" id="funnels_chart_label"><?= l('admin_index.funnels_analytics.chart_header') ?> (<?= l('admin_index.analytics_phase1.period.30d') ?>)</h3>
+                    <p class="small text-muted mb-3"><?= l('admin_index.funnels_analytics.chart_subheader') ?></p>
+
+                    <div class="chart-container" style="height: 280px;">
+                        <canvas id="funnels_analytics_chart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-2">
+        <div class="col-12 col-xl-6 p-2">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h3 class="h6 mb-2" id="funnels_top_funnels_label"><?= l('admin_index.funnels_analytics.top_funnels_header') ?></h3>
+                    <p class="small text-muted mb-3"><?= l('admin_index.funnels_analytics.top_funnels_subheader') ?></p>
+                    <div id="funnels_top_funnels" class="small text-muted"><span class="spinner-border spinner-border-sm" role="status"></span></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-xl-6 p-2">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h3 class="h6 mb-2" id="funnels_top_collaborators_label"><?= l('admin_index.funnels_analytics.top_collaborators_header') ?></h3>
+                    <p class="small text-muted mb-3"><?= l('admin_index.funnels_analytics.top_collaborators_subheader') ?></p>
+                    <div id="funnels_top_collaborators" class="small text-muted"><span class="spinner-border spinner-border-sm" role="status"></span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-2">
+        <div class="col-12 col-xl-6 p-2">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h3 class="h6 mb-2" id="funnels_open_mode_label"><?= l('admin_index.funnels_analytics.open_mode_header') ?></h3>
+                    <p class="small text-muted mb-3"><?= l('admin_index.funnels_analytics.open_mode_subheader') ?></p>
+                    <div id="funnels_open_mode_breakdown" class="small text-muted"><span class="spinner-border spinner-border-sm" role="status"></span></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-xl-6 p-2">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h3 class="h6 mb-2" id="funnels_thank_you_label"><?= l('admin_index.funnels_analytics.thank_you_header') ?></h3>
+                    <p class="small text-muted mb-3"><?= l('admin_index.funnels_analytics.thank_you_subheader') ?></p>
+                    <div id="funnels_thank_you_breakdown" class="small text-muted"><span class="spinner-border spinner-border-sm" role="status"></span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-2">
+        <div class="col-12 col-xl-6 p-2">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h3 class="h6 mb-2" id="funnels_top_conversion_label"><?= l('admin_index.funnels_analytics.top_conversion_header') ?></h3>
+                    <p class="small text-muted mb-3"><?= l('admin_index.funnels_analytics.top_conversion_subheader') ?></p>
+                    <div id="funnels_top_conversion" class="small text-muted"><span class="spinner-border spinner-border-sm" role="status"></span></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-xl-6 p-2">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h3 class="h6 mb-2" id="funnels_opportunities_label"><?= l('admin_index.funnels_analytics.opportunities_header') ?></h3>
+                    <p class="small text-muted mb-3"><?= l('admin_index.funnels_analytics.opportunities_subheader') ?></p>
+                    <div id="funnels_opportunities" class="small text-muted"><span class="spinner-border spinner-border-sm" role="status"></span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- /Custom code: FC-2026-03-26 -->
 <?php endif ?>
 
 <?php if($is_sensitive_dashboard): ?>
@@ -1512,6 +1678,9 @@ $dashboard_toggle_url = $data->dashboard_toggle_url ?? ($is_sensitive_dashboard 
     let dashboard_kpi_payload = {};
     let biolink_analytics_payload = {};
     let biolink_analytics_period = '30d';
+    let funnels_analytics_payload = {};
+    let funnels_analytics_period = '30d';
+    let funnels_analytics_filter = 'all';
     let sales_subscriptions_chart_payload = {};
     let sales_subscriptions_chart_period = 30;
     let biolink_selected_collaborator = null;
@@ -1523,6 +1692,7 @@ $dashboard_toggle_url = $data->dashboard_toggle_url ?? ($is_sensitive_dashboard 
         users: null,
         sales_subscriptions: null,
         biolink_analytics: null,
+        funnels_analytics: null,
     };
 
     const escape_html = value => {
@@ -2250,6 +2420,284 @@ $dashboard_toggle_url = $data->dashboard_toggle_url ?? ($is_sensitive_dashboard 
         render_biolink_period();
     };
 
+    /* Custom code: FC-2026-03-26: funnels analytics rendering */
+    const funnel_open_mode_labels = {
+        popup: '<?= l('biolink_lead_funnel.open_mode_popup') ?>',
+        page: '<?= l('biolink_lead_funnel.open_mode_page') ?>',
+    };
+
+    const funnel_thank_you_type_labels = {
+        message: '<?= l('biolink_lead_funnel.thank_you_type_message') ?>',
+        external_url: '<?= l('biolink_lead_funnel.thank_you_type_external_url') ?>',
+        biolink_redirect: '<?= l('biolink_lead_funnel.thank_you_type_biolink_redirect') ?>',
+        file_download: '<?= l('biolink_lead_funnel.thank_you_type_file_download') ?>',
+    };
+
+    const render_funnels_chart = (chart_data, selected_period_label) => {
+        const funnels_chart_context = document.getElementById('funnels_analytics_chart')?.getContext('2d');
+        if(!funnels_chart_context) {
+            return;
+        }
+
+        document.querySelector('#funnels_chart_label').innerText = `<?= l('admin_index.funnels_analytics.chart_header') ?> (${selected_period_label})`;
+
+        const funnels_chart_datasets = [{
+            label: '<?= l('admin_index.funnels_analytics.unique_clicks') ?>',
+            data: chart_data.unique_clicks_series ?? [],
+            borderColor: chart_css.getPropertyValue('--primary'),
+            backgroundColor: set_hex_opacity(chart_css.getPropertyValue('--primary'), 0.08),
+            fill: true,
+            tension: 0.35,
+            yAxisID: 'y'
+        }, {
+            label: '<?= l('admin_index.funnels_analytics.leads') ?>',
+            data: chart_data.leads_series ?? [],
+            borderColor: chart_css.getPropertyValue('--success'),
+            backgroundColor: set_hex_opacity(chart_css.getPropertyValue('--success'), 0.08),
+            fill: true,
+            tension: 0.35,
+            yAxisID: 'y'
+        }, {
+            label: '<?= l('admin_index.funnels_analytics.conversion_rate') ?>',
+            data: chart_data.conversion_rate_series ?? [],
+            borderColor: chart_css.getPropertyValue('--warning'),
+            backgroundColor: set_hex_opacity(chart_css.getPropertyValue('--warning'), 0.08),
+            fill: false,
+            tension: 0.35,
+            yAxisID: 'y1'
+        }];
+
+        if(!dashboard_charts.funnels_analytics) {
+            dashboard_charts.funnels_analytics = new Chart(funnels_chart_context, {
+                type: 'line',
+                data: {
+                    labels: chart_data.labels ?? [],
+                    datasets: funnels_chart_datasets,
+                },
+                options: {
+                    ...chart_options,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: value => nr(value)
+                            }
+                        },
+                        y1: {
+                            beginAtZero: true,
+                            position: 'right',
+                            grid: {
+                                drawOnChartArea: false,
+                            },
+                            ticks: {
+                                callback: value => `${nr(value)}%`
+                            }
+                        }
+                    },
+                    plugins: {
+                        ...chart_options.plugins,
+                        legend: {
+                            display: true,
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        } else {
+            dashboard_charts.funnels_analytics.data.labels = chart_data.labels ?? [];
+            dashboard_charts.funnels_analytics.data.datasets = funnels_chart_datasets;
+            dashboard_charts.funnels_analytics.update();
+        }
+    };
+
+    const render_funnels_breakdown = (container_selector, rows, type_labels) => {
+        const items = (rows ?? []).map(row => `
+            <div class="border-bottom py-2">
+                <div class="d-flex justify-content-between">
+                    <strong>${escape_html(type_labels[row.type] || row.type || '<?= l('global.unknown') ?>')}</strong>
+                    <span>${nr(row.conversion_rate ?? 0)}%</span>
+                </div>
+                <div class="text-muted mt-1">
+                    <?= l('admin_index.funnels_analytics.breakdown_meta') ?>:
+                    ${nr(row.funnels_count ?? 0)} ·
+                    <?= l('admin_index.funnels_analytics.unique_clicks') ?>: ${nr(row.unique_clicks ?? 0)} ·
+                    <?= l('admin_index.funnels_analytics.leads') ?>: ${nr(row.leads ?? 0)}
+                </div>
+            </div>
+        `);
+
+        render_compact_list(container_selector, items, 5);
+    };
+
+    const render_funnels_flow_summary = flow => {
+        const items = [
+            `<div class="border-bottom py-2"><div class="d-flex justify-content-between"><strong><?= l('admin_index.funnels_analytics.flow_views') ?></strong><span>${nr(flow.views ?? 0)}</span></div><div class="text-muted mt-1"><?= l('admin_index.funnels_analytics.flow_views_subheader') ?></div></div>`,
+            `<div class="border-bottom py-2"><div class="d-flex justify-content-between"><strong><?= l('admin_index.funnels_analytics.flow_opens') ?></strong><span>${nr(flow.opens ?? 0)}</span></div><div class="text-muted mt-1"><?= l('admin_index.funnels_analytics.flow_opens_subheader') ?></div></div>`,
+            `<div class="border-bottom py-2"><div class="d-flex justify-content-between"><strong><?= l('admin_index.funnels_analytics.flow_form_starts') ?></strong><span>${nr(flow.form_starts ?? 0)}</span></div><div class="text-muted mt-1"><?= l('admin_index.funnels_analytics.flow_entry_to_start') ?>: ${nr(flow.entry_to_start_rate ?? 0)}%</div></div>`,
+            `<div class="border-bottom py-2"><div class="d-flex justify-content-between"><strong><?= l('admin_index.funnels_analytics.flow_submit_attempts') ?></strong><span>${nr(flow.submit_attempts ?? 0)}</span></div><div class="text-muted mt-1"><?= l('admin_index.funnels_analytics.flow_submit_errors') ?>: ${nr(flow.submit_errors ?? 0)}</div></div>`,
+            `<div class="border-bottom py-2"><div class="d-flex justify-content-between"><strong><?= l('admin_index.funnels_analytics.flow_submit_success') ?></strong><span>${nr(flow.submit_success ?? 0)}</span></div><div class="text-muted mt-1"><?= l('admin_index.funnels_analytics.flow_start_to_success') ?>: ${nr(flow.start_to_success_rate ?? 0)}%</div></div>`,
+            `<div class="border-bottom py-2"><div class="d-flex justify-content-between"><strong><?= l('admin_index.funnels_analytics.flow_thank_you_views') ?></strong><span>${nr(flow.thank_you_views ?? 0)}</span></div><div class="text-muted mt-1"><?= l('admin_index.funnels_analytics.flow_success_to_thank_you') ?>: ${nr(flow.success_to_thank_you_rate ?? 0)}%</div></div>`,
+            `<div class="border-bottom py-2"><div class="d-flex justify-content-between"><strong><?= l('admin_index.funnels_analytics.flow_cta_clicks') ?></strong><span>${nr(flow.cta_clicks ?? 0)}</span></div><div class="text-muted mt-1"><?= l('admin_index.funnels_analytics.flow_success_to_cta') ?>: ${nr(flow.success_to_cta_rate ?? 0)}%</div></div>`
+        ];
+
+        render_compact_list('#funnels_flow_summary', items, 7);
+    };
+
+    const render_funnels_period = () => {
+        if(!get_element('#funnels_total_funnels')) {
+            return;
+        }
+
+        const selected_filter_payload = funnels_analytics_payload.filters?.[funnels_analytics_filter] || {};
+        const period_data = selected_filter_payload.periods?.[funnels_analytics_period] || funnels_analytics_payload.periods?.[funnels_analytics_period] || {};
+        const selected_period_label = period_labels[funnels_analytics_period] || period_labels['30d'];
+        const flow = period_data.flow ?? {};
+
+        document.querySelector('#funnels_total_funnels_label').innerText = `<?= l('admin_index.funnels_analytics.total_funnels') ?> (${selected_period_label})`;
+        document.querySelector('#funnels_active_funnels_label').innerText = `<?= l('admin_index.funnels_analytics.active_funnels') ?> (${selected_period_label})`;
+        document.querySelector('#funnels_active_collaborators_label').innerText = `<?= l('admin_index.funnels_analytics.active_collaborators') ?> (${selected_period_label})`;
+        document.querySelector('#funnels_unique_clicks_label').innerText = `<?= l('admin_index.funnels_analytics.unique_clicks') ?> (${selected_period_label})`;
+        document.querySelector('#funnels_leads_label').innerText = `<?= l('admin_index.funnels_analytics.leads') ?> (${selected_period_label})`;
+        document.querySelector('#funnels_conversion_rate_label').innerText = `<?= l('admin_index.funnels_analytics.conversion_rate') ?> (${selected_period_label})`;
+        document.querySelector('#funnels_flow_entry_points_label').innerText = `<?= l('admin_index.funnels_analytics.flow_entry_points') ?> (${selected_period_label})`;
+        document.querySelector('#funnels_flow_starts_label').innerText = `<?= l('admin_index.funnels_analytics.flow_form_starts') ?> (${selected_period_label})`;
+        document.querySelector('#funnels_flow_success_label').innerText = `<?= l('admin_index.funnels_analytics.flow_submit_success') ?> (${selected_period_label})`;
+        document.querySelector('#funnels_flow_cta_label').innerText = `<?= l('admin_index.funnels_analytics.flow_cta_clicks') ?> (${selected_period_label})`;
+
+        document.querySelector('#funnels_total_funnels').innerText = nr(period_data.total_funnels ?? 0);
+        document.querySelector('#funnels_active_funnels').innerText = nr(period_data.active_funnels ?? 0);
+        document.querySelector('#funnels_active_collaborators').innerText = nr(period_data.active_collaborators ?? 0);
+        document.querySelector('#funnels_unique_clicks').innerText = nr(period_data.unique_clicks ?? 0);
+        document.querySelector('#funnels_leads').innerText = nr(period_data.leads ?? 0);
+        document.querySelector('#funnels_conversion_rate').innerText = `${nr(period_data.conversion_rate ?? 0)}%`;
+        document.querySelector('#funnels_flow_entry_points').innerText = nr(flow.entry_points ?? 0);
+        document.querySelector('#funnels_flow_starts').innerText = nr(flow.form_starts ?? 0);
+        document.querySelector('#funnels_flow_success').innerText = nr(flow.submit_success ?? 0);
+        document.querySelector('#funnels_flow_cta').innerText = nr(flow.cta_clicks ?? 0);
+        document.querySelector('#funnels_flow_starts_meta').innerText = `<?= l('admin_index.funnels_analytics.flow_entry_to_start') ?>: ${nr(flow.entry_to_start_rate ?? 0)}%`;
+        document.querySelector('#funnels_flow_success_meta').innerText = `<?= l('admin_index.funnels_analytics.flow_start_to_success') ?>: ${nr(flow.start_to_success_rate ?? 0)}%`;
+        document.querySelector('#funnels_flow_cta_meta').innerText = `<?= l('admin_index.funnels_analytics.flow_success_to_cta') ?>: ${nr(flow.success_to_cta_rate ?? 0)}%`;
+
+        document.querySelector('#funnels_top_funnels_label').innerText = `<?= l('admin_index.funnels_analytics.top_funnels_header') ?> (${selected_period_label})`;
+        document.querySelector('#funnels_top_collaborators_label').innerText = `<?= l('admin_index.funnels_analytics.top_collaborators_header') ?> (${selected_period_label})`;
+        document.querySelector('#funnels_open_mode_label').innerText = `<?= l('admin_index.funnels_analytics.open_mode_header') ?> (${selected_period_label})`;
+        document.querySelector('#funnels_thank_you_label').innerText = `<?= l('admin_index.funnels_analytics.thank_you_header') ?> (${selected_period_label})`;
+        document.querySelector('#funnels_top_conversion_label').innerText = `<?= l('admin_index.funnels_analytics.top_conversion_header') ?> (${selected_period_label})`;
+        document.querySelector('#funnels_opportunities_label').innerText = `<?= l('admin_index.funnels_analytics.opportunities_header') ?> (${selected_period_label})`;
+        document.querySelector('#funnels_flow_panel_label').innerText = `<?= l('admin_index.funnels_analytics.flow_header') ?> (${selected_period_label})`;
+        document.querySelector('#funnels_flow_opportunities_label').innerText = `<?= l('admin_index.funnels_analytics.flow_opportunities_header') ?> (${selected_period_label})`;
+
+        const top_funnels_items = (period_data.top_funnels ?? []).map((item, index) => `
+            <div class="border-bottom py-2">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div class="pr-3">
+                        <div>${index + 1}. <a href="${item.analytics_url}">${escape_html(item.name || '<?= l('global.unknown') ?>')}</a></div>
+                        <div class="text-muted"><a href="${item.admin_user_url}">${escape_html(item.user_name || '<?= l('global.unknown') ?>')}</a> · ${escape_html(item.biolink_url || '')}</div>
+                        <div class="text-muted">${escape_html(funnel_open_mode_labels[item.open_mode] || item.open_mode || '')} · ${escape_html(funnel_thank_you_type_labels[item.thank_you_type] || item.thank_you_type || '')}</div>
+                    </div>
+                    <div class="text-right">
+                        <div><strong>${nr(item.leads ?? 0)}</strong></div>
+                        <div class="text-muted"><?= l('admin_index.funnels_analytics.unique_clicks') ?>: ${nr(item.unique_clicks ?? 0)}</div>
+                        <div class="text-muted">${nr(item.conversion_rate ?? 0)}%</div>
+                    </div>
+                </div>
+            </div>
+        `);
+        render_compact_list('#funnels_top_funnels', top_funnels_items, 5);
+
+        const top_collaborators_items = (period_data.top_collaborators ?? []).map((item, index) => `
+            <div class="border-bottom py-2">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div class="pr-3">
+                        <div>${index + 1}. <a href="${item.admin_user_url}">${escape_html(item.name || '<?= l('global.unknown') ?>')}</a></div>
+                        <div class="text-muted"><?= l('admin_index.funnels_analytics.breakdown_meta') ?>: ${nr(item.funnels_count ?? 0)} / <?= l('admin_index.funnels_analytics.active_funnels_short') ?> ${nr(item.active_funnels ?? 0)}</div>
+                    </div>
+                    <div class="text-right">
+                        <div><strong>${nr(item.leads ?? 0)}</strong></div>
+                        <div class="text-muted"><?= l('admin_index.funnels_analytics.unique_clicks') ?>: ${nr(item.unique_clicks ?? 0)}</div>
+                        <div class="text-muted">${nr(item.conversion_rate ?? 0)}%</div>
+                    </div>
+                </div>
+            </div>
+        `);
+        render_compact_list('#funnels_top_collaborators', top_collaborators_items, 5);
+
+        render_funnels_breakdown('#funnels_open_mode_breakdown', period_data.open_mode_breakdown ?? [], funnel_open_mode_labels);
+        render_funnels_breakdown('#funnels_thank_you_breakdown', period_data.thank_you_type_breakdown ?? [], funnel_thank_you_type_labels);
+
+        const top_conversion_items = (period_data.top_funnels_by_conversion ?? []).map((item, index) => `
+            <div class="border-bottom py-2">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div class="pr-3">
+                        <div>${index + 1}. <a href="${item.analytics_url}">${escape_html(item.name || '<?= l('global.unknown') ?>')}</a></div>
+                        <div class="text-muted"><a href="${item.admin_user_url}">${escape_html(item.user_name || '<?= l('global.unknown') ?>')}</a></div>
+                    </div>
+                    <div class="text-right">
+                        <div><strong>${nr(item.conversion_rate ?? 0)}%</strong></div>
+                        <div class="text-muted"><?= l('admin_index.funnels_analytics.unique_clicks') ?>: ${nr(item.unique_clicks ?? 0)}</div>
+                        <div class="text-muted"><?= l('admin_index.funnels_analytics.leads') ?>: ${nr(item.leads ?? 0)}</div>
+                    </div>
+                </div>
+            </div>
+        `);
+        render_compact_list('#funnels_top_conversion', top_conversion_items, 5);
+
+        const opportunities_items = (period_data.opportunities ?? []).map((item, index) => `
+            <div class="border-bottom py-2">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div class="pr-3">
+                        <div>${index + 1}. <a href="${item.analytics_url}">${escape_html(item.name || '<?= l('global.unknown') ?>')}</a></div>
+                        <div class="text-muted"><a href="${item.admin_user_url}">${escape_html(item.user_name || '<?= l('global.unknown') ?>')}</a></div>
+                    </div>
+                    <div class="text-right">
+                        <div><strong>${nr(item.unique_clicks ?? 0)}</strong></div>
+                        <div class="text-muted"><?= l('admin_index.funnels_analytics.zero_leads') ?></div>
+                    </div>
+                </div>
+            </div>
+        `);
+        render_compact_list('#funnels_opportunities', opportunities_items, 5);
+        render_funnels_flow_summary(flow);
+
+        const flow_opportunities_items = (period_data.flow_opportunities ?? []).map((item, index) => `
+            <div class="border-bottom py-2">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div class="pr-3">
+                        <div>${index + 1}. <a href="${item.analytics_url}">${escape_html(item.name || '<?= l('global.unknown') ?>')}</a></div>
+                        <div class="text-muted"><a href="${item.admin_user_url}">${escape_html(item.user_name || '<?= l('global.unknown') ?>')}</a></div>
+                        <div class="text-muted"><?= l('admin_index.funnels_analytics.flow_weakest_stage') ?>: ${escape_html({
+                            entry_to_start: '<?= l('admin_index.funnels_analytics.flow_entry_to_start') ?>',
+                            start_to_success: '<?= l('admin_index.funnels_analytics.flow_start_to_success') ?>',
+                            success_to_cta: '<?= l('admin_index.funnels_analytics.flow_success_to_cta') ?>'
+                        }[item.weakest_stage] || item.weakest_stage || '')}</div>
+                    </div>
+                    <div class="text-right">
+                        <div><strong>${nr(item.weakest_rate ?? 0)}%</strong></div>
+                        <div class="text-muted"><?= l('admin_index.funnels_analytics.flow_entry_points') ?>: ${nr(item.entry_points ?? 0)}</div>
+                        <div class="text-muted"><?= l('admin_index.funnels_analytics.flow_submit_success') ?>: ${nr(item.submit_success ?? 0)}</div>
+                    </div>
+                </div>
+            </div>
+        `);
+        render_compact_list('#funnels_flow_opportunities', flow_opportunities_items, 5);
+
+        render_funnels_chart(period_data.chart ?? {}, selected_period_label);
+    };
+
+    const render_funnels_analytics = funnels_analytics => {
+        if(!get_element('#funnels_total_funnels')) {
+            return;
+        }
+
+        funnels_analytics_payload = funnels_analytics ?? {};
+        render_funnels_period();
+    };
+    /* /Custom code: FC-2026-03-26 */
+
     const hide_biolink_search_results = () => {
         const results_container = document.querySelector('#biolink_collaborator_search_results');
         if(!results_container) {
@@ -2401,6 +2849,28 @@ $dashboard_toggle_url = $data->dashboard_toggle_url ?? ($is_sensitive_dashboard 
         });
     });
 
+    document.querySelectorAll('[data-funnels-period]').forEach(button => {
+        button.addEventListener('click', event => {
+            funnels_analytics_period = event.currentTarget.getAttribute('data-funnels-period');
+
+            document.querySelectorAll('[data-funnels-period]').forEach(item => item.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+
+            render_funnels_period();
+        });
+    });
+
+    document.querySelectorAll('[data-funnels-filter]').forEach(button => {
+        button.addEventListener('click', event => {
+            funnels_analytics_filter = event.currentTarget.getAttribute('data-funnels-filter');
+
+            document.querySelectorAll('[data-funnels-filter]').forEach(item => item.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+
+            render_funnels_period();
+        });
+    });
+
     /* Custom code: FC-2026-03-18: sales subscriptions chart period buttons */
     document.querySelectorAll('[data-sales-subscriptions-period]').forEach(button => {
         button.addEventListener('click', event => {
@@ -2511,6 +2981,7 @@ $dashboard_toggle_url = $data->dashboard_toggle_url ?? ($is_sensitive_dashboard 
                 render_action_center(data.details.admin_analytics.action_center ?? {});
                 render_billing_risk(data.details.admin_analytics.billing_risk ?? {});
                 render_biolink_analytics(data.details.admin_analytics.biolink_analytics ?? {});
+                render_funnels_analytics(data.details.admin_analytics.funnels_analytics ?? {});
             }
             /* /Custom code: FC-2026-03-04 */
 

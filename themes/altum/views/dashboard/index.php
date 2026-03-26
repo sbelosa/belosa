@@ -1,5 +1,222 @@
 <?php defined('ALTUMCODE') || die() ?>
 
+<?php ob_start() ?>
+<style>
+    .dashboard-funnel-card {
+        position: relative;
+        overflow: hidden;
+        border: 1px solid rgba(255,255,255,.08);
+        border-radius: 1.35rem;
+        background:
+            radial-gradient(circle at top right, rgba(73, 227, 207, 0.1), transparent 28%),
+            linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.015));
+    }
+
+    .dashboard-funnel-card::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        background: linear-gradient(135deg, rgba(73, 227, 207, 0.05), transparent 48%);
+    }
+
+    .dashboard-funnel-shell {
+        position: relative;
+        z-index: 1;
+        display: grid;
+        grid-template-columns: minmax(0, 1.35fr) minmax(18rem, 1fr);
+        gap: 1rem;
+        align-items: stretch;
+    }
+
+    .dashboard-funnel-side,
+    .dashboard-funnel-metrics {
+        min-width: 0;
+    }
+
+    .dashboard-funnel-kpis {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: .8rem;
+    }
+
+    .dashboard-funnel-kpi {
+        border-radius: 1rem;
+        padding: .9rem 1rem;
+        border: 1px solid rgba(255,255,255,.06);
+        background: rgba(255,255,255,.03);
+    }
+
+    .dashboard-funnel-kpi-label {
+        color: var(--gray-500);
+        font-size: .74rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .04em;
+        margin-bottom: .45rem;
+    }
+
+    .dashboard-funnel-kpi-value {
+        color: #fff;
+        font-size: 1.3rem;
+        font-weight: 700;
+        line-height: 1.15;
+    }
+
+    .dashboard-funnel-insights {
+        display: flex;
+        flex-direction: column;
+        gap: .7rem;
+        margin-top: .9rem;
+    }
+
+    .dashboard-funnel-insight {
+        display: flex;
+        justify-content: space-between;
+        gap: .75rem;
+        padding: .85rem .95rem;
+        border-radius: 1rem;
+        border: 1px solid rgba(255,255,255,.06);
+        background: rgba(255,255,255,.03);
+    }
+
+    .dashboard-funnel-insight-value {
+        color: #fff;
+        font-weight: 700;
+    }
+
+    .dashboard-funnel-status-copy {
+        max-width: 38rem;
+    }
+
+    .dashboard-funnel-status-copy .btn {
+        border-radius: .9rem;
+    }
+
+    .dashboard-funnel-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: .4rem;
+        border-radius: 999px;
+        padding: .35rem .7rem;
+        font-size: .76rem;
+        font-weight: 700;
+        margin-bottom: .8rem;
+    }
+
+    .dashboard-funnel-badge.is-good {
+        color: #34d399;
+        background: rgba(52, 211, 153, .12);
+    }
+
+    .dashboard-funnel-badge.is-warning {
+        color: #fbbf24;
+        background: rgba(251, 191, 36, .12);
+    }
+
+    .dashboard-funnel-badge.is-danger,
+    .dashboard-funnel-badge.is-setup {
+        color: #fb7185;
+        background: rgba(251, 113, 133, .12);
+    }
+
+    .dashboard-modern-card {
+        position: relative;
+        overflow: hidden;
+        border: 1px solid rgba(255,255,255,.08);
+        border-radius: 1.2rem;
+        background:
+            radial-gradient(circle at top right, rgba(73, 227, 207, 0.07), transparent 24%),
+            linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.015));
+        box-shadow: 0 18px 40px rgba(15, 23, 42, .12);
+    }
+
+    .dashboard-modern-card::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        background: linear-gradient(135deg, rgba(73, 227, 207, 0.04), transparent 52%);
+    }
+
+    .dashboard-modern-card > .card-body {
+        position: relative;
+        z-index: 1;
+    }
+
+    .dashboard-section-heading {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-bottom: 1.1rem;
+        padding: 0 0 .25rem;
+    }
+
+    .dashboard-section-heading .h5 {
+        margin-bottom: 0;
+    }
+
+    .dashboard-onboarding-card .small + .small {
+        margin-top: .35rem;
+    }
+
+    .dashboard-kpi-card .badge {
+        border-radius: 999px;
+        padding: .35rem .55rem;
+    }
+
+    .dashboard-chart-card {
+        margin-top: 1rem;
+    }
+
+    .dashboard-stack {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .dashboard-grid-tight {
+        margin: 0 -.5rem;
+        row-gap: 0;
+    }
+
+    .dashboard-grid-tight > [class*="col-"] {
+        padding: .5rem;
+    }
+
+    .dashboard-modern-card .card-body {
+        padding: 1rem 1.1rem;
+    }
+
+    .dashboard-funnel-card .card-body {
+        padding: 1.1rem 1.15rem;
+    }
+
+    .dashboard-list-grid + .dashboard-list-grid {
+        margin-top: 0;
+    }
+
+    @media (max-width: 991.98px) {
+        .dashboard-funnel-shell,
+        .dashboard-funnel-kpis {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 767.98px) {
+        .dashboard-modern-card .card-body,
+        .dashboard-funnel-card .card-body {
+            padding: .95rem 1rem;
+        }
+
+        .dashboard-stack {
+            gap: .85rem;
+        }
+    }
+</style>
+<?php \Altum\Event::add_content(ob_get_clean(), 'head') ?>
+
 <div class="container">
     <?= \Altum\Alerts::output_alerts() ?>
 
@@ -27,189 +244,86 @@
         <!-- /Custom code: FC-2026-02-24 -->
     <?php endif ?>
 
-    <?php
-        /* Custom code: FC-2026-03-03: hidden dashboard link type cards for all users */
-        $show_admin_only_dashboard_link_cards = false;
-
-    $enabled_links = [];
-    if(settings()->links->biolinks_is_enabled) $enabled_links[] = 'biolink';
-    if(settings()->links->shortener_is_enabled) $enabled_links[] = 'link';
-        if(settings()->links->files_is_enabled && $show_admin_only_dashboard_link_cards) $enabled_links[] = 'file';
-        if(settings()->links->vcards_is_enabled && $show_admin_only_dashboard_link_cards) $enabled_links[] = 'vcard';
-    if(settings()->links->events_is_enabled) $enabled_links[] = 'event';
-        if(settings()->links->static_is_enabled && $show_admin_only_dashboard_link_cards) $enabled_links[] = 'static';
-    $enabled_links_count = count($enabled_links);
-
-    $col_class = match ($enabled_links_count) {
-        1 => 'col-12',
-        2,4 => 'col-12 col-sm-6',
-        3,5,6 => 'col-12 col-sm-6 col-xl-4',
-        default => null,
-    }
-    ?>
-
     <div class="mb-5">
-        <div class="row m-n3 justify-content-between">
-            <?php if(settings()->links->biolinks_is_enabled): ?>
-                <div class="<?= $col_class ?> p-3">
-                    <div class="card h-100 position-relative">
-                        <div class="card-body d-flex">
-                            <div>
-                                <div class="card border-0 mr-3 position-static" style="background: #eff6ff;">
-                                    <div class="p-3 d-flex align-items-center justify-content-between">
-                                        <a href="<?= url('links?type=biolink') ?>" class="stretched-link" style="color: #3b82f6;">
-                                            <i class="fas fa-fw fa-hashtag fa-lg"></i>
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div>
-                                <div class="card-title h4 m-0" id="biolink_links_total">
-                                    <span class="spinner-border spinner-border-sm" role="status"></span>
-                                </div>
-                                <span class="text-muted"><?= l('dashboard.biolinks') ?></span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            <?php endif ?>
-
-            <?php if(settings()->links->shortener_is_enabled): ?>
-                <div class="<?= $col_class ?> p-3">
-                    <div class="card h-100 position-relative">
-                        <div class="card-body d-flex">
-                            <div>
-                                <div class="card border-0 mr-3 position-static" style="background: #f0fdfa;">
-                                    <div class="p-3 d-flex align-items-center justify-content-between">
-                                        <a href="<?= url('links?type=link') ?>" class="stretched-link" style="color: #14b8a6;">
-                                            <i class="fas fa-fw fa-link fa-lg"></i>
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div>
-                                <div class="card-title h4 m-0" id="link_links_total">
-                                    <span class="spinner-border spinner-border-sm" role="status"></span>
-                                </div>
-                                <span class="text-muted"><?= l('dashboard.links') ?></span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            <?php endif ?>
-
-            <?php if(settings()->links->files_is_enabled && $show_admin_only_dashboard_link_cards): ?>
-                <div class="<?= $col_class ?> p-3">
-                    <div class="card h-100 position-relative">
-                        <div class="card-body d-flex">
-                            <div>
-                                <div class="card border-0 mr-3 position-static" style="background: #ecfdf5;">
-                                    <div class="p-3 d-flex align-items-center justify-content-between">
-                                        <a href="<?= url('links?type=file') ?>" class="stretched-link" style="color: #10b981;">
-                                            <i class="fas fa-fw fa-file fa-lg"></i>
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div>
-                                <div class="card-title h4 m-0" id="file_links_total">
-                                    <span class="spinner-border spinner-border-sm" role="status"></span>
-                                </div>
-                                <span class="text-muted"><?= l('dashboard.file_links') ?></span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            <?php endif ?>
-
-            <?php if(settings()->links->vcards_is_enabled && $show_admin_only_dashboard_link_cards): ?>
-                <div class="<?= $col_class ?> p-3">
-                    <div class="card h-100 position-relative">
-                        <div class="card-body d-flex">
-                            <div>
-                                <div class="card border-0 mr-3 position-static" style="background: #ecfeff;">
-                                    <div class="p-3 d-flex align-items-center justify-content-between">
-                                        <a href="<?= url('links?type=vcard') ?>" class="stretched-link" style="color: #06b6d4;">
-                                            <i class="fas fa-fw fa-id-card fa-lg"></i>
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div>
-                                <div class="card-title h4 m-0" id="vcard_links_total">
-                                    <span class="spinner-border spinner-border-sm" role="status"></span>
-                                </div>
-                                <span class="text-muted"><?= l('dashboard.vcard_links') ?></span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            <?php endif ?>
-
-            <?php if(settings()->links->events_is_enabled): ?>
-                <div class="<?= $col_class ?> p-3">
-                    <div class="card h-100 position-relative">
-                        <div class="card-body d-flex">
-                            <div>
-                                <div class="card border-0 mr-3 position-static" style="background: #eef2ff;">
-                                    <div class="p-3 d-flex align-items-center justify-content-between">
-                                        <a href="<?= url('links?type=event') ?>" class="stretched-link" style="color: #6366f1;">
-                                            <i class="fas fa-fw fa-calendar fa-lg"></i>
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div>
-                                <div class="card-title h4 m-0" id="event_links_total">
-                                    <span class="spinner-border spinner-border-sm" role="status"></span>
-                                </div>
-                                <span class="text-muted"><?= l('dashboard.event_links') ?></span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            <?php endif ?>
-
-            <?php if(settings()->links->static_is_enabled && $show_admin_only_dashboard_link_cards): ?>
-                <div class="<?= $col_class ?> p-3">
-                    <div class="card h-100 position-relative">
-                        <div class="card-body d-flex">
-                            <div>
-                                <div class="card border-0 mr-3 position-static" style="background: #fdf4ff;">
-                                    <div class="p-3 d-flex align-items-center justify-content-between">
-                                        <a href="<?= url('links?type=static') ?>" class="stretched-link" style="color: #c026d3;">
-                                            <i class="fas fa-fw fa-file-code fa-lg"></i>
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div>
-                                <div class="card-title h4 m-0" id="static_links_total">
-                                    <span class="spinner-border spinner-border-sm" role="status"></span>
-                                </div>
-                                <span class="text-muted"><?= l('dashboard.static_links') ?></span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            <?php endif ?>
-        </div>
-
         <!-- Custom code: FC-2026-03-05: productivity-first forever dashboard section -->
-        <div class="mt-4">
-            <div class="d-flex flex-column flex-md-row justify-content-between mb-3">
+        <div class="mt-4 dashboard-stack">
+            <div class="dashboard-section-heading">
                 <h2 class="h5 mb-2 mb-md-0"><i class="fas fa-fw fa-sm fa-chart-line text-primary mr-1"></i> <?= l('dashboard.forever_analytics.header') ?></h2>
                 <small class="text-muted"><?= l('dashboard.forever_analytics.subheader') ?></small>
             </div>
 
-            <div class="alert alert-light border d-flex flex-column flex-lg-row justify-content-between align-items-start mb-3">
-                <div>
+            <div class="card dashboard-funnel-card border-0">
+                <div class="card-body">
+                    <div class="dashboard-funnel-shell">
+                        <div class="dashboard-funnel-side">
+                            <div id="dashboard_funnel_status_badge"><span class="spinner-border spinner-border-sm" role="status"></span></div>
+                            <div class="dashboard-funnel-status-copy">
+                                <h3 class="h5 mb-2"><?= l('dashboard.funnel.header') ?></h3>
+                                <div class="text-muted mb-2"><?= l('dashboard.funnel.subheader') ?></div>
+                                <div class="font-weight-bold text-body mb-2" id="dashboard_funnel_status_title"><span class="spinner-border spinner-border-sm" role="status"></span></div>
+                                <div class="text-muted mb-3" id="dashboard_funnel_status_description"><span class="spinner-border spinner-border-sm" role="status"></span></div>
+                                <div class="d-flex flex-wrap align-items-center" style="gap: .75rem;">
+                                    <a href="<?= url('funnels-analytics') ?>" class="btn btn-sm btn-outline-primary"><?= l('dashboard.funnel.analytics_cta') ?></a>
+                                    <a href="<?= url('links?type=biolink') ?>" class="btn btn-sm btn-primary" id="dashboard_funnel_primary_cta"><?= l('dashboard.funnel.status.setup_cta') ?></a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="dashboard-funnel-metrics">
+                            <div class="dashboard-funnel-kpis">
+                                <div class="dashboard-funnel-kpi">
+                                    <div class="dashboard-funnel-kpi-label"><?= l('dashboard.funnel.total_funnels') ?></div>
+                                    <div class="dashboard-funnel-kpi-value" id="dashboard_funnel_total"><span class="spinner-border spinner-border-sm" role="status"></span></div>
+                                </div>
+
+                                <div class="dashboard-funnel-kpi">
+                                    <div class="dashboard-funnel-kpi-label"><?= l('dashboard.funnel.leads_30d') ?></div>
+                                    <div class="dashboard-funnel-kpi-value" id="dashboard_funnel_leads_30d"><span class="spinner-border spinner-border-sm" role="status"></span></div>
+                                </div>
+
+                                <div class="dashboard-funnel-kpi">
+                                    <div class="dashboard-funnel-kpi-label"><?= l('dashboard.funnel.unique_clicks_30d') ?></div>
+                                    <div class="dashboard-funnel-kpi-value" id="dashboard_funnel_unique_clicks_30d"><span class="spinner-border spinner-border-sm" role="status"></span></div>
+                                </div>
+
+                                <div class="dashboard-funnel-kpi">
+                                    <div class="dashboard-funnel-kpi-label"><?= l('dashboard.funnel.conversion_rate_30d') ?></div>
+                                    <div class="dashboard-funnel-kpi-value" id="dashboard_funnel_conversion_rate_30d"><span class="spinner-border spinner-border-sm" role="status"></span></div>
+                                </div>
+                            </div>
+
+                            <div class="dashboard-funnel-insights">
+                                <div class="dashboard-funnel-insight">
+                                    <div>
+                                        <div class="dashboard-funnel-kpi-label mb-1"><?= l('dashboard.funnel.best_open_mode') ?></div>
+                                        <div class="text-muted small"><?= l('dashboard.funnel.best_open_mode_help') ?></div>
+                                    </div>
+                                    <div class="dashboard-funnel-insight-value" id="dashboard_funnel_best_open_mode"><span class="spinner-border spinner-border-sm" role="status"></span></div>
+                                </div>
+
+                                <div class="dashboard-funnel-insight">
+                                    <div>
+                                        <div class="dashboard-funnel-kpi-label mb-1"><?= l('dashboard.funnel.best_thank_you_type') ?></div>
+                                        <div class="text-muted small"><?= l('dashboard.funnel.best_thank_you_type_help') ?></div>
+                                    </div>
+                                    <div class="dashboard-funnel-insight-value" id="dashboard_funnel_best_thank_you_type"><span class="spinner-border spinner-border-sm" role="status"></span></div>
+                                </div>
+
+                                <div class="dashboard-funnel-insight">
+                                    <div>
+                                        <div class="dashboard-funnel-kpi-label mb-1"><?= l('dashboard.funnel.last_lead') ?></div>
+                                        <div class="text-muted small"><?= l('dashboard.funnel.last_lead_help') ?></div>
+                                    </div>
+                                    <div class="dashboard-funnel-insight-value" id="dashboard_funnel_last_lead"><span class="spinner-border spinner-border-sm" role="status"></span></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card dashboard-modern-card dashboard-onboarding-card border-0">
+                <div class="card-body">
                     <div class="font-weight-bold mb-2"><?= l('dashboard.forever_analytics.onboarding_header') ?></div>
                     <div class="small text-muted"><?= l('dashboard.forever_analytics.onboarding_step_1') ?></div>
                     <div class="small text-muted"><?= l('dashboard.forever_analytics.onboarding_step_2') ?></div>
@@ -217,9 +331,9 @@
                 </div>
             </div>
 
-            <div class="row m-n2 mb-2">
+            <div class="row dashboard-grid-tight">
                 <div class="col-12 col-md-6 col-xl-3 p-2">
-                    <div class="card h-100">
+                    <div class="card h-100 dashboard-modern-card dashboard-kpi-card">
                         <div class="card-body">
                             <small class="text-muted d-block mb-1"><?= l('dashboard.forever_analytics.kpi_biolink_visits_title') ?></small>
                             <div class="h5 mb-0" id="dashboard_biolink_visits_30d"><span class="spinner-border spinner-border-sm" role="status"></span></div>
@@ -229,7 +343,7 @@
                     </div>
                 </div>
                 <div class="col-12 col-md-6 col-xl-3 p-2">
-                    <div class="card h-100">
+                    <div class="card h-100 dashboard-modern-card dashboard-kpi-card">
                         <div class="card-body">
                             <small class="text-muted d-block mb-1"><?= l('dashboard.forever_analytics.kpi_shop_clicks_title') ?></small>
                             <div class="d-flex align-items-center justify-content-between">
@@ -242,7 +356,7 @@
                     </div>
                 </div>
                 <div class="col-12 col-md-6 col-xl-3 p-2">
-                    <div class="card h-100">
+                    <div class="card h-100 dashboard-modern-card dashboard-kpi-card">
                         <div class="card-body">
                             <small class="text-muted d-block mb-1"><?= l('dashboard.forever_analytics.kpi_shop_ctr_title') ?></small>
                             <div class="d-flex align-items-center justify-content-between">
@@ -255,7 +369,7 @@
                     </div>
                 </div>
                 <div class="col-12 col-md-6 col-xl-3 p-2">
-                    <div class="card h-100">
+                    <div class="card h-100 dashboard-modern-card dashboard-kpi-card">
                         <div class="card-body">
                             <small class="text-muted d-block mb-1"><?= l('dashboard.forever_analytics.kpi_shop_trend_title') ?></small>
                             <div class="d-flex align-items-center justify-content-between">
@@ -268,9 +382,9 @@
                 </div>
             </div>
 
-            <div class="row m-n2 mb-2">
+            <div class="row dashboard-grid-tight">
                 <div class="col-12 col-md-6 p-2">
-                    <div class="card h-100">
+                    <div class="card h-100 dashboard-modern-card dashboard-kpi-card">
                         <div class="card-body">
                             <small class="text-muted d-block mb-1"><?= l('dashboard.forever_analytics.kpi_registration_clicks_title') ?></small>
                             <div class="d-flex align-items-center justify-content-between">
@@ -284,7 +398,7 @@
                 </div>
 
                 <div class="col-12 col-md-6 p-2">
-                    <div class="card h-100">
+                    <div class="card h-100 dashboard-modern-card dashboard-kpi-card">
                         <div class="card-body">
                             <small class="text-muted d-block mb-1"><?= l('dashboard.forever_analytics.kpi_registration_ctr_title') ?></small>
                             <div class="d-flex align-items-center justify-content-between">
@@ -298,7 +412,7 @@
                 </div>
             </div>
 
-            <div class="card mb-2">
+            <div class="card dashboard-modern-card">
                 <div class="card-body">
                     <h3 class="h6 mb-3"><?= l('dashboard.forever_analytics.action_header') ?></h3>
                     <small class="text-muted d-block mb-3"><?= l('dashboard.forever_analytics.action_subheader') ?></small>
@@ -309,9 +423,9 @@
                 </div>
             </div>
 
-            <div class="row m-n2">
+            <div class="row dashboard-grid-tight dashboard-list-grid">
                 <div class="col-12 col-xl-6 p-2">
-                    <div class="card h-100">
+                    <div class="card h-100 dashboard-modern-card">
                         <div class="card-body">
                             <h3 class="h6 mb-3"><?= l('dashboard.forever_analytics.top_countries_30d') ?></h3>
                             <div id="dashboard_top_countries_30d" class="small text-muted">
@@ -323,7 +437,7 @@
                 </div>
 
                 <div class="col-12 col-xl-6 p-2">
-                    <div class="card h-100">
+                    <div class="card h-100 dashboard-modern-card">
                         <div class="card-body">
                             <h3 class="h6 mb-3"><?= l('dashboard.forever_analytics.top_forever_pages_30d') ?></h3>
                             <div id="dashboard_top_forever_pages_30d" class="small text-muted">
@@ -335,9 +449,9 @@
                 </div>
             </div>
 
-            <div class="row m-n2 mt-1">
+            <div class="row dashboard-grid-tight dashboard-list-grid">
                 <div class="col-12 col-xl-6 p-2">
-                    <div class="card h-100">
+                    <div class="card h-100 dashboard-modern-card">
                         <div class="card-body">
                             <h3 class="h6 mb-3"><?= l('dashboard.forever_analytics.top_shop_sources_30d') ?></h3>
                             <div id="dashboard_top_shop_sources_30d" class="small text-muted">
@@ -349,7 +463,7 @@
                 </div>
 
                 <div class="col-12 col-xl-6 p-2">
-                    <div class="card h-100">
+                    <div class="card h-100 dashboard-modern-card">
                         <div class="card-body">
                             <h3 class="h6 mb-3"><?= l('dashboard.forever_analytics.top_registration_sources_30d') ?></h3>
                             <div id="dashboard_top_registration_sources_30d" class="small text-muted">
@@ -363,7 +477,7 @@
         </div>
         <!-- /Custom code: FC-2026-03-05 -->
 
-        <div class="card mt-5">
+        <div class="card dashboard-modern-card dashboard-chart-card">
             <div class="card-body">
                 <div class="chart-container d-none" id="pageviews_chart_container">
                     <canvas id="pageviews_chart"></canvas>
@@ -388,13 +502,23 @@
 
         <?php require THEME_PATH . 'views/partials/js_chart_defaults.php' ?>
     </div>
-
-    <?= $this->views['links_content'] ?>
 </div>
 
 <?php ob_start() ?>
     <script>
     'use strict';
+
+        const funnel_open_mode_labels = {
+            popup: <?= json_encode(l('biolink_lead_funnel.open_mode_popup')) ?>,
+            page: <?= json_encode(l('biolink_lead_funnel.open_mode_page')) ?>,
+        };
+
+        const funnel_thank_you_labels = {
+            message: <?= json_encode(l('biolink_lead_funnel.thank_you_type_message')) ?>,
+            external_url: <?= json_encode(l('biolink_lead_funnel.thank_you_type_external_url')) ?>,
+            biolink_redirect: <?= json_encode(l('biolink_lead_funnel.thank_you_type_biolink_redirect')) ?>,
+            file_download: <?= json_encode(l('biolink_lead_funnel.thank_you_type_file_download')) ?>,
+        };
 
         const dashboard_compact_state = {};
         const render_dashboard_compact_list = (container_selector, toggle_selector, items_html, visible_limit = 5) => {
@@ -505,6 +629,7 @@
 
                 /* Custom code: FC-2026-03-05: render productivity-first forever analytics */
                 const dashboard_forever_analytics = data.details.dashboard_forever_analytics ?? {};
+                const dashboard_funnel_analytics = data.details.dashboard_funnel_analytics ?? {};
 
                 const set_metric = (selector, value) => {
                     const element = document.querySelector(selector);
@@ -650,6 +775,58 @@
 
                 render_dashboard_compact_list('#dashboard_top_registration_sources_30d', '#dashboard_top_registration_sources_30d_toggle', top_registration_sources_html, 5);
                 /* /Custom code: FC-2026-03-05 */
+
+                const dashboard_funnel_status_badge = document.querySelector('#dashboard_funnel_status_badge');
+                if(dashboard_funnel_status_badge) {
+                    const funnel_status_map = {
+                        good: {
+                            label: <?= json_encode(l('dashboard.forever_analytics.status.good')) ?>,
+                            className: 'is-good',
+                            icon: 'fa-circle-check'
+                        },
+                        warning: {
+                            label: <?= json_encode(l('dashboard.forever_analytics.status.warning')) ?>,
+                            className: 'is-warning',
+                            icon: 'fa-triangle-exclamation'
+                        },
+                        danger: {
+                            label: <?= json_encode(l('dashboard.forever_analytics.status.danger')) ?>,
+                            className: 'is-danger',
+                            icon: 'fa-bolt'
+                        },
+                        setup: {
+                            label: <?= json_encode(l('dashboard.funnel.status.setup_badge')) ?>,
+                            className: 'is-setup',
+                            icon: 'fa-wand-magic-sparkles'
+                        }
+                    };
+
+                    const selected_funnel_status = funnel_status_map[dashboard_funnel_analytics.status] ?? funnel_status_map.setup;
+                    dashboard_funnel_status_badge.innerHTML = `<span class="dashboard-funnel-badge ${selected_funnel_status.className}"><i class="fas fa-fw ${selected_funnel_status.icon}"></i>${selected_funnel_status.label}</span>`;
+                }
+
+                const set_funnel_text = (selector, value) => {
+                    const element = document.querySelector(selector);
+                    if(element) {
+                        element.innerText = value ?? '—';
+                    }
+                };
+
+                set_funnel_text('#dashboard_funnel_status_title', dashboard_funnel_analytics.status_title);
+                set_funnel_text('#dashboard_funnel_status_description', dashboard_funnel_analytics.status_description);
+                set_funnel_text('#dashboard_funnel_total', `${nr(dashboard_funnel_analytics.active_funnels_30d ?? 0)} / ${nr(dashboard_funnel_analytics.total_funnels ?? 0)}`);
+                set_funnel_text('#dashboard_funnel_leads_30d', nr(dashboard_funnel_analytics.leads_30d ?? 0));
+                set_funnel_text('#dashboard_funnel_unique_clicks_30d', nr(dashboard_funnel_analytics.unique_clicks_30d ?? 0));
+                set_funnel_text('#dashboard_funnel_conversion_rate_30d', `${nr(Number(dashboard_funnel_analytics.conversion_rate_30d ?? 0))}%`);
+                set_funnel_text('#dashboard_funnel_best_open_mode', dashboard_funnel_analytics.best_open_mode?.type ? (funnel_open_mode_labels[dashboard_funnel_analytics.best_open_mode.type] ?? dashboard_funnel_analytics.best_open_mode.type) : '—');
+                set_funnel_text('#dashboard_funnel_best_thank_you_type', dashboard_funnel_analytics.best_thank_you_type?.type ? (funnel_thank_you_labels[dashboard_funnel_analytics.best_thank_you_type.type] ?? dashboard_funnel_analytics.best_thank_you_type.type) : '—');
+                set_funnel_text('#dashboard_funnel_last_lead', dashboard_funnel_analytics.last_lead_display ?? '—');
+
+                const dashboard_funnel_primary_cta = document.querySelector('#dashboard_funnel_primary_cta');
+                if(dashboard_funnel_primary_cta) {
+                    dashboard_funnel_primary_cta.innerText = dashboard_funnel_analytics.cta_label ?? <?= json_encode(l('dashboard.funnel.status.setup_cta')) ?>;
+                    dashboard_funnel_primary_cta.setAttribute('href', dashboard_funnel_analytics.cta_url ?? <?= json_encode(url('links?type=biolink')) ?>);
+                }
 
                 /* Remove loading */
                 document.querySelector('#pageviews_chart_loading').classList.add('d-none');

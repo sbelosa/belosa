@@ -1,30 +1,194 @@
 <?php defined('ALTUMCODE') || die() ?>
 
-<div class="row mb-4">
-    <div class="col-12 col-lg d-flex align-items-center mb-3 mb-lg-0 text-truncate">
-        <h1 class="h4 m-0 text-truncate">
-            <i class="fas fa-fw fa-xs <?= isset($data->filters->filters['type']) ? $data->links_types[$data->filters->filters['type']]['icon'] : $data->links_types['link']['icon'] ?> mr-1"></i>
-            <?= isset($data->filters->filters['type']) ? l('links.menu.' . $data->filters->filters['type']) : l('links.header') ?>
-        </h1>
+<style>
+    .fcc-links-shell {
+        display: flex;
+        flex-direction: column;
+        gap: 1.25rem;
+    }
 
-        <div class="ml-2">
-            <span data-toggle="tooltip" title="<?= l('links.subheader') ?>">
-                <i class="fas fa-fw fa-info-circle text-muted"></i>
-            </span>
+    .fcc-links-header {
+        background: linear-gradient(180deg, rgba(19, 27, 29, 0.92) 0%, rgba(15, 21, 23, 0.98) 100%);
+        border: 1px solid rgba(127, 227, 217, 0.08);
+        border-radius: 22px;
+        padding: 1.35rem 1.4rem;
+        box-shadow: 0 18px 40px rgba(0, 0, 0, 0.18);
+    }
+
+    .fcc-links-heading {
+        display: flex;
+        align-items: center;
+        gap: 0.85rem;
+        min-width: 0;
+    }
+
+    .fcc-links-heading-icon {
+        width: 2.85rem;
+        height: 2.85rem;
+        border-radius: 16px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, rgba(191, 246, 239, 0.18) 0%, rgba(142, 233, 222, 0.3) 100%);
+        color: #9ef1e7;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+        flex-shrink: 0;
+    }
+
+    .fcc-links-heading-copy {
+        min-width: 0;
+    }
+
+    .fcc-links-heading-copy h1 {
+        margin: 0;
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: #f5fbfb;
+    }
+
+    .fcc-links-toolbar {
+        gap: 0.75rem;
+    }
+
+    .fcc-links-action-btn {
+        border-radius: 14px;
+        min-height: 2.75rem;
+        font-weight: 600;
+        box-shadow: none !important;
+    }
+
+    .fcc-links-action-btn.btn-primary {
+        background: linear-gradient(135deg, #3fd7c7 0%, #6de9dd 100%);
+        border-color: transparent;
+        color: #082826;
+    }
+
+    .fcc-links-action-btn.btn-primary:hover {
+        color: #041b19;
+        transform: translateY(-1px);
+        box-shadow: 0 10px 24px rgba(63, 215, 199, 0.2) !important;
+    }
+
+    .fcc-links-action-btn.btn-outline-primary {
+        border-color: rgba(127, 227, 217, 0.34);
+        color: #97eee4;
+        background: rgba(127, 227, 217, 0.03);
+    }
+
+    .fcc-links-action-btn.btn-outline-primary:hover {
+        color: #d9fffb;
+        border-color: rgba(127, 227, 217, 0.48);
+        background: rgba(127, 227, 217, 0.1);
+    }
+
+    .fcc-links-action-btn.btn-light,
+    .fcc-links-action-btn.btn-dark {
+        background: rgba(255, 255, 255, 0.04);
+        border-color: rgba(255, 255, 255, 0.06);
+        color: #d5e1e2;
+    }
+
+    .fcc-links-action-btn.btn-light:hover,
+    .fcc-links-action-btn.btn-dark:hover {
+        background: rgba(127, 227, 217, 0.1);
+        border-color: rgba(127, 227, 217, 0.16);
+        color: #f5fbfb;
+    }
+
+    .fcc-links-table-card {
+        background: linear-gradient(180deg, rgba(19, 21, 24, 0.98) 0%, rgba(16, 18, 20, 0.98) 100%);
+        border: 1px solid rgba(127, 227, 217, 0.07);
+        border-radius: 22px;
+        overflow: hidden;
+        box-shadow: 0 20px 44px rgba(0, 0, 0, 0.16);
+    }
+
+    .fcc-links-table-card .table-custom-container {
+        border: 0;
+        background: transparent;
+    }
+
+    .fcc-links-table-card .table-custom {
+        margin-bottom: 0;
+    }
+
+    .fcc-links-table-card .table-custom thead th {
+        background: rgba(255, 255, 255, 0.02);
+        color: #e9f7f5;
+        border-bottom-color: rgba(127, 227, 217, 0.08);
+    }
+
+    .fcc-links-table-card .table-custom td {
+        border-top-color: rgba(255, 255, 255, 0.04);
+        vertical-align: middle;
+    }
+
+    .fcc-links-table-card .table-custom tbody tr {
+        transition: background 0.2s ease;
+    }
+
+    .fcc-links-table-card .table-custom tbody tr:hover {
+        background: rgba(127, 227, 217, 0.035);
+    }
+
+    .fcc-links-table-card .badge.badge-light {
+        background: rgba(255, 255, 255, 0.08);
+        color: #d6e5e4;
+        border: 1px solid rgba(255, 255, 255, 0.04);
+    }
+
+    .fcc-links-table-card .btn.btn-link.text-secondary {
+        color: #92aaab !important;
+    }
+
+    .fcc-links-table-card .btn.btn-link.text-secondary:hover {
+        color: #d8fffb !important;
+    }
+
+    .fcc-links-pagination {
+        margin-top: 1rem;
+        padding: 0 0.35rem;
+    }
+
+    .fcc-links-empty {
+        background: linear-gradient(180deg, rgba(19, 21, 24, 0.98) 0%, rgba(16, 18, 20, 0.98) 100%);
+        border: 1px solid rgba(127, 227, 217, 0.07);
+        border-radius: 22px;
+        padding: 0.25rem;
+    }
+</style>
+
+<div class="fcc-links-shell">
+<div class="fcc-links-header">
+<div class="row align-items-center">
+    <div class="col-12 col-lg mb-4 mb-lg-0 text-truncate">
+        <div class="fcc-links-heading">
+            <div class="fcc-links-heading-icon">
+                <i class="fas fa-fw <?= isset($data->filters->filters['type']) ? $data->links_types[$data->filters->filters['type']]['icon'] : $data->links_types['link']['icon'] ?>"></i>
+            </div>
+
+            <div class="fcc-links-heading-copy">
+                <h1 class="text-truncate">
+                    <?= isset($data->filters->filters['type']) ? l('links.menu.' . $data->filters->filters['type']) : l('links.header') ?>
+                    <span class="ml-1" data-toggle="tooltip" title="<?= l('links.subheader') ?>">
+                        <i class="fas fa-fw fa-info-circle text-muted"></i>
+                    </span>
+                </h1>
+            </div>
         </div>
     </div>
 
-    <div class="col-12 col-lg-auto d-flex flex-wrap gap-3 d-print-none">
+    <div class="col-12 col-lg-auto d-flex flex-wrap fcc-links-toolbar d-print-none">
         <?php if(isset($data->filters->filters['type'])): ?>
             <div>
-                <button type="button" data-toggle="modal" data-target="<?= '#create_' . $data->filters->filters['type'] ?>" class="btn btn-primary">
+                <button type="button" data-toggle="modal" data-target="<?= '#create_' . $data->filters->filters['type'] ?>" class="btn btn-primary fcc-links-action-btn">
                     <i class="fas fa-fw fa-plus-circle fa-sm mr-1"></i> <?= l('link.' . $data->filters->filters['type'] . '.name') ?>
                 </button>
             </div>
 
             <?php if(settings()->links->shortener_is_enabled && $data->filters->filters['type'] == 'link'): ?>
                 <div>
-                    <a href="<?= url('link-create') ?>" class="btn btn-outline-primary" data-toggle="tooltip" title="<?= l('link_create.menu') ?>">
+                    <a href="<?= url('link-create') ?>" class="btn btn-outline-primary fcc-links-action-btn" data-toggle="tooltip" title="<?= l('link_create.menu') ?>">
                         <i class="fas fa-fw fa-upload fa-sm"></i>
                     </a>
                 </div>
@@ -32,7 +196,7 @@
 
             <?php if(settings()->links->biolinks_templates_is_enabled && $data->filters->filters['type'] == 'biolink'): ?>
                 <div>
-                    <a href="<?= url('biolinks-templates') ?>" class="btn btn-outline-primary">
+                    <a href="<?= url('biolinks-templates') ?>" class="btn btn-outline-primary fcc-links-action-btn">
                         <i class="fas fa-fw fa-moon fa-sm mr-1"></i> <?= l('biolinks_templates.menu') ?>
                     </a>
                 </div>
@@ -52,7 +216,7 @@
                 <?php if(count($enabled_links) > 1): ?>
 
                     <div class="dropdown">
-                    <button type="button" data-toggle="dropdown" data-boundary="viewport" class="btn btn-primary dropdown-toggle dropdown-toggle-simple">
+                    <button type="button" data-toggle="dropdown" data-boundary="viewport" class="btn btn-primary dropdown-toggle dropdown-toggle-simple fcc-links-action-btn">
                         <i class="fas fa-fw fa-plus-circle fa-sm mr-1"></i> <?= l('links.create') ?>
                     </button>
 
@@ -110,7 +274,7 @@
                 <?php elseif(count($enabled_links) == 1): ?>
 
                     <div>
-                        <button type="button" data-toggle="modal" data-target="<?= '#create_' . reset($enabled_links) ?>" class="btn btn-primary">
+                        <button type="button" data-toggle="modal" data-target="<?= '#create_' . reset($enabled_links) ?>" class="btn btn-primary fcc-links-action-btn">
                             <i class="fas fa-fw fa-plus-circle fa-sm mr-1"></i> <?= l('link.' . reset($enabled_links) . '.name') ?>
                         </button>
                     </div>
@@ -121,7 +285,7 @@
 
         <div>
             <div class="dropdown">
-                <button type="button" class="btn btn-light dropdown-toggle-simple <?= !empty($data->links) ? null : 'disabled' ?>" data-toggle="dropdown" data-boundary="viewport" data-tooltip title="<?= l('global.export') ?>" data-tooltip-hide-on-click>
+                <button type="button" class="btn btn-light dropdown-toggle-simple fcc-links-action-btn <?= !empty($data->links) ? null : 'disabled' ?>" data-toggle="dropdown" data-boundary="viewport" data-tooltip title="<?= l('global.export') ?>" data-tooltip-hide-on-click>
                     <i class="fas fa-fw fa-sm fa-download"></i>
                 </button>
 
@@ -141,7 +305,7 @@
 
         <div>
             <div class="dropdown">
-                <button type="button" class="btn <?= $data->filters->has_applied_filters ? 'btn-dark' : 'btn-light' ?> filters-button dropdown-toggle-simple <?= !empty($data->links) || $data->filters->has_applied_filters ? null : 'disabled' ?>" data-toggle="dropdown" data-boundary="viewport" data-tooltip data-html="true" title="<?= l('global.filters.tooltip') ?>" data-tooltip-hide-on-click>
+                <button type="button" class="btn <?= $data->filters->has_applied_filters ? 'btn-dark' : 'btn-light' ?> filters-button dropdown-toggle-simple fcc-links-action-btn <?= !empty($data->links) || $data->filters->has_applied_filters ? null : 'disabled' ?>" data-toggle="dropdown" data-boundary="viewport" data-tooltip data-html="true" title="<?= l('global.filters.tooltip') ?>" data-tooltip-hide-on-click>
                     <i class="fas fa-fw fa-sm fa-filter"></i>
                 </button>
 
@@ -277,7 +441,7 @@
         </div>
 
         <div>
-            <button id="bulk_enable" type="button" class="btn btn-light" data-toggle="tooltip" title="<?= l('global.bulk_actions') ?>"><i class="fas fa-fw fa-sm fa-list"></i></button>
+            <button id="bulk_enable" type="button" class="btn btn-light fcc-links-action-btn" data-toggle="tooltip" title="<?= l('global.bulk_actions') ?>"><i class="fas fa-fw fa-sm fa-list"></i></button>
 
             <div id="bulk_group" class="btn-group d-none" role="group">
                 <div class="btn-group dropdown" role="group">
@@ -294,6 +458,7 @@
         </div>
     </div>
 </div>
+</div>
 
 <?php if (!empty($data->links)): ?>
 
@@ -303,6 +468,7 @@
         <input type="hidden" name="original_request" value="<?= base64_encode(\Altum\Router::$original_request) ?>" />
         <input type="hidden" name="original_request_query" value="<?= base64_encode(\Altum\Router::$original_request_query) ?>" />
 
+        <div class="fcc-links-table-card">
         <div class="table-responsive table-custom-container">
             <table class="table table-custom">
                 <thead>
@@ -313,7 +479,7 @@
                             <label class="custom-control-label" for="bulk_select_all"></label>
                         </div>
                     </th>
-                    <th><?= l('link.link') ?></th>
+                    <th><?= isset($data->filters->filters['type']) && $data->filters->filters['type'] == 'biolink' ? 'Vaše Forever Card Aplikacije' : l('link.link') ?></th>
                     <th></th>
                     <th></th>
                     <th></th>
@@ -465,19 +631,23 @@
                 </tbody>
             </table>
         </div>
+        </div>
     </form>
 
-    <div class="mt-3"><?= $data->pagination ?></div>
+    <div class="fcc-links-pagination"><?= $data->pagination ?></div>
 
 <?php else: ?>
 
+    <div class="fcc-links-empty">
     <?= include_view(THEME_PATH . 'views/partials/no_data.php', [
         'filters_get' => $data->filters->get ?? [],
         'name' => 'links',
         'has_secondary_text' => false,
     ]); ?>
+    </div>
 
 <?php endif ?>
+</div>
 
 <?php \Altum\Event::add_content(include_view(THEME_PATH . 'views/partials/duplicate_modal.php', ['modal_id' => 'link_duplicate_modal', 'resource_id' => 'link_id', 'path' => 'link-ajax/duplicate']), 'modals'); ?>
 <?php include_view(THEME_PATH . 'views/partials/clipboard_js.php') ?>

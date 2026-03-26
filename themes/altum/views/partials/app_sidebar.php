@@ -109,12 +109,6 @@ if(is_logged_in()) {
                     </li>
                 <?php endif ?>
 
-                <?php if(settings()->links->biolinks_is_enabled): ?>
-                    <li class="<?= in_array(\Altum\Router::$controller, ['FunnelsAnalytics']) ? 'active' : null ?>">
-                        <a href="<?= url('funnels-analytics') ?>" class="<?= $has_lead_funnel_access ? null : 'disabled pointer-events-all' ?>" <?= $has_lead_funnel_access ? null : get_plan_feature_disabled_info() ?>><i class="fas fa-fw fa-sm fa-filter mr-2"></i> <?= l('funnels_analytics.menu') ?></a>
-                    </li>
-                <?php endif ?>
-
                 <?php if(settings()->codes->qr_codes_is_enabled): ?>
                     <li class="<?= in_array(\Altum\Router::$controller, ['QrCodes', 'QrCodeUpdate', 'QrCodeCreate']) ? 'active' : null ?>">
                         <a href="<?= url('qr-codes') ?>"><i class="fas fa-fw fa-sm fa-qrcode mr-2"></i> <?= l('qr_codes.menu') ?></a>
@@ -208,7 +202,7 @@ if(is_logged_in()) {
 
                 <?php if(settings()->links->biolinks_is_enabled): ?>
                     <li class="<?= \Altum\Router::$controller == 'Data' ? 'active' : null ?>">
-                        <a href="<?= url('data') ?>"><i class="fas fa-fw fa-sm fa-database mr-2"></i> <?= l('data.menu') ?></a>
+                        <a href="<?= url('data') ?>"><i class="fas fa-fw fa-sm fa-address-book mr-2"></i> <?= l('data.menu') ?></a>
                     </li>
 
                     <?php /* Custom code: FC-2026-03-08: user feedback tickets menu */ ?>
@@ -270,22 +264,28 @@ if(is_logged_in()) {
                 <div class="divider-wrapper">
                     <div class="divider"></div>
                 </div>
-                <li class="small text-uppercase font-weight-bold px-3 mt-2 mb-1" style="letter-spacing: 0.08em; color: #5ebdb5;">FCC zona</li>
-                <?php /* Custom code: FC-2026-03-14: FCC results sidebar menu entry moved above forever education */ ?>
+                <li class="app-sidebar-section-label">
+                    <span>FCC zona</span>
+                </li>
                 <?php $fcc_results_sidebar_is_active = \Altum\Router::$controller == 'FccResults'; ?>
-                <li class="<?= $fcc_results_sidebar_is_active ? 'active' : null ?>" style="margin: 0.2rem 0 0.45rem;">
-                    <a href="<?= url('fcc-results') ?>" style="<?= $fcc_results_sidebar_is_active ? 'background: linear-gradient(135deg, #c9f4ec 0%, #a7e7de 100%); color: #0f2d2a; border-radius: 12px; box-shadow: 0 8px 22px rgba(127, 215, 208, 0.16); font-weight: 700;' : 'background: rgba(127, 215, 208, 0.08); color: #9ae8df; border: 1px solid rgba(127, 215, 208, 0.22); border-radius: 12px; font-weight: 700;'; ?>">
+                <li class="<?= $fcc_results_sidebar_is_active ? 'active' : null ?> app-sidebar-fcc-item">
+                    <a href="<?= url('fcc-results') ?>">
                         <i class="fas fa-fw fa-sm fa-trophy mr-2"></i> <?= l('fcc_results.menu') ?>
                     </a>
                 </li>
-                <?php /* /Custom code: FC-2026-03-14 */ ?>
-                <li class="<?= \Altum\Router::$controller == 'FccEducation' ? 'active' : null ?>">
-                    <a href="<?= url('fcc-education?video=last') ?>" style="color: #7fd7d0;"><i class="fas fa-fw fa-sm fa-graduation-cap mr-2"></i> FOREVER EDUKACIJA</a>
+                <?php if(settings()->links->biolinks_is_enabled): ?>
+                    <li class="<?= in_array(\Altum\Router::$controller, ['FunnelsAnalytics']) ? 'active' : null ?> app-sidebar-fcc-item">
+                        <a href="<?= url('funnels-analytics') ?>" class="<?= $has_lead_funnel_access ? null : 'disabled pointer-events-all' ?>" <?= $has_lead_funnel_access ? null : get_plan_feature_disabled_info() ?>>
+                            <i class="fas fa-fw fa-sm fa-filter mr-2"></i> <?= l('funnels_analytics.menu') ?>
+                        </a>
+                    </li>
+                <?php endif ?>
+                <li class="<?= \Altum\Router::$controller == 'FccEducation' ? 'active' : null ?> app-sidebar-fcc-item">
+                    <a href="<?= url('fcc-education?video=last') ?>"><i class="fas fa-fw fa-sm fa-graduation-cap mr-2"></i> FOREVER EDUKACIJA</a>
                 </li>
-                <li class="<?= \Altum\Router::$controller == 'Blog' ? 'active' : null ?>">
-                    <a href="<?= url('blog/category/forever-proizvodi') ?>" style="color: #7fd7d0;"><i class="fas fa-fw fa-sm fa-leaf mr-2"></i> FOREVER PROIZVODI</a>
+                <li class="<?= \Altum\Router::$controller == 'Blog' ? 'active' : null ?> app-sidebar-fcc-item">
+                    <a href="<?= url('blog/category/forever-proizvodi') ?>"><i class="fas fa-fw fa-sm fa-leaf mr-2"></i> FOREVER PROIZVODI</a>
                 </li>
-                <!-- /Custom code: FC-2026-02-25 -->
         </ul>
     </div>
 
@@ -363,6 +363,77 @@ if(is_logged_in()) {
 </div>
 
 <?php ob_start() ?>
+<style>
+    .app-sidebar-links > li.app-sidebar-section-label {
+        padding: 1rem 1rem 0.35rem 1rem;
+        margin-top: 0.35rem;
+    }
+
+    .app-sidebar-links > li.app-sidebar-section-label span {
+        display: inline-block;
+        font-size: 0.76rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: #73d8ce;
+    }
+
+    .app-sidebar-links > li.app-sidebar-fcc-item {
+        padding-top: 0.16rem;
+        padding-bottom: 0.16rem;
+    }
+
+    .app-sidebar-links > li.app-sidebar-fcc-item > a {
+        color: #7fe3d9;
+        background: rgba(127, 227, 217, 0.04);
+        border: 1px solid transparent;
+        border-radius: 14px;
+        font-weight: 600;
+        transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .app-sidebar-links > li.app-sidebar-fcc-item > a:hover {
+        color: #cffff8;
+        background: rgba(127, 227, 217, 0.1);
+        border-color: rgba(127, 227, 217, 0.18);
+        box-shadow: 0 10px 24px rgba(15, 40, 38, 0.18);
+        transform: translateY(-1px);
+    }
+
+    .app-sidebar-links > li.app-sidebar-fcc-item.active > a:not(.default) {
+        color: #082826;
+        background: linear-gradient(135deg, #bff6ef 0%, #8ee9de 100%);
+        border-color: rgba(191, 246, 239, 0.75);
+        box-shadow: 0 12px 28px rgba(73, 190, 177, 0.24);
+        font-weight: 700;
+    }
+
+    [data-theme-style="dark"] .app-sidebar-links > li.app-sidebar-fcc-item > a {
+        color: #8ce8df;
+        background: rgba(127, 227, 217, 0.05);
+        border-color: rgba(127, 227, 217, 0.08);
+    }
+
+    [data-theme-style="dark"] .app-sidebar-links > li.app-sidebar-fcc-item > a:hover {
+        color: #d8fffb;
+        background: rgba(127, 227, 217, 0.12);
+        border-color: rgba(127, 227, 217, 0.2);
+    }
+
+    [data-theme-style="dark"] .app-sidebar-links > li.app-sidebar-fcc-item.active > a:not(.default) {
+        color: #082826;
+        background: linear-gradient(135deg, #bff6ef 0%, #8ee9de 100%);
+        border-color: rgba(191, 246, 239, 0.72);
+    }
+
+    .app-sidebar-links > li.app-sidebar-fcc-item > a.disabled {
+        opacity: 0.58;
+        background: rgba(127, 227, 217, 0.025);
+        border-color: transparent;
+        box-shadow: none;
+        transform: none;
+    }
+</style>
 <script>
     'use strict';
     

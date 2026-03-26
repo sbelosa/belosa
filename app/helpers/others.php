@@ -1253,6 +1253,43 @@ function get_countries_array() {
     ];
 }
 
+function get_contact_phone_dial_codes_array() {
+    static $cached = null;
+
+    if($cached !== null) {
+        return $cached;
+    }
+
+    return $cached = require APP_PATH . 'includes/contact_phone_dial_codes.php';
+}
+
+function get_contact_phone_country_options_array() {
+    static $cached = null;
+
+    if($cached !== null) {
+        return $cached;
+    }
+
+    $options = [];
+    $countries = get_countries_array();
+    $dial_codes = get_contact_phone_dial_codes_array();
+
+    foreach($countries as $country_code => $country_name) {
+        if(!isset($dial_codes[$country_code])) {
+            continue;
+        }
+
+        $country_label = preg_replace('/^[^\p{L}\p{N}]+/u', '', $country_name);
+        $options[$country_code] = $country_label . ' (+' . $dial_codes[$country_code] . ')';
+    }
+
+    if(!isset($options['XK']) && isset($dial_codes['XK'])) {
+        $options['XK'] = 'Kosovo (+' . $dial_codes['XK'] . ')';
+    }
+
+    return $cached = $options;
+}
+
 function get_country_from_country_code($code) {
     $code = mb_strtoupper($code ?? '');
     return get_countries_no_emoji_array()[$code] ?? $code;

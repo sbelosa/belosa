@@ -32,6 +32,58 @@ use Razorpay\Api\Api;
 defined('ALTUMCODE') || die();
 
 class Link extends Controller {
+
+    private function get_contact_phone_country_options(): array {
+        $country_options = [];
+
+        foreach(get_contact_phone_country_options_array() as $country_code => $country_label) {
+            $country_options[$country_code] = [
+                'name' => $country_label,
+                'dial_code' => get_contact_phone_dial_codes_array()[$country_code] ?? '',
+            ];
+        }
+
+        return $country_options;
+    }
+
+    private function normalize_contact_phone(string $phone, ?string $country_code = null): array {
+        $country_code = mb_strtoupper(trim((string) $country_code));
+        $country_options = $this->get_contact_phone_country_options();
+        $country_code = array_key_exists($country_code, $country_options) ? $country_code : 'HR';
+        $dial_code = $country_options[$country_code]['dial_code'] ?? '';
+
+        $raw_digits = preg_replace('/\D+/', '', $phone);
+        $trimmed_digits = ltrim($raw_digits, '0');
+
+        if(!$trimmed_digits) {
+            return [
+                'raw' => trim($phone),
+                'country_code' => $country_code,
+                'dial_code' => $dial_code,
+                'local' => '',
+                'e164' => '',
+                'is_valid' => false,
+            ];
+        }
+
+        if($dial_code && str_starts_with($raw_digits, $dial_code)) {
+            $trimmed_digits = $raw_digits;
+        } elseif($dial_code) {
+            $trimmed_digits = $dial_code . $trimmed_digits;
+        }
+
+        $e164 = '+' . $trimmed_digits;
+        $is_valid = mb_strlen($trimmed_digits) >= 8 && mb_strlen($trimmed_digits) <= 15;
+
+        return [
+            'raw' => trim($phone),
+            'country_code' => $country_code,
+            'dial_code' => $dial_code,
+            'local' => $raw_digits,
+            'e164' => $e164,
+            'is_valid' => $is_valid,
+        ];
+    }
 	public $link = null;
 	public $type;
 	public $user;
@@ -395,6 +447,20 @@ class Link extends Controller {
 
 		Title::set($this->link->settings->popup_title ?? $this->link->settings->name ?? $biolink->url);
 		Meta::set_description(string_truncate($lead_funnel_meta_description, 160));
+
+		if(!$this->is_preview) {
+			fc_track_funnel_event([
+				'user_id' => $this->link->user_id,
+				'link_id' => $biolink->link_id,
+				'biolink_block_id' => $this->link->biolink_block_id,
+				'project_id' => $biolink->project_id,
+				'visitor_key' => fc_get_funnel_visitor_key(),
+				'event_type' => 'view',
+				'event_data' => [
+					'source' => 'page_render',
+				],
+			]);
+		}
 
 		$pixels_view = null;
 		if(count($biolink->pixels_ids)) {
@@ -1250,6 +1316,8 @@ class Link extends Controller {
 
 		$_POST['biolink_block_id'] = (int) $_POST['biolink_block_id'];
 		$_POST['phone'] = input_clean($_POST['phone'], 32);
+		$_POST['phone_country_code'] = input_clean($_POST['phone_country_code'] ?? 'HR', 8);
+		$_POST['preferred_contact_channel'] = input_clean($_POST['preferred_contact_channel'] ?? 'whatsapp', 32);
 		$_POST['name'] = input_clean($_POST['name'], 32);
 
 		if(settings()->captcha->biolink_is_enabled && settings()->captcha->type != 'basic' && !(new Captcha())->is_valid()) {
@@ -1288,8 +1356,18 @@ class Link extends Controller {
 
 		$data = [
 			'phone' => $_POST['phone'],
+			'phone_country_code' => $_POST['phone_country_code'],
 			'name' => $_POST['name'],
+			'preferred_contact_channel' => $_POST['preferred_contact_channel'],
 		];
+
+		$normalized_phone = $this->normalize_contact_phone($_POST['phone'], $_POST['phone_country_code']);
+		if(!$normalized_phone['is_valid']) {
+			Response::json(l('global.error_message.empty_fields'), 'error');
+		}
+
+		$data['phone_e164'] = $normalized_phone['e164'];
+		$data['phone_dial_code'] = $normalized_phone['dial_code'];
 
 		/* Store the data */
 		$datum_id = db()->insert('data', [
@@ -1407,6 +1485,8 @@ class Link extends Controller {
 
 		$_POST['biolink_block_id'] = (int) $_POST['biolink_block_id'];
 		$_POST['phone'] = input_clean($_POST['phone'], 32);
+		$_POST['phone_country_code'] = input_clean($_POST['phone_country_code'] ?? 'HR', 8);
+		$_POST['preferred_contact_channel'] = input_clean($_POST['preferred_contact_channel'] ?? 'whatsapp', 32);
 		$_POST['name'] = input_clean($_POST['name'], 32);
 		$_POST['email'] = input_clean_email($_POST['email'] ?? '');
 		$_POST['message'] = input_clean($_POST['message'], 512);
@@ -1437,10 +1517,20 @@ class Link extends Controller {
 
 		$data = [
 			'phone' => $_POST['phone'],
+			'phone_country_code' => $_POST['phone_country_code'],
 			'email' => $_POST['email'],
 			'message' => $_POST['message'],
 			'name' => $_POST['name'],
+			'preferred_contact_channel' => $_POST['preferred_contact_channel'],
 		];
+
+		$normalized_phone = $this->normalize_contact_phone($_POST['phone'], $_POST['phone_country_code']);
+		if(!$normalized_phone['is_valid']) {
+			Response::json(l('global.error_message.empty_fields'), 'error');
+		}
+
+		$data['phone_e164'] = $normalized_phone['e164'];
+		$data['phone_dial_code'] = $normalized_phone['dial_code'];
 
 		/* Store the data */
 		$datum_id = db()->insert('data', [
@@ -1556,20 +1646,58 @@ class Link extends Controller {
 	}
 
 	/* Custom code: FC-2026-03-23: lead funnel block phase 1 */
+	public function lead_funnel_event() {
+		if(empty($_POST)) {
+			die();
+		}
+
+		fc_ensure_funnel_analytics_tables();
+
+		$biolink_block_id = (int) ($_POST['biolink_block_id'] ?? 0);
+		$event_type = input_clean($_POST['event_type'] ?? '', 32);
+
+		$biolink_block = db()->where('biolink_block_id', $biolink_block_id)->where('type', 'lead_funnel')->getOne('biolinks_blocks', ['biolink_block_id', 'link_id']);
+
+		if(!$biolink_block) {
+			die();
+		}
+
+		$link = db()->where('link_id', $biolink_block->link_id)->getOne('links', ['link_id', 'user_id', 'project_id']);
+
+		if(!$link) {
+			die();
+		}
+
+		fc_track_funnel_event([
+			'user_id' => $link->user_id,
+			'link_id' => $link->link_id,
+			'biolink_block_id' => $biolink_block->biolink_block_id,
+			'project_id' => $link->project_id,
+			'visitor_key' => fc_get_funnel_visitor_key(),
+			'event_type' => $event_type,
+			'event_data' => [
+				'source' => input_clean($_POST['source'] ?? '', 32),
+				'context' => input_clean($_POST['context'] ?? '', 64),
+			],
+		]);
+
+		die('1');
+	}
+
 	public function lead_funnel() {
 		if(empty($_POST)) {
 			die();
 		}
 
+		fc_ensure_funnel_analytics_tables();
+
 		$_POST['biolink_block_id'] = (int) ($_POST['biolink_block_id'] ?? 0);
 		$_POST['phone'] = input_clean($_POST['phone'] ?? '', 32);
+		$_POST['phone_country_code'] = input_clean($_POST['phone_country_code'] ?? 'HR', 8);
+		$_POST['preferred_contact_channel'] = input_clean($_POST['preferred_contact_channel'] ?? 'whatsapp', 32);
 		$_POST['name'] = input_clean($_POST['name'] ?? '', 64);
 		$_POST['email'] = input_clean_email($_POST['email'] ?? '');
 		$_POST['message'] = input_clean($_POST['message'] ?? '', 512);
-
-		if(settings()->captcha->biolink_is_enabled && settings()->captcha->type != 'basic' && !(new Captcha())->is_valid()) {
-			Response::json(l('global.error_message.invalid_captcha'), 'error');
-		}
 
 		$biolink_block = db()->where('biolink_block_id', $_POST['biolink_block_id'])->where('type', 'lead_funnel')->getOne('biolinks_blocks', ['biolink_block_id', 'link_id', 'type', 'settings']);
 
@@ -1579,15 +1707,54 @@ class Link extends Controller {
 
 		$biolink_block->settings = json_decode($biolink_block->settings ?? '');
 
-		if($biolink_block->settings->show_agreement && empty($_POST['agreement'])) {
-			Response::json(l('global.error_message.empty_fields'), 'error');
+		$data = [];
+		$link = db()->where('link_id', $biolink_block->link_id)->getOne('links');
+
+		if(!$link) {
+			Response::json(l('global.error_message.basic'), 'error');
 		}
 
-		$data = [];
+		$visitor_key = fc_get_funnel_visitor_key();
+
+		$respond_with_error = function(string $message, string $reason) use ($biolink_block, $link, $visitor_key) {
+			fc_track_funnel_event([
+				'user_id' => $link->user_id,
+				'link_id' => $link->link_id,
+				'biolink_block_id' => $biolink_block->biolink_block_id,
+				'project_id' => $link->project_id,
+				'visitor_key' => $visitor_key,
+				'event_type' => 'submit_error',
+				'event_data' => [
+					'reason' => $reason,
+				],
+			]);
+
+			Response::json($message, 'error');
+		};
+
+		fc_track_funnel_event([
+			'user_id' => $link->user_id,
+			'link_id' => $link->link_id,
+			'biolink_block_id' => $biolink_block->biolink_block_id,
+			'project_id' => $link->project_id,
+			'visitor_key' => $visitor_key,
+			'event_type' => 'submit_attempt',
+			'event_data' => [
+				'source' => 'ajax_form',
+			],
+		]);
+
+		if(settings()->captcha->biolink_is_enabled && settings()->captcha->type != 'basic' && !(new Captcha())->is_valid()) {
+			$respond_with_error(l('global.error_message.invalid_captcha'), 'invalid_captcha');
+		}
+
+		if($biolink_block->settings->show_agreement && empty($_POST['agreement'])) {
+			$respond_with_error(l('global.error_message.empty_fields'), 'missing_agreement');
+		}
 
 		if(!empty($biolink_block->settings->show_name)) {
 			if(!empty($biolink_block->settings->require_name) && empty($_POST['name'])) {
-				Response::json(l('global.error_message.empty_fields'), 'error');
+				$respond_with_error(l('global.error_message.empty_fields'), 'missing_name');
 			}
 
 			$data['name'] = $_POST['name'];
@@ -1595,7 +1762,7 @@ class Link extends Controller {
 
 		if(!empty($biolink_block->settings->show_email)) {
 			if(!empty($biolink_block->settings->require_email) && empty($_POST['email'])) {
-				Response::json(l('global.error_message.empty_fields'), 'error');
+				$respond_with_error(l('global.error_message.empty_fields'), 'missing_email');
 			}
 
 			$data['email'] = $_POST['email'];
@@ -1603,25 +1770,32 @@ class Link extends Controller {
 
 		if(!empty($biolink_block->settings->show_phone)) {
 			if(!empty($biolink_block->settings->require_phone) && empty($_POST['phone'])) {
-				Response::json(l('global.error_message.empty_fields'), 'error');
+				$respond_with_error(l('global.error_message.empty_fields'), 'missing_phone');
+			}
+
+			$normalized_phone = $this->normalize_contact_phone($_POST['phone'], $_POST['phone_country_code']);
+			if(!empty($_POST['phone']) && !$normalized_phone['is_valid']) {
+				$respond_with_error(l('global.error_message.empty_fields'), 'invalid_phone');
 			}
 
 			$data['phone'] = $_POST['phone'];
+			$data['phone_country_code'] = $_POST['phone_country_code'];
+			$data['preferred_contact_channel'] = $_POST['preferred_contact_channel'];
+			$data['phone_e164'] = $normalized_phone['e164'];
+			$data['phone_dial_code'] = $normalized_phone['dial_code'];
 		}
 
 		if(!empty($biolink_block->settings->show_message)) {
 			if(!empty($biolink_block->settings->require_message) && empty($_POST['message'])) {
-				Response::json(l('global.error_message.empty_fields'), 'error');
+				$respond_with_error(l('global.error_message.empty_fields'), 'missing_message');
 			}
 
 			$data['message'] = $_POST['message'];
 		}
 
 		if(empty(array_filter($data))) {
-			Response::json(l('global.error_message.empty_fields'), 'error');
+			$respond_with_error(l('global.error_message.empty_fields'), 'empty_payload');
 		}
-
-		$link = db()->where('link_id', $biolink_block->link_id)->getOne('links');
 		$user = db()->where('user_id', $link->user_id)->getOne('users');
 
 		$datum_id = db()->insert('data', [
@@ -1632,6 +1806,18 @@ class Link extends Controller {
 			'type' => $biolink_block->type,
 			'data' => json_encode($data),
 			'datetime' => get_date(),
+		]);
+
+		fc_track_funnel_event([
+			'user_id' => $link->user_id,
+			'link_id' => $link->link_id,
+			'biolink_block_id' => $biolink_block->biolink_block_id,
+			'project_id' => $link->project_id,
+			'visitor_key' => $visitor_key,
+			'event_type' => 'submit_success',
+			'event_data' => [
+				'datum_id' => $datum_id,
+			],
 		]);
 
 		if(count($biolink_block->settings->notifications ?? [])) {

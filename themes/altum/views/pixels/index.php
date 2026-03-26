@@ -3,31 +3,182 @@
 <div class="container">
     <?= \Altum\Alerts::output_alerts() ?>
 
+    <style>
+        .fcc-pixels-shell {
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+
+        .fcc-pixels-header {
+            background: linear-gradient(180deg, rgba(19, 27, 29, 0.92) 0%, rgba(15, 21, 23, 0.98) 100%);
+            border: 1px solid rgba(127, 227, 217, 0.08);
+            border-radius: 22px;
+            padding: 1.35rem 1.4rem;
+            box-shadow: 0 18px 40px rgba(0, 0, 0, 0.18);
+        }
+
+        .fcc-pixels-heading {
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+            min-width: 0;
+        }
+
+        .fcc-pixels-heading-icon {
+            width: 2.85rem;
+            height: 2.85rem;
+            border-radius: 16px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, rgba(191, 246, 239, 0.18) 0%, rgba(142, 233, 222, 0.3) 100%);
+            color: #9ef1e7;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+            flex-shrink: 0;
+        }
+
+        .fcc-pixels-heading-copy {
+            min-width: 0;
+        }
+
+        .fcc-pixels-heading-copy h1 {
+            margin: 0;
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #f5fbfb;
+        }
+
+        .fcc-pixels-toolbar {
+            gap: 0.75rem;
+        }
+
+        .fcc-pixels-action-btn {
+            border-radius: 14px;
+            min-height: 2.75rem;
+            font-weight: 600;
+            box-shadow: none !important;
+        }
+
+        .fcc-pixels-action-btn.btn-primary {
+            background: linear-gradient(135deg, #3fd7c7 0%, #6de9dd 100%);
+            border-color: transparent;
+            color: #082826;
+        }
+
+        .fcc-pixels-action-btn.btn-primary:hover {
+            color: #041b19;
+            transform: translateY(-1px);
+            box-shadow: 0 10px 24px rgba(63, 215, 199, 0.2) !important;
+        }
+
+        .fcc-pixels-action-btn.btn-light,
+        .fcc-pixels-action-btn.btn-dark {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(255, 255, 255, 0.06);
+            color: #d5e1e2;
+        }
+
+        .fcc-pixels-action-btn.btn-light:hover,
+        .fcc-pixels-action-btn.btn-dark:hover {
+            background: rgba(127, 227, 217, 0.1);
+            border-color: rgba(127, 227, 217, 0.16);
+            color: #f5fbfb;
+        }
+
+        .fcc-pixels-table-card,
+        .fcc-pixels-empty {
+            background: linear-gradient(180deg, rgba(19, 21, 24, 0.98) 0%, rgba(16, 18, 20, 0.98) 100%);
+            border: 1px solid rgba(127, 227, 217, 0.07);
+            border-radius: 22px;
+            overflow: hidden;
+            box-shadow: 0 20px 44px rgba(0, 0, 0, 0.16);
+        }
+
+        .fcc-pixels-table-card .table-custom-container {
+            border: 0;
+            background: transparent;
+        }
+
+        .fcc-pixels-table-card .table-custom {
+            margin-bottom: 0;
+        }
+
+        .fcc-pixels-table-card .table-custom thead th {
+            background: rgba(255, 255, 255, 0.02);
+            color: #e9f7f5;
+            border-bottom-color: rgba(127, 227, 217, 0.08);
+        }
+
+        .fcc-pixels-table-card .table-custom td {
+            background: transparent;
+            color: #dce7e8;
+            border-top-color: rgba(255, 255, 255, 0.04);
+            vertical-align: middle;
+        }
+
+        .fcc-pixels-table-card .table-custom tbody tr:hover {
+            background: rgba(127, 227, 217, 0.035);
+        }
+
+        .fcc-pixels-table-card .badge.badge-light {
+            background: rgba(255, 255, 255, 0.08);
+            color: #d6e5e4;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        .fcc-pixels-table-card .btn.btn-link,
+        .fcc-pixels-table-card a:not(.dropdown-item):not(.btn) {
+            color: #abf5ec;
+        }
+
+        .fcc-pixels-table-card .btn.btn-link:hover,
+        .fcc-pixels-table-card a:not(.dropdown-item):not(.btn):hover {
+            color: #d8fffb;
+            text-decoration: none;
+        }
+
+        .fcc-pixels-pagination {
+            margin-top: 1rem;
+            padding: 0 0.35rem;
+        }
+    </style>
+
+    <div class="fcc-pixels-shell">
+
     <?php if($this->user->plan_settings->pixels_limit != -1 && $data->total_pixels > $this->user->plan_settings->pixels_limit): ?>
         <div class="alert alert-danger">
             <i class="fas fa-fw fa-times-circle text-danger mr-2"></i> <?= sprintf(settings()->payment->is_enabled ? l('global.info_message.plan_feature_limit_removal_with_upgrade') : l('global.info_message.plan_feature_limit_removal'), '<strong>' . $data->total_pixels - $this->user->plan_settings->pixels_limit, mb_strtolower(l('pixels.title')) . '</strong>', '<a href="' . url('plan') . '" class="font-weight-bold text-reset">' . l('global.info_message.plan_upgrade') . '</a>') ?>
         </div>
     <?php endif ?>
 
-    <div class="row mb-4">
-        <div class="col-12 col-lg d-flex align-items-center mb-3 mb-lg-0 text-truncate">
-            <h1 class="h4 m-0 text-truncate"><i class="fas fa-fw fa-xs fa-adjust mr-1"></i> <?= l('pixels.header') ?></h1>
+    <div class="fcc-pixels-header">
+    <div class="row align-items-center">
+        <div class="col-12 col-lg mb-4 mb-lg-0 text-truncate">
+            <div class="fcc-pixels-heading">
+                <div class="fcc-pixels-heading-icon">
+                    <i class="fas fa-fw fa-adjust"></i>
+                </div>
 
-            <div class="ml-2">
-                <span data-toggle="tooltip" title="<?= l('pixels.subheader') ?>">
-                    <i class="fas fa-fw fa-info-circle text-muted"></i>
-                </span>
+                <div class="fcc-pixels-heading-copy">
+                    <h1 class="text-truncate">
+                        <?= l('pixels.header') ?>
+                        <span class="ml-1" data-toggle="tooltip" title="<?= l('pixels.subheader') ?>">
+                            <i class="fas fa-fw fa-info-circle text-muted"></i>
+                        </span>
+                    </h1>
+                </div>
             </div>
         </div>
 
-        <div class="col-12 col-lg-auto d-flex flex-wrap gap-3 d-print-none">
+        <div class="col-12 col-lg-auto d-flex flex-wrap fcc-pixels-toolbar d-print-none">
             <div>
                 <?php if($this->user->plan_settings->pixels_limit != -1 && $data->total_pixels >= $this->user->plan_settings->pixels_limit): ?>
-                    <button type="button" class="btn btn-primary disabled" <?= get_plan_feature_limit_reached_info() ?>>
+                    <button type="button" class="btn btn-primary disabled fcc-pixels-action-btn" <?= get_plan_feature_limit_reached_info() ?>>
                         <i class="fas fa-fw fa-plus-circle fa-sm mr-1"></i> <?= l('pixels.create') ?>
                     </button>
                 <?php else: ?>
-                    <a href="<?= url('pixel-create') ?>" class="btn btn-primary" data-toggle="tooltip" data-html="true" title="<?= get_plan_feature_limit_info($data->total_pixels, $this->user->plan_settings->pixels_limit, isset($data->filters) ? !$data->filters->has_applied_filters : true) ?>">
+                    <a href="<?= url('pixel-create') ?>" class="btn btn-primary fcc-pixels-action-btn" data-toggle="tooltip" data-html="true" title="<?= get_plan_feature_limit_info($data->total_pixels, $this->user->plan_settings->pixels_limit, isset($data->filters) ? !$data->filters->has_applied_filters : true) ?>">
                         <i class="fas fa-fw fa-plus-circle fa-sm mr-1"></i> <?= l('pixels.create') ?>
                     </a>
                 <?php endif ?>
@@ -35,7 +186,7 @@
 
             <div>
                 <div class="dropdown">
-                    <button type="button" class="btn btn-light dropdown-toggle-simple <?= !empty($data->pixels) ? null : 'disabled' ?>" data-toggle="dropdown" data-boundary="viewport" data-tooltip title="<?= l('global.export') ?>" data-tooltip-hide-on-click>
+                    <button type="button" class="btn btn-light dropdown-toggle-simple fcc-pixels-action-btn <?= !empty($data->pixels) ? null : 'disabled' ?>" data-toggle="dropdown" data-boundary="viewport" data-tooltip title="<?= l('global.export') ?>" data-tooltip-hide-on-click>
                         <i class="fas fa-fw fa-sm fa-download"></i>
                     </button>
 
@@ -55,7 +206,7 @@
 
             <div>
                 <div class="dropdown">
-                    <button type="button" class="btn <?= $data->filters->has_applied_filters ? 'btn-dark' : 'btn-light' ?> filters-button dropdown-toggle-simple <?= !empty($data->pixels) || $data->filters->has_applied_filters ? null : 'disabled' ?>" data-toggle="dropdown" data-boundary="viewport" data-tooltip data-html="true" title="<?= l('global.filters.tooltip') ?>" data-tooltip-hide-on-click>
+                    <button type="button" class="btn <?= $data->filters->has_applied_filters ? 'btn-dark' : 'btn-light' ?> filters-button dropdown-toggle-simple fcc-pixels-action-btn <?= !empty($data->pixels) || $data->filters->has_applied_filters ? null : 'disabled' ?>" data-toggle="dropdown" data-boundary="viewport" data-tooltip data-html="true" title="<?= l('global.filters.tooltip') ?>" data-tooltip-hide-on-click>
                         <i class="fas fa-fw fa-sm fa-filter"></i>
                     </button>
 
@@ -131,7 +282,7 @@
             </div>
 
             <div>
-                <button id="bulk_enable" type="button" class="btn btn-light" data-toggle="tooltip" title="<?= l('global.bulk_actions') ?>"><i class="fas fa-fw fa-sm fa-list"></i></button>
+                <button id="bulk_enable" type="button" class="btn btn-light fcc-pixels-action-btn" data-toggle="tooltip" title="<?= l('global.bulk_actions') ?>"><i class="fas fa-fw fa-sm fa-list"></i></button>
 
                 <div id="bulk_group" class="btn-group d-none" role="group">
                     <div class="btn-group dropdown" role="group">
@@ -148,6 +299,7 @@
             </div>
         </div>
     </div>
+    </div>
 
     <?php if (!empty($data->pixels)): ?>
         <?php $available_pixels = require APP_PATH . 'includes/pixels.php'; ?>
@@ -157,6 +309,7 @@
             <input type="hidden" name="original_request" value="<?= base64_encode(\Altum\Router::$original_request) ?>" />
             <input type="hidden" name="original_request_query" value="<?= base64_encode(\Altum\Router::$original_request_query) ?>" />
 
+            <div class="fcc-pixels-table-card">
             <div class="table-responsive table-custom-container">
                 <table class="table table-custom">
                     <thead>
@@ -224,20 +377,24 @@
                     </tbody>
                 </table>
             </div>
+            </div>
         </form>
 
-        <div class="mt-3"><?= $data->pagination ?></div>
+        <div class="fcc-pixels-pagination"><?= $data->pagination ?></div>
 
     <?php else: ?>
 
+        <div class="fcc-pixels-empty">
         <?= include_view(THEME_PATH . 'views/partials/no_data.php', [
             'filters_get' => $data->filters->get ?? [],
             'name' => 'pixels',
             'has_secondary_text' => true,
         ]); ?>
+        </div>
 
     <?php endif ?>
 
+</div>
 </div>
 
 <?php require THEME_PATH . 'views/partials/js_bulk.php' ?>

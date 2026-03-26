@@ -595,6 +595,149 @@ class Dashboard extends Controller {
             'top_registration_sources_30d' => $top_registration_sources_30d,
         ];
 
+        $dashboard_funnel_analytics = [
+            'has_funnels' => false,
+            'total_funnels' => 0,
+            'active_funnels_30d' => 0,
+            'unique_clicks_30d' => 0,
+            'leads_30d' => 0,
+            'conversion_rate_30d' => 0,
+            'best_open_mode' => null,
+            'best_thank_you_type' => null,
+            'last_lead_datetime' => null,
+            'last_lead_display' => null,
+            'status' => 'setup',
+            'status_title' => l('dashboard.funnel.status.setup_title'),
+            'status_description' => $biolink_links_total > 0 ? l('dashboard.funnel.status.setup_description') : l('dashboard.funnel.status.no_biolinks_description'),
+            'cta_label' => $biolink_links_total > 0 ? l('dashboard.funnel.status.setup_cta') : l('dashboard.funnel.status.no_biolinks_cta'),
+            'cta_url' => $biolink_links_total > 0 ? url('links?type=biolink') : url('link-create'),
+        ];
+
+        $funnel_blocks_map = [];
+        $funnel_ids = [];
+        $funnel_blocks_result = database()->query("SELECT `biolink_block_id`, `settings` FROM `biolinks_blocks` WHERE `user_id` = {$this->user->user_id} AND `type` = 'lead_funnel'");
+        while($row = $funnel_blocks_result->fetch_object()) {
+            $row->settings = json_decode($row->settings ?? '');
+            $row->open_mode = in_array(($row->settings->open_mode ?? 'popup'), ['popup', 'page'], true) ? $row->settings->open_mode : 'popup';
+            $row->thank_you_type = in_array(($row->settings->thank_you_type ?? 'message'), ['message', 'external_url', 'biolink_redirect', 'file_download'], true) ? $row->settings->thank_you_type : 'message';
+
+            $funnel_blocks_map[(int) $row->biolink_block_id] = $row;
+            $funnel_ids[] = (int) $row->biolink_block_id;
+        }
+
+        if($funnel_ids) {
+            $dashboard_funnel_analytics['has_funnels'] = true;
+            $dashboard_funnel_analytics['total_funnels'] = count($funnel_ids);
+
+            $funnel_ids_sql = implode(',', $funnel_ids);
+
+            $funnel_unique_clicks_result = database()->query("SELECT `biolink_block_id`, SUM(`is_unique`) AS `unique_clicks` FROM `track_links` WHERE `user_id` = {$this->user->user_id} AND `biolink_block_id` IN ({$funnel_ids_sql}) AND `datetime` >= '{$thirty_days_start_datetime}' GROUP BY `biolink_block_id`");
+            $funnel_unique_clicks_map = [];
+            while($row = $funnel_unique_clicks_result->fetch_object()) {
+                $funnel_unique_clicks_map[(int) $row->biolink_block_id] = (int) ($row->unique_clicks ?? 0);
+            }
+
+            $funnel_leads_result = database()->query("SELECT `biolink_block_id`, COUNT(*) AS `total_leads`, MAX(`datetime`) AS `last_lead_datetime` FROM `data` WHERE `user_id` = {$this->user->user_id} AND `type` = 'lead_funnel' AND `biolink_block_id` IN ({$funnel_ids_sql}) AND `datetime` >= '{$thirty_days_start_datetime}' GROUP BY `biolink_block_id`");
+            $funnel_leads_map = [];
+            while($row = $funnel_leads_result->fetch_object()) {
+                $funnel_leads_map[(int) $row->biolink_block_id] = [
+                    'total_leads' => (int) ($row->total_leads ?? 0),
+                    'last_lead_datetime' => $row->last_lead_datetime ?? null,
+                ];
+            }
+
+            $open_mode_breakdown = [
+                'popup' => ['type' => 'popup', 'unique_clicks' => 0, 'leads' => 0, 'conversion_rate' => 0],
+                'page' => ['type' => 'page', 'unique_clicks' => 0, 'leads' => 0, 'conversion_rate' => 0],
+            ];
+            $thank_you_type_breakdown = [
+                'message' => ['type' => 'message', 'unique_clicks' => 0, 'leads' => 0, 'conversion_rate' => 0],
+                'external_url' => ['type' => 'external_url', 'unique_clicks' => 0, 'leads' => 0, 'conversion_rate' => 0],
+                'biolink_redirect' => ['type' => 'biolink_redirect', 'unique_clicks' => 0, 'leads' => 0, 'conversion_rate' => 0],
+                'file_download' => ['type' => 'file_download', 'unique_clicks' => 0, 'leads' => 0, 'conversion_rate' => 0],
+            ];
+
+            foreach($funnel_ids as $funnel_id) {
+                $unique_clicks = (int) ($funnel_unique_clicks_map[$funnel_id] ?? 0);
+                $leads = (int) ($funnel_leads_map[$funnel_id]['total_leads'] ?? 0);
+                $dashboard_funnel_analytics['unique_clicks_30d'] += $unique_clicks;
+                $dashboard_funnel_analytics['leads_30d'] += $leads;
+
+                if($unique_clicks > 0 || $leads > 0) {
+                    $dashboard_funnel_analytics['active_funnels_30d']++;
+                }
+
+                $last_lead_datetime = $funnel_leads_map[$funnel_id]['last_lead_datetime'] ?? null;
+                if($last_lead_datetime && (!$dashboard_funnel_analytics['last_lead_datetime'] || strtotime($last_lead_datetime) > strtotime($dashboard_funnel_analytics['last_lead_datetime']))) {
+                    $dashboard_funnel_analytics['last_lead_datetime'] = $last_lead_datetime;
+                    $dashboard_funnel_analytics['last_lead_display'] = \Altum\Date::get($last_lead_datetime, 2);
+                }
+
+                $funnel = $funnel_blocks_map[$funnel_id];
+                $open_mode_breakdown[$funnel->open_mode]['unique_clicks'] += $unique_clicks;
+                $open_mode_breakdown[$funnel->open_mode]['leads'] += $leads;
+                $thank_you_type_breakdown[$funnel->thank_you_type]['unique_clicks'] += $unique_clicks;
+                $thank_you_type_breakdown[$funnel->thank_you_type]['leads'] += $leads;
+            }
+
+            $dashboard_funnel_analytics['conversion_rate_30d'] = $dashboard_funnel_analytics['unique_clicks_30d'] > 0 ? round(($dashboard_funnel_analytics['leads_30d'] / $dashboard_funnel_analytics['unique_clicks_30d']) * 100, 1) : 0;
+
+            foreach($open_mode_breakdown as &$row) {
+                $row['conversion_rate'] = $row['unique_clicks'] > 0 ? round(($row['leads'] / $row['unique_clicks']) * 100, 1) : 0;
+            }
+            unset($row);
+
+            foreach($thank_you_type_breakdown as &$row) {
+                $row['conversion_rate'] = $row['unique_clicks'] > 0 ? round(($row['leads'] / $row['unique_clicks']) * 100, 1) : 0;
+            }
+            unset($row);
+
+            $rank_breakdown = static function(array $rows): ?array {
+                $rows = array_values(array_filter($rows, static function($row) {
+                    return $row['unique_clicks'] > 0 || $row['leads'] > 0;
+                }));
+
+                if(!$rows) {
+                    return null;
+                }
+
+                usort($rows, static function($a, $b) {
+                    return [$b['conversion_rate'], $b['leads'], $b['unique_clicks']] <=> [$a['conversion_rate'], $a['leads'], $a['unique_clicks']];
+                });
+
+                return $rows[0] ?? null;
+            };
+
+            $dashboard_funnel_analytics['best_open_mode'] = $rank_breakdown($open_mode_breakdown);
+            $dashboard_funnel_analytics['best_thank_you_type'] = $rank_breakdown($thank_you_type_breakdown);
+
+            if($dashboard_funnel_analytics['unique_clicks_30d'] <= 0) {
+                $dashboard_funnel_analytics['status'] = 'warning';
+                $dashboard_funnel_analytics['status_title'] = l('dashboard.funnel.status.no_traffic_title');
+                $dashboard_funnel_analytics['status_description'] = l('dashboard.funnel.status.no_traffic_description');
+                $dashboard_funnel_analytics['cta_label'] = l('dashboard.funnel.status.no_traffic_cta');
+                $dashboard_funnel_analytics['cta_url'] = url('links?type=biolink');
+            } elseif($dashboard_funnel_analytics['leads_30d'] <= 0) {
+                $dashboard_funnel_analytics['status'] = 'danger';
+                $dashboard_funnel_analytics['status_title'] = l('dashboard.funnel.status.no_leads_title');
+                $dashboard_funnel_analytics['status_description'] = l('dashboard.funnel.status.no_leads_description');
+                $dashboard_funnel_analytics['cta_label'] = l('dashboard.funnel.status.no_leads_cta');
+                $dashboard_funnel_analytics['cta_url'] = url('funnels-analytics');
+            } elseif($dashboard_funnel_analytics['conversion_rate_30d'] < 10) {
+                $dashboard_funnel_analytics['status'] = 'warning';
+                $dashboard_funnel_analytics['status_title'] = l('dashboard.funnel.status.improve_title');
+                $dashboard_funnel_analytics['status_description'] = sprintf(l('dashboard.funnel.status.improve_description'), $dashboard_funnel_analytics['conversion_rate_30d']);
+                $dashboard_funnel_analytics['cta_label'] = l('dashboard.funnel.status.improve_cta');
+                $dashboard_funnel_analytics['cta_url'] = url('funnels-analytics');
+            } else {
+                $dashboard_funnel_analytics['status'] = 'good';
+                $dashboard_funnel_analytics['status_title'] = l('dashboard.funnel.status.good_title');
+                $dashboard_funnel_analytics['status_description'] = sprintf(l('dashboard.funnel.status.good_description'), $dashboard_funnel_analytics['leads_30d']);
+                $dashboard_funnel_analytics['cta_label'] = l('dashboard.funnel.status.good_cta');
+                $dashboard_funnel_analytics['cta_url'] = url('funnels-analytics');
+            }
+        }
+
         /* Custom code: FC-2026-03-05: synthetic demo traffic preview */
         if($dashboard_demo_mode) {
             $links_chart = [
@@ -681,6 +824,24 @@ class Dashboard extends Controller {
                     ['source' => '(direct)', 'total' => 1],
                 ],
             ];
+
+            $dashboard_funnel_analytics = [
+                'has_funnels' => true,
+                'total_funnels' => 3,
+                'active_funnels_30d' => 2,
+                'unique_clicks_30d' => 74,
+                'leads_30d' => 11,
+                'conversion_rate_30d' => 14.9,
+                'best_open_mode' => ['type' => 'page', 'leads' => 7, 'conversion_rate' => 18.4],
+                'best_thank_you_type' => ['type' => 'file_download', 'leads' => 6, 'conversion_rate' => 16.7],
+                'last_lead_datetime' => date('Y-m-d H:i:s'),
+                'last_lead_display' => \Altum\Date::get(date('Y-m-d H:i:s'), 2),
+                'status' => 'good',
+                'status_title' => l('dashboard.funnel.status.good_title'),
+                'status_description' => sprintf(l('dashboard.funnel.status.good_description'), 11),
+                'cta_label' => l('dashboard.funnel.status.good_cta'),
+                'cta_url' => url('funnels-analytics'),
+            ];
         }
         /* /Custom code: FC-2026-03-05 */
         /* /Custom code: FC-2026-03-05 */
@@ -699,6 +860,7 @@ class Dashboard extends Controller {
 
             /* Custom code: FC-2026-03-05: detailed forever dashboard data */
             'dashboard_forever_analytics' => $dashboard_forever_analytics,
+            'dashboard_funnel_analytics' => $dashboard_funnel_analytics,
             /* /Custom code: FC-2026-03-05 */
         ];
 

@@ -179,6 +179,195 @@ function fc_ensure_email_automation_tables() {
     $is_ready = true;
 }
 
+/* Custom code: FC-2026-03-26: lead funnel event analytics helpers */
+function fc_ensure_funnel_analytics_tables(): void {
+    static $is_ready = false;
+
+    if($is_ready) {
+        return;
+    }
+
+    db()->rawQuery("CREATE TABLE IF NOT EXISTS `funnel_events` (
+        `funnel_event_id` bigint unsigned NOT NULL AUTO_INCREMENT,
+        `user_id` int unsigned NOT NULL,
+        `link_id` int unsigned NOT NULL,
+        `biolink_block_id` int unsigned NOT NULL,
+        `project_id` int unsigned NULL,
+        `visitor_key` varchar(64) NOT NULL,
+        `event_type` varchar(32) NOT NULL,
+        `referrer_host` varchar(128) NULL,
+        `referrer_path` text NULL,
+        `utm_source` varchar(128) NULL,
+        `utm_medium` varchar(128) NULL,
+        `utm_campaign` varchar(128) NULL,
+        `device_type` varchar(32) NULL,
+        `browser_language` varchar(8) NULL,
+        `browser_name` varchar(64) NULL,
+        `os_name` varchar(64) NULL,
+        `continent_code` varchar(8) NULL,
+        `country_code` varchar(8) NULL,
+        `city_name` varchar(128) NULL,
+        `event_data` longtext NULL,
+        `datetime` datetime NOT NULL,
+        PRIMARY KEY (`funnel_event_id`),
+        KEY `biolink_block_id` (`biolink_block_id`),
+        KEY `user_id` (`user_id`),
+        KEY `link_id` (`link_id`),
+        KEY `event_type` (`event_type`),
+        KEY `datetime` (`datetime`),
+        KEY `visitor_key` (`visitor_key`),
+        KEY `funnel_event_period` (`biolink_block_id`, `event_type`, `datetime`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+    $is_ready = true;
+}
+
+function fc_get_funnel_visitor_key(): string {
+    $cookie_name = 'fc_funnel_visitor_key';
+    $cookie_lifetime = time() + 60 * 60 * 24 * 180;
+    $provided_visitor_key = input_clean($_POST['visitor_key'] ?? $_GET['visitor_key'] ?? '', 64);
+
+    if($provided_visitor_key && preg_match('/^[A-Za-z0-9_-]{12,64}$/', $provided_visitor_key)) {
+        if((!isset($_COOKIE[$cookie_name]) || $_COOKIE[$cookie_name] !== $provided_visitor_key) && !headers_sent()) {
+            setcookie($cookie_name, $provided_visitor_key, $cookie_lifetime, COOKIE_PATH);
+        }
+
+        return $provided_visitor_key;
+    }
+
+    if(isset($_COOKIE[$cookie_name])) {
+        $cookie_visitor_key = input_clean($_COOKIE[$cookie_name], 64);
+
+        if($cookie_visitor_key && preg_match('/^[A-Za-z0-9_-]{12,64}$/', $cookie_visitor_key)) {
+            return $cookie_visitor_key;
+        }
+    }
+
+    try {
+        $generated_visitor_key = rtrim(strtr(base64_encode(random_bytes(24)), '+/', '-_'), '=');
+    } catch(\Exception $exception) {
+        $generated_visitor_key = md5(uniqid((string) mt_rand(), true)) . substr(md5((string) microtime(true)), 0, 16);
+    }
+
+    if(!headers_sent()) {
+        setcookie($cookie_name, $generated_visitor_key, $cookie_lifetime, COOKIE_PATH);
+    }
+
+    return $generated_visitor_key;
+}
+
+function fc_track_funnel_event(array $payload): void {
+    try {
+        fc_ensure_funnel_analytics_tables();
+
+        $allowed_event_types = [
+            'view',
+            'open',
+            'form_start',
+            'submit_attempt',
+            'submit_success',
+            'submit_error',
+            'thank_you_view',
+            'thank_you_cta_click',
+        ];
+
+        $event_type = input_clean($payload['event_type'] ?? '', 32);
+
+        if(!in_array($event_type, $allowed_event_types, true)) {
+            return;
+        }
+
+        $user_id = (int) ($payload['user_id'] ?? 0);
+        $link_id = (int) ($payload['link_id'] ?? 0);
+        $biolink_block_id = (int) ($payload['biolink_block_id'] ?? 0);
+
+        if(!$user_id || !$link_id || !$biolink_block_id) {
+            return;
+        }
+
+        $visitor_key = input_clean($payload['visitor_key'] ?? fc_get_funnel_visitor_key(), 64);
+
+        if(!$visitor_key) {
+            return;
+        }
+
+        $whichbrowser = get_whichbrowser();
+
+        if(($whichbrowser->device->type ?? null) === 'bot') {
+            return;
+        }
+
+        $browser_name = $whichbrowser->browser->name ?? null;
+        $os_name = $whichbrowser->os->name ?? null;
+        $browser_language = isset($_SERVER['HTTP_ACCEPT_LANGUAGE']) ? mb_substr($_SERVER['HTTP_ACCEPT_LANGUAGE'], 0, 2) : null;
+        $device_type = get_this_device_type();
+
+        try {
+            $maxmind = (get_maxmind_reader_city())->get(get_ip());
+        } catch(\Exception $exception) {
+            $maxmind = null;
+        }
+
+        $continent_code = isset($maxmind['continent']) ? ($maxmind['continent']['code'] ?? null) : null;
+        $country_code = isset($maxmind['country']) ? ($maxmind['country']['iso_code'] ?? null) : null;
+        $city_name = isset($maxmind['city']) ? ($maxmind['city']['names']['en'] ?? null) : null;
+
+        $referrer = [
+            'host' => null,
+            'path' => null,
+        ];
+
+        if(isset($_SERVER['HTTP_REFERER'])) {
+            $parsed_referrer = parse_url($_SERVER['HTTP_REFERER']);
+            if(is_array($parsed_referrer)) {
+                $referrer['host'] = $parsed_referrer['host'] ?? null;
+                $referrer['path'] = $parsed_referrer['path'] ?? null;
+            }
+        }
+
+        if(isset($_REQUEST['referrer']) && $_REQUEST['referrer'] === 'qr') {
+            $referrer['host'] = 'qr';
+            $referrer['path'] = null;
+        }
+
+        $event_data = $payload['event_data'] ?? null;
+
+        if(is_array($event_data) || is_object($event_data)) {
+            $event_data = json_encode($event_data);
+        }
+
+        if(!is_string($event_data) || $event_data === '') {
+            $event_data = null;
+        }
+
+        db()->insert('funnel_events', [
+            'user_id' => $user_id,
+            'link_id' => $link_id,
+            'biolink_block_id' => $biolink_block_id,
+            'project_id' => isset($payload['project_id']) ? (int) $payload['project_id'] : null,
+            'visitor_key' => $visitor_key,
+            'event_type' => $event_type,
+            'referrer_host' => $referrer['host'],
+            'referrer_path' => $referrer['path'],
+            'utm_source' => input_clean($_REQUEST['utm_source'] ?? ($payload['utm_source'] ?? null), 128),
+            'utm_medium' => input_clean($_REQUEST['utm_medium'] ?? ($payload['utm_medium'] ?? null), 128),
+            'utm_campaign' => input_clean($_REQUEST['utm_campaign'] ?? ($payload['utm_campaign'] ?? null), 128),
+            'device_type' => $device_type,
+            'browser_language' => $browser_language,
+            'browser_name' => $browser_name,
+            'os_name' => $os_name,
+            'continent_code' => $continent_code,
+            'country_code' => $country_code,
+            'city_name' => $city_name,
+            'event_data' => $event_data,
+            'datetime' => get_date(),
+        ]);
+    } catch(\Throwable $exception) {
+        error_log('[Funnel Events] ' . $exception->getMessage() . ' @ ' . $exception->getFile() . ':' . $exception->getLine());
+    }
+}
+/* /Custom code: FC-2026-03-26 */
+
 function fc_get_email_automation_settings($settings): object {
     if(is_string($settings)) {
         $settings = json_decode($settings ?? '');

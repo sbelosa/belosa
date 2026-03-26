@@ -52,7 +52,7 @@ if(!empty($data->link->settings->video_url)) {
     <?php ob_start() ?>
     <div class="modal fade" id="<?= 'lead_funnel_' . $data->link->biolink_block_id ?>" tabindex="-1" role="dialog" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg" role="document">
-            <div class="modal-content" data-lead-funnel-container style="<?= $lead_funnel_popup_style ?>">
+            <div class="modal-content" data-lead-funnel-container data-biolink-block-id="<?= $data->link->biolink_block_id ?>" style="<?= $lead_funnel_popup_style ?>">
 
                 <div class="modal-header">
                     <h5 class="modal-title" data-lead-funnel-popup-title><?= $data->link->settings->popup_title ?: $data->link->settings->name ?></h5>
@@ -70,4 +70,40 @@ if(!empty($data->link->settings->video_url)) {
     </div>
     <?php \Altum\Event::add_content(ob_get_clean(), 'modals') ?>
 <?php endif ?>
+
+<?php if($open_mode == 'popup' && !\Altum\Event::exists_content_type_key('javascript', 'lead_funnel_popup_tracking')): ?>
+    <?php ob_start() ?>
+    <script>
+        'use strict';
+
+        $(document).on('shown.bs.modal', '[id^="lead_funnel_"]', event => {
+            let modal = $(event.currentTarget);
+            let biolink_block_id = modal.find('[data-biolink-block-id]').attr('data-biolink-block-id');
+
+            if(!biolink_block_id) {
+                return;
+            }
+
+            try {
+                let payload = new FormData();
+                payload.append('biolink_block_id', biolink_block_id);
+                payload.append('event_type', 'open');
+                payload.append('source', 'popup_modal');
+
+                if(navigator.sendBeacon && navigator.sendBeacon(`${site_url}l/link/lead_funnel_event`, payload)) {
+                    return;
+                }
+
+                fetch(`${site_url}l/link/lead_funnel_event`, {
+                    method: 'POST',
+                    body: payload,
+                    credentials: 'same-origin',
+                    keepalive: true
+                }).catch(() => {});
+            } catch(error) {}
+        });
+    </script>
+    <?php \Altum\Event::add_content(ob_get_clean(), 'javascript', 'lead_funnel_popup_tracking') ?>
+<?php endif ?>
+
 <?php /* /Custom code: FC-2026-03-23 */ ?>

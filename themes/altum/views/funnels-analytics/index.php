@@ -155,7 +155,9 @@
     }
 
     .funnels-analytics-main-grid,
-    .funnels-analytics-bottom-grid {
+    .funnels-analytics-bottom-grid,
+    .funnels-analytics-flow-grid,
+    .funnels-analytics-insight-grid {
         display: grid;
         gap: 1rem;
     }
@@ -167,6 +169,16 @@
 
     .funnels-analytics-bottom-grid {
         grid-template-columns: minmax(0, 1.25fr) minmax(20rem, .95fr);
+    }
+
+    .funnels-analytics-insight-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        margin-bottom: 1rem;
+    }
+
+    .funnels-analytics-flow-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        margin-top: 1rem;
     }
 
     .funnels-analytics-stack + .funnels-analytics-stack {
@@ -218,10 +230,65 @@
 
     .funnels-analytics-submission-row {
         padding: 1rem 1.05rem;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
         gap: 1rem;
+    }
+
+    .funnels-analytics-submission-main {
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: .22rem;
+    }
+
+    .funnels-analytics-submission-side {
+        min-width: 12.5rem;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: .85rem;
+    }
+
+    .funnels-analytics-submission-date {
+        text-align: right;
+    }
+
+    .funnels-analytics-submission-date-value {
+        color: #cbd5e1;
+        font-size: .82rem;
+        font-weight: 700;
+        line-height: 1.35;
+    }
+
+    .funnels-analytics-submission-actions {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: .45rem;
+    }
+
+    .funnels-analytics-submission-actions .btn {
+        width: 100%;
+        min-width: 0;
+        justify-content: center;
+    }
+
+    .funnels-analytics-submission-secondary-actions {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: .45rem;
+        width: 100%;
+    }
+
+    .funnels-analytics-submission-funnel {
+        color: #94a3b8;
+        font-size: .8rem;
+        font-weight: 600;
+        line-height: 1.35;
+        margin-top: .2rem;
     }
 
     .funnels-analytics-source-row + .funnels-analytics-source-row,
@@ -306,6 +373,18 @@
         max-width: 100%;
     }
 
+    .funnels-analytics-badge.is-ready {
+        background: rgba(46, 211, 198, 0.14);
+        color: #9ef1e7;
+        border: 1px solid rgba(46, 211, 198, 0.22);
+    }
+
+    .funnels-analytics-badge.is-review {
+        background: rgba(245, 158, 11, 0.12);
+        color: #fcd58a;
+        border: 1px solid rgba(245, 158, 11, 0.22);
+    }
+
     .funnels-analytics-badge-wrap {
         display: flex;
         align-items: center;
@@ -347,16 +426,97 @@
         justify-content: flex-end;
     }
 
+    .funnels-analytics-highlight {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: .85rem;
+        padding: 1rem 1.05rem;
+        border-radius: 1.15rem;
+        border: 1px solid rgba(255,255,255,0.06);
+        background: rgba(255,255,255,0.025);
+    }
+
+    .funnels-analytics-highlight + .funnels-analytics-highlight {
+        margin-top: .75rem;
+    }
+
+    .funnels-analytics-highlight-value {
+        color: #fff;
+        font-size: 1.05rem;
+        font-weight: 700;
+        line-height: 1.25;
+    }
+
+    .funnels-analytics-flow-step {
+        padding: 1rem 1.05rem;
+        border-radius: 1.15rem;
+        border: 1px solid rgba(255,255,255,0.06);
+        background: rgba(255,255,255,0.025);
+    }
+
+    .funnels-analytics-flow-step-value {
+        color: #fff;
+        font-size: 1.45rem;
+        font-weight: 700;
+        line-height: 1;
+        margin-bottom: .4rem;
+    }
+
+    .funnels-analytics-list-item + .funnels-analytics-list-item {
+        margin-top: .75rem;
+    }
+
     .funnels-analytics-actions .btn,
     .funnels-analytics-submission-actions .btn,
     .funnels-analytics-modal-actions .btn {
         border-radius: .8rem;
     }
 
-    .funnels-analytics-submission-actions {
+    .funnels-analytics-contact-action {
+        display: inline-flex;
         align-items: center;
-        justify-content: flex-end;
-        min-width: 12rem;
+        justify-content: center;
+        gap: .35rem;
+        min-width: 0;
+    }
+
+    .funnels-analytics-contact-action.is-viber {
+        background: rgba(115, 96, 242, 0.18);
+        border-color: rgba(115, 96, 242, 0.3);
+        color: #d8d2ff;
+    }
+
+    .funnels-analytics-contact-action.is-viber:hover {
+        background: rgba(115, 96, 242, 0.26);
+        border-color: rgba(115, 96, 242, 0.4);
+        color: #f1efff;
+    }
+
+    .funnels-analytics-contact-action.is-call,
+    .funnels-analytics-contact-action.is-email {
+        background: rgba(255,255,255,0.06);
+        border-color: rgba(255,255,255,0.12);
+        color: #fff;
+    }
+
+    .funnels-analytics-contact-action.is-sms {
+        background: rgba(73, 227, 207, 0.2);
+        border-color: rgba(73, 227, 207, 0.34);
+        color: #dffdfa;
+    }
+
+    .funnels-analytics-contact-action.is-sms:hover {
+        background: rgba(73, 227, 207, 0.28);
+        border-color: rgba(73, 227, 207, 0.42);
+        color: #ffffff;
+    }
+
+    .funnels-analytics-contact-action.is-call:hover,
+    .funnels-analytics-contact-action.is-email:hover {
+        background: rgba(255,255,255,0.12);
+        border-color: rgba(255,255,255,0.18);
+        color: #fff;
     }
 
     .funnels-analytics-footer {
@@ -457,6 +617,8 @@
         .funnels-analytics-kpi-grid,
         .funnels-analytics-main-grid,
         .funnels-analytics-bottom-grid,
+        .funnels-analytics-insight-grid,
+        .funnels-analytics-flow-grid,
         .funnels-analytics-funnel-metrics {
             grid-template-columns: 1fr;
         }
@@ -465,16 +627,33 @@
             grid-template-columns: 1fr;
         }
 
-        .funnels-analytics-funnel-header,
-        .funnels-analytics-submission-row {
+        .funnels-analytics-funnel-header {
             flex-direction: column;
             align-items: flex-start;
+        }
+
+        .funnels-analytics-submission-row {
+            grid-template-columns: 1fr;
+        }
+
+        .funnels-analytics-submission-side {
+            width: 100%;
+            min-width: 0;
+            align-items: flex-start;
+        }
+
+        .funnels-analytics-submission-date {
+            text-align: left;
         }
 
         .funnels-analytics-submission-actions,
         .funnels-analytics-actions {
             justify-content: flex-start;
             min-width: 0;
+        }
+
+        .funnels-analytics-submission-secondary-actions {
+            grid-template-columns: 1fr;
         }
     }
 
@@ -617,38 +796,42 @@
                 </div>
 
                 <div class="funnels-analytics-kpi-grid">
-                    <button type="button" class="funnels-analytics-kpi is-actionable" data-toggle="modal" data-target="#funnels-all-blocks-modal">
-                        <div class="funnels-analytics-kpi-label"><?= l('funnels_analytics.total_funnels') ?></div>
-                        <div class="funnels-analytics-kpi-value is-link"><?= nr($selected_period_summary['total_funnels'] ?? 0) ?></div>
-                        <div class="funnels-analytics-kpi-meta">Klik otvara popis svih FCC Funnel blokova i direktan ulaz u uređivanje odabranog bloka.</div>
-                    </button>
-
                     <button type="button" class="funnels-analytics-kpi is-actionable" data-toggle="modal" data-target="#funnels-active-biolinks-modal">
                         <div class="funnels-analytics-kpi-label"><?= l('funnels_analytics.active_funnels') ?></div>
-                        <div class="funnels-analytics-kpi-value is-link"><?= nr($selected_period_summary['active_funnels'] ?? 0) ?></div>
-                        <div class="funnels-analytics-kpi-meta">Klik otvara popis biolinkova s aktivnim funnelima i direktan ulaz u editor.</div>
+                        <div class="funnels-analytics-kpi-value is-link"><?= nr($selected_period_summary['active_funnels'] ?? 0) ?> / <?= nr($selected_period_summary['total_funnels'] ?? 0) ?></div>
+                        <div class="funnels-analytics-kpi-meta"><?= sprintf(l('funnels_analytics.active_funnels_meta'), (int) ($data->selected_period_days ?? 30)) ?></div>
                     </button>
 
                     <div class="funnels-analytics-kpi">
                         <div class="funnels-analytics-kpi-label"><?= l('biolink_lead_funnel.unique_clicks') ?></div>
                         <div class="funnels-analytics-kpi-value"><?= nr($selected_period_summary['unique_clicks'] ?? 0) ?></div>
-                        <div class="funnels-analytics-kpi-meta"><?= l('biolink_lead_funnel.trend_help') ?></div>
+                        <div class="funnels-analytics-kpi-meta"><?= l('funnels_analytics.simple_clicks_help') ?></div>
                     </div>
 
                     <button type="button" class="funnels-analytics-kpi is-actionable" data-toggle="modal" data-target="#funnels-leads-modal">
                         <div class="funnels-analytics-kpi-label"><?= l('biolink_lead_funnel.total_leads') ?></div>
                         <div class="funnels-analytics-kpi-value is-link"><?= nr($selected_period_summary['total_leads'] ?? 0) ?></div>
-                        <div class="funnels-analytics-kpi-meta">Klik otvara popup s kontaktima i porukom spremnom za WhatsApp ili SMS.</div>
+                        <div class="funnels-analytics-kpi-meta"><?= l('funnels_analytics.simple_leads_help') ?></div>
                     </button>
 
                     <div class="funnels-analytics-kpi">
                         <div class="funnels-analytics-kpi-label"><?= l('biolink_lead_funnel.conversion_rate') ?></div>
                         <div class="funnels-analytics-kpi-value"><?= $selected_period_summary['conversion_rate'] ?? 0 ?>%</div>
-                        <div class="funnels-analytics-kpi-meta">Omjer prijava prema jedinstvenim klikovima u odabranom vremenskom okviru.</div>
+                        <div class="funnels-analytics-kpi-meta"><?= l('funnels_analytics.simple_conversion_help') ?></div>
+                    </div>
+
+                    <div class="funnels-analytics-kpi">
+                        <div class="funnels-analytics-kpi-label"><?= l('funnels_analytics.best_setup') ?></div>
+                        <div class="funnels-analytics-kpi-value" style="font-size: 1.3rem; line-height: 1.25;"><?= $data->type_performance['best_open_mode'] ? l('biolink_lead_funnel.open_mode_' . $data->type_performance['best_open_mode']['type']) : '—' ?></div>
+                        <div class="funnels-analytics-kpi-meta"><?= l('funnels_analytics.best_thank_you_type') ?>: <?= $data->type_performance['best_thank_you_type'] ? l('biolink_lead_funnel.thank_you_type_' . $data->type_performance['best_thank_you_type']['type']) : '—' ?></div>
                     </div>
                 </div>
 
                 <div class="d-flex flex-wrap align-items-center mb-4" style="gap: .75rem;">
+                    <button type="button" class="btn btn-sm btn-outline-light" data-toggle="modal" data-target="#funnels-all-blocks-modal">
+                        <i class="fas fa-fw fa-list-ul fa-sm mr-1"></i> <?= l('funnels_analytics.total_funnels') ?>
+                    </button>
+
                     <button type="button" class="btn btn-sm btn-outline-light" data-toggle="modal" data-target="#funnels-active-biolinks-modal">
                         <i class="fas fa-fw fa-layer-group fa-sm mr-1"></i> <?= l('funnels_analytics.active_funnels') ?>
                     </button>
@@ -662,7 +845,7 @@
                     <div class="funnels-analytics-card card border-0">
                         <div class="card-body">
                             <div class="funnels-analytics-title"><?= l('biolink_lead_funnel.trend_title') ?></div>
-                            <div class="funnels-analytics-help"><?= l('biolink_lead_funnel.trend_help') ?></div>
+                            <div class="funnels-analytics-help"><?= l('funnels_analytics.simple_trend_help') ?></div>
 
                             <?php if($data->summary['unique_clicks'] || $data->summary['total_leads']): ?>
                                 <div class="funnels-analytics-chart-wrap"><canvas id="funnels_analytics_chart"></canvas></div>
@@ -675,45 +858,53 @@
                     <div>
                         <div class="funnels-analytics-card card border-0 funnels-analytics-stack">
                             <div class="card-body">
-                                <div class="funnels-analytics-title"><?= l('biolink_lead_funnel.sources_title') ?></div>
-                                <div class="funnels-analytics-help"><?= l('biolink_lead_funnel.sources_help') ?></div>
+                                <div class="funnels-analytics-title"><?= l('funnels_analytics.best_performing_title') ?></div>
+                                <div class="funnels-analytics-help"><?= l('funnels_analytics.best_performing_help') ?></div>
 
-                                <?php if($data->sources): ?>
-                                    <?php foreach($data->sources as $source): ?>
-                                        <?php
-                                        $source_label = $source->source == 'direct' ? l('link.statistics.referrer_direct') : ($source->source ?: l('global.unknown'));
-                                        $source_label = htmlspecialchars($source_label, ENT_QUOTES, 'UTF-8');
-                                        $source_share = $data->summary['total_clicks'] ? round(((int) $source->total / $data->summary['total_clicks']) * 100) : 0;
-                                        ?>
-                                        <div class="funnels-analytics-source-row">
-                                            <div class="d-flex justify-content-between align-items-center mb-1">
-                                                <div class="text-truncate pr-3" title="<?= $source_label ?>"><?= $source_label ?></div>
-                                                <div class="font-weight-bold small text-white"><?= $source_share ?>%</div>
-                                            </div>
-                                            <div class="funnels-analytics-progress"><span class="funnels-analytics-progress-bar" style="width: <?= $source_share ?>%"></span></div>
-                                            <div class="funnels-analytics-meta mt-2"><?= sprintf(l('biolink_lead_funnel.source_clicks_x'), nr((int) $source->total), $source_share) ?></div>
-                                        </div>
-                                    <?php endforeach ?>
-                                <?php else: ?>
-                                    <p class="funnels-analytics-empty"><?= l('biolink_lead_funnel.no_clicks_yet') ?></p>
-                                <?php endif ?>
+                                <div class="funnels-analytics-highlight">
+                                    <div>
+                                        <div class="funnels-analytics-stat-label"><?= l('funnels_analytics.best_opening_mode') ?></div>
+                                        <div class="funnels-analytics-highlight-value"><?= $data->type_performance['best_open_mode'] ? l('biolink_lead_funnel.open_mode_' . $data->type_performance['best_open_mode']['type']) : '—' ?></div>
+                                        <?php if($data->type_performance['best_open_mode']): ?>
+                                            <div class="funnels-analytics-meta"><?= nr($data->type_performance['best_open_mode']['total_leads']) ?> <?= mb_strtolower(l('biolink_lead_funnel.total_leads')) ?> · <?= nr($data->type_performance['best_open_mode']['conversion_rate']) ?>%</div>
+                                        <?php endif ?>
+                                    </div>
+                                    <span class="funnels-analytics-badge"><?= sprintf(l('funnels_analytics.period_days_short'), (int) ($data->selected_period_days ?? 30)) ?></span>
+                                </div>
+
+                                <div class="funnels-analytics-highlight">
+                                    <div>
+                                        <div class="funnels-analytics-stat-label"><?= l('funnels_analytics.best_thank_you_type') ?></div>
+                                        <div class="funnels-analytics-highlight-value"><?= $data->type_performance['best_thank_you_type'] ? l('biolink_lead_funnel.thank_you_type_' . $data->type_performance['best_thank_you_type']['type']) : '—' ?></div>
+                                        <?php if($data->type_performance['best_thank_you_type']): ?>
+                                            <div class="funnels-analytics-meta"><?= nr($data->type_performance['best_thank_you_type']['total_leads']) ?> <?= mb_strtolower(l('biolink_lead_funnel.total_leads')) ?> · <?= nr($data->type_performance['best_thank_you_type']['conversion_rate']) ?>%</div>
+                                        <?php endif ?>
+                                    </div>
+                                    <span class="funnels-analytics-badge"><?= sprintf(l('funnels_analytics.period_days_short'), (int) ($data->selected_period_days ?? 30)) ?></span>
+                                </div>
                             </div>
                         </div>
 
                         <div class="funnels-analytics-card card border-0 funnels-analytics-stack">
                             <div class="card-body">
-                                <div class="funnels-analytics-title"><?= l('biolink_lead_funnel.devices_title') ?></div>
-                                <div class="funnels-analytics-help"><?= l('biolink_lead_funnel.devices_help') ?></div>
+                                <div class="funnels-analytics-title"><?= l('funnels_analytics.top_funnels_title') ?></div>
+                                <div class="funnels-analytics-help"><?= l('funnels_analytics.top_funnels_help') ?></div>
 
-                                <?php if($data->device_total_clicks): ?>
-                                    <?php foreach(['desktop', 'mobile', 'tablet'] as $device_type): ?>
-                                        <?php $device_share = round(($data->device_totals[$device_type] / $data->device_total_clicks) * 100); ?>
-                                        <div class="funnels-analytics-device-row d-flex justify-content-between align-items-center">
-                                            <div>
-                                                <div class="font-weight-bold text-white"><?= l('global.device.' . $device_type) ?></div>
-                                                <div class="funnels-analytics-meta"><?= $device_share ?>%</div>
+                                <?php if($data->top_funnels): ?>
+                                    <?php foreach($data->top_funnels as $funnel): ?>
+                                        <div class="funnels-analytics-highlight funnels-analytics-list-item">
+                                            <div class="min-width-0">
+                                                <div class="funnels-analytics-funnel-name"><?= $funnel->name ?></div>
+                                                <div class="funnels-analytics-meta"><?= $funnel->biolink_url ?></div>
+                                                <div class="mt-2 funnels-analytics-badge-wrap">
+                                                    <span class="funnels-analytics-badge"><?= $funnel->open_mode == 'page' ? l('biolink_lead_funnel.open_mode_page') : l('biolink_lead_funnel.open_mode_popup') ?></span>
+                                                    <span class="funnels-analytics-badge"><?= l('biolink_lead_funnel.thank_you_type_' . $funnel->thank_you_type) ?></span>
+                                                </div>
                                             </div>
-                                            <div class="h5 mb-0 text-white"><?= nr($data->device_totals[$device_type]) ?></div>
+                                            <div class="text-right">
+                                                <div class="funnels-analytics-highlight-value"><?= nr($funnel->selected_total_leads) ?></div>
+                                                <div class="funnels-analytics-meta"><?= l('biolink_lead_funnel.total_leads') ?> · <?= nr($funnel->selected_conversion_rate) ?>%</div>
+                                            </div>
                                         </div>
                                     <?php endforeach ?>
                                 <?php else: ?>
@@ -724,59 +915,76 @@
                     </div>
                 </div>
 
-                <div class="funnels-analytics-bottom-grid align-items-start">
+                <?php
+                $flow_stage_labels = [
+                    'entry_to_start' => l('funnels_analytics.flow_entry_to_start'),
+                    'start_to_success' => l('funnels_analytics.flow_start_to_success'),
+                    'success_to_cta' => l('funnels_analytics.flow_success_to_cta'),
+                ];
+                ?>
+
+                <div class="funnels-analytics-card card border-0 mb-4">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start flex-wrap" style="gap: .75rem;">
+                            <div>
+                                <div class="funnels-analytics-title"><?= l('funnels_analytics.flow_title') ?></div>
+                                <div class="funnels-analytics-help mb-0"><?= l('funnels_analytics.flow_help') ?></div>
+                            </div>
+                            <?php if($data->flow_summary['weakest_stage']): ?>
+                                <span class="funnels-analytics-badge"><?= l('funnels_analytics.weakest_stage') ?>: <?= $flow_stage_labels[$data->flow_summary['weakest_stage']] ?? '—' ?></span>
+                            <?php endif ?>
+                        </div>
+
+                        <div class="funnels-analytics-flow-grid">
+                            <div class="funnels-analytics-flow-step">
+                                <div class="funnels-analytics-stat-label"><?= l('funnels_analytics.flow_entries') ?></div>
+                                <div class="funnels-analytics-flow-step-value"><?= nr($data->flow_summary['entry_points']) ?></div>
+                                <div class="funnels-analytics-meta"><?= nr($data->flow_summary['page_views']) ?> <?= mb_strtolower(l('biolink_lead_funnel.open_mode_page')) ?> · <?= nr($data->flow_summary['popup_opens']) ?> <?= mb_strtolower(l('biolink_lead_funnel.open_mode_popup')) ?></div>
+                            </div>
+
+                            <div class="funnels-analytics-flow-step">
+                                <div class="funnels-analytics-stat-label"><?= l('funnels_analytics.flow_form_starts') ?></div>
+                                <div class="funnels-analytics-flow-step-value"><?= nr($data->flow_summary['form_starts']) ?></div>
+                                <div class="funnels-analytics-meta"><?= nr($data->flow_summary['entry_to_start_rate'] ?? 0) ?>% <?= l('funnels_analytics.from_entries') ?></div>
+                            </div>
+
+                            <div class="funnels-analytics-flow-step">
+                                <div class="funnels-analytics-stat-label"><?= l('funnels_analytics.flow_successful_submits') ?></div>
+                                <div class="funnels-analytics-flow-step-value"><?= nr($data->flow_summary['submit_success']) ?></div>
+                                <div class="funnels-analytics-meta"><?= nr($data->flow_summary['start_to_success_rate'] ?? 0) ?>% <?= l('funnels_analytics.from_form_starts') ?></div>
+                            </div>
+
+                            <div class="funnels-analytics-flow-step">
+                                <div class="funnels-analytics-stat-label"><?= l('funnels_analytics.flow_cta_clicks') ?></div>
+                                <div class="funnels-analytics-flow-step-value"><?= nr($data->flow_summary['cta_clicks']) ?></div>
+                                <div class="funnels-analytics-meta"><?= nr($data->flow_summary['submit_errors']) ?> <?= l('funnels_analytics.submit_errors_short') ?></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="funnels-analytics-insight-grid align-items-start">
                     <div class="funnels-analytics-card card border-0">
                         <div class="card-body">
-                            <div class="funnels-analytics-title"><?= l('funnels_analytics.performance_table') ?></div>
-                            <div class="funnels-analytics-help"><?= l('funnels_analytics.performance_table_help') ?></div>
+                            <div class="funnels-analytics-title"><?= l('funnels_analytics.top_conversion_title') ?></div>
+                            <div class="funnels-analytics-help"><?= l('funnels_analytics.top_conversion_help') ?></div>
 
-                            <?php foreach($data->funnel_blocks as $funnel): ?>
-                                <div class="funnels-analytics-funnel-row">
-                                    <div class="funnels-analytics-funnel-header">
-                                        <div class="funnels-analytics-funnel-summary">
+                            <?php if($data->top_conversion_funnels): ?>
+                                <?php foreach($data->top_conversion_funnels as $funnel): ?>
+                                    <div class="funnels-analytics-highlight funnels-analytics-list-item">
+                                        <div class="min-width-0">
                                             <div class="funnels-analytics-funnel-name"><?= $funnel->name ?></div>
-                                            <div class="funnels-analytics-meta"><?= $funnel->biolink_url ?><?= $funnel->project_name ? ' • ' . $funnel->project_name : '' ?></div>
-                                            <div class="mt-2 funnels-analytics-badge-wrap"><span class="funnels-analytics-badge"><?= $funnel->open_mode == 'page' ? l('biolink_lead_funnel.open_mode_page') : l('biolink_lead_funnel.open_mode_popup') ?></span></div>
+                                            <div class="funnels-analytics-meta"><?= $funnel->biolink_url ?></div>
                                         </div>
-
-                                        <div class="funnels-analytics-actions">
-                                            <a href="<?= $funnel->analytics_url ?>" class="btn btn-sm btn-outline-secondary"><?= l('funnels_analytics.view_filtered') ?></a>
-                                            <a href="<?= $funnel->data_url ?>" class="btn btn-sm btn-outline-secondary"><?= l('funnels_analytics.view_data') ?></a>
-                                            <a href="<?= $funnel->edit_url ?>" class="btn btn-sm btn-primary"><?= l('funnels_analytics.edit_funnel') ?></a>
+                                        <div class="text-right">
+                                            <div class="funnels-analytics-highlight-value"><?= nr($funnel->selected_conversion_rate) ?>%</div>
+                                            <div class="funnels-analytics-meta"><?= nr($funnel->selected_unique_clicks) ?> <?= mb_strtolower(l('biolink_lead_funnel.unique_clicks')) ?> · <?= nr($funnel->selected_total_leads) ?> <?= mb_strtolower(l('biolink_lead_funnel.total_leads')) ?></div>
                                         </div>
                                     </div>
-
-                                    <div class="funnels-analytics-funnel-metrics">
-                                        <div class="funnels-analytics-funnel-metric">
-                                            <div class="funnels-analytics-stat-label"><?= l('biolink_lead_funnel.total_clicks') ?></div>
-                                            <div class="funnels-analytics-stat-value"><?= nr($funnel->total_clicks) ?></div>
-                                        </div>
-
-                                        <div class="funnels-analytics-funnel-metric">
-                                            <div class="funnels-analytics-stat-label"><?= l('biolink_lead_funnel.unique_clicks') ?></div>
-                                            <div class="funnels-analytics-stat-value"><?= nr($funnel->unique_clicks) ?></div>
-                                        </div>
-
-                                        <div class="funnels-analytics-funnel-metric">
-                                            <div class="funnels-analytics-stat-label"><?= l('biolink_lead_funnel.total_leads') ?></div>
-                                            <div class="funnels-analytics-stat-value"><?= nr($funnel->total_leads) ?></div>
-                                        </div>
-
-                                        <div class="funnels-analytics-funnel-metric">
-                                            <div class="funnels-analytics-stat-label"><?= l('biolink_lead_funnel.conversion_rate') ?></div>
-                                            <div class="funnels-analytics-stat-value"><?= $funnel->conversion_rate ?>%</div>
-                                        </div>
-
-                                        <?php /* Custom code: FC-2026-03-23: compact last submission date output */ ?>
-                                        <div class="funnels-analytics-funnel-metric">
-                                            <div class="funnels-analytics-stat-label"><?= l('biolink_lead_funnel.last_submission') ?></div>
-                                            <div class="funnels-analytics-stat-value funnels-analytics-stat-value-date"><?php if($funnel->last_submission): ?><?= date('d.m.Y.', strtotime($funnel->last_submission)) ?><?php else: ?>—<?php endif ?></div>
-                                            <?php if($funnel->last_submission): ?><div class="funnels-analytics-meta"><?= \Altum\Date::get_timeago($funnel->last_submission) ?></div><?php endif ?>
-                                        </div>
-                                        <?php /* /Custom code: FC-2026-03-23 */ ?>
-                                    </div>
-                                </div>
-                            <?php endforeach ?>
+                                <?php endforeach ?>
+                            <?php else: ?>
+                                <p class="funnels-analytics-empty"><?= l('funnels_analytics.top_conversion_empty') ?></p>
+                            <?php endif ?>
                         </div>
                     </div>
 
@@ -787,45 +995,130 @@
                                     <div class="funnels-analytics-title"><?= l('funnels_analytics.recent_submissions') ?></div>
                                     <div class="funnels-analytics-help mb-0"><?= l('funnels_analytics.recent_submissions_help') ?></div>
                                 </div>
-                                <div class="funnels-analytics-muted">Limit 10 po stranici</div>
+                                <div class="funnels-analytics-muted"><?= l('funnels_analytics.recent_submissions_limit') ?></div>
                             </div>
 
                             <?php if($data->recent_submissions): ?>
                                 <?php foreach($data->recent_submissions as $submission): ?>
-                                    <?php $primary_contact_url = $submission->whatsapp_url ?: $submission->sms_url ?: null; ?>
                                     <div class="funnels-analytics-submission-row">
-                                        <div>
+                                        <div class="funnels-analytics-submission-main">
                                             <div class="funnels-analytics-submission-title"><?= $submission->funnel_name ?></div>
                                             <div class="funnels-analytics-meta"><?= htmlspecialchars($submission->identity, ENT_QUOTES, 'UTF-8') ?></div>
                                             <?php if($submission->contact_phone): ?><div class="funnels-analytics-meta"><?= htmlspecialchars($submission->contact_phone, ENT_QUOTES, 'UTF-8') ?></div><?php endif ?>
-                                            <div class="funnels-analytics-meta"><?= $submission->biolink_url ?></div>
+                                            <div class="funnels-analytics-badge-wrap mt-2">
+                                                <?php if($submission->preferred_contact_channel): ?>
+                                                    <span class="funnels-analytics-badge"><?= mb_strtoupper($submission->preferred_contact_channel) ?></span>
+                                                <?php endif ?>
+                                                <span class="funnels-analytics-badge <?= $submission->contact_status === 'ready' ? 'is-ready' : 'is-review' ?>"><?= $submission->contact_status_label ?></span>
+                                            </div>
+                                            <div class="funnels-analytics-submission-funnel"><?= $submission->biolink_url ?></div>
                                         </div>
 
-                                        <div class="funnels-analytics-submission-actions">
-                                            <div class="text-right mr-2">
-                                                <div class="text-white small"><?= \Altum\Date::get($submission->datetime, 2) ?></div>
+                                        <div class="funnels-analytics-submission-side">
+                                            <div class="funnels-analytics-submission-date">
+                                                <div class="funnels-analytics-submission-date-value"><?= \Altum\Date::get($submission->datetime, 2) ?></div>
                                                 <div class="funnels-analytics-meta"><?= \Altum\Date::get_timeago($submission->datetime) ?></div>
                                             </div>
-                                            <?php if($primary_contact_url): ?>
-                                                <a href="<?= $primary_contact_url ?>" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-success">WhatsApp poruka</a>
-                                            <?php endif ?>
-                                            <a href="<?= $submission->data_url ?>" class="btn btn-sm btn-light"><?= l('funnels_analytics.view_data') ?></a>
+
+                                            <div class="funnels-analytics-submission-actions">
+                                                <?php if($submission->primary_action): ?>
+                                                    <?php
+                                                    $primary_action_class = 'btn btn-sm btn-outline-light funnels-analytics-contact-action ' . $submission->primary_action['class'];
+                                                    if($submission->primary_action['key'] === 'whatsapp_url') {
+                                                        $primary_action_class = 'btn btn-sm btn-outline-success funnels-analytics-contact-action ' . $submission->primary_action['class'];
+                                                    } elseif($submission->primary_action['key'] === 'sms_url') {
+                                                        $primary_action_class = 'btn btn-sm funnels-analytics-contact-action ' . $submission->primary_action['class'];
+                                                    }
+                                                    ?>
+                                                    <a href="<?= $submission->primary_action['url'] ?>" target="_blank" rel="noopener noreferrer" class="<?= $primary_action_class ?>">
+                                                        <i class="<?= $submission->primary_action['icon'] ?>"></i>
+                                                        <?= $submission->primary_action['label'] ?>
+                                                    </a>
+                                                <?php endif ?>
+                                                <div class="funnels-analytics-submission-secondary-actions">
+                                                    <?php foreach($submission->available_actions as $action): ?>
+                                                        <?php if($submission->primary_action && $action['key'] === $submission->primary_action['key']) continue; ?>
+                                                        <a href="<?= $action['url'] ?>" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-light funnels-analytics-contact-action <?= $action['class'] ?>">
+                                                            <i class="<?= $action['icon'] ?>"></i>
+                                                            <?= $action['label'] ?>
+                                                        </a>
+                                                    <?php endforeach ?>
+                                                </div>
+                                                <?php if($submission->data_url): ?>
+                                                    <a href="<?= $submission->data_url ?>" class="btn btn-sm btn-light"><?= l('funnels_analytics.view_data') ?></a>
+                                                <?php endif ?>
+                                            </div>
                                         </div>
                                     </div>
                                 <?php endforeach ?>
 
-                                <?php /* Custom code: FC-2026-03-23: hide empty submissions pagination footer */ ?>
                                 <?php if(!empty(trim($data->pagination))): ?>
                                     <div class="funnels-analytics-footer">
-                                        <div class="funnels-analytics-muted">Ovdje je ograničen pregled zadnjih prijava. Starije prijave možeš otvoriti preko stranica ispod.</div>
+                                        <div class="funnels-analytics-muted"><?= l('funnels_analytics.recent_submissions_pagination_help') ?></div>
                                         <div><?= $data->pagination ?></div>
                                     </div>
                                 <?php endif ?>
-                                <?php /* /Custom code: FC-2026-03-23 */ ?>
                             <?php else: ?>
                                 <p class="funnels-analytics-empty"><?= l('biolink_lead_funnel.no_submissions_yet') ?></p>
                             <?php endif ?>
                         </div>
+                    </div>
+                </div>
+
+                <div class="funnels-analytics-card card border-0">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start flex-wrap" style="gap: .75rem;">
+                            <div>
+                                <div class="funnels-analytics-title"><?= l('funnels_analytics.performance_table') ?></div>
+                                <div class="funnels-analytics-help mb-0"><?= l('funnels_analytics.performance_table_help_simple') ?></div>
+                            </div>
+                            <button type="button" class="btn btn-sm btn-outline-light" data-toggle="modal" data-target="#funnels-all-blocks-modal">
+                                <?= l('funnels_analytics.total_funnels') ?>
+                            </button>
+                        </div>
+
+                        <?php foreach(array_slice($data->funnel_blocks, 0, 5) as $funnel): ?>
+                            <div class="funnels-analytics-funnel-row">
+                                <div class="funnels-analytics-funnel-header">
+                                    <div class="funnels-analytics-funnel-summary">
+                                        <div class="funnels-analytics-funnel-name"><?= $funnel->name ?></div>
+                                        <div class="funnels-analytics-meta"><?= $funnel->biolink_url ?><?= $funnel->project_name ? ' • ' . $funnel->project_name : '' ?></div>
+                                        <div class="mt-2 funnels-analytics-badge-wrap">
+                                            <span class="funnels-analytics-badge"><?= $funnel->open_mode == 'page' ? l('biolink_lead_funnel.open_mode_page') : l('biolink_lead_funnel.open_mode_popup') ?></span>
+                                            <span class="funnels-analytics-badge"><?= l('biolink_lead_funnel.thank_you_type_' . $funnel->thank_you_type) ?></span>
+                                        </div>
+                                    </div>
+
+                                    <div class="funnels-analytics-actions">
+                                        <a href="<?= $funnel->data_url ?>" class="btn btn-sm btn-outline-secondary"><?= l('funnels_analytics.view_data') ?></a>
+                                        <a href="<?= $funnel->edit_url ?>" class="btn btn-sm btn-primary"><?= l('funnels_analytics.edit_funnel') ?></a>
+                                    </div>
+                                </div>
+
+                                <div class="funnels-analytics-funnel-metrics">
+                                    <div class="funnels-analytics-funnel-metric">
+                                        <div class="funnels-analytics-stat-label"><?= l('biolink_lead_funnel.unique_clicks') ?></div>
+                                        <div class="funnels-analytics-stat-value"><?= nr($funnel->selected_unique_clicks ?? 0) ?></div>
+                                    </div>
+
+                                    <div class="funnels-analytics-funnel-metric">
+                                        <div class="funnels-analytics-stat-label"><?= l('biolink_lead_funnel.total_leads') ?></div>
+                                        <div class="funnels-analytics-stat-value"><?= nr($funnel->selected_total_leads ?? 0) ?></div>
+                                    </div>
+
+                                    <div class="funnels-analytics-funnel-metric">
+                                        <div class="funnels-analytics-stat-label"><?= l('biolink_lead_funnel.conversion_rate') ?></div>
+                                        <div class="funnels-analytics-stat-value"><?= nr($funnel->selected_conversion_rate ?? 0) ?>%</div>
+                                    </div>
+
+                                    <div class="funnels-analytics-funnel-metric">
+                                        <div class="funnels-analytics-stat-label"><?= l('biolink_lead_funnel.last_submission') ?></div>
+                                        <div class="funnels-analytics-stat-value funnels-analytics-stat-value-date"><?php if($funnel->last_submission): ?><?= date('d.m.Y.', strtotime($funnel->last_submission)) ?><?php else: ?>—<?php endif ?></div>
+                                        <?php if($funnel->last_submission): ?><div class="funnels-analytics-meta"><?= \Altum\Date::get_timeago($funnel->last_submission) ?></div><?php endif ?>
+                                    </div>
+                                </div>
+                            </div>
+                        <?php endforeach ?>
                     </div>
                 </div>
             <?php endif ?>
@@ -893,7 +1186,7 @@
                 <div class="modal-header">
                     <div>
                         <h5 class="modal-title mb-1"><?= l('biolink_lead_funnel.total_leads') ?></h5>
-                        <div class="funnels-analytics-meta">Klik na ime otvara pripremljenu WhatsApp ili SMS poruku prema osobi koja je ostavila kontakt.</div>
+                        <div class="funnels-analytics-meta">Svaki lead ima prioritetni kanal kontakta i dostupne fallback akcije za brži follow-up.</div>
                     </div>
                     <button type="button" class="close" data-dismiss="modal" aria-label="<?= l('global.close') ?>">
                         <span aria-hidden="true">&times;</span>
@@ -902,16 +1195,21 @@
                 <div class="modal-body">
                     <?php if($data->lead_contacts_preview): ?>
                         <?php foreach($data->lead_contacts_preview as $submission): ?>
-                            <?php $primary_contact_url = $submission->whatsapp_url ?: $submission->sms_url ?: null; ?>
                             <div class="funnels-analytics-modal-contact">
                                 <div class="d-flex justify-content-between align-items-start flex-wrap">
                                     <div class="pr-3">
-                                        <?php if($primary_contact_url): ?>
-                                            <a href="<?= $primary_contact_url ?>" target="_blank" rel="noopener noreferrer" class="funnels-analytics-contact-link"><?= htmlspecialchars($submission->contact_name, ENT_QUOTES, 'UTF-8') ?></a>
+                                        <?php if($submission->primary_action): ?>
+                                            <a href="<?= $submission->primary_action['url'] ?>" target="_blank" rel="noopener noreferrer" class="funnels-analytics-contact-link"><?= htmlspecialchars($submission->contact_name, ENT_QUOTES, 'UTF-8') ?></a>
                                         <?php else: ?>
                                             <div class="font-weight-bold text-white"><?= htmlspecialchars($submission->contact_name, ENT_QUOTES, 'UTF-8') ?></div>
                                         <?php endif ?>
                                         <div class="funnels-analytics-meta"><?= $submission->funnel_name ?> • <?= $submission->biolink_url ?></div>
+                                        <div class="funnels-analytics-badge-wrap mt-2">
+                                            <?php if($submission->preferred_contact_channel): ?>
+                                                <span class="funnels-analytics-badge"><?= mb_strtoupper($submission->preferred_contact_channel) ?></span>
+                                            <?php endif ?>
+                                            <span class="funnels-analytics-badge <?= $submission->contact_status === 'ready' ? 'is-ready' : 'is-review' ?>"><?= $submission->contact_status_label ?></span>
+                                        </div>
                                         <?php if($submission->contact_email): ?><div class="funnels-analytics-meta"><?= htmlspecialchars($submission->contact_email, ENT_QUOTES, 'UTF-8') ?></div><?php endif ?>
                                         <?php if($submission->contact_phone): ?><div class="funnels-analytics-meta"><?= htmlspecialchars($submission->contact_phone, ENT_QUOTES, 'UTF-8') ?></div><?php endif ?>
                                     </div>
@@ -922,12 +1220,27 @@
                                 </div>
 
                                 <div class="funnels-analytics-modal-actions mt-3">
-                                    <?php if($submission->whatsapp_url): ?>
-                                        <a href="<?= $submission->whatsapp_url ?>" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-success">WhatsApp</a>
+                                    <?php if($submission->primary_action): ?>
+                                        <?php
+                                        $primary_action_class = 'btn btn-sm btn-outline-light funnels-analytics-contact-action ' . $submission->primary_action['class'];
+                                        if($submission->primary_action['key'] === 'whatsapp_url') {
+                                            $primary_action_class = 'btn btn-sm btn-success funnels-analytics-contact-action ' . $submission->primary_action['class'];
+                                        } elseif($submission->primary_action['key'] === 'sms_url') {
+                                            $primary_action_class = 'btn btn-sm funnels-analytics-contact-action ' . $submission->primary_action['class'];
+                                        }
+                                        ?>
+                                        <a href="<?= $submission->primary_action['url'] ?>" target="_blank" rel="noopener noreferrer" class="<?= $primary_action_class ?>">
+                                            <i class="<?= $submission->primary_action['icon'] ?>"></i>
+                                            <?= $submission->primary_action['label'] ?>
+                                        </a>
                                     <?php endif ?>
-                                    <?php if($submission->sms_url): ?>
-                                        <a href="<?= $submission->sms_url ?>" class="btn btn-sm btn-outline-light">SMS</a>
-                                    <?php endif ?>
+                                    <?php foreach($submission->available_actions as $action): ?>
+                                        <?php if($submission->primary_action && $action['key'] === $submission->primary_action['key']) continue; ?>
+                                        <a href="<?= $action['url'] ?>" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-light funnels-analytics-contact-action <?= $action['class'] ?>">
+                                            <i class="<?= $action['icon'] ?>"></i>
+                                            <?= $action['label'] ?>
+                                        </a>
+                                    <?php endforeach ?>
                                     <a href="<?= $submission->data_url ?>" class="btn btn-sm btn-light"><?= l('funnels_analytics.view_data') ?></a>
                                 </div>
                             </div>

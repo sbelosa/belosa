@@ -22,12 +22,12 @@ $education_by_language = is_array($education_by_language) || is_object($educatio
 
 /* Custom code: FC-2026-02-24: FCC Core help widget pages */
 $help_widget_pages = [
-    ['key' => 'links_biolink', 'label' => 'Biolink pages', 'pathname' => '/links', 'search' => 'type=biolink'],
+    ['key' => 'links_biolink', 'label' => 'FCC Apps', 'pathname' => '/links', 'search' => 'type=biolink'],
     ['key' => 'links_link', 'label' => 'Shortened links', 'pathname' => '/links', 'search' => 'type=link'],
     ['key' => 'links_file', 'label' => 'File links', 'pathname' => '/links', 'search' => 'type=file'],
     ['key' => 'links_vcard', 'label' => 'Vcard links', 'pathname' => '/links', 'search' => 'type=vcard'],
     ['key' => 'links_static', 'label' => 'Static sites', 'pathname' => '/links', 'search' => 'type=static'],
-    ['key' => 'link_editor', 'label' => 'Biolink editor', 'pathname_prefix' => '/link/', 'search' => ''],
+    ['key' => 'link_editor', 'label' => 'FCC App editor', 'pathname_prefix' => '/link/', 'search' => ''],
     ['key' => 'links_statistics', 'label' => 'Links statistics', 'pathname' => '/links-statistics', 'search' => ''],
     ['key' => 'qr_codes', 'label' => 'QR codes', 'pathname' => '/qr-codes', 'search' => ''],
     ['key' => 'domains', 'label' => 'Custom domains', 'pathname' => '/domains', 'search' => ''],

@@ -284,6 +284,500 @@ class AdminIndex extends Controller {
     }
     /* /Custom code: FC-2026-03-18 */
 
+    /* Custom code: FC-2026-03-26: admin funnels analytics helpers */
+    private function get_funnel_blocks_map(): array {
+        $blocks = [];
+        $block_ids = [];
+
+        $result = database()->query("
+            SELECT
+                `biolinks_blocks`.`biolink_block_id`,
+                `biolinks_blocks`.`link_id`,
+                `biolinks_blocks`.`user_id`,
+                `biolinks_blocks`.`settings`,
+                `links`.`url` AS `biolink_url`,
+                `links`.`domain_id`,
+                `users`.`name` AS `user_name`
+            FROM
+                `biolinks_blocks`
+            LEFT JOIN
+                `links` ON `links`.`link_id` = `biolinks_blocks`.`link_id`
+            LEFT JOIN
+                `users` ON `users`.`user_id` = `biolinks_blocks`.`user_id`
+            WHERE
+                `biolinks_blocks`.`type` = 'lead_funnel'
+                AND `links`.`type` = 'biolink'
+            ORDER BY
+                `biolinks_blocks`.`biolink_block_id` DESC
+        ");
+
+        while($row = $result->fetch_object()) {
+            $row->settings = json_decode($row->settings ?? '{}');
+            $row->name = $row->settings->name ?? l('link.biolink.blocks.lead_funnel');
+            $row->open_mode = in_array(($row->settings->open_mode ?? 'popup'), ['popup', 'page'], true) ? $row->settings->open_mode : 'popup';
+            $row->thank_you_type = in_array(($row->settings->thank_you_type ?? 'message'), ['message', 'external_url', 'biolink_redirect', 'file_download'], true) ? $row->settings->thank_you_type : 'message';
+            $row->analytics_url = url('funnels-analytics?biolink_block_id=' . $row->biolink_block_id);
+            $row->admin_user_url = url('admin/user-view/' . $row->user_id);
+
+            $blocks[(int) $row->biolink_block_id] = $row;
+            $block_ids[] = (int) $row->biolink_block_id;
+        }
+
+        return [
+            'blocks' => $blocks,
+            'block_ids' => $block_ids,
+        ];
+    }
+
+    private function get_funnel_chart_series(string $period_key, string $period_start_datetime, string $funnel_ids_sql): array {
+        $chart_bucket_expression = $period_key === 'today'
+            ? "DATE_FORMAT(`track_links`.`datetime`, '%Y-%m-%d %H:00:00')"
+            : "DATE(`track_links`.`datetime`)";
+        $chart_points = $period_key === 'today' ? 24 : ($period_key === '7d' ? 7 : ($period_key === '30d' ? 30 : 90));
+        $chart_start = new \DateTimeImmutable($period_start_datetime);
+        $chart_interval = new \DateInterval($period_key === 'today' ? 'PT1H' : 'P1D');
+        $chart_label_format = $period_key === 'today' ? 'H:i' : 'd.m.';
+
+        $clicks_series_map = $this->get_daily_series_map(
+            "SELECT {$chart_bucket_expression} AS `formatted_date`, SUM(`track_links`.`is_unique`) AS `metric` FROM `track_links` WHERE `track_links`.`datetime` >= '{$period_start_datetime}' AND `track_links`.`biolink_block_id` IN ({$funnel_ids_sql}) GROUP BY `formatted_date` ORDER BY `formatted_date` ASC",
+            'metric'
+        );
+
+        $leads_chart_bucket_expression = $period_key === 'today'
+            ? "DATE_FORMAT(`data`.`datetime`, '%Y-%m-%d %H:00:00')"
+            : "DATE(`data`.`datetime`)";
+
+        $leads_series_map = $this->get_daily_series_map(
+            "SELECT {$leads_chart_bucket_expression} AS `formatted_date`, COUNT(*) AS `metric` FROM `data` WHERE `data`.`datetime` >= '{$period_start_datetime}' AND `data`.`type` = 'lead_funnel' AND `data`.`biolink_block_id` IN ({$funnel_ids_sql}) GROUP BY `formatted_date` ORDER BY `formatted_date` ASC",
+            'metric'
+        );
+
+        $chart_labels = [];
+        $chart_unique_clicks_series = [];
+        $chart_leads_series = [];
+        $chart_conversion_rate_series = [];
+
+        for($chart_index = 0; $chart_index < $chart_points; $chart_index++) {
+            $chart_key = $period_key === 'today'
+                ? $chart_start->format('Y-m-d H:00:00')
+                : $chart_start->format('Y-m-d');
+
+            $unique_clicks = (int) ($clicks_series_map[$chart_key] ?? 0);
+            $leads = (int) ($leads_series_map[$chart_key] ?? 0);
+
+            $chart_labels[] = $chart_start->format($chart_label_format);
+            $chart_unique_clicks_series[] = $unique_clicks;
+            $chart_leads_series[] = $leads;
+            $chart_conversion_rate_series[] = $unique_clicks ? round(($leads / $unique_clicks) * 100, 1) : 0;
+
+            $chart_start = $chart_start->add($chart_interval);
+        }
+
+        return [
+            'labels' => $chart_labels,
+            'unique_clicks_series' => $chart_unique_clicks_series,
+            'leads_series' => $chart_leads_series,
+            'conversion_rate_series' => $chart_conversion_rate_series,
+        ];
+    }
+
+    private function get_funnel_flow_maps(string $period_start_datetime, string $funnel_ids_sql): array {
+        $unique_by_event = [];
+        $totals_by_event = [];
+        $unique_by_funnel_event = [];
+
+        $result = database()->query("
+            SELECT
+                `biolink_block_id`,
+                `event_type`,
+                COUNT(*) AS `total_events`,
+                COUNT(DISTINCT `visitor_key`) AS `unique_visitors`
+            FROM
+                `funnel_events`
+            WHERE
+                `datetime` >= '{$period_start_datetime}'
+                AND `biolink_block_id` IN ({$funnel_ids_sql})
+            GROUP BY
+                `biolink_block_id`,
+                `event_type`
+        ");
+
+        while($row = $result->fetch_object()) {
+            $event_type = (string) $row->event_type;
+            $biolink_block_id = (int) $row->biolink_block_id;
+            $unique_visitors = (int) ($row->unique_visitors ?? 0);
+            $total_events = (int) ($row->total_events ?? 0);
+
+            $unique_by_event[$event_type] = ($unique_by_event[$event_type] ?? 0) + $unique_visitors;
+            $totals_by_event[$event_type] = ($totals_by_event[$event_type] ?? 0) + $total_events;
+            $unique_by_funnel_event[$biolink_block_id][$event_type] = $unique_visitors;
+        }
+
+        return [
+            'unique_by_event' => $unique_by_event,
+            'totals_by_event' => $totals_by_event,
+            'unique_by_funnel_event' => $unique_by_funnel_event,
+        ];
+    }
+
+    private function get_funnels_filter_groups(array $funnel_blocks_map): array {
+        $groups = [
+            'all' => $funnel_blocks_map,
+            'open_mode:popup' => [],
+            'open_mode:page' => [],
+            'thank_you_type:message' => [],
+            'thank_you_type:external_url' => [],
+            'thank_you_type:biolink_redirect' => [],
+            'thank_you_type:file_download' => [],
+        ];
+
+        foreach($funnel_blocks_map as $funnel_id => $funnel) {
+            $groups['open_mode:' . $funnel->open_mode][$funnel_id] = $funnel;
+            $groups['thank_you_type:' . $funnel->thank_you_type][$funnel_id] = $funnel;
+        }
+
+        return $groups;
+    }
+
+    private function get_funnel_period_payload(string $period_key, string $period_start_datetime, array $funnel_blocks_map, array $funnel_block_ids): array {
+        $empty_payload = [
+            'total_funnels' => 0,
+            'active_funnels' => 0,
+            'active_collaborators' => 0,
+            'unique_clicks' => 0,
+            'leads' => 0,
+            'conversion_rate' => 0,
+            'chart' => [
+                'labels' => [],
+                'unique_clicks_series' => [],
+                'leads_series' => [],
+                'conversion_rate_series' => [],
+            ],
+            'top_funnels' => [],
+            'top_funnels_by_conversion' => [],
+            'top_collaborators' => [],
+            'open_mode_breakdown' => [],
+            'thank_you_type_breakdown' => [],
+            'opportunities' => [],
+            'flow' => [
+                'entry_points' => 0,
+                'views' => 0,
+                'opens' => 0,
+                'form_starts' => 0,
+                'submit_attempts' => 0,
+                'submit_success' => 0,
+                'submit_errors' => 0,
+                'thank_you_views' => 0,
+                'cta_clicks' => 0,
+                'entry_to_start_rate' => 0,
+                'start_to_success_rate' => 0,
+                'success_to_thank_you_rate' => 0,
+                'success_to_cta_rate' => 0,
+            ],
+            'flow_opportunities' => [],
+        ];
+
+        if(empty($funnel_block_ids)) {
+            return $empty_payload;
+        }
+
+        fc_ensure_funnel_analytics_tables();
+
+        $funnel_ids_sql = implode(',', $funnel_block_ids);
+        $minimum_unique_clicks_for_conversion_ranking = 30;
+        $minimum_unique_clicks_for_opportunity = 20;
+
+        $clicks_by_funnel = [];
+        $clicks_result = database()->query("SELECT `biolink_block_id`, SUM(`is_unique`) AS `unique_clicks` FROM `track_links` WHERE `datetime` >= '{$period_start_datetime}' AND `biolink_block_id` IN ({$funnel_ids_sql}) GROUP BY `biolink_block_id`");
+        while($row = $clicks_result->fetch_object()) {
+            $clicks_by_funnel[(int) $row->biolink_block_id] = (int) ($row->unique_clicks ?? 0);
+        }
+
+        $leads_by_funnel = [];
+        $leads_result = database()->query("SELECT `biolink_block_id`, COUNT(*) AS `total_leads` FROM `data` WHERE `datetime` >= '{$period_start_datetime}' AND `type` = 'lead_funnel' AND `biolink_block_id` IN ({$funnel_ids_sql}) GROUP BY `biolink_block_id`");
+        while($row = $leads_result->fetch_object()) {
+            $leads_by_funnel[(int) $row->biolink_block_id] = (int) ($row->total_leads ?? 0);
+        }
+
+        $flow_maps = $this->get_funnel_flow_maps($period_start_datetime, $funnel_ids_sql);
+        $flow_unique_by_event = $flow_maps['unique_by_event'];
+        $flow_totals_by_event = $flow_maps['totals_by_event'];
+        $flow_unique_by_funnel_event = $flow_maps['unique_by_funnel_event'];
+
+        $summary = [
+            'total_funnels' => count($funnel_block_ids),
+            'active_funnels' => 0,
+            'active_collaborators' => 0,
+            'unique_clicks' => 0,
+            'leads' => 0,
+            'conversion_rate' => 0,
+        ];
+
+        $active_collaborator_ids = [];
+        $top_funnels = [];
+        $top_funnels_by_conversion = [];
+        $top_collaborators = [];
+        $opportunities = [];
+        $flow_opportunities = [];
+        $open_mode_breakdown = [];
+        $thank_you_type_breakdown = [];
+
+        foreach(['popup', 'page'] as $open_mode_key) {
+            $open_mode_breakdown[$open_mode_key] = [
+                'type' => $open_mode_key,
+                'funnels_count' => 0,
+                'active_funnels' => 0,
+                'unique_clicks' => 0,
+                'leads' => 0,
+                'conversion_rate' => 0,
+                'avg_leads_per_funnel' => 0,
+            ];
+        }
+
+        foreach(['message', 'external_url', 'biolink_redirect', 'file_download'] as $thank_you_type_key) {
+            $thank_you_type_breakdown[$thank_you_type_key] = [
+                'type' => $thank_you_type_key,
+                'funnels_count' => 0,
+                'active_funnels' => 0,
+                'unique_clicks' => 0,
+                'leads' => 0,
+                'conversion_rate' => 0,
+                'avg_leads_per_funnel' => 0,
+            ];
+        }
+
+        foreach($funnel_blocks_map as $funnel_id => $funnel) {
+            $unique_clicks = (int) ($clicks_by_funnel[$funnel_id] ?? 0);
+            $leads = (int) ($leads_by_funnel[$funnel_id] ?? 0);
+            $conversion_rate = $unique_clicks ? round(($leads / $unique_clicks) * 100, 1) : 0;
+            $is_active = $unique_clicks > 0 || $leads > 0;
+
+            $summary['unique_clicks'] += $unique_clicks;
+            $summary['leads'] += $leads;
+
+            if($is_active) {
+                $summary['active_funnels']++;
+                $active_collaborator_ids[(int) $funnel->user_id] = true;
+            }
+
+            $open_mode_breakdown[$funnel->open_mode]['funnels_count']++;
+            $open_mode_breakdown[$funnel->open_mode]['unique_clicks'] += $unique_clicks;
+            $open_mode_breakdown[$funnel->open_mode]['leads'] += $leads;
+            if($is_active) {
+                $open_mode_breakdown[$funnel->open_mode]['active_funnels']++;
+            }
+
+            $thank_you_type_breakdown[$funnel->thank_you_type]['funnels_count']++;
+            $thank_you_type_breakdown[$funnel->thank_you_type]['unique_clicks'] += $unique_clicks;
+            $thank_you_type_breakdown[$funnel->thank_you_type]['leads'] += $leads;
+            if($is_active) {
+                $thank_you_type_breakdown[$funnel->thank_you_type]['active_funnels']++;
+            }
+
+            $top_funnels[] = [
+                'biolink_block_id' => (int) $funnel->biolink_block_id,
+                'name' => (string) $funnel->name,
+                'user_id' => (int) $funnel->user_id,
+                'user_name' => (string) ($funnel->user_name ?? l('global.unknown')),
+                'biolink_url' => (string) ($funnel->biolink_url ?? ''),
+                'analytics_url' => (string) $funnel->analytics_url,
+                'admin_user_url' => (string) $funnel->admin_user_url,
+                'open_mode' => (string) $funnel->open_mode,
+                'thank_you_type' => (string) $funnel->thank_you_type,
+                'unique_clicks' => $unique_clicks,
+                'leads' => $leads,
+                'conversion_rate' => $conversion_rate,
+            ];
+
+            if($unique_clicks >= $minimum_unique_clicks_for_conversion_ranking) {
+                $top_funnels_by_conversion[] = [
+                    'biolink_block_id' => (int) $funnel->biolink_block_id,
+                    'name' => (string) $funnel->name,
+                    'user_id' => (int) $funnel->user_id,
+                    'user_name' => (string) ($funnel->user_name ?? l('global.unknown')),
+                    'analytics_url' => (string) $funnel->analytics_url,
+                    'admin_user_url' => (string) $funnel->admin_user_url,
+                    'unique_clicks' => $unique_clicks,
+                    'leads' => $leads,
+                    'conversion_rate' => $conversion_rate,
+                ];
+            }
+
+            if($unique_clicks >= $minimum_unique_clicks_for_opportunity && $leads === 0) {
+                $opportunities[] = [
+                    'biolink_block_id' => (int) $funnel->biolink_block_id,
+                    'name' => (string) $funnel->name,
+                    'user_id' => (int) $funnel->user_id,
+                    'user_name' => (string) ($funnel->user_name ?? l('global.unknown')),
+                    'analytics_url' => (string) $funnel->analytics_url,
+                    'admin_user_url' => (string) $funnel->admin_user_url,
+                    'unique_clicks' => $unique_clicks,
+                ];
+            }
+
+            $funnel_flow = $flow_unique_by_funnel_event[$funnel_id] ?? [];
+            $tracked_entry_points = (int) (($funnel_flow['view'] ?? 0) + ($funnel_flow['open'] ?? 0));
+            $entry_points = max($tracked_entry_points, $unique_clicks);
+            $form_starts = max((int) ($funnel_flow['form_start'] ?? 0), (int) ($funnel_flow['submit_attempt'] ?? 0));
+            $submit_success = (int) ($funnel_flow['submit_success'] ?? 0);
+            $thank_you_views = max((int) ($funnel_flow['thank_you_view'] ?? 0), $submit_success);
+            $cta_clicks = (int) ($funnel_flow['thank_you_cta_click'] ?? 0);
+            $entry_to_start_rate = $entry_points ? round(($form_starts / $entry_points) * 100, 1) : 0;
+            $start_to_success_rate = $form_starts ? round(($submit_success / $form_starts) * 100, 1) : 0;
+            $success_to_cta_rate = $submit_success ? round(($cta_clicks / $submit_success) * 100, 1) : 0;
+
+            $weakest_stage = null;
+            $weakest_rate = null;
+
+            if($entry_points >= 20) {
+                $weakest_stage = 'entry_to_start';
+                $weakest_rate = $entry_to_start_rate;
+            }
+
+            if($form_starts >= 10 && ($weakest_rate === null || $start_to_success_rate < $weakest_rate)) {
+                $weakest_stage = 'start_to_success';
+                $weakest_rate = $start_to_success_rate;
+            }
+
+            if($submit_success >= 10 && ($weakest_rate === null || $success_to_cta_rate < $weakest_rate)) {
+                $weakest_stage = 'success_to_cta';
+                $weakest_rate = $success_to_cta_rate;
+            }
+
+            if($weakest_stage !== null) {
+                $flow_opportunities[] = [
+                    'biolink_block_id' => (int) $funnel->biolink_block_id,
+                    'name' => (string) $funnel->name,
+                    'user_id' => (int) $funnel->user_id,
+                    'user_name' => (string) ($funnel->user_name ?? l('global.unknown')),
+                    'analytics_url' => (string) $funnel->analytics_url,
+                    'admin_user_url' => (string) $funnel->admin_user_url,
+                    'entry_points' => $entry_points,
+                    'form_starts' => $form_starts,
+                    'submit_success' => $submit_success,
+                    'thank_you_views' => $thank_you_views,
+                    'cta_clicks' => $cta_clicks,
+                    'weakest_stage' => $weakest_stage,
+                    'weakest_rate' => $weakest_rate,
+                ];
+            }
+
+            $collaborator_key = (string) $funnel->user_id;
+            if(!isset($top_collaborators[$collaborator_key])) {
+                $top_collaborators[$collaborator_key] = [
+                    'user_id' => (int) $funnel->user_id,
+                    'name' => (string) ($funnel->user_name ?? l('global.unknown')),
+                    'admin_user_url' => (string) $funnel->admin_user_url,
+                    'funnels_count' => 0,
+                    'active_funnels' => 0,
+                    'unique_clicks' => 0,
+                    'leads' => 0,
+                    'conversion_rate' => 0,
+                ];
+            }
+
+            $top_collaborators[$collaborator_key]['funnels_count']++;
+            $top_collaborators[$collaborator_key]['unique_clicks'] += $unique_clicks;
+            $top_collaborators[$collaborator_key]['leads'] += $leads;
+            if($is_active) {
+                $top_collaborators[$collaborator_key]['active_funnels']++;
+            }
+        }
+
+        $summary['active_collaborators'] = count($active_collaborator_ids);
+        $summary['conversion_rate'] = $summary['unique_clicks'] ? round(($summary['leads'] / $summary['unique_clicks']) * 100, 1) : 0;
+
+        foreach($open_mode_breakdown as &$breakdown_row) {
+            $breakdown_row['conversion_rate'] = $breakdown_row['unique_clicks'] ? round(($breakdown_row['leads'] / $breakdown_row['unique_clicks']) * 100, 1) : 0;
+            $breakdown_row['avg_leads_per_funnel'] = $breakdown_row['funnels_count'] ? round($breakdown_row['leads'] / $breakdown_row['funnels_count'], 1) : 0;
+        }
+        unset($breakdown_row);
+
+        foreach($thank_you_type_breakdown as &$breakdown_row) {
+            $breakdown_row['conversion_rate'] = $breakdown_row['unique_clicks'] ? round(($breakdown_row['leads'] / $breakdown_row['unique_clicks']) * 100, 1) : 0;
+            $breakdown_row['avg_leads_per_funnel'] = $breakdown_row['funnels_count'] ? round($breakdown_row['leads'] / $breakdown_row['funnels_count'], 1) : 0;
+        }
+        unset($breakdown_row);
+
+        foreach($top_collaborators as &$collaborator_row) {
+            $collaborator_row['conversion_rate'] = $collaborator_row['unique_clicks'] ? round(($collaborator_row['leads'] / $collaborator_row['unique_clicks']) * 100, 1) : 0;
+        }
+        unset($collaborator_row);
+
+        usort($top_funnels, fn($a, $b) => [$b['leads'], $b['unique_clicks'], $b['conversion_rate']] <=> [$a['leads'], $a['unique_clicks'], $a['conversion_rate']]);
+        usort($top_funnels_by_conversion, fn($a, $b) => [$b['conversion_rate'], $b['leads'], $b['unique_clicks']] <=> [$a['conversion_rate'], $a['leads'], $a['unique_clicks']]);
+        usort($opportunities, fn($a, $b) => $b['unique_clicks'] <=> $a['unique_clicks']);
+        usort($flow_opportunities, fn($a, $b) => [$a['weakest_rate'], $b['entry_points']] <=> [$b['weakest_rate'], $a['entry_points']]);
+        $top_collaborators = array_values($top_collaborators);
+        usort($top_collaborators, fn($a, $b) => [$b['leads'], $b['unique_clicks'], $b['active_funnels']] <=> [$a['leads'], $a['unique_clicks'], $a['active_funnels']]);
+
+        $flow = [
+            'views' => (int) ($flow_unique_by_event['view'] ?? 0),
+            'opens' => (int) ($flow_unique_by_event['open'] ?? 0),
+            'form_starts' => max((int) ($flow_unique_by_event['form_start'] ?? 0), (int) ($flow_unique_by_event['submit_attempt'] ?? 0)),
+            'submit_attempts' => (int) ($flow_unique_by_event['submit_attempt'] ?? 0),
+            'submit_success' => (int) ($flow_unique_by_event['submit_success'] ?? 0),
+            'submit_errors' => (int) ($flow_totals_by_event['submit_error'] ?? 0),
+            'thank_you_views' => max((int) ($flow_unique_by_event['thank_you_view'] ?? 0), (int) ($flow_unique_by_event['submit_success'] ?? 0)),
+            'cta_clicks' => (int) ($flow_unique_by_event['thank_you_cta_click'] ?? 0),
+        ];
+
+        $flow['entry_points'] = max($flow['views'] + $flow['opens'], $summary['unique_clicks']);
+        $flow['entry_to_start_rate'] = $flow['entry_points'] ? round(($flow['form_starts'] / $flow['entry_points']) * 100, 1) : 0;
+        $flow['start_to_success_rate'] = $flow['form_starts'] ? round(($flow['submit_success'] / $flow['form_starts']) * 100, 1) : 0;
+        $flow['success_to_thank_you_rate'] = $flow['submit_success'] ? round(($flow['thank_you_views'] / $flow['submit_success']) * 100, 1) : 0;
+        $flow['success_to_cta_rate'] = $flow['submit_success'] ? round(($flow['cta_clicks'] / $flow['submit_success']) * 100, 1) : 0;
+
+        return [
+            'total_funnels' => $summary['total_funnels'],
+            'active_funnels' => $summary['active_funnels'],
+            'active_collaborators' => $summary['active_collaborators'],
+            'unique_clicks' => $summary['unique_clicks'],
+            'leads' => $summary['leads'],
+            'conversion_rate' => $summary['conversion_rate'],
+            'chart' => $this->get_funnel_chart_series($period_key, $period_start_datetime, $funnel_ids_sql),
+            'top_funnels' => array_slice($top_funnels, 0, 10),
+            'top_funnels_by_conversion' => array_slice($top_funnels_by_conversion, 0, 10),
+            'top_collaborators' => array_slice($top_collaborators, 0, 10),
+            'open_mode_breakdown' => array_values($open_mode_breakdown),
+            'thank_you_type_breakdown' => array_values($thank_you_type_breakdown),
+            'opportunities' => array_slice($opportunities, 0, 10),
+            'flow' => $flow,
+            'flow_opportunities' => array_slice($flow_opportunities, 0, 10),
+        ];
+    }
+
+    private function get_funnels_analytics_payload(): array {
+        $funnel_blocks_data = $this->get_funnel_blocks_map();
+        $period_start_map = $this->get_biolink_period_start_map();
+        $filters = [];
+        $filter_groups = $this->get_funnels_filter_groups($funnel_blocks_data['blocks']);
+
+        foreach($filter_groups as $filter_key => $filter_blocks_map) {
+            $filter_periods = [];
+            $filter_block_ids = array_map('intval', array_keys($filter_blocks_map));
+
+            foreach($period_start_map as $period_key => $period_start_datetime) {
+                $filter_periods[$period_key] = $this->get_funnel_period_payload(
+                    $period_key,
+                    $period_start_datetime,
+                    $filter_blocks_map,
+                    $filter_block_ids
+                );
+            }
+
+            $filters[$filter_key] = [
+                'periods' => $filter_periods,
+            ];
+        }
+
+        return [
+            'periods' => $filters['all']['periods'] ?? [],
+            'filters' => $filters,
+        ];
+    }
+    /* /Custom code: FC-2026-03-26 */
+
     /* Custom code: FC-2026-03-04: admin dashboard phase 1 analytics helpers */
     private function get_period_start_datetime(int $days): string {
         $days = max(1, $days);
@@ -1527,6 +2021,10 @@ class AdminIndex extends Controller {
         ];
         /* /Custom code: FC-2026-03-04 */
 
+        /* Custom code: FC-2026-03-26: admin funnel analytics payload */
+        $funnels_analytics = $this->get_funnels_analytics_payload();
+        /* /Custom code: FC-2026-03-26 */
+
         $admin_analytics = [
             'kpi' => $kpi,
             'charts' => [
@@ -1548,6 +2046,7 @@ class AdminIndex extends Controller {
             'alerts' => $alerts,
             'sales_subscriptions' => $sales_subscriptions,
             'biolink_analytics' => $biolink_analytics,
+            'funnels_analytics' => $funnels_analytics,
             'action_center' => $action_center,
             /* Custom code: FC-2026-03-17: include billing risk analytics payload */
             'billing_risk' => $billing_risk,

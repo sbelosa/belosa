@@ -49,7 +49,7 @@ if(!empty($data->block->settings->video_url)) {
             <?php require THEME_PATH . 'views/l/partials/ads_header_biolink.php' ?>
 
             <main class="my-<?= $data->link->settings->block_spacing ?? '2' ?>">
-                <div class="lead-funnel-page-card text-left" data-lead-funnel-container style="<?= $lead_funnel_page_style ?>">
+                <div class="lead-funnel-page-card text-left" data-lead-funnel-container data-lead-funnel-page data-biolink-block-id="<?= $data->block->biolink_block_id ?>" style="<?= $lead_funnel_page_style ?>">
                     <div class="lead-funnel-page-header">
                         <a href="<?= $data->link->full_url ?>" class="small text-decoration-none lead-funnel-page-back-link"><i class="fas fa-fw fa-arrow-left mr-1"></i> <?= l('biolink_lead_funnel.back_to_biolink') ?></a>
                         <h1 class="h3 mt-3 mb-0"><?= $data->block->settings->popup_title ?: $data->block->settings->name ?></h1>

@@ -7,23 +7,23 @@
     @font-face {font-family: 'Scriptorama'; src: url('<?= ASSETS_FULL_URL . 'css/fonts/scriptorama_tradeshow_jf_regular-webfont.woff2' ?>') format('woff2'), url('<?= ASSETS_FULL_URL . 'css/fonts/scriptorama_tradeshow_jf_regular-webfont.woff' ?>') format('woff'); font-weight: normal; font-style: normal;}
     @font-face {font-family: 'Helvetica Neue Medium'; src: url('<?= ASSETS_FULL_URL . 'css/fonts/helveticaneuemedium-webfont.woff2' ?>') format('woff2'), url('<?= ASSETS_FULL_URL . 'css/fonts/helveticaneuemedium-webfont.woff' ?>') format('woff'); font-weight: normal; font-style: normal;}
     @font-face {font-family: 'Helvetica Neue LT'; src: url('<?= ASSETS_FULL_URL . 'css/fonts/helveticaneuelt.woff2' ?>') format('woff2'), url('<?= ASSETS_FULL_URL . 'css/fonts/helveticaneuelt.woff' ?>') format('woff'); font-weight: normal; font-style: normal;}
-    .lead-funnel-video-wrapper {position: relative; width: 100%; padding-top: 56.25%; overflow: hidden; border-radius: 1rem; background: #000;}
+    .lead-funnel-video-wrapper {position: relative; width: 100%; padding-top: 56.25%; overflow: hidden; border-radius: 1.2rem; background: #000; box-shadow: 0 1rem 2.5rem rgba(15, 23, 42, 0.16);}
     .lead-funnel-video-wrapper iframe {position: absolute; inset: 0; width: 100%; height: 100%; border: 0;}
     [data-lead-funnel-container] {background: var(--lead-funnel-background-color, #ffffff); color: var(--lead-funnel-text-color, #212529);}
     [data-lead-funnel-container] .modal-header {border-bottom-color: rgba(0, 0, 0, 0.08);}
     [data-lead-funnel-container] .close {color: var(--lead-funnel-text-color, #212529); text-shadow: none; opacity: .8;}
-    .lead-funnel-supporting-text {color: var(--lead-funnel-text-color, #212529); opacity: .8;}
+    .lead-funnel-supporting-text {color: var(--lead-funnel-text-color, #212529); opacity: .82; font-size: .98rem; line-height: 1.65;}
     .lead-funnel-submit-button,
-    .lead-funnel-thank-you-button {background: var(--lead-funnel-button-background-color, #007bff); border-color: var(--lead-funnel-button-background-color, #007bff); color: var(--lead-funnel-button-text-color, #ffffff);}
+    .lead-funnel-thank-you-button {background: var(--lead-funnel-button-background-color, #007bff); border-color: var(--lead-funnel-button-background-color, #007bff); color: var(--lead-funnel-button-text-color, #ffffff); border-radius: 1rem; min-height: 3.7rem; font-size: 1.05rem; font-weight: 800; box-shadow: 0 1rem 2.2rem rgba(0,0,0,.16);}
     .lead-funnel-submit-button:hover,
     .lead-funnel-submit-button:focus,
     .lead-funnel-thank-you-button:hover,
     .lead-funnel-thank-you-button:focus {background: var(--lead-funnel-button-background-color, #007bff); border-color: var(--lead-funnel-button-background-color, #007bff); color: var(--lead-funnel-button-text-color, #ffffff); filter: brightness(0.95);}
     .lead-funnel-thank-you {display: none; text-align: center; padding: 1rem 0;}
     .lead-funnel-thank-you.is-visible {display: block;}
-    .lead-funnel-page-card {background: var(--lead-funnel-background-color, #ffffff); color: var(--lead-funnel-text-color, #212529); border-radius: 1.5rem; box-shadow: 0 1.5rem 4rem rgba(0,0,0,0.12); overflow: hidden;}
-    .lead-funnel-page-header {padding: 1.5rem 1.5rem 0;}
-    .lead-funnel-page-body {padding: 1.5rem;}
+    .lead-funnel-page-card {background: var(--lead-funnel-background-color, #ffffff); color: var(--lead-funnel-text-color, #212529); border-radius: 1.75rem; border: 1px solid rgba(255,255,255,.16); box-shadow: 0 1.75rem 4rem rgba(0,0,0,0.14); overflow: hidden; backdrop-filter: blur(12px);}
+    .lead-funnel-page-header {padding: 1.35rem 1.35rem 0;}
+    .lead-funnel-page-body {padding: 1.15rem 1.35rem 1.35rem;}
     .lead-funnel-page-back-link {color: var(--lead-funnel-text-color, #212529); opacity: .75;}
     .lead-funnel-page-back-link:hover {color: var(--lead-funnel-text-color, #212529); opacity: 1;}
     .lead-funnel-page-card h1,
@@ -33,6 +33,35 @@
     .lead-funnel-page-card h5,
     .lead-funnel-page-card h6,
     .lead-funnel-page-card label {color: var(--lead-funnel-text-color, #212529);}
+    [data-lead-funnel-container] .form-group {margin-bottom: .9rem;}
+    [data-lead-funnel-container] .input-group {align-items: stretch;}
+    [data-lead-funnel-container] .input-group-text,
+    [data-lead-funnel-container] .form-control,
+    [data-lead-funnel-container] .custom-select {min-height: 3.2rem;}
+    [data-lead-funnel-container] .form-control,
+    [data-lead-funnel-container] .custom-select {border: 0; border-radius: 1rem; background: rgba(255,255,255,.96); color: var(--lead-funnel-text-color, #212529); box-shadow: 0 .5rem 1.4rem rgba(15, 23, 42, .08);}
+    [data-lead-funnel-container] .form-control::placeholder {color: rgba(15, 23, 42, .52);}
+    [data-lead-funnel-container] .input-group-text {width: 3.15rem; justify-content: center; border: 0; border-radius: 1rem 0 0 1rem; background: rgba(255,255,255,.88); color: #c9ad58;}
+    [data-lead-funnel-container] .input-group .form-control {border-radius: 0 1rem 1rem 0;}
+    [data-lead-funnel-container] textarea.form-control {min-height: 7rem; padding-top: .95rem; padding-bottom: .95rem;}
+    .fcc-contact-capture {margin-bottom: 1rem; padding: .8rem; border-radius: 1.3rem; background: linear-gradient(180deg, rgba(255,255,255,.14), rgba(255,255,255,.08)); border: 1px solid rgba(255,255,255,.18); backdrop-filter: blur(10px); box-shadow: inset 0 1px 0 rgba(255,255,255,.1);}
+    .fcc-contact-capture .custom-select,
+    .fcc-contact-capture .form-control {border-radius: 1rem; min-height: 3.2rem; box-shadow: none;}
+    .fcc-contact-capture .custom-select {padding-left: 1rem; padding-right: 2.4rem; font-weight: 700; font-size: .9rem;}
+    .fcc-contact-capture .input-group-text {border-radius: 1rem 0 0 1rem;}
+    .fcc-contact-capture .input-group .form-control {border-radius: 0 1rem 1rem 0;}
+    .fcc-contact-capture-row + .fcc-contact-capture-row {margin-top: .7rem;}
+    .fcc-contact-capture-channels {display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .45rem;}
+    .fcc-contact-capture-radio {position: absolute; opacity: 0; pointer-events: none;}
+    .fcc-contact-capture-chip {display: inline-flex; align-items: center; justify-content: center; width: 100%; min-width: 0; min-height: 2.9rem; padding: .45rem .3rem; border-radius: 999px; border: 1px solid rgba(255,255,255,.26); background: rgba(255,255,255,.08); color: var(--lead-funnel-text-color, #212529); font-size: .84rem; font-weight: 800; cursor: pointer; transition: all .2s ease; white-space: nowrap;}
+    .fcc-contact-capture-radio:checked + .fcc-contact-capture-chip {background: var(--lead-funnel-button-background-color, #007bff); border-color: var(--lead-funnel-button-background-color, #007bff); color: var(--lead-funnel-button-text-color, #ffffff); box-shadow: 0 .5rem 1.2rem rgba(0,0,0,.16);}
+    .fcc-contact-capture-radio:focus + .fcc-contact-capture-chip {outline: 0; box-shadow: 0 0 0 .2rem rgba(0,123,255,.18);}
+    @media (max-width: 575.98px) {
+        .lead-funnel-page-header {padding: 1.15rem 1.1rem 0;}
+        .lead-funnel-page-body {padding: 1rem 1.1rem 1.15rem;}
+        .lead-funnel-page-card h1 {font-size: 2rem;}
+        .lead-funnel-supporting-text {font-size: .95rem;}
+    }
     [data-lead-funnel-container] .ql-content p:last-child,
     [data-lead-funnel-container] .ql-content ul:last-child,
     [data-lead-funnel-container] .ql-content ol:last-child {margin-bottom: 0;}
@@ -131,6 +160,12 @@ $description_has_html = strip_tags($description) !== $description;
 $agreement_text_has_html = strip_tags($agreement_text) !== $agreement_text;
 $thank_you_title_has_html = strip_tags($thank_you_title) !== $thank_you_title;
 $thank_you_text_has_html = strip_tags($thank_you_text) !== $thank_you_text;
+$contact_country_options = get_contact_phone_country_options_array();
+$contact_channel_options = [
+    'whatsapp' => 'WhatsApp',
+    'viber' => 'Viber',
+    'sms' => 'SMS',
+];
 /* /Custom code: FC-2026-03-23 */
 ?>
 
@@ -170,12 +205,31 @@ $thank_you_text_has_html = strip_tags($thank_you_text) !== $thank_you_text;
     <?php endif ?>
 
     <?php if(!empty($data->link->settings->show_phone)): ?>
-        <div class="form-group">
-            <div class="input-group">
-                <div class="input-group-prepend">
-                    <div class="input-group-text bg-gray-50"><i class="fas fa-fw fa-phone-square-alt"></i></div>
+        <div class="fcc-contact-capture">
+            <div class="fcc-contact-capture-row">
+                <select class="custom-select" name="phone_country_code" required="required" aria-label="Država i pozivni broj">
+                    <?php foreach($contact_country_options as $country_code => $country_label): ?>
+                        <option value="<?= $country_code ?>" <?= $country_code == 'HR' ? 'selected="selected"' : null ?>><?= $country_label ?></option>
+                    <?php endforeach ?>
+                </select>
+            </div>
+            <div class="fcc-contact-capture-row">
+                <div class="input-group">
+                    <div class="input-group-prepend">
+                        <div class="input-group-text"><i class="fas fa-fw fa-phone-square-alt"></i></div>
+                    </div>
+                    <input type="tel" inputmode="tel" class="form-control" name="phone" maxlength="32" <?= !empty($data->link->settings->require_phone) ? 'required="required"' : null ?> placeholder="<?= $data->link->settings->phone_placeholder ?>" aria-label="<?= $data->link->settings->phone_placeholder ?>" />
                 </div>
-                <input type="text" class="form-control" name="phone" maxlength="32" <?= !empty($data->link->settings->require_phone) ? 'required="required"' : null ?> placeholder="<?= $data->link->settings->phone_placeholder ?>" aria-label="<?= $data->link->settings->phone_placeholder ?>" />
+            </div>
+            <div class="fcc-contact-capture-row">
+                <div class="fcc-contact-capture-channels" role="radiogroup" aria-label="Najbrži kanal kontakta">
+                    <?php foreach($contact_channel_options as $channel_key => $channel_label): ?>
+                        <label class="mb-0">
+                            <input type="radio" class="fcc-contact-capture-radio" name="preferred_contact_channel" value="<?= $channel_key ?>" <?= $channel_key == 'whatsapp' ? 'checked="checked"' : null ?> />
+                            <span class="fcc-contact-capture-chip"><?= $channel_label ?></span>
+                        </label>
+                    <?php endforeach ?>
+                </div>
             </div>
         </div>
     <?php endif ?>

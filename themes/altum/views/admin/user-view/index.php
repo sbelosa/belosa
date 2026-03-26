@@ -197,6 +197,262 @@ $billing_event_icons = [
 </div>
 <!-- /Custom code: FC-2026-03-04 -->
 
+<!-- Custom code: FC-2026-03-26: admin user funnel performance panel -->
+<div class="mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between mb-3">
+        <h2 class="h5 mb-2 mb-md-0"><i class="fas fa-fw fa-sm fa-filter text-primary mr-1"></i> <?= l('admin_user_view.funnels.header') ?></h2>
+        <small class="text-muted"><?= l('admin_user_view.funnels.subheader') ?></small>
+    </div>
+
+    <div class="row mb-2">
+        <div class="col-12 col-md-6 col-xl-3 p-2">
+            <div class="card h-100">
+                <div class="card-body">
+                    <small class="text-muted d-block mb-1"><?= l('admin_user_view.funnels.total_funnels') ?></small>
+                    <div class="h5 mb-0"><?= nr($data->user_funnels_analytics['total_funnels']) ?></div>
+                    <small class="text-muted d-block mt-1"><?= l('admin_user_view.funnels.active_funnels_30d') ?>: <?= nr($data->user_funnels_analytics['active_funnels_30d']) ?></small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-6 col-xl-3 p-2">
+            <div class="card h-100">
+                <div class="card-body">
+                    <small class="text-muted d-block mb-1"><?= l('admin_user_view.funnels.unique_clicks_total') ?></small>
+                    <div class="h5 mb-0"><?= nr($data->user_funnels_analytics['unique_clicks_total']) ?></div>
+                    <small class="text-muted d-block mt-1"><?= l('admin_user_view.analytics.last_30d') ?>: <?= nr($data->user_funnels_analytics['unique_clicks_30d']) ?></small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-6 col-xl-3 p-2">
+            <div class="card h-100">
+                <div class="card-body">
+                    <small class="text-muted d-block mb-1"><?= l('admin_user_view.funnels.leads_total') ?></small>
+                    <div class="h5 mb-0"><?= nr($data->user_funnels_analytics['leads_total']) ?></div>
+                    <small class="text-muted d-block mt-1"><?= l('admin_user_view.analytics.last_30d') ?>: <?= nr($data->user_funnels_analytics['leads_30d']) ?></small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-6 col-xl-3 p-2">
+            <div class="card h-100">
+                <div class="card-body">
+                    <small class="text-muted d-block mb-1"><?= l('admin_user_view.funnels.conversion_rate_total') ?></small>
+                    <div class="h5 mb-0"><?= nr($data->user_funnels_analytics['conversion_rate_total']) ?>%</div>
+                    <small class="text-muted d-block mt-1"><?= l('admin_user_view.analytics.last_30d') ?>: <?= nr($data->user_funnels_analytics['conversion_rate_30d']) ?>%</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-2">
+        <div class="col-12 col-md-6 col-xl-3 p-2">
+            <div class="card h-100">
+                <div class="card-body">
+                    <small class="text-muted d-block mb-1"><?= l('admin_user_view.funnels.best_open_mode_30d') ?></small>
+                    <?php if($data->user_funnels_analytics['best_open_mode_30d']): ?>
+                        <div class="h5 mb-0"><?= l('biolink_lead_funnel.open_mode_' . $data->user_funnels_analytics['best_open_mode_30d']['type']) ?></div>
+                        <small class="text-muted d-block mt-1"><?= nr($data->user_funnels_analytics['best_open_mode_30d']['conversion_rate_30d']) ?>% · <?= l('admin_user_view.funnels.leads_30d') ?>: <?= nr($data->user_funnels_analytics['best_open_mode_30d']['leads_30d']) ?></small>
+                    <?php else: ?>
+                        <div class="h5 mb-0"><?= l('global.no_data') ?></div>
+                    <?php endif ?>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-6 col-xl-3 p-2">
+            <div class="card h-100">
+                <div class="card-body">
+                    <small class="text-muted d-block mb-1"><?= l('admin_user_view.funnels.best_thank_you_type_30d') ?></small>
+                    <?php if($data->user_funnels_analytics['best_thank_you_type_30d']): ?>
+                        <div class="h6 mb-0"><?= l('biolink_lead_funnel.thank_you_type_' . $data->user_funnels_analytics['best_thank_you_type_30d']['type']) ?></div>
+                        <small class="text-muted d-block mt-1"><?= nr($data->user_funnels_analytics['best_thank_you_type_30d']['conversion_rate_30d']) ?>% · <?= l('admin_user_view.funnels.leads_30d') ?>: <?= nr($data->user_funnels_analytics['best_thank_you_type_30d']['leads_30d']) ?></small>
+                    <?php else: ?>
+                        <div class="h5 mb-0"><?= l('global.no_data') ?></div>
+                    <?php endif ?>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-6 col-xl-3 p-2">
+            <div class="card h-100">
+                <div class="card-body">
+                    <small class="text-muted d-block mb-1"><?= l('admin_user_view.funnels.flow_entry_points_30d') ?></small>
+                    <div class="h5 mb-0"><?= nr($data->user_funnels_analytics['flow']['entry_points_30d']) ?></div>
+                    <small class="text-muted d-block mt-1"><?= l('admin_user_view.funnels.flow_views_30d') ?>: <?= nr($data->user_funnels_analytics['flow']['views_30d']) ?> · <?= l('admin_user_view.funnels.flow_opens_30d') ?>: <?= nr($data->user_funnels_analytics['flow']['opens_30d']) ?></small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-6 col-xl-3 p-2">
+            <div class="card h-100">
+                <div class="card-body">
+                    <small class="text-muted d-block mb-1"><?= l('admin_user_view.funnels.flow_form_starts_30d') ?></small>
+                    <div class="h5 mb-0"><?= nr($data->user_funnels_analytics['flow']['form_starts_30d']) ?></div>
+                    <small class="text-muted d-block mt-1"><?= l('admin_user_view.funnels.flow_entry_to_start_30d') ?>: <?= nr($data->user_funnels_analytics['flow']['entry_to_start_rate_30d']) ?>%</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-6 col-xl-3 p-2">
+            <div class="card h-100">
+                <div class="card-body">
+                    <small class="text-muted d-block mb-1"><?= l('admin_user_view.funnels.flow_submit_success_30d') ?></small>
+                    <div class="h5 mb-0"><?= nr($data->user_funnels_analytics['flow']['submit_success_30d']) ?></div>
+                    <small class="text-muted d-block mt-1"><?= l('admin_user_view.funnels.flow_start_to_success_30d') ?>: <?= nr($data->user_funnels_analytics['flow']['start_to_success_rate_30d']) ?>%</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-6 col-xl-3 p-2">
+            <div class="card h-100">
+                <div class="card-body">
+                    <small class="text-muted d-block mb-1"><?= l('admin_user_view.funnels.flow_cta_clicks_30d') ?></small>
+                    <div class="h5 mb-0"><?= nr($data->user_funnels_analytics['flow']['cta_clicks_30d']) ?></div>
+                    <small class="text-muted d-block mt-1"><?= l('admin_user_view.funnels.flow_submit_errors_30d') ?>: <?= nr($data->user_funnels_analytics['flow']['submit_errors_30d']) ?></small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-2">
+        <div class="col-12 col-xl-4 p-2">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h3 class="h6 mb-3"><?= l('admin_user_view.funnels.top_funnels') ?></h3>
+                    <?php if(empty($data->user_funnels_analytics['top_funnels'])): ?>
+                        <div class="text-muted small"><?= l('global.no_data') ?></div>
+                    <?php else: ?>
+                        <?php foreach($data->user_funnels_analytics['top_funnels'] as $funnel): ?>
+                            <div class="border-bottom py-2 small">
+                                <div class="d-flex justify-content-between">
+                                    <span class="text-truncate mr-2" style="max-width: 75%;">
+                                        <a href="<?= $funnel['analytics_url'] ?>"><?= e($funnel['name']) ?></a>
+                                    </span>
+                                    <strong><?= nr($funnel['leads_30d']) ?></strong>
+                                </div>
+                                <div class="text-muted"><?= e($funnel['biolink_url']) ?></div>
+                                <div class="text-muted"><?= l('admin_user_view.funnels.unique_clicks_30d') ?>: <?= nr($funnel['unique_clicks_30d']) ?> · <?= nr($funnel['conversion_rate_30d']) ?>%</div>
+                                <div class="text-muted"><?= l('biolink_lead_funnel.open_mode_' . $funnel['open_mode']) ?> · <?= l('biolink_lead_funnel.thank_you_type_' . $funnel['thank_you_type']) ?></div>
+                            </div>
+                        <?php endforeach ?>
+                    <?php endif ?>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-xl-4 p-2">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h3 class="h6 mb-3"><?= l('admin_user_view.funnels.open_mode_breakdown') ?></h3>
+                    <?php if(empty($data->user_funnels_analytics['open_mode_breakdown'])): ?>
+                        <div class="text-muted small"><?= l('global.no_data') ?></div>
+                    <?php else: ?>
+                        <?php foreach($data->user_funnels_analytics['open_mode_breakdown'] as $row): ?>
+                            <div class="d-flex justify-content-between border-bottom py-2 small">
+                                <span><?= l('biolink_lead_funnel.open_mode_' . $row['type']) ?></span>
+                                <strong><?= nr($row['conversion_rate_30d']) ?>%</strong>
+                            </div>
+                            <div class="text-muted small pb-2"><?= l('admin_user_view.funnels.breakdown_meta') ?>: <?= nr($row['funnels_count']) ?> · <?= l('admin_user_view.funnels.unique_clicks_30d') ?>: <?= nr($row['unique_clicks_30d']) ?> · <?= l('admin_user_view.funnels.leads_30d') ?>: <?= nr($row['leads_30d']) ?></div>
+                        <?php endforeach ?>
+                    <?php endif ?>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-xl-4 p-2">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h3 class="h6 mb-3"><?= l('admin_user_view.funnels.thank_you_breakdown') ?></h3>
+                    <?php if(empty($data->user_funnels_analytics['thank_you_type_breakdown'])): ?>
+                        <div class="text-muted small"><?= l('global.no_data') ?></div>
+                    <?php else: ?>
+                        <?php foreach($data->user_funnels_analytics['thank_you_type_breakdown'] as $row): ?>
+                            <div class="d-flex justify-content-between border-bottom py-2 small">
+                                <span><?= l('biolink_lead_funnel.thank_you_type_' . $row['type']) ?></span>
+                                <strong><?= nr($row['conversion_rate_30d']) ?>%</strong>
+                            </div>
+                            <div class="text-muted small pb-2"><?= l('admin_user_view.funnels.breakdown_meta') ?>: <?= nr($row['funnels_count']) ?> · <?= l('admin_user_view.funnels.unique_clicks_30d') ?>: <?= nr($row['unique_clicks_30d']) ?> · <?= l('admin_user_view.funnels.leads_30d') ?>: <?= nr($row['leads_30d']) ?></div>
+                        <?php endforeach ?>
+                    <?php endif ?>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-2">
+        <div class="col-12 col-xl-6 p-2">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h3 class="h6 mb-3"><?= l('admin_user_view.funnels.flow_header') ?></h3>
+                    <div class="border-bottom py-2 small d-flex justify-content-between">
+                        <span><?= l('admin_user_view.funnels.flow_views_30d') ?></span>
+                        <strong><?= nr($data->user_funnels_analytics['flow']['views_30d']) ?></strong>
+                    </div>
+                    <div class="border-bottom py-2 small d-flex justify-content-between">
+                        <span><?= l('admin_user_view.funnels.flow_opens_30d') ?></span>
+                        <strong><?= nr($data->user_funnels_analytics['flow']['opens_30d']) ?></strong>
+                    </div>
+                    <div class="border-bottom py-2 small d-flex justify-content-between">
+                        <span><?= l('admin_user_view.funnels.flow_form_starts_30d') ?></span>
+                        <strong><?= nr($data->user_funnels_analytics['flow']['form_starts_30d']) ?></strong>
+                    </div>
+                    <div class="text-muted small pb-2"><?= l('admin_user_view.funnels.flow_entry_to_start_30d') ?>: <?= nr($data->user_funnels_analytics['flow']['entry_to_start_rate_30d']) ?>%</div>
+
+                    <div class="border-bottom py-2 small d-flex justify-content-between">
+                        <span><?= l('admin_user_view.funnels.flow_submit_attempts_30d') ?></span>
+                        <strong><?= nr($data->user_funnels_analytics['flow']['submit_attempts_30d']) ?></strong>
+                    </div>
+                    <div class="text-muted small pb-2"><?= l('admin_user_view.funnels.flow_submit_errors_30d') ?>: <?= nr($data->user_funnels_analytics['flow']['submit_errors_30d']) ?></div>
+
+                    <div class="border-bottom py-2 small d-flex justify-content-between">
+                        <span><?= l('admin_user_view.funnels.flow_submit_success_30d') ?></span>
+                        <strong><?= nr($data->user_funnels_analytics['flow']['submit_success_30d']) ?></strong>
+                    </div>
+                    <div class="text-muted small pb-2"><?= l('admin_user_view.funnels.flow_start_to_success_30d') ?>: <?= nr($data->user_funnels_analytics['flow']['start_to_success_rate_30d']) ?>%</div>
+
+                    <div class="border-bottom py-2 small d-flex justify-content-between">
+                        <span><?= l('admin_user_view.funnels.flow_thank_you_views_30d') ?></span>
+                        <strong><?= nr($data->user_funnels_analytics['flow']['thank_you_views_30d']) ?></strong>
+                    </div>
+                    <div class="border-bottom py-2 small d-flex justify-content-between">
+                        <span><?= l('admin_user_view.funnels.flow_cta_clicks_30d') ?></span>
+                        <strong><?= nr($data->user_funnels_analytics['flow']['cta_clicks_30d']) ?></strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-xl-6 p-2">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h3 class="h6 mb-3"><?= l('admin_user_view.funnels.flow_opportunities') ?></h3>
+                    <?php if(empty($data->user_funnels_analytics['flow_opportunities'])): ?>
+                        <div class="text-muted small"><?= l('global.no_data') ?></div>
+                    <?php else: ?>
+                        <?php foreach($data->user_funnels_analytics['flow_opportunities'] as $item): ?>
+                            <div class="border-bottom py-2 small">
+                                <div class="d-flex justify-content-between">
+                                    <span class="text-truncate mr-2" style="max-width: 75%;">
+                                        <a href="<?= $item['analytics_url'] ?>"><?= e($item['name']) ?></a>
+                                    </span>
+                                    <strong><?= nr($item['weakest_rate']) ?>%</strong>
+                                </div>
+                                <div class="text-muted"><?= l('admin_user_view.funnels.flow_weakest_stage') ?>:
+                                    <?= l('admin_user_view.funnels.' . $item['weakest_stage']) ?>
+                                </div>
+                                <div class="text-muted"><?= l('admin_user_view.funnels.flow_entry_points_30d') ?>: <?= nr($item['entry_points_30d']) ?> · <?= l('admin_user_view.funnels.flow_submit_success_30d') ?>: <?= nr($item['submit_success_30d']) ?></div>
+                            </div>
+                        <?php endforeach ?>
+                    <?php endif ?>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- /Custom code: FC-2026-03-26 -->
+
 <!-- Custom code: FC-2026-03-17: admin user billing risk panel -->
 <div class="mb-4">
     <div class="d-flex flex-column flex-md-row justify-content-between mb-3">

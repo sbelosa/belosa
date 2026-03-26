@@ -30,23 +30,111 @@ class Data extends Controller {
 
         \Altum\Authentication::guard();
 
+        $_GET['preferred_contact_channel'] = isset($_GET['preferred_contact_channel']) ? input_clean($_GET['preferred_contact_channel'], 32) : null;
+        $allowed_contact_channels = ['whatsapp', 'viber', 'sms', 'phone', 'email'];
+        if(!in_array($_GET['preferred_contact_channel'], $allowed_contact_channels, true)) {
+            $_GET['preferred_contact_channel'] = null;
+        }
+
         /* Prepare the filtering system */
         $filters = (new \Altum\Filters(['datum_id', 'biolink_block_id', 'link_id', 'project_id', 'user_id', 'type', 'is_enabled'], [], ['datum_id', 'datetime']));
         $filters->set_default_order_by($this->user->preferences->data_default_order_by, $this->user->preferences->default_order_type ?? settings()->main->default_order_type);
         $filters->set_default_results_per_page($this->user->preferences->default_results_per_page ?? settings()->main->default_results_per_page);
 
+        $preferred_channel_sql = '';
+        if($_GET['preferred_contact_channel']) {
+            $preferred_contact_channel = database()->escape($_GET['preferred_contact_channel']);
+            $preferred_channel_sql = " AND JSON_UNQUOTE(JSON_EXTRACT(`data`, '$.preferred_contact_channel')) = '{$preferred_contact_channel}'";
+        }
+
         /* Prepare the paginator */
-        $total_rows = database()->query("SELECT COUNT(*) AS `total` FROM `data` WHERE `user_id` = {$this->user->user_id} {$filters->get_sql_where()}")->fetch_object()->total ?? 0;
+        $total_rows = database()->query("SELECT COUNT(*) AS `total` FROM `data` WHERE `user_id` = {$this->user->user_id} {$preferred_channel_sql} {$filters->get_sql_where()}")->fetch_object()->total ?? 0;
         $paginator = (new \Altum\Paginator($total_rows, $filters->get_results_per_page(), $_GET['page'] ?? 1, url('data?' . $filters->get_get() . '&page=%d')));
+
+        $normalize_phone = function($phone) {
+            return preg_replace('/[^0-9]/', '', (string) $phone);
+        };
+
+        $normalize_phone_with_plus = function($phone) {
+            return preg_replace('/[^0-9+]/', '', (string) $phone);
+        };
+
+        $build_contact_actions = function($phone, $email, $name, $app_name, $preferred_channel) use ($normalize_phone, $normalize_phone_with_plus) {
+            $phone_digits = $normalize_phone($phone);
+            $phone_plus = $normalize_phone_with_plus($phone);
+            $preferred_channel = trim((string) $preferred_channel);
+
+            $message = sprintf(
+                'Pozdrav%s, javljam se vezano uz vaš upit%s.',
+                $name ? ' ' . $name : '',
+                $app_name ? ' preko ' . $app_name : ''
+            );
+
+            $actions = [
+                'whatsapp_url' => $phone_digits ? 'https://wa.me/' . $phone_digits . '?text=' . rawurlencode($message) : null,
+                'viber_url' => $phone_plus ? 'viber://chat?number=' . rawurlencode($phone_plus) : null,
+                'sms_url' => $phone_plus ? 'sms:' . $phone_plus . '?body=' . rawurlencode($message) : null,
+                'call_url' => $phone_plus ? 'tel:' . $phone_plus : null,
+                'email_url' => $email ? 'mailto:' . $email . '?subject=' . rawurlencode('Upit preko FCC aplikacije') . '&body=' . rawurlencode($message) : null,
+            ];
+
+            $preferred_order = [
+                'whatsapp' => ['whatsapp_url', 'sms_url', 'call_url', 'email_url'],
+                'viber' => ['viber_url', 'whatsapp_url', 'sms_url', 'call_url', 'email_url'],
+                'sms' => ['sms_url', 'whatsapp_url', 'call_url', 'email_url'],
+                'phone' => ['call_url', 'whatsapp_url', 'sms_url', 'email_url'],
+                'email' => ['email_url', 'whatsapp_url', 'sms_url', 'call_url'],
+            ][$preferred_channel ?: 'whatsapp'] ?? ['whatsapp_url', 'sms_url', 'call_url', 'email_url'];
+
+            $action_meta = [
+                'whatsapp_url' => ['label' => 'WhatsApp', 'icon' => 'fab fa-whatsapp', 'class' => 'is-whatsapp'],
+                'viber_url' => ['label' => 'Viber', 'icon' => 'fas fa-comment-dots', 'class' => 'is-viber'],
+                'sms_url' => ['label' => 'SMS', 'icon' => 'fas fa-sms', 'class' => 'is-sms'],
+                'call_url' => ['label' => 'Nazovi', 'icon' => 'fas fa-phone-alt', 'class' => 'is-call'],
+                'email_url' => ['label' => 'Email', 'icon' => 'fas fa-envelope', 'class' => 'is-email'],
+            ];
+
+            $primary_action = null;
+            foreach($preferred_order as $action_key) {
+                if(!empty($actions[$action_key])) {
+                    $primary_action = array_merge(['key' => $action_key, 'url' => $actions[$action_key]], $action_meta[$action_key]);
+                    break;
+                }
+            }
+
+            $available_actions = [];
+            foreach($action_meta as $action_key => $meta) {
+                if(empty($actions[$action_key])) {
+                    continue;
+                }
+
+                $available_actions[] = array_merge(['key' => $action_key, 'url' => $actions[$action_key]], $meta);
+            }
+
+            return [
+                'primary_action' => $primary_action,
+                'available_actions' => $available_actions,
+            ] + $actions;
+        };
 
         /* Get the data list for the user */
         $data = [];
+        $summary = [
+            'total' => 0,
+            'with_phone' => 0,
+            'with_email' => 0,
+            'with_message' => 0,
+            'with_whatsapp' => 0,
+            'needs_review' => 0,
+        ];
         $data_result = database()->query("
-            SELECT `data`.*, `biolinks_blocks`.`settings` 
+            SELECT `data`.*, `biolinks_blocks`.`settings`, `links`.`url` AS `link_url`
             FROM `data` 
             LEFT JOIN `biolinks_blocks` ON `biolinks_blocks`.`biolink_block_id` = `data`.`biolink_block_id`
+            LEFT JOIN `links` ON `links`.`link_id` = `data`.`link_id`
             WHERE 
                 `data`.`user_id` = {$this->user->user_id} 
+                {$preferred_channel_sql}
                 {$filters->get_sql_where('data')} 
                     
                 {$filters->get_sql_order_by('data')} 
@@ -56,6 +144,45 @@ class Data extends Controller {
             $row->data = json_decode($row->data);
             $row->settings = json_decode($row->settings ?? '');
             $row->biolink_block_name = $row->settings->name ?? null;
+            $row->app_name = $row->link_url ?? l('global.unknown');
+
+            $row->contact_name = trim((string) ($row->data->name ?? $row->data->full_name ?? (($row->data->first_name ?? '') . ' ' . ($row->data->last_name ?? ''))));
+            $row->contact_email = trim((string) ($row->data->email ?? ''));
+            $row->contact_phone = trim((string) ($row->data->phone_e164 ?? $row->data->phone ?? $row->data->whatsapp ?? $row->data->mobile ?? ''));
+            $row->contact_message = trim((string) ($row->data->message ?? ''));
+            $row->preferred_contact_channel = trim((string) ($row->data->preferred_contact_channel ?? ''));
+            $row->contact_identity = $row->contact_name ?: ($row->contact_email ?: ($row->contact_phone ?: l('global.unknown')));
+            $row->initials = mb_strtoupper(mb_substr($row->contact_identity, 0, 2));
+            $contact_actions = $build_contact_actions($row->contact_phone, $row->contact_email, $row->contact_name, $row->app_name, $row->preferred_contact_channel);
+            $row->whatsapp_url = $contact_actions['whatsapp_url'];
+            $row->viber_url = $contact_actions['viber_url'];
+            $row->sms_url = $contact_actions['sms_url'];
+            $row->call_url = $contact_actions['call_url'];
+            $row->email_url = $contact_actions['email_url'];
+            $row->primary_action = $contact_actions['primary_action'];
+            $row->available_actions = $contact_actions['available_actions'];
+            $row->contact_status = $row->primary_action ? 'ready' : 'needs_review';
+            $row->contact_status_label = $row->primary_action ? 'Spreman za ' . $row->primary_action['label'] : 'Ručno provjeri kontakt';
+
+            $excluded_keys = ['name', 'full_name', 'first_name', 'last_name', 'email', 'phone', 'phone_e164', 'phone_country_code', 'phone_dial_code', 'whatsapp', 'mobile', 'message', 'preferred_contact_channel'];
+            $row->extra_fields = [];
+            foreach((array) $row->data as $key => $value) {
+                if(in_array($key, $excluded_keys, true) || $value === '' || $value === null) {
+                    continue;
+                }
+
+                $row->extra_fields[] = [
+                    'label' => $key,
+                    'value' => is_scalar($value) ? (string) $value : json_encode($value),
+                ];
+            }
+
+            $summary['total']++;
+            $summary['with_phone'] += $row->contact_phone ? 1 : 0;
+            $summary['with_email'] += $row->contact_email ? 1 : 0;
+            $summary['with_message'] += $row->contact_message ? 1 : 0;
+            $summary['with_whatsapp'] += $row->whatsapp_url ? 1 : 0;
+            $summary['needs_review'] += $row->primary_action ? 0 : 1;
 
             $data[] = $row;
         }
@@ -74,6 +201,14 @@ class Data extends Controller {
             'pagination'        => $pagination,
             'filters'           => $filters,
             'biolink_blocks'    => require APP_PATH . 'includes/biolink_blocks.php',
+            'summary'           => $summary,
+            'contact_channel_options' => [
+                'whatsapp' => 'WhatsApp',
+                'viber' => 'Viber',
+                'sms' => 'SMS',
+                'phone' => 'Poziv',
+                'email' => 'Email',
+            ],
         ];
 
         $view = new \Altum\View('data/index', (array) $this);
