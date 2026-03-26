@@ -180,6 +180,7 @@ class Sitemap extends Controller {
                         AND `links`.`is_enabled` = 1
                         AND `links`.`type` IN ('biolink','static')
                         AND `links`.`domain_id` = 0
+                        AND COALESCE(JSON_UNQUOTE(JSON_EXTRACT(`links`.`settings`, '$.seo.block')), '0') != '1'
                   ")->fetch_object()->total ?? 0;
 
                 /* Calculate the needed sitemaps */
@@ -222,6 +223,7 @@ class Sitemap extends Controller {
                         AND `links`.`is_enabled` = 1
                         AND `links`.`type` IN ('biolink','static')
                         AND `links`.`domain_id` = 0
+                        AND COALESCE(JSON_UNQUOTE(JSON_EXTRACT(`links`.`settings`, '$.seo.block')), '0') != '1'
                     LIMIT 
                         {$limit_start}, {$pagination}
                 ");
