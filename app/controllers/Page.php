@@ -298,6 +298,11 @@ class Page extends Controller {
                         'description' => 'Discover Forever Card Club as an independent digital system for Forever partners built around apps, education, AI tools, smart links, and analytics.',
                         'keywords' => 'about Forever Card Club, Forever digital system, Forever partner platform, Forever app, education for Forever partners, AI tools for Forever, smart links Forever'
                     ],
+                    'independent-disclaimer' => [
+                        'title' => 'Independent Disclaimer: Forever Card Club and Official Forever Shop Routing',
+                        'description' => 'Read the independent disclaimer for Forever Card Club, how the system relates to Forever Living Products, and how product ordering is routed through the official Forever webshop.',
+                        'keywords' => 'Forever Card Club disclaimer, independent Forever Card Club, official Forever webshop, Forever Living Products disclaimer, Forever Card Club legal notice'
+                    ],
                 ];
 
                 $foreverclub_semantics_map = [
@@ -446,7 +451,9 @@ class Page extends Controller {
         /* Meta */
 
         /* Custom code: FC-2026-03-24: strengthen foreverclub page hub SEO and internal linking */
-        Meta::set_description(string_truncate($page_meta_override['description'] ?? $page->description, 160));
+        $meta_description = $page_meta_override['description'] ?? $page->description ?? (!empty($foreverclub_semantics['summary']) ? $foreverclub_semantics['summary'] : null);
+
+        Meta::set_description(string_truncate($meta_description, 160));
         Meta::set_keywords(string_truncate($page_meta_override['keywords'] ?? $page->keywords, 255));
         Meta::set_canonical_url($page_url);
         if($is_foreverclub_page) {
@@ -457,6 +464,13 @@ class Page extends Controller {
         /* Custom code: FC-2026-02-25: page social image */
         if(!empty($page->image)) {
             Meta::set_social_image(\Altum\Uploads::get_full_url('pages') . $page->image);
+        } elseif($is_foreverclub_page) {
+            foreach($related_pages as $related_page) {
+                if(!empty($related_page->image_url)) {
+                    Meta::set_social_image($related_page->image_url);
+                    break;
+                }
+            }
         }
         /* /Custom code: FC-2026-02-25 */
 
