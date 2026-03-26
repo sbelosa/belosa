@@ -159,7 +159,11 @@
                         <div class="index-icon-container mb-2">
                             <i class="fas fa-fw fa-users fa-sm"></i>
                         </div>
-                        <h2 class="mt-0"><?= l('index.presentation1.header') ?></h2>
+                        <h2 class="mt-0">
+                            <a href="<?= url('page/forever-card-app') ?>" class="fcc-presentation-card__title-link">
+                                <span><?= l('index.presentation1.header') ?></span>
+                            </a>
+                        </h2>
                         <p class="h6 mt-3 text-muted"><?= l('index.presentation1.subheader') ?></p>
 
                         <ul class="list-style-none mt-4 font-size-small">
@@ -185,11 +189,6 @@
                             </li>
                         </ul>
 
-                        <div class="mt-4">
-                            <a href="<?= url('page/forever-card-app') ?>" class="btn btn-primary index-button">
-                                <?= l('index.presentation1.cta') ?>
-                            </a>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -209,7 +208,11 @@
                         <div class="index-icon-container mb-2">
                             <i class="fas fa-fw fa-link fa-sm"></i>
                         </div>
-                        <h2 class="mt-0"><?= l('index.presentation2.header') ?></h2>
+                        <h2 class="mt-0">
+                            <a href="<?= url('page/smart-referral-links') ?>" class="fcc-presentation-card__title-link">
+                                <span><?= l('index.presentation2.header') ?></span>
+                            </a>
+                        </h2>
                         <p class="h6 mt-3 text-muted"><?= l('index.presentation2.subheader') ?></p>
 
                         <ul class="list-style-none mt-4 font-size-small">
@@ -1287,6 +1290,47 @@
     .fcc-home-summary .index-icon-container {
         background: rgba(104, 232, 188, 0.14);
         color: rgba(104, 232, 188, 0.96);
+    }
+
+    .fcc-presentation-card__title-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.7rem;
+        color: #f7f9fc !important;
+        text-decoration: none !important;
+        transition: color 0.2s ease, transform 0.2s ease, opacity 0.2s ease;
+    }
+
+    .fcc-presentation-card__title-link span {
+        display: inline-block;
+    }
+
+    .fcc-presentation-card__title-link::after {
+        content: '↗';
+        font-family: inherit;
+        font-size: 0.95rem;
+        color: rgba(104, 232, 188, 0.9);
+        opacity: 0.85;
+        line-height: 1;
+        transform: translateY(-1px);
+        transition: transform 0.2s ease, opacity 0.2s ease;
+    }
+
+    .fcc-presentation-card__title-link:hover,
+    .fcc-presentation-card__title-link:focus {
+        color: #bff8eb !important;
+        transform: translateX(1px);
+    }
+
+    .fcc-presentation-card__title-link:hover::after,
+    .fcc-presentation-card__title-link:focus::after {
+        opacity: 1;
+        transform: translate(2px, -1px);
+    }
+
+    .fcc-presentation-card__title-link--muted {
+        font-size: 0.92rem;
+        font-weight: 700;
     }
 
     @media (max-width: 767px) {

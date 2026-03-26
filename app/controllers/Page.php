@@ -123,6 +123,11 @@ class Page extends Controller {
                         'description' => 'Saznaj što je Forever Card Aplikacija, kako pomaže u prikupljanju kontakata, preporuci proizvoda, komunikaciji i razvoju Forever Living poslovanja.',
                         'keywords' => 'Forever Card Aplikacija, FCC aplikacija, Forever Card Club aplikacija, digitalna aplikacija za Forever partnere, Forever poslovanje online, alati za Forever Living'
                     ],
+                    'smart-referral-links' => [
+                        'title' => 'Pametni referral linkovi: kako globalno dijeliti Forever proizvode i preporuku',
+                        'description' => 'Saznaj kako pametni referral linkovi prepoznaju državu posjetitelja, vode na službeni Forever web shop i zadržavaju preporuku partnera.',
+                        'keywords' => 'pametni referral linkovi, Forever referral link, globalni referral linkovi, Forever web shop, partner referral, FCC smart links'
+                    ],
                     'forever-card-club' => [
                         'title' => 'Što je Forever Card Club? Aplikacija, AI alati i NFC kartica',
                         'description' => 'Saznaj što je Forever Card Club i kako osobna aplikacija, pametni linkovi, AI alati i NFC kartica pomažu Forever partnerima u online i offline poslovanju.',
@@ -164,6 +169,19 @@ class Page extends Controller {
                         'term_alternate_names' => ['FCC aplikacija', 'Forever Card app', 'Forever Card Club aplikacija'],
                         'term_description' => 'Forever Card Aplikacija je personalizirana digitalna aplikacija partnera unutar Forever Card Club sustava, namijenjena predstavljanju proizvoda, prikupljanju kontakata, preporukama i razvoju Forever Living poslovanja.'
                     ],
+                    'smart-referral-links' => [
+                        'heading' => 'Zašto su ovi linkovi važni?',
+                        'summary' => 'Pametni referral linkovi olakšavaju globalno dijeljenje proizvoda i preporuke. Posjetitelja vode prema ispravnom službenom Forever web shopu, a partneru pomažu da preporuka ostane povezana s njim na jednostavniji i pregledniji način.',
+                        'facts' => [
+                            'Jedan link može služiti ljudima iz više država bez ručnog traženja pravog shopa.',
+                            'Sustav prepoznaje državu posjetitelja i usmjerava ga na odgovarajuću službenu stranicu.',
+                            'Partnerova preporuka ostaje ugrađena u iskustvo dijeljenja i kupnje.',
+                            'Dijeljenje je jednostavnije, profesionalnije i pogodnije za online i offline rad.'
+                        ],
+                        'term_name' => 'Pametni referral linkovi',
+                        'term_alternate_names' => ['Global smart links', 'FCC referral linkovi', 'Forever referral linkovi'],
+                        'term_description' => 'Pametni referral linkovi su globalni linkovi unutar Forever Card Club sustava koji prepoznaju državu posjetitelja, vode ga prema službenom Forever web shopu i zadržavaju partnerovu preporuku.'
+                    ],
                 ];
 
                 $foreverclub_semantics = [
@@ -185,6 +203,11 @@ class Page extends Controller {
                         'title' => 'Forever Card App: how it helps with leads, product sharing and team growth',
                         'description' => 'Learn what the Forever Card App is and how it helps with contacts, product recommendations, follow-up, and building a stronger Forever Living business.',
                         'keywords' => 'Forever Card App, FCC app, Forever Card Club app, app for Forever partners, Forever business tools, Forever Living digital app'
+                    ],
+                    'smart-referral-links' => [
+                        'title' => 'Smart referral links: how to share Forever products globally with the right referral',
+                        'description' => 'Learn how smart referral links detect the visitor country, route them to the official Forever webshop, and keep the partner referral connected.',
+                        'keywords' => 'smart referral links, Forever referral links, global referral links, Forever webshop routing, partner referral links, FCC smart links'
                     ],
                     'forever-card-club' => [
                         'title' => 'What Is Forever Card Club? App, AI Tools and NFC Card',
@@ -221,6 +244,19 @@ class Page extends Controller {
                         'term_name' => 'Forever Card App',
                         'term_alternate_names' => ['FCC app', 'Forever Card application', 'Forever Card Club app'],
                         'term_description' => 'The Forever Card App is a personalized partner application inside the Forever Card Club system used for product presentation, contact collection, recommendations, and structured Forever Living business growth.'
+                    ],
+                    'smart-referral-links' => [
+                        'heading' => 'Why do these links matter?',
+                        'summary' => 'Smart referral links make global product sharing easier. They help visitors reach the correct official Forever webshop while keeping the partner recommendation connected in a simpler and more scalable way.',
+                        'facts' => [
+                            'One link can serve visitors from different countries without manual searching.',
+                            'The system detects the visitor location and routes them to the correct official shop.',
+                            'The partner recommendation stays connected to the visitor path and order flow.',
+                            'Sharing becomes simpler, more professional, and easier to repeat at scale.'
+                        ],
+                        'term_name' => 'Smart referral links',
+                        'term_alternate_names' => ['Global smart links', 'FCC referral links', 'Forever referral links'],
+                        'term_description' => 'Smart referral links are global links inside the Forever Card Club system that detect the visitor country, route them toward the official Forever webshop, and preserve the partner referral.'
                     ],
                 ];
 
@@ -321,4 +357,3 @@ class Page extends Controller {
     }
 
 }
-
