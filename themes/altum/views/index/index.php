@@ -260,7 +260,11 @@
                         <div class="index-icon-container mb-2">
                             <i class="fas fa-fw fa-file-code fa-sm"></i>
                         </div>
-                        <h2 class="mt-0"><?= l('index.presentation5.header') ?></h2>
+                        <h2 class="mt-0">
+                            <a href="<?= url('page/forever-card-funnel') ?>" class="fcc-presentation-card__title-link">
+                                <span><?= l('index.presentation5.header') ?></span>
+                            </a>
+                        </h2>
                         <p class="h6 mt-3 text-muted"><?= l('index.presentation5.subheader') ?></p>
 
                         <ul class="list-style-none mt-4 font-size-small">
@@ -300,7 +304,11 @@
                         <div class="index-icon-container mb-2">
                             <i class="fas fa-fw fa-qrcode fa-sm"></i>
                         </div>
-                        <h2 class="mt-0"><?= l('index.presentation3.header') ?></h2>
+                        <h2 class="mt-0">
+                            <a href="<?= url('page/nfc-card-offline') ?>" class="fcc-presentation-card__title-link">
+                                <span><?= l('index.presentation3.header') ?></span>
+                            </a>
+                        </h2>
                         <p class="h6 mt-3 text-muted"><?= l('index.presentation3.subheader') ?></p>
 
                         <ul class="list-style-none mt-4 font-size-small">
@@ -344,7 +352,11 @@
                         <div class="index-icon-container mb-2">
                             <i class="fas fa-fw fa-robot fa-sm"></i>
                         </div>
-                        <h2 class="mt-0"><?= l('index.presentation6.header') ?></h2>
+                        <h2 class="mt-0">
+                            <a href="<?= url('page/ai-product-assistants') ?>" class="fcc-presentation-card__title-link">
+                                <span><?= l('index.presentation6.header') ?></span>
+                            </a>
+                        </h2>
                         <p class="h6 mt-3 text-muted"><?= l('index.presentation6.subheader') ?></p>
 
                         <ul class="list-style-none mt-4 font-size-small">
