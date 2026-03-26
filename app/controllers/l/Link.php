@@ -1895,6 +1895,9 @@ class Link extends Controller {
 
 		$redirect_url = null;
 		$download_url = null;
+		$thank_you_file_source = in_array(($biolink_block->settings->thank_you_file_source ?? 'local_upload'), ['local_upload', 'external_url'], true)
+			? $biolink_block->settings->thank_you_file_source
+			: 'local_upload';
 
 		if(($biolink_block->settings->thank_you_type ?? 'message') == 'external_url' && !empty($biolink_block->settings->thank_you_url)) {
 			$redirect_url = $biolink_block->settings->thank_you_url;
@@ -1908,8 +1911,14 @@ class Link extends Controller {
 			}
 		}
 
-		if(($biolink_block->settings->thank_you_type ?? 'message') == 'file_download' && !empty($biolink_block->settings->thank_you_file)) {
-			$download_url = \Altum\Uploads::get_full_url('files') . $biolink_block->settings->thank_you_file;
+		if(($biolink_block->settings->thank_you_type ?? 'message') == 'file_download') {
+			if($thank_you_file_source == 'external_url' && !empty($biolink_block->settings->thank_you_file_url)) {
+				$download_url = $biolink_block->settings->thank_you_file_url;
+			}
+
+			if($thank_you_file_source == 'local_upload' && !empty($biolink_block->settings->thank_you_file)) {
+				$download_url = \Altum\Uploads::get_full_url('files') . $biolink_block->settings->thank_you_file;
+			}
 		}
 
 		Response::json($biolink_block->settings->success_text, 'success', [

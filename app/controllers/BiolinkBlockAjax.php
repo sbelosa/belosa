@@ -6067,7 +6067,9 @@ class BiolinkBlockAjax extends Controller {
             'thank_you_text' => l('biolink_lead_funnel.thank_you_text_default'),
             'thank_you_url' => '',
             'thank_you_biolink_id' => null,
+            'thank_you_file_source' => 'local_upload',
             'thank_you_file' => '',
+            'thank_you_file_url' => '',
             'thank_you_button_text' => l('biolink_lead_funnel.thank_you_button_text_default'),
             'notifications' => [],
             'columns' => 1,
@@ -6250,6 +6252,8 @@ class BiolinkBlockAjax extends Controller {
         $_POST['thank_you_text'] = $lead_funnel_rich_text_sanitizer($_POST['thank_you_text'] ?? '');
         $_POST['thank_you_url'] = get_url($_POST['thank_you_url'] ?? '');
         $_POST['thank_you_biolink_id'] = !empty($_POST['thank_you_biolink_id']) ? (int) $_POST['thank_you_biolink_id'] : null;
+        $_POST['thank_you_file_source'] = in_array($_POST['thank_you_file_source'] ?? '', ['local_upload', 'external_url']) ? query_clean($_POST['thank_you_file_source']) : 'local_upload';
+        $_POST['thank_you_file_url'] = get_url($_POST['thank_you_file_url'] ?? '');
         $_POST['thank_you_button_text'] = input_clean($_POST['thank_you_button_text'] ?? '', 64);
         $_POST['columns'] = isset($_POST['columns']) && in_array($_POST['columns'], [1, 2]) ? (int) $_POST['columns'] : 1;
 
@@ -6283,9 +6287,14 @@ class BiolinkBlockAjax extends Controller {
 
         $biolink_block = $this->biolink_block;
         $db_image = $this->handle_image_upload($biolink_block->settings->image, 'block_thumbnail_images/', settings()->links->thumbnail_image_size_limit);
-        $db_file = $this->handle_file_upload($biolink_block->settings->thank_you_file ?? null, 'thank_you_file', 'thank_you_file_remove', $this->biolink_blocks['lead_funnel']['whitelisted_file_extensions'], 'files/', settings()->links->file_size_limit);
+        $lead_funnel_local_file_size_limit = min((float) settings()->links->file_size_limit, 15);
+        $db_file = $this->handle_file_upload($biolink_block->settings->thank_you_file ?? null, 'thank_you_file', 'thank_you_file_remove', $this->biolink_blocks['lead_funnel']['whitelisted_file_extensions'], 'files/', $lead_funnel_local_file_size_limit);
 
-        if($_POST['thank_you_type'] == 'file_download' && empty($db_file)) {
+        if($_POST['thank_you_type'] == 'file_download' && $_POST['thank_you_file_source'] == 'local_upload' && empty($db_file)) {
+            Response::json(l('global.error_message.empty_fields'), 'error');
+        }
+
+        if($_POST['thank_you_type'] == 'file_download' && $_POST['thank_you_file_source'] == 'external_url' && empty($_POST['thank_you_file_url'])) {
             Response::json(l('global.error_message.empty_fields'), 'error');
         }
 
@@ -6342,7 +6351,9 @@ class BiolinkBlockAjax extends Controller {
             'thank_you_text' => $_POST['thank_you_text'],
             'thank_you_url' => $_POST['thank_you_url'],
             'thank_you_biolink_id' => $_POST['thank_you_biolink_id'],
+            'thank_you_file_source' => $_POST['thank_you_file_source'],
             'thank_you_file' => $db_file,
+            'thank_you_file_url' => $_POST['thank_you_file_url'],
             'thank_you_button_text' => $_POST['thank_you_button_text'],
             'notifications' => $_POST['notifications'],
             'columns' => $_POST['columns'],

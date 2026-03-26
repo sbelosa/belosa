@@ -481,6 +481,19 @@
         min-width: 0;
     }
 
+    .funnels-analytics-contact-action.is-whatsapp {
+        background: rgba(34, 197, 94, 0.14);
+        border-color: rgba(34, 197, 94, 0.28);
+        color: #b7f7cb;
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.03);
+    }
+
+    .funnels-analytics-contact-action.is-whatsapp:hover {
+        background: rgba(34, 197, 94, 0.22);
+        border-color: rgba(34, 197, 94, 0.38);
+        color: #f3fff7;
+    }
+
     .funnels-analytics-contact-action.is-viber {
         background: rgba(115, 96, 242, 0.18);
         border-color: rgba(115, 96, 242, 0.3);

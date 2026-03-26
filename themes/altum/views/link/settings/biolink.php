@@ -2386,6 +2386,7 @@
                     /* Custom code: FC-2026-03-23: conditional thank you settings */
                     let lead_funnel_thank_you_type_handler = () => {
                         let thank_you_type_select = update_form_content.querySelector('select[name="thank_you_type"]');
+                        let thank_you_file_source_select = update_form_content.querySelector('select[name="thank_you_file_source"]');
 
                         if(!thank_you_type_select) {
                             return;
@@ -2394,9 +2395,20 @@
                         update_form_content.querySelectorAll('[data-lead-funnel-thank-you-setting]').forEach(element => {
                             element.classList.toggle('d-none', element.getAttribute('data-lead-funnel-thank-you-setting') !== thank_you_type_select.value);
                         });
+
+                        update_form_content.querySelectorAll('[data-lead-funnel-file-source-setting]').forEach(element => {
+                            let should_hide = thank_you_type_select.value !== 'file_download';
+
+                            if(!should_hide && thank_you_file_source_select) {
+                                should_hide = element.getAttribute('data-lead-funnel-file-source-setting') !== thank_you_file_source_select.value;
+                            }
+
+                            element.classList.toggle('d-none', should_hide);
+                        });
                     };
 
                     $(update_form_content.querySelector('select[name="thank_you_type"]')).off().on('change', lead_funnel_thank_you_type_handler);
+                    $(update_form_content.querySelector('select[name="thank_you_file_source"]')).off().on('change', lead_funnel_thank_you_type_handler);
                     lead_funnel_thank_you_type_handler();
                     /* /Custom code: FC-2026-03-23 */
 
@@ -3045,4 +3057,3 @@
 <?php $javascript = ob_get_clean() ?>
 
 <?php return (object) ['html' => $html, 'javascript' => $javascript] ?>
-

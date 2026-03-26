@@ -295,6 +295,23 @@ $contact_channel_options = [
     <script>
         'use strict';
 
+        const trackLeadFunnelEvent = ({biolinkBlockId, eventType, source = '', context = ''}) => {
+            if(!biolinkBlockId || !eventType) {
+                return;
+            }
+
+            $.ajax({
+                type: 'POST',
+                url: `${site_url}l/link/lead_funnel_event`,
+                data: {
+                    biolink_block_id: biolinkBlockId,
+                    event_type: eventType,
+                    source: source,
+                    context: context
+                },
+            });
+        };
+
         $('form[id^="lead_funnel_form_"]').on('submit', event => {
             let form = $(event.currentTarget);
             let notification_container = form.closest('[data-lead-funnel-container]').find('[data-lead-funnel-notification-container]')[0];
@@ -329,6 +346,7 @@ $contact_channel_options = [
                         let container = form.closest('[data-lead-funnel-container]');
                         let thank_you_screen = container.find('[data-thank-you-screen]');
                         let thank_you_button = container.find('[data-thank-you-button]');
+                        let biolinkBlockId = form.find('input[name="biolink_block_id"]').val();
 
                         if(details.thank_you_type === 'file_download' && details.download_url) {
                             thank_you_button
@@ -336,12 +354,20 @@ $contact_channel_options = [
                                 .attr('href', details.download_url)
                                 .attr('target', '_blank')
                                 .attr('rel', 'noopener noreferrer')
+                                .attr('data-biolink-block-id', biolinkBlockId)
                                 .text(details.thank_you_button_text || <?= json_encode(l('biolink_lead_funnel.thank_you_button_text_default')) ?>);
 
                             form.hide();
                             thank_you_screen.addClass('is-visible');
 
                             setTimeout(() => {
+                                trackLeadFunnelEvent({
+                                    biolinkBlockId: biolinkBlockId,
+                                    eventType: 'thank_you_cta_click',
+                                    source: 'auto_download',
+                                    context: 'file_download'
+                                });
+
                                 let download_trigger = document.createElement('a');
                                 download_trigger.href = details.download_url;
                                 download_trigger.target = '_blank';
@@ -374,6 +400,22 @@ $contact_channel_options = [
             });
 
             event.preventDefault();
+        });
+
+        $(document).on('click', '[data-thank-you-button]', event => {
+            let button = $(event.currentTarget);
+            let biolinkBlockId = button.attr('data-biolink-block-id');
+
+            if(!biolinkBlockId) {
+                return;
+            }
+
+            trackLeadFunnelEvent({
+                biolinkBlockId: biolinkBlockId,
+                eventType: 'thank_you_cta_click',
+                source: 'manual_click',
+                context: 'file_download'
+            });
         });
     </script>
     <?php \Altum\Event::add_content(ob_get_clean(), 'javascript', 'lead_funnel') ?>

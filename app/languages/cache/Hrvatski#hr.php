@@ -1954,5 +1954,12 @@ Lijep pozdrav, <br />
 	'global.notifications.billing_admin_critical.description' => '%1$s (%2$s) i dalje ima neriješen billing problem: %3$s',
 	'global.notifications.billing_admin_revoked.title' => 'Pristup ugašen nakon neuspjelih obnova',
 	'global.notifications.billing_admin_revoked.description' => '%1$s (%2$s) je downgradean nakon isteka grace perioda. Razlog: %3$s',
+	'biolink_lead_funnel.thank_you_file_source' => 'Izvor datoteke',
+	'biolink_lead_funnel.thank_you_file_source_local_upload' => 'Lokalni upload datoteke',
+	'biolink_lead_funnel.thank_you_file_source_external_url' => 'Vanjski link do datoteke',
+	'biolink_lead_funnel.thank_you_file_source_help' => 'Odaberite želite li učitati datoteku na server ili koristiti vanjski link do datoteke.',
+	'biolink_lead_funnel.thank_you_file_url' => 'Vanjski URL datoteke',
+	'biolink_lead_funnel.thank_you_file_url_help' => 'Za veće datoteke koristite vanjski link poput Google Drivea, Dropboxa, OneDrivea, WeTransfera ili vlastitog CDN/server linka.',
+	'biolink_lead_funnel.thank_you_file_limit_help' => 'Za veće datoteke koristite vanjski link radi brzine i stabilnosti.',
 
 ];

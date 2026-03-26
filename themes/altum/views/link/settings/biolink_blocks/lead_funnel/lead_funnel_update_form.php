@@ -5,6 +5,7 @@
 $lead_funnel_statistics_url = url('biolink-block/' . $row->biolink_block_id . '/statistics');
 $lead_funnel_data_url = url('data?type=lead_funnel&biolink_block_id=' . $row->biolink_block_id);
 $lead_funnel_analytics_url = url('funnels-analytics?biolink_block_id=' . $row->biolink_block_id);
+$lead_funnel_local_file_size_limit = min((float) settings()->links->file_size_limit, 15);
 /* /Custom code: FC-2026-03-23 */
 ?>
 
@@ -436,6 +437,15 @@ $lead_funnel_analytics_url = url('funnels-analytics?biolink_block_id=' . $row->b
         </div>
 
         <div class="form-group" data-lead-funnel-thank-you-setting="file_download">
+            <label for="<?= 'lead_funnel_thank_you_file_source_' . $row->biolink_block_id ?>"><i class="fas fa-fw fa-database fa-sm text-muted mr-1"></i> <?= l('biolink_lead_funnel.thank_you_file_source') ?></label>
+            <select id="<?= 'lead_funnel_thank_you_file_source_' . $row->biolink_block_id ?>" name="thank_you_file_source" class="custom-select" data-is-not-custom-select>
+                <option value="local_upload" <?= ($row->settings->thank_you_file_source ?? 'local_upload') == 'local_upload' ? 'selected="selected"' : null ?>><?= l('biolink_lead_funnel.thank_you_file_source_local_upload') ?></option>
+                <option value="external_url" <?= ($row->settings->thank_you_file_source ?? '') == 'external_url' ? 'selected="selected"' : null ?>><?= l('biolink_lead_funnel.thank_you_file_source_external_url') ?></option>
+            </select>
+            <small class="form-text text-muted"><?= l('biolink_lead_funnel.thank_you_file_source_help') ?></small>
+        </div>
+
+        <div class="form-group" data-lead-funnel-thank-you-setting="file_download" data-lead-funnel-file-source-setting="local_upload">
             <label for="<?= 'lead_funnel_thank_you_file_' . $row->biolink_block_id ?>"><i class="fas fa-fw fa-file-arrow-down fa-sm text-muted mr-1"></i> <?= l('biolink_lead_funnel.thank_you_file') ?></label>
             <div class="row">
                 <div class="col">
@@ -452,7 +462,13 @@ $lead_funnel_analytics_url = url('funnels-analytics?biolink_block_id=' . $row->b
                     </a>
                 </div>
             </div>
-            <small class="form-text text-muted"><?= sprintf(l('global.accessibility.whitelisted_file_extensions'), \Altum\Uploads::array_to_list_format($data->biolink_blocks['lead_funnel']['whitelisted_file_extensions'])) . ' ' . sprintf(l('global.accessibility.file_size_limit'), settings()->links->file_size_limit) ?></small>
+            <small class="form-text text-muted"><?= sprintf(l('global.accessibility.whitelisted_file_extensions'), \Altum\Uploads::array_to_list_format($data->biolink_blocks['lead_funnel']['whitelisted_file_extensions'])) . ' ' . sprintf(l('global.accessibility.file_size_limit'), $lead_funnel_local_file_size_limit) . ' ' . l('biolink_lead_funnel.thank_you_file_limit_help') ?></small>
+        </div>
+
+        <div class="form-group" data-lead-funnel-thank-you-setting="file_download" data-lead-funnel-file-source-setting="external_url">
+            <label for="<?= 'lead_funnel_thank_you_file_url_' . $row->biolink_block_id ?>"><i class="fas fa-fw fa-link fa-sm text-muted mr-1"></i> <?= l('biolink_lead_funnel.thank_you_file_url') ?></label>
+            <input id="<?= 'lead_funnel_thank_you_file_url_' . $row->biolink_block_id ?>" type="url" name="thank_you_file_url" class="form-control" value="<?= $row->settings->thank_you_file_url ?? '' ?>" placeholder="<?= l('global.url_placeholder') ?>" maxlength="2048" />
+            <small class="form-text text-muted"><?= l('biolink_lead_funnel.thank_you_file_url_help') ?></small>
         </div>
 
         <div class="form-group" data-lead-funnel-thank-you-setting="file_download">

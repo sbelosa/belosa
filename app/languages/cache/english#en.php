@@ -2888,5 +2888,12 @@ return [
 	'global.notifications.billing_admin_critical.description' => '%1$s (%2$s) still has an unresolved billing issue: %3$s',
 	'global.notifications.billing_admin_revoked.title' => 'Access revoked after failed renewals',
 	'global.notifications.billing_admin_revoked.description' => '%1$s (%2$s) was downgraded after grace period expiry. Reason: %3$s',
+	'biolink_lead_funnel.thank_you_file_source' => 'File source',
+	'biolink_lead_funnel.thank_you_file_source_local_upload' => 'Local file upload',
+	'biolink_lead_funnel.thank_you_file_source_external_url' => 'External file link',
+	'biolink_lead_funnel.thank_you_file_source_help' => 'Choose whether to upload a file to the server or use an external file link.',
+	'biolink_lead_funnel.thank_you_file_url' => 'External file URL',
+	'biolink_lead_funnel.thank_you_file_url_help' => 'For larger files, use an external link such as Google Drive, Dropbox, OneDrive, WeTransfer, or your own CDN/server URL.',
+	'biolink_lead_funnel.thank_you_file_limit_help' => 'Use an external link for larger files to keep the funnel fast and stable.',
 
 ];
