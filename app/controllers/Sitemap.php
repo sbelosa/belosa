@@ -36,51 +36,51 @@ class Sitemap extends Controller {
         header('Content-Type: text/xml');
 
         $sitemap_urls = [
-            '',
-            'login',
-            'lost-password',
+            ['loc' => SITE_URL, 'lastmod' => null],
+            ['loc' => SITE_URL . 'login', 'lastmod' => null],
+            ['loc' => SITE_URL . 'lost-password', 'lastmod' => null],
         ];
 
         if(settings()->users->email_confirmation) {
-            $sitemap_urls[] = 'resend-activation';
+            $sitemap_urls[] = ['loc' => SITE_URL . 'resend-activation', 'lastmod' => null];
         }
 
         if(settings()->users->register_is_enabled) {
-            $sitemap_urls[] = 'register';
+            $sitemap_urls[] = ['loc' => SITE_URL . 'register', 'lastmod' => null];
         }
 
         if(\Altum\Plugin::is_active('affiliate') && settings()->affiliate->is_enabled) {
-            $sitemap_urls[] = 'affiliate';
+            $sitemap_urls[] = ['loc' => SITE_URL . 'affiliate', 'lastmod' => null];
         }
 
         if(settings()->main->api_is_enabled) {
-            $sitemap_urls[] = 'api-documentation';
+            $sitemap_urls[] = ['loc' => SITE_URL . 'api-documentation', 'lastmod' => null];
         }
 
         if(settings()->email_notifications->contact && !empty(settings()->email_notifications->emails)) {
-            $sitemap_urls[] = 'contact';
+            $sitemap_urls[] = ['loc' => SITE_URL . 'contact', 'lastmod' => null];
         }
 
         if(settings()->payment->is_enabled) {
-            $sitemap_urls[] = 'plan';
+            $sitemap_urls[] = ['loc' => SITE_URL . 'plan', 'lastmod' => null];
         }
 
         if(settings()->content->pages_is_enabled) {
-            $sitemap_urls[] = 'pages';
+            $sitemap_urls[] = ['loc' => SITE_URL . 'pages', 'lastmod' => null];
         }
 
         if(settings()->content->blog_is_enabled) {
-            $sitemap_urls[] = 'blog';
+            $sitemap_urls[] = ['loc' => SITE_URL . 'blog', 'lastmod' => null];
         }
 
         if(settings()->links->directory_is_enabled && settings()->links->directory_access == 'everyone') {
-            $sitemap_urls[] = 'directory';
+            $sitemap_urls[] = ['loc' => SITE_URL . 'directory', 'lastmod' => null];
         }
 
         if(settings()->tools->is_enabled && settings()->tools->access == 'everyone') {
             foreach ((require APP_PATH . 'includes/tools/tools.php') as $key => $value) {
                 if(settings()->tools->available_tools->{$key}) {
-                    $sitemap_urls[] = 'tools/' . str_replace('_', '-', $key);
+                    $sitemap_urls[] = ['loc' => SITE_URL . 'tools/' . str_replace('_', '-', $key), 'lastmod' => null];
                 }
             }
         }
@@ -89,34 +89,50 @@ class Sitemap extends Controller {
         $new_sitemap_urls = [];
 
         foreach(\Altum\Language::$active_languages as $language_name => $language_code) {
-            foreach($sitemap_urls as $url) {
-                $new_sitemap_urls[] = settings()->main->default_language == $language_name ? SITE_URL . $url : SITE_URL . $language_code . '/' . $url;
+            foreach($sitemap_urls as $entry) {
+                $relative_url = str_replace(SITE_URL, '', $entry['loc']);
+                $new_sitemap_urls[] = [
+                    'loc' => settings()->main->default_language == $language_name ? SITE_URL . $relative_url : SITE_URL . $language_code . '/' . $relative_url,
+                    'lastmod' => $entry['lastmod'],
+                ];
             }
         }
 
         if(settings()->content->pages_is_enabled) {
-            $pages = db()->where('type', 'internal')->where('is_published', 1)->get('pages', null, ['url', 'language']);
+            $pages = db()->where('type', 'internal')->where('is_published', 1)->get('pages', null, ['url', 'language', 'last_datetime', 'datetime']);
             $pages_categories = db()->get('pages_categories', null, ['url', 'language']);
 
             foreach ($pages as $page) {
-                $new_sitemap_urls[] = SITE_URL . ($page->language ? \Altum\Language::$active_languages[$page->language] . '/' : '') . 'page/' . $page->url;
+                $new_sitemap_urls[] = [
+                    'loc' => SITE_URL . ($page->language ? \Altum\Language::$active_languages[$page->language] . '/' : '') . 'page/' . $page->url,
+                    'lastmod' => $page->last_datetime ?? $page->datetime ?? null,
+                ];
             }
 
             foreach ($pages_categories as $pages_category) {
-                $new_sitemap_urls[] = SITE_URL . ($pages_category->language ? \Altum\Language::$active_languages[$pages_category->language] . '/' : '') . 'pages/' . $pages_category->url;
+                $new_sitemap_urls[] = [
+                    'loc' => SITE_URL . ($pages_category->language ? \Altum\Language::$active_languages[$pages_category->language] . '/' : '') . 'pages/' . $pages_category->url,
+                    'lastmod' => null,
+                ];
             }
         }
 
         if(settings()->content->blog_is_enabled) {
-            $blog_posts = db()->where('is_published', 1)->get('blog_posts', null, ['url', 'language']);
+            $blog_posts = db()->where('is_published', 1)->get('blog_posts', null, ['url', 'language', 'last_datetime', 'datetime']);
             $blog_posts_categories = db()->get('blog_posts_categories', null, ['url', 'language']);
 
             foreach ($blog_posts as $blog_post) {
-                $new_sitemap_urls[] = SITE_URL . ($blog_post->language ? \Altum\Language::$active_languages[$blog_post->language] . '/' : '') . 'blog/' . $blog_post->url;
+                $new_sitemap_urls[] = [
+                    'loc' => SITE_URL . ($blog_post->language ? \Altum\Language::$active_languages[$blog_post->language] . '/' : '') . 'blog/' . $blog_post->url,
+                    'lastmod' => $blog_post->last_datetime ?? $blog_post->datetime ?? null,
+                ];
             }
 
             foreach ($blog_posts_categories as $blog_posts_category) {
-                $new_sitemap_urls[] = SITE_URL . ($blog_posts_category->language ? \Altum\Language::$active_languages[$blog_posts_category->language] . '/' : '') . 'blog/category/' . $blog_posts_category->url;
+                $new_sitemap_urls[] = [
+                    'loc' => SITE_URL . ($blog_posts_category->language ? \Altum\Language::$active_languages[$blog_posts_category->language] . '/' : '') . 'blog/category/' . $blog_posts_category->url,
+                    'lastmod' => null,
+                ];
             }
         }
 

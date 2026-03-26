@@ -3,7 +3,10 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <?php foreach ($data->sitemap_urls as $url) : ?>
         <url>
-            <loc><?= $url ?></loc>
+            <loc><?= is_array($url) ? $url['loc'] : $url ?></loc>
+            <?php if(is_array($url) && !empty($url['lastmod'])): ?>
+                <lastmod><?= (new \DateTime($url['lastmod']))->format('Y-m-d\TH:i:sP') ?></lastmod>
+            <?php endif ?>
         </url>
     <?php endforeach ?>
 </urlset>
