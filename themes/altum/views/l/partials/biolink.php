@@ -160,6 +160,10 @@
                         if($country_code) {
                             $country_code = mb_strtoupper((string) $country_code);
                         }
+
+                        $forever_id = $data->user->preferences->meta->foreverId ?? '';
+                        $forever_webshop_links = settings()->links->forever_webshop_links ?? new \StdClass();
+                        $forever_business_links = settings()->links->forever_business_links ?? new \StdClass();
                         /* /Custom code: FC-2026-03-05 */
                         $city_name = isset($maxmind) && isset($maxmind['city']) ? $maxmind['city']['names']['en'] : null;
                         $continent_code = isset($maxmind) && isset($maxmind['continent']) ? $maxmind['continent']['code'] : null;
@@ -172,81 +176,23 @@
                             $row->settings = json_decode($row->settings ?? '');
 
                             /* Custom code */
-                            if (($row->type == 'link' && $row->settings->name == 'FOREVER WEB SHOP') || $row->type == 'link_forever_shop' || $row->type == 'link_forever_living_bih' || in_array($row->type, ['link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo']) || $row->location_url == 'https://businesscard.club/en/forevershop' || $row->location_url == 'https://foreverliving.com' || $row->location_url == 'https://foreverliving.com/') {
-                                if (isset($data->user->preferences->meta->foreverId)) {
-                                    $forever_id = $data->user->preferences->meta->foreverId;
-                                } else {
-                                    $forever_id = '';
+                            if($row->type == 'link_forever_shop') {
+                                $resolved_country_code = mb_strtolower((string) ($country_code ?: $browser_language ?: ''));
+                                $business_country_code = in_array($resolved_country_code, ['xk']) ? 'al' : $resolved_country_code;
+                                $business_base_url = $forever_business_links->{$business_country_code} ?? null;
+
+                                if(!$business_base_url && !empty($forever_business_links->us)) {
+                                    $business_country_code = 'us';
+                                    $business_base_url = $forever_business_links->us;
                                 }
 
-                                if (isset($country_code)) {
-                                    switch ($country_code) {
-                                        /*case 'HR':
-                                            $url = 'https://www.foreverliving.hr/?id=' . $forever_id;
-                                            break;*/
-                                        
-                                        case 'BA':
-                                            $url = 'https://www.flpshop.ba/?id=' . $forever_id;
-                                            break;
-
-                                        case 'AL':
-                                            $url = 'https://www.foreveralbania.com/?id=' . $forever_id;
-                                            break;
-
-                                        case 'XK':
-                                            $url = 'https://www.foreveralbania.com/?id=' . $forever_id;
-                                            break;
-                                
-                                        /*case 'SI':
-                                            $url = 'https://' . $forever_id . '.webshop.forever.si';
-                                            break; */
-                                        
-                                        /*case 'RS':
-                                            $url = 'https://www.flpshop.rs/forever-paketi/12560/start-your-journey-pack/'. $forever_id . '/personal.html';
-                                            break;  
-                                        */
-
-                                        default:
-                                            $url = 'https://www.foreverliving.com/welcome?fboId=' . $forever_id;
-                                            break;
-                                    }
-                                } else if (isset($browser_language)) {
-                                    switch ($browser_language) {
-                                       /* case 'hr':
-                                            $url = 'https://www.foreverliving.hr/?id=' . $forever_id;
-                                            break;*/
-                                        
-                                        case 'ba':
-                                            $url = 'https://www.flpshop.ba/?id=' . $forever_id;
-                                            break;
-
-                                        case 'al':
-                                            $url = 'https://www.foreveralbania.com/?id=' . $forever_id;
-                                            break;
-
-                                        case 'xk':
-                                            $url = 'https://www.foreveralbania.com/?id=' . $forever_id;
-                                            break;
-                                
-                                        /*case 'sl':
-                                            $url = 'https://' . $forever_id . '.webshop.forever.si';
-                                            break; */
-
-                                        /*case 'rs':
-                                            $url = 'https://www.flpshop.rs/forever-paketi/12560/start-your-journey-pack/'. $forever_id . '/personal.html';
-                                            break;                                     
-                                        */
-                                        
-                                        default:
-                                            $url = 'https://www.foreverliving.com/welcome?fboId=' . $forever_id;
-                                            break; 
-                                    }
-                                } else {
-                                    $url = 'https://www.foreverliving.com/welcome?fboId=' . $forever_id;
+                                if(!$business_base_url && !empty($forever_business_links->gb)) {
+                                    $business_country_code = 'gb';
+                                    $business_base_url = $forever_business_links->gb;
                                 }
 
-                                if($row->type != 'link_forever_living_bih' && !in_array($row->type, ['link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo'])) {
-                                    $row->location_url = $url;
+                                if($business_base_url) {
+                                    $row->location_url = \Altum\Link::build_forever_destination_url($business_base_url, $forever_id, $business_country_code);
                                 }
                             }
                             /* /Custom code */
@@ -323,40 +269,27 @@
                                     continue;
                                 }                                
                             }                              
-                            if($row->type == 'link_discount' && mb_strtoupper((string) $country_code) !== 'BA' && !filter_var($row->settings->decoded_url, FILTER_VALIDATE_URL)) {
+                            if($row->type == 'link_discount' && !filter_var($row->settings->decoded_url ?? '', FILTER_VALIDATE_URL)) {
                                 continue;
                             }                    
-                            if($row->type == 'link_discount') {                                
-                                $destination_url = $row->settings->decoded_url;
-                        
-                                $parsed_url = parse_url($destination_url);
-                                $host = $parsed_url['host'];
-                                $path = $parsed_url['path'];
-                                $path_explode = explode('/', $parsed_url['path']);
-                                
+                            if($row->type == 'link_discount') {
+                                $resolved_country_code = mb_strtolower((string) ($country_code ?: $browser_language ?: ''));
+                                $webshop_country_code = in_array($resolved_country_code, ['xk']) ? 'al' : $resolved_country_code;
+                                $webshop_base_url = $forever_webshop_links->{$webshop_country_code} ?? null;
 
-                                if ($host == 'foreverliving.com' && isset($path_explode[1]) && $path_explode[1] == 'shop') {
-                                    parse_str($parsed_url['query'], $params);
+                                if(!$webshop_base_url && !empty($forever_webshop_links->us)) {
+                                    $webshop_country_code = 'us';
+                                    $webshop_base_url = $forever_webshop_links->us;
+                                }
 
-                                    if (isset($params['fboId'])) {
-                                        $fbo_id = $params['fboId'];
-                                    }
-                                    if (isset($params['discountConfigType'])) {
-                                        $discount_type = $params['discountConfigType'];
-                                    }
-                                    if (isset($params['uniqueExtRefID'])) {
-                                        $unique_uid = $params['uniqueExtRefID'];
-                                    }
-                                    if (isset($params['referralUuid'])) {
-                                        $refferal_uid = $params['referralUuid'];
-                                    }
+                                if(!$webshop_base_url && !empty($forever_webshop_links->gb)) {
+                                    $webshop_country_code = 'gb';
+                                    $webshop_base_url = $forever_webshop_links->gb;
+                                }
 
-                                    if (isset($discount_type) && isset($unique_uid) && isset($refferal_uid) && isset($fbo_id)) {
-                                        $country_code = strtolower($country_code);                                        
-                                        $destination_url = 'https://' . $host . '/shop?fboId=' . $fbo_id . '&discountConfigType=' . $discount_type . '&uniqueExtRefID=' . $unique_uid . '&referralUuid=' . $refferal_uid;                                        
-
-                                        $row->location_url = $destination_url;
-                                    }
+                                if($webshop_base_url) {
+                                    $discount_query_params = \Altum\Link::get_forever_discount_query_params($row->settings->decoded_url ?? null);
+                                    $row->location_url = \Altum\Link::build_forever_destination_url($webshop_base_url, $forever_id, $webshop_country_code, $discount_query_params);
                                 }
                             }
 

@@ -875,6 +875,77 @@ class Link {
     }
 
     /* Custom code */
+    public static function get_forever_referral_parameter($country_code = null) {
+        $country_code = mb_strtolower((string) $country_code);
+
+        return in_array($country_code, ['ba', 'al', 'me', 'xk']) ? 'id' : 'fboId';
+    }
+
+    public static function get_forever_discount_query_params($destination_url): array {
+        if(!$destination_url || !filter_var($destination_url, FILTER_VALIDATE_URL)) {
+            return [];
+        }
+
+        $parsed_url = parse_url($destination_url);
+
+        if(empty($parsed_url['query'])) {
+            return [];
+        }
+
+        parse_str($parsed_url['query'], $params);
+
+        $discount_params = [];
+
+        foreach(['discountConfigType', 'uniqueExtRefID', 'referralUuid'] as $key) {
+            if(!empty($params[$key])) {
+                $discount_params[$key] = $params[$key];
+            }
+        }
+
+        return $discount_params;
+    }
+
+    public static function build_forever_destination_url($base_url, $forever_id = null, $country_code = null, array $extra_query_params = []) {
+        if(!$base_url || !filter_var($base_url, FILTER_VALIDATE_URL)) {
+            return false;
+        }
+
+        $parsed_url = parse_url($base_url);
+        $query_params = [];
+
+        if(!empty($parsed_url['query'])) {
+            parse_str($parsed_url['query'], $query_params);
+        }
+
+        if($forever_id !== null && $forever_id !== '') {
+            $query_params[self::get_forever_referral_parameter($country_code)] = $forever_id;
+        }
+
+        foreach($extra_query_params as $key => $value) {
+            if($value !== null && $value !== '') {
+                $query_params[$key] = $value;
+            }
+        }
+
+        $final_url = ($parsed_url['scheme'] ?? 'https') . '://' . ($parsed_url['host'] ?? '');
+
+        if(isset($parsed_url['port'])) {
+            $final_url .= ':' . $parsed_url['port'];
+        }
+
+        $final_url .= $parsed_url['path'] ?? '';
+
+        if(!empty($query_params)) {
+            $final_url .= '?' . http_build_query($query_params, '', '&', PHP_QUERY_RFC3986);
+        }
+
+        if(isset($parsed_url['fragment'])) {
+            $final_url .= '#' . $parsed_url['fragment'];
+        }
+
+        return $final_url;
+    }
+
    public static function get_product_webshop_link($referral, $product_id, $country_code = null, $browser_language = null) {                        
         if($biolink = db()->where('url', $referral)->where('type', 'biolink')->getOne('links', ['user_id'])) {
             if($user = db()->where('user_id', $biolink->user_id)->getOne('users', ['user_id', 'status', 'plan_id', 'preferences'])) {
@@ -907,11 +978,7 @@ class Link {
             if ($country_code) {
                 $country_code = strtolower($country_code); 
                 if(isset($webshop_links->$country_code) && !empty($webshop_links->$country_code)) {
-                    if(in_array($country_code, ['ba', 'al'])) {
-                        $url = $webshop_links->$country_code . '?id=' . $forever_id;   
-                    } else if(in_array($country_code, ['hr', 'at', 'au', 'ca', 'de', 'ie', 'lu', 'nl', 'no', 'pl', 'se', 'gb', 'us', 'qa', 'ch', 'si', 'rs', 'ae'])) {
-                        $url = $webshop_links->$country_code . '?fboId=' . $forever_id;   
-                    }
+                    $url = self::build_forever_destination_url($webshop_links->$country_code, $forever_id, $country_code);
                 }
 
                 $link_discount = db()->where('user_id', $user->user_id)->where('type', 'link_discount')->getOne('biolinks_blocks', ['location_url', 'is_enabled']);
@@ -920,33 +987,11 @@ class Link {
                     $link_discount_settings = db()->where('user_id', $user->user_id)->where('type', 'link_discount')->getOne('biolinks_blocks', ['settings']);
                     $link_discount_settings_decode = json_decode($link_discount_settings->settings); 
                     if (isset($link_discount_settings_decode->apply_to_all_products) && $link_discount_settings_decode->apply_to_all_products && isset($link_discount_settings_decode->decoded_url) && !empty($link_discount_settings_decode->decoded_url)) {
-                        $destination_url = $link_discount_settings_decode->decoded_url;
-                        $parsed_url = parse_url($destination_url);
-                        $host = $parsed_url['host'];
-                        $path = $parsed_url['path'];
-                        $path_explode = explode('/', $parsed_url['path']);
-                        
+                        $discount_params = self::get_forever_discount_query_params($link_discount_settings_decode->decoded_url);
 
-                        if ($host == 'foreverliving.com' && isset($path_explode[1]) && $path_explode[1] == 'shop') {
-                            parse_str($parsed_url['query'], $params);
-
-                            if (isset($params['discountConfigType'])) {
-                                $discount_type = $params['discountConfigType'];
-                            }
-                            if (isset($params['uniqueExtRefID'])) {
-                                $unique_uid = $params['uniqueExtRefID'];
-                            }
-                            if (isset($params['referralUuid'])) {
-                                $refferal_uid = $params['referralUuid'];
-                            }
-
-                            if (isset($discount_type) && isset($unique_uid) && isset($refferal_uid)) {
-                                $country_code = strtolower($country_code);
-                                if(in_array($country_code, ['hr', 'at', 'au', 'ca', 'de', 'ie', 'lu', 'nl', 'no', 'pl', 'se', 'gb', 'us', 'qa', 'ch', 'si', 'rs', 'ae'])) {
-                                    $url .= '&discountConfigType=' . $discount_type . '&uniqueExtRefID=' . $unique_uid . '&referralUuid=' . $refferal_uid;
-                                }
-                            }
-                        }                                                                        
+                        if($discount_params && in_array($country_code, ['hr', 'at', 'au', 'ca', 'de', 'ie', 'lu', 'nl', 'no', 'pl', 'se', 'gb', 'us', 'qa', 'ch', 'si', 'rs', 'ae'])) {
+                            $url = self::build_forever_destination_url($webshop_links->$country_code, $forever_id, $country_code, $discount_params);
+                        }
                     }                    
                 }
             }            

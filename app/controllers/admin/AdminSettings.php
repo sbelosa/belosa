@@ -25,6 +25,32 @@ defined('ALTUMCODE') || die();
 
 class AdminSettings extends Controller {
 
+    private function get_forever_country_definitions(): array {
+        return [
+            'hr' => ['label' => 'Forever HR - Hrvatska', 'referral_parameter' => 'fboId'],
+            'ba' => ['label' => 'Forever BA - Bosna i Hercegovina', 'referral_parameter' => 'id'],
+            'al' => ['label' => 'Forever AL - Albanija', 'referral_parameter' => 'id'],
+            'me' => ['label' => 'Forever ME - Crna Gora', 'referral_parameter' => 'id'],
+            'si' => ['label' => 'Forever SI - Slovenija', 'referral_parameter' => 'fboId'],
+            'rs' => ['label' => 'Forever RS - Srbija', 'referral_parameter' => 'fboId'],
+            'at' => ['label' => 'Forever AT - Austrija', 'referral_parameter' => 'fboId'],
+            'au' => ['label' => 'Forever AU - Australija', 'referral_parameter' => 'fboId'],
+            'ca' => ['label' => 'Forever CA - Kanada', 'referral_parameter' => 'fboId'],
+            'de' => ['label' => 'Forever DE - Njemačka', 'referral_parameter' => 'fboId'],
+            'ie' => ['label' => 'Forever IE - Irska', 'referral_parameter' => 'fboId'],
+            'lu' => ['label' => 'Forever LU - Luksemburg', 'referral_parameter' => 'fboId'],
+            'nl' => ['label' => 'Forever NL - Nizozemska', 'referral_parameter' => 'fboId'],
+            'no' => ['label' => 'Forever NO - Norveška', 'referral_parameter' => 'fboId'],
+            'pl' => ['label' => 'Forever PL - Poljska', 'referral_parameter' => 'fboId'],
+            'se' => ['label' => 'Forever SE - Švedska', 'referral_parameter' => 'fboId'],
+            'gb' => ['label' => 'Forever GB - Ujedinjeno Kraljevstvo', 'referral_parameter' => 'fboId'],
+            'us' => ['label' => 'Forever US - Sjedinjene Američke Države', 'referral_parameter' => 'fboId'],
+            'qa' => ['label' => 'Forever QA - Katar', 'referral_parameter' => 'fboId'],
+            'ch' => ['label' => 'Forever CH - Švicarska', 'referral_parameter' => 'fboId'],
+            'ae' => ['label' => 'Forever AE - Emirati', 'referral_parameter' => 'fboId'],
+        ];
+    }
+
     public function index() {
         redirect('admin/settings/main');
     }
@@ -2376,6 +2402,58 @@ class AdminSettings extends Controller {
 
             $this->update_settings('links', $value);
         }
+    }
+
+    public function forever() {
+        $country_definitions = $this->get_forever_country_definitions();
+
+        if(!empty($_POST)) {
+            if(!\Altum\Csrf::check()) {
+                Alerts::add_error(l('global.error_message.invalid_csrf_token'));
+            }
+
+            $forever_webshop_links = [];
+            $forever_business_links = [];
+
+            foreach($country_definitions as $country_code => $country) {
+                $webshop_post_key = 'forever_webshop_links_' . $country_code;
+                $business_post_key = 'forever_business_links_' . $country_code;
+
+                $forever_webshop_links[$country_code] = trim($_POST[$webshop_post_key] ?? '');
+                $forever_business_links[$country_code] = trim($_POST[$business_post_key] ?? '');
+            }
+
+            if(!Alerts::has_field_errors() && !Alerts::has_errors()) {
+                $links_settings = json_decode(json_encode(settings()->links), true) ?? [];
+                $links_settings['forever_webshop_links'] = $forever_webshop_links;
+                $links_settings['forever_business_links'] = $forever_business_links;
+
+                db()->where('`key`', 'links')->update('settings', [
+                    'value' => json_encode($links_settings)
+                ]);
+
+                $this->after_update_settings('forever');
+            }
+
+            redirect('admin/settings/forever');
+        }
+
+        $payment_processors = require APP_PATH . 'includes/payment_processors.php';
+
+        Title::set(sprintf(l('admin_settings.title'), l('admin_settings.forever.tab')));
+
+        $view = new \Altum\View('admin/settings/partials/forever', (array) $this);
+        $this->add_view_content('method', $view->run([
+            'country_definitions' => $country_definitions,
+            'forever_webshop_links' => settings()->links->forever_webshop_links ?? new \StdClass(),
+            'forever_business_links' => settings()->links->forever_business_links ?? new \StdClass(),
+        ]));
+
+        $view = new \Altum\View('admin/settings/index', (array) $this);
+        $this->add_view_content('content', $view->run([
+            'method' => 'forever',
+            'payment_processors' => $payment_processors,
+        ]));
     }
 
     public function tools() {
