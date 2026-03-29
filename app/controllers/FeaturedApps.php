@@ -204,7 +204,7 @@ class FeaturedApps extends Controller {
             LEFT JOIN `domains` ON `main_link`.`domain_id` = `domains`.`domain_id`
             LEFT JOIN `links` AS `all_biolinks` ON `all_biolinks`.`user_id` = `users_biolinks`.`user_id` AND `all_biolinks`.`type` = 'biolink' AND `all_biolinks`.`is_enabled` = 1
             LEFT JOIN `biolinks_blocks` ON `biolinks_blocks`.`link_id` = `all_biolinks`.`link_id` AND `biolinks_blocks`.`type` IN ({$forever_shop_block_types_sql})
-            LEFT JOIN `track_links` ON `track_links`.`link_id` = `all_biolinks`.`link_id` AND `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id` AND `track_links`.`datetime` >= '{$period_start_datetime}' AND `track_links`.`is_unique` = 1
+            LEFT JOIN `track_links` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id` AND `track_links`.`datetime` >= '{$period_start_datetime}' AND `track_links`.`is_unique` = 1
             WHERE `main_link`.`type` = 'biolink' AND `main_link`.`is_enabled` = 1 AND `main_link`.`fcc_featured_opt_in` = 1 AND `main_link`.`fcc_featured_is_approved` = 1
             GROUP BY
                 `main_link`.`link_id`,
