@@ -27,6 +27,23 @@ defined('ALTUMCODE') || die();
 
 class Blog extends Controller {
 
+    private function log_forever_blog_market_debug(array $payload): void {
+        try {
+            $log_directory = UPLOADS_PATH . 'logs' . DIRECTORY_SEPARATOR;
+
+            if(!is_dir($log_directory)) {
+                @mkdir($log_directory, 0777, true);
+            }
+
+            $log_file = $log_directory . 'fcc-blog-market-debug-' . date('Y-m-d') . '.log';
+            $line = '[' . date('Y-m-d H:i:s') . '] ' . json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) . PHP_EOL;
+
+            @file_put_contents($log_file, $line, FILE_APPEND | LOCK_EX);
+        } catch(\Throwable $exception) {
+            /* :) */
+        }
+    }
+
     private function get_logged_in_referral_biolink_url(): ?string {
         $user_id = \Altum\Authentication::check();
 
@@ -267,6 +284,9 @@ class Blog extends Controller {
             if ($referral) {                      
                 /* Custom code: FC-2026-02-26: robust visitor country detection for blog webshop routing */
                 $country_code = null;
+                $header_country_code = null;
+                $maxmind_country_code = null;
+                $maxmind_city_country_code = null;
 
                 foreach(['HTTP_CF_IPCOUNTRY', 'HTTP_CF-IPCOUNTRY', 'GEOIP_COUNTRY_CODE', 'HTTP_GEOIP_COUNTRY_CODE', 'HTTP_X_COUNTRY_CODE', 'HTTP_X_COUNTRY'] as $country_header_key) {
                     if(!empty($_SERVER[$country_header_key])) {
@@ -287,7 +307,8 @@ class Blog extends Controller {
                         /* :) */
                     }
 
-                    $country_code = isset($maxmind) && isset($maxmind['country']) ? $maxmind['country']['iso_code'] : null;
+                    $maxmind_country_code = isset($maxmind) && isset($maxmind['country']) ? ($maxmind['country']['iso_code'] ?? null) : null;
+                    $country_code = $maxmind_country_code;
                 }
 
                 if(!$country_code) {
@@ -297,11 +318,39 @@ class Blog extends Controller {
                         /* :) */
                     }
 
-                    $country_code = isset($maxmind_city) && isset($maxmind_city['country']) ? $maxmind_city['country']['iso_code'] : null;
+                    $maxmind_city_country_code = isset($maxmind_city) && isset($maxmind_city['country']) ? ($maxmind_city['country']['iso_code'] ?? null) : null;
+                    $country_code = $maxmind_city_country_code;
                 }
                 /* /Custom code: FC-2026-02-26 */
 
                 $webshop_link = \Altum\Link::get_product_webshop_link($referral, $blog_post->blog_post_id, $country_code);                
+
+                $resolved_market_country_code = \Altum\Link::resolve_forever_market_country_code($country_code);
+                $product_webshop_links = json_decode($blog_post->webshop_links ?? '{}');
+
+                $this->log_forever_blog_market_debug([
+                    'event' => 'blog_market_resolution',
+                    'blog_post_id' => (int) $blog_post->blog_post_id,
+                    'blog_post_url' => $blog_post->url,
+                    'request_uri' => $_SERVER['REQUEST_URI'] ?? null,
+                    'ip' => get_ip(),
+                    'cf_ipcountry' => $_SERVER['HTTP_CF_IPCOUNTRY'] ?? null,
+                    'geoip_country_code' => $_SERVER['GEOIP_COUNTRY_CODE'] ?? null,
+                    'http_geoip_country_code' => $_SERVER['HTTP_GEOIP_COUNTRY_CODE'] ?? null,
+                    'http_x_country_code' => $_SERVER['HTTP_X_COUNTRY_CODE'] ?? null,
+                    'http_x_country' => $_SERVER['HTTP_X_COUNTRY'] ?? null,
+                    'accept_language' => $_SERVER['HTTP_ACCEPT_LANGUAGE'] ?? null,
+                    'header_country_code' => $header_country_code,
+                    'maxmind_country_code' => $maxmind_country_code,
+                    'maxmind_city_country_code' => $maxmind_city_country_code,
+                    'final_country_code' => $country_code,
+                    'resolved_market_country_code' => $resolved_market_country_code,
+                    'ba_target' => $product_webshop_links->ba ?? null,
+                    'rs_target' => $product_webshop_links->rs ?? null,
+                    'de_target' => $product_webshop_links->de ?? null,
+                    'final_webshop_link' => $webshop_link,
+                    'referral' => $referral,
+                ]);
             }            
 
             /* Get popular posts */
