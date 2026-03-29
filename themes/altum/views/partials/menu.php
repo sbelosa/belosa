@@ -327,7 +327,13 @@ if(is_logged_in() && in_array($fcc_share_route, ['index', 'blog', 'page'], true)
             </div>
 
             <div class="fcc-navbar-share-row__buttons">
-                <?= include_view(THEME_PATH . 'views/partials/share_buttons.php', ['url' => $fcc_share_url, 'class' => 'btn btn-gray-100 btn-sm', 'copy_to_clipboard' => true]) ?>
+                <?= include_view(THEME_PATH . 'views/partials/share_buttons.php', [
+                    'url' => $fcc_share_url,
+                    'class' => 'btn btn-gray-100 btn-sm',
+                    'copy_to_clipboard' => true,
+                    'include' => ['copy', 'share', 'print', 'facebook', 'linkedin', 'whatsapp'],
+                    'exclude' => ['email', 'threads', 'x', 'telegram'],
+                ]) ?>
             </div>
         </div>
 
@@ -419,6 +425,7 @@ if(is_logged_in() && in_array($fcc_share_route, ['index', 'blog', 'page'], true)
         align-items: center;
         gap: 0.85rem;
         flex-wrap: wrap;
+        min-width: 0;
     }
 
     .fcc-navbar-share-row__title {
@@ -443,7 +450,13 @@ if(is_logged_in() && in_array($fcc_share_route, ['index', 'blog', 'page'], true)
     }
 
     .fcc-navbar-share-row__buttons .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 2.5rem;
+        height: 2.5rem;
         margin: 0 0.28rem 0 0;
+        padding: 0;
         border-radius: 999px;
         background: rgba(255, 255, 255, 0.04);
         border-color: rgba(255, 255, 255, 0.04);
@@ -488,32 +501,38 @@ if(is_logged_in() && in_array($fcc_share_route, ['index', 'blog', 'page'], true)
         .fcc-navbar-share-row__inner {
             flex-direction: column;
             align-items: stretch;
-            gap: 0.8rem;
-            padding: 0.88rem 1rem 0.95rem;
+            gap: 0.72rem;
+            padding: 0.8rem 1rem 0.85rem;
         }
 
         .fcc-navbar-share-row__copy {
             align-items: flex-start;
+            gap: 0.7rem;
         }
 
         .fcc-navbar-share-row__text-wrap {
             align-items: flex-start;
             flex-direction: column;
-            gap: 0.55rem;
+            gap: 0.45rem;
         }
 
         .fcc-navbar-share-row__buttons {
             display: flex;
             flex-wrap: wrap;
-            gap: 0.45rem;
+            gap: 0.4rem;
+            margin-left: 3.15rem;
         }
 
         .fcc-navbar-share-row__buttons .btn {
             margin: 0;
+            width: 2.35rem;
+            height: 2.35rem;
         }
 
         .fcc-navbar-share-row__details {
-            padding: 0 1rem 0.95rem;
+            padding: 0 1rem 0.82rem;
+            font-size: 0.84rem;
+            line-height: 1.55;
         }
 
         .fcc-navbar-shell .dropdown-menu.dropdown-menu-right,
@@ -528,15 +547,37 @@ if(is_logged_in() && in_array($fcc_share_route, ['index', 'blog', 'page'], true)
         }
 
         .fcc-navbar-share-row__inner {
-            padding: 0.85rem 0.88rem 0.9rem;
+            gap: 0.65rem;
+            padding: 0.72rem 0.82rem 0.78rem;
         }
 
         .fcc-navbar-share-row__details {
-            padding: 0 0.88rem 0.88rem;
+            padding: 0 0.82rem 0.78rem;
         }
 
         .fcc-navbar-share-row__title {
-            font-size: 0.91rem;
+            font-size: 0.84rem;
+            line-height: 1.38;
+        }
+
+        .fcc-navbar-share-row__pill {
+            padding: 0.28rem 0.54rem;
+            font-size: 0.64rem;
+        }
+
+        .fcc-navbar-share-row__info {
+            padding: 0.22rem 0.46rem;
+            font-size: 0.76rem;
+        }
+
+        .fcc-navbar-share-row__buttons {
+            margin-left: 0;
+            padding-left: 2.95rem;
+        }
+
+        .fcc-navbar-share-row__buttons .btn {
+            width: 2.2rem;
+            height: 2.2rem;
         }
     }
 </style>
