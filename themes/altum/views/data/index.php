@@ -606,11 +606,14 @@
                                     <td>
                                         <div class="fcc-contact-source">
                                             <div class="fcc-contact-source-title">
-                                                <?= $row->biolink_block_id ? string_truncate($row->settings->name ?? l('global.unknown'), 42) : l('global.unknown') ?>
+                                                <?= $row->biolink_block_id ? string_truncate($row->settings->name ?? l('global.unknown'), 42) : ($row->source_label ?: l('global.unknown')) ?>
                                             </div>
                                             <div class="fcc-contact-meta">FCC aplikacija: <?= $row->app_name ?></div>
                                             <?php if($row->preferred_contact_channel): ?>
                                                 <div class="fcc-contact-meta">Preferirani kontakt: <?= mb_strtoupper($row->preferred_contact_channel) ?></div>
+                                            <?php endif ?>
+                                            <?php if($row->source_context): ?>
+                                                <div class="fcc-contact-meta"><?= $row->source_context ?></div>
                                             <?php endif ?>
                                             <div class="fcc-contact-status-badge <?= $row->contact_status === 'ready' ? 'is-ready' : 'is-review' ?>">
                                                 <i class="fas fa-fw <?= $row->contact_status === 'ready' ? 'fa-bolt' : 'fa-exclamation-circle' ?>"></i>

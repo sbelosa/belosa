@@ -151,6 +151,8 @@ class Data extends Controller {
             $row->contact_phone = trim((string) ($row->data->phone_e164 ?? $row->data->phone ?? $row->data->whatsapp ?? $row->data->mobile ?? ''));
             $row->contact_message = trim((string) ($row->data->message ?? ''));
             $row->preferred_contact_channel = trim((string) ($row->data->preferred_contact_channel ?? ''));
+            $row->source_label = trim((string) ($row->data->source_label ?? ''));
+            $row->source_context = trim((string) ($row->data->source_context ?? ''));
             $row->contact_identity = $row->contact_name ?: ($row->contact_email ?: ($row->contact_phone ?: l('global.unknown')));
             $row->initials = mb_strtoupper(mb_substr($row->contact_identity, 0, 2));
             $contact_actions = $build_contact_actions($row->contact_phone, $row->contact_email, $row->contact_name, $row->app_name, $row->preferred_contact_channel);
@@ -164,7 +166,7 @@ class Data extends Controller {
             $row->contact_status = $row->primary_action ? 'ready' : 'needs_review';
             $row->contact_status_label = $row->primary_action ? 'Spreman za ' . $row->primary_action['label'] : 'Ručno provjeri kontakt';
 
-            $excluded_keys = ['name', 'full_name', 'first_name', 'last_name', 'email', 'phone', 'phone_e164', 'phone_country_code', 'phone_dial_code', 'whatsapp', 'mobile', 'message', 'preferred_contact_channel'];
+            $excluded_keys = ['name', 'full_name', 'first_name', 'last_name', 'email', 'phone', 'phone_e164', 'phone_country_code', 'phone_dial_code', 'whatsapp', 'mobile', 'message', 'preferred_contact_channel', 'source_label', 'source_context', 'source_page_slug', 'source_page_url', 'contact_intent'];
             $row->extra_fields = [];
             foreach((array) $row->data as $key => $value) {
                 if(in_array($key, $excluded_keys, true) || $value === '' || $value === null) {

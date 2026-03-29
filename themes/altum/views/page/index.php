@@ -9,6 +9,42 @@ $fcc_contact_title = $fcc_is_hr ? 'Kontaktirajte suradnika' : 'Contact the colla
 $fcc_info_note = $fcc_is_hr
     ? 'Napomena: Kontakt podaci pripadaju suradniku i članu Forever Card Cluba. Posjetili ste stranicu putem njegove preporuke i slobodno ga možete kontaktirati za sva pitanja.'
     : 'Note: Contact details belong to a collaborator and Forever Card Club member. You visited this page through their recommendation and can freely contact them with any questions.';
+$fcc_contact_intro = $fcc_is_hr
+    ? 'Odaberi najjednostavniji način da nastaviš dalje. Ova stranica te vodi prema informacijama o proizvodima, poslovnim informacijama ili jednostavnom nastavku razgovora sa suradnikom.'
+    : 'Choose the simplest way to continue. This page guides you toward product information, business information, or an easy next conversation with the collaborator.';
+$fcc_contact_help_title = $fcc_is_hr ? 'Kako ti mogu pomoći?' : 'How can I help?';
+$fcc_contact_product_title = $fcc_is_hr ? 'Preporuka proizvoda' : 'Product guidance';
+$fcc_contact_product_text = $fcc_is_hr
+    ? 'Ako želiš saznati više o Forever proizvodima koji te zanimaju, ovdje možeš otvoriti Forever webshop s proizvodima i nastaviti prema informacijama koje su ti važne.'
+    : 'If you want to learn more about the Forever products that interest you, you can open the Forever product webshop and continue toward the information that matters to you.';
+$fcc_contact_business_title = $fcc_is_hr ? 'Postani poslovni partner' : 'Become a business partner';
+$fcc_contact_business_text = $fcc_is_hr
+    ? 'Ako želiš postati poslovni partner Forever Living Productsa, naručiti start paket i ostvariti pristup svim benefitima Forever Card Cluba, ovdje možeš postati naš poslovni partner.'
+    : 'If you want to become a Forever Living Products business partner, order the starter package, and get access to all Forever Card Club benefits, you can start here.';
+$fcc_contact_direct_title = $fcc_is_hr ? 'Želim da mi se javi suradnik' : 'I want the collaborator to contact me';
+$fcc_contact_direct_text = $fcc_is_hr
+    ? 'Ako imaš pitanje ili želiš nastavak razgovora, ovdje možeš ostaviti svoje podatke kako bi ti se suradnik javio.'
+    : 'If you have a question or want to continue the conversation, you can leave your details here and the collaborator can get back to you.';
+$fcc_contact_app_title = $fcc_is_hr ? 'Otvori aplikaciju' : 'Open the app';
+$fcc_contact_app_text = $fcc_is_hr
+    ? 'Ako želiš ponovno pogledati preporuke, proizvode ili sadržaj suradnika, otvori njegovu aplikaciju.'
+    : 'If you want to revisit recommendations, products, or the collaborator content, open the app.';
+$fcc_contact_go_products = $fcc_is_hr ? 'Idi na preporuku proizvoda' : 'Go to product guidance';
+$fcc_contact_go_business = $fcc_is_hr ? 'Postani poslovni partner' : 'Become a business partner';
+$fcc_contact_go_direct = $fcc_is_hr ? 'Idi na kontakt' : 'Go to contact';
+$fcc_contact_open_app = $fcc_is_hr ? 'Otvori aplikaciju' : 'Open app';
+$fcc_contact_whatsapp = 'WhatsApp';
+$fcc_contact_call = $fcc_is_hr ? 'Nazovi' : 'Call';
+$fcc_contact_email = $fcc_is_hr ? 'Pošalji email' : 'Send email';
+$fcc_contact_back_to_choices = $fcc_is_hr ? 'Povratak na odabir' : 'Back to choices';
+$fcc_contact_form_title = $fcc_is_hr ? 'Pošalji upit suradniku' : 'Send your details to the collaborator';
+$fcc_contact_form_text = $fcc_is_hr ? 'Ako imaš pitanja ili želiš da te kontaktira poslovni suradnik %s putem čije preporuke si došao na FCC, ispuni podatke u nastavku.' : 'If you have questions or would like to be contacted by the business collaborator %s whose recommendation brought you to FCC, fill in your details below.';
+$fcc_contact_form_submit = $fcc_is_hr ? 'Pošalji kontakt' : 'Send contact';
+$fcc_contact_name_placeholder = $fcc_is_hr ? 'Tvoje ime i prezime' : 'Your full name';
+$fcc_contact_email_placeholder = $fcc_is_hr ? 'Tvoja email adresa' : 'Your email address';
+$fcc_contact_phone_placeholder = $fcc_is_hr ? 'Tvoj broj telefona' : 'Your phone number';
+$fcc_contact_message_placeholder = $fcc_is_hr ? 'Kratka poruka ili pitanje' : 'Short message or question';
+$fcc_contact_channel_label = $fcc_is_hr ? 'Najbrži kanal kontakta' : 'Fastest contact channel';
 /* /Custom code: FC-2026-02-26 */
 ?>
 
@@ -145,19 +181,124 @@ $fcc_info_note = $fcc_is_hr
     </section>
 
     <?php if($fcc_is_contact_page && !empty($data->collaborator_contact)): ?>
-        <!-- Custom code: FC-2026-02-26: premium collaborator contact form -->
-        <section class="fcc-collab-contact-wrap">
+        <?php
+        $fcc_contact_name = trim((string) ($data->collaborator_contact->name ?? ''));
+        $fcc_contact_email_value = trim((string) ($data->collaborator_contact->email ?? ''));
+        $fcc_contact_phone_value = trim((string) ($data->collaborator_contact->phone ?? ''));
+        $fcc_contact_forever_id = trim((string) ($data->collaborator_contact->forever_id ?? ''));
+        $fcc_contact_app_url = trim((string) ($data->collaborator_contact->aff_link ?? ''));
+        $fcc_contact_hero_image = trim((string) ($data->collaborator_contact->hero_image_url ?? ''));
+        $fcc_phone_link = $fcc_contact_phone_value ? preg_replace('/\s+/', '', $fcc_contact_phone_value) : '';
+        $fcc_whatsapp_digits = preg_replace('/\D+/', '', $fcc_contact_phone_value);
+        $fcc_whatsapp_url = $fcc_whatsapp_digits ? 'https://wa.me/' . $fcc_whatsapp_digits : '';
+        $fcc_product_url = url('blog/category/forever-proizvodi');
+        $fcc_business_url = url('blog/start-paket');
+        $fcc_country_options = $data->contact_country_options ?? [];
+        $fcc_preferred_channel = in_array($_POST['preferred_contact_channel'] ?? 'whatsapp', ['whatsapp', 'viber', 'sms', 'phone', 'email'], true) ? ($_POST['preferred_contact_channel'] ?? 'whatsapp') : 'whatsapp';
+        ?>
+        <section id="fcc-contact-top" class="fcc-collab-contact-wrap">
             <div class="fcc-collab-contact-card">
-                <div class="fcc-collab-contact-head">
-                    <h2><?= $fcc_contact_title ?></h2>
+                <div class="fcc-collab-contact-hero">
+                    <div class="fcc-collab-contact-identity">
+                        <img src="<?= $fcc_contact_hero_image ?: get_user_avatar(null, $fcc_contact_email_value ?: $fcc_contact_name) ?>" alt="<?= $fcc_contact_name ?: $fcc_contact_title ?>" class="fcc-collab-contact-avatar <?= $fcc_contact_hero_image ? 'fcc-collab-contact-avatar--hero' : null ?>" loading="lazy" />
+                        <div>
+                            <div class="fcc-collab-contact-eyebrow"><?= $fcc_is_hr ? 'Tvoj FCC kontakt' : 'Your FCC contact' ?></div>
+                            <h2><?= $fcc_contact_name ?: $fcc_contact_title ?></h2>
+                            <p><?= $fcc_contact_intro ?></p>
+                        </div>
+                    </div>
+
+                    <div class="fcc-collab-contact-pills">
+                        <?php if($fcc_contact_forever_id): ?>
+                            <span class="fcc-collab-pill">Forever ID: <?= $fcc_contact_forever_id ?></span>
+                        <?php endif ?>
+                        <span class="fcc-collab-pill"><?= $fcc_is_hr ? 'Forever Card Aplikacija' : 'Forever Card App' ?></span>
+                    </div>
                 </div>
 
-                <div class="fcc-collab-contact-details">
-                    <?php if(!empty($data->collaborator_contact->name)): ?><span><strong><?= $fcc_is_hr ? 'Ime suradnika:' : 'Collaborator name:' ?></strong> <?= $data->collaborator_contact->name ?></span><?php endif ?>
-                    <?php if(!empty($data->collaborator_contact->email)): ?><span><strong>Email:</strong> <a href="mailto:<?= $data->collaborator_contact->email ?>"><?= $data->collaborator_contact->email ?></a></span><?php endif ?>
-                    <?php if(!empty($data->collaborator_contact->phone)): ?><span><strong><?= $fcc_is_hr ? 'Telefon:' : 'Phone:' ?></strong> <a href="tel:<?= preg_replace('/\s+/', '', $data->collaborator_contact->phone) ?>"><?= $data->collaborator_contact->phone ?></a></span><?php endif ?>
-                    <?php if(!empty($data->collaborator_contact->forever_id)): ?><span><strong><?= $fcc_is_hr ? 'Forever ID:' : 'Forever ID:' ?></strong> <?= $data->collaborator_contact->forever_id ?></span><?php endif ?>
-                    <?php if(!empty($data->collaborator_contact->aff_link)): ?><span><strong><?= $fcc_is_hr ? 'Preporuka:' : 'Referral:' ?></strong> <a href="<?= $data->collaborator_contact->aff_link ?>" target="_blank" rel="noopener noreferrer"><?= $data->collaborator_contact->aff_link ?></a></span><?php endif ?>
+                <div class="fcc-collab-contact-choices">
+                    <div class="fcc-collab-contact-choices__head">
+                        <h3><?= $fcc_contact_help_title ?></h3>
+                    </div>
+
+                    <div class="fcc-collab-contact-choices__grid">
+                        <a href="<?= $fcc_product_url ?>" class="fcc-collab-choice-card">
+                            <h4><?= $fcc_contact_product_title ?></h4>
+                            <p><?= $fcc_contact_product_text ?></p>
+                            <span><?= $fcc_contact_go_products ?></span>
+                        </a>
+
+                        <a href="<?= $fcc_business_url ?>" class="fcc-collab-choice-card">
+                            <h4><?= $fcc_contact_business_title ?></h4>
+                            <p><?= $fcc_contact_business_text ?></p>
+                            <span><?= $fcc_contact_go_business ?></span>
+                        </a>
+
+                        <?php if($fcc_contact_app_url): ?>
+                            <a href="<?= $fcc_contact_app_url ?>" target="_blank" rel="noopener noreferrer" class="fcc-collab-choice-card fcc-collab-choice-card--accent">
+                                <h4><?= $fcc_contact_app_title ?></h4>
+                                <p><?= $fcc_contact_app_text ?></p>
+                                <span><?= $fcc_contact_open_app ?></span>
+                            </a>
+                        <?php endif ?>
+                    </div>
+                </div>
+
+                <div class="fcc-collab-contact-sections">
+                    <div id="fcc-contact-direct" class="fcc-collab-section">
+                        <div class="fcc-collab-section__head">
+                            <h3><?= $fcc_contact_form_title ?></h3>
+                        </div>
+                        <p><?= sprintf($fcc_contact_form_text, '<strong>' . htmlspecialchars($fcc_contact_name ?: $fcc_contact_title) . '</strong>') ?></p>
+                        <form method="post" action="#fcc-contact-direct" class="fcc-collab-form">
+                            <input type="hidden" name="token" value="<?= \Altum\Csrf::get() ?>" />
+                            <input type="hidden" name="fcc_contact_action" value="store_contact" />
+
+                            <div class="fcc-collab-form__grid">
+                                <div class="form-group">
+                                    <input type="text" class="form-control" name="name" maxlength="64" required="required" placeholder="<?= $fcc_contact_name_placeholder ?>" value="<?= input_clean($_POST['name'] ?? '', 64) ?>" />
+                                </div>
+
+                                <div class="form-group">
+                                    <input type="email" class="form-control" name="email" maxlength="320" required="required" placeholder="<?= $fcc_contact_email_placeholder ?>" value="<?= input_clean($_POST['email'] ?? '', 320) ?>" />
+                                </div>
+                            </div>
+
+                            <div class="fcc-collab-form__grid fcc-collab-form__grid--contact">
+                                <div class="form-group">
+                                    <select class="custom-select" name="phone_country_code" required="required">
+                                        <?php foreach($fcc_country_options as $country_code => $country_label): ?>
+                                            <option value="<?= $country_code ?>" <?= ($country_code === ($_POST['phone_country_code'] ?? 'HR')) ? 'selected="selected"' : null ?>><?= $country_label ?></option>
+                                        <?php endforeach ?>
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <input type="tel" inputmode="tel" class="form-control" name="phone" maxlength="32" required="required" placeholder="<?= $fcc_contact_phone_placeholder ?>" value="<?= input_clean($_POST['phone'] ?? '', 32) ?>" />
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <div class="fcc-collab-channel-label"><?= $fcc_contact_channel_label ?></div>
+                                <div class="fcc-collab-channels" role="radiogroup" aria-label="<?= $fcc_contact_channel_label ?>">
+                                    <?php foreach(['whatsapp' => 'WhatsApp', 'viber' => 'Viber', 'sms' => 'SMS', 'phone' => ($fcc_is_hr ? 'Poziv' : 'Call'), 'email' => 'Email'] as $channel_key => $channel_label): ?>
+                                        <label class="mb-0">
+                                            <input type="radio" class="fcc-collab-channel-radio" name="preferred_contact_channel" value="<?= $channel_key ?>" <?= $channel_key === $fcc_preferred_channel ? 'checked="checked"' : null ?> />
+                                            <span class="fcc-collab-channel-chip"><?= $channel_label ?></span>
+                                        </label>
+                                    <?php endforeach ?>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <textarea class="form-control" name="message" maxlength="512" rows="4" placeholder="<?= $fcc_contact_message_placeholder ?>"><?= input_clean($_POST['message'] ?? '', 512) ?></textarea>
+                            </div>
+
+                            <div class="fcc-collab-section__actions">
+                                <button type="submit" class="btn btn-primary"><?= $fcc_contact_form_submit ?></button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
 
                 <small class="fcc-collab-note"><?= $fcc_info_note ?></small>
@@ -742,22 +883,199 @@ $fcc_info_note = $fcc_is_hr
     }
 
     .fcc-collab-contact-card {
+        position: relative;
+        overflow: hidden;
         background: linear-gradient(160deg, rgba(16, 22, 31, 0.95), rgba(8, 12, 18, 0.98));
         border: 1px solid rgba(255, 255, 255, 0.08);
-        border-radius: 20px;
-        box-shadow: 0 18px 42px rgba(0, 0, 0, 0.38);
+        border-radius: 24px;
+        box-shadow: 0 22px 52px rgba(0, 0, 0, 0.4);
         padding: 28px;
     }
 
-    .fcc-collab-contact-head h2 {
+    .fcc-collab-contact-card::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background:
+            radial-gradient(circle at top left, rgba(63, 216, 161, 0.08), transparent 28%),
+            radial-gradient(circle at bottom right, rgba(74, 167, 255, 0.08), transparent 24%);
+        pointer-events: none;
+    }
+
+    .fcc-collab-contact-hero,
+    .fcc-collab-contact-choices,
+    .fcc-collab-contact-sections,
+    .fcc-collab-note {
+        position: relative;
+    }
+
+    .fcc-collab-contact-hero {
+        display: grid;
+        grid-template-columns: minmax(0, 1.2fr) minmax(220px, 0.8fr);
+        gap: 18px;
+        margin-bottom: 24px;
+    }
+
+    .fcc-collab-contact-identity {
+        display: flex;
+        align-items: flex-start;
+        gap: 18px;
+    }
+
+    .fcc-collab-contact-avatar {
+        width: 108px;
+        height: 108px;
+        border-radius: 22px;
+        object-fit: cover;
+        border: 2px solid rgba(104, 232, 188, 0.18);
+        box-shadow: 0 10px 24px rgba(0, 0, 0, 0.22);
+    }
+
+    .fcc-collab-contact-avatar--hero {
+        width: 136px;
+        height: 136px;
+        border-radius: 24px;
+    }
+
+    .fcc-collab-contact-eyebrow {
+        display: inline-flex;
+        align-items: center;
+        margin-bottom: 10px;
+        padding: 0.28rem 0.7rem;
+        border-radius: 999px;
+        font-size: 0.72rem;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: rgba(104, 232, 188, 0.92);
+        background: rgba(104, 232, 188, 0.08);
+        border: 1px solid rgba(104, 232, 188, 0.12);
+    }
+
+    .fcc-collab-contact-identity h2,
+    .fcc-collab-contact-choices__head h3,
+    .fcc-collab-section__head h3 {
         color: rgba(255, 255, 255, 0.94);
         margin-bottom: 8px;
     }
 
-    .fcc-collab-contact-head p,
+    .fcc-collab-contact-identity p,
+    .fcc-collab-choice-card p,
+    .fcc-collab-section p,
     .fcc-collab-note {
-        color: rgba(255, 255, 255, 0.66);
-        line-height: 1.6;
+        color: rgba(255, 255, 255, 0.7);
+        line-height: 1.65;
+    }
+
+    .fcc-collab-contact-pills {
+        display: flex;
+        flex-wrap: wrap;
+        align-content: flex-start;
+        justify-content: flex-end;
+        gap: 0.6rem;
+    }
+
+    .fcc-collab-pill {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 2rem;
+        padding: 0.38rem 0.72rem;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        color: rgba(240, 244, 251, 0.9);
+        font-size: 0.78rem;
+        font-weight: 700;
+    }
+
+    .fcc-collab-contact-choices {
+        margin-bottom: 22px;
+    }
+
+    .fcc-collab-contact-choices__head {
+        margin-bottom: 14px;
+    }
+
+    .fcc-collab-contact-choices__grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 16px;
+    }
+
+    .fcc-collab-choice-card {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        min-height: 210px;
+        padding: 20px;
+        border-radius: 22px;
+        text-decoration: none !important;
+        color: inherit;
+        background: radial-gradient(140% 140% at 0% 0%, rgba(104, 232, 188, 0.08), transparent 55%), rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(140, 255, 221, 0.1);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+        transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .fcc-collab-choice-card:hover,
+    .fcc-collab-choice-card:focus {
+        transform: translateY(-2px);
+        border-color: rgba(104, 232, 188, 0.22);
+        background: radial-gradient(140% 140% at 0% 0%, rgba(104, 232, 188, 0.12), transparent 55%), rgba(104, 232, 188, 0.05);
+        box-shadow: 0 18px 40px rgba(0, 0, 0, 0.18);
+    }
+
+    .fcc-collab-choice-card *,
+    .fcc-collab-choice-card:hover *,
+    .fcc-collab-choice-card:focus * {
+        text-decoration: none !important;
+    }
+
+    .fcc-collab-choice-card h4 {
+        margin-bottom: 0;
+        color: #f5f7ff;
+        font-size: 1.08rem;
+        line-height: 1.3;
+    }
+
+    .fcc-collab-choice-card span {
+        margin-top: auto;
+        color: #bff8eb;
+        font-weight: 700;
+        font-size: 0.78rem;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+    }
+
+    .fcc-collab-choice-card--accent {
+        background: radial-gradient(140% 140% at 0% 0%, rgba(104, 232, 188, 0.12), transparent 55%), rgba(104, 232, 188, 0.06);
+        border-color: rgba(104, 232, 188, 0.18);
+    }
+
+    .fcc-collab-contact-sections {
+        display: grid;
+        gap: 14px;
+    }
+
+    .fcc-collab-section {
+        border-radius: 18px;
+        padding: 18px;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .fcc-collab-section__head {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin-bottom: 10px;
+    }
+
+    .fcc-collab-section__actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        margin-top: 14px;
     }
 
     .fcc-collab-contact-details {
@@ -768,6 +1086,88 @@ $fcc_info_note = $fcc_is_hr
         font-size: 0.98rem;
     }
 
+    .fcc-collab-form {
+        margin-top: 6px;
+    }
+
+    .fcc-collab-form__grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+    }
+
+    .fcc-collab-form__grid--contact {
+        margin-top: 4px;
+    }
+
+    .fcc-collab-form .form-control,
+    .fcc-collab-form .custom-select {
+        min-height: 3.15rem;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.04);
+        color: rgba(255, 255, 255, 0.9);
+        box-shadow: none;
+    }
+
+    .fcc-collab-form textarea.form-control {
+        min-height: 7rem;
+        resize: vertical;
+    }
+
+    .fcc-collab-form .form-control::placeholder {
+        color: rgba(255, 255, 255, 0.46);
+    }
+
+    .fcc-collab-channel-label {
+        margin-bottom: 8px;
+        color: rgba(255, 255, 255, 0.74);
+        font-size: 0.84rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+    }
+
+    .fcc-collab-channels {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.55rem;
+    }
+
+    .fcc-collab-channel-radio {
+        position: absolute;
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    .fcc-collab-channel-chip {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 5.6rem;
+        padding: 0.58rem 0.92rem;
+        border-radius: 999px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.05);
+        color: rgba(240, 244, 251, 0.9);
+        font-size: 0.86rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all .2s ease;
+    }
+
+    .fcc-collab-channel-radio:checked + .fcc-collab-channel-chip {
+        background: #2ed3c6;
+        border-color: #2ed3c6;
+        color: #05292c;
+        box-shadow: 0 .5rem 1.2rem rgba(46, 211, 198, .18);
+    }
+
+    .fcc-collab-note--inline {
+        display: block;
+        margin-top: 10px;
+    }
+
     .fcc-collab-contact-details a {
         color: #7cf7c7;
         text-decoration: none;
@@ -776,6 +1176,31 @@ $fcc_info_note = $fcc_is_hr
     @media (max-width: 768px) {
         .fcc-collab-contact-card {
             padding: 18px;
+        }
+
+        .fcc-collab-contact-hero {
+            grid-template-columns: 1fr;
+        }
+
+        .fcc-collab-contact-identity {
+            flex-direction: column;
+        }
+
+        .fcc-collab-contact-choices__grid {
+            grid-template-columns: 1fr;
+        }
+
+        .fcc-collab-form__grid {
+            grid-template-columns: 1fr;
+        }
+
+        .fcc-collab-contact-pills {
+            justify-content: flex-start;
+        }
+
+        .fcc-collab-section__head {
+            flex-direction: column;
+            align-items: flex-start;
         }
     }
     /* /Custom code: FC-2026-02-26 */

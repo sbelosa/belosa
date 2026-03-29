@@ -24,6 +24,112 @@ defined('ALTUMCODE') || die();
 
 class Page extends Controller {
 
+    private function resolve_hero_image_url_for_link(?int $link_id): ?string {
+        if(!$link_id) {
+            return null;
+        }
+
+        $hero_block = db()->where('link_id', $link_id)
+            ->where('is_enabled', 1)
+            ->where('type', ['header', 'avatar', 'image'], 'IN')
+            ->orderBy('`order`', 'ASC')
+            ->getOne('biolinks_blocks', ['type', 'settings']);
+
+        if(!$hero_block) {
+            return null;
+        }
+
+        $hero_block->settings = json_decode($hero_block->settings ?? '');
+
+        if($hero_block->type === 'header' && !empty($hero_block->settings->avatar)) {
+            return \Altum\Uploads::get_full_url('avatars') . $hero_block->settings->avatar;
+        }
+
+        if($hero_block->type === 'avatar' && !empty($hero_block->settings->image)) {
+            return \Altum\Uploads::get_full_url('avatars') . $hero_block->settings->image;
+        }
+
+        if($hero_block->type === 'image' && !empty($hero_block->settings->image)) {
+            return \Altum\Uploads::get_full_url('block_images') . $hero_block->settings->image;
+        }
+
+        return null;
+    }
+
+    private function get_factory_biolink_template_link_id(): ?int {
+        $template = null;
+
+        if(settings()->links->default_biolink_template_id) {
+            $template = db()->where('is_enabled', 1)->where('biolink_template_id', settings()->links->default_biolink_template_id)->getOne('biolinks_templates', ['link_id']);
+        }
+
+        if(!$template) {
+            $template = db()->where('is_enabled', 1)->where('link_id', 83)->getOne('biolinks_templates', ['link_id']);
+        }
+
+        if(!$template) {
+            $template = db()->where('is_enabled', 1)->where('biolink_template_id', 1)->getOne('biolinks_templates', ['link_id']);
+        }
+
+        if(!$template) {
+            $template = db()->where('is_enabled', 1)->orderBy('biolink_template_id', 'ASC')->getOne('biolinks_templates', ['link_id']);
+        }
+
+        return $template ? (int) $template->link_id : null;
+    }
+
+    private function get_contact_phone_country_options(): array {
+        $country_options = [];
+
+        foreach(get_contact_phone_country_options_array() as $country_code => $country_label) {
+            $country_options[$country_code] = [
+                'name' => $country_label,
+                'dial_code' => get_contact_phone_dial_codes_array()[$country_code] ?? '',
+            ];
+        }
+
+        return $country_options;
+    }
+
+    private function normalize_contact_phone(string $phone, ?string $country_code = null): array {
+        $country_code = mb_strtoupper(trim((string) $country_code));
+        $country_options = $this->get_contact_phone_country_options();
+        $country_code = array_key_exists($country_code, $country_options) ? $country_code : 'HR';
+        $dial_code = $country_options[$country_code]['dial_code'] ?? '';
+
+        $raw_digits = preg_replace('/\D+/', '', $phone);
+        $trimmed_digits = ltrim($raw_digits, '0');
+
+        if(!$trimmed_digits) {
+            return [
+                'raw' => trim($phone),
+                'country_code' => $country_code,
+                'dial_code' => $dial_code,
+                'local' => '',
+                'e164' => '',
+                'is_valid' => false,
+            ];
+        }
+
+        if($dial_code && str_starts_with($raw_digits, $dial_code)) {
+            $trimmed_digits = $raw_digits;
+        } elseif($dial_code) {
+            $trimmed_digits = $dial_code . $trimmed_digits;
+        }
+
+        $e164 = '+' . $trimmed_digits;
+        $is_valid = mb_strlen($trimmed_digits) >= 8 && mb_strlen($trimmed_digits) <= 15;
+
+        return [
+            'raw' => trim($phone),
+            'country_code' => $country_code,
+            'dial_code' => $dial_code,
+            'local' => $raw_digits,
+            'e164' => $e164,
+            'is_valid' => $is_valid,
+        ];
+    }
+
     public function index() {
 
         if(!settings()->content->pages_is_enabled) {
@@ -547,7 +653,109 @@ class Page extends Controller {
                 'phone' => $shortcodes->generate_shorcode('phone', null) ?? '',
                 'forever_id' => $shortcodes->generate_shorcode('forever_id', null) ?? '',
                 'aff_link' => $collaborator_aff_url,
+                'hero_image_url' => null,
+                'user_id' => null,
+                'main_link_id' => null,
+                'project_id' => null,
             ];
+
+            $collaborator_user = null;
+            $main_biolink = null;
+
+            if($collaborator_aff_url) {
+                $aff_path = trim((string) parse_url($collaborator_aff_url, PHP_URL_PATH), '/');
+
+                if($aff_path) {
+                    $main_biolink = db()->where('url', $aff_path)->where('type', 'biolink')->getOne('links', ['link_id', 'user_id', 'project_id', 'url']);
+                }
+            }
+
+            if(!$main_biolink && $collaborator_contact->email) {
+                $collaborator_user = db()->where('email', $collaborator_contact->email)->getOne('users', ['user_id', 'name', 'email']);
+
+                if($collaborator_user) {
+                    $main_biolink_map = db()->where('user_id', $collaborator_user->user_id)->getOne('users_biolinks', ['biolink_id']);
+
+                    if($main_biolink_map && !empty($main_biolink_map->biolink_id)) {
+                        $main_biolink = db()->where('link_id', $main_biolink_map->biolink_id)->where('type', 'biolink')->getOne('links', ['link_id', 'user_id', 'project_id', 'url']);
+                    }
+
+                    if(!$main_biolink) {
+                        $main_biolink = db()->where('user_id', $collaborator_user->user_id)->where('type', 'biolink')->orderBy('link_id', 'ASC')->getOne('links', ['link_id', 'user_id', 'project_id', 'url']);
+                    }
+                }
+            }
+
+            if($main_biolink && empty($collaborator_contact->aff_link)) {
+                $collaborator_contact->aff_link = SITE_URL . ltrim($main_biolink->url, '/');
+            }
+
+            if($main_biolink) {
+                $collaborator_contact->user_id = (int) $main_biolink->user_id;
+                $collaborator_contact->main_link_id = (int) $main_biolink->link_id;
+                $collaborator_contact->project_id = (int) $main_biolink->project_id;
+                $collaborator_contact->hero_image_url = $this->resolve_hero_image_url_for_link($main_biolink->link_id);
+            }
+
+            if(empty($collaborator_contact->hero_image_url)) {
+                $collaborator_contact->hero_image_url = $this->resolve_hero_image_url_for_link($this->get_factory_biolink_template_link_id());
+            }
+
+            if(!empty($_POST['fcc_contact_action']) && $_POST['fcc_contact_action'] === 'store_contact') {
+                if(!\Altum\Csrf::check()) {
+                    \Altum\Alerts::add_error(l('global.error_message.invalid_csrf_token'));
+                } elseif(empty($collaborator_contact->user_id) || empty($collaborator_contact->main_link_id)) {
+                    \Altum\Alerts::add_error(l('global.error_message.basic'));
+                } else {
+                    $_POST['name'] = input_clean($_POST['name'] ?? '', 64);
+                    $_POST['email'] = input_clean_email($_POST['email'] ?? '');
+                    $_POST['phone'] = input_clean($_POST['phone'] ?? '', 32);
+                    $_POST['phone_country_code'] = input_clean($_POST['phone_country_code'] ?? 'HR', 8);
+                    $_POST['preferred_contact_channel'] = input_clean($_POST['preferred_contact_channel'] ?? 'whatsapp', 32);
+                    $_POST['message'] = input_clean($_POST['message'] ?? '', 512);
+
+                    if(!$_POST['name'] || !$_POST['email'] || !$_POST['phone']) {
+                        \Altum\Alerts::add_error(l('global.error_message.empty_fields'));
+                    } else {
+                        $normalized_phone = $this->normalize_contact_phone($_POST['phone'], $_POST['phone_country_code']);
+
+                        if(!$normalized_phone['is_valid']) {
+                            \Altum\Alerts::add_error(l('global.error_message.empty_fields'));
+                        } else {
+                            $contact_data = [
+                                'name' => $_POST['name'],
+                                'email' => $_POST['email'],
+                                'phone' => $_POST['phone'],
+                                'phone_country_code' => $_POST['phone_country_code'],
+                                'preferred_contact_channel' => $_POST['preferred_contact_channel'],
+                                'phone_e164' => $normalized_phone['e164'],
+                                'phone_dial_code' => $normalized_phone['dial_code'],
+                                'message' => $_POST['message'],
+                                'source_label' => Language::$code === 'hr' ? 'Kontakt stranica suradnika' : 'Collaborator contact page',
+                                'source_context' => Language::$code === 'hr' ? 'FCC kontakt handoff' : 'FCC contact handoff',
+                                'source_page_slug' => $page->url,
+                                'source_page_url' => $page_url,
+                                'contact_intent' => 'direct_contact',
+                            ];
+
+                            db()->insert('data', [
+                                'biolink_block_id' => null,
+                                'link_id' => $collaborator_contact->main_link_id,
+                                'project_id' => $collaborator_contact->project_id,
+                                'user_id' => $collaborator_contact->user_id,
+                                'type' => 'contact_collector',
+                                'data' => json_encode($contact_data),
+                                'datetime' => get_date(),
+                            ]);
+
+                            \Altum\Alerts::add_success(Language::$code === 'hr' ? 'Kontakt je spremljen i proslijeđen suradniku.' : 'Your contact has been saved and sent to the collaborator.');
+
+                            $page_route = ($page->language ? ((\Altum\Language::$active_languages[$page->language] ?? null) ? \Altum\Language::$active_languages[$page->language] . '/' : null) : null) . 'page/' . $page->url;
+                            redirect($page_route . '?contact_saved=1#fcc-contact-direct');
+                        }
+                    }
+                }
+            }
         }
         /* /Custom code: FC-2026-02-26 */
 
@@ -556,6 +764,7 @@ class Page extends Controller {
             'page'  => $page,
             'pages_category' => $pages_category,
             'collaborator_contact' => $collaborator_contact,
+            'contact_country_options' => get_contact_phone_country_options_array(),
             /* Custom code: FC-2026-03-24: strengthen foreverclub page hub SEO and internal linking */
             'is_foreverclub_page' => $is_foreverclub_page,
             'foreverclub_semantics' => $foreverclub_semantics,
