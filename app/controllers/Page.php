@@ -762,7 +762,7 @@ class Page extends Controller {
             if($main_biolink) {
                 $collaborator_contact->user_id = (int) $main_biolink->user_id;
                 $collaborator_contact->main_link_id = (int) $main_biolink->link_id;
-                $collaborator_contact->project_id = (int) $main_biolink->project_id;
+                $collaborator_contact->project_id = isset($main_biolink->project_id) && $main_biolink->project_id !== null ? (int) $main_biolink->project_id : null;
                 $collaborator_contact->hero_image_url = $this->resolve_hero_image_url_for_link($main_biolink->link_id);
 
                 $contact_block = db()->where('link_id', $main_biolink->link_id)
@@ -833,7 +833,7 @@ class Page extends Controller {
                             $datum_id = db()->insert('data', [
                                 'biolink_block_id' => $collaborator_contact->contact_biolink_block_id ?: null,
                                 'link_id' => $collaborator_contact->main_link_id,
-                                'project_id' => $collaborator_contact->project_id,
+                                'project_id' => $collaborator_contact->project_id ?: null,
                                 'user_id' => $collaborator_contact->user_id,
                                 'type' => $contact_type,
                                 'data' => json_encode($contact_data),
