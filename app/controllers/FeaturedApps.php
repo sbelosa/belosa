@@ -180,6 +180,8 @@ class FeaturedApps extends Controller {
         $forever_shop_block_types_sql = "'" . implode("','", $forever_shop_block_types) . "'";
 
         $featured_apps = [];
+        $seen_featured_user_ids = [];
+        $seen_featured_link_ids = [];
 
         $qualified_apps_result = database()->query("
             SELECT
@@ -227,9 +229,20 @@ class FeaturedApps extends Controller {
 
         while($row = $qualified_apps_result->fetch_object()) {
             $link_id = (int) ($row->link_id ?? 0);
-            if(!$link_id || empty($row->url)) {
+            $user_id = (int) ($row->user_id ?? 0);
+
+            if(
+                !$link_id
+                || !$user_id
+                || empty($row->url)
+                || isset($seen_featured_link_ids[$link_id])
+                || isset($seen_featured_user_ids[$user_id])
+            ) {
                 continue;
             }
+
+            $seen_featured_link_ids[$link_id] = true;
+            $seen_featured_user_ids[$user_id] = true;
 
             $has_custom_domain = !empty($row->domain_id) && !empty($row->host) && !empty($row->scheme);
             $app_url = $has_custom_domain
@@ -239,7 +252,7 @@ class FeaturedApps extends Controller {
             $feature_labels = $this->get_case_study_feature_labels($link_id);
 
             $featured_apps[] = [
-                'user_id' => (int) ($row->user_id ?? 0),
+                'user_id' => $user_id,
                 'name' => (string) ($row->name ?? l('global.unknown')),
                 'email' => (string) ($row->email ?? ''),
                 'avatar' => (string) ($row->avatar ?? ''),
