@@ -656,6 +656,7 @@ class Page extends Controller {
                 'hero_image_url' => null,
                 'user_id' => null,
                 'main_link_id' => null,
+                'contact_biolink_block_id' => null,
                 'project_id' => null,
             ];
 
@@ -695,6 +696,16 @@ class Page extends Controller {
                 $collaborator_contact->main_link_id = (int) $main_biolink->link_id;
                 $collaborator_contact->project_id = (int) $main_biolink->project_id;
                 $collaborator_contact->hero_image_url = $this->resolve_hero_image_url_for_link($main_biolink->link_id);
+
+                $contact_block = db()->where('link_id', $main_biolink->link_id)
+                    ->where('is_enabled', 1)
+                    ->where('type', ['contact_collector', 'phone_collector', 'email_collector', 'lead_funnel'], 'IN')
+                    ->orderBy('`order`', 'ASC')
+                    ->getOne('biolinks_blocks', ['biolink_block_id', 'type']);
+
+                if($contact_block) {
+                    $collaborator_contact->contact_biolink_block_id = (int) $contact_block->biolink_block_id;
+                }
             }
 
             if(empty($collaborator_contact->hero_image_url)) {
@@ -739,7 +750,7 @@ class Page extends Controller {
                             ];
 
                             db()->insert('data', [
-                                'biolink_block_id' => null,
+                                'biolink_block_id' => $collaborator_contact->contact_biolink_block_id ?: null,
                                 'link_id' => $collaborator_contact->main_link_id,
                                 'project_id' => $collaborator_contact->project_id,
                                 'user_id' => $collaborator_contact->user_id,

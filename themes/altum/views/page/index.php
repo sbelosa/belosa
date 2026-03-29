@@ -49,6 +49,8 @@ $fcc_contact_channel_label = $fcc_is_hr ? 'Najbrži kanal kontakta' : 'Fastest c
 ?>
 
 <div class="container">
+    <?= \Altum\Alerts::output_alerts() ?>
+
     <?php if(settings()->main->breadcrumbs_is_enabled): ?>
         <nav aria-label="breadcrumb">
             <ol class="custom-breadcrumbs small">
