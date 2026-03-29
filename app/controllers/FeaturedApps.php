@@ -12,6 +12,38 @@ defined('ALTUMCODE') || die();
 
 class FeaturedApps extends Controller {
 
+    private function resolve_display_image_for_link(?int $link_id): ?string {
+        if(!$link_id) {
+            return null;
+        }
+
+        $hero_block = db()->where('link_id', $link_id)
+            ->where('is_enabled', 1)
+            ->where('type', ['header', 'avatar', 'image'], 'IN')
+            ->orderBy('`order`', 'ASC')
+            ->getOne('biolinks_blocks', ['type', 'settings']);
+
+        if(!$hero_block) {
+            return null;
+        }
+
+        $hero_block->settings = json_decode($hero_block->settings ?? '');
+
+        if($hero_block->type === 'header' && !empty($hero_block->settings->avatar)) {
+            return \Altum\Uploads::get_full_url('avatars') . $hero_block->settings->avatar;
+        }
+
+        if($hero_block->type === 'avatar' && !empty($hero_block->settings->image)) {
+            return \Altum\Uploads::get_full_url('avatars') . $hero_block->settings->image;
+        }
+
+        if($hero_block->type === 'image' && !empty($hero_block->settings->image)) {
+            return \Altum\Uploads::get_full_url('block_images') . $hero_block->settings->image;
+        }
+
+        return null;
+    }
+
     private function ensure_featured_app_columns(): void {
         $required_columns = [
             'fcc_featured_opt_in' => "ALTER TABLE `links` ADD COLUMN `fcc_featured_opt_in` TINYINT(1) NOT NULL DEFAULT 1",
@@ -256,6 +288,9 @@ class FeaturedApps extends Controller {
                 'name' => (string) ($row->name ?? l('global.unknown')),
                 'email' => (string) ($row->email ?? ''),
                 'avatar' => (string) ($row->avatar ?? ''),
+                'display_image_url' => $this->resolve_display_image_for_link($link_id),
+                'default_image_url' => SITE_URL . 'uploads/logo/forever.png',
+                'generated_avatar_url' => get_user_avatar(null, (string) ($row->email ?? ($row->name ?? ''))),
                 'app_url' => $app_url,
                 'shop_clicks' => (int) ($row->shop_clicks ?? 0),
                 'public_market' => $this->get_default_public_market($row),

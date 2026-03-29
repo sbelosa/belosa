@@ -30,7 +30,15 @@
                     <article class="featured-app-card card border-0 shadow-sm h-100">
                         <div class="card-body d-flex flex-column">
                             <div class="d-flex align-items-center mb-3">
-                                <img src="<?= get_user_avatar($app['avatar'], $app['email']) ?>" alt="<?= $app['name'] ?>" class="rounded-circle mr-3 featured-app-card__avatar" loading="lazy" />
+                                <img
+                                    src="<?= $app['display_image_url'] ?: $app['default_image_url'] ?>"
+                                    alt="<?= $app['name'] ?>"
+                                    class="rounded-circle mr-3 featured-app-card__avatar"
+                                    loading="lazy"
+                                    data-default-image="<?= htmlspecialchars($app['default_image_url'], ENT_QUOTES, 'UTF-8') ?>"
+                                    data-avatar-image="<?= htmlspecialchars($app['generated_avatar_url'], ENT_QUOTES, 'UTF-8') ?>"
+                                    onerror="if(!this.dataset.fallbackStep){this.dataset.fallbackStep='default';this.src=this.dataset.defaultImage;return;}if(this.dataset.fallbackStep==='default'){this.dataset.fallbackStep='avatar';this.src=this.dataset.avatarImage;return;}this.onerror=null;"
+                                />
                                 <div class="min-width-0">
                                     <div class="font-weight-bold text-truncate"><?= $app['name'] ?></div>
                                     <div class="small text-muted"><?= l('featured_apps.card_label') ?></div>
