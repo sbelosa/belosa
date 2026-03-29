@@ -191,6 +191,7 @@ $fcc_contact_channel_label = $fcc_is_hr ? 'Najbrži kanal kontakta' : 'Fastest c
         $fcc_contact_app_url = trim((string) ($data->collaborator_contact->aff_link ?? ''));
         $fcc_contact_hero_image = trim((string) ($data->collaborator_contact->hero_image_url ?? ''));
         $fcc_contact_default_image = SITE_URL . 'uploads/logo/forever.png';
+        $fcc_contact_generated_avatar = get_user_avatar(null, $fcc_contact_email_value ?: $fcc_contact_name);
         $fcc_contact_display_image = $fcc_contact_hero_image ?: $fcc_contact_default_image;
         $fcc_phone_link = $fcc_contact_phone_value ? preg_replace('/\s+/', '', $fcc_contact_phone_value) : '';
         $fcc_whatsapp_digits = preg_replace('/\D+/', '', $fcc_contact_phone_value);
@@ -204,7 +205,15 @@ $fcc_contact_channel_label = $fcc_is_hr ? 'Najbrži kanal kontakta' : 'Fastest c
             <div class="fcc-collab-contact-card">
                 <div class="fcc-collab-contact-hero">
                     <div class="fcc-collab-contact-identity">
-                        <img src="<?= $fcc_contact_display_image ?>" alt="<?= $fcc_contact_name ?: $fcc_contact_title ?>" class="fcc-collab-contact-avatar <?= $fcc_contact_hero_image ? 'fcc-collab-contact-avatar--hero' : 'fcc-collab-contact-avatar--default' ?>" loading="lazy" />
+                        <img
+                            src="<?= $fcc_contact_display_image ?>"
+                            alt="<?= $fcc_contact_name ?: $fcc_contact_title ?>"
+                            class="fcc-collab-contact-avatar <?= $fcc_contact_hero_image ? 'fcc-collab-contact-avatar--hero' : 'fcc-collab-contact-avatar--default' ?>"
+                            loading="lazy"
+                            data-default-image="<?= htmlspecialchars($fcc_contact_default_image, ENT_QUOTES, 'UTF-8') ?>"
+                            data-avatar-image="<?= htmlspecialchars($fcc_contact_generated_avatar, ENT_QUOTES, 'UTF-8') ?>"
+                            onerror="if(!this.dataset.fallbackStep){this.dataset.fallbackStep='default';this.src=this.dataset.defaultImage;this.classList.remove('fcc-collab-contact-avatar--hero');this.classList.add('fcc-collab-contact-avatar--default');return;}if(this.dataset.fallbackStep==='default'){this.dataset.fallbackStep='avatar';this.src=this.dataset.avatarImage;return;}this.onerror=null;"
+                        />
                         <div>
                             <div class="fcc-collab-contact-eyebrow"><?= $fcc_is_hr ? 'Tvoj FCC kontakt' : 'Your FCC contact' ?></div>
                             <h2><?= $fcc_contact_name ?: $fcc_contact_title ?></h2>
