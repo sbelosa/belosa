@@ -93,51 +93,6 @@ if(!is_object($account_meta)) {
                     </div>
                     <!-- /Custom code: FC-2026-03-05 -->
 
-                    <div class="border rounded p-3 mb-3">
-                        <h2 class="h6 mb-2"><?= l('account.settings.featured_apps_header') ?></h2>
-                        <p class="small text-muted mb-3"><?= l('account.settings.featured_apps_subheader') ?></p>
-
-                        <div class="form-group custom-control custom-switch mb-3">
-                            <input id="fcc_featured_opt_in" name="fcc_featured_opt_in" type="checkbox" class="custom-control-input" <?= !empty($this->user->fcc_featured_opt_in) ? 'checked="checked"' : null ?>>
-                            <label class="custom-control-label" for="fcc_featured_opt_in"><?= l('account.settings.featured_apps_opt_in') ?></label>
-                            <small class="form-text text-muted"><?= l('account.settings.featured_apps_opt_in_help') ?></small>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-12 col-lg-6">
-                                <div class="form-group">
-                                    <label for="fcc_featured_public_market"><i class="fas fa-fw fa-sm fa-globe-europe text-muted mr-1"></i> <?= l('account.settings.featured_apps_market') ?></label>
-                                    <input type="text" id="fcc_featured_public_market" name="fcc_featured_public_market" class="form-control" value="<?= $_POST['fcc_featured_public_market'] ?? ($this->user->fcc_featured_public_market ?? '') ?>" maxlength="64" />
-                                    <small class="form-text text-muted"><?= l('account.settings.featured_apps_market_help') ?></small>
-                                </div>
-                            </div>
-
-                            <div class="col-12 col-lg-6">
-                                <div class="form-group">
-                                    <label for="fcc_featured_public_use_case"><i class="fas fa-fw fa-sm fa-briefcase text-muted mr-1"></i> <?= l('account.settings.featured_apps_use_case') ?></label>
-                                    <input type="text" id="fcc_featured_public_use_case" name="fcc_featured_public_use_case" class="form-control" value="<?= $_POST['fcc_featured_public_use_case'] ?? ($this->user->fcc_featured_public_use_case ?? '') ?>" maxlength="128" />
-                                    <small class="form-text text-muted"><?= l('account.settings.featured_apps_use_case_help') ?></small>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="form-group mb-0">
-                            <label for="fcc_featured_public_summary"><i class="fas fa-fw fa-sm fa-align-left text-muted mr-1"></i> <?= l('account.settings.featured_apps_summary') ?></label>
-                            <textarea id="fcc_featured_public_summary" name="fcc_featured_public_summary" class="form-control" rows="4" maxlength="512"><?= $_POST['fcc_featured_public_summary'] ?? ($this->user->fcc_featured_public_summary ?? '') ?></textarea>
-                            <small class="form-text text-muted"><?= l('account.settings.featured_apps_summary_help') ?></small>
-                        </div>
-
-                        <div class="mt-3 small">
-                            <?php if(!empty($this->user->fcc_featured_opt_in) && !empty($this->user->fcc_featured_is_approved)): ?>
-                                <div class="alert alert-success py-2 mb-0"><?= l('account.settings.featured_apps_status_approved') ?></div>
-                            <?php elseif(!empty($this->user->fcc_featured_opt_in)): ?>
-                                <div class="alert alert-light border py-2 mb-0"><?= l('account.settings.featured_apps_status_pending') ?></div>
-                            <?php else: ?>
-                                <div class="alert alert-light border py-2 mb-0"><?= l('account.settings.featured_apps_status_private') ?></div>
-                            <?php endif ?>
-                        </div>
-                    </div>
-
                     <div class="form-group">
                         <label for="timezone"><i class="fas fa-fw fa-sm fa-user-clock text-muted mr-1"></i> <?= l('account.settings.timezone') ?></label>
                         <select id="timezone" name="timezone" class="custom-select">

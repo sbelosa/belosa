@@ -23,13 +23,177 @@ defined('ALTUMCODE') || die();
 
 class Links extends Controller {
 
+    private function ensure_featured_app_columns(): void {
+        $required_columns = [
+            'fcc_featured_opt_in' => "ALTER TABLE `links` ADD COLUMN `fcc_featured_opt_in` TINYINT(1) NOT NULL DEFAULT 1",
+            'fcc_featured_is_approved' => "ALTER TABLE `links` ADD COLUMN `fcc_featured_is_approved` TINYINT(1) NOT NULL DEFAULT 1",
+            'fcc_featured_public_market' => "ALTER TABLE `links` ADD COLUMN `fcc_featured_public_market` VARCHAR(64) NULL DEFAULT NULL",
+            'fcc_featured_public_use_case' => "ALTER TABLE `links` ADD COLUMN `fcc_featured_public_use_case` VARCHAR(128) NULL DEFAULT NULL",
+            'fcc_featured_public_summary' => "ALTER TABLE `links` ADD COLUMN `fcc_featured_public_summary` VARCHAR(512) NULL DEFAULT NULL",
+        ];
+
+        foreach($required_columns as $column => $query) {
+            $column_result = db()->rawQuery("SHOW COLUMNS FROM `links` LIKE '{$column}'");
+
+            if(empty($column_result)) {
+                db()->rawQuery($query);
+            }
+        }
+    }
+
+    private function get_main_biolink(int $user_id): ?object {
+        if($user_id <= 0) {
+            return null;
+        }
+
+        $result = database()->query("SELECT `links`.*, `users_biolinks`.`biolink_id`, `domains`.`scheme`, `domains`.`host`, `domains`.`link_id` AS `domain_link_id` FROM `links` LEFT JOIN `users_biolinks` ON `links`.`link_id` = `users_biolinks`.`biolink_id` LEFT JOIN `domains` ON `links`.`domain_id` = `domains`.`domain_id` WHERE `links`.`user_id` = {$user_id} AND `links`.`type` = 'biolink' AND `users_biolinks`.`biolink_id` IS NOT NULL ORDER BY `links`.`datetime` ASC, `links`.`link_id` ASC LIMIT 1");
+        $biolink = $result ? $result->fetch_object() : null;
+
+        if(!$biolink) {
+            $fallback_result = database()->query("SELECT `links`.*, NULL AS `biolink_id`, `domains`.`scheme`, `domains`.`host`, `domains`.`link_id` AS `domain_link_id` FROM `links` LEFT JOIN `domains` ON `links`.`domain_id` = `domains`.`domain_id` WHERE `links`.`user_id` = {$user_id} AND `links`.`type` = 'biolink' ORDER BY `links`.`datetime` ASC, `links`.`link_id` ASC LIMIT 1");
+            $biolink = $fallback_result ? $fallback_result->fetch_object() : null;
+        }
+
+        if($biolink && isset($biolink->settings) && is_string($biolink->settings)) {
+            $biolink->settings = json_decode($biolink->settings);
+        }
+
+        return $biolink ?: null;
+    }
+
+    private function get_case_study_feature_labels(int $link_id): array {
+        $labels = [];
+        $block_types_result = database()->query("SELECT `type` FROM `biolinks_blocks` WHERE `link_id` = {$link_id} AND `is_enabled` = 1");
+
+        if(!$block_types_result) {
+            return $labels;
+        }
+
+        $available_types = [];
+
+        while($row = $block_types_result->fetch_object()) {
+            $available_types[(string) $row->type] = true;
+        }
+
+        $map = \Altum\Language::$code === 'hr'
+            ? [
+                ['label' => 'Pametni preporučni linkovi', 'types' => ['link_discount', 'link_forever_shop', 'link_forever_product', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo']],
+                ['label' => 'AI asistenti', 'types' => ['custom_html_chatbot', 'custom_html_chatbot_pets']],
+                ['label' => 'Prikupljanje kontakata', 'types' => ['lead_funnel', 'contact_collector', 'email_collector', 'phone_collector']],
+                ['label' => 'Kontakt i spremanje kontakta', 'types' => ['link_save_contact', 'custom_html_whatsapp']],
+                ['label' => 'Predstavljanje aplikacije', 'types' => ['socials', 'avatar', 'heading', 'paragraph', 'image', 'image_slider', 'modal_text', 'cta']],
+            ]
+            : [
+                ['label' => 'Smart referral links', 'types' => ['link_discount', 'link_forever_shop', 'link_forever_product', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo']],
+                ['label' => 'AI assistants', 'types' => ['custom_html_chatbot', 'custom_html_chatbot_pets']],
+                ['label' => 'Lead capture', 'types' => ['lead_funnel', 'contact_collector', 'email_collector', 'phone_collector']],
+                ['label' => 'Contact actions', 'types' => ['link_save_contact', 'custom_html_whatsapp']],
+                ['label' => 'App presentation', 'types' => ['socials', 'avatar', 'heading', 'paragraph', 'image', 'image_slider', 'modal_text', 'cta']],
+            ];
+
+        foreach($map as $group) {
+            foreach($group['types'] as $type) {
+                if(isset($available_types[$type])) {
+                    $labels[] = $group['label'];
+                    break;
+                }
+            }
+        }
+
+        return array_slice($labels, 0, 5);
+    }
+
+    private function get_default_public_market(object $user): string {
+        $preferences = is_string($user->preferences ?? null) ? json_decode($user->preferences ?? '{}') : ($user->preferences ?? (object) []);
+        if(is_array($preferences)) {
+            $preferences = (object) $preferences;
+        }
+
+        $meta = $preferences->meta ?? (object) [];
+        if(is_array($meta)) {
+            $meta = (object) $meta;
+        }
+
+        $billing = is_string($user->billing ?? null) ? json_decode($user->billing ?? '{}') : ($user->billing ?? (object) []);
+        if(is_array($billing)) {
+            $billing = (object) $billing;
+        }
+
+        $candidates = [
+            trim((string) ($meta->country ?? '')),
+            trim((string) ($billing->country ?? '')),
+        ];
+
+        foreach($candidates as $candidate) {
+            if($candidate === '') {
+                continue;
+            }
+
+            if(strlen($candidate) === 2) {
+                $countries = get_countries_array();
+                if(isset($countries[$candidate])) {
+                    return $countries[$candidate];
+                }
+            }
+
+            return $candidate;
+        }
+
+        return '';
+    }
+
+    private function get_auto_featured_summary(array $feature_labels): string {
+        $feature_labels = array_values(array_filter(array_map('trim', $feature_labels)));
+
+        if(empty($feature_labels)) {
+            return \Altum\Language::$code === 'hr'
+                ? 'Glavna Forever Card Aplikacija povezuje predstavljanje, preporuke i kontakt u jednom jasnom poslovnom toku.'
+                : 'The main Forever Card App connects presentation, referrals, and contact actions inside one clear business flow.';
+        }
+
+        $top_labels = array_slice($feature_labels, 0, 3);
+
+        return \Altum\Language::$code === 'hr'
+            ? 'Glavna Forever Card Aplikacija koristi ' . implode(', ', $top_labels) . ' kao dio svakodnevnog Forever poslovanja.'
+            : 'The main Forever Card App uses ' . implode(', ', $top_labels) . ' as part of the everyday Forever workflow.';
+    }
+
     public function index() {
 
         \Altum\Authentication::guard();
+        $this->ensure_featured_app_columns();
 
         /* Custom code: FC-2026-03-19: self-heal link states after plan downgrades */
         (new \Altum\Models\User())->sync_links_with_plan($this->user->user_id);
         /* /Custom code: FC-2026-03-19 */
+
+        $main_biolink = $this->get_main_biolink($this->user->user_id);
+
+        if(!empty($_POST['fcc_main_biolink_featured_settings'])) {
+            if(!\Altum\Csrf::check()) {
+                Alerts::add_error(l('global.error_message.invalid_csrf_token'));
+            }
+
+            if(!$main_biolink) {
+                Alerts::add_error(\Altum\Language::$code === 'hr' ? 'Glavna Forever Card Aplikacija nije pronađena.' : 'The main Forever Card App could not be found.');
+            }
+
+            if(!Alerts::has_errors()) {
+                $featured_opt_in = (int) isset($_POST['fcc_featured_opt_in']);
+                $featured_market = input_clean($_POST['fcc_featured_public_market'] ?? '', 64);
+                $featured_summary = input_clean($_POST['fcc_featured_public_summary'] ?? '', 220);
+
+                db()->where('link_id', $main_biolink->link_id)->where('user_id', $this->user->user_id)->update('links', [
+                    'fcc_featured_opt_in' => $featured_opt_in,
+                    'fcc_featured_public_market' => $featured_market ?: null,
+                    'fcc_featured_public_summary' => $featured_summary ?: null,
+                ]);
+
+                Alerts::add_success(\Altum\Language::$code === 'hr' ? 'Postavke javnog prikaza glavne Forever Card Aplikacije su spremljene.' : 'Public display settings for the main Forever Card App have been saved.');
+            }
+
+            redirect('links?type=biolink');
+        }
 
         /* Check for the plan limit */
         $total_links = [];
@@ -101,6 +265,18 @@ class Links extends Controller {
         /* Existing projects */
         $projects = (new \Altum\Models\Projects())->get_projects_by_user_id($this->user->user_id);
 
+        $main_biolink_featured = null;
+        if($main_biolink) {
+            $main_biolink_featured = [
+                'link_id' => (int) $main_biolink->link_id,
+                'opt_in' => (int) ($main_biolink->fcc_featured_opt_in ?? 1),
+                'is_approved' => (int) ($main_biolink->fcc_featured_is_approved ?? 1),
+                'public_market' => trim((string) ($main_biolink->fcc_featured_public_market ?? '')) ?: $this->get_default_public_market($this->user),
+                'public_summary' => trim((string) ($main_biolink->fcc_featured_public_summary ?? '')),
+                'feature_labels' => $this->get_case_study_feature_labels((int) $main_biolink->link_id),
+            ];
+        }
+
         /* Prepare the Links Content View */
         $data = [
             'links'             => $links,
@@ -109,6 +285,8 @@ class Links extends Controller {
             'projects'          => $projects,
             'domains'           => $domains,
             'links_types'       => require APP_PATH . 'includes/links_types.php',
+            'main_biolink_featured' => $main_biolink_featured,
+            'main_biolink_auto_summary' => $main_biolink_featured ? $this->get_auto_featured_summary($main_biolink_featured['feature_labels']) : null,
         ];
         $view = new \Altum\View('links/links_content', (array) $this);
         $this->add_view_content('links_content', $view->run($data));

@@ -22,13 +22,14 @@
 <?php //ALTUMCODE:DEMO if(DEMO) {$data->user->email = 'hidden@demo.com'; $data->user->name = $data->user->ip = $data->user->api_key = 'hidden on demo';} ?>
 <?php
 $fcc_admin_is_hr = \Altum\Language::$code === 'hr';
-$fcc_admin_featured_header = $fcc_admin_is_hr ? 'Istaknuta FCC aplikacija' : 'Featured FCC app';
-$fcc_admin_featured_subheader = $fcc_admin_is_hr ? 'Obje postavke su uključene po zadanim postavkama. Korisnik može ugasiti svoj javni prikaz, a ti ga kao admin možeš dodatno isključiti ako želiš sakriti aplikaciju iz javnog FCC prikaza.' : 'Both settings are enabled by default. The user can turn off their public display, and you as admin can additionally disable it if you want to hide the app from the public FCC showcase.';
+$fcc_admin_featured_header = $fcc_admin_is_hr ? 'Glavna Forever Card Aplikacija' : 'Main Forever Card App';
+$fcc_admin_featured_subheader = $fcc_admin_is_hr ? 'Ove postavke vrijede samo za glavnu Forever Card Aplikaciju dodijeljenu korisniku pri aktivaciji pristupa. Ovdje možeš urediti javni prikaz i po potrebi ga isključiti.' : 'These settings apply only to the main Forever Card App assigned to the user during access activation. You can edit the public showcase settings here and turn them off if needed.';
 $fcc_admin_opt_in = $fcc_admin_is_hr ? 'Korisnik dopušta javni prikaz' : 'User allows public display';
 $fcc_admin_approved = $fcc_admin_is_hr ? 'Admin dopušta javni prikaz' : 'Admin allows public display';
 $fcc_admin_market = $fcc_admin_is_hr ? 'Javno tržište / država' : 'Public market / country';
-$fcc_admin_use_case = $fcc_admin_is_hr ? 'Javni tip korištenja' : 'Public use case';
-$fcc_admin_summary = $fcc_admin_is_hr ? 'Javni sažetak case studyja' : 'Public case study summary';
+$fcc_admin_summary = $fcc_admin_is_hr ? 'Kratki javni opis glavne aplikacije' : 'Short public summary of the main app';
+$fcc_admin_summary_help = $fcc_admin_is_hr ? 'Opis je opcionalan. Ako ostane prazan, sustav će javno koristiti automatski sažetak na temelju aktivnih blokova glavne aplikacije.' : 'This summary is optional. If left empty, the system will use an automatic public summary based on the active blocks in the main app.';
+$fcc_admin_missing = $fcc_admin_is_hr ? 'Korisnik još nema dodijeljenu glavnu Forever Card Aplikaciju pa ove postavke trenutno nije moguće uređivati.' : 'This user does not yet have a main Forever Card App assigned, so these settings cannot be edited yet.';
 ?>
 
 <div class="card <?= \Altum\Alerts::has_field_errors() ? 'border-danger' : null ?>">
@@ -104,30 +105,30 @@ $fcc_admin_summary = $fcc_admin_is_hr ? 'Javni sažetak case studyja' : 'Public 
                 <h2 class="h5 mb-2"><?= $fcc_admin_featured_header ?></h2>
                 <p class="small text-muted mb-3"><?= $fcc_admin_featured_subheader ?></p>
 
+                <?php if(empty($data->main_biolink)): ?>
+                    <div class="alert alert-light border mb-0"><?= $fcc_admin_missing ?></div>
+                <?php else: ?>
                 <div class="form-group custom-control custom-switch">
-                    <input id="fcc_featured_opt_in" name="fcc_featured_opt_in" type="checkbox" class="custom-control-input" <?= !empty($data->user->fcc_featured_opt_in) ? 'checked="checked"' : null ?>>
+                    <input id="fcc_featured_opt_in" name="fcc_featured_opt_in" type="checkbox" class="custom-control-input" <?= !empty($data->main_biolink->fcc_featured_opt_in) ? 'checked="checked"' : null ?>>
                     <label class="custom-control-label" for="fcc_featured_opt_in"><?= $fcc_admin_opt_in ?></label>
                 </div>
 
                 <div class="form-group custom-control custom-switch">
-                    <input id="fcc_featured_is_approved" name="fcc_featured_is_approved" type="checkbox" class="custom-control-input" <?= !empty($data->user->fcc_featured_is_approved) ? 'checked="checked"' : null ?>>
+                    <input id="fcc_featured_is_approved" name="fcc_featured_is_approved" type="checkbox" class="custom-control-input" <?= !empty($data->main_biolink->fcc_featured_is_approved) ? 'checked="checked"' : null ?>>
                     <label class="custom-control-label" for="fcc_featured_is_approved"><?= $fcc_admin_approved ?></label>
                 </div>
 
                 <div class="form-group">
                     <label for="fcc_featured_public_market"><i class="fas fa-fw fa-sm fa-globe text-muted mr-1"></i> <?= $fcc_admin_market ?></label>
-                    <input id="fcc_featured_public_market" type="text" name="fcc_featured_public_market" class="form-control" value="<?= $data->user->fcc_featured_public_market ?? '' ?>" maxlength="64" />
-                </div>
-
-                <div class="form-group">
-                    <label for="fcc_featured_public_use_case"><i class="fas fa-fw fa-sm fa-briefcase text-muted mr-1"></i> <?= $fcc_admin_use_case ?></label>
-                    <input id="fcc_featured_public_use_case" type="text" name="fcc_featured_public_use_case" class="form-control" value="<?= $data->user->fcc_featured_public_use_case ?? '' ?>" maxlength="128" />
+                    <input id="fcc_featured_public_market" type="text" name="fcc_featured_public_market" class="form-control" value="<?= $data->main_biolink->fcc_featured_public_market ?? '' ?>" maxlength="64" />
                 </div>
 
                 <div class="form-group mb-0">
                     <label for="fcc_featured_public_summary"><i class="fas fa-fw fa-sm fa-align-left text-muted mr-1"></i> <?= $fcc_admin_summary ?></label>
-                    <textarea id="fcc_featured_public_summary" name="fcc_featured_public_summary" class="form-control" rows="4" maxlength="512"><?= $data->user->fcc_featured_public_summary ?? '' ?></textarea>
+                    <textarea id="fcc_featured_public_summary" name="fcc_featured_public_summary" class="form-control" rows="4" maxlength="220"><?= $data->main_biolink->fcc_featured_public_summary ?? '' ?></textarea>
+                    <small class="form-text text-muted"><?= $fcc_admin_summary_help ?></small>
                 </div>
+                <?php endif ?>
             </div>
 
             <div class="form-group">

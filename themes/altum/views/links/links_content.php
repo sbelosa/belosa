@@ -1,5 +1,22 @@
 <?php defined('ALTUMCODE') || die() ?>
 
+<?php
+$fcc_links_is_hr = \Altum\Language::$code === 'hr';
+$fcc_main_featured = $data->main_biolink_featured ?? null;
+$fcc_main_auto_summary = $data->main_biolink_auto_summary ?? '';
+$fcc_main_header = $fcc_links_is_hr ? 'Javni prikaz glavne Forever Card Aplikacije' : 'Public showcase of the main Forever Card App';
+$fcc_main_subheader = $fcc_links_is_hr ? 'Ove postavke vrijede samo za glavnu aplikaciju koju si dobio pri registraciji i aktivaciji pristupa. Ostale aplikacije ne ulaze u ovaj javni prikaz.' : 'These settings apply only to the main app assigned when your access was activated. Other apps are not included in this public showcase.';
+$fcc_main_toggle = $fcc_links_is_hr ? 'Dopuštam javni prikaz glavne Forever Card Aplikacije' : 'I allow public display of the main Forever Card App';
+$fcc_main_market = $fcc_links_is_hr ? 'Javno tržište / država' : 'Public market / country';
+$fcc_main_summary = $fcc_links_is_hr ? 'Kratki javni opis' : 'Short public summary';
+$fcc_main_summary_help = $fcc_links_is_hr ? 'Opis je opcionalan. Ako ga ne upišeš, FCC će automatski složiti kratak sažetak na temelju aktivnih blokova tvoje glavne aplikacije.' : 'This summary is optional. If you leave it empty, FCC will automatically generate a short public summary based on the active blocks in your main app.';
+$fcc_main_detected = $fcc_links_is_hr ? 'FCC je automatski prepoznao' : 'FCC automatically detected';
+$fcc_main_status_on = $fcc_links_is_hr ? 'Javni prikaz je uključen.' : 'Public showcase is enabled.';
+$fcc_main_status_off = $fcc_links_is_hr ? 'Javni prikaz je trenutno isključen.' : 'Public showcase is currently turned off.';
+$fcc_main_admin_hidden = $fcc_links_is_hr ? 'Admin je trenutno isključio javni prikaz ove aplikacije.' : 'Admin has currently hidden this app from the public showcase.';
+$fcc_main_submit = $fcc_links_is_hr ? 'Spremi javni prikaz' : 'Save public showcase settings';
+?>
+
 <style>
     .fcc-links-shell {
         display: flex;
@@ -155,6 +172,62 @@
         border: 1px solid rgba(127, 227, 217, 0.07);
         border-radius: 22px;
         padding: 0.25rem;
+    }
+
+    .fcc-main-app-featured-card {
+        background: linear-gradient(180deg, rgba(19, 21, 24, 0.98) 0%, rgba(16, 18, 20, 0.98) 100%);
+        border: 1px solid rgba(127, 227, 217, 0.07);
+        border-radius: 22px;
+        padding: 1.35rem 1.4rem;
+        box-shadow: 0 20px 44px rgba(0, 0, 0, 0.16);
+    }
+
+    .fcc-main-app-featured-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .fcc-main-app-featured-pill,
+    .fcc-main-app-featured-tag {
+        display: inline-flex;
+        align-items: center;
+        min-height: 2rem;
+        padding: 0.35rem 0.7rem;
+        border-radius: 999px;
+        font-size: 0.78rem;
+        font-weight: 700;
+    }
+
+    .fcc-main-app-featured-pill {
+        background: rgba(255, 255, 255, 0.05);
+        color: rgba(240, 244, 251, 0.88);
+    }
+
+    .fcc-main-app-featured-tag {
+        background: rgba(104, 232, 188, 0.1);
+        color: #c9fff2;
+    }
+
+    .fcc-main-app-featured-status {
+        border-radius: 16px;
+        padding: 0.85rem 1rem;
+        background: rgba(127, 227, 217, 0.05);
+        border: 1px solid rgba(127, 227, 217, 0.08);
+        color: #d8f8f3;
+    }
+
+    .fcc-main-app-featured-status.is-muted {
+        background: rgba(255, 255, 255, 0.04);
+        border-color: rgba(255, 255, 255, 0.06);
+        color: #d5e1e2;
+    }
+
+    .fcc-main-app-featured-preview {
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 4;
+        overflow: hidden;
     }
 </style>
 
@@ -456,9 +529,72 @@
                 <button id="bulk_disable" type="button" class="btn btn-secondary" data-toggle="tooltip" title="<?= l('global.close') ?>"><i class="fas fa-fw fa-times"></i></button>
             </div>
         </div>
+</div>
+</div>
+</div>
+
+<?php if(isset($data->filters->filters['type']) && $data->filters->filters['type'] == 'biolink' && $fcc_main_featured): ?>
+    <div class="fcc-main-app-featured-card">
+        <div class="row">
+            <div class="col-12 col-xl-7 mb-4 mb-xl-0">
+                <h2 class="h5 mb-2"><?= $fcc_main_header ?></h2>
+                <p class="small text-muted mb-3"><?= $fcc_main_subheader ?></p>
+
+                <form action="<?= url('links?type=biolink') ?>" method="post" role="form">
+                    <input type="hidden" name="token" value="<?= \Altum\Csrf::get() ?>" />
+                    <input type="hidden" name="fcc_main_biolink_featured_settings" value="1" />
+
+                    <div class="form-group custom-control custom-switch mb-3">
+                        <input id="fcc_featured_opt_in" name="fcc_featured_opt_in" type="checkbox" class="custom-control-input" <?= !empty($fcc_main_featured['opt_in']) ? 'checked="checked"' : null ?>>
+                        <label class="custom-control-label" for="fcc_featured_opt_in"><?= $fcc_main_toggle ?></label>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="fcc_featured_public_market"><i class="fas fa-fw fa-sm fa-globe-europe text-muted mr-1"></i> <?= $fcc_main_market ?></label>
+                        <input type="text" id="fcc_featured_public_market" name="fcc_featured_public_market" class="form-control" value="<?= $_POST['fcc_featured_public_market'] ?? ($fcc_main_featured['public_market'] ?? '') ?>" maxlength="64" />
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label for="fcc_featured_public_summary"><i class="fas fa-fw fa-sm fa-align-left text-muted mr-1"></i> <?= $fcc_main_summary ?></label>
+                        <textarea id="fcc_featured_public_summary" name="fcc_featured_public_summary" class="form-control" rows="4" maxlength="220"><?= $_POST['fcc_featured_public_summary'] ?? ($fcc_main_featured['public_summary'] ?? '') ?></textarea>
+                        <small class="form-text text-muted"><?= $fcc_main_summary_help ?></small>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary fcc-links-action-btn"><?= $fcc_main_submit ?></button>
+                </form>
+            </div>
+
+            <div class="col-12 col-xl-5">
+                <div class="fcc-main-app-featured-status <?= empty($fcc_main_featured['opt_in']) ? 'is-muted' : null ?>">
+                    <div class="font-weight-bold mb-2"><?= !empty($fcc_main_featured['opt_in']) ? $fcc_main_status_on : $fcc_main_status_off ?></div>
+
+                    <?php if(empty($fcc_main_featured['is_approved'])): ?>
+                        <div class="small text-muted mb-3"><?= $fcc_main_admin_hidden ?></div>
+                    <?php endif ?>
+
+                    <?php if(!empty($fcc_main_featured['public_market'])): ?>
+                        <div class="fcc-main-app-featured-meta mb-3">
+                            <span class="fcc-main-app-featured-pill"><?= $fcc_main_market ?>: <?= $fcc_main_featured['public_market'] ?></span>
+                        </div>
+                    <?php endif ?>
+
+                    <?php if(!empty($fcc_main_featured['feature_labels'])): ?>
+                        <div class="small text-uppercase text-muted font-weight-bold mb-2"><?= $fcc_main_detected ?></div>
+                        <div class="fcc-main-app-featured-meta mb-3">
+                            <?php foreach($fcc_main_featured['feature_labels'] as $feature_label): ?>
+                                <span class="fcc-main-app-featured-tag"><?= $feature_label ?></span>
+                            <?php endforeach ?>
+                        </div>
+                    <?php endif ?>
+
+                    <div class="small text-muted mb-0 fcc-main-app-featured-preview">
+                        <?= !empty(trim((string) ($fcc_main_featured['public_summary'] ?? ''))) ? $fcc_main_featured['public_summary'] : $fcc_main_auto_summary ?>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-</div>
-</div>
+<?php endif ?>
 
 <?php if (!empty($data->links)): ?>
 

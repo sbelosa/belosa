@@ -24,20 +24,35 @@ class AdminUserUpdate extends Controller {
 
     private function ensure_featured_app_columns(): void {
         $required_columns = [
-            'fcc_featured_opt_in' => "ALTER TABLE `users` ADD COLUMN `fcc_featured_opt_in` TINYINT(1) NOT NULL DEFAULT 1",
-            'fcc_featured_is_approved' => "ALTER TABLE `users` ADD COLUMN `fcc_featured_is_approved` TINYINT(1) NOT NULL DEFAULT 1",
-            'fcc_featured_public_market' => "ALTER TABLE `users` ADD COLUMN `fcc_featured_public_market` VARCHAR(64) NULL DEFAULT NULL",
-            'fcc_featured_public_use_case' => "ALTER TABLE `users` ADD COLUMN `fcc_featured_public_use_case` VARCHAR(128) NULL DEFAULT NULL",
-            'fcc_featured_public_summary' => "ALTER TABLE `users` ADD COLUMN `fcc_featured_public_summary` VARCHAR(512) NULL DEFAULT NULL",
+            'fcc_featured_opt_in' => "ALTER TABLE `links` ADD COLUMN `fcc_featured_opt_in` TINYINT(1) NOT NULL DEFAULT 1",
+            'fcc_featured_is_approved' => "ALTER TABLE `links` ADD COLUMN `fcc_featured_is_approved` TINYINT(1) NOT NULL DEFAULT 1",
+            'fcc_featured_public_market' => "ALTER TABLE `links` ADD COLUMN `fcc_featured_public_market` VARCHAR(64) NULL DEFAULT NULL",
+            'fcc_featured_public_use_case' => "ALTER TABLE `links` ADD COLUMN `fcc_featured_public_use_case` VARCHAR(128) NULL DEFAULT NULL",
+            'fcc_featured_public_summary' => "ALTER TABLE `links` ADD COLUMN `fcc_featured_public_summary` VARCHAR(512) NULL DEFAULT NULL",
         ];
 
         foreach($required_columns as $column => $query) {
-            $column_result = db()->rawQuery("SHOW COLUMNS FROM `users` LIKE '{$column}'");
+            $column_result = db()->rawQuery("SHOW COLUMNS FROM `links` LIKE '{$column}'");
 
             if(empty($column_result)) {
                 db()->rawQuery($query);
             }
         }
+    }
+
+    private function get_main_biolink(int $user_id): ?object {
+        if($user_id <= 0) {
+            return null;
+        }
+
+        $result = database()->query("SELECT `links`.*, `domains`.`scheme`, `domains`.`host`, `domains`.`link_id` AS `domain_link_id` FROM `links` INNER JOIN `users_biolinks` ON `links`.`link_id` = `users_biolinks`.`biolink_id` LEFT JOIN `domains` ON `links`.`domain_id` = `domains`.`domain_id` WHERE `users_biolinks`.`user_id` = {$user_id} AND `links`.`type` = 'biolink' ORDER BY `links`.`datetime` ASC, `links`.`link_id` ASC LIMIT 1");
+        $biolink = $result ? $result->fetch_object() : null;
+
+        if($biolink && isset($biolink->settings) && is_string($biolink->settings)) {
+            $biolink->settings = json_decode($biolink->settings);
+        }
+
+        return $biolink ?: null;
     }
 
     public function index() {
@@ -49,6 +64,8 @@ class AdminUserUpdate extends Controller {
         if(!$user = db()->where('user_id', $user_id)->getOne('users')) {
             redirect('admin/users');
         }
+
+        $main_biolink = $this->get_main_biolink($user_id);
 
         $user->plan_settings = json_decode($user->plan_settings);
 
@@ -65,8 +82,7 @@ class AdminUserUpdate extends Controller {
             $_POST['fcc_featured_opt_in'] = (int) isset($_POST['fcc_featured_opt_in']);
             $_POST['fcc_featured_is_approved'] = (int) isset($_POST['fcc_featured_is_approved']);
             $_POST['fcc_featured_public_market'] = input_clean($_POST['fcc_featured_public_market'] ?? '', 64);
-            $_POST['fcc_featured_public_use_case'] = input_clean($_POST['fcc_featured_public_use_case'] ?? '', 128);
-            $_POST['fcc_featured_public_summary'] = input_clean($_POST['fcc_featured_public_summary'] ?? '', 512);
+            $_POST['fcc_featured_public_summary'] = input_clean($_POST['fcc_featured_public_summary'] ?? '', 220);
             $_POST['user_meta']['limited'] = $_POST['user_meta']['limited'] == 'on' ? 1 : null; /* Custom code */
 
             if(\Altum\Plugin::is_active('affiliate')) {
@@ -305,13 +321,17 @@ class AdminUserUpdate extends Controller {
                     'plan_settings' => $plan_settings,
                     'plan_trial_done' => $_POST['plan_trial_done'],
                     'referred_by' => $user->referred_by != $_POST['referred_by'] ? $_POST['referred_by'] : $user->referred_by,
-                    'fcc_featured_opt_in' => $_POST['fcc_featured_opt_in'],
-                    'fcc_featured_is_approved' => $_POST['fcc_featured_is_approved'],
-                    'fcc_featured_public_market' => $_POST['fcc_featured_public_market'] ?: null,
-                    'fcc_featured_public_use_case' => $_POST['fcc_featured_public_use_case'] ?: null,
-                    'fcc_featured_public_summary' => $_POST['fcc_featured_public_summary'] ?: null,
                     'preferences' => json_encode($preferences), /* Custom code */
                 ]);
+
+                if($main_biolink) {
+                    db()->where('link_id', $main_biolink->link_id)->where('user_id', $user->user_id)->update('links', [
+                        'fcc_featured_opt_in' => $_POST['fcc_featured_opt_in'],
+                        'fcc_featured_is_approved' => $_POST['fcc_featured_is_approved'],
+                        'fcc_featured_public_market' => $_POST['fcc_featured_public_market'] ?: null,
+                        'fcc_featured_public_summary' => $_POST['fcc_featured_public_summary'] ?: null,
+                    ]);
+                }
 
                 (new \Altum\Models\User())->sync_links_with_plan($user->user_id);
 
@@ -382,6 +402,7 @@ class AdminUserUpdate extends Controller {
         $data = [
             'user' => $user,
             'user_meta' => $preferences->meta, /* Custom code */
+            'main_biolink' => $main_biolink,
             'plans' => $plans,
             'additional_domains' => $additional_domains,
             'biolinks_templates' => $biolinks_templates,

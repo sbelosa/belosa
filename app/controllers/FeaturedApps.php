@@ -14,20 +14,81 @@ class FeaturedApps extends Controller {
 
     private function ensure_featured_app_columns(): void {
         $required_columns = [
-            'fcc_featured_opt_in' => "ALTER TABLE `users` ADD COLUMN `fcc_featured_opt_in` TINYINT(1) NOT NULL DEFAULT 1",
-            'fcc_featured_is_approved' => "ALTER TABLE `users` ADD COLUMN `fcc_featured_is_approved` TINYINT(1) NOT NULL DEFAULT 1",
-            'fcc_featured_public_market' => "ALTER TABLE `users` ADD COLUMN `fcc_featured_public_market` VARCHAR(64) NULL DEFAULT NULL",
-            'fcc_featured_public_use_case' => "ALTER TABLE `users` ADD COLUMN `fcc_featured_public_use_case` VARCHAR(128) NULL DEFAULT NULL",
-            'fcc_featured_public_summary' => "ALTER TABLE `users` ADD COLUMN `fcc_featured_public_summary` VARCHAR(512) NULL DEFAULT NULL",
+            'fcc_featured_opt_in' => "ALTER TABLE `links` ADD COLUMN `fcc_featured_opt_in` TINYINT(1) NOT NULL DEFAULT 1",
+            'fcc_featured_is_approved' => "ALTER TABLE `links` ADD COLUMN `fcc_featured_is_approved` TINYINT(1) NOT NULL DEFAULT 1",
+            'fcc_featured_public_market' => "ALTER TABLE `links` ADD COLUMN `fcc_featured_public_market` VARCHAR(64) NULL DEFAULT NULL",
+            'fcc_featured_public_use_case' => "ALTER TABLE `links` ADD COLUMN `fcc_featured_public_use_case` VARCHAR(128) NULL DEFAULT NULL",
+            'fcc_featured_public_summary' => "ALTER TABLE `links` ADD COLUMN `fcc_featured_public_summary` VARCHAR(512) NULL DEFAULT NULL",
         ];
 
         foreach($required_columns as $column => $query) {
-            $column_result = db()->rawQuery("SHOW COLUMNS FROM `users` LIKE '{$column}'");
+            $column_result = db()->rawQuery("SHOW COLUMNS FROM `links` LIKE '{$column}'");
 
             if(empty($column_result)) {
                 db()->rawQuery($query);
             }
         }
+    }
+
+    private function get_default_public_market(object $row): string {
+        $preferences = is_string($row->preferences ?? null) ? json_decode($row->preferences ?? '{}') : ($row->preferences ?? (object) []);
+        if(is_array($preferences)) {
+            $preferences = (object) $preferences;
+        }
+
+        $meta = $preferences->meta ?? (object) [];
+        if(is_array($meta)) {
+            $meta = (object) $meta;
+        }
+
+        $billing = is_string($row->billing ?? null) ? json_decode($row->billing ?? '{}') : ($row->billing ?? (object) []);
+        if(is_array($billing)) {
+            $billing = (object) $billing;
+        }
+
+        $candidates = [
+            trim((string) ($row->fcc_featured_public_market ?? '')),
+            trim((string) ($meta->country ?? '')),
+            trim((string) ($billing->country ?? '')),
+        ];
+
+        foreach($candidates as $candidate) {
+            if($candidate === '') {
+                continue;
+            }
+
+            if(strlen($candidate) === 2) {
+                $countries = get_countries_array();
+                if(isset($countries[$candidate])) {
+                    return $countries[$candidate];
+                }
+            }
+
+            return $candidate;
+        }
+
+        return '';
+    }
+
+    private function get_public_summary(string $stored_summary, array $feature_labels): string {
+        $stored_summary = trim($stored_summary);
+        if($stored_summary !== '') {
+            return $stored_summary;
+        }
+
+        $feature_labels = array_values(array_filter(array_map('trim', $feature_labels)));
+
+        if(empty($feature_labels)) {
+            return \Altum\Language::$code === 'hr'
+                ? 'Glavna Forever Card Aplikacija povezuje predstavljanje, preporuke i kontakt u jednom jasnom poslovnom toku.'
+                : 'The main Forever Card App connects presentation, referrals, and contact actions inside one clear business flow.';
+        }
+
+        $top_labels = array_slice($feature_labels, 0, 3);
+
+        return \Altum\Language::$code === 'hr'
+            ? 'Glavna Forever Card Aplikacija koristi ' . implode(', ', $top_labels) . ' kao dio svakodnevnog Forever poslovanja.'
+            : 'The main Forever Card App uses ' . implode(', ', $top_labels) . ' as part of the everyday Forever workflow.';
     }
 
     private function get_case_study_feature_labels(int $link_id): array {
@@ -120,39 +181,73 @@ class FeaturedApps extends Controller {
 
         $featured_apps = [];
 
-        $qualified_users_result = database()->query("SELECT `track_links`.`user_id`, `users`.`name`, `users`.`email`, `users`.`avatar`, `users`.`fcc_featured_public_market`, `users`.`fcc_featured_public_use_case`, `users`.`fcc_featured_public_summary`, COUNT(*) AS `shop_clicks` FROM `track_links` LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id` LEFT JOIN `users` ON `track_links`.`user_id` = `users`.`user_id` WHERE `track_links`.`datetime` >= '{$period_start_datetime}' AND `track_links`.`is_unique` = 1 AND `biolinks_blocks`.`type` IN ({$forever_shop_block_types_sql}) AND `users`.`fcc_featured_opt_in` = 1 AND `users`.`fcc_featured_is_approved` = 1 GROUP BY `track_links`.`user_id` HAVING `shop_clicks` >= {$min_qualified_clicks} ORDER BY `shop_clicks` DESC, `users`.`name` ASC");
+        $qualified_apps_result = database()->query("
+            SELECT
+                `main_link`.`link_id`,
+                `main_link`.`user_id`,
+                `main_link`.`url`,
+                `main_link`.`domain_id`,
+                `main_link`.`fcc_featured_public_market`,
+                `main_link`.`fcc_featured_public_summary`,
+                `domains`.`scheme`,
+                `domains`.`host`,
+                `domains`.`link_id` AS `domain_link_id`,
+                `users`.`name`,
+                `users`.`email`,
+                `users`.`avatar`,
+                `users`.`preferences`,
+                `users`.`billing`,
+                COUNT(`track_links`.`id`) AS `shop_clicks`
+            FROM `users_biolinks`
+            INNER JOIN `links` AS `main_link` ON `main_link`.`link_id` = `users_biolinks`.`biolink_id`
+            INNER JOIN `users` ON `users`.`user_id` = `users_biolinks`.`user_id`
+            LEFT JOIN `domains` ON `main_link`.`domain_id` = `domains`.`domain_id`
+            LEFT JOIN `links` AS `all_biolinks` ON `all_biolinks`.`user_id` = `users_biolinks`.`user_id` AND `all_biolinks`.`type` = 'biolink' AND `all_biolinks`.`is_enabled` = 1
+            LEFT JOIN `biolinks_blocks` ON `biolinks_blocks`.`link_id` = `all_biolinks`.`link_id` AND `biolinks_blocks`.`type` IN ({$forever_shop_block_types_sql})
+            LEFT JOIN `track_links` ON `track_links`.`link_id` = `all_biolinks`.`link_id` AND `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id` AND `track_links`.`datetime` >= '{$period_start_datetime}' AND `track_links`.`is_unique` = 1
+            WHERE `main_link`.`type` = 'biolink' AND `main_link`.`is_enabled` = 1 AND `main_link`.`fcc_featured_opt_in` = 1 AND `main_link`.`fcc_featured_is_approved` = 1
+            GROUP BY
+                `main_link`.`link_id`,
+                `main_link`.`user_id`,
+                `main_link`.`url`,
+                `main_link`.`domain_id`,
+                `main_link`.`fcc_featured_public_market`,
+                `main_link`.`fcc_featured_public_summary`,
+                `domains`.`scheme`,
+                `domains`.`host`,
+                `domains`.`link_id`,
+                `users`.`name`,
+                `users`.`email`,
+                `users`.`avatar`,
+                `users`.`preferences`,
+                `users`.`billing`
+            HAVING `shop_clicks` >= {$min_qualified_clicks}
+            ORDER BY `shop_clicks` DESC, `users`.`name` ASC
+        ");
 
-        while($row = $qualified_users_result->fetch_object()) {
-            $user_id = (int) ($row->user_id ?? 0);
-            if(!$user_id) {
+        while($row = $qualified_apps_result->fetch_object()) {
+            $link_id = (int) ($row->link_id ?? 0);
+            if(!$link_id || empty($row->url)) {
                 continue;
             }
 
-            /* Custom code: FC-2026-03-18: featured apps should use locked main biolink only */
-            $biolink_result = database()->query("SELECT `links`.`link_id`, `links`.`url`, `links`.`domain_id`, `domains`.`scheme`, `domains`.`host`, `domains`.`link_id` AS `domain_link_id` FROM `links` LEFT JOIN `users_biolinks` ON `links`.`link_id` = `users_biolinks`.`biolink_id` LEFT JOIN `domains` ON `links`.`domain_id` = `domains`.`domain_id` WHERE `links`.`user_id` = {$user_id} AND `links`.`type` = 'biolink' AND `links`.`is_enabled` = 1 AND `users_biolinks`.`biolink_id` IS NOT NULL ORDER BY `links`.`datetime` ASC, `links`.`link_id` ASC LIMIT 1");
-            /* /Custom code: FC-2026-03-18 */
-            $biolink = $biolink_result ? $biolink_result->fetch_object() : null;
-
-            if(!$biolink || empty($biolink->url)) {
-                continue;
-            }
-
-            $has_custom_domain = !empty($biolink->domain_id) && !empty($biolink->host) && !empty($biolink->scheme);
+            $has_custom_domain = !empty($row->domain_id) && !empty($row->host) && !empty($row->scheme);
             $app_url = $has_custom_domain
-                ? $biolink->scheme . $biolink->host . ((int) $biolink->domain_link_id === (int) $biolink->link_id ? '' : '/' . $biolink->url)
-                : SITE_URL . $biolink->url;
+                ? $row->scheme . $row->host . ((int) $row->domain_link_id === $link_id ? '' : '/' . $row->url)
+                : SITE_URL . $row->url;
+
+            $feature_labels = $this->get_case_study_feature_labels($link_id);
 
             $featured_apps[] = [
-                'user_id' => $user_id,
+                'user_id' => (int) ($row->user_id ?? 0),
                 'name' => (string) ($row->name ?? l('global.unknown')),
                 'email' => (string) ($row->email ?? ''),
                 'avatar' => (string) ($row->avatar ?? ''),
                 'app_url' => $app_url,
                 'shop_clicks' => (int) ($row->shop_clicks ?? 0),
-                'public_market' => trim((string) ($row->fcc_featured_public_market ?? '')),
-                'public_use_case' => trim((string) ($row->fcc_featured_public_use_case ?? '')),
-                'public_summary' => trim((string) ($row->fcc_featured_public_summary ?? '')),
-                'feature_labels' => $this->get_case_study_feature_labels((int) $biolink->link_id),
+                'public_market' => $this->get_default_public_market($row),
+                'public_summary' => $this->get_public_summary((string) ($row->fcc_featured_public_summary ?? ''), $feature_labels),
+                'feature_labels' => $feature_labels,
             ];
         }
 

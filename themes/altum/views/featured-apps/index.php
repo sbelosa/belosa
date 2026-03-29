@@ -41,17 +41,13 @@
                                     <span class="featured-app-pill"><?= l('featured_apps.market') ?>: <?= $app['public_market'] ?></span>
                                 <?php endif ?>
 
-                                <?php if(!empty($app['public_use_case'])): ?>
-                                    <span class="featured-app-pill"><?= l('featured_apps.use_case') ?>: <?= $app['public_use_case'] ?></span>
-                                <?php endif ?>
-
                                 <span class="featured-app-pill featured-app-pill--accent"><?= l('featured_apps.performance') ?>: <?= nr($app['shop_clicks']) ?></span>
                             </div>
 
                             <?php if(!empty($app['public_summary'])): ?>
                                 <div class="featured-app-section mb-3">
                                     <div class="featured-app-section__label"><?= l('featured_apps.case_study_label') ?></div>
-                                    <p class="mb-0 text-muted"><?= $app['public_summary'] ?></p>
+                                    <p class="mb-0 text-muted featured-app-card__summary"><?= $app['public_summary'] ?></p>
                                 </div>
                             <?php endif ?>
 
@@ -123,6 +119,13 @@
         width: 56px;
         height: 56px;
         object-fit: cover;
+    }
+
+    .featured-app-card__summary {
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 4;
+        overflow: hidden;
     }
 
     .featured-app-card__meta,
