@@ -160,7 +160,7 @@ $fcc_blog_post_url = $data->blog_post_url ?? (SITE_URL . ($data->blog_post->lang
                 $share_referral_key = $data->biolink->url;
             }
 
-            $share_url = url(\Altum\Router::$original_request . ($share_referral_key ? '?ref=' . $share_referral_key : ''));
+            $share_url = $data->share_url ?? $fcc_blog_post_url;
             /* /Custom code: FC-2026-02-26 */
 
             ?>
@@ -185,7 +185,7 @@ $fcc_blog_post_url = $data->blog_post_url ?? (SITE_URL . ($data->blog_post->lang
                         <?php endif; ?>
 
                         <?php /* Custom code: FC-2026-03-09: share helper text by authentication state */ ?>
-                        <?php $is_logged_user = is_logged_in(); ?>
+                        <?php $is_logged_user = is_logged_in() && !empty($share_referral_key); ?>
                         <div class="mb-3 p-3 rounded position-relative fcc-share-helper" id="blog-share-referral-wrapper">
                             <div class="d-flex align-items-center justify-content-between flex-wrap fcc-share-helper-row">
                                 <span class="small mb-2 mb-md-0 fcc-share-helper-text">

@@ -209,15 +209,26 @@ class Blog extends Controller {
 
             if ($user_id = \Altum\Authentication::check()) {
                 $referral = false;
-                $private_display = true;                
+                $private_display = true;
+                $biolink = null;
 
-                $biolink_id = db()->where('user_id', $user_id)->getOne('users_biolinks', ['biolink_id']);                
-                if ($biolink_id) {                    
-                    $biolink = db()->where('link_id', $biolink_id->biolink_id)->getOne('links', ['url']);
+                $main_biolink_map = db()->where('user_id', $user_id)->getOne('users_biolinks', ['biolink_id']);
+
+                if($main_biolink_map && !empty($main_biolink_map->biolink_id)) {
+                    $biolink = db()->where('link_id', $main_biolink_map->biolink_id)->where('type', 'biolink')->getOne('links', ['link_id', 'url']);
                 }
-                if (\Altum\Authentication::is_pro()) {
+
+                /* Safety fallback only if the original main mapping is missing or broken. */
+                if(!$biolink) {
+                    $biolink = db()->where('user_id', $user_id)->where('type', 'biolink')->orderBy('link_id', 'ASC')->getOne('links', ['link_id', 'url']);
+                }
+
+                if($biolink && !empty($biolink->url)) {
+                    $referral = $biolink->url;
+                }
+
+                if(\Altum\Authentication::is_pro()) {
                     $private = true;
-                    $referral = $biolink->url;                    
                 }
             }
 
@@ -269,6 +280,11 @@ class Blog extends Controller {
             $blog_posts_popular = settings()->content->blog_popular_widget_is_enabled ? (new BlogPosts())->get_popular_blog_posts_by_language($language) : [];
 
             /* Prepare the view */
+            $share_url = $blog_post_url;
+            if($referral) {
+                $share_url .= (parse_url($share_url, PHP_URL_QUERY) ? '&' : '?') . http_build_query(['ref' => $referral]);
+            }
+
             $data = [
                 'blog_posts_popular' => $blog_posts_popular,
                 'blog_post' => $blog_post,
@@ -282,6 +298,7 @@ class Blog extends Controller {
                 'private' => isset($private) ? $private : null,
                 'webshop_link' => isset($webshop_link) && !empty($webshop_link) ? $webshop_link : null,
                 'blog_post_url' => $blog_post_url,
+                'share_url' => $share_url,
             ];
             /* /Custom code */
 
