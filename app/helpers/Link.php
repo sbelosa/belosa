@@ -946,6 +946,47 @@ class Link {
         return $final_url;
     }
 
+    public static function get_main_biolink_discount_query_params(int $user_id): array {
+        if(!$user_id) {
+            return [];
+        }
+
+        $main_biolink_id = db()->where('user_id', $user_id)->getValue('users_biolinks', 'biolink_id');
+
+        if(!$main_biolink_id) {
+            return [];
+        }
+
+        $discount_block = db()
+            ->where('link_id', (int) $main_biolink_id)
+            ->where('type', 'link_discount')
+            ->where('is_enabled', 1)
+            ->orderBy('`order`', 'ASC')
+            ->getOne('biolinks_blocks', ['settings', 'location_url']);
+
+        if(!$discount_block) {
+            return [];
+        }
+
+        $discount_block->settings = json_decode($discount_block->settings ?? '');
+
+        if(empty($discount_block->settings->apply_to_all_products)) {
+            return [];
+        }
+
+        $decoded_url = $discount_block->settings->decoded_url ?? null;
+
+        if(!$decoded_url && !empty($discount_block->location_url) && strpos($discount_block->location_url, 'https://thealoeveraco.shop/') === 0) {
+            $decoded_url = self::decode_discount_link($discount_block->location_url);
+        }
+
+        if(!$decoded_url || !filter_var($decoded_url, FILTER_VALIDATE_URL)) {
+            return [];
+        }
+
+        return self::get_forever_discount_query_params($decoded_url);
+    }
+
    public static function get_product_webshop_link($referral, $product_id, $country_code = null, $browser_language = null) {                        
         if($biolink = db()->where('url', $referral)->where('type', 'biolink')->getOne('links', ['user_id'])) {
             if($user = db()->where('user_id', $biolink->user_id)->getOne('users', ['user_id', 'status', 'plan_id', 'preferences'])) {
@@ -975,26 +1016,24 @@ class Link {
                 $forever_id = '';
             }
             
-            if ($country_code) {
-                $country_code = strtolower($country_code); 
-                if(isset($webshop_links->$country_code) && !empty($webshop_links->$country_code)) {
-                    $url = self::build_forever_destination_url($webshop_links->$country_code, $forever_id, $country_code);
-                }
+            $resolved_country_code = mb_strtolower((string) ($country_code ?: $browser_language ?: ''));
+            $webshop_country_code = in_array($resolved_country_code, ['xk']) ? 'al' : $resolved_country_code;
+            $webshop_base_url = $webshop_links->{$webshop_country_code} ?? null;
 
-                $link_discount = db()->where('user_id', $user->user_id)->where('type', 'link_discount')->getOne('biolinks_blocks', ['location_url', 'is_enabled']);
+            if(!$webshop_base_url && !empty($webshop_links->us)) {
+                $webshop_country_code = 'us';
+                $webshop_base_url = $webshop_links->us;
+            }
 
-                if (isset($url) && $link_discount && $link_discount->is_enabled) {                                        
-                    $link_discount_settings = db()->where('user_id', $user->user_id)->where('type', 'link_discount')->getOne('biolinks_blocks', ['settings']);
-                    $link_discount_settings_decode = json_decode($link_discount_settings->settings); 
-                    if (isset($link_discount_settings_decode->apply_to_all_products) && $link_discount_settings_decode->apply_to_all_products && isset($link_discount_settings_decode->decoded_url) && !empty($link_discount_settings_decode->decoded_url)) {
-                        $discount_params = self::get_forever_discount_query_params($link_discount_settings_decode->decoded_url);
+            if(!$webshop_base_url && !empty($webshop_links->gb)) {
+                $webshop_country_code = 'gb';
+                $webshop_base_url = $webshop_links->gb;
+            }
 
-                        if($discount_params && in_array($country_code, ['hr', 'at', 'au', 'ca', 'de', 'ie', 'lu', 'nl', 'no', 'pl', 'se', 'gb', 'us', 'qa', 'ch', 'si', 'rs', 'ae'])) {
-                            $url = self::build_forever_destination_url($webshop_links->$country_code, $forever_id, $country_code, $discount_params);
-                        }
-                    }                    
-                }
-            }            
+            if($webshop_base_url) {
+                $discount_params = self::get_main_biolink_discount_query_params((int) $user->user_id);
+                $url = self::build_forever_destination_url($webshop_base_url, $forever_id, $webshop_country_code, $discount_params);
+            }
         }
 
         return isset($url) ? $url : false;
