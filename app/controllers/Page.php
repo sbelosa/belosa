@@ -24,6 +24,10 @@ defined('ALTUMCODE') || die();
 
 class Page extends Controller {
 
+    private function get_contact_page_session_key(int $page_id): string {
+        return 'fcc_contact_page_target_' . $page_id;
+    }
+
     private function get_main_biolink_for_user_id(?int $user_id): ?object {
         $user_id = (int) $user_id;
 
@@ -754,6 +758,12 @@ class Page extends Controller {
             ];
 
             $main_biolink = $this->resolve_contact_page_main_biolink($collaborator_aff_url, $collaborator_contact->email);
+            $contact_page_session_key = $this->get_contact_page_session_key((int) $page->page_id);
+            $stored_contact_target = session_get($contact_page_session_key, null);
+
+            if(!$main_biolink && !empty($stored_contact_target['main_link_id'])) {
+                $main_biolink = db()->where('link_id', (int) $stored_contact_target['main_link_id'])->where('type', 'biolink')->getOne('links', ['link_id', 'user_id', 'project_id', 'url']);
+            }
 
             if($main_biolink && empty($collaborator_contact->aff_link)) {
                 $collaborator_contact->aff_link = SITE_URL . ltrim($main_biolink->url, '/');
@@ -775,6 +785,24 @@ class Page extends Controller {
                     $collaborator_contact->contact_biolink_block_id = (int) $contact_block->biolink_block_id;
                     $collaborator_contact->contact_biolink_block_type = $contact_block->type;
                 }
+            }
+
+            if($main_biolink) {
+                session_set($contact_page_session_key, [
+                    'user_id' => $collaborator_contact->user_id,
+                    'main_link_id' => $collaborator_contact->main_link_id,
+                    'project_id' => $collaborator_contact->project_id,
+                    'contact_biolink_block_id' => $collaborator_contact->contact_biolink_block_id,
+                    'contact_biolink_block_type' => $collaborator_contact->contact_biolink_block_type,
+                    'aff_link' => $collaborator_contact->aff_link,
+                ]);
+            } elseif($stored_contact_target) {
+                $collaborator_contact->user_id = !empty($stored_contact_target['user_id']) ? (int) $stored_contact_target['user_id'] : null;
+                $collaborator_contact->main_link_id = !empty($stored_contact_target['main_link_id']) ? (int) $stored_contact_target['main_link_id'] : null;
+                $collaborator_contact->project_id = array_key_exists('project_id', $stored_contact_target) && $stored_contact_target['project_id'] !== null ? (int) $stored_contact_target['project_id'] : null;
+                $collaborator_contact->contact_biolink_block_id = !empty($stored_contact_target['contact_biolink_block_id']) ? (int) $stored_contact_target['contact_biolink_block_id'] : null;
+                $collaborator_contact->contact_biolink_block_type = !empty($stored_contact_target['contact_biolink_block_type']) ? $stored_contact_target['contact_biolink_block_type'] : 'contact_collector';
+                $collaborator_contact->aff_link = $collaborator_contact->aff_link ?: ($stored_contact_target['aff_link'] ?? null);
             }
 
             if(empty($collaborator_contact->hero_image_url)) {
@@ -830,7 +858,7 @@ class Page extends Controller {
                                 unset($contact_data['message'], $contact_data['source_context'], $contact_data['contact_intent']);
                             }
 
-                            $datum_id = db()->insert('data', [
+                            $insert_payload = [
                                 'biolink_block_id' => $collaborator_contact->contact_biolink_block_id ?: null,
                                 'link_id' => $collaborator_contact->main_link_id,
                                 'project_id' => $collaborator_contact->project_id ?: null,
@@ -838,7 +866,41 @@ class Page extends Controller {
                                 'type' => $contact_type,
                                 'data' => json_encode($contact_data),
                                 'datetime' => get_date(),
-                            ]);
+                            ];
+
+                            db()->reset();
+                            $datum_id = db()->insert('data', $insert_payload);
+
+                            if(!$datum_id) {
+                                $database = database();
+                                $biolink_block_id_sql = $insert_payload['biolink_block_id'] ? (int) $insert_payload['biolink_block_id'] : 'NULL';
+                                $project_id_sql = $insert_payload['project_id'] ? (int) $insert_payload['project_id'] : 'NULL';
+                                $link_id_sql = (int) $insert_payload['link_id'];
+                                $user_id_sql = (int) $insert_payload['user_id'];
+                                $type_sql = "'" . $database->real_escape_string((string) $insert_payload['type']) . "'";
+                                $data_sql = "'" . $database->real_escape_string((string) $insert_payload['data']) . "'";
+                                $datetime_sql = "'" . $database->real_escape_string((string) $insert_payload['datetime']) . "'";
+
+                                $fallback_insert = $database->query("
+                                    INSERT INTO `data`
+                                    (`biolink_block_id`, `link_id`, `project_id`, `user_id`, `type`, `data`, `datetime`)
+                                    VALUES
+                                    ({$biolink_block_id_sql}, {$link_id_sql}, {$project_id_sql}, {$user_id_sql}, {$type_sql}, {$data_sql}, {$datetime_sql})
+                                ");
+
+                                if($fallback_insert) {
+                                    $datum_id = $database->insert_id;
+                                } else {
+                                    error_log('FCC contact save failed: ' . $database->error . ' | payload=' . json_encode([
+                                        'page_id' => $page->page_id,
+                                        'user_id' => $collaborator_contact->user_id,
+                                        'main_link_id' => $collaborator_contact->main_link_id,
+                                        'contact_biolink_block_id' => $collaborator_contact->contact_biolink_block_id,
+                                        'contact_biolink_block_type' => $contact_type,
+                                        'project_id' => $collaborator_contact->project_id,
+                                    ]));
+                                }
+                            }
 
                             if($datum_id) {
                                 \Altum\Alerts::add_success(Language::$code === 'hr' ? 'Kontakt je spremljen i proslijeđen suradniku.' : 'Your contact has been saved and sent to the collaborator.');
