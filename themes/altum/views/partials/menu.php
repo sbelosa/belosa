@@ -311,7 +311,7 @@ if(is_logged_in() && in_array($fcc_share_route, ['index', 'blog', 'page'], true)
             <div class="fcc-navbar-share-row__copy">
                 <span class="fcc-navbar-share-row__pill">FCC</span>
                 <div class="fcc-navbar-share-row__text-wrap">
-                    <div class="fcc-navbar-share-row__title"><?= $fcc_is_hr_language ? 'Prijavljeni ste! Podijelite ovu stranicu s vašom preporukom.' : 'You are signed in! Share this page with your recommendation.' ?></div>
+                    <div class="fcc-navbar-share-row__title"><?= $fcc_is_hr_language ? 'Podijelite ovu stranicu s vašom preporukom.' : 'Share this page with your recommendation.' ?></div>
                     <button
                         type="button"
                         class="fcc-navbar-share-row__info"
@@ -383,6 +383,8 @@ if(is_logged_in() && in_array($fcc_share_route, ['index', 'blog', 'page'], true)
     .fcc-navbar-share-row {
         width: 100%;
         padding: 0;
+        position: relative;
+        z-index: 6;
     }
 
     .fcc-navbar-share-row__inner {
@@ -460,6 +462,10 @@ if(is_logged_in() && in_array($fcc_share_route, ['index', 'blog', 'page'], true)
         border-radius: 999px;
         background: rgba(255, 255, 255, 0.04);
         border-color: rgba(255, 255, 255, 0.04);
+        position: relative;
+        z-index: 7;
+        pointer-events: auto;
+        touch-action: manipulation;
     }
 
     .fcc-navbar-share-row__details {
@@ -488,6 +494,24 @@ if(is_logged_in() && in_array($fcc_share_route, ['index', 'blog', 'page'], true)
     }
 
     @media (max-width: 991px) {
+        .fcc-navbar-shell,
+        .fcc-navbar-shell--with-share-row,
+        .fcc-navbar-share-row,
+        .fcc-navbar-share-row__inner,
+        .fcc-navbar-share-row__buttons {
+            position: relative;
+        }
+
+        .fcc-navbar-share-row__buttons {
+            z-index: 8;
+        }
+
+        .fcc-navbar-share-row__buttons .btn,
+        .fcc-navbar-share-row__buttons a,
+        .fcc-navbar-share-row__buttons button {
+            pointer-events: auto;
+        }
+
         .fcc-navbar-shell--with-share-row {
             border-radius: 1.15rem;
             overflow: hidden;
