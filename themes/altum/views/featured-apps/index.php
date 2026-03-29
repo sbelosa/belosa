@@ -1,7 +1,7 @@
 <?php defined('ALTUMCODE') || die() ?>
 
 <?php $fcc_is_hr = \Altum\Language::$code === 'hr'; ?>
-<?php $featured_app_visible_tags_limit = 3; ?>
+<?php $featured_app_visible_tags_limit = 2; ?>
 
 <div class="container my-5 featured-apps-page">
     <section class="featured-apps-hero mb-4">
@@ -57,14 +57,26 @@
                                     <div class="featured-app-section__label"><?= l('featured_apps.block_usage') ?></div>
                                     <div class="featured-app-tags">
                                         <?php $visible_feature_labels = array_slice($app['feature_labels'], 0, $featured_app_visible_tags_limit); ?>
-                                        <?php $remaining_feature_labels = max(0, count($app['feature_labels']) - count($visible_feature_labels)); ?>
+                                        <?php $remaining_feature_labels = array_slice($app['feature_labels'], $featured_app_visible_tags_limit); ?>
 
                                         <?php foreach($visible_feature_labels as $feature_label): ?>
                                             <span class="featured-app-tag"><?= $feature_label ?></span>
                                         <?php endforeach ?>
 
-                                        <?php if($remaining_feature_labels > 0): ?>
-                                            <span class="featured-app-tag featured-app-tag--more"><?= $fcc_is_hr ? '+ još ' . $remaining_feature_labels : '+ ' . $remaining_feature_labels . ' more' ?></span>
+                                        <?php if(!empty($remaining_feature_labels)): ?>
+                                            <?php $remaining_feature_labels_id = 'featured-app-more-' . $app['user_id']; ?>
+                                            <button
+                                                type="button"
+                                                class="featured-app-tag featured-app-tag--more border-0"
+                                                data-toggle="popover"
+                                                data-trigger="focus"
+                                                data-placement="top"
+                                                data-container="body"
+                                                data-html="true"
+                                                data-content="<?= htmlspecialchars('<div class=&quot;featured-app-popover-list&quot;>' . implode('', array_map(fn($label) => '<div class=&quot;featured-app-popover-item&quot;>' . htmlspecialchars($label, ENT_QUOTES, 'UTF-8') . '</div>', $remaining_feature_labels)) . '</div>', ENT_QUOTES, 'UTF-8') ?>"
+                                            >
+                                                <?= $fcc_is_hr ? '+ još ' . count($remaining_feature_labels) : '+ ' . count($remaining_feature_labels) . ' more' ?>
+                                            </button>
                                         <?php endif ?>
                                     </div>
                                 </div>
@@ -139,21 +151,23 @@
     .featured-app-card__meta,
     .featured-app-tags {
         display: flex;
-        flex-wrap: wrap;
-        gap: 0.5rem;
+        gap: 0.35rem;
     }
 
     .featured-app-pill,
     .featured-app-tag {
         display: inline-flex;
         align-items: center;
-        min-height: 2rem;
-        padding: 0.35rem 0.7rem;
+        justify-content: center;
+        min-height: 1.75rem;
+        padding: 0.28rem 0.55rem;
         border-radius: 999px;
         background: rgba(255, 255, 255, 0.05);
         color: rgba(240, 244, 251, 0.88);
-        font-size: 0.78rem;
+        font-size: 0.7rem;
         font-weight: 700;
+        line-height: 1.2;
+        white-space: nowrap;
     }
 
     .featured-app-pill--accent {
@@ -169,6 +183,20 @@
     .featured-app-tag--more {
         background: rgba(255, 255, 255, 0.06);
         color: rgba(240, 244, 251, 0.82);
+        cursor: pointer;
+    }
+
+    .featured-app-popover-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+        min-width: 150px;
+    }
+
+    .featured-app-popover-item {
+        font-size: 0.78rem;
+        color: #eef7fb;
+        line-height: 1.35;
     }
 
     .featured-app-section__label {
@@ -184,6 +212,17 @@
         .featured-apps-page .featured-apps-hero {
             grid-template-columns: 1fr;
         }
+
+        .featured-apps-page .featured-app-tags {
+            flex-wrap: wrap;
+        }
     }
 </style>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        if(window.jQuery && typeof window.jQuery.fn.popover === 'function') {
+            window.jQuery('[data-toggle="popover"]').popover();
+        }
+    });
+</script>
 <?php \Altum\Event::add_content(ob_get_clean(), 'head') ?>
