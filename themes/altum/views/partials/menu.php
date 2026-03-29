@@ -8,10 +8,48 @@ $fcc_menu_products_label = $fcc_is_hr_language ? 'Forever Proizvodi' : 'Forever 
 $fcc_menu_blog_label = 'Blog';
 $fcc_menu_contact_label = $fcc_is_hr_language ? 'Kontakt' : 'Contact';
 $fcc_menu_dashboard_label = $fcc_is_hr_language ? 'Nadzorna ploča' : 'Dashboard';
+
+$fcc_share_is_visible = false;
+$fcc_share_url = null;
+$fcc_share_route = \Altum\Router::$controller_key ?? null;
+
+if(is_logged_in() && in_array($fcc_share_route, ['index', 'blog', 'page'], true)) {
+    $fcc_user_id = \Altum\Authentication::check();
+    $fcc_referral_slug = null;
+
+    if($fcc_user_id) {
+        $fcc_main_biolink_map = db()->where('user_id', $fcc_user_id)->getOne('users_biolinks', ['biolink_id']);
+
+        if($fcc_main_biolink_map && !empty($fcc_main_biolink_map->biolink_id)) {
+            $fcc_biolink = db()->where('link_id', $fcc_main_biolink_map->biolink_id)->where('type', 'biolink')->getOne('links', ['url']);
+
+            if($fcc_biolink && !empty($fcc_biolink->url)) {
+                $fcc_referral_slug = $fcc_biolink->url;
+            }
+        }
+
+        if(!$fcc_referral_slug) {
+            $fcc_biolink = db()->where('user_id', $fcc_user_id)->where('type', 'biolink')->orderBy('link_id', 'ASC')->getOne('links', ['url']);
+
+            if($fcc_biolink && !empty($fcc_biolink->url)) {
+                $fcc_referral_slug = $fcc_biolink->url;
+            }
+        }
+    }
+
+    $fcc_current_path = \Altum\Router::$original_request ?? '';
+    $fcc_share_url = url($fcc_current_path);
+
+    if($fcc_referral_slug) {
+        $fcc_share_url .= (parse_url($fcc_share_url, PHP_URL_QUERY) ? '&' : '?') . http_build_query(['ref' => $fcc_referral_slug]);
+        $fcc_share_is_visible = true;
+    }
+}
 /* /Custom code: FC-2026-02-26 */
 ?>
 
-<nav id="navbar" class="navbar navbar-main navbar-expand-lg navbar-light mb-6 index-highly-rounded border border-gray-100">
+<div class="fcc-navbar-shell mb-6 <?= $fcc_share_is_visible ? 'fcc-navbar-shell--with-share-row' : null ?>">
+<nav id="navbar" class="navbar navbar-main navbar-expand-lg navbar-light index-highly-rounded border border-gray-100 <?= $fcc_share_is_visible ? 'fcc-navbar--with-share-row' : null ?>">
     <div class="container">
         <a
                 class="navbar-brand d-flex"
@@ -265,4 +303,264 @@ $fcc_menu_dashboard_label = $fcc_is_hr_language ? 'Nadzorna ploča' : 'Dashboard
             </ul>
         </div>
     </div>
+
+    <?php if($fcc_share_is_visible): ?>
 </nav>
+    <div class="fcc-navbar-share-row">
+        <div class="fcc-navbar-share-row__inner">
+            <div class="fcc-navbar-share-row__copy">
+                <span class="fcc-navbar-share-row__pill">FCC</span>
+                <div class="fcc-navbar-share-row__text-wrap">
+                    <div class="fcc-navbar-share-row__title"><?= $fcc_is_hr_language ? 'Prijavljeni ste! Podijelite ovu stranicu s vašom preporukom.' : 'You are signed in! Share this page with your recommendation.' ?></div>
+                    <button
+                        type="button"
+                        class="fcc-navbar-share-row__info"
+                        data-fcc-navbar-share-toggle
+                        data-target="#fcc-navbar-share-details"
+                        aria-expanded="false"
+                        aria-controls="fcc-navbar-share-details"
+                    >
+                        <i class="fas fa-fw fa-info-circle mr-1"></i>
+                        <?= $fcc_is_hr_language ? 'Kako ovo radi' : 'How this works' ?>
+                    </button>
+                </div>
+            </div>
+
+            <div class="fcc-navbar-share-row__buttons">
+                <?= include_view(THEME_PATH . 'views/partials/share_buttons.php', ['url' => $fcc_share_url, 'class' => 'btn btn-gray-100 btn-sm', 'copy_to_clipboard' => true]) ?>
+            </div>
+        </div>
+
+        <div id="fcc-navbar-share-details" class="fcc-navbar-share-row__details d-none">
+            <?= $fcc_is_hr_language
+                ? 'Kada podijelite ovaj članak putem ove forme, vaš link za preporuku automatski se dodaje. Ako netko preko tog linka naruči proizvode ili posjeti Forever Card Club, prikazat će se vaši kontakt podaci, a sustav Forever Living Products Web Shopa automatski će zabilježiti vašu preporuku.'
+                : 'When you share this page through this form, your referral link is added automatically. If someone orders products or visits Forever Card Club through that link, your contact details will be shown and the Forever Living Products Web Shop system will automatically record your recommendation.' ?>
+        </div>
+    </div>
+    <?php endif ?>
+<?php if(!$fcc_share_is_visible): ?>
+</nav>
+<?php endif ?>
+</div>
+
+<?php ob_start() ?>
+<style>
+    .fcc-navbar-shell {
+        position: relative;
+    }
+
+    .fcc-navbar-shell--with-share-row {
+        border-radius: 1.35rem;
+        overflow: hidden;
+        background: linear-gradient(180deg, rgba(5, 7, 12, 0.98), rgba(10, 13, 20, 0.94));
+        border: 1px solid rgba(68, 196, 181, 0.12);
+        box-shadow: 0 14px 32px rgba(0, 0, 0, 0.16);
+    }
+
+    .fcc-navbar-shell--with-share-row #navbar {
+        margin-bottom: 0;
+        border-bottom-left-radius: 0;
+        border-bottom-right-radius: 0;
+        border: 0 !important;
+        background: transparent;
+        box-shadow: none;
+    }
+
+    .fcc-navbar--with-share-row {
+        padding-bottom: 0;
+    }
+
+    .fcc-navbar--with-share-row > .container:first-child {
+        padding-bottom: 0.05rem;
+    }
+
+    .fcc-navbar-share-row {
+        width: 100%;
+        padding: 0;
+    }
+
+    .fcc-navbar-share-row__inner {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 0.82rem 1.35rem 0.92rem;
+        border-top: 1px solid rgba(68, 196, 181, 0.1);
+        background:
+            radial-gradient(120% 180% at 0% 0%, rgba(74, 208, 189, 0.07), transparent 36%),
+            linear-gradient(180deg, rgba(10, 14, 20, 0.68), rgba(10, 14, 20, 0.9));
+    }
+
+    .fcc-navbar-share-row__copy {
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+        min-width: 0;
+    }
+
+    .fcc-navbar-share-row__pill {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.34rem 0.64rem;
+        border-radius: 999px;
+        background: linear-gradient(135deg, rgba(75, 210, 190, 0.16), rgba(71, 120, 255, 0.1));
+        color: #abfaf1;
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        flex-shrink: 0;
+        box-shadow: inset 0 0 0 1px rgba(171, 250, 241, 0.06);
+    }
+
+    .fcc-navbar-share-row__text-wrap {
+        display: flex;
+        align-items: center;
+        gap: 0.85rem;
+        flex-wrap: wrap;
+    }
+
+    .fcc-navbar-share-row__title {
+        color: rgba(241, 246, 251, 0.94);
+        font-size: 0.95rem;
+        font-weight: 600;
+        line-height: 1.45;
+    }
+
+    .fcc-navbar-share-row__info {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.2rem;
+        padding: 0.28rem 0.55rem;
+        border: 1px solid rgba(68, 196, 181, 0.08);
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.03);
+        color: rgba(148, 230, 221, 0.9);
+        font-size: 0.83rem;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    .fcc-navbar-share-row__buttons .btn {
+        margin: 0 0.28rem 0 0;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.04);
+        border-color: rgba(255, 255, 255, 0.04);
+    }
+
+    .fcc-navbar-share-row__details {
+        padding: 0 1.35rem 0.95rem;
+        border-bottom-left-radius: 1.35rem;
+        border-bottom-right-radius: 1.35rem;
+        background: linear-gradient(180deg, rgba(10, 14, 20, 0.88), rgba(10, 14, 20, 0.94));
+        color: rgba(228, 235, 241, 0.84);
+        font-size: 0.88rem;
+        line-height: 1.6;
+    }
+
+    .fcc-navbar-shell .dropdown {
+        position: relative;
+    }
+
+    .fcc-navbar-shell .dropdown-menu.dropdown-menu-right {
+        margin-top: 0.8rem;
+        border-radius: 1rem;
+        overflow: hidden;
+        z-index: 1085;
+    }
+
+    .fcc-navbar-shell--with-share-row .dropdown-menu.dropdown-menu-right {
+        margin-top: 1rem;
+    }
+
+    @media (max-width: 991px) {
+        .fcc-navbar-shell--with-share-row {
+            border-radius: 1.15rem;
+            overflow: hidden;
+        }
+
+        .fcc-navbar-shell--with-share-row #navbar {
+            border-bottom-left-radius: 1.15rem;
+            border-bottom-right-radius: 1.15rem;
+        }
+
+        .fcc-navbar-share-row__inner {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 0.8rem;
+            padding: 0.88rem 1rem 0.95rem;
+        }
+
+        .fcc-navbar-share-row__copy {
+            align-items: flex-start;
+        }
+
+        .fcc-navbar-share-row__text-wrap {
+            align-items: flex-start;
+            flex-direction: column;
+            gap: 0.55rem;
+        }
+
+        .fcc-navbar-share-row__buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.45rem;
+        }
+
+        .fcc-navbar-share-row__buttons .btn {
+            margin: 0;
+        }
+
+        .fcc-navbar-share-row__details {
+            padding: 0 1rem 0.95rem;
+        }
+
+        .fcc-navbar-shell .dropdown-menu.dropdown-menu-right,
+        .fcc-navbar-shell--with-share-row .dropdown-menu.dropdown-menu-right {
+            margin-top: 0.6rem;
+        }
+    }
+
+    @media (max-width: 575px) {
+        .fcc-navbar-shell--with-share-row {
+            border-radius: 1.05rem;
+        }
+
+        .fcc-navbar-share-row__inner {
+            padding: 0.85rem 0.88rem 0.9rem;
+        }
+
+        .fcc-navbar-share-row__details {
+            padding: 0 0.88rem 0.88rem;
+        }
+
+        .fcc-navbar-share-row__title {
+            font-size: 0.91rem;
+        }
+    }
+</style>
+<?php \Altum\Event::add_content(ob_get_clean(), 'head', 'fcc_navbar_share_row_css'); ?>
+
+<?php ob_start() ?>
+<script>
+    'use strict';
+
+    (() => {
+        const button = document.querySelector('[data-fcc-navbar-share-toggle]');
+        const target = document.querySelector('#fcc-navbar-share-details');
+
+        if(!button || !target || button.dataset.fccNavbarShareBound) {
+            return;
+        }
+
+        button.dataset.fccNavbarShareBound = 'true';
+
+        button.addEventListener('click', () => {
+            const isHidden = target.classList.contains('d-none');
+            target.classList.toggle('d-none', !isHidden);
+            button.setAttribute('aria-expanded', isHidden ? 'true' : 'false');
+        });
+    })();
+</script>
+<?php \Altum\Event::add_content(ob_get_clean(), 'javascript', 'fcc_navbar_share_row_js'); ?>

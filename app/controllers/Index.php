@@ -25,6 +25,38 @@ defined('ALTUMCODE') || die();
 
 class Index extends Controller {
 
+    private function get_logged_in_referral_biolink_url(): ?string {
+        $user_id = \Altum\Authentication::check();
+
+        if(!$user_id) {
+            return null;
+        }
+
+        $main_biolink_map = db()->where('user_id', $user_id)->getOne('users_biolinks', ['biolink_id']);
+
+        if($main_biolink_map && !empty($main_biolink_map->biolink_id)) {
+            $biolink = db()->where('link_id', $main_biolink_map->biolink_id)->where('type', 'biolink')->getOne('links', ['url']);
+
+            if($biolink && !empty($biolink->url)) {
+                return $biolink->url;
+            }
+        }
+
+        $biolink = db()->where('user_id', $user_id)->where('type', 'biolink')->orderBy('link_id', 'ASC')->getOne('links', ['url']);
+
+        return ($biolink && !empty($biolink->url)) ? $biolink->url : null;
+    }
+
+    private function append_referral_to_url(string $url, ?string $referral = null): string {
+        $referral = trim((string) $referral);
+
+        if($referral === '') {
+            return $url;
+        }
+
+        return $url . (parse_url($url, PHP_URL_QUERY) ? '&' : '?') . http_build_query(['ref' => $referral]);
+    }
+
     public function index() {
 
         /* Custom index redirect if set */
@@ -267,6 +299,7 @@ class Index extends Controller {
             'tools_categories' => $tools_categories,
             'enabled_tools' => $enabled_tools,
             'domains' => $domains,
+            'share_url' => $this->append_referral_to_url(url(), $this->get_logged_in_referral_biolink_url()),
             /* Custom code: FC-2026-03-24: strengthen homepage SEO and AI semantics */
             'homepage_semantics' => $homepage_semantics,
             /* /Custom code: FC-2026-03-24 */

@@ -24,6 +24,38 @@ defined('ALTUMCODE') || die();
 
 class Page extends Controller {
 
+    private function get_logged_in_referral_biolink_url(): ?string {
+        $user_id = \Altum\Authentication::check();
+
+        if(!$user_id) {
+            return null;
+        }
+
+        $main_biolink_map = db()->where('user_id', $user_id)->getOne('users_biolinks', ['biolink_id']);
+
+        if($main_biolink_map && !empty($main_biolink_map->biolink_id)) {
+            $biolink = db()->where('link_id', $main_biolink_map->biolink_id)->where('type', 'biolink')->getOne('links', ['url']);
+
+            if($biolink && !empty($biolink->url)) {
+                return $biolink->url;
+            }
+        }
+
+        $biolink = db()->where('user_id', $user_id)->where('type', 'biolink')->orderBy('link_id', 'ASC')->getOne('links', ['url']);
+
+        return ($biolink && !empty($biolink->url)) ? $biolink->url : null;
+    }
+
+    private function append_referral_to_url(string $url, ?string $referral = null): string {
+        $referral = trim((string) $referral);
+
+        if($referral === '') {
+            return $url;
+        }
+
+        return $url . (parse_url($url, PHP_URL_QUERY) ? '&' : '?') . http_build_query(['ref' => $referral]);
+    }
+
     private function get_main_biolink_for_user_id(?int $user_id): ?object {
         $user_id = (int) $user_id;
 
@@ -717,6 +749,7 @@ class Page extends Controller {
             'page'  => $page,
             'pages_category' => $pages_category,
             'collaborator_contact' => $collaborator_contact,
+            'share_url' => $this->append_referral_to_url($page_url, $this->get_logged_in_referral_biolink_url()),
             /* Custom code: FC-2026-03-24: strengthen foreverclub page hub SEO and internal linking */
             'is_foreverclub_page' => $is_foreverclub_page,
             'foreverclub_semantics' => $foreverclub_semantics,

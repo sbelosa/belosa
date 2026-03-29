@@ -27,6 +27,38 @@ defined('ALTUMCODE') || die();
 
 class Blog extends Controller {
 
+    private function get_logged_in_referral_biolink_url(): ?string {
+        $user_id = \Altum\Authentication::check();
+
+        if(!$user_id) {
+            return null;
+        }
+
+        $main_biolink_map = db()->where('user_id', $user_id)->getOne('users_biolinks', ['biolink_id']);
+
+        if($main_biolink_map && !empty($main_biolink_map->biolink_id)) {
+            $biolink = db()->where('link_id', $main_biolink_map->biolink_id)->where('type', 'biolink')->getOne('links', ['url']);
+
+            if($biolink && !empty($biolink->url)) {
+                return $biolink->url;
+            }
+        }
+
+        $biolink = db()->where('user_id', $user_id)->where('type', 'biolink')->orderBy('link_id', 'ASC')->getOne('links', ['url']);
+
+        return ($biolink && !empty($biolink->url)) ? $biolink->url : null;
+    }
+
+    private function append_referral_to_url(string $url, ?string $referral = null): string {
+        $referral = trim((string) $referral);
+
+        if($referral === '') {
+            return $url;
+        }
+
+        return $url . (parse_url($url, PHP_URL_QUERY) ? '&' : '?') . http_build_query(['ref' => $referral]);
+    }
+
     public function index() {
 
         if(!settings()->content->blog_is_enabled) {
@@ -470,6 +502,7 @@ class Blog extends Controller {
                 'blog_posts' => $blog_posts,
                 'pagination' => $pagination,                
                 'blog_posts_popular' => $blog_posts_popular,
+                'share_url' => $this->append_referral_to_url($blog_posts_category_url, $this->get_logged_in_referral_biolink_url()),
                 /* Custom code */
                 'blog_posts_main_categories' => $blog_posts_main_categories,
                 'blog_posts_parents' => $blog_posts_parent_categories,
@@ -600,6 +633,11 @@ class Blog extends Controller {
                 'pagination' => $pagination,
                 'filters' => $filters,                
                 'blog_posts_popular' => $blog_posts_popular,
+                'blog_index_url' => SITE_URL . ($language ? ((\Altum\Language::$active_languages[$language] ?? null) ? \Altum\Language::$active_languages[$language] . '/' : null) : null) . 'blog',
+                'share_url' => $this->append_referral_to_url(
+                    SITE_URL . ($language ? ((\Altum\Language::$active_languages[$language] ?? null) ? \Altum\Language::$active_languages[$language] . '/' : null) : null) . 'blog' . (!empty($_GET['search']) ? '?search=' . urlencode($_GET['search']) : ''),
+                    $this->get_logged_in_referral_biolink_url()
+                ),
                 /* Custom code */
                 'blog_posts_main_categories' => $blog_posts_main_categories,
                 'blog_posts_parents' => $blog_posts_parent_categories,

@@ -5,6 +5,14 @@
 $fcc_blog_categories_title = \Altum\Language::$code == 'hr' ? 'Kategorije' : 'Categories';
 $fcc_blog_popular_title = \Altum\Language::$code == 'hr' ? 'Popularni postovi' : 'Popular posts';
 $fcc_blog_post_url = $data->blog_post_url ?? (SITE_URL . ($data->blog_post->language ? \Altum\Language::$active_languages[$data->blog_post->language] . '/' : null) . 'blog/' . $data->blog_post->url);
+$share_referral_key = null;
+if(isset($data->referral) && $data->referral) {
+    $share_referral_key = $data->referral;
+} elseif(isset($data->biolink->url) && $data->biolink->url) {
+    $share_referral_key = $data->biolink->url;
+}
+
+$share_url = $data->share_url ?? $fcc_blog_post_url;
 /* /Custom code: FC-2026-02-26 */
 ?>
 
@@ -151,19 +159,6 @@ $fcc_blog_post_url = $data->blog_post_url ?? (SITE_URL . ($data->blog_post->lang
                 </div>
             </div>
 
-            <?php
-            /* Custom code: FC-2026-02-26: unified share referral URL */
-            $share_referral_key = null;
-            if(isset($data->referral) && $data->referral) {
-                $share_referral_key = $data->referral;
-            } elseif(isset($data->biolink->url) && $data->biolink->url) {
-                $share_referral_key = $data->biolink->url;
-            }
-
-            $share_url = $data->share_url ?? $fcc_blog_post_url;
-            /* /Custom code: FC-2026-02-26 */
-
-            ?>
             <?php if(settings()->content->blog_share_is_enabled): ?>
                 <div class="card mt-4 fcc-glass-card fcc-share-card">
                     <div class="card-body">
