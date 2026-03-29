@@ -22,9 +22,28 @@ defined('ALTUMCODE') || die();
 
 class Account extends Controller {
 
+    private function ensure_featured_app_columns(): void {
+        $required_columns = [
+            'fcc_featured_opt_in' => "ALTER TABLE `users` ADD COLUMN `fcc_featured_opt_in` TINYINT(1) NOT NULL DEFAULT 1",
+            'fcc_featured_is_approved' => "ALTER TABLE `users` ADD COLUMN `fcc_featured_is_approved` TINYINT(1) NOT NULL DEFAULT 1",
+            'fcc_featured_public_market' => "ALTER TABLE `users` ADD COLUMN `fcc_featured_public_market` VARCHAR(64) NULL DEFAULT NULL",
+            'fcc_featured_public_use_case' => "ALTER TABLE `users` ADD COLUMN `fcc_featured_public_use_case` VARCHAR(128) NULL DEFAULT NULL",
+            'fcc_featured_public_summary' => "ALTER TABLE `users` ADD COLUMN `fcc_featured_public_summary` VARCHAR(512) NULL DEFAULT NULL",
+        ];
+
+        foreach($required_columns as $column => $query) {
+            $column_result = db()->rawQuery("SHOW COLUMNS FROM `users` LIKE '{$column}'");
+
+            if(empty($column_result)) {
+                db()->rawQuery($query);
+            }
+        }
+    }
+
     public function index() {
 
         \Altum\Authentication::guard();
+        $this->ensure_featured_app_columns();
 
         /* Prepare the TwoFA codes just in case we need them */
         $twofa = new \RobThree\Auth\TwoFactorAuth(new \RobThree\Auth\Providers\Qr\BaconQrCodeProvider(format: 'svg'), settings()->main->title, 6, 30);
@@ -42,6 +61,10 @@ class Account extends Controller {
             /* Custom code: FC-2026-03-05: account contact fields for shortcode/referral data */
             $_POST['phone'] = input_clean($_POST['phone'] ?? '', 32);
             /* /Custom code: FC-2026-03-05 */
+            $_POST['fcc_featured_opt_in'] = (int) isset($_POST['fcc_featured_opt_in']);
+            $_POST['fcc_featured_public_market'] = input_clean($_POST['fcc_featured_public_market'] ?? '', 64);
+            $_POST['fcc_featured_public_use_case'] = input_clean($_POST['fcc_featured_public_use_case'] ?? '', 128);
+            $_POST['fcc_featured_public_summary'] = input_clean($_POST['fcc_featured_public_summary'] ?? '', 512);
             $_POST['twofa_is_enabled'] = (bool) $_POST['twofa_is_enabled'];
             $_POST['twofa_token'] = input_clean(str_replace(' ', '', $_POST['twofa_token'] ?? ''));
             $_POST['is_newsletter_subscribed'] = (int) isset($_POST['is_newsletter_subscribed']);
@@ -191,6 +214,10 @@ class Account extends Controller {
                     'anti_phishing_code' => $_POST['anti_phishing_code'],
                     'is_newsletter_subscribed' => $_POST['is_newsletter_subscribed'],
                     'referral_key' => $_POST['referral_key'],
+                    'fcc_featured_opt_in' => $_POST['fcc_featured_opt_in'],
+                    'fcc_featured_public_market' => $_POST['fcc_featured_public_market'] ?: null,
+                    'fcc_featured_public_use_case' => $_POST['fcc_featured_public_use_case'] ?: null,
+                    'fcc_featured_public_summary' => $_POST['fcc_featured_public_summary'] ?: null,
                     /* Custom code: FC-2026-03-05: persist account contact fields in preferences */
                     'preferences' => json_encode($preferences),
                     /* /Custom code: FC-2026-03-05 */

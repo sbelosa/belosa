@@ -22,7 +22,26 @@ defined('ALTUMCODE') || die();
 
 class AdminUserUpdate extends Controller {
 
+    private function ensure_featured_app_columns(): void {
+        $required_columns = [
+            'fcc_featured_opt_in' => "ALTER TABLE `users` ADD COLUMN `fcc_featured_opt_in` TINYINT(1) NOT NULL DEFAULT 1",
+            'fcc_featured_is_approved' => "ALTER TABLE `users` ADD COLUMN `fcc_featured_is_approved` TINYINT(1) NOT NULL DEFAULT 1",
+            'fcc_featured_public_market' => "ALTER TABLE `users` ADD COLUMN `fcc_featured_public_market` VARCHAR(64) NULL DEFAULT NULL",
+            'fcc_featured_public_use_case' => "ALTER TABLE `users` ADD COLUMN `fcc_featured_public_use_case` VARCHAR(128) NULL DEFAULT NULL",
+            'fcc_featured_public_summary' => "ALTER TABLE `users` ADD COLUMN `fcc_featured_public_summary` VARCHAR(512) NULL DEFAULT NULL",
+        ];
+
+        foreach($required_columns as $column => $query) {
+            $column_result = db()->rawQuery("SHOW COLUMNS FROM `users` LIKE '{$column}'");
+
+            if(empty($column_result)) {
+                db()->rawQuery($query);
+            }
+        }
+    }
+
     public function index() {
+        $this->ensure_featured_app_columns();
 
         $user_id = isset($this->params[0]) ? (int) $this->params[0] : null;
 
@@ -43,6 +62,11 @@ class AdminUserUpdate extends Controller {
             $_POST['status'] = (int) $_POST['status'];
             $_POST['type'] = (int) $_POST['type'];
             $_POST['plan_trial_done'] = (int) isset($_POST['plan_trial_done']);
+            $_POST['fcc_featured_opt_in'] = (int) isset($_POST['fcc_featured_opt_in']);
+            $_POST['fcc_featured_is_approved'] = (int) isset($_POST['fcc_featured_is_approved']);
+            $_POST['fcc_featured_public_market'] = input_clean($_POST['fcc_featured_public_market'] ?? '', 64);
+            $_POST['fcc_featured_public_use_case'] = input_clean($_POST['fcc_featured_public_use_case'] ?? '', 128);
+            $_POST['fcc_featured_public_summary'] = input_clean($_POST['fcc_featured_public_summary'] ?? '', 512);
             $_POST['user_meta']['limited'] = $_POST['user_meta']['limited'] == 'on' ? 1 : null; /* Custom code */
 
             if(\Altum\Plugin::is_active('affiliate')) {
@@ -281,6 +305,11 @@ class AdminUserUpdate extends Controller {
                     'plan_settings' => $plan_settings,
                     'plan_trial_done' => $_POST['plan_trial_done'],
                     'referred_by' => $user->referred_by != $_POST['referred_by'] ? $_POST['referred_by'] : $user->referred_by,
+                    'fcc_featured_opt_in' => $_POST['fcc_featured_opt_in'],
+                    'fcc_featured_is_approved' => $_POST['fcc_featured_is_approved'],
+                    'fcc_featured_public_market' => $_POST['fcc_featured_public_market'] ?: null,
+                    'fcc_featured_public_use_case' => $_POST['fcc_featured_public_use_case'] ?: null,
+                    'fcc_featured_public_summary' => $_POST['fcc_featured_public_summary'] ?: null,
                     'preferences' => json_encode($preferences), /* Custom code */
                 ]);
 

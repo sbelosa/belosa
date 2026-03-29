@@ -215,6 +215,8 @@
                     <a href="<?= url('featured-apps') ?>"><?= l('featured_apps.title') ?></a>
                     <?= l('fcc_results.homepage_spotlight_notice_after') ?>
                 </div>
+
+                <div class="small fcc-metric-note mt-3 mb-0"><?= l('fcc_results.proof_note') ?></div>
             </div>
         </div>
     </div>
