@@ -24,6 +24,98 @@ defined('ALTUMCODE') || die();
 
 class Page extends Controller {
 
+    private function get_main_biolink_for_user_id(?int $user_id): ?object {
+        $user_id = (int) $user_id;
+
+        if(!$user_id) {
+            return null;
+        }
+
+        $main_biolink_map = db()->where('user_id', $user_id)->getOne('users_biolinks', ['biolink_id']);
+
+        if($main_biolink_map && !empty($main_biolink_map->biolink_id)) {
+            $main_biolink = db()->where('link_id', $main_biolink_map->biolink_id)->where('type', 'biolink')->getOne('links', ['link_id', 'user_id', 'project_id', 'url']);
+
+            if($main_biolink) {
+                return $main_biolink;
+            }
+        }
+
+        return db()->where('user_id', $user_id)->where('type', 'biolink')->orderBy('link_id', 'ASC')->getOne('links', ['link_id', 'user_id', 'project_id', 'url']);
+    }
+
+    private function resolve_contact_page_main_biolink(?string $collaborator_aff_url = null, ?string $collaborator_email = null): ?object {
+        $legacy_referral_slug = 'wpebe1grqr';
+        $referral_candidates = [];
+
+        if($collaborator_aff_url) {
+            $referral_candidates[] = trim((string) $collaborator_aff_url);
+        }
+
+        if(!empty($_GET['ref'])) {
+            $referral_candidates[] = query_clean($_GET['ref']);
+        }
+
+        if(!empty($_COOKIE['referral']) && trim((string) $_COOKIE['referral']) !== $legacy_referral_slug) {
+            $referral_candidates[] = trim((string) $_COOKIE['referral']);
+        }
+
+        if(!empty($_COOKIE['referred_by']) && trim((string) $_COOKIE['referred_by']) !== $legacy_referral_slug) {
+            $referral_candidates[] = trim((string) $_COOKIE['referred_by']);
+        }
+
+        $normalized_candidates = [];
+
+        foreach($referral_candidates as $candidate) {
+            $candidate = trim((string) $candidate);
+
+            if($candidate === '') {
+                continue;
+            }
+
+            $normalized_candidates[] = ltrim($candidate, '/');
+
+            if(filter_var($candidate, FILTER_VALIDATE_URL)) {
+                $candidate_path = parse_url($candidate, PHP_URL_PATH);
+
+                if($candidate_path) {
+                    $normalized_candidates[] = ltrim($candidate_path, '/');
+                    $normalized_candidates[] = basename($candidate_path);
+                }
+            }
+        }
+
+        $normalized_candidates = array_values(array_unique(array_filter($normalized_candidates)));
+
+        foreach($normalized_candidates as $candidate) {
+            $resolved_user = db()->where('referral_key', $candidate)->where('status', 1)->getOne('users', ['user_id']);
+
+            if($resolved_user) {
+                $main_biolink = $this->get_main_biolink_for_user_id((int) $resolved_user->user_id);
+
+                if($main_biolink) {
+                    return $main_biolink;
+                }
+            }
+
+            $resolved_biolink = db()->where('url', $candidate)->where('type', 'biolink')->getOne('links', ['link_id', 'user_id', 'project_id', 'url']);
+
+            if($resolved_biolink) {
+                return $resolved_biolink;
+            }
+        }
+
+        if($collaborator_email) {
+            $resolved_user = db()->where('email', trim((string) $collaborator_email))->getOne('users', ['user_id']);
+
+            if($resolved_user) {
+                return $this->get_main_biolink_for_user_id((int) $resolved_user->user_id);
+            }
+        }
+
+        return null;
+    }
+
     private function resolve_hero_image_url_for_link(?int $link_id): ?string {
         if(!$link_id) {
             return null;
@@ -661,32 +753,7 @@ class Page extends Controller {
                 'project_id' => null,
             ];
 
-            $collaborator_user = null;
-            $main_biolink = null;
-
-            if($collaborator_aff_url) {
-                $aff_path = trim((string) parse_url($collaborator_aff_url, PHP_URL_PATH), '/');
-
-                if($aff_path) {
-                    $main_biolink = db()->where('url', $aff_path)->where('type', 'biolink')->getOne('links', ['link_id', 'user_id', 'project_id', 'url']);
-                }
-            }
-
-            if(!$main_biolink && $collaborator_contact->email) {
-                $collaborator_user = db()->where('email', $collaborator_contact->email)->getOne('users', ['user_id', 'name', 'email']);
-
-                if($collaborator_user) {
-                    $main_biolink_map = db()->where('user_id', $collaborator_user->user_id)->getOne('users_biolinks', ['biolink_id']);
-
-                    if($main_biolink_map && !empty($main_biolink_map->biolink_id)) {
-                        $main_biolink = db()->where('link_id', $main_biolink_map->biolink_id)->where('type', 'biolink')->getOne('links', ['link_id', 'user_id', 'project_id', 'url']);
-                    }
-
-                    if(!$main_biolink) {
-                        $main_biolink = db()->where('user_id', $collaborator_user->user_id)->where('type', 'biolink')->orderBy('link_id', 'ASC')->getOne('links', ['link_id', 'user_id', 'project_id', 'url']);
-                    }
-                }
-            }
+            $main_biolink = $this->resolve_contact_page_main_biolink($collaborator_aff_url, $collaborator_contact->email);
 
             if($main_biolink && empty($collaborator_contact->aff_link)) {
                 $collaborator_contact->aff_link = SITE_URL . ltrim($main_biolink->url, '/');
