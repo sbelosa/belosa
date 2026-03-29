@@ -15,6 +15,7 @@ $fcc_main_status_on = $fcc_links_is_hr ? 'Javni prikaz je uključen.' : 'Public 
 $fcc_main_status_off = $fcc_links_is_hr ? 'Javni prikaz je trenutno isključen.' : 'Public showcase is currently turned off.';
 $fcc_main_admin_hidden = $fcc_links_is_hr ? 'Admin je trenutno isključio javni prikaz ove aplikacije.' : 'Admin has currently hidden this app from the public showcase.';
 $fcc_main_submit = $fcc_links_is_hr ? 'Spremi javni prikaz' : 'Save public showcase settings';
+$fcc_main_visible_tags_limit = 3;
 ?>
 
 <style>
@@ -581,9 +582,16 @@ $fcc_main_submit = $fcc_links_is_hr ? 'Spremi javni prikaz' : 'Save public showc
                     <?php if(!empty($fcc_main_featured['feature_labels'])): ?>
                         <div class="small text-uppercase text-muted font-weight-bold mb-2"><?= $fcc_main_detected ?></div>
                         <div class="fcc-main-app-featured-meta mb-3">
-                            <?php foreach($fcc_main_featured['feature_labels'] as $feature_label): ?>
+                            <?php $fcc_main_visible_tags = array_slice($fcc_main_featured['feature_labels'], 0, $fcc_main_visible_tags_limit); ?>
+                            <?php $fcc_main_remaining_tags = max(0, count($fcc_main_featured['feature_labels']) - count($fcc_main_visible_tags)); ?>
+
+                            <?php foreach($fcc_main_visible_tags as $feature_label): ?>
                                 <span class="fcc-main-app-featured-tag"><?= $feature_label ?></span>
                             <?php endforeach ?>
+
+                            <?php if($fcc_main_remaining_tags > 0): ?>
+                                <span class="fcc-main-app-featured-pill"><?= $fcc_links_is_hr ? '+ još ' . $fcc_main_remaining_tags : '+ ' . $fcc_main_remaining_tags . ' more' ?></span>
+                            <?php endif ?>
                         </div>
                     <?php endif ?>
 

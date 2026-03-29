@@ -109,45 +109,45 @@ class FeaturedApps extends Controller {
             ? [
                 'smart_links' => [
                     'label' => 'Pametni preporučni linkovi',
-                    'types' => ['link_discount', 'link_forever_shop', 'link_forever_product', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo'],
+                    'types' => ['link_discount', 'link_forever_shop', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo'],
                 ],
                 'ai' => [
                     'label' => 'AI asistenti',
                     'types' => ['custom_html_chatbot', 'custom_html_chatbot_pets'],
                 ],
+                'funnel' => [
+                    'label' => 'FCC Funnel',
+                    'types' => ['lead_funnel'],
+                ],
                 'lead_capture' => [
                     'label' => 'Prikupljanje kontakata',
-                    'types' => ['lead_funnel', 'contact_collector', 'email_collector', 'phone_collector'],
+                    'types' => ['contact_collector', 'email_collector', 'phone_collector', 'appointment_calendar'],
                 ],
                 'contact' => [
                     'label' => 'Kontakt i spremanje kontakta',
                     'types' => ['link_save_contact', 'custom_html_whatsapp'],
                 ],
-                'presentation' => [
-                    'label' => 'Predstavljanje aplikacije',
-                    'types' => ['socials', 'avatar', 'heading', 'paragraph', 'image', 'image_slider', 'modal_text', 'cta'],
-                ],
             ]
             : [
                 'smart_links' => [
                     'label' => 'Smart referral links',
-                    'types' => ['link_discount', 'link_forever_shop', 'link_forever_product', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo'],
+                    'types' => ['link_discount', 'link_forever_shop', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo'],
                 ],
                 'ai' => [
                     'label' => 'AI assistants',
                     'types' => ['custom_html_chatbot', 'custom_html_chatbot_pets'],
                 ],
+                'funnel' => [
+                    'label' => 'FCC Funnel',
+                    'types' => ['lead_funnel'],
+                ],
                 'lead_capture' => [
                     'label' => 'Lead capture',
-                    'types' => ['lead_funnel', 'contact_collector', 'email_collector', 'phone_collector'],
+                    'types' => ['contact_collector', 'email_collector', 'phone_collector', 'appointment_calendar'],
                 ],
                 'contact' => [
                     'label' => 'Contact actions',
                     'types' => ['link_save_contact', 'custom_html_whatsapp'],
-                ],
-                'presentation' => [
-                    'label' => 'App presentation',
-                    'types' => ['socials', 'avatar', 'heading', 'paragraph', 'image', 'image_slider', 'modal_text', 'cta'],
                 ],
             ];
 

@@ -1,6 +1,7 @@
 <?php defined('ALTUMCODE') || die() ?>
 
 <?php $fcc_is_hr = \Altum\Language::$code === 'hr'; ?>
+<?php $featured_app_visible_tags_limit = 3; ?>
 
 <div class="container my-5 featured-apps-page">
     <section class="featured-apps-hero mb-4">
@@ -55,9 +56,16 @@
                                 <div class="featured-app-section mb-3">
                                     <div class="featured-app-section__label"><?= l('featured_apps.block_usage') ?></div>
                                     <div class="featured-app-tags">
-                                        <?php foreach($app['feature_labels'] as $feature_label): ?>
+                                        <?php $visible_feature_labels = array_slice($app['feature_labels'], 0, $featured_app_visible_tags_limit); ?>
+                                        <?php $remaining_feature_labels = max(0, count($app['feature_labels']) - count($visible_feature_labels)); ?>
+
+                                        <?php foreach($visible_feature_labels as $feature_label): ?>
                                             <span class="featured-app-tag"><?= $feature_label ?></span>
                                         <?php endforeach ?>
+
+                                        <?php if($remaining_feature_labels > 0): ?>
+                                            <span class="featured-app-tag featured-app-tag--more"><?= $fcc_is_hr ? '+ još ' . $remaining_feature_labels : '+ ' . $remaining_feature_labels . ' more' ?></span>
+                                        <?php endif ?>
                                     </div>
                                 </div>
                             <?php endif ?>
@@ -156,6 +164,11 @@
     .featured-app-tag {
         background: rgba(104, 232, 188, 0.1);
         color: #c9fff2;
+    }
+
+    .featured-app-tag--more {
+        background: rgba(255, 255, 255, 0.06);
+        color: rgba(240, 244, 251, 0.82);
     }
 
     .featured-app-section__label {
