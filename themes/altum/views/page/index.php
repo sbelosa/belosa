@@ -196,6 +196,7 @@ $fcc_contact_channel_label = $fcc_is_hr ? 'Najbrži kanal kontakta' : 'Fastest c
         $fcc_contact_default_image = SITE_URL . 'uploads/logo/forever.png';
         $fcc_contact_generated_avatar = get_user_avatar(null, $fcc_contact_email_value ?: $fcc_contact_name);
         $fcc_contact_display_image = $fcc_contact_hero_image ?: $fcc_contact_default_image;
+        $fcc_contact_form_action = SITE_URL . ($data->page->language ? ((\Altum\Language::$active_languages[$data->page->language] ?? null) ? \Altum\Language::$active_languages[$data->page->language] . '/' : null) : null) . 'page/' . $data->page->url . '#fcc-contact-direct';
         $fcc_phone_link = $fcc_contact_phone_value ? preg_replace('/\s+/', '', $fcc_contact_phone_value) : '';
         $fcc_whatsapp_digits = preg_replace('/\D+/', '', $fcc_contact_phone_value);
         $fcc_whatsapp_url = $fcc_whatsapp_digits ? 'https://wa.me/' . $fcc_whatsapp_digits : '';
@@ -266,7 +267,7 @@ $fcc_contact_channel_label = $fcc_is_hr ? 'Najbrži kanal kontakta' : 'Fastest c
                             <h3><?= $fcc_contact_form_title ?></h3>
                         </div>
                         <p><?= sprintf($fcc_contact_form_text, '<strong>' . htmlspecialchars($fcc_contact_name ?: $fcc_contact_title) . '</strong>') ?></p>
-                        <form method="post" action="#fcc-contact-direct" class="fcc-collab-form">
+                        <form id="fcc-contact-form" method="post" action="<?= $fcc_contact_form_action ?>" class="fcc-collab-form">
                             <input type="hidden" name="token" value="<?= \Altum\Csrf::get() ?>" />
                             <input type="hidden" name="fcc_contact_action" value="store_contact" />
 
@@ -311,7 +312,7 @@ $fcc_contact_channel_label = $fcc_is_hr ? 'Najbrži kanal kontakta' : 'Fastest c
                             </div>
 
                             <div class="fcc-collab-section__actions">
-                                <button type="submit" class="btn btn-primary"><?= $fcc_contact_form_submit ?></button>
+                                <button type="submit" form="fcc-contact-form" class="btn btn-primary"><?= $fcc_contact_form_submit ?></button>
                             </div>
                         </form>
                     </div>
