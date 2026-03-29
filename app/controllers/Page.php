@@ -24,24 +24,6 @@ defined('ALTUMCODE') || die();
 
 class Page extends Controller {
 
-    private function get_contact_page_session_key(int $page_id): string {
-        return 'fcc_contact_page_target_' . $page_id;
-    }
-
-    private function log_contact_page_debug(string $message, array $context = []): void {
-        $line = '[' . get_date() . '] ' . $message;
-
-        if(!empty($context)) {
-            $line .= ' ' . json_encode($context, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
-        }
-
-        $line .= PHP_EOL;
-
-        $debug_file = UPLOADS_PATH . 'logs/fcc-contact-debug-' . date('Y-m-d') . '.log';
-
-        @file_put_contents($debug_file, $line, FILE_APPEND | LOCK_EX);
-    }
-
     private function get_main_biolink_for_user_id(?int $user_id): ?object {
         $user_id = (int) $user_id;
 
@@ -186,58 +168,6 @@ class Page extends Controller {
         }
 
         return $template ? (int) $template->link_id : null;
-    }
-
-    private function get_contact_phone_country_options(): array {
-        $country_options = [];
-
-        foreach(get_contact_phone_country_options_array() as $country_code => $country_label) {
-            $country_options[$country_code] = [
-                'name' => $country_label,
-                'dial_code' => get_contact_phone_dial_codes_array()[$country_code] ?? '',
-            ];
-        }
-
-        return $country_options;
-    }
-
-    private function normalize_contact_phone(string $phone, ?string $country_code = null): array {
-        $country_code = mb_strtoupper(trim((string) $country_code));
-        $country_options = $this->get_contact_phone_country_options();
-        $country_code = array_key_exists($country_code, $country_options) ? $country_code : 'HR';
-        $dial_code = $country_options[$country_code]['dial_code'] ?? '';
-
-        $raw_digits = preg_replace('/\D+/', '', $phone);
-        $trimmed_digits = ltrim($raw_digits, '0');
-
-        if(!$trimmed_digits) {
-            return [
-                'raw' => trim($phone),
-                'country_code' => $country_code,
-                'dial_code' => $dial_code,
-                'local' => '',
-                'e164' => '',
-                'is_valid' => false,
-            ];
-        }
-
-        if($dial_code && str_starts_with($raw_digits, $dial_code)) {
-            $trimmed_digits = $raw_digits;
-        } elseif($dial_code) {
-            $trimmed_digits = $dial_code . $trimmed_digits;
-        }
-
-        $e164 = '+' . $trimmed_digits;
-        $is_valid = mb_strlen($trimmed_digits) >= 8 && mb_strlen($trimmed_digits) <= 15;
-
-        return [
-            'raw' => trim($phone),
-            'country_code' => $country_code,
-            'dial_code' => $dial_code,
-            'local' => $raw_digits,
-            'e164' => $e164,
-            'is_valid' => $is_valid,
-        ];
     }
 
     public function index() {
@@ -750,13 +680,6 @@ class Page extends Controller {
 
         $collaborator_contact = null;
         if(mb_strtolower((string) $page->url) === 'contact') {
-            $this->log_contact_page_debug('contact_page_opened', [
-                'page_id' => $page->page_id,
-                'page_url' => $page->url,
-                'request_method' => $_SERVER['REQUEST_METHOD'] ?? 'UNKNOWN',
-                'has_contact_action' => !empty($_POST['fcc_contact_action']),
-            ]);
-
             $collaborator_aff_biolink = $shortcodes->generate_shorcode('aff_biolink', null);
             $collaborator_aff_url = null;
 
@@ -771,212 +694,20 @@ class Page extends Controller {
                 'forever_id' => $shortcodes->generate_shorcode('forever_id', null) ?? '',
                 'aff_link' => $collaborator_aff_url,
                 'hero_image_url' => null,
-                'user_id' => null,
-                'main_link_id' => null,
-                'contact_biolink_block_id' => null,
-                'contact_biolink_block_type' => 'contact_collector',
-                'project_id' => null,
             ];
 
             $main_biolink = $this->resolve_contact_page_main_biolink($collaborator_aff_url, $collaborator_contact->email);
-            $contact_page_session_key = $this->get_contact_page_session_key((int) $page->page_id);
-            $stored_contact_target = session_get($contact_page_session_key, null);
-
-            if(!$main_biolink && !empty($stored_contact_target['main_link_id'])) {
-                $main_biolink = db()->where('link_id', (int) $stored_contact_target['main_link_id'])->where('type', 'biolink')->getOne('links', ['link_id', 'user_id', 'project_id', 'url']);
-            }
 
             if($main_biolink && empty($collaborator_contact->aff_link)) {
                 $collaborator_contact->aff_link = SITE_URL . ltrim($main_biolink->url, '/');
             }
 
             if($main_biolink) {
-                $collaborator_contact->user_id = (int) $main_biolink->user_id;
-                $collaborator_contact->main_link_id = (int) $main_biolink->link_id;
-                $collaborator_contact->project_id = isset($main_biolink->project_id) && $main_biolink->project_id !== null ? (int) $main_biolink->project_id : null;
                 $collaborator_contact->hero_image_url = $this->resolve_hero_image_url_for_link($main_biolink->link_id);
-
-                $contact_block = db()->where('link_id', $main_biolink->link_id)
-                    ->where('is_enabled', 1)
-                    ->where('type', ['contact_collector', 'phone_collector', 'email_collector', 'lead_funnel'], 'IN')
-                    ->orderBy('`order`', 'ASC')
-                    ->getOne('biolinks_blocks', ['biolink_block_id', 'type']);
-
-                if($contact_block) {
-                    $collaborator_contact->contact_biolink_block_id = (int) $contact_block->biolink_block_id;
-                    $collaborator_contact->contact_biolink_block_type = $contact_block->type;
-                }
-            }
-
-            if($main_biolink) {
-                session_set($contact_page_session_key, [
-                    'user_id' => $collaborator_contact->user_id,
-                    'main_link_id' => $collaborator_contact->main_link_id,
-                    'project_id' => $collaborator_contact->project_id,
-                    'contact_biolink_block_id' => $collaborator_contact->contact_biolink_block_id,
-                    'contact_biolink_block_type' => $collaborator_contact->contact_biolink_block_type,
-                    'aff_link' => $collaborator_contact->aff_link,
-                ]);
-            } elseif($stored_contact_target) {
-                $collaborator_contact->user_id = !empty($stored_contact_target['user_id']) ? (int) $stored_contact_target['user_id'] : null;
-                $collaborator_contact->main_link_id = !empty($stored_contact_target['main_link_id']) ? (int) $stored_contact_target['main_link_id'] : null;
-                $collaborator_contact->project_id = array_key_exists('project_id', $stored_contact_target) && $stored_contact_target['project_id'] !== null ? (int) $stored_contact_target['project_id'] : null;
-                $collaborator_contact->contact_biolink_block_id = !empty($stored_contact_target['contact_biolink_block_id']) ? (int) $stored_contact_target['contact_biolink_block_id'] : null;
-                $collaborator_contact->contact_biolink_block_type = !empty($stored_contact_target['contact_biolink_block_type']) ? $stored_contact_target['contact_biolink_block_type'] : 'contact_collector';
-                $collaborator_contact->aff_link = $collaborator_contact->aff_link ?: ($stored_contact_target['aff_link'] ?? null);
             }
 
             if(empty($collaborator_contact->hero_image_url)) {
                 $collaborator_contact->hero_image_url = $this->resolve_hero_image_url_for_link($this->get_factory_biolink_template_link_id());
-            }
-
-            if(!empty($_POST['fcc_contact_action']) && $_POST['fcc_contact_action'] === 'store_contact') {
-                $this->log_contact_page_debug('submit_started', [
-                    'page_id' => $page->page_id,
-                    'page_url' => $page->url,
-                    'resolved_user_id' => $collaborator_contact->user_id,
-                    'resolved_main_link_id' => $collaborator_contact->main_link_id,
-                    'resolved_block_id' => $collaborator_contact->contact_biolink_block_id,
-                    'resolved_block_type' => $collaborator_contact->contact_biolink_block_type,
-                    'resolved_project_id' => $collaborator_contact->project_id,
-                    'session_key' => $contact_page_session_key,
-                    'has_stored_target' => !empty($stored_contact_target),
-                ]);
-
-                if(empty($collaborator_contact->user_id) || empty($collaborator_contact->main_link_id)) {
-                    $this->log_contact_page_debug('submit_aborted_missing_target', [
-                        'page_id' => $page->page_id,
-                        'resolved_user_id' => $collaborator_contact->user_id,
-                        'resolved_main_link_id' => $collaborator_contact->main_link_id,
-                    ]);
-                    \Altum\Alerts::add_error(l('global.error_message.basic'));
-                } else {
-                    $_POST['name'] = input_clean($_POST['name'] ?? '', 64);
-                    $_POST['email'] = input_clean_email($_POST['email'] ?? '');
-                    $_POST['phone'] = input_clean($_POST['phone'] ?? '', 32);
-                    $_POST['phone_country_code'] = input_clean($_POST['phone_country_code'] ?? 'HR', 8);
-                    $_POST['preferred_contact_channel'] = input_clean($_POST['preferred_contact_channel'] ?? 'whatsapp', 32);
-                    $_POST['message'] = input_clean($_POST['message'] ?? '', 512);
-
-                    if(!$_POST['name'] || !$_POST['email'] || !$_POST['phone']) {
-                        $this->log_contact_page_debug('submit_aborted_empty_fields', [
-                            'has_name' => (bool) $_POST['name'],
-                            'has_email' => (bool) $_POST['email'],
-                            'has_phone' => (bool) $_POST['phone'],
-                        ]);
-                        \Altum\Alerts::add_error(l('global.error_message.empty_fields'));
-                    } else {
-                        $normalized_phone = $this->normalize_contact_phone($_POST['phone'], $_POST['phone_country_code']);
-
-                        if(!$normalized_phone['is_valid']) {
-                            $this->log_contact_page_debug('submit_aborted_invalid_phone', [
-                                'phone' => $_POST['phone'],
-                                'phone_country_code' => $_POST['phone_country_code'],
-                            ]);
-                            \Altum\Alerts::add_error(l('global.error_message.empty_fields'));
-                        } else {
-                            $contact_type = $collaborator_contact->contact_biolink_block_type ?: 'contact_collector';
-
-                            if(!in_array($contact_type, ['contact_collector', 'phone_collector', 'email_collector', 'lead_funnel'], true)) {
-                                $contact_type = 'contact_collector';
-                            }
-
-                            $contact_data = [
-                                'name' => $_POST['name'],
-                                'email' => $_POST['email'],
-                                'phone' => $_POST['phone'],
-                                'phone_country_code' => $_POST['phone_country_code'],
-                                'preferred_contact_channel' => $_POST['preferred_contact_channel'],
-                                'phone_e164' => $normalized_phone['e164'],
-                                'phone_dial_code' => $normalized_phone['dial_code'],
-                                'message' => $_POST['message'],
-                                'source_label' => Language::$code === 'hr' ? 'Kontakt stranica suradnika' : 'Collaborator contact page',
-                                'source_context' => Language::$code === 'hr' ? 'FCC kontakt handoff' : 'FCC contact handoff',
-                                'source_page_slug' => $page->url,
-                                'source_page_url' => $page_url,
-                                'contact_intent' => 'direct_contact',
-                            ];
-
-                            if($contact_type === 'email_collector') {
-                                unset($contact_data['message'], $contact_data['preferred_contact_channel'], $contact_data['source_context'], $contact_data['contact_intent']);
-                            }
-
-                            if($contact_type === 'phone_collector') {
-                                unset($contact_data['message'], $contact_data['source_context'], $contact_data['contact_intent']);
-                            }
-
-                            $insert_payload = [
-                                'biolink_block_id' => $collaborator_contact->contact_biolink_block_id ?: null,
-                                'link_id' => $collaborator_contact->main_link_id,
-                                'project_id' => $collaborator_contact->project_id ?: null,
-                                'user_id' => $collaborator_contact->user_id,
-                                'type' => $contact_type,
-                                'data' => json_encode($contact_data),
-                                'datetime' => get_date(),
-                            ];
-
-                            db()->reset();
-                            $datum_id = db()->insert('data', $insert_payload);
-
-                            if(!$datum_id) {
-                                $this->log_contact_page_debug('insert_failed_mysqldb', [
-                                    'db_error' => db()->getLastError(),
-                                    'payload' => $insert_payload,
-                                ]);
-
-                                $database = database();
-                                $biolink_block_id_sql = $insert_payload['biolink_block_id'] ? (int) $insert_payload['biolink_block_id'] : 'NULL';
-                                $project_id_sql = $insert_payload['project_id'] ? (int) $insert_payload['project_id'] : 'NULL';
-                                $link_id_sql = (int) $insert_payload['link_id'];
-                                $user_id_sql = (int) $insert_payload['user_id'];
-                                $type_sql = "'" . $database->real_escape_string((string) $insert_payload['type']) . "'";
-                                $data_sql = "'" . $database->real_escape_string((string) $insert_payload['data']) . "'";
-                                $datetime_sql = "'" . $database->real_escape_string((string) $insert_payload['datetime']) . "'";
-
-                                $fallback_insert = $database->query("
-                                    INSERT INTO `data`
-                                    (`biolink_block_id`, `link_id`, `project_id`, `user_id`, `type`, `data`, `datetime`)
-                                    VALUES
-                                    ({$biolink_block_id_sql}, {$link_id_sql}, {$project_id_sql}, {$user_id_sql}, {$type_sql}, {$data_sql}, {$datetime_sql})
-                                ");
-
-                                if($fallback_insert) {
-                                    $datum_id = $database->insert_id;
-                                    $this->log_contact_page_debug('insert_success_fallback', [
-                                        'datum_id' => $datum_id,
-                                        'payload' => $insert_payload,
-                                    ]);
-                                } else {
-                                    $this->log_contact_page_debug('insert_failed_fallback', [
-                                        'db_error' => $database->error,
-                                        'payload' => $insert_payload,
-                                    ]);
-                                    error_log('FCC contact save failed: ' . $database->error . ' | payload=' . json_encode([
-                                        'page_id' => $page->page_id,
-                                        'user_id' => $collaborator_contact->user_id,
-                                        'main_link_id' => $collaborator_contact->main_link_id,
-                                        'contact_biolink_block_id' => $collaborator_contact->contact_biolink_block_id,
-                                        'contact_biolink_block_type' => $contact_type,
-                                        'project_id' => $collaborator_contact->project_id,
-                                    ]));
-                                }
-                            }
-
-                            if($datum_id) {
-                                $this->log_contact_page_debug('insert_success', [
-                                    'datum_id' => $datum_id,
-                                    'payload' => $insert_payload,
-                                ]);
-                                \Altum\Alerts::add_success(Language::$code === 'hr' ? 'Kontakt je spremljen i proslijeđen suradniku.' : 'Your contact has been saved and sent to the collaborator.');
-
-                                $page_route = ($page->language ? ((\Altum\Language::$active_languages[$page->language] ?? null) ? \Altum\Language::$active_languages[$page->language] . '/' : null) : null) . 'page/' . $page->url;
-                                redirect($page_route . '?contact_saved=1#fcc-contact-direct');
-                            } else {
-                                \Altum\Alerts::add_error(Language::$code === 'hr' ? 'Kontakt trenutno nije moguće spremiti. Pokušaj ponovno za nekoliko trenutaka.' : 'The contact could not be saved right now. Please try again in a moment.');
-                            }
-                        }
-                    }
-                }
             }
         }
         /* /Custom code: FC-2026-02-26 */
@@ -986,7 +717,6 @@ class Page extends Controller {
             'page'  => $page,
             'pages_category' => $pages_category,
             'collaborator_contact' => $collaborator_contact,
-            'contact_country_options' => get_contact_phone_country_options_array(),
             /* Custom code: FC-2026-03-24: strengthen foreverclub page hub SEO and internal linking */
             'is_foreverclub_page' => $is_foreverclub_page,
             'foreverclub_semantics' => $foreverclub_semantics,

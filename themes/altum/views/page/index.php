@@ -21,30 +21,20 @@ $fcc_contact_business_title = $fcc_is_hr ? 'Postani poslovni partner' : 'Become 
 $fcc_contact_business_text = $fcc_is_hr
     ? 'Ako želiš postati poslovni partner Forever Living Productsa, naručiti start paket i ostvariti pristup svim benefitima Forever Card Cluba, ovdje možeš postati naš poslovni partner.'
     : 'If you want to become a Forever Living Products business partner, order the starter package, and get access to all Forever Card Club benefits, you can start here.';
-$fcc_contact_direct_title = $fcc_is_hr ? 'Želim da mi se javi suradnik' : 'I want the collaborator to contact me';
-$fcc_contact_direct_text = $fcc_is_hr
-    ? 'Ako imaš pitanje ili želiš nastavak razgovora, ovdje možeš ostaviti svoje podatke kako bi ti se suradnik javio.'
-    : 'If you have a question or want to continue the conversation, you can leave your details here and the collaborator can get back to you.';
 $fcc_contact_app_title = $fcc_is_hr ? 'Otvori aplikaciju' : 'Open the app';
 $fcc_contact_app_text = $fcc_is_hr
     ? 'Ako želiš ponovno pogledati preporuke, proizvode ili sadržaj suradnika, otvori njegovu aplikaciju.'
     : 'If you want to revisit recommendations, products, or the collaborator content, open the app.';
 $fcc_contact_go_products = $fcc_is_hr ? 'Idi na preporuku proizvoda' : 'Go to product guidance';
 $fcc_contact_go_business = $fcc_is_hr ? 'Postani poslovni partner' : 'Become a business partner';
-$fcc_contact_go_direct = $fcc_is_hr ? 'Idi na kontakt' : 'Go to contact';
 $fcc_contact_open_app = $fcc_is_hr ? 'Otvori aplikaciju' : 'Open app';
 $fcc_contact_whatsapp = 'WhatsApp';
 $fcc_contact_call = $fcc_is_hr ? 'Nazovi' : 'Call';
 $fcc_contact_email = $fcc_is_hr ? 'Pošalji email' : 'Send email';
-$fcc_contact_back_to_choices = $fcc_is_hr ? 'Povratak na odabir' : 'Back to choices';
-$fcc_contact_form_title = $fcc_is_hr ? 'Pošalji upit suradniku' : 'Send your details to the collaborator';
-$fcc_contact_form_text = $fcc_is_hr ? 'Ako imaš pitanja ili želiš da te kontaktira poslovni suradnik %s putem čije preporuke si došao na FCC, ispuni podatke u nastavku.' : 'If you have questions or would like to be contacted by the business collaborator %s whose recommendation brought you to FCC, fill in your details below.';
-$fcc_contact_form_submit = $fcc_is_hr ? 'Pošalji kontakt' : 'Send contact';
-$fcc_contact_name_placeholder = $fcc_is_hr ? 'Tvoje ime i prezime' : 'Your full name';
-$fcc_contact_email_placeholder = $fcc_is_hr ? 'Tvoja email adresa' : 'Your email address';
-$fcc_contact_phone_placeholder = $fcc_is_hr ? 'Tvoj broj telefona' : 'Your phone number';
-$fcc_contact_message_placeholder = $fcc_is_hr ? 'Kratka poruka ili pitanje' : 'Short message or question';
-$fcc_contact_channel_label = $fcc_is_hr ? 'Najbrži kanal kontakta' : 'Fastest contact channel';
+$fcc_contact_direct_title = $fcc_is_hr ? 'Izravni kontakt' : 'Direct contact';
+$fcc_contact_direct_text = $fcc_is_hr
+    ? 'Ako želiš nastavak razgovora, koristi jedan od izravnih kontakata ispod ili otvori aplikaciju suradnika.'
+    : 'If you want to continue the conversation, use one of the direct contact options below or open the collaborator app.';
 /* /Custom code: FC-2026-02-26 */
 ?>
 
@@ -196,14 +186,11 @@ $fcc_contact_channel_label = $fcc_is_hr ? 'Najbrži kanal kontakta' : 'Fastest c
         $fcc_contact_default_image = SITE_URL . 'uploads/logo/forever.png';
         $fcc_contact_generated_avatar = get_user_avatar(null, $fcc_contact_email_value ?: $fcc_contact_name);
         $fcc_contact_display_image = $fcc_contact_hero_image ?: $fcc_contact_default_image;
-        $fcc_contact_form_action = SITE_URL . ($data->page->language ? ((\Altum\Language::$active_languages[$data->page->language] ?? null) ? \Altum\Language::$active_languages[$data->page->language] . '/' : null) : null) . 'page/' . $data->page->url . '#fcc-contact-direct';
         $fcc_phone_link = $fcc_contact_phone_value ? preg_replace('/\s+/', '', $fcc_contact_phone_value) : '';
         $fcc_whatsapp_digits = preg_replace('/\D+/', '', $fcc_contact_phone_value);
         $fcc_whatsapp_url = $fcc_whatsapp_digits ? 'https://wa.me/' . $fcc_whatsapp_digits : '';
         $fcc_product_url = url('blog/category/forever-proizvodi');
         $fcc_business_url = url('blog/start-paket');
-        $fcc_country_options = $data->contact_country_options ?? [];
-        $fcc_preferred_channel = in_array($_POST['preferred_contact_channel'] ?? 'whatsapp', ['whatsapp', 'viber', 'sms', 'phone', 'email'], true) ? ($_POST['preferred_contact_channel'] ?? 'whatsapp') : 'whatsapp';
         ?>
         <section id="fcc-contact-top" class="fcc-collab-contact-wrap">
             <div class="fcc-collab-contact-card">
@@ -264,57 +251,27 @@ $fcc_contact_channel_label = $fcc_is_hr ? 'Najbrži kanal kontakta' : 'Fastest c
                 <div class="fcc-collab-contact-sections">
                     <div id="fcc-contact-direct" class="fcc-collab-section">
                         <div class="fcc-collab-section__head">
-                            <h3><?= $fcc_contact_form_title ?></h3>
+                            <h3><?= $fcc_contact_direct_title ?></h3>
                         </div>
-                        <p><?= sprintf($fcc_contact_form_text, '<strong>' . htmlspecialchars($fcc_contact_name ?: $fcc_contact_title) . '</strong>') ?></p>
-                        <form id="fcc-contact-form" method="post" action="<?= $fcc_contact_form_action ?>" class="fcc-collab-form">
-                            <input type="hidden" name="token" value="<?= \Altum\Csrf::get() ?>" />
-                            <input type="hidden" name="fcc_contact_action" value="store_contact" />
+                        <p><?= $fcc_contact_direct_text ?></p>
 
-                            <div class="fcc-collab-form__grid">
-                                <div class="form-group">
-                                    <input type="text" class="form-control" name="name" maxlength="64" required="required" placeholder="<?= $fcc_contact_name_placeholder ?>" value="<?= input_clean($_POST['name'] ?? '', 64) ?>" />
-                                </div>
+                        <div class="fcc-collab-section__actions">
+                            <?php if($fcc_whatsapp_url): ?>
+                                <a href="<?= $fcc_whatsapp_url ?>" target="_blank" rel="noopener noreferrer" class="btn btn-primary"><?= $fcc_contact_whatsapp ?></a>
+                            <?php endif ?>
 
-                                <div class="form-group">
-                                    <input type="email" class="form-control" name="email" maxlength="320" required="required" placeholder="<?= $fcc_contact_email_placeholder ?>" value="<?= input_clean($_POST['email'] ?? '', 320) ?>" />
-                                </div>
-                            </div>
+                            <?php if($fcc_phone_link): ?>
+                                <a href="tel:<?= $fcc_phone_link ?>" class="btn btn-outline-primary"><?= $fcc_contact_call ?></a>
+                            <?php endif ?>
 
-                            <div class="fcc-collab-form__grid fcc-collab-form__grid--contact">
-                                <div class="form-group">
-                                    <select class="custom-select" name="phone_country_code" required="required">
-                                        <?php foreach($fcc_country_options as $country_code => $country_label): ?>
-                                            <option value="<?= $country_code ?>" <?= ($country_code === ($_POST['phone_country_code'] ?? 'HR')) ? 'selected="selected"' : null ?>><?= $country_label ?></option>
-                                        <?php endforeach ?>
-                                    </select>
-                                </div>
+                            <?php if($fcc_contact_email_value): ?>
+                                <a href="mailto:<?= $fcc_contact_email_value ?>" class="btn btn-outline-primary"><?= $fcc_contact_email ?></a>
+                            <?php endif ?>
 
-                                <div class="form-group">
-                                    <input type="tel" inputmode="tel" class="form-control" name="phone" maxlength="32" required="required" placeholder="<?= $fcc_contact_phone_placeholder ?>" value="<?= input_clean($_POST['phone'] ?? '', 32) ?>" />
-                                </div>
-                            </div>
-
-                            <div class="form-group">
-                                <div class="fcc-collab-channel-label"><?= $fcc_contact_channel_label ?></div>
-                                <div class="fcc-collab-channels" role="radiogroup" aria-label="<?= $fcc_contact_channel_label ?>">
-                                    <?php foreach(['whatsapp' => 'WhatsApp', 'viber' => 'Viber', 'sms' => 'SMS', 'phone' => ($fcc_is_hr ? 'Poziv' : 'Call'), 'email' => 'Email'] as $channel_key => $channel_label): ?>
-                                        <label class="mb-0">
-                                            <input type="radio" class="fcc-collab-channel-radio" name="preferred_contact_channel" value="<?= $channel_key ?>" <?= $channel_key === $fcc_preferred_channel ? 'checked="checked"' : null ?> />
-                                            <span class="fcc-collab-channel-chip"><?= $channel_label ?></span>
-                                        </label>
-                                    <?php endforeach ?>
-                                </div>
-                            </div>
-
-                            <div class="form-group">
-                                <textarea class="form-control" name="message" maxlength="512" rows="4" placeholder="<?= $fcc_contact_message_placeholder ?>"><?= input_clean($_POST['message'] ?? '', 512) ?></textarea>
-                            </div>
-
-                            <div class="fcc-collab-section__actions">
-                                <button type="submit" form="fcc-contact-form" class="btn btn-primary"><?= $fcc_contact_form_submit ?></button>
-                            </div>
-                        </form>
+                            <?php if($fcc_contact_app_url): ?>
+                                <a href="<?= $fcc_contact_app_url ?>" target="_blank" rel="noopener noreferrer" class="btn btn-outline-primary"><?= $fcc_contact_open_app ?></a>
+                            <?php endif ?>
+                        </div>
                     </div>
                 </div>
 
