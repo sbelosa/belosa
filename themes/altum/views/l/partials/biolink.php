@@ -177,8 +177,7 @@
 
                             /* Custom code */
                             if($row->type == 'link_forever_shop') {
-                                $resolved_country_code = mb_strtolower((string) ($country_code ?: $browser_language ?: ''));
-                                $business_country_code = in_array($resolved_country_code, ['xk']) ? 'al' : $resolved_country_code;
+                                $business_country_code = \Altum\Link::resolve_forever_market_country_code($country_code);
                                 $business_base_url = $forever_business_links->{$business_country_code} ?? null;
 
                                 if(!$business_base_url && !empty($forever_business_links->us)) {
@@ -273,8 +272,7 @@
                                 continue;
                             }                    
                             if($row->type == 'link_discount') {
-                                $resolved_country_code = mb_strtolower((string) ($country_code ?: $browser_language ?: ''));
-                                $webshop_country_code = in_array($resolved_country_code, ['xk']) ? 'al' : $resolved_country_code;
+                                $webshop_country_code = \Altum\Link::resolve_forever_market_country_code($country_code);
                                 $webshop_base_url = $forever_webshop_links->{$webshop_country_code} ?? null;
 
                                 if(!$webshop_base_url && !empty($forever_webshop_links->us)) {

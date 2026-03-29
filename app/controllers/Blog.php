@@ -301,11 +301,7 @@ class Blog extends Controller {
                 }
                 /* /Custom code: FC-2026-02-26 */
 
-                /* Custom code: FC-2026-02-26: browser language fallback for blog webshop links */
-                $browser_language = isset($_SERVER['HTTP_ACCEPT_LANGUAGE']) ? mb_substr($_SERVER['HTTP_ACCEPT_LANGUAGE'], 0, 2) : null;
-                /* /Custom code: FC-2026-02-26 */
-
-                $webshop_link = \Altum\Link::get_product_webshop_link($referral, $blog_post->blog_post_id, $country_code, $browser_language);                
+                $webshop_link = \Altum\Link::get_product_webshop_link($referral, $blog_post->blog_post_id, $country_code);                
             }            
 
             /* Get popular posts */

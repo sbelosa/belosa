@@ -905,6 +905,20 @@ class Link {
         return $discount_params;
     }
 
+    public static function resolve_forever_market_country_code($country_code = null): ?string {
+        $country_code = mb_strtolower(trim((string) $country_code));
+
+        if($country_code === '' || mb_strlen($country_code) !== 2) {
+            return null;
+        }
+
+        if($country_code === 'xx') {
+            return null;
+        }
+
+        return in_array($country_code, ['xk'], true) ? 'al' : $country_code;
+    }
+
     public static function build_forever_destination_url($base_url, $forever_id = null, $country_code = null, array $extra_query_params = []) {
         if(!$base_url || !filter_var($base_url, FILTER_VALIDATE_URL)) {
             return false;
@@ -1015,9 +1029,9 @@ class Link {
             } else {
                 $forever_id = '';
             }
-            
-            $resolved_country_code = mb_strtolower((string) ($country_code ?: $browser_language ?: ''));
-            $webshop_country_code = in_array($resolved_country_code, ['xk']) ? 'al' : $resolved_country_code;
+
+            /* Market routing must follow the detected visitor country, never browser language. */
+            $webshop_country_code = self::resolve_forever_market_country_code($country_code);
             $webshop_base_url = $webshop_links->{$webshop_country_code} ?? null;
 
             if(!$webshop_base_url && !empty($webshop_links->us)) {
