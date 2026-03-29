@@ -85,6 +85,7 @@ class Page extends Controller {
         $related_pages = [];
         $foreverclub_semantics = null;
         $page_meta_override = null;
+        $foreverclub_pathways = null;
 
         if($is_foreverclub_page) {
             $related_pages_query = "
@@ -116,52 +117,112 @@ class Page extends Controller {
                 return $related_pages;
             });
 
+            $foreverclub_pathways_map = [
+                'forever-business-tools' => [
+                    'core' => ['forever-card-club', 'how-it-works'],
+                    'landing' => ['build-forever-business-online', 'fcc-vs-linktree'],
+                ],
+                'build-forever-business-online' => [
+                    'core' => ['forever-card-app', 'forever-card-funnel'],
+                    'landing' => ['forever-business-tools', 'lead-funnel-for-forever-partners'],
+                ],
+                'smart-referral-links-for-forever-partners' => [
+                    'core' => ['smart-referral-links', 'forever-card-club'],
+                    'landing' => ['fcc-vs-linktree', 'build-forever-business-online'],
+                ],
+                'ai-product-assistants-for-forever-partners' => [
+                    'core' => ['ai-product-assistants', 'forever-card-app'],
+                    'landing' => ['lead-funnel-for-forever-partners', 'build-forever-business-online'],
+                ],
+                'lead-funnel-for-forever-partners' => [
+                    'core' => ['forever-card-funnel', 'how-it-works'],
+                    'landing' => ['build-forever-business-online', 'ai-product-assistants-for-forever-partners'],
+                ],
+                'nfc-card-for-forever-follow-up' => [
+                    'core' => ['nfc-card-offline', 'forever-card-app'],
+                    'landing' => ['lead-funnel-for-forever-partners', 'forever-business-tools'],
+                ],
+                'fcc-vs-linktree' => [
+                    'core' => ['forever-card-app', 'smart-referral-links'],
+                    'landing' => ['forever-business-tools', 'fcc-vs-gohighlevel'],
+                ],
+                'fcc-vs-gohighlevel' => [
+                    'core' => ['forever-card-funnel', 'how-it-works'],
+                    'landing' => ['forever-business-tools', 'fcc-vs-linktree'],
+                ],
+            ];
+
+            if(isset($foreverclub_pathways_map[$page->url])) {
+                $related_pages_index = [];
+
+                foreach($related_pages as $related_page) {
+                    $related_pages_index[$related_page->url] = $related_page;
+                }
+
+                $foreverclub_pathways = [
+                    'core_pages' => [],
+                    'landing_pages' => [],
+                ];
+
+                foreach($foreverclub_pathways_map[$page->url]['core'] as $slug) {
+                    if(isset($related_pages_index[$slug])) {
+                        $foreverclub_pathways['core_pages'][] = $related_pages_index[$slug];
+                    }
+                }
+
+                foreach($foreverclub_pathways_map[$page->url]['landing'] as $slug) {
+                    if(isset($related_pages_index[$slug])) {
+                        $foreverclub_pathways['landing_pages'][] = $related_pages_index[$slug];
+                    }
+                }
+            }
+
             if(\Altum\Language::$code === 'hr') {
                 $page_meta_map = [
                     'forever-card-app' => [
-                        'title' => 'Forever Card Aplikacija: kako pomaže u prodaji, preporukama i izgradnji tima',
-                        'description' => 'Saznaj što je Forever Card Aplikacija, kako pomaže u prikupljanju kontakata, preporuci proizvoda, komunikaciji i razvoju Forever Living poslovanja.',
-                        'keywords' => 'Forever Card Aplikacija, FCC aplikacija, Forever Card Club aplikacija, digitalna aplikacija za Forever partnere, Forever poslovanje online, alati za Forever Living'
+                        'title' => 'Forever Card aplikacija: osobna aplikacija unutar FCC sustava za Forever partnere',
+                        'description' => 'Saznaj kako Forever Card aplikacija kao dio FCC sustava pomaže u predstavljanju proizvoda, komunikaciji, prikupljanju kontakata i strukturiranom razvoju Forever poslovanja.',
+                        'keywords' => 'Forever Card aplikacija, FCC aplikacija, osobna aplikacija za Forever partnere, Forever Card Club aplikacija, digitalni poslovni sustav Forever'
                     ],
                     'smart-referral-links' => [
-                        'title' => 'Pametni referral linkovi: kako globalno dijeliti Forever proizvode i preporuku',
-                        'description' => 'Saznaj kako pametni referral linkovi prepoznaju državu posjetitelja, vode na službeni Forever web shop i zadržavaju preporuku partnera.',
-                        'keywords' => 'pametni referral linkovi, Forever referral link, globalni referral linkovi, Forever web shop, partner referral, FCC smart links'
+                        'title' => 'Pametni preporučni linkovi: kako globalno dijeliti Forever proizvode i preporuku',
+                        'description' => 'Saznaj kako pametni preporučni linkovi prepoznaju državu posjetitelja, vode na službeni Forever web shop i zadržavaju preporuku partnera.',
+                        'keywords' => 'pametni preporučni linkovi, Forever preporučni link, globalni preporučni linkovi, Forever web shop, preporuka partnera, FCC linkovi'
                     ],
                     'forever-card-funnel' => [
-                        'title' => 'Forever Card Funnel: kako pretvoriti interes u konkretan posao',
-                        'description' => 'Saznaj kako Forever Card Funnel pomaže u prikupljanju leadova, bržem follow-upu, organizaciji kontakata i boljoj konverziji interesa u stvaran posao.',
-                        'keywords' => 'Forever Card Funnel, FCC funnel, funnel za Forever partnere, prikupljanje leadova, funnel analitika, konverzija kontakata, online Forever poslovanje'
+                        'title' => 'Forever Card sustav za kontakte: kako pretvoriti interes u konkretan posao',
+                        'description' => 'Saznaj kako FCC sustav za kontakte pomaže u prikupljanju kontakata, bržem nastavku razgovora, organizaciji interesa i boljoj pretvorbi interesa u stvaran posao.',
+                        'keywords' => 'Forever Card sustav za kontakte, FCC sustav za kontakte, prikupljanje kontakata za Forever partnere, analitika interesa, razvoj Forever poslovanja na internetu'
                     ],
                     'nfc-card-offline' => [
-                        'title' => 'NFC kartica (offline): kako pretvoriti susret uživo u aplikaciju, kontakt i posao',
-                        'description' => 'Saznaj kako NFC kartica i QR kod vode osobu na Forever Card Aplikaciju, olakšavaju preporuku proizvoda, dijeljenje kontakta, funnel prijave i offline izgradnju poslovanja.',
-                        'keywords' => 'NFC kartica Forever, Forever Card NFC kartica, offline Forever poslovanje, QR kod Forever, Forever Card aplikacija, digitalna vizitka Forever, NFC za Forever partnere'
+                        'title' => 'NFC kartica: kako pretvoriti susret uživo u aplikaciju, kontakt i posao',
+                        'description' => 'Saznaj kako NFC kartica i QR kod vode osobu na Forever Card aplikaciju, olakšavaju preporuku proizvoda, dijeljenje kontakta, prijavu interesa i razvoj poslovanja uživo.',
+                        'keywords' => 'NFC kartica Forever, Forever Card NFC kartica, razvoj Forever poslovanja uživo, QR kod Forever, Forever Card aplikacija, digitalna vizitka Forever, NFC za Forever partnere'
                     ],
                     'ai-product-assistants' => [
                         'title' => 'AI asistenti za preporuku proizvoda: kako sustav preporučuje umjesto partnera',
-                        'description' => 'Saznaj kako AI asistenti za ljude i životinje preporučuju Forever proizvode, vode korisnika prema pravom shop linku i pomažu partneru prodavati bez klasične prodaje.',
+                        'description' => 'Saznaj kako AI asistenti za ljude i životinje preporučuju Forever proizvode, vode korisnika prema pravom linku za kupnju i pomažu partneru prodavati bez klasične prodaje.',
                         'keywords' => 'AI asistenti Forever, AI preporuka proizvoda, Forever AI savjetnik, AI za kućne ljubimce, AI prodajni savjetnik, Forever Card AI, AI za Forever partnere'
                     ],
                     'forever-card-club' => [
-                        'title' => 'Što je Forever Card Club? Aplikacija, AI alati i NFC kartica',
-                        'description' => 'Saznaj što je Forever Card Club i kako osobna aplikacija, pametni linkovi, AI alati i NFC kartica pomažu Forever partnerima u online i offline poslovanju.',
-                        'keywords' => 'Forever Card Club, što je Forever Card Club, Forever Card aplikacija, Forever Card, AI alati za Forever, pametni linkovi Forever, NFC kartica Forever, online Forever poslovanje'
+                        'title' => 'Što je Forever Card Club (FCC)? Cjeloviti digitalni poslovni sustav za Forever partnere',
+                        'description' => 'Saznaj kako Forever Card Club (FCC) kao cjeloviti digitalni poslovni sustav povezuje osobnu aplikaciju, pametne preporučne linkove, AI asistente za proizvode, sustav za kontakte i NFC karticu za Forever partnere.',
+                        'keywords' => 'Forever Card Club, FCC, cjeloviti digitalni poslovni sustav, Forever Living Products partneri, pametni preporučni linkovi, AI asistenti za proizvode, sustav za kontakte, NFC kartica'
                     ],
                     'how-it-works' => [
-                        'title' => 'Kako funkcionira Forever Card Club: aplikacija, linkovi i AI',
-                        'description' => 'Pogledaj kako funkcionira Forever Card Club: osobna aplikacija partnera, pametni linkovi, AI savjetnik, NFC kartica i povezivanje sa službenim Forever web shopom.',
-                        'keywords' => 'kako funkcionira Forever Card Club, Forever Card sustav, pametni linkovi Forever, AI savjetnik Forever, NFC kartica Forever, Forever web shop, referal sustav Forever'
+                        'title' => 'Kako funkcionira Forever Card Club (FCC): aplikacija, preporučni linkovi, AI i kontakti',
+                        'description' => 'Pogledaj kako FCC povezuje osobnu aplikaciju partnera, pametne preporučne linkove, AI podršku, sustav za kontakte i NFC karticu sa službenim Forever web shopom.',
+                        'keywords' => 'kako funkcionira Forever Card Club, FCC sustav, pametni preporučni linkovi Forever, AI podrška Forever, sustav za kontakte Forever, NFC kartica Forever'
                     ],
                     'faq' => [
-                        'title' => 'Forever Card Club FAQ: česta pitanja i odgovori',
-                        'description' => 'Odgovori na najčešća pitanja o Forever Card Clubu, osobnoj aplikaciji, pametnim linkovima, AI alatima, pristupu sustavu i službenom Forever web shopu.',
-                        'keywords' => 'Forever Card Club FAQ, pitanja i odgovori Forever Card Club, osobna Forever Card aplikacija, AI alati Forever, pametni linkovi Forever, pristup Forever Card Clubu'
+                        'title' => 'Forever Card Club (FCC) FAQ: česta pitanja o sustavu, aplikaciji i preporukama',
+                        'description' => 'Odgovori na najčešća pitanja o FCC sustavu, osobnoj Forever Card aplikaciji, pametnim preporučnim linkovima, AI alatima, pristupu i službenom Forever webshop procesu.',
+                        'keywords' => 'Forever Card Club FAQ, FCC FAQ, pametni preporučni linkovi Forever, Forever Card aplikacija, AI alati Forever, pristup FCC sustavu'
                     ],
                     'about' => [
-                        'title' => 'O Forever Card Clubu: digitalni sustav za Forever partnere',
-                        'description' => 'Upoznaj Forever Card Club kao neovisni digitalni sustav za Forever partnere koji objedinjuje aplikaciju, edukaciju, AI alate, pametne linkove i analitiku.',
-                        'keywords' => 'o Forever Card Clubu, Forever digitalni sustav, Forever partneri, Forever aplikacija, edukacija za Forever, AI alati za Forever, pametni linkovi Forever'
+                        'title' => 'O Forever Card Clubu (FCC): cjeloviti digitalni poslovni sustav za Forever partnere',
+                        'description' => 'Upoznaj FCC kao neovisni cjeloviti digitalni poslovni sustav za Forever Living Products partnere koji objedinjuje aplikaciju, edukaciju, AI alate, pametne preporučne linkove i analitiku.',
+                        'keywords' => 'o Forever Card Clubu, FCC, digitalni poslovni sustav za Forever partnere, Forever aplikacija, edukacija za Forever, AI alati za Forever'
                     ],
                     'independent-disclaimer' => [
                         'title' => 'Pravna napomena i neovisnost Forever Card Cluba',
@@ -173,7 +234,7 @@ class Page extends Controller {
                 $foreverclub_semantics_map = [
                     'forever-card-app' => [
                         'heading' => 'Zašto je ova aplikacija važna?',
-                        'summary' => 'Forever Card Aplikacija je partnerova osobna digitalna baza za predstavljanje proizvoda, preporuka, edukacije i kontakta. Pomaže da svaka preporuka izgleda ozbiljnije, brže vodi do razgovora i lakše se pretvara u konkretan posao.',
+                        'summary' => 'Forever Card Aplikacija je osobna aplikacija koju dobiva svaki član unutar Forever Card Club (FCC) sustava. Ona je središnje mjesto kroz koje FCC povezuje sadržaj, preporuke, kontaktne akcije, prikupljanje kontakata i daljnji poslovni nastavak razgovora.',
                         'facts' => [
                             'Na jednom mjestu spaja predstavljanje partnera, proizvoda, kontakta i poziva na akciju.',
                             'Pomaže da zainteresirana osoba lakše ostavi kontakt i brže dobije prave informacije.',
@@ -181,82 +242,90 @@ class Page extends Controller {
                             'Partner jasnije vidi što radi najbolje i lakše gradi svoj sustav preporuka i praćenja.'
                         ],
                         'term_name' => 'Forever Card Aplikacija',
-                        'term_alternate_names' => ['FCC aplikacija', 'Forever Card app', 'Forever Card Club aplikacija'],
+                        'term_alternate_names' => ['FCC aplikacija', 'Forever Card Aplikacija', 'Forever Card App'],
                         'term_description' => 'Forever Card Aplikacija je personalizirana digitalna aplikacija partnera unutar Forever Card Club sustava, namijenjena predstavljanju proizvoda, prikupljanju kontakata, preporukama i razvoju Forever Living poslovanja.'
                     ],
                     'smart-referral-links' => [
                         'heading' => 'Zašto su ovi linkovi važni?',
-                        'summary' => 'Pametni referral linkovi olakšavaju globalno dijeljenje proizvoda i preporuke. Posjetitelja vode prema ispravnom službenom Forever web shopu, a partneru pomažu da preporuka ostane povezana s njim na jednostavniji i pregledniji način.',
+                        'summary' => 'Pametni preporučni linkovi su ključni dio FCC sustava jer olakšavaju globalno dijeljenje proizvoda i preporuke. Posjetitelja vode prema ispravnom službenom Forever web shopu, a partneru pomažu da preporuka ostane povezana s njim na jednostavniji i pregledniji način.',
                         'facts' => [
                             'Jedan link može služiti ljudima iz više država bez ručnog traženja pravog shopa.',
                             'Sustav prepoznaje državu posjetitelja i usmjerava ga na odgovarajuću službenu stranicu.',
                             'Partnerova preporuka ostaje ugrađena u iskustvo dijeljenja i kupnje.',
-                            'Dijeljenje je jednostavnije, profesionalnije i pogodnije za online i offline rad.'
+                            'Dijeljenje je jednostavnije, profesionalnije i pogodnije za rad na internetu i uživo.'
                         ],
-                        'term_name' => 'Pametni referral linkovi',
-                        'term_alternate_names' => ['Global smart links', 'FCC referral linkovi', 'Forever referral linkovi'],
-                        'term_description' => 'Pametni referral linkovi su globalni linkovi unutar Forever Card Club sustava koji prepoznaju državu posjetitelja, vode ga prema službenom Forever web shopu i zadržavaju partnerovu preporuku.'
+                        'term_name' => 'Pametni preporučni linkovi',
+                        'term_alternate_names' => ['Globalni pametni linkovi', 'FCC preporučni linkovi', 'Forever preporučni linkovi'],
+                        'term_description' => 'Pametni preporučni linkovi su globalni linkovi unutar Forever Card Club sustava koji prepoznaju državu posjetitelja, vode ga prema službenom Forever web shopu i zadržavaju partnerovu preporuku.'
                     ],
                     'forever-card-funnel' => [
-                        'heading' => 'Zašto je funnel važan?',
-                        'summary' => 'Forever Card Funnel pomaže da interes ne ostane samo na pregledu stranice ili poruke. Vodi posjetitelja prema ostavljanju kontakta, partneru daje jasan sljedeći korak i olakšava da se više razgovora pretvori u konkretan posao.',
+                        'heading' => 'Zašto je sustav za kontakte važan?',
+                        'summary' => 'Sustav za kontakte unutar FCC-a pomaže da interes ne ostane samo na pregledu stranice ili poruke. Vodi posjetitelja prema ostavljanju kontakta, partneru daje jasan sljedeći korak i olakšava da se više razgovora pretvori u konkretan posao.',
                         'facts' => [
-                            'Pomaže u prikupljanju kvalitetnijih leadova kroz jednostavan i jasan kontakt proces.',
-                            'Olakšava brži follow-up preko WhatsAppa, Vibera, SMS-a, poziva ili emaila.',
-                            'Daje pregled koji funnel i koja poruka donose najviše rezultata.',
+                            'Pomaže u prikupljanju kvalitetnijih kontakata kroz jednostavan i jasan kontakt proces.',
+                            'Olakšava brži nastavak razgovora preko WhatsAppa, Vibera, SMS-a, poziva ili emaila.',
+                            'Daje pregled koji put i koja poruka donose najviše rezultata.',
                             'Smanjuje gubitak interesa između prvog klika i stvarnog kontakta.'
                         ],
-                        'term_name' => 'Forever Card Funnel',
-                        'term_alternate_names' => ['FCC Funnel', 'Funnel i pametni kontakti', 'Lead funnel'],
-                        'term_description' => 'Forever Card Funnel je dio Forever Card Club sustava namijenjen prikupljanju kontakata, praćenju interesa, bržem follow-upu i pretvaranju leadova u konkretne poslovne razgovore.'
+                        'term_name' => 'FCC sustav za kontakte',
+                        'term_alternate_names' => ['Sustav za kontakte', 'Pametni kontakti', 'Prikupljanje kontakata'],
+                        'term_description' => 'FCC sustav za kontakte je dio Forever Card Club sustava namijenjen prikupljanju kontakata, praćenju interesa, bržem nastavku razgovora i pretvaranju interesa u konkretne poslovne razgovore.'
                     ],
                     'nfc-card-offline' => [
                         'heading' => 'Zašto je NFC kartica važna?',
-                        'summary' => 'NFC kartica povezuje offline razgovor i digitalni poslovni sustav. Jednim dodirom ili skeniranjem QR koda osoba otvara Forever Card Aplikaciju s videom, proizvodima, kontaktima, AI alatima, funnelom i svim sljedećim koracima.',
+                        'summary' => 'NFC kartica povezuje razgovor uživo i FCC digitalni poslovni sustav. Jednim dodirom ili skeniranjem QR koda osoba otvara Forever Card Aplikaciju s videom, proizvodima, kontaktima, AI alatima, obrascem za interes i svim sljedećim koracima.',
                         'facts' => [
                             'Jedan susret uživo može odmah voditi na personaliziranu aplikaciju partnera.',
                             'Osoba bez ručnog tipkanja dobiva video, proizvode, popust, kontakt i idući korak.',
                             'Ista aplikacija može se koristiti i na NFC kartici i na društvenim mrežama kao biolink.',
-                            'Partner dobiva profesionalniji offline nastup i lakše pretvara razgovor u kontakt ili preporuku.'
+                            'Partner dobiva profesionalniji nastup uživo i lakše pretvara razgovor u kontakt ili preporuku.'
                         ],
                         'term_name' => 'NFC kartica',
-                        'term_alternate_names' => ['Forever Card NFC kartica', 'FCC NFC kartica', 'Offline Forever Card'],
-                        'term_description' => 'NFC kartica je fizička kartica partnera unutar Forever Card Club sustava koja jednim dodirom ili skeniranjem QR koda otvara Forever Card Aplikaciju s proizvodima, kontaktima, funnelima, AI alatima i drugim poslovnim sadržajem.'
+                        'term_alternate_names' => ['Forever Card NFC kartica', 'FCC NFC kartica', 'Forever Card za susrete uživo'],
+                        'term_description' => 'NFC kartica je fizička kartica partnera unutar Forever Card Club sustava koja jednim dodirom ili skeniranjem QR koda otvara Forever Card Aplikaciju s proizvodima, kontaktima, obrascima za interes, AI alatima i drugim poslovnim sadržajem.'
                     ],
                     'ai-product-assistants' => [
                         'heading' => 'Zašto su AI asistenti važni?',
-                        'summary' => 'AI asistenti pomažu partneru da preporuka proizvoda ne ovisi samo o njegovu iskustvu, znanju ili trenutnoj dostupnosti. Oni vode korisnika prema najboljim kombinacijama proizvoda, savjetima i pravom linku za naručivanje.',
+                        'summary' => 'AI asistenti za proizvode pomažu partneru da preporuka proizvoda ne ovisi samo o njegovu iskustvu, znanju ili trenutnoj dostupnosti. Oni vode korisnika prema najboljim kombinacijama proizvoda, savjetima i pravom linku za naručivanje unutar FCC poslovnog toka.',
                         'facts' => [
                             'Postoje specijalizirani AI savjetnici za preporuku proizvoda kod ljudi i zasebno za životinje.',
                             'AI asistenti rade unutar Forever Card Aplikacije, na NFC kartici i kroz dijeljenje aplikacije na društvenim mrežama.',
-                            'Preporuke su usklađene s poslovnom logikom, EU okvirom i usmjeravanjem prema službenom shop linku u zemlji posjetitelja.',
+                            'Preporuke su usklađene s poslovnom logikom, EU okvirom i usmjeravanjem prema službenom linku za kupnju u zemlji posjetitelja.',
                             'Novi partner može slati svoju aplikaciju bez potrebe da zna svaki proizvod ili vodi klasičnu prodaju ručno.'
                         ],
                         'term_name' => 'AI asistenti za preporuku proizvoda',
                         'term_alternate_names' => ['Forever AI savjetnici', 'AI prodajni savjetnik', 'AI za kućne ljubimce'],
-                        'term_description' => 'AI asistenti za preporuku proizvoda su specijalizirani savjetnici unutar Forever Card Club sustava koji preporučuju kombinacije Forever proizvoda za ljude i životinje te korisnika vode prema odgovarajućem shop linku partnera.'
+                        'term_description' => 'AI asistenti za preporuku proizvoda su specijalizirani savjetnici unutar Forever Card Club sustava koji preporučuju kombinacije Forever proizvoda za ljude i životinje te korisnika vode prema odgovarajućem linku partnera za kupnju.'
                     ],
                 ];
 
                 $foreverclub_semantics = [
                     'heading' => 'Kratko objašnjenje',
-                    'summary' => 'Forever Card Club je neovisni digitalni sustav za Forever partnere. Forever Card označava personaliziranu aplikaciju partnera i povezanu fizičku NFC karticu koja korisnika vodi na isti poslovni sustav.',
+                    'summary' => 'Forever Card Club (FCC) je cjeloviti digitalni poslovni sustav za Forever Living Products partnere. Forever Card Aplikacija označava osobnu aplikaciju koju dobiva svaki član, dok FCC označava cijeli sustav koji povezuje predstavljanje na internetu, preporučne linkove, prikupljanje kontakata, AI podršku i analitiku.',
                     'facts' => [
-                        'Namijenjen je neovisnim Forever partnerima koji žele graditi poslovanje online i offline.',
-                        'Uključuje osobnu aplikaciju, pametne linkove, AI podršku, edukaciju i analitiku.',
+                        'Namijenjen je neovisnim Forever partnerima koji žele graditi poslovanje na internetu i uživo.',
+                        'Uključuje osobnu aplikaciju, pametne preporučne linkove, AI asistente za proizvode, sustav za prikupljanje kontakata, edukaciju i analitiku.',
                         'Kupnja proizvoda odvija se preko službenog Forever web shopa u državi kupca.',
                         'Forever Card Club nije službena stranica kompanije Forever Living Products.'
                     ],
+                    'solves_heading' => 'Što FCC rješava?',
+                    'solves' => [
+                        'Predstavljanje na internetu kroz jednu osobnu aplikaciju.',
+                        'Globalno usmjeravanje prema službenom Forever shopu.',
+                        'Prikupljanje kontakata i jasan nastavak razgovora nakon interesa.',
+                        'AI podršku pri istraživanju proizvoda i odabiru sljedećeg koraka.',
+                        'Povezivanje susreta uživo s online sustavom preko NFC kartice i QR koda.'
+                    ],
                     'term_name' => 'Forever Card Club',
-                    'term_alternate_names' => ['FCC', 'Forever Card', 'Forever Card aplikacija'],
-                    'term_description' => 'Forever Card Club je neovisni digitalni sustav za Forever partnere koji spaja osobnu aplikaciju, pametne linkove, AI podršku, edukaciju, analitiku i fizičku NFC karticu u jedan poslovni proces.'
+                    'term_alternate_names' => ['FCC', 'Forever Card Club (FCC)'],
+                    'term_description' => 'Forever Card Club (FCC) je cjeloviti digitalni poslovni sustav za Forever Living Products partnere koji spaja osobnu aplikaciju, pametne preporučne linkove, AI asistente za proizvode, sustav za prikupljanje kontakata, edukaciju, analitiku i fizičku NFC karticu u jedan poslovni proces.'
                 ];
             } else {
                 $page_meta_map = [
                     'forever-card-app' => [
-                        'title' => 'Forever Card App: how it helps with leads, product sharing and team growth',
-                        'description' => 'Learn what the Forever Card App is and how it helps with contacts, product recommendations, follow-up, and building a stronger Forever Living business.',
-                        'keywords' => 'Forever Card App, FCC app, Forever Card Club app, app for Forever partners, Forever business tools, Forever Living digital app'
+                        'title' => 'Forever Card app: the personal app inside the FCC system for Forever partners',
+                        'description' => 'Learn how the Forever Card app, as part of the FCC system, helps with product presentation, communication, contact capture, and structured Forever business growth.',
+                        'keywords' => 'Forever Card app, FCC app, personal app for Forever partners, Forever Card Club app, digital business system Forever'
                     ],
                     'smart-referral-links' => [
                         'title' => 'Smart referral links: how to share Forever products globally with the right referral',
@@ -279,24 +348,24 @@ class Page extends Controller {
                         'keywords' => 'AI assistants Forever, AI product recommendations, Forever AI advisor, AI for pets, AI sales assistant, Forever Card AI, AI for Forever partners'
                     ],
                     'forever-card-club' => [
-                        'title' => 'What Is Forever Card Club? App, AI Tools and NFC Card',
-                        'description' => 'Learn what Forever Card Club is and how the personal app, smart links, AI tools, and NFC card help Forever partners grow online and offline.',
-                        'keywords' => 'what is Forever Card Club, Forever Card Club, Forever Card app, Forever Card, AI tools for Forever, smart links Forever, NFC card Forever, Forever business tools'
+                        'title' => 'What Is Forever Card Club (FCC)? An all-in-one digital business system for Forever partners',
+                        'description' => 'Learn how Forever Card Club (FCC), as an all-in-one digital business system, connects a personal app, smart referral links, AI product assistants, lead funnel, and NFC card for Forever partners.',
+                        'keywords' => 'Forever Card Club, FCC, all-in-one digital business system, Forever Living Products partners, smart referral links, AI product assistants, lead funnel, NFC card'
                     ],
                     'how-it-works' => [
-                        'title' => 'How Forever Card Club Works: App, Smart Links and AI',
-                        'description' => 'See how Forever Card Club works through the partner app, smart links, AI assistance, NFC card, and official Forever webshop routing.',
-                        'keywords' => 'how Forever Card Club works, Forever Card system, smart links Forever, AI assistant Forever, NFC card Forever, Forever webshop routing, referral system Forever'
+                        'title' => 'How Forever Card Club (FCC) works: app, referral routing, AI, and lead funnel',
+                        'description' => 'See how FCC connects the partner app, smart referral links, AI guidance, lead funnel logic, and NFC card with official Forever webshop routing.',
+                        'keywords' => 'how Forever Card Club works, FCC system, smart referral links Forever, AI guidance Forever, lead funnel Forever, NFC card Forever'
                     ],
                     'faq' => [
-                        'title' => 'Forever Card Club FAQ: Common Questions Answered',
-                        'description' => 'Find clear answers about Forever Card Club, the personal app, smart links, AI tools, access requirements, and the official Forever webshop flow.',
-                        'keywords' => 'Forever Card Club FAQ, Forever Card Club questions, Forever Card app questions, AI tools for Forever, smart links Forever, access to Forever Card Club'
+                        'title' => 'Forever Card Club (FCC) FAQ: common questions about the system, app, and referral logic',
+                        'description' => 'Find clear answers about the FCC system, the personal Forever Card app, smart referral links, AI tools, access requirements, and the official Forever webshop flow.',
+                        'keywords' => 'Forever Card Club FAQ, FCC FAQ, smart referral links Forever, Forever Card app, AI tools for Forever, access to FCC system'
                     ],
                     'about' => [
-                        'title' => 'About Forever Card Club: Digital System for Forever Partners',
-                        'description' => 'Discover Forever Card Club as an independent digital system for Forever partners built around apps, education, AI tools, smart links, and analytics.',
-                        'keywords' => 'about Forever Card Club, Forever digital system, Forever partner platform, Forever app, education for Forever partners, AI tools for Forever, smart links Forever'
+                        'title' => 'About Forever Card Club (FCC): an all-in-one digital business system for Forever partners',
+                        'description' => 'Discover FCC as an independent all-in-one digital business system for Forever Living Products partners built around apps, education, AI tools, smart referral links, and analytics.',
+                        'keywords' => 'about Forever Card Club, FCC, digital business system for Forever partners, Forever app, education for Forever partners, AI tools for Forever'
                     ],
                     'independent-disclaimer' => [
                         'title' => 'Independent Disclaimer: Forever Card Club and Official Forever Shop Routing',
@@ -308,7 +377,7 @@ class Page extends Controller {
                 $foreverclub_semantics_map = [
                     'forever-card-app' => [
                         'heading' => 'Why does this app matter?',
-                        'summary' => 'The Forever Card App gives each partner one clear digital place to present products, answer common questions, collect contacts, and move conversations toward real business outcomes.',
+                        'summary' => 'The Forever Card App is the personal app each member receives inside the Forever Card Club (FCC) system. It is the operating layer through which FCC connects content, recommendations, contact actions, lead capture, and business follow-up.',
                         'facts' => [
                             'It brings product presentation, contact actions, and guidance into one simple experience.',
                             'It helps interested visitors get information faster and choose an easy next step.',
@@ -316,12 +385,12 @@ class Page extends Controller {
                             'It gives partners a more professional image and a stronger business follow-up process.'
                         ],
                         'term_name' => 'Forever Card App',
-                        'term_alternate_names' => ['FCC app', 'Forever Card application', 'Forever Card Club app'],
+                        'term_alternate_names' => ['FCC app', 'Forever Card App', 'Forever Card application'],
                         'term_description' => 'The Forever Card App is a personalized partner application inside the Forever Card Club system used for product presentation, contact collection, recommendations, and structured Forever Living business growth.'
                     ],
                     'smart-referral-links' => [
                         'heading' => 'Why do these links matter?',
-                        'summary' => 'Smart referral links make global product sharing easier. They help visitors reach the correct official Forever webshop while keeping the partner recommendation connected in a simpler and more scalable way.',
+                        'summary' => 'Smart referral links are a core part of the FCC system because they make global product sharing easier. They help visitors reach the correct official Forever webshop while keeping the partner recommendation connected in a simpler and more scalable way.',
                         'facts' => [
                             'One link can serve visitors from different countries without manual searching.',
                             'The system detects the visitor location and routes them to the correct official shop.',
@@ -334,7 +403,7 @@ class Page extends Controller {
                     ],
                     'forever-card-funnel' => [
                         'heading' => 'Why does the funnel matter?',
-                        'summary' => 'The Forever Card Funnel helps make sure interest does not stop at a page view or a message. It guides visitors toward leaving a contact, gives the partner a clear next step, and helps turn more attention into real business conversations.',
+                        'summary' => 'The lead funnel inside the FCC system helps make sure interest does not stop at a page view or a message. It guides visitors toward leaving a contact, gives the partner a clear next step, and helps turn more attention into real business conversations.',
                         'facts' => [
                             'It helps collect better leads through a simple and clear contact path.',
                             'It supports faster follow-up through WhatsApp, Viber, SMS, calls, or email.',
@@ -347,7 +416,7 @@ class Page extends Controller {
                     ],
                     'nfc-card-offline' => [
                         'heading' => 'Why does the NFC card matter?',
-                        'summary' => 'The NFC card connects the offline conversation with the partner’s digital business system. One tap or QR scan opens the Forever Card App with product info, contact actions, AI support, funnels, and the next business steps.',
+                        'summary' => 'The NFC card connects the offline conversation with the FCC digital business system. One tap or QR scan opens the Forever Card App with product info, contact actions, AI support, funnels, and the next business steps.',
                         'facts' => [
                             'A live conversation can instantly lead into the partner’s personalized app.',
                             'Visitors get video, products, discounts, contact details, and the next action without manual searching.',
@@ -360,7 +429,7 @@ class Page extends Controller {
                     ],
                     'ai-product-assistants' => [
                         'heading' => 'Why do AI assistants matter?',
-                        'summary' => 'AI assistants help make product recommendations less dependent on the partner’s own experience, memory, or sales confidence. They guide visitors toward suitable product combinations, useful advice, and the correct next ordering step.',
+                        'summary' => 'AI product assistants make product recommendations less dependent on the partner’s own experience, memory, or sales confidence. They guide visitors toward suitable product combinations, useful advice, and the correct next ordering step inside the FCC business flow.',
                         'facts' => [
                             'There are specialized AI advisors for people and separate AI advisors for pets.',
                             'They work inside the Forever Card App, on the NFC card flow, and through shared app links on social media.',
@@ -375,16 +444,24 @@ class Page extends Controller {
 
                 $foreverclub_semantics = [
                     'heading' => 'Quick Explanation',
-                    'summary' => 'Forever Card Club is an independent digital system for Forever partners. Forever Card refers to the partner\'s personalized app and the connected physical NFC card that bring visitors into the same business system.',
+                    'summary' => 'Forever Card Club (FCC) is an all-in-one digital business system for Forever Living Products partners. The Forever Card App is the personal app each member receives, while FCC refers to the wider system that connects online sharing, referral routing, lead capture, AI guidance, and analytics.',
                     'facts' => [
                         'It is designed for independent Forever partners who want to build online and offline business.',
-                        'It includes a personal app, smart links, AI support, education, and analytics.',
+                        'It includes a personal app, smart referral links, AI product assistants, lead funnel logic, education, and analytics.',
                         'Product purchases happen through the official Forever webshop in the customer\'s country.',
                         'Forever Card Club is not an official Forever Living Products website.'
                     ],
+                    'solves_heading' => 'What does FCC solve?',
+                    'solves' => [
+                        'Online sharing through one personal app.',
+                        'Global referral routing toward the official Forever shop.',
+                        'Lead capture and structured follow-up after interest.',
+                        'AI guidance during product discovery and next-step decisions.',
+                        'Offline-to-online transition through NFC card and QR flow.'
+                    ],
                     'term_name' => 'Forever Card Club',
-                    'term_alternate_names' => ['FCC', 'Forever Card', 'Forever Card app'],
-                    'term_description' => 'Forever Card Club is an independent digital system for Forever partners that combines a personal app, smart referral links, AI support, education, analytics, and a physical NFC card in one business workflow.'
+                    'term_alternate_names' => ['FCC', 'Forever Card Club (FCC)'],
+                    'term_description' => 'Forever Card Club (FCC) is an all-in-one digital business system for Forever Living Products partners that combines a personal app, smart referral links, AI product assistants, lead funnel logic, education, analytics, and a physical NFC card in one business workflow.'
                 ];
             }
 
@@ -435,6 +512,7 @@ class Page extends Controller {
             'is_foreverclub_page' => $is_foreverclub_page,
             'foreverclub_semantics' => $foreverclub_semantics,
             'related_pages' => $related_pages,
+            'foreverclub_pathways' => $foreverclub_pathways,
             'page_url' => $page_url,
             /* /Custom code: FC-2026-03-24 */
         ];

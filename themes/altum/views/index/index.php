@@ -115,37 +115,6 @@
     </div>
 </div>
 
-<?php if(!empty($data->homepage_semantics)): ?>
-    <!-- Custom code: FC-2026-03-24: homepage semantic summary -->
-    <div class="container mt-6">
-        <section class="card index-highly-rounded border-0 bg-gray-900 fcc-home-summary" data-aos="fade-up">
-            <div class="card-body fcc-home-summary__inner py-5 py-lg-5">
-                <div class="fcc-home-summary__copy">
-                    <div class="index-icon-container mb-3">
-                        <i class="fas fa-fw fa-id-card fa-sm"></i>
-                    </div>
-                    <div class="fcc-home-summary__eyebrow"><?= $data->homepage_semantics['term_name'] ?></div>
-                    <h2><?= $data->homepage_semantics['hero_heading'] ?></h2>
-                    <p><?= $data->homepage_semantics['hero_summary'] ?></p>
-                </div>
-
-                <div class="fcc-home-summary__facts">
-                    <?php foreach($data->homepage_semantics['facts'] as $fact): ?>
-                        <div class="fcc-home-summary__fact"><?= $fact ?></div>
-                    <?php endforeach ?>
-                </div>
-
-                <div class="fcc-home-summary__links">
-                    <?php foreach($data->homepage_semantics['hub_pages'] as $hub_page): ?>
-                        <a href="<?= $hub_page['url'] ?>" class="fcc-home-summary__link"><?= $hub_page['name'] ?></a>
-                    <?php endforeach ?>
-                </div>
-            </div>
-        </section>
-    </div>
-    <!-- /Custom code: FC-2026-03-24 -->
-<?php endif ?>
-
 <!-- Custom code: FC-2026-02-27: restore smaller presentation header icons -->
 <?php if(settings()->links->biolinks_is_enabled): ?>
     <div class="container mt-6">
@@ -426,6 +395,49 @@
         </div>
     </div>
 </div>
+<?php endif ?>
+
+<?php if(!empty($data->homepage_semantics)): ?>
+    <!-- Custom code: FC-2026-03-24: homepage semantic summary -->
+    <div class="container mt-8">
+        <section class="card index-highly-rounded border-0 bg-gray-900 fcc-home-summary" data-aos="fade-up">
+            <div class="card-body fcc-home-summary__inner py-5 py-lg-5">
+                <div class="fcc-home-summary__copy">
+                    <div class="index-icon-container mb-3">
+                        <i class="fas fa-fw fa-id-card fa-sm"></i>
+                    </div>
+                    <div class="fcc-home-summary__eyebrow"><?= $data->homepage_semantics['term_name'] ?></div>
+                    <h2><?= $data->homepage_semantics['hero_heading'] ?></h2>
+                    <p><?= $data->homepage_semantics['hero_summary'] ?></p>
+                </div>
+
+                <div class="fcc-home-summary__facts">
+                    <?php foreach($data->homepage_semantics['facts'] as $fact): ?>
+                        <div class="fcc-home-summary__fact"><?= $fact ?></div>
+                    <?php endforeach ?>
+                </div>
+
+                <?php if(!empty($data->homepage_semantics['solves'])): ?>
+                    <div class="fcc-home-summary__solves">
+                        <h3><?= $data->homepage_semantics['solves_heading'] ?></h3>
+
+                        <div class="fcc-home-summary__solve-list">
+                            <?php foreach($data->homepage_semantics['solves'] as $solve): ?>
+                                <div class="fcc-home-summary__solve"><?= $solve ?></div>
+                            <?php endforeach ?>
+                        </div>
+                    </div>
+                <?php endif ?>
+
+                <div class="fcc-home-summary__links">
+                    <?php foreach($data->homepage_semantics['hub_pages'] as $hub_page): ?>
+                        <a href="<?= $hub_page['url'] ?>" class="fcc-home-summary__link"><?= $hub_page['name'] ?></a>
+                    <?php endforeach ?>
+                </div>
+            </div>
+        </section>
+    </div>
+    <!-- /Custom code: FC-2026-03-24 -->
 <?php endif ?>
 
 <div class="py-3"></div>
@@ -1270,10 +1282,52 @@
         backdrop-filter: blur(6px);
     }
 
+    .fcc-home-summary__solves {
+        padding-top: 0.35rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .fcc-home-summary__solves h3 {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.6rem;
+        margin-bottom: 1rem;
+        color: #f7f9fc;
+        font-size: 1rem;
+        letter-spacing: -0.01em;
+    }
+
+    .fcc-home-summary__solves h3::after {
+        content: '';
+        display: block;
+        width: 2.25rem;
+        height: 1px;
+        background: linear-gradient(90deg, rgba(104, 232, 188, 0.55), rgba(104, 232, 188, 0));
+    }
+
+    .fcc-home-summary__solve-list {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 0.85rem;
+    }
+
+    .fcc-home-summary__solve {
+        height: 100%;
+        padding: 0.95rem 1rem;
+        border-radius: 1rem;
+        background: rgba(104, 232, 188, 0.08);
+        border: 1px solid rgba(104, 232, 188, 0.14);
+        color: rgba(244, 247, 252, 0.92);
+        font-size: 0.94rem;
+        line-height: 1.58;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
+    }
+
     .fcc-home-summary__links {
         display: flex;
         flex-wrap: wrap;
         gap: 0.75rem;
+        padding-top: 0.1rem;
     }
 
     .fcc-home-summary__link {
@@ -1345,12 +1399,28 @@
         font-weight: 700;
     }
 
+    @media (max-width: 1199px) {
+        .fcc-home-summary__solve-list {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+    }
+
+    @media (max-width: 991px) {
+        .fcc-home-summary__solve-list {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
     @media (max-width: 767px) {
         .fcc-home-summary__inner {
             gap: 1rem;
         }
 
         .fcc-home-summary__facts {
+            grid-template-columns: 1fr;
+        }
+
+        .fcc-home-summary__solve-list {
             grid-template-columns: 1fr;
         }
 
@@ -1457,6 +1527,56 @@
 
 <script type="application/ld+json">
     <?php
+    $fcc_software_application_schema = [
+        '@context' => 'https://schema.org',
+        '@type' => 'SoftwareApplication',
+        '@id' => url() . '#fcc-software',
+        'name' => 'Forever Card Club',
+        'alternateName' => ['FCC', 'Forever Card Club (FCC)'],
+        'applicationCategory' => 'BusinessApplication',
+        'operatingSystem' => 'Web',
+        'url' => url(),
+        'description' => $data->homepage_semantics['description'] ?? l('index.meta_description'),
+        'inLanguage' => \Altum\Language::$code,
+        'audience' => [
+            '@type' => 'Audience',
+            'audienceType' => \Altum\Language::$code === 'hr'
+                ? 'Forever Living Products partneri'
+                : 'Forever Living Products partners',
+        ],
+        'publisher' => [
+            '@type' => 'Organization',
+            'name' => settings()->main->title,
+            'url' => url(),
+        ],
+        'featureList' => \Altum\Language::$code === 'hr'
+            ? [
+                'Osobna aplikacija partnera',
+                'Pametni preporučni linkovi',
+                'AI asistenti za proizvode',
+                'Sustav za prikupljanje kontakata',
+                'Analitika i praćenje interesa',
+                'NFC kartica povezana s aplikacijom',
+                'Usmjeravanje prema službenom Forever web shopu',
+            ]
+            : [
+                'Personal partner app',
+                'Smart referral links',
+                'AI product assistants',
+                'Lead capture system',
+                'Analytics and engagement tracking',
+                'NFC card connected to the app',
+                'Routing toward the official Forever webshop',
+            ],
+        'offers' => [
+            '@type' => 'Offer',
+            'price' => '0',
+            'priceCurrency' => 'EUR',
+            'availability' => 'https://schema.org/InStock',
+            'url' => url('contact'),
+        ],
+    ];
+
     $homepage_schema = [
         '@context' => 'https://schema.org',
         '@type' => 'WebPage',
@@ -1469,14 +1589,23 @@
     if(!empty($data->homepage_semantics)) {
         $homepage_schema['about'] = [
             '@type' => 'DefinedTerm',
+            '@id' => url('pages/foreverclub') . '#fcc-term',
             'name' => $data->homepage_semantics['term_name'],
             'alternateName' => $data->homepage_semantics['term_alternate_names'],
             'description' => $data->homepage_semantics['term_description'],
             'inDefinedTermSet' => url('pages/foreverclub'),
         ];
+
+        $homepage_schema['mainEntity'] = [
+            '@id' => url() . '#fcc-software',
+        ];
     }
     ?>
     <?= json_encode($homepage_schema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?>
+</script>
+
+<script type="application/ld+json">
+    <?= json_encode($fcc_software_application_schema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?>
 </script>
 
 <script type="application/ld+json">

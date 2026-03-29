@@ -84,6 +84,18 @@ $fcc_info_note = $fcc_is_hr
                         <li><?= $fact ?></li>
                     <?php endforeach ?>
                 </ul>
+
+                <?php if(!empty($data->foreverclub_semantics['solves'])): ?>
+                    <div class="fcc-page-summary__solves">
+                        <h3><?= $data->foreverclub_semantics['solves_heading'] ?></h3>
+
+                        <div class="fcc-page-summary__solve-grid">
+                            <?php foreach($data->foreverclub_semantics['solves'] as $solve): ?>
+                                <div class="fcc-page-summary__solve"><?= $solve ?></div>
+                            <?php endforeach ?>
+                        </div>
+                    </div>
+                <?php endif ?>
             </div>
         </section>
         <!-- /Custom code: FC-2026-03-24 -->
@@ -123,6 +135,39 @@ $fcc_info_note = $fcc_is_hr
                 <div class="d-flex align-items-center flex-wrap gap-3">
                     <?= include_view(THEME_PATH . 'views/partials/share_buttons.php', ['url' => url(\Altum\Router::$original_request), 'class' => 'btn btn-gray-100', 'copy_to_clipboard' => true]) ?>
                 </div>
+            </div>
+        </section>
+    <?php endif ?>
+
+    <?php if(!empty($data->foreverclub_pathways) && (!empty($data->foreverclub_pathways['core_pages']) || !empty($data->foreverclub_pathways['landing_pages']))): ?>
+        <section class="fcc-pathways">
+            <div class="fcc-pathways__head">
+                <h2><?= $fcc_is_hr ? 'Sljedeći korisni koraci' : 'Useful next steps' ?></h2>
+                <p><?= $fcc_is_hr ? 'Ovaj vodič je dio šireg FCC sadržajnog klastera. Ovdje su dvije ključne FCC stranice i dodatni landing vodiči koji prirodno nastavljaju ovu temu.' : 'This guide is part of a broader FCC content cluster. Here are two core FCC pages and additional landing guides that naturally continue the topic.' ?></p>
+            </div>
+
+            <div class="fcc-pathways__grid">
+                <?php foreach($data->foreverclub_pathways['core_pages'] as $row): ?>
+                    <?php $row_url = $row->type == 'internal' ? SITE_URL . ($row->language ? \Altum\Language::$active_languages[$row->language] . '/' : null) . 'page/' . $row->url : $row->url; ?>
+                    <a href="<?= $row_url ?>" class="fcc-pathways__card">
+                        <span class="fcc-pathways__tag"><?= $fcc_is_hr ? 'Ključna FCC stranica' : 'Core FCC page' ?></span>
+                        <h3><?= $row->title ?></h3>
+                        <?php if(!empty($row->description)): ?>
+                            <p><?= $row->description ?></p>
+                        <?php endif ?>
+                    </a>
+                <?php endforeach ?>
+
+                <?php foreach($data->foreverclub_pathways['landing_pages'] as $row): ?>
+                    <?php $row_url = $row->type == 'internal' ? SITE_URL . ($row->language ? \Altum\Language::$active_languages[$row->language] . '/' : null) . 'page/' . $row->url : $row->url; ?>
+                    <a href="<?= $row_url ?>" class="fcc-pathways__card fcc-pathways__card--accent">
+                        <span class="fcc-pathways__tag"><?= $fcc_is_hr ? 'Landing vodič' : 'Landing guide' ?></span>
+                        <h3><?= $row->title ?></h3>
+                        <?php if(!empty($row->description)): ?>
+                            <p><?= $row->description ?></p>
+                        <?php endif ?>
+                    </a>
+                <?php endforeach ?>
             </div>
         </section>
     <?php endif ?>
@@ -334,6 +379,35 @@ $fcc_info_note = $fcc_is_hr
         padding-left: 18px;
     }
 
+    .fcc-page-summary__solves {
+        margin-top: 22px;
+        padding-top: 6px;
+        border-top: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .fcc-page-summary__solves h3 {
+        color: #f5f7ff;
+        font-size: 1rem;
+        margin-bottom: 12px;
+        letter-spacing: -0.01em;
+    }
+
+    .fcc-page-summary__solve-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 12px;
+    }
+
+    .fcc-page-summary__solve {
+        border-radius: 16px;
+        padding: 14px 16px;
+        background: rgba(104, 232, 188, 0.08);
+        border: 1px solid rgba(104, 232, 188, 0.14);
+        color: rgba(235, 239, 248, 0.88);
+        line-height: 1.6;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
+    }
+
     .fcc-related-pages {
         margin-top: 24px;
     }
@@ -399,6 +473,87 @@ $fcc_info_note = $fcc_is_hr
         border: 1px solid rgba(255, 255, 255, 0.06);
         border-radius: 18px;
         padding: 18px 22px;
+    }
+
+    .fcc-pathways {
+        margin-top: 24px;
+        padding: 22px 24px;
+        border-radius: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        background: linear-gradient(160deg, rgba(16, 21, 30, 0.96), rgba(9, 13, 20, 0.98));
+        box-shadow: 0 16px 34px rgba(0, 0, 0, 0.28);
+    }
+
+    .fcc-pathways__head {
+        margin-bottom: 16px;
+    }
+
+    .fcc-pathways__head h2 {
+        margin-bottom: 8px;
+        color: #f5f7ff;
+        font-size: clamp(1.35rem, 2vw, 1.75rem);
+    }
+
+    .fcc-pathways__head p {
+        max-width: 54rem;
+        margin-bottom: 0;
+        color: rgba(223, 228, 240, 0.76);
+        line-height: 1.7;
+    }
+
+    .fcc-pathways__grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 16px;
+    }
+
+    .fcc-pathways__card {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        padding: 18px;
+        border-radius: 18px;
+        text-decoration: none;
+        color: inherit;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+    }
+
+    .fcc-pathways__card:hover,
+    .fcc-pathways__card:focus {
+        transform: translateY(-2px);
+        border-color: rgba(104, 232, 188, 0.2);
+        background: rgba(104, 232, 188, 0.06);
+    }
+
+    .fcc-pathways__card--accent {
+        border-color: rgba(255, 198, 0, 0.16);
+        background: rgba(255, 198, 0, 0.05);
+    }
+
+    .fcc-pathways__tag {
+        display: inline-flex;
+        align-self: flex-start;
+        padding: 0.35rem 0.7rem;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.05);
+        color: rgba(240, 244, 251, 0.86);
+        font-size: 0.76rem;
+        font-weight: 700;
+    }
+
+    .fcc-pathways__card h3 {
+        margin-bottom: 0;
+        color: #f5f7ff;
+        font-size: 1.02rem;
+        line-height: 1.45;
+    }
+
+    .fcc-pathways__card p {
+        margin-bottom: 0;
+        color: rgba(223, 228, 240, 0.75);
+        line-height: 1.65;
     }
 
     @media (max-width: 900px) {
@@ -529,6 +684,7 @@ if(!empty($data->pages_category->title)) {
 if(!empty($data->is_foreverclub_page) && !empty($data->foreverclub_semantics)) {
     $fcc_page_schema['about'] = [
         '@type' => 'DefinedTerm',
+        '@id' => url('pages/foreverclub') . '#fcc-term',
         'name' => $data->foreverclub_semantics['term_name'],
         'alternateName' => $data->foreverclub_semantics['term_alternate_names'],
         'description' => $data->foreverclub_semantics['term_description'],
@@ -545,6 +701,184 @@ if(!empty($data->is_foreverclub_page) && !empty($data->foreverclub_semantics)) {
 $fcc_page_schema = array_filter($fcc_page_schema, static function($value) {
     return $value !== null && $value !== '';
 });
+
+$fcc_software_application_schema = null;
+
+if(!empty($data->is_foreverclub_page) && $data->page->url === 'forever-card-club') {
+    $fcc_software_application_schema = [
+        '@context' => 'https://schema.org',
+        '@type' => 'SoftwareApplication',
+        '@id' => SITE_URL . '#fcc-software',
+        'name' => 'Forever Card Club',
+        'alternateName' => ['FCC', 'Forever Card Club (FCC)'],
+        'applicationCategory' => 'BusinessApplication',
+        'operatingSystem' => 'Web',
+        'url' => $data->page_url ?? SITE_URL,
+        'description' => $data->page->description ?: ($data->foreverclub_semantics['term_description'] ?? ''),
+        'inLanguage' => \Altum\Language::$code,
+        'audience' => [
+            '@type' => 'Audience',
+            'audienceType' => \Altum\Language::$code === 'hr'
+                ? 'Forever Living Products partneri'
+                : 'Forever Living Products partners',
+        ],
+        'publisher' => [
+            '@type' => 'Organization',
+            'name' => 'Forever Card Club',
+            'url' => SITE_URL,
+        ],
+        'featureList' => \Altum\Language::$code === 'hr'
+            ? [
+                'Osobna aplikacija partnera',
+                'Pametni preporučni linkovi',
+                'AI asistenti za proizvode',
+                'Sustav za prikupljanje kontakata',
+                'Analitika i praćenje interesa',
+                'NFC kartica povezana s aplikacijom',
+                'Usmjeravanje prema službenom Forever web shopu',
+            ]
+            : [
+                'Personal partner app',
+                'Smart referral links',
+                'AI product assistants',
+                'Lead capture system',
+                'Analytics and engagement tracking',
+                'NFC card connected to the app',
+                'Routing toward the official Forever webshop',
+            ],
+        'offers' => [
+            '@type' => 'Offer',
+            'price' => '0',
+            'priceCurrency' => 'EUR',
+            'availability' => 'https://schema.org/InStock',
+            'url' => SITE_URL . 'contact',
+        ],
+    ];
+}
+
+$fcc_howto_schema = null;
+$fcc_howto_map = [
+    'forever-card-app' => [
+        'name' => [
+            'hr' => 'Kako postaviti Forever Card aplikaciju',
+            'en' => 'How to set up the Forever Card app',
+        ],
+        'description' => [
+            'hr' => 'Koraci za postavljanje osobne Forever Card aplikacije unutar FCC sustava.',
+            'en' => 'Steps for setting up the personal Forever Card app inside the FCC system.',
+        ],
+        'steps' => [
+            'hr' => [
+                'Aktiviraj svoju Forever Card aplikaciju i potvrdi osnovne podatke partnera.',
+                'Dodaj sadržaj koji želiš pokazati: proizvode, kontakt, preporuke i korisne informacije.',
+                'Poveži pametne preporučne linkove i provjeri vodi li aplikacija na pravi službeni Forever web shop.',
+                'Podijeli aplikaciju putem poruka, društvenih mreža, QR koda ili NFC kartice.',
+            ],
+            'en' => [
+                'Activate your Forever Card app and confirm the partner basics.',
+                'Add the content you want to show: products, contact actions, recommendations, and useful information.',
+                'Connect smart referral links and confirm the app routes to the correct official Forever webshop.',
+                'Share the app through messages, social media, QR code, or NFC card.',
+            ],
+        ],
+    ],
+    'smart-referral-links' => [
+        'name' => [
+            'hr' => 'Kako rade pametni preporučni linkovi',
+            'en' => 'How smart referral links work',
+        ],
+        'description' => [
+            'hr' => 'Koraci koji pokazuju kako FCC pametni linkovi vode posjetitelja prema službenom Forever web shopu.',
+            'en' => 'Steps that explain how FCC smart links route visitors toward the official Forever webshop.',
+        ],
+        'steps' => [
+            'hr' => [
+                'Partner podijeli svoj preporučni link kroz aplikaciju, poruku ili objavu.',
+                'FCC prepoznaje odakle posjetitelj dolazi i određuje odgovarajući tržišni put.',
+                'Posjetitelj se usmjerava prema službenom Forever web shopu u svojoj državi.',
+                'Preporuka partnera ostaje povezana s korisničkim putem prema kupnji ili daljnjem interesu.',
+            ],
+            'en' => [
+                'The partner shares a referral link through the app, a message, or a post.',
+                'FCC detects where the visitor comes from and selects the correct market route.',
+                'The visitor is routed toward the official Forever webshop in their country.',
+                'The partner referral stays connected to the path toward purchase or further interest.',
+            ],
+        ],
+    ],
+    'nfc-card-offline' => [
+        'name' => [
+            'hr' => 'Kako NFC kartica vodi iz susreta uživo u FCC aplikaciju',
+            'en' => 'How the NFC card moves visitors from an in-person meeting into the FCC app',
+        ],
+        'description' => [
+            'hr' => 'Koraci koji pokazuju kako NFC kartica i QR kod otvaraju FCC digitalni put nakon susreta uživo.',
+            'en' => 'Steps that show how the NFC card and QR code open the FCC digital journey after an in-person meeting.',
+        ],
+        'steps' => [
+            'hr' => [
+                'Na susretu uživo partner pokaže NFC karticu ili QR kod.',
+                'Posjetitelj dodirom ili skeniranjem otvori Forever Card aplikaciju.',
+                'U aplikaciji odmah vidi proizvode, kontakt, preporuke i sljedeće korake.',
+                'Partner nastavlja razgovor kroz kontakt, preporuku ili daljnje praćenje interesa.',
+            ],
+            'en' => [
+                'During an in-person meeting the partner presents the NFC card or QR code.',
+                'The visitor opens the Forever Card app with a tap or scan.',
+                'Inside the app they immediately see products, contact actions, recommendations, and next steps.',
+                'The partner continues the journey through contact, referral guidance, or follow-up.',
+            ],
+        ],
+    ],
+    'ai-product-assistants' => [
+        'name' => [
+            'hr' => 'Kako AI asistenti vode korisnika do proizvoda i sljedećeg koraka',
+            'en' => 'How AI assistants guide visitors toward products and the next step',
+        ],
+        'description' => [
+            'hr' => 'Koraci koji pokazuju kako AI asistenti unutar FCC-a pomažu korisniku istražiti proizvode i doći do pravog koraka.',
+            'en' => 'Steps that explain how AI assistants inside FCC help visitors explore products and move to the right next step.',
+        ],
+        'steps' => [
+            'hr' => [
+                'Korisnik postavlja pitanje unutar FCC aplikacije ili AI bloka.',
+                'AI asistent predlaže relevantne proizvode i korisne informacije.',
+                'Sustav usmjerava korisnika prema kontaktu, dodatnom objašnjenju ili linku za kupnju.',
+                'Partner dobiva jednostavniji i jasniji put od interesa do preporuke ili razgovora.',
+            ],
+            'en' => [
+                'The visitor asks a question inside the FCC app or AI block.',
+                'The AI assistant suggests relevant products and useful guidance.',
+                'The system routes the visitor toward contact, deeper explanation, or the purchase path.',
+                'The partner gets a clearer and simpler path from interest to recommendation or conversation.',
+            ],
+        ],
+    ],
+];
+
+if(!empty($data->is_foreverclub_page) && isset($fcc_howto_map[$data->page->url])) {
+    $howto = $fcc_howto_map[$data->page->url];
+    $lang = \Altum\Language::$code === 'hr' ? 'hr' : 'en';
+
+    $fcc_howto_schema = [
+        '@context' => 'https://schema.org',
+        '@type' => 'HowTo',
+        'name' => $howto['name'][$lang],
+        'description' => $howto['description'][$lang],
+        'inLanguage' => \Altum\Language::$code,
+        'url' => $data->page_url ?? (SITE_URL . 'page/' . $data->page->url),
+        'step' => [],
+    ];
+
+    foreach($howto['steps'][$lang] as $index => $step_text) {
+        $fcc_howto_schema['step'][] = [
+            '@type' => 'HowToStep',
+            'position' => $index + 1,
+            'name' => $step_text,
+            'text' => $step_text,
+        ];
+    }
+}
 
 $fcc_faq_schema = null;
 
@@ -621,6 +955,22 @@ if(!empty($data->is_foreverclub_page) && !empty($data->page->content) && class_e
     <?= json_encode($fcc_page_schema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) ?>
 </script>
 <?php \Altum\Event::add_content(ob_get_clean(), 'javascript') ?>
+
+<?php if($fcc_software_application_schema): ?>
+<?php ob_start() ?>
+<script type="application/ld+json">
+    <?= json_encode($fcc_software_application_schema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) ?>
+</script>
+<?php \Altum\Event::add_content(ob_get_clean(), 'javascript') ?>
+<?php endif ?>
+
+<?php if($fcc_howto_schema): ?>
+<?php ob_start() ?>
+<script type="application/ld+json">
+    <?= json_encode($fcc_howto_schema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) ?>
+</script>
+<?php \Altum\Event::add_content(ob_get_clean(), 'javascript') ?>
+<?php endif ?>
 
 <?php if($fcc_faq_schema): ?>
 <?php ob_start() ?>

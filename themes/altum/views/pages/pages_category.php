@@ -64,9 +64,48 @@ $fcc_pages_category_cta = $fcc_is_hr_language ? 'Saznaj više' : 'Learn more';
                         <li><?= $fact ?></li>
                     <?php endforeach ?>
                 </ul>
+
+                <?php if(!empty($data->foreverclub_semantics['solves'])): ?>
+                    <div class="fcc-pages-summary__solves">
+                        <h3><?= $data->foreverclub_semantics['solves_heading'] ?></h3>
+
+                        <div class="fcc-pages-summary__solve-grid">
+                            <?php foreach($data->foreverclub_semantics['solves'] as $solve): ?>
+                                <div class="fcc-pages-summary__solve"><?= $solve ?></div>
+                            <?php endforeach ?>
+                        </div>
+                    </div>
+                <?php endif ?>
             </div>
         </section>
         <!-- /Custom code: FC-2026-03-24 -->
+    <?php endif ?>
+
+    <?php if(!empty($data->foreverclub_landing_pages)): ?>
+        <section class="fcc-pages-cluster">
+            <div class="fcc-pages-cluster__head">
+                <div>
+                    <div class="fcc-pages-cluster__eyebrow"><?= $fcc_is_hr_language ? 'Po problemima' : 'Problem-first' ?></div>
+                    <h2><?= $fcc_is_hr_language ? 'Vodiči za konkretne Forever poslovne situacije' : 'Guides for specific Forever business situations' ?></h2>
+                    <p><?= $fcc_is_hr_language ? 'Ove stranice ciljaju stvarna pitanja koja partneri i AI sustavi najčešće traže: alati, online izgradnja poslovanja, kontakti, AI preporuke i usporedbe s generičkim alatima.' : 'These pages target the practical questions that partners and AI systems most often look for: tools, online business building, leads, AI guidance, and comparisons with generic platforms.' ?></p>
+                </div>
+                <a href="<?= url('page/how-it-works') ?>" class="fcc-pages-cluster__cta"><?= $fcc_is_hr_language ? 'Kako sustav radi' : 'How the system works' ?></a>
+            </div>
+
+            <div class="fcc-pages-cluster__grid">
+                <?php foreach($data->foreverclub_landing_pages as $row): ?>
+                    <?php $row_url = $row->type == 'internal' ? SITE_URL . ($row->language ? \Altum\Language::$active_languages[$row->language] . '/' : null) . 'page/' . $row->url : $row->url; ?>
+                    <a href="<?= $row_url ?>" class="fcc-pages-cluster__card">
+                        <span class="fcc-pages-cluster__label"><?= $fcc_is_hr_language ? 'Landing vodič' : 'Landing guide' ?></span>
+                        <h3><?= $row->title ?></h3>
+                        <?php if(!empty($row->description)): ?>
+                            <p><?= $row->description ?></p>
+                        <?php endif ?>
+                        <span class="fcc-pages-cluster__link"><?= $fcc_is_hr_language ? 'Otvori vodič' : 'Open guide' ?></span>
+                    </a>
+                <?php endforeach ?>
+            </div>
+        </section>
     <?php endif ?>
 
     <?php if (!empty($data->pages)): ?>
@@ -198,6 +237,114 @@ $fcc_pages_category_cta = $fcc_is_hr_language ? 'Saznaj više' : 'Learn more';
         gap: 22px;
     }
 
+    .fcc-pages-cluster {
+        margin-bottom: 28px;
+        padding: 24px 26px;
+        border-radius: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        background: linear-gradient(160deg, rgba(17, 22, 32, 0.96), rgba(9, 13, 20, 0.98));
+        box-shadow: 0 16px 36px rgba(0, 0, 0, 0.3);
+    }
+
+    .fcc-pages-cluster__head {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        gap: 18px;
+        margin-bottom: 18px;
+    }
+
+    .fcc-pages-cluster__eyebrow {
+        margin-bottom: 10px;
+        font-size: 0.72rem;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: rgba(104, 232, 188, 0.82);
+    }
+
+    .fcc-pages-cluster__head h2 {
+        margin-bottom: 8px;
+        color: #f5f7ff;
+        font-size: clamp(1.45rem, 2.4vw, 1.9rem);
+    }
+
+    .fcc-pages-cluster__head p {
+        max-width: 54rem;
+        margin-bottom: 0;
+        color: rgba(223, 228, 240, 0.78);
+        line-height: 1.7;
+    }
+
+    .fcc-pages-cluster__cta {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 2.85rem;
+        padding: 0.8rem 1.1rem;
+        border-radius: 999px;
+        text-decoration: none !important;
+        font-weight: 600;
+        color: #f5f7ff !important;
+        background: rgba(104, 232, 188, 0.12);
+        border: 1px solid rgba(104, 232, 188, 0.2);
+    }
+
+    .fcc-pages-cluster__grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 18px;
+    }
+
+    .fcc-pages-cluster__card {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        padding: 18px;
+        border-radius: 18px;
+        text-decoration: none;
+        color: inherit;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+    }
+
+    .fcc-pages-cluster__card:hover,
+    .fcc-pages-cluster__card:focus {
+        transform: translateY(-2px);
+        border-color: rgba(104, 232, 188, 0.22);
+        background: rgba(104, 232, 188, 0.06);
+    }
+
+    .fcc-pages-cluster__label {
+        display: inline-flex;
+        align-self: flex-start;
+        padding: 0.35rem 0.7rem;
+        border-radius: 999px;
+        font-size: 0.76rem;
+        font-weight: 700;
+        color: rgba(191, 248, 235, 0.92);
+        background: rgba(104, 232, 188, 0.08);
+    }
+
+    .fcc-pages-cluster__card h3 {
+        margin-bottom: 0;
+        color: #f5f7ff;
+        font-size: 1.06rem;
+        line-height: 1.4;
+    }
+
+    .fcc-pages-cluster__card p {
+        margin-bottom: 0;
+        color: rgba(223, 228, 240, 0.76);
+        line-height: 1.65;
+    }
+
+    .fcc-pages-cluster__link {
+        margin-top: auto;
+        font-weight: 600;
+        color: #bff8eb;
+    }
+
     .fcc-pages-summary {
         margin-bottom: 28px;
     }
@@ -224,6 +371,31 @@ $fcc_pages_category_cta = $fcc_is_hr_language ? 'Saznaj više' : 'Learn more';
     .fcc-pages-summary__inner ul {
         margin: 14px 0 0;
         padding-left: 18px;
+    }
+
+    .fcc-pages-summary__solves {
+        margin-top: 22px;
+    }
+
+    .fcc-pages-summary__solves h3 {
+        color: #f5f7ff;
+        font-size: 1rem;
+        margin-bottom: 12px;
+    }
+
+    .fcc-pages-summary__solve-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 12px;
+    }
+
+    .fcc-pages-summary__solve {
+        border-radius: 16px;
+        padding: 14px 16px;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        color: rgba(235, 239, 248, 0.85);
+        line-height: 1.6;
     }
 
     .fcc-page-card {
@@ -310,6 +482,11 @@ $fcc_pages_category_cta = $fcc_is_hr_language ? 'Saznaj više' : 'Learn more';
         .fcc-pages-hero__meta {
             grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
             min-width: 100%;
+        }
+
+        .fcc-pages-cluster__head {
+            flex-direction: column;
+            align-items: flex-start;
         }
     }
 </style>

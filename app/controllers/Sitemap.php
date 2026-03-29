@@ -39,6 +39,7 @@ class Sitemap extends Controller {
             ['loc' => SITE_URL, 'lastmod' => null],
             ['loc' => SITE_URL . 'login', 'lastmod' => null],
             ['loc' => SITE_URL . 'lost-password', 'lastmod' => null],
+            ['loc' => SITE_URL . 'llms.txt', 'lastmod' => null],
         ];
 
         if(settings()->users->email_confirmation) {
