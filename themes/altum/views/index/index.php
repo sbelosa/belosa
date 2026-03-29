@@ -634,73 +634,48 @@
     </div>
 </div>
 
-<?php if(settings()->links->shortener_is_enabled): ?>
+<?php if(!empty($data->homepage_semantics['workflow_steps']) || !empty($data->homepage_semantics['use_cases'])): ?>
     <div class="container mt-8">
-        <div class="card py-4 index-highly-rounded border-0">
-            <div class="card-body">
-                <!-- Custom code: FC-2026-02-25: smart links section styling hooks -->
-                <div class="text-center mb-4 index-smart-links-header">
-                    <h2><?= l('index.shortener_app_linking.header') ?></h2>
-                    <p class="text-muted index-smart-links-subheader"><?= l('index.shortener_app_linking.subheader') ?></p>
-                </div>
-                <!-- /Custom code: FC-2026-02-25 -->
+        <section class="card index-highly-rounded border-0 bg-gray-900 fcc-home-flow" data-aos="fade-up">
+            <div class="card-body fcc-home-flow__inner py-5">
+                <?php if(!empty($data->homepage_semantics['workflow_steps'])): ?>
+                    <div class="fcc-home-flow__block">
+                        <div class="fcc-home-flow__eyebrow"><?= \Altum\Language::$code === 'hr' ? 'Kako sustav radi' : 'How the system works' ?></div>
+                        <h2><?= $data->homepage_semantics['workflow_heading'] ?></h2>
+                        <p class="fcc-home-flow__intro"><?= $data->homepage_semantics['workflow_intro'] ?></p>
 
-                <div class="d-flex flex-wrap justify-content-center">
-                    <?php foreach(require APP_PATH . 'includes/app_linking.php' as $app_key => $app): ?>
-                        <div class="bg-gray-100 index-highly-rounded w-fit-content p-3 m-4 icon-zoom-animation" data-toggle="tooltip" title="<?= $app['name'] ?>">
-                            <span title="<?= $app['name'] ?>"><i class="<?= $app['icon'] ?> fa-fw fa-xl mx-1" style="color: <?= $app['color'] ?>"></i></span>
-                        </div>
-                    <?php endforeach ?>
-                </div>
-            </div>
-        </div>
-    </div>
-<?php endif ?>
-
-<div class="py-3"></div>
-
-
-
-
-
-
-
-<div class="container mt-8">
-    <div class="card py-4 index-highly-rounded border-0 bg-gray-900">
-        <div class="card-body">
-            <div class="row justify-content-between">
-                <div class="col-12 col-lg-3 mb-4 mb-lg-0">
-                    <div class="text-center d-flex flex-column">
-                        <span class="font-weight-bold text-muted mb-3"><?= l('index.stats.links') ?></span>
-                        <span class="h1 text-gradient-primary" style="--gradient-one: var(--purple); --gradient-two: var(--pink);" data-count-up-append="+" data-count-up-number="<?= $data->total_links ?>"><?= nr($data->total_links, 0, true, true) . '+' ?></span>
-                    </div>
-                </div>
-
-                <?php if(settings()->codes->qr_codes_is_enabled): ?>
-                    <div class="col-12 col-lg-3 mb-4 mb-lg-0">
-                        <div class="text-center d-flex flex-column">
-                            <span class="font-weight-bold text-muted mb-3"><?= l('index.stats.qr_codes') ?></span>
-                            <span class="h1 text-gradient-primary" style="--gradient-one: var(--teal); --gradient-two: var(--blue);" data-count-up-append="+" data-count-up-number="<?= $data->total_qr_codes ?>"><?= nr($data->total_qr_codes, 0, true, true) . '+' ?></span>
+                        <div class="fcc-home-flow__grid">
+                            <?php foreach($data->homepage_semantics['workflow_steps'] as $index => $step): ?>
+                                <div class="fcc-home-flow__card">
+                                    <span class="fcc-home-flow__step"><?= str_pad((string) ($index + 1), 2, '0', STR_PAD_LEFT) ?></span>
+                                    <h3><?= $step['title'] ?></h3>
+                                    <p><?= $step['text'] ?></p>
+                                </div>
+                            <?php endforeach ?>
                         </div>
                     </div>
                 <?php endif ?>
 
-                <div class="col-12 col-lg-3 mb-4 mb-lg-0">
-                    <div class="text-center d-flex flex-column">
-                        <span class="font-weight-bold text-muted mb-3"><?= l('index.stats.track_links') ?></span>
-                        <span class="h1 text-gradient-primary" style="--gradient-one: var(--blue); --gradient-two: var(--purple);" data-count-up-append="+" data-count-up-number="<?= $data->total_track_links ?>"><?= nr($data->total_track_links, 0, true, true) . '+' ?></span>
+                <?php if(!empty($data->homepage_semantics['use_cases'])): ?>
+                    <div class="fcc-home-flow__block">
+                        <div class="fcc-home-flow__eyebrow"><?= \Altum\Language::$code === 'hr' ? 'Za koga je' : 'Who it helps' ?></div>
+                        <h2><?= $data->homepage_semantics['use_cases_heading'] ?></h2>
+                        <p class="fcc-home-flow__intro"><?= $data->homepage_semantics['use_cases_intro'] ?></p>
+
+                        <div class="fcc-home-usecases__grid">
+                            <?php foreach($data->homepage_semantics['use_cases'] as $use_case): ?>
+                                <div class="fcc-home-usecases__card">
+                                    <h3><?= $use_case['title'] ?></h3>
+                                    <p><?= $use_case['text'] ?></p>
+                                </div>
+                            <?php endforeach ?>
+                        </div>
                     </div>
-                </div>
+                <?php endif ?>
             </div>
-            <!-- Custom code: FC-2026-02-25: stats note -->
-            <!-- Custom code: FC-2026-02-25: stats note styling hook -->
-            <p class="text-muted text-center mt-4 mb-0 index-stats-note"><?= l('index.stats.note') ?></p>
-            <!-- /Custom code: FC-2026-02-25 -->
-            <!-- /Custom code: FC-2026-02-25 -->
-        </div>
+        </section>
     </div>
-</div>
-<!-- /Custom code: FC-2026-02-27 -->
+<?php endif ?>
 
 <div class="py-3"></div>
 
@@ -1356,6 +1331,178 @@
     .fcc-home-summary .index-icon-container {
         background: rgba(104, 232, 188, 0.14);
         color: rgba(104, 232, 188, 0.96);
+    }
+
+    .fcc-home-flow {
+        position: relative;
+        overflow: hidden;
+        background:
+            radial-gradient(circle at top left, rgba(63, 216, 161, 0.08), transparent 24%),
+            radial-gradient(circle at bottom right, rgba(74, 167, 255, 0.1), transparent 22%),
+            linear-gradient(160deg, rgba(16, 21, 30, 0.98), rgba(8, 12, 18, 0.98));
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        box-shadow: 0 20px 48px rgba(0, 0, 0, 0.42);
+    }
+
+    .fcc-home-flow::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background:
+            linear-gradient(135deg, rgba(255, 255, 255, 0.03), transparent 38%),
+            linear-gradient(315deg, rgba(255, 255, 255, 0.02), transparent 34%);
+        pointer-events: none;
+    }
+
+    .fcc-home-flow__inner {
+        position: relative;
+        display: grid;
+        gap: 34px;
+    }
+
+    .fcc-home-flow__eyebrow {
+        display: inline-flex;
+        align-items: center;
+        margin-bottom: 10px;
+        padding: 0.28rem 0.7rem;
+        border-radius: 999px;
+        font-size: 0.72rem;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: rgba(104, 232, 188, 0.92);
+        background: rgba(104, 232, 188, 0.08);
+        border: 1px solid rgba(104, 232, 188, 0.12);
+    }
+
+    .fcc-home-flow__block h2,
+    .fcc-home-usecases__card h3,
+    .fcc-home-flow__card h3 {
+        color: #f5f7ff;
+    }
+
+    .fcc-home-flow__block h2 {
+        margin-bottom: 0.7rem;
+        font-size: clamp(1.55rem, 2.3vw, 2.1rem);
+        line-height: 1.14;
+        letter-spacing: -0.02em;
+    }
+
+    .fcc-home-flow__intro,
+    .fcc-home-flow__card p,
+    .fcc-home-usecases__card p {
+        color: rgba(223, 228, 240, 0.78);
+        line-height: 1.65;
+    }
+
+    .fcc-home-flow__intro {
+        max-width: 54rem;
+        margin-bottom: 0;
+    }
+
+    .fcc-home-flow__grid,
+    .fcc-home-usecases__grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 16px;
+        margin-top: 18px;
+    }
+
+    .fcc-home-flow__card,
+    .fcc-home-usecases__card {
+        position: relative;
+        overflow: hidden;
+        min-height: 100%;
+        border-radius: 20px;
+        padding: 20px 20px 18px;
+        background:
+            linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.02));
+        border: 1px solid rgba(255, 255, 255, 0.07);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+        transition: transform 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease, background 0.22s ease;
+    }
+
+    .fcc-home-flow__card::before,
+    .fcc-home-usecases__card::before {
+        content: '';
+        position: absolute;
+        inset: 0 0 auto 0;
+        height: 1px;
+        background: linear-gradient(90deg, rgba(104, 232, 188, 0.55), rgba(104, 232, 188, 0));
+        opacity: 0.65;
+    }
+
+    .fcc-home-flow__card:hover,
+    .fcc-home-flow__card:focus,
+    .fcc-home-usecases__card:hover,
+    .fcc-home-usecases__card:focus {
+        transform: translateY(-3px);
+        border-color: rgba(104, 232, 188, 0.18);
+        box-shadow: 0 18px 30px rgba(0, 0, 0, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    }
+
+    .fcc-home-flow__card h3,
+    .fcc-home-usecases__card h3 {
+        margin-bottom: 0.7rem;
+        font-size: clamp(1.05rem, 1.6vw, 1.45rem);
+        line-height: 1.16;
+        letter-spacing: -0.03em;
+    }
+
+    .fcc-home-flow__step {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 12px;
+        min-width: 2.55rem;
+        padding: 0.34rem 0.7rem;
+        border-radius: 999px;
+        background: rgba(104, 232, 188, 0.14);
+        border: 1px solid rgba(104, 232, 188, 0.18);
+        color: #bff8eb;
+        font-size: 0.76rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+    }
+
+    .fcc-home-usecases__card {
+        background:
+            linear-gradient(180deg, rgba(104, 232, 188, 0.06), rgba(255, 255, 255, 0.02));
+        border-color: rgba(104, 232, 188, 0.1);
+    }
+
+    .fcc-home-flow__grid .fcc-home-flow__card:nth-child(-n+3) {
+        background:
+            radial-gradient(circle at top right, rgba(104, 232, 188, 0.08), transparent 38%),
+            linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+        border-color: rgba(104, 232, 188, 0.12);
+    }
+
+    .fcc-home-flow__grid .fcc-home-flow__card:nth-child(-n+3) .fcc-home-flow__step {
+        background: linear-gradient(180deg, rgba(104, 232, 188, 0.2), rgba(104, 232, 188, 0.12));
+        color: #d8fff2;
+    }
+
+    .fcc-home-flow__block + .fcc-home-flow__block {
+        padding-top: 0.5rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    @media (max-width: 991px) {
+        .fcc-home-flow__grid,
+        .fcc-home-usecases__grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @media (max-width: 767px) {
+        .fcc-home-flow__grid,
+        .fcc-home-usecases__grid {
+            grid-template-columns: 1fr;
+        }
+
+        .fcc-home-flow__block h2 {
+            font-size: 1.55rem;
+        }
     }
 
     .fcc-presentation-card__title-link {

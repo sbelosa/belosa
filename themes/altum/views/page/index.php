@@ -72,33 +72,70 @@ $fcc_info_note = $fcc_is_hr
         </section>
     <?php endif ?>
 
-    <?php if(!empty($data->is_foreverclub_page) && !empty($data->foreverclub_semantics)): ?>
-        <!-- Custom code: FC-2026-03-24: foreverclub semantic summary block -->
-        <section class="fcc-page-summary">
-            <div class="fcc-page-summary__inner">
-                <h2><?= $data->foreverclub_semantics['heading'] ?></h2>
-                <p><?= $data->foreverclub_semantics['summary'] ?></p>
-
-                <ul>
-                    <?php foreach($data->foreverclub_semantics['facts'] as $fact): ?>
-                        <li><?= $fact ?></li>
-                    <?php endforeach ?>
-                </ul>
+    <?php if(!empty($data->is_foreverclub_page) && (!empty($data->foreverclub_semantics) || !empty($data->foreverclub_workflow) || !empty($data->foreverclub_use_cases))): ?>
+        <section class="fcc-page-overview">
+            <?php if(!empty($data->foreverclub_semantics)): ?>
+                <div class="fcc-page-overview__top">
+                    <div>
+                        <div class="fcc-page-overview__eyebrow"><?= $fcc_is_hr ? 'FCC pregled' : 'FCC overview' ?></div>
+                        <h2><?= $data->foreverclub_semantics['heading'] ?></h2>
+                        <p><?= $data->foreverclub_semantics['summary'] ?></p>
+                    </div>
+                </div>
 
                 <?php if(!empty($data->foreverclub_semantics['solves'])): ?>
-                    <div class="fcc-page-summary__solves">
-                        <h3><?= $data->foreverclub_semantics['solves_heading'] ?></h3>
+                    <div class="fcc-page-overview__solves">
+                        <?php foreach($data->foreverclub_semantics['solves'] as $solve): ?>
+                            <div class="fcc-page-overview__solve"><?= $solve ?></div>
+                        <?php endforeach ?>
+                    </div>
+                <?php endif ?>
+            <?php endif ?>
 
-                        <div class="fcc-page-summary__solve-grid">
-                            <?php foreach($data->foreverclub_semantics['solves'] as $solve): ?>
-                                <div class="fcc-page-summary__solve"><?= $solve ?></div>
+            <div class="fcc-page-overview__details">
+                <?php if(!empty($data->foreverclub_semantics['facts'])): ?>
+                    <details class="fcc-page-overview__detail">
+                        <summary><?= $fcc_is_hr ? 'Ključne činjenice' : 'Key facts' ?></summary>
+                        <ul>
+                            <?php foreach($data->foreverclub_semantics['facts'] as $fact): ?>
+                                <li><?= $fact ?></li>
+                            <?php endforeach ?>
+                        </ul>
+                    </details>
+                <?php endif ?>
+
+                <?php if(!empty($data->foreverclub_workflow)): ?>
+                    <details class="fcc-page-overview__detail">
+                        <summary><?= $data->foreverclub_workflow['heading'] ?></summary>
+                        <p><?= $data->foreverclub_workflow['intro'] ?></p>
+                        <div class="fcc-page-overview__mini-grid">
+                            <?php foreach($data->foreverclub_workflow['steps'] as $index => $step): ?>
+                                <div class="fcc-page-overview__mini-card">
+                                    <span><?= str_pad((string) ($index + 1), 2, '0', STR_PAD_LEFT) ?></span>
+                                    <strong><?= $step['title'] ?></strong>
+                                    <p><?= $step['text'] ?></p>
+                                </div>
                             <?php endforeach ?>
                         </div>
-                    </div>
+                    </details>
+                <?php endif ?>
+
+                <?php if(!empty($data->foreverclub_use_cases)): ?>
+                    <details class="fcc-page-overview__detail">
+                        <summary><?= $data->foreverclub_use_cases['heading'] ?></summary>
+                        <p><?= $data->foreverclub_use_cases['intro'] ?></p>
+                        <div class="fcc-page-overview__mini-grid">
+                            <?php foreach($data->foreverclub_use_cases['items'] as $item): ?>
+                                <div class="fcc-page-overview__mini-card fcc-page-overview__mini-card--soft">
+                                    <strong><?= $item['title'] ?></strong>
+                                    <p><?= $item['text'] ?></p>
+                                </div>
+                            <?php endforeach ?>
+                        </div>
+                    </details>
                 <?php endif ?>
             </div>
         </section>
-        <!-- /Custom code: FC-2026-03-24 -->
     <?php endif ?>
 
     <section class="fcc-page-content">
@@ -351,61 +388,184 @@ $fcc_info_note = $fcc_is_hr
         margin-top: 22px;
     }
 
-    .fcc-page-summary {
+    .fcc-page-overview {
+        position: relative;
+        overflow: hidden;
         margin-top: 24px;
-    }
-
-    .fcc-page-summary__inner {
-        background: linear-gradient(160deg, rgba(20, 26, 38, 0.96), rgba(10, 14, 20, 0.98));
-        border: 1px solid rgba(255, 255, 255, 0.06);
+        padding: 24px 26px;
         border-radius: 20px;
-        padding: 24px 28px;
-        box-shadow: 0 16px 36px rgba(0, 0, 0, 0.34);
-    }
-
-    .fcc-page-summary__inner h2 {
-        color: #f5f7ff;
-        margin-bottom: 10px;
-    }
-
-    .fcc-page-summary__inner p,
-    .fcc-page-summary__inner li {
-        color: rgba(228, 233, 243, 0.82);
-        line-height: 1.7;
-    }
-
-    .fcc-page-summary__inner ul {
-        margin: 14px 0 0;
-        padding-left: 18px;
-    }
-
-    .fcc-page-summary__solves {
-        margin-top: 22px;
-        padding-top: 6px;
-        border-top: 1px solid rgba(255, 255, 255, 0.06);
-    }
-
-    .fcc-page-summary__solves h3 {
-        color: #f5f7ff;
-        font-size: 1rem;
-        margin-bottom: 12px;
-        letter-spacing: -0.01em;
-    }
-
-    .fcc-page-summary__solve-grid {
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        background:
+            radial-gradient(circle at top left, rgba(63, 216, 161, 0.08), transparent 28%),
+            radial-gradient(circle at bottom right, rgba(74, 167, 255, 0.08), transparent 24%),
+            linear-gradient(160deg, rgba(16, 21, 30, 0.96), rgba(9, 13, 20, 0.98));
+        box-shadow: 0 20px 46px rgba(0, 0, 0, 0.34);
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 18px;
+    }
+
+    .fcc-page-overview::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background:
+            linear-gradient(135deg, rgba(255, 255, 255, 0.03), transparent 38%),
+            linear-gradient(315deg, rgba(255, 255, 255, 0.02), transparent 34%);
+        pointer-events: none;
+    }
+
+    .fcc-page-overview__top,
+    .fcc-page-overview__solves,
+    .fcc-page-overview__details {
+        position: relative;
+    }
+
+    .fcc-page-overview__eyebrow {
+        display: inline-flex;
+        align-items: center;
+        margin-bottom: 10px;
+        padding: 0.28rem 0.7rem;
+        border-radius: 999px;
+        font-size: 0.72rem;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: rgba(104, 232, 188, 0.92);
+        background: rgba(104, 232, 188, 0.08);
+        border: 1px solid rgba(104, 232, 188, 0.12);
+    }
+
+    .fcc-page-overview__top h2 {
+        margin-bottom: 8px;
+        color: #f5f7ff;
+        font-size: clamp(1.45rem, 2.2vw, 1.95rem);
+        line-height: 1.12;
+        letter-spacing: -0.03em;
+    }
+
+    .fcc-page-overview__top p,
+    .fcc-page-overview__solve,
+    .fcc-page-overview__detail p,
+    .fcc-page-overview__detail li,
+    .fcc-page-overview__mini-card p {
+        color: rgba(223, 228, 240, 0.78);
+        line-height: 1.65;
+    }
+
+    .fcc-page-overview__solves {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 14px;
+    }
+
+    .fcc-page-overview__solve {
+        position: relative;
+        overflow: hidden;
+        border-radius: 20px;
+        padding: 14px 16px;
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.02));
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+    }
+
+    .fcc-page-overview__solve::before {
+        content: '';
+        position: absolute;
+        inset: 0 0 auto 0;
+        height: 1px;
+        background: linear-gradient(90deg, rgba(104, 232, 188, 0.42), rgba(104, 232, 188, 0));
+    }
+
+    .fcc-page-overview__details {
+        display: grid;
         gap: 12px;
     }
 
-    .fcc-page-summary__solve {
-        border-radius: 16px;
-        padding: 14px 16px;
-        background: rgba(104, 232, 188, 0.08);
-        border: 1px solid rgba(104, 232, 188, 0.14);
-        color: rgba(235, 239, 248, 0.88);
-        line-height: 1.6;
+    .fcc-page-overview__detail {
+        border-radius: 18px;
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.02));
+        border: 1px solid rgba(255, 255, 255, 0.06);
         box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
+        overflow: hidden;
+    }
+
+    .fcc-page-overview__detail summary {
+        list-style: none;
+        cursor: pointer;
+        padding: 17px 20px;
+        color: #f5f7ff;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 1.03rem;
+        transition: background 0.22s ease, color 0.22s ease;
+    }
+
+    .fcc-page-overview__detail summary::-webkit-details-marker {
+        display: none;
+    }
+
+    .fcc-page-overview__detail summary::after {
+        content: '+';
+        color: #bff8eb;
+        font-size: 1.15rem;
+        line-height: 1;
+    }
+
+    .fcc-page-overview__detail[open] summary::after {
+        content: '−';
+    }
+
+    .fcc-page-overview__detail[open] summary {
+        background: rgba(104, 232, 188, 0.05);
+    }
+
+    .fcc-page-overview__detail > p,
+    .fcc-page-overview__detail > ul,
+    .fcc-page-overview__mini-grid {
+        margin: 0;
+        padding: 0 20px 20px;
+    }
+
+    .fcc-page-overview__detail ul {
+        padding-left: 2rem;
+    }
+
+    .fcc-page-overview__mini-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+        gap: 12px;
+    }
+
+    .fcc-page-overview__mini-card {
+        border-radius: 16px;
+        padding: 14px;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .fcc-page-overview__mini-card span {
+        display: inline-flex;
+        margin-bottom: 10px;
+        padding: 0.26rem 0.55rem;
+        border-radius: 999px;
+        background: rgba(104, 232, 188, 0.12);
+        color: #bff8eb;
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+    }
+
+    .fcc-page-overview__mini-card strong {
+        display: block;
+        margin-bottom: 6px;
+        color: #f5f7ff;
+        font-size: 0.96rem;
+    }
+
+    .fcc-page-overview__mini-card--soft {
+        background: rgba(104, 232, 188, 0.05);
+        border-color: rgba(104, 232, 188, 0.1);
     }
 
     .fcc-related-pages {
@@ -433,7 +593,7 @@ $fcc_info_note = $fcc_is_hr
         border: 1px solid rgba(255, 255, 255, 0.06);
         border-radius: 18px;
         padding: 18px 20px;
-        text-decoration: none;
+        text-decoration: none !important;
         color: inherit;
         display: flex;
         flex-direction: column;
@@ -446,6 +606,13 @@ $fcc_info_note = $fcc_is_hr
         transform: translateY(-4px);
         border-color: rgba(255, 198, 0, 0.35);
         box-shadow: 0 14px 32px rgba(0, 0, 0, 0.35);
+        text-decoration: none !important;
+    }
+
+    .fcc-related-card *,
+    .fcc-related-card:hover *,
+    .fcc-related-card:focus * {
+        text-decoration: none !important;
     }
 
     .fcc-related-card h3 {
@@ -513,7 +680,7 @@ $fcc_info_note = $fcc_is_hr
         gap: 10px;
         padding: 18px;
         border-radius: 18px;
-        text-decoration: none;
+        text-decoration: none !important;
         color: inherit;
         background: rgba(255, 255, 255, 0.03);
         border: 1px solid rgba(255, 255, 255, 0.05);
@@ -525,6 +692,13 @@ $fcc_info_note = $fcc_is_hr
         transform: translateY(-2px);
         border-color: rgba(104, 232, 188, 0.2);
         background: rgba(104, 232, 188, 0.06);
+        text-decoration: none !important;
+    }
+
+    .fcc-pathways__card *,
+    .fcc-pathways__card:hover *,
+    .fcc-pathways__card:focus * {
+        text-decoration: none !important;
     }
 
     .fcc-pathways__card--accent {

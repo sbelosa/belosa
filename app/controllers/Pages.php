@@ -124,6 +124,8 @@ class Pages extends Controller {
             $social_image = null;
             $foreverclub_semantics = null;
             $foreverclub_landing_pages = [];
+            $foreverclub_workflow = [];
+            $foreverclub_use_cases = [];
 
             foreach($pages as $page) {
                 if(!empty($page->image_url)) {
@@ -175,6 +177,29 @@ class Pages extends Controller {
                         'term_alternate_names' => ['FCC', 'Forever Card Club (FCC)'],
                         'term_description' => 'Forever Card Club (FCC) je cjeloviti digitalni poslovni sustav za Forever Living Products partnere koji uključuje osobnu aplikaciju, pametne preporučne linkove, AI asistente za proizvode, sustav za prikupljanje kontakata, edukaciju, analitiku i fizičku NFC karticu povezanu s partnerovim sadržajem i preporukama.'
                     ];
+                    $foreverclub_workflow = [
+                        'heading' => 'Kako FCC radi u praksi?',
+                        'intro' => 'Od prvog interesa do kontakta ili kupnje, FCC povezuje sve ključne korake u jedan poslovni tok.',
+                        'steps' => [
+                            ['title' => 'Ulaz', 'text' => 'Objava, poruka, QR kod ili NFC kartica dovode osobu u sustav.'],
+                            ['title' => 'Aplikacija', 'text' => 'Forever Card Aplikacija otvara sadržaj, proizvode, kontakt i preporuke.'],
+                            ['title' => 'Usmjeravanje', 'text' => 'AI, linkovi i blokovi vode korisnika prema pravom sljedećem koraku.'],
+                            ['title' => 'Akcija', 'text' => 'Posjetitelj ostavlja kontakt ili odlazi prema službenom Forever shopu.'],
+                            ['title' => 'Nastavak', 'text' => 'Partner prati interes i lakše nastavlja razgovor.'],
+                        ],
+                    ];
+                    $foreverclub_use_cases = [
+                        'heading' => 'Što FCC rješava?',
+                        'intro' => 'Isti sustav podržava više različitih načina gradnje Forever poslovanja.',
+                        'items' => [
+                            ['title' => 'Novi partner', 'text' => 'Dobiva jasan digitalni početak i profesionalniji prvi dojam.'],
+                            ['title' => 'Aktivni partner', 'text' => 'Lakše povezuje preporuke, kontakte i proizvode u jedan tijek rada.'],
+                            ['title' => 'Team leader', 'text' => 'Može jednostavnije uvesti tim u isti sustav i lakše duplicirati model rada.'],
+                            ['title' => 'Online dijeljenje', 'text' => 'Aplikacija i pametni linkovi olakšavaju dijeljenje kroz objave i poruke.'],
+                            ['title' => 'Offline kontakt', 'text' => 'NFC kartica i QR kod daju susretu uživo digitalni nastavak.'],
+                            ['title' => 'AI preporuke', 'text' => 'AI asistenti pomažu korisniku brže pronaći relevantan proizvod i sljedeći korak.'],
+                        ],
+                    ];
                 } else {
                     $meta_title = 'Forever Card Club (FCC): guides for an all-in-one digital business system for Forever partners';
                     $meta_description = 'Learn how Forever Card Club (FCC) works as an all-in-one digital business system for Forever Living Products partners through a personal app, smart referral links, AI product assistants, lead funnel, and NFC card.';
@@ -200,6 +225,29 @@ class Pages extends Controller {
                         'term_alternate_names' => ['FCC', 'Forever Card Club (FCC)'],
                         'term_description' => 'Forever Card Club (FCC) is an all-in-one digital business system for Forever Living Products partners that includes a personal app, smart referral links, AI product assistants, lead funnel logic, education, analytics, and a physical NFC card connected to the partner\'s content and recommendations.'
                     ];
+                    $foreverclub_workflow = [
+                        'heading' => 'How does FCC work in practice?',
+                        'intro' => 'From first attention to contact or purchase, FCC connects the key steps into one business flow.',
+                        'steps' => [
+                            ['title' => 'Entry', 'text' => 'A post, message, QR code, or NFC card brings the visitor into the system.'],
+                            ['title' => 'App', 'text' => 'The Forever Card App opens content, products, contact actions, and recommendations.'],
+                            ['title' => 'Guidance', 'text' => 'AI, links, and blocks route the visitor toward the right next step.'],
+                            ['title' => 'Action', 'text' => 'The visitor leaves a lead or moves toward the official Forever shop.'],
+                            ['title' => 'Follow-up', 'text' => 'The partner tracks interest and continues the conversation more easily.'],
+                        ],
+                    ];
+                    $foreverclub_use_cases = [
+                        'heading' => 'What does FCC solve?',
+                        'intro' => 'The same system supports several different ways of building a Forever business.',
+                        'items' => [
+                            ['title' => 'New partner', 'text' => 'Gets a clearer digital start and a more professional first impression.'],
+                            ['title' => 'Active partner', 'text' => 'Can connect referrals, leads, and products inside one workflow.'],
+                            ['title' => 'Team leader', 'text' => 'Can onboard the team into the same system and duplicate the model more easily.'],
+                            ['title' => 'Online sharing', 'text' => 'The app and smart links make posts and direct sharing much easier.'],
+                            ['title' => 'Offline contact', 'text' => 'The NFC card and QR flow give in-person meetings a digital continuation.'],
+                            ['title' => 'AI guidance', 'text' => 'AI assistants help visitors find a relevant product and the right next step faster.'],
+                        ],
+                    ];
                 }
             }
             /* /Custom code: FC-2026-03-24 */
@@ -211,6 +259,8 @@ class Pages extends Controller {
                 /* Custom code: FC-2026-03-24: strengthen category SEO metadata for content hubs */
                 'foreverclub_semantics' => $foreverclub_semantics,
                 'foreverclub_landing_pages' => $foreverclub_landing_pages,
+                'foreverclub_workflow' => $foreverclub_workflow,
+                'foreverclub_use_cases' => $foreverclub_use_cases,
                 'pages_category_url' => $pages_category_url,
                 /* /Custom code: FC-2026-03-24 */
             ];
