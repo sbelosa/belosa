@@ -64,19 +64,17 @@
                                         <?php endforeach ?>
 
                                         <?php if(!empty($remaining_feature_labels)): ?>
-                                            <?php $remaining_feature_labels_id = 'featured-app-more-' . $app['user_id']; ?>
-                                            <button
-                                                type="button"
-                                                class="featured-app-tag featured-app-tag--more border-0"
-                                                data-toggle="popover"
-                                                data-trigger="focus"
-                                                data-placement="top"
-                                                data-container="body"
-                                                data-html="true"
-                                                data-content="<?= htmlspecialchars('<div class=&quot;featured-app-popover-list&quot;>' . implode('', array_map(fn($label) => '<div class=&quot;featured-app-popover-item&quot;>' . htmlspecialchars($label, ENT_QUOTES, 'UTF-8') . '</div>', $remaining_feature_labels)) . '</div>', ENT_QUOTES, 'UTF-8') ?>"
-                                            >
-                                                <?= $fcc_is_hr ? '+ još ' . count($remaining_feature_labels) : '+ ' . count($remaining_feature_labels) . ' more' ?>
-                                            </button>
+                                            <details class="featured-app-more">
+                                                <summary class="featured-app-tag featured-app-tag--more">
+                                                    <?= $fcc_is_hr ? '+ još ' . count($remaining_feature_labels) : '+ ' . count($remaining_feature_labels) . ' more' ?>
+                                                </summary>
+
+                                                <div class="featured-app-more__panel">
+                                                    <?php foreach($remaining_feature_labels as $feature_label): ?>
+                                                        <div class="featured-app-more__item"><?= $feature_label ?></div>
+                                                    <?php endforeach ?>
+                                                </div>
+                                            </details>
                                         <?php endif ?>
                                     </div>
                                 </div>
@@ -184,19 +182,42 @@
         background: rgba(255, 255, 255, 0.06);
         color: rgba(240, 244, 251, 0.82);
         cursor: pointer;
+        border: 0;
     }
 
-    .featured-app-popover-list {
-        display: flex;
-        flex-direction: column;
-        gap: 0.35rem;
-        min-width: 150px;
+    .featured-app-more {
+        position: relative;
     }
 
-    .featured-app-popover-item {
+    .featured-app-more summary {
+        list-style: none;
+    }
+
+    .featured-app-more summary::-webkit-details-marker {
+        display: none;
+    }
+
+    .featured-app-more__panel {
+        position: absolute;
+        top: calc(100% + 0.45rem);
+        right: 0;
+        z-index: 20;
+        min-width: 180px;
+        padding: 0.7rem 0.75rem;
+        border-radius: 14px;
+        background: rgba(10, 14, 20, 0.98);
+        border: 1px solid rgba(127, 227, 217, 0.14);
+        box-shadow: 0 16px 36px rgba(0, 0, 0, 0.28);
+    }
+
+    .featured-app-more__item {
         font-size: 0.78rem;
         color: #eef7fb;
         line-height: 1.35;
+    }
+
+    .featured-app-more__item + .featured-app-more__item {
+        margin-top: 0.35rem;
     }
 
     .featured-app-section__label {
@@ -218,11 +239,4 @@
         }
     }
 </style>
-<script>
-    document.addEventListener('DOMContentLoaded', () => {
-        if(window.jQuery && typeof window.jQuery.fn.popover === 'function') {
-            window.jQuery('[data-toggle="popover"]').popover();
-        }
-    });
-</script>
 <?php \Altum\Event::add_content(ob_get_clean(), 'head') ?>
