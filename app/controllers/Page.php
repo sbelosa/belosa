@@ -750,6 +750,13 @@ class Page extends Controller {
 
         $collaborator_contact = null;
         if(mb_strtolower((string) $page->url) === 'contact') {
+            $this->log_contact_page_debug('contact_page_opened', [
+                'page_id' => $page->page_id,
+                'page_url' => $page->url,
+                'request_method' => $_SERVER['REQUEST_METHOD'] ?? 'UNKNOWN',
+                'has_contact_action' => !empty($_POST['fcc_contact_action']),
+            ]);
+
             $collaborator_aff_biolink = $shortcodes->generate_shorcode('aff_biolink', null);
             $collaborator_aff_url = null;
 
