@@ -28,6 +28,20 @@ class Page extends Controller {
         return 'fcc_contact_page_target_' . $page_id;
     }
 
+    private function log_contact_page_debug(string $message, array $context = []): void {
+        $line = '[' . get_date() . '] ' . $message;
+
+        if(!empty($context)) {
+            $line .= ' ' . json_encode($context, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        }
+
+        $line .= PHP_EOL;
+
+        $debug_file = UPLOADS_PATH . 'logs/fcc-contact-debug-' . date('Y-m-d') . '.log';
+
+        @file_put_contents($debug_file, $line, FILE_APPEND | LOCK_EX);
+    }
+
     private function get_main_biolink_for_user_id(?int $user_id): ?object {
         $user_id = (int) $user_id;
 
@@ -810,7 +824,24 @@ class Page extends Controller {
             }
 
             if(!empty($_POST['fcc_contact_action']) && $_POST['fcc_contact_action'] === 'store_contact') {
+                $this->log_contact_page_debug('submit_started', [
+                    'page_id' => $page->page_id,
+                    'page_url' => $page->url,
+                    'resolved_user_id' => $collaborator_contact->user_id,
+                    'resolved_main_link_id' => $collaborator_contact->main_link_id,
+                    'resolved_block_id' => $collaborator_contact->contact_biolink_block_id,
+                    'resolved_block_type' => $collaborator_contact->contact_biolink_block_type,
+                    'resolved_project_id' => $collaborator_contact->project_id,
+                    'session_key' => $contact_page_session_key,
+                    'has_stored_target' => !empty($stored_contact_target),
+                ]);
+
                 if(empty($collaborator_contact->user_id) || empty($collaborator_contact->main_link_id)) {
+                    $this->log_contact_page_debug('submit_aborted_missing_target', [
+                        'page_id' => $page->page_id,
+                        'resolved_user_id' => $collaborator_contact->user_id,
+                        'resolved_main_link_id' => $collaborator_contact->main_link_id,
+                    ]);
                     \Altum\Alerts::add_error(l('global.error_message.basic'));
                 } else {
                     $_POST['name'] = input_clean($_POST['name'] ?? '', 64);
@@ -821,11 +852,20 @@ class Page extends Controller {
                     $_POST['message'] = input_clean($_POST['message'] ?? '', 512);
 
                     if(!$_POST['name'] || !$_POST['email'] || !$_POST['phone']) {
+                        $this->log_contact_page_debug('submit_aborted_empty_fields', [
+                            'has_name' => (bool) $_POST['name'],
+                            'has_email' => (bool) $_POST['email'],
+                            'has_phone' => (bool) $_POST['phone'],
+                        ]);
                         \Altum\Alerts::add_error(l('global.error_message.empty_fields'));
                     } else {
                         $normalized_phone = $this->normalize_contact_phone($_POST['phone'], $_POST['phone_country_code']);
 
                         if(!$normalized_phone['is_valid']) {
+                            $this->log_contact_page_debug('submit_aborted_invalid_phone', [
+                                'phone' => $_POST['phone'],
+                                'phone_country_code' => $_POST['phone_country_code'],
+                            ]);
                             \Altum\Alerts::add_error(l('global.error_message.empty_fields'));
                         } else {
                             $contact_type = $collaborator_contact->contact_biolink_block_type ?: 'contact_collector';
@@ -872,6 +912,11 @@ class Page extends Controller {
                             $datum_id = db()->insert('data', $insert_payload);
 
                             if(!$datum_id) {
+                                $this->log_contact_page_debug('insert_failed_mysqldb', [
+                                    'db_error' => db()->getLastError(),
+                                    'payload' => $insert_payload,
+                                ]);
+
                                 $database = database();
                                 $biolink_block_id_sql = $insert_payload['biolink_block_id'] ? (int) $insert_payload['biolink_block_id'] : 'NULL';
                                 $project_id_sql = $insert_payload['project_id'] ? (int) $insert_payload['project_id'] : 'NULL';
@@ -890,7 +935,15 @@ class Page extends Controller {
 
                                 if($fallback_insert) {
                                     $datum_id = $database->insert_id;
+                                    $this->log_contact_page_debug('insert_success_fallback', [
+                                        'datum_id' => $datum_id,
+                                        'payload' => $insert_payload,
+                                    ]);
                                 } else {
+                                    $this->log_contact_page_debug('insert_failed_fallback', [
+                                        'db_error' => $database->error,
+                                        'payload' => $insert_payload,
+                                    ]);
                                     error_log('FCC contact save failed: ' . $database->error . ' | payload=' . json_encode([
                                         'page_id' => $page->page_id,
                                         'user_id' => $collaborator_contact->user_id,
@@ -903,6 +956,10 @@ class Page extends Controller {
                             }
 
                             if($datum_id) {
+                                $this->log_contact_page_debug('insert_success', [
+                                    'datum_id' => $datum_id,
+                                    'payload' => $insert_payload,
+                                ]);
                                 \Altum\Alerts::add_success(Language::$code === 'hr' ? 'Kontakt je spremljen i proslijeđen suradniku.' : 'Your contact has been saved and sent to the collaborator.');
 
                                 $page_route = ($page->language ? ((\Altum\Language::$active_languages[$page->language] ?? null) ? \Altum\Language::$active_languages[$page->language] . '/' : null) : null) . 'page/' . $page->url;
