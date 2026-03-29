@@ -657,6 +657,7 @@ class Page extends Controller {
                 'user_id' => null,
                 'main_link_id' => null,
                 'contact_biolink_block_id' => null,
+                'contact_biolink_block_type' => 'contact_collector',
                 'project_id' => null,
             ];
 
@@ -705,6 +706,7 @@ class Page extends Controller {
 
                 if($contact_block) {
                     $collaborator_contact->contact_biolink_block_id = (int) $contact_block->biolink_block_id;
+                    $collaborator_contact->contact_biolink_block_type = $contact_block->type;
                 }
             }
 
@@ -713,9 +715,7 @@ class Page extends Controller {
             }
 
             if(!empty($_POST['fcc_contact_action']) && $_POST['fcc_contact_action'] === 'store_contact') {
-                if(!\Altum\Csrf::check()) {
-                    \Altum\Alerts::add_error(l('global.error_message.invalid_csrf_token'));
-                } elseif(empty($collaborator_contact->user_id) || empty($collaborator_contact->main_link_id)) {
+                if(empty($collaborator_contact->user_id) || empty($collaborator_contact->main_link_id)) {
                     \Altum\Alerts::add_error(l('global.error_message.basic'));
                 } else {
                     $_POST['name'] = input_clean($_POST['name'] ?? '', 64);
@@ -733,6 +733,12 @@ class Page extends Controller {
                         if(!$normalized_phone['is_valid']) {
                             \Altum\Alerts::add_error(l('global.error_message.empty_fields'));
                         } else {
+                            $contact_type = $collaborator_contact->contact_biolink_block_type ?: 'contact_collector';
+
+                            if(!in_array($contact_type, ['contact_collector', 'phone_collector', 'email_collector', 'lead_funnel'], true)) {
+                                $contact_type = 'contact_collector';
+                            }
+
                             $contact_data = [
                                 'name' => $_POST['name'],
                                 'email' => $_POST['email'],
@@ -749,20 +755,32 @@ class Page extends Controller {
                                 'contact_intent' => 'direct_contact',
                             ];
 
-                            db()->insert('data', [
+                            if($contact_type === 'email_collector') {
+                                unset($contact_data['message'], $contact_data['preferred_contact_channel'], $contact_data['source_context'], $contact_data['contact_intent']);
+                            }
+
+                            if($contact_type === 'phone_collector') {
+                                unset($contact_data['message'], $contact_data['source_context'], $contact_data['contact_intent']);
+                            }
+
+                            $datum_id = db()->insert('data', [
                                 'biolink_block_id' => $collaborator_contact->contact_biolink_block_id ?: null,
                                 'link_id' => $collaborator_contact->main_link_id,
                                 'project_id' => $collaborator_contact->project_id,
                                 'user_id' => $collaborator_contact->user_id,
-                                'type' => 'contact_collector',
+                                'type' => $contact_type,
                                 'data' => json_encode($contact_data),
                                 'datetime' => get_date(),
                             ]);
 
-                            \Altum\Alerts::add_success(Language::$code === 'hr' ? 'Kontakt je spremljen i proslijeđen suradniku.' : 'Your contact has been saved and sent to the collaborator.');
+                            if($datum_id) {
+                                \Altum\Alerts::add_success(Language::$code === 'hr' ? 'Kontakt je spremljen i proslijeđen suradniku.' : 'Your contact has been saved and sent to the collaborator.');
 
-                            $page_route = ($page->language ? ((\Altum\Language::$active_languages[$page->language] ?? null) ? \Altum\Language::$active_languages[$page->language] . '/' : null) : null) . 'page/' . $page->url;
-                            redirect($page_route . '?contact_saved=1#fcc-contact-direct');
+                                $page_route = ($page->language ? ((\Altum\Language::$active_languages[$page->language] ?? null) ? \Altum\Language::$active_languages[$page->language] . '/' : null) : null) . 'page/' . $page->url;
+                                redirect($page_route . '?contact_saved=1#fcc-contact-direct');
+                            } else {
+                                \Altum\Alerts::add_error(Language::$code === 'hr' ? 'Kontakt trenutno nije moguće spremiti. Pokušaj ponovno za nekoliko trenutaka.' : 'The contact could not be saved right now. Please try again in a moment.');
+                            }
                         }
                     }
                 }

@@ -176,11 +176,14 @@ $fcc_contact_channel_label = $fcc_is_hr ? 'Najbrži kanal kontakta' : 'Fastest c
         </section>
     <?php endif ?>
 
-    <section class="fcc-page-content">
-        <div class="fcc-page-content__inner <?= !empty($data->is_foreverclub_page) ? 'fcc-page-content__inner--foreverclub' : null ?> <?= $data->page->editor == 'wysiwyg' ? 'ql-content' : null ?>">
-            <?= $data->page->content ?>
-        </div>
-    </section>
+    <?php $fcc_has_page_content = trim(strip_tags((string) $data->page->content)) !== ''; ?>
+    <?php if($fcc_has_page_content): ?>
+        <section class="fcc-page-content">
+            <div class="fcc-page-content__inner <?= !empty($data->is_foreverclub_page) ? 'fcc-page-content__inner--foreverclub' : null ?> <?= $data->page->editor == 'wysiwyg' ? 'ql-content' : null ?>">
+                <?= $data->page->content ?>
+            </div>
+        </section>
+    <?php endif ?>
 
     <?php if($fcc_is_contact_page && !empty($data->collaborator_contact)): ?>
         <?php
