@@ -2,6 +2,21 @@
 
 <?= \Altum\Alerts::output_alerts() ?>
 
+<?php $contact_country_options = get_contact_phone_country_options_array(); ?>
+
+<?php ob_start() ?>
+<style>
+    .fcc-contact-capture {padding: .9rem; border-radius: 1.2rem; background: rgba(15, 23, 42, .04); border: 1px solid rgba(15, 23, 42, .08);}
+    .fcc-contact-capture .custom-select,
+    .fcc-contact-capture .form-control {border: 0; border-radius: .9rem; min-height: 3.15rem; box-shadow: none;}
+    .fcc-contact-capture .custom-select {padding-left: 1rem; padding-right: 2.4rem; font-weight: 600; background-color: #fff;}
+    .fcc-contact-capture .input-group-text {border: 0; border-radius: .9rem 0 0 .9rem; background: rgba(255,255,255,.98); color: #b99a44;}
+    .fcc-contact-capture .form-control {background: rgba(255,255,255,.98);}
+    .fcc-contact-capture .input-group .form-control {border-radius: 0 .9rem .9rem 0;}
+    .fcc-contact-capture-row + .fcc-contact-capture-row {margin-top: .75rem;}
+</style>
+<?php \Altum\Event::add_content(ob_get_clean(), 'head', 'register_phone_capture_styles') ?>
+
 <!-- Custom code: FC-2026-02-25: registration header copy -->
 <h1 class="h5 mb-3 register-hero-title">
     <?= l('register.hero_title') ?>
@@ -51,7 +66,23 @@
             <div class="col-12 col-lg-6 register-form-col">
                 <div class="form-group">
                     <label for="meta_phone"><?= l('account.billing.phone') ?></label>
-                    <input id="meta_phone" type="text" name="meta_phone" class="form-control <?= \Altum\Alerts::has_field_errors('meta_phone') ? 'is-invalid' : null ?>" value="<?= isset($data->values['meta_phone']) ? $data->values['meta_phone'] : '' ?>" maxlength="64" placeholder="385911234567" required="required"/>
+                    <div class="fcc-contact-capture">
+                        <div class="fcc-contact-capture-row">
+                            <select id="meta_phone_country_code" class="custom-select" name="meta_phone_country_code" required="required" aria-label="<?= l('register.phone_country_code') ?>">
+                                <?php foreach($contact_country_options as $country_code => $country_label): ?>
+                                    <option value="<?= $country_code ?>" <?= (($data->values['meta_phone_country_code'] ?? 'HR') == $country_code) ? 'selected="selected"' : null ?>><?= $country_label ?></option>
+                                <?php endforeach ?>
+                            </select>
+                        </div>
+                        <div class="fcc-contact-capture-row">
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <div class="input-group-text"><i class="fas fa-fw fa-phone-square-alt"></i></div>
+                                </div>
+                                <input id="meta_phone" type="tel" inputmode="tel" name="meta_phone" class="form-control <?= \Altum\Alerts::has_field_errors('meta_phone') ? 'is-invalid' : null ?>" value="<?= isset($data->values['meta_phone']) ? $data->values['meta_phone'] : '' ?>" maxlength="64" placeholder="0911234567" required="required"/>
+                            </div>
+                        </div>
+                    </div>
                     <?= \Altum\Alerts::output_field_error('meta_phone') ?>
                     <small class="form-text text-muted"><?= l('register.phone_help') ?></small>
                 </div>

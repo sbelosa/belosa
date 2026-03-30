@@ -25,11 +25,27 @@ defined('ALTUMCODE') || die();
 
 class Register extends Controller {
 
-    private function normalize_registration_phone($phone) {
+    private function normalize_registration_phone($phone, ?string $country_code = null) {
         $phone = preg_replace('/\D+/', '', (string) $phone);
 
         if(mb_substr($phone, 0, 2) === '00') {
             $phone = mb_substr($phone, 2);
+        }
+
+        $country_code = mb_strtoupper(trim((string) $country_code));
+        $dial_codes = get_contact_phone_dial_codes_array();
+        $dial_code = $dial_codes[$country_code] ?? '';
+
+        if($phone !== '' && $dial_code) {
+            if(str_starts_with($phone, $dial_code)) {
+                return $phone;
+            }
+
+            $phone = ltrim($phone, '0');
+
+            if($phone !== '') {
+                $phone = $dial_code . $phone;
+            }
         }
 
         return $phone;
@@ -67,7 +83,8 @@ class Register extends Controller {
             'meta_city' => isset($_POST['meta_city']) ? query_clean($_POST['meta_city']) : '',
             'meta_zip' => isset($_POST['meta_zip']) ? query_clean($_POST['meta_zip']) : '',
             'meta_country' => isset($_POST['meta_country']) ? query_clean($_POST['meta_country']) : '',
-            'meta_phone' => isset($_POST['meta_phone']) ? query_clean($_POST['meta_phone']) : '',    
+            'meta_phone' => isset($_POST['meta_phone']) ? query_clean($_POST['meta_phone']) : '',
+            'meta_phone_country_code' => isset($_POST['meta_phone_country_code']) ? query_clean($_POST['meta_phone_country_code']) : 'HR',
             /* /Custom code */
         ];
 
@@ -91,14 +108,16 @@ class Register extends Controller {
             $_POST['meta_city'] = input_clean($_POST['meta_city'], 64);
             $_POST['meta_zip'] = input_clean($_POST['meta_zip'], 12);
             $_POST['meta_country'] = input_clean($_POST['meta_country'], 64);
-            $_POST['meta_phone'] = $this->normalize_registration_phone(input_clean($_POST['meta_phone'], 64));
+            $_POST['meta_phone_country_code'] = array_key_exists(mb_strtoupper(input_clean($_POST['meta_phone_country_code'] ?? 'HR', 8)), get_contact_phone_dial_codes_array()) ? mb_strtoupper(input_clean($_POST['meta_phone_country_code'] ?? 'HR', 8)) : 'HR';
+            $_POST['meta_phone'] = $this->normalize_registration_phone(input_clean($_POST['meta_phone'], 64), $_POST['meta_phone_country_code']);
             $_POST['meta'] = [
                 'foreverId' => $_POST['meta_foreverId'],                    
                 'address' => $_POST['meta_address'],
                 'city' => $_POST['meta_city'],                    
                 'zip' => $_POST['meta_zip'],
                 'country' => $_POST['meta_country'],
-                'phone' => $_POST['meta_phone'],                    
+                'phone' => $_POST['meta_phone'],
+                'phone_country_code' => $_POST['meta_phone_country_code'],
             ];
             /* /Custom code */
 
