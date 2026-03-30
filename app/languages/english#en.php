@@ -4550,6 +4550,8 @@ return [
 	'create_biolink_custom_html_whatsapp_modal.title' => 'Send WhatsApp message',
 	'create_biolink_custom_html_whatsapp_modal.button' => 'Send message',
 	'create_biolink_custom_html_whatsapp_modal.message' => 'Hello! Please contact me at your convenience!',
+	'create_biolink_custom_html_whatsapp_modal.phone_help' => 'Enter the full WhatsApp number with country calling code, for example 385911234567.',
+	'create_biolink_custom_html_whatsapp_modal.error.invalid_phone' => 'Enter a valid WhatsApp number with country calling code, for example 385911234567.',
 	'create_biolink_link_modal.header' => 'Add a link button',
 	'create_biolink_link_modal.input.name' => 'Name',
 	'biolink_link.save_contact' => 'Save contact',

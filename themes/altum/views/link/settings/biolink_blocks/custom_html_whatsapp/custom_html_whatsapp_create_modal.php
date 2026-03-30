@@ -28,7 +28,8 @@
                     </div>
                     <div class="form-group">
                         <label for="custom_html_whatsapp_phone"><i class="fa fa-fw fa-mobile fa-sm text-muted mr-1"></i> <?= l('account.billing.phone') ?></label>
-                        <input id="custom_html_whatsapp_phone" name="phone" value="<?= $default_whatsapp_phone ?>" class="form-control"  required="required" maxlength="256">                        
+                        <input id="custom_html_whatsapp_phone" name="phone" value="<?= $default_whatsapp_phone ?>" class="form-control" required="required" maxlength="256" placeholder="385911234567">
+                        <small class="form-text text-muted"><?= l('create_biolink_custom_html_whatsapp_modal.phone_help') ?></small>
                     </div>
                     <div class="form-group">
                         <label for="custom_html_whatsapp_message"><i class="fa fa-fw fa-comment fa-sm text-muted mr-1"></i> <?= l('create_biolink_custom_html_whatsapp_modal.html') ?></label>

@@ -9854,7 +9854,21 @@ class BiolinkBlockAjax extends Controller {
     /* /Custom code: FC-2026-02-27 */
 
     private function normalize_whatsapp_phone($phone) {
-        return preg_replace('/\D+/', '', (string) $phone);
+        $phone = preg_replace('/\D+/', '', (string) $phone);
+
+        if(mb_substr($phone, 0, 2) === '00') {
+            $phone = mb_substr($phone, 2);
+        }
+
+        return $phone;
+    }
+
+    private function is_valid_whatsapp_phone($phone) {
+        if($phone === '' || !preg_match('/^[1-9][0-9]{7,14}$/', $phone)) {
+            return false;
+        }
+
+        return true;
     }
 
     private function extract_user_phone_from_preferences($user) {
@@ -9897,6 +9911,10 @@ class BiolinkBlockAjax extends Controller {
 
         if(empty($_POST['phone'])) {
             $_POST['phone'] = $this->get_default_whatsapp_phone_for_current_user();
+        }
+
+        if(!$this->is_valid_whatsapp_phone($_POST['phone'])) {
+            Response::json(l('create_biolink_custom_html_whatsapp_modal.error.invalid_phone'), 'error');
         }
 
         if(!$link = db()->where('link_id', $_POST['link_id'])->where('user_id', $this->user->user_id)->getOne('links')) {
@@ -9962,6 +9980,10 @@ class BiolinkBlockAjax extends Controller {
 
         /* Display settings */
         $this->process_display_settings();
+
+        if(!$this->is_valid_whatsapp_phone($_POST['phone'])) {
+            Response::json(l('create_biolink_custom_html_whatsapp_modal.error.invalid_phone'), 'error');
+        }
 
         if(!$biolink_block = db()->where('biolink_block_id', $_POST['biolink_block_id'])->where('user_id', $this->user->user_id)->getOne('biolinks_blocks')) {
             die();

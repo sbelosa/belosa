@@ -128,7 +128,8 @@
 
     <div class="form-group mt-4">
         <label for="<?= 'custom_html_whatsapp_phone_' . $row->biolink_block_id ?>"><i class="fa fa-fw fa-mobile fa-sm text-muted mr-1"></i> <?= l('account.billing.phone') ?></label>
-        <input id="<?= 'custom_html_whatsapp_phone_' . $row->biolink_block_id ?>" name="phone" class="form-control" value="<?= $row->settings->phone ?>" maxlength="<?= $data->biolink_blocks['custom_html_whatsapp']['max_length'] ?>">
+        <input id="<?= 'custom_html_whatsapp_phone_' . $row->biolink_block_id ?>" name="phone" class="form-control" value="<?= $row->settings->phone ?>" maxlength="<?= $data->biolink_blocks['custom_html_whatsapp']['max_length'] ?>" placeholder="385911234567" required="required">
+        <small class="form-text text-muted"><?= l('create_biolink_custom_html_whatsapp_modal.phone_help') ?></small>
     </div>
 
     <div class="form-group">

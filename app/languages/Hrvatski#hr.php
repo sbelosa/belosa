@@ -3115,6 +3115,8 @@ return [
 	'create_biolink_custom_html_whatsapp_modal.title' => 'Pošalji WhatsApp poruku',
 	'create_biolink_custom_html_whatsapp_modal.button' => 'Pošalji poruku',
 	'create_biolink_custom_html_whatsapp_modal.message' => 'Pozdrav! Molim vas da me kontaktirate kada ste u mogućnosti',
+	'create_biolink_custom_html_whatsapp_modal.phone_help' => 'Upišite puni WhatsApp broj s pozivnim brojem države, na primjer 385911234567.',
+	'create_biolink_custom_html_whatsapp_modal.error.invalid_phone' => 'Upišite ispravan WhatsApp broj s pozivnim brojem države, na primjer 385911234567.',
 	'create_biolink_link_modal.header' => 'Dodaj gumb linka',
 	'create_biolink_link_modal.input.name' => 'Naziv',
 	'biolink_link.save_contact' => 'Spremi kontakt',
