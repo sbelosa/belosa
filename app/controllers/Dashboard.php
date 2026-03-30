@@ -406,8 +406,6 @@ class Dashboard extends Controller {
         $shop_clicks_warning_threshold = $team_avg_shop_clicks_30d > 0 ? max(3, (int) round($team_avg_shop_clicks_30d * 0.6)) : 10;
         $shop_ctr_good_threshold = $team_avg_shop_ctr_30d > 0 ? max(15.0, round($team_avg_shop_ctr_30d * 1.1, 1)) : 25.0;
         $shop_ctr_warning_threshold = $team_avg_shop_ctr_30d > 0 ? max(7.0, round($team_avg_shop_ctr_30d * 0.7, 1)) : 12.0;
-        $shop_trend_good_threshold = round($team_shop_trend_delta_percent + 5, 1);
-        $shop_trend_warning_threshold = round($team_shop_trend_delta_percent - 5, 1);
         $registration_clicks_good_threshold = $team_avg_registration_clicks_30d > 0 ? max(3, (int) round($team_avg_registration_clicks_30d * 1.1)) : 8;
         $registration_clicks_warning_threshold = $team_avg_registration_clicks_30d > 0 ? max(1, (int) round($team_avg_registration_clicks_30d * 0.6)) : 3;
         $registration_ctr_good_threshold = $team_avg_registration_ctr_30d > 0 ? max(8.0, round($team_avg_registration_ctr_30d * 1.1, 1)) : 18.0;
@@ -415,7 +413,15 @@ class Dashboard extends Controller {
 
         $shop_clicks_status = $forever_shop_clicks_30d >= $shop_clicks_good_threshold ? 'good' : ($forever_shop_clicks_30d >= $shop_clicks_warning_threshold ? 'warning' : 'danger');
         $shop_ctr_status = $shop_ctr_30d >= $shop_ctr_good_threshold ? 'good' : ($shop_ctr_30d >= $shop_ctr_warning_threshold ? 'warning' : 'danger');
-        $shop_trend_status = $shop_clicks_delta_percent >= $shop_trend_good_threshold ? 'good' : ($shop_clicks_delta_percent >= $shop_trend_warning_threshold ? 'warning' : 'danger');
+        /* Custom code: FC-2026-03-30: webshop trend status follows positive-vs-team logic */
+        if($shop_clicks_delta_percent < 0) {
+            $shop_trend_status = 'danger';
+        } elseif($shop_clicks_delta_percent >= $team_shop_trend_delta_percent) {
+            $shop_trend_status = 'good';
+        } else {
+            $shop_trend_status = 'warning';
+        }
+        /* /Custom code: FC-2026-03-30 */
         $registration_clicks_status = $forever_registration_clicks_30d >= $registration_clicks_good_threshold ? 'good' : ($forever_registration_clicks_30d >= $registration_clicks_warning_threshold ? 'warning' : 'danger');
         $registration_ctr_status = $registration_ctr_30d >= $registration_ctr_good_threshold ? 'good' : ($registration_ctr_30d >= $registration_ctr_warning_threshold ? 'warning' : 'danger');
 
@@ -468,7 +474,7 @@ class Dashboard extends Controller {
             ];
         }
 
-        if($shop_clicks_delta_percent < $shop_trend_warning_threshold) {
+        if($shop_clicks_delta_percent < 0) {
             $dashboard_recommendations[] = [
                 'status' => 'warning',
                 'title' => l('dashboard.forever_analytics.recommendation.falling_trend.title'),
@@ -516,6 +522,68 @@ class Dashboard extends Controller {
         $top_registration_sources_30d_result = database()->query("SELECT {$source_label_sql} AS `source`, COUNT(*) AS `total` FROM `track_links` LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id` WHERE `track_links`.`user_id` = {$this->user->user_id} AND `track_links`.`datetime` >= '{$thirty_days_start_datetime}' {$unique_track_links_condition} AND `biolinks_blocks`.`type` IN ({$forever_registration_block_types_sql}) GROUP BY `source` ORDER BY `total` DESC LIMIT 100");
         $top_registration_sources_30d = $this->normalize_and_rank_dashboard_traffic_sources($top_registration_sources_30d_result, 15);
         /* /Custom code: FC-2026-03-07 */
+
+        /* Custom code: FC-2026-03-30: dashboard geo breakdowns for key FCC KPIs */
+        $dashboard_user_id = (int) $this->user->user_id;
+        $get_dashboard_geo_breakdown = static function(string $joins_sql, string $where_sql, string $field) use ($thirty_days_start_datetime, $unique_track_links_condition, $dashboard_user_id) {
+            $field = $field === 'city_name' ? 'city_name' : 'country_code';
+            $value_filter_sql = $field === 'city_name'
+                ? "AND `track_links`.`city_name` IS NOT NULL AND `track_links`.`city_name` != ''"
+                : "AND `track_links`.`country_code` IS NOT NULL AND `track_links`.`country_code` != ''";
+
+            $select_sql = $field === 'city_name'
+                ? "`track_links`.`city_name` AS `value`, `track_links`.`country_code` AS `country_code`, COUNT(*) AS `total`"
+                : "`track_links`.`country_code` AS `value`, COUNT(*) AS `total`";
+
+            $group_by_sql = $field === 'city_name'
+                ? "`track_links`.`city_name`, `track_links`.`country_code`"
+                : "`track_links`.`country_code`";
+
+            $result = database()->query("SELECT {$select_sql} FROM `track_links` {$joins_sql} WHERE `track_links`.`user_id` = {$dashboard_user_id} AND `track_links`.`datetime` >= '{$thirty_days_start_datetime}' {$unique_track_links_condition} {$where_sql} {$value_filter_sql} GROUP BY {$group_by_sql} ORDER BY `total` DESC LIMIT 15");
+            $rows = [];
+
+            while($row = $result->fetch_object()) {
+                $rows[] = [
+                    'value' => (string) ($row->value ?? ''),
+                    'total' => (int) ($row->total ?? 0),
+                    'country_code' => isset($row->country_code) ? (string) ($row->country_code ?? '') : null,
+                ];
+            }
+
+            return $rows;
+        };
+
+        $biolink_visits_countries_30d = $get_dashboard_geo_breakdown(
+            "LEFT JOIN `links` ON `track_links`.`link_id` = `links`.`link_id`",
+            "AND `links`.`type` = 'biolink'",
+            'country_code'
+        );
+        $biolink_visits_cities_30d = $get_dashboard_geo_breakdown(
+            "LEFT JOIN `links` ON `track_links`.`link_id` = `links`.`link_id`",
+            "AND `links`.`type` = 'biolink'",
+            'city_name'
+        );
+        $forever_shop_clicks_countries_30d = $get_dashboard_geo_breakdown(
+            "LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id`",
+            "AND `biolinks_blocks`.`type` IN ({$forever_shop_block_types_sql})",
+            'country_code'
+        );
+        $forever_shop_clicks_cities_30d = $get_dashboard_geo_breakdown(
+            "LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id`",
+            "AND `biolinks_blocks`.`type` IN ({$forever_shop_block_types_sql})",
+            'city_name'
+        );
+        $forever_registration_clicks_countries_30d = $get_dashboard_geo_breakdown(
+            "LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id`",
+            "AND `biolinks_blocks`.`type` IN ({$forever_registration_block_types_sql})",
+            'country_code'
+        );
+        $forever_registration_clicks_cities_30d = $get_dashboard_geo_breakdown(
+            "LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id`",
+            "AND `biolinks_blocks`.`type` IN ({$forever_registration_block_types_sql})",
+            'city_name'
+        );
+        /* /Custom code: FC-2026-03-30 */
 
         $top_country = $top_countries_30d[0] ?? null;
         if($top_country && !empty($top_country['country_code'])) {
@@ -593,6 +661,14 @@ class Dashboard extends Controller {
             'top_forever_pages_30d' => $top_forever_pages_30d,
             'top_shop_sources_30d' => $top_shop_sources_30d,
             'top_registration_sources_30d' => $top_registration_sources_30d,
+            /* Custom code: FC-2026-03-30: dashboard geo breakdown payload */
+            'biolink_visits_countries_30d' => $biolink_visits_countries_30d,
+            'biolink_visits_cities_30d' => $biolink_visits_cities_30d,
+            'forever_shop_clicks_countries_30d' => $forever_shop_clicks_countries_30d,
+            'forever_shop_clicks_cities_30d' => $forever_shop_clicks_cities_30d,
+            'forever_registration_clicks_countries_30d' => $forever_registration_clicks_countries_30d,
+            'forever_registration_clicks_cities_30d' => $forever_registration_clicks_cities_30d,
+            /* /Custom code: FC-2026-03-30 */
         ];
 
         $dashboard_funnel_analytics = [
@@ -811,6 +887,38 @@ class Dashboard extends Controller {
                     ['link_id' => 0, 'url' => 'detox-forever', 'total' => 24],
                     ['link_id' => 0, 'url' => 'aloe-proizvodi', 'total' => 19],
                 ],
+                /* Custom code: FC-2026-03-30: demo geo breakdown payload */
+                'biolink_visits_countries_30d' => [
+                    ['value' => 'HR', 'total' => 188],
+                    ['value' => 'BA', 'total' => 67],
+                    ['value' => 'RS', 'total' => 31],
+                ],
+                'biolink_visits_cities_30d' => [
+                    ['value' => 'Zagreb', 'total' => 84, 'country_code' => 'HR'],
+                    ['value' => 'Split', 'total' => 36, 'country_code' => 'HR'],
+                    ['value' => 'Sarajevo', 'total' => 28, 'country_code' => 'BA'],
+                ],
+                'forever_shop_clicks_countries_30d' => [
+                    ['value' => 'HR', 'total' => 42],
+                    ['value' => 'BA', 'total' => 21],
+                    ['value' => 'AL', 'total' => 15],
+                ],
+                'forever_shop_clicks_cities_30d' => [
+                    ['value' => 'Zagreb', 'total' => 17, 'country_code' => 'HR'],
+                    ['value' => 'Split', 'total' => 11, 'country_code' => 'HR'],
+                    ['value' => 'Tirana', 'total' => 8, 'country_code' => 'AL'],
+                ],
+                'forever_registration_clicks_countries_30d' => [
+                    ['value' => 'HR', 'total' => 9],
+                    ['value' => 'BA', 'total' => 5],
+                    ['value' => 'RS', 'total' => 3],
+                ],
+                'forever_registration_clicks_cities_30d' => [
+                    ['value' => 'Zagreb', 'total' => 4, 'country_code' => 'HR'],
+                    ['value' => 'Sarajevo', 'total' => 3, 'country_code' => 'BA'],
+                    ['value' => 'Beograd', 'total' => 2, 'country_code' => 'RS'],
+                ],
+                /* /Custom code: FC-2026-03-30 */
                 'top_shop_sources_30d' => [
                     ['source' => 'utm:instagram', 'total' => 29],
                     ['source' => 'facebook.com', 'total' => 24],

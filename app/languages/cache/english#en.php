@@ -479,12 +479,10 @@ return [
 	'pages.header' => 'Resources center',
 	'pages.subheader' => 'Here you can find useful page resources depending on your needs.',
 	'pages.index.breadcrumb' => 'Pages',
-	/* Custom code: FC-2026-03-30: menu localization */
 	'menu.forever_club' => 'Forever Card Club',
 	'menu.forever_products' => 'Forever Products',
 	'menu.contact' => 'Contact',
 	'menu.dashboard' => 'Dashboard',
-	/* /Custom code: FC-2026-03-30 */
 	'pages.index.popular_pages' => 'Popular pages',
 	'pages.index.pages_categories.header' => 'Categories',
 	'pages.index.pages_categories.total_pages' => '%s available pages',
@@ -501,10 +499,8 @@ return [
 	'blog.rss' => 'RSS Feed',
 	'blog.categories' => 'Categories',
 	'blog.popular' => 'Popular posts',
-	/* Custom code: FC-2026-03-30: blog and page localization keys */
 	'blog.category.badge' => 'Blog category',
 	'blog.category.all_posts' => 'Posts in this category',
-	/* /Custom code: FC-2026-03-30 */
 	'blog.total_views' => '%s views',
 	'blog.estimated_reading_time' => '%s read',
 	'blog.blog_post.title' => '%s - Blog',
@@ -864,12 +860,10 @@ return [
 	'login.header' => 'Sign in',
 	'login.hero_title' => 'Login',
 	'login.hero_subtitle' => 'for Forever Card members',
-	/* Custom code: FC-2026-03-30: login demo helper translations */
 	'login.demo_title' => 'Demo',
 	'login.demo_disabled_features' => 'Some features are disabled as this is a demo version.',
 	'login.demo_admin_credentials' => 'You can login as the admin with the prefilled credentials below.',
 	'login.demo_register_account' => 'You can also register your own account to test it as a normal user.',
-	/* /Custom code: FC-2026-03-30 */
 	'login.twofa_token' => 'Two-factor token',
 	'login.remember_me' => 'Remember me',
 	'login.remember_me_help' => 'A browser cookie will be used to remember you for %s days on this browser.',
@@ -976,6 +970,11 @@ return [
 	'dashboard.forever_analytics.status.good' => 'Good',
 	'dashboard.forever_analytics.status.warning' => 'Watch',
 	'dashboard.forever_analytics.status.danger' => 'Act now',
+	/* Custom code: FC-2026-03-30: clearer labels for webshop trend card */
+	'dashboard.forever_analytics.status.shop_trend.good' => 'Above team average',
+	'dashboard.forever_analytics.status.shop_trend.warning' => 'Below team average',
+	'dashboard.forever_analytics.status.shop_trend.danger' => 'Trend declining',
+	/* /Custom code: FC-2026-03-30 */
 	'dashboard.forever_analytics.track_clicks_total' => 'Tracked clicks (total)',
 	'dashboard.forever_analytics.track_clicks_30d' => 'Tracked clicks (last 30 days)',
 	'dashboard.forever_analytics.unique' => 'Unique',
@@ -990,6 +989,15 @@ return [
 	'dashboard.forever_analytics.top_forever_pages_30d' => 'Top pages generating unique webshop clicks (last 30 days)',
 	'dashboard.forever_analytics.top_shop_sources_30d' => 'Top traffic sources for unique webshop clicks (last 30 days)',
 	'dashboard.forever_analytics.top_registration_sources_30d' => 'Top traffic sources for business collaboration clicks (last 30 days)',
+	'dashboard.forever_analytics.breakdown_open' => 'Open geographic breakdown',
+	'dashboard.forever_analytics.breakdown_modal_default_title' => 'Countries and cities',
+	'dashboard.forever_analytics.breakdown_biolink_visits_title' => 'Unique page visits by country and city (30 days)',
+	'dashboard.forever_analytics.breakdown_shop_clicks_title' => 'Unique webshop clicks by country and city (30 days)',
+	'dashboard.forever_analytics.breakdown_registration_clicks_title' => 'Registration clicks by country and city (30 days)',
+	'dashboard.forever_analytics.breakdown_countries' => 'Countries',
+	'dashboard.forever_analytics.breakdown_cities' => 'Cities',
+	'dashboard.forever_analytics.breakdown_click_country_hint' => 'Click a country to narrow the cities list.',
+	'dashboard.forever_analytics.breakdown_all_cities' => 'All cities',
 	'dashboard.forever_analytics.recommendation.share_more.title' => 'First step: increase page visits',
 	'dashboard.forever_analytics.recommendation.share_more.description' => 'You had 0 visits in the last 30 days. Do 3 shares today: 1 WhatsApp status, 1 story, and 1 direct message with your link.',
 	'dashboard.forever_analytics.recommendation.share_more.cta' => 'Open my pages',
@@ -2931,7 +2939,6 @@ return [
 	'blog.copy_url' => 'Copy the link to the article',
 	'blog.copy_url.copied' => 'The link has been copied to the clipboard',
 	'blog.share_referral.helper_text' => 'Share this article with your referral link.',
-	/* Custom code: FC-2026-03-30: blog and page localization keys */
 	'blog.share_referral.helper_text_guest' => 'Share or send this article to friends.',
 	'blog.share_referral.learn_more' => 'How this works',
 	'blog.share_referral.modal_title' => 'How your referral link works',
@@ -3182,7 +3189,6 @@ return [
 	'fcc.page.howto.ai_product_assistants.step_2' => 'The AI assistant suggests relevant products and useful guidance.',
 	'fcc.page.howto.ai_product_assistants.step_3' => 'The system routes the visitor toward contact, deeper explanation, or the purchase path.',
 	'fcc.page.howto.ai_product_assistants.step_4' => 'The partner gets a clearer and simpler path from interest to recommendation or conversation.',
-	/* /Custom code: FC-2026-03-30 */
 	'fcc.core_gate.biolinks_disabled' => 'Complete FCC education to activate FCC Apps.',
 	'global.emails.billing_warning_first.subject' => 'We could not renew your {{PLAN_NAME}} plan',
 	'global.emails.billing_warning_first.body' => 'Hello {{NAME}},<br /><br />We could not process your latest renewal for the {{PLAN_NAME}} plan.<br /><br />Reason: {{FAILURE_REASON}}<br />Next payment attempt: {{NEXT_PAYMENT_ATTEMPT}}<br />Grace access until: {{GRACE_UNTIL}}<br /><br />Please review your billing method here: <a href="{{USER_PLAN_LINK}}">{{USER_PLAN_LINK}}</a><br /><br />You can also review your invoices here: <a href="{{USER_PAYMENTS_LINK}}">{{USER_PAYMENTS_LINK}}</a>',

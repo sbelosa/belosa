@@ -952,6 +952,11 @@ return [
 	'dashboard.forever_analytics.status.good' => 'Dobro',
 	'dashboard.forever_analytics.status.warning' => 'Pazi',
 	'dashboard.forever_analytics.status.danger' => 'Reagiraj',
+	/* Custom code: FC-2026-03-30: clearer labels for webshop trend card */
+	'dashboard.forever_analytics.status.shop_trend.good' => 'Iznad timskog prosjeka',
+	'dashboard.forever_analytics.status.shop_trend.warning' => 'Ispod timskog prosjeka',
+	'dashboard.forever_analytics.status.shop_trend.danger' => 'Pad trenda',
+	/* /Custom code: FC-2026-03-30 */
 	'dashboard.forever_analytics.track_clicks_total' => 'Praćeni klikovi (ukupno)',
 	'dashboard.forever_analytics.track_clicks_30d' => 'Praćeni klikovi (zadnjih 30 dana)',
 	'dashboard.forever_analytics.unique' => 'Jedinstveni',
@@ -966,6 +971,17 @@ return [
 	'dashboard.forever_analytics.top_forever_pages_30d' => 'Top aplikacije koje dovode jedinstvene klikove prema webshopovima (zadnjih 30 dana)',
 	'dashboard.forever_analytics.top_shop_sources_30d' => 'Top izvori jedinstvenih klikova prema webshopovima (zadnjih 30 dana)',
 	'dashboard.forever_analytics.top_registration_sources_30d' => 'Top izvori klikova na poslovnu suradnju (zadnjih 30 dana)',
+	/* Custom code: FC-2026-03-30: dashboard geo breakdown labels */
+	'dashboard.forever_analytics.breakdown_open' => 'Otvori pregled po lokacijama',
+	'dashboard.forever_analytics.breakdown_modal_default_title' => 'Zemlje i gradovi',
+	'dashboard.forever_analytics.breakdown_biolink_visits_title' => 'Jedinstveni posjeti aplikacijama po zemljama i gradovima (30 dana)',
+	'dashboard.forever_analytics.breakdown_shop_clicks_title' => 'Jedinstveni klikovi prema webshopovima po zemljama i gradovima (30 dana)',
+	'dashboard.forever_analytics.breakdown_registration_clicks_title' => 'Klikovi na registraciju po zemljama i gradovima (30 dana)',
+	'dashboard.forever_analytics.breakdown_countries' => 'Zemlje',
+	'dashboard.forever_analytics.breakdown_cities' => 'Gradovi',
+	'dashboard.forever_analytics.breakdown_click_country_hint' => 'Klikni na zemlju da suziš popis gradova.',
+	'dashboard.forever_analytics.breakdown_all_cities' => 'Svi gradovi',
+	/* /Custom code: FC-2026-03-30 */
 	'dashboard.forever_analytics.recommendation.share_more.title' => 'Prvi korak: povećajte posjete stranici',
 	'dashboard.forever_analytics.recommendation.share_more.description' => 'U zadnjih 30 dana imate 0 posjeta. Danas napravite 3 dijeljenja: 1 WhatsApp status, 1 story i 1 direktnu poruku s linkom.',
 	'dashboard.forever_analytics.recommendation.share_more.cta' => 'Otvori moje stranice',

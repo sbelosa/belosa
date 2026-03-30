@@ -170,6 +170,109 @@
         margin-top: 1rem;
     }
 
+    .dashboard-kpi-trigger {
+        display: inline-flex;
+        align-items: center;
+        gap: .35rem;
+        padding: 0;
+        border: 0;
+        background: transparent;
+        color: inherit;
+        font: inherit;
+        cursor: pointer;
+    }
+
+    .dashboard-kpi-trigger:hover .dashboard-kpi-trigger__value,
+    .dashboard-kpi-trigger:focus .dashboard-kpi-trigger__value {
+        text-decoration: underline;
+    }
+
+    .dashboard-kpi-trigger:focus {
+        outline: none;
+    }
+
+    .dashboard-kpi-trigger__value {
+        color: #fff;
+    }
+
+    .dashboard-geo-list-row {
+        display: flex;
+        justify-content: space-between;
+        gap: .75rem;
+        padding: .65rem 0;
+        border-bottom: 1px solid rgba(255,255,255,.06);
+    }
+
+    .dashboard-geo-list-row--interactive {
+        cursor: pointer;
+        border-radius: .8rem;
+        padding: .75rem .6rem;
+        margin: 0 -.6rem;
+    }
+
+    .dashboard-geo-list-row--interactive:hover,
+    .dashboard-geo-list-row--interactive:focus {
+        background: rgba(255,255,255,.04);
+        outline: none;
+    }
+
+    .dashboard-geo-list-row--active {
+        background: rgba(73, 227, 207, 0.08);
+    }
+
+    .dashboard-geo-list-row:last-child {
+        border-bottom: 0;
+    }
+
+    .dashboard-geo-list-label {
+        display: inline-flex;
+        align-items: center;
+        gap: .55rem;
+        min-width: 0;
+        color: var(--gray-700);
+    }
+
+    .dashboard-geo-list-total {
+        white-space: nowrap;
+        color: #fff;
+        font-weight: 700;
+    }
+
+    .dashboard-geo-list-meta {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: .1rem;
+        white-space: nowrap;
+    }
+
+    .dashboard-geo-list-share {
+        color: var(--gray-500);
+        font-size: .78rem;
+    }
+
+    .dashboard-geo-flag {
+        width: 1rem;
+        height: 1rem;
+        border-radius: 999px;
+        object-fit: cover;
+        flex-shrink: 0;
+        box-shadow: 0 0 0 1px rgba(255,255,255,.08);
+    }
+
+    .dashboard-geo-filter-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: .75rem;
+        margin-bottom: .85rem;
+    }
+
+    .dashboard-geo-filter-bar .badge {
+        border-radius: 999px;
+        padding: .45rem .65rem;
+    }
+
     .dashboard-stack {
         display: flex;
         flex-direction: column;
@@ -336,7 +439,12 @@
                     <div class="card h-100 dashboard-modern-card dashboard-kpi-card">
                         <div class="card-body">
                             <small class="text-muted d-block mb-1"><?= l('dashboard.forever_analytics.kpi_biolink_visits_title') ?></small>
-                            <div class="h5 mb-0" id="dashboard_biolink_visits_30d"><span class="spinner-border spinner-border-sm" role="status"></span></div>
+                            <!-- Custom code: FC-2026-03-30: dashboard geo breakdown trigger -->
+                            <button type="button" class="dashboard-kpi-trigger h5 mb-0" data-dashboard-geo-trigger="biolink_visits" title="<?= l('dashboard.forever_analytics.breakdown_open') ?>" aria-label="<?= l('dashboard.forever_analytics.breakdown_open') ?>">
+                                <span class="dashboard-kpi-trigger__value" id="dashboard_biolink_visits_30d"><span class="spinner-border spinner-border-sm" role="status"></span></span>
+                                <i class="fas fa-fw fa-location-dot fa-xs text-muted"></i>
+                            </button>
+                            <!-- /Custom code: FC-2026-03-30 -->
                             <small class="text-muted d-block mt-1" id="dashboard_biolink_visits_delta"><span class="spinner-border spinner-border-sm" role="status"></span></small>
                             <small class="text-muted d-block mt-2"><?= l('dashboard.forever_analytics.kpi_biolink_visits_help') ?></small>
                         </div>
@@ -347,7 +455,12 @@
                         <div class="card-body">
                             <small class="text-muted d-block mb-1"><?= l('dashboard.forever_analytics.kpi_shop_clicks_title') ?></small>
                             <div class="d-flex align-items-center justify-content-between">
-                                <div class="h5 mb-0" id="dashboard_forever_shop_clicks_30d"><span class="spinner-border spinner-border-sm" role="status"></span></div>
+                                <!-- Custom code: FC-2026-03-30: dashboard geo breakdown trigger -->
+                                <button type="button" class="dashboard-kpi-trigger h5 mb-0" data-dashboard-geo-trigger="forever_shop_clicks" title="<?= l('dashboard.forever_analytics.breakdown_open') ?>" aria-label="<?= l('dashboard.forever_analytics.breakdown_open') ?>">
+                                    <span class="dashboard-kpi-trigger__value" id="dashboard_forever_shop_clicks_30d"><span class="spinner-border spinner-border-sm" role="status"></span></span>
+                                    <i class="fas fa-fw fa-location-dot fa-xs text-muted"></i>
+                                </button>
+                                <!-- /Custom code: FC-2026-03-30 -->
                                 <span id="dashboard_status_shop_clicks"><span class="spinner-border spinner-border-sm" role="status"></span></span>
                             </div>
                             <small class="text-muted d-block mt-1" id="dashboard_shop_clicks_delta"><span class="spinner-border spinner-border-sm" role="status"></span></small>
@@ -388,7 +501,12 @@
                         <div class="card-body">
                             <small class="text-muted d-block mb-1"><?= l('dashboard.forever_analytics.kpi_registration_clicks_title') ?></small>
                             <div class="d-flex align-items-center justify-content-between">
-                                <div class="h5 mb-0" id="dashboard_forever_registration_clicks_30d"><span class="spinner-border spinner-border-sm" role="status"></span></div>
+                                <!-- Custom code: FC-2026-03-30: dashboard geo breakdown trigger -->
+                                <button type="button" class="dashboard-kpi-trigger h5 mb-0" data-dashboard-geo-trigger="forever_registration_clicks" title="<?= l('dashboard.forever_analytics.breakdown_open') ?>" aria-label="<?= l('dashboard.forever_analytics.breakdown_open') ?>">
+                                    <span class="dashboard-kpi-trigger__value" id="dashboard_forever_registration_clicks_30d"><span class="spinner-border spinner-border-sm" role="status"></span></span>
+                                    <i class="fas fa-fw fa-location-dot fa-xs text-muted"></i>
+                                </button>
+                                <!-- /Custom code: FC-2026-03-30 -->
                                 <span id="dashboard_status_registration_clicks"><span class="spinner-border spinner-border-sm" role="status"></span></span>
                             </div>
                             <small class="text-muted d-block mt-1" id="dashboard_registration_clicks_delta"><span class="spinner-border spinner-border-sm" role="status"></span></small>
@@ -504,9 +622,44 @@
     </div>
 </div>
 
+<!-- Custom code: FC-2026-03-30: dashboard geo breakdown modal -->
+<div class="modal fade" id="dashboard_geo_breakdown_modal" tabindex="-1" role="dialog" aria-labelledby="dashboard_geo_breakdown_modal_title" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="dashboard_geo_breakdown_modal_title"><?= l('dashboard.forever_analytics.breakdown_modal_default_title') ?></h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="<?= l('global.close') ?>">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-12 col-lg-6 mb-4 mb-lg-0">
+                        <div class="font-weight-bold mb-3"><?= l('dashboard.forever_analytics.breakdown_countries') ?></div>
+                        <div id="dashboard_geo_breakdown_countries" class="small text-muted"></div>
+                    </div>
+
+                    <div class="col-12 col-lg-6">
+                        <div class="dashboard-geo-filter-bar">
+                            <div class="font-weight-bold"><?= l('dashboard.forever_analytics.breakdown_cities') ?></div>
+                            <div id="dashboard_geo_breakdown_city_filter"></div>
+                        </div>
+                        <div id="dashboard_geo_breakdown_cities" class="small text-muted"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- /Custom code: FC-2026-03-30 -->
+
 <?php ob_start() ?>
     <script>
     'use strict';
+
+        const dashboard_country_names = <?= json_encode(get_countries_array()) ?>;
+        const dashboard_country_flags_base_url = <?= json_encode(ASSETS_FULL_URL . 'images/countries/') ?>;
 
         const funnel_open_mode_labels = {
             popup: <?= json_encode(l('biolink_lead_funnel.open_mode_popup')) ?>,
@@ -638,6 +791,164 @@
                     }
                 };
 
+                const round_number = (value, precision = 0) => {
+                    const multiplier = Math.pow(10, precision);
+                    return Math.round((Number(value ?? 0) + Number.EPSILON) * multiplier) / multiplier;
+                };
+
+                const dashboard_geo_breakdown_state = {
+                    dataset: null,
+                    selectedCountryCode: null,
+                };
+
+                const get_flag_html = (countryCode) => {
+                    const normalizedCountryCode = typeof countryCode === 'string' ? countryCode.trim().toLowerCase() : '';
+
+                    if(!normalizedCountryCode || normalizedCountryCode.length !== 2) {
+                        return '';
+                    }
+
+                    return `<img src="${dashboard_country_flags_base_url}${normalizedCountryCode}.svg" class="dashboard-geo-flag" alt="${normalizedCountryCode.toUpperCase()}" loading="lazy" />`;
+                };
+
+                const get_share_label = (value, total) => {
+                    const safeValue = Number(value ?? 0);
+                    const safeTotal = Number(total ?? 0);
+                    const share = safeTotal > 0 ? round_number((safeValue / safeTotal) * 100, 1) : 0;
+                    return `${nr(share)}%`;
+                };
+
+                const render_country_rows = (dataset) => {
+                    const countriesContainer = document.querySelector('#dashboard_geo_breakdown_countries');
+
+                    if(!countriesContainer) {
+                        return;
+                    }
+
+                    const items = dataset?.countries ?? [];
+                    const totalMetric = Number(dataset?.total ?? 0);
+
+                    if(!items.length) {
+                        countriesContainer.innerHTML = `<span class="text-muted"><?= l('global.no_data') ?></span>`;
+                        return;
+                    }
+
+                    countriesContainer.innerHTML = items.map(item => {
+                        const countryCode = item.value ?? '';
+                        const label = `${dashboard_country_names[countryCode] ?? countryCode}${countryCode ? ` (${countryCode})` : ''}`;
+                        const isActive = dashboard_geo_breakdown_state.selectedCountryCode === countryCode;
+
+                        return `
+                            <button type="button" class="dashboard-geo-list-row dashboard-geo-list-row--interactive ${isActive ? 'dashboard-geo-list-row--active' : ''} w-100 text-left" data-dashboard-geo-country="${countryCode}">
+                                <span class="dashboard-geo-list-label text-truncate mr-2">${get_flag_html(countryCode)}<span class="text-truncate">${label}</span></span>
+                                <span class="dashboard-geo-list-meta">
+                                    <span class="dashboard-geo-list-total">${nr(item.total ?? 0)}</span>
+                                    <span class="dashboard-geo-list-share">${get_share_label(item.total ?? 0, totalMetric)}</span>
+                                </span>
+                            </button>
+                        `;
+                    }).join('');
+
+                    countriesContainer.querySelectorAll('[data-dashboard-geo-country]').forEach(element => {
+                        element.addEventListener('click', () => {
+                            const clickedCountryCode = element.getAttribute('data-dashboard-geo-country') || null;
+                            dashboard_geo_breakdown_state.selectedCountryCode = dashboard_geo_breakdown_state.selectedCountryCode === clickedCountryCode ? null : clickedCountryCode;
+                            render_geo_breakdown_modal();
+                        });
+                    });
+                };
+
+                const render_city_rows = (dataset) => {
+                    const citiesContainer = document.querySelector('#dashboard_geo_breakdown_cities');
+                    const cityFilterContainer = document.querySelector('#dashboard_geo_breakdown_city_filter');
+
+                    if(!citiesContainer || !cityFilterContainer) {
+                        return;
+                    }
+
+                    const selectedCountryCode = dashboard_geo_breakdown_state.selectedCountryCode;
+                    const allCities = Array.isArray(dataset?.cities) ? dataset.cities : [];
+                    const filteredCities = selectedCountryCode
+                        ? allCities.filter(item => (item.country_code ?? '') === selectedCountryCode)
+                        : allCities;
+                    const selectedCountryTotal = selectedCountryCode
+                        ? Number((dataset?.countries ?? []).find(item => (item.value ?? '') === selectedCountryCode)?.total ?? 0)
+                        : Number(dataset?.total ?? 0);
+
+                    if(selectedCountryCode) {
+                        const selectedCountryName = dashboard_country_names[selectedCountryCode] ?? selectedCountryCode;
+                        cityFilterContainer.innerHTML = `
+                            <div class="d-flex align-items-center" style="gap: .5rem;">
+                                <span class="badge badge-primary">${selectedCountryName} (${selectedCountryCode})</span>
+                                <button type="button" class="btn btn-sm btn-outline-secondary" id="dashboard_geo_breakdown_reset_cities"><?= l('dashboard.forever_analytics.breakdown_all_cities') ?></button>
+                            </div>
+                        `;
+
+                        const resetButton = cityFilterContainer.querySelector('#dashboard_geo_breakdown_reset_cities');
+                        if(resetButton) {
+                            resetButton.addEventListener('click', () => {
+                                dashboard_geo_breakdown_state.selectedCountryCode = null;
+                                render_geo_breakdown_modal();
+                            });
+                        }
+                    } else {
+                        cityFilterContainer.innerHTML = `<small class="text-muted"><?= l('dashboard.forever_analytics.breakdown_click_country_hint') ?></small>`;
+                    }
+
+                    if(!filteredCities.length) {
+                        citiesContainer.innerHTML = `<span class="text-muted"><?= l('global.no_data') ?></span>`;
+                        return;
+                    }
+
+                    citiesContainer.innerHTML = filteredCities.map(item => {
+                        const cityName = item.value || '<?= l('global.unknown') ?>';
+                        const countryCode = item.country_code ?? '';
+                        const label = selectedCountryCode
+                            ? cityName
+                            : `${cityName}${countryCode ? ` (${countryCode})` : ''}`;
+
+                        return `
+                            <div class="dashboard-geo-list-row">
+                                <span class="dashboard-geo-list-label text-truncate mr-2">${!selectedCountryCode ? get_flag_html(countryCode) : ''}<span class="text-truncate">${label}</span></span>
+                                <span class="dashboard-geo-list-meta">
+                                    <span class="dashboard-geo-list-total">${nr(item.total ?? 0)}</span>
+                                    <span class="dashboard-geo-list-share">${get_share_label(item.total ?? 0, selectedCountryTotal)}</span>
+                                </span>
+                            </div>
+                        `;
+                    }).join('');
+                };
+
+                const render_geo_breakdown_modal = () => {
+                    const dataset = dashboard_geo_breakdown_state.dataset;
+
+                    if(!dataset) {
+                        return;
+                    }
+
+                    const title = document.querySelector('#dashboard_geo_breakdown_modal_title');
+                    if(title) {
+                        title.innerText = dataset.title ?? <?= json_encode(l('dashboard.forever_analytics.breakdown_modal_default_title')) ?>;
+                    }
+
+                    render_country_rows(dataset);
+                    render_city_rows(dataset);
+                };
+
+                const open_geo_breakdown_modal = (dataset) => {
+                    if(!dataset) {
+                        return;
+                    }
+
+                    dashboard_geo_breakdown_state.dataset = dataset;
+                    dashboard_geo_breakdown_state.selectedCountryCode = null;
+                    render_geo_breakdown_modal();
+
+                    if(window.jQuery) {
+                        window.jQuery('#dashboard_geo_breakdown_modal').modal('show');
+                    }
+                };
+
                 const set_delta = (selector, value, suffix = '%') => {
                     const element = document.querySelector(selector);
                     if(!element) {
@@ -649,13 +960,14 @@
                     element.innerText = `${sign}${nr(numeric_value)}${suffix}`;
                 };
 
-                const render_status_badge = (selector, status) => {
+                const render_status_badge = (selector, status, labels = null) => {
                     const element = document.querySelector(selector);
                     if(!element) {
                         return;
                     }
 
-                    const status_map = {
+                    /* Custom code: FC-2026-03-30: allow metric-specific dashboard status labels */
+                    const default_status_map = {
                         good: {
                             text: <?= json_encode(l('dashboard.forever_analytics.status.good')) ?>,
                             className: 'badge-success'
@@ -669,6 +981,9 @@
                             className: 'badge-danger'
                         }
                     };
+
+                    const status_map = labels ?? default_status_map;
+                    /* /Custom code: FC-2026-03-30 */
 
                     const selected_status = status_map[status] ?? status_map.warning;
                     element.innerHTML = `<span class="badge ${selected_status.className}">${selected_status.text}</span>`;
@@ -697,7 +1012,22 @@
 
                 render_status_badge('#dashboard_status_shop_clicks', dashboard_forever_analytics.status_shop_clicks);
                 render_status_badge('#dashboard_status_shop_ctr', dashboard_forever_analytics.status_shop_ctr);
-                render_status_badge('#dashboard_status_shop_trend', dashboard_forever_analytics.status_shop_trend);
+                /* Custom code: FC-2026-03-30: trend badge uses clearer team-comparison labels */
+                render_status_badge('#dashboard_status_shop_trend', dashboard_forever_analytics.status_shop_trend, {
+                    good: {
+                        text: <?= json_encode(l('dashboard.forever_analytics.status.shop_trend.good')) ?>,
+                        className: 'badge-success'
+                    },
+                    warning: {
+                        text: <?= json_encode(l('dashboard.forever_analytics.status.shop_trend.warning')) ?>,
+                        className: 'badge-warning'
+                    },
+                    danger: {
+                        text: <?= json_encode(l('dashboard.forever_analytics.status.shop_trend.danger')) ?>,
+                        className: 'badge-danger'
+                    }
+                });
+                /* /Custom code: FC-2026-03-30 */
                 render_status_badge('#dashboard_status_registration_clicks', dashboard_forever_analytics.status_registration_clicks);
                 render_status_badge('#dashboard_status_registration_ctr', dashboard_forever_analytics.status_registration_ctr);
 
@@ -774,6 +1104,35 @@
                 });
 
                 render_dashboard_compact_list('#dashboard_top_registration_sources_30d', '#dashboard_top_registration_sources_30d_toggle', top_registration_sources_html, 5);
+
+                /* Custom code: FC-2026-03-30: bind KPI geo breakdown modal */
+                const dashboard_geo_breakdown_sets = {
+                    biolink_visits: {
+                        title: <?= json_encode(l('dashboard.forever_analytics.breakdown_biolink_visits_title')) ?>,
+                        total: dashboard_forever_analytics.biolink_visits_30d ?? 0,
+                        countries: dashboard_forever_analytics.biolink_visits_countries_30d ?? [],
+                        cities: dashboard_forever_analytics.biolink_visits_cities_30d ?? [],
+                    },
+                    forever_shop_clicks: {
+                        title: <?= json_encode(l('dashboard.forever_analytics.breakdown_shop_clicks_title')) ?>,
+                        total: dashboard_forever_analytics.forever_shop_clicks_30d ?? 0,
+                        countries: dashboard_forever_analytics.forever_shop_clicks_countries_30d ?? [],
+                        cities: dashboard_forever_analytics.forever_shop_clicks_cities_30d ?? [],
+                    },
+                    forever_registration_clicks: {
+                        title: <?= json_encode(l('dashboard.forever_analytics.breakdown_registration_clicks_title')) ?>,
+                        total: dashboard_forever_analytics.forever_registration_clicks_30d ?? 0,
+                        countries: dashboard_forever_analytics.forever_registration_clicks_countries_30d ?? [],
+                        cities: dashboard_forever_analytics.forever_registration_clicks_cities_30d ?? [],
+                    },
+                };
+
+                document.querySelectorAll('[data-dashboard-geo-trigger]').forEach(element => {
+                    element.addEventListener('click', () => {
+                        open_geo_breakdown_modal(dashboard_geo_breakdown_sets[element.getAttribute('data-dashboard-geo-trigger')] ?? null);
+                    });
+                });
+                /* /Custom code: FC-2026-03-30 */
                 /* /Custom code: FC-2026-03-05 */
 
                 const dashboard_funnel_status_badge = document.querySelector('#dashboard_funnel_status_badge');

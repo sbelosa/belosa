@@ -1142,6 +1142,11 @@ return [
 	'dashboard.forever_analytics.status.good' => 'Good',
 	'dashboard.forever_analytics.status.warning' => 'Watch',
 	'dashboard.forever_analytics.status.danger' => 'Act now',
+	/* Custom code: FC-2026-03-30: clearer labels for webshop trend card */
+	'dashboard.forever_analytics.status.shop_trend.good' => 'Above team average',
+	'dashboard.forever_analytics.status.shop_trend.warning' => 'Below team average',
+	'dashboard.forever_analytics.status.shop_trend.danger' => 'Trend declining',
+	/* /Custom code: FC-2026-03-30 */
 	'dashboard.forever_analytics.track_clicks_total' => 'Tracked clicks (total)',
 	'dashboard.forever_analytics.track_clicks_30d' => 'Tracked clicks (last 30 days)',
 	'dashboard.forever_analytics.unique' => 'Unique',
@@ -1156,6 +1161,17 @@ return [
 	'dashboard.forever_analytics.top_forever_pages_30d' => 'Top pages generating unique webshop clicks (last 30 days)',
 	'dashboard.forever_analytics.top_shop_sources_30d' => 'Top traffic sources for unique webshop clicks (last 30 days)',
 	'dashboard.forever_analytics.top_registration_sources_30d' => 'Top traffic sources for business collaboration clicks (last 30 days)',
+	/* Custom code: FC-2026-03-30: dashboard geo breakdown labels */
+	'dashboard.forever_analytics.breakdown_open' => 'Open geographic breakdown',
+	'dashboard.forever_analytics.breakdown_modal_default_title' => 'Countries and cities',
+	'dashboard.forever_analytics.breakdown_biolink_visits_title' => 'Unique page visits by country and city (30 days)',
+	'dashboard.forever_analytics.breakdown_shop_clicks_title' => 'Unique webshop clicks by country and city (30 days)',
+	'dashboard.forever_analytics.breakdown_registration_clicks_title' => 'Registration clicks by country and city (30 days)',
+	'dashboard.forever_analytics.breakdown_countries' => 'Countries',
+	'dashboard.forever_analytics.breakdown_cities' => 'Cities',
+	'dashboard.forever_analytics.breakdown_click_country_hint' => 'Click a country to narrow the cities list.',
+	'dashboard.forever_analytics.breakdown_all_cities' => 'All cities',
+	/* /Custom code: FC-2026-03-30 */
 	'dashboard.forever_analytics.recommendation.share_more.title' => 'First step: increase page visits',
 	'dashboard.forever_analytics.recommendation.share_more.description' => 'You had 0 visits in the last 30 days. Do 3 shares today: 1 WhatsApp status, 1 story, and 1 direct message with your link.',
 	'dashboard.forever_analytics.recommendation.share_more.cta' => 'Open my pages',
