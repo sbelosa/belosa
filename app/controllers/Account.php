@@ -22,6 +22,20 @@ defined('ALTUMCODE') || die();
 
 class Account extends Controller {
 
+    private function normalize_phone_number($phone) {
+        $phone = preg_replace('/\D+/', '', (string) $phone);
+
+        if(mb_substr($phone, 0, 2) === '00') {
+            $phone = mb_substr($phone, 2);
+        }
+
+        return $phone;
+    }
+
+    private function is_valid_phone_number($phone) {
+        return $phone !== '' && preg_match('/^[1-9][0-9]{7,14}$/', $phone);
+    }
+
     public function index() {
 
         \Altum\Authentication::guard();
@@ -40,7 +54,7 @@ class Account extends Controller {
             $_POST['timezone'] = in_array($_POST['timezone'], \DateTimeZone::listIdentifiers()) ? query_clean($_POST['timezone']) : settings()->main->default_timezone;
             $_POST['anti_phishing_code'] = input_clean($_POST['anti_phishing_code'], 8);
             /* Custom code: FC-2026-03-05: account contact fields for shortcode/referral data */
-            $_POST['phone'] = input_clean($_POST['phone'] ?? '', 32);
+            $_POST['phone'] = $this->normalize_phone_number(input_clean($_POST['phone'] ?? '', 32));
             /* /Custom code: FC-2026-03-05 */
             $_POST['twofa_is_enabled'] = (bool) $_POST['twofa_is_enabled'];
             $_POST['twofa_token'] = input_clean(str_replace(' ', '', $_POST['twofa_token'] ?? ''));
@@ -63,7 +77,7 @@ class Account extends Controller {
                 $_POST['billing_county'] = input_clean($_POST['billing_county'], 64);
                 $_POST['billing_zip'] = input_clean($_POST['billing_zip'], 32);
                 $_POST['billing_country'] = array_key_exists($_POST['billing_country'], get_countries_array()) ? query_clean($_POST['billing_country']) : 'US';
-                $_POST['billing_phone'] = input_clean($_POST['billing_phone'], 32);
+                $_POST['billing_phone'] = $this->normalize_phone_number(input_clean($_POST['billing_phone'], 32));
                 $_POST['billing_tax_id'] = $_POST['billing_type'] == 'business' ? input_clean($_POST['billing_tax_id'], 64) : '';
                 $_POST['billing_notes'] = input_clean($_POST['billing_notes'], 512);
                 $_POST['billing'] = json_encode([
@@ -122,6 +136,14 @@ class Account extends Controller {
 
             if(mb_strlen($_POST['name']) < 1 || mb_strlen($_POST['name']) > 64) {
                 Alerts::add_field_error('name', l('register.error_message.name_length'));
+            }
+
+            if($_POST['phone'] !== '' && !$this->is_valid_phone_number($_POST['phone'])) {
+                Alerts::add_field_error('phone', l('register.error_message.phone_invalid'));
+            }
+
+            if(empty($this->user->payment_subscription_id) && $_POST['billing_phone'] !== '' && !$this->is_valid_phone_number($_POST['billing_phone'])) {
+                Alerts::add_field_error('billing_phone', l('register.error_message.phone_invalid'));
             }
 
             if(!empty($_POST['old_password']) && !empty($_POST['new_password'])) {

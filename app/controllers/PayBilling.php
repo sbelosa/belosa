@@ -22,6 +22,20 @@ defined('ALTUMCODE') || die();
 
 class PayBilling extends Controller {
 
+    private function normalize_phone_number($phone) {
+        $phone = preg_replace('/\D+/', '', (string) $phone);
+
+        if(mb_substr($phone, 0, 2) === '00') {
+            $phone = mb_substr($phone, 2);
+        }
+
+        return $phone;
+    }
+
+    private function is_valid_phone_number($phone) {
+        return $phone !== '' && preg_match('/^[1-9][0-9]{7,14}$/', $phone);
+    }
+
     public function index() {
 
         \Altum\Authentication::guard();
@@ -59,7 +73,7 @@ class PayBilling extends Controller {
             $_POST['billing_county'] = mb_substr(trim(query_clean($_POST['billing_county'])), 0, 64);
             $_POST['billing_zip'] = mb_substr(trim(query_clean($_POST['billing_zip'])), 0, 32);
             $_POST['billing_country'] = array_key_exists($_POST['billing_country'], get_countries_array()) ? query_clean($_POST['billing_country']) : 'US';
-            $_POST['billing_phone'] = mb_substr(trim(query_clean($_POST['billing_phone'])), 0, 32);
+            $_POST['billing_phone'] = $this->normalize_phone_number(mb_substr(trim(query_clean($_POST['billing_phone'])), 0, 32));
             $_POST['billing_tax_id'] = $_POST['billing_type'] == 'business' ? mb_substr(trim(query_clean($_POST['billing_tax_id'])), 0, 64) : '';
             $_POST['billing'] = json_encode([
                 'type' => $_POST['billing_type'],
@@ -79,6 +93,10 @@ class PayBilling extends Controller {
                 if(!isset($_POST[$field]) || trim($_POST[$field]) === '') {
                     Alerts::add_field_error($field, l('global.error_message.empty_field'));
                 }
+            }
+
+            if($_POST['billing_phone'] !== '' && !$this->is_valid_phone_number($_POST['billing_phone'])) {
+                Alerts::add_field_error('billing_phone', l('register.error_message.phone_invalid'));
             }
 
             /* Check for any errors */

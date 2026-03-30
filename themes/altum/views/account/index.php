@@ -74,7 +74,7 @@ if(!is_object($account_meta)) {
                             <div class="col-12 col-lg-6">
                                 <div class="form-group mb-0">
                                     <label for="phone"><i class="fas fa-fw fa-sm fa-phone text-muted mr-1"></i> <?= l('account.settings.phone') ?></label>
-                                    <input type="text" id="phone" name="phone" class="form-control <?= \Altum\Alerts::has_field_errors('phone') ? 'is-invalid' : null ?>" value="<?= $_POST['phone'] ?? ($account_meta->phone ?? '') ?>" maxlength="32" />
+                                    <input type="text" id="phone" name="phone" class="form-control <?= \Altum\Alerts::has_field_errors('phone') ? 'is-invalid' : null ?>" value="<?= $_POST['phone'] ?? ($account_meta->phone ?? '') ?>" maxlength="32" placeholder="385911234567" />
                                     <?= \Altum\Alerts::output_field_error('phone') ?>
                                     <small class="form-text text-muted"><?= l('account.settings.phone_help') ?></small>
                                 </div>
@@ -226,7 +226,9 @@ if(!is_object($account_meta)) {
                             <div class="col-12">
                                 <div class="form-group">
                                     <label for="billing_phone"><i class="fas fa-fw fa-sm fa-phone-square-alt text-muted mr-1"></i> <?= l('account.billing.phone') ?></label>
-                                    <input id="billing_phone" type="text" name="billing_phone" class="form-control" value="<?= $this->user->billing->phone ?>" maxlength="32" />
+                                    <input id="billing_phone" type="text" name="billing_phone" class="form-control <?= \Altum\Alerts::has_field_errors('billing_phone') ? 'is-invalid' : null ?>" value="<?= $this->user->billing->phone ?>" maxlength="32" placeholder="385911234567" />
+                                    <?= \Altum\Alerts::output_field_error('billing_phone') ?>
+                                    <small class="form-text text-muted"><?= l('account.billing.phone_help') ?></small>
                                 </div>
                             </div>
 
