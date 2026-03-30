@@ -154,24 +154,27 @@
                         $forever_id = $data->user->preferences->meta->foreverId ?? '';
                         $forever_webshop_links = settings()->links->forever_webshop_links ?? new \StdClass();
                         $forever_business_links = settings()->links->forever_business_links ?? new \StdClass();
-                        $fcc_market_selector_is_visible = !$country_code_is_trusted && array_reduce($data->biolink_blocks, static function($carry, $block) {
+                        $fcc_market_resolver_is_visible = !$country_code_is_trusted && array_reduce($data->biolink_blocks, static function($carry, $block) {
                             return $carry || in_array($block->type, ['link_forever_shop', 'link_discount'], true);
                         }, false);
-                        $fcc_market_selector_current = \Altum\Link::resolve_preferred_forever_market_country_code($country_code, ['hr', 'ba', 'rs'], $accept_language_header, $country_code_is_trusted);
+                        $fcc_market_resolver_allowed_markets = array_values(array_unique(array_merge(
+                            array_keys(array_filter((array) $forever_business_links, static function($value) {
+                                return !empty($value);
+                            })),
+                            array_keys(array_filter((array) $forever_webshop_links, static function($value) {
+                                return !empty($value);
+                            }))
+                        )));
                         /* /Custom code: FC-2026-03-05 */
                         $city_name = isset($maxmind) && isset($maxmind['city']) ? $maxmind['city']['names']['en'] : null;
                         $continent_code = isset($maxmind) && isset($maxmind['continent']) ? $maxmind['continent']['code'] : null;
                         $device_type = get_this_device_type();
                         ?>
 
-                        <?php if($fcc_market_selector_is_visible): ?>
-                            <div class="mb-4">
-                                <?= include_view(THEME_PATH . 'views/partials/fcc_market_selector.php', [
-                                    'current_market' => $fcc_market_selector_current,
-                                    'title' => \Altum\Language::$code === 'hr' ? 'Odaberite tržište za Forever linkove' : 'Choose market for Forever links',
-                                    'subtitle' => \Altum\Language::$code === 'hr' ? 'Odabir se pamti i koristi za Forever preporuke dok mreža ne pošalje pouzdanu državu posjetitelja.' : 'Your choice is remembered and used for Forever referrals until the network provides a trusted visitor country.',
-                                ]) ?>
-                            </div>
+                        <?php if($fcc_market_resolver_is_visible): ?>
+                            <?= include_view(THEME_PATH . 'views/partials/fcc_market_resolver.php', [
+                                'allowed_markets' => $fcc_market_resolver_allowed_markets,
+                            ]) ?>
                         <?php endif ?>
 
                         <?php foreach($data->biolink_blocks as $row): ?>
