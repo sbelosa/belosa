@@ -227,11 +227,216 @@ class AdminIndex extends Controller {
         ];
     }
 
+    /* Custom code: FC-2026-03-30: detailed qualified collaborator analytics helpers */
+    private function get_biolink_period_days(string $period_key): int {
+        return match($period_key) {
+            'today' => 1,
+            '7d' => 7,
+            '30d' => 30,
+            '90d' => 90,
+            default => 30,
+        };
+    }
+
+    private function get_biolink_growth_metrics(int $current, int $previous): array {
+        $difference = $current - $previous;
+        $growth_percent = null;
+
+        if($previous > 0) {
+            $growth_percent = round(($difference / $previous) * 100, 1);
+        } elseif($current === 0) {
+            $growth_percent = 0.0;
+        }
+
+        return [
+            'current' => $current,
+            'previous' => $previous,
+            'difference' => $difference,
+            'growth_percent' => $growth_percent,
+        ];
+    }
+
+    private function increment_biolink_bucket(array &$buckets, string $key, string $label): void {
+        if($key === '') {
+            return;
+        }
+
+        if(!isset($buckets[$key])) {
+            $buckets[$key] = [
+                'label' => $label,
+                'total' => 0,
+            ];
+        }
+
+        $buckets[$key]['total']++;
+    }
+
+    private function build_biolink_ranked_breakdown(array $buckets, int $total, int $limit = 6): array {
+        if(empty($buckets)) {
+            return [];
+        }
+
+        usort($buckets, static function($a, $b) {
+            return ($b['total'] ?? 0) <=> ($a['total'] ?? 0);
+        });
+
+        $items = [];
+        foreach(array_slice($buckets, 0, $limit) as $bucket) {
+            $bucket_total = (int) ($bucket['total'] ?? 0);
+            $items[] = [
+                'label' => (string) ($bucket['label'] ?? l('global.unknown')),
+                'total' => $bucket_total,
+                'share' => $total > 0 ? round(($bucket_total / $total) * 100, 1) : 0,
+            ];
+        }
+
+        return $items;
+    }
+
+    private function get_biolink_source_label(array $click): string {
+        $utm_source = trim((string) ($click['utm_source'] ?? ''));
+        $utm_medium = trim((string) ($click['utm_medium'] ?? ''));
+        $utm_campaign = trim((string) ($click['utm_campaign'] ?? ''));
+        $referrer_host = trim((string) ($click['referrer_host'] ?? ''));
+
+        if($utm_source !== '') {
+            return implode(' / ', array_filter([
+                'utm:' . $utm_source,
+                $utm_medium !== '' ? $utm_medium : null,
+                $utm_campaign !== '' ? $utm_campaign : null,
+            ]));
+        }
+
+        if($referrer_host !== '') {
+            return $referrer_host;
+        }
+
+        return '(direct)';
+    }
+
+    private function get_biolink_source_type(array $click): string {
+        if(trim((string) ($click['utm_source'] ?? '')) !== '') {
+            return 'utm';
+        }
+
+        if(trim((string) ($click['referrer_host'] ?? '')) !== '') {
+            return 'referral';
+        }
+
+        return 'direct';
+    }
+
+    private function build_biolink_country_movers(array $current_country_buckets, array $previous_country_buckets, int $limit = 5): array {
+        $current_map = [];
+        foreach($current_country_buckets as $bucket) {
+            $current_map[(string) ($bucket['label'] ?? '')] = (int) ($bucket['total'] ?? 0);
+        }
+
+        $previous_map = [];
+        foreach($previous_country_buckets as $bucket) {
+            $previous_map[(string) ($bucket['label'] ?? '')] = (int) ($bucket['total'] ?? 0);
+        }
+
+        $movers_up = [];
+        $movers_down = [];
+
+        foreach(array_unique(array_merge(array_keys($current_map), array_keys($previous_map))) as $country_code) {
+            if($country_code === '') {
+                continue;
+            }
+
+            $current_total = (int) ($current_map[$country_code] ?? 0);
+            $previous_total = (int) ($previous_map[$country_code] ?? 0);
+            $delta = $current_total - $previous_total;
+
+            if($delta === 0) {
+                continue;
+            }
+
+            $item = [
+                'label' => $country_code,
+                'current' => $current_total,
+                'previous' => $previous_total,
+                'delta' => $delta,
+                'growth_percent' => $previous_total > 0 ? round(($delta / $previous_total) * 100, 1) : null,
+            ];
+
+            if($delta > 0) {
+                $movers_up[] = $item;
+            } else {
+                $movers_down[] = $item;
+            }
+        }
+
+        usort($movers_up, static function($a, $b) {
+            if(($a['delta'] ?? 0) === ($b['delta'] ?? 0)) {
+                return ($b['current'] ?? 0) <=> ($a['current'] ?? 0);
+            }
+
+            return ($b['delta'] ?? 0) <=> ($a['delta'] ?? 0);
+        });
+
+        usort($movers_down, static function($a, $b) {
+            if(($a['delta'] ?? 0) === ($b['delta'] ?? 0)) {
+                return ($b['previous'] ?? 0) <=> ($a['previous'] ?? 0);
+            }
+
+            return ($a['delta'] ?? 0) <=> ($b['delta'] ?? 0);
+        });
+
+        return [
+            'up' => array_slice($movers_up, 0, $limit),
+            'down' => array_slice($movers_down, 0, $limit),
+        ];
+    }
+
+    private function get_biolink_qualification_status(array $candidate): array {
+        $shop_clicks_90d = (int) ($candidate['forever_shop_clicks_90d'] ?? 0);
+        $shop_clicks_30d = (int) ($candidate['forever_shop_clicks_30d'] ?? 0);
+        $shop_clicks_7d = (int) ($candidate['forever_shop_clicks_7d'] ?? 0);
+        $growth_30d = $candidate['growth_30d'] ?? null;
+        $growth_7d = $candidate['growth_7d'] ?? null;
+
+        $status_key = 'steady';
+        $status_priority = 2;
+        $status_class = 'secondary';
+
+        if($shop_clicks_90d >= 60 || ($shop_clicks_30d >= 25 && $growth_30d !== null && $growth_30d >= 25)) {
+            $status_key = 'top';
+            $status_priority = 4;
+            $status_class = 'success';
+        } elseif(($growth_30d !== null && $growth_30d >= 18) || ($growth_7d !== null && $growth_7d >= 25) || $shop_clicks_30d >= 20) {
+            $status_key = 'rising';
+            $status_priority = 3;
+            $status_class = 'primary';
+        } elseif(($growth_30d !== null && $growth_30d <= -20) || ($growth_7d !== null && $growth_7d <= -25) || ($shop_clicks_30d > 0 && $shop_clicks_7d === 0)) {
+            $status_key = 'attention';
+            $status_priority = 1;
+            $status_class = 'warning';
+        }
+
+        return [
+            'key' => $status_key,
+            'priority' => $status_priority,
+            'class' => $status_class,
+            'label' => l('admin_index.biolink_qualified_watch.status.' . $status_key),
+        ];
+    }
+    /* /Custom code: FC-2026-03-30 */
+
     private function get_biolink_collaborator_period_payload(int $user_id, string $period_key, string $period_start_datetime, array $biolink_sets): array {
+        $period_days = $this->get_biolink_period_days($period_key);
+        $period_start = new \DateTimeImmutable($period_start_datetime);
+        $previous_period_start_datetime = $period_start->sub(new \DateInterval('P' . $period_days . 'D'))->format('Y-m-d H:i:s');
+
         $clicks_total = (int) db()->where('user_id', $user_id)->where('datetime', $period_start_datetime, '>=')->getValue('track_links', 'COUNT(*)');
+        $previous_clicks_total = (int) database()->query("SELECT COUNT(*) AS `total` FROM `track_links` WHERE `user_id` = {$user_id} AND `datetime` >= '{$previous_period_start_datetime}' AND `datetime` < '{$period_start_datetime}'")->fetch_object()->total;
 
         $forever_shop_clicks = 0;
         $forever_registration_clicks = 0;
+        $previous_forever_shop_clicks = 0;
+        $previous_forever_registration_clicks = 0;
+
         $forever_clicks_result = database()->query("SELECT `biolinks_blocks`.`type`, COUNT(*) AS `total` FROM `track_links` LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id` WHERE `track_links`.`datetime` >= '{$period_start_datetime}'{$biolink_sets['unique_track_links_condition']} AND `track_links`.`user_id` = {$user_id} AND `biolinks_blocks`.`type` IN ({$biolink_sets['forever_all_block_types_sql']}) GROUP BY `biolinks_blocks`.`type`");
         while($forever_click_row = $forever_clicks_result->fetch_object()) {
             if(in_array((string) $forever_click_row->type, $biolink_sets['forever_shop_block_types'], true)) {
@@ -243,12 +448,120 @@ class AdminIndex extends Controller {
             }
         }
 
-        $top_countries = [];
-        $top_countries_result = database()->query("SELECT `track_links`.`country_code`, COUNT(*) AS `total` FROM `track_links` LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id` WHERE `track_links`.`datetime` >= '{$period_start_datetime}'{$biolink_sets['unique_track_links_condition']} AND `track_links`.`user_id` = {$user_id} AND `track_links`.`country_code` IS NOT NULL AND `track_links`.`country_code` != '' AND `biolinks_blocks`.`type` IN ({$biolink_sets['forever_shop_block_types_sql']}) GROUP BY `track_links`.`country_code` ORDER BY `total` DESC LIMIT 5");
-        while($country_row = $top_countries_result->fetch_object()) {
-            $top_countries[] = [
-                'country_code' => (string) ($country_row->country_code ?? ''),
-                'total' => (int) ($country_row->total ?? 0),
+        $previous_forever_clicks_result = database()->query("SELECT `biolinks_blocks`.`type`, COUNT(*) AS `total` FROM `track_links` LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id` WHERE `track_links`.`datetime` >= '{$previous_period_start_datetime}' AND `track_links`.`datetime` < '{$period_start_datetime}'{$biolink_sets['unique_track_links_condition']} AND `track_links`.`user_id` = {$user_id} AND `biolinks_blocks`.`type` IN ({$biolink_sets['forever_all_block_types_sql']}) GROUP BY `biolinks_blocks`.`type`");
+        while($previous_forever_click_row = $previous_forever_clicks_result->fetch_object()) {
+            if(in_array((string) $previous_forever_click_row->type, $biolink_sets['forever_shop_block_types'], true)) {
+                $previous_forever_shop_clicks += (int) $previous_forever_click_row->total;
+            }
+
+            if(in_array((string) $previous_forever_click_row->type, $biolink_sets['forever_registration_block_types'], true)) {
+                $previous_forever_registration_clicks += (int) $previous_forever_click_row->total;
+            }
+        }
+
+        $current_shop_clicks = [];
+        $current_shop_clicks_result = database()->query("SELECT `track_links`.`datetime`, `track_links`.`country_code`, `track_links`.`city_name`, `track_links`.`browser_language`, `track_links`.`browser_name`, `track_links`.`device_type`, `track_links`.`referrer_host`, `track_links`.`utm_source`, `track_links`.`utm_medium`, `track_links`.`utm_campaign`, `track_links`.`os_name`, `track_links`.`continent_code` FROM `track_links` LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id` WHERE `track_links`.`datetime` >= '{$period_start_datetime}'{$biolink_sets['unique_track_links_condition']} AND `track_links`.`user_id` = {$user_id} AND `biolinks_blocks`.`type` IN ({$biolink_sets['forever_shop_block_types_sql']}) ORDER BY `track_links`.`datetime` DESC");
+        while($click_row = $current_shop_clicks_result->fetch_object()) {
+            $current_shop_clicks[] = [
+                'datetime' => (string) ($click_row->datetime ?? ''),
+                'country_code' => (string) ($click_row->country_code ?? ''),
+                'city_name' => (string) ($click_row->city_name ?? ''),
+                'browser_language' => (string) ($click_row->browser_language ?? ''),
+                'browser_name' => (string) ($click_row->browser_name ?? ''),
+                'device_type' => (string) ($click_row->device_type ?? ''),
+                'referrer_host' => (string) ($click_row->referrer_host ?? ''),
+                'utm_source' => (string) ($click_row->utm_source ?? ''),
+                'utm_medium' => (string) ($click_row->utm_medium ?? ''),
+                'utm_campaign' => (string) ($click_row->utm_campaign ?? ''),
+                'os_name' => (string) ($click_row->os_name ?? ''),
+                'continent_code' => (string) ($click_row->continent_code ?? ''),
+            ];
+        }
+
+        $previous_shop_clicks = [];
+        $previous_shop_clicks_result = database()->query("SELECT `track_links`.`datetime`, `track_links`.`country_code`, `track_links`.`city_name`, `track_links`.`browser_language`, `track_links`.`browser_name`, `track_links`.`device_type`, `track_links`.`referrer_host`, `track_links`.`utm_source`, `track_links`.`utm_medium`, `track_links`.`utm_campaign`, `track_links`.`os_name`, `track_links`.`continent_code` FROM `track_links` LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id` WHERE `track_links`.`datetime` >= '{$previous_period_start_datetime}' AND `track_links`.`datetime` < '{$period_start_datetime}'{$biolink_sets['unique_track_links_condition']} AND `track_links`.`user_id` = {$user_id} AND `biolinks_blocks`.`type` IN ({$biolink_sets['forever_shop_block_types_sql']})");
+        while($click_row = $previous_shop_clicks_result->fetch_object()) {
+            $previous_shop_clicks[] = [
+                'datetime' => (string) ($click_row->datetime ?? ''),
+                'country_code' => (string) ($click_row->country_code ?? ''),
+                'city_name' => (string) ($click_row->city_name ?? ''),
+                'browser_language' => (string) ($click_row->browser_language ?? ''),
+                'browser_name' => (string) ($click_row->browser_name ?? ''),
+                'device_type' => (string) ($click_row->device_type ?? ''),
+                'referrer_host' => (string) ($click_row->referrer_host ?? ''),
+                'utm_source' => (string) ($click_row->utm_source ?? ''),
+                'utm_medium' => (string) ($click_row->utm_medium ?? ''),
+                'utm_campaign' => (string) ($click_row->utm_campaign ?? ''),
+                'os_name' => (string) ($click_row->os_name ?? ''),
+                'continent_code' => (string) ($click_row->continent_code ?? ''),
+            ];
+        }
+
+        $country_buckets = [];
+        $city_buckets = [];
+        $language_buckets = [];
+        $source_buckets = [];
+        $hour_buckets = [];
+        $browser_buckets = [];
+        $device_buckets = [];
+        $active_days = [];
+        $source_mix_counts = ['direct' => 0, 'utm' => 0, 'referral' => 0];
+
+        foreach($current_shop_clicks as $click) {
+            $country_code = strtoupper(trim((string) ($click['country_code'] ?? '')));
+            $city_name = trim((string) ($click['city_name'] ?? ''));
+            $browser_language = trim((string) ($click['browser_language'] ?? ''));
+            $browser_name = trim((string) ($click['browser_name'] ?? ''));
+            $device_type = trim((string) ($click['device_type'] ?? ''));
+            $source_label = $this->get_biolink_source_label($click);
+            $source_type = $this->get_biolink_source_type($click);
+            $hour_label = substr((string) ($click['datetime'] ?? ''), 11, 2);
+            $hour_label = $hour_label !== '' ? $hour_label . ':00' : '';
+            $date_label = substr((string) ($click['datetime'] ?? ''), 0, 10);
+
+            $this->increment_biolink_bucket($country_buckets, $country_code, $country_code);
+            $this->increment_biolink_bucket($city_buckets, mb_strtolower($city_name), $city_name);
+            $this->increment_biolink_bucket($language_buckets, mb_strtolower($browser_language), $browser_language);
+            $this->increment_biolink_bucket($source_buckets, mb_strtolower($source_label), $source_label);
+            $this->increment_biolink_bucket($hour_buckets, $hour_label, $hour_label);
+            $this->increment_biolink_bucket($browser_buckets, mb_strtolower($browser_name), $browser_name);
+            $this->increment_biolink_bucket($device_buckets, mb_strtolower($device_type), $device_type);
+
+            if($date_label !== '') {
+                $active_days[$date_label] = true;
+            }
+
+            $source_mix_counts[$source_type]++;
+        }
+
+        $previous_country_buckets = [];
+        foreach($previous_shop_clicks as $click) {
+            $country_code = strtoupper(trim((string) ($click['country_code'] ?? '')));
+            $this->increment_biolink_bucket($previous_country_buckets, $country_code, $country_code);
+        }
+
+        $top_countries = array_map(static function($item) {
+            return [
+                'country_code' => (string) ($item['label'] ?? ''),
+                'total' => (int) ($item['total'] ?? 0),
+                'share' => (float) ($item['share'] ?? 0),
+            ];
+        }, $this->build_biolink_ranked_breakdown($country_buckets, $forever_shop_clicks, 6));
+
+        $top_cities = $this->build_biolink_ranked_breakdown($city_buckets, $forever_shop_clicks, 6);
+        $top_languages = $this->build_biolink_ranked_breakdown($language_buckets, $forever_shop_clicks, 6);
+        $top_sources = $this->build_biolink_ranked_breakdown($source_buckets, $forever_shop_clicks, 6);
+        $top_hours = $this->build_biolink_ranked_breakdown($hour_buckets, $forever_shop_clicks, 6);
+        $top_browsers = $this->build_biolink_ranked_breakdown($browser_buckets, $forever_shop_clicks, 6);
+        $top_devices = $this->build_biolink_ranked_breakdown($device_buckets, $forever_shop_clicks, 6);
+        $country_movers = $this->build_biolink_country_movers($country_buckets, $previous_country_buckets, 5);
+
+        $source_mix = [];
+        foreach(['direct', 'utm', 'referral'] as $source_type) {
+            $source_mix[] = [
+                'label' => l('admin_index.biolink_qualified_watch.source.' . $source_type),
+                'total' => (int) ($source_mix_counts[$source_type] ?? 0),
+                'share' => $forever_shop_clicks > 0 ? round(((int) ($source_mix_counts[$source_type] ?? 0) / $forever_shop_clicks) * 100, 1) : 0,
             ];
         }
 
@@ -258,11 +571,30 @@ class AdminIndex extends Controller {
             'forever_registration_clicks' => $forever_registration_clicks,
             'top_countries' => $top_countries,
             'chart' => $this->get_biolink_chart_series($period_key, $period_start_datetime, $biolink_sets, $user_id),
+            'comparison' => [
+                'clicks_total' => $this->get_biolink_growth_metrics($clicks_total, $previous_clicks_total),
+                'forever_shop_clicks' => $this->get_biolink_growth_metrics($forever_shop_clicks, $previous_forever_shop_clicks),
+                'forever_registration_clicks' => $this->get_biolink_growth_metrics($forever_registration_clicks, $previous_forever_registration_clicks),
+            ],
+            'shop_share_percent' => $clicks_total > 0 ? round(($forever_shop_clicks / $clicks_total) * 100, 1) : 0,
+            'registration_rate_percent' => $forever_shop_clicks > 0 ? round(($forever_registration_clicks / $forever_shop_clicks) * 100, 1) : 0,
+            'avg_daily_shop_clicks' => round($forever_shop_clicks / max(1, $period_days), 1),
+            'avg_daily_registration_clicks' => round($forever_registration_clicks / max(1, $period_days), 1),
+            'active_days_total' => count($active_days),
+            'last_click_at' => (string) ($current_shop_clicks[0]['datetime'] ?? ''),
+            'top_cities' => $top_cities,
+            'top_languages' => $top_languages,
+            'top_sources' => $top_sources,
+            'top_hours' => $top_hours,
+            'top_browsers' => $top_browsers,
+            'top_devices' => $top_devices,
+            'source_mix' => $source_mix,
+            'country_movers' => $country_movers,
         ];
     }
 
     private function get_biolink_collaborator_payload(int $user_id): ?array {
-        $collaborator = db()->where('user_id', $user_id)->where('type', 0)->getOne('users', ['user_id', 'name', 'email']);
+        $collaborator = db()->where('user_id', $user_id)->where('type', 0)->getOne('users', ['user_id', 'name', 'email', 'preferences']);
 
         if(!$collaborator) {
             return null;
@@ -279,9 +611,131 @@ class AdminIndex extends Controller {
             'user_id' => (int) $collaborator->user_id,
             'name' => (string) ($collaborator->name ?? l('global.unknown')),
             'email' => (string) ($collaborator->email ?? ''),
+            'forever_id' => $this->extract_forever_id_from_preferences($collaborator->preferences ?? null),
+            'admin_user_url' => url('admin/user-view/' . (int) $collaborator->user_id),
             'periods' => $periods,
         ];
     }
+
+    /* Custom code: FC-2026-03-30: 90-day qualified collaborator roster for homepage qualification block */
+    private function get_biolink_qualified_collaborators_payload(array $biolink_sets): array {
+        $ninety_days_start_datetime = $this->get_period_start_datetime(90);
+        $thirty_days_start_datetime = $this->get_period_start_datetime(30);
+        $seven_days_start_datetime = (new \DateTime())->modify('-6 days')->format('Y-m-d 00:00:00');
+        $previous_thirty_days_start_datetime = (new \DateTimeImmutable($thirty_days_start_datetime))->sub(new \DateInterval('P30D'))->format('Y-m-d H:i:s');
+        $previous_seven_days_start_datetime = (new \DateTimeImmutable($seven_days_start_datetime))->sub(new \DateInterval('P7D'))->format('Y-m-d H:i:s');
+
+        $qualified_users = [];
+        $qualified_result = database()->query("SELECT
+            `track_links`.`user_id`,
+            `users`.`name`,
+            `users`.`email`,
+            `users`.`preferences`,
+            COUNT(*) AS `forever_shop_clicks_90d`,
+            SUM(CASE WHEN `track_links`.`datetime` >= '{$thirty_days_start_datetime}' THEN 1 ELSE 0 END) AS `forever_shop_clicks_30d`,
+            SUM(CASE WHEN `track_links`.`datetime` >= '{$seven_days_start_datetime}' THEN 1 ELSE 0 END) AS `forever_shop_clicks_7d`,
+            SUM(CASE WHEN `track_links`.`datetime` >= '{$previous_thirty_days_start_datetime}' AND `track_links`.`datetime` < '{$thirty_days_start_datetime}' THEN 1 ELSE 0 END) AS `previous_forever_shop_clicks_30d`,
+            SUM(CASE WHEN `track_links`.`datetime` >= '{$previous_seven_days_start_datetime}' AND `track_links`.`datetime` < '{$seven_days_start_datetime}' THEN 1 ELSE 0 END) AS `previous_forever_shop_clicks_7d`,
+            MAX(`track_links`.`datetime`) AS `last_click_at`
+        FROM `track_links`
+        LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id`
+        LEFT JOIN `users` ON `track_links`.`user_id` = `users`.`user_id`
+        WHERE `track_links`.`datetime` >= '{$ninety_days_start_datetime}' {$biolink_sets['unique_track_links_condition']} AND `users`.`type` = 0 AND `biolinks_blocks`.`type` IN ({$biolink_sets['forever_shop_block_types_sql']})
+        GROUP BY `track_links`.`user_id`
+        HAVING `forever_shop_clicks_90d` >= 15
+        ORDER BY `forever_shop_clicks_90d` DESC
+        LIMIT 120");
+
+        while($row = $qualified_result->fetch_object()) {
+            $qualified_users[(int) $row->user_id] = [
+                'user_id' => (int) ($row->user_id ?? 0),
+                'name' => (string) ($row->name ?? l('global.unknown')),
+                'email' => (string) ($row->email ?? ''),
+                'forever_id' => $this->extract_forever_id_from_preferences($row->preferences ?? null),
+                'forever_shop_clicks_90d' => (int) ($row->forever_shop_clicks_90d ?? 0),
+                'forever_shop_clicks_30d' => (int) ($row->forever_shop_clicks_30d ?? 0),
+                'forever_shop_clicks_7d' => (int) ($row->forever_shop_clicks_7d ?? 0),
+                'previous_forever_shop_clicks_30d' => (int) ($row->previous_forever_shop_clicks_30d ?? 0),
+                'previous_forever_shop_clicks_7d' => (int) ($row->previous_forever_shop_clicks_7d ?? 0),
+                'last_click_at' => (string) ($row->last_click_at ?? ''),
+                'admin_user_url' => url('admin/user-view/' . (int) ($row->user_id ?? 0)),
+            ];
+        }
+
+        if(empty($qualified_users)) {
+            return [
+                'qualified_users_total' => 0,
+                'top_users_total' => 0,
+                'rising_users_total' => 0,
+                'attention_users_total' => 0,
+                'qualified_forever_shop_clicks_total' => 0,
+                'users' => [],
+            ];
+        }
+
+        $registration_counts = [];
+        $user_ids_sql = implode(',', array_keys($qualified_users));
+        $registration_result = database()->query("SELECT `track_links`.`user_id`, COUNT(*) AS `total` FROM `track_links` LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id` WHERE `track_links`.`datetime` >= '{$ninety_days_start_datetime}' {$biolink_sets['unique_track_links_condition']} AND `track_links`.`user_id` IN ({$user_ids_sql}) AND `biolinks_blocks`.`type` IN ({$biolink_sets['forever_registration_block_types_sql']}) GROUP BY `track_links`.`user_id`");
+        while($row = $registration_result->fetch_object()) {
+            $registration_counts[(int) ($row->user_id ?? 0)] = (int) ($row->total ?? 0);
+        }
+
+        $top_users_total = 0;
+        $rising_users_total = 0;
+        $attention_users_total = 0;
+        $qualified_forever_shop_clicks_total = 0;
+
+        foreach($qualified_users as &$qualified_user) {
+            $growth_30d_metrics = $this->get_biolink_growth_metrics((int) $qualified_user['forever_shop_clicks_30d'], (int) $qualified_user['previous_forever_shop_clicks_30d']);
+            $growth_7d_metrics = $this->get_biolink_growth_metrics((int) $qualified_user['forever_shop_clicks_7d'], (int) $qualified_user['previous_forever_shop_clicks_7d']);
+            $qualified_user['forever_registration_clicks_90d'] = (int) ($registration_counts[(int) $qualified_user['user_id']] ?? 0);
+            $qualified_user['growth_30d'] = $growth_30d_metrics['growth_percent'];
+            $qualified_user['growth_7d'] = $growth_7d_metrics['growth_percent'];
+            $qualified_user['growth_30d_difference'] = $growth_30d_metrics['difference'];
+            $qualified_user['growth_7d_difference'] = $growth_7d_metrics['difference'];
+
+            $status = $this->get_biolink_qualification_status($qualified_user);
+            $qualified_user['status_key'] = $status['key'];
+            $qualified_user['status_label'] = $status['label'];
+            $qualified_user['status_class'] = $status['class'];
+            $qualified_user['status_priority'] = $status['priority'];
+            $qualified_user['ranking_score'] = ((int) $qualified_user['forever_shop_clicks_90d'] * 4) + ((int) $qualified_user['forever_shop_clicks_30d'] * 2) + (int) $qualified_user['forever_shop_clicks_7d'] + ((int) $qualified_user['forever_registration_clicks_90d'] * 3) + max(0, (int) round((float) ($qualified_user['growth_30d'] ?? 0))) + max(0, (int) round((float) ($qualified_user['growth_7d'] ?? 0)));
+
+            if($qualified_user['status_key'] === 'top') {
+                $top_users_total++;
+            } elseif($qualified_user['status_key'] === 'rising') {
+                $rising_users_total++;
+            } elseif($qualified_user['status_key'] === 'attention') {
+                $attention_users_total++;
+            }
+
+            $qualified_forever_shop_clicks_total += (int) $qualified_user['forever_shop_clicks_90d'];
+        }
+        unset($qualified_user);
+
+        $qualified_users = array_values($qualified_users);
+        usort($qualified_users, static function($a, $b) {
+            if(($a['status_priority'] ?? 0) === ($b['status_priority'] ?? 0)) {
+                if(($a['ranking_score'] ?? 0) === ($b['ranking_score'] ?? 0)) {
+                    return ($b['forever_shop_clicks_90d'] ?? 0) <=> ($a['forever_shop_clicks_90d'] ?? 0);
+                }
+
+                return ($b['ranking_score'] ?? 0) <=> ($a['ranking_score'] ?? 0);
+            }
+
+            return ($b['status_priority'] ?? 0) <=> ($a['status_priority'] ?? 0);
+        });
+
+        return [
+            'qualified_users_total' => count($qualified_users),
+            'top_users_total' => $top_users_total,
+            'rising_users_total' => $rising_users_total,
+            'attention_users_total' => $attention_users_total,
+            'qualified_forever_shop_clicks_total' => $qualified_forever_shop_clicks_total,
+            'users' => array_slice($qualified_users, 0, 120),
+        ];
+    }
+    /* /Custom code: FC-2026-03-30 */
     /* /Custom code: FC-2026-03-18 */
 
     /* Custom code: FC-2026-03-26: admin funnels analytics helpers */
@@ -1966,6 +2420,10 @@ class AdminIndex extends Controller {
             /* /Custom code: FC-2026-03-18 */
         }
 
+        /* Custom code: FC-2026-03-30: homepage qualification roster based on 90-day Forever shop clicks */
+        $qualified_collaborators = $this->get_biolink_qualified_collaborators_payload($this->get_biolink_block_type_sets());
+        /* /Custom code: FC-2026-03-30 */
+
         $user_details = [];
         if(!empty($leaderboard)) {
             $leaderboard_user_ids = array_map(fn($entry) => (int) $entry['user_id'], $leaderboard);
@@ -2017,6 +2475,9 @@ class AdminIndex extends Controller {
             'top_countries' => $top_countries,
             'leaderboard' => $leaderboard,
             'user_details' => $user_details,
+            /* Custom code: FC-2026-03-30: expose 90d qualified collaborator insights block */
+            'qualified_collaborators' => $qualified_collaborators,
+            /* /Custom code: FC-2026-03-30 */
             'periods' => $periods,
         ];
         /* /Custom code: FC-2026-03-04 */

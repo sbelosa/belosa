@@ -860,6 +860,211 @@ $dashboard_toggle_url = $data->dashboard_toggle_url ?? ($is_sensitive_dashboard 
             </div>
         </div>
     </div>
+
+    <!-- Custom code: FC-2026-03-30: premium qualified collaborators block for homepage qualification coaching -->
+    <style>
+        .biolink-qualified-card {
+            border: 1px solid rgba(102, 126, 234, 0.12);
+            background: linear-gradient(180deg, rgba(17, 24, 39, 0.96) 0%, rgba(10, 15, 28, 0.98) 100%);
+            box-shadow: 0 18px 42px rgba(2, 6, 23, 0.36);
+            color: #e5eefc;
+        }
+
+        .biolink-qualified-stat,
+        .biolink-qualified-panel,
+        .biolink-qualified-user-item {
+            border: 1px solid rgba(148, 163, 184, 0.14);
+            background: linear-gradient(180deg, rgba(20, 29, 47, 0.92) 0%, rgba(11, 19, 34, 0.94) 100%);
+            box-shadow: 0 10px 24px rgba(2, 6, 23, 0.24);
+            color: #dbe7ff;
+        }
+
+        .biolink-qualified-user-item {
+            border-radius: 0.85rem;
+            transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+            text-decoration: none !important;
+        }
+
+        .biolink-qualified-user-item:hover {
+            transform: translateY(-1px);
+            border-color: rgba(96, 165, 250, 0.38);
+            box-shadow: 0 16px 30px rgba(37, 99, 235, 0.18);
+        }
+
+        .biolink-qualified-card .text-muted,
+        .biolink-qualified-panel .text-muted,
+        .biolink-qualified-user-item .text-muted,
+        .biolink-qualified-stat .text-muted {
+            color: #93a8c7 !important;
+        }
+
+        .biolink-qualified-card .text-primary {
+            color: #7dd3fc !important;
+        }
+
+        .biolink-qualified-card .form-control {
+            background: rgba(8, 13, 24, 0.92);
+            border-color: rgba(148, 163, 184, 0.18);
+            color: #e5eefc;
+        }
+
+        .biolink-qualified-card .form-control::placeholder {
+            color: #7f93b2;
+        }
+
+        .biolink-qualified-card .btn-outline-secondary,
+        .biolink-qualified-period-button {
+            border-color: rgba(148, 163, 184, 0.24);
+            color: #c8d6ee;
+            background: rgba(15, 23, 42, 0.68);
+        }
+
+        .biolink-qualified-filter.active {
+            background: #0d6efd;
+            border-color: #0d6efd;
+            color: #fff;
+        }
+
+        .biolink-qualified-hero {
+            border: 1px solid rgba(15, 23, 42, 0.08);
+            border-radius: 1rem;
+            background: linear-gradient(145deg, #0f172a 0%, #16324f 52%, #1b6b57 100%);
+            color: #fff;
+            box-shadow: 0 20px 40px rgba(15, 23, 42, 0.18);
+        }
+
+        .biolink-qualified-hero .text-muted {
+            color: rgba(255, 255, 255, 0.72) !important;
+        }
+
+        .biolink-qualified-period-button.active {
+            background: #0d6efd;
+            border-color: #0d6efd;
+            color: #fff;
+        }
+
+        .biolink-qualified-chart-shell {
+            position: relative;
+            min-height: 360px;
+        }
+
+        .biolink-qualified-chart-shell canvas {
+            width: 100% !important;
+            height: 100% !important;
+        }
+
+        #biolink_qualified_modal .modal-content {
+            background: linear-gradient(180deg, rgba(12, 18, 31, 0.98) 0%, rgba(7, 12, 22, 0.99) 100%);
+            color: #e5eefc;
+            border: 1px solid rgba(148, 163, 184, 0.14);
+        }
+
+        #biolink_qualified_modal .modal-header,
+        #biolink_qualified_modal .modal-body {
+            background: transparent;
+        }
+
+        #biolink_qualified_modal .close {
+            color: #dbe7ff;
+            text-shadow: none;
+            opacity: 0.75;
+        }
+    </style>
+
+    <div class="row mt-2">
+        <div class="col-12 p-2">
+            <div class="card h-100 biolink-qualified-card">
+                <div class="card-body p-3 p-xl-4">
+                    <div class="d-flex flex-column flex-xl-row justify-content-between align-items-xl-end mb-3">
+                        <div class="pr-xl-4 mb-3 mb-xl-0">
+                            <div class="small text-primary font-weight-bold text-uppercase mb-2"><?= l('admin_index.biolink_qualified_watch.eyebrow') ?></div>
+                            <h3 class="h5 mb-2" id="biolink_qualified_header"><?= l('admin_index.biolink_qualified_watch.header') ?></h3>
+                            <p class="text-muted mb-0"><?= l('admin_index.biolink_qualified_watch.subheader') ?></p>
+                        </div>
+
+                        <div class="text-xl-right">
+                            <div class="small text-muted mb-1" id="biolink_qualified_note"><?= l('admin_index.biolink_qualified_watch.note') ?></div>
+                            <div class="small text-muted" id="biolink_qualified_hint"><?= l('admin_index.biolink_qualified_watch.click_hint') ?></div>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-12 col-md-6 col-xl-3 p-2">
+                            <div class="biolink-qualified-stat rounded p-3 h-100">
+                                <small class="text-muted d-block mb-1"><?= l('admin_index.biolink_qualified_watch.qualified_users') ?></small>
+                                <div class="h3 mb-0" id="biolink_qualified_total_users"><span class="spinner-border spinner-border-sm" role="status"></span></div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6 col-xl-3 p-2">
+                            <div class="biolink-qualified-stat rounded p-3 h-100">
+                                <small class="text-muted d-block mb-1"><?= l('admin_index.biolink_qualified_watch.top_status_users') ?></small>
+                                <div class="h3 mb-0" id="biolink_qualified_top_users"><span class="spinner-border spinner-border-sm" role="status"></span></div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6 col-xl-3 p-2">
+                            <div class="biolink-qualified-stat rounded p-3 h-100">
+                                <small class="text-muted d-block mb-1"><?= l('admin_index.biolink_qualified_watch.rising_users') ?></small>
+                                <div class="h3 mb-0" id="biolink_qualified_rising_users"><span class="spinner-border spinner-border-sm" role="status"></span></div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6 col-xl-3 p-2">
+                            <div class="biolink-qualified-stat rounded p-3 h-100">
+                                <small class="text-muted d-block mb-1"><?= l('admin_index.biolink_qualified_watch.total_shop_clicks') ?></small>
+                                <div class="h3 mb-0" id="biolink_qualified_total_clicks"><span class="spinner-border spinner-border-sm" role="status"></span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row align-items-end mb-3">
+                        <div class="col-12 col-lg-5 p-2">
+                            <label class="small text-muted d-block mb-2" for="biolink_qualified_search"><?= l('admin_index.biolink_qualified_watch.search_label') ?></label>
+                            <input id="biolink_qualified_search" type="search" class="form-control" placeholder="<?= l('admin_index.biolink_qualified_watch.search_placeholder') ?>">
+                        </div>
+
+                        <div class="col-12 col-lg-7 p-2">
+                            <div class="small text-muted mb-2"><?= l('admin_index.biolink_qualified_watch.filter_label') ?></div>
+                            <div class="d-flex flex-wrap" id="biolink_qualified_filters">
+                                <button type="button" class="btn btn-sm btn-outline-secondary mr-2 mb-2 biolink-qualified-filter active" data-biolink-qualified-status="all"><?= l('admin_index.biolink_qualified_watch.filter.all') ?></button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary mr-2 mb-2 biolink-qualified-filter" data-biolink-qualified-status="top"><?= l('admin_index.biolink_qualified_watch.filter.top') ?></button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary mr-2 mb-2 biolink-qualified-filter" data-biolink-qualified-status="rising"><?= l('admin_index.biolink_qualified_watch.filter.rising') ?></button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary mr-2 mb-2 biolink-qualified-filter" data-biolink-qualified-status="steady"><?= l('admin_index.biolink_qualified_watch.filter.steady') ?></button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary mb-2 biolink-qualified-filter" data-biolink-qualified-status="attention"><?= l('admin_index.biolink_qualified_watch.filter.attention') ?></button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="small text-muted" id="biolink_qualified_results_label"><?= l('admin_index.biolink_qualified_watch.results_label') ?></div>
+                        <div class="small text-muted" id="biolink_qualified_results_count"></div>
+                    </div>
+
+                    <div id="biolink_qualified_users" class="small text-muted">
+                        <span class="spinner-border spinner-border-sm" role="status"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="biolink_qualified_modal" tabindex="-1" role="dialog" aria-labelledby="biolink_qualified_modal_title" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-scrollable" role="document">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title" id="biolink_qualified_modal_title"><?= l('admin_index.biolink_qualified_watch.modal_default_title') ?></h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="<?= l('global.close') ?>">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+
+                <div class="modal-body pt-3">
+                    <div id="biolink_qualified_modal_body" class="small text-muted">
+                        <span class="spinner-border spinner-border-sm" role="status"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- /Custom code: FC-2026-03-30 -->
 </div>
 <!-- /Custom code: FC-2026-03-04 -->
 <?php endif ?>
@@ -1686,12 +1891,18 @@ $dashboard_toggle_url = $data->dashboard_toggle_url ?? ($is_sensitive_dashboard 
     let biolink_selected_collaborator = null;
     let biolink_search_timeout = null;
     let biolink_search_request_id = 0;
+    let biolink_qualified_search_query = '';
+    let biolink_qualified_status_filter = 'all';
+    let biolink_qualified_modal_period = '90d';
+    let biolink_qualified_modal_collaborator = null;
     const biolink_collaborator_cache = {};
+    const biolink_qualified_user_map = {};
     let dashboard_charts = {
         revenue: null,
         users: null,
         sales_subscriptions: null,
         biolink_analytics: null,
+        biolink_qualification_modal: null,
         funnels_analytics: null,
     };
 
@@ -2313,6 +2524,450 @@ $dashboard_toggle_url = $data->dashboard_toggle_url ?? ($is_sensitive_dashboard 
         }
     };
 
+    /* Custom code: FC-2026-03-30: render 90d qualified collaborators coaching block and premium modal */
+    const qualified_period_order = ['7d', '30d', '90d'];
+
+    const format_growth_value = value => {
+        const numeric = Number(value);
+        if(value === null || value === undefined || Number.isNaN(numeric)) {
+            return '<?= l('admin_index.biolink_qualified_watch.growth_new') ?>';
+        }
+
+        if(numeric === 0) {
+            return '0%';
+        }
+
+        return `${numeric > 0 ? '+' : ''}${nr(numeric)}%`;
+    };
+
+    const get_growth_class = value => {
+        const numeric = Number(value);
+        if(value === null || value === undefined || Number.isNaN(numeric)) {
+            return 'info';
+        }
+
+        if(numeric > 0) {
+            return 'success';
+        }
+
+        if(numeric < 0) {
+            return 'danger';
+        }
+
+        return 'secondary';
+    };
+
+    const render_breakdown_rows = items => {
+        if(!Array.isArray(items) || !items.length) {
+            return `<span class="text-muted"><?= l('global.no_data') ?></span>`;
+        }
+
+        return items.map(item => `
+            <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+                <div class="pr-3">
+                    <div>${escape_html(item.label || item.country_code || '-')}</div>
+                    <div class="small text-muted">${nr(item.share ?? 0)}%</div>
+                </div>
+                <strong>${nr(item.total ?? item.current ?? 0)}</strong>
+            </div>
+        `).join('');
+    };
+
+    const render_movers_rows = (items, direction) => {
+        if(!Array.isArray(items) || !items.length) {
+            return `<span class="text-muted"><?= l('global.no_data') ?></span>`;
+        }
+
+        return items.map(item => {
+            const delta = Number(item.delta ?? 0);
+            const delta_label = `${delta > 0 ? '+' : ''}${nr(delta)}`;
+
+            return `
+                <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+                    <div class="pr-3">
+                        <div>${escape_html(item.label || '-')}</div>
+                        <div class="small text-muted">${nr(item.previous ?? 0)} -> ${nr(item.current ?? 0)}</div>
+                    </div>
+                    <div class="text-right">
+                        <div class="font-weight-bold text-${direction === 'up' ? 'success' : 'danger'}">${delta_label}</div>
+                        <div class="small text-muted">${format_growth_value(item.growth_percent)}</div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    };
+
+    const render_biolink_qualified_modal_chart = collaborator => {
+        const chart_context = document.getElementById('biolink_qualified_modal_chart')?.getContext('2d');
+        const period_data = collaborator?.periods?.[biolink_qualified_modal_period] || {};
+        const period_label = period_labels[biolink_qualified_modal_period] || period_labels['90d'];
+
+        if(!chart_context) {
+            return;
+        }
+
+        if(dashboard_charts.biolink_qualification_modal) {
+            dashboard_charts.biolink_qualification_modal.destroy();
+            dashboard_charts.biolink_qualification_modal = null;
+        }
+
+        dashboard_charts.biolink_qualification_modal = new Chart(chart_context, {
+            type: 'line',
+            data: {
+                labels: period_data.chart?.labels ?? [],
+                datasets: [{
+                    label: `<?= l('admin_index.biolink_qualified_watch.period_total_clicks') ?> (${period_label})`,
+                    data: period_data.chart?.clicks_total_series ?? [],
+                    borderColor: chart_css.getPropertyValue('--primary'),
+                    backgroundColor: set_hex_opacity(chart_css.getPropertyValue('--primary'), 0.08),
+                    fill: true,
+                    tension: 0.35
+                }, {
+                    label: `<?= l('admin_index.biolink_qualified_watch.period_shop_clicks') ?> (${period_label})`,
+                    data: period_data.chart?.forever_shop_clicks_series ?? [],
+                    borderColor: chart_css.getPropertyValue('--success'),
+                    backgroundColor: set_hex_opacity(chart_css.getPropertyValue('--success'), 0.08),
+                    fill: true,
+                    tension: 0.35
+                }, {
+                    label: `<?= l('admin_index.biolink_qualified_watch.period_registrations') ?> (${period_label})`,
+                    data: period_data.chart?.forever_registration_clicks_series ?? [],
+                    borderColor: chart_css.getPropertyValue('--warning'),
+                    backgroundColor: set_hex_opacity(chart_css.getPropertyValue('--warning'), 0.08),
+                    fill: true,
+                    tension: 0.35
+                }]
+            },
+            options: {
+                ...chart_options,
+                maintainAspectRatio: false,
+                responsive: true,
+                interaction: {
+                    mode: 'index',
+                    intersect: false,
+                },
+                plugins: {
+                    ...chart_options.plugins,
+                    legend: {
+                        display: true,
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+
+        requestAnimationFrame(() => {
+            dashboard_charts.biolink_qualification_modal?.resize();
+            dashboard_charts.biolink_qualification_modal?.update('none');
+        });
+    };
+
+    const queue_biolink_qualified_modal_chart_render = collaborator => {
+        const modal = document.querySelector('#biolink_qualified_modal');
+
+        if(!modal || !collaborator) {
+            return;
+        }
+
+        if(modal.classList.contains('show')) {
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    render_biolink_qualified_modal_chart(collaborator);
+                });
+            });
+        }
+    };
+
+    const render_biolink_qualified_modal = collaborator => {
+        const modal_title = document.querySelector('#biolink_qualified_modal_title');
+        const modal_body = document.querySelector('#biolink_qualified_modal_body');
+        const active_period = collaborator?.periods?.[biolink_qualified_modal_period] || {};
+        const summary = collaborator?.qualified_summary || {};
+
+        if(!modal_title || !modal_body || !collaborator) {
+            return;
+        }
+
+        modal_title.innerText = `<?= l('admin_index.biolink_qualified_watch.modal_title_for') ?> ${collaborator.name || '<?= l('global.unknown') ?>'}`;
+
+        const summary_cards = qualified_period_order.map(period_key => {
+            const period_data = collaborator.periods?.[period_key] || {};
+            const growth_value = period_data.comparison?.forever_shop_clicks?.growth_percent;
+            const period_label = period_labels[period_key] || period_key;
+
+            return `
+                <div class="col-12 col-md-6 col-xl-4 p-2">
+                    <div class="biolink-qualified-panel rounded p-3 h-100">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <strong>${period_label}</strong>
+                            <span class="badge badge-${get_growth_class(growth_value)}">${format_growth_value(growth_value)}</span>
+                        </div>
+                        <div class="h4 mb-1">${nr(period_data.forever_shop_clicks ?? 0)}</div>
+                        <div class="small text-muted mb-3"><?= l('admin_index.biolink_qualified_watch.period_shop_clicks') ?></div>
+                        <div class="d-flex justify-content-between small mb-1"><span><?= l('admin_index.biolink_qualified_watch.period_registrations') ?></span><strong>${nr(period_data.forever_registration_clicks ?? 0)}</strong></div>
+                        <div class="d-flex justify-content-between small mb-1"><span><?= l('admin_index.biolink_qualified_watch.period_total_clicks') ?></span><strong>${nr(period_data.clicks_total ?? 0)}</strong></div>
+                        <div class="d-flex justify-content-between small"><span><?= l('admin_index.biolink_qualified_watch.registration_rate') ?></span><strong>${nr(period_data.registration_rate_percent ?? 0)}%</strong></div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        const period_buttons = qualified_period_order.map(period_key => {
+            const period_label = period_labels[period_key] || period_key;
+            return `<button type="button" class="btn btn-sm btn-outline-secondary biolink-qualified-period-button ${biolink_qualified_modal_period === period_key ? 'active' : ''}" data-biolink-qualified-modal-period="${period_key}">${period_label}</button>`;
+        }).join('');
+
+        const top_countries_html = render_breakdown_rows((active_period.top_countries ?? []).map(item => ({
+            label: item.country_code || '-',
+            total: item.total ?? 0,
+            share: item.share ?? 0,
+        })));
+
+        modal_body.innerHTML = `
+            <div class="biolink-qualified-hero p-4 mb-4">
+                <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-start">
+                    <div class="pr-lg-4 mb-3 mb-lg-0">
+                        <div class="h4 mb-2">${escape_html(collaborator.name || '<?= l('global.unknown') ?>')}</div>
+                        <div class="text-muted text-break mb-2">${escape_html(collaborator.email || '')}</div>
+                        <div class="d-flex flex-wrap align-items-center">
+                            <span class="badge badge-light mr-2 mb-2">${escape_html(summary.status_label || '<?= l('admin_index.biolink_qualified_watch.status.steady') ?>')}</span>
+                            <span class="small text-muted mr-3 mb-2"><?= l('admin_index.biolink_qualified_watch.forever_id') ?>: ${escape_html(collaborator.forever_id || '-')}</span>
+                            <span class="small text-muted mb-2"><?= l('admin_index.biolink_qualified_watch.last_click') ?>: ${escape_html(summary.last_click_at || active_period.last_click_at || '-')}</span>
+                        </div>
+                    </div>
+
+                    <div class="text-lg-right">
+                        <div class="small text-muted mb-1"><?= l('admin_index.biolink_qualified_watch.modal_top_status') ?></div>
+                        <div class="display-4 font-weight-bold mb-1">${nr(summary.forever_shop_clicks_90d ?? collaborator.periods?.['90d']?.forever_shop_clicks ?? 0)}</div>
+                        <div class="small text-muted"><?= l('admin_index.biolink_qualified_watch.period_shop_clicks') ?> · 90d</div>
+                        <div class="mt-3"><a href="${collaborator.admin_user_url || '#'}" class="btn btn-sm btn-light"><?= l('admin_index.biolink_qualified_watch.open_profile') ?></a></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mb-4">
+                ${summary_cards}
+            </div>
+
+            <div class="biolink-qualified-panel rounded p-3 mb-4">
+                <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center mb-3">
+                    <div class="mb-3 mb-lg-0">
+                        <div class="font-weight-bold mb-1"><?= l('admin_index.biolink_qualified_watch.chart_header') ?></div>
+                        <div class="small text-muted"><?= l('admin_index.biolink_qualified_watch.chart_subheader') ?></div>
+                    </div>
+                    <div class="btn-group btn-group-sm flex-wrap" role="group">${period_buttons}</div>
+                </div>
+                <div class="biolink-qualified-chart-shell">
+                    <canvas id="biolink_qualified_modal_chart"></canvas>
+                </div>
+            </div>
+
+            <div class="row mb-4">
+                <div class="col-12 col-md-6 col-xl-3 p-2">
+                    <div class="biolink-qualified-panel rounded p-3 h-100">
+                        <small class="text-muted d-block mb-1"><?= l('admin_index.biolink_qualified_watch.avg_daily_shop_clicks') ?></small>
+                        <div class="h5 mb-0">${nr(active_period.avg_daily_shop_clicks ?? 0)}</div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-6 col-xl-3 p-2">
+                    <div class="biolink-qualified-panel rounded p-3 h-100">
+                        <small class="text-muted d-block mb-1"><?= l('admin_index.biolink_qualified_watch.active_days') ?></small>
+                        <div class="h5 mb-0">${nr(active_period.active_days_total ?? 0)}</div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-6 col-xl-3 p-2">
+                    <div class="biolink-qualified-panel rounded p-3 h-100">
+                        <small class="text-muted d-block mb-1"><?= l('admin_index.biolink_qualified_watch.shop_share') ?></small>
+                        <div class="h5 mb-0">${nr(active_period.shop_share_percent ?? 0)}%</div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-6 col-xl-3 p-2">
+                    <div class="biolink-qualified-panel rounded p-3 h-100">
+                        <small class="text-muted d-block mb-1"><?= l('admin_index.biolink_qualified_watch.peak_hour') ?></small>
+                        <div class="h5 mb-0">${escape_html(active_period.top_hours?.[0]?.label || '-')}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-12 col-xl-4 p-2">
+                    <div class="biolink-qualified-panel rounded p-3 h-100">
+                        <div class="font-weight-bold mb-2"><?= l('admin_index.biolink_qualified_watch.top_countries') ?></div>
+                        ${top_countries_html}
+                    </div>
+                </div>
+                <div class="col-12 col-xl-4 p-2">
+                    <div class="biolink-qualified-panel rounded p-3 h-100">
+                        <div class="font-weight-bold mb-2"><?= l('admin_index.biolink_qualified_watch.top_cities') ?></div>
+                        ${render_breakdown_rows(active_period.top_cities ?? [])}
+                    </div>
+                </div>
+                <div class="col-12 col-xl-4 p-2">
+                    <div class="biolink-qualified-panel rounded p-3 h-100">
+                        <div class="font-weight-bold mb-2"><?= l('admin_index.biolink_qualified_watch.top_languages') ?></div>
+                        ${render_breakdown_rows(active_period.top_languages ?? [])}
+                    </div>
+                </div>
+                <div class="col-12 col-xl-4 p-2">
+                    <div class="biolink-qualified-panel rounded p-3 h-100">
+                        <div class="font-weight-bold mb-2"><?= l('admin_index.biolink_qualified_watch.top_sources') ?></div>
+                        ${render_breakdown_rows(active_period.top_sources ?? [])}
+                    </div>
+                </div>
+                <div class="col-12 col-xl-4 p-2">
+                    <div class="biolink-qualified-panel rounded p-3 h-100">
+                        <div class="font-weight-bold mb-2"><?= l('admin_index.biolink_qualified_watch.source_mix') ?></div>
+                        ${render_breakdown_rows(active_period.source_mix ?? [])}
+                    </div>
+                </div>
+                <div class="col-12 col-xl-4 p-2">
+                    <div class="biolink-qualified-panel rounded p-3 h-100">
+                        <div class="font-weight-bold mb-2"><?= l('admin_index.biolink_qualified_watch.top_hours') ?></div>
+                        ${render_breakdown_rows(active_period.top_hours ?? [])}
+                    </div>
+                </div>
+                <div class="col-12 col-xl-6 p-2">
+                    <div class="biolink-qualified-panel rounded p-3 h-100">
+                        <div class="font-weight-bold mb-2"><?= l('admin_index.biolink_qualified_watch.country_movers_up') ?></div>
+                        ${render_movers_rows(active_period.country_movers?.up ?? [], 'up')}
+                    </div>
+                </div>
+                <div class="col-12 col-xl-6 p-2">
+                    <div class="biolink-qualified-panel rounded p-3 h-100">
+                        <div class="font-weight-bold mb-2"><?= l('admin_index.biolink_qualified_watch.country_movers_down') ?></div>
+                        ${render_movers_rows(active_period.country_movers?.down ?? [], 'down')}
+                    </div>
+                </div>
+                <div class="col-12 col-xl-6 p-2">
+                    <div class="biolink-qualified-panel rounded p-3 h-100">
+                        <div class="font-weight-bold mb-2"><?= l('admin_index.biolink_qualified_watch.top_browsers') ?></div>
+                        ${render_breakdown_rows(active_period.top_browsers ?? [])}
+                    </div>
+                </div>
+                <div class="col-12 col-xl-6 p-2">
+                    <div class="biolink-qualified-panel rounded p-3 h-100">
+                        <div class="font-weight-bold mb-2"><?= l('admin_index.biolink_qualified_watch.top_devices') ?></div>
+                        ${render_breakdown_rows(active_period.top_devices ?? [])}
+                    </div>
+                </div>
+            </div>
+        `;
+
+        modal_body.querySelectorAll('[data-biolink-qualified-modal-period]').forEach(button => {
+            button.addEventListener('click', event => {
+                biolink_qualified_modal_period = event.currentTarget.getAttribute('data-biolink-qualified-modal-period') || '90d';
+                render_biolink_qualified_modal(collaborator);
+            });
+        });
+
+        queue_biolink_qualified_modal_chart_render(collaborator);
+    };
+
+    const open_biolink_qualified_modal = async summary_user => {
+        const modal_body = document.querySelector('#biolink_qualified_modal_body');
+        const user_id = parseInt(summary_user?.user_id ?? 0, 10);
+
+        if(!modal_body || !user_id) {
+            return;
+        }
+
+        biolink_qualified_modal_period = '90d';
+        modal_body.innerHTML = `<span class="spinner-border spinner-border-sm" role="status"></span>`;
+        document.querySelector('#biolink_qualified_modal_title').innerText = `<?= l('admin_index.biolink_qualified_watch.modal_title_for') ?> ${summary_user?.name || '<?= l('global.unknown') ?>'}`;
+        $('#biolink_qualified_modal').modal('show');
+
+        const collaborator = await get_biolink_collaborator_details(user_id, summary_user?.name || '');
+        if(!collaborator) {
+            modal_body.innerHTML = `<div class="alert alert-warning mb-0"><?= l('admin_index.biolink_qualified_watch.load_error') ?></div>`;
+            return;
+        }
+
+        biolink_qualified_modal_collaborator = {
+            ...collaborator,
+            qualified_summary: summary_user,
+        };
+
+        render_biolink_qualified_modal(biolink_qualified_modal_collaborator);
+    };
+
+    const render_biolink_qualified_watch = qualified_payload => {
+        const users_container = document.querySelector('#biolink_qualified_users');
+        if(!users_container) {
+            return;
+        }
+
+        const all_users = Array.isArray(qualified_payload?.users) ? qualified_payload.users : [];
+        const search_query = biolink_qualified_search_query.trim().toLowerCase();
+        const filtered_users = all_users.filter(user => {
+            if(biolink_qualified_status_filter !== 'all' && user.status_key !== biolink_qualified_status_filter) {
+                return false;
+            }
+
+            if(!search_query) {
+                return true;
+            }
+
+            return [user.name, user.email, user.forever_id]
+                .filter(Boolean)
+                .some(value => String(value).toLowerCase().includes(search_query));
+        });
+
+        set_text_if_present('#biolink_qualified_total_users', nr(qualified_payload?.qualified_users_total ?? 0));
+        set_text_if_present('#biolink_qualified_top_users', nr(qualified_payload?.top_users_total ?? 0));
+        set_text_if_present('#biolink_qualified_rising_users', nr(qualified_payload?.rising_users_total ?? 0));
+        set_text_if_present('#biolink_qualified_total_clicks', nr(qualified_payload?.qualified_forever_shop_clicks_total ?? 0));
+        set_text_if_present('#biolink_qualified_results_count', `${nr(filtered_users.length)} / ${nr(all_users.length)}`);
+
+        Object.keys(biolink_qualified_user_map).forEach(key => delete biolink_qualified_user_map[key]);
+
+        const users_items = filtered_users.map((user, index) => {
+            biolink_qualified_user_map[String(user.user_id ?? '')] = user;
+
+            return `
+                <button type="button" class="btn btn-link text-left w-100 p-3 mb-3 biolink-qualified-user-item" data-biolink-qualified-user-id="${user.user_id}">
+                    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-start">
+                        <div class="pr-lg-4 mb-3 mb-lg-0">
+                            <div class="d-flex flex-wrap align-items-center mb-2">
+                                <span class="badge badge-${escape_html(user.status_class || 'secondary')} mr-2 mb-2">${escape_html(user.status_label || '')}</span>
+                                <span class="badge badge-light mr-2 mb-2">#${index + 1}</span>
+                                <strong class="mb-2">${escape_html(user.name || '<?= l('global.unknown') ?>')}</strong>
+                            </div>
+                            <div class="text-muted small text-break mb-2">${escape_html(user.email || '')}</div>
+                            <div class="small text-muted"><?= l('admin_index.biolink_qualified_watch.forever_id') ?>: ${escape_html(user.forever_id || '-')} · <?= l('admin_index.biolink_qualified_watch.last_click') ?>: ${escape_html(user.last_click_at || '-')}</div>
+                        </div>
+
+                        <div class="text-lg-right">
+                            <div class="h4 mb-1">${nr(user.forever_shop_clicks_90d ?? 0)}</div>
+                            <div class="small text-muted mb-2"><?= l('admin_index.biolink_qualified_watch.period_shop_clicks') ?> · 90d</div>
+                            <div class="d-flex flex-wrap justify-content-lg-end">
+                                <span class="badge badge-${get_growth_class(user.growth_30d)} mr-2 mb-2">30d ${format_growth_value(user.growth_30d)}</span>
+                                <span class="badge badge-${get_growth_class(user.growth_7d)} mb-2">7d ${format_growth_value(user.growth_7d)}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-2 small text-muted">
+                        <div class="col-6 col-lg-3 py-1"><strong><?= l('admin_index.biolink_qualified_watch.metric_30d') ?>:</strong> ${nr(user.forever_shop_clicks_30d ?? 0)}</div>
+                        <div class="col-6 col-lg-3 py-1"><strong><?= l('admin_index.biolink_qualified_watch.metric_7d') ?>:</strong> ${nr(user.forever_shop_clicks_7d ?? 0)}</div>
+                        <div class="col-6 col-lg-3 py-1"><strong><?= l('admin_index.biolink_qualified_watch.metric_registrations_90d') ?>:</strong> ${nr(user.forever_registration_clicks_90d ?? 0)}</div>
+                        <div class="col-6 col-lg-3 py-1"><strong><?= l('admin_index.biolink_qualified_watch.metric_score') ?>:</strong> ${nr(user.ranking_score ?? 0)}</div>
+                    </div>
+                </button>
+            `;
+        });
+
+        render_compact_list('#biolink_qualified_users', users_items.length ? users_items : [`<div class="py-3 text-muted"><?= l('admin_index.biolink_qualified_watch.empty') ?></div>`], 12, () => {
+            document.querySelectorAll('[data-biolink-qualified-user-id]').forEach(button => {
+                button.addEventListener('click', event => {
+                    const user_id = String(event.currentTarget.getAttribute('data-biolink-qualified-user-id') || '');
+                    const summary_user = biolink_qualified_user_map[user_id] || null;
+                    open_biolink_qualified_modal(summary_user);
+                });
+            });
+        });
+    };
+    /* /Custom code: FC-2026-03-30 */
+
     const render_biolink_period = () => {
         if(!get_element('#biolink_period_total_clicks')) {
             return;
@@ -2408,6 +3063,8 @@ $dashboard_toggle_url = $data->dashboard_toggle_url ?? ($is_sensitive_dashboard 
 
         document.querySelector('#biolink_top_registration_sources_count').innerText = `(${nr(top_registration_sources_items.length)})`;
         render_compact_list('#biolink_top_registration_sources', top_registration_sources_items, 5);
+
+        render_biolink_qualified_watch(biolink_analytics_payload.qualified_collaborators ?? {});
     };
 
     const render_biolink_analytics = biolink_analytics => {
@@ -2788,23 +3445,15 @@ $dashboard_toggle_url = $data->dashboard_toggle_url ?? ($is_sensitive_dashboard 
         render_biolink_search_results(data.details?.results ?? []);
     };
 
-    const load_biolink_collaborator = async (user_id, fallback_name = '') => {
+    const get_biolink_collaborator_details = async (user_id, fallback_name = '') => {
         const collaborator_id = parseInt(user_id, 10);
         if(!collaborator_id) {
-            return;
+            return null;
         }
 
         if(biolink_collaborator_cache[collaborator_id]) {
-            biolink_selected_collaborator = biolink_collaborator_cache[collaborator_id];
-            render_biolink_period();
-            return;
+            return biolink_collaborator_cache[collaborator_id];
         }
-
-        biolink_selected_collaborator = {
-            name: fallback_name || '<?= l('global.loading') ?>',
-            periods: {},
-        };
-        render_biolink_selected_collaborator_state();
 
         const response = await fetch(`${url}admin/index/get_biolink_collaborator_stats_ajax?user_id=${collaborator_id}`, {
             method: 'get',
@@ -2814,25 +3463,41 @@ $dashboard_toggle_url = $data->dashboard_toggle_url ?? ($is_sensitive_dashboard 
         try {
             data = await response.json();
         } catch(error) {
-            biolink_selected_collaborator = null;
-            render_biolink_period();
-            return;
+            return null;
         }
 
         if(!response.ok || data?.status !== 'success') {
-            biolink_selected_collaborator = null;
-            render_biolink_period();
-            return;
+            return null;
         }
 
         const collaborator = data.details?.collaborator ?? null;
+        if(!collaborator) {
+            return null;
+        }
+
+        biolink_collaborator_cache[collaborator_id] = collaborator;
+        return collaborator;
+    };
+
+    const load_biolink_collaborator = async (user_id, fallback_name = '') => {
+        const collaborator_id = parseInt(user_id, 10);
+        if(!collaborator_id) {
+            return;
+        }
+
+        biolink_selected_collaborator = {
+            name: fallback_name || '<?= l('global.loading') ?>',
+            periods: {},
+        };
+        render_biolink_selected_collaborator_state();
+
+        const collaborator = await get_biolink_collaborator_details(collaborator_id, fallback_name);
         if(!collaborator) {
             biolink_selected_collaborator = null;
             render_biolink_period();
             return;
         }
 
-        biolink_collaborator_cache[collaborator_id] = collaborator;
         biolink_selected_collaborator = collaborator;
         render_biolink_period();
     };
@@ -2908,6 +3573,38 @@ $dashboard_toggle_url = $data->dashboard_toggle_url ?? ($is_sensitive_dashboard 
         biolink_search_timeout = setTimeout(() => {
             search_biolink_collaborators(query);
         }, 250);
+    });
+
+    document.querySelector('#biolink_qualified_search')?.addEventListener('input', event => {
+        biolink_qualified_search_query = event.currentTarget.value || '';
+        render_biolink_qualified_watch(biolink_analytics_payload.qualified_collaborators ?? {});
+    });
+
+    document.querySelectorAll('[data-biolink-qualified-status]').forEach(button => {
+        button.addEventListener('click', event => {
+            biolink_qualified_status_filter = event.currentTarget.getAttribute('data-biolink-qualified-status') || 'all';
+
+            document.querySelectorAll('[data-biolink-qualified-status]').forEach(item => item.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+
+            render_biolink_qualified_watch(biolink_analytics_payload.qualified_collaborators ?? {});
+        });
+    });
+
+    $('#biolink_qualified_modal').on('hidden.bs.modal', () => {
+        biolink_qualified_modal_collaborator = null;
+        biolink_qualified_modal_period = '90d';
+
+        if(dashboard_charts.biolink_qualification_modal) {
+            dashboard_charts.biolink_qualification_modal.destroy();
+            dashboard_charts.biolink_qualification_modal = null;
+        }
+    });
+
+    $('#biolink_qualified_modal').on('shown.bs.modal', () => {
+        if(biolink_qualified_modal_collaborator) {
+            queue_biolink_qualified_modal_chart_render(biolink_qualified_modal_collaborator);
+        }
     });
 
     document.addEventListener('click', event => {
