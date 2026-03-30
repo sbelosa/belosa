@@ -284,9 +284,11 @@ class Blog extends Controller {
             if ($referral) {                      
                 /* Custom code: FC-2026-02-26: robust visitor country detection for blog webshop routing */
                 $country_code = null;
+                $country_code_is_trusted = false;
                 $header_country_code = null;
                 $maxmind_country_code = null;
                 $maxmind_city_country_code = null;
+                $accept_language_header = $_SERVER['HTTP_ACCEPT_LANGUAGE'] ?? null;
 
                 foreach(['HTTP_CF_IPCOUNTRY', 'HTTP_CF-IPCOUNTRY', 'GEOIP_COUNTRY_CODE', 'HTTP_GEOIP_COUNTRY_CODE', 'HTTP_X_COUNTRY_CODE', 'HTTP_X_COUNTRY'] as $country_header_key) {
                     if(!empty($_SERVER[$country_header_key])) {
@@ -295,6 +297,7 @@ class Blog extends Controller {
 
                         if(mb_strlen($header_country_code) == 2 && $header_country_code !== 'XX') {
                             $country_code = $header_country_code;
+                            $country_code_is_trusted = true;
                             break;
                         }
                     }
@@ -323,10 +326,12 @@ class Blog extends Controller {
                 }
                 /* /Custom code: FC-2026-02-26 */
 
-                $webshop_link = \Altum\Link::get_product_webshop_link($referral, $blog_post->blog_post_id, $country_code);                
-
-                $resolved_market_country_code = \Altum\Link::resolve_forever_market_country_code($country_code);
                 $product_webshop_links = json_decode($blog_post->webshop_links ?? '{}');
+                $available_market_country_codes = array_keys(array_filter((array) $product_webshop_links, static function($value) {
+                    return !empty($value);
+                }));
+                $resolved_market_country_code = \Altum\Link::resolve_preferred_forever_market_country_code($country_code, $available_market_country_codes, $accept_language_header, $country_code_is_trusted);
+                $webshop_link = \Altum\Link::get_product_webshop_link($referral, $blog_post->blog_post_id, $resolved_market_country_code);                
 
                 $this->log_forever_blog_market_debug([
                     'event' => 'blog_market_resolution',
@@ -348,11 +353,12 @@ class Blog extends Controller {
                     'http_geoip_country_code' => $_SERVER['HTTP_GEOIP_COUNTRY_CODE'] ?? null,
                     'http_x_country_code' => $_SERVER['HTTP_X_COUNTRY_CODE'] ?? null,
                     'http_x_country' => $_SERVER['HTTP_X_COUNTRY'] ?? null,
-                    'accept_language' => $_SERVER['HTTP_ACCEPT_LANGUAGE'] ?? null,
+                    'accept_language' => $accept_language_header,
                     'header_country_code' => $header_country_code,
                     'maxmind_country_code' => $maxmind_country_code,
                     'maxmind_city_country_code' => $maxmind_city_country_code,
                     'final_country_code' => $country_code,
+                    'country_code_is_trusted' => $country_code_is_trusted,
                     'resolved_market_country_code' => $resolved_market_country_code,
                     'ba_target' => $product_webshop_links->ba ?? null,
                     'rs_target' => $product_webshop_links->rs ?? null,

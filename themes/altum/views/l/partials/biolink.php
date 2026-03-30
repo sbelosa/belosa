@@ -121,18 +121,18 @@
                         $browser_name = $whichbrowser->browser->name ?? null;
                         $accept_language_header = isset($_SERVER['HTTP_ACCEPT_LANGUAGE']) ? (string) $_SERVER['HTTP_ACCEPT_LANGUAGE'] : null;
                         $browser_language = $accept_language_header ? mb_substr($accept_language_header, 0, 2) : null;
-                        $country_code = isset($maxmind) && isset($maxmind['country']) ? $maxmind['country']['iso_code'] : null;
+                        $country_code = null;
+                        $country_code_is_trusted = false;
                         /* Custom code: FC-2026-03-05: robust country detection fallback for BIH-only block display */
-                        if(!$country_code) {
-                            foreach(['HTTP_CF_IPCOUNTRY', 'HTTP_CF-IPCOUNTRY', 'GEOIP_COUNTRY_CODE', 'HTTP_GEOIP_COUNTRY_CODE', 'HTTP_X_COUNTRY_CODE', 'HTTP_X_COUNTRY'] as $country_header_key) {
-                                if(!empty($_SERVER[$country_header_key])) {
-                                    $header_country_code = mb_strtoupper(trim((string) $_SERVER[$country_header_key]));
-                                    $header_country_code = mb_substr($header_country_code, 0, 2);
+                        foreach(['HTTP_CF_IPCOUNTRY', 'HTTP_CF-IPCOUNTRY', 'GEOIP_COUNTRY_CODE', 'HTTP_GEOIP_COUNTRY_CODE', 'HTTP_X_COUNTRY_CODE', 'HTTP_X_COUNTRY'] as $country_header_key) {
+                            if(!empty($_SERVER[$country_header_key])) {
+                                $header_country_code = mb_strtoupper(trim((string) $_SERVER[$country_header_key]));
+                                $header_country_code = mb_substr($header_country_code, 0, 2);
 
-                                    if(mb_strlen($header_country_code) == 2 && $header_country_code !== 'XX') {
-                                        $country_code = $header_country_code;
-                                        break;
-                                    }
+                                if(mb_strlen($header_country_code) == 2 && $header_country_code !== 'XX') {
+                                    $country_code = $header_country_code;
+                                    $country_code_is_trusted = true;
+                                    break;
                                 }
                             }
                         }
@@ -145,16 +145,6 @@
                             }
 
                             $country_code = isset($maxmind_country) && isset($maxmind_country['country']) ? $maxmind_country['country']['iso_code'] : null;
-                        }
-
-                        if(!$country_code && $accept_language_header) {
-                            if(preg_match('/(?:^|,|;)\s*[a-z]{2,3}-([a-z]{2})\b/i', $accept_language_header, $matches)) {
-                                $inferred_country_code = mb_strtoupper($matches[1]);
-
-                                if(array_key_exists($inferred_country_code, get_countries_array())) {
-                                    $country_code = $inferred_country_code;
-                                }
-                            }
                         }
 
                         if($country_code) {
@@ -177,7 +167,14 @@
 
                             /* Custom code */
                             if($row->type == 'link_forever_shop') {
-                                $business_country_code = \Altum\Link::resolve_forever_market_country_code($country_code);
+                                $business_country_code = \Altum\Link::resolve_preferred_forever_market_country_code(
+                                    $country_code,
+                                    array_keys(array_filter((array) $forever_business_links, static function($value) {
+                                        return !empty($value);
+                                    })),
+                                    $accept_language_header,
+                                    $country_code_is_trusted
+                                );
                                 $business_base_url = $forever_business_links->{$business_country_code} ?? null;
 
                                 if(!$business_base_url && !empty($forever_business_links->us)) {
@@ -272,7 +269,14 @@
                                 continue;
                             }                    
                             if($row->type == 'link_discount') {
-                                $webshop_country_code = \Altum\Link::resolve_forever_market_country_code($country_code);
+                                $webshop_country_code = \Altum\Link::resolve_preferred_forever_market_country_code(
+                                    $country_code,
+                                    array_keys(array_filter((array) $forever_webshop_links, static function($value) {
+                                        return !empty($value);
+                                    })),
+                                    $accept_language_header,
+                                    $country_code_is_trusted
+                                );
                                 $webshop_base_url = $forever_webshop_links->{$webshop_country_code} ?? null;
 
                                 if(!$webshop_base_url && !empty($forever_webshop_links->us)) {

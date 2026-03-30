@@ -919,6 +919,65 @@ class Link {
         return in_array($country_code, ['xk'], true) ? 'al' : $country_code;
     }
 
+    public static function resolve_preferred_forever_market_country_code($country_code = null, array $available_country_codes = [], ?string $accept_language_header = null, bool $country_code_is_trusted = false): ?string {
+        $normalized_country_code = self::resolve_forever_market_country_code($country_code);
+        $available_country_codes = array_values(array_unique(array_filter(array_map([self::class, 'resolve_forever_market_country_code'], $available_country_codes))));
+
+        if($country_code_is_trusted && $normalized_country_code) {
+            if(empty($available_country_codes) || in_array($normalized_country_code, $available_country_codes, true)) {
+                return $normalized_country_code;
+            }
+        }
+
+        foreach(self::get_accept_language_forever_market_candidates($accept_language_header) as $candidate_country_code) {
+            if(empty($available_country_codes) || in_array($candidate_country_code, $available_country_codes, true)) {
+                return $candidate_country_code;
+            }
+        }
+
+        if($normalized_country_code) {
+            if(empty($available_country_codes) || in_array($normalized_country_code, $available_country_codes, true)) {
+                return $normalized_country_code;
+            }
+        }
+
+        return $normalized_country_code;
+    }
+
+    private static function get_accept_language_forever_market_candidates(?string $accept_language_header): array {
+        if(!$accept_language_header) {
+            return [];
+        }
+
+        $language_market_map = [
+            'hr' => 'hr',
+            'sr' => 'rs',
+            'bs' => 'ba',
+            'sl' => 'si',
+            'sq' => 'al',
+            'de' => 'de',
+        ];
+
+        $candidates = [];
+
+        if(preg_match_all('/([a-z]{2,3})(?:-([a-z]{2}))?/i', $accept_language_header, $matches, PREG_SET_ORDER)) {
+            foreach($matches as $match) {
+                $language_code = mb_strtolower($match[1] ?? '');
+                $region_code = self::resolve_forever_market_country_code($match[2] ?? null);
+
+                if($region_code) {
+                    $candidates[] = $region_code;
+                }
+
+                if(isset($language_market_map[$language_code])) {
+                    $candidates[] = $language_market_map[$language_code];
+                }
+            }
+        }
+
+        return array_values(array_unique(array_filter($candidates)));
+    }
+
     public static function build_forever_destination_url($base_url, $forever_id = null, $country_code = null, array $extra_query_params = []) {
         if(!$base_url || !filter_var($base_url, FILTER_VALIDATE_URL)) {
             return false;
@@ -1030,7 +1089,7 @@ class Link {
                 $forever_id = '';
             }
 
-            /* Market routing must follow the detected visitor country, never browser language. */
+            /* Market routing uses the caller-resolved preferred market code. */
             $webshop_country_code = self::resolve_forever_market_country_code($country_code);
             $webshop_base_url = $webshop_links->{$webshop_country_code} ?? null;
 
