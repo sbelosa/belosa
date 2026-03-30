@@ -38,27 +38,6 @@ $fcc_market_resolver_cookie_name = \Altum\Link::get_forever_market_cookie_name()
             'Europe/Berlin': 'de',
         };
 
-        const regionMap = {
-            'hr': 'hr',
-            'ba': 'ba',
-            'rs': 'rs',
-            'si': 'si',
-            'al': 'al',
-            'xk': 'al',
-            'ae': 'ae',
-            'de': 'de',
-        };
-
-        const languageMap = {
-            'hr': 'hr',
-            'bs': 'ba',
-            'sr': 'rs',
-            'sl': 'si',
-            'sq': 'al',
-            'de': 'de',
-            'ar': 'ae',
-        };
-
         const normalizeMarket = value => {
             if(!value || typeof value !== 'string') {
                 return null;
@@ -93,45 +72,11 @@ $fcc_market_resolver_cookie_name = \Altum\Link::get_forever_market_cookie_name()
         };
 
         const resolveMarketFromBrowserSignals = () => {
-            let market = null;
-
-            const localeCandidates = [];
-
-            if(Array.isArray(navigator.languages)) {
-                localeCandidates.push(...navigator.languages);
-            }
-
-            if(navigator.language) {
-                localeCandidates.push(navigator.language);
-            }
-
             if(timezoneMap[timezone] && allowedMarkets.includes(timezoneMap[timezone])) {
-                market = timezoneMap[timezone];
+                return timezoneMap[timezone];
             }
 
-            if(!market) {
-                for(const locale of localeCandidates) {
-                    if(!locale || typeof locale !== 'string') {
-                        continue;
-                    }
-
-                    const parts = locale.toLowerCase().split('-');
-                    const languageCode = parts[0] || null;
-                    const regionCode = parts[1] || null;
-
-                    if(regionCode && regionMap[regionCode] && allowedMarkets.includes(regionMap[regionCode])) {
-                        market = regionMap[regionCode];
-                        break;
-                    }
-
-                    if(languageCode && languageMap[languageCode] && allowedMarkets.includes(languageMap[languageCode])) {
-                        market = languageMap[languageCode];
-                        break;
-                    }
-                }
-            }
-
-            return market;
+            return null;
         };
 
         const currentCookieMarket = getCookie(cookieName);
@@ -149,7 +94,12 @@ $fcc_market_resolver_cookie_name = \Altum\Link::get_forever_market_cookie_name()
 
         const applyBrowserFallback = () => {
             if(browserFallbackMarket) {
-                applyMarket(browserFallbackMarket);
+                return applyMarket(browserFallbackMarket);
+            }
+
+            if(currentCookieMarket) {
+                setCookie(cookieName, '');
+                window.sessionStorage.removeItem(sessionKey);
             }
 
             return false;
