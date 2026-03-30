@@ -3,7 +3,14 @@
 <?php
 $button = $data->link->settings->title ?? ($data->link->settings->button ?? 'WhatsApp');
 $phone = preg_replace('/[^\d]/', '', (string) ($data->link->settings->phone ?? ''));
-$message = rawurlencode((string) ($data->link->settings->message ?? ''));
+$message = trim((string) ($data->link->settings->message ?? ''));
+$whatsapp_query = ['phone' => $phone];
+
+if($message !== '') {
+    $whatsapp_query['text'] = $message;
+}
+
+$whatsapp_url = 'https://api.whatsapp.com/send?' . http_build_query($whatsapp_query);
 $button_icon = $data->link->settings->icon ?? 'fab fa-whatsapp';
 $button_border_radius = $data->link->settings->border_radius ?? 'rounded';
 
@@ -19,7 +26,7 @@ $hover_class = ($data->biolink->settings->hover_animation ?? 'smooth') != 'false
 
 <div id="<?= 'biolink_block_id_' . $data->link->biolink_block_id ?>" data-biolink-block-id="<?= $data->link->biolink_block_id ?>" data-biolink-block-type="<?= $data->link->type ?>" class="col-12 my-<?= $data->biolink->settings->block_spacing ?? '2' ?>">
     <a class="btn btn-block btn-primary link-btn <?= $hover_class ?> <?= 'link-btn-' . $button_border_radius ?> <?= $button_extra_class ?>"
-       href="https://wa.me/<?= $phone ?>?text=<?= $message ?>"
+       href="<?= $whatsapp_url ?>"
        target="_blank"
        rel="noopener noreferrer"
        style="<?= $button_style ?>"
