@@ -206,6 +206,12 @@
                             /* Custom code: FC-2026-03-06: strict plan-based final block visibility */
                             $is_biolink_block_enabled_for_plan = (bool) ($data->user->plan_settings->enabled_biolink_blocks->{$row->type} ?? false);
 
+                            /* Custom code: FC-2026-03-30: keep legacy WhatsApp blocks visible for users who already have them */
+                            if(!$is_biolink_block_enabled_for_plan && $row->type === 'custom_html_whatsapp') {
+                                $is_biolink_block_enabled_for_plan = true;
+                            }
+                            /* /Custom code: FC-2026-03-30 */
+
                             if(!$is_biolink_block_enabled_for_plan) {
                                 continue;
                             }
