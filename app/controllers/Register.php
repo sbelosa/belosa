@@ -25,6 +25,20 @@ defined('ALTUMCODE') || die();
 
 class Register extends Controller {
 
+    private function normalize_registration_phone($phone) {
+        $phone = preg_replace('/\D+/', '', (string) $phone);
+
+        if(mb_substr($phone, 0, 2) === '00') {
+            $phone = mb_substr($phone, 2);
+        }
+
+        return $phone;
+    }
+
+    private function is_valid_registration_phone($phone) {
+        return $phone !== '' && preg_match('/^[1-9][0-9]{7,14}$/', $phone);
+    }
+
     public function index() {
 
         \Altum\Authentication::guard('guest');
@@ -77,7 +91,7 @@ class Register extends Controller {
             $_POST['meta_city'] = input_clean($_POST['meta_city'], 64);
             $_POST['meta_zip'] = input_clean($_POST['meta_zip'], 12);
             $_POST['meta_country'] = input_clean($_POST['meta_country'], 64);
-            $_POST['meta_phone'] = input_clean($_POST['meta_phone'], 64);
+            $_POST['meta_phone'] = $this->normalize_registration_phone(input_clean($_POST['meta_phone'], 64));
             $_POST['meta'] = [
                 'foreverId' => $_POST['meta_foreverId'],                    
                 'address' => $_POST['meta_address'],
@@ -120,6 +134,9 @@ class Register extends Controller {
             /* Custom code */
             if(mb_strlen($_POST['meta_foreverId']) < 12 || mb_strlen($_POST['meta_foreverId']) > 12) {
                 Alerts::add_field_error('meta_foreverId', l('register.error_message.foreverId_length'));
+            }
+            if(!$this->is_valid_registration_phone($_POST['meta_phone'])) {
+                Alerts::add_field_error('meta_phone', l('register.error_message.phone_invalid'));
             }
             /* /Custom code */
 

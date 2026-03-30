@@ -51,8 +51,9 @@
             <div class="col-12 col-lg-6 register-form-col">
                 <div class="form-group">
                     <label for="meta_phone"><?= l('account.billing.phone') ?></label>
-                    <input id="meta_phone" type="text" name="meta_phone" class="form-control <?= \Altum\Alerts::has_field_errors('meta_phone') ? 'is-invalid' : null ?>" value="<?= isset($data->values['meta_phone']) ? $data->values['meta_phone'] : '' ?>" maxlength="64" required="required"/>
+                    <input id="meta_phone" type="text" name="meta_phone" class="form-control <?= \Altum\Alerts::has_field_errors('meta_phone') ? 'is-invalid' : null ?>" value="<?= isset($data->values['meta_phone']) ? $data->values['meta_phone'] : '' ?>" maxlength="64" placeholder="385911234567" required="required"/>
                     <?= \Altum\Alerts::output_field_error('meta_phone') ?>
+                    <small class="form-text text-muted"><?= l('register.phone_help') ?></small>
                 </div>
             </div>
 
