@@ -1635,6 +1635,12 @@ class Router {
                 'controller' => 'AdminPageUpdate'
             ],
 
+            /* Custom code: FC-2026-03-30: admin page english draft creation */
+            'page-create-english' => [
+                'controller' => 'AdminPageCreateEnglish'
+            ],
+            /* /Custom code: FC-2026-03-30 */
+
             'pages-categories' => [
                 'controller' => 'AdminPagesCategories'
             ],
@@ -1642,6 +1648,12 @@ class Router {
             'pages-category-create' => [
                 'controller' => 'AdminPagesCategoryCreate'
             ],
+
+            /* Custom code: FC-2026-03-30: admin pages category english creation */
+            'pages-category-create-english' => [
+                'controller' => 'AdminPagesCategoryCreateEnglish'
+            ],
+            /* /Custom code: FC-2026-03-30 */
 
             'pages-category-update' => [
                 'controller' => 'AdminPagesCategoryUpdate'
