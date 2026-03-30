@@ -1599,6 +1599,18 @@ class Router {
                 'controller' => 'AdminBlogPostUpdate'
             ],
 
+            /* Custom code: FC-2026-03-30: admin blog post english draft creation */
+            'blog-post-create-english' => [
+                'controller' => 'AdminBlogPostCreateEnglish'
+            ],
+            /* /Custom code: FC-2026-03-30 */
+
+            /* Custom code: FC-2026-03-30: admin blog category english creation */
+            'blog-posts-category-create-english' => [
+                'controller' => 'AdminBlogPostsCategoryCreateEnglish'
+            ],
+            /* /Custom code: FC-2026-03-30 */
+
             'blog-posts-categories' => [
                 'controller' => 'AdminBlogPostsCategories'
             ],

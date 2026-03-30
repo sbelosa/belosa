@@ -8,6 +8,7 @@ $fcc_menu_products_label = $fcc_is_hr_language ? 'Forever Proizvodi' : 'Forever 
 $fcc_menu_blog_label = 'Blog';
 $fcc_menu_contact_label = $fcc_is_hr_language ? 'Kontakt' : 'Contact';
 $fcc_menu_dashboard_label = $fcc_is_hr_language ? 'Nadzorna ploča' : 'Dashboard';
+$fcc_products_category_url = fc_get_forever_products_blog_category_url();
 
 $fcc_share_is_visible = false;
 $fcc_share_url = null;
@@ -78,7 +79,7 @@ if(is_logged_in() && in_array($fcc_share_route, ['index', 'blog', 'page'], true)
 
                 <!-- Custom code: FC-2026-02-26: fixed primary menu order -->
                 <li class="nav-item"><a class="nav-link" href="<?= url('pages/foreverclub') ?>"><?= $fcc_menu_fcc_label ?></a></li>
-                <li class="nav-item"><a class="nav-link" href="<?= url('blog/category/forever-proizvodi') ?>"><?= $fcc_menu_products_label ?></a></li>
+                <li class="nav-item"><a class="nav-link" href="<?= $fcc_products_category_url ?>"><?= $fcc_menu_products_label ?></a></li>
                 <li class="nav-item"><a class="nav-link" href="<?= url('blog') ?>"><?= $fcc_menu_blog_label ?></a></li>
                 <li class="nav-item"><a class="nav-link" href="<?= url('page/contact') ?>"><?= $fcc_menu_contact_label ?></a></li>
                 <!-- /Custom code: FC-2026-02-26 -->
@@ -88,7 +89,7 @@ if(is_logged_in() && in_array($fcc_share_route, ['index', 'blog', 'page'], true)
                     /* Custom code: FC-2026-02-26: avoid duplicates with fixed primary links */
                     $fcc_skip_urls = [
                         trim((string) url('pages/foreverclub'), '/'),
-                        trim((string) url('blog/category/forever-proizvodi'), '/'),
+                        trim((string) $fcc_products_category_url, '/'),
                         trim((string) url('blog'), '/'),
                         trim((string) url('page/contact'), '/'),
                     ];

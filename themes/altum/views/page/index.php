@@ -189,7 +189,7 @@ $fcc_contact_direct_text = $fcc_is_hr
         $fcc_phone_link = $fcc_contact_phone_value ? preg_replace('/\s+/', '', $fcc_contact_phone_value) : '';
         $fcc_whatsapp_digits = preg_replace('/\D+/', '', $fcc_contact_phone_value);
         $fcc_whatsapp_url = $fcc_whatsapp_digits ? 'https://wa.me/' . $fcc_whatsapp_digits : '';
-        $fcc_product_url = url('blog/category/forever-proizvodi');
+        $fcc_product_url = fc_get_forever_products_blog_category_url();
         $fcc_business_url = url('blog/start-paket');
         ?>
         <section id="fcc-contact-top" class="fcc-collab-contact-wrap">

@@ -284,7 +284,7 @@ if(is_logged_in()) {
                     <a href="<?= url('fcc-education?video=last') ?>"><i class="fas fa-fw fa-sm fa-graduation-cap mr-2"></i> FOREVER EDUKACIJA</a>
                 </li>
                 <li class="<?= \Altum\Router::$controller == 'Blog' ? 'active' : null ?> app-sidebar-fcc-item">
-                    <a href="<?= url('blog/category/forever-proizvodi') ?>"><i class="fas fa-fw fa-sm fa-leaf mr-2"></i> FOREVER PROIZVODI</a>
+                    <a href="<?= fc_get_forever_products_blog_category_url() ?>"><i class="fas fa-fw fa-sm fa-leaf mr-2"></i> FOREVER PROIZVODI</a>
                 </li>
         </ul>
     </div>

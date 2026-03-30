@@ -105,6 +105,161 @@ function fc_resolve_email_language_name($language = null) {
 }
 /* /Custom code: FC-2026-03-24 */
 
+/* Custom code: FC-2026-03-30: localized forever products category helpers */
+function fc_translate_blog_category_fields($blog_posts_category, $target_language, $model, $api_key) {
+    $fields = [
+        'title' => (string) ($blog_posts_category->title ?? ''),
+        'description' => (string) ($blog_posts_category->description ?? ''),
+    ];
+
+    $source_language = !empty($blog_posts_category->language) ? $blog_posts_category->language : 'Croatian';
+
+    $response = \Unirest\Request::post(
+        'https://api.openai.com/v1/chat/completions',
+        [
+            'Authorization' => 'Bearer ' . get_random_line_from_text($api_key),
+            'Content-Type' => 'application/json',
+        ],
+        \Unirest\Request\Body::json([
+            'model' => $model,
+            'messages' => [
+                [
+                    'role' => 'system',
+                    'content' => 'You are a professional website translator. Return JSON only.'
+                ],
+                [
+                    'role' => 'user',
+                    'content' => implode("\n\n", [
+                        'Translate the provided blog category fields from ' . $source_language . ' to ' . $target_language . '.',
+                        'Return only a valid JSON object with these exact keys: title, description.',
+                        'Keep category meaning and SEO intent natural in English.',
+                        'Do not add explanations, markdown, or extra keys.',
+                        'Input JSON:' . json_encode($fields, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+                    ])
+                ],
+            ],
+        ])
+    );
+
+    if($response->code >= 400) {
+        throw new \Exception($response->body->error->message ?? 'OpenAI request failed.');
+    }
+
+    $content = trim((string) ($response->body->choices[0]->message->content ?? ''));
+
+    if(substr($content, 0, 3) === '```') {
+        $content = preg_replace('/^```[a-zA-Z0-9_-]*\s*/', '', $content);
+        $content = preg_replace('/\s*```$/', '', $content);
+        $content = trim($content);
+    }
+
+    $translated_fields = json_decode($content, true);
+
+    if(!is_array($translated_fields)) {
+        throw new \Exception('OpenAI did not return valid JSON for the category translation.');
+    }
+
+    return [
+        'title' => input_clean(trim((string) ($translated_fields['title'] ?? '')), 256),
+        'description' => input_clean(trim((string) ($translated_fields['description'] ?? '')), 256),
+    ];
+}
+
+function fc_get_or_create_blog_category_translation($source_category, $target_language, $api_key = null, $model = 'gpt-4o') {
+    if(!$source_category) {
+        return null;
+    }
+
+    if(empty($source_category->language) || $source_category->language === $target_language) {
+        return $source_category;
+    }
+
+    $target_category = db()->where('url', $source_category->url)->where('language', $target_language)->getOne('blog_posts_categories');
+
+    if($target_category) {
+        return $target_category;
+    }
+
+    if(!$api_key) {
+        return null;
+    }
+
+    $target_parent_category = null;
+    if(!empty($source_category->blog_posts_parent_id)) {
+        $source_parent_category = db()->where('blog_posts_category_id', $source_category->blog_posts_parent_id)->getOne('blog_posts_categories');
+        $target_parent_category = fc_get_or_create_blog_category_translation($source_parent_category, $target_language, $api_key, $model);
+    }
+
+    $translated_fields = fc_translate_blog_category_fields($source_category, $target_language, $model, $api_key);
+
+    $blog_posts_category_data = [
+        'blog_posts_parent_id' => $target_parent_category->blog_posts_category_id ?? null,
+        'url' => $source_category->url,
+        'title' => $translated_fields['title'] ?: $source_category->title,
+        'description' => $translated_fields['description'] ?: $source_category->description,
+        'language' => $target_language,
+        'order' => (int) ($source_category->order ?? 0),
+        'datetime' => get_date(),
+        'last_datetime' => get_date(),
+        'visibility' => $source_category->visibility ?? 'public',
+        'show_share_links' => $source_category->show_share_links ?? 0,
+    ];
+
+    static $blog_posts_categories_has_style_column = null;
+    if($blog_posts_categories_has_style_column === null) {
+        $blog_posts_categories_has_style_column = (bool) count(db()->rawQuery("SHOW COLUMNS FROM `blog_posts_categories` LIKE 'style'"));
+    }
+
+    if($blog_posts_categories_has_style_column) {
+        $blog_posts_category_data['style'] = $source_category->style ?? null;
+    }
+
+    db()->insert('blog_posts_categories', $blog_posts_category_data);
+    $blog_posts_category_id = db()->getInsertId();
+
+    cache()->deleteItemsByTag('blog_posts_categories');
+
+    return db()->where('blog_posts_category_id', $blog_posts_category_id)->getOne('blog_posts_categories');
+}
+
+function fc_get_forever_products_blog_category_url($language = null) {
+    $language = fc_resolve_language_name($language ?? \Altum\Language::$name);
+
+    static $cached_urls = [];
+
+    if(array_key_exists($language, $cached_urls)) {
+        return $cached_urls[$language];
+    }
+
+    $candidate_urls = ['forever-products', 'forever-proizvodi'];
+
+    foreach($candidate_urls as $candidate_url) {
+        $blog_posts_category = db()
+            ->where('blog_posts_parent_id', null, 'IS')
+            ->where('url', $candidate_url)
+            ->where('language', $language)
+            ->getOne('blog_posts_categories', ['url']);
+
+        if($blog_posts_category) {
+            return $cached_urls[$language] = url('blog/category/' . $blog_posts_category->url);
+        }
+    }
+
+    foreach($candidate_urls as $candidate_url) {
+        $blog_posts_category = db()
+            ->where('blog_posts_parent_id', null, 'IS')
+            ->where('url', $candidate_url)
+            ->getOne('blog_posts_categories', ['url']);
+
+        if($blog_posts_category) {
+            return $cached_urls[$language] = SITE_URL . ((\Altum\Language::$active_languages[$language] ?? null) ? \Altum\Language::$active_languages[$language] . '/' : null) . 'blog/category/' . $blog_posts_category->url;
+        }
+    }
+
+    return $cached_urls[$language] = url('blog');
+}
+/* /Custom code: FC-2026-03-30 */
+
 function language($language = null) {
     /* Custom code: FC-2026-03-22: normalize legacy language aliases */
     return \Altum\Language::get(fc_resolve_language_name($language));
