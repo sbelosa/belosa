@@ -11,7 +11,7 @@ $fcc_market_resolver_cookie_name = \Altum\Link::get_forever_market_cookie_name()
     (() => {
         const allowedMarkets = <?= json_encode($fcc_market_resolver_allowed_markets) ?>;
         const cookieName = <?= json_encode($fcc_market_resolver_cookie_name) ?>;
-        const sessionKey = 'fcc-market-resolver-ran';
+        const sessionKey = 'fcc-market-resolver-last-market';
 
         const getCookie = name => {
             const cookie = document.cookie
@@ -24,10 +24,6 @@ $fcc_market_resolver_cookie_name = \Altum\Link::get_forever_market_cookie_name()
         const setCookie = (name, value) => {
             document.cookie = `${name}=${encodeURIComponent(value)}; path=/; max-age=${60 * 60 * 24 * 365}; SameSite=Lax`;
         };
-
-        if(getCookie(cookieName) || window.sessionStorage.getItem(sessionKey)) {
-            return;
-        }
 
         const timezone = Intl.DateTimeFormat?.().resolvedOptions?.().timeZone || '';
         const timezoneMap = {
@@ -104,8 +100,15 @@ $fcc_market_resolver_cookie_name = \Altum\Link::get_forever_market_cookie_name()
             return;
         }
 
+        const currentCookieMarket = getCookie(cookieName);
+        const lastAttemptedMarket = window.sessionStorage.getItem(sessionKey);
+
+        if(currentCookieMarket === market || lastAttemptedMarket === market) {
+            return;
+        }
+
         setCookie(cookieName, market);
-        window.sessionStorage.setItem(sessionKey, '1');
+        window.sessionStorage.setItem(sessionKey, market);
         window.location.reload();
     })();
     </script>
