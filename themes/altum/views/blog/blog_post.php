@@ -13,18 +13,8 @@ if(isset($data->referral) && $data->referral) {
 }
 
 $share_url = $data->share_url ?? $fcc_blog_post_url;
-$fcc_blog_market_resolver_is_visible = !\Altum\Link::get_trusted_forever_request_country_code();
-$fcc_blog_market_resolver_allowed_markets = array_keys(array_filter((array) json_decode($data->blog_post->webshop_links ?? '{}'), static function($value) {
-    return !empty($value);
-}));
 /* /Custom code: FC-2026-02-26 */
 ?>
-
-<?php if($fcc_blog_market_resolver_is_visible): ?>
-    <?= include_view(THEME_PATH . 'views/partials/fcc_market_resolver.php', [
-        'allowed_markets' => $fcc_blog_market_resolver_allowed_markets,
-    ]) ?>
-<?php endif ?>
 
 <?php ob_start() ?>
 <style>

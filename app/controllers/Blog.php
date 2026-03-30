@@ -305,24 +305,24 @@ class Blog extends Controller {
 
                 if(!$country_code) {
                     try {
-                        $maxmind = (new \MaxMind\Db\Reader(APP_PATH . 'includes/GeoLite2-Country.mmdb'))->get(get_ip());
-                    } catch(\Exception $exception) {
-                        /* :) */
-                    }
-
-                    $maxmind_country_code = isset($maxmind) && isset($maxmind['country']) ? ($maxmind['country']['iso_code'] ?? null) : null;
-                    $country_code = $maxmind_country_code;
-                }
-
-                if(!$country_code) {
-                    try {
-                        $maxmind_city = (new \MaxMind\Db\Reader(APP_PATH . 'includes/GeoLite2-City.mmdb'))->get(get_ip());
+                        $maxmind_city = get_maxmind_reader_city()->get(get_ip());
                     } catch(\Exception $exception) {
                         /* :) */
                     }
 
                     $maxmind_city_country_code = isset($maxmind_city) && isset($maxmind_city['country']) ? ($maxmind_city['country']['iso_code'] ?? null) : null;
                     $country_code = $maxmind_city_country_code;
+                }
+
+                if(!$country_code) {
+                    try {
+                        $maxmind = get_maxmind_reader_country()->get(get_ip());
+                    } catch(\Exception $exception) {
+                        /* :) */
+                    }
+
+                    $maxmind_country_code = isset($maxmind) && isset($maxmind['country']) ? ($maxmind['country']['iso_code'] ?? null) : null;
+                    $country_code = $maxmind_country_code;
                 }
                 /* /Custom code: FC-2026-02-26 */
 

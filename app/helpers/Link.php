@@ -945,15 +945,14 @@ class Link {
     public static function resolve_preferred_forever_market_country_code($country_code = null, array $available_country_codes = [], ?string $accept_language_header = null, bool $country_code_is_trusted = false): ?string {
         $normalized_country_code = self::resolve_forever_market_country_code($country_code);
         $available_country_codes = array_values(array_unique(array_filter(array_map([self::class, 'resolve_forever_market_country_code'], $available_country_codes))));
-        $forced_country_code = self::get_forced_forever_market_country_code();
 
-        if($forced_country_code) {
-            if(empty($available_country_codes) || in_array($forced_country_code, $available_country_codes, true)) {
-                return $forced_country_code;
+        if($country_code_is_trusted && $normalized_country_code) {
+            if(empty($available_country_codes) || in_array($normalized_country_code, $available_country_codes, true)) {
+                return $normalized_country_code;
             }
         }
 
-        if($country_code_is_trusted && $normalized_country_code) {
+        if($normalized_country_code) {
             if(empty($available_country_codes) || in_array($normalized_country_code, $available_country_codes, true)) {
                 return $normalized_country_code;
             }
@@ -962,12 +961,6 @@ class Link {
         foreach(self::get_accept_language_forever_market_candidates($accept_language_header) as $candidate_country_code) {
             if(empty($available_country_codes) || in_array($candidate_country_code, $available_country_codes, true)) {
                 return $candidate_country_code;
-            }
-        }
-
-        if($normalized_country_code) {
-            if(empty($available_country_codes) || in_array($normalized_country_code, $available_country_codes, true)) {
-                return $normalized_country_code;
             }
         }
 
