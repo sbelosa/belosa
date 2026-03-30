@@ -12,6 +12,7 @@ $fcc_market_resolver_cookie_name = \Altum\Link::get_forever_market_cookie_name()
         const allowedMarkets = <?= json_encode($fcc_market_resolver_allowed_markets) ?>;
         const cookieName = <?= json_encode($fcc_market_resolver_cookie_name) ?>;
         const sessionKey = 'fcc-market-resolver-last-market';
+        const geoSessionKey = 'fcc-market-resolver-geo-attempted';
 
         const getCookie = name => {
             const cookie = document.cookie
@@ -58,58 +59,159 @@ $fcc_market_resolver_cookie_name = \Altum\Link::get_forever_market_cookie_name()
             'ar': 'ae',
         };
 
-        const localeCandidates = [];
+        const normalizeMarket = value => {
+            if(!value || typeof value !== 'string') {
+                return null;
+            }
 
-        if(Array.isArray(navigator.languages)) {
-            localeCandidates.push(...navigator.languages);
-        }
+            const normalizedValue = value.trim().toLowerCase().slice(0, 2);
 
-        if(navigator.language) {
-            localeCandidates.push(navigator.language);
-        }
+            if(normalizedValue === 'xk') {
+                return 'al';
+            }
 
-        let market = null;
+            return allowedMarkets.includes(normalizedValue) ? normalizedValue : null;
+        };
 
-        if(timezoneMap[timezone] && allowedMarkets.includes(timezoneMap[timezone])) {
-            market = timezoneMap[timezone];
-        }
+        const applyMarket = market => {
+            if(!market) {
+                return false;
+            }
 
-        if(!market) {
-            for(const locale of localeCandidates) {
-                if(!locale || typeof locale !== 'string') {
-                    continue;
-                }
+            const currentCookieMarket = getCookie(cookieName);
+            const lastAttemptedMarket = window.sessionStorage.getItem(sessionKey);
 
-                const parts = locale.toLowerCase().split('-');
-                const languageCode = parts[0] || null;
-                const regionCode = parts[1] || null;
+            if(currentCookieMarket === market || lastAttemptedMarket === market) {
+                return false;
+            }
 
-                if(regionCode && regionMap[regionCode] && allowedMarkets.includes(regionMap[regionCode])) {
-                    market = regionMap[regionCode];
-                    break;
-                }
+            setCookie(cookieName, market);
+            window.sessionStorage.setItem(sessionKey, market);
+            window.location.reload();
 
-                if(languageCode && languageMap[languageCode] && allowedMarkets.includes(languageMap[languageCode])) {
-                    market = languageMap[languageCode];
-                    break;
+            return true;
+        };
+
+        const resolveMarketFromBrowserSignals = () => {
+            let market = null;
+
+            const localeCandidates = [];
+
+            if(Array.isArray(navigator.languages)) {
+                localeCandidates.push(...navigator.languages);
+            }
+
+            if(navigator.language) {
+                localeCandidates.push(navigator.language);
+            }
+
+            if(timezoneMap[timezone] && allowedMarkets.includes(timezoneMap[timezone])) {
+                market = timezoneMap[timezone];
+            }
+
+            if(!market) {
+                for(const locale of localeCandidates) {
+                    if(!locale || typeof locale !== 'string') {
+                        continue;
+                    }
+
+                    const parts = locale.toLowerCase().split('-');
+                    const languageCode = parts[0] || null;
+                    const regionCode = parts[1] || null;
+
+                    if(regionCode && regionMap[regionCode] && allowedMarkets.includes(regionMap[regionCode])) {
+                        market = regionMap[regionCode];
+                        break;
+                    }
+
+                    if(languageCode && languageMap[languageCode] && allowedMarkets.includes(languageMap[languageCode])) {
+                        market = languageMap[languageCode];
+                        break;
+                    }
                 }
             }
-        }
 
-        if(!market) {
-            return;
-        }
+            return market;
+        };
 
         const currentCookieMarket = getCookie(cookieName);
-        const lastAttemptedMarket = window.sessionStorage.getItem(sessionKey);
+        const browserFallbackMarket = resolveMarketFromBrowserSignals();
 
-        if(currentCookieMarket === market || lastAttemptedMarket === market) {
+        if(currentCookieMarket && !allowedMarkets.includes(currentCookieMarket)) {
+            setCookie(cookieName, '');
+        }
+
+        if(currentCookieMarket && browserFallbackMarket && currentCookieMarket !== browserFallbackMarket) {
+            window.sessionStorage.removeItem(sessionKey);
+        }
+
+        const geoAttempted = window.sessionStorage.getItem(geoSessionKey) === '1';
+
+        const applyBrowserFallback = () => {
+            if(browserFallbackMarket) {
+                applyMarket(browserFallbackMarket);
+            }
+
+            return false;
+        };
+
+        const tryGeoResolvers = async () => {
+            const geoRequests = [
+                {
+                    url: 'https://get.geojs.io/v1/ip/country.json',
+                    extractCountryCode: payload => payload?.country
+                },
+                {
+                    url: 'https://ipwho.is/',
+                    extractCountryCode: payload => payload?.country_code
+                },
+            ];
+
+            for(const geoRequest of geoRequests) {
+                try {
+                    const controller = new AbortController();
+                    const timeout = window.setTimeout(() => controller.abort(), 2500);
+
+                    const response = await fetch(geoRequest.url, {
+                        method: 'GET',
+                        cache: 'no-store',
+                        mode: 'cors',
+                        signal: controller.signal,
+                    });
+
+                    window.clearTimeout(timeout);
+
+                    if(!response.ok) {
+                        continue;
+                    }
+
+                    const payload = await response.json();
+                    const market = normalizeMarket(geoRequest.extractCountryCode(payload));
+
+                    if(market && applyMarket(market)) {
+                        return true;
+                    }
+                } catch(error) {
+                    /* Ignore geo resolver failures and fall back to browser hints. */
+                }
+            }
+
+            return false;
+        };
+
+        if(!geoAttempted) {
+            window.sessionStorage.setItem(geoSessionKey, '1');
+
+            tryGeoResolvers().then(didApplyGeoMarket => {
+                if(!didApplyGeoMarket) {
+                    applyBrowserFallback();
+                }
+            });
+
             return;
         }
 
-        setCookie(cookieName, market);
-        window.sessionStorage.setItem(sessionKey, market);
-        window.location.reload();
+        applyBrowserFallback();
     })();
     </script>
     <?php \Altum\Event::add_content(ob_get_clean(), 'javascript', 'fcc_market_resolver_' . md5(json_encode($fcc_market_resolver_allowed_markets))); ?>
