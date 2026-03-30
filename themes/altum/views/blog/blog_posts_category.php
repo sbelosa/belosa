@@ -2,11 +2,11 @@
 
 <?php
 /* Custom code: FC-2026-02-26: EN/HR widget titles and category hero labels */
-$fcc_blog_categories_title = \Altum\Language::$code == 'hr' ? 'Kategorije' : 'Categories';
-$fcc_blog_popular_title = \Altum\Language::$code == 'hr' ? 'Popularni postovi' : 'Popular posts';
-$fcc_category_hero_badge = \Altum\Language::$code == 'hr' ? 'Blog kategorija' : 'Blog category';
-$fcc_category_back_to_blog = \Altum\Language::$code == 'hr' ? 'Povratak na blog' : 'Back to blog';
-$fcc_category_all_posts = \Altum\Language::$code == 'hr' ? 'Objave u kategoriji' : 'Posts in this category';
+$fcc_blog_categories_title = l('blog.categories');
+$fcc_blog_popular_title = l('blog.popular');
+$fcc_category_hero_badge = l('blog.category.badge');
+$fcc_category_back_to_blog = l('blog.back');
+$fcc_category_all_posts = l('blog.category.all_posts');
 $fcc_blog_home_url = url('blog');
 /* /Custom code: FC-2026-02-26 */
 ?>

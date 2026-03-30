@@ -20,11 +20,11 @@
 
 <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center mb-4">
     <div>
-        <h1 class="h3 mb-2"><i class="fas fa-fw fa-xs fa-plus-circle text-primary-900 mr-2"></i> Nova automatizacija</h1>
-        <p class="text-muted mb-0">Kreiraj live automatizaciju i nakon toga uredi njezine korake i statistiku.</p>
+        <h1 class="h3 mb-2"><i class="fas fa-fw fa-xs fa-plus-circle text-primary-900 mr-2"></i> <?= l('admin_automation_create.header') ?></h1>
+        <p class="text-muted mb-0"><?= l('admin_automation_create.subheader') ?></p>
     </div>
 
-    <a href="<?= url('admin/automations') ?>" class="btn btn-gray-300 mt-3 mt-lg-0">Natrag</a>
+    <a href="<?= url('admin/automations') ?>" class="btn btn-gray-300 mt-3 mt-lg-0"><?= l('admin_automation_create.back') ?></a>
 </div>
 
 <?= \Altum\Alerts::output_alerts() ?>
@@ -35,23 +35,23 @@
         <div class="card-body">
             <div class="row align-items-center">
                 <div class="col-lg-7 mb-3 mb-lg-0">
-                    <span class="mail-studio-eyebrow">Live automation flow</span>
-                    <h2 class="mail-studio-title mb-2">Postavi onboarding sekvencu koja odmah zvuči kao prava kampanja i vodi korisnika kroz sljedeći korak.</h2>
-                    <p class="text-muted mb-0">Prvo postavi skupinu i pravila, zatim dodaj mail korake i odgode. Svaki korak je odvojen kao zasebna poruka s vlastitim CTA-om.</p>
+                    <span class="mail-studio-eyebrow"><?= l('admin_automation_create.hero_eyebrow') ?></span>
+                    <h2 class="mail-studio-title mb-2"><?= l('admin_automation_create.hero_title') ?></h2>
+                    <p class="text-muted mb-0"><?= l('admin_automation_create.hero_text') ?></p>
                 </div>
                 <div class="col-lg-5">
                     <div class="mail-studio-hero__stats">
                         <div class="mail-studio-stat">
-                            <span class="mail-studio-stat__label">Skupina</span>
+                            <span class="mail-studio-stat__label"><?= l('admin_automation_create.stat_segment') ?></span>
                             <strong class="mail-studio-stat__value">Live segment</strong>
                         </div>
                         <div class="mail-studio-stat">
-                            <span class="mail-studio-stat__label">Koraci</span>
+                            <span class="mail-studio-stat__label"><?= l('admin_automation_create.stat_steps') ?></span>
                             <strong class="mail-studio-stat__value" id="active_steps_counter"><?= $active_steps_count ?></strong>
                         </div>
                         <div class="mail-studio-stat">
-                            <span class="mail-studio-stat__label">Način rada</span>
-                            <strong class="mail-studio-stat__value">Automatski slijed</strong>
+                            <span class="mail-studio-stat__label"><?= l('admin_automation_create.stat_mode') ?></span>
+                            <strong class="mail-studio-stat__value"><?= l('admin_automation_create.stat_mode_value') ?></strong>
                         </div>
                     </div>
                 </div>
@@ -66,38 +66,38 @@
         <div class="card-body">
             <div class="mail-studio-section-heading">
                 <div>
-                    <span class="mail-studio-section-heading__eyebrow">Postavke automatizacije</span>
-                    <h2 class="h4 mb-1">Osnovna pravila i publika</h2>
-                    <p class="text-muted mb-0">Definiraj kome se automatizacija prikazuje i kako se ponaša kada korisnik ponovno uđe u segment.</p>
+                    <span class="mail-studio-section-heading__eyebrow"><?= l('admin_automation_create.section_eyebrow') ?></span>
+                    <h2 class="h4 mb-1"><?= l('admin_automation_create.section_title') ?></h2>
+                    <p class="text-muted mb-0"><?= l('admin_automation_create.section_text') ?></p>
                 </div>
             </div>
 
             <div class="row">
                 <div class="col-lg-4">
                     <div class="form-group">
-                        <label for="name">Naziv</label>
+                        <label for="name"><?= l('admin_automation_create.name_label') ?></label>
                         <input type="text" id="name" name="name" class="form-control <?= \Altum\Alerts::has_field_errors('name') ? 'is-invalid' : null ?>" value="<?= e($values['name']) ?>" maxlength="128" required="required" />
                         <?= \Altum\Alerts::output_field_error('name') ?>
                     </div>
                 </div>
                 <div class="col-lg-2">
                     <div class="form-group">
-                        <label for="status">Status</label>
+                        <label for="status"><?= l('admin_automation_create.status_label') ?></label>
                         <select id="status" name="status" class="custom-select">
-                            <option value="paused" <?= $values['status'] == 'paused' ? 'selected="selected"' : null ?>>Pauzirano</option>
-                            <option value="active" <?= $values['status'] == 'active' ? 'selected="selected"' : null ?>>Aktivno</option>
+                            <option value="paused" <?= $values['status'] == 'paused' ? 'selected="selected"' : null ?>><?= l('admin_automations.status.paused') ?></option>
+                            <option value="active" <?= $values['status'] == 'active' ? 'selected="selected"' : null ?>><?= l('admin_automations.status.active') ?></option>
                         </select>
                     </div>
                 </div>
                 <div class="col-lg-3">
                     <div class="form-group">
-                        <label for="batch_size">Po cron izvođenju</label>
+                        <label for="batch_size"><?= l('admin_automation_update.batch_size') ?></label>
                         <input type="number" min="1" max="200" id="batch_size" name="batch_size" class="form-control" value="<?= (int) $values['batch_size'] ?>" />
                     </div>
                 </div>
                 <div class="col-lg-3 d-flex align-items-end">
                     <div class="w-100 mail-studio-inline-stat text-center">
-                        <div class="small text-uppercase text-muted mb-1">Koraci</div>
+                        <div class="small text-uppercase text-muted mb-1"><?= l('admin_automation_create.steps_short') ?></div>
                         <div class="h4 mb-0"><?= $active_steps_count ?></div>
                     </div>
                 </div>
@@ -106,7 +106,7 @@
             <div class="row">
                 <div class="col-lg-4">
                     <div class="form-group">
-                        <label for="segment">Skupina</label>
+                        <label for="segment"><?= l('admin_automation_create.segment_label') ?></label>
                         <select id="segment" name="segment" class="custom-select <?= \Altum\Alerts::has_field_errors('segment') ? 'is-invalid' : null ?>">
                             <?php foreach($data->segment_options as $segment_key => $segment_name): ?>
                                 <option value="<?= $segment_key ?>" <?= $values['segment'] === $segment_key ? 'selected="selected"' : null ?>><?= e($segment_name) ?></option>
@@ -117,13 +117,13 @@
                 </div>
                 <div class="col-lg-4">
                     <div class="form-group">
-                        <label for="segment_label">Prikazani naziv skupine</label>
+                            <label for="segment_label"><?= l('admin_automation_create.segment_display_name') ?></label>
                         <input type="text" id="segment_label" name="segment_label" class="form-control" value="<?= e($values['segment_label']) ?>" maxlength="128" />
                     </div>
                 </div>
                 <div class="col-lg-4">
                     <div class="form-group">
-                        <label for="video_url">Video URL</label>
+                        <label for="video_url"><?= l('admin_automation_update.video_url') ?></label>
                         <input type="url" id="video_url" name="video_url" class="form-control" value="<?= e($values['video_url']) ?>" />
                     </div>
                 </div>
@@ -133,19 +133,19 @@
                 <div class="col-lg-6">
                     <div class="custom-control custom-switch">
                         <input id="reentry_is_enabled" name="reentry_is_enabled" type="checkbox" class="custom-control-input" <?= $values['reentry_is_enabled'] ? 'checked="checked"' : null ?>>
-                        <label class="custom-control-label" for="reentry_is_enabled">Ponovni ulaz kada korisnik ponovno zadovolji uvjet</label>
+                            <label class="custom-control-label" for="reentry_is_enabled"><?= l('admin_automation_create.reentry') ?></label>
                     </div>
                 </div>
                 <div class="col-lg-6">
                     <div class="custom-control custom-switch">
                         <input id="exit_when_condition_met" name="exit_when_condition_met" type="checkbox" class="custom-control-input" <?= $values['exit_when_condition_met'] ? 'checked="checked"' : null ?>>
-                        <label class="custom-control-label" for="exit_when_condition_met">Automatski izlaz kad korisnik više ne zadovoljava uvjet</label>
+                            <label class="custom-control-label" for="exit_when_condition_met"><?= l('admin_automation_create.auto_exit_condition') ?></label>
                     </div>
                 </div>
             </div>
 
             <div class="form-group" data-plan-users>
-                <label>Planovi</label>
+                <label><?= l('admin_automation_create.plans') ?></label>
                 <div class="row">
                     <div class="col-md-3 mb-2">
                         <div class="custom-control custom-switch">
@@ -178,10 +178,10 @@
         <div class="card-body">
             <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center mb-3">
                 <div>
-                    <h2 class="h5 mb-1">Shortkodovi za mail</h2>
-                    <p class="text-muted mb-0">U predmetu i sadržaju možeš koristiti varijable koje se automatski zamijene podacima korisnika.</p>
+                    <h2 class="h5 mb-1"><?= l('admin_mail_builder.shortcodes_title') ?></h2>
+                    <p class="text-muted mb-0"><?= l('admin_automation_create.shortcodes_help') ?></p>
                 </div>
-                <div class="small text-muted mt-2 mt-lg-0">Klik na kod za kopiranje</div>
+                <div class="small text-muted mt-2 mt-lg-0"><?= l('admin_mail_builder.copy_hint') ?></div>
             </div>
 
             <div class="mail-shortcodes-grid">
@@ -198,53 +198,53 @@
             <div class="card-body">
                 <div class="automation-step-card__header mb-4">
                     <div>
-                        <span class="automation-step-card__eyebrow">Sekvenca <?= $step['step_order'] ?></span>
-                        <h2 class="h4 mb-1">Korak <?= $step['step_order'] ?></h2>
-                        <p class="text-muted mb-0">Jasna poruka, jedna glavna akcija i dovoljno razmaka da izgleda kao pravi mail.</p>
+                        <span class="automation-step-card__eyebrow"><?= sprintf(l('admin_automation_create.sequence_eyebrow'), $step['step_order']) ?></span>
+                        <h2 class="h4 mb-1"><?= sprintf(l('admin_automation_update.step_header'), $step['step_order']) ?></h2>
+                        <p class="text-muted mb-0"><?= l('admin_automation_create.step_intro') ?></p>
                     </div>
-                    <span class="automation-step-card__badge">Mail <?= $step['step_order'] ?></span>
+                    <span class="automation-step-card__badge"><?= sprintf(l('admin_automation_create.step_mail_badge'), $step['step_order']) ?></span>
                 </div>
 
                 <div class="row">
                     <div class="col-lg-8">
                         <div class="form-group">
-                            <label for="step_subject_<?= $step['step_order'] ?>">Predmet</label>
+                            <label for="step_subject_<?= $step['step_order'] ?>"><?= l('admin_broadcasts.subject') ?></label>
                             <input type="text" id="step_subject_<?= $step['step_order'] ?>" name="step_subject_<?= $step['step_order'] ?>" class="form-control <?= \Altum\Alerts::has_field_errors('step_subject_' . $step['step_order']) ? 'is-invalid' : null ?>" value="<?= e($step['subject']) ?>" maxlength="128" <?= $step['step_order'] === 1 ? 'required="required"' : '' ?> />
                             <?= \Altum\Alerts::output_field_error('step_subject_' . $step['step_order']) ?>
                         </div>
                     </div>
                     <div class="col-lg-4">
                         <div class="form-group">
-                            <label>Odgoda od zadnje poslane poruke</label>
+                            <label><?= l('admin_mail_builder.delay_label') ?></label>
                             <div class="delay-input-group">
                                 <div class="delay-input-group__value">
                                     <input type="number" min="0" class="form-control" data-delay-value data-target="step_delay_minutes_<?= $step['step_order'] ?>" value="<?= $step_delay['value'] ?>" />
                                 </div>
                                 <div class="delay-input-group__unit">
                                     <select class="custom-select" data-delay-unit data-target="step_delay_minutes_<?= $step['step_order'] ?>">
-                                        <option value="minutes" <?= $step_delay['unit'] === 'minutes' ? 'selected="selected"' : null ?>>Minute</option>
-                                        <option value="hours" <?= $step_delay['unit'] === 'hours' ? 'selected="selected"' : null ?>>Sati</option>
-                                        <option value="days" <?= $step_delay['unit'] === 'days' ? 'selected="selected"' : null ?>>Dani</option>
+                                        <option value="minutes" <?= $step_delay['unit'] === 'minutes' ? 'selected="selected"' : null ?>><?= l('admin_mail_builder.delay_unit_minutes') ?></option>
+                                        <option value="hours" <?= $step_delay['unit'] === 'hours' ? 'selected="selected"' : null ?>><?= l('admin_mail_builder.delay_unit_hours') ?></option>
+                                        <option value="days" <?= $step_delay['unit'] === 'days' ? 'selected="selected"' : null ?>><?= l('admin_mail_builder.delay_unit_days') ?></option>
                                     </select>
                                 </div>
                             </div>
                             <input type="hidden" id="step_delay_minutes_<?= $step['step_order'] ?>" name="step_delay_minutes_<?= $step['step_order'] ?>" value="<?= (int) $step['delay_minutes'] ?>" />
-                            <small class="form-text text-muted">Korak se šalje nakon odabranog vremena od prethodnog poslanog maila.</small>
+                            <small class="form-text text-muted"><?= l('admin_automation_create.delay_help') ?></small>
                         </div>
                     </div>
                 </div>
 
                 <div class="form-group mb-0">
-                    <label for="step_content_<?= $step['step_order'] ?>">Sadržaj</label>
+                    <label for="step_content_<?= $step['step_order'] ?>"><?= l('admin_broadcasts.content') ?></label>
                     <div class="mail-editor-shell">
                         <div class="mail-editor-shell__header">
-                            <div class="mail-editor-shell__title">Email builder</div>
-                            <div class="mail-editor-shell__meta">Koristi kratke odlomke, CTA link i personalizaciju.</div>
+                            <div class="mail-editor-shell__title"><?= l('admin_mail_builder.editor_title') ?></div>
+                            <div class="mail-editor-shell__meta"><?= l('admin_automation_create.editor_meta') ?></div>
                         </div>
                         <div class="mail-editor-shell__canvas-meta">
-                            <span class="mail-editor-shell__pill">Personalizacija</span>
-                            <span class="mail-editor-shell__pill">Jedan glavni CTA</span>
-                            <span class="mail-editor-shell__pill">Footer odjave ide automatski</span>
+                            <span class="mail-editor-shell__pill"><?= l('admin_mail_builder.pill_personalization') ?></span>
+                            <span class="mail-editor-shell__pill"><?= l('admin_mail_builder.pill_primary_cta') ?></span>
+                            <span class="mail-editor-shell__pill"><?= l('admin_mail_builder.pill_unsubscribe_footer') ?></span>
                         </div>
                         <div id="quill_step_<?= $step['step_order'] ?>" class="border rounded-bottom bg-transparent quill-email-editor" data-target="step_content_<?= $step['step_order'] ?>"></div>
                     </div>
@@ -256,17 +256,17 @@
     <?php endforeach ?>
 
     <div class="mail-studio-actions mb-4">
-        <button type="button" class="btn btn-outline-primary mb-2 mb-md-0" id="add_step_button">Dodaj sljedeći korak</button>
-        <button type="button" class="btn btn-outline-secondary" id="remove_step_button">Ukloni zadnji korak</button>
+        <button type="button" class="btn btn-outline-primary mb-2 mb-md-0" id="add_step_button"><?= l('admin_automation_create.add_next_step') ?></button>
+        <button type="button" class="btn btn-outline-secondary" id="remove_step_button"><?= l('admin_automation_create.remove_last_step') ?></button>
     </div>
 
     <div class="card mail-studio-submit-card">
         <div class="card-body d-flex flex-column flex-lg-row justify-content-between align-items-lg-center">
             <div class="mb-3 mb-lg-0">
-                <h2 class="h5 mb-1">Spremno za aktivaciju</h2>
-                <p class="text-muted mb-0">Ako je status aktivan, cron će krenuti obrađivati korisnike iz odabrane skupine.</p>
+                <h2 class="h5 mb-1"><?= l('admin_automation_create.ready_title') ?></h2>
+                <p class="text-muted mb-0"><?= l('admin_automation_create.ready_text') ?></p>
             </div>
-            <button type="submit" class="btn btn-lg btn-primary px-5">Kreiraj automatizaciju</button>
+            <button type="submit" class="btn btn-lg btn-primary px-5"><?= l('admin_automation_create.submit') ?></button>
         </div>
     </div>
 </form>

@@ -39,17 +39,17 @@ class AdminBlogPostCreateEnglish extends Controller {
         $target_language = array_search('en', \Altum\Language::$active_languages, true);
 
         if(!$target_language) {
-            Alerts::add_error('English must be enabled in Languages before creating an English draft.');
+            Alerts::add_error(l('admin_blog_post_create_english.error_language_disabled'));
             redirect('admin/blog-post-update/' . $blog_post_id);
         }
 
         if($blog_post->language === $target_language) {
-            Alerts::add_warning('This article is already in English.');
+            Alerts::add_warning(l('admin_blog_post_create_english.warning_already_english'));
             redirect('admin/blog-post-update/' . $blog_post_id);
         }
 
         if($existing_blog_post = db()->where('url', $blog_post->url)->where('language', $target_language)->getOne('blog_posts', ['blog_post_id'])) {
-            Alerts::add_warning('An English version already exists for this URL.');
+            Alerts::add_warning(l('admin_blog_post_create_english.warning_exists'));
             redirect('admin/blog-post-update/' . $existing_blog_post->blog_post_id);
         }
 
@@ -57,7 +57,7 @@ class AdminBlogPostCreateEnglish extends Controller {
         $model = trim((string) (settings()->main->openai_model ?? 'gpt-4o'));
 
         if($api_key === '') {
-            Alerts::add_error('OpenAI API key is missing in settings.');
+            Alerts::add_error(l('admin_ai.error_missing_api_key'));
             redirect('admin/blog-post-update/' . $blog_post_id);
         }
 
@@ -115,17 +115,17 @@ class AdminBlogPostCreateEnglish extends Controller {
 
             $this->resume_session();
 
-            Alerts::add_success('English draft created successfully. Review it before publishing.');
+            Alerts::add_success(l('admin_blog_post_create_english.success_created'));
 
             if($blog_post->blog_posts_category_id && !$target_category_id) {
-                Alerts::add_warning('No matching English category was found and it could not be auto-created, so the draft was created without a category.');
+                Alerts::add_warning(l('admin_blog_post_create_english.warning_category_missing'));
             }
 
             redirect('admin/blog-post-update/' . $new_blog_post_id);
         } catch (\Exception $exception) {
             $this->resume_session();
 
-            Alerts::add_error('The English draft could not be created: ' . $exception->getMessage());
+            Alerts::add_error(sprintf(l('admin_blog_post_create_english.error_failed'), $exception->getMessage()));
             redirect('admin/blog-post-update/' . $blog_post_id);
         }
 

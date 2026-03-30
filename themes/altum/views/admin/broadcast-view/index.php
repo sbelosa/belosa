@@ -1,11 +1,19 @@
 <?php defined('ALTUMCODE') || die() ?>
 
 <?php $base_url = url('admin/broadcast-view/' . $data->broadcast->broadcast_id) ?>
+<?php $broadcast_status_labels = [
+    'sent' => l('admin_broadcast_view.summary_sent'),
+    'delivered' => l('admin_broadcast_view.summary_delivered'),
+    'opened' => l('admin_broadcast_view.summary_opened'),
+    'clicked' => l('admin_broadcast_view.summary_clicked'),
+    'bounced' => l('admin_broadcast_view.summary_bounced'),
+    'unsubscribed' => l('admin_broadcast_view.summary_unsubscribed'),
+]; ?>
 
 <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center mb-4">
     <div>
         <h1 class="h3 mb-2"><i class="fas fa-fw fa-xs fa-mail-bulk text-primary-900 mr-2"></i> <?= e($data->broadcast->name) ?></h1>
-        <p class="text-muted mb-0">Pregled isporuke, otvaranja, klikova i liste primatelja za ovaj mail.</p>
+        <p class="text-muted mb-0"><?= l('admin_broadcast_view.subheader') ?></p>
     </div>
 
     <div class="d-flex align-items-center mt-3 mt-lg-0">
@@ -33,8 +41,8 @@
 <?php endif ?>
 
 <div class="row mb-4">
-    <div class="col-6 col-xl-2 mb-3"><div class="card h-100"><div class="card-body"><div class="text-muted small text-uppercase mb-1">Status</div><div class="h5 mb-0"><?php if($data->broadcast->status == 'draft'): ?>Draft<?php elseif($data->broadcast->status == 'processing'): ?>Processing<?php else: ?>Sent<?php endif ?></div></div></div></div>
-    <?php foreach(['sent' => 'Poslano', 'delivered' => 'Isporučeno', 'opened' => 'Otvoreno', 'clicked' => 'Kliknuto', 'bounced' => 'Bounce', 'unsubscribed' => 'Odjavljeno'] as $status_key => $status_label): ?>
+    <div class="col-6 col-xl-2 mb-3"><div class="card h-100"><div class="card-body"><div class="text-muted small text-uppercase mb-1"><?= l('admin_broadcast_view.summary_status') ?></div><div class="h5 mb-0"><?php if($data->broadcast->status == 'draft'): ?><?= l('admin_broadcasts.status.draft') ?><?php elseif($data->broadcast->status == 'processing'): ?><?= l('admin_broadcasts.status.processing') ?><?php else: ?><?= l('admin_broadcasts.status.sent') ?><?php endif ?></div></div></div></div>
+    <?php foreach($broadcast_status_labels as $status_key => $status_label): ?>
         <div class="col-6 col-xl-2 mb-3">
             <a href="<?= $base_url . '?start_date=' . $data->datetime['start_date'] . '&end_date=' . $data->datetime['end_date'] . '&status_filter=' . $status_key ?>" class="card h-100 text-decoration-none <?= $data->status_filter === $status_key ? 'border-primary' : '' ?>">
                 <div class="card-body">
@@ -50,17 +58,17 @@
     <div class="card-body">
         <div class="row">
             <div class="col-lg-4 mb-3 mb-lg-0">
-                <div class="small text-uppercase text-muted mb-2">Osnovno</div>
-                <div class="mb-2"><strong>Naziv:</strong> <?= e($data->broadcast->name) ?></div>
-                <div class="mb-2"><strong>Predmet:</strong> <?= e($data->broadcast->subject) ?></div>
-                <div class="mb-2"><strong>Skupina:</strong> <?= l('admin_broadcasts.segment.' . $data->broadcast->segment) ?></div>
-                <div class="mb-2"><strong>Poslano:</strong> <?= nr($data->broadcast->sent_emails) ?> / <?= nr($data->broadcast->total_emails) ?></div>
+                <div class="small text-uppercase text-muted mb-2"><?= l('admin_broadcast_view.info_title') ?></div>
+                <div class="mb-2"><strong><?= l('admin_broadcast_view.info_name') ?>:</strong> <?= e($data->broadcast->name) ?></div>
+                <div class="mb-2"><strong><?= l('admin_broadcast_view.info_subject') ?>:</strong> <?= e($data->broadcast->subject) ?></div>
+                <div class="mb-2"><strong><?= l('admin_broadcast_view.info_segment') ?>:</strong> <?= l('admin_broadcasts.segment.' . $data->broadcast->segment) ?></div>
+                <div class="mb-2"><strong><?= l('admin_broadcast_view.info_sent') ?>:</strong> <?= nr($data->broadcast->sent_emails) ?> / <?= nr($data->broadcast->total_emails) ?></div>
             </div>
             <div class="col-lg-8">
                 <div class="row">
-                    <div class="col-md-3 col-6 mb-3"><div class="bg-gray-100 rounded p-3 h-100"><div class="small text-uppercase text-muted mb-1">Delivery rate</div><div class="h4 mb-0"><?= $data->analytics['rates']['delivery_rate'] ?>%</div></div></div>
-                    <div class="col-md-3 col-6 mb-3"><div class="bg-gray-100 rounded p-3 h-100"><div class="small text-uppercase text-muted mb-1">Open rate</div><div class="h4 mb-0"><?= $data->analytics['rates']['open_rate'] ?>%</div></div></div>
-                    <div class="col-md-3 col-6 mb-3"><div class="bg-gray-100 rounded p-3 h-100"><div class="small text-uppercase text-muted mb-1">Click rate</div><div class="h4 mb-0"><?= $data->analytics['rates']['click_rate'] ?>%</div></div></div>
+                    <div class="col-md-3 col-6 mb-3"><div class="bg-gray-100 rounded p-3 h-100"><div class="small text-uppercase text-muted mb-1"><?= l('admin_broadcast_view.rate_delivery') ?></div><div class="h4 mb-0"><?= $data->analytics['rates']['delivery_rate'] ?>%</div></div></div>
+                    <div class="col-md-3 col-6 mb-3"><div class="bg-gray-100 rounded p-3 h-100"><div class="small text-uppercase text-muted mb-1"><?= l('admin_broadcast_view.rate_open') ?></div><div class="h4 mb-0"><?= $data->analytics['rates']['open_rate'] ?>%</div></div></div>
+                    <div class="col-md-3 col-6 mb-3"><div class="bg-gray-100 rounded p-3 h-100"><div class="small text-uppercase text-muted mb-1"><?= l('admin_broadcast_view.rate_click') ?></div><div class="h4 mb-0"><?= $data->analytics['rates']['click_rate'] ?>%</div></div></div>
                     <div class="col-md-3 col-6 mb-3"><div class="bg-gray-100 rounded p-3 h-100"><div class="small text-uppercase text-muted mb-1">CTOR</div><div class="h4 mb-0"><?= $data->analytics['rates']['click_to_open_rate'] ?>%</div></div></div>
                 </div>
             </div>
@@ -71,28 +79,28 @@
 <div class="card mb-4">
     <div class="card-body">
         <div class="d-flex justify-content-between align-items-center mb-3">
-            <h2 class="h5 mb-0">Primatelji</h2>
-            <div class="small text-muted">Prikazano zadnjih <?= nr($data->messages_display_limit) ?> zapisa<?php if(($data->filtered_messages_total ?? 0) > $data->messages_display_limit): ?> od ukupno <?= nr($data->filtered_messages_total) ?><?php endif ?> • Filter: <?= e($data->status_filter) ?></div>
+            <h2 class="h5 mb-0"><?= l('admin_broadcast_view.recipients_title') ?></h2>
+            <div class="small text-muted"><?php if(($data->filtered_messages_total ?? 0) > $data->messages_display_limit): ?><?= sprintf(l('admin_broadcast_view.records_shown_total'), nr($data->messages_display_limit), nr($data->filtered_messages_total)) ?><?php else: ?><?= sprintf(l('admin_broadcast_view.records_shown'), nr($data->messages_display_limit)) ?><?php endif ?> • <?= l('admin_broadcast_view.filter_label') ?>: <?= e($broadcast_status_labels[$data->status_filter] ?? $data->status_filter) ?></div>
         </div>
         <div class="table-responsive table-custom-container">
             <table class="table table-custom mb-0">
                 <thead>
                 <tr>
-                    <th>Korisnik</th>
-                    <th>Status</th>
-                    <th>Poslano</th>
-                    <th>Isporučeno</th>
-                    <th>Otvoreno</th>
-                    <th>Kliknuto</th>
-                    <th>Odjavljeno</th>
-                    <th>Poruka</th>
+                    <th><?= l('admin_broadcast_view.table_user') ?></th>
+                    <th><?= l('admin_broadcast_view.table_status') ?></th>
+                    <th><?= l('admin_broadcast_view.table_sent') ?></th>
+                    <th><?= l('admin_broadcast_view.table_delivered') ?></th>
+                    <th><?= l('admin_broadcast_view.table_opened') ?></th>
+                    <th><?= l('admin_broadcast_view.table_clicked') ?></th>
+                    <th><?= l('admin_broadcast_view.table_unsubscribed') ?></th>
+                    <th><?= l('admin_broadcast_view.table_message') ?></th>
                 </tr>
                 </thead>
                 <tbody>
                 <?php foreach($data->filtered_messages as $message): ?>
                     <tr>
                         <td class="text-nowrap"><?php if($message->user): ?><div class="font-weight-bold"><?= e($message->user->name ?: ('#' . $message->user_id)) ?></div><div class="small text-muted"><?= e($message->user->email) ?></div><?php else: ?><div class="font-weight-bold">#<?= (int) $message->user_id ?></div><div class="small text-muted"><?= e($message->recipient_email) ?></div><?php endif ?></td>
-                        <td class="text-nowrap"><span class="badge badge-light"><?= e(str_replace('_', ' ', $message->status)) ?></span></td>
+                        <td class="text-nowrap"><span class="badge badge-light"><?= e($broadcast_status_labels[$message->status] ?? ucwords(str_replace('_', ' ', $message->status))) ?></span></td>
                         <td class="text-nowrap"><?= \Altum\Date::get($message->sent_datetime, 2) ?></td>
                         <td class="text-nowrap"><?= $message->delivered_datetime ? \Altum\Date::get($message->delivered_datetime, 2) : '-' ?></td>
                         <td class="text-nowrap"><?= $message->first_open_datetime ? \Altum\Date::get($message->first_open_datetime, 2) : '-' ?></td>
@@ -101,7 +109,7 @@
                         <td class="text-nowrap small"><?php if($message->brevo_message_id): ?><code data-copy><?= e($message->brevo_message_id) ?></code><?php else: ?>-<?php endif ?></td>
                     </tr>
                 <?php endforeach ?>
-                <?php if(empty($data->filtered_messages)): ?><tr><td colspan="8" class="text-center text-muted py-4">Nema primatelja za odabrani filter.</td></tr><?php endif ?>
+                <?php if(empty($data->filtered_messages)): ?><tr><td colspan="8" class="text-center text-muted py-4"><?= l('admin_broadcast_view.no_recipients') ?></td></tr><?php endif ?>
                 </tbody>
             </table>
         </div>

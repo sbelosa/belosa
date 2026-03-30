@@ -21,15 +21,14 @@
 
 <?php //ALTUMCODE:DEMO if(DEMO) {$data->user->email = 'hidden@demo.com'; $data->user->name = $data->user->ip = $data->user->api_key = 'hidden on demo';} ?>
 <?php
-$fcc_admin_is_hr = \Altum\Language::$code === 'hr';
-$fcc_admin_featured_header = $fcc_admin_is_hr ? 'Glavna Forever Card Aplikacija' : 'Main Forever Card App';
-$fcc_admin_featured_subheader = $fcc_admin_is_hr ? 'Ove postavke vrijede samo za glavnu Forever Card Aplikaciju dodijeljenu korisniku pri aktivaciji pristupa. Ovdje možeš urediti javni prikaz i po potrebi ga isključiti.' : 'These settings apply only to the main Forever Card App assigned to the user during access activation. You can edit the public showcase settings here and turn them off if needed.';
-$fcc_admin_opt_in = $fcc_admin_is_hr ? 'Korisnik dopušta javni prikaz' : 'User allows public display';
-$fcc_admin_approved = $fcc_admin_is_hr ? 'Admin dopušta javni prikaz' : 'Admin allows public display';
-$fcc_admin_market = $fcc_admin_is_hr ? 'Javno tržište / država' : 'Public market / country';
-$fcc_admin_summary = $fcc_admin_is_hr ? 'Kratki javni opis glavne aplikacije' : 'Short public summary of the main app';
-$fcc_admin_summary_help = $fcc_admin_is_hr ? 'Opis je opcionalan. Ako ostane prazan, sustav će javno koristiti automatski sažetak na temelju aktivnih blokova glavne aplikacije.' : 'This summary is optional. If left empty, the system will use an automatic public summary based on the active blocks in the main app.';
-$fcc_admin_missing = $fcc_admin_is_hr ? 'Korisnik još nema dodijeljenu glavnu Forever Card Aplikaciju pa ove postavke trenutno nije moguće uređivati.' : 'This user does not yet have a main Forever Card App assigned, so these settings cannot be edited yet.';
+$fcc_admin_featured_header = l('admin_user_update.fcc_featured_header');
+$fcc_admin_featured_subheader = l('admin_user_update.fcc_featured_subheader');
+$fcc_admin_opt_in = l('admin_user_update.fcc_featured_opt_in');
+$fcc_admin_approved = l('admin_user_update.fcc_featured_approved');
+$fcc_admin_market = l('admin_user_update.fcc_featured_market');
+$fcc_admin_summary = l('admin_user_update.fcc_featured_summary');
+$fcc_admin_summary_help = l('admin_user_update.fcc_featured_summary_help');
+$fcc_admin_missing = l('admin_user_update.fcc_featured_missing');
 ?>
 
 <div class="card <?= \Altum\Alerts::has_field_errors() ? 'border-danger' : null ?>">

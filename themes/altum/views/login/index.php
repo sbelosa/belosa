@@ -201,10 +201,10 @@
 //ALTUMCODE:DEMO if(DEMO) {
 //ALTUMCODE:DEMO echo '<div class="card mb-4">';
 //ALTUMCODE:DEMO echo '<div class="card-body">';
-//ALTUMCODE:DEMO echo '<div class="h6">Demo</div>';
-//ALTUMCODE:DEMO echo '<div><small class="text-muted">📱 Some features are disabled as this is a demo version.</small></div>';
-//ALTUMCODE:DEMO echo '<div><small class="text-muted">🛠️ You can login as the admin with the prefilled credentials below.</small></div>';
-//ALTUMCODE:DEMO echo '<div><small class="text-muted">👨‍💻 You can also register your own account to test it as a normal user</small></div>';
+//ALTUMCODE:DEMO echo '<div class="h6">' . l('login.demo_title') . '</div>';
+//ALTUMCODE:DEMO echo '<div><small class="text-muted">📱 ' . l('login.demo_disabled_features') . '</small></div>';
+//ALTUMCODE:DEMO echo '<div><small class="text-muted">🛠️ ' . l('login.demo_admin_credentials') . '</small></div>';
+//ALTUMCODE:DEMO echo '<div><small class="text-muted">👨‍💻 ' . l('login.demo_register_account') . '</small></div>';
 //ALTUMCODE:DEMO echo '</div>';
 //ALTUMCODE:DEMO echo '</div>';
 //ALTUMCODE:DEMO }

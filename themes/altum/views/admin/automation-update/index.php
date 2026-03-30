@@ -4,6 +4,15 @@
 <?php $segment = $data->automation->segment ?>
 <?php $settings = $data->automation->settings ?>
 <?php $automation_shortcodes = ['{{USER:NAME}}', '{{USER:EMAIL}}', '{{SALES_LINKS_PAGE}}', '{{FOREVER_CARD_APPLICATION_URL}}', '{{FCC_VIDEO_URL}}', '{{USER:LOGIN_LINK}}', '{{WEBSITE_TITLE}}']; ?>
+<?php $automation_status_labels = [
+    'sent' => l('admin_automation_update.summary_sent'),
+    'delivered' => l('admin_automation_update.summary_delivered'),
+    'opened' => l('admin_automation_update.summary_opened'),
+    'clicked' => l('admin_automation_update.summary_clicked'),
+    'goal_completed' => l('admin_automation_update.summary_goal_completed'),
+    'unsubscribed' => l('admin_automation_update.summary_unsubscribed'),
+    'all' => l('admin_automation_update.summary_all_records'),
+]; ?>
 <?php $get_delay_parts = static function($minutes) {
     $minutes = max(0, (int) $minutes);
 
@@ -21,12 +30,12 @@
 <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center mb-4">
     <div>
         <h1 class="h3 mb-2"><i class="fas fa-fw fa-xs fa-wave-square text-primary-900 mr-2"></i> <?= e($data->automation->name) ?></h1>
-        <p class="text-muted mb-0">Uređivanje automatizacije i detaljna statistika primatelja.</p>
+        <p class="text-muted mb-0"><?= l('admin_automation_update.page_text') ?></p>
     </div>
 
     <div class="d-flex flex-column flex-md-row mt-3 mt-lg-0">
-        <a href="<?= url('admin/settings/smtp') ?>" class="btn btn-outline-primary mb-2 mb-md-0 mr-md-2">Brevo postavke</a>
-        <a href="<?= url('admin/automations') ?>" class="btn btn-gray-300">Natrag</a>
+        <a href="<?= url('admin/settings/smtp') ?>" class="btn btn-outline-primary mb-2 mb-md-0 mr-md-2"><?= l('admin_automation_update.smtp_settings') ?></a>
+        <a href="<?= url('admin/automations') ?>" class="btn btn-gray-300"><?= l('admin_automation_update.back') ?></a>
     </div>
 </div>
 
@@ -45,22 +54,22 @@
         <div class="card-body">
             <div class="row align-items-center">
                 <div class="col-lg-7 mb-3 mb-lg-0">
-                    <span class="mail-studio-eyebrow">Automation overview</span>
-                    <h2 class="mail-studio-title mb-2">Uređuj sekvencu i statistiku u istom prostoru, bez admin kaosa.</h2>
-                    <p class="text-muted mb-0">Gornji dio služi za rezultate i filtre, donji dio za sadržaj i schedule svakog mail koraka.</p>
+                    <span class="mail-studio-eyebrow"><?= l('admin_automation_update.hero_eyebrow') ?></span>
+                    <h2 class="mail-studio-title mb-2"><?= l('admin_automation_update.hero_title') ?></h2>
+                    <p class="text-muted mb-0"><?= l('admin_automation_update.hero_text') ?></p>
                 </div>
                 <div class="col-lg-5">
                     <div class="mail-studio-hero__stats">
                         <div class="mail-studio-stat">
-                            <span class="mail-studio-stat__label">Status</span>
-                            <strong class="mail-studio-stat__value"><?= $data->automation->status == 'active' ? 'Aktivno' : 'Pauzirano' ?></strong>
+                            <span class="mail-studio-stat__label"><?= l('admin_automation_update.status_label') ?></span>
+                            <strong class="mail-studio-stat__value"><?= $data->automation->status == 'active' ? l('admin_automations.status.active') : l('admin_automations.status.paused') ?></strong>
                         </div>
                         <div class="mail-studio-stat">
-                            <span class="mail-studio-stat__label">Koraci</span>
+                            <span class="mail-studio-stat__label"><?= l('admin_automation_create.stat_steps') ?></span>
                             <strong class="mail-studio-stat__value"><?= count($data->steps) ?></strong>
                         </div>
                         <div class="mail-studio-stat">
-                            <span class="mail-studio-stat__label">Skupina</span>
+                            <span class="mail-studio-stat__label"><?= l('admin_automation_update.segment_label') ?></span>
                             <strong class="mail-studio-stat__value"><?= e($data->automation->segment_label ?: $data->automation->segment) ?></strong>
                         </div>
                     </div>
@@ -70,11 +79,11 @@
     </div>
 
 <div class="row mb-4">
-    <?php foreach(['sent' => 'Poslano', 'delivered' => 'Isporučeno', 'opened' => 'Otvoreno', 'clicked' => 'Kliknuto', 'goal_completed' => 'Goal', 'unsubscribed' => 'Odjavljeno'] as $status_key => $status_label): ?>
+    <?php foreach(['sent', 'delivered', 'opened', 'clicked', 'goal_completed', 'unsubscribed'] as $status_key): ?>
         <div class="col-6 col-xl-2 mb-3">
             <a href="<?= $base_url . '?status_filter=' . $status_key ?>" class="card h-100 text-decoration-none <?= $data->status_filter === $status_key ? 'border-primary' : '' ?>">
                 <div class="card-body">
-                    <div class="text-muted small text-uppercase mb-1"><?= $status_label ?></div>
+                    <div class="text-muted small text-uppercase mb-1"><?= $automation_status_labels[$status_key] ?></div>
                     <div class="h3 mb-0 text-body"><?= nr($data->analytics['summary'][$status_key]) ?></div>
                 </div>
             </a>
@@ -83,7 +92,7 @@
     <div class="col-6 col-xl-2 mb-3">
         <a href="<?= $base_url . '?status_filter=all' ?>" class="card h-100 text-decoration-none <?= $data->status_filter === 'all' ? 'border-primary' : '' ?>">
             <div class="card-body">
-                <div class="text-muted small text-uppercase mb-1">Svi zapisi</div>
+                <div class="text-muted small text-uppercase mb-1"><?= l('admin_automation_update.summary_all_records') ?></div>
                 <div class="h3 mb-0 text-body"><?= nr($data->analytics['summary']['total'] ?? 0) ?></div>
             </div>
         </a>
@@ -93,22 +102,22 @@
 <div class="card mb-4">
     <div class="card-body">
         <div class="d-flex justify-content-between align-items-center mb-3">
-            <div class="small text-muted">Prikazano zadnjih <?= nr($data->messages_display_limit) ?> zapisa<?php if(($data->filtered_messages_total ?? 0) > $data->messages_display_limit): ?> od ukupno <?= nr($data->filtered_messages_total) ?><?php endif ?>.</div>
-            <div class="small text-muted">Filter: <?= e($data->status_filter) ?></div>
+            <div class="small text-muted"><?php if(($data->filtered_messages_total ?? 0) > $data->messages_display_limit): ?><?= sprintf(l('admin_automation_update.records_shown_total'), nr($data->messages_display_limit), nr($data->filtered_messages_total)) ?><?php else: ?><?= sprintf(l('admin_automation_update.records_shown'), nr($data->messages_display_limit)) ?><?php endif ?></div>
+            <div class="small text-muted"><?= l('admin_automation_update.filter_label') ?>: <?= e($automation_status_labels[$data->status_filter] ?? $data->status_filter) ?></div>
         </div>
         <div class="table-responsive table-custom-container">
             <table class="table table-custom mb-0">
                 <thead>
                 <tr>
-                    <th>Korisnik</th>
-                    <th>Korak</th>
-                    <th>Status</th>
-                    <th>Poslano</th>
-                    <th>Isporučeno</th>
-                    <th>Otvoreno</th>
-                    <th>Kliknuto</th>
-                    <th>Odjavljeno</th>
-                    <th>Poruka</th>
+                    <th><?= l('admin_automation_update.table_user') ?></th>
+                    <th><?= l('admin_automation_update.table_step') ?></th>
+                    <th><?= l('admin_automation_update.table_status') ?></th>
+                    <th><?= l('admin_automation_update.table_sent') ?></th>
+                    <th><?= l('admin_automation_update.table_delivered') ?></th>
+                    <th><?= l('admin_automation_update.table_opened') ?></th>
+                    <th><?= l('admin_automation_update.table_clicked') ?></th>
+                    <th><?= l('admin_automation_update.table_unsubscribed') ?></th>
+                    <th><?= l('admin_automation_update.table_message') ?></th>
                 </tr>
                 </thead>
                 <tbody>
@@ -116,7 +125,7 @@
                     <tr>
                         <td class="text-nowrap"><?php if($message->user): ?><div class="font-weight-bold"><?= e($message->user->name ?: ('#' . $message->user_id)) ?></div><div class="small text-muted"><?= e($message->user->email) ?></div><?php else: ?><div class="font-weight-bold">#<?= (int) $message->user_id ?></div><div class="small text-muted"><?= e($message->recipient_email) ?></div><?php endif ?></td>
                         <td class="text-nowrap">#<?= (int) $message->automation_step_id ?></td>
-                        <td class="text-nowrap"><span class="badge badge-light"><?= e(str_replace('_', ' ', $message->status)) ?></span></td>
+                        <td class="text-nowrap"><span class="badge badge-light"><?= e($automation_status_labels[$message->status] ?? ucwords(str_replace('_', ' ', $message->status))) ?></span></td>
                         <td class="text-nowrap"><?= \Altum\Date::get($message->sent_datetime, 2) ?></td>
                         <td class="text-nowrap"><?= $message->delivered_datetime ? \Altum\Date::get($message->delivered_datetime, 2) : '-' ?></td>
                         <td class="text-nowrap"><?= $message->first_open_datetime ? \Altum\Date::get($message->first_open_datetime, 2) : '-' ?></td>
@@ -125,7 +134,7 @@
                         <td class="text-nowrap small"><?php if($message->brevo_message_id): ?><code data-copy><?= e($message->brevo_message_id) ?></code><?php else: ?>-<?php endif ?></td>
                     </tr>
                 <?php endforeach ?>
-                <?php if(empty($data->filtered_messages)): ?><tr><td colspan="9" class="text-center text-muted py-4">Nema primatelja za odabrani filter.</td></tr><?php endif ?>
+                <?php if(empty($data->filtered_messages)): ?><tr><td colspan="9" class="text-center text-muted py-4"><?= l('admin_automation_update.no_recipients') ?></td></tr><?php endif ?>
                 </tbody>
             </table>
         </div>
@@ -138,18 +147,18 @@
             <table class="table table-custom mb-0">
                 <thead>
                 <tr>
-                    <th>Korak</th>
-                    <th>Poslano</th>
-                    <th>Isporučeno</th>
-                    <th>Otvoreno</th>
-                    <th>Kliknuto</th>
-                    <th>Goal</th>
+                    <th><?= l('admin_automation_update.table_step') ?></th>
+                    <th><?= l('admin_automation_update.table_sent') ?></th>
+                    <th><?= l('admin_automation_update.table_delivered') ?></th>
+                    <th><?= l('admin_automation_update.table_opened') ?></th>
+                    <th><?= l('admin_automation_update.table_clicked') ?></th>
+                    <th><?= l('admin_automation_update.summary_goal_completed') ?></th>
                 </tr>
                 </thead>
                 <tbody>
                 <?php foreach($data->analytics['per_step'] as $step_analytics): ?>
                     <tr>
-                        <td><div class="font-weight-bold">Korak <?= (int) $step_analytics['step']->step_order ?></div><div class="small text-muted"><?= e($step_analytics['step']->subject) ?></div></td>
+                        <td><div class="font-weight-bold"><?= sprintf(l('admin_automation_update.step_header'), (int) $step_analytics['step']->step_order) ?></div><div class="small text-muted"><?= e($step_analytics['step']->subject) ?></div></td>
                         <td><?= nr($step_analytics['sent']) ?></td>
                         <td><?= nr($step_analytics['delivered']) ?></td>
                         <td><?= nr($step_analytics['opened']) ?></td>
@@ -171,10 +180,10 @@
         <div class="card-body">
             <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center mb-3">
                 <div>
-                    <h2 class="h5 mb-1">Shortkodovi za automatizaciju</h2>
-                    <p class="text-muted mb-0">Možeš ih koristiti u predmetu i sadržaju svakog koraka.</p>
+                        <h2 class="h5 mb-1"><?= l('admin_mail_builder.shortcodes_title') ?></h2>
+                        <p class="text-muted mb-0"><?= l('admin_automation_update.shortcodes_help') ?></p>
                 </div>
-                <div class="small text-muted mt-2 mt-lg-0">Klik na kod za kopiranje</div>
+                    <div class="small text-muted mt-2 mt-lg-0"><?= l('admin_mail_builder.copy_hint') ?></div>
             </div>
 
             <div class="mail-shortcodes-grid">
@@ -189,26 +198,26 @@
         <div class="card-body">
             <div class="mail-studio-section-heading">
                 <div>
-                    <span class="mail-studio-section-heading__eyebrow">Osnovne postavke</span>
-                    <h2 class="h4 mb-1">Segment, status i ponašanje</h2>
-                    <p class="text-muted mb-0">Promjene ovdje utječu na to tko ulazi u automatizaciju i koliko korisnika cron obrađuje po prolazu.</p>
+                    <span class="mail-studio-section-heading__eyebrow"><?= l('admin_automation_update.settings_eyebrow') ?></span>
+                    <h2 class="h4 mb-1"><?= l('admin_automation_update.settings_title') ?></h2>
+                    <p class="text-muted mb-0"><?= l('admin_automation_update.settings_text') ?></p>
                 </div>
             </div>
             <div class="row">
-                <div class="col-lg-4"><div class="form-group"><label for="name">Naziv</label><input type="text" id="name" name="name" class="form-control <?= \Altum\Alerts::has_field_errors('name') ? 'is-invalid' : null ?>" value="<?= e($data->automation->name) ?>" maxlength="128" required="required" /><?= \Altum\Alerts::output_field_error('name') ?></div></div>
-                <div class="col-lg-2"><div class="form-group"><label for="status">Status</label><select id="status" name="status" class="custom-select"><option value="active" <?= $data->automation->status == 'active' ? 'selected="selected"' : null ?>>Aktivno</option><option value="paused" <?= $data->automation->status == 'paused' ? 'selected="selected"' : null ?>>Pauzirano</option></select></div></div>
-                <div class="col-lg-3"><div class="form-group"><label for="batch_size">Po cron izvođenju</label><input type="number" min="1" max="200" id="batch_size" name="batch_size" class="form-control" value="<?= $settings->batch_size ?>" /></div></div>
-                <div class="col-lg-3"><div class="form-group"><label for="video_url">Video URL</label><input type="url" id="video_url" name="video_url" class="form-control" value="<?= e($data->video_url) ?>" /></div></div>
+                <div class="col-lg-4"><div class="form-group"><label for="name"><?= l('admin_automation_update.name_label') ?></label><input type="text" id="name" name="name" class="form-control <?= \Altum\Alerts::has_field_errors('name') ? 'is-invalid' : null ?>" value="<?= e($data->automation->name) ?>" maxlength="128" required="required" /><?= \Altum\Alerts::output_field_error('name') ?></div></div>
+                <div class="col-lg-2"><div class="form-group"><label for="status"><?= l('admin_automation_update.status_label') ?></label><select id="status" name="status" class="custom-select"><option value="active" <?= $data->automation->status == 'active' ? 'selected="selected"' : null ?>><?= l('admin_automations.status.active') ?></option><option value="paused" <?= $data->automation->status == 'paused' ? 'selected="selected"' : null ?>><?= l('admin_automations.status.paused') ?></option></select></div></div>
+                <div class="col-lg-3"><div class="form-group"><label for="batch_size"><?= l('admin_automation_update.batch_size') ?></label><input type="number" min="1" max="200" id="batch_size" name="batch_size" class="form-control" value="<?= $settings->batch_size ?>" /></div></div>
+                <div class="col-lg-3"><div class="form-group"><label for="video_url"><?= l('admin_automation_update.video_url') ?></label><input type="url" id="video_url" name="video_url" class="form-control" value="<?= e($data->video_url) ?>" /></div></div>
             </div>
 
             <div class="row">
-                <div class="col-lg-4"><div class="form-group"><label for="segment">Skupina</label><select id="segment" name="segment" class="custom-select <?= \Altum\Alerts::has_field_errors('segment') ? 'is-invalid' : null ?>"><?php foreach($data->segment_options as $segment_key => $segment_name): ?><option value="<?= $segment_key ?>" <?= $segment === $segment_key ? 'selected="selected"' : null ?>><?= e($segment_name) ?></option><?php endforeach ?></select><?= \Altum\Alerts::output_field_error('segment') ?></div></div>
-                <div class="col-lg-4"><div class="form-group"><label for="segment_label">Prikazani naziv skupine</label><input type="text" id="segment_label" name="segment_label" class="form-control" value="<?= e($settings->segment_label ?: $data->automation->segment_label) ?>" maxlength="128" /></div></div>
-                <div class="col-lg-4 d-flex align-items-center"><div class="custom-control custom-switch mr-4 mt-3"><input id="reentry_is_enabled" name="reentry_is_enabled" type="checkbox" class="custom-control-input" <?= $settings->reentry_is_enabled ? 'checked="checked"' : null ?>><label class="custom-control-label" for="reentry_is_enabled">Ponovni ulaz</label></div><div class="custom-control custom-switch mt-3"><input id="exit_when_condition_met" name="exit_when_condition_met" type="checkbox" class="custom-control-input" <?= $settings->exit_when_condition_met ? 'checked="checked"' : null ?>><label class="custom-control-label" for="exit_when_condition_met">Automatski izlaz</label></div></div>
+                <div class="col-lg-4"><div class="form-group"><label for="segment"><?= l('admin_automation_update.segment_label') ?></label><select id="segment" name="segment" class="custom-select <?= \Altum\Alerts::has_field_errors('segment') ? 'is-invalid' : null ?>"><?php foreach($data->segment_options as $segment_key => $segment_name): ?><option value="<?= $segment_key ?>" <?= $segment === $segment_key ? 'selected="selected"' : null ?>><?= e($segment_name) ?></option><?php endforeach ?></select><?= \Altum\Alerts::output_field_error('segment') ?></div></div>
+                <div class="col-lg-4"><div class="form-group"><label for="segment_label"><?= l('admin_automation_update.segment_display_name') ?></label><input type="text" id="segment_label" name="segment_label" class="form-control" value="<?= e($settings->segment_label ?: $data->automation->segment_label) ?>" maxlength="128" /></div></div>
+                <div class="col-lg-4 d-flex align-items-center"><div class="custom-control custom-switch mr-4 mt-3"><input id="reentry_is_enabled" name="reentry_is_enabled" type="checkbox" class="custom-control-input" <?= $settings->reentry_is_enabled ? 'checked="checked"' : null ?>><label class="custom-control-label" for="reentry_is_enabled"><?= l('admin_automation_update.reentry') ?></label></div><div class="custom-control custom-switch mt-3"><input id="exit_when_condition_met" name="exit_when_condition_met" type="checkbox" class="custom-control-input" <?= $settings->exit_when_condition_met ? 'checked="checked"' : null ?>><label class="custom-control-label" for="exit_when_condition_met"><?= l('admin_automation_update.auto_exit') ?></label></div></div>
             </div>
 
             <div class="form-group" data-plan-users>
-                <label>Planovi</label>
+                <label><?= l('admin_automation_update.plans') ?></label>
                 <div class="row">
                     <div class="col-md-3 mb-2"><div class="custom-control custom-switch"><input id="filters_plans_free" name="filters_plans[]" value="free" type="checkbox" class="custom-control-input" <?= in_array('free', $settings->filters_plans) ? 'checked="checked"' : null ?>><label class="custom-control-label" for="filters_plans_free"><?= settings()->plan_free->name ?></label></div></div>
                     <div class="col-md-3 mb-2"><div class="custom-control custom-switch"><input id="filters_plans_custom" name="filters_plans[]" value="custom" type="checkbox" class="custom-control-input" <?= in_array('custom', $settings->filters_plans) ? 'checked="checked"' : null ?>><label class="custom-control-label" for="filters_plans_custom"><?= settings()->plan_custom->name ?></label></div></div>
@@ -223,13 +232,13 @@
         <?php $step_delay = $get_delay_parts($step_delay_minutes_value); ?>
         <div class="card mb-4 automation-step-card">
             <div class="card-body">
-                <div class="automation-step-card__header mb-4"><div><span class="automation-step-card__eyebrow">Postojeći korak</span><h2 class="h4 mb-1">Korak <?= (int) $step->step_order ?></h2><p class="text-muted mb-0">Uredi naslov, odgodu i sadržaj bez prelaska na drugi ekran.</p></div><span class="automation-step-card__badge"><?= nr($step_delay_minutes_value) ?> min</span></div>
+                <div class="automation-step-card__header mb-4"><div><span class="automation-step-card__eyebrow"><?= l('admin_automation_update.existing_step_eyebrow') ?></span><h2 class="h4 mb-1"><?= sprintf(l('admin_automation_update.step_header'), (int) $step->step_order) ?></h2><p class="text-muted mb-0"><?= l('admin_automation_update.existing_step_intro') ?></p></div><span class="automation-step-card__badge"><?= sprintf(l('admin_automation_update.step_delay_badge'), nr($step_delay_minutes_value)) ?></span></div>
                 <div class="row">
-                    <div class="col-lg-8"><div class="form-group"><label for="subject_<?= $step->automation_step_id ?>">Predmet</label><input type="text" id="subject_<?= $step->automation_step_id ?>" name="subject_<?= $step->automation_step_id ?>" class="form-control <?= \Altum\Alerts::has_field_errors('subject_' . $step->automation_step_id) ? 'is-invalid' : null ?>" value="<?= isset($_POST['subject_' . $step->automation_step_id]) ? e($_POST['subject_' . $step->automation_step_id]) : e($step->subject) ?>" maxlength="128" required="required" /><?= \Altum\Alerts::output_field_error('subject_' . $step->automation_step_id) ?></div></div>
-                    <div class="col-lg-4"><div class="form-group"><label>Odgoda od zadnje poslane poruke</label><div class="delay-input-group"><div class="delay-input-group__value"><input type="number" min="0" class="form-control" data-delay-value data-target="delay_minutes_<?= $step->automation_step_id ?>" value="<?= $step_delay['value'] ?>" /></div><div class="delay-input-group__unit"><select class="custom-select" data-delay-unit data-target="delay_minutes_<?= $step->automation_step_id ?>"><option value="minutes" <?= $step_delay['unit'] === 'minutes' ? 'selected="selected"' : null ?>>Minute</option><option value="hours" <?= $step_delay['unit'] === 'hours' ? 'selected="selected"' : null ?>>Sati</option><option value="days" <?= $step_delay['unit'] === 'days' ? 'selected="selected"' : null ?>>Dani</option></select></div></div><input type="hidden" id="delay_minutes_<?= $step->automation_step_id ?>" name="delay_minutes_<?= $step->automation_step_id ?>" value="<?= $step_delay_minutes_value ?>" /><small class="form-text text-muted">Korak se šalje nakon odabranog vremena od prethodnog poslanog maila.</small></div></div>
+                    <div class="col-lg-8"><div class="form-group"><label for="subject_<?= $step->automation_step_id ?>"><?= l('admin_broadcasts.subject') ?></label><input type="text" id="subject_<?= $step->automation_step_id ?>" name="subject_<?= $step->automation_step_id ?>" class="form-control <?= \Altum\Alerts::has_field_errors('subject_' . $step->automation_step_id) ? 'is-invalid' : null ?>" value="<?= isset($_POST['subject_' . $step->automation_step_id]) ? e($_POST['subject_' . $step->automation_step_id]) : e($step->subject) ?>" maxlength="128" required="required" /><?= \Altum\Alerts::output_field_error('subject_' . $step->automation_step_id) ?></div></div>
+                    <div class="col-lg-4"><div class="form-group"><label><?= l('admin_mail_builder.delay_label') ?></label><div class="delay-input-group"><div class="delay-input-group__value"><input type="number" min="0" class="form-control" data-delay-value data-target="delay_minutes_<?= $step->automation_step_id ?>" value="<?= $step_delay['value'] ?>" /></div><div class="delay-input-group__unit"><select class="custom-select" data-delay-unit data-target="delay_minutes_<?= $step->automation_step_id ?>"><option value="minutes" <?= $step_delay['unit'] === 'minutes' ? 'selected="selected"' : null ?>><?= l('admin_mail_builder.delay_unit_minutes') ?></option><option value="hours" <?= $step_delay['unit'] === 'hours' ? 'selected="selected"' : null ?>><?= l('admin_mail_builder.delay_unit_hours') ?></option><option value="days" <?= $step_delay['unit'] === 'days' ? 'selected="selected"' : null ?>><?= l('admin_mail_builder.delay_unit_days') ?></option></select></div></div><input type="hidden" id="delay_minutes_<?= $step->automation_step_id ?>" name="delay_minutes_<?= $step->automation_step_id ?>" value="<?= $step_delay_minutes_value ?>" /><small class="form-text text-muted"><?= l('admin_automation_update.delay_help') ?></small></div></div>
                 </div>
                 <?php $step_editor_content = isset($_POST['content_' . $step->automation_step_id]) ? $_POST['content_' . $step->automation_step_id] : bootstrap_to_quilljs($step->content) ?>
-                <div class="form-group mb-0"><label for="content_<?= $step->automation_step_id ?>">Sadržaj</label><div class="mail-editor-shell"><div class="mail-editor-shell__header"><div class="mail-editor-shell__title">Email builder</div><div class="mail-editor-shell__meta">Složi poruku, CTA i personalizaciju za ovaj korak.</div></div><div class="mail-editor-shell__canvas-meta"><span class="mail-editor-shell__pill">Personalizacija</span><span class="mail-editor-shell__pill">Jedan glavni CTA</span><span class="mail-editor-shell__pill">Footer odjave ide automatski</span></div><div id="quill_existing_<?= $step->automation_step_id ?>" class="border rounded-bottom bg-transparent quill-email-editor" data-target="content_<?= $step->automation_step_id ?>"></div></div><textarea id="content_<?= $step->automation_step_id ?>" name="content_<?= $step->automation_step_id ?>" class="form-control d-none <?= \Altum\Alerts::has_field_errors('content_' . $step->automation_step_id) ? 'is-invalid' : null ?>" required="required"><?= e($step_editor_content) ?></textarea><?= \Altum\Alerts::output_field_error('content_' . $step->automation_step_id) ?></div>
+                <div class="form-group mb-0"><label for="content_<?= $step->automation_step_id ?>"><?= l('admin_broadcasts.content') ?></label><div class="mail-editor-shell"><div class="mail-editor-shell__header"><div class="mail-editor-shell__title"><?= l('admin_mail_builder.editor_title') ?></div><div class="mail-editor-shell__meta"><?= l('admin_automation_update.editor_meta') ?></div></div><div class="mail-editor-shell__canvas-meta"><span class="mail-editor-shell__pill"><?= l('admin_mail_builder.pill_personalization') ?></span><span class="mail-editor-shell__pill"><?= l('admin_mail_builder.pill_primary_cta') ?></span><span class="mail-editor-shell__pill"><?= l('admin_mail_builder.pill_unsubscribe_footer') ?></span></div><div id="quill_existing_<?= $step->automation_step_id ?>" class="border rounded-bottom bg-transparent quill-email-editor" data-target="content_<?= $step->automation_step_id ?>"></div></div><textarea id="content_<?= $step->automation_step_id ?>" name="content_<?= $step->automation_step_id ?>" class="form-control d-none <?= \Altum\Alerts::has_field_errors('content_' . $step->automation_step_id) ? 'is-invalid' : null ?>" required="required"><?= e($step_editor_content) ?></textarea><?= \Altum\Alerts::output_field_error('content_' . $step->automation_step_id) ?></div>
             </div>
         </div>
     <?php endforeach ?>
@@ -239,28 +248,28 @@
         <?php $new_step_delay = $get_delay_parts($new_step_delay_minutes_value); ?>
         <div class="card mb-4 automation-step-card <?= \Altum\Alerts::has_field_errors('new_subject_' . $new_step_index) || \Altum\Alerts::has_field_errors('new_content_' . $new_step_index) ? 'border-danger' : null ?>" data-new-step-card data-new-step-index="<?= $new_step_index ?>" <?= $new_step_index <= (int) $data->active_new_steps_count ? '' : 'style="display:none;"' ?>>
             <div class="card-body">
-                <div class="automation-step-card__header mb-4"><div><span class="automation-step-card__eyebrow">Novi korak</span><h2 class="h4 mb-1">Novi korak <?= count($data->steps) + $new_step_index ?></h2><p class="text-muted mb-0">Dodaj sljedeću poruku u sekvenci tek kada ti stvarno treba.</p></div><span class="automation-step-card__badge">Novi</span></div>
+                <div class="automation-step-card__header mb-4"><div><span class="automation-step-card__eyebrow"><?= l('admin_automation_update.new_step_eyebrow') ?></span><h2 class="h4 mb-1"><?= sprintf(l('admin_automation_update.new_step_title'), count($data->steps) + $new_step_index) ?></h2><p class="text-muted mb-0"><?= l('admin_automation_update.new_step_intro') ?></p></div><span class="automation-step-card__badge"><?= l('admin_automation_update.new_step_badge') ?></span></div>
                 <div class="row">
-                    <div class="col-lg-8"><div class="form-group"><label for="new_subject_<?= $new_step_index ?>">Predmet</label><input type="text" id="new_subject_<?= $new_step_index ?>" name="new_subject_<?= $new_step_index ?>" class="form-control <?= \Altum\Alerts::has_field_errors('new_subject_' . $new_step_index) ? 'is-invalid' : null ?>" value="<?= e($_POST['new_subject_' . $new_step_index] ?? '') ?>" maxlength="128" /><?= \Altum\Alerts::output_field_error('new_subject_' . $new_step_index) ?></div></div>
-                    <div class="col-lg-4"><div class="form-group"><label>Odgoda od zadnje poslane poruke</label><div class="delay-input-group"><div class="delay-input-group__value"><input type="number" min="0" class="form-control" data-delay-value data-target="new_delay_minutes_<?= $new_step_index ?>" value="<?= $new_step_delay['value'] ?>" /></div><div class="delay-input-group__unit"><select class="custom-select" data-delay-unit data-target="new_delay_minutes_<?= $new_step_index ?>"><option value="minutes" <?= $new_step_delay['unit'] === 'minutes' ? 'selected="selected"' : null ?>>Minute</option><option value="hours" <?= $new_step_delay['unit'] === 'hours' ? 'selected="selected"' : null ?>>Sati</option><option value="days" <?= $new_step_delay['unit'] === 'days' ? 'selected="selected"' : null ?>>Dani</option></select></div></div><input type="hidden" id="new_delay_minutes_<?= $new_step_index ?>" name="new_delay_minutes_<?= $new_step_index ?>" value="<?= $new_step_delay_minutes_value ?>" /><small class="form-text text-muted">Vrijeme čekanja nakon prethodnog maila.</small></div></div>
+                    <div class="col-lg-8"><div class="form-group"><label for="new_subject_<?= $new_step_index ?>"><?= l('admin_broadcasts.subject') ?></label><input type="text" id="new_subject_<?= $new_step_index ?>" name="new_subject_<?= $new_step_index ?>" class="form-control <?= \Altum\Alerts::has_field_errors('new_subject_' . $new_step_index) ? 'is-invalid' : null ?>" value="<?= e($_POST['new_subject_' . $new_step_index] ?? '') ?>" maxlength="128" /><?= \Altum\Alerts::output_field_error('new_subject_' . $new_step_index) ?></div></div>
+                    <div class="col-lg-4"><div class="form-group"><label><?= l('admin_mail_builder.delay_label') ?></label><div class="delay-input-group"><div class="delay-input-group__value"><input type="number" min="0" class="form-control" data-delay-value data-target="new_delay_minutes_<?= $new_step_index ?>" value="<?= $new_step_delay['value'] ?>" /></div><div class="delay-input-group__unit"><select class="custom-select" data-delay-unit data-target="new_delay_minutes_<?= $new_step_index ?>"><option value="minutes" <?= $new_step_delay['unit'] === 'minutes' ? 'selected="selected"' : null ?>><?= l('admin_mail_builder.delay_unit_minutes') ?></option><option value="hours" <?= $new_step_delay['unit'] === 'hours' ? 'selected="selected"' : null ?>><?= l('admin_mail_builder.delay_unit_hours') ?></option><option value="days" <?= $new_step_delay['unit'] === 'days' ? 'selected="selected"' : null ?>><?= l('admin_mail_builder.delay_unit_days') ?></option></select></div></div><input type="hidden" id="new_delay_minutes_<?= $new_step_index ?>" name="new_delay_minutes_<?= $new_step_index ?>" value="<?= $new_step_delay_minutes_value ?>" /><small class="form-text text-muted"><?= l('admin_automation_update.new_delay_help') ?></small></div></div>
                 </div>
-                <div class="form-group mb-0"><label for="new_content_<?= $new_step_index ?>">Sadržaj</label><div class="mail-editor-shell"><div class="mail-editor-shell__header"><div class="mail-editor-shell__title">Email builder</div><div class="mail-editor-shell__meta">Novi korak koji ide nakon prethodne poruke.</div></div><div class="mail-editor-shell__canvas-meta"><span class="mail-editor-shell__pill">Personalizacija</span><span class="mail-editor-shell__pill">Jasan CTA</span><span class="mail-editor-shell__pill">Footer odjave ide automatski</span></div><div id="quill_new_<?= $new_step_index ?>" class="border rounded-bottom bg-transparent quill-email-editor" data-target="new_content_<?= $new_step_index ?>"></div></div><textarea id="new_content_<?= $new_step_index ?>" name="new_content_<?= $new_step_index ?>" class="form-control d-none <?= \Altum\Alerts::has_field_errors('new_content_' . $new_step_index) ? 'is-invalid' : null ?>"><?= e($_POST['new_content_' . $new_step_index] ?? '<p>Upiši sadržaj za novi korak.</p>') ?></textarea><?= \Altum\Alerts::output_field_error('new_content_' . $new_step_index) ?></div>
+                <div class="form-group mb-0"><label for="new_content_<?= $new_step_index ?>"><?= l('admin_broadcasts.content') ?></label><div class="mail-editor-shell"><div class="mail-editor-shell__header"><div class="mail-editor-shell__title"><?= l('admin_mail_builder.editor_title') ?></div><div class="mail-editor-shell__meta"><?= l('admin_automation_update.new_editor_meta') ?></div></div><div class="mail-editor-shell__canvas-meta"><span class="mail-editor-shell__pill"><?= l('admin_mail_builder.pill_personalization') ?></span><span class="mail-editor-shell__pill"><?= l('admin_mail_builder.pill_primary_cta') ?></span><span class="mail-editor-shell__pill"><?= l('admin_mail_builder.pill_unsubscribe_footer') ?></span></div><div id="quill_new_<?= $new_step_index ?>" class="border rounded-bottom bg-transparent quill-email-editor" data-target="new_content_<?= $new_step_index ?>"></div></div><textarea id="new_content_<?= $new_step_index ?>" name="new_content_<?= $new_step_index ?>" class="form-control d-none <?= \Altum\Alerts::has_field_errors('new_content_' . $new_step_index) ? 'is-invalid' : null ?>"><?= e($_POST['new_content_' . $new_step_index] ?? l('admin_automation_update.new_default_content')) ?></textarea><?= \Altum\Alerts::output_field_error('new_content_' . $new_step_index) ?></div>
             </div>
         </div>
     <?php endfor ?>
 
     <div class="mail-studio-actions mb-4">
-        <button type="button" class="btn btn-outline-primary mb-2 mb-md-0" id="add_new_step_button">Dodaj sljedeći korak</button>
-        <button type="button" class="btn btn-outline-secondary" id="remove_new_step_button">Ukloni zadnji novi korak</button>
+        <button type="button" class="btn btn-outline-primary mb-2 mb-md-0" id="add_new_step_button"><?= l('admin_automation_update.add_next_step') ?></button>
+        <button type="button" class="btn btn-outline-secondary" id="remove_new_step_button"><?= l('admin_automation_update.remove_last_new_step') ?></button>
     </div>
 
     <div class="card mb-4 mail-studio-card mail-studio-card--soft">
         <div class="card-body">
-            <h2 class="h5 mb-3">Pošalji testni mail</h2>
+            <h2 class="h5 mb-3"><?= l('admin_automation_update.test_title') ?></h2>
             <div class="row align-items-end">
-                <div class="col-lg-3"><div class="form-group"><label for="preview_step_id">Korak</label><select id="preview_step_id" name="preview_step_id" class="custom-select"><?php foreach($data->steps as $step): ?><option value="<?= $step->automation_step_id ?>" <?= $data->preview_step_id == $step->automation_step_id ? 'selected="selected"' : null ?>>Korak <?= $step->step_order ?></option><?php endforeach ?></select></div></div>
-                <div class="col-lg-6"><div class="form-group"><label for="preview_email">Email adresa</label><input type="email" id="preview_email" name="preview_email" class="form-control <?= \Altum\Alerts::has_field_errors('preview_email') ? 'is-invalid' : null ?>" value="<?= e($data->preview_email) ?>" /><?= \Altum\Alerts::output_field_error('preview_email') ?></div></div>
-                <div class="col-lg-3"><button type="submit" name="preview" value="1" class="btn btn-outline-primary btn-block mb-2">Pošalji test</button><button type="submit" name="preview_all" value="1" class="btn btn-outline-secondary btn-block">Pošalji sve korake</button></div>
+                <div class="col-lg-3"><div class="form-group"><label for="preview_step_id"><?= l('admin_automation_update.test_step') ?></label><select id="preview_step_id" name="preview_step_id" class="custom-select"><?php foreach($data->steps as $step): ?><option value="<?= $step->automation_step_id ?>" <?= $data->preview_step_id == $step->automation_step_id ? 'selected="selected"' : null ?>><?= sprintf(l('admin_automation_update.step_header'), $step->step_order) ?></option><?php endforeach ?></select></div></div>
+                <div class="col-lg-6"><div class="form-group"><label for="preview_email"><?= l('admin_automation_update.test_email') ?></label><input type="email" id="preview_email" name="preview_email" class="form-control <?= \Altum\Alerts::has_field_errors('preview_email') ? 'is-invalid' : null ?>" value="<?= e($data->preview_email) ?>" /><?= \Altum\Alerts::output_field_error('preview_email') ?></div></div>
+                <div class="col-lg-3"><button type="submit" name="preview" value="1" class="btn btn-outline-primary btn-block mb-2"><?= l('admin_automation_update.test_send') ?></button><button type="submit" name="preview_all" value="1" class="btn btn-outline-secondary btn-block"><?= l('admin_automation_update.test_send_all') ?></button></div>
             </div>
         </div>
     </div>
@@ -268,10 +277,10 @@
     <div class="card mail-studio-submit-card mb-4">
         <div class="card-body d-flex flex-column flex-lg-row justify-content-between align-items-lg-center">
             <div class="mb-3 mb-lg-0">
-                <h2 class="h5 mb-1">Spremi promjene i testiraj</h2>
-                <p class="text-muted mb-0">Prije aktivacije možeš poslati testni mail ili cijeli slijed na vlastitu adresu.</p>
+                <h2 class="h5 mb-1"><?= l('admin_automation_update.save_title') ?></h2>
+                <p class="text-muted mb-0"><?= l('admin_automation_update.save_text') ?></p>
             </div>
-            <button type="submit" class="btn btn-lg btn-primary px-5">Spremi automatizaciju</button>
+            <button type="submit" class="btn btn-lg btn-primary px-5"><?= l('admin_automation_update.save_submit') ?></button>
         </div>
     </div>
 </form>
@@ -280,10 +289,10 @@
 
 <div class="card">
     <div class="card-body">
-        <h2 class="h5 mb-3">Aktivnost</h2>
+        <h2 class="h5 mb-3"><?= l('admin_automation_update.activity_title') ?></h2>
         <div class="table-responsive table-custom-container">
             <table class="table table-custom mb-0">
-                <thead><tr><th>Vrijeme</th><th>Akcija</th><th>Korisnik</th><th>Detalji</th></tr></thead>
+            <thead><tr><th><?= l('admin_automation_update.activity_time') ?></th><th><?= l('admin_automation_update.activity_action') ?></th><th><?= l('admin_automation_update.activity_user') ?></th><th><?= l('admin_automation_update.activity_details') ?></th></tr></thead>
                 <tbody>
                 <?php foreach($data->logs as $log): ?>
                     <tr>
@@ -293,7 +302,7 @@
                         <td class="small text-muted"><?= isset($log->details->message) ? e($log->details->message) : '-' ?></td>
                     </tr>
                 <?php endforeach ?>
-                <?php if(empty($data->logs)): ?><tr><td colspan="4" class="text-center text-muted py-4">Još nema aktivnosti.</td></tr><?php endif ?>
+                <?php if(empty($data->logs)): ?><tr><td colspan="4" class="text-center text-muted py-4"><?= l('admin_automation_update.activity_empty') ?></td></tr><?php endif ?>
                 </tbody>
             </table>
         </div>

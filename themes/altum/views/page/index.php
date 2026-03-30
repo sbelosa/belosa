@@ -3,38 +3,24 @@
 <?php
 /* Custom code: FC-2026-02-26: contact page bilingual labels */
 $fcc_is_contact_page = mb_strtolower((string) $data->page->url) === 'contact';
-$fcc_is_hr = \Altum\Language::$code === 'hr';
-
-$fcc_contact_title = $fcc_is_hr ? 'Kontaktirajte suradnika' : 'Contact the collaborator';
-$fcc_info_note = $fcc_is_hr
-    ? 'Napomena: Kontakt podaci pripadaju suradniku i članu Forever Card Cluba. Posjetili ste stranicu putem njegove preporuke i slobodno ga možete kontaktirati za sva pitanja.'
-    : 'Note: Contact details belong to a collaborator and Forever Card Club member. You visited this page through their recommendation and can freely contact them with any questions.';
-$fcc_contact_intro = $fcc_is_hr
-    ? 'Odaberi najjednostavniji način da nastaviš dalje. Ova stranica te vodi prema informacijama o proizvodima, poslovnim informacijama ili jednostavnom nastavku razgovora sa suradnikom.'
-    : 'Choose the simplest way to continue. This page guides you toward product information, business information, or an easy next conversation with the collaborator.';
-$fcc_contact_help_title = $fcc_is_hr ? 'Kako ti mogu pomoći?' : 'How can I help?';
-$fcc_contact_product_title = $fcc_is_hr ? 'Preporuka proizvoda' : 'Product guidance';
-$fcc_contact_product_text = $fcc_is_hr
-    ? 'Ako želiš saznati više o Forever proizvodima koji te zanimaju, ovdje možeš otvoriti Forever webshop s proizvodima i nastaviti prema informacijama koje su ti važne.'
-    : 'If you want to learn more about the Forever products that interest you, you can open the Forever product webshop and continue toward the information that matters to you.';
-$fcc_contact_business_title = $fcc_is_hr ? 'Postani poslovni partner' : 'Become a business partner';
-$fcc_contact_business_text = $fcc_is_hr
-    ? 'Ako želiš postati poslovni partner Forever Living Productsa, naručiti start paket i ostvariti pristup svim benefitima Forever Card Cluba, ovdje možeš postati naš poslovni partner.'
-    : 'If you want to become a Forever Living Products business partner, order the starter package, and get access to all Forever Card Club benefits, you can start here.';
-$fcc_contact_app_title = $fcc_is_hr ? 'Otvori aplikaciju' : 'Open the app';
-$fcc_contact_app_text = $fcc_is_hr
-    ? 'Ako želiš ponovno pogledati preporuke, proizvode ili sadržaj suradnika, otvori njegovu aplikaciju.'
-    : 'If you want to revisit recommendations, products, or the collaborator content, open the app.';
-$fcc_contact_go_products = $fcc_is_hr ? 'Idi na preporuku proizvoda' : 'Go to product guidance';
-$fcc_contact_go_business = $fcc_is_hr ? 'Postani poslovni partner' : 'Become a business partner';
-$fcc_contact_open_app = $fcc_is_hr ? 'Otvori aplikaciju' : 'Open app';
-$fcc_contact_whatsapp = 'WhatsApp';
-$fcc_contact_call = $fcc_is_hr ? 'Nazovi' : 'Call';
-$fcc_contact_email = $fcc_is_hr ? 'Pošalji email' : 'Send email';
-$fcc_contact_direct_title = $fcc_is_hr ? 'Izravni kontakt' : 'Direct contact';
-$fcc_contact_direct_text = $fcc_is_hr
-    ? 'Ako želiš nastavak razgovora, koristi jedan od izravnih kontakata ispod ili otvori aplikaciju suradnika.'
-    : 'If you want to continue the conversation, use one of the direct contact options below or open the collaborator app.';
+$fcc_contact_title = l('fcc.page.contact_title');
+$fcc_info_note = l('fcc.page.contact_note');
+$fcc_contact_intro = l('fcc.page.contact_intro');
+$fcc_contact_help_title = l('fcc.page.contact_help_title');
+$fcc_contact_product_title = l('fcc.page.contact_product_title');
+$fcc_contact_product_text = l('fcc.page.contact_product_text');
+$fcc_contact_business_title = l('fcc.page.contact_business_title');
+$fcc_contact_business_text = l('fcc.page.contact_business_text');
+$fcc_contact_app_title = l('fcc.page.contact_app_title');
+$fcc_contact_app_text = l('fcc.page.contact_app_text');
+$fcc_contact_go_products = l('fcc.page.contact_go_products');
+$fcc_contact_go_business = l('fcc.page.contact_go_business');
+$fcc_contact_open_app = l('fcc.page.contact_open_app');
+$fcc_contact_whatsapp = l('fcc.page.contact_whatsapp');
+$fcc_contact_call = l('fcc.page.contact_call');
+$fcc_contact_email = l('fcc.page.contact_email');
+$fcc_contact_direct_title = l('fcc.page.contact_direct_title');
+$fcc_contact_direct_text = l('fcc.page.contact_direct_text');
 /* /Custom code: FC-2026-02-26 */
 ?>
 
@@ -105,7 +91,7 @@ $fcc_contact_direct_text = $fcc_is_hr
             <?php if(!empty($data->foreverclub_semantics)): ?>
                 <div class="fcc-page-overview__top">
                     <div>
-                        <div class="fcc-page-overview__eyebrow"><?= $fcc_is_hr ? 'FCC pregled' : 'FCC overview' ?></div>
+                        <div class="fcc-page-overview__eyebrow"><?= l('fcc.page.overview_badge') ?></div>
                         <h2><?= $data->foreverclub_semantics['heading'] ?></h2>
                         <p><?= $data->foreverclub_semantics['summary'] ?></p>
                     </div>
@@ -123,7 +109,7 @@ $fcc_contact_direct_text = $fcc_is_hr
             <div class="fcc-page-overview__details">
                 <?php if(!empty($data->foreverclub_semantics['facts'])): ?>
                     <details class="fcc-page-overview__detail">
-                        <summary><?= $fcc_is_hr ? 'Ključne činjenice' : 'Key facts' ?></summary>
+                        <summary><?= l('fcc.page.key_facts') ?></summary>
                         <ul>
                             <?php foreach($data->foreverclub_semantics['facts'] as $fact): ?>
                                 <li><?= $fact ?></li>
@@ -206,7 +192,7 @@ $fcc_contact_direct_text = $fcc_is_hr
                             onerror="if(!this.dataset.fallbackStep){this.dataset.fallbackStep='default';this.src=this.dataset.defaultImage;this.classList.remove('fcc-collab-contact-avatar--hero');this.classList.add('fcc-collab-contact-avatar--default');return;}if(this.dataset.fallbackStep==='default'){this.dataset.fallbackStep='avatar';this.src=this.dataset.avatarImage;return;}this.onerror=null;"
                         />
                         <div>
-                            <div class="fcc-collab-contact-eyebrow"><?= $fcc_is_hr ? 'Tvoj FCC kontakt' : 'Your FCC contact' ?></div>
+                            <div class="fcc-collab-contact-eyebrow"><?= l('fcc.page.contact_eyebrow') ?></div>
                             <h2><?= $fcc_contact_name ?: $fcc_contact_title ?></h2>
                             <p><?= $fcc_contact_intro ?></p>
                         </div>
@@ -214,9 +200,9 @@ $fcc_contact_direct_text = $fcc_is_hr
 
                     <div class="fcc-collab-contact-pills">
                         <?php if($fcc_contact_forever_id): ?>
-                            <span class="fcc-collab-pill">Forever ID: <?= $fcc_contact_forever_id ?></span>
+                            <span class="fcc-collab-pill"><?= l('global.forerverId') ?>: <?= $fcc_contact_forever_id ?></span>
                         <?php endif ?>
-                        <span class="fcc-collab-pill"><?= $fcc_is_hr ? 'Forever Card Aplikacija' : 'Forever Card App' ?></span>
+                        <span class="fcc-collab-pill"><?= l('fcc.page.contact_app_pill') ?></span>
                     </div>
                 </div>
 
@@ -294,15 +280,15 @@ $fcc_contact_direct_text = $fcc_is_hr
     <?php if(!empty($data->foreverclub_pathways) && (!empty($data->foreverclub_pathways['core_pages']) || !empty($data->foreverclub_pathways['landing_pages']))): ?>
         <section class="fcc-pathways">
             <div class="fcc-pathways__head">
-                <h2><?= $fcc_is_hr ? 'Sljedeći korisni koraci' : 'Useful next steps' ?></h2>
-                <p><?= $fcc_is_hr ? 'Ovaj vodič je dio šireg FCC sadržajnog klastera. Ovdje su dvije ključne FCC stranice i dodatni landing vodiči koji prirodno nastavljaju ovu temu.' : 'This guide is part of a broader FCC content cluster. Here are two core FCC pages and additional landing guides that naturally continue the topic.' ?></p>
+                <h2><?= l('fcc.page.pathways_title') ?></h2>
+                <p><?= l('fcc.page.pathways_text') ?></p>
             </div>
 
             <div class="fcc-pathways__grid">
                 <?php foreach($data->foreverclub_pathways['core_pages'] as $row): ?>
                     <?php $row_url = $row->type == 'internal' ? SITE_URL . ($row->language ? \Altum\Language::$active_languages[$row->language] . '/' : null) . 'page/' . $row->url : $row->url; ?>
                     <a href="<?= $row_url ?>" class="fcc-pathways__card">
-                        <span class="fcc-pathways__tag"><?= $fcc_is_hr ? 'Ključna FCC stranica' : 'Core FCC page' ?></span>
+                        <span class="fcc-pathways__tag"><?= l('fcc.page.pathways_core_tag') ?></span>
                         <h3><?= $row->title ?></h3>
                         <?php if(!empty($row->description)): ?>
                             <p><?= $row->description ?></p>
@@ -313,7 +299,7 @@ $fcc_contact_direct_text = $fcc_is_hr
                 <?php foreach($data->foreverclub_pathways['landing_pages'] as $row): ?>
                     <?php $row_url = $row->type == 'internal' ? SITE_URL . ($row->language ? \Altum\Language::$active_languages[$row->language] . '/' : null) . 'page/' . $row->url : $row->url; ?>
                     <a href="<?= $row_url ?>" class="fcc-pathways__card fcc-pathways__card--accent">
-                        <span class="fcc-pathways__tag"><?= $fcc_is_hr ? 'Landing vodič' : 'Landing guide' ?></span>
+                        <span class="fcc-pathways__tag"><?= l('fcc.page.pathways_landing_tag') ?></span>
                         <h3><?= $row->title ?></h3>
                         <?php if(!empty($row->description)): ?>
                             <p><?= $row->description ?></p>
@@ -328,8 +314,8 @@ $fcc_contact_direct_text = $fcc_is_hr
         <!-- Custom code: FC-2026-03-24: foreverclub related pages cluster -->
         <section class="fcc-related-pages">
             <div class="fcc-related-pages__head">
-                <h2><?= $fcc_is_hr ? 'Povezane stranice' : 'Related pages' ?></h2>
-                <p><?= $fcc_is_hr ? 'Dodatna objašnjenja i vodiči unutar Forever Card Club kategorije.' : 'Additional guides and explanations inside the Forever Card Club category.' ?></p>
+                <h2><?= l('fcc.page.related_title') ?></h2>
+                <p><?= l('fcc.page.related_text') ?></p>
             </div>
 
             <div class="fcc-related-grid">
@@ -342,7 +328,7 @@ $fcc_contact_direct_text = $fcc_is_hr
                                 <p><?= $row->description ?></p>
                             <?php endif ?>
                         </div>
-                        <span><?= $fcc_is_hr ? 'Otvori' : 'Open' ?></span>
+                        <span><?= l('fcc.page.open') ?></span>
                     </a>
                 <?php endforeach ?>
             </div>
@@ -1338,118 +1324,61 @@ if(!empty($data->is_foreverclub_page) && $data->page->url === 'forever-card-club
 $fcc_howto_schema = null;
 $fcc_howto_map = [
     'forever-card-app' => [
-        'name' => [
-            'hr' => 'Kako postaviti Forever Card aplikaciju',
-            'en' => 'How to set up the Forever Card app',
-        ],
-        'description' => [
-            'hr' => 'Koraci za postavljanje osobne Forever Card aplikacije unutar FCC sustava.',
-            'en' => 'Steps for setting up the personal Forever Card app inside the FCC system.',
-        ],
+        'name' => l('fcc.page.howto.forever_card_app.name'),
+        'description' => l('fcc.page.howto.forever_card_app.description'),
         'steps' => [
-            'hr' => [
-                'Aktiviraj svoju Forever Card aplikaciju i potvrdi osnovne podatke partnera.',
-                'Dodaj sadržaj koji želiš pokazati: proizvode, kontakt, preporuke i korisne informacije.',
-                'Poveži pametne preporučne linkove i provjeri vodi li aplikacija na pravi službeni Forever web shop.',
-                'Podijeli aplikaciju putem poruka, društvenih mreža, QR koda ili NFC kartice.',
-            ],
-            'en' => [
-                'Activate your Forever Card app and confirm the partner basics.',
-                'Add the content you want to show: products, contact actions, recommendations, and useful information.',
-                'Connect smart referral links and confirm the app routes to the correct official Forever webshop.',
-                'Share the app through messages, social media, QR code, or NFC card.',
-            ],
+            l('fcc.page.howto.forever_card_app.step_1'),
+            l('fcc.page.howto.forever_card_app.step_2'),
+            l('fcc.page.howto.forever_card_app.step_3'),
+            l('fcc.page.howto.forever_card_app.step_4'),
         ],
     ],
     'smart-referral-links' => [
-        'name' => [
-            'hr' => 'Kako rade pametni preporučni linkovi',
-            'en' => 'How smart referral links work',
-        ],
-        'description' => [
-            'hr' => 'Koraci koji pokazuju kako FCC pametni linkovi vode posjetitelja prema službenom Forever web shopu.',
-            'en' => 'Steps that explain how FCC smart links route visitors toward the official Forever webshop.',
-        ],
+        'name' => l('fcc.page.howto.smart_referral_links.name'),
+        'description' => l('fcc.page.howto.smart_referral_links.description'),
         'steps' => [
-            'hr' => [
-                'Partner podijeli svoj preporučni link kroz aplikaciju, poruku ili objavu.',
-                'FCC prepoznaje odakle posjetitelj dolazi i određuje odgovarajući tržišni put.',
-                'Posjetitelj se usmjerava prema službenom Forever web shopu u svojoj državi.',
-                'Preporuka partnera ostaje povezana s korisničkim putem prema kupnji ili daljnjem interesu.',
-            ],
-            'en' => [
-                'The partner shares a referral link through the app, a message, or a post.',
-                'FCC detects where the visitor comes from and selects the correct market route.',
-                'The visitor is routed toward the official Forever webshop in their country.',
-                'The partner referral stays connected to the path toward purchase or further interest.',
-            ],
+            l('fcc.page.howto.smart_referral_links.step_1'),
+            l('fcc.page.howto.smart_referral_links.step_2'),
+            l('fcc.page.howto.smart_referral_links.step_3'),
+            l('fcc.page.howto.smart_referral_links.step_4'),
         ],
     ],
     'nfc-card-offline' => [
-        'name' => [
-            'hr' => 'Kako NFC kartica vodi iz susreta uživo u FCC aplikaciju',
-            'en' => 'How the NFC card moves visitors from an in-person meeting into the FCC app',
-        ],
-        'description' => [
-            'hr' => 'Koraci koji pokazuju kako NFC kartica i QR kod otvaraju FCC digitalni put nakon susreta uživo.',
-            'en' => 'Steps that show how the NFC card and QR code open the FCC digital journey after an in-person meeting.',
-        ],
+        'name' => l('fcc.page.howto.nfc_card_offline.name'),
+        'description' => l('fcc.page.howto.nfc_card_offline.description'),
         'steps' => [
-            'hr' => [
-                'Na susretu uživo partner pokaže NFC karticu ili QR kod.',
-                'Posjetitelj dodirom ili skeniranjem otvori Forever Card aplikaciju.',
-                'U aplikaciji odmah vidi proizvode, kontakt, preporuke i sljedeće korake.',
-                'Partner nastavlja razgovor kroz kontakt, preporuku ili daljnje praćenje interesa.',
-            ],
-            'en' => [
-                'During an in-person meeting the partner presents the NFC card or QR code.',
-                'The visitor opens the Forever Card app with a tap or scan.',
-                'Inside the app they immediately see products, contact actions, recommendations, and next steps.',
-                'The partner continues the journey through contact, referral guidance, or follow-up.',
-            ],
+            l('fcc.page.howto.nfc_card_offline.step_1'),
+            l('fcc.page.howto.nfc_card_offline.step_2'),
+            l('fcc.page.howto.nfc_card_offline.step_3'),
+            l('fcc.page.howto.nfc_card_offline.step_4'),
         ],
     ],
     'ai-product-assistants' => [
-        'name' => [
-            'hr' => 'Kako AI asistenti vode korisnika do proizvoda i sljedećeg koraka',
-            'en' => 'How AI assistants guide visitors toward products and the next step',
-        ],
-        'description' => [
-            'hr' => 'Koraci koji pokazuju kako AI asistenti unutar FCC-a pomažu korisniku istražiti proizvode i doći do pravog koraka.',
-            'en' => 'Steps that explain how AI assistants inside FCC help visitors explore products and move to the right next step.',
-        ],
+        'name' => l('fcc.page.howto.ai_product_assistants.name'),
+        'description' => l('fcc.page.howto.ai_product_assistants.description'),
         'steps' => [
-            'hr' => [
-                'Korisnik postavlja pitanje unutar FCC aplikacije ili AI bloka.',
-                'AI asistent predlaže relevantne proizvode i korisne informacije.',
-                'Sustav usmjerava korisnika prema kontaktu, dodatnom objašnjenju ili linku za kupnju.',
-                'Partner dobiva jednostavniji i jasniji put od interesa do preporuke ili razgovora.',
-            ],
-            'en' => [
-                'The visitor asks a question inside the FCC app or AI block.',
-                'The AI assistant suggests relevant products and useful guidance.',
-                'The system routes the visitor toward contact, deeper explanation, or the purchase path.',
-                'The partner gets a clearer and simpler path from interest to recommendation or conversation.',
-            ],
+            l('fcc.page.howto.ai_product_assistants.step_1'),
+            l('fcc.page.howto.ai_product_assistants.step_2'),
+            l('fcc.page.howto.ai_product_assistants.step_3'),
+            l('fcc.page.howto.ai_product_assistants.step_4'),
         ],
     ],
 ];
 
 if(!empty($data->is_foreverclub_page) && isset($fcc_howto_map[$data->page->url])) {
     $howto = $fcc_howto_map[$data->page->url];
-    $lang = \Altum\Language::$code === 'hr' ? 'hr' : 'en';
 
     $fcc_howto_schema = [
         '@context' => 'https://schema.org',
         '@type' => 'HowTo',
-        'name' => $howto['name'][$lang],
-        'description' => $howto['description'][$lang],
+        'name' => $howto['name'],
+        'description' => $howto['description'],
         'inLanguage' => \Altum\Language::$code,
         'url' => $data->page_url ?? (SITE_URL . 'page/' . $data->page->url),
         'step' => [],
     ];
 
-    foreach($howto['steps'][$lang] as $index => $step_text) {
+    foreach($howto['steps'] as $index => $step_text) {
         $fcc_howto_schema['step'][] = [
             '@type' => 'HowToStep',
             'position' => $index + 1,

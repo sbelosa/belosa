@@ -2,14 +2,10 @@
 
 <?php
 /* Custom code: FC-2026-02-27: premium plan localized copy */
-$fcc_is_hr_language = \Altum\Language::$code === 'hr';
-
-$fcc_plan_eyebrow = $fcc_is_hr_language ? 'Članstvo' : 'Membership';
-$fcc_plan_subtitle = $fcc_is_hr_language
-    ? 'Odaberi plan koji najbolje prati tvoj rast i ciljeve.'
-    : 'Choose the plan that best fits your growth and goals.';
-$fcc_plan_stats_primary_label = $fcc_is_hr_language ? 'Sigurna naplata' : 'Secure billing';
-$fcc_plan_stats_secondary_label = $fcc_is_hr_language ? 'Podrška uključena' : 'Support included';
+$fcc_plan_eyebrow = l('plan.hero_eyebrow');
+$fcc_plan_subtitle = l('plan.hero_default_subtitle');
+$fcc_plan_stats_primary_label = l('plan.hero_stat_secure_billing');
+$fcc_plan_stats_secondary_label = l('plan.hero_stat_support_included');
 /* /Custom code: FC-2026-02-27 */
 ?>
 

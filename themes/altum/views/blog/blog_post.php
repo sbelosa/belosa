@@ -2,8 +2,8 @@
 
 <?php
 /* Custom code: FC-2026-02-26: EN/HR widget titles */
-$fcc_blog_categories_title = \Altum\Language::$code == 'hr' ? 'Kategorije' : 'Categories';
-$fcc_blog_popular_title = \Altum\Language::$code == 'hr' ? 'Popularni postovi' : 'Popular posts';
+$fcc_blog_categories_title = l('blog.categories');
+$fcc_blog_popular_title = l('blog.popular');
 $fcc_blog_post_url = $data->blog_post_url ?? (SITE_URL . ($data->blog_post->language ? \Altum\Language::$active_languages[$data->blog_post->language] . '/' : null) . 'blog/' . $data->blog_post->url);
 $share_referral_key = null;
 if(isset($data->referral) && $data->referral) {
@@ -184,7 +184,7 @@ $share_url = $data->share_url ?? $fcc_blog_post_url;
                         <div class="mb-3 p-3 rounded position-relative fcc-share-helper" id="blog-share-referral-wrapper">
                             <div class="d-flex align-items-center justify-content-between flex-wrap fcc-share-helper-row">
                                 <span class="small mb-2 mb-md-0 fcc-share-helper-text">
-                                    <?= $is_logged_user ? l('blog.share_referral.helper_text') : 'Pošaljite ili podijelite ovaj članak sa prijateljima.' ?>
+                                    <?= $is_logged_user ? l('blog.share_referral.helper_text') : l('blog.share_referral.helper_text_guest') ?>
                                 </span>
 
                                 <?php if($is_logged_user): ?>

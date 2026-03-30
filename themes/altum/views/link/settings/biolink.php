@@ -1367,7 +1367,7 @@
 
     /* Custom code: FC-2026-03-06: reset to factory template action */
     document.querySelector('#reset_biolink_factory_btn')?.addEventListener('click', event => {
-        if(!window.confirm('Jeste li sigurni? Ova radnja će obrisati trenutni sadržaj i vratiti početni izgled Forever Card Aplikacije.')) {
+        if(!window.confirm(<?= json_encode(l('biolink.reset_factory_confirm')) ?>)) {
             return;
         }
 

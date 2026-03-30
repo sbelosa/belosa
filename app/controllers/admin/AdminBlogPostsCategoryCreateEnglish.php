@@ -39,12 +39,12 @@ class AdminBlogPostsCategoryCreateEnglish extends Controller {
         $target_language = array_search('en', \Altum\Language::$active_languages, true);
 
         if(!$target_language) {
-            Alerts::add_error('English must be enabled in Languages before creating an English category.');
+            Alerts::add_error(l('admin_blog_posts_category_create_english.error_language_disabled'));
             redirect('admin/blog-posts-category-update/' . $blog_posts_category_id);
         }
 
         if($blog_posts_category->language === $target_language) {
-            Alerts::add_warning('This category is already in English.');
+            Alerts::add_warning(l('admin_blog_posts_category_create_english.warning_already_english'));
             redirect('admin/blog-posts-category-update/' . $blog_posts_category_id);
         }
 
@@ -52,7 +52,7 @@ class AdminBlogPostsCategoryCreateEnglish extends Controller {
         $model = trim((string) (settings()->main->openai_model ?? 'gpt-4o'));
 
         if($api_key === '') {
-            Alerts::add_error('OpenAI API key is missing in settings.');
+            Alerts::add_error(l('admin_ai.error_missing_api_key'));
             redirect('admin/blog-posts-category-update/' . $blog_posts_category_id);
         }
 
@@ -65,21 +65,21 @@ class AdminBlogPostsCategoryCreateEnglish extends Controller {
             $this->resume_session();
 
             if(!$target_category) {
-                Alerts::add_error('The English category could not be created.');
+                Alerts::add_error(l('admin_blog_posts_category_create_english.error_create_failed'));
                 redirect('admin/blog-posts-category-update/' . $blog_posts_category_id);
             }
 
             if((int) $target_category->blog_posts_category_id === (int) $blog_posts_category_id) {
-                Alerts::add_warning('This category is already using the target English record.');
+                Alerts::add_warning(l('admin_blog_posts_category_create_english.warning_target_same'));
             } else {
-                Alerts::add_success('English category created successfully.');
+                Alerts::add_success(l('admin_blog_posts_category_create_english.success_created'));
             }
 
             redirect('admin/blog-posts-category-update/' . $target_category->blog_posts_category_id);
         } catch (\Exception $exception) {
             $this->resume_session();
 
-            Alerts::add_error('The English category could not be created: ' . $exception->getMessage());
+            Alerts::add_error(sprintf(l('admin_blog_posts_category_create_english.error_failed'), $exception->getMessage()));
             redirect('admin/blog-posts-category-update/' . $blog_posts_category_id);
         }
     }

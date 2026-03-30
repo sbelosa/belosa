@@ -2,7 +2,7 @@
 
 <?php /* Custom code: FC-2026-03-19: prepare broadcast content for Quill editor */ ?>
 <?php $broadcast_editor_content = isset($_POST['content']) ? $_POST['content'] : (json_decode($data->broadcast->content) ? bootstrap_to_quilljs(convert_editorjs_json_to_html($data->broadcast->content)) : bootstrap_to_quilljs($data->broadcast->content)) ?>
-<?php $broadcast_editor_content = $broadcast_editor_content ?: '<p>Upiši sadržaj e-maila ovdje.</p>' ?>
+<?php $broadcast_editor_content = $broadcast_editor_content ?: l('admin_broadcasts.default_content') ?>
 <?php $broadcast_shortcodes = ['{{WEBSITE_TITLE}}', '{{USER:NAME}}', '{{USER:EMAIL}}', '{{FOREVER_CARD_APPLICATION_URL}}', '{{USER:CONTINENT_NAME}}', '{{USER:COUNTRY_NAME}}', '{{USER:CITY_NAME}}', '{{USER:DEVICE_TYPE}}', '{{USER:OS_NAME}}', '{{USER:BROWSER_NAME}}', '{{USER:BROWSER_LANGUAGE}}']; ?>
 <?php /* /Custom code: FC-2026-03-19 */ ?>
 
@@ -31,15 +31,15 @@
     <div class="card-body">
         <div class="row align-items-center">
             <div class="col-lg-7 mb-3 mb-lg-0">
-                <span class="mail-studio-eyebrow">Broadcast campaign</span>
-                <h2 class="mail-studio-title mb-2">Pregled, uređivanje i slanje u istom mirnijem campaign layoutu.</h2>
-                <p class="text-muted mb-0">Poruka, publika i preview sada su raspoređeni kao campaign composer umjesto klasičnog admin obrasca.</p>
+                <span class="mail-studio-eyebrow"><?= l('admin_broadcasts.hero_eyebrow') ?></span>
+                <h2 class="mail-studio-title mb-2"><?= l('admin_broadcast_update.hero_title') ?></h2>
+                <p class="text-muted mb-0"><?= l('admin_broadcast_update.hero_text') ?></p>
             </div>
             <div class="col-lg-5">
                 <div class="mail-studio-hero__stats">
-                    <div class="mail-studio-stat"><span class="mail-studio-stat__label">Status</span><strong class="mail-studio-stat__value"><?= $data->broadcast->status == 'sent' ? 'Poslano' : 'Draft' ?></strong></div>
-                    <div class="mail-studio-stat"><span class="mail-studio-stat__label">Publika</span><strong class="mail-studio-stat__value"><?= $data->broadcast->status == 'sent' ? nr($data->broadcast->total_emails) . ' kontakta' : 'Segmentirana' ?></strong></div>
-                    <div class="mail-studio-stat"><span class="mail-studio-stat__label">Editor</span><strong class="mail-studio-stat__value">Mail builder</strong></div>
+                    <div class="mail-studio-stat"><span class="mail-studio-stat__label"><?= l('global.status') ?></span><strong class="mail-studio-stat__value"><?= $data->broadcast->status == 'sent' ? l('admin_broadcasts.status.sent') : l('admin_broadcasts.status.draft') ?></strong></div>
+                    <div class="mail-studio-stat"><span class="mail-studio-stat__label"><?= l('admin_broadcasts.stat_audience') ?></span><strong class="mail-studio-stat__value"><?= $data->broadcast->status == 'sent' ? sprintf(l('admin_broadcasts.stat_audience_count'), nr($data->broadcast->total_emails)) : l('admin_broadcasts.stat_audience_segmented') ?></strong></div>
+                    <div class="mail-studio-stat"><span class="mail-studio-stat__label"><?= l('admin_broadcasts.stat_editor') ?></span><strong class="mail-studio-stat__value"><?= l('admin_broadcasts.stat_editor_value') ?></strong></div>
                 </div>
             </div>
         </div>
@@ -56,10 +56,10 @@
                 <div class="card-body">
                     <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center mb-3">
                         <div>
-                            <h2 class="h5 mb-1">Shortkodovi za mail</h2>
-                            <p class="text-muted mb-0">Koristi ih u predmetu i sadržaju kako bi mail ostao personaliziran bez ručnog uređivanja.</p>
+                                <h2 class="h5 mb-1"><?= l('admin_mail_builder.shortcodes_title') ?></h2>
+                                <p class="text-muted mb-0"><?= l('admin_broadcasts.shortcodes_help_update') ?></p>
                         </div>
-                        <div class="small text-muted mt-2 mt-lg-0">Klik na kod za kopiranje</div>
+                            <div class="small text-muted mt-2 mt-lg-0"><?= l('admin_mail_builder.copy_hint') ?></div>
                     </div>
 
                     <div class="mail-shortcodes-grid">
@@ -280,13 +280,13 @@
                 <label for="content"><i class="fas fa-fw fa-sm fa-paragraph text-muted mr-1"></i> <?= l('admin_broadcasts.content') ?></label>
                 <div class="mail-editor-shell">
                     <div class="mail-editor-shell__header">
-                        <div class="mail-editor-shell__title">Email builder</div>
-                        <div class="mail-editor-shell__meta">Uredi poruku kao pravi newsletter ili sistemski email, s jasnim CTA-om i kratkim blokovima.</div>
+                        <div class="mail-editor-shell__title"><?= l('admin_mail_builder.editor_title') ?></div>
+                        <div class="mail-editor-shell__meta"><?= l('admin_broadcasts.editor_meta_update') ?></div>
                     </div>
                     <div class="mail-editor-shell__canvas-meta">
-                        <span class="mail-editor-shell__pill">Personalizacija</span>
-                        <span class="mail-editor-shell__pill">Jasna struktura poruke</span>
-                        <span class="mail-editor-shell__pill">Footer odjave ide automatski</span>
+                        <span class="mail-editor-shell__pill"><?= l('admin_mail_builder.pill_personalization') ?></span>
+                        <span class="mail-editor-shell__pill"><?= l('admin_mail_builder.pill_clear_structure') ?></span>
+                        <span class="mail-editor-shell__pill"><?= l('admin_mail_builder.pill_unsubscribe_footer') ?></span>
                     </div>
                     <div id="quill_broadcast_editor" class="border rounded-bottom bg-transparent <?= $data->broadcast->status == 'sent' ? 'container-disabled' : null ?>"></div>
                 </div>
@@ -308,8 +308,8 @@
             <div class="card mail-studio-submit-card mt-4">
                 <div class="card-body d-flex flex-column flex-lg-row justify-content-between align-items-lg-center">
                     <div class="mb-3 mb-lg-0">
-                        <h2 class="h5 mb-1"><?= $data->broadcast->status == 'sent' ? 'Ažuriranje kampanje' : 'Draft ili slanje' ?></h2>
-                        <p class="text-muted mb-0"><?= $data->broadcast->status == 'sent' ? 'Već poslanu kampanju još možeš administrativno ažurirati i pregledati.' : 'Spremi draft za kasnije ili pošalji odmah odabranom segmentu.' ?></p>
+                        <h2 class="h5 mb-1"><?= $data->broadcast->status == 'sent' ? l('admin_broadcast_update.submit_title_sent') : l('admin_broadcast_update.submit_title_draft') ?></h2>
+                        <p class="text-muted mb-0"><?= $data->broadcast->status == 'sent' ? l('admin_broadcast_update.submit_text_sent') : l('admin_broadcast_update.submit_text_draft') ?></p>
                     </div>
                     <div class="d-flex flex-column flex-md-row gap-3 w-100 w-lg-auto">
                         <?php if($data->broadcast->status == 'sent'): ?>

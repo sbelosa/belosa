@@ -108,13 +108,13 @@
             <div class="collapse" id="advanced_container">
                 <!-- Custom code: FC-2026-03-09: blog search aliases tags field -->
                 <div class="form-group">
-                    <label for="search_aliases"><i class="fas fa-fw fa-sm fa-search text-muted mr-1"></i> Nazivi za pretragu (aliasi)</label>
+                    <label for="search_aliases"><i class="fas fa-fw fa-sm fa-search text-muted mr-1"></i> <?= l('admin_blog.search_aliases_label') ?></label>
                     <input id="search_aliases" type="hidden" name="search_aliases" value="<?= e($data->values['search_aliases'] ?? '') ?>" data-fcc-aliases-hidden />
                     <div class="form-control d-flex flex-wrap align-items-center" style="min-height: 46px; height: auto;" data-fcc-aliases-wrapper>
                         <div class="d-flex flex-wrap align-items-center" data-fcc-aliases-tags></div>
-                        <input type="text" class="border-0 flex-grow-1 py-1" style="min-width: 180px; outline: none;" placeholder="Upiši naziv i stisni Enter" data-fcc-aliases-input />
+                        <input type="text" class="border-0 flex-grow-1 py-1" style="min-width: 180px; outline: none;" placeholder="<?= l('admin_blog.search_aliases_placeholder') ?>" data-fcc-aliases-input />
                     </div>
-                    <small class="form-text text-muted">Svaki alias odvoji tipkom Enter ili zarezom.</small>
+                    <small class="form-text text-muted"><?= l('admin_blog.search_aliases_help') ?></small>
                 </div>
                 <!-- /Custom code: FC-2026-03-09 -->
 

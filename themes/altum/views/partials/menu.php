@@ -3,11 +3,11 @@
 <?php
 /* Custom code: FC-2026-02-26: localized fixed menu labels */
 $fcc_is_hr_language = \Altum\Language::$code === 'hr';
-$fcc_menu_fcc_label = $fcc_is_hr_language ? 'Forever Card Klub' : 'Forever Card Club';
-$fcc_menu_products_label = $fcc_is_hr_language ? 'Forever Proizvodi' : 'Forever Products';
+$fcc_menu_fcc_label = l('menu.forever_club');
+$fcc_menu_products_label = l('menu.forever_products');
 $fcc_menu_blog_label = 'Blog';
-$fcc_menu_contact_label = $fcc_is_hr_language ? 'Kontakt' : 'Contact';
-$fcc_menu_dashboard_label = $fcc_is_hr_language ? 'Nadzorna ploča' : 'Dashboard';
+$fcc_menu_contact_label = l('menu.contact');
+$fcc_menu_dashboard_label = l('menu.dashboard');
 $fcc_products_category_url = fc_get_forever_products_blog_category_url();
 
 $fcc_share_is_visible = false;
@@ -339,9 +339,7 @@ if(is_logged_in() && in_array($fcc_share_route, ['index', 'blog', 'page'], true)
         </div>
 
         <div id="fcc-navbar-share-details" class="fcc-navbar-share-row__details d-none">
-            <?= $fcc_is_hr_language
-                ? 'Kada podijelite ovaj članak putem ove forme, vaš link za preporuku automatski se dodaje. Ako netko preko tog linka naruči proizvode ili posjeti Forever Card Club, prikazat će se vaši kontakt podaci, a sustav Forever Living Products Web Shopa automatski će zabilježiti vašu preporuku.'
-                : 'When you share this page through this form, your referral link is added automatically. If someone orders products or visits Forever Card Club through that link, your contact details will be shown and the Forever Living Products Web Shop system will automatically record your recommendation.' ?>
+            <?= l('blog.share_referral.navbar_details') ?>
         </div>
     </div>
     <?php endif ?>
