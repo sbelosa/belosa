@@ -20,14 +20,6 @@ defined('ALTUMCODE') || die();
 
 class Link {
 
-    public static function get_forever_market_cookie_name(): string {
-        return 'fcc_forever_market';
-    }
-
-    public static function get_forced_forever_market_country_code(): ?string {
-        return self::resolve_forever_market_country_code($_COOKIE[self::get_forever_market_cookie_name()] ?? null);
-    }
-
     public static function get_trusted_forever_request_country_code(): ?string {
         foreach(['HTTP_CF_IPCOUNTRY', 'HTTP_CF-IPCOUNTRY', 'GEOIP_COUNTRY_CODE', 'HTTP_GEOIP_COUNTRY_CODE', 'HTTP_X_COUNTRY_CODE', 'HTTP_X_COUNTRY'] as $country_header_key) {
             if(!empty($_SERVER[$country_header_key])) {

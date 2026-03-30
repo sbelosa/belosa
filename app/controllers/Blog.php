@@ -27,23 +27,6 @@ defined('ALTUMCODE') || die();
 
 class Blog extends Controller {
 
-    private function log_forever_blog_market_debug(array $payload): void {
-        try {
-            $log_directory = UPLOADS_PATH . 'logs' . DIRECTORY_SEPARATOR;
-
-            if(!is_dir($log_directory)) {
-                @mkdir($log_directory, 0777, true);
-            }
-
-            $log_file = $log_directory . 'fcc-blog-market-debug-' . date('Y-m-d') . '.log';
-            $line = '[' . date('Y-m-d H:i:s') . '] ' . json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) . PHP_EOL;
-
-            @file_put_contents($log_file, $line, FILE_APPEND | LOCK_EX);
-        } catch(\Throwable $exception) {
-            /* :) */
-        }
-    }
-
     private function get_logged_in_referral_biolink_url(): ?string {
         $user_id = \Altum\Authentication::check();
 
@@ -339,40 +322,6 @@ class Blog extends Controller {
                 $resolved_market_country_code = \Altum\Link::resolve_preferred_forever_market_country_code($country_code, $available_market_country_codes, $accept_language_header, $country_code_is_trusted);
                 $webshop_link = \Altum\Link::get_product_webshop_link($referral, $blog_post->blog_post_id, $resolved_market_country_code);                
 
-                $this->log_forever_blog_market_debug([
-                    'event' => 'blog_market_resolution',
-                    'blog_post_id' => (int) $blog_post->blog_post_id,
-                    'blog_post_url' => $blog_post->url,
-                    'request_uri' => $_SERVER['REQUEST_URI'] ?? null,
-                    'ip' => get_ip(),
-                    'http_cf_connecting_ip' => $_SERVER['HTTP_CF_CONNECTING_IP'] ?? null,
-                    'http_true_client_ip' => $_SERVER['HTTP_TRUE_CLIENT_IP'] ?? null,
-                    'http_x_real_ip' => $_SERVER['HTTP_X_REAL_IP'] ?? null,
-                    'http_x_forwarded' => $_SERVER['HTTP_X_FORWARDED'] ?? null,
-                    'http_forwarded_for' => $_SERVER['HTTP_FORWARDED_FOR'] ?? null,
-                    'http_forwarded' => $_SERVER['HTTP_FORWARDED'] ?? null,
-                    'http_client_ip' => $_SERVER['HTTP_CLIENT_IP'] ?? null,
-                    'http_x_forwarded_for' => $_SERVER['HTTP_X_FORWARDED_FOR'] ?? null,
-                    'remote_addr' => $_SERVER['REMOTE_ADDR'] ?? null,
-                    'cf_ipcountry' => $_SERVER['HTTP_CF_IPCOUNTRY'] ?? null,
-                    'geoip_country_code' => $_SERVER['GEOIP_COUNTRY_CODE'] ?? null,
-                    'http_geoip_country_code' => $_SERVER['HTTP_GEOIP_COUNTRY_CODE'] ?? null,
-                    'http_x_country_code' => $_SERVER['HTTP_X_COUNTRY_CODE'] ?? null,
-                    'http_x_country' => $_SERVER['HTTP_X_COUNTRY'] ?? null,
-                    'accept_language' => $accept_language_header,
-                    'header_country_code' => $header_country_code,
-                    'external_geo_country_code' => $external_geo_country_code,
-                    'maxmind_country_code' => $maxmind_country_code,
-                    'maxmind_city_country_code' => $maxmind_city_country_code,
-                    'final_country_code' => $country_code,
-                    'country_code_is_trusted' => $country_code_is_trusted,
-                    'resolved_market_country_code' => $resolved_market_country_code,
-                    'ba_target' => $product_webshop_links->ba ?? null,
-                    'rs_target' => $product_webshop_links->rs ?? null,
-                    'de_target' => $product_webshop_links->de ?? null,
-                    'final_webshop_link' => $webshop_link,
-                    'referral' => $referral,
-                ]);
             }            
 
             /* Get popular posts */
