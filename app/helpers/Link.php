@@ -895,6 +895,14 @@ class Link {
                 break;
             /* /Custom code: FC-2026-02-27 */
 
+            /* Custom code: FC-2026-03-30: restore WhatsApp block renderer */
+            case 'custom_html_whatsapp':
+
+                $view_path = THEME_PATH . 'views/l/biolink_blocks/custom_html_whatsapp.php';
+
+                break;
+            /* /Custom code: FC-2026-03-30 */
+
             case 'discord':
             case 'facebook':
             case 'reddit':

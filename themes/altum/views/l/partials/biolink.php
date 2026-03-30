@@ -319,24 +319,6 @@
                             }
                             /* /Custom code: FC-2026-02-27 */
 
-                            if ($row->type == 'custom_html_whatsapp') {
-                                $button = $row->settings->title ?? ($row->settings->button ?? 'WhatsApp');
-                                $phone = preg_replace('/[^\p{L}\p{N}\s]/u', '', $row->settings->phone);
-                                $message = rawurlencode($row->settings->message);
-                                $button_icon = $row->settings->icon ?? 'fab fa-whatsapp';
-                                $button_border_radius = $row->settings->border_radius ?? 'rounded';
-
-                                $whatsapp_link_style = \Altum\Link::get_processed_link_style($row->settings);
-                                if(!empty($row->settings->border_shadow_style) && $row->settings->border_shadow_style !== 'none') {
-                                    $whatsapp_link_style['style'] .= \Altum\Link::get_processed_box_shadow_style($row->settings);
-                                }
-
-                                $button_style = $whatsapp_link_style['style'];
-                                $button_extra_class = $whatsapp_link_style['class'];
-                                $hover_class = ($data->link->settings->hover_animation ?? 'smooth') != 'false' ? 'link-hover-animation-' . ($data->link->settings->hover_animation ?? 'smooth') : null;
-
-                                require THEME_PATH . 'views/l/partials/whatsapp.php';
-                            }
                             /* /Custom code */
 
                             $row->utm = $data->link->settings->utm;
