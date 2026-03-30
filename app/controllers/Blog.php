@@ -286,6 +286,7 @@ class Blog extends Controller {
                 $country_code = null;
                 $country_code_is_trusted = false;
                 $header_country_code = null;
+                $external_geo_country_code = null;
                 $maxmind_country_code = null;
                 $maxmind_city_country_code = null;
                 $accept_language_header = $_SERVER['HTTP_ACCEPT_LANGUAGE'] ?? null;
@@ -301,6 +302,11 @@ class Blog extends Controller {
                             break;
                         }
                     }
+                }
+
+                if(!$country_code) {
+                    $external_geo_country_code = \Altum\Link::get_external_geo_country_code(get_ip());
+                    $country_code = $external_geo_country_code;
                 }
 
                 if(!$country_code) {
@@ -355,6 +361,7 @@ class Blog extends Controller {
                     'http_x_country' => $_SERVER['HTTP_X_COUNTRY'] ?? null,
                     'accept_language' => $accept_language_header,
                     'header_country_code' => $header_country_code,
+                    'external_geo_country_code' => $external_geo_country_code,
                     'maxmind_country_code' => $maxmind_country_code,
                     'maxmind_city_country_code' => $maxmind_city_country_code,
                     'final_country_code' => $country_code,

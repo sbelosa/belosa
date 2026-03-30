@@ -43,6 +43,71 @@ class Link {
         return null;
     }
 
+    public static function get_external_geo_country_code(?string $ip_address = null): ?string {
+        $ip_address = trim((string) $ip_address);
+
+        if(!$ip_address || !filter_var($ip_address, FILTER_VALIDATE_IP)) {
+            return null;
+        }
+
+        $cache_key = 'fcc_external_geo_country?' . md5($ip_address);
+        $cache_instance = cache()->getItem($cache_key);
+
+        if(!is_null($cache_instance->get())) {
+            return self::resolve_forever_market_country_code($cache_instance->get());
+        }
+
+        $providers = [
+            'https://ipwho.is/' . rawurlencode($ip_address),
+            'https://ipapi.co/' . rawurlencode($ip_address) . '/json/',
+        ];
+
+        $resolved_country_code = null;
+
+        foreach($providers as $provider_url) {
+            try {
+                $curl_handle = curl_init($provider_url);
+
+                curl_setopt_array($curl_handle, [
+                    CURLOPT_RETURNTRANSFER => true,
+                    CURLOPT_FOLLOWLOCATION => true,
+                    CURLOPT_TIMEOUT => 3,
+                    CURLOPT_CONNECTTIMEOUT => 2,
+                    CURLOPT_USERAGENT => 'ForeverCardClub/1.0',
+                    CURLOPT_HTTPHEADER => ['Accept: application/json'],
+                ]);
+
+                $response_body = curl_exec($curl_handle);
+                $http_code = (int) curl_getinfo($curl_handle, CURLINFO_RESPONSE_CODE);
+                curl_close($curl_handle);
+
+                if(!$response_body || $http_code < 200 || $http_code >= 300) {
+                    continue;
+                }
+
+                $payload = json_decode($response_body);
+
+                if(!$payload) {
+                    continue;
+                }
+
+                $resolved_country_code = self::resolve_forever_market_country_code(
+                    $payload->country_code ?? $payload->country ?? null
+                );
+
+                if($resolved_country_code) {
+                    break;
+                }
+            } catch(\Throwable $exception) {
+                /* Ignore provider failures and continue with the next fallback. */
+            }
+        }
+
+        cache()->save($cache_instance->set($resolved_country_code)->expiresAfter(86400));
+
+        return $resolved_country_code;
+    }
+
     public static function get_processed_background_style($settings) {
         $style = '';
 

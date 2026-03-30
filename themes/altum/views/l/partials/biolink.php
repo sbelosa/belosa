@@ -137,6 +137,10 @@
                             }
                         }
 
+                        if(!$country_code) {
+                            $country_code = \Altum\Link::get_external_geo_country_code($geo_lookup_ip);
+                        }
+
                         if(!$country_code && isset($maxmind['country']['iso_code'])) {
                             $country_code = $maxmind['country']['iso_code'];
                         }
