@@ -12,6 +12,8 @@ $fcc_menu_dashboard_label = $fcc_is_hr_language ? 'Nadzorna ploča' : 'Dashboard
 $fcc_share_is_visible = false;
 $fcc_share_url = null;
 $fcc_share_route = \Altum\Router::$controller_key ?? null;
+$fcc_market_selector_is_visible = in_array($fcc_share_route, ['index', 'blog', 'page'], true) && !\Altum\Link::get_trusted_forever_request_country_code();
+$fcc_market_selector_current = \Altum\Link::resolve_preferred_forever_market_country_code(null, ['hr', 'ba', 'rs'], $_SERVER['HTTP_ACCEPT_LANGUAGE'] ?? null, false);
 
 if(is_logged_in() && in_array($fcc_share_route, ['index', 'blog', 'page'], true)) {
     $fcc_user_id = \Altum\Authentication::check();
@@ -306,6 +308,16 @@ if(is_logged_in() && in_array($fcc_share_route, ['index', 'blog', 'page'], true)
 
     <?php if($fcc_share_is_visible): ?>
 </nav>
+    <?php if($fcc_market_selector_is_visible): ?>
+    <div class="fcc-navbar-market-row">
+        <?= include_view(THEME_PATH . 'views/partials/fcc_market_selector.php', [
+            'current_market' => $fcc_market_selector_current,
+            'class' => 'fcc-navbar-market-selector',
+            'title' => $fcc_is_hr_language ? 'Odaberite tržište za Forever linkove' : 'Choose market for Forever links',
+            'subtitle' => $fcc_is_hr_language ? 'Odabir se pamti i koristi za blog preporuke i Forever linkove dok ne dobijemo pouzdanu državu posjetitelja.' : 'Your choice is remembered and used for blog referrals and Forever links until a trusted visitor country is available.',
+        ]) ?>
+    </div>
+    <?php endif ?>
     <div class="fcc-navbar-share-row">
         <div class="fcc-navbar-share-row__inner">
             <div class="fcc-navbar-share-row__copy">
@@ -346,6 +358,16 @@ if(is_logged_in() && in_array($fcc_share_route, ['index', 'blog', 'page'], true)
     <?php endif ?>
 <?php if(!$fcc_share_is_visible): ?>
 </nav>
+    <?php if($fcc_market_selector_is_visible): ?>
+    <div class="fcc-navbar-market-row fcc-navbar-market-row--standalone">
+        <?= include_view(THEME_PATH . 'views/partials/fcc_market_selector.php', [
+            'current_market' => $fcc_market_selector_current,
+            'class' => 'fcc-navbar-market-selector',
+            'title' => $fcc_is_hr_language ? 'Odaberite tržište za Forever linkove' : 'Choose market for Forever links',
+            'subtitle' => $fcc_is_hr_language ? 'Odabir se pamti i koristi za blog preporuke i Forever linkove dok ne dobijemo pouzdanu državu posjetitelja.' : 'Your choice is remembered and used for blog referrals and Forever links until a trusted visitor country is available.',
+        ]) ?>
+    </div>
+    <?php endif ?>
 <?php endif ?>
 </div>
 
@@ -385,6 +407,21 @@ if(is_logged_in() && in_array($fcc_share_route, ['index', 'blog', 'page'], true)
         padding: 0;
         position: relative;
         z-index: 6;
+    }
+
+    .fcc-navbar-market-row {
+        padding: 0.9rem 1.25rem 0;
+        background:
+            radial-gradient(120% 180% at 0% 0%, rgba(74, 208, 189, 0.06), transparent 34%),
+            linear-gradient(180deg, rgba(10, 14, 20, 0.3), rgba(10, 14, 20, 0.12));
+    }
+
+    .fcc-navbar-market-row--standalone {
+        padding-bottom: 1rem;
+    }
+
+    .fcc-navbar-market-selector {
+        border-radius: 1rem;
     }
 
     .fcc-navbar-share-row__inner {
@@ -512,6 +549,11 @@ if(is_logged_in() && in_array($fcc_share_route, ['index', 'blog', 'page'], true)
             pointer-events: auto;
         }
 
+        .fcc-navbar-market-row,
+        .fcc-navbar-market-row--standalone {
+            padding: 0.8rem 0.8rem 0;
+        }
+
         .fcc-navbar-shell--with-share-row {
             border-radius: 1.15rem;
             overflow: hidden;
@@ -553,6 +595,10 @@ if(is_logged_in() && in_array($fcc_share_route, ['index', 'blog', 'page'], true)
             height: 2.35rem;
         }
 
+        .fcc-navbar-market-row--standalone {
+            padding-bottom: 0.8rem;
+        }
+
         .fcc-navbar-share-row__details {
             padding: 0 1rem 0.82rem;
             font-size: 0.84rem;
@@ -568,6 +614,11 @@ if(is_logged_in() && in_array($fcc_share_route, ['index', 'blog', 'page'], true)
     @media (max-width: 575px) {
         .fcc-navbar-shell--with-share-row {
             border-radius: 1.05rem;
+        }
+
+        .fcc-navbar-market-row,
+        .fcc-navbar-market-row--standalone {
+            padding: 0.72rem 0.72rem 0;
         }
 
         .fcc-navbar-share-row__inner {
@@ -602,6 +653,10 @@ if(is_logged_in() && in_array($fcc_share_route, ['index', 'blog', 'page'], true)
         .fcc-navbar-share-row__buttons .btn {
             width: 2.2rem;
             height: 2.2rem;
+        }
+
+        .fcc-navbar-market-row--standalone {
+            padding-bottom: 0.72rem;
         }
     }
 </style>

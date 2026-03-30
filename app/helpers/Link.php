@@ -20,6 +20,29 @@ defined('ALTUMCODE') || die();
 
 class Link {
 
+    public static function get_forever_market_cookie_name(): string {
+        return 'fcc_forever_market';
+    }
+
+    public static function get_forced_forever_market_country_code(): ?string {
+        return self::resolve_forever_market_country_code($_COOKIE[self::get_forever_market_cookie_name()] ?? null);
+    }
+
+    public static function get_trusted_forever_request_country_code(): ?string {
+        foreach(['HTTP_CF_IPCOUNTRY', 'HTTP_CF-IPCOUNTRY', 'GEOIP_COUNTRY_CODE', 'HTTP_GEOIP_COUNTRY_CODE', 'HTTP_X_COUNTRY_CODE', 'HTTP_X_COUNTRY'] as $country_header_key) {
+            if(!empty($_SERVER[$country_header_key])) {
+                $header_country_code = mb_strtoupper(trim((string) $_SERVER[$country_header_key]));
+                $header_country_code = mb_substr($header_country_code, 0, 2);
+
+                if(mb_strlen($header_country_code) == 2 && $header_country_code !== 'XX') {
+                    return self::resolve_forever_market_country_code($header_country_code);
+                }
+            }
+        }
+
+        return null;
+    }
+
     public static function get_processed_background_style($settings) {
         $style = '';
 
@@ -922,6 +945,13 @@ class Link {
     public static function resolve_preferred_forever_market_country_code($country_code = null, array $available_country_codes = [], ?string $accept_language_header = null, bool $country_code_is_trusted = false): ?string {
         $normalized_country_code = self::resolve_forever_market_country_code($country_code);
         $available_country_codes = array_values(array_unique(array_filter(array_map([self::class, 'resolve_forever_market_country_code'], $available_country_codes))));
+        $forced_country_code = self::get_forced_forever_market_country_code();
+
+        if($forced_country_code) {
+            if(empty($available_country_codes) || in_array($forced_country_code, $available_country_codes, true)) {
+                return $forced_country_code;
+            }
+        }
 
         if($country_code_is_trusted && $normalized_country_code) {
             if(empty($available_country_codes) || in_array($normalized_country_code, $available_country_codes, true)) {
