@@ -92,6 +92,10 @@ class Cron extends Controller {
         $this->billing_risk_monitor();
         /* /Custom code: FC-2026-03-17 */
 
+        /* Custom code: FC-2026-03-31: Phase 6 cleanup for privacy-safe funnel fraud traces */
+        $this->leader_operating_system_fraud_cleanup();
+        /* /Custom code: FC-2026-03-31 */
+
         $this->statistics_cleanup();
 
         /* Make sure the reset date month is different than the current one to avoid double resetting */
@@ -140,6 +144,20 @@ class Cron extends Controller {
         }
     }
     /* /Custom code: FC-2026-03-17 */
+
+    /* Custom code: FC-2026-03-31: purge short-lived LOS fraud traces automatically */
+    private function leader_operating_system_fraud_cleanup() {
+        if(!function_exists('fc_cleanup_funnel_analytics_data')) {
+            return;
+        }
+
+        fc_cleanup_funnel_analytics_data();
+
+        if(DEBUG) {
+            echo sprintf('leader_operating_system_fraud_cleanup() -> pruned funnel traces older than %s days and fraud summaries older than %s days', LOS_FRAUD_EVENT_RETENTION_DAYS, LOS_FRAUD_SUMMARY_RETENTION_DAYS);
+        }
+    }
+    /* /Custom code: FC-2026-03-31 */
 
     private function users_plan_expiry_checker() {
         if(!settings()->payment->user_plan_expiry_checker_is_enabled) {

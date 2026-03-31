@@ -219,8 +219,80 @@ function fc_ensure_funnel_analytics_tables(): void {
         KEY `funnel_event_period` (`biolink_block_id`, `event_type`, `datetime`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
 
+    /* Custom code: FC-2026-03-31: Phase 6 privacy-safe funnel identity enrichment */
+    fc_add_table_column_if_missing('funnel_events', 'ip_hash', "`ip_hash` varchar(64) NULL AFTER `visitor_key`");
+    fc_add_table_column_if_missing('funnel_events', 'fingerprint_hash', "`fingerprint_hash` varchar(64) NULL AFTER `ip_hash`");
+    fc_add_table_column_if_missing('funnel_events', 'event_signature', "`event_signature` varchar(64) NULL AFTER `fingerprint_hash`");
+    /* /Custom code: FC-2026-03-31 */
+
     $is_ready = true;
 }
+
+/* Custom code: FC-2026-03-31: Phase 6 privacy-safe fraud helpers */
+function fc_get_privacy_hash(string $value): ?string {
+    $value = trim($value);
+
+    if($value === '') {
+        return null;
+    }
+
+    return hash_hmac('sha256', $value, LOS_PRIVACY_HASH_SALT);
+}
+
+function fc_get_funnel_ip_hash(): ?string {
+    $ip_address = trim((string) get_ip());
+
+    if($ip_address === '') {
+        return null;
+    }
+
+    return fc_get_privacy_hash($ip_address);
+}
+
+function fc_get_funnel_fingerprint_hash(array $payload): ?string {
+    $parts = [
+        mb_strtolower(trim((string) ($payload['browser_name'] ?? ''))),
+        mb_strtolower(trim((string) ($payload['os_name'] ?? ''))),
+        mb_strtolower(trim((string) ($payload['device_type'] ?? ''))),
+        mb_strtolower(trim((string) ($payload['browser_language'] ?? ''))),
+        mb_strtolower(trim((string) ($payload['referrer_host'] ?? ''))),
+        mb_strtolower(trim((string) ($_SERVER['HTTP_USER_AGENT'] ?? ''))),
+    ];
+
+    $signature = implode('|', array_filter($parts, static function($value) {
+        return $value !== '';
+    }));
+
+    return fc_get_privacy_hash($signature);
+}
+
+function fc_get_funnel_event_signature(array $payload): ?string {
+    $identity = trim((string) ($payload['fingerprint_hash'] ?? $payload['ip_hash'] ?? ''));
+
+    if($identity === '') {
+        return null;
+    }
+
+    $bucket = date('Y-m-d H:i', time() - (time() % 300));
+
+    return fc_get_privacy_hash(implode('|', [
+        $identity,
+        (string) ($payload['event_type'] ?? ''),
+        (string) ($payload['biolink_block_id'] ?? ''),
+        $bucket,
+    ]));
+}
+
+function fc_cleanup_funnel_analytics_data(): void {
+    fc_ensure_funnel_analytics_tables();
+
+    $events_past_datetime = (new \DateTime())->modify('-' . LOS_FRAUD_EVENT_RETENTION_DAYS . ' days')->format('Y-m-d H:i:s');
+    $summaries_past_datetime = (new \DateTime())->modify('-' . LOS_FRAUD_SUMMARY_RETENTION_DAYS . ' days')->format('Y-m-d H:i:s');
+
+    database()->query("DELETE FROM `funnel_events` WHERE `datetime` < '{$events_past_datetime}'");
+    database()->query("DELETE FROM `data` WHERE `type` = 'leader_os_fraud_cluster' AND `datetime` < '{$summaries_past_datetime}'");
+}
+/* /Custom code: FC-2026-03-31 */
 
 function fc_get_funnel_visitor_key(): string {
     $cookie_name = 'fc_funnel_visitor_key';
@@ -301,6 +373,7 @@ function fc_track_funnel_event(array $payload): void {
         $os_name = $whichbrowser->os->name ?? null;
         $browser_language = isset($_SERVER['HTTP_ACCEPT_LANGUAGE']) ? mb_substr($_SERVER['HTTP_ACCEPT_LANGUAGE'], 0, 2) : null;
         $device_type = get_this_device_type();
+        $ip_hash = fc_get_funnel_ip_hash();
 
         try {
             $maxmind = (get_maxmind_reader_city())->get(get_ip());
@@ -340,12 +413,30 @@ function fc_track_funnel_event(array $payload): void {
             $event_data = null;
         }
 
+        $fingerprint_hash = fc_get_funnel_fingerprint_hash([
+            'browser_name' => $browser_name,
+            'os_name' => $os_name,
+            'device_type' => $device_type,
+            'browser_language' => $browser_language,
+            'referrer_host' => $referrer['host'],
+        ]);
+
+        $event_signature = fc_get_funnel_event_signature([
+            'ip_hash' => $ip_hash,
+            'fingerprint_hash' => $fingerprint_hash,
+            'event_type' => $event_type,
+            'biolink_block_id' => $biolink_block_id,
+        ]);
+
         db()->insert('funnel_events', [
             'user_id' => $user_id,
             'link_id' => $link_id,
             'biolink_block_id' => $biolink_block_id,
             'project_id' => isset($payload['project_id']) ? (int) $payload['project_id'] : null,
             'visitor_key' => $visitor_key,
+            'ip_hash' => $ip_hash,
+            'fingerprint_hash' => $fingerprint_hash,
+            'event_signature' => $event_signature,
             'event_type' => $event_type,
             'referrer_host' => $referrer['host'],
             'referrer_path' => $referrer['path'],

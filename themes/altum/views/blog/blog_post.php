@@ -164,7 +164,7 @@ $share_url = $data->share_url ?? $fcc_blog_post_url;
                     <div class="card-body">
                         <?php
                         /* Custom code: FC-2026-03-09: place primary product CTA above main share block */
-                        $blog_product_cta_url = $data->webshop_link ?: null;
+                        $blog_product_cta_url = $data->tracked_webshop_link ?: ($data->webshop_link ?: null);
                         $blog_contact_cta_url = !empty($data->referral) ? url($data->referral) : null;
                         $blog_cta_url = $blog_product_cta_url ?: $blog_contact_cta_url;
                         /* /Custom code: FC-2026-03-09 */

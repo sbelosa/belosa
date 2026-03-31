@@ -56,6 +56,14 @@ try {
                 </a>
             </li>
 
+            <!-- Custom code: FC-2026-03-31: Leader Operating System admin navigation -->
+            <li class="<?= in_array(\Altum\Router::$controller, ['AdminLeaderOperatingSystem', 'AdminLeaderOperatingSystemLeader']) ? 'active' : null ?>">
+                <a class="nav-link text-truncate" href="<?= url('admin/leader-operating-system') ?>">
+                    <i class="fas fa-fw fa-sm fa-chess-king mr-2"></i> <?= l('admin_leader_operating_system.menu') ?>
+                </a>
+            </li>
+            <!-- /Custom code: FC-2026-03-31 -->
+
             <li class="<?= in_array(\Altum\Router::$controller, ['AdminUsers', 'AdminUserUpdate', 'AdminUserCreate', 'AdminUserView']) ? 'active' : null ?>">
                 <a class="nav-link text-truncate" href="<?= url('admin/users') ?>">
                     <i class="fas fa-fw fa-sm fa-users mr-2"></i> <?= l('admin_users.menu') ?>

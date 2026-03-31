@@ -350,6 +350,11 @@ class Dashboard extends Controller {
         /* /Custom code: FC-2026-03-08 */
         $forever_shop_block_types_sql = "'" . implode("','", $forever_shop_block_types) . "'";
         $forever_registration_block_types_sql = "'" . implode("','", $forever_registration_block_types) . "'";
+        $forever_shop_condition = \Altum\Link::get_forever_shop_click_condition_sql('`track_links`', '`biolinks_blocks`', $forever_shop_block_types_sql);
+        $forever_registration_condition = \Altum\Link::get_forever_registration_click_condition_sql('`track_links`', '`biolinks_blocks`', $forever_registration_block_types_sql);
+        $forever_outbound_condition = \Altum\Link::get_forever_outbound_click_condition_sql('`track_links`', '`biolinks_blocks`', $forever_shop_block_types_sql, $forever_registration_block_types_sql);
+        $blog_product_medium = \Altum\Link::get_blog_cta_tracking_medium('product');
+        $blog_business_medium = \Altum\Link::get_blog_cta_tracking_medium('business');
         $unique_track_links_condition = " AND `track_links`.`is_unique` = 1";
 
         $track_clicks_total = (int) db()->where('user_id', $this->user->user_id)->getValue('track_links', 'COUNT(`id`)');
@@ -361,10 +366,10 @@ class Dashboard extends Controller {
 
         $biolink_visits_prev_30d = (int) database()->query("SELECT COUNT(*) AS `total` FROM `track_links` LEFT JOIN `links` ON `track_links`.`link_id` = `links`.`link_id` WHERE `track_links`.`user_id` = {$this->user->user_id} AND `track_links`.`datetime` >= '{$previous_thirty_days_start_datetime}' AND `track_links`.`datetime` < '{$thirty_days_start_datetime}' {$unique_track_links_condition} AND `links`.`type` = 'biolink'")->fetch_object()->total;
 
-        $forever_shop_clicks_30d = (int) database()->query("SELECT COUNT(*) AS `total` FROM `track_links` LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id` WHERE `track_links`.`user_id` = {$this->user->user_id} AND `track_links`.`datetime` >= '{$thirty_days_start_datetime}' {$unique_track_links_condition} AND `biolinks_blocks`.`type` IN ({$forever_shop_block_types_sql})")->fetch_object()->total;
-        $forever_shop_clicks_prev_30d = (int) database()->query("SELECT COUNT(*) AS `total` FROM `track_links` LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id` WHERE `track_links`.`user_id` = {$this->user->user_id} AND `track_links`.`datetime` >= '{$previous_thirty_days_start_datetime}' AND `track_links`.`datetime` < '{$thirty_days_start_datetime}' {$unique_track_links_condition} AND `biolinks_blocks`.`type` IN ({$forever_shop_block_types_sql})")->fetch_object()->total;
-        $forever_registration_clicks_30d = (int) database()->query("SELECT COUNT(*) AS `total` FROM `track_links` LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id` WHERE `track_links`.`user_id` = {$this->user->user_id} AND `track_links`.`datetime` >= '{$thirty_days_start_datetime}' {$unique_track_links_condition} AND `biolinks_blocks`.`type` IN ({$forever_registration_block_types_sql})")->fetch_object()->total;
-        $forever_registration_clicks_prev_30d = (int) database()->query("SELECT COUNT(*) AS `total` FROM `track_links` LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id` WHERE `track_links`.`user_id` = {$this->user->user_id} AND `track_links`.`datetime` >= '{$previous_thirty_days_start_datetime}' AND `track_links`.`datetime` < '{$thirty_days_start_datetime}' {$unique_track_links_condition} AND `biolinks_blocks`.`type` IN ({$forever_registration_block_types_sql})")->fetch_object()->total;
+        $forever_shop_clicks_30d = (int) database()->query("SELECT COUNT(*) AS `total` FROM `track_links` LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id` WHERE `track_links`.`user_id` = {$this->user->user_id} AND `track_links`.`datetime` >= '{$thirty_days_start_datetime}' {$unique_track_links_condition} AND {$forever_shop_condition}")->fetch_object()->total;
+        $forever_shop_clicks_prev_30d = (int) database()->query("SELECT COUNT(*) AS `total` FROM `track_links` LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id` WHERE `track_links`.`user_id` = {$this->user->user_id} AND `track_links`.`datetime` >= '{$previous_thirty_days_start_datetime}' AND `track_links`.`datetime` < '{$thirty_days_start_datetime}' {$unique_track_links_condition} AND {$forever_shop_condition}")->fetch_object()->total;
+        $forever_registration_clicks_30d = (int) database()->query("SELECT COUNT(*) AS `total` FROM `track_links` LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id` WHERE `track_links`.`user_id` = {$this->user->user_id} AND `track_links`.`datetime` >= '{$thirty_days_start_datetime}' {$unique_track_links_condition} AND {$forever_registration_condition}")->fetch_object()->total;
+        $forever_registration_clicks_prev_30d = (int) database()->query("SELECT COUNT(*) AS `total` FROM `track_links` LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id` WHERE `track_links`.`user_id` = {$this->user->user_id} AND `track_links`.`datetime` >= '{$previous_thirty_days_start_datetime}' AND `track_links`.`datetime` < '{$thirty_days_start_datetime}' {$unique_track_links_condition} AND {$forever_registration_condition}")->fetch_object()->total;
 
         $revenue_total = (float) (db()->where('user_id', $this->user->user_id)->where('status', 'paid')->getValue('payments', 'SUM(`total_amount_default_currency`)') ?? 0);
         $revenue_30d = (float) (db()->where('user_id', $this->user->user_id)->where('status', 'paid')->where('datetime', $thirty_days_start_datetime, '>=')->getValue('payments', 'SUM(`total_amount_default_currency`)') ?? 0);
@@ -389,10 +394,10 @@ class Dashboard extends Controller {
         $registration_ctr_delta_points = round($registration_ctr_30d - $registration_ctr_prev_30d, 1);
 
         $team_active_partners_30d = (int) database()->query("SELECT COUNT(DISTINCT `track_links`.`user_id`) AS `total` FROM `track_links` LEFT JOIN `users` ON `track_links`.`user_id` = `users`.`user_id` WHERE `track_links`.`datetime` >= '{$thirty_days_start_datetime}' {$unique_track_links_condition} AND `users`.`type` = 0")->fetch_object()->total;
-        $team_shop_clicks_30d = (int) database()->query("SELECT COUNT(*) AS `total` FROM `track_links` LEFT JOIN `users` ON `track_links`.`user_id` = `users`.`user_id` LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id` WHERE `track_links`.`datetime` >= '{$thirty_days_start_datetime}' {$unique_track_links_condition} AND `users`.`type` = 0 AND `biolinks_blocks`.`type` IN ({$forever_shop_block_types_sql})")->fetch_object()->total;
-        $team_shop_clicks_prev_30d = (int) database()->query("SELECT COUNT(*) AS `total` FROM `track_links` LEFT JOIN `users` ON `track_links`.`user_id` = `users`.`user_id` LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id` WHERE `track_links`.`datetime` >= '{$previous_thirty_days_start_datetime}' AND `track_links`.`datetime` < '{$thirty_days_start_datetime}' {$unique_track_links_condition} AND `users`.`type` = 0 AND `biolinks_blocks`.`type` IN ({$forever_shop_block_types_sql})")->fetch_object()->total;
-        $team_registration_clicks_30d = (int) database()->query("SELECT COUNT(*) AS `total` FROM `track_links` LEFT JOIN `users` ON `track_links`.`user_id` = `users`.`user_id` LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id` WHERE `track_links`.`datetime` >= '{$thirty_days_start_datetime}' {$unique_track_links_condition} AND `users`.`type` = 0 AND `biolinks_blocks`.`type` IN ({$forever_registration_block_types_sql})")->fetch_object()->total;
-        $team_registration_clicks_prev_30d = (int) database()->query("SELECT COUNT(*) AS `total` FROM `track_links` LEFT JOIN `users` ON `track_links`.`user_id` = `users`.`user_id` LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id` WHERE `track_links`.`datetime` >= '{$previous_thirty_days_start_datetime}' AND `track_links`.`datetime` < '{$thirty_days_start_datetime}' {$unique_track_links_condition} AND `users`.`type` = 0 AND `biolinks_blocks`.`type` IN ({$forever_registration_block_types_sql})")->fetch_object()->total;
+        $team_shop_clicks_30d = (int) database()->query("SELECT COUNT(*) AS `total` FROM `track_links` LEFT JOIN `users` ON `track_links`.`user_id` = `users`.`user_id` LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id` WHERE `track_links`.`datetime` >= '{$thirty_days_start_datetime}' {$unique_track_links_condition} AND `users`.`type` = 0 AND {$forever_shop_condition}")->fetch_object()->total;
+        $team_shop_clicks_prev_30d = (int) database()->query("SELECT COUNT(*) AS `total` FROM `track_links` LEFT JOIN `users` ON `track_links`.`user_id` = `users`.`user_id` LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id` WHERE `track_links`.`datetime` >= '{$previous_thirty_days_start_datetime}' AND `track_links`.`datetime` < '{$thirty_days_start_datetime}' {$unique_track_links_condition} AND `users`.`type` = 0 AND {$forever_shop_condition}")->fetch_object()->total;
+        $team_registration_clicks_30d = (int) database()->query("SELECT COUNT(*) AS `total` FROM `track_links` LEFT JOIN `users` ON `track_links`.`user_id` = `users`.`user_id` LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id` WHERE `track_links`.`datetime` >= '{$thirty_days_start_datetime}' {$unique_track_links_condition} AND `users`.`type` = 0 AND {$forever_registration_condition}")->fetch_object()->total;
+        $team_registration_clicks_prev_30d = (int) database()->query("SELECT COUNT(*) AS `total` FROM `track_links` LEFT JOIN `users` ON `track_links`.`user_id` = `users`.`user_id` LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id` WHERE `track_links`.`datetime` >= '{$previous_thirty_days_start_datetime}' AND `track_links`.`datetime` < '{$thirty_days_start_datetime}' {$unique_track_links_condition} AND `users`.`type` = 0 AND {$forever_registration_condition}")->fetch_object()->total;
         $team_biolink_visits_30d = (int) database()->query("SELECT COUNT(*) AS `total` FROM `track_links` LEFT JOIN `users` ON `track_links`.`user_id` = `users`.`user_id` LEFT JOIN `links` ON `track_links`.`link_id` = `links`.`link_id` WHERE `track_links`.`datetime` >= '{$thirty_days_start_datetime}' {$unique_track_links_condition} AND `users`.`type` = 0 AND `links`.`type` = 'biolink'")->fetch_object()->total;
 
         $team_avg_shop_clicks_30d = $team_active_partners_30d > 0 ? round($team_shop_clicks_30d / $team_active_partners_30d, 1) : 0;
@@ -495,7 +500,7 @@ class Dashboard extends Controller {
         }
 
         $top_countries_30d = [];
-        $top_countries_30d_result = database()->query("SELECT `track_links`.`country_code`, COUNT(*) AS `total` FROM `track_links` LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id` WHERE `track_links`.`user_id` = {$this->user->user_id} AND `track_links`.`datetime` >= '{$thirty_days_start_datetime}' {$unique_track_links_condition} AND `biolinks_blocks`.`type` IN ({$forever_shop_block_types_sql}) AND `track_links`.`country_code` IS NOT NULL AND `track_links`.`country_code` != '' GROUP BY `track_links`.`country_code` ORDER BY `total` DESC LIMIT 15");
+        $top_countries_30d_result = database()->query("SELECT `track_links`.`country_code`, COUNT(*) AS `total` FROM `track_links` LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id` WHERE `track_links`.`user_id` = {$this->user->user_id} AND `track_links`.`datetime` >= '{$thirty_days_start_datetime}' {$unique_track_links_condition} AND {$forever_shop_condition} AND `track_links`.`country_code` IS NOT NULL AND `track_links`.`country_code` != '' GROUP BY `track_links`.`country_code` ORDER BY `total` DESC LIMIT 15");
         while($country_row = $top_countries_30d_result->fetch_object()) {
             $top_countries_30d[] = [
                 'country_code' => (string) ($country_row->country_code ?? ''),
@@ -504,11 +509,45 @@ class Dashboard extends Controller {
         }
 
         $top_forever_pages_30d = [];
-        $top_forever_pages_30d_result = database()->query("SELECT `track_links`.`link_id`, `links`.`url`, COUNT(*) AS `total` FROM `track_links` LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id` LEFT JOIN `links` ON `track_links`.`link_id` = `links`.`link_id` WHERE `track_links`.`user_id` = {$this->user->user_id} AND `track_links`.`datetime` >= '{$thirty_days_start_datetime}' {$unique_track_links_condition} AND `biolinks_blocks`.`type` IN ({$forever_shop_block_types_sql}) GROUP BY `track_links`.`link_id` ORDER BY `total` DESC LIMIT 15");
+        $top_forever_pages_30d_result = database()->query("SELECT
+            CASE
+                WHEN `track_links`.`utm_medium` IN ('{$blog_product_medium}', '{$blog_business_medium}') THEN CONCAT('blog:', COALESCE(`blog_posts`.`blog_post_id`, 0))
+                ELSE CONCAT('link:', COALESCE(`track_links`.`link_id`, `biolink_links`.`link_id`, 0))
+            END AS `page_key`,
+            COALESCE(`track_links`.`link_id`, `biolink_links`.`link_id`, 0) AS `resolved_link_id`,
+            COALESCE(`links`.`url`, `biolink_links`.`url`, '') AS `link_url`,
+            `blog_posts`.`blog_post_id`,
+            `blog_posts`.`title` AS `blog_post_title`,
+            `blog_posts`.`url` AS `blog_post_url`,
+            `track_links`.`utm_medium`,
+            COUNT(*) AS `total`
+            FROM `track_links`
+            LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id`
+            LEFT JOIN `links` ON `track_links`.`link_id` = `links`.`link_id`
+            LEFT JOIN `links` AS `biolink_links` ON `biolinks_blocks`.`link_id` = `biolink_links`.`link_id`
+            LEFT JOIN `blog_posts` ON `blog_posts`.`blog_post_id` = CAST(SUBSTRING_INDEX(`track_links`.`utm_campaign`, ':', -1) AS UNSIGNED)
+            WHERE `track_links`.`user_id` = {$this->user->user_id}
+              AND `track_links`.`datetime` >= '{$thirty_days_start_datetime}'
+              {$unique_track_links_condition}
+              AND {$forever_outbound_condition}
+            GROUP BY `page_key`
+            ORDER BY `total` DESC
+            LIMIT 15");
         while($top_forever_page = $top_forever_pages_30d_result->fetch_object()) {
+            $is_blog_article = !empty($top_forever_page->blog_post_id);
+            $display_url = $is_blog_article
+                ? 'blog/' . (string) ($top_forever_page->blog_post_url ?? '')
+                : (string) ($top_forever_page->link_url ?? '');
+            $open_url = $is_blog_article
+                ? url('blog/' . (string) ($top_forever_page->blog_post_url ?? ''))
+                : (!empty($top_forever_page->resolved_link_id) ? url('link/' . (int) $top_forever_page->resolved_link_id . '?tab=blocks') : '');
+
             $top_forever_pages_30d[] = [
-                'link_id' => (int) ($top_forever_page->link_id ?? 0),
-                'url' => (string) ($top_forever_page->url ?? ''),
+                'link_id' => (int) ($top_forever_page->resolved_link_id ?? 0),
+                'blog_post_id' => (int) ($top_forever_page->blog_post_id ?? 0),
+                'url' => $display_url,
+                'title' => $is_blog_article ? (string) ($top_forever_page->blog_post_title ?? '') : '',
+                'open_url' => $open_url,
                 'total' => (int) ($top_forever_page->total ?? 0),
             ];
         }
@@ -516,10 +555,10 @@ class Dashboard extends Controller {
         $source_label_sql = "CASE WHEN `track_links`.`utm_source` IS NOT NULL AND `track_links`.`utm_source` != '' THEN CONCAT('utm:', `track_links`.`utm_source`) WHEN `track_links`.`referrer_host` IS NOT NULL AND `track_links`.`referrer_host` != '' THEN `track_links`.`referrer_host` ELSE '(direct)' END";
 
         /* Custom code: FC-2026-03-07: normalize source channels for collaborator dashboard cards */
-        $top_shop_sources_30d_result = database()->query("SELECT {$source_label_sql} AS `source`, COUNT(*) AS `total` FROM `track_links` LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id` WHERE `track_links`.`user_id` = {$this->user->user_id} AND `track_links`.`datetime` >= '{$thirty_days_start_datetime}' {$unique_track_links_condition} AND `biolinks_blocks`.`type` IN ({$forever_shop_block_types_sql}) GROUP BY `source` ORDER BY `total` DESC LIMIT 100");
+        $top_shop_sources_30d_result = database()->query("SELECT {$source_label_sql} AS `source`, COUNT(*) AS `total` FROM `track_links` LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id` WHERE `track_links`.`user_id` = {$this->user->user_id} AND `track_links`.`datetime` >= '{$thirty_days_start_datetime}' {$unique_track_links_condition} AND {$forever_shop_condition} GROUP BY `source` ORDER BY `total` DESC LIMIT 100");
         $top_shop_sources_30d = $this->normalize_and_rank_dashboard_traffic_sources($top_shop_sources_30d_result, 15);
 
-        $top_registration_sources_30d_result = database()->query("SELECT {$source_label_sql} AS `source`, COUNT(*) AS `total` FROM `track_links` LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id` WHERE `track_links`.`user_id` = {$this->user->user_id} AND `track_links`.`datetime` >= '{$thirty_days_start_datetime}' {$unique_track_links_condition} AND `biolinks_blocks`.`type` IN ({$forever_registration_block_types_sql}) GROUP BY `source` ORDER BY `total` DESC LIMIT 100");
+        $top_registration_sources_30d_result = database()->query("SELECT {$source_label_sql} AS `source`, COUNT(*) AS `total` FROM `track_links` LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id` WHERE `track_links`.`user_id` = {$this->user->user_id} AND `track_links`.`datetime` >= '{$thirty_days_start_datetime}' {$unique_track_links_condition} AND {$forever_registration_condition} GROUP BY `source` ORDER BY `total` DESC LIMIT 100");
         $top_registration_sources_30d = $this->normalize_and_rank_dashboard_traffic_sources($top_registration_sources_30d_result, 15);
         /* /Custom code: FC-2026-03-07 */
 
@@ -565,22 +604,22 @@ class Dashboard extends Controller {
         );
         $forever_shop_clicks_countries_30d = $get_dashboard_geo_breakdown(
             "LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id`",
-            "AND `biolinks_blocks`.`type` IN ({$forever_shop_block_types_sql})",
+            "AND {$forever_shop_condition}",
             'country_code'
         );
         $forever_shop_clicks_cities_30d = $get_dashboard_geo_breakdown(
             "LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id`",
-            "AND `biolinks_blocks`.`type` IN ({$forever_shop_block_types_sql})",
+            "AND {$forever_shop_condition}",
             'city_name'
         );
         $forever_registration_clicks_countries_30d = $get_dashboard_geo_breakdown(
             "LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id`",
-            "AND `biolinks_blocks`.`type` IN ({$forever_registration_block_types_sql})",
+            "AND {$forever_registration_condition}",
             'country_code'
         );
         $forever_registration_clicks_cities_30d = $get_dashboard_geo_breakdown(
             "LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id`",
-            "AND `biolinks_blocks`.`type` IN ({$forever_registration_block_types_sql})",
+            "AND {$forever_registration_condition}",
             'city_name'
         );
         /* /Custom code: FC-2026-03-30 */
@@ -597,13 +636,13 @@ class Dashboard extends Controller {
         }
 
         $top_forever_page = $top_forever_pages_30d[0] ?? null;
-        if($top_forever_page && !empty($top_forever_page['link_id'])) {
+        if($top_forever_page && !empty($top_forever_page['open_url'])) {
             $dashboard_recommendations[] = [
                 'status' => 'good',
                 'title' => l('dashboard.forever_analytics.recommendation.top_page.title'),
-                'description' => sprintf(l('dashboard.forever_analytics.recommendation.top_page.description'), $top_forever_page['url'] ?: '-', $top_forever_page['total']),
+                'description' => sprintf(l('dashboard.forever_analytics.recommendation.top_page.description'), $top_forever_page['title'] ?: ($top_forever_page['url'] ?: '-'), $top_forever_page['total']),
                 'cta_label' => l('dashboard.forever_analytics.recommendation.top_page.cta'),
-                'cta_url' => url('link/' . $top_forever_page['link_id'] . '?tab=blocks'),
+                'cta_url' => $top_forever_page['open_url'],
             ];
         }
 

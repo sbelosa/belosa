@@ -1007,6 +1007,39 @@ class Link {
         return in_array($country_code, ['xk'], true) ? 'al' : $country_code;
     }
 
+    /* Custom code: FC-2026-03-31: blog CTA tracking helpers */
+    public static function get_blog_cta_business_post_ids(): array {
+        return [406, 407];
+    }
+
+    public static function get_blog_cta_click_type_by_post_id(int $blog_post_id): string {
+        return in_array($blog_post_id, self::get_blog_cta_business_post_ids(), true) ? 'business' : 'product';
+    }
+
+    public static function get_blog_cta_tracking_medium(string $click_type = 'product'): string {
+        return $click_type === 'business' ? 'blog_cta_business' : 'blog_cta_product';
+    }
+
+    public static function get_forever_shop_click_condition_sql(string $track_links_alias, string $biolinks_blocks_alias, string $block_types_sql): string {
+        $blog_tracking_medium = self::get_blog_cta_tracking_medium('product');
+
+        return "(({$biolinks_blocks_alias}.`type` IN ({$block_types_sql})) OR ({$track_links_alias}.`utm_medium` = '{$blog_tracking_medium}'))";
+    }
+
+    public static function get_forever_registration_click_condition_sql(string $track_links_alias, string $biolinks_blocks_alias, string $block_types_sql): string {
+        $blog_tracking_medium = self::get_blog_cta_tracking_medium('business');
+
+        return "(({$biolinks_blocks_alias}.`type` IN ({$block_types_sql})) OR ({$track_links_alias}.`utm_medium` = '{$blog_tracking_medium}'))";
+    }
+
+    public static function get_forever_outbound_click_condition_sql(string $track_links_alias, string $biolinks_blocks_alias, string $shop_block_types_sql, string $registration_block_types_sql): string {
+        $shop_condition = self::get_forever_shop_click_condition_sql($track_links_alias, $biolinks_blocks_alias, $shop_block_types_sql);
+        $registration_condition = self::get_forever_registration_click_condition_sql($track_links_alias, $biolinks_blocks_alias, $registration_block_types_sql);
+
+        return "({$shop_condition} OR {$registration_condition})";
+    }
+    /* /Custom code: FC-2026-03-31 */
+
     public static function resolve_preferred_forever_market_country_code($country_code = null, array $available_country_codes = [], ?string $accept_language_header = null, bool $country_code_is_trusted = false): ?string {
         $normalized_country_code = self::resolve_forever_market_country_code($country_code);
         $available_country_codes = array_values(array_unique(array_filter(array_map([self::class, 'resolve_forever_market_country_code'], $available_country_codes))));

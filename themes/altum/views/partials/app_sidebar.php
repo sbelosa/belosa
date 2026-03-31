@@ -267,6 +267,11 @@ if(is_logged_in()) {
                 <li class="app-sidebar-section-label">
                     <span>FCC zona</span>
                 </li>
+                <?php /* Custom code: FC-2026-03-31: Next step sidebar entry above FCC results */ ?>
+                <li class="<?= \Altum\Router::$controller == 'AiPlan' ? 'active' : null ?> app-sidebar-fcc-item">
+                    <a href="<?= url('ai-plan') ?>"><i class="fas fa-fw fa-sm fa-brain mr-2"></i> <?= l('ai_plan.menu') ?></a>
+                </li>
+                <?php /* /Custom code: FC-2026-03-31 */ ?>
                 <?php $fcc_results_sidebar_is_active = \Altum\Router::$controller == 'FccResults'; ?>
                 <li class="<?= $fcc_results_sidebar_is_active ? 'active' : null ?> app-sidebar-fcc-item">
                     <a href="<?= url('fcc-results') ?>">

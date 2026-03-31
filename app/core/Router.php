@@ -128,6 +128,28 @@ class Router {
             ],
             /* /Custom code: FC-2026-02-24 */
 
+            /* Custom code: FC-2026-03-31: user AI plan module */
+            'ai-plan' => [
+                'controller' => 'AiPlan',
+                'settings' => [
+                    'wrapper' => 'app_wrapper',
+                    'ads' => true,
+                ]
+            ],
+            /* /Custom code: FC-2026-03-31 */
+
+            /* Custom code: FC-2026-03-31: tracked blog CTA redirect */
+            'blog-click' => [
+                'controller' => 'BlogClick',
+                'settings' => [
+                    'no_authentication_check' => true,
+                    'has_view' => false,
+                    'no_browser_language_detection' => true,
+                    'ads' => true,
+                ]
+            ],
+            /* /Custom code: FC-2026-03-31 */
+
             'directory' => [
                 'controller' => 'Directory',
                 'settings' => [
@@ -1406,6 +1428,16 @@ class Router {
 
         /* Admin Panel */
         'admin' => [
+            /* Custom code: FC-2026-03-31: Leader Operating System admin routes */
+            'leader-operating-system' => [
+                'controller' => 'AdminLeaderOperatingSystem'
+            ],
+
+            'leader-operating-system-leader' => [
+                'controller' => 'AdminLeaderOperatingSystemLeader'
+            ],
+            /* /Custom code: FC-2026-03-31 */
+
             'links' => [
                 'controller' => 'AdminLinks'
             ],

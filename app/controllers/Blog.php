@@ -320,7 +320,32 @@ class Blog extends Controller {
                     return !empty($value);
                 }));
                 $resolved_market_country_code = \Altum\Link::resolve_preferred_forever_market_country_code($country_code, $available_market_country_codes, $accept_language_header, $country_code_is_trusted);
-                $webshop_link = \Altum\Link::get_product_webshop_link($referral, $blog_post->blog_post_id, $resolved_market_country_code);                
+                $webshop_link = \Altum\Link::get_product_webshop_link($referral, $blog_post->blog_post_id, $resolved_market_country_code);
+
+                if($webshop_link) {
+                    $tracked_webshop_link = url('blog-click?blog_post_id=' . (int) $blog_post->blog_post_id . '&ref=' . rawurlencode($referral) . '&destination=' . rawurlencode($webshop_link));
+                    $tracked_utm_source = '';
+
+                    if(isset($_GET['utm_source']) && trim((string) $_GET['utm_source']) !== '') {
+                        $tracked_utm_source = trim((string) $_GET['utm_source']);
+                    } elseif(!empty($_SERVER['HTTP_REFERER'])) {
+                        $referrer_host = parse_url((string) $_SERVER['HTTP_REFERER'], PHP_URL_HOST);
+
+                        if(is_string($referrer_host) && $referrer_host !== '') {
+                            $site_host = parse_url(SITE_URL, PHP_URL_HOST);
+                            $normalized_referrer_host = mb_strtolower(preg_replace('/^www\./', '', $referrer_host) ?? $referrer_host);
+                            $normalized_site_host = is_string($site_host) ? mb_strtolower(preg_replace('/^www\./', '', $site_host) ?? $site_host) : '';
+
+                            if($normalized_site_host === '' || ($normalized_referrer_host !== $normalized_site_host && !str_ends_with($normalized_referrer_host, '.' . $normalized_site_host))) {
+                                $tracked_utm_source = $normalized_referrer_host;
+                            }
+                        }
+                    }
+
+                    if($tracked_utm_source !== '') {
+                        $tracked_webshop_link .= '&utm_source=' . rawurlencode($tracked_utm_source);
+                    }
+                }
 
             }            
 
@@ -345,6 +370,7 @@ class Blog extends Controller {
                 'private_display' => isset($private_display) ? $private_display : null,
                 'private' => isset($private) ? $private : null,
                 'webshop_link' => isset($webshop_link) && !empty($webshop_link) ? $webshop_link : null,
+                'tracked_webshop_link' => isset($tracked_webshop_link) && !empty($tracked_webshop_link) ? $tracked_webshop_link : null,
                 'blog_post_url' => $blog_post_url,
                 'share_url' => $share_url,
             ];

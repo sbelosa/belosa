@@ -1,0 +1,3272 @@
+<?php
+/* Custom code: FC-2026-03-31: Leader Operating System detail controller */
+
+namespace Altum\Controllers;
+
+use Altum\Alerts;
+use Altum\Response;
+use Altum\Title;
+
+defined('ALTUMCODE') || die();
+
+class AdminLeaderOperatingSystemLeader extends Controller {
+
+    private function save_user_preferences(int $user_id, \stdClass $preferences): void {
+        db()->where('user_id', $user_id)->update('users', [
+            'preferences' => json_encode($preferences, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+        ]);
+
+        /* Custom code: FC-2026-03-31: Keep user caches aligned after LOS/admin preference updates */
+        cache()->deleteItemsByTag('user_id=' . $user_id);
+        cache()->deleteItem('user?user_id=' . $user_id);
+        /* /Custom code: FC-2026-03-31 */
+    }
+
+    private function get_period_days(string $period_key): int {
+        return [
+            '7d' => 7,
+            '30d' => 30,
+            '90d' => 90,
+        ][$period_key] ?? 30;
+    }
+
+    private function get_period_start_datetime(int $days): string {
+        $days = max(1, $days);
+
+        return (new \DateTime())->modify('-' . ($days - 1) . ' days')->format('Y-m-d 00:00:00');
+    }
+
+    private function get_biolink_sets(): array {
+        $forever_shop_block_types = ['link_discount', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo'];
+        $forever_registration_block_types = ['link_forever_shop'];
+        $forever_all_block_types = array_values(array_unique(array_merge($forever_shop_block_types, $forever_registration_block_types)));
+
+        return [
+            'forever_shop_block_types' => $forever_shop_block_types,
+            'forever_registration_block_types' => $forever_registration_block_types,
+            'forever_all_block_types_sql' => "'" . implode("', '", $forever_all_block_types) . "'",
+            'forever_shop_block_types_sql' => "'" . implode("', '", $forever_shop_block_types) . "'",
+            'forever_registration_block_types_sql' => "'" . implode("', '", $forever_registration_block_types) . "'",
+        ];
+    }
+
+    private function extract_forever_id_from_preferences($preferences): string {
+        if(is_string($preferences)) {
+            $preferences = json_decode($preferences ?? '{}');
+        }
+
+        if(is_array($preferences)) {
+            $preferences = (object) $preferences;
+        }
+
+        if(!is_object($preferences)) {
+            return '-';
+        }
+
+        $meta = $preferences->meta ?? null;
+
+        if(is_string($meta)) {
+            $decoded_meta = json_decode($meta);
+            if(is_array($decoded_meta)) {
+                $decoded_meta = (object) $decoded_meta;
+            }
+            if(is_object($decoded_meta)) {
+                $meta = $decoded_meta;
+            }
+        }
+
+        if(is_array($meta)) {
+            $meta = (object) $meta;
+        }
+
+        if(!is_object($meta)) {
+            return '-';
+        }
+
+        $forever_id = $meta->foreverId ?? $meta->forever_id ?? $meta->foreverID ?? null;
+        $forever_id = is_scalar($forever_id) ? trim((string) $forever_id) : '';
+
+        return $forever_id !== '' ? $forever_id : '-';
+    }
+
+    private function normalize_source_value(string $source): string {
+        $source = mb_strtolower(trim($source));
+
+        if($source === '') {
+            return '';
+        }
+
+        if(strpos($source, '://') !== false) {
+            $parsed_host = parse_url($source, PHP_URL_HOST);
+            if(is_string($parsed_host) && $parsed_host !== '') {
+                $source = $parsed_host;
+            }
+        }
+
+        if(strpos($source, '/') !== false) {
+            $source = explode('/', $source)[0];
+        }
+
+        return preg_replace('/^www\./', '', $source) ?? $source;
+    }
+
+    private function is_internal_source(string $source): bool {
+        $source = $this->normalize_source_value($source);
+
+        if($source === '') {
+            return false;
+        }
+
+        $site_host = parse_url(SITE_URL, PHP_URL_HOST);
+        $site_host = is_string($site_host) ? $this->normalize_source_value($site_host) : '';
+
+        if($site_host !== '' && ($source === $site_host || str_ends_with($source, '.' . $site_host))) {
+            return true;
+        }
+
+        return $source === 'forevercard.club' || str_ends_with($source, '.forevercard.club');
+    }
+
+    private function normalize_source_label(string $source): string {
+        $source = $this->normalize_source_value($source);
+
+        if($source === '' || in_array($source, ['(direct)', 'direct', 'none', '(none)'], true) || $this->is_internal_source($source)) {
+            return l('admin_index.biolink_qualified_watch.source.direct');
+        }
+
+        if($source === 'fb' || strpos($source, 'facebook') !== false) return 'facebook';
+        if($source === 'ig' || strpos($source, 'instagram') !== false) return 'instagram';
+        if(strpos($source, 'whatsapp') !== false || $source === 'wa') return 'whatsapp';
+        if(strpos($source, 'tiktok') !== false) return 'tiktok';
+        if(strpos($source, 'youtube') !== false || $source === 'youtu.be') return 'youtube';
+        if(strpos($source, 'telegram') !== false) return 'telegram';
+        if(strpos($source, 'viber') !== false) return 'viber';
+        if(strpos($source, 'google') !== false || $source === 'gclid') return 'google';
+        if(strpos($source, 'linkedin') !== false) return 'linkedin';
+
+        return $source;
+    }
+
+    private function get_source_label(array $click): string {
+        foreach([
+            trim((string) ($click['utm_source'] ?? '')),
+            trim((string) ($click['referrer_host'] ?? '')),
+        ] as $candidate_source) {
+            $normalized_source = $this->normalize_source_value($candidate_source);
+
+            if($normalized_source === '' || $this->is_internal_source($normalized_source)) {
+                continue;
+            }
+
+            return $this->normalize_source_label($normalized_source);
+        }
+
+        return l('admin_index.biolink_qualified_watch.source.direct');
+    }
+
+    private function increment_bucket(array &$buckets, string $key, string $label): void {
+        $key = trim($key);
+        $label = trim($label);
+
+        if($key === '' || $label === '') {
+            return;
+        }
+
+        if(!isset($buckets[$key])) {
+            $buckets[$key] = ['label' => $label, 'total' => 0];
+        }
+
+        $buckets[$key]['total']++;
+    }
+
+    private function build_breakdown(array $buckets, int $total, int $limit = 5): array {
+        uasort($buckets, static function($a, $b) {
+            return (($b['total'] ?? 0) <=> ($a['total'] ?? 0)) ?: (($a['label'] ?? '') <=> ($b['label'] ?? ''));
+        });
+
+        $result = [];
+        foreach(array_slice($buckets, 0, max(1, $limit), true) as $item) {
+            $item_total = (int) ($item['total'] ?? 0);
+            $result[] = [
+                'label' => (string) ($item['label'] ?? '-'),
+                'total' => $item_total,
+                'share' => $total > 0 ? round(($item_total / $total) * 100, 1) : 0,
+            ];
+        }
+
+        return $result;
+    }
+
+    private function get_chart_series(int $user_id, string $period_start_datetime, int $period_days, array $biolink_sets): array {
+        $labels = [];
+        $shop_clicks = [];
+        $registrations = [];
+        $total_clicks = [];
+
+        $period_start = new \DateTimeImmutable($period_start_datetime);
+        $date_index = [];
+
+        for($day = 0; $day < $period_days; $day++) {
+            $date = $period_start->add(new \DateInterval('P' . $day . 'D'));
+            $date_key = $date->format('Y-m-d');
+            $date_index[$date_key] = $day;
+            $labels[] = $date->format('d.m.');
+            $shop_clicks[] = 0;
+            $registrations[] = 0;
+            $total_clicks[] = 0;
+        }
+
+                $shop_condition = \Altum\Link::get_forever_shop_click_condition_sql('`track_links`', '`biolinks_blocks`', $biolink_sets['forever_shop_block_types_sql']);
+                $registration_condition = \Altum\Link::get_forever_registration_click_condition_sql('`track_links`', '`biolinks_blocks`', $biolink_sets['forever_registration_block_types_sql']);
+        $result = database()->query("SELECT
+            DATE(`track_links`.`datetime`) AS `date_key`,
+            COUNT(*) AS `total_clicks`,
+                        SUM(CASE WHEN `track_links`.`is_unique` = 1 AND {$shop_condition} THEN 1 ELSE 0 END) AS `shop_clicks`,
+                        SUM(CASE WHEN `track_links`.`is_unique` = 1 AND {$registration_condition} THEN 1 ELSE 0 END) AS `registration_clicks`
+            FROM `track_links`
+            LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id`
+            WHERE `track_links`.`datetime` >= '{$period_start_datetime}'
+              AND `track_links`.`user_id` = {$user_id}
+            GROUP BY DATE(`track_links`.`datetime`)");
+
+        while($row = $result->fetch_assoc()) {
+            $date_key = (string) ($row['date_key'] ?? '');
+
+            if($date_key === '' || !isset($date_index[$date_key])) {
+                continue;
+            }
+
+            $index = $date_index[$date_key];
+            $total_clicks[$index] = (int) ($row['total_clicks'] ?? 0);
+            $shop_clicks[$index] = (int) ($row['shop_clicks'] ?? 0);
+            $registrations[$index] = (int) ($row['registration_clicks'] ?? 0);
+        }
+
+        return [
+            'labels' => $labels,
+            'shop_clicks' => $shop_clicks,
+            'registrations' => $registrations,
+            'total_clicks' => $total_clicks,
+        ];
+    }
+
+    private function get_growth_metrics(int $current, int $previous): array {
+        $difference = $current - $previous;
+        $growth_percent = null;
+
+        if($previous > 0) {
+            $growth_percent = round(($difference / $previous) * 100, 1);
+        } elseif($current === 0) {
+            $growth_percent = 0.0;
+        }
+
+        return [
+            'current' => $current,
+            'previous' => $previous,
+            'difference' => $difference,
+            'growth_percent' => $growth_percent,
+        ];
+    }
+
+    private function clamp_score(float $value): int {
+        return (int) max(0, min(100, round($value)));
+    }
+
+    private function get_scores(array $row): array {
+        $total_clicks = (int) ($row['clicks_total_period'] ?? 0);
+        $shop_clicks = (int) ($row['forever_shop_clicks_period'] ?? 0);
+        $registration_clicks = (int) ($row['forever_registration_clicks_period'] ?? 0);
+        $growth = $row['growth_percent'];
+        $shop_share = $total_clicks > 0 ? (($shop_clicks / $total_clicks) * 100) : 0;
+        $registration_rate = $shop_clicks > 0 ? (($registration_clicks / $shop_clicks) * 100) : 0;
+
+        $performance_score = $this->clamp_score(min(40, $shop_clicks * 2.3) + min(25, $registration_clicks * 6) + min(35, $total_clicks * 0.55));
+        $momentum_score = $this->clamp_score($growth === null ? ($shop_clicks > 0 ? 58 : 0) : 50 + ($growth * 1.1));
+        $conversion_score = $this->clamp_score(($shop_share * 0.55) + ($registration_rate * 0.9));
+
+        $risk_score = 0;
+        if($growth !== null && $growth <= -20) $risk_score += 35;
+        if((int) ($row['previous_forever_shop_clicks_period'] ?? 0) > 0 && $shop_clicks === 0) $risk_score += 35;
+        if($total_clicks === 0 && (int) ($row['forever_shop_clicks_90d'] ?? 0) > 0) $risk_score += 20;
+        $risk_score = $this->clamp_score($risk_score);
+
+        $opportunity_score = 0;
+        if($total_clicks >= 20 && $shop_share < 25) $opportunity_score += 35;
+        if($shop_clicks >= 10 && $registration_clicks === 0) $opportunity_score += 20;
+        if($growth !== null && $growth > 0 && $registration_rate < 10) $opportunity_score += 15;
+        $opportunity_score = $this->clamp_score($opportunity_score);
+
+        $leader_os_score = $this->clamp_score(
+            ($performance_score * 0.35)
+            + ($momentum_score * 0.2)
+            + ($conversion_score * 0.2)
+            + ((100 - $risk_score) * 0.1)
+            + ($opportunity_score * 0.15)
+        );
+
+        return [
+            'performance_score' => $performance_score,
+            'momentum_score' => $momentum_score,
+            'conversion_score' => $conversion_score,
+            'risk_score' => $risk_score,
+            'opportunity_score' => $opportunity_score,
+            'leader_os_score' => $leader_os_score,
+            'shop_share_percent' => round($shop_share, 1),
+            'registration_rate_percent' => round($registration_rate, 1),
+        ];
+    }
+
+    private function get_status_payload(array $row): array {
+        $qualified = (int) ($row['forever_shop_clicks_90d'] ?? 0) >= 15;
+        $growth = $row['growth_percent'] ?? null;
+        $current_shop_clicks = (int) ($row['forever_shop_clicks_period'] ?? 0);
+        $previous_shop_clicks = (int) ($row['previous_forever_shop_clicks_period'] ?? 0);
+        $total_clicks = (int) ($row['clicks_total_period'] ?? 0);
+        $opportunity_score = (int) ($row['opportunity_score'] ?? 0);
+        $risk_score = (int) ($row['risk_score'] ?? 0);
+
+        $status_key = 'stable';
+        $status_label = l('admin_leader_operating_system.status.stable');
+        $status_class = 'secondary';
+
+        if($total_clicks === 0 && (int) ($row['forever_shop_clicks_90d'] ?? 0) === 0) {
+            $status_key = 'inactive';
+            $status_label = l('admin_leader_operating_system.status.inactive');
+            $status_class = 'dark';
+        } elseif($risk_score >= 55 || ($previous_shop_clicks > 0 && $current_shop_clicks === 0) || ($growth !== null && $growth <= -20)) {
+            $status_key = 'risk';
+            $status_label = l('admin_leader_operating_system.status.risk');
+            $status_class = 'warning';
+        } elseif($opportunity_score >= 60 && $total_clicks >= 20) {
+            $status_key = 'high_potential';
+            $status_label = l('admin_leader_operating_system.status.high_potential');
+            $status_class = 'info';
+        } elseif(($growth !== null && $growth >= 20) || $current_shop_clicks >= 12) {
+            $status_key = 'rising';
+            $status_label = l('admin_leader_operating_system.status.rising');
+            $status_class = 'success';
+        }
+
+        return [
+            'qualified' => $qualified,
+            'status_key' => $status_key,
+            'status_label' => $status_label,
+            'status_class' => $status_class,
+        ];
+    }
+
+    /* Custom code: FC-2026-03-31: Phase 6 stronger risk scoring with privacy-safe fraud signals */
+    private function blend_period_payload_with_fraud(array $payload, array $fraud_intelligence): array {
+        $base_risk_score = (int) ($payload['risk_score'] ?? 0);
+        $fraud_score = (int) ($fraud_intelligence['score'] ?? 0);
+        $blended_risk_score = $this->clamp_score(($base_risk_score * 0.65) + ($fraud_score * 0.35));
+
+        $payload['risk_score_base'] = $base_risk_score;
+        $payload['fraud_score'] = $fraud_score;
+        $payload['risk_score'] = $blended_risk_score;
+        $payload['leader_os_score'] = $this->clamp_score(
+            ((int) ($payload['performance_score'] ?? 0) * 0.35)
+            + ((int) ($payload['momentum_score'] ?? 0) * 0.2)
+            + ((int) ($payload['conversion_score'] ?? 0) * 0.2)
+            + ((100 - $blended_risk_score) * 0.1)
+            + ((int) ($payload['opportunity_score'] ?? 0) * 0.15)
+        );
+
+        return array_merge($payload, $this->get_status_payload($payload));
+    }
+
+    private function build_fraud_signal_item(string $level_key, string $label, string $text, string $action, int $points): array {
+        $class_map = [
+            'high' => 'status-warning',
+            'watch' => 'status-info',
+            'stable' => 'status-success',
+        ];
+
+        return [
+            'level_key' => $level_key,
+            'level_label' => l('admin_leader_operating_system.leader.fraud_level.' . $level_key),
+            'class' => $class_map[$level_key] ?? 'status-dark',
+            'label' => $label,
+            'text' => $text,
+            'action' => $action,
+            'points' => $points,
+        ];
+    }
+
+    private function persist_fraud_cluster_summary(int $user_id, string $period_key, array $fraud_intelligence): void {
+        $type = 'leader_os_fraud_cluster';
+        $today_start_datetime = (new \DateTime())->format('Y-m-d 00:00:00');
+        $period_key_sql = database()->real_escape_string($period_key);
+
+        database()->query("DELETE FROM `data` WHERE `user_id` = {$user_id} AND `type` = '{$type}' AND `datetime` >= '{$today_start_datetime}' AND JSON_UNQUOTE(JSON_EXTRACT(`data`, '$.period_key')) = '{$period_key_sql}'");
+
+        if((int) ($fraud_intelligence['clusters_total'] ?? 0) === 0) {
+            return;
+        }
+
+        db()->insert('data', [
+            'user_id' => $user_id,
+            'type' => $type,
+            'data' => json_encode([
+                'period_key' => $period_key,
+                'score' => (int) ($fraud_intelligence['score'] ?? 0),
+                'level_key' => (string) ($fraud_intelligence['level_key'] ?? 'stable'),
+                'clusters_total' => (int) ($fraud_intelligence['clusters_total'] ?? 0),
+                'top_concern' => (string) ($fraud_intelligence['top_concern'] ?? ''),
+                'retention_days' => LOS_FRAUD_SUMMARY_RETENTION_DAYS,
+                'clusters' => array_map(static function($cluster) {
+                    return [
+                        'score' => (int) ($cluster['score'] ?? 0),
+                        'label' => (string) ($cluster['label'] ?? ''),
+                        'text' => (string) ($cluster['text'] ?? ''),
+                        'signature' => (string) ($cluster['signature'] ?? ''),
+                        'first_datetime' => (string) ($cluster['first_datetime'] ?? ''),
+                        'last_datetime' => (string) ($cluster['last_datetime'] ?? ''),
+                    ];
+                }, array_slice($fraud_intelligence['clusters'] ?? [], 0, 3)),
+            ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+            'datetime' => get_date(),
+        ]);
+    }
+
+    private function get_fraud_intelligence_payload(int $user_id, string $period_key): array {
+        if(function_exists('fc_ensure_funnel_analytics_tables')) {
+            fc_ensure_funnel_analytics_tables();
+        }
+
+        $period_start_datetime = $this->get_period_start_datetime($this->get_period_days($period_key));
+        $identity_expression = "COALESCE(NULLIF(`funnel_events`.`fingerprint_hash`, ''), NULLIF(`funnel_events`.`ip_hash`, ''), NULLIF(`funnel_events`.`visitor_key`, ''))";
+        $clusters = [];
+        $fraud_score = 0;
+
+        $clusters_result = database()->query("SELECT
+            {$identity_expression} AS `identity_key`,
+            `funnel_events`.`ip_hash`,
+            `funnel_events`.`fingerprint_hash`,
+            COUNT(*) AS `events_total`,
+            COUNT(DISTINCT `funnel_events`.`visitor_key`) AS `visitors_total`,
+            COUNT(DISTINCT `funnel_events`.`biolink_block_id`) AS `funnels_total`,
+            COUNT(DISTINCT COALESCE(NULLIF(`funnel_events`.`country_code`, ''), 'na')) AS `countries_total`,
+            SUM(CASE WHEN `funnel_events`.`event_type` = 'submit_error' THEN 1 ELSE 0 END) AS `submit_errors_total`,
+            SUM(CASE WHEN `funnel_events`.`event_type` = 'submit_success' THEN 1 ELSE 0 END) AS `submit_success_total`,
+            SUM(CASE WHEN `funnel_events`.`event_type` = 'form_start' THEN 1 ELSE 0 END) AS `form_starts_total`,
+            MIN(`funnel_events`.`datetime`) AS `first_datetime`,
+            MAX(`funnel_events`.`datetime`) AS `last_datetime`
+        FROM `funnel_events`
+        WHERE `funnel_events`.`user_id` = {$user_id}
+          AND `funnel_events`.`datetime` >= '{$period_start_datetime}'
+          AND ({$identity_expression}) IS NOT NULL
+        GROUP BY {$identity_expression}, `funnel_events`.`ip_hash`, `funnel_events`.`fingerprint_hash`
+        HAVING `events_total` >= 4
+        ORDER BY `events_total` DESC, `visitors_total` DESC, `funnels_total` DESC
+        LIMIT 20");
+
+        while($cluster = $clusters_result->fetch_assoc()) {
+            $cluster_signals = [];
+            $cluster_score = 0;
+            $events_total = (int) ($cluster['events_total'] ?? 0);
+            $visitors_total = (int) ($cluster['visitors_total'] ?? 0);
+            $funnels_total = (int) ($cluster['funnels_total'] ?? 0);
+            $countries_total = (int) ($cluster['countries_total'] ?? 0);
+            $submit_errors_total = (int) ($cluster['submit_errors_total'] ?? 0);
+            $submit_success_total = (int) ($cluster['submit_success_total'] ?? 0);
+            $form_starts_total = (int) ($cluster['form_starts_total'] ?? 0);
+            $first_timestamp = strtotime((string) ($cluster['first_datetime'] ?? '')) ?: 0;
+            $last_timestamp = strtotime((string) ($cluster['last_datetime'] ?? '')) ?: 0;
+            $duration_minutes = $first_timestamp && $last_timestamp && $last_timestamp >= $first_timestamp ? max(1, (int) ceil(($last_timestamp - $first_timestamp) / 60)) : null;
+
+            if($visitors_total >= 3) {
+                $cluster_score += 35;
+                $cluster_signals[] = $this->build_fraud_signal_item(
+                    'high',
+                    l('admin_leader_operating_system.leader.fraud_signal.reused_identity.label'),
+                    sprintf(l('admin_leader_operating_system.leader.fraud_signal.reused_identity.text'), $visitors_total),
+                    l('admin_leader_operating_system.leader.fraud_signal.reused_identity.action'),
+                    35
+                );
+            }
+
+            if($funnels_total >= 3) {
+                $cluster_score += 15;
+                $cluster_signals[] = $this->build_fraud_signal_item(
+                    'watch',
+                    l('admin_leader_operating_system.leader.fraud_signal.multi_funnel.label'),
+                    sprintf(l('admin_leader_operating_system.leader.fraud_signal.multi_funnel.text'), $funnels_total),
+                    l('admin_leader_operating_system.leader.fraud_signal.multi_funnel.action'),
+                    15
+                );
+            }
+
+            if($submit_errors_total >= 3 && $submit_success_total === 0) {
+                $cluster_score += 15;
+                $cluster_signals[] = $this->build_fraud_signal_item(
+                    'watch',
+                    l('admin_leader_operating_system.leader.fraud_signal.error_burst.label'),
+                    sprintf(l('admin_leader_operating_system.leader.fraud_signal.error_burst.text'), $submit_errors_total),
+                    l('admin_leader_operating_system.leader.fraud_signal.error_burst.action'),
+                    15
+                );
+            }
+
+            if($events_total >= 8 && $duration_minutes !== null && $duration_minutes <= 10) {
+                $cluster_score += 20;
+                $cluster_signals[] = $this->build_fraud_signal_item(
+                    'high',
+                    l('admin_leader_operating_system.leader.fraud_signal.speed_burst.label'),
+                    sprintf(l('admin_leader_operating_system.leader.fraud_signal.speed_burst.text'), $events_total, $duration_minutes),
+                    l('admin_leader_operating_system.leader.fraud_signal.speed_burst.action'),
+                    20
+                );
+            }
+
+            if($countries_total >= 2 && $events_total >= 6) {
+                $cluster_score += 10;
+                $cluster_signals[] = $this->build_fraud_signal_item(
+                    'watch',
+                    l('admin_leader_operating_system.leader.fraud_signal.geo_spread.label'),
+                    sprintf(l('admin_leader_operating_system.leader.fraud_signal.geo_spread.text'), $countries_total),
+                    l('admin_leader_operating_system.leader.fraud_signal.geo_spread.action'),
+                    10
+                );
+            }
+
+            if($form_starts_total >= 4 && $submit_success_total === 0 && $submit_errors_total >= max(2, (int) floor($form_starts_total * 0.6))) {
+                $cluster_score += 10;
+            }
+
+            if($cluster_score === 0) {
+                continue;
+            }
+
+            usort($cluster_signals, static function($a, $b) {
+                return (($b['points'] ?? 0) <=> ($a['points'] ?? 0)) ?: (($a['label'] ?? '') <=> ($b['label'] ?? ''));
+            });
+
+            $clusters[] = [
+                'signature' => substr((string) ($cluster['fingerprint_hash'] ?: $cluster['ip_hash'] ?: md5((string) ($cluster['identity_key'] ?? ''))), 0, 16),
+                'score' => $this->clamp_score($cluster_score),
+                'label' => (string) ($cluster_signals[0]['label'] ?? l('admin_leader_operating_system.leader.fraud_none')),
+                'text' => (string) ($cluster_signals[0]['text'] ?? ''),
+                'action' => (string) ($cluster_signals[0]['action'] ?? ''),
+                'signals' => $cluster_signals,
+                'events_total' => $events_total,
+                'visitors_total' => $visitors_total,
+                'funnels_total' => $funnels_total,
+                'submit_errors_total' => $submit_errors_total,
+                'submit_success_total' => $submit_success_total,
+                'duration_minutes' => $duration_minutes,
+                'first_datetime' => (string) ($cluster['first_datetime'] ?? ''),
+                'last_datetime' => (string) ($cluster['last_datetime'] ?? ''),
+            ];
+
+            $fraud_score += $cluster_score;
+        }
+
+        usort($clusters, static function($a, $b) {
+            return (($b['score'] ?? 0) <=> ($a['score'] ?? 0)) ?: (($b['events_total'] ?? 0) <=> ($a['events_total'] ?? 0));
+        });
+
+        $fraud_score = $this->clamp_score($fraud_score);
+        $level_key = 'stable';
+
+        if($fraud_score >= 55) {
+            $level_key = 'high';
+        } elseif($fraud_score >= 25) {
+            $level_key = 'watch';
+        }
+
+        return [
+            'period_key' => $period_key,
+            'score' => $fraud_score,
+            'level_key' => $level_key,
+            'level_label' => l('admin_leader_operating_system.leader.fraud_level.' . $level_key),
+            'level_class' => $this->build_fraud_signal_item($level_key, '', '', '', 0)['class'],
+            'clusters_total' => count($clusters),
+            'top_concern' => $clusters[0]['label'] ?? l('admin_leader_operating_system.leader.fraud_none'),
+            'retention_days' => LOS_FRAUD_EVENT_RETENTION_DAYS,
+            'clusters' => array_slice($clusters, 0, 6),
+        ];
+    }
+    /* /Custom code: FC-2026-03-31 */
+
+    private function get_primary_breakdown_label(array $breakdown, string $fallback = '-'): string {
+        return !empty($breakdown[0]['label']) ? (string) $breakdown[0]['label'] : $fallback;
+    }
+
+    private function get_funnel_payload(int $user_id, string $period_start_datetime): array {
+        $funnel_blocks = [];
+        $funnel_blocks_result = database()->query("SELECT `biolink_block_id`, `settings`
+            FROM `biolinks_blocks`
+            WHERE `user_id` = {$user_id}
+              AND `type` = 'lead_funnel'");
+
+        while($row = $funnel_blocks_result->fetch_object()) {
+            $settings = json_decode($row->settings ?? '{}');
+            $funnel_blocks[(int) $row->biolink_block_id] = [
+                'name' => trim((string) ($settings->name ?? l('link.biolink.blocks.lead_funnel'))),
+                'objective' => trim((string) ($settings->thank_you_type ?? $settings->open_mode ?? '')),
+            ];
+        }
+
+        if(empty($funnel_blocks)) {
+            return [
+                'total_funnels' => 0,
+                'active_funnels' => 0,
+                'unique_clicks' => 0,
+                'total_leads' => 0,
+                'conversion_rate' => 0.0,
+                'top_funnel_name' => '-',
+                'top_funnel_objective' => '-',
+            ];
+        }
+
+        $funnel_ids_sql = implode(',', array_map('intval', array_keys($funnel_blocks)));
+        $clicks_per_funnel = [];
+        $clicks_result = database()->query("SELECT `biolink_block_id`, SUM(`is_unique`) AS `unique_clicks`
+            FROM `track_links`
+            WHERE `user_id` = {$user_id}
+              AND `biolink_block_id` IN ({$funnel_ids_sql})
+              AND `datetime` >= '{$period_start_datetime}'
+            GROUP BY `biolink_block_id`");
+
+        while($row = $clicks_result->fetch_object()) {
+            $clicks_per_funnel[(int) $row->biolink_block_id] = (int) ($row->unique_clicks ?? 0);
+        }
+
+        $leads_per_funnel = [];
+        $leads_result = database()->query("SELECT `biolink_block_id`, COUNT(*) AS `total_leads`
+            FROM `data`
+            WHERE `user_id` = {$user_id}
+              AND `type` = 'lead_funnel'
+              AND `biolink_block_id` IN ({$funnel_ids_sql})
+              AND `datetime` >= '{$period_start_datetime}'
+            GROUP BY `biolink_block_id`");
+
+        while($row = $leads_result->fetch_object()) {
+            $leads_per_funnel[(int) $row->biolink_block_id] = (int) ($row->total_leads ?? 0);
+        }
+
+        $active_funnels = 0;
+        $unique_clicks = 0;
+        $total_leads = 0;
+        $top_funnel_name = '-';
+        $top_funnel_objective = '-';
+        $top_funnel_score = -1;
+
+        foreach($funnel_blocks as $biolink_block_id => $funnel_block) {
+            $funnel_clicks = $clicks_per_funnel[$biolink_block_id] ?? 0;
+            $funnel_leads = $leads_per_funnel[$biolink_block_id] ?? 0;
+
+            if($funnel_clicks > 0 || $funnel_leads > 0) {
+                $active_funnels++;
+            }
+
+            $unique_clicks += $funnel_clicks;
+            $total_leads += $funnel_leads;
+
+            $funnel_score = ($funnel_leads * 1000) + $funnel_clicks;
+            if($funnel_score > $top_funnel_score) {
+                $top_funnel_score = $funnel_score;
+                $top_funnel_name = $funnel_block['name'] !== '' ? $funnel_block['name'] : l('link.biolink.blocks.lead_funnel');
+                $top_funnel_objective = $funnel_block['objective'] !== '' ? $funnel_block['objective'] : '-';
+            }
+        }
+
+        return [
+            'total_funnels' => count($funnel_blocks),
+            'active_funnels' => $active_funnels,
+            'unique_clicks' => $unique_clicks,
+            'total_leads' => $total_leads,
+            'conversion_rate' => $unique_clicks ? round(($total_leads / $unique_clicks) * 100, 1) : 0.0,
+            'top_funnel_name' => $top_funnel_name,
+            'top_funnel_objective' => $top_funnel_objective,
+        ];
+    }
+
+    /* Custom code: FC-2026-03-31: Leader OS app structure payload for AI analysis */
+    private function get_app_structure_payload(int $user_id): array {
+        $apps_result = database()->query("SELECT `link_id`, `url` FROM `links` WHERE `user_id` = {$user_id} AND `type` = 'biolink'");
+
+        $apps = [];
+        $link_ids = [];
+
+        while($row = $apps_result->fetch_object()) {
+            $link_id = (int) ($row->link_id ?? 0);
+
+            if(!$link_id) {
+                continue;
+            }
+
+            $apps[$link_id] = [
+                'url' => (string) ($row->url ?? ''),
+                'total_blocks' => 0,
+                'forever_blocks' => 0,
+                'funnel_blocks' => 0,
+                'social_blocks' => 0,
+                'content_blocks' => 0,
+                'visual_blocks' => 0,
+                'cta_blocks' => 0,
+                'trust_blocks' => 0,
+                'contact_blocks' => 0,
+                'review_blocks' => 0,
+                'ordered_blocks' => [],
+            ];
+            $link_ids[] = $link_id;
+        }
+
+        if(empty($link_ids)) {
+            return [
+                'total_apps' => 0,
+                'top_app_url' => '-',
+                'top_app_total_blocks' => 0,
+                'block_mix' => [],
+                'priority_blocks' => [],
+                'composition_score' => 0,
+                'composition_key' => 'critical',
+                'composition_label' => l('admin_leader_operating_system.leader.composition_health.critical'),
+                'composition_class' => 'status-warning',
+                'cta_audit' => [
+                    'score' => 0,
+                    'state_key' => 'missing',
+                    'state_label' => l('admin_leader_operating_system.leader.design_state.missing'),
+                    'summary' => l('admin_leader_operating_system.leader.cta_audit_empty'),
+                    'first_cta_position' => null,
+                ],
+                'trust_audit' => [
+                    'score' => 0,
+                    'state_key' => 'weak',
+                    'state_label' => l('admin_leader_operating_system.leader.design_state.weak'),
+                    'summary' => l('admin_leader_operating_system.leader.trust_audit_empty'),
+                ],
+                'content_audit' => [
+                    'score' => 0,
+                    'state_key' => 'thin',
+                    'state_label' => l('admin_leader_operating_system.leader.design_state.thin'),
+                    'summary' => l('admin_leader_operating_system.leader.content_audit_empty'),
+                ],
+                'page_review' => [
+                    'has_preview' => false,
+                    'public_url' => null,
+                    'preview_title' => '-',
+                    'checklist' => [],
+                ],
+                'composition_findings' => [],
+                'top_apps' => [],
+            ];
+        }
+
+        $block_counts = [];
+        $priority_block_types = [
+            'socials',
+            'heading',
+            'paragraph',
+            'image',
+            'avatar',
+            'lead_funnel',
+            'link_forever_shop',
+            'link_forever_product',
+            'link_discount',
+            'link_app_switcher',
+            'link_save_contact',
+            'contact_collector',
+            'email_collector',
+            'phone_collector',
+            'review',
+            'youtube',
+            'tiktok_video',
+        ];
+        $priority_blocks = array_fill_keys($priority_block_types, 0);
+        $cta_types = ['link_forever_shop', 'link_forever_product', 'link_discount', 'lead_funnel', 'link_save_contact', 'contact_collector', 'email_collector', 'phone_collector'];
+        $visual_types = ['image', 'avatar', 'youtube', 'tiktok_video'];
+        $content_types = ['heading', 'paragraph'];
+        $contact_types = ['link_save_contact', 'contact_collector', 'email_collector', 'phone_collector'];
+        $trust_types = array_values(array_unique(array_merge($visual_types, ['socials', 'review'], $contact_types)));
+
+        $link_ids_sql = implode(',', array_map('intval', $link_ids));
+        $blocks_result = database()->query("SELECT `link_id`, `type`, `order` FROM `biolinks_blocks` WHERE `user_id` = {$user_id} AND `link_id` IN ({$link_ids_sql}) AND `is_enabled` = 1 ORDER BY `link_id` ASC, `order` ASC, `biolink_block_id` ASC");
+
+        while($row = $blocks_result->fetch_object()) {
+            $link_id = (int) ($row->link_id ?? 0);
+            $type = (string) ($row->type ?? '');
+            $order = (int) ($row->order ?? 0);
+
+            if($type === '' || !isset($apps[$link_id])) {
+                continue;
+            }
+
+            $apps[$link_id]['total_blocks']++;
+            $apps[$link_id]['ordered_blocks'][] = [
+                'type' => $type,
+                'order' => $order,
+            ];
+            $block_counts[$type] = ($block_counts[$type] ?? 0) + 1;
+
+            if(isset($priority_blocks[$type])) {
+                $priority_blocks[$type]++;
+            }
+
+            if(in_array($type, $content_types, true)) {
+                $apps[$link_id]['content_blocks']++;
+            }
+
+            if(in_array($type, ['socials'], true)) {
+                $apps[$link_id]['social_blocks']++;
+            }
+
+            if(in_array($type, $visual_types, true)) {
+                $apps[$link_id]['visual_blocks']++;
+            }
+
+            if(in_array($type, $cta_types, true)) {
+                $apps[$link_id]['cta_blocks']++;
+            }
+
+            if(in_array($type, $trust_types, true)) {
+                $apps[$link_id]['trust_blocks']++;
+            }
+
+            if(in_array($type, $contact_types, true)) {
+                $apps[$link_id]['contact_blocks']++;
+            }
+
+            if($type === 'review') {
+                $apps[$link_id]['review_blocks']++;
+            }
+
+            if($type === 'lead_funnel') {
+                $apps[$link_id]['funnel_blocks']++;
+            }
+
+            if(str_starts_with($type, 'link_forever') || in_array($type, ['link_discount', 'link_app_switcher'], true)) {
+                $apps[$link_id]['forever_blocks']++;
+            }
+        }
+
+        uasort($block_counts, static function($a, $b) {
+            return $b <=> $a;
+        });
+
+        uasort($apps, static function($a, $b) {
+            return ($b['total_blocks'] <=> $a['total_blocks']) ?: ($b['forever_blocks'] <=> $a['forever_blocks']);
+        });
+
+        $top_app_id = (int) array_key_first($apps);
+        $top_app = reset($apps);
+        $top_app_url = $top_app['url'] ?? '-';
+        $top_app_total_blocks = (int) ($top_app['total_blocks'] ?? 0);
+        $top_app_public_url = $top_app_url !== '' && $top_app_url !== '-' ? url($top_app_url) : null;
+
+        $block_mix = [];
+        foreach(array_slice($block_counts, 0, 8, true) as $type => $total) {
+            $block_mix[] = [
+                'type' => $type,
+                'total' => (int) $total,
+            ];
+        }
+
+        $forever_entry_points = (int) (($priority_blocks['link_forever_shop'] ?? 0) + ($priority_blocks['link_forever_product'] ?? 0) + ($priority_blocks['link_discount'] ?? 0));
+        $content_stack = (int) (($priority_blocks['heading'] ?? 0) + ($priority_blocks['paragraph'] ?? 0));
+        $visual_stack = (int) (($priority_blocks['image'] ?? 0) + ($priority_blocks['avatar'] ?? 0) + ($priority_blocks['youtube'] ?? 0) + ($priority_blocks['tiktok_video'] ?? 0));
+        $social_stack = (int) ($priority_blocks['socials'] ?? 0);
+        $funnel_stack = (int) ($priority_blocks['lead_funnel'] ?? 0);
+
+        $health_score = 100;
+        if(count($apps) === 0) $health_score -= 45;
+        if($top_app_total_blocks < 4) $health_score -= 20;
+        if($content_stack < 2) $health_score -= 15;
+        if($visual_stack < 1) $health_score -= 10;
+        if($social_stack < 1) $health_score -= 10;
+        if($funnel_stack < 1) $health_score -= 12;
+        if($forever_entry_points < 2) $health_score -= 12;
+        $health_score = max(0, min(100, $health_score));
+
+        $health_key = 'strong';
+        $health_class = 'status-success';
+
+        if($health_score < 30) {
+            $health_key = 'critical';
+            $health_class = 'status-warning';
+        } elseif($health_score < 55) {
+            $health_key = 'fragile';
+            $health_class = 'status-warning';
+        } elseif($health_score < 75) {
+            $health_key = 'workable';
+            $health_class = 'status-info';
+        }
+
+        $diagnostics = [];
+
+        if(count($apps) === 0) {
+            $diagnostics[] = [
+                'label' => l('admin_leader_operating_system.leader.structure_diag.no_apps.label'),
+                'state_label' => l('admin_leader_operating_system.leader.structure_diag.state.critical'),
+                'action' => l('admin_leader_operating_system.leader.structure_diag.no_apps.action'),
+                'class' => 'status-warning',
+            ];
+        }
+
+        if($top_app_total_blocks < 4) {
+            $diagnostics[] = [
+                'label' => l('admin_leader_operating_system.leader.structure_diag.thin_primary.label'),
+                'state_label' => l('admin_leader_operating_system.leader.structure_diag.state.needs_work'),
+                'action' => l('admin_leader_operating_system.leader.structure_diag.thin_primary.action'),
+                'class' => 'status-warning',
+            ];
+        }
+
+        if($content_stack < 2) {
+            $diagnostics[] = [
+                'label' => l('admin_leader_operating_system.leader.structure_diag.content_stack.label'),
+                'state_label' => l('admin_leader_operating_system.leader.structure_diag.state.needs_work'),
+                'action' => l('admin_leader_operating_system.leader.structure_diag.content_stack.action'),
+                'class' => 'status-info',
+            ];
+        }
+
+        if($forever_entry_points < 2) {
+            $diagnostics[] = [
+                'label' => l('admin_leader_operating_system.leader.structure_diag.forever_cta.label'),
+                'state_label' => l('admin_leader_operating_system.leader.structure_diag.state.needs_work'),
+                'action' => l('admin_leader_operating_system.leader.structure_diag.forever_cta.action'),
+                'class' => 'status-info',
+            ];
+        }
+
+        $has_direct_sale_structure = $forever_entry_points >= 2 && ($social_stack >= 1 || $visual_stack >= 1);
+
+        if($funnel_stack < 1 && !$has_direct_sale_structure) {
+            $diagnostics[] = [
+                'label' => l('admin_leader_operating_system.leader.structure_diag.funnel.label'),
+                'state_label' => l('admin_leader_operating_system.leader.structure_diag.state.missing'),
+                'action' => l('admin_leader_operating_system.leader.structure_diag.funnel.action'),
+                'class' => 'status-dark',
+            ];
+        } elseif($funnel_stack < 1 && $has_direct_sale_structure) {
+            $diagnostics[] = [
+                'label' => l('admin_leader_operating_system.leader.structure_diag.funnel_optional.label'),
+                'state_label' => l('admin_leader_operating_system.leader.structure_diag.state.healthy'),
+                'action' => l('admin_leader_operating_system.leader.structure_diag.funnel_optional.action'),
+                'class' => 'status-success',
+            ];
+        }
+
+        if($social_stack < 1) {
+            $diagnostics[] = [
+                'label' => l('admin_leader_operating_system.leader.structure_diag.social_proof.label'),
+                'state_label' => l('admin_leader_operating_system.leader.structure_diag.state.missing'),
+                'action' => l('admin_leader_operating_system.leader.structure_diag.social_proof.action'),
+                'class' => 'status-dark',
+            ];
+        }
+
+        if($visual_stack < 1) {
+            $diagnostics[] = [
+                'label' => l('admin_leader_operating_system.leader.structure_diag.visuals.label'),
+                'state_label' => l('admin_leader_operating_system.leader.structure_diag.state.missing'),
+                'action' => l('admin_leader_operating_system.leader.structure_diag.visuals.action'),
+                'class' => 'status-dark',
+            ];
+        }
+
+        if(empty($diagnostics)) {
+            $diagnostics[] = [
+                'label' => l('admin_leader_operating_system.leader.structure_diag.healthy.label'),
+                'state_label' => l('admin_leader_operating_system.leader.structure_diag.state.healthy'),
+                'action' => l('admin_leader_operating_system.leader.structure_diag.healthy.action'),
+                'class' => 'status-success',
+            ];
+        }
+
+        /* Custom code: FC-2026-03-31: Phase 7 design and behavior intelligence */
+        $top_app_blocks = $top_app['ordered_blocks'] ?? [];
+        $first_cta_position = null;
+        $heading_before_cta = false;
+        $paragraph_before_cta = false;
+        $visual_before_cta = false;
+        $social_before_cta = false;
+        $intro_stack_total = 0;
+
+        foreach($top_app_blocks as $index => $block) {
+            $block_type = (string) ($block['type'] ?? '');
+            $position = $index + 1;
+
+            if($first_cta_position === null && in_array($block_type, $cta_types, true)) {
+                $first_cta_position = $position;
+                continue;
+            }
+
+            if($first_cta_position === null) {
+                if($block_type === 'heading') {
+                    $heading_before_cta = true;
+                }
+
+                if($block_type === 'paragraph') {
+                    $paragraph_before_cta = true;
+                }
+
+                if(in_array($block_type, $visual_types, true)) {
+                    $visual_before_cta = true;
+                }
+
+                if($block_type === 'socials') {
+                    $social_before_cta = true;
+                }
+
+                if(in_array($block_type, ['avatar', 'heading', 'paragraph', 'socials'], true)) {
+                    $intro_stack_total++;
+                }
+            }
+        }
+
+        $has_balanced_intro_stack = $intro_stack_total >= 3 && ($heading_before_cta || $paragraph_before_cta) && ($visual_before_cta || $social_before_cta);
+
+        $cta_audit_score = 0;
+        $cta_audit_state_key = 'missing';
+        $cta_audit_summary = l('admin_leader_operating_system.leader.cta_audit_empty');
+
+        if((int) ($top_app['cta_blocks'] ?? 0) > 0) {
+            $cta_audit_score = 100;
+
+            if($first_cta_position === 1) {
+                $cta_audit_score -= 10;
+            } elseif($has_balanced_intro_stack && $first_cta_position !== null && $first_cta_position <= 5) {
+                $cta_audit_score -= 0;
+            } elseif($first_cta_position !== null && $first_cta_position > 3) {
+                $cta_audit_score -= min(45, ($first_cta_position - 3) * 10);
+            }
+
+            if(!$heading_before_cta && !$paragraph_before_cta) {
+                $cta_audit_score -= 20;
+            }
+
+            if(!$visual_before_cta) {
+                $cta_audit_score -= 10;
+            }
+
+            if((int) ($top_app['cta_blocks'] ?? 0) >= 4 && $top_app_total_blocks <= 8) {
+                $cta_audit_score -= 10;
+            }
+
+            $cta_audit_score = $this->clamp_score($cta_audit_score);
+
+            if($cta_audit_score >= 75) {
+                $cta_audit_state_key = 'strong';
+            } elseif($cta_audit_score >= 45) {
+                $cta_audit_state_key = 'workable';
+            } else {
+                $cta_audit_state_key = 'weak';
+            }
+
+            if($has_balanced_intro_stack && $first_cta_position !== null && $first_cta_position <= 5) {
+                $cta_audit_summary = sprintf(l('admin_leader_operating_system.leader.cta_audit_balanced_intro'), $first_cta_position);
+            } elseif($first_cta_position !== null && $first_cta_position <= 3) {
+                $cta_audit_summary = sprintf(l('admin_leader_operating_system.leader.cta_audit_prominent'), $first_cta_position);
+            } elseif($first_cta_position !== null) {
+                $cta_audit_summary = sprintf(l('admin_leader_operating_system.leader.cta_audit_delayed'), $first_cta_position);
+            }
+        }
+
+        $trust_audit_score = 0;
+        if((int) ($top_app['visual_blocks'] ?? 0) > 0) {
+            $trust_audit_score += 35;
+        }
+        if((int) ($top_app['social_blocks'] ?? 0) > 0 || (int) ($top_app['contact_blocks'] ?? 0) > 0) {
+            $trust_audit_score += 35;
+        }
+        if((int) ($top_app['review_blocks'] ?? 0) > 0) {
+            $trust_audit_score += 15;
+        }
+        if((int) ($top_app['trust_blocks'] ?? 0) >= 3) {
+            $trust_audit_score += 15;
+        }
+        $trust_audit_score = $this->clamp_score($trust_audit_score);
+        $trust_audit_state_key = $trust_audit_score >= 70 ? 'strong' : ($trust_audit_score >= 40 ? 'workable' : 'weak');
+        $trust_audit_summary = l('admin_leader_operating_system.leader.trust_audit_weak');
+
+        if((int) ($top_app['visual_blocks'] ?? 0) > 0 && ((int) ($top_app['social_blocks'] ?? 0) > 0 || (int) ($top_app['contact_blocks'] ?? 0) > 0)) {
+            $trust_audit_summary = l('admin_leader_operating_system.leader.trust_audit_strong');
+        } elseif((int) ($top_app['visual_blocks'] ?? 0) > 0 || (int) ($top_app['social_blocks'] ?? 0) > 0 || (int) ($top_app['contact_blocks'] ?? 0) > 0) {
+            $trust_audit_summary = l('admin_leader_operating_system.leader.trust_audit_partial');
+        }
+
+        $content_audit_score = 0;
+        if($heading_before_cta && $paragraph_before_cta) {
+            $content_audit_score += 35;
+        } elseif($heading_before_cta || $paragraph_before_cta || (int) ($top_app['content_blocks'] ?? 0) > 0) {
+            $content_audit_score += 18;
+        }
+        if($top_app_total_blocks >= 4 && $top_app_total_blocks <= 10) {
+            $content_audit_score += 25;
+        } elseif($top_app_total_blocks > 10 && $top_app_total_blocks <= 14) {
+            $content_audit_score += 15;
+        } elseif($top_app_total_blocks > 0) {
+            $content_audit_score += 8;
+        }
+        if($has_balanced_intro_stack && $first_cta_position !== null && $first_cta_position <= 5) {
+            $content_audit_score += 22;
+        } elseif($first_cta_position !== null && $first_cta_position >= 2 && $first_cta_position <= 4) {
+            $content_audit_score += 20;
+        } elseif($first_cta_position === 1) {
+            $content_audit_score += 10;
+        } elseif($first_cta_position !== null) {
+            $content_audit_score += 5;
+        }
+        if((int) ($top_app['funnel_blocks'] ?? 0) > 0 || (int) ($top_app['contact_blocks'] ?? 0) > 0) {
+            $content_audit_score += 15;
+        }
+        $content_audit_score = $this->clamp_score($content_audit_score);
+        $content_audit_state_key = $content_audit_score >= 70 ? 'clear' : ($content_audit_score >= 40 ? 'mixed' : 'thin');
+        $content_audit_summary = l('admin_leader_operating_system.leader.content_audit_thin');
+
+        if($content_audit_state_key === 'clear') {
+            $content_audit_summary = l('admin_leader_operating_system.leader.content_audit_clear');
+        } elseif($content_audit_state_key === 'mixed') {
+            $content_audit_summary = l('admin_leader_operating_system.leader.content_audit_mixed');
+        }
+
+        $composition_score = $this->clamp_score(($health_score * 0.3) + ($cta_audit_score * 0.25) + ($trust_audit_score * 0.25) + ($content_audit_score * 0.2));
+        $composition_key = 'strong';
+        $composition_class = 'status-success';
+
+        if($composition_score < 30) {
+            $composition_key = 'critical';
+            $composition_class = 'status-warning';
+        } elseif($composition_score < 55) {
+            $composition_key = 'fragile';
+            $composition_class = 'status-warning';
+        } elseif($composition_score < 75) {
+            $composition_key = 'workable';
+            $composition_class = 'status-info';
+        }
+
+        $composition_findings = [];
+
+        if((int) ($top_app['cta_blocks'] ?? 0) === 0) {
+            $composition_findings[] = [
+                'label' => l('admin_leader_operating_system.leader.composition_finding.cta_missing.label'),
+                'state_label' => l('admin_leader_operating_system.leader.design_state.missing'),
+                'action' => l('admin_leader_operating_system.leader.composition_finding.cta_missing.action'),
+                'class' => 'status-warning',
+            ];
+        } elseif($first_cta_position !== null && $first_cta_position > 4 && !$has_balanced_intro_stack) {
+            $composition_findings[] = [
+                'label' => l('admin_leader_operating_system.leader.composition_finding.cta_delayed.label'),
+                'state_label' => l('admin_leader_operating_system.leader.design_state.workable'),
+                'action' => sprintf(l('admin_leader_operating_system.leader.composition_finding.cta_delayed.action'), $first_cta_position),
+                'class' => 'status-info',
+            ];
+        }
+
+        if((int) ($top_app['visual_blocks'] ?? 0) < 1 || (((int) ($top_app['social_blocks'] ?? 0) + (int) ($top_app['contact_blocks'] ?? 0)) < 1)) {
+            $composition_findings[] = [
+                'label' => l('admin_leader_operating_system.leader.composition_finding.trust_gap.label'),
+                'state_label' => l('admin_leader_operating_system.leader.design_state.weak'),
+                'action' => l('admin_leader_operating_system.leader.composition_finding.trust_gap.action'),
+                'class' => 'status-warning',
+            ];
+        }
+
+        if(!$heading_before_cta || !$paragraph_before_cta) {
+            $composition_findings[] = [
+                'label' => l('admin_leader_operating_system.leader.composition_finding.content_intro.label'),
+                'state_label' => l('admin_leader_operating_system.leader.design_state.thin'),
+                'action' => l('admin_leader_operating_system.leader.composition_finding.content_intro.action'),
+                'class' => 'status-info',
+            ];
+        }
+
+        if(empty($composition_findings)) {
+            $composition_findings[] = [
+                'label' => l('admin_leader_operating_system.leader.composition_finding.healthy.label'),
+                'state_label' => l('admin_leader_operating_system.leader.design_state.strong'),
+                'action' => l('admin_leader_operating_system.leader.composition_finding.healthy.action'),
+                'class' => 'status-success',
+            ];
+        }
+
+        $page_review_checklist = [];
+        if($top_app_public_url) {
+            $page_review_checklist[] = [
+                'label' => l('admin_leader_operating_system.leader.page_review_check.public_page'),
+                'value' => l('admin_leader_operating_system.leader.page_review_yes'),
+                'class' => 'status-success',
+            ];
+        }
+        $page_review_checklist[] = [
+            'label' => l('admin_leader_operating_system.leader.page_review_check.cta_position'),
+            'value' => $first_cta_position ? sprintf(l('admin_leader_operating_system.leader.page_review_cta_position_value'), $first_cta_position) : l('admin_leader_operating_system.leader.page_review_cta_position_missing'),
+            'class' => (($first_cta_position && $first_cta_position <= 3) || ($has_balanced_intro_stack && $first_cta_position && $first_cta_position <= 5)) ? 'status-success' : ($first_cta_position ? 'status-info' : 'status-warning'),
+        ];
+        $page_review_checklist[] = [
+            'label' => l('admin_leader_operating_system.leader.page_review_check.trust'),
+            'value' => $trust_audit_summary,
+            'class' => $trust_audit_state_key === 'strong' ? 'status-success' : ($trust_audit_state_key === 'workable' ? 'status-info' : 'status-warning'),
+        ];
+        $page_review_checklist[] = [
+            'label' => l('admin_leader_operating_system.leader.page_review_check.content_flow'),
+            'value' => $content_audit_summary,
+            'class' => $content_audit_state_key === 'clear' ? 'status-success' : ($content_audit_state_key === 'mixed' ? 'status-info' : 'status-warning'),
+        ];
+
+        $top_apps = [];
+        foreach(array_slice($apps, 0, 3, true) as $link_id => $app) {
+            $top_apps[] = [
+                'link_id' => (int) $link_id,
+                'public_url' => !empty($app['url']) ? url($app['url']) : null,
+                'url' => (string) ($app['url'] ?? '-'),
+                'total_blocks' => (int) ($app['total_blocks'] ?? 0),
+                'cta_blocks' => (int) ($app['cta_blocks'] ?? 0),
+                'trust_blocks' => (int) ($app['trust_blocks'] ?? 0),
+            ];
+        }
+        /* /Custom code: FC-2026-03-31 */
+
+        return [
+            'total_apps' => count($apps),
+            'top_app_id' => $top_app_id,
+            'top_app_url' => $top_app_url !== '' ? $top_app_url : '-',
+            'top_app_public_url' => $top_app_public_url,
+            'top_app_total_blocks' => $top_app_total_blocks,
+            'block_mix' => $block_mix,
+            'priority_blocks' => $priority_blocks,
+            'health_score' => $health_score,
+            'health_key' => $health_key,
+            'health_label' => l('admin_leader_operating_system.leader.structure_health.' . $health_key),
+            'health_class' => $health_class,
+            'content_stack_total' => $content_stack,
+            'visual_stack_total' => $visual_stack,
+            'social_stack_total' => $social_stack,
+            'funnel_stack_total' => $funnel_stack,
+            'forever_entry_points_total' => $forever_entry_points,
+            'diagnostics' => $diagnostics,
+            'composition_score' => $composition_score,
+            'composition_key' => $composition_key,
+            'composition_label' => l('admin_leader_operating_system.leader.composition_health.' . $composition_key),
+            'composition_class' => $composition_class,
+            'cta_audit' => [
+                'score' => $cta_audit_score,
+                'state_key' => $cta_audit_state_key,
+                'state_label' => l('admin_leader_operating_system.leader.design_state.' . $cta_audit_state_key),
+                'summary' => $cta_audit_summary,
+                'first_cta_position' => $first_cta_position,
+                'has_balanced_intro_stack' => $has_balanced_intro_stack,
+            ],
+            'trust_audit' => [
+                'score' => $trust_audit_score,
+                'state_key' => $trust_audit_state_key,
+                'state_label' => l('admin_leader_operating_system.leader.design_state.' . $trust_audit_state_key),
+                'summary' => $trust_audit_summary,
+            ],
+            'content_audit' => [
+                'score' => $content_audit_score,
+                'state_key' => $content_audit_state_key,
+                'state_label' => l('admin_leader_operating_system.leader.design_state.' . $content_audit_state_key),
+                'summary' => $content_audit_summary,
+            ],
+            'page_review' => [
+                'has_preview' => (bool) $top_app_public_url,
+                'public_url' => $top_app_public_url,
+                'preview_title' => $top_app_url !== '' ? $top_app_url : '-',
+                'checklist' => $page_review_checklist,
+            ],
+            'composition_findings' => $composition_findings,
+            'top_apps' => $top_apps,
+        ];
+    }
+    /* /Custom code: FC-2026-03-31 */
+
+    private function get_next_step(array $payload): string {
+        if(($payload['status_key'] ?? '') === 'risk') return l('admin_leader_operating_system.leader.next_step.risk');
+        if(($payload['status_key'] ?? '') === 'high_potential') return l('admin_leader_operating_system.leader.next_step.opportunity');
+        if(($payload['status_key'] ?? '') === 'rising') return l('admin_leader_operating_system.leader.next_step.rising');
+        if((int) ($payload['forever_shop_clicks_period'] ?? 0) === 0) return l('admin_leader_operating_system.leader.next_step.reactivate');
+
+        return l('admin_leader_operating_system.leader.next_step.stable');
+    }
+
+    private function get_period_payload(int $user_id, string $period_key, array $biolink_sets, int $shop_clicks_90d): array {
+        $period_days = $this->get_period_days($period_key);
+        $period_start_datetime = $this->get_period_start_datetime($period_days);
+        $previous_period_start_datetime = (new \DateTimeImmutable($period_start_datetime))->sub(new \DateInterval('P' . $period_days . 'D'))->format('Y-m-d H:i:s');
+        $shop_condition = \Altum\Link::get_forever_shop_click_condition_sql('`track_links`', '`biolinks_blocks`', $biolink_sets['forever_shop_block_types_sql']);
+        $registration_condition = \Altum\Link::get_forever_registration_click_condition_sql('`track_links`', '`biolinks_blocks`', $biolink_sets['forever_registration_block_types_sql']);
+        $outbound_condition = \Altum\Link::get_forever_outbound_click_condition_sql('`track_links`', '`biolinks_blocks`', $biolink_sets['forever_shop_block_types_sql'], $biolink_sets['forever_registration_block_types_sql']);
+
+        $clicks_total = (int) db()->where('user_id', $user_id)->where('datetime', $period_start_datetime, '>=')->getValue('track_links', 'COUNT(*)');
+        $previous_clicks_total = (int) database()->query("SELECT COUNT(*) AS `total` FROM `track_links` WHERE `user_id` = {$user_id} AND `datetime` >= '{$previous_period_start_datetime}' AND `datetime` < '{$period_start_datetime}'")->fetch_object()->total;
+
+        $current_counts = database()->query("SELECT
+            SUM(CASE WHEN {$shop_condition} THEN 1 ELSE 0 END) AS `shop_clicks`,
+            SUM(CASE WHEN {$registration_condition} THEN 1 ELSE 0 END) AS `registration_clicks`
+            FROM `track_links`
+            LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id`
+            WHERE `track_links`.`datetime` >= '{$period_start_datetime}'
+              AND `track_links`.`is_unique` = 1
+              AND `track_links`.`user_id` = {$user_id}")->fetch_object();
+
+        $previous_counts = database()->query("SELECT
+            SUM(CASE WHEN {$shop_condition} THEN 1 ELSE 0 END) AS `shop_clicks`,
+            SUM(CASE WHEN {$registration_condition} THEN 1 ELSE 0 END) AS `registration_clicks`
+            FROM `track_links`
+            LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id`
+            WHERE `track_links`.`datetime` >= '{$previous_period_start_datetime}'
+              AND `track_links`.`datetime` < '{$period_start_datetime}'
+              AND `track_links`.`is_unique` = 1
+              AND `track_links`.`user_id` = {$user_id}")->fetch_object();
+
+        $forever_shop_clicks = (int) ($current_counts->shop_clicks ?? 0);
+        $forever_registration_clicks = (int) ($current_counts->registration_clicks ?? 0);
+        $previous_forever_shop_clicks = (int) ($previous_counts->shop_clicks ?? 0);
+        $previous_forever_registration_clicks = (int) ($previous_counts->registration_clicks ?? 0);
+
+        $clicks_result = database()->query("SELECT `track_links`.`datetime`, `track_links`.`country_code`, `track_links`.`city_name`, `track_links`.`browser_language`, `track_links`.`browser_name`, `track_links`.`device_type`, `track_links`.`referrer_host`, `track_links`.`utm_source`, `track_links`.`os_name`
+            FROM `track_links`
+            LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id`
+            WHERE `track_links`.`datetime` >= '{$period_start_datetime}'
+              AND `track_links`.`is_unique` = 1
+              AND `track_links`.`user_id` = {$user_id}
+              AND {$outbound_condition}
+            ORDER BY `track_links`.`datetime` DESC");
+
+        $country_buckets = [];
+        $source_buckets = [];
+        $device_buckets = [];
+        $browser_buckets = [];
+        $language_buckets = [];
+        $active_days = [];
+        $last_click_at = '';
+
+        while($click_row = $clicks_result->fetch_assoc()) {
+            $last_click_at = $last_click_at ?: (string) ($click_row['datetime'] ?? '');
+            $country_code = strtoupper(trim((string) ($click_row['country_code'] ?? '')));
+            $browser_language = trim((string) ($click_row['browser_language'] ?? ''));
+            $browser_name = trim((string) ($click_row['browser_name'] ?? ''));
+            $device_type = trim((string) ($click_row['device_type'] ?? ''));
+            $source_label = $this->get_source_label($click_row);
+            $date_label = substr((string) ($click_row['datetime'] ?? ''), 0, 10);
+
+            $this->increment_bucket($country_buckets, $country_code, $country_code);
+            $this->increment_bucket($language_buckets, mb_strtolower($browser_language), $browser_language);
+            $this->increment_bucket($source_buckets, mb_strtolower($source_label), $source_label);
+            $this->increment_bucket($browser_buckets, mb_strtolower($browser_name), $browser_name);
+            $this->increment_bucket($device_buckets, mb_strtolower($device_type), $device_type);
+
+            if($date_label !== '') {
+                $active_days[$date_label] = true;
+            }
+        }
+
+        $payload = [
+            'clicks_total_period' => $clicks_total,
+            'previous_clicks_total' => $previous_clicks_total,
+            'forever_shop_clicks_period' => $forever_shop_clicks,
+            'forever_registration_clicks_period' => $forever_registration_clicks,
+            'previous_forever_shop_clicks_period' => $previous_forever_shop_clicks,
+            'previous_forever_registration_clicks_period' => $previous_forever_registration_clicks,
+            'forever_shop_clicks_90d' => $shop_clicks_90d,
+            'growth' => $this->get_growth_metrics($forever_shop_clicks, $previous_forever_shop_clicks),
+            'comparison_clicks_total' => $this->get_growth_metrics($clicks_total, $previous_clicks_total),
+            'comparison_registrations' => $this->get_growth_metrics($forever_registration_clicks, $previous_forever_registration_clicks),
+            'last_click_at' => $last_click_at,
+            'avg_daily_shop_clicks' => round($forever_shop_clicks / max(1, $period_days), 1),
+            'avg_daily_registration_clicks' => round($forever_registration_clicks / max(1, $period_days), 1),
+            'active_days_total' => count($active_days),
+            'chart' => $this->get_chart_series($user_id, $period_start_datetime, $period_days, $biolink_sets),
+            'top_countries' => $this->build_breakdown($country_buckets, $forever_shop_clicks, 5),
+            'top_sources' => $this->build_breakdown($source_buckets, $forever_shop_clicks, 5),
+            'top_devices' => $this->build_breakdown($device_buckets, $forever_shop_clicks, 5),
+            'top_browsers' => $this->build_breakdown($browser_buckets, $forever_shop_clicks, 5),
+            'top_languages' => $this->build_breakdown($language_buckets, $forever_shop_clicks, 5),
+            'funnel' => $this->get_funnel_payload($user_id, $period_start_datetime),
+        ];
+
+        $payload['growth_percent'] = $payload['growth']['growth_percent'];
+        $payload['growth_difference'] = $payload['growth']['difference'];
+        $payload = array_merge($payload, $this->get_scores($payload));
+        $payload = array_merge($payload, $this->get_status_payload($payload));
+        $payload['top_country_label'] = $this->get_primary_breakdown_label($payload['top_countries']);
+        $payload['top_source_label'] = $this->get_primary_breakdown_label($payload['top_sources'], l('admin_index.biolink_qualified_watch.source.direct'));
+        $payload['top_device_label'] = $this->get_primary_breakdown_label($payload['top_devices']);
+        $payload['top_language_label'] = $this->get_primary_breakdown_label($payload['top_languages']);
+        $payload['next_step'] = $this->get_next_step($payload);
+
+        return $payload;
+    }
+
+    /* Custom code: FC-2026-03-31: V2 cohort comparison by market and collaborator tier */
+    private function get_cohort_tier_payload(int $shop_clicks_90d): array {
+        $tier_key = 'starter';
+
+        if($shop_clicks_90d >= 60) {
+            $tier_key = 'scaled';
+        } elseif($shop_clicks_90d >= 15) {
+            $tier_key = 'building';
+        }
+
+        return [
+            'tier_key' => $tier_key,
+            'tier_label' => l('admin_leader_operating_system.leader.cohort_tier.' . $tier_key),
+        ];
+    }
+
+    private function build_cohort_metric(string $label, float $selected_value, float $cohort_value, bool $lower_is_better = false): array {
+        $delta = round($selected_value - $cohort_value, 1);
+        $is_positive = $lower_is_better ? $delta <= 0 : $delta >= 0;
+
+        return [
+            'label' => $label,
+            'selected_value' => $selected_value,
+            'cohort_value' => $cohort_value,
+            'delta' => $delta,
+            'delta_class' => $delta === 0.0 ? 'is-neutral' : ($is_positive ? 'is-positive' : 'is-negative'),
+        ];
+    }
+
+    private function get_cohort_comparison_payload(int $selected_user_id, array $selected_payload, string $period_key): array {
+        $period_days = $this->get_period_days($period_key);
+        $period_start_datetime = $this->get_period_start_datetime($period_days);
+        $previous_period_start_datetime = (new \DateTimeImmutable($period_start_datetime))->sub(new \DateInterval('P' . $period_days . 'D'))->format('Y-m-d H:i:s');
+        $ninety_days_start_datetime = $this->get_period_start_datetime(90);
+        $query_start_datetime = $period_days === 90 ? $previous_period_start_datetime : $ninety_days_start_datetime;
+        $biolink_sets = $this->get_biolink_sets();
+        $shop_condition = \Altum\Link::get_forever_shop_click_condition_sql('`track_links`', '`biolinks_blocks`', $biolink_sets['forever_shop_block_types_sql']);
+        $registration_condition = \Altum\Link::get_forever_registration_click_condition_sql('`track_links`', '`biolinks_blocks`', $biolink_sets['forever_registration_block_types_sql']);
+        $outbound_condition = \Altum\Link::get_forever_outbound_click_condition_sql('`track_links`', '`biolinks_blocks`', $biolink_sets['forever_shop_block_types_sql'], $biolink_sets['forever_registration_block_types_sql']);
+
+        $country_result = database()->query("SELECT
+            `track_links`.`user_id`,
+            UPPER(TRIM(`track_links`.`country_code`)) AS `country_code`,
+            COUNT(*) AS `total`
+        FROM `track_links`
+        LEFT JOIN `users` ON `users`.`user_id` = `track_links`.`user_id`
+        LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id`
+        WHERE `users`.`type` = 0
+          AND `track_links`.`datetime` >= '{$period_start_datetime}'
+          AND `track_links`.`is_unique` = 1
+          AND {$outbound_condition}
+        GROUP BY `track_links`.`user_id`, `country_code`");
+
+        $top_country_map = [];
+
+        while($row = $country_result->fetch_object()) {
+            $user_id = (int) ($row->user_id ?? 0);
+            $country_code = trim((string) ($row->country_code ?? ''));
+            $total = (int) ($row->total ?? 0);
+
+            if(!$user_id || $country_code === '') {
+                continue;
+            }
+
+            if(!isset($top_country_map[$user_id]) || $total > $top_country_map[$user_id]['total']) {
+                $top_country_map[$user_id] = [
+                    'label' => $country_code,
+                    'total' => $total,
+                ];
+            }
+        }
+
+        $selected_tier = $this->get_cohort_tier_payload((int) ($selected_payload['forever_shop_clicks_90d'] ?? 0));
+        $selected_country = trim((string) ($selected_payload['top_country_label'] ?? '-'));
+
+        $result = database()->query("SELECT
+            `users`.`user_id`,
+            `users`.`name`,
+            SUM(CASE WHEN `track_links`.`datetime` >= '{$period_start_datetime}' THEN 1 ELSE 0 END) AS `clicks_total_period`,
+            SUM(CASE WHEN `track_links`.`datetime` >= '{$period_start_datetime}' AND `track_links`.`is_unique` = 1 AND {$shop_condition} THEN 1 ELSE 0 END) AS `forever_shop_clicks_period`,
+            SUM(CASE WHEN `track_links`.`datetime` >= '{$period_start_datetime}' AND `track_links`.`is_unique` = 1 AND {$registration_condition} THEN 1 ELSE 0 END) AS `forever_registration_clicks_period`,
+            SUM(CASE WHEN `track_links`.`datetime` >= '{$previous_period_start_datetime}' AND `track_links`.`datetime` < '{$period_start_datetime}' AND `track_links`.`is_unique` = 1 AND {$shop_condition} THEN 1 ELSE 0 END) AS `previous_forever_shop_clicks_period`,
+            SUM(CASE WHEN `track_links`.`datetime` >= '{$ninety_days_start_datetime}' AND `track_links`.`is_unique` = 1 AND {$shop_condition} THEN 1 ELSE 0 END) AS `forever_shop_clicks_90d`
+        FROM `users`
+        LEFT JOIN `track_links` ON `track_links`.`user_id` = `users`.`user_id` AND `track_links`.`datetime` >= '{$query_start_datetime}'
+        LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id`
+        WHERE `users`.`type` = 0
+        GROUP BY `users`.`user_id`");
+
+        $tier_candidates = [];
+        $market_tier_candidates = [];
+
+        while($row = $result->fetch_object()) {
+            $candidate_user_id = (int) ($row->user_id ?? 0);
+
+            if(!$candidate_user_id || $candidate_user_id === $selected_user_id) {
+                continue;
+            }
+
+            $candidate = [
+                'user_id' => $candidate_user_id,
+                'name' => (string) ($row->name ?? l('global.unknown')),
+                'clicks_total_period' => (int) ($row->clicks_total_period ?? 0),
+                'forever_shop_clicks_period' => (int) ($row->forever_shop_clicks_period ?? 0),
+                'forever_registration_clicks_period' => (int) ($row->forever_registration_clicks_period ?? 0),
+                'previous_forever_shop_clicks_period' => (int) ($row->previous_forever_shop_clicks_period ?? 0),
+                'forever_shop_clicks_90d' => (int) ($row->forever_shop_clicks_90d ?? 0),
+            ];
+
+            $candidate['growth'] = $this->get_growth_metrics($candidate['forever_shop_clicks_period'], $candidate['previous_forever_shop_clicks_period']);
+            $candidate['growth_percent'] = $candidate['growth']['growth_percent'];
+            $candidate = array_merge($candidate, $this->get_scores($candidate));
+            $candidate['top_country_label'] = $top_country_map[$candidate_user_id]['label'] ?? '-';
+            $candidate['tier'] = $this->get_cohort_tier_payload((int) $candidate['forever_shop_clicks_90d']);
+
+            if(($candidate['tier']['tier_key'] ?? '') !== $selected_tier['tier_key']) {
+                continue;
+            }
+
+            $tier_candidates[] = $candidate;
+
+            if($selected_country !== '-' && $candidate['top_country_label'] === $selected_country) {
+                $market_tier_candidates[] = $candidate;
+            }
+        }
+
+        $chosen_candidates = count($market_tier_candidates) >= 3 ? $market_tier_candidates : $tier_candidates;
+        $scope_key = count($market_tier_candidates) >= 3 ? 'market_tier' : 'tier_only';
+
+        if(empty($chosen_candidates)) {
+            return [
+                'cohort_size' => 0,
+                'scope_key' => $scope_key,
+                'scope_label' => l('admin_leader_operating_system.leader.cohort_scope.' . $scope_key),
+                'selected_country' => $selected_country,
+                'selected_tier_label' => $selected_tier['tier_label'],
+                'metrics' => [],
+                'top_peers' => [],
+            ];
+        }
+
+        usort($chosen_candidates, static function($a, $b) {
+            return (($b['leader_os_score'] ?? 0) <=> ($a['leader_os_score'] ?? 0)) ?: (($a['name'] ?? '') <=> ($b['name'] ?? ''));
+        });
+
+        $cohort_count = count($chosen_candidates);
+        $average = static function(array $items, string $key) use ($cohort_count) {
+            $total = 0.0;
+
+            foreach($items as $item) {
+                $total += (float) ($item[$key] ?? 0);
+            }
+
+            return $cohort_count > 0 ? round($total / $cohort_count, 1) : 0.0;
+        };
+
+        return [
+            'cohort_size' => $cohort_count,
+            'scope_key' => $scope_key,
+            'scope_label' => l('admin_leader_operating_system.leader.cohort_scope.' . $scope_key),
+            'selected_country' => $selected_country,
+            'selected_tier_label' => $selected_tier['tier_label'],
+            'metrics' => [
+                $this->build_cohort_metric(l('admin_leader_operating_system.leader.kpi_score'), (float) ($selected_payload['leader_os_score'] ?? 0), $average($chosen_candidates, 'leader_os_score')),
+                $this->build_cohort_metric(l('admin_leader_operating_system.leader.kpi_shop_clicks'), (float) ($selected_payload['forever_shop_clicks_period'] ?? 0), $average($chosen_candidates, 'forever_shop_clicks_period')),
+                $this->build_cohort_metric(l('admin_leader_operating_system.leader.kpi_registrations'), (float) ($selected_payload['forever_registration_clicks_period'] ?? 0), $average($chosen_candidates, 'forever_registration_clicks_period')),
+                $this->build_cohort_metric(l('admin_leader_operating_system.leader.conversion_score'), (float) ($selected_payload['conversion_score'] ?? 0), $average($chosen_candidates, 'conversion_score')),
+                $this->build_cohort_metric(l('admin_leader_operating_system.leader.risk_score'), (float) ($selected_payload['risk_score'] ?? 0), $average($chosen_candidates, 'risk_score'), true),
+            ],
+            'top_peers' => array_slice(array_map(static function($candidate) {
+                return [
+                    'name' => (string) ($candidate['name'] ?? ''),
+                    'leader_os_score' => (int) ($candidate['leader_os_score'] ?? 0),
+                    'top_country_label' => (string) ($candidate['top_country_label'] ?? '-'),
+                ];
+            }, $chosen_candidates), 0, 3),
+        ];
+    }
+    /* /Custom code: FC-2026-03-31 */
+
+    /* Custom code: FC-2026-03-31: V3 behavior anomaly radar */
+    private function build_behavior_anomaly_signal(string $level_key, string $label, string $text, string $action, int $points): array {
+        $class_map = [
+            'high' => 'status-warning',
+            'watch' => 'status-info',
+            'stable' => 'status-success',
+        ];
+
+        return [
+            'level_key' => $level_key,
+            'level_label' => l('admin_leader_operating_system.leader.anomaly_level.' . $level_key),
+            'class' => $class_map[$level_key] ?? 'status-dark',
+            'label' => $label,
+            'text' => $text,
+            'action' => $action,
+            'points' => $points,
+        ];
+    }
+
+    private function get_behavior_anomaly_payload(array $selected_payload, array $all_periods, array $app_structure, string $period_key): array {
+        $signals = [];
+        $anomaly_score = 0;
+        $shop_clicks = (int) ($selected_payload['forever_shop_clicks_period'] ?? 0);
+        $registrations = (int) ($selected_payload['forever_registration_clicks_period'] ?? 0);
+        $total_clicks = (int) ($selected_payload['clicks_total_period'] ?? 0);
+        $active_days_total = (int) ($selected_payload['active_days_total'] ?? 0);
+        $top_source = $selected_payload['top_sources'][0] ?? [];
+        $top_country = $selected_payload['top_countries'][0] ?? [];
+        $top_source_share = (float) ($top_source['share'] ?? 0);
+        $top_country_share = (float) ($top_country['share'] ?? 0);
+        $funnel_unique_clicks = (int) ($selected_payload['funnel']['unique_clicks'] ?? 0);
+        $funnel_leads = (int) ($selected_payload['funnel']['total_leads'] ?? 0);
+        $recent_avg_daily = (float) ($all_periods['7d']['avg_daily_shop_clicks'] ?? 0);
+        $baseline_avg_daily = (float) ($all_periods['30d']['avg_daily_shop_clicks'] ?? 0);
+        $structure_health_score = (int) ($app_structure['health_score'] ?? 0);
+
+        $add_signal = function(string $level_key, string $label, string $text, string $action, int $points) use (&$signals, &$anomaly_score) {
+            $signals[] = $this->build_behavior_anomaly_signal($level_key, $label, $text, $action, $points);
+            $anomaly_score += $points;
+        };
+
+        if($shop_clicks >= 20 && $top_source_share >= 75) {
+            $add_signal(
+                'watch',
+                l('admin_leader_operating_system.leader.anomaly_signal.source_concentration.label'),
+                sprintf(l('admin_leader_operating_system.leader.anomaly_signal.source_concentration.text'), (string) ($top_source['label'] ?? '-'), round($top_source_share, 1)),
+                l('admin_leader_operating_system.leader.anomaly_signal.source_concentration.action'),
+                16
+            );
+        }
+
+        if($shop_clicks >= 15 && $top_country_share >= 80) {
+            $add_signal(
+                'watch',
+                l('admin_leader_operating_system.leader.anomaly_signal.market_concentration.label'),
+                sprintf(l('admin_leader_operating_system.leader.anomaly_signal.market_concentration.text'), (string) ($top_country['label'] ?? '-'), round($top_country_share, 1)),
+                l('admin_leader_operating_system.leader.anomaly_signal.market_concentration.action'),
+                14
+            );
+        }
+
+        if($shop_clicks >= 12 && $registrations === 0) {
+            $add_signal(
+                'high',
+                l('admin_leader_operating_system.leader.anomaly_signal.conversion_block.label'),
+                sprintf(l('admin_leader_operating_system.leader.anomaly_signal.conversion_block.text'), $shop_clicks),
+                l('admin_leader_operating_system.leader.anomaly_signal.conversion_block.action'),
+                22
+            );
+        }
+
+        if($baseline_avg_daily >= 1.5 && $recent_avg_daily <= max(0.4, $baseline_avg_daily * 0.45)) {
+            $add_signal(
+                'high',
+                l('admin_leader_operating_system.leader.anomaly_signal.recent_drop.label'),
+                sprintf(l('admin_leader_operating_system.leader.anomaly_signal.recent_drop.text'), round($baseline_avg_daily, 1), round($recent_avg_daily, 1)),
+                l('admin_leader_operating_system.leader.anomaly_signal.recent_drop.action'),
+                20
+            );
+        }
+
+        if($total_clicks >= 20 && $active_days_total <= 2) {
+            $add_signal(
+                'watch',
+                l('admin_leader_operating_system.leader.anomaly_signal.activity_concentration.label'),
+                sprintf(l('admin_leader_operating_system.leader.anomaly_signal.activity_concentration.text'), $active_days_total),
+                l('admin_leader_operating_system.leader.anomaly_signal.activity_concentration.action'),
+                12
+            );
+        }
+
+        if($funnel_unique_clicks >= 10 && $funnel_leads === 0) {
+            $add_signal(
+                'high',
+                l('admin_leader_operating_system.leader.anomaly_signal.funnel_block.label'),
+                sprintf(l('admin_leader_operating_system.leader.anomaly_signal.funnel_block.text'), $funnel_unique_clicks),
+                l('admin_leader_operating_system.leader.anomaly_signal.funnel_block.action'),
+                18
+            );
+        }
+
+        if((int) ($selected_payload['funnel']['total_funnels'] ?? 0) >= 2 && (int) ($selected_payload['funnel']['active_funnels'] ?? 0) <= 1) {
+            $add_signal(
+                'watch',
+                l('admin_leader_operating_system.leader.anomaly_signal.funnel_fragmented.label'),
+                sprintf(
+                    l('admin_leader_operating_system.leader.anomaly_signal.funnel_fragmented.text'),
+                    (int) ($selected_payload['funnel']['total_funnels'] ?? 0),
+                    (int) ($selected_payload['funnel']['active_funnels'] ?? 0)
+                ),
+                l('admin_leader_operating_system.leader.anomaly_signal.funnel_fragmented.action'),
+                14
+            );
+        }
+
+        if($funnel_unique_clicks >= 15 && (float) ($selected_payload['funnel']['conversion_rate'] ?? 0) > 0 && (float) ($selected_payload['funnel']['conversion_rate'] ?? 0) < 5) {
+            $add_signal(
+                'watch',
+                l('admin_leader_operating_system.leader.anomaly_signal.funnel_low_conversion.label'),
+                sprintf(
+                    l('admin_leader_operating_system.leader.anomaly_signal.funnel_low_conversion.text'),
+                    round((float) ($selected_payload['funnel']['conversion_rate'] ?? 0), 1),
+                    $funnel_unique_clicks
+                ),
+                l('admin_leader_operating_system.leader.anomaly_signal.funnel_low_conversion.action'),
+                12
+            );
+        }
+
+        if($structure_health_score > 0 && $structure_health_score < 45 && $shop_clicks >= 10) {
+            $add_signal(
+                'watch',
+                l('admin_leader_operating_system.leader.anomaly_signal.structure_friction.label'),
+                sprintf(l('admin_leader_operating_system.leader.anomaly_signal.structure_friction.text'), $structure_health_score),
+                l('admin_leader_operating_system.leader.anomaly_signal.structure_friction.action'),
+                10
+            );
+        }
+
+        if($shop_clicks >= 15 && (int) ($app_structure['forever_entry_points_total'] ?? 0) < 2) {
+            $add_signal(
+                'high',
+                l('admin_leader_operating_system.leader.anomaly_signal.entry_gap.label'),
+                sprintf(l('admin_leader_operating_system.leader.anomaly_signal.entry_gap.text'), (int) ($app_structure['forever_entry_points_total'] ?? 0)),
+                l('admin_leader_operating_system.leader.anomaly_signal.entry_gap.action'),
+                18
+            );
+        }
+
+        if($total_clicks >= 20 && (((int) ($app_structure['visual_stack_total'] ?? 0) < 1) || ((int) ($app_structure['social_stack_total'] ?? 0) < 1))) {
+            $add_signal(
+                'watch',
+                l('admin_leader_operating_system.leader.anomaly_signal.trust_gap.label'),
+                sprintf(
+                    l('admin_leader_operating_system.leader.anomaly_signal.trust_gap.text'),
+                    (int) ($app_structure['visual_stack_total'] ?? 0),
+                    (int) ($app_structure['social_stack_total'] ?? 0)
+                ),
+                l('admin_leader_operating_system.leader.anomaly_signal.trust_gap.action'),
+                12
+            );
+        }
+
+        if((int) ($app_structure['total_apps'] ?? 0) >= 3 && (int) ($app_structure['top_app_total_blocks'] ?? 0) <= 4) {
+            $add_signal(
+                'watch',
+                l('admin_leader_operating_system.leader.anomaly_signal.multi_app_fragmented.label'),
+                sprintf(
+                    l('admin_leader_operating_system.leader.anomaly_signal.multi_app_fragmented.text'),
+                    (int) ($app_structure['total_apps'] ?? 0),
+                    (int) ($app_structure['top_app_total_blocks'] ?? 0)
+                ),
+                l('admin_leader_operating_system.leader.anomaly_signal.multi_app_fragmented.action'),
+                10
+            );
+        }
+
+        if(!empty($selected_payload['last_click_at']) && (int) ($selected_payload['forever_shop_clicks_90d'] ?? 0) >= 15) {
+            try {
+                $days_since_last_click = (int) (new \DateTimeImmutable((string) $selected_payload['last_click_at']))->diff(new \DateTimeImmutable())->format('%a');
+
+                if($days_since_last_click >= 14) {
+                    $add_signal(
+                        'high',
+                        l('admin_leader_operating_system.leader.anomaly_signal.freshness_gap.label'),
+                        sprintf(l('admin_leader_operating_system.leader.anomaly_signal.freshness_gap.text'), $days_since_last_click),
+                        l('admin_leader_operating_system.leader.anomaly_signal.freshness_gap.action'),
+                        18
+                    );
+                } elseif($days_since_last_click >= 7) {
+                    $add_signal(
+                        'watch',
+                        l('admin_leader_operating_system.leader.anomaly_signal.freshness_gap.label'),
+                        sprintf(l('admin_leader_operating_system.leader.anomaly_signal.freshness_gap.text'), $days_since_last_click),
+                        l('admin_leader_operating_system.leader.anomaly_signal.freshness_gap.action'),
+                        10
+                    );
+                }
+            } catch(\Throwable $exception) {
+            }
+        }
+
+        usort($signals, static function($a, $b) {
+            return (($b['points'] ?? 0) <=> ($a['points'] ?? 0)) ?: (($a['label'] ?? '') <=> ($b['label'] ?? ''));
+        });
+
+        $anomaly_score = $this->clamp_score($anomaly_score);
+        $level_key = 'stable';
+
+        if($anomaly_score >= 55) {
+            $level_key = 'high';
+        } elseif($anomaly_score >= 25) {
+            $level_key = 'watch';
+        }
+
+        return [
+            'period_key' => $period_key,
+            'score' => $anomaly_score,
+            'level_key' => $level_key,
+            'level_label' => l('admin_leader_operating_system.leader.anomaly_level.' . $level_key),
+            'level_class' => $this->build_behavior_anomaly_signal($level_key, '', '', '', 0)['class'],
+            'signals_total' => count($signals),
+            'top_concern' => $signals[0]['label'] ?? l('admin_leader_operating_system.leader.anomaly_none'),
+            'signals' => $signals,
+        ];
+    }
+    /* /Custom code: FC-2026-03-31 */
+
+    private function get_detail_payload(int $user_id): ?array {
+        $user = db()->where('user_id', $user_id)->where('type', 0)->getOne('users', ['user_id', 'name', 'email', 'preferences']);
+
+        if(!$user) {
+            return null;
+        }
+
+        $biolink_sets = $this->get_biolink_sets();
+        $ninety_days_start_datetime = $this->get_period_start_datetime(90);
+          $outbound_condition = \Altum\Link::get_forever_outbound_click_condition_sql('`track_links`', '`biolinks_blocks`', $biolink_sets['forever_shop_block_types_sql'], $biolink_sets['forever_registration_block_types_sql']);
+        $shop_clicks_90d = (int) database()->query("SELECT COUNT(*) AS `total`
+            FROM `track_links`
+            LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id`
+            WHERE `track_links`.`datetime` >= '{$ninety_days_start_datetime}'
+              AND `track_links`.`is_unique` = 1
+              AND `track_links`.`user_id` = {$user_id}
+              AND {$outbound_condition}")->fetch_object()->total;
+
+        $periods = [];
+        foreach(['7d', '30d', '90d'] as $period_key) {
+            $periods[$period_key] = $this->get_period_payload($user_id, $period_key, $biolink_sets, $shop_clicks_90d);
+        }
+
+        /* Custom code: FC-2026-03-31: Phase 6 fraud intelligence per period with lightweight persistence */
+        $fraud_intelligence = [];
+        foreach(['7d', '30d', '90d'] as $period_key) {
+            $fraud_intelligence[$period_key] = $this->get_fraud_intelligence_payload($user_id, $period_key);
+            $periods[$period_key] = $this->blend_period_payload_with_fraud($periods[$period_key], $fraud_intelligence[$period_key]);
+            $this->persist_fraud_cluster_summary($user_id, $period_key, $fraud_intelligence[$period_key]);
+        }
+        /* /Custom code: FC-2026-03-31 */
+
+        /* Custom code: FC-2026-03-31: Persist lightweight LOS score snapshots */
+        $score_history = $this->persist_score_snapshots((int) $user->user_id, $user->preferences ?? null, $periods);
+        /* /Custom code: FC-2026-03-31 */
+
+        return [
+            'user_id' => (int) $user->user_id,
+            'name' => (string) ($user->name ?? l('global.unknown')),
+            'email' => (string) ($user->email ?? ''),
+            'forever_id' => $this->extract_forever_id_from_preferences($user->preferences ?? null),
+            'admin_user_url' => url('admin/user-view/' . (int) $user->user_id),
+            /* Custom code: FC-2026-03-31: Attach app structure to leader payload */
+            'app_structure' => $this->get_app_structure_payload($user_id),
+            /* /Custom code: FC-2026-03-31 */
+            /* Custom code: FC-2026-03-31: Attach AI Plan phase 4 admin coaching payload */
+            'ai_plan_admin' => $this->get_ai_plan_admin_payload($user->preferences ?? null, $periods['30d'] ?? []),
+            /* /Custom code: FC-2026-03-31 */
+            /* Custom code: FC-2026-03-31: Attach LOS score history payload */
+            'score_history' => $score_history,
+            /* /Custom code: FC-2026-03-31 */
+            /* Custom code: FC-2026-03-31: Attach Phase 6 fraud intelligence payload */
+            'fraud_intelligence' => $fraud_intelligence,
+            /* /Custom code: FC-2026-03-31 */
+            'periods' => $periods,
+        ];
+    }
+
+    /* Custom code: FC-2026-03-31: Lightweight LOS score snapshot history */
+    private function get_score_snapshot_store($preferences): array {
+        $preferences = $this->get_preferences_object($preferences);
+        $snapshots = $preferences->leader_os_score_snapshots ?? [];
+
+        if(is_object($snapshots)) {
+            $snapshots = (array) $snapshots;
+        }
+
+        if(!is_array($snapshots)) {
+            return [];
+        }
+
+        $normalized = [];
+
+        foreach($snapshots as $snapshot) {
+            if(is_object($snapshot)) {
+                $snapshot = (array) $snapshot;
+            }
+
+            if(!is_array($snapshot)) {
+                continue;
+            }
+
+            $period_key = $this->get_valid_period_key((string) ($snapshot['period_key'] ?? '30d'));
+
+            $normalized[] = [
+                'snapshot_id' => trim((string) ($snapshot['snapshot_id'] ?? '')),
+                'period_key' => $period_key,
+                'created_at' => $snapshot['created_at'] ?? null,
+                'leader_os_score' => (int) ($snapshot['leader_os_score'] ?? 0),
+                'performance_score' => (int) ($snapshot['performance_score'] ?? 0),
+                'momentum_score' => (int) ($snapshot['momentum_score'] ?? 0),
+                'conversion_score' => (int) ($snapshot['conversion_score'] ?? 0),
+                'risk_score' => (int) ($snapshot['risk_score'] ?? 0),
+                'opportunity_score' => (int) ($snapshot['opportunity_score'] ?? 0),
+            ];
+        }
+
+        usort($normalized, static function($a, $b) {
+            return strcmp((string) ($b['created_at'] ?? ''), (string) ($a['created_at'] ?? ''));
+        });
+
+        return $normalized;
+    }
+
+    private function get_score_snapshot_signature(array $snapshot): string {
+        return implode('|', [
+            (int) ($snapshot['leader_os_score'] ?? 0),
+            (int) ($snapshot['performance_score'] ?? 0),
+            (int) ($snapshot['momentum_score'] ?? 0),
+            (int) ($snapshot['conversion_score'] ?? 0),
+            (int) ($snapshot['risk_score'] ?? 0),
+            (int) ($snapshot['opportunity_score'] ?? 0),
+        ]);
+    }
+
+    private function build_score_snapshot_entry(string $period_key, array $payload): array {
+        return [
+            'snapshot_id' => $this->generate_los_outreach_id('los_score'),
+            'period_key' => $period_key,
+            'created_at' => get_date(),
+            'leader_os_score' => (int) ($payload['leader_os_score'] ?? 0),
+            'performance_score' => (int) ($payload['performance_score'] ?? 0),
+            'momentum_score' => (int) ($payload['momentum_score'] ?? 0),
+            'conversion_score' => (int) ($payload['conversion_score'] ?? 0),
+            'risk_score' => (int) ($payload['risk_score'] ?? 0),
+            'opportunity_score' => (int) ($payload['opportunity_score'] ?? 0),
+        ];
+    }
+
+    private function build_score_history_payload(array $store): array {
+        $grouped = [
+            '7d' => [],
+            '30d' => [],
+            '90d' => [],
+        ];
+
+        foreach($store as $snapshot) {
+            $period_key = $this->get_valid_period_key((string) ($snapshot['period_key'] ?? '30d'));
+            $grouped[$period_key][] = $snapshot;
+        }
+
+        $payload = [];
+
+        foreach($grouped as $period_key => $snapshots) {
+            $history = [];
+
+            foreach(array_values($snapshots) as $index => $snapshot) {
+                $previous_snapshot = $snapshots[$index + 1] ?? null;
+                $delta = $previous_snapshot ? ((int) ($snapshot['leader_os_score'] ?? 0) - (int) ($previous_snapshot['leader_os_score'] ?? 0)) : null;
+
+                $snapshot['delta_leader_os_score'] = $delta;
+                $snapshot['delta_class'] = $delta === null ? 'is-neutral' : ($delta >= 0 ? 'is-positive' : 'is-negative');
+                $history[] = $snapshot;
+            }
+
+            $payload[$period_key] = [
+                'latest' => $history[0] ?? null,
+                'previous' => $history[1] ?? null,
+                'history' => array_slice($history, 0, 6),
+                'total' => count($history),
+            ];
+        }
+
+        return $payload;
+    }
+
+    private function persist_score_snapshots(int $user_id, $preferences, array $periods): array {
+        $preferences = $this->get_preferences_object($preferences);
+        $store = $this->get_score_snapshot_store($preferences);
+        $changed = false;
+
+        foreach(['7d', '30d', '90d'] as $period_key) {
+            $payload = $periods[$period_key] ?? null;
+
+            if(!$payload || !is_array($payload)) {
+                continue;
+            }
+
+            $new_snapshot = $this->build_score_snapshot_entry($period_key, $payload);
+            $latest_snapshot = null;
+
+            foreach($store as $snapshot) {
+                if((string) ($snapshot['period_key'] ?? '') === $period_key) {
+                    $latest_snapshot = $snapshot;
+                    break;
+                }
+            }
+
+            if(!$latest_snapshot || $this->get_score_snapshot_signature($latest_snapshot) !== $this->get_score_snapshot_signature($new_snapshot)) {
+                array_unshift($store, $new_snapshot);
+                $changed = true;
+            }
+        }
+
+        if($changed) {
+            $pruned_store = [];
+            $period_counts = ['7d' => 0, '30d' => 0, '90d' => 0];
+
+            foreach($store as $snapshot) {
+                $period_key = $this->get_valid_period_key((string) ($snapshot['period_key'] ?? '30d'));
+
+                if($period_counts[$period_key] >= 12) {
+                    continue;
+                }
+
+                $pruned_store[] = $snapshot;
+                $period_counts[$period_key]++;
+            }
+
+            $preferences->leader_os_score_snapshots = array_values($pruned_store);
+            $this->save_user_preferences($user_id, $preferences);
+            $store = $pruned_store;
+        }
+
+        return $this->build_score_history_payload($store);
+    }
+    /* /Custom code: FC-2026-03-31 */
+
+    /* Custom code: FC-2026-03-31: AI Plan phase 4 admin coaching helpers */
+    private function get_preferences_object($preferences): \stdClass {
+        if(is_string($preferences)) {
+            $preferences = json_decode($preferences ?? '{}');
+        }
+
+        if(is_array($preferences)) {
+            $preferences = (object) $preferences;
+        }
+
+        if(!$preferences instanceof \stdClass) {
+            $preferences = (object) $preferences;
+        }
+
+        return $preferences;
+    }
+
+    private function translate_ai_plan_option(string $group, $value): string {
+        if(is_array($value)) {
+            $labels = [];
+
+            foreach($value as $item) {
+                $label = $this->translate_ai_plan_option($group, $item);
+
+                if($label !== '-') {
+                    $labels[] = $label;
+                }
+            }
+
+            return !empty($labels) ? implode(', ', $labels) : '-';
+        }
+
+        if(!is_scalar($value)) {
+            return '-';
+        }
+
+        $value = trim((string) $value);
+
+        if($value === '') {
+            return '-';
+        }
+
+        $key = 'ai_plan.option.' . $group . '.' . $value;
+        $label = l($key);
+
+        if($label === $key) {
+            return ucfirst(str_replace('_', ' ', $value));
+        }
+
+        return $label;
+    }
+
+    private function get_ai_plan_profile($preferences): array {
+        $preferences = $this->get_preferences_object($preferences);
+        $profile = $preferences->leader_ai_profile ?? null;
+
+        if(is_object($profile)) {
+            $profile = (array) $profile;
+        }
+
+        if(!is_array($profile)) {
+            return [];
+        }
+
+        $channels = [];
+        foreach((array) ($profile['active_channels'] ?? []) as $channel) {
+            if(is_scalar($channel)) {
+                $channels[] = (string) $channel;
+            }
+        }
+
+        return [
+            'primary_goal' => (string) ($profile['primary_goal'] ?? ''),
+            'primary_goal_label' => $this->translate_ai_plan_option('primary_goal', $profile['primary_goal'] ?? ''),
+            'priority_offer' => (string) ($profile['priority_offer'] ?? ''),
+            'priority_offer_label' => $this->translate_ai_plan_option('priority_offer', $profile['priority_offer'] ?? ''),
+            'biggest_blocker' => (string) ($profile['biggest_blocker'] ?? ''),
+            'biggest_blocker_label' => $this->translate_ai_plan_option('biggest_blocker', $profile['biggest_blocker'] ?? ''),
+            'active_channels' => $channels,
+            'active_channels_label' => $this->translate_ai_plan_option('active_channels', $channels),
+            'available_time' => (string) ($profile['available_time'] ?? ''),
+            'available_time_label' => $this->translate_ai_plan_option('available_time', $profile['available_time'] ?? ''),
+            'notes' => trim((string) ($profile['notes'] ?? '')),
+            'updated_at' => $profile['updated_at'] ?? null,
+        ];
+    }
+
+    private function get_ai_plan_checkins($preferences): array {
+        $preferences = $this->get_preferences_object($preferences);
+        $checkins = $preferences->leader_ai_weekly_checkins ?? [];
+
+        if(is_object($checkins)) {
+            $checkins = (array) $checkins;
+        }
+
+        if(!is_array($checkins)) {
+            return [];
+        }
+
+        $normalized = [];
+
+        foreach($checkins as $checkin) {
+            if(is_object($checkin)) {
+                $checkin = (array) $checkin;
+            }
+
+            if(!is_array($checkin)) {
+                continue;
+            }
+
+            $normalized[] = [
+                'weekly_priority' => (string) ($checkin['weekly_priority'] ?? ''),
+                'weekly_priority_label' => $this->translate_ai_plan_option('weekly_priority', $checkin['weekly_priority'] ?? ''),
+                'content_commitment' => (string) ($checkin['content_commitment'] ?? ''),
+                'content_commitment_label' => $this->translate_ai_plan_option('content_commitment', $checkin['content_commitment'] ?? ''),
+                'follow_up_volume' => (string) ($checkin['follow_up_volume'] ?? ''),
+                'follow_up_volume_label' => $this->translate_ai_plan_option('follow_up_volume', $checkin['follow_up_volume'] ?? ''),
+                'ai_need' => (string) ($checkin['ai_need'] ?? ''),
+                'ai_need_label' => $this->translate_ai_plan_option('ai_need', $checkin['ai_need'] ?? ''),
+                'weekly_energy' => (string) ($checkin['weekly_energy'] ?? ''),
+                'weekly_energy_label' => $this->translate_ai_plan_option('weekly_energy', $checkin['weekly_energy'] ?? ''),
+                'weekly_context' => trim((string) ($checkin['weekly_context'] ?? '')),
+                'adaptive_answer' => trim((string) ($checkin['adaptive_answer'] ?? '')),
+                'submitted_at' => $checkin['submitted_at'] ?? null,
+            ];
+        }
+
+        usort($normalized, static function($a, $b) {
+            return strcmp((string) ($b['submitted_at'] ?? ''), (string) ($a['submitted_at'] ?? ''));
+        });
+
+        return $normalized;
+    }
+
+    private function get_ai_plan_plans($preferences): array {
+        $preferences = $this->get_preferences_object($preferences);
+        $plans = $preferences->leader_ai_weekly_plans ?? [];
+
+        if(is_object($plans)) {
+            $plans = (array) $plans;
+        }
+
+        if(!is_array($plans)) {
+            return [];
+        }
+
+        $normalized = [];
+
+        foreach($plans as $plan) {
+            if(is_object($plan)) {
+                $plan = (array) $plan;
+            }
+
+            if(!is_array($plan)) {
+                continue;
+            }
+
+            $coach_ideas = [];
+            foreach((array) ($plan['coach_ideas'] ?? []) as $idea) {
+                if(is_scalar($idea) && trim((string) $idea) !== '') {
+                    $coach_ideas[] = trim((string) $idea);
+                }
+            }
+
+            $normalized[] = [
+                'checkin_submitted_at' => $plan['checkin_submitted_at'] ?? null,
+                'generated_at' => $plan['generated_at'] ?? null,
+                'headline' => trim((string) ($plan['headline'] ?? '')),
+                'summary' => trim((string) ($plan['summary'] ?? '')),
+                'focus' => trim((string) ($plan['focus'] ?? '')),
+                'coach_intro' => trim((string) ($plan['coach_intro'] ?? '')),
+                'brutal_truth' => trim((string) ($plan['brutal_truth'] ?? '')),
+                'power_move' => trim((string) ($plan['power_move'] ?? '')),
+                'why_this_week' => trim((string) ($plan['why_this_week'] ?? '')),
+                'encouragement' => trim((string) ($plan['encouragement'] ?? '')),
+                'coach_ideas' => array_slice($coach_ideas, 0, 3),
+            ];
+        }
+
+        usort($normalized, static function($a, $b) {
+            return strcmp((string) ($b['checkin_submitted_at'] ?? $b['generated_at'] ?? ''), (string) ($a['checkin_submitted_at'] ?? $a['generated_at'] ?? ''));
+        });
+
+        return $normalized;
+    }
+
+    private function get_latest_matching_ai_plan(array $plans, ?array $latest_checkin): ?array {
+        if(!$latest_checkin) {
+            return $plans[0] ?? null;
+        }
+
+        $submitted_at = (string) ($latest_checkin['submitted_at'] ?? '');
+
+        foreach($plans as $plan) {
+            if((string) ($plan['checkin_submitted_at'] ?? '') === $submitted_at) {
+                return $plan;
+            }
+        }
+
+        return $plans[0] ?? null;
+    }
+
+    private function get_ai_plan_change_log(?array $latest_checkin, ?array $previous_checkin): array {
+        if(!$latest_checkin || !$previous_checkin) {
+            return [];
+        }
+
+        $fields = [
+            'weekly_priority' => l('ai_plan.weekly_priority'),
+            'weekly_energy' => l('ai_plan.weekly_energy'),
+            'content_commitment' => l('ai_plan.content_commitment'),
+            'follow_up_volume' => l('ai_plan.follow_up_volume'),
+            'ai_need' => l('ai_plan.ai_need'),
+        ];
+
+        $changes = [];
+
+        foreach($fields as $field => $label) {
+            $previous_value = trim((string) ($previous_checkin[$field] ?? ''));
+            $latest_value = trim((string) ($latest_checkin[$field] ?? ''));
+
+            if($previous_value === $latest_value) {
+                continue;
+            }
+
+            $changes[] = [
+                'label' => $label,
+                'before' => (string) ($previous_checkin[$field . '_label'] ?? '-'),
+                'after' => (string) ($latest_checkin[$field . '_label'] ?? '-'),
+            ];
+        }
+
+        return $changes;
+    }
+
+    private function get_ai_plan_priority(array $profile, ?array $latest_checkin, ?array $latest_plan, array $period_payload): array {
+        if(empty($profile['primary_goal'])) {
+            return [
+                'level' => 'waiting',
+                'label' => l('admin_leader_operating_system.leader.ai_plan_priority_waiting'),
+                'reason' => l('admin_leader_operating_system.leader.ai_plan_priority_reason_waiting_profile'),
+            ];
+        }
+
+        if(!$latest_checkin) {
+            return [
+                'level' => 'waiting',
+                'label' => l('admin_leader_operating_system.leader.ai_plan_priority_waiting'),
+                'reason' => l('admin_leader_operating_system.leader.ai_plan_priority_reason_waiting_checkin'),
+            ];
+        }
+
+        $score = 0;
+
+        if(($latest_checkin['weekly_energy'] ?? '') === 'low') {
+            $score += 2;
+        }
+
+        if(in_array((string) ($profile['biggest_blocker'] ?? ''), ['no_sales', 'no_leads', 'follow_up_unclear', 'low_confidence'], true)) {
+            $score += 2;
+        }
+
+        if((int) ($period_payload['risk_score'] ?? 0) >= 65) {
+            $score += 2;
+        }
+
+        if((int) ($period_payload['forever_shop_clicks_period'] ?? 0) < 15) {
+            $score += 1;
+        }
+
+        if(!empty($latest_plan['brutal_truth'])) {
+            $score += 1;
+        }
+
+        if($score >= 4) {
+            return [
+                'level' => 'high',
+                'label' => l('admin_leader_operating_system.leader.ai_plan_priority_high'),
+                'reason' => l('admin_leader_operating_system.leader.ai_plan_priority_reason_high'),
+            ];
+        }
+
+        if($score >= 2) {
+            return [
+                'level' => 'medium',
+                'label' => l('admin_leader_operating_system.leader.ai_plan_priority_medium'),
+                'reason' => l('admin_leader_operating_system.leader.ai_plan_priority_reason_medium'),
+            ];
+        }
+
+        return [
+            'level' => 'low',
+            'label' => l('admin_leader_operating_system.leader.ai_plan_priority_low'),
+            'reason' => l('admin_leader_operating_system.leader.ai_plan_priority_reason_low'),
+        ];
+    }
+
+    private function get_ai_plan_admin_payload($preferences, array $period_payload): array {
+        $profile = $this->get_ai_plan_profile($preferences);
+        $checkins = $this->get_ai_plan_checkins($preferences);
+        $plans = $this->get_ai_plan_plans($preferences);
+        $latest_checkin = $checkins[0] ?? null;
+        $previous_checkin = $checkins[1] ?? null;
+        $latest_plan = $this->get_latest_matching_ai_plan($plans, $latest_checkin);
+        $change_log = $this->get_ai_plan_change_log($latest_checkin, $previous_checkin);
+        $priority = $this->get_ai_plan_priority($profile, $latest_checkin, $latest_plan, $period_payload);
+
+        $days_since_last_checkin = null;
+
+        if(!empty($latest_checkin['submitted_at'])) {
+            try {
+                $latest_date = new \DateTimeImmutable((string) $latest_checkin['submitted_at']);
+                $days_since_last_checkin = (int) $latest_date->diff(new \DateTimeImmutable())->format('%a');
+            } catch(\Throwable $exception) {
+                $days_since_last_checkin = null;
+            }
+        }
+
+        $mentor_note = '';
+        foreach([
+            $latest_plan['summary'] ?? '',
+            $latest_plan['coach_intro'] ?? '',
+            $latest_plan['why_this_week'] ?? '',
+            $latest_plan['encouragement'] ?? '',
+        ] as $candidate_note) {
+            $candidate_note = trim((string) $candidate_note);
+
+            if($candidate_note !== '') {
+                $mentor_note = $candidate_note;
+                break;
+            }
+        }
+
+        return [
+            'has_profile' => !empty($profile['primary_goal']),
+            'has_checkin' => (bool) $latest_checkin,
+            'has_plan' => (bool) $latest_plan,
+            'profile' => $profile,
+            'latest_checkin' => $latest_checkin,
+            'previous_checkin' => $previous_checkin,
+            'latest_plan' => $latest_plan,
+            'change_log' => $change_log,
+            'priority' => $priority,
+            'mentor_note' => $mentor_note,
+            'history_total' => count($checkins),
+            'plans_total' => count($plans),
+            'days_since_last_checkin' => $days_since_last_checkin,
+            'mentor_actions' => $this->get_ai_plan_mentor_actions($preferences),
+        ];
+    }
+
+    private function get_ai_plan_mentor_actions($preferences): array {
+        $preferences = $this->get_preferences_object($preferences);
+        $actions = $preferences->leader_ai_admin_coaching ?? null;
+
+        if(is_object($actions)) {
+            $actions = (array) $actions;
+        }
+
+        if(!is_array($actions)) {
+            $actions = [];
+        }
+
+        $status = trim((string) ($actions['status'] ?? 'pending_contact'));
+        $allowed_statuses = ['pending_contact', 'in_progress', 'monitoring', 'resolved'];
+
+        if(!in_array($status, $allowed_statuses, true)) {
+            $status = 'pending_contact';
+        }
+
+        return [
+            'status' => $status,
+            'needs_follow_up' => (bool) ($actions['needs_follow_up'] ?? false),
+            'mentored_this_week' => (bool) ($actions['mentored_this_week'] ?? false),
+            'mentor_note' => trim((string) ($actions['mentor_note'] ?? '')),
+            'ai_guidance' => trim((string) ($actions['ai_guidance'] ?? '')),
+            'next_action' => trim((string) ($actions['next_action'] ?? '')),
+            'updated_at' => $actions['updated_at'] ?? null,
+            'last_contacted_at' => $actions['last_contacted_at'] ?? null,
+        ];
+    }
+
+    private function update_ai_plan_mentor_actions(int $user_id): void {
+        $user = db()->where('user_id', $user_id)->getOne('users', ['user_id', 'preferences']);
+
+        if(!$user) {
+            throw new \Exception(l('admin_leader_operating_system.leader.missing'));
+        }
+
+        $preferences = $this->get_preferences_object($user->preferences ?? null);
+        $existing_actions = $this->get_ai_plan_mentor_actions($preferences);
+
+        $allowed_statuses = ['pending_contact', 'in_progress', 'monitoring', 'resolved'];
+        $status = input_clean($_POST['mentor_status'] ?? $existing_actions['status'], 64);
+        $status = in_array($status, $allowed_statuses, true) ? $status : $existing_actions['status'];
+
+        $mentor_note = trim(input_clean($_POST['mentor_note'] ?? $existing_actions['mentor_note'], 2000));
+        $ai_guidance = trim(input_clean($_POST['mentor_ai_guidance'] ?? $existing_actions['ai_guidance'], 2400));
+        $next_action = trim(input_clean($_POST['mentor_next_action'] ?? $existing_actions['next_action'], 280));
+        $needs_follow_up = $existing_actions['needs_follow_up'];
+        $mentored_this_week = $existing_actions['mentored_this_week'];
+        $last_contacted_at = $existing_actions['last_contacted_at'];
+
+        if(isset($_POST['toggle_follow_up'])) {
+            $needs_follow_up = !$existing_actions['needs_follow_up'];
+        }
+
+        if(isset($_POST['mark_mentored_this_week'])) {
+            $mentored_this_week = true;
+            $last_contacted_at = get_date();
+        }
+
+        if(isset($_POST['reset_mentored_this_week'])) {
+            $mentored_this_week = false;
+        }
+
+        $preferences->leader_ai_admin_coaching = (object) [
+            'status' => $status,
+            'needs_follow_up' => $needs_follow_up,
+            'mentored_this_week' => $mentored_this_week,
+            'mentor_note' => $mentor_note,
+            'ai_guidance' => $ai_guidance,
+            'next_action' => $next_action,
+            'updated_at' => get_date(),
+            'last_contacted_at' => $last_contacted_at,
+        ];
+
+        $this->save_user_preferences($user_id, $preferences);
+    }
+    /* /Custom code: FC-2026-03-31 */
+
+    private function get_ai_credentials(): array {
+        $api_key = trim((string) (settings()->main->openai_api_key ?? settings()->aix->openai_api_key ?? ''));
+        $model = trim((string) (settings()->main->openai_model ?? 'gpt-4o'));
+
+        return [
+            'api_key' => $api_key,
+            'model' => $model !== '' ? $model : 'gpt-4o',
+        ];
+    }
+
+    private function get_ai_report_cache_key(int $user_id, string $period_key): string {
+        /* Custom code: FC-2026-03-31: Version AI cache after prompt/input changes */
+        return 'leader_operating_system_ai_report_v2?user_id=' . $user_id . '&period=' . $period_key;
+        /* /Custom code: FC-2026-03-31 */
+    }
+
+    private function get_cached_ai_report(int $user_id, string $period_key): ?array {
+        $cache_instance = cache()->getItem($this->get_ai_report_cache_key($user_id, $period_key));
+        $report = $cache_instance->get();
+
+        return is_array($report) ? $report : null;
+    }
+
+    /* Custom code: FC-2026-03-31: Lightweight LOS outreach storage and email workflow */
+    private function generate_los_outreach_id(string $prefix): string {
+        return $prefix . '_' . md5($prefix . '|' . microtime(true) . '|' . mt_rand());
+    }
+
+    private function get_los_outreach_store($preferences): array {
+        $preferences = $this->get_preferences_object($preferences);
+        $outreach = $preferences->leader_os_outreach ?? null;
+
+        if(is_object($outreach)) {
+            $outreach = (array) $outreach;
+        }
+
+        if(!is_array($outreach)) {
+            $outreach = [];
+        }
+
+        $reports = [];
+        foreach((array) ($outreach['reports'] ?? []) as $report) {
+            if(is_object($report)) {
+                $report = (array) $report;
+            }
+
+            if(!is_array($report)) {
+                continue;
+            }
+
+            $email_body_points = [];
+            foreach((array) ($report['email_body_points'] ?? []) as $item) {
+                if(is_scalar($item) && trim((string) $item) !== '') {
+                    $email_body_points[] = trim((string) $item);
+                }
+            }
+
+            $reports[] = [
+                'report_id' => trim((string) ($report['report_id'] ?? '')),
+                'period_key' => trim((string) ($report['period_key'] ?? '30d')),
+                'generated_at' => $report['generated_at'] ?? null,
+                'admin_id' => (int) ($report['admin_id'] ?? 0),
+                'model' => trim((string) ($report['model'] ?? '')),
+                'headline' => trim((string) ($report['headline'] ?? '')),
+                'executive_summary' => trim((string) ($report['executive_summary'] ?? '')),
+                'email_subject' => trim((string) ($report['email_subject'] ?? '')),
+                'email_intro' => trim((string) ($report['email_intro'] ?? '')),
+                'email_body_points' => array_slice($email_body_points, 0, 5),
+                'email_cta' => trim((string) ($report['email_cta'] ?? '')),
+            ];
+        }
+
+        usort($reports, static function($a, $b) {
+            return strcmp((string) ($b['generated_at'] ?? ''), (string) ($a['generated_at'] ?? ''));
+        });
+
+        $sends = [];
+        foreach((array) ($outreach['sends'] ?? []) as $send) {
+            if(is_object($send)) {
+                $send = (array) $send;
+            }
+
+            if(!is_array($send)) {
+                continue;
+            }
+
+            $sends[] = [
+                'send_id' => trim((string) ($send['send_id'] ?? '')),
+                'report_id' => trim((string) ($send['report_id'] ?? '')),
+                'period_key' => trim((string) ($send['period_key'] ?? '30d')),
+                'sent_at' => $send['sent_at'] ?? null,
+                'admin_id' => (int) ($send['admin_id'] ?? 0),
+                'email_address' => trim((string) ($send['email_address'] ?? '')),
+                'subject' => trim((string) ($send['subject'] ?? '')),
+                'body_snapshot' => trim((string) ($send['body_snapshot'] ?? '')),
+                'status' => trim((string) ($send['status'] ?? 'unknown')),
+                'message_id' => trim((string) ($send['message_id'] ?? '')),
+                'error_message' => trim((string) ($send['error_message'] ?? '')),
+            ];
+        }
+
+        usort($sends, static function($a, $b) {
+            return strcmp((string) ($b['sent_at'] ?? ''), (string) ($a['sent_at'] ?? ''));
+        });
+
+        return [
+            'reports' => array_slice($reports, 0, 15),
+            'sends' => array_slice($sends, 0, 20),
+        ];
+    }
+
+    private function store_generated_ai_report(int $user_id, array $report): array {
+        $user = db()->where('user_id', $user_id)->getOne('users', ['user_id', 'preferences']);
+
+        if(!$user) {
+            return $report;
+        }
+
+        $preferences = $this->get_preferences_object($user->preferences ?? null);
+        $store = $this->get_los_outreach_store($preferences);
+        $report_id = $this->generate_los_outreach_id('los_report');
+
+        array_unshift($store['reports'], [
+            'report_id' => $report_id,
+            'period_key' => (string) ($report['period_key'] ?? '30d'),
+            'generated_at' => $report['generated_at'] ?? get_date(),
+            'admin_id' => (int) ($this->user->user_id ?? 0),
+            'model' => (string) ($report['model'] ?? ''),
+            'headline' => (string) ($report['headline'] ?? ''),
+            'executive_summary' => (string) ($report['executive_summary'] ?? ''),
+            'email_subject' => (string) ($report['email_subject'] ?? ''),
+            'email_intro' => (string) ($report['email_intro'] ?? ''),
+            'email_body_points' => $report['email_body_points'] ?? [],
+            'email_cta' => (string) ($report['email_cta'] ?? ''),
+        ]);
+
+        $preferences->leader_os_outreach = (object) [
+            'reports' => array_slice($store['reports'], 0, 15),
+            'sends' => $store['sends'],
+        ];
+
+        $this->save_user_preferences($user_id, $preferences);
+
+        $report['report_id'] = $report_id;
+
+        return $report;
+    }
+
+    private function store_ai_report_send(int $user_id, array $send_entry): void {
+        $user = db()->where('user_id', $user_id)->getOne('users', ['user_id', 'preferences']);
+
+        if(!$user) {
+            return;
+        }
+
+        $preferences = $this->get_preferences_object($user->preferences ?? null);
+        $store = $this->get_los_outreach_store($preferences);
+
+        array_unshift($store['sends'], $send_entry);
+
+        $preferences->leader_os_outreach = (object) [
+            'reports' => $store['reports'],
+            'sends' => array_slice($store['sends'], 0, 20),
+        ];
+
+        $this->save_user_preferences($user_id, $preferences);
+    }
+
+    private function build_ai_email_review_body(array $report): string {
+        $body_sections = [];
+
+        if(!empty($report['email_intro'])) {
+            $body_sections[] = trim((string) $report['email_intro']);
+        }
+
+        $body_points = [];
+        foreach((array) ($report['email_body_points'] ?? []) as $item) {
+            if(is_scalar($item) && trim((string) $item) !== '') {
+                $body_points[] = '- ' . trim((string) $item);
+            }
+        }
+
+        if(!empty($body_points)) {
+            $body_sections[] = implode("\n", $body_points);
+        }
+
+        if(!empty($report['email_cta'])) {
+            $body_sections[] = trim((string) $report['email_cta']);
+        }
+
+        return trim(implode("\n\n", $body_sections));
+    }
+
+    private function get_valid_period_key(?string $period_key): string {
+        $period_key = trim((string) $period_key);
+
+        return in_array($period_key, ['7d', '30d', '90d'], true) ? $period_key : '30d';
+    }
+
+    private function get_detail_and_period_payload_or_fail(int $user_id, string $period_key): array {
+        $detail = $this->get_detail_payload($user_id);
+
+        if(!$detail) {
+            Response::json(l('admin_leader_operating_system.leader.missing'), 'error');
+        }
+
+        $selected_payload = $detail['periods'][$period_key] ?? null;
+
+        if(!$selected_payload) {
+            Response::json(l('admin_leader_operating_system.leader.missing'), 'error');
+        }
+
+        return [$detail, $selected_payload];
+    }
+
+    private function get_ajax_detail_response_payload(array $detail, string $period_key): array {
+        $ai_report = $this->get_cached_ai_report((int) ($detail['user_id'] ?? 0), $period_key);
+
+        return [
+            'period_key' => $period_key,
+            'selected_payload' => $detail['periods'][$period_key] ?? null,
+            /* Custom code: FC-2026-03-31: Expose anomaly radar in AJAX payload */
+            'behavior_anomaly' => $this->get_behavior_anomaly_payload($detail['periods'][$period_key] ?? [], $detail['periods'] ?? [], $detail['app_structure'] ?? [], $period_key),
+            /* /Custom code: FC-2026-03-31 */
+            /* Custom code: FC-2026-03-31: Expose Phase 6 fraud payload in AJAX detail */
+            'fraud_intelligence' => $detail['fraud_intelligence'][$period_key] ?? $this->get_fraud_intelligence_payload((int) ($detail['user_id'] ?? 0), $period_key),
+            /* /Custom code: FC-2026-03-31 */
+            'ai_report' => $ai_report,
+            'los_outreach' => $this->get_los_outreach_payload((int) ($detail['user_id'] ?? 0), $period_key, $ai_report, (string) ($detail['email'] ?? '')),
+        ];
+    }
+
+    private function get_los_outreach_payload(int $user_id, string $period_key, ?array $active_report, string $default_email): array {
+        $user = db()->where('user_id', $user_id)->getOne('users', ['user_id', 'preferences']);
+        $store = $this->get_los_outreach_store($user->preferences ?? null);
+        $reports = array_values(array_filter($store['reports'], static function($report) use ($period_key) {
+            return (string) ($report['period_key'] ?? '') === $period_key;
+        }));
+        $sends = array_values(array_filter($store['sends'], static function($send) use ($period_key) {
+            return (string) ($send['period_key'] ?? '') === $period_key;
+        }));
+
+        $report_version_map = [];
+        $report_count = count($reports);
+
+        foreach($reports as $index => &$report) {
+            $report['version_number'] = max(1, $report_count - $index);
+            $report_version_map[(string) ($report['report_id'] ?? '')] = $report['version_number'];
+        }
+        unset($report);
+
+        foreach($sends as &$send) {
+            $report_id = (string) ($send['report_id'] ?? '');
+            $send['report_version_number'] = $report_id !== '' && isset($report_version_map[$report_id]) ? $report_version_map[$report_id] : null;
+        }
+        unset($send);
+
+        $resolved_active_report = $active_report;
+
+        if($resolved_active_report && !empty($resolved_active_report['report_id'])) {
+            foreach($reports as $stored_report) {
+                if((string) ($stored_report['report_id'] ?? '') === (string) ($resolved_active_report['report_id'] ?? '')) {
+                    $resolved_active_report = $stored_report;
+                    break;
+                }
+            }
+        }
+
+        if($resolved_active_report && empty($resolved_active_report['report_id'])) {
+            foreach($reports as $stored_report) {
+                if(
+                    (string) ($stored_report['generated_at'] ?? '') === (string) ($resolved_active_report['generated_at'] ?? '')
+                    && (string) ($stored_report['email_subject'] ?? '') === (string) ($resolved_active_report['email_subject'] ?? '')
+                ) {
+                    $resolved_active_report = $stored_report;
+                    break;
+                }
+            }
+        }
+
+        $latest_report = $resolved_active_report ?: ($reports[0] ?? null);
+
+        return [
+            'latest_report' => $latest_report,
+            'latest_send' => $sends[0] ?? null,
+            'report_history' => array_slice($reports, 0, 6),
+            'send_history' => array_slice($sends, 0, 8),
+            'draft_email' => $default_email,
+            'draft_subject' => (string) ($latest_report['email_subject'] ?? ''),
+            'draft_body' => $latest_report ? $this->build_ai_email_review_body($latest_report) : '',
+        ];
+    }
+
+    private function send_ai_report_email(int $user_id, array $detail, string $period_key, ?array $active_report): void {
+        $outreach_payload = $this->get_los_outreach_payload($user_id, $period_key, $active_report, (string) ($detail['email'] ?? ''));
+        $resolved_report = $outreach_payload['latest_report'] ?? null;
+        $recipient_email = trim((string) ($_POST['outreach_email'] ?? $outreach_payload['draft_email'] ?? ''));
+        $subject = trim((string) ($_POST['outreach_subject'] ?? $outreach_payload['draft_subject'] ?? ''));
+        $body = (string) ($_POST['outreach_body'] ?? $outreach_payload['draft_body'] ?? '');
+        $body = str_replace(["\r\n", "\r"], "\n", $body);
+        $body = mb_substr(trim(strip_tags($body)), 0, 12000);
+
+        if(!$resolved_report) {
+            throw new \Exception(l('admin_leader_operating_system.leader.outreach_error_missing_report'));
+        }
+
+        if(!$recipient_email || !filter_var($recipient_email, FILTER_VALIDATE_EMAIL)) {
+            throw new \Exception(l('admin_leader_operating_system.leader.outreach_error_recipient'));
+        }
+
+        if($subject === '') {
+            throw new \Exception(l('admin_leader_operating_system.leader.outreach_error_subject'));
+        }
+
+        if($body === '') {
+            throw new \Exception(l('admin_leader_operating_system.leader.outreach_error_body'));
+        }
+
+        $transport_result = send_mail($recipient_email, $subject, nl2br(htmlspecialchars($body, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8')), [
+            'return_transport_result' => true,
+        ]);
+
+        if(empty($transport_result->success)) {
+            throw new \Exception($this->sanitize_ai_string($transport_result->ErrorInfo ?? $transport_result->response_body ?? '', 280) ?: l('admin_leader_operating_system.leader.outreach_send_failed'));
+        }
+
+        $this->store_ai_report_send($user_id, [
+            'send_id' => $this->generate_los_outreach_id('los_send'),
+            'report_id' => (string) ($resolved_report['report_id'] ?? ''),
+            'period_key' => $period_key,
+            'sent_at' => get_date(),
+            'admin_id' => (int) ($this->user->user_id ?? 0),
+            'email_address' => $recipient_email,
+            'subject' => $subject,
+            'body_snapshot' => $body,
+            'status' => 'sent',
+            'message_id' => (string) ($transport_result->message_id ?? ''),
+            'error_message' => '',
+        ]);
+    }
+    /* /Custom code: FC-2026-03-31 */
+
+    private function sanitize_ai_string($value, int $max_length = 320): string {
+        if(!is_scalar($value)) {
+            return '';
+        }
+
+        $value = trim(strip_tags((string) $value));
+        $value = preg_replace('/\s+/', ' ', $value) ?? $value;
+
+        return mb_substr($value, 0, $max_length);
+    }
+
+    private function normalize_ai_list($value, int $max_items = 5, int $max_length = 220): array {
+        if(!is_array($value)) {
+            return [];
+        }
+
+        $items = [];
+
+        foreach($value as $item) {
+            $normalized_item = $this->sanitize_ai_string($item, $max_length);
+
+            if($normalized_item === '') {
+                continue;
+            }
+
+            $items[] = $normalized_item;
+
+            if(count($items) >= $max_items) {
+                break;
+            }
+        }
+
+        return $items;
+    }
+
+    private function build_ai_report_input(array $detail, array $payload, string $period_key): array {
+        $behavior_anomaly = $this->get_behavior_anomaly_payload($payload, $detail['periods'] ?? [], $detail['app_structure'] ?? [], $period_key);
+        $fraud_intelligence = $detail['fraud_intelligence'][$period_key] ?? $this->get_fraud_intelligence_payload((int) ($detail['user_id'] ?? 0), $period_key);
+
+        return [
+            'period_key' => $period_key,
+            'period_label' => l('admin_leader_operating_system.period_' . $period_key),
+            'leader' => [
+                'user_id' => (int) ($detail['user_id'] ?? 0),
+                'name' => (string) ($detail['name'] ?? ''),
+                'email' => (string) ($detail['email'] ?? ''),
+                'forever_id' => (string) ($detail['forever_id'] ?? '-'),
+            ],
+            /* Custom code: FC-2026-03-31: Include current app structure in AI input */
+            'app_structure' => [
+                'total_apps' => (int) ($detail['app_structure']['total_apps'] ?? 0),
+                'top_app_url' => (string) ($detail['app_structure']['top_app_url'] ?? '-'),
+                'top_app_public_url' => (string) ($detail['app_structure']['top_app_public_url'] ?? ''),
+                'top_app_total_blocks' => (int) ($detail['app_structure']['top_app_total_blocks'] ?? 0),
+                'block_mix' => $detail['app_structure']['block_mix'] ?? [],
+                'priority_blocks' => $detail['app_structure']['priority_blocks'] ?? [],
+                'composition_score' => (int) ($detail['app_structure']['composition_score'] ?? 0),
+                'cta_audit' => $detail['app_structure']['cta_audit'] ?? [],
+                'trust_audit' => $detail['app_structure']['trust_audit'] ?? [],
+                'content_audit' => $detail['app_structure']['content_audit'] ?? [],
+                'composition_findings' => $detail['app_structure']['composition_findings'] ?? [],
+            ],
+            /* /Custom code: FC-2026-03-31 */
+            'scores' => [
+                'leader_os_score' => (int) ($payload['leader_os_score'] ?? 0),
+                'performance_score' => (int) ($payload['performance_score'] ?? 0),
+                'momentum_score' => (int) ($payload['momentum_score'] ?? 0),
+                'conversion_score' => (int) ($payload['conversion_score'] ?? 0),
+                'risk_score' => (int) ($payload['risk_score'] ?? 0),
+                'opportunity_score' => (int) ($payload['opportunity_score'] ?? 0),
+            ],
+            'status' => [
+                'status_key' => (string) ($payload['status_key'] ?? 'stable'),
+                'status_label' => (string) ($payload['status_label'] ?? ''),
+                'qualified' => (bool) ($payload['qualified'] ?? false),
+            ],
+            'metrics' => [
+                'total_clicks' => (int) ($payload['clicks_total_period'] ?? 0),
+                'webshop_clicks' => (int) ($payload['forever_shop_clicks_period'] ?? 0),
+                'registrations' => (int) ($payload['forever_registration_clicks_period'] ?? 0),
+                'growth_percent' => $payload['growth_percent'],
+                'growth_difference' => (int) ($payload['growth_difference'] ?? 0),
+                'shop_share_percent' => (float) ($payload['shop_share_percent'] ?? 0),
+                'registration_rate_percent' => (float) ($payload['registration_rate_percent'] ?? 0),
+                'avg_daily_shop_clicks' => (float) ($payload['avg_daily_shop_clicks'] ?? 0),
+                'active_days_total' => (int) ($payload['active_days_total'] ?? 0),
+            ],
+            'funnel' => [
+                'total_funnels' => (int) ($payload['funnel']['total_funnels'] ?? 0),
+                'active_funnels' => (int) ($payload['funnel']['active_funnels'] ?? 0),
+                'unique_clicks' => (int) ($payload['funnel']['unique_clicks'] ?? 0),
+                'total_leads' => (int) ($payload['funnel']['total_leads'] ?? 0),
+                'conversion_rate' => (float) ($payload['funnel']['conversion_rate'] ?? 0),
+                'top_funnel_name' => (string) ($payload['funnel']['top_funnel_name'] ?? '-'),
+                'top_funnel_objective' => (string) ($payload['funnel']['top_funnel_objective'] ?? '-'),
+            ],
+            'signals' => [
+                'top_country' => (string) ($payload['top_country_label'] ?? '-'),
+                'top_source' => (string) ($payload['top_source_label'] ?? '-'),
+                'top_device' => (string) ($payload['top_device_label'] ?? '-'),
+                'top_language' => (string) ($payload['top_language_label'] ?? '-'),
+                'next_step' => (string) ($payload['next_step'] ?? ''),
+            ],
+            /* Custom code: FC-2026-03-31: Feed anomaly radar into AI input */
+            'anomaly_radar' => [
+                'score' => (int) ($behavior_anomaly['score'] ?? 0),
+                'level_key' => (string) ($behavior_anomaly['level_key'] ?? 'stable'),
+                'level_label' => (string) ($behavior_anomaly['level_label'] ?? ''),
+                'top_concern' => (string) ($behavior_anomaly['top_concern'] ?? ''),
+                'signals' => array_map(static function($signal) {
+                    return [
+                        'label' => (string) ($signal['label'] ?? ''),
+                        'text' => (string) ($signal['text'] ?? ''),
+                        'action' => (string) ($signal['action'] ?? ''),
+                    ];
+                }, array_slice($behavior_anomaly['signals'] ?? [], 0, 5)),
+            ],
+            /* /Custom code: FC-2026-03-31 */
+            /* Custom code: FC-2026-03-31: Feed Phase 6 fraud intelligence into AI input */
+            'fraud_intelligence' => [
+                'score' => (int) ($fraud_intelligence['score'] ?? 0),
+                'level_key' => (string) ($fraud_intelligence['level_key'] ?? 'stable'),
+                'level_label' => (string) ($fraud_intelligence['level_label'] ?? ''),
+                'top_concern' => (string) ($fraud_intelligence['top_concern'] ?? ''),
+                'clusters_total' => (int) ($fraud_intelligence['clusters_total'] ?? 0),
+                'retention_days' => (int) ($fraud_intelligence['retention_days'] ?? LOS_FRAUD_EVENT_RETENTION_DAYS),
+                'clusters' => array_map(static function($cluster) {
+                    return [
+                        'score' => (int) ($cluster['score'] ?? 0),
+                        'label' => (string) ($cluster['label'] ?? ''),
+                        'text' => (string) ($cluster['text'] ?? ''),
+                        'action' => (string) ($cluster['action'] ?? ''),
+                    ];
+                }, array_slice($fraud_intelligence['clusters'] ?? [], 0, 3)),
+            ],
+            /* /Custom code: FC-2026-03-31 */
+            'breakdowns' => [
+                'top_countries' => $payload['top_countries'] ?? [],
+                'top_sources' => $payload['top_sources'] ?? [],
+                'top_devices' => $payload['top_devices'] ?? [],
+                'top_browsers' => $payload['top_browsers'] ?? [],
+            ],
+        ];
+    }
+
+    /* Custom code: FC-2026-03-31: LOS Phase 5 AJAX endpoints */
+    public function leader_analytics_ajax() {
+
+        session_write_close();
+
+        if($_SERVER['REQUEST_METHOD'] !== 'GET') {
+            throw_404();
+        }
+
+        $user_id = (int) ($_GET['user_id'] ?? 0);
+        $period_key = $this->get_valid_period_key($_GET['period'] ?? '30d');
+
+        if(!$user_id) {
+            Response::json(l('global.error_message.basic'), 'error');
+        }
+
+        [$detail] = $this->get_detail_and_period_payload_or_fail($user_id, $period_key);
+
+        Response::json('', 'success', $this->get_ajax_detail_response_payload($detail, $period_key));
+
+    }
+
+    public function generate_ai_report_ajax() {
+
+        session_write_close();
+
+        if($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            throw_404();
+        }
+
+        if(!\Altum\Csrf::check()) {
+            Response::json(l('global.error_message.invalid_csrf_token'), 'error');
+        }
+
+        $user_id = (int) ($_POST['user_id'] ?? 0);
+        $period_key = $this->get_valid_period_key($_POST['period'] ?? '30d');
+        $force_refresh = isset($_POST['force_refresh']) && (int) $_POST['force_refresh'] === 1;
+
+        if(!$user_id) {
+            Response::json(l('global.error_message.basic'), 'error');
+        }
+
+        try {
+            [$detail, $selected_payload] = $this->get_detail_and_period_payload_or_fail($user_id, $period_key);
+            $report = $this->generate_ai_report($detail, $selected_payload, $period_key, $force_refresh);
+
+            Response::json('', 'success', [
+                'report' => $report,
+                'payload' => $this->get_ajax_detail_response_payload($detail, $period_key),
+            ]);
+        } catch(\Throwable $exception) {
+            Response::json($this->sanitize_ai_string($exception->getMessage(), 280) ?: l('admin_leader_operating_system.leader.ai_error_request_failed'), 'error');
+        }
+
+    }
+
+    public function send_ai_report_ajax() {
+
+        session_write_close();
+
+        if($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            throw_404();
+        }
+
+        if(!\Altum\Csrf::check()) {
+            Response::json(l('global.error_message.invalid_csrf_token'), 'error');
+        }
+
+        $user_id = (int) ($_POST['user_id'] ?? 0);
+        $period_key = $this->get_valid_period_key($_POST['period'] ?? '30d');
+
+        if(!$user_id) {
+            Response::json(l('global.error_message.basic'), 'error');
+        }
+
+        try {
+            [$detail] = $this->get_detail_and_period_payload_or_fail($user_id, $period_key);
+            $active_report = $this->get_cached_ai_report((int) $detail['user_id'], $period_key);
+            $this->send_ai_report_email((int) $detail['user_id'], $detail, $period_key, $active_report);
+
+            Response::json(l('admin_leader_operating_system.leader.outreach_send_success'), 'success', $this->get_ajax_detail_response_payload($detail, $period_key));
+        } catch(\Throwable $exception) {
+            Response::json($this->sanitize_ai_string($exception->getMessage(), 280) ?: l('admin_leader_operating_system.leader.outreach_send_failed'), 'error');
+        }
+
+    }
+
+    public function report_history_ajax() {
+
+        session_write_close();
+
+        if($_SERVER['REQUEST_METHOD'] !== 'GET') {
+            throw_404();
+        }
+
+        $user_id = (int) ($_GET['user_id'] ?? 0);
+        $period_key = $this->get_valid_period_key($_GET['period'] ?? '30d');
+
+        if(!$user_id) {
+            Response::json(l('global.error_message.basic'), 'error');
+        }
+
+        [$detail] = $this->get_detail_and_period_payload_or_fail($user_id, $period_key);
+        $ai_report = $this->get_cached_ai_report((int) $detail['user_id'], $period_key);
+        $outreach = $this->get_los_outreach_payload((int) $detail['user_id'], $period_key, $ai_report, (string) ($detail['email'] ?? ''));
+
+        Response::json('', 'success', [
+            'latest_report' => $outreach['latest_report'] ?? null,
+            'latest_send' => $outreach['latest_send'] ?? null,
+            'report_history' => $outreach['report_history'] ?? [],
+            'send_history' => $outreach['send_history'] ?? [],
+        ]);
+
+    }
+    /* /Custom code: FC-2026-03-31 */
+
+    private function validate_ai_report_response(array $report): array {
+        /* Custom code: FC-2026-03-31: Allow fuller AI report while keeping sectioned UI */
+        $headline = $this->sanitize_ai_string($report['headline'] ?? '', 140);
+        $executive_summary = $this->sanitize_ai_string($report['executive_summary'] ?? '', 900);
+        $primary_risks = $this->normalize_ai_list($report['primary_risks'] ?? [], 4, 220);
+        $opportunities = $this->normalize_ai_list($report['opportunities'] ?? [], 4, 220);
+        $next_30_days = $this->normalize_ai_list($report['next_30_days'] ?? [], 5, 220);
+        $email_subject = $this->sanitize_ai_string($report['email_subject'] ?? '', 160);
+        $email_intro = $this->sanitize_ai_string($report['email_intro'] ?? '', 320);
+        $email_body_points = $this->normalize_ai_list($report['email_body_points'] ?? [], 5, 240);
+        $email_cta = $this->sanitize_ai_string($report['email_cta'] ?? '', 200);
+        /* /Custom code: FC-2026-03-31 */
+
+        if($headline === '' || $executive_summary === '' || empty($next_30_days) || $email_subject === '') {
+            throw new \Exception(l('admin_leader_operating_system.leader.ai_error_invalid_response'));
+        }
+
+        return [
+            'headline' => $headline,
+            'executive_summary' => $executive_summary,
+            'primary_risks' => $primary_risks,
+            'opportunities' => $opportunities,
+            'next_30_days' => $next_30_days,
+            'email_subject' => $email_subject,
+            'email_intro' => $email_intro,
+            'email_body_points' => $email_body_points,
+            'email_cta' => $email_cta,
+        ];
+    }
+
+    private function generate_ai_report(array $detail, array $payload, string $period_key, bool $force_refresh = false): array {
+        $user_id = (int) ($detail['user_id'] ?? 0);
+
+        if(!$force_refresh) {
+            $cached_report = $this->get_cached_ai_report($user_id, $period_key);
+
+            if($cached_report) {
+                return $cached_report;
+            }
+        }
+
+        $credentials = $this->get_ai_credentials();
+
+        if($credentials['api_key'] === '') {
+            throw new \Exception(l('admin_leader_operating_system.leader.ai_error_missing_api_key'));
+        }
+
+        $ai_input = $this->build_ai_report_input($detail, $payload, $period_key);
+
+        $response = \Unirest\Request::post(
+            'https://api.openai.com/v1/chat/completions',
+            [
+                'Authorization' => 'Bearer ' . get_random_line_from_text($credentials['api_key']),
+                'Content-Type' => 'application/json',
+            ],
+            \Unirest\Request\Body::json([
+                'model' => $credentials['model'],
+                'messages' => [
+                    [
+                        'role' => 'system',
+                        /* Custom code: FC-2026-03-31: Prompt AI to analyze current setup instead of parroting tactics */
+                        'content' => 'Pisi iskljucivo na hrvatskom. Ti si strucnjak za analizu poslovanja Forever Card Club suradnika. Vrati samo valjan JSON bez markdowna i bez dodatnih kljuceva.'
+                        /* /Custom code: FC-2026-03-31 */
+                    ],
+                    [
+                        'role' => 'user',
+                        /* Custom code: FC-2026-03-31: Require data-grounded recommendations from actual app structure and analytics */
+                        'content' => implode("\n\n", [
+                            'Analiziraj stvarno poslovanje suradnika na temelju analytics payload-a, strukture postojecih Forever Card aplikacija i blokova koje vec koristi.',
+                            'Zakljuci sto treba promijeniti, sto zadrzati i koje parametre treba uzeti u obzir prije preporuke.',
+                            'Vrati samo valjan JSON s tocnim kljucevima: headline, executive_summary, primary_risks, opportunities, next_30_days, email_subject, email_intro, email_body_points, email_cta.',
+                            'Pravila:',
+                            '- primary_risks, opportunities, next_30_days i email_body_points moraju biti polja kratkih, konkretnih stringova.',
+                            '- Nemoj samo ponavljati unaprijed zadane taktike. Prvo analiziraj postojecu strukturu aplikacija i blokova, promet, izvore, zemlje, uredaje i funnel podatke, pa tek onda predlozi sto mijenjati.',
+                            '- Ako suradnik vec koristi odredene blokove ili funnel, procijeni jesu li dobro iskoristeni i sto nedostaje.',
+                            '- Ako promet dolazi iz odredenih izvora, predlozi koje drustvene mreze i koji format sadrzaja imaju najvise smisla. Ako nema dovoljno signala, to jasno reci i predlozi sto testirati.',
+                            '- U preporukama mozes koristiti Forever Card pristup kada ima smisla: story s ugradenim linkom na aplikaciju, posebna aplikacija za odredeni proizvod, funnel za prodaju ili regrutaciju, te direktne poruke ljudima koji reagiraju na sadrzaj. Ali to koristi samo ako podaci i postojeca struktura to podupiru.',
+                            '- Uvazi da vecina suradnika radi kroz izgradnju osobnog brenda i specificne modele rada.',
+                            '- Nemoj davati genericke savjete. Povezi preporuke s onime sto vec postoji i onime sto nedostaje.',
+                            '- Nemoj koristiti markdown, code blockove ni dodatne kljuceve.',
+                            '- Izlaz ne mora biti kraci, ali treba biti pregledan i dobro podijeljen po sekcijama.',
+                            'Input JSON: ' . json_encode($ai_input, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+                        ])
+                        /* /Custom code: FC-2026-03-31 */
+                    ],
+                ],
+            ])
+        );
+
+        if($response->code >= 400) {
+            throw new \Exception($response->body->error->message ?? l('admin_leader_operating_system.leader.ai_error_request_failed'));
+        }
+
+        $content = trim((string) ($response->body->choices[0]->message->content ?? ''));
+
+        if(substr($content, 0, 3) === '```') {
+            $content = preg_replace('/^```[a-zA-Z0-9_-]*\s*/', '', $content);
+            $content = preg_replace('/\s*```$/', '', $content);
+            $content = trim($content);
+        }
+
+        $decoded_report = json_decode($content, true);
+
+        if(!is_array($decoded_report)) {
+            throw new \Exception(l('admin_leader_operating_system.leader.ai_error_invalid_response'));
+        }
+
+        $report = $this->validate_ai_report_response($decoded_report);
+        $report['generated_at'] = get_date();
+        $report['model'] = $credentials['model'];
+        $report['period_key'] = $period_key;
+        $report = $this->store_generated_ai_report($user_id, $report);
+
+        $cache_item = cache()->getItem($this->get_ai_report_cache_key($user_id, $period_key));
+        $cache_item
+            ->set($report)
+            ->expiresAfter(86400)
+            ->addTag('leader_os_ai_report')
+            ->addTag('user_id=' . $user_id);
+
+        cache()->save($cache_item);
+
+        return $report;
+    }
+
+    public function index() {
+        $allowed_periods = ['7d', '30d', '90d'];
+        $selected_period = isset($_GET['period']) && in_array($_GET['period'], $allowed_periods, true) ? $_GET['period'] : '30d';
+        $user_id = isset($_GET['user_id']) ? (int) $_GET['user_id'] : 0;
+        $detail = $user_id > 0 ? $this->get_detail_payload($user_id) : null;
+
+        if($detail && $_SERVER['REQUEST_METHOD'] === 'POST' && (isset($_POST['save_mentor_actions']) || isset($_POST['toggle_follow_up']) || isset($_POST['mark_mentored_this_week']) || isset($_POST['reset_mentored_this_week']))) {
+            if(!\Altum\Csrf::check()) {
+                Alerts::add_error(l('global.error_message.invalid_csrf_token'));
+            } else {
+                try {
+                    $this->update_ai_plan_mentor_actions((int) $detail['user_id']);
+                    Alerts::add_success(l('admin_leader_operating_system.leader.ai_plan_mentor_actions_saved'));
+                } catch(\Throwable $exception) {
+                    Alerts::add_error($this->sanitize_ai_string($exception->getMessage(), 280) ?: l('global.error_message.basic'));
+                }
+            }
+
+            redirect('admin/leader-operating-system-leader?user_id=' . $user_id . '&period=' . $selected_period . '#leader-os-ai-report');
+        }
+
+        if($detail && $_SERVER['REQUEST_METHOD'] === 'POST' && (isset($_POST['generate_ai_report']) || isset($_POST['regenerate_ai_report']))) {
+            if(!\Altum\Csrf::check()) {
+                \Altum\Alerts::add_error(l('global.error_message.invalid_csrf_token'));
+            } else {
+                try {
+                    $selected_payload = $detail['periods'][$selected_period] ?? null;
+
+                    if(!$selected_payload) {
+                        throw new \Exception(l('admin_leader_operating_system.leader.missing'));
+                    }
+
+                    $force_refresh = isset($_POST['regenerate_ai_report']);
+                    $this->generate_ai_report($detail, $selected_payload, $selected_period, $force_refresh);
+
+                    \Altum\Alerts::add_success($force_refresh ? l('admin_leader_operating_system.leader.ai_success_regenerated') : l('admin_leader_operating_system.leader.ai_success_generated'));
+                } catch(\Throwable $exception) {
+                    \Altum\Alerts::add_error($this->sanitize_ai_string($exception->getMessage(), 280) ?: l('admin_leader_operating_system.leader.ai_error_request_failed'));
+                }
+            }
+
+            redirect('admin/leader-operating-system-leader?user_id=' . $user_id . '&period=' . $selected_period . '#leader-os-ai-history');
+        }
+
+        /* Custom code: FC-2026-03-31: LOS outreach send flow */
+        if($detail && $_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['send_ai_report'])) {
+            if(!\Altum\Csrf::check()) {
+                \Altum\Alerts::add_error(l('global.error_message.invalid_csrf_token'));
+            } else {
+                try {
+                    $active_report = $this->get_cached_ai_report((int) $detail['user_id'], $selected_period);
+                    $this->send_ai_report_email((int) $detail['user_id'], $detail, $selected_period, $active_report);
+
+                    \Altum\Alerts::add_success(l('admin_leader_operating_system.leader.outreach_send_success'));
+                } catch(\Throwable $exception) {
+                    \Altum\Alerts::add_error($this->sanitize_ai_string($exception->getMessage(), 280) ?: l('admin_leader_operating_system.leader.outreach_send_failed'));
+                }
+            }
+
+            redirect('admin/leader-operating-system-leader?user_id=' . $user_id . '&period=' . $selected_period);
+        }
+        /* /Custom code: FC-2026-03-31 */
+
+        Title::set(l('admin_leader_operating_system.leader.title'));
+
+        $ai_report = $detail ? $this->get_cached_ai_report((int) $detail['user_id'], $selected_period) : null;
+
+        $data = [
+            'selected_period' => $selected_period,
+            'period_options' => $allowed_periods,
+            'overview_url' => url('admin/leader-operating-system?period=' . $selected_period),
+            'detail' => $detail,
+            'selected_payload' => $detail['periods'][$selected_period] ?? null,
+            /* Custom code: FC-2026-03-31: V2 cohort comparison payload */
+            'cohort_comparison' => ($detail && !empty($detail['periods'][$selected_period])) ? $this->get_cohort_comparison_payload((int) $detail['user_id'], $detail['periods'][$selected_period], $selected_period) : null,
+            /* /Custom code: FC-2026-03-31 */
+            /* Custom code: FC-2026-03-31: V3 behavior anomaly payload */
+            'behavior_anomaly' => ($detail && !empty($detail['periods'][$selected_period])) ? $this->get_behavior_anomaly_payload($detail['periods'][$selected_period], $detail['periods'], $detail['app_structure'] ?? [], $selected_period) : null,
+            /* /Custom code: FC-2026-03-31 */
+            /* Custom code: FC-2026-03-31: Phase 6 fraud intelligence payload */
+            'fraud_intelligence' => $detail['fraud_intelligence'][$selected_period] ?? null,
+            /* /Custom code: FC-2026-03-31 */
+            'ai_report' => $ai_report,
+            'los_outreach' => $detail ? $this->get_los_outreach_payload((int) $detail['user_id'], $selected_period, $ai_report, (string) ($detail['email'] ?? '')) : null,
+        ];
+
+        $view = new \Altum\View('admin/leader-operating-system/leader', (array) $this);
+        $this->add_view_content('content', $view->run((object) $data));
+    }
+}
+
+/* /Custom code: FC-2026-03-31 */
