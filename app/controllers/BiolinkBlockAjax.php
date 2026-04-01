@@ -37,6 +37,26 @@ class BiolinkBlockAjax extends Controller {
     /* /Custom code: FC-2026-03-09 */
     public $file_blocks = ['audio', 'video', 'file', 'pdf_document', 'powerpoint_presentation', 'excel_spreadsheet'];
 
+    /* Custom code: FC-2026-04-01: enforce plan-gated Forever blocks on the backend as well */
+    private function is_block_enabled_for_current_plan(string $block_type): bool {
+        $enabled_biolink_blocks = $this->user->plan_settings->enabled_biolink_blocks ?? (object) [];
+
+        if(is_array($enabled_biolink_blocks)) {
+            $enabled_biolink_blocks = (object) $enabled_biolink_blocks;
+        }
+
+        return (bool) ($enabled_biolink_blocks->{$block_type} ?? false);
+    }
+
+    private function validate_block_access_for_current_plan(string $block_type): void {
+        if($this->is_block_enabled_for_current_plan($block_type)) {
+            return;
+        }
+
+        Response::json(settings()->payment->is_enabled ? l('global.info_message.plan_feature_no_access') . ' <a href="' . url('plan') . '" class="font-weight-bold text-reset">' . l('global.info_message.plan_upgrade') . '.</a>' : l('global.info_message.plan_feature_no_access'), 'error');
+    }
+    /* /Custom code: FC-2026-04-01 */
+
 
     public function index() {
         \Altum\Authentication::guard();
@@ -94,10 +114,16 @@ class BiolinkBlockAjax extends Controller {
         $_POST['biolink_block_id'] = (int) $_POST['biolink_block_id'];
 
         /* Get the current status */
-        $biolink_block = db()->where('biolink_block_id', $_POST['biolink_block_id'])->where('user_id', $this->user->user_id)->getOne('biolinks_blocks', ['biolink_block_id', 'link_id', 'is_enabled']);
+        $biolink_block = db()->where('biolink_block_id', $_POST['biolink_block_id'])->where('user_id', $this->user->user_id)->getOne('biolinks_blocks', ['biolink_block_id', 'link_id', 'type', 'is_enabled']);
 
         if($biolink_block) {
             $new_is_enabled = (int) !$biolink_block->is_enabled;
+
+            /* Custom code: FC-2026-04-01: do not let disabled plan blocks be re-enabled manually */
+            if($new_is_enabled === 1) {
+                $this->validate_block_access_for_current_plan($biolink_block->type);
+            }
+            /* /Custom code: FC-2026-04-01 */
 
             db()->where('biolink_block_id', $biolink_block->biolink_block_id)->update('biolinks_blocks', ['is_enabled' => $new_is_enabled]);
 
@@ -129,6 +155,10 @@ class BiolinkBlockAjax extends Controller {
         if(!$biolink_block) {
             redirect('links');
         }
+
+        /* Custom code: FC-2026-04-01: prevent duplicating blocks that the current package no longer allows */
+        $this->validate_block_access_for_current_plan($biolink_block->type);
+        /* /Custom code: FC-2026-04-01 */
 
 
         /* Check for the plan limit */
@@ -288,6 +318,10 @@ class BiolinkBlockAjax extends Controller {
             $_POST['block_type'] = query_clean($_POST['block_type']);
             $_POST['link_id'] = (int) $_POST['link_id'];
 
+            /* Custom code: FC-2026-04-01: backend plan gate for block creation */
+            $this->validate_block_access_for_current_plan($_POST['block_type']);
+            /* /Custom code: FC-2026-04-01 */
+
             $is_handled = false;
 
             /* Check for the plan limit */
@@ -341,6 +375,10 @@ class BiolinkBlockAjax extends Controller {
                     die();
                 }
                 $this->biolink_block->settings = json_decode($this->biolink_block->settings ?? '');
+
+                /* Custom code: FC-2026-04-01: backend plan gate for block updates based on the actual stored block type */
+                $this->validate_block_access_for_current_plan($this->biolink_block->type);
+                /* /Custom code: FC-2026-04-01 */
 
                 /* Check for the plan limit */
                 $this->total_biolink_blocks = database()->query("SELECT COUNT(*) AS `total` FROM `biolinks_blocks` WHERE `user_id` = {$this->user->user_id} AND `link_id` = {$this->biolink_block->link_id}")->fetch_object()->total;

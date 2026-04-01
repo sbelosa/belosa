@@ -91,6 +91,74 @@ class User extends Model {
         return $settings;
     }
 
+    /* Custom code: FC-2026-04-01: keep plan-gated WhatsApp block state aligned with current package */
+    private function sync_whatsapp_biolink_blocks_with_plan(int $user_id, object $plan_settings, array &$updated_link_ids = []): void {
+        $enabled_biolink_blocks = $plan_settings->enabled_biolink_blocks ?? (object) [];
+
+        if(is_array($enabled_biolink_blocks)) {
+            $enabled_biolink_blocks = (object) $enabled_biolink_blocks;
+        }
+
+        $can_use_whatsapp_block = (bool) ($enabled_biolink_blocks->custom_html_whatsapp ?? false);
+
+        $whatsapp_blocks = db()
+            ->where('user_id', $user_id)
+            ->where('type', 'custom_html_whatsapp')
+            ->get('biolinks_blocks', null, ['biolink_block_id', 'link_id', 'is_enabled', 'settings']);
+
+        if(!$whatsapp_blocks) {
+            return;
+        }
+
+        foreach($whatsapp_blocks as $biolink_block) {
+            $settings = $this->normalize_link_settings($biolink_block->settings ?? '{}');
+            $was_auto_disabled = (bool) ($settings->plan_auto_disabled ?? false);
+            $is_enabled = (int) $biolink_block->is_enabled === 1;
+
+            $status_changed = false;
+            $settings_changed = false;
+            $new_is_enabled = $is_enabled;
+
+            if($can_use_whatsapp_block) {
+                if($was_auto_disabled) {
+                    $settings->plan_auto_disabled = false;
+                    $settings_changed = true;
+                }
+
+                if(!$is_enabled && $was_auto_disabled) {
+                    $new_is_enabled = true;
+                    $status_changed = true;
+                }
+            } else {
+                if($is_enabled) {
+                    $new_is_enabled = false;
+                    $status_changed = true;
+                }
+
+                if(!$was_auto_disabled) {
+                    $settings->plan_auto_disabled = true;
+                    $settings_changed = true;
+                }
+            }
+
+            if($status_changed || $settings_changed) {
+                $update = [];
+
+                if($status_changed) {
+                    $update['is_enabled'] = (int) $new_is_enabled;
+                }
+
+                if($settings_changed) {
+                    $update['settings'] = json_encode($settings);
+                }
+
+                db()->where('biolink_block_id', $biolink_block->biolink_block_id)->where('user_id', $user_id)->update('biolinks_blocks', $update);
+                $updated_link_ids[] = (int) $biolink_block->link_id;
+            }
+        }
+    }
+    /* /Custom code: FC-2026-04-01 */
+
     /* Custom code: FC-2026-04-01: centralize user payload hydration to avoid cache refresh recursion */
     private function hydrate_user_record($data) {
         if(!$data) {
@@ -272,6 +340,10 @@ class User extends Model {
                 }
             }
         }
+
+        /* Custom code: FC-2026-04-01: disable PRO-only WhatsApp blocks after plan downgrade and restore after upgrade */
+        $this->sync_whatsapp_biolink_blocks_with_plan((int) $user->user_id, $plan_settings, $updated_link_ids);
+        /* /Custom code: FC-2026-04-01 */
 
         if(!empty($updated_link_ids)) {
             foreach(array_unique($updated_link_ids) as $link_id) {
