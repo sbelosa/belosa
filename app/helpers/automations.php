@@ -312,6 +312,374 @@ function fc_cleanup_funnel_analytics_data(): void {
 }
 /* /Custom code: FC-2026-03-31 */
 
+/* Custom code: FC-2026-04-01: Forever outbound click integrity guardrails */
+function fc_get_forever_click_integrity_retention_days(): int {
+    return 30;
+}
+
+function fc_get_forever_click_integrity_network_match_days(): int {
+    return 7;
+}
+
+function fc_ensure_forever_click_integrity_tables(): void {
+    static $is_ready = false;
+
+    if($is_ready) {
+        return;
+    }
+
+    db()->rawQuery("CREATE TABLE IF NOT EXISTS `forever_click_integrity_accepts` (
+        `integrity_accept_id` bigint unsigned NOT NULL AUTO_INCREMENT,
+        `user_id` int unsigned NOT NULL,
+        `link_id` int unsigned NULL,
+        `biolink_block_id` int unsigned NULL,
+        `blog_post_id` int unsigned NULL,
+        `project_id` int unsigned NULL,
+        `source_type` varchar(32) NOT NULL,
+        `click_type` varchar(32) NOT NULL,
+        `target_signature` char(64) NOT NULL,
+        `target_label` varchar(255) NOT NULL,
+        `destination_url` text NULL,
+        `visitor_key` varchar(64) NULL,
+        `identity_hash` char(64) NULL,
+        `network_hash` char(64) NULL,
+        `ip_address` varchar(45) NULL,
+        `country_code` varchar(8) NULL,
+        `city_name` varchar(128) NULL,
+        `os_name` varchar(64) NULL,
+        `browser_name` varchar(64) NULL,
+        `referrer_host` varchar(128) NULL,
+        `referrer_path` text NULL,
+        `device_type` varchar(32) NULL,
+        `browser_language` varchar(8) NULL,
+        `utm_source` varchar(128) NULL,
+        `utm_medium` varchar(128) NULL,
+        `utm_campaign` varchar(128) NULL,
+        `blocked_attempts` int unsigned NOT NULL DEFAULT 0,
+        `accepted_datetime` datetime NOT NULL,
+        `last_attempt_datetime` datetime NOT NULL,
+        PRIMARY KEY (`integrity_accept_id`),
+        KEY `user_id` (`user_id`),
+        KEY `accepted_datetime` (`accepted_datetime`),
+        KEY `user_identity` (`user_id`, `identity_hash`, `accepted_datetime`),
+        KEY `user_network` (`user_id`, `network_hash`, `accepted_datetime`),
+        KEY `user_target` (`user_id`, `target_signature`, `accepted_datetime`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+    db()->rawQuery("CREATE TABLE IF NOT EXISTS `forever_click_integrity_suspicious` (
+        `integrity_suspicious_id` bigint unsigned NOT NULL AUTO_INCREMENT,
+        `user_id` int unsigned NOT NULL,
+        `integrity_accept_id` bigint unsigned NULL,
+        `link_id` int unsigned NULL,
+        `biolink_block_id` int unsigned NULL,
+        `blog_post_id` int unsigned NULL,
+        `project_id` int unsigned NULL,
+        `source_type` varchar(32) NOT NULL,
+        `click_type` varchar(32) NOT NULL,
+        `target_signature` char(64) NOT NULL,
+        `target_label` varchar(255) NOT NULL,
+        `destination_url` text NULL,
+        `visitor_key` varchar(64) NULL,
+        `identity_hash` char(64) NULL,
+        `network_hash` char(64) NULL,
+        `ip_address` varchar(45) NULL,
+        `country_code` varchar(8) NULL,
+        `city_name` varchar(128) NULL,
+        `os_name` varchar(64) NULL,
+        `browser_name` varchar(64) NULL,
+        `referrer_host` varchar(128) NULL,
+        `referrer_path` text NULL,
+        `device_type` varchar(32) NULL,
+        `browser_language` varchar(8) NULL,
+        `utm_source` varchar(128) NULL,
+        `utm_medium` varchar(128) NULL,
+        `utm_campaign` varchar(128) NULL,
+        `reason_key` varchar(64) NOT NULL,
+        `reason_title` varchar(255) NOT NULL,
+        `reason_text` text NULL,
+        `reason_details` text NULL,
+        `datetime` datetime NOT NULL,
+        PRIMARY KEY (`integrity_suspicious_id`),
+        KEY `user_id` (`user_id`),
+        KEY `integrity_accept_id` (`integrity_accept_id`),
+        KEY `datetime` (`datetime`),
+        KEY `reason_key` (`reason_key`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+    $is_ready = true;
+}
+
+function fc_get_forever_click_identity_context(array $payload = []): ?array {
+    $whichbrowser = get_whichbrowser();
+
+    if(($whichbrowser->device->type ?? null) === 'bot') {
+        return null;
+    }
+
+    $browser_name = $whichbrowser->browser->name ?? null;
+    $os_name = $whichbrowser->os->name ?? null;
+    $browser_language = isset($_SERVER['HTTP_ACCEPT_LANGUAGE']) ? mb_substr($_SERVER['HTTP_ACCEPT_LANGUAGE'], 0, 2) : null;
+    $device_type = get_this_device_type();
+    $visitor_key = function_exists('fc_get_funnel_visitor_key') ? fc_get_funnel_visitor_key() : null;
+    $ip_address = trim((string) get_ip());
+    $identity_hash = $visitor_key ? fc_get_privacy_hash('vk|' . $visitor_key) : null;
+    $network_hash = fc_get_privacy_hash(implode('|', [
+        $ip_address,
+        mb_strtolower(trim((string) $browser_name)),
+        mb_strtolower(trim((string) $os_name)),
+        mb_strtolower(trim((string) $device_type)),
+        mb_strtolower(trim((string) $browser_language)),
+        mb_strtolower(trim((string) ($_SERVER['HTTP_USER_AGENT'] ?? ''))),
+    ]));
+
+    try {
+        $maxmind = (get_maxmind_reader_city())->get(get_ip());
+    } catch(\Exception $exception) {
+        $maxmind = null;
+    }
+
+    $continent_code = isset($maxmind['continent']) ? ($maxmind['continent']['code'] ?? null) : null;
+    $country_code = isset($maxmind['country']) ? ($maxmind['country']['iso_code'] ?? null) : null;
+    $city_name = isset($maxmind['city']) ? ($maxmind['city']['names']['en'] ?? null) : null;
+
+    $referrer_host = null;
+    $referrer_path = null;
+    if(isset($_SERVER['HTTP_REFERER'])) {
+        $parsed_referrer = parse_url($_SERVER['HTTP_REFERER']);
+        if(is_array($parsed_referrer)) {
+            $referrer_host = $parsed_referrer['host'] ?? null;
+            $referrer_path = $parsed_referrer['path'] ?? null;
+        }
+    }
+
+    if(isset($_REQUEST['referrer']) && $_REQUEST['referrer'] === 'qr') {
+        $referrer_host = 'qr';
+        $referrer_path = null;
+    }
+
+    return [
+        'visitor_key' => $visitor_key,
+        'identity_hash' => $identity_hash,
+        'network_hash' => $network_hash,
+        'ip_address' => $ip_address ?: null,
+        'continent_code' => $continent_code,
+        'country_code' => $country_code,
+        'city_name' => $city_name,
+        'os_name' => $os_name,
+        'browser_name' => $browser_name,
+        'referrer_host' => $referrer_host,
+        'referrer_path' => $referrer_path,
+        'device_type' => $device_type,
+        'browser_language' => $browser_language,
+        'utm_source' => input_clean($_REQUEST['utm_source'] ?? ($payload['utm_source'] ?? null), 128),
+        'utm_medium' => input_clean($_REQUEST['utm_medium'] ?? ($payload['utm_medium'] ?? null), 128),
+        'utm_campaign' => input_clean($_REQUEST['utm_campaign'] ?? ($payload['utm_campaign'] ?? null), 128),
+    ];
+}
+
+function fc_cleanup_forever_click_integrity_data(): void {
+    fc_ensure_forever_click_integrity_tables();
+
+    $cutoff_datetime = (new \DateTime())->modify('-' . fc_get_forever_click_integrity_retention_days() . ' days')->format('Y-m-d H:i:s');
+
+    database()->query("DELETE FROM `forever_click_integrity_accepts` WHERE `accepted_datetime` < '{$cutoff_datetime}'");
+    database()->query("DELETE FROM `forever_click_integrity_suspicious` WHERE `datetime` < '{$cutoff_datetime}'");
+}
+
+function fc_process_monitored_forever_click(array $payload): array {
+    fc_ensure_forever_click_integrity_tables();
+
+    $user_id = (int) ($payload['user_id'] ?? 0);
+    $project_id = isset($payload['project_id']) ? (int) $payload['project_id'] : null;
+    $link_id = isset($payload['link_id']) ? (int) $payload['link_id'] : null;
+    $biolink_block_id = isset($payload['biolink_block_id']) ? (int) $payload['biolink_block_id'] : null;
+    $blog_post_id = isset($payload['blog_post_id']) ? (int) $payload['blog_post_id'] : null;
+    $source_type = input_clean($payload['source_type'] ?? 'link_redirect', 32);
+    $click_type = input_clean($payload['click_type'] ?? 'forever_outbound', 32);
+    $destination_url = trim((string) ($payload['destination_url'] ?? ''));
+
+    if(!$user_id || !$destination_url || !\Altum\Link::is_monitored_forever_destination_url($destination_url)) {
+        return ['accepted' => false, 'ignored' => true];
+    }
+
+    $context = fc_get_forever_click_identity_context($payload);
+    if(!$context) {
+        return ['accepted' => false, 'ignored' => true];
+    }
+
+    $target_signature = \Altum\Link::get_monitored_forever_destination_signature($destination_url);
+    $target_label = \Altum\Link::get_monitored_forever_destination_label($destination_url);
+    $now_datetime = get_date();
+    $retention_start_datetime = (new \DateTime())->modify('-' . fc_get_forever_click_integrity_retention_days() . ' days')->format('Y-m-d H:i:s');
+    $network_start_datetime = (new \DateTime())->modify('-' . fc_get_forever_click_integrity_network_match_days() . ' days')->format('Y-m-d H:i:s');
+
+    $matched_accept = null;
+    $match_type = null;
+
+    if(!empty($context['identity_hash'])) {
+        $identity_hash = database()->real_escape_string((string) $context['identity_hash']);
+        $matched_accept = db()
+            ->where('user_id', $user_id)
+            ->where('identity_hash', $identity_hash)
+            ->where('accepted_datetime', $retention_start_datetime, '>=')
+            ->orderBy('accepted_datetime', 'DESC')
+            ->getOne('forever_click_integrity_accepts');
+
+        if($matched_accept) {
+            $match_type = 'identity';
+        }
+    }
+
+    if(!$matched_accept && !empty($context['network_hash'])) {
+        $network_hash = database()->real_escape_string((string) $context['network_hash']);
+        $matched_accept = db()
+            ->where('user_id', $user_id)
+            ->where('network_hash', $network_hash)
+            ->where('accepted_datetime', $network_start_datetime, '>=')
+            ->orderBy('accepted_datetime', 'DESC')
+            ->getOne('forever_click_integrity_accepts');
+
+        if($matched_accept) {
+            $match_type = 'network';
+        }
+    }
+
+    if($matched_accept) {
+        $last_accepted_datetime = (string) ($matched_accept->accepted_datetime ?? '');
+        $last_accepted_timestamp = $last_accepted_datetime ? strtotime($last_accepted_datetime) : 0;
+        $minutes_since_last_accept = $last_accepted_timestamp ? max(1, (int) ceil((time() - $last_accepted_timestamp) / 60)) : null;
+        $same_target = (string) ($matched_accept->target_signature ?? '') === (string) $target_signature;
+        $blocked_attempts = (int) ($matched_accept->blocked_attempts ?? 0) + 1;
+
+        if($same_target && $minutes_since_last_accept !== null && $minutes_since_last_accept <= 60) {
+            $reason_key = 'rapid_repeat_same_target';
+            $reason_title = 'Ponovljeni klik na isti Forever link u kratkom roku';
+            $reason_text = sprintf('Isti identitet je vec imao priznat klik, a zatim je ponovno otvorio isti target nakon %s min. Klik je blokiran i ne pribraja se statistici.', $minutes_since_last_accept);
+        } elseif($same_target) {
+            $reason_key = 'repeat_same_target_30d';
+            $reason_title = 'Isti identitet je vec priznat za ovaj Forever target';
+            $reason_text = 'Klik je blokiran jer je isti identitet vec imao priznat outbound klik prema ovom Forever targetu unutar zadnjih 30 dana.';
+        } elseif($match_type === 'network') {
+            $reason_key = 'same_network_signature';
+            $reason_title = 'Ista mreza i uredaj pokusavaju generirati novi klik';
+            $reason_text = 'Klik je blokiran jer se isti IP/uredaj potpis vec pojavio kao priznati Forever outbound klik za ovog suradnika u zadnjih 7 dana.';
+        } else {
+            $reason_key = 'repeat_identity_other_target';
+            $reason_title = 'Isti identitet pokusava nabiti vise Forever klikova';
+            $reason_text = 'Klik je blokiran jer je isti identitet vec imao priznat Forever outbound klik za ovog suradnika, a dodatni klikovi se ne zbrajaju.';
+        }
+
+        db()->where('integrity_accept_id', (int) $matched_accept->integrity_accept_id)->update('forever_click_integrity_accepts', [
+            'blocked_attempts' => $blocked_attempts,
+            'last_attempt_datetime' => $now_datetime,
+        ]);
+
+        db()->insert('forever_click_integrity_suspicious', [
+            'user_id' => $user_id,
+            'integrity_accept_id' => (int) ($matched_accept->integrity_accept_id ?? 0) ?: null,
+            'link_id' => $link_id,
+            'biolink_block_id' => $biolink_block_id,
+            'blog_post_id' => $blog_post_id,
+            'project_id' => $project_id,
+            'source_type' => $source_type,
+            'click_type' => $click_type,
+            'target_signature' => $target_signature,
+            'target_label' => $target_label,
+            'destination_url' => $destination_url,
+            'visitor_key' => $context['visitor_key'],
+            'identity_hash' => $context['identity_hash'],
+            'network_hash' => $context['network_hash'],
+            'ip_address' => $context['ip_address'],
+            'country_code' => $context['country_code'],
+            'city_name' => $context['city_name'],
+            'os_name' => $context['os_name'],
+            'browser_name' => $context['browser_name'],
+            'referrer_host' => $context['referrer_host'],
+            'referrer_path' => $context['referrer_path'],
+            'device_type' => $context['device_type'],
+            'browser_language' => $context['browser_language'],
+            'utm_source' => $context['utm_source'],
+            'utm_medium' => $context['utm_medium'],
+            'utm_campaign' => $context['utm_campaign'],
+            'reason_key' => $reason_key,
+            'reason_title' => $reason_title,
+            'reason_text' => $reason_text,
+            'reason_details' => $last_accepted_datetime ? ('Zadnji priznati klik: ' . $last_accepted_datetime . ' · Blokirani pokusaji: ' . $blocked_attempts) : null,
+            'datetime' => $now_datetime,
+        ]);
+
+        return [
+            'accepted' => false,
+            'reason_key' => $reason_key,
+            'reason_title' => $reason_title,
+            'reason_text' => $reason_text,
+        ];
+    }
+
+    db()->insert('forever_click_integrity_accepts', [
+        'user_id' => $user_id,
+        'link_id' => $link_id,
+        'biolink_block_id' => $biolink_block_id,
+        'blog_post_id' => $blog_post_id,
+        'project_id' => $project_id,
+        'source_type' => $source_type,
+        'click_type' => $click_type,
+        'target_signature' => $target_signature,
+        'target_label' => $target_label,
+        'destination_url' => $destination_url,
+        'visitor_key' => $context['visitor_key'],
+        'identity_hash' => $context['identity_hash'],
+        'network_hash' => $context['network_hash'],
+        'ip_address' => $context['ip_address'],
+        'country_code' => $context['country_code'],
+        'city_name' => $context['city_name'],
+        'os_name' => $context['os_name'],
+        'browser_name' => $context['browser_name'],
+        'referrer_host' => $context['referrer_host'],
+        'referrer_path' => $context['referrer_path'],
+        'device_type' => $context['device_type'],
+        'browser_language' => $context['browser_language'],
+        'utm_source' => $context['utm_source'],
+        'utm_medium' => $context['utm_medium'],
+        'utm_campaign' => $context['utm_campaign'],
+        'accepted_datetime' => $now_datetime,
+        'last_attempt_datetime' => $now_datetime,
+    ]);
+
+    db()->insert('track_links', [
+        'user_id' => $user_id,
+        'link_id' => $link_id,
+        'biolink_block_id' => $biolink_block_id,
+        'project_id' => $project_id,
+        'continent_code' => $context['continent_code'],
+        'country_code' => $context['country_code'],
+        'city_name' => $context['city_name'],
+        'os_name' => $context['os_name'],
+        'browser_name' => $context['browser_name'],
+        'referrer_host' => $context['referrer_host'],
+        'referrer_path' => $context['referrer_path'],
+        'device_type' => $context['device_type'],
+        'browser_language' => $context['browser_language'],
+        'utm_source' => $context['utm_source'],
+        'utm_medium' => $context['utm_medium'],
+        'utm_campaign' => $context['utm_campaign'],
+        'is_unique' => 1,
+        'datetime' => $now_datetime,
+    ]);
+
+    if($biolink_block_id) {
+        db()->where('biolink_block_id', $biolink_block_id)->update('biolinks_blocks', ['clicks' => db()->inc()]);
+    } elseif($link_id) {
+        db()->where('link_id', $link_id)->update('links', ['clicks' => db()->inc()]);
+    }
+
+    return [
+        'accepted' => true,
+        'target_label' => $target_label,
+    ];
+}
+/* /Custom code: FC-2026-04-01 */
+
 function fc_get_funnel_visitor_key(): string {
     $cookie_name = 'fc_funnel_visitor_key';
     $cookie_lifetime = time() + 60 * 60 * 24 * 180;

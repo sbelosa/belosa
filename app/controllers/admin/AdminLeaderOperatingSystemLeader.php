@@ -430,143 +430,111 @@ class AdminLeaderOperatingSystemLeader extends Controller {
     }
 
     private function get_fraud_intelligence_payload(int $user_id, string $period_key): array {
-        if(function_exists('fc_ensure_funnel_analytics_tables')) {
-            fc_ensure_funnel_analytics_tables();
+        if(function_exists('fc_ensure_forever_click_integrity_tables')) {
+            fc_ensure_forever_click_integrity_tables();
         }
 
-        $period_start_datetime = $this->get_period_start_datetime($this->get_period_days($period_key));
-        $identity_expression = "COALESCE(NULLIF(`funnel_events`.`fingerprint_hash`, ''), NULLIF(`funnel_events`.`ip_hash`, ''), NULLIF(`funnel_events`.`visitor_key`, ''))";
+        $period_days = min($this->get_period_days($period_key), function_exists('fc_get_forever_click_integrity_retention_days') ? fc_get_forever_click_integrity_retention_days() : 30);
+        $period_start_datetime = $this->get_period_start_datetime($period_days);
         $clusters = [];
-        $fraud_score = 0;
+        $recent_attempts = [];
+        $blocked_attempts_total = 0;
 
-        $clusters_result = database()->query("SELECT
-            {$identity_expression} AS `identity_key`,
-            `funnel_events`.`ip_hash`,
-            `funnel_events`.`fingerprint_hash`,
-            COUNT(*) AS `events_total`,
-            COUNT(DISTINCT `funnel_events`.`visitor_key`) AS `visitors_total`,
-            COUNT(DISTINCT `funnel_events`.`biolink_block_id`) AS `funnels_total`,
-            COUNT(DISTINCT COALESCE(NULLIF(`funnel_events`.`country_code`, ''), 'na')) AS `countries_total`,
-            SUM(CASE WHEN `funnel_events`.`event_type` = 'submit_error' THEN 1 ELSE 0 END) AS `submit_errors_total`,
-            SUM(CASE WHEN `funnel_events`.`event_type` = 'submit_success' THEN 1 ELSE 0 END) AS `submit_success_total`,
-            SUM(CASE WHEN `funnel_events`.`event_type` = 'form_start' THEN 1 ELSE 0 END) AS `form_starts_total`,
-            MIN(`funnel_events`.`datetime`) AS `first_datetime`,
-            MAX(`funnel_events`.`datetime`) AS `last_datetime`
-        FROM `funnel_events`
-        WHERE `funnel_events`.`user_id` = {$user_id}
-          AND `funnel_events`.`datetime` >= '{$period_start_datetime}'
-          AND ({$identity_expression}) IS NOT NULL
-        GROUP BY {$identity_expression}, `funnel_events`.`ip_hash`, `funnel_events`.`fingerprint_hash`
-        HAVING `events_total` >= 4
-        ORDER BY `events_total` DESC, `visitors_total` DESC, `funnels_total` DESC
-        LIMIT 20");
+        $accepted_clicks_total = (int) (db()
+            ->where('user_id', $user_id)
+            ->where('accepted_datetime', $period_start_datetime, '>=')
+            ->getValue('forever_click_integrity_accepts', 'COUNT(`integrity_accept_id`)') ?? 0);
 
-        while($cluster = $clusters_result->fetch_assoc()) {
-            $cluster_signals = [];
-            $cluster_score = 0;
-            $events_total = (int) ($cluster['events_total'] ?? 0);
-            $visitors_total = (int) ($cluster['visitors_total'] ?? 0);
-            $funnels_total = (int) ($cluster['funnels_total'] ?? 0);
-            $countries_total = (int) ($cluster['countries_total'] ?? 0);
-            $submit_errors_total = (int) ($cluster['submit_errors_total'] ?? 0);
-            $submit_success_total = (int) ($cluster['submit_success_total'] ?? 0);
-            $form_starts_total = (int) ($cluster['form_starts_total'] ?? 0);
-            $first_timestamp = strtotime((string) ($cluster['first_datetime'] ?? '')) ?: 0;
-            $last_timestamp = strtotime((string) ($cluster['last_datetime'] ?? '')) ?: 0;
-            $duration_minutes = $first_timestamp && $last_timestamp && $last_timestamp >= $first_timestamp ? max(1, (int) ceil(($last_timestamp - $first_timestamp) / 60)) : null;
+        $suspicious_rows = db()
+            ->where('user_id', $user_id)
+            ->where('datetime', $period_start_datetime, '>=')
+            ->orderBy('datetime', 'DESC')
+            ->get('forever_click_integrity_suspicious') ?? [];
 
-            if($visitors_total >= 3) {
-                $cluster_score += 35;
-                $cluster_signals[] = $this->build_fraud_signal_item(
-                    'high',
-                    l('admin_leader_operating_system.leader.fraud_signal.reused_identity.label'),
-                    sprintf(l('admin_leader_operating_system.leader.fraud_signal.reused_identity.text'), $visitors_total),
-                    l('admin_leader_operating_system.leader.fraud_signal.reused_identity.action'),
-                    35
-                );
+        foreach(array_slice($suspicious_rows, 0, 15) as $row) {
+            $recent_attempts[] = [
+                'datetime' => (string) ($row->datetime ?? ''),
+                'reason_title' => (string) ($row->reason_title ?? ''),
+                'reason_text' => (string) ($row->reason_text ?? ''),
+                'target_label' => (string) ($row->target_label ?? ''),
+                'source_type' => (string) ($row->source_type ?? ''),
+                'ip_address' => (string) ($row->ip_address ?? ''),
+            ];
+        }
+
+        $grouped = [];
+        foreach($suspicious_rows as $row) {
+            $blocked_attempts_total++;
+            $group_key = ($row->reason_key ?? 'unknown') . '|' . ($row->target_signature ?? 'target');
+
+            if(!isset($grouped[$group_key])) {
+                $grouped[$group_key] = [
+                    'label' => (string) ($row->reason_title ?? l('admin_leader_operating_system.leader.fraud_none')),
+                    'text' => (string) ($row->reason_text ?? ''),
+                    'action' => (string) ($row->reason_details ?? l('admin_leader_operating_system.leader.fraud_blocked_default_action')),
+                    'events_total' => 0,
+                    'visitors_total' => 0,
+                    'funnels_total' => 0,
+                    'countries' => [],
+                    'targets' => [],
+                    'identities' => [],
+                    'first_datetime' => (string) ($row->datetime ?? ''),
+                    'last_datetime' => (string) ($row->datetime ?? ''),
+                    'signature' => substr((string) ($row->identity_hash ?? $row->network_hash ?? md5((string) ($row->ip_address ?? 'unknown'))), 0, 16),
+                ];
             }
 
-            if($funnels_total >= 3) {
-                $cluster_score += 15;
-                $cluster_signals[] = $this->build_fraud_signal_item(
-                    'watch',
-                    l('admin_leader_operating_system.leader.fraud_signal.multi_funnel.label'),
-                    sprintf(l('admin_leader_operating_system.leader.fraud_signal.multi_funnel.text'), $funnels_total),
-                    l('admin_leader_operating_system.leader.fraud_signal.multi_funnel.action'),
-                    15
-                );
+            $grouped[$group_key]['events_total']++;
+            $grouped[$group_key]['targets'][(string) ($row->target_signature ?? '')] = true;
+            $grouped[$group_key]['identities'][(string) ($row->identity_hash ?? $row->network_hash ?? $row->ip_address ?? uniqid('id_', true))] = true;
+
+            if(!empty($row->country_code)) {
+                $grouped[$group_key]['countries'][(string) $row->country_code] = true;
             }
 
-            if($submit_errors_total >= 3 && $submit_success_total === 0) {
-                $cluster_score += 15;
-                $cluster_signals[] = $this->build_fraud_signal_item(
-                    'watch',
-                    l('admin_leader_operating_system.leader.fraud_signal.error_burst.label'),
-                    sprintf(l('admin_leader_operating_system.leader.fraud_signal.error_burst.text'), $submit_errors_total),
-                    l('admin_leader_operating_system.leader.fraud_signal.error_burst.action'),
-                    15
-                );
+            if((string) ($row->datetime ?? '') < $grouped[$group_key]['first_datetime']) {
+                $grouped[$group_key]['first_datetime'] = (string) $row->datetime;
             }
 
-            if($events_total >= 8 && $duration_minutes !== null && $duration_minutes <= 10) {
-                $cluster_score += 20;
-                $cluster_signals[] = $this->build_fraud_signal_item(
-                    'high',
-                    l('admin_leader_operating_system.leader.fraud_signal.speed_burst.label'),
-                    sprintf(l('admin_leader_operating_system.leader.fraud_signal.speed_burst.text'), $events_total, $duration_minutes),
-                    l('admin_leader_operating_system.leader.fraud_signal.speed_burst.action'),
-                    20
-                );
+            if((string) ($row->datetime ?? '') > $grouped[$group_key]['last_datetime']) {
+                $grouped[$group_key]['last_datetime'] = (string) $row->datetime;
             }
+        }
 
-            if($countries_total >= 2 && $events_total >= 6) {
-                $cluster_score += 10;
-                $cluster_signals[] = $this->build_fraud_signal_item(
-                    'watch',
-                    l('admin_leader_operating_system.leader.fraud_signal.geo_spread.label'),
-                    sprintf(l('admin_leader_operating_system.leader.fraud_signal.geo_spread.text'), $countries_total),
-                    l('admin_leader_operating_system.leader.fraud_signal.geo_spread.action'),
-                    10
-                );
-            }
+        foreach($grouped as $group) {
+            $first_timestamp = strtotime((string) ($group['first_datetime'] ?? '')) ?: 0;
+            $last_timestamp = strtotime((string) ($group['last_datetime'] ?? '')) ?: 0;
+            $duration_minutes = $first_timestamp && $last_timestamp && $last_timestamp >= $first_timestamp ? max(1, (int) ceil(($last_timestamp - $first_timestamp) / 60)) : 1;
+            $attempts_total = (int) ($group['events_total'] ?? 0);
+            $targets_total = count($group['targets'] ?? []);
+            $identities_total = count($group['identities'] ?? []);
+            $countries_total = count($group['countries'] ?? []);
 
-            if($form_starts_total >= 4 && $submit_success_total === 0 && $submit_errors_total >= max(2, (int) floor($form_starts_total * 0.6))) {
-                $cluster_score += 10;
-            }
-
-            if($cluster_score === 0) {
-                continue;
-            }
-
-            usort($cluster_signals, static function($a, $b) {
-                return (($b['points'] ?? 0) <=> ($a['points'] ?? 0)) ?: (($a['label'] ?? '') <=> ($b['label'] ?? ''));
-            });
+            $cluster_score = min(100, ($attempts_total * 18) + (max(0, $targets_total - 1) * 12) + (($duration_minutes <= 60 && $attempts_total >= 3) ? 14 : 0) + (($countries_total >= 2) ? 8 : 0));
 
             $clusters[] = [
-                'signature' => substr((string) ($cluster['fingerprint_hash'] ?: $cluster['ip_hash'] ?: md5((string) ($cluster['identity_key'] ?? ''))), 0, 16),
+                'signature' => (string) ($group['signature'] ?? ''),
                 'score' => $this->clamp_score($cluster_score),
-                'label' => (string) ($cluster_signals[0]['label'] ?? l('admin_leader_operating_system.leader.fraud_none')),
-                'text' => (string) ($cluster_signals[0]['text'] ?? ''),
-                'action' => (string) ($cluster_signals[0]['action'] ?? ''),
-                'signals' => $cluster_signals,
-                'events_total' => $events_total,
-                'visitors_total' => $visitors_total,
-                'funnels_total' => $funnels_total,
-                'submit_errors_total' => $submit_errors_total,
-                'submit_success_total' => $submit_success_total,
+                'label' => (string) ($group['label'] ?? l('admin_leader_operating_system.leader.fraud_none')),
+                'text' => (string) ($group['text'] ?? ''),
+                'action' => (string) ($group['action'] ?? ''),
+                'signals' => [],
+                'events_total' => $attempts_total,
+                'visitors_total' => $attempts_total,
+                'funnels_total' => max(1, $targets_total),
+                'submit_errors_total' => 0,
+                'submit_success_total' => 0,
                 'duration_minutes' => $duration_minutes,
-                'first_datetime' => (string) ($cluster['first_datetime'] ?? ''),
-                'last_datetime' => (string) ($cluster['last_datetime'] ?? ''),
+                'first_datetime' => (string) ($group['first_datetime'] ?? ''),
+                'last_datetime' => (string) ($group['last_datetime'] ?? ''),
             ];
-
-            $fraud_score += $cluster_score;
         }
 
         usort($clusters, static function($a, $b) {
             return (($b['score'] ?? 0) <=> ($a['score'] ?? 0)) ?: (($b['events_total'] ?? 0) <=> ($a['events_total'] ?? 0));
         });
 
-        $fraud_score = $this->clamp_score($fraud_score);
+        $fraud_score = $this->clamp_score(min(100, ($blocked_attempts_total * 9) + (count($clusters) * 6)));
         $level_key = 'stable';
 
         if($fraud_score >= 55) {
@@ -583,8 +551,11 @@ class AdminLeaderOperatingSystemLeader extends Controller {
             'level_class' => $this->build_fraud_signal_item($level_key, '', '', '', 0)['class'],
             'clusters_total' => count($clusters),
             'top_concern' => $clusters[0]['label'] ?? l('admin_leader_operating_system.leader.fraud_none'),
-            'retention_days' => fc_get_los_fraud_event_retention_days(),
-            'clusters' => array_slice($clusters, 0, 6),
+            'retention_days' => function_exists('fc_get_forever_click_integrity_retention_days') ? fc_get_forever_click_integrity_retention_days() : 30,
+            'clusters' => array_slice($clusters, 0, 8),
+            'blocked_attempts_total' => $blocked_attempts_total,
+            'accepted_clicks_total' => $accepted_clicks_total,
+            'recent_attempts' => $recent_attempts,
         ];
     }
     /* /Custom code: FC-2026-03-31 */

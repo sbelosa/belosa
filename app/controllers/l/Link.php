@@ -491,6 +491,10 @@ class Link extends Controller {
 
 	private function create_statistics() {
 
+		if($this->is_monitored_forever_outbound_request()) {
+			return;
+		}
+
 		$cookie_name = 's_statistics_' . ($this->type == 'link' ? $this->link->link_id : $this->link->biolink_block_id);
 
 		if(isset($_COOKIE[$cookie_name]) && (int) $_COOKIE[$cookie_name] >= 3) {
@@ -593,6 +597,45 @@ class Link extends Controller {
 		/* Set cookie to try and avoid multiple entrances */
 		$cookie_new_value = isset($_COOKIE[$cookie_name]) ? (int) $_COOKIE[$cookie_name] + 1 : 0;
 		setcookie($cookie_name, (int) $cookie_new_value, time()+60*60*24*1);
+	}
+
+	private function is_monitored_forever_outbound_request(?string $destination_url = null): bool {
+		if($this->is_preview) {
+			return false;
+		}
+
+		if($this->type !== 'link' && $this->type !== 'biolink_block') {
+			return false;
+		}
+
+		if(\Altum\Link::is_monitored_forever_outbound_type((string) ($this->link->type ?? ''))) {
+			return true;
+		}
+
+		$candidate_url = $destination_url ?: ($this->link->location_url ?? null);
+
+		return \Altum\Link::is_monitored_forever_destination_url($candidate_url);
+	}
+
+	private function process_monitored_forever_outbound_click(string $destination_url): void {
+		if(!$this->is_monitored_forever_outbound_request($destination_url) || !function_exists('fc_process_monitored_forever_click')) {
+			return;
+		}
+
+		fc_process_monitored_forever_click([
+			'user_id' => (int) $this->user->user_id,
+			'link_id' => $this->type == 'link' ? (int) ($this->link->link_id ?? 0) : null,
+			'biolink_block_id' => $this->type == 'biolink_block' ? (int) ($this->link->biolink_block_id ?? 0) : null,
+			'project_id' => isset($this->link->project_id) ? (int) $this->link->project_id : null,
+			'source_type' => $this->type == 'biolink_block' ? 'biolink_block' : 'direct_link',
+			'click_type' => \Altum\Link::is_monitored_forever_outbound_type((string) ($this->link->type ?? '')) ? (string) $this->link->type : 'forever_outbound',
+			'destination_url' => $destination_url,
+		]);
+	}
+
+	private function redirect_tracked_location($location_url, $cloaking = false, $app_linking = false) {
+		$this->process_monitored_forever_outbound_click((string) $location_url);
+		$this->redirect_to($location_url, $cloaking, $app_linking);
 	}
 
 	private function process_biolink() {
@@ -950,10 +993,10 @@ class Link extends Controller {
 
 				foreach($this->link->settings->{'targeting_' . $this->link->settings->targeting_type} as $value) {
 					if($continent_code == $value->key) {
-						$this->redirect_to(
-							$value->value . $append_query,
-							$this->link_user->plan_settings->cloaking_is_enabled && $this->link->settings->cloaking_is_enabled ? $this->link->settings : false,
-							$this->user->plan_settings->app_linking_is_enabled && $this->link->settings->app_linking_is_enabled && $this->link->settings->app_linking->app ? $this->link->settings->app_linking : false,
+							$this->redirect_tracked_location(
+								$value->value . $append_query,
+								$this->link_user->plan_settings->cloaking_is_enabled && $this->link->settings->cloaking_is_enabled ? $this->link->settings : false,
+								$this->user->plan_settings->app_linking_is_enabled && $this->link->settings->app_linking_is_enabled && $this->link->settings->app_linking->app ? $this->link->settings->app_linking : false,
 						);
 					}
 				}
@@ -971,10 +1014,10 @@ class Link extends Controller {
 				foreach($this->link->settings->{'targeting_' . $this->link->settings->targeting_type} as $value) {
 					if($country_code == $value->key) {
 						/* Redirection */
-						$this->redirect_to(
-							$value->value . $append_query,
-							$this->user->plan_settings->cloaking_is_enabled && $this->link->settings->cloaking_is_enabled ? $this->link->settings : false,
-							$this->user->plan_settings->app_linking_is_enabled && $this->link->settings->app_linking_is_enabled && $this->link->settings->app_linking->app ? $this->link->settings->app_linking : false,
+							$this->redirect_tracked_location(
+								$value->value . $append_query,
+								$this->user->plan_settings->cloaking_is_enabled && $this->link->settings->cloaking_is_enabled ? $this->link->settings : false,
+								$this->user->plan_settings->app_linking_is_enabled && $this->link->settings->app_linking_is_enabled && $this->link->settings->app_linking->app ? $this->link->settings->app_linking : false,
 						);
 					}
 				}
@@ -991,10 +1034,10 @@ class Link extends Controller {
 
 				foreach($this->link->settings->{'targeting_' . $this->link->settings->targeting_type} as $value) {
 					if($city_name == $value->key) {
-						$this->redirect_to(
-							$value->value . $append_query,
-							$this->link_user->plan_settings->cloaking_is_enabled && $this->link->settings->cloaking_is_enabled ? $this->link->settings : false,
-							$this->user->plan_settings->app_linking_is_enabled && $this->link->settings->app_linking_is_enabled && $this->link->settings->app_linking->app ? $this->link->settings->app_linking : false,
+							$this->redirect_tracked_location(
+								$value->value . $append_query,
+								$this->link_user->plan_settings->cloaking_is_enabled && $this->link->settings->cloaking_is_enabled ? $this->link->settings : false,
+								$this->user->plan_settings->app_linking_is_enabled && $this->link->settings->app_linking_is_enabled && $this->link->settings->app_linking->app ? $this->link->settings->app_linking : false,
 						);
 					}
 				}
@@ -1006,10 +1049,10 @@ class Link extends Controller {
 				foreach($this->link->settings->{'targeting_' . $this->link->settings->targeting_type} as $value) {
 					if($device_type == $value->key) {
 						/* Redirection */
-						$this->redirect_to(
-							$value->value . $append_query,
-							$this->user->plan_settings->cloaking_is_enabled && $this->link->settings->cloaking_is_enabled ? $this->link->settings : false,
-							$this->user->plan_settings->app_linking_is_enabled && $this->link->settings->app_linking_is_enabled && $this->link->settings->app_linking->app ? $this->link->settings->app_linking : false,
+							$this->redirect_tracked_location(
+								$value->value . $append_query,
+								$this->user->plan_settings->cloaking_is_enabled && $this->link->settings->cloaking_is_enabled ? $this->link->settings : false,
+								$this->user->plan_settings->app_linking_is_enabled && $this->link->settings->app_linking_is_enabled && $this->link->settings->app_linking->app ? $this->link->settings->app_linking : false,
 						);
 					}
 				}
@@ -1023,10 +1066,10 @@ class Link extends Controller {
 				foreach($this->link->settings->{'targeting_' . $this->link->settings->targeting_type} as $value) {
 					if($os_name == $value->key) {
 						/* Redirection */
-						$this->redirect_to(
-							$value->value . $append_query,
-							$this->user->plan_settings->cloaking_is_enabled && $this->link->settings->cloaking_is_enabled ? $this->link->settings : false,
-							$this->user->plan_settings->app_linking_is_enabled && $this->link->settings->app_linking_is_enabled && $this->link->settings->app_linking->app ? $this->link->settings->app_linking : false,
+							$this->redirect_tracked_location(
+								$value->value . $append_query,
+								$this->user->plan_settings->cloaking_is_enabled && $this->link->settings->cloaking_is_enabled ? $this->link->settings : false,
+								$this->user->plan_settings->app_linking_is_enabled && $this->link->settings->app_linking_is_enabled && $this->link->settings->app_linking->app ? $this->link->settings->app_linking : false,
 						);
 					}
 				}
@@ -1039,10 +1082,10 @@ class Link extends Controller {
 
 				foreach($this->link->settings->{'targeting_' . $this->link->settings->targeting_type} as $value) {
 					if($browser_name == $value->key) {
-						$this->redirect_to(
-							$value->value . $append_query,
-							$this->link_user->plan_settings->cloaking_is_enabled && $this->link->settings->cloaking_is_enabled ? $this->link->settings : false,
-							$this->user->plan_settings->app_linking_is_enabled && $this->link->settings->app_linking_is_enabled && $this->link->settings->app_linking->app ? $this->link->settings->app_linking : false,
+							$this->redirect_tracked_location(
+								$value->value . $append_query,
+								$this->link_user->plan_settings->cloaking_is_enabled && $this->link->settings->cloaking_is_enabled ? $this->link->settings : false,
+								$this->user->plan_settings->app_linking_is_enabled && $this->link->settings->app_linking_is_enabled && $this->link->settings->app_linking->app ? $this->link->settings->app_linking : false,
 						);
 					}
 				}
@@ -1054,10 +1097,10 @@ class Link extends Controller {
 				foreach($this->link->settings->{'targeting_' . $this->link->settings->targeting_type} as $value) {
 					if($browser_language == $value->key) {
 						/* Redirection */
-						$this->redirect_to(
-							$value->value . $append_query,
-							$this->user->plan_settings->cloaking_is_enabled && $this->link->settings->cloaking_is_enabled ? $this->link->settings : false,
-							$this->user->plan_settings->app_linking_is_enabled && $this->link->settings->app_linking_is_enabled && $this->link->settings->app_linking->app ? $this->link->settings->app_linking : false,
+							$this->redirect_tracked_location(
+								$value->value . $append_query,
+								$this->user->plan_settings->cloaking_is_enabled && $this->link->settings->cloaking_is_enabled ? $this->link->settings : false,
+								$this->user->plan_settings->app_linking_is_enabled && $this->link->settings->app_linking_is_enabled && $this->link->settings->app_linking->app ? $this->link->settings->app_linking : false,
 						);
 					}
 				}
@@ -1080,10 +1123,10 @@ class Link extends Controller {
 					$end += $chance;
 
 					if($chosen_winner >= $start && $chosen_winner < $end) {
-						$this->redirect_to(
-							$value->value . $append_query,
-							$this->user->plan_settings->cloaking_is_enabled && $this->link->settings->cloaking_is_enabled ? $this->link->settings : false,
-							$this->user->plan_settings->app_linking_is_enabled && $this->link->settings->app_linking_is_enabled && $this->link->settings->app_linking->app ? $this->link->settings->app_linking : false,
+							$this->redirect_tracked_location(
+								$value->value . $append_query,
+								$this->user->plan_settings->cloaking_is_enabled && $this->link->settings->cloaking_is_enabled ? $this->link->settings : false,
+								$this->user->plan_settings->app_linking_is_enabled && $this->link->settings->app_linking_is_enabled && $this->link->settings->app_linking->app ? $this->link->settings->app_linking : false,
 						);
 					}
 
@@ -1093,7 +1136,7 @@ class Link extends Controller {
 		}
 
 		/* Redirection */
-		$this->redirect_to(
+		$this->redirect_tracked_location(
 			$this->link->location_url . $append_query,
 			$this->user->plan_settings->cloaking_is_enabled && $this->link->settings->cloaking_is_enabled ? $this->link->settings : false,
 			$this->user->plan_settings->app_linking_is_enabled && $this->link->settings->app_linking_is_enabled && $this->link->settings->app_linking->app ? $this->link->settings->app_linking : false,

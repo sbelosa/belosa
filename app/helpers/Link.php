@@ -1020,6 +1020,96 @@ class Link {
         return $click_type === 'business' ? 'blog_cta_business' : 'blog_cta_product';
     }
 
+    public static function get_monitored_forever_outbound_types(): array {
+        return [
+            'link_forever_shop',
+            'link_forever_product',
+            'link_forever_living_bih',
+            'link_forever_living_alb_kosovo',
+            'link_discount',
+        ];
+    }
+
+    public static function is_monitored_forever_outbound_type(?string $type): bool {
+        return in_array((string) $type, self::get_monitored_forever_outbound_types(), true);
+    }
+
+    public static function is_monitored_forever_destination_url($url): bool {
+        $url = trim((string) $url);
+
+        if($url === '' || !filter_var($url, FILTER_VALIDATE_URL)) {
+            return false;
+        }
+
+        $host = parse_url($url, PHP_URL_HOST);
+        $host = is_string($host) ? mb_strtolower(preg_replace('/^www\./', '', $host) ?? $host) : '';
+
+        if($host === '') {
+            return false;
+        }
+
+        if($host === 'thealoeveraco.shop') {
+            return true;
+        }
+
+        if(strpos($host, 'foreverliving') !== false || strpos($host, 'foreverlivingproducts') !== false) {
+            return true;
+        }
+
+        $query = parse_url($url, PHP_URL_QUERY);
+        if(is_string($query) && $query !== '') {
+            parse_str($query, $query_parameters);
+
+            if(isset($query_parameters['fboId']) || isset($query_parameters['id'])) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public static function get_monitored_forever_destination_signature($url): ?string {
+        $url = trim((string) $url);
+
+        if(!self::is_monitored_forever_destination_url($url)) {
+            return null;
+        }
+
+        $parsed_url = parse_url($url);
+        $host = mb_strtolower(trim((string) ($parsed_url['host'] ?? '')));
+        $path = '/' . ltrim(trim((string) ($parsed_url['path'] ?? '/')), '/');
+        $query = [];
+
+        if(!empty($parsed_url['query'])) {
+            parse_str($parsed_url['query'], $query);
+        }
+
+        $stable_query = [];
+        foreach(['fboId', 'id', 'product', 'sku'] as $query_key) {
+            if(isset($query[$query_key]) && $query[$query_key] !== '') {
+                $stable_query[$query_key] = (string) $query[$query_key];
+            }
+        }
+
+        ksort($stable_query);
+
+        return hash('sha256', $host . '|' . $path . '|' . http_build_query($stable_query, '', '&', PHP_QUERY_RFC3986));
+    }
+
+    public static function get_monitored_forever_destination_label($url): string {
+        $url = trim((string) $url);
+
+        if(!filter_var($url, FILTER_VALIDATE_URL)) {
+            return '-';
+        }
+
+        $parsed_url = parse_url($url);
+        $host = mb_strtolower(trim((string) ($parsed_url['host'] ?? '')));
+        $path = trim((string) ($parsed_url['path'] ?? '/'));
+
+        return rtrim($host . ($path !== '' ? $path : '/'), '/');
+    }
+
     public static function get_forever_shop_click_condition_sql(string $track_links_alias, string $biolinks_blocks_alias, string $block_types_sql): string {
         $blog_tracking_medium = self::get_blog_cta_tracking_medium('product');
 

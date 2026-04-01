@@ -104,61 +104,21 @@ class BlogClick extends Controller {
         return \Altum\Link::resolve_preferred_forever_market_country_code($country_code, $available_market_country_codes, $accept_language_header, $country_code_is_trusted);
     }
 
-    private function track_click(object $biolink, object $blog_post, string $click_type): void {
-        $cookie_name = 'blog_post_cta_v2_' . $biolink->user_id . '_' . $blog_post->blog_post_id . '_' . $click_type;
-        $whichbrowser = get_whichbrowser();
-
-        if(($whichbrowser->device->type ?? null) === 'bot') {
+    private function track_click(object $biolink, object $blog_post, string $click_type, string $destination_url): void {
+        if(!function_exists('fc_process_monitored_forever_click')) {
             return;
         }
 
-        $browser_name = $whichbrowser->browser->name ?? null;
-        $os_name = $whichbrowser->os->name ?? null;
-        $browser_language = isset($_SERVER['HTTP_ACCEPT_LANGUAGE']) ? mb_substr($_SERVER['HTTP_ACCEPT_LANGUAGE'], 0, 2) : null;
-        $device_type = get_this_device_type();
-        $is_unique = isset($_COOKIE[$cookie_name]) ? 0 : 1;
-
-        try {
-            $maxmind = (get_maxmind_reader_city())->get(get_ip());
-        } catch(\Exception $exception) {
-            $maxmind = null;
-        }
-
-        $continent_code = isset($maxmind['continent']) ? ($maxmind['continent']['code'] ?? null) : null;
-        $country_code = isset($maxmind['country']) ? ($maxmind['country']['iso_code'] ?? null) : null;
-        $city_name = isset($maxmind['city']) ? ($maxmind['city']['names']['en'] ?? null) : null;
-
-        $referrer = [
-            'host' => null,
-            'path' => null,
-        ];
-
-        if(isset($_SERVER['HTTP_REFERER'])) {
-            $referrer = parse_url($_SERVER['HTTP_REFERER']);
-        }
-
-        db()->insert('track_links', [
-            'user_id' => $biolink->user_id,
-            'link_id' => null,
-            'biolink_block_id' => null,
-            'project_id' => $biolink->project_id,
-            'continent_code' => $continent_code,
-            'country_code' => $country_code,
-            'city_name' => $city_name,
-            'os_name' => $os_name,
-            'browser_name' => $browser_name,
-            'referrer_host' => $referrer['host'] ?? null,
-            'referrer_path' => $referrer['path'] ?? null,
-            'device_type' => $device_type,
-            'browser_language' => $browser_language,
-            'utm_source' => input_clean($_GET['utm_source'] ?? null),
+        fc_process_monitored_forever_click([
+            'user_id' => (int) $biolink->user_id,
+            'project_id' => isset($biolink->project_id) ? (int) $biolink->project_id : null,
+            'blog_post_id' => (int) $blog_post->blog_post_id,
+            'source_type' => 'blog_cta',
+            'click_type' => $click_type === 'business' ? 'blog_forever_business' : 'blog_forever_product',
+            'destination_url' => $destination_url,
             'utm_medium' => \Altum\Link::get_blog_cta_tracking_medium($click_type),
             'utm_campaign' => 'blog_post:' . (int) $blog_post->blog_post_id,
-            'is_unique' => $is_unique,
-            'datetime' => get_date(),
         ]);
-
-        setcookie($cookie_name, '1', time() + 60 * 60 * 24, '/');
     }
 
     public function index() {
@@ -193,7 +153,7 @@ class BlogClick extends Controller {
 
         if($biolink && $destination_url) {
             $click_type = \Altum\Link::get_blog_cta_click_type_by_post_id($blog_post_id);
-            $this->track_click($biolink, $blog_post, $click_type);
+            $this->track_click($biolink, $blog_post, $click_type, $destination_url);
         }
 
         $this->redirect_to_destination($destination_url ?: $fallback_url);

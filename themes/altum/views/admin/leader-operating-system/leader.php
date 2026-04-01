@@ -1170,6 +1170,14 @@
 
                         <div class="leader-os-detail-list">
                             <div class="leader-os-detail-list-item">
+                                <span class="text-muted"><?= l('admin_leader_operating_system.leader.fraud_accepted_clicks') ?></span>
+                                <strong><?= nr((int) ($fraud_intelligence['accepted_clicks_total'] ?? 0)) ?></strong>
+                            </div>
+                            <div class="leader-os-detail-list-item">
+                                <span class="text-muted"><?= l('admin_leader_operating_system.leader.fraud_blocked_attempts') ?></span>
+                                <strong><?= nr((int) ($fraud_intelligence['blocked_attempts_total'] ?? 0)) ?></strong>
+                            </div>
+                            <div class="leader-os-detail-list-item">
                                 <span class="text-muted"><?= l('admin_leader_operating_system.leader.fraud_cluster_count') ?></span>
                                 <strong><?= nr((int) ($fraud_intelligence['clusters_total'] ?? 0)) ?></strong>
                             </div>
@@ -1228,6 +1236,35 @@
                     <?php endif ?>
                 </div>
             </div>
+
+            <?php if(!empty($fraud_intelligence['recent_attempts'])): ?>
+                <div class="leader-os-anomaly-item mt-3">
+                    <div class="leader-os-ai-title mb-2"><?= l('admin_leader_operating_system.leader.fraud_recent_attempts') ?></div>
+
+                    <?php foreach(($fraud_intelligence['recent_attempts'] ?? []) as $attempt): ?>
+                        <div class="border-bottom py-2">
+                            <div class="font-weight-bold"><?= htmlspecialchars((string) ($attempt['reason_title'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                            <div class="text-muted small mt-1"><?= htmlspecialchars((string) ($attempt['reason_text'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                            <div class="text-muted small mt-1">
+                                <?= l('admin_leader_operating_system.leader.fraud_recent_time') ?>:
+                                <strong class="text-white"><?= \Altum\Date::get($attempt['datetime'] ?? '', 2) ?></strong>
+                                <?php if(!empty($attempt['target_label'])): ?>
+                                    · <?= l('admin_leader_operating_system.leader.fraud_recent_target') ?>:
+                                    <strong class="text-white"><?= htmlspecialchars((string) ($attempt['target_label'] ?? ''), ENT_QUOTES, 'UTF-8') ?></strong>
+                                <?php endif ?>
+                                <?php if(!empty($attempt['source_type'])): ?>
+                                    · <?= l('admin_leader_operating_system.leader.fraud_recent_source') ?>:
+                                    <strong class="text-white"><?= htmlspecialchars((string) ($attempt['source_type'] ?? ''), ENT_QUOTES, 'UTF-8') ?></strong>
+                                <?php endif ?>
+                                <?php if(!empty($attempt['ip_address'])): ?>
+                                    · IP:
+                                    <strong class="text-white"><?= htmlspecialchars((string) ($attempt['ip_address'] ?? ''), ENT_QUOTES, 'UTF-8') ?></strong>
+                                <?php endif ?>
+                            </div>
+                        </div>
+                    <?php endforeach ?>
+                </div>
+            <?php endif ?>
         </div>
     </div>
     <!-- /Custom code: FC-2026-03-31 -->

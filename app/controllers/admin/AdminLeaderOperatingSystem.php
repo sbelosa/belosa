@@ -693,6 +693,126 @@ class AdminLeaderOperatingSystem extends Controller {
     }
     /* /Custom code: FC-2026-03-31 */
 
+    /* Custom code: FC-2026-04-01: LOS overview suspicious Forever click collaborators */
+    private function get_suspicious_click_overview_payload(array $rows, string $period_key): array {
+        $retention_days = function_exists('fc_get_forever_click_integrity_retention_days') ? fc_get_forever_click_integrity_retention_days() : 30;
+        $effective_period_days = min($this->get_period_days($period_key), $retention_days);
+        $period_start_datetime = $this->get_period_start_datetime($effective_period_days);
+
+        $payload = [
+            'retention_days' => $retention_days,
+            'effective_period_days' => $effective_period_days,
+            'totals' => [
+                'affected_collaborators' => 0,
+                'blocked_attempts_total' => 0,
+                'groups_total' => 0,
+            ],
+            'rows' => [],
+        ];
+
+        if(empty($rows) || !function_exists('fc_ensure_forever_click_integrity_tables')) {
+            return $payload;
+        }
+
+        fc_ensure_forever_click_integrity_tables();
+
+        $row_map = [];
+        foreach($rows as $row) {
+            $row_map[(int) ($row['user_id'] ?? 0)] = $row;
+        }
+
+        $user_ids = array_keys($row_map);
+        if(empty($user_ids)) {
+            return $payload;
+        }
+
+        $user_ids_sql = implode(',', array_map(static fn($user_id) => (int) $user_id, $user_ids));
+        $suspicious_result = database()->query("SELECT
+            `user_id`,
+            `reason_key`,
+            `reason_title`,
+            `reason_text`,
+            `target_signature`,
+            `target_label`,
+            `datetime`
+        FROM `forever_click_integrity_suspicious`
+        WHERE `datetime` >= '{$period_start_datetime}'
+          AND `user_id` IN ({$user_ids_sql})
+        ORDER BY `datetime` DESC");
+
+        $grouped_rows = [];
+
+        while($row = $suspicious_result->fetch_assoc()) {
+            $user_id = (int) ($row['user_id'] ?? 0);
+
+            if(!$user_id || !isset($row_map[$user_id])) {
+                continue;
+            }
+
+            if(!isset($grouped_rows[$user_id])) {
+                $grouped_rows[$user_id] = [
+                    'blocked_attempts_total' => 0,
+                    'groups' => [],
+                    'targets' => [],
+                    'latest_datetime' => (string) ($row['datetime'] ?? ''),
+                    'latest_reason_title' => (string) ($row['reason_title'] ?? ''),
+                    'latest_reason_text' => (string) ($row['reason_text'] ?? ''),
+                ];
+            }
+
+            $grouped_rows[$user_id]['blocked_attempts_total']++;
+            $grouped_rows[$user_id]['groups'][(string) (($row['reason_key'] ?? 'unknown') . '|' . ($row['target_signature'] ?? 'target'))] = true;
+            $grouped_rows[$user_id]['targets'][(string) ($row['target_label'] ?? '-')] = true;
+
+            if((string) ($row['datetime'] ?? '') >= $grouped_rows[$user_id]['latest_datetime']) {
+                $grouped_rows[$user_id]['latest_datetime'] = (string) ($row['datetime'] ?? '');
+                $grouped_rows[$user_id]['latest_reason_title'] = (string) ($row['reason_title'] ?? '');
+                $grouped_rows[$user_id]['latest_reason_text'] = (string) ($row['reason_text'] ?? '');
+            }
+        }
+
+        foreach($grouped_rows as $user_id => $suspicious_row) {
+            $base_row = $row_map[$user_id];
+
+            $payload['rows'][] = [
+                'user_id' => $user_id,
+                'name' => (string) ($base_row['name'] ?? l('global.unknown')),
+                'email' => (string) ($base_row['email'] ?? ''),
+                'detail_url' => (string) ($base_row['detail_url'] ?? ''),
+                'admin_user_url' => (string) ($base_row['admin_user_url'] ?? ''),
+                'status_label' => (string) ($base_row['status_label'] ?? ''),
+                'status_class' => (string) ($base_row['status_class'] ?? 'secondary'),
+                'ai_usage_stage_label' => (string) ($base_row['ai_usage_stage_label'] ?? ''),
+                'ai_usage_stage_class' => (string) ($base_row['ai_usage_stage_class'] ?? 'status-dark'),
+                'anomaly_stage_label' => (string) ($base_row['anomaly_stage_label'] ?? ''),
+                'anomaly_stage_class' => (string) ($base_row['anomaly_stage_class'] ?? 'status-info'),
+                'blocked_attempts_total' => (int) ($suspicious_row['blocked_attempts_total'] ?? 0),
+                'suspicious_groups_total' => count($suspicious_row['groups'] ?? []),
+                'targets_total' => count($suspicious_row['targets'] ?? []),
+                'last_suspicious_at' => (string) ($suspicious_row['latest_datetime'] ?? ''),
+                'top_reason_title' => (string) ($suspicious_row['latest_reason_title'] ?? ''),
+                'top_reason_text' => (string) ($suspicious_row['latest_reason_text'] ?? ''),
+            ];
+        }
+
+        usort($payload['rows'], static function($a, $b) {
+            return (($b['blocked_attempts_total'] ?? 0) <=> ($a['blocked_attempts_total'] ?? 0))
+                ?: (($b['suspicious_groups_total'] ?? 0) <=> ($a['suspicious_groups_total'] ?? 0))
+                ?: strcmp((string) ($b['last_suspicious_at'] ?? ''), (string) ($a['last_suspicious_at'] ?? ''));
+        });
+
+        $payload['rows'] = array_slice($payload['rows'], 0, 8);
+        $payload['totals']['affected_collaborators'] = count($grouped_rows);
+
+        foreach($grouped_rows as $suspicious_row) {
+            $payload['totals']['blocked_attempts_total'] += (int) ($suspicious_row['blocked_attempts_total'] ?? 0);
+            $payload['totals']['groups_total'] += count($suspicious_row['groups'] ?? []);
+        }
+
+        return $payload;
+    }
+    /* /Custom code: FC-2026-04-01 */
+
     private function get_overview_payload(string $period_key, string $search_query, string $status_filter, string $ai_status_filter, string $anomaly_status_filter, string $sort_key, int $page): array {
         $period_days = $this->get_period_days($period_key);
         $period_start_datetime = $this->get_period_start_datetime($period_days);
@@ -882,6 +1002,8 @@ class AdminLeaderOperatingSystem extends Controller {
 
         $alert_rows = array_slice($alert_rows, 0, 8);
 
+        $suspicious_clicks = $this->get_suspicious_click_overview_payload($rows, $period_key);
+
         usort($rows, function($a, $b) use ($sort_key) {
             return match($sort_key) {
                 'shop_clicks' => ($b['forever_shop_clicks_period'] <=> $a['forever_shop_clicks_period']) ?: ($b['leader_os_score'] <=> $a['leader_os_score']),
@@ -910,6 +1032,7 @@ class AdminLeaderOperatingSystem extends Controller {
                 'totals' => $alerts_totals,
                 'rows' => $alert_rows,
             ],
+            'suspicious_clicks' => $suspicious_clicks,
             'rows' => $rows,
             'pagination' => [
                 'page' => $page,

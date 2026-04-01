@@ -565,6 +565,77 @@
 
         <div class="d-flex justify-content-between align-items-center flex-wrap mb-3">
             <div>
+                <div class="text-uppercase small text-muted mb-2"><?= l('admin_leader_operating_system.section_suspicious_clicks') ?></div>
+                <h2 class="h4 mb-1"><?= l('admin_leader_operating_system.suspicious_clicks_title') ?></h2>
+                <p class="text-muted mb-0"><?= sprintf(l('admin_leader_operating_system.suspicious_clicks_text'), nr((int) ($data->overview['suspicious_clicks']['effective_period_days'] ?? 30))) ?></p>
+                <div class="leader-os-inline-note mt-3"><?= sprintf(l('admin_leader_operating_system.suspicious_clicks_helper'), nr((int) ($data->overview['suspicious_clicks']['retention_days'] ?? 30))) ?></div>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-12 col-lg-4 mb-3">
+                <div class="leader-os-kpi">
+                    <div class="text-muted small mb-1"><?= l('admin_leader_operating_system.suspicious_clicks_affected') ?></div>
+                    <div class="h2 mb-0"><?= nr((int) ($data->overview['suspicious_clicks']['totals']['affected_collaborators'] ?? 0)) ?></div>
+                </div>
+            </div>
+
+            <div class="col-12 col-lg-4 mb-3">
+                <div class="leader-os-kpi">
+                    <div class="text-muted small mb-1"><?= l('admin_leader_operating_system.suspicious_clicks_blocked') ?></div>
+                    <div class="h2 mb-0"><?= nr((int) ($data->overview['suspicious_clicks']['totals']['blocked_attempts_total'] ?? 0)) ?></div>
+                </div>
+            </div>
+
+            <div class="col-12 col-lg-4 mb-3">
+                <div class="leader-os-kpi">
+                    <div class="text-muted small mb-1"><?= l('admin_leader_operating_system.suspicious_clicks_groups') ?></div>
+                    <div class="h2 mb-0"><?= nr((int) ($data->overview['suspicious_clicks']['totals']['groups_total'] ?? 0)) ?></div>
+                </div>
+            </div>
+        </div>
+
+        <?php if(empty($data->overview['suspicious_clicks']['rows'])): ?>
+            <div class="leader-os-panel mb-4">
+                <p class="text-muted mb-0"><?= l('admin_leader_operating_system.suspicious_clicks_empty') ?></p>
+            </div>
+        <?php else: ?>
+            <div class="leader-os-queue-grid mb-4">
+                <?php foreach(($data->overview['suspicious_clicks']['rows'] ?? []) as $suspicious_row): ?>
+                    <div class="leader-os-queue-card">
+                        <div class="d-flex justify-content-between align-items-start mb-2" style="gap:.75rem;">
+                            <div>
+                                <div class="font-weight-bold"><?= htmlspecialchars((string) ($suspicious_row['name'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                                <div class="text-muted small"><?= htmlspecialchars((string) ($suspicious_row['email'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                                <div class="leader-os-ai-usage">
+                                    <span class="leader-os-status-badge leader-os-ai-usage-main <?= $suspicious_row['ai_usage_stage_class'] ?>"><?= htmlspecialchars((string) ($suspicious_row['ai_usage_stage_label'] ?? ''), ENT_QUOTES, 'UTF-8') ?></span>
+                                    <span class="leader-os-status-badge leader-os-anomaly-badge <?= $suspicious_row['anomaly_stage_class'] ?>"><?= htmlspecialchars((string) ($suspicious_row['anomaly_stage_label'] ?? ''), ENT_QUOTES, 'UTF-8') ?></span>
+                                </div>
+                            </div>
+                            <span class="leader-os-status-badge status-<?= htmlspecialchars((string) ($suspicious_row['status_class'] ?? 'secondary'), ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars((string) ($suspicious_row['status_label'] ?? ''), ENT_QUOTES, 'UTF-8') ?></span>
+                        </div>
+
+                        <div class="leader-os-queue-reason mb-2"><?= htmlspecialchars((string) ($suspicious_row['top_reason_title'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                        <div class="text-muted small mb-2"><?= htmlspecialchars((string) ($suspicious_row['top_reason_text'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+
+                        <div class="leader-os-queue-meta">
+                            <div class="text-muted small"><?= l('admin_leader_operating_system.suspicious_clicks_blocked') ?>: <strong class="text-white"><?= nr((int) ($suspicious_row['blocked_attempts_total'] ?? 0)) ?></strong></div>
+                            <div class="text-muted small"><?= l('admin_leader_operating_system.suspicious_clicks_groups') ?>: <strong class="text-white"><?= nr((int) ($suspicious_row['suspicious_groups_total'] ?? 0)) ?></strong></div>
+                            <div class="text-muted small"><?= l('admin_leader_operating_system.suspicious_clicks_targets') ?>: <strong class="text-white"><?= nr((int) ($suspicious_row['targets_total'] ?? 0)) ?></strong></div>
+                            <div class="text-muted small"><?= l('admin_leader_operating_system.suspicious_clicks_last') ?>: <strong class="text-white"><?= !empty($suspicious_row['last_suspicious_at']) ? \Altum\Date::get($suspicious_row['last_suspicious_at'], 2) : '-' ?></strong></div>
+                        </div>
+
+                        <div class="mt-3 d-flex flex-column">
+                            <a href="<?= $suspicious_row['detail_url'] ?>" class="leader-os-link"><?= l('admin_leader_operating_system.queue_open') ?></a>
+                            <a href="<?= $suspicious_row['admin_user_url'] ?>" class="leader-os-link text-muted"><?= l('admin_index.biolink_qualified_watch.open_profile') ?></a>
+                        </div>
+                    </div>
+                <?php endforeach ?>
+            </div>
+        <?php endif ?>
+
+        <div class="d-flex justify-content-between align-items-center flex-wrap mb-3">
+            <div>
                 <div class="text-uppercase small text-muted mb-2"><?= l('admin_leader_operating_system.section_roster') ?></div>
                 <h2 class="h4 mb-1"><?= l('admin_leader_operating_system.roster_title') ?></h2>
                 <p class="text-muted mb-0">

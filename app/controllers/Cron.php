@@ -152,9 +152,17 @@ class Cron extends Controller {
         }
 
         fc_cleanup_funnel_analytics_data();
+        if(function_exists('fc_cleanup_forever_click_integrity_data')) {
+            fc_cleanup_forever_click_integrity_data();
+        }
 
         if(DEBUG) {
-            echo sprintf('leader_operating_system_fraud_cleanup() -> pruned funnel traces older than %s days and fraud summaries older than %s days', fc_get_los_fraud_event_retention_days(), fc_get_los_fraud_summary_retention_days());
+            echo sprintf(
+                'leader_operating_system_fraud_cleanup() -> pruned funnel traces older than %s days, fraud summaries older than %s days, and Forever click integrity traces older than %s days',
+                fc_get_los_fraud_event_retention_days(),
+                fc_get_los_fraud_summary_retention_days(),
+                function_exists('fc_get_forever_click_integrity_retention_days') ? fc_get_forever_click_integrity_retention_days() : 30
+            );
         }
     }
     /* /Custom code: FC-2026-03-31 */
