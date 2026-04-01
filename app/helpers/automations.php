@@ -247,6 +247,37 @@ function fc_ensure_funnel_analytics_tables(): void {
 }
 
 /* Custom code: FC-2026-03-31: Phase 6 privacy-safe fraud helpers */
+function fc_get_privacy_hash_salt(): string {
+    if(defined('LOS_PRIVACY_HASH_SALT')) {
+        return (string) constant('LOS_PRIVACY_HASH_SALT');
+    }
+
+    static $fallback_salt = null;
+
+    if($fallback_salt !== null) {
+        return $fallback_salt;
+    }
+
+    $parts = [
+        defined('SITE_URL') ? (string) constant('SITE_URL') : '',
+        defined('URL') ? (string) constant('URL') : '',
+        defined('APP_PATH') ? (string) constant('APP_PATH') : __FILE__,
+        defined('DATABASE_NAME') ? (string) constant('DATABASE_NAME') : '',
+    ];
+
+    $seed = implode('|', array_filter($parts, static function($value) {
+        return trim((string) $value) !== '';
+    }));
+
+    if($seed === '') {
+        $seed = __FILE__;
+    }
+
+    $fallback_salt = 'los-fallback|' . hash('sha256', $seed);
+
+    return $fallback_salt;
+}
+
 function fc_get_privacy_hash(string $value): ?string {
     $value = trim($value);
 
@@ -254,7 +285,7 @@ function fc_get_privacy_hash(string $value): ?string {
         return null;
     }
 
-    return hash_hmac('sha256', $value, LOS_PRIVACY_HASH_SALT);
+    return hash_hmac('sha256', $value, fc_get_privacy_hash_salt());
 }
 
 function fc_get_funnel_ip_hash(): ?string {

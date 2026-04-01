@@ -53,6 +53,26 @@ require_once APP_PATH . 'includes/product.php';
 /* Config file */
 require_once ROOT_PATH . 'config.php';
 
+/* Custom code: FC-2026-04-01: bootstrap fallback for LOS privacy hashing on partial deploys */
+if(!defined('LOS_PRIVACY_HASH_SALT')) {
+    $los_privacy_seed_parts = [
+        defined('SITE_URL') ? (string) SITE_URL : '',
+        defined('DATABASE_NAME') ? (string) DATABASE_NAME : '',
+        defined('DATABASE_PASSWORD') ? (string) DATABASE_PASSWORD : '',
+    ];
+
+    $los_privacy_seed = implode('|', array_filter($los_privacy_seed_parts, static function($value) {
+        return trim((string) $value) !== '';
+    }));
+
+    if($los_privacy_seed === '') {
+        $los_privacy_seed = ROOT_PATH;
+    }
+
+    define('LOS_PRIVACY_HASH_SALT', getenv('LOS_PRIVACY_HASH_SALT') ?: hash('sha256', $los_privacy_seed));
+}
+/* /Custom code: FC-2026-04-01 */
+
 /* Establish cookie / session on this path specifically */
 define('COOKIE_PATH', preg_replace('|https?://[^/]+|i', '', SITE_URL));
 
@@ -116,4 +136,3 @@ require_once APP_PATH . 'helpers/66uptime.php';
 
 /* Autoload for vendor */
 require_once ROOT_PATH . 'vendor/autoload.php';
-
