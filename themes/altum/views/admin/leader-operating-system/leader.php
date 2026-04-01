@@ -543,6 +543,27 @@
         padding-top: 0.7rem;
     }
 
+    .leader-os-score-metric-trigger {
+        appearance: none;
+        border: 0;
+        background: transparent;
+        padding: 0;
+        margin: 0;
+        color: #ecf3ff;
+        font: inherit;
+        font-weight: 700;
+        line-height: inherit;
+        cursor: pointer;
+        text-align: left;
+    }
+
+    .leader-os-score-metric-trigger:hover,
+    .leader-os-score-metric-trigger:focus {
+        color: #7cc8ff;
+        outline: none;
+        text-decoration: none;
+    }
+
     .leader-os-score-history-item {
         display: flex;
         justify-content: space-between;
@@ -972,7 +993,7 @@
                                 <strong>
                                     <button
                                         type="button"
-                                        class="btn btn-link p-0 text-white text-left leader-os-link"
+                                        class="leader-os-score-metric-trigger"
                                         data-toggle="modal"
                                         data-target="#leader-os-opportunity-modal"
                                     >
