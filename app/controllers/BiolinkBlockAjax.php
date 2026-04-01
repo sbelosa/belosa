@@ -53,7 +53,13 @@ class BiolinkBlockAjax extends Controller {
             return;
         }
 
-        Response::json(settings()->payment->is_enabled ? l('global.info_message.plan_feature_no_access') . ' <a href="' . url('plan') . '" class="font-weight-bold text-reset">' . l('global.info_message.plan_upgrade') . '.</a>' : l('global.info_message.plan_feature_no_access'), 'error');
+        $message = l('global.info_message.plan_feature_no_access');
+
+        if(settings()->payment->is_enabled) {
+            $message .= ' ' . l('global.info_message.plan_upgrade') . ': ' . url('plan');
+        }
+
+        Response::json($message, 'error');
     }
     /* /Custom code: FC-2026-04-01 */
 
