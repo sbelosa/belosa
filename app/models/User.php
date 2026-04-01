@@ -25,6 +25,10 @@ defined('ALTUMCODE') || die();
 
 class User extends Model {
 
+    /* Custom code: FC-2026-04-01: guard user cache refreshes from re-entering in the same request */
+    private static array $user_cache_refresh_in_progress = [];
+    /* /Custom code: FC-2026-04-01 */
+
     /* Custom code: FC-2026-03-04: trial cancellation analytics helpers */
     private function decode_extra($extra): object {
         if(is_string($extra)) {
@@ -86,6 +90,70 @@ class User extends Model {
 
         return $settings;
     }
+
+    /* Custom code: FC-2026-04-01: centralize user payload hydration to avoid cache refresh recursion */
+    private function hydrate_user_record($data) {
+        if(!$data) {
+            return null;
+        }
+
+        $current_plan_settings = $this->normalize_plan_settings($data->plan_settings ?? '{}');
+
+        if(isset($data->plan_id) && is_numeric($data->plan_id)) {
+            $plan = (new \Altum\Models\Plan())->get_plan_by_id((int) $data->plan_id);
+
+            if($plan && isset($plan->settings)) {
+                $synced_plan_settings = $this->normalize_plan_settings($plan->settings ?? '{}');
+
+                if(json_encode($current_plan_settings) !== json_encode($synced_plan_settings)) {
+                    db()->where('user_id', $data->user_id)->update('users', ['plan_settings' => json_encode($synced_plan_settings)]);
+                    $current_plan_settings = $synced_plan_settings;
+                }
+            }
+        }
+
+        $data->plan_settings = $current_plan_settings;
+
+        /* Parse billing details if existing */
+        $data->billing = json_decode($data->billing ?? '');
+
+        /* Parse preferences if existing */
+        $data->preferences = json_decode($data->preferences ?? '');
+
+        return $data;
+    }
+    /* /Custom code: FC-2026-04-01 */
+
+    /* Custom code: FC-2026-04-01: single source for forced user refreshes bypassing stale cache state */
+    private function get_fresh_user_by_user_id($user_id, bool $should_refresh_cache = true) {
+        if(isset(self::$user_cache_refresh_in_progress[$user_id])) {
+            return db()->where('user_id', $user_id)->getOne('users');
+        }
+
+        self::$user_cache_refresh_in_progress[$user_id] = true;
+
+        try {
+            $data = $this->hydrate_user_record(db()->where('user_id', $user_id)->getOne('users'));
+
+            if($should_refresh_cache) {
+                cache()->deleteItem('user?user_id=' . $user_id);
+                cache()->deleteItemsByTag('user_id=' . $user_id);
+
+                if($data) {
+                    $cache_instance = cache()->getItem('user?user_id=' . $user_id);
+
+                    cache()->save(
+                        $cache_instance->set($data)->expiresAfter(CACHE_DEFAULT_SECONDS)->addTag('user_id=' . $data->user_id)
+                    );
+                }
+            }
+
+            return $data;
+        } finally {
+            unset(self::$user_cache_refresh_in_progress[$user_id]);
+        }
+    }
+    /* /Custom code: FC-2026-04-01 */
 
     public function sync_links_with_plan($user_id) {
         $user = db()->where('user_id', $user_id)->getOne('users', ['user_id', 'plan_settings']);
@@ -228,31 +296,7 @@ class User extends Model {
             $data = db()->where('user_id', $user_id)->getOne('users');
 
             if($data) {
-
-                /* Custom code: FC-2026-03-06: enforce user plan settings sync with current plan definition */
-                $current_plan_settings = $this->normalize_plan_settings($data->plan_settings ?? '{}');
-
-                if(isset($data->plan_id) && is_numeric($data->plan_id)) {
-                    $plan = (new \Altum\Models\Plan())->get_plan_by_id((int) $data->plan_id);
-
-                    if($plan && isset($plan->settings)) {
-                        $synced_plan_settings = $this->normalize_plan_settings($plan->settings ?? '{}');
-
-                        if(json_encode($current_plan_settings) !== json_encode($synced_plan_settings)) {
-                            db()->where('user_id', $data->user_id)->update('users', ['plan_settings' => json_encode($synced_plan_settings)]);
-                            $current_plan_settings = $synced_plan_settings;
-                        }
-                    }
-                }
-
-                $data->plan_settings = $current_plan_settings;
-                /* /Custom code: FC-2026-03-06 */
-
-                /* Parse billing details if existing */
-                $data->billing = json_decode($data->billing ?? '');
-
-                /* Parse preferences if existing */
-                $data->preferences = json_decode($data->preferences ?? '');
+                $data = $this->hydrate_user_record($data);
 
                 /* Save to cache */
                 cache()->save(
@@ -265,6 +309,12 @@ class User extends Model {
             /* Get cache */
             $data = $cache_instance->get();
 
+            /* Custom code: FC-2026-04-01: recover from malformed cached payloads before touching nested fields */
+            if(!is_object($data) || !isset($data->user_id)) {
+                return $this->get_fresh_user_by_user_id($user_id);
+            }
+            /* /Custom code: FC-2026-04-01 */
+
             /* Custom code: FC-2026-03-06: revalidate cached user plan after plan changes */
             $latest_plan_row = db()->where('user_id', $user_id)->getOne('users', ['user_id', 'plan_id', 'plan_settings']);
 
@@ -272,8 +322,7 @@ class User extends Model {
                 $has_plan_id_changed = (string) ($latest_plan_row->plan_id ?? '') !== (string) ($data->plan_id ?? '');
 
                 if($has_plan_id_changed) {
-                    cache()->deleteItemsByTag('user_id=' . $user_id);
-                    return $this->get_user_by_user_id($user_id);
+                    return $this->get_fresh_user_by_user_id($user_id);
                 }
 
                 $latest_plan_settings = $this->normalize_plan_settings($latest_plan_row->plan_settings ?? '{}');
