@@ -781,6 +781,7 @@
 
 <?php $detail = $data->detail; ?>
 <?php $selected = $data->selected_payload; ?>
+<?php $opportunity_actions = $data->opportunity_actions ?? null; ?>
 <?php $ai_report = $data->ai_report; ?>
 <?php $app_structure = $detail['app_structure'] ?? []; ?>
 <?php $ai_plan_admin = $detail['ai_plan_admin'] ?? []; ?>
