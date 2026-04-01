@@ -2,6 +2,24 @@
 /* Custom code: FC-2026-03-18: live email automations helpers */
 defined('ALTUMCODE') || die();
 
+/* Custom code: FC-2026-04-01: LOS fraud retention fallbacks for partial deploy safety */
+function fc_get_los_fraud_event_retention_days(): int {
+    if(defined('LOS_FRAUD_EVENT_RETENTION_DAYS')) {
+        return max(1, (int) constant('LOS_FRAUD_EVENT_RETENTION_DAYS'));
+    }
+
+    return 30;
+}
+
+function fc_get_los_fraud_summary_retention_days(): int {
+    if(defined('LOS_FRAUD_SUMMARY_RETENTION_DAYS')) {
+        return max(1, (int) constant('LOS_FRAUD_SUMMARY_RETENTION_DAYS'));
+    }
+
+    return 90;
+}
+/* /Custom code: FC-2026-04-01 */
+
 /* Custom code: FC-2026-03-19: schema helpers for reusable mail analytics */
 function fc_table_has_column(string $table, string $column): bool {
     static $cache = [];
@@ -286,8 +304,8 @@ function fc_get_funnel_event_signature(array $payload): ?string {
 function fc_cleanup_funnel_analytics_data(): void {
     fc_ensure_funnel_analytics_tables();
 
-    $events_past_datetime = (new \DateTime())->modify('-' . LOS_FRAUD_EVENT_RETENTION_DAYS . ' days')->format('Y-m-d H:i:s');
-    $summaries_past_datetime = (new \DateTime())->modify('-' . LOS_FRAUD_SUMMARY_RETENTION_DAYS . ' days')->format('Y-m-d H:i:s');
+    $events_past_datetime = (new \DateTime())->modify('-' . fc_get_los_fraud_event_retention_days() . ' days')->format('Y-m-d H:i:s');
+    $summaries_past_datetime = (new \DateTime())->modify('-' . fc_get_los_fraud_summary_retention_days() . ' days')->format('Y-m-d H:i:s');
 
     database()->query("DELETE FROM `funnel_events` WHERE `datetime` < '{$events_past_datetime}'");
     database()->query("DELETE FROM `data` WHERE `type` = 'leader_os_fraud_cluster' AND `datetime` < '{$summaries_past_datetime}'");

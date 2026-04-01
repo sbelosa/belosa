@@ -413,7 +413,7 @@ class AdminLeaderOperatingSystemLeader extends Controller {
                 'level_key' => (string) ($fraud_intelligence['level_key'] ?? 'stable'),
                 'clusters_total' => (int) ($fraud_intelligence['clusters_total'] ?? 0),
                 'top_concern' => (string) ($fraud_intelligence['top_concern'] ?? ''),
-                'retention_days' => LOS_FRAUD_SUMMARY_RETENTION_DAYS,
+                'retention_days' => fc_get_los_fraud_summary_retention_days(),
                 'clusters' => array_map(static function($cluster) {
                     return [
                         'score' => (int) ($cluster['score'] ?? 0),
@@ -583,7 +583,7 @@ class AdminLeaderOperatingSystemLeader extends Controller {
             'level_class' => $this->build_fraud_signal_item($level_key, '', '', '', 0)['class'],
             'clusters_total' => count($clusters),
             'top_concern' => $clusters[0]['label'] ?? l('admin_leader_operating_system.leader.fraud_none'),
-            'retention_days' => LOS_FRAUD_EVENT_RETENTION_DAYS,
+            'retention_days' => fc_get_los_fraud_event_retention_days(),
             'clusters' => array_slice($clusters, 0, 6),
         ];
     }
@@ -3093,7 +3093,7 @@ class AdminLeaderOperatingSystemLeader extends Controller {
                 'level_label' => (string) ($fraud_intelligence['level_label'] ?? ''),
                 'top_concern' => (string) ($fraud_intelligence['top_concern'] ?? ''),
                 'clusters_total' => (int) ($fraud_intelligence['clusters_total'] ?? 0),
-                'retention_days' => (int) ($fraud_intelligence['retention_days'] ?? LOS_FRAUD_EVENT_RETENTION_DAYS),
+                'retention_days' => (int) ($fraud_intelligence['retention_days'] ?? fc_get_los_fraud_event_retention_days()),
                 'clusters' => array_map(static function($cluster) {
                     return [
                         'score' => (int) ($cluster['score'] ?? 0),

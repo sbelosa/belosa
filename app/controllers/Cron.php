@@ -154,7 +154,7 @@ class Cron extends Controller {
         fc_cleanup_funnel_analytics_data();
 
         if(DEBUG) {
-            echo sprintf('leader_operating_system_fraud_cleanup() -> pruned funnel traces older than %s days and fraud summaries older than %s days', LOS_FRAUD_EVENT_RETENTION_DAYS, LOS_FRAUD_SUMMARY_RETENTION_DAYS);
+            echo sprintf('leader_operating_system_fraud_cleanup() -> pruned funnel traces older than %s days and fraud summaries older than %s days', fc_get_los_fraud_event_retention_days(), fc_get_los_fraud_summary_retention_days());
         }
     }
     /* /Custom code: FC-2026-03-31 */
