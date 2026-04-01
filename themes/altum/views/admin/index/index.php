@@ -47,6 +47,19 @@ $dashboard_toggle_url = $data->dashboard_toggle_url ?? ($is_sensitive_dashboard 
         box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
     }
 
+    .private-dashboard-kpi.is-clickable {
+        cursor: pointer;
+        transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+    }
+
+    .private-dashboard-kpi.is-clickable:hover,
+    .private-dashboard-kpi.is-clickable:focus {
+        transform: translateY(-1px);
+        border-color: rgba(96, 165, 250, 0.34);
+        box-shadow: 0 0.85rem 2rem rgba(2, 6, 23, 0.18);
+        outline: none;
+    }
+
     .private-dashboard-kpi .text-muted,
     .private-dashboard-panel .text-muted,
     .private-dashboard-list-item .text-muted,
@@ -230,6 +243,29 @@ $dashboard_toggle_url = $data->dashboard_toggle_url ?? ($is_sensitive_dashboard 
     </div>
 </div>
 <!-- /Custom code: FC-2026-03-18 -->
+
+<?php if($is_sensitive_dashboard): ?>
+<div class="modal fade" id="sales_subscription_users_modal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <h5 class="modal-title mb-1" id="sales_subscription_users_modal_title"><?= l('admin_index.sales_subscriptions.modal_default_title') ?></h5>
+                    <div class="small text-muted" id="sales_subscription_users_modal_count"></div>
+                </div>
+                <button type="button" class="close" data-dismiss="modal" aria-label="<?= l('global.close') ?>">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="sales_subscription_users_modal_list" class="small text-muted">
+                    <span class="spinner-border spinner-border-sm" role="status"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<?php endif ?>
 
 <!-- Custom code: FC-2026-03-18: grouped admin dashboard layout -->
 <div class="d-flex flex-column">
@@ -517,32 +553,32 @@ $dashboard_toggle_url = $data->dashboard_toggle_url ?? ($is_sensitive_dashboard 
                     <div class="private-dashboard-kpi"><small class="text-muted d-block mb-1"><?= l('admin_index.sales_subscriptions.recurring_revenue_current_month') ?></small><div class="h5 mb-0"><span id="sales_recurring_revenue_current_month"><span class="spinner-border spinner-border-sm" role="status"></span></span> <small><?= settings()->payment->default_currency ?></small></div></div>
                 </div>
                 <div class="col-12 col-md-6 col-xl-3 p-2">
-                    <div class="private-dashboard-kpi"><small class="text-muted d-block mb-1"><?= l('admin_index.sales_subscriptions.active_paid_subscriptions') ?></small><div class="h5 mb-0" id="sales_active_paid_subscriptions"><span class="spinner-border spinner-border-sm" role="status"></span></div></div>
+                    <div class="private-dashboard-kpi is-clickable" tabindex="0" role="button" data-sales-subscriptions-modal-key="active_paid_subscriptions"><small class="text-muted d-block mb-1"><?= l('admin_index.sales_subscriptions.active_paid_subscriptions') ?></small><div class="h5 mb-0" id="sales_active_paid_subscriptions"><span class="spinner-border spinner-border-sm" role="status"></span></div></div>
                 </div>
                 <!-- Custom code: FC-2026-03-18: total active Forever Pro collaborators KPI card -->
                 <div class="col-12 col-md-6 col-xl-3 p-2">
-                    <div class="private-dashboard-kpi"><small class="text-muted d-block mb-1"><?= l('admin_index.sales_subscriptions.active_total_pro_collaborators') ?></small><div class="h5 mb-0" id="sales_active_total_pro_collaborators"><span class="spinner-border spinner-border-sm" role="status"></span></div></div>
+                    <div class="private-dashboard-kpi is-clickable" tabindex="0" role="button" data-sales-subscriptions-modal-key="active_total_pro_collaborators"><small class="text-muted d-block mb-1"><?= l('admin_index.sales_subscriptions.active_total_pro_collaborators') ?></small><div class="h5 mb-0" id="sales_active_total_pro_collaborators"><span class="spinner-border spinner-border-sm" role="status"></span></div></div>
                 </div>
                 <!-- /Custom code: FC-2026-03-18 -->
                 <!-- Custom code: FC-2026-03-18: cancelled subscriptions KPI card -->
                 <div class="col-12 col-md-6 col-xl-3 p-2">
-                    <div class="private-dashboard-kpi"><small class="text-muted d-block mb-1"><?= l('admin_index.sales_subscriptions.cancelled_billing_30d') ?></small><div class="h5 mb-0" id="sales_cancelled_billing_30d"><span class="spinner-border spinner-border-sm" role="status"></span></div></div>
+                    <div class="private-dashboard-kpi is-clickable" tabindex="0" role="button" data-sales-subscriptions-modal-key="cancelled_billing_30d"><small class="text-muted d-block mb-1"><?= l('admin_index.sales_subscriptions.cancelled_billing_30d') ?></small><div class="h5 mb-0" id="sales_cancelled_billing_30d"><span class="spinner-border spinner-border-sm" role="status"></span></div></div>
                 </div>
                 <!-- /Custom code: FC-2026-03-18 -->
             </div>
 
             <div class="row mb-2">
                 <div class="col-12 col-md-6 col-xl-3 p-2">
-                    <div class="private-dashboard-kpi"><small class="text-muted d-block mb-1"><?= l('admin_index.sales_subscriptions.new_subscriptions_30d') ?></small><div class="h5 mb-0" id="sales_new_subscriptions_30d"><span class="spinner-border spinner-border-sm" role="status"></span></div></div>
+                    <div class="private-dashboard-kpi is-clickable" tabindex="0" role="button" data-sales-subscriptions-modal-key="new_subscriptions_30d"><small class="text-muted d-block mb-1"><?= l('admin_index.sales_subscriptions.new_subscriptions_30d') ?></small><div class="h5 mb-0" id="sales_new_subscriptions_30d"><span class="spinner-border spinner-border-sm" role="status"></span></div></div>
                 </div>
                 <div class="col-12 col-md-6 col-xl-3 p-2">
-                    <div class="private-dashboard-kpi"><small class="text-muted d-block mb-1"><?= l('admin_index.sales_subscriptions.cancelled_subscriptions_30d') ?></small><div class="h5 mb-0" id="sales_cancelled_subscriptions_30d"><span class="spinner-border spinner-border-sm" role="status"></span></div></div>
+                    <div class="private-dashboard-kpi is-clickable" tabindex="0" role="button" data-sales-subscriptions-modal-key="cancelled_subscriptions_30d"><small class="text-muted d-block mb-1"><?= l('admin_index.sales_subscriptions.cancelled_subscriptions_30d') ?></small><div class="h5 mb-0" id="sales_cancelled_subscriptions_30d"><span class="spinner-border spinner-border-sm" role="status"></span></div></div>
                 </div>
                 <div class="col-12 col-md-6 col-xl-3 p-2">
-                    <div class="private-dashboard-kpi"><small class="text-muted d-block mb-1"><?= l('admin_index.sales_subscriptions.failed_payments_30d') ?></small><div class="h5 mb-0" id="sales_failed_payments_30d"><span class="spinner-border spinner-border-sm" role="status"></span></div></div>
+                    <div class="private-dashboard-kpi is-clickable" tabindex="0" role="button" data-sales-subscriptions-modal-key="failed_payments_30d"><small class="text-muted d-block mb-1"><?= l('admin_index.sales_subscriptions.failed_payments_30d') ?></small><div class="h5 mb-0" id="sales_failed_payments_30d"><span class="spinner-border spinner-border-sm" role="status"></span></div></div>
                 </div>
                 <div class="col-12 col-md-6 col-xl-3 p-2">
-                    <div class="private-dashboard-kpi"><small class="text-muted d-block mb-1"><?= l('admin_index.sales_subscriptions.plan_changes_30d') ?></small><div class="h5 mb-0" id="sales_plan_changes_30d"><span class="spinner-border spinner-border-sm" role="status"></span></div></div>
+                    <div class="private-dashboard-kpi is-clickable" tabindex="0" role="button" data-sales-subscriptions-modal-key="plan_changes_30d"><small class="text-muted d-block mb-1"><?= l('admin_index.sales_subscriptions.plan_changes_30d') ?></small><div class="h5 mb-0" id="sales_plan_changes_30d"><span class="spinner-border spinner-border-sm" role="status"></span></div></div>
                 </div>
             </div>
 
@@ -1888,6 +1924,7 @@ $dashboard_toggle_url = $data->dashboard_toggle_url ?? ($is_sensitive_dashboard 
     let funnels_analytics_filter = 'all';
     let sales_subscriptions_chart_payload = {};
     let sales_subscriptions_chart_period = 30;
+    let sales_subscriptions_modal_payload = {};
     let biolink_selected_collaborator = null;
     let biolink_search_timeout = null;
     let biolink_search_request_id = 0;
@@ -2246,6 +2283,7 @@ $dashboard_toggle_url = $data->dashboard_toggle_url ?? ($is_sensitive_dashboard 
         set_text_if_present('#sales_failed_payments_30d', nr(sales_subscriptions.failed_payments_30d ?? 0));
         set_text_if_present('#sales_plan_changes_30d', nr(sales_subscriptions.plan_changes_30d ?? 0));
         sales_subscriptions_chart_payload = sales_subscriptions.chart ?? {};
+        sales_subscriptions_modal_payload = sales_subscriptions.modal_lists ?? {};
 
         const at_risk_html = (sales_subscriptions.at_risk_trial_users ?? []).map(user => {
             const plan_expiration_date = user.plan_expiration_date ? new Date(user.plan_expiration_date.replace(' ', 'T')) : null;
@@ -2263,6 +2301,26 @@ $dashboard_toggle_url = $data->dashboard_toggle_url ?? ($is_sensitive_dashboard 
         set_html_if_present('#sales_at_risk_trial_users', at_risk_html || `<span class="text-muted"><?= l('global.no_data') ?></span>`);
 
         update_sales_subscriptions_chart();
+    };
+
+    const open_sales_subscription_users_modal = modal_key => {
+        const modal_payload = sales_subscriptions_modal_payload?.[modal_key] ?? null;
+        const modal_title = modal_payload?.title ?? '<?= l('admin_index.sales_subscriptions.modal_default_title') ?>';
+        const users = modal_payload?.users ?? [];
+
+        set_text_if_present('#sales_subscription_users_modal_title', modal_title);
+        set_text_if_present('#sales_subscription_users_modal_count', users.length ? `<?= l('admin_index.sales_subscriptions.modal_count_prefix') ?>: ${nr(users.length)}` : '');
+
+        const modal_html = users.map(user => `
+            <div class="border-bottom py-2">
+                <div><a href="${url}admin/user-view/${user.user_id}">${escape_html(user.name ?? '<?= l('global.unknown') ?>')}</a></div>
+                <div class="text-muted">${escape_html(user.email ?? '')}</div>
+                ${(user.meta ?? '') ? `<div class="text-muted">${escape_html(user.meta)}</div>` : ''}
+            </div>
+        `).join('');
+
+        set_html_if_present('#sales_subscription_users_modal_list', modal_html || `<span class="text-muted"><?= l('global.no_data') ?></span>`);
+        $('#sales_subscription_users_modal').modal('show');
     };
 
     /* Custom code: FC-2026-03-04: phase 5 action center rendering */
@@ -3548,6 +3606,18 @@ $dashboard_toggle_url = $data->dashboard_toggle_url ?? ($is_sensitive_dashboard 
         });
     });
     /* /Custom code: FC-2026-03-18 */
+
+    document.querySelectorAll('[data-sales-subscriptions-modal-key]').forEach(card => {
+        const open_modal = () => open_sales_subscription_users_modal(card.getAttribute('data-sales-subscriptions-modal-key'));
+
+        card.addEventListener('click', open_modal);
+        card.addEventListener('keydown', event => {
+            if(event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                open_modal();
+            }
+        });
+    });
 
     document.querySelector('#biolink_selection_reset')?.addEventListener('click', () => {
         biolink_selected_collaborator = null;

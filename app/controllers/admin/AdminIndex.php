@@ -1321,6 +1321,26 @@ class AdminIndex extends Controller {
         return $datetime >= $start_datetime && $datetime <= get_date();
     }
 
+    private function format_sales_subscription_user_item(object $user, array $extra = []): array {
+        $name = trim((string) ($user->name ?? ''));
+        $email = trim((string) ($user->email ?? ''));
+
+        return array_merge([
+            'user_id' => (int) ($user->user_id ?? 0),
+            'name' => $name !== '' ? $name : l('global.unknown'),
+            'email' => $email,
+            'meta' => null,
+        ], $extra);
+    }
+
+    private function sort_sales_subscription_user_items_by_name(array $items): array {
+        usort($items, function($a, $b) {
+            return strcasecmp((string) ($a['name'] ?? ''), (string) ($b['name'] ?? ''));
+        });
+
+        return $items;
+    }
+
     /* Custom code: FC-2026-03-05: normalize and aggregate traffic sources */
     private function normalize_traffic_source_label(string $source): string {
         $source = mb_strtolower(trim($source));
@@ -1907,7 +1927,7 @@ class AdminIndex extends Controller {
             ? "'" . implode("', '", array_map(fn($plan_id) => database()->real_escape_string($plan_id), $trial_plan_ids)) . "'"
             : "''";
 
-        $billing_markers_users = db()->where('extra', '%billing_trial_started_at%', 'LIKE')->get('users', null, ['user_id', 'extra']);
+        $billing_markers_users = db()->where('extra', '%billing_trial_started_at%', 'LIKE')->get('users', null, ['user_id', 'name', 'email', 'extra']);
 
         $chart_labels = [];
         $revenue_series = [];
@@ -2010,24 +2030,59 @@ class AdminIndex extends Controller {
         $recurring_revenue_current_month = (float) (db()->where('status', 'paid')->where('type', 'recurring')->where('datetime', $first_day_current_month, '>=')->getValue('payments', 'SUM(`total_amount_default_currency`)') ?? 0);
 
         $active_paid_subscriptions = (int) database()->query("SELECT COUNT(*) AS `total` FROM `users` WHERE `type` = 0 AND `status` = 1 AND `plan_id` = '5' AND `plan_expiration_date` >= '" . get_date() . "' AND (`plan_trial_done` = 0 OR `plan_trial_done` IS NULL)")->fetch_object()->total;
+        $active_paid_subscription_users = [];
+        $active_paid_subscription_users_result = database()->query("SELECT `user_id`, `name`, `email`, `plan_expiration_date` FROM `users` WHERE `type` = 0 AND `status` = 1 AND `plan_id` = '5' AND `plan_expiration_date` >= '" . get_date() . "' AND (`plan_trial_done` = 0 OR `plan_trial_done` IS NULL) ORDER BY `name` ASC");
+        while($row = $active_paid_subscription_users_result->fetch_object()) {
+            $meta = null;
+
+            if(!empty($row->plan_expiration_date)) {
+                $meta = l('admin_index.sales_subscriptions.meta_active_until') . ': ' . (new \DateTime($row->plan_expiration_date))->format('d.m.Y.');
+            }
+
+            $active_paid_subscription_users[] = $this->format_sales_subscription_user_item($row, [
+                'meta' => $meta,
+            ]);
+        }
         /* Custom code: FC-2026-03-18: total active Forever Pro collaborators KPI */
         $active_total_pro_collaborators = (int) database()->query("SELECT COUNT(*) AS `total` FROM `users` WHERE `type` = 0 AND `status` = 1 AND `plan_id` = '5' AND `plan_expiration_date` >= '" . get_date() . "'")->fetch_object()->total;
+        $active_total_pro_collaborator_users = [];
+        $active_total_pro_collaborator_users_result = database()->query("SELECT `user_id`, `name`, `email`, `plan_expiration_date`, `plan_trial_done` FROM `users` WHERE `type` = 0 AND `status` = 1 AND `plan_id` = '5' AND `plan_expiration_date` >= '" . get_date() . "' ORDER BY `name` ASC");
+        while($row = $active_total_pro_collaborator_users_result->fetch_object()) {
+            $meta_parts = [
+                (int) ($row->plan_trial_done ?? 0) === 1 ? l('admin_index.sales_subscriptions.meta_trial_active') : l('admin_index.sales_subscriptions.meta_paid_pro'),
+            ];
+
+            if(!empty($row->plan_expiration_date)) {
+                $meta_parts[] = l('admin_index.sales_subscriptions.meta_active_until') . ': ' . (new \DateTime($row->plan_expiration_date))->format('d.m.Y.');
+            }
+
+            $active_total_pro_collaborator_users[] = $this->format_sales_subscription_user_item($row, [
+                'meta' => implode(' · ', array_filter($meta_parts)),
+            ]);
+        }
         /* /Custom code: FC-2026-03-18 */
         /* Custom code: FC-2026-03-18: cancelled subscriptions in last 30 days KPI */
         $cancelled_billing_30d = 0;
-        $cancelled_billing_users = db()->where('extra', '%billing_subscription_cancelled_at%', 'LIKE')->get('users', null, ['user_id', 'extra']);
+        $cancelled_billing_30d_users = [];
+        $cancelled_billing_users = db()->where('extra', '%billing_subscription_cancelled_at%', 'LIKE')->get('users', null, ['user_id', 'name', 'email', 'extra']);
         foreach($cancelled_billing_users as $cancelled_billing_user) {
             $extra = $this->decode_user_extra($cancelled_billing_user->extra ?? null);
             $cancelled_at = $this->get_extra_datetime($extra, 'billing_subscription_cancelled_at');
 
             if($this->is_datetime_within_last_days($cancelled_at, 30)) {
                 $cancelled_billing_30d++;
+                $cancelled_billing_30d_users[] = $this->format_sales_subscription_user_item($cancelled_billing_user, [
+                    'meta' => l('admin_index.sales_subscriptions.meta_cancelled_at') . ': ' . (new \DateTime($cancelled_at))->format('d.m.Y. H:i'),
+                ]);
             }
         }
+        $cancelled_billing_30d_users = $this->sort_sales_subscription_user_items_by_name($cancelled_billing_30d_users);
         /* /Custom code: FC-2026-03-18 */
 
         $new_subscriptions_30d = 0;
         $cancelled_subscriptions_30d = 0;
+        $new_subscriptions_30d_users = [];
+        $cancelled_subscriptions_30d_users = [];
 
         foreach($billing_markers_users as $billing_user) {
             $extra = $this->decode_user_extra($billing_user->extra ?? null);
@@ -2035,21 +2090,58 @@ class AdminIndex extends Controller {
             $trial_started_at = $this->get_extra_datetime($extra, 'billing_trial_started_at');
             if($this->is_datetime_within_last_days($trial_started_at, 30)) {
                 $new_subscriptions_30d++;
+                $new_subscriptions_30d_users[] = $this->format_sales_subscription_user_item($billing_user, [
+                    'meta' => l('admin_index.sales_subscriptions.meta_trial_started_at') . ': ' . (new \DateTime($trial_started_at))->format('d.m.Y. H:i'),
+                ]);
             }
 
             $cancelled_during_trial = (int) ($extra->billing_subscription_cancelled_during_trial ?? 0) === 1;
             $cancelled_at = $this->get_extra_datetime($extra, 'billing_subscription_cancelled_at');
             if($cancelled_during_trial && $this->is_datetime_within_last_days($cancelled_at, 30)) {
                 $cancelled_subscriptions_30d++;
+                $cancelled_subscriptions_30d_users[] = $this->format_sales_subscription_user_item($billing_user, [
+                    'meta' => l('admin_index.sales_subscriptions.meta_cancelled_during_trial_at') . ': ' . (new \DateTime($cancelled_at))->format('d.m.Y. H:i'),
+                ]);
             }
         }
+        $new_subscriptions_30d_users = $this->sort_sales_subscription_user_items_by_name($new_subscriptions_30d_users);
+        $cancelled_subscriptions_30d_users = $this->sort_sales_subscription_user_items_by_name($cancelled_subscriptions_30d_users);
 
         $failed_payments_30d = (int) db()
             ->where('status', ['cancelled', 'pending'], 'IN')
             ->where('datetime', $thirty_days_start_datetime, '>=')
             ->getValue('payments', 'COUNT(*)');
+        $failed_payments_30d_users = [];
+        $failed_payments_30d_result = database()->query("
+            SELECT `users`.`user_id`, `users`.`name`, `users`.`email`, COUNT(*) AS `failed_total`, MAX(`payments`.`datetime`) AS `failed_datetime`
+            FROM `payments`
+            LEFT JOIN `users` ON `payments`.`user_id` = `users`.`user_id`
+            WHERE `payments`.`status` IN ('cancelled', 'pending') AND `payments`.`datetime` >= '{$thirty_days_start_datetime}' AND `users`.`type` = 0
+            GROUP BY `users`.`user_id`
+            ORDER BY `failed_datetime` DESC
+        ");
+        while($row = $failed_payments_30d_result->fetch_object()) {
+            $failed_payments_30d_users[] = $this->format_sales_subscription_user_item($row, [
+                'meta' => l('admin_index.sales_subscriptions.meta_failed_payments') . ': ' . (int) ($row->failed_total ?? 0) . ' · ' . l('admin_index.sales_subscriptions.meta_last_failed_payment') . ': ' . (new \DateTime($row->failed_datetime))->format('d.m.Y. H:i'),
+            ]);
+        }
 
         $plan_changes_30d = (int) database()->query("SELECT COUNT(*) AS total FROM (SELECT `user_id` FROM `payments` WHERE `status` = 'paid' AND `datetime` >= '{$thirty_days_start_datetime}' GROUP BY `user_id` HAVING COUNT(DISTINCT `plan_id`) > 1) AS `plan_changes`")->fetch_object()->total;
+        $plan_changes_30d_users = [];
+        $plan_changes_30d_result = database()->query("
+            SELECT `users`.`user_id`, `users`.`name`, `users`.`email`, COUNT(DISTINCT `payments`.`plan_id`) AS `plans_total`, MAX(`payments`.`datetime`) AS `latest_change_datetime`
+            FROM `payments`
+            LEFT JOIN `users` ON `payments`.`user_id` = `users`.`user_id`
+            WHERE `payments`.`status` = 'paid' AND `payments`.`datetime` >= '{$thirty_days_start_datetime}' AND `users`.`type` = 0
+            GROUP BY `users`.`user_id`
+            HAVING COUNT(DISTINCT `payments`.`plan_id`) > 1
+            ORDER BY `latest_change_datetime` DESC
+        ");
+        while($row = $plan_changes_30d_result->fetch_object()) {
+            $plan_changes_30d_users[] = $this->format_sales_subscription_user_item($row, [
+                'meta' => l('admin_index.sales_subscriptions.meta_changed_plans') . ': ' . (int) ($row->plans_total ?? 0) . ' · ' . l('admin_index.sales_subscriptions.meta_last_plan_change') . ': ' . (new \DateTime($row->latest_change_datetime))->format('d.m.Y. H:i'),
+            ]);
+        }
 
         $at_risk_trial_users = [];
         if(!empty($trial_plan_ids)) {
@@ -2089,6 +2181,36 @@ class AdminIndex extends Controller {
             'failed_payments_30d' => $failed_payments_30d,
             'plan_changes_30d' => $plan_changes_30d,
             'at_risk_trial_users' => $at_risk_trial_users,
+            'modal_lists' => [
+                'active_paid_subscriptions' => [
+                    'title' => l('admin_index.sales_subscriptions.active_paid_subscriptions'),
+                    'users' => $active_paid_subscription_users,
+                ],
+                'active_total_pro_collaborators' => [
+                    'title' => l('admin_index.sales_subscriptions.active_total_pro_collaborators'),
+                    'users' => $active_total_pro_collaborator_users,
+                ],
+                'cancelled_billing_30d' => [
+                    'title' => l('admin_index.sales_subscriptions.cancelled_billing_30d'),
+                    'users' => $cancelled_billing_30d_users,
+                ],
+                'new_subscriptions_30d' => [
+                    'title' => l('admin_index.sales_subscriptions.new_subscriptions_30d'),
+                    'users' => $new_subscriptions_30d_users,
+                ],
+                'cancelled_subscriptions_30d' => [
+                    'title' => l('admin_index.sales_subscriptions.cancelled_subscriptions_30d'),
+                    'users' => $cancelled_subscriptions_30d_users,
+                ],
+                'failed_payments_30d' => [
+                    'title' => l('admin_index.sales_subscriptions.failed_payments_30d'),
+                    'users' => $failed_payments_30d_users,
+                ],
+                'plan_changes_30d' => [
+                    'title' => l('admin_index.sales_subscriptions.plan_changes_30d'),
+                    'users' => $plan_changes_30d_users,
+                ],
+            ],
             /* Custom code: FC-2026-03-18: chart period data for 30/60/90 toggle */
             'chart' => [
                 'labels' => $sales_subscriptions_chart_labels,
