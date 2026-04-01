@@ -969,7 +969,16 @@
                             </div>
                             <div class="leader-os-score-snapshot-metric">
                                 <div class="text-muted small mb-1"><?= l('admin_leader_operating_system.leader.opportunity_score') ?></div>
-                                <strong><?= nr((int) ($latest_score_snapshot['opportunity_score'] ?? 0)) ?></strong>
+                                <strong>
+                                    <button
+                                        type="button"
+                                        class="btn btn-link p-0 text-white text-left leader-os-link"
+                                        data-toggle="modal"
+                                        data-target="#leader-os-opportunity-modal"
+                                    >
+                                        <?= nr((int) ($latest_score_snapshot['opportunity_score'] ?? 0)) ?>
+                                    </button>
+                                </strong>
                             </div>
                             <div class="leader-os-score-snapshot-metric">
                                 <div class="text-muted small mb-1"><?= l('admin_leader_operating_system.leader.score_snapshot_previous') ?></div>
@@ -2133,6 +2142,24 @@
         </div>
     </div>
 
+    <div class="modal fade leader-os-modal" id="leader-os-opportunity-modal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><?= l('admin_leader_operating_system.leader.opportunity_modal_title') ?></h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="<?= l('global.close') ?>">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="text-muted small mb-3" id="leader-os-opportunity-modal-intro"></div>
+                    <div id="leader-os-opportunity-modal-body" class="leader-os-modal-list"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <?php require THEME_PATH . 'views/partials/js_chart_defaults.php' ?>
 
     <?php ob_start() ?>
@@ -2151,6 +2178,7 @@
         'top_devices' => $selected['top_devices'],
         'top_browsers' => $selected['top_browsers'],
     ]) ?>;
+    const leaderOsOpportunityActions = <?= json_encode($opportunity_actions ?? ['intro' => '', 'items' => []]) ?>;
     const leaderOsOutreachForm = document.querySelector('.leader-os-outreach-form');
 
     const trendChartCanvas = document.getElementById('leader-os-detail-trend-chart');
@@ -2264,6 +2292,29 @@
         }
 
         $('#leader-os-breakdown-modal-body').html(html);
+    });
+
+    $('#leader-os-opportunity-modal').on('show.bs.modal', () => {
+        $('#leader-os-opportunity-modal-intro').text(leaderOsOpportunityActions.intro || '');
+
+        const items = leaderOsOpportunityActions.items || [];
+        let html = '';
+
+        if(!items.length) {
+            html = `<div class="text-muted small"><?= addslashes(l('admin_leader_operating_system.leader.opportunity_modal_empty')) ?></div>`;
+        } else {
+            html = items.map(item => `
+                <div class="leader-os-modal-item">
+                    <div>
+                        <div class="font-weight-bold mb-1">${item.label || ''}</div>
+                        <div class="text-muted small mb-2">${item.text || ''}</div>
+                        <div class="text-white small">${(item.actions || []).map(action => `• ${action}`).join('<br>')}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        $('#leader-os-opportunity-modal-body').html(html);
     });
 
     document.querySelectorAll('.leader-os-load-report').forEach(button => {

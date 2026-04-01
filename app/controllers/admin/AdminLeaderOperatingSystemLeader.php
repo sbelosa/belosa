@@ -1255,6 +1255,93 @@ class AdminLeaderOperatingSystemLeader extends Controller {
         return l('admin_leader_operating_system.leader.next_step.stable');
     }
 
+    /* Custom code: FC-2026-04-01: explain opportunity score with concrete improvement actions */
+    private function get_opportunity_actions_payload(array $payload): array {
+        $total_clicks = (int) ($payload['clicks_total_period'] ?? 0);
+        $shop_clicks = (int) ($payload['forever_shop_clicks_period'] ?? 0);
+        $registration_clicks = (int) ($payload['forever_registration_clicks_period'] ?? 0);
+        $shop_share = (float) ($payload['shop_share_percent'] ?? 0);
+        $registration_rate = (float) ($payload['registration_rate_percent'] ?? 0);
+        $growth = $payload['growth_percent'] ?? null;
+        $top_source = trim((string) ($payload['top_source_label'] ?? ''));
+        $top_country = trim((string) ($payload['top_country_label'] ?? ''));
+
+        $items = [];
+
+        if($total_clicks >= 20 && $shop_share < 25) {
+            $items[] = [
+                'label' => l('admin_leader_operating_system.leader.opportunity_action.more_shop_share.label'),
+                'text' => sprintf(
+                    l('admin_leader_operating_system.leader.opportunity_action.more_shop_share.text'),
+                    nr($total_clicks),
+                    nr($shop_share)
+                ),
+                'actions' => [
+                    l('admin_leader_operating_system.leader.opportunity_action.more_shop_share.step_1'),
+                    $top_source !== '' && $top_source !== l('admin_index.biolink_qualified_watch.source.direct')
+                        ? sprintf(l('admin_leader_operating_system.leader.opportunity_action.more_shop_share.step_2_source'), $top_source)
+                        : l('admin_leader_operating_system.leader.opportunity_action.more_shop_share.step_2'),
+                    l('admin_leader_operating_system.leader.opportunity_action.more_shop_share.step_3'),
+                ],
+            ];
+        }
+
+        if($shop_clicks >= 10 && $registration_clicks === 0) {
+            $items[] = [
+                'label' => l('admin_leader_operating_system.leader.opportunity_action.unlock_registrations.label'),
+                'text' => sprintf(
+                    l('admin_leader_operating_system.leader.opportunity_action.unlock_registrations.text'),
+                    nr($shop_clicks)
+                ),
+                'actions' => [
+                    l('admin_leader_operating_system.leader.opportunity_action.unlock_registrations.step_1'),
+                    l('admin_leader_operating_system.leader.opportunity_action.unlock_registrations.step_2'),
+                    $top_country !== '' && $top_country !== '-'
+                        ? sprintf(l('admin_leader_operating_system.leader.opportunity_action.unlock_registrations.step_3_country'), $top_country)
+                        : l('admin_leader_operating_system.leader.opportunity_action.unlock_registrations.step_3'),
+                ],
+            ];
+        }
+
+        if($growth !== null && $growth > 0 && $registration_rate < 10) {
+            $items[] = [
+                'label' => l('admin_leader_operating_system.leader.opportunity_action.raise_conversion_rate.label'),
+                'text' => sprintf(
+                    l('admin_leader_operating_system.leader.opportunity_action.raise_conversion_rate.text'),
+                    nr($growth),
+                    nr($registration_rate)
+                ),
+                'actions' => [
+                    l('admin_leader_operating_system.leader.opportunity_action.raise_conversion_rate.step_1'),
+                    l('admin_leader_operating_system.leader.opportunity_action.raise_conversion_rate.step_2'),
+                    l('admin_leader_operating_system.leader.opportunity_action.raise_conversion_rate.step_3'),
+                ],
+            ];
+        }
+
+        if(empty($items)) {
+            $items[] = [
+                'label' => l('admin_leader_operating_system.leader.opportunity_action.keep_momentum.label'),
+                'text' => l('admin_leader_operating_system.leader.opportunity_action.keep_momentum.text'),
+                'actions' => [
+                    l('admin_leader_operating_system.leader.opportunity_action.keep_momentum.step_1'),
+                    l('admin_leader_operating_system.leader.opportunity_action.keep_momentum.step_2'),
+                    l('admin_leader_operating_system.leader.opportunity_action.keep_momentum.step_3'),
+                ],
+            ];
+        }
+
+        return [
+            'score' => (int) ($payload['opportunity_score'] ?? 0),
+            'intro' => sprintf(
+                l('admin_leader_operating_system.leader.opportunity_modal_intro'),
+                nr((int) ($payload['opportunity_score'] ?? 0))
+            ),
+            'items' => $items,
+        ];
+    }
+    /* /Custom code: FC-2026-04-01 */
+
     private function get_period_payload(int $user_id, string $period_key, array $biolink_sets, int $shop_clicks_90d): array {
         $period_days = $this->get_period_days($period_key);
         $period_start_datetime = $this->get_period_start_datetime($period_days);
@@ -3398,6 +3485,7 @@ class AdminLeaderOperatingSystemLeader extends Controller {
             'overview_url' => url('admin/leader-operating-system?period=' . $selected_period),
             'detail' => $detail,
             'selected_payload' => $detail['periods'][$selected_period] ?? null,
+            'opportunity_actions' => ($detail && !empty($detail['periods'][$selected_period])) ? $this->get_opportunity_actions_payload($detail['periods'][$selected_period]) : null,
             /* Custom code: FC-2026-03-31: V2 cohort comparison payload */
             'cohort_comparison' => ($detail && !empty($detail['periods'][$selected_period])) ? $this->get_cohort_comparison_payload((int) $detail['user_id'], $detail['periods'][$selected_period], $selected_period) : null,
             /* /Custom code: FC-2026-03-31 */
