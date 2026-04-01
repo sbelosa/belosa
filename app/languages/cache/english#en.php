@@ -138,7 +138,7 @@ return [
 	'global.custom_js_help' => 'Your custom JS code to enhance the capability of your page.',
 	'global.custom_js_placeholder' => '<script>console.log(`Hello world`);</script>',
 	'global.info_message.user_plan_is_expired' => 'Your current plan has expired and your access is now limited.',
-	'global.info_message.plan_feature_no_access' => 'Your current plan does not allow you to access this feature.',
+	'global.info_message.plan_feature_no_access' => 'This option is currently available only on the PRO plan.',
 	'global.info_message.plan_upgrade' => 'Upgrade your plan 🔐',
 	'global.info_message.plan_feature_limit' => 'Your have exceeded the limits of your current plan.',
 	'global.info_message.plan_feature_limit_removal' => 'You must delete %1$s %2$s as you have exceeded your plan limits.',

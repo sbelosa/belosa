@@ -138,7 +138,7 @@ return [
 	'global.custom_js_help' => 'Vaš JS kod za proširenje funkcionalnosti stranice.',
 	'global.custom_js_placeholder' => '<script>console.log(`Hello world`);</script>',
 	'global.info_message.user_plan_is_expired' => 'Vaš trenutni plan je istekao i pristup je sada ograničen.',
-	'global.info_message.plan_feature_no_access' => 'Vaš trenutni plan ne omogućuje pristup ovoj funkciji.',
+	'global.info_message.plan_feature_no_access' => 'Ova opcija trenutno je dostupna samo u PRO paketu.',
 	'global.info_message.plan_upgrade' => 'Nadogradi plan 🔐',
 	'global.info_message.plan_feature_limit' => 'Prekoračili ste ograničenja trenutnog plana.',
 	'global.info_message.plan_feature_limit_removal' => 'Morate obrisati %1$s %2$s jer ste prekoračili ograničenja plana.',
