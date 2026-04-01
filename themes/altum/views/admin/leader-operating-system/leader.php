@@ -430,6 +430,27 @@
         margin-bottom: 1rem;
     }
 
+    .leader-os-phase4-history {
+        display: grid;
+        gap: 0.8rem;
+    }
+
+    .leader-os-phase4-history-item {
+        border: 1px solid rgba(148, 163, 184, 0.12);
+        border-radius: 0.95rem;
+        background: rgba(7, 12, 24, 0.62);
+        padding: 0.9rem 0.95rem;
+    }
+
+    .leader-os-phase4-history-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.65rem;
+        margin-top: 0.55rem;
+        font-size: 0.76rem;
+        color: rgba(191, 211, 238, 0.72);
+    }
+
     .leader-os-outreach-form .form-control {
         background: rgba(8, 13, 26, 0.72);
         border-color: rgba(148, 163, 184, 0.16);
@@ -743,6 +764,7 @@
 <?php $app_structure = $detail['app_structure'] ?? []; ?>
 <?php $ai_plan_admin = $detail['ai_plan_admin'] ?? []; ?>
 <?php $mentor_actions = $ai_plan_admin['mentor_actions'] ?? []; ?>
+<?php $mentor_history = $ai_plan_admin['mentor_history'] ?? []; ?>
 <?php $mentor_ai_guidance_active = !empty($mentor_actions['ai_guidance']); ?>
 <?php $los_outreach = $data->los_outreach ?? []; ?>
 <?php $report_history = $los_outreach['report_history'] ?? []; ?>
@@ -803,7 +825,7 @@
         $comparison_registrations[] = (int) ($detail['periods'][$comparison_period_key]['forever_registration_clicks_period'] ?? 0);
     }
     ?>
-    <div class="card leader-os-detail-shell mb-4">
+    <div class="card leader-os-detail-shell mb-4" id="leader-os-phase4">
         <div class="card-body">
             <div class="leader-os-detail-periods">
                 <?php foreach($data->period_options as $period_key): ?>
@@ -1861,6 +1883,28 @@
                                     <strong><?= htmlspecialchars((string) (($ai_plan_admin['profile']['active_channels_label'] ?? '-')), ENT_QUOTES, 'UTF-8') ?></strong>
                                 </div>
                             </div>
+
+                            <div class="leader-os-ai-title mt-3"><?= l('admin_leader_operating_system.leader.ai_plan_history_title') ?></div>
+                            <div class="text-muted small mb-3"><?= l('admin_leader_operating_system.leader.ai_plan_history_text') ?></div>
+
+                            <?php if(empty($mentor_history)): ?>
+                                <div class="text-muted small mb-0"><?= l('admin_leader_operating_system.leader.ai_plan_history_empty') ?></div>
+                            <?php else: ?>
+                                <div class="leader-os-phase4-history">
+                                    <?php foreach($mentor_history as $history_item): ?>
+                                        <div class="leader-os-phase4-history-item">
+                                            <div class="font-weight-bold"><?= htmlspecialchars((string) ($history_item['summary'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                                            <?php if(!empty($history_item['details'])): ?>
+                                                <div class="text-muted small mt-2"><?= htmlspecialchars((string) ($history_item['details'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                                            <?php endif ?>
+                                            <div class="leader-os-phase4-history-meta">
+                                                <span><?= !empty($history_item['admin_name']) ? htmlspecialchars((string) $history_item['admin_name'], ENT_QUOTES, 'UTF-8') : 'Admin' ?></span>
+                                                <span><?= !empty($history_item['created_at']) ? \Altum\Date::get($history_item['created_at'], 2) : '-' ?></span>
+                                            </div>
+                                        </div>
+                                    <?php endforeach ?>
+                                </div>
+                            <?php endif ?>
                         <?php endif ?>
                     </div>
                 </div>

@@ -37,8 +37,10 @@ class AiPlan extends Controller {
         ];
     }
 
-    private function get_preferences_object() {
-        $preferences = $this->user->preferences ?? new \stdClass();
+    private function get_preferences_object($preferences = null) {
+        if($preferences === null) {
+            $preferences = $this->user->preferences ?? new \stdClass();
+        }
 
         if(is_string($preferences)) {
             $preferences = json_decode($preferences ?? '{}');
@@ -404,7 +406,7 @@ class AiPlan extends Controller {
     }
 
     private function get_mentor_ai_guidance($preferences): array {
-        $preferences = $this->get_preferences_object();
+        $preferences = $this->get_preferences_object($preferences);
         $coaching = $preferences->leader_ai_admin_coaching ?? null;
 
         if(is_array($coaching)) {

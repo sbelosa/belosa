@@ -169,7 +169,7 @@
                             >
                                 <?php if($key == 'custom_html_chatbot'): ?>
                                     <img
-                                        src="<?= SITE_URL . 'themes/altum/assets/images/sovica.png' ?>"
+                                        src="<?= SITE_URL . ASSETS_URL_PATH . 'images/sovica.png' ?>"
                                         alt=""
                                         class="mr-2"
                                         style="width: 28px; height: 28px; object-fit: contain;"

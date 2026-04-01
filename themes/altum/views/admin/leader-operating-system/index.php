@@ -269,6 +269,24 @@
         border-bottom: 0;
     }
 
+    .leader-os-coaching-list {
+        display: grid;
+        gap: 0.75rem;
+    }
+
+    .leader-os-coaching-item {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+    }
+
+    .leader-os-coaching-item:last-child {
+        padding-bottom: 0;
+        border-bottom: 0;
+    }
+
     .leader-os-pagination {
         display: flex;
         align-items: center;
@@ -522,6 +540,15 @@
                             <div class="text-muted small"><?= l('admin_leader_operating_system.queue_score') ?>: <strong class="text-white"><?= nr((int) ($queue_row['queue_priority_score'] ?? 0)) ?></strong></div>
                             <div class="text-muted small"><?= l('admin_leader_operating_system.queue_risk') ?>: <strong class="text-white"><?= nr((int) ($queue_row['risk_score'] ?? 0)) ?></strong></div>
                             <div class="text-muted small"><?= l('admin_leader_operating_system.queue_anomaly') ?>: <strong class="text-white"><?= nr((int) ($queue_row['anomaly_score'] ?? 0)) ?></strong></div>
+                            <?php if(!empty($queue_row['last_contacted_at'])): ?>
+                                <div class="text-muted small"><?= l('admin_leader_operating_system.queue_last_contact') ?>: <strong class="text-white"><?= \Altum\Date::get($queue_row['last_contacted_at'], 2) ?></strong></div>
+                            <?php endif ?>
+                            <?php if(!empty($queue_row['latest_mentor_event_summary'])): ?>
+                                <div class="text-muted small"><?= l('admin_leader_operating_system.queue_last_event') ?>: <strong class="text-white"><?= htmlspecialchars((string) $queue_row['latest_mentor_event_summary'], ENT_QUOTES, 'UTF-8') ?></strong></div>
+                            <?php endif ?>
+                            <?php if(!empty($queue_row['mentor_history_total'])): ?>
+                                <div class="text-muted small"><?= l('admin_leader_operating_system.queue_history_total') ?>: <strong class="text-white"><?= nr((int) $queue_row['mentor_history_total']) ?></strong></div>
+                            <?php endif ?>
                             <?php if(!empty($queue_row['mentor_next_action'])): ?>
                                 <div class="text-muted small"><?= l('admin_leader_operating_system.queue_next_action') ?>: <strong class="text-white"><?= htmlspecialchars((string) $queue_row['mentor_next_action'], ENT_QUOTES, 'UTF-8') ?></strong></div>
                             <?php endif ?>
@@ -775,6 +802,35 @@
                                 <div class="text-muted small"><?= htmlspecialchars((string) ($alert_row['label'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
                             </div>
                             <a href="<?= $alert_row['detail_url'] ?>" class="leader-os-link"><?= l('admin_leader_operating_system.queue_open') ?></a>
+                        </div>
+                    <?php endforeach ?>
+                </div>
+            <?php endif ?>
+        </div>
+
+        <div class="leader-os-panel mt-3">
+            <div class="d-flex justify-content-between align-items-center flex-wrap mb-3">
+                <div>
+                    <div class="font-weight-bold mb-1"><?= l('admin_leader_operating_system.recent_coaching_title') ?></div>
+                    <div class="text-muted small"><?= l('admin_leader_operating_system.recent_coaching_text') ?></div>
+                </div>
+            </div>
+
+            <?php if(empty($data->overview['recent_coaching_rows'])): ?>
+                <div class="text-muted small mb-0"><?= l('admin_leader_operating_system.recent_coaching_empty') ?></div>
+            <?php else: ?>
+                <div class="leader-os-coaching-list">
+                    <?php foreach($data->overview['recent_coaching_rows'] as $coaching_row): ?>
+                        <div class="leader-os-coaching-item">
+                            <div>
+                                <div class="font-weight-bold"><?= htmlspecialchars((string) ($coaching_row['name'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                                <div class="text-muted small"><?= htmlspecialchars((string) ($coaching_row['latest_mentor_event_summary'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                                <div class="text-muted small">
+                                    <?= !empty($coaching_row['latest_mentor_event_admin']) ? htmlspecialchars((string) ($coaching_row['latest_mentor_event_admin'] ?? ''), ENT_QUOTES, 'UTF-8') . ' · ' : '' ?>
+                                    <?= !empty($coaching_row['latest_mentor_event_at']) ? \Altum\Date::get($coaching_row['latest_mentor_event_at'], 2) : '-' ?>
+                                </div>
+                            </div>
+                            <a href="<?= $coaching_row['detail_url'] ?>#leader-os-phase4" class="leader-os-link"><?= l('admin_leader_operating_system.queue_open') ?></a>
                         </div>
                     <?php endforeach ?>
                 </div>

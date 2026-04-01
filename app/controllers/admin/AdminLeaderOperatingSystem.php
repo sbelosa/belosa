@@ -367,6 +367,7 @@ class AdminLeaderOperatingSystem extends Controller {
         $outcomes = $preferences->leader_ai_weekly_outcomes ?? [];
         $plans = $preferences->leader_ai_weekly_plans ?? [];
         $mentor_actions = $preferences->leader_ai_admin_coaching ?? null;
+        $mentor_history = $this->get_ai_plan_mentor_history($preferences);
 
         if(is_object($profile)) {
             $profile = (array) $profile;
@@ -420,6 +421,18 @@ class AdminLeaderOperatingSystem extends Controller {
             }
         }
 
+        $days_since_last_contact = null;
+        if(!empty($mentor_actions['last_contacted_at'])) {
+            try {
+                $last_contact_date = new \DateTimeImmutable((string) $mentor_actions['last_contacted_at']);
+                $days_since_last_contact = (int) $last_contact_date->diff(new \DateTimeImmutable())->format('%a');
+            } catch(\Throwable $exception) {
+                $days_since_last_contact = null;
+            }
+        }
+
+        $latest_mentor_event = $mentor_history[0] ?? [];
+
         $overview_context = [
             'has_profile' => !empty($profile['primary_goal']),
             'has_checkin' => !empty($latest_checkin),
@@ -432,11 +445,60 @@ class AdminLeaderOperatingSystem extends Controller {
             'mentor_status' => $mentor_status,
             'has_ai_guidance' => trim((string) ($mentor_actions['ai_guidance'] ?? '')) !== '',
             'mentor_next_action' => trim((string) ($mentor_actions['next_action'] ?? '')),
+            'last_contacted_at' => $mentor_actions['last_contacted_at'] ?? null,
+            'days_since_last_contact' => $days_since_last_contact,
+            'mentor_history_total' => count($mentor_history),
+            'latest_mentor_event_summary' => trim((string) ($latest_mentor_event['summary'] ?? '')),
+            'latest_mentor_event_at' => $latest_mentor_event['created_at'] ?? null,
+            'latest_mentor_event_admin' => trim((string) ($latest_mentor_event['admin_name'] ?? '')),
         ];
 
         /* Custom code: FC-2026-03-31: LOS overview AI usage payload */
         return array_merge($overview_context, $this->get_ai_usage_payload($overview_context));
         /* /Custom code: FC-2026-03-31 */
+    }
+
+    private function get_ai_plan_mentor_history($preferences): array {
+        $preferences = $this->get_preferences_object($preferences);
+        $history = $preferences->leader_ai_admin_history ?? [];
+
+        if(is_object($history)) {
+            $history = (array) $history;
+        }
+
+        if(!is_array($history)) {
+            return [];
+        }
+
+        $normalized = [];
+
+        foreach($history as $history_item) {
+            if(is_object($history_item)) {
+                $history_item = (array) $history_item;
+            }
+
+            if(!is_array($history_item)) {
+                continue;
+            }
+
+            $summary = trim((string) ($history_item['summary'] ?? ''));
+
+            if($summary === '') {
+                continue;
+            }
+
+            $normalized[] = [
+                'summary' => $summary,
+                'created_at' => $history_item['created_at'] ?? null,
+                'admin_name' => trim((string) ($history_item['admin_name'] ?? '')),
+            ];
+        }
+
+        usort($normalized, static function($a, $b) {
+            return strcmp((string) ($b['created_at'] ?? ''), (string) ($a['created_at'] ?? ''));
+        });
+
+        return $normalized;
     }
 
     /* Custom code: FC-2026-03-31: LOS overview AI usage payload */
@@ -499,7 +561,10 @@ class AdminLeaderOperatingSystem extends Controller {
         $reason = l('admin_leader_operating_system.queue_reason_monitor');
         $anomaly_score = (int) ($candidate['anomaly_score'] ?? 0);
 
-        if(!empty($candidate['needs_follow_up'])) {
+        if(!empty($candidate['needs_follow_up']) && (($candidate['days_since_last_contact'] ?? null) === null || (int) ($candidate['days_since_last_contact'] ?? 0) >= 7)) {
+            $score = 110;
+            $reason = l('admin_leader_operating_system.queue_reason_follow_up_stale');
+        } elseif(!empty($candidate['needs_follow_up'])) {
             $score = 100;
             $reason = l('admin_leader_operating_system.queue_reason_follow_up');
         } elseif($anomaly_score >= 55) {
@@ -538,6 +603,13 @@ class AdminLeaderOperatingSystem extends Controller {
             $alerts[] = [
                 'type' => 'manual_follow_up',
                 'label' => l('admin_leader_operating_system.alert.manual_follow_up'),
+            ];
+        }
+
+        if(!empty($candidate['needs_follow_up']) && (($candidate['days_since_last_contact'] ?? null) === null || (int) ($candidate['days_since_last_contact'] ?? 0) >= 7)) {
+            $alerts[] = [
+                'type' => 'stale_follow_up',
+                'label' => l('admin_leader_operating_system.alert.stale_follow_up'),
             ];
         }
 
@@ -767,6 +839,16 @@ class AdminLeaderOperatingSystem extends Controller {
 
         $queue_rows = array_slice($queue_rows, 0, 6);
 
+        $recent_coaching_rows = array_values(array_filter($rows, static function($row) {
+            return !empty($row['latest_mentor_event_at']);
+        }));
+
+        usort($recent_coaching_rows, static function($a, $b) {
+            return strcmp((string) ($b['latest_mentor_event_at'] ?? ''), (string) ($a['latest_mentor_event_at'] ?? ''));
+        });
+
+        $recent_coaching_rows = array_slice($recent_coaching_rows, 0, 8);
+
         $alerts_totals = [
             'manual_follow_up' => 0,
             'weekly_signal_gaps' => 0,
@@ -823,6 +905,7 @@ class AdminLeaderOperatingSystem extends Controller {
         return [
             'totals' => $totals,
             'queue_rows' => $queue_rows,
+            'recent_coaching_rows' => $recent_coaching_rows,
             'alerts' => [
                 'totals' => $alerts_totals,
                 'rows' => $alert_rows,

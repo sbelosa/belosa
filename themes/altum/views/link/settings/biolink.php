@@ -1062,7 +1062,7 @@
                                     <div class="col-1 mr-2 p-0 d-none d-lg-block">
                                         <?php if($row->type == 'custom_html_chatbot'): ?>
                                             <img
-                                                src="<?= SITE_URL . 'themes/altum/assets/images/sovica.png' ?>"
+                                                src="<?= SITE_URL . ASSETS_URL_PATH . 'images/sovica.png' ?>"
                                                 alt=""
                                                 data-toggle="tooltip"
                                                 title="<?= l('link.biolink.blocks.' . $row->type) ?>"

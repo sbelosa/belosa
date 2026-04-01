@@ -185,8 +185,8 @@ class AdminQrCode extends Controller {
         $text = preg_replace('/\s+/', ' ', mb_strtoupper(trim((string) $full_name)));
         $text_color = imagecolorallocate($canvas, 0, 0, 0);
         $font_candidates = [
-            ROOT_PATH . 'themes/altum/assets/fonts/Inter-Bold.ttf',
-            ROOT_PATH . 'themes/altum/assets/css/fonts/segoe-ui.ttf',
+            ASSETS_PATH . 'fonts/Inter-Bold.ttf',
+            ASSETS_PATH . 'css/fonts/segoe-ui.ttf',
             '/usr/share/fonts/truetype/dejavu/DejaVuSansCondensed-Bold.ttf',
             '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf',
         ];

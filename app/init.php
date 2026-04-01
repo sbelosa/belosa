@@ -16,14 +16,33 @@
 
 defined('ALTUMCODE') || die();
 define('ROOT_PATH', realpath(__DIR__ . '/..') . '/');
-const APP_PATH = ROOT_PATH . 'app/';
-const PLUGINS_PATH = ROOT_PATH . 'plugins/';
-const THEME_PATH = ROOT_PATH . 'themes/altum/';
-const THEME_URL_PATH = 'themes/altum/';
-const ASSETS_PATH = THEME_PATH . 'assets/';
-const ASSETS_URL_PATH = THEME_URL_PATH . 'assets/';
-const UPLOADS_PATH = ROOT_PATH . 'uploads/';
-const UPLOADS_URL_PATH = 'uploads/';
+
+/* Custom code: FC-2026-04-01: Resolve folder names safely on case-sensitive live environments */
+$resolve_root_directory_name = static function(array $candidates): string {
+    foreach($candidates as $candidate) {
+        if(is_dir(ROOT_PATH . $candidate)) {
+            return $candidate;
+        }
+    }
+
+    return $candidates[0];
+};
+
+$app_directory_name = $resolve_root_directory_name(['app', 'APP']);
+$plugins_directory_name = $resolve_root_directory_name(['plugins', 'Plugins']);
+$themes_directory_name = $resolve_root_directory_name(['themes', 'Themes']);
+$uploads_directory_name = $resolve_root_directory_name(['uploads', 'Uploads']);
+
+define('APP_PATH', ROOT_PATH . $app_directory_name . '/');
+define('PLUGINS_PATH', ROOT_PATH . $plugins_directory_name . '/');
+define('THEME_PATH', ROOT_PATH . $themes_directory_name . '/altum/');
+define('THEME_URL_PATH', $themes_directory_name . '/altum/');
+define('ASSETS_PATH', THEME_PATH . 'assets/');
+define('ASSETS_URL_PATH', THEME_URL_PATH . 'assets/');
+define('UPLOADS_PATH', ROOT_PATH . $uploads_directory_name . '/');
+define('UPLOADS_URL_PATH', $uploads_directory_name . '/');
+/* /Custom code: FC-2026-04-01 */
+
 const CACHE_DEFAULT_SECONDS = 2592000;
 
 /* Starting to include the required files */

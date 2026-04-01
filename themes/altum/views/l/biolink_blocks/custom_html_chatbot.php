@@ -4,7 +4,7 @@
 <?php
 $chatbot_html = (string) ($data->link->settings->html ?? '');
 $is_pets_chatbot = ($data->link->type ?? null) === 'custom_html_chatbot_pets';
-$chatbot_icon_url = SITE_URL . 'themes/altum/assets/images/sovica.png';
+$chatbot_icon_url = SITE_URL . ASSETS_URL_PATH . 'images/sovica.png';
 $chatbot_icon_fallback_url = SITE_URL . UPLOADS_URL_PATH . 'ai-chat/sovica.png';
 $chatbot_label = $is_pets_chatbot
     ? 'Chat podrška za kućne ljubimce'

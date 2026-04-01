@@ -2320,6 +2320,7 @@ class AdminLeaderOperatingSystemLeader extends Controller {
         $profile = $this->get_ai_plan_profile($preferences);
         $checkins = $this->get_ai_plan_checkins($preferences);
         $plans = $this->get_ai_plan_plans($preferences);
+        $mentor_history = $this->get_ai_plan_mentor_history($preferences);
         $latest_checkin = $checkins[0] ?? null;
         $previous_checkin = $checkins[1] ?? null;
         $latest_plan = $this->get_latest_matching_ai_plan($plans, $latest_checkin);
@@ -2367,6 +2368,9 @@ class AdminLeaderOperatingSystemLeader extends Controller {
             'plans_total' => count($plans),
             'days_since_last_checkin' => $days_since_last_checkin,
             'mentor_actions' => $this->get_ai_plan_mentor_actions($preferences),
+            'mentor_history' => array_slice($mentor_history, 0, 8),
+            'mentor_history_total' => count($mentor_history),
+            'latest_mentor_event' => $mentor_history[0] ?? null,
         ];
     }
 
@@ -2399,6 +2403,151 @@ class AdminLeaderOperatingSystemLeader extends Controller {
             'updated_at' => $actions['updated_at'] ?? null,
             'last_contacted_at' => $actions['last_contacted_at'] ?? null,
         ];
+    }
+
+    private function get_ai_plan_mentor_history($preferences): array {
+        $preferences = $this->get_preferences_object($preferences);
+        $history = $preferences->leader_ai_admin_history ?? [];
+
+        if(is_object($history)) {
+            $history = (array) $history;
+        }
+
+        if(!is_array($history)) {
+            return [];
+        }
+
+        $normalized = [];
+
+        foreach($history as $history_item) {
+            if(is_object($history_item)) {
+                $history_item = (array) $history_item;
+            }
+
+            if(!is_array($history_item)) {
+                continue;
+            }
+
+            $summary = trim((string) ($history_item['summary'] ?? ''));
+
+            if($summary === '') {
+                continue;
+            }
+
+            $normalized[] = [
+                'history_id' => trim((string) ($history_item['history_id'] ?? '')),
+                'event_key' => trim((string) ($history_item['event_key'] ?? 'update')),
+                'summary' => $summary,
+                'details' => trim((string) ($history_item['details'] ?? '')),
+                'created_at' => $history_item['created_at'] ?? null,
+                'admin_id' => (int) ($history_item['admin_id'] ?? 0),
+                'admin_name' => trim((string) ($history_item['admin_name'] ?? '')),
+            ];
+        }
+
+        usort($normalized, static function($a, $b) {
+            return strcmp((string) ($b['created_at'] ?? ''), (string) ($a['created_at'] ?? ''));
+        });
+
+        return $normalized;
+    }
+
+    private function get_ai_plan_mentor_admin_identity(): array {
+        $admin_name = trim((string) ($this->user->name ?? $this->user->email ?? 'Admin'));
+
+        return [
+            'admin_id' => (int) ($this->user->user_id ?? 0),
+            'admin_name' => $admin_name !== '' ? $admin_name : 'Admin',
+        ];
+    }
+
+    private function get_ai_plan_mentor_status_label(string $status): string {
+        $key = 'admin_leader_operating_system.leader.ai_plan_admin_status.' . $status;
+        $label = l($key);
+
+        return $label === $key ? ucfirst(str_replace('_', ' ', $status)) : $label;
+    }
+
+    private function build_ai_plan_mentor_history_change_parts(array $existing_actions, array $new_actions): array {
+        $parts = [];
+
+        if(($existing_actions['status'] ?? 'pending_contact') !== ($new_actions['status'] ?? 'pending_contact')) {
+            $parts[] = sprintf(
+                l('admin_leader_operating_system.leader.ai_plan_history_change_status'),
+                $this->get_ai_plan_mentor_status_label((string) ($existing_actions['status'] ?? 'pending_contact')),
+                $this->get_ai_plan_mentor_status_label((string) ($new_actions['status'] ?? 'pending_contact'))
+            );
+        }
+
+        if(trim((string) ($existing_actions['next_action'] ?? '')) !== trim((string) ($new_actions['next_action'] ?? ''))) {
+            $parts[] = l('admin_leader_operating_system.leader.ai_plan_history_change_next_action');
+        }
+
+        if(trim((string) ($existing_actions['mentor_note'] ?? '')) !== trim((string) ($new_actions['mentor_note'] ?? ''))) {
+            $parts[] = l('admin_leader_operating_system.leader.ai_plan_history_change_note');
+        }
+
+        if(trim((string) ($existing_actions['ai_guidance'] ?? '')) !== trim((string) ($new_actions['ai_guidance'] ?? ''))) {
+            $parts[] = l('admin_leader_operating_system.leader.ai_plan_history_change_guidance');
+        }
+
+        if((bool) ($existing_actions['needs_follow_up'] ?? false) !== (bool) ($new_actions['needs_follow_up'] ?? false)) {
+            $parts[] = l('admin_leader_operating_system.leader.ai_plan_history_change_follow_up');
+        }
+
+        if((bool) ($existing_actions['mentored_this_week'] ?? false) !== (bool) ($new_actions['mentored_this_week'] ?? false)) {
+            $parts[] = l('admin_leader_operating_system.leader.ai_plan_history_change_mentored');
+        }
+
+        return $parts;
+    }
+
+    private function build_ai_plan_mentor_history_entry(string $event_key, array $existing_actions, array $new_actions): ?array {
+        $identity = $this->get_ai_plan_mentor_admin_identity();
+        $change_parts = $this->build_ai_plan_mentor_history_change_parts($existing_actions, $new_actions);
+        $summary = '';
+
+        switch($event_key) {
+            case 'follow_up_enabled':
+                $summary = l('admin_leader_operating_system.leader.ai_plan_history_follow_up_enabled');
+                break;
+
+            case 'follow_up_removed':
+                $summary = l('admin_leader_operating_system.leader.ai_plan_history_follow_up_removed');
+                break;
+
+            case 'mentored_marked':
+                $summary = l('admin_leader_operating_system.leader.ai_plan_history_mentored_marked');
+                break;
+
+            case 'mentored_reset':
+                $summary = l('admin_leader_operating_system.leader.ai_plan_history_mentored_reset');
+                break;
+
+            default:
+                if(empty($change_parts)) {
+                    return null;
+                }
+
+                $summary = l('admin_leader_operating_system.leader.ai_plan_history_updated_actions');
+                break;
+        }
+
+        return [
+            'history_id' => $this->generate_los_outreach_id('los_coaching'),
+            'event_key' => $event_key,
+            'summary' => $summary,
+            'details' => implode(' | ', $change_parts),
+            'created_at' => get_date(),
+            'admin_id' => $identity['admin_id'],
+            'admin_name' => $identity['admin_name'],
+        ];
+    }
+
+    private function append_ai_plan_mentor_history(\stdClass $preferences, array $history_entry): void {
+        $history = $this->get_ai_plan_mentor_history($preferences);
+        array_unshift($history, $history_entry);
+        $preferences->leader_ai_admin_history = array_slice($history, 0, 24);
     }
 
     private function update_ai_plan_mentor_actions(int $user_id): void {
@@ -2435,7 +2584,7 @@ class AdminLeaderOperatingSystemLeader extends Controller {
             $mentored_this_week = false;
         }
 
-        $preferences->leader_ai_admin_coaching = (object) [
+        $new_actions = [
             'status' => $status,
             'needs_follow_up' => $needs_follow_up,
             'mentored_this_week' => $mentored_this_week,
@@ -2445,6 +2594,33 @@ class AdminLeaderOperatingSystemLeader extends Controller {
             'updated_at' => get_date(),
             'last_contacted_at' => $last_contacted_at,
         ];
+
+        $event_key = 'actions_updated';
+
+        if(isset($_POST['toggle_follow_up'])) {
+            $event_key = $needs_follow_up ? 'follow_up_enabled' : 'follow_up_removed';
+        } elseif(isset($_POST['mark_mentored_this_week'])) {
+            $event_key = 'mentored_marked';
+        } elseif(isset($_POST['reset_mentored_this_week'])) {
+            $event_key = 'mentored_reset';
+        }
+
+        $history_entry = $this->build_ai_plan_mentor_history_entry($event_key, $existing_actions, $new_actions);
+
+        $preferences->leader_ai_admin_coaching = (object) [
+            'status' => $new_actions['status'],
+            'needs_follow_up' => $new_actions['needs_follow_up'],
+            'mentored_this_week' => $new_actions['mentored_this_week'],
+            'mentor_note' => $new_actions['mentor_note'],
+            'ai_guidance' => $new_actions['ai_guidance'],
+            'next_action' => $new_actions['next_action'],
+            'updated_at' => $new_actions['updated_at'],
+            'last_contacted_at' => $new_actions['last_contacted_at'],
+        ];
+
+        if($history_entry) {
+            $this->append_ai_plan_mentor_history($preferences, $history_entry);
+        }
 
         $this->save_user_preferences($user_id, $preferences);
     }
