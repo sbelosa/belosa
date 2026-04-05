@@ -37,6 +37,7 @@ if(settings()->links->biolinks_is_enabled) {
 
 $features = array_merge($features, [
     'statistics',
+    'ai_growth_plan_is_enabled',
     'temporary_url_is_enabled',
     'cloaking_is_enabled',
     'app_linking_is_enabled',
@@ -66,4 +67,3 @@ if(\Altum\Plugin::is_active('pwa') && settings()->pwa->is_enabled) {
 }
 
 return $features;
-

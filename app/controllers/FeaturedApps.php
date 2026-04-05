@@ -203,12 +203,10 @@ class FeaturedApps extends Controller {
         $period_days = 30;
         $period_start_datetime = (new \DateTime())->modify('-' . ($period_days - 1) . ' days')->format('Y-m-d 00:00:00');
 
-        $forever_shop_block_types = [
-            'link_discount',
-            'link_forever_living_bih',
-            'link_forever_living_alb_kosovo',
-            'link_forever_living_albania_kosovo',
-        ];
+        $forever_shop_block_types = array_values(array_unique(array_merge(
+            \Altum\Link::get_monitored_forever_outbound_types(),
+            ['link_forever_living_albania_kosovo']
+        )));
         $forever_shop_block_types_sql = "'" . implode("','", $forever_shop_block_types) . "'";
 
         $featured_apps = [];

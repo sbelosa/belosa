@@ -23,6 +23,57 @@ defined('ALTUMCODE') || die();
 /* Custom code: FC-2026-03-08: admin feedback tickets module */
 class AdminFeedbackTickets extends Controller {
 
+    private function ensure_feedback_workflow_columns(): void {
+        static $is_checked = false;
+
+        if($is_checked || !$this->has_feedback_tables()) {
+            return;
+        }
+
+        $columns = [];
+        $result = database()->query("SHOW COLUMNS FROM `feedback_tickets`");
+
+        while($row = $result->fetch_assoc()) {
+            $columns[$row['Field']] = true;
+        }
+
+        if(!isset($columns['admin_last_replied_at'])) {
+            database()->query("ALTER TABLE `feedback_tickets` ADD `admin_last_replied_at` DATETIME NULL DEFAULT NULL AFTER `last_datetime`");
+        }
+
+        if(!isset($columns['user_last_read_at'])) {
+            database()->query("ALTER TABLE `feedback_tickets` ADD `user_last_read_at` DATETIME NULL DEFAULT NULL AFTER `admin_last_replied_at`");
+        }
+
+        if(!isset($columns['is_webinar_topic_suggestion'])) {
+            database()->query("ALTER TABLE `feedback_tickets` ADD `is_webinar_topic_suggestion` TINYINT(1) NOT NULL DEFAULT 0 AFTER `user_last_read_at`");
+        }
+
+        if(!isset($columns['is_webinar_topic_confirmed'])) {
+            database()->query("ALTER TABLE `feedback_tickets` ADD `is_webinar_topic_confirmed` TINYINT(1) NOT NULL DEFAULT 0 AFTER `is_webinar_topic_suggestion`");
+        }
+
+        $is_checked = true;
+    }
+
+    private function auto_close_read_answered_tickets(): void {
+        if(!$this->has_feedback_tables()) {
+            return;
+        }
+
+        $this->ensure_feedback_workflow_columns();
+
+        database()->query("
+            UPDATE `feedback_tickets`
+            SET `status` = 'closed'
+            WHERE `status` = 'answered'
+              AND `admin_last_replied_at` IS NOT NULL
+              AND `user_last_read_at` IS NOT NULL
+              AND `user_last_read_at` >= `admin_last_replied_at`
+              AND `user_last_read_at` <= DATE_SUB(NOW(), INTERVAL 1 DAY)
+        ");
+    }
+
     private function ensure_feedback_upload_directory_is_writable(): bool {
         $directory_path = \Altum\Uploads::get_full_path('feedback_tickets');
 
@@ -55,6 +106,9 @@ class AdminFeedbackTickets extends Controller {
             Alerts::add_error(sprintf(l('admin_feedback_tickets.alert.migration_missing'), 'baze/feedback_tickets_migration_2026-03-08.sql'));
             redirect('admin/');
         }
+
+        $this->ensure_feedback_workflow_columns();
+        $this->auto_close_read_answered_tickets();
         /* /Custom code: FC-2026-03-08 */
 
         $feedback_tickets = db()
@@ -82,6 +136,9 @@ class AdminFeedbackTickets extends Controller {
             Alerts::add_error(sprintf(l('admin_feedback_tickets.alert.migration_missing'), 'baze/feedback_tickets_migration_2026-03-08.sql'));
             redirect('admin/');
         }
+
+        $this->ensure_feedback_workflow_columns();
+        $this->auto_close_read_answered_tickets();
         /* /Custom code: FC-2026-03-08 */
 
         $feedback_ticket_id = isset($this->params[0]) ? (int) $this->params[0] : 0;
@@ -104,9 +161,36 @@ class AdminFeedbackTickets extends Controller {
             }
 
             if(($_POST['action_type'] ?? null) === 'close' && !Alerts::has_errors()) {
+                db()->insert('feedback_ticket_messages', [
+                    'feedback_ticket_id' => $feedback_ticket->feedback_ticket_id,
+                    'user_id' => $feedback_ticket->user_id,
+                    'admin_user_id' => $this->user->user_id,
+                    'is_admin_reply' => 1,
+                    'message' => 'Ticket je označen kao riješen. Ako trebaš dodatnu pomoć, slobodno odgovori na ovaj ticket i ponovno ćemo ga otvoriti.',
+                    'attachment' => null,
+                    'datetime' => get_date(),
+                ]);
+
                 db()->where('feedback_ticket_id', $feedback_ticket->feedback_ticket_id)->update('feedback_tickets', [
                     'status' => 'closed',
                     'last_datetime' => get_date(),
+                    'admin_last_replied_at' => get_date(),
+                    'user_last_read_at' => null,
+                ]);
+
+                db()->insert('internal_notifications', [
+                    'user_id' => $feedback_ticket->user_id,
+                    'for_who' => 'user',
+                    'from_who' => 'admin',
+                    'title' => 'Tvoj support ticket je riješen',
+                    'description' => sprintf('Ticket "%s" je označen kao riješen. Otvori ticket ako želiš provjeriti odgovor ili dodati novo pitanje.', (string) ($feedback_ticket->subject ?? '')),
+                    'url' => url('feedback-tickets/ticket/' . $feedback_ticket->feedback_ticket_id),
+                    'icon' => 'fas fa-check-circle',
+                    'datetime' => get_date(),
+                ]);
+
+                db()->where('user_id', $feedback_ticket->user_id)->update('users', [
+                    'has_pending_internal_notifications' => 1,
                 ]);
 
                 Alerts::add_success(l('admin_feedback_tickets.alert.closed'));
@@ -153,6 +237,8 @@ class AdminFeedbackTickets extends Controller {
                     db()->where('feedback_ticket_id', $feedback_ticket->feedback_ticket_id)->update('feedback_tickets', [
                         'status' => 'answered',
                         'last_datetime' => get_date(),
+                        'admin_last_replied_at' => get_date(),
+                        'user_last_read_at' => null,
                     ]);
 
                     db()->insert('internal_notifications', [

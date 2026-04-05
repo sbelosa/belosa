@@ -138,6 +138,16 @@ class Router {
             ],
             /* /Custom code: FC-2026-03-31 */
 
+            /* Custom code: FC-2026-04-01: standalone FCC app review page */
+            'ai-app-review' => [
+                'controller' => 'AiPlan',
+                'settings' => [
+                    'wrapper' => 'app_wrapper',
+                    'ads' => true,
+                ]
+            ],
+            /* /Custom code: FC-2026-04-01 */
+
             /* Custom code: FC-2026-03-31: tracked blog CTA redirect */
             'blog-click' => [
                 'controller' => 'BlogClick',

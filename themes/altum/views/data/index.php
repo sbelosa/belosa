@@ -8,14 +8,38 @@
             display: flex;
             flex-direction: column;
             gap: 1.25rem;
+            position: relative;
+        }
+
+        .fcc-contacts-shell::before {
+            content: '';
+            position: absolute;
+            inset: 4.8rem 0 auto;
+            height: 34rem;
+            border-radius: 34px;
+            background:
+                radial-gradient(circle at 14% 16%, rgba(70, 220, 214, 0.06) 0%, rgba(70, 220, 214, 0) 40%),
+                radial-gradient(circle at 82% 10%, rgba(61, 118, 255, 0.06) 0%, rgba(61, 118, 255, 0) 34%),
+                radial-gradient(circle at 46% 0%, rgba(34, 185, 129, 0.03) 0%, rgba(34, 185, 129, 0) 26%),
+                linear-gradient(180deg, rgba(12, 19, 33, 0.60) 0%, rgba(16, 16, 18, 0) 100%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .fcc-contacts-shell > * {
+            position: relative;
+            z-index: 1;
         }
 
         .fcc-contacts-header {
-            background: linear-gradient(180deg, rgba(19, 27, 29, 0.92) 0%, rgba(15, 21, 23, 0.98) 100%);
-            border: 1px solid rgba(127, 227, 217, 0.08);
+            background:
+                radial-gradient(circle at top left, rgba(71, 224, 213, 0.05) 0%, rgba(71, 224, 213, 0) 32%),
+                radial-gradient(circle at top right, rgba(69, 120, 255, 0.05) 0%, rgba(69, 120, 255, 0) 30%),
+                linear-gradient(180deg, rgba(16, 26, 45, 0.97) 0%, rgba(11, 16, 28, 0.99) 100%);
+            border: 1px solid rgba(101, 220, 232, 0.08);
             border-radius: 22px;
             padding: 1.35rem 1.4rem;
-            box-shadow: 0 18px 40px rgba(0, 0, 0, 0.18);
+            box-shadow: 0 24px 50px rgba(4, 10, 24, 0.30);
         }
 
         .fcc-contacts-heading {
@@ -32,9 +56,9 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            background: linear-gradient(135deg, rgba(191, 246, 239, 0.18) 0%, rgba(142, 233, 222, 0.3) 100%);
-            color: #9ef1e7;
-            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+            background: linear-gradient(135deg, rgba(76, 226, 214, 0.18) 0%, rgba(48, 105, 235, 0.26) 100%);
+            color: #9ff4ec;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.10), 0 16px 30px rgba(9, 20, 46, 0.28);
             flex-shrink: 0;
         }
 
@@ -42,12 +66,12 @@
             margin: 0;
             font-size: 1.15rem;
             font-weight: 700;
-            color: #f5fbfb;
+            color: #f4f8ff;
         }
 
         .fcc-contacts-heading-copy p {
             margin: 0.35rem 0 0;
-            color: #8ea4a6;
+            color: #b7c8dd;
             font-size: 0.92rem;
         }
 
@@ -81,16 +105,18 @@
         }
 
         .fcc-contacts-summary-card {
-            background: linear-gradient(180deg, rgba(19, 21, 24, 0.98) 0%, rgba(16, 18, 20, 0.98) 100%);
-            border: 1px solid rgba(127, 227, 217, 0.07);
+            background:
+                radial-gradient(circle at top left, rgba(72, 220, 214, 0.05) 0%, rgba(72, 220, 214, 0) 26%),
+                linear-gradient(180deg, rgba(16, 23, 39, 0.98) 0%, rgba(10, 14, 24, 0.99) 100%);
+            border: 1px solid rgba(90, 201, 230, 0.07);
             border-radius: 20px;
             padding: 1rem 1.1rem;
             height: 100%;
-            box-shadow: 0 16px 36px rgba(0, 0, 0, 0.14);
+            box-shadow: 0 20px 40px rgba(4, 10, 24, 0.22);
         }
 
         .fcc-contacts-summary-label {
-            color: #89a0a2;
+            color: #8fb5d0;
             font-size: 0.82rem;
             text-transform: uppercase;
             letter-spacing: 0.08em;
@@ -99,7 +125,7 @@
 
         .fcc-contacts-summary-value {
             margin-top: 0.45rem;
-            color: #f1fbfa;
+            color: #f4f8ff;
             font-size: 1.6rem;
             font-weight: 700;
             line-height: 1;
@@ -107,17 +133,19 @@
 
         .fcc-contacts-summary-note {
             margin-top: 0.45rem;
-            color: #7f9597;
+            color: #9bb3c7;
             font-size: 0.88rem;
         }
 
         .fcc-contacts-table-card,
         .fcc-contacts-empty {
-            background: linear-gradient(180deg, rgba(19, 21, 24, 0.98) 0%, rgba(16, 18, 20, 0.98) 100%);
-            border: 1px solid rgba(127, 227, 217, 0.07);
+            background:
+                radial-gradient(circle at top center, rgba(72, 220, 214, 0.05) 0%, rgba(72, 220, 214, 0) 24%),
+                linear-gradient(180deg, rgba(16, 23, 39, 0.99) 0%, rgba(10, 14, 24, 0.99) 100%);
+            border: 1px solid rgba(90, 201, 230, 0.07);
             border-radius: 22px;
             overflow: hidden;
-            box-shadow: 0 20px 44px rgba(0, 0, 0, 0.16);
+            box-shadow: 0 24px 48px rgba(4, 10, 24, 0.26);
         }
 
         .fcc-contacts-table-card .table-custom-container {
@@ -130,20 +158,20 @@
         }
 
         .fcc-contacts-table-card .table-custom thead th {
-            background: rgba(255, 255, 255, 0.02);
-            color: #e9f7f5;
-            border-bottom-color: rgba(127, 227, 217, 0.08);
+            background: rgba(80, 150, 255, 0.02);
+            color: #e7f2ff;
+            border-bottom-color: rgba(95, 205, 231, 0.08);
         }
 
         .fcc-contacts-table-card .table-custom td {
             background: transparent;
-            color: #dce7e8;
-            border-top-color: rgba(255, 255, 255, 0.04);
+            color: #dce9f7;
+            border-top-color: rgba(95, 205, 231, 0.05);
             vertical-align: top;
         }
 
         .fcc-contacts-table-card .table-custom tbody tr:hover {
-            background: rgba(127, 227, 217, 0.035);
+            background: rgba(73, 200, 218, 0.02);
         }
 
         .fcc-contact-main {

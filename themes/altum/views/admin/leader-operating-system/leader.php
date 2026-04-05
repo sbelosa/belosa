@@ -1193,6 +1193,20 @@
 
             <div class="leader-os-detail-note mb-3"><?= sprintf(l('admin_leader_operating_system.leader.fraud_helper'), nr((int) ($fraud_intelligence['retention_days'] ?? 0))) ?></div>
 
+            <?php if(!empty($data->fraud_action)): ?>
+                <div class="leader-os-anomaly-item mb-3">
+                    <div class="d-flex justify-content-between align-items-start flex-wrap" style="gap:.75rem;">
+                        <div>
+                            <div class="leader-os-ai-title mb-1">Recommended fraud action</div>
+                            <div class="text-muted small"><?= htmlspecialchars((string) ($data->fraud_action['text'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                        </div>
+                        <span class="leader-os-detail-status <?= htmlspecialchars((string) ($data->fraud_action['class'] ?? 'status-dark'), ENT_QUOTES, 'UTF-8') ?>">
+                            <?= htmlspecialchars((string) ($data->fraud_action['label'] ?? '-'), ENT_QUOTES, 'UTF-8') ?>
+                        </span>
+                    </div>
+                </div>
+            <?php endif ?>
+
             <div class="row">
                 <div class="col-12 col-xl-4 mb-3 mb-xl-0">
                     <div class="leader-os-anomaly-item h-100">
@@ -1219,6 +1233,10 @@
                             <div class="leader-os-detail-list-item">
                                 <span class="text-muted"><?= l('admin_leader_operating_system.leader.fraud_retention_label') ?></span>
                                 <strong><?= sprintf(l('admin_leader_operating_system.leader.fraud_retention_value'), nr((int) ($fraud_intelligence['retention_days'] ?? 0))) ?></strong>
+                            </div>
+                            <div class="leader-os-detail-list-item">
+                                <span class="text-muted">Blocked / accepted omjer</span>
+                                <strong><?= nr((float) ($fraud_intelligence['blocked_vs_accepted_ratio'] ?? 0)) ?>%</strong>
                             </div>
                         </div>
                     </div>
@@ -1268,6 +1286,40 @@
                 </div>
             </div>
 
+            <div class="row mt-3">
+                <div class="col-12 col-xl-6 mb-3">
+                    <div class="leader-os-anomaly-item h-100">
+                        <div class="leader-os-ai-title mb-2">Top fraud razlozi</div>
+                        <?php if(empty($fraud_intelligence['top_reasons'])): ?>
+                            <div class="text-muted small mb-0"><?= l('admin_leader_operating_system.leader.fraud_empty') ?></div>
+                        <?php else: ?>
+                            <?php foreach(($fraud_intelligence['top_reasons'] ?? []) as $item): ?>
+                                <div class="leader-os-detail-list-item">
+                                    <span class="text-muted"><?= htmlspecialchars((string) ($item['label'] ?? ''), ENT_QUOTES, 'UTF-8') ?></span>
+                                    <strong><?= nr((int) ($item['total'] ?? 0)) ?></strong>
+                                </div>
+                            <?php endforeach ?>
+                        <?php endif ?>
+                    </div>
+                </div>
+
+                <div class="col-12 col-xl-6 mb-3">
+                    <div class="leader-os-anomaly-item h-100">
+                        <div class="leader-os-ai-title mb-2">Top fraud targeti</div>
+                        <?php if(empty($fraud_intelligence['top_targets'])): ?>
+                            <div class="text-muted small mb-0"><?= l('admin_leader_operating_system.leader.fraud_empty') ?></div>
+                        <?php else: ?>
+                            <?php foreach(($fraud_intelligence['top_targets'] ?? []) as $item): ?>
+                                <div class="leader-os-detail-list-item">
+                                    <span class="text-muted"><?= htmlspecialchars((string) ($item['label'] ?? ''), ENT_QUOTES, 'UTF-8') ?></span>
+                                    <strong><?= nr((int) ($item['total'] ?? 0)) ?></strong>
+                                </div>
+                            <?php endforeach ?>
+                        <?php endif ?>
+                    </div>
+                </div>
+            </div>
+
             <?php if(!empty($fraud_intelligence['recent_attempts'])): ?>
                 <div class="leader-os-anomaly-item mt-3">
                     <div class="leader-os-ai-title mb-2"><?= l('admin_leader_operating_system.leader.fraud_recent_attempts') ?></div>
@@ -1300,6 +1352,112 @@
     </div>
     <!-- /Custom code: FC-2026-03-31 -->
 
+    <div class="card leader-os-detail-shell mb-4">
+        <div class="card-body">
+            <?php if(!empty($data->consistency)): ?>
+                <div class="d-flex justify-content-between align-items-center flex-wrap mb-3">
+                    <div>
+                        <h3 class="h5 mb-1">Consistency score</h3>
+                        <div class="text-muted small">Signal discipline rada, kontinuiteta aktivnosti i prolaska kroz AI weekly ciklus.</div>
+                    </div>
+                    <span class="leader-os-detail-status <?= htmlspecialchars((string) ($data->consistency['state_class'] ?? 'status-dark'), ENT_QUOTES, 'UTF-8') ?>">
+                        <?= nr((int) ($data->consistency['score'] ?? 0)) ?> · <?= htmlspecialchars((string) ($data->consistency['state_label'] ?? '-'), ENT_QUOTES, 'UTF-8') ?>
+                    </span>
+                </div>
+            <?php endif ?>
+
+            <div class="d-flex justify-content-between align-items-center flex-wrap mb-3">
+                <div>
+                    <h3 class="h5 mb-1">Blog -> Forever Living</h3>
+                    <div class="text-muted small">Pregled koliko blog članci stvarno vode prema Forever Living odredištima u odabranom periodu.</div>
+                </div>
+                <span class="leader-os-detail-status status-info">
+                    <?= nr((int) ($selected['blog_forever']['total_clicks'] ?? 0)) ?>
+                </span>
+            </div>
+
+            <div class="row">
+                <div class="col-12 col-lg-3 mb-3">
+                    <div class="leader-os-anomaly-item h-100">
+                        <div class="text-muted small mb-1">Ukupni klikovi</div>
+                        <div class="h3 mb-0"><?= nr((int) ($selected['blog_forever']['total_clicks'] ?? 0)) ?></div>
+                    </div>
+                </div>
+                <div class="col-12 col-lg-3 mb-3">
+                    <div class="leader-os-anomaly-item h-100">
+                        <div class="text-muted small mb-1">Product CTA</div>
+                        <div class="h3 mb-0"><?= nr((int) ($selected['blog_forever']['product_clicks'] ?? 0)) ?></div>
+                    </div>
+                </div>
+                <div class="col-12 col-lg-3 mb-3">
+                    <div class="leader-os-anomaly-item h-100">
+                        <div class="text-muted small mb-1">Business CTA</div>
+                        <div class="h3 mb-0"><?= nr((int) ($selected['blog_forever']['business_clicks'] ?? 0)) ?></div>
+                    </div>
+                </div>
+                <div class="col-12 col-lg-3 mb-3">
+                    <div class="leader-os-anomaly-item h-100">
+                        <div class="text-muted small mb-1">Udio u Forever klikovima</div>
+                        <div class="h3 mb-0"><?= nr((float) ($selected['blog_forever']['share_percent'] ?? 0)) ?>%</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="leader-os-detail-note">
+                Top blog članak:
+                <strong><?= htmlspecialchars((string) ($selected['blog_forever']['top_article_title'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></strong>
+                <?php if(!empty($selected['blog_forever']['top_article_clicks'])): ?>
+                    · <?= nr((int) ($selected['blog_forever']['top_article_clicks'] ?? 0)) ?> klikova
+                <?php endif ?>
+            </div>
+        </div>
+    </div>
+
+    <?php if(!empty($data->ai_text_detail['has_any'])): ?>
+        <div class="card leader-os-detail-shell mb-4">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center flex-wrap mb-3">
+                    <div>
+                        <h3 class="h5 mb-1">AI open-text signal</h3>
+                        <div class="text-muted small">Sažetak zadnjih tekstualnih signala iz check-ina, outcomea i AI plana.</div>
+                    </div>
+                    <span class="leader-os-detail-status status-info"><?= htmlspecialchars((string) ($data->detail['ai_plan_admin']['priority']['label'] ?? 'AI signal'), ENT_QUOTES, 'UTF-8') ?></span>
+                </div>
+
+                <div class="leader-os-detail-list">
+                    <div class="leader-os-detail-list-item">
+                        <span class="text-muted">Trenutni fokus</span>
+                        <strong><?= htmlspecialchars((string) (($data->ai_text_detail['focus_summary'] ?? '') ?: '-'), ENT_QUOTES, 'UTF-8') ?></strong>
+                    </div>
+                    <div class="leader-os-detail-list-item">
+                        <span class="text-muted">Weekly context</span>
+                        <strong><?= htmlspecialchars((string) (($data->ai_text_detail['weekly_context'] ?? '') ?: '-'), ENT_QUOTES, 'UTF-8') ?></strong>
+                    </div>
+                    <div class="leader-os-detail-list-item">
+                        <span class="text-muted">Adaptive odgovor</span>
+                        <strong><?= htmlspecialchars((string) (($data->ai_text_detail['adaptive_answer'] ?? '') ?: '-'), ENT_QUOTES, 'UTF-8') ?></strong>
+                    </div>
+                    <div class="leader-os-detail-list-item">
+                        <span class="text-muted">Glavni blocker sada</span>
+                        <strong><?= htmlspecialchars((string) (($data->ai_text_detail['main_blocker_now'] ?? '') ?: '-'), ENT_QUOTES, 'UTF-8') ?></strong>
+                    </div>
+                    <div class="leader-os-detail-list-item">
+                        <span class="text-muted">Najveća lekcija</span>
+                        <strong><?= htmlspecialchars((string) (($data->ai_text_detail['biggest_lesson'] ?? '') ?: '-'), ENT_QUOTES, 'UTF-8') ?></strong>
+                    </div>
+                    <div class="leader-os-detail-list-item">
+                        <span class="text-muted">Next adjustment</span>
+                        <strong><?= htmlspecialchars((string) (($data->ai_text_detail['next_adjustment'] ?? '') ?: '-'), ENT_QUOTES, 'UTF-8') ?></strong>
+                    </div>
+                    <div class="leader-os-detail-list-item">
+                        <span class="text-muted">Najbolji odgovor</span>
+                        <strong><?= htmlspecialchars((string) (($data->ai_text_detail['best_response'] ?? '') ?: '-'), ENT_QUOTES, 'UTF-8') ?></strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    <?php endif ?>
+
     <div class="row">
         <div class="col-12 col-xl-4 mb-3">
             <div class="leader-os-detail-panel" id="leader-os-ai-report">
@@ -1323,6 +1481,12 @@
                         <span class="text-muted"><?= l('admin_leader_operating_system.leader.next_step_label') ?></span>
                         <strong><?= $selected['next_step'] ?></strong>
                     </div>
+                    <?php if(!empty($data->consistency)): ?>
+                        <div class="leader-os-detail-list-item">
+                            <span class="text-muted">Consistency</span>
+                            <strong><?= nr((int) ($data->consistency['score'] ?? 0)) ?> · <?= htmlspecialchars((string) ($data->consistency['state_label'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></strong>
+                        </div>
+                    <?php endif ?>
                 </div>
             </div>
         </div>
@@ -1338,6 +1502,26 @@
                         <strong><?= nr($selected['clicks_total_period']) ?></strong>
                     </div>
                     <div class="leader-os-detail-list-item">
+                        <span class="text-muted"><?= l('admin_leader_operating_system.leader.app_quality_score') ?></span>
+                        <strong><?= nr((int) ($selected['app_quality_score'] ?? 0)) ?> · <?= htmlspecialchars((string) ($selected['app_quality_stage_label'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></strong>
+                    </div>
+                    <div class="leader-os-detail-list-item">
+                        <span class="text-muted"><?= l('admin_leader_operating_system.leader.app_signal_shop') ?></span>
+                        <strong><?= nr((int) ($selected['app_shop_contacts_period'] ?? 0)) ?></strong>
+                    </div>
+                    <div class="leader-os-detail-list-item">
+                        <span class="text-muted"><?= l('admin_leader_operating_system.leader.app_signal_whatsapp') ?></span>
+                        <strong><?= nr((int) ($selected['app_whatsapp_contacts_period'] ?? 0)) ?></strong>
+                    </div>
+                    <div class="leader-os-detail-list-item">
+                        <span class="text-muted"><?= l('admin_leader_operating_system.leader.app_signal_products') ?></span>
+                        <strong><?= nr((int) ($selected['app_product_clicks_period'] ?? 0)) ?></strong>
+                    </div>
+                    <div class="leader-os-detail-list-item">
+                        <span class="text-muted"><?= l('admin_leader_operating_system.leader.app_signal_funnel') ?></span>
+                        <strong><?= nr((int) ($selected['app_funnel_registrations_period'] ?? 0)) ?></strong>
+                    </div>
+                    <div class="leader-os-detail-list-item">
                         <span class="text-muted"><?= l('admin_leader_operating_system.leader.shop_share') ?></span>
                         <strong><?= nr($selected['shop_share_percent']) ?>%</strong>
                     </div>
@@ -1348,6 +1532,10 @@
                     <div class="leader-os-detail-list-item">
                         <span class="text-muted"><?= l('admin_leader_operating_system.leader.top_language') ?></span>
                         <strong><?= $selected['top_language_label'] ?></strong>
+                    </div>
+                    <div class="leader-os-detail-list-item">
+                        <span class="text-muted">Top grad</span>
+                        <strong><?= htmlspecialchars((string) (($selected['top_cities'][0]['label'] ?? '-')), ENT_QUOTES, 'UTF-8') ?></strong>
                     </div>
                     <div class="leader-os-detail-list-item">
                         <span class="text-muted"><?= l('admin_leader_operating_system.leader.funnel_active') ?></span>
@@ -1816,6 +2004,51 @@
     <!-- Custom code: FC-2026-03-31: Phase 4 admin coaching panel from AI Plan history -->
     <div class="card leader-os-detail-shell mb-4">
         <div class="card-body">
+            <?php if(!empty($data->coaching_roi)): ?>
+                <div class="leader-os-detail-panel mb-3">
+                    <div class="d-flex justify-content-between align-items-center flex-wrap mb-3">
+                        <div>
+                            <h3 class="h5 mb-1">Coaching ROI</h3>
+                            <div class="text-muted small">Rani signal pomaka nakon zadnjeg mentoring kontakta i score snapshotova.</div>
+                        </div>
+                        <span class="leader-os-detail-status <?= htmlspecialchars((string) ($data->coaching_roi['signal_class'] ?? 'status-dark'), ENT_QUOTES, 'UTF-8') ?>">
+                            <?= htmlspecialchars((string) ($data->coaching_roi['signal_label'] ?? '-'), ENT_QUOTES, 'UTF-8') ?>
+                        </span>
+                    </div>
+
+                    <div class="leader-os-detail-list">
+                        <div class="leader-os-detail-list-item">
+                            <span class="text-muted">Zadnji coaching touch</span>
+                            <strong><?= !empty($data->coaching_roi['anchor_at']) ? \Altum\Date::get($data->coaching_roi['anchor_at'], 2) : '-' ?></strong>
+                        </div>
+                        <div class="leader-os-detail-list-item">
+                            <span class="text-muted">Dana od kontakta</span>
+                            <strong><?= $data->coaching_roi['days_since_touch'] !== null ? nr((int) $data->coaching_roi['days_since_touch']) : '-' ?></strong>
+                        </div>
+                        <div class="leader-os-detail-list-item">
+                            <span class="text-muted">LOS score prije / sada</span>
+                            <strong>
+                                <?= $data->coaching_roi['score_before'] !== null ? nr((int) $data->coaching_roi['score_before']) : '-' ?>
+                                /
+                                <?= $data->coaching_roi['score_current'] !== null ? nr((int) $data->coaching_roi['score_current']) : '-' ?>
+                            </strong>
+                        </div>
+                        <div class="leader-os-detail-list-item">
+                            <span class="text-muted">Delta score</span>
+                            <strong><?= $data->coaching_roi['score_delta'] !== null ? (($data->coaching_roi['score_delta'] > 0 ? '+' : '') . nr((int) $data->coaching_roi['score_delta'])) : '-' ?></strong>
+                        </div>
+                        <div class="leader-os-detail-list-item">
+                            <span class="text-muted">Risk prije / sada</span>
+                            <strong>
+                                <?= $data->coaching_roi['risk_before'] !== null ? nr((int) $data->coaching_roi['risk_before']) : '-' ?>
+                                /
+                                <?= $data->coaching_roi['risk_current'] !== null ? nr((int) $data->coaching_roi['risk_current']) : '-' ?>
+                            </strong>
+                        </div>
+                    </div>
+                </div>
+            <?php endif ?>
+
             <div class="row">
                 <div class="col-12 col-xl-5 mb-3 mb-xl-0">
                     <div class="leader-os-detail-panel h-100">
@@ -2113,7 +2346,9 @@
 
     <?php $breakdown_map = [
         'top_countries' => l('admin_leader_operating_system.leader.breakdown_countries'),
+        'top_cities' => 'Top gradovi',
         'top_sources' => l('admin_leader_operating_system.leader.breakdown_sources'),
+        'top_languages' => 'Jezici',
         'top_devices' => l('admin_leader_operating_system.leader.breakdown_devices'),
         'top_browsers' => l('admin_leader_operating_system.leader.breakdown_browsers'),
     ]; ?>
@@ -2196,7 +2431,9 @@
     };
     const leaderOsBreakdowns = <?= json_encode([
         'top_countries' => $selected['top_countries'],
+        'top_cities' => $selected['top_cities'],
         'top_sources' => $selected['top_sources'],
+        'top_languages' => $selected['top_languages'],
         'top_devices' => $selected['top_devices'],
         'top_browsers' => $selected['top_browsers'],
     ]) ?>;

@@ -18,6 +18,113 @@ $share_url = $data->share_url ?? $fcc_blog_post_url;
 
 <?php ob_start() ?>
 <style>
+    .fcc-referral-tour-target {
+        scroll-margin-top: 6rem;
+    }
+
+    .fcc-referral-tour-target.is-active {
+        position: relative !important;
+        z-index: 2052 !important;
+        box-shadow: 0 0 0 2px rgba(73, 227, 207, .95), 0 0 0 14px rgba(73, 227, 207, .16), 0 24px 72px rgba(2, 8, 23, .42) !important;
+        border-radius: 1.35rem !important;
+    }
+
+    .fcc-referral-tour-backdrop {
+        position: fixed;
+        inset: 0;
+        z-index: 2050;
+        display: none;
+        pointer-events: none;
+    }
+
+    .fcc-referral-tour-backdrop.is-visible {
+        display: block;
+    }
+
+    .fcc-referral-tour-backdrop-segment {
+        position: fixed;
+        background: rgba(2, 8, 23, .58);
+        backdrop-filter: blur(3px);
+        pointer-events: none;
+    }
+
+    .fcc-referral-tour-popover {
+        position: fixed;
+        z-index: 2055;
+        width: min(24rem, calc(100vw - 2rem));
+        display: none;
+        border-radius: 1.2rem;
+        border: 1px solid rgba(147, 197, 253, .22);
+        background:
+            radial-gradient(circle at top right, rgba(73, 227, 207, .18), transparent 30%),
+            linear-gradient(180deg, rgba(25, 36, 58, .98), rgba(16, 24, 41, .97));
+        box-shadow: 0 30px 80px rgba(2, 8, 23, .44), inset 0 1px 0 rgba(255,255,255,.05);
+        padding: 1.05rem 1.05rem 1rem;
+    }
+
+    .fcc-referral-tour-popover.is-visible {
+        display: block;
+    }
+
+    .fcc-referral-tour-progress {
+        display: inline-flex;
+        align-items: center;
+        gap: .45rem;
+        padding: .35rem .65rem;
+        border-radius: 999px;
+        background: rgba(73, 227, 207, .18);
+        color: #e8fffb;
+        font-size: .75rem;
+        font-weight: 800;
+        letter-spacing: .06em;
+        text-transform: uppercase;
+        margin-bottom: .75rem;
+        border: 1px solid rgba(73, 227, 207, .16);
+    }
+
+    .fcc-referral-tour-title {
+        color: #f8fbff;
+        font-size: 1.12rem;
+        font-weight: 800;
+        line-height: 1.3;
+        margin-bottom: .45rem;
+    }
+
+    .fcc-referral-tour-text {
+        color: rgba(236, 244, 255, .94);
+        font-size: .94rem;
+        line-height: 1.65;
+        margin-bottom: 1rem;
+    }
+
+    .fcc-referral-tour-actions {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: .75rem;
+    }
+
+    .fcc-referral-tour-actions-main {
+        display: flex;
+        gap: .65rem;
+        flex-wrap: wrap;
+    }
+
+    .fcc-referral-tour-actions .btn {
+        border-radius: .85rem;
+    }
+
+    .fcc-referral-tour-actions .btn-link {
+        color: rgba(226, 232, 240, .82) !important;
+        text-decoration: none;
+    }
+
+    .fcc-referral-tour-actions .btn-outline-light {
+        color: #ecf8ff !important;
+        border-color: rgba(147, 197, 253, .28) !important;
+        background: rgba(59, 130, 246, .12) !important;
+    }
+
     .fcc-blog-post-content .ql-content h2,
     .fcc-blog-post-content .ql-content h3,
     .fcc-blog-post-content .ql-content h4,
@@ -58,6 +165,16 @@ $share_url = $data->share_url ?? $fcc_blog_post_url;
 
     .fcc-blog-post-content .ql-content li + li {
         margin-top: 0.45rem;
+    }
+
+    @media (max-width: 767.98px) {
+        .fcc-referral-tour-popover {
+            left: 1rem !important;
+            right: 1rem !important;
+            width: auto;
+            top: auto !important;
+            bottom: 1rem;
+        }
     }
 </style>
 <?php \Altum\Event::add_content(ob_get_clean(), 'head') ?>
@@ -181,7 +298,7 @@ $share_url = $data->share_url ?? $fcc_blog_post_url;
 
                         <?php /* Custom code: FC-2026-03-09: share helper text by authentication state */ ?>
                         <?php $is_logged_user = is_logged_in() && !empty($share_referral_key); ?>
-                        <div class="mb-3 p-3 rounded position-relative fcc-share-helper" id="blog-share-referral-wrapper">
+                        <div class="mb-3 p-3 rounded position-relative fcc-share-helper fcc-referral-tour-target" id="blog-share-referral-wrapper">
                             <div class="d-flex align-items-center justify-content-between flex-wrap fcc-share-helper-row">
                                 <span class="small mb-2 mb-md-0 fcc-share-helper-text">
                                     <?= $is_logged_user ? l('blog.share_referral.helper_text') : l('blog.share_referral.helper_text_guest') ?>
@@ -222,8 +339,8 @@ $share_url = $data->share_url ?? $fcc_blog_post_url;
                         </div>
                         <?php /* /Custom code: FC-2026-03-09 */ ?>
 
-                        <div class="d-flex align-items-center flex-wrap gap-3">
-                            <?= include_view(THEME_PATH . 'views/partials/share_buttons.php', ['url' => $share_url, 'class' => 'btn btn-gray-100', 'copy_to_clipboard' => true]) ?>
+                        <div class="d-flex align-items-center flex-wrap gap-3 fcc-referral-tour-target" id="blog-share-referral-buttons-inline">
+                            <?= include_view(THEME_PATH . 'views/partials/share_buttons.php', ['url' => $share_url, 'class' => 'btn btn-gray-100', 'copy_to_clipboard' => true, 'tracking_context' => 'blog_share']) ?>
                         </div>
                     </div>
                 </div>
@@ -240,20 +357,26 @@ $share_url = $data->share_url ?? $fcc_blog_post_url;
                     <hr class="w-100" style="border-color: #26282B;">
                 </div>
                 <h6 class="mt-3 mb-4 fcc-widget-title"><?= sprintf(l('blog.more_info.share')) ?></h6>
+                <?php
+                $fcc_blog_share_copy_url = \Altum\Link::get_share_tracking_url($share_url, 'direct_share', 'copy', 'blog_share');
+                $fcc_blog_share_email_url = \Altum\Link::get_share_tracking_url($share_url, 'email', 'share', 'blog_share');
+                $fcc_blog_share_facebook_url = \Altum\Link::get_share_tracking_url($share_url, 'facebook', 'share_button', 'blog_share');
+                $fcc_blog_share_whatsapp_url = \Altum\Link::get_share_tracking_url($share_url, 'whatsapp', 'message', 'blog_share');
+                ?>
                 <div class="d-flex align-items-center justify-content-between flex-wrap mt-4">
-                    <button type="button" id="copy-url" class="btn btn-gray-100 mb-2 mb-md-0 mr-md-3" style="color:#41aaa5" data-url="<?= $share_url ?>" data-toggle="tooltip" title="<?= l('blog.copy_url') ?>" onclick="copy_url()"><i class="fa fa-fw fa-sm fa-link"></i></button>
+                    <button type="button" id="copy-url" class="btn btn-gray-100 mb-2 mb-md-0 mr-md-3" style="color:#41aaa5" data-url="<?= htmlspecialchars($fcc_blog_share_copy_url, ENT_QUOTES, 'UTF-8') ?>" data-toggle="tooltip" title="<?= l('blog.copy_url') ?>" onclick="copy_url()"><i class="fa fa-fw fa-sm fa-link"></i></button>
                     <input type="hidden" id="copy-url-copied" value="<?= l('blog.copy_url.copied') ?>" />
 
-                    <a href="mailto:?body=<?= $share_url ?>" target="_blank" class="btn btn-gray-100 mb-2 mb-md-0 mr-md-3">
+                    <a href="mailto:?body=<?= rawurlencode($fcc_blog_share_email_url) ?>" target="_blank" class="btn btn-gray-100 mb-2 mb-md-0 mr-md-3">
                         <i class="fa fa-fw fa-envelope"></i>
                     </a>
 
                     <button type="button" class="btn btn-gray-100 mb-2 mb-md-0 mr-md-3" style="color:#41aaa5" data-toggle="tooltip" title="<?= l('page.print') ?>" onclick="window.print()"><i class="fa fa-fw fa-sm fa-print"></i></button>
 
-                    <a href="https://www.facebook.com/sharer/sharer.php?u=<?= $share_url ?>" target="_blank" class="btn btn-gray-100 mb-2 mb-md-0 mr-md-3">
+                    <a href="https://www.facebook.com/sharer/sharer.php?u=<?= rawurlencode($fcc_blog_share_facebook_url) ?>" target="_blank" class="btn btn-gray-100 mb-2 mb-md-0 mr-md-3">
                         <i class="fab fa-fw fa-facebook"></i>
                     </a>
-                    <a href="https://wa.me/?text=<?= $share_url ?>" class="btn btn-gray-100 mb-2 mb-md-0 mr-md-3">
+                    <a href="https://wa.me/?text=<?= rawurlencode($fcc_blog_share_whatsapp_url) ?>" class="btn btn-gray-100 mb-2 mb-md-0 mr-md-3">
                         <i class="fab fa-fw fa-whatsapp"></i>
                     </a>
                 </div>
@@ -376,6 +499,25 @@ $share_url = $data->share_url ?? $fcc_blog_post_url;
 </div>
 </div>
 <!-- /Custom code: FC-2026-02-26 -->
+
+<div class="fcc-referral-tour-backdrop" id="fcc_referral_tour_backdrop">
+    <div class="fcc-referral-tour-backdrop-segment" data-segment="top"></div>
+    <div class="fcc-referral-tour-backdrop-segment" data-segment="left"></div>
+    <div class="fcc-referral-tour-backdrop-segment" data-segment="right"></div>
+    <div class="fcc-referral-tour-backdrop-segment" data-segment="bottom"></div>
+</div>
+<div class="fcc-referral-tour-popover" id="fcc_referral_tour_popover" aria-live="polite">
+    <div class="fcc-referral-tour-progress" id="fcc_referral_tour_progress">1 / 4</div>
+    <div class="fcc-referral-tour-title" id="fcc_referral_tour_title"></div>
+    <div class="fcc-referral-tour-text" id="fcc_referral_tour_text"></div>
+    <div class="fcc-referral-tour-actions">
+        <button type="button" class="btn btn-link text-muted px-0" id="fcc_referral_tour_skip"><?= l('dashboard.tour.skip') ?></button>
+        <div class="fcc-referral-tour-actions-main">
+            <button type="button" class="btn btn-outline-light" id="fcc_referral_tour_prev"><?= l('dashboard.tour.prev') ?></button>
+            <button type="button" class="btn btn-primary" id="fcc_referral_tour_next"><?= l('dashboard.tour.next') ?></button>
+        </div>
+    </div>
+</div>
 
 <?php ob_start() ?>
 <script type="application/ld+json">
@@ -586,6 +728,266 @@ if(!empty($data->blog_post->content) && class_exists('DOMDocument')) {
     });
 </script>
 
+<?php \Altum\Event::add_content(ob_get_clean(), 'javascript') ?>
+
+<?php ob_start() ?>
+<script>
+(function() {
+    'use strict';
+
+    const storageKey = 'fcc_blog_referral_tour_v1';
+    const defaultNextLabel = <?= json_encode(l('dashboard.tour.next')) ?>;
+    const finishLabel = <?= json_encode(l('dashboard.tour.finish')) ?>;
+
+    let activeStep = -1;
+    let currentTarget = null;
+
+    const steps = [
+        {
+            selector: '#fcc_tour_blog_share_row',
+            title: <?= json_encode(l('dashboard.tutorials.blog_referral.article_step_1_title')) ?>,
+            text: <?= json_encode(l('dashboard.tutorials.blog_referral.article_step_1_text')) ?>,
+        },
+        {
+            selector: '#fcc_tour_blog_share_info',
+            title: <?= json_encode(l('dashboard.tutorials.blog_referral.article_step_2_title')) ?>,
+            text: <?= json_encode(l('dashboard.tutorials.blog_referral.article_step_2_text')) ?>,
+            onShow: () => {
+                const details = document.getElementById('fcc-navbar-share-details');
+                const toggle = document.getElementById('fcc_tour_blog_share_info');
+
+                if(details && details.classList.contains('d-none') && toggle) {
+                    toggle.click();
+                }
+            }
+        },
+        {
+            selector: '#fcc_tour_blog_share_buttons',
+            title: <?= json_encode(l('dashboard.tutorials.blog_referral.article_step_3_title')) ?>,
+            text: <?= json_encode(l('dashboard.tutorials.blog_referral.article_step_3_text')) ?>,
+        },
+        {
+            selector: '#fcc_tour_blog_share_buttons [data-share-button="copy"]',
+            title: <?= json_encode(l('dashboard.tutorials.blog_referral.article_step_4_title')) ?>,
+            text: <?= json_encode(l('dashboard.tutorials.blog_referral.article_step_4_text')) ?>,
+        }
+    ];
+
+    const getState = () => {
+        try {
+            const raw = localStorage.getItem(storageKey);
+            return raw ? JSON.parse(raw) : null;
+        } catch(error) {
+            return null;
+        }
+    };
+
+    const clearState = () => {
+        try {
+            localStorage.removeItem(storageKey);
+        } catch(error) {
+            /* Ignore storage failures. */
+        }
+    };
+
+    const clearHighlight = () => {
+        if(currentTarget) {
+            currentTarget.classList.remove('is-active');
+        }
+
+        currentTarget = null;
+    };
+
+    const updateBackdrop = (rect) => {
+        const backdrop = document.getElementById('fcc_referral_tour_backdrop');
+        if(!backdrop || !rect) {
+            return;
+        }
+
+        const topSegment = backdrop.querySelector('[data-segment="top"]');
+        const leftSegment = backdrop.querySelector('[data-segment="left"]');
+        const rightSegment = backdrop.querySelector('[data-segment="right"]');
+        const bottomSegment = backdrop.querySelector('[data-segment="bottom"]');
+
+        if(!topSegment || !leftSegment || !rightSegment || !bottomSegment) {
+            return;
+        }
+
+        const padding = 12;
+        const top = Math.max(0, rect.top - padding);
+        const left = Math.max(0, rect.left - padding);
+        const right = Math.min(window.innerWidth, rect.right + padding);
+        const bottom = Math.min(window.innerHeight, rect.bottom + padding);
+        const spotlightHeight = Math.max(0, bottom - top);
+
+        topSegment.style.top = '0px';
+        topSegment.style.left = '0px';
+        topSegment.style.width = '100vw';
+        topSegment.style.height = `${top}px`;
+
+        leftSegment.style.top = `${top}px`;
+        leftSegment.style.left = '0px';
+        leftSegment.style.width = `${left}px`;
+        leftSegment.style.height = `${spotlightHeight}px`;
+
+        rightSegment.style.top = `${top}px`;
+        rightSegment.style.left = `${right}px`;
+        rightSegment.style.width = `${Math.max(0, window.innerWidth - right)}px`;
+        rightSegment.style.height = `${spotlightHeight}px`;
+
+        bottomSegment.style.top = `${bottom}px`;
+        bottomSegment.style.left = '0px';
+        bottomSegment.style.width = '100vw';
+        bottomSegment.style.height = `${Math.max(0, window.innerHeight - bottom)}px`;
+    };
+
+    const placePopover = () => {
+        const popover = document.getElementById('fcc_referral_tour_popover');
+        if(!popover || !currentTarget || !popover.classList.contains('is-visible')) {
+            return;
+        }
+
+        const rect = currentTarget.getBoundingClientRect();
+        const margin = 20;
+        const popoverWidth = popover.offsetWidth || 360;
+        const popoverHeight = popover.offsetHeight || 220;
+
+        updateBackdrop(rect);
+
+        let top = rect.bottom + 16;
+        if(top + popoverHeight > window.innerHeight - margin) {
+            top = Math.max(margin, rect.top - popoverHeight - 16);
+        }
+
+        let left = rect.left;
+        if(left + popoverWidth > window.innerWidth - margin) {
+            left = window.innerWidth - popoverWidth - margin;
+        }
+
+        if(left < margin) {
+            left = margin;
+        }
+
+        popover.style.top = `${top}px`;
+        popover.style.left = `${left}px`;
+    };
+
+    const endTour = (clear = false) => {
+        const backdrop = document.getElementById('fcc_referral_tour_backdrop');
+        const popover = document.getElementById('fcc_referral_tour_popover');
+
+        clearHighlight();
+        activeStep = -1;
+
+        if(backdrop) {
+            backdrop.classList.remove('is-visible');
+        }
+
+        if(popover) {
+            popover.classList.remove('is-visible');
+            popover.style.top = '';
+            popover.style.left = '';
+        }
+
+        if(clear) {
+            clearState();
+        }
+    };
+
+    const renderStep = (index) => {
+        if(index >= steps.length) {
+            endTour(true);
+            return;
+        }
+
+        const step = steps[index];
+        const target = step ? document.querySelector(step.selector) : null;
+        const popover = document.getElementById('fcc_referral_tour_popover');
+        const backdrop = document.getElementById('fcc_referral_tour_backdrop');
+
+        if(!step || !popover || !backdrop) {
+            endTour(true);
+            return;
+        }
+
+        if(!target) {
+            renderStep(index + 1);
+            return;
+        }
+
+        activeStep = index;
+        clearHighlight();
+        currentTarget = target;
+        currentTarget.classList.add('is-active');
+        currentTarget.scrollIntoView({behavior: 'smooth', block: 'center', inline: 'nearest'});
+
+        if(typeof step.onShow === 'function') {
+            step.onShow();
+        }
+
+        document.getElementById('fcc_referral_tour_title').textContent = step.title;
+        document.getElementById('fcc_referral_tour_text').textContent = step.text;
+        document.getElementById('fcc_referral_tour_progress').textContent = `${index + 1} / ${steps.length}`;
+
+        const prevButton = document.getElementById('fcc_referral_tour_prev');
+        const nextButton = document.getElementById('fcc_referral_tour_next');
+
+        if(prevButton) {
+            prevButton.style.display = index === 0 ? 'none' : 'inline-flex';
+        }
+
+        if(nextButton) {
+            nextButton.textContent = index === steps.length - 1 ? finishLabel : defaultNextLabel;
+        }
+
+        backdrop.classList.add('is-visible');
+        popover.classList.add('is-visible');
+
+        setTimeout(placePopover, 140);
+    };
+
+    const initTutorial = () => {
+        const state = getState();
+        if(!state || state.flow !== 'blog_referral' || state.stage !== 'article') {
+            return;
+        }
+
+        const skipButton = document.getElementById('fcc_referral_tour_skip');
+        const prevButton = document.getElementById('fcc_referral_tour_prev');
+        const nextButton = document.getElementById('fcc_referral_tour_next');
+
+        if(skipButton) {
+            skipButton.addEventListener('click', () => endTour(true));
+        }
+
+        if(prevButton) {
+            prevButton.addEventListener('click', () => {
+                if(activeStep > 0) {
+                    renderStep(activeStep - 1);
+                }
+            });
+        }
+
+        if(nextButton) {
+            nextButton.addEventListener('click', () => {
+                if(activeStep >= steps.length - 1) {
+                    endTour(true);
+                    return;
+                }
+
+                renderStep(activeStep + 1);
+            });
+        }
+
+        window.addEventListener('resize', placePopover);
+        window.addEventListener('scroll', placePopover, {passive: true});
+
+        setTimeout(() => renderStep(0), 420);
+    };
+
+    document.addEventListener('DOMContentLoaded', initTutorial);
+})();
+</script>
 <?php \Altum\Event::add_content(ob_get_clean(), 'javascript') ?>
 
 <?php ob_start() ?>

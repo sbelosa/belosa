@@ -1,5 +1,16 @@
 <?php defined('ALTUMCODE') || die() ?>
 
+<?php
+$fcc_qr_tour_storage_key = 'fcc_qr_codes_tour_seen_v1';
+$fcc_qr_tour_steps = [
+    ['selector' => '#fcc_qr_tour_step_create', 'title' => l('qr_codes.tour.create_title'), 'text' => l('qr_codes.tour.create_text')],
+    ['selector' => '#fcc_qr_tour_step_guide', 'title' => l('qr_codes.tour.guide_title'), 'text' => l('qr_codes.tour.guide_text')],
+    ['selector' => '#fcc_qr_tour_step_list', 'title' => l('qr_codes.tour.list_title'), 'text' => l('qr_codes.tour.list_text')],
+    ['selector' => '#fcc_qr_tour_step_row', 'title' => l('qr_codes.tour.row_title'), 'text' => l('qr_codes.tour.row_text')],
+    ['selector' => '#fcc_qr_tour_step_actions', 'title' => l('qr_codes.tour.actions_title'), 'text' => l('qr_codes.tour.actions_text')],
+];
+?>
+
 <div class="container">
     <?= \Altum\Alerts::output_alerts() ?>
 
@@ -11,11 +22,53 @@
         }
 
         .fcc-qr-header {
-            background: linear-gradient(180deg, rgba(19, 27, 29, 0.92) 0%, rgba(15, 21, 23, 0.98) 100%);
-            border: 1px solid rgba(127, 227, 217, 0.08);
+            background:
+                radial-gradient(circle at top right, rgba(84, 191, 255, 0.16), transparent 32%),
+                linear-gradient(180deg, rgba(17, 28, 41, 0.94) 0%, rgba(13, 20, 31, 0.98) 100%);
+            border: 1px solid rgba(117, 214, 255, 0.12);
             border-radius: 22px;
             padding: 1.35rem 1.4rem;
-            box-shadow: 0 18px 40px rgba(0, 0, 0, 0.18);
+            box-shadow: 0 18px 40px rgba(4, 10, 24, 0.22);
+        }
+
+        .dashboard-page-guide-rail {
+            display: flex;
+            justify-content: flex-end;
+            margin: 0 0 .72rem;
+        }
+
+        .dashboard-page-guide-trigger {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: .48rem;
+            padding: .68rem .98rem;
+            min-height: 2.7rem;
+            border-radius: .95rem;
+            border: 1px solid rgba(111, 244, 228, .28);
+            background: linear-gradient(135deg, rgba(42, 215, 199, .14) 0%, rgba(29, 122, 209, .12) 100%);
+            color: #eefdfb;
+            font-size: .86rem;
+            font-weight: 750;
+            line-height: 1.1;
+            text-decoration: none !important;
+            box-shadow: 0 12px 24px rgba(4, 14, 25, .14), inset 0 1px 0 rgba(255,255,255,.06);
+            transition: all .18s ease;
+        }
+
+        .dashboard-page-guide-trigger i {
+            color: #8cf6e9;
+            font-size: .92em;
+        }
+
+        .dashboard-page-guide-trigger:hover,
+        .dashboard-page-guide-trigger:focus {
+            color: #ffffff;
+            border-color: rgba(111, 244, 228, .42);
+            background: linear-gradient(135deg, rgba(44, 214, 199, .2) 0%, rgba(41, 126, 212, .18) 100%);
+            box-shadow: 0 16px 30px rgba(63, 215, 199, .12);
+            transform: translateY(-1px);
+            outline: none;
         }
 
         .fcc-qr-heading {
@@ -32,8 +85,8 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            background: linear-gradient(135deg, rgba(191, 246, 239, 0.18) 0%, rgba(142, 233, 222, 0.3) 100%);
-            color: #9ef1e7;
+            background: linear-gradient(135deg, rgba(110, 205, 255, 0.18) 0%, rgba(76, 240, 218, 0.3) 100%);
+            color: #b8f3ff;
             box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
             flex-shrink: 0;
         }
@@ -49,6 +102,70 @@
             color: #f5fbfb;
         }
 
+        .fcc-qr-heading-copy p {
+            margin: .28rem 0 0;
+            color: #9cb4c8;
+            max-width: 62ch;
+            line-height: 1.62;
+        }
+
+        .fcc-qr-guide {
+            position: relative;
+            overflow: hidden;
+            background:
+                radial-gradient(circle at top left, rgba(91, 181, 255, 0.18), transparent 30%),
+                linear-gradient(180deg, rgba(18, 29, 43, 0.97) 0%, rgba(12, 19, 29, 0.98) 100%);
+            border: 1px solid rgba(117, 214, 255, 0.12);
+            border-radius: 24px;
+            padding: 1.35rem;
+            box-shadow: 0 22px 48px rgba(4, 10, 24, .2);
+        }
+
+        .fcc-qr-guide-copy h2 {
+            margin: 0 0 .6rem;
+            color: #f4fbff;
+            font-size: clamp(1.45rem, 2.3vw, 2.05rem);
+            line-height: 1.05;
+            letter-spacing: -.045em;
+            font-weight: 900;
+            max-width: 16ch;
+        }
+
+        .fcc-qr-guide-copy p {
+            margin: 0;
+            color: #c7d9e8;
+            line-height: 1.72;
+            max-width: 74ch;
+        }
+
+        .fcc-qr-guide-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: .9rem;
+            margin-top: 1.1rem;
+        }
+
+        .fcc-qr-guide-card {
+            border-radius: 18px;
+            border: 1px solid rgba(117, 214, 255, 0.14);
+            background: linear-gradient(180deg, rgba(15, 24, 35, 0.94) 0%, rgba(12, 18, 27, 0.98) 100%);
+            padding: 1rem 1.02rem;
+        }
+
+        .fcc-qr-guide-card strong {
+            display: block;
+            margin-bottom: .36rem;
+            color: #f6fbff;
+            font-size: .95rem;
+            font-weight: 760;
+        }
+
+        .fcc-qr-guide-card span {
+            color: #9fb4c5;
+            font-size: .9rem;
+            line-height: 1.62;
+        }
+
         .fcc-qr-toolbar {
             gap: 0.75rem;
         }
@@ -61,15 +178,15 @@
         }
 
         .fcc-qr-action-btn.btn-primary {
-            background: linear-gradient(135deg, #3fd7c7 0%, #6de9dd 100%);
+            background: linear-gradient(135deg, #58a8ff 0%, #5ce8d5 100%);
             border-color: transparent;
-            color: #082826;
+            color: #081d2d;
         }
 
         .fcc-qr-action-btn.btn-primary:hover {
-            color: #041b19;
+            color: #051622;
             transform: translateY(-1px);
-            box-shadow: 0 10px 24px rgba(63, 215, 199, 0.2) !important;
+            box-shadow: 0 10px 24px rgba(88, 168, 255, 0.24) !important;
         }
 
         .fcc-qr-action-btn.btn-light,
@@ -88,11 +205,11 @@
 
         .fcc-qr-table-card,
         .fcc-qr-empty {
-            background: linear-gradient(180deg, rgba(19, 21, 24, 0.98) 0%, rgba(16, 18, 20, 0.98) 100%);
-            border: 1px solid rgba(127, 227, 217, 0.07);
+            background: linear-gradient(180deg, rgba(16, 23, 34, 0.98) 0%, rgba(12, 17, 26, 0.98) 100%);
+            border: 1px solid rgba(117, 214, 255, 0.08);
             border-radius: 22px;
             overflow: hidden;
-            box-shadow: 0 20px 44px rgba(0, 0, 0, 0.16);
+            box-shadow: 0 20px 44px rgba(4, 10, 24, 0.18);
         }
 
         .fcc-qr-table-card .table-custom-container {
@@ -107,7 +224,7 @@
         .fcc-qr-table-card .table-custom thead th {
             background: rgba(255, 255, 255, 0.02);
             color: #e9f7f5;
-            border-bottom-color: rgba(127, 227, 217, 0.08);
+            border-bottom-color: rgba(117, 214, 255, 0.08);
         }
 
         .fcc-qr-table-card .table-custom td {
@@ -118,7 +235,7 @@
         }
 
         .fcc-qr-table-card .table-custom tbody tr:hover {
-            background: rgba(127, 227, 217, 0.035);
+            background: rgba(117, 214, 255, 0.04);
         }
 
         .fcc-qr-table-card .badge.badge-light {
@@ -136,9 +253,141 @@
             text-decoration: none;
         }
 
+        .fcc-qr-tour-active-target {
+            position: relative !important;
+            z-index: 2052 !important;
+            isolation: isolate;
+            transform: translateZ(0);
+            filter: brightness(1.06) saturate(1.04);
+            box-shadow: 0 0 0 2px rgba(110, 205, 255, .98), 0 0 0 10px rgba(137, 223, 255, .17), 0 18px 54px rgba(7, 19, 38, .34) !important;
+            border-radius: 1.35rem !important;
+        }
+
+        .fcc-qr-tour-ancestor {
+            position: relative !important;
+            z-index: 2051 !important;
+            overflow: visible !important;
+        }
+
+        .fcc-qr-tour-backdrop {
+            position: fixed;
+            inset: 0;
+            z-index: 2050;
+            display: none;
+            pointer-events: none;
+        }
+
+        .fcc-qr-tour-backdrop.is-visible {
+            display: block;
+        }
+
+        .fcc-qr-tour-backdrop-segment {
+            position: fixed;
+            background: rgba(2, 8, 23, .6);
+            backdrop-filter: blur(3px);
+            pointer-events: none;
+        }
+
+        .fcc-qr-tour-popover {
+            position: fixed;
+            z-index: 2055;
+            width: min(25rem, calc(100vw - 2rem));
+            display: none;
+            border-radius: 1.2rem;
+            border: 1px solid rgba(110, 205, 255, .22);
+            background:
+                radial-gradient(circle at top right, rgba(110, 205, 255, .16), transparent 30%),
+                linear-gradient(180deg, rgba(16, 28, 46, .98), rgba(12, 20, 34, .97));
+            box-shadow: 0 30px 80px rgba(2, 8, 23, .44), inset 0 1px 0 rgba(255,255,255,.05);
+            padding: 1.05rem 1.05rem 1rem;
+        }
+
+        .fcc-qr-tour-popover.is-visible {
+            display: block;
+        }
+
+        .fcc-qr-tour-progress {
+            display: inline-flex;
+            align-items: center;
+            gap: .45rem;
+            padding: .35rem .65rem;
+            border-radius: 999px;
+            background: rgba(110, 205, 255, .18);
+            color: #eefbff;
+            font-size: .75rem;
+            font-weight: 800;
+            letter-spacing: .06em;
+            text-transform: uppercase;
+            margin-bottom: .75rem;
+            border: 1px solid rgba(110, 205, 255, .16);
+        }
+
+        .fcc-qr-tour-title {
+            color: #f8fbff;
+            font-size: 1.12rem;
+            font-weight: 800;
+            line-height: 1.3;
+            margin-bottom: .45rem;
+        }
+
+        .fcc-qr-tour-text {
+            color: rgba(236, 244, 255, .94);
+            font-size: .94rem;
+            line-height: 1.65;
+            margin-bottom: 1rem;
+        }
+
+        .fcc-qr-tour-actions {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: .75rem;
+        }
+
+        .fcc-qr-tour-actions-main {
+            display: flex;
+            gap: .65rem;
+            flex-wrap: wrap;
+        }
+
+        .fcc-qr-tour-actions .btn {
+            border-radius: .85rem;
+        }
+
+        .fcc-qr-tour-actions .btn-link {
+            color: rgba(226, 232, 240, .82) !important;
+            text-decoration: none;
+        }
+
+        .fcc-qr-tour-actions .btn-outline-light {
+            color: #ecf8ff !important;
+            border-color: rgba(110, 205, 255, .28) !important;
+            background: rgba(88, 168, 255, .12) !important;
+        }
+
         .fcc-qr-pagination {
             margin-top: 1rem;
             padding: 0 0.35rem;
+        }
+
+        @media (max-width: 1199px) {
+            .fcc-qr-guide-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 767px) {
+            .fcc-qr-guide-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .fcc-qr-tour-popover {
+                left: 1rem !important;
+                right: 1rem !important;
+                width: auto;
+                top: auto !important;
+                bottom: 1rem;
+            }
         }
     </style>
 
@@ -149,6 +398,13 @@
             <i class="fas fa-fw fa-times-circle text-danger mr-2"></i> <?= sprintf(settings()->payment->is_enabled ? l('global.info_message.plan_feature_limit_removal_with_upgrade') : l('global.info_message.plan_feature_limit_removal'), '<strong>' . $data->total_qr_codes - $this->user->plan_settings->qr_codes_limit, mb_strtolower(l('qr_codes.title')) . '</strong>', '<a href="' . url('plan') . '" class="font-weight-bold text-reset">' . l('global.info_message.plan_upgrade') . '</a>') ?>
         </div>
     <?php endif ?>
+
+    <div class="dashboard-page-guide-rail">
+        <a href="#" class="dashboard-page-guide-trigger" id="fcc_qr_tour_step_intro" data-fcc-start-qr-tour>
+            <i class="fas fa-fw fa-compass"></i>
+            <span><?= l('dashboard.tour.launch') ?></span>
+        </a>
+    </div>
 
     <div class="fcc-qr-header">
     <div class="row align-items-center">
@@ -165,6 +421,7 @@
                             <i class="fas fa-fw fa-info-circle text-muted"></i>
                         </span>
                     </h1>
+                    <p><?= l('qr_codes.page_intro') ?></p>
                 </div>
             </div>
         </div>
@@ -172,11 +429,11 @@
         <div class="col-12 col-lg-auto d-flex flex-wrap fcc-qr-toolbar d-print-none">
             <div>
                 <?php if($this->user->plan_settings->qr_codes_limit != -1 && $data->total_qr_codes >= $this->user->plan_settings->qr_codes_limit): ?>
-                    <button type="button" class="btn btn-primary disabled fcc-qr-action-btn" <?= get_plan_feature_limit_reached_info() ?>>
+                    <button type="button" class="btn btn-primary disabled fcc-qr-action-btn" id="fcc_qr_tour_step_create" <?= get_plan_feature_limit_reached_info() ?>>
                         <i class="fas fa-fw fa-plus-circle fa-sm mr-1"></i> <?= l('qr_codes.create') ?>
                     </button>
                 <?php else: ?>
-                    <a href="<?= url('qr-code-create') ?>" class="btn btn-primary fcc-qr-action-btn" data-toggle="tooltip" data-html="true" title="<?= get_plan_feature_limit_info($data->total_qr_codes, $this->user->plan_settings->qr_codes_limit, isset($data->filters) ? !$data->filters->has_applied_filters : true) ?>">
+                    <a href="<?= url('qr-code-create') ?>" id="fcc_qr_tour_step_create" class="btn btn-primary fcc-qr-action-btn" data-toggle="tooltip" data-html="true" title="<?= get_plan_feature_limit_info($data->total_qr_codes, $this->user->plan_settings->qr_codes_limit, isset($data->filters) ? !$data->filters->has_applied_filters : true) ?>">
                         <i class="fas fa-fw fa-plus-circle fa-sm mr-1"></i> <?= l('qr_codes.create') ?>
                     </a>
                 <?php endif ?>
@@ -315,6 +572,35 @@
     </div>
     </div>
 
+    <section class="fcc-qr-guide" id="fcc_qr_tour_step_guide">
+        <div class="fcc-qr-guide-copy">
+            <h2><?= l('qr_codes.guide_title') ?></h2>
+            <p><?= l('qr_codes.guide_text') ?></p>
+        </div>
+
+        <div class="fcc-qr-guide-grid">
+            <article class="fcc-qr-guide-card">
+                <strong><?= l('qr_codes.guide_card_1_title') ?></strong>
+                <span><?= l('qr_codes.guide_card_1_text') ?></span>
+            </article>
+
+            <article class="fcc-qr-guide-card">
+                <strong><?= l('qr_codes.guide_card_2_title') ?></strong>
+                <span><?= l('qr_codes.guide_card_2_text') ?></span>
+            </article>
+
+            <article class="fcc-qr-guide-card">
+                <strong><?= l('qr_codes.guide_card_3_title') ?></strong>
+                <span><?= l('qr_codes.guide_card_3_text') ?></span>
+            </article>
+
+            <article class="fcc-qr-guide-card">
+                <strong><?= l('qr_codes.guide_card_4_title') ?></strong>
+                <span><?= l('qr_codes.guide_card_4_text') ?></span>
+            </article>
+        </div>
+    </section>
+
     <?php if (!empty($data->qr_codes)): ?>
         <form id="table" action="<?= SITE_URL . 'qr-codes/bulk' ?>" method="post" role="form">
             <input type="hidden" name="token" value="<?= \Altum\Csrf::get() ?>" />
@@ -322,7 +608,7 @@
             <input type="hidden" name="original_request" value="<?= base64_encode(\Altum\Router::$original_request) ?>" />
             <input type="hidden" name="original_request_query" value="<?= base64_encode(\Altum\Router::$original_request_query) ?>" />
 
-            <div class="fcc-qr-table-card">
+            <div class="fcc-qr-table-card" id="fcc_qr_tour_step_list">
             <div class="table-responsive table-custom-container">
                 <table class="table table-custom">
                     <thead>
@@ -343,9 +629,9 @@
                     </tr>
                     </thead>
                     <tbody>
-
+                    <?php $fcc_qr_row_index = 0; ?>
                     <?php foreach($data->qr_codes as $row): ?>
-                        <tr>
+                        <tr <?= $fcc_qr_row_index === 0 ? 'id="fcc_qr_tour_step_row"' : null ?>>
                             <td data-bulk-table class="d-none">
                                 <div class="custom-control custom-checkbox">
                                     <input id="selected_qr_code_id_<?= $row->qr_code_id ?>" type="checkbox" class="custom-control-input" name="selected[]" value="<?= $row->qr_code_id ?>" />
@@ -410,7 +696,7 @@
                             </td>
 
                             <td>
-                                <div class="d-flex justify-content-end">
+                                <div class="d-flex justify-content-end" <?= $fcc_qr_row_index === 0 ? 'id="fcc_qr_tour_step_actions"' : null ?>>
                                     <div class="dropdown">
                                         <button type="button" class="btn btn-block btn-link dropdown-toggle dropdown-toggle-simple" title="<?= l('global.download') ?>" data-toggle="dropdown" aria-expanded="false" data-tooltip data-tooltip-hide-on-click>
                                             <i class="fas fa-fw fa-sm fa-download"></i>
@@ -428,6 +714,7 @@
                                 </div>
                             </td>
                         </tr>
+                        <?php $fcc_qr_row_index++; ?>
                     <?php endforeach ?>
 
                     </tbody>
@@ -440,11 +727,10 @@
     <?php else: ?>
 
         <div class="fcc-qr-empty">
-        <?= include_view(THEME_PATH . 'views/partials/no_data.php', [
-                'filters_get' => $data->filters->get ?? [],
-                'name' => 'qr_codes',
-                'has_secondary_text' => true,
-        ]); ?>
+        <div class="p-4 text-center">
+            <h2 class="h5 mb-2 text-white"><?= l('qr_codes.empty_title') ?></h2>
+            <p class="text-muted mb-0"><?= l('qr_codes.empty_text') ?></p>
+        </div>
         </div>
 
     <?php endif ?>
@@ -452,7 +738,228 @@
 </div>
 </div>
 
+<div class="fcc-qr-tour-backdrop" id="fcc_qr_tour_backdrop"></div>
+<div class="fcc-qr-tour-popover" id="fcc_qr_tour_popover" aria-live="polite">
+    <div class="fcc-qr-tour-progress" id="fcc_qr_tour_progress">1 / <?= count($fcc_qr_tour_steps) ?></div>
+    <div class="fcc-qr-tour-title" id="fcc_qr_tour_title"></div>
+    <div class="fcc-qr-tour-text" id="fcc_qr_tour_text"></div>
+    <div class="fcc-qr-tour-actions">
+        <button type="button" class="btn btn-link text-muted px-0" id="fcc_qr_tour_skip"><?= l('dashboard.tour.skip') ?></button>
+        <div class="fcc-qr-tour-actions-main">
+            <button type="button" class="btn btn-outline-light" id="fcc_qr_tour_prev"><?= l('dashboard.tour.prev') ?></button>
+            <button type="button" class="btn btn-primary" id="fcc_qr_tour_next"><?= l('dashboard.tour.next') ?></button>
+        </div>
+    </div>
+</div>
+
 <?php require THEME_PATH . 'views/qr-codes/js_qr_codes.php' ?>
 <?php require THEME_PATH . 'views/partials/js_bulk.php' ?>
 <?php \Altum\Event::add_content(include_view(THEME_PATH . 'views/partials/bulk_delete_modal.php'), 'modals'); ?>
 <?php \Altum\Event::add_content(include_view(THEME_PATH . 'views/partials/bulk_download_modal.php'), 'modals'); ?>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const storageKey = <?= json_encode($fcc_qr_tour_storage_key) ?>;
+    const steps = <?= json_encode($fcc_qr_tour_steps, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
+    const backdrop = document.getElementById('fcc_qr_tour_backdrop');
+    const popover = document.getElementById('fcc_qr_tour_popover');
+    const title = document.getElementById('fcc_qr_tour_title');
+    const text = document.getElementById('fcc_qr_tour_text');
+    const progress = document.getElementById('fcc_qr_tour_progress');
+    const prevButton = document.getElementById('fcc_qr_tour_prev');
+    const nextButton = document.getElementById('fcc_qr_tour_next');
+    const skipButton = document.getElementById('fcc_qr_tour_skip');
+
+    if(!backdrop || !popover || !title || !text || !progress || !prevButton || !nextButton || !skipButton || !Array.isArray(steps) || !steps.length) {
+        return;
+    }
+
+    let activeStep = -1;
+    let currentTarget = null;
+    let elevatedAncestors = [];
+    let backdropSegments = [];
+
+    const ensureBackdropSegments = () => {
+        if(backdropSegments.length) return backdropSegments;
+
+        backdropSegments = Array.from({length: 4}, () => {
+            const segment = document.createElement('div');
+            segment.className = 'fcc-qr-tour-backdrop-segment';
+            backdrop.appendChild(segment);
+            return segment;
+        });
+
+        return backdropSegments;
+    };
+
+    const getElevatedAncestors = target => {
+        const ancestors = [];
+        let node = target?.parentElement ?? null;
+
+        while(node && node !== document.body) {
+            const computedStyle = window.getComputedStyle(node);
+            const hasClippingOverflow = ['hidden', 'clip', 'auto', 'scroll'].includes(computedStyle.overflow) || ['hidden', 'clip', 'auto', 'scroll'].includes(computedStyle.overflowX) || ['hidden', 'clip', 'auto', 'scroll'].includes(computedStyle.overflowY);
+            const shouldElevate = hasClippingOverflow;
+
+            if(shouldElevate) {
+                ancestors.push(node);
+            }
+
+            node = node.parentElement;
+        }
+
+        return ancestors;
+    };
+
+    const clearHighlight = () => {
+        if(currentTarget) {
+            currentTarget.classList.remove('fcc-qr-tour-active-target');
+        }
+
+        elevatedAncestors.forEach(node => node.classList.remove('fcc-qr-tour-ancestor'));
+        elevatedAncestors = [];
+
+        currentTarget = null;
+    };
+
+    const placePopover = () => {
+        if(!currentTarget || !popover.classList.contains('is-visible')) {
+            return;
+        }
+
+        const rect = currentTarget.getBoundingClientRect();
+        const viewportWidth = window.innerWidth;
+        const viewportHeight = window.innerHeight;
+        const popoverWidth = popover.offsetWidth;
+        const popoverHeight = popover.offsetHeight;
+        const spacing = 18;
+
+        let top = rect.bottom + spacing;
+        let left = rect.left;
+
+        if(top + popoverHeight > viewportHeight - spacing) {
+            top = Math.max(spacing, rect.top - popoverHeight - spacing);
+        }
+
+        if(left + popoverWidth > viewportWidth - spacing) {
+            left = Math.max(spacing, viewportWidth - popoverWidth - spacing);
+        }
+
+        if(left < spacing) {
+            left = spacing;
+        }
+
+        popover.style.top = `${top}px`;
+        popover.style.left = `${left}px`;
+    };
+
+    const updateBackdropSpotlight = () => {
+        if(!currentTarget || !backdrop.classList.contains('is-visible')) return;
+
+        const segments = ensureBackdropSegments();
+        const rect = currentTarget.getBoundingClientRect();
+        const padding = 10;
+        const top = Math.max(0, rect.top - padding);
+        const left = Math.max(0, rect.left - padding);
+        const right = Math.min(window.innerWidth, rect.right + padding);
+        const bottom = Math.min(window.innerHeight, rect.bottom + padding);
+        const holeHeight = Math.max(0, bottom - top);
+
+        Object.assign(segments[0].style, {top: '0px', left: '0px', width: '100vw', height: `${top}px`});
+        Object.assign(segments[1].style, {top: `${top}px`, left: '0px', width: `${left}px`, height: `${holeHeight}px`});
+        Object.assign(segments[2].style, {top: `${top}px`, left: `${right}px`, width: `${Math.max(0, window.innerWidth - right)}px`, height: `${holeHeight}px`});
+        Object.assign(segments[3].style, {top: `${bottom}px`, left: '0px', width: '100vw', height: `${Math.max(0, window.innerHeight - bottom)}px`});
+    };
+
+    const endTour = completed => {
+        clearHighlight();
+        activeStep = -1;
+        backdrop.classList.remove('is-visible');
+        popover.classList.remove('is-visible');
+
+        if(completed) {
+            localStorage.setItem(storageKey, '1');
+        }
+    };
+
+    const renderStep = index => {
+        const step = steps[index];
+        if(!step) {
+            endTour(false);
+            return;
+        }
+
+        const target = document.querySelector(step.selector);
+        if(!target) {
+            if(index >= steps.length - 1) {
+                endTour(true);
+                return;
+            }
+
+            renderStep(index + 1);
+            return;
+        }
+
+        activeStep = index;
+        clearHighlight();
+        currentTarget = target;
+        elevatedAncestors = getElevatedAncestors(currentTarget);
+        elevatedAncestors.forEach(node => node.classList.add('fcc-qr-tour-ancestor'));
+        currentTarget.classList.add('fcc-qr-tour-active-target');
+        currentTarget.scrollIntoView({behavior: 'smooth', block: 'center', inline: 'nearest'});
+
+        title.textContent = step.title || '';
+        text.textContent = step.text || '';
+        progress.textContent = `${index + 1} / ${steps.length}`;
+        prevButton.style.visibility = index === 0 ? 'hidden' : 'visible';
+        nextButton.textContent = index === steps.length - 1 ? <?= json_encode(l('dashboard.tour.finish')) ?> : <?= json_encode(l('dashboard.tour.next')) ?>;
+
+        backdrop.classList.add('is-visible');
+        popover.classList.add('is-visible');
+        updateBackdropSpotlight();
+        setTimeout(placePopover, 140);
+    };
+
+    const startTour = ({markAutoSeen = false} = {}) => {
+        if(markAutoSeen) {
+            localStorage.setItem(storageKey, '1');
+        }
+
+        renderStep(0);
+    };
+
+    document.querySelectorAll('[data-fcc-start-qr-tour]').forEach(button => {
+        button.addEventListener('click', event => {
+            event.preventDefault();
+            startTour();
+        });
+    });
+
+    skipButton.addEventListener('click', () => endTour(false));
+    prevButton.addEventListener('click', () => {
+        if(activeStep > 0) {
+            renderStep(activeStep - 1);
+        }
+    });
+    nextButton.addEventListener('click', () => {
+        if(activeStep >= steps.length - 1) {
+            endTour(true);
+            return;
+        }
+
+        renderStep(activeStep + 1);
+    });
+
+    const syncOverlay = () => {
+        placePopover();
+        updateBackdropSpotlight();
+    };
+
+    window.addEventListener('resize', syncOverlay);
+    window.addEventListener('scroll', syncOverlay, {passive: true});
+
+    if(!localStorage.getItem(storageKey)) {
+        setTimeout(() => startTour({markAutoSeen: true}), 500);
+    }
+});
+</script>

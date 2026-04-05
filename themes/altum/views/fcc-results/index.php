@@ -180,6 +180,168 @@
         border-radius: 12px;
         padding: 0.7rem 0.85rem;
     }
+
+    .fcc-results-page .fcc-ai-widget {
+        background:
+            radial-gradient(520px 180px at 115% -5%, rgba(34, 211, 238, 0.14), transparent 62%),
+            radial-gradient(460px 220px at -10% 110%, rgba(45, 212, 191, 0.12), transparent 66%),
+            linear-gradient(160deg, rgba(11, 36, 44, 0.94), rgba(10, 22, 34, 0.94));
+        border: 1px solid rgba(127, 215, 208, 0.16);
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.03), 0 18px 40px rgba(0, 0, 0, 0.16);
+    }
+
+    .fcc-results-page .fcc-ai-pill {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.32rem 0.7rem;
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .fcc-results-page .fcc-ai-pill-starter {
+        background: rgba(59, 130, 246, 0.14);
+        color: #b9dcff;
+    }
+
+    .fcc-results-page .fcc-ai-pill-active {
+        background: rgba(34, 197, 94, 0.16);
+        color: #bbf7d0;
+    }
+
+    .fcc-results-page .fcc-ai-pill-vip {
+        background: rgba(250, 204, 21, 0.14);
+        color: #fde68a;
+    }
+
+    .fcc-results-page .fcc-ai-progress {
+        height: 10px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.06);
+        overflow: hidden;
+    }
+
+    .fcc-results-page .fcc-ai-progress > span {
+        display: block;
+        height: 100%;
+        border-radius: inherit;
+        background: linear-gradient(90deg, #5eead4 0%, #38bdf8 100%);
+        box-shadow: 0 0 16px rgba(56, 189, 248, 0.32);
+    }
+
+    .fcc-results-page .fcc-ai-progress-gold > span {
+        background: linear-gradient(90deg, #f59e0b 0%, #fde047 100%);
+        box-shadow: 0 0 16px rgba(245, 158, 11, 0.28);
+    }
+
+    .fcc-results-page .fcc-ai-stage-card {
+        border: 1px solid rgba(127, 215, 208, 0.12);
+        border-radius: 16px;
+        background:
+            radial-gradient(200px 90px at 100% 0%, rgba(56, 189, 248, 0.07), transparent 70%),
+            linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.025));
+        padding: 0.95rem 1rem;
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.03);
+    }
+
+    .fcc-results-page .fcc-inline-kv {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 0.8rem;
+    }
+
+    .fcc-results-page .fcc-ai-widget .text-muted,
+    .fcc-results-page .fcc-ai-stage-card .text-muted {
+        color: rgba(214, 241, 239, 0.78) !important;
+    }
+
+    .fcc-results-page .fcc-ai-widget .text-white-50 {
+        color: rgba(235, 250, 248, 0.84) !important;
+    }
+
+    .fcc-results-page .fcc-ai-widget strong,
+    .fcc-results-page .fcc-ai-widget .h6 {
+        color: #f5fffd;
+    }
+
+    .fcc-results-page .fcc-ai-stage-card .fcc-inline-kv strong {
+        font-size: 1.15rem;
+        line-height: 1;
+        color: #f7fffe;
+        text-align: right;
+    }
+
+    .fcc-results-page .fcc-ai-widget .fcc-metric-note {
+        color: #effffc;
+        background: rgba(127, 215, 208, 0.11);
+        border-color: rgba(127, 215, 208, 0.16);
+    }
+
+    .fcc-results-page .fcc-ai-headline {
+        font-size: 1.35rem;
+        line-height: 1.15;
+        letter-spacing: -0.01em;
+    }
+
+    .fcc-results-page .fcc-ai-subcopy {
+        max-width: 28rem;
+        line-height: 1.5;
+    }
+
+    .fcc-results-page .fcc-ai-signal-value {
+        font-size: 1.45rem;
+        line-height: 1;
+        font-weight: 800;
+        color: #f4fffd;
+    }
+
+    .fcc-results-page .fcc-ai-value-stack {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 0.2rem;
+        min-width: 82px;
+    }
+
+    .fcc-results-page .fcc-ai-value-label {
+        font-size: 10px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: rgba(198, 236, 232, 0.72);
+        font-weight: 700;
+        line-height: 1;
+    }
+
+    .fcc-results-page .fcc-ai-kicker {
+        font-size: 10px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: rgba(180, 226, 223, 0.72);
+        margin-bottom: 0.35rem;
+        font-weight: 700;
+    }
+
+    .fcc-results-page .fcc-ai-benefit {
+        color: rgba(240, 255, 252, 0.88);
+        line-height: 1.5;
+    }
+
+    .fcc-results-page .fcc-ai-meter-label {
+        font-size: 12px;
+        color: rgba(212, 243, 240, 0.78);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        font-weight: 700;
+    }
+
+    .fcc-results-page .fcc-ai-footnote {
+        font-size: 13px;
+        line-height: 1.55;
+    }
 </style>
 
 <div class="container">
@@ -271,7 +433,7 @@
                                                     <?php endif ?>
                                                 </div>
                                             </td>
-                                            <td class="text-right font-weight-bold"><?= nr($entry['shop_clicks']) ?></td>
+                                            <td class="text-right font-weight-bold"><?= nr($entry['qualified_clicks']) ?></td>
                                             <td class="text-right"><?= nr($entry['ctr']) ?>%</td>
                                             <td class="text-right <?= $entry['trend_percent'] > 0 ? 'text-success' : ($entry['trend_percent'] < 0 ? 'text-danger' : 'text-muted') ?>">
                                                 <?php $trend_sign = $entry['trend_percent'] > 0 ? '+' : ''; ?>
@@ -312,7 +474,15 @@
                                 <?= l('fcc_results.you.shop_clicks') ?>
                                 <span data-toggle="tooltip" title="<?= l('fcc_results.metrics_info.shop_clicks') ?>"><i class="fas fa-info-circle fcc-help-icon"></i></span>
                             </span>
-                            <strong><?= nr($current_user_data['shop_clicks']) ?></strong>
+                            <strong><?= nr($current_user_data['qualified_clicks']) ?></strong>
+                        </div>
+                        <div class="fcc-stat-row">
+                            <span><?= l('fcc_results.you.app_clicks') ?></span>
+                            <strong><?= nr($current_user_data['app_clicks']) ?></strong>
+                        </div>
+                        <div class="fcc-stat-row">
+                            <span><?= l('fcc_results.you.blog_clicks') ?></span>
+                            <strong><?= nr($current_user_data['blog_clicks']) ?></strong>
                         </div>
                         <div class="fcc-stat-row">
                             <span>
@@ -343,6 +513,66 @@
                                 <div class="alert alert-light border py-2 px-3 mb-0 small"><?= l('fcc_results.you.first_place') ?></div>
                             <?php endif ?>
                         <?php endif ?>
+                    </div>
+                </div>
+            </div>
+
+            <?php $ai_unlock = $data->ai_unlock; ?>
+            <div class="card fcc-card fcc-ai-widget shadow-sm mb-3">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-4">
+                        <div>
+                            <div class="fcc-ai-kicker"><?= l('ai_plan.title') ?></div>
+                            <h2 class="fcc-ai-headline mb-2"><?= l('fcc_results.ai_widget.title') ?></h2>
+                            <p class="small text-muted mb-0 fcc-ai-subcopy"><?= l('fcc_results.ai_widget.subheader') ?></p>
+                        </div>
+                        <span class="fcc-ai-pill <?= $ai_unlock['stage'] === 'vip' ? 'fcc-ai-pill-vip' : ($ai_unlock['stage'] === 'active' ? 'fcc-ai-pill-active' : 'fcc-ai-pill-starter') ?>">
+                            <?= l('fcc_results.ai_widget.stage_' . $ai_unlock['stage']) ?>
+                        </span>
+                    </div>
+
+                    <div class="fcc-ai-stage-card mb-3">
+                        <div class="fcc-inline-kv mb-3">
+                            <div>
+                                <div class="fcc-ai-meter-label mb-1"><?= l('fcc_results.ai_widget.signal_30d') ?></div>
+                                <div class="small text-muted"><?= l('fcc_results.ai_widget.signal_breakdown') ?></div>
+                            </div>
+                            <div class="fcc-ai-value-stack">
+                                <span class="fcc-ai-value-label"><?= l('fcc_results.ai_widget.total_label') ?></span>
+                                <div class="fcc-ai-signal-value"><?= nr($ai_unlock['signal_30d']) ?></div>
+                            </div>
+                        </div>
+                        <div class="small text-white-50 fcc-ai-benefit">
+                            <?= sprintf(l('fcc_results.ai_widget.signal_breakdown_text'), nr($ai_unlock['app_clicks_30d']), nr($ai_unlock['blog_clicks_30d'])) ?>
+                        </div>
+                    </div>
+
+                    <div class="fcc-ai-stage-card mb-3">
+                        <div class="fcc-inline-kv mb-3">
+                            <span class="fcc-ai-meter-label"><?= sprintf(l('fcc_results.ai_widget.active_goal'), nr($ai_unlock['active_threshold'])) ?></span>
+                            <div class="fcc-ai-value-stack">
+                                <span class="fcc-ai-value-label"><?= $ai_unlock['to_active'] > 0 ? l('fcc_results.ai_widget.remaining_label') : l('fcc_results.ai_widget.status_label') ?></span>
+                                <strong><?= $ai_unlock['to_active'] > 0 ? nr($ai_unlock['to_active']) : l('fcc_results.ai_widget.unlocked_short') ?></strong>
+                            </div>
+                        </div>
+                        <div class="fcc-ai-progress mb-3"><span style="width: <?= (int) $ai_unlock['active_progress_percent'] ?>%"></span></div>
+                        <div class="small text-white-50 fcc-ai-benefit"><?= l('fcc_results.ai_widget.active_benefits') ?></div>
+                    </div>
+
+                    <div class="fcc-ai-stage-card mb-3">
+                        <div class="fcc-inline-kv mb-3">
+                            <span class="fcc-ai-meter-label"><?= sprintf(l('fcc_results.ai_widget.vip_goal'), nr($ai_unlock['vip_threshold'])) ?></span>
+                            <div class="fcc-ai-value-stack">
+                                <span class="fcc-ai-value-label"><?= $ai_unlock['to_vip'] > 0 ? l('fcc_results.ai_widget.remaining_label') : l('fcc_results.ai_widget.status_label') ?></span>
+                                <strong><?= $ai_unlock['to_vip'] > 0 ? nr($ai_unlock['to_vip']) : l('fcc_results.ai_widget.unlocked_short') ?></strong>
+                            </div>
+                        </div>
+                        <div class="fcc-ai-progress fcc-ai-progress-gold mb-3"><span style="width: <?= (int) $ai_unlock['vip_progress_percent'] ?>%"></span></div>
+                        <div class="small text-white-50 fcc-ai-benefit"><?= l('fcc_results.ai_widget.vip_benefits') ?></div>
+                    </div>
+
+                    <div class="small fcc-metric-note mb-0 fcc-ai-footnote">
+                        <?= $ai_unlock['is_pro'] ? l('fcc_results.ai_widget.pro_note') : l('fcc_results.ai_widget.pro_required_note') ?>
                     </div>
                 </div>
             </div>

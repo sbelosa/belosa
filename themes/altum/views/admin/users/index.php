@@ -324,10 +324,12 @@
                                 <i class="fa fa-fw fa-envelope text-muted"></i>
                             </a>
 
-                            <?php if ($row->type == 0 && isset($row->biolink_id)): ?>
+                            <?php if ($row->type == 0 && isset($row->biolink_id) && !empty($row->main_biolink_nfc_url)): ?>
                                 <i class="fa fa-fw fa-clipboard text-muted link-copy" style="cursor:pointer"></i>                                    
-                                <input class="link-val" type="hidden" value="<?= SITE_URL . $row->url ?>" ?>
-                                <a href="<?= SITE_URL . $row->url ?>" target="_blank"><?= SITE_URL . $row->url ?></a>
+                                <input class="link-val" type="hidden" value="<?= htmlspecialchars($row->main_biolink_nfc_url, ENT_QUOTES, 'UTF-8') ?>" ?>
+                                <a href="<?= htmlspecialchars($row->main_biolink_nfc_url, ENT_QUOTES, 'UTF-8') ?>" target="_blank" data-toggle="tooltip" title="NFC tracking link">
+                                    <?= htmlspecialchars($row->main_biolink_url, ENT_QUOTES, 'UTF-8') ?>
+                                </a>
                             <?php endif; ?>
                             <!-- /Custom code -->
                         </div>
@@ -349,4 +351,3 @@
 <?php require THEME_PATH . 'views/partials/js_bulk.php' ?>
 <?php \Altum\Event::add_content(include_view(THEME_PATH . 'views/partials/bulk_delete_modal.php'), 'modals'); ?>
 <?php \Altum\Event::add_content(include_view(THEME_PATH . 'views/admin/users/bulk_resend_activation_modal.php'), 'modals'); ?>
-

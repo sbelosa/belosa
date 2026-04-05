@@ -38,6 +38,72 @@ class Payments extends Model {
     }
     /* /Custom code: FC-2026-03-04 */
 
+    private function decode_preferences($preferences): object {
+        if(is_string($preferences)) {
+            $preferences = json_decode($preferences);
+        }
+
+        if(is_array($preferences)) {
+            $preferences = (object) $preferences;
+        }
+
+        if(!is_object($preferences)) {
+            $preferences = (object) [];
+        }
+
+        return $preferences;
+    }
+
+    private function queue_nfc_card_fulfillment(object $user, object $plan): void {
+        if((string) ($plan->plan_id ?? '') !== '5') {
+            return;
+        }
+
+        $preferences = $this->decode_preferences($user->preferences ?? null);
+        $meta = $preferences->meta ?? null;
+
+        if(is_array($meta)) {
+            $meta = (object) $meta;
+        }
+
+        if(!is_object($meta)) {
+            $meta = (object) [];
+        }
+
+        $already_queued = !empty($meta->fcc_nfc_requested_at ?? null)
+            || !empty($meta->fcc_nfc_sent_at ?? null)
+            || (isset($meta->card_status) && (int) $meta->card_status === 1);
+
+        if($already_queued) {
+            return;
+        }
+
+        $meta->fcc_nfc_required = 1;
+        $meta->fcc_nfc_requested_at = get_date();
+
+        if(!isset($meta->card_status)) {
+            $meta->card_status = 0;
+        }
+
+        $preferences->meta = $meta;
+
+        db()->where('user_id', $user->user_id)->update('users', [
+            'preferences' => json_encode($preferences),
+        ]);
+
+        if(!empty(settings()->internal_notifications->admins_is_enabled)) {
+            db()->insert('internal_notifications', [
+                'for_who' => 'admin',
+                'from_who' => 'system',
+                'icon' => 'fas fa-id-card',
+                'title' => 'Nova NFC kartica za obradu',
+                'description' => $user->name . ' je aktivirao Forever Pro i sada čeka izradu i slanje poklon NFC kartice.',
+                'url' => 'admin/leader-operating-system?tab=operations',
+                'datetime' => get_date(),
+            ]);
+        }
+    }
+
     public function webhook_process_payment($payment_processor, $external_payment_id, $payment_total, $payment_currency, $user_id, $plan_id, $payment_frequency, $code, $discount_amount, $base_amount, $taxes_ids, $payment_type, $payment_subscription_id, $payer_email, $payer_name) {
         /* Get the plan details */
         $plan = db()->where('plan_id', $plan_id)->getOne('plans');
@@ -120,6 +186,8 @@ class Payments extends Model {
                 'payment_currency' => $payment_currency,
                 'extra' => json_encode($extra),
             ]);
+
+            $this->queue_nfc_card_fulfillment($user, $plan);
 
             (new \Altum\Models\User())->sync_links_with_plan($user->user_id);
 
@@ -219,6 +287,8 @@ class Payments extends Model {
             'payment_currency' => $payment_currency,
             'extra' => json_encode($extra),
         ]);
+
+        $this->queue_nfc_card_fulfillment($user, $plan);
 
         (new \Altum\Models\User())->sync_links_with_plan($user_id);
 

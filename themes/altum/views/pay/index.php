@@ -3,6 +3,117 @@
 <?php
 $selected_currency = settings()->payment->currencies->{currency()};
 $currency_decimals = $selected_currency->currency_decimals ?? 2;
+$is_fcc_premium_checkout = isset($data->plan_id) && is_numeric($data->plan_id) && (int) $data->plan_id === 5;
+
+$get_pay_plan_translation_value = static function($plan, string $field): string {
+    if(!$plan) {
+        return '';
+    }
+
+    $translation = $plan->translations->{\Altum\Language::$name} ?? null;
+
+    if(is_object($translation) && isset($translation->{$field}) && trim((string) $translation->{$field}) !== '') {
+        return (string) $translation->{$field};
+    }
+
+    return trim((string) ($plan->{$field} ?? ''));
+};
+
+$normalize_pay_plan_description = static function(string $description): string {
+    $description = trim($description);
+
+    if($description === 'For Offline Forever Business + Physical Forever Business Club Card') {
+        return 'For Offline Forever Business';
+    }
+
+    return $description;
+};
+
+$format_pay_currency_amount = static function(float $amount) use ($selected_currency, $currency_decimals): string {
+    $formatted_amount = nr($amount, $currency_decimals);
+    $currency_label = ($selected_currency->display_as ?? 'currency_symbol') === 'currency_code'
+        ? currency()
+        : ($selected_currency->symbol ?? currency());
+
+    if(($selected_currency->currency_placement ?? 'left') === 'right') {
+        return $formatted_amount . ' ' . $currency_label;
+    }
+
+    return (($selected_currency->display_as ?? 'currency_symbol') === 'currency_code')
+        ? $currency_label . ' ' . $formatted_amount
+        : $currency_label . $formatted_amount;
+};
+
+$get_pay_plan_price_variants = static function($plan) use ($format_pay_currency_amount): array {
+    $variants = [];
+
+    if($plan && isset($plan->prices) && is_object($plan->prices)) {
+        foreach(['monthly', 'quarterly', 'biannual', 'annual', 'lifetime'] as $frequency) {
+            $amount = (float) ($plan->prices->{$frequency}->{currency()} ?? 0);
+
+            if($amount <= 0) {
+                continue;
+            }
+
+            $variants[] = [
+                'label' => l('plan.custom_plan.' . $frequency),
+                'amount' => $format_pay_currency_amount($amount),
+                'frequency' => $frequency,
+            ];
+        }
+    }
+
+    return $variants;
+};
+
+$pay_plan_has_feature = static function($plan_settings, string $feature_key): bool {
+    $enabled_biolink_blocks = (array) ($plan_settings->enabled_biolink_blocks ?? []);
+
+    return match($feature_key) {
+        'ai_growth_plan_is_enabled' => !empty($plan_settings->ai_growth_plan_is_enabled),
+        'lead_funnel' => !empty($enabled_biolink_blocks['lead_funnel']),
+        'funnels_analytics_is_enabled' => !empty($plan_settings->funnels_analytics_is_enabled) && !empty($enabled_biolink_blocks['lead_funnel']),
+        'link_discount' => !empty($enabled_biolink_blocks['link_discount']),
+        'link_forever_product' => !empty($enabled_biolink_blocks['link_forever_product']),
+        'link_save_contact' => !empty($enabled_biolink_blocks['link_save_contact']),
+        'custom_html_whatsapp' => !empty($enabled_biolink_blocks['custom_html_whatsapp']),
+        default => false,
+    };
+};
+
+$pay_feature_labels = [
+    'ai_growth_plan_is_enabled' => l('global.plan_settings.ai_growth_plan_is_enabled'),
+    'lead_funnel' => l('plan_features.forever.label.lead_funnel'),
+    'funnels_analytics_is_enabled' => l('plan_features.forever.label.funnels_analytics_is_enabled'),
+    'link_discount' => l('plan_features.forever.label.link_discount'),
+    'link_forever_product' => l('plan_features.forever.label.link_forever_product'),
+    'link_save_contact' => l('plan_features.forever.label.link_save_contact'),
+    'custom_html_whatsapp' => l('plan_features.forever.label.custom_html_whatsapp'),
+];
+
+$pay_plan_name = $get_pay_plan_translation_value($data->plan ?? null, 'name');
+$pay_plan_description = $normalize_pay_plan_description($get_pay_plan_translation_value($data->plan ?? null, 'description'));
+$pay_plan_prices = $get_pay_plan_price_variants($data->plan ?? null);
+$pay_primary_price = $pay_plan_prices[0] ?? null;
+$pay_secondary_prices = array_slice($pay_plan_prices, 1);
+$pay_plan_highlights = [];
+
+foreach($pay_feature_labels as $feature_key => $feature_label) {
+    if($pay_plan_has_feature($data->plan->settings ?? new \stdClass(), $feature_key)) {
+        $pay_plan_highlights[] = $feature_label;
+    }
+}
+
+if(!empty($data->plan->settings->biolinks_limit)) {
+    $pay_plan_highlights[] = sprintf('%s: %s', l('account_plan.premium.metric_apps'), ($data->plan->settings->biolinks_limit == -1 ? l('global.unlimited') : nr($data->plan->settings->biolinks_limit)));
+}
+
+if(!empty($data->plan->settings->biolink_blocks_limit)) {
+    $pay_plan_highlights[] = sprintf('%s: %s', l('account_plan.premium.metric_blocks'), ($data->plan->settings->biolink_blocks_limit == -1 ? l('global.unlimited') : nr($data->plan->settings->biolink_blocks_limit)));
+}
+
+$pay_plan_highlights = array_slice(array_values(array_unique($pay_plan_highlights)), 0, 6);
+$pay_trial_available = !empty($data->plan->trial_days) && empty($this->user->plan_trial_done);
 ?>
 
 <?php ob_start() ?>
@@ -27,7 +138,7 @@ $currency_decimals = $selected_currency->currency_decimals ?? 2;
 </script>
 <?php \Altum\Event::add_content(ob_get_clean(), 'javascript') ?>
 
-<div class="container">
+<div class="container <?= $is_fcc_premium_checkout ? 'fcc-pay-page fcc-pay-page--premium' : '' ?>">
     <?= \Altum\Alerts::output_alerts() ?>
 
     <?php if(settings()->main->breadcrumbs_is_enabled): ?>
@@ -43,8 +154,52 @@ $currency_decimals = $selected_currency->currency_decimals ?? 2;
         </nav>
     <?php endif ?>
 
+    <?php if($is_fcc_premium_checkout): ?>
+        <section class="fcc-pay-hero">
+            <div class="fcc-pay-hero__content">
+                <div class="fcc-pay-eyebrow"><?= l('pay.premium.eyebrow') ?></div>
+                <h1 class="fcc-pay-title"><?= sprintf(l('pay.custom_plan.header'), $pay_plan_name) ?></h1>
+                <p class="fcc-pay-subtitle"><?= l('pay.premium.subtitle') ?></p>
+
+                <div class="fcc-pay-badges">
+                    <span class="fcc-pay-badge is-plan"><?= $pay_plan_name ?></span>
+                    <?php if($pay_trial_available): ?>
+                        <span class="fcc-pay-badge is-trial"><?= sprintf(l('account_plan.premium.trial_cta'), (int) $data->plan->trial_days) ?></span>
+                    <?php endif ?>
+                    <span class="fcc-pay-badge is-gift"><?= l('account_plan.premium.trial_note') ?></span>
+                </div>
+
+                <?php if(!empty($pay_plan_highlights)): ?>
+                    <div class="fcc-pay-feature-chips">
+                        <?php foreach($pay_plan_highlights as $pay_highlight): ?>
+                            <span class="fcc-pay-feature-chip"><?= $pay_highlight ?></span>
+                        <?php endforeach ?>
+                    </div>
+                <?php endif ?>
+            </div>
+
+            <div class="fcc-pay-hero__aside">
+                <?php if($pay_primary_price): ?>
+                    <div class="fcc-pay-price-panel">
+                        <div class="fcc-pay-price-overline"><?= l('account_plan.premium.from') ?></div>
+                        <div class="fcc-pay-price-main"><?= $pay_primary_price['amount'] ?></div>
+                        <div class="fcc-pay-price-label"><?= $pay_primary_price['label'] ?></div>
+                    </div>
+                <?php endif ?>
+
+                <?php if(!empty($pay_secondary_prices)): ?>
+                    <div class="fcc-pay-price-variants">
+                        <?php foreach($pay_secondary_prices as $price_variant): ?>
+                            <span class="fcc-pay-price-variant"><?= $price_variant['label'] ?>: <?= $price_variant['amount'] ?></span>
+                        <?php endforeach ?>
+                    </div>
+                <?php endif ?>
+            </div>
+        </section>
+    <?php endif ?>
+
     <?php if(!settings()->payment->trial_require_card && $data->plan->trial_days && !$this->user->plan_trial_done && !isset($_GET['trial_skip'])): ?>
-        <div class="d-flex align-items-center mb-5">
+        <div class="d-flex align-items-center mb-5 <?= $is_fcc_premium_checkout ? 'fcc-pay-heading' : '' ?>">
             <h1 class="h3 m-0"><?= sprintf(l('pay.trial.header'), $data->plan->translations->{\Altum\Language::$name}->name ?? $data->plan->name) ?></h1>
 
             <div class="ml-2">
@@ -57,7 +212,7 @@ $currency_decimals = $selected_currency->currency_decimals ?? 2;
         <form action="" method="post" role="form">
             <input type="hidden" name="token" value="<?= \Altum\Csrf::get() ?>" />
 
-            <div class="row">
+            <div class="row <?= $is_fcc_premium_checkout ? 'fcc-pay-layout' : '' ?>">
                 <div class="col-12 col-xl-8 order-1 order-xl-0">
                     <button type="submit" name="submit" class="btn btn-lg btn-block btn-primary"><?= sprintf(l('pay.trial.trial_start'), $data->plan->trial_days) ?></button>
                     <a href="<?= url('pay/' . $data->plan_id . '?trial_skip=true' . (isset($_GET['code']) ? '&code=' . $_GET['code'] : null)) ?>" class="btn btn-block btn-light"><?= l('pay.trial.trial_skip') ?></a>
@@ -74,7 +229,7 @@ $currency_decimals = $selected_currency->currency_decimals ?? 2;
 
                 </div>
 
-                <div class="mb-5 col-12 col-xl-4 order-0 order-xl-1">
+                <div class="mb-5 col-12 col-xl-4 order-0 order-xl-1 <?= $is_fcc_premium_checkout ? 'fcc-pay-sidebar-column' : '' ?>">
                     <div>
                         <div>
                             <h2 class="h5 mb-4">
@@ -96,6 +251,7 @@ $currency_decimals = $selected_currency->currency_decimals ?? 2;
 
     <?php elseif(is_numeric($data->plan_id)): ?>
 
+        <?php if(!$is_fcc_premium_checkout): ?>
         <div class="d-flex align-items-center mb-5">
             <h1 class="h3 m-0"><?= sprintf(l('pay.custom_plan.header'), $data->plan->translations->{\Altum\Language::$name}->name ?? $data->plan->name) ?></h1>
 
@@ -105,6 +261,7 @@ $currency_decimals = $selected_currency->currency_decimals ?? 2;
                 </span>
             </div>
         </div>
+        <?php endif ?>
 
         <form action="" method="post" enctype="multipart/form-data" role="form">
             <input type="hidden" name="plan_id" value="<?= $data->plan_id ?>" />
@@ -115,8 +272,8 @@ $currency_decimals = $selected_currency->currency_decimals ?? 2;
             <input type="hidden" name="lifetime_price" value="<?= $data->plan->prices->lifetime->{currency()} ?>" />
             <input type="hidden" name="token" value="<?= \Altum\Csrf::get() ?>" />
 
-            <div class="row">
-                <div class="col-12 col-xl-8">
+            <div class="row <?= $is_fcc_premium_checkout ? 'fcc-pay-layout' : '' ?>">
+                <div class="col-12 col-xl-8 <?= $is_fcc_premium_checkout ? 'fcc-pay-main-column' : '' ?>">
 
                     <div class="d-flex justify-content-between">
                         <h2 class="h5 mb-4"><i class="fas fa-fw fa-sm fa-shopping-bag mr-2"></i> <?= l('pay.custom_plan.payment_frequency') ?></h2>
@@ -511,7 +668,7 @@ $currency_decimals = $selected_currency->currency_decimals ?? 2;
 
                 </div>
 
-                <div class="mt-5 mt-xl-0 col-12 col-xl-4">
+                <div class="mt-5 mt-xl-0 col-12 col-xl-4 <?= $is_fcc_premium_checkout ? 'fcc-pay-sidebar-column' : '' ?>">
                     <div class="mb-5">
                         <h2 class="h6 mb-4">
                             <i class="fas fa-fw fa-sm fa-hand-holding-heart mr-2"></i> <?= l('pay.plan_details') ?>
@@ -979,6 +1136,327 @@ $currency_decimals = $selected_currency->currency_decimals ?? 2;
         </div>
     </div>
 </div>
+
+<?php if($is_fcc_premium_checkout): ?>
+<style>
+    .fcc-pay-page {
+        padding-bottom: 3rem;
+    }
+
+    .fcc-pay-page--premium .custom-breadcrumbs a,
+    .fcc-pay-page--premium .custom-breadcrumbs li,
+    .fcc-pay-page--premium .custom-breadcrumbs i {
+        color: rgba(208, 224, 243, 0.72);
+    }
+
+    .fcc-pay-hero,
+    .fcc-pay-page--premium .card,
+    .fcc-pay-page--premium .index-icon-container,
+    .fcc-pay-page--premium .fcc-pay-trust-card {
+        position: relative;
+        overflow: hidden;
+        border-radius: 28px;
+        border: 1px solid rgba(110, 142, 196, 0.16);
+        background:
+            radial-gradient(circle at top right, rgba(72, 230, 210, 0.12), transparent 26%),
+            radial-gradient(circle at bottom left, rgba(76, 132, 255, 0.1), transparent 30%),
+            linear-gradient(180deg, rgba(14, 24, 45, 0.98), rgba(10, 17, 32, 0.98));
+        box-shadow: 0 24px 64px rgba(3, 10, 24, 0.34);
+        color: #ecf7ff;
+    }
+
+    .fcc-pay-hero::before,
+    .fcc-pay-page--premium .card::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(180deg, rgba(255,255,255,0.035), transparent 26%);
+        pointer-events: none;
+    }
+
+    .fcc-pay-hero {
+        display: grid;
+        grid-template-columns: minmax(0, 1.4fr) minmax(280px, .88fr);
+        gap: 1.5rem;
+        padding: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .fcc-pay-eyebrow {
+        display: inline-flex;
+        align-items: center;
+        font-size: .76rem;
+        text-transform: uppercase;
+        letter-spacing: .16em;
+        font-weight: 800;
+        color: #8ceee2;
+        margin-bottom: .95rem;
+    }
+
+    .fcc-pay-title {
+        font-size: clamp(2rem, 4.2vw, 3.3rem);
+        line-height: .98;
+        letter-spacing: -.05em;
+        margin-bottom: .95rem;
+        color: #f7fbff;
+    }
+
+    .fcc-pay-subtitle,
+    .fcc-pay-page--premium .text-muted,
+    .fcc-pay-page--premium small.text-muted,
+    .fcc-pay-page--premium .form-text.text-muted,
+    .fcc-pay-page--premium .card-subtitle,
+    .fcc-pay-page--premium .card-title + small {
+        color: rgba(214, 228, 245, 0.76) !important;
+    }
+
+    .fcc-pay-subtitle {
+        max-width: 62ch;
+        font-size: 1.02rem;
+        line-height: 1.7;
+        margin-bottom: 1.2rem;
+    }
+
+    .fcc-pay-badges,
+    .fcc-pay-feature-chips,
+    .fcc-pay-price-variants {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .75rem;
+    }
+
+    .fcc-pay-badge,
+    .fcc-pay-feature-chip,
+    .fcc-pay-price-variant {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 999px;
+        padding: .72rem 1rem;
+        background: rgba(255,255,255,0.05);
+        border: 1px solid rgba(153, 183, 225, 0.18);
+        color: #f3fbff;
+        font-size: .92rem;
+        line-height: 1.2;
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+    }
+
+    .fcc-pay-badge.is-trial,
+    .fcc-pay-badge.is-gift,
+    .fcc-pay-feature-chip,
+    .fcc-pay-price-variant {
+        background: linear-gradient(135deg, rgba(255, 214, 110, 0.16), rgba(81, 226, 209, 0.16));
+        border-color: rgba(255, 225, 138, 0.24);
+    }
+
+    .fcc-pay-price-panel {
+        min-width: 100%;
+        padding: 1rem 1.05rem;
+        border-radius: 24px;
+        text-align: right;
+        background: linear-gradient(180deg, rgba(255, 232, 168, 0.12), rgba(79, 215, 203, 0.08));
+        border: 1px solid rgba(255, 225, 138, 0.2);
+    }
+
+    .fcc-pay-price-overline {
+        font-size: .72rem;
+        text-transform: uppercase;
+        letter-spacing: .16em;
+        font-weight: 800;
+        color: rgba(255, 244, 201, 0.82);
+        margin-bottom: .2rem;
+    }
+
+    .fcc-pay-price-main {
+        font-size: clamp(1.75rem, 3vw, 2.6rem);
+        line-height: 1;
+        letter-spacing: -.06em;
+        font-weight: 900;
+        color: #ffffff;
+    }
+
+    .fcc-pay-price-label {
+        margin-top: .35rem;
+        color: rgba(220, 235, 249, 0.78);
+        font-weight: 700;
+    }
+
+    .fcc-pay-page--premium h1,
+    .fcc-pay-page--premium h2,
+    .fcc-pay-page--premium h3,
+    .fcc-pay-page--premium h4,
+    .fcc-pay-page--premium h5,
+    .fcc-pay-page--premium h6,
+    .fcc-pay-page--premium label,
+    .fcc-pay-page--premium .card-title,
+    .fcc-pay-page--premium .card-body,
+    .fcc-pay-page--premium .card-footer,
+    .fcc-pay-page--premium .valid-feedback {
+        color: #ecf7ff;
+    }
+
+    .fcc-pay-page--premium .card {
+        background:
+            radial-gradient(circle at top right, rgba(72, 230, 210, 0.08), transparent 24%),
+            linear-gradient(180deg, rgba(16, 26, 47, 0.98), rgba(11, 18, 34, 0.98));
+    }
+
+    .fcc-pay-page--premium .card-body,
+    .fcc-pay-page--premium .card-footer {
+        position: relative;
+        z-index: 1;
+        background: transparent !important;
+        border-color: rgba(163, 192, 234, 0.1);
+    }
+
+    .fcc-pay-page--premium .custom-radio-box .card,
+    .fcc-pay-page--premium .sticky .card,
+    .fcc-pay-page--premium #offline_payment_processor_wrapper .card,
+    .fcc-pay-page--premium #plisio_processor_wrapper .card,
+    .fcc-pay-page--premium #plisio_whitelabel_processor_wrapper .card {
+        border-radius: 22px;
+    }
+
+    .fcc-pay-page--premium .custom-radio-box .card {
+        border-color: rgba(153, 183, 225, 0.14);
+        transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease, background .18s ease;
+    }
+
+    .fcc-pay-page--premium .custom-radio-box:hover .card {
+        transform: translateY(-2px);
+        border-color: rgba(126, 232, 220, 0.26);
+        box-shadow: 0 18px 34px rgba(2, 10, 24, 0.24);
+    }
+
+    .fcc-pay-page--premium .custom-radio-box input:checked ~ .card {
+        border-color: rgba(126, 232, 220, 0.42);
+        background:
+            radial-gradient(circle at top right, rgba(72, 230, 210, 0.13), transparent 24%),
+            linear-gradient(180deg, rgba(18, 35, 55, 0.99), rgba(11, 21, 37, 0.99));
+        box-shadow: 0 20px 38px rgba(12, 33, 58, 0.26);
+    }
+
+    .fcc-pay-page--premium .custom-radio-box-main-text {
+        font-size: 1.25rem;
+        font-weight: 900;
+        letter-spacing: -.03em;
+        color: #ffffff;
+    }
+
+    .fcc-pay-page--premium .badge-primary,
+    .fcc-pay-page--premium .badge-success {
+        border-radius: 999px;
+        padding: .42rem .62rem;
+    }
+
+    .fcc-pay-page--premium .badge-primary {
+        background: linear-gradient(135deg, #62f2df 0%, #4fd7cb 40%, #7ad0ff 100%);
+        color: #062322;
+    }
+
+    .fcc-pay-page--premium .badge-success {
+        background: rgba(89, 232, 203, 0.14);
+        color: #bfffee;
+        border: 1px solid rgba(89, 232, 203, 0.18);
+    }
+
+    .fcc-pay-page--premium .btn-primary {
+        border: 0;
+        color: #062322;
+        background: linear-gradient(135deg, #62f2df 0%, #4fd7cb 40%, #7ad0ff 100%);
+        box-shadow: 0 18px 32px rgba(79, 215, 203, 0.22);
+    }
+
+    .fcc-pay-page--premium .btn-primary:hover,
+    .fcc-pay-page--premium .btn-primary:focus {
+        color: #04191c;
+        transform: translateY(-1px);
+        box-shadow: 0 22px 38px rgba(79, 215, 203, 0.28);
+    }
+
+    .fcc-pay-page--premium .btn-light,
+    .fcc-pay-page--premium .btn-outline-secondary {
+        background: rgba(255,255,255,0.04);
+        color: #eef9ff;
+        border-color: rgba(181, 213, 248, 0.18);
+    }
+
+    .fcc-pay-page--premium .btn-light:hover,
+    .fcc-pay-page--premium .btn-outline-secondary:hover {
+        background: rgba(255,255,255,0.08);
+        color: #fff;
+        border-color: rgba(181, 213, 248, 0.28);
+    }
+
+    .fcc-pay-page--premium .form-control,
+    .fcc-pay-page--premium .form-control:focus,
+    .fcc-pay-page--premium .form-control-file,
+    .fcc-pay-page--premium .custom-select {
+        background: rgba(255,255,255,0.05);
+        border-color: rgba(163, 192, 234, 0.14);
+        color: #eef8ff;
+    }
+
+    .fcc-pay-page--premium .form-control::placeholder {
+        color: rgba(214, 228, 245, 0.42);
+    }
+
+    .fcc-pay-page--premium #code_help.valid-feedback,
+    .fcc-pay-page--premium #code_help.invalid-feedback {
+        display: block;
+    }
+
+    .fcc-pay-page--premium .card-footer.bg-white {
+        background: rgba(255,255,255,0.03) !important;
+    }
+
+    .fcc-pay-page--premium .index-icon-container {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 64px;
+        height: 64px;
+        border-radius: 20px;
+        background: linear-gradient(135deg, rgba(98, 242, 223, 0.2), rgba(122, 208, 255, 0.14));
+        border: 1px solid rgba(126, 232, 220, 0.18);
+        box-shadow: none;
+    }
+
+    .fcc-pay-page--premium .index-icon-container i {
+        color: #8ceee2 !important;
+    }
+
+    .fcc-pay-page--premium .up-animation.card,
+    .fcc-pay-page--premium .up-animation {
+        border-radius: 24px;
+    }
+
+    .fcc-pay-page--premium .mt-8.row .card {
+        height: 100%;
+    }
+
+    .fcc-pay-page--premium a:not(.btn) {
+        color: #8ceee2;
+    }
+
+    @media (max-width: 1199.98px) {
+        .fcc-pay-hero {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 767.98px) {
+        .fcc-pay-hero {
+            padding: 1.25rem;
+            border-radius: 24px;
+        }
+
+        .fcc-pay-price-panel {
+            text-align: left;
+        }
+    }
+</style>
+<?php endif ?>
 
 <?php ob_start() ?>
 <script>

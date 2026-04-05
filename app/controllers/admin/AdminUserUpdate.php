@@ -125,6 +125,7 @@ class AdminUserUpdate extends Controller {
                         'removable_branding' => isset($_POST['removable_branding']),
                         'custom_branding' => isset($_POST['custom_branding']),
                         'statistics' => isset($_POST['statistics']),
+                        'ai_growth_plan_is_enabled' => isset($_POST['ai_growth_plan_is_enabled']),
                         'temporary_url_is_enabled' => isset($_POST['temporary_url_is_enabled']),
                         'cloaking_is_enabled' => isset($_POST['cloaking_is_enabled']),
                         'app_linking_is_enabled' => isset($_POST['app_linking_is_enabled']),
@@ -306,6 +307,26 @@ class AdminUserUpdate extends Controller {
                 }
 
                 $preferences->meta = (object) array_merge((array) $existing_meta, $posted_meta);
+
+                if($_POST['status'] == 1 && $user->status == 0 && empty($preferences->meta->fcc_access_approved_at)) {
+                    $preferences->meta->fcc_access_approved_at = get_date();
+                }
+
+                if(isset($preferences->meta->card_status) && (int) $preferences->meta->card_status === 1) {
+                    $preferences->meta->fcc_nfc_required = 0;
+
+                    if(empty($preferences->meta->fcc_nfc_sent_at)) {
+                        $preferences->meta->fcc_nfc_sent_at = get_date();
+                    }
+                }
+
+                if(isset($_POST['user_meta']['send_card_email']) && $_POST['user_meta']['send_card_email'] == 'on') {
+                    $preferences->meta->send_card_email = get_date();
+
+                    if(empty($preferences->meta->fcc_nfc_sent_email_sent_at)) {
+                        $preferences->meta->fcc_nfc_sent_email_sent_at = get_date();
+                    }
+                }
                 /* /Custom code */
 
 
@@ -366,17 +387,20 @@ class AdminUserUpdate extends Controller {
                         $link = db()->where('link_id', $link_id->biolink_id)->getOne('links');
 
                         if ($link) {
+                            $language = fc_resolve_language_name($user->language ?? null);
+                            $dashboard_link = url('dashboard');
                             $email_template = get_email_template(
                                 [],
-                                l('global.emails.admin.card_sent_email.subject'),
+                                l('global.emails.admin.card_sent_email.subject', $language),
                                 [
                                     '{{NAME}}' => str_replace('.', '. ', $user->name),           
-                                    '{{LINK}}' => '<a href="' . SITE_URL . $link->url . '">' . SITE_URL . $link->url . '</a>',                 
+                                    '{{LINK}}' => '<a href="' . SITE_URL . $link->url . '">' . SITE_URL . $link->url . '</a>',
+                                    '{{DASHBOARD_LINK}}' => '<a href="' . $dashboard_link . '">' . $dashboard_link . '</a>',
                                 ],
-                                l('global.emails.admin.card_sent_email.body')
+                                l('global.emails.admin.card_sent_email.body', $language)
                             );
 
-                            send_mail($user->email, $email_template->subject, $email_template->body);
+                            send_mail($user->email, $email_template->subject, $email_template->body, ['anti_phishing_code' => $user->anti_phishing_code ?? null, 'language' => $language]);
                         }
                      }                     
                 }

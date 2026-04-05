@@ -565,6 +565,10 @@ class Link extends Controller {
 		$utm_medium = input_clean($_GET['utm_medium'] ?? null);
 		$utm_campaign = input_clean($_GET['utm_campaign'] ?? null);
 
+		if(!$utm_source && ($referrer['host'] ?? null) === 'qr') {
+			$utm_source = 'qr';
+		}
+
 		/* Insert the log */
 		db()->insert('track_links', [
 			'user_id' => $this->user->user_id,

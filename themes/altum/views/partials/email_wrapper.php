@@ -146,8 +146,9 @@
         }
 
         a {
-            color: <?= settings()->smtp->button_background_color ?? '#15c' ?>;
+            color: #13b9c9;
             text-decoration: underline;
+            font-weight: 600;
         }
 
         a.cta {

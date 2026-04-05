@@ -355,6 +355,14 @@ class Dashboard extends Controller {
         $forever_outbound_condition = \Altum\Link::get_forever_outbound_click_condition_sql('`track_links`', '`biolinks_blocks`', $forever_shop_block_types_sql, $forever_registration_block_types_sql);
         $blog_product_medium = \Altum\Link::get_blog_cta_tracking_medium('product');
         $blog_business_medium = \Altum\Link::get_blog_cta_tracking_medium('business');
+        $qualified_forever_block_types = array_values(array_unique(array_merge(
+            \Altum\Link::get_monitored_forever_outbound_types(),
+            ['link_forever_living_albania_kosovo']
+        )));
+        $qualified_forever_block_types_sql = "'" . implode("','", $qualified_forever_block_types) . "'";
+        $qualified_blog_mediums = [$blog_product_medium, $blog_business_medium];
+        $qualified_blog_mediums_sql = "'" . implode("','", $qualified_blog_mediums) . "'";
+        $qualified_click_condition = "((`biolinks_blocks`.`type` IN ({$qualified_forever_block_types_sql})) OR (`track_links`.`utm_medium` IN ({$qualified_blog_mediums_sql})))";
         $unique_track_links_condition = " AND `track_links`.`is_unique` = 1";
 
         $track_clicks_total = (int) db()->where('user_id', $this->user->user_id)->getValue('track_links', 'COUNT(`id`)');
@@ -370,6 +378,34 @@ class Dashboard extends Controller {
         $forever_shop_clicks_prev_30d = (int) database()->query("SELECT COUNT(*) AS `total` FROM `track_links` LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id` WHERE `track_links`.`user_id` = {$this->user->user_id} AND `track_links`.`datetime` >= '{$previous_thirty_days_start_datetime}' AND `track_links`.`datetime` < '{$thirty_days_start_datetime}' {$unique_track_links_condition} AND {$forever_shop_condition}")->fetch_object()->total;
         $forever_registration_clicks_30d = (int) database()->query("SELECT COUNT(*) AS `total` FROM `track_links` LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id` WHERE `track_links`.`user_id` = {$this->user->user_id} AND `track_links`.`datetime` >= '{$thirty_days_start_datetime}' {$unique_track_links_condition} AND {$forever_registration_condition}")->fetch_object()->total;
         $forever_registration_clicks_prev_30d = (int) database()->query("SELECT COUNT(*) AS `total` FROM `track_links` LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id` WHERE `track_links`.`user_id` = {$this->user->user_id} AND `track_links`.`datetime` >= '{$previous_thirty_days_start_datetime}' AND `track_links`.`datetime` < '{$thirty_days_start_datetime}' {$unique_track_links_condition} AND {$forever_registration_condition}")->fetch_object()->total;
+        $qualified_clicks_30d = (int) database()->query("SELECT COUNT(*) AS `total`
+            FROM `track_links`
+            LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id`
+            WHERE `track_links`.`user_id` = {$this->user->user_id}
+              AND `track_links`.`datetime` >= '{$thirty_days_start_datetime}'
+              {$unique_track_links_condition}
+              AND {$qualified_click_condition}")->fetch_object()->total;
+        $qualified_clicks_prev_30d = (int) database()->query("SELECT COUNT(*) AS `total`
+            FROM `track_links`
+            LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id`
+            WHERE `track_links`.`user_id` = {$this->user->user_id}
+              AND `track_links`.`datetime` >= '{$previous_thirty_days_start_datetime}'
+              AND `track_links`.`datetime` < '{$thirty_days_start_datetime}'
+              {$unique_track_links_condition}
+              AND {$qualified_click_condition}")->fetch_object()->total;
+        $app_qualified_clicks_30d = (int) database()->query("SELECT COUNT(*) AS `total`
+            FROM `track_links`
+            LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id`
+            WHERE `track_links`.`user_id` = {$this->user->user_id}
+              AND `track_links`.`datetime` >= '{$thirty_days_start_datetime}'
+              {$unique_track_links_condition}
+              AND `biolinks_blocks`.`type` IN ({$qualified_forever_block_types_sql})")->fetch_object()->total;
+        $blog_qualified_clicks_30d = (int) database()->query("SELECT COUNT(*) AS `total`
+            FROM `track_links`
+            WHERE `track_links`.`user_id` = {$this->user->user_id}
+              AND `track_links`.`datetime` >= '{$thirty_days_start_datetime}'
+              {$unique_track_links_condition}
+              AND `track_links`.`utm_medium` IN ({$qualified_blog_mediums_sql})")->fetch_object()->total;
 
         $revenue_total = (float) (db()->where('user_id', $this->user->user_id)->where('status', 'paid')->getValue('payments', 'SUM(`total_amount_default_currency`)') ?? 0);
         $revenue_30d = (float) (db()->where('user_id', $this->user->user_id)->where('status', 'paid')->where('datetime', $thirty_days_start_datetime, '>=')->getValue('payments', 'SUM(`total_amount_default_currency`)') ?? 0);
@@ -388,6 +424,7 @@ class Dashboard extends Controller {
         };
 
         $biolink_visits_delta_percent = $calculate_delta_percent($biolink_visits_30d, $biolink_visits_prev_30d);
+        $qualified_clicks_delta_percent = $calculate_delta_percent($qualified_clicks_30d, $qualified_clicks_prev_30d);
         $shop_clicks_delta_percent = $calculate_delta_percent($forever_shop_clicks_30d, $forever_shop_clicks_prev_30d);
         $shop_ctr_delta_points = round($shop_ctr_30d - $shop_ctr_prev_30d, 1);
         $registration_clicks_delta_percent = $calculate_delta_percent($forever_registration_clicks_30d, $forever_registration_clicks_prev_30d);
@@ -512,10 +549,10 @@ class Dashboard extends Controller {
         $top_forever_pages_30d_result = database()->query("SELECT
             CASE
                 WHEN `track_links`.`utm_medium` IN ('{$blog_product_medium}', '{$blog_business_medium}') THEN CONCAT('blog:', COALESCE(`blog_posts`.`blog_post_id`, 0))
-                ELSE CONCAT('link:', COALESCE(`track_links`.`link_id`, `biolink_links`.`link_id`, 0))
+                ELSE CONCAT('link:', COALESCE(`biolink_links`.`link_id`, 0))
             END AS `page_key`,
-            COALESCE(`track_links`.`link_id`, `biolink_links`.`link_id`, 0) AS `resolved_link_id`,
-            COALESCE(`links`.`url`, `biolink_links`.`url`, '') AS `link_url`,
+            COALESCE(`biolink_links`.`link_id`, 0) AS `resolved_link_id`,
+            COALESCE(`biolink_links`.`url`, `links`.`url`, '') AS `link_url`,
             `blog_posts`.`blog_post_id`,
             `blog_posts`.`title` AS `blog_post_title`,
             `blog_posts`.`url` AS `blog_post_url`,
@@ -529,7 +566,11 @@ class Dashboard extends Controller {
             WHERE `track_links`.`user_id` = {$this->user->user_id}
               AND `track_links`.`datetime` >= '{$thirty_days_start_datetime}'
               {$unique_track_links_condition}
-              AND {$forever_outbound_condition}
+              AND {$qualified_click_condition}
+              AND (
+                    `track_links`.`utm_medium` IN ('{$blog_product_medium}', '{$blog_business_medium}')
+                    OR (`track_links`.`biolink_block_id` IS NOT NULL AND `biolink_links`.`link_id` IS NOT NULL)
+              )
             GROUP BY `page_key`
             ORDER BY `total` DESC
             LIMIT 15");
@@ -547,9 +588,43 @@ class Dashboard extends Controller {
                 'blog_post_id' => (int) ($top_forever_page->blog_post_id ?? 0),
                 'url' => $display_url,
                 'title' => $is_blog_article ? (string) ($top_forever_page->blog_post_title ?? '') : '',
+                'kind' => $is_blog_article ? 'blog' : 'app',
                 'open_url' => $open_url,
                 'total' => (int) ($top_forever_page->total ?? 0),
             ];
+        }
+
+        $normalized_top_forever_pages_30d = [];
+        foreach($top_forever_pages_30d as $entry) {
+            $entry_label = trim((string) (($entry['kind'] ?? '') === 'blog' ? ($entry['title'] ?? '') : ($entry['url'] ?? '')));
+            $entry_key = ($entry['kind'] ?? 'app') . '|' . mb_strtolower($entry_label !== '' ? $entry_label : (string) ($entry['link_id'] ?? 0));
+
+            if(!isset($normalized_top_forever_pages_30d[$entry_key])) {
+                $normalized_top_forever_pages_30d[$entry_key] = $entry;
+                continue;
+            }
+
+            $normalized_top_forever_pages_30d[$entry_key]['total'] += (int) ($entry['total'] ?? 0);
+
+            if(empty($normalized_top_forever_pages_30d[$entry_key]['open_url']) && !empty($entry['open_url'])) {
+                $normalized_top_forever_pages_30d[$entry_key]['open_url'] = $entry['open_url'];
+            }
+        }
+
+        $top_forever_pages_30d = array_values($normalized_top_forever_pages_30d);
+        usort($top_forever_pages_30d, fn($a, $b) => ((int) ($b['total'] ?? 0)) <=> ((int) ($a['total'] ?? 0)));
+        $top_forever_pages_30d = array_slice($top_forever_pages_30d, 0, 15);
+
+        $top_blog_content_30d = null;
+        $top_app_content_30d = null;
+        foreach($top_forever_pages_30d as $entry) {
+            if(!$top_blog_content_30d && ($entry['kind'] ?? '') === 'blog') {
+                $top_blog_content_30d = $entry;
+            }
+
+            if(!$top_app_content_30d && ($entry['kind'] ?? '') === 'app') {
+                $top_app_content_30d = $entry;
+            }
         }
 
         $source_label_sql = "CASE WHEN `track_links`.`utm_source` IS NOT NULL AND `track_links`.`utm_source` != '' THEN CONCAT('utm:', `track_links`.`utm_source`) WHEN `track_links`.`referrer_host` IS NOT NULL AND `track_links`.`referrer_host` != '' THEN `track_links`.`referrer_host` ELSE '(direct)' END";
@@ -561,6 +636,69 @@ class Dashboard extends Controller {
         $top_registration_sources_30d_result = database()->query("SELECT {$source_label_sql} AS `source`, COUNT(*) AS `total` FROM `track_links` LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id` WHERE `track_links`.`user_id` = {$this->user->user_id} AND `track_links`.`datetime` >= '{$thirty_days_start_datetime}' {$unique_track_links_condition} AND {$forever_registration_condition} GROUP BY `source` ORDER BY `total` DESC LIMIT 100");
         $top_registration_sources_30d = $this->normalize_and_rank_dashboard_traffic_sources($top_registration_sources_30d_result, 15);
         /* /Custom code: FC-2026-03-07 */
+
+        $signal_chart_labels = [];
+        $signal_chart_app_clicks = [];
+        $signal_chart_blog_clicks = [];
+        $signal_chart_registration_clicks = [];
+        $signal_chart_leads = [];
+
+        $signal_chart_start_datetime = (new \DateTimeImmutable($thirty_days_start_datetime))->setTime(0, 0, 0);
+        $signal_chart_days_map = [];
+        for($day_offset = 0; $day_offset < 30; $day_offset++) {
+            $day_key = $signal_chart_start_datetime->modify("+{$day_offset} days")->format('Y-m-d');
+            $signal_chart_days_map[$day_key] = [
+                'label' => $signal_chart_start_datetime->modify("+{$day_offset} days")->format('d.m.'),
+                'app_clicks' => 0,
+                'blog_clicks' => 0,
+                'registration_clicks' => 0,
+                'leads' => 0,
+            ];
+        }
+
+        $signal_chart_clicks_result = database()->query("SELECT
+            DATE(`track_links`.`datetime`) AS `day`,
+            SUM(CASE WHEN `biolinks_blocks`.`type` IN ({$qualified_forever_block_types_sql}) AND `track_links`.`is_unique` = 1 THEN 1 ELSE 0 END) AS `app_clicks`,
+            SUM(CASE WHEN `track_links`.`utm_medium` IN ({$qualified_blog_mediums_sql}) AND `track_links`.`is_unique` = 1 THEN 1 ELSE 0 END) AS `blog_clicks`,
+            SUM(CASE WHEN {$forever_registration_condition} AND `track_links`.`is_unique` = 1 THEN 1 ELSE 0 END) AS `registration_clicks`
+            FROM `track_links`
+            LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id`
+            WHERE `track_links`.`user_id` = {$this->user->user_id}
+              AND `track_links`.`datetime` >= '{$thirty_days_start_datetime}'
+            GROUP BY DATE(`track_links`.`datetime`)");
+        while($signal_chart_row = $signal_chart_clicks_result->fetch_object()) {
+            $day_key = (string) ($signal_chart_row->day ?? '');
+            if(!isset($signal_chart_days_map[$day_key])) {
+                continue;
+            }
+
+            $signal_chart_days_map[$day_key]['app_clicks'] = (int) ($signal_chart_row->app_clicks ?? 0);
+            $signal_chart_days_map[$day_key]['blog_clicks'] = (int) ($signal_chart_row->blog_clicks ?? 0);
+            $signal_chart_days_map[$day_key]['registration_clicks'] = (int) ($signal_chart_row->registration_clicks ?? 0);
+        }
+
+        $signal_chart_leads_result = database()->query("SELECT DATE(`datetime`) AS `day`, COUNT(*) AS `total`
+            FROM `data`
+            WHERE `user_id` = {$this->user->user_id}
+              AND `type` = 'lead_funnel'
+              AND `datetime` >= '{$thirty_days_start_datetime}'
+            GROUP BY DATE(`datetime`)");
+        while($signal_chart_lead_row = $signal_chart_leads_result->fetch_object()) {
+            $day_key = (string) ($signal_chart_lead_row->day ?? '');
+            if(!isset($signal_chart_days_map[$day_key])) {
+                continue;
+            }
+
+            $signal_chart_days_map[$day_key]['leads'] = (int) ($signal_chart_lead_row->total ?? 0);
+        }
+
+        foreach($signal_chart_days_map as $day_row) {
+            $signal_chart_labels[] = $day_row['label'];
+            $signal_chart_app_clicks[] = $day_row['app_clicks'];
+            $signal_chart_blog_clicks[] = $day_row['blog_clicks'];
+            $signal_chart_registration_clicks[] = $day_row['registration_clicks'];
+            $signal_chart_leads[] = $day_row['leads'];
+        }
 
         /* Custom code: FC-2026-03-30: dashboard geo breakdowns for key FCC KPIs */
         $dashboard_user_id = (int) $this->user->user_id;
@@ -624,6 +762,98 @@ class Dashboard extends Controller {
         );
         /* /Custom code: FC-2026-03-30 */
 
+        $growth_active_threshold = 15;
+        $growth_vip_threshold = 50;
+        $growth_stage = $qualified_clicks_30d >= $growth_vip_threshold ? 'vip' : ($qualified_clicks_30d >= $growth_active_threshold ? 'active' : 'building');
+
+        if($qualified_clicks_30d < $growth_active_threshold) {
+            $hero_title = 'Na putu si do prvih 15 kvalificiranih klikova.';
+            $hero_description = 'Sada je fokus povećati prodajni signal iz aplikacije i blog sadržaja prema Foreveru kako bi otključao istaknutu aplikaciju i jači AI ritam.';
+            $next_focus = 'Dovedi još kvalificiranih klikova prema Foreveru.';
+        } elseif($forever_registration_clicks_30d <= 0 && $qualified_clicks_30d > 0) {
+            $hero_title = 'Imaš interes, sada pojačaj prijave i kontakte.';
+            $hero_description = 'Klikovi postoje, ali rezultat još može biti jači. Vrijeme je da pojačaš put od sadržaja i webshop interesa do prijave ili leadova.';
+            $next_focus = 'Pojačaj CTA i put do prijave.';
+        } elseif(($dashboard_funnel_analytics['leads_30d'] ?? 0) > 0) {
+            $hero_title = 'Imaš signal koji već donosi konkretan rezultat.';
+            $hero_description = 'Tvoj prodajni sadržaj i funnel već rade. Sada vrijedi ponoviti ono što daje klikove i leadove te dodatno ojačati kanal koji najbolje nosi promet.';
+            $next_focus = 'Skaliraj sadržaj koji već donosi rezultat.';
+        } else {
+            $hero_title = 'Tvoj prodajni signal je aktivan i spreman za rast.';
+            $hero_description = 'Klikovi prema Foreveru dolaze, a sada fokus prebacujemo na konzistentnost, bolji conversion put i pametno ponavljanje sadržaja koji već radi.';
+            $next_focus = 'Zadrži ritam i povećaj conversion.';
+        }
+
+        $support_summary = [
+            'available' => false,
+            'open_total' => 0,
+            'answered_total' => 0,
+            'closed_total' => 0,
+            'unread_total' => 0,
+            'webinar_total' => 0,
+            'repeated_issue_detected' => false,
+            'repeated_issue_label' => '',
+            'selected_ticket_url' => url('feedback-tickets'),
+        ];
+
+        $has_feedback_tickets = database()->query("SHOW TABLES LIKE 'feedback_tickets'");
+        $has_feedback_ticket_messages = database()->query("SHOW TABLES LIKE 'feedback_ticket_messages'");
+        if($has_feedback_tickets && $has_feedback_tickets->num_rows && $has_feedback_ticket_messages && $has_feedback_ticket_messages->num_rows) {
+            $support_summary['available'] = true;
+            $support_tickets_result = database()->query("SELECT `feedback_ticket_id`, `category`, `status`, `admin_last_replied_at`, `user_last_read_at`, `is_webinar_topic_suggestion`
+                FROM `feedback_tickets`
+                WHERE `user_id` = {$this->user->user_id}
+                ORDER BY `last_datetime` DESC");
+            $support_category_counter = [];
+            $first_ticket_id = null;
+            $preferred_ticket_id = null;
+            while($ticket_row = $support_tickets_result->fetch_object()) {
+                if($first_ticket_id === null) {
+                    $first_ticket_id = (int) ($ticket_row->feedback_ticket_id ?? 0);
+                }
+
+                $status = (string) ($ticket_row->status ?? 'open');
+                if($status === 'open') {
+                    $support_summary['open_total']++;
+                } elseif($status === 'answered') {
+                    $support_summary['answered_total']++;
+                } elseif($status === 'closed') {
+                    $support_summary['closed_total']++;
+                }
+
+                if(!empty($ticket_row->is_webinar_topic_suggestion)) {
+                    $support_summary['webinar_total']++;
+                }
+
+                $admin_last_replied_at = (string) ($ticket_row->admin_last_replied_at ?? '');
+                $user_last_read_at = (string) ($ticket_row->user_last_read_at ?? '');
+                if($admin_last_replied_at !== '' && in_array($status, ['answered', 'closed'], true) && ($user_last_read_at === '' || $user_last_read_at < $admin_last_replied_at)) {
+                    $support_summary['unread_total']++;
+                    if($preferred_ticket_id === null) {
+                        $preferred_ticket_id = (int) ($ticket_row->feedback_ticket_id ?? 0);
+                    }
+                } elseif($preferred_ticket_id === null && in_array($status, ['open', 'answered'], true)) {
+                    $preferred_ticket_id = (int) ($ticket_row->feedback_ticket_id ?? 0);
+                }
+
+                $category = (string) ($ticket_row->category ?? 'other');
+                $support_category_counter[$category] = ($support_category_counter[$category] ?? 0) + 1;
+            }
+
+            $selected_ticket_id = $preferred_ticket_id ?: $first_ticket_id;
+            if($selected_ticket_id) {
+                $support_summary['selected_ticket_url'] = url('feedback-tickets?ticket_id=' . $selected_ticket_id);
+            }
+
+            arsort($support_category_counter);
+            $repeated_category = key($support_category_counter);
+            $repeated_total = (int) current($support_category_counter);
+            if($repeated_category && $repeated_total >= 2) {
+                $support_summary['repeated_issue_detected'] = true;
+                $support_summary['repeated_issue_label'] = $repeated_category;
+            }
+        }
+
         $top_country = $top_countries_30d[0] ?? null;
         if($top_country && !empty($top_country['country_code'])) {
             $dashboard_recommendations[] = [
@@ -673,6 +903,12 @@ class Dashboard extends Controller {
             'biolink_visits_30d' => $biolink_visits_30d,
             'biolink_visits_prev_30d' => $biolink_visits_prev_30d,
             'biolink_visits_delta_percent' => $biolink_visits_delta_percent,
+            'qualified_clicks_30d' => $qualified_clicks_30d,
+            'qualified_clicks_prev_30d' => $qualified_clicks_prev_30d,
+            'qualified_clicks_delta_percent' => $qualified_clicks_delta_percent,
+            'qualified_ctr_30d' => $biolink_visits_30d > 0 ? round(($qualified_clicks_30d / $biolink_visits_30d) * 100, 1) : 0,
+            'app_qualified_clicks_30d' => $app_qualified_clicks_30d,
+            'blog_qualified_clicks_30d' => $blog_qualified_clicks_30d,
             'forever_shop_clicks_30d' => $forever_shop_clicks_30d,
             'forever_shop_clicks_prev_30d' => $forever_shop_clicks_prev_30d,
             'forever_registration_clicks_30d' => $forever_registration_clicks_30d,
@@ -698,8 +934,29 @@ class Dashboard extends Controller {
             'revenue_30d' => round($revenue_30d, 2),
             'top_countries_30d' => $top_countries_30d,
             'top_forever_pages_30d' => $top_forever_pages_30d,
+            'top_blog_content_30d' => $top_blog_content_30d,
+            'top_app_content_30d' => $top_app_content_30d,
             'top_shop_sources_30d' => $top_shop_sources_30d,
             'top_registration_sources_30d' => $top_registration_sources_30d,
+            'top_country_30d' => $top_country,
+            'top_shop_source_30d' => $top_shop_sources_30d[0] ?? null,
+            'growth_active_threshold' => $growth_active_threshold,
+            'growth_vip_threshold' => $growth_vip_threshold,
+            'growth_stage' => $growth_stage,
+            'to_active' => max(0, $growth_active_threshold - $qualified_clicks_30d),
+            'to_vip' => max(0, $growth_vip_threshold - $qualified_clicks_30d),
+            'active_progress_percent' => min(100, round(($qualified_clicks_30d / max(1, $growth_active_threshold)) * 100)),
+            'vip_progress_percent' => min(100, round(($qualified_clicks_30d / max(1, $growth_vip_threshold)) * 100)),
+            'hero_title' => $hero_title,
+            'hero_description' => $hero_description,
+            'next_focus' => $next_focus,
+            'signal_chart_30d' => [
+                'labels' => $signal_chart_labels,
+                'app_clicks' => $signal_chart_app_clicks,
+                'blog_clicks' => $signal_chart_blog_clicks,
+                'registration_clicks' => $signal_chart_registration_clicks,
+                'leads' => $signal_chart_leads,
+            ],
             /* Custom code: FC-2026-03-30: dashboard geo breakdown payload */
             'biolink_visits_countries_30d' => $biolink_visits_countries_30d,
             'biolink_visits_cities_30d' => $biolink_visits_cities_30d,
@@ -1008,6 +1265,7 @@ class Dashboard extends Controller {
             /* Custom code: FC-2026-03-05: detailed forever dashboard data */
             'dashboard_forever_analytics' => $dashboard_forever_analytics,
             'dashboard_funnel_analytics' => $dashboard_funnel_analytics,
+            'dashboard_support_summary' => $support_summary,
             /* /Custom code: FC-2026-03-05 */
         ];
 

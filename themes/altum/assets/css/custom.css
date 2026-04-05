@@ -915,12 +915,100 @@ input[type="radio"]:checked ~ .link-background-type-preset {
 }
 
 /* Biolink theme */
+#biolink_themes_modal .modal-content {
+	background: linear-gradient(180deg, rgba(14, 19, 33, .98) 0%, rgba(23, 27, 39, .98) 100%);
+	border: 1px solid rgba(255, 255, 255, .08);
+	border-radius: 1.5rem;
+	box-shadow: 0 2rem 4rem rgba(0, 0, 0, .35);
+}
+
+#biolink_themes_modal .modal-title,
+#biolink_themes_modal .close {
+	color: #f7f9ff;
+}
+
+.fcc-biolink-theme-intro {
+	display: grid;
+	grid-template-columns: minmax(0, 1.35fr) minmax(18rem, .85fr);
+	gap: 1rem;
+}
+
+.fcc-biolink-theme-intro__content,
+.fcc-biolink-theme-current,
+.fcc-biolink-theme-summary {
+	background: linear-gradient(180deg, rgba(255, 255, 255, .06) 0%, rgba(255, 255, 255, .03) 100%);
+	border: 1px solid rgba(255, 255, 255, .08);
+	border-radius: 1.25rem;
+}
+
+.fcc-biolink-theme-intro__content {
+	padding: 1.25rem 1.35rem;
+	color: rgba(242, 245, 255, .88);
+}
+
+.fcc-biolink-theme-intro__eyebrow,
+.fcc-biolink-theme-current__label {
+	font-size: .78rem;
+	font-weight: 700;
+	letter-spacing: .12em;
+	text-transform: uppercase;
+	color: rgba(132, 228, 255, .92);
+	margin-bottom: .5rem;
+}
+
+.fcc-biolink-theme-intro__hint {
+	display: inline-flex;
+	align-items: center;
+	padding: .5rem .8rem;
+	border-radius: 999px;
+	background: rgba(67, 201, 255, .08);
+	color: rgba(222, 246, 255, .94);
+	font-size: .85rem;
+}
+
+.fcc-biolink-theme-current {
+	padding: 1.25rem 1.35rem;
+	color: #f7f9ff;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+}
+
+.fcc-biolink-theme-current__name {
+	font-size: 1.2rem;
+	font-weight: 700;
+	line-height: 1.25;
+	margin-bottom: .45rem;
+}
+
+.fcc-biolink-theme-current__help {
+	color: rgba(226, 231, 244, .78);
+	font-size: .92rem;
+	line-height: 1.55;
+}
+
+.fcc-biolink-theme-current__status {
+	align-self: flex-start;
+	margin-top: .9rem;
+}
+
+.fcc-biolink-theme-summary .card-body {
+	padding: 1.1rem 1.2rem;
+}
+
+.fcc-biolink-theme-summary .h5 {
+	font-weight: 700;
+}
+
 .link-biolink-theme {
 	transition: .3s transform, .3s opacity, .3s border-color;
 	height: 22.5rem !important;
 	background-size: cover !important;
 	background-position: center center !important;
 	border-width: 2px;
+	border-color: rgba(255, 255, 255, .08);
+	overflow: hidden;
+	position: relative;
 }
 
 .link-biolink-theme:hover {
@@ -931,11 +1019,84 @@ input[type="radio"]:checked ~ .link-background-type-preset {
 input[type="radio"]:checked ~ .link-biolink-theme {
 	transform: scale(1.05);
 	border-color: var(--primary);
+	box-shadow: 0 1.25rem 2.5rem rgba(0, 0, 0, .22);
 }
 
 .link-biolink-theme-custom {
-	background: linear-gradient(to right, #800080, #ffc0cb);
+	background:
+		radial-gradient(circle at top left, rgba(255, 255, 255, .22), transparent 34%),
+		linear-gradient(135deg, #151f38 0%, #284876 42%, #57c7b6 100%);
 	color: white;
+}
+
+.link-biolink-theme__badge {
+	position: absolute;
+	top: 1rem;
+	left: 1rem;
+	z-index: 2;
+	padding: .35rem .7rem;
+	border-radius: 999px;
+	background: rgba(11, 17, 29, .74);
+	backdrop-filter: blur(10px);
+	color: rgba(245, 248, 255, .94);
+	font-size: .72rem;
+	font-weight: 700;
+	letter-spacing: .08em;
+	text-transform: uppercase;
+}
+
+.link-biolink-theme__footer {
+	width: 100%;
+	margin-top: auto;
+	padding-top: 1rem;
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: .45rem;
+}
+
+.link-biolink-theme__title {
+	font-size: 1.05rem;
+	font-weight: 700;
+	line-height: 1.3;
+	color: #ffffff;
+	text-shadow: 0 .35rem 1.2rem rgba(0, 0, 0, .22);
+}
+
+.link-biolink-theme__active-pill {
+	display: inline-flex;
+	align-items: center;
+	padding: .28rem .65rem;
+	border-radius: 999px;
+	background: rgba(79, 227, 193, .14);
+	color: #a8fff0;
+	font-size: .78rem;
+	font-weight: 600;
+}
+
+.link-biolink-theme__text {
+	max-width: 19rem;
+	font-size: .95rem;
+	line-height: 1.6;
+	color: rgba(244, 248, 255, .88);
+}
+
+.link-biolink-theme__icon {
+	width: 3.25rem;
+	height: 3.25rem;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	margin-bottom: 1rem;
+	border-radius: 1rem;
+	background: rgba(255, 255, 255, .14);
+	font-size: 1.1rem;
+}
+
+@media (max-width: 991.98px) {
+	.fcc-biolink-theme-intro {
+		grid-template-columns: 1fr;
+	}
 }
 
 .link-btn-straight {
@@ -2775,4 +2936,3 @@ body.fcc-blog-route .footer.app-footer {
 	}
 }
 /* /Custom code: FC-2026-02-26 */
-

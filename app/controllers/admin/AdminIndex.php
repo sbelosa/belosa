@@ -311,11 +311,25 @@ class AdminIndex extends Controller {
             return $referrer_host;
         }
 
-        return '(direct)';
+        return l('admin_index.biolink_qualified_watch.source.direct_share');
     }
 
     private function get_biolink_source_type(array $click): string {
-        if(trim((string) ($click['utm_source'] ?? '')) !== '') {
+        $utm_source = trim((string) ($click['utm_source'] ?? ''));
+
+        if($utm_source === 'direct_share') {
+            return 'direct_share';
+        }
+
+        if($utm_source === 'nfc_card') {
+            return 'nfc_card';
+        }
+
+        if($utm_source === 'qr') {
+            return 'qr';
+        }
+
+        if($utm_source !== '') {
             return 'utm';
         }
 
@@ -323,7 +337,7 @@ class AdminIndex extends Controller {
             return 'referral';
         }
 
-        return 'direct';
+        return 'direct_share';
     }
 
     private function build_biolink_country_movers(array $current_country_buckets, array $previous_country_buckets, int $limit = 5): array {
@@ -505,7 +519,7 @@ class AdminIndex extends Controller {
         $browser_buckets = [];
         $device_buckets = [];
         $active_days = [];
-        $source_mix_counts = ['direct' => 0, 'utm' => 0, 'referral' => 0];
+        $source_mix_counts = ['direct_share' => 0, 'nfc_card' => 0, 'qr' => 0, 'utm' => 0, 'referral' => 0];
 
         foreach($current_shop_clicks as $click) {
             $country_code = strtoupper(trim((string) ($click['country_code'] ?? '')));
@@ -557,7 +571,7 @@ class AdminIndex extends Controller {
         $country_movers = $this->build_biolink_country_movers($country_buckets, $previous_country_buckets, 5);
 
         $source_mix = [];
-        foreach(['direct', 'utm', 'referral'] as $source_type) {
+        foreach(['direct_share', 'nfc_card', 'qr', 'utm', 'referral'] as $source_type) {
             $source_mix[] = [
                 'label' => l('admin_index.biolink_qualified_watch.source.' . $source_type),
                 'total' => (int) ($source_mix_counts[$source_type] ?? 0),
@@ -1346,7 +1360,7 @@ class AdminIndex extends Controller {
         $source = mb_strtolower(trim($source));
 
         if($source === '' || in_array($source, ['(direct)', 'direct', 'none', '(none)'], true)) {
-            return '(direct)';
+            return l('admin_index.biolink_qualified_watch.source.direct_share');
         }
 
         if(strpos($source, 'utm:') === 0) {
@@ -1376,17 +1390,33 @@ class AdminIndex extends Controller {
             $site_host = preg_replace('/^www\./', '', $site_host);
 
             if($source === $site_host || str_ends_with($source, '.' . $site_host)) {
-                return '(direct)';
+                return l('admin_index.biolink_qualified_watch.source.direct_share');
             }
         }
 
         if($source === 'forevercard.club' || str_ends_with($source, '.forevercard.club')) {
-            return '(direct)';
+            return l('admin_index.biolink_qualified_watch.source.direct_share');
         }
         /* /Custom code: FC-2026-03-07 */
 
         if($source === '' || in_array($source, ['(direct)', 'direct', 'none', '(none)'], true)) {
-            return '(direct)';
+            return l('admin_index.biolink_qualified_watch.source.direct_share');
+        }
+
+        if($source === 'direct_share') {
+            return l('admin_index.biolink_qualified_watch.source.direct_share');
+        }
+
+        if($source === 'nfc_card') {
+            return l('admin_index.biolink_qualified_watch.source.nfc_card');
+        }
+
+        if($source === 'qr') {
+            return l('admin_index.biolink_qualified_watch.source.qr');
+        }
+
+        if(strpos($source, 'messenger') !== false) {
+            return 'messenger';
         }
 
         if($source === 'fb' || strpos($source, 'facebook') !== false) {
@@ -1417,12 +1447,40 @@ class AdminIndex extends Controller {
             return 'viber';
         }
 
+        if(strpos($source, 'email') !== false || strpos($source, 'mail') !== false) {
+            return 'email';
+        }
+
         if(strpos($source, 'google') !== false || $source === 'gclid') {
             return 'google';
         }
 
+        if($source === 'x' || strpos($source, 'twitter') !== false) {
+            return 'x';
+        }
+
+        if(strpos($source, 'threads') !== false) {
+            return 'threads';
+        }
+
         if(strpos($source, 'linkedin') !== false) {
             return 'linkedin';
+        }
+
+        if(strpos($source, 'pinterest') !== false) {
+            return 'pinterest';
+        }
+
+        if(strpos($source, 'reddit') !== false) {
+            return 'reddit';
+        }
+
+        if(strpos($source, 'snapchat') !== false) {
+            return 'snapchat';
+        }
+
+        if(strpos($source, 'teams') !== false) {
+            return 'teams';
         }
 
         return $source;
@@ -2477,7 +2535,7 @@ class AdminIndex extends Controller {
                 ];
             }
 
-            $period_source_label_sql = "CASE WHEN `track_links`.`utm_source` IS NOT NULL AND `track_links`.`utm_source` != '' THEN CONCAT('utm:', `track_links`.`utm_source`) WHEN `track_links`.`referrer_host` IS NOT NULL AND `track_links`.`referrer_host` != '' THEN `track_links`.`referrer_host` ELSE '(direct)' END";
+            $period_source_label_sql = "CASE WHEN `track_links`.`utm_source` IS NOT NULL AND `track_links`.`utm_source` != '' THEN CONCAT('utm:', `track_links`.`utm_source`) WHEN `track_links`.`referrer_host` IS NOT NULL AND `track_links`.`referrer_host` != '' THEN `track_links`.`referrer_host` ELSE 'direct_share' END";
 
             /* Custom code: FC-2026-03-05: normalize source channels for admin period analytics */
             $period_top_shop_sources_result = database()->query("SELECT {$period_source_label_sql} AS `source`, COUNT(*) AS `total` FROM `track_links` LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id` WHERE `track_links`.`datetime` >= '{$period_start_datetime}' {$unique_track_links_condition} AND `biolinks_blocks`.`type` IN ({$forever_shop_block_types_sql}) GROUP BY `source` ORDER BY `total` DESC LIMIT 100");

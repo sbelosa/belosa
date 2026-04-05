@@ -32,12 +32,50 @@ class AccountPlan extends Controller {
         $menu = new \Altum\View('partials/account_header_menu', (array) $this);
         $this->add_view_content('account_header_menu', $menu->run());
 
+        $plan_model = new Plan();
+        $active_paid_plans = [];
+
+        if(settings()->payment->is_enabled) {
+            foreach($plan_model->get_plans() as $plan) {
+                if((int) ($plan->status ?? 0) !== 1) {
+                    continue;
+                }
+
+                $active_paid_plans[$plan->plan_id] = $plan;
+            }
+        }
+
         /* Suggested plan */
         if(settings()->payment->is_enabled && !empty($this->user->plan->additional_settings->suggested_plan_id ?? null)) {
-            $suggested_plan = (new Plan())->get_plan_by_id($this->user->plan->additional_settings->suggested_plan_id);
+            $suggested_plan = $plan_model->get_plan_by_id($this->user->plan->additional_settings->suggested_plan_id);
 
             if($this->user->plan->additional_settings->suggested_plan_code_id) {
                 $suggested_plan_code = db()->where('code_id', $this->user->plan->additional_settings->suggested_plan_code_id)->getOne('codes');
+            }
+        }
+
+        if(settings()->payment->is_enabled && empty($suggested_plan) && !empty($active_paid_plans)) {
+            $current_plan_id = (string) ($this->user->plan_id ?? '');
+            $current_plan_order = (int) ($this->user->plan->order ?? -1);
+
+            foreach($active_paid_plans as $plan) {
+                if((string) $plan->plan_id === $current_plan_id) {
+                    continue;
+                }
+
+                if(in_array($current_plan_id, ['free', 'guest', 'custom'], true) || (int) ($plan->order ?? 0) > $current_plan_order) {
+                    $suggested_plan = $plan;
+                    break;
+                }
+            }
+
+            if(empty($suggested_plan)) {
+                foreach($active_paid_plans as $plan) {
+                    if((string) $plan->plan_id !== $current_plan_id) {
+                        $suggested_plan = $plan;
+                        break;
+                    }
+                }
             }
         }
 
@@ -45,6 +83,7 @@ class AccountPlan extends Controller {
         $data = [
             'suggested_plan' => $suggested_plan ?? null,
             'suggested_plan_code' => $suggested_plan_code ?? null,
+            'active_paid_plans' => $active_paid_plans,
         ];
 
         $view = new \Altum\View('account-plan/index', (array) $this);

@@ -1230,6 +1230,70 @@ class Link {
         return $final_url;
     }
 
+    public static function append_query_parameters_to_url($url, array $params = [], bool $preserve_existing = true) {
+        $url = trim((string) $url);
+
+        if($url === '' || !filter_var($url, FILTER_VALIDATE_URL)) {
+            return $url;
+        }
+
+        $parsed_url = parse_url($url);
+        $query_params = [];
+
+        if(!empty($parsed_url['query'])) {
+            parse_str($parsed_url['query'], $query_params);
+        }
+
+        foreach($params as $key => $value) {
+            $key = trim((string) $key);
+
+            if($key === '' || $value === null || $value === '') {
+                continue;
+            }
+
+            if($preserve_existing && array_key_exists($key, $query_params)) {
+                continue;
+            }
+
+            $query_params[$key] = (string) $value;
+        }
+
+        $final_url = ($parsed_url['scheme'] ?? 'https') . '://' . ($parsed_url['host'] ?? '');
+
+        if(isset($parsed_url['port'])) {
+            $final_url .= ':' . $parsed_url['port'];
+        }
+
+        $final_url .= $parsed_url['path'] ?? '';
+
+        if(!empty($query_params)) {
+            $final_url .= '?' . http_build_query($query_params, '', '&', PHP_QUERY_RFC3986);
+        }
+
+        if(isset($parsed_url['fragment'])) {
+            $final_url .= '#' . $parsed_url['fragment'];
+        }
+
+        return $final_url;
+    }
+
+    public static function get_share_tracking_url($url, string $source = 'direct_share', string $medium = 'share', string $context = 'fcc_share') {
+        $campaign = 'fcc_' . preg_replace('/[^a-z0-9_]+/i', '_', mb_strtolower(trim($context))) ;
+        $campaign = trim($campaign, '_') ?: 'fcc_share';
+
+        $query_parameters = [
+            'utm_source' => trim($source),
+            'utm_medium' => trim($medium),
+            'utm_campaign' => $campaign,
+        ];
+
+        if($source === 'qr') {
+            $query_parameters['referrer'] = 'qr';
+        }
+
+        return self::append_query_parameters_to_url($url, $query_parameters, true);
+    }
+
     public static function get_main_biolink_discount_query_params(int $user_id): array {
         if(!$user_id) {
             return [];

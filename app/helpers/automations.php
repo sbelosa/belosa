@@ -488,6 +488,11 @@ function fc_get_forever_click_identity_context(array $payload = []): ?array {
         $referrer_path = null;
     }
 
+    $utm_source = input_clean($_REQUEST['utm_source'] ?? ($payload['utm_source'] ?? null), 128);
+    if(!$utm_source && $referrer_host === 'qr') {
+        $utm_source = 'qr';
+    }
+
     return [
         'visitor_key' => $visitor_key,
         'identity_hash' => $identity_hash,
@@ -502,7 +507,7 @@ function fc_get_forever_click_identity_context(array $payload = []): ?array {
         'referrer_path' => $referrer_path,
         'device_type' => $device_type,
         'browser_language' => $browser_language,
-        'utm_source' => input_clean($_REQUEST['utm_source'] ?? ($payload['utm_source'] ?? null), 128),
+        'utm_source' => $utm_source,
         'utm_medium' => input_clean($_REQUEST['utm_medium'] ?? ($payload['utm_medium'] ?? null), 128),
         'utm_campaign' => input_clean($_REQUEST['utm_campaign'] ?? ($payload['utm_campaign'] ?? null), 128),
     ];

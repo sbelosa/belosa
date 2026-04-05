@@ -1,61 +1,109 @@
 <?php defined('ALTUMCODE') || die() ?>
 
-<div class="mb-4">
-    <div class="row m-n2">
-        <div class="col-12 col-sm-6 p-2 position-relative text-truncate">
-            <div class="card d-flex flex-row h-100 overflow-hidden">
-                <div class="pl-3 d-flex flex-column justify-content-center">
-                    <div class="p-2 rounded-2x index-widget-icon d-flex align-items-center justify-content-center bg-gray-100">
-                        <i class="fas fa-fw fa-sm fa-eye"></i>
-                    </div>
-                </div>
+<?php
+$fcc_stats_language_name = fc_resolve_language_name(\Altum\Language::$name ?? '');
+$fcc_stats_language_code = mb_strtolower((string) (\Altum\Language::$code ?? ''));
+$fcc_stats_is_hr = in_array(mb_strtolower((string) $fcc_stats_language_name), ['hrvatski', 'croatian', 'hr'], true) || str_starts_with($fcc_stats_language_code, 'hr');
 
-                <div class="card-body text-truncate">
-                    <span class="h6"><?= nr($data->totals['pageviews']) . ' ' . l('link.statistics.pageviews') ?></span>
+$top_country_code = array_key_first($data->statistics['country_code'] ?? []);
+$top_country_value = $top_country_code !== null ? (($data->statistics['country_code'][$top_country_code] ?? 0)) : 0;
+$top_country_label = $top_country_code ? get_country_from_country_code($top_country_code) : ($fcc_stats_is_hr ? 'Nema podataka' : 'No data');
+
+$top_source_key = array_key_first($data->statistics['referrer_host'] ?? []);
+$top_source_value = $top_source_key !== null ? (($data->statistics['referrer_host'][$top_source_key] ?? 0)) : 0;
+if($top_source_key === '' || $top_source_key === null) {
+    $top_source_label = $fcc_stats_is_hr ? 'Direktno' : 'Direct';
+} elseif($top_source_key === 'qr') {
+    $top_source_label = $fcc_stats_is_hr ? 'QR kod' : 'QR code';
+} else {
+    $top_source_label = $top_source_key;
+}
+
+$latest_count = is_array($data->latest ?? null) ? count($data->latest) : 0;
+$overview_lead = $data->link->type === 'biolink'
+    ? ($fcc_stats_is_hr ? 'Ovdje vidiš kako se ova aplikacija ponaša kroz posjete, kretanje interesa i izvore prometa u odabranom razdoblju.' : 'Here you see how this app performs through visits, movement of interest and traffic sources across the selected range.')
+    : l('link.statistics.data_preview');
+?>
+
+<div class="fcc-app-overview-shell">
+    <div class="fcc-app-overview-intro">
+        <div>
+            <div class="fcc-app-overview-intro-eyebrow"><?= $fcc_stats_is_hr ? 'FCC pregled aplikacije' : 'FCC app overview' ?></div>
+            <h3><?= $data->link->type === 'biolink' ? ($fcc_stats_is_hr ? 'Ključne brojke i signali za ovu aplikaciju' : 'Key numbers and signals for this app') : l('link.statistics.overview') ?></h3>
+            <p><?= $overview_lead ?></p>
+        </div>
+        <div class="fcc-app-overview-intro-badge">
+            <span><?= $fcc_stats_is_hr ? 'Zadnje zabilježenih posjeta' : 'Latest tracked visits' ?></span>
+            <strong><?= nr($latest_count) ?></strong>
+        </div>
+    </div>
+
+    <div class="fcc-app-overview-kpis">
+        <div class="fcc-app-overview-kpi">
+            <div class="fcc-app-overview-kpi-eyebrow">
+                <i class="fas fa-fw fa-eye"></i>
+                <span><?= l('link.statistics.pageviews') ?></span>
+            </div>
+            <p class="fcc-app-overview-kpi-value"><?= nr($data->totals['pageviews']) ?></p>
+            <div class="fcc-app-overview-kpi-note"><?= $fcc_stats_is_hr ? 'Ukupan broj otvaranja aplikacije u odabranom razdoblju.' : 'Total app opens in the selected period.' ?></div>
+        </div>
+
+        <div class="fcc-app-overview-kpi">
+            <div class="fcc-app-overview-kpi-eyebrow">
+                <i class="fas fa-fw fa-users"></i>
+                <span><?= l('link.statistics.visitors') ?></span>
+            </div>
+            <p class="fcc-app-overview-kpi-value"><?= nr($data->totals['visitors']) ?></p>
+            <div class="fcc-app-overview-kpi-note"><?= $fcc_stats_is_hr ? 'Jedinstveni ljudi koji su otvorili ovu aplikaciju.' : 'Unique people who opened this app.' ?></div>
+        </div>
+
+        <div class="fcc-app-overview-kpi">
+            <div class="fcc-app-overview-kpi-eyebrow">
+                <i class="fas fa-fw fa-globe-europe"></i>
+                <span><?= $fcc_stats_is_hr ? 'Najjače tržište' : 'Top market' ?></span>
+            </div>
+            <p class="fcc-app-overview-kpi-value fcc-app-overview-kpi-value--compact"><?= htmlspecialchars((string) $top_country_label, ENT_QUOTES, 'UTF-8') ?></p>
+            <div class="fcc-app-overview-kpi-note"><?= $fcc_stats_is_hr ? 'Najviše posjeta dolazi iz ovog tržišta.' : 'Most visits currently come from this market.' ?> <strong><?= nr($top_country_value) ?></strong></div>
+        </div>
+
+        <div class="fcc-app-overview-kpi">
+            <div class="fcc-app-overview-kpi-eyebrow">
+                <i class="fas fa-fw fa-random"></i>
+                <span><?= $fcc_stats_is_hr ? 'Glavni izvor' : 'Main source' ?></span>
+            </div>
+            <p class="fcc-app-overview-kpi-value fcc-app-overview-kpi-value--compact"><?= htmlspecialchars((string) $top_source_label, ENT_QUOTES, 'UTF-8') ?></p>
+            <div class="fcc-app-overview-kpi-note"><?= $fcc_stats_is_hr ? 'Ovaj kanal ti trenutno dovodi najviše interesa.' : 'This channel is currently bringing the most interest.' ?> <strong><?= nr($top_source_value) ?></strong></div>
+        </div>
+    </div>
+
+    <div class="fcc-app-overview-chart-card card">
+        <div class="card-body">
+            <div class="fcc-app-overview-chart-head">
+                <div>
+                    <h3><?= $data->link->type === 'biolink' ? 'Kretanje interesa za ovu FCC aplikaciju' : l('link.statistics.overview') ?></h3>
+                    <p><?= $data->link->type === 'biolink' ? ($fcc_stats_is_hr ? 'Prati ritam otvaranja i jedinstvenih posjeta. Ovaj graf ti pomaže povezati objave, kampanje i stvarni interes za aplikaciju.' : 'Track the rhythm of opens and unique visits. This chart helps connect posts, campaigns and real interest in the app.') : l('link.statistics.data_preview') ?></p>
                 </div>
             </div>
-        </div>
-
-        <div class="col-12 col-sm-6 p-2 position-relative text-truncate">
-            <div class="card d-flex flex-row h-100 overflow-hidden">
-                <div class="pl-3 d-flex flex-column justify-content-center">
-                    <div class="p-2 rounded-2x index-widget-icon d-flex align-items-center justify-content-center bg-gray-100">
-                        <i class="fas fa-fw fa-sm fa-users"></i>
-                    </div>
-                </div>
-
-                <div class="card-body text-truncate">
-                    <span class="h6"><?= nr($data->totals['visitors']) . ' ' . l('link.statistics.visitors') ?></span>
-                </div>
+            <div class="chart-container">
+                <canvas id="pageviews_chart"></canvas>
             </div>
         </div>
     </div>
-</div>
 
-<div class="card mt-3 mb-5">
-    <div class="card-body">
-        <div class="chart-container">
-            <canvas id="pageviews_chart"></canvas>
+    <div class="fcc-app-preview-strip" data-toggle="tooltip" title="<?= sprintf(l('link.statistics.data_preview_info'), $this->user->preferences->default_results_per_page ?? settings()->main->default_results_per_page) ?>">
+        <div>
+            <strong><?= $fcc_stats_is_hr ? 'Pregled izvora i ponašanja' : 'Traffic and behaviour snapshot' ?></strong>
+            <div class="small text-muted mt-1"><?= $data->link->type === 'biolink' ? ($fcc_stats_is_hr ? 'Ispod odmah vidiš tržišta, referrere, uređaje i zadnje posjete koje najviše otkrivaju što se događa s aplikacijom.' : 'Below you immediately see markets, referrers, devices and latest visits that reveal what is happening with the app.') : l('link.statistics.data_preview') ?></div>
         </div>
+        <i class="fas fa-fw fa-info-circle text-muted"></i>
     </div>
-</div>
-
-<div class="d-flex align-items-center">
-    <h2 class="small font-weight-bold text-uppercase text-muted mb-0 mr-3" data-toggle="tooltip" title="<?= sprintf(l('link.statistics.data_preview_info'), $this->user->preferences->default_results_per_page ?? settings()->main->default_results_per_page) ?>">
-        <i class="fas fa-fw fa-sm fa-info-circle mr-1"></i> <?= l('link.statistics.data_preview') ?>
-    </h2>
-
-    <div class="flex-fill">
-        <hr class="border-gray-100" />
-    </div>
-</div>
 
 <div class="row mb-4">
     <div class="col-12 col-lg-6 my-3">
-        <div class="card h-100">
+        <div class="card h-100 fcc-app-insight-card">
             <div class="card-body">
                 <h3 class="h5"><?= l('global.continents') ?></h3>
-                <p></p>
+                <div class="fcc-app-insight-subtitle"><?= $data->link->type === 'biolink' ? 'Gdje se otvara tvoja aplikacija po kontinentima.' : '&nbsp;' ?></div>
 
                 <?php $i = 0; foreach($data->statistics['continent_code'] as $key => $value): $i++; if($i > 5) break; ?>
                     <?php $percentage = round($value / $data->statistics['continent_code_total_sum'] * 100, 1) ?>
@@ -92,10 +140,10 @@
     </div>
 
     <div class="col-12 col-lg-6 my-3">
-        <div class="card h-100">
+        <div class="card h-100 fcc-app-insight-card">
             <div class="card-body">
                 <h3 class="h5"><?= l('global.countries') ?></h3>
-                <p></p>
+                <div class="fcc-app-insight-subtitle"><?= $data->link->type === 'biolink' ? 'Najaktivnija tržišta za ovu aplikaciju.' : '&nbsp;' ?></div>
 
                 <?php $i = 0; foreach($data->statistics['country_code'] as $key => $value): $i++; if($i > 5) break; ?>
                     <?php $percentage = round($value / $data->statistics['country_code_total_sum'] * 100, 1) ?>
@@ -131,10 +179,10 @@
     </div>
 
     <div class="col-12 col-lg-6 my-3">
-        <div class="card h-100">
+        <div class="card h-100 fcc-app-insight-card">
             <div class="card-body">
                 <h3 class="h5"><?= l('global.cities') ?></h3>
-                <p></p>
+                <div class="fcc-app-insight-subtitle"><?= $data->link->type === 'biolink' ? 'Gradovi iz kojih dolazi najveći interes.' : '&nbsp;' ?></div>
 
                 <?php $i = 0; foreach($data->statistics['city_name'] as $key => $value): $i++; if($i > 5) break; ?>
                     <?php $percentage = round($value / $data->statistics['city_name_total_sum'] * 100, 1) ?>
@@ -165,10 +213,10 @@
     </div>
 
     <div class="col-12 col-lg-6 my-3">
-        <div class="card h-100">
+        <div class="card h-100 fcc-app-insight-card">
             <div class="card-body">
                 <h3 class="h5"><?= l('link.statistics.referrer_host') ?></h3>
-                <p></p>
+                <div class="fcc-app-insight-subtitle"><?= $data->link->type === 'biolink' ? 'Kanali i stranice koje ti dovode promet na aplikaciju.' : '&nbsp;' ?></div>
 
                 <?php $i = 0; foreach($data->statistics['referrer_host'] as $key => $value): $i++; if($i > 5) break; ?>
                     <?php $percentage = round($value / $data->statistics['referrer_host_total_sum'] * 100, 1) ?>
@@ -207,10 +255,10 @@
     </div>
 
     <div class="col-12 col-lg-6 my-3">
-        <div class="card h-100">
+        <div class="card h-100 fcc-app-insight-card">
             <div class="card-body">
                 <h3 class="h5"><?= l('link.statistics.device') ?></h3>
-                <p></p>
+                <div class="fcc-app-insight-subtitle"><?= $data->link->type === 'biolink' ? 'Na kojim uređajima se tvoja aplikacija najviše otvara.' : '&nbsp;' ?></div>
 
                 <?php $i = 0; foreach($data->statistics['device_type'] as $key => $value): $i++; if($i > 5) break; ?>
                     <?php $percentage = round($value / $data->statistics['device_type_total_sum'] * 100, 1) ?>
@@ -245,10 +293,10 @@
     </div>
 
     <div class="col-12 col-lg-6 my-3">
-        <div class="card h-100">
+        <div class="card h-100 fcc-app-insight-card">
             <div class="card-body">
                 <h3 class="h5"><?= l('link.statistics.os') ?></h3>
-                <p></p>
+                <div class="fcc-app-insight-subtitle"><?= $data->link->type === 'biolink' ? 'Operativni sustavi tvojih posjetitelja.' : '&nbsp;' ?></div>
 
                 <?php $i = 0; foreach($data->statistics['os_name'] as $key => $value): $i++; if($i > 5) break; ?>
                     <?php $percentage = round($value / $data->statistics['os_name_total_sum'] * 100, 1) ?>
@@ -280,10 +328,10 @@
     </div>
 
     <div class="col-12 col-lg-6 my-3">
-        <div class="card h-100">
+        <div class="card h-100 fcc-app-insight-card">
             <div class="card-body">
                 <h3 class="h5"><?= l('link.statistics.browser') ?></h3>
-                <p></p>
+                <div class="fcc-app-insight-subtitle"><?= $data->link->type === 'biolink' ? 'Preglednici kroz koje posjetitelji dolaze.' : '&nbsp;' ?></div>
 
                 <?php $i = 0; foreach($data->statistics['browser_name'] as $key => $value): $i++; if($i > 5) break; ?>
                     <?php $percentage = round($value / $data->statistics['browser_name_total_sum'] * 100, 1) ?>
@@ -315,10 +363,10 @@
     </div>
 
     <div class="col-12 col-lg-6 my-3">
-        <div class="card h-100">
+        <div class="card h-100 fcc-app-insight-card">
             <div class="card-body">
                 <h3 class="h5"><?= l('link.statistics.language') ?></h3>
-                <p></p>
+                <div class="fcc-app-insight-subtitle"><?= $data->link->type === 'biolink' ? 'Jezici preglednika koji dominiraju u prometu.' : '&nbsp;' ?></div>
 
                 <?php $i = 0; foreach($data->statistics['browser_language'] as $key => $value): $i++; if($i > 5) break; ?>
                     <?php $percentage = round($value / $data->statistics['browser_language_total_sum'] * 100, 1) ?>
@@ -353,98 +401,98 @@
     </div>
 </div>
 
-<div>
-    <div class="d-flex align-items-center mb-3">
-        <h2 class="small font-weight-bold text-uppercase text-muted mb-0 mr-3"><i class="fas fa-fw fa-sm fa-chart-bar mr-1"></i> <?= l('link.statistics.latest') ?></h2>
+<div id="fcc_app_stats_tour_step_latest">
+    <div class="fcc-app-latest-card card">
+        <div class="card-body">
+            <h3><?= l('link.statistics.latest') ?></h3>
+            <div class="fcc-app-insight-subtitle"><?= $data->link->type === 'biolink' ? 'Zadnje posjete, odakle su došle i kada su se dogodile. Ovo je koristan dnevni pregled kampanja i aktivnosti.' : l('link.statistics.latest') ?></div>
 
-        <div class="flex-fill">
-            <hr class="border-gray-100" />
+            <div class="table-responsive table-custom-container">
+                <table class="table table-custom">
+                    <thead>
+                    <tr>
+                        <th class="">
+                            <div><?= l('global.country') ?></div>
+                            <div><?= l('global.city') ?></div>
+                        </th>
+                        <th class=""><?= l('link.table.device') ?></th>
+                        <th class="">
+                            <div><?= l('link.table.os') ?></div>
+                            <div><?= l('link.table.browser') ?></div>
+                        </th>
+                        <th class=""><?= l('link.table.referrer') ?></th>
+                        <th class=""><?= l('global.datetime') ?></th>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+
+                    <?php $i = 1; ?>
+                    <?php foreach($data->latest as $row): ?>
+                        <?php if($i++ > 10) break ?>
+                        <tr>
+                            <td class="text-nowrap">
+                                <div class="d-flex align-items-center">
+                                    <div class="table-image-wrapper mr-3">
+                                        <img src="<?= ASSETS_FULL_URL . 'images/countries/' . ($row->country_code ? mb_strtolower($row->country_code) : 'unknown') . '.svg' ?>" class="img-fluid icon-favicon" />
+                                    </div>
+
+                                    <div class="d-flex flex-column">
+                                        <span class=""><?= $row->country_code ? get_country_from_country_code($row->country_code) : l('global.unknown') ?></span>
+                                        <span class="text-muted small"><?= $row->city_name ?? l('global.unknown') ?></span>
+                                    </div>
+                                </div>
+                            </td>
+
+                            <td class="text-nowrap">
+                                <span class="badge badge-light">
+                                    <?= $row->device_type ? '<i class="fas fa-fw fa-sm fa-' . $row->device_type . ' mr-1"></i>' . l('global.device.' . $row->device_type) : l('global.unknown') ?>
+                                </span>
+                            </td>
+
+                            <td class="text-nowrap">
+                                <div>
+                                    <img src="<?= ASSETS_FULL_URL . 'images/os/' . os_name_to_os_key($row->os_name) . '.svg' ?>" class="img-fluid icon-favicon-small mr-1" />
+                                    <span class="font-size-small"><?= $row->os_name ?: l('global.unknown') ?></span>
+                                </div>
+                                <div>
+                                    <img src="<?= ASSETS_FULL_URL . 'images/browsers/' . browser_name_to_browser_key($row->browser_name) . '.svg' ?>" class="img-fluid icon-favicon-small mr-1" />
+                                    <span class="font-size-small"><?= $row->browser_name ?: l('global.unknown') ?></span>
+                                </div>
+                            </td>
+
+                            <td class="text-nowrap">
+                                <?php if(!$row->referrer_host): ?>
+                                    <span><?= l('link.statistics.referrer_direct') ?></span>
+                                <?php elseif($row->referrer_host == 'qr'): ?>
+                                    <span><?= l('link.statistics.referrer_qr') ?></span>
+                                <?php else: ?>
+                                    <img referrerpolicy="no-referrer" src="<?= get_favicon_url_from_domain($row->referrer_host) ?>" class="img-fluid icon-favicon mr-1" loading="lazy" />
+                                    <a href="<?= url($data->url . '/statistics?type=referrer_path&referrer_host=' . $row->referrer_host . '&start_date=' . $data->datetime['start_date'] . '&end_date=' . $data->datetime['end_date']) ?>" title="<?= $row->referrer_host ?>" class=""><?= $row->referrer_host ?></a>
+                                    <a href="<?= 'https://' . $row->referrer_host ?>" target="_blank" rel="nofollow noopener" class="text-muted ml-1"><i class="fas fa-fw fa-xs fa-external-link-alt"></i></a>
+                                <?php endif ?>
+                            </td>
+
+                            <td class="text-nowrap">
+                                <span class="text-muted" data-toggle="tooltip" title="<?= \Altum\Date::get($row->datetime, 1) ?>"><?= \Altum\Date::get_timeago($row->datetime) ?></span>
+                            </td>
+                        </tr>
+                    <?php endforeach ?>
+
+                    <tr>
+                        <td colspan="7">
+                            <a href="<?= url((isset($data->link->biolink_block_id) ? 'biolink-block/' . $data->link->biolink_block_id : 'link/' . $data->link->link_id) . '/' . $data->method . '?type=entries&start_date=' . $data->datetime['start_date'] . '&end_date=' . $data->datetime['end_date']) ?>" class="text-muted text-decoration-none small">
+                                <i class="fas fa-angle-right fa-sm fa-fw mr-1"></i> <?= l('global.view_more') ?>
+                            </a>
+                        </td>
+                    </tr>
+
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
-
-    <div class="table-responsive table-custom-container">
-        <table class="table table-custom">
-            <thead>
-            <tr>
-                <th class="">
-                    <div><?= l('global.country') ?></div>
-                    <div><?= l('global.city') ?></div>
-                </th>
-                <th class=""><?= l('link.table.device') ?></th>
-                <th class="">
-                    <div><?= l('link.table.os') ?></div>
-                    <div><?= l('link.table.browser') ?></div>
-                </th>
-                <th class=""><?= l('link.table.referrer') ?></th>
-                <th class=""><?= l('global.datetime') ?></th>
-            </tr>
-            </thead>
-
-            <tbody>
-
-            <?php $i = 1; ?>
-            <?php foreach($data->latest as $row): ?>
-                <?php if($i++ > 10) break ?>
-                <tr>
-                    <td class="text-nowrap">
-                        <div class="d-flex align-items-center">
-                            <div class="table-image-wrapper mr-3">
-                                <img src="<?= ASSETS_FULL_URL . 'images/countries/' . ($row->country_code ? mb_strtolower($row->country_code) : 'unknown') . '.svg' ?>" class="img-fluid icon-favicon" />
-                            </div>
-
-                            <div class="d-flex flex-column">
-                                <span class=""><?= $row->country_code ? get_country_from_country_code($row->country_code) : l('global.unknown') ?></span>
-                                <span class="text-muted small"><?= $row->city_name ?? l('global.unknown') ?></span>
-                            </div>
-                        </div>
-                    </td>
-
-                    <td class="text-nowrap">
-                        <span class="badge badge-light">
-                            <?= $row->device_type ? '<i class="fas fa-fw fa-sm fa-' . $row->device_type . ' mr-1"></i>' . l('global.device.' . $row->device_type) : l('global.unknown') ?>
-                        </span>
-                    </td>
-
-                    <td class="text-nowrap">
-                        <div>
-                            <img src="<?= ASSETS_FULL_URL . 'images/os/' . os_name_to_os_key($row->os_name) . '.svg' ?>" class="img-fluid icon-favicon-small mr-1" />
-                            <span class="font-size-small"><?= $row->os_name ?: l('global.unknown') ?></span>
-                        </div>
-                        <div>
-                            <img src="<?= ASSETS_FULL_URL . 'images/browsers/' . browser_name_to_browser_key($row->browser_name) . '.svg' ?>" class="img-fluid icon-favicon-small mr-1" />
-                            <span class="font-size-small"><?= $row->browser_name ?: l('global.unknown') ?></span>
-                        </div>
-                    </td>
-
-                    <td class="text-nowrap">
-                        <?php if(!$row->referrer_host): ?>
-                            <span><?= l('link.statistics.referrer_direct') ?></span>
-                        <?php elseif($row->referrer_host == 'qr'): ?>
-                            <span><?= l('link.statistics.referrer_qr') ?></span>
-                        <?php else: ?>
-                            <img referrerpolicy="no-referrer" src="<?= get_favicon_url_from_domain($row->referrer_host) ?>" class="img-fluid icon-favicon mr-1" loading="lazy" />
-                            <a href="<?= url($data->url . '/statistics?type=referrer_path&referrer_host=' . $row->referrer_host . '&start_date=' . $data->datetime['start_date'] . '&end_date=' . $data->datetime['end_date']) ?>" title="<?= $row->referrer_host ?>" class=""><?= $row->referrer_host ?></a>
-                            <a href="<?= 'https://' . $row->referrer_host ?>" target="_blank" rel="nofollow noopener" class="text-muted ml-1"><i class="fas fa-fw fa-xs fa-external-link-alt"></i></a>
-                        <?php endif ?>
-                    </td>
-
-                    <td class="text-nowrap">
-                        <span class="text-muted" data-toggle="tooltip" title="<?= \Altum\Date::get($row->datetime, 1) ?>"><?= \Altum\Date::get_timeago($row->datetime) ?></span>
-                    </td>
-                </tr>
-            <?php endforeach ?>
-
-            <tr>
-                <td colspan="7">
-                    <a href="<?= url((isset($data->link->biolink_block_id) ? 'biolink-block/' . $data->link->biolink_block_id : 'link/' . $data->link->link_id) . '/' . $data->method . '?type=entries&start_date=' . $data->datetime['start_date'] . '&end_date=' . $data->datetime['end_date']) ?>" class="text-muted text-decoration-none small">
-                        <i class="fas fa-angle-right fa-sm fa-fw mr-1"></i> <?= l('global.view_more') ?>
-                    </a>
-                </td>
-            </tr>
-
-            </tbody>
-        </table>
-    </div>
+</div>
 </div>
 
 <?php require THEME_PATH . 'views/partials/js_chart_defaults.php' ?>

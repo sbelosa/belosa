@@ -66,6 +66,455 @@ class Link extends Controller {
         return $this->extract_user_phone_from_preferences($user);
     }
 
+    private function get_ai_profile_values($preferences): array {
+        if(is_string($preferences)) {
+            $preferences = json_decode($preferences ?? '{}');
+        }
+
+        if(is_array($preferences)) {
+            $preferences = (object) $preferences;
+        }
+
+        $profile = $preferences->leader_ai_profile ?? null;
+
+        if(is_array($profile)) {
+            $profile = (object) $profile;
+        }
+
+        return [
+            'primary_goal' => (string) ($profile->primary_goal ?? ''),
+            'priority_offer' => (string) ($profile->priority_offer ?? ''),
+            'active_channels' => is_array($profile->active_channels ?? null) ? array_values($profile->active_channels) : [],
+            'available_time' => (string) ($profile->available_time ?? ''),
+            'biggest_blocker' => (string) ($profile->biggest_blocker ?? ''),
+            'communication_style' => (string) ($profile->communication_style ?? ''),
+            'follow_up_readiness' => (string) ($profile->follow_up_readiness ?? ''),
+            'weekly_change' => (string) ($profile->weekly_change ?? ''),
+        ];
+    }
+
+    private function is_ai_profile_complete(array $values): bool {
+        return (bool) ($values['primary_goal'] && $values['priority_offer'] && !empty($values['active_channels']) && $values['available_time'] && $values['biggest_blocker'] && $values['communication_style'] && $values['follow_up_readiness'] && $values['weekly_change']);
+    }
+
+    private function decode_biolink_block_settings($settings): \stdClass {
+        if(is_string($settings)) {
+            $settings = json_decode($settings ?? '{}');
+        }
+
+        if(is_array($settings)) {
+            $settings = (object) $settings;
+        }
+
+        if(!$settings instanceof \stdClass) {
+            $settings = new \stdClass();
+        }
+
+        return $settings;
+    }
+
+    private function is_app_review_whatsapp_socials_block(\stdClass $settings): bool {
+        $socials = $settings->socials ?? null;
+
+        if(is_object($socials)) {
+            $socials = (array) $socials;
+        }
+
+        if(!is_array($socials)) {
+            return false;
+        }
+
+        $whatsapp_value = trim((string) ($socials['whatsapp'] ?? ''));
+
+        if($whatsapp_value === '') {
+            return false;
+        }
+
+        foreach($socials as $social_key => $social_value) {
+            if($social_key === 'whatsapp') {
+                continue;
+            }
+
+            if(trim((string) $social_value) !== '') {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private function is_app_review_whatsapp_block(string $type, \stdClass $settings): bool {
+        if($type === 'custom_html_whatsapp') {
+            return true;
+        }
+
+        if($type === 'socials') {
+            return $this->is_app_review_whatsapp_socials_block($settings);
+        }
+
+        if($type !== 'link') {
+            return false;
+        }
+
+        $location_url = trim((string) ($settings->location_url ?? ''));
+        if($location_url === '') {
+            return false;
+        }
+
+        return str_contains(mb_strtolower($location_url), 'wa.me')
+            || str_contains(mb_strtolower($location_url), 'api.whatsapp.com');
+    }
+
+    private function get_app_review_signal_block_maps(array $link_ids): array {
+        $signal_maps = [];
+
+        foreach($link_ids as $link_id) {
+            $link_id = (int) $link_id;
+
+            if($link_id <= 0) {
+                continue;
+            }
+
+            $signal_maps[$link_id] = [
+                'shop_block_ids' => [],
+                'whatsapp_block_ids' => [],
+                'product_block_ids' => [],
+                'funnel_block_ids' => [],
+            ];
+        }
+
+        if(empty($signal_maps)) {
+            return [];
+        }
+
+        $shop_types = ['link_discount', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo'];
+        $relevant_types = array_unique(array_merge($shop_types, ['link_forever_product', 'lead_funnel', 'custom_html_whatsapp', 'socials', 'link']));
+        $relevant_types_sql = "'" . implode("','", array_map(static function($type) {
+            return str_replace("'", "\\'", (string) $type);
+        }, $relevant_types)) . "'";
+        $link_ids_sql = implode(',', array_map('intval', array_keys($signal_maps)));
+
+        $blocks_result = database()->query("SELECT `biolink_block_id`, `link_id`, `type`, `settings`
+            FROM `biolinks_blocks`
+            WHERE `link_id` IN ({$link_ids_sql})
+              AND `type` IN ({$relevant_types_sql})");
+
+        while($row = $blocks_result->fetch_object()) {
+            $link_id = (int) ($row->link_id ?? 0);
+            $block_id = (int) ($row->biolink_block_id ?? 0);
+            $type = (string) ($row->type ?? '');
+
+            if(!$link_id || !$block_id || !isset($signal_maps[$link_id])) {
+                continue;
+            }
+
+            $settings = $this->decode_biolink_block_settings($row->settings ?? null);
+
+            if(in_array($type, $shop_types, true)) {
+                $signal_maps[$link_id]['shop_block_ids'][] = $block_id;
+            }
+
+            if($type === 'link_forever_product') {
+                $signal_maps[$link_id]['product_block_ids'][] = $block_id;
+            }
+
+            if($type === 'lead_funnel') {
+                $signal_maps[$link_id]['funnel_block_ids'][] = $block_id;
+            }
+
+            if($this->is_app_review_whatsapp_block($type, $settings)) {
+                $signal_maps[$link_id]['whatsapp_block_ids'][] = $block_id;
+            }
+        }
+
+        foreach($signal_maps as &$signal_map) {
+            foreach(['shop_block_ids', 'whatsapp_block_ids', 'product_block_ids', 'funnel_block_ids'] as $signal_key) {
+                $signal_map[$signal_key] = array_values(array_unique(array_map('intval', $signal_map[$signal_key])));
+            }
+        }
+        unset($signal_map);
+
+        return $signal_maps;
+    }
+
+    private function calculate_app_review_weighted_signal_score(array $signals): int {
+        return (int) (
+            (int) ($signals['shop_contacts_30d'] ?? 0)
+            + (int) ($signals['whatsapp_contacts_30d'] ?? 0)
+            + (int) ($signals['product_clicks_30d'] ?? 0)
+            + ((int) ($signals['funnel_registrations_30d'] ?? 0) * 2)
+        );
+    }
+
+    private function enrich_app_review_signal_snapshots(array $apps, string $period_start_datetime): array {
+        if(empty($apps)) {
+            return [];
+        }
+
+        $signal_maps = $this->get_app_review_signal_block_maps(array_keys($apps));
+        $track_block_map = [];
+        $funnel_block_map = [];
+
+        foreach($apps as $link_id => &$app) {
+            $signal_map = $signal_maps[(int) $link_id] ?? [
+                'shop_block_ids' => [],
+                'whatsapp_block_ids' => [],
+                'product_block_ids' => [],
+                'funnel_block_ids' => [],
+            ];
+
+            $app['shop_contacts_30d'] = 0;
+            $app['whatsapp_contacts_30d'] = 0;
+            $app['product_clicks_30d'] = 0;
+            $app['funnel_registrations_30d'] = 0;
+            $app['weighted_signal_score'] = 0;
+
+            foreach(($signal_map['shop_block_ids'] ?? []) as $block_id) {
+                $track_block_map[(int) $block_id]['shop_contacts_30d'][] = (int) $link_id;
+            }
+
+            foreach(($signal_map['whatsapp_block_ids'] ?? []) as $block_id) {
+                $track_block_map[(int) $block_id]['whatsapp_contacts_30d'][] = (int) $link_id;
+            }
+
+            foreach(($signal_map['product_block_ids'] ?? []) as $block_id) {
+                $track_block_map[(int) $block_id]['product_clicks_30d'][] = (int) $link_id;
+            }
+
+            foreach(($signal_map['funnel_block_ids'] ?? []) as $block_id) {
+                $funnel_block_map[(int) $block_id][] = (int) $link_id;
+            }
+        }
+        unset($app);
+
+        if(!empty($track_block_map)) {
+            $track_block_ids_sql = implode(',', array_map('intval', array_keys($track_block_map)));
+            $track_result = database()->query("SELECT `biolink_block_id`, COUNT(*) AS `total`
+                FROM `track_links`
+                WHERE `datetime` >= '{$period_start_datetime}'
+                  AND `is_unique` = 1
+                  AND `biolink_block_id` IN ({$track_block_ids_sql})
+                GROUP BY `biolink_block_id`");
+
+            while($row = $track_result->fetch_object()) {
+                $block_id = (int) ($row->biolink_block_id ?? 0);
+                $total = (int) ($row->total ?? 0);
+
+                foreach(($track_block_map[$block_id] ?? []) as $signal_key => $link_ids) {
+                    foreach((array) $link_ids as $link_id) {
+                        if(isset($apps[$link_id])) {
+                            $apps[$link_id][$signal_key] += $total;
+                        }
+                    }
+                }
+            }
+        }
+
+        if(!empty($funnel_block_map)) {
+            $funnel_block_ids_sql = implode(',', array_map('intval', array_keys($funnel_block_map)));
+            $funnel_result = database()->query("SELECT `biolink_block_id`, COUNT(*) AS `total`
+                FROM `data`
+                WHERE `type` = 'lead_funnel'
+                  AND `datetime` >= '{$period_start_datetime}'
+                  AND `biolink_block_id` IN ({$funnel_block_ids_sql})
+                GROUP BY `biolink_block_id`");
+
+            while($row = $funnel_result->fetch_object()) {
+                $block_id = (int) ($row->biolink_block_id ?? 0);
+                $total = (int) ($row->total ?? 0);
+
+                foreach((array) ($funnel_block_map[$block_id] ?? []) as $link_id) {
+                    if(isset($apps[$link_id])) {
+                        $apps[$link_id]['funnel_registrations_30d'] += $total;
+                    }
+                }
+            }
+        }
+
+        foreach($apps as &$app) {
+            $app['weighted_signal_score'] = $this->calculate_app_review_weighted_signal_score($app);
+        }
+        unset($app);
+
+        return $apps;
+    }
+
+    private function compare_app_review_signal_rows(array $a, array $b): int {
+        return (($b['weighted_signal_score'] ?? 0) <=> ($a['weighted_signal_score'] ?? 0))
+            ?: (($b['shop_contacts_30d'] ?? 0) <=> ($a['shop_contacts_30d'] ?? 0))
+            ?: (($b['whatsapp_contacts_30d'] ?? 0) <=> ($a['whatsapp_contacts_30d'] ?? 0))
+            ?: (($b['funnel_registrations_30d'] ?? 0) <=> ($a['funnel_registrations_30d'] ?? 0))
+            ?: (($b['product_clicks_30d'] ?? 0) <=> ($a['product_clicks_30d'] ?? 0))
+            ?: ((string) ($a['url'] ?? '') <=> (string) ($b['url'] ?? ''));
+    }
+
+    private function get_default_app_review_benchmark(): array {
+        return [
+            'shop_contacts_30d' => 18,
+            'whatsapp_contacts_30d' => 10,
+            'product_clicks_30d' => 8,
+            'funnel_registrations_30d' => 4,
+            'weighted_signal_score' => 44,
+        ];
+    }
+
+    private function get_app_review_benchmark_payload(array $selected_app = []): array {
+        $period_30d_start = (new \DateTimeImmutable())->sub(new \DateInterval('P29D'))->format('Y-m-d 00:00:00');
+        $now_datetime = (new \DateTimeImmutable())->format('Y-m-d H:i:s');
+        $shop_block_types = ['link_discount', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo'];
+        $shop_block_types_sql = "'" . implode("','", $shop_block_types) . "'";
+        $shop_condition = \Altum\Link::get_forever_shop_click_condition_sql('`tl`', '`bb`', $shop_block_types_sql);
+
+        $qualified_users = [];
+        $qualified_users_result = database()->query("SELECT `tl`.`user_id`, COUNT(*) AS `shop_contacts_30d`
+            FROM `track_links` AS `tl`
+            INNER JOIN `biolinks_blocks` AS `bb` ON `bb`.`biolink_block_id` = `tl`.`biolink_block_id`
+            INNER JOIN `users` AS `u` ON `u`.`user_id` = `tl`.`user_id`
+            WHERE `tl`.`datetime` >= '{$period_30d_start}'
+              AND `tl`.`is_unique` = 1
+              AND {$shop_condition}
+              AND `u`.`status` = 1
+              AND `u`.`plan_id` = '5'
+              AND (`u`.`plan_expiration_date` IS NULL OR `u`.`plan_expiration_date` = '' OR `u`.`plan_expiration_date` >= '{$now_datetime}')
+            GROUP BY `tl`.`user_id`
+            HAVING `shop_contacts_30d` > 15");
+
+        while($row = $qualified_users_result->fetch_object()) {
+            $qualified_users[(int) ($row->user_id ?? 0)] = (int) ($row->shop_contacts_30d ?? 0);
+        }
+
+        if(empty($qualified_users)) {
+            return [
+                'benchmark' => $this->get_default_app_review_benchmark(),
+                'peer_examples' => [],
+            ];
+        }
+
+        $qualified_user_ids_sql = implode(',', array_map('intval', array_keys($qualified_users)));
+        $apps_result = database()->query("SELECT `ub`.`user_id`, `ub`.`biolink_id` AS `link_id`, `l`.`url`
+            FROM `users_biolinks` AS `ub`
+            INNER JOIN `links` AS `l` ON `l`.`link_id` = `ub`.`biolink_id` AND `l`.`type` = 'biolink'
+            WHERE `l`.`is_enabled` = 1
+              AND `ub`.`user_id` IN ({$qualified_user_ids_sql})");
+
+        $benchmark_apps = [];
+
+        while($row = $apps_result->fetch_object()) {
+            $link_id = (int) ($row->link_id ?? 0);
+
+            if(!$link_id) {
+                continue;
+            }
+
+            $benchmark_apps[$link_id] = [
+                'link_id' => $link_id,
+                'user_id' => (int) ($row->user_id ?? 0),
+                'url' => (string) ($row->url ?? ''),
+                'public_url' => !empty($row->url) ? url((string) $row->url) : '',
+            ];
+        }
+
+        if(empty($benchmark_apps)) {
+            return [
+                'benchmark' => $this->get_default_app_review_benchmark(),
+                'peer_examples' => [],
+            ];
+        }
+
+        $benchmark_apps = array_values($this->enrich_app_review_signal_snapshots($benchmark_apps, $period_30d_start));
+        usort($benchmark_apps, fn(array $a, array $b): int => $this->compare_app_review_signal_rows($a, $b));
+
+        if(empty($benchmark_apps)) {
+            return [
+                'benchmark' => $this->get_default_app_review_benchmark(),
+                'peer_examples' => [],
+            ];
+        }
+
+        $top_benchmark_apps = array_slice($benchmark_apps, 0, min(5, count($benchmark_apps)));
+        $totals = [
+            'shop_contacts_30d' => 0,
+            'whatsapp_contacts_30d' => 0,
+            'product_clicks_30d' => 0,
+            'funnel_registrations_30d' => 0,
+            'weighted_signal_score' => 0,
+        ];
+
+        foreach($top_benchmark_apps as $app) {
+            $totals['shop_contacts_30d'] += (int) ($app['shop_contacts_30d'] ?? 0);
+            $totals['whatsapp_contacts_30d'] += (int) ($app['whatsapp_contacts_30d'] ?? 0);
+            $totals['product_clicks_30d'] += (int) ($app['product_clicks_30d'] ?? 0);
+            $totals['funnel_registrations_30d'] += (int) ($app['funnel_registrations_30d'] ?? 0);
+            $totals['weighted_signal_score'] += (int) ($app['weighted_signal_score'] ?? 0);
+        }
+
+        $count = max(1, count($top_benchmark_apps));
+        $selected_performance = !empty($selected_app) ? $selected_app : ['weighted_signal_score' => 0];
+        $peer_examples = [];
+
+        foreach($benchmark_apps as $app) {
+            if($this->compare_app_review_signal_rows($app, $selected_performance) <= 0) {
+                continue;
+            }
+
+            $peer_examples[] = [
+                'label' => (string) (($app['url'] ?? '') ?: '-'),
+                'public_url' => (string) ($app['public_url'] ?? ''),
+            ];
+
+            if(count($peer_examples) >= 3) {
+                break;
+            }
+        }
+
+        return [
+            'benchmark' => [
+                'shop_contacts_30d' => max(1, (int) round($totals['shop_contacts_30d'] / $count)),
+                'whatsapp_contacts_30d' => max(1, (int) round($totals['whatsapp_contacts_30d'] / $count)),
+                'product_clicks_30d' => max(1, (int) round($totals['product_clicks_30d'] / $count)),
+                'funnel_registrations_30d' => max(1, (int) round($totals['funnel_registrations_30d'] / $count)),
+                'weighted_signal_score' => max(1, (int) round($totals['weighted_signal_score'] / $count)),
+            ],
+            'peer_examples' => $peer_examples,
+        ];
+    }
+
+    private function get_app_review_quality_payload(array $selected_app): array {
+        $benchmark_payload = $this->get_app_review_benchmark_payload($selected_app);
+        $benchmark = (array) ($benchmark_payload['benchmark'] ?? []);
+        $performance = $selected_app;
+
+        $ratios = [
+            'shop_contacts_30d' => min(1.2, ((int) ($performance['shop_contacts_30d'] ?? 0)) / max(1, (int) ($benchmark['shop_contacts_30d'] ?? 1))),
+            'whatsapp_contacts_30d' => min(1.2, ((int) ($performance['whatsapp_contacts_30d'] ?? 0)) / max(1, (int) ($benchmark['whatsapp_contacts_30d'] ?? 1))),
+            'product_clicks_30d' => min(1.15, ((int) ($performance['product_clicks_30d'] ?? 0)) / max(1, (int) ($benchmark['product_clicks_30d'] ?? 1))),
+            'funnel_registrations_30d' => min(1.25, ((int) ($performance['funnel_registrations_30d'] ?? 0)) / max(1, (int) ($benchmark['funnel_registrations_30d'] ?? 1))),
+        ];
+
+        $score = (int) round(min(100,
+            ($ratios['shop_contacts_30d'] * 25) +
+            ($ratios['whatsapp_contacts_30d'] * 25) +
+            ($ratios['product_clicks_30d'] * 20) +
+            ($ratios['funnel_registrations_30d'] * 30)
+        ));
+
+        $level_key = $score >= 80 ? 'strong' : ($score >= 60 ? 'growing' : 'foundation');
+
+        return [
+            'score' => $score,
+            'level_key' => $level_key,
+            'level_label' => l('ai_plan.app_review_quality_level.' . $level_key),
+            'summary' => l('ai_plan.app_review_quality_summary.' . $level_key),
+            'performance' => [
+                'shop_contacts_30d' => (int) ($performance['shop_contacts_30d'] ?? 0),
+                'whatsapp_contacts_30d' => (int) ($performance['whatsapp_contacts_30d'] ?? 0),
+                'product_clicks_30d' => (int) ($performance['product_clicks_30d'] ?? 0),
+                'funnel_registrations_30d' => (int) ($performance['funnel_registrations_30d'] ?? 0),
+            ],
+            'peer_examples' => (array) ($benchmark_payload['peer_examples'] ?? []),
+        ];
+    }
+
     public function index() {
 
         \Altum\Authentication::guard();
@@ -88,6 +537,11 @@ class Link extends Controller {
         $this->link->settings = json_decode($this->link->settings ?? '');
         $this->link->pixels_ids = json_decode($this->link->pixels_ids ?? '[]');
         $this->link->email_reports = json_decode($this->link->email_reports ?? '[]');
+        $ai_profile_values = $this->get_ai_profile_values($this->user->preferences ?? null);
+        $has_ai_growth_plan_access = \Altum\Authentication::is_admin() || !empty($this->user->plan_settings->ai_growth_plan_is_enabled ?? false);
+        $app_review_is_accessible = $has_ai_growth_plan_access && (\Altum\Authentication::is_admin() || $this->is_ai_profile_complete($ai_profile_values));
+        $app_review_locked_reason = !$has_ai_growth_plan_access ? l('global.info_message.plan_feature_no_access') : ($app_review_is_accessible ? '' : l('ai_plan.app_review_locked_entry_tooltip'));
+        $app_review_page_url = url('ai-plan?section=app_review');
 
         /* Check for the plan limit */
         $plan_limit = match($this->link->type) {
@@ -120,6 +574,26 @@ class Link extends Controller {
             $this->link->full_url .= '/';
         }
 
+        $app_review_quality_payload = null;
+        if($this->link->type === 'biolink') {
+            $signal_snapshot = [
+                (int) $this->link->link_id => [
+                    'link_id' => (int) $this->link->link_id,
+                    'user_id' => (int) $this->user->user_id,
+                    'url' => (string) ($this->link->url ?? ''),
+                    'public_url' => (string) ($this->link->full_url ?? ''),
+                ],
+            ];
+            $signal_snapshot = $this->enrich_app_review_signal_snapshots($signal_snapshot, (new \DateTimeImmutable())->sub(new \DateInterval('P29D'))->format('Y-m-d 00:00:00'));
+            $app_review_quality_payload = $this->get_app_review_quality_payload($signal_snapshot[(int) $this->link->link_id] ?? []);
+        }
+
+        /* Main FCC app context */
+        $biolink_main = db()->where('user_id', $this->user->user_id)->getOne('users_biolinks', ['biolink_id']);
+        $vcard_main = db()->where('user_id', $this->user->user_id)->getOne('users_vcards', ['vcard_id']);
+        $is_main_biolink_app = $this->link->type === 'biolink' && $biolink_main && (int) $biolink_main->biolink_id === (int) $this->link->link_id;
+        $main_biolink_statistics_url = $biolink_main ? url('link/' . (int) $biolink_main->biolink_id . '/statistics') : null;
+
         /* Set a custom title */
         Title::set(sprintf(l('link.title'), $this->link->url));
 
@@ -139,20 +613,63 @@ class Link extends Controller {
                         ->where('is_published', 1)
                         ->orderBy('datetime', 'DESC')
                         ->get('blog_posts', 300, ['blog_post_id', 'title', 'description', 'url', 'image', 'language']);
+                    $blog_products_index = [];
+                    $app_language_code = $this->link->settings->language_code ?? \Altum\Language::$default_code;
 
                     foreach($blog_products_result as $blog_post) {
-                        $language_prefix = null;
-                        if(!empty($blog_post->language) && isset(\Altum\Language::$active_languages[$blog_post->language])) {
-                            $language_prefix = \Altum\Language::$active_languages[$blog_post->language] . '/';
+                        $translation_key = trim((string) ($blog_post->url ?? ''));
+
+                        if($translation_key === '') {
+                            continue;
                         }
 
-                        $blog_products[] = (object) [
+                        $language_code = null;
+                        if(!empty($blog_post->language) && isset(\Altum\Language::$active_languages[$blog_post->language])) {
+                            $language_code = \Altum\Language::$active_languages[$blog_post->language];
+                        }
+
+                        $language_prefix = $language_code ? $language_code . '/' : null;
+                        $product_row = (object) [
                             'blog_post_id' => (int) $blog_post->blog_post_id,
-                            'title' => $blog_post->title,
+                            'title' => (string) $blog_post->title,
                             'description' => mb_substr(trim(strip_tags((string) ($blog_post->description ?? ''))), 0, 220),
                             'blog_url' => SITE_URL . $language_prefix . 'blog/' . $blog_post->url,
                             'image_url' => !empty($blog_post->image) ? \Altum\Uploads::get_full_url('blog') . $blog_post->image : null,
+                            'translation_key' => $translation_key,
+                            'language_code' => $language_code ?: \Altum\Language::$default_code,
                         ];
+
+                        if(!isset($blog_products_index[$translation_key])) {
+                            $blog_products_index[$translation_key] = [
+                                'rows' => [],
+                                'ordered_language_codes' => [],
+                            ];
+                        }
+
+                        $blog_products_index[$translation_key]['rows'][$product_row->language_code] = $product_row;
+
+                        if(!in_array($product_row->language_code, $blog_products_index[$translation_key]['ordered_language_codes'], true)) {
+                            $blog_products_index[$translation_key]['ordered_language_codes'][] = $product_row->language_code;
+                        }
+                    }
+
+                    foreach($blog_products_index as $translation_key => $product_group) {
+                        $preferred_product = $product_group['rows'][$app_language_code]
+                            ?? $product_group['rows']['hr']
+                            ?? $product_group['rows']['en']
+                            ?? reset($product_group['rows']);
+
+                        if(!$preferred_product) {
+                            continue;
+                        }
+
+                        $preferred_product->translation_key = $translation_key;
+                        $preferred_product->available_language_codes = array_values($product_group['ordered_language_codes']);
+                        $preferred_product->available_languages_label = implode(' / ', array_map(static function($code) {
+                            return mb_strtoupper((string) $code);
+                        }, $preferred_product->available_language_codes));
+
+                        $blog_products[] = $preferred_product;
                     }
                     /* /Custom code: FC-2026-03-09 */
 
@@ -228,11 +745,6 @@ class Link extends Controller {
                     $payment_processors = (new \Altum\Models\PaymentProcessor())->get_payment_processors_by_user_id($this->user->user_id);
                 }
 
-                 /* Custom code */                        
-                $biolink_main = db()->where('user_id', $this->user->user_id)->getOne('users_biolinks', ['biolink_id']);
-                $vcard_main = db()->where('user_id', $this->user->user_id)->getOne('users_vcards', ['vcard_id']);
-                 /* /Custom code */
-
                 /* Prepare variables for the view */
                 $data = [
                     'link'              => $this->link,
@@ -254,6 +766,12 @@ class Link extends Controller {
                      /* Custom code */
                     'vcard_main' => $vcard_main ?? null,
                     'biolink_main' => $biolink_main ?? null,
+                    'is_main_biolink_app' => $is_main_biolink_app,
+                    'main_biolink_statistics_url' => $main_biolink_statistics_url,
+                    'app_review_quality_payload' => $app_review_quality_payload,
+                    'app_review_page_url' => $app_review_page_url,
+                    'app_review_is_accessible' => $app_review_is_accessible,
+                    'app_review_locked_reason' => $app_review_locked_reason,
                      /* /Custom code */
                 ];
 
@@ -782,6 +1300,13 @@ class Link extends Controller {
                     'type' => $type,
                     'datetime' => $datetime,
                     'has_data' => $has_data,
+                    'biolink_main' => $biolink_main ?? null,
+                    'is_main_biolink_app' => $is_main_biolink_app,
+                    'main_biolink_statistics_url' => $main_biolink_statistics_url,
+                    'app_review_quality_payload' => $app_review_quality_payload,
+                    'app_review_page_url' => $app_review_page_url,
+                    'app_review_is_accessible' => $app_review_is_accessible,
+                    'app_review_locked_reason' => $app_review_locked_reason,
                 ];
 
                 break;
@@ -814,11 +1339,6 @@ class Link extends Controller {
         $view = new \Altum\View('link/' . $method, (array) $this);
         $this->add_view_content('method', $view->run($data));
 
-        /* Custom code */
-        $biolink_main = db()->where('user_id', $this->user->user_id)->getOne('users_biolinks', ['biolink_id']);
-        $vcard_main = db()->where('user_id', $this->user->user_id)->getOne('users_vcards', ['vcard_id']);        
-        /* /Custom code */
-
         /* Prepare the view */
         $data = [
             'link' => $this->link,
@@ -827,6 +1347,12 @@ class Link extends Controller {
             /* Custom code */
             'vcard_main' => $vcard_main ?? null,
             'biolink_main' => $biolink_main ?? null,
+            'is_main_biolink_app' => $is_main_biolink_app,
+            'main_biolink_statistics_url' => $main_biolink_statistics_url,
+            'app_review_quality_payload' => $app_review_quality_payload,
+            'app_review_page_url' => $app_review_page_url,
+            'app_review_is_accessible' => $app_review_is_accessible,
+            'app_review_locked_reason' => $app_review_locked_reason,
             /* /Custom code */
         ];
 

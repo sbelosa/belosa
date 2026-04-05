@@ -78,10 +78,10 @@ if(is_logged_in() && in_array($fcc_share_route, ['index', 'blog', 'page'], true)
             <ul class="navbar-nav align-items-lg-center flex-wrap flex-lg-nowrap">
 
                 <!-- Custom code: FC-2026-02-26: fixed primary menu order -->
-                <li class="nav-item"><a class="nav-link" href="<?= url('pages/foreverclub') ?>"><?= $fcc_menu_fcc_label ?></a></li>
-                <li class="nav-item"><a class="nav-link" href="<?= $fcc_products_category_url ?>"><?= $fcc_menu_products_label ?></a></li>
-                <li class="nav-item"><a class="nav-link" href="<?= url('blog') ?>"><?= $fcc_menu_blog_label ?></a></li>
-                <li class="nav-item"><a class="nav-link" href="<?= url('page/contact') ?>"><?= $fcc_menu_contact_label ?></a></li>
+                <li class="nav-item"><a class="nav-link" href="<?= url('pages/foreverclub') ?>" id="fcc_tour_nav_forever_club"><?= $fcc_menu_fcc_label ?></a></li>
+                <li class="nav-item"><a class="nav-link" href="<?= $fcc_products_category_url ?>" id="fcc_tour_nav_forever_products"><?= $fcc_menu_products_label ?></a></li>
+                <li class="nav-item"><a class="nav-link" href="<?= url('blog') ?>" id="fcc_tour_nav_blog"><?= $fcc_menu_blog_label ?></a></li>
+                <li class="nav-item"><a class="nav-link" href="<?= url('page/contact') ?>" id="fcc_tour_nav_contact"><?= $fcc_menu_contact_label ?></a></li>
                 <!-- /Custom code: FC-2026-02-26 -->
 
                 <?php foreach($data->pages as $data): ?>
@@ -128,7 +128,7 @@ if(is_logged_in() && in_array($fcc_share_route, ['index', 'blog', 'page'], true)
 
                 <?php if(is_logged_in()): ?>
 
-                    <li class="nav-item"><a class="nav-link" href="<?= url('dashboard') ?>"><?= $fcc_menu_dashboard_label ?></a></li>
+                    <li class="nav-item"><a class="nav-link" href="<?= url('dashboard') ?>" id="fcc_tour_nav_dashboard"><?= $fcc_menu_dashboard_label ?></a></li>
 
                     <?php if(settings()->internal_notifications->users_is_enabled): ?>
                         <li class="nav-item dropdown" id="internal_notifications">
@@ -307,7 +307,7 @@ if(is_logged_in() && in_array($fcc_share_route, ['index', 'blog', 'page'], true)
 
     <?php if($fcc_share_is_visible): ?>
 </nav>
-    <div class="fcc-navbar-share-row">
+    <div class="fcc-navbar-share-row" id="fcc_tour_blog_share_row">
         <div class="fcc-navbar-share-row__inner">
             <div class="fcc-navbar-share-row__copy">
                 <span class="fcc-navbar-share-row__pill">FCC</span>
@@ -315,6 +315,7 @@ if(is_logged_in() && in_array($fcc_share_route, ['index', 'blog', 'page'], true)
                     <div class="fcc-navbar-share-row__title"><?= $fcc_is_hr_language ? 'Podijelite ovu stranicu s vašom preporukom.' : 'Share this page with your recommendation.' ?></div>
                     <button
                         type="button"
+                        id="fcc_tour_blog_share_info"
                         class="fcc-navbar-share-row__info"
                         data-fcc-navbar-share-toggle
                         data-target="#fcc-navbar-share-details"
@@ -327,11 +328,12 @@ if(is_logged_in() && in_array($fcc_share_route, ['index', 'blog', 'page'], true)
                 </div>
             </div>
 
-            <div class="fcc-navbar-share-row__buttons">
+            <div class="fcc-navbar-share-row__buttons" id="fcc_tour_blog_share_buttons">
                 <?= include_view(THEME_PATH . 'views/partials/share_buttons.php', [
                     'url' => $fcc_share_url,
                     'class' => 'btn btn-gray-100 btn-sm',
                     'copy_to_clipboard' => true,
+                    'tracking_context' => 'navbar_share',
                     'include' => ['copy', 'share', 'print', 'facebook', 'linkedin', 'whatsapp'],
                     'exclude' => ['email', 'threads', 'x', 'telegram'],
                 ]) ?>

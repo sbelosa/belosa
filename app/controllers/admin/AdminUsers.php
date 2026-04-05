@@ -56,6 +56,14 @@ class AdminUsers extends Controller {
             {$paginator->get_sql_limit()}
         ");
         while($row = $users_result->fetch_object()) {
+            $row->main_biolink_url = null;
+            $row->main_biolink_nfc_url = null;
+
+            if(!empty($row->url)) {
+                $row->main_biolink_url = SITE_URL . $row->url;
+                $row->main_biolink_nfc_url = \Altum\Link::get_share_tracking_url($row->main_biolink_url, 'nfc_card', 'nfc_tap', 'nfc_card');
+            }
+
             $users[] = $row;
         }
         /* Custom code */

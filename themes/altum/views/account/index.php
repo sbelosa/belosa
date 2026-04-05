@@ -18,18 +18,77 @@ if(!is_object($account_meta)) {
     $account_meta = (object) [];
 }
 /* /Custom code: FC-2026-03-05 */
+
+$account_get_plan_translation_value = static function($plan, string $field): string {
+    if(!$plan) {
+        return '';
+    }
+
+    $translation = $plan->translations->{\Altum\Language::$name} ?? null;
+
+    if(is_object($translation) && isset($translation->{$field}) && trim((string) $translation->{$field}) !== '') {
+        return (string) $translation->{$field};
+    }
+
+    return trim((string) ($plan->{$field} ?? ''));
+};
+
+$account_current_plan_name = $account_get_plan_translation_value($this->user->plan ?? null, 'name');
+$account_phone_value = trim((string) ($account_meta->phone ?? ''));
+$account_twofa_enabled = !empty($this->user->twofa_secret);
+$account_billing_locked = !empty($this->user->payment_subscription_id);
 ?>
 
-<div class="container">
+<div class="container fcc-account-page">
     <?= \Altum\Alerts::output_alerts() ?>
 
     <?= $this->views['account_header_menu'] ?>
 
+    <section class="fcc-account-hero">
+        <div class="fcc-account-hero__content">
+            <div class="fcc-account-eyebrow"><?= l('account.premium.eyebrow') ?></div>
+            <h1 class="fcc-account-title"><?= $this->user->name ?: $this->user->email ?></h1>
+            <p class="fcc-account-subtitle"><?= l('account.premium.subtitle') ?></p>
+
+            <div class="fcc-account-badges">
+                <span class="fcc-account-badge"><?= $this->user->email ?></span>
+                <span class="fcc-account-badge is-highlight"><?= l('account_plan.menu') ?>: <?= $account_current_plan_name ?></span>
+                <span class="fcc-account-badge"><?= l('account.settings.timezone') ?>: <?= $this->user->timezone ?></span>
+            </div>
+        </div>
+
+        <div class="fcc-account-hero__metrics">
+            <div class="fcc-account-metric-card">
+                <div class="fcc-account-metric-label"><?= l('account.settings.contact_header') ?></div>
+                <div class="fcc-account-metric-value"><?= $account_phone_value !== '' ? $account_phone_value : l('global.none') ?></div>
+                <div class="fcc-account-metric-note"><?= l('account.settings.phone') ?></div>
+            </div>
+
+            <div class="fcc-account-metric-card">
+                <div class="fcc-account-metric-label"><?= l('account.twofa.header') ?></div>
+                <div class="fcc-account-metric-value"><?= $account_twofa_enabled ? l('global.yes') : l('global.no') ?></div>
+                <div class="fcc-account-metric-note"><?= l('account.twofa.subheader') ?></div>
+            </div>
+
+            <div class="fcc-account-metric-card">
+                <div class="fcc-account-metric-label"><?= l('account.billing.header') ?></div>
+                <div class="fcc-account-metric-value"><?= $account_billing_locked ? l('account.premium.billing_locked') : l('account.premium.billing_editable') ?></div>
+                <div class="fcc-account-metric-note"><?= l('account.billing.subheader') ?></div>
+            </div>
+
+            <div class="fcc-account-metric-card">
+                <div class="fcc-account-metric-label"><?= l('account.change_password.header') ?></div>
+                <div class="fcc-account-metric-value"><?= l('global.active') ?></div>
+                <div class="fcc-account-metric-note"><?= l('account.change_password.subheader') ?></div>
+            </div>
+        </div>
+    </section>
+
     <form action="" method="post" role="form" enctype="multipart/form-data">
         <input type="hidden" name="token" value="<?= \Altum\Csrf::get() ?>" />
 
-        <div>
-            <div class="d-flex align-items-center mb-3">
+        <section class="fcc-account-section">
+            <div class="fcc-account-section-header d-flex align-items-center mb-3">
                 <h1 class="h4 m-0"><?= l('account.settings.header') ?></h1>
 
                 <div class="ml-2">
@@ -39,7 +98,7 @@ if(!is_object($account_meta)) {
                 </div>
             </div>
 
-            <div class="card">
+            <div class="card fcc-account-card">
                 <div class="card-body">
                     <div class="form-group" data-file-image-input-wrapper data-file-input-wrapper-size-limit="<?= settings()->main->avatar_size_limit ?>" data-file-input-wrapper-size-limit-error="<?= sprintf(l('global.error_message.file_size_limit'), settings()->main->avatar_size_limit) ?>">
                         <label for="avatar"><i class="fas fa-fw fa-sm fa-image text-muted mr-1"></i> <?= l('account.settings.avatar') ?></label>
@@ -66,7 +125,7 @@ if(!is_object($account_meta)) {
                     </div>
 
                     <!-- Custom code: FC-2026-03-05: account contact details section -->
-                    <div class="border rounded p-3 mb-3">
+                    <div class="fcc-account-subcard mb-3">
                         <h2 class="h6 mb-2"><?= l('account.settings.contact_header') ?></h2>
                         <p class="small text-muted mb-3"><?= l('account.settings.contact_subheader') ?></p>
 
@@ -130,12 +189,12 @@ if(!is_object($account_meta)) {
                     <?php endif ?>
                 </div>
             </div>
-        </div>
+        </section>
 
-        <hr class="border-gray-50 my-4" />
+        <hr class="fcc-account-divider my-4" />
 
-        <div class="" id="billing" style="<?= !settings()->payment->is_enabled || !settings()->payment->taxes_and_billing_is_enabled ? 'display: none;' : null ?>">
-            <div class="d-flex align-items-center mb-3">
+        <section class="fcc-account-section" id="billing" style="<?= !settings()->payment->is_enabled || !settings()->payment->taxes_and_billing_is_enabled ? 'display: none;' : null ?>">
+            <div class="fcc-account-section-header d-flex align-items-center mb-3">
                 <h1 class="h4 m-0"><?= l('account.billing.header') ?></h1>
 
                 <div class="ml-2">
@@ -145,7 +204,7 @@ if(!is_object($account_meta)) {
                 </div>
             </div>
 
-            <div class="card">
+            <div class="card fcc-account-card">
                 <div class="card-body">
                     <div class="row">
                             <div class="col-12">
@@ -252,7 +311,7 @@ if(!is_object($account_meta)) {
                         </div>
                 </div>
             </div>
-        </div>
+        </section>
 
         <?php ob_start() ?>
         <script>
@@ -332,10 +391,10 @@ if(!is_object($account_meta)) {
         </script>
         <?php \Altum\Event::add_content(ob_get_clean(), 'javascript') ?>
 
-        <hr class="border-gray-50 my-4" />
+        <hr class="fcc-account-divider my-4" />
 
-        <div>
-            <div class="d-flex align-items-center mb-3">
+        <section class="fcc-account-section">
+            <div class="fcc-account-section-header d-flex align-items-center mb-3">
                 <h1 class="h4 m-0"><?= l('account.twofa.header') ?></h1>
 
                 <div class="ml-2">
@@ -345,7 +404,7 @@ if(!is_object($account_meta)) {
                 </div>
             </div>
 
-            <div class="card">
+            <div class="card fcc-account-card">
                 <div class="card-body">
                     <div class="form-group">
                         <label for="twofa_is_enabled"><i class="fas fa-fw fa-sm fa-passport text-muted mr-1"></i> <?= l('account.twofa.is_enabled') ?></label>
@@ -399,12 +458,12 @@ if(!is_object($account_meta)) {
                     </div>
                 </div>
             </div>
-        </div>
+        </section>
 
-        <hr class="border-gray-50 my-4" />
+        <hr class="fcc-account-divider my-4" />
 
-        <div>
-            <div class="d-flex align-items-center mb-3">
+        <section class="fcc-account-section">
+            <div class="fcc-account-section-header d-flex align-items-center mb-3">
                 <h1 class="h4 m-0"><?= l('account.change_password.header') ?></h1>
 
                 <div class="ml-2">
@@ -414,7 +473,7 @@ if(!is_object($account_meta)) {
                 </div>
             </div>
 
-            <div class="card">
+            <div class="card fcc-account-card">
                 <div class="card-body">
                     <div class="form-group" data-password-toggle-view data-password-toggle-view-show="<?= l('global.show') ?>" data-password-toggle-view-hide="<?= l('global.hide') ?>">
                         <label for="old_password"><i class="fas fa-fw fa-sm fa-unlock text-muted mr-1"></i> <?= l('account.change_password.current_password') ?></label>
@@ -436,11 +495,266 @@ if(!is_object($account_meta)) {
                     </div>
                 </div>
             </div>
-        </div>
+        </section>
 
-        <button type="submit" name="submit" class="btn btn-block btn-primary mt-5"><?= l('global.update') ?></button>
+        <button type="submit" name="submit" class="btn btn-block btn-primary btn-lg fcc-account-save-btn mt-5"><?= l('account.premium.save_changes') ?></button>
     </form>
 </div>
+
+<style>
+    .fcc-account-page {
+        padding-bottom: 3rem;
+    }
+
+    .fcc-account-hero,
+    .fcc-account-card {
+        position: relative;
+        overflow: hidden;
+        border-radius: 28px;
+        border: 1px solid rgba(110, 142, 196, 0.18);
+        background:
+            radial-gradient(circle at top right, rgba(72, 230, 210, 0.13), transparent 26%),
+            radial-gradient(circle at bottom left, rgba(76, 132, 255, 0.12), transparent 30%),
+            linear-gradient(180deg, rgba(14, 24, 45, 0.98), rgba(10, 17, 32, 0.98));
+        box-shadow: 0 26px 70px rgba(3, 10, 24, 0.36);
+        color: #ecf7ff;
+    }
+
+    .fcc-account-hero::before,
+    .fcc-account-card::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(180deg, rgba(255,255,255,0.035), transparent 26%);
+        pointer-events: none;
+    }
+
+    .fcc-account-hero {
+        padding: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .fcc-account-eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: .45rem;
+        font-size: .76rem;
+        text-transform: uppercase;
+        letter-spacing: .16em;
+        font-weight: 800;
+        color: #8ceee2;
+        margin-bottom: .95rem;
+    }
+
+    .fcc-account-title {
+        font-size: clamp(2rem, 4.2vw, 3.2rem);
+        line-height: .98;
+        letter-spacing: -.05em;
+        margin-bottom: 1rem;
+        color: #f7fbff;
+    }
+
+    .fcc-account-subtitle,
+    .fcc-account-metric-note,
+    .fcc-account-page .text-muted,
+    .fcc-account-page small.text-muted,
+    .fcc-account-page .form-text.text-muted {
+        color: rgba(219, 232, 247, 0.78) !important;
+    }
+
+    .fcc-account-subtitle {
+        max-width: 62ch;
+        font-size: 1.04rem;
+        line-height: 1.7;
+        margin-bottom: 1.25rem;
+    }
+
+    .fcc-account-badges {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .75rem;
+    }
+
+    .fcc-account-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 999px;
+        padding: .72rem 1rem;
+        background: rgba(255,255,255,0.05);
+        border: 1px solid rgba(153, 183, 225, 0.18);
+        color: #f3fbff;
+        font-size: .92rem;
+        line-height: 1.2;
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+    }
+
+    .fcc-account-badge.is-highlight {
+        background: linear-gradient(135deg, rgba(80, 219, 203, 0.22), rgba(78, 129, 255, 0.14));
+        border-color: rgba(124, 232, 220, 0.4);
+    }
+
+    .fcc-account-hero__metrics {
+        margin-top: 1.5rem;
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 1rem;
+    }
+
+    .fcc-account-metric-card {
+        border-radius: 22px;
+        padding: 1.2rem;
+        background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.025));
+        border: 1px solid rgba(161, 192, 235, 0.12);
+        min-height: 148px;
+    }
+
+    .fcc-account-metric-label {
+        font-size: .78rem;
+        text-transform: uppercase;
+        letter-spacing: .14em;
+        color: rgba(178, 208, 239, 0.72);
+        margin-bottom: .8rem;
+        font-weight: 700;
+    }
+
+    .fcc-account-metric-value {
+        font-size: clamp(1.15rem, 2.8vw, 1.8rem);
+        line-height: 1.08;
+        font-weight: 900;
+        letter-spacing: -.04em;
+        margin-bottom: .55rem;
+        color: #ffffff;
+        word-break: break-word;
+    }
+
+    .fcc-account-section-header h1 {
+        color: #edf8ff;
+    }
+
+    .fcc-account-card {
+        border: 1px solid rgba(110, 142, 196, 0.14);
+    }
+
+    .fcc-account-card .card-body {
+        position: relative;
+        z-index: 1;
+        padding: 1.55rem;
+        background: transparent;
+    }
+
+    .fcc-account-subcard {
+        border-radius: 22px;
+        border: 1px solid rgba(163, 192, 234, 0.12);
+        background: rgba(255,255,255,0.035);
+        padding: 1rem;
+    }
+
+    .fcc-account-divider {
+        border-top: 1px solid rgba(163, 192, 234, 0.12);
+        opacity: 1;
+    }
+
+    .fcc-account-page .form-control,
+    .fcc-account-page .form-control:focus,
+    .fcc-account-page .custom-select,
+    .fcc-account-page .custom-select:focus,
+    .fcc-account-page .input-group-text,
+    .fcc-account-page textarea.form-control {
+        background: rgba(255,255,255,0.05);
+        border-color: rgba(163, 192, 234, 0.14);
+        color: #eef8ff;
+    }
+
+    .fcc-account-page .form-control::placeholder,
+    .fcc-account-page textarea.form-control::placeholder {
+        color: rgba(214, 228, 245, 0.42);
+    }
+
+    .fcc-account-page label,
+    .fcc-account-page .custom-control-label,
+    .fcc-account-page .btn-light,
+    .fcc-account-page .btn-light:hover,
+    .fcc-account-page .btn-light:focus {
+        color: #ecf7ff;
+    }
+
+    .fcc-account-page .custom-control-label::before,
+    .fcc-account-page .custom-control-label::after {
+        top: .2rem;
+    }
+
+    .fcc-account-page .btn-group-toggle .btn-light {
+        background: rgba(255,255,255,0.04);
+        border-color: rgba(181, 213, 248, 0.14);
+        border-radius: 18px;
+        min-height: 3.4rem;
+    }
+
+    .fcc-account-page .btn-group-toggle .btn-light.active,
+    .fcc-account-page .btn-group-toggle .btn-light:hover {
+        background: linear-gradient(135deg, rgba(98, 242, 223, 0.18), rgba(122, 208, 255, 0.12));
+        border-color: rgba(126, 232, 220, 0.28);
+    }
+
+    .fcc-account-page .btn-primary {
+        border: 0;
+        color: #062322;
+        background: linear-gradient(135deg, #62f2df 0%, #4fd7cb 40%, #7ad0ff 100%);
+        box-shadow: 0 18px 32px rgba(79, 215, 203, 0.22);
+    }
+
+    .fcc-account-page .btn-primary:hover,
+    .fcc-account-page .btn-primary:focus {
+        color: #04191c;
+        transform: translateY(-1px);
+        box-shadow: 0 22px 38px rgba(79, 215, 203, 0.28);
+    }
+
+    .fcc-account-save-btn {
+        border-radius: 18px;
+        padding: 1rem 1.35rem;
+        font-weight: 800;
+        letter-spacing: -.01em;
+    }
+
+    .fcc-account-page .input-group-text {
+        color: rgba(219, 232, 247, 0.7);
+    }
+
+    .fcc-account-page .btn-sm.btn-light {
+        background: rgba(255,255,255,0.06);
+        border-color: rgba(181, 213, 248, 0.16);
+    }
+
+    .fcc-account-page .img-fluid {
+        border-radius: 20px;
+        border: 1px solid rgba(163, 192, 234, 0.12);
+        background: rgba(255,255,255,0.03);
+        padding: .4rem;
+    }
+
+    @media (max-width: 1199.98px) {
+        .fcc-account-hero__metrics {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @media (max-width: 767.98px) {
+        .fcc-account-hero,
+        .fcc-account-card .card-body {
+            padding: 1.25rem;
+        }
+
+        .fcc-account-hero {
+            border-radius: 24px;
+        }
+
+        .fcc-account-hero__metrics {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
 
 <?php include_view(THEME_PATH . 'views/partials/js_cropper.php') ?>
 

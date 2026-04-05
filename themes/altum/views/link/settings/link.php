@@ -2,8 +2,154 @@
 
 <?php ob_start() ?>
 
-<div class="card">
-    <div class="card-body">
+<style>
+    .fcc-short-editor-shell {
+        display: flex;
+        flex-direction: column;
+        gap: 1.15rem;
+    }
+
+    .fcc-short-editor-guide {
+        border-radius: 1.45rem;
+        border: 1px solid rgba(90, 201, 230, 0.08);
+        background:
+            radial-gradient(circle at top left, rgba(72, 220, 214, 0.04) 0%, rgba(72, 220, 214, 0) 28%),
+            radial-gradient(circle at 88% 14%, rgba(61, 118, 255, 0.05) 0%, rgba(61, 118, 255, 0) 24%),
+            linear-gradient(180deg, rgba(14, 22, 40, 0.98) 0%, rgba(8, 13, 24, 0.99) 100%);
+        box-shadow: 0 28px 56px rgba(4, 10, 24, 0.28);
+        padding: 1.3rem;
+    }
+
+    .fcc-short-editor-guide-copy h3 {
+        margin: 0 0 .55rem;
+        color: #f7fbff;
+        font-size: clamp(1.28rem, 2vw, 1.7rem);
+        line-height: 1.08;
+        letter-spacing: -.04em;
+        font-weight: 850;
+    }
+
+    .fcc-short-editor-guide-copy p {
+        margin: 0;
+        max-width: 70ch;
+        color: #c8d8ea;
+        line-height: 1.72;
+    }
+
+    .fcc-short-editor-guide-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: .85rem;
+        margin-top: 1rem;
+    }
+
+    .fcc-short-editor-card {
+        border-radius: 1.1rem;
+        border: 1px solid rgba(84, 166, 255, 0.08);
+        background:
+            radial-gradient(circle at top left, rgba(40, 194, 146, 0.05) 0%, rgba(40, 194, 146, 0) 28%),
+            linear-gradient(180deg, rgba(16, 23, 39, 0.95) 0%, rgba(10, 14, 24, 0.98) 100%);
+        padding: 1rem;
+    }
+
+    .fcc-short-editor-card strong {
+        display: block;
+        margin-bottom: .35rem;
+        color: #f1f8ff;
+        font-size: .95rem;
+        font-weight: 760;
+    }
+
+    .fcc-short-editor-card span {
+        color: #adc2d9;
+        font-size: .9rem;
+        line-height: 1.62;
+    }
+
+    .fcc-short-editor-panel {
+        border-radius: 1.45rem;
+        border: 1px solid rgba(90, 201, 230, 0.08);
+        background:
+            radial-gradient(circle at top left, rgba(72, 220, 214, 0.025) 0%, rgba(72, 220, 214, 0) 28%),
+            linear-gradient(180deg, rgba(16, 23, 39, 0.98) 0%, rgba(10, 14, 24, 0.99) 100%);
+        box-shadow: 0 22px 48px rgba(4, 10, 24, 0.22);
+        overflow: hidden;
+    }
+
+    .fcc-short-editor-panel .card,
+    .fcc-short-editor-panel .card-body {
+        background: transparent;
+        border: 0;
+        box-shadow: none;
+    }
+
+    .fcc-short-editor-panel .card-body {
+        padding: 1.35rem;
+    }
+
+    .fcc-short-editor-panel-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 1rem;
+        border: 1px solid rgba(84, 166, 255, .07);
+        background: rgba(255,255,255,.025);
+        color: #eef7f7;
+        transition: all .18s ease;
+    }
+
+    .fcc-short-editor-panel-toggle:hover,
+    .fcc-short-editor-panel-toggle:focus {
+        background: rgba(73, 227, 207, .10);
+        border-color: rgba(73, 227, 207, .18);
+        color: #ffffff;
+    }
+
+    .fcc-short-editor-save {
+        padding-top: .5rem;
+    }
+
+    .fcc-short-editor-save .btn {
+        min-height: 3.15rem;
+        border-radius: 1rem;
+        font-weight: 700;
+        letter-spacing: .01em;
+    }
+
+    @media (max-width: 991px) {
+        .fcc-short-editor-guide-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<div class="fcc-short-editor-shell">
+    <section class="fcc-short-editor-guide">
+        <div class="fcc-short-editor-guide-copy">
+            <h3><?= l('link.short_editor.form_title') ?></h3>
+            <p><?= l('link.short_editor.form_text') ?></p>
+        </div>
+
+        <div class="fcc-short-editor-guide-grid">
+            <article class="fcc-short-editor-card">
+                <strong><?= l('link.short_editor.card_1_title') ?></strong>
+                <span><?= l('link.short_editor.card_1_text') ?></span>
+            </article>
+
+            <article class="fcc-short-editor-card">
+                <strong><?= l('link.short_editor.card_2_title') ?></strong>
+                <span><?= l('link.short_editor.card_2_text') ?></span>
+            </article>
+
+            <article class="fcc-short-editor-card">
+                <strong><?= l('link.short_editor.card_3_title') ?></strong>
+                <span><?= l('link.short_editor.card_3_text') ?></span>
+            </article>
+        </div>
+    </section>
+
+    <div class="card fcc-short-editor-panel">
+        <div class="card-body">
 
         <form id="update_link" name="update_link" action="" method="post" role="form" enctype="multipart/form-data">
             <input type="hidden" name="token" value="<?= \Altum\Csrf::get() ?>" />
@@ -13,7 +159,7 @@
 
             <div class="notification-container"></div>
 
-            <div class="form-group">
+            <div id="fcc_short_link_editor_step_basics" class="form-group fcc-short-link-tour-target">
                 <label for="location_url"><i class="fas fa-fw fa-link fa-sm text-muted mr-1"></i> <?= l('link.settings.location_url') ?></label>
                 <input id="location_url" type="text" class="form-control" name="location_url" value="<?= $data->link->location_url ?>" maxlength="2048" required="required" placeholder="<?= l('global.url_placeholder') ?>" />
             </div>
@@ -62,7 +208,7 @@
                 </div>
             <?php endif ?>
 
-            <button class="btn btn-block btn-gray-200 font-size-little-small font-weight-450 my-4" type="button" data-toggle="collapse" data-target="#app_linking_container" aria-expanded="false" aria-controls="app_linking_container">
+            <button id="fcc_short_link_editor_step_app_linking" class="btn btn-block btn-gray-200 font-size-little-small font-weight-450 my-4 fcc-short-editor-panel-toggle fcc-short-link-tour-target" type="button" data-toggle="collapse" data-target="#app_linking_container" aria-expanded="false" aria-controls="app_linking_container">
                 <i class="fas fa-fw fa-mobile-button fa-sm mr-1"></i> <?= l('link.settings.app_linking_header') ?>
             </button>
 
@@ -170,7 +316,7 @@
                 </div>
             <?php endif ?>
 
-            <button class="btn btn-block btn-gray-200 font-size-little-small font-weight-450 my-4" type="button" data-toggle="collapse" data-target="#temporary_url_container" aria-expanded="false" aria-controls="temporary_url_container">
+            <button id="fcc_short_link_editor_step_temporary" class="btn btn-block btn-gray-200 font-size-little-small font-weight-450 my-4 fcc-short-editor-panel-toggle fcc-short-link-tour-target" type="button" data-toggle="collapse" data-target="#temporary_url_container" aria-expanded="false" aria-controls="temporary_url_container">
                 <i class="fas fa-fw fa-clock fa-sm mr-1"></i> <?= l('link.settings.temporary_url_header') ?>
             </button>
 
@@ -247,7 +393,7 @@
                 </div>
             </div>
 
-            <button class="btn btn-block btn-gray-200 font-size-little-small font-weight-450 my-4" type="button" data-toggle="collapse" data-target="#utm_container" aria-expanded="false" aria-controls="utm_container">
+            <button id="fcc_short_link_editor_step_utm" class="btn btn-block btn-gray-200 font-size-little-small font-weight-450 my-4 fcc-short-editor-panel-toggle fcc-short-link-tour-target" type="button" data-toggle="collapse" data-target="#utm_container" aria-expanded="false" aria-controls="utm_container">
                 <i class="fas fa-fw fa-keyboard fa-sm mr-1"></i> <?= l('link.settings.utm_header') ?>
             </button>
 
@@ -278,7 +424,7 @@
                 </div>
             </div>
 
-            <button class="btn btn-block btn-gray-200 font-size-little-small font-weight-450 my-4" type="button" data-toggle="collapse" data-target="#protection_container" aria-expanded="false" aria-controls="protection_container">
+            <button id="fcc_short_link_editor_step_protection" class="btn btn-block btn-gray-200 font-size-little-small font-weight-450 my-4 fcc-short-editor-panel-toggle fcc-short-link-tour-target" type="button" data-toggle="collapse" data-target="#protection_container" aria-expanded="false" aria-controls="protection_container">
                 <i class="fas fa-fw fa-user-shield fa-sm mr-1"></i> <?= l('link.settings.protection_header') ?>
             </button>
 
@@ -311,7 +457,7 @@
                 </div>
             </div>
 
-            <button class="btn btn-block btn-gray-200 font-size-little-small font-weight-450 my-4" type="button" data-toggle="collapse" data-target="#targeting_container" aria-expanded="false" aria-controls="targeting_container">
+            <button id="fcc_short_link_editor_step_targeting" class="btn btn-block btn-gray-200 font-size-little-small font-weight-450 my-4 fcc-short-editor-panel-toggle fcc-short-link-tour-target" type="button" data-toggle="collapse" data-target="#targeting_container" aria-expanded="false" aria-controls="targeting_container">
                 <i class="fas fa-fw fa-bullseye fa-sm mr-1"></i> <?= l('link.settings.targeting_header') ?>
             </button>
 
@@ -589,7 +735,7 @@
                 </div>
             </div>
 
-            <button class="btn btn-block btn-gray-200 font-size-little-small font-weight-450 my-4" type="button" data-toggle="collapse" data-target="#cloaking_container" aria-expanded="false" aria-controls="cloaking_container">
+            <button id="fcc_short_link_editor_step_cloaking" class="btn btn-block btn-gray-200 font-size-little-small font-weight-450 my-4 fcc-short-editor-panel-toggle fcc-short-link-tour-target" type="button" data-toggle="collapse" data-target="#cloaking_container" aria-expanded="false" aria-controls="cloaking_container">
                 <i class="fas fa-fw fa-eye fa-sm mr-1"></i> <?= l('link.settings.cloaking_header') ?>
             </button>
 
@@ -647,7 +793,7 @@
                 </div>
             </div>
 
-            <button class="btn btn-block btn-gray-200 font-size-little-small font-weight-450 my-4" type="button" data-toggle="collapse" data-target="#http_container" aria-expanded="false" aria-controls="http_container">
+            <button id="fcc_short_link_editor_step_http" class="btn btn-block btn-gray-200 font-size-little-small font-weight-450 my-4 fcc-short-editor-panel-toggle fcc-short-link-tour-target" type="button" data-toggle="collapse" data-target="#http_container" aria-expanded="false" aria-controls="http_container">
                 <i class="fas fa-fw fa-laptop-code fa-sm mr-1"></i> <?= l('link.settings.http_header') ?>
             </button>
 
@@ -675,7 +821,7 @@
                 </div>
             </div>
 
-            <button class="btn btn-block btn-gray-200 font-size-little-small font-weight-450 my-4" type="button" data-toggle="collapse" data-target="#advanced_container" aria-expanded="false" aria-controls="advanced_container">
+            <button id="fcc_short_link_editor_step_advanced" class="btn btn-block btn-gray-200 font-size-little-small font-weight-450 my-4 fcc-short-editor-panel-toggle fcc-short-link-tour-target" type="button" data-toggle="collapse" data-target="#advanced_container" aria-expanded="false" aria-controls="advanced_container">
                 <i class="fas fa-fw fa-user-tie fa-sm mr-1"></i> <?= l('link.settings.advanced_header') ?>
             </button>
 
@@ -756,11 +902,12 @@
                 </div>
             </div>
 
-            <div class="mt-4">
+            <div id="fcc_short_link_editor_step_save" class="mt-4 fcc-short-editor-save fcc-short-link-tour-target">
                 <button type="submit" name="submit" class="btn btn-block btn-primary" data-is-ajax><?= l('global.update') ?></button>
             </div>
         </form>
 
+        </div>
     </div>
 </div>
 

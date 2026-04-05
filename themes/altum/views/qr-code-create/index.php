@@ -1,7 +1,335 @@
 <?php defined('ALTUMCODE') || die() ?>
 
+<?php
+$fcc_qr_create_steps = [
+    ['selector' => '#fcc_qr_create_step_intro', 'title' => l('qr_codes.editor.tour.intro_title'), 'text' => l('qr_codes.editor.tour.intro_text')],
+    ['selector' => '#fcc_qr_create_step_type', 'title' => l('qr_codes.editor.tour.type_title'), 'text' => l('qr_codes.editor.tour.type_text')],
+    ['selector' => '#fcc_qr_create_step_basics', 'title' => l('qr_codes.editor.tour.basics_title'), 'text' => l('qr_codes.editor.tour.basics_text')],
+    ['selector' => '#fcc_qr_create_step_style', 'title' => l('qr_codes.editor.tour.style_title'), 'text' => l('qr_codes.editor.tour.style_text')],
+    ['selector' => '#fcc_qr_create_step_colors', 'title' => l('qr_codes.editor.tour.colors_title'), 'text' => l('qr_codes.editor.tour.colors_text')],
+    ['selector' => '#fcc_qr_create_step_frame', 'title' => l('qr_codes.editor.tour.frame_title'), 'text' => l('qr_codes.editor.tour.frame_text')],
+    ['selector' => '#fcc_qr_create_step_branding', 'title' => l('qr_codes.editor.tour.branding_title'), 'text' => l('qr_codes.editor.tour.branding_text')],
+    ['selector' => '#fcc_qr_create_step_options', 'title' => l('qr_codes.editor.tour.options_title'), 'text' => l('qr_codes.editor.tour.options_text')],
+    ['selector' => '#fcc_qr_create_step_preview', 'title' => l('qr_codes.editor.tour.preview_title'), 'text' => l('qr_codes.editor.tour.preview_text')],
+    ['selector' => '#fcc_qr_create_step_download', 'title' => l('qr_codes.editor.tour.download_title'), 'text' => l('qr_codes.editor.tour.download_text')],
+    ['selector' => '#fcc_qr_create_step_save', 'title' => l('qr_codes.editor.tour.save_title'), 'text' => l('qr_codes.editor.tour.save_text')],
+];
+?>
+
 <div class="container">
     <?= \Altum\Alerts::output_alerts() ?>
+
+    <style>
+        .fcc-qr-editor-shell {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .fcc-qr-editor-rail {
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .fcc-qr-editor-launch {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: .48rem;
+            padding: .72rem 1rem;
+            border-radius: 14px;
+            border: 1px solid rgba(110, 205, 255, .28);
+            background: linear-gradient(135deg, rgba(69, 156, 255, .16) 0%, rgba(70, 234, 209, .14) 100%);
+            color: #eefaff;
+            font-size: .84rem;
+            font-weight: 760;
+            text-decoration: none !important;
+            transition: all .18s ease;
+        }
+
+        .fcc-qr-editor-launch:hover,
+        .fcc-qr-editor-launch:focus {
+            color: #ffffff;
+            border-color: rgba(110, 205, 255, .42);
+            background: linear-gradient(135deg, rgba(69, 156, 255, .22) 0%, rgba(70, 234, 209, .2) 100%);
+            transform: translateY(-1px);
+            outline: none;
+        }
+
+        .fcc-qr-editor-hero {
+            position: relative;
+            overflow: hidden;
+            background:
+                radial-gradient(circle at top right, rgba(84, 191, 255, 0.16), transparent 32%),
+                linear-gradient(180deg, rgba(17, 28, 41, 0.94) 0%, rgba(13, 20, 31, 0.98) 100%);
+            border: 1px solid rgba(117, 214, 255, 0.12);
+            border-radius: 24px;
+            padding: 1.35rem;
+            box-shadow: 0 22px 48px rgba(4, 10, 24, .2);
+        }
+
+        .fcc-qr-editor-hero h2 {
+            margin: 0 0 .65rem;
+            color: #f5fbff;
+            font-size: clamp(1.6rem, 2.8vw, 2.35rem);
+            line-height: 1.03;
+            letter-spacing: -.05em;
+            font-weight: 900;
+            max-width: 15ch;
+        }
+
+        .fcc-qr-editor-hero p {
+            margin: 0;
+            max-width: 75ch;
+            color: #c7d9e8;
+            line-height: 1.72;
+        }
+
+        .fcc-qr-editor-hero-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: .9rem;
+            margin-top: 1.05rem;
+        }
+
+        .fcc-qr-editor-hero-card {
+            border-radius: 18px;
+            border: 1px solid rgba(117, 214, 255, 0.14);
+            background: linear-gradient(180deg, rgba(15, 24, 35, 0.94) 0%, rgba(12, 18, 27, 0.98) 100%);
+            padding: 1rem 1.02rem;
+        }
+
+        .fcc-qr-editor-hero-card strong {
+            display: block;
+            margin-bottom: .35rem;
+            color: #f6fbff;
+            font-size: .95rem;
+            font-weight: 760;
+        }
+
+        .fcc-qr-editor-hero-card span {
+            color: #9fb4c5;
+            font-size: .9rem;
+            line-height: 1.62;
+        }
+
+        .fcc-qr-editor-wrap .card {
+            background: linear-gradient(180deg, rgba(16, 23, 34, 0.98) 0%, rgba(12, 17, 26, 0.98) 100%);
+            border: 1px solid rgba(117, 214, 255, 0.08);
+            border-radius: 22px;
+            box-shadow: 0 20px 44px rgba(4, 10, 24, 0.18);
+        }
+
+        .fcc-qr-editor-wrap .card-body {
+            padding: 1.25rem;
+        }
+
+        .fcc-qr-editor-wrap .btn.btn-gray-300,
+        .fcc-qr-editor-wrap .btn.btn-light {
+            background: rgba(255, 255, 255, .04);
+            border-color: rgba(117, 214, 255, .12);
+            color: #e7f2fb;
+            border-radius: 14px;
+        }
+
+        .fcc-qr-editor-wrap .btn.btn-gray-300:hover,
+        .fcc-qr-editor-wrap .btn.btn-light:hover {
+            background: rgba(110, 205, 255, .1);
+            border-color: rgba(117, 214, 255, .18);
+            color: #ffffff;
+        }
+
+        .fcc-qr-editor-wrap .btn-primary {
+            background: linear-gradient(135deg, #58a8ff 0%, #5ce8d5 100%);
+            border-color: transparent;
+            color: #081d2d;
+            border-radius: 14px;
+            font-weight: 700;
+        }
+
+        .fcc-qr-editor-wrap .btn-primary:hover {
+            color: #051622;
+        }
+
+        .fcc-qr-editor-wrap .custom-breadcrumbs a,
+        .fcc-qr-editor-wrap .text-muted,
+        .fcc-qr-editor-wrap small,
+        .fcc-qr-editor-wrap label,
+        .fcc-qr-editor-wrap .form-text {
+            color: #a2b6c6 !important;
+        }
+
+        .fcc-qr-editor-wrap h1,
+        .fcc-qr-editor-wrap .h4,
+        .fcc-qr-editor-wrap .custom-control-label,
+        .fcc-qr-editor-wrap .dropdown-item,
+        .fcc-qr-editor-wrap .btn {
+            color: #edf7ff;
+        }
+
+        .fcc-qr-editor-wrap .form-control,
+        .fcc-qr-editor-wrap .custom-select,
+        .fcc-qr-editor-wrap .input-group-text {
+            background: rgba(255, 255, 255, .04);
+            border-color: rgba(117, 214, 255, .12);
+            color: #f6fbff;
+        }
+
+        .fcc-qr-editor-wrap .dropdown-menu {
+            background: #101722;
+            border-color: rgba(117, 214, 255, .12);
+        }
+
+        .fcc-qr-editor-wrap .dropdown-item:hover {
+            background: rgba(110, 205, 255, .08);
+        }
+
+        .fcc-qr-tour-target {
+            scroll-margin-top: 6rem;
+        }
+
+        .fcc-qr-tour-highlight {
+            position: relative !important;
+            z-index: 2052 !important;
+            isolation: isolate;
+            transform: translateZ(0);
+            filter: brightness(1.06) saturate(1.04);
+            box-shadow: 0 0 0 2px rgba(110, 205, 255, .98), 0 0 0 10px rgba(137, 223, 255, .17), 0 18px 54px rgba(7, 19, 38, .34) !important;
+            border-radius: 1.35rem !important;
+        }
+
+        .fcc-qr-tour-ancestor {
+            position: relative !important;
+            z-index: 2051 !important;
+            overflow: visible !important;
+        }
+
+        .fcc-qr-tour-backdrop {
+            position: fixed;
+            inset: 0;
+            z-index: 2050;
+            display: none;
+            pointer-events: none;
+        }
+
+        .fcc-qr-tour-backdrop.is-visible {
+            display: block;
+        }
+
+        .fcc-qr-tour-backdrop-segment {
+            position: fixed;
+            background: rgba(2, 8, 23, .6);
+            backdrop-filter: blur(3px);
+            pointer-events: none;
+        }
+
+        .fcc-qr-tour-popover {
+            position: fixed;
+            z-index: 2055;
+            width: min(25rem, calc(100vw - 2rem));
+            display: none;
+            border-radius: 1.2rem;
+            border: 1px solid rgba(110, 205, 255, .22);
+            background:
+                radial-gradient(circle at top right, rgba(110, 205, 255, .16), transparent 30%),
+                linear-gradient(180deg, rgba(16, 28, 46, .98), rgba(12, 20, 34, .97));
+            box-shadow: 0 30px 80px rgba(2, 8, 23, .44), inset 0 1px 0 rgba(255,255,255,.05);
+            padding: 1.05rem 1.05rem 1rem;
+        }
+
+        .fcc-qr-tour-popover.is-visible {
+            display: block;
+        }
+
+        .fcc-qr-tour-progress {
+            display: inline-flex;
+            align-items: center;
+            gap: .45rem;
+            padding: .35rem .65rem;
+            border-radius: 999px;
+            background: rgba(110, 205, 255, .18);
+            color: #eefbff;
+            font-size: .75rem;
+            font-weight: 800;
+            letter-spacing: .06em;
+            text-transform: uppercase;
+            margin-bottom: .75rem;
+            border: 1px solid rgba(110, 205, 255, .16);
+        }
+
+        .fcc-qr-tour-title {
+            color: #f8fbff;
+            font-size: 1.12rem;
+            font-weight: 800;
+            line-height: 1.3;
+            margin-bottom: .45rem;
+        }
+
+        .fcc-qr-tour-text {
+            color: rgba(236, 244, 255, .94);
+            font-size: .94rem;
+            line-height: 1.65;
+            margin-bottom: 1rem;
+        }
+
+        .fcc-qr-tour-actions {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: .75rem;
+        }
+
+        .fcc-qr-tour-actions-main {
+            display: flex;
+            gap: .65rem;
+            flex-wrap: wrap;
+        }
+
+        .fcc-qr-tour-actions .btn {
+            border-radius: .85rem;
+        }
+
+        .fcc-qr-tour-actions .btn-link {
+            color: rgba(226, 232, 240, .82) !important;
+            text-decoration: none;
+        }
+
+        .fcc-qr-tour-actions .btn-outline-light {
+            color: #ecf8ff !important;
+            border-color: rgba(110, 205, 255, .28) !important;
+            background: rgba(88, 168, 255, .12) !important;
+        }
+
+        @media (max-width: 1199px) {
+            .fcc-qr-editor-hero-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 767px) {
+            .fcc-qr-editor-rail {
+                justify-content: stretch;
+            }
+
+            .fcc-qr-editor-launch {
+                width: 100%;
+            }
+
+            .fcc-qr-editor-hero-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .fcc-qr-tour-popover {
+                left: 1rem !important;
+                right: 1rem !important;
+                width: auto;
+                top: auto !important;
+                bottom: 1rem;
+            }
+        }
+    </style>
+
+    <div class="fcc-qr-editor-shell fcc-qr-editor-wrap">
 
     <div class="d-print-none">
         <?php if(settings()->main->breadcrumbs_is_enabled): ?>
@@ -15,10 +343,40 @@
             </nav>
         <?php endif ?>
 
+        <div class="fcc-qr-editor-rail mb-3">
+            <a href="#" class="fcc-qr-editor-launch" data-fcc-start-qr-create-tour>
+                <i class="fas fa-fw fa-compass"></i> <?= l('dashboard.tour.launch') ?>
+            </a>
+        </div>
+
         <div class="d-flex align-items-center mb-4">
             <h1 class="h4 text-truncate mb-0 mr-2"><i class="fas fa-fw fa-xs fa-qrcode mr-1"></i> <?= l('qr_code_create.header') ?></h1>
         </div>
     </div>
+
+    <section class="fcc-qr-editor-hero fcc-qr-tour-target" id="fcc_qr_create_step_intro">
+        <h2><?= l('qr_codes.editor.hero_title') ?></h2>
+        <p><?= l('qr_codes.editor.hero_text') ?></p>
+
+        <div class="fcc-qr-editor-hero-grid">
+            <article class="fcc-qr-editor-hero-card">
+                <strong><?= l('qr_codes.editor.hero_card_1_title') ?></strong>
+                <span><?= l('qr_codes.editor.hero_card_1_text') ?></span>
+            </article>
+            <article class="fcc-qr-editor-hero-card">
+                <strong><?= l('qr_codes.editor.hero_card_2_title') ?></strong>
+                <span><?= l('qr_codes.editor.hero_card_2_text') ?></span>
+            </article>
+            <article class="fcc-qr-editor-hero-card">
+                <strong><?= l('qr_codes.editor.hero_card_3_title') ?></strong>
+                <span><?= l('qr_codes.editor.hero_card_3_text') ?></span>
+            </article>
+            <article class="fcc-qr-editor-hero-card">
+                <strong><?= l('qr_codes.editor.hero_card_4_title') ?></strong>
+                <span><?= l('qr_codes.editor.hero_card_4_text') ?></span>
+            </article>
+        </div>
+    </section>
 
     <form id="form" action="" method="post" role="form" enctype="multipart/form-data">
         <input type="hidden" name="token" value="<?= \Altum\Csrf::get() ?>" />
@@ -28,7 +386,7 @@
         <input type="hidden" name="reload" value="" data-reload-qr-code />
         <input type="hidden" name="is_readable" value="" />
 
-        <div class="flex-wrap mb-4 btn-group-toggle d-none d-lg-flex" data-toggle="buttons">
+        <div id="fcc_qr_create_step_type" class="flex-wrap mb-4 btn-group-toggle d-none d-lg-flex fcc-qr-tour-target" data-toggle="buttons">
             <?php foreach($data->available_qr_codes as $key => $value): ?>
                 <label class="mr-3 mb-3 btn btn-light font-size-small font-weight-500 <?= $data->values['type'] == $key ? 'active' : null ?>" data-toggle="tooltip" title="<?= l('qr_codes.type.' . $key . '_description') ?>" data-tooltip-hide-on-click>
                     <input type="radio" name="type" value="<?= $key ?>" class="custom-control-input" <?= $data->values['type'] == $key ? 'checked="checked"' : null ?> required="required" data-reload-qr-code />
@@ -44,7 +402,7 @@
                 <div class="card">
                     <div class="card-body">
 
-                        <div class="form-group">
+                        <div id="fcc_qr_create_step_basics" class="form-group fcc-qr-tour-target">
                             <label for="name"><i class="fas fa-fw fa-signature fa-sm text-muted mr-1"></i> <?= l('global.name') ?></label>
                             <input type="text" id="name" name="name" class="form-control <?= \Altum\Alerts::has_field_errors('name') ? 'is-invalid' : null ?>" value="<?= $data->values['name'] ?? null ?>" maxlength="64" required="required" />
                             <?= \Altum\Alerts::output_field_error('name') ?>
@@ -644,7 +1002,7 @@
                             </div>
                         </div>
 
-                        <button class="btn btn-block btn-gray-300 my-4" type="button" data-toggle="collapse" data-target="#style_container" aria-expanded="false" aria-controls="style_container">
+                        <button id="fcc_qr_create_step_style" class="btn btn-block btn-gray-300 my-4 fcc-qr-tour-target" type="button" data-toggle="collapse" data-target="#style_container" aria-expanded="false" aria-controls="style_container">
                             <i class="fas fa-fw fa-qrcode fa-sm mr-1"></i> <?= l('qr_codes.input.style') ?>
                         </button>
 
@@ -698,7 +1056,7 @@
                             </div>
                         </div>
 
-                        <button class="btn btn-block btn-gray-300 my-4" type="button" data-toggle="collapse" data-target="#colors_container" aria-expanded="false" aria-controls="colors_container">
+                        <button id="fcc_qr_create_step_colors" class="btn btn-block btn-gray-300 my-4 fcc-qr-tour-target" type="button" data-toggle="collapse" data-target="#colors_container" aria-expanded="false" aria-controls="colors_container">
                             <i class="fas fa-fw fa-palette fa-sm mr-1"></i> <?= l('qr_codes.input.colors') ?>
                         </button>
 
@@ -780,7 +1138,7 @@
                             </div>
                         </div>
 
-                        <button class="btn btn-block btn-gray-300 my-4" type="button" data-toggle="collapse" data-target="#frame_container" aria-expanded="false" aria-controls="frame_container">
+                        <button id="fcc_qr_create_step_frame" class="btn btn-block btn-gray-300 my-4 fcc-qr-tour-target" type="button" data-toggle="collapse" data-target="#frame_container" aria-expanded="false" aria-controls="frame_container">
                             <i class="fas fa-fw fa-crop-alt fa-sm mr-1"></i> <?= l('qr_codes.input.frame') ?>
                         </button>
 
@@ -853,7 +1211,7 @@
                             </div>
                         </div>
 
-                        <button class="btn btn-block btn-gray-300 my-4" type="button" data-toggle="collapse" data-target="#branding_container" aria-expanded="false" aria-controls="branding_container">
+                        <button id="fcc_qr_create_step_branding" class="btn btn-block btn-gray-300 my-4 fcc-qr-tour-target" type="button" data-toggle="collapse" data-target="#branding_container" aria-expanded="false" aria-controls="branding_container">
                             <i class="fas fa-fw fa-copyright fa-sm mr-1"></i> <?= l('qr_codes.input.branding') ?>
                         </button>
 
@@ -898,7 +1256,7 @@
                             </div>
                         </div>
 
-                        <button class="btn btn-block btn-gray-300 my-4" type="button" data-toggle="collapse" data-target="#options_container" aria-expanded="false" aria-controls="options_container">
+                        <button id="fcc_qr_create_step_options" class="btn btn-block btn-gray-300 my-4 fcc-qr-tour-target" type="button" data-toggle="collapse" data-target="#options_container" aria-expanded="false" aria-controls="options_container">
                             <i class="fas fa-fw fa-wrench fa-sm mr-1"></i> <?= l('qr_codes.input.options') ?>
                         </button>
 
@@ -954,14 +1312,14 @@
                             <?php endif ?>
                         </div>
 
-                        <button type="submit" name="submit" class="btn btn-block btn-primary mt-4"><?= l('global.create') ?></button>
+                        <button id="fcc_qr_create_step_save" type="submit" name="submit" class="btn btn-block btn-primary mt-4 fcc-qr-tour-target"><?= l('global.create') ?></button>
                     </div>
                 </div>
             </div>
 
             <div class="col-12 col-lg-6">
                 <div class="sticky">
-                    <div class="mb-4">
+                    <div class="mb-4 fcc-qr-tour-target" id="fcc_qr_create_step_preview">
                         <div class="card">
                             <div class="card-body">
                                 <img id="qr_code" src="<?= settings()->codes->qr_codes_default_image ? \Altum\Uploads::get_full_url('qr_code_default_image') . settings()->codes->qr_codes_default_image : ASSETS_FULL_URL . 'images/qr_code.svg' ?>" class="img-fluid qr-code" loading="lazy" />
@@ -969,7 +1327,7 @@
                         </div>
                     </div>
 
-                    <div class="row mb-4 d-print-none">
+                    <div class="row mb-4 d-print-none fcc-qr-tour-target" id="fcc_qr_create_step_download">
                         <div class="col-12 col-lg-6 mb-3 mb-lg-0">
                             <button type="button" class="btn btn-block btn-outline-secondary d-print-none <?= $this->user->plan_settings->export->pdf ? null : 'disabled' ?>" <?= $this->user->plan_settings->export->pdf ? 'onclick="window.print();return false;"' : get_plan_feature_disabled_info() ?>>
                                 <i class="fas fa-fw fa-sm fa-file-pdf mr-1"></i> <?= l('qr_codes.print') ?>
@@ -1018,6 +1376,21 @@
         </div>
     </form>
 </div>
+</div>
+
+<div class="fcc-qr-tour-backdrop" id="fcc_qr_create_backdrop"></div>
+<div class="fcc-qr-tour-popover" id="fcc_qr_create_popover" aria-live="polite">
+    <div class="fcc-qr-tour-progress" id="fcc_qr_create_progress">1 / <?= count($fcc_qr_create_steps) ?></div>
+    <div class="fcc-qr-tour-title" id="fcc_qr_create_title"></div>
+    <div class="fcc-qr-tour-text" id="fcc_qr_create_text"></div>
+    <div class="fcc-qr-tour-actions">
+        <button type="button" class="btn btn-link text-muted px-0" id="fcc_qr_create_skip"><?= l('dashboard.tour.skip') ?></button>
+        <div class="fcc-qr-tour-actions-main">
+            <button type="button" class="btn btn-outline-light" id="fcc_qr_create_prev"><?= l('dashboard.tour.prev') ?></button>
+            <button type="button" class="btn btn-primary" id="fcc_qr_create_next"><?= l('dashboard.tour.next') ?></button>
+        </div>
+    </div>
+</div>
 
 <template id="template_vcard_social">
     <div class="mb-4">
@@ -1055,3 +1428,165 @@
 <?php require THEME_PATH . 'views/qr-codes/js_qr_codes.php' ?>
 <?php include_view(THEME_PATH . 'views/partials/color_picker_js.php') ?>
 
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const storageKey = 'fcc_qr_editor_create_tour_seen_v1';
+    const steps = <?= json_encode($fcc_qr_create_steps, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
+    const backdrop = document.getElementById('fcc_qr_create_backdrop');
+    const popover = document.getElementById('fcc_qr_create_popover');
+    const title = document.getElementById('fcc_qr_create_title');
+    const text = document.getElementById('fcc_qr_create_text');
+    const progress = document.getElementById('fcc_qr_create_progress');
+    const prevButton = document.getElementById('fcc_qr_create_prev');
+    const nextButton = document.getElementById('fcc_qr_create_next');
+    const skipButton = document.getElementById('fcc_qr_create_skip');
+    const startButtons = document.querySelectorAll('[data-fcc-start-qr-create-tour]');
+
+    if(!backdrop || !popover || !title || !text || !progress || !prevButton || !nextButton || !skipButton || !Array.isArray(steps) || !steps.length) {
+        return;
+    }
+
+    let activeStep = -1;
+    let currentTarget = null;
+    let elevatedAncestors = [];
+    let backdropSegments = [];
+
+    const ensureBackdropSegments = () => {
+        if(backdropSegments.length) return backdropSegments;
+
+        backdropSegments = Array.from({length: 4}, () => {
+            const segment = document.createElement('div');
+            segment.className = 'fcc-qr-tour-backdrop-segment';
+            backdrop.appendChild(segment);
+            return segment;
+        });
+
+        return backdropSegments;
+    };
+
+    const getElevatedAncestors = target => {
+        const ancestors = [];
+        let node = target?.parentElement ?? null;
+
+        while(node && node !== document.body) {
+            const computedStyle = window.getComputedStyle(node);
+            const hasClippingOverflow = ['hidden', 'clip', 'auto', 'scroll'].includes(computedStyle.overflow) || ['hidden', 'clip', 'auto', 'scroll'].includes(computedStyle.overflowX) || ['hidden', 'clip', 'auto', 'scroll'].includes(computedStyle.overflowY);
+            const shouldElevate = hasClippingOverflow;
+
+            if(shouldElevate) ancestors.push(node);
+
+            node = node.parentElement;
+        }
+
+        return ancestors;
+    };
+
+    const clearHighlight = () => {
+        if(currentTarget) currentTarget.classList.remove('fcc-qr-tour-highlight');
+        elevatedAncestors.forEach(node => node.classList.remove('fcc-qr-tour-ancestor'));
+        elevatedAncestors = [];
+        currentTarget = null;
+    };
+
+    const placePopover = () => {
+        if(!currentTarget || !popover.classList.contains('is-visible')) return;
+
+        const rect = currentTarget.getBoundingClientRect();
+        const viewportWidth = window.innerWidth;
+        const viewportHeight = window.innerHeight;
+        const popoverWidth = popover.offsetWidth;
+        const popoverHeight = popover.offsetHeight;
+        const spacing = 18;
+
+        let top = rect.bottom + spacing;
+        let left = rect.left;
+
+        if(top + popoverHeight > viewportHeight - spacing) top = Math.max(spacing, rect.top - popoverHeight - spacing);
+        if(left + popoverWidth > viewportWidth - spacing) left = Math.max(spacing, viewportWidth - popoverWidth - spacing);
+        if(left < spacing) left = spacing;
+
+        popover.style.top = `${top}px`;
+        popover.style.left = `${left}px`;
+    };
+
+    const updateBackdropSpotlight = () => {
+        if(!currentTarget || !backdrop.classList.contains('is-visible')) return;
+
+        const segments = ensureBackdropSegments();
+        const rect = currentTarget.getBoundingClientRect();
+        const padding = 10;
+        const top = Math.max(0, rect.top - padding);
+        const left = Math.max(0, rect.left - padding);
+        const right = Math.min(window.innerWidth, rect.right + padding);
+        const bottom = Math.min(window.innerHeight, rect.bottom + padding);
+        const holeHeight = Math.max(0, bottom - top);
+
+        Object.assign(segments[0].style, {top: '0px', left: '0px', width: '100vw', height: `${top}px`});
+        Object.assign(segments[1].style, {top: `${top}px`, left: '0px', width: `${left}px`, height: `${holeHeight}px`});
+        Object.assign(segments[2].style, {top: `${top}px`, left: `${right}px`, width: `${Math.max(0, window.innerWidth - right)}px`, height: `${holeHeight}px`});
+        Object.assign(segments[3].style, {top: `${bottom}px`, left: '0px', width: '100vw', height: `${Math.max(0, window.innerHeight - bottom)}px`});
+    };
+
+    const endTour = completed => {
+        clearHighlight();
+        activeStep = -1;
+        backdrop.classList.remove('is-visible');
+        popover.classList.remove('is-visible');
+        if(completed) localStorage.setItem(storageKey, '1');
+    };
+
+    const renderStep = index => {
+        const step = steps[index];
+        if(!step) return endTour(false);
+
+        const target = document.querySelector(step.selector);
+        if(!target) {
+            if(index >= steps.length - 1) return endTour(true);
+            return renderStep(index + 1);
+        }
+
+        activeStep = index;
+        clearHighlight();
+        currentTarget = target;
+        elevatedAncestors = getElevatedAncestors(currentTarget);
+        elevatedAncestors.forEach(node => node.classList.add('fcc-qr-tour-ancestor'));
+        currentTarget.classList.add('fcc-qr-tour-highlight');
+        currentTarget.scrollIntoView({behavior: 'smooth', block: 'center', inline: 'nearest'});
+
+        title.textContent = step.title || '';
+        text.textContent = step.text || '';
+        progress.textContent = `${index + 1} / ${steps.length}`;
+        prevButton.style.visibility = index === 0 ? 'hidden' : 'visible';
+        nextButton.textContent = index === steps.length - 1 ? <?= json_encode(l('dashboard.tour.finish')) ?> : <?= json_encode(l('dashboard.tour.next')) ?>;
+
+        backdrop.classList.add('is-visible');
+        popover.classList.add('is-visible');
+        updateBackdropSpotlight();
+        setTimeout(placePopover, 140);
+    };
+
+    const startTour = ({markAutoSeen = false} = {}) => {
+        if(markAutoSeen) localStorage.setItem(storageKey, '1');
+        renderStep(0);
+    };
+
+    startButtons.forEach(button => button.addEventListener('click', event => {
+        event.preventDefault();
+        startTour();
+    }));
+    skipButton.addEventListener('click', () => endTour(false));
+    prevButton.addEventListener('click', () => activeStep > 0 && renderStep(activeStep - 1));
+    nextButton.addEventListener('click', () => activeStep >= steps.length - 1 ? endTour(true) : renderStep(activeStep + 1));
+    const syncOverlay = () => {
+        placePopover();
+        updateBackdropSpotlight();
+    };
+
+    window.addEventListener('resize', syncOverlay);
+    window.addEventListener('scroll', syncOverlay, {passive: true});
+
+    if(!localStorage.getItem(storageKey)) {
+        setTimeout(() => startTour({markAutoSeen: true}), 500);
+    }
+});
+</script>

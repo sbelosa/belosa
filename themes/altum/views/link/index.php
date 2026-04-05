@@ -1,9 +1,334 @@
 <?php defined('ALTUMCODE') || die() ?>
 
+<?php
+$fcc_is_hr = \Altum\Language::$code === 'hr';
+$fcc_is_short_link_editor = $data->link->type === 'link' && $data->method === 'settings';
+$fcc_is_biolink_editor = $data->link->type === 'biolink' && $data->method === 'settings';
+$fcc_link_header_subheader = $data->link->type === 'link'
+    ? l('link.header.short_link_subheader')
+    : l('link.header.subheader');
+$fcc_short_link_editor_steps = $fcc_is_short_link_editor ? [
+    ['selector' => '#fcc_short_link_editor_step_intro', 'title' => l('link.short_editor.tour.intro_title'), 'text' => l('link.short_editor.tour.intro_text')],
+    ['selector' => '#fcc_short_link_editor_step_basics', 'title' => l('link.short_editor.tour.basics_title'), 'text' => l('link.short_editor.tour.basics_text')],
+    ['selector' => '#fcc_short_link_editor_step_app_linking', 'title' => l('link.short_editor.tour.app_linking_title'), 'text' => l('link.short_editor.tour.app_linking_text')],
+    ['selector' => '#fcc_short_link_editor_step_temporary', 'title' => l('link.short_editor.tour.temporary_title'), 'text' => l('link.short_editor.tour.temporary_text')],
+    ['selector' => '#fcc_short_link_editor_step_utm', 'title' => l('link.short_editor.tour.utm_title'), 'text' => l('link.short_editor.tour.utm_text')],
+    ['selector' => '#fcc_short_link_editor_step_protection', 'title' => l('link.short_editor.tour.protection_title'), 'text' => l('link.short_editor.tour.protection_text')],
+    ['selector' => '#fcc_short_link_editor_step_targeting', 'title' => l('link.short_editor.tour.targeting_title'), 'text' => l('link.short_editor.tour.targeting_text')],
+    ['selector' => '#fcc_short_link_editor_step_cloaking', 'title' => l('link.short_editor.tour.cloaking_title'), 'text' => l('link.short_editor.tour.cloaking_text')],
+    ['selector' => '#fcc_short_link_editor_step_http', 'title' => l('link.short_editor.tour.http_title'), 'text' => l('link.short_editor.tour.http_text')],
+    ['selector' => '#fcc_short_link_editor_step_advanced', 'title' => l('link.short_editor.tour.advanced_title'), 'text' => l('link.short_editor.tour.advanced_text')],
+    ['selector' => '#fcc_short_link_editor_step_save', 'title' => l('link.short_editor.tour.save_title'), 'text' => l('link.short_editor.tour.save_text')],
+] : [];
+?>
+
 <input type="hidden" name="link_base" value="<?= $this->link->domain ? $this->link->domain->url : SITE_URL ?>" />
+
+<?php if($fcc_is_short_link_editor || $fcc_is_biolink_editor): ?>
+<?php ob_start() ?>
+<style>
+    .fcc-short-link-page-shell {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        position: relative;
+    }
+
+    .fcc-short-link-page-shell::before {
+        content: '';
+        position: absolute;
+        inset: 4.8rem 0 auto;
+        height: 34rem;
+        border-radius: 32px;
+        background:
+            radial-gradient(circle at 14% 16%, rgba(70, 220, 214, 0.06) 0%, rgba(70, 220, 214, 0) 40%),
+            radial-gradient(circle at 82% 10%, rgba(61, 118, 255, 0.06) 0%, rgba(61, 118, 255, 0) 34%),
+            radial-gradient(circle at 46% 0%, rgba(34, 185, 129, 0.03) 0%, rgba(34, 185, 129, 0) 26%),
+            linear-gradient(180deg, rgba(12, 19, 33, 0.60) 0%, rgba(16, 16, 18, 0) 100%);
+        pointer-events: none;
+        z-index: 0;
+    }
+
+    .fcc-short-link-page-shell > * {
+        position: relative;
+        z-index: 1;
+    }
+
+    .fcc-short-link-page-rail {
+        display: flex;
+        justify-content: flex-end;
+    }
+
+    .fcc-short-link-page-guide {
+        display: inline-flex;
+        align-items: center;
+        gap: .48rem;
+        justify-content: center;
+        padding: .68rem .98rem;
+        min-height: 2.7rem;
+        border-radius: .95rem;
+        border: 1px solid rgba(111, 244, 228, .28);
+        background: linear-gradient(135deg, rgba(42, 215, 199, .14) 0%, rgba(29, 122, 209, .12) 100%);
+        color: #eefdfb;
+        font-size: .86rem;
+        font-weight: 750;
+        text-decoration: none !important;
+        box-shadow: 0 12px 24px rgba(4, 14, 25, .14), inset 0 1px 0 rgba(255,255,255,.06);
+        transition: all .18s ease;
+    }
+
+    .fcc-short-link-page-guide:hover,
+    .fcc-short-link-page-guide:focus {
+        color: #ffffff;
+        border-color: rgba(111, 244, 228, .42);
+        background: linear-gradient(135deg, rgba(44, 214, 199, .2) 0%, rgba(41, 126, 212, .18) 100%);
+        box-shadow: 0 16px 30px rgba(63, 215, 199, .12);
+        transform: translateY(-1px);
+        outline: none;
+    }
+
+    .fcc-short-link-page-guide i {
+        color: #8cf6e9;
+        font-size: .92em;
+    }
+
+    .fcc-short-link-page-hero {
+        background:
+            radial-gradient(circle at top left, rgba(72, 220, 214, 0.04) 0%, rgba(72, 220, 214, 0) 28%),
+            radial-gradient(circle at 88% 14%, rgba(61, 118, 255, 0.05) 0%, rgba(61, 118, 255, 0) 24%),
+            linear-gradient(180deg, rgba(14, 22, 40, 0.98) 0%, rgba(8, 13, 24, 0.99) 100%);
+        border: 1px solid rgba(90, 201, 230, 0.08);
+        border-radius: 24px;
+        padding: 1.3rem 1.35rem;
+        box-shadow: 0 28px 56px rgba(4, 10, 24, 0.30);
+    }
+
+    .fcc-short-link-page-hero-copy h2 {
+        margin: 0 0 0.75rem;
+        color: #f7fbff;
+        font-size: clamp(1.8rem, 3vw, 2.85rem);
+        line-height: 1.02;
+        letter-spacing: -0.055em;
+        font-weight: 900;
+        max-width: 14ch;
+    }
+
+    .fcc-short-link-page-hero-copy p {
+        margin: 0;
+        max-width: 72ch;
+        color: #c8d8ea;
+        line-height: 1.72;
+        font-size: 1.04rem;
+    }
+
+    .fcc-short-link-page-hero-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 0.85rem;
+        margin-top: 1.2rem;
+    }
+
+    .fcc-short-link-page-hero-card {
+        padding: 1rem 1.05rem;
+        border-radius: 18px;
+        border: 1px solid rgba(84, 166, 255, 0.08);
+        background:
+            radial-gradient(circle at top left, rgba(40, 194, 146, 0.05) 0%, rgba(40, 194, 146, 0) 28%),
+            linear-gradient(180deg, rgba(16, 23, 39, 0.95) 0%, rgba(10, 14, 24, 0.98) 100%);
+    }
+
+    .fcc-short-link-page-hero-card strong {
+        display: block;
+        margin-bottom: 0.35rem;
+        color: #f1f8ff;
+        font-size: 0.96rem;
+        font-weight: 700;
+    }
+
+    .fcc-short-link-page-hero-card span {
+        color: #adc2d9;
+        font-size: 0.9rem;
+        line-height: 1.62;
+    }
+
+    .fcc-short-link-tour-target {
+        scroll-margin-top: 6rem;
+    }
+
+    .fcc-short-link-tour-ancestor {
+        position: relative !important;
+        z-index: 2051 !important;
+        overflow: visible !important;
+    }
+
+    .fcc-short-link-tour-active {
+        position: relative !important;
+        z-index: 2052 !important;
+        isolation: isolate;
+        transform: translateZ(0);
+        filter: brightness(1.06) saturate(1.04);
+        box-shadow: 0 0 0 2px rgba(73, 227, 207, .98), 0 0 0 10px rgba(112, 244, 228, .18), 0 18px 54px rgba(7, 19, 38, .34) !important;
+        border-radius: 1.35rem !important;
+    }
+
+    .fcc-short-link-tour-backdrop {
+        position: fixed;
+        inset: 0;
+        z-index: 2050;
+        display: none;
+        pointer-events: none;
+    }
+
+    .fcc-short-link-tour-backdrop.is-visible {
+        display: block;
+    }
+
+    .fcc-short-link-tour-backdrop-segment {
+        position: fixed;
+        background: rgba(2, 8, 23, .58);
+        backdrop-filter: blur(3px);
+        pointer-events: none;
+    }
+
+    .fcc-short-link-tour-popover {
+        position: fixed;
+        z-index: 2055;
+        width: min(25rem, calc(100vw - 2rem));
+        display: none;
+        border-radius: 1.2rem;
+        border: 1px solid rgba(147, 197, 253, .22);
+        background:
+            radial-gradient(circle at top right, rgba(73, 227, 207, .18), transparent 30%),
+            linear-gradient(180deg, rgba(25, 36, 58, .98), rgba(16, 24, 41, .97));
+        box-shadow: 0 30px 80px rgba(2, 8, 23, .44), inset 0 1px 0 rgba(255,255,255,.05);
+        padding: 1.05rem 1.05rem 1rem;
+    }
+
+    .fcc-short-link-tour-popover.is-visible {
+        display: block;
+    }
+
+    .fcc-short-link-tour-progress {
+        display: inline-flex;
+        align-items: center;
+        gap: .45rem;
+        padding: .35rem .65rem;
+        border-radius: 999px;
+        background: rgba(73, 227, 207, .18);
+        color: #e8fffb;
+        font-size: .75rem;
+        font-weight: 800;
+        letter-spacing: .06em;
+        text-transform: uppercase;
+        margin-bottom: .75rem;
+        border: 1px solid rgba(73, 227, 207, .16);
+    }
+
+    .fcc-short-link-tour-title {
+        color: #f8fbff;
+        font-size: 1.12rem;
+        font-weight: 800;
+        line-height: 1.3;
+        margin-bottom: .45rem;
+    }
+
+    .fcc-short-link-tour-text {
+        color: rgba(236, 244, 255, .94);
+        font-size: .94rem;
+        line-height: 1.65;
+        margin-bottom: 1rem;
+    }
+
+    .fcc-short-link-tour-actions {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: .75rem;
+    }
+
+    .fcc-short-link-tour-actions-main {
+        display: flex;
+        gap: .65rem;
+        flex-wrap: wrap;
+    }
+
+    .fcc-short-link-tour-actions .btn {
+        border-radius: .85rem;
+    }
+
+    .fcc-short-link-tour-actions .btn-link {
+        color: rgba(226, 232, 240, .82) !important;
+        text-decoration: none;
+    }
+
+    .fcc-short-link-tour-actions .btn-outline-light {
+        color: #ecf8ff !important;
+        border-color: rgba(147, 197, 253, .28) !important;
+        background: rgba(59, 130, 246, .12) !important;
+    }
+
+    .fcc-short-link-tour-actions .btn-outline-light:hover,
+    .fcc-short-link-tour-actions .btn-outline-light:focus {
+        color: #ffffff !important;
+        border-color: rgba(147, 197, 253, .48) !important;
+        background: rgba(59, 130, 246, .2) !important;
+    }
+
+    @media (max-width: 1199px) {
+        .fcc-short-link-page-hero-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @media (max-width: 767px) {
+        .fcc-short-link-page-rail {
+            justify-content: stretch;
+        }
+
+        .fcc-short-link-page-guide {
+            width: 100%;
+        }
+
+        .fcc-short-link-page-hero-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .fcc-short-link-tour-popover {
+            left: 1rem !important;
+            right: 1rem !important;
+            width: auto;
+            top: auto !important;
+            bottom: 1rem;
+        }
+    }
+</style>
+<?php \Altum\Event::add_content(ob_get_clean(), 'head') ?>
+<?php endif ?>
 
 <div class="container">
     <?= \Altum\Alerts::output_alerts() ?>
+
+    <?php if($fcc_is_short_link_editor): ?>
+    <div class="fcc-short-link-page-shell">
+        <div class="fcc-short-link-page-rail">
+            <button type="button" class="fcc-short-link-page-guide" data-fcc-start-short-link-editor-tour>
+                <i class="fas fa-fw fa-route"></i>
+                <span><?= l('dashboard.tour.launch') ?></span>
+            </button>
+        </div>
+    <?php elseif($fcc_is_biolink_editor): ?>
+        <div class="fcc-short-link-page-rail">
+            <button
+                type="button"
+                id="fcc_biolink_page_guide"
+                class="fcc-short-link-page-guide fcc-biolink-tour-target"
+                data-fcc-start-biolink-tour="main"
+            >
+                <i class="fas fa-fw fa-route"></i>
+                <span><?= l('dashboard.tour.launch') ?></span>
+            </button>
+        </div>
+    <?php endif ?>
 
     <?php if(settings()->main->breadcrumbs_is_enabled): ?>
         <nav aria-label="breadcrumb">
@@ -14,6 +339,33 @@
                 </li>
             </ol>
         </nav>
+    <?php endif ?>
+
+    <?php if($fcc_is_short_link_editor): ?>
+        <div class="fcc-short-link-page-hero fcc-short-link-tour-target" id="fcc_short_link_editor_step_intro">
+            <div class="fcc-short-link-page-hero-copy">
+                <h2><?= l('link.short_editor.hero_title') ?></h2>
+                <p><?= l('link.short_editor.hero_text') ?></p>
+            </div>
+            <div class="fcc-short-link-page-hero-grid">
+                <div class="fcc-short-link-page-hero-card">
+                    <strong><?= l('link.short_editor.hero_card_1_title') ?></strong>
+                    <span><?= l('link.short_editor.hero_card_1_text') ?></span>
+                </div>
+                <div class="fcc-short-link-page-hero-card">
+                    <strong><?= l('link.short_editor.hero_card_2_title') ?></strong>
+                    <span><?= l('link.short_editor.hero_card_2_text') ?></span>
+                </div>
+                <div class="fcc-short-link-page-hero-card">
+                    <strong><?= l('link.short_editor.hero_card_3_title') ?></strong>
+                    <span><?= l('link.short_editor.hero_card_3_text') ?></span>
+                </div>
+                <div class="fcc-short-link-page-hero-card">
+                    <strong><?= l('link.short_editor.hero_card_4_title') ?></strong>
+                    <span><?= l('link.short_editor.hero_card_4_text') ?></span>
+                </div>
+            </div>
+        </div>
     <?php endif ?>
 
     <div class="row">
@@ -38,7 +390,8 @@
                 <button
                         id="link_full_url_copy"
                         type="button"
-                        class="btn btn-link text-secondary"
+                        class="btn btn-link text-secondary <?= $fcc_is_short_link_editor ? 'fcc-short-link-tour-target' : null ?> <?= $fcc_is_biolink_editor ? 'fcc-biolink-tour-target' : null ?>"
+                        <?= $fcc_is_short_link_editor ? 'data-short-link-copy-target="1"' : null ?>
                         data-toggle="tooltip"
                         title="<?= l('global.clipboard_copy') ?>"
                         aria-label="<?= l('global.clipboard_copy') ?>"
@@ -50,7 +403,13 @@
                 </button>
 
                 <?php if($data->method != 'statistics'): ?>
-                    <a href="<?= url('link/' . $data->link->link_id . '/statistics') ?>" class="btn btn-link text-secondary" data-toggle="tooltip" title="<?= l('link.statistics.link') ?>"><i class="fas fa-fw fa-sm fa-chart-bar"></i></a>
+                    <a
+                        href="<?= url('link/' . $data->link->link_id . '/statistics') ?>"
+                        class="btn btn-link text-secondary <?= $fcc_is_short_link_editor ? 'fcc-short-link-tour-target' : null ?> <?= $fcc_is_biolink_editor ? 'fcc-biolink-tour-target' : null ?>"
+                        <?= $fcc_is_short_link_editor ? 'id="fcc_short_link_editor_step_stats"' : ($fcc_is_biolink_editor ? 'id="fcc_biolink_editor_step_statistics"' : null) ?>
+                        data-toggle="tooltip"
+                        title="<?= l('link.statistics.link') ?>"
+                    ><i class="fas fa-fw fa-sm fa-chart-bar"></i></a>
                 <?php endif ?>
 
                 <?php if($data->method != 'settings'): ?>
@@ -93,13 +452,63 @@
         </span>
 
         <div class="text-muted text-truncate">
-            <?= sprintf(l('link.header.subheader'), '<a id="link_full_url" href="' . $data->link->full_url . '" target="_blank" rel="noreferrer">' . remove_url_protocol_from_url($data->link->full_url) . '</a>') ?>
+            <?= sprintf($fcc_link_header_subheader, '<a id="link_full_url" href="' . $data->link->full_url . '" target="_blank" rel="noreferrer">' . remove_url_protocol_from_url($data->link->full_url) . '</a>') ?>
         </div>
     </div>
+
+    <?php if($data->method === 'statistics' && $data->link->type === 'biolink'): ?>
+        <div class="fcc-app-stats-guide-rail">
+            <button type="button" class="fcc-app-stats-guide-trigger" id="fcc_app_stats_start_tour">
+                <i class="fas fa-fw fa-route"></i>
+                <span><?= fc_resolve_language_name(\Altum\Language::$name ?? '') === 'Hrvatski' || mb_strtolower((string) (\Altum\Language::$code ?? '')) === 'hr' ? 'Pokreni tutorijal' : 'Start tutorial' ?></span>
+            </button>
+        </div>
+    <?php endif ?>
+
+    <?php if($data->link->type === 'biolink' && !empty($data->app_review_quality_payload) && !empty($data->is_main_biolink_app)): ?>
+        <?php $quality = $data->app_review_quality_payload; ?>
+        <div id="fcc_app_stats_tour_step_ai_block" class="card mb-4 border-0 fcc-biolink-tour-target" style="background:linear-gradient(135deg, rgba(18,26,31,.96) 0%, rgba(13,18,24,.98) 100%); border-radius:22px; box-shadow:0 18px 40px rgba(0,0,0,.18); border:1px solid rgba(127,227,217,.08) !important; overflow:hidden;">
+            <div class="card-body p-4">
+                <div class="row align-items-center">
+                    <div class="col-12 col-xl-8 mb-4 mb-xl-0">
+                        <div class="d-inline-flex align-items-center px-3 py-2 mb-3" style="border-radius:999px; background:rgba(127,227,217,.08); border:1px solid rgba(127,227,217,.16); color:#9ef1e7; font-size:.78rem; font-weight:800; letter-spacing:.04em;">
+                            <?= l('ai_plan.app_review_menu') ?>
+                        </div>
+                        <h2 class="h4 mb-2" style="color:#f5fbfb;"><?= l('links.app_review_teaser_title') ?></h2>
+                        <p class="text-muted mb-3" style="max-width:52rem;"><?= htmlspecialchars((string) ($quality['summary'] ?? ''), ENT_QUOTES, 'UTF-8') ?></p>
+                        <div class="d-flex flex-wrap" style="gap:.5rem;">
+                            <span class="badge badge-pill px-3 py-2" style="background:rgba(63,215,199,.14); color:#aef7ef; border:1px solid rgba(63,215,199,.28);"><?= l('links.app_review_quality_short') ?> <?= nr((int) ($quality['score'] ?? 0)) ?></span>
+                            <span class="badge badge-pill px-3 py-2" style="background:rgba(79,116,255,.12); color:#d8e2ff; border:1px solid rgba(79,116,255,.18);"><?= htmlspecialchars((string) ($quality['level_label'] ?? ''), ENT_QUOTES, 'UTF-8') ?></span>
+                            <span class="badge badge-pill px-3 py-2" style="background:rgba(255,255,255,.04); color:#d5e1e2; border:1px solid rgba(255,255,255,.06);"><?= l('links.app_review_metric_shop_short') ?> <?= nr((int) (($quality['performance']['shop_contacts_30d'] ?? 0))) ?></span>
+                            <span class="badge badge-pill px-3 py-2" style="background:rgba(255,255,255,.04); color:#d5e1e2; border:1px solid rgba(255,255,255,.06);"><?= l('links.app_review_metric_whatsapp_short') ?> <?= nr((int) (($quality['performance']['whatsapp_contacts_30d'] ?? 0))) ?></span>
+                            <span class="badge badge-pill px-3 py-2" style="background:rgba(255,255,255,.04); color:#d5e1e2; border:1px solid rgba(255,255,255,.06);"><?= l('links.app_review_metric_products_short') ?> <?= nr((int) (($quality['performance']['product_clicks_30d'] ?? 0))) ?></span>
+                            <span class="badge badge-pill px-3 py-2" style="background:rgba(255,255,255,.04); color:#d5e1e2; border:1px solid rgba(255,255,255,.06);"><?= l('links.app_review_metric_funnel_short') ?> <?= nr((int) (($quality['performance']['funnel_registrations_30d'] ?? 0))) ?></span>
+                        </div>
+                    </div>
+                    <div class="col-12 col-xl-4">
+                        <div style="background:rgba(18,26,44,.78); border:1px solid rgba(110,143,255,.12); border-radius:20px; padding:1.2rem;">
+                            <div class="small text-uppercase text-muted font-weight-bold mb-2"><?= l('links.app_review_cta_label') ?></div>
+                            <div class="mb-3" style="color:#eef6ff; font-size:1.75rem; font-weight:800; line-height:1;"><?= nr((int) ($quality['score'] ?? 0)) ?></div>
+                            <div class="text-muted small mb-3"><?= l('links.app_review_cta_text') ?></div>
+                            <?php if($data->app_review_is_accessible): ?>
+                                <a href="<?= htmlspecialchars((string) $data->app_review_page_url, ENT_QUOTES, 'UTF-8') ?>" class="btn btn-primary btn-block" style="display:flex; align-items:center; justify-content:center; min-height:3.2rem; border-radius:18px; font-weight:800;"><?= l('ai_plan.cta_go_app_review_direct') ?></a>
+                            <?php else: ?>
+                                <a href="#" class="btn btn-primary btn-block disabled pointer-events-all" data-tooltip title="<?= htmlspecialchars((string) $data->app_review_locked_reason, ENT_QUOTES, 'UTF-8') ?>" onclick="event.preventDefault();" style="display:flex; align-items:center; justify-content:center; min-height:3.2rem; border-radius:18px; font-weight:800; opacity:.62; filter:saturate(.75);"><?= l('ai_plan.cta_go_app_review_direct') ?></a>
+                            <?php endif ?>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    <?php endif ?>
 
     <div id="links_auto_copy_link"></div>
 
     <?= $this->views['method'] ?>
+
+    <?php if($fcc_is_short_link_editor): ?>
+    </div>
+    <?php endif ?>
 </div>
 
 
@@ -133,3 +542,228 @@
     }
 </script>
 <?php \Altum\Event::add_content(ob_get_clean(), 'javascript') ?>
+
+<?php if($fcc_is_short_link_editor): ?>
+<?php ob_start() ?>
+<div class="fcc-short-link-tour-backdrop" id="fcc_short_link_editor_backdrop"></div>
+<div class="fcc-short-link-tour-popover" id="fcc_short_link_editor_popover" aria-live="polite">
+    <div class="fcc-short-link-tour-progress" id="fcc_short_link_editor_progress">1 / <?= count($fcc_short_link_editor_steps) ?></div>
+    <div class="fcc-short-link-tour-title" id="fcc_short_link_editor_title"></div>
+    <div class="fcc-short-link-tour-text" id="fcc_short_link_editor_text"></div>
+    <div class="fcc-short-link-tour-actions">
+        <button type="button" class="btn btn-link text-muted px-0" id="fcc_short_link_editor_skip"><?= l('dashboard.tour.skip') ?></button>
+        <div class="fcc-short-link-tour-actions-main">
+            <button type="button" class="btn btn-outline-light" id="fcc_short_link_editor_prev"><?= l('dashboard.tour.prev') ?></button>
+            <button type="button" class="btn btn-primary" id="fcc_short_link_editor_next"><?= l('dashboard.tour.next') ?></button>
+        </div>
+    </div>
+</div>
+<?php \Altum\Event::add_content(ob_get_clean(), 'modals') ?>
+
+<?php ob_start() ?>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const storageKey = 'fcc_short_link_editor_tour_seen_v1';
+    const steps = <?= json_encode($fcc_short_link_editor_steps, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
+    const backdrop = document.getElementById('fcc_short_link_editor_backdrop');
+    const popover = document.getElementById('fcc_short_link_editor_popover');
+    const title = document.getElementById('fcc_short_link_editor_title');
+    const text = document.getElementById('fcc_short_link_editor_text');
+    const progress = document.getElementById('fcc_short_link_editor_progress');
+    const prevButton = document.getElementById('fcc_short_link_editor_prev');
+    const nextButton = document.getElementById('fcc_short_link_editor_next');
+    const skipButton = document.getElementById('fcc_short_link_editor_skip');
+    const startButtons = document.querySelectorAll('[data-fcc-start-short-link-editor-tour]');
+
+    if(!backdrop || !popover || !title || !text || !progress || !prevButton || !nextButton || !skipButton || !Array.isArray(steps) || !steps.length) {
+        return;
+    }
+
+    let activeStep = -1;
+    let currentTarget = null;
+    let elevatedAncestors = [];
+    let backdropSegments = [];
+
+    const ensureBackdropSegments = () => {
+        if(backdropSegments.length) return backdropSegments;
+
+        backdropSegments = Array.from({length: 4}, () => {
+            const segment = document.createElement('div');
+            segment.className = 'fcc-short-link-tour-backdrop-segment';
+            backdrop.appendChild(segment);
+            return segment;
+        });
+
+        return backdropSegments;
+    };
+
+    const getElevatedAncestors = target => {
+        const ancestors = [];
+        let node = target?.parentElement ?? null;
+
+        while(node && node !== document.body) {
+            const computedStyle = window.getComputedStyle(node);
+            const hasClippingOverflow = ['hidden', 'clip', 'auto', 'scroll'].includes(computedStyle.overflow) || ['hidden', 'clip', 'auto', 'scroll'].includes(computedStyle.overflowX) || ['hidden', 'clip', 'auto', 'scroll'].includes(computedStyle.overflowY);
+            const shouldElevate = hasClippingOverflow;
+
+            if(shouldElevate) {
+                ancestors.push(node);
+            }
+
+            node = node.parentElement;
+        }
+
+        return ancestors;
+    };
+
+    const clearHighlight = () => {
+        if(currentTarget) {
+            currentTarget.classList.remove('fcc-short-link-tour-active');
+        }
+
+        elevatedAncestors.forEach(node => node.classList.remove('fcc-short-link-tour-ancestor'));
+        elevatedAncestors = [];
+
+        currentTarget = null;
+    };
+
+    const placePopover = () => {
+        if(!currentTarget || !popover.classList.contains('is-visible')) {
+            return;
+        }
+
+        const rect = currentTarget.getBoundingClientRect();
+        const viewportWidth = window.innerWidth;
+        const viewportHeight = window.innerHeight;
+        const popoverWidth = popover.offsetWidth;
+        const popoverHeight = popover.offsetHeight;
+        const spacing = 18;
+
+        let top = rect.bottom + spacing;
+        let left = rect.left;
+
+        if(top + popoverHeight > viewportHeight - spacing) {
+            top = Math.max(spacing, rect.top - popoverHeight - spacing);
+        }
+
+        if(left + popoverWidth > viewportWidth - spacing) {
+            left = Math.max(spacing, viewportWidth - popoverWidth - spacing);
+        }
+
+        if(left < spacing) {
+            left = spacing;
+        }
+
+        popover.style.top = `${top}px`;
+        popover.style.left = `${left}px`;
+    };
+
+    const updateBackdropSpotlight = () => {
+        if(!currentTarget || !backdrop.classList.contains('is-visible')) {
+            return;
+        }
+
+        const segments = ensureBackdropSegments();
+        const rect = currentTarget.getBoundingClientRect();
+        const padding = 10;
+        const top = Math.max(0, rect.top - padding);
+        const left = Math.max(0, rect.left - padding);
+        const right = Math.min(window.innerWidth, rect.right + padding);
+        const bottom = Math.min(window.innerHeight, rect.bottom + padding);
+        const holeWidth = Math.max(0, right - left);
+        const holeHeight = Math.max(0, bottom - top);
+
+        Object.assign(segments[0].style, {top: '0px', left: '0px', width: '100vw', height: `${top}px`});
+        Object.assign(segments[1].style, {top: `${top}px`, left: '0px', width: `${left}px`, height: `${holeHeight}px`});
+        Object.assign(segments[2].style, {top: `${top}px`, left: `${right}px`, width: `${Math.max(0, window.innerWidth - right)}px`, height: `${holeHeight}px`});
+        Object.assign(segments[3].style, {top: `${bottom}px`, left: '0px', width: '100vw', height: `${Math.max(0, window.innerHeight - bottom)}px`});
+    };
+
+    const endTour = completed => {
+        clearHighlight();
+        activeStep = -1;
+        backdrop.classList.remove('is-visible');
+        popover.classList.remove('is-visible');
+
+        if(completed) {
+            localStorage.setItem(storageKey, '1');
+        }
+    };
+
+    const renderStep = index => {
+        const step = steps[index];
+        if(!step) {
+            endTour(false);
+            return;
+        }
+
+        const target = document.querySelector(step.selector);
+        if(!target) {
+            if(index >= steps.length - 1) {
+                endTour(true);
+                return;
+            }
+
+            renderStep(index + 1);
+            return;
+        }
+
+        activeStep = index;
+        clearHighlight();
+        currentTarget = target;
+        elevatedAncestors = getElevatedAncestors(currentTarget);
+        elevatedAncestors.forEach(node => node.classList.add('fcc-short-link-tour-ancestor'));
+        currentTarget.classList.add('fcc-short-link-tour-active');
+        currentTarget.scrollIntoView({behavior: 'smooth', block: 'center', inline: 'nearest'});
+
+        title.textContent = step.title || '';
+        text.textContent = step.text || '';
+        progress.textContent = `${index + 1} / ${steps.length}`;
+        prevButton.style.visibility = index === 0 ? 'hidden' : 'visible';
+        nextButton.textContent = index === steps.length - 1 ? <?= json_encode(l('dashboard.tour.finish')) ?> : <?= json_encode(l('dashboard.tour.next')) ?>;
+
+        backdrop.classList.add('is-visible');
+        popover.classList.add('is-visible');
+        updateBackdropSpotlight();
+        setTimeout(placePopover, 140);
+    };
+
+    const startTour = ({markAutoSeen = false} = {}) => {
+        if(markAutoSeen) {
+            localStorage.setItem(storageKey, '1');
+        }
+
+        renderStep(0);
+    };
+
+    startButtons.forEach(button => button.addEventListener('click', startTour));
+    skipButton.addEventListener('click', () => endTour(false));
+    prevButton.addEventListener('click', () => {
+        if(activeStep > 0) {
+            renderStep(activeStep - 1);
+        }
+    });
+    nextButton.addEventListener('click', () => {
+        if(activeStep >= steps.length - 1) {
+            endTour(true);
+            return;
+        }
+
+        renderStep(activeStep + 1);
+    });
+
+    const syncOverlay = () => {
+        placePopover();
+        updateBackdropSpotlight();
+    };
+
+    window.addEventListener('resize', syncOverlay);
+    window.addEventListener('scroll', syncOverlay, {passive: true});
+
+    if(!localStorage.getItem(storageKey)) {
+        setTimeout(() => startTour({markAutoSeen: true}), 500);
+    }
+});
+</script>
+<?php \Altum\Event::add_content(ob_get_clean(), 'javascript') ?>
+<?php endif ?>

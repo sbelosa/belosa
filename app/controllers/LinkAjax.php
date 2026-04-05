@@ -126,6 +126,215 @@ class LinkAjax extends Controller {
 	}
 	/* /Custom code: FC-2026-03-06 */
 
+	private function normalize_json_to_array($value): array {
+		if(is_string($value)) {
+			$value = json_decode($value, true);
+		} elseif(is_object($value)) {
+			$value = json_decode(json_encode($value), true);
+		}
+
+		return is_array($value) ? $value : [];
+	}
+
+	private function prepare_biolink_additional_for_storage(array $additional): ?string {
+		$additional = array_filter($additional, function($value) {
+			if(is_array($value)) {
+				return !empty($value);
+			}
+
+			return !($value === null || $value === '');
+		});
+
+		return empty($additional) ? null : json_encode($additional);
+	}
+
+	private function get_biolink_theme_controlled_settings_keys(): array {
+		return [
+			'background_type',
+			'background',
+			'background_color_one',
+			'background_color_two',
+			'font',
+			'font_size',
+			'background_blur',
+			'background_brightness',
+			'width',
+			'block_spacing',
+			'hover_animation',
+		];
+	}
+
+	private function get_biolink_theme_default_settings(): array {
+		return [
+			'background_type' => 'preset',
+			'background' => 'zero',
+			'background_color_one' => null,
+			'background_color_two' => null,
+			'font' => 'default',
+			'font_size' => 16,
+			'background_blur' => 0,
+			'background_brightness' => 100,
+			'width' => 8,
+			'block_spacing' => 2,
+			'hover_animation' => 'smooth',
+		];
+	}
+
+	private function get_themable_biolink_blocks_snapshot(int $link_id): array {
+		$biolink_blocks = require APP_PATH . 'includes/biolink_blocks.php';
+		$themable_blocks = array_keys(array_filter($biolink_blocks, fn($block) => !empty($block['themable'])));
+
+		if(empty($themable_blocks)) {
+			return [];
+		}
+
+		$themable_blocks_sql = "'" . implode('\', \'', $themable_blocks) . "'";
+		$result = database()->query("SELECT `biolink_block_id`, `type`, `settings` FROM `biolinks_blocks` WHERE `link_id` = {$link_id} AND `type` IN ({$themable_blocks_sql})");
+		$snapshot = [];
+
+		while($biolink_block = $result->fetch_object()) {
+			$snapshot[(int) $biolink_block->biolink_block_id] = [
+				'type' => (string) $biolink_block->type,
+				'settings' => $this->normalize_json_to_array($biolink_block->settings ?? null),
+			];
+		}
+
+		return $snapshot;
+	}
+
+	private function restore_themable_biolink_blocks_snapshot(array $snapshot): void {
+		foreach($snapshot as $biolink_block_id => $block_data) {
+			$biolink_block_id = (int) $biolink_block_id;
+
+			if($biolink_block_id <= 0) {
+				continue;
+			}
+
+			db()->where('biolink_block_id', $biolink_block_id)->update('biolinks_blocks', [
+				'settings' => json_encode($block_data['settings'] ?? []),
+			]);
+		}
+	}
+
+	private function build_biolink_theme_custom_backup($link): array {
+		$settings = $this->normalize_json_to_array($link->settings ?? null);
+		$settings = array_intersect_key($settings, array_flip($this->get_biolink_theme_controlled_settings_keys()));
+
+		$additional = $this->normalize_json_to_array($link->additional ?? null);
+		unset($additional['fcc_theme_custom_backup']);
+
+		if(!empty($link->biolink_theme_id)) {
+			unset($additional['custom_css'], $additional['custom_js']);
+		}
+
+		return [
+			'settings' => $settings,
+			'additional' => $additional,
+			'blocks' => $this->get_themable_biolink_blocks_snapshot((int) $link->link_id),
+		];
+	}
+
+	private function are_theme_values_equal($a, $b): bool {
+		return json_encode($a) === json_encode($b);
+	}
+
+	private function remove_matching_theme_values(array $settings, array $theme_values): array {
+		foreach($theme_values as $key => $value) {
+			if(array_key_exists($key, $settings) && $this->are_theme_values_equal($settings[$key], $value)) {
+				unset($settings[$key]);
+			}
+		}
+
+		return $settings;
+	}
+
+	private function get_theme_values_to_remove_for_block_type(string $type, $biolink_theme): array {
+		$theme_block = $this->normalize_json_to_array($biolink_theme->settings->biolink_block ?? null);
+
+		switch($type) {
+			case 'socials':
+				return $this->normalize_json_to_array($biolink_theme->settings->biolink_block_socials ?? null);
+
+			case 'heading':
+				return $this->normalize_json_to_array($biolink_theme->settings->biolink_block_heading ?? null);
+
+			case 'paragraph':
+				return array_merge(
+					$theme_block,
+					$this->normalize_json_to_array($biolink_theme->settings->biolink_block_paragraph ?? null)
+				);
+
+			case 'counter':
+			case 'loading':
+				$theme_block['number_color'] = $theme_block['text_color'] ?? ($theme_block['number_color'] ?? null);
+				return $theme_block;
+
+			case 'external_item':
+				$theme_block['price_color'] = $theme_block['text_color'] ?? ($theme_block['price_color'] ?? null);
+				$theme_block['name_color'] = $theme_block['text_color'] ?? ($theme_block['name_color'] ?? null);
+				return $theme_block;
+
+			case 'business_hours':
+				$theme_block['icon_color'] = $theme_block['text_color'] ?? ($theme_block['icon_color'] ?? null);
+				return $theme_block;
+
+			default:
+				return $theme_block;
+		}
+	}
+
+	private function remove_biolink_theme_styles_from_existing_blocks(int $link_id, $biolink_theme): void {
+		if(!$biolink_theme) {
+			return;
+		}
+
+		$biolink_blocks = require APP_PATH . 'includes/biolink_blocks.php';
+		$themable_blocks = array_keys(array_filter($biolink_blocks, fn($block) => !empty($block['themable'])));
+
+		if(empty($themable_blocks)) {
+			return;
+		}
+
+		$themable_blocks_sql = "'" . implode('\', \'', $themable_blocks) . "'";
+		$result = database()->query("SELECT `biolink_block_id`, `type`, `settings` FROM `biolinks_blocks` WHERE `link_id` = {$link_id} AND `type` IN ({$themable_blocks_sql})");
+
+		while($biolink_block = $result->fetch_object()) {
+			$settings = $this->normalize_json_to_array($biolink_block->settings ?? null);
+			$theme_values = $this->get_theme_values_to_remove_for_block_type((string) $biolink_block->type, $biolink_theme);
+			$settings = $this->remove_matching_theme_values($settings, $theme_values);
+
+			db()->where('biolink_block_id', (int) $biolink_block->biolink_block_id)->update('biolinks_blocks', [
+				'settings' => json_encode($settings),
+			]);
+		}
+	}
+
+	private function get_biolink_theme_fallback_settings_after_disable(array $settings, $biolink_theme): array {
+		if(!$biolink_theme) {
+			return $settings;
+		}
+
+		$theme_settings = $this->normalize_json_to_array($biolink_theme->settings->biolink ?? null);
+		$default_settings = $this->get_biolink_theme_default_settings();
+
+		foreach($this->get_biolink_theme_controlled_settings_keys() as $key) {
+			if(
+				array_key_exists($key, $theme_settings)
+				&& array_key_exists($key, $settings)
+				&& $this->are_theme_values_equal($settings[$key], $theme_settings[$key])
+			) {
+				$settings[$key] = $default_settings[$key] ?? null;
+			}
+		}
+
+		if(($settings['background_type'] ?? null) !== 'gradient') {
+			$settings['background_color_one'] = null;
+			$settings['background_color_two'] = null;
+		}
+
+		return $settings;
+	}
+
 	private function is_enabled_toggle() {
 		/* Team checks */
 		if(\Altum\Teams::is_delegated() && !\Altum\Teams::has_access('update.links')) {
@@ -1963,14 +2172,48 @@ class LinkAjax extends Controller {
 
 		/* Check if we need to override defaults for a new theme */
 		$additional = $link->additional ?? '';
-		if($_POST['biolink_theme_id'] && $link->biolink_theme_id != $_POST['biolink_theme_id']) {
+		$link_additional_data = $this->normalize_json_to_array($link->additional ?? null);
+		$theme_custom_backup = $this->normalize_json_to_array($link_additional_data['fcc_theme_custom_backup'] ?? null);
+		$previous_biolink_theme_id = (int) ($link->biolink_theme_id ?? 0);
+		$previous_biolink_theme = $previous_biolink_theme_id && isset($biolinks_themes[$previous_biolink_theme_id]) ? $biolinks_themes[$previous_biolink_theme_id] : null;
+		$is_switching_to_new_theme = $_POST['biolink_theme_id'] && $previous_biolink_theme_id != (int) $_POST['biolink_theme_id'];
+		$is_disabling_theme = !$_POST['biolink_theme_id'] && $previous_biolink_theme_id;
+
+		if($is_disabling_theme) {
+			if(!empty($theme_custom_backup)) {
+				$settings = array_merge(
+					$settings,
+					array_intersect_key(
+						(array) ($theme_custom_backup['settings'] ?? []),
+						array_flip($this->get_biolink_theme_controlled_settings_keys())
+					)
+				);
+
+				$additional = $this->prepare_biolink_additional_for_storage(
+					$this->normalize_json_to_array($theme_custom_backup['additional'] ?? null)
+				);
+
+				$this->restore_themable_biolink_blocks_snapshot((array) ($theme_custom_backup['blocks'] ?? []));
+			} else {
+				$settings = $this->get_biolink_theme_fallback_settings_after_disable($settings, $previous_biolink_theme);
+				$this->remove_biolink_theme_styles_from_existing_blocks($link->link_id, $previous_biolink_theme);
+
+				unset($link_additional_data['custom_css'], $link_additional_data['custom_js'], $link_additional_data['fcc_theme_custom_backup']);
+				$additional = $this->prepare_biolink_additional_for_storage($link_additional_data);
+			}
+		}
+
+		if($is_switching_to_new_theme) {
 			$biolink_theme = $biolinks_themes[$_POST['biolink_theme_id']];
+			$theme_custom_backup = !empty($theme_custom_backup) ? $theme_custom_backup : $this->build_biolink_theme_custom_backup($link);
 
 			/* Save settings for biolink page */
 			$settings = array_merge($settings, (array) $biolink_theme->settings->biolink);
 
 			/* Save the additional settings */
-			$additional = json_encode($biolink_theme->settings->additional ?? '');
+			$theme_additional = $this->normalize_json_to_array($biolink_theme->settings->additional ?? null);
+			$theme_additional['fcc_theme_custom_backup'] = $theme_custom_backup;
+			$additional = $this->prepare_biolink_additional_for_storage($theme_additional);
 
 			/* Save settings for all existing blocks */
 			$biolink_blocks = require APP_PATH . 'includes/biolink_blocks.php';

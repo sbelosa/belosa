@@ -8502,11 +8502,24 @@ class BiolinkBlockAjax extends Controller {
         $_POST['location_url'] = get_url($_POST['location_url']);
         $_POST['name'] = mb_substr(query_clean($_POST['name']), 0, 128);
         $_POST['product_blog_post_id'] = (int) ($_POST['product_blog_post_id'] ?? 0);
+        $_POST['product_translation_key'] = mb_substr(query_clean($_POST['product_translation_key'] ?? ''), 0, 128);
+        $_POST['product_language_mode'] = in_array($_POST['product_language_mode'] ?? null, ['app', 'manual'], true) ? query_clean($_POST['product_language_mode']) : 'app';
         $_POST['product_image_url'] = mb_substr(query_clean($_POST['product_image_url'] ?? ''), 0, 2048);
+        $available_language_codes = array_values((array) \Altum\Language::$active_languages);
         $_POST['description'] = mb_substr(query_clean($_POST['description'] ?? ''), 0, 220);
 
         if(!$link = db()->where('link_id', $_POST['link_id'])->where('user_id', $this->user->user_id)->getOne('links')) {
             die();
+        }
+
+        $link->settings = json_decode($link->settings ?? '{}');
+        $default_language_code = $link->settings->language_code ?? \Altum\Language::$default_code;
+        $_POST['product_language_code'] = in_array($_POST['product_language_code'] ?? null, $available_language_codes, true) ? query_clean($_POST['product_language_code']) : $default_language_code;
+        $_POST['product_fallback_language_code'] = in_array($_POST['product_fallback_language_code'] ?? null, array_merge($available_language_codes, ['']), true) ? query_clean($_POST['product_fallback_language_code']) : 'hr';
+
+        if($_POST['product_blog_post_id'] && $_POST['product_translation_key'] === '') {
+            $blog_post = db()->where('blog_post_id', $_POST['product_blog_post_id'])->getOne('blog_posts', ['url']);
+            $_POST['product_translation_key'] = $blog_post->url ?? '';
         }
 
         $required_fields = ['location_url', 'name'];
@@ -8540,6 +8553,10 @@ class BiolinkBlockAjax extends Controller {
             'columns' => 1,
 
             'product_blog_post_id' => $_POST['product_blog_post_id'],
+            'product_translation_key' => $_POST['product_translation_key'],
+            'product_language_mode' => $_POST['product_language_mode'],
+            'product_language_code' => $_POST['product_language_code'],
+            'product_fallback_language_code' => $_POST['product_fallback_language_code'],
             'product_image_url' => $_POST['product_image_url'],
             'description' => $_POST['description'],
 
@@ -8589,8 +8606,11 @@ class BiolinkBlockAjax extends Controller {
         $_POST['sensitive_content'] = (int) isset($_POST['sensitive_content']);
         $_POST['columns'] = isset($_POST['columns']) && in_array($_POST['columns'], [1, 2]) ? (int) $_POST['columns'] : 1;
         $_POST['product_blog_post_id'] = (int) ($_POST['product_blog_post_id'] ?? 0);
+        $_POST['product_translation_key'] = mb_substr(query_clean($_POST['product_translation_key'] ?? ''), 0, 128);
+        $_POST['product_language_mode'] = in_array($_POST['product_language_mode'] ?? null, ['app', 'manual'], true) ? query_clean($_POST['product_language_mode']) : 'app';
         $_POST['product_image_url'] = mb_substr(query_clean($_POST['product_image_url'] ?? ''), 0, 2048);
         $_POST['description'] = mb_substr(query_clean($_POST['description'] ?? ''), 0, 220);
+        $available_language_codes = array_values((array) \Altum\Language::$active_languages);
 
         $this->process_display_settings();
 
@@ -8601,6 +8621,17 @@ class BiolinkBlockAjax extends Controller {
 
         if(!$_POST['link_id'] && isset($biolink_block->link_id)) {
             $_POST['link_id'] = (int) $biolink_block->link_id;
+        }
+
+        $link = db()->where('link_id', $_POST['link_id'])->where('user_id', $this->user->user_id)->getOne('links', ['settings']);
+        $link_settings = $link ? json_decode($link->settings ?? '{}') : new \stdClass();
+        $default_language_code = $link_settings->language_code ?? \Altum\Language::$default_code;
+        $_POST['product_language_code'] = in_array($_POST['product_language_code'] ?? null, $available_language_codes, true) ? query_clean($_POST['product_language_code']) : $default_language_code;
+        $_POST['product_fallback_language_code'] = in_array($_POST['product_fallback_language_code'] ?? null, array_merge($available_language_codes, ['']), true) ? query_clean($_POST['product_fallback_language_code']) : 'hr';
+
+        if($_POST['product_blog_post_id'] && $_POST['product_translation_key'] === '') {
+            $blog_post = db()->where('blog_post_id', $_POST['product_blog_post_id'])->getOne('blog_posts', ['url']);
+            $_POST['product_translation_key'] = $blog_post->url ?? '';
         }
 
         $required_fields = ['location_url', 'name'];
@@ -8648,6 +8679,10 @@ class BiolinkBlockAjax extends Controller {
             'columns' => $_POST['columns'],
 
             'product_blog_post_id' => $_POST['product_blog_post_id'],
+            'product_translation_key' => $_POST['product_translation_key'],
+            'product_language_mode' => $_POST['product_language_mode'],
+            'product_language_code' => $_POST['product_language_code'],
+            'product_fallback_language_code' => $_POST['product_fallback_language_code'],
             'product_image_url' => $_POST['product_image_url'],
             'description' => $_POST['description'],
 

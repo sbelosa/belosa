@@ -35,7 +35,7 @@ $fcc_share_spacing_class = !empty($data->flush_top) ? 'fcc-referral-share-banner
                 </button>
 
                 <div class="fcc-referral-share-banner__buttons">
-                    <?= include_view(THEME_PATH . 'views/partials/share_buttons.php', ['url' => $data->share_url, 'class' => 'btn btn-gray-100 btn-sm', 'copy_to_clipboard' => true]) ?>
+                    <?= include_view(THEME_PATH . 'views/partials/share_buttons.php', ['url' => $data->share_url, 'class' => 'btn btn-gray-100 btn-sm', 'copy_to_clipboard' => true, 'tracking_context' => 'referral_share']) ?>
                 </div>
             </div>
         </div>

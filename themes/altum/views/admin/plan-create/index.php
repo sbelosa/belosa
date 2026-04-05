@@ -620,6 +620,12 @@
                 </div>
 
                 <div class="form-group custom-control custom-switch">
+                    <input id="ai_growth_plan_is_enabled" name="ai_growth_plan_is_enabled" type="checkbox" class="custom-control-input">
+                    <label class="custom-control-label" for="ai_growth_plan_is_enabled"><?= l('admin_plans.plan.ai_growth_plan_is_enabled') ?></label>
+                    <div><small class="form-text text-muted"><?= l('admin_plans.plan.ai_growth_plan_is_enabled_help') ?></small></div>
+                </div>
+
+                <div class="form-group custom-control custom-switch">
                     <input id="temporary_url_is_enabled" name="temporary_url_is_enabled" type="checkbox" class="custom-control-input">
                     <label class="custom-control-label" for="temporary_url_is_enabled"><?= l('admin_plans.plan.temporary_url_is_enabled') ?></label>
                     <div><small class="form-text text-muted"><?= l('admin_plans.plan.temporary_url_is_enabled_help') ?></small></div>
@@ -803,4 +809,3 @@
 <?= include_view(THEME_PATH . 'views/partials/scroll_top_bottom.php', ['top_selector' => '.admin-content', 'bottom_selector' => 'footer']) ?>
 <?php include_view(THEME_PATH . 'views/partials/clipboard_js.php') ?>
 <?php include_view(THEME_PATH . 'views/partials/color_picker_js.php') ?>
-

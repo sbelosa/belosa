@@ -1,5 +1,278 @@
 <?php defined('ALTUMCODE') || die() ?>
 
+<?php
+$fcc_is_hr = \Altum\Language::$code === 'hr';
+$fcc_biolink_editor_copy = $fcc_is_hr ? [
+    'eyebrow' => 'Forever Card App editor',
+    'summary' => 'Ovdje vidiš kojoj aplikaciji uređuješ strukturu, što je javno objavljeno i gdje se otvara analiza kvalitete glavne FCC aplikacije.',
+    'main_role' => 'Glavna aplikacija',
+    'secondary_role' => 'Dodatna aplikacija',
+    'live_status' => 'Javno objavljena',
+    'paused_status' => 'Privremeno skrivena',
+    'analysis_ready' => 'Analiza spremna',
+    'analysis_locked' => 'Analiza zaključana',
+    'analysis_main_only' => 'Samo glavna aplikacija',
+    'analysis_ready_note' => 'Ova aplikacija može otvoriti App Review i pratiti signal, preporuke i kvalitetu glavnog FCC toka.',
+    'analysis_locked_note' => 'Dovrši AI profil i potrebne preduvjete kako bi se analiza otključala za glavnu aplikaciju.',
+    'analysis_main_only_note' => 'Analiza kvalitete ostaje vezana uz glavnu FCC aplikaciju. Dodatne aplikacije služe kao pomoćni ili kampanjski layer.',
+    'live_note' => 'Posjetitelji trenutno mogu otvoriti ovu aplikaciju na javnom URL-u.',
+    'paused_note' => 'Aplikacija je spremljena, ali nije javno prikazana dok je ponovno ne uključiš.',
+    'name_label' => 'Naziv aplikacije',
+    'role_label' => 'Tip aplikacije',
+    'public_label' => 'Status javnog prikaza',
+    'analysis_label' => 'Status analize',
+    'analysis_cta' => 'Otvori App Review',
+    'analysis_locked_cta' => 'Kako otključati analizu',
+    'tour_main' => 'Pokreni vodič editora',
+    'tour_theme' => 'Teme',
+    'tour_reset' => 'Reset',
+    'tour_forever' => 'Forever blokovi',
+    'tour_discount' => 'Popust na Forever Living Products proizvode',
+    'tour_funnel' => 'Funnels',
+    'status_card_title' => 'Pregled ove aplikacije',
+    'tours_title' => 'Mini tutorijali za ključne radnje',
+    'tours_text' => 'Ovdje su najvažniji kratki vodiči za uređivanje izgleda, resetiranje, Forever blokove i funnel korake.',
+    'tour_launch_title' => 'Glavni tutorijal editora',
+    'tour_launch_text' => 'Ovaj gumb uvijek možeš kliknuti kada želiš ponovno pokrenuti kompletni vodič kroz editor. Prvi put se otvara automatski kako bi početnik odmah dobio jasan redoslijed rada.',
+    'tour_copy_title' => 'Kopiranje javne web adrese',
+    'tour_copy_text' => 'Ovdje jednim klikom kopiraš javni URL cijele aplikacije kako bi ga mogla podijeliti u poruci, objavi ili kampanji.',
+    'tour_statistics_title' => 'Analitika aplikacije',
+    'tour_statistics_text' => 'Na ovom gumbu otvaraš statistiku cijele Forever Card aplikacije i pratiš klikove, posjete i druge ključne signale.',
+    'tour_ai_title' => 'AI analiza glavne FCC aplikacije',
+    'tour_ai_text' => 'Ako je ovo glavna Forever aplikacija, ovdje pokrećeš AI analizu koja procjenjuje kvalitetu aplikacije i priprema plan za sljedećih 7 dana poslovnih aktivnosti.',
+    'tour_status_title' => 'Status editora na vrhu',
+    'tour_status_text' => 'Na vrhu uvijek vidiš koju aplikaciju uređuješ, je li glavna ili dodatna, je li javno aktivna i može li otvoriti analizu kvalitete.',
+    'tour_settings_title' => 'Postavke same aplikacije',
+    'tour_settings_text' => 'U kartici Postavke uređuješ sve glavne postavke aplikacije. Ovdje početnik podešava adresu, izgled, zaštitu, praćenje i SEO prije rada na samim blokovima.',
+    'tour_url_title' => 'Kratki URL i osnovna adresa',
+    'tour_url_text' => 'Ovdje određuješ kratku web adresu aplikacije. To je glavni link koji korisnici otvaraju, zato ga ovdje provjeriš i po potrebi prilagodiš.',
+    'tour_blocks_title' => 'Blokovi za sadržaj i strukturu',
+    'tour_blocks_text' => 'Kartica Blokovi prikazuje sve blokove koji se trenutno nalaze na Forever Card aplikaciji. Tu slažeš redoslijed, uređuješ sadržaj i uključuješ ili isključuješ pojedine dijelove.',
+    'tour_blocks_panel_title' => 'Popis blokova unutar aplikacije',
+    'tour_blocks_panel_text' => 'Ovdje vidiš stvarni raspored blokova na aplikaciji. Svaki red predstavlja jedan blok, a za pojedine blokove vidiš i njihov link, klikove i dodatnu analitiku.',
+    'tour_add_block_title' => 'Dodavanje novog bloka',
+    'tour_add_block_text' => 'Ovaj gumb otvara novi odabir blokova po namjeni. Tamo biraš blokove prema tome što želiš postići, a ne po tehničkom nazivu.',
+    'tour_add_block_modal_title' => 'Popup za dodavanje blokova',
+    'tour_add_block_modal_text' => 'Kad otvoriš Dodaj blok, dobiješ popis blokova složen po stvarnoj primjeni. Tako početnik odmah vidi koja grupa služi za uvod, kontakte, prodaju, business ili Forever Card Club korake.',
+    'tour_block_search_title' => 'Pretraga blokova',
+    'tour_block_search_text' => 'U ovu tražilicu upiši naziv bloka, njegovu namjenu ili cilj aplikacije i popup će odmah suziti izbor na najrelevantnije opcije.',
+    'tour_block_group_title' => 'Odabir grupe blokova',
+    'tour_block_group_text' => 'Ovdje filtriraš blokove po grupi kao što su Početak aplikacije, Kontakti i leadovi, Prodaja i preporuke ili Business.',
+    'tour_block_goal_title' => 'Filter po cilju aplikacije',
+    'tour_block_goal_text' => 'Ovaj filter dodatno sužava izbor prema tome želiš li uvod, prikupljanje kontakata, preporuku proizvoda, rezervaciju termina, povjerenje ili sadržaj.',
+    'tour_block_card_title' => 'Kako stvarno dodati blok',
+    'tour_block_card_text' => 'Kada pronađeš željeni blok, klikneš na njegovu karticu i editor ga odmah dodaje u aplikaciju. Nakon toga se vraćaš u Blocks listu i uređuješ sadržaj tog novog bloka.',
+    'tour_preview_title' => 'Pregled uživo',
+    'tour_preview_text' => 'Desna strana ti u svakom trenutku pokazuje pregled aplikacije uživo. Tu odmah vidiš kako promjene iz Postavki i Blokova izgledaju za stvarnog posjetitelja.',
+    'tour_theme_title' => 'Teme počinju u kartici Postavke',
+    'tour_theme_text' => 'Odabir teme vezan je uz postavke aplikacije, zato prvo prelazimo u karticu Postavke.',
+    'tour_theme_button_title' => 'Otvaranje teme',
+    'tour_theme_button_text' => 'Ovaj gumb otvara biblioteku tema i layout stilova za cijelu aplikaciju.',
+    'tour_theme_modal_title' => 'Pregled biblioteke tema',
+    'tour_theme_modal_text' => 'U ovom popupu biraš vizualni smjer aplikacije i odmah vidiš koji layout želiš primijeniti.',
+    'tour_reset_title' => 'Vraćanje aplikacije na početni izgled',
+    'tour_reset_text' => 'Reset služi kada želiš vratiti početni FCC raspored i krenuti ponovno od čistog predloška.',
+    'tour_reset_button_title' => 'Vrati na početni izgled',
+    'tour_reset_button_text' => 'Ovdje pokrećeš vraćanje početnog izgleda i početnog sadržajnog rasporeda aplikacije.',
+    'tour_customizations_title' => 'Prilagodbe aplikacije',
+    'tour_customizations_text' => 'Ova rubrika otvara vizualne prilagodbe kao što su pozadina, fontovi, širina, spacing i opći izgled cijele aplikacije.',
+    'tour_pixels_title' => 'Pikseli i praćenje kampanja',
+    'tour_pixels_text' => 'Ovdje spajaš marketinške pixele kako bi kampanje, remarketing i konverzije bile mjerljive izvan same aplikacije.',
+    'tour_utm_title' => 'UTM parametri',
+    'tour_utm_text' => 'U ovoj rubrici dodaješ UTM oznake za praćenje izvora prometa, kampanja i kanala iz kojih korisnici dolaze.',
+    'tour_protection_title' => 'Zaštita aplikacije',
+    'tour_protection_text' => 'Zaštita služi za lozinku i osjetljivi sadržaj. Koristiš je kada aplikaciju ne želiš pokazati svakome bez kontrole pristupa.',
+    'tour_seo_title' => 'SEO postavke',
+    'tour_seo_text' => 'SEO rubrika određuje kako se aplikacija prikazuje u tražilicama i kada se dijeli kao link, uključujući naslov i opis.',
+    'tour_reset_preview_title' => 'Provjeri rezultat u pregledu',
+    'tour_reset_preview_text' => 'Nakon resetiranja upravo ovdje najbrže potvrđuješ da je aplikacija stvarno vraćena na početni izgled.',
+    'tour_forever_title' => 'Forever blokovi nalaze se u kartici Blokovi',
+    'tour_forever_text' => 'Za Forever Card Club specifične blokove prvo otvori karticu Blokovi pa zatim Dodaj blok.',
+    'tour_forever_add_block_title' => 'Dodaj Forever blok',
+    'tour_forever_add_block_text' => 'Odabir blokova po namjeni možeš odmah filtrirati na FCC specifične blokove kako bi izbor bio kraći i jasniji.',
+    'tour_forever_modal_title' => 'FCC blokovi po primjeni',
+    'tour_forever_modal_text' => 'Ovdje su svi ključni FCC blokovi za preporuke, proizvode, chatbot i pomoćne korake unutar glavne aplikacije.',
+    'tour_discount_title' => 'Prodajni blok nalazi se u kartici Blokovi',
+    'tour_discount_text' => 'Za klikove prema Forever Living proizvodima prvo otvori karticu Blokovi, jer se prodajni blok dodaje iz popisa blokova.',
+    'tour_discount_add_block_title' => 'Otvori Dodaj blok',
+    'tour_discount_add_block_text' => 'Ovdje otvaraš odabir blokova po namjeni iz kojeg dodaješ prodajni blok za Forever Living proizvode.',
+    'tour_discount_modal_title' => 'Forever web trgovina blok',
+    'tour_discount_modal_text' => 'Ovaj blok koristiš za prodajni i preporučni link prema Forever Living proizvodima. Klikovi na ovaj blok ulaze u pozicioniranje tvoje Forever Card Aplikacije za isticanje na naslovnici Forever Card Cluba. Nakon klika na blok i prije aktivacije obavezno zalijepi link izrađen u Forever Link Builderu na Foreverliving.com stranici.',
+    'tour_discount_modal_resource' => 'Pogledaj video uputu',
+    'tour_funnel_title' => 'Funnel koraci počinju u kartici Blokovi',
+    'tour_funnel_text' => 'Forever Card Funnel dodaješ kao blok, zato prvo ulazimo u listu blokova.',
+    'tour_funnel_add_block_title' => 'Otvori odabir funnel bloka',
+    'tour_funnel_add_block_text' => 'Ovdje otvaraš odabir blokova koji već može filtrirati blokove za prijave, pozive na akciju i vođene daljnje korake.',
+    'tour_funnel_modal_title' => 'Lead i funnel blokovi',
+    'tour_funnel_modal_text' => 'U ovoj grupi biraš blokove za prijave, preporuke i konverzijske korake unutar aplikacije.',
+] : [
+    'eyebrow' => 'Forever Card App editor',
+    'summary' => 'This area shows which app you are editing, what is publicly visible, and whether the main FCC app can open quality analysis.',
+    'main_role' => 'Main app',
+    'secondary_role' => 'Additional app',
+    'live_status' => 'Publicly live',
+    'paused_status' => 'Temporarily hidden',
+    'analysis_ready' => 'Analysis ready',
+    'analysis_locked' => 'Analysis locked',
+    'analysis_main_only' => 'Main app only',
+    'analysis_ready_note' => 'This app can open App Review and track signal, recommendations, and quality for the main FCC flow.',
+    'analysis_locked_note' => 'Complete the AI profile and required prerequisites to unlock analysis for the main app.',
+    'analysis_main_only_note' => 'Quality analysis stays tied to the main FCC app. Additional apps act as support or campaign layers.',
+    'live_note' => 'Visitors can currently open this app on its public URL.',
+    'paused_note' => 'The app is saved, but not publicly visible until you enable it again.',
+    'name_label' => 'App name',
+    'role_label' => 'App type',
+    'public_label' => 'Public status',
+    'analysis_label' => 'Analysis status',
+    'analysis_cta' => 'Open App Review',
+    'analysis_locked_cta' => 'How to unlock analysis',
+    'tour_main' => 'Start the editor guide',
+    'tour_theme' => 'Themes',
+    'tour_reset' => 'Reset',
+    'tour_forever' => 'Forever blocks',
+    'tour_discount' => 'Forever product discount',
+    'tour_funnel' => 'Funnels',
+    'status_card_title' => 'Overview of this app',
+    'tours_title' => 'Mini tutorials for key actions',
+    'tours_text' => 'Here are the most useful quick guides for styling, reset, Forever blocks, and funnel actions.',
+    'tour_launch_title' => 'Main editor tutorial',
+    'tour_launch_text' => 'Use this button whenever you want to restart the full editor walkthrough. On the first visit it opens automatically so a beginner gets the right working order right away.',
+    'tour_copy_title' => 'Copy the public web address',
+    'tour_copy_text' => 'This button copies the public URL of the whole app, so you can quickly share it in a message, post, or campaign.',
+    'tour_statistics_title' => 'App analytics',
+    'tour_statistics_text' => 'This opens analytics for the full Forever Card app so you can review clicks, visits, and the most important performance signals.',
+    'tour_ai_title' => 'AI analysis for the main FCC app',
+    'tour_ai_text' => 'If this is the main Forever app, this area launches the AI analysis that evaluates app quality and prepares the next 7 days of business actions.',
+    'tour_status_title' => 'Top editor status',
+    'tour_status_text' => 'At the top you always see which app you are editing, whether it is main or additional, whether it is publicly live, and whether it can open quality analysis.',
+    'tour_settings_title' => 'Settings for the app itself',
+    'tour_settings_text' => 'The Settings tab contains the global app controls. This is where a beginner sets the address, appearance, protection, tracking, and SEO before editing individual blocks.',
+    'tour_url_title' => 'Short URL and base address',
+    'tour_url_text' => 'This area defines the short address of the app. It is the main link people open, so this is where you review and adjust it when needed.',
+    'tour_blocks_title' => 'Blocks for structure and content',
+    'tour_blocks_text' => 'The Blocks tab shows every block currently inside the Forever Card app. This is where you arrange order, edit content, and enable or disable sections.',
+    'tour_blocks_panel_title' => 'The block list inside the app',
+    'tour_blocks_panel_text' => 'This is the real block structure of the app. Each row is one block, and some rows also expose a block URL, click data, or extra analytics actions.',
+    'tour_add_block_title' => 'Adding a new block',
+    'tour_add_block_text' => 'This button opens the new purpose-based block picker, where you choose blocks by what you want to achieve instead of by technical label.',
+    'tour_add_block_modal_title' => 'The add-block popup',
+    'tour_add_block_modal_text' => 'When you open Add block, you get a block list organized by real use case. That helps a beginner immediately understand which group fits intros, contacts, sales, business needs, or Forever Card Club flows.',
+    'tour_block_search_title' => 'Searching for blocks',
+    'tour_block_search_text' => 'Type a block name, its purpose, or the goal of the app here and the popup will instantly narrow the choice to the most relevant options.',
+    'tour_block_group_title' => 'Choose a block group',
+    'tour_block_group_text' => 'Use this filter to narrow blocks by group such as App start, Contacts and leads, Sales and recommendations, or Business.',
+    'tour_block_goal_title' => 'Filter by app goal',
+    'tour_block_goal_text' => 'This filter narrows the list even further based on whether you want an intro, lead capture, product recommendation, booking, trust, or content.',
+    'tour_block_card_title' => 'How to actually add a block',
+    'tour_block_card_text' => 'Once you find the right block, click its card and the editor will add it to the app immediately. After that you return to the block list and edit the new block content.',
+    'tour_preview_title' => 'Live preview',
+    'tour_preview_text' => 'The right side always shows a live preview of the app. This is where you immediately confirm how changes from Settings and Blocks look to a real visitor.',
+    'tour_theme_title' => 'Themes begin in Settings',
+    'tour_theme_text' => 'The theme flow belongs to the app settings, so we begin in Settings first.',
+    'tour_theme_button_title' => 'Open themes',
+    'tour_theme_button_text' => 'This button opens the theme library and layout styles for the whole app.',
+    'tour_theme_modal_title' => 'Theme library overview',
+    'tour_theme_modal_text' => 'Inside this popup you choose the visual direction of the app and see which layout you want to apply.',
+    'tour_reset_title' => 'The app reset flow',
+    'tour_reset_text' => 'Reset is useful when you want to restore the starting FCC structure and begin again from a clean template.',
+    'tour_reset_button_title' => 'Factory reset',
+    'tour_reset_button_text' => 'This is where you restore the starting layout and default content structure of the app.',
+    'tour_customizations_title' => 'App customizations',
+    'tour_customizations_text' => 'This section opens the visual customizations such as background, fonts, width, spacing, and the overall look of the app.',
+    'tour_pixels_title' => 'Pixels and campaign tracking',
+    'tour_pixels_text' => 'This is where you connect marketing pixels so campaigns, remarketing, and conversions can be measured outside the app as well.',
+    'tour_utm_title' => 'UTM parameters',
+    'tour_utm_text' => 'In this section you add UTM tags for tracking traffic sources, campaigns, and channels that bring users to the app.',
+    'tour_protection_title' => 'App protection',
+    'tour_protection_text' => 'Protection is used for passwords and sensitive content. Use it when the app should not be openly visible to everyone.',
+    'tour_seo_title' => 'SEO settings',
+    'tour_seo_text' => 'The SEO section controls how the app appears in search engines and when shared as a link, including title and description.',
+    'tour_reset_preview_title' => 'Check the result in preview',
+    'tour_reset_preview_text' => 'After a reset, this preview is the fastest place to confirm that the app really returned to the starting layout.',
+    'tour_forever_title' => 'Forever blocks live in Blocks',
+    'tour_forever_text' => 'For Forever Card Club-specific blocks, first open the Blocks tab and then the Add block picker.',
+    'tour_forever_add_block_title' => 'Add a Forever block',
+    'tour_forever_add_block_text' => 'The purpose-based picker can immediately filter to FCC-specific blocks so the choice becomes shorter and clearer.',
+    'tour_forever_modal_title' => 'FCC blocks by use case',
+    'tour_forever_modal_text' => 'This view contains the key FCC blocks for referrals, products, chatbots, and support steps inside the main app.',
+    'tour_discount_title' => 'The sales block lives in Blocks',
+    'tour_discount_text' => 'For clicks toward Forever Living products, first open the Blocks tab because the sales block is added from the block list.',
+    'tour_discount_add_block_title' => 'Open Add block',
+    'tour_discount_add_block_text' => 'This opens the purpose-based picker where you add the sales block for Forever Living products.',
+    'tour_discount_modal_title' => 'Forever Web Shop block',
+    'tour_discount_modal_text' => 'Use this block for the sales and referral link toward Forever Living products. Clicks on this block count toward the positioning of your Forever Card App for homepage visibility inside Forever Card Club. After clicking the block and before activation, paste the link created in Forever Link Builder on the Foreverliving.com website.',
+    'tour_discount_modal_resource' => 'Watch the video guide',
+    'tour_funnel_title' => 'The funnel flow starts in Blocks',
+    'tour_funnel_text' => 'You add the Forever Card Funnel as a block, so we begin in the block list.',
+    'tour_funnel_add_block_title' => 'Open the funnel picker',
+    'tour_funnel_add_block_text' => 'This opens the picker which can already filter blocks for registrations, CTA steps, and guided follow-up.',
+    'tour_funnel_modal_title' => 'Lead and funnel blocks',
+    'tour_funnel_modal_text' => 'In this group you choose blocks for registrations, recommendations, and conversion steps inside the app.',
+];
+
+$fcc_biolink_editor_is_main = !empty($data->is_main_biolink_app);
+$fcc_biolink_editor_public_status = !empty($data->link->is_enabled) ? 'live' : 'paused';
+$fcc_biolink_editor_analysis_status = !$fcc_biolink_editor_is_main ? 'main_only' : (!empty($data->app_review_is_accessible) ? 'ready' : 'locked');
+$fcc_biolink_editor_display_name = trim((string) ($data->link->settings->seo->title ?? ''));
+if($fcc_biolink_editor_display_name === '') {
+    $fcc_biolink_editor_display_name = trim((string) ($data->link->url ?? ''));
+}
+
+$fcc_biolink_editor_meta_items = [
+    ['label' => $fcc_biolink_editor_copy['role_label'], 'value' => $fcc_biolink_editor_is_main ? $fcc_biolink_editor_copy['main_role'] : $fcc_biolink_editor_copy['secondary_role'], 'icon' => 'fas fa-layer-group', 'title' => $fcc_biolink_editor_is_main ? $fcc_biolink_editor_copy['analysis_ready_note'] : $fcc_biolink_editor_copy['analysis_main_only_note']],
+    ['label' => $fcc_biolink_editor_copy['public_label'], 'value' => $fcc_biolink_editor_public_status === 'live' ? $fcc_biolink_editor_copy['live_status'] : $fcc_biolink_editor_copy['paused_status'], 'icon' => 'fas fa-globe-europe', 'title' => $fcc_biolink_editor_public_status === 'live' ? $fcc_biolink_editor_copy['live_note'] : $fcc_biolink_editor_copy['paused_note']],
+    ['label' => $fcc_biolink_editor_copy['analysis_label'], 'value' => $fcc_biolink_editor_analysis_status === 'ready' ? $fcc_biolink_editor_copy['analysis_ready'] : ($fcc_biolink_editor_analysis_status === 'locked' ? $fcc_biolink_editor_copy['analysis_locked'] : $fcc_biolink_editor_copy['analysis_main_only']), 'icon' => 'fas fa-chart-line', 'title' => $fcc_biolink_editor_analysis_status === 'ready' ? $fcc_biolink_editor_copy['analysis_ready_note'] : ($fcc_biolink_editor_analysis_status === 'locked' ? $fcc_biolink_editor_copy['analysis_locked_note'] : $fcc_biolink_editor_copy['analysis_main_only_note'])],
+];
+
+$fcc_biolink_editor_tours = [
+    'main' => [
+        ['selector' => '#fcc_biolink_page_guide', 'title' => $fcc_biolink_editor_copy['tour_launch_title'], 'text' => $fcc_biolink_editor_copy['tour_launch_text']],
+        ['selector' => '#link_full_url_copy', 'title' => $fcc_biolink_editor_copy['tour_copy_title'], 'text' => $fcc_biolink_editor_copy['tour_copy_text']],
+        ['selector' => '#fcc_biolink_editor_step_statistics', 'title' => $fcc_biolink_editor_copy['tour_statistics_title'], 'text' => $fcc_biolink_editor_copy['tour_statistics_text']],
+        ['selector' => '#fcc_app_stats_tour_step_ai_block', 'title' => $fcc_biolink_editor_copy['tour_ai_title'], 'text' => $fcc_biolink_editor_copy['tour_ai_text']],
+        ['selector' => '#fcc_biolink_editor_status', 'title' => $fcc_biolink_editor_copy['tour_status_title'], 'text' => $fcc_biolink_editor_copy['tour_status_text']],
+        ['selector' => '#settings-tab', 'action' => 'activateSettings', 'title' => $fcc_biolink_editor_copy['tour_settings_title'], 'text' => $fcc_biolink_editor_copy['tour_settings_text']],
+        ['selector' => '#fcc_biolink_editor_step_url', 'action' => 'activateSettings', 'title' => $fcc_biolink_editor_copy['tour_url_title'], 'text' => $fcc_biolink_editor_copy['tour_url_text']],
+        ['selector' => '#fcc_biolink_theme_button', 'action' => 'activateSettings', 'title' => $fcc_biolink_editor_copy['tour_theme_button_title'], 'text' => $fcc_biolink_editor_copy['tour_theme_button_text']],
+        ['selector' => '#reset_biolink_factory_btn', 'action' => 'activateSettings', 'title' => $fcc_biolink_editor_copy['tour_reset_button_title'], 'text' => $fcc_biolink_editor_copy['tour_reset_button_text']],
+        ['selector' => '#fcc_biolink_settings_customizations_button', 'action' => 'showCollapse', 'collapse_target' => '#customizations_container', 'title' => $fcc_biolink_editor_copy['tour_customizations_title'], 'text' => $fcc_biolink_editor_copy['tour_customizations_text']],
+        ['selector' => '#fcc_biolink_settings_pixels_button', 'action' => 'showCollapse', 'collapse_target' => '#pixels_container', 'title' => $fcc_biolink_editor_copy['tour_pixels_title'], 'text' => $fcc_biolink_editor_copy['tour_pixels_text']],
+        ['selector' => '#fcc_biolink_settings_utm_button', 'action' => 'showCollapse', 'collapse_target' => '#utm_container', 'title' => $fcc_biolink_editor_copy['tour_utm_title'], 'text' => $fcc_biolink_editor_copy['tour_utm_text']],
+        ['selector' => '#fcc_biolink_settings_protection_button', 'action' => 'showCollapse', 'collapse_target' => '#protection_container', 'title' => $fcc_biolink_editor_copy['tour_protection_title'], 'text' => $fcc_biolink_editor_copy['tour_protection_text']],
+        ['selector' => '#fcc_biolink_settings_seo_button', 'action' => 'showCollapse', 'collapse_target' => '#seo_container', 'title' => $fcc_biolink_editor_copy['tour_seo_title'], 'text' => $fcc_biolink_editor_copy['tour_seo_text']],
+        ['selector' => '#blocks-tab', 'action' => 'activateBlocks', 'title' => $fcc_biolink_editor_copy['tour_blocks_title'], 'text' => $fcc_biolink_editor_copy['tour_blocks_text']],
+        ['selector' => '#biolink_blocks', 'action' => 'activateBlocks', 'title' => $fcc_biolink_editor_copy['tour_blocks_panel_title'], 'text' => $fcc_biolink_editor_copy['tour_blocks_panel_text']],
+        ['selector' => '#fcc_biolink_add_block_button', 'action' => 'activateBlocks', 'title' => $fcc_biolink_editor_copy['tour_add_block_title'], 'text' => $fcc_biolink_editor_copy['tour_add_block_text']],
+        ['selector' => '#biolink_preview_iframe', 'action' => 'closeModals', 'title' => $fcc_biolink_editor_copy['tour_preview_title'], 'text' => $fcc_biolink_editor_copy['tour_preview_text']],
+    ],
+    'themes' => [
+        ['selector' => '#settings-tab', 'action' => 'activateSettings', 'title' => $fcc_biolink_editor_copy['tour_theme_title'], 'text' => $fcc_biolink_editor_copy['tour_theme_text']],
+        ['selector' => '#fcc_biolink_theme_button', 'action' => 'activateSettings', 'title' => $fcc_biolink_editor_copy['tour_theme_button_title'], 'text' => $fcc_biolink_editor_copy['tour_theme_button_text']],
+        ['selector' => '#biolinks_themes', 'action' => 'openThemesModal', 'title' => $fcc_biolink_editor_copy['tour_theme_modal_title'], 'text' => $fcc_biolink_editor_copy['tour_theme_modal_text']],
+    ],
+    'reset' => [
+        ['selector' => '#settings-tab', 'action' => 'activateSettings', 'title' => $fcc_biolink_editor_copy['tour_reset_title'], 'text' => $fcc_biolink_editor_copy['tour_reset_text']],
+        ['selector' => '#reset_biolink_factory_btn', 'action' => 'activateSettings', 'title' => $fcc_biolink_editor_copy['tour_reset_button_title'], 'text' => $fcc_biolink_editor_copy['tour_reset_button_text']],
+        ['selector' => '#biolink_preview_iframe', 'title' => $fcc_biolink_editor_copy['tour_reset_preview_title'], 'text' => $fcc_biolink_editor_copy['tour_reset_preview_text']],
+    ],
+    'forever' => [
+        ['selector' => '#blocks-tab', 'action' => 'activateBlocks', 'title' => $fcc_biolink_editor_copy['tour_forever_title'], 'text' => $fcc_biolink_editor_copy['tour_forever_text']],
+        ['selector' => '#fcc_biolink_add_block_button', 'action' => 'activateBlocks', 'title' => $fcc_biolink_editor_copy['tour_forever_add_block_title'], 'text' => $fcc_biolink_editor_copy['tour_forever_add_block_text']],
+        ['selector' => '[data-block-id="link_forever_shop"]', 'action' => 'openAddBlockModal', 'filter_group' => 'forever', 'title' => $fcc_biolink_editor_copy['tour_forever_modal_title'], 'text' => $fcc_biolink_editor_copy['tour_forever_modal_text']],
+    ],
+    'discount' => [
+        ['selector' => '#blocks-tab', 'action' => 'activateBlocks', 'title' => $fcc_biolink_editor_copy['tour_discount_title'], 'text' => $fcc_biolink_editor_copy['tour_discount_text']],
+        ['selector' => '#fcc_biolink_add_block_button', 'action' => 'activateBlocks', 'title' => $fcc_biolink_editor_copy['tour_discount_add_block_title'], 'text' => $fcc_biolink_editor_copy['tour_discount_add_block_text']],
+        ['selector' => '[data-block-id="link_discount"]', 'action' => 'openAddBlockModal', 'filter_group' => 'forever', 'filter_goal' => 'product_recommendation', 'title' => $fcc_biolink_editor_copy['tour_discount_modal_title'], 'text' => $fcc_biolink_editor_copy['tour_discount_modal_text'], 'resource_url' => 'https://www.youtube.com/watch?v=8tBJiDu1EWc', 'resource_label' => $fcc_biolink_editor_copy['tour_discount_modal_resource']],
+    ],
+    'funnel' => [
+        ['selector' => '#blocks-tab', 'action' => 'activateBlocks', 'title' => $fcc_biolink_editor_copy['tour_funnel_title'], 'text' => $fcc_biolink_editor_copy['tour_funnel_text']],
+        ['selector' => '#fcc_biolink_add_block_button', 'action' => 'activateBlocks', 'title' => $fcc_biolink_editor_copy['tour_funnel_add_block_title'], 'text' => $fcc_biolink_editor_copy['tour_funnel_add_block_text']],
+        ['selector' => '[data-block-id="lead_funnel"]', 'action' => 'openAddBlockModal', 'filter_group' => 'sales', 'filter_goal' => 'lead_capture', 'title' => $fcc_biolink_editor_copy['tour_funnel_modal_title'], 'text' => $fcc_biolink_editor_copy['tour_funnel_modal_text']],
+    ],
+];
+?>
+
 <?php ob_start() ?>
 <script src="<?= ASSETS_FULL_URL . 'js/libraries/sortable.js?v=' . PRODUCT_CODE ?>"></script>
 <?php \Altum\Event::add_content(ob_get_clean(), 'javascript') ?>
@@ -7,6 +280,143 @@
 <?php /* Custom code: FC-2026-02-27: premium biolink editor styling */ ?>
 <?php ob_start() ?>
 <style>
+    .fcc-biolink-editor-status {
+        position: relative;
+        overflow: hidden;
+        border: 1px solid #d8e3ef;
+        border-radius: 1.2rem;
+        padding: 1.2rem 1.25rem;
+        margin-bottom: 1rem;
+        background:
+            radial-gradient(circle at top left, rgba(74, 222, 128, 0.10) 0%, rgba(74, 222, 128, 0) 30%),
+            radial-gradient(circle at 88% 12%, rgba(59, 130, 246, 0.10) 0%, rgba(59, 130, 246, 0) 26%),
+            linear-gradient(180deg, #f8fbff 0%, #eef4fb 100%);
+        box-shadow: 0 .85rem 2rem rgba(15, 23, 42, 0.08);
+    }
+
+    .fcc-biolink-editor-status-eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: .45rem;
+        margin-bottom: .55rem;
+        font-size: .76rem;
+        font-weight: 800;
+        letter-spacing: .08em;
+        text-transform: uppercase;
+        color: #3b82f6;
+    }
+
+    .fcc-biolink-editor-status-copy h2 {
+        margin: 0 0 .45rem;
+        color: #0f172a;
+        font-size: clamp(1.45rem, 2vw, 2rem);
+        line-height: 1.05;
+        letter-spacing: -.04em;
+        font-weight: 900;
+    }
+
+    .fcc-biolink-editor-status-copy p {
+        margin: 0;
+        max-width: 64ch;
+        color: #516174;
+        line-height: 1.68;
+    }
+
+    .fcc-biolink-editor-status-url {
+        display: inline-flex;
+        align-items: center;
+        gap: .45rem;
+        margin-top: .8rem;
+        border-radius: 999px;
+        padding: .4rem .8rem;
+        background: rgba(255, 255, 255, .72);
+        border: 1px solid rgba(148, 163, 184, .24);
+        color: #1e293b;
+        font-size: .82rem;
+        font-weight: 700;
+        word-break: break-all;
+    }
+
+    .fcc-biolink-editor-status-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .65rem;
+        margin-top: .95rem;
+    }
+
+    .fcc-biolink-editor-status-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: .55rem;
+        border-radius: 999px;
+        padding: .52rem .85rem;
+        background: rgba(255, 255, 255, .74);
+        border: 1px solid rgba(148, 163, 184, .18);
+        color: #0f172a;
+        font-size: .82rem;
+        font-weight: 700;
+        line-height: 1.2;
+    }
+
+    .fcc-biolink-editor-status-pill-label {
+        color: #64748b;
+        font-size: .72rem;
+        font-weight: 800;
+        letter-spacing: .06em;
+        text-transform: uppercase;
+    }
+
+    .fcc-biolink-editor-tutorial-panel {
+        margin-top: 1rem;
+        border-radius: 1.05rem;
+        padding: 1rem 1.05rem;
+        background: rgba(255, 255, 255, .68);
+        border: 1px solid rgba(148, 163, 184, .18);
+        box-shadow: inset 0 1px 0 rgba(255,255,255,.32);
+    }
+
+    .fcc-biolink-editor-tutorial-header {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        gap: .9rem;
+        align-items: flex-start;
+    }
+
+    .fcc-biolink-editor-tutorial-header h3 {
+        margin: 0 0 .35rem;
+        color: #0f172a;
+        font-size: 1rem;
+        font-weight: 800;
+    }
+
+    .fcc-biolink-editor-tutorial-header p {
+        margin: 0;
+        max-width: 56ch;
+        color: #5b6978;
+        font-size: .88rem;
+        line-height: 1.65;
+    }
+
+    .fcc-biolink-editor-mini-guides {
+        display: flex;
+        flex-direction: column;
+        gap: .6rem;
+        margin-top: .95rem;
+    }
+
+    .fcc-biolink-editor-mini-guides-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .6rem;
+    }
+
+    .fcc-biolink-editor-mini-guides .btn {
+        border-radius: 999px;
+        min-height: 2.2rem;
+        padding-inline: .9rem;
+    }
+
     .biolink-editor-toolbar {
         border: 1px solid var(--gray-200);
         box-shadow: 0 0.4rem 1.1rem rgba(0, 0, 0, 0.06);
@@ -134,6 +544,45 @@
         box-shadow: 0 0.45rem 1.2rem rgba(0, 0, 0, 0.33) !important;
     }
 
+    body[data-theme-style='dark'] .fcc-biolink-editor-status {
+        background:
+            radial-gradient(circle at top left, rgba(45, 212, 191, 0.12) 0%, rgba(45, 212, 191, 0) 30%),
+            radial-gradient(circle at 88% 12%, rgba(59, 130, 246, 0.12) 0%, rgba(59, 130, 246, 0) 26%),
+            linear-gradient(180deg, #162130 0%, #0f1724 100%);
+        border-color: #33445b;
+        box-shadow: 0 .95rem 2.2rem rgba(0, 0, 0, .32);
+    }
+
+    body[data-theme-style='dark'] .fcc-biolink-editor-status-copy h2,
+    body[data-theme-style='dark'] .fcc-biolink-editor-status-url {
+        color: #f3f7fd;
+    }
+
+    body[data-theme-style='dark'] .fcc-biolink-editor-status-eyebrow {
+        color: #93c5fd;
+    }
+
+    body[data-theme-style='dark'] .fcc-biolink-editor-status-copy p {
+        color: #b7c4d6;
+    }
+
+    body[data-theme-style='dark'] .fcc-biolink-editor-status-pill,
+    body[data-theme-style='dark'] .fcc-biolink-editor-tutorial-panel,
+    body[data-theme-style='dark'] .fcc-biolink-editor-status-url {
+        background: rgba(15, 23, 36, .6);
+        border-color: rgba(100, 116, 139, .22);
+    }
+
+    body[data-theme-style='dark'] .fcc-biolink-editor-status-pill,
+    body[data-theme-style='dark'] .fcc-biolink-editor-tutorial-header h3 {
+        color: #f3f7fd;
+    }
+
+    body[data-theme-style='dark'] .fcc-biolink-editor-status-pill-label,
+    body[data-theme-style='dark'] .fcc-biolink-editor-tutorial-header p {
+        color: #b7c4d6;
+    }
+
     body[data-theme-style='dark'] .biolink-switch-buttons {
         background: #1a2330;
         border-color: #33445b;
@@ -202,6 +651,181 @@
     body[data-theme-style='dark'] #biolink_blocks .biolink_block.card .biolink-editor-expanded {
         border-top-color: #3b4a60;
     }
+
+    .fcc-biolink-tour-target {
+        scroll-margin-top: 6rem;
+    }
+
+    .fcc-biolink-tour-active-ancestor {
+        position: relative !important;
+        z-index: 2051 !important;
+        overflow: visible !important;
+    }
+
+    .fcc-biolink-tour-active-target {
+        position: relative !important;
+        z-index: 2052 !important;
+        isolation: isolate;
+        transform: translateZ(0);
+        filter: brightness(1.05) saturate(1.04);
+        box-shadow: 0 0 0 2px rgba(73, 227, 207, .98), 0 0 0 10px rgba(112, 244, 228, .18), 0 18px 54px rgba(7, 19, 38, .34) !important;
+        border-radius: 1.1rem !important;
+    }
+
+    .fcc-biolink-tour-backdrop {
+        position: fixed;
+        inset: 0;
+        z-index: 2050;
+        display: none;
+        pointer-events: none;
+    }
+
+    .fcc-biolink-tour-backdrop.is-visible {
+        display: block;
+    }
+
+    .fcc-biolink-tour-backdrop-segment {
+        position: fixed;
+        background: rgba(2, 8, 23, .58);
+        backdrop-filter: blur(3px);
+        pointer-events: none;
+    }
+
+    .fcc-biolink-tour-popover {
+        position: fixed;
+        z-index: 2055;
+        width: min(25rem, calc(100vw - 2rem));
+        display: none;
+        opacity: 0;
+        pointer-events: none;
+        border-radius: 1.2rem;
+        border: 1px solid rgba(147, 197, 253, .22);
+        background:
+            radial-gradient(circle at top right, rgba(73, 227, 207, .18), transparent 30%),
+            linear-gradient(180deg, rgba(25, 36, 58, .98), rgba(16, 24, 41, .97));
+        box-shadow: 0 30px 80px rgba(2, 8, 23, .44), inset 0 1px 0 rgba(255,255,255,.05);
+        padding: 1.05rem 1.05rem 1rem;
+        transition: opacity .12s ease;
+    }
+
+    .fcc-biolink-tour-popover.is-visible {
+        display: block;
+    }
+
+    .fcc-biolink-tour-popover.is-ready {
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    .fcc-biolink-tour-progress {
+        display: inline-flex;
+        align-items: center;
+        gap: .45rem;
+        padding: .35rem .65rem;
+        border-radius: 999px;
+        background: rgba(73, 227, 207, .18);
+        color: #e8fffb;
+        font-size: .75rem;
+        font-weight: 800;
+        letter-spacing: .06em;
+        text-transform: uppercase;
+        margin-bottom: .75rem;
+        border: 1px solid rgba(73, 227, 207, .16);
+    }
+
+    .fcc-biolink-tour-title {
+        color: #f8fbff;
+        font-size: 1.12rem;
+        font-weight: 800;
+        line-height: 1.3;
+        margin-bottom: .45rem;
+    }
+
+    .fcc-biolink-tour-text {
+        color: rgba(236, 244, 255, .94);
+        font-size: .94rem;
+        line-height: 1.65;
+        margin-bottom: 1rem;
+    }
+
+    .fcc-biolink-tour-resource {
+        display: none;
+        align-items: center;
+        justify-content: center;
+        gap: .55rem;
+        width: 100%;
+        margin-bottom: 1rem;
+        border-radius: .95rem;
+        border: 1px solid rgba(73, 227, 207, .22);
+        background: rgba(73, 227, 207, .12);
+        color: #e8fffb;
+        font-weight: 700;
+        text-decoration: none;
+        padding: .8rem .95rem;
+    }
+
+    .fcc-biolink-tour-resource:hover,
+    .fcc-biolink-tour-resource:focus {
+        color: #ffffff;
+        text-decoration: none;
+        background: rgba(73, 227, 207, .18);
+        border-color: rgba(73, 227, 207, .36);
+    }
+
+    .fcc-biolink-tour-actions {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: .75rem;
+    }
+
+    .fcc-biolink-tour-actions-main {
+        display: flex;
+        gap: .65rem;
+        flex-wrap: wrap;
+    }
+
+    .fcc-biolink-tour-actions .btn {
+        border-radius: .85rem;
+    }
+
+    .fcc-biolink-tour-actions .btn-link {
+        color: rgba(226, 232, 240, .82) !important;
+        text-decoration: none;
+    }
+
+    .fcc-biolink-tour-actions .btn-link:hover,
+    .fcc-biolink-tour-actions .btn-link:focus {
+        color: #ffffff !important;
+        text-decoration: none;
+    }
+
+    .fcc-biolink-tour-actions .btn-outline-light {
+        color: #ecf8ff !important;
+        border-color: rgba(147, 197, 253, .28) !important;
+        background: rgba(59, 130, 246, .12) !important;
+    }
+
+    .fcc-biolink-tour-actions .btn-outline-light:hover,
+    .fcc-biolink-tour-actions .btn-outline-light:focus {
+        color: #ffffff !important;
+        border-color: rgba(147, 197, 253, .48) !important;
+        background: rgba(59, 130, 246, .2) !important;
+    }
+
+    @media (max-width: 767px) {
+        .fcc-biolink-editor-status-pill {
+            width: 100%;
+        }
+
+        .fcc-biolink-tour-popover {
+            left: 1rem !important;
+            right: 1rem !important;
+            width: auto;
+            top: auto !important;
+            bottom: 1rem;
+        }
+    }
 </style>
 <?php \Altum\Event::add_content(ob_get_clean(), 'head') ?>
 <?php /* /Custom code: FC-2026-02-27 */ ?>
@@ -223,8 +847,55 @@
 		}
 
         /* Custom code: FC-2026-03-03: keep sections in DOM for JS stability; hidden via CSS for all users */
-        $show_admin_only_biolink_sections = true;
+		$show_admin_only_biolink_sections = true;
 		?>
+
+        <div class="fcc-biolink-editor-status fcc-biolink-tour-target" id="fcc_biolink_editor_status">
+            <div class="fcc-biolink-editor-status-copy">
+                <div class="fcc-biolink-editor-status-eyebrow">
+                    <i class="fas fa-fw fa-compass"></i>
+                    <span><?= $fcc_biolink_editor_copy['eyebrow'] ?></span>
+                </div>
+                <h2><?= htmlspecialchars($fcc_biolink_editor_display_name, ENT_QUOTES, 'UTF-8') ?></h2>
+                <p><?= $fcc_biolink_editor_copy['summary'] ?></p>
+                <a href="<?= htmlspecialchars($data->link->full_url, ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noreferrer" class="fcc-biolink-editor-status-url">
+                    <i class="fas fa-fw fa-up-right-from-square"></i>
+                    <span><?= htmlspecialchars($data->link->full_url, ENT_QUOTES, 'UTF-8') ?></span>
+                </a>
+            </div>
+
+            <div class="fcc-biolink-editor-status-meta">
+                <?php foreach($fcc_biolink_editor_meta_items as $meta_item): ?>
+                    <div class="fcc-biolink-editor-status-pill" data-toggle="tooltip" title="<?= htmlspecialchars((string) $meta_item['title'], ENT_QUOTES, 'UTF-8') ?>">
+                        <i class="<?= $meta_item['icon'] ?>"></i>
+                        <span class="fcc-biolink-editor-status-pill-label"><?= $meta_item['label'] ?>:</span>
+                        <span><?= htmlspecialchars((string) $meta_item['value'], ENT_QUOTES, 'UTF-8') ?></span>
+                    </div>
+                <?php endforeach ?>
+            </div>
+
+            <div class="fcc-biolink-editor-tutorial-panel">
+                <div class="fcc-biolink-editor-tutorial-header">
+                    <div>
+                        <h3><?= $fcc_biolink_editor_copy['tours_title'] ?></h3>
+                        <p><?= $fcc_biolink_editor_copy['tours_text'] ?></p>
+                    </div>
+                </div>
+
+                <div class="fcc-biolink-editor-mini-guides">
+                    <div class="fcc-biolink-editor-mini-guides-row">
+                        <button type="button" class="btn btn-outline-secondary" data-fcc-start-biolink-tour="themes"><?= $fcc_biolink_editor_copy['tour_theme'] ?></button>
+                        <button type="button" class="btn btn-outline-secondary" data-fcc-start-biolink-tour="reset"><?= $fcc_biolink_editor_copy['tour_reset'] ?></button>
+                        <button type="button" class="btn btn-outline-secondary" data-fcc-start-biolink-tour="forever"><?= $fcc_biolink_editor_copy['tour_forever'] ?></button>
+                        <button type="button" class="btn btn-outline-secondary" data-fcc-start-biolink-tour="funnel"><?= $fcc_biolink_editor_copy['tour_funnel'] ?></button>
+                    </div>
+
+                    <div class="fcc-biolink-editor-mini-guides-row">
+                        <button type="button" class="btn btn-outline-secondary" data-fcc-start-biolink-tour="discount"><?= $fcc_biolink_editor_copy['tour_discount'] ?></button>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <!-- Custom code: FC-2026-02-27: premium toolbar for biolink editor -->
         <div class="card biolink-editor-toolbar mb-4">
@@ -232,19 +903,19 @@
                 <div class="d-flex flex-column flex-sm-row justify-content-sm-between align-items-sm-center">
                     <ul class="nav nav-pills biolink-switch-buttons mb-3 mb-sm-0" id="pills-tab" role="tablist">
                         <li class="nav-item">
-                            <a class="nav-link <?= $active_tab == 'settings' ? 'active' : null ?>" id="settings-tab" data-toggle="pill" href="#settings" role="tab" aria-controls="settings" aria-selected="true">
+                            <a class="nav-link fcc-biolink-tour-target <?= $active_tab == 'settings' ? 'active' : null ?>" id="settings-tab" data-toggle="pill" href="#settings" role="tab" aria-controls="settings" aria-selected="true">
                                 <i class="fas fa-fw fa-wrench fa-sm mr-1"></i> <?= l('link.header.settings_tab') ?>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link <?= $active_tab == 'blocks' ? 'active' : null ?>" id="blocks-tab" data-toggle="pill" href="#biolink_blocks" role="tab" aria-controls="links" aria-selected="false">
+                            <a class="nav-link fcc-biolink-tour-target <?= $active_tab == 'blocks' ? 'active' : null ?>" id="blocks-tab" data-toggle="pill" href="#biolink_blocks" role="tab" aria-controls="links" aria-selected="false">
                                 <i class="fas fa-fw fa-th-large fa-sm mr-1"></i> <?= l('link.header.blocks_tab') ?>
                             </a>
                         </li>
                     </ul>
 
                     <div>
-                        <button type="button" data-toggle="modal" data-target="#biolink_link_create_modal" class="btn btn-primary"><i class="fas fa-fw fa-plus-circle fa-sm mr-1"></i> <?= l('links.create_biolink_block') ?></button>
+                        <button type="button" id="fcc_biolink_add_block_button" data-toggle="modal" data-target="#biolink_link_create_modal" class="btn btn-primary fcc-biolink-tour-target"><i class="fas fa-fw fa-plus-circle fa-sm mr-1"></i> <?= l('links.create_biolink_block') ?></button>
                     </div>
                 </div>
             </div>
@@ -263,7 +934,7 @@
 
                             <div class="notification-container"></div>
 
-                            <div class="form-group">
+                            <div class="form-group fcc-biolink-tour-target" id="fcc_biolink_editor_step_url">
                                 <label for="url"><i class="fas fa-fw fa-bolt fa-sm text-muted mr-1"></i> <?= l('link.settings.url') ?></label>
                                 <div class="input-group">
                                     <div class="input-group-prepend">
@@ -309,12 +980,33 @@
 							<?php endif ?>
 
 							<?php if(settings()->links->biolinks_themes_is_enabled): ?>
-                                <button class="btn btn-block btn-gray-200 font-size-little-small font-weight-450 my-4" type="button" data-toggle="modal" data-target="#biolink_themes_modal" aria-expanded="false" aria-controls="theme_container">
+                                <?php $fcc_selected_biolink_theme = !empty($data->link->biolink_theme_id) && isset($data->biolinks_themes[$data->link->biolink_theme_id]) ? $data->biolinks_themes[$data->link->biolink_theme_id] : null; ?>
+                                <button id="fcc_biolink_theme_button" class="btn btn-block btn-gray-200 font-size-little-small font-weight-450 my-4 fcc-biolink-tour-target" type="button" data-toggle="modal" data-target="#biolink_themes_modal" aria-expanded="false" aria-controls="theme_container">
                                     <i class="fas fa-fw fa-palette fa-sm mr-1"></i> <?= l('link.settings.theme_header') ?>
                                 </button>
+                                <small class="form-text text-muted mt-n3 mb-3"><?= l('link.settings.theme_help') ?></small>
+
+                                <div class="fcc-biolink-theme-summary card border-0 shadow-sm mb-4">
+                                    <div class="card-body">
+                                        <div class="d-flex flex-wrap justify-content-between align-items-start mb-2">
+                                            <div class="text-uppercase small font-weight-bold text-muted"><?= l('biolink_themes.current_title') ?></div>
+                                            <span id="fcc_biolink_theme_summary_status" class="badge badge-pill badge-light">
+                                                <?= $fcc_selected_biolink_theme ? l('biolink_themes.current_active') : l('biolink_themes.current_custom') ?>
+                                            </span>
+                                        </div>
+
+                                        <div id="fcc_biolink_theme_summary_name" class="h5 mb-2">
+                                            <?= $fcc_selected_biolink_theme ? $fcc_selected_biolink_theme->name : l('biolink_themes.id_null') ?>
+                                        </div>
+
+                                        <p id="fcc_biolink_theme_summary_help" class="mb-0 text-muted">
+                                            <?= $fcc_selected_biolink_theme ? l('biolink_themes.current_active_help') : l('biolink_themes.current_custom_help') ?>
+                                        </p>
+                                    </div>
+                                </div>
 
                                 <!-- Custom code: FC-2026-03-06: factory reset button for biolink template -->
-                                <button id="reset_biolink_factory_btn" class="btn btn-block btn-outline-danger font-size-little-small font-weight-450 mb-4" type="button" data-link-id="<?= $data->link->link_id ?>">
+                                <button id="reset_biolink_factory_btn" class="btn btn-block btn-outline-danger font-size-little-small font-weight-450 mb-4 fcc-biolink-tour-target" type="button" data-link-id="<?= $data->link->link_id ?>">
                                     <i class="fas fa-fw fa-undo-alt fa-sm mr-1"></i> <?= l('global.reset') ?> Forever Card Aplikaciju
                                 </button>
                                 <small class="form-text text-muted mt-n3 mb-3">Ova radnja briše trenutni sadržaj i vraća početni izgled Forever Card Aplikacije.</small>
@@ -328,7 +1020,7 @@
                                 </div>
 							<?php endif ?>
 
-                            <button class="btn btn-block btn-gray-200 font-size-little-small font-weight-450 my-4" type="button" data-toggle="collapse" data-target="#customizations_container" aria-expanded="false" aria-controls="customizations_container">
+                            <button id="fcc_biolink_settings_customizations_button" class="btn btn-block btn-gray-200 font-size-little-small font-weight-450 my-4 fcc-biolink-tour-target" type="button" data-toggle="collapse" data-target="#customizations_container" aria-expanded="false" aria-controls="customizations_container">
                                 <i class="fas fa-fw fa-paint-brush fa-sm mr-1"></i> <?= l('link.settings.customization_header') ?>
                             </button>
 
@@ -615,7 +1307,7 @@
                             <?php endif ?>
 
 							<?php if(settings()->links->pixels_is_enabled): ?>
-                                <button class="btn btn-block btn-gray-200 font-size-little-small font-weight-450 my-4" type="button" data-toggle="collapse" data-target="#pixels_container" aria-expanded="false" aria-controls="pixels_container">
+                                <button id="fcc_biolink_settings_pixels_button" class="btn btn-block btn-gray-200 font-size-little-small font-weight-450 my-4 fcc-biolink-tour-target" type="button" data-toggle="collapse" data-target="#pixels_container" aria-expanded="false" aria-controls="pixels_container">
                                     <i class="fas fa-fw fa-adjust fa-sm mr-1"></i> <?= l('link.settings.pixels_header') ?>
                                 </button>
 
@@ -646,7 +1338,7 @@
                                 </div>
 							<?php endif ?>
 
-                            <button class="btn btn-block btn-gray-200 font-size-little-small font-weight-450 my-4" type="button" data-toggle="collapse" data-target="#utm_container" aria-expanded="false" aria-controls="utm_container">
+                            <button id="fcc_biolink_settings_utm_button" class="btn btn-block btn-gray-200 font-size-little-small font-weight-450 my-4 fcc-biolink-tour-target" type="button" data-toggle="collapse" data-target="#utm_container" aria-expanded="false" aria-controls="utm_container">
                                 <i class="fas fa-fw fa-keyboard fa-sm mr-1"></i> <?= l('link.settings.utm_header') ?>
                             </button>
 
@@ -677,7 +1369,7 @@
                                 </div>
                             </div>
 
-                            <button class="btn btn-block btn-gray-200 font-size-little-small font-weight-450 my-4" type="button" data-toggle="collapse" data-target="#protection_container" aria-expanded="false" aria-controls="protection_container">
+                            <button id="fcc_biolink_settings_protection_button" class="btn btn-block btn-gray-200 font-size-little-small font-weight-450 my-4 fcc-biolink-tour-target" type="button" data-toggle="collapse" data-target="#protection_container" aria-expanded="false" aria-controls="protection_container">
                                 <i class="fas fa-fw fa-user-shield fa-sm mr-1"></i> <?= l('link.settings.protection_header') ?>
                             </button>
 
@@ -711,7 +1403,7 @@
                                 </div>
                             </div>
 
-                            <button class="btn btn-block btn-gray-200 font-size-little-small font-weight-450 my-4" type="button" data-toggle="collapse" data-target="#seo_container" aria-expanded="false" aria-controls="seo_container">
+                            <button id="fcc_biolink_settings_seo_button" class="btn btn-block btn-gray-200 font-size-little-small font-weight-450 my-4 fcc-biolink-tour-target" type="button" data-toggle="collapse" data-target="#seo_container" aria-expanded="false" aria-controls="seo_container">
                                 <i class="fas fa-fw fa-search-plus fa-sm mr-1"></i> <?= l('link.settings.seo_header') ?>
                             </button>
 
@@ -1227,9 +1919,27 @@
             <div class="biolink-preview sticky">
                 <div class="biolink-preview-iframe-container">
                     <div id="biolink_preview_iframe_loading" class="biolink-preview-iframe-loading d-none"><div class="spinner-border bg-primary" role="status"></div></div>
-                    <iframe id="biolink_preview_iframe" class="biolink-preview-iframe" src="<?= SITE_URL . 'l/link?link_id=' . $data->link->link_id . '&preview=' . md5($data->link->user_id) ?>"></iframe>
+                    <iframe id="biolink_preview_iframe" class="biolink-preview-iframe fcc-biolink-tour-target" src="<?= SITE_URL . 'l/link?link_id=' . $data->link->link_id . '&preview=' . md5($data->link->user_id) ?>"></iframe>
                 </div>
             </div>
+        </div>
+    </div>
+</div>
+
+<div class="fcc-biolink-tour-backdrop" id="fcc_biolink_editor_backdrop"></div>
+<div class="fcc-biolink-tour-popover" id="fcc_biolink_editor_popover" aria-live="polite">
+    <div class="fcc-biolink-tour-progress" id="fcc_biolink_editor_progress">1 / 1</div>
+    <div class="fcc-biolink-tour-title" id="fcc_biolink_editor_title"></div>
+    <div class="fcc-biolink-tour-text" id="fcc_biolink_editor_text"></div>
+    <a href="#" target="_blank" rel="noopener noreferrer" class="fcc-biolink-tour-resource" id="fcc_biolink_editor_resource">
+        <i class="fab fa-youtube"></i>
+        <span id="fcc_biolink_editor_resource_label"></span>
+    </a>
+    <div class="fcc-biolink-tour-actions">
+        <button type="button" class="btn btn-link text-muted px-0" id="fcc_biolink_editor_skip"><?= l('dashboard.tour.skip') ?></button>
+        <div class="fcc-biolink-tour-actions-main">
+            <button type="button" class="btn btn-outline-light" id="fcc_biolink_editor_prev"><?= l('dashboard.tour.prev') ?></button>
+            <button type="button" class="btn btn-primary" id="fcc_biolink_editor_next"><?= l('dashboard.tour.next') ?></button>
         </div>
     </div>
 </div>
@@ -1329,6 +2039,51 @@
 
     process_utm();
 
+    const fcc_biolink_theme_copy = {
+        custom_name: <?= json_encode(l('biolink_themes.id_null')) ?>,
+        active_status: <?= json_encode(l('biolink_themes.current_active')) ?>,
+        custom_status: <?= json_encode(l('biolink_themes.current_custom')) ?>,
+        active_help: <?= json_encode(l('biolink_themes.current_active_help')) ?>,
+        custom_help: <?= json_encode(l('biolink_themes.current_custom_help')) ?>
+    };
+
+    let update_biolink_theme_summary = () => {
+        let hidden_theme_input = document.querySelector('#biolink_theme_id');
+
+        if(!hidden_theme_input) {
+            return;
+        }
+
+        let biolink_theme_id = hidden_theme_input.value;
+        let selector = biolink_theme_id
+            ? `#biolink_themes_modal input[name="biolink_theme_id"][value="${biolink_theme_id}"]`
+            : '#settings_biolink_theme_id_null';
+        let selected_theme_input = document.querySelector(selector);
+        let selected_theme_name = selected_theme_input?.dataset.themeName || fcc_biolink_theme_copy.custom_name;
+        let is_custom_theme = !biolink_theme_id;
+
+        let summary_name = document.querySelector('#fcc_biolink_theme_summary_name');
+        let summary_status = document.querySelector('#fcc_biolink_theme_summary_status');
+        let summary_help = document.querySelector('#fcc_biolink_theme_summary_help');
+
+        if(summary_name) {
+            summary_name.textContent = selected_theme_name;
+        }
+
+        if(summary_status) {
+            summary_status.textContent = is_custom_theme ? fcc_biolink_theme_copy.custom_status : fcc_biolink_theme_copy.active_status;
+            summary_status.classList.toggle('badge-light', is_custom_theme);
+            summary_status.classList.toggle('badge-primary', !is_custom_theme);
+        }
+
+        if(summary_help) {
+            summary_help.textContent = is_custom_theme ? fcc_biolink_theme_copy.custom_help : fcc_biolink_theme_copy.active_help;
+        }
+    };
+
+    window.update_biolink_theme_summary = update_biolink_theme_summary;
+    update_biolink_theme_summary();
+
     /* Switching themes & previewing */
     let biolink_theme_preview = () => {
         return new Promise((resolve) => {
@@ -1410,6 +2165,10 @@
         $('input[name="biolink_theme_id"][type="radio"]').prop('checked', false);
         $('input[name="biolink_theme_id"][type="radio"][value=""]').prop('checked', true);
         document.querySelector('#biolink_theme_id').value = '';
+        update_biolink_theme_summary();
+        if(window.update_biolink_theme_modal_current) {
+            window.update_biolink_theme_modal_current();
+        }
 
         //await biolink_theme_preview();
     }
@@ -3015,6 +3774,406 @@
         vcard_phone_number_remove_initiator();
     </script>
 <?php endif ?>
+
+<script>
+    'use strict';
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const storageKey = 'fcc_biolink_editor_tour_seen_v2';
+        const tours = <?= json_encode($fcc_biolink_editor_tours, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
+        const backdrop = document.getElementById('fcc_biolink_editor_backdrop');
+        const popover = document.getElementById('fcc_biolink_editor_popover');
+        const title = document.getElementById('fcc_biolink_editor_title');
+        const text = document.getElementById('fcc_biolink_editor_text');
+        const resource = document.getElementById('fcc_biolink_editor_resource');
+        const resourceLabel = document.getElementById('fcc_biolink_editor_resource_label');
+        const progress = document.getElementById('fcc_biolink_editor_progress');
+        const prevButton = document.getElementById('fcc_biolink_editor_prev');
+        const nextButton = document.getElementById('fcc_biolink_editor_next');
+        const skipButton = document.getElementById('fcc_biolink_editor_skip');
+        const startButtons = document.querySelectorAll('[data-fcc-start-biolink-tour]');
+
+        if(!backdrop || !popover || !title || !text || !resource || !resourceLabel || !progress || !prevButton || !nextButton || !skipButton || !startButtons.length) {
+            return;
+        }
+
+        let activeTourKey = 'main';
+        let activeStep = -1;
+        let currentTarget = null;
+        let elevatedAncestors = [];
+        let backdropSegments = [];
+
+        const ensureBackdropSegments = () => {
+            if(backdropSegments.length) {
+                return backdropSegments;
+            }
+
+            backdropSegments = Array.from({length: 4}, () => {
+                const segment = document.createElement('div');
+                segment.className = 'fcc-biolink-tour-backdrop-segment';
+                backdrop.appendChild(segment);
+                return segment;
+            });
+
+            return backdropSegments;
+        };
+
+        const getActiveSteps = () => Array.isArray(tours[activeTourKey]) ? tours[activeTourKey] : [];
+
+        const hideTourModals = (exceptSelector = null) => {
+            ['#biolink_link_create_modal', '#biolink_themes_modal'].forEach(selector => {
+                if(exceptSelector && selector === exceptSelector) {
+                    return;
+                }
+
+                const $modal = $(selector);
+                if($modal.length && $modal.hasClass('show')) {
+                    $modal.modal('hide');
+                }
+            });
+        };
+
+        const waitForModalReady = (selector, beforeShow = null) => {
+            return new Promise(resolve => {
+                const $modal = $(selector);
+
+                if(!$modal.length) {
+                    resolve();
+                    return;
+                }
+
+                if(typeof beforeShow === 'function') {
+                    beforeShow();
+                }
+
+                if($modal.hasClass('show')) {
+                    setTimeout(resolve, 100);
+                    return;
+                }
+
+                $modal.one('shown.bs.modal', () => setTimeout(resolve, 100));
+                $modal.modal('show');
+            });
+        };
+
+        const isRenderableTarget = target => {
+            if(!target) {
+                return false;
+            }
+
+            const style = window.getComputedStyle(target);
+            const rect = target.getBoundingClientRect();
+
+            return style.display !== 'none'
+                && style.visibility !== 'hidden'
+                && rect.width > 8
+                && rect.height > 8;
+        };
+
+        const resolveStepTarget = step => {
+            const primaryTarget = document.querySelector(step.selector);
+
+            if(!primaryTarget) {
+                return null;
+            }
+
+            if(isRenderableTarget(primaryTarget)) {
+                return primaryTarget;
+            }
+
+            const fallbackTarget = primaryTarget.closest('.fcc-biolink-tour-target')
+                || primaryTarget.closest('.form-group')
+                || primaryTarget.parentElement;
+
+            if(isRenderableTarget(fallbackTarget)) {
+                return fallbackTarget;
+            }
+
+            return primaryTarget;
+        };
+
+        const getElevatedAncestors = target => {
+            const ancestors = [];
+            let node = target?.parentElement ?? null;
+
+            while(node && node !== document.body) {
+                const computedStyle = window.getComputedStyle(node);
+                const hasClippingOverflow = ['hidden', 'clip', 'auto', 'scroll'].includes(computedStyle.overflow) || ['hidden', 'clip', 'auto', 'scroll'].includes(computedStyle.overflowX) || ['hidden', 'clip', 'auto', 'scroll'].includes(computedStyle.overflowY);
+                const isModalLayer = node.classList.contains('modal') || node.classList.contains('modal-dialog') || node.classList.contains('modal-content');
+
+                if(hasClippingOverflow || isModalLayer) {
+                    ancestors.push(node);
+                }
+
+                node = node.parentElement;
+            }
+
+            return ancestors;
+        };
+
+        const clearHighlight = () => {
+            if(currentTarget) {
+                currentTarget.classList.remove('fcc-biolink-tour-active-target');
+            }
+
+            elevatedAncestors.forEach(node => node.classList.remove('fcc-biolink-tour-active-ancestor'));
+            elevatedAncestors = [];
+            currentTarget = null;
+        };
+
+        const revealPopover = () => {
+            placePopover();
+            updateBackdropSpotlight();
+            requestAnimationFrame(() => popover.classList.add('is-ready'));
+        };
+
+        const placePopover = () => {
+            if(!currentTarget || !popover.classList.contains('is-visible')) {
+                return;
+            }
+
+            const rect = currentTarget.getBoundingClientRect();
+            const viewportWidth = window.innerWidth;
+            const viewportHeight = window.innerHeight;
+            const popoverWidth = popover.offsetWidth;
+            const popoverHeight = popover.offsetHeight;
+            const spacing = 18;
+
+            let top = rect.bottom + spacing;
+            let left = rect.left;
+
+            if(top + popoverHeight > viewportHeight - spacing) {
+                top = Math.max(spacing, rect.top - popoverHeight - spacing);
+            }
+
+            if(left + popoverWidth > viewportWidth - spacing) {
+                left = Math.max(spacing, viewportWidth - popoverWidth - spacing);
+            }
+
+            if(left < spacing) {
+                left = spacing;
+            }
+
+            popover.style.top = `${top}px`;
+            popover.style.left = `${left}px`;
+        };
+
+        const updateBackdropSpotlight = () => {
+            if(!currentTarget || !backdrop.classList.contains('is-visible')) {
+                return;
+            }
+
+            const segments = ensureBackdropSegments();
+            const rect = currentTarget.getBoundingClientRect();
+            const padding = 10;
+            const top = Math.max(0, rect.top - padding);
+            const left = Math.max(0, rect.left - padding);
+            const right = Math.min(window.innerWidth, rect.right + padding);
+            const bottom = Math.min(window.innerHeight, rect.bottom + padding);
+            const holeWidth = Math.max(0, right - left);
+            const holeHeight = Math.max(0, bottom - top);
+
+            Object.assign(segments[0].style, {top: '0px', left: '0px', width: '100vw', height: `${top}px`});
+            Object.assign(segments[1].style, {top: `${top}px`, left: '0px', width: `${left}px`, height: `${holeHeight}px`});
+            Object.assign(segments[2].style, {top: `${top}px`, left: `${right}px`, width: `${Math.max(0, window.innerWidth - right)}px`, height: `${holeHeight}px`});
+            Object.assign(segments[3].style, {top: `${bottom}px`, left: '0px', width: '100vw', height: `${Math.max(0, window.innerHeight - bottom)}px`});
+        };
+
+        const performAction = step => {
+            return new Promise(resolve => {
+                if(!step?.action) {
+                    resolve();
+                    return;
+                }
+
+                if(step.action === 'activateSettings') {
+                    hideTourModals();
+                    $('#settings-tab').tab('show');
+                    setTimeout(resolve, 140);
+                    return;
+                }
+
+                if(step.action === 'activateBlocks') {
+                    hideTourModals();
+                    $('#blocks-tab').tab('show');
+                    setTimeout(resolve, 140);
+                    return;
+                }
+
+                if(step.action === 'openThemesModal') {
+                    $('#settings-tab').tab('show');
+                    setTimeout(async () => {
+                        hideTourModals('#biolink_themes_modal');
+                        await waitForModalReady('#biolink_themes_modal');
+                        resolve();
+                    }, 140);
+                    return;
+                }
+
+                if(step.action === 'openAddBlockModal') {
+                    $('#blocks-tab').tab('show');
+                    setTimeout(async () => {
+                        hideTourModals('#biolink_link_create_modal');
+                        await waitForModalReady('#biolink_link_create_modal', () => {
+                            if(window.fccBiolinkBlockPicker?.setFilters) {
+                                window.fccBiolinkBlockPicker.setFilters({
+                                    group: step.filter_group || '',
+                                    goal: step.filter_goal || '',
+                                    search: step.search || ''
+                                });
+                            }
+                        });
+                        resolve();
+                    }, 140);
+                    return;
+                }
+
+                if(step.action === 'showCollapse') {
+                    hideTourModals();
+                    $('#settings-tab').tab('show');
+                    setTimeout(() => {
+                        if(step.collapse_target) {
+                            $(step.collapse_target).collapse('show');
+                            setTimeout(resolve, 260);
+                            return;
+                        }
+
+                        resolve();
+                    }, 140);
+                    return;
+                }
+
+                if(step.action === 'closeModals') {
+                    hideTourModals();
+                    setTimeout(resolve, 140);
+                    return;
+                }
+
+                resolve();
+            });
+        };
+
+        const endTour = (completed = false) => {
+            clearHighlight();
+            activeStep = -1;
+            backdrop.classList.remove('is-visible');
+            popover.classList.remove('is-visible');
+            popover.classList.remove('is-ready');
+            if(completed && activeTourKey === 'main') {
+                localStorage.setItem(storageKey, '1');
+            }
+        };
+
+        const renderStep = async index => {
+            const steps = getActiveSteps();
+            const step = steps[index];
+            const maxRenderAttempts = step?.action === 'openAddBlockModal' ? 18 : 6;
+            const renderRetryDelay = step?.action === 'openAddBlockModal' ? 180 : 160;
+
+            if(!step) {
+                endTour(false);
+                return;
+            }
+
+            await performAction(step);
+
+            const attemptRender = attempt => {
+                const target = resolveStepTarget(step);
+
+                if(!isRenderableTarget(target)) {
+                    if(attempt < maxRenderAttempts) {
+                        setTimeout(() => attemptRender(attempt + 1), renderRetryDelay);
+                        return;
+                    }
+
+                    if(index >= steps.length - 1) {
+                        endTour(true);
+                    } else {
+                        renderStep(index + 1);
+                    }
+                    return;
+                }
+
+                activeStep = index;
+                clearHighlight();
+                currentTarget = target;
+                elevatedAncestors = getElevatedAncestors(currentTarget);
+                elevatedAncestors.forEach(node => node.classList.add('fcc-biolink-tour-active-ancestor'));
+                currentTarget.classList.add('fcc-biolink-tour-active-target');
+                currentTarget.scrollIntoView({behavior: 'auto', block: 'center', inline: 'nearest'});
+
+                title.textContent = step.title || '';
+                text.textContent = step.text || '';
+                if(step.resource_url && step.resource_label) {
+                    resource.href = step.resource_url;
+                    resourceLabel.textContent = step.resource_label;
+                    resource.style.display = 'inline-flex';
+                } else {
+                    resource.removeAttribute('href');
+                    resourceLabel.textContent = '';
+                    resource.style.display = 'none';
+                }
+                progress.textContent = `${index + 1} / ${steps.length}`;
+                prevButton.style.visibility = index === 0 ? 'hidden' : 'visible';
+                nextButton.textContent = index === steps.length - 1 ? <?= json_encode(l('dashboard.tour.finish')) ?> : <?= json_encode(l('dashboard.tour.next')) ?>;
+
+                backdrop.classList.add('is-visible');
+                popover.classList.remove('is-ready');
+                popover.classList.add('is-visible');
+
+                setTimeout(revealPopover, 60);
+            };
+
+            attemptRender(0);
+        };
+
+        const startTour = ({tour = 'main', autoSeen = false} = {}) => {
+            if(!Array.isArray(tours[tour]) || !tours[tour].length) {
+                return;
+            }
+
+            activeTourKey = tour;
+
+            if(autoSeen && tour === 'main') {
+                localStorage.setItem(storageKey, '1');
+            }
+
+            renderStep(0);
+        };
+
+        startButtons.forEach(button => {
+            button.addEventListener('click', () => startTour({tour: button.getAttribute('data-fcc-start-biolink-tour') || 'main'}));
+        });
+
+        skipButton.addEventListener('click', () => endTour(false));
+        prevButton.addEventListener('click', () => {
+            if(activeStep > 0) {
+                renderStep(activeStep - 1);
+            }
+        });
+        nextButton.addEventListener('click', () => {
+            const steps = getActiveSteps();
+            if(activeStep >= steps.length - 1) {
+                endTour(true);
+                return;
+            }
+
+            renderStep(activeStep + 1);
+        });
+
+        const syncOverlay = () => {
+            placePopover();
+            updateBackdropSpotlight();
+        };
+
+        window.addEventListener('resize', syncOverlay);
+        window.addEventListener('scroll', syncOverlay, {passive: true});
+
+        if(!localStorage.getItem(storageKey)) {
+            setTimeout(() => startTour({tour: 'main', autoSeen: true}), 600);
+        }
+    });
+</script>
 
 <script>
     /* Live block highlighting */

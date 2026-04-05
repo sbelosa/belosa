@@ -1,6 +1,10 @@
 <?php defined('ALTUMCODE') || die() ?>
 
 <?php if($this->link->settings->share_is_enabled): ?>
+    <?php
+    $fcc_biolink_share_copy_url = \Altum\Link::get_share_tracking_url($data->link->full_url, 'direct_share', 'copy', 'biolink_share');
+    $fcc_biolink_share_qr_url = \Altum\Link::get_share_tracking_url($data->link->full_url, 'qr', 'qr', 'biolink_share');
+    ?>
     <div data-toggle="modal" data-target="#share_modal" class="d-flex justify-content-center align-items-center position-absolute share-button-wrapper">
         <button type="button" class="btn share-button zoom-animation-subtle d-flex justify-content-center align-items-center" data-toggle="tooltip" title="<?= l('global.share') ?>" data-tooltip-hide-on-click>
             <i class="fas fa-fw fa-share"></i>
@@ -23,15 +27,15 @@
                         </button>
                     </div>
 
-                    <div class="w-100 mb-4" data-qr="<?= $data->link->full_url ?>"></div>
+                    <div class="w-100 mb-4" data-qr="<?= htmlspecialchars($fcc_biolink_share_qr_url, ENT_QUOTES, 'UTF-8') ?>"></div>
 
                     <div class="d-flex align-items-center flex-wrap gap-3">
-                        <?= include_view(THEME_PATH . 'views/partials/share_buttons.php', ['url' => $data->link->full_url, 'class' => 'btn btn-gray-100', 'print_is_enabled' => false]) ?>
+                        <?= include_view(THEME_PATH . 'views/partials/share_buttons.php', ['url' => $data->link->full_url, 'class' => 'btn btn-gray-100', 'print_is_enabled' => false, 'tracking_context' => 'biolink_share']) ?>
                     </div>
 
                     <div class="form-group mt-4">
                         <div class="input-group">
-                            <input id="share" type="text" class="form-control" value="<?= $data->link->full_url ?>" onclick="this.select();" readonly="readonly" />
+                            <input id="share" type="text" class="form-control" value="<?= htmlspecialchars($fcc_biolink_share_copy_url, ENT_QUOTES, 'UTF-8') ?>" onclick="this.select();" readonly="readonly" />
 
                             <div class="input-group-append">
                                 <button

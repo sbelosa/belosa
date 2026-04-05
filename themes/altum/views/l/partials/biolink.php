@@ -156,6 +156,84 @@
                         $city_name = isset($maxmind) && isset($maxmind['city']) ? $maxmind['city']['names']['en'] : null;
                         $continent_code = isset($maxmind) && isset($maxmind['continent']) ? $maxmind['continent']['code'] : null;
                         $device_type = get_this_device_type();
+                        $fcc_blog_language_names_by_code = array_flip((array) \Altum\Language::$active_languages);
+                        $fcc_forever_product_translation_cache = [];
+                        $fcc_forever_product_id_cache = [];
+                        $fcc_resolve_forever_product = static function(string $translation_key, string $target_language_code, string $fallback_language_code = '') use (&$fcc_forever_product_translation_cache, $fcc_blog_language_names_by_code) {
+                            $translation_key = trim($translation_key);
+                            $target_language_code = trim($target_language_code);
+                            $fallback_language_code = trim($fallback_language_code);
+
+                            if($translation_key === '') {
+                                return null;
+                            }
+
+                            $cache_key = $translation_key . '|' . $target_language_code . '|' . $fallback_language_code;
+                            if(array_key_exists($cache_key, $fcc_forever_product_translation_cache)) {
+                                return $fcc_forever_product_translation_cache[$cache_key];
+                            }
+
+                            $language_priority = array_values(array_filter(array_unique([
+                                $target_language_code,
+                                $fallback_language_code,
+                            ])));
+
+                            foreach($language_priority as $language_code) {
+                                $language_name = $fcc_blog_language_names_by_code[$language_code] ?? null;
+
+                                if(!$language_name) {
+                                    continue;
+                                }
+
+                                $blog_post = db()
+                                    ->where('is_published', 1)
+                                    ->where('url', $translation_key)
+                                    ->where('language', $language_name)
+                                    ->getOne('blog_posts', ['blog_post_id', 'title', 'description', 'url', 'image', 'language']);
+
+                                if(!$blog_post) {
+                                    continue;
+                                }
+
+                                $language_prefix = !empty($blog_post->language) && isset(\Altum\Language::$active_languages[$blog_post->language])
+                                    ? \Altum\Language::$active_languages[$blog_post->language] . '/'
+                                    : null;
+
+                                return $fcc_forever_product_translation_cache[$cache_key] = (object) [
+                                    'blog_post_id' => (int) ($blog_post->blog_post_id ?? 0),
+                                    'title' => (string) ($blog_post->title ?? ''),
+                                    'description' => mb_substr(trim(strip_tags((string) ($blog_post->description ?? ''))), 0, 220),
+                                    'blog_url' => SITE_URL . $language_prefix . 'blog/' . ($blog_post->url ?? ''),
+                                    'image_url' => !empty($blog_post->image) ? \Altum\Uploads::get_full_url('blog') . $blog_post->image : null,
+                                    'language_code' => $language_code,
+                                ];
+                            }
+
+                            $fallback_post = db()
+                                ->where('is_published', 1)
+                                ->where('url', $translation_key)
+                                ->getOne('blog_posts', ['blog_post_id', 'title', 'description', 'url', 'image', 'language']);
+
+                            if(!$fallback_post) {
+                                return $fcc_forever_product_translation_cache[$cache_key] = null;
+                            }
+
+                            $fallback_language_code = !empty($fallback_post->language) && isset(\Altum\Language::$active_languages[$fallback_post->language])
+                                ? \Altum\Language::$active_languages[$fallback_post->language]
+                                : \Altum\Language::$default_code;
+                            $language_prefix = !empty($fallback_post->language) && isset(\Altum\Language::$active_languages[$fallback_post->language])
+                                ? \Altum\Language::$active_languages[$fallback_post->language] . '/'
+                                : null;
+
+                            return $fcc_forever_product_translation_cache[$cache_key] = (object) [
+                                'blog_post_id' => (int) ($fallback_post->blog_post_id ?? 0),
+                                'title' => (string) ($fallback_post->title ?? ''),
+                                'description' => mb_substr(trim(strip_tags((string) ($fallback_post->description ?? ''))), 0, 220),
+                                'blog_url' => SITE_URL . $language_prefix . 'blog/' . ($fallback_post->url ?? ''),
+                                'image_url' => !empty($fallback_post->image) ? \Altum\Uploads::get_full_url('blog') . $fallback_post->image : null,
+                                'language_code' => $fallback_language_code,
+                            ];
+                        };
                         ?>
 
                         <?php foreach($data->biolink_blocks as $row): ?>
@@ -187,6 +265,47 @@
 
                                 if($business_base_url) {
                                     $row->location_url = \Altum\Link::build_forever_destination_url($business_base_url, $forever_id, $business_country_code);
+                                }
+                            }
+
+                            if($row->type === 'link_forever_product') {
+                                $product_translation_key = trim((string) ($row->settings->product_translation_key ?? ''));
+
+                                if($product_translation_key === '' && !empty($row->settings->product_blog_post_id)) {
+                                    $product_blog_post_id = (int) $row->settings->product_blog_post_id;
+
+                                    if(!array_key_exists($product_blog_post_id, $fcc_forever_product_id_cache)) {
+                                        $product_blog_post = db()
+                                            ->where('blog_post_id', $product_blog_post_id)
+                                            ->getOne('blog_posts', ['url']);
+
+                                        $fcc_forever_product_id_cache[$product_blog_post_id] = $product_blog_post->url ?? '';
+                                    }
+
+                                    $product_translation_key = (string) $fcc_forever_product_id_cache[$product_blog_post_id];
+                                    $row->settings->product_translation_key = $product_translation_key;
+                                }
+
+                                $app_language_code = $data->link->settings->language_code ?? \Altum\Language::$default_code;
+                                $product_language_mode = in_array($row->settings->product_language_mode ?? 'app', ['app', 'manual'], true) ? $row->settings->product_language_mode : 'app';
+                                $target_language_code = $product_language_mode === 'manual'
+                                    ? (string) ($row->settings->product_language_code ?? $app_language_code)
+                                    : (string) $app_language_code;
+                                $fallback_language_code = (string) ($row->settings->product_fallback_language_code ?? 'hr');
+                                $resolved_product = $fcc_resolve_forever_product($product_translation_key, $target_language_code, $fallback_language_code);
+
+                                if($resolved_product) {
+                                    $row->location_url = $resolved_product->blog_url;
+                                    $row->settings->product_blog_post_id = $resolved_product->blog_post_id;
+                                    $row->settings->product_image_url = $resolved_product->image_url;
+
+                                    if(!empty($resolved_product->title)) {
+                                        $row->settings->name = $resolved_product->title;
+                                    }
+
+                                    if(!empty($resolved_product->description)) {
+                                        $row->settings->description = $resolved_product->description;
+                                    }
                                 }
                             }
                             /* /Custom code */

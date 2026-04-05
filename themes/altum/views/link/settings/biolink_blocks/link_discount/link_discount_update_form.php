@@ -1,4 +1,15 @@
 <?php defined('ALTUMCODE') || die() ?>
+<?php
+$fcc_discount_tutorial_copy = \Altum\Language::$code === 'hr'
+    ? [
+        'note' => 'Prije aktivacije ovog bloka zalijepi link izrađen u Forever Link Builderu na Foreverliving.com stranici. Klikovi na ovaj blok ulaze u pozicioniranje tvoje Forever Card Aplikacije na naslovnici Forever Card Cluba.',
+        'video' => 'Pogledaj video uputu'
+    ]
+    : [
+        'note' => 'Before activating this block, paste the link created in Forever Link Builder on the Foreverliving.com website. Clicks on this block count toward positioning your Forever Card App on the Forever Card Club homepage.',
+        'video' => 'Watch the video guide'
+    ];
+?>
 <!-- Custom code -->
 <form id="<?= 'update_biolink_block_' . $row->biolink_block_id ?>" name="update_biolink_" method="post" role="form" data-type="<?= $row->type ?>">
     <input type="hidden" name="token" value="<?= \Altum\Csrf::get() ?>" required="required" />
@@ -7,6 +18,14 @@
     <input type="hidden" name="biolink_block_id" value="<?= $row->biolink_block_id ?>" />
 
     <div class="notification-container"></div>
+
+    <div class="alert alert-primary">
+        <i class="fas fa-fw fa-info-circle mr-2"></i>
+        <?= $fcc_discount_tutorial_copy['note'] ?>
+        <a href="https://www.youtube.com/watch?v=8tBJiDu1EWc" target="_blank" rel="noopener noreferrer" class="alert-link d-inline-block ml-1">
+            <?= $fcc_discount_tutorial_copy['video'] ?>
+        </a>
+    </div>
 
     <div class="form-group">
         <label for="<?= 'link_location_url_' . $row->biolink_block_id ?>"><i class="fa fa-fw fa-link fa-sm text-muted mr-1"></i> <?= l('biolink_link.location_url') ?></label>

@@ -13,6 +13,28 @@ defined('ALTUMCODE') || die();
 class FccResults extends Controller {
 
     /* Custom code: FC-2026-03-14: FCC results page and qualification metrics */
+    private function is_active_pro_user(): bool {
+        if(\Altum\Authentication::is_admin()) {
+            return true;
+        }
+
+        if(empty($this->user->plan_settings->ai_growth_plan_is_enabled ?? false)) {
+            return false;
+        }
+
+        $plan_expiration_date = (string) ($this->user->plan_expiration_date ?? '');
+
+        if($plan_expiration_date === '') {
+            return true;
+        }
+
+        try {
+            return (new \DateTimeImmutable($plan_expiration_date)) >= (new \DateTimeImmutable());
+        } catch(\Throwable $exception) {
+            return false;
+        }
+    }
+
     private function get_period_start_datetime(int $days): string {
         $days = max(1, $days);
 
@@ -49,13 +71,17 @@ class FccResults extends Controller {
 
         $min_qualified_clicks = 15;
 
-        $forever_shop_block_types = [
-            'link_discount',
-            'link_forever_living_bih',
-            'link_forever_living_alb_kosovo',
-            'link_forever_living_albania_kosovo',
-        ];
+        $forever_shop_block_types = array_values(array_unique(array_merge(
+            \Altum\Link::get_monitored_forever_outbound_types(),
+            ['link_forever_living_albania_kosovo']
+        )));
         $forever_shop_block_types_sql = "'" . implode("','", $forever_shop_block_types) . "'";
+        $blog_forever_mediums = [
+            \Altum\Link::get_blog_cta_tracking_medium('product'),
+            \Altum\Link::get_blog_cta_tracking_medium('business'),
+        ];
+        $blog_forever_mediums_sql = "'" . implode("','", $blog_forever_mediums) . "'";
+        $qualified_click_condition_sql = "((`biolinks_blocks`.`type` IN ({$forever_shop_block_types_sql})) OR (`track_links`.`utm_medium` IN ({$blog_forever_mediums_sql})))";
 
         $periods = [];
 
@@ -64,30 +90,46 @@ class FccResults extends Controller {
             $period_previous_start_datetime = $this->get_previous_period_start_datetime($period_days);
 
             $previous_clicks_map = [];
-            $previous_clicks_result = database()->query("SELECT `track_links`.`user_id`, COUNT(*) AS `total` FROM `track_links` LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id` WHERE `track_links`.`datetime` >= '{$period_previous_start_datetime}' AND `track_links`.`datetime` < '{$period_start_datetime}' AND `track_links`.`is_unique` = 1 AND `biolinks_blocks`.`type` IN ({$forever_shop_block_types_sql}) GROUP BY `track_links`.`user_id`");
+            $previous_clicks_result = database()->query("SELECT `track_links`.`user_id`, COUNT(*) AS `total` FROM `track_links` LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id` WHERE `track_links`.`datetime` >= '{$period_previous_start_datetime}' AND `track_links`.`datetime` < '{$period_start_datetime}' AND `track_links`.`is_unique` = 1 AND {$qualified_click_condition_sql} GROUP BY `track_links`.`user_id`");
             while($previous_click_row = $previous_clicks_result->fetch_object()) {
                 $previous_clicks_map[(int) $previous_click_row->user_id] = (int) $previous_click_row->total;
             }
 
             $leaderboard = [];
-            $leaderboard_result = database()->query("SELECT `track_links`.`user_id`, `users`.`name`, SUM(CASE WHEN `biolinks_blocks`.`type` IN ({$forever_shop_block_types_sql}) AND `track_links`.`is_unique` = 1 THEN 1 ELSE 0 END) AS `shop_clicks`, SUM(CASE WHEN `links`.`type` = 'biolink' AND `track_links`.`is_unique` = 1 THEN 1 ELSE 0 END) AS `biolink_visits` FROM `track_links` LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id` LEFT JOIN `links` ON `track_links`.`link_id` = `links`.`link_id` LEFT JOIN `users` ON `track_links`.`user_id` = `users`.`user_id` WHERE `track_links`.`datetime` >= '{$period_start_datetime}' GROUP BY `track_links`.`user_id` HAVING `shop_clicks` >= {$min_qualified_clicks} ORDER BY `shop_clicks` DESC, `biolink_visits` DESC, `users`.`name` ASC");
+            $leaderboard_result = database()->query("SELECT `track_links`.`user_id`, `users`.`name`,
+                SUM(CASE WHEN {$qualified_click_condition_sql} AND `track_links`.`is_unique` = 1 THEN 1 ELSE 0 END) AS `qualified_clicks`,
+                SUM(CASE WHEN `biolinks_blocks`.`type` IN ({$forever_shop_block_types_sql}) AND `track_links`.`is_unique` = 1 THEN 1 ELSE 0 END) AS `app_clicks`,
+                SUM(CASE WHEN `track_links`.`utm_medium` IN ({$blog_forever_mediums_sql}) AND `track_links`.`is_unique` = 1 THEN 1 ELSE 0 END) AS `blog_clicks`,
+                SUM(CASE WHEN `links`.`type` = 'biolink' AND `track_links`.`is_unique` = 1 THEN 1 ELSE 0 END) AS `biolink_visits`
+                FROM `track_links`
+                LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id`
+                LEFT JOIN `links` ON `track_links`.`link_id` = `links`.`link_id`
+                LEFT JOIN `users` ON `track_links`.`user_id` = `users`.`user_id`
+                WHERE `track_links`.`datetime` >= '{$period_start_datetime}'
+                GROUP BY `track_links`.`user_id`
+                HAVING `qualified_clicks` >= {$min_qualified_clicks}
+                ORDER BY `qualified_clicks` DESC, `biolink_visits` DESC, `users`.`name` ASC");
 
             $rank = 1;
             while($leaderboard_row = $leaderboard_result->fetch_object()) {
                 $user_id = (int) ($leaderboard_row->user_id ?? 0);
-                $shop_clicks = (int) ($leaderboard_row->shop_clicks ?? 0);
+                $qualified_clicks = (int) ($leaderboard_row->qualified_clicks ?? 0);
+                $app_clicks = (int) ($leaderboard_row->app_clicks ?? 0);
+                $blog_clicks = (int) ($leaderboard_row->blog_clicks ?? 0);
                 $biolink_visits = (int) ($leaderboard_row->biolink_visits ?? 0);
-                $previous_shop_clicks = (int) ($previous_clicks_map[$user_id] ?? 0);
-                $trend_percent = $this->get_trend_percent($shop_clicks, $previous_shop_clicks);
+                $previous_qualified_clicks = (int) ($previous_clicks_map[$user_id] ?? 0);
+                $trend_percent = $this->get_trend_percent($qualified_clicks, $previous_qualified_clicks);
 
                 $leaderboard[] = [
                     'rank' => $rank,
                     'user_id' => $user_id,
                     'name' => (string) ($leaderboard_row->name ?? l('global.unknown')),
-                    'shop_clicks' => $shop_clicks,
+                    'qualified_clicks' => $qualified_clicks,
+                    'app_clicks' => $app_clicks,
+                    'blog_clicks' => $blog_clicks,
                     'biolink_visits' => $biolink_visits,
-                    'ctr' => $biolink_visits > 0 ? round(($shop_clicks / $biolink_visits) * 100, 2) : 0.0,
-                    'previous_shop_clicks' => $previous_shop_clicks,
+                    'ctr' => $biolink_visits > 0 ? round(($qualified_clicks / $biolink_visits) * 100, 2) : 0.0,
+                    'previous_qualified_clicks' => $previous_qualified_clicks,
                     'trend_percent' => $trend_percent,
                     'is_top_three' => $rank <= 3,
                     'is_rising' => $trend_percent > 0,
@@ -97,12 +139,22 @@ class FccResults extends Controller {
                 $rank++;
             }
 
-            $current_user_totals_result = database()->query("SELECT SUM(CASE WHEN `biolinks_blocks`.`type` IN ({$forever_shop_block_types_sql}) AND `track_links`.`is_unique` = 1 THEN 1 ELSE 0 END) AS `shop_clicks`, SUM(CASE WHEN `links`.`type` = 'biolink' AND `track_links`.`is_unique` = 1 THEN 1 ELSE 0 END) AS `biolink_visits` FROM `track_links` LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id` LEFT JOIN `links` ON `track_links`.`link_id` = `links`.`link_id` WHERE `track_links`.`user_id` = {$this->user->user_id} AND `track_links`.`datetime` >= '{$period_start_datetime}'");
+            $current_user_totals_result = database()->query("SELECT
+                SUM(CASE WHEN {$qualified_click_condition_sql} AND `track_links`.`is_unique` = 1 THEN 1 ELSE 0 END) AS `qualified_clicks`,
+                SUM(CASE WHEN `biolinks_blocks`.`type` IN ({$forever_shop_block_types_sql}) AND `track_links`.`is_unique` = 1 THEN 1 ELSE 0 END) AS `app_clicks`,
+                SUM(CASE WHEN `track_links`.`utm_medium` IN ({$blog_forever_mediums_sql}) AND `track_links`.`is_unique` = 1 THEN 1 ELSE 0 END) AS `blog_clicks`,
+                SUM(CASE WHEN `links`.`type` = 'biolink' AND `track_links`.`is_unique` = 1 THEN 1 ELSE 0 END) AS `biolink_visits`
+                FROM `track_links`
+                LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id`
+                LEFT JOIN `links` ON `track_links`.`link_id` = `links`.`link_id`
+                WHERE `track_links`.`user_id` = {$this->user->user_id} AND `track_links`.`datetime` >= '{$period_start_datetime}'");
             $current_user_totals = $current_user_totals_result->fetch_object();
 
-            $current_user_shop_clicks = (int) ($current_user_totals->shop_clicks ?? 0);
+            $current_user_qualified_clicks = (int) ($current_user_totals->qualified_clicks ?? 0);
+            $current_user_app_clicks = (int) ($current_user_totals->app_clicks ?? 0);
+            $current_user_blog_clicks = (int) ($current_user_totals->blog_clicks ?? 0);
             $current_user_biolink_visits = (int) ($current_user_totals->biolink_visits ?? 0);
-            $current_user_previous_shop_clicks = (int) ($previous_clicks_map[$this->user->user_id] ?? 0);
+            $current_user_previous_qualified_clicks = (int) ($previous_clicks_map[$this->user->user_id] ?? 0);
 
             $periods[$period_key] = [
                 'days' => $period_days,
@@ -110,12 +162,14 @@ class FccResults extends Controller {
                 'leaderboard' => $leaderboard,
                 'qualified_total' => count($leaderboard),
                 'current_user' => [
-                    'shop_clicks' => $current_user_shop_clicks,
+                    'qualified_clicks' => $current_user_qualified_clicks,
+                    'app_clicks' => $current_user_app_clicks,
+                    'blog_clicks' => $current_user_blog_clicks,
                     'biolink_visits' => $current_user_biolink_visits,
-                    'ctr' => $current_user_biolink_visits > 0 ? round(($current_user_shop_clicks / $current_user_biolink_visits) * 100, 2) : 0.0,
-                    'previous_shop_clicks' => $current_user_previous_shop_clicks,
-                    'trend_percent' => $this->get_trend_percent($current_user_shop_clicks, $current_user_previous_shop_clicks),
-                    'is_qualified' => $current_user_shop_clicks >= $min_qualified_clicks,
+                    'ctr' => $current_user_biolink_visits > 0 ? round(($current_user_qualified_clicks / $current_user_biolink_visits) * 100, 2) : 0.0,
+                    'previous_qualified_clicks' => $current_user_previous_qualified_clicks,
+                    'trend_percent' => $this->get_trend_percent($current_user_qualified_clicks, $current_user_previous_qualified_clicks),
+                    'is_qualified' => $current_user_qualified_clicks >= $min_qualified_clicks,
                 ],
             ];
         }
@@ -131,18 +185,25 @@ class FccResults extends Controller {
 
             $current_user_rank = (int) $entry['rank'];
             if($index > 0) {
-                $current_user_next_rank_clicks = (int) $selected_period_data['leaderboard'][$index - 1]['shop_clicks'];
+                $current_user_next_rank_clicks = (int) $selected_period_data['leaderboard'][$index - 1]['qualified_clicks'];
             }
             break;
         }
 
-        $selected_user_clicks = (int) ($selected_period_data['current_user']['shop_clicks'] ?? 0);
+        $selected_user_clicks = (int) ($selected_period_data['current_user']['qualified_clicks'] ?? 0);
         $distance_to_qualification = max(0, $min_qualified_clicks - $selected_user_clicks);
         $distance_to_next_rank = null;
 
         if($current_user_rank && $current_user_next_rank_clicks !== null) {
             $distance_to_next_rank = max(0, $current_user_next_rank_clicks - $selected_user_clicks + 1);
         }
+
+        $ai_signal_period = $periods['30d']['current_user'] ?? $selected_period_data['current_user'];
+        $ai_signal_30d = (int) ($ai_signal_period['qualified_clicks'] ?? 0);
+        $ai_active_threshold = 15;
+        $ai_vip_threshold = 50;
+        $is_pro_ai_user = $this->is_active_pro_user();
+        $ai_stage = $ai_signal_30d >= $ai_vip_threshold ? 'vip' : ($ai_signal_30d >= $ai_active_threshold ? 'active' : 'starter');
 
         $data = [
             'selected_period' => $selected_period,
@@ -151,12 +212,26 @@ class FccResults extends Controller {
             'current_user_rank' => $current_user_rank,
             'distance_to_qualification' => $distance_to_qualification,
             'distance_to_next_rank' => $distance_to_next_rank,
+            'ai_unlock' => [
+                'is_pro' => $is_pro_ai_user,
+                'stage' => $ai_stage,
+                'signal_30d' => $ai_signal_30d,
+                'app_clicks_30d' => (int) ($ai_signal_period['app_clicks'] ?? 0),
+                'blog_clicks_30d' => (int) ($ai_signal_period['blog_clicks'] ?? 0),
+                'active_threshold' => $ai_active_threshold,
+                'vip_threshold' => $ai_vip_threshold,
+                'to_active' => max(0, $ai_active_threshold - $ai_signal_30d),
+                'to_vip' => max(0, $ai_vip_threshold - $ai_signal_30d),
+                'active_progress_percent' => min(100, round(($ai_signal_30d / max(1, $ai_active_threshold)) * 100)),
+                'vip_progress_percent' => min(100, round(($ai_signal_30d / max(1, $ai_vip_threshold)) * 100)),
+            ],
             'tips' => [
                 l('fcc_results.tips.item_1'),
                 l('fcc_results.tips.item_2'),
                 l('fcc_results.tips.item_3'),
                 l('fcc_results.tips.item_4'),
                 l('fcc_results.tips.item_5'),
+                l('fcc_results.tips.item_6'),
             ],
         ];
 

@@ -16,9 +16,84 @@ defined('ALTUMCODE') || die();
 
 class AdminQrCode extends Controller {
 
+    private function prepare_qr_source_assets(int $user_id, string $url, string $card_hash): array {
+        $qr_svg_path = UPLOADS_PATH . 'qr_code/' . 'card_user_' . $user_id . '_' . $card_hash . '.svg';
+        $qr_png_path = UPLOADS_PATH . 'qr_code/' . 'card_user_' . $user_id . '_' . $card_hash . '_qr.png';
+        $generated_directly = false;
+
+        if(class_exists('\\TCPDF2DBarcode')) {
+            try {
+                $barcode = new \TCPDF2DBarcode($url, 'QRCODE,H');
+                $png_data = $barcode->getBarcodePngData(12, 12, [0, 0, 0]);
+
+                if($png_data) {
+                    file_put_contents($qr_png_path, $png_data);
+                    $generated_directly = file_exists($qr_png_path);
+                }
+            } catch(\Throwable $exception) {
+                error_log('[AdminQrCode] Direct QR PNG generation failed: ' . $exception->getMessage());
+            }
+        }
+
+        if(!$generated_directly && class_exists('\\SimpleSoftwareIO\\QrCode\\Generator')) {
+            try {
+                $qr = new \SimpleSoftwareIO\QrCode\Generator;
+                $qr->size(520);
+                $qr->margin(0);
+                $qr->errorCorrection('H');
+                $qr->encoding('UTF-8');
+                $svg = $qr->generate($url);
+                file_put_contents($qr_svg_path, $svg);
+            } catch(\Throwable $exception) {
+                error_log('[AdminQrCode] QR SVG generation failed: ' . $exception->getMessage());
+            }
+        }
+
+        return [
+            'svg' => file_exists($qr_svg_path) ? $qr_svg_path : null,
+            'png' => file_exists($qr_png_path) ? $qr_png_path : null,
+        ];
+    }
+
+    private function output_print_pdf(string $url, string $full_name, ?string $qr_png_path = null, ?string $qr_svg_path = null): void {
+        $pdf = new \TCPDF('L', 'mm', ['85.51', '54.02'], true, 'UTF-8');
+        $pdf->setPrintHeader(false);
+        $pdf->setPrintFooter(false);
+        $pdf->SetAutoPageBreak(false, 0);
+        $pdf->AddPage();
+        $pdf->SetFont('DejaVuSansCondensed', 'B', 10);
+
+        $style = [
+            'border' => false,
+            'padding' => 0,
+            'fgcolor' => [0, 0, 0],
+            'bgcolor' => false,
+        ];
+
+        try {
+            $pdf->write2DBarcode($url, 'QRCODE,H', 33.5, 17.5, 19, 19, $style, 'N');
+        } catch(\Throwable $exception) {
+            if($qr_png_path && file_exists($qr_png_path)) {
+                $pdf->Image($qr_png_path, 33.5, 17.5, 19, 19);
+            } elseif($qr_svg_path && file_exists($qr_svg_path)) {
+                $pdf->ImageSVG($qr_svg_path, 33.5, 17.5, 19, 19, '', '', '', 0, false);
+            } else {
+                Alerts::add_error(l('admin_qrcode.not.found'));
+                redirect('admin/users');
+            }
+        }
+
+        $display_name = mb_strtoupper(preg_replace('/\s+/', ' ', trim((string) $full_name)));
+        $pdf->SetXY(10, 39);
+        $pdf->Cell(65, 8, $display_name, 0, 1, 'C');
+        $pdf->Output(get_slug($full_name) . '-qr-kartica.pdf', 'I');
+        die();
+    }
+
     public function index() {
         try {
             $user_id = isset($_GET['user_id']) ? (int) $_GET['user_id'] : 0;
+            $mode = input_clean($_GET['mode'] ?? '', 16);
 
             if(!$user_id) {
                 Alerts::add_error(l('admin_qrcode.not.found'));
@@ -43,9 +118,12 @@ class AdminQrCode extends Controller {
             $card_hash = md5($main_biolink_url . '|' . $user->name . '|' . $card_style_version);
             $card_png = UPLOADS_PATH . 'qr_code/' . 'card_user_' . $user_id . '_' . $card_hash . '.png';
 
-            if(!file_exists($card_png)) {
-                $this->generate_print_card_png($user_id, $main_biolink_url, $user->name, $card_hash, $card_png);
+            if($mode === 'print') {
+                $qr_assets = $this->prepare_qr_source_assets($user_id, $main_biolink_url, $card_hash);
+                $this->output_print_pdf($main_biolink_url, (string) ($user->name ?? 'NFC kartica'), $qr_assets['png'] ?? null, $qr_assets['svg'] ?? null);
             }
+
+            $this->generate_print_card_png($user_id, $main_biolink_url, $user->name, $card_hash, $card_png);
 
             if(!file_exists($card_png)) {
                 Alerts::add_error(l('admin_qrcode.not.found'));
@@ -108,45 +186,16 @@ class AdminQrCode extends Controller {
         return SITE_URL . $biolink->url;
     }
 
-    private function generate_print_card_png($user_id, $url, $full_name, $card_hash, $card_png_path) {
-        $qr_svg_path = UPLOADS_PATH . 'qr_code/' . 'card_user_' . $user_id . '_' . $card_hash . '.svg';
-        $qr_png_path = UPLOADS_PATH . 'qr_code/' . 'card_user_' . $user_id . '_' . $card_hash . '_qr.png';
-        $existing_qr = db()->where('user_id', $user_id)->orderBy('qr_code_id', 'DESC')->getOne('qr_codes', ['qr_code']);
-
-        if($existing_qr && $existing_qr->qr_code) {
-            $existing_qr_file = UPLOADS_PATH . 'qr_code/' . $existing_qr->qr_code;
-            $existing_qr_extension = mb_strtolower(pathinfo($existing_qr_file, PATHINFO_EXTENSION));
-
-            if(file_exists($existing_qr_file) && $existing_qr_extension === 'png') {
-                copy($existing_qr_file, $qr_png_path);
-            }
-
-            if(file_exists($existing_qr_file) && $existing_qr_extension === 'svg') {
-                copy($existing_qr_file, $qr_svg_path);
-            }
+    private function generate_print_card_png($user_id, $url, $full_name, $card_hash, $card_png_path, ?array $qr_assets = null) {
+        if(file_exists($card_png_path)) {
+            @unlink($card_png_path);
         }
 
-        if(!file_exists($qr_png_path) && !file_exists($qr_svg_path) && class_exists('\\SimpleSoftwareIO\\QrCode\\Generator')) {
-            $qr = new \SimpleSoftwareIO\QrCode\Generator;
-            $qr->size(520);
-            $qr->margin(0);
-            $qr->errorCorrection('M');
-            $qr->encoding('UTF-8');
-            $svg = $qr->generate($url);
+        $qr_assets = $qr_assets ?? $this->prepare_qr_source_assets((int) $user_id, (string) $url, (string) $card_hash);
+        $qr_svg_path = $qr_assets['svg'] ?? null;
+        $qr_png_path = $qr_assets['png'] ?? null;
 
-            file_put_contents($qr_svg_path, $svg);
-        }
-
-        $magick_binary = trim((string) shell_exec('command -v magick'));
-        $convert_binary = trim((string) shell_exec('command -v convert'));
-
-        if(!file_exists($qr_png_path) && file_exists($qr_svg_path) && $magick_binary) {
-            exec(escapeshellarg($magick_binary) . ' convert -density 300x300 -background none ' . escapeshellarg($qr_svg_path) . ' ' . escapeshellarg($qr_png_path));
-        } elseif(!file_exists($qr_png_path) && file_exists($qr_svg_path) && $convert_binary) {
-            exec(escapeshellarg($convert_binary) . ' -density 300x300 -background none ' . escapeshellarg($qr_svg_path) . ' ' . escapeshellarg($qr_png_path));
-        }
-
-        if(!file_exists($qr_png_path)) {
+        if(!$qr_png_path || !file_exists($qr_png_path)) {
             return;
         }
 
@@ -257,11 +306,11 @@ class AdminQrCode extends Controller {
         imagepng($canvas, $card_png_path);
         imagedestroy($canvas);
 
-        if(file_exists($qr_svg_path)) {
+        if($qr_svg_path && file_exists($qr_svg_path)) {
             @unlink($qr_svg_path);
         }
 
-        if(file_exists($qr_png_path)) {
+        if($qr_png_path && file_exists($qr_png_path)) {
             @unlink($qr_png_path);
         }
     }

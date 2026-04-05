@@ -271,7 +271,7 @@ $fcc_contact_direct_text = l('fcc.page.contact_direct_text');
         <section class="fcc-page-share">
             <div class="fcc-page-share__inner">
                 <div class="d-flex align-items-center flex-wrap gap-3">
-                    <?= include_view(THEME_PATH . 'views/partials/share_buttons.php', ['url' => url(\Altum\Router::$original_request), 'class' => 'btn btn-gray-100', 'copy_to_clipboard' => true]) ?>
+                    <?= include_view(THEME_PATH . 'views/partials/share_buttons.php', ['url' => url(\Altum\Router::$original_request), 'class' => 'btn btn-gray-100', 'copy_to_clipboard' => true, 'tracking_context' => 'page_share']) ?>
                 </div>
             </div>
         </section>

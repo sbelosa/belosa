@@ -19,12 +19,49 @@ if(is_logged_in()) {
     /* Custom code: FC-2026-03-23: sync funnels analytics sidebar access with lead funnel plan availability */
     $enabled_biolink_blocks = (object) ($this->user->plan_settings->enabled_biolink_blocks ?? []);
     $has_lead_funnel_access = (bool) ($enabled_biolink_blocks->lead_funnel ?? false);
+    $has_ai_growth_plan_access = \Altum\Authentication::is_admin() || (bool) ($this->user->plan_settings->ai_growth_plan_is_enabled ?? false);
+    $ai_plan_preferences = $this->user->preferences ?? new \stdClass();
+
+    if(is_string($ai_plan_preferences)) {
+        $ai_plan_preferences = json_decode($ai_plan_preferences ?? '{}');
+    }
+
+    if(is_array($ai_plan_preferences)) {
+        $ai_plan_preferences = (object) $ai_plan_preferences;
+    }
+
+    if(!$ai_plan_preferences instanceof \stdClass) {
+        $ai_plan_preferences = (object) $ai_plan_preferences;
+    }
+
+    $ai_plan_profile = $ai_plan_preferences->leader_ai_profile ?? null;
+
+    if(is_array($ai_plan_profile)) {
+        $ai_plan_profile = (object) $ai_plan_profile;
+    }
+
+    $ai_plan_profile_required_fields = ['primary_goal', 'priority_offer', 'available_time', 'biggest_blocker', 'communication_style', 'follow_up_readiness', 'weekly_change'];
+    $ai_plan_sidebar_profile_complete = true;
+
+    if(!$ai_plan_profile || empty($ai_plan_profile->active_channels) || !is_array($ai_plan_profile->active_channels)) {
+        $ai_plan_sidebar_profile_complete = false;
+    }
+
+    foreach($ai_plan_profile_required_fields as $ai_plan_profile_field) {
+        if(empty($ai_plan_profile->{$ai_plan_profile_field})) {
+            $ai_plan_sidebar_profile_complete = false;
+            break;
+        }
+    }
+
+    $ai_plan_sidebar_app_review_accessible = \Altum\Authentication::is_admin() || $ai_plan_sidebar_profile_complete;
+    $ai_plan_sidebar_app_review_tooltip = l('ai_plan.app_review_locked_entry_tooltip');
     /* /Custom code: FC-2026-03-23 */
 }
 /* /Custom code: FC-2026-03-08 */
 ?>
 
-<div class="app-sidebar">
+<div class="app-sidebar" id="fcc_dashboard_tour_sidebar">
     <div class="app-sidebar-title text-truncate">
         <a
                 href="<?= url() ?>"
@@ -49,7 +86,7 @@ if(is_logged_in()) {
         <ul class="app-sidebar-links">
             <?php if(is_logged_in()): ?>
                 <li class="<?= \Altum\Router::$controller == 'Dashboard' ? 'active' : null ?> d-flex dropdown" id="internal_notifications">
-                    <a href="<?= url('dashboard') ?>"><i class="fas fa-fw fa-sm fa-th mr-2"></i> <?= l('dashboard.menu') ?></a>
+                    <a href="<?= url('dashboard') ?>" id="fcc_dashboard_tour_sidebar_dashboard"><i class="fas fa-fw fa-sm fa-th mr-2"></i> <?= l('dashboard.menu') ?></a>
 
                     <?php if(settings()->internal_notifications->users_is_enabled): ?>
                         <a id="internal_notifications_link" href="#" class="default w-auto dropdown-toggle dropdown-toggle-simple ml-1" data-internal-notifications="user" data-tooltip data-tooltip-hide-on-click title="<?= l('internal_notifications.menu') ?>" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-boundary="window">
@@ -69,7 +106,7 @@ if(is_logged_in()) {
 
                 <?php if(settings()->links->biolinks_is_enabled): ?>
                     <li class="<?= (\Altum\Router::$controller == 'Links' && ($_GET['type'] ?? null) == 'biolink') || (\Altum\Router::$controller == 'Link' && $this->link->type == 'biolink') ? 'active' : null ?>">
-                        <a href="<?= url('links?type=biolink') ?>"><i class="fas fa-fw fa-sm fa-hashtag mr-2"></i> <?= l('links.menu.biolink') ?></a>
+                        <a href="<?= url('links?type=biolink') ?>" id="fcc_dashboard_tour_sidebar_apps"><i class="fas fa-fw fa-sm fa-hashtag mr-2"></i> <?= l('links.menu.biolink') ?></a>
                     </li>
                 <?php endif ?>
 
@@ -100,12 +137,6 @@ if(is_logged_in()) {
                 <?php if(settings()->links->static_is_enabled && $show_admin_only_sidebar_items): ?>
                     <li class="<?= (\Altum\Router::$controller == 'Links' && ($_GET['type'] ?? null) == 'static') || (\Altum\Router::$controller == 'Link' && $this->link->type == 'static') ? 'active' : null ?>">
                         <a href="<?= url('links?type=static') ?>"><i class="fas fa-fw fa-sm fa-file-code mr-2"></i> <?= l('links.menu.static') ?></a>
-                    </li>
-                <?php endif ?>
-
-                <?php if(settings()->links->biolinks_is_enabled || settings()->links->shortener_is_enabled || settings()->links->files_is_enabled || settings()->links->vcards_is_enabled || settings()->links->events_is_enabled || settings()->links->static_is_enabled): ?>
-                    <li class="<?= in_array(\Altum\Router::$controller, ['LinksStatistics']) ? 'active' : null ?>">
-                        <a href="<?= url('links-statistics') ?>"><i class="fas fa-fw fa-sm fa-chart-bar mr-2"></i> <?= l('links_statistics.menu') ?></a>
                     </li>
                 <?php endif ?>
 
@@ -264,17 +295,17 @@ if(is_logged_in()) {
                 <div class="divider-wrapper">
                     <div class="divider"></div>
                 </div>
-                <li class="app-sidebar-section-label">
+                <li class="app-sidebar-section-label" id="fcc_dashboard_tour_sidebar_section">
                     <span>FCC zona</span>
                 </li>
                 <?php /* Custom code: FC-2026-03-31: Next step sidebar entry above FCC results */ ?>
-                <li class="<?= \Altum\Router::$controller == 'AiPlan' ? 'active' : null ?> app-sidebar-fcc-item">
-                    <a href="<?= url('ai-plan') ?>"><i class="fas fa-fw fa-sm fa-brain mr-2"></i> <?= l('ai_plan.menu') ?></a>
+                <li class="<?= (\Altum\Router::$controller_key ?? null) === 'ai-plan' ? 'active' : null ?> app-sidebar-fcc-item">
+                    <a href="<?= url('ai-plan') ?>" id="fcc_dashboard_tour_sidebar_ai_plan" class="<?= $has_ai_growth_plan_access ? null : 'disabled pointer-events-all' ?>" <?= $has_ai_growth_plan_access ? null : get_plan_feature_disabled_info() ?>><i class="fas fa-fw fa-sm fa-brain mr-2"></i> <?= l('ai_plan.menu') ?></a>
                 </li>
                 <?php /* /Custom code: FC-2026-03-31 */ ?>
                 <?php $fcc_results_sidebar_is_active = \Altum\Router::$controller == 'FccResults'; ?>
                 <li class="<?= $fcc_results_sidebar_is_active ? 'active' : null ?> app-sidebar-fcc-item">
-                    <a href="<?= url('fcc-results') ?>">
+                    <a href="<?= url('fcc-results') ?>" id="fcc_dashboard_tour_sidebar_results">
                         <i class="fas fa-fw fa-sm fa-trophy mr-2"></i> <?= l('fcc_results.menu') ?>
                     </a>
                 </li>
@@ -286,10 +317,10 @@ if(is_logged_in()) {
                     </li>
                 <?php endif ?>
                 <li class="<?= \Altum\Router::$controller == 'FccEducation' ? 'active' : null ?> app-sidebar-fcc-item">
-                    <a href="<?= url('fcc-education?video=last') ?>"><i class="fas fa-fw fa-sm fa-graduation-cap mr-2"></i> FOREVER EDUKACIJA</a>
+                    <a href="<?= url('fcc-education?video=last') ?>" id="fcc_dashboard_tour_sidebar_education"><i class="fas fa-fw fa-sm fa-graduation-cap mr-2"></i> FOREVER EDUKACIJA</a>
                 </li>
                 <li class="<?= \Altum\Router::$controller == 'Blog' ? 'active' : null ?> app-sidebar-fcc-item">
-                    <a href="<?= fc_get_forever_products_blog_category_url() ?>"><i class="fas fa-fw fa-sm fa-leaf mr-2"></i> FOREVER PROIZVODI</a>
+                    <a href="<?= fc_get_forever_products_blog_category_url() ?>" id="fcc_dashboard_tour_sidebar_products"><i class="fas fa-fw fa-sm fa-leaf mr-2"></i> FOREVER PROIZVODI</a>
                 </li>
         </ul>
     </div>
@@ -369,9 +400,227 @@ if(is_logged_in()) {
 
 <?php ob_start() ?>
 <style>
+    .app-sidebar {
+        min-width: 272px;
+        max-width: 272px;
+        background:
+            radial-gradient(circle at top right, rgba(73, 227, 207, 0.08), transparent 24%),
+            linear-gradient(180deg, rgba(17, 24, 39, 0.98), rgba(9, 13, 24, 0.98));
+        border: 1px solid rgba(148, 163, 184, 0.12);
+        box-shadow: 0 22px 60px rgba(2, 8, 23, 0.38);
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+    }
+
+    .app-sidebar::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        border-radius: inherit;
+        background: linear-gradient(180deg, rgba(255,255,255,0.03), transparent 24%);
+    }
+
+    .app-sidebar-title {
+        height: auto;
+        margin: 0;
+        padding: 1rem 1rem .7rem;
+    }
+
+    .app-sidebar-title a {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 82px;
+        width: 100%;
+        border-radius: 1.15rem;
+        border: 1px solid rgba(148, 163, 184, 0.1);
+        background:
+            radial-gradient(circle at top, rgba(73, 227, 207, 0.1), transparent 40%),
+            linear-gradient(180deg, rgba(255,255,255,0.025), rgba(255,255,255,0.01));
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+    }
+
+    .app-sidebar-title .navbar-logo {
+        max-height: 2.85rem;
+        height: 2.85rem;
+    }
+
+    .app-sidebar-links-wrapper {
+        width: 100%;
+        padding: 0 .8rem .45rem;
+        scrollbar-width: none;
+    }
+
+    .app-sidebar-links-wrapper:hover {
+        width: 100%;
+        scrollbar-width: thin !important;
+    }
+
+    .app-sidebar-links {
+        gap: .08rem;
+    }
+
+    .app-sidebar-links > li {
+        width: 100%;
+        padding: .16rem 0;
+    }
+
+    .app-sidebar-links > li > a {
+        min-height: 2.95rem;
+        border-radius: 1rem;
+        padding: .8rem .95rem;
+        color: rgba(226, 232, 240, 0.82);
+        border: 1px solid transparent;
+        background: transparent;
+        font-size: .96rem;
+        font-weight: 600;
+        letter-spacing: -.01em;
+        transition: transform .18s ease, background .18s ease, border-color .18s ease, color .18s ease, box-shadow .18s ease;
+    }
+
+    .app-sidebar-links > li > a:hover {
+        background: rgba(255,255,255,0.05);
+        color: #f8fbff;
+        border-color: rgba(148, 163, 184, 0.14);
+        box-shadow: 0 12px 24px rgba(2, 8, 23, 0.14);
+        transform: translateY(-1px);
+        text-decoration: none;
+    }
+
+    .app-sidebar-links > li.active > a:not(.default) {
+        color: #082826;
+        background: linear-gradient(135deg, #d5fff8 0%, #b5f5ed 100%);
+        border-color: rgba(191, 246, 239, 0.72);
+        box-shadow: 0 14px 28px rgba(45, 212, 191, 0.22);
+        font-weight: 700;
+    }
+
+    [data-theme-style="dark"] .app-sidebar-links > li > a:hover {
+        background: rgba(255,255,255,0.05);
+        color: #f8fbff;
+        border-color: rgba(148, 163, 184, 0.14);
+    }
+
+    [data-theme-style="dark"] .app-sidebar-links > li.active > a:not(.default) {
+        color: #082826;
+        background: linear-gradient(135deg, #d5fff8 0%, #b5f5ed 100%);
+        border-color: rgba(191, 246, 239, 0.72);
+    }
+
+    .app-sidebar-links > li > a i {
+        opacity: .9;
+    }
+
+    .app-sidebar-links > li#internal_notifications {
+        gap: .45rem;
+        align-items: center;
+    }
+
+    .app-sidebar-links > li#internal_notifications > a:first-child {
+        flex: 1 1 auto;
+    }
+
+    .app-sidebar-links > li#internal_notifications > a.default {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 2.95rem;
+        width: 2.95rem;
+        min-height: 2.95rem;
+        padding: 0;
+        border-radius: 1rem;
+        border: 1px solid transparent;
+        background: transparent;
+        color: rgba(226, 232, 240, 0.78);
+    }
+
+    .app-sidebar-links > li#internal_notifications > a.default:hover {
+        background: rgba(255,255,255,0.05);
+        border-color: rgba(148, 163, 184, 0.12);
+        color: #fff;
+    }
+
+    .app-sidebar-links > .divider-wrapper {
+        width: 100%;
+        padding: .7rem .05rem .3rem;
+        margin: .2rem 0;
+    }
+
+    .app-sidebar-links > .divider-wrapper > .divider {
+        border-top: 1px solid rgba(148, 163, 184, 0.1);
+    }
+
+    .app-sidebar-footer {
+        width: 100%;
+        padding: .6rem .8rem .85rem;
+    }
+
+    .app-sidebar-footer > a {
+        width: 100%;
+        padding: .8rem .9rem;
+        border-top: 0;
+        display: flex;
+        align-items: center;
+        color: rgba(226, 232, 240, 0.82);
+        font-size: .92rem;
+        font-weight: 600;
+        transition: background .25s ease, border-color .25s ease, transform .25s ease;
+        border-radius: 1rem;
+        border: 1px solid rgba(148, 163, 184, 0.08);
+        background: rgba(255,255,255,0.03);
+    }
+
+    .app-sidebar-footer > a:hover {
+        text-decoration: none;
+        background: rgba(255,255,255,0.05);
+        color: #fff;
+        border-color: rgba(148, 163, 184, 0.12);
+        transform: translateY(-1px);
+    }
+
+    .app-sidebar-avatar {
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        border: 1px solid rgba(148, 163, 184, 0.14);
+        box-shadow: 0 10px 20px rgba(2, 8, 23, 0.2);
+    }
+
+    .app-sidebar-footer-block {
+        max-width: 100%;
+    }
+
+    .app-sidebar-footer-text {
+        color: rgba(226, 232, 240, 0.9);
+    }
+
+    .app-sidebar-footer-text small {
+        color: rgba(148, 163, 184, 0.88);
+        font-size: .82rem;
+    }
+
+    .app-sidebar .dropdown-menu {
+        border-radius: 1rem;
+        border: 1px solid rgba(148, 163, 184, 0.12);
+        background: rgba(15, 23, 42, 0.98);
+        box-shadow: 0 24px 44px rgba(2, 8, 23, 0.32);
+    }
+
+    .app-sidebar .dropdown-item {
+        color: rgba(226, 232, 240, 0.88);
+    }
+
+    .app-sidebar .dropdown-item:hover,
+    .app-sidebar .dropdown-item:focus,
+    .app-sidebar .dropdown-item.active {
+        background: rgba(255,255,255,0.06);
+        color: #fff;
+    }
+
     .app-sidebar-links > li.app-sidebar-section-label {
-        padding: 1rem 1rem 0.35rem 1rem;
-        margin-top: 0.35rem;
+        padding: .95rem .45rem .25rem;
+        margin-top: .25rem;
     }
 
     .app-sidebar-links > li.app-sidebar-section-label span {
@@ -388,11 +637,20 @@ if(is_logged_in()) {
         padding-bottom: 0.16rem;
     }
 
+    .app-sidebar-links > li.app-sidebar-fcc-item.app-sidebar-fcc-subitem {
+        padding-left: 1.65rem;
+    }
+
+    .app-sidebar-links > li.app-sidebar-fcc-item.app-sidebar-fcc-spotlight {
+        padding-top: 0.55rem;
+        padding-bottom: 0.4rem;
+    }
+
     .app-sidebar-links > li.app-sidebar-fcc-item > a {
         color: #7fe3d9;
-        background: rgba(127, 227, 217, 0.04);
-        border: 1px solid transparent;
-        border-radius: 14px;
+        background: rgba(127, 227, 217, 0.05);
+        border: 1px solid rgba(127, 227, 217, 0.08);
+        border-radius: 1rem;
         font-weight: 600;
         transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
     }
@@ -437,6 +695,53 @@ if(is_logged_in()) {
         border-color: transparent;
         box-shadow: none;
         transform: none;
+        filter: saturate(0.75) brightness(0.92);
+    }
+
+    .app-sidebar-links > li.app-sidebar-fcc-item.app-sidebar-fcc-subitem > a {
+        min-height: 3.35rem;
+        font-size: 0.86rem;
+        border-radius: 13px;
+    }
+
+    .app-sidebar-links > li.app-sidebar-fcc-item.app-sidebar-fcc-spotlight > a {
+        min-height: 3.6rem;
+        color: #f6fbff;
+        background: radial-gradient(140px 90px at 12% 8%, rgba(45, 212, 191, 0.22), transparent 60%), linear-gradient(135deg, rgba(21, 33, 54, 0.96) 0%, rgba(13, 22, 38, 0.98) 100%);
+        border-color: rgba(86, 168, 255, 0.18);
+        box-shadow: 0 14px 30px rgba(2, 12, 28, 0.24), inset 0 1px 0 rgba(255,255,255,0.04);
+        font-weight: 700;
+    }
+
+    .app-sidebar-links > li.app-sidebar-fcc-item.app-sidebar-fcc-spotlight > a:hover {
+        color: #ffffff;
+        background: radial-gradient(160px 110px at 12% 8%, rgba(45, 212, 191, 0.28), transparent 62%), linear-gradient(135deg, rgba(24, 37, 61, 0.98) 0%, rgba(14, 24, 42, 1) 100%);
+        border-color: rgba(125, 211, 252, 0.26);
+        box-shadow: 0 16px 34px rgba(2, 12, 28, 0.28), inset 0 1px 0 rgba(255,255,255,0.05);
+    }
+
+    .app-sidebar-links > li.app-sidebar-fcc-item.app-sidebar-fcc-spotlight.active > a:not(.default) {
+        color: #061c22;
+        background: linear-gradient(135deg, #d8fff8 0%, #92ecdf 58%, #74c8ff 100%);
+        border-color: rgba(216, 255, 248, 0.82);
+        box-shadow: 0 18px 36px rgba(73, 190, 177, 0.3);
+    }
+
+    @media (max-width: 991.98px) {
+        .app-sidebar {
+            min-width: 282px;
+            max-width: 282px;
+        }
+
+        .app-sidebar-title {
+            padding: .85rem .85rem .55rem;
+        }
+
+        .app-sidebar-links-wrapper,
+        .app-sidebar-footer {
+            padding-left: .7rem;
+            padding-right: .7rem;
+        }
     }
 </style>
 <script>
