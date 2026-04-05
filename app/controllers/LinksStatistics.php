@@ -49,6 +49,7 @@ class LinksStatistics extends Controller {
                 /* Get the required statistics */
                 $pageviews = [];
                 $pageviews_chart = [];
+                $latest_entries = [];
                 $totals = [
                     'pageviews' => 0,
                     'visitors' => 0,
@@ -91,7 +92,25 @@ class LinksStatistics extends Controller {
                 $pageviews_chart = get_chart_data($pageviews_chart);
 
                 $limit = $this->user->preferences->default_results_per_page ?? settings()->main->default_results_per_page;
-                $result = database()->query("
+                $statistics_result = database()->query("
+                    SELECT
+                        `continent_code`,
+                        `country_code`,
+                        `city_name`,
+                        `referrer_host`,
+                        `device_type`,
+                        `os_name`,
+                        `browser_name`,
+                        `browser_language`
+                    FROM
+                        `track_links`
+                    WHERE
+                        `user_id` = {$this->user->user_id}
+                        {$filters->get_sql_where()}
+                        AND (`datetime` BETWEEN '{$datetime['query_start_date']}' AND '{$datetime['query_end_date']}')
+                ");
+
+                $latest_result = database()->query("
                     SELECT
                         *
                     FROM
@@ -364,10 +383,9 @@ class LinksStatistics extends Controller {
                     $statistics[$key . '_total_sum'] = 0;
                 }
 
-                $has_data = $result->num_rows;
+                $has_data = ($statistics_result->num_rows ?? 0) || ($latest_result->num_rows ?? 0);
 
-                /* Start processing the rows from the database */
-                while($row = $result->fetch_object()) {
+                while($row = $statistics_result->fetch_object()) {
                     foreach($statistics_keys as $key) {
                         $row->{$key} = $row->{$key} ?? '';
 
@@ -376,19 +394,21 @@ class LinksStatistics extends Controller {
                         $statistics[$key . '_total_sum']++;
 
                     }
-
-                    $latest[] = $row;
                 }
 
                 foreach($statistics_keys as $key) {
                     arsort($statistics[$key]);
                 }
 
+                while($row = $latest_result->fetch_object()) {
+                    $latest_entries[] = $row;
+                }
+
                 /* Prepare the statistics method View */
                 $data = [
                     'statistics' => $statistics,
                     'datetime' => $datetime,
-                    'latest' => $latest,
+                    'latest' => $latest_entries,
                     'pageviews' => $pageviews,
                     'pageviews_chart' => $pageviews_chart,
                     'totals' => $totals,

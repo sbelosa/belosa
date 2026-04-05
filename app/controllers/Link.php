@@ -840,6 +840,7 @@ class Link extends Controller {
                         /* Get the required statistics */
                         $pageviews = [];
                         $pageviews_chart = [];
+                        $latest_entries = [];
                         $totals = [
                             'pageviews' => 0,
                             'visitors' => 0,
@@ -881,7 +882,24 @@ class Link extends Controller {
                         $pageviews_chart = get_chart_data($pageviews_chart);
 
                         $limit = $this->user->preferences->default_results_per_page ?? settings()->main->default_results_per_page;
-                        $result = database()->query("
+                        $statistics_result = database()->query("
+                            SELECT
+                                `continent_code`,
+                                `country_code`,
+                                `city_name`,
+                                `referrer_host`,
+                                `device_type`,
+                                `os_name`,
+                                `browser_name`,
+                                `browser_language`
+                            FROM
+                                `track_links`
+                            WHERE
+                                `link_id` = {$this->link->link_id}
+                                AND (`datetime` BETWEEN '{$datetime['query_start_date']}' AND '{$datetime['query_end_date']}')
+                        ");
+
+                        $latest_result = database()->query("
                             SELECT
                                 *
                             FROM
@@ -1146,33 +1164,23 @@ class Link extends Controller {
                             $statistics[$key . '_total_sum'] = 0;
                         }
 
-                        $has_data = $result->num_rows;
+                        $has_data = ($statistics_result->num_rows ?? 0) || ($latest_result->num_rows ?? 0);
 
-                        /* Start processing the rows from the database */
-                        while($row = $result->fetch_object()) {
+                        while($row = $statistics_result->fetch_object()) {
                             foreach($statistics_keys as $key) {
-
-                                /* Get country of city */
-//                                if($key == 'city_name' && $row->{$key}) {
-//                                    $test = $row->{$key} . '_country_code';
-//
-//                                    echo $test;
-//                                    $statistics[$key][$test] = $row->country_code;
-//                                }
-
                                 $row->{$key} = $row->{$key} ?? '';
-
-                        $statistics[$key][$row->{$key}] = isset($statistics[$key][$row->{$key}]) ? $statistics[$key][$row->{$key}] + 1 : 1;
+                                $statistics[$key][$row->{$key}] = isset($statistics[$key][$row->{$key}]) ? $statistics[$key][$row->{$key}] + 1 : 1;
 
                                 $statistics[$key . '_total_sum']++;
-
                             }
-
-                            $latest[] = $row;
                         }
 
                         foreach($statistics_keys as $key) {
                             arsort($statistics[$key]);
+                        }
+
+                        while($row = $latest_result->fetch_object()) {
+                            $latest_entries[] = $row;
                         }
 
                         /* Prepare the statistics method View */
@@ -1181,7 +1189,7 @@ class Link extends Controller {
                             'link' => $this->link,
                             'method' => $method,
                             'datetime' => $datetime,
-                            'latest' => $latest,
+                            'latest' => $latest_entries,
                             'pageviews' => $pageviews,
                             'pageviews_chart' => $pageviews_chart,
                             'totals' => $totals,

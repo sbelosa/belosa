@@ -20,6 +20,7 @@ if($top_source_key === '' || $top_source_key === null) {
 }
 
 $latest_count = is_array($data->latest ?? null) ? count($data->latest) : 0;
+$latest_preview_limit = $this->user->preferences->default_results_per_page ?? settings()->main->default_results_per_page;
 $overview_lead = $data->link->type === 'biolink'
     ? ($fcc_stats_is_hr ? 'Ovdje vidiš kako se ova aplikacija ponaša kroz posjete, kretanje interesa i izvore prometa u odabranom razdoblju.' : 'Here you see how this app performs through visits, movement of interest and traffic sources across the selected range.')
     : l('link.statistics.data_preview');
@@ -90,10 +91,10 @@ $overview_lead = $data->link->type === 'biolink'
         </div>
     </div>
 
-    <div class="fcc-app-preview-strip" data-toggle="tooltip" title="<?= sprintf(l('link.statistics.data_preview_info'), $this->user->preferences->default_results_per_page ?? settings()->main->default_results_per_page) ?>">
+    <div class="fcc-app-preview-strip" data-toggle="tooltip" title="<?= $fcc_stats_is_hr ? 'Kartice ispod koriste cijelo odabrano razdoblje. Tablica najnovijih unosa prikazuje zadnjih ' . nr($latest_preview_limit) . ' zabilježenih posjeta.' : 'The cards below use the full selected period. The latest entries table shows the last ' . nr($latest_preview_limit) . ' tracked visits.' ?>">
         <div>
             <strong><?= $fcc_stats_is_hr ? 'Pregled izvora i ponašanja' : 'Traffic and behaviour snapshot' ?></strong>
-            <div class="small text-muted mt-1"><?= $data->link->type === 'biolink' ? ($fcc_stats_is_hr ? 'Ispod odmah vidiš tržišta, referrere, uređaje i zadnje posjete koje najviše otkrivaju što se događa s aplikacijom.' : 'Below you immediately see markets, referrers, devices and latest visits that reveal what is happening with the app.') : l('link.statistics.data_preview') ?></div>
+            <div class="small text-muted mt-1"><?= $data->link->type === 'biolink' ? ($fcc_stats_is_hr ? 'Kartice ispod prikazuju cijelo odabrano razdoblje, a tablica na dnu zadnje zabilježene posjete za brzi dnevni pregled.' : 'The cards below cover the full selected period, while the table at the bottom shows the latest tracked visits for a quick daily check.') : l('link.statistics.data_preview') ?></div>
         </div>
         <i class="fas fa-fw fa-info-circle text-muted"></i>
     </div>
@@ -406,6 +407,7 @@ $overview_lead = $data->link->type === 'biolink'
         <div class="card-body">
             <h3><?= l('link.statistics.latest') ?></h3>
             <div class="fcc-app-insight-subtitle"><?= $data->link->type === 'biolink' ? 'Zadnje posjete, odakle su došle i kada su se dogodile. Ovo je koristan dnevni pregled kampanja i aktivnosti.' : l('link.statistics.latest') ?></div>
+            <div class="small text-muted mb-3"><?= $fcc_stats_is_hr ? 'Prikazano je zadnjih ' . nr($latest_preview_limit) . ' zabilježenih posjeta u odabranom razdoblju.' : 'Showing the last ' . nr($latest_preview_limit) . ' tracked visits in the selected period.' ?></div>
 
             <div class="table-responsive table-custom-container">
                 <table class="table table-custom">
