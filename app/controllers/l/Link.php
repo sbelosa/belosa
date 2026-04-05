@@ -492,6 +492,14 @@ class Link extends Controller {
 	private function create_statistics() {
 
 		if($this->is_monitored_forever_outbound_request()) {
+			if(isset($_GET['no_redirect'])) {
+				$destination_url = trim((string) ($this->link->location_url ?? ''));
+
+				if($destination_url !== '') {
+					$this->process_monitored_forever_outbound_click($destination_url);
+				}
+			}
+
 			return;
 		}
 
