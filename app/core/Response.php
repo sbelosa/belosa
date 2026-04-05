@@ -20,6 +20,20 @@ defined('ALTUMCODE') || die();
 
 class Response {
 
+    private static function json_flags(): int {
+        $flags = JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES;
+
+        if(defined('JSON_INVALID_UTF8_SUBSTITUTE')) {
+            $flags |= JSON_INVALID_UTF8_SUBSTITUTE;
+        }
+
+        if(defined('JSON_PARTIAL_OUTPUT_ON_ERROR')) {
+            $flags |= JSON_PARTIAL_OUTPUT_ON_ERROR;
+        }
+
+        return $flags;
+    }
+
     public static function json($message, $status = 'success', $details = []) {
         if(!is_array($message) && $message) $message = [$message];
 
@@ -28,7 +42,8 @@ class Response {
                 'message' 	=> $message,
                 'status' 	=> $status,
                 'details'	=> $details,
-            ]
+            ],
+            self::json_flags()
         );
 
 
@@ -51,7 +66,7 @@ class Response {
             $response = array_merge($response, $others);
         }
 
-        echo json_encode($response);
+        echo json_encode($response, self::json_flags());
 
         die();
     }
@@ -67,7 +82,7 @@ class Response {
             $response['meta'] = $meta;
         };
 
-        echo json_encode($response);
+        echo json_encode($response, self::json_flags());
 
         die();
     }

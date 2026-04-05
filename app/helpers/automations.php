@@ -1232,7 +1232,7 @@ function fc_get_user_main_biolink_url(int $user_id): string {
         return '';
     }
 
-    $main_biolink_id = \Altum\Link::get_user_main_biolink_id($user_id);
+    $main_biolink_id = fc_get_user_main_biolink_id($user_id);
 
     if(!$main_biolink_id) {
         return '';

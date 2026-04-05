@@ -68,6 +68,73 @@ function database() {
     return \Altum\Database::$database;
 }
 
+function fc_get_user_main_biolink_id(int $user_id, bool $repair_mapping = true): int {
+    if($user_id <= 0) {
+        return 0;
+    }
+
+    if(method_exists('\Altum\Link', 'get_user_main_biolink_id')) {
+        return (int) \Altum\Link::get_user_main_biolink_id($user_id, $repair_mapping);
+    }
+
+    $mapping_rows = db()
+        ->where('user_id', $user_id)
+        ->orderBy('id', 'DESC')
+        ->get('users_biolinks', null, ['id', 'biolink_id']);
+
+    $latest_mapping_id = (int) ($mapping_rows[0]->id ?? 0);
+    $latest_mapped_biolink_id = (int) ($mapping_rows[0]->biolink_id ?? 0);
+    $resolved_biolink_id = 0;
+
+    foreach((array) $mapping_rows as $mapping_row) {
+        $candidate_biolink_id = (int) ($mapping_row->biolink_id ?? 0);
+
+        if($candidate_biolink_id <= 0) {
+            continue;
+        }
+
+        $valid_biolink_id = (int) (db()
+            ->where('link_id', $candidate_biolink_id)
+            ->where('user_id', $user_id)
+            ->where('type', 'biolink')
+            ->getValue('links', 'link_id') ?? 0);
+
+        if($valid_biolink_id > 0) {
+            $resolved_biolink_id = $valid_biolink_id;
+            break;
+        }
+    }
+
+    if(!$resolved_biolink_id) {
+        $fallback_biolink = db()
+            ->where('user_id', $user_id)
+            ->where('type', 'biolink')
+            ->orderBy('is_enabled', 'DESC')
+            ->orderBy('datetime', 'ASC')
+            ->orderBy('link_id', 'ASC')
+            ->getOne('links', ['link_id']);
+
+        $resolved_biolink_id = (int) ($fallback_biolink->link_id ?? 0);
+    }
+
+    if($repair_mapping && $resolved_biolink_id > 0) {
+        if($latest_mapping_id > 0) {
+            if($latest_mapped_biolink_id !== $resolved_biolink_id) {
+                db()->where('id', $latest_mapping_id)->update('users_biolinks', [
+                    'biolink_id' => $resolved_biolink_id,
+                ]);
+            }
+        } else {
+            db()->insert('users_biolinks', [
+                'user_id' => $user_id,
+                'biolink_id' => $resolved_biolink_id,
+            ]);
+        }
+    }
+
+    return $resolved_biolink_id;
+}
+
 /* Custom code: FC-2026-03-22: normalize legacy language aliases */
 function fc_resolve_language_name($language = null) {
     if(!$language) {

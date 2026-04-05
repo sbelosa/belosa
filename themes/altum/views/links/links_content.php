@@ -13,7 +13,7 @@ $fcc_table_links = $fcc_is_biolink_links ? $fcc_additional_links : ($data->links
 $fcc_has_renderable_links = $fcc_is_biolink_links ? (!empty($fcc_main_biolink_row) || !empty($fcc_additional_links)) : !empty($fcc_table_links);
 
 if($fcc_is_biolink_links && !$fcc_main_biolink_row && !empty($this->user->user_id)) {
-    $fcc_resolved_main_biolink_id = (int) (\Altum\Link::get_user_main_biolink_id((int) $this->user->user_id, false) ?? 0);
+    $fcc_resolved_main_biolink_id = (int) (fc_get_user_main_biolink_id((int) $this->user->user_id, false) ?? 0);
 
     if(!$fcc_resolved_main_biolink_id) {
         $fcc_resolved_main_biolink_id = (int) (db()

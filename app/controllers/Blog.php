@@ -34,7 +34,7 @@ class Blog extends Controller {
             return null;
         }
 
-        $main_biolink_id = \Altum\Link::get_user_main_biolink_id($user_id);
+        $main_biolink_id = fc_get_user_main_biolink_id($user_id);
 
         if($main_biolink_id) {
             $biolink = db()->where('link_id', $main_biolink_id)->where('type', 'biolink')->getOne('links', ['url']);
@@ -196,7 +196,7 @@ class Blog extends Controller {
 
                 if($resolved_user) {
                     if(!$resolved_biolink_url) {
-                        $resolved_biolink_id = \Altum\Link::get_user_main_biolink_id((int) $resolved_user->user_id);
+                        $resolved_biolink_id = fc_get_user_main_biolink_id((int) $resolved_user->user_id);
                         if($resolved_biolink_id) {
                             $resolved_biolink = db()->where('link_id', $resolved_biolink_id)->where('type', 'biolink')->getOne('links', ['url']);
                             if($resolved_biolink && !empty($resolved_biolink->url)) {
@@ -244,7 +244,7 @@ class Blog extends Controller {
                 $private_display = true;
                 $biolink = null;
 
-                $main_biolink_id = \Altum\Link::get_user_main_biolink_id($user_id);
+                $main_biolink_id = fc_get_user_main_biolink_id($user_id);
 
                 if($main_biolink_id) {
                     $biolink = db()->where('link_id', $main_biolink_id)->where('type', 'biolink')->getOne('links', ['link_id', 'url']);

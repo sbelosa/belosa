@@ -31,7 +31,7 @@ class Page extends Controller {
             return null;
         }
 
-        $main_biolink_id = \Altum\Link::get_user_main_biolink_id($user_id);
+        $main_biolink_id = fc_get_user_main_biolink_id($user_id);
 
         if($main_biolink_id) {
             $biolink = db()->where('link_id', $main_biolink_id)->where('type', 'biolink')->getOne('links', ['url']);
@@ -63,7 +63,7 @@ class Page extends Controller {
             return null;
         }
 
-        $main_biolink_id = \Altum\Link::get_user_main_biolink_id($user_id);
+        $main_biolink_id = fc_get_user_main_biolink_id($user_id);
 
         if($main_biolink_id) {
             $main_biolink = db()->where('link_id', $main_biolink_id)->where('type', 'biolink')->getOne('links', ['link_id', 'user_id', 'project_id', 'url']);

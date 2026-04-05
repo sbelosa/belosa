@@ -76,7 +76,7 @@ class Links extends Controller {
             return null;
         }
 
-        $mapped_biolink_id = (int) (\Altum\Link::get_user_main_biolink_id($user_id) ?? 0);
+        $mapped_biolink_id = (int) (fc_get_user_main_biolink_id($user_id) ?? 0);
         $biolink = null;
 
         if($mapped_biolink_id > 0) {
@@ -854,7 +854,7 @@ class Links extends Controller {
         unset($row);
 
         if($is_biolink_listing && !$main_biolink) {
-            $resolved_main_biolink_id = (int) (\Altum\Link::get_user_main_biolink_id($this->user->user_id, false) ?? 0);
+            $resolved_main_biolink_id = (int) (fc_get_user_main_biolink_id($this->user->user_id, false) ?? 0);
 
             if($resolved_main_biolink_id > 0) {
                 $main_biolink = $this->get_biolink_row_by_id($this->user->user_id, $resolved_main_biolink_id, $resolved_main_biolink_id);
@@ -977,7 +977,7 @@ class Links extends Controller {
                     }
 
                     /* Custom code: FC-2026-02-24: lock main NFC biolink deletion */
-                    $main_biolink_id = (int) (\Altum\Link::get_user_main_biolink_id((int) $this->user->user_id) ?? 0);
+                    $main_biolink_id = (int) (fc_get_user_main_biolink_id((int) $this->user->user_id) ?? 0);
                     /* /Custom code: FC-2026-02-24 */
 
                     foreach($_POST['selected'] as $link_id) {

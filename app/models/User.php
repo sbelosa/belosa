@@ -238,7 +238,7 @@ class User extends Model {
             return;
         }
 
-        $default_biolink_id = (int) (\Altum\Link::get_user_main_biolink_id((int) $user->user_id) ?? 0);
+        $default_biolink_id = (int) (fc_get_user_main_biolink_id((int) $user->user_id) ?? 0);
         $default_vcard_id = (int) (db()->where('user_id', $user->user_id)->getValue('users_vcards', 'vcard_id') ?? 0);
 
         $links_by_type = [];

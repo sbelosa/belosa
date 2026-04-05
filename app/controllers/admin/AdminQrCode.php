@@ -155,7 +155,7 @@ class AdminQrCode extends Controller {
     }
 
     private function get_main_biolink_url($user_id) {
-        $biolink_id = \Altum\Link::get_user_main_biolink_id((int) $user_id);
+        $biolink_id = fc_get_user_main_biolink_id((int) $user_id);
 
         if(!$biolink_id) {
             return null;

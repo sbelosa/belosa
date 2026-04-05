@@ -2889,7 +2889,7 @@ class AiPlan extends Controller {
 
     private function get_app_structure_payload(int $user_id): array {
         /* Custom code: FC-2026-03-31: load the protected default biolink and avoid non-portable links columns */
-        $main_biolink_id = (int) (\Altum\Link::get_user_main_biolink_id($user_id) ?? 0);
+        $main_biolink_id = (int) (fc_get_user_main_biolink_id($user_id) ?? 0);
         $apps_result = database()->query("SELECT `link_id`, `url`, `settings`, `is_enabled`, `datetime`, `last_datetime` FROM `links` WHERE `user_id` = {$user_id} AND `type` = 'biolink'");
         /* /Custom code: FC-2026-03-31 */
 

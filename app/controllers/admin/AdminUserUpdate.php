@@ -45,7 +45,7 @@ class AdminUserUpdate extends Controller {
             return null;
         }
 
-        $main_biolink_id = (int) (\Altum\Link::get_user_main_biolink_id($user_id) ?? 0);
+        $main_biolink_id = (int) (fc_get_user_main_biolink_id($user_id) ?? 0);
         if(!$main_biolink_id) {
             return null;
         }
@@ -257,7 +257,7 @@ class AdminUserUpdate extends Controller {
             if(!Alerts::has_field_errors() && !Alerts::has_errors()) {
                 /* Custom code */
                 if ($_POST['status'] == 1 && $user->status == 0 && is_null($_POST['user_meta']['limited'])) {
-                    $main_biolink_id = (int) (\Altum\Link::get_user_main_biolink_id((int) $user->user_id) ?? 0);
+                    $main_biolink_id = (int) (fc_get_user_main_biolink_id((int) $user->user_id) ?? 0);
 
                     if (!$main_biolink_id) {
                         $biolink = db()->where('user_id', $user->user_id)->where('type', 'biolink')->getOne('links'); 
@@ -395,7 +395,7 @@ class AdminUserUpdate extends Controller {
                 /* Custom code */
                 if (isset($_POST['user_meta']['send_card_email']) && $_POST['user_meta']['send_card_email'] == 'on') {
                      /* Prepare the email */
-                     $main_biolink_id = (int) (\Altum\Link::get_user_main_biolink_id((int) $user_id) ?? 0);
+                     $main_biolink_id = (int) (fc_get_user_main_biolink_id((int) $user_id) ?? 0);
                      if ($main_biolink_id) {
                         $link = db()->where('link_id', $main_biolink_id)->getOne('links');
 

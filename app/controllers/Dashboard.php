@@ -760,6 +760,24 @@ class Dashboard extends Controller {
         );
         /* /Custom code: FC-2026-03-30 */
 
+        $dashboard_funnel_analytics = [
+            'has_funnels' => false,
+            'total_funnels' => 0,
+            'active_funnels_30d' => 0,
+            'unique_clicks_30d' => 0,
+            'leads_30d' => 0,
+            'conversion_rate_30d' => 0,
+            'best_open_mode' => null,
+            'best_thank_you_type' => null,
+            'last_lead_datetime' => null,
+            'last_lead_display' => null,
+            'status' => 'setup',
+            'status_title' => l('dashboard.funnel.status.setup_title'),
+            'status_description' => $biolink_links_total > 0 ? l('dashboard.funnel.status.setup_description') : l('dashboard.funnel.status.no_biolinks_description'),
+            'cta_label' => $biolink_links_total > 0 ? l('dashboard.funnel.status.setup_cta') : l('dashboard.funnel.status.no_biolinks_cta'),
+            'cta_url' => $biolink_links_total > 0 ? url('links?type=biolink') : url('link-create'),
+        ];
+
         $growth_active_threshold = 15;
         $growth_vip_threshold = 50;
         $growth_stage = $qualified_clicks_30d >= $growth_vip_threshold ? 'vip' : ($qualified_clicks_30d >= $growth_active_threshold ? 'active' : 'building');
@@ -965,24 +983,6 @@ class Dashboard extends Controller {
             /* /Custom code: FC-2026-03-30 */
         ];
 
-        $dashboard_funnel_analytics = [
-            'has_funnels' => false,
-            'total_funnels' => 0,
-            'active_funnels_30d' => 0,
-            'unique_clicks_30d' => 0,
-            'leads_30d' => 0,
-            'conversion_rate_30d' => 0,
-            'best_open_mode' => null,
-            'best_thank_you_type' => null,
-            'last_lead_datetime' => null,
-            'last_lead_display' => null,
-            'status' => 'setup',
-            'status_title' => l('dashboard.funnel.status.setup_title'),
-            'status_description' => $biolink_links_total > 0 ? l('dashboard.funnel.status.setup_description') : l('dashboard.funnel.status.no_biolinks_description'),
-            'cta_label' => $biolink_links_total > 0 ? l('dashboard.funnel.status.setup_cta') : l('dashboard.funnel.status.no_biolinks_cta'),
-            'cta_url' => $biolink_links_total > 0 ? url('links?type=biolink') : url('link-create'),
-        ];
-
         $funnel_blocks_map = [];
         $funnel_ids = [];
         $funnel_blocks_result = database()->query("SELECT `biolink_block_id`, `settings` FROM `biolinks_blocks` WHERE `user_id` = {$this->user->user_id} AND `type` = 'lead_funnel'");
@@ -1106,6 +1106,24 @@ class Dashboard extends Controller {
                 $dashboard_funnel_analytics['cta_label'] = l('dashboard.funnel.status.good_cta');
                 $dashboard_funnel_analytics['cta_url'] = url('funnels-analytics');
             }
+        }
+
+        if($qualified_clicks_30d < $growth_active_threshold) {
+            $hero_title = 'Na putu si do prvih 15 kvalificiranih klikova.';
+            $hero_description = 'Sada je fokus povećati prodajni signal iz aplikacije i blog sadržaja prema Foreveru kako bi otključao istaknutu aplikaciju i jači AI ritam.';
+            $next_focus = 'Dovedi još kvalificiranih klikova prema Foreveru.';
+        } elseif($forever_registration_clicks_30d <= 0 && $qualified_clicks_30d > 0) {
+            $hero_title = 'Imaš interes, sada pojačaj prijave i kontakte.';
+            $hero_description = 'Klikovi postoje, ali rezultat još može biti jači. Vrijeme je da pojačaš put od sadržaja i webshop interesa do prijave ili leadova.';
+            $next_focus = 'Pojačaj CTA i put do prijave.';
+        } elseif(($dashboard_funnel_analytics['leads_30d'] ?? 0) > 0) {
+            $hero_title = 'Imaš signal koji već donosi konkretan rezultat.';
+            $hero_description = 'Tvoj prodajni sadržaj i funnel već rade. Sada vrijedi ponoviti ono što daje klikove i leadove te dodatno ojačati kanal koji najbolje nosi promet.';
+            $next_focus = 'Skaliraj sadržaj koji već donosi rezultat.';
+        } else {
+            $hero_title = 'Tvoj prodajni signal je aktivan i spreman za rast.';
+            $hero_description = 'Klikovi prema Foreveru dolaze, a sada fokus prebacujemo na konzistentnost, bolji conversion put i pametno ponavljanje sadržaja koji već radi.';
+            $next_focus = 'Zadrži ritam i povećaj conversion.';
         }
 
         /* Custom code: FC-2026-03-05: synthetic demo traffic preview */

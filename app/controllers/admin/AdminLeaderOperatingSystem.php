@@ -253,7 +253,7 @@ class AdminLeaderOperatingSystem extends Controller {
             return null;
         }
 
-        $main_biolink_id = (int) (\Altum\Link::get_user_main_biolink_id($user_id) ?? 0);
+        $main_biolink_id = (int) (fc_get_user_main_biolink_id($user_id) ?? 0);
         $biolink = null;
 
         if($main_biolink_id > 0) {

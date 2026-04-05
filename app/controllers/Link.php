@@ -554,7 +554,7 @@ class Link extends Controller {
             'static' => 'static_limit',
         };
         /* Custom code: FC-2026-03-19: allow editing the protected default biolink/vcard after downgrade */
-        $default_biolink_id = (int) (\Altum\Link::get_user_main_biolink_id((int) $this->user->user_id) ?? 0);
+        $default_biolink_id = (int) (fc_get_user_main_biolink_id((int) $this->user->user_id) ?? 0);
         $default_vcard_id = (int) (db()->where('user_id', $this->user->user_id)->getValue('users_vcards', 'vcard_id') ?? 0);
         $is_protected_default_link = ($this->link->type == 'biolink' && $default_biolink_id && (int) $this->link->link_id === $default_biolink_id)
             || ($this->link->type == 'vcard' && $default_vcard_id && (int) $this->link->link_id === $default_vcard_id);
@@ -590,7 +590,7 @@ class Link extends Controller {
         }
 
         /* Main FCC app context */
-        $biolink_main_id = (int) (\Altum\Link::get_user_main_biolink_id((int) $this->user->user_id) ?? 0);
+        $biolink_main_id = (int) (fc_get_user_main_biolink_id((int) $this->user->user_id) ?? 0);
         $vcard_main = db()->where('user_id', $this->user->user_id)->getOne('users_vcards', ['vcard_id']);
         $is_main_biolink_app = $this->link->type === 'biolink' && $biolink_main_id && $biolink_main_id === (int) $this->link->link_id;
         $main_biolink_statistics_url = $biolink_main_id ? url('link/' . $biolink_main_id . '/statistics') : null;

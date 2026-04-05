@@ -19,7 +19,7 @@ if(is_logged_in() && in_array($fcc_share_route, ['index', 'blog', 'page'], true)
     $fcc_referral_slug = null;
 
     if($fcc_user_id) {
-        $fcc_main_biolink_id = \Altum\Link::get_user_main_biolink_id($fcc_user_id);
+        $fcc_main_biolink_id = fc_get_user_main_biolink_id($fcc_user_id);
 
         if($fcc_main_biolink_id) {
             $fcc_biolink = db()->where('link_id', $fcc_main_biolink_id)->where('type', 'biolink')->getOne('links', ['url']);
