@@ -2279,7 +2279,7 @@ $dashboard_forever_products_url = fc_get_forever_products_blog_category_url(\Alt
 
                 if(rightSpace >= popoverWidth + 16) {
                     left = rect.right + 16;
-                } elseif(leftSpace >= popoverWidth + 16) {
+                } else if(leftSpace >= popoverWidth + 16) {
                     left = rect.left - popoverWidth - 16;
                 } else {
                     left = Math.min(
@@ -2545,28 +2545,73 @@ $dashboard_forever_products_url = fc_get_forever_products_blog_category_url(\Alt
         (async function fetch_statistics() {
             /* Custom code: FC-2026-03-05: pass demo query flag to ajax endpoint */
             const dashboard_query_params = new URLSearchParams(window.location.search);
-            const dashboard_stats_url = dashboard_query_params.get('demo') === '1' ? `${url}dashboard/get_stats_ajax?demo=1` : `${url}dashboard/get_stats_ajax`;
+            const dashboard_stats_url = dashboard_query_params.get('demo') === '1'
+                ? `${window.location.origin}/dashboard/get_stats_ajax?demo=1`
+                : `${window.location.origin}/dashboard/get_stats_ajax`;
             /* /Custom code: FC-2026-03-05 */
 
-            /* Send request to server */
-            let response = await fetch(dashboard_stats_url, {
-                method: 'get',
-            });
+            const render_dashboard_fetch_error = (message = 'Podaci se trenutno ne mogu učitati. Osvježi stranicu ili pokušaj ponovno za nekoliko trenutaka.') => {
+                const safeMessage = message || 'Podaci se trenutno ne mogu učitati. Osvježi stranicu ili pokušaj ponovno za nekoliko trenutaka.';
+                const loadingTargets = [
+                    '#dashboard_strengths_list',
+                    '#dashboard_blockers_list',
+                    '#dashboard_top_forever_pages_30d',
+                    '#dashboard_top_shop_sources_30d',
+                    '#dashboard_top_countries_30d'
+                ];
 
-            let data = null;
+                loadingTargets.forEach(selector => {
+                    const element = document.querySelector(selector);
+                    if(element) {
+                        element.innerHTML = `<div class="dashboard-side-card-list-item is-warning">${safeMessage}</div>`;
+                    }
+                });
+
+                const chartLoading = document.querySelector('#dashboard_signal_chart_loading');
+                const chartContainer = document.querySelector('#dashboard_signal_chart_container');
+                const chartNoData = document.querySelector('#dashboard_signal_chart_no_data');
+
+                if(chartLoading) {
+                    chartLoading.classList.add('d-none');
+                    chartLoading.classList.remove('d-flex', 'align-items-center', 'justify-content-center');
+                }
+
+                if(chartContainer) {
+                    chartContainer.classList.add('d-none');
+                }
+
+                if(chartNoData) {
+                    chartNoData.classList.remove('d-none');
+                }
+            };
+
             try {
-                data = await response.json();
-            } catch (error) {
-                /* :)  */
-            }
+                /* Send request to server */
+                let response = await fetch(dashboard_stats_url, {
+                    method: 'get',
+                    credentials: 'same-origin',
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
 
-            if(!response.ok) {
-                /* :)  */
-            }
+                let data = null;
+                try {
+                    data = await response.json();
+                } catch (error) {
+                    render_dashboard_fetch_error();
+                    return;
+                }
 
-            if(data.status == 'error') {
-                /* :)  */
-            } else if(data.status == 'success') {
+                if(!response.ok) {
+                    render_dashboard_fetch_error();
+                    return;
+                }
+
+                if(!data || data.status == 'error') {
+                    render_dashboard_fetch_error();
+                    return;
+                } else if(data.status == 'success') {
 
                 /* update link_links_total */
                 const link_links_total_element = document.querySelector('#link_links_total');
@@ -2604,35 +2649,82 @@ $dashboard_forever_products_url = fc_get_forever_products_blog_category_url(\Alt
                     static_links_total_element.innerHTML = data.details.static_links_total ? nr(data.details.static_links_total) : 0;
                 }
 
-                const dashboard_forever_analytics = data.details.dashboard_forever_analytics ?? {};
-                const dashboard_funnel_analytics = data.details.dashboard_funnel_analytics ?? {};
-                const dashboard_support_summary = data.details.dashboard_support_summary ?? {};
+                const dashboard_value = (value, fallback = null) => {
+                    return value === null || typeof value === 'undefined' ? fallback : value;
+                };
+
+                const dashboard_nested_value = (object, keys, fallback = null) => {
+                    let current = object;
+
+                    for(let i = 0; i < keys.length; i++) {
+                        if(current === null || typeof current === 'undefined' || (typeof current !== 'object' && typeof current !== 'function')) {
+                            return fallback;
+                        }
+
+                        current = current[keys[i]];
+                    }
+
+                    return dashboard_value(current, fallback);
+                };
+
+                const dashboard_nr = value => {
+                    const safeValue = dashboard_value(value, 0);
+
+                    if(typeof nr === 'function') {
+                        return nr(safeValue);
+                    }
+
+                    const numericValue = Number(safeValue);
+
+                    if(isFinite(numericValue)) {
+                        return String(numericValue);
+                    }
+
+                    return '0';
+                };
+
+                const dashboard_forever_analytics = dashboard_value(data.details.dashboard_forever_analytics, {});
+                const dashboard_funnel_analytics = dashboard_value(data.details.dashboard_funnel_analytics, {});
+                const dashboard_support_summary = dashboard_value(data.details.dashboard_support_summary, {});
+
+                const dashboard_to_active = Number(dashboard_value(dashboard_forever_analytics.to_active, 0));
+                const dashboard_to_vip = Number(dashboard_value(dashboard_forever_analytics.to_vip, 0));
+                const dashboard_webinar_total = Number(dashboard_value(dashboard_support_summary.webinar_total, 0));
+                const dashboard_qualified_clicks_30d = Number(dashboard_value(dashboard_forever_analytics.qualified_clicks_30d, 0));
+                const dashboard_registration_clicks_30d = Number(dashboard_value(dashboard_forever_analytics.forever_registration_clicks_30d, 0));
+                const dashboard_blog_qualified_clicks_30d = Number(dashboard_value(dashboard_forever_analytics.blog_qualified_clicks_30d, 0));
+                const dashboard_app_qualified_clicks_30d = Number(dashboard_value(dashboard_forever_analytics.app_qualified_clicks_30d, 0));
+                const dashboard_growth_active_threshold = Number(dashboard_value(dashboard_forever_analytics.growth_active_threshold, 15));
+                const dashboard_funnel_leads_30d = Number(dashboard_value(dashboard_funnel_analytics.leads_30d, 0));
+                const dashboard_funnel_unique_clicks_30d = Number(dashboard_value(dashboard_funnel_analytics.unique_clicks_30d, 0));
+                const dashboard_support_repeated_issue_detected = !!dashboard_value(dashboard_support_summary.repeated_issue_detected, false);
+                const dashboard_support_unread_total = Number(dashboard_value(dashboard_support_summary.unread_total, 0));
 
                 const set_text = (selector, value, fallback = '—') => {
                     const element = document.querySelector(selector);
                     if(element) {
-                        element.innerText = value ?? fallback;
+                        element.innerText = dashboard_value(value, fallback);
                     }
                 };
 
                 const set_html = (selector, value, fallback = '—') => {
                     const element = document.querySelector(selector);
                     if(element) {
-                        element.innerHTML = value ?? fallback;
+                        element.innerHTML = dashboard_value(value, fallback);
                     }
                 };
 
                 const set_metric = (selector, value, suffix = '') => {
                     const element = document.querySelector(selector);
                     if(element) {
-                        element.innerText = `${nr(value ?? 0)}${suffix}`;
+                        element.innerText = `${dashboard_nr(dashboard_value(value, 0))}${suffix}`;
                     }
                 };
 
                 const set_progress = (selector, value) => {
                     const element = document.querySelector(selector);
                     if(element) {
-                        const safe_value = Math.max(0, Math.min(100, Number(value ?? 0)));
+                        const safe_value = Math.max(0, Math.min(100, Number(dashboard_value(value, 0))));
                         element.style.width = `${safe_value}%`;
                     }
                 };
@@ -2643,21 +2735,21 @@ $dashboard_forever_products_url = fc_get_forever_products_blog_category_url(\Alt
                         return;
                     }
 
-                    const numeric_value = Number(value ?? 0);
+                    const numeric_value = Number(dashboard_value(value, 0));
                     const sign = numeric_value > 0 ? '+' : '';
-                    element.innerText = `${sign}${nr(numeric_value)}${suffix}`;
+                    element.innerText = `${sign}${dashboard_nr(numeric_value)}${suffix}`;
                 };
 
                 const stage_map = {
                     building: {
                         badge: 'Na putu do 15',
                         label: 'Početni signal',
-                        unlock: `Još ${nr(dashboard_forever_analytics.to_active ?? 0)} do Active signala`
+                        unlock: `Još ${dashboard_nr(dashboard_to_active)} do Active signala`
                     },
                     active: {
                         badge: 'Active signal',
                         label: 'Aktivan signal',
-                        unlock: `Još ${nr(dashboard_forever_analytics.to_vip ?? 0)} do VIP signala`
+                        unlock: `Još ${dashboard_nr(dashboard_to_vip)} do VIP signala`
                     },
                     vip: {
                         badge: 'VIP momentum',
@@ -2666,12 +2758,12 @@ $dashboard_forever_products_url = fc_get_forever_products_blog_category_url(\Alt
                     }
                 };
 
-                const selected_stage = stage_map[dashboard_forever_analytics.growth_stage] ?? stage_map.building;
+                const selected_stage = stage_map[dashboard_forever_analytics.growth_stage] || stage_map.building;
                 set_text('#dashboard_growth_stage_badge', selected_stage.badge);
                 set_text('#dashboard_growth_stage_label', selected_stage.label);
                 set_text('#dashboard_next_unlock', selected_stage.unlock);
-                set_text('#dashboard_hero_title', dashboard_forever_analytics.hero_title ?? 'Tvoj rast sada');
-                set_text('#dashboard_hero_description', dashboard_forever_analytics.hero_description ?? '');
+                set_text('#dashboard_hero_title', dashboard_value(dashboard_forever_analytics.hero_title, 'Tvoj rast sada'));
+                set_text('#dashboard_hero_description', dashboard_value(dashboard_forever_analytics.hero_description, ''));
                 set_metric('#dashboard_growth_signal_30d', dashboard_forever_analytics.qualified_clicks_30d);
                 set_metric('#dashboard_blog_signal_30d', dashboard_forever_analytics.blog_qualified_clicks_30d);
 
@@ -2687,18 +2779,18 @@ $dashboard_forever_products_url = fc_get_forever_products_blog_category_url(\Alt
                 set_metric('#dashboard_vip_remaining', dashboard_forever_analytics.to_vip);
                 set_progress('#dashboard_active_progress_fill', dashboard_forever_analytics.active_progress_percent);
                 set_progress('#dashboard_vip_progress_fill', dashboard_forever_analytics.vip_progress_percent);
-                set_text('#dashboard_active_progress_copy', (dashboard_forever_analytics.to_active ?? 0) > 0
-                    ? `Još ${nr(dashboard_forever_analytics.to_active ?? 0)} odlaznih klikova prema Forever webshopu do aktivnog ritma u rubrici Tvoj plan rasta.`
+                set_text('#dashboard_active_progress_copy', dashboard_to_active > 0
+                    ? `Još ${dashboard_nr(dashboard_to_active)} odlaznih klikova prema Forever webshopu do aktivnog ritma u rubrici Tvoj plan rasta.`
                     : 'Aktivni signal je otključan. Nastavi graditi ritam i pojačaj put od klika do prijave.');
-                set_text('#dashboard_vip_progress_copy', (dashboard_forever_analytics.to_vip ?? 0) > 0
-                    ? `Još ${nr(dashboard_forever_analytics.to_vip ?? 0)} odlaznih klikova prema Forever webshopu do VIP pristupa i otključavanja punog potencijala AI sustava.`
+                set_text('#dashboard_vip_progress_copy', dashboard_to_vip > 0
+                    ? `Još ${dashboard_nr(dashboard_to_vip)} odlaznih klikova prema Forever webshopu do VIP pristupa i otključavanja punog potencijala AI sustava.`
                     : 'VIP signal je aktivan. Sada je fokus zadržati kontinuitet i skalirati kanal koji već radi.');
-                set_text('#dashboard_growth_note', (dashboard_support_summary.webinar_total ?? 0) > 0
-                    ? `Već imaš ${nr(dashboard_support_summary.webinar_total)} prijedloga za webinar iz podrške. Iskoristi ih kao signal što trebaš dodatno razraditi.`
+                set_text('#dashboard_growth_note', dashboard_webinar_total > 0
+                    ? `Već imaš ${dashboard_nr(dashboard_webinar_total)} prijedloga za webinar iz podrške. Iskoristi ih kao signal što trebaš dodatno razraditi.`
                     : 'Tvoj plan rasta koristi ovaj 30-dnevni signal odlaznih klikova prema Forever Living webshopovima kako bi odredio ritam preporuka, AI analize i sljedeći najbolji potez.');
 
-                const topBlogContent = dashboard_forever_analytics.top_blog_content_30d;
-                const topAppContent = dashboard_forever_analytics.top_app_content_30d;
+                const topBlogContent = dashboard_value(dashboard_forever_analytics.top_blog_content_30d, null);
+                const topAppContent = dashboard_value(dashboard_forever_analytics.top_app_content_30d, null);
                 set_text('#dashboard_top_blog_title', topBlogContent ? (topBlogContent.title || topBlogContent.url || '—') : 'Još nema blog signala');
                 set_text('#dashboard_top_app_title', topAppContent ? (topAppContent.url || '—') : 'Još nema signala iz aplikacije');
 
@@ -2707,18 +2799,20 @@ $dashboard_forever_products_url = fc_get_forever_products_blog_category_url(\Alt
                     : (topAppContent ? `Najviše klikova prema Foreveru trenutno donosi aplikacija ili blok ${topAppContent.url}.` : 'Sustav još skuplja dovoljno signala da bi izdvojio najbolji prodajni sadržaj.');
                 set_text('#dashboard_best_content_summary', bestContentSummary);
 
-                const topCountry = dashboard_forever_analytics.top_country_30d;
-                const topSource = dashboard_forever_analytics.top_shop_source_30d;
-                set_text('#dashboard_top_country_label', topCountry ? `${topCountry.country_code} · ${nr(topCountry.total)}` : 'Još nema signala');
-                set_text('#dashboard_top_source_label', topSource ? `${topSource.source} · ${nr(topSource.total)}` : 'Još nema signala');
+                const topCountry = dashboard_value(dashboard_forever_analytics.top_country_30d, null);
+                const topSource = dashboard_value(dashboard_forever_analytics.top_shop_source_30d, null);
+                set_text('#dashboard_top_country_label', topCountry ? `${topCountry.country_code} · ${dashboard_nr(topCountry.total)}` : 'Još nema signala');
+                set_text('#dashboard_top_source_label', topSource ? `${topSource.source} · ${dashboard_nr(topSource.total)}` : 'Još nema signala');
 
-                const conversionSummary = (dashboard_forever_analytics.forever_registration_clicks_30d ?? 0) <= 0 && (dashboard_forever_analytics.qualified_clicks_30d ?? 0) > 0
+                const conversionSummary = dashboard_registration_clicks_30d <= 0 && dashboard_qualified_clicks_30d > 0
                     ? 'Klikovi prema Foreveru postoje, ali sada treba pojačati put do prijave i kontakta.'
-                    : ((dashboard_funnel_analytics.leads_30d ?? 0) > 0
+                    : (dashboard_funnel_leads_30d > 0
                         ? 'Promet se već pretvara u leadove. Fokus je zadržati najbolji kanal i pojačati ono što već radi.'
                         : 'Prati gdje promet prelazi iz klika prema prijavi i gdje funnel gubi ljude.');
-                const openModeLabel = funnel_open_mode_labels[dashboard_funnel_analytics.best_open_mode?.type] ?? null;
-                const thankYouLabel = funnel_thank_you_labels[dashboard_funnel_analytics.best_thank_you_type?.type] ?? null;
+                const openModeType = dashboard_nested_value(dashboard_funnel_analytics, ['best_open_mode', 'type'], null);
+                const thankYouType = dashboard_nested_value(dashboard_funnel_analytics, ['best_thank_you_type', 'type'], null);
+                const openModeLabel = openModeType && funnel_open_mode_labels[openModeType] ? funnel_open_mode_labels[openModeType] : null;
+                const thankYouLabel = thankYouType && funnel_thank_you_labels[thankYouType] ? funnel_thank_you_labels[thankYouType] : null;
                 const conversionAddOn = [];
                 if(openModeLabel) {
                     conversionAddOn.push(`Najbolje otvaranje: ${openModeLabel.toLowerCase()}`);
@@ -2729,48 +2823,49 @@ $dashboard_forever_products_url = fc_get_forever_products_blog_category_url(\Alt
                 set_text('#dashboard_conversion_summary', conversionAddOn.length ? `${conversionSummary} ${conversionAddOn.join(' · ')}.` : conversionSummary);
 
                 const strengths = [];
-                if((dashboard_forever_analytics.blog_qualified_clicks_30d ?? 0) > 0) {
-                    strengths.push(`Blog prema Foreveru već nosi ${nr(dashboard_forever_analytics.blog_qualified_clicks_30d)} kvalificiranih klikova.`);
+                if(dashboard_blog_qualified_clicks_30d > 0) {
+                    strengths.push(`Blog prema Foreveru već nosi ${dashboard_nr(dashboard_blog_qualified_clicks_30d)} kvalificiranih klikova.`);
                 }
-                if((dashboard_forever_analytics.app_qualified_clicks_30d ?? 0) > 0) {
-                    strengths.push(`Aplikacija i blokovi donose ${nr(dashboard_forever_analytics.app_qualified_clicks_30d)} kvalificiranih klikova.`);
+                if(dashboard_app_qualified_clicks_30d > 0) {
+                    strengths.push(`Aplikacija i blokovi donose ${dashboard_nr(dashboard_app_qualified_clicks_30d)} kvalificiranih klikova.`);
                 }
-                if((dashboard_funnel_analytics.leads_30d ?? 0) > 0) {
-                    strengths.push(`Funnel je u zadnjih 30 dana donio ${nr(dashboard_funnel_analytics.leads_30d)} leadova.`);
+                if(dashboard_funnel_leads_30d > 0) {
+                    strengths.push(`Funnel je u zadnjih 30 dana donio ${dashboard_nr(dashboard_funnel_leads_30d)} leadova.`);
                 }
-                if(topSource?.source) {
+                if(topSource && topSource.source) {
                     strengths.push(`Najviše interesa trenutno dolazi iz izvora ${topSource.source}.`);
                 }
                 set_html('#dashboard_strengths_list', strengths.length ? strengths.map(item => `<div class="dashboard-side-card-list-item is-positive">${item}</div>`).join('') : `<div class="dashboard-side-card-list-item is-positive">Sustav još skuplja dovoljno signala da izdvoji tvoje najjače točke.</div>`);
 
                 const blockers = [];
-                if((dashboard_forever_analytics.qualified_clicks_30d ?? 0) < (dashboard_forever_analytics.growth_active_threshold ?? 15)) {
-                    blockers.push(`Još ti nedostaje ${nr(dashboard_forever_analytics.to_active ?? 0)} kvalificiranih klikova do Active praga.`);
+                if(dashboard_qualified_clicks_30d < dashboard_growth_active_threshold) {
+                    blockers.push(`Još ti nedostaje ${dashboard_nr(dashboard_to_active)} kvalificiranih klikova do Active praga.`);
                 }
-                if((dashboard_forever_analytics.forever_registration_clicks_30d ?? 0) <= 0 && (dashboard_forever_analytics.qualified_clicks_30d ?? 0) > 0) {
+                if(dashboard_registration_clicks_30d <= 0 && dashboard_qualified_clicks_30d > 0) {
                     blockers.push('Imaš klikove prema Foreveru, ali još nema dovoljno prijava.');
                 }
-                if((dashboard_funnel_analytics.unique_clicks_30d ?? 0) > 0 && (dashboard_funnel_analytics.leads_30d ?? 0) <= 0) {
+                if(dashboard_funnel_unique_clicks_30d > 0 && dashboard_funnel_leads_30d <= 0) {
                     blockers.push('Funnel ima promet, ali još ne pretvara dovoljno u leadove.');
                 }
-                if((dashboard_support_summary.repeated_issue_detected ?? false) && !(dashboard_support_summary.webinar_total ?? 0)) {
+                if(dashboard_support_repeated_issue_detected && !dashboard_webinar_total) {
                     blockers.push('Isti problem se ponavlja kroz podršku, vrijedi predložiti temu za webinar.');
                 }
                 set_html('#dashboard_blockers_list', blockers.length ? blockers.map(item => `<div class="dashboard-side-card-list-item is-warning">${item}</div>`).join('') : `<div class="dashboard-side-card-list-item is-warning">Trenutno nema jednog velikog blockera. Fokus je zadržati ritam i pojačati ono što već radi.</div>`);
 
-                const nextRecommendation = (dashboard_forever_analytics.recommendations ?? [])[0] ?? null;
-                set_text('#dashboard_next_action_title', nextRecommendation?.title ?? (dashboard_forever_analytics.next_focus ?? 'Zadrži fokus na najboljem kanalu'));
-                set_text('#dashboard_next_action_description', nextRecommendation?.description ?? 'Sustav trenutno ne vidi hitnu blokadu, pa je najbolji potez ponoviti sadržaj koji već donosi klikove i dodatno pojačati CTA.');
+                const dashboardRecommendations = Array.isArray(dashboard_forever_analytics.recommendations) ? dashboard_forever_analytics.recommendations : [];
+                const nextRecommendation = dashboardRecommendations.length ? dashboardRecommendations[0] : null;
+                set_text('#dashboard_next_action_title', nextRecommendation && nextRecommendation.title ? nextRecommendation.title : dashboard_value(dashboard_forever_analytics.next_focus, 'Zadrži fokus na najboljem kanalu'));
+                set_text('#dashboard_next_action_description', nextRecommendation && nextRecommendation.description ? nextRecommendation.description : 'Sustav trenutno ne vidi hitnu blokadu, pa je najbolji potez ponoviti sadržaj koji već donosi klikove i dodatno pojačati CTA.');
                 const nextActionCta = document.querySelector('#dashboard_next_action_cta');
                 if(nextActionCta) {
-                    nextActionCta.innerText = nextRecommendation?.cta_label ?? 'Otvori moje aplikacije';
-                    nextActionCta.setAttribute('href', nextRecommendation?.cta_url ?? <?= json_encode(url('links?type=biolink')) ?>);
+                    nextActionCta.innerText = nextRecommendation && nextRecommendation.cta_label ? nextRecommendation.cta_label : 'Otvori moje aplikacije';
+                    nextActionCta.setAttribute('href', nextRecommendation && nextRecommendation.cta_url ? nextRecommendation.cta_url : <?= json_encode(url('links?type=biolink')) ?>);
                 }
 
-                const supportSummaryText = (dashboard_support_summary.repeated_issue_detected ?? false) && !(dashboard_support_summary.webinar_total ?? 0)
+                const supportSummaryText = dashboard_support_repeated_issue_detected && !dashboard_webinar_total
                     ? 'Čini se da se ista tema ponavlja. Vrijedi poslati prijedlog da je obradimo na sljedećem webinaru.'
-                    : ((dashboard_support_summary.unread_total ?? 0) > 0
-                        ? `Imaš ${nr(dashboard_support_summary.unread_total)} nepročitana admin odgovora u podršci.`
+                    : (dashboard_support_unread_total > 0
+                        ? `Imaš ${dashboard_nr(dashboard_support_unread_total)} nepročitana admin odgovora u podršci.`
                         : 'Podrška ti je spremna za pitanja, ideje i prijedloge tema koje želiš obraditi kroz timski ili osobni webinar.');
                 set_text('#dashboard_support_summary_text', supportSummaryText);
                 set_metric('#dashboard_support_open_total', dashboard_support_summary.open_total);
@@ -2778,20 +2873,20 @@ $dashboard_forever_products_url = fc_get_forever_products_blog_category_url(\Alt
                 const supportPrimaryCta = document.querySelector('#dashboard_support_primary_cta');
                 const supportSecondaryCta = document.querySelector('#dashboard_support_secondary_cta');
                 if(supportPrimaryCta) {
-                    supportPrimaryCta.setAttribute('href', dashboard_support_summary.selected_ticket_url ?? <?= json_encode(url('feedback-tickets')) ?>);
-                    supportPrimaryCta.innerText = (dashboard_support_summary.unread_total ?? 0) > 0 ? 'Otvori odgovore admina' : 'Otvori podršku';
+                    supportPrimaryCta.setAttribute('href', dashboard_value(dashboard_support_summary.selected_ticket_url, <?= json_encode(url('feedback-tickets')) ?>));
+                    supportPrimaryCta.innerText = dashboard_support_unread_total > 0 ? 'Otvori odgovore admina' : 'Otvori podršku';
                 }
                 if(supportSecondaryCta) {
                     supportSecondaryCta.setAttribute('href', <?= json_encode(url('feedback-tickets')) ?>);
-                    supportSecondaryCta.innerText = (dashboard_support_summary.repeated_issue_detected ?? false) && !(dashboard_support_summary.webinar_total ?? 0)
+                    supportSecondaryCta.innerText = dashboard_support_repeated_issue_detected && !dashboard_webinar_total
                         ? 'Predloži webinar temu'
-                        : `Webinar teme (${nr(dashboard_support_summary.webinar_total ?? 0)})`;
+                        : `Webinar teme (${dashboard_nr(dashboard_webinar_total)})`;
                 }
 
-                const top_countries_html = (dashboard_forever_analytics.top_countries_30d ?? []).map(country => `
+                const top_countries_html = dashboard_value(dashboard_forever_analytics.top_countries_30d, []).map(country => `
                     <div class="dashboard-side-card-list-item d-flex justify-content-between align-items-center">
                         <span>${country.country_code ? `${country.country_code}` : '-'}</span>
-                        <strong>${nr(country.total ?? 0)}</strong>
+                        <strong>${dashboard_nr(dashboard_value(country.total, 0))}</strong>
                     </div>
                 `);
                 render_dashboard_compact_list('#dashboard_top_countries_30d', '#dashboard_top_countries_30d_toggle', top_countries_html, 5);
@@ -2802,14 +2897,14 @@ $dashboard_forever_products_url = fc_get_forever_products_blog_category_url(\Alt
                         badgeClass: 'dashboard-list-source-badge dashboard-list-source-badge--app',
                         title: 'FCC aplikacija',
                         copy: 'Odlazni klikovi prema Forever webshopu iz tvoje FCC aplikacije.',
-                        total: Number(dashboard_forever_analytics.app_qualified_clicks_30d ?? 0),
+                        total: Number(dashboard_value(dashboard_forever_analytics.app_qualified_clicks_30d, 0)),
                     },
                     {
                         badge: 'Blog članak',
                         badgeClass: 'dashboard-list-source-badge dashboard-list-source-badge--blog',
                         title: 'Podijeljeni blog članak',
                         copy: 'Odlazni klikovi prema Forever webshopu iz blog članaka koje dijeliš.',
-                        total: Number(dashboard_forever_analytics.blog_qualified_clicks_30d ?? 0),
+                        total: Number(dashboard_value(dashboard_forever_analytics.blog_qualified_clicks_30d, 0)),
                     }
                 ];
 
@@ -2823,16 +2918,16 @@ $dashboard_forever_products_url = fc_get_forever_products_blog_category_url(\Alt
                                 <div class="font-weight-bold text-white mb-1">${item.title}</div>
                                 <div class="dashboard-list-source-copy">${item.copy}</div>
                             </div>
-                            <strong>${nr(item.total ?? 0)}</strong>
+                            <strong>${dashboard_nr(dashboard_value(item.total, 0))}</strong>
                         </div>
                     </div>
                 `);
                 set_html('#dashboard_top_forever_pages_30d', top_forever_pages_html.join(''));
 
-                const top_shop_sources_html = (dashboard_forever_analytics.top_shop_sources_30d ?? []).map(item => `
+                const top_shop_sources_html = dashboard_value(dashboard_forever_analytics.top_shop_sources_30d, []).map(item => `
                     <div class="dashboard-side-card-list-item d-flex justify-content-between align-items-center">
                         <span class="text-truncate pr-2">${item.source ? item.source : '<?= l('dashboard.forever_analytics.source_direct') ?>'}</span>
-                        <strong>${nr(item.total ?? 0)}</strong>
+                        <strong>${dashboard_nr(dashboard_value(item.total, 0))}</strong>
                     </div>
                 `);
                 render_dashboard_compact_list('#dashboard_top_shop_sources_30d', '#dashboard_top_shop_sources_30d_toggle', top_shop_sources_html, 5);
@@ -2852,7 +2947,7 @@ $dashboard_forever_products_url = fc_get_forever_products_blog_category_url(\Alt
 
                 hideSignalChartLoading();
 
-                const signalChartData = dashboard_forever_analytics.signal_chart_30d ?? {};
+                const signalChartData = dashboard_value(dashboard_forever_analytics.signal_chart_30d, {});
                 const hasSignalChartData = Array.isArray(signalChartData.labels) && signalChartData.labels.length > 0;
                 if(!hasSignalChartData) {
                     hideSignalChartLoading();
@@ -2860,8 +2955,10 @@ $dashboard_forever_products_url = fc_get_forever_products_blog_category_url(\Alt
                 } else {
                     hideSignalChartLoading();
                     signalChartContainer && signalChartContainer.classList.remove('d-none');
-                    const chartContext = document.getElementById('dashboard_signal_chart')?.getContext('2d');
-                    if(chartContext) {
+                    const chartCanvas = document.getElementById('dashboard_signal_chart');
+                    const chartContext = chartCanvas ? chartCanvas.getContext('2d') : null;
+                    const chartDependenciesReady = typeof Chart !== 'undefined' && typeof chart_options !== 'undefined';
+                    if(chartContext && chartDependenciesReady) {
                         if(dashboard_signal_chart_instance) {
                             dashboard_signal_chart_instance.destroy();
                         }
@@ -2876,7 +2973,7 @@ $dashboard_forever_products_url = fc_get_forever_products_blog_category_url(\Alt
                                 datasets: [
                                     {
                                         label: 'Aplikacija → Forever',
-                                        data: signalChartData.app_clicks ?? [],
+                                        data: dashboard_value(signalChartData.app_clicks, []),
                                         borderColor: '#49e3cf',
                                         backgroundColor: 'rgba(73,227,207,.12)',
                                         borderWidth: 3,
@@ -2886,7 +2983,7 @@ $dashboard_forever_products_url = fc_get_forever_products_blog_category_url(\Alt
                                     },
                                     {
                                         label: 'Blog → Forever',
-                                        data: signalChartData.blog_clicks ?? [],
+                                        data: dashboard_value(signalChartData.blog_clicks, []),
                                         borderColor: '#5bb6ff',
                                         backgroundColor: 'rgba(91,182,255,.12)',
                                         borderWidth: 3,
@@ -2896,7 +2993,7 @@ $dashboard_forever_products_url = fc_get_forever_products_blog_category_url(\Alt
                                     },
                                     {
                                         label: 'Prijave',
-                                        data: signalChartData.registration_clicks ?? [],
+                                        data: dashboard_value(signalChartData.registration_clicks, []),
                                         borderColor: '#ffd166',
                                         backgroundColor: 'rgba(255,209,102,.12)',
                                         borderWidth: 2.5,
@@ -2906,7 +3003,7 @@ $dashboard_forever_products_url = fc_get_forever_products_blog_category_url(\Alt
                                     },
                                     {
                                         label: 'Funnel leadovi',
-                                        data: signalChartData.leads ?? [],
+                                        data: dashboard_value(signalChartData.leads, []),
                                         borderColor: '#8b5cf6',
                                         backgroundColor: 'rgba(139,92,246,.12)',
                                         borderWidth: 2.5,
@@ -2919,10 +3016,16 @@ $dashboard_forever_products_url = fc_get_forever_products_blog_category_url(\Alt
                             options: chartOptions
                         });
                         hideSignalChartLoading();
+                    } else {
+                        hideSignalChartLoading();
+                        signalChartNoData && signalChartNoData.classList.remove('d-none');
                     }
                 }
 
-                initDashboardOnboarding();
+                    initDashboardOnboarding();
+                }
+            } catch (error) {
+                render_dashboard_fetch_error();
             }
         })();
 

@@ -17,8 +17,13 @@
 function session_start_if_not_started() {
 	global $session_started;
 
-	if($session_started) {
+	if(session_status() === PHP_SESSION_ACTIVE) {
+		$session_started = true;
 		return;
+	}
+
+	if($session_started) {
+		$session_started = false;
 	}
 
 	/* Debug output */
@@ -33,7 +38,9 @@ function session_start_if_not_started() {
 	}
 
 	if($should_start_session) {
-        session_start();
+        if(session_status() !== PHP_SESSION_ACTIVE) {
+            session_start();
+        }
 		$session_started = true;
 	} else {
 		$session_started = false;

@@ -240,10 +240,11 @@ class Dashboard extends Controller {
     }
 
     public function get_stats_ajax() {
-
-        session_write_close();
-
         \Altum\Authentication::guard();
+
+        if(session_status() === PHP_SESSION_ACTIVE) {
+            session_write_close();
+        }
 
         if($_SERVER['REQUEST_METHOD'] !== 'GET') {
             throw_404();
