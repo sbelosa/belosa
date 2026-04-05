@@ -584,6 +584,16 @@ document.addEventListener('DOMContentLoaded', () => {
     let elevatedAncestors = [];
     let backdropSegments = [];
 
+    const setTourMode = isActive => {
+        document.body.classList.toggle('fcc-tour-mode', !!isActive);
+
+        if(typeof window.CustomEvent === 'function') {
+            window.dispatchEvent(new CustomEvent('fcc:tutorial:state', {
+                detail: {active: !!isActive}
+            }));
+        }
+    };
+
     const ensureBackdropSegments = () => {
         if(backdropSegments.length) return backdropSegments;
 
@@ -682,6 +692,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const endTour = completed => {
         clearHighlight();
         activeStep = -1;
+        setTourMode(false);
         backdrop.classList.remove('is-visible');
         popover.classList.remove('is-visible');
 
@@ -733,6 +744,7 @@ document.addEventListener('DOMContentLoaded', () => {
             localStorage.setItem(storageKey, '1');
         }
 
+        setTourMode(true);
         renderStep(0);
     };
 

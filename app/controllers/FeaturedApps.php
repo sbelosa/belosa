@@ -212,6 +212,7 @@ class FeaturedApps extends Controller {
         $featured_apps = [];
         $seen_featured_user_ids = [];
         $seen_featured_link_ids = [];
+        $users_biolinks_latest_sql = \Altum\Link::get_users_biolinks_latest_subquery('users_biolinks');
 
         $qualified_apps_result = database()->query("
             SELECT
@@ -230,7 +231,7 @@ class FeaturedApps extends Controller {
                 `users`.`preferences`,
                 `users`.`billing`,
                 COUNT(`track_links`.`id`) AS `shop_clicks`
-            FROM `users_biolinks`
+            FROM {$users_biolinks_latest_sql}
             INNER JOIN `links` AS `main_link` ON `main_link`.`link_id` = `users_biolinks`.`biolink_id`
             INNER JOIN `users` ON `users`.`user_id` = `users_biolinks`.`user_id`
             LEFT JOIN `domains` ON `main_link`.`domain_id` = `domains`.`domain_id`

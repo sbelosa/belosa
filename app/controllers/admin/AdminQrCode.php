@@ -155,23 +155,7 @@ class AdminQrCode extends Controller {
     }
 
     private function get_main_biolink_url($user_id) {
-        $biolink_id = db()->where('user_id', $user_id)->getValue('users_biolinks', 'biolink_id');
-
-        if(!$biolink_id) {
-            $fallback_biolink = db()->where('user_id', $user_id)->where('type', 'biolink')->orderBy('link_id', 'ASC')->getOne('links', ['link_id', 'url']);
-
-            if($fallback_biolink && $fallback_biolink->link_id) {
-                $biolink_id = $fallback_biolink->link_id;
-
-                $already_set = db()->where('user_id', $user_id)->getOne('users_biolinks', ['user_id']);
-                if(!$already_set) {
-                    db()->insert('users_biolinks', [
-                        'user_id' => $user_id,
-                        'biolink_id' => $biolink_id
-                    ]);
-                }
-            }
-        }
+        $biolink_id = \Altum\Link::get_user_main_biolink_id((int) $user_id);
 
         if(!$biolink_id) {
             return null;

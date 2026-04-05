@@ -349,6 +349,16 @@ $fcc_first_blog_post_url = $fcc_first_blog_post ? SITE_URL . ($fcc_first_blog_po
     let activeStep = -1;
     let currentTarget = null;
 
+    const setTourMode = isActive => {
+        document.body.classList.toggle('fcc-tour-mode', !!isActive);
+
+        if(typeof window.CustomEvent === 'function') {
+            window.dispatchEvent(new CustomEvent('fcc:tutorial:state', {
+                detail: {active: !!isActive}
+            }));
+        }
+    };
+
     const steps = [
         {
             selector: '#fcc_referral_tour_category_hero',
@@ -480,6 +490,7 @@ $fcc_first_blog_post_url = $fcc_first_blog_post ? SITE_URL . ($fcc_first_blog_po
 
         clearHighlight();
         activeStep = -1;
+        setTourMode(false);
 
         if(backdrop) {
             backdrop.classList.remove('is-visible');
@@ -521,6 +532,7 @@ $fcc_first_blog_post_url = $fcc_first_blog_post ? SITE_URL . ($fcc_first_blog_po
         clearHighlight();
         currentTarget = target;
         currentTarget.classList.add('is-active');
+        setTourMode(true);
         currentTarget.scrollIntoView({behavior: 'smooth', block: 'center', inline: 'nearest'});
 
         document.getElementById('fcc_referral_tour_title').textContent = step.title;

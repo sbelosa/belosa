@@ -20,6 +20,82 @@ defined('ALTUMCODE') || die();
 
 class Link {
 
+    public static function get_users_biolinks_latest_subquery(string $alias = 'users_biolinks'): string {
+        $alias = preg_replace('/[^a-zA-Z0-9_]/', '', $alias) ?: 'users_biolinks';
+
+        return "(SELECT `ub_latest`.`id`, `ub_latest`.`user_id`, `ub_latest`.`biolink_id`
+            FROM `users_biolinks` AS `ub_latest`
+            INNER JOIN (
+                SELECT `user_id`, MAX(`id`) AS `latest_id`
+                FROM `users_biolinks`
+                GROUP BY `user_id`
+            ) AS `ub_map` ON `ub_latest`.`id` = `ub_map`.`latest_id`
+        ) AS `{$alias}`";
+    }
+
+    public static function get_user_main_biolink_id(int $user_id, bool $repair_mapping = true): int {
+        if($user_id <= 0) {
+            return 0;
+        }
+
+        $mapping_rows = db()
+            ->where('user_id', $user_id)
+            ->orderBy('id', 'DESC')
+            ->get('users_biolinks', null, ['id', 'biolink_id']);
+
+        $latest_mapping_id = (int) ($mapping_rows[0]->id ?? 0);
+        $latest_mapped_biolink_id = (int) ($mapping_rows[0]->biolink_id ?? 0);
+        $resolved_biolink_id = 0;
+
+        foreach((array) $mapping_rows as $mapping_row) {
+            $candidate_biolink_id = (int) ($mapping_row->biolink_id ?? 0);
+
+            if($candidate_biolink_id <= 0) {
+                continue;
+            }
+
+            $valid_biolink_id = (int) (db()
+                ->where('link_id', $candidate_biolink_id)
+                ->where('user_id', $user_id)
+                ->where('type', 'biolink')
+                ->getValue('links', 'link_id') ?? 0);
+
+            if($valid_biolink_id > 0) {
+                $resolved_biolink_id = $valid_biolink_id;
+                break;
+            }
+        }
+
+        if(!$resolved_biolink_id) {
+            $fallback_biolink = db()
+                ->where('user_id', $user_id)
+                ->where('type', 'biolink')
+                ->orderBy('is_enabled', 'DESC')
+                ->orderBy('datetime', 'ASC')
+                ->orderBy('link_id', 'ASC')
+                ->getOne('links', ['link_id']);
+
+            $resolved_biolink_id = (int) ($fallback_biolink->link_id ?? 0);
+        }
+
+        if($repair_mapping && $resolved_biolink_id > 0) {
+            if($latest_mapping_id > 0) {
+                if($latest_mapped_biolink_id !== $resolved_biolink_id) {
+                    db()->where('id', $latest_mapping_id)->update('users_biolinks', [
+                        'biolink_id' => $resolved_biolink_id,
+                    ]);
+                }
+            } else {
+                db()->insert('users_biolinks', [
+                    'user_id' => $user_id,
+                    'biolink_id' => $resolved_biolink_id,
+                ]);
+            }
+        }
+
+        return $resolved_biolink_id;
+    }
+
     public static function get_trusted_forever_request_country_code(): ?string {
         foreach(['HTTP_CF_IPCOUNTRY', 'HTTP_CF-IPCOUNTRY', 'GEOIP_COUNTRY_CODE', 'HTTP_GEOIP_COUNTRY_CODE', 'HTTP_X_COUNTRY_CODE', 'HTTP_X_COUNTRY'] as $country_header_key) {
             if(!empty($_SERVER[$country_header_key])) {
@@ -276,42 +352,47 @@ class Link {
         }
 
         /* Apply theme if needed */
-        if($biolink_theme && $biolink_blocks[$link->type]['themable']) {            
+        if($biolink_theme && $biolink_blocks[$link->type]['themable']) {
+            $theme_block_settings = isset($biolink_theme->settings->biolink_block) ? (array) $biolink_theme->settings->biolink_block : [];
+            $theme_social_settings = isset($biolink_theme->settings->biolink_block_socials) ? (array) $biolink_theme->settings->biolink_block_socials : [];
+            $theme_heading_settings = isset($biolink_theme->settings->biolink_block_heading) ? (array) $biolink_theme->settings->biolink_block_heading : [];
+            $theme_paragraph_settings = isset($biolink_theme->settings->biolink_block_paragraph) ? (array) $biolink_theme->settings->biolink_block_paragraph : [];
+
             switch($link->type) {
                 case 'socials':
-                    $link->settings = (object) array_merge((array) $link->settings, (array) $biolink_theme->settings->biolink_block_socials ?? []);
+                    $link->settings = (object) array_merge((array) $link->settings, $theme_social_settings);
                     break;
 
                 case 'heading':
-                    $link->settings = (object) array_merge((array) $link->settings, (array) $biolink_theme->settings->biolink_block_heading ?? []);
+                    $link->settings = (object) array_merge((array) $link->settings, $theme_heading_settings);
                     break;
 
                 case 'paragraph':
-                    $link->settings = (object) array_merge((array) $link->settings, (array) $biolink_theme->settings->biolink_block ?? [], (array) $biolink_theme->settings->biolink_block_paragraph ?? []);
+                    $link->settings = (object) array_merge((array) $link->settings, $theme_block_settings, $theme_paragraph_settings);
                     break;
 
                 case 'counter':
                 case 'loading':
                     $biolink_theme->settings->biolink_block->number_color = $biolink_theme->settings->biolink_block->text_color;
 
-                    $link->settings = (object) array_merge((array) $link->settings, (array) $biolink_theme->settings->biolink_block ?? []);
+                    $link->settings = (object) array_merge((array) $link->settings, $theme_block_settings);
                     break;
 
                 case 'external_item':
                     $biolink_theme->settings->biolink_block->price_color = $biolink_theme->settings->biolink_block->text_color;
                     $biolink_theme->settings->biolink_block->name_color = $biolink_theme->settings->biolink_block->text_color;
 
-                    $link->settings = (object) array_merge((array) $link->settings, (array) $biolink_theme->settings->biolink_block ?? []);
+                    $link->settings = (object) array_merge((array) $link->settings, $theme_block_settings);
                     break;
 
                 case 'business_hours':
                     $biolink_theme->settings->biolink_block->icon_color = $biolink_theme->settings->biolink_block->text_color;
 
-                    $link->settings = (object) array_merge((array) $link->settings, (array) $biolink_theme->settings->biolink_block ?? []);
+                    $link->settings = (object) array_merge((array) $link->settings, $theme_block_settings);
                     break;
 
                 default:
-                    $link->settings = (object) array_merge((array) $link->settings, (array) $biolink_theme->settings->biolink_block ?? []);
+                    $link->settings = (object) array_merge((array) $link->settings, $theme_block_settings);
                     break;
             }
         }
@@ -1299,7 +1380,7 @@ class Link {
             return [];
         }
 
-        $main_biolink_id = db()->where('user_id', $user_id)->getValue('users_biolinks', 'biolink_id');
+        $main_biolink_id = self::get_user_main_biolink_id($user_id);
 
         if(!$main_biolink_id) {
             return [];

@@ -253,28 +253,15 @@ class AdminLeaderOperatingSystem extends Controller {
             return null;
         }
 
-        $result = database()->query("SELECT `links`.`link_id`, `links`.`url`
-            FROM `links`
-            INNER JOIN `users_biolinks` ON `links`.`link_id` = `users_biolinks`.`biolink_id`
-            WHERE `users_biolinks`.`user_id` = {$user_id}
-              AND `links`.`type` = 'biolink'
-            ORDER BY `links`.`datetime` ASC, `links`.`link_id` ASC
-            LIMIT 1");
-        $biolink = $result ? $result->fetch_object() : null;
+        $main_biolink_id = (int) (\Altum\Link::get_user_main_biolink_id($user_id) ?? 0);
+        $biolink = null;
 
-        if(!$biolink) {
+        if($main_biolink_id > 0) {
             $biolink = db()
+                ->where('link_id', $main_biolink_id)
                 ->where('user_id', $user_id)
                 ->where('type', 'biolink')
-                ->orderBy('link_id', 'ASC')
                 ->getOne('links', ['link_id', 'url']);
-
-            if($biolink && !db()->where('user_id', $user_id)->has('users_biolinks')) {
-                db()->insert('users_biolinks', [
-                    'user_id' => $user_id,
-                    'biolink_id' => $biolink->link_id,
-                ]);
-            }
         }
 
         return $biolink ?: null;

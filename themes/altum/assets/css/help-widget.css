@@ -63,7 +63,8 @@ body.app-sidebar-opened .fcc-help-button {
 }
 
 body.fcc-help-open .fcc-help-tooltip,
-body.app-sidebar-opened .fcc-help-tooltip {
+body.app-sidebar-opened .fcc-help-tooltip,
+body.fcc-tour-mode .fcc-help-tooltip {
     opacity: 0;
     pointer-events: none;
 }
@@ -71,6 +72,17 @@ body.app-sidebar-opened .fcc-help-tooltip {
 body.fcc-help-open .fcc-help-button {
     background: rgba(65, 170, 165, 0.16);
     color: #f6fffe;
+}
+
+body.fcc-tour-mode .fcc-assist-dock,
+body.fcc-tour-mode .fcc-help-tooltip,
+body.fcc-tour-mode .fcc-help-panel,
+body.fcc-tour-mode .fcc-help-overlay,
+body.fcc-tour-mode .fcc-zapier-shell,
+body.fcc-tour-mode .fcc-zapier-toggle {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
 }
 
 .fcc-help-button .fcc-assist-label {

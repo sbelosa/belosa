@@ -391,8 +391,9 @@ class Link extends Controller {
         }
 
         $qualified_user_ids_sql = implode(',', array_map('intval', array_keys($qualified_users)));
+        $users_biolinks_latest_sql = \Altum\Link::get_users_biolinks_latest_subquery('ub');
         $apps_result = database()->query("SELECT `ub`.`user_id`, `ub`.`biolink_id` AS `link_id`, `l`.`url`
-            FROM `users_biolinks` AS `ub`
+            FROM {$users_biolinks_latest_sql}
             INNER JOIN `links` AS `l` ON `l`.`link_id` = `ub`.`biolink_id` AND `l`.`type` = 'biolink'
             WHERE `l`.`is_enabled` = 1
               AND `ub`.`user_id` IN ({$qualified_user_ids_sql})");
@@ -553,7 +554,7 @@ class Link extends Controller {
             'static' => 'static_limit',
         };
         /* Custom code: FC-2026-03-19: allow editing the protected default biolink/vcard after downgrade */
-        $default_biolink_id = (int) (db()->where('user_id', $this->user->user_id)->getValue('users_biolinks', 'biolink_id') ?? 0);
+        $default_biolink_id = (int) (\Altum\Link::get_user_main_biolink_id((int) $this->user->user_id) ?? 0);
         $default_vcard_id = (int) (db()->where('user_id', $this->user->user_id)->getValue('users_vcards', 'vcard_id') ?? 0);
         $is_protected_default_link = ($this->link->type == 'biolink' && $default_biolink_id && (int) $this->link->link_id === $default_biolink_id)
             || ($this->link->type == 'vcard' && $default_vcard_id && (int) $this->link->link_id === $default_vcard_id);
@@ -589,10 +590,10 @@ class Link extends Controller {
         }
 
         /* Main FCC app context */
-        $biolink_main = db()->where('user_id', $this->user->user_id)->getOne('users_biolinks', ['biolink_id']);
+        $biolink_main_id = (int) (\Altum\Link::get_user_main_biolink_id((int) $this->user->user_id) ?? 0);
         $vcard_main = db()->where('user_id', $this->user->user_id)->getOne('users_vcards', ['vcard_id']);
-        $is_main_biolink_app = $this->link->type === 'biolink' && $biolink_main && (int) $biolink_main->biolink_id === (int) $this->link->link_id;
-        $main_biolink_statistics_url = $biolink_main ? url('link/' . (int) $biolink_main->biolink_id . '/statistics') : null;
+        $is_main_biolink_app = $this->link->type === 'biolink' && $biolink_main_id && $biolink_main_id === (int) $this->link->link_id;
+        $main_biolink_statistics_url = $biolink_main_id ? url('link/' . $biolink_main_id . '/statistics') : null;
 
         /* Set a custom title */
         Title::set(sprintf(l('link.title'), $this->link->url));

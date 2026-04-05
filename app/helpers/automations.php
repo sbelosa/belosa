@@ -1232,13 +1232,20 @@ function fc_get_user_main_biolink_url(int $user_id): string {
         return '';
     }
 
-    $main_biolink_result = database()->query("SELECT `links`.`link_id`, `links`.`url`, `links`.`domain_id`, `domains`.`scheme`, `domains`.`host`, `domains`.`link_id` AS `domain_link_id` FROM `links` LEFT JOIN `users_biolinks` ON `links`.`link_id` = `users_biolinks`.`biolink_id` LEFT JOIN `domains` ON `links`.`domain_id` = `domains`.`domain_id` WHERE `links`.`user_id` = {$user_id} AND `links`.`type` = 'biolink' AND `links`.`is_enabled` = 1 AND `users_biolinks`.`biolink_id` IS NOT NULL ORDER BY `links`.`datetime` ASC, `links`.`link_id` ASC LIMIT 1");
-    $main_biolink = $main_biolink_result ? $main_biolink_result->fetch_object() : null;
+    $main_biolink_id = \Altum\Link::get_user_main_biolink_id($user_id);
 
-    if(!$main_biolink) {
-        $fallback_biolink_result = database()->query("SELECT `links`.`link_id`, `links`.`url`, `links`.`domain_id`, `domains`.`scheme`, `domains`.`host`, `domains`.`link_id` AS `domain_link_id` FROM `links` LEFT JOIN `domains` ON `links`.`domain_id` = `domains`.`domain_id` WHERE `links`.`user_id` = {$user_id} AND `links`.`type` = 'biolink' AND `links`.`is_enabled` = 1 ORDER BY `links`.`datetime` ASC, `links`.`link_id` ASC LIMIT 1");
-        $main_biolink = $fallback_biolink_result ? $fallback_biolink_result->fetch_object() : null;
+    if(!$main_biolink_id) {
+        return '';
     }
+
+    $main_biolink_result = database()->query("SELECT `links`.`link_id`, `links`.`url`, `links`.`domain_id`, `domains`.`scheme`, `domains`.`host`, `domains`.`link_id` AS `domain_link_id`
+        FROM `links`
+        LEFT JOIN `domains` ON `links`.`domain_id` = `domains`.`domain_id`
+        WHERE `links`.`user_id` = {$user_id}
+          AND `links`.`type` = 'biolink'
+          AND `links`.`link_id` = {$main_biolink_id}
+        LIMIT 1");
+    $main_biolink = $main_biolink_result ? $main_biolink_result->fetch_object() : null;
 
     if(!$main_biolink || empty($main_biolink->url)) {
         return '';

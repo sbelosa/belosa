@@ -311,10 +311,10 @@ class Shortcodes {
 				case 'aff_biolink':				
 					/* Custom code: FC-2026-02-26: shortcode aff_biolink robust lookup */
 					$biolink = null;
-					$biolink_map = db()->where('user_id', $user->user_id)->getOne('users_biolinks', ['biolink_id']);
+					$main_biolink_id = \Altum\Link::get_user_main_biolink_id((int) $user->user_id);
 
-					if($biolink_map && isset($biolink_map->biolink_id)) {
-						$biolink = db()->where('link_id', $biolink_map->biolink_id)->where('type', 'biolink')->getOne('links', ['url']);
+					if($main_biolink_id) {
+						$biolink = db()->where('link_id', $main_biolink_id)->where('type', 'biolink')->getOne('links', ['url']);
 					}
 
 					if(!$biolink) {

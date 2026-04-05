@@ -134,15 +134,11 @@
 
         var showTooltip = !localStorage.getItem(storageKey);
 
-        function closePanel() {
-            overlay.classList.remove('is-open');
-            panel.classList.remove('is-open');
-            document.body.classList.remove('fcc-help-open');
-            button.setAttribute('aria-expanded', 'false');
-            button.innerHTML = '<i class="fas fa-graduation-cap" aria-hidden="true"></i><span class="fcc-assist-label">Video edukacija</span>';
+        function isTutorialActive() {
+            return document.body.classList.contains('fcc-tour-mode');
         }
 
-        function openPanel() {
+        function closeAiShell() {
             var aiShell = document.getElementById('fcc-zapier-shell');
 
             if (aiShell) {
@@ -154,6 +150,22 @@
                 aiToggle.setAttribute('aria-expanded', 'false');
                 aiToggle.textContent = 'Ai Savjetnik';
             }
+        }
+
+        function closePanel() {
+            overlay.classList.remove('is-open');
+            panel.classList.remove('is-open');
+            document.body.classList.remove('fcc-help-open');
+            button.setAttribute('aria-expanded', 'false');
+            button.innerHTML = '<i class="fas fa-graduation-cap" aria-hidden="true"></i><span class="fcc-assist-label">Video edukacija</span>';
+        }
+
+        function openPanel() {
+            if (isTutorialActive()) {
+                return;
+            }
+
+            closeAiShell();
 
             overlay.classList.add('is-open');
             panel.classList.add('is-open');
@@ -166,6 +178,10 @@
         }
 
         button.addEventListener('click', function () {
+            if (isTutorialActive()) {
+                return;
+            }
+
             if (panel.classList.contains('is-open')) {
                 closePanel();
             } else {
@@ -194,6 +210,15 @@
             dock.appendChild(aiToggle);
         }
         document.body.appendChild(dock);
+
+        window.addEventListener('fcc:tutorial:state', function (event) {
+            var isActive = !!(event && event.detail && event.detail.active);
+
+            if (isActive) {
+                closePanel();
+                closeAiShell();
+            }
+        });
 
         if (showTooltip) {
             localStorage.setItem(storageKey, '1');

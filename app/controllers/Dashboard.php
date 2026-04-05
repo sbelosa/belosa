@@ -167,8 +167,6 @@ class Dashboard extends Controller {
                 *
             FROM 
                 `links`
-            LEFT JOIN `users_biolinks` ON `links`.`link_id` = `users_biolinks`.`biolink_id`
-            LEFT JOIN `users_vcards` ON `links`.`link_id` = `users_vcards`.`vcard_id`
             WHERE 
                 `links`.`user_id` = {$this->user->user_id}
             {$filters->get_sql_order_by()}

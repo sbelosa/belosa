@@ -58,7 +58,7 @@
     <?php /* /Custom code: FC-2026-02-27 */ ?>
 
     <!-- Custom code: FC-2026-02-24: help widget assets -->
-    <link href="<?= ASSETS_FULL_URL ?>css/help-widget.css?v=<?= PRODUCT_CODE ?>&fcce=20260227v3" rel="stylesheet" media="screen,print">
+    <link href="<?= ASSETS_FULL_URL ?>css/help-widget.css?v=<?= PRODUCT_CODE ?>&fcce=20260405v1" rel="stylesheet" media="screen,print">
     <!-- /Custom code: FC-2026-02-24 -->
 
     <?= \Altum\Event::get_content('head') ?>
@@ -160,7 +160,7 @@
     <!-- /Custom code: FC-2026-02-24 -->
 
     <!-- Custom code: FC-2026-02-24: help widget assets -->
-    <script defer src="<?= ASSETS_FULL_URL ?>js/help-widget.js?v=<?= PRODUCT_CODE ?>&fcce=20260227v3"></script>
+    <script defer src="<?= ASSETS_FULL_URL ?>js/help-widget.js?v=<?= PRODUCT_CODE ?>&fcce=20260405v1"></script>
     <!-- /Custom code: FC-2026-02-24 -->
 
     <?php /* Custom code: FC-2026-02-27: logged-in Zapier chatbot embed in user zone */ ?>
@@ -244,7 +244,13 @@
 
                 if(!shell || !toggle) return;
 
+                const isTutorialActive = () => document.body.classList.contains('fcc-tour-mode');
+
                 const setOpen = isOpen => {
+                    if(isOpen && isTutorialActive()) {
+                        return;
+                    }
+
                     shell.classList.toggle('is-open', isOpen);
                     shell.setAttribute('aria-hidden', isOpen ? 'false' : 'true');
                     toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
@@ -254,6 +260,12 @@
                 toggle.addEventListener('click', () => setOpen(!shell.classList.contains('is-open')));
                 document.addEventListener('keydown', event => {
                     if(event.key === 'Escape') setOpen(false);
+                });
+
+                window.addEventListener('fcc:tutorial:state', event => {
+                    if(event && event.detail && event.detail.active) {
+                        setOpen(false);
+                    }
                 });
             })();
         </script>

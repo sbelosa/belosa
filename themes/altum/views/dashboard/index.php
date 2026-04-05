@@ -824,6 +824,20 @@ $dashboard_forever_products_url = fc_get_forever_products_blog_category_url(\Alt
             grid-template-columns: 1fr;
         }
 
+        .dashboard-onboarding-card--embedded {
+            max-width: none;
+            margin-top: 1rem;
+        }
+
+        .dashboard-onboarding-card--embedded .dashboard-onboarding-grid {
+            grid-template-columns: 1fr;
+            gap: .8rem;
+        }
+
+        .dashboard-onboarding-copy {
+            max-width: none;
+        }
+
         .dashboard-tour-popover {
             left: 1rem !important;
             right: 1rem !important;
@@ -2061,6 +2075,16 @@ $dashboard_forever_products_url = fc_get_forever_products_blog_category_url(\Alt
         let dashboard_tour_current_target = null;
         let dashboard_tour_sequence = [];
 
+        const dashboard_set_tour_mode = isActive => {
+            document.body.classList.toggle('fcc-tour-mode', !!isActive);
+
+            if(typeof window.CustomEvent === 'function') {
+                window.dispatchEvent(new CustomEvent('fcc:tutorial:state', {
+                    detail: {active: !!isActive}
+                }));
+            }
+        };
+
         const dashboard_tour_steps = [
             {
                 selector: '#dashboard_tour_step_page_guide',
@@ -2288,6 +2312,7 @@ $dashboard_forever_products_url = fc_get_forever_products_blog_category_url(\Alt
             dashboard_tour_active_step = -1;
             dashboard_tour_active_position = -1;
             dashboard_tour_sequence = [];
+            dashboard_set_tour_mode(false);
 
             if(backdrop) {
                 backdrop.classList.remove('is-visible');
@@ -2404,6 +2429,7 @@ $dashboard_forever_products_url = fc_get_forever_products_blog_category_url(\Alt
                 return;
             }
 
+            dashboard_set_tour_mode(true);
             dashboard_render_tour_step(0);
         };
 

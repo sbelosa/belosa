@@ -45,7 +45,18 @@ class AdminUserUpdate extends Controller {
             return null;
         }
 
-        $result = database()->query("SELECT `links`.*, `domains`.`scheme`, `domains`.`host`, `domains`.`link_id` AS `domain_link_id` FROM `links` INNER JOIN `users_biolinks` ON `links`.`link_id` = `users_biolinks`.`biolink_id` LEFT JOIN `domains` ON `links`.`domain_id` = `domains`.`domain_id` WHERE `users_biolinks`.`user_id` = {$user_id} AND `links`.`type` = 'biolink' ORDER BY `links`.`datetime` ASC, `links`.`link_id` ASC LIMIT 1");
+        $main_biolink_id = (int) (\Altum\Link::get_user_main_biolink_id($user_id) ?? 0);
+        if(!$main_biolink_id) {
+            return null;
+        }
+
+        $result = database()->query("SELECT `links`.*, `domains`.`scheme`, `domains`.`host`, `domains`.`link_id` AS `domain_link_id`
+            FROM `links`
+            LEFT JOIN `domains` ON `links`.`domain_id` = `domains`.`domain_id`
+            WHERE `links`.`user_id` = {$user_id}
+              AND `links`.`type` = 'biolink'
+              AND `links`.`link_id` = {$main_biolink_id}
+            LIMIT 1");
         $biolink = $result ? $result->fetch_object() : null;
 
         if($biolink && isset($biolink->settings) && is_string($biolink->settings)) {
@@ -246,22 +257,24 @@ class AdminUserUpdate extends Controller {
             if(!Alerts::has_field_errors() && !Alerts::has_errors()) {
                 /* Custom code */
                 if ($_POST['status'] == 1 && $user->status == 0 && is_null($_POST['user_meta']['limited'])) {
-                    $biolink_check = db()->where('user_id', $user->user_id)->getOne('users_biolinks');         
+                    $main_biolink_id = (int) (\Altum\Link::get_user_main_biolink_id((int) $user->user_id) ?? 0);
 
-                    if (!$biolink_check) {
+                    if (!$main_biolink_id) {
                         $biolink = db()->where('user_id', $user->user_id)->where('type', 'biolink')->getOne('links'); 
                         $vcard = db()->where('user_id', $user->user_id)->where('type', 'vcard')->getOne('links'); 
 
-                        db()->insert('users_biolinks', [
-                            'user_id' => $user->user_id,
-                            'biolink_id' => $biolink->link_id
-                        ]); 
+                        if($biolink && !db()->where('user_id', $user->user_id)->has('users_biolinks')) {
+                            db()->insert('users_biolinks', [
+                                'user_id' => $user->user_id,
+                                'biolink_id' => $biolink->link_id
+                            ]);
+                        }
                         db()->insert('users_vcards', [
                             'user_id' => $user->user_id,
                             'vcard_id' => $vcard->link_id
                         ]);            
                     } else {
-                        $biolink = db()->where('link_id', $biolink_check->biolink_id)->getOne('links');             
+                        $biolink = db()->where('link_id', $main_biolink_id)->getOne('links');
 
                         /* Send webhook notification if needed */
                         if(settings()->webhooks->user_new) {
@@ -382,9 +395,9 @@ class AdminUserUpdate extends Controller {
                 /* Custom code */
                 if (isset($_POST['user_meta']['send_card_email']) && $_POST['user_meta']['send_card_email'] == 'on') {
                      /* Prepare the email */
-                     $link_id = db()->where('user_id', $user_id)->getOne('users_biolinks');
-                     if ($link_id) {
-                        $link = db()->where('link_id', $link_id->biolink_id)->getOne('links');
+                     $main_biolink_id = (int) (\Altum\Link::get_user_main_biolink_id((int) $user_id) ?? 0);
+                     if ($main_biolink_id) {
+                        $link = db()->where('link_id', $main_biolink_id)->getOne('links');
 
                         if ($link) {
                             $language = fc_resolve_language_name($user->language ?? null);

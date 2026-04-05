@@ -39,6 +39,7 @@ class AdminUsers extends Controller {
         /* Get the data */
         $users = [];
         /* Custom code */
+        $users_biolinks_latest_sql = \Altum\Link::get_users_biolinks_latest_subquery('users_biolinks');
         $users_result = database()->query("
             SELECT
                 users.*,
@@ -46,7 +47,7 @@ class AdminUsers extends Controller {
                 links.url   
             FROM
                 `users`
-            LEFT JOIN `users_biolinks` ON `users`.`user_id` = `users_biolinks`.`user_id`
+            LEFT JOIN {$users_biolinks_latest_sql} ON `users`.`user_id` = `users_biolinks`.`user_id`
             LEFT JOIN `links` ON `users_biolinks`.`biolink_id` = `links`.`link_id`
             WHERE
                 1 = 1

@@ -2889,7 +2889,7 @@ class AiPlan extends Controller {
 
     private function get_app_structure_payload(int $user_id): array {
         /* Custom code: FC-2026-03-31: load the protected default biolink and avoid non-portable links columns */
-        $main_biolink_id = (int) (db()->where('user_id', $user_id)->getValue('users_biolinks', 'biolink_id') ?? 0);
+        $main_biolink_id = (int) (\Altum\Link::get_user_main_biolink_id($user_id) ?? 0);
         $apps_result = database()->query("SELECT `link_id`, `url`, `settings`, `is_enabled`, `datetime`, `last_datetime` FROM `links` WHERE `user_id` = {$user_id} AND `type` = 'biolink'");
         /* /Custom code: FC-2026-03-31 */
 
@@ -3338,8 +3338,9 @@ class AiPlan extends Controller {
         }
 
         $qualified_user_ids_sql = implode(',', array_map('intval', array_keys($qualified_users)));
+        $users_biolinks_latest_sql = \Altum\Link::get_users_biolinks_latest_subquery('ub');
         $apps_result = database()->query("SELECT `ub`.`user_id`, `ub`.`biolink_id` AS `link_id`, `l`.`url`
-            FROM `users_biolinks` AS `ub`
+            FROM {$users_biolinks_latest_sql}
             INNER JOIN `links` AS `l` ON `l`.`link_id` = `ub`.`biolink_id` AND `l`.`type` = 'biolink'
             WHERE `l`.`is_enabled` = 1
               AND `ub`.`user_id` IN ({$qualified_user_ids_sql})");

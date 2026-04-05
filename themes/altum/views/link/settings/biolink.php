@@ -3803,6 +3803,16 @@ $fcc_biolink_editor_tours = [
         let elevatedAncestors = [];
         let backdropSegments = [];
 
+        const setTourMode = isActive => {
+            document.body.classList.toggle('fcc-tour-mode', !!isActive);
+
+            if(typeof window.CustomEvent === 'function') {
+                window.dispatchEvent(new CustomEvent('fcc:tutorial:state', {
+                    detail: {active: !!isActive}
+                }));
+            }
+        };
+
         const ensureBackdropSegments = () => {
             if(backdropSegments.length) {
                 return backdropSegments;
@@ -4056,6 +4066,7 @@ $fcc_biolink_editor_tours = [
         const endTour = (completed = false) => {
             clearHighlight();
             activeStep = -1;
+            setTourMode(false);
             backdrop.classList.remove('is-visible');
             popover.classList.remove('is-visible');
             popover.classList.remove('is-ready');
@@ -4138,6 +4149,7 @@ $fcc_biolink_editor_tours = [
                 localStorage.setItem(storageKey, '1');
             }
 
+            setTourMode(true);
             renderStep(0);
         };
 

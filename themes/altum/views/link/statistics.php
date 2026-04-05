@@ -868,6 +868,16 @@ moment.tz.setDefault(<?= json_encode($this->user->timezone) ?>);
         const desktopBreakpoint = 991.98;
         const viewportPadding = 18;
 
+        const setTourMode = isActive => {
+            document.body.classList.toggle('fcc-tour-mode', !!isActive);
+
+            if(typeof window.CustomEvent === 'function') {
+                window.dispatchEvent(new CustomEvent('fcc:tutorial:state', {
+                    detail: {active: !!isActive}
+                }));
+            }
+        };
+
         if(!launchButton || !overlay || !card || !title || !text || !counter || !prevButton || !nextButton || !skipButton || !validSteps.length) {
             return;
         }
@@ -928,6 +938,7 @@ moment.tz.setDefault(<?= json_encode($this->user->timezone) ?>);
             overlay.classList.remove('is-active');
             card.classList.remove('is-active');
             document.body.classList.remove('fcc-app-stats-tour-open');
+            setTourMode(false);
             resetCardPosition();
         };
 
@@ -960,6 +971,7 @@ moment.tz.setDefault(<?= json_encode($this->user->timezone) ?>);
             overlay.classList.add('is-active');
             card.classList.add('is-active');
             document.body.classList.add('fcc-app-stats-tour-open');
+            setTourMode(true);
             activeIndex = 0;
             renderStep();
         };

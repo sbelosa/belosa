@@ -60,8 +60,8 @@ class Link extends Model {
         }
 
         /* Custom code: FC-2026-02-24: lock main NFC biolink deletion */
-        $main_biolink = db()->where('user_id', $link->user_id)->getOne('users_biolinks', ['biolink_id']);
-        if($main_biolink && (int) $main_biolink->biolink_id === (int) $link->link_id) {
+        $main_biolink_id = (int) (\Altum\Link::get_user_main_biolink_id((int) $link->user_id) ?? 0);
+        if($main_biolink_id && $main_biolink_id === (int) $link->link_id) {
             return;
         }
         /* /Custom code: FC-2026-02-24 */

@@ -238,7 +238,7 @@ class User extends Model {
             return;
         }
 
-        $default_biolink_id = (int) (db()->where('user_id', $user->user_id)->getValue('users_biolinks', 'biolink_id') ?? 0);
+        $default_biolink_id = (int) (\Altum\Link::get_user_main_biolink_id((int) $user->user_id) ?? 0);
         $default_vcard_id = (int) (db()->where('user_id', $user->user_id)->getValue('users_vcards', 'vcard_id') ?? 0);
 
         $links_by_type = [];
@@ -744,6 +744,11 @@ class User extends Model {
                     if($cancel_response->code >= 400) {
                         $name = $cancel_response->body->name ?? 'paypal_cancel_error';
                         $message = $cancel_response->body->message ?? 'Unknown PayPal cancellation error.';
+
+                        if($name === 'RESOURCE_NOT_FOUND') {
+                            return;
+                        }
+
                         throw new \Exception($name . ':' . $message);
                     }
                 };

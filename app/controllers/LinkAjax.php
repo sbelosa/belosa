@@ -350,7 +350,7 @@ class LinkAjax extends Controller {
 			$new_is_enabled = (int) !$link->is_enabled;
 
 			/* Custom code: FC-2026-03-19: keep the default biolink/vcard always available on limited plans */
-			$default_biolink_id = (int) (db()->where('user_id', $this->user->user_id)->getValue('users_biolinks', 'biolink_id') ?? 0);
+			$default_biolink_id = (int) (\Altum\Link::get_user_main_biolink_id((int) $this->user->user_id) ?? 0);
 			$default_vcard_id = (int) (db()->where('user_id', $this->user->user_id)->getValue('users_vcards', 'vcard_id') ?? 0);
 			$is_protected_default_link = ($link->type == 'biolink' && $default_biolink_id && (int) $link->link_id === $default_biolink_id)
 				|| ($link->type == 'vcard' && $default_vcard_id && (int) $link->link_id === $default_vcard_id);
@@ -3346,8 +3346,8 @@ class LinkAjax extends Controller {
 		}
 
 		/* Custom code: FC-2026-02-24: lock main NFC biolink deletion */
-		$main_biolink = db()->where('user_id', $this->user->user_id)->getOne('users_biolinks', ['biolink_id']);
-		if($main_biolink && (int) $main_biolink->biolink_id === (int) $link->link_id) {
+		$main_biolink_id = (int) (\Altum\Link::get_user_main_biolink_id((int) $this->user->user_id) ?? 0);
+		if($main_biolink_id && $main_biolink_id === (int) $link->link_id) {
 			Response::json(l('link_delete_modal.error_message.main_biolink_locked'), 'error');
 		}
 		/* /Custom code: FC-2026-02-24 */

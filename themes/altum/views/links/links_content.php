@@ -9,6 +9,38 @@ $fcc_main_featured = $data->main_biolink_featured ?? null;
 $fcc_main_auto_summary = $data->main_biolink_auto_summary ?? '';
 $fcc_main_biolink_row = $data->main_biolink_row ?? null;
 $fcc_additional_links = $fcc_is_biolink_links ? ($data->links ?? []) : [];
+$fcc_table_links = $fcc_is_biolink_links ? $fcc_additional_links : ($data->links ?? []);
+$fcc_has_renderable_links = $fcc_is_biolink_links ? (!empty($fcc_main_biolink_row) || !empty($fcc_additional_links)) : !empty($fcc_table_links);
+
+if($fcc_is_biolink_links && !$fcc_main_biolink_row && !empty($this->user->user_id)) {
+    $fcc_resolved_main_biolink_id = (int) (\Altum\Link::get_user_main_biolink_id((int) $this->user->user_id, false) ?? 0);
+
+    if(!$fcc_resolved_main_biolink_id) {
+        $fcc_resolved_main_biolink_id = (int) (db()
+            ->where('user_id', (int) $this->user->user_id)
+            ->where('type', 'biolink')
+            ->orderBy('is_enabled', 'DESC')
+            ->orderBy('datetime', 'ASC')
+            ->orderBy('link_id', 'ASC')
+            ->getValue('links', 'link_id') ?? 0);
+    }
+
+    if($fcc_resolved_main_biolink_id > 0) {
+        $fcc_main_biolink_row = db()
+            ->where('link_id', $fcc_resolved_main_biolink_id)
+            ->where('user_id', (int) $this->user->user_id)
+            ->where('type', 'biolink')
+            ->getOne('links');
+
+        if($fcc_main_biolink_row) {
+            $fcc_main_biolink_row->settings = is_string($fcc_main_biolink_row->settings ?? null) ? json_decode($fcc_main_biolink_row->settings ?? '{}') : ($fcc_main_biolink_row->settings ?? new \stdClass());
+            $fcc_main_biolink_row->full_url = $fcc_main_biolink_row->domain_id && !empty($data->domains[$fcc_main_biolink_row->domain_id])
+                ? $data->domains[$fcc_main_biolink_row->domain_id]->scheme . $data->domains[$fcc_main_biolink_row->domain_id]->host . '/' . ($data->domains[$fcc_main_biolink_row->domain_id]->link_id == $fcc_main_biolink_row->link_id ? null : $fcc_main_biolink_row->url)
+                : SITE_URL . $fcc_main_biolink_row->url;
+            $fcc_main_biolink_row->app_review_page_url = $data->app_review_page_url . '?app_review_selected_link_id=' . (int) $fcc_main_biolink_row->link_id;
+        }
+    }
+}
 
 if($fcc_is_biolink_links && !$fcc_main_biolink_row && !empty($data->links)) {
     $fcc_fallback_main_candidate = null;
@@ -21,10 +53,6 @@ if($fcc_is_biolink_links && !$fcc_main_biolink_row && !empty($data->links)) {
         if((int) ($fcc_candidate_row->biolink_id ?? 0) === (int) ($fcc_candidate_row->link_id ?? 0)) {
             $fcc_fallback_main_candidate = $fcc_candidate_row;
             break;
-        }
-
-        if(!$fcc_fallback_main_candidate) {
-            $fcc_fallback_main_candidate = $fcc_candidate_row;
         }
     }
 
@@ -1542,14 +1570,16 @@ if($fcc_links_type === 'biolink') {
                             </select>
                         </div>
 
-                        <div class="form-group px-4">
-                            <label for="filters_results_per_page" class="small"><?= l('global.filters.results_per_page') ?></label>
-                            <select name="results_per_page" id="filters_results_per_page" class="custom-select custom-select-sm">
-                                <?php foreach($data->filters->allowed_results_per_page as $key): ?>
-                                    <option value="<?= $key ?>" <?= $data->filters->results_per_page == $key ? 'selected="selected"' : null ?>><?= $key ?></option>
-                                <?php endforeach ?>
-                            </select>
-                        </div>
+                        <?php if(!$fcc_is_biolink_links): ?>
+                            <div class="form-group px-4">
+                                <label for="filters_results_per_page" class="small"><?= l('global.filters.results_per_page') ?></label>
+                                <select name="results_per_page" id="filters_results_per_page" class="custom-select custom-select-sm">
+                                    <?php foreach($data->filters->allowed_results_per_page as $key): ?>
+                                        <option value="<?= $key ?>" <?= $data->filters->results_per_page == $key ? 'selected="selected"' : null ?>><?= $key ?></option>
+                                    <?php endforeach ?>
+                                </select>
+                            </div>
+                        <?php endif ?>
 
                         <div class="form-group px-4 mt-4">
                             <button type="submit" name="submit" class="btn btn-sm btn-primary btn-block"><?= l('global.submit') ?></button>
@@ -1791,7 +1821,7 @@ if($fcc_links_type === 'biolink') {
     </div>
 <?php endif ?>
 
-<?php if (!empty($data->links)): ?>
+<?php if ($fcc_has_renderable_links): ?>
 
     <form id="table" action="<?= SITE_URL . 'links/bulk' ?>" method="post" role="form">
         <input type="hidden" name="token" value="<?= \Altum\Csrf::get() ?>" />
@@ -1809,7 +1839,6 @@ if($fcc_links_type === 'biolink') {
                 <div class="text-muted small"><?= $fcc_links_is_hr ? 'Ukupno: ' : 'Total: ' ?><?= nr(count($fcc_additional_links)) ?></div>
             </div>
         <?php endif ?>
-        <?php $fcc_table_links = (isset($data->filters->filters['type']) && $data->filters->filters['type'] == 'biolink') ? $fcc_additional_links : $data->links; ?>
         <?php if(!empty($fcc_table_links)): ?>
         <div class="table-responsive table-custom-container">
             <table class="table table-custom">
@@ -2000,7 +2029,9 @@ if($fcc_links_type === 'biolink') {
         </div>
     </form>
 
-    <div class="fcc-links-pagination"><?= $data->pagination ?></div>
+    <?php if(!$fcc_is_biolink_links && !empty($data->pagination)): ?>
+        <div class="fcc-links-pagination"><?= $data->pagination ?></div>
+    <?php endif ?>
 
 <?php else: ?>
 
@@ -2068,6 +2099,16 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentTarget = null;
     let elevatedAncestors = [];
     let backdropSegments = [];
+
+    const setTourMode = isActive => {
+        document.body.classList.toggle('fcc-tour-mode', !!isActive);
+
+        if(typeof window.CustomEvent === 'function') {
+            window.dispatchEvent(new CustomEvent('fcc:tutorial:state', {
+                detail: {active: !!isActive}
+            }));
+        }
+    };
 
     const ensureBackdropSegments = () => {
         if(backdropSegments.length) {
@@ -2169,6 +2210,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const endTour = (completed = false) => {
         clearHighlight();
         activeStep = -1;
+        setTourMode(false);
         backdrop.classList.remove('is-visible');
         popover.classList.remove('is-visible');
         if(completed) {
@@ -2219,6 +2261,7 @@ document.addEventListener('DOMContentLoaded', () => {
             localStorage.setItem(fccTourStorageKey, '1');
         }
 
+        setTourMode(true);
         renderStep(0);
     };
 

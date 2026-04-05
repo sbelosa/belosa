@@ -34,10 +34,10 @@ class Blog extends Controller {
             return null;
         }
 
-        $main_biolink_map = db()->where('user_id', $user_id)->getOne('users_biolinks', ['biolink_id']);
+        $main_biolink_id = \Altum\Link::get_user_main_biolink_id($user_id);
 
-        if($main_biolink_map && !empty($main_biolink_map->biolink_id)) {
-            $biolink = db()->where('link_id', $main_biolink_map->biolink_id)->where('type', 'biolink')->getOne('links', ['url']);
+        if($main_biolink_id) {
+            $biolink = db()->where('link_id', $main_biolink_id)->where('type', 'biolink')->getOne('links', ['url']);
 
             if($biolink && !empty($biolink->url)) {
                 return $biolink->url;
@@ -196,9 +196,9 @@ class Blog extends Controller {
 
                 if($resolved_user) {
                     if(!$resolved_biolink_url) {
-                        $resolved_biolink_map = db()->where('user_id', $resolved_user->user_id)->getOne('users_biolinks', ['biolink_id']);
-                        if($resolved_biolink_map) {
-                            $resolved_biolink = db()->where('link_id', $resolved_biolink_map->biolink_id)->where('type', 'biolink')->getOne('links', ['url']);
+                        $resolved_biolink_id = \Altum\Link::get_user_main_biolink_id((int) $resolved_user->user_id);
+                        if($resolved_biolink_id) {
+                            $resolved_biolink = db()->where('link_id', $resolved_biolink_id)->where('type', 'biolink')->getOne('links', ['url']);
                             if($resolved_biolink && !empty($resolved_biolink->url)) {
                                 $resolved_biolink_url = $resolved_biolink->url;
                             }
@@ -244,10 +244,10 @@ class Blog extends Controller {
                 $private_display = true;
                 $biolink = null;
 
-                $main_biolink_map = db()->where('user_id', $user_id)->getOne('users_biolinks', ['biolink_id']);
+                $main_biolink_id = \Altum\Link::get_user_main_biolink_id($user_id);
 
-                if($main_biolink_map && !empty($main_biolink_map->biolink_id)) {
-                    $biolink = db()->where('link_id', $main_biolink_map->biolink_id)->where('type', 'biolink')->getOne('links', ['link_id', 'url']);
+                if($main_biolink_id) {
+                    $biolink = db()->where('link_id', $main_biolink_id)->where('type', 'biolink')->getOne('links', ['link_id', 'url']);
                 }
 
                 /* Safety fallback only if the original main mapping is missing or broken. */

@@ -23,6 +23,36 @@ defined('ALTUMCODE') || die();
 
 class Links extends Controller {
 
+    private function get_biolink_row_by_id(int $user_id, int $link_id, ?int $mapped_biolink_id = null): ?object {
+        if($user_id <= 0 || $link_id <= 0) {
+            return null;
+        }
+
+        $mapped_biolink_id_sql = $mapped_biolink_id && $mapped_biolink_id > 0 ? (int) $mapped_biolink_id : 'NULL';
+        $result = database()->query("
+            SELECT
+                `links`.*,
+                {$mapped_biolink_id_sql} AS `biolink_id`,
+                `domains`.`scheme`,
+                `domains`.`host`,
+                `domains`.`link_id` AS `domain_link_id`
+            FROM `links`
+            LEFT JOIN `domains` ON `links`.`domain_id` = `domains`.`domain_id`
+            WHERE `links`.`link_id` = {$link_id}
+                AND `links`.`user_id` = {$user_id}
+                AND `links`.`type` = 'biolink'
+            LIMIT 1
+        ");
+
+        $biolink = $result ? $result->fetch_object() : null;
+
+        if($biolink && isset($biolink->settings) && is_string($biolink->settings)) {
+            $biolink->settings = json_decode($biolink->settings);
+        }
+
+        return $biolink ?: null;
+    }
+
     private function ensure_featured_app_columns(): void {
         $required_columns = [
             'fcc_featured_opt_in' => "ALTER TABLE `links` ADD COLUMN `fcc_featured_opt_in` TINYINT(1) NOT NULL DEFAULT 1",
@@ -46,26 +76,11 @@ class Links extends Controller {
             return null;
         }
 
-        $mapped_biolink_id = (int) (db()->where('user_id', $user_id)->getValue('users_biolinks', 'biolink_id') ?? 0);
+        $mapped_biolink_id = (int) (\Altum\Link::get_user_main_biolink_id($user_id) ?? 0);
         $biolink = null;
 
         if($mapped_biolink_id > 0) {
-            $result = database()->query("
-                SELECT
-                    `links`.*,
-                    {$mapped_biolink_id} AS `biolink_id`,
-                    `domains`.`scheme`,
-                    `domains`.`host`,
-                    `domains`.`link_id` AS `domain_link_id`
-                FROM `links`
-                LEFT JOIN `domains` ON `links`.`domain_id` = `domains`.`domain_id`
-                WHERE `links`.`link_id` = {$mapped_biolink_id}
-                    AND `links`.`user_id` = {$user_id}
-                    AND `links`.`type` = 'biolink'
-                LIMIT 1
-            ");
-
-            $biolink = $result ? $result->fetch_object() : null;
+            $biolink = $this->get_biolink_row_by_id($user_id, $mapped_biolink_id, $mapped_biolink_id);
         }
 
         if(!$biolink) {
@@ -90,6 +105,34 @@ class Links extends Controller {
 
             $biolink = $fallback_result ? $fallback_result->fetch_object() : null;
         }
+
+        return $biolink ?: null;
+    }
+
+    private function get_stable_first_biolink(int $user_id): ?object {
+        if($user_id <= 0) {
+            return null;
+        }
+
+        $result = database()->query("
+            SELECT
+                `links`.*,
+                NULL AS `biolink_id`,
+                `domains`.`scheme`,
+                `domains`.`host`,
+                `domains`.`link_id` AS `domain_link_id`
+            FROM `links`
+            LEFT JOIN `domains` ON `links`.`domain_id` = `domains`.`domain_id`
+            WHERE `links`.`user_id` = {$user_id}
+                AND `links`.`type` = 'biolink'
+            ORDER BY
+                CASE WHEN `links`.`is_enabled` = 1 THEN 0 ELSE 1 END ASC,
+                `links`.`datetime` ASC,
+                `links`.`link_id` ASC
+            LIMIT 1
+        ");
+
+        $biolink = $result ? $result->fetch_object() : null;
 
         if($biolink && isset($biolink->settings) && is_string($biolink->settings)) {
             $biolink->settings = json_decode($biolink->settings);
@@ -520,8 +563,9 @@ class Links extends Controller {
         }
 
         $qualified_user_ids_sql = implode(',', array_map('intval', array_keys($qualified_users)));
+        $users_biolinks_latest_sql = \Altum\Link::get_users_biolinks_latest_subquery('ub');
         $apps_result = database()->query("SELECT `ub`.`user_id`, `ub`.`biolink_id` AS `link_id`, `l`.`url`
-            FROM `users_biolinks` AS `ub`
+            FROM {$users_biolinks_latest_sql}
             INNER JOIN `links` AS `l` ON `l`.`link_id` = `ub`.`biolink_id` AND `l`.`type` = 'biolink'
             WHERE `l`.`is_enabled` = 1
               AND `ub`.`user_id` IN ({$qualified_user_ids_sql})");
@@ -700,13 +744,25 @@ class Links extends Controller {
         $filters->set_default_results_per_page($this->user->preferences->default_results_per_page ?? settings()->main->default_results_per_page);
 
         $is_biolink_listing = (($filters->filters['type'] ?? null) === 'biolink');
+
+        if($is_biolink_listing && !$main_biolink) {
+            $main_biolink = $this->get_stable_first_biolink($this->user->user_id);
+        }
+
         $exclude_main_biolink_sql = ($is_biolink_listing && $main_biolink)
             ? " AND `link_id` != " . (int) $main_biolink->link_id
             : '';
 
         /* Prepare the paginator */
         $total_rows = database()->query("SELECT COUNT(*) AS `total` FROM `links` WHERE `user_id` = {$this->user->user_id} {$filters->get_sql_where()} {$exclude_main_biolink_sql}")->fetch_object()->total ?? 0;
-        $paginator = (new \Altum\Paginator($total_rows, $filters->get_results_per_page(), $_GET['page'] ?? 1, url('links?' . $filters->get_get() . '&page=%d')));
+        $links_sql_limit = '';
+        $pagination = '';
+
+        if(!$is_biolink_listing) {
+            $paginator = (new \Altum\Paginator($total_rows, $filters->get_results_per_page(), $_GET['page'] ?? 1, url('links?' . $filters->get_get() . '&page=%d')));
+            $links_sql_limit = $paginator->get_sql_limit();
+            $pagination = (new \Altum\View('partials/pagination', (array) $this))->run(['paginator' => $paginator]);
+        }
 
         /* Get domains */
         $domains = (new Domain())->get_available_domains_by_user($this->user);
@@ -719,20 +775,20 @@ class Links extends Controller {
 
         /* Get the links list for the project */
         /* Custom code */
+        $main_biolink_id = (int) ($main_biolink->link_id ?? 0);
         $links_result = database()->query("
             SELECT 
-                *,
-                users_biolinks.biolink_id
+                `links`.*,
+                `users_vcards`.`vcard_id`
             FROM 
                 `links`
-            LEFT JOIN `users_biolinks` ON `links`.`link_id` = `users_biolinks`.`biolink_id`
             LEFT JOIN `users_vcards` ON `links`.`link_id` = `users_vcards`.`vcard_id`
             WHERE 
                 `links`.`user_id` = {$this->user->user_id} 
                 {$filters->get_sql_where()}
                 {$exclude_main_biolink_sql}
                 {$filters->get_sql_order_by()}
-            {$paginator->get_sql_limit()}
+            {$links_sql_limit}
         ");
         /* /Custom code */
 
@@ -740,20 +796,14 @@ class Links extends Controller {
         $links = [];
 
         while($row = $links_result->fetch_object()) {
+            $row->biolink_id = $main_biolink_id && (int) ($row->link_id ?? 0) === $main_biolink_id ? $main_biolink_id : null;
             $row->full_url = $row->domain_id && isset($domains[$row->domain_id]) ? $domains[$row->domain_id]->scheme . $domains[$row->domain_id]->host . '/' . ($domains[$row->domain_id]->link_id == $row->link_id ? null : $row->url) : SITE_URL . $row->url;
             $row->settings = json_decode($row->settings);
             $links[] = $row;
         }
 
         if($is_biolink_listing && !$main_biolink) {
-            foreach($links as $row) {
-                if(($row->type ?? '') !== 'biolink') {
-                    continue;
-                }
-
-                $main_biolink = clone $row;
-                break;
-            }
+            $main_biolink = $this->get_stable_first_biolink($this->user->user_id);
 
             if($main_biolink) {
                 $links = array_values(array_filter($links, function($row) use ($main_biolink) {
@@ -803,6 +853,18 @@ class Links extends Controller {
         }
         unset($row);
 
+        if($is_biolink_listing && !$main_biolink) {
+            $resolved_main_biolink_id = (int) (\Altum\Link::get_user_main_biolink_id($this->user->user_id, false) ?? 0);
+
+            if($resolved_main_biolink_id > 0) {
+                $main_biolink = $this->get_biolink_row_by_id($this->user->user_id, $resolved_main_biolink_id, $resolved_main_biolink_id);
+            }
+
+            if(!$main_biolink) {
+                $main_biolink = $this->get_stable_first_biolink($this->user->user_id);
+            }
+        }
+
         $main_biolink_row = null;
         if($is_biolink_listing && $main_biolink) {
             $main_biolink_row = clone $main_biolink;
@@ -821,9 +883,6 @@ class Links extends Controller {
         }
         process_export_csv($export_links, ['link_id', 'user_id', 'project_id', 'pixels_ids', 'type', 'url', 'location_url', 'start_date', 'end_date', 'clicks', 'is_verified', 'is_enabled', 'last_datetime', 'datetime'], sprintf(l('links.title')));
         process_export_json($export_links, ['link_id', 'user_id', 'project_id', 'pixels_ids', 'type', 'url', 'location_url', 'settings', 'start_date', 'end_date', 'clicks', 'is_verified', 'is_enabled', 'last_datetime', 'datetime'], sprintf(l('links.title')));
-
-        /* Prepare the pagination view */
-        $pagination = (new \Altum\View('partials/pagination', (array) $this))->run(['paginator' => $paginator]);
 
         /* Create Link Modal */
         $view = new \Altum\View('links/create_link_modals', (array) $this);
@@ -918,13 +977,13 @@ class Links extends Controller {
                     }
 
                     /* Custom code: FC-2026-02-24: lock main NFC biolink deletion */
-                    $main_biolink = db()->where('user_id', $this->user->user_id)->getOne('users_biolinks', ['biolink_id']);
+                    $main_biolink_id = (int) (\Altum\Link::get_user_main_biolink_id((int) $this->user->user_id) ?? 0);
                     /* /Custom code: FC-2026-02-24 */
 
                     foreach($_POST['selected'] as $link_id) {
                         if($link = db()->where('link_id', $link_id)->where('user_id', $this->user->user_id)->getOne('links', ['link_id'])) {
                             /* Custom code: FC-2026-02-24: lock main NFC biolink deletion */
-                            if($main_biolink && (int) $main_biolink->biolink_id === (int) $link->link_id) {
+                            if($main_biolink_id && $main_biolink_id === (int) $link->link_id) {
                                 Alerts::add_error(l('link_delete_modal.error_message.main_biolink_locked'));
                                 continue;
                             }

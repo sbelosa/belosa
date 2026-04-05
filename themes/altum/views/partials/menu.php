@@ -19,10 +19,10 @@ if(is_logged_in() && in_array($fcc_share_route, ['index', 'blog', 'page'], true)
     $fcc_referral_slug = null;
 
     if($fcc_user_id) {
-        $fcc_main_biolink_map = db()->where('user_id', $fcc_user_id)->getOne('users_biolinks', ['biolink_id']);
+        $fcc_main_biolink_id = \Altum\Link::get_user_main_biolink_id($fcc_user_id);
 
-        if($fcc_main_biolink_map && !empty($fcc_main_biolink_map->biolink_id)) {
-            $fcc_biolink = db()->where('link_id', $fcc_main_biolink_map->biolink_id)->where('type', 'biolink')->getOne('links', ['url']);
+        if($fcc_main_biolink_id) {
+            $fcc_biolink = db()->where('link_id', $fcc_main_biolink_id)->where('type', 'biolink')->getOne('links', ['url']);
 
             if($fcc_biolink && !empty($fcc_biolink->url)) {
                 $fcc_referral_slug = $fcc_biolink->url;

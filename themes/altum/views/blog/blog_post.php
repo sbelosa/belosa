@@ -742,6 +742,16 @@ if(!empty($data->blog_post->content) && class_exists('DOMDocument')) {
     let activeStep = -1;
     let currentTarget = null;
 
+    const setTourMode = isActive => {
+        document.body.classList.toggle('fcc-tour-mode', !!isActive);
+
+        if(typeof window.CustomEvent === 'function') {
+            window.dispatchEvent(new CustomEvent('fcc:tutorial:state', {
+                detail: {active: !!isActive}
+            }));
+        }
+    };
+
     const steps = [
         {
             selector: '#fcc_tour_blog_share_row',
@@ -878,6 +888,7 @@ if(!empty($data->blog_post->content) && class_exists('DOMDocument')) {
 
         clearHighlight();
         activeStep = -1;
+        setTourMode(false);
 
         if(backdrop) {
             backdrop.classList.remove('is-visible');
@@ -919,6 +930,7 @@ if(!empty($data->blog_post->content) && class_exists('DOMDocument')) {
         clearHighlight();
         currentTarget = target;
         currentTarget.classList.add('is-active');
+        setTourMode(true);
         currentTarget.scrollIntoView({behavior: 'smooth', block: 'center', inline: 'nearest'});
 
         if(typeof step.onShow === 'function') {

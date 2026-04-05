@@ -32,10 +32,10 @@ class Index extends Controller {
             return null;
         }
 
-        $main_biolink_map = db()->where('user_id', $user_id)->getOne('users_biolinks', ['biolink_id']);
+        $main_biolink_id = \Altum\Link::get_user_main_biolink_id($user_id);
 
-        if($main_biolink_map && !empty($main_biolink_map->biolink_id)) {
-            $biolink = db()->where('link_id', $main_biolink_map->biolink_id)->where('type', 'biolink')->getOne('links', ['url']);
+        if($main_biolink_id) {
+            $biolink = db()->where('link_id', $main_biolink_id)->where('type', 'biolink')->getOne('links', ['url']);
 
             if($biolink && !empty($biolink->url)) {
                 return $biolink->url;
