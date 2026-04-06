@@ -146,6 +146,29 @@ class Dashboard extends Controller {
         $needs_fcc_education = $this->user->type == 0 && !\Altum\Authentication::is_fcc_core_completed();
         /* /Custom code: FC-2026-02-24 */
 
+        /* Custom code: FC-2026-04-06: dashboard onboarding should auto-open only once per user */
+        $preferences = is_string($this->user->preferences ?? null) ? json_decode($this->user->preferences ?? '{}') : ($this->user->preferences ?? (object) []);
+        if(is_array($preferences)) {
+            $preferences = (object) $preferences;
+        }
+        if(!is_object($preferences)) {
+            $preferences = (object) [];
+        }
+
+        $preferences_meta = $preferences->meta ?? (object) [];
+        if(is_array($preferences_meta)) {
+            $preferences_meta = (object) $preferences_meta;
+        }
+        if(!is_object($preferences_meta)) {
+            $preferences_meta = (object) [];
+        }
+
+        $dashboard_onboarding_seen = !empty($preferences_meta->fcc_dashboard_onboarding_seen_at)
+            || !empty($preferences_meta->fcc_dashboard_onboarding_seen)
+            || !empty($preferences->fcc_dashboard_onboarding_seen_at)
+            || !empty($preferences->fcc_dashboard_onboarding_seen);
+        /* /Custom code: FC-2026-04-06 */
+
         /* Prepare the filtering system */
         $filters = (new \Altum\Filters(['is_enabled', 'type'], ['url', 'location_url'], ['link_id', 'last_datetime', 'datetime', 'clicks', 'url']));
         $filters->set_default_order_by($this->user->preferences->links_default_order_by, $this->user->preferences->default_order_type ?? settings()->main->default_order_type);
@@ -231,6 +254,10 @@ class Dashboard extends Controller {
             /* Custom code: FC-2026-02-24: FCC core education notice */
             'needs_fcc_education' => $needs_fcc_education,
             /* /Custom code: FC-2026-02-24 */
+            /* Custom code: FC-2026-04-06: dashboard onboarding should auto-open only once per user */
+            'dashboard_onboarding_seen' => $dashboard_onboarding_seen,
+            'should_auto_open_dashboard_onboarding' => !$dashboard_onboarding_seen,
+            /* /Custom code: FC-2026-04-06 */
         ];
 
         $view = new \Altum\View('dashboard/index', (array) $this);
@@ -238,6 +265,60 @@ class Dashboard extends Controller {
         $this->add_view_content('content', $view->run($data));
 
     }
+
+    /* Custom code: FC-2026-04-06: persist dashboard onboarding seen state per user */
+    public function mark_onboarding_seen() {
+        \Altum\Authentication::guard();
+
+        if($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            throw_404();
+        }
+
+        $preferences = is_string($this->user->preferences ?? null) ? json_decode($this->user->preferences ?? '{}') : ($this->user->preferences ?? (object) []);
+        if(is_array($preferences)) {
+            $preferences = (object) $preferences;
+        }
+        if(!is_object($preferences)) {
+            $preferences = (object) [];
+        }
+
+        $preferences_meta = $preferences->meta ?? (object) [];
+        if(is_array($preferences_meta)) {
+            $preferences_meta = (object) $preferences_meta;
+        }
+        if(!is_object($preferences_meta)) {
+            $preferences_meta = (object) [];
+        }
+
+        $already_seen = !empty($preferences_meta->fcc_dashboard_onboarding_seen_at)
+            || !empty($preferences_meta->fcc_dashboard_onboarding_seen)
+            || !empty($preferences->fcc_dashboard_onboarding_seen_at)
+            || !empty($preferences->fcc_dashboard_onboarding_seen);
+
+        if(!$already_seen) {
+            $seen_at = get_date();
+            $preferences_meta->fcc_dashboard_onboarding_seen = true;
+            $preferences_meta->fcc_dashboard_onboarding_seen_at = $seen_at;
+            $preferences->meta = $preferences_meta;
+            $preferences->fcc_dashboard_onboarding_seen = true;
+            $preferences->fcc_dashboard_onboarding_seen_at = $seen_at;
+
+            db()->where('user_id', $this->user->user_id)->update('users', [
+                'preferences' => json_encode($preferences),
+            ]);
+
+            $this->user->preferences = $preferences;
+            \Altum\Authentication::$user->preferences = $preferences;
+
+            cache()->deleteItemsByTag('user_id=' . $this->user->user_id);
+            cache()->deleteItem('user?user_id=' . $this->user->user_id);
+        }
+
+        Response::json('', 'success', [
+            'seen' => true,
+        ]);
+    }
+    /* /Custom code: FC-2026-04-06 */
 
     public function get_stats_ajax() {
         \Altum\Authentication::guard();

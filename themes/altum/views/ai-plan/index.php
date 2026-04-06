@@ -1586,17 +1586,6 @@
                 <?php elseif(!$data->is_weekly_plan_eligible): ?>
                     <div class="ai-plan-lock-box"><div class="font-weight-bold mb-2"><?= l('ai_plan.weekly_locked_signal_title') ?></div><div class="text-muted small mb-0"><?= sprintf(l('ai_plan.weekly_locked_signal'), 15, nr($ai_growth_signal)) ?></div></div>
                 <?php elseif($weekly_requires_closing_report): ?>
-                    <div class="ai-plan-review-highlight mb-3">
-                        <div class="font-weight-bold mb-2">Prvo zatvori prošli tjedan</div>
-                        <div class="text-muted small mb-0">Prije novog tjednog unosa trebaš kratko upisati što se stvarno dogodilo. Tek nakon toga otvara se sljedeći tjedni ciklus.</div>
-                    </div>
-
-                    <?= $render_weekly_outcome_form(
-                        $ai_plan_section_urls['plan'],
-                        $data->latest_pending_outcome ?? null,
-                        'Nakon spremanja izvještaja otvara se novi tjedni unos za sljedeći plan.',
-                        $data->latest_pending_outcome_plan ?? null
-                    ) ?>
                 <?php elseif($data->weekly_is_locked): ?>
                     <div class="ai-plan-lock-box"><div class="font-weight-bold mb-2"><?= l('ai_plan.weekly_locked_cooldown_title') ?></div><div class="text-muted small mb-0"><?= sprintf(l('ai_plan.weekly_locked_cooldown_short'), $data->weekly_countdown_days ?? 0) ?></div></div>
                 <?php else: ?>
@@ -1641,6 +1630,20 @@
                     $render_weekly_plan_result,
                     'weekly'
                 ) ?>
+
+                <?php if($weekly_requires_closing_report): ?>
+                    <div class="ai-plan-review-highlight mb-3">
+                        <div class="font-weight-bold mb-2">Prvo zatvori prošli tjedan</div>
+                        <div class="text-muted small mb-0">Prije novog tjednog unosa trebaš kratko upisati što se stvarno dogodilo. Tek nakon toga otvara se sljedeći tjedni ciklus.</div>
+                    </div>
+
+                    <?= $render_weekly_outcome_form(
+                        $ai_plan_section_urls['plan'],
+                        $data->latest_pending_outcome ?? null,
+                        'Nakon spremanja izvještaja otvara se novi tjedni unos za sljedeći plan.',
+                        $data->latest_pending_outcome_plan ?? null
+                    ) ?>
+                <?php endif ?>
             </div></div>
 
             <?= $render_app_review_teaser_card($app_review_page_url, (bool) $data->is_profile_complete, $app_review_is_accessible, $app_review_locked_reason, $data->latest_app_review ?? null, $data->app_review_quality_payload ?? [], $ai_growth_access, (bool) $data->app_review_is_locked, $data->app_review_next_at ?? null, true) ?>
@@ -1674,20 +1677,6 @@
 
                 <?= $render_weekly_cycle_panel($plan_cycle_steps, $plan_cycle_next_value) ?>
 
-                <?php if($plan_requires_closing_report): ?>
-                    <div class="ai-plan-review-highlight mb-3" id="ai-plan-weekly-outcome-start">
-                        <div class="font-weight-bold mb-2">Prvo zatvori prošli tjedan</div>
-                        <div class="text-muted small mb-0">Prije novog tjednog unosa ovdje kratko upiši što je stvarno prošlo, što te kočilo i što mijenjaš dalje. Nakon spremanja izvještaja otvara ti se novi tjedni unos.</div>
-                    </div>
-
-                    <?= $render_weekly_outcome_form(
-                        $ai_plan_section_urls['plan'],
-                        $data->latest_pending_outcome ?? null,
-                        'Nakon spremanja izvještaja otvara se novi tjedni unos za sljedeći plan.',
-                        $data->latest_pending_outcome_plan ?? null
-                    ) ?>
-                <?php endif ?>
-
                 <?= $render_weekly_plan_history_strip(
                     (array) ($data->weekly_plans ?? []),
                     $data->latest_weekly_plan ?? null,
@@ -1711,6 +1700,20 @@
                         $display_weekly_outcome,
                         (array) ($data->feedback_loop_payload ?? []),
                         !empty($data->feedback_loop_payload['has_feedback']) && (($display_weekly_plan['generated_at'] ?? '') === ($data->latest_weekly_plan['generated_at'] ?? ''))
+                    ) ?>
+                <?php endif ?>
+
+                <?php if($plan_requires_closing_report): ?>
+                    <div class="ai-plan-review-highlight mb-3" id="ai-plan-weekly-outcome-start">
+                        <div class="font-weight-bold mb-2">Prvo zatvori prošli tjedan</div>
+                        <div class="text-muted small mb-0">Prije novog tjednog unosa ovdje kratko upiši što je stvarno prošlo, što te kočilo i što mijenjaš dalje. Nakon spremanja izvještaja otvara ti se novi tjedni unos.</div>
+                    </div>
+
+                    <?= $render_weekly_outcome_form(
+                        $ai_plan_section_urls['plan'],
+                        $data->latest_pending_outcome ?? null,
+                        'Nakon spremanja izvještaja otvara se novi tjedni unos za sljedeći plan.',
+                        $data->latest_pending_outcome_plan ?? null
                     ) ?>
                 <?php endif ?>
             </div></div>

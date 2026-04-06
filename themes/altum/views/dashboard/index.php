@@ -2054,6 +2054,8 @@ $dashboard_forever_products_url = fc_get_forever_products_blog_category_url(\Alt
         const dashboard_tour_storage_key = 'fcc_dashboard_tour_completed_v1';
         const dashboard_blog_referral_tour_storage_key = 'fcc_blog_referral_tour_v1';
         const dashboard_forever_products_url = <?= json_encode($dashboard_forever_products_url) ?>;
+        const dashboard_should_auto_open_onboarding = <?= json_encode((bool) ($data->should_auto_open_dashboard_onboarding ?? false)) ?>;
+        const dashboard_mark_onboarding_seen_url = <?= json_encode(url('dashboard/mark_onboarding_seen')) ?>;
 
         const funnel_open_mode_labels = {
             popup: <?= json_encode(l('biolink_lead_funnel.open_mode_popup')) ?>,
@@ -2074,6 +2076,7 @@ $dashboard_forever_products_url = fc_get_forever_products_blog_category_url(\Alt
         let dashboard_tour_active_position = -1;
         let dashboard_tour_current_target = null;
         let dashboard_tour_sequence = [];
+        let dashboard_onboarding_seen_synced = <?= json_encode((bool) ($data->dashboard_onboarding_seen ?? false)) ?>;
 
         const dashboard_set_tour_mode = isActive => {
             document.body.classList.toggle('fcc-tour-mode', !!isActive);
@@ -2196,6 +2199,55 @@ $dashboard_forever_products_url = fc_get_forever_products_blog_category_url(\Alt
 
             dashboard_close_blog_referral_modal();
             window.location.href = dashboard_forever_products_url;
+        };
+
+        const dashboard_set_onboarding_storage = () => {
+            try {
+                localStorage.setItem(dashboard_onboarding_storage_key, '1');
+            } catch(error) {
+                /* Ignore storage failures. */
+            }
+        };
+
+        const dashboard_has_onboarding_storage = () => {
+            try {
+                return !!localStorage.getItem(dashboard_onboarding_storage_key);
+            } catch(error) {
+                return false;
+            }
+        };
+
+        const dashboard_mark_onboarding_seen = () => {
+            dashboard_set_onboarding_storage();
+
+            if(dashboard_onboarding_seen_synced) {
+                return;
+            }
+
+            dashboard_onboarding_seen_synced = true;
+
+            const payload = 'source=dashboard';
+
+            if(navigator.sendBeacon) {
+                try {
+                    const beaconPayload = new Blob([payload], {type: 'application/x-www-form-urlencoded; charset=UTF-8'});
+                    if(navigator.sendBeacon(dashboard_mark_onboarding_seen_url, beaconPayload)) {
+                        return;
+                    }
+                } catch(error) {
+                    /* Continue with fetch fallback. */
+                }
+            }
+
+            fetch(dashboard_mark_onboarding_seen_url, {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+                    'Accept': 'application/json'
+                },
+                body: payload
+            }).catch(() => {});
         };
 
         const dashboard_clear_tour_highlight = () => {
@@ -2420,7 +2472,7 @@ $dashboard_forever_products_url = fc_get_forever_products_blog_category_url(\Alt
         };
 
         const dashboard_start_tour = () => {
-            localStorage.setItem(dashboard_onboarding_storage_key, '1');
+            dashboard_mark_onboarding_seen();
             dashboard_close_how_it_works_modal();
             dashboard_tour_sequence = dashboard_build_tour_sequence();
 
@@ -2463,7 +2515,7 @@ $dashboard_forever_products_url = fc_get_forever_products_blog_category_url(\Alt
 
             if(skipButton) {
                 skipButton.addEventListener('click', () => {
-                    localStorage.setItem(dashboard_onboarding_storage_key, '1');
+                    dashboard_mark_onboarding_seen();
                     dashboard_end_tour(false);
                 });
             }
@@ -2490,11 +2542,19 @@ $dashboard_forever_products_url = fc_get_forever_products_blog_category_url(\Alt
             window.addEventListener('resize', dashboard_place_tour_popover);
             window.addEventListener('scroll', dashboard_place_tour_popover, {passive: true});
 
-            if(!localStorage.getItem(dashboard_onboarding_storage_key)) {
+            const hasStoredOnboarding = dashboard_has_onboarding_storage();
+
+            if(hasStoredOnboarding && !dashboard_onboarding_seen_synced) {
+                dashboard_mark_onboarding_seen();
+            }
+
+            if(dashboard_should_auto_open_onboarding && !hasStoredOnboarding) {
                 setTimeout(() => {
+                    dashboard_mark_onboarding_seen();
                     dashboard_open_how_it_works_modal();
-                    localStorage.setItem(dashboard_onboarding_storage_key, '1');
                 }, 700);
+            } else if(!hasStoredOnboarding) {
+                dashboard_set_onboarding_storage();
             }
         };
 
