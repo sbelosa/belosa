@@ -648,7 +648,7 @@ class AiPlan extends Controller {
                 'design_notes' => $this->normalize_app_review_channel_list(array_values(array_filter((array) ($review['design_notes'] ?? []), 'is_scalar'))),
                 'keep_doing' => $this->normalize_app_review_channel_list(array_values(array_filter((array) ($review['keep_doing'] ?? []), 'is_scalar'))),
                 'funnel_blueprint' => $this->normalize_app_review_channel_list(array_values(array_filter((array) ($review['funnel_blueprint'] ?? []), 'is_scalar'))),
-                'color_palette' => $this->normalize_app_review_channel_list(array_values(array_filter((array) ($review['color_palette'] ?? []), 'is_scalar'))),
+                'color_palette' => $this->normalize_app_review_color_palette($review['color_palette'] ?? []),
                 'trust_builders' => $this->normalize_app_review_channel_list(array_values(array_filter((array) ($review['trust_builders'] ?? []), 'is_scalar'))),
             ];
         }
@@ -1277,6 +1277,20 @@ class AiPlan extends Controller {
             'background_blur' => (int) ($settings->background_blur ?? 0),
             'background_brightness' => (int) ($settings->background_brightness ?? 100),
         ];
+    }
+
+    private function get_app_review_block_style_profile(\stdClass $settings): array {
+        $profile = [
+            'text_color' => (string) ($settings->text_color ?? ''),
+            'background_color' => (string) ($settings->background_color ?? ''),
+            'border_color' => (string) ($settings->border_color ?? ''),
+            'border_shadow_style' => (string) ($settings->border_shadow_style ?? ''),
+            'border_shadow_color' => (string) ($settings->border_shadow_color ?? ''),
+        ];
+
+        return array_filter($profile, static function($value) {
+            return is_string($value) ? trim($value) !== '' : !empty($value);
+        });
     }
 
     private function get_app_review_segment_key(int $position, int $total_blocks): string {
@@ -1960,6 +1974,69 @@ class AiPlan extends Controller {
         }
 
         return $normalized_items;
+    }
+
+    private function normalize_app_review_color_palette($value): array {
+        $field_map = [
+            'background' => ['background', 'background_color', 'app_background', 'background_hex'],
+            'heading' => ['heading', 'heading_color', 'title', 'title_color', 'headline'],
+            'text' => ['text', 'text_color', 'body_text', 'text_body', 'content_text'],
+            'primary_block_text' => ['primary_block_text', 'main_block_text', 'first_block_text', 'primary_cta_text'],
+            'primary_block_background' => ['primary_block_background', 'main_block_background', 'first_block_background', 'primary_cta_background'],
+            'primary_block_border' => ['primary_block_border', 'main_block_border', 'first_block_border', 'primary_cta_border'],
+            'primary_block_shadow' => ['primary_block_shadow', 'main_block_shadow', 'first_block_shadow', 'primary_cta_shadow'],
+            'secondary_blocks_text' => ['secondary_blocks_text', 'other_blocks_text', 'secondary_block_text', 'remaining_blocks_text'],
+            'secondary_blocks_background' => ['secondary_blocks_background', 'other_blocks_background', 'secondary_block_background', 'remaining_blocks_background'],
+            'secondary_blocks_border' => ['secondary_blocks_border', 'other_blocks_border', 'secondary_block_border', 'remaining_blocks_border'],
+            'secondary_blocks_shadow' => ['secondary_blocks_shadow', 'other_blocks_shadow', 'secondary_block_shadow', 'remaining_blocks_shadow'],
+        ];
+
+        $normalized = array_fill_keys(array_keys($field_map), '');
+        $normalized['legacy_list'] = [];
+
+        if($value instanceof \stdClass) {
+            $value = (array) $value;
+        }
+
+        if(is_string($value)) {
+            $normalized['legacy_list'] = $this->normalize_app_review_channel_list($this->normalize_ai_list($value, 11, 200));
+            return $normalized;
+        }
+
+        if(!is_array($value)) {
+            return $normalized;
+        }
+
+        $has_structured_values = false;
+
+        foreach($field_map as $field_key => $aliases) {
+            foreach($aliases as $alias) {
+                if(!array_key_exists($alias, $value) || !is_scalar($value[$alias])) {
+                    continue;
+                }
+
+                $normalized_value = $this->normalize_app_review_channel_copy($this->sanitize_ai_string($value[$alias], 200));
+
+                if($normalized_value === '') {
+                    continue;
+                }
+
+                $normalized[$field_key] = $normalized_value;
+                $has_structured_values = true;
+                break;
+            }
+        }
+
+        if(isset($value['legacy_list']) || isset($value['items']) || isset($value['list'])) {
+            $legacy_source = $value['legacy_list'] ?? $value['items'] ?? $value['list'] ?? [];
+            $normalized['legacy_list'] = $this->normalize_app_review_channel_list($this->normalize_ai_list($legacy_source, 11, 200));
+        }
+
+        if(!$has_structured_values) {
+            $normalized['legacy_list'] = $this->normalize_app_review_channel_list(array_values(array_filter($value, 'is_scalar')));
+        }
+
+        return $normalized;
     }
     /* /Custom code: FC-2026-03-31 */
 
@@ -2887,6 +2964,79 @@ class AiPlan extends Controller {
         ];
     }
 
+    private function get_app_review_primary_action_block_snapshot(array $selected_app): array {
+        foreach((array) ($selected_app['sales_path_preview'] ?? []) as $preview) {
+            if(!is_array($preview)) {
+                continue;
+            }
+
+            return [
+                'type' => (string) ($preview['type'] ?? ''),
+                'label' => (string) ($preview['label'] ?? ''),
+                'style_profile' => (array) ($preview['style_profile'] ?? []),
+            ];
+        }
+
+        foreach((array) ($selected_app['ordered_block_previews'] ?? []) as $preview) {
+            if(!is_array($preview)) {
+                continue;
+            }
+
+            $style_profile = (array) ($preview['style_profile'] ?? []);
+
+            if(empty($style_profile)) {
+                continue;
+            }
+
+            return [
+                'type' => (string) ($preview['type'] ?? ''),
+                'label' => (string) ($preview['label'] ?? ''),
+                'style_profile' => $style_profile,
+            ];
+        }
+
+        return [];
+    }
+
+    private function get_app_review_secondary_block_style_samples(array $selected_app, int $limit = 3): array {
+        $samples = [];
+        $primary_snapshot = $this->get_app_review_primary_action_block_snapshot($selected_app);
+        $primary_type = (string) ($primary_snapshot['type'] ?? '');
+        $primary_label = (string) ($primary_snapshot['label'] ?? '');
+
+        foreach((array) ($selected_app['ordered_block_previews'] ?? []) as $preview) {
+            if(!is_array($preview)) {
+                continue;
+            }
+
+            $style_profile = (array) ($preview['style_profile'] ?? []);
+
+            if(empty($style_profile)) {
+                continue;
+            }
+
+            $is_primary_block = $primary_type !== ''
+                && (string) ($preview['type'] ?? '') === $primary_type
+                && (string) ($preview['label'] ?? '') === $primary_label;
+
+            if($is_primary_block) {
+                continue;
+            }
+
+            $samples[] = [
+                'type' => (string) ($preview['type'] ?? ''),
+                'label' => (string) ($preview['label'] ?? ''),
+                'style_profile' => $style_profile,
+            ];
+
+            if(count($samples) >= $limit) {
+                break;
+            }
+        }
+
+        return $samples;
+    }
+
     private function get_app_structure_payload(int $user_id): array {
         /* Custom code: FC-2026-03-31: load the protected default biolink and avoid non-portable links columns */
         $main_biolink_id = (int) (fc_get_user_main_biolink_id($user_id) ?? 0);
@@ -3072,6 +3222,8 @@ class AiPlan extends Controller {
                     }
                 }
 
+                $style_profile = $this->get_app_review_block_style_profile($settings);
+
                 if(
                     count($apps[$link_id]['sales_path_preview']) < 5
                     && (
@@ -3084,6 +3236,7 @@ class AiPlan extends Controller {
                     $apps[$link_id]['sales_path_preview'][] = [
                         'type' => $type,
                         'label' => $this->get_app_review_block_preview_label($type, $settings),
+                        'style_profile' => $style_profile,
                     ];
                 }
 
@@ -3091,6 +3244,7 @@ class AiPlan extends Controller {
                     'type' => $type,
                     'label' => $this->get_app_review_block_preview_label($type, $settings),
                     'visual_url' => $this->get_app_review_block_visual_url($type, $settings),
+                    'style_profile' => $style_profile,
                 ];
             }
         }
@@ -3234,6 +3388,8 @@ class AiPlan extends Controller {
                     'visual_type' => (string) ($selected_app['primary_visual_type'] ?? ''),
                     'primary_visual_url' => (string) ($selected_app['primary_visual_url'] ?? ''),
                     'first_screen_blocks' => array_values(array_filter((array) ($selected_app['first_screen_blocks'] ?? []), 'is_array')),
+                    'primary_action_block' => $this->get_app_review_primary_action_block_snapshot($selected_app),
+                    'secondary_block_style_samples' => $this->get_app_review_secondary_block_style_samples($selected_app),
                     'sales_path_preview' => array_values(array_filter((array) ($selected_app['sales_path_preview'] ?? []), 'is_array')),
                     'ordered_block_previews' => array_values(array_filter((array) ($selected_app['ordered_block_previews'] ?? []), 'is_array')),
                     'visual_segments' => (array) ($selected_app['visual_segments'] ?? $this->get_default_app_review_visual_segments()),
@@ -3542,7 +3698,7 @@ class AiPlan extends Controller {
         $next_move = $this->normalize_app_review_channel_copy($this->sanitize_ai_string($review['next_move'] ?? $review['do_next'] ?? $weekly_focus, 180));
         $do_not_touch = $this->normalize_app_review_channel_copy($this->sanitize_ai_string($review['do_not_touch'] ?? $review['dont_break'] ?? ($keep_doing[0] ?? ''), 180));
         $funnel_blueprint = $this->normalize_app_review_channel_list($this->normalize_ai_list($review['funnel_blueprint'] ?? $review['funnel_plan'] ?? $review['lead_flow'] ?? [], 4, 220));
-        $color_palette = $this->normalize_app_review_channel_list($this->normalize_ai_list($review['color_palette'] ?? $review['color_direction'] ?? $review['palette'] ?? [], 6, 200));
+        $color_palette = $this->normalize_app_review_color_palette($review['color_palette'] ?? $review['color_direction'] ?? $review['palette'] ?? []);
         $trust_builders = $this->normalize_app_review_channel_list($this->normalize_ai_list($review['trust_builders'] ?? $review['trust_elements'] ?? $review['trust_plan'] ?? [], 5, 200));
 
         if($headline === '' || $summary === '' || $top_recommendation === '' || empty($priority_actions) || empty($ideal_block_order)) {
@@ -3618,7 +3774,8 @@ class AiPlan extends Controller {
             '- priority_actions mora imati 3 do 4 vrlo konkretne preporuke koje odmah govore sto promijeniti i zasto ce to pomoci.',
             '- ideal_block_order mora imati 5 do 8 kratkih stavki i mora slijediti najbolji red za cilj korisnika.',
             '- design_notes mora imati 2 do 5 konkretnih savjeta za boje, tekst blokove, video, kontrast i vizualni dojam.',
-            '- color_palette mora imati 4 do 6 kratkih stavki s konkretnim hex kodovima za pozadinu, naslov, glavni gumb, tekst na gumbu, sekundarni gumb i sjenu ako ima smisla.',
+            '- color_palette mora biti objekt s kljucevima: background, heading, text, primary_block_text, primary_block_background, primary_block_border, primary_block_shadow, secondary_blocks_text, secondary_blocks_background, secondary_blocks_border, secondary_blocks_shadow.',
+            '- Svaka vrijednost unutar color_palette mora biti jedna kratka recenica s konkretnim hex kodom i kratkim razlogom zasto ta boja odgovara cilju i dojmu aplikacije.',
             '- trust_builders mora imati 3 do 5 kratkih savjeta kako aplikacija moze djelovati sigurnije, ozbiljnije i uvjerljivije.',
             '- funnel_blueprint mora imati 3 do 4 kratke stavke i jasno reci kako sloziti Funnel ako Funnel ima smisla za cilj korisnika.',
             '- keep_doing neka bude kratko i ohrabrujuce: sto vec radi dobro i ne treba kvariti.',
@@ -3643,8 +3800,11 @@ class AiPlan extends Controller {
             '- Ako su prodajni linkovi previsoko, a cilj je kontakt ili suradnja, reci da trebaju ici nakon povjerenja, videa ili Funnel-a.',
             '- U obzir uzmi goal_context: publiku, glavni cilj, prioritetnu ponudu, stil komunikacije i biljeske iz upitnika. Preporuke moraju biti uskladjene s tim identitetom.',
             '- Ako predlazes tekst blokove, reci jednostavno sto trebaju poruciti: kome je aplikacija namijenjena, sto osoba dobiva i koji je sljedeci korak.',
-            '- Za boje koristi konkretne hex kodove i kratko objasni zasto te boje pomazu bas ovom cilju i ovom tonu brenda.',
-            '- U color_palette i design_notes analiziraj pozadinu, boju naslova, boju teksta, boju gumba, boju teksta na gumbu i sjenu gumba.',
+            '- Glavni blok u color_palette tretiraj kao prvi i najvazniji prodajni ili kontaktni blok koji vodi osobu na sljedeci korak.',
+            '- Ostale blokove u color_palette tretiraj kao ostatak blokova koji dolaze poslije glavnog koraka i moraju ostati citljivi, mirni i uskladjeni.',
+            '- Za boje koristi konkretne hex kodove i kratko objasni zasto te boje pomazu bas ovom cilju, ovom prioritetu i ovom tonu brenda.',
+            '- U color_palette i design_notes analiziraj pozadinu aplikacije, naslov, tekst, glavni blok i ostale blokove.',
+            '- U obzir uzmi goal_context, fcc_goal_system, visual_profile, primary_action_block i secondary_block_style_samples. Ako postojece boje vec rade dobro, zadrzi smjer i predlozi poboljsanja bez nepotrebnog resetiranja svega.',
             '- U trust_builders reci kako vise povjerenja grade fotografija, video, jedan glavni korak, edukacija, Funnel i jasan redoslijed blokova.',
             (!empty($evolution_payload['has_previous_review'])
                 ? '- Ovo nije nova analiza od nule. Ovo je nadogradnja prethodne analize iste aplikacije. Ukratko reci sto je bolje nego prosli put, sto i dalje koci rezultat i koji je sada novi najbolji sljedeci korak.'

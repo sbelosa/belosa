@@ -255,6 +255,12 @@
     .ai-plan-shell .ai-plan-review-detail-card { padding:1rem 1.05rem; border:1px solid rgba(148,163,184,.12); border-radius:1.05rem; background:linear-gradient(145deg, rgba(255,255,255,.025), rgba(255,255,255,.012)); }
     .ai-plan-shell .ai-plan-review-detail-card.full { grid-column:1 / -1; }
     .ai-plan-shell .ai-plan-review-detail-card h3 { font-size:.95rem; line-height:1.25; margin:0 0 .8rem; color:#f8fafc; }
+    .ai-plan-shell .ai-plan-review-color-grid { display:grid; gap:.7rem; }
+    .ai-plan-shell .ai-plan-review-color-item { display:grid; gap:.35rem; padding:.8rem .85rem; border:1px solid rgba(148,163,184,.1); border-radius:.95rem; background:rgba(15,23,42,.22); }
+    .ai-plan-shell .ai-plan-review-color-head { display:flex; align-items:center; justify-content:space-between; gap:.75rem; }
+    .ai-plan-shell .ai-plan-review-color-label { font-size:.72rem; font-weight:800; letter-spacing:.06em; text-transform:uppercase; color:rgba(148,163,184,.86); }
+    .ai-plan-shell .ai-plan-review-color-copy { color:rgba(226,232,240,.92); font-size:.92rem; line-height:1.58; }
+    .ai-plan-shell .ai-plan-review-color-swatch { width:1rem; height:1rem; flex:0 0 1rem; border-radius:999px; border:1px solid rgba(255,255,255,.2); box-shadow:0 0 0 4px rgba(255,255,255,.04); }
     .ai-plan-shell .ai-plan-review-comparison-list { display:grid; gap:.7rem; }
     .ai-plan-shell .ai-plan-review-comparison-row { display:grid; grid-template-columns:minmax(0, 1fr) auto; gap:.8rem; padding:.55rem 0; border-bottom:1px solid rgba(148,163,184,.08); }
     .ai-plan-shell .ai-plan-review-comparison-row:last-child { border-bottom:0; padding-bottom:0; }
@@ -414,7 +420,92 @@
 
     return '<a href="#" class="' . htmlspecialchars($class, ENT_QUOTES, 'UTF-8') . ' disabled pointer-events-all ai-plan-disabled-link" data-tooltip title="' . $safe_reason . '" onclick="event.preventDefault();">' . $safe_label . '</a>';
 }; ?>
-<?php $render_app_review_result_cards = static function(array $review, array $quality_payload): string {
+<?php $app_review_color_palette_fields = static function(): array {
+    return [
+        'background' => 'ai_plan.app_review_color_palette.background',
+        'heading' => 'ai_plan.app_review_color_palette.heading',
+        'text' => 'ai_plan.app_review_color_palette.text',
+        'primary_block_text' => 'ai_plan.app_review_color_palette.primary_block_text',
+        'primary_block_background' => 'ai_plan.app_review_color_palette.primary_block_background',
+        'primary_block_border' => 'ai_plan.app_review_color_palette.primary_block_border',
+        'primary_block_shadow' => 'ai_plan.app_review_color_palette.primary_block_shadow',
+        'secondary_blocks_text' => 'ai_plan.app_review_color_palette.secondary_blocks_text',
+        'secondary_blocks_background' => 'ai_plan.app_review_color_palette.secondary_blocks_background',
+        'secondary_blocks_border' => 'ai_plan.app_review_color_palette.secondary_blocks_border',
+        'secondary_blocks_shadow' => 'ai_plan.app_review_color_palette.secondary_blocks_shadow',
+    ];
+}; ?>
+<?php $extract_app_review_color_hex = static function(string $value): string {
+    if(preg_match('/#(?:[A-Fa-f0-9]{3}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})\b/', $value, $matches)) {
+        return $matches[0];
+    }
+
+    return '';
+}; ?>
+<?php $app_review_color_palette_has_content = static function(array $palette) use ($app_review_color_palette_fields): bool {
+    foreach(array_keys($app_review_color_palette_fields()) as $field_key) {
+        if(trim((string) ($palette[$field_key] ?? '')) !== '') {
+            return true;
+        }
+    }
+
+    foreach((array) ($palette['legacy_list'] ?? []) as $item) {
+        if(trim((string) $item) !== '') {
+            return true;
+        }
+    }
+
+    return false;
+}; ?>
+<?php $render_app_review_color_palette = static function(array $palette) use ($app_review_color_palette_fields, $extract_app_review_color_hex): string {
+    $fields = $app_review_color_palette_fields();
+    $has_structured_values = false;
+
+    foreach(array_keys($fields) as $field_key) {
+        if(trim((string) ($palette[$field_key] ?? '')) !== '') {
+            $has_structured_values = true;
+            break;
+        }
+    }
+
+    ob_start();
+
+    if($has_structured_values):
+    ?>
+        <div class="ai-plan-review-color-grid">
+            <?php foreach($fields as $field_key => $label_key): ?>
+                <?php $copy = trim((string) ($palette[$field_key] ?? '')); ?>
+                <?php if($copy === '') continue; ?>
+                <?php $hex = $extract_app_review_color_hex($copy); ?>
+                <div class="ai-plan-review-color-item">
+                    <div class="ai-plan-review-color-head">
+                        <span class="ai-plan-review-color-label"><?= l($label_key) ?></span>
+                        <?php if($hex !== ''): ?>
+                            <span class="ai-plan-review-color-swatch" style="background: <?= htmlspecialchars($hex, ENT_QUOTES, 'UTF-8') ?>;" title="<?= htmlspecialchars($hex, ENT_QUOTES, 'UTF-8') ?>"></span>
+                        <?php endif ?>
+                    </div>
+                    <div class="ai-plan-review-color-copy"><?= htmlspecialchars($copy, ENT_QUOTES, 'UTF-8') ?></div>
+                </div>
+            <?php endforeach ?>
+        </div>
+    <?php
+    else:
+    ?>
+        <ul class="ai-plan-review-list mb-0">
+            <?php foreach((array) ($palette['legacy_list'] ?? []) as $item): ?>
+                <?php $item = trim((string) $item); ?>
+                <?php if($item === '') continue; ?>
+                <li><?= htmlspecialchars($item, ENT_QUOTES, 'UTF-8') ?></li>
+            <?php endforeach ?>
+        </ul>
+    <?php
+    endif;
+
+    return (string) ob_get_clean();
+}; ?>
+<?php $render_app_review_result_cards = static function(array $review, array $quality_payload) use ($app_review_color_palette_has_content, $render_app_review_color_palette): string {
+    $color_palette = is_array($review['color_palette'] ?? null) ? $review['color_palette'] : [];
+    $has_color_palette = $app_review_color_palette_has_content($color_palette);
     ob_start();
     ?>
     <div class="ai-plan-review-results">
@@ -529,7 +620,7 @@
                         </div>
                     </details>
 
-                    <?php if(!empty($review['funnel_blueprint']) || !empty($review['color_palette']) || !empty($review['trust_builders'])): ?>
+                    <?php if(!empty($review['funnel_blueprint']) || $has_color_palette || !empty($review['trust_builders'])): ?>
                         <details class="ai-plan-review-disclosure" data-accordion-item="app-review-details">
                             <summary><?= l('ai_plan.app_review_funnel_blueprint') ?> &amp; <?= l('ai_plan.app_review_color_palette') ?></summary>
                             <div class="ai-plan-review-disclosure-body">
@@ -545,14 +636,10 @@
                                         </div>
                                     <?php endif ?>
 
-                                    <?php if(!empty($review['color_palette'])): ?>
-                                        <div class="ai-plan-review-detail-card">
+                                    <?php if($has_color_palette): ?>
+                                        <div class="ai-plan-review-detail-card full">
                                             <h3><?= l('ai_plan.app_review_color_palette') ?></h3>
-                                            <ul class="ai-plan-review-list mb-0">
-                                                <?php foreach(($review['color_palette'] ?? []) as $item): ?>
-                                                    <li><?= htmlspecialchars((string) $item, ENT_QUOTES, 'UTF-8') ?></li>
-                                                <?php endforeach ?>
-                                            </ul>
+                                            <?= $render_app_review_color_palette($color_palette) ?>
                                         </div>
                                     <?php endif ?>
 
