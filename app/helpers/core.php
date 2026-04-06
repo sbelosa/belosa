@@ -79,11 +79,11 @@ function fc_get_user_main_biolink_id(int $user_id, bool $repair_mapping = true):
 
     $mapping_rows = db()
         ->where('user_id', $user_id)
-        ->orderBy('id', 'DESC')
+        ->orderBy('id', 'ASC')
         ->get('users_biolinks', null, ['id', 'biolink_id']);
 
-    $latest_mapping_id = (int) ($mapping_rows[0]->id ?? 0);
-    $latest_mapped_biolink_id = (int) ($mapping_rows[0]->biolink_id ?? 0);
+    $primary_mapping_id = (int) ($mapping_rows[0]->id ?? 0);
+    $primary_mapped_biolink_id = (int) ($mapping_rows[0]->biolink_id ?? 0);
     $resolved_biolink_id = 0;
 
     foreach((array) $mapping_rows as $mapping_row) {
@@ -118,9 +118,9 @@ function fc_get_user_main_biolink_id(int $user_id, bool $repair_mapping = true):
     }
 
     if($repair_mapping && $resolved_biolink_id > 0) {
-        if($latest_mapping_id > 0) {
-            if($latest_mapped_biolink_id !== $resolved_biolink_id) {
-                db()->where('id', $latest_mapping_id)->update('users_biolinks', [
+        if($primary_mapping_id > 0) {
+            if($primary_mapped_biolink_id !== $resolved_biolink_id) {
+                db()->where('id', $primary_mapping_id)->update('users_biolinks', [
                     'biolink_id' => $resolved_biolink_id,
                 ]);
             }
