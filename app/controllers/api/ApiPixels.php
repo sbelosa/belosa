@@ -24,6 +24,8 @@ defined('ALTUMCODE') || die();
 class ApiPixels extends Controller {
     use Apiable;
 
+    private const PIXEL_MAX_LENGTH = 64;
+
     public function index() {
 
         $this->verify_request();
@@ -171,6 +173,10 @@ class ApiPixels extends Controller {
        $_POST['name'] = input_clean($_POST['name'], 64);
         $_POST['pixel'] = trim($_POST['pixel']);
 
+        if(mb_strlen($_POST['pixel']) > self::PIXEL_MAX_LENGTH) {
+            $this->response_error(sprintf(l('pixels.error_message.pixel_maximum_characters'), self::PIXEL_MAX_LENGTH), 401);
+        }
+
         /* Database query */
         $pixel_id = db()->insert('pixels', [
             'user_id' => $this->api_user->user_id,
@@ -220,6 +226,10 @@ class ApiPixels extends Controller {
         $_POST['type'] = array_key_exists($_POST['type'] ?? $pixel->type, require APP_PATH . 'includes/pixels.php') ? $_POST['type'] : '';
        $_POST['name'] = input_clean($_POST['name'] ?? $pixel->name, 64);
         $_POST['pixel'] = trim($_POST['pixel'] ?? $pixel->pixel);
+
+        if(mb_strlen($_POST['pixel']) > self::PIXEL_MAX_LENGTH) {
+            $this->response_error(sprintf(l('pixels.error_message.pixel_maximum_characters'), self::PIXEL_MAX_LENGTH), 401);
+        }
 
         /* Database query */
         db()->where('pixel_id', $pixel->pixel_id)->update('pixels', [

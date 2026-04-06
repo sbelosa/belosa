@@ -43,7 +43,8 @@
 
                 <div class="form-group">
                     <label for="pixel"><i class="fas fa-fw fa-code fa-sm text-muted mr-1"></i> <?= l('pixels.pixel') ?></label>
-                    <input type="text" id="pixel" name="pixel" class="form-control" value="<?= $data->values['pixel'] ?>" required="required" />
+                    <input type="text" id="pixel" name="pixel" class="form-control <?= \Altum\Alerts::has_field_errors('pixel') ? 'is-invalid' : null ?>" value="<?= $data->values['pixel'] ?>" maxlength="64" required="required" />
+                    <?= \Altum\Alerts::output_field_error('pixel') ?>
                     <small class="text-muted form-text"><?= l('pixels.pixel_help') ?></small>
                 </div>
 

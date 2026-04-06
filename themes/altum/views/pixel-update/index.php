@@ -28,7 +28,7 @@
 
                 <div class="form-group">
                     <label for="name"><i class="fas fa-fw fa-signature fa-sm text-muted mr-1"></i> <?= l('global.name') ?></label>
-                    <input type="text" id="name" name="name" class="form-control" value="<?= $data->pixel->name ?>" required="required" />
+                    <input type="text" id="name" name="name" class="form-control" value="<?= $_POST['name'] ?? $data->pixel->name ?>" required="required" />
                 </div>
 
                 <div class="form-group">
@@ -36,8 +36,8 @@
                     <div class="row btn-group-toggle m-n2" data-toggle="buttons">
                         <?php foreach(require APP_PATH . 'includes/pixels.php' as $pixel_key => $pixel): ?>
                             <div class="p-2 col-12 col-lg-4">
-                                <label class="btn btn-light btn-block font-size-small mb-0 text-truncate <?= $data->pixel->type == $pixel_key ? 'active"' : null?>">
-                                    <input type="radio" name="type" value="<?= $pixel_key ?>" class="custom-control-input" <?= $data->pixel->type == $pixel_key ? 'checked="checked"' : null?> required="required" />
+                                <label class="btn btn-light btn-block font-size-small mb-0 text-truncate <?= ($_POST['type'] ?? $data->pixel->type) == $pixel_key ? 'active"' : null?>">
+                                    <input type="radio" name="type" value="<?= $pixel_key ?>" class="custom-control-input" <?= ($_POST['type'] ?? $data->pixel->type) == $pixel_key ? 'checked="checked"' : null?> required="required" />
                                     <i class="<?= $pixel['icon'] ?> fa-fw fa-sm mr-1" style="color: <?= $pixel['color'] ?>"></i> <?= $pixel['name'] ?>
                                 </label>
                             </div>
@@ -47,7 +47,8 @@
 
                 <div class="form-group">
                     <label for="pixel"><i class="fas fa-fw fa-code fa-sm text-muted mr-1"></i> <?= l('pixels.pixel') ?></label>
-                    <input type="text" id="pixel" name="pixel" class="form-control" value="<?= $data->pixel->pixel ?>" required="required" />
+                    <input type="text" id="pixel" name="pixel" class="form-control <?= \Altum\Alerts::has_field_errors('pixel') ? 'is-invalid' : null ?>" value="<?= $_POST['pixel'] ?? $data->pixel->pixel ?>" maxlength="64" required="required" />
+                    <?= \Altum\Alerts::output_field_error('pixel') ?>
                     <small class="text-muted form-text"><?= l('pixels.pixel_help') ?></small>
                 </div>
 
@@ -57,4 +58,3 @@
         </div>
     </div>
 </div>
-

@@ -22,6 +22,8 @@ defined('ALTUMCODE') || die();
 
 class PixelUpdate extends Controller {
 
+    private const PIXEL_MAX_LENGTH = 64;
+
     public function index() {
 
         if(!settings()->links->pixels_is_enabled) {
@@ -61,6 +63,10 @@ class PixelUpdate extends Controller {
                 if(!isset($_POST[$field]) || trim($_POST[$field]) === '') {
                     Alerts::add_field_error($field, l('global.error_message.empty_field'));
                 }
+            }
+
+            if(mb_strlen($_POST['pixel']) > self::PIXEL_MAX_LENGTH) {
+                Alerts::add_field_error('pixel', sprintf(l('pixels.error_message.pixel_maximum_characters'), self::PIXEL_MAX_LENGTH));
             }
 
             if(!\Altum\Csrf::check()) {

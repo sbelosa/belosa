@@ -2204,6 +2204,7 @@ return [
 	'pixels.create' => 'Create pixel',
 	'pixels.pixel' => 'Pixel ID',
 	'pixels.pixel_help' => 'Enter the pixel id from this specific pixel type you chose.',
+	'pixels.error_message.pixel_maximum_characters' => 'The pixel ID is too long. Please use at most %s characters.',
 	'pixels.no_data' => 'There are no pixels for now',
 	'pixels.no_data_help' => 'Start by creating your first pixel.',
 	'pixel_create.breadcrumb' => 'Create a new pixel',

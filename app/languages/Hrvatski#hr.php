@@ -2156,6 +2156,7 @@ return [
 	'pixels.create' => 'Kreiraj piksel',
 	'pixels.pixel' => 'ID piksela',
 	'pixels.pixel_help' => 'Unesite ID piksela za odabrani tip.',
+	'pixels.error_message.pixel_maximum_characters' => 'ID piksela je predugačak. Unesite najviše %s znakova.',
 	'pixels.no_data' => 'Trenutno nema piksela',
 	'pixels.no_data_help' => 'Započnite kreiranjem prvog piksela.',
 	'pixel_create.breadcrumb' => 'Kreiraj novi piksel',
