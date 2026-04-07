@@ -1,5 +1,10 @@
 <?php defined('ALTUMCODE') || die() ?>
 
+<?php
+$default_title_color = (string) ($data->link->settings->text_color ?? '#F8FAFC');
+$default_title_font_size = min(max(((int) ($data->link->settings->font_size ?? 16)) + 4, 12), 40);
+?>
+
 <div class="modal fade" id="create_biolink_youtube" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" role="document">
         <div class="modal-content">
@@ -24,6 +29,16 @@
                     <div class="form-group">
                         <label for="youtube_title"><i class="fas fa-fw fa-heading fa-sm text-muted mr-1"></i> <?= l('global.title') ?></label>
                         <input id="youtube_title" type="text" class="form-control" name="title" maxlength="256" placeholder="<?= l('global.title') ?>" />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="youtube_text_color"><i class="fas fa-fw fa-paint-brush fa-sm text-muted mr-1"></i> <?= l('biolink_link.text_color') ?></label>
+                        <input id="youtube_text_color" type="color" class="form-control" name="text_color" value="<?= htmlspecialchars($default_title_color, ENT_QUOTES, 'UTF-8') ?>" />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="youtube_font_size"><i class="fas fa-fw fa-font fa-sm text-muted mr-1"></i> <?= l('link.settings.font_size') ?></label>
+                        <input id="youtube_font_size" type="number" min="12" max="40" class="form-control" name="font_size" value="<?= $default_title_font_size ?>" />
                     </div>
 
                     <div class="form-group">

@@ -7339,6 +7339,8 @@ class BiolinkBlockAjax extends Controller {
         $_POST['location_url'] = get_url($_POST['location_url']);
         $_POST['theme'] = isset($_POST['theme']) && in_array($_POST['theme'], ['light', 'dark']) ? query_clean($_POST['theme']) : null;
         $_POST['title'] = mb_substr(trim((string) ($_POST['title'] ?? '')), 0, 256);
+        $_POST['text_color'] = !verify_hex_color($_POST['text_color'] ?? null) ? '' : $_POST['text_color'];
+        $_POST['font_size'] = in_array((int) ($_POST['font_size'] ?? 0), range(12, 40), true) ? (int) $_POST['font_size'] : 0;
 
         $settings = [
             'border_shadow_style' => 'subtle',
@@ -7358,16 +7360,26 @@ class BiolinkBlockAjax extends Controller {
             'display_browsers' => [],
         ];
 
+        if(!$link = db()->where('link_id', $_POST['link_id'])->where('user_id', $this->user->user_id)->getOne('links')) {
+            die();
+        }
+
+        $link_settings = is_string($link->settings ?? null) ? json_decode($link->settings ?? '{}') : ($link->settings ?? (object) []);
+        if(is_array($link_settings)) {
+            $link_settings = (object) $link_settings;
+        }
+
+        $default_title_color = !empty($link_settings->text_color) && verify_hex_color($link_settings->text_color) ? $link_settings->text_color : '#F8FAFC';
+        $default_title_font_size = in_array((int) (($link_settings->font_size ?? 16) + 4), range(12, 40), true) ? (int) (($link_settings->font_size ?? 16) + 4) : 20;
+
         if($_POST['theme']) {
             $settings['theme'] = $_POST['theme'];
         }
 
         if(in_array($type, ['youtube', 'vimeo'], true)) {
             $settings['title'] = $_POST['title'];
-        }
-
-        if(!$link = db()->where('link_id', $_POST['link_id'])->where('user_id', $this->user->user_id)->getOne('links')) {
-            die();
+            $settings['text_color'] = $_POST['text_color'] ?: $default_title_color;
+            $settings['font_size'] = $_POST['font_size'] ?: $default_title_font_size;
         }
 
         /* Check for any errors */
@@ -7483,6 +7495,8 @@ class BiolinkBlockAjax extends Controller {
         $_POST['location_url'] = get_url($_POST['location_url']);
         $_POST['theme'] = isset($_POST['theme']) && in_array($_POST['theme'], ['light', 'dark']) ? query_clean($_POST['theme']) : null;
         $_POST['title'] = mb_substr(trim((string) ($_POST['title'] ?? '')), 0, 256);
+        $_POST['text_color'] = !verify_hex_color($_POST['text_color'] ?? null) ? '#F8FAFC' : $_POST['text_color'];
+        $_POST['font_size'] = in_array((int) ($_POST['font_size'] ?? 0), range(12, 40), true) ? (int) $_POST['font_size'] : 20;
         $_POST['border_radius'] = in_array($_POST['border_radius'], ['straight', 'round', 'rounded']) ? query_clean($_POST['border_radius']) : 'rounded';
         $_POST['border_width'] = in_array($_POST['border_width'], [0, 1, 2, 3, 4, 5]) ? (int) $_POST['border_width'] : 0;
         $_POST['border_style'] = in_array($_POST['border_style'], ['solid', 'dashed', 'double', 'inset', 'outset']) ? query_clean($_POST['border_style']) : 'solid';
@@ -7517,6 +7531,8 @@ class BiolinkBlockAjax extends Controller {
 
         if(in_array($type, ['youtube', 'vimeo'], true)) {
             $settings['title'] = $_POST['title'];
+            $settings['text_color'] = $_POST['text_color'];
+            $settings['font_size'] = $_POST['font_size'];
         }
 
         if(!$biolink_block = db()->where('biolink_block_id', $_POST['biolink_block_id'])->where('user_id', $this->user->user_id)->getOne('biolinks_blocks')) {

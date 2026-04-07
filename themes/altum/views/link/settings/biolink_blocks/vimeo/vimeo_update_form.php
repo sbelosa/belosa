@@ -1,5 +1,13 @@
 <?php defined('ALTUMCODE') || die() ?>
 
+<?php
+$title_color = (string) ($row->settings->text_color ?? ($data->link->settings->text_color ?? '#F8FAFC'));
+$title_font_size = (int) ($row->settings->font_size ?? min(max(((int) ($data->link->settings->font_size ?? 16)) + 4, 12), 40));
+if($title_font_size < 12 || $title_font_size > 40) {
+    $title_font_size = 20;
+}
+?>
+
 <form id="<?= 'update_biolink_block_' . $row->biolink_block_id ?>" name="update_biolink_" method="post" role="form" data-type="<?= $row->type ?>">
     <input type="hidden" name="token" value="<?= \Altum\Csrf::get() ?>" required="required" />
     <input type="hidden" name="request_type" value="update" />
@@ -11,6 +19,17 @@
     <div class="form-group">
         <label for="<?= 'vimeo_title_' . $row->biolink_block_id ?>"><i class="fas fa-fw fa-heading fa-sm text-muted mr-1"></i> <?= l('global.title') ?></label>
         <input id="<?= 'vimeo_title_' . $row->biolink_block_id ?>" type="text" class="form-control" name="title" value="<?= htmlspecialchars((string) ($row->settings->title ?? ''), ENT_QUOTES, 'UTF-8') ?>" maxlength="256" />
+    </div>
+
+    <div class="form-group">
+        <label><i class="fas fa-fw fa-paint-brush fa-sm text-muted mr-1"></i> <?= l('biolink_link.text_color') ?></label>
+        <input id="<?= 'vimeo_text_color_' . $row->biolink_block_id ?>" type="hidden" name="text_color" class="form-control" value="<?= htmlspecialchars($title_color, ENT_QUOTES, 'UTF-8') ?>" required="required" />
+        <div class="text_color_pickr"></div>
+    </div>
+
+    <div class="form-group">
+        <label for="<?= 'vimeo_font_size_' . $row->biolink_block_id ?>"><i class="fas fa-fw fa-font fa-sm text-muted mr-1"></i> <?= l('link.settings.font_size') ?></label>
+        <input id="<?= 'vimeo_font_size_' . $row->biolink_block_id ?>" type="number" min="12" max="40" class="form-control" name="font_size" value="<?= $title_font_size ?>" />
     </div>
 
     <div class="form-group">

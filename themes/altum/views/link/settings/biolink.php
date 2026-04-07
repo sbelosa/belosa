@@ -4520,6 +4520,22 @@ $fcc_biolink_editor_tours = [
                 });
             }
 
+            let font_size_input = update_form_content.querySelector('input[name="font_size"]');
+
+            if(font_size_input && biolink_link.find('[data-font-size]').length) {
+                $(font_size_input).off().on('change input', event => {
+                    let font_size = parseInt(event.currentTarget.value);
+
+                    if(Number.isNaN(font_size)) {
+                        return;
+                    }
+
+                    font_size = Math.min(40, Math.max(12, font_size));
+                    event.currentTarget.value = font_size;
+                    biolink_link.find('[data-font-size]').css('font-size', `${font_size}px`);
+                });
+            }
+
             /* Background color */
             let background_color_pickr_element = update_form_content.querySelector('.background_color_pickr');
 
