@@ -186,6 +186,13 @@ $fcc_app_language_code = $data->link->settings->language_code ?? \Altum\Language
 
     if(!selector || !nameInput || !locationInput || !blogPostIdInput || !translationKeyInput || !imageUrlInput || !descriptionInput || !languageMode) return;
 
+    const getAutoTrackedValue = (element) => element ? (element.dataset.foreverProductAutoValue || '') : '';
+    const setAutoTrackedValue = (element, value) => {
+        if(element) {
+            element.dataset.foreverProductAutoValue = value || '';
+        }
+    };
+
     const syncLanguageMode = () => {
         if(!manualLanguageWrapper) {
             return;
@@ -215,14 +222,24 @@ $fcc_app_language_code = $data->link->settings->language_code ?? \Altum\Language
         const selectedImageUrl = option.getAttribute('data-image-url') || '';
         const translationKey = option.getAttribute('data-translation-key') || '';
         const languageLabel = option.getAttribute('data-language-label') || '';
+        const previousAutoName = getAutoTrackedValue(nameInput);
+        const previousAutoDescription = getAutoTrackedValue(descriptionInput);
 
         blogPostIdInput.value = option.value;
         translationKeyInput.value = translationKey;
         locationInput.value = selectedUrl;
         imageUrlInput.value = selectedImageUrl;
 
-        nameInput.value = selectedTitle;
-        descriptionInput.value = selectedDescription;
+        if(nameInput.value.trim() === '' || nameInput.value === previousAutoName) {
+            nameInput.value = selectedTitle;
+        }
+
+        if(descriptionInput.value.trim() === '' || descriptionInput.value === previousAutoDescription) {
+            descriptionInput.value = selectedDescription;
+        }
+
+        setAutoTrackedValue(nameInput, selectedTitle);
+        setAutoTrackedValue(descriptionInput, selectedDescription);
 
         if(languageHint) {
             if(languageLabel) {
@@ -248,6 +265,8 @@ $fcc_app_language_code = $data->link->settings->language_code ?? \Altum\Language
     selector.addEventListener('change', applySelectedProduct);
     languageMode.addEventListener('change', syncLanguageMode);
     syncLanguageMode();
+    setAutoTrackedValue(nameInput, '');
+    setAutoTrackedValue(descriptionInput, '');
 
     const initializeProductSelector = () => {
         if($(selector).hasClass('select2-hidden-accessible')) {

@@ -299,11 +299,11 @@
                                     $row->settings->product_blog_post_id = $resolved_product->blog_post_id;
                                     $row->settings->product_image_url = $resolved_product->image_url;
 
-                                    if(!empty($resolved_product->title)) {
+                                    if(!empty($resolved_product->title) && trim((string) ($row->settings->name ?? '')) === '') {
                                         $row->settings->name = $resolved_product->title;
                                     }
 
-                                    if(!empty($resolved_product->description)) {
+                                    if(!empty($resolved_product->description) && trim((string) ($row->settings->description ?? '')) === '') {
                                         $row->settings->description = $resolved_product->description;
                                     }
                                 }

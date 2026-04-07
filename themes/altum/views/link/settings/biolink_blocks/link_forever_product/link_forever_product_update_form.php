@@ -193,6 +193,12 @@ foreach($data->blog_products ?? [] as $fcc_blog_product) {
     const previewWrapper = selector.closest('.card')?.querySelector('[data-forever-product-preview-wrapper]');
     const previewImage = selector.closest('.card')?.querySelector('[data-forever-product-preview-image]');
     const languageHint = selector.closest('.card')?.querySelector('[data-forever-product-language-hint]');
+    const getAutoTrackedValue = (element) => element ? (element.dataset.foreverProductAutoValue || '') : '';
+    const setAutoTrackedValue = (element, value) => {
+        if(element) {
+            element.dataset.foreverProductAutoValue = value || '';
+        }
+    };
 
     const syncLanguageMode = () => {
         if(!manualLanguageWrapper || !languageMode) {
@@ -222,13 +228,21 @@ foreach($data->blog_products ?? [] as $fcc_blog_product) {
         const selectedImageUrl = option.getAttribute('data-image-url') || '';
         const translationKey = option.getAttribute('data-translation-key') || '';
         const languageLabel = option.getAttribute('data-language-label') || '';
+        const previousAutoName = getAutoTrackedValue(nameInput);
+        const previousAutoDescription = getAutoTrackedValue(descriptionInput);
 
         if(blogPostIdInput) blogPostIdInput.value = option.value;
         if(translationKeyInput) translationKeyInput.value = translationKey;
         if(imageUrlInput) imageUrlInput.value = selectedImageUrl;
         if(locationInput) locationInput.value = selectedUrl;
-        if(nameInput) nameInput.value = selectedTitle;
-        if(descriptionInput) descriptionInput.value = selectedDescription;
+        if(nameInput && (nameInput.value.trim() === '' || nameInput.value === previousAutoName)) {
+            nameInput.value = selectedTitle;
+        }
+        if(descriptionInput && (descriptionInput.value.trim() === '' || descriptionInput.value === previousAutoDescription)) {
+            descriptionInput.value = selectedDescription;
+        }
+        setAutoTrackedValue(nameInput, selectedTitle);
+        setAutoTrackedValue(descriptionInput, selectedDescription);
 
         if(languageHint) {
             if(languageLabel) {
@@ -262,6 +276,10 @@ foreach($data->blog_products ?? [] as $fcc_blog_product) {
             iconGroup.style.display = 'none';
         }
     }
+
+    const initiallySelectedOption = selector.options[selector.selectedIndex];
+    setAutoTrackedValue(nameInput, initiallySelectedOption?.getAttribute('data-title') || '');
+    setAutoTrackedValue(descriptionInput, initiallySelectedOption?.getAttribute('data-description') || '');
 
     selector.addEventListener('change', applySelectedProduct);
     if(languageMode) {
