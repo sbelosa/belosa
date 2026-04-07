@@ -1,7 +1,6 @@
 <?php defined('ALTUMCODE') || die() ?>
 
 <?php
-$fcc_links_is_hr = \Altum\Language::$code === 'hr';
 $fcc_links_type = (string) ($data->filters->filters['type'] ?? '');
 $fcc_is_biolink_links = $fcc_links_type === 'biolink';
 $fcc_is_short_links = $fcc_links_type === 'link';
@@ -78,32 +77,37 @@ if($fcc_is_biolink_links && $fcc_main_biolink_row && !$fcc_main_featured) {
     ];
 }
 
-$fcc_main_header = $fcc_links_is_hr ? 'Javni prikaz glavne Forever Card Aplikacije' : 'Public showcase of the main Forever Card App';
-$fcc_main_subheader = $fcc_links_is_hr ? 'Ove postavke vrijede samo za glavnu aplikaciju koju si dobio pri registraciji i aktivaciji pristupa. Ostale aplikacije ne ulaze u ovaj javni prikaz.' : 'These settings apply only to the main app assigned when your access was activated. Other apps are not included in this public showcase.';
-$fcc_main_toggle = $fcc_links_is_hr ? 'Dopuštam javni prikaz glavne Forever Card Aplikacije na naslovnici Forever Card Cluba' : 'I allow public display of the main Forever Card App on the Forever Card Club homepage';
-$fcc_main_market = $fcc_links_is_hr ? 'Javno tržište / država' : 'Public market / country';
-$fcc_main_summary = $fcc_links_is_hr ? 'Kratki javni opis' : 'Short public summary';
-$fcc_main_summary_help = $fcc_links_is_hr ? 'Opis je opcionalan. Ako ga ne upišeš, FCC će automatski složiti kratak sažetak na temelju aktivnih blokova tvoje glavne aplikacije.' : 'This summary is optional. If you leave it empty, FCC will automatically generate a short public summary based on the active blocks in your main app.';
-$fcc_main_detected = $fcc_links_is_hr ? 'FCC je automatski prepoznao' : 'FCC automatically detected';
-$fcc_main_status_on = $fcc_links_is_hr ? 'Javni prikaz je uključen.' : 'Public showcase is enabled.';
-$fcc_main_status_off = $fcc_links_is_hr ? 'Javni prikaz je trenutno isključen.' : 'Public showcase is currently turned off.';
-$fcc_main_admin_hidden = $fcc_links_is_hr ? 'Admin je trenutno isključio javni prikaz ove aplikacije.' : 'Admin has currently hidden this app from the public showcase.';
-$fcc_main_submit = $fcc_links_is_hr ? 'Spremi javni prikaz' : 'Save public showcase settings';
+$fcc_main_header = l('links.biolink_workspace.main_header');
+$fcc_main_subheader = l('links.biolink_workspace.main_subheader');
+$fcc_main_toggle = l('links.biolink_workspace.main_toggle');
+$fcc_main_market = l('links.biolink_workspace.main_market');
+$fcc_main_summary = l('links.biolink_workspace.main_summary');
+$fcc_main_summary_help = l('links.biolink_workspace.main_summary_help');
+$fcc_main_detected = l('links.biolink_workspace.main_detected');
+$fcc_main_status_on = l('links.biolink_workspace.main_status_on');
+$fcc_main_status_off = l('links.biolink_workspace.main_status_off');
+$fcc_main_admin_hidden = l('links.biolink_workspace.main_admin_hidden');
+$fcc_main_submit = l('links.biolink_workspace.main_submit');
 $fcc_main_visible_tags_limit = 3;
-$fcc_workspace_guide_title = $fcc_links_is_hr ? 'Uredi, stvaraj i vodi svoje FCC aplikacije na jednom mjestu' : 'Create, edit and manage your FCC apps in one place';
-$fcc_workspace_guide_text = $fcc_links_is_hr ? 'Ovdje izrađuješ nove aplikacije, biraš predloške, vodiš glavnu aplikaciju povezanu s Tvojim planom rasta i uređuješ dodatne verzije za posebne potrebe.' : 'Create new apps, choose templates, manage the main app connected to your Growth Plan and edit extra versions for specific use cases.';
-$fcc_main_workspace_title = $fcc_links_is_hr ? 'Glavna FCC aplikacija' : 'Main FCC app';
-$fcc_main_workspace_text = $fcc_links_is_hr ? 'Ovo je tvoja glavna aplikacija povezana s javnim prikazom, AI analizom i rastom unutar FCC sustava.' : 'This is your main app connected to the public showcase, AI review and growth inside the FCC system.';
-$fcc_secondary_apps_title = $fcc_links_is_hr ? 'Dodatne FCC aplikacije' : 'Additional FCC apps';
-$fcc_secondary_apps_text = $fcc_links_is_hr ? 'Ovdje su sve dodatne aplikacije koje koristiš za posebne ponude, tržišta ili testiranje. AI analiza ostaje vezana samo uz glavnu aplikaciju.' : 'These are your additional apps for specific offers, markets or testing. AI review remains available only for the main app.';
-$fcc_main_actions_label = $fcc_links_is_hr ? 'Glavne akcije' : 'Main actions';
-$fcc_main_signals_label = $fcc_links_is_hr ? 'Signal aplikacije' : 'App signal';
-$fcc_main_edit = $fcc_links_is_hr ? 'Uredi glavnu aplikaciju' : 'Edit main app';
-$fcc_main_stats = $fcc_links_is_hr ? 'Statistika aplikacije' : 'App statistics';
-$fcc_main_copy = $fcc_links_is_hr ? 'Kopiraj link aplikacije' : 'Copy app link';
-$fcc_main_quality = $fcc_links_is_hr ? 'Kvaliteta aplikacije' : 'App quality';
-$fcc_main_public_preview = $fcc_links_is_hr ? 'Pregled javnog prikaza' : 'Public showcase preview';
-$fcc_secondary_header = $fcc_links_is_hr ? 'Sve dodatne aplikacije' : 'All additional apps';
+$fcc_workspace_guide_title = l('links.biolink_workspace.guide_title');
+$fcc_workspace_guide_text = l('links.biolink_workspace.guide_text');
+$fcc_main_workspace_title = l('links.biolink_workspace.main_workspace_title');
+$fcc_main_workspace_text = l('links.biolink_workspace.main_workspace_text');
+$fcc_secondary_apps_title = l('links.biolink_workspace.secondary_apps_title');
+$fcc_secondary_apps_text = l('links.biolink_workspace.secondary_apps_text');
+$fcc_main_actions_label = l('links.biolink_workspace.main_actions_label');
+$fcc_main_signals_label = l('links.biolink_workspace.main_signals_label');
+$fcc_main_edit = l('links.biolink_workspace.main_edit');
+$fcc_main_stats = l('links.biolink_workspace.main_stats');
+$fcc_main_copy = l('links.biolink_workspace.main_copy');
+$fcc_main_quality = l('links.biolink_workspace.main_quality');
+$fcc_main_public_preview = l('links.biolink_workspace.main_public_preview');
+$fcc_secondary_header = l('links.biolink_workspace.secondary_header');
+$fcc_main_badge = l('links.biolink_workspace.main_badge');
+$fcc_public_showcase_badge = l('links.biolink_workspace.public_showcase_badge');
+$fcc_secondary_total = l('links.biolink_workspace.secondary_total');
+$fcc_more_tags = l('links.biolink_workspace.more_tags');
+$fcc_additional_apps_empty = l('links.biolink_workspace.extra_apps_empty');
 $fcc_apps_tour_launch = l('dashboard.tour.launch');
 $fcc_short_links_guide_title = l('links.short_links.guide_title');
 $fcc_short_links_guide_text = l('links.short_links.guide_text');
@@ -118,38 +122,38 @@ if($fcc_links_type === 'biolink') {
     $fcc_tour_steps = [
         [
             'selector' => '#fcc_apps_tour_step_create',
-            'title' => $fcc_links_is_hr ? 'Nova FCC aplikacija' : 'New FCC app',
-            'text' => $fcc_links_is_hr ? 'Ovdje kreiraš novu FCC aplikaciju za tržište, ponudu, kampanju ili posebnu namjenu. Kreni odavde kada želiš novu verziju svoje prezentacije.' : 'Create a new FCC app here for a market, offer, campaign or a special use case. Start here whenever you want a new version of your presentation.'
+            'title' => l('links.biolink_workspace.tour.create_title'),
+            'text' => l('links.biolink_workspace.tour.create_text')
         ],
         [
             'selector' => '#fcc_apps_tour_step_templates',
-            'title' => $fcc_links_is_hr ? 'FCC Predlošci' : 'FCC Templates',
-            'text' => $fcc_links_is_hr ? 'Ovdje biraš gotove FCC predloške. Oni su unaprijed složeni i automatski povlače podatke koje si unio prilikom registracije na FCC, pa možeš krenuti brže.' : 'Choose ready-made FCC templates here. They come pre-assembled and automatically use the data you entered during FCC registration so you can start faster.'
+            'title' => l('links.biolink_workspace.tour.templates_title'),
+            'text' => l('links.biolink_workspace.tour.templates_text')
         ],
         [
             'selector' => '#fcc_apps_tour_step_main_app',
-            'title' => $fcc_links_is_hr ? 'Glavna FCC aplikacija' : 'Main FCC app',
-            'text' => $fcc_links_is_hr ? 'Ovo je tvoja glavna aplikacija. Ovdje uređuješ njezine postavke, a iznad odmah vidiš kvalitetu aplikacije i ključne blokove koji grade rezultat.' : 'This is your main app. Here you manage its core settings and immediately see the app quality and the key blocks that drive results.'
+            'title' => l('links.biolink_workspace.tour.main_app_title'),
+            'text' => l('links.biolink_workspace.tour.main_app_text')
         ],
         [
             'selector' => '#fcc_apps_tour_step_stats',
-            'title' => $fcc_links_is_hr ? 'Statistika aplikacije' : 'App statistics',
-            'text' => $fcc_links_is_hr ? 'Ovdje otvaraš detaljnu statistiku glavne FCC aplikacije i pratiš što stvarno donosi klikove, interes i daljnji napredak.' : 'Open the detailed statistics of your main FCC app here and see what actually brings clicks, interest and progress.'
+            'title' => l('links.biolink_workspace.tour.stats_title'),
+            'text' => l('links.biolink_workspace.tour.stats_text')
         ],
         [
             'selector' => '#fcc_apps_tour_step_copy_link',
-            'title' => $fcc_links_is_hr ? 'Kopiraj glavni link aplikacije' : 'Copy the main app link',
-            'text' => $fcc_links_is_hr ? 'Ovdje kopiraš link glavne FCC aplikacije za dijeljenje. Taj link u sebi nosi sve elemente potrebne za praćenje interesa i tvoju preporuku prema Forever webshopovima.' : 'Copy the main FCC app link here for sharing. This link includes the elements needed for tracking interest and your recommendation toward Forever webshops.'
+            'title' => l('links.biolink_workspace.tour.copy_title'),
+            'text' => l('links.biolink_workspace.tour.copy_text')
         ],
         [
             'selector' => '#fcc_apps_tour_step_public_showcase',
-            'title' => $fcc_links_is_hr ? 'Javni prikaz i rast aplikacije' : 'Public showcase and app growth',
-            'text' => $fcc_links_is_hr ? 'Ovdje uređuješ javni prikaz glavne aplikacije. Nakon ostvarenih 15 kvalificiranih klikova glavna aplikacija može biti izlistana na naslovnici Forever Card Cluba, uzeta u partnera Forever Card Cluba te prijavljena u indekse umjetnih inteligencija i tražilica kao partner Forever Living Productsa.' : 'Here you manage the public showcase of the main app. After reaching 15 qualified clicks, your main app can be listed on the Forever Card Club homepage, featured as a Forever Card Club partner, and submitted to AI/search indexes as a Forever Living Products partner.'
+            'title' => l('links.biolink_workspace.tour.public_showcase_title'),
+            'text' => l('links.biolink_workspace.tour.public_showcase_text')
         ],
         [
             'selector' => '#fcc_apps_tour_step_extra_apps',
-            'title' => $fcc_links_is_hr ? 'Dodatne FCC aplikacije' : 'Additional FCC apps',
-            'text' => $fcc_links_is_hr ? 'Ovdje će se nalaziti sve dodatne FCC aplikacije koje izradiš za posebne potrebe, tržišta i scenarije, bez miješanja s glavnom aplikacijom.' : 'This is where all extra FCC apps you create for special needs, markets and scenarios will appear, separate from your main app.'
+            'title' => l('links.biolink_workspace.tour.extra_apps_title'),
+            'text' => l('links.biolink_workspace.tour.extra_apps_text')
         ],
     ];
 } elseif($fcc_is_short_links) {
@@ -382,6 +386,47 @@ if($fcc_links_type === 'biolink') {
         box-shadow: 0 26px 52px rgba(4, 10, 24, 0.28);
     }
 
+    .fcc-links-table-card--featured {
+        position: relative;
+        isolation: isolate;
+    }
+
+    .fcc-links-shell.is-biolink .fcc-links-table-card--featured {
+        border-color: rgba(144, 191, 255, 0.18);
+        background:
+            radial-gradient(circle at top right, rgba(223, 190, 112, 0.16) 0%, rgba(223, 190, 112, 0) 32%),
+            radial-gradient(circle at top left, rgba(72, 220, 214, 0.1) 0%, rgba(72, 220, 214, 0) 28%),
+            linear-gradient(180deg, rgba(18, 27, 46, 0.992) 0%, rgba(10, 14, 24, 0.995) 100%);
+        box-shadow:
+            0 26px 56px rgba(4, 10, 24, 0.3),
+            0 0 0 1px rgba(225, 201, 145, 0.04),
+            inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    }
+
+    .fcc-links-table-card--featured::before {
+        content: '';
+        position: absolute;
+        left: 1.15rem;
+        right: 1.15rem;
+        top: 0;
+        height: 4px;
+        border-radius: 0 0 999px 999px;
+        background: linear-gradient(90deg, rgba(83, 228, 215, 0.38) 0%, rgba(223, 190, 112, 0.78) 52%, rgba(97, 178, 255, 0.4) 100%);
+        opacity: 0.92;
+        pointer-events: none;
+        z-index: 1;
+    }
+
+    .fcc-links-table-card--featured::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        box-shadow: inset 0 0 0 1px rgba(239, 217, 171, 0.08);
+        pointer-events: none;
+        z-index: 1;
+    }
+
     .fcc-links-table-card .table-custom-container {
         border: 0;
         background: transparent;
@@ -403,6 +448,11 @@ if($fcc_links_type === 'biolink') {
         border-bottom-color: rgba(95, 205, 231, 0.08);
     }
 
+    .fcc-links-shell.is-biolink .fcc-links-table-card--featured .table-custom thead th {
+        background: rgba(255, 255, 255, 0.03);
+        border-bottom-color: rgba(139, 202, 234, 0.1);
+    }
+
     .fcc-links-table-card .table-custom td {
         border-top-color: rgba(255, 255, 255, 0.04);
         vertical-align: middle;
@@ -422,6 +472,10 @@ if($fcc_links_type === 'biolink') {
 
     .fcc-links-shell.is-biolink .fcc-links-table-card .table-custom tbody tr:hover {
         background: rgba(73, 200, 218, 0.02);
+    }
+
+    .fcc-links-shell.is-biolink .fcc-links-table-card--featured .table-custom tbody tr:hover {
+        background: rgba(255, 255, 255, 0.03);
     }
 
     .fcc-links-table-card .badge.badge-light {
@@ -955,6 +1009,53 @@ if($fcc_links_type === 'biolink') {
             linear-gradient(180deg, rgba(16, 23, 39, 0.98) 0%, rgba(10, 14, 24, 0.99) 100%);
     }
 
+    .fcc-links-main-card--featured {
+        position: relative;
+        overflow: hidden;
+        isolation: isolate;
+    }
+
+    .fcc-links-main-card--featured > * {
+        position: relative;
+        z-index: 1;
+    }
+
+    .fcc-links-shell.is-biolink .fcc-links-main-card--featured {
+        border-color: rgba(144, 191, 255, 0.22);
+        background:
+            radial-gradient(circle at top right, rgba(223, 190, 112, 0.2) 0%, rgba(223, 190, 112, 0) 36%),
+            radial-gradient(circle at top left, rgba(72, 220, 214, 0.11) 0%, rgba(72, 220, 214, 0) 30%),
+            linear-gradient(180deg, rgba(19, 28, 48, 0.995) 0%, rgba(10, 15, 26, 0.995) 100%);
+        box-shadow:
+            0 26px 54px rgba(4, 13, 27, 0.3),
+            0 0 0 1px rgba(225, 201, 145, 0.05),
+            inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    }
+
+    .fcc-links-main-card--featured::before {
+        content: '';
+        position: absolute;
+        left: 1.15rem;
+        right: 1.15rem;
+        top: 0;
+        height: 4px;
+        border-radius: 0 0 999px 999px;
+        background: linear-gradient(90deg, rgba(83, 228, 215, 0.42) 0%, rgba(223, 190, 112, 0.85) 52%, rgba(97, 178, 255, 0.42) 100%);
+        opacity: 0.95;
+        pointer-events: none;
+    }
+
+    .fcc-links-main-card--featured::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        box-shadow:
+            inset 0 0 0 1px rgba(239, 217, 171, 0.1),
+            inset 0 14px 30px rgba(255, 255, 255, 0.015);
+        pointer-events: none;
+    }
+
     .fcc-links-main-card-top {
         display: flex;
         align-items: flex-start;
@@ -973,6 +1074,10 @@ if($fcc_links_type === 'biolink') {
 
     .fcc-links-shell.is-biolink .fcc-links-main-app-name {
         color: #f7fbff;
+    }
+
+    .fcc-links-shell.is-biolink .fcc-links-main-card--featured .fcc-links-main-app-name {
+        text-shadow: 0 0 18px rgba(255, 255, 255, 0.04);
     }
 
     .fcc-links-main-app-url {
@@ -1022,10 +1127,23 @@ if($fcc_links_type === 'biolink') {
         color: #c9fcf5;
     }
 
+    .fcc-links-shell.is-biolink .fcc-links-main-card--featured .fcc-links-main-badge {
+        background: rgba(72, 220, 214, 0.12);
+        border-color: rgba(120, 215, 225, 0.22);
+        color: #dcfffa;
+    }
+
     .fcc-links-main-badge.is-primary {
         background: rgba(79, 116, 255, 0.14);
         border-color: rgba(79, 116, 255, 0.2);
         color: #d9e3ff;
+    }
+
+    .fcc-links-shell.is-biolink .fcc-links-main-card--featured .fcc-links-main-badge.is-primary {
+        background: linear-gradient(135deg, rgba(75, 118, 243, 0.24) 0%, rgba(223, 190, 112, 0.22) 100%);
+        border-color: rgba(176, 204, 255, 0.34);
+        color: #eef3ff;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 8px 18px rgba(21, 42, 86, 0.14);
     }
 
     .fcc-links-main-metric {
@@ -1034,12 +1152,24 @@ if($fcc_links_type === 'biolink') {
         color: #d8e8e9;
     }
 
+    .fcc-links-shell.is-biolink .fcc-links-main-card--featured .fcc-links-main-metric {
+        background: rgba(255, 255, 255, 0.058);
+        border-color: rgba(224, 235, 255, 0.1);
+        color: #ebf4f8;
+    }
+
     .fcc-links-main-actions .fcc-links-action-btn {
         min-height: 2.6rem;
     }
 
     .fcc-links-main-actions .fcc-links-action-btn.btn-outline-primary {
         background: rgba(127, 227, 217, 0.05);
+    }
+
+    .fcc-links-shell.is-biolink .fcc-links-main-card--featured .fcc-links-main-actions .fcc-links-action-btn.btn-outline-primary {
+        background: rgba(255, 255, 255, 0.045);
+        border-color: rgba(129, 208, 238, 0.24);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
     }
 
     .fcc-links-section-title {
@@ -1074,6 +1204,11 @@ if($fcc_links_type === 'biolink') {
         justify-content: space-between;
         gap: 1rem;
         padding: 1.15rem 1.3rem 0;
+    }
+
+    .fcc-links-shell.is-biolink .fcc-links-table-card--featured .fcc-links-secondary-header {
+        position: relative;
+        z-index: 2;
     }
 
     .fcc-tour-target {
@@ -1649,25 +1784,6 @@ if($fcc_links_type === 'biolink') {
                 <p><?= $fcc_workspace_guide_text ?></p>
             </div>
         </div>
-
-        <div class="fcc-links-guide-pills">
-            <div class="fcc-links-guide-pill">
-                <strong><?= $fcc_links_is_hr ? 'Nova aplikacija' : 'New app' ?></strong>
-                <span><?= $fcc_links_is_hr ? 'Kreiraj novu FCC aplikaciju za tržište, ponudu ili posebnu kampanju.' : 'Create a new FCC app for a market, offer or special campaign.' ?></span>
-            </div>
-            <div class="fcc-links-guide-pill">
-                <strong><?= $fcc_links_is_hr ? 'Glavna aplikacija' : 'Main app' ?></strong>
-                <span><?= $fcc_links_is_hr ? 'Samo glavna aplikacija vodi javni prikaz i AI analizu povezanu s planom rasta.' : 'Only the main app controls the public showcase and AI review connected to the growth plan.' ?></span>
-            </div>
-            <div class="fcc-links-guide-pill">
-                <strong><?= $fcc_links_is_hr ? 'Predlošci' : 'Templates' ?></strong>
-                <span><?= $fcc_links_is_hr ? 'Brže započni novu aplikaciju iz FCC predloška i prilagodi je svojoj ponudi.' : 'Start faster from an FCC template and adapt it to your own offer.' ?></span>
-            </div>
-            <div class="fcc-links-guide-pill">
-                <strong><?= $fcc_links_is_hr ? 'Dodatne verzije' : 'Extra versions' ?></strong>
-                <span><?= $fcc_links_is_hr ? 'Dodatne aplikacije koristi za posebne scenarije, bez miješanja s glavnom aplikacijom.' : 'Use extra apps for specific scenarios without mixing them with your main app.' ?></span>
-            </div>
-        </div>
     </div>
 <?php endif ?>
 
@@ -1680,25 +1796,6 @@ if($fcc_links_type === 'biolink') {
                     <p><?= $fcc_workspace_guide_text ?></p>
                 </div>
             </div>
-
-            <div class="fcc-links-guide-pills">
-                <div class="fcc-links-guide-pill">
-                    <strong><?= $fcc_links_is_hr ? 'Nova aplikacija' : 'New app' ?></strong>
-                    <span><?= $fcc_links_is_hr ? 'Kreiraj novu FCC aplikaciju za tržište, ponudu ili posebnu kampanju.' : 'Create a new FCC app for a market, offer or special campaign.' ?></span>
-                </div>
-                <div class="fcc-links-guide-pill">
-                    <strong><?= $fcc_links_is_hr ? 'Glavna aplikacija' : 'Main app' ?></strong>
-                    <span><?= $fcc_links_is_hr ? 'Samo glavna aplikacija vodi javni prikaz i AI analizu povezanu s planom rasta.' : 'Only the main app controls the public showcase and AI review connected to the growth plan.' ?></span>
-                </div>
-                <div class="fcc-links-guide-pill">
-                    <strong><?= $fcc_links_is_hr ? 'Predlošci' : 'Templates' ?></strong>
-                    <span><?= $fcc_links_is_hr ? 'Brže započni novu aplikaciju iz FCC predloška i prilagodi je svojoj ponudi.' : 'Start faster from an FCC template and adapt it to your own offer.' ?></span>
-                </div>
-                <div class="fcc-links-guide-pill">
-                    <strong><?= $fcc_links_is_hr ? 'Dodatne verzije' : 'Extra versions' ?></strong>
-                    <span><?= $fcc_links_is_hr ? 'Dodatne aplikacije koristi za posebne scenarije, bez miješanja s glavnom aplikacijom.' : 'Use extra apps for specific scenarios without mixing them with your main app.' ?></span>
-                </div>
-            </div>
         </div>
         <div class="fcc-links-main-featured-divider"></div>
 
@@ -1708,16 +1805,16 @@ if($fcc_links_type === 'biolink') {
         </div>
 
         <div class="fcc-links-main-featured-stack">
-            <div class="fcc-links-main-card fcc-tour-target" id="fcc_apps_tour_step_main_app">
+            <div class="fcc-links-main-card fcc-links-main-card--featured fcc-tour-target" id="fcc_apps_tour_step_main_app">
                 <div class="fcc-links-main-card-top">
                     <div>
                         <div class="fcc-links-main-app-name"><?= htmlspecialchars((string) $fcc_main_biolink_row->url, ENT_QUOTES, 'UTF-8') ?></div>
                         <div class="fcc-links-main-app-url"><?= htmlspecialchars(remove_url_protocol_from_url((string) $fcc_main_biolink_row->full_url), ENT_QUOTES, 'UTF-8') ?></div>
                     </div>
                     <div class="fcc-links-main-badges">
-                        <span class="fcc-links-main-badge is-primary"><?= $fcc_links_is_hr ? 'Glavna aplikacija' : 'Main app' ?></span>
+                        <span class="fcc-links-main-badge is-primary"><?= $fcc_main_badge ?></span>
                         <?php if(!empty($fcc_main_featured['opt_in'])): ?>
-                            <span class="fcc-links-main-badge"><?= $fcc_links_is_hr ? 'Javni prikaz uključen' : 'Public showcase on' ?></span>
+                            <span class="fcc-links-main-badge"><?= $fcc_public_showcase_badge ?></span>
                         <?php endif ?>
                     </div>
                 </div>
@@ -1736,6 +1833,9 @@ if($fcc_links_type === 'biolink') {
                 <div class="fcc-links-main-actions">
                     <a href="<?= url('link/' . $fcc_main_biolink_row->link_id) ?>" class="btn btn-primary fcc-links-action-btn"><?= $fcc_main_edit ?></a>
                     <a href="<?= url('link/' . $fcc_main_biolink_row->link_id . '/statistics') ?>" class="btn btn-outline-primary fcc-links-action-btn fcc-tour-target" id="fcc_apps_tour_step_stats"><?= $fcc_main_stats ?></a>
+                    <?php if($data->app_review_is_accessible): ?>
+                        <a href="<?= htmlspecialchars((string) ($fcc_main_biolink_row->app_review_page_url ?? ($data->app_review_page_url . '?app_review_selected_link_id=' . (int) $fcc_main_biolink_row->link_id)), ENT_QUOTES, 'UTF-8') ?>" class="btn btn-outline-primary fcc-links-action-btn"><?= l('ai_plan.app_review_menu') ?></a>
+                    <?php endif ?>
                     <button
                         type="button"
                         class="btn btn-outline-primary fcc-links-action-btn fcc-tour-target"
@@ -1748,9 +1848,6 @@ if($fcc_links_type === 'biolink') {
                     >
                         <i class="fas fa-fw fa-copy fa-sm mr-1"></i> <?= $fcc_main_copy ?>
                     </button>
-                    <?php if($data->app_review_is_accessible): ?>
-                        <a href="<?= htmlspecialchars((string) ($fcc_main_biolink_row->app_review_page_url ?? ($data->app_review_page_url . '?app_review_selected_link_id=' . (int) $fcc_main_biolink_row->link_id)), ENT_QUOTES, 'UTF-8') ?>" class="btn btn-outline-primary fcc-links-action-btn"><?= l('ai_plan.app_review_menu') ?></a>
-                    <?php endif ?>
                 </div>
             </div>
 
@@ -1803,7 +1900,7 @@ if($fcc_links_type === 'biolink') {
                                     <?php endforeach ?>
 
                                     <?php if($fcc_main_remaining_tags > 0): ?>
-                                        <span class="fcc-main-app-featured-pill"><?= $fcc_links_is_hr ? '+ još ' . $fcc_main_remaining_tags : '+ ' . $fcc_main_remaining_tags . ' more' ?></span>
+                                        <span class="fcc-main-app-featured-pill"><?= sprintf($fcc_more_tags, $fcc_main_remaining_tags) ?></span>
                                     <?php endif ?>
                                 </div>
                             <?php endif ?>
@@ -1829,14 +1926,14 @@ if($fcc_links_type === 'biolink') {
         <input type="hidden" name="original_request" value="<?= base64_encode(\Altum\Router::$original_request) ?>" />
         <input type="hidden" name="original_request_query" value="<?= base64_encode(\Altum\Router::$original_request_query) ?>" />
 
-        <div class="fcc-links-table-card" <?= $fcc_is_short_links ? 'id="fcc_short_links_tour_step_list"' : null ?>>
+        <div class="fcc-links-table-card <?= $fcc_is_biolink_links ? 'fcc-links-table-card--featured' : null ?>" <?= $fcc_is_short_links ? 'id="fcc_short_links_tour_step_list"' : null ?>>
         <?php if(isset($data->filters->filters['type']) && $data->filters->filters['type'] == 'biolink'): ?>
             <div class="fcc-links-secondary-header fcc-tour-target" id="fcc_apps_tour_step_extra_apps">
                 <div>
                     <h2 class="fcc-links-section-title mb-1"><?= $fcc_secondary_apps_title ?></h2>
                     <p class="fcc-links-section-copy mb-0"><?= $fcc_secondary_apps_text ?></p>
                 </div>
-                <div class="text-muted small"><?= $fcc_links_is_hr ? 'Ukupno: ' : 'Total: ' ?><?= nr(count($fcc_additional_links)) ?></div>
+                <div class="text-muted small"><?= sprintf($fcc_secondary_total, nr(count($fcc_additional_links))) ?></div>
             </div>
         <?php endif ?>
         <?php if(!empty($fcc_table_links)): ?>
@@ -2023,7 +2120,7 @@ if($fcc_links_type === 'biolink') {
         </div>
         <?php else: ?>
             <div class="p-4 text-center text-muted">
-                <?= $fcc_is_short_links ? $fcc_short_links_empty : ($fcc_links_is_hr ? 'Trenutno nema dodatnih FCC aplikacija. Glavna aplikacija je spremna gore, a novu možeš dodati kroz gumb Nova FCC Aplikacija.' : 'There are no additional FCC apps yet. Your main app is ready above, and you can create a new one with the New FCC App button.') ?>
+                <?= $fcc_is_short_links ? $fcc_short_links_empty : $fcc_additional_apps_empty ?>
             </div>
         <?php endif ?>
         </div>

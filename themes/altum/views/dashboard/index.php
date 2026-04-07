@@ -1573,14 +1573,14 @@ $dashboard_forever_products_url = fc_get_forever_products_blog_category_url(\Alt
             <div class="dashboard-growth-hero-main">
                 <div class="dashboard-growth-pills">
                     <span class="dashboard-growth-pill dashboard-growth-pill--blue" id="dashboard_growth_stage_badge">...</span>
-                    <span class="dashboard-growth-pill dashboard-growth-pill--green">30 dana</span>
-                    <span class="dashboard-growth-pill dashboard-growth-pill--teal">Blog + Aplikacije</span>
+                    <span class="dashboard-growth-pill dashboard-growth-pill--green"><?= l('dashboard.hero.period_30_days') ?></span>
+                    <span class="dashboard-growth-pill dashboard-growth-pill--teal"><?= l('dashboard.hero.blog_plus_apps') ?></span>
                 </div>
-                <h1 class="dashboard-growth-title" id="dashboard_hero_title">Učitavanje signala rasta...</h1>
-                <p class="dashboard-growth-subtitle" id="dashboard_hero_description">Pripremamo tvoj pregled prodajnog signala, konverzije i sljedećeg poteza.</p>
+                <h1 class="dashboard-growth-title" id="dashboard_hero_title"><?= l('dashboard.hero.loading_title') ?></h1>
+                <p class="dashboard-growth-subtitle" id="dashboard_hero_description"><?= l('dashboard.hero.loading_description') ?></p>
                 <div class="dashboard-growth-actions">
-                    <a href="<?= url('links?type=biolink') ?>" class="btn btn-primary btn-lg dashboard-growth-cta" id="dashboard_hero_primary_cta">Otvori moje aplikacije</a>
-                    <a href="<?= url('feedback-tickets') ?>" class="btn btn-outline-light btn-lg dashboard-growth-cta-secondary">Podrška i webinar teme</a>
+                    <a href="<?= url('links?type=biolink') ?>" class="btn btn-primary btn-lg dashboard-growth-cta" id="dashboard_hero_primary_cta"><?= l('dashboard.hero.primary_cta') ?></a>
+                    <a href="<?= url('feedback-tickets') ?>" class="btn btn-outline-light btn-lg dashboard-growth-cta-secondary"><?= l('dashboard.hero.secondary_cta') ?></a>
                 </div>
                 <div class="dashboard-onboarding-card dashboard-onboarding-card--embedded mt-4">
                     <div class="dashboard-onboarding-grid">
@@ -1588,10 +1588,6 @@ $dashboard_forever_products_url = fc_get_forever_products_blog_category_url(\Alt
                             <div class="dashboard-growth-eyebrow"><?= l('dashboard.onboarding_intro.eyebrow') ?></div>
                             <h2 class="dashboard-onboarding-title"><?= l('dashboard.onboarding_intro.title') ?></h2>
                             <p class="dashboard-onboarding-text"><?= l('dashboard.onboarding_intro.text') ?></p>
-                            <div class="dashboard-onboarding-quickhelp">
-                                <i class="fas fa-sparkles"></i>
-                                <span><?= l('dashboard.onboarding_modal.subtitle') ?></span>
-                            </div>
                         </div>
                         <div class="dashboard-onboarding-list">
                             <div class="dashboard-onboarding-list-item">
@@ -1609,14 +1605,6 @@ $dashboard_forever_products_url = fc_get_forever_products_blog_category_url(\Alt
                         </div>
                     </div>
                     <div class="dashboard-onboarding-tutorials dashboard-tour-target" id="dashboard_tour_step_tutorials">
-                        <div class="dashboard-onboarding-tutorials-header">
-                            <div>
-                                <div class="dashboard-growth-eyebrow"><?= l('dashboard.tutorials.eyebrow') ?></div>
-                                <h3 class="dashboard-onboarding-tutorials-title"><?= l('dashboard.tutorials.title') ?></h3>
-                                <p class="dashboard-onboarding-tutorials-text"><?= l('dashboard.tutorials.text') ?></p>
-                            </div>
-                        </div>
-
                         <div class="dashboard-onboarding-tutorials-grid">
                             <button type="button" class="dashboard-onboarding-tutorial-button" data-toggle="modal" data-target="#dashboard_blog_referral_tutorial_modal">
                                 <span class="dashboard-onboarding-tutorial-badge"><?= l('dashboard.tutorials.blog_referral.badge') ?></span>
@@ -1634,31 +1622,31 @@ $dashboard_forever_products_url = fc_get_forever_products_blog_category_url(\Alt
             <div class="dashboard-growth-hero-aside dashboard-tour-target" id="dashboard_tour_step_growth">
                 <div class="dashboard-growth-aside-stack">
                     <div class="dashboard-growth-aside-intro">
-                        Ovdje pratiš kvalificirane odlazne klikove koji vode prema Forever Living webshopovima kroz tvoju FCC aplikaciju, blog sadržaj i NFC karticu.
+                        <?= l('dashboard.growth.intro') ?>
                     </div>
                     <div class="dashboard-growth-aside-row">
-                        <span>Odlazni klikovi prema Foreveru u 30 dana</span>
+                        <span><?= l('dashboard.growth.outbound_clicks_label') ?></span>
                         <strong id="dashboard_growth_signal_30d">0</strong>
                     </div>
                     <div class="dashboard-growth-aside-row">
-                        <span>AI status</span>
-                        <strong id="dashboard_growth_stage_label">Početni signal</strong>
+                        <span><?= l('dashboard.growth.ai_status_label') ?></span>
+                        <strong id="dashboard_growth_stage_label"><?= l('dashboard.dynamic.stage.building.label') ?></strong>
                     </div>
                     <div class="dashboard-growth-aside-row">
-                        <span>Sljedeće otključavanje</span>
-                        <strong id="dashboard_next_unlock">Još 15</strong>
+                        <span><?= l('dashboard.growth.next_unlock_label') ?></span>
+                        <strong id="dashboard_next_unlock"><?= l('dashboard.growth.remaining_label') ?> 15</strong>
                     </div>
                     <div class="dashboard-growth-aside-row">
-                        <span>Blog → Forever webshop</span>
+                        <span><?= l('dashboard.growth.blog_webshop_label') ?></span>
                         <strong id="dashboard_blog_signal_30d">0</strong>
                     </div>
 
                     <div class="dashboard-growth-aside-progress">
                         <div class="dashboard-growth-aside-progress-card">
                             <div class="dashboard-growth-aside-progress-top">
-                                <div class="dashboard-growth-aside-progress-label">Prag 15 za aktivni signal</div>
+                                <div class="dashboard-growth-aside-progress-label"><?= l('dashboard.growth.active_threshold_label') ?></div>
                                 <div class="dashboard-growth-aside-progress-value">
-                                    <span>Još</span>
+                                    <span><?= l('dashboard.growth.remaining_label') ?></span>
                                     <strong id="dashboard_active_remaining">15</strong>
                                 </div>
                             </div>
@@ -1666,15 +1654,15 @@ $dashboard_forever_products_url = fc_get_forever_products_blog_category_url(\Alt
                                 <div class="dashboard-growth-progress-fill dashboard-growth-progress-fill--teal" id="dashboard_active_progress_fill"></div>
                             </div>
                             <div class="dashboard-growth-aside-progress-copy" id="dashboard_active_progress_copy">
-                                Kad dođeš do 15 kvalificiranih klikova, otključavaš aktivniji ritam rasta i jači AI signal.
+                                <?= l('dashboard.growth.active_progress_default') ?>
                             </div>
                         </div>
 
                         <div class="dashboard-growth-aside-progress-card">
                             <div class="dashboard-growth-aside-progress-top">
-                                <div class="dashboard-growth-aside-progress-label">Prag 50 za VIP signal</div>
+                                <div class="dashboard-growth-aside-progress-label"><?= l('dashboard.growth.vip_threshold_label') ?></div>
                                 <div class="dashboard-growth-aside-progress-value">
-                                    <span>Još</span>
+                                    <span><?= l('dashboard.growth.remaining_label') ?></span>
                                     <strong id="dashboard_vip_remaining">50</strong>
                                 </div>
                             </div>
@@ -1682,13 +1670,13 @@ $dashboard_forever_products_url = fc_get_forever_products_blog_category_url(\Alt
                                 <div class="dashboard-growth-progress-fill dashboard-growth-progress-fill--gold" id="dashboard_vip_progress_fill"></div>
                             </div>
                             <div class="dashboard-growth-aside-progress-copy" id="dashboard_vip_progress_copy">
-                                VIP signal označava jači kontinuitet prometa, konverzije i spremnosti za ozbiljniji rast.
+                                <?= l('dashboard.growth.vip_progress_default') ?>
                             </div>
                         </div>
                     </div>
 
                     <div class="dashboard-growth-aside-note" id="dashboard_growth_note">
-                        Tvoj plan rasta koristi ovaj 30-dnevni signal kako bi odredio ritam preporuka, AI analize i sljedeći najbolji potez.
+                        <?= l('dashboard.growth.note_default') ?>
                     </div>
                 </div>
             </div>
@@ -1697,89 +1685,89 @@ $dashboard_forever_products_url = fc_get_forever_products_blog_category_url(\Alt
         <div class="dashboard-workbench dashboard-growth-card mb-4 dashboard-tour-target" id="dashboard_tour_step_workbench">
             <div class="dashboard-workbench-header">
                 <div>
-                    <div class="dashboard-growth-eyebrow">Radni pregled</div>
-                    <h2 class="dashboard-workbench-title">Sve je na jednom mjestu</h2>
-                    <p class="dashboard-workbench-copy">Odmah vidi što ti donosi prodajni signal, gdje gubiš rezultat i koji je tvoj sljedeći potez.</p>
+                    <div class="dashboard-growth-eyebrow"><?= l('dashboard.workbench.eyebrow') ?></div>
+                    <h2 class="dashboard-workbench-title"><?= l('dashboard.workbench.title') ?></h2>
+                    <p class="dashboard-workbench-copy"><?= l('dashboard.workbench.description') ?></p>
                 </div>
             </div>
 
             <div class="dashboard-workbench-grid">
                 <div class="dashboard-workbench-card dashboard-workbench-card--green">
-                    <div class="dashboard-growth-pill dashboard-growth-pill--green">Tvoj prodajni sadržaj</div>
-                    <h3>Što ti trenutno donosi klikove</h3>
-                    <p id="dashboard_best_content_summary">Učitavanje prodajnog sadržaja...</p>
+                    <div class="dashboard-growth-pill dashboard-growth-pill--green"><?= l('dashboard.workbench.content_pill') ?></div>
+                    <h3><?= l('dashboard.workbench.content_title') ?></h3>
+                    <p id="dashboard_best_content_summary"><?= l('dashboard.workbench.content_loading') ?></p>
                     <div class="dashboard-workbench-meta">
                         <div>
-                            <span>Top blog</span>
+                            <span><?= l('dashboard.workbench.top_blog') ?></span>
                             <strong id="dashboard_top_blog_title">—</strong>
                         </div>
                         <div>
-                            <span>Top aplikacija</span>
+                            <span><?= l('dashboard.workbench.top_app') ?></span>
                             <strong id="dashboard_top_app_title">—</strong>
                         </div>
                     </div>
                 </div>
 
                 <div class="dashboard-workbench-card dashboard-workbench-card--blue">
-                    <div class="dashboard-growth-pill dashboard-growth-pill--blue">Conversion put</div>
-                    <h3>Gdje se rezultat pretvara</h3>
-                    <p id="dashboard_conversion_summary">Učitavanje conversion puta...</p>
+                    <div class="dashboard-growth-pill dashboard-growth-pill--blue"><?= l('dashboard.workbench.conversion_pill') ?></div>
+                    <h3><?= l('dashboard.workbench.conversion_title') ?></h3>
+                    <p id="dashboard_conversion_summary"><?= l('dashboard.workbench.conversion_loading') ?></p>
                     <div class="dashboard-workbench-meta">
                         <div>
-                            <span>Top zemlja</span>
+                            <span><?= l('dashboard.workbench.top_country') ?></span>
                             <strong id="dashboard_top_country_label">—</strong>
                         </div>
                         <div>
-                            <span>Top izvor</span>
+                            <span><?= l('dashboard.workbench.top_source') ?></span>
                             <strong id="dashboard_top_source_label">—</strong>
                         </div>
                     </div>
                 </div>
 
                 <div class="dashboard-workbench-card dashboard-workbench-card--gold dashboard-tour-target" id="dashboard_tour_step_support">
-                    <div class="dashboard-growth-pill dashboard-growth-pill--gold">Podrška i webinar</div>
-                    <h3>Signal za podršku i sljedeći webinar</h3>
-                    <p id="dashboard_support_summary_text">Učitavanje support signala...</p>
+                    <div class="dashboard-growth-pill dashboard-growth-pill--gold"><?= l('dashboard.workbench.support_pill') ?></div>
+                    <h3><?= l('dashboard.workbench.support_title') ?></h3>
+                    <p id="dashboard_support_summary_text"><?= l('dashboard.workbench.support_loading') ?></p>
                     <div class="dashboard-workbench-meta">
                         <div>
-                            <span>Otvoreni razgovori</span>
+                            <span><?= l('dashboard.workbench.open_conversations') ?></span>
                             <strong id="dashboard_support_open_total">0</strong>
                         </div>
                         <div>
-                            <span>Nepročitani admin odgovori</span>
+                            <span><?= l('dashboard.workbench.unread_admin_replies') ?></span>
                             <strong id="dashboard_support_unread_total">0</strong>
                         </div>
                     </div>
                     <div class="dashboard-workbench-actions">
-                        <a href="<?= url('feedback-tickets') ?>" class="btn btn-primary" id="dashboard_support_primary_cta">Otvori podršku</a>
-                        <a href="<?= url('feedback-tickets') ?>" class="btn btn-outline-light" id="dashboard_support_secondary_cta">Predloži webinar temu</a>
+                        <a href="<?= url('feedback-tickets') ?>" class="btn btn-primary" id="dashboard_support_primary_cta"><?= l('dashboard.workbench.support_primary_cta') ?></a>
+                        <a href="<?= url('feedback-tickets') ?>" class="btn btn-outline-light" id="dashboard_support_secondary_cta"><?= l('dashboard.workbench.support_secondary_cta') ?></a>
                     </div>
                 </div>
             </div>
 
             <div class="dashboard-workbench-note">
-                Klik na blokove vodi te prema aplikacijama, funnelima i podršci. Sustav je posložen da odmah vidiš što vrijedi ponoviti, što popraviti i što sada radi najbolje.
+                <?= l('dashboard.workbench.note') ?>
             </div>
         </div>
 
         <div class="dashboard-growth-kpi-grid mb-4">
             <div class="dashboard-growth-kpi">
-                <div class="dashboard-growth-kpi-label">Posjete aplikacijama</div>
+                <div class="dashboard-growth-kpi-label"><?= l('dashboard.kpi.biolink_visits') ?></div>
                 <div class="dashboard-growth-kpi-value" id="dashboard_biolink_visits_30d">0</div>
                 <div class="dashboard-growth-kpi-delta" id="dashboard_biolink_visits_delta">—</div>
             </div>
             <div class="dashboard-growth-kpi">
-                <div class="dashboard-growth-kpi-label">Kvalificirani klikovi</div>
+                <div class="dashboard-growth-kpi-label"><?= l('dashboard.kpi.qualified_clicks') ?></div>
                 <div class="dashboard-growth-kpi-value" id="dashboard_qualified_clicks_30d">0</div>
                 <div class="dashboard-growth-kpi-delta" id="dashboard_qualified_clicks_delta">—</div>
             </div>
             <div class="dashboard-growth-kpi">
-                <div class="dashboard-growth-kpi-label">Klikovi na prijavu</div>
+                <div class="dashboard-growth-kpi-label"><?= l('dashboard.kpi.registration_clicks') ?></div>
                 <div class="dashboard-growth-kpi-value" id="dashboard_forever_registration_clicks_30d">0</div>
                 <div class="dashboard-growth-kpi-delta" id="dashboard_registration_clicks_delta">—</div>
             </div>
             <div class="dashboard-growth-kpi">
-                <div class="dashboard-growth-kpi-label">Funnel leadovi</div>
+                <div class="dashboard-growth-kpi-label"><?= l('dashboard.kpi.funnel_leads') ?></div>
                 <div class="dashboard-growth-kpi-value" id="dashboard_funnel_leads_30d">0</div>
                 <div class="dashboard-growth-kpi-delta" id="dashboard_funnel_conversion_rate_30d">—</div>
             </div>
@@ -1788,24 +1776,24 @@ $dashboard_forever_products_url = fc_get_forever_products_blog_category_url(\Alt
         <div class="dashboard-main-grid">
             <div class="dashboard-focus-grid mb-4">
                 <div class="dashboard-growth-card dashboard-side-card dashboard-side-card--green">
-                    <div class="dashboard-growth-eyebrow">Što ti radi</div>
-                    <h3 class="dashboard-side-card-title">Nastavi s onim što već nosi rezultat</h3>
-                    <div class="dashboard-side-card-list" id="dashboard_strengths_list">Učitavanje...</div>
+                    <div class="dashboard-growth-eyebrow"><?= l('dashboard.focus.strengths_eyebrow') ?></div>
+                    <h3 class="dashboard-side-card-title"><?= l('dashboard.focus.strengths_title') ?></h3>
+                    <div class="dashboard-side-card-list" id="dashboard_strengths_list"><?= l('dashboard.loading') ?></div>
                 </div>
 
                 <div class="dashboard-growth-card dashboard-side-card dashboard-side-card--gold">
-                    <div class="dashboard-growth-eyebrow">Što te koči</div>
-                    <h3 class="dashboard-side-card-title">Glavni blocker koji sada treba riješiti</h3>
-                    <div class="dashboard-side-card-list" id="dashboard_blockers_list">Učitavanje...</div>
+                    <div class="dashboard-growth-eyebrow"><?= l('dashboard.focus.blockers_eyebrow') ?></div>
+                    <h3 class="dashboard-side-card-title"><?= l('dashboard.focus.blockers_title') ?></h3>
+                    <div class="dashboard-side-card-list" id="dashboard_blockers_list"><?= l('dashboard.loading') ?></div>
                 </div>
 
                 <div class="dashboard-growth-card dashboard-side-card dashboard-side-card--blue dashboard-tour-target" id="dashboard_tour_step_next_action">
-                    <div class="dashboard-growth-eyebrow">Tvoj sljedeći potez</div>
-                    <h3 class="dashboard-side-card-title" id="dashboard_next_action_title">Pripremamo preporuku...</h3>
-                    <p class="dashboard-side-card-copy" id="dashboard_next_action_description">Sustav slaže sljedeći najbolji potez na temelju tvog prodajnog signala i conversion puta.</p>
+                    <div class="dashboard-growth-eyebrow"><?= l('dashboard.focus.next_action_eyebrow') ?></div>
+                    <h3 class="dashboard-side-card-title" id="dashboard_next_action_title"><?= l('dashboard.focus.next_action_loading_title') ?></h3>
+                    <p class="dashboard-side-card-copy" id="dashboard_next_action_description"><?= l('dashboard.focus.next_action_loading_description') ?></p>
                     <div class="d-flex flex-wrap" style="gap:.65rem;">
-                        <a href="<?= url('links?type=biolink') ?>" class="btn btn-primary dashboard-growth-button" id="dashboard_next_action_cta">Otvori moje aplikacije</a>
-                        <a href="<?= url('feedback-tickets') ?>" class="btn btn-outline-light dashboard-growth-button">Podrška</a>
+                        <a href="<?= url('links?type=biolink') ?>" class="btn btn-primary dashboard-growth-button" id="dashboard_next_action_cta"><?= l('dashboard.hero.primary_cta') ?></a>
+                        <a href="<?= url('feedback-tickets') ?>" class="btn btn-outline-light dashboard-growth-button"><?= l('dashboard.focus.next_action_support_cta') ?></a>
                     </div>
                 </div>
             </div>
@@ -1813,15 +1801,15 @@ $dashboard_forever_products_url = fc_get_forever_products_blog_category_url(\Alt
             <div class="dashboard-growth-card dashboard-signal-chart-card h-100 dashboard-tour-target" id="dashboard_tour_step_chart">
                 <div class="dashboard-chart-card-header">
                     <div>
-                        <div class="dashboard-growth-eyebrow">Signal kroz 30 dana</div>
-                        <h2 class="dashboard-workbench-title mb-2">Klikovi koji grade rezultat</h2>
-                        <p class="dashboard-workbench-copy mb-0">Prati odvojeno blog → Forever, aplikacija → Forever, prijave i funnel leadove.</p>
+                        <div class="dashboard-growth-eyebrow"><?= l('dashboard.chart.eyebrow') ?></div>
+                        <h2 class="dashboard-workbench-title mb-2"><?= l('dashboard.chart.title') ?></h2>
+                        <p class="dashboard-workbench-copy mb-0"><?= l('dashboard.chart.description') ?></p>
                     </div>
                     <div class="dashboard-chart-legend">
-                        <span><i class="fas fa-circle" style="color:#49e3cf"></i> Aplikacija → Forever</span>
-                        <span><i class="fas fa-circle" style="color:#5bb6ff"></i> Blog → Forever</span>
-                        <span><i class="fas fa-circle" style="color:#ffd166"></i> Prijave</span>
-                        <span><i class="fas fa-circle" style="color:#8b5cf6"></i> Funnel leadovi</span>
+                        <span><i class="fas fa-circle" style="color:#49e3cf"></i> <?= l('dashboard.chart.legend_app') ?></span>
+                        <span><i class="fas fa-circle" style="color:#5bb6ff"></i> <?= l('dashboard.chart.legend_blog') ?></span>
+                        <span><i class="fas fa-circle" style="color:#ffd166"></i> <?= l('dashboard.chart.legend_registrations') ?></span>
+                        <span><i class="fas fa-circle" style="color:#8b5cf6"></i> <?= l('dashboard.chart.legend_leads') ?></span>
                     </div>
                 </div>
                 <div class="chart-container d-flex align-items-center justify-content-center" id="dashboard_signal_chart_loading">
@@ -1839,25 +1827,25 @@ $dashboard_forever_products_url = fc_get_forever_products_blog_category_url(\Alt
         <div class="dashboard-lists-grid">
             <div>
                 <div class="dashboard-growth-card dashboard-list-card">
-                    <div class="dashboard-growth-eyebrow">Klikovi koji ulaze u prag 15</div>
-                    <h3 class="dashboard-side-card-title">Kvalificirani klikovi prema Foreveru</h3>
-                    <div class="dashboard-workbench-copy mb-3">Ovdje vidiš odakle dolaze tvoji kvalificirani klikovi prema Forever webshopu.</div>
-                    <div id="dashboard_top_forever_pages_30d" class="small text-muted">Učitavanje...</div>
+                    <div class="dashboard-growth-eyebrow"><?= l('dashboard.lists.qualified_eyebrow') ?></div>
+                    <h3 class="dashboard-side-card-title"><?= l('dashboard.lists.qualified_title') ?></h3>
+                    <div class="dashboard-workbench-copy mb-3"><?= l('dashboard.lists.qualified_description') ?></div>
+                    <div id="dashboard_top_forever_pages_30d" class="small text-muted"><?= l('dashboard.loading') ?></div>
                 </div>
             </div>
             <div>
                 <div class="dashboard-growth-card dashboard-list-card">
-                    <div class="dashboard-growth-eyebrow">Izvori klikova</div>
-                    <h3 class="dashboard-side-card-title">Kanali koji dovode interes</h3>
-                    <div id="dashboard_top_shop_sources_30d" class="small text-muted">Učitavanje...</div>
+                    <div class="dashboard-growth-eyebrow"><?= l('dashboard.lists.sources_eyebrow') ?></div>
+                    <h3 class="dashboard-side-card-title"><?= l('dashboard.lists.sources_title') ?></h3>
+                    <div id="dashboard_top_shop_sources_30d" class="small text-muted"><?= l('dashboard.loading') ?></div>
                     <div id="dashboard_top_shop_sources_30d_toggle" class="pt-2"></div>
                 </div>
             </div>
             <div>
                 <div class="dashboard-growth-card dashboard-list-card">
-                    <div class="dashboard-growth-eyebrow">Tržište</div>
-                    <h3 class="dashboard-side-card-title">Gdje trenutno imaš najviše interesa</h3>
-                    <div id="dashboard_top_countries_30d" class="small text-muted">Učitavanje...</div>
+                    <div class="dashboard-growth-eyebrow"><?= l('dashboard.lists.market_eyebrow') ?></div>
+                    <h3 class="dashboard-side-card-title"><?= l('dashboard.lists.market_title') ?></h3>
+                    <div id="dashboard_top_countries_30d" class="small text-muted"><?= l('dashboard.loading') ?></div>
                     <div id="dashboard_top_countries_30d_toggle" class="pt-2"></div>
                 </div>
             </div>
@@ -1873,7 +1861,6 @@ $dashboard_forever_products_url = fc_get_forever_products_blog_category_url(\Alt
             <div class="modal-header">
                 <div>
                     <h5 class="modal-title" id="dashboard_how_fcc_works_modal_title"><?= l('dashboard.onboarding_modal.title') ?></h5>
-                    <div class="small text-muted mt-1"><?= l('dashboard.onboarding_modal.subtitle') ?></div>
                 </div>
                 <button type="button" class="close" data-dismiss="modal" aria-label="<?= l('global.close') ?>">
                     <span aria-hidden="true">&times;</span>
@@ -2067,6 +2054,102 @@ $dashboard_forever_products_url = fc_get_forever_products_blog_category_url(\Alt
             external_url: <?= json_encode(l('biolink_lead_funnel.thank_you_type_external_url')) ?>,
             biolink_redirect: <?= json_encode(l('biolink_lead_funnel.thank_you_type_biolink_redirect')) ?>,
             file_download: <?= json_encode(l('biolink_lead_funnel.thank_you_type_file_download')) ?>,
+        };
+
+        const dashboard_i18n = {
+            source_direct: <?= json_encode(l('dashboard.forever_analytics.source_direct')) ?>,
+            fetch_error: <?= json_encode(l('dashboard.dynamic.fetch_error')) ?>,
+            hero_fallback_title: <?= json_encode(l('dashboard.dynamic.hero_fallback_title')) ?>,
+            hero_primary_cta: <?= json_encode(l('dashboard.hero.primary_cta')) ?>,
+            support_primary_cta: <?= json_encode(l('dashboard.workbench.support_primary_cta')) ?>,
+            support_secondary_cta: <?= json_encode(l('dashboard.workbench.support_secondary_cta')) ?>,
+            next_action_support_cta: <?= json_encode(l('dashboard.focus.next_action_support_cta')) ?>,
+            no_signal: <?= json_encode(l('dashboard.dynamic.no_signal')) ?>,
+            no_blog_signal: <?= json_encode(l('dashboard.dynamic.no_blog_signal')) ?>,
+            no_app_signal: <?= json_encode(l('dashboard.dynamic.no_app_signal')) ?>,
+            conversion_rate_suffix: <?= json_encode(l('dashboard.kpi.conversion_suffix')) ?>,
+            workbench: {
+                top_blog: <?= json_encode(l('dashboard.workbench.top_blog')) ?>,
+                top_app: <?= json_encode(l('dashboard.workbench.top_app')) ?>,
+                top_country: <?= json_encode(l('dashboard.workbench.top_country')) ?>,
+                top_source: <?= json_encode(l('dashboard.workbench.top_source')) ?>,
+            },
+            stage: {
+                building: {
+                    badge: <?= json_encode(l('dashboard.dynamic.stage.building.badge')) ?>,
+                    label: <?= json_encode(l('dashboard.dynamic.stage.building.label')) ?>,
+                    unlock: <?= json_encode(l('dashboard.dynamic.stage.building.unlock')) ?>,
+                },
+                active: {
+                    badge: <?= json_encode(l('dashboard.dynamic.stage.active.badge')) ?>,
+                    label: <?= json_encode(l('dashboard.dynamic.stage.active.label')) ?>,
+                    unlock: <?= json_encode(l('dashboard.dynamic.stage.active.unlock')) ?>,
+                },
+                vip: {
+                    badge: <?= json_encode(l('dashboard.dynamic.stage.vip.badge')) ?>,
+                    label: <?= json_encode(l('dashboard.dynamic.stage.vip.label')) ?>,
+                    unlock: <?= json_encode(l('dashboard.dynamic.stage.vip.unlock')) ?>,
+                },
+            },
+            templates: {
+                active_progress_remaining: <?= json_encode(l('dashboard.dynamic.active_progress_remaining')) ?>,
+                active_progress_unlocked: <?= json_encode(l('dashboard.dynamic.active_progress_unlocked')) ?>,
+                vip_progress_remaining: <?= json_encode(l('dashboard.dynamic.vip_progress_remaining')) ?>,
+                vip_progress_unlocked: <?= json_encode(l('dashboard.dynamic.vip_progress_unlocked')) ?>,
+                growth_note_webinars: <?= json_encode(l('dashboard.dynamic.growth_note_webinars')) ?>,
+                growth_note_default: <?= json_encode(l('dashboard.growth.note_default')) ?>,
+                best_content_blog: <?= json_encode(l('dashboard.dynamic.best_content_blog')) ?>,
+                best_content_app: <?= json_encode(l('dashboard.dynamic.best_content_app')) ?>,
+                best_content_none: <?= json_encode(l('dashboard.dynamic.best_content_none')) ?>,
+                conversion_registration_gap: <?= json_encode(l('dashboard.dynamic.conversion_registration_gap')) ?>,
+                conversion_leads: <?= json_encode(l('dashboard.dynamic.conversion_leads')) ?>,
+                conversion_default: <?= json_encode(l('dashboard.dynamic.conversion_default')) ?>,
+                conversion_best_opening: <?= json_encode(l('dashboard.dynamic.conversion_best_opening')) ?>,
+                conversion_best_thank_you: <?= json_encode(l('dashboard.dynamic.conversion_best_thank_you')) ?>,
+                strength_blog: <?= json_encode(l('dashboard.dynamic.strength_blog')) ?>,
+                strength_app: <?= json_encode(l('dashboard.dynamic.strength_app')) ?>,
+                strength_funnel: <?= json_encode(l('dashboard.dynamic.strength_funnel')) ?>,
+                strength_source: <?= json_encode(l('dashboard.dynamic.strength_source')) ?>,
+                strengths_empty: <?= json_encode(l('dashboard.focus.strengths.empty')) ?>,
+                blocker_active_gap: <?= json_encode(l('dashboard.dynamic.blocker_active_gap')) ?>,
+                blocker_no_registrations: <?= json_encode(l('dashboard.dynamic.blocker_no_registrations')) ?>,
+                blocker_funnel_no_leads: <?= json_encode(l('dashboard.dynamic.blocker_funnel_no_leads')) ?>,
+                blocker_repeated_issue: <?= json_encode(l('dashboard.dynamic.blocker_repeated_issue')) ?>,
+                blockers_empty: <?= json_encode(l('dashboard.focus.blockers.empty')) ?>,
+                next_action_fallback_title: <?= json_encode(l('dashboard.dynamic.next_action_fallback_title')) ?>,
+                next_action_fallback_description: <?= json_encode(l('dashboard.dynamic.next_action_fallback_description')) ?>,
+                support_repeated_issue: <?= json_encode(l('dashboard.dynamic.support_repeated_issue')) ?>,
+                support_unread: <?= json_encode(l('dashboard.dynamic.support_unread')) ?>,
+                support_default: <?= json_encode(l('dashboard.dynamic.support_default')) ?>,
+                support_secondary_webinar_topics: <?= json_encode(l('dashboard.dynamic.support_secondary_webinar_topics')) ?>,
+            },
+            actions: {
+                support_primary_admin_replies: <?= json_encode(l('dashboard.dynamic.support_primary_admin_replies')) ?>,
+            },
+            channels: {
+                app_badge: <?= json_encode(l('dashboard.dynamic.channel_app_badge')) ?>,
+                app_title: <?= json_encode(l('dashboard.dynamic.channel_app_title')) ?>,
+                app_copy: <?= json_encode(l('dashboard.dynamic.channel_app_copy')) ?>,
+                blog_badge: <?= json_encode(l('dashboard.dynamic.channel_blog_badge')) ?>,
+                blog_title: <?= json_encode(l('dashboard.dynamic.channel_blog_title')) ?>,
+                blog_copy: <?= json_encode(l('dashboard.dynamic.channel_blog_copy')) ?>,
+            },
+            chart: {
+                app: <?= json_encode(l('dashboard.chart.legend_app')) ?>,
+                blog: <?= json_encode(l('dashboard.chart.legend_blog')) ?>,
+                registrations: <?= json_encode(l('dashboard.chart.legend_registrations')) ?>,
+                leads: <?= json_encode(l('dashboard.chart.legend_leads')) ?>,
+            }
+        };
+
+        const dashboard_format = (template, replacements = {}) => {
+            let output = String(template ?? '');
+
+            Object.entries(replacements).forEach(([key, value]) => {
+                output = output.split(`{${key}}`).join(String(value));
+            });
+
+            return output;
         };
 
         const dashboard_compact_state = {};
@@ -2610,8 +2693,8 @@ $dashboard_forever_products_url = fc_get_forever_products_blog_category_url(\Alt
                 : `${window.location.origin}/dashboard/get_stats_ajax`;
             /* /Custom code: FC-2026-03-05 */
 
-            const render_dashboard_fetch_error = (message = 'Podaci se trenutno ne mogu učitati. Osvježi stranicu ili pokušaj ponovno za nekoliko trenutaka.') => {
-                const safeMessage = message || 'Podaci se trenutno ne mogu učitati. Osvježi stranicu ili pokušaj ponovno za nekoliko trenutaka.';
+            const render_dashboard_fetch_error = (message = dashboard_i18n.fetch_error) => {
+                const safeMessage = message || dashboard_i18n.fetch_error;
                 const loadingTargets = [
                     '#dashboard_strengths_list',
                     '#dashboard_blockers_list',
@@ -2743,6 +2826,16 @@ $dashboard_forever_products_url = fc_get_forever_products_blog_category_url(\Alt
                     return '0';
                 };
 
+                const dashboard_source_label = source => {
+                    const safeSource = String(dashboard_value(source, '') || '').trim();
+
+                    if(safeSource === '' || safeSource === '(direct)') {
+                        return dashboard_i18n.source_direct;
+                    }
+
+                    return safeSource;
+                };
+
                 const dashboard_forever_analytics = dashboard_value(data.details.dashboard_forever_analytics, {});
                 const dashboard_funnel_analytics = dashboard_value(data.details.dashboard_funnel_analytics, {});
                 const dashboard_support_summary = dashboard_value(data.details.dashboard_support_summary, {});
@@ -2802,19 +2895,19 @@ $dashboard_forever_products_url = fc_get_forever_products_blog_category_url(\Alt
 
                 const stage_map = {
                     building: {
-                        badge: 'Na putu do 15',
-                        label: 'Početni signal',
-                        unlock: `Još ${dashboard_nr(dashboard_to_active)} do Active signala`
+                        badge: dashboard_i18n.stage.building.badge,
+                        label: dashboard_i18n.stage.building.label,
+                        unlock: dashboard_format(dashboard_i18n.stage.building.unlock, {count: dashboard_nr(dashboard_to_active)})
                     },
                     active: {
-                        badge: 'Active signal',
-                        label: 'Aktivan signal',
-                        unlock: `Još ${dashboard_nr(dashboard_to_vip)} do VIP signala`
+                        badge: dashboard_i18n.stage.active.badge,
+                        label: dashboard_i18n.stage.active.label,
+                        unlock: dashboard_format(dashboard_i18n.stage.active.unlock, {count: dashboard_nr(dashboard_to_vip)})
                     },
                     vip: {
-                        badge: 'VIP momentum',
-                        label: 'VIP signal',
-                        unlock: 'Otključan najjači ritam'
+                        badge: dashboard_i18n.stage.vip.badge,
+                        label: dashboard_i18n.stage.vip.label,
+                        unlock: dashboard_i18n.stage.vip.unlock
                     }
                 };
 
@@ -2822,7 +2915,7 @@ $dashboard_forever_products_url = fc_get_forever_products_blog_category_url(\Alt
                 set_text('#dashboard_growth_stage_badge', selected_stage.badge);
                 set_text('#dashboard_growth_stage_label', selected_stage.label);
                 set_text('#dashboard_next_unlock', selected_stage.unlock);
-                set_text('#dashboard_hero_title', dashboard_value(dashboard_forever_analytics.hero_title, 'Tvoj rast sada'));
+                set_text('#dashboard_hero_title', dashboard_value(dashboard_forever_analytics.hero_title, dashboard_i18n.hero_fallback_title));
                 set_text('#dashboard_hero_description', dashboard_value(dashboard_forever_analytics.hero_description, ''));
                 set_metric('#dashboard_growth_signal_30d', dashboard_forever_analytics.qualified_clicks_30d);
                 set_metric('#dashboard_blog_signal_30d', dashboard_forever_analytics.blog_qualified_clicks_30d);
@@ -2834,99 +2927,99 @@ $dashboard_forever_products_url = fc_get_forever_products_blog_category_url(\Alt
                 set_delta('#dashboard_biolink_visits_delta', dashboard_forever_analytics.biolink_visits_delta_percent);
                 set_delta('#dashboard_qualified_clicks_delta', dashboard_forever_analytics.qualified_clicks_delta_percent);
                 set_delta('#dashboard_registration_clicks_delta', dashboard_forever_analytics.registration_clicks_delta_percent);
-                set_metric('#dashboard_funnel_conversion_rate_30d', dashboard_funnel_analytics.conversion_rate_30d, '% konverzije');
+                set_metric('#dashboard_funnel_conversion_rate_30d', dashboard_funnel_analytics.conversion_rate_30d, dashboard_i18n.conversion_rate_suffix);
                 set_metric('#dashboard_active_remaining', dashboard_forever_analytics.to_active);
                 set_metric('#dashboard_vip_remaining', dashboard_forever_analytics.to_vip);
                 set_progress('#dashboard_active_progress_fill', dashboard_forever_analytics.active_progress_percent);
                 set_progress('#dashboard_vip_progress_fill', dashboard_forever_analytics.vip_progress_percent);
                 set_text('#dashboard_active_progress_copy', dashboard_to_active > 0
-                    ? `Još ${dashboard_nr(dashboard_to_active)} odlaznih klikova prema Forever webshopu do aktivnog ritma u rubrici Tvoj plan rasta.`
-                    : 'Aktivni signal je otključan. Nastavi graditi ritam i pojačaj put od klika do prijave.');
+                    ? dashboard_format(dashboard_i18n.templates.active_progress_remaining, {count: dashboard_nr(dashboard_to_active)})
+                    : dashboard_i18n.templates.active_progress_unlocked);
                 set_text('#dashboard_vip_progress_copy', dashboard_to_vip > 0
-                    ? `Još ${dashboard_nr(dashboard_to_vip)} odlaznih klikova prema Forever webshopu do VIP pristupa i otključavanja punog potencijala AI sustava.`
-                    : 'VIP signal je aktivan. Sada je fokus zadržati kontinuitet i skalirati kanal koji već radi.');
+                    ? dashboard_format(dashboard_i18n.templates.vip_progress_remaining, {count: dashboard_nr(dashboard_to_vip)})
+                    : dashboard_i18n.templates.vip_progress_unlocked);
                 set_text('#dashboard_growth_note', dashboard_webinar_total > 0
-                    ? `Već imaš ${dashboard_nr(dashboard_webinar_total)} prijedloga za webinar iz podrške. Iskoristi ih kao signal što trebaš dodatno razraditi.`
-                    : 'Tvoj plan rasta koristi ovaj 30-dnevni signal odlaznih klikova prema Forever Living webshopovima kako bi odredio ritam preporuka, AI analize i sljedeći najbolji potez.');
+                    ? dashboard_format(dashboard_i18n.templates.growth_note_webinars, {count: dashboard_nr(dashboard_webinar_total)})
+                    : dashboard_i18n.templates.growth_note_default);
 
                 const topBlogContent = dashboard_value(dashboard_forever_analytics.top_blog_content_30d, null);
                 const topAppContent = dashboard_value(dashboard_forever_analytics.top_app_content_30d, null);
-                set_text('#dashboard_top_blog_title', topBlogContent ? (topBlogContent.title || topBlogContent.url || '—') : 'Još nema blog signala');
-                set_text('#dashboard_top_app_title', topAppContent ? (topAppContent.url || '—') : 'Još nema signala iz aplikacije');
+                set_text('#dashboard_top_blog_title', topBlogContent ? (topBlogContent.title || topBlogContent.url || '—') : dashboard_i18n.no_blog_signal);
+                set_text('#dashboard_top_app_title', topAppContent ? (topAppContent.url || '—') : dashboard_i18n.no_app_signal);
 
                 const bestContentSummary = topBlogContent
-                    ? `Najviše klikova prema Foreveru trenutno donosi blog sadržaj ${topBlogContent.title || topBlogContent.url}.`
-                    : (topAppContent ? `Najviše klikova prema Foreveru trenutno donosi aplikacija ili blok ${topAppContent.url}.` : 'Sustav još skuplja dovoljno signala da bi izdvojio najbolji prodajni sadržaj.');
+                    ? dashboard_format(dashboard_i18n.templates.best_content_blog, {title: topBlogContent.title || topBlogContent.url || '—'})
+                    : (topAppContent ? dashboard_format(dashboard_i18n.templates.best_content_app, {title: topAppContent.url || '—'}) : dashboard_i18n.templates.best_content_none);
                 set_text('#dashboard_best_content_summary', bestContentSummary);
 
                 const topCountry = dashboard_value(dashboard_forever_analytics.top_country_30d, null);
                 const topSource = dashboard_value(dashboard_forever_analytics.top_shop_source_30d, null);
-                set_text('#dashboard_top_country_label', topCountry ? `${topCountry.country_code} · ${dashboard_nr(topCountry.total)}` : 'Još nema signala');
-                set_text('#dashboard_top_source_label', topSource ? `${topSource.source} · ${dashboard_nr(topSource.total)}` : 'Još nema signala');
+                set_text('#dashboard_top_country_label', topCountry ? `${topCountry.country_code} · ${dashboard_nr(topCountry.total)}` : dashboard_i18n.no_signal);
+                set_text('#dashboard_top_source_label', topSource ? `${dashboard_source_label(topSource.source)} · ${dashboard_nr(topSource.total)}` : dashboard_i18n.no_signal);
 
                 const conversionSummary = dashboard_registration_clicks_30d <= 0 && dashboard_qualified_clicks_30d > 0
-                    ? 'Klikovi prema Foreveru postoje, ali sada treba pojačati put do prijave i kontakta.'
+                    ? dashboard_i18n.templates.conversion_registration_gap
                     : (dashboard_funnel_leads_30d > 0
-                        ? 'Promet se već pretvara u leadove. Fokus je zadržati najbolji kanal i pojačati ono što već radi.'
-                        : 'Prati gdje promet prelazi iz klika prema prijavi i gdje funnel gubi ljude.');
+                        ? dashboard_i18n.templates.conversion_leads
+                        : dashboard_i18n.templates.conversion_default);
                 const openModeType = dashboard_nested_value(dashboard_funnel_analytics, ['best_open_mode', 'type'], null);
                 const thankYouType = dashboard_nested_value(dashboard_funnel_analytics, ['best_thank_you_type', 'type'], null);
                 const openModeLabel = openModeType && funnel_open_mode_labels[openModeType] ? funnel_open_mode_labels[openModeType] : null;
                 const thankYouLabel = thankYouType && funnel_thank_you_labels[thankYouType] ? funnel_thank_you_labels[thankYouType] : null;
                 const conversionAddOn = [];
                 if(openModeLabel) {
-                    conversionAddOn.push(`Najbolje otvaranje: ${openModeLabel.toLowerCase()}`);
+                    conversionAddOn.push(dashboard_format(dashboard_i18n.templates.conversion_best_opening, {label: openModeLabel.toLowerCase()}));
                 }
                 if(thankYouLabel) {
-                    conversionAddOn.push(`Najbolji thank-you korak: ${thankYouLabel.toLowerCase()}`);
+                    conversionAddOn.push(dashboard_format(dashboard_i18n.templates.conversion_best_thank_you, {label: thankYouLabel.toLowerCase()}));
                 }
                 set_text('#dashboard_conversion_summary', conversionAddOn.length ? `${conversionSummary} ${conversionAddOn.join(' · ')}.` : conversionSummary);
 
                 const strengths = [];
                 if(dashboard_blog_qualified_clicks_30d > 0) {
-                    strengths.push(`Blog prema Foreveru već nosi ${dashboard_nr(dashboard_blog_qualified_clicks_30d)} kvalificiranih klikova.`);
+                    strengths.push(dashboard_format(dashboard_i18n.templates.strength_blog, {count: dashboard_nr(dashboard_blog_qualified_clicks_30d)}));
                 }
                 if(dashboard_app_qualified_clicks_30d > 0) {
-                    strengths.push(`Aplikacija i blokovi donose ${dashboard_nr(dashboard_app_qualified_clicks_30d)} kvalificiranih klikova.`);
+                    strengths.push(dashboard_format(dashboard_i18n.templates.strength_app, {count: dashboard_nr(dashboard_app_qualified_clicks_30d)}));
                 }
                 if(dashboard_funnel_leads_30d > 0) {
-                    strengths.push(`Funnel je u zadnjih 30 dana donio ${dashboard_nr(dashboard_funnel_leads_30d)} leadova.`);
+                    strengths.push(dashboard_format(dashboard_i18n.templates.strength_funnel, {count: dashboard_nr(dashboard_funnel_leads_30d)}));
                 }
                 if(topSource && topSource.source) {
-                    strengths.push(`Najviše interesa trenutno dolazi iz izvora ${topSource.source}.`);
+                    strengths.push(dashboard_format(dashboard_i18n.templates.strength_source, {source: dashboard_source_label(topSource.source)}));
                 }
-                set_html('#dashboard_strengths_list', strengths.length ? strengths.map(item => `<div class="dashboard-side-card-list-item is-positive">${item}</div>`).join('') : `<div class="dashboard-side-card-list-item is-positive">Sustav još skuplja dovoljno signala da izdvoji tvoje najjače točke.</div>`);
+                set_html('#dashboard_strengths_list', strengths.length ? strengths.map(item => `<div class="dashboard-side-card-list-item is-positive">${item}</div>`).join('') : `<div class="dashboard-side-card-list-item is-positive">${dashboard_i18n.templates.strengths_empty}</div>`);
 
                 const blockers = [];
                 if(dashboard_qualified_clicks_30d < dashboard_growth_active_threshold) {
-                    blockers.push(`Još ti nedostaje ${dashboard_nr(dashboard_to_active)} kvalificiranih klikova do Active praga.`);
+                    blockers.push(dashboard_format(dashboard_i18n.templates.blocker_active_gap, {count: dashboard_nr(dashboard_to_active)}));
                 }
                 if(dashboard_registration_clicks_30d <= 0 && dashboard_qualified_clicks_30d > 0) {
-                    blockers.push('Imaš klikove prema Foreveru, ali još nema dovoljno prijava.');
+                    blockers.push(dashboard_i18n.templates.blocker_no_registrations);
                 }
                 if(dashboard_funnel_unique_clicks_30d > 0 && dashboard_funnel_leads_30d <= 0) {
-                    blockers.push('Funnel ima promet, ali još ne pretvara dovoljno u leadove.');
+                    blockers.push(dashboard_i18n.templates.blocker_funnel_no_leads);
                 }
                 if(dashboard_support_repeated_issue_detected && !dashboard_webinar_total) {
-                    blockers.push('Isti problem se ponavlja kroz podršku, vrijedi predložiti temu za webinar.');
+                    blockers.push(dashboard_i18n.templates.blocker_repeated_issue);
                 }
-                set_html('#dashboard_blockers_list', blockers.length ? blockers.map(item => `<div class="dashboard-side-card-list-item is-warning">${item}</div>`).join('') : `<div class="dashboard-side-card-list-item is-warning">Trenutno nema jednog velikog blockera. Fokus je zadržati ritam i pojačati ono što već radi.</div>`);
+                set_html('#dashboard_blockers_list', blockers.length ? blockers.map(item => `<div class="dashboard-side-card-list-item is-warning">${item}</div>`).join('') : `<div class="dashboard-side-card-list-item is-warning">${dashboard_i18n.templates.blockers_empty}</div>`);
 
                 const dashboardRecommendations = Array.isArray(dashboard_forever_analytics.recommendations) ? dashboard_forever_analytics.recommendations : [];
                 const nextRecommendation = dashboardRecommendations.length ? dashboardRecommendations[0] : null;
-                set_text('#dashboard_next_action_title', nextRecommendation && nextRecommendation.title ? nextRecommendation.title : dashboard_value(dashboard_forever_analytics.next_focus, 'Zadrži fokus na najboljem kanalu'));
-                set_text('#dashboard_next_action_description', nextRecommendation && nextRecommendation.description ? nextRecommendation.description : 'Sustav trenutno ne vidi hitnu blokadu, pa je najbolji potez ponoviti sadržaj koji već donosi klikove i dodatno pojačati CTA.');
+                set_text('#dashboard_next_action_title', nextRecommendation && nextRecommendation.title ? nextRecommendation.title : dashboard_value(dashboard_forever_analytics.next_focus, dashboard_i18n.templates.next_action_fallback_title));
+                set_text('#dashboard_next_action_description', nextRecommendation && nextRecommendation.description ? nextRecommendation.description : dashboard_i18n.templates.next_action_fallback_description);
                 const nextActionCta = document.querySelector('#dashboard_next_action_cta');
                 if(nextActionCta) {
-                    nextActionCta.innerText = nextRecommendation && nextRecommendation.cta_label ? nextRecommendation.cta_label : 'Otvori moje aplikacije';
+                    nextActionCta.innerText = nextRecommendation && nextRecommendation.cta_label ? nextRecommendation.cta_label : dashboard_i18n.hero_primary_cta;
                     nextActionCta.setAttribute('href', nextRecommendation && nextRecommendation.cta_url ? nextRecommendation.cta_url : <?= json_encode(url('links?type=biolink')) ?>);
                 }
 
                 const supportSummaryText = dashboard_support_repeated_issue_detected && !dashboard_webinar_total
-                    ? 'Čini se da se ista tema ponavlja. Vrijedi poslati prijedlog da je obradimo na sljedećem webinaru.'
+                    ? dashboard_i18n.templates.support_repeated_issue
                     : (dashboard_support_unread_total > 0
-                        ? `Imaš ${dashboard_nr(dashboard_support_unread_total)} nepročitana admin odgovora u podršci.`
-                        : 'Podrška ti je spremna za pitanja, ideje i prijedloge tema koje želiš obraditi kroz timski ili osobni webinar.');
+                        ? dashboard_format(dashboard_i18n.templates.support_unread, {count: dashboard_nr(dashboard_support_unread_total)})
+                        : dashboard_i18n.templates.support_default);
                 set_text('#dashboard_support_summary_text', supportSummaryText);
                 set_metric('#dashboard_support_open_total', dashboard_support_summary.open_total);
                 set_metric('#dashboard_support_unread_total', dashboard_support_summary.unread_total);
@@ -2934,13 +3027,13 @@ $dashboard_forever_products_url = fc_get_forever_products_blog_category_url(\Alt
                 const supportSecondaryCta = document.querySelector('#dashboard_support_secondary_cta');
                 if(supportPrimaryCta) {
                     supportPrimaryCta.setAttribute('href', dashboard_value(dashboard_support_summary.selected_ticket_url, <?= json_encode(url('feedback-tickets')) ?>));
-                    supportPrimaryCta.innerText = dashboard_support_unread_total > 0 ? 'Otvori odgovore admina' : 'Otvori podršku';
+                    supportPrimaryCta.innerText = dashboard_support_unread_total > 0 ? dashboard_i18n.actions.support_primary_admin_replies : dashboard_i18n.support_primary_cta;
                 }
                 if(supportSecondaryCta) {
                     supportSecondaryCta.setAttribute('href', <?= json_encode(url('feedback-tickets')) ?>);
                     supportSecondaryCta.innerText = dashboard_support_repeated_issue_detected && !dashboard_webinar_total
-                        ? 'Predloži webinar temu'
-                        : `Webinar teme (${dashboard_nr(dashboard_webinar_total)})`;
+                        ? dashboard_i18n.support_secondary_cta
+                        : dashboard_format(dashboard_i18n.templates.support_secondary_webinar_topics, {count: dashboard_nr(dashboard_webinar_total)});
                 }
 
                 const top_countries_html = dashboard_value(dashboard_forever_analytics.top_countries_30d, []).map(country => `
@@ -2953,17 +3046,17 @@ $dashboard_forever_products_url = fc_get_forever_products_blog_category_url(\Alt
 
                 const groupedProgressChannels = [
                     {
-                        badge: 'FCC aplikacija',
+                        badge: dashboard_i18n.channels.app_badge,
                         badgeClass: 'dashboard-list-source-badge dashboard-list-source-badge--app',
-                        title: 'FCC aplikacija',
-                        copy: 'Odlazni klikovi prema Forever webshopu iz tvoje FCC aplikacije.',
+                        title: dashboard_i18n.channels.app_title,
+                        copy: dashboard_i18n.channels.app_copy,
                         total: Number(dashboard_value(dashboard_forever_analytics.app_qualified_clicks_30d, 0)),
                     },
                     {
-                        badge: 'Blog članak',
+                        badge: dashboard_i18n.channels.blog_badge,
                         badgeClass: 'dashboard-list-source-badge dashboard-list-source-badge--blog',
-                        title: 'Podijeljeni blog članak',
-                        copy: 'Odlazni klikovi prema Forever webshopu iz blog članaka koje dijeliš.',
+                        title: dashboard_i18n.channels.blog_title,
+                        copy: dashboard_i18n.channels.blog_copy,
                         total: Number(dashboard_value(dashboard_forever_analytics.blog_qualified_clicks_30d, 0)),
                     }
                 ];
@@ -2986,7 +3079,7 @@ $dashboard_forever_products_url = fc_get_forever_products_blog_category_url(\Alt
 
                 const top_shop_sources_html = dashboard_value(dashboard_forever_analytics.top_shop_sources_30d, []).map(item => `
                     <div class="dashboard-side-card-list-item d-flex justify-content-between align-items-center">
-                        <span class="text-truncate pr-2">${item.source ? item.source : '<?= l('dashboard.forever_analytics.source_direct') ?>'}</span>
+                        <span class="text-truncate pr-2">${dashboard_source_label(item.source)}</span>
                         <strong>${dashboard_nr(dashboard_value(item.total, 0))}</strong>
                     </div>
                 `);
@@ -3032,7 +3125,7 @@ $dashboard_forever_products_url = fc_get_forever_products_blog_category_url(\Alt
                                 labels: signalChartData.labels,
                                 datasets: [
                                     {
-                                        label: 'Aplikacija → Forever',
+                                        label: dashboard_i18n.chart.app,
                                         data: dashboard_value(signalChartData.app_clicks, []),
                                         borderColor: '#49e3cf',
                                         backgroundColor: 'rgba(73,227,207,.12)',
@@ -3042,7 +3135,7 @@ $dashboard_forever_products_url = fc_get_forever_products_blog_category_url(\Alt
                                         tension: .35
                                     },
                                     {
-                                        label: 'Blog → Forever',
+                                        label: dashboard_i18n.chart.blog,
                                         data: dashboard_value(signalChartData.blog_clicks, []),
                                         borderColor: '#5bb6ff',
                                         backgroundColor: 'rgba(91,182,255,.12)',
@@ -3052,7 +3145,7 @@ $dashboard_forever_products_url = fc_get_forever_products_blog_category_url(\Alt
                                         tension: .35
                                     },
                                     {
-                                        label: 'Prijave',
+                                        label: dashboard_i18n.chart.registrations,
                                         data: dashboard_value(signalChartData.registration_clicks, []),
                                         borderColor: '#ffd166',
                                         backgroundColor: 'rgba(255,209,102,.12)',
@@ -3062,7 +3155,7 @@ $dashboard_forever_products_url = fc_get_forever_products_blog_category_url(\Alt
                                         tension: .35
                                     },
                                     {
-                                        label: 'Funnel leadovi',
+                                        label: dashboard_i18n.chart.leads,
                                         data: dashboard_value(signalChartData.leads, []),
                                         borderColor: '#8b5cf6',
                                         backgroundColor: 'rgba(139,92,246,.12)',

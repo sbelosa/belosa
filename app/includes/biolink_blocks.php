@@ -311,6 +311,7 @@ $forever_blocks = [
         'icon' => 'fas fa-fw fa-percent',
         'color' => '#30a85a',
         'has_statistics' => true,
+        'themable' => true,
         'display_dynamic_name' => 'name',
         'whitelisted_thumbnail_image_extensions' => ['jpg', 'jpeg', 'png', 'svg', 'gif', 'webp'],
         'category' => 'forever',

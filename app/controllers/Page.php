@@ -24,6 +24,24 @@ defined('ALTUMCODE') || die();
 
 class Page extends Controller {
 
+    private function has_personalized_contact_referral_context(): bool {
+        $legacy_referral_slug = 'wpebe1grqr';
+
+        if(!empty($_GET['ref']) && trim((string) $_GET['ref']) !== '') {
+            return true;
+        }
+
+        if(!empty($_COOKIE['referral']) && trim((string) $_COOKIE['referral']) !== '' && trim((string) $_COOKIE['referral']) !== $legacy_referral_slug) {
+            return true;
+        }
+
+        if(!empty($_COOKIE['referred_by']) && trim((string) $_COOKIE['referred_by']) !== '' && trim((string) $_COOKIE['referred_by']) !== $legacy_referral_slug) {
+            return true;
+        }
+
+        return false;
+    }
+
     private function get_logged_in_referral_biolink_url(): ?string {
         $user_id = \Altum\Authentication::check();
 
@@ -711,7 +729,10 @@ class Page extends Controller {
         $page->content = $shortcodes->display_shortcodes($page->content, null);
 
         $collaborator_contact = null;
-        if(mb_strtolower((string) $page->url) === 'contact') {
+        $is_contact_page = mb_strtolower((string) $page->url) === 'contact';
+        $has_personalized_contact_referral_context = $is_contact_page && $this->has_personalized_contact_referral_context();
+
+        if($is_contact_page) {
             $collaborator_aff_biolink = $shortcodes->generate_shorcode('aff_biolink', null);
             $collaborator_aff_url = null;
 
@@ -778,7 +799,9 @@ class Page extends Controller {
         Meta::set_description(string_truncate($meta_description, 160));
         Meta::set_keywords(string_truncate($page_meta_override['keywords'] ?? $page->keywords, 255));
         Meta::set_canonical_url($page_url);
-        if($is_foreverclub_page) {
+        if($has_personalized_contact_referral_context) {
+            Meta::set_robots('noindex,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1');
+        } elseif($is_foreverclub_page) {
             Meta::set_robots('index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1');
         }
         /* /Custom code: FC-2026-03-24 */

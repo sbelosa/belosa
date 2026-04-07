@@ -78,11 +78,11 @@ class AdminLanguageUpdate extends Controller {
                 /* Check if new translation for the field is submitted */
                 if(!empty($_POST[$form_key])) {
                     $values[$form_key] = $_POST[$form_key];
-                    $_POST[$form_key] = addcslashes($_POST[$form_key], "'");
+                    $_POST[$form_key] = addcslashes($_POST[$form_key], "\\'");
 
                     /* Make sure the new translated string contains the required variables if existing */
                     $translated_string = $_POST[$form_key];
-                    $original_translation_string = addcslashes(\Altum\Language::$languages[\Altum\Language::$main_name]['content'][$key], "'");
+                    $original_translation_string = addcslashes(\Altum\Language::$languages[\Altum\Language::$main_name]['content'][$key], "\\'");
 
                     /* Revert to default if the required variables are not introduced */
                     if(count_matched_translation_variables($translated_string) != count_matched_translation_variables($original_translation_string)) {
@@ -102,7 +102,7 @@ class AdminLanguageUpdate extends Controller {
 
                     /* Do not allow removing of translations for the main default one */
                     if($translation_exists && $_POST['language_name'] == Language::$main_name) {
-                        $potential_already_existing_value = addcslashes($language['content'][$key], "'");
+                        $potential_already_existing_value = addcslashes($language['content'][$key], "\\'");
 
                         if(string_starts_with('admin_', $key)) {
                             $admin_language_strings .= "\t'{$key}' => '{$potential_already_existing_value}',\n";
@@ -120,7 +120,7 @@ class AdminLanguageUpdate extends Controller {
                     if(empty($_POST['translation_value'][$key])) continue;
                     if(array_key_exists($value, \Altum\Language::$languages[\Altum\Language::$main_name]['content'])) continue;
 
-                    $translation_value = addcslashes($_POST['translation_value'][$key], "'");
+                    $translation_value = addcslashes($_POST['translation_value'][$key], "\\'");
                     $language_strings .= "\t'{$value}' => '{$translation_value}',\n";
                 }
             }

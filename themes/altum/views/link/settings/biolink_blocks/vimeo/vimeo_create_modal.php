@@ -22,6 +22,11 @@
                     <div class="notification-container"></div>
 
                     <div class="form-group">
+                        <label for="vimeo_title"><i class="fas fa-fw fa-heading fa-sm text-muted mr-1"></i> <?= l('global.title') ?></label>
+                        <input id="vimeo_title" type="text" class="form-control" name="title" maxlength="256" placeholder="<?= l('global.title') ?>" />
+                    </div>
+
+                    <div class="form-group">
                         <label for="vimeo_location_url"><i class="fas fa-fw fa-link fa-sm text-muted mr-1"></i> <?= l('biolink_vimeo.location_url') ?></label>
                         <input id="vimeo_location_url" type="url" class="form-control" name="location_url" required="required" maxlength="2048" placeholder="<?= l('biolink_vimeo.location_url_placeholder') ?>" />
                     </div>

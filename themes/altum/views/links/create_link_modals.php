@@ -142,6 +142,171 @@
         transform: translateY(-1px);
         box-shadow: 0 16px 32px rgba(63, 215, 199, 0.18) !important;
     }
+
+    .fcc-biolink-create-modal .modal-content {
+        position: relative;
+        overflow: hidden;
+        background:
+            radial-gradient(circle at top right, rgba(223, 190, 112, 0.16) 0%, rgba(223, 190, 112, 0) 34%),
+            radial-gradient(circle at top left, rgba(72, 220, 214, 0.1) 0%, rgba(72, 220, 214, 0) 28%),
+            linear-gradient(180deg, rgba(18, 26, 44, 0.995) 0%, rgba(10, 15, 26, 0.995) 100%);
+        border: 1px solid rgba(144, 191, 255, 0.2);
+        border-radius: 24px;
+        box-shadow:
+            0 30px 64px rgba(4, 13, 27, 0.34),
+            0 0 0 1px rgba(225, 201, 145, 0.04),
+            inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    }
+
+    .fcc-biolink-create-modal .modal-content::before {
+        content: '';
+        position: absolute;
+        left: 1.2rem;
+        right: 1.2rem;
+        top: 0;
+        height: 4px;
+        border-radius: 0 0 999px 999px;
+        background: linear-gradient(90deg, rgba(83, 228, 215, 0.42) 0%, rgba(223, 190, 112, 0.84) 52%, rgba(97, 178, 255, 0.42) 100%);
+        opacity: 0.95;
+        pointer-events: none;
+    }
+
+    .fcc-biolink-create-modal .modal-content::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        box-shadow: inset 0 0 0 1px rgba(239, 217, 171, 0.08);
+        pointer-events: none;
+    }
+
+    .fcc-biolink-create-modal .modal-body {
+        position: relative;
+        z-index: 1;
+        padding: 1.35rem 1.35rem 1.4rem;
+    }
+
+    .fcc-biolink-create-modal .close {
+        color: #dbe8ff;
+        opacity: 0.9;
+        text-shadow: none;
+    }
+
+    .fcc-biolink-create-modal .close:hover {
+        color: #ffffff;
+    }
+
+    .fcc-biolink-create-head {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.85rem;
+        margin-bottom: 1rem;
+    }
+
+    .fcc-biolink-create-icon {
+        width: 2.95rem;
+        height: 2.95rem;
+        border-radius: 17px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        background: linear-gradient(135deg, rgba(75, 118, 243, 0.22) 0%, rgba(223, 190, 112, 0.18) 100%);
+        border: 1px solid rgba(170, 198, 255, 0.16);
+        color: #eef3ff;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    }
+
+    .fcc-biolink-create-head h5 {
+        margin: 0;
+        color: #f5f9ff;
+    }
+
+    .fcc-biolink-create-head p {
+        margin: 0.28rem 0 0;
+        color: #a9bdd6;
+        line-height: 1.62;
+        font-size: 0.93rem;
+    }
+
+    .fcc-biolink-create-note {
+        margin-bottom: 1rem;
+        border-radius: 18px;
+        padding: 0.95rem 1rem;
+        border: 1px solid rgba(139, 202, 234, 0.12);
+        background:
+            linear-gradient(180deg, rgba(16, 24, 38, 0.92) 0%, rgba(12, 18, 30, 0.96) 100%);
+    }
+
+    .fcc-biolink-create-note strong {
+        display: block;
+        margin-bottom: 0.35rem;
+        color: #f5f9ff;
+        font-size: 0.95rem;
+    }
+
+    .fcc-biolink-create-note span {
+        color: #b1c2d8;
+        line-height: 1.62;
+        font-size: 0.9rem;
+    }
+
+    .fcc-biolink-create-modal label {
+        color: #e7f0fb;
+        font-weight: 700;
+    }
+
+    .fcc-biolink-create-modal .form-control,
+    .fcc-biolink-create-modal .custom-select,
+    .fcc-biolink-create-modal .input-group-text {
+        min-height: 3rem;
+        border-radius: 14px;
+        border-color: rgba(224, 235, 255, 0.09);
+        background: rgba(255, 255, 255, 0.04);
+        color: #edf4ff;
+    }
+
+    .fcc-biolink-create-modal .input-group > .form-control:not(:first-child) {
+        border-top-left-radius: 0;
+        border-bottom-left-radius: 0;
+    }
+
+    .fcc-biolink-create-modal .input-group > .input-group-prepend > .input-group-text,
+    .fcc-biolink-create-modal .input-group > .input-group-prepend > .custom-select {
+        border-top-right-radius: 0;
+        border-bottom-right-radius: 0;
+    }
+
+    .fcc-biolink-create-modal .form-control::placeholder {
+        color: #89a0b8;
+    }
+
+    .fcc-biolink-create-modal .form-control:focus,
+    .fcc-biolink-create-modal .custom-select:focus {
+        border-color: rgba(129, 208, 238, 0.3);
+        box-shadow: 0 0 0 0.2rem rgba(83, 228, 215, 0.1);
+    }
+
+    .fcc-biolink-create-modal .text-muted,
+    .fcc-biolink-create-modal .form-text {
+        color: #9db2c8 !important;
+    }
+
+    .fcc-biolink-create-modal .btn-primary {
+        min-height: 3.2rem;
+        border-radius: 16px;
+        border-color: transparent;
+        background: linear-gradient(135deg, #3fd7c7 0%, #6de9dd 100%);
+        color: #082826;
+        font-weight: 800;
+        box-shadow: none !important;
+    }
+
+    .fcc-biolink-create-modal .btn-primary:hover {
+        color: #041b19;
+        transform: translateY(-1px);
+        box-shadow: 0 16px 32px rgba(63, 215, 199, 0.18) !important;
+    }
 </style>
 <?php \Altum\Event::add_content(ob_get_clean(), 'head') ?>
 
@@ -236,16 +401,21 @@
 <?php endif ?>
 
 <?php if(settings()->links->biolinks_is_enabled): ?>
-    <div class="modal fade" id="create_biolink" role="dialog" aria-hidden="true">
+    <div class="modal fade fcc-biolink-create-modal" id="create_biolink" role="dialog" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content">
 
                 <div class="modal-body">
-                    <div class="d-flex justify-content-between mb-3">
-                        <h5 class="modal-title">
-                            <i class="fas fa-fw fa-sm fa-hashtag text-dark mr-2"></i>
-                            <?= l('biolink_modal.header') ?>
-                        </h5>
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div class="fcc-biolink-create-head">
+                            <div class="fcc-biolink-create-icon">
+                                <i class="fas fa-fw fa-sm fa-hashtag"></i>
+                            </div>
+                            <div>
+                                <h5 class="modal-title"><?= l('biolink_modal.header') ?></h5>
+                                <p><?= l('biolink_modal.subheader') ?></p>
+                            </div>
+                        </div>
                         <button type="button" class="close" data-dismiss="modal" title="<?= l('global.close') ?>">
                             <span aria-hidden="true">&times;</span>
                         </button>
@@ -259,8 +429,13 @@
 
                         <div class="notification-container"></div>
 
+                        <div class="fcc-biolink-create-note">
+                            <strong><?= l('biolink_modal.guide_title') ?></strong>
+                            <span><?= l('biolink_modal.guide_text') ?></span>
+                        </div>
+
                         <div class="form-group">
-                            <label for="biolink_url"><i class="fas fa-fw fa-bolt fa-sm text-muted mr-1"></i> <?= l('link.settings.url') ?></label>
+                            <label for="biolink_url"><i class="fas fa-fw fa-bolt fa-sm text-muted mr-1"></i> <?= l('create_link_modal.input.url') ?></label>
                             <div class="input-group">
                                 <div class="input-group-prepend">
                                     <?php if (!empty($data->domains)): ?>
@@ -285,15 +460,15 @@
                                         maxlength="<?= $this->user->plan_settings->url_maximum_characters ?? 64 ?>"
                                         onchange="update_this_value(this, get_slug)"
                                         onkeyup="update_this_value(this, get_slug)"
-                                        placeholder="<?= $this->user->plan_settings->custom_url ? l('global.url_slug_placeholder') : l('link.settings.url_placeholder_random') ?>"
+                                        placeholder="<?= $this->user->plan_settings->custom_url ? l('global.url_slug_placeholder') : l('create_link_modal.input.url_placeholder') ?>"
                                     <?= !$this->user->plan_settings->custom_url ? 'readonly="readonly"' : null ?>
                                     <?= $this->user->plan_settings->custom_url ? null : get_plan_feature_disabled_info() ?>
                                 />
                             </div>
-                            <small class="form-text text-muted"><?= l('link.settings.url_help') ?></small>
+                            <small class="form-text text-muted"><?= l('create_link_modal.input.url_help') ?></small>
                         </div>
 
-                        <p class="small text-muted"><i class="fas fa-fw fa-sm fa-circle-info mr-1"></i> <?= l('link.create_info') ?></p>
+                        <p class="small text-muted"><i class="fas fa-fw fa-sm fa-circle-info mr-1"></i> <?= l('biolink_modal.info') ?></p>
 
                         <div class="text-center mt-4">
                             <button type="submit" name="submit" class="btn btn-block btn-primary" data-is-ajax><?= l('biolink_modal.input.submit') ?></button>

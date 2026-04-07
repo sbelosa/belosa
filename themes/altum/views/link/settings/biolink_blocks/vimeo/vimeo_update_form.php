@@ -9,6 +9,11 @@
     <div class="notification-container"></div>
 
     <div class="form-group">
+        <label for="<?= 'vimeo_title_' . $row->biolink_block_id ?>"><i class="fas fa-fw fa-heading fa-sm text-muted mr-1"></i> <?= l('global.title') ?></label>
+        <input id="<?= 'vimeo_title_' . $row->biolink_block_id ?>" type="text" class="form-control" name="title" value="<?= htmlspecialchars((string) ($row->settings->title ?? ''), ENT_QUOTES, 'UTF-8') ?>" maxlength="256" />
+    </div>
+
+    <div class="form-group">
         <label for="<?= 'vimeo_location_url_' . $row->biolink_block_id ?>"><i class="fas fa-fw fa-link fa-sm text-muted mr-1"></i> <?= l('biolink_vimeo.location_url') ?></label>
         <input id="<?= 'vimeo_location_url_' . $row->biolink_block_id ?>" type="text" class="form-control" name="location_url" value="<?= $row->location_url ?>" maxlength="2048" placeholder="<?= l('biolink_vimeo.location_url_placeholder') ?>" required="required" />
     </div>

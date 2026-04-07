@@ -174,6 +174,28 @@
             background: rgba(73, 200, 218, 0.02);
         }
 
+        .fcc-contact-row-highlight td {
+            background:
+                radial-gradient(circle at 12% 14%, rgba(63, 215, 199, 0.08) 0%, rgba(63, 215, 199, 0) 34%),
+                radial-gradient(circle at 88% 10%, rgba(84, 124, 255, 0.08) 0%, rgba(84, 124, 255, 0) 32%),
+                radial-gradient(circle at 76% 0%, rgba(226, 188, 116, 0.06) 0%, rgba(226, 188, 116, 0) 24%),
+                linear-gradient(180deg, rgba(18, 27, 45, 0.98) 0%, rgba(11, 16, 28, 0.995) 100%) !important;
+            border-top-color: rgba(115, 176, 255, 0.12) !important;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03), inset 0 -1px 0 rgba(63, 215, 199, 0.05);
+        }
+
+        .fcc-contact-row-highlight td:first-child {
+            box-shadow: inset 3px 0 0 rgba(96, 235, 220, 0.36), inset 0 1px 0 rgba(255, 255, 255, 0.03), inset 0 -1px 0 rgba(63, 215, 199, 0.05);
+        }
+
+        .fcc-contact-row-highlight:hover td {
+            background:
+                radial-gradient(circle at 12% 14%, rgba(63, 215, 199, 0.11) 0%, rgba(63, 215, 199, 0) 34%),
+                radial-gradient(circle at 88% 10%, rgba(84, 124, 255, 0.10) 0%, rgba(84, 124, 255, 0) 32%),
+                radial-gradient(circle at 76% 0%, rgba(226, 188, 116, 0.08) 0%, rgba(226, 188, 116, 0) 24%),
+                linear-gradient(180deg, rgba(20, 30, 49, 0.99) 0%, rgba(11, 17, 30, 0.998) 100%) !important;
+        }
+
         .fcc-contact-main {
             display: flex;
             gap: 0.8rem;
@@ -216,6 +238,28 @@
             min-width: 14rem;
         }
 
+        .fcc-contact-source.is-emphasized {
+            position: relative;
+            padding: 0.9rem 1rem;
+            border-radius: 20px;
+            border: 1px solid rgba(118, 180, 255, 0.14);
+            background:
+                radial-gradient(circle at top right, rgba(84, 124, 255, 0.10) 0%, rgba(84, 124, 255, 0) 42%),
+                radial-gradient(circle at 12% 0%, rgba(226, 188, 116, 0.05) 0%, rgba(226, 188, 116, 0) 26%),
+                linear-gradient(180deg, rgba(17, 24, 40, 0.9) 0%, rgba(12, 17, 30, 0.96) 100%);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 18px 34px rgba(3, 10, 23, 0.16);
+        }
+
+        .fcc-contact-source.is-emphasized::before {
+            content: '';
+            position: absolute;
+            inset: 0 0 auto;
+            height: 2px;
+            border-radius: 20px 20px 0 0;
+            background: linear-gradient(90deg, rgba(95, 236, 221, 0.9) 0%, rgba(104, 158, 255, 0.72) 56%, rgba(228, 188, 118, 0.82) 100%);
+            opacity: 0.95;
+        }
+
         .fcc-contact-source-title {
             color: #edf9f7;
             font-weight: 600;
@@ -252,6 +296,13 @@
             border: 1px solid rgba(245, 158, 11, 0.22);
         }
 
+        .fcc-contact-source.is-emphasized .fcc-contact-status-badge.is-review {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.16) 0%, rgba(180, 83, 9, 0.16) 100%);
+            color: #ffe2a6;
+            border-color: rgba(245, 158, 11, 0.3);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+        }
+
         .fcc-contact-tags {
             display: flex;
             flex-wrap: wrap;
@@ -274,6 +325,13 @@
 
         .fcc-contact-actions {
             min-width: 10rem;
+        }
+
+        .fcc-contact-actions.is-emphasized {
+            padding: 0.9rem 0.95rem;
+            border-radius: 18px;
+            border: 1px solid rgba(118, 180, 255, 0.1);
+            background: linear-gradient(180deg, rgba(18, 25, 41, 0.76) 0%, rgba(12, 17, 30, 0.88) 100%);
         }
 
         .fcc-contact-primary-action {
@@ -606,7 +664,8 @@
                             </thead>
                             <tbody>
                             <?php foreach($data->data as $row): ?>
-                                <tr>
+                                <?php $fcc_contact_is_highlighted = $row->contact_status !== 'ready'; ?>
+                                <tr class="<?= $fcc_contact_is_highlighted ? 'fcc-contact-row-highlight' : null ?>">
                                     <td data-bulk-table class="d-none">
                                         <div class="custom-control custom-checkbox">
                                             <input id="selected_datum_id_<?= $row->datum_id ?>" type="checkbox" class="custom-control-input" name="selected[]" value="<?= $row->datum_id ?>" />
@@ -632,7 +691,7 @@
                                     </td>
 
                                     <td>
-                                        <div class="fcc-contact-source">
+                                        <div class="fcc-contact-source <?= $fcc_contact_is_highlighted ? 'is-emphasized' : null ?>">
                                             <div class="fcc-contact-source-title">
                                                 <?= $row->biolink_block_id ? string_truncate($row->settings->name ?? l('global.unknown'), 42) : ($row->source_label ?: l('global.unknown')) ?>
                                             </div>
@@ -670,7 +729,7 @@
                                     </td>
 
                                     <td>
-                                        <div class="fcc-contact-actions">
+                                        <div class="fcc-contact-actions <?= $fcc_contact_is_highlighted ? 'is-emphasized' : null ?>">
                                             <?php if($row->primary_action): ?>
                                                 <a href="<?= $row->primary_action['url'] ?>" target="_blank" rel="noopener noreferrer" class="fcc-contact-primary-action <?= $row->primary_action['class'] ?>">
                                                     <i class="<?= $row->primary_action['icon'] ?>"></i>

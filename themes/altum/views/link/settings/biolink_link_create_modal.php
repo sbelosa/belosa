@@ -347,6 +347,27 @@ $fcc_get_visual_accent = static function(?string $block_color, string $group_col
 
 $fcc_grouped_blocks = array_fill_keys(array_keys($fcc_group_meta), []);
 $fcc_enabled_biolink_blocks = (object) ($this->user->plan_settings->enabled_biolink_blocks ?? []);
+$fcc_ai_editor_payload = $data->ai_editor_payload ?? [];
+$fcc_ai_missing_block_recommendations = is_array($fcc_ai_editor_payload['missing_block_recommendations'] ?? null) ? $fcc_ai_editor_payload['missing_block_recommendations'] : [];
+$fcc_ai_missing_copy = $fcc_is_hr ? [
+    'title' => 'AI blokovi koji nedostaju',
+    'text' => 'Ovdje vidiš što AI smatra da nedostaje ovoj aplikaciji. Dodaj i pripremi odmah ubacuje blok, smješta ga bliže preporučenoj poziciji i otvara ga za uređivanje.',
+    'priority' => 'Prioritet %s',
+    'position_after' => 'Preporučena pozicija: nakon %s',
+    'position_top' => 'Preporučena pozicija: pri vrhu aplikacije',
+    'add' => 'Dodaj i pripremi',
+    'open_picker' => 'Otvori u popisu blokova',
+    'kicker' => 'AI preporuka',
+] : [
+    'title' => 'Missing AI-recommended blocks',
+    'text' => 'This area shows what AI believes is missing from this app. Add and prepare inserts the block, places it closer to the recommended spot, and opens it for editing.',
+    'priority' => 'Priority %s',
+    'position_after' => 'Recommended position: after %s',
+    'position_top' => 'Recommended position: near the top of the app',
+    'add' => 'Add and prepare',
+    'open_picker' => 'Open in block picker',
+    'kicker' => 'AI recommendation',
+];
 ?>
 
 <?php /* Custom code: FC-2026-02-27: premium add-block modal styling */ ?>
@@ -666,6 +687,68 @@ $fcc_enabled_biolink_blocks = (object) ($this->user->plan_settings->enabled_biol
         line-height: 1.55;
     }
 
+    #biolink_link_create_modal .biolink-ai-missing-card {
+        position: relative;
+        overflow: hidden;
+        border: 1px solid rgba(56, 189, 248, .18);
+        border-radius: 1.15rem;
+        background:
+            radial-gradient(circle at top right, rgba(45, 212, 191, .10), transparent 34%),
+            linear-gradient(180deg, rgba(8, 19, 36, .98), rgba(11, 24, 43, .96));
+        box-shadow: 0 1rem 2.2rem rgba(2, 6, 23, .24);
+    }
+
+    #biolink_link_create_modal .biolink-ai-missing-card::before {
+        content: '';
+        position: absolute;
+        inset: 0 auto auto 0;
+        width: 4px;
+        height: 100%;
+        background: linear-gradient(180deg, #2dd4bf, rgba(45, 212, 191, .15));
+    }
+
+    #biolink_link_create_modal .biolink-ai-missing-card .card-body {
+        position: relative;
+        padding: 1rem 1.1rem 1.05rem;
+    }
+
+    #biolink_link_create_modal .biolink-ai-missing-kicker {
+        display: inline-flex;
+        align-items: center;
+        gap: .45rem;
+        color: #5eead4;
+        font-size: .68rem;
+        font-weight: 800;
+        letter-spacing: .14em;
+        text-transform: uppercase;
+    }
+
+    #biolink_link_create_modal .biolink-ai-missing-title {
+        color: #f8fbff;
+        font-size: 1.05rem;
+        font-weight: 800;
+        letter-spacing: -.02em;
+    }
+
+    #biolink_link_create_modal .biolink-ai-missing-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .5rem;
+        margin-top: .8rem;
+    }
+
+    #biolink_link_create_modal .biolink-ai-missing-badge {
+        display: inline-flex;
+        align-items: center;
+        border-radius: 999px;
+        padding: .3rem .7rem;
+        background: rgba(255,255,255,.07);
+        border: 1px solid rgba(255,255,255,.08);
+        color: rgba(235, 245, 255, .92);
+        font-size: .72rem;
+        font-weight: 700;
+    }
+
     #biolink_link_create_modal .biolink-create-empty {
         border: 1px dashed rgba(255,255,255,.18);
         border-radius: 1.15rem;
@@ -728,10 +811,86 @@ $fcc_enabled_biolink_blocks = (object) ($this->user->plan_settings->enabled_biol
                     </button>
                 </div>
 
+                <div id="fcc_biolink_ai_missing_notification" class="notification-container mb-3"></div>
+
                 <div id="fcc_biolink_block_picker_intro" class="biolink-create-intro mb-3 fcc-biolink-tour-target">
                     <h6 class="mb-2"><?= $fcc_is_hr ? 'Dodaj blok po stvarnoj primjeni' : 'Add a block by real use case' ?></h6>
                     <p class="small text-muted mb-0"><?= $fcc_picker_copy['subheader'] ?></p>
                 </div>
+
+                <?php if(!empty($fcc_ai_missing_block_recommendations)): ?>
+                    <div class="mb-4">
+                        <div class="biolink-block-category-card card border-0 mb-3" style="--group-background: linear-gradient(135deg, rgba(13, 41, 56, .92), rgba(8, 22, 39, .96)); --group-soft-background: rgba(45, 212, 191, .10); --group-color: #2dd4bf;">
+                            <div class="card-body d-flex justify-content-between align-items-center flex-wrap">
+                                <div class="pr-3">
+                                    <span class="biolink-block-category-kicker"><?= $fcc_ai_missing_copy['kicker'] ?></span>
+                                    <div class="biolink-block-category-title"><?= $fcc_ai_missing_copy['title'] ?></div>
+                                    <p class="small mb-0 biolink-block-category-subtitle"><?= $fcc_ai_missing_copy['text'] ?></p>
+                                </div>
+
+                                <div class="d-flex align-items-center flex-wrap justify-content-end" style="gap: .75rem;">
+                                    <span class="biolink-block-category-count"><?= count($fcc_ai_missing_block_recommendations) . ' ' . $fcc_picker_copy['block_count'] ?></span>
+                                    <span class="biolink-block-category-icon">
+                                        <i class="fas fa-fw fa-wand-magic-sparkles fa-lg"></i>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <?php foreach($fcc_ai_missing_block_recommendations as $fcc_ai_missing_block): ?>
+                                <?php
+                                $fcc_ai_missing_label = (string) (($fcc_ai_missing_block['label'] ?? '') ?: l('link.biolink.blocks.' . ($fcc_ai_missing_block['block_type'] ?? '')));
+                                $fcc_ai_missing_position_label = trim((string) ($fcc_ai_missing_block['insert_after_label'] ?? ''));
+                                $fcc_is_auto_add_supported = !empty($fcc_ai_missing_block['supports_auto_add']);
+                                ?>
+                                <div class="col-12 col-lg-6 mb-3">
+                                    <div class="biolink-ai-missing-card card border-0 h-100">
+                                        <div class="card-body">
+                                            <div class="biolink-ai-missing-kicker mb-2">
+                                                <i class="fas fa-fw fa-wand-magic-sparkles"></i>
+                                                <span><?= $fcc_ai_missing_copy['kicker'] ?></span>
+                                            </div>
+                                            <div class="biolink-ai-missing-title mb-2"><?= htmlspecialchars($fcc_ai_missing_label, ENT_QUOTES, 'UTF-8') ?></div>
+                                            <div class="small text-muted mb-2"><?= htmlspecialchars((string) ($fcc_ai_missing_block['why'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                                            <div class="biolink-ai-missing-meta mb-3">
+                                                <span class="biolink-ai-missing-badge"><?= sprintf($fcc_ai_missing_copy['priority'], nr((int) ($fcc_ai_missing_block['priority'] ?? 0))) ?></span>
+                                                <span class="biolink-ai-missing-badge">
+                                                    <?= $fcc_ai_missing_position_label !== ''
+                                                        ? sprintf($fcc_ai_missing_copy['position_after'], htmlspecialchars($fcc_ai_missing_position_label, ENT_QUOTES, 'UTF-8'))
+                                                        : $fcc_ai_missing_copy['position_top'] ?>
+                                                </span>
+                                            </div>
+
+                                            <?php if($fcc_is_auto_add_supported): ?>
+                                                <button
+                                                    type="button"
+                                                    class="btn btn-primary btn-block js-add-ai-missing-block-modal"
+                                                    data-link-id="<?= (int) ($data->link->link_id ?? 0) ?>"
+                                                    data-recommendation-key="<?= htmlspecialchars((string) ($fcc_ai_missing_block['recommendation_key'] ?? ''), ENT_QUOTES, 'UTF-8') ?>"
+                                                    data-block-type="<?= htmlspecialchars((string) ($fcc_ai_missing_block['block_type'] ?? ''), ENT_QUOTES, 'UTF-8') ?>"
+                                                >
+                                                    <i class="fas fa-fw fa-wand-magic-sparkles mr-1"></i> <?= $fcc_ai_missing_copy['add'] ?>
+                                                </button>
+                                            <?php else: ?>
+                                                <button
+                                                    type="button"
+                                                    class="btn btn-outline-light btn-block js-open-ai-block-picker-from-modal"
+                                                    data-block-type="<?= htmlspecialchars((string) ($fcc_ai_missing_block['block_type'] ?? ''), ENT_QUOTES, 'UTF-8') ?>"
+                                                    data-picker-search="<?= htmlspecialchars((string) ($fcc_ai_missing_block['picker_search'] ?? ''), ENT_QUOTES, 'UTF-8') ?>"
+                                                    data-block-group="<?= htmlspecialchars((string) ($fcc_ai_missing_block['preferred_group'] ?? ''), ENT_QUOTES, 'UTF-8') ?>"
+                                                    data-block-goal="<?= htmlspecialchars((string) ($fcc_ai_missing_block['preferred_goal'] ?? ''), ENT_QUOTES, 'UTF-8') ?>"
+                                                >
+                                                    <i class="fas fa-fw fa-plus-circle mr-1"></i> <?= $fcc_ai_missing_copy['open_picker'] ?>
+                                                </button>
+                                            <?php endif ?>
+                                        </div>
+                                    </div>
+                                </div>
+                            <?php endforeach ?>
+                        </div>
+                    </div>
+                <?php endif ?>
 
                 <div class="biolink-create-filters">
                     <form action="" method="get" role="form" id="fcc_biolink_block_picker_search_form" class="biolink-create-search mb-0 fcc-biolink-tour-target">
@@ -909,12 +1068,24 @@ $fcc_enabled_biolink_blocks = (object) ($this->user->plan_settings->enabled_biol
         const sections = Array.from(modal.querySelectorAll('[data-purpose-section]'));
         const emptyState = modal.querySelector('#fcc_biolink_block_picker_empty');
         const resetFiltersButton = modal.querySelector('[data-reset-filters]');
+        const aiNotificationContainer = modal.querySelector('#fcc_biolink_ai_missing_notification');
 
         if(!searchInput || !groupFilter || !goalFilter) {
             return;
         }
 
         const normalize = value => (value || '').toString().trim().toLowerCase();
+        const setAiNotification = (message, status) => {
+            if(!aiNotificationContainer) {
+                return;
+            }
+
+            aiNotificationContainer.innerHTML = '';
+
+            if(message) {
+                display_notifications(message, status || 'info', aiNotificationContainer);
+            }
+        };
         const resetFilters = () => {
             searchInput.value = '';
             groupFilter.value = '';
@@ -976,6 +1147,52 @@ $fcc_enabled_biolink_blocks = (object) ($this->user->plan_settings->enabled_biol
             });
         }
 
+        modal.querySelectorAll('.js-add-ai-missing-block-modal').forEach(button => {
+            button.addEventListener('click', () => {
+                button.setAttribute('disabled', 'disabled');
+                setAiNotification('', 'success');
+
+                $.ajax({
+                    type: 'POST',
+                    url: `${url}link-ajax`,
+                    data: {
+                        token: <?= json_encode(\Altum\Csrf::get()) ?>,
+                        request_type: 'add_ai_recommended_block',
+                        link_id: button.getAttribute('data-link-id') || '',
+                        recommendation_key: button.getAttribute('data-recommendation-key') || '',
+                        block_type: button.getAttribute('data-block-type') || ''
+                    },
+                    dataType: 'json',
+                    success: response => {
+                        button.removeAttribute('disabled');
+                        setAiNotification(response.message, response.status);
+
+                        if(response.status === 'success' && response.details?.url) {
+                            window.setTimeout(() => redirect(response.details.url, true), 250);
+                        }
+                    },
+                    error: () => {
+                        button.removeAttribute('disabled');
+                        setAiNotification(<?= json_encode(l('global.error_message.basic')) ?>, 'error');
+                    }
+                });
+            });
+        });
+
+        modal.querySelectorAll('.js-open-ai-block-picker-from-modal').forEach(button => {
+            button.addEventListener('click', () => {
+                const blockType = button.getAttribute('data-block-type') || '';
+                const pickerSearch = (button.getAttribute('data-picker-search') || '').trim();
+                const blockGroup = (button.getAttribute('data-block-group') || '').trim();
+                const blockGoal = (button.getAttribute('data-block-goal') || '').trim();
+                searchInput.value = pickerSearch || blockType.replace(/_/g, ' ');
+                groupFilter.value = blockGroup;
+                goalFilter.value = blockGoal;
+                applyFilters();
+                searchInput.focus();
+            });
+        });
+
         $('#biolink_link_create_modal').on('shown.bs.modal', () => {
             searchInput.focus();
             applyFilters();
@@ -984,6 +1201,7 @@ $fcc_enabled_biolink_blocks = (object) ($this->user->plan_settings->enabled_biol
         $('#biolink_link_create_modal').on('hidden.bs.modal', () => {
             resetFilters();
             applyFilters();
+            setAiNotification('', 'success');
         });
 
         window.fccBiolinkBlockPicker = {

@@ -1,4 +1,4 @@
-<div class="card ai-plan-card ai-plan-tool-card" id="ai-plan-app-review">
+<div class="card ai-plan-card ai-plan-tool-card ai-plan-app-review-card" id="ai-plan-app-review">
     <div class="card-body">
         <div class="ai-plan-tool-header">
             <div class="ai-plan-tool-heading">
@@ -16,8 +16,11 @@
             <span class="ai-plan-chip active"><?= l($data->app_review_access_payload['plan_label_key']) ?></span>
             <span class="ai-plan-chip <?= $data->app_review_access_payload['can_select_any_app'] ? 'active' : '' ?>"><?= $data->app_review_access_payload['can_select_any_app'] ? l('ai_plan.app_review_scope_multiple') : l('ai_plan.app_review_scope_main') ?></span>
             <span class="ai-plan-chip">
+                <?php $app_review_tier = (string) ($data->ai_growth_access_payload['tier'] ?? 'none'); ?>
                 <?php if(!empty($data->app_review_access_payload['is_admin_testing'])): ?>
                     <?= l('ai_plan.app_review_frequency_unlimited') ?>
+                <?php elseif($app_review_tier === 'pro_start'): ?>
+                    <?= l('ai_plan.app_review_frequency_note_starter') ?>
                 <?php elseif((int) ($data->app_review_access_payload['cooldown_days'] ?? 7) <= 1): ?>
                     <?= l('ai_plan.app_review_frequency_note_daily') ?>
                 <?php else: ?>
@@ -27,7 +30,7 @@
         </div>
 
         <div class="ai-plan-review-grid">
-            <div class="ai-plan-review-box">
+            <div class="ai-plan-review-box ai-plan-app-review-form-box">
                 <?php if(!$data->is_profile_complete): ?>
                     <div class="ai-plan-lock-box">
                         <div class="font-weight-bold mb-2"><?= l('ai_plan.app_review_locked_profile_title') ?></div>
@@ -67,7 +70,7 @@
                         <?php endif ?>
 
                         <?php if($data->app_review_is_locked): ?>
-                            <div class="ai-plan-lock-box mb-3">
+                            <div class="ai-plan-lock-box ai-plan-app-review-lock mb-3">
                                 <div class="font-weight-bold mb-2"><?= l('ai_plan.app_review_locked_cooldown_title') ?></div>
                                 <div class="text-muted small mb-0"><?= sprintf(l('ai_plan.app_review_locked_cooldown_short'), $data->app_review_countdown_days ?? 0) ?></div>
                             </div>
@@ -77,7 +80,7 @@
 
                         <?php if(empty($data->app_review_access_payload['can_select_any_app']) || count((array) ($data->app_review_available_apps ?? [])) <= 1): ?>
                             <?php if(!empty($data->app_review_selected_app)): ?>
-                            <div class="ai-plan-soft-box mb-3">
+                            <div class="ai-plan-soft-box ai-plan-app-review-main-app mb-3">
                                 <div class="small text-muted mb-1"><?= l('ai_plan.app_review_main_app') ?></div>
                                 <div class="font-weight-bold"><?= htmlspecialchars((string) (($data->app_review_selected_app['name'] ?? '') ?: ($data->app_review_selected_app['url'] ?? '-')), ENT_QUOTES, 'UTF-8') ?></div>
                                 <?php if(!empty($data->app_review_selected_app['url'])): ?>

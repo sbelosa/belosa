@@ -865,21 +865,21 @@ class Dashboard extends Controller {
         $growth_stage = $qualified_clicks_30d >= $growth_vip_threshold ? 'vip' : ($qualified_clicks_30d >= $growth_active_threshold ? 'active' : 'building');
 
         if($qualified_clicks_30d < $growth_active_threshold) {
-            $hero_title = 'Na putu si do prvih 15 kvalificiranih klikova.';
-            $hero_description = 'Sada je fokus povećati prodajni signal iz aplikacije i blog sadržaja prema Foreveru kako bi otključao istaknutu aplikaciju i jači AI ritam.';
-            $next_focus = 'Dovedi još kvalificiranih klikova prema Foreveru.';
+            $hero_title = l('dashboard.hero.state.building.title');
+            $hero_description = l('dashboard.hero.state.building.description');
+            $next_focus = l('dashboard.hero.state.building.next_focus');
         } elseif($forever_registration_clicks_30d <= 0 && $qualified_clicks_30d > 0) {
-            $hero_title = 'Imaš interes, sada pojačaj prijave i kontakte.';
-            $hero_description = 'Klikovi postoje, ali rezultat još može biti jači. Vrijeme je da pojačaš put od sadržaja i webshop interesa do prijave ili leadova.';
-            $next_focus = 'Pojačaj CTA i put do prijave.';
+            $hero_title = l('dashboard.hero.state.registration.title');
+            $hero_description = l('dashboard.hero.state.registration.description');
+            $next_focus = l('dashboard.hero.state.registration.next_focus');
         } elseif(($dashboard_funnel_analytics['leads_30d'] ?? 0) > 0) {
-            $hero_title = 'Imaš signal koji već donosi konkretan rezultat.';
-            $hero_description = 'Tvoj prodajni sadržaj i funnel već rade. Sada vrijedi ponoviti ono što daje klikove i leadove te dodatno ojačati kanal koji najbolje nosi promet.';
-            $next_focus = 'Skaliraj sadržaj koji već donosi rezultat.';
+            $hero_title = l('dashboard.hero.state.leads.title');
+            $hero_description = l('dashboard.hero.state.leads.description');
+            $next_focus = l('dashboard.hero.state.leads.next_focus');
         } else {
-            $hero_title = 'Tvoj prodajni signal je aktivan i spreman za rast.';
-            $hero_description = 'Klikovi prema Foreveru dolaze, a sada fokus prebacujemo na konzistentnost, bolji conversion put i pametno ponavljanje sadržaja koji već radi.';
-            $next_focus = 'Zadrži ritam i povećaj conversion.';
+            $hero_title = l('dashboard.hero.state.active.title');
+            $hero_description = l('dashboard.hero.state.active.description');
+            $next_focus = l('dashboard.hero.state.active.next_focus');
         }
 
         $support_summary = [
@@ -1191,21 +1191,21 @@ class Dashboard extends Controller {
         }
 
         if($qualified_clicks_30d < $growth_active_threshold) {
-            $hero_title = 'Na putu si do prvih 15 kvalificiranih klikova.';
-            $hero_description = 'Sada je fokus povećati prodajni signal iz aplikacije i blog sadržaja prema Foreveru kako bi otključao istaknutu aplikaciju i jači AI ritam.';
-            $next_focus = 'Dovedi još kvalificiranih klikova prema Foreveru.';
+            $hero_title = l('dashboard.hero.state.building.title');
+            $hero_description = l('dashboard.hero.state.building.description');
+            $next_focus = l('dashboard.hero.state.building.next_focus');
         } elseif($forever_registration_clicks_30d <= 0 && $qualified_clicks_30d > 0) {
-            $hero_title = 'Imaš interes, sada pojačaj prijave i kontakte.';
-            $hero_description = 'Klikovi postoje, ali rezultat još može biti jači. Vrijeme je da pojačaš put od sadržaja i webshop interesa do prijave ili leadova.';
-            $next_focus = 'Pojačaj CTA i put do prijave.';
+            $hero_title = l('dashboard.hero.state.registration.title');
+            $hero_description = l('dashboard.hero.state.registration.description');
+            $next_focus = l('dashboard.hero.state.registration.next_focus');
         } elseif(($dashboard_funnel_analytics['leads_30d'] ?? 0) > 0) {
-            $hero_title = 'Imaš signal koji već donosi konkretan rezultat.';
-            $hero_description = 'Tvoj prodajni sadržaj i funnel već rade. Sada vrijedi ponoviti ono što daje klikove i leadove te dodatno ojačati kanal koji najbolje nosi promet.';
-            $next_focus = 'Skaliraj sadržaj koji već donosi rezultat.';
+            $hero_title = l('dashboard.hero.state.leads.title');
+            $hero_description = l('dashboard.hero.state.leads.description');
+            $next_focus = l('dashboard.hero.state.leads.next_focus');
         } else {
-            $hero_title = 'Tvoj prodajni signal je aktivan i spreman za rast.';
-            $hero_description = 'Klikovi prema Foreveru dolaze, a sada fokus prebacujemo na konzistentnost, bolji conversion put i pametno ponavljanje sadržaja koji već radi.';
-            $next_focus = 'Zadrži ritam i povećaj conversion.';
+            $hero_title = l('dashboard.hero.state.active.title');
+            $hero_description = l('dashboard.hero.state.active.description');
+            $next_focus = l('dashboard.hero.state.active.next_focus');
         }
 
         /* Custom code: FC-2026-03-05: synthetic demo traffic preview */

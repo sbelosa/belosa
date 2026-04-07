@@ -158,6 +158,20 @@
     .ai-plan-shell .ai-plan-step-meta-value.is-waiting { color:#fde68a; }
     .ai-plan-shell .ai-plan-form-card { position:relative; overflow:hidden; border:1px solid rgba(255,255,255,.08); background:radial-gradient(640px 220px at 0% 0%, rgba(14,165,233,.08), transparent 58%), linear-gradient(160deg, rgba(255,255,255,.032), rgba(255,255,255,.012)); box-shadow:0 1.15rem 2.3rem rgba(2,6,23,.16), inset 0 1px 0 rgba(255,255,255,.03); }
     .ai-plan-shell .ai-plan-form-card::before { content:''; position:absolute; inset:0; pointer-events:none; background:linear-gradient(120deg, rgba(255,255,255,.02), transparent 28%, transparent 72%, rgba(255,255,255,.015)); }
+    .ai-plan-shell .ai-plan-profile-card { border-color:rgba(93,167,255,.18); background:radial-gradient(circle at 12% 14%, rgba(63,215,199,.12) 0%, rgba(63,215,199,0) 34%), radial-gradient(circle at 88% 10%, rgba(84,124,255,.11) 0%, rgba(84,124,255,0) 30%), radial-gradient(circle at 72% 0%, rgba(226,188,116,.07) 0%, rgba(226,188,116,0) 22%), linear-gradient(160deg, rgba(20,31,48,.98), rgba(10,16,29,.995)); box-shadow:0 1.4rem 3rem rgba(2,8,23,.22), inset 0 3px 0 rgba(92,239,223,.78), inset 0 1px 0 rgba(255,255,255,.04); }
+    .ai-plan-shell .ai-plan-profile-card::after { content:''; position:absolute; inset:auto auto -4.5rem -3rem; width:16rem; height:16rem; border-radius:999px; background:radial-gradient(circle, rgba(63,215,199,.1) 0%, rgba(63,215,199,0) 72%); pointer-events:none; }
+    .ai-plan-shell .ai-plan-profile-card .card-body { position:relative; z-index:1; }
+    .ai-plan-shell .ai-plan-profile-card .ai-plan-option input:checked + label { border-color:rgba(92,239,223,.34); background:linear-gradient(145deg, rgba(45,212,191,.16), rgba(14,165,233,.08)); box-shadow:0 1rem 1.8rem rgba(8,47,73,.12); }
+    .ai-plan-shell .ai-plan-profile-card .btn-primary { box-shadow:0 1.1rem 2.3rem rgba(45,212,191,.2); }
+    .ai-plan-shell .ai-plan-profile-card .btn-primary:hover { box-shadow:0 1.3rem 2.7rem rgba(45,212,191,.26); }
+    .ai-plan-shell .ai-plan-weekly-card { border-color:rgba(93,167,255,.18); background:radial-gradient(circle at 12% 14%, rgba(63,215,199,.12) 0%, rgba(63,215,199,0) 34%), radial-gradient(circle at 88% 10%, rgba(84,124,255,.12) 0%, rgba(84,124,255,0) 30%), radial-gradient(circle at 72% 0%, rgba(226,188,116,.08) 0%, rgba(226,188,116,0) 22%), linear-gradient(160deg, rgba(20,31,48,.98), rgba(10,16,29,.995)); box-shadow:0 1.4rem 3rem rgba(2,8,23,.24), inset 0 3px 0 rgba(92,239,223,.78), inset 0 1px 0 rgba(255,255,255,.04); }
+    .ai-plan-shell .ai-plan-weekly-card::after { content:''; position:absolute; inset:auto auto -4.5rem -3rem; width:16rem; height:16rem; border-radius:999px; background:radial-gradient(circle, rgba(63,215,199,.1) 0%, rgba(63,215,199,0) 72%); pointer-events:none; }
+    .ai-plan-shell .ai-plan-weekly-card .card-body { position:relative; z-index:1; }
+    .ai-plan-shell .ai-plan-weekly-card .ai-plan-cycle-panel { border-color:rgba(92,239,223,.2); background:radial-gradient(circle at top right, rgba(84,124,255,.1) 0%, rgba(84,124,255,0) 40%), linear-gradient(145deg, rgba(18,73,90,.26), rgba(15,23,42,.28)); box-shadow:0 1rem 2rem rgba(2,6,23,.12), inset 0 1px 0 rgba(255,255,255,.04); }
+    .ai-plan-shell .ai-plan-weekly-card .ai-plan-cycle-card.current { border-color:rgba(92,239,223,.3); background:linear-gradient(145deg, rgba(45,212,191,.16), rgba(14,165,233,.08)); box-shadow:0 1rem 1.9rem rgba(8,47,73,.16); }
+    .ai-plan-shell .ai-plan-weekly-card .ai-plan-cycle-next-value { color:#ecfeff; }
+    .ai-plan-shell .ai-plan-weekly-card .btn-primary { box-shadow:0 1.1rem 2.3rem rgba(45,212,191,.2); }
+    .ai-plan-shell .ai-plan-weekly-card .btn-primary:hover { box-shadow:0 1.3rem 2.7rem rgba(45,212,191,.26); }
     .ai-plan-shell .ai-plan-form-card .card-body,
     .ai-plan-shell .ai-plan-tool-card .card-body,
     .ai-plan-shell .ai-plan-side-card .card-body { position:relative; z-index:1; }
@@ -201,6 +215,14 @@
     .ai-plan-shell .ai-plan-side-card .ai-plan-history-item { padding:.72rem 0; }
     .ai-plan-shell .ai-plan-tool-card { position:relative; overflow:hidden; border:1px solid rgba(255,255,255,.08); background:radial-gradient(520px 180px at 0% 0%, rgba(14,165,233,.08), transparent 58%), linear-gradient(160deg, rgba(255,255,255,.032), rgba(255,255,255,.012)); box-shadow:0 1.05rem 2rem rgba(2,6,23,.15), inset 0 1px 0 rgba(255,255,255,.03); }
     .ai-plan-shell .ai-plan-tool-card::before { content:''; position:absolute; inset:0; pointer-events:none; background:linear-gradient(120deg, rgba(255,255,255,.02), transparent 36%, transparent 70%, rgba(255,255,255,.015)); }
+    .ai-plan-shell .ai-plan-app-review-card { border-color:rgba(93,167,255,.18); background:radial-gradient(circle at 12% 14%, rgba(63,215,199,.12) 0%, rgba(63,215,199,0) 34%), radial-gradient(circle at 88% 10%, rgba(84,124,255,.12) 0%, rgba(84,124,255,0) 30%), radial-gradient(circle at 72% 0%, rgba(226,188,116,.08) 0%, rgba(226,188,116,0) 22%), linear-gradient(160deg, rgba(20,31,48,.98), rgba(10,16,29,.995)); box-shadow:0 1.4rem 3rem rgba(2,8,23,.24), inset 0 3px 0 rgba(92,239,223,.78), inset 0 1px 0 rgba(255,255,255,.04); }
+    .ai-plan-shell .ai-plan-app-review-card::after { content:''; position:absolute; inset:auto auto -4.5rem -3rem; width:16rem; height:16rem; border-radius:999px; background:radial-gradient(circle, rgba(63,215,199,.1) 0%, rgba(63,215,199,0) 72%); pointer-events:none; }
+    .ai-plan-shell .ai-plan-app-review-card .card-body { position:relative; z-index:1; }
+    .ai-plan-shell .ai-plan-app-review-card .ai-plan-review-box.ai-plan-app-review-form-box { border-color:rgba(118,180,255,.16); background:radial-gradient(circle at top right, rgba(84,124,255,.1) 0%, rgba(84,124,255,0) 40%), linear-gradient(165deg, rgba(18,27,45,.9), rgba(12,18,32,.88)); box-shadow:0 1rem 2rem rgba(2,6,23,.12), inset 0 1px 0 rgba(255,255,255,.04); }
+    .ai-plan-shell .ai-plan-app-review-card .ai-plan-lock-box.ai-plan-app-review-lock { border-color:rgba(118,180,255,.14); background:linear-gradient(160deg, rgba(24,31,47,.86), rgba(17,24,39,.82)); box-shadow:inset 0 1px 0 rgba(255,255,255,.03); }
+    .ai-plan-shell .ai-plan-app-review-card .ai-plan-soft-box.ai-plan-app-review-main-app { border-color:rgba(118,180,255,.14); background:radial-gradient(circle at top right, rgba(84,124,255,.08) 0%, rgba(84,124,255,0) 38%), linear-gradient(160deg, rgba(20,29,46,.86), rgba(14,21,34,.82)); box-shadow:0 .9rem 1.8rem rgba(2,6,23,.08), inset 0 1px 0 rgba(255,255,255,.03); }
+    .ai-plan-shell .ai-plan-app-review-card #ai-plan-app-review-submit { box-shadow:0 1.1rem 2.3rem rgba(45,212,191,.2); }
+    .ai-plan-shell .ai-plan-app-review-card #ai-plan-app-review-submit:hover { box-shadow:0 1.3rem 2.7rem rgba(45,212,191,.26); }
     .ai-plan-shell .ai-plan-tool-header { display:grid; grid-template-columns:minmax(0, 1fr) auto; gap:1rem; align-items:start; margin-bottom:1rem; }
     .ai-plan-shell .ai-plan-tool-heading { max-width:54ch; }
     .ai-plan-shell .ai-plan-tool-heading .text-muted { color:rgba(191,203,218,.78) !important; line-height:1.52; font-size:.94rem; }
@@ -304,6 +326,19 @@
     .ai-plan-shell .ai-plan-tool-teaser-copy .text-muted { max-width:42ch; color:rgba(191,203,218,.84) !important; line-height:1.58; font-size:.97rem; }
     .ai-plan-shell .ai-plan-tool-teaser-meta { display:flex; flex-wrap:wrap; gap:.55rem; }
     .ai-plan-shell .ai-plan-tool-teaser-summary { max-width:36ch; font-size:.97rem; line-height:1.62; color:rgba(226,232,240,.9); }
+    .ai-plan-shell .ai-plan-tool-teaser-actions { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:.65rem; max-width:34rem; }
+    .ai-plan-shell .ai-plan-tool-teaser-action { width:100%; min-height:2.9rem; display:inline-flex; align-items:center; justify-content:center; gap:.55rem; padding:.72rem 1rem; border-radius:1rem; border:1px solid rgba(148,163,184,.22); background:linear-gradient(145deg, rgba(19,28,41,.92), rgba(12,18,29,.86)); color:#e2e8f0; font-size:.94rem; font-weight:800; letter-spacing:-.01em; line-height:1.15; box-shadow:inset 0 1px 0 rgba(255,255,255,.03); transition:transform .18s ease, border-color .18s ease, background .18s ease, box-shadow .18s ease; }
+    .ai-plan-shell .ai-plan-tool-teaser-action:hover:not(:disabled) { transform:translateY(-1px); border-color:rgba(45,212,191,.3); background:linear-gradient(145deg, rgba(24,35,51,.94), rgba(13,20,33,.9)); box-shadow:0 .9rem 1.7rem rgba(2,6,23,.12), inset 0 1px 0 rgba(255,255,255,.035); }
+    .ai-plan-shell .ai-plan-tool-teaser-action.is-wide { grid-column:1 / -1; }
+    .ai-plan-shell .ai-plan-tool-teaser-action.is-primary { border-color:rgba(45,212,191,.22); background:linear-gradient(145deg, rgba(45,212,191,.16), rgba(14,165,233,.08)); color:#d8fffb; }
+    .ai-plan-shell .ai-plan-tool-teaser-action.is-primary:hover:not(:disabled) { border-color:rgba(45,212,191,.36); background:linear-gradient(145deg, rgba(45,212,191,.2), rgba(14,165,233,.1)); }
+    .ai-plan-shell .ai-plan-tool-teaser-action.is-muted { color:rgba(203,213,225,.9); border-color:rgba(148,163,184,.18); }
+    .ai-plan-shell .ai-plan-tool-teaser-action:disabled,
+    .ai-plan-shell .ai-plan-tool-teaser-action.is-disabled { cursor:not-allowed; opacity:.5; filter:saturate(.85); box-shadow:none; transform:none !important; }
+    .ai-plan-shell .ai-plan-tool-teaser-notification { margin-top:.75rem; }
+    .ai-plan-shell .ai-plan-tool-teaser-notice { padding:.72rem .88rem; border-radius:.95rem; font-size:.88rem; line-height:1.5; border:1px solid rgba(148,163,184,.18); background:rgba(15,23,42,.28); color:#e2e8f0; }
+    .ai-plan-shell .ai-plan-tool-teaser-notice.is-success { border-color:rgba(45,212,191,.24); background:rgba(13,148,136,.12); color:#ccfbf1; }
+    .ai-plan-shell .ai-plan-tool-teaser-notice.is-error { border-color:rgba(248,113,113,.22); background:rgba(127,29,29,.24); color:#fecaca; }
     .ai-plan-shell .ai-plan-tool-teaser-side { display:flex; flex-direction:column; justify-content:flex-start; gap:.9rem; min-width:0; padding:1rem 1rem 1.05rem; border:1px solid rgba(96,165,250,.14); border-radius:1.25rem; background:radial-gradient(280px 180px at 0% 0%, rgba(14,165,233,.1), transparent 62%), linear-gradient(165deg, rgba(16,24,40,.92), rgba(12,18,32,.86)); box-shadow:inset 0 1px 0 rgba(255,255,255,.035), 0 1rem 2rem rgba(2,6,23,.14); }
     .ai-plan-shell .ai-plan-tool-teaser-score { display:grid; grid-template-columns:auto minmax(0, 1fr); gap:.75rem; align-items:center; }
     .ai-plan-shell .ai-plan-tool-teaser-score-value { font-size:3.35rem; line-height:.88; font-weight:800; letter-spacing:-.07em; color:#f8fafc; text-shadow:0 0 30px rgba(255,255,255,.06); }
@@ -363,6 +398,8 @@
         .ai-plan-shell .ai-plan-tool-teaser-body { grid-template-columns:1fr; }
         .ai-plan-shell .ai-plan-tool-teaser-copy { padding-right:0; }
         .ai-plan-shell .ai-plan-tool-teaser-copy h2 { max-width:none; font-size:1.45rem; }
+        .ai-plan-shell .ai-plan-tool-teaser-actions { grid-template-columns:1fr; max-width:none; }
+        .ai-plan-shell .ai-plan-tool-teaser-action.is-wide { grid-column:auto; }
         .ai-plan-shell .ai-plan-tool-teaser-score-value { font-size:2.8rem; }
         .ai-plan-shell .ai-plan-cycle-grid { grid-template-columns:1fr; }
         .ai-plan-shell .ai-plan-cycle-next { min-width:0; }
@@ -410,6 +447,7 @@
 <?php $app_review_locked_reason = (string) ($data->app_review_locked_reason ?? l('ai_plan.app_review_locked_entry_tooltip')); ?>
 <?php $app_review_job_status = (array) ($data->app_review_job_status ?? []); ?>
 <?php $app_review_is_processing = (string) ($app_review_job_status['status'] ?? '') === 'pending'; ?>
+<?php $app_review_editor_actions = (array) ($data->app_review_editor_actions ?? []); ?>
 <?php $render_app_review_link = static function(string $url, string $label, bool $is_accessible, string $locked_reason, string $class = 'btn btn-outline-primary'): string {
     $safe_label = htmlspecialchars($label, ENT_QUOTES, 'UTF-8');
     $safe_reason = htmlspecialchars($locked_reason, ENT_QUOTES, 'UTF-8');
@@ -503,9 +541,44 @@
 
     return (string) ob_get_clean();
 }; ?>
-<?php $render_app_review_result_cards = static function(array $review, array $quality_payload) use ($app_review_color_palette_has_content, $render_app_review_color_palette): string {
+<?php $app_review_theme_pack_has_content = static function(array $theme_pack): bool {
+    return (bool) array_filter([
+        $theme_pack['background_color'] ?? '',
+        $theme_pack['gradient_start'] ?? '',
+        $theme_pack['gradient_end'] ?? '',
+        $theme_pack['primary_block_background'] ?? '',
+        $theme_pack['secondary_blocks_background'] ?? '',
+    ]);
+}; ?>
+<?php $app_review_evolution_display = is_array($data->app_review_evolution_payload ?? null) ? $data->app_review_evolution_payload : []; ?>
+<?php $app_review_block_attribution = is_array($data->app_review_block_attribution_payload ?? null) ? $data->app_review_block_attribution_payload : []; ?>
+<?php $render_app_review_evolution_status = static function(string $status): string {
+    if($status === 'measured') {
+        return l('link.settings.ai_evolution_status_measured');
+    }
+
+    if($status === 'ready') {
+        return l('link.settings.ai_evolution_status_ready');
+    }
+
+    return l('link.settings.ai_evolution_status_pending');
+}; ?>
+<?php $render_app_review_result_cards = static function(array $review, array $quality_payload) use ($app_review_color_palette_has_content, $render_app_review_color_palette, $app_review_theme_pack_has_content, $app_review_evolution_display, $app_review_block_attribution, $render_app_review_evolution_status): string {
     $color_palette = is_array($review['color_palette'] ?? null) ? $review['color_palette'] : [];
     $has_color_palette = $app_review_color_palette_has_content($color_palette);
+    $theme_pack = is_array($review['theme_pack'] ?? null) ? $review['theme_pack'] : [];
+    $has_theme_pack = $app_review_theme_pack_has_content($theme_pack);
+    $primary_block_plan = is_array($review['primary_block_plan'] ?? null) ? $review['primary_block_plan'] : [];
+    $has_primary_block_plan = (bool) array_filter([
+        $primary_block_plan['block_id'] ?? 0,
+        $primary_block_plan['block_type'] ?? '',
+        $primary_block_plan['label'] ?? '',
+        $primary_block_plan['reason'] ?? '',
+    ]);
+    $copy_suggestions = is_array($review['copy_suggestions'] ?? null) ? $review['copy_suggestions'] : [];
+    $layout_actions = is_array($review['layout_actions'] ?? null) ? $review['layout_actions'] : [];
+    $signal_protection_summary = is_array($review['signal_protection_summary'] ?? null) ? $review['signal_protection_summary'] : [];
+    $evolution_active_cycle = is_array($app_review_evolution_display['active_cycle'] ?? null) ? $app_review_evolution_display['active_cycle'] : [];
     ob_start();
     ?>
     <div class="ai-plan-review-results">
@@ -658,6 +731,176 @@
                         </details>
                     <?php endif ?>
 
+                    <?php if($has_theme_pack || $has_primary_block_plan || !empty($copy_suggestions) || !empty($layout_actions)): ?>
+                        <details class="ai-plan-review-disclosure" data-accordion-item="app-review-details">
+                            <summary><?= l('ai_plan.app_review_editor_ready') ?></summary>
+                            <div class="ai-plan-review-disclosure-body">
+                                <div class="ai-plan-review-detail-grid" style="margin-top:0;">
+                                    <?php if($has_theme_pack): ?>
+                                        <div class="ai-plan-review-detail-card">
+                                            <h3><?= l('ai_plan.app_review_editor_theme_ready') ?></h3>
+                                            <p class="mb-3"><?= htmlspecialchars((string) (($theme_pack['summary'] ?? '') ?: l('ai_plan.app_review_editor_theme_ready_text')), ENT_QUOTES, 'UTF-8') ?></p>
+                                            <ul class="ai-plan-review-list mb-0">
+                                                <li><?= l('ai_plan.app_review_editor_location') ?></li>
+                                                <?php if(!empty($theme_pack['background_mode']) && (($theme_pack['background_color'] ?? '') !== '' || ($theme_pack['gradient_start'] ?? '') !== '')): ?>
+                                                    <li><?= htmlspecialchars((string) (($theme_pack['background_mode'] ?? 'color') === 'gradient'
+                                                        ? l('ai_plan.app_review_editor_background_gradient') . ': ' . (($theme_pack['gradient_start'] ?? '') . ' / ' . ($theme_pack['gradient_end'] ?? ''))
+                                                        : l('ai_plan.app_review_editor_background_color') . ': ' . ($theme_pack['background_color'] ?? '')), ENT_QUOTES, 'UTF-8') ?></li>
+                                                <?php endif ?>
+                                                <?php if(!empty($theme_pack['primary_block_background'])): ?>
+                                                    <li><?= htmlspecialchars((string) (l('ai_plan.app_review_editor_primary_color') . ': ' . ($theme_pack['primary_block_background'] ?? '')), ENT_QUOTES, 'UTF-8') ?></li>
+                                                <?php endif ?>
+                                            </ul>
+                                        </div>
+                                    <?php endif ?>
+
+                                    <?php if($has_primary_block_plan): ?>
+                                        <div class="ai-plan-review-detail-card">
+                                            <h3><?= l('ai_plan.app_review_editor_primary_block') ?></h3>
+                                            <p class="mb-2 font-weight-bold"><?= htmlspecialchars((string) (($primary_block_plan['label'] ?? '') ?: '-'), ENT_QUOTES, 'UTF-8') ?></p>
+                                            <?php if(!empty($primary_block_plan['reason'])): ?>
+                                                <p class="mb-0"><?= htmlspecialchars((string) ($primary_block_plan['reason'] ?? ''), ENT_QUOTES, 'UTF-8') ?></p>
+                                            <?php endif ?>
+                                        </div>
+                                    <?php endif ?>
+
+                                    <?php if(!empty($copy_suggestions)): ?>
+                                        <div class="ai-plan-review-detail-card full">
+                                            <h3><?= l('ai_plan.app_review_editor_copy') ?></h3>
+                                            <ul class="ai-plan-review-list mb-0">
+                                                <?php foreach($copy_suggestions as $copy_item): ?>
+                                                    <li><?= htmlspecialchars((string) (($copy_item['label'] ?? '') ? ($copy_item['label'] . ': ' . ($copy_item['value'] ?? '')) : ($copy_item['value'] ?? '')), ENT_QUOTES, 'UTF-8') ?></li>
+                                                <?php endforeach ?>
+                                            </ul>
+                                        </div>
+                                    <?php endif ?>
+
+                                    <?php if(!empty($layout_actions)): ?>
+                                        <div class="ai-plan-review-detail-card full">
+                                            <h3><?= l('ai_plan.app_review_editor_layout') ?></h3>
+                                            <ul class="ai-plan-review-list mb-0">
+                                                <?php foreach($layout_actions as $layout_item): ?>
+                                                    <li><?= htmlspecialchars((string) (($layout_item['label'] ?? '') ? ($layout_item['label'] . ': ' . ($layout_item['why'] ?? '')) : ($layout_item['why'] ?? '')), ENT_QUOTES, 'UTF-8') ?></li>
+                                                <?php endforeach ?>
+                                            </ul>
+                                        </div>
+                                    <?php endif ?>
+                                </div>
+                            </div>
+                        </details>
+                    <?php endif ?>
+
+                    <?php if(!empty($evolution_active_cycle)): ?>
+                        <details class="ai-plan-review-disclosure" data-accordion-item="app-review-details">
+                            <summary><?= l('link.settings.ai_evolution_title') ?></summary>
+                            <div class="ai-plan-review-disclosure-body">
+                                <div class="ai-plan-review-detail-grid" style="margin-top:0;">
+                                    <div class="ai-plan-review-detail-card">
+                                        <h3><?= l('link.settings.ai_evolution_theme_status') ?></h3>
+                                        <p class="mb-2 font-weight-bold"><?= !empty($evolution_active_cycle['applied']['theme_applied_at']) ? l('link.settings.ai_evolution_status_measured') : l('link.settings.ai_evolution_status_pending') ?></p>
+                                        <p class="mb-0 text-muted"><?= !empty($evolution_active_cycle['applied']['theme_applied_at']) ? \Altum\Date::get($evolution_active_cycle['applied']['theme_applied_at'], 2) : l('link.settings.ai_evolution_waiting_apply') ?></p>
+                                    </div>
+                                    <div class="ai-plan-review-detail-card">
+                                        <h3><?= l('link.settings.ai_evolution_layout_status') ?></h3>
+                                        <p class="mb-2 font-weight-bold"><?= !empty($evolution_active_cycle['applied']['layout_applied_at']) ? l('link.settings.ai_evolution_status_measured') : (!empty($evolution_active_cycle['applied']['layout_reverted_at']) ? l('link.settings.ai_layout_restore_badge') : l('link.settings.ai_evolution_status_pending')) ?></p>
+                                        <p class="mb-0 text-muted">
+                                            <?php if(!empty($evolution_active_cycle['applied']['layout_applied_at'])): ?>
+                                                <?= \Altum\Date::get($evolution_active_cycle['applied']['layout_applied_at'], 2) ?>
+                                            <?php elseif(!empty($evolution_active_cycle['applied']['layout_reverted_at'])): ?>
+                                                <?= \Altum\Date::get($evolution_active_cycle['applied']['layout_reverted_at'], 2) ?>
+                                            <?php else: ?>
+                                                <?= l('link.settings.ai_evolution_waiting_apply') ?>
+                                            <?php endif ?>
+                                        </p>
+                                    </div>
+                                    <?php foreach(['evaluation_7d' => l('link.settings.ai_evolution_window_7d'), 'evaluation_30d' => l('link.settings.ai_evolution_window_30d')] as $measurement_key => $measurement_label): ?>
+                                        <?php $measurement = is_array($evolution_active_cycle[$measurement_key] ?? null) ? $evolution_active_cycle[$measurement_key] : []; ?>
+                                        <div class="ai-plan-review-detail-card">
+                                            <h3><?= htmlspecialchars($measurement_label, ENT_QUOTES, 'UTF-8') ?></h3>
+                                            <p class="mb-2 font-weight-bold"><?= $render_app_review_evolution_status((string) ($measurement['status'] ?? 'pending')) ?></p>
+                                            <p class="mb-2 text-muted">
+                                                <?php if(!empty($measurement['measured_at'])): ?>
+                                                    <?= \Altum\Date::get($measurement['measured_at'], 2) ?>
+                                                <?php elseif(($measurement['status'] ?? 'pending') === 'ready'): ?>
+                                                    <?= l('link.settings.ai_evolution_ready_text') ?>
+                                                <?php else: ?>
+                                                    <?= l('link.settings.ai_evolution_waiting_measurement') ?>
+                                                <?php endif ?>
+                                            </p>
+                                            <p class="mb-0"><?= htmlspecialchars((string) ($measurement['summary'] ?? l('link.settings.ai_evolution_result_same')), ENT_QUOTES, 'UTF-8') ?></p>
+                                        </div>
+                                    <?php endforeach ?>
+                                </div>
+                            </div>
+                        </details>
+                    <?php endif ?>
+
+                    <?php if(!empty($app_review_block_attribution['top_signal_blocks']) || !empty($app_review_block_attribution['focus_risk_blocks'])): ?>
+                        <details class="ai-plan-review-disclosure" data-accordion-item="app-review-details">
+                            <summary><?= l('link.settings.ai_block_attribution_title') ?></summary>
+                            <div class="ai-plan-review-disclosure-body">
+                                <div class="ai-plan-review-detail-grid" style="margin-top:0;">
+                                    <?php if(!empty($app_review_block_attribution['top_signal_blocks'])): ?>
+                                        <div class="ai-plan-review-detail-card">
+                                            <h3><?= l('link.settings.ai_block_attribution_positive') ?></h3>
+                                            <ul class="ai-plan-review-list mb-0">
+                                                <?php foreach(($app_review_block_attribution['top_signal_blocks'] ?? []) as $signal_block): ?>
+                                                    <li><?= htmlspecialchars((string) (((($signal_block['label'] ?? '') ?: ($signal_block['type'] ?? '-')) . ' - ' . sprintf(l('link.settings.ai_block_attribution_signal_value'), nr((int) ($signal_block['signal_score'] ?? 0)), nr((int) ($signal_block['position'] ?? 0))))), ENT_QUOTES, 'UTF-8') ?></li>
+                                                <?php endforeach ?>
+                                            </ul>
+                                        </div>
+                                    <?php endif ?>
+
+                                    <?php if(!empty($app_review_block_attribution['focus_risk_blocks'])): ?>
+                                        <div class="ai-plan-review-detail-card">
+                                            <h3><?= l('link.settings.ai_block_attribution_risk') ?></h3>
+                                            <ul class="ai-plan-review-list mb-0">
+                                                <?php foreach(($app_review_block_attribution['focus_risk_blocks'] ?? []) as $risk_block): ?>
+                                                    <li><?= htmlspecialchars((string) (((($risk_block['label'] ?? '') ?: ($risk_block['type'] ?? '-')) . ' - ' . sprintf(l('link.settings.ai_block_attribution_focus_value'), nr((int) ($risk_block['position'] ?? 0)), nr((int) ($risk_block['signal_score'] ?? 0))))), ENT_QUOTES, 'UTF-8') ?></li>
+                                                <?php endforeach ?>
+                                            </ul>
+                                        </div>
+                                    <?php endif ?>
+                                </div>
+                            </div>
+                        </details>
+                    <?php endif ?>
+
+                    <?php if(!empty($signal_protection_summary['has_items'])): ?>
+                        <details class="ai-plan-review-disclosure" data-accordion-item="app-review-details">
+                            <summary><?= l('link.settings.ai_signal_protection_title') ?></summary>
+                            <div class="ai-plan-review-disclosure-body">
+                                <?php if(!empty($signal_protection_summary['summary'])): ?>
+                                    <p class="mb-3"><?= htmlspecialchars((string) $signal_protection_summary['summary'], ENT_QUOTES, 'UTF-8') ?></p>
+                                <?php endif ?>
+
+                                <div class="ai-plan-review-detail-grid" style="margin-top:0;">
+                                    <?php if(!empty($signal_protection_summary['kept_signal_blocks'])): ?>
+                                        <div class="ai-plan-review-detail-card">
+                                            <h3><?= l('link.settings.ai_signal_protection_kept') ?></h3>
+                                            <ul class="ai-plan-review-list mb-0">
+                                                <?php foreach(($signal_protection_summary['kept_signal_blocks'] ?? []) as $signal_item): ?>
+                                                    <li><?= htmlspecialchars((string) (((($signal_item['label'] ?? '') ?: '-') . ' - ' . ($signal_item['reason'] ?? ''))), ENT_QUOTES, 'UTF-8') ?></li>
+                                                <?php endforeach ?>
+                                            </ul>
+                                        </div>
+                                    <?php endif ?>
+
+                                    <?php if(!empty($signal_protection_summary['repositioned_focus_blocks'])): ?>
+                                        <div class="ai-plan-review-detail-card">
+                                            <h3><?= l('link.settings.ai_signal_protection_moved') ?></h3>
+                                            <ul class="ai-plan-review-list mb-0">
+                                                <?php foreach(($signal_protection_summary['repositioned_focus_blocks'] ?? []) as $focus_item): ?>
+                                                    <li><?= htmlspecialchars((string) (((($focus_item['label'] ?? '') ?: '-') . ' - ' . ($focus_item['reason'] ?? ''))), ENT_QUOTES, 'UTF-8') ?></li>
+                                                <?php endforeach ?>
+                                            </ul>
+                                        </div>
+                                    <?php endif ?>
+                                </div>
+                            </div>
+                        </details>
+                    <?php endif ?>
+
                     <?php if(!empty($review['design_notes']) || !empty($review['keep_doing'])): ?>
                         <details class="ai-plan-review-disclosure" data-accordion-item="app-review-details">
                             <summary><?= l('ai_plan.app_review_design_notes') ?> &amp; <?= l('ai_plan.app_review_keep_doing') ?></summary>
@@ -715,12 +958,20 @@
     <?php
     return (string) ob_get_clean();
 }; ?>
-<?php $render_app_review_teaser_card = static function(string $page_url, bool $is_profile_complete, bool $is_accessible, string $locked_reason, ?array $latest_review, array $quality_payload, array $ai_growth_access = [], bool $is_app_review_locked = false, ?string $app_review_next_at = null, bool $compact = false): string {
+<?php $render_app_review_teaser_card = static function(string $page_url, bool $is_profile_complete, bool $is_accessible, string $locked_reason, ?array $latest_review, array $quality_payload, array $ai_growth_access = [], bool $is_app_review_locked = false, ?string $app_review_next_at = null, bool $compact = false, array $editor_actions = []): string {
     $tier = (string) ($ai_growth_access['tier'] ?? 'none');
     $starter = (array) ($ai_growth_access['starter'] ?? []);
     $starter_app_review_remaining = (int) ($starter['app_review_remaining'] ?? 0);
     $review_cooldown_days = (int) (($ai_growth_access['app_review']['cooldown_days'] ?? 0));
     $growth_signal_30d = (int) ($ai_growth_access['growth_signal_30d'] ?? 0);
+    $editor_link_id = max(0, (int) ($editor_actions['link_id'] ?? 0));
+    $show_editor_actions = !$compact && $editor_link_id > 0 && (!empty($editor_actions['has_any']) || !empty($latest_review));
+    $can_apply_blocks = !empty($editor_actions['can_apply_blocks']);
+    $can_apply_colors = !empty($editor_actions['can_apply_colors']);
+    $can_restore = !empty($editor_actions['can_restore']);
+    $actions_freshness = (array) ($editor_actions['freshness'] ?? []);
+    $actions_stale = !empty($actions_freshness['is_stale']);
+    $actions_notification_id = 'ai-plan-app-review-actions-notification-' . $editor_link_id . ($compact ? '-compact' : '');
 
     $summary_text = $latest_review ? (string) ($quality_payload['summary'] ?? '') : '';
     $reason_text = l('ai_plan.app_review_quality_teaser_reason');
@@ -744,7 +995,7 @@
             : 'PRO Start uključuje 1 početnu analizu glavne FCC aplikacije kako bi odmah dobio jasan smjer promjena.';
         $reason_text = 'Nakon 15+ klikova i prijava otključavaš redovni ritam analiza i tjednih planova.';
     } elseif(in_array($tier, ['pro_active', 'pro_vip', 'admin'], true)) {
-        $cadence_text = $tier === 'pro_vip' ? 'svakih 7 dana' : ($tier === 'admin' ? 'bez ograničenja u testnom modu' : 'svakih 14 dana');
+        $cadence_text = in_array($tier, ['pro_active', 'pro_vip'], true) ? 'svakih 7 dana' : 'bez ograničenja u testnom modu';
         $summary_text = $latest_review
             ? ($is_app_review_locked
                 ? 'Zadnja analiza je spremljena. Nova analiza aplikacije otključava se ' . $cadence_text . '.'
@@ -776,6 +1027,58 @@
                 <div class="ai-plan-tool-teaser-summary">
                     <?= htmlspecialchars($summary_text, ENT_QUOTES, 'UTF-8') ?>
                 </div>
+
+                <?php if($show_editor_actions): ?>
+                    <div class="ai-plan-tool-teaser-actions">
+                        <button
+                            type="button"
+                            class="ai-plan-tool-teaser-action is-primary is-wide js-ai-plan-editor-action"
+                            data-request-type="apply_ai_block_bundle"
+                            data-link-id="<?= $editor_link_id ?>"
+                            data-notification-target="#<?= htmlspecialchars($actions_notification_id, ENT_QUOTES, 'UTF-8') ?>"
+                            data-ai-stale="<?= $actions_stale ? '1' : '0' ?>"
+                            data-ai-stale-message="<?= htmlspecialchars((string) ($actions_freshness['message'] ?? ''), ENT_QUOTES, 'UTF-8') ?>"
+                            <?= $can_apply_blocks ? null : 'disabled="disabled"' ?>
+                        >
+                            <i class="fas fa-fw fa-layer-group"></i>
+                            <span><?= htmlspecialchars(l('link.settings.ai_block_bundle_apply'), ENT_QUOTES, 'UTF-8') ?></span>
+                        </button>
+
+                        <button
+                            type="button"
+                            class="ai-plan-tool-teaser-action js-ai-plan-editor-action"
+                            data-request-type="apply_ai_color_bundle"
+                            data-link-id="<?= $editor_link_id ?>"
+                            data-notification-target="#<?= htmlspecialchars($actions_notification_id, ENT_QUOTES, 'UTF-8') ?>"
+                            data-ai-stale="<?= $actions_stale ? '1' : '0' ?>"
+                            data-ai-stale-message="<?= htmlspecialchars((string) ($actions_freshness['message'] ?? ''), ENT_QUOTES, 'UTF-8') ?>"
+                            <?= $can_apply_colors ? null : 'disabled="disabled"' ?>
+                        >
+                            <i class="fas fa-fw fa-palette"></i>
+                            <span><?= htmlspecialchars(l('link.settings.ai_color_bundle_apply'), ENT_QUOTES, 'UTF-8') ?></span>
+                        </button>
+
+                        <button
+                            type="button"
+                            class="ai-plan-tool-teaser-action is-muted js-ai-plan-editor-action"
+                            data-request-type="restore_ai_bundle_backup"
+                            data-link-id="<?= $editor_link_id ?>"
+                            data-notification-target="#<?= htmlspecialchars($actions_notification_id, ENT_QUOTES, 'UTF-8') ?>"
+                            <?= $can_restore ? null : 'disabled="disabled"' ?>
+                        >
+                            <i class="fas fa-fw fa-undo"></i>
+                            <span><?= htmlspecialchars(l('link.settings.ai_bundle_restore'), ENT_QUOTES, 'UTF-8') ?></span>
+                        </button>
+                    </div>
+
+                    <?php if($actions_stale): ?>
+                        <div class="ai-plan-tool-teaser-notice is-error" style="margin-top:.85rem;">
+                            <?= htmlspecialchars((string) ($actions_freshness['message'] ?? ''), ENT_QUOTES, 'UTF-8') ?>
+                        </div>
+                    <?php endif ?>
+
+                    <div id="<?= htmlspecialchars($actions_notification_id, ENT_QUOTES, 'UTF-8') ?>" class="ai-plan-tool-teaser-notification"></div>
+                <?php endif ?>
             </div>
 
             <div class="ai-plan-tool-teaser-side">
@@ -892,7 +1195,15 @@
                 <div class="small text-muted mb-1"><?= l('ai_plan.feedback_loop_blocker') ?></div>
                 <div class="mb-3"><?= htmlspecialchars($feedback_payload['main_blocker_now'] ?? '', ENT_QUOTES, 'UTF-8') ?></div>
                 <div class="small text-muted mb-1"><?= l('ai_plan.feedback_loop_adjustment') ?></div>
-                <div class="mb-0"><?= htmlspecialchars($feedback_payload['next_adjustment'] ?? '', ENT_QUOTES, 'UTF-8') ?></div>
+                <div class="mb-3"><?= htmlspecialchars($feedback_payload['next_adjustment'] ?? '', ENT_QUOTES, 'UTF-8') ?></div>
+                <?php if(!empty($feedback_payload['palette_feedback'])): ?>
+                    <div class="small text-muted mb-1"><?= l('ai_plan.outcome_palette_feedback') ?></div>
+                    <div class="mb-2"><?= htmlspecialchars($feedback_payload['palette_feedback'] ?? '', ENT_QUOTES, 'UTF-8') ?></div>
+                    <?php if(!empty($feedback_payload['palette_feedback_note'])): ?>
+                        <div class="small text-muted mb-1"><?= l('ai_plan.outcome_palette_feedback_note') ?></div>
+                        <div class="mb-0"><?= htmlspecialchars($feedback_payload['palette_feedback_note'] ?? '', ENT_QUOTES, 'UTF-8') ?></div>
+                    <?php endif ?>
+                <?php endif ?>
             </div>
         <?php endif ?>
 
@@ -1017,7 +1328,15 @@
                 <div class="small text-muted mb-1"><?= l('ai_plan.outcome_biggest_lesson') ?></div>
                 <div class="mb-3"><?= htmlspecialchars($outcome['biggest_lesson'], ENT_QUOTES, 'UTF-8') ?></div>
                 <div class="small text-muted mb-1"><?= l('ai_plan.outcome_next_adjustment') ?></div>
-                <div class="mb-0"><?= htmlspecialchars($outcome['next_adjustment'], ENT_QUOTES, 'UTF-8') ?></div>
+                <div class="mb-3"><?= htmlspecialchars($outcome['next_adjustment'], ENT_QUOTES, 'UTF-8') ?></div>
+                <?php if(!empty($outcome['palette_feedback'])): ?>
+                    <div class="small text-muted mb-1"><?= l('ai_plan.outcome_palette_feedback') ?></div>
+                    <div class="mb-2"><?= l('ai_plan.option.palette_feedback.' . $outcome['palette_feedback']) ?></div>
+                    <?php if(!empty($outcome['palette_feedback_note'])): ?>
+                        <div class="small text-muted mb-1"><?= l('ai_plan.outcome_palette_feedback_note') ?></div>
+                        <div class="mb-0"><?= htmlspecialchars($outcome['palette_feedback_note'], ENT_QUOTES, 'UTF-8') ?></div>
+                    <?php endif ?>
+                <?php endif ?>
             </div>
         <?php endif ?>
     </div></div>
@@ -1075,8 +1394,17 @@
     <?php
     return (string) ob_get_clean();
 }; ?>
-<?php $render_weekly_outcome_form = static function(string $action_url, ?array $outcome = null, string $footer_text = '', ?array $plan = null): string {
+<?php $render_weekly_outcome_form = static function(string $action_url, ?array $outcome = null, string $footer_text = '', ?array $plan = null, array $palette_context = []): string {
     ob_start();
+    $selected_link_id = max(0, (int) ($outcome['selected_link_id'] ?? ($palette_context['selected_link_id'] ?? 0)));
+    $app_review_generated_at = (string) ($outcome['app_review_generated_at'] ?? ($palette_context['app_review_generated_at'] ?? ''));
+    $app_review_review_key = (string) ($outcome['app_review_review_key'] ?? ($palette_context['app_review_review_key'] ?? $app_review_generated_at));
+    $outcome_is_ready = !empty($outcome['completion_level'])
+        && !empty(trim((string) ($outcome['best_response'] ?? '')))
+        && !empty(trim((string) ($outcome['main_blocker_now'] ?? '')))
+        && !empty(trim((string) ($outcome['biggest_lesson'] ?? '')))
+        && !empty(trim((string) ($outcome['next_adjustment'] ?? '')))
+        && !empty($outcome['palette_feedback']);
     ?>
     <div class="card ai-plan-card mb-3" id="ai-plan-weekly-outcome-start"><div class="card-body">
         <div class="d-flex justify-content-between align-items-start mb-3 flex-wrap" style="gap:.75rem;">
@@ -1089,16 +1417,19 @@
             <?php endif ?>
         </div>
 
-        <form action="<?= htmlspecialchars($action_url, ENT_QUOTES, 'UTF-8') ?>" method="post" role="form">
+        <form action="<?= htmlspecialchars($action_url, ENT_QUOTES, 'UTF-8') ?>" method="post" role="form" class="js-ai-plan-weekly-outcome-form">
             <input type="hidden" name="token" value="<?= \Altum\Csrf::get() ?>" />
             <?php if($plan): ?>
                 <input type="hidden" name="outcome_plan_generated_at" value="<?= htmlspecialchars((string) ($plan['generated_at'] ?? ''), ENT_QUOTES, 'UTF-8') ?>" />
                 <input type="hidden" name="outcome_checkin_submitted_at" value="<?= htmlspecialchars((string) ($plan['checkin_submitted_at'] ?? ''), ENT_QUOTES, 'UTF-8') ?>" />
             <?php endif ?>
+            <input type="hidden" name="outcome_selected_link_id" value="<?= $selected_link_id ?>" />
+            <input type="hidden" name="outcome_app_review_generated_at" value="<?= htmlspecialchars($app_review_generated_at, ENT_QUOTES, 'UTF-8') ?>" />
+            <input type="hidden" name="outcome_app_review_review_key" value="<?= htmlspecialchars($app_review_review_key, ENT_QUOTES, 'UTF-8') ?>" />
 
             <div class="form-group">
                 <label for="completion_level" class="font-weight-bold"><?= l('ai_plan.outcome_completion_level') ?></label>
-                <select id="completion_level" name="completion_level" class="custom-select <?= \Altum\Alerts::has_field_errors('completion_level') ? 'is-invalid' : null ?>">
+                <select id="completion_level" name="completion_level" class="custom-select <?= \Altum\Alerts::has_field_errors('completion_level') ? 'is-invalid' : null ?>" data-ai-required="1" required>
                     <option value=""><?= l('global.choose') ?></option>
                     <?php foreach(['strong_progress', 'partial_progress', 'low_execution', 'not_started'] as $option): ?>
                         <option value="<?= $option ?>" <?= ((($outcome['completion_level'] ?? '') === $option) ? 'selected="selected"' : null) ?>><?= l('ai_plan.option.completion_level.' . $option) ?></option>
@@ -1109,30 +1440,47 @@
 
             <div class="form-group">
                 <label for="best_response" class="font-weight-bold"><?= l('ai_plan.outcome_best_response') ?></label>
-                <textarea id="best_response" name="best_response" rows="3" maxlength="800" class="form-control <?= \Altum\Alerts::has_field_errors('best_response') ? 'is-invalid' : null ?>" placeholder="<?= l('ai_plan.outcome_best_response_placeholder') ?>"><?= htmlspecialchars((string) ($outcome['best_response'] ?? ''), ENT_QUOTES, 'UTF-8') ?></textarea>
+                <textarea id="best_response" name="best_response" rows="3" maxlength="800" class="form-control <?= \Altum\Alerts::has_field_errors('best_response') ? 'is-invalid' : null ?>" placeholder="<?= l('ai_plan.outcome_best_response_placeholder') ?>" data-ai-required="1" required><?= htmlspecialchars((string) ($outcome['best_response'] ?? ''), ENT_QUOTES, 'UTF-8') ?></textarea>
                 <?= \Altum\Alerts::output_field_error('best_response') ?>
             </div>
 
             <div class="form-group">
                 <label for="main_blocker_now" class="font-weight-bold"><?= l('ai_plan.outcome_main_blocker_now') ?></label>
-                <textarea id="main_blocker_now" name="main_blocker_now" rows="3" maxlength="800" class="form-control <?= \Altum\Alerts::has_field_errors('main_blocker_now') ? 'is-invalid' : null ?>" placeholder="<?= l('ai_plan.outcome_main_blocker_now_placeholder') ?>"><?= htmlspecialchars((string) ($outcome['main_blocker_now'] ?? ''), ENT_QUOTES, 'UTF-8') ?></textarea>
+                <textarea id="main_blocker_now" name="main_blocker_now" rows="3" maxlength="800" class="form-control <?= \Altum\Alerts::has_field_errors('main_blocker_now') ? 'is-invalid' : null ?>" placeholder="<?= l('ai_plan.outcome_main_blocker_now_placeholder') ?>" data-ai-required="1" required><?= htmlspecialchars((string) ($outcome['main_blocker_now'] ?? ''), ENT_QUOTES, 'UTF-8') ?></textarea>
                 <?= \Altum\Alerts::output_field_error('main_blocker_now') ?>
             </div>
 
             <div class="form-group">
                 <label for="biggest_lesson" class="font-weight-bold"><?= l('ai_plan.outcome_biggest_lesson') ?></label>
-                <textarea id="biggest_lesson" name="biggest_lesson" rows="3" maxlength="800" class="form-control <?= \Altum\Alerts::has_field_errors('biggest_lesson') ? 'is-invalid' : null ?>" placeholder="<?= l('ai_plan.outcome_biggest_lesson_placeholder') ?>"><?= htmlspecialchars((string) ($outcome['biggest_lesson'] ?? ''), ENT_QUOTES, 'UTF-8') ?></textarea>
+                <textarea id="biggest_lesson" name="biggest_lesson" rows="3" maxlength="800" class="form-control <?= \Altum\Alerts::has_field_errors('biggest_lesson') ? 'is-invalid' : null ?>" placeholder="<?= l('ai_plan.outcome_biggest_lesson_placeholder') ?>" data-ai-required="1" required><?= htmlspecialchars((string) ($outcome['biggest_lesson'] ?? ''), ENT_QUOTES, 'UTF-8') ?></textarea>
                 <?= \Altum\Alerts::output_field_error('biggest_lesson') ?>
             </div>
 
             <div class="form-group mb-0">
                 <label for="next_adjustment" class="font-weight-bold"><?= l('ai_plan.outcome_next_adjustment') ?></label>
-                <textarea id="next_adjustment" name="next_adjustment" rows="3" maxlength="800" class="form-control <?= \Altum\Alerts::has_field_errors('next_adjustment') ? 'is-invalid' : null ?>" placeholder="<?= l('ai_plan.outcome_next_adjustment_placeholder') ?>"><?= htmlspecialchars((string) ($outcome['next_adjustment'] ?? ''), ENT_QUOTES, 'UTF-8') ?></textarea>
+                <textarea id="next_adjustment" name="next_adjustment" rows="3" maxlength="800" class="form-control <?= \Altum\Alerts::has_field_errors('next_adjustment') ? 'is-invalid' : null ?>" placeholder="<?= l('ai_plan.outcome_next_adjustment_placeholder') ?>" data-ai-required="1" required><?= htmlspecialchars((string) ($outcome['next_adjustment'] ?? ''), ENT_QUOTES, 'UTF-8') ?></textarea>
                 <?= \Altum\Alerts::output_field_error('next_adjustment') ?>
             </div>
 
+            <div class="form-group mt-4">
+                <label for="palette_feedback" class="font-weight-bold"><?= l('ai_plan.outcome_palette_feedback') ?></label>
+                <select id="palette_feedback" name="palette_feedback" class="custom-select <?= \Altum\Alerts::has_field_errors('palette_feedback') ? 'is-invalid' : null ?>" data-ai-required="1" required>
+                    <option value=""><?= l('global.choose') ?></option>
+                    <?php foreach(['love_keep', 'good_refine', 'new_direction', 'not_applied'] as $option): ?>
+                        <option value="<?= $option ?>" <?= ((($outcome['palette_feedback'] ?? '') === $option) ? 'selected="selected"' : null) ?>><?= l('ai_plan.option.palette_feedback.' . $option) ?></option>
+                    <?php endforeach ?>
+                </select>
+                <small class="form-text text-muted"><?= l('ai_plan.outcome_palette_feedback_help') ?></small>
+                <?= \Altum\Alerts::output_field_error('palette_feedback') ?>
+            </div>
+
+            <div class="form-group mb-0">
+                <label for="palette_feedback_note" class="font-weight-bold"><?= l('ai_plan.outcome_palette_feedback_note') ?></label>
+                <textarea id="palette_feedback_note" name="palette_feedback_note" rows="2" maxlength="500" class="form-control" placeholder="<?= l('ai_plan.outcome_palette_feedback_note_placeholder') ?>"><?= htmlspecialchars((string) ($outcome['palette_feedback_note'] ?? ''), ENT_QUOTES, 'UTF-8') ?></textarea>
+            </div>
+
             <div class="mt-4 d-flex flex-wrap align-items-center" style="gap:.75rem;">
-                <button type="submit" name="save_weekly_outcome" value="1" class="btn btn-primary"><i class="fas fa-check-circle fa-sm mr-1"></i> <?= l('ai_plan.outcome_save') ?></button>
+                <button type="submit" name="save_weekly_outcome" value="1" class="btn btn-primary js-ai-plan-weekly-outcome-submit" <?= $outcome_is_ready ? null : 'disabled="disabled"' ?>><i class="fas fa-check-circle fa-sm mr-1"></i> <?= l('ai_plan.outcome_save') ?></button>
                 <span class="text-muted small"><?= htmlspecialchars($footer_text !== '' ? $footer_text : l('ai_plan.outcome_footer'), ENT_QUOTES, 'UTF-8') ?></span>
             </div>
         </form>
@@ -1224,7 +1572,7 @@
 <?php if($ai_growth_tier === 'admin') $ai_plan_tier_label = 'Admin test'; ?>
 <?php $ai_plan_access_summary = 'Za AI analizu aplikacije i tjedni plan potreban je aktivan PRO paket.'; ?>
 <?php if($ai_growth_tier === 'pro_start') $ai_plan_access_summary = 'PRO Start uključuje 1 početnu analizu FCC aplikacije i 1 prvi tjedni plan.'; ?>
-<?php if($ai_growth_tier === 'pro_active') $ai_plan_access_summary = 'PRO Active je otključan. Tjedni plan je aktivan, a nova analiza aplikacije dostupna je svakih 14 dana.'; ?>
+<?php if($ai_growth_tier === 'pro_active') $ai_plan_access_summary = 'PRO Active je otključan. Tjedni plan je aktivan, a nova analiza aplikacije dostupna je svakih 7 dana.'; ?>
 <?php if($ai_growth_tier === 'pro_vip') $ai_plan_access_summary = 'PRO VIP je otključan. Tjedni plan je aktivan, a nova analiza aplikacije dostupna je svakih 7 dana.'; ?>
 <?php if($ai_growth_tier === 'admin') $ai_plan_access_summary = 'Administratorski testni način ima puni pristup svim AI koracima.'; ?>
 <?php $ai_plan_guide_text = l('ai_plan.guide_profile_text'); ?>
@@ -1243,6 +1591,7 @@
 <?php if($ai_plan_current_step === 'app_review') { $ai_plan_primary_cta_label = l('ai_plan.cta_go_app_review_direct'); $ai_plan_primary_cta_url = $ai_plan_app_review_anchor_url; } ?>
 <?php if($ai_plan_current_step === 'weekly') { $ai_plan_primary_cta_label = $data->is_weekly_plan_eligible ? l('ai_plan.cta_go_weekly') : l('ai_plan.cta_go_app_review_direct'); $ai_plan_primary_cta_url = $data->is_weekly_plan_eligible ? $ai_plan_section_urls['weekly'] : $ai_plan_app_review_anchor_url; } ?>
 <?php if($ai_plan_current_step === 'plan') { $ai_plan_primary_cta_label = l('ai_plan.cta_go_plan'); $ai_plan_primary_cta_url = $ai_plan_section_urls['plan']; } ?>
+<?php $ai_plan_metric_next_label = l('ai_plan.sidebar_next_step_label'); ?>
 <?php
     $ai_plan_step_profile_url = $ai_plan_section_urls['profile'];
     $ai_plan_step_app_review_url = $app_review_is_accessible ? $ai_plan_app_review_anchor_url : '#';
@@ -1389,7 +1738,7 @@
         $ai_plan_app_review_step_status_class = 'review-waiting';
         $ai_plan_app_review_step_status_label = 'Plan spreman';
         $ai_plan_app_review_step_title = '2. Pregledaj plan promjena aplikacije';
-        $ai_plan_app_review_step_text = 'Tu vidiš zadnju analizu i preporuke. Nova analiza se otključava ' . ($ai_growth_tier === 'pro_vip' ? 'svakih 7 dana.' : 'svakih 14 dana.');
+        $ai_plan_app_review_step_text = 'Tu vidiš zadnju analizu i preporuke. Nova analiza se otključava svakih 7 dana.';
         $ai_plan_app_review_step_meta_label = 'Nova analiza dostupna';
         $ai_plan_app_review_step_meta_value = !empty($data->app_review_next_at)
             ? \Altum\Date::get($data->app_review_next_at, 1)
@@ -1476,7 +1825,7 @@
 
     <?= \Altum\Alerts::output_alerts() ?>
 
-    <div class="card ai-plan-card ai-plan-hero mb-4"><div class="card-body"><div class="row align-items-center"><div class="col-12 col-xl-8 mb-3 mb-xl-0"><div class="ai-plan-hero-copy"><div class="d-flex flex-wrap align-items-center mb-2" style="gap:.5rem;"><span class="ai-plan-chip active"><?= l('ai_plan.phase_label') ?> <?= $ai_plan_current_phase ?></span><span class="ai-plan-chip <?= $ai_plan_hero_status_class ?>"><?= $ai_plan_hero_status_label ?></span><?php if($data->latest_weekly_plan): ?><span class="ai-plan-chip success"><?= l('ai_plan.status_plan_ready') ?></span><?php elseif($data->weekly_is_locked && $data->latest_weekly_checkin): ?><span class="ai-plan-chip locked"><?= l('ai_plan.weekly_status_cooldown') ?></span><?php endif ?></div><h2 class="h4 mb-2"><?= $ai_plan_hero_title ?></h2><p class="text-muted mb-3"><?= $ai_plan_hero_text ?></p><?php if($data->is_profile_complete && !$data->is_weekly_plan_eligible): ?><div class="small text-muted mb-3"><?= $ai_growth_is_pro ? 'Za puni tjedni AI plan treba ti još ' . nr($ai_plan_signal_missing) . ' klikova i prijava u zadnjih 30 dana.' : 'Za AI planove i analize aplikacije aktiviraj PRO paket.' ?></div><?php endif ?><a href="<?= $ai_plan_primary_cta_url ?>" class="btn btn-primary"><?= $ai_plan_primary_cta_label ?></a></div></div><div class="col-12 col-xl-4"><div class="ai-plan-card ai-plan-hero-summary p-3 h-100"><div class="ai-plan-stat-row"><span class="text-muted small">Klikovi i prijave u 30 dana</span><strong><?= nr($ai_growth_signal) ?></strong></div><div class="ai-plan-stat-row"><span class="text-muted small">AI status</span><strong><?= $ai_plan_metric_unlock_value ?></strong></div><div class="ai-plan-stat-row"><span class="text-muted small"><?= l('ai_plan.weekly_next') ?></span><strong><?= $ai_plan_metric_next_value ?></strong></div><div class="small text-muted mt-3 mb-0"><?= $ai_plan_metric_help_text ?></div></div></div></div></div></div>
+    <div class="card ai-plan-card ai-plan-hero mb-4"><div class="card-body"><div class="row align-items-center"><div class="col-12 col-xl-8 mb-3 mb-xl-0"><div class="ai-plan-hero-copy"><div class="d-flex flex-wrap align-items-center mb-2" style="gap:.5rem;"><span class="ai-plan-chip active"><?= l('ai_plan.phase_label') ?> <?= $ai_plan_current_phase ?></span><span class="ai-plan-chip <?= $ai_plan_hero_status_class ?>"><?= $ai_plan_hero_status_label ?></span><?php if($data->latest_weekly_plan): ?><span class="ai-plan-chip success"><?= l('ai_plan.status_plan_ready') ?></span><?php elseif($data->weekly_is_locked && $data->latest_weekly_checkin): ?><span class="ai-plan-chip locked"><?= l('ai_plan.weekly_status_cooldown') ?></span><?php endif ?></div><h2 class="h4 mb-2"><?= $ai_plan_hero_title ?></h2><p class="text-muted mb-3"><?= $ai_plan_hero_text ?></p><?php if($data->is_profile_complete && !$data->is_weekly_plan_eligible): ?><div class="small text-muted mb-3"><?= $ai_growth_is_pro ? 'Za puni tjedni AI plan treba ti još ' . nr($ai_plan_signal_missing) . ' klikova i prijava u zadnjih 30 dana.' : 'Za AI planove i analize aplikacije aktiviraj PRO paket.' ?></div><?php endif ?><a href="<?= $ai_plan_primary_cta_url ?>" class="btn btn-primary"><?= $ai_plan_primary_cta_label ?></a></div></div><div class="col-12 col-xl-4"><div class="ai-plan-card ai-plan-hero-summary p-3 h-100"><div class="ai-plan-stat-row"><span class="text-muted small">Klikovi i prijave u 30 dana</span><strong><?= nr($ai_growth_signal) ?></strong></div><div class="ai-plan-stat-row"><span class="text-muted small">AI status</span><strong><?= $ai_plan_metric_unlock_value ?></strong></div><div class="ai-plan-stat-row"><span class="text-muted small"><?= $ai_plan_metric_next_label ?></span><strong><?= $ai_plan_metric_next_value ?></strong></div><div class="small text-muted mt-3 mb-0"><?= $ai_plan_metric_help_text ?></div></div></div></div></div></div>
 
             <div class="card ai-plan-card ai-plan-guide-card mb-4">
                 <div class="card-body">
@@ -1579,7 +1928,7 @@
     <div class="row">
         <div class="<?= $ai_plan_active_section === 'app_review' ? 'col-12' : 'col-12 col-xl-8' ?> mb-4 ai-plan-main-column">
             <?php if($ai_plan_active_section === 'profile'): ?>
-            <div class="card ai-plan-card ai-plan-form-card" id="ai-plan-profile-start"><div class="card-body"><div class="d-flex justify-content-between align-items-start mb-3 flex-wrap" style="gap:.75rem;"><div><h2 class="h5 mb-1"><?= l('ai_plan.form_title') ?></h2><p class="text-muted mb-0"><?= l('ai_plan.form_text') ?></p></div><?php if(!empty($values['updated_at'])): ?><div class="small text-muted"><?= l('ai_plan.last_updated') ?>: <?= \Altum\Date::get($values['updated_at'], 2) ?></div><?php endif ?></div>
+            <div class="card ai-plan-card ai-plan-form-card ai-plan-profile-card" id="ai-plan-profile-start"><div class="card-body"><div class="d-flex justify-content-between align-items-start mb-3 flex-wrap" style="gap:.75rem;"><div><h2 class="h5 mb-1"><?= l('ai_plan.form_title') ?></h2><p class="text-muted mb-0"><?= l('ai_plan.form_text') ?></p></div><?php if(!empty($values['updated_at'])): ?><div class="small text-muted"><?= l('ai_plan.last_updated') ?>: <?= \Altum\Date::get($values['updated_at'], 2) ?></div><?php endif ?></div>
                 <form action="<?= $ai_plan_section_urls['profile'] ?>" method="post" role="form">
                     <input type="hidden" name="token" value="<?= \Altum\Csrf::get() ?>" />
 
@@ -1597,13 +1946,15 @@
 
                     <div class="form-row"><div class="col-12 col-md-6"><div class="form-group"><label for="audience_focus" class="font-weight-bold"><?= l('ai_plan.audience_focus') ?></label><input id="audience_focus" type="text" name="audience_focus" class="form-control" maxlength="120" value="<?= htmlspecialchars($values['audience_focus'], ENT_QUOTES, 'UTF-8') ?>" placeholder="<?= l('ai_plan.audience_focus_placeholder') ?>" /></div></div><div class="col-12 col-md-6"><div class="form-group"><label for="product_focus" class="font-weight-bold"><?= l('ai_plan.product_focus') ?></label><input id="product_focus" type="text" name="product_focus" class="form-control" maxlength="120" value="<?= htmlspecialchars($values['product_focus'], ENT_QUOTES, 'UTF-8') ?>" placeholder="<?= l('ai_plan.product_focus_placeholder') ?>" /></div></div></div>
 
+                    <div class="form-group"><label for="visual_tone_preference" class="font-weight-bold"><?= l('ai_plan.visual_tone_preference') ?></label><input id="visual_tone_preference" type="text" name="visual_tone_preference" class="form-control" maxlength="160" value="<?= htmlspecialchars($values['visual_tone_preference'], ENT_QUOTES, 'UTF-8') ?>" placeholder="<?= l('ai_plan.visual_tone_preference_placeholder') ?>" /></div>
+
                     <div class="form-group mb-0"><label for="notes" class="font-weight-bold"><?= l('ai_plan.notes') ?></label><textarea id="notes" name="notes" class="form-control" rows="4" maxlength="1000" placeholder="<?= l('ai_plan.notes_placeholder') ?>"><?= htmlspecialchars($values['notes'], ENT_QUOTES, 'UTF-8') ?></textarea></div>
 
                     <div class="mt-4 d-flex flex-wrap align-items-center" style="gap:.75rem;"><button type="submit" name="save_profile" value="1" class="btn btn-primary"><i class="fas fa-save fa-sm mr-1"></i> <?= l('ai_plan.save') ?></button><span class="text-muted small"><?= l('ai_plan.form_footer') ?></span></div>
                 </form>
             </div></div>
 
-            <?= $render_app_review_teaser_card($app_review_page_url, (bool) $data->is_profile_complete, $app_review_is_accessible, $app_review_locked_reason, $data->latest_app_review ?? null, $data->app_review_quality_payload ?? [], $ai_growth_access, (bool) $data->app_review_is_locked, $data->app_review_next_at ?? null) ?>
+            <?= $render_app_review_teaser_card($app_review_page_url, (bool) $data->is_profile_complete, $app_review_is_accessible, $app_review_locked_reason, $data->latest_app_review ?? null, $data->app_review_quality_payload ?? [], $ai_growth_access, (bool) $data->app_review_is_locked, $data->app_review_next_at ?? null, false, $app_review_editor_actions) ?>
             <?php endif ?>
 
             <?php if($ai_plan_active_section === 'app_review'): ?>
@@ -1662,7 +2013,7 @@
                 if($data->latest_weekly_checkin && !$data->latest_weekly_plan) $weekly_cycle_next_value = l('ai_plan.weekly_cycle_next_wait_plan');
                 if($data->latest_weekly_outcome) $weekly_cycle_next_value = l('ai_plan.weekly_cycle_next_done');
             ?>
-            <div class="card ai-plan-card"><div class="card-body"><div class="d-flex justify-content-between align-items-start mb-3 flex-wrap" style="gap:.75rem;"><div><h2 class="h5 mb-1"><?= l('ai_plan.weekly_title') ?></h2><p class="text-muted mb-0"><?= $weekly_is_first_cycle ? l('ai_plan.weekly_text') : 'Prethodni ciklus je zatvoren. U ovom unosu postavljaš fokus za sljedećih 7 dana. Ako želiš, prije plana možeš prvo promijeniti Profil i smjer rada.' ?></p></div><?php if(!empty($data->latest_weekly_checkin['submitted_at'])): ?><div class="small text-muted"><?= l('ai_plan.last_updated') ?>: <?= \Altum\Date::get($data->latest_weekly_checkin['submitted_at'], 2) ?></div><?php endif ?></div>
+            <div class="card ai-plan-card ai-plan-form-card ai-plan-weekly-card"><div class="card-body"><div class="d-flex justify-content-between align-items-start mb-3 flex-wrap" style="gap:.75rem;"><div><h2 class="h5 mb-1"><?= l('ai_plan.weekly_title') ?></h2><p class="text-muted mb-0"><?= $weekly_is_first_cycle ? l('ai_plan.weekly_text') : 'Prethodni ciklus je zatvoren. U ovom unosu postavljaš fokus za sljedećih 7 dana. Ako želiš, prije plana možeš prvo promijeniti Profil i smjer rada.' ?></p></div><?php if(!empty($data->latest_weekly_checkin['submitted_at'])): ?><div class="small text-muted"><?= l('ai_plan.last_updated') ?>: <?= \Altum\Date::get($data->latest_weekly_checkin['submitted_at'], 2) ?></div><?php endif ?></div>
 
                 <?= $weekly_is_first_cycle ? $render_weekly_cycle_panel($weekly_cycle_steps, $weekly_cycle_next_value) : $render_weekly_refresh_panel($ai_plan_section_urls['profile']) ?>
 
@@ -1728,12 +2079,17 @@
                         $ai_plan_section_urls['plan'],
                         $data->latest_pending_outcome ?? null,
                         'Nakon spremanja izvještaja otvara se novi tjedni unos za sljedeći plan.',
-                        $data->latest_pending_outcome_plan ?? null
+                        $data->latest_pending_outcome_plan ?? null,
+                        [
+                            'selected_link_id' => (int) ($data->app_review_selected_link_id ?? 0),
+                            'app_review_generated_at' => (string) (($data->selected_app_review['generated_at'] ?? $data->latest_app_review['generated_at'] ?? '')),
+                            'app_review_review_key' => (string) (($data->selected_app_review['review_key'] ?? $data->selected_app_review['generated_at'] ?? $data->latest_app_review['review_key'] ?? $data->latest_app_review['generated_at'] ?? '')),
+                        ]
                     ) ?>
                 <?php endif ?>
             </div></div>
 
-            <?= $render_app_review_teaser_card($app_review_page_url, (bool) $data->is_profile_complete, $app_review_is_accessible, $app_review_locked_reason, $data->latest_app_review ?? null, $data->app_review_quality_payload ?? [], $ai_growth_access, (bool) $data->app_review_is_locked, $data->app_review_next_at ?? null, true) ?>
+            <?= $render_app_review_teaser_card($app_review_page_url, (bool) $data->is_profile_complete, $app_review_is_accessible, $app_review_locked_reason, $data->latest_app_review ?? null, $data->app_review_quality_payload ?? [], $ai_growth_access, (bool) $data->app_review_is_locked, $data->app_review_next_at ?? null, true, $app_review_editor_actions) ?>
             <?php endif ?>
 
             <?php if($ai_plan_active_section === 'plan'): ?>
@@ -1800,7 +2156,12 @@
                         $ai_plan_section_urls['plan'],
                         $data->latest_pending_outcome ?? null,
                         'Nakon spremanja izvještaja otvara se novi tjedni unos za sljedeći plan.',
-                        $data->latest_pending_outcome_plan ?? null
+                        $data->latest_pending_outcome_plan ?? null,
+                        [
+                            'selected_link_id' => (int) ($data->app_review_selected_link_id ?? 0),
+                            'app_review_generated_at' => (string) (($data->selected_app_review['generated_at'] ?? $data->latest_app_review['generated_at'] ?? '')),
+                            'app_review_review_key' => (string) (($data->selected_app_review['review_key'] ?? $data->selected_app_review['generated_at'] ?? $data->latest_app_review['review_key'] ?? $data->latest_app_review['generated_at'] ?? '')),
+                        ]
                     ) ?>
                 <?php endif ?>
             </div></div>
@@ -1810,7 +2171,12 @@
                     $ai_plan_section_urls['plan'],
                     $display_weekly_outcome,
                     l('ai_plan.outcome_footer'),
-                    $display_weekly_plan
+                    $display_weekly_plan,
+                    [
+                        'selected_link_id' => (int) ($data->app_review_selected_link_id ?? 0),
+                        'app_review_generated_at' => (string) (($data->selected_app_review['generated_at'] ?? $data->latest_app_review['generated_at'] ?? '')),
+                        'app_review_review_key' => (string) (($data->selected_app_review['review_key'] ?? $data->selected_app_review['generated_at'] ?? $data->latest_app_review['review_key'] ?? $data->latest_app_review['generated_at'] ?? '')),
+                    ]
                 ) ?>
             <?php endif ?>
             <?php endif ?>
@@ -1920,6 +2286,137 @@
                         frameId: 'ai-plan-preview-frame-weekly',
                         wrapId: 'ai-plan-preview-frame-wrap-weekly',
                         emptyId: 'ai-plan-preview-empty-weekly'
+                    });
+
+                    const aiPlanAjaxUrl = (typeof url !== 'undefined' ? url : <?= json_encode(url()) ?>) + 'link-ajax';
+                    const aiPlanAjaxToken = <?= json_encode(\Altum\Csrf::get()) ?>;
+
+                    const renderAiPlanEditorNotice = function(container, message, status) {
+                        if(!container) {
+                            return;
+                        }
+
+                        container.innerHTML = '';
+
+                        if(!message) {
+                            return;
+                        }
+
+                        const notice = document.createElement('div');
+                        notice.className = 'ai-plan-tool-teaser-notice ' + (status === 'success' ? 'is-success' : 'is-error');
+                        notice.textContent = message;
+                        container.appendChild(notice);
+                    };
+
+                    document.querySelectorAll('.js-ai-plan-editor-action').forEach(function(button) {
+                        button.addEventListener('click', function(event) {
+                            event.preventDefault();
+
+                            if(button.disabled) {
+                                return;
+                            }
+
+                            const requestType = button.getAttribute('data-request-type') || '';
+                            const linkId = button.getAttribute('data-link-id') || '';
+                            const notificationTarget = button.getAttribute('data-notification-target') || '';
+                            const notificationContainer = notificationTarget ? document.querySelector(notificationTarget) : null;
+                            const actionGroup = button.closest('.ai-plan-tool-teaser-actions');
+                            const actionButtons = actionGroup ? Array.from(actionGroup.querySelectorAll('.js-ai-plan-editor-action')) : [button];
+
+                            renderAiPlanEditorNotice(notificationContainer, '', 'success');
+
+                            if((button.getAttribute('data-ai-stale') || '0') === '1') {
+                                renderAiPlanEditorNotice(notificationContainer, button.getAttribute('data-ai-stale-message') || <?= json_encode(l('link.settings.ai_bundle_stale_notice')) ?>, 'error');
+                                return;
+                            }
+
+                            if(!requestType || !linkId) {
+                                renderAiPlanEditorNotice(notificationContainer, <?= json_encode(l('global.error_message.basic')) ?>, 'error');
+                                return;
+                            }
+
+                            actionButtons.forEach(function(actionButton) {
+                                actionButton.setAttribute('disabled', 'disabled');
+                            });
+
+                            const payload = new URLSearchParams();
+                            payload.append('token', aiPlanAjaxToken);
+                            payload.append('request_type', requestType);
+                            payload.append('link_id', linkId);
+
+                            fetch(aiPlanAjaxUrl, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+                                    'X-Requested-With': 'XMLHttpRequest',
+                                },
+                                body: payload.toString(),
+                                credentials: 'same-origin',
+                            })
+                                .then(function(response) {
+                                    return response.json().catch(function() {
+                                        return null;
+                                    });
+                                })
+                                .then(function(response) {
+                                    if(!response || !response.status) {
+                                        renderAiPlanEditorNotice(notificationContainer, <?= json_encode(l('global.error_message.basic')) ?>, 'error');
+                                        return;
+                                    }
+
+                                    renderAiPlanEditorNotice(notificationContainer, response.message || '', response.status);
+
+                                    if(response.status === 'success') {
+                                        window.setTimeout(function() {
+                                            window.location.reload();
+                                        }, 850);
+                                    } else {
+                                        actionButtons.forEach(function(actionButton) {
+                                            actionButton.removeAttribute('disabled');
+                                        });
+                                    }
+                                })
+                                .catch(function() {
+                                    renderAiPlanEditorNotice(notificationContainer, <?= json_encode(l('global.error_message.basic')) ?>, 'error');
+                                    actionButtons.forEach(function(actionButton) {
+                                        actionButton.removeAttribute('disabled');
+                                    });
+                                });
+                        });
+                    });
+
+                    document.querySelectorAll('.js-ai-plan-weekly-outcome-form').forEach(function(form) {
+                        const submitButton = form.querySelector('.js-ai-plan-weekly-outcome-submit');
+                        const requiredFields = Array.from(form.querySelectorAll('[data-ai-required="1"]'));
+
+                        if(!submitButton || !requiredFields.length) {
+                            return;
+                        }
+
+                        const isFieldFilled = function(field) {
+                            return ((field.value || '').trim() !== '');
+                        };
+
+                        const syncOutcomeSubmitState = function() {
+                            const isReady = requiredFields.every(isFieldFilled);
+                            submitButton.disabled = !isReady;
+                        };
+
+                        requiredFields.forEach(function(field) {
+                            ['input', 'change', 'keyup'].forEach(function(eventName) {
+                                field.addEventListener(eventName, syncOutcomeSubmitState);
+                            });
+                        });
+
+                        form.addEventListener('submit', function(event) {
+                            syncOutcomeSubmitState();
+
+                            if(submitButton.disabled) {
+                                event.preventDefault();
+                            }
+                        });
+
+                        syncOutcomeSubmitState();
                     });
                 });
             </script>

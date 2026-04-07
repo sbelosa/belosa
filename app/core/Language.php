@@ -110,13 +110,19 @@ class Language {
 
         /* Caching system */
         if(\Altum\Router::$path !== 'admin' && ALTUMCODE == 66) {
+            $cache_file_path = self::$path . 'cache/' . $name . '#' . self::$languages[$name]['code'] . '.php';
+
             /* Try to access the cached file */
-            if(file_exists(self::$path . 'cache/' . $name . '#' . self::$languages[$name]['code'] . '.php')) {
-                self::$languages[$name]['content'] = require self::$path . 'cache/' . $name . '#' . self::$languages[$name]['code'] . '.php';
+            if(file_exists($cache_file_path) && self::is_valid_cached_language_file($cache_file_path)) {
+                self::$languages[$name]['content'] = require $cache_file_path;
             }
 
             /* We need to generate the caching */
             else {
+                if(file_exists($cache_file_path) && !self::is_valid_cached_language_file($cache_file_path)) {
+                    @unlink($cache_file_path);
+                }
+
                 /* Include the language file */
                 if(file_exists(self::$path . $name . '#' . self::$languages[$name]['code'] . '.php')) {
                     self::$languages[$name]['content'] = require self::$path . $name . '#' . self::$languages[$name]['code'] . '.php';
@@ -198,10 +204,30 @@ class Language {
         if(ALTUMCODE != 66) return;
 
         /* Determine all the languages available in the directory */
-        foreach(glob(self::$path . 'cache/*.php') as $file_path) {
-            unlink($file_path);
+        foreach(glob(self::$path . 'cache/*') as $file_path) {
+            if(is_file($file_path)) {
+                unlink($file_path);
+            }
         }
 
+    }
+
+    private static function is_valid_cached_language_file(string $file_path): bool {
+        if(!is_file($file_path) || !is_readable($file_path) || filesize($file_path) < 20) {
+            return false;
+        }
+
+        $content = file_get_contents($file_path);
+
+        if($content === false) {
+            return false;
+        }
+
+        $trimmed_content = trim($content);
+
+        return str_starts_with($trimmed_content, '<?php')
+            && str_contains($trimmed_content, 'return [')
+            && str_ends_with($trimmed_content, '];');
     }
 
     public static function generate_cached_language_file($language, $prefixes_to_skip) {
@@ -228,7 +254,7 @@ class Language {
             }
 
             /* Add the language string */
-            $value = addcslashes($value, "'");
+            $value = addcslashes($value, "\\'");
             $language_strings .= "\t'{$key}' => '{$value}',\n";
         }
 
@@ -244,8 +270,12 @@ ALTUM;
         };
 
         /* Save / update file */
-        file_put_contents(Language::$path . 'cache/' . $language['name'] . '#' . $language['code'] . '.php', $language_content($language_strings));
-        chmod(Language::$path . 'cache/' . $language['name'] . '#' . $language['code'] . '.php', 0777);
+        $cache_file_path = Language::$path . 'cache/' . $language['name'] . '#' . $language['code'] . '.php';
+        $temporary_cache_file_path = $cache_file_path . '.' . bin2hex(random_bytes(6)) . '.tmp';
+        file_put_contents($temporary_cache_file_path, $language_content($language_strings), LOCK_EX);
+        chmod($temporary_cache_file_path, 0777);
+        rename($temporary_cache_file_path, $cache_file_path);
+        chmod($cache_file_path, 0777);
 
         return $language['content'];
     }

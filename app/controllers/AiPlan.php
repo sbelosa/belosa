@@ -57,6 +57,16 @@ class AiPlan extends Controller {
         return $preferences;
     }
 
+    private function normalize_json_to_array($value): array {
+        if(is_string($value)) {
+            $value = json_decode($value, true);
+        } elseif(is_object($value)) {
+            $value = json_decode(json_encode($value), true);
+        }
+
+        return is_array($value) ? $value : [];
+    }
+
     private function get_form_options(): array {
         return [
             'primary_goal' => ['product_sales', 'recruitment', 'brand_building', 'customer_activation', 'testing_new_angle'],
@@ -82,6 +92,7 @@ class AiPlan extends Controller {
             'weekly_change' => '',
             'audience_focus' => '',
             'product_focus' => '',
+            'visual_tone_preference' => '',
             'notes' => '',
             'updated_at' => null,
         ];
@@ -210,6 +221,7 @@ class AiPlan extends Controller {
         $values['weekly_change'] = (string) ($profile->weekly_change ?? '');
         $values['audience_focus'] = (string) ($profile->audience_focus ?? '');
         $values['product_focus'] = (string) ($profile->product_focus ?? '');
+        $values['visual_tone_preference'] = (string) ($profile->visual_tone_preference ?? '');
         $values['notes'] = (string) ($profile->notes ?? '');
         $values['updated_at'] = $profile->updated_at ?? null;
 
@@ -395,11 +407,17 @@ class AiPlan extends Controller {
             $normalized[] = [
                 'checkin_submitted_at' => $outcome['checkin_submitted_at'] ?? null,
                 'plan_generated_at' => $outcome['plan_generated_at'] ?? null,
+                'selected_link_id' => max(0, (int) ($outcome['selected_link_id'] ?? 0)),
+                'app_review_generated_at' => $outcome['app_review_generated_at'] ?? null,
+                'app_review_review_key' => (string) ($outcome['app_review_review_key'] ?? ($outcome['app_review_generated_at'] ?? '')),
                 'completion_level' => (string) ($outcome['completion_level'] ?? ''),
                 'best_response' => (string) ($outcome['best_response'] ?? ''),
                 'main_blocker_now' => (string) ($outcome['main_blocker_now'] ?? ''),
                 'biggest_lesson' => (string) ($outcome['biggest_lesson'] ?? ''),
                 'next_adjustment' => (string) ($outcome['next_adjustment'] ?? ''),
+                'palette_feedback' => $this->normalize_palette_feedback_choice($outcome['palette_feedback'] ?? ''),
+                'palette_feedback_note' => (string) ($outcome['palette_feedback_note'] ?? ''),
+                'palette_decision' => $this->get_palette_feedback_decision($outcome['palette_feedback'] ?? ''),
                 'submitted_at' => $outcome['submitted_at'] ?? null,
             ];
         }
@@ -541,7 +559,73 @@ class AiPlan extends Controller {
             'best_response' => (string) ($outcome['best_response'] ?? ''),
             'main_blocker_now' => (string) ($outcome['main_blocker_now'] ?? ''),
             'next_adjustment' => (string) ($outcome['next_adjustment'] ?? ''),
+            'palette_feedback' => $this->get_palette_feedback_label($outcome['palette_feedback'] ?? ''),
+            'palette_feedback_note' => (string) ($outcome['palette_feedback_note'] ?? ''),
+            'palette_decision' => (string) ($outcome['palette_decision'] ?? $this->get_palette_feedback_decision($outcome['palette_feedback'] ?? '')),
         ];
+    }
+
+    private function normalize_palette_feedback_choice($value): string {
+        $value = trim((string) $value);
+
+        return in_array($value, ['love_keep', 'good_refine', 'new_direction', 'not_applied'], true) ? $value : '';
+    }
+
+    private function get_palette_feedback_label(?string $value): string {
+        $value = $this->normalize_palette_feedback_choice($value);
+
+        return $value !== '' ? l('ai_plan.option.palette_feedback.' . $value) : '';
+    }
+
+    private function get_palette_feedback_decision(?string $value): string {
+        return match($this->normalize_palette_feedback_choice($value)) {
+            'love_keep' => 'keep',
+            'good_refine' => 'refine',
+            'new_direction' => 'replace',
+            'not_applied' => 'hold',
+            default => '',
+        };
+    }
+
+    private function get_latest_palette_feedback_for_app(array $weekly_outcomes, int $selected_link_id = 0, string $app_review_review_key = '', string $app_review_generated_at = ''): ?array {
+        $selected_link_id = max(0, $selected_link_id);
+        $app_review_review_key = trim($app_review_review_key);
+        $app_review_generated_at = trim($app_review_generated_at);
+
+        foreach($weekly_outcomes as $weekly_outcome) {
+            if(!is_array($weekly_outcome)) {
+                continue;
+            }
+
+            $palette_feedback = $this->normalize_palette_feedback_choice($weekly_outcome['palette_feedback'] ?? '');
+
+            if($palette_feedback === '') {
+                continue;
+            }
+
+            if(
+                $app_review_review_key !== ''
+                && (string) ($weekly_outcome['app_review_review_key'] ?? '') === $app_review_review_key
+            ) {
+                return $weekly_outcome;
+            }
+
+            if(
+                $app_review_generated_at !== ''
+                && (string) ($weekly_outcome['app_review_generated_at'] ?? '') === $app_review_generated_at
+            ) {
+                return $weekly_outcome;
+            }
+
+            if(
+                $selected_link_id > 0
+                && (int) ($weekly_outcome['selected_link_id'] ?? 0) === $selected_link_id
+            ) {
+                return $weekly_outcome;
+            }
+        }
+
+        return null;
     }
 
     private function get_mentor_ai_guidance($preferences): array {
@@ -616,8 +700,34 @@ class AiPlan extends Controller {
                 $performance_snapshot = [];
             }
 
+            $color_palette = $this->normalize_app_review_color_palette($review['color_palette'] ?? []);
+            $raw_primary_block_plan = $review['primary_block_plan'] ?? [];
+            if($raw_primary_block_plan instanceof \stdClass) {
+                $raw_primary_block_plan = (array) $raw_primary_block_plan;
+            }
+            if(!is_array($raw_primary_block_plan)) {
+                $raw_primary_block_plan = [];
+            }
+            $primary_action_fallback = [
+                'block_id' => (int) ($raw_primary_block_plan['block_id'] ?? 0),
+                'type' => (string) ($raw_primary_block_plan['block_type'] ?? ''),
+                'label' => (string) ($raw_primary_block_plan['label'] ?? ''),
+            ];
+            $theme_pack = $this->normalize_app_review_theme_pack($review['theme_pack'] ?? [], $color_palette);
+            $color_palette = $this->sync_app_review_color_palette_with_theme_pack($color_palette, $theme_pack);
+            $block_attribution_snapshot = $this->normalize_app_review_block_attribution_payload($review['block_attribution_snapshot'] ?? []);
+            $layout_actions = $this->enforce_app_review_signal_safe_layout_actions(
+                $this->normalize_app_review_layout_actions($review['layout_actions'] ?? []),
+                $block_attribution_snapshot
+            );
+            $signal_protection_summary = $this->normalize_app_review_signal_protection_summary($review['signal_protection_summary'] ?? []);
+            if(empty($signal_protection_summary['has_items']) && !empty($block_attribution_snapshot['has_blocks'])) {
+                $signal_protection_summary = $this->build_app_review_signal_protection_summary($block_attribution_snapshot, $layout_actions);
+            }
+
             $normalized[] = [
                 'generated_at' => $review['generated_at'] ?? null,
+                'review_key' => (string) ($review['review_key'] ?? ($review['generated_at'] ?? '')),
                 'model' => (string) ($review['model'] ?? ''),
                 'selected_link_id' => (int) ($review['selected_link_id'] ?? 0),
                 'selected_app_url' => (string) ($review['selected_app_url'] ?? ''),
@@ -644,12 +754,19 @@ class AiPlan extends Controller {
                 'next_move' => $this->normalize_app_review_channel_copy((string) ($review['next_move'] ?? '')),
                 'do_not_touch' => $this->normalize_app_review_channel_copy((string) ($review['do_not_touch'] ?? '')),
                 'priority_actions' => $this->normalize_app_review_channel_list(array_values(array_filter((array) ($review['priority_actions'] ?? []), 'is_scalar'))),
-                'ideal_block_order' => $this->normalize_app_review_channel_list(array_values(array_filter((array) ($review['ideal_block_order'] ?? []), 'is_scalar'))),
+                'ideal_block_order' => $this->normalize_app_review_visible_list(array_values(array_filter((array) ($review['ideal_block_order'] ?? []), 'is_scalar'))),
                 'design_notes' => $this->normalize_app_review_channel_list(array_values(array_filter((array) ($review['design_notes'] ?? []), 'is_scalar'))),
                 'keep_doing' => $this->normalize_app_review_channel_list(array_values(array_filter((array) ($review['keep_doing'] ?? []), 'is_scalar'))),
                 'funnel_blueprint' => $this->normalize_app_review_channel_list(array_values(array_filter((array) ($review['funnel_blueprint'] ?? []), 'is_scalar'))),
-                'color_palette' => $this->normalize_app_review_color_palette($review['color_palette'] ?? []),
+                'color_palette' => $color_palette,
                 'trust_builders' => $this->normalize_app_review_channel_list(array_values(array_filter((array) ($review['trust_builders'] ?? []), 'is_scalar'))),
+                'theme_pack' => $theme_pack,
+                'primary_block_plan' => $this->normalize_app_review_primary_block_plan($raw_primary_block_plan, $primary_action_fallback),
+                'block_patch_pack' => $this->normalize_app_review_block_patch_pack($review['block_patch_pack'] ?? []),
+                'copy_suggestions' => $this->normalize_app_review_copy_suggestions($review['copy_suggestions'] ?? []),
+                'layout_actions' => $layout_actions,
+                'block_attribution_snapshot' => $block_attribution_snapshot,
+                'signal_protection_summary' => $signal_protection_summary,
             ];
         }
 
@@ -772,6 +889,1234 @@ class AiPlan extends Controller {
         cache()->deleteItem('user?user_id=' . $this->user->user_id);
     }
 
+    private function get_saved_ai_theme_library($preferences): array {
+        $preferences = $this->get_preferences_object($preferences);
+        $library = $preferences->leader_ai_theme_library ?? [];
+
+        if($library instanceof \stdClass) {
+            $library = (array) $library;
+        }
+
+        if(!is_array($library)) {
+            return [];
+        }
+
+        $normalized = [];
+
+        foreach($library as $entry) {
+            if($entry instanceof \stdClass) {
+                $entry = (array) $entry;
+            }
+
+            if(!is_array($entry)) {
+                continue;
+            }
+
+            $theme_pack = $this->normalize_app_review_theme_pack($entry['theme_pack'] ?? []);
+
+            $normalized[] = [
+                'theme_key' => $this->sanitize_ai_string($entry['theme_key'] ?? '', 64),
+                'name' => $this->normalize_app_review_channel_copy($this->sanitize_ai_string($entry['name'] ?? $theme_pack['name'] ?? '', 120)),
+                'summary' => $this->normalize_app_review_channel_copy($this->sanitize_ai_string($entry['summary'] ?? $theme_pack['summary'] ?? '', 220)),
+                'generated_at' => $entry['generated_at'] ?? null,
+                'selected_link_id' => (int) ($entry['selected_link_id'] ?? 0),
+                'selected_app_name' => $this->normalize_app_review_channel_copy($this->sanitize_ai_string($entry['selected_app_name'] ?? '', 120)),
+                'goal_type' => $this->sanitize_ai_string($entry['goal_type'] ?? '', 32),
+                'theme_pack' => $theme_pack,
+            ];
+        }
+
+        return array_values(array_filter($normalized, static function(array $entry): bool {
+            return (string) ($entry['theme_key'] ?? '') !== '' && !empty($entry['theme_pack']);
+        }));
+    }
+
+    private function upsert_ai_theme_library(array $library, array $new_entry): array {
+        $theme_key = (string) ($new_entry['theme_key'] ?? '');
+
+        if($theme_key === '') {
+            return $library;
+        }
+
+        $updated_library = [];
+
+        foreach($library as $entry) {
+            if((string) ($entry['theme_key'] ?? '') === $theme_key) {
+                continue;
+            }
+
+            $updated_library[] = $entry;
+        }
+
+        array_unshift($updated_library, $new_entry);
+
+        return array_slice($updated_library, 0, 12);
+    }
+
+    private function get_default_app_review_performance_snapshot(): array {
+        return [
+            'shop_contacts_30d' => 0,
+            'whatsapp_contacts_30d' => 0,
+            'product_clicks_30d' => 0,
+            'funnel_registrations_30d' => 0,
+            'weighted_signal_score' => 0,
+        ];
+    }
+
+    private function normalize_app_review_performance_snapshot($value): array {
+        if($value instanceof \stdClass) {
+            $value = (array) $value;
+        }
+
+        if(!is_array($value)) {
+            $value = [];
+        }
+
+        return [
+            'shop_contacts_30d' => max(0, (int) ($value['shop_contacts_30d'] ?? 0)),
+            'whatsapp_contacts_30d' => max(0, (int) ($value['whatsapp_contacts_30d'] ?? 0)),
+            'product_clicks_30d' => max(0, (int) ($value['product_clicks_30d'] ?? 0)),
+            'funnel_registrations_30d' => max(0, (int) ($value['funnel_registrations_30d'] ?? 0)),
+            'weighted_signal_score' => max(0, (int) ($value['weighted_signal_score'] ?? 0)),
+        ];
+    }
+
+    private function get_app_review_performance_delta(array $before, array $after): array {
+        $before = $this->normalize_app_review_performance_snapshot($before);
+        $after = $this->normalize_app_review_performance_snapshot($after);
+        $metric_labels = [
+            'shop_contacts_30d' => 'shop',
+            'whatsapp_contacts_30d' => 'whatsapp',
+            'product_clicks_30d' => 'blog_products',
+            'funnel_registrations_30d' => 'funnel_contacts',
+            'weighted_signal_score' => 'total_signal',
+        ];
+        $delta = [];
+
+        foreach($metric_labels as $metric_key => $label) {
+            $previous_value = (int) ($before[$metric_key] ?? 0);
+            $current_value = (int) ($after[$metric_key] ?? 0);
+            $change = $current_value - $previous_value;
+
+            $delta[] = [
+                'metric' => $label,
+                'previous' => $previous_value,
+                'current' => $current_value,
+                'delta' => $change,
+                'direction' => $change > 0 ? 'up' : ($change < 0 ? 'down' : 'same'),
+            ];
+        }
+
+        return $delta;
+    }
+
+    private function get_app_review_block_attribution_role(string $type, \stdClass $settings): string {
+        $shop_types = ['link_discount', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo'];
+        $video_types = ['youtube', 'video', 'tiktok_video', 'vimeo', 'twitter_video', 'vk_video'];
+
+        if($type === 'lead_funnel') {
+            return 'lead_capture';
+        }
+
+        if($this->is_app_review_whatsapp_block($type, $settings)) {
+            return 'whatsapp';
+        }
+
+        if($type === 'link_forever_shop') {
+            return 'cta';
+        }
+
+        if(in_array($type, $shop_types, true)) {
+            return 'shop';
+        }
+
+        if($type === 'link_forever_product') {
+            return 'product';
+        }
+
+        if(in_array($type, ['link_app_switcher', 'link_save_contact', 'contact_collector', 'email_collector', 'link'], true)) {
+            return 'cta';
+        }
+
+        if(in_array($type, $video_types, true)) {
+            return 'video';
+        }
+
+        if(in_array($type, ['heading', 'paragraph', 'image', 'avatar', 'review'], true)) {
+            return 'trust_content';
+        }
+
+        if($type === 'socials') {
+            return 'social_contact';
+        }
+
+        return 'supporting';
+    }
+
+    private function is_app_review_block_focus_sensitive_role(string $role): bool {
+        return in_array($role, ['lead_capture', 'whatsapp', 'shop', 'product', 'cta', 'social_contact', 'video'], true);
+    }
+
+    private function get_app_review_block_focus_cost_score(string $role, int $position): int {
+        $score = match(true) {
+            $position <= 1 => 5,
+            $position <= 3 => 4,
+            $position <= 5 => 3,
+            $position <= 8 => 2,
+            default => 1,
+        };
+
+        if(in_array($role, ['lead_capture', 'whatsapp', 'shop', 'product', 'cta'], true)) {
+            $score += 2;
+        } elseif($role === 'video') {
+            $score += 1;
+        }
+
+        return $score;
+    }
+
+    private function get_app_review_block_attribution_reason(string $status, int $position, int $signal_score, int $unique_clicks, int $funnel_leads): string {
+        return match($status) {
+            'high_signal' => $funnel_leads > 0
+                ? 'Ovaj blok trenutno nosi najjaci signal i vec dovodi prijave, zato ga vrijedi zadrzati jasno vidljivim.'
+                : 'Ovaj blok trenutno donosi najvise klika i vrijedi ga zadrzati visoko u fokusu aplikacije.',
+            'contributing' => 'Blok vec donosi signal pa ga vrijedi zadrzati i dodatno izbrusiti kroz tekst ili naglasak.',
+            'critical_focus_risk' => 'Blok je vrlo visoko postavljen, ali u zadnjih 30 dana nema signal pa vjerojatno uzima fokus bez rezultata.',
+            'focus_risk' => 'Blok je rano u aplikaciji, ali zasad nema mjerljiv rezultat pa je kandidat za spustanje ili jasniji tekst.',
+            'supporting' => $position <= 4
+                ? 'Blok vise gradi dojam i povjerenje nego klik, pa treba ostati kratak i ne smije gurati glavni korak u drugi plan.'
+                : 'Blok trenutno sluzi vise kao podrzka i povjerenje nego kao izravan izvor signala.',
+            default => $signal_score > 0 || $unique_clicks > 0 || $funnel_leads > 0
+                ? 'Blok ima slabiji signal i vrijedi ga pratiti prije vecih promjena.'
+                : 'Blok je aktivan, ali trenutno nema mjerljiv doprinos rezultatu.',
+        };
+    }
+
+    private function is_app_review_trust_anchor_block(string $type, string $role): bool {
+        return $role === 'trust_content';
+    }
+
+    private function build_app_review_block_attribution_row(array $block, int $position, int $unique_clicks, int $funnel_leads): array {
+        $type = (string) ($block['type'] ?? '');
+        $settings = $this->decode_biolink_block_settings($block['settings'] ?? null);
+        $role = $this->get_app_review_block_attribution_role($type, $settings);
+        $signal_score = max(0, $unique_clicks + ($funnel_leads * 2));
+        $focus_cost_score = $this->get_app_review_block_focus_cost_score($role, $position);
+        $is_focus_sensitive = $this->is_app_review_block_focus_sensitive_role($role);
+
+        if($signal_score >= 8 || $funnel_leads >= 2 || ($is_focus_sensitive && $unique_clicks >= 4)) {
+            $status = 'high_signal';
+        } elseif($signal_score >= 2 || $unique_clicks >= 2) {
+            $status = 'contributing';
+        } elseif($signal_score === 0 && $this->is_app_review_trust_anchor_block($type, $role)) {
+            $status = 'supporting';
+        } elseif($signal_score === 0 && $focus_cost_score >= 6 && $position <= 3 && $is_focus_sensitive) {
+            $status = 'critical_focus_risk';
+        } elseif($signal_score === 0 && $focus_cost_score >= 5 && $position <= 5) {
+            $status = 'focus_risk';
+        } elseif($signal_score === 0 && in_array($role, ['trust_content', 'video'], true)) {
+            $status = 'supporting';
+        } else {
+            $status = 'low_signal';
+        }
+
+        $action_hint = match($status) {
+            'high_signal' => 'keep_or_emphasize',
+            'contributing' => 'keep_and_refine',
+            'critical_focus_risk' => 'move_down_or_hide',
+            'focus_risk' => 'rewrite_or_move_down',
+            'supporting' => 'keep_supporting',
+            default => 'test_or_reduce',
+        };
+
+        return [
+            'block_id' => (int) ($block['block_id'] ?? 0),
+            'position' => $position,
+            'type' => $this->sanitize_ai_string($type, 64),
+            'label' => $this->normalize_app_review_channel_copy($this->sanitize_ai_string(($block['label'] ?? '') ?: $type, 160)),
+            'role' => $role,
+            'unique_clicks_30d' => max(0, $unique_clicks),
+            'funnel_leads_30d' => max(0, $funnel_leads),
+            'signal_score' => $signal_score,
+            'focus_cost_score' => $focus_cost_score,
+            'status' => $status,
+            'action_hint' => $action_hint,
+            'reason' => $this->get_app_review_block_attribution_reason($status, $position, $signal_score, $unique_clicks, $funnel_leads),
+        ];
+    }
+
+    private function normalize_app_review_block_attribution_payload($value): array {
+        if($value instanceof \stdClass) {
+            $value = (array) $value;
+        }
+
+        if(!is_array($value)) {
+            return [
+                'has_blocks' => false,
+                'summary' => [
+                    'tracked_blocks' => 0,
+                    'signal_blocks' => 0,
+                    'focus_risk_blocks' => 0,
+                    'zero_signal_blocks' => 0,
+                ],
+                'top_signal_blocks' => [],
+                'focus_risk_blocks' => [],
+                'all_blocks' => [],
+            ];
+        }
+
+        $normalize_row = function($item): ?array {
+            if($item instanceof \stdClass) {
+                $item = (array) $item;
+            }
+
+            if(!is_array($item)) {
+                return null;
+            }
+
+            $row = [
+                'block_id' => (int) ($item['block_id'] ?? 0),
+                'position' => max(0, (int) ($item['position'] ?? 0)),
+                'type' => $this->sanitize_ai_string($item['type'] ?? '', 64),
+                'label' => $this->normalize_app_review_channel_copy($this->sanitize_ai_string($item['label'] ?? '', 160)),
+                'role' => $this->sanitize_ai_string($item['role'] ?? '', 64),
+                'unique_clicks_30d' => max(0, (int) ($item['unique_clicks_30d'] ?? 0)),
+                'funnel_leads_30d' => max(0, (int) ($item['funnel_leads_30d'] ?? 0)),
+                'signal_score' => max(0, (int) ($item['signal_score'] ?? 0)),
+                'focus_cost_score' => max(0, (int) ($item['focus_cost_score'] ?? 0)),
+                'status' => $this->sanitize_ai_string($item['status'] ?? '', 48),
+                'action_hint' => $this->sanitize_ai_string($item['action_hint'] ?? '', 64),
+                'reason' => $this->normalize_app_review_channel_copy($this->sanitize_ai_string($item['reason'] ?? '', 220)),
+            ];
+
+            if(
+                (int) ($row['signal_score'] ?? 0) === 0
+                && in_array((string) ($row['status'] ?? ''), ['focus_risk', 'critical_focus_risk'], true)
+                && $this->is_app_review_trust_anchor_block((string) ($row['type'] ?? ''), (string) ($row['role'] ?? ''))
+            ) {
+                $row['status'] = 'supporting';
+                $row['action_hint'] = 'keep_supporting';
+                $row['reason'] = $this->get_app_review_block_attribution_reason(
+                    'supporting',
+                    (int) ($row['position'] ?? 0),
+                    (int) ($row['signal_score'] ?? 0),
+                    (int) ($row['unique_clicks_30d'] ?? 0),
+                    (int) ($row['funnel_leads_30d'] ?? 0)
+                );
+            }
+
+            return $row;
+        };
+
+        $top_signal_blocks = [];
+        foreach((array) ($value['top_signal_blocks'] ?? []) as $item) {
+            $row = $normalize_row($item);
+            if($row) {
+                $top_signal_blocks[] = $row;
+            }
+            if(count($top_signal_blocks) >= 4) {
+                break;
+            }
+        }
+
+        $focus_risk_blocks = [];
+        foreach((array) ($value['focus_risk_blocks'] ?? []) as $item) {
+            $row = $normalize_row($item);
+            if($row) {
+                $focus_risk_blocks[] = $row;
+            }
+            if(count($focus_risk_blocks) >= 4) {
+                break;
+            }
+        }
+
+        $all_blocks = [];
+        foreach((array) ($value['all_blocks'] ?? []) as $item) {
+            $row = $normalize_row($item);
+            if($row) {
+                $all_blocks[] = $row;
+            }
+            if(count($all_blocks) >= 18) {
+                break;
+            }
+        }
+
+        $summary = is_array($value['summary'] ?? null) ? (array) $value['summary'] : [];
+
+        return [
+            'has_blocks' => !empty($all_blocks),
+            'summary' => [
+                'tracked_blocks' => max(0, (int) ($summary['tracked_blocks'] ?? count($all_blocks))),
+                'signal_blocks' => max(0, (int) ($summary['signal_blocks'] ?? count(array_filter($all_blocks, static fn($item): bool => (int) ($item['signal_score'] ?? 0) > 0)))),
+                'focus_risk_blocks' => count($focus_risk_blocks),
+                'zero_signal_blocks' => max(0, (int) ($summary['zero_signal_blocks'] ?? count(array_filter($all_blocks, static fn($item): bool => (int) ($item['signal_score'] ?? 0) === 0)))),
+            ],
+            'top_signal_blocks' => $top_signal_blocks,
+            'focus_risk_blocks' => $focus_risk_blocks,
+            'all_blocks' => $all_blocks,
+        ];
+    }
+
+    private function normalize_app_review_signal_protection_summary($value): array {
+        if($value instanceof \stdClass) {
+            $value = (array) $value;
+        }
+
+        if(!is_array($value)) {
+            $value = [];
+        }
+
+        $normalize_row = function($item): ?array {
+            if($item instanceof \stdClass) {
+                $item = (array) $item;
+            }
+
+            if(!is_array($item)) {
+                return null;
+            }
+
+            return [
+                'block_id' => max(0, (int) ($item['block_id'] ?? 0)),
+                'label' => $this->normalize_app_review_channel_copy($this->sanitize_ai_string($item['label'] ?? '', 160)),
+                'status' => $this->sanitize_ai_string($item['status'] ?? '', 48),
+                'planned_action' => $this->sanitize_ai_string($item['planned_action'] ?? '', 64),
+                'reason' => $this->normalize_app_review_channel_copy($this->sanitize_ai_string($item['reason'] ?? '', 220)),
+            ];
+        };
+
+        $build_rows = function(array $items) use ($normalize_row): array {
+            $rows = [];
+            foreach($items as $item) {
+                $row = $normalize_row($item);
+                if($row) {
+                    $rows[] = $row;
+                }
+                if(count($rows) >= 4) {
+                    break;
+                }
+            }
+            return $rows;
+        };
+
+        $protected_block_ids = array_values(array_unique(array_filter(array_map(static function($item): int {
+            return max(0, (int) $item);
+        }, (array) ($value['protected_block_ids'] ?? [])))));
+
+        $kept_signal_blocks = $build_rows((array) ($value['kept_signal_blocks'] ?? []));
+        $repositioned_focus_blocks = $build_rows((array) ($value['repositioned_focus_blocks'] ?? []));
+        $summary = $this->normalize_app_review_channel_copy($this->sanitize_ai_string($value['summary'] ?? '', 320));
+
+        return [
+            'has_items' => $summary !== '' || !empty($kept_signal_blocks) || !empty($repositioned_focus_blocks),
+            'summary' => $summary,
+            'protected_block_ids' => $protected_block_ids,
+            'kept_signal_blocks' => $kept_signal_blocks,
+            'repositioned_focus_blocks' => $repositioned_focus_blocks,
+        ];
+    }
+
+    private function build_app_review_signal_protection_summary(array $block_attribution_payload, array $layout_actions = []): array {
+        $block_attribution_payload = $this->normalize_app_review_block_attribution_payload($block_attribution_payload);
+        $layout_actions = $this->normalize_app_review_layout_actions($layout_actions);
+        $action_map = [];
+
+        foreach($layout_actions as $action) {
+            $block_id = (int) ($action['block_id'] ?? 0);
+            if($block_id <= 0 || isset($action_map[$block_id])) {
+                continue;
+            }
+
+            $action_map[$block_id] = [
+                'action' => (string) ($action['action'] ?? ''),
+                'why' => (string) ($action['why'] ?? ''),
+            ];
+        }
+
+        $protected_block_ids = [];
+        $kept_signal_blocks = [];
+        $repositioned_focus_blocks = [];
+
+        foreach((array) ($block_attribution_payload['all_blocks'] ?? []) as $block) {
+            $block_id = (int) ($block['block_id'] ?? 0);
+            if($block_id <= 0) {
+                continue;
+            }
+
+            $status = (string) ($block['status'] ?? '');
+            $label = $this->normalize_app_review_channel_copy((string) (($block['label'] ?? '') ?: ($block['type'] ?? 'Blok')));
+            $planned_action = (string) (($action_map[$block_id]['action'] ?? ''));
+
+            if(in_array($status, ['high_signal', 'contributing'], true)) {
+                $protected_block_ids[] = $block_id;
+                if(in_array($planned_action, ['hide_for_now', 'consider_remove'], true)) {
+                    $planned_action = 'keep';
+                }
+
+                $reason = $status === 'high_signal'
+                    ? 'Ovaj blok ostaje aktivan jer vec donosi mjerljiv signal i ne treba ga gasiti.'
+                    : 'Ovaj blok vec doprinosi rezultatu pa ga vrijedi doraditi ili bolje pozicionirati, a ne ukloniti.';
+
+                if(in_array($planned_action, ['move_up', 'move_down', 'keep_top', 'keep_after_primary'], true)) {
+                    $reason .= ' U planu se po potrebi samo preslaguje kako bi jos jasnije podrzao glavni cilj.';
+                }
+
+                $kept_signal_blocks[] = [
+                    'block_id' => $block_id,
+                    'label' => $label,
+                    'status' => $status,
+                    'planned_action' => $planned_action !== '' ? $planned_action : 'keep',
+                    'reason' => $reason,
+                ];
+                continue;
+            }
+
+            if(!in_array($status, ['focus_risk', 'critical_focus_risk'], true) || !in_array($planned_action, ['move_down', 'consider_remove', 'hide_for_now'], true)) {
+                continue;
+            }
+
+            $reason = $planned_action === 'move_down'
+                ? 'Ovaj blok ide nize jer prerano uzima paznju bez mjerljivog rezultata.'
+                : 'Ovaj blok trenutno nema dokazani rezultat pa vise nije prioritet u vrhu aplikacije.';
+
+            $repositioned_focus_blocks[] = [
+                'block_id' => $block_id,
+                'label' => $label,
+                'status' => $status,
+                'planned_action' => $planned_action,
+                'reason' => $reason,
+            ];
+        }
+
+        $kept_signal_blocks = array_slice($kept_signal_blocks, 0, 4);
+        $repositioned_focus_blocks = array_slice($repositioned_focus_blocks, 0, 4);
+        $protected_block_ids = array_values(array_unique($protected_block_ids));
+
+        $summary = match(true) {
+            !empty($kept_signal_blocks) && !empty($repositioned_focus_blocks) => 'U novom planu zadrzani su blokovi koji vec donose signal, a nize su pomaknuti oni koji prerano uzimaju paznju bez rezultata.',
+            !empty($kept_signal_blocks) => 'U novom planu zadrzani su blokovi koji vec donose signal kako se ne bi pokvarilo ono sto vec radi.',
+            !empty($repositioned_focus_blocks) => 'U novom planu nize su pomaknuti blokovi koji prerano uzimaju fokus bez rezultata kako bi glavni korak bio jasniji.',
+            default => '',
+        };
+
+        return $this->normalize_app_review_signal_protection_summary([
+            'summary' => $summary,
+            'protected_block_ids' => $protected_block_ids,
+            'kept_signal_blocks' => $kept_signal_blocks,
+            'repositioned_focus_blocks' => $repositioned_focus_blocks,
+        ]);
+    }
+
+    private function enforce_app_review_signal_safe_layout_actions(array $layout_actions, array $block_attribution_payload): array {
+        $layout_actions = $this->normalize_app_review_layout_actions($layout_actions);
+        $block_attribution_payload = $this->normalize_app_review_block_attribution_payload($block_attribution_payload);
+        $protected_signal_ids = [];
+
+        foreach((array) ($block_attribution_payload['all_blocks'] ?? []) as $block) {
+            $block_id = (int) ($block['block_id'] ?? 0);
+            $status = (string) ($block['status'] ?? '');
+
+            if($block_id > 0 && in_array($status, ['high_signal', 'contributing'], true)) {
+                $protected_signal_ids[$block_id] = true;
+            }
+        }
+
+        if(empty($protected_signal_ids)) {
+            return $layout_actions;
+        }
+
+        return array_values(array_filter($layout_actions, static function($action) use ($protected_signal_ids): bool {
+            $block_id = (int) ($action['block_id'] ?? 0);
+            $action_key = (string) ($action['action'] ?? '');
+
+            if($block_id <= 0 || !isset($protected_signal_ids[$block_id])) {
+                return true;
+            }
+
+            return !in_array($action_key, ['hide_for_now', 'consider_remove'], true);
+        }));
+    }
+
+    private function normalize_app_review_block_delta_summary($value): array {
+        if($value instanceof \stdClass) {
+            $value = (array) $value;
+        }
+
+        if(!is_array($value)) {
+            $value = [];
+        }
+
+        $normalize_delta_row = function($item): ?array {
+            if($item instanceof \stdClass) {
+                $item = (array) $item;
+            }
+
+            if(!is_array($item)) {
+                return null;
+            }
+
+            return [
+                'block_id' => (int) ($item['block_id'] ?? 0),
+                'label' => $this->normalize_app_review_channel_copy($this->sanitize_ai_string($item['label'] ?? '', 160)),
+                'type' => $this->sanitize_ai_string($item['type'] ?? '', 64),
+                'previous_signal' => max(0, (int) ($item['previous_signal'] ?? 0)),
+                'current_signal' => max(0, (int) ($item['current_signal'] ?? 0)),
+                'delta_signal' => (int) ($item['delta_signal'] ?? 0),
+                'direction' => in_array((string) ($item['direction'] ?? 'same'), ['up', 'down', 'same'], true) ? (string) ($item['direction'] ?? 'same') : 'same',
+            ];
+        };
+
+        $build_delta_rows = function(array $items) use ($normalize_delta_row): array {
+            $rows = [];
+            foreach($items as $item) {
+                $row = $normalize_delta_row($item);
+                if($row) {
+                    $rows[] = $row;
+                }
+                if(count($rows) >= 4) {
+                    break;
+                }
+            }
+            return $rows;
+        };
+
+        return [
+            'top_gainers' => $build_delta_rows((array) ($value['top_gainers'] ?? [])),
+            'top_decliners' => $build_delta_rows((array) ($value['top_decliners'] ?? [])),
+            'current_top_blocks' => $this->normalize_app_review_block_attribution_payload([
+                'top_signal_blocks' => (array) ($value['current_top_blocks'] ?? []),
+            ])['top_signal_blocks'],
+            'focus_risk_blocks' => $this->normalize_app_review_block_attribution_payload([
+                'focus_risk_blocks' => (array) ($value['focus_risk_blocks'] ?? []),
+            ])['focus_risk_blocks'],
+        ];
+    }
+
+    private function get_app_review_block_delta_summary(array $before_payload, array $after_payload): array {
+        $before_payload = $this->normalize_app_review_block_attribution_payload($before_payload);
+        $after_payload = $this->normalize_app_review_block_attribution_payload($after_payload);
+        $before_rows = [];
+        $after_rows = [];
+
+        foreach((array) ($before_payload['all_blocks'] ?? []) as $row) {
+            $before_rows[(int) ($row['block_id'] ?? 0)] = $row;
+        }
+
+        foreach((array) ($after_payload['all_blocks'] ?? []) as $row) {
+            $after_rows[(int) ($row['block_id'] ?? 0)] = $row;
+        }
+
+        $delta_rows = [];
+        foreach(array_unique(array_merge(array_keys($before_rows), array_keys($after_rows))) as $block_id) {
+            $block_id = (int) $block_id;
+
+            if($block_id <= 0) {
+                continue;
+            }
+
+            $before_row = $before_rows[$block_id] ?? [];
+            $after_row = $after_rows[$block_id] ?? [];
+            $previous_signal = (int) ($before_row['signal_score'] ?? 0);
+            $current_signal = (int) ($after_row['signal_score'] ?? 0);
+            $delta_signal = $current_signal - $previous_signal;
+
+            if($delta_signal === 0) {
+                continue;
+            }
+
+            $delta_rows[] = [
+                'block_id' => $block_id,
+                'label' => (string) (($after_row['label'] ?? '') ?: ($before_row['label'] ?? '')),
+                'type' => (string) (($after_row['type'] ?? '') ?: ($before_row['type'] ?? '')),
+                'previous_signal' => $previous_signal,
+                'current_signal' => $current_signal,
+                'delta_signal' => $delta_signal,
+                'direction' => $delta_signal > 0 ? 'up' : 'down',
+            ];
+        }
+
+        usort($delta_rows, static function($a, $b) {
+            return abs((int) ($b['delta_signal'] ?? 0)) <=> abs((int) ($a['delta_signal'] ?? 0));
+        });
+
+        $top_gainers = array_values(array_slice(array_filter($delta_rows, static fn($item): bool => (int) ($item['delta_signal'] ?? 0) > 0), 0, 4));
+        $top_decliners = array_values(array_slice(array_filter($delta_rows, static fn($item): bool => (int) ($item['delta_signal'] ?? 0) < 0), 0, 4));
+
+        return [
+            'top_gainers' => $top_gainers,
+            'top_decliners' => $top_decliners,
+            'current_top_blocks' => (array) ($after_payload['top_signal_blocks'] ?? []),
+            'focus_risk_blocks' => (array) ($after_payload['focus_risk_blocks'] ?? []),
+        ];
+    }
+
+    private function has_app_review_evolution_window_elapsed(string $recommended_at, int $days, ?string $reference_datetime = null): bool {
+        if($recommended_at === '' || $days < 1) {
+            return false;
+        }
+
+        try {
+            $recommended_datetime = new \DateTimeImmutable($recommended_at);
+            $reference = $reference_datetime ? new \DateTimeImmutable($reference_datetime) : new \DateTimeImmutable();
+
+            return $recommended_datetime->add(new \DateInterval('P' . $days . 'D')) <= $reference;
+        } catch(\Throwable $exception) {
+            return false;
+        }
+    }
+
+    private function get_app_review_evolution_window_status(string $recommended_at, ?string $measured_at, int $days): string {
+        if(!empty($measured_at)) {
+            return 'measured';
+        }
+
+        return $this->has_app_review_evolution_window_elapsed($recommended_at, $days) ? 'ready' : 'pending';
+    }
+
+    private function normalize_app_review_evolution_delta_items($value): array {
+        if($value instanceof \stdClass) {
+            $value = (array) $value;
+        }
+
+        if(!is_array($value)) {
+            return [];
+        }
+
+        $normalized = [];
+
+        foreach($value as $item) {
+            if($item instanceof \stdClass) {
+                $item = (array) $item;
+            }
+
+            if(!is_array($item) || empty($item['metric'])) {
+                continue;
+            }
+
+            $normalized[] = [
+                'metric' => $this->sanitize_ai_string($item['metric'] ?? '', 48),
+                'previous' => (int) ($item['previous'] ?? 0),
+                'current' => (int) ($item['current'] ?? 0),
+                'delta' => (int) ($item['delta'] ?? 0),
+                'direction' => in_array((string) ($item['direction'] ?? 'same'), ['up', 'down', 'same'], true) ? (string) ($item['direction'] ?? 'same') : 'same',
+            ];
+        }
+
+        return array_slice($normalized, 0, 5);
+    }
+
+    private function normalize_app_review_evolution_measurement($value, string $recommended_at = '', int $days = 7): array {
+        if($value instanceof \stdClass) {
+            $value = (array) $value;
+        }
+
+        if(!is_array($value)) {
+            $value = [];
+        }
+
+        $measured_at = !empty($value['measured_at']) ? (string) $value['measured_at'] : null;
+
+        return [
+            'status' => $this->get_app_review_evolution_window_status($recommended_at, $measured_at, $days),
+            'measured_at' => $measured_at,
+            'performance' => $this->normalize_app_review_performance_snapshot($value['performance'] ?? []),
+            'delta' => $this->normalize_app_review_evolution_delta_items($value['delta'] ?? []),
+            'block_summary' => $this->normalize_app_review_block_delta_summary($value['block_summary'] ?? []),
+        ];
+    }
+
+    private function normalize_app_review_evolution_memory($value): array {
+        if($value instanceof \stdClass) {
+            $value = (array) $value;
+        }
+
+        if(!is_array($value)) {
+            return [];
+        }
+
+        $normalized = [];
+
+        foreach($value as $item) {
+            if($item instanceof \stdClass) {
+                $item = (array) $item;
+            }
+
+            if(!is_array($item)) {
+                continue;
+            }
+
+            $recommended_at = (string) ($item['recommended_at'] ?? '');
+            $recommended = $item['recommended'] ?? [];
+            $applied = $item['applied'] ?? [];
+
+            if($recommended instanceof \stdClass) {
+                $recommended = (array) $recommended;
+            }
+
+            if($applied instanceof \stdClass) {
+                $applied = (array) $applied;
+            }
+
+            $normalized[] = [
+                'review_key' => $this->sanitize_ai_string($item['review_key'] ?? '', 64),
+                'recommended_at' => $recommended_at ?: null,
+                'analysis_mode' => in_array((string) ($item['analysis_mode'] ?? 'initial'), ['initial', 'evolution'], true) ? (string) ($item['analysis_mode'] ?? 'initial') : 'initial',
+                'quality_score' => max(0, (int) ($item['quality_score'] ?? 0)),
+                'quality_level' => $this->sanitize_ai_string($item['quality_level'] ?? 'foundation', 24),
+                'performance_before' => $this->normalize_app_review_performance_snapshot($item['performance_before'] ?? []),
+                'block_attribution_before' => $this->normalize_app_review_block_attribution_payload($item['block_attribution_before'] ?? []),
+                'recommended' => [
+                    'headline' => $this->normalize_app_review_channel_copy((string) ($recommended['headline'] ?? '')),
+                    'summary' => $this->normalize_app_review_channel_copy((string) ($recommended['summary'] ?? '')),
+                    'top_recommendation' => $this->normalize_app_review_channel_copy((string) ($recommended['top_recommendation'] ?? '')),
+                    'first_move' => $this->normalize_app_review_channel_copy((string) ($recommended['first_move'] ?? '')),
+                    'next_move' => $this->normalize_app_review_channel_copy((string) ($recommended['next_move'] ?? '')),
+                    'theme_name' => $this->normalize_app_review_channel_copy((string) ($recommended['theme_name'] ?? '')),
+                    'theme_summary' => $this->normalize_app_review_channel_copy((string) ($recommended['theme_summary'] ?? '')),
+                    'primary_block' => $this->normalize_app_review_primary_block_plan($recommended['primary_block'] ?? []),
+                    'layout_actions' => $this->normalize_app_review_layout_actions($recommended['layout_actions'] ?? []),
+                ],
+                'applied' => [
+                    'theme_applied_at' => !empty($applied['theme_applied_at']) ? (string) $applied['theme_applied_at'] : null,
+                    'primary_applied_at' => !empty($applied['primary_applied_at']) ? (string) $applied['primary_applied_at'] : null,
+                    'layout_applied_at' => !empty($applied['layout_applied_at']) ? (string) $applied['layout_applied_at'] : null,
+                    'layout_reverted_at' => !empty($applied['layout_reverted_at']) ? (string) $applied['layout_reverted_at'] : null,
+                    'theme_key' => $this->sanitize_ai_string($applied['theme_key'] ?? '', 64),
+                    'layout_summary' => [
+                        'reordered_blocks' => max(0, (int) (($applied['layout_summary']['reordered_blocks'] ?? 0))),
+                        'hidden_blocks' => max(0, (int) (($applied['layout_summary']['hidden_blocks'] ?? 0))),
+                        'updated_blocks' => max(0, (int) (($applied['layout_summary']['updated_blocks'] ?? 0))),
+                    ],
+                    'layout_rollback_summary' => [
+                        'restored_blocks' => max(0, (int) (($applied['layout_rollback_summary']['restored_blocks'] ?? 0))),
+                        're_enabled_blocks' => max(0, (int) (($applied['layout_rollback_summary']['re_enabled_blocks'] ?? 0))),
+                    ],
+                ],
+                'evaluation_7d' => $this->normalize_app_review_evolution_measurement($item['evaluation_7d'] ?? [], $recommended_at, 7),
+                'evaluation_30d' => $this->normalize_app_review_evolution_measurement($item['evaluation_30d'] ?? [], $recommended_at, 30),
+            ];
+        }
+
+        usort($normalized, static function($a, $b) {
+            return strcmp((string) ($b['recommended_at'] ?? ''), (string) ($a['recommended_at'] ?? ''));
+        });
+
+        return array_slice($normalized, 0, 12);
+    }
+
+    private function refresh_app_review_evolution_memory(array $cycles, array $current_performance, ?string $current_datetime = null, array $current_block_attribution = []): array {
+        $cycles = $this->normalize_app_review_evolution_memory($cycles);
+        $current_performance = $this->normalize_app_review_performance_snapshot($current_performance);
+        $current_block_attribution = $this->normalize_app_review_block_attribution_payload($current_block_attribution);
+        $current_datetime = $current_datetime ?: get_date();
+
+        foreach($cycles as &$cycle) {
+            $recommended_at = (string) ($cycle['recommended_at'] ?? '');
+
+            if(
+                empty($cycle['evaluation_7d']['measured_at'])
+                && $this->has_app_review_evolution_window_elapsed($recommended_at, 7, $current_datetime)
+            ) {
+                $cycle['evaluation_7d'] = [
+                    'status' => 'measured',
+                    'measured_at' => $current_datetime,
+                    'performance' => $current_performance,
+                    'delta' => $this->get_app_review_performance_delta((array) ($cycle['performance_before'] ?? []), $current_performance),
+                    'block_summary' => $this->get_app_review_block_delta_summary((array) ($cycle['block_attribution_before'] ?? []), $current_block_attribution),
+                ];
+            }
+
+            if(
+                empty($cycle['evaluation_30d']['measured_at'])
+                && $this->has_app_review_evolution_window_elapsed($recommended_at, 30, $current_datetime)
+            ) {
+                $cycle['evaluation_30d'] = [
+                    'status' => 'measured',
+                    'measured_at' => $current_datetime,
+                    'performance' => $current_performance,
+                    'delta' => $this->get_app_review_performance_delta((array) ($cycle['performance_before'] ?? []), $current_performance),
+                    'block_summary' => $this->get_app_review_block_delta_summary((array) ($cycle['block_attribution_before'] ?? []), $current_block_attribution),
+                ];
+            }
+        }
+        unset($cycle);
+
+        return $cycles;
+    }
+
+    private function build_app_review_evolution_cycle(array $review): array {
+        $generated_at = (string) ($review['generated_at'] ?? get_date());
+
+        return [
+            'review_key' => $generated_at !== '' ? $generated_at : uniqid('app_review_', true),
+            'recommended_at' => $generated_at ?: null,
+            'analysis_mode' => in_array((string) ($review['analysis_mode'] ?? 'initial'), ['initial', 'evolution'], true) ? (string) ($review['analysis_mode'] ?? 'initial') : 'initial',
+            'quality_score' => max(0, (int) ($review['quality_score'] ?? 0)),
+            'quality_level' => $this->sanitize_ai_string($review['quality_level'] ?? 'foundation', 24),
+            'performance_before' => $this->normalize_app_review_performance_snapshot($review['performance_snapshot'] ?? []),
+            'block_attribution_before' => $this->normalize_app_review_block_attribution_payload($review['block_attribution_snapshot'] ?? []),
+            'recommended' => [
+                'headline' => (string) ($review['headline'] ?? ''),
+                'summary' => (string) ($review['summary'] ?? ''),
+                'top_recommendation' => (string) ($review['top_recommendation'] ?? ''),
+                'first_move' => (string) ($review['first_move'] ?? ''),
+                'next_move' => (string) ($review['next_move'] ?? ''),
+                'theme_name' => (string) (($review['theme_pack']['name'] ?? '') ?: ''),
+                'theme_summary' => (string) (($review['theme_pack']['summary'] ?? '') ?: ''),
+                'primary_block' => $this->normalize_app_review_primary_block_plan($review['primary_block_plan'] ?? []),
+                'layout_actions' => $this->normalize_app_review_layout_actions($review['layout_actions'] ?? []),
+            ],
+            'applied' => [
+                'theme_applied_at' => null,
+                'primary_applied_at' => null,
+                'layout_applied_at' => null,
+                'layout_reverted_at' => null,
+                'theme_key' => '',
+                'layout_summary' => [
+                    'reordered_blocks' => 0,
+                    'hidden_blocks' => 0,
+                    'updated_blocks' => 0,
+                ],
+                'layout_rollback_summary' => [
+                    'restored_blocks' => 0,
+                    're_enabled_blocks' => 0,
+                ],
+            ],
+            'evaluation_7d' => [
+                'measured_at' => null,
+                'performance' => $this->get_default_app_review_performance_snapshot(),
+                'delta' => [],
+                'block_summary' => [],
+            ],
+            'evaluation_30d' => [
+                'measured_at' => null,
+                'performance' => $this->get_default_app_review_performance_snapshot(),
+                'delta' => [],
+                'block_summary' => [],
+            ],
+        ];
+    }
+
+    private function upsert_app_review_evolution_cycle(array $cycles, array $new_cycle): array {
+        $review_key = (string) ($new_cycle['review_key'] ?? '');
+
+        if($review_key === '') {
+            return $cycles;
+        }
+
+        $updated = [];
+
+        foreach($cycles as $cycle) {
+            if((string) ($cycle['review_key'] ?? '') === $review_key) {
+                continue;
+            }
+
+            $updated[] = $cycle;
+        }
+
+        array_unshift($updated, $new_cycle);
+
+        return array_slice($updated, 0, 12);
+    }
+
+    private function get_link_additional_by_id(int $selected_link_id): array {
+        if($selected_link_id <= 0) {
+            return [];
+        }
+
+        $link = db()->where('link_id', $selected_link_id)->where('user_id', $this->user->user_id)->getOne('links', ['additional']);
+
+        return $link ? $this->normalize_json_to_array($link->additional ?? null) : [];
+    }
+
+    private function get_link_ai_editor_snapshot_by_id(int $selected_link_id): array {
+        if($selected_link_id <= 0) {
+            return [
+                'additional' => [],
+                'last_datetime' => null,
+            ];
+        }
+
+        $link = db()->where('link_id', $selected_link_id)->where('user_id', $this->user->user_id)->getOne('links', ['additional', 'last_datetime']);
+
+        return [
+            'additional' => $link ? $this->normalize_json_to_array($link->additional ?? null) : [],
+            'last_datetime' => !empty($link->last_datetime) ? (string) $link->last_datetime : null,
+        ];
+    }
+
+    private function get_ai_bundle_freshness_payload(array $additional, ?string $last_datetime = null, ?string $fallback_recommended_at = null): array {
+        $apply_state = $this->normalize_json_to_array($additional['fcc_ai_theme_apply_state'] ?? []);
+        $review_summary = $this->normalize_json_to_array($additional['fcc_ai_review_summary'] ?? []);
+        $recommended_at = trim((string) ($apply_state['recommended_at'] ?? ($review_summary['generated_at'] ?? ($fallback_recommended_at ?? ''))));
+        $last_datetime = trim((string) ($last_datetime ?? ''));
+        $reference_points = array_filter([
+            $recommended_at,
+            trim((string) ($apply_state['applied_at'] ?? '')),
+            trim((string) ($apply_state['theme_applied_at'] ?? '')),
+            trim((string) ($apply_state['primary_applied_at'] ?? '')),
+            trim((string) ($apply_state['layout_applied_at'] ?? '')),
+            trim((string) ($apply_state['layout_reverted_at'] ?? '')),
+        ]);
+        $reference_at = '';
+
+        foreach($reference_points as $candidate) {
+            if($reference_at === '' || strcmp($candidate, $reference_at) > 0) {
+                $reference_at = $candidate;
+            }
+        }
+
+        $is_stale = false;
+
+        if($last_datetime !== '' && $reference_at !== '') {
+            try {
+                $is_stale = (new \DateTimeImmutable($last_datetime)) > (new \DateTimeImmutable($reference_at));
+            } catch(\Throwable $exception) {
+                $is_stale = strcmp($last_datetime, $reference_at) > 0;
+            }
+        }
+
+        return [
+            'is_stale' => $is_stale,
+            'recommended_at' => $recommended_at !== '' ? $recommended_at : null,
+            'last_changed_at' => $last_datetime !== '' ? $last_datetime : null,
+            'message' => $is_stale ? l('link.settings.ai_bundle_stale_notice') : '',
+        ];
+    }
+
+    private function get_app_review_editor_actions_payload(int $selected_link_id, ?array $review = null): array {
+        $payload = [
+            'link_id' => max(0, $selected_link_id),
+            'can_apply_blocks' => false,
+            'can_apply_colors' => false,
+            'can_restore' => false,
+            'has_any' => false,
+            'freshness' => [
+                'is_stale' => false,
+                'recommended_at' => null,
+                'last_changed_at' => null,
+                'message' => '',
+            ],
+        ];
+
+        if($selected_link_id <= 0) {
+            return $payload;
+        }
+
+        $link_snapshot = $this->get_link_ai_editor_snapshot_by_id($selected_link_id);
+        $additional = $link_snapshot['additional'];
+
+        $theme_pack = $this->normalize_app_review_theme_pack($additional['fcc_ai_theme_pack'] ?? []);
+        if(empty($theme_pack) && !empty($review)) {
+            $theme_pack = $this->normalize_app_review_theme_pack($review['theme_pack'] ?? [], (array) ($review['color_palette'] ?? []));
+        }
+
+        $copy_suggestions = $this->normalize_app_review_copy_suggestions($additional['fcc_ai_copy_suggestions'] ?? []);
+        if(empty($copy_suggestions) && !empty($review)) {
+            $copy_suggestions = $this->normalize_app_review_copy_suggestions($review['copy_suggestions'] ?? []);
+        }
+
+        $layout_actions = $this->normalize_app_review_layout_actions($additional['fcc_ai_layout_actions'] ?? []);
+        if(empty($layout_actions) && !empty($review)) {
+            $layout_actions = $this->normalize_app_review_layout_actions($review['layout_actions'] ?? []);
+        }
+
+        $missing_block_recommendations = $this->normalize_app_review_missing_block_recommendations($additional['fcc_ai_missing_block_recommendations'] ?? []);
+        if(empty($missing_block_recommendations) && !empty($review)) {
+            $missing_block_recommendations = $this->normalize_app_review_missing_block_recommendations($review['missing_block_recommendations'] ?? []);
+        }
+
+        $ideal_block_order = $this->normalize_app_review_visible_list((array) ($additional['fcc_ai_ideal_block_order'] ?? []));
+        if(empty($ideal_block_order) && !empty($review)) {
+            $ideal_block_order = $this->normalize_app_review_visible_list((array) ($review['ideal_block_order'] ?? []));
+        }
+
+        $bundle_backup = $this->normalize_json_to_array($additional['fcc_ai_bundle_backup'] ?? []);
+
+        $payload['can_apply_blocks'] = !empty($copy_suggestions) || !empty($layout_actions) || !empty($missing_block_recommendations) || !empty($ideal_block_order);
+        $payload['can_apply_colors'] = !empty($theme_pack);
+        $payload['can_restore'] = !empty($bundle_backup['captured_at']);
+        $payload['has_any'] = $payload['can_apply_blocks'] || $payload['can_apply_colors'] || $payload['can_restore'];
+        $payload['freshness'] = $this->get_ai_bundle_freshness_payload(
+            $additional,
+            (string) ($link_snapshot['last_datetime'] ?? ''),
+            (string) ($review['generated_at'] ?? '')
+        );
+
+        return $payload;
+    }
+
+    private function summarize_app_review_evolution_delta(array $delta): string {
+        foreach($delta as $item) {
+            if((string) ($item['metric'] ?? '') !== 'total_signal') {
+                continue;
+            }
+
+            $change = (int) ($item['delta'] ?? 0);
+
+            if($change > 0) {
+                return sprintf(l('link.settings.ai_evolution_result_positive'), nr($change));
+            }
+
+            if($change < 0) {
+                return sprintf(l('link.settings.ai_evolution_result_negative'), nr(abs($change)));
+            }
+
+            return l('link.settings.ai_evolution_result_same');
+        }
+
+        return l('link.settings.ai_evolution_result_same');
+    }
+
+    private function get_app_review_display_evolution_payload(int $selected_link_id, array $current_performance = [], array $current_block_attribution = []): array {
+        $additional = $this->get_link_additional_by_id($selected_link_id);
+        $original_memory = $this->normalize_app_review_evolution_memory($additional['fcc_ai_evolution_memory'] ?? []);
+        $memory = $this->refresh_app_review_evolution_memory(
+            $original_memory,
+            $current_performance,
+            null,
+            $current_block_attribution
+        );
+        $active_cycle = $memory[0] ?? null;
+
+        if(json_encode($memory) !== json_encode($original_memory)) {
+            $additional['fcc_ai_evolution_memory'] = $memory;
+
+            db()->where('link_id', $selected_link_id)->where('user_id', $this->user->user_id)->update('links', [
+                'additional' => json_encode($additional),
+            ]);
+
+            cache()->deleteItemsByTag('link_id=' . $selected_link_id);
+            cache()->deleteItem('link?link_id=' . $selected_link_id);
+        }
+
+        if(!$active_cycle) {
+            return [
+                'has_memory' => false,
+                'active_cycle' => null,
+                'recent_measured_cycles' => [],
+            ];
+        }
+
+        foreach(['evaluation_7d', 'evaluation_30d'] as $measurement_key) {
+            $active_cycle[$measurement_key]['summary'] = $this->summarize_app_review_evolution_delta((array) ($active_cycle[$measurement_key]['delta'] ?? []));
+        }
+
+        $recent_measured_cycles = [];
+
+        foreach($memory as $cycle) {
+            if(empty($cycle['evaluation_7d']['measured_at']) && empty($cycle['evaluation_30d']['measured_at'])) {
+                continue;
+            }
+
+            $recent_measured_cycles[] = [
+                'recommended_at' => $cycle['recommended_at'] ?? null,
+                'headline' => (string) ($cycle['recommended']['headline'] ?? ''),
+                'summary_7d' => $this->summarize_app_review_evolution_delta((array) ($cycle['evaluation_7d']['delta'] ?? [])),
+                'summary_30d' => $this->summarize_app_review_evolution_delta((array) ($cycle['evaluation_30d']['delta'] ?? [])),
+                'evaluation_7d' => $cycle['evaluation_7d'],
+                'evaluation_30d' => $cycle['evaluation_30d'],
+            ];
+
+            if(count($recent_measured_cycles) >= 3) {
+                break;
+            }
+        }
+
+        return [
+            'has_memory' => true,
+            'active_cycle' => $active_cycle,
+            'recent_measured_cycles' => $recent_measured_cycles,
+        ];
+    }
+
+    private function sync_app_review_assets_to_editor(int $selected_link_id, array $review, \stdClass $preferences): \stdClass {
+        if($selected_link_id <= 0) {
+            return $preferences;
+        }
+
+        $theme_pack = $this->normalize_app_review_theme_pack($review['theme_pack'] ?? [], (array) ($review['color_palette'] ?? []));
+        $theme_key = 'app_' . $selected_link_id;
+
+        $theme_library_entry = [
+            'theme_key' => $theme_key,
+            'name' => (string) ($theme_pack['name'] ?? 'AI preporučena tema'),
+            'summary' => (string) ($theme_pack['summary'] ?? ''),
+            'generated_at' => $review['generated_at'] ?? null,
+            'selected_link_id' => $selected_link_id,
+            'selected_app_name' => (string) ($review['selected_app_name'] ?? ''),
+            'goal_type' => (string) ($review['goal_type'] ?? ''),
+            'theme_pack' => $theme_pack,
+        ];
+
+        $preferences->leader_ai_theme_library = $this->upsert_ai_theme_library(
+            $this->get_saved_ai_theme_library($preferences),
+            $theme_library_entry
+        );
+
+        $link = db()->where('link_id', $selected_link_id)->where('user_id', $this->user->user_id)->getOne('links', ['link_id', 'additional']);
+
+        if(!$link) {
+            return $preferences;
+        }
+
+        $additional = $this->normalize_json_to_array($link->additional ?? null);
+        $evolution_memory = $this->refresh_app_review_evolution_memory(
+            $this->normalize_app_review_evolution_memory($additional['fcc_ai_evolution_memory'] ?? []),
+            (array) ($review['performance_snapshot'] ?? []),
+            (string) ($review['generated_at'] ?? get_date()),
+            (array) ($review['block_attribution_snapshot'] ?? [])
+        );
+        $evolution_cycle = $this->build_app_review_evolution_cycle($review);
+        $evolution_memory = $this->upsert_app_review_evolution_cycle($evolution_memory, $evolution_cycle);
+        $signal_protection_summary = $this->normalize_app_review_signal_protection_summary(
+            $review['signal_protection_summary'] ?? $this->build_app_review_signal_protection_summary(
+                (array) ($review['block_attribution_snapshot'] ?? []),
+                (array) ($review['layout_actions'] ?? [])
+            )
+        );
+
+        $additional['fcc_ai_theme_pack'] = $theme_pack;
+        $additional['fcc_ai_primary_block_plan'] = $this->normalize_app_review_primary_block_plan($review['primary_block_plan'] ?? []);
+        $additional['fcc_ai_block_patch_pack'] = $this->normalize_app_review_block_patch_pack($review['block_patch_pack'] ?? []);
+        $additional['fcc_ai_copy_suggestions'] = $this->normalize_app_review_copy_suggestions($review['copy_suggestions'] ?? []);
+        $additional['fcc_ai_layout_actions'] = $this->normalize_app_review_layout_actions($review['layout_actions'] ?? []);
+        $additional['fcc_ai_missing_block_recommendations'] = $this->normalize_app_review_missing_block_recommendations($review['missing_block_recommendations'] ?? []);
+        $additional['fcc_ai_ideal_block_order'] = $this->normalize_app_review_visible_list((array) ($review['ideal_block_order'] ?? []));
+        $additional['fcc_ai_core_block_policy'] = $this->normalize_json_to_array($review['fcc_core_block_policy'] ?? []);
+        $additional['fcc_ai_signal_protection_summary'] = $signal_protection_summary;
+        $additional['fcc_ai_evolution_memory'] = $evolution_memory;
+        $additional['fcc_ai_theme_library_key'] = $theme_key;
+        $additional['fcc_ai_review_summary'] = [
+            'generated_at' => $review['generated_at'] ?? null,
+            'review_key' => (string) ($review['review_key'] ?? ($review['generated_at'] ?? '')),
+            'headline' => (string) ($review['headline'] ?? ''),
+            'summary' => (string) ($review['summary'] ?? ''),
+            'selected_app_name' => (string) ($review['selected_app_name'] ?? ''),
+            'goal_type' => (string) ($review['goal_type'] ?? ''),
+            'ideal_block_order' => $this->normalize_app_review_visible_list((array) ($review['ideal_block_order'] ?? [])),
+            'signal_protection_summary' => $signal_protection_summary,
+            'theme_ready' => true,
+        ];
+        $additional['fcc_ai_theme_apply_state'] = array_merge([
+            'recommended_at' => null,
+            'applied_at' => null,
+            'last_applied_theme_key' => '',
+            'layout_applied_at' => null,
+            'active_review_key' => '',
+        ], (array) ($additional['fcc_ai_theme_apply_state'] ?? []));
+        $additional['fcc_ai_theme_apply_state']['recommended_at'] = $review['generated_at'] ?? null;
+        $additional['fcc_ai_theme_apply_state']['active_review_key'] = (string) ($evolution_cycle['review_key'] ?? '');
+
+        db()->where('link_id', $selected_link_id)->where('user_id', $this->user->user_id)->update('links', [
+            'additional' => json_encode($additional),
+        ]);
+
+        cache()->deleteItemsByTag('link_id=' . $selected_link_id);
+        cache()->deleteItem('link?link_id=' . $selected_link_id);
+
+        return $preferences;
+    }
+
     private function get_weekly_cooldown_payload(?array $latest_weekly_checkin, int $days = 7): array {
         if($days < 1) {
             return [
@@ -884,7 +2229,7 @@ class AiPlan extends Controller {
         $starter_weekly_remaining = $is_pro ? max(0, 1 - (int) ($access_settings['starter_weekly_plan_used'] ?? 0)) : 0;
         $has_recurring_weekly = in_array($tier, ['pro_active', 'pro_vip'], true);
         $has_recurring_app_review = in_array($tier, ['pro_active', 'pro_vip'], true);
-        $app_review_cooldown_days = $tier === 'pro_vip' ? 7 : ($tier === 'pro_active' ? 14 : 0);
+        $app_review_cooldown_days = $has_recurring_app_review ? 7 : 0;
 
         return [
             'tier' => $tier,
@@ -1054,14 +2399,11 @@ class AiPlan extends Controller {
             ?? $this->get_selected_app($app_structure_payload);
     }
 
-    private function get_app_review_evolution_payload(array $current_performance, ?array $previous_review = null): array {
-        $default_snapshot = [
-            'shop_contacts_30d' => 0,
-            'whatsapp_contacts_30d' => 0,
-            'product_clicks_30d' => 0,
-            'funnel_registrations_30d' => 0,
-            'weighted_signal_score' => 0,
-        ];
+    private function get_app_review_evolution_payload(array $current_performance, ?array $previous_review = null, array $evolution_memory = [], ?string $current_datetime = null, array $current_block_attribution = []): array {
+        $default_snapshot = $this->get_default_app_review_performance_snapshot();
+        $current_snapshot = $this->normalize_app_review_performance_snapshot($current_performance);
+        $evolution_memory = $this->refresh_app_review_evolution_memory($evolution_memory, $current_snapshot, $current_datetime, $current_block_attribution);
+        $latest_cycle = $evolution_memory[0] ?? null;
 
         if(!$previous_review) {
             return [
@@ -1074,35 +2416,18 @@ class AiPlan extends Controller {
                 'previous_top_recommendation' => '',
                 'previous_first_move' => '',
                 'previous_snapshot' => $default_snapshot,
-                'current_snapshot' => array_merge($default_snapshot, $current_performance),
+                'current_snapshot' => $current_snapshot,
                 'changes' => [],
+                'tracked_cycles' => count($evolution_memory),
+                'latest_cycle' => $latest_cycle,
+                'recent_measured_cycles' => array_values(array_slice(array_filter($evolution_memory, static function($cycle) {
+                    return !empty($cycle['evaluation_7d']['measured_at']) || !empty($cycle['evaluation_30d']['measured_at']);
+                }), 0, 3)),
             ];
         }
 
-        $previous_snapshot = array_merge($default_snapshot, (array) ($previous_review['performance_snapshot'] ?? []));
-        $current_snapshot = array_merge($default_snapshot, $current_performance);
-        $metric_labels = [
-            'shop_contacts_30d' => 'shop',
-            'whatsapp_contacts_30d' => 'whatsapp',
-            'product_clicks_30d' => 'blog_products',
-            'funnel_registrations_30d' => 'funnel_contacts',
-            'weighted_signal_score' => 'total_signal',
-        ];
-        $changes = [];
-
-        foreach($metric_labels as $metric_key => $label) {
-            $previous_value = (int) ($previous_snapshot[$metric_key] ?? 0);
-            $current_value = (int) ($current_snapshot[$metric_key] ?? 0);
-            $delta = $current_value - $previous_value;
-
-            $changes[] = [
-                'metric' => $label,
-                'previous' => $previous_value,
-                'current' => $current_value,
-                'delta' => $delta,
-                'direction' => $delta > 0 ? 'up' : ($delta < 0 ? 'down' : 'same'),
-            ];
-        }
+        $previous_snapshot = $this->normalize_app_review_performance_snapshot($previous_review['performance_snapshot'] ?? []);
+        $changes = $this->get_app_review_performance_delta($previous_snapshot, $current_snapshot);
 
         return [
             'has_previous_review' => true,
@@ -1116,6 +2441,11 @@ class AiPlan extends Controller {
             'previous_snapshot' => $previous_snapshot,
             'current_snapshot' => $current_snapshot,
             'changes' => $changes,
+            'tracked_cycles' => count($evolution_memory),
+            'latest_cycle' => $latest_cycle,
+            'recent_measured_cycles' => array_values(array_slice(array_filter($evolution_memory, static function($cycle) {
+                return !empty($cycle['evaluation_7d']['measured_at']) || !empty($cycle['evaluation_30d']['measured_at']);
+            }), 0, 3)),
         ];
     }
 
@@ -1247,6 +2577,150 @@ class AiPlan extends Controller {
             || str_starts_with($model, 'o3');
     }
 
+    private function get_app_review_color_signal($value): array {
+        if(!is_scalar($value)) {
+            return [];
+        }
+
+        $value = trim((string) $value);
+
+        if($value === '') {
+            return [];
+        }
+
+        $rgb = null;
+
+        if(preg_match('/#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})\b/', $value, $matches)) {
+            $hex = strtoupper((string) $matches[1]);
+
+            if(strlen($hex) === 3) {
+                $hex = $hex[0] . $hex[0] . $hex[1] . $hex[1] . $hex[2] . $hex[2];
+            } elseif(strlen($hex) === 8) {
+                $hex = substr($hex, 0, 6);
+            }
+
+            if(strlen($hex) === 6) {
+                $rgb = [
+                    'r' => hexdec(substr($hex, 0, 2)),
+                    'g' => hexdec(substr($hex, 2, 2)),
+                    'b' => hexdec(substr($hex, 4, 2)),
+                ];
+            }
+        } elseif(preg_match('/^rgba?\(([^)]+)\)$/i', $value, $matches)) {
+            $parts = preg_split('/\s*,\s*/', trim((string) $matches[1])) ?: [];
+
+            if(count($parts) >= 3) {
+                $rgb = [
+                    'r' => (int) max(0, min(255, (float) $parts[0])),
+                    'g' => (int) max(0, min(255, (float) $parts[1])),
+                    'b' => (int) max(0, min(255, (float) $parts[2])),
+                ];
+            }
+        }
+
+        if(!$rgb) {
+            return [];
+        }
+
+        $r = (float) $rgb['r'];
+        $g = (float) $rgb['g'];
+        $b = (float) $rgb['b'];
+        $max = max($r, $g, $b);
+        $min = min($r, $g, $b);
+        $delta = $max - $min;
+        $lightness_ratio = (($max + $min) / 2) / 255;
+        $saturation_denominator = 255 - abs($max + $min - 255);
+        $saturation = ($delta === 0 || $saturation_denominator <= 0) ? 0 : $delta / $saturation_denominator;
+
+        if($saturation < 0.12) {
+            $family = 'neutral';
+        } else {
+            if($delta == 0) {
+                $hue = 0;
+            } elseif($max === $r) {
+                $hue = fmod((($g - $b) / $delta), 6);
+            } elseif($max === $g) {
+                $hue = (($b - $r) / $delta) + 2;
+            } else {
+                $hue = (($r - $g) / $delta) + 4;
+            }
+
+            $hue = (int) round($hue * 60);
+
+            if($hue < 0) {
+                $hue += 360;
+            }
+
+            $family = match(true) {
+                $hue < 15 || $hue >= 345 => 'red',
+                $hue < 40 => 'orange',
+                $hue < 65 => 'yellow',
+                $hue < 95 => 'lime',
+                $hue < 155 => 'green',
+                $hue < 190 => 'teal',
+                $hue < 240 => 'blue',
+                $hue < 285 => 'purple',
+                $hue < 345 => 'pink',
+                default => 'neutral',
+            };
+        }
+
+        $lightness = match(true) {
+            $lightness_ratio <= 0.16 => 'very_dark',
+            $lightness_ratio <= 0.34 => 'dark',
+            $lightness_ratio <= 0.68 => 'mid',
+            $lightness_ratio <= 0.84 => 'light',
+            default => 'very_light',
+        };
+
+        $intensity = match(true) {
+            $saturation < 0.12 => 'neutral',
+            $saturation < 0.30 => 'soft',
+            $saturation < 0.56 => 'balanced',
+            default => 'strong',
+        };
+
+        return [
+            'family' => $family,
+            'lightness' => $lightness,
+            'intensity' => $intensity,
+        ];
+    }
+
+    private function get_app_review_palette_anchor_risk(array $signals): string {
+        $families = [];
+        $strong_count = 0;
+
+        foreach($signals as $signal) {
+            if(!is_array($signal) || empty($signal)) {
+                continue;
+            }
+
+            $family = (string) ($signal['family'] ?? '');
+            $intensity = (string) ($signal['intensity'] ?? '');
+
+            if($family !== '' && $family !== 'neutral') {
+                $families[$family] = true;
+            }
+
+            if($intensity === 'strong') {
+                $strong_count++;
+            }
+        }
+
+        $family_count = count($families);
+
+        if($family_count >= 3 || $strong_count >= 2) {
+            return 'high';
+        }
+
+        if($family_count >= 2 || $strong_count >= 1) {
+            return 'medium';
+        }
+
+        return 'low';
+    }
+
     private function get_app_review_visual_profile(\stdClass $settings): array {
         $background_type = (string) ($settings->background_type ?? '');
         $background_value = trim((string) ($settings->background ?? ''));
@@ -1264,33 +2738,57 @@ class AiPlan extends Controller {
             };
         }
 
+        $background_signal = $this->get_app_review_color_signal(
+            $background_type === 'color'
+                ? $background_value
+                : ((string) ($settings->background_color_one ?? ''))
+        );
+        $gradient_start_signal = $this->get_app_review_color_signal((string) ($settings->background_color_one ?? ''));
+        $gradient_end_signal = $this->get_app_review_color_signal((string) ($settings->background_color_two ?? ''));
+        $text_signal = $this->get_app_review_color_signal((string) ($settings->text_color ?? ''));
+
         return [
             'background_type' => $background_type !== '' ? $background_type : 'default',
             'background_summary' => $background_summary,
-            'background_value' => $background_value,
-            'background_color_one' => (string) ($settings->background_color_one ?? ''),
-            'background_color_two' => (string) ($settings->background_color_two ?? ''),
-            'text_color' => (string) ($settings->text_color ?? ''),
+            'background_signal' => $background_signal,
+            'gradient_start_signal' => $gradient_start_signal,
+            'gradient_end_signal' => $gradient_end_signal,
+            'text_signal' => $text_signal,
             'font' => (string) ($settings->font ?? ''),
             'block_spacing' => (string) ($settings->block_spacing ?? ''),
             'width' => (string) ($settings->width ?? ''),
             'background_blur' => (int) ($settings->background_blur ?? 0),
             'background_brightness' => (int) ($settings->background_brightness ?? 100),
+            'palette_anchor_risk' => $this->get_app_review_palette_anchor_risk([$background_signal, $gradient_start_signal, $gradient_end_signal, $text_signal]),
+            'current_visual_role' => 'diagnostic_only',
         ];
     }
 
     private function get_app_review_block_style_profile(\stdClass $settings): array {
-        $profile = [
-            'text_color' => (string) ($settings->text_color ?? ''),
-            'background_color' => (string) ($settings->background_color ?? ''),
-            'border_color' => (string) ($settings->border_color ?? ''),
-            'border_shadow_style' => (string) ($settings->border_shadow_style ?? ''),
-            'border_shadow_color' => (string) ($settings->border_shadow_color ?? ''),
-        ];
+        $has_custom_text_color = trim((string) ($settings->text_color ?? '')) !== '';
+        $has_custom_background = trim((string) ($settings->background_color ?? '')) !== '';
+        $has_custom_border = trim((string) ($settings->border_color ?? '')) !== '';
+        $has_shadow = trim((string) ($settings->border_shadow_style ?? '')) !== '' || trim((string) ($settings->border_shadow_color ?? '')) !== '';
 
-        return array_filter($profile, static function($value) {
-            return is_string($value) ? trim($value) !== '' : !empty($value);
-        });
+        if(!$has_custom_text_color && !$has_custom_background && !$has_custom_border && !$has_shadow) {
+            return [];
+        }
+
+        $styled_surface_count = ($has_custom_text_color ? 1 : 0) + ($has_custom_background ? 1 : 0) + ($has_custom_border ? 1 : 0) + ($has_shadow ? 1 : 0);
+
+        return [
+            'has_custom_text_color' => $has_custom_text_color,
+            'has_custom_background' => $has_custom_background,
+            'has_custom_border' => $has_custom_border,
+            'uses_shadow' => $has_shadow,
+            'text_signal' => $this->get_app_review_color_signal((string) ($settings->text_color ?? '')),
+            'background_signal' => $this->get_app_review_color_signal((string) ($settings->background_color ?? '')),
+            'border_signal' => $this->get_app_review_color_signal((string) ($settings->border_color ?? '')),
+            'shadow_signal' => $this->get_app_review_color_signal((string) ($settings->border_shadow_color ?? '')),
+            'emphasis_strength' => $styled_surface_count >= 3 ? 'strong' : ($styled_surface_count >= 2 ? 'balanced' : 'soft'),
+            'style_complexity' => $styled_surface_count >= 4 ? 'busy' : ($styled_surface_count >= 2 ? 'controlled' : 'minimal'),
+            'current_visual_role' => 'diagnostic_only',
+        ];
     }
 
     private function get_app_review_segment_key(int $position, int $total_blocks): string {
@@ -1930,6 +3428,123 @@ class AiPlan extends Controller {
         return $apps;
     }
 
+    private function get_app_review_block_attribution_payload(array $selected_app): array {
+        $link_id = (int) ($selected_app['link_id'] ?? 0);
+
+        if($link_id <= 0) {
+            return $this->normalize_app_review_block_attribution_payload([]);
+        }
+
+        $period_30d_start = (new \DateTimeImmutable())->sub(new \DateInterval('P29D'))->format('Y-m-d 00:00:00');
+        $blocks_result = database()->query("SELECT `biolink_block_id`, `type`, `settings`, `order`
+            FROM `biolinks_blocks`
+            WHERE `user_id` = {$this->user->user_id}
+              AND `link_id` = {$link_id}
+              AND `is_enabled` = 1
+            ORDER BY `order` ASC, `biolink_block_id` ASC");
+
+        $blocks = [];
+        $block_ids = [];
+
+        if($blocks_result) {
+            while($row = $blocks_result->fetch_object()) {
+                $block_id = (int) ($row->biolink_block_id ?? 0);
+
+                if($block_id <= 0) {
+                    continue;
+                }
+
+                $settings = $this->decode_biolink_block_settings($row->settings ?? null);
+                $blocks[] = [
+                    'block_id' => $block_id,
+                    'type' => (string) ($row->type ?? ''),
+                    'settings' => $settings,
+                    'order' => (int) ($row->order ?? 0),
+                    'label' => $this->get_app_review_block_preview_label((string) ($row->type ?? ''), $settings),
+                ];
+                $block_ids[] = $block_id;
+            }
+        }
+
+        if(empty($blocks)) {
+            return $this->normalize_app_review_block_attribution_payload([]);
+        }
+
+        $clicks_per_block = [];
+        $leads_per_block = [];
+        $block_ids_sql = implode(',', array_map('intval', $block_ids));
+
+        $clicks_result = database()->query("SELECT `biolink_block_id`, COUNT(*) AS `total`
+            FROM `track_links`
+            WHERE `datetime` >= '{$period_30d_start}'
+              AND `is_unique` = 1
+              AND `biolink_block_id` IN ({$block_ids_sql})
+            GROUP BY `biolink_block_id`");
+
+        if($clicks_result) {
+            while($row = $clicks_result->fetch_object()) {
+                $clicks_per_block[(int) ($row->biolink_block_id ?? 0)] = (int) ($row->total ?? 0);
+            }
+        }
+
+        $funnel_ids = array_values(array_filter(array_map(static function($block): int {
+            return (string) ($block['type'] ?? '') === 'lead_funnel' ? (int) ($block['block_id'] ?? 0) : 0;
+        }, $blocks)));
+
+        if(!empty($funnel_ids)) {
+            $funnel_ids_sql = implode(',', array_map('intval', $funnel_ids));
+            $leads_result = database()->query("SELECT `biolink_block_id`, COUNT(*) AS `total`
+                FROM `data`
+                WHERE `type` = 'lead_funnel'
+                  AND `datetime` >= '{$period_30d_start}'
+                  AND `biolink_block_id` IN ({$funnel_ids_sql})
+                GROUP BY `biolink_block_id`");
+
+            if($leads_result) {
+                while($row = $leads_result->fetch_object()) {
+                    $leads_per_block[(int) ($row->biolink_block_id ?? 0)] = (int) ($row->total ?? 0);
+                }
+            }
+        }
+
+        $rows = [];
+        foreach($blocks as $index => $block) {
+            $block_id = (int) ($block['block_id'] ?? 0);
+            $rows[] = $this->build_app_review_block_attribution_row(
+                $block,
+                $index + 1,
+                (int) ($clicks_per_block[$block_id] ?? 0),
+                (int) ($leads_per_block[$block_id] ?? 0)
+            );
+        }
+
+        $top_signal_blocks = array_values(array_slice(array_filter($rows, static fn($row): bool => (int) ($row['signal_score'] ?? 0) > 0), 0, count($rows)));
+        usort($top_signal_blocks, static function($a, $b) {
+            return (($b['signal_score'] ?? 0) <=> ($a['signal_score'] ?? 0))
+                ?: (($a['position'] ?? 0) <=> ($b['position'] ?? 0));
+        });
+
+        $focus_risk_blocks = array_values(array_filter($rows, static function($row): bool {
+            return in_array((string) ($row['status'] ?? ''), ['critical_focus_risk', 'focus_risk'], true);
+        }));
+        usort($focus_risk_blocks, static function($a, $b) {
+            return (($b['focus_cost_score'] ?? 0) <=> ($a['focus_cost_score'] ?? 0))
+                ?: (($a['position'] ?? 0) <=> ($b['position'] ?? 0));
+        });
+
+        return $this->normalize_app_review_block_attribution_payload([
+            'summary' => [
+                'tracked_blocks' => count($rows),
+                'signal_blocks' => count(array_filter($rows, static fn($row): bool => (int) ($row['signal_score'] ?? 0) > 0)),
+                'focus_risk_blocks' => count($focus_risk_blocks),
+                'zero_signal_blocks' => count(array_filter($rows, static fn($row): bool => (int) ($row['signal_score'] ?? 0) === 0)),
+            ],
+            'top_signal_blocks' => array_slice($top_signal_blocks, 0, 4),
+            'focus_risk_blocks' => array_slice($focus_risk_blocks, 0, 4),
+            'all_blocks' => $rows,
+        ]);
+    }
+
     /* Custom code: FC-2026-03-31: normalize app review DM wording to WhatsApp wording */
     private function normalize_app_review_channel_copy(string $value): string {
         if($value === '') {
@@ -1954,6 +3569,325 @@ class AiPlan extends Controller {
         }
 
         return trim(preg_replace('/\s+/', ' ', $value) ?? $value);
+    }
+
+    private function strip_app_review_internal_visibility_notes(string $value): string {
+        if($value === '') {
+            return '';
+        }
+
+        $meta_note_pattern = '(?:kao\s+)?(?:sporedn(?:o|i|a|e)|sekundarn(?:o|i|a|e)|rezervn(?:o|i|a|e)|opcionaln(?:o|i|a|e)|zadnj(?:e|i|a)|primarn(?:o|i|a|e)|glavn(?:o|i|a|e)|fallback|backup|secondary|primary)(?:\s+(?:put|smjer|korak|opcija|path|route|step|blok|cta|gumb|link))?';
+
+        $value = preg_replace_callback('/\s*\(([^()]*)\)/u', static function($matches) use ($meta_note_pattern) {
+            $inner = trim((string) ($matches[1] ?? ''));
+
+            if($inner !== '' && preg_match('/^' . $meta_note_pattern . '$/iu', $inner)) {
+                return '';
+            }
+
+            return $matches[0];
+        }, $value) ?? $value;
+
+        $value = preg_replace('/\s*(?:[-,:]\s*)' . $meta_note_pattern . '\s*$/iu', '', $value) ?? $value;
+        $value = preg_replace('/\s+([,.:!?])/u', '$1', $value) ?? $value;
+        $value = preg_replace('/\s{2,}/u', ' ', $value) ?? $value;
+
+        return trim($value, " \t\n\r\0\x0B-,:");
+    }
+
+    private function normalize_app_review_visible_copy(string $value): string {
+        $value = $this->normalize_app_review_channel_copy($value);
+        $value = $this->strip_app_review_internal_visibility_notes($value);
+
+        return trim(preg_replace('/\s+/', ' ', $value) ?? $value);
+    }
+
+    private function normalize_app_review_visible_list(array $items): array {
+        $normalized_items = [];
+
+        foreach($items as $item) {
+            if(!is_scalar($item)) {
+                continue;
+            }
+
+            $normalized_item = $this->normalize_app_review_visible_copy((string) $item);
+
+            if($normalized_item === '') {
+                continue;
+            }
+
+            $normalized_items[] = $normalized_item;
+        }
+
+        return $normalized_items;
+    }
+
+    private function normalize_app_review_matching_key(string $value): string {
+        $value = mb_strtolower(trim($value));
+
+        if($value === '') {
+            return '';
+        }
+
+        $value = strtr($value, [
+            'č' => 'c',
+            'ć' => 'c',
+            'đ' => 'd',
+            'š' => 's',
+            'ž' => 'z',
+        ]);
+
+        return preg_replace('/[^\p{L}\p{N}]+/u', '', $value) ?? '';
+    }
+
+    private function app_review_text_has_any(string $value, array $needles): bool {
+        $normalized_value = $this->normalize_app_review_matching_key($value);
+
+        if($normalized_value === '') {
+            return false;
+        }
+
+        foreach($needles as $needle) {
+            $normalized_needle = $this->normalize_app_review_matching_key((string) $needle);
+
+            if($normalized_needle !== '' && str_contains($normalized_value, $normalized_needle)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function get_contextual_app_review_link_copy_value(string $block_type, string $current_label, string $goal_type): string {
+        $current_label = trim($current_label);
+        $is_business_offer = $this->app_review_text_has_any($current_label, ['start paket', 'start-paket', 'suradnik', 'partner', 'upis', 'registracija', 'prijava']);
+        $is_discount_offer = $this->app_review_text_has_any($current_label, ['web shop', 'webshop', 'shop', 'popust', 'forever living', 'forever webshop', 'kupnja']);
+
+        if($block_type === 'link_forever_shop') {
+            if($this->app_review_text_has_any($current_label, ['upis', 'prijava', 'registracija', 'partner', 'suradnik'])) {
+                return 'Prijavi se kao Forever partner';
+            }
+
+            return 'Postani Forever partner';
+        }
+
+        if($this->app_review_text_has_any($current_label, ['partner', 'suradnja', 'suradnik', 'upis', 'registracija', 'prijava'])) {
+            if($this->app_review_text_has_any($current_label, ['partner'])) {
+                return 'Pogledaj kako postati partner';
+            }
+
+            if($this->app_review_text_has_any($current_label, ['upis', 'prijava', 'registracija'])) {
+                return 'Pogledaj kako izgleda upis';
+            }
+
+            return 'Saznaj kako izgleda suradnja';
+        }
+
+        if($block_type === 'link_forever_product' && $is_business_offer) {
+            return 'Postani Forever suradnik';
+        }
+
+        if(
+            $is_discount_offer
+            || in_array($block_type, ['link_discount', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo'], true)
+        ) {
+            return 'Pogledaj proizvode s popustom';
+        }
+
+        if($this->app_review_text_has_any($current_label, ['proizvod', 'proizvodi']) || $block_type === 'link_forever_product') {
+            return 'Pogledaj preporučene proizvode';
+        }
+
+        if($this->app_review_text_has_any($current_label, ['whatsapp'])) {
+            return 'Pošalji poruku na WhatsApp';
+        }
+
+        return match($goal_type) {
+            'business' => 'Saznaj kako izgleda suradnja',
+            'shop' => 'Pogledaj proizvode i ponudu',
+            'activation' => 'Javi se i saznaj više',
+            default => 'Pogledaj više detalja',
+        };
+    }
+
+    private function should_force_contextual_app_review_link_copy(string $suggested_value, string $current_label, string $block_type, string $goal_type): bool {
+        $suggested_value = trim($suggested_value);
+
+        if($suggested_value === '') {
+            return true;
+        }
+
+        if($this->app_review_text_has_any($suggested_value, [
+            'saznaj više i otvori sljedeći korak',
+            'saznaj vise i otvori sljedeci korak',
+            'otvori sljedeći korak',
+            'otvori sljedeci korak',
+            'sljedeći korak',
+            'sljedeci korak',
+            'glavni korak',
+        ])) {
+            return true;
+        }
+
+        if($block_type === 'link_forever_shop' && !$this->app_review_text_has_any($suggested_value, ['forever', 'partner', 'suradnik', 'upis', 'prijava', 'registracija'])) {
+            return true;
+        }
+
+        if($block_type === 'link_forever_product'
+            && $this->app_review_text_has_any($current_label, ['start paket', 'start-paket', 'partner', 'suradnik', 'upis', 'prijava', 'registracija'])
+            && !$this->app_review_text_has_any($suggested_value, ['suradnik', 'partner', 'upis', 'prijava', 'start'])) {
+            return true;
+        }
+
+        if($this->app_review_text_has_any($current_label, ['partner', 'suradnja', 'upis', 'prijava', 'registracija'])
+            && !$this->app_review_text_has_any($suggested_value, ['partner', 'suradnja', 'upis', 'prijava', 'registracija'])) {
+            return true;
+        }
+
+        if((
+                $this->app_review_text_has_any($current_label, ['web shop', 'webshop', 'shop', 'popust', 'forever living', 'forever webshop', 'kupnja'])
+                || in_array($block_type, ['link_discount', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo'], true)
+            )
+            && !$this->app_review_text_has_any($suggested_value, ['shop', 'webshop', 'ponud', 'popust', 'forever', 'kup', 'proizvod']) ) {
+            return true;
+        }
+
+        if(($this->app_review_text_has_any($current_label, ['proizvod', 'proizvodi']) || $block_type === 'link_forever_product')
+            && !$this->app_review_text_has_any($suggested_value, ['proizvod', 'ponud'])) {
+            return true;
+        }
+
+        if($goal_type === 'business' && $block_type === 'link' && !$this->app_review_text_has_any($suggested_value, ['suradnja', 'partner', 'upis', 'prijava', 'detalj'])) {
+            return true;
+        }
+
+        return false;
+    }
+
+    private function refine_app_review_copy_suggestions(array $copy_suggestions, ?array $selected_app = null, string $goal_type = '', string $owner_name = ''): array {
+        if(empty($copy_suggestions)) {
+            return [];
+        }
+
+        $block_map = [];
+        foreach((array) ($selected_app['ordered_block_previews'] ?? []) as $preview) {
+            if(!is_array($preview)) {
+                continue;
+            }
+
+            $block_id = (int) ($preview['block_id'] ?? 0);
+
+            if($block_id <= 0) {
+                continue;
+            }
+
+            $block_map[$block_id] = [
+                'type' => (string) ($preview['type'] ?? ''),
+                'label' => (string) ($preview['label'] ?? ''),
+            ];
+        }
+
+        $refined = [];
+
+        foreach($copy_suggestions as $item) {
+            if(!is_array($item)) {
+                continue;
+            }
+
+            $block_id = (int) ($item['block_id'] ?? 0);
+            $block_type = trim((string) ($item['block_type'] ?? ''));
+            $current_label = '';
+
+            if($block_id > 0 && isset($block_map[$block_id])) {
+                $block_type = trim((string) ($block_map[$block_id]['type'] ?? $block_type));
+                $current_label = trim((string) ($block_map[$block_id]['label'] ?? ''));
+            }
+
+            $value = trim((string) ($item['value'] ?? ''));
+            $role_key = trim((string) ($item['role_key'] ?? ''));
+
+            if($role_key === 'owner_identity' && $owner_name !== '') {
+                $item['value'] = $owner_name;
+            } elseif(in_array($block_type, ['link', 'link_forever_shop', 'link_forever_product', 'link_discount', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo'], true)) {
+                if($this->should_force_contextual_app_review_link_copy($value, $current_label, $block_type, $goal_type)) {
+                    $item['value'] = $this->get_contextual_app_review_link_copy_value($block_type, $current_label, $goal_type);
+                }
+            }
+
+            $item['value'] = $this->normalize_app_review_visible_copy($this->sanitize_ai_string($item['value'] ?? '', 180));
+
+            if($item['value'] === '') {
+                continue;
+            }
+
+            $refined[] = $item;
+        }
+
+        return array_slice($refined, 0, 8);
+    }
+
+    private function get_default_app_review_missing_picker_context(string $block_type): array {
+        return match(trim($block_type)) {
+            'heading', 'header', 'avatar', 'image', 'paragraph', 'markdown', 'video', 'youtube', 'vimeo' => ['preferred_group' => 'start', 'preferred_goal' => 'trust', 'picker_search' => l('link.biolink.blocks.' . trim($block_type))],
+            'lead_funnel' => ['preferred_group' => 'sales', 'preferred_goal' => 'lead_capture', 'picker_search' => 'Funnel'],
+            'custom_html_whatsapp' => ['preferred_group' => 'contacts', 'preferred_goal' => 'lead_capture', 'picker_search' => 'WhatsApp'],
+            'link_forever_shop' => ['preferred_group' => 'forever', 'preferred_goal' => 'lead_capture', 'picker_search' => l('link.biolink.blocks.' . trim($block_type))],
+            'link_forever_product', 'link_discount', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo' => ['preferred_group' => 'forever', 'preferred_goal' => 'product_recommendation', 'picker_search' => l('link.biolink.blocks.' . trim($block_type))],
+            'link' => ['preferred_group' => 'sales', 'preferred_goal' => 'lead_capture', 'picker_search' => l('link.biolink.blocks.link')],
+            default => ['preferred_group' => '', 'preferred_goal' => '', 'picker_search' => l('link.biolink.blocks.' . trim($block_type))],
+        };
+    }
+
+    private function refine_app_review_missing_block_recommendations(array $recommendations, string $owner_name = ''): array {
+        if(empty($recommendations)) {
+            return [];
+        }
+
+        $owner_key = $this->normalize_app_review_matching_key($owner_name);
+        $refined = [];
+
+        foreach($recommendations as $item) {
+            if(!is_array($item)) {
+                continue;
+            }
+
+            $block_type = trim((string) ($item['block_type'] ?? ''));
+            if(in_array($block_type, ['video', 'tiktok_video', 'twitter_video', 'vk_video'], true)) {
+                $block_type = 'youtube';
+                $item['block_type'] = 'youtube';
+            }
+
+            if($block_type === '') {
+                continue;
+            }
+
+            $label = trim((string) ($item['label'] ?? ''));
+            $seed_text = trim((string) (($item['seed_settings']['text'] ?? '') ?: ($item['seed_settings']['name'] ?? '') ?: ''));
+            $combined_identity_text = $this->normalize_app_review_matching_key(trim($label . ' ' . $seed_text));
+
+            if($block_type === 'heading' && ($this->app_review_text_has_any($combined_identity_text, ['ime i prezime']) || ($owner_key !== '' && $combined_identity_text !== '' && (str_contains($combined_identity_text, $owner_key) || str_contains($owner_key, $combined_identity_text))))) {
+                $item['role_key'] = 'owner_identity';
+                $item['allow_existing_type'] = true;
+            } elseif($block_type === 'lead_funnel' && empty($item['role_key'])) {
+                $item['role_key'] = 'primary_funnel';
+            } elseif($block_type === 'custom_html_whatsapp' && empty($item['role_key'])) {
+                $item['role_key'] = 'whatsapp_backup';
+            } elseif($block_type === 'link_discount' && empty($item['role_key'])) {
+                $item['role_key'] = 'core_discount_offer';
+            } elseif($block_type === 'link_forever_product' && empty($item['role_key']) && $this->app_review_text_has_any(trim($label . ' ' . $seed_text), ['start paket', 'start-paket', 'partner', 'suradnik', 'upis', 'prijava', 'registracija'])) {
+                $item['role_key'] = 'core_business_offer';
+            } elseif(in_array($block_type, ['youtube', 'vimeo'], true) && empty($item['role_key'])) {
+                $item['role_key'] = 'trust_video';
+            }
+
+            $picker_context = $this->get_default_app_review_missing_picker_context($block_type);
+            $item['preferred_group'] = (string) (($item['preferred_group'] ?? '') ?: ($picker_context['preferred_group'] ?? ''));
+            $item['preferred_goal'] = (string) (($item['preferred_goal'] ?? '') ?: ($picker_context['preferred_goal'] ?? ''));
+            $item['picker_search'] = (string) (($item['picker_search'] ?? '') ?: ($picker_context['picker_search'] ?? ''));
+            $refined[] = $item;
+        }
+
+        return array_slice($refined, 0, 6);
     }
 
     private function normalize_app_review_channel_list(array $items): array {
@@ -2038,6 +3972,942 @@ class AiPlan extends Controller {
 
         return $normalized;
     }
+
+    private function extract_first_hex_color(string $value): string {
+        if(preg_match('/#(?:[A-Fa-f0-9]{3}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})\b/', $value, $matches)) {
+            return strtoupper($matches[0]);
+        }
+
+        return '';
+    }
+
+    private function normalize_ai_css_color_value($value, bool $allow_rgba = false): string {
+        if(!is_scalar($value)) {
+            return '';
+        }
+
+        $value = trim((string) $value);
+
+        if($value === '') {
+            return '';
+        }
+
+        if($allow_rgba && preg_match('/^rgba?\(\s*[\d.\s,%]+\)$/i', $value)) {
+            return preg_replace('/\s+/', ' ', $value) ?? $value;
+        }
+
+        return $this->extract_first_hex_color($value);
+    }
+
+    private function hex_to_rgb_triplet(string $value): array {
+        $hex = $this->extract_first_hex_color($value);
+
+        if($hex === '') {
+            return [];
+        }
+
+        $hex = ltrim($hex, '#');
+
+        if(strlen($hex) === 3) {
+            $hex = $hex[0] . $hex[0] . $hex[1] . $hex[1] . $hex[2] . $hex[2];
+        } elseif(strlen($hex) === 8) {
+            $hex = substr($hex, 0, 6);
+        }
+
+        if(strlen($hex) !== 6) {
+            return [];
+        }
+
+        return [
+            'r' => hexdec(substr($hex, 0, 2)),
+            'g' => hexdec(substr($hex, 2, 2)),
+            'b' => hexdec(substr($hex, 4, 2)),
+        ];
+    }
+
+    private function rgb_triplet_to_hex(array $rgb): string {
+        if(!isset($rgb['r'], $rgb['g'], $rgb['b'])) {
+            return '';
+        }
+
+        return sprintf(
+            '#%02X%02X%02X',
+            max(0, min(255, (int) round($rgb['r']))),
+            max(0, min(255, (int) round($rgb['g']))),
+            max(0, min(255, (int) round($rgb['b'])))
+        );
+    }
+
+    private function rgb_triplet_to_hsl(array $rgb): array {
+        if(!isset($rgb['r'], $rgb['g'], $rgb['b'])) {
+            return [];
+        }
+
+        $r = max(0, min(255, (float) $rgb['r'])) / 255;
+        $g = max(0, min(255, (float) $rgb['g'])) / 255;
+        $b = max(0, min(255, (float) $rgb['b'])) / 255;
+
+        $max = max($r, $g, $b);
+        $min = min($r, $g, $b);
+        $h = 0.0;
+        $s = 0.0;
+        $l = ($max + $min) / 2;
+
+        if($max !== $min) {
+            $delta = $max - $min;
+            $s = $l > 0.5 ? $delta / (2 - $max - $min) : $delta / ($max + $min);
+
+            switch($max) {
+                case $r:
+                    $h = ($g - $b) / $delta + ($g < $b ? 6 : 0);
+                    break;
+
+                case $g:
+                    $h = ($b - $r) / $delta + 2;
+                    break;
+
+                default:
+                    $h = ($r - $g) / $delta + 4;
+                    break;
+            }
+
+            $h /= 6;
+        }
+
+        return [
+            'h' => $h * 360,
+            's' => $s,
+            'l' => $l,
+        ];
+    }
+
+    private function hsl_to_rgb_triplet(float $h, float $s, float $l): array {
+        $h = fmod(($h < 0 ? $h + 360 : $h), 360) / 360;
+        $s = max(0, min(1, $s));
+        $l = max(0, min(1, $l));
+
+        if($s == 0.0) {
+            $value = (int) round($l * 255);
+
+            return [
+                'r' => $value,
+                'g' => $value,
+                'b' => $value,
+            ];
+        }
+
+        $q = $l < 0.5 ? $l * (1 + $s) : ($l + $s - ($l * $s));
+        $p = 2 * $l - $q;
+        $hue_to_rgb = static function(float $p, float $q, float $t): float {
+            if($t < 0) {
+                $t += 1;
+            }
+
+            if($t > 1) {
+                $t -= 1;
+            }
+
+            if($t < 1 / 6) {
+                return $p + ($q - $p) * 6 * $t;
+            }
+
+            if($t < 1 / 2) {
+                return $q;
+            }
+
+            if($t < 2 / 3) {
+                return $p + ($q - $p) * (2 / 3 - $t) * 6;
+            }
+
+            return $p;
+        };
+
+        return [
+            'r' => (int) round($hue_to_rgb($p, $q, $h + 1 / 3) * 255),
+            'g' => (int) round($hue_to_rgb($p, $q, $h) * 255),
+            'b' => (int) round($hue_to_rgb($p, $q, $h - 1 / 3) * 255),
+        ];
+    }
+
+    private function get_hex_relative_luminance(string $value): ?float {
+        $rgb = $this->hex_to_rgb_triplet($value);
+
+        if(empty($rgb)) {
+            return null;
+        }
+
+        $linearize = static function(float $channel): float {
+            $channel /= 255;
+
+            return $channel <= 0.03928
+                ? $channel / 12.92
+                : pow(($channel + 0.055) / 1.055, 2.4);
+        };
+
+        $r = $linearize((float) $rgb['r']);
+        $g = $linearize((float) $rgb['g']);
+        $b = $linearize((float) $rgb['b']);
+
+        return 0.2126 * $r + 0.7152 * $g + 0.0722 * $b;
+    }
+
+    private function get_hex_contrast_ratio(string $foreground, string $background): float {
+        $foreground_luminance = $this->get_hex_relative_luminance($foreground);
+        $background_luminance = $this->get_hex_relative_luminance($background);
+
+        if($foreground_luminance === null || $background_luminance === null) {
+            return 0.0;
+        }
+
+        $lighter = max($foreground_luminance, $background_luminance);
+        $darker = min($foreground_luminance, $background_luminance);
+
+        return ($lighter + 0.05) / ($darker + 0.05);
+    }
+
+    private function get_safe_contrast_text_hex(string $background): string {
+        $dark = '#0F172A';
+        $light = '#F8FAFC';
+
+        return $this->get_hex_contrast_ratio($dark, $background) >= $this->get_hex_contrast_ratio($light, $background)
+            ? $dark
+            : $light;
+    }
+
+    private function soften_ai_theme_hex(string $hex, string $role): string {
+        $hex = $this->extract_first_hex_color($hex);
+
+        if($hex === '') {
+            return '';
+        }
+
+        $signal = $this->get_app_review_color_signal($hex);
+        $rgb = $this->hex_to_rgb_triplet($hex);
+        $hsl = $this->rgb_triplet_to_hsl($rgb);
+
+        if(empty($signal) || empty($rgb) || empty($hsl)) {
+            return $hex;
+        }
+
+        $family = (string) ($signal['family'] ?? '');
+        $lightness = (string) ($signal['lightness'] ?? '');
+        $intensity = (string) ($signal['intensity'] ?? '');
+        $is_canary_risk = in_array($family, ['yellow', 'lime'], true) && in_array($lightness, ['light', 'very_light'], true) && $intensity === 'strong';
+        $is_neon_risk = $hsl['s'] > 0.78 && $hsl['l'] > 0.66;
+
+        if($role === 'secondary_blocks_background') {
+            if($hsl['s'] > 0.42) {
+                $hsl['s'] = 0.28;
+            }
+
+            if($is_canary_risk) {
+                $hsl['h'] = 46;
+                $hsl['s'] = 0.22;
+                $hsl['l'] = min($hsl['l'], 0.90);
+            }
+        } elseif(in_array($role, ['background_color', 'gradient_start', 'gradient_end'], true)) {
+            if($hsl['s'] > 0.58 && $hsl['l'] > 0.68) {
+                $hsl['s'] = 0.34;
+                $hsl['l'] = 0.56;
+            }
+
+            if($is_canary_risk) {
+                $hsl['h'] = 44;
+                $hsl['s'] = 0.30;
+                $hsl['l'] = 0.50;
+            }
+        } elseif(in_array($role, ['primary_block_background', 'primary_block_border'], true)) {
+            if($is_neon_risk) {
+                $hsl['s'] = 0.62;
+                $hsl['l'] = 0.52;
+            }
+
+            if($is_canary_risk) {
+                $hsl['h'] = 42;
+                $hsl['s'] = 0.58;
+                $hsl['l'] = 0.46;
+            }
+        }
+
+        return $this->rgb_triplet_to_hex($this->hsl_to_rgb_triplet($hsl['h'], $hsl['s'], $hsl['l']));
+    }
+
+    private function get_ai_tinted_surface_hex(string $hex, float $lightness, float $max_saturation = 0.16, float $min_saturation = 0.05): string {
+        $hex = $this->extract_first_hex_color($hex);
+
+        if($hex === '') {
+            return '';
+        }
+
+        $rgb = $this->hex_to_rgb_triplet($hex);
+        $hsl = $this->rgb_triplet_to_hsl($rgb);
+
+        if(empty($rgb) || empty($hsl)) {
+            return '';
+        }
+
+        $hsl['s'] = max($min_saturation, min($max_saturation, (float) ($hsl['s'] ?? 0.0)));
+        $hsl['l'] = max(0.0, min(1.0, $lightness));
+
+        return $this->rgb_triplet_to_hex($this->hsl_to_rgb_triplet($hsl['h'], $hsl['s'], $hsl['l']));
+    }
+
+    private function is_ai_light_surface_hex(string $hex): bool {
+        $hex = $this->extract_first_hex_color($hex);
+
+        if($hex === '') {
+            return false;
+        }
+
+        $signal = $this->get_app_review_color_signal($hex);
+
+        return in_array((string) ($signal['lightness'] ?? ''), ['light', 'very_light'], true);
+    }
+
+    private function is_ai_sterile_canvas_hex(string $hex): bool {
+        $hex = $this->extract_first_hex_color($hex);
+
+        if($hex === '') {
+            return false;
+        }
+
+        $rgb = $this->hex_to_rgb_triplet($hex);
+        $hsl = $this->rgb_triplet_to_hsl($rgb);
+
+        if(empty($rgb) || empty($hsl)) {
+            return false;
+        }
+
+        return ((float) ($hsl['l'] ?? 0.0) >= 0.90) && ((float) ($hsl['s'] ?? 0.0) <= 0.18);
+    }
+
+    private function diversify_sterile_goal_first_theme_pack(array $theme_pack): array {
+        $primary_background = (string) ($theme_pack['primary_block_background'] ?? '');
+
+        if($primary_background === '') {
+            return $theme_pack;
+        }
+
+        $background_mode = (string) ($theme_pack['background_mode'] ?? 'color');
+        $background_color = (string) ($theme_pack['background_color'] ?? '');
+        $gradient_start = (string) ($theme_pack['gradient_start'] ?? '');
+        $gradient_end = (string) ($theme_pack['gradient_end'] ?? '');
+        $secondary_background = (string) ($theme_pack['secondary_blocks_background'] ?? '');
+
+        $background_is_sterile = $this->is_ai_sterile_canvas_hex($background_color);
+        $secondary_is_sterile = $this->is_ai_sterile_canvas_hex($secondary_background);
+        $gradient_is_sterile = $this->is_ai_sterile_canvas_hex($gradient_start) && $this->is_ai_sterile_canvas_hex($gradient_end);
+
+        if($background_mode === 'gradient' && $gradient_is_sterile) {
+            $theme_pack['gradient_start'] = $this->get_ai_tinted_surface_hex($primary_background, 0.92, 0.18, 0.07) ?: $gradient_start;
+            $theme_pack['gradient_end'] = $this->get_ai_tinted_surface_hex($primary_background, 0.975, 0.12, 0.04) ?: $gradient_end;
+            $theme_pack['background_color'] = (string) ($theme_pack['gradient_start'] ?? $background_color);
+
+            if($secondary_is_sterile) {
+                $theme_pack['secondary_blocks_background'] = $this->get_ai_tinted_surface_hex($primary_background, 0.985, 0.10, 0.04) ?: $secondary_background;
+            }
+        } elseif($background_mode === 'color' && $background_is_sterile && $secondary_is_sterile) {
+            $theme_pack['background_mode'] = 'gradient';
+            $theme_pack['background_color'] = $this->get_ai_tinted_surface_hex($primary_background, 0.93, 0.18, 0.07) ?: $background_color;
+            $theme_pack['gradient_start'] = $this->get_ai_tinted_surface_hex($primary_background, 0.92, 0.18, 0.07) ?: $background_color;
+            $theme_pack['gradient_end'] = $this->get_ai_tinted_surface_hex($primary_background, 0.975, 0.12, 0.04) ?: $secondary_background;
+            $theme_pack['secondary_blocks_background'] = $this->get_ai_tinted_surface_hex($primary_background, 0.985, 0.10, 0.04) ?: $secondary_background;
+        }
+
+        return $theme_pack;
+    }
+
+    private function enforce_goal_first_theme_pack_guardrails(array $theme_pack): array {
+        $hex_roles = [
+            'background_color',
+            'gradient_start',
+            'gradient_end',
+            'heading_color',
+            'text_color',
+            'primary_block_text',
+            'primary_block_background',
+            'primary_block_border',
+            'secondary_blocks_text',
+            'secondary_blocks_background',
+            'secondary_blocks_border',
+        ];
+
+        foreach($hex_roles as $role) {
+            if(($theme_pack[$role] ?? '') === '') {
+                continue;
+            }
+
+            if(in_array($role, ['background_color', 'gradient_start', 'gradient_end', 'primary_block_background', 'primary_block_border', 'secondary_blocks_background'], true)) {
+                $theme_pack[$role] = $this->soften_ai_theme_hex((string) $theme_pack[$role], $role);
+            } else {
+                $theme_pack[$role] = $this->extract_first_hex_color((string) $theme_pack[$role]);
+            }
+        }
+
+        if(
+            !empty($theme_pack['primary_block_background'])
+            && !empty($theme_pack['secondary_blocks_background'])
+            && strtoupper((string) $theme_pack['primary_block_background']) === strtoupper((string) $theme_pack['secondary_blocks_background'])
+        ) {
+            $primary_signal = $this->get_app_review_color_signal((string) $theme_pack['primary_block_background']);
+            $theme_pack['secondary_blocks_background'] = in_array((string) ($primary_signal['lightness'] ?? ''), ['light', 'very_light'], true)
+                ? '#F3F6F4'
+                : '#111827';
+        }
+
+        $theme_pack = $this->diversify_sterile_goal_first_theme_pack($theme_pack);
+
+        $canvas_reference = (string) ($theme_pack['background_color'] ?: ($theme_pack['gradient_start'] ?: $theme_pack['secondary_blocks_background']));
+
+        if($canvas_reference !== '') {
+            if($theme_pack['heading_color'] === '' || $this->get_hex_contrast_ratio((string) $theme_pack['heading_color'], $canvas_reference) < 3.8) {
+                $theme_pack['heading_color'] = $this->get_safe_contrast_text_hex($canvas_reference);
+            }
+
+            if($theme_pack['text_color'] === '' || $this->get_hex_contrast_ratio((string) $theme_pack['text_color'], $canvas_reference) < 3.3) {
+                $theme_pack['text_color'] = $this->get_safe_contrast_text_hex($canvas_reference);
+            }
+        }
+
+        if(!empty($theme_pack['primary_block_background']) && ($theme_pack['primary_block_text'] === '' || $this->get_hex_contrast_ratio((string) $theme_pack['primary_block_text'], (string) $theme_pack['primary_block_background']) < 4.2)) {
+            $theme_pack['primary_block_text'] = $this->get_safe_contrast_text_hex((string) $theme_pack['primary_block_background']);
+        }
+
+        if(!empty($theme_pack['secondary_blocks_background']) && ($theme_pack['secondary_blocks_text'] === '' || $this->get_hex_contrast_ratio((string) $theme_pack['secondary_blocks_text'], (string) $theme_pack['secondary_blocks_background']) < 4.0)) {
+            $theme_pack['secondary_blocks_text'] = $this->get_safe_contrast_text_hex((string) $theme_pack['secondary_blocks_background']);
+        }
+
+        if($theme_pack['secondary_blocks_border'] === '' && $theme_pack['secondary_blocks_background'] !== '') {
+            $secondary_signal = $this->get_app_review_color_signal((string) $theme_pack['secondary_blocks_background']);
+            $theme_pack['secondary_blocks_border'] = in_array((string) ($secondary_signal['lightness'] ?? ''), ['light', 'very_light'], true)
+                ? '#CBD5E1'
+                : '#334155';
+        }
+
+        if($theme_pack['primary_block_border'] === '' && $theme_pack['primary_block_background'] !== '') {
+            $theme_pack['primary_block_border'] = (string) $theme_pack['primary_block_background'];
+        }
+
+        return $theme_pack;
+    }
+
+    private function sync_app_review_color_palette_with_theme_pack(array $color_palette, array $theme_pack): array {
+        $fallback_messages = [
+            'background' => 'daje mirnu i čitljivu pozadinu za fokus.',
+            'heading' => 'drži naslov jasnim i lako uočljivim.',
+            'text' => 'održava tekst laganim za čitanje.',
+            'primary_block_text' => 'daje jasan kontrast glavnom bloku.',
+            'primary_block_background' => 'vizualno ističe glavni korak.',
+            'primary_block_border' => 'dodatno naglašava glavni blok bez viška šuma.',
+            'primary_block_shadow' => 'dodaje blagi naglasak bez teškog efekta.',
+            'secondary_blocks_text' => 'održava ostale blokove čitljivima.',
+            'secondary_blocks_background' => 'smiruje sekundarne blokove kako glavni ne bi izgubio fokus.',
+            'secondary_blocks_border' => 'blago odvaja sekundarne blokove bez novog naglaska.',
+            'secondary_blocks_shadow' => 'ostavlja sekundarne blokove nenametljivima.',
+        ];
+
+        $theme_map = [
+            'background' => $theme_pack['background_mode'] === 'gradient'
+                ? (string) ($theme_pack['gradient_start'] ?? '')
+                : (string) ($theme_pack['background_color'] ?? ''),
+            'heading' => (string) ($theme_pack['heading_color'] ?? ''),
+            'text' => (string) ($theme_pack['text_color'] ?? ''),
+            'primary_block_text' => (string) ($theme_pack['primary_block_text'] ?? ''),
+            'primary_block_background' => (string) ($theme_pack['primary_block_background'] ?? ''),
+            'primary_block_border' => (string) ($theme_pack['primary_block_border'] ?? ''),
+            'primary_block_shadow' => (string) ($theme_pack['primary_block_shadow'] ?? ''),
+            'secondary_blocks_text' => (string) ($theme_pack['secondary_blocks_text'] ?? ''),
+            'secondary_blocks_background' => (string) ($theme_pack['secondary_blocks_background'] ?? ''),
+            'secondary_blocks_border' => (string) ($theme_pack['secondary_blocks_border'] ?? ''),
+            'secondary_blocks_shadow' => (string) ($theme_pack['secondary_blocks_shadow'] ?? ''),
+        ];
+
+        foreach($theme_map as $key => $replacement) {
+            if($replacement === '') {
+                continue;
+            }
+
+            $current_value = (string) ($color_palette[$key] ?? '');
+
+            if($current_value === '') {
+                $color_palette[$key] = $replacement . ' ' . ($fallback_messages[$key] ?? '');
+                continue;
+            }
+
+            if(str_contains($current_value, '#')) {
+                $color_palette[$key] = preg_replace('/#(?:[A-Fa-f0-9]{3}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})\b/', $replacement, $current_value, 1) ?? $current_value;
+            } elseif(!str_starts_with($current_value, $replacement)) {
+                $color_palette[$key] = $replacement . ' ' . $current_value;
+            }
+        }
+
+        return $color_palette;
+    }
+
+    private function normalize_app_review_theme_pack($value, array $fallback_color_palette = []): array {
+        $normalized = [
+            'name' => '',
+            'summary' => '',
+            'background_mode' => 'color',
+            'background_color' => '',
+            'gradient_start' => '',
+            'gradient_end' => '',
+            'gradient_style' => 'current_135deg',
+            'heading_color' => '',
+            'text_color' => '',
+            'primary_block_text' => '',
+            'primary_block_background' => '',
+            'primary_block_border' => '',
+            'primary_block_shadow' => '',
+            'secondary_blocks_text' => '',
+            'secondary_blocks_background' => '',
+            'secondary_blocks_border' => '',
+            'secondary_blocks_shadow' => '',
+            'font' => '',
+            'font_size' => 0,
+            'width' => '',
+            'block_spacing' => '',
+            'hover_animation' => '',
+            'migration_note' => '',
+        ];
+
+        if($value instanceof \stdClass) {
+            $value = (array) $value;
+        }
+
+        if(is_array($value)) {
+            $available_fonts = array_keys((array) (settings()->links->biolinks_fonts ?? []));
+            $normalized['name'] = $this->normalize_app_review_channel_copy($this->sanitize_ai_string($value['name'] ?? $value['theme_name'] ?? '', 120));
+            $normalized['summary'] = $this->normalize_app_review_channel_copy($this->sanitize_ai_string($value['summary'] ?? $value['why'] ?? '', 220));
+            $background_mode = (string) ($value['background_mode'] ?? $value['mode'] ?? 'color');
+            $normalized['background_mode'] = in_array($background_mode, ['color', 'gradient'], true) ? $background_mode : 'color';
+            $normalized['gradient_style'] = 'current_135deg';
+            $normalized['migration_note'] = $this->normalize_app_review_channel_copy($this->sanitize_ai_string($value['migration_note'] ?? $value['transition_note'] ?? '', 220));
+
+            $font = trim((string) ($value['font'] ?? $value['font_key'] ?? ''));
+            if($font !== '' && in_array($font, $available_fonts, true)) {
+                $normalized['font'] = $font;
+            }
+
+            $font_size = (int) ($value['font_size'] ?? 0);
+            if($font_size >= 12 && $font_size <= 22) {
+                $normalized['font_size'] = $font_size;
+            }
+
+            $width = trim((string) ($value['width'] ?? $value['layout_width'] ?? ''));
+            if(in_array($width, ['6', '8', '10', '12'], true)) {
+                $normalized['width'] = $width;
+            }
+
+            $block_spacing = trim((string) ($value['block_spacing'] ?? $value['spacing'] ?? ''));
+            if(in_array($block_spacing, ['1', '2', '3'], true)) {
+                $normalized['block_spacing'] = $block_spacing;
+            }
+
+            $hover_animation = trim((string) ($value['hover_animation'] ?? $value['hover_style'] ?? ''));
+            if(in_array($hover_animation, ['false', 'smooth', 'instant'], true)) {
+                $normalized['hover_animation'] = $hover_animation;
+            }
+
+            $color_alias_map = [
+                'background_color' => ['background_color', 'background', 'color'],
+                'gradient_start' => ['gradient_start', 'background_color_one', 'gradient_color_one', 'color_one'],
+                'gradient_end' => ['gradient_end', 'background_color_two', 'gradient_color_two', 'color_two'],
+                'heading_color' => ['heading_color', 'heading', 'title_color'],
+                'text_color' => ['text_color', 'text', 'body_text'],
+                'primary_block_text' => ['primary_block_text', 'primary_text_color', 'main_block_text'],
+                'primary_block_background' => ['primary_block_background', 'primary_background_color', 'main_block_background'],
+                'primary_block_border' => ['primary_block_border', 'primary_border_color', 'main_block_border'],
+                'primary_block_shadow' => ['primary_block_shadow', 'primary_shadow', 'main_block_shadow'],
+                'secondary_blocks_text' => ['secondary_blocks_text', 'secondary_text_color', 'other_blocks_text'],
+                'secondary_blocks_background' => ['secondary_blocks_background', 'secondary_background_color', 'other_blocks_background'],
+                'secondary_blocks_border' => ['secondary_blocks_border', 'secondary_border_color', 'other_blocks_border'],
+                'secondary_blocks_shadow' => ['secondary_blocks_shadow', 'secondary_shadow', 'other_blocks_shadow'],
+            ];
+
+            foreach($color_alias_map as $field_key => $aliases) {
+                foreach($aliases as $alias) {
+                    if(!array_key_exists($alias, $value)) {
+                        continue;
+                    }
+
+                    $normalized_value = str_contains($field_key, 'shadow')
+                        ? $this->normalize_ai_css_color_value($value[$alias], true)
+                        : $this->normalize_ai_css_color_value($value[$alias]);
+
+                    if($normalized_value === '') {
+                        continue;
+                    }
+
+                    $normalized[$field_key] = $normalized_value;
+                    break;
+                }
+            }
+        }
+
+        $fallback_map = [
+            'background_color' => 'background',
+            'heading_color' => 'heading',
+            'text_color' => 'text',
+            'primary_block_text' => 'primary_block_text',
+            'primary_block_background' => 'primary_block_background',
+            'primary_block_border' => 'primary_block_border',
+            'primary_block_shadow' => 'primary_block_shadow',
+            'secondary_blocks_text' => 'secondary_blocks_text',
+            'secondary_blocks_background' => 'secondary_blocks_background',
+            'secondary_blocks_border' => 'secondary_blocks_border',
+            'secondary_blocks_shadow' => 'secondary_blocks_shadow',
+        ];
+
+        foreach($fallback_map as $theme_key => $palette_key) {
+            if($normalized[$theme_key] !== '') {
+                continue;
+            }
+
+            $palette_value = (string) ($fallback_color_palette[$palette_key] ?? '');
+            $normalized[$theme_key] = str_contains($theme_key, 'shadow')
+                ? $this->normalize_ai_css_color_value($palette_value, true)
+                : $this->normalize_ai_css_color_value($palette_value);
+        }
+
+        if($normalized['background_mode'] === 'gradient' && ($normalized['gradient_start'] === '' || $normalized['gradient_end'] === '')) {
+            $normalized['background_mode'] = 'color';
+        }
+
+        if($normalized['background_mode'] === 'color' && $normalized['background_color'] === '') {
+            $background_fallback = (string) ($normalized['gradient_start'] ?: '');
+
+            if($background_fallback === '' || $this->is_ai_sterile_canvas_hex($background_fallback)) {
+                $secondary_background = (string) ($normalized['secondary_blocks_background'] ?? '');
+                $accent_reference = (string) ($normalized['primary_block_background'] ?: ($normalized['secondary_blocks_border'] ?: ''));
+
+                $background_fallback = $this->is_ai_sterile_canvas_hex($secondary_background)
+                    ? ($this->get_ai_tinted_surface_hex($accent_reference, 0.93, 0.18, 0.07) ?: $secondary_background)
+                    : $secondary_background;
+            }
+
+            $normalized['background_color'] = $background_fallback;
+        }
+
+        if($normalized['name'] === '') {
+            $normalized['name'] = 'AI preporučena tema';
+        }
+
+        return $this->enforce_goal_first_theme_pack_guardrails($normalized);
+    }
+
+    private function normalize_app_review_primary_block_plan($value, array $fallback_snapshot = []): array {
+        $normalized = [
+            'block_id' => (int) ($fallback_snapshot['block_id'] ?? 0),
+            'block_type' => (string) ($fallback_snapshot['type'] ?? ''),
+            'label' => (string) ($fallback_snapshot['label'] ?? ''),
+            'reason' => '',
+            'emphasis' => 'strong',
+            'apply_theme_emphasis' => true,
+        ];
+
+        if($value instanceof \stdClass) {
+            $value = (array) $value;
+        }
+
+        if(is_array($value)) {
+            $normalized['block_id'] = (int) ($value['block_id'] ?? $value['primary_block_id'] ?? $normalized['block_id']);
+            $normalized['block_type'] = $this->sanitize_ai_string($value['block_type'] ?? $value['type'] ?? $normalized['block_type'], 64);
+            $normalized['label'] = $this->normalize_app_review_visible_copy($this->sanitize_ai_string($value['label'] ?? $value['name'] ?? $normalized['label'], 160));
+            $normalized['reason'] = $this->normalize_app_review_channel_copy($this->sanitize_ai_string($value['reason'] ?? $value['why'] ?? $value['focus_reason'] ?? '', 220));
+
+            $emphasis = (string) ($value['emphasis'] ?? $value['emphasis_level'] ?? 'strong');
+            $normalized['emphasis'] = in_array($emphasis, ['soft', 'balanced', 'strong'], true) ? $emphasis : 'strong';
+
+            if(array_key_exists('apply_theme_emphasis', $value)) {
+                $normalized['apply_theme_emphasis'] = filter_var($value['apply_theme_emphasis'], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+                $normalized['apply_theme_emphasis'] = $normalized['apply_theme_emphasis'] ?? true;
+            }
+        } elseif(is_scalar($value)) {
+            $normalized['reason'] = $this->normalize_app_review_channel_copy($this->sanitize_ai_string($value, 220));
+        }
+
+        return $normalized;
+    }
+
+    private function normalize_app_review_block_patch_pack($value): array {
+        if($value instanceof \stdClass) {
+            $value = (array) $value;
+        }
+
+        if(!is_array($value)) {
+            return [];
+        }
+
+        $normalized = [];
+
+        foreach($value as $item) {
+            if($item instanceof \stdClass) {
+                $item = (array) $item;
+            }
+
+            if(!is_array($item)) {
+                continue;
+            }
+
+            $settings = [];
+
+            foreach((array) ($item['settings'] ?? $item['patch'] ?? []) as $setting_key => $setting_value) {
+                if(!is_scalar($setting_value)) {
+                    continue;
+                }
+
+                $normalized_key = preg_replace('/[^a-z0-9_]+/i', '_', (string) $setting_key) ?? '';
+                $normalized_key = trim($normalized_key, '_');
+
+                if($normalized_key === '') {
+                    continue;
+                }
+
+                $settings[$normalized_key] = str_contains($normalized_key, 'color') || str_contains($normalized_key, 'shadow')
+                    ? ($this->normalize_ai_css_color_value($setting_value, str_contains($normalized_key, 'shadow')) ?: $this->sanitize_ai_string($setting_value, 120))
+                    : $this->sanitize_ai_string($setting_value, 240);
+            }
+
+            if(empty($settings)) {
+                continue;
+            }
+
+            $normalized[] = [
+                'block_id' => (int) ($item['block_id'] ?? 0),
+                'block_type' => $this->sanitize_ai_string($item['block_type'] ?? $item['type'] ?? '', 64),
+                'reason' => $this->normalize_app_review_channel_copy($this->sanitize_ai_string($item['reason'] ?? $item['why'] ?? '', 180)),
+                'settings' => $settings,
+            ];
+
+            if(count($normalized) >= 6) {
+                break;
+            }
+        }
+
+        return $normalized;
+    }
+
+    private function normalize_app_review_copy_suggestions($value): array {
+        if($value instanceof \stdClass) {
+            $value = (array) $value;
+        }
+
+        if(!is_array($value)) {
+            return [];
+        }
+
+        $allowed_fields = ['name', 'title', 'button_text', 'thank_you_button_text', 'description', 'text', 'message', 'popup_title', 'popup_subtitle', 'thank_you_title', 'thank_you_text'];
+        $allowed_case_styles = ['sentence', 'title', 'upper', 'lower', 'brand'];
+        $normalized = [];
+
+        foreach($value as $item) {
+            if($item instanceof \stdClass) {
+                $item = (array) $item;
+            }
+
+            if(is_scalar($item)) {
+                $item = [
+                    'field' => 'name',
+                    'label' => 'AI prijedlog',
+                    'value' => (string) $item,
+                ];
+            }
+
+            if(!is_array($item)) {
+                continue;
+            }
+
+            $field = (string) ($item['field'] ?? $item['target_field'] ?? $item['target'] ?? 'name');
+
+            if(!in_array($field, $allowed_fields, true)) {
+                $field = 'name';
+            }
+
+            $value_text = $this->normalize_app_review_visible_copy($this->sanitize_ai_string($item['value'] ?? $item['text'] ?? '', 180));
+
+            if($value_text === '') {
+                continue;
+            }
+
+            $case_style = (string) ($item['case_style'] ?? $item['text_case'] ?? 'sentence');
+
+            $normalized[] = [
+                'block_id' => (int) ($item['block_id'] ?? 0),
+                'block_type' => $this->sanitize_ai_string($item['block_type'] ?? $item['type'] ?? '', 64),
+                'role_key' => $this->sanitize_ai_string($item['role_key'] ?? $item['semantic_role'] ?? '', 64),
+                'field' => $field,
+                'label' => $this->normalize_app_review_visible_copy($this->sanitize_ai_string($item['label'] ?? $item['title'] ?? '', 120)),
+                'value' => $value_text,
+                'reason' => $this->normalize_app_review_channel_copy($this->sanitize_ai_string($item['reason'] ?? $item['why'] ?? '', 180)),
+                'case_style' => in_array($case_style, $allowed_case_styles, true) ? $case_style : 'sentence',
+            ];
+
+            if(count($normalized) >= 8) {
+                break;
+            }
+        }
+
+        return $normalized;
+    }
+
+    private function normalize_app_review_layout_actions($value): array {
+        if($value instanceof \stdClass) {
+            $value = (array) $value;
+        }
+
+        if(!is_array($value)) {
+            return [];
+        }
+
+        $allowed_actions = ['move_up', 'move_down', 'keep_top', 'keep_after_primary', 'consider_remove', 'hide_for_now', 'add_block', 'swap_order', 'keep'];
+        $normalized = [];
+
+        foreach($value as $item) {
+            if($item instanceof \stdClass) {
+                $item = (array) $item;
+            }
+
+            if(!is_array($item)) {
+                continue;
+            }
+
+            $action = (string) ($item['action'] ?? '');
+            $why = $this->normalize_app_review_channel_copy($this->sanitize_ai_string($item['why'] ?? $item['reason'] ?? '', 180));
+
+            if(!in_array($action, $allowed_actions, true) || $why === '') {
+                continue;
+            }
+
+            $normalized[] = [
+                'action' => $action,
+                'block_id' => (int) ($item['block_id'] ?? 0),
+                'block_type' => $this->sanitize_ai_string($item['block_type'] ?? $item['type'] ?? '', 64),
+                'label' => $this->normalize_app_review_visible_copy($this->sanitize_ai_string($item['label'] ?? $item['name'] ?? '', 120)),
+                'why' => $why,
+            ];
+
+            if(count($normalized) >= 8) {
+                break;
+            }
+        }
+
+        return $normalized;
+    }
+
+    private function normalize_app_review_missing_block_seed_settings($value): array {
+        if($value instanceof \stdClass) {
+            $value = (array) $value;
+        }
+
+        if(!is_array($value)) {
+            return [];
+        }
+
+        $allowed_keys = [
+            'name',
+            'title',
+            'text',
+            'message',
+            'button_text',
+            'description',
+            'popup_title',
+            'popup_subtitle',
+            'thank_you_title',
+            'thank_you_text',
+            'thank_you_button_text',
+            'open_mode',
+            'location_url',
+            'product_translation_key',
+            'product_language_mode',
+            'product_language_code',
+            'product_fallback_language_code',
+            'product_image_url',
+        ];
+        $normalized = [];
+
+        foreach($allowed_keys as $key) {
+            if(!array_key_exists($key, $value) || !is_scalar($value[$key])) {
+                continue;
+            }
+
+            $clean_value = in_array($key, ['location_url', 'product_translation_key', 'product_language_mode', 'product_language_code', 'product_fallback_language_code', 'product_image_url'], true)
+                ? trim((string) $value[$key])
+                : $this->normalize_app_review_visible_copy($this->sanitize_ai_string($value[$key], 500));
+
+            if($clean_value === '') {
+                continue;
+            }
+
+            $normalized[$key] = $clean_value;
+        }
+
+        if(array_key_exists('product_blog_post_id', $value)) {
+            $product_blog_post_id = (int) ($value['product_blog_post_id'] ?? 0);
+
+            if($product_blog_post_id > 0) {
+                $normalized['product_blog_post_id'] = $product_blog_post_id;
+            }
+        }
+
+        if(array_key_exists('apply_to_all_products', $value)) {
+            $normalized['apply_to_all_products'] = (int) !empty($value['apply_to_all_products']);
+        }
+
+        return $normalized;
+    }
+
+    private function normalize_app_review_missing_block_recommendations($value): array {
+        if($value instanceof \stdClass) {
+            $value = (array) $value;
+        }
+
+        if(!is_array($value)) {
+            return [];
+        }
+
+        $normalized = [];
+
+        foreach($value as $index => $item) {
+            if($item instanceof \stdClass) {
+                $item = (array) $item;
+            }
+
+            if(!is_array($item)) {
+                continue;
+            }
+
+            $block_type = $this->sanitize_ai_string($item['block_type'] ?? $item['type'] ?? '', 64);
+            $why = $this->normalize_app_review_channel_copy($this->sanitize_ai_string($item['why'] ?? $item['reason'] ?? '', 180));
+
+            if($block_type === '' || $why === '') {
+                continue;
+            }
+
+            $normalized[] = [
+                'recommendation_key' => $this->sanitize_ai_string($item['recommendation_key'] ?? '', 64),
+                'block_type' => $block_type,
+                'role_key' => $this->sanitize_ai_string($item['role_key'] ?? $item['semantic_role'] ?? '', 64),
+                'label' => $this->normalize_app_review_visible_copy($this->sanitize_ai_string($item['label'] ?? $item['name'] ?? '', 120)),
+                'why' => $why,
+                'priority' => max(1, min(9, (int) ($item['priority'] ?? ($index + 1)))),
+                'insert_after_block_id' => max(0, (int) ($item['insert_after_block_id'] ?? 0)),
+                'insert_after_type' => $this->sanitize_ai_string($item['insert_after_type'] ?? '', 64),
+                'insert_after_label' => $this->normalize_app_review_visible_copy($this->sanitize_ai_string($item['insert_after_label'] ?? '', 120)),
+                'allow_existing_type' => !empty($item['allow_existing_type']),
+                'preferred_group' => $this->sanitize_ai_string($item['preferred_group'] ?? '', 32),
+                'preferred_goal' => $this->sanitize_ai_string($item['preferred_goal'] ?? '', 32),
+                'picker_search' => $this->normalize_app_review_visible_copy($this->sanitize_ai_string($item['picker_search'] ?? '', 120)),
+                'seed_settings' => $this->normalize_app_review_missing_block_seed_settings($item['seed_settings'] ?? []),
+            ];
+
+            if(count($normalized) >= 6) {
+                break;
+            }
+        }
+
+        return $normalized;
+    }
     /* /Custom code: FC-2026-03-31 */
 
     private function get_goal_type(array $values): string {
@@ -2061,6 +4931,95 @@ class AiPlan extends Controller {
         }
 
         return 'hybrid';
+    }
+
+    private function get_effective_app_review_goal_type(array $values, string $request_context = '', ?array $selected_app = null): string {
+        $base_goal_type = $this->get_goal_type($values);
+
+        if($base_goal_type === 'shop') {
+            return 'shop';
+        }
+
+        $product_sales_score = 0;
+        $context_fragments = array_filter([
+            (string) ($values['product_focus'] ?? ''),
+            (string) ($values['notes'] ?? ''),
+            (string) $request_context,
+            (string) ($values['priority_offer'] ?? ''),
+            (string) ($values['primary_goal'] ?? ''),
+        ]);
+        $product_sales_context = implode(' ', $context_fragments);
+
+        if((string) ($values['primary_goal'] ?? '') === 'product_sales') {
+            $product_sales_score += 4;
+        }
+
+        if(in_array((string) ($values['priority_offer'] ?? ''), ['single_product', 'product_category'], true)) {
+            $product_sales_score += 3;
+        }
+
+        if(trim((string) ($values['product_focus'] ?? '')) !== '') {
+            $product_sales_score += 1;
+        }
+
+        if($this->app_review_text_has_any($product_sales_context, [
+            'prodaj', 'prodaja', 'proizvod', 'proizvodi', 'webshop', 'web shop', 'shop',
+            'popust', 'kup', 'kupnja', 'preporuk', 'aloe', 'gel', 'c9', 'detox',
+        ])) {
+            $product_sales_score += 2;
+        }
+
+        if(!empty($selected_app)) {
+            if((int) ($selected_app['forever_blocks'] ?? 0) > 0) {
+                $product_sales_score += 1;
+            }
+
+            if(!empty($selected_app['conversion_capabilities']['has_shop_links'])) {
+                $product_sales_score += 1;
+            }
+        }
+
+        if($product_sales_score >= 3 && in_array($base_goal_type, ['business', 'hybrid'], true)) {
+            return 'shop';
+        }
+
+        return $base_goal_type;
+    }
+
+    private function get_fcc_start_paket_public_url(): string {
+        return rtrim(SITE_URL, '/') . '/blog/start-paket';
+    }
+
+    private function get_fcc_start_paket_seed_settings(): array {
+        return [
+            'name' => 'Postani Forever suradnik',
+            'description' => 'Pogledaj kako izgleda start paket i koji je najbolji sljedeći korak za suradnju.',
+            'location_url' => $this->get_fcc_start_paket_public_url(),
+            'product_translation_key' => 'start-paket',
+            'product_language_mode' => 'app',
+            'product_fallback_language_code' => 'hr',
+        ];
+    }
+
+    private function get_fcc_core_block_policy(array $values, string $goal_type = '', string $request_context = ''): array {
+        $goal_type = $goal_type !== '' ? $goal_type : $this->get_effective_app_review_goal_type($values, $request_context);
+
+        return [
+            'goal_type' => $goal_type,
+            'require_discount_offer' => true,
+            'require_business_start_paket_offer' => true,
+            'require_funnel' => in_array($goal_type, ['shop', 'business', 'hybrid', 'activation'], true),
+            'require_whatsapp_backup' => in_array($goal_type, ['shop', 'business', 'hybrid', 'activation'], true),
+            'discount_block_type' => 'link_discount',
+            'discount_block_label' => 'Pogledaj proizvode s popustom',
+            'business_offer_block_type' => 'link_forever_product',
+            'business_offer_block_label' => 'Postani Forever suradnik',
+            'business_offer_translation_key' => 'start-paket',
+            'business_offer_url' => $this->get_fcc_start_paket_public_url(),
+            'funnel_preferred_primary' => in_array($goal_type, ['shop', 'business', 'hybrid'], true),
+            'funnel_label_shop' => 'Zatraži preporuku i sljedeći korak',
+            'funnel_label_business' => 'Prijavi se i saznaj više',
+        ];
     }
 
     private function is_contact_collection_goal(array $values, string $goal_type = ''): bool {
@@ -2088,12 +5047,15 @@ class AiPlan extends Controller {
         $primary_goal = (string) ($values['primary_goal'] ?? '');
         $communication_style = (string) ($values['communication_style'] ?? '');
         $priority_offer = (string) ($values['priority_offer'] ?? '');
+        $visual_tone_preference = trim((string) ($values['visual_tone_preference'] ?? ''));
 
         $brand_tone = match($communication_style) {
-            'warm_personal' => 'topao, osoban i siguran',
-            'direct_simple' => 'izravan, jednostavan i čist',
-            'expert_structured' => 'stručan, uredan i ozbiljan',
-            'storytelling' => 'priča, emocija i povjerenje',
+            'personal_story' => 'topao, osoban i siguran',
+            'direct_sales' => 'izravan, jednostavan i čist',
+            'educational' => 'stručan, uredan i ozbiljan',
+            'testimonial' => 'priča, emocija i povjerenje',
+            'soft_brand' => 'premium, smiren i elegantan',
+            'recruitment_focus' => 'jasan, ozbiljan i usmjeren na razgovor',
             default => 'jasan, smiren i lako razumljiv',
         };
 
@@ -2105,63 +5067,61 @@ class AiPlan extends Controller {
             default => 'jedan glavni korak + povjerenje + sekundarni sadržaj',
         };
 
-        $color_strategy = match($goal_type) {
+        $design_direction = match($goal_type) {
             'business' => [
-                'background' => '#0F172A',
-                'surface' => '#111827',
-                'primary_button' => '#14B8A6',
-                'secondary_button' => '#38BDF8',
-                'button_text' => '#FFFFFF',
-                'heading' => '#F8FAFC',
-                'body_text' => '#CBD5E1',
-                'shadow' => 'rgba(20,184,166,.28)',
-                'why' => 'ozbiljan i čist dojam koji pomaže povjerenju za suradnju i prijavu',
+                'mood' => 'ozbiljno, smireno i vjerodostojno',
+                'background_role' => 'mirna baza koja drži prvi ekran urednim',
+                'primary_role' => 'glavni blok mora biti najjasniji naglasak bez agresije',
+                'secondary_role' => 'sekundarni blokovi trebaju ostati povučeni i uredni',
+                'accent_energy' => 'umjerena',
+                'why' => 'povjerenje za suradnju raste kad aplikacija djeluje čisto, jasno i ozbiljno',
             ],
             'shop' => [
-                'background' => '#F8FAFC',
-                'surface' => '#FFFFFF',
-                'primary_button' => '#16A34A',
-                'secondary_button' => '#0EA5A4',
-                'button_text' => '#FFFFFF',
-                'heading' => '#0F172A',
-                'body_text' => '#334155',
-                'shadow' => 'rgba(22,163,74,.20)',
-                'why' => 'čist i svjež dojam koji pojačava sigurnost kod preporuke proizvoda',
+                'mood' => 'svježe, sigurno i uvjerljivo bez sterilnog dojma',
+                'background_role' => 'baza treba djelovati uredno i lagano tonirano, ne prazno ni sterilno',
+                'primary_role' => 'glavni blok treba jasno voditi prema proizvodu ili kupnji',
+                'secondary_role' => 'sekundarni blokovi trebaju podržati odluku bez dodatne buke',
+                'accent_energy' => 'umjerena do nešto svježija',
+                'why' => 'sigurnost i jasnoća pojačavaju osjećaj povjerenja kod proizvoda',
             ],
             'brand' => [
-                'background' => '#0B1120',
-                'surface' => '#111827',
-                'primary_button' => '#C89B3C',
-                'secondary_button' => '#E2E8F0',
-                'button_text' => '#111111',
-                'heading' => '#F8FAFC',
-                'body_text' => '#CBD5E1',
-                'shadow' => 'rgba(200,155,60,.22)',
-                'why' => 'premium i autoritativan dojam koji jača osobni brend i ozbiljnost',
+                'mood' => 'premium, autoritativno i dosljedno',
+                'background_role' => 'baza treba djelovati profinjeno i stabilno',
+                'primary_role' => 'glavni blok treba djelovati vrijedno i sigurno, ne napadno',
+                'secondary_role' => 'ostali blokovi moraju držati isti premium ritam bez novih naglasaka',
+                'accent_energy' => 'suptilna do umjerena',
+                'why' => 'osobni brend djeluje snažnije kad vizual ostane dosljedan i profinjen',
             ],
             'activation' => [
-                'background' => '#111827',
-                'surface' => '#1F2937',
-                'primary_button' => '#25D366',
-                'secondary_button' => '#14B8A6',
-                'button_text' => '#FFFFFF',
-                'heading' => '#F8FAFC',
-                'body_text' => '#CBD5E1',
-                'shadow' => 'rgba(37,211,102,.22)',
-                'why' => 'topao i siguran dojam koji pomaže ljudima da lakše pošalju poruku',
+                'mood' => 'toplo, pristupačno i brzo razumljivo',
+                'background_role' => 'baza treba smiriti i olakšati prvi kontakt',
+                'primary_role' => 'glavni blok mora jasno potaknuti poruku ili aktivaciju',
+                'secondary_role' => 'sekundarni blokovi trebaju biti podrška, ne novi fokus',
+                'accent_energy' => 'umjerena do toplija',
+                'why' => 'ljudi se lakše aktiviraju kad aplikacija djeluje toplo i jednostavno',
             ],
             default => [
-                'background' => '#0F172A',
-                'surface' => '#111827',
-                'primary_button' => '#14B8A6',
-                'secondary_button' => '#38BDF8',
-                'button_text' => '#FFFFFF',
-                'heading' => '#F8FAFC',
-                'body_text' => '#CBD5E1',
-                'shadow' => 'rgba(20,184,166,.24)',
-                'why' => 'jasan i smiren izgled koji pomaže fokusu i povjerenju',
+                'mood' => 'jasno, smireno i lako razumljivo',
+                'background_role' => 'pozadina mora ostati čista i nenametljiva',
+                'primary_role' => 'glavni blok treba odmah reći koji je sljedeći korak',
+                'secondary_role' => 'sekundarni blokovi moraju biti mirni i podržavati fokus',
+                'accent_energy' => 'umjerena',
+                'why' => 'fokus i povjerenje rastu kad aplikacija djeluje uredno i bez viška naglasaka',
             ],
         };
+
+        $design_direction['user_preferred_visual_tone'] = $visual_tone_preference;
+        $design_direction['palette_freedom'] = $visual_tone_preference !== ''
+            ? 'Poštuj opisani ton ako i dalje pomaže cilju, fokusu i čitljivosti.'
+            : 'AI sam bira najučinkovitiju paletu za cilj, publiku i ponudu.';
+        $design_direction['guardrails'] = [
+            'glavni blok mora biti vizualno najjači, ali ne neon',
+            'sekundarni blokovi moraju biti mirniji od glavnog',
+            'izbjegavaj fluorescentne i kanarinac tonove',
+            'najviše jedna jaka naglašena boja uz mirnu bazu',
+            'ako korisnik nije izričito tražio clean ili minimal stil, izbjegavaj ravnu bijelu ili gotovo potpuno bijelu pozadinu za cijelu shop aplikaciju',
+            'vizualni smjer mora se mijenjati prema tonu, ponudi i stilu komunikacije; ne vraćaj istu blijedu paletu po navici',
+        ];
 
         $preferred_trust_elements = [
             'osobna fotografija koja djeluje stvarno i toplo',
@@ -2201,7 +5161,7 @@ class AiPlan extends Controller {
             'recommended_primary_system' => $recommended_primary_system,
             'preferred_trust_elements' => $preferred_trust_elements,
             'funnel_blueprint' => $funnel_blueprint,
-            'color_strategy' => $color_strategy,
+            'design_direction' => $design_direction,
             'forbidden_recommendations' => [
                 'nemoj predlagati Save Contact, Contact Collector ni Email Collector kao glavno rješenje ako Funnel može bolje odraditi isti cilj',
                 'nemoj predlagati Dodaj na početni zaslon',
@@ -2219,6 +5179,123 @@ class AiPlan extends Controller {
             ],
             'priority_offer_hint' => $priority_offer,
         ];
+    }
+
+    private function get_goal_first_fallback_theme_seed(array $values, string $goal_type = ''): array {
+        $goal_type = $goal_type !== '' ? $goal_type : $this->get_goal_type($values);
+        $communication_style = (string) ($values['communication_style'] ?? '');
+        $priority_offer = (string) ($values['priority_offer'] ?? '');
+        $visual_tone_preference = mb_strtolower(trim((string) ($values['visual_tone_preference'] ?? '')));
+
+        $palette_key = match(true) {
+            $visual_tone_preference !== '' && preg_match('/premium|elegan|luksuz|autoritet|profinj/u', $visual_tone_preference) => 'premium_graphite_gold',
+            $visual_tone_preference !== '' && preg_match('/topl|prijatelj|osoban|human|mek|njez|zemlj/u', $visual_tone_preference) => 'warm_forest_sand',
+            $visual_tone_preference !== '' && preg_match('/cist|čist|moder|minimal|ured|clean/u', $visual_tone_preference) => $goal_type === 'shop' ? 'sage_mist_graphite' : 'trust_slate_blue',
+            $goal_type === 'shop' && in_array($communication_style, ['personal_story', 'testimonial'], true) => 'warm_forest_sand',
+            $goal_type === 'shop' && ($communication_style === 'direct_sales' || $priority_offer === 'single_product') => 'friendly_emerald_ink',
+            $goal_type === 'shop' && in_array($communication_style, ['educational', 'soft_brand'], true) => 'sage_mist_graphite',
+            $goal_type === 'shop' && in_array($priority_offer, ['product_category', 'mixed_offer'], true) => 'sage_mist_graphite',
+            $goal_type === 'shop' => 'friendly_emerald_ink',
+            $goal_type === 'activation' => 'friendly_emerald_ink',
+            $goal_type === 'brand' || $communication_style === 'soft_brand' => 'premium_graphite_gold',
+            in_array($communication_style, ['personal_story', 'testimonial'], true) => 'warm_forest_sand',
+            default => 'trust_slate_blue',
+        };
+
+        $palettes = [
+            'trust_slate_blue' => [
+                'background_mode' => 'gradient',
+                'background_color' => '#0F172A',
+                'gradient_start' => '#0F172A',
+                'gradient_end' => '#111827',
+                'heading_color' => '#F8FAFC',
+                'text_color' => '#CBD5E1',
+                'primary_block_text' => '#FFFFFF',
+                'primary_block_background' => '#2563EB',
+                'primary_block_border' => '#1D4ED8',
+                'primary_block_shadow' => 'rgba(37,99,235,.24)',
+                'secondary_blocks_text' => '#F8FAFC',
+                'secondary_blocks_background' => '#111827',
+                'secondary_blocks_border' => '#334155',
+            ],
+            'clean_green_slate' => [
+                'background_mode' => 'gradient',
+                'background_color' => '#E9F2EC',
+                'gradient_start' => '#E9F2EC',
+                'gradient_end' => '#DCE7E0',
+                'heading_color' => '#10261E',
+                'text_color' => '#334155',
+                'primary_block_text' => '#FFFFFF',
+                'primary_block_background' => '#15803D',
+                'primary_block_border' => '#166534',
+                'primary_block_shadow' => 'rgba(21,128,61,.18)',
+                'secondary_blocks_text' => '#10261E',
+                'secondary_blocks_background' => '#F4F7F3',
+                'secondary_blocks_border' => '#C1D0C5',
+            ],
+            'premium_graphite_gold' => [
+                'background_mode' => 'gradient',
+                'background_color' => '#0B1120',
+                'gradient_start' => '#0B1120',
+                'gradient_end' => '#111827',
+                'heading_color' => '#F8FAFC',
+                'text_color' => '#CBD5E1',
+                'primary_block_text' => '#111827',
+                'primary_block_background' => '#B88A2D',
+                'primary_block_border' => '#9A741E',
+                'primary_block_shadow' => 'rgba(184,138,45,.20)',
+                'secondary_blocks_text' => '#F8FAFC',
+                'secondary_blocks_background' => '#111827',
+                'secondary_blocks_border' => '#374151',
+            ],
+            'warm_forest_sand' => [
+                'background_mode' => 'gradient',
+                'background_color' => '#F5EEE3',
+                'gradient_start' => '#F5EEE3',
+                'gradient_end' => '#EADFCC',
+                'heading_color' => '#1F2937',
+                'text_color' => '#475569',
+                'primary_block_text' => '#FFFFFF',
+                'primary_block_background' => '#2F6B5F',
+                'primary_block_border' => '#285C52',
+                'primary_block_shadow' => 'rgba(47,107,95,.18)',
+                'secondary_blocks_text' => '#1F2937',
+                'secondary_blocks_background' => '#FBF6EE',
+                'secondary_blocks_border' => '#D6C7B2',
+            ],
+            'sage_mist_graphite' => [
+                'background_mode' => 'gradient',
+                'background_color' => '#E3EFE8',
+                'gradient_start' => '#E3EFE8',
+                'gradient_end' => '#D6E3DE',
+                'heading_color' => '#10241F',
+                'text_color' => '#334155',
+                'primary_block_text' => '#FFFFFF',
+                'primary_block_background' => '#1D7A65',
+                'primary_block_border' => '#165F4F',
+                'primary_block_shadow' => 'rgba(29,122,101,.18)',
+                'secondary_blocks_text' => '#10241F',
+                'secondary_blocks_background' => '#F1F6F2',
+                'secondary_blocks_border' => '#B7CCC0',
+            ],
+            'friendly_emerald_ink' => [
+                'background_mode' => 'gradient',
+                'background_color' => '#111827',
+                'gradient_start' => '#111827',
+                'gradient_end' => '#1F2937',
+                'heading_color' => '#F8FAFC',
+                'text_color' => '#D1D5DB',
+                'primary_block_text' => '#FFFFFF',
+                'primary_block_background' => '#16A34A',
+                'primary_block_border' => '#15803D',
+                'primary_block_shadow' => 'rgba(22,163,74,.22)',
+                'secondary_blocks_text' => '#F8FAFC',
+                'secondary_blocks_background' => '#1F2937',
+                'secondary_blocks_border' => '#475569',
+            ],
+        ];
+
+        return $this->enforce_goal_first_theme_pack_guardrails($palettes[$palette_key] ?? $palettes['trust_slate_blue']);
     }
 
     private function get_app_review_capability_context(array $capabilities, array $values, string $goal_type = ''): array {
@@ -2273,9 +5350,77 @@ class AiPlan extends Controller {
 
         return [
             'is_contact_collection_goal' => $is_contact_goal,
-            'preferred_primary_path' => $is_contact_goal ? 'lead_funnel' : ($goal_type === 'shop' ? 'shop_or_whatsapp' : 'hybrid'),
+            'preferred_primary_path' => $is_contact_goal ? 'trust_then_lead_funnel' : ($goal_type === 'shop' ? 'shop_or_whatsapp' : 'hybrid'),
+            'preferred_first_screen_system' => match(true) {
+                $is_contact_goal => 'avatar ili stvarna fotografija + puno ime i prezime + kratka trust poruka + video ili Funnel kao prvi ozbiljan korak',
+                $goal_type === 'shop' => 'fotografija ili jasan naslov + kratko objasnjenje + jedan glavni proizvodni ili shop korak',
+                $goal_type === 'brand' => 'avatar ili stvarna fotografija + puno ime i prezime + jasan naslov + video + jedan glavni korak',
+                default => 'kratak sloj povjerenja na vrhu + jedan glavni korak + miran sekundarni sadrzaj',
+            },
+            'funnel_role' => $is_contact_goal ? 'first_serious_action_after_trust' : 'optional',
+            'trust_before_capture' => $is_contact_goal,
             'available_tools' => $available_tools,
             'missing_for_contact_goal' => $missing_for_contact_goal,
+        ];
+    }
+
+    private function get_app_review_block_catalog_payload(): array {
+        return [
+            [
+                'type' => 'avatar',
+                'best_for' => 'osobni dojam i povjerenje na prvom ekranu',
+                'warning' => 'ne vodi sam po sebi prema sljedecem koraku',
+            ],
+            [
+                'type' => 'heading',
+                'best_for' => 'jasna poruka kome je aplikacija namijenjena',
+                'warning' => 'ako je nejasan ili predug, brzo gubi fokus',
+            ],
+            [
+                'type' => 'paragraph',
+                'best_for' => 'kratko objasnjenje koristi i sljedeceg koraka',
+                'warning' => 'predug tekst usporava odluku',
+            ],
+            [
+                'type' => 'video',
+                'best_for' => 'brze gradjenje povjerenja i objasnjenje ponude',
+                'warning' => 'mora imati jasan razlog zasto ga osoba treba pogledati',
+            ],
+            [
+                'type' => 'lead_funnel',
+                'best_for' => 'skupljanje kontakata, prijave i ozbiljan prvi korak',
+                'warning' => 'treba biti dovoljno visoko i jasno najavljen',
+            ],
+            [
+                'type' => 'custom_html_whatsapp',
+                'best_for' => 'brza WhatsApp poruka kad je cilj razgovor ili pomoc pri izboru',
+                'warning' => 'ne smije se natjecati s vise jednakih glavnih gumba',
+            ],
+            [
+                'type' => 'link_discount',
+                'best_for' => 'jasan prodajni korak prema shopu ili ponudi',
+                'warning' => 'ako je previsoko bez povjerenja, moze djelovati preprodajno',
+            ],
+            [
+                'type' => 'link_forever_product',
+                'best_for' => 'fokus na jedan proizvod ili preporuku proizvoda',
+                'warning' => 'previse proizvoda odjednom rasipa paznju',
+            ],
+            [
+                'type' => 'review',
+                'best_for' => 'dokaz i sigurnost prije glavnog koraka',
+                'warning' => 'treba biti blizu glavne akcije, ne predaleko',
+            ],
+            [
+                'type' => 'modal_text',
+                'best_for' => 'dodatno objasnjenje bez zatrpavanja glavnog ekrana',
+                'warning' => 'nije dobar kao prvi glavni korak',
+            ],
+            [
+                'type' => 'link_app_switcher',
+                'best_for' => 'prebacivanje na drugu aplikaciju tek kad to stvarno pomaze cilju',
+                'warning' => 'na vrhu moze odvesti fokus s glavne akcije',
+            ],
         ];
     }
 
@@ -2971,6 +6116,7 @@ class AiPlan extends Controller {
             }
 
             return [
+                'block_id' => (int) ($preview['block_id'] ?? 0),
                 'type' => (string) ($preview['type'] ?? ''),
                 'label' => (string) ($preview['label'] ?? ''),
                 'style_profile' => (array) ($preview['style_profile'] ?? []),
@@ -2989,6 +6135,7 @@ class AiPlan extends Controller {
             }
 
             return [
+                'block_id' => (int) ($preview['block_id'] ?? 0),
                 'type' => (string) ($preview['type'] ?? ''),
                 'label' => (string) ($preview['label'] ?? ''),
                 'style_profile' => $style_profile,
@@ -3024,6 +6171,7 @@ class AiPlan extends Controller {
             }
 
             $samples[] = [
+                'block_id' => (int) ($preview['block_id'] ?? 0),
                 'type' => (string) ($preview['type'] ?? ''),
                 'label' => (string) ($preview['label'] ?? ''),
                 'style_profile' => $style_profile,
@@ -3035,6 +6183,80 @@ class AiPlan extends Controller {
         }
 
         return $samples;
+    }
+
+    private function get_app_review_design_diagnostic(array $selected_app): array {
+        $styled_blocks = 0;
+        $strong_blocks = 0;
+        $busy_blocks = 0;
+        $accent_families = [];
+
+        foreach((array) ($selected_app['ordered_block_previews'] ?? []) as $preview) {
+            if(!is_array($preview)) {
+                continue;
+            }
+
+            $style_profile = (array) ($preview['style_profile'] ?? []);
+
+            if(empty($style_profile)) {
+                continue;
+            }
+
+            $styled_blocks++;
+
+            if((string) ($style_profile['emphasis_strength'] ?? '') === 'strong') {
+                $strong_blocks++;
+            }
+
+            if((string) ($style_profile['style_complexity'] ?? '') === 'busy') {
+                $busy_blocks++;
+            }
+
+            foreach(['background_signal', 'border_signal', 'text_signal'] as $signal_key) {
+                $family = (string) (($style_profile[$signal_key]['family'] ?? ''));
+
+                if($family !== '' && $family !== 'neutral') {
+                    $accent_families[$family] = true;
+                }
+            }
+        }
+
+        $app_visual_profile = (array) ($selected_app['visual_profile'] ?? []);
+        foreach(['background_signal', 'gradient_start_signal', 'gradient_end_signal', 'text_signal'] as $signal_key) {
+            $family = (string) (($app_visual_profile[$signal_key]['family'] ?? ''));
+
+            if($family !== '' && $family !== 'neutral') {
+                $accent_families[$family] = true;
+            }
+        }
+
+        $accent_family_count = count($accent_families);
+        $visual_noise_level = 'calm';
+        $recommendation_bias = 'fine_tune';
+
+        if($accent_family_count >= 4 || $busy_blocks >= 3 || $strong_blocks >= 3) {
+            $visual_noise_level = 'high';
+            $recommendation_bias = 'reset';
+        } elseif($accent_family_count >= 2 || $busy_blocks >= 1 || $strong_blocks >= 2) {
+            $visual_noise_level = 'medium';
+            $recommendation_bias = 'soft_reset';
+        }
+
+        $note = match($recommendation_bias) {
+            'reset' => 'Trenutni vizual izgleda dovoljno raspršeno da boje i naglaske ne treba čuvati po defaultu. AI smije predložiti jasniji reset.',
+            'soft_reset' => 'Trenutni vizual ima više naglasaka ili više stilskih smjerova. AI neka predloži mirniji i fokusiraniji sustav, ne samo kozmetičku doradu.',
+            default => 'Trenutni vizual nije glavni problem. AI može zadržati smjer samo ako podržava cilj i ostaje dovoljno jasan.',
+        };
+
+        return [
+            'styled_blocks' => $styled_blocks,
+            'strong_emphasis_blocks' => $strong_blocks,
+            'busy_blocks' => $busy_blocks,
+            'accent_family_count' => $accent_family_count,
+            'visual_noise_level' => $visual_noise_level,
+            'recommendation_bias' => $recommendation_bias,
+            'note' => $note,
+        ];
     }
 
     private function get_app_structure_payload(int $user_id): array {
@@ -3234,6 +6456,7 @@ class AiPlan extends Controller {
                     )
                 ) {
                     $apps[$link_id]['sales_path_preview'][] = [
+                        'block_id' => (int) ($row->biolink_block_id ?? 0),
                         'type' => $type,
                         'label' => $this->get_app_review_block_preview_label($type, $settings),
                         'style_profile' => $style_profile,
@@ -3241,6 +6464,8 @@ class AiPlan extends Controller {
                 }
 
                 $apps[$link_id]['ordered_block_previews'][] = [
+                    'block_id' => (int) ($row->biolink_block_id ?? 0),
+                    'order' => (int) ($row->order ?? 0),
                     'type' => $type,
                     'label' => $this->get_app_review_block_preview_label($type, $settings),
                     'visual_url' => $this->get_app_review_block_visual_url($type, $settings),
@@ -3333,13 +6558,23 @@ class AiPlan extends Controller {
         ];
     }
 
-    private function build_app_review_ai_input(array $values, array $analytics_payload, array $app_structure_payload, int $current_clicks_30d, string $request_context = '', ?array $selected_app = null): array {
-        $goal_type = $this->get_goal_type($values);
+    private function build_app_review_ai_input(array $values, array $analytics_payload, array $app_structure_payload, int $current_clicks_30d, string $request_context = '', ?array $selected_app = null, array $selected_app_block_attribution = [], ?array $previous_review = null): array {
         $selected_app = $selected_app ?? $this->get_selected_app($app_structure_payload);
+        $goal_type = $this->get_effective_app_review_goal_type($values, $request_context, $selected_app);
+        $selected_app_block_attribution = !empty($selected_app_block_attribution)
+            ? $this->normalize_app_review_block_attribution_payload($selected_app_block_attribution)
+            : $this->get_app_review_block_attribution_payload((array) $selected_app);
         $quality_payload = $this->get_app_review_quality_payload($selected_app, $current_clicks_30d);
         $selected_app_capabilities = (array) ($selected_app['conversion_capabilities'] ?? []);
         $capability_context = $this->get_app_review_capability_context($selected_app_capabilities, $values, $goal_type);
         $fcc_goal_system = $this->get_fcc_goal_system_payload($values, $goal_type);
+        $fcc_core_block_policy = $this->get_fcc_core_block_policy($values, $goal_type, $request_context);
+        $palette_feedback_outcome = $this->get_latest_palette_feedback_for_app(
+            $this->get_saved_weekly_outcomes($this->user->preferences ?? null),
+            (int) ($selected_app['link_id'] ?? 0),
+            (string) ($previous_review['review_key'] ?? ''),
+            (string) ($previous_review['generated_at'] ?? '')
+        );
 
         return [
             'user' => [
@@ -3355,7 +6590,15 @@ class AiPlan extends Controller {
                 'follow_up_readiness' => !empty($values['follow_up_readiness']) ? l('ai_plan.option.follow_up_readiness.' . $values['follow_up_readiness']) : '',
                 'audience_focus' => (string) ($values['audience_focus'] ?? ''),
                 'product_focus' => (string) ($values['product_focus'] ?? ''),
+                'visual_tone_preference' => (string) ($values['visual_tone_preference'] ?? ''),
                 'notes' => (string) ($values['notes'] ?? ''),
+            ],
+            'ordering_policy' => [
+                'trust_first_for_contact_goals' => $this->is_contact_collection_goal($values, $goal_type),
+                'preferred_trust_hero' => 'avatar ili stvarna fotografija + puno ime i prezime + kratki trust tekst ili video',
+                'primary_conversion_after_trust' => $this->is_contact_collection_goal($values, $goal_type) ? 'lead_funnel_or_whatsapp' : 'best_goal_match',
+                'owner_identity_anchor' => (string) ($this->user->name ?? ''),
+                'full_name_should_follow_avatar' => $goal_type !== 'shop',
             ],
             'growth_stage' => $current_clicks_30d >= 15 ? 'active_signal' : 'building_signal',
             'analytics_30d' => [
@@ -3370,6 +6613,22 @@ class AiPlan extends Controller {
             'funnel' => $analytics_payload['funnel'] ?? [],
             ],
             'app_structure' => $app_structure_payload,
+            'design_policy' => [
+                'target_mode' => 'goal_first_target_theme',
+                'current_visual_role' => 'diagnostic_only',
+                'reuse_current_palette_only_if' => 'current palette is already calm, cohesive and clearly supports the goal',
+                'do_not_clone_current_hex_values' => true,
+            ],
+            'palette_feedback' => [
+                'has_feedback' => (bool) $palette_feedback_outcome,
+                'feedback' => (string) ($palette_feedback_outcome['palette_feedback'] ?? ''),
+                'feedback_label' => $this->get_palette_feedback_label($palette_feedback_outcome['palette_feedback'] ?? ''),
+                'decision' => (string) ($palette_feedback_outcome['palette_decision'] ?? $this->get_palette_feedback_decision($palette_feedback_outcome['palette_feedback'] ?? '')),
+                'note' => (string) ($palette_feedback_outcome['palette_feedback_note'] ?? ''),
+                'selected_link_id' => max(0, (int) ($palette_feedback_outcome['selected_link_id'] ?? 0)),
+                'review_key' => (string) ($palette_feedback_outcome['app_review_review_key'] ?? ''),
+                'submitted_at' => (string) ($palette_feedback_outcome['submitted_at'] ?? ''),
+            ],
             'selected_app' => [
                 'link_id' => (int) ($selected_app['link_id'] ?? 0),
                 'name' => (string) (($selected_app['name'] ?? '') ?: ($selected_app['url'] ?? '')),
@@ -3382,11 +6641,13 @@ class AiPlan extends Controller {
                 'content_blocks' => (int) ($selected_app['content_blocks'] ?? 0),
                 'conversion_capabilities' => $selected_app_capabilities,
                 'conversion_context' => $capability_context,
+                'block_attribution' => $selected_app_block_attribution,
                 'visual_context' => [
                     'visual_profile' => (array) ($selected_app['visual_profile'] ?? []),
                     'scope' => (string) ($selected_app['primary_visual_scope'] ?? 'none'),
                     'visual_type' => (string) ($selected_app['primary_visual_type'] ?? ''),
                     'primary_visual_url' => (string) ($selected_app['primary_visual_url'] ?? ''),
+                    'design_diagnostic' => $this->get_app_review_design_diagnostic($selected_app),
                     'first_screen_blocks' => array_values(array_filter((array) ($selected_app['first_screen_blocks'] ?? []), 'is_array')),
                     'primary_action_block' => $this->get_app_review_primary_action_block_snapshot($selected_app),
                     'secondary_block_style_samples' => $this->get_app_review_secondary_block_style_samples($selected_app),
@@ -3404,7 +6665,17 @@ class AiPlan extends Controller {
                 'benchmark' => $quality_payload['benchmark'] ?? [],
                 'peer_examples' => $quality_payload['peer_examples'] ?? [],
             ],
+            'editor_theme_capabilities' => [
+                'fonts' => array_keys((array) (settings()->links->biolinks_fonts ?? [])),
+                'font_size_min' => 12,
+                'font_size_max' => 22,
+                'width_options' => ['6', '8', '10', '12'],
+                'block_spacing_options' => ['1', '2', '3'],
+                'hover_animation_options' => ['false', 'smooth', 'instant'],
+            ],
             'fcc_goal_system' => $fcc_goal_system,
+            'fcc_core_block_policy' => $fcc_core_block_policy,
+            'fcc_block_catalog' => $this->get_app_review_block_catalog_payload(),
             'request_context' => $request_context,
         ];
     }
@@ -3684,14 +6955,14 @@ class AiPlan extends Controller {
         return $expiration === '' || $expiration === '0000-00-00 00:00:00' || $expiration >= get_date();
     }
 
-    private function validate_app_review_response(array $review): array {
+    private function validate_app_review_response(array $review, ?array $selected_app = null): array {
         $headline = $this->normalize_app_review_channel_copy($this->sanitize_ai_string($review['headline'] ?? $review['title'] ?? '', 140));
         $summary = $this->normalize_app_review_channel_copy($this->sanitize_ai_string($review['summary'] ?? $review['overview'] ?? '', 600));
         $biggest_bottleneck = $this->normalize_app_review_channel_copy($this->sanitize_ai_string($review['biggest_bottleneck'] ?? $review['main_problem'] ?? '', 220));
         $top_recommendation = $this->normalize_app_review_channel_copy($this->sanitize_ai_string($review['top_recommendation'] ?? $review['power_move'] ?? '', 320));
         $weekly_focus = $this->normalize_app_review_channel_copy($this->sanitize_ai_string($review['weekly_focus'] ?? $review['next_focus'] ?? '', 240));
         $priority_actions = $this->normalize_app_review_channel_list($this->normalize_ai_list($review['priority_actions'] ?? $review['quick_wins'] ?? [], 4, 200));
-        $ideal_block_order = $this->normalize_app_review_channel_list($this->normalize_ai_list($review['ideal_block_order'] ?? $review['recommended_block_order'] ?? [], 8, 120));
+        $ideal_block_order = $this->normalize_app_review_visible_list($this->normalize_ai_list($review['ideal_block_order'] ?? $review['recommended_block_order'] ?? [], 8, 120));
         $design_notes = $this->normalize_app_review_channel_list($this->normalize_ai_list($review['design_notes'] ?? $review['visual_notes'] ?? $review['color_advice'] ?? [], 5, 220));
         $keep_doing = $this->normalize_app_review_channel_list($this->normalize_ai_list($review['keep_doing'] ?? $review['strengths_to_keep'] ?? [], 4, 180));
         $first_move = $this->normalize_app_review_channel_copy($this->sanitize_ai_string($review['first_move'] ?? $review['do_first'] ?? $top_recommendation, 180));
@@ -3700,9 +6971,17 @@ class AiPlan extends Controller {
         $funnel_blueprint = $this->normalize_app_review_channel_list($this->normalize_ai_list($review['funnel_blueprint'] ?? $review['funnel_plan'] ?? $review['lead_flow'] ?? [], 4, 220));
         $color_palette = $this->normalize_app_review_color_palette($review['color_palette'] ?? $review['color_direction'] ?? $review['palette'] ?? []);
         $trust_builders = $this->normalize_app_review_channel_list($this->normalize_ai_list($review['trust_builders'] ?? $review['trust_elements'] ?? $review['trust_plan'] ?? [], 5, 200));
+        $primary_action_fallback = $selected_app ? $this->get_app_review_primary_action_block_snapshot($selected_app) : [];
+        $theme_pack = $this->normalize_app_review_theme_pack($review['theme_pack'] ?? $review['design_system'] ?? [], $color_palette);
+        $color_palette = $this->sync_app_review_color_palette_with_theme_pack($color_palette, $theme_pack);
+        $primary_block_plan = $this->normalize_app_review_primary_block_plan($review['primary_block_plan'] ?? $review['main_block_plan'] ?? [], $primary_action_fallback);
+        $block_patch_pack = $this->normalize_app_review_block_patch_pack($review['block_patch_pack'] ?? $review['block_overrides'] ?? []);
+        $copy_suggestions = $this->normalize_app_review_copy_suggestions($review['copy_suggestions'] ?? $review['text_suggestions'] ?? []);
+        $layout_actions = $this->normalize_app_review_layout_actions($review['layout_actions'] ?? $review['layout_plan'] ?? []);
+        $missing_block_recommendations = $this->normalize_app_review_missing_block_recommendations($review['missing_block_recommendations'] ?? $review['recommended_missing_blocks'] ?? []);
 
         if($headline === '' || $summary === '' || $top_recommendation === '' || empty($priority_actions) || empty($ideal_block_order)) {
-            throw new \Exception(l('ai_plan.ai_error_invalid_response'));
+            throw new \Exception(l('ai_plan.app_review_error_invalid_response'));
         }
 
         return [
@@ -3721,6 +7000,644 @@ class AiPlan extends Controller {
             'first_move' => $first_move,
             'next_move' => $next_move,
             'do_not_touch' => $do_not_touch,
+            'theme_pack' => $theme_pack,
+            'primary_block_plan' => $primary_block_plan,
+            'block_patch_pack' => $block_patch_pack,
+            'copy_suggestions' => $copy_suggestions,
+            'layout_actions' => $layout_actions,
+            'missing_block_recommendations' => $missing_block_recommendations,
+        ];
+    }
+
+    private function build_emergency_app_review(array $values, array $analytics_payload, ?array $selected_app, int $current_clicks_30d, string $request_context = '', array $quality_payload = [], array $selected_app_block_attribution = []): array {
+        $selected_app = $selected_app ?? $this->get_default_app_summary();
+        $goal_type = $this->get_effective_app_review_goal_type($values, $request_context, $selected_app);
+        $is_contact_goal = $this->is_contact_collection_goal($values, $goal_type);
+        $core_block_policy = $this->get_fcc_core_block_policy($values, $goal_type, $request_context);
+        $ordered_blocks = array_values(array_filter((array) ($selected_app['ordered_block_previews'] ?? []), 'is_array'));
+        $position_signals = (array) ($selected_app['position_signals'] ?? []);
+        $visual_profile = (array) ($selected_app['visual_profile'] ?? []);
+        $design_diagnostic = $this->get_app_review_design_diagnostic($selected_app);
+        $primary_snapshot = $this->get_app_review_primary_action_block_snapshot($selected_app);
+        $selected_app_capabilities = (array) ($selected_app['conversion_capabilities'] ?? []);
+        $capability_context = $this->get_app_review_capability_context($selected_app_capabilities, $values, $goal_type);
+        $fcc_goal_system = $this->get_fcc_goal_system_payload($values, $goal_type);
+        $fallback_theme_seed = $this->get_goal_first_fallback_theme_seed($values, $goal_type);
+        $quality_summary = (string) ($quality_payload['summary'] ?? l('ai_plan.app_review_quality_summary.foundation'));
+        $quality_level = (string) ($quality_payload['level_key'] ?? 'foundation');
+        $app_name = (string) (($selected_app['name'] ?? '') ?: ($selected_app['url'] ?? 'aplikacija'));
+        $app_block_attribution = !empty($selected_app_block_attribution)
+            ? $this->normalize_app_review_block_attribution_payload($selected_app_block_attribution)
+            : $this->get_app_review_block_attribution_payload((array) $selected_app);
+        $first_focus_risk_block = (array) (($app_block_attribution['focus_risk_blocks'][0] ?? []));
+
+        $get_first_block_by_types = function(array $types) use ($ordered_blocks): array {
+            foreach($ordered_blocks as $preview) {
+                $type = (string) ($preview['type'] ?? '');
+
+                if(in_array($type, $types, true)) {
+                    return $preview;
+                }
+            }
+
+            return [];
+        };
+
+        $clean_label = function(string $value): string {
+            return $this->normalize_app_review_visible_copy($this->sanitize_ai_string($value, 160));
+        };
+
+        $video_block = $get_first_block_by_types(['youtube', 'video', 'tiktok_video', 'vimeo', 'twitter_video', 'vk_video']);
+        $discount_block = $get_first_block_by_types(['link_discount', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo']);
+        $business_offer_block = [];
+        foreach($ordered_blocks as $preview) {
+            $type = (string) ($preview['type'] ?? '');
+            $label = trim((string) ($preview['label'] ?? ''));
+            $location_url = trim((string) ($preview['location_url'] ?? ''));
+
+            if($type !== 'link_forever_product') {
+                continue;
+            }
+
+            if($this->app_review_text_has_any($label . ' ' . $location_url, ['start paket', 'start-paket', 'partner', 'suradnik', 'upis', 'prijava', 'registracija']) || str_contains($location_url, '/blog/start-paket')) {
+                $business_offer_block = $preview;
+                break;
+            }
+        }
+        $shop_block = $discount_block ?: $get_first_block_by_types(['link_forever_shop', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo', 'link_discount']);
+        $hero_visual_block = $get_first_block_by_types(['avatar', 'image']);
+        $trust_block = $get_first_block_by_types(['avatar', 'image', 'heading', 'paragraph', 'markdown']);
+        $trust_copy_block = $get_first_block_by_types(['paragraph', 'markdown']);
+        $socials_block = $get_first_block_by_types(['socials']);
+        $whatsapp_block = $get_first_block_by_types(['custom_html_whatsapp']);
+        $chatbot_block = $get_first_block_by_types(['custom_html_chatbot', 'custom_html_chatbot_pets']);
+        $funnel_block = $get_first_block_by_types(['lead_funnel']);
+        $owner_name = $clean_label((string) ($this->user->name ?? ''));
+        $identity_heading_block = [];
+        $identity_heading_index = null;
+        $normalize_compare = static function(string $value): string {
+            return preg_replace('/[^\p{L}\p{N}]+/u', '', mb_strtolower(trim($value))) ?? '';
+        };
+        $owner_name_compare = $normalize_compare($owner_name);
+        $has_owner_name_block = false;
+        $core_funnel_label = (string) (($goal_type === 'shop' ? ($core_block_policy['funnel_label_shop'] ?? '') : ($core_block_policy['funnel_label_business'] ?? '')) ?: 'Prijavi se i saznaj više');
+        $core_discount_label = (string) ($core_block_policy['discount_block_label'] ?? 'Pogledaj proizvode s popustom');
+        $core_business_offer_label = (string) ($core_block_policy['business_offer_block_label'] ?? 'Postani Forever suradnik');
+
+        foreach($ordered_blocks as $index => $preview) {
+            $type = (string) ($preview['type'] ?? '');
+
+            if($identity_heading_index === null && $type === 'heading') {
+                $identity_heading_block = $preview;
+                $identity_heading_index = $index;
+            }
+
+            if($owner_name_compare === '' || !in_array($type, ['heading', 'paragraph', 'markdown'], true)) {
+                continue;
+            }
+
+            $label_compare = $normalize_compare((string) ($preview['label'] ?? ''));
+
+            if($label_compare !== '' && (str_contains($label_compare, $owner_name_compare) || str_contains($owner_name_compare, $label_compare))) {
+                $has_owner_name_block = true;
+                break;
+            }
+        }
+
+        $needs_owner_identity_anchor = $owner_name !== '' && !$has_owner_name_block && ($is_contact_goal || $goal_type === 'brand' || $goal_type === 'activation');
+
+        $headline = match($goal_type) {
+            'business' => 'Najveći pomak za ovu FCC aplikaciju sada je jasniji put do prijave',
+            'shop' => 'Najveći pomak za ovu FCC aplikaciju sada je kraći i sigurniji put do proizvoda',
+            'brand' => 'Najveći pomak za ovu FCC aplikaciju sada je više povjerenja na prvom ekranu',
+            'activation' => 'Najveći pomak za ovu FCC aplikaciju sada je lakši prijelaz u razgovor',
+            default => 'Najveći pomak za ovu FCC aplikaciju sada je jasniji prvi korak',
+        };
+
+        $biggest_bottleneck = match(true) {
+            $needs_owner_identity_anchor => 'Na vrhu aplikacije nedostaje jasno ime i prezime osobe kojoj bi posjetitelj trebao vjerovati.',
+            $is_contact_goal && empty($selected_app_capabilities['has_lead_funnel']) => 'Aplikacija još nema dovoljno jasan korak kojim ozbiljan interes postaje stvarna prijava ili kontakt.',
+            !empty($first_focus_risk_block['label']) => 'Jedan od ranih blokova uzima fokus, a ne pomaže dovoljno prema glavnom cilju aplikacije.',
+            ((int) ($selected_app['total_blocks'] ?? 0)) >= 9 => 'Na vrhu aplikacije osoba prebrzo dobiva previše izbora pa glavni smjer nije dovoljno jasan.',
+            default => 'Prvi ekran još ne vodi dovoljno jasno prema jednom glavnom sljedećem koraku.',
+        };
+
+        $top_recommendation = match(true) {
+            $needs_owner_identity_anchor => 'Odmah ispod avatara istakni puno ime i prezime kako bi osoba odmah znala kome vjeruje prije videa, Funnel-a ili linkova.',
+            $is_contact_goal && empty($selected_app_capabilities['has_lead_funnel']) => 'Dodaj Funnel kao glavni korak odmah nakon sloja povjerenja i veži cijelu aplikaciju oko tog jednog ulaza.',
+            $is_contact_goal && empty($selected_app_capabilities['has_video']) => 'Dodaj kratak video prije glavnog kontaktnog koraka kako bi osoba brže razumjela tko si i zašto vrijedi kliknuti dalje.',
+            ((int) ($selected_app['total_blocks'] ?? 0)) >= 9 => 'Smanji broj ranih izbora i ostavi jedan glavni blok koji odmah vodi prema najvažnijem cilju aplikacije.',
+            !empty($primary_snapshot['label']) => 'Pojačaj glavni blok "' . $clean_label((string) ($primary_snapshot['label'] ?? '')) . '" i smiri sve što mu prerano uzima pažnju.',
+            default => 'Na vrhu aplikacije pojačaj povjerenje i odmah nakon toga pokaži jedan glavni korak bez dodatnog šuma.',
+        };
+
+        $weekly_focus = $needs_owner_identity_anchor
+            ? 'Ovaj tjedan fokus neka bude jasan trust sloj na vrhu: avatar, ime i prezime, kratka poruka i tek onda glavni sljedeći korak.'
+            : ($is_contact_goal
+                ? 'Ovaj tjedan fokus neka bude povjerenje na vrhu i jedan jasan put do prijave ili razgovora.'
+                : 'Ovaj tjedan fokus neka bude jasniji prvi ekran i jedan glavni sljedeći korak bez raspršivanja.');
+
+        $priority_actions = array_values(array_filter(array_unique([
+            $top_recommendation,
+            $needs_owner_identity_anchor
+                ? 'Odmah ispod avatara pokaži puno ime i prezime kako bi posjetitelj u prvim sekundama znao tko stoji iza aplikacije.'
+                : '',
+            empty($selected_app_capabilities['has_video'])
+                ? 'Ako nemaš video, dodaj kratki video od 30 do 60 sekundi koji jednostavno objašnjava kome pomažeš i što osoba dobiva.'
+                : 'Zadrži video blizu vrha aplikacije i neka odmah podržava glavni korak umjesto da stoji odvojeno bez jasnog nastavka.',
+            ((int) ($selected_app['total_blocks'] ?? 0)) >= 9 || !empty($first_focus_risk_block['label'])
+                ? 'Spusti niže ili privremeno ugasi blokove koji rano odvlače pažnju, posebno prije glavnog koraka.'
+                : 'Ostavi rani dio aplikacije mirnim i čitljivim, bez previše paralelnih izbora.',
+            $is_contact_goal && empty($selected_app_capabilities['has_whatsapp_contact'])
+                ? 'Dodaj i WhatsApp blok kao jednostavan drugi put do razgovora za ljude koji ne žele odmah kroz prijavu.'
+                : 'Ako koristiš WhatsApp, neka bude jasan nastavak nakon glavnog koraka, a ne novi izvor kaosa na vrhu.',
+            empty($discount_block['block_id'])
+                ? 'Na svakoj FCC aplikaciji zadrži i jasan blok za proizvode s popustom jer je to srce prodajnog dijela sustava.'
+                : 'Blok za proizvode s popustom zadrži aktivnim i smjesti ga tako da podržava glavni cilj umjesto da mu konkurira.',
+            empty($business_offer_block['block_id'])
+                ? 'Dodaj i blok "Postani Forever suradnik" koji vodi na Start Paket jer je to ključni business korak u FCC sustavu.'
+                : 'Blok "Postani Forever suradnik" neka ostane aktivan kao stalni business put prema Start Paketu.',
+        ])));
+        $priority_actions = array_slice($priority_actions, 0, 4);
+
+        $ideal_block_order = $goal_type === 'shop'
+            ? array_filter([
+                $hero_visual_block ? $clean_label((string) ($hero_visual_block['label'] ?? '')) : 'Avatar ili stvarna fotografija',
+                $owner_name !== '' ? $owner_name : 'Ime i prezime',
+                $trust_copy_block ? $clean_label((string) ($trust_copy_block['label'] ?? '')) : 'Kratka trust poruka',
+                $video_block ? $clean_label((string) ($video_block['label'] ?? '')) : 'Kratki video',
+                $funnel_block ? $clean_label((string) ($funnel_block['label'] ?? '')) : $core_funnel_label,
+                $discount_block ? $clean_label((string) ($discount_block['label'] ?? '')) : $core_discount_label,
+                $whatsapp_block ? $clean_label((string) ($whatsapp_block['label'] ?? '')) : 'Pošalji poruku na WhatsApp',
+                $business_offer_block ? $clean_label((string) ($business_offer_block['label'] ?? '')) : $core_business_offer_label,
+            ])
+            : array_filter([
+                $hero_visual_block ? $clean_label((string) ($hero_visual_block['label'] ?? '')) : 'Avatar ili stvarna fotografija',
+                $owner_name !== '' ? $owner_name : 'Ime i prezime',
+                $trust_copy_block ? $clean_label((string) ($trust_copy_block['label'] ?? '')) : 'Kratka trust poruka',
+                $video_block ? $clean_label((string) ($video_block['label'] ?? '')) : 'Kratki video',
+                $funnel_block ? $clean_label((string) ($funnel_block['label'] ?? '')) : $core_funnel_label,
+                $business_offer_block ? $clean_label((string) ($business_offer_block['label'] ?? '')) : $core_business_offer_label,
+                $whatsapp_block ? $clean_label((string) ($whatsapp_block['label'] ?? '')) : 'Pošalji poruku na WhatsApp',
+                $discount_block ? $clean_label((string) ($discount_block['label'] ?? '')) : $core_discount_label,
+            ]);
+
+        $ideal_block_order = array_values(array_slice(array_unique(array_filter(array_map(static fn($item) => trim((string) $item), $ideal_block_order))), 0, 8));
+
+        if(count($ideal_block_order) < 5) {
+            foreach($ordered_blocks as $preview) {
+                $label = $clean_label((string) ($preview['label'] ?? ''));
+
+                if($label === '' || in_array($label, $ideal_block_order, true)) {
+                    continue;
+                }
+
+                $ideal_block_order[] = $label;
+
+                if(count($ideal_block_order) >= 5) {
+                    break;
+                }
+            }
+        }
+
+        $design_notes = array_values(array_filter(array_unique([
+            'Koristi mirnu pozadinu i jedan jasni glavni naglasak kako bi prvi ekran djelovao ozbiljno i čitljivo.',
+            $needs_owner_identity_anchor
+                ? 'Odmah ispod avatara ili fotografije stavi puno ime i prezime jer to ubrzava prepoznavanje i povjerenje.'
+                : '',
+            !empty($design_diagnostic['visual_noise_level']) && $design_diagnostic['visual_noise_level'] !== 'calm'
+                ? 'Trenutni vizual ima više naglasaka nego što treba, zato boje i blokove treba smiriti u jedan dosljedan sustav.'
+                : 'Vizual neka ostane čist i miran, bez dodatnih boja i sjena koje ne pojačavaju glavni korak.',
+            !empty($video_block)
+                ? 'Video neka ostane blizu vrha i odmah objasni tko si, kome pomažeš i što osoba treba napraviti dalje.'
+                : 'Ako dodaješ video, neka bude kratak i neka odmah gradi povjerenje prije glavnog koraka.',
+            'Glavni blok mora imati najjači kontrast, a ostali blokovi trebaju biti smireniji i manje napadni.',
+        ])));
+        $design_notes = array_slice($design_notes, 0, 4);
+
+        $keep_doing = array_values(array_filter(array_unique([
+            $quality_summary,
+            !empty($trust_block) ? 'Zadrži sloj povjerenja koji već postoji na vrhu i samo ga učini jasnijim.' : '',
+            !empty($video_block) ? 'Zadrži video kao alat povjerenja ako vodi prema jasnom sljedećem koraku.' : '',
+        ])));
+        $keep_doing = array_slice($keep_doing, 0, 4);
+
+        $funnel_blueprint = array_slice(array_values(array_filter(array_map(function($item) {
+            return $this->sanitize_ai_string((string) $item, 220);
+        }, (array) ($fcc_goal_system['funnel_blueprint'] ?? [])))), 0, 4);
+
+        $trust_builders = array_slice(array_values(array_filter(array_unique(array_map(function($item) {
+            return $this->sanitize_ai_string((string) $item, 180);
+        }, (array) ($fcc_goal_system['preferred_trust_elements'] ?? []))))), 0, 4);
+
+        if($needs_owner_identity_anchor) {
+            array_unshift($trust_builders, 'Avatar ili fotografija uz puno ime i prezime daje brz osjećaj da iza aplikacije stoji stvarna osoba.');
+            $trust_builders = array_slice(array_values(array_unique(array_filter($trust_builders))), 0, 4);
+        }
+
+        $theme_pack = [
+            'name' => 'AI preporučena tema',
+            'summary' => $quality_summary,
+            'background_mode' => (string) ($fallback_theme_seed['background_mode'] ?? 'color'),
+            'background_color' => (string) ($fallback_theme_seed['background_color'] ?? '#0F172A'),
+            'gradient_start' => (string) ($fallback_theme_seed['gradient_start'] ?? '#0F172A'),
+            'gradient_end' => (string) ($fallback_theme_seed['gradient_end'] ?? '#111827'),
+            'gradient_style' => 'current_135deg',
+            'heading_color' => (string) ($fallback_theme_seed['heading_color'] ?? '#F8FAFC'),
+            'text_color' => (string) ($fallback_theme_seed['text_color'] ?? '#CBD5E1'),
+            'primary_block_text' => (string) ($fallback_theme_seed['primary_block_text'] ?? '#FFFFFF'),
+            'primary_block_background' => (string) ($fallback_theme_seed['primary_block_background'] ?? '#2563EB'),
+            'primary_block_border' => (string) ($fallback_theme_seed['primary_block_border'] ?? '#1D4ED8'),
+            'primary_block_shadow' => (string) ($fallback_theme_seed['primary_block_shadow'] ?? 'rgba(37,99,235,.24)'),
+            'secondary_blocks_text' => (string) ($fallback_theme_seed['secondary_blocks_text'] ?? '#F8FAFC'),
+            'secondary_blocks_background' => (string) ($fallback_theme_seed['secondary_blocks_background'] ?? '#111827'),
+            'secondary_blocks_border' => (string) ($fallback_theme_seed['secondary_blocks_border'] ?? '#334155'),
+            'secondary_blocks_shadow' => 'rgba(15,23,42,.12)',
+            'font' => in_array((string) ($visual_profile['font'] ?? ''), array_keys((array) (settings()->links->biolinks_fonts ?? [])), true) ? (string) ($visual_profile['font'] ?? '') : '',
+            'font_size' => 16,
+            'width' => in_array((string) ($visual_profile['width'] ?? ''), ['6', '8', '10', '12'], true) ? (string) ($visual_profile['width'] ?? '') : '8',
+            'block_spacing' => in_array((string) ($visual_profile['block_spacing'] ?? ''), ['1', '2', '3'], true) ? (string) ($visual_profile['block_spacing'] ?? '') : '2',
+            'hover_animation' => 'smooth',
+            'migration_note' => 'Prvo uskladi pozadinu, glavni blok i tekst na vrhu, a zatim smiri ostale blokove da podrže isti cilj.',
+        ];
+        $theme_pack = $this->enforce_goal_first_theme_pack_guardrails($theme_pack);
+
+        $color_palette = [
+            'background' => ($theme_pack['background_mode'] === 'gradient' ? $theme_pack['gradient_start'] : $theme_pack['background_color']) . ' daje mirnu pozadinu koja pomaže fokusu i ozbiljnijem dojmu.',
+            'heading' => $theme_pack['heading_color'] . ' pojačava čitljivost naslova i prvi dojam povjerenja.',
+            'text' => $theme_pack['text_color'] . ' drži glavni tekst jasnim i laganim za čitanje.',
+            'primary_block_text' => $theme_pack['primary_block_text'] . ' daje čist kontrast za glavni blok i glavni klik.',
+            'primary_block_background' => $theme_pack['primary_block_background'] . ' ističe glavni korak bez vizualnog kaosa.',
+            'primary_block_border' => $theme_pack['primary_block_border'] . ' dodatno naglašava glavni blok i drži ga jasnim.',
+            'primary_block_shadow' => $theme_pack['primary_block_shadow'] . ' daje blagi naglasak glavnom bloku bez teškog efekta.',
+            'secondary_blocks_text' => $theme_pack['secondary_blocks_text'] . ' održava ostale blokove čitljivima i urednima.',
+            'secondary_blocks_background' => $theme_pack['secondary_blocks_background'] . ' smiruje ostatak aplikacije kako glavni blok ne bi izgubio fokus.',
+            'secondary_blocks_border' => $theme_pack['secondary_blocks_border'] . ' blago odvaja sekundarne blokove bez novog šuma.',
+            'secondary_blocks_shadow' => $theme_pack['secondary_blocks_shadow'] . ' drži sekundarne blokove lagano odvojenima i nenametljivima.',
+        ];
+
+        if(!empty($core_block_policy['funnel_preferred_primary'])) {
+            $primary_block_plan = !empty($funnel_block['block_id'])
+                ? [
+                    'block_id' => (int) ($funnel_block['block_id'] ?? 0),
+                    'block_type' => 'lead_funnel',
+                    'label' => $clean_label((string) ($funnel_block['label'] ?? $core_funnel_label)),
+                    'reason' => 'Funnel treba biti glavni blok jer u FCC sustavu najjasnije vodi prema preporuci, prijavi ili ozbiljnom sljedećem koraku.',
+                    'emphasis' => 'strong',
+                    'apply_theme_emphasis' => true,
+                ]
+                : [
+                    'block_id' => 0,
+                    'block_type' => 'lead_funnel',
+                    'label' => $core_funnel_label,
+                    'reason' => 'Funnel treba biti glavni blok jer u FCC sustavu najjasnije vodi prema preporuci, prijavi ili ozbiljnom sljedećem koraku.',
+                    'emphasis' => 'strong',
+                    'apply_theme_emphasis' => true,
+                ];
+        } else {
+            $primary_block_plan = !empty($primary_snapshot)
+                ? [
+                    'block_id' => (int) ($primary_snapshot['block_id'] ?? 0),
+                    'block_type' => (string) ($primary_snapshot['type'] ?? ''),
+                    'label' => $clean_label((string) ($primary_snapshot['label'] ?? '')),
+                    'reason' => 'Ovaj blok je najbliži glavnom sljedećem koraku i treba dobiti najjači naglasak.',
+                    'emphasis' => 'strong',
+                    'apply_theme_emphasis' => true,
+                ]
+                : [
+                    'block_id' => 0,
+                    'block_type' => (string) ($shop_block['type'] ?? 'heading'),
+                    'label' => $clean_label((string) ($shop_block['label'] ?? 'Glavni korak')) ?: 'Glavni korak',
+                    'reason' => 'Za ovaj cilj aplikacija treba jedan jasan glavni blok koji odmah vodi prema sljedećem koraku.',
+                    'emphasis' => 'strong',
+                    'apply_theme_emphasis' => true,
+                ];
+        }
+
+        $copy_suggestions = [];
+
+        if($needs_owner_identity_anchor && !empty($identity_heading_block['block_id']) && $identity_heading_index !== null && $identity_heading_index <= 3) {
+            $copy_suggestions[] = [
+                'block_id' => (int) ($identity_heading_block['block_id'] ?? 0),
+                'block_type' => 'heading',
+                'role_key' => 'owner_identity',
+                'field' => 'text',
+                'label' => 'Ime i prezime',
+                'value' => $owner_name,
+                'reason' => 'Puno ime i prezime odmah ispod avatara najbrže gradi prepoznavanje i povjerenje.',
+                'case_style' => 'title',
+            ];
+        }
+
+        foreach($ordered_blocks as $preview) {
+            $type = (string) ($preview['type'] ?? '');
+            $block_id = (int) ($preview['block_id'] ?? 0);
+
+            if($block_id <= 0) {
+                continue;
+            }
+
+            if(in_array($type, ['youtube', 'vimeo', 'video'], true)) {
+                $copy_suggestions[] = [
+                    'block_id' => $block_id,
+                    'block_type' => $type,
+                    'field' => 'title',
+                    'label' => 'Video naslov',
+                    'value' => $is_contact_goal ? 'Pogledaj u 60 sekundi: je li ovo za tebe?' : 'Pogledaj kratko: što ovdje dobivaš?',
+                    'reason' => 'Video treba odmah reći zašto vrijedi ostati i gledati dalje.',
+                    'case_style' => 'sentence',
+                ];
+            } elseif($type === 'custom_html_whatsapp') {
+                $copy_suggestions[] = [
+                    'block_id' => $block_id,
+                    'block_type' => $type,
+                    'field' => 'title',
+                    'label' => 'WhatsApp naslov',
+                    'value' => 'Pošalji poruku na WhatsApp',
+                    'reason' => 'Naslov treba odmah reći koji je sljedeći korak bez dodatnog objašnjavanja.',
+                    'case_style' => 'sentence',
+                ];
+            } elseif(in_array($type, ['link_discount', 'link_forever_shop', 'link_forever_product', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo', 'link'], true)) {
+                $contextual_link_value = $this->get_contextual_app_review_link_copy_value($type, (string) ($preview['label'] ?? ''), $goal_type);
+                $copy_suggestions[] = [
+                    'block_id' => $block_id,
+                    'block_type' => $type,
+                    'field' => 'name',
+                    'label' => 'Naziv gumba',
+                    'value' => $contextual_link_value,
+                    'reason' => 'Naziv gumba treba biti jasan i čist, bez internog objašnjenja u zagradi.',
+                    'case_style' => 'sentence',
+                ];
+            } elseif($type === 'lead_funnel') {
+                $copy_suggestions[] = [
+                    'block_id' => $block_id,
+                    'block_type' => $type,
+                    'field' => 'name',
+                    'label' => 'Naziv Funnel gumba',
+                    'value' => $core_funnel_label,
+                    'reason' => 'Glavni kontaktni korak treba zvučati sigurno i jednostavno.',
+                    'case_style' => 'sentence',
+                ];
+            }
+
+            if(count($copy_suggestions) >= 4) {
+                break;
+            }
+        }
+
+        $layout_actions = [];
+        $push_layout_action = function(string $action, array $block, string $why) use (&$layout_actions, $clean_label) {
+            $block_id = (int) ($block['block_id'] ?? 0);
+
+            if($block_id <= 0) {
+                return;
+            }
+
+            foreach($layout_actions as $existing_action) {
+                if((int) ($existing_action['block_id'] ?? 0) === $block_id) {
+                    return;
+                }
+            }
+
+            $layout_actions[] = [
+                'action' => $action,
+                'block_id' => $block_id,
+                'block_type' => (string) ($block['type'] ?? ''),
+                'label' => $clean_label((string) ($block['label'] ?? '')),
+                'why' => $why,
+            ];
+        };
+
+        if($is_contact_goal) {
+            $push_layout_action('keep_top', $hero_visual_block, 'Profilna fotografija ili avatar trebaju ostati prvi trust signal na vrhu aplikacije.');
+            $push_layout_action('keep_top', $identity_heading_block, 'Puno ime i prezime trebaju odmah slijediti iza avatara kako bi osoba odmah znala kome vjeruje.');
+            $push_layout_action('keep_top', $trust_copy_block, 'Kratka trust poruka treba ostati iznad videa i glavnog koraka kako bi pojasnila kome je aplikacija namijenjena.');
+            $push_layout_action('keep_top', $video_block, 'Video treba ostati visoko jer brzo gradi povjerenje prije prijave ili razgovora.');
+            $push_layout_action('keep_after_primary', $whatsapp_block, 'WhatsApp treba biti odmah nakon glavnog koraka kao jednostavan rezervni put do razgovora.');
+            $push_layout_action('keep_after_primary', $business_offer_block, 'Business korak prema Start Paketu treba ostati aktivan i odmah ispod glavnog koraka ili rezervnog kontakta.');
+            $push_layout_action('keep_after_primary', $discount_block, 'Blok za proizvode s popustom treba ostati aktivan i jasno vidljiv niže od glavnog koraka.');
+            $push_layout_action('keep_after_primary', $socials_block, 'Društvene mreže i kontakti trebaju doći nakon glavnog koraka, ne prije njega.');
+
+            foreach($ordered_blocks as $preview) {
+                $type = (string) ($preview['type'] ?? '');
+                $label = trim((string) ($preview['label'] ?? ''));
+                $is_product_or_shop_block = in_array($type, ['link_forever_shop', 'link_discount', 'link_forever_product'], true)
+                    || ($type === 'link' && $this->app_review_text_has_any($label, ['proizvod', 'proizvodi', 'shop', 'webshop', 'popust']));
+
+                if($is_product_or_shop_block) {
+                    $push_layout_action('move_down', $preview, 'Prodajni i webshop blokovi trebaju doći nakon trust sloja i glavnog kontaktnog koraka.');
+                }
+            }
+
+        } else {
+            $push_layout_action('keep_top', $hero_visual_block, 'Profilna fotografija ili avatar trebaju ostati prvi trust signal na vrhu aplikacije.');
+            $push_layout_action('keep_top', $identity_heading_block, 'Puno ime i prezime trebaju odmah slijediti iza avatara kako bi osoba odmah znala kome vjeruje.');
+            $push_layout_action('keep_top', $trust_copy_block, 'Kratka trust poruka treba ostati iznad prodajnog dijela kako bi posjetitelj razumio kome vjeruje.');
+            $push_layout_action('keep_top', $video_block, 'Video treba ostati visoko jer brzo objašnjava što osoba ovdje dobiva.');
+            $push_layout_action('keep_after_primary', $discount_block, 'Blok za proizvode s popustom treba ostati aktivan kao glavni prodajni put.');
+            $push_layout_action('keep_after_primary', $whatsapp_block, 'WhatsApp treba ostati odmah nakon glavnog koraka kao brza pomoć pri izboru.');
+            $push_layout_action('keep_after_primary', $business_offer_block, 'Business korak prema Start Paketu treba ostati prisutan i na prodajnim aplikacijama, ali niže od glavnog prodajnog fokusa.');
+        }
+
+        if(!empty($first_focus_risk_block['block_id'])) {
+            $push_layout_action('move_down', $first_focus_risk_block, 'Ovaj blok sada prerano uzima pažnju i treba doći kasnije u aplikaciji.');
+        }
+
+        $missing_block_recommendations = [];
+
+        if($needs_owner_identity_anchor && (empty($identity_heading_block['block_id']) || $identity_heading_index === null || $identity_heading_index > 3)) {
+            $missing_block_recommendations[] = [
+                'block_type' => 'heading',
+                'role_key' => 'owner_identity',
+                'label' => $owner_name !== '' ? $owner_name : 'Ime i prezime',
+                'why' => 'Puno ime i prezime odmah ispod avatara pomaže da osoba odmah zna kome vjeruje prije svih drugih koraka.',
+                'priority' => 1,
+                'insert_after_block_id' => max(0, (int) ($hero_visual_block['block_id'] ?? 0)),
+                'insert_after_type' => (string) ($hero_visual_block['type'] ?? ''),
+                'insert_after_label' => $clean_label((string) ($hero_visual_block['label'] ?? '')),
+                'allow_existing_type' => true,
+                'preferred_group' => 'start',
+                'preferred_goal' => 'trust',
+                'picker_search' => 'Naslov',
+                'seed_settings' => [
+                    'text' => $owner_name !== '' ? $owner_name : 'Ime i prezime',
+                ],
+            ];
+        }
+
+        if(!empty($core_block_policy['require_funnel']) && empty($selected_app_capabilities['has_lead_funnel'])) {
+            $missing_block_recommendations[] = [
+                'block_type' => 'lead_funnel',
+                'role_key' => 'primary_funnel',
+                'label' => $core_funnel_label,
+                'why' => $goal_type === 'shop'
+                    ? 'Funnel mora biti prisutan i na prodajnoj FCC aplikaciji jer preko njega mozes voditi preporuku proizvoda, izbor i ozbiljan sljedeci korak.'
+                    : 'Ovdje nedostaje jasan glavni korak koji pretvara interes u stvarnu prijavu ili ostavljen kontakt.',
+                'priority' => $needs_owner_identity_anchor ? 2 : 1,
+                'insert_after_block_id' => max(0, (int) ($video_block['block_id'] ?? $trust_block['block_id'] ?? 0)),
+                'insert_after_type' => (string) ($video_block['type'] ?? $trust_block['type'] ?? ''),
+                'insert_after_label' => $clean_label((string) ($video_block['label'] ?? $trust_block['label'] ?? '')),
+                'preferred_group' => 'sales',
+                'preferred_goal' => 'lead_capture',
+                'picker_search' => 'Funnel',
+                'seed_settings' => [
+                    'name' => $core_funnel_label,
+                    'popup_title' => $goal_type === 'shop' ? 'Zatraži preporuku i sljedeći korak' : 'Prijava za poslovnu suradnju',
+                    'popup_subtitle' => $goal_type === 'shop' ? 'Ostavi podatke i dobij najjednostavniji sljedeći korak za pravu preporuku proizvoda.' : 'Ostavi podatke i dobij sljedeći korak bez lutanja.',
+                    'thank_you_title' => 'Prijava je zaprimljena',
+                    'thank_you_text' => 'Uskoro dobivaš sljedeći korak i jasniji pregled što dalje.',
+                    'thank_you_button_text' => 'Nastavi dalje',
+                ],
+            ];
+        }
+
+        if($is_contact_goal && empty($selected_app_capabilities['has_video'])) {
+            $missing_block_recommendations[] = [
+                'block_type' => 'youtube',
+                'role_key' => 'trust_video',
+                'label' => 'Kratki video',
+                'why' => 'Kratki video prije prijave ili WhatsApp poruke brzo objašnjava tko si, kome pomažeš i zašto vrijedi ostati.',
+                'priority' => $needs_owner_identity_anchor ? 2 : 1,
+                'insert_after_block_id' => max(0, (int) ($trust_copy_block['block_id'] ?? $hero_visual_block['block_id'] ?? 0)),
+                'insert_after_type' => (string) ($trust_copy_block['type'] ?? $hero_visual_block['type'] ?? ''),
+                'insert_after_label' => $clean_label((string) ($trust_copy_block['label'] ?? $hero_visual_block['label'] ?? '')),
+                'preferred_group' => 'start',
+                'preferred_goal' => 'trust',
+                'picker_search' => l('link.biolink.blocks.youtube'),
+                'seed_settings' => [
+                    'title' => 'Pogledaj u 60 sekundi: je li ovo za tebe?',
+                ],
+            ];
+        }
+
+        if(!empty($core_block_policy['require_whatsapp_backup']) && empty($selected_app_capabilities['has_whatsapp_contact'])) {
+            $missing_block_recommendations[] = [
+                'block_type' => 'custom_html_whatsapp',
+                'role_key' => 'whatsapp_backup',
+                'label' => 'WhatsApp poruka',
+                'why' => 'Drugi jednostavan put do razgovora pomaže ljudima koji ne žele odmah kroz prijavu.',
+                'priority' => 2,
+                'insert_after_block_id' => max(0, (int) ($funnel_block['block_id'] ?? 0)),
+                'insert_after_type' => (string) ($funnel_block['type'] ?? ''),
+                'insert_after_label' => $clean_label((string) ($funnel_block['label'] ?? '')),
+                'preferred_group' => 'contacts',
+                'preferred_goal' => 'lead_capture',
+                'picker_search' => 'WhatsApp',
+                'seed_settings' => [
+                    'title' => 'Pošalji poruku na WhatsApp',
+                    'message' => 'Javi se ako želiš kratko pojašnjenje prije sljedećeg koraka.',
+                ],
+            ];
+        }
+
+        if(!empty($core_block_policy['require_discount_offer']) && empty($discount_block['block_id'])) {
+            $missing_block_recommendations[] = [
+                'block_type' => 'link_discount',
+                'role_key' => 'core_discount_offer',
+                'label' => $core_discount_label,
+                'why' => 'Blok za proizvode s popustom mora biti prisutan na svakoj FCC aplikaciji jer je to srce prodajnog dijela sustava.',
+                'priority' => $goal_type === 'shop' ? 2 : 4,
+                'insert_after_block_id' => max(0, (int) ($funnel_block['block_id'] ?? $whatsapp_block['block_id'] ?? 0)),
+                'insert_after_type' => (string) ($funnel_block['type'] ?? $whatsapp_block['type'] ?? ''),
+                'insert_after_label' => $clean_label((string) ($funnel_block['label'] ?? $whatsapp_block['label'] ?? '')),
+                'preferred_group' => 'forever',
+                'preferred_goal' => 'product_recommendation',
+                'picker_search' => l('link.biolink.blocks.link_discount'),
+                'seed_settings' => [
+                    'name' => $core_discount_label,
+                    'apply_to_all_products' => 1,
+                ],
+            ];
+        }
+
+        if(!empty($core_block_policy['require_business_start_paket_offer']) && empty($business_offer_block['block_id'])) {
+            $missing_block_recommendations[] = [
+                'block_type' => 'link_forever_product',
+                'role_key' => 'core_business_offer',
+                'label' => $core_business_offer_label,
+                'why' => 'Blok "Postani Forever suradnik" mora biti prisutan na svakoj FCC aplikaciji jer vodi na Start Paket i cuva business put kroz referral sustav.',
+                'priority' => $goal_type === 'shop' ? 4 : 2,
+                'insert_after_block_id' => max(0, (int) ($whatsapp_block['block_id'] ?? $funnel_block['block_id'] ?? 0)),
+                'insert_after_type' => (string) ($whatsapp_block['type'] ?? $funnel_block['type'] ?? ''),
+                'insert_after_label' => $clean_label((string) ($whatsapp_block['label'] ?? $funnel_block['label'] ?? '')),
+                'preferred_group' => 'forever',
+                'preferred_goal' => 'lead_capture',
+                'picker_search' => l('link.biolink.blocks.link_forever_product'),
+                'seed_settings' => $this->get_fcc_start_paket_seed_settings(),
+            ];
+        }
+
+        if(empty($selected_app_capabilities['has_chatbot'])) {
+            $chatbot_context = implode(' ', array_filter([
+                (string) ($values['main_offer'] ?? ''),
+                (string) ($values['priority_offer'] ?? ''),
+                (string) ($values['notes'] ?? ''),
+                $app_name,
+            ]));
+            $preferred_chatbot_type = $this->app_review_text_has_any($chatbot_context, ['ljubim', 'ljubimac', 'ljubimci', 'pas', 'psi', 'mack', 'mačk', 'pet', 'pets', 'animal'])
+                ? 'custom_html_chatbot_pets'
+                : 'custom_html_chatbot';
+
+            $missing_block_recommendations[] = [
+                'block_type' => $preferred_chatbot_type,
+                'role_key' => 'floating_ai_assistant',
+                'label' => $preferred_chatbot_type === 'custom_html_chatbot_pets' ? 'AI savjetnik za ljubimce' : 'AI savjetnik za preporuku proizvoda',
+                'why' => 'AI savjetnik je jedan od glavnih FCC Pro benefita i treba biti aktivan kao plutajuci popup alat koji pomaže oko preporuke proizvoda i vodi prema pravim linkovima.',
+                'priority' => 1,
+                'insert_after_block_id' => max(0, (int) ($socials_block['block_id'] ?? $whatsapp_block['block_id'] ?? $funnel_block['block_id'] ?? 0)),
+                'insert_after_type' => (string) ($socials_block['type'] ?? $whatsapp_block['type'] ?? $funnel_block['type'] ?? ''),
+                'insert_after_label' => $clean_label((string) ($socials_block['label'] ?? $whatsapp_block['label'] ?? $funnel_block['label'] ?? '')),
+                'preferred_group' => 'forever',
+                'preferred_goal' => 'product_recommendation',
+                'picker_search' => l('link.biolink.blocks.' . $preferred_chatbot_type),
+                'seed_settings' => [],
+            ];
+        }
+
+        $visible_missing_block_recommendations = array_slice($missing_block_recommendations, 0, 6);
+        $has_visible_chatbot_recommendation = false;
+        foreach($visible_missing_block_recommendations as $item) {
+            if(in_array((string) ($item['block_type'] ?? ''), ['custom_html_chatbot', 'custom_html_chatbot_pets'], true)) {
+                $has_visible_chatbot_recommendation = true;
+                break;
+            }
+        }
+
+        if(!$has_visible_chatbot_recommendation) {
+            foreach($missing_block_recommendations as $item) {
+                if(!in_array((string) ($item['block_type'] ?? ''), ['custom_html_chatbot', 'custom_html_chatbot_pets'], true)) {
+                    continue;
+                }
+
+                array_pop($visible_missing_block_recommendations);
+                $visible_missing_block_recommendations[] = $item;
+                break;
+            }
+        }
+
+        return [
+            'headline' => $headline,
+            'summary' => $quality_summary . ' Za ' . $app_name . ' sada najveći pomak dolazi iz jasnijeg vrha, mirnijeg rasporeda i jednog glavnog koraka.',
+            'biggest_bottleneck' => $biggest_bottleneck,
+            'top_recommendation' => $top_recommendation,
+            'weekly_focus' => $weekly_focus,
+            'first_move' => $priority_actions[0] ?? $top_recommendation,
+            'next_move' => $priority_actions[1] ?? 'Nakon glavne promjene pojačaj sljedeći blok koji podržava isti cilj.',
+            'do_not_touch' => !empty($video_block) ? 'Ne uklanjaj sloj povjerenja na vrhu, samo ga pojednostavni.' : 'Ne dodaj nove rane distrakcije prije glavnog koraka.',
+            'priority_actions' => $priority_actions,
+            'ideal_block_order' => $ideal_block_order,
+            'design_notes' => $design_notes,
+            'keep_doing' => $keep_doing,
+            'funnel_blueprint' => $funnel_blueprint,
+            'color_palette' => $color_palette,
+            'trust_builders' => $trust_builders,
+            'theme_pack' => $theme_pack,
+            'fcc_core_block_policy' => $core_block_policy,
+            'primary_block_plan' => $primary_block_plan,
+            'block_patch_pack' => [],
+            'copy_suggestions' => $copy_suggestions,
+            'layout_actions' => $layout_actions,
+            'missing_block_recommendations' => array_values($visible_missing_block_recommendations),
         ];
     }
 
@@ -3736,10 +7653,14 @@ class AiPlan extends Controller {
         }
 
         $selected_app = $selected_app ?? $this->get_selected_app($app_structure_payload) ?? $this->get_default_app_summary();
-        $ai_input = $this->build_app_review_ai_input($values, $analytics_payload, $app_structure_payload, $current_clicks_30d, $request_context, $selected_app);
+        $selected_app_block_attribution = $this->get_app_review_block_attribution_payload($selected_app);
+        $review_generated_at = get_date();
+        $ai_input = $this->build_app_review_ai_input($values, $analytics_payload, $app_structure_payload, $current_clicks_30d, $request_context, $selected_app, $selected_app_block_attribution, $previous_review);
         $ai_input = $this->sanitize_utf8_for_json($ai_input);
         $quality_payload = $this->get_app_review_quality_payload($selected_app, $current_clicks_30d);
-        $evolution_payload = $this->get_app_review_evolution_payload((array) ($quality_payload['performance'] ?? []), $previous_review);
+        $selected_link_additional = $this->get_link_additional_by_id((int) ($selected_app['link_id'] ?? 0));
+        $evolution_memory = $this->normalize_app_review_evolution_memory($selected_link_additional['fcc_ai_evolution_memory'] ?? []);
+        $evolution_payload = $this->get_app_review_evolution_payload((array) ($quality_payload['performance'] ?? []), $previous_review, $evolution_memory, $review_generated_at, $selected_app_block_attribution);
         $evolution_payload = $this->sanitize_utf8_for_json($evolution_payload);
         $supports_image_input = $this->model_supports_image_input((string) ($credentials['model'] ?? ''));
 
@@ -3759,9 +7680,9 @@ class AiPlan extends Controller {
         $selected_visual_segments = (array) ($ai_input['selected_app']['visual_context']['visual_segments'] ?? []);
         $user_prompt = implode("\n\n", [
             !empty($evolution_payload['has_previous_review'])
-                ? 'Na temelju cilja korisnika, postojece strukture aplikacije, vizualnog ulaza ako postoji, prethodne analize iste glavne FCC aplikacije i novih mjernih podataka napravi nadogradnju analize iste aplikacije.'
+                ? 'Na temelju cilja korisnika, postojece strukture aplikacije, vizualnog ulaza ako postoji, prethodne analize iste glavne FCC aplikacije, evolution memorije i novih mjernih podataka napravi nadogradnju analize iste aplikacije.'
                 : 'Na temelju cilja korisnika, postojece strukture aplikacije, vizualnog ulaza ako postoji i link analitike napravi pocetnu AI analizu glavne FCC aplikacije.',
-            'Vrati samo JSON s kljucevima: headline, summary, biggest_bottleneck, top_recommendation, weekly_focus, first_move, next_move, do_not_touch, priority_actions, ideal_block_order, design_notes, keep_doing, funnel_blueprint, color_palette, trust_builders.',
+            'Vrati samo JSON s kljucevima: headline, summary, biggest_bottleneck, top_recommendation, weekly_focus, first_move, next_move, do_not_touch, priority_actions, ideal_block_order, design_notes, keep_doing, funnel_blueprint, color_palette, trust_builders, theme_pack, primary_block_plan, block_patch_pack, copy_suggestions, layout_actions, missing_block_recommendations.',
             'Pravila:',
             '- Ovo je faza 1 FCC AI sustava. Sve preporuke moraju biti vezane samo uz glavnu, zasticenu FCC aplikaciju korisnika.',
             '- Pisi vrlo jednostavno, toplo i potpuno. Sve mora razumjeti pocetnik koji nema internet ili marketinsko znanje.',
@@ -3776,6 +7697,26 @@ class AiPlan extends Controller {
             '- design_notes mora imati 2 do 5 konkretnih savjeta za boje, tekst blokove, video, kontrast i vizualni dojam.',
             '- color_palette mora biti objekt s kljucevima: background, heading, text, primary_block_text, primary_block_background, primary_block_border, primary_block_shadow, secondary_blocks_text, secondary_blocks_background, secondary_blocks_border, secondary_blocks_shadow.',
             '- Svaka vrijednost unutar color_palette mora biti jedna kratka recenica s konkretnim hex kodom i kratkim razlogom zasto ta boja odgovara cilju i dojmu aplikacije.',
+            '- theme_pack mora biti strojno citljiv objekt za editor, bez recenica u bojama. Koristi kljuceve: name, summary, background_mode, background_color, gradient_start, gradient_end, gradient_style, heading_color, text_color, primary_block_text, primary_block_background, primary_block_border, primary_block_shadow, secondary_blocks_text, secondary_blocks_background, secondary_blocks_border, secondary_blocks_shadow, font, font_size, width, block_spacing, hover_animation, migration_note.',
+            '- U theme_pack bojama vrati samo stvarne CSS vrijednosti. Za boje koristi hex. Za shadow smijes koristiti rgba. gradient_style uvijek vrati kao "current_135deg" ako je mode = gradient.',
+            '- Ako je background_mode = color, popuni background_color. Ako je background_mode = gradient, popuni gradient_start i gradient_end prema trenutnom FCC sustavu pocetak/kraj gradijenta, ne top/bottom.',
+            '- Uvijek postuj FCC core block policy iz inputa. Svaka glavna FCC aplikacija mora imati aktivan blok za proizvode s popustom, blok "Postani Forever suradnik" koji vodi na Start Paket, Funnel i WhatsApp rezervni put. AI smije odluciti redoslijed i tekst, ali ne smije izbaciti te blokove iz plana.',
+            '- Ako je goal_type shop ili request_context jasno govori o prodaji proizvoda, slozi aplikaciju product-first: trust sloj, video po potrebi, Funnel kao glavni blok, zatim proizvodi s popustom, zatim WhatsApp, a business Start Paket niže kao dodatni put.',
+            '- Ako je goal_type business, recruitment ili partnership, slozi aplikaciju business-first: trust sloj, video po potrebi, Funnel kao glavni blok, zatim Start Paket / Postani Forever suradnik, zatim WhatsApp, a blok za proizvode s popustom ostavi aktivan malo niže.',
+            '- Za business/start paket put koristi link_forever_product blok sa seed_settings koji ciljaju Start Paket. Taj blok treba imati jasan naziv poput "Postani Forever suradnik".',
+            '- primary_block_plan mora biti objekt s kljucevima: block_id, block_type, label, reason, emphasis, apply_theme_emphasis. Ako ne znas block_id, vrati 0 ali vrati type i label.',
+            '- Ako vracas font u theme_pack, koristi samo vrijednosti iz editor_theme_capabilities. font_size, width, block_spacing i hover_animation takoder moraju pratiti samo dopustene editor vrijednosti.',
+            '- copy_suggestions mora biti lista kratkih AI prijedloga za naslove i gumbe samo za blokove koji vec postoje i koji se stvarno mogu urediti kroz editor. Svaka stavka neka ima: block_id, block_type, field, label, value, reason, case_style. Po potrebi smijes dodati role_key ako preporuka ima jasnu ulogu poput owner_identity, primary_funnel ili whatsapp_backup.',
+            '- Za copy_suggestions field koristi samo postojece editor fieldove: name, title, button_text, description, text, message, popup_title, popup_subtitle, thank_you_title, thank_you_text ili thank_you_button_text.',
+            '- Ako je blok partner, suradnja, upis, registracija, webshop, popust ili proizvod, naziv mora jasno zadrzati tu stvarnu namjenu. Nemoj davati genericke nazive poput "Saznaj vise i otvori sljedeci korak".',
+            '- Interna strategijska oznaka kao (sporedno), (rezervno), (zadnje), (primarno), (kao rezervni put) i slicne napomene nikad ne smiju biti dio vidljivog naziva, naslova, gumba, ideal_block_order stavke, label polja, value polja ni seed_settings vrijednosti.',
+            '- Ako zelis objasniti da je nesto sporedno, rezervno ili sekundarno, to smijes napisati samo u reason ili why, nikada u label, value, name, title, button_text, text, message, insert_after_label ni seed_settings.',
+            '- Nemoj stavljati copy_suggestions na custom_html, code, iframe, divider, loading ni slicne napredne ili strukturne blokove.',
+            '- layout_actions mora biti lista kratkih odluka za raspored blokova. Svaka stavka neka ima: action, block_id, block_type, label, why.',
+            '- missing_block_recommendations koristi samo za blokove koji trenutno ne postoje u aplikaciji ili kada postoji isti tehnicki tip bloka, ali nedostaje bas ta uloga na pravom mjestu. Svaka stavka neka ima: block_type, label, why, priority, insert_after_block_id, insert_after_type, insert_after_label, seed_settings. Po potrebi smijes dodati role_key i allow_existing_type=true.',
+            '- U missing_block_recommendations seed_settings koristi samo ova polja ako su stvarno korisna: name, title, text, message, button_text, description, popup_title, popup_subtitle, thank_you_title, thank_you_text, thank_you_button_text, open_mode, location_url, product_blog_post_id, product_translation_key, product_language_mode, product_language_code, product_fallback_language_code, product_image_url, apply_to_all_products.',
+            '- Ako preporucujes video kao missing_block_recommendation, koristi youtube ili vimeo blok, nikad genericki video. Ako nisi siguran, koristi youtube.',
+            '- block_patch_pack koristi samo kad poseban blok, posebno Funnel ili nestandardni blok, treba vlastite boje ili tekstualni naglasak. Svaka stavka neka ima: block_id, block_type, reason, settings.',
             '- trust_builders mora imati 3 do 5 kratkih savjeta kako aplikacija moze djelovati sigurnije, ozbiljnije i uvjerljivije.',
             '- funnel_blueprint mora imati 3 do 4 kratke stavke i jasno reci kako sloziti Funnel ako Funnel ima smisla za cilj korisnika.',
             '- keep_doing neka bude kratko i ohrabrujuce: sto vec radi dobro i ne treba kvariti.',
@@ -3785,13 +7726,20 @@ class AiPlan extends Controller {
             '- Nemoj preporucivati Save Contact, Contact Collector ni Email Collector kao glavno rjesenje.',
             '- Nemoj davati savjete o velicini gumba jer su gumbi u sustavu vec standardizirani.',
             '- Chatbot ili AI savjetnik nije klasicni gumb u redoslijedu blokova. On se pojavljuje kao mala ikonica u donjem desnom kutu i otvara popup preko ekrana.',
-            '- Ako aplikacija ima chatbot, tretiraj ga kao neutralan pomocni sloj koji ne smeta fokusu i ne racunaj ga kao problem u prioritetu glavnih gumba ili redoslijedu blokova.',
+            '- Ako aplikacija ima chatbot ili AI savjetnik za ljude ili ljubimce, tretiraj ga kao neutralan pomocni sloj koji ne smeta fokusu i ne racunaj ga kao problem u prioritetu glavnih gumba ili redoslijedu blokova.',
+            '- Ako aplikacija vec ima chatbot, nikad nemoj predlagati gasenje, skrivanje, uklanjanje ni spustanje u smislu da nestane iz aplikacije. Taj blok mora ostati aktivan.',
+            '- Ako aplikacija nema chatbot ili AI savjetnik, dodaj ga u missing_block_recommendations kao floating popup benefit. Koristi custom_html_chatbot za opci proizvodni savjetnik, a custom_html_chatbot_pets za pet ili animal kontekst.',
             '- Chatbot mozes spomenuti kao koristan dodatak za preporuku proizvoda i usmjeravanje na linkove s popustom, ali ga nemoj isticati kao glavnu prepreku niti kao glavni prvi korak.',
             '- Kad predlazes kontakt, koristi formulaciju "pošalji poruku na WhatsApp" ili "WhatsApp poruka".',
-            '- Ako je cilj skupljanje kontakata, suradnja ili prijava ljudi, Funnel tretiraj kao glavni i najbolji alat za prvi ozbiljan korak.',
+            '- Ako je cilj skupljanje kontakata, suradnja ili prijava ljudi, Funnel tretiraj kao glavni i najbolji alat za prvi ozbiljan korak, ali ne automatski kao prvi vidljivi blok na vrhu.',
             '- Ako je cilj skupljanje kontakata i aplikacija nema Funnel, jedna od prvih preporuka mora biti ugradnja Funnel-a.',
             '- Ako preporucujes Funnel, nemoj predlagati pitanja. Funnel u FCC-u moze imati video, ime, email, broj telefona i thank you stranicu.',
             '- Ako preporucujes Funnel, provjeri ima li aplikacija video. Ako ga nema, preporuci kratak video prije ili unutar Funnel-a.',
+            '- Za business, recruitment i slicne trust-first ciljeve razlikuj prvi sloj povjerenja od prvog konverzijskog koraka. Na vrhu su cesto ucinkovitiji avatar ili stvarna fotografija, puno ime i prezime, kratki trust tekst i po potrebi kratak video. Funnel tada ide odmah nakon tog trust sloja kao prvi ozbiljan korak.',
+            '- Nemoj stavljati Lead Funnel kao prvu vidljivu stvar na vrhu ako prethodno nema dovoljno povjerenja, osim ako signal i kontekst jasno pokazuju da je promet vec topao i osoba korisnika vec dobro poznaje.',
+            '- Ako user.name postoji i aplikacija predstavlja osobu, puno ime i prezime tretiraj kao obavezni dio trust sloja odmah nakon avatara ili stvarne fotografije.',
+            '- Ako na vrhu aplikacije nema jasnog bloka s punim imenom i prezimenom vlasnika, preporuci heading blok s imenom prije trust teksta, videa i Funnel-a.',
+            '- Ako ideal_block_order slazes za osobni brand, suradnju ili prijavu, u pravilu prvo razmisli o ovome: avatar ili stvarna fotografija, puno ime i prezime, kratki trust tekst, zatim video ili Funnel. Tek nakon toga idu rezervni linkovi, socials i shop.',
             '- U funnel_blueprint smijes preporuciti PDF knjigu, plan, mini vodič, edukaciju ili preusmjeravanje na drugu FCC aplikaciju kao poklon ili sljedeci korak.',
             '- Ako je cilj regrutacija, Funnel ili thank you stranica mogu voditi na edukativnu FCC aplikaciju za suradnju.',
             '- Ako je cilj proizvod, Funnel moze voditi na preporuku proizvoda, plan prehrane, vjezbe, detox ili korisni poklon prije kupnje.',
@@ -3799,17 +7747,44 @@ class AiPlan extends Controller {
             '- Ako postoje previse jednaki glavni smjerovi na vrhu, jasno reci koji jedan mora biti glavni prvi korak.',
             '- Ako su prodajni linkovi previsoko, a cilj je kontakt ili suradnja, reci da trebaju ici nakon povjerenja, videa ili Funnel-a.',
             '- U obzir uzmi goal_context: publiku, glavni cilj, prioritetnu ponudu, stil komunikacije i biljeske iz upitnika. Preporuke moraju biti uskladjene s tim identitetom.',
+            '- Ako goal_context.visual_tone_preference postoji, tretiraj ga kao opis željenog dojma, ne kao točan HEX zahtjev. Ako ne postoji, samostalno odaberi najučinkovitiju paletu za cilj, publiku i ponudu.',
+            '- Za dizajn kreni goal-first. Prvo odredi sto bi najbolje pomoglo rezultatu za ovaj cilj, publiku i ponudu. Tek nakon toga pogledaj trenutni dizajn da das migration_note i da izbjegnes nepotreban kaos pri prijelazu.',
+            '- Nemoj cuvati lose, krestave ili nepovezane postojece boje samo zato sto vec postoje. Ako trenutni dizajn odmaže fokusu, predlozi jasan reset prema boljem smjeru.',
+            '- design_policy i visual_context.design_diagnostic su glavni signal kako tretirati trenutni izgled. Ako recommendation_bias kaze reset ili soft_reset, nemoj kopirati postojece boje ni isti vizualni smjer.',
+            '- Koristi fcc_block_catalog da procijenis koji blokovi imaju smisla za cilj, koji smetaju fokusu i sto bi vrijedilo dodati, pomaknuti ili ugasiti.',
+            '- selected_app.block_attribution pokazuje koji blokovi trenutno donose signal, a koji su visoko postavljeni bez rezultata. To koristi kao stvarni dokaz sto pomaze, a sto odmaze.',
+            '- Ako selected_app.block_attribution pokazuje da blok ima status high_signal ili contributing, nemoj predlagati hide_for_now ni consider_remove za taj blok. Takav blok smijes zadrzati, doraditi ili pomaknuti, ali ne gasiti.',
+            '- Ako je blok focus_risk ili critical_focus_risk, radije prvo predlozi move_down i jasniji fokus. Gasenje ili skrivanje koristi samo za ocite viskove bez signala.',
             '- Ako predlazes tekst blokove, reci jednostavno sto trebaju poruciti: kome je aplikacija namijenjena, sto osoba dobiva i koji je sljedeci korak.',
             '- Glavni blok u color_palette tretiraj kao prvi i najvazniji prodajni ili kontaktni blok koji vodi osobu na sljedeci korak.',
             '- Ostale blokove u color_palette tretiraj kao ostatak blokova koji dolaze poslije glavnog koraka i moraju ostati citljivi, mirni i uskladjeni.',
             '- Za boje koristi konkretne hex kodove i kratko objasni zasto te boje pomazu bas ovom cilju, ovom prioritetu i ovom tonu brenda.',
+            '- fcc_goal_system.design_direction daje smjer dojma i guardrailse, ali ne daje unaprijed zadane HEX boje. Boje biraj samostalno.',
+            '- Za shop ili product-first aplikacije nemoj automatski zavrsiti na ravnoj bijeloj ili gotovo potpuno bijeloj pozadini. Ako korisnik nije izričito trazio clean ili minimal izgled, koristi toniranu bazu ili nenapadni gradijent koji djeluje profesionalnije i pomaže fokusu.',
+            '- Ako vise aplikacija ima slican prodajni cilj, nemoj po navici vracati gotovo istu blijedu paletu. Vizualni smjer prilagodi tonu komunikacije, ponudi, publici i trust sloju konkretne aplikacije.',
+            '- Sekundarni blokovi trebaju biti neutralni ili blago tonirani. Ne smiju biti vizualno glasniji od glavnog bloka.',
+            '- Izbjegavaj neon, fluorescentne tonove, kanarinac zutu i preveliku saturaciju koja djeluje neprofesionalno.',
             '- U color_palette i design_notes analiziraj pozadinu aplikacije, naslov, tekst, glavni blok i ostale blokove.',
-            '- U obzir uzmi goal_context, fcc_goal_system, visual_profile, primary_action_block i secondary_block_style_samples. Ako postojece boje vec rade dobro, zadrzi smjer i predlozi poboljsanja bez nepotrebnog resetiranja svega.',
+            '- U obzir uzmi goal_context, fcc_goal_system, visual_profile, primary_action_block, secondary_block_style_samples i fcc_block_catalog. Trenutni dizajn je sekundarni kontekst, ne glavni izvor istine.',
+            '- visual_profile i style profili sluze za dijagnozu kaosa, kontrasta i razine naglasaka. Ne tretiraj ih kao izvor palete koju treba zadrzati.',
+            '- Screenshot ili visual_context nikad ne smije biti razlog da theme_pack ponovi iste postojece HEX boje, osim ako analytics, evolution i design_diagnostic jasno pokazu da je trenutna paleta vec mirna, fokusirana i ucinkovita.',
+            '- Ako je nova theme_pack paleta gotovo ista kao trenutni vizual, to je dopusteno samo kad je to opravdano stvarnim rezultatom i treba biti objasnjeno u migration_note. Inace promijeni barem pozadinu ili glavni blok u bolji goal-first smjer.',
+            '- U evolution_payload gledaj sto je prije bilo preporuceno, sto je stvarno primijenjeno i kakav je bio ishod nakon 7 ili 30 dana.',
+            '- Ako evolution_payload sadrzi block_summary, koristi ga da prepoznas koji su blokovi pojacali signal, a koji su oslabili ili ostali bez rezultata.',
+            '- Ako theme_applied_at, primary_applied_at ili layout_applied_at nedostaju, tretiraj to kao preporuku koja jos nije stvarno provedena.',
+            '- Ako palette_feedback.has_feedback = true, to je stvarna ljudska povratna informacija o tome je li paleta korisniku sjela ili nije.',
+            '- Ako palette_feedback.decision = keep i rezultati nisu losi, zadrzi isti osnovni vizualni smjer i predlozi samo finu doradu.',
+            '- Ako palette_feedback.decision = refine, zadrzi osnovni mood palete, ali popravi kontrast, hijerarhiju i fokus glavnog bloka.',
+            '- Ako palette_feedback.decision = replace, slobodno predlozi novi vizualni smjer i novu paletu ako ce to bolje pomoci cilju aplikacije.',
+            '- Ako palette_feedback.decision = hold, nemoj zakljuciti da je paleta losa samo po performansu jer nije stvarno bila primijenjena.',
+            '- Ako palette_feedback.note postoji, uzmi ga kao dodatni dokaz sto korisniku djeluje preglasno, prehladno, pretamno ili neusklađeno.',
+            '- Ako je nesto primijenjeno i 7d ili 30d rezultat nije donio pomak, predlozi novi jasan korak umjesto ponavljanja istog savjeta.',
+            '- Ako je nakon primjene vidljiv rast, zadrzi smjer i predlozi finu doradu, ne potpuni reset.',
             '- U trust_builders reci kako vise povjerenja grade fotografija, video, jedan glavni korak, edukacija, Funnel i jasan redoslijed blokova.',
             (!empty($evolution_payload['has_previous_review'])
                 ? '- Ovo nije nova analiza od nule. Ovo je nadogradnja prethodne analize iste aplikacije. Ukratko reci sto je bolje nego prosli put, sto i dalje koci rezultat i koji je sada novi najbolji sljedeci korak.'
                 : '- Ovo je prva analiza ove glavne aplikacije. Postavi jasnu pocetnu bazu, glavni fokus i najvazniji prvi redoslijed blokova.'),
-            '- Ako dobijes vizual, koristi ga za komentare o fotografiji, dojmu, kontrastu i prvom ekranu.',
+            '- Ako dobijes vizual, koristi ga za komentare o fotografiji, dojmu, kontrastu i prvom ekranu, ali ne za kopiranje postojecih boja.',
             '- Ako je visual_context.scope = rendered_live_app, tretiraj to kao stvarni screenshot live FCC aplikacije i komentiraj raspored, fotografiju, citljivost i prvi dojam.',
             '- Ako je visual_context.scope = hero_image_only ili avatar_only, nemoj tvrditi da si pregledao cijelu live aplikaciju.',
             '- Ako nema vizuala, oslanjaj se samo na strukturu, redoslijed blokova i analitiku.',
@@ -3900,28 +7875,50 @@ class AiPlan extends Controller {
         }
 
         $decoded_review = $this->extract_json_from_text($content);
+        $used_fallback_review = false;
 
         if(!is_array($decoded_review)) {
-            throw $this->get_ai_debug_error($content);
+            $review = $this->build_emergency_app_review($values, $analytics_payload, $selected_app, $current_clicks_30d, $request_context, $quality_payload, $selected_app_block_attribution);
+            $used_fallback_review = true;
+        } else {
+            try {
+                $review = $this->validate_app_review_response($decoded_review, $selected_app);
+            } catch(\Throwable $exception) {
+                $review = $this->build_emergency_app_review($values, $analytics_payload, $selected_app, $current_clicks_30d, $request_context, $quality_payload, $selected_app_block_attribution);
+                $used_fallback_review = true;
+            }
         }
 
-        try {
-            $review = $this->validate_app_review_response($decoded_review);
-        } catch(\Throwable $exception) {
-            throw $this->get_ai_debug_error($content);
-        }
+        $review['copy_suggestions'] = $this->refine_app_review_copy_suggestions(
+            (array) ($review['copy_suggestions'] ?? []),
+            $selected_app,
+            $this->get_effective_app_review_goal_type($values, $request_context, $selected_app),
+            (string) ($this->user->name ?? '')
+        );
+        $review['layout_actions'] = $this->enforce_app_review_signal_safe_layout_actions(
+            (array) ($review['layout_actions'] ?? []),
+            $selected_app_block_attribution
+        );
+        $review['missing_block_recommendations'] = $this->refine_app_review_missing_block_recommendations(
+            (array) ($review['missing_block_recommendations'] ?? []),
+            (string) ($this->user->name ?? '')
+        );
 
-        $review['generated_at'] = get_date();
-        $review['model'] = $credentials['model'];
+        $review['generated_at'] = $review_generated_at;
+        $review['review_key'] = $review_generated_at;
+        $review['model'] = $used_fallback_review ? 'fallback_local' : $credentials['model'];
         $review['selected_link_id'] = (int) ($selected_app['link_id'] ?? 0);
         $review['selected_app_url'] = (string) ($selected_app['url'] ?? '');
         $review['selected_app_name'] = (string) (($selected_app['name'] ?? '') ?: ($selected_app['url'] ?? ''));
         $review['request_context'] = $request_context;
-        $review['goal_type'] = $this->get_goal_type($values);
+        $review['goal_type'] = $this->get_effective_app_review_goal_type($values, $request_context, $selected_app);
+        $review['fcc_core_block_policy'] = $this->get_fcc_core_block_policy($values, $review['goal_type'], $request_context);
         $review['growth_stage'] = $current_clicks_30d >= 15 ? 'active_signal' : 'building_signal';
         $review['quality_score'] = (int) ($quality_payload['score'] ?? 0);
         $review['quality_level'] = (string) ($quality_payload['level_key'] ?? 'foundation');
         $review['performance_snapshot'] = (array) ($quality_payload['performance'] ?? []);
+        $review['block_attribution_snapshot'] = $selected_app_block_attribution;
+        $review['signal_protection_summary'] = $this->build_app_review_signal_protection_summary($selected_app_block_attribution, (array) ($review['layout_actions'] ?? []));
         $review['analysis_mode'] = !empty($evolution_payload['has_previous_review']) ? 'evolution' : 'initial';
 
         return $review;
@@ -4221,8 +8218,8 @@ class AiPlan extends Controller {
         return is_array($decoded_candidate) ? $decoded_candidate : null;
     }
 
-    private function get_ai_debug_error(string $content): \Exception {
-        $message = l('ai_plan.ai_error_invalid_response');
+    private function get_ai_debug_error(string $content, string $message_key = 'ai_plan.ai_error_invalid_response'): \Exception {
+        $message = l($message_key);
 
         if(\Altum\Authentication::is_admin()) {
             $snippet = $this->sanitize_ai_string($content, 450);
@@ -4320,7 +8317,97 @@ class AiPlan extends Controller {
         return $fallback_plan;
     }
 
+    private function build_weekly_text_fallback(array $candidates, int $max_length = 320): string {
+        $parts = [];
+
+        foreach($candidates as $candidate) {
+            if(is_object($candidate)) {
+                $candidate = (array) $candidate;
+            }
+
+            if(is_array($candidate)) {
+                $candidate = implode(' ', $this->normalize_ai_list($candidate, 2, min(180, $max_length)));
+            }
+
+            $candidate = $this->sanitize_ai_string($candidate, $max_length);
+
+            if($candidate === '') {
+                continue;
+            }
+
+            $parts[] = $candidate;
+
+            if(count($parts) >= 2) {
+                break;
+            }
+        }
+
+        if(empty($parts)) {
+            return '';
+        }
+
+        return $this->sanitize_ai_string(implode(' ', array_values(array_unique($parts))), $max_length);
+    }
+
+    private function normalize_daily_plan_tasks($value): array {
+        if(is_object($value)) {
+            $value = (array) $value;
+        }
+
+        $tasks = $this->normalize_ai_list($value, 4, 180);
+
+        if(!empty($tasks)) {
+            return $tasks;
+        }
+
+        if(!is_array($value)) {
+            return [];
+        }
+
+        $possible_task_fields = [
+            'task',
+            'task_one',
+            'task_two',
+            'task_three',
+            'task_1',
+            'task_2',
+            'task_3',
+            'step',
+            'step_one',
+            'step_two',
+            'step_three',
+            'todo',
+            'to_do',
+            'action',
+            'action_one',
+            'action_two',
+            'action_three',
+            'next_step',
+        ];
+
+        $collected_tasks = [];
+
+        foreach($possible_task_fields as $field) {
+            if(!isset($value[$field])) {
+                continue;
+            }
+
+            if(is_array($value[$field]) || is_object($value[$field])) {
+                $collected_tasks = array_merge($collected_tasks, $this->normalize_ai_list($value[$field], 4, 180));
+                continue;
+            }
+
+            $collected_tasks[] = $value[$field];
+        }
+
+        return $this->normalize_ai_list($collected_tasks, 4, 180);
+    }
+
     private function normalize_daily_plan($value): array {
+        if(is_object($value)) {
+            $value = (array) $value;
+        }
+
         if(is_array($value) && isset($value['days']) && is_array($value['days'])) {
             $value = $value['days'];
         }
@@ -4336,13 +8423,53 @@ class AiPlan extends Controller {
                 $day_plan = (array) $day_plan;
             }
 
+            $day = is_string($index) && !is_numeric($index)
+                ? $this->sanitize_ai_string($index, 40)
+                : '';
+
+            if(is_scalar($day_plan)) {
+                $title = $this->sanitize_ai_string($day_plan, 120);
+
+                if($title === '') {
+                    continue;
+                }
+
+                $normalized_days[] = [
+                    'day' => $day !== '' ? $day : ('Dan ' . (count($normalized_days) + 1)),
+                    'title' => $title,
+                    'tasks' => [$title],
+                ];
+
+                if(count($normalized_days) >= 7) {
+                    break;
+                }
+
+                continue;
+            }
+
             if(!is_array($day_plan)) {
                 continue;
             }
 
-            $tasks = $this->normalize_ai_list($day_plan['tasks'] ?? $day_plan['actions'] ?? $day_plan['steps'] ?? [], 4, 180);
-            $title = $this->sanitize_ai_string($day_plan['title'] ?? $day_plan['focus'] ?? $day_plan['headline'] ?? '', 120);
-            $day = $this->sanitize_ai_string($day_plan['day'] ?? $day_plan['label'] ?? ('Dan ' . ($index + 1)), 40);
+            $tasks = $this->normalize_daily_plan_tasks(
+                $day_plan['tasks']
+                ?? $day_plan['actions']
+                ?? $day_plan['steps']
+                ?? $day_plan['checklist']
+                ?? $day_plan['todo']
+                ?? $day_plan['to_do']
+                ?? []
+            );
+            $title = $this->sanitize_ai_string($day_plan['title'] ?? $day_plan['focus'] ?? $day_plan['headline'] ?? $day_plan['main_task'] ?? $day_plan['main_focus'] ?? '', 120);
+            $day = $this->sanitize_ai_string($day_plan['day'] ?? $day_plan['label'] ?? $day ?: ('Dan ' . ($index + 1)), 40);
+
+            if($title === '' && !empty($tasks)) {
+                $title = $tasks[0];
+            }
+
+            if(empty($tasks) && $title !== '') {
+                $tasks = [$title];
+            }
 
             if($title === '' || empty($tasks)) {
                 continue;
@@ -4458,6 +8585,8 @@ class AiPlan extends Controller {
             $best_response = $this->sanitize_ai_string($previous_outcome['best_response'] ?? '', 220);
             $main_blocker_now = $this->sanitize_ai_string($previous_outcome['main_blocker_now'] ?? '', 220);
             $next_adjustment = $this->sanitize_ai_string($previous_outcome['next_adjustment'] ?? '', 220);
+            $palette_decision = (string) ($previous_outcome['palette_decision'] ?? $this->get_palette_feedback_decision($previous_outcome['palette_feedback'] ?? ''));
+            $palette_feedback_note = $this->sanitize_ai_string($previous_outcome['palette_feedback_note'] ?? '', 220);
 
             if(in_array($completion_level, ['low_execution', 'not_started'], true)) {
                 $guardrails[] = 'Prosli tjedan izvedba je bila slaba. Novi plan mora biti osjetno jednostavniji, uz manje obveza i jednu glavnu pobjedu koju osoba realno moze zatvoriti.';
@@ -4473,6 +8602,20 @@ class AiPlan extends Controller {
 
             if($next_adjustment !== '') {
                 $guardrails[] = 'Korisnik je vec rekao sto zeli prilagoditi. Ako je to razumno, plan to mora ugraditi kao stvarnu korekciju, ne ignorirati.';
+            }
+
+            if($palette_decision === 'keep') {
+                $guardrails[] = 'Korisniku je paleta sjela. Nemoj bez jakog razloga mijenjati cijeli vizualni smjer, nego ga doradi mirno i precizno.';
+            } elseif($palette_decision === 'refine') {
+                $guardrails[] = 'Paleta je uglavnom dobra, ali trazi doradu. Novi plan smije predlagati finu korekciju kontrasta, hijerarhije i fokusa, bez potpunog reseta.';
+            } elseif($palette_decision === 'replace') {
+                $guardrails[] = 'Korisniku paleta nije sjela. Novi plan smije traziti novi smjer boja ako to i signal i cilj podrzavaju.';
+            } elseif($palette_decision === 'hold') {
+                $guardrails[] = 'Paleta nije stvarno primijenjena. Nemoj je proglasiti losom samo po rezultatu dok nije bila stvarno aktivna na aplikaciji.';
+            }
+
+            if($palette_feedback_note !== '') {
+                $guardrails[] = 'Korisnik je ostavio i konkretan komentar o paleti. To uzmi kao korektiv dojma, ne samo kao estetsku napomenu.';
             }
         }
 
@@ -4509,6 +8652,7 @@ class AiPlan extends Controller {
                 'weekly_change' => $labels['weekly_change'],
                 'audience_focus' => (string) ($values['audience_focus'] ?? ''),
                 'product_focus' => (string) ($values['product_focus'] ?? ''),
+                'visual_tone_preference' => (string) ($values['visual_tone_preference'] ?? ''),
                 'notes' => (string) ($values['notes'] ?? ''),
             ],
             'weekly_checkin' => [
@@ -4564,6 +8708,9 @@ class AiPlan extends Controller {
                     'main_blocker_now' => (string) ($previous_outcome['main_blocker_now'] ?? ''),
                     'biggest_lesson' => (string) ($previous_outcome['biggest_lesson'] ?? ''),
                     'next_adjustment' => (string) ($previous_outcome['next_adjustment'] ?? ''),
+                    'palette_feedback' => $this->get_palette_feedback_label($previous_outcome['palette_feedback'] ?? ''),
+                    'palette_feedback_note' => (string) ($previous_outcome['palette_feedback_note'] ?? ''),
+                    'palette_decision' => (string) ($previous_outcome['palette_decision'] ?? $this->get_palette_feedback_decision($previous_outcome['palette_feedback'] ?? '')),
                 ] : null,
             ],
             'mentor_context' => [
@@ -4579,14 +8726,49 @@ class AiPlan extends Controller {
     private function validate_weekly_ai_plan_response(array $plan): array {
         $plan = $this->unwrap_weekly_ai_plan_payload($plan);
 
-        $headline = $this->sanitize_ai_string($plan['headline'] ?? $plan['title'] ?? '', 140);
-        $summary = $this->sanitize_ai_string($plan['summary'] ?? $plan['overview'] ?? $plan['executive_summary'] ?? '', 900);
-        $focus = $this->sanitize_ai_string($plan['focus'] ?? $plan['main_focus'] ?? $headline, 180);
-        $coach_intro = $this->sanitize_ai_string($plan['coach_intro'] ?? $plan['intro'] ?? $plan['opening_note'] ?? '', 420);
+        $headline = $this->build_weekly_text_fallback([
+            $plan['headline'] ?? '',
+            $plan['title'] ?? '',
+            $plan['focus'] ?? '',
+            $plan['main_focus'] ?? '',
+            $plan['power_move'] ?? '',
+            $plan['leverage_move'] ?? '',
+        ], 140);
+        $summary = $this->build_weekly_text_fallback([
+            $plan['summary'] ?? '',
+            $plan['overview'] ?? '',
+            $plan['executive_summary'] ?? '',
+            $plan['coach_intro'] ?? '',
+            $plan['intro'] ?? '',
+            $plan['opening_note'] ?? '',
+            $plan['why_this_week'] ?? '',
+            $plan['strategic_explanation'] ?? '',
+        ], 900);
+        $focus = $this->build_weekly_text_fallback([
+            $plan['focus'] ?? '',
+            $plan['main_focus'] ?? '',
+            $headline,
+            $plan['power_move'] ?? '',
+        ], 180);
+        $coach_intro = $this->build_weekly_text_fallback([
+            $plan['coach_intro'] ?? '',
+            $plan['intro'] ?? '',
+            $plan['opening_note'] ?? '',
+            $summary,
+        ], 420);
         $brutal_truth = $this->sanitize_ai_string($plan['brutal_truth'] ?? $plan['hard_truth'] ?? $plan['uncomfortable_truth'] ?? '', 320);
         $power_move = $this->sanitize_ai_string($plan['power_move'] ?? $plan['leverage_move'] ?? $plan['best_move'] ?? '', 320);
-        $why_this_week = $this->sanitize_ai_string($plan['why_this_week'] ?? $plan['strategic_explanation'] ?? $plan['reasoning'] ?? '', 500);
-        $encouragement = $this->sanitize_ai_string($plan['encouragement'] ?? $plan['mindset_note'] ?? $plan['closing_note'] ?? '', 320);
+        $why_this_week = $this->build_weekly_text_fallback([
+            $plan['why_this_week'] ?? '',
+            $plan['strategic_explanation'] ?? '',
+            $plan['reasoning'] ?? '',
+            $summary,
+        ], 500);
+        $encouragement = $this->build_weekly_text_fallback([
+            $plan['encouragement'] ?? '',
+            $plan['mindset_note'] ?? '',
+            $plan['closing_note'] ?? '',
+        ], 320);
         $priority_channels = $this->normalize_ai_list($plan['priority_channels'] ?? $plan['channels'] ?? [], 4, 80);
         $content_ideas = $this->normalize_ai_list($plan['content_ideas'] ?? $plan['content_plan'] ?? $plan['content_suggestions'] ?? [], 5, 180);
         $coach_ideas = $this->normalize_ai_list($plan['coach_ideas'] ?? $plan['next_move_ideas'] ?? $plan['recommendation_ideas'] ?? [], 5, 180);
@@ -4600,15 +8782,156 @@ class AiPlan extends Controller {
         }
 
         $do_not_do = $this->normalize_ai_list($plan['do_not_do'] ?? $plan['avoid'] ?? $plan['warnings'] ?? [], 4, 180);
-        $daily_plan = $this->normalize_daily_plan($plan['daily_plan'] ?? $plan['week_plan'] ?? $plan['seven_day_plan'] ?? $plan['days'] ?? []);
+        $daily_plan = $this->normalize_daily_plan($plan['daily_plan'] ?? $plan['week_plan'] ?? $plan['seven_day_plan'] ?? $plan['days'] ?? $plan['daily_actions'] ?? []);
 
-        if(empty($daily_plan)) {
-            $daily_plan = $this->build_fallback_daily_plan($plan, $focus, $summary, $priority_channels, $content_ideas, $coach_ideas, $do_not_do);
+        if(count($daily_plan) < 3) {
+            $fallback_daily_plan = $this->build_fallback_daily_plan(
+                $plan,
+                $focus,
+                $summary !== '' ? $summary : $coach_intro,
+                $priority_channels,
+                $content_ideas,
+                $coach_ideas,
+                $do_not_do
+            );
+
+            if(count($fallback_daily_plan) >= 3) {
+                $daily_plan = $fallback_daily_plan;
+            }
         }
 
         if($headline === '' || $summary === '' || count($daily_plan) < 3) {
             throw new \Exception(l('ai_plan.ai_error_invalid_response'));
         }
+
+        return [
+            'headline' => $headline,
+            'summary' => $summary,
+            'focus' => $focus,
+            'coach_intro' => $coach_intro,
+            'brutal_truth' => $brutal_truth,
+            'power_move' => $power_move,
+            'why_this_week' => $why_this_week,
+            'encouragement' => $encouragement,
+            'priority_channels' => $priority_channels,
+            'content_ideas' => $content_ideas,
+            'coach_ideas' => $coach_ideas,
+            'do_not_do' => $do_not_do,
+            'daily_plan' => $daily_plan,
+        ];
+    }
+
+    private function build_emergency_weekly_ai_plan(array $values, array $weekly_checkin, array $analytics_payload, array $app_structure_payload, ?array $previous_cycle_context = null, array $mentor_guidance = []): array {
+        $labels = $this->get_option_labels($values, $weekly_checkin);
+        $goal_type = $this->get_goal_type($values);
+        $guardrails = $this->get_strategy_guardrails($values, $weekly_checkin, $analytics_payload, $app_structure_payload, $previous_cycle_context, $mentor_guidance);
+        $main_app = $this->get_main_app_for_review($app_structure_payload);
+        $main_app_total_blocks = (int) ($main_app['total_blocks'] ?? $app_structure_payload['top_app_total_blocks'] ?? 0);
+        $active_funnels = (int) ($analytics_payload['funnel']['active_funnels'] ?? 0);
+        $current_clicks_30d = (int) ($analytics_payload['webshop_clicks'] ?? 0);
+        $is_low_energy = (($weekly_checkin['weekly_energy'] ?? '') === 'low');
+        $is_contact_goal = $this->is_contact_collection_goal($values, $goal_type);
+
+        $focus = match($goal_type) {
+            'business' => 'Učini put do prijave i prvog ozbiljnog kontakta potpuno jasnim',
+            'shop' => 'Učini put do proizvoda i prvog klika kraćim i sigurnijim',
+            'brand' => 'Pojačaj povjerenje prije nego osoba donese prvi klik',
+            'activation' => 'Pretvori postojeći interes u stvarni sljedeći korak',
+            default => 'Pojednostavni glavni put kroz aplikaciju i komunikaciju',
+        };
+
+        $headline = match($goal_type) {
+            'business' => 'Tjedan jasnijeg prvog koraka za suradnju',
+            'shop' => 'Tjedan čišćeg puta do proizvoda',
+            'brand' => 'Tjedan jačeg povjerenja i jasnije poruke',
+            'activation' => 'Tjedan pretvaranja interesa u stvarni odgovor',
+            default => 'Tjedan jednog jasnog pomaka',
+        };
+
+        $summary_parts = [
+            'Ovaj tjedan nemoj širiti fokus. Najviše će pomoći da osoba koja dođe na tvoju aplikaciju odmah razumije što je glavni sljedeći korak i zašto vrijedi kliknuti baš njega.',
+        ];
+
+        if($main_app_total_blocks >= 9) {
+            $summary_parts[] = 'Aplikacija trenutno vjerojatno nudi previše izbora prerano, pa plan ide prema čišćem vrhu i manje distrakcije.';
+        }
+
+        if($is_contact_goal && $active_funnels === 0) {
+            $summary_parts[] = 'Za tvoj cilj nedostaje jednostavan korak za prijavu ili ostavljanje kontakta, zato to treba postati glavni potez tjedna.';
+        } elseif($current_clicks_30d < 15) {
+            $summary_parts[] = 'Signal je još slab, zato plan mora prvo stvoriti jasniji i ponovljiv ulaz prije širenja aktivnosti.';
+        }
+
+        if($is_low_energy) {
+            $summary_parts[] = 'Energija je ograničena, zato sve svodimo na jedan ritam koji je realno izvediv bez pritiska.';
+        }
+
+        $summary = $this->sanitize_ai_string(implode(' ', array_slice($summary_parts, 0, 3)), 900);
+        $coach_intro = $this->sanitize_ai_string('Ne treba ti više ideja nego jasniji prvi korak. Ovaj plan reže višak i drži fokus na jednoj promjeni koja može najbrže popraviti rezultat. Kad aplikacija postane jednostavnija, lakše ćeš vidjeti što stvarno radi.', 420);
+
+        $brutal_truth = $main_app_total_blocks >= 9
+            ? 'Kad osoba prebrzo vidi previše opcija, najčešće ne odabere ništa.'
+            : ($is_contact_goal && $active_funnels === 0
+                ? 'Ako tražiš ozbiljan kontakt, a ne nudiš jasan korak za prijavu, interes lako ostaje bez nastavka.'
+                : 'Rezultat sada više koči nejasan prvi korak nego manjak truda.');
+
+        $power_move = $is_contact_goal && $active_funnels === 0
+            ? 'Dodaj Funnel kao glavni prvi korak odmah nakon videa ili prvog uvoda i pojednostavni sve što mu oduzima fokus.'
+            : ($main_app_total_blocks >= 9
+                ? 'Smanji broj ranih izbora i ostavi jedan glavni blok koji vodi prema najvažnijem sljedećem koraku.'
+                : 'Pojačaj prvi blok, tekst i redoslijed tako da osoba u par sekundi vidi što treba napraviti dalje.');
+
+        $why_this_week = $this->sanitize_ai_string('Ovaj fokus ima smisla jer najbrže popravlja ono gdje ljudi sada zapinju: previše širine, premalo jasnoće ili preslab prijelaz u stvarni kontakt. Kad središ prvi korak, sve ostale aktivnosti dobivaju više smisla i veći učinak.', 500);
+        $encouragement = $this->sanitize_ai_string('Ne pokušavaj ovaj tjedan pobijediti širinom. Pobijedi jasnoćom, redom i jednim dobrim sljedećim korakom.', 320);
+
+        $priority_channels = array_slice(array_values(array_filter((array) ($labels['active_channels'] ?? []))), 0, 3);
+        if(empty($priority_channels)) {
+            $priority_channels = ['Tvoja glavna FCC aplikacija'];
+        }
+
+        $content_ideas = [];
+        if(in_array('Instagram Story', $priority_channels, true) || in_array('Instagram story', $priority_channels, true)) {
+            $content_ideas[] = 'Kratki story koji vodi samo na jedan glavni blok ili Funnel, bez dodatnog objašnjavanja.';
+        }
+        $content_ideas[] = $goal_type === 'shop'
+            ? 'Jedna jasna objava ili story koja pokazuje zašto baš taj proizvod ili ponuda vrijedi otvoriti.'
+            : 'Jedan kratak sadržaj koji jasno kaže kome pomažeš i što osoba dobiva ako klikne dalje.';
+        $content_ideas[] = 'Jedna jednostavna follow-up objava ili podsjetnik koji vraća ljude na isti glavni korak, bez otvaranja novih tema.';
+        $content_ideas = array_slice(array_values(array_unique(array_filter($content_ideas))), 0, 5);
+
+        $coach_ideas = [];
+        if($is_contact_goal && $active_funnels === 0) {
+            $coach_ideas[] = 'Dodaj Funnel i stavi ga u prvi plan umjesto da očekuješ da se ozbiljni ljudi sami snađu kroz više različitih blokova.';
+        }
+        if($main_app_total_blocks >= 9) {
+            $coach_ideas[] = 'Sve što ne gura glavni cilj naprijed ovaj tjedan spusti niže ili privremeno ugasi.';
+        }
+        if($current_clicks_30d > 0 && (int) ($analytics_payload['blog_article_clicks'] ?? 0) > 0) {
+            $coach_ideas[] = 'Ako članak već dobiva klikove, koristi ga kao alat povjerenja i veži ga uz jedan jasan sljedeći korak.';
+        }
+        if($is_low_energy) {
+            $coach_ideas[] = 'Održi isti jednostavan ritam cijeli tjedan umjesto da svaki dan smišljaš novi smjer.';
+        }
+        $coach_ideas = array_slice(array_values(array_unique(array_filter(array_merge($coach_ideas, array_slice($guardrails, 0, 2))))), 0, 5);
+
+        $do_not_do = [
+            'Ne dodavaj nove blokove, ideje i teme koje ne hrane glavni cilj ovog tjedna.',
+            'Ne objašnjavaj previše prerano ako prvi korak još nije potpuno jasan.',
+            'Ne mjeri uspjeh količinom aktivnosti nego time koliko je aplikacija postala jednostavnija i jasnija.',
+        ];
+        $do_not_do = array_slice(array_values(array_unique(array_filter(array_merge($do_not_do, array_slice($guardrails, 0, 1))))), 0, 4);
+
+        $daily_plan = $this->build_fallback_daily_plan(
+            [
+                'next_steps' => array_values(array_unique(array_filter(array_merge([$power_move], $coach_ideas, $content_ideas)))),
+            ],
+            $focus,
+            $summary,
+            $priority_channels,
+            $content_ideas,
+            $coach_ideas,
+            $do_not_do
+        );
 
         return [
             'headline' => $headline,
@@ -4721,19 +9044,22 @@ class AiPlan extends Controller {
         }
 
         $decoded_plan = $this->extract_json_from_text($content);
+        $used_fallback_plan = false;
 
         if(!is_array($decoded_plan)) {
-            throw $this->get_ai_debug_error($content);
-        }
-
-        try {
-            $plan = $this->validate_weekly_ai_plan_response($decoded_plan);
-        } catch(\Throwable $exception) {
-            throw $this->get_ai_debug_error($content);
+            $plan = $this->build_emergency_weekly_ai_plan($values, $weekly_checkin, $analytics_payload, $app_structure_payload, $previous_cycle_context, $mentor_guidance);
+            $used_fallback_plan = true;
+        } else {
+            try {
+                $plan = $this->validate_weekly_ai_plan_response($decoded_plan);
+            } catch(\Throwable $exception) {
+                $plan = $this->build_emergency_weekly_ai_plan($values, $weekly_checkin, $analytics_payload, $app_structure_payload, $previous_cycle_context, $mentor_guidance);
+                $used_fallback_plan = true;
+            }
         }
         $plan['checkin_submitted_at'] = $weekly_checkin['submitted_at'] ?? get_date();
         $plan['generated_at'] = get_date();
-        $plan['model'] = $credentials['model'];
+        $plan['model'] = $used_fallback_plan ? 'fallback_local' : $credentials['model'];
 
         return $plan;
     }
@@ -4771,6 +9097,31 @@ class AiPlan extends Controller {
         $latest_pending_outcome = $this->get_weekly_outcome_for_plan($weekly_outcomes, $latest_pending_outcome_plan);
         $previous_weekly_cycle_context = $this->get_previous_weekly_cycle_context($weekly_checkins, $weekly_plans, $weekly_outcomes, $latest_weekly_checkin);
         $feedback_loop_payload = $this->get_feedback_loop_payload($previous_weekly_cycle_context);
+
+        if($latest_weekly_checkin && !$latest_weekly_plan) {
+            $mentor_guidance = $this->get_mentor_ai_guidance($this->user->preferences ?? null);
+            $recovered_plan = $this->build_emergency_weekly_ai_plan($values, $latest_weekly_checkin, $analytics_payload, $app_structure_payload, $previous_weekly_cycle_context, $mentor_guidance);
+            $recovered_plan['checkin_submitted_at'] = (string) ($latest_weekly_checkin['submitted_at'] ?? get_date());
+            $recovered_plan['generated_at'] = get_date();
+            $recovered_plan['model'] = 'fallback_recovery';
+
+            $weekly_plans = $this->upsert_weekly_plan($weekly_plans, $recovered_plan);
+            $preferences->leader_ai_weekly_plans = $weekly_plans;
+
+            db()->where('user_id', $this->user->user_id)->update('users', [
+                'preferences' => json_encode($preferences),
+            ]);
+
+            cache()->deleteItemsByTag('user_id=' . $this->user->user_id);
+            cache()->deleteItem('user?user_id=' . $this->user->user_id);
+
+            $latest_weekly_plan = $this->get_latest_weekly_plan($weekly_plans, $latest_weekly_checkin);
+            $latest_pending_outcome_plan = $this->get_latest_plan_missing_outcome($weekly_plans, $weekly_outcomes);
+            $latest_pending_outcome = $this->get_weekly_outcome_for_plan($weekly_outcomes, $latest_pending_outcome_plan);
+            $previous_weekly_cycle_context = $this->get_previous_weekly_cycle_context($weekly_checkins, $weekly_plans, $weekly_outcomes, $latest_weekly_checkin);
+            $feedback_loop_payload = $this->get_feedback_loop_payload($previous_weekly_cycle_context);
+        }
+
         $has_weekly_limits_bypass = \Altum\Authentication::is_admin();
         $ai_growth_access_payload = $this->get_ai_growth_access_payload($preferences, $app_structure_payload, $current_clicks_30d);
         $app_review_access_payload = (array) ($ai_growth_access_payload['app_review'] ?? []);
@@ -4784,6 +9135,14 @@ class AiPlan extends Controller {
         $weekly_next_checkin_at = $has_weekly_limits_bypass ? null : $cooldown_payload['next_checkin_at'];
         $is_app_review_locked = $has_weekly_limits_bypass ? false : (!empty($app_review_access_payload['can_generate']) ? $app_review_cooldown_payload['is_locked'] : true);
         $app_review_next_at = $has_weekly_limits_bypass ? null : $app_review_cooldown_payload['next_checkin_at'];
+        $app_review_countdown_days = $this->get_weekly_checkin_countdown_days($app_review_next_at);
+
+        /* Defensive unlock: if countdown already hit 0, do not keep the app review visually or functionally locked. */
+        if($is_app_review_locked && $app_review_countdown_days === 0) {
+            $is_app_review_locked = false;
+            $app_review_next_at = null;
+            $app_review_countdown_days = null;
+        }
         $is_profile_complete_for_weekly = $has_weekly_limits_bypass || $is_profile_complete;
         $is_app_review_accessible = $has_weekly_limits_bypass || ($is_profile_complete && !empty($app_review_access_payload['has_access']));
         $app_review_locked_reason = !$is_profile_complete
@@ -4866,6 +9225,7 @@ class AiPlan extends Controller {
 
         $selected_app = $selected_app ?? $this->get_main_app_for_review($app_structure_payload);
         $selected_app_id = (int) ($selected_app['link_id'] ?? 0);
+        $app_review_block_attribution_payload = $this->get_app_review_block_attribution_payload((array) $selected_app);
         $app_review_history = $this->get_app_reviews_for_link($app_reviews, $selected_app_id);
         $selected_app_review = $this->get_latest_app_review_for_link($app_reviews, $selected_app_id);
         $history_app_review = $this->get_app_review_for_link_by_generated_at($app_reviews, $selected_app_id, $requested_app_review_generated_at);
@@ -4876,10 +9236,46 @@ class AiPlan extends Controller {
                 ?? $latest_app_review_any
             )
             : ($selected_app_review ?? $latest_app_review_any);
+        $app_review_editor_action_review = $selected_app_review;
+
+        if(!$app_review_editor_action_review && !empty($latest_app_review) && (int) ($latest_app_review['selected_link_id'] ?? 0) === $selected_app_id) {
+            $app_review_editor_action_review = $latest_app_review;
+        }
+
+        $selected_app_snapshot = $this->get_link_ai_editor_snapshot_by_id($selected_app_id);
+        $selected_app_review_reference_at = (string) (
+            $selected_app_review['generated_at']
+            ?? $latest_app_review['generated_at']
+            ?? $latest_app_review_any['generated_at']
+            ?? ''
+        );
+        $selected_app_review_freshness = $this->get_ai_bundle_freshness_payload(
+            (array) ($selected_app_snapshot['additional'] ?? []),
+            (string) ($selected_app_snapshot['last_datetime'] ?? ''),
+            $selected_app_review_reference_at
+        );
+
+        /* If the selected app changed after the latest saved review, allow an immediate fresh review. */
+        if(
+            !$has_weekly_limits_bypass
+            && $is_app_review_locked
+            && !empty($app_review_access_payload['can_generate'])
+            && !empty($selected_app_review_freshness['is_stale'])
+        ) {
+            $is_app_review_locked = false;
+            $app_review_next_at = null;
+            $app_review_countdown_days = null;
+            $app_review_cooldown_payload = [
+                'is_locked' => false,
+                'next_checkin_at' => null,
+            ];
+        }
+
         $selected_weekly_plan = $this->get_weekly_plan_by_generated_at($weekly_plans, $requested_plan_generated_at);
         $display_weekly_plan = $requested_plan_history_only ? null : ($selected_weekly_plan ?? $latest_weekly_plan);
         $display_weekly_outcome = $this->get_weekly_outcome_for_plan($weekly_outcomes, $display_weekly_plan);
         $app_review_quality_payload = $this->get_app_review_quality_payload($selected_app, $current_clicks_30d);
+        $app_review_evolution_display_payload = $this->get_app_review_display_evolution_payload($selected_app_id, (array) ($app_review_quality_payload['performance'] ?? []), $app_review_block_attribution_payload);
         $signal_summary_payload = $this->get_user_signal_summary_payload($values, $analytics_payload, $growth_signal_30d, $is_weekly_plan_eligible);
         $available_app_options = [];
 
@@ -4904,6 +9300,7 @@ class AiPlan extends Controller {
                 $values['weekly_change'] = $this->normalize_single_choice($_POST['weekly_change'] ?? null, $options['weekly_change']);
                 $values['audience_focus'] = input_clean($_POST['audience_focus'] ?? '', 120);
                 $values['product_focus'] = input_clean($_POST['product_focus'] ?? '', 120);
+                $values['visual_tone_preference'] = input_clean($_POST['visual_tone_preference'] ?? '', 160);
                 $values['notes'] = input_clean($_POST['notes'] ?? '', 1000);
 
                 if(!$values['primary_goal']) Alerts::add_field_error('primary_goal', l('ai_plan.error.primary_goal'));
@@ -4931,6 +9328,7 @@ class AiPlan extends Controller {
                         'weekly_change' => $values['weekly_change'],
                         'audience_focus' => $values['audience_focus'],
                         'product_focus' => $values['product_focus'],
+                        'visual_tone_preference' => $values['visual_tone_preference'],
                         'notes' => $values['notes'],
                         'updated_at' => get_date(),
                         'phase' => 1,
@@ -4947,7 +9345,7 @@ class AiPlan extends Controller {
 
                     Alerts::add_success(l('ai_plan.success_message'));
 
-                    redirect('ai-plan?section=app_review');
+                    redirect('ai-plan?section=app_review#ai-plan-app-review');
                 }
             }
 
@@ -5077,6 +9475,7 @@ class AiPlan extends Controller {
                         $generated_review_at = (string) ($new_app_review['generated_at'] ?? '');
                         $app_reviews = $this->upsert_app_review($app_reviews, $new_app_review);
                         $preferences->leader_ai_app_reviews = $app_reviews;
+                        $preferences = $this->sync_app_review_assets_to_editor($selected_app_id, $new_app_review, $preferences);
                         if(!empty($app_review_access_payload['uses_starter_credit'])) {
                             $preferences = $this->consume_ai_growth_starter_credit($preferences, 'app_review');
                         }
@@ -5115,8 +9514,6 @@ class AiPlan extends Controller {
                         $redirect_query['app_review_generated_at'] = $generated_review_at;
                     }
 
-                    $redirect_query['app_review_done'] = 1;
-
                     $redirect_query['section'] = 'app_review';
                     redirect('ai-plan' . (!empty($redirect_query) ? '?' . http_build_query($redirect_query) : ''));
                 }
@@ -5133,17 +9530,21 @@ class AiPlan extends Controller {
 
             if(isset($_POST['save_weekly_outcome'])) {
                 $allowed_completion_levels = ['strong_progress', 'partial_progress', 'low_execution', 'not_started'];
+                $allowed_palette_feedback = ['love_keep', 'good_refine', 'new_direction', 'not_applied'];
                 $completion_level = $this->normalize_single_choice($_POST['completion_level'] ?? null, $allowed_completion_levels);
                 $best_response = input_clean($_POST['best_response'] ?? '', 800);
                 $main_blocker_now = input_clean($_POST['main_blocker_now'] ?? '', 800);
                 $biggest_lesson = input_clean($_POST['biggest_lesson'] ?? '', 800);
                 $next_adjustment = input_clean($_POST['next_adjustment'] ?? '', 800);
+                $palette_feedback = $this->normalize_single_choice($_POST['palette_feedback'] ?? null, $allowed_palette_feedback);
+                $palette_feedback_note = input_clean($_POST['palette_feedback_note'] ?? '', 500);
 
                 if(!$completion_level) Alerts::add_field_error('completion_level', l('ai_plan.error.completion_level'));
                 if(!$best_response) Alerts::add_field_error('best_response', l('ai_plan.error.best_response'));
                 if(!$main_blocker_now) Alerts::add_field_error('main_blocker_now', l('ai_plan.error.main_blocker_now'));
                 if(!$biggest_lesson) Alerts::add_field_error('biggest_lesson', l('ai_plan.error.biggest_lesson'));
                 if(!$next_adjustment) Alerts::add_field_error('next_adjustment', l('ai_plan.error.next_adjustment'));
+                if(!$palette_feedback) Alerts::add_field_error('palette_feedback', l('ai_plan.error.palette_feedback'));
 
                 if(!\Altum\Csrf::check()) {
                     Alerts::add_error(l('global.error_message.invalid_csrf_token'));
@@ -5167,15 +9568,27 @@ class AiPlan extends Controller {
                     $target_checkin_submitted_at = $target_checkin_submitted_at !== ''
                         ? $target_checkin_submitted_at
                         : (string) ($target_weekly_plan['checkin_submitted_at'] ?? '');
+                    $target_selected_link_id = max(0, (int) ($_POST['outcome_selected_link_id'] ?? 0));
+                    $target_app_review_generated_at = input_clean($_POST['outcome_app_review_generated_at'] ?? '', 32);
+                    $target_app_review_review_key = input_clean($_POST['outcome_app_review_review_key'] ?? '', 64);
+                    if($target_app_review_review_key === '' && $target_app_review_generated_at !== '') {
+                        $target_app_review_review_key = $target_app_review_generated_at;
+                    }
 
                     $new_outcome = [
                         'checkin_submitted_at' => $target_checkin_submitted_at !== '' ? $target_checkin_submitted_at : null,
                         'plan_generated_at' => (string) ($target_weekly_plan['generated_at'] ?? ''),
+                        'selected_link_id' => $target_selected_link_id,
+                        'app_review_generated_at' => $target_app_review_generated_at !== '' ? $target_app_review_generated_at : null,
+                        'app_review_review_key' => $target_app_review_review_key,
                         'completion_level' => $completion_level,
                         'best_response' => $best_response,
                         'main_blocker_now' => $main_blocker_now,
                         'biggest_lesson' => $biggest_lesson,
                         'next_adjustment' => $next_adjustment,
+                        'palette_feedback' => $palette_feedback,
+                        'palette_feedback_note' => $palette_feedback_note,
+                        'palette_decision' => $this->get_palette_feedback_decision($palette_feedback),
                         'submitted_at' => get_date(),
                     ];
 
@@ -5210,7 +9623,7 @@ class AiPlan extends Controller {
             'feature_is_available' => true,
             'is_app_review_page' => $is_app_review_page,
             'self_route' => $self_route,
-            'app_review_page_url' => url('ai-plan?section=app_review'),
+            'app_review_page_url' => url('ai-plan?section=app_review#ai-plan-app-review'),
             'app_review_is_accessible' => $is_app_review_accessible,
             'app_review_locked_reason' => $app_review_locked_reason,
             'values' => $values,
@@ -5244,6 +9657,9 @@ class AiPlan extends Controller {
             'app_review_active_generated_at' => (string) ($latest_app_review['generated_at'] ?? ''),
             'app_review_selected_app' => $selected_app,
             'app_review_quality_payload' => $app_review_quality_payload,
+            'app_review_evolution_payload' => $app_review_evolution_display_payload,
+            'app_review_block_attribution_payload' => $app_review_block_attribution_payload,
+            'app_review_editor_actions' => $this->get_app_review_editor_actions_payload($selected_app_id, $app_review_editor_action_review),
             'feedback_loop_payload' => $feedback_loop_payload,
             'current_clicks_30d' => $current_clicks_30d,
             'growth_signal_30d' => $growth_signal_30d,
@@ -5259,7 +9675,7 @@ class AiPlan extends Controller {
             'weekly_countdown_days' => $this->get_weekly_checkin_countdown_days($weekly_next_checkin_at),
             'app_review_is_locked' => $is_app_review_locked,
             'app_review_next_at' => $app_review_next_at,
-            'app_review_countdown_days' => $this->get_weekly_checkin_countdown_days($app_review_next_at),
+            'app_review_countdown_days' => $app_review_countdown_days,
             'app_review_status_url' => url('ai-plan?section=app_review&app_review_status=1'),
             'phases' => [
                 ['number' => 1, 'title_key' => 'ai_plan.phase_1_title', 'text_key' => 'ai_plan.phase_1_text', 'is_active' => false],

@@ -22,6 +22,11 @@
                     <div class="notification-container"></div>
 
                     <div class="form-group">
+                        <label for="youtube_title"><i class="fas fa-fw fa-heading fa-sm text-muted mr-1"></i> <?= l('global.title') ?></label>
+                        <input id="youtube_title" type="text" class="form-control" name="title" maxlength="256" placeholder="<?= l('global.title') ?>" />
+                    </div>
+
+                    <div class="form-group">
                         <label for="youtube_location_url"><i class="fas fa-fw fa-link fa-sm text-muted mr-1"></i> <?= l('biolink_youtube.location_url') ?></label>
                         <input id="youtube_location_url" type="url" class="form-control" name="location_url" required="required" maxlength="2048" placeholder="<?= l('biolink_youtube.location_url_placeholder') ?>" />
                     </div>

@@ -25,13 +25,17 @@ $fcc_biolink_editor_copy = $fcc_is_hr ? [
     'analysis_locked_cta' => 'Kako otključati analizu',
     'tour_main' => 'Pokreni vodič editora',
     'tour_theme' => 'Teme',
+    'tour_ai_theme' => 'AI teme',
+    'tour_ai_copy' => 'AI akcije',
     'tour_reset' => 'Reset',
     'tour_forever' => 'Forever blokovi',
     'tour_discount' => 'Popust na Forever Living Products proizvode',
     'tour_funnel' => 'Funnels',
     'status_card_title' => 'Pregled ove aplikacije',
-    'tours_title' => 'Mini tutorijali za ključne radnje',
-    'tours_text' => 'Ovdje su najvažniji kratki vodiči za uređivanje izgleda, resetiranje, Forever blokove i funnel korake.',
+    'tours_title' => 'AI uređivanje aplikacije',
+    'tours_text' => 'Na jednom mjestu imaš 3 glavne AI akcije i kratke korake za brzo, jednostavno i sigurno uređivanje aplikacije.',
+    'ai_actions_title' => 'AI brze akcije',
+    'ai_actions_text' => 'Na jednom mjestu možeš dodati AI preporučene blokove i nazive, primijeniti AI boje ili sigurno vratiti aplikaciju na prethodno stanje.',
     'tour_launch_title' => 'Glavni tutorijal editora',
     'tour_launch_text' => 'Ovaj gumb uvijek možeš kliknuti kada želiš ponovno pokrenuti kompletni vodič kroz editor. Prvi put se otvara automatski kako bi početnik odmah dobio jasan redoslijed rada.',
     'tour_copy_title' => 'Kopiranje javne web adrese',
@@ -70,6 +74,29 @@ $fcc_biolink_editor_copy = $fcc_is_hr ? [
     'tour_theme_button_text' => 'Ovaj gumb otvara biblioteku tema i layout stilova za cijelu aplikaciju.',
     'tour_theme_modal_title' => 'Pregled biblioteke tema',
     'tour_theme_modal_text' => 'U ovom popupu biraš vizualni smjer aplikacije i odmah vidiš koji layout želiš primijeniti.',
+    'tour_ai_theme_title' => 'Teme i izgled aplikacije',
+    'tour_ai_theme_text' => 'Ovdje biraš osnovni izgled aplikacije kroz teme, a AI boje se sada primjenjuju kroz jedinstveni blok AI brzih akcija.',
+    'tour_ai_theme_library_title' => 'AI teme u biblioteci tema',
+    'tour_ai_theme_library_text' => 'U biblioteci tema ovdje se pojavljuju i AI preporučene teme. Tako preporuku s jedne aplikacije možeš primijeniti i na drugu bez ručnog slaganja svega ispočetka.',
+    'tour_ai_copy_title' => 'AI akcije za ovu aplikaciju',
+    'tour_ai_copy_text' => 'Ovdje na jednom mjestu dobivaš 3 glavne AI radnje: dodavanje blokova i naziva, primjenu boja i siguran povratak na staro stanje.',
+    'ai_workflow_title' => 'Kako koristiti AI preporuke bez lutanja',
+    'ai_workflow_text' => 'Ako je AI analiza već izrađena, slijedi ova 4 koraka i dobit ćeš najbrži put od preporuke do uređene aplikacije.',
+    'ai_workflow_step_1' => '1. U App Reviewu provjeri glavnu preporuku i zatim otvori uređivanje aplikacije.',
+    'ai_workflow_step_2' => '2. Ako želiš ručno birati osnovni izgled, otvori Teme. Za AI tok koristi 3 AI brze akcije u ovom bloku.',
+    'ai_workflow_step_3' => '3. U Blokovima klikni AI prijedlog blokova i naziva. Sustav tada dodaje preporučene blokove, ubacuje AI nazive i CTA tekstove te slaže aplikaciju po planu.',
+    'ai_workflow_step_4' => '4. Nakon toga klikni AI prijedlog boja, provjeri preview i po potrebi koristi Vrati na staro ako želiš siguran povratak na prethodno stanje.',
+    'ai_block_helper_title' => 'AI preporuke za ovaj blok',
+    'ai_block_helper_text' => 'Ovdje odmah vidiš što AI predlaže baš za ovaj blok i možeš jednim klikom ubaciti naziv ili CTA u pravo polje.',
+    'ai_block_helper_primary' => 'Ovo je označeno kao glavni blok za sljedeći korak.',
+    'tour_ai_theme_apply_title' => 'Primijeni AI temu',
+    'tour_ai_theme_apply_text' => 'Klikom ovdje sustav odmah prenosi preporučene boje, pozadinu, font i raspored razmaka na ovu aplikaciju.',
+    'tour_ai_theme_library_button_title' => 'Otvori AI teme za druge aplikacije',
+    'tour_ai_theme_library_button_text' => 'Ako suradnik ima više aplikacija, ovdje iz biblioteke možeš uzeti isti AI stil i primijeniti ga i na drugu aplikaciju.',
+    'tour_ai_copy_apply_title' => 'AI prijedlog blokova i naziva',
+    'tour_ai_copy_apply_text' => 'Ovaj gumb odjednom dodaje preporučene blokove, ubacuje AI nazive i CTA tekstove te slaže aplikaciju prema planu.',
+    'tour_ai_layout_apply_title' => 'AI prijedlog boja',
+    'tour_ai_layout_apply_text' => 'Ovaj gumb primjenjuje AI boje i pozadinu, a odmah do njega je i Vrati na staro ako želiš siguran povratak na prethodno stanje.',
     'tour_reset_title' => 'Vraćanje aplikacije na početni izgled',
     'tour_reset_text' => 'Reset služi kada želiš vratiti početni FCC raspored i krenuti ponovno od čistog predloška.',
     'tour_reset_button_title' => 'Vrati na početni izgled',
@@ -99,6 +126,18 @@ $fcc_biolink_editor_copy = $fcc_is_hr ? [
     'tour_discount_modal_title' => 'Forever web trgovina blok',
     'tour_discount_modal_text' => 'Ovaj blok koristiš za prodajni i preporučni link prema Forever Living proizvodima. Klikovi na ovaj blok ulaze u pozicioniranje tvoje Forever Card Aplikacije za isticanje na naslovnici Forever Card Cluba. Nakon klika na blok i prije aktivacije obavezno zalijepi link izrađen u Forever Link Builderu na Foreverliving.com stranici.',
     'tour_discount_modal_resource' => 'Pogledaj video uputu',
+    'tour_discount_create_title' => 'Otvara se prozor za aktivaciju bloka',
+    'tour_discount_create_text' => 'Nakon klika na ovaj blok otvara se prozor u kojem podešavaš sve što je potrebno za ispravnu aktivaciju webshop gumba.',
+    'tour_discount_notice_title' => 'Prvo pripremi ispravan Forever Link Builder link',
+    'tour_discount_notice_text' => 'Ovdje odmah vidiš najvažniju napomenu i video uputu. Prije spremanja trebaš imati link izrađen u Forever Link Builderu na Foreverliving.com stranici.',
+    'tour_discount_url_title' => 'Zalijepi webshop link',
+    'tour_discount_url_text' => 'U ovo polje zalijepi puni link koji si izradio u Forever Link Builderu. To je glavni korak bez kojeg blok neće ispravno voditi na ponudu.',
+    'tour_discount_name_title' => 'Upiši naziv gumba',
+    'tour_discount_name_text' => 'Ovdje postavljaš jasan naziv koji će posjetitelj vidjeti na aplikaciji, npr. webshop, popust ili druga kratka prodajna poruka.',
+    'tour_discount_apply_title' => 'Odaberi primjenu popusta na sve proizvode',
+    'tour_discount_apply_text' => 'Ovdje biraš hoće li se isti popust automatski primijeniti i na ostale produkt gumbe u blogu i aplikaciji.',
+    'tour_discount_submit_title' => 'Spremi i aktiviraj blok',
+    'tour_discount_submit_text' => 'Kad su link, naziv i opcija popusta spremni, ovdje spremaš blok. Nakon toga blok je dodan u aplikaciju i možeš ga dalje uređivati.',
     'tour_funnel_title' => 'Funnel koraci počinju u kartici Blokovi',
     'tour_funnel_text' => 'Forever Card Funnel dodaješ kao blok, zato prvo ulazimo u listu blokova.',
     'tour_funnel_add_block_title' => 'Otvori odabir funnel bloka',
@@ -128,13 +167,17 @@ $fcc_biolink_editor_copy = $fcc_is_hr ? [
     'analysis_locked_cta' => 'How to unlock analysis',
     'tour_main' => 'Start the editor guide',
     'tour_theme' => 'Themes',
+    'tour_ai_theme' => 'AI themes',
+    'tour_ai_copy' => 'AI actions',
     'tour_reset' => 'Reset',
     'tour_forever' => 'Forever blocks',
     'tour_discount' => 'Forever product discount',
     'tour_funnel' => 'Funnels',
     'status_card_title' => 'Overview of this app',
-    'tours_title' => 'Mini tutorials for key actions',
-    'tours_text' => 'Here are the most useful quick guides for styling, reset, Forever blocks, and funnel actions.',
+    'tours_title' => 'AI app editing',
+    'tours_text' => 'In one place you have the 3 main AI actions and short steps for fast, simple, and safe app editing.',
+    'ai_actions_title' => 'AI quick actions',
+    'ai_actions_text' => 'From one place you can add AI-recommended blocks and titles, apply AI colors, or safely restore the previous app state.',
     'tour_launch_title' => 'Main editor tutorial',
     'tour_launch_text' => 'Use this button whenever you want to restart the full editor walkthrough. On the first visit it opens automatically so a beginner gets the right working order right away.',
     'tour_copy_title' => 'Copy the public web address',
@@ -173,6 +216,29 @@ $fcc_biolink_editor_copy = $fcc_is_hr ? [
     'tour_theme_button_text' => 'This button opens the theme library and layout styles for the whole app.',
     'tour_theme_modal_title' => 'Theme library overview',
     'tour_theme_modal_text' => 'Inside this popup you choose the visual direction of the app and see which layout you want to apply.',
+    'tour_ai_theme_title' => 'App themes and styling',
+    'tour_ai_theme_text' => 'This is where you choose the base app look through themes, while AI colors are now applied through the single AI quick actions block.',
+    'tour_ai_theme_library_title' => 'AI themes inside the theme library',
+    'tour_ai_theme_library_text' => 'The theme library also shows AI-recommended themes for you, so a strong recommendation from one app can be applied to another without rebuilding the style from scratch.',
+    'tour_ai_copy_title' => 'AI actions for this app',
+    'tour_ai_copy_text' => 'This is the single place for the 3 main AI actions: adding blocks and titles, applying colors, and safely restoring the previous state.',
+    'ai_workflow_title' => 'How to use AI recommendations without guessing',
+    'ai_workflow_text' => 'If the AI analysis is already ready, follow these 4 steps for the fastest path from recommendation to a polished app.',
+    'ai_workflow_step_1' => '1. Open App Review, confirm the main recommendation, and enter the app editor.',
+    'ai_workflow_step_2' => '2. If you want to choose the base look manually, open Themes. For the AI flow, use the 3 AI quick actions in this block.',
+    'ai_workflow_step_3' => '3. In Blocks click AI block and copy suggestion. The system then adds the recommended blocks, inserts AI titles and CTA text, and arranges the app by plan.',
+    'ai_workflow_step_4' => '4. Then click AI color suggestion, review the preview, and use Restore previous state if you want a safe rollback.',
+    'ai_block_helper_title' => 'AI suggestions for this block',
+    'ai_block_helper_text' => 'This area shows what AI recommends for this specific block, and you can insert the title or CTA into the right field with one click.',
+    'ai_block_helper_primary' => 'This is marked as the main next-step block.',
+    'tour_ai_theme_apply_title' => 'Apply the AI theme',
+    'tour_ai_theme_apply_text' => 'This button immediately applies the recommended colors, background, font, and spacing to this app.',
+    'tour_ai_theme_library_button_title' => 'Open AI themes for other apps',
+    'tour_ai_theme_library_button_text' => 'If the collaborator has multiple apps, this library lets you reuse the same AI style on another app as well.',
+    'tour_ai_copy_apply_title' => 'AI block and copy suggestion',
+    'tour_ai_copy_apply_text' => 'This button adds the recommended blocks, fills in AI titles and CTA text, and arranges the app according to the plan.',
+    'tour_ai_layout_apply_title' => 'AI color suggestion',
+    'tour_ai_layout_apply_text' => 'This button applies AI colors and background, and the restore button next to it safely returns the previous state.',
     'tour_reset_title' => 'The app reset flow',
     'tour_reset_text' => 'Reset is useful when you want to restore the starting FCC structure and begin again from a clean template.',
     'tour_reset_button_title' => 'Factory reset',
@@ -202,6 +268,18 @@ $fcc_biolink_editor_copy = $fcc_is_hr ? [
     'tour_discount_modal_title' => 'Forever Web Shop block',
     'tour_discount_modal_text' => 'Use this block for the sales and referral link toward Forever Living products. Clicks on this block count toward the positioning of your Forever Card App for homepage visibility inside Forever Card Club. After clicking the block and before activation, paste the link created in Forever Link Builder on the Foreverliving.com website.',
     'tour_discount_modal_resource' => 'Watch the video guide',
+    'tour_discount_create_title' => 'The block activation modal opens here',
+    'tour_discount_create_text' => 'After clicking this block, the setup modal opens so you can define everything needed for correct webshop block activation.',
+    'tour_discount_notice_title' => 'Prepare the correct Forever Link Builder link first',
+    'tour_discount_notice_text' => 'This is the key note and video guide. Before saving, you should have the link created in Forever Link Builder on the Foreverliving.com website.',
+    'tour_discount_url_title' => 'Paste the webshop link',
+    'tour_discount_url_text' => 'Paste the full link created in Forever Link Builder into this field. This is the main step required for the block to open the correct offer.',
+    'tour_discount_name_title' => 'Set the button name',
+    'tour_discount_name_text' => 'This is where you set the clear visible label that the visitor sees on the app, such as webshop, discount, or another short sales message.',
+    'tour_discount_apply_title' => 'Choose whether the discount applies to all products',
+    'tour_discount_apply_text' => 'Here you decide whether the same discount should also be applied automatically to other product buttons across the app and blog.',
+    'tour_discount_submit_title' => 'Save and activate the block',
+    'tour_discount_submit_text' => 'Once the link, title, and discount option are ready, save the block here. After that the block is added to the app and ready for further editing.',
     'tour_funnel_title' => 'The funnel flow starts in Blocks',
     'tour_funnel_text' => 'You add the Forever Card Funnel as a block, so we begin in the block list.',
     'tour_funnel_add_block_title' => 'Open the funnel picker',
@@ -223,6 +301,77 @@ $fcc_biolink_editor_meta_items = [
     ['label' => $fcc_biolink_editor_copy['public_label'], 'value' => $fcc_biolink_editor_public_status === 'live' ? $fcc_biolink_editor_copy['live_status'] : $fcc_biolink_editor_copy['paused_status'], 'icon' => 'fas fa-globe-europe', 'title' => $fcc_biolink_editor_public_status === 'live' ? $fcc_biolink_editor_copy['live_note'] : $fcc_biolink_editor_copy['paused_note']],
     ['label' => $fcc_biolink_editor_copy['analysis_label'], 'value' => $fcc_biolink_editor_analysis_status === 'ready' ? $fcc_biolink_editor_copy['analysis_ready'] : ($fcc_biolink_editor_analysis_status === 'locked' ? $fcc_biolink_editor_copy['analysis_locked'] : $fcc_biolink_editor_copy['analysis_main_only']), 'icon' => 'fas fa-chart-line', 'title' => $fcc_biolink_editor_analysis_status === 'ready' ? $fcc_biolink_editor_copy['analysis_ready_note'] : ($fcc_biolink_editor_analysis_status === 'locked' ? $fcc_biolink_editor_copy['analysis_locked_note'] : $fcc_biolink_editor_copy['analysis_main_only_note'])],
 ];
+
+$fcc_ai_editor_payload = $data->ai_editor_payload ?? [];
+$fcc_ai_theme_pack = is_array($fcc_ai_editor_payload['theme_pack'] ?? null) ? $fcc_ai_editor_payload['theme_pack'] : [];
+$fcc_ai_primary_block_plan = is_array($fcc_ai_editor_payload['primary_block_plan'] ?? null) ? $fcc_ai_editor_payload['primary_block_plan'] : [];
+$fcc_ai_copy_suggestions = is_array($fcc_ai_editor_payload['copy_suggestions'] ?? null) ? $fcc_ai_editor_payload['copy_suggestions'] : [];
+$fcc_ai_layout_actions = is_array($fcc_ai_editor_payload['layout_actions'] ?? null) ? $fcc_ai_editor_payload['layout_actions'] : [];
+$fcc_ai_missing_block_recommendations = is_array($fcc_ai_editor_payload['missing_block_recommendations'] ?? null) ? $fcc_ai_editor_payload['missing_block_recommendations'] : [];
+$fcc_ai_theme_library = is_array($fcc_ai_editor_payload['theme_library'] ?? null) ? $fcc_ai_editor_payload['theme_library'] : [];
+$fcc_ai_theme_apply_state = is_array($fcc_ai_editor_payload['theme_apply_state'] ?? null) ? $fcc_ai_editor_payload['theme_apply_state'] : [];
+$fcc_ai_review_summary = is_array($fcc_ai_editor_payload['review_summary'] ?? null) ? $fcc_ai_editor_payload['review_summary'] : [];
+$fcc_ai_evolution_payload = is_array($fcc_ai_editor_payload['evolution'] ?? null) ? $fcc_ai_editor_payload['evolution'] : [];
+$fcc_ai_layout_backup = is_array($fcc_ai_editor_payload['layout_backup'] ?? null) ? $fcc_ai_editor_payload['layout_backup'] : [];
+$fcc_ai_bundle_backup = is_array($fcc_ai_editor_payload['bundle_backup'] ?? null) ? $fcc_ai_editor_payload['bundle_backup'] : [];
+$fcc_ai_block_attribution = is_array($fcc_ai_editor_payload['block_attribution'] ?? null) ? $fcc_ai_editor_payload['block_attribution'] : [];
+$fcc_ai_evolution_active_cycle = is_array($fcc_ai_evolution_payload['active_cycle'] ?? null) ? $fcc_ai_evolution_payload['active_cycle'] : [];
+$fcc_ai_evolution_recent_cycles = is_array($fcc_ai_evolution_payload['recent_cycles'] ?? null) ? $fcc_ai_evolution_payload['recent_cycles'] : [];
+$fcc_ai_block_signal_blocks = is_array($fcc_ai_block_attribution['top_signal_blocks'] ?? null) ? $fcc_ai_block_attribution['top_signal_blocks'] : [];
+$fcc_ai_block_focus_risks = is_array($fcc_ai_block_attribution['focus_risk_blocks'] ?? null) ? $fcc_ai_block_attribution['focus_risk_blocks'] : [];
+$fcc_ai_has_theme = (bool) array_filter([
+    $fcc_ai_theme_pack['background_color'] ?? '',
+    $fcc_ai_theme_pack['gradient_start'] ?? '',
+    $fcc_ai_theme_pack['gradient_end'] ?? '',
+    $fcc_ai_theme_pack['primary_block_background'] ?? '',
+    $fcc_ai_theme_pack['secondary_blocks_background'] ?? '',
+]);
+$fcc_ai_primary_block_id = (int) ($fcc_ai_primary_block_plan['block_id'] ?? 0);
+$fcc_ai_copy_suggestion_map = [];
+$fcc_ai_copy_suggestion_block_ids = [];
+
+foreach($fcc_ai_copy_suggestions as $fcc_ai_copy_suggestion) {
+    $fcc_ai_copy_block_id = (int) ($fcc_ai_copy_suggestion['block_id'] ?? 0);
+
+    if(!$fcc_ai_copy_block_id) {
+        continue;
+    }
+
+    $fcc_ai_copy_suggestion_map[$fcc_ai_copy_block_id][] = $fcc_ai_copy_suggestion;
+    $fcc_ai_copy_suggestion_block_ids[$fcc_ai_copy_block_id] = true;
+}
+
+$fcc_render_ai_color_chip = static function(?string $color, string $label): string {
+    $color = trim((string) $color);
+
+    if($color === '') {
+        return '';
+    }
+
+    ob_start();
+    ?>
+    <span class="fcc-ai-theme-chip">
+        <span class="fcc-ai-theme-chip-dot" style="background: <?= htmlspecialchars($color, ENT_QUOTES, 'UTF-8') ?>"></span>
+        <span><?= htmlspecialchars($label, ENT_QUOTES, 'UTF-8') ?></span>
+        <strong><?= htmlspecialchars($color, ENT_QUOTES, 'UTF-8') ?></strong>
+    </span>
+    <?php
+    return (string) ob_get_clean();
+};
+
+$fcc_ai_render_evolution_status = static function(string $status): string {
+    $status = trim($status);
+
+    if($status === 'measured') {
+        return l('link.settings.ai_evolution_status_measured');
+    }
+
+    if($status === 'ready') {
+        return l('link.settings.ai_evolution_status_ready');
+    }
+
+    return l('link.settings.ai_evolution_status_pending');
+};
 
 $fcc_biolink_editor_tours = [
     'main' => [
@@ -250,6 +399,17 @@ $fcc_biolink_editor_tours = [
         ['selector' => '#fcc_biolink_theme_button', 'action' => 'activateSettings', 'title' => $fcc_biolink_editor_copy['tour_theme_button_title'], 'text' => $fcc_biolink_editor_copy['tour_theme_button_text']],
         ['selector' => '#biolinks_themes', 'action' => 'openThemesModal', 'title' => $fcc_biolink_editor_copy['tour_theme_modal_title'], 'text' => $fcc_biolink_editor_copy['tour_theme_modal_text']],
     ],
+    'ai_theme' => [
+        ['selector' => '#settings-tab', 'action' => 'activateSettings', 'title' => $fcc_biolink_editor_copy['tour_ai_theme_title'], 'text' => $fcc_biolink_editor_copy['tour_ai_theme_text']],
+        ['selector' => '#fcc_biolink_theme_button', 'action' => 'activateSettings', 'title' => $fcc_biolink_editor_copy['tour_ai_theme_apply_title'], 'text' => $fcc_biolink_editor_copy['tour_ai_theme_apply_text']],
+        ['selector' => '#biolinks_themes', 'action' => 'openThemesModal', 'title' => $fcc_biolink_editor_copy['tour_ai_theme_library_title'], 'text' => $fcc_biolink_editor_copy['tour_ai_theme_library_text']],
+    ],
+    'ai_copy' => [
+        ['selector' => '#blocks-tab', 'action' => 'activateBlocks', 'title' => $fcc_biolink_editor_copy['tour_ai_copy_title'], 'text' => $fcc_biolink_editor_copy['tour_ai_copy_text']],
+        ['selector' => '#fcc_ai_action_panel', 'action' => 'activateBlocks', 'title' => $fcc_biolink_editor_copy['tour_ai_copy_title'], 'text' => $fcc_biolink_editor_copy['tour_ai_copy_text']],
+        ['selector' => '#fcc_ai_block_bundle_button', 'action' => 'activateBlocks', 'title' => $fcc_biolink_editor_copy['tour_ai_copy_apply_title'], 'text' => $fcc_biolink_editor_copy['tour_ai_copy_apply_text']],
+        ['selector' => '#fcc_ai_color_bundle_button', 'action' => 'activateBlocks', 'title' => $fcc_biolink_editor_copy['tour_ai_layout_apply_title'], 'text' => $fcc_biolink_editor_copy['tour_ai_layout_apply_text']],
+    ],
     'reset' => [
         ['selector' => '#settings-tab', 'action' => 'activateSettings', 'title' => $fcc_biolink_editor_copy['tour_reset_title'], 'text' => $fcc_biolink_editor_copy['tour_reset_text']],
         ['selector' => '#reset_biolink_factory_btn', 'action' => 'activateSettings', 'title' => $fcc_biolink_editor_copy['tour_reset_button_title'], 'text' => $fcc_biolink_editor_copy['tour_reset_button_text']],
@@ -263,7 +423,13 @@ $fcc_biolink_editor_tours = [
     'discount' => [
         ['selector' => '#blocks-tab', 'action' => 'activateBlocks', 'title' => $fcc_biolink_editor_copy['tour_discount_title'], 'text' => $fcc_biolink_editor_copy['tour_discount_text']],
         ['selector' => '#fcc_biolink_add_block_button', 'action' => 'activateBlocks', 'title' => $fcc_biolink_editor_copy['tour_discount_add_block_title'], 'text' => $fcc_biolink_editor_copy['tour_discount_add_block_text']],
-        ['selector' => '[data-block-id="link_discount"]', 'action' => 'openAddBlockModal', 'filter_group' => 'forever', 'filter_goal' => 'product_recommendation', 'title' => $fcc_biolink_editor_copy['tour_discount_modal_title'], 'text' => $fcc_biolink_editor_copy['tour_discount_modal_text'], 'resource_url' => 'https://www.youtube.com/watch?v=8tBJiDu1EWc', 'resource_label' => $fcc_biolink_editor_copy['tour_discount_modal_resource']],
+        ['selector' => '[data-block-card][data-block-id="link_discount"]:not(.d-none)', 'action' => 'openAddBlockModal', 'filter_group' => 'forever', 'filter_goal' => 'product_recommendation', 'title' => $fcc_biolink_editor_copy['tour_discount_modal_title'], 'text' => $fcc_biolink_editor_copy['tour_discount_modal_text'], 'resource_url' => 'https://www.youtube.com/watch?v=8tBJiDu1EWc', 'resource_label' => $fcc_biolink_editor_copy['tour_discount_modal_resource']],
+        ['selector' => '#create_biolink_link_discount .modal-content', 'action' => 'openBlockCreateModal', 'trigger_selector' => '[data-block-card][data-block-id="link_discount"]:not(.d-none) button[data-target="#create_biolink_link_discount"]', 'modal_selector' => '#create_biolink_link_discount', 'title' => $fcc_biolink_editor_copy['tour_discount_create_title'], 'text' => $fcc_biolink_editor_copy['tour_discount_create_text']],
+        ['selector' => '#create_biolink_link_discount .alert.alert-primary', 'action' => 'openBlockCreateModal', 'modal_selector' => '#create_biolink_link_discount', 'title' => $fcc_biolink_editor_copy['tour_discount_notice_title'], 'text' => $fcc_biolink_editor_copy['tour_discount_notice_text'], 'resource_url' => 'https://www.youtube.com/watch?v=8tBJiDu1EWc', 'resource_label' => $fcc_biolink_editor_copy['tour_discount_modal_resource']],
+        ['selector' => '#create_biolink_link_discount #link_location_url', 'action' => 'openBlockCreateModal', 'modal_selector' => '#create_biolink_link_discount', 'title' => $fcc_biolink_editor_copy['tour_discount_url_title'], 'text' => $fcc_biolink_editor_copy['tour_discount_url_text']],
+        ['selector' => '#create_biolink_link_discount #link_name', 'action' => 'openBlockCreateModal', 'modal_selector' => '#create_biolink_link_discount', 'title' => $fcc_biolink_editor_copy['tour_discount_name_title'], 'text' => $fcc_biolink_editor_copy['tour_discount_name_text']],
+        ['selector' => '#create_biolink_link_discount input[name="apply_to_all_products"][value="1"]', 'action' => 'openBlockCreateModal', 'modal_selector' => '#create_biolink_link_discount', 'title' => $fcc_biolink_editor_copy['tour_discount_apply_title'], 'text' => $fcc_biolink_editor_copy['tour_discount_apply_text']],
+        ['selector' => '#create_biolink_link_discount [data-is-ajax]', 'action' => 'openBlockCreateModal', 'modal_selector' => '#create_biolink_link_discount', 'title' => $fcc_biolink_editor_copy['tour_discount_submit_title'], 'text' => $fcc_biolink_editor_copy['tour_discount_submit_text']],
     ],
     'funnel' => [
         ['selector' => '#blocks-tab', 'action' => 'activateBlocks', 'title' => $fcc_biolink_editor_copy['tour_funnel_title'], 'text' => $fcc_biolink_editor_copy['tour_funnel_text']],
@@ -415,6 +581,262 @@ $fcc_biolink_editor_tours = [
         border-radius: 999px;
         min-height: 2.2rem;
         padding-inline: .9rem;
+    }
+
+    .fcc-ai-theme-card,
+    .fcc-ai-copy-panel {
+        border: 1px solid #d9e4ef;
+        box-shadow: 0 .65rem 1.5rem rgba(15, 23, 42, .08);
+        border-radius: 1rem;
+    }
+
+    .fcc-ai-theme-card {
+        background: linear-gradient(180deg, #f8fbff 0%, #eef6ff 100%);
+    }
+
+    .fcc-ai-theme-kicker {
+        display: inline-flex;
+        align-items: center;
+        gap: .45rem;
+        font-size: .72rem;
+        font-weight: 800;
+        letter-spacing: .08em;
+        text-transform: uppercase;
+        color: #0f766e;
+    }
+
+    .fcc-ai-theme-summary {
+        color: #526173;
+        line-height: 1.65;
+    }
+
+    .fcc-ai-theme-chip-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .55rem;
+    }
+
+    .fcc-ai-theme-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: .45rem;
+        padding: .45rem .65rem;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, .82);
+        border: 1px solid rgba(148, 163, 184, .18);
+        color: #0f172a;
+        font-size: .8rem;
+        font-weight: 700;
+    }
+
+    .fcc-ai-theme-chip strong {
+        color: #475569;
+        font-size: .74rem;
+    }
+
+    .fcc-ai-theme-chip-dot {
+        width: .85rem;
+        height: .85rem;
+        border-radius: 999px;
+        border: 1px solid rgba(15, 23, 42, .1);
+        box-shadow: inset 0 1px 0 rgba(255,255,255,.25);
+    }
+
+    .fcc-ai-theme-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .65rem;
+    }
+
+    .fcc-ai-theme-meta {
+        color: #64748b;
+        font-size: .82rem;
+        line-height: 1.6;
+    }
+
+    .fcc-ai-copy-panel .list-group-item {
+        border-color: rgba(148, 163, 184, .16);
+    }
+
+    .fcc-ai-panel-notification {
+        margin: 0 0 1rem;
+    }
+
+    .fcc-ai-panel-notification:empty {
+        display: none;
+    }
+
+    .fcc-ai-primary-badge,
+    .fcc-ai-copy-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: .35rem;
+        margin-top: .35rem;
+        margin-right: .35rem;
+        border-radius: 999px;
+        padding: .24rem .55rem;
+        font-size: .7rem;
+        font-weight: 800;
+        letter-spacing: .06em;
+        text-transform: uppercase;
+    }
+
+    .fcc-ai-primary-badge {
+        background: rgba(16, 185, 129, .12);
+        color: #047857;
+        border: 1px solid rgba(16, 185, 129, .18);
+    }
+
+    .fcc-ai-copy-badge {
+        background: rgba(59, 130, 246, .1);
+        color: #1d4ed8;
+        border: 1px solid rgba(59, 130, 246, .16);
+    }
+
+    .fcc-ai-layout-item {
+        border-radius: .9rem;
+        padding: .8rem .9rem;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+    }
+
+    .fcc-ai-evolution-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(12.5rem, 1fr));
+        gap: .75rem;
+        margin-bottom: 1rem;
+    }
+
+    .fcc-ai-evolution-card {
+        border-radius: .95rem;
+        padding: .9rem .95rem;
+        background: linear-gradient(180deg, rgba(248, 250, 252, .95), rgba(241, 245, 249, .9));
+        border: 1px solid rgba(148, 163, 184, .2);
+    }
+
+    .fcc-ai-evolution-label {
+        display: block;
+        margin-bottom: .4rem;
+        color: #64748b;
+        font-size: .72rem;
+        font-weight: 800;
+        letter-spacing: .06em;
+        text-transform: uppercase;
+    }
+
+    .fcc-ai-evolution-value {
+        color: #0f172a;
+        font-weight: 800;
+        line-height: 1.45;
+    }
+
+    .fcc-ai-evolution-note {
+        margin-top: .35rem;
+        color: #64748b;
+        font-size: .8rem;
+        line-height: 1.55;
+    }
+
+    .fcc-ai-evolution-status {
+        display: inline-flex;
+        align-items: center;
+        gap: .35rem;
+        border-radius: 999px;
+        padding: .22rem .55rem;
+        font-size: .68rem;
+        font-weight: 800;
+        letter-spacing: .06em;
+        text-transform: uppercase;
+    }
+
+    .fcc-ai-evolution-status.pending {
+        background: rgba(251, 191, 36, .14);
+        color: #92400e;
+        border: 1px solid rgba(245, 158, 11, .2);
+    }
+
+    .fcc-ai-evolution-status.ready {
+        background: rgba(59, 130, 246, .12);
+        color: #1d4ed8;
+        border: 1px solid rgba(59, 130, 246, .18);
+    }
+
+    .fcc-ai-evolution-status.measured {
+        background: rgba(16, 185, 129, .12);
+        color: #047857;
+        border: 1px solid rgba(16, 185, 129, .18);
+    }
+
+    .fcc-biolink-editor-ai-workflow {
+        margin-top: 1rem;
+        border-radius: 1rem;
+        padding: 1rem 1.05rem;
+        background: rgba(255, 255, 255, .82);
+        border: 1px solid rgba(148, 163, 184, .22);
+    }
+
+    .fcc-biolink-editor-ai-workflow h4 {
+        margin: 0 0 .35rem;
+        color: #0f172a;
+        font-size: 1rem;
+        font-weight: 800;
+    }
+
+    .fcc-biolink-editor-ai-workflow p {
+        margin: 0 0 .75rem;
+        color: #516174;
+        line-height: 1.6;
+    }
+
+    .fcc-biolink-editor-ai-workflow ol {
+        margin: 0;
+        padding-left: 1.1rem;
+        color: #1e293b;
+    }
+
+    .fcc-biolink-editor-ai-workflow li + li {
+        margin-top: .45rem;
+    }
+
+    .fcc-ai-block-helper {
+        border-radius: .95rem;
+        padding: .9rem 1rem;
+        background: linear-gradient(135deg, rgba(219, 234, 254, .48), rgba(236, 253, 245, .7));
+        border: 1px solid rgba(59, 130, 246, .14);
+    }
+
+    .fcc-ai-block-helper-copy {
+        color: #4b5563;
+        line-height: 1.6;
+    }
+
+    .fcc-ai-inline-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .65rem;
+        margin-top: .8rem;
+    }
+
+    .fcc-ai-inline-suggestion {
+        flex: 1 1 18rem;
+        min-width: 0;
+        border-radius: .85rem;
+        padding: .8rem .85rem;
+        background: rgba(255, 255, 255, .82);
+        border: 1px solid rgba(148, 163, 184, .18);
+    }
+
+    .fcc-ai-inline-suggestion-value {
+        color: #0f172a;
+        font-weight: 700;
+        line-height: 1.5;
+    }
+
+    .fcc-ai-inline-suggestion-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .5rem;
+        margin-top: .75rem;
     }
 
     .biolink-editor-toolbar {
@@ -581,6 +1003,53 @@ $fcc_biolink_editor_tours = [
     body[data-theme-style='dark'] .fcc-biolink-editor-status-pill-label,
     body[data-theme-style='dark'] .fcc-biolink-editor-tutorial-header p {
         color: #b7c4d6;
+    }
+
+    body[data-theme-style='dark'] .fcc-ai-theme-card,
+    body[data-theme-style='dark'] .fcc-ai-copy-panel {
+        background: linear-gradient(180deg, #162130 0%, #101924 100%);
+        border-color: #33445b;
+        box-shadow: 0 .95rem 2.2rem rgba(0, 0, 0, .24);
+    }
+
+    body[data-theme-style='dark'] .fcc-ai-theme-summary,
+    body[data-theme-style='dark'] .fcc-ai-theme-meta {
+        color: #b7c4d6;
+    }
+
+    body[data-theme-style='dark'] .fcc-ai-theme-chip,
+    body[data-theme-style='dark'] .fcc-ai-layout-item,
+    body[data-theme-style='dark'] .fcc-ai-evolution-card {
+        background: rgba(15, 23, 36, .6);
+        border-color: rgba(100, 116, 139, .22);
+        color: #f3f7fd;
+    }
+
+    body[data-theme-style='dark'] .fcc-ai-evolution-label,
+    body[data-theme-style='dark'] .fcc-ai-evolution-note {
+        color: #b7c4d6;
+    }
+
+    body[data-theme-style='dark'] .fcc-ai-evolution-value {
+        color: #f8fbff;
+    }
+
+    body[data-theme-style='dark'] .fcc-biolink-editor-ai-workflow,
+    body[data-theme-style='dark'] .fcc-ai-block-helper,
+    body[data-theme-style='dark'] .fcc-ai-inline-suggestion {
+        background: rgba(15, 23, 36, .72);
+        border-color: rgba(100, 116, 139, .22);
+    }
+
+    body[data-theme-style='dark'] .fcc-biolink-editor-ai-workflow h4,
+    body[data-theme-style='dark'] .fcc-ai-inline-suggestion-value {
+        color: #f3f7fd;
+    }
+
+    body[data-theme-style='dark'] .fcc-biolink-editor-ai-workflow p,
+    body[data-theme-style='dark'] .fcc-biolink-editor-ai-workflow ol,
+    body[data-theme-style='dark'] .fcc-ai-block-helper-copy {
+        color: #c7d2e0;
     }
 
     body[data-theme-style='dark'] .biolink-switch-buttons {
@@ -874,27 +1343,6 @@ $fcc_biolink_editor_tours = [
                 <?php endforeach ?>
             </div>
 
-            <div class="fcc-biolink-editor-tutorial-panel">
-                <div class="fcc-biolink-editor-tutorial-header">
-                    <div>
-                        <h3><?= $fcc_biolink_editor_copy['tours_title'] ?></h3>
-                        <p><?= $fcc_biolink_editor_copy['tours_text'] ?></p>
-                    </div>
-                </div>
-
-                <div class="fcc-biolink-editor-mini-guides">
-                    <div class="fcc-biolink-editor-mini-guides-row">
-                        <button type="button" class="btn btn-outline-secondary" data-fcc-start-biolink-tour="themes"><?= $fcc_biolink_editor_copy['tour_theme'] ?></button>
-                        <button type="button" class="btn btn-outline-secondary" data-fcc-start-biolink-tour="reset"><?= $fcc_biolink_editor_copy['tour_reset'] ?></button>
-                        <button type="button" class="btn btn-outline-secondary" data-fcc-start-biolink-tour="forever"><?= $fcc_biolink_editor_copy['tour_forever'] ?></button>
-                        <button type="button" class="btn btn-outline-secondary" data-fcc-start-biolink-tour="funnel"><?= $fcc_biolink_editor_copy['tour_funnel'] ?></button>
-                    </div>
-
-                    <div class="fcc-biolink-editor-mini-guides-row">
-                        <button type="button" class="btn btn-outline-secondary" data-fcc-start-biolink-tour="discount"><?= $fcc_biolink_editor_copy['tour_discount'] ?></button>
-                    </div>
-                </div>
-            </div>
         </div>
 
         <!-- Custom code: FC-2026-02-27: premium toolbar for biolink editor -->
@@ -980,30 +1428,10 @@ $fcc_biolink_editor_tours = [
 							<?php endif ?>
 
 							<?php if(settings()->links->biolinks_themes_is_enabled): ?>
-                                <?php $fcc_selected_biolink_theme = !empty($data->link->biolink_theme_id) && isset($data->biolinks_themes[$data->link->biolink_theme_id]) ? $data->biolinks_themes[$data->link->biolink_theme_id] : null; ?>
                                 <button id="fcc_biolink_theme_button" class="btn btn-block btn-gray-200 font-size-little-small font-weight-450 my-4 fcc-biolink-tour-target" type="button" data-toggle="modal" data-target="#biolink_themes_modal" aria-expanded="false" aria-controls="theme_container">
                                     <i class="fas fa-fw fa-palette fa-sm mr-1"></i> <?= l('link.settings.theme_header') ?>
                                 </button>
                                 <small class="form-text text-muted mt-n3 mb-3"><?= l('link.settings.theme_help') ?></small>
-
-                                <div class="fcc-biolink-theme-summary card border-0 shadow-sm mb-4">
-                                    <div class="card-body">
-                                        <div class="d-flex flex-wrap justify-content-between align-items-start mb-2">
-                                            <div class="text-uppercase small font-weight-bold text-muted"><?= l('biolink_themes.current_title') ?></div>
-                                            <span id="fcc_biolink_theme_summary_status" class="badge badge-pill badge-light">
-                                                <?= $fcc_selected_biolink_theme ? l('biolink_themes.current_active') : l('biolink_themes.current_custom') ?>
-                                            </span>
-                                        </div>
-
-                                        <div id="fcc_biolink_theme_summary_name" class="h5 mb-2">
-                                            <?= $fcc_selected_biolink_theme ? $fcc_selected_biolink_theme->name : l('biolink_themes.id_null') ?>
-                                        </div>
-
-                                        <p id="fcc_biolink_theme_summary_help" class="mb-0 text-muted">
-                                            <?= $fcc_selected_biolink_theme ? l('biolink_themes.current_active_help') : l('biolink_themes.current_custom_help') ?>
-                                        </p>
-                                    </div>
-                                </div>
 
                                 <!-- Custom code: FC-2026-03-06: factory reset button for biolink template -->
                                 <button id="reset_biolink_factory_btn" class="btn btn-block btn-outline-danger font-size-little-small font-weight-450 mb-4 fcc-biolink-tour-target" type="button" data-link-id="<?= $data->link->link_id ?>">
@@ -1739,6 +2167,9 @@ $fcc_biolink_editor_tours = [
 						<?php
 						$row->settings->border_shadow_style = $row->settings->border_shadow_style ?? 'subtle';
 						$row->settings->border_shadow_color = $row->settings->border_shadow_color ?? '#00000010';
+                        $fcc_row_is_ai_primary = $fcc_ai_primary_block_id && (int) $row->biolink_block_id === $fcc_ai_primary_block_id;
+                        $fcc_row_has_ai_copy = !empty($fcc_ai_copy_suggestion_block_ids[(int) $row->biolink_block_id]);
+                        $fcc_row_copy_suggestions = $fcc_ai_copy_suggestion_map[(int) $row->biolink_block_id] ?? [];
 						?>
 
                         <?php /* Custom code: FC-2026-02-27: premium biolink block cards */ ?>
@@ -1794,6 +2225,18 @@ $fcc_biolink_editor_tours = [
 													<?php endif ?>
                                                 </a>
                                             </div>
+
+                                            <?php if($fcc_row_is_ai_primary): ?>
+                                                <span class="fcc-ai-primary-badge">
+                                                    <i class="fas fa-fw fa-bullseye"></i> <?= l('link.settings.ai_primary_badge') ?>
+                                                </span>
+                                            <?php endif ?>
+
+                                            <?php if($fcc_row_has_ai_copy): ?>
+                                                <span class="fcc-ai-copy-badge">
+                                                    <i class="fas fa-fw fa-pen"></i> <?= l('link.settings.ai_copy_badge') ?>
+                                                </span>
+                                            <?php endif ?>
 
                                             <span class="d-flex align-items-center">
 												<?php if(!empty($row->location_url)): ?>
@@ -1893,6 +2336,60 @@ $fcc_biolink_editor_tours = [
                                 </div>
 
                                 <div class="collapse biolink-editor-expanded <?= isset($_GET['biolink_block_id']) && $_GET['biolink_block_id'] == $row->biolink_block_id ? 'show' : null ?>" id="biolink_block_expanded_content_<?= $row->biolink_block_id ?>" data-link-type="<?= $row->type ?>" data-parent="#biolink_blocks">
+                                    <?php if($fcc_row_is_ai_primary || !empty($fcc_row_copy_suggestions)): ?>
+                                        <div class="fcc-ai-block-helper mb-3">
+                                            <div class="d-flex flex-wrap justify-content-between align-items-start">
+                                                <div class="mr-3">
+                                                    <div class="fcc-ai-theme-kicker">
+                                                        <i class="fas fa-fw fa-magic"></i>
+                                                        <span><?= $fcc_biolink_editor_copy['ai_block_helper_title'] ?></span>
+                                                    </div>
+                                                    <p class="fcc-ai-block-helper-copy mb-0 mt-2"><?= $fcc_biolink_editor_copy['ai_block_helper_text'] ?></p>
+                                                </div>
+
+                                                <?php if($fcc_row_is_ai_primary): ?>
+                                                    <span class="fcc-ai-primary-badge mt-0">
+                                                        <i class="fas fa-fw fa-bullseye"></i>
+                                                        <?= $fcc_biolink_editor_copy['ai_block_helper_primary'] ?>
+                                                    </span>
+                                                <?php endif ?>
+                                            </div>
+
+                                            <?php if(!empty($fcc_row_copy_suggestions)): ?>
+                                                <div class="fcc-ai-inline-actions">
+                                                    <?php foreach($fcc_row_copy_suggestions as $fcc_inline_copy): ?>
+                                                        <div class="fcc-ai-inline-suggestion">
+                                                            <div class="font-weight-bold"><?= htmlspecialchars((string) (($fcc_inline_copy['label'] ?? '') ?: l('link.settings.ai_copy_default_label')), ENT_QUOTES, 'UTF-8') ?></div>
+                                                            <?php if(!empty($fcc_inline_copy['reason'])): ?>
+                                                                <div class="small text-muted mb-2"><?= htmlspecialchars((string) ($fcc_inline_copy['reason'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                                                            <?php endif ?>
+                                                            <div class="fcc-ai-inline-suggestion-value"><?= htmlspecialchars((string) ($fcc_inline_copy['value'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                                                            <div class="fcc-ai-inline-suggestion-actions">
+                                                                <button
+                                                                    type="button"
+                                                                    class="btn btn-sm btn-outline-primary js-ai-copy-insert"
+                                                                    data-block-id="<?= (int) $row->biolink_block_id ?>"
+                                                                    data-field="<?= htmlspecialchars((string) ($fcc_inline_copy['field'] ?? 'name'), ENT_QUOTES, 'UTF-8') ?>"
+                                                                    data-value="<?= htmlspecialchars((string) ($fcc_inline_copy['value'] ?? ''), ENT_QUOTES, 'UTF-8') ?>"
+                                                                    data-notification-target="#fcc_ai_copy_notification"
+                                                                >
+                                                                    <i class="fas fa-fw fa-magic mr-1"></i> <?= l('link.settings.ai_copy_insert') ?>
+                                                                </button>
+                                                                <button
+                                                                    type="button"
+                                                                    class="btn btn-sm btn-light js-ai-copy-copy"
+                                                                    data-value="<?= htmlspecialchars((string) ($fcc_inline_copy['value'] ?? ''), ENT_QUOTES, 'UTF-8') ?>"
+                                                                    data-notification-target="#fcc_ai_copy_notification"
+                                                                >
+                                                                    <i class="fas fa-fw fa-copy mr-1"></i> <?= l('global.copy') ?>
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    <?php endforeach ?>
+                                                </div>
+                                            <?php endif ?>
+                                        </div>
+                                    <?php endif ?>
 									<?php require THEME_PATH . 'views/link/settings/biolink_blocks/' . $row->type . '/' . $row->type . '_update_form.php' ?>
                                 </div>
                             </div>
@@ -2083,6 +2580,380 @@ $fcc_biolink_editor_tours = [
 
     window.update_biolink_theme_summary = update_biolink_theme_summary;
     update_biolink_theme_summary();
+
+    let get_ai_notification_container = targetSelector => {
+        if(!targetSelector) {
+            return null;
+        }
+
+        return document.querySelector(targetSelector);
+    };
+
+    let reveal_ai_notification_container = notification_container => {
+        if(!notification_container) {
+            return;
+        }
+
+        window.requestAnimationFrame(() => {
+            notification_container.scrollIntoView({
+                behavior: 'smooth',
+                block: 'nearest'
+            });
+
+            let first_alert = notification_container.querySelector('.alert');
+
+            if(first_alert) {
+                first_alert.setAttribute('tabindex', '-1');
+                first_alert.focus({preventScroll: true});
+            }
+        });
+    };
+
+    let update_ai_applied_meta = () => {
+        document.querySelectorAll('[data-ai-applied-now]').forEach(element => {
+            element.classList.remove('d-none');
+        });
+    };
+
+    let reload_biolink_editor_tab = tab => {
+        let location_url = new URL(window.location.href);
+        location_url.searchParams.set('tab', tab || 'settings');
+        window.location.assign(location_url.toString());
+    };
+
+    let post_ai_editor_action = (payload, notificationTarget, reloadTab = '') => {
+        let notification_container = get_ai_notification_container(notificationTarget);
+
+        if(notification_container) {
+            notification_container.innerHTML = '';
+        }
+
+        return $.ajax({
+            type: 'POST',
+            url: `${url}link-ajax`,
+            data: payload,
+            dataType: 'json',
+            success: response => {
+                if(notification_container) {
+                    display_notifications(response.message, response.status, notification_container);
+
+                    if(response.status !== 'success' || response.message) {
+                        reveal_ai_notification_container(notification_container);
+                    }
+                }
+
+                if(response.status === 'success') {
+                    if(response.details?.url) {
+                        window.setTimeout(() => redirect(response.details.url, true), 250);
+                        return;
+                    }
+
+                    update_ai_applied_meta();
+                    if(reloadTab) {
+                        window.setTimeout(() => reload_biolink_editor_tab(reloadTab), 800);
+                    } else {
+                        refresh_biolink_preview();
+                    }
+                }
+            },
+            error: () => {
+                if(notification_container) {
+                    display_notifications(<?= json_encode(l('global.error_message.basic')) ?>, 'error', notification_container);
+                    reveal_ai_notification_container(notification_container);
+                }
+            }
+        });
+    };
+
+    window.post_ai_editor_action = post_ai_editor_action;
+
+    document.querySelectorAll('.js-apply-ai-theme').forEach(element => {
+        element.addEventListener('click', event => {
+            let button = event.currentTarget;
+            let theme_key = button.getAttribute('data-theme-key') || '';
+            let notification_target = button.getAttribute('data-notification-target');
+            let reload_tab = button.getAttribute('data-reload-tab') || '';
+
+            post_ai_editor_action({
+                token: <?= json_encode(\Altum\Csrf::get()) ?>,
+                request_type: 'apply_ai_color_bundle',
+                link_id: button.getAttribute('data-link-id'),
+                theme_key: theme_key
+            }, notification_target, reload_tab);
+        });
+    });
+
+    document.querySelectorAll('.js-apply-ai-color-bundle').forEach(element => {
+        element.addEventListener('click', event => {
+            let button = event.currentTarget;
+            let notification_target = button.getAttribute('data-notification-target');
+            let reload_tab = button.getAttribute('data-reload-tab') || '';
+
+            post_ai_editor_action({
+                token: <?= json_encode(\Altum\Csrf::get()) ?>,
+                request_type: 'apply_ai_color_bundle',
+                link_id: button.getAttribute('data-link-id')
+            }, notification_target, reload_tab);
+        });
+    });
+
+    document.querySelectorAll('.js-apply-ai-block-bundle').forEach(element => {
+        element.addEventListener('click', event => {
+            let button = event.currentTarget;
+            let notification_target = button.getAttribute('data-notification-target');
+            let reload_tab = button.getAttribute('data-reload-tab') || '';
+
+            post_ai_editor_action({
+                token: <?= json_encode(\Altum\Csrf::get()) ?>,
+                request_type: 'apply_ai_block_bundle',
+                link_id: button.getAttribute('data-link-id')
+            }, notification_target, reload_tab);
+        });
+    });
+
+    document.querySelectorAll('.js-restore-ai-bundle').forEach(element => {
+        element.addEventListener('click', event => {
+            let button = event.currentTarget;
+            let notification_target = button.getAttribute('data-notification-target');
+            let reload_tab = button.getAttribute('data-reload-tab') || '';
+
+            post_ai_editor_action({
+                token: <?= json_encode(\Altum\Csrf::get()) ?>,
+                request_type: 'restore_ai_bundle_backup',
+                link_id: button.getAttribute('data-link-id')
+            }, notification_target, reload_tab);
+        });
+    });
+
+    document.querySelectorAll('.js-apply-ai-primary-focus').forEach(element => {
+        element.addEventListener('click', event => {
+            let button = event.currentTarget;
+            let notification_target = button.getAttribute('data-notification-target');
+            let reload_tab = button.getAttribute('data-reload-tab') || '';
+
+            post_ai_editor_action({
+                token: <?= json_encode(\Altum\Csrf::get()) ?>,
+                request_type: 'apply_ai_primary_block_focus',
+                link_id: button.getAttribute('data-link-id')
+            }, notification_target, reload_tab);
+        });
+    });
+
+    document.querySelectorAll('.js-apply-ai-layout').forEach(element => {
+        element.addEventListener('click', event => {
+            let button = event.currentTarget;
+            let notification_target = button.getAttribute('data-notification-target');
+            let reload_tab = button.getAttribute('data-reload-tab') || '';
+
+            post_ai_editor_action({
+                token: <?= json_encode(\Altum\Csrf::get()) ?>,
+                request_type: 'apply_ai_layout_actions',
+                link_id: button.getAttribute('data-link-id')
+            }, notification_target, reload_tab);
+        });
+    });
+
+    document.querySelectorAll('.js-restore-ai-layout').forEach(element => {
+        element.addEventListener('click', event => {
+            let button = event.currentTarget;
+            let notification_target = button.getAttribute('data-notification-target');
+            let reload_tab = button.getAttribute('data-reload-tab') || '';
+
+            post_ai_editor_action({
+                token: <?= json_encode(\Altum\Csrf::get()) ?>,
+                request_type: 'restore_ai_layout_backup',
+                link_id: button.getAttribute('data-link-id')
+            }, notification_target, reload_tab);
+        });
+    });
+
+    document.querySelectorAll('.js-add-ai-missing-block').forEach(element => {
+        element.addEventListener('click', event => {
+            let button = event.currentTarget;
+
+            post_ai_editor_action({
+                token: <?= json_encode(\Altum\Csrf::get()) ?>,
+                request_type: 'add_ai_recommended_block',
+                link_id: button.getAttribute('data-link-id'),
+                recommendation_key: button.getAttribute('data-recommendation-key') || '',
+                block_type: button.getAttribute('data-block-type') || ''
+            }, button.getAttribute('data-notification-target') || '#fcc_ai_copy_notification');
+        });
+    });
+
+    document.querySelectorAll('.js-open-ai-block-picker').forEach(element => {
+        element.addEventListener('click', event => {
+            let button = event.currentTarget;
+            let block_type = button.getAttribute('data-block-type') || '';
+            let picker_search = (button.getAttribute('data-picker-search') || '').trim();
+            let block_group = (button.getAttribute('data-block-group') || '').trim();
+            let block_goal = (button.getAttribute('data-block-goal') || '').trim();
+            let label = picker_search || (block_type ? <?= json_encode(l('link.settings.ai_missing_blocks_search_prefix')) ?> + ' ' + block_type.replace(/_/g, ' ') : '');
+
+            $('#biolink_link_create_modal').modal('show');
+
+            window.setTimeout(() => {
+                if(window.fccBiolinkBlockPicker) {
+                    window.fccBiolinkBlockPicker.setFilters({
+                        search: label.trim(),
+                        group: block_group,
+                        goal: block_goal
+                    });
+                    window.fccBiolinkBlockPicker.focusSearch();
+                }
+            }, 180);
+        });
+    });
+
+    let copy_ai_text_to_clipboard = async value => {
+        if(!value) {
+            return false;
+        }
+
+        try {
+            await navigator.clipboard.writeText(value);
+            return true;
+        } catch(error) {
+            let fallback = document.createElement('textarea');
+            fallback.value = value;
+            fallback.setAttribute('readonly', '');
+            fallback.style.position = 'absolute';
+            fallback.style.left = '-9999px';
+            document.body.appendChild(fallback);
+            fallback.select();
+            let copied = document.execCommand('copy');
+            document.body.removeChild(fallback);
+            return copied;
+        }
+    };
+
+    document.querySelectorAll('.js-ai-copy-copy').forEach(element => {
+        element.addEventListener('click', async event => {
+            let button = event.currentTarget;
+            let value = button.getAttribute('data-value') || '';
+            let notification_container = get_ai_notification_container(button.getAttribute('data-notification-target'));
+            let copied = await copy_ai_text_to_clipboard(value);
+
+            if(notification_container) {
+                display_notifications(copied ? <?= json_encode(l('link.settings.ai_copy_copied')) ?> : <?= json_encode(l('global.error_message.basic')) ?>, copied ? 'success' : 'error', notification_container);
+            }
+        });
+    });
+
+    let get_ai_copy_insert_target = (block_id, field) => {
+        let scopes = [
+            document.querySelector(`#update_biolink_block_${block_id}`),
+            document.querySelector(`#biolink_block_expanded_content_${block_id}`),
+            document.querySelector(`[data-biolink-block-id="${block_id}"]`)
+        ].filter(Boolean);
+
+        let scoped_selectors = field ? [`[name="${field}"]`] : [];
+        let unique_selectors = [];
+
+        if(field === 'name') {
+            scoped_selectors.push('[name="title"]');
+            unique_selectors.push(
+                `#link_name_${block_id}`,
+                `#featured_link_name_${block_id}`,
+                `#big_link_name_${block_id}`,
+                `#youtube_title_${block_id}`,
+                `#vimeo_title_${block_id}`
+            );
+        }
+
+        if(field === 'title') {
+            unique_selectors.push(
+                `#youtube_title_${block_id}`,
+                `#vimeo_title_${block_id}`
+            );
+        }
+
+        for(let scope of scopes) {
+            for(let selector of [...unique_selectors, ...scoped_selectors]) {
+                let target = scope.querySelector(selector);
+
+                if(target) {
+                    return target;
+                }
+            }
+        }
+
+        for(let selector of unique_selectors) {
+            let target = document.querySelector(selector);
+
+            if(target) {
+                return target;
+            }
+        }
+
+        return null;
+    };
+
+    document.addEventListener('click', async event => {
+        let button = event.target.closest('.js-ai-copy-insert');
+
+        if(!button) {
+            return;
+        }
+
+        event.preventDefault();
+        event.stopPropagation();
+
+        let block_id = parseInt(button.getAttribute('data-block-id') || '0', 10);
+        let field = button.getAttribute('data-field') || 'name';
+        let value = button.getAttribute('data-value') || '';
+        let notification_container = get_ai_notification_container(button.getAttribute('data-notification-target'));
+
+        if(!block_id) {
+            let copied = await copy_ai_text_to_clipboard(value);
+            if(notification_container) {
+                display_notifications(copied ? <?= json_encode(l('link.settings.ai_copy_copied')) ?> : <?= json_encode(l('global.error_message.basic')) ?>, copied ? 'success' : 'error', notification_container);
+            }
+            return;
+        }
+
+        let collapseElement = document.querySelector(`#biolink_block_expanded_content_${block_id}`);
+
+        if(collapseElement && !collapseElement.classList.contains('show')) {
+            $(collapseElement).collapse('show');
+            await new Promise(resolve => setTimeout(resolve, 180));
+        }
+
+        let form = document.querySelector(`#update_biolink_block_${block_id}`);
+        let target = get_ai_copy_insert_target(block_id, field);
+
+        if(!target) {
+            let copied = await copy_ai_text_to_clipboard(value);
+            if(notification_container) {
+                display_notifications(copied ? <?= json_encode(l('link.settings.ai_copy_missing_field')) ?> : <?= json_encode(l('global.error_message.basic')) ?>, copied ? 'success' : 'error', notification_container);
+            }
+            return;
+        }
+
+        target.value = value;
+        target.dispatchEvent(new Event('input', { bubbles: true }));
+        target.dispatchEvent(new Event('change', { bubbles: true }));
+        target.dispatchEvent(new Event('keyup', { bubbles: true }));
+
+        if(typeof target.focus === 'function') {
+            try {
+                target.focus({ preventScroll: true });
+            } catch(error) {
+                target.focus();
+            }
+        }
+
+        if(typeof target.select === 'function' && ['text', 'search', 'url', 'tel', 'email', 'password'].includes((target.type || '').toLowerCase())) {
+            target.select();
+        }
+
+        target.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
+        form?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+        if(notification_container) {
+            display_notifications(<?= json_encode(l('link.settings.ai_copy_inserted')) ?>, 'success', notification_container);
+        }
+    });
 
     /* Switching themes & previewing */
     let biolink_theme_preview = () => {
@@ -3383,6 +4254,11 @@ $fcc_biolink_editor_tours = [
                     extra_updating_and_potentially_color_inputs = ['name', 'description'];
                     break;
 
+                case 'youtube':
+                case 'vimeo':
+                    extra_updating_and_potentially_color_inputs = ['title'];
+                    break;
+
                 case 'socials':
                     extra_updating_and_potentially_color_inputs = [];
 
@@ -3439,8 +4315,14 @@ $fcc_biolink_editor_tours = [
 
                 if(item_input) {
                     $(item_input).off().on('change paste keyup', event => {
+                        let item_value = $(event.currentTarget).val();
+
                         if(biolink_link.find(`[data-${item}]`).length) {
-                            biolink_link.find(`[data-${item}]`).text($(event.currentTarget).val());
+                            biolink_link.find(`[data-${item}]`).text(item_value);
+                        }
+
+                        if(item === 'title' && biolink_link.find('[data-title-container]').length) {
+                            biolink_link.find('[data-title-container]').toggleClass('d-none', item_value.trim() === '');
                         }
 
                         if(update_form_content.querySelector('input[name="icon"]')) {
@@ -4033,6 +4915,27 @@ $fcc_biolink_editor_tours = [
                                 });
                             }
                         });
+                        resolve();
+                    }, 140);
+                    return;
+                }
+
+                if(step.action === 'openBlockCreateModal') {
+                    $('#blocks-tab').tab('show');
+                    setTimeout(async () => {
+                        const modalSelector = step.modal_selector || '#create_biolink_link_discount';
+                        const triggerSelector = step.trigger_selector || '';
+                        const trigger = triggerSelector ? document.querySelector(triggerSelector) : null;
+
+                        if(trigger) {
+                            trigger.click();
+                            await waitForModalReady(modalSelector);
+                            resolve();
+                            return;
+                        }
+
+                        hideTourModals(modalSelector);
+                        await waitForModalReady(modalSelector);
                         resolve();
                     }, 140);
                     return;

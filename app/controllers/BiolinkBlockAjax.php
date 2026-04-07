@@ -7338,6 +7338,7 @@ class BiolinkBlockAjax extends Controller {
         $_POST['link_id'] = (int) $_POST['link_id'];
         $_POST['location_url'] = get_url($_POST['location_url']);
         $_POST['theme'] = isset($_POST['theme']) && in_array($_POST['theme'], ['light', 'dark']) ? query_clean($_POST['theme']) : null;
+        $_POST['title'] = mb_substr(trim((string) ($_POST['title'] ?? '')), 0, 256);
 
         $settings = [
             'border_shadow_style' => 'subtle',
@@ -7359,6 +7360,10 @@ class BiolinkBlockAjax extends Controller {
 
         if($_POST['theme']) {
             $settings['theme'] = $_POST['theme'];
+        }
+
+        if(in_array($type, ['youtube', 'vimeo'], true)) {
+            $settings['title'] = $_POST['title'];
         }
 
         if(!$link = db()->where('link_id', $_POST['link_id'])->where('user_id', $this->user->user_id)->getOne('links')) {
@@ -7477,6 +7482,7 @@ class BiolinkBlockAjax extends Controller {
         $_POST['biolink_block_id'] = (int) $_POST['biolink_block_id'];
         $_POST['location_url'] = get_url($_POST['location_url']);
         $_POST['theme'] = isset($_POST['theme']) && in_array($_POST['theme'], ['light', 'dark']) ? query_clean($_POST['theme']) : null;
+        $_POST['title'] = mb_substr(trim((string) ($_POST['title'] ?? '')), 0, 256);
         $_POST['border_radius'] = in_array($_POST['border_radius'], ['straight', 'round', 'rounded']) ? query_clean($_POST['border_radius']) : 'rounded';
         $_POST['border_width'] = in_array($_POST['border_width'], [0, 1, 2, 3, 4, 5]) ? (int) $_POST['border_width'] : 0;
         $_POST['border_style'] = in_array($_POST['border_style'], ['solid', 'dashed', 'double', 'inset', 'outset']) ? query_clean($_POST['border_style']) : 'solid';
@@ -7507,6 +7513,10 @@ class BiolinkBlockAjax extends Controller {
 
         if($_POST['theme']) {
             $settings['theme'] = $_POST['theme'];
+        }
+
+        if(in_array($type, ['youtube', 'vimeo'], true)) {
+            $settings['title'] = $_POST['title'];
         }
 
         if(!$biolink_block = db()->where('biolink_block_id', $_POST['biolink_block_id'])->where('user_id', $this->user->user_id)->getOne('biolinks_blocks')) {

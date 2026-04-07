@@ -60,7 +60,7 @@ $account_billing_locked = !empty($this->user->payment_subscription_id);
         <div class="fcc-account-hero__metrics">
             <div class="fcc-account-metric-card">
                 <div class="fcc-account-metric-label"><?= l('account.settings.contact_header') ?></div>
-                <div class="fcc-account-metric-value"><?= $account_phone_value !== '' ? $account_phone_value : l('global.none') ?></div>
+                <div class="fcc-account-metric-value fcc-account-metric-value--phone"><?= $account_phone_value !== '' ? $account_phone_value : l('global.none') ?></div>
                 <div class="fcc-account-metric-note"><?= l('account.settings.phone') ?></div>
             </div>
 
@@ -626,6 +626,11 @@ $account_billing_locked = !empty($this->user->payment_subscription_id);
         margin-bottom: .55rem;
         color: #ffffff;
         word-break: break-word;
+    }
+
+    .fcc-account-metric-value--phone {
+        font-size: clamp(1rem, 2.35vw, 1.55rem);
+        letter-spacing: -.02em;
     }
 
     .fcc-account-section-header h1 {

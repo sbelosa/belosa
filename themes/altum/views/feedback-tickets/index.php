@@ -404,10 +404,64 @@ foreach($data->feedback_tickets as $ticket) {
     }
 
     .fcc-support-compose-card {
+        position: relative;
+        overflow: hidden;
         background:
-            radial-gradient(circle at top right, rgba(45, 212, 191, 0.1), transparent 26%),
-            linear-gradient(180deg, rgba(17, 31, 48, 0.96) 0%, rgba(10, 17, 29, 0.99) 100%);
-        border-color: rgba(45, 212, 191, 0.18);
+            radial-gradient(circle at 12% 14%, rgba(63, 215, 199, 0.12) 0%, rgba(63, 215, 199, 0) 34%),
+            radial-gradient(circle at 88% 10%, rgba(84, 124, 255, 0.12) 0%, rgba(84, 124, 255, 0) 30%),
+            radial-gradient(circle at 72% 0%, rgba(226, 188, 116, 0.08) 0%, rgba(226, 188, 116, 0) 22%),
+            linear-gradient(180deg, rgba(18, 31, 49, 0.98) 0%, rgba(10, 17, 29, 0.995) 100%);
+        border-color: rgba(93, 167, 255, 0.18);
+        box-shadow: 0 1.45rem 3rem rgba(2, 8, 23, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    }
+
+    .fcc-support-compose-card::before {
+        content: '';
+        position: absolute;
+        inset: 0 0 auto;
+        height: 3px;
+        background: linear-gradient(90deg, rgba(92, 239, 223, 0.96) 0%, rgba(103, 160, 255, 0.78) 54%, rgba(228, 188, 118, 0.88) 100%);
+        opacity: 0.96;
+    }
+
+    .fcc-support-compose-card::after {
+        content: '';
+        position: absolute;
+        inset: auto auto -4rem -3rem;
+        width: 15rem;
+        height: 15rem;
+        border-radius: 999px;
+        background: radial-gradient(circle, rgba(63, 215, 199, 0.1) 0%, rgba(63, 215, 199, 0) 72%);
+        pointer-events: none;
+    }
+
+    .fcc-support-compose-card .fcc-support-eyebrow,
+    .fcc-support-compose-card .fcc-support-section-title,
+    .fcc-support-compose-card .text-muted,
+    .fcc-support-compose-card form {
+        position: relative;
+        z-index: 1;
+    }
+
+    .fcc-support-compose-card .fcc-support-section-title {
+        margin-bottom: 0.55rem;
+    }
+
+    .fcc-support-compose-card .fcc-support-webinar-box {
+        border-color: rgba(92, 239, 223, 0.22);
+        background:
+            radial-gradient(circle at top right, rgba(84, 124, 255, 0.1) 0%, rgba(84, 124, 255, 0) 40%),
+            linear-gradient(135deg, rgba(17, 72, 89, 0.28) 0%, rgba(15, 23, 42, 0.32) 100%);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    }
+
+    .fcc-support-compose-card .fcc-support-button {
+        min-width: 11rem;
+        box-shadow: 0 1.1rem 2.3rem rgba(45, 212, 191, 0.22);
+    }
+
+    .fcc-support-compose-card .fcc-support-button:hover {
+        box-shadow: 0 1.35rem 2.7rem rgba(45, 212, 191, 0.28);
     }
 
     .fcc-support-inbox-card {

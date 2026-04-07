@@ -7,6 +7,32 @@ $fcc_is_biolink_editor = $data->link->type === 'biolink' && $data->method === 's
 $fcc_link_header_subheader = $data->link->type === 'link'
     ? l('link.header.short_link_subheader')
     : l('link.header.subheader');
+$fcc_ai_editor_payload = is_array($data->ai_editor_payload ?? null) ? $data->ai_editor_payload : [];
+$fcc_ai_theme_pack = is_array($fcc_ai_editor_payload['theme_pack'] ?? null) ? $fcc_ai_editor_payload['theme_pack'] : [];
+$fcc_ai_theme_bundle_ready = (bool) array_filter([
+    (string) ($fcc_ai_theme_pack['background_color'] ?? ''),
+    (string) ($fcc_ai_theme_pack['gradient_start'] ?? ''),
+    (string) ($fcc_ai_theme_pack['gradient_end'] ?? ''),
+    (string) ($fcc_ai_theme_pack['heading_color'] ?? ''),
+    (string) ($fcc_ai_theme_pack['text_color'] ?? ''),
+    (string) ($fcc_ai_theme_pack['primary_block_background'] ?? ''),
+    (string) ($fcc_ai_theme_pack['secondary_blocks_background'] ?? ''),
+]);
+$fcc_ai_block_bundle_ready = !empty($fcc_ai_editor_payload['missing_block_recommendations']) || !empty($fcc_ai_editor_payload['copy_suggestions']) || !empty($fcc_ai_editor_payload['layout_actions']);
+$fcc_ai_bundle_restore_ready = !empty($fcc_ai_editor_payload['bundle_backup']['available']);
+$fcc_ai_review_summary_ready = !empty($fcc_ai_editor_payload['review_summary']);
+$fcc_ai_actions_freshness = is_array($fcc_ai_editor_payload['freshness'] ?? null) ? $fcc_ai_editor_payload['freshness'] : [];
+$fcc_ai_actions_stale = !empty($fcc_ai_actions_freshness['is_stale']);
+$fcc_ai_review_teaser_actions_visible = $fcc_ai_review_summary_ready || $fcc_ai_theme_bundle_ready || $fcc_ai_block_bundle_ready || $fcc_ai_bundle_restore_ready;
+$fcc_ai_review_teaser_notification_id = 'fcc_app_review_ai_actions_notification';
+$fcc_app_review_next_step_payload = is_array($data->app_review_next_step_payload ?? null) ? $data->app_review_next_step_payload : [];
+$fcc_app_review_next_step_number = max(0, (int) ($fcc_app_review_next_step_payload['step_number'] ?? 0));
+$fcc_app_review_next_step_title = (string) ($fcc_app_review_next_step_payload['title'] ?? l('ai_plan.onboarding_step_2_title'));
+$fcc_app_review_next_step_text = (string) ($fcc_app_review_next_step_payload['text'] ?? l('links.app_review_cta_text'));
+$fcc_app_review_next_step_button_label = (string) ($fcc_app_review_next_step_payload['button_label'] ?? l('ai_plan.cta_go_app_review_direct'));
+$fcc_app_review_next_step_url = (string) ($fcc_app_review_next_step_payload['url'] ?? ($data->app_review_page_url ?? '#'));
+$fcc_app_review_next_step_is_accessible = array_key_exists('is_accessible', $fcc_app_review_next_step_payload) ? (bool) $fcc_app_review_next_step_payload['is_accessible'] : (bool) ($data->app_review_is_accessible ?? false);
+$fcc_app_review_next_step_locked_reason = (string) ($fcc_app_review_next_step_payload['locked_reason'] ?? ($data->app_review_locked_reason ?? ''));
 $fcc_short_link_editor_steps = $fcc_is_short_link_editor ? [
     ['selector' => '#fcc_short_link_editor_step_intro', 'title' => l('link.short_editor.tour.intro_title'), 'text' => l('link.short_editor.tour.intro_text')],
     ['selector' => '#fcc_short_link_editor_step_basics', 'title' => l('link.short_editor.tour.basics_title'), 'text' => l('link.short_editor.tour.basics_text')],
@@ -21,6 +47,270 @@ $fcc_short_link_editor_steps = $fcc_is_short_link_editor ? [
     ['selector' => '#fcc_short_link_editor_step_save', 'title' => l('link.short_editor.tour.save_title'), 'text' => l('link.short_editor.tour.save_text')],
 ] : [];
 ?>
+
+<?php ob_start() ?>
+<style>
+    .fcc-app-review-teaser-card {
+        position: relative;
+        overflow: hidden;
+        border: 1px solid rgba(119, 181, 255, .18) !important;
+        border-radius: 24px;
+        background:
+            radial-gradient(circle at 12% 14%, rgba(63, 215, 199, .14) 0%, rgba(63, 215, 199, 0) 34%),
+            radial-gradient(circle at 88% 10%, rgba(84, 124, 255, .14) 0%, rgba(84, 124, 255, 0) 32%),
+            radial-gradient(circle at 72% 0%, rgba(226, 188, 116, .08) 0%, rgba(226, 188, 116, 0) 24%),
+            linear-gradient(135deg, rgba(17, 25, 41, .985) 0%, rgba(9, 13, 23, .995) 100%);
+        box-shadow: 0 28px 64px rgba(3, 9, 23, .34), inset 0 1px 0 rgba(255,255,255,.04);
+    }
+
+    .fcc-app-review-teaser-card::before {
+        content: '';
+        position: absolute;
+        inset: 0 0 auto;
+        height: 3px;
+        background: linear-gradient(90deg, rgba(89, 239, 224, .95) 0%, rgba(103, 160, 255, .76) 52%, rgba(228, 188, 118, .9) 100%);
+        opacity: .96;
+    }
+
+    .fcc-app-review-teaser-card::after {
+        content: '';
+        position: absolute;
+        inset: auto auto -4.5rem -3rem;
+        width: 15rem;
+        height: 15rem;
+        border-radius: 999px;
+        background: radial-gradient(circle, rgba(63, 215, 199, .11) 0%, rgba(63, 215, 199, 0) 72%);
+        pointer-events: none;
+    }
+
+    .fcc-app-review-teaser-body {
+        position: relative;
+        z-index: 1;
+        padding: 1.55rem;
+    }
+
+    .fcc-app-review-teaser-grid {
+        align-items: stretch;
+    }
+
+    .fcc-app-review-teaser-copy {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .fcc-app-review-teaser-pill {
+        display: inline-flex;
+        align-items: center;
+        padding: .74rem 1rem;
+        margin-bottom: .95rem;
+        border-radius: 999px;
+        border: 1px solid rgba(111, 244, 228, .22);
+        background: linear-gradient(135deg, rgba(44, 205, 191, .16) 0%, rgba(27, 125, 165, .16) 100%);
+        color: #b7fff3;
+        font-size: .8rem;
+        font-weight: 800;
+        letter-spacing: .03em;
+        box-shadow: inset 0 1px 0 rgba(255,255,255,.05);
+    }
+
+    .fcc-app-review-teaser-title {
+        margin-bottom: .65rem;
+        color: #f5fbfb;
+    }
+
+    .fcc-app-review-teaser-summary {
+        max-width: 54rem;
+        margin-bottom: 1rem;
+        color: rgba(224, 232, 243, .72) !important;
+        font-size: 1.02rem;
+        line-height: 1.55;
+    }
+
+    .fcc-app-review-teaser-metrics {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .55rem;
+    }
+
+    .fcc-app-review-teaser-metric {
+        display: inline-flex;
+        align-items: center;
+        min-height: 2.55rem;
+        padding: .58rem .94rem;
+        border-radius: 999px;
+        border: 1px solid rgba(255,255,255,.08);
+        background: rgba(255,255,255,.045);
+        box-shadow: inset 0 1px 0 rgba(255,255,255,.03);
+        color: #d5e1e2;
+        font-weight: 700;
+    }
+
+    .fcc-app-review-teaser-metric.is-quality {
+        border-color: rgba(63, 215, 199, .34);
+        background: linear-gradient(135deg, rgba(54, 205, 190, .2) 0%, rgba(20, 102, 120, .18) 100%);
+        color: #b8fff3;
+    }
+
+    .fcc-app-review-teaser-metric.is-level {
+        border-color: rgba(121, 150, 255, .22);
+        background: linear-gradient(135deg, rgba(79, 116, 255, .16) 0%, rgba(30, 61, 146, .12) 100%);
+        color: #e1e8ff;
+    }
+
+    .fcc-app-review-teaser-actions {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: .72rem;
+        max-width: 38rem;
+        margin-top: 1rem;
+    }
+
+    .fcc-app-review-teaser-action {
+        width: 100%;
+        min-height: 3rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: .58rem;
+        padding: .78rem 1rem;
+        border-radius: 1rem;
+        border: 1px solid rgba(148, 163, 184, .16);
+        background: linear-gradient(145deg, rgba(18, 26, 44, .92), rgba(10, 16, 28, .88));
+        box-shadow: inset 0 1px 0 rgba(255,255,255,.03);
+        color: #edf6ff;
+        font-size: .95rem;
+        font-weight: 800;
+        letter-spacing: -.01em;
+        line-height: 1.15;
+        transition: transform .18s ease, border-color .18s ease, background .18s ease, box-shadow .18s ease, opacity .18s ease;
+    }
+
+    .fcc-app-review-teaser-action:hover:not(:disabled),
+    .fcc-app-review-teaser-action:focus-visible:not(:disabled) {
+        transform: translateY(-1px);
+        border-color: rgba(127, 227, 217, .28);
+        background: linear-gradient(145deg, rgba(23, 34, 56, .94), rgba(11, 18, 32, .9));
+        box-shadow: 0 .95rem 1.9rem rgba(2, 6, 23, .18), inset 0 1px 0 rgba(255,255,255,.04);
+        color: #ffffff;
+        outline: none;
+        text-decoration: none;
+    }
+
+    .fcc-app-review-teaser-action.is-primary {
+        grid-column: 1 / -1;
+        border-color: rgba(63, 215, 199, .22);
+        background: linear-gradient(145deg, rgba(49, 210, 197, .18), rgba(11, 118, 132, .14));
+        color: #d7fffa;
+    }
+
+    .fcc-app-review-teaser-action.is-primary:hover:not(:disabled),
+    .fcc-app-review-teaser-action.is-primary:focus-visible:not(:disabled) {
+        border-color: rgba(63, 215, 199, .34);
+        background: linear-gradient(145deg, rgba(49, 210, 197, .24), rgba(11, 118, 132, .18));
+    }
+
+    .fcc-app-review-teaser-action.is-muted {
+        color: rgba(226, 232, 240, .88);
+    }
+
+    .fcc-app-review-teaser-action:disabled {
+        cursor: not-allowed;
+        opacity: .5;
+        filter: saturate(.86);
+        transform: none !important;
+        box-shadow: inset 0 1px 0 rgba(255,255,255,.02);
+    }
+
+    .fcc-app-review-teaser-notification {
+        margin-top: .78rem;
+    }
+
+    .fcc-app-review-teaser-notification .alert {
+        border-radius: 1rem;
+    }
+
+    .fcc-app-review-teaser-step-card {
+        height: 100%;
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        border-radius: 22px;
+        padding: 1.35rem;
+        border: 1px solid rgba(126, 155, 255, .18);
+        background:
+            radial-gradient(circle at top right, rgba(87, 120, 255, .16) 0%, rgba(87, 120, 255, 0) 42%),
+            radial-gradient(circle at 15% 0%, rgba(226, 188, 116, .08) 0%, rgba(226, 188, 116, 0) 28%),
+            linear-gradient(180deg, rgba(23, 30, 56, .88) 0%, rgba(16, 20, 39, .96) 100%);
+        box-shadow: inset 0 1px 0 rgba(255,255,255,.03), 0 20px 34px rgba(4, 11, 25, .18);
+    }
+
+    .fcc-app-review-teaser-step-card::before {
+        content: '';
+        position: absolute;
+        inset: 0 0 auto;
+        height: 2px;
+        background: linear-gradient(90deg, rgba(126, 155, 255, .78) 0%, rgba(92, 235, 220, .82) 100%);
+        opacity: .9;
+    }
+
+    .fcc-app-review-teaser-step-label {
+        margin-bottom: .4rem;
+        color: rgba(212, 220, 236, .62) !important;
+        letter-spacing: .03em;
+    }
+
+    .fcc-app-review-teaser-step-number {
+        margin-bottom: .35rem;
+        color: #f3f7ff;
+        font-size: 1.95rem;
+        font-weight: 850;
+        line-height: 1;
+    }
+
+    .fcc-app-review-teaser-step-title {
+        margin-bottom: .75rem;
+        color: #f3f7ff;
+        font-weight: 800;
+    }
+
+    .fcc-app-review-teaser-step-text {
+        margin-bottom: 1rem;
+        color: rgba(220, 228, 241, .72) !important;
+    }
+
+    .fcc-app-review-teaser-step-card .btn-primary {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 3.2rem;
+        border-radius: 18px;
+        font-weight: 800;
+        box-shadow: 0 16px 28px rgba(44, 202, 188, .18);
+    }
+
+    @media (max-width: 767.98px) {
+        .fcc-app-review-teaser-actions {
+            grid-template-columns: 1fr;
+            max-width: none;
+        }
+
+        .fcc-app-review-teaser-action.is-primary {
+            grid-column: auto;
+        }
+
+        .fcc-app-review-teaser-body {
+            padding: 1.2rem;
+        }
+
+        .fcc-app-review-teaser-summary {
+            font-size: .96rem;
+        }
+    }
+</style>
+<?php \Altum\Event::add_content(ob_get_clean(), 'head') ?>
 
 <input type="hidden" name="link_base" value="<?= $this->link->domain ? $this->link->domain->url : SITE_URL ?>" />
 
@@ -467,33 +757,85 @@ $fcc_short_link_editor_steps = $fcc_is_short_link_editor ? [
 
     <?php if($data->link->type === 'biolink' && !empty($data->app_review_quality_payload) && !empty($data->is_main_biolink_app)): ?>
         <?php $quality = $data->app_review_quality_payload; ?>
-        <div id="fcc_app_stats_tour_step_ai_block" class="card mb-4 border-0 fcc-biolink-tour-target" style="background:linear-gradient(135deg, rgba(18,26,31,.96) 0%, rgba(13,18,24,.98) 100%); border-radius:22px; box-shadow:0 18px 40px rgba(0,0,0,.18); border:1px solid rgba(127,227,217,.08) !important; overflow:hidden;">
-            <div class="card-body p-4">
-                <div class="row align-items-center">
-                    <div class="col-12 col-xl-8 mb-4 mb-xl-0">
-                        <div class="d-inline-flex align-items-center px-3 py-2 mb-3" style="border-radius:999px; background:rgba(127,227,217,.08); border:1px solid rgba(127,227,217,.16); color:#9ef1e7; font-size:.78rem; font-weight:800; letter-spacing:.04em;">
+        <div id="fcc_app_stats_tour_step_ai_block" class="card mb-4 border-0 fcc-biolink-tour-target fcc-app-review-teaser-card">
+            <div class="card-body fcc-app-review-teaser-body">
+                <div class="row fcc-app-review-teaser-grid">
+                    <div class="col-12 col-xl-8 mb-4 mb-xl-0 fcc-app-review-teaser-copy">
+                        <div class="fcc-app-review-teaser-pill">
                             <?= l('ai_plan.app_review_menu') ?>
                         </div>
-                        <h2 class="h4 mb-2" style="color:#f5fbfb;"><?= l('links.app_review_teaser_title') ?></h2>
-                        <p class="text-muted mb-3" style="max-width:52rem;"><?= htmlspecialchars((string) ($quality['summary'] ?? ''), ENT_QUOTES, 'UTF-8') ?></p>
-                        <div class="d-flex flex-wrap" style="gap:.5rem;">
-                            <span class="badge badge-pill px-3 py-2" style="background:rgba(63,215,199,.14); color:#aef7ef; border:1px solid rgba(63,215,199,.28);"><?= l('links.app_review_quality_short') ?> <?= nr((int) ($quality['score'] ?? 0)) ?></span>
-                            <span class="badge badge-pill px-3 py-2" style="background:rgba(79,116,255,.12); color:#d8e2ff; border:1px solid rgba(79,116,255,.18);"><?= htmlspecialchars((string) ($quality['level_label'] ?? ''), ENT_QUOTES, 'UTF-8') ?></span>
-                            <span class="badge badge-pill px-3 py-2" style="background:rgba(255,255,255,.04); color:#d5e1e2; border:1px solid rgba(255,255,255,.06);"><?= l('links.app_review_metric_shop_short') ?> <?= nr((int) (($quality['performance']['shop_contacts_30d'] ?? 0))) ?></span>
-                            <span class="badge badge-pill px-3 py-2" style="background:rgba(255,255,255,.04); color:#d5e1e2; border:1px solid rgba(255,255,255,.06);"><?= l('links.app_review_metric_whatsapp_short') ?> <?= nr((int) (($quality['performance']['whatsapp_contacts_30d'] ?? 0))) ?></span>
-                            <span class="badge badge-pill px-3 py-2" style="background:rgba(255,255,255,.04); color:#d5e1e2; border:1px solid rgba(255,255,255,.06);"><?= l('links.app_review_metric_products_short') ?> <?= nr((int) (($quality['performance']['product_clicks_30d'] ?? 0))) ?></span>
-                            <span class="badge badge-pill px-3 py-2" style="background:rgba(255,255,255,.04); color:#d5e1e2; border:1px solid rgba(255,255,255,.06);"><?= l('links.app_review_metric_funnel_short') ?> <?= nr((int) (($quality['performance']['funnel_registrations_30d'] ?? 0))) ?></span>
+                        <h2 class="h4 fcc-app-review-teaser-title"><?= l('links.app_review_teaser_title') ?></h2>
+                        <p class="text-muted fcc-app-review-teaser-summary"><?= htmlspecialchars((string) ($quality['summary'] ?? ''), ENT_QUOTES, 'UTF-8') ?></p>
+                        <div class="fcc-app-review-teaser-metrics">
+                            <span class="fcc-app-review-teaser-metric is-quality"><?= l('links.app_review_quality_short') ?> <?= nr((int) ($quality['score'] ?? 0)) ?></span>
+                            <span class="fcc-app-review-teaser-metric is-level"><?= htmlspecialchars((string) ($quality['level_label'] ?? ''), ENT_QUOTES, 'UTF-8') ?></span>
+                            <span class="fcc-app-review-teaser-metric"><?= l('links.app_review_metric_shop_short') ?> <?= nr((int) (($quality['performance']['shop_contacts_30d'] ?? 0))) ?></span>
+                            <span class="fcc-app-review-teaser-metric"><?= l('links.app_review_metric_whatsapp_short') ?> <?= nr((int) (($quality['performance']['whatsapp_contacts_30d'] ?? 0))) ?></span>
+                            <span class="fcc-app-review-teaser-metric"><?= l('links.app_review_metric_products_short') ?> <?= nr((int) (($quality['performance']['product_clicks_30d'] ?? 0))) ?></span>
+                            <span class="fcc-app-review-teaser-metric"><?= l('links.app_review_metric_funnel_short') ?> <?= nr((int) (($quality['performance']['funnel_registrations_30d'] ?? 0))) ?></span>
                         </div>
+                        <?php if($fcc_ai_review_teaser_actions_visible): ?>
+                            <div class="fcc-app-review-teaser-actions">
+                                <button
+                                    type="button"
+                                    class="fcc-app-review-teaser-action is-primary js-link-index-ai-editor-action"
+                                    data-request-type="apply_ai_block_bundle"
+                                    data-link-id="<?= (int) $data->link->link_id ?>"
+                                    data-notification-target="#<?= htmlspecialchars($fcc_ai_review_teaser_notification_id, ENT_QUOTES, 'UTF-8') ?>"
+                                    data-ai-stale="<?= $fcc_ai_actions_stale ? '1' : '0' ?>"
+                                    data-ai-stale-message="<?= htmlspecialchars((string) ($fcc_ai_actions_freshness['message'] ?? ''), ENT_QUOTES, 'UTF-8') ?>"
+                                    <?= $fcc_ai_block_bundle_ready ? null : 'disabled="disabled"' ?>
+                                >
+                                    <i class="fas fa-fw fa-layer-group"></i>
+                                    <span><?= htmlspecialchars(l('link.settings.ai_block_bundle_apply'), ENT_QUOTES, 'UTF-8') ?></span>
+                                </button>
+
+                                <button
+                                    type="button"
+                                    class="fcc-app-review-teaser-action js-link-index-ai-editor-action"
+                                    data-request-type="apply_ai_color_bundle"
+                                    data-link-id="<?= (int) $data->link->link_id ?>"
+                                    data-notification-target="#<?= htmlspecialchars($fcc_ai_review_teaser_notification_id, ENT_QUOTES, 'UTF-8') ?>"
+                                    data-ai-stale="<?= $fcc_ai_actions_stale ? '1' : '0' ?>"
+                                    data-ai-stale-message="<?= htmlspecialchars((string) ($fcc_ai_actions_freshness['message'] ?? ''), ENT_QUOTES, 'UTF-8') ?>"
+                                    <?= $fcc_ai_theme_bundle_ready ? null : 'disabled="disabled"' ?>
+                                >
+                                    <i class="fas fa-fw fa-palette"></i>
+                                    <span><?= htmlspecialchars(l('link.settings.ai_color_bundle_apply'), ENT_QUOTES, 'UTF-8') ?></span>
+                                </button>
+
+                                <button
+                                    type="button"
+                                    class="fcc-app-review-teaser-action is-muted js-link-index-ai-editor-action"
+                                    data-request-type="restore_ai_bundle_backup"
+                                    data-link-id="<?= (int) $data->link->link_id ?>"
+                                    data-notification-target="#<?= htmlspecialchars($fcc_ai_review_teaser_notification_id, ENT_QUOTES, 'UTF-8') ?>"
+                                    <?= $fcc_ai_bundle_restore_ready ? null : 'disabled="disabled"' ?>
+                                >
+                                    <i class="fas fa-fw fa-undo"></i>
+                                    <span><?= htmlspecialchars(l('link.settings.ai_bundle_restore'), ENT_QUOTES, 'UTF-8') ?></span>
+                                </button>
+                            </div>
+
+                            <?php if($fcc_ai_actions_stale): ?>
+                                <div class="alert alert-warning mt-3 mb-0" style="border-radius:1rem;">
+                                    <?= htmlspecialchars((string) ($fcc_ai_actions_freshness['message'] ?? ''), ENT_QUOTES, 'UTF-8') ?>
+                                </div>
+                            <?php endif ?>
+
+                            <div id="<?= htmlspecialchars($fcc_ai_review_teaser_notification_id, ENT_QUOTES, 'UTF-8') ?>" class="fcc-app-review-teaser-notification"></div>
+                        <?php endif ?>
                     </div>
                     <div class="col-12 col-xl-4">
-                        <div style="background:rgba(18,26,44,.78); border:1px solid rgba(110,143,255,.12); border-radius:20px; padding:1.2rem;">
-                            <div class="small text-uppercase text-muted font-weight-bold mb-2"><?= l('links.app_review_cta_label') ?></div>
-                            <div class="mb-3" style="color:#eef6ff; font-size:1.75rem; font-weight:800; line-height:1;"><?= nr((int) ($quality['score'] ?? 0)) ?></div>
-                            <div class="text-muted small mb-3"><?= l('links.app_review_cta_text') ?></div>
-                            <?php if($data->app_review_is_accessible): ?>
-                                <a href="<?= htmlspecialchars((string) $data->app_review_page_url, ENT_QUOTES, 'UTF-8') ?>" class="btn btn-primary btn-block" style="display:flex; align-items:center; justify-content:center; min-height:3.2rem; border-radius:18px; font-weight:800;"><?= l('ai_plan.cta_go_app_review_direct') ?></a>
+                        <div class="fcc-app-review-teaser-step-card">
+                            <div class="small text-uppercase font-weight-bold fcc-app-review-teaser-step-label"><?= l('links.app_review_cta_label') ?></div>
+                            <div class="fcc-app-review-teaser-step-number"><?= nr($fcc_app_review_next_step_number) ?></div>
+                            <div class="fcc-app-review-teaser-step-title"><?= htmlspecialchars($fcc_app_review_next_step_title, ENT_QUOTES, 'UTF-8') ?></div>
+                            <div class="text-muted small fcc-app-review-teaser-step-text"><?= htmlspecialchars($fcc_app_review_next_step_text, ENT_QUOTES, 'UTF-8') ?></div>
+                            <?php if($fcc_app_review_next_step_is_accessible): ?>
+                                <a href="<?= htmlspecialchars($fcc_app_review_next_step_url, ENT_QUOTES, 'UTF-8') ?>" class="btn btn-primary btn-block"><?= htmlspecialchars($fcc_app_review_next_step_button_label, ENT_QUOTES, 'UTF-8') ?></a>
                             <?php else: ?>
-                                <a href="#" class="btn btn-primary btn-block disabled pointer-events-all" data-tooltip title="<?= htmlspecialchars((string) $data->app_review_locked_reason, ENT_QUOTES, 'UTF-8') ?>" onclick="event.preventDefault();" style="display:flex; align-items:center; justify-content:center; min-height:3.2rem; border-radius:18px; font-weight:800; opacity:.62; filter:saturate(.75);"><?= l('ai_plan.cta_go_app_review_direct') ?></a>
+                                <a href="#" class="btn btn-primary btn-block disabled pointer-events-all" data-tooltip title="<?= htmlspecialchars($fcc_app_review_next_step_locked_reason, ENT_QUOTES, 'UTF-8') ?>" onclick="event.preventDefault();" style="opacity:.62; filter:saturate(.75);"><?= htmlspecialchars($fcc_app_review_next_step_button_label, ENT_QUOTES, 'UTF-8') ?></a>
                             <?php endif ?>
                         </div>
                     </div>
@@ -540,6 +882,67 @@ $fcc_short_link_editor_steps = $fcc_is_short_link_editor ? [
             display_notifications(<?= json_encode(l('links.auto_copy_link.error')) ?>, 'error', notification_container);
         });
     }
+
+    const post_link_index_ai_editor_action = ({request_type = '', link_id = 0, notification_target = ''} = {}) => {
+        let notification_container = notification_target ? document.querySelector(notification_target) : null;
+
+        if(notification_container) {
+            notification_container.innerHTML = '';
+        }
+
+        $.ajax({
+            type: 'POST',
+            url: `${url}link-ajax`,
+            dataType: 'json',
+            data: {
+                token: <?= json_encode(\Altum\Csrf::get()) ?>,
+                request_type,
+                link_id
+            },
+            success: (data) => {
+                if(notification_container) {
+                    display_notifications(data.message || <?= json_encode(l('global.error_message.basic')) ?>, data.status || 'error', notification_container);
+                    notification_container.scrollIntoView({behavior: 'smooth', block: 'nearest'});
+                }
+
+                if(data.status === 'success') {
+                    window.setTimeout(() => window.location.reload(), 700);
+                }
+            },
+            error: () => {
+                if(notification_container) {
+                    display_notifications(<?= json_encode(l('global.error_message.basic')) ?>, 'error', notification_container);
+                }
+            }
+        });
+    };
+
+    document.querySelectorAll('.js-link-index-ai-editor-action').forEach(element => {
+        element.addEventListener('click', event => {
+            const button = event.currentTarget;
+
+            if(button.disabled) {
+                return;
+            }
+
+            const notification_target = button.getAttribute('data-notification-target') || '';
+            const notification_container = notification_target ? document.querySelector(notification_target) : null;
+
+            if((button.getAttribute('data-ai-stale') || '0') === '1') {
+                if(notification_container) {
+                    display_notifications(button.getAttribute('data-ai-stale-message') || <?= json_encode(l('link.settings.ai_bundle_stale_notice')) ?>, 'error', notification_container);
+                    notification_container.scrollIntoView({behavior: 'smooth', block: 'nearest'});
+                }
+                return;
+            }
+
+            post_link_index_ai_editor_action({
+                request_type: button.getAttribute('data-request-type') || '',
+                link_id: button.getAttribute('data-link-id') || 0,
+                notification_target
+            });
+        });
+    });
 </script>
 <?php \Altum\Event::add_content(ob_get_clean(), 'javascript') ?>
 
