@@ -434,6 +434,11 @@ class Login extends Controller {
 
             if(!Alerts::has_field_errors() && !Alerts::has_errors() && !Alerts::has_infos()) {
 
+                /* Always initialize the current authenticated session immediately.
+                 * Remember-me cookies are only an additional persistent login layer. */
+                session_set('user_id', $user->user_id);
+                session_set('user_password_hash', md5($user->password));
+
                 /* If remember me is checked, log the user with cookies for X days else, remember just with a session */
                 if(isset($_POST['rememberme'])) {
                     $token_code = $user->token_code;
@@ -448,10 +453,6 @@ class Login extends Controller {
                     setcookie('user_id', $user->user_id, time()+60*60*24* (settings()->users->login_rememberme_cookie_days ?? 30), COOKIE_PATH);
                     setcookie('token_code', $token_code, time()+60*60*24* (settings()->users->login_rememberme_cookie_days ?? 30), COOKIE_PATH);
                     setcookie('user_password_hash', md5($user->password), time()+60*60*24* (settings()->users->login_rememberme_cookie_days ?? 30), COOKIE_PATH);
-
-                } else {
-                    session_set('user_id', $user->user_id);
-                    session_set('user_password_hash', md5($user->password));
                 }
 
                 session_unset_key('twofa_required');

@@ -2843,7 +2843,7 @@ return [
 	'link.settings.ai_bundle_restore' => 'Vrati na staro',
 	'link.settings.ai_bundle_restore_success' => 'Aplikacija je vracena na staro. Obnovljeno: %1$s, skriveni novi blokovi: %2$s.',
 	'link.settings.ai_bundle_restore_missing' => 'Nema spremljenog prethodnog stanja za vracanje.',
-	'link.settings.ai_bundle_stale_notice' => 'Aplikacija je mijenjana nakon zadnje AI analize. Prije primjene ovih AI gumba pokreni novu analizu kako bi prijedlog odgovarao stvarnom trenutnom stanju.',
+	'link.settings.ai_bundle_stale_notice' => 'Aplikacija je mijenjana nakon zadnje AI analize. Ovi AI prijedlozi mozda vise nisu potpuno svjezi. Mozes ih i dalje primijeniti ili prvo pokrenuti novu analizu za preciznije prijedloge.',
 	'link.settings.ai_layout_apply' => 'Primijeni AI raspored',
 	'link.settings.ai_layout_apply_success' => 'AI raspored je primijenjen. Pomaknuto: %1$s, skriveno: %2$s.',
 	'link.settings.ai_layout_apply_missing' => 'AI trenutno nema jasan raspored koji se sigurno može automatski primijeniti.',

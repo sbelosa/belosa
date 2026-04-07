@@ -338,6 +338,7 @@
     .ai-plan-shell .ai-plan-tool-teaser-notification { margin-top:.75rem; }
     .ai-plan-shell .ai-plan-tool-teaser-notice { padding:.72rem .88rem; border-radius:.95rem; font-size:.88rem; line-height:1.5; border:1px solid rgba(148,163,184,.18); background:rgba(15,23,42,.28); color:#e2e8f0; }
     .ai-plan-shell .ai-plan-tool-teaser-notice.is-success { border-color:rgba(45,212,191,.24); background:rgba(13,148,136,.12); color:#ccfbf1; }
+    .ai-plan-shell .ai-plan-tool-teaser-notice.is-warning { border-color:rgba(250,204,21,.24); background:rgba(133,77,14,.22); color:#fde68a; }
     .ai-plan-shell .ai-plan-tool-teaser-notice.is-error { border-color:rgba(248,113,113,.22); background:rgba(127,29,29,.24); color:#fecaca; }
     .ai-plan-shell .ai-plan-tool-teaser-side { display:flex; flex-direction:column; justify-content:flex-start; gap:.9rem; min-width:0; padding:1rem 1rem 1.05rem; border:1px solid rgba(96,165,250,.14); border-radius:1.25rem; background:radial-gradient(280px 180px at 0% 0%, rgba(14,165,233,.1), transparent 62%), linear-gradient(165deg, rgba(16,24,40,.92), rgba(12,18,32,.86)); box-shadow:inset 0 1px 0 rgba(255,255,255,.035), 0 1rem 2rem rgba(2,6,23,.14); }
     .ai-plan-shell .ai-plan-tool-teaser-score { display:grid; grid-template-columns:auto minmax(0, 1fr); gap:.75rem; align-items:center; }
@@ -1072,7 +1073,7 @@
                     </div>
 
                     <?php if($actions_stale): ?>
-                        <div class="ai-plan-tool-teaser-notice is-error" style="margin-top:.85rem;">
+                        <div class="ai-plan-tool-teaser-notice is-warning" style="margin-top:.85rem;">
                             <?= htmlspecialchars((string) ($actions_freshness['message'] ?? ''), ENT_QUOTES, 'UTF-8') ?>
                         </div>
                     <?php endif ?>
@@ -2303,7 +2304,10 @@
                         }
 
                         const notice = document.createElement('div');
-                        notice.className = 'ai-plan-tool-teaser-notice ' + (status === 'success' ? 'is-success' : 'is-error');
+                        const noticeClass = status === 'success'
+                            ? 'is-success'
+                            : (status === 'warning' ? 'is-warning' : 'is-error');
+                        notice.className = 'ai-plan-tool-teaser-notice ' + noticeClass;
                         notice.textContent = message;
                         container.appendChild(notice);
                     };
@@ -2326,8 +2330,7 @@
                             renderAiPlanEditorNotice(notificationContainer, '', 'success');
 
                             if((button.getAttribute('data-ai-stale') || '0') === '1') {
-                                renderAiPlanEditorNotice(notificationContainer, button.getAttribute('data-ai-stale-message') || <?= json_encode(l('link.settings.ai_bundle_stale_notice')) ?>, 'error');
-                                return;
+                                renderAiPlanEditorNotice(notificationContainer, button.getAttribute('data-ai-stale-message') || <?= json_encode(l('link.settings.ai_bundle_stale_notice')) ?>, 'warning');
                             }
 
                             if(!requestType || !linkId) {

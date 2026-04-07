@@ -231,14 +231,6 @@ class LinkAjax extends Controller {
 		];
 	}
 
-	private function ensure_ai_bundle_is_fresh_or_fail(\stdClass $link, array $additional): void {
-		$freshness = $this->get_ai_bundle_freshness_payload($additional, (string) ($link->last_datetime ?? ''));
-
-		if(!empty($freshness['is_stale'])) {
-			Response::json((string) ($freshness['message'] ?? l('link.settings.ai_bundle_stale_notice')), 'error');
-		}
-	}
-
 	private function get_preferences_object($preferences = null): \stdClass {
 		if($preferences === null) {
 			$preferences = $this->user->preferences ?? new \stdClass();
@@ -5761,7 +5753,6 @@ class LinkAjax extends Controller {
 
 		$settings = $this->normalize_json_to_array($link->settings ?? null);
 		$additional = $this->normalize_json_to_array($link->additional ?? null);
-		$this->ensure_ai_bundle_is_fresh_or_fail($link, $additional);
 		$additional = $this->ensure_ai_bundle_backup($link, $additional);
 
 		if(($theme_pack['background_mode'] ?? 'color') === 'gradient' && $theme_pack['gradient_start'] !== '' && $theme_pack['gradient_end'] !== '') {
@@ -5931,8 +5922,6 @@ class LinkAjax extends Controller {
 
 		$settings = $this->normalize_json_to_array($link->settings ?? null);
 		$additional = $this->normalize_json_to_array($link->additional ?? null);
-		$this->ensure_ai_bundle_is_fresh_or_fail($link, $additional);
-
 		if(($theme_pack['background_mode'] ?? 'color') === 'gradient' && $theme_pack['gradient_start'] !== '' && $theme_pack['gradient_end'] !== '') {
 			$settings['background_type'] = 'gradient';
 			$settings['background_color_one'] = $theme_pack['gradient_start'];
@@ -6030,7 +6019,6 @@ class LinkAjax extends Controller {
 		$theme_pack = $payload['theme_pack'];
 		$primary_block_plan = $payload['primary_block_plan'];
 		$block_patch_pack = $payload['block_patch_pack'];
-		$this->ensure_ai_bundle_is_fresh_or_fail($link, $payload['additional']);
 		$additional = $this->ensure_ai_bundle_backup($link, $payload['additional']);
 
 		$primary_block_id = $this->resolve_ai_primary_block_id((int) $link->link_id, $primary_block_plan);
@@ -6195,7 +6183,6 @@ class LinkAjax extends Controller {
 		}
 
 		$additional = $this->normalize_json_to_array($link->additional ?? null);
-		$this->ensure_ai_bundle_is_fresh_or_fail($link, $additional);
 		$additional = $this->ensure_ai_bundle_backup($link, $additional);
 		$block_catalog = $this->get_ai_editor_block_catalog((int) $link->link_id);
 		$raw_primary_block_plan = $this->normalize_ai_primary_block_plan($additional['fcc_ai_primary_block_plan'] ?? []);
@@ -6331,7 +6318,6 @@ class LinkAjax extends Controller {
 		$payload = $this->get_ai_layout_payload($link);
 		$layout_actions = $payload['layout_actions'];
 		$primary_block_plan = $payload['primary_block_plan'];
-		$this->ensure_ai_bundle_is_fresh_or_fail($link, $payload['additional']);
 		$additional = $this->ensure_ai_bundle_backup($link, $payload['additional']);
 		$editor_catalog = $this->get_ai_editor_block_catalog((int) $link->link_id);
 		$missing_block_recommendations = $this->build_ai_missing_block_recommendations($additional, $editor_catalog, $primary_block_plan);

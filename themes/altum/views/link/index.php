@@ -928,12 +928,9 @@ $fcc_short_link_editor_steps = $fcc_is_short_link_editor ? [
             const notification_target = button.getAttribute('data-notification-target') || '';
             const notification_container = notification_target ? document.querySelector(notification_target) : null;
 
-            if((button.getAttribute('data-ai-stale') || '0') === '1') {
-                if(notification_container) {
-                    display_notifications(button.getAttribute('data-ai-stale-message') || <?= json_encode(l('link.settings.ai_bundle_stale_notice')) ?>, 'error', notification_container);
-                    notification_container.scrollIntoView({behavior: 'smooth', block: 'nearest'});
-                }
-                return;
+            if((button.getAttribute('data-ai-stale') || '0') === '1' && notification_container) {
+                display_notifications(button.getAttribute('data-ai-stale-message') || <?= json_encode(l('link.settings.ai_bundle_stale_notice')) ?>, 'warning', notification_container);
+                notification_container.scrollIntoView({behavior: 'smooth', block: 'nearest'});
             }
 
             post_link_index_ai_editor_action({
