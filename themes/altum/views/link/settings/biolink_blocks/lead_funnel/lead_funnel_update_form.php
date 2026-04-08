@@ -64,6 +64,12 @@ $lead_funnel_local_file_size_limit = min((float) settings()->links->file_size_li
                     <div class="ql-content lead-funnel-supporting-text mb-4" data-lead-funnel-popup-mini-preview-description style="<?= !empty($row->settings->description) ? '' : 'display:none;' ?>"><?= $row->settings->description ?? '' ?></div>
 
                     <div data-lead-funnel-popup-preview-screen="form">
+                        <div class="form-group mb-3 <?= !empty($row->settings->show_name) ? '' : 'd-none' ?>" data-lead-funnel-popup-preview-field="name">
+                            <div class="input-group">
+                                <div class="input-group-prepend"><div class="input-group-text bg-gray-50"><i class="fas fa-fw fa-signature"></i></div></div>
+                                <input type="text" class="form-control" readonly data-lead-funnel-popup-preview-placeholder="name" placeholder="<?= $row->settings->name_placeholder ?? '' ?>">
+                            </div>
+                        </div>
                         <div class="form-group mb-3 <?= !empty($row->settings->show_email) ? '' : 'd-none' ?>" data-lead-funnel-popup-preview-field="email">
                             <div class="input-group">
                                 <div class="input-group-prepend"><div class="input-group-text bg-gray-50"><i class="fas fa-fw fa-envelope"></i></div></div>
@@ -74,12 +80,6 @@ $lead_funnel_local_file_size_limit = min((float) settings()->links->file_size_li
                             <div class="input-group">
                                 <div class="input-group-prepend"><div class="input-group-text bg-gray-50"><i class="fas fa-fw fa-phone-square-alt"></i></div></div>
                                 <input type="text" class="form-control" readonly data-lead-funnel-popup-preview-placeholder="phone" placeholder="<?= $row->settings->phone_placeholder ?? '' ?>">
-                            </div>
-                        </div>
-                        <div class="form-group mb-3 <?= !empty($row->settings->show_name) ? '' : 'd-none' ?>" data-lead-funnel-popup-preview-field="name">
-                            <div class="input-group">
-                                <div class="input-group-prepend"><div class="input-group-text bg-gray-50"><i class="fas fa-fw fa-signature"></i></div></div>
-                                <input type="text" class="form-control" readonly data-lead-funnel-popup-preview-placeholder="name" placeholder="<?= $row->settings->name_placeholder ?? '' ?>">
                             </div>
                         </div>
                         <div class="form-group mb-3 <?= !empty($row->settings->show_message) ? '' : 'd-none' ?>" data-lead-funnel-popup-preview-field="message">
@@ -201,6 +201,12 @@ $lead_funnel_local_file_size_limit = min((float) settings()->links->file_size_li
                         <div class="ql-content lead-funnel-supporting-text mb-4" data-lead-funnel-popup-mini-preview-description style="<?= !empty($row->settings->description) ? '' : 'display:none;' ?>"><?= $row->settings->description ?? '' ?></div>
 
                         <div data-lead-funnel-popup-preview-screen="form">
+                            <div class="form-group mb-3 <?= !empty($row->settings->show_name) ? '' : 'd-none' ?>" data-lead-funnel-popup-preview-field="name">
+                                <div class="input-group">
+                                    <div class="input-group-prepend"><div class="input-group-text bg-gray-50"><i class="fas fa-fw fa-signature"></i></div></div>
+                                    <input type="text" class="form-control" readonly data-lead-funnel-popup-preview-placeholder="name" placeholder="<?= $row->settings->name_placeholder ?? '' ?>">
+                                </div>
+                            </div>
                             <div class="form-group mb-3 <?= !empty($row->settings->show_email) ? '' : 'd-none' ?>" data-lead-funnel-popup-preview-field="email">
                                 <div class="input-group">
                                     <div class="input-group-prepend"><div class="input-group-text bg-gray-50"><i class="fas fa-fw fa-envelope"></i></div></div>
@@ -211,12 +217,6 @@ $lead_funnel_local_file_size_limit = min((float) settings()->links->file_size_li
                                 <div class="input-group">
                                     <div class="input-group-prepend"><div class="input-group-text bg-gray-50"><i class="fas fa-fw fa-phone-square-alt"></i></div></div>
                                     <input type="text" class="form-control" readonly data-lead-funnel-popup-preview-placeholder="phone" placeholder="<?= $row->settings->phone_placeholder ?? '' ?>">
-                                </div>
-                            </div>
-                            <div class="form-group mb-3 <?= !empty($row->settings->show_name) ? '' : 'd-none' ?>" data-lead-funnel-popup-preview-field="name">
-                                <div class="input-group">
-                                    <div class="input-group-prepend"><div class="input-group-text bg-gray-50"><i class="fas fa-fw fa-signature"></i></div></div>
-                                    <input type="text" class="form-control" readonly data-lead-funnel-popup-preview-placeholder="name" placeholder="<?= $row->settings->name_placeholder ?? '' ?>">
                                 </div>
                             </div>
                             <div class="form-group mb-3 <?= !empty($row->settings->show_message) ? '' : 'd-none' ?>" data-lead-funnel-popup-preview-field="message">

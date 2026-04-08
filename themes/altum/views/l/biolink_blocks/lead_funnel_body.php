@@ -193,6 +193,17 @@ $contact_channel_options = [
         <div class="mb-4 lead-funnel-supporting-text" data-lead-funnel-popup-description style="<?= !empty($description) ? null : 'display:none;' ?>"><?= nl2br($description) ?></div>
     <?php endif ?>
 
+    <?php if(!empty($data->link->settings->show_name)): ?>
+        <div class="form-group">
+            <div class="input-group">
+                <div class="input-group-prepend">
+                    <div class="input-group-text bg-gray-50"><i class="fas fa-fw fa-signature"></i></div>
+                </div>
+                <input type="text" class="form-control" name="name" maxlength="64" <?= !empty($data->link->settings->require_name) ? 'required="required"' : null ?> placeholder="<?= $data->link->settings->name_placeholder ?>" aria-label="<?= $data->link->settings->name_placeholder ?>" />
+            </div>
+        </div>
+    <?php endif ?>
+
     <?php if(!empty($data->link->settings->show_email)): ?>
         <div class="form-group">
             <div class="input-group">
@@ -230,17 +241,6 @@ $contact_channel_options = [
                         </label>
                     <?php endforeach ?>
                 </div>
-            </div>
-        </div>
-    <?php endif ?>
-
-    <?php if(!empty($data->link->settings->show_name)): ?>
-        <div class="form-group">
-            <div class="input-group">
-                <div class="input-group-prepend">
-                    <div class="input-group-text bg-gray-50"><i class="fas fa-fw fa-signature"></i></div>
-                </div>
-                <input type="text" class="form-control" name="name" maxlength="64" <?= !empty($data->link->settings->require_name) ? 'required="required"' : null ?> placeholder="<?= $data->link->settings->name_placeholder ?>" aria-label="<?= $data->link->settings->name_placeholder ?>" />
             </div>
         </div>
     <?php endif ?>
