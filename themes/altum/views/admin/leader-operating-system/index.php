@@ -4513,6 +4513,8 @@ $operations_tab_badge_total = (int) (($data->operations['totals']['pending_appro
     </div>
 </div>
 
+<?php require THEME_PATH . 'views/partials/js_chart_defaults.php' ?>
+
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const modal = document.getElementById('leader_os_drilldown_modal');
