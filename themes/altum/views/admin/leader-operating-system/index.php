@@ -1557,6 +1557,89 @@
         font-size: 0.8rem;
     }
 
+    .leader-os-overview-chart-wrap {
+        min-height: 320px;
+    }
+
+    .leader-os-country-periods {
+        display: inline-flex;
+        gap: 0.4rem;
+        flex-wrap: wrap;
+    }
+
+    .leader-os-country-period {
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        background: rgba(255, 255, 255, 0.05);
+        color: #ffffff;
+        border-radius: 999px;
+        padding: 0.38rem 0.72rem;
+        font-size: 0.78rem;
+        font-weight: 600;
+        line-height: 1;
+        cursor: pointer;
+    }
+
+    .leader-os-country-period.active {
+        border-color: rgba(45, 212, 191, 0.45);
+        background: rgba(45, 212, 191, 0.16);
+        color: #dffefa;
+    }
+
+    .leader-os-country-table-wrap {
+        max-height: 320px;
+        overflow: auto;
+    }
+
+    .leader-os-country-table {
+        width: 100%;
+        color: #ecf3ff;
+        margin-bottom: 0;
+    }
+
+    .leader-os-country-table thead th {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+        background: rgba(8, 13, 26, 0.96);
+        color: rgba(191, 211, 238, 0.82);
+        border-color: rgba(148, 163, 184, 0.08);
+        font-size: 0.74rem;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+
+    .leader-os-country-table td {
+        border-color: rgba(148, 163, 184, 0.08);
+        vertical-align: middle;
+    }
+
+    .leader-os-country-table tbody tr:hover {
+        background: rgba(124, 200, 255, 0.06);
+    }
+
+    .leader-os-country-name {
+        display: flex;
+        flex-direction: column;
+        gap: 0.12rem;
+    }
+
+    .leader-os-country-code {
+        color: rgba(191, 211, 238, 0.64);
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+    }
+
+    .leader-os-country-table-empty {
+        min-height: 220px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        color: rgba(191, 211, 238, 0.72);
+        font-size: 0.9rem;
+    }
+
     .leader-os-status-graph-wrap {
         margin-top: 1rem;
         border-top: 1px solid rgba(148, 163, 184, 0.12);
@@ -1949,6 +2032,17 @@ $render_kpi_card = static function(string $key, string $label, $value, string $h
     return ob_get_clean();
 };
 
+$leader_os_team_signal_chart = $data->overview['team_signal_chart'] ?? [
+    'labels' => [],
+    'app_visits' => [],
+    'app_shop_clicks' => [],
+    'blog_clicks' => [],
+    'funnel_registrations' => [],
+];
+$leader_os_team_country_matrix_periods = $data->overview['team_country_signal_matrix_periods'] ?? [];
+$leader_os_team_country_initial_period = isset($leader_os_team_country_matrix_periods[$data->selected_period]) ? $data->selected_period : '30d';
+$leader_os_team_country_initial_matrix = $leader_os_team_country_matrix_periods[$leader_os_team_country_initial_period] ?? ['rows' => []];
+
 $support_tab_badge_total = (int) (($data->overview['support_center']['totals']['outstanding_total'] ?? 0));
 $operations_tab_badge_total = (int) (($data->operations['totals']['pending_approvals'] ?? 0) + ($data->operations['totals']['card_queue'] ?? 0));
 ?>
@@ -2273,6 +2367,80 @@ $operations_tab_badge_total = (int) (($data->operations['totals']['pending_appro
         </div>
 
         <?php if(($data->selected_tab ?? 'overview') === 'overview'): ?>
+            <div class="row mb-4">
+                <div class="col-12 col-xl-8 mb-3">
+                    <div class="leader-os-panel h-100">
+                        <div class="d-flex justify-content-between align-items-start flex-wrap mb-3" style="gap:1rem;">
+                            <div>
+                                <div class="text-uppercase small text-muted mb-2"><?= l('admin_leader_operating_system.overview.team_signal_badge') ?></div>
+                                <h3 class="h5 mb-1"><?= l('admin_leader_operating_system.overview.team_signal_title') ?></h3>
+                                <div class="text-muted small"><?= l('admin_leader_operating_system.overview.team_signal_text') ?></div>
+                            </div>
+                            <span class="leader-os-status-badge status-info"><?= l('admin_leader_operating_system.period_' . ($data->selected_period ?? '30d')) ?></span>
+                        </div>
+                        <div class="leader-os-overview-chart-wrap">
+                            <canvas id="leader-os-overview-team-signal-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 col-xl-4 mb-3">
+                    <div class="leader-os-panel h-100">
+                        <div class="d-flex justify-content-between align-items-start flex-wrap mb-3" style="gap:1rem;">
+                            <div>
+                                <div class="text-uppercase small text-muted mb-2"><?= l('admin_leader_operating_system.overview.country_signal_badge') ?></div>
+                                <h3 class="h5 mb-1"><?= l('admin_leader_operating_system.overview.country_signal_title') ?></h3>
+                                <div class="text-muted small"><?= l('admin_leader_operating_system.overview.country_signal_text') ?></div>
+                            </div>
+                            <div class="leader-os-country-periods">
+                                <?php foreach(['1d', '7d', '30d', '90d'] as $country_period_key): ?>
+                                    <button type="button" class="leader-os-country-period <?= $country_period_key === $leader_os_team_country_initial_period ? 'active' : null ?>" data-overview-country-period="<?= $country_period_key ?>">
+                                        <?= l('admin_leader_operating_system.period_' . $country_period_key) ?>
+                                    </button>
+                                <?php endforeach ?>
+                            </div>
+                        </div>
+                        <div class="leader-os-country-table-wrap">
+                            <table class="table table-sm leader-os-country-table">
+                                <thead>
+                                <tr>
+                                    <th><?= l('admin_leader_operating_system.leader.country_table.country') ?></th>
+                                    <th class="text-right"><?= l('admin_leader_operating_system.leader.chart_metric_app_visits') ?></th>
+                                    <th class="text-right"><?= l('admin_leader_operating_system.leader.chart_metric_app_shop_clicks') ?></th>
+                                    <th class="text-right"><?= l('admin_leader_operating_system.leader.chart_metric_blog_clicks') ?></th>
+                                    <th class="text-right"><?= l('admin_leader_operating_system.leader.chart_metric_funnel_registrations') ?></th>
+                                </tr>
+                                </thead>
+                                <tbody id="leader-os-overview-country-table-body">
+                                <?php if(empty($leader_os_team_country_initial_matrix['rows'])): ?>
+                                    <tr>
+                                        <td colspan="5">
+                                            <div class="leader-os-country-table-empty"><?= l('admin_leader_operating_system.leader.country_table.empty') ?></div>
+                                        </td>
+                                    </tr>
+                                <?php else: ?>
+                                    <?php foreach($leader_os_team_country_initial_matrix['rows'] as $country_row): ?>
+                                        <tr>
+                                            <td>
+                                                <div class="leader-os-country-name">
+                                                    <strong><?= htmlspecialchars((string) ($country_row['country_name'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></strong>
+                                                    <span class="leader-os-country-code"><?= htmlspecialchars((string) ($country_row['country_code'] ?? ''), ENT_QUOTES, 'UTF-8') ?></span>
+                                                </div>
+                                            </td>
+                                            <td class="text-right"><?= nr((int) ($country_row['app_visits'] ?? 0)) ?></td>
+                                            <td class="text-right"><?= nr((int) ($country_row['app_shop_clicks'] ?? 0)) ?></td>
+                                            <td class="text-right"><?= nr((int) ($country_row['blog_clicks'] ?? 0)) ?></td>
+                                            <td class="text-right"><?= nr((int) ($country_row['funnel_registrations'] ?? 0)) ?></td>
+                                        </tr>
+                                    <?php endforeach ?>
+                                <?php endif ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="leader-os-panel mb-4">
                 <div class="d-flex justify-content-between align-items-start flex-wrap" style="gap:1rem;">
                     <div>
@@ -4358,6 +4526,143 @@ document.addEventListener('DOMContentLoaded', function () {
             .replace(/"/g, '&quot;')
             .replace(/'/g, '&#039;');
     };
+
+    const overviewTeamSignalChartPayload = <?= json_encode($leader_os_team_signal_chart, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
+    const overviewTeamCountrySignalMatrix = <?= json_encode($leader_os_team_country_matrix_periods, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
+    const overviewTeamCountryInitialPeriod = <?= json_encode($leader_os_team_country_initial_period, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
+    const overviewTeamCountryTableBody = document.getElementById('leader-os-overview-country-table-body');
+    const overviewTeamCountryPeriodButtons = Array.from(document.querySelectorAll('[data-overview-country-period]'));
+    const overviewTeamNumberFormatter = typeof Intl !== 'undefined' && Intl.NumberFormat ? new Intl.NumberFormat('hr-HR') : null;
+
+    const formatOverviewTeamNumber = (value) => {
+        const numericValue = Number(value || 0);
+        return overviewTeamNumberFormatter ? overviewTeamNumberFormatter.format(numericValue) : String(numericValue);
+    };
+
+    const overviewTeamSignalChartCanvas = document.getElementById('leader-os-overview-team-signal-chart');
+    if(typeof Chart !== 'undefined' && overviewTeamSignalChartCanvas) {
+        new Chart(overviewTeamSignalChartCanvas, {
+            type: 'line',
+            data: {
+                labels: overviewTeamSignalChartPayload.labels || [],
+                datasets: [
+                    {
+                        label: <?= json_encode(l('admin_leader_operating_system.leader.chart_metric_app_visits')) ?>,
+                        data: overviewTeamSignalChartPayload.app_visits || [],
+                        borderColor: '#94a3ff',
+                        backgroundColor: 'rgba(148, 163, 255, 0.16)',
+                        tension: 0.35,
+                        fill: true,
+                    },
+                    {
+                        label: <?= json_encode(l('admin_leader_operating_system.leader.chart_metric_app_shop_clicks')) ?>,
+                        data: overviewTeamSignalChartPayload.app_shop_clicks || [],
+                        borderColor: '#7cc8ff',
+                        backgroundColor: 'rgba(124, 200, 255, 0.08)',
+                        tension: 0.35,
+                        fill: false,
+                    },
+                    {
+                        label: <?= json_encode(l('admin_leader_operating_system.leader.chart_metric_blog_clicks')) ?>,
+                        data: overviewTeamSignalChartPayload.blog_clicks || [],
+                        borderColor: '#f9c74f',
+                        backgroundColor: 'rgba(249, 199, 79, 0.08)',
+                        tension: 0.35,
+                        fill: false,
+                    },
+                    {
+                        label: <?= json_encode(l('admin_leader_operating_system.leader.chart_metric_funnel_registrations')) ?>,
+                        data: overviewTeamSignalChartPayload.funnel_registrations || [],
+                        borderColor: '#86efac',
+                        backgroundColor: 'rgba(134, 239, 172, 0.1)',
+                        tension: 0.35,
+                        fill: false,
+                    },
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: '#ecf3ff'
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        ticks: {
+                            color: 'rgba(191, 211, 238, 0.72)'
+                        },
+                        grid: {
+                            color: 'rgba(148, 163, 184, 0.08)'
+                        }
+                    },
+                    y: {
+                        ticks: {
+                            color: 'rgba(191, 211, 238, 0.72)',
+                            precision: 0
+                        },
+                        grid: {
+                            color: 'rgba(148, 163, 184, 0.08)'
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    const renderOverviewTeamCountrySignalTable = (periodKey) => {
+        if(!overviewTeamCountryTableBody) {
+            return;
+        }
+
+        const payload = overviewTeamCountrySignalMatrix[periodKey] || overviewTeamCountrySignalMatrix[overviewTeamCountryInitialPeriod] || {rows: []};
+        const rows = Array.isArray(payload.rows) ? payload.rows : [];
+
+        if(!rows.length) {
+            overviewTeamCountryTableBody.innerHTML = `
+                <tr>
+                    <td colspan="5">
+                        <div class="leader-os-country-table-empty"><?= addslashes(l('admin_leader_operating_system.leader.country_table.empty')) ?></div>
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+
+        overviewTeamCountryTableBody.innerHTML = rows.map((row) => `
+            <tr>
+                <td>
+                    <div class="leader-os-country-name">
+                        <strong>${escapeHtml(row.country_name || '-')}</strong>
+                        <span class="leader-os-country-code">${escapeHtml(row.country_code || '')}</span>
+                    </div>
+                </td>
+                <td class="text-right">${formatOverviewTeamNumber(row.app_visits || 0)}</td>
+                <td class="text-right">${formatOverviewTeamNumber(row.app_shop_clicks || 0)}</td>
+                <td class="text-right">${formatOverviewTeamNumber(row.blog_clicks || 0)}</td>
+                <td class="text-right">${formatOverviewTeamNumber(row.funnel_registrations || 0)}</td>
+            </tr>
+        `).join('');
+    };
+
+    if(overviewTeamCountryTableBody) {
+        renderOverviewTeamCountrySignalTable(overviewTeamCountryInitialPeriod);
+    }
+
+    overviewTeamCountryPeriodButtons.forEach((button) => {
+        button.addEventListener('click', () => {
+            const periodKey = button.getAttribute('data-overview-country-period') || '30d';
+
+            overviewTeamCountryPeriodButtons.forEach((item) => {
+                item.classList.toggle('active', item === button);
+            });
+
+            renderOverviewTeamCountrySignalTable(periodKey);
+        });
+    });
 
     const teamTrendChart = document.getElementById('leader-os-team-trend-chart');
     const teamTrendPeriods = Array.from(document.querySelectorAll('.leader-os-trend-period'));
