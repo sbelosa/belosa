@@ -668,6 +668,15 @@ class AiPlan extends Controller {
         return array_slice($updated_plans, 0, 12);
     }
 
+    private function build_recovery_weekly_plan(array $values, array $weekly_checkin, array $analytics_payload, array $app_structure_payload, ?array $previous_cycle_context = null, array $mentor_guidance = [], ?array $latest_app_review = null, string $model = 'fallback_recovery'): array {
+        $recovery_plan = $this->build_emergency_weekly_ai_plan($values, $weekly_checkin, $analytics_payload, $app_structure_payload, $previous_cycle_context, $mentor_guidance, $latest_app_review);
+        $recovery_plan['checkin_submitted_at'] = (string) ($weekly_checkin['submitted_at'] ?? get_date());
+        $recovery_plan['generated_at'] = get_date();
+        $recovery_plan['model'] = $model;
+
+        return $recovery_plan;
+    }
+
     private function get_saved_app_reviews($preferences): array {
         $reviews = $preferences->leader_ai_app_reviews ?? [];
 
@@ -1887,6 +1896,92 @@ class AiPlan extends Controller {
         ];
     }
 
+    private function get_weekly_ai_focus_app_context(array $app_structure_payload, ?array $latest_app_review = null, ?array $previous_plan = null): array {
+        $focus_app = $this->get_weekly_plan_focus_app($app_structure_payload, $latest_app_review);
+
+        if(!$focus_app) {
+            return [
+                'link_id' => 0,
+                'name' => '',
+                'url' => '',
+                'public_url' => '',
+                'selection_source' => 'none',
+                'selection_reason' => '',
+                'current_structure' => $this->get_weekly_ai_app_structure_snapshot(null),
+                'visual_context' => [
+                    'scope' => 'none',
+                    'primary_visual_url' => '',
+                    'visual_segments' => $this->get_default_app_review_visual_segments(),
+                ],
+                'latest_app_review' => [
+                    'exists' => !empty($latest_app_review),
+                    'matches_focus_app' => false,
+                    'generated_at' => !empty($latest_app_review['generated_at']) ? (string) $latest_app_review['generated_at'] : null,
+                    'headline' => '',
+                    'top_recommendation' => '',
+                    'first_move' => '',
+                    'quality_score' => 0,
+                    'quality_level' => '',
+                ],
+                'current_state_against_latest_review' => $this->get_ai_bundle_freshness_payload([], null, !empty($latest_app_review['generated_at']) ? (string) $latest_app_review['generated_at'] : null),
+                'current_state_against_previous_plan' => $this->get_ai_bundle_freshness_payload([], null, !empty($previous_plan['generated_at']) ? (string) $previous_plan['generated_at'] : null),
+            ];
+        }
+
+        $focus_link_id = (int) ($focus_app['link_id'] ?? 0);
+        $editor_snapshot = $this->get_link_ai_editor_snapshot_by_id($focus_link_id);
+        $last_changed_at = (string) (($focus_app['last_datetime'] ?? '') ?: ($editor_snapshot['last_datetime'] ?? '') ?: ($focus_app['datetime'] ?? ''));
+        $latest_review_matches_focus_app = $focus_link_id > 0 && (int) ($latest_app_review['selected_link_id'] ?? 0) === $focus_link_id;
+        $selection_source = 'main_app';
+        $selection_reason = 'Weekly plan koristi glavnu FCC aplikaciju kao bazu.';
+
+        if($latest_review_matches_focus_app) {
+            $selection_source = 'latest_app_review';
+            $selection_reason = 'Weekly plan prati aplikaciju koja je zadnja bila analizirana kroz AI app review.';
+        } elseif(
+            $focus_link_id > 0
+            && (int) ($focus_app['link_id'] ?? 0) !== (int) (($app_structure_payload['main_app']['link_id'] ?? 0))
+        ) {
+            $selection_source = 'latest_updated_app';
+            $selection_reason = 'Weekly plan koristi trenutno najaktivniju aplikaciju jer je novija od kanonske glavne aplikacije.';
+        }
+
+        return [
+            'link_id' => $focus_link_id,
+            'name' => (string) (($focus_app['name'] ?? '') ?: ($focus_app['url'] ?? '')),
+            'url' => (string) ($focus_app['url'] ?? ''),
+            'public_url' => (string) ($focus_app['public_url'] ?? ''),
+            'selection_source' => $selection_source,
+            'selection_reason' => $selection_reason,
+            'current_structure' => $this->get_weekly_ai_app_structure_snapshot($focus_app),
+            'visual_context' => [
+                'scope' => (string) ($focus_app['primary_visual_scope'] ?? 'none'),
+                'primary_visual_url' => (string) ($focus_app['primary_visual_url'] ?? ''),
+                'visual_segments' => (array) ($focus_app['visual_segments'] ?? $this->get_default_app_review_visual_segments()),
+            ],
+            'latest_app_review' => [
+                'exists' => !empty($latest_app_review),
+                'matches_focus_app' => $latest_review_matches_focus_app,
+                'generated_at' => !empty($latest_app_review['generated_at']) ? (string) $latest_app_review['generated_at'] : null,
+                'headline' => $latest_review_matches_focus_app ? (string) ($latest_app_review['headline'] ?? '') : '',
+                'top_recommendation' => $latest_review_matches_focus_app ? (string) ($latest_app_review['top_recommendation'] ?? '') : '',
+                'first_move' => $latest_review_matches_focus_app ? (string) ($latest_app_review['first_move'] ?? '') : '',
+                'quality_score' => $latest_review_matches_focus_app ? (int) ($latest_app_review['quality_score'] ?? 0) : 0,
+                'quality_level' => $latest_review_matches_focus_app ? (string) ($latest_app_review['quality_level'] ?? '') : '',
+            ],
+            'current_state_against_latest_review' => $this->get_ai_bundle_freshness_payload(
+                (array) ($editor_snapshot['additional'] ?? []),
+                $last_changed_at !== '' ? $last_changed_at : null,
+                !empty($latest_app_review['generated_at']) ? (string) $latest_app_review['generated_at'] : null
+            ),
+            'current_state_against_previous_plan' => $this->get_ai_bundle_freshness_payload(
+                (array) ($editor_snapshot['additional'] ?? []),
+                $last_changed_at !== '' ? $last_changed_at : null,
+                !empty($previous_plan['generated_at']) ? (string) $previous_plan['generated_at'] : null
+            ),
+        ];
+    }
+
     private function get_app_review_editor_actions_payload(int $selected_link_id, ?array $review = null): array {
         $payload = [
             'link_id' => max(0, $selected_link_id),
@@ -2402,6 +2497,60 @@ class AiPlan extends Controller {
     private function get_main_app_for_review(array $app_structure_payload): ?array {
         return $this->get_selected_app($app_structure_payload, (int) ($app_structure_payload['top_app_link_id'] ?? 0))
             ?? $this->get_selected_app($app_structure_payload);
+    }
+
+    private function get_latest_updated_app(array $app_structure_payload): ?array {
+        $apps = array_values(array_filter((array) ($app_structure_payload['apps'] ?? []), 'is_array'));
+
+        if(empty($apps)) {
+            return null;
+        }
+
+        usort($apps, static function($a, $b) {
+            $activity_a = (string) (($a['last_datetime'] ?? '') ?: ($a['datetime'] ?? ''));
+            $activity_b = (string) (($b['last_datetime'] ?? '') ?: ($b['datetime'] ?? ''));
+
+            if($activity_a !== $activity_b) {
+                return strcmp($activity_b, $activity_a);
+            }
+
+            return ((int) ($b['link_id'] ?? 0)) <=> ((int) ($a['link_id'] ?? 0));
+        });
+
+        return $apps[0] ?? null;
+    }
+
+    private function get_weekly_plan_focus_app(array $app_structure_payload, ?array $latest_app_review = null): ?array {
+        $latest_review_selected_link_id = (int) ($latest_app_review['selected_link_id'] ?? 0);
+
+        if($latest_review_selected_link_id > 0) {
+            $review_selected_app = $this->get_selected_app($app_structure_payload, $latest_review_selected_link_id);
+
+            if($review_selected_app) {
+                return $review_selected_app;
+            }
+        }
+
+        $main_app = $this->get_main_app_for_review($app_structure_payload);
+        $latest_updated_app = $this->get_latest_updated_app($app_structure_payload);
+
+        if(!$main_app) {
+            return $latest_updated_app;
+        }
+
+        if(
+            $latest_updated_app
+            && (int) ($latest_updated_app['link_id'] ?? 0) !== (int) ($main_app['link_id'] ?? 0)
+        ) {
+            $latest_updated_at = (string) (($latest_updated_app['last_datetime'] ?? '') ?: ($latest_updated_app['datetime'] ?? ''));
+            $main_app_updated_at = (string) (($main_app['last_datetime'] ?? '') ?: ($main_app['datetime'] ?? ''));
+
+            if($latest_updated_at !== '' && ($main_app_updated_at === '' || strcmp($latest_updated_at, $main_app_updated_at) > 0)) {
+                return $latest_updated_app;
+            }
+        }
+
+        return $main_app;
     }
 
     private function get_app_review_evolution_payload(array $current_performance, ?array $previous_review = null, array $evolution_memory = [], ?string $current_datetime = null, array $current_block_attribution = []): array {
@@ -6363,7 +6512,7 @@ class AiPlan extends Controller {
         $priority_blocks = array_fill_keys($priority_block_types, 0);
 
         $link_ids_sql = implode(',', array_map('intval', $link_ids));
-        $blocks_result = database()->query("SELECT `biolink_block_id`, `link_id`, `type`, `settings`, `order`
+        $blocks_result = database()->query("SELECT `biolink_block_id`, `link_id`, `type`, `location_url`, `settings`, `order`
             FROM `biolinks_blocks`
             WHERE `user_id` = {$user_id} AND `link_id` IN ({$link_ids_sql})
               AND `is_enabled` = 1
@@ -6464,6 +6613,7 @@ class AiPlan extends Controller {
                         'block_id' => (int) ($row->biolink_block_id ?? 0),
                         'type' => $type,
                         'label' => $this->get_app_review_block_preview_label($type, $settings),
+                        'location_url' => (string) ($row->location_url ?? ''),
                         'style_profile' => $style_profile,
                     ];
                 }
@@ -6473,6 +6623,7 @@ class AiPlan extends Controller {
                     'order' => (int) ($row->order ?? 0),
                     'type' => $type,
                     'label' => $this->get_app_review_block_preview_label($type, $settings),
+                    'location_url' => (string) ($row->location_url ?? ''),
                     'visual_url' => $this->get_app_review_block_visual_url($type, $settings),
                     'style_profile' => $style_profile,
                 ];
@@ -8643,15 +8794,16 @@ class AiPlan extends Controller {
         return array_values(array_unique($guardrails));
     }
 
-    private function build_weekly_ai_plan_input(array $values, array $weekly_checkin, array $analytics_payload, array $app_structure_payload, array $adaptive_question, ?array $previous_cycle_context = null, array $mentor_guidance = []): array {
+    private function build_weekly_ai_plan_input(array $values, array $weekly_checkin, array $analytics_payload, array $app_structure_payload, array $adaptive_question, ?array $previous_cycle_context = null, array $mentor_guidance = [], ?array $latest_app_review = null): array {
         $labels = $this->get_option_labels($values, $weekly_checkin);
         $analytics_payload['webshop_clicks'] = (int) $this->get_last_30_days_shop_clicks();
         $goal_type = $this->get_goal_type($values);
         $fcc_goal_system = $this->get_fcc_goal_system_payload($values, $goal_type);
-        $main_app_snapshot = $this->get_weekly_ai_app_structure_snapshot($this->get_main_app_for_review($app_structure_payload));
         $previous_outcome = $previous_cycle_context['outcome'] ?? null;
         $previous_plan = $previous_cycle_context['plan'] ?? null;
         $previous_checkin = $previous_cycle_context['checkin'] ?? null;
+        $focus_app_context = $this->get_weekly_ai_focus_app_context($app_structure_payload, $latest_app_review, $previous_plan);
+        $main_app_snapshot = (array) ($focus_app_context['current_structure'] ?? $this->get_weekly_ai_app_structure_snapshot($this->get_main_app_for_review($app_structure_payload)));
 
         return [
             'user' => [
@@ -8700,6 +8852,7 @@ class AiPlan extends Controller {
             ],
             'app_structure' => $app_structure_payload,
             'main_app_structure' => $main_app_snapshot,
+            'weekly_focus_app' => $focus_app_context,
             'fcc_goal_system' => $fcc_goal_system,
             'previous_cycle' => [
                 'has_previous_checkin' => (bool) $previous_checkin,
@@ -8838,11 +8991,11 @@ class AiPlan extends Controller {
         ];
     }
 
-    private function build_emergency_weekly_ai_plan(array $values, array $weekly_checkin, array $analytics_payload, array $app_structure_payload, ?array $previous_cycle_context = null, array $mentor_guidance = []): array {
+    private function build_emergency_weekly_ai_plan(array $values, array $weekly_checkin, array $analytics_payload, array $app_structure_payload, ?array $previous_cycle_context = null, array $mentor_guidance = [], ?array $latest_app_review = null): array {
         $labels = $this->get_option_labels($values, $weekly_checkin);
         $goal_type = $this->get_goal_type($values);
         $guardrails = $this->get_strategy_guardrails($values, $weekly_checkin, $analytics_payload, $app_structure_payload, $previous_cycle_context, $mentor_guidance);
-        $main_app = $this->get_main_app_for_review($app_structure_payload);
+        $main_app = $this->get_weekly_plan_focus_app($app_structure_payload, $latest_app_review) ?? $this->get_main_app_for_review($app_structure_payload);
         $main_app_total_blocks = (int) ($main_app['total_blocks'] ?? $app_structure_payload['top_app_total_blocks'] ?? 0);
         $active_funnels = (int) ($analytics_payload['funnel']['active_funnels'] ?? 0);
         $current_clicks_30d = (int) ($analytics_payload['webshop_clicks'] ?? 0);
@@ -8967,7 +9120,7 @@ class AiPlan extends Controller {
         ];
     }
 
-    private function generate_weekly_ai_plan(array $values, array $weekly_checkin, array $weekly_checkins, array $weekly_plans, array $weekly_outcomes, array $analytics_payload, array $app_structure_payload, array $adaptive_question): array {
+    private function generate_weekly_ai_plan(array $values, array $weekly_checkin, array $weekly_checkins, array $weekly_plans, array $weekly_outcomes, array $analytics_payload, array $app_structure_payload, array $adaptive_question, array $app_reviews = []): array {
         $credentials = $this->get_ai_credentials();
 
         if($credentials['api_key'] === '') {
@@ -8980,8 +9133,104 @@ class AiPlan extends Controller {
 
         $previous_cycle_context = $this->get_previous_weekly_cycle_context($weekly_checkins, $weekly_plans, $weekly_outcomes, $weekly_checkin);
         $mentor_guidance = $this->get_mentor_ai_guidance($this->user->preferences ?? null);
-        $ai_input = $this->build_weekly_ai_plan_input($values, $weekly_checkin, $analytics_payload, $app_structure_payload, $adaptive_question, $previous_cycle_context, $mentor_guidance);
+        $latest_app_review = $this->get_latest_app_review($app_reviews);
+        $ai_input = $this->build_weekly_ai_plan_input($values, $weekly_checkin, $analytics_payload, $app_structure_payload, $adaptive_question, $previous_cycle_context, $mentor_guidance, $latest_app_review);
         $ai_input = $this->sanitize_utf8_for_json($ai_input);
+        $supports_image_input = $this->model_supports_image_input((string) ($credentials['model'] ?? ''));
+        $focus_visual_context = (array) ($ai_input['weekly_focus_app']['visual_context'] ?? []);
+        $selected_visual_url = (string) ($focus_visual_context['primary_visual_url'] ?? '');
+        $selected_visual_scope = (string) ($focus_visual_context['scope'] ?? 'none');
+        $selected_visual_segments = (array) ($focus_visual_context['visual_segments'] ?? []);
+        $user_prompt = implode("\n\n", [
+            'Na temelju tjednog check-ina, profila korisnika, analytics signala i postojece strukture aplikacije izradi konkretan 7-dnevni akcijski plan.',
+            'Vrati samo JSON s kljucevima: headline, summary, focus, coach_intro, brutal_truth, power_move, why_this_week, encouragement, priority_channels, content_ideas, coach_ideas, do_not_do, daily_plan.',
+            'Pravila:',
+            '- Pisi kao vrhunski strategist-coach, ne kao robot. Recenice neka budu prirodne, ali zakljucci moraju biti inteligentni, jasni i jaki.',
+            '- Nemoj davati slabe, predvidljive ili genericne savjete poput javi se nekim ljudima, budi aktivniji, objavi nesto ili pokusaj jos malo. Ako ne mozes biti pametniji od toga, plan nije dovoljno dobar.',
+            '- Nemoj koristiti programerske, analiticke ni marketinske izraze koje pocetnik ne razumije, kao sto su direct, mobile, desktop, CTR, CTA, conversion rate i slicno.',
+            '- Smijes koristiti rijec Funnel jer je to stvarni naziv gumba i funkcije u FCC-u.',
+            '- Ako podatak moras spomenuti, prevedi ga u jednostavan svakodnevni jezik. Primjer: umjesto direct reci da ljudi najcesce dolaze sami, bez druge mreze ili oglasa. Umjesto mobile reci da vecina gleda preko mobitela. Umjesto CTA reci jasan poziv sto osoba treba napraviti dalje.',
+            '- Rjesenja moraju biti logicna, jednostavna i laka za pratiti osobi koja nema iskustva s marketingom, ali moraju biti pametna i imati jasan razlog zasto bas to donosi rezultat.',
+            '- Nemoj sastavljati gotove poruke, skripte, DM predloske ni tekstove za slanje. Fokus mora biti na idejama, smjeru, prioritetima i jednostavnim coaching prijedlozima.',
+            '- coach_intro neka bude kratak uvod od 2 do 4 recenice koji osobi objasnjava sto vidis i zasto ovaj tjedan ne treba raditi previse nego tocno ono sto najvise pomaze.',
+            '- brutal_truth neka bude jedna kratka, korisna i pomalo neugodna istina koju osoba treba cuti da prestane raditi stvari koje joj trenutno ne donose rezultat.',
+            '- power_move neka bude jedan najjaci potez tjedna. Ne lista, nego jedna odluka ili promjena koja najvise pomice rezultat.',
+            '- why_this_week neka objasni logiku plana na ljudski nacin: zasto je bas ovaj fokus dobar s obzirom na signal, kanale, publiku i trenutnu energiju.',
+            '- encouragement neka bude kratka zavrsna coach poruka koja daje smjer i mirnocu, bez umjetnog hypea.',
+            '- coach_ideas neka bude polje od 3 do 5 kratkih, jakih i neocitih coaching ideja. To ne smiju biti gotove poruke za kopiranje, nego smjerovi koji pokazuju zrelije razmisljanje od prosjecnog savjeta.',
+            '- daily_plan mora biti polje od 7 dana, a svaki dan mora imati kljuceve day, title i tasks.',
+            '- title za svaki dan neka zvuci kao smisleni dnevni fokus, ne kao mehanicki label.',
+            '- tasks mora biti polje kratkih i konkretnih zadataka koje osoba stvarno moze napraviti taj dan, ali neka budu napisani prirodnim coaching jezikom, ne tehnickim ili robotskim tonom.',
+            '- Ako predlazes da se osoba nekome javi, to smije biti samo kada postoji jasan razlog iz konteksta i mora biti precizno receno kome i zasto, bez generickog javi se ljudima.',
+            '- Plan mora uzeti u obzir energiju, raspolozive kanale, ograniceno vrijeme, follow-up spremnost, top izvore i stvarne blokove/aplikacije koje korisnik vec ima.',
+            '- Ako previous_cycle.outcome postoji, novi plan mora jasno pokazati da je naucio iz proslog tjedna: pojacaj ono sto je dalo najbolji odgovor, skrati ili ukloni ono gdje je zapelo i ugradi korisnikovu vlastitu prilagodbu za iduci tjedan.',
+            '- Ako je prosli tjedan izvedba bila slaba ili plan nije ni krenuo, nemoj samo ponoviti isti pristup. Novi plan mora biti jednostavniji, uzi i realniji za osobu.',
+            '- Ako je u proslog tjedna nesto dobro reagiralo, nemoj to zanemariti. Novi plan treba se nasloniti na taj signal umjesto da ide u potpuno novi smjer bez razloga.',
+            '- Ako mentor_context.has_guidance postoji, uzmi to kao dodatnu procjenu mentora iz direktnog kontakta s osobom. To nije glavni orijentir, ali treba poostrinti realnost plana, razinu fokusa i procjenu discipline kada ima smisla.',
+            '- Mentor smjernica je admin-only i sekundarni signal. Nemoj je slijediti slijepo ako je u ocitom sukobu sa stvarnim podacima, ali je koristi kad treba procijeniti je li osobi potreban strozi, uzi ili jednostavniji plan.',
+            '- weekly_focus_app.current_structure i main_app_structure opisuju stvarnu trenutnu live aplikaciju koju ovaj tjedan treba komentirati. To ima prednost nad starim planovima i starim analizama.',
+            '- latest_app_review i previous_cycle sluze samo kao povijest. Nemoj tvrditi da nesto trenutno postoji, nedostaje ili je na vrhu samo zato sto je bilo spomenuto u starijoj analizi ili starom planu.',
+            '- Ako weekly_focus_app.current_state_against_latest_review.has_changes_since_recommendation = true ili weekly_focus_app.current_state_against_previous_plan.has_changes_since_recommendation = true, to znaci da je aplikacija mijenjana nakon zadnje analize ili zadnjeg plana. U tom slucaju trenutna live aplikacija je izvor istine, a stare preporuke su samo povijest.',
+            '- Ako weekly_focus_app.current_structure.position_signals i ordered_block_previews pokazuju da video, Funnel, WhatsApp ili business blok vec postoje, nemoj pisati kao da ih nema.',
+            '- Ako korisnik vec ima Funnel ili Forever blokove, procijeni jesu li sada korisni ili samo kompliciraju put. Ako nema dovoljno strukture, reci sto prvo treba postaviti. Ako ima previse strukture, reci sto treba maknuti ili spustiti.',
+            '- Ako input sadrzi main_app_structure.position_signals i ordered_block_previews, koristi njih kao izvor istine za stvarni redoslijed blokova. Nemoj reci da je nesto na vrhu, prvi blok ili prije videa ako to nije izricito potvrdeno tim signalima.',
+            '- Ako je cilj skupljanje kontakata, regrutacija ili prijava, plan smije i treba preporuciti Funnel kao glavni tjedni fokus i glavni prvi korak aplikacije.',
+            '- Nemoj preporucivati Save Contact, Contact Collector, Email Collector ni Dodaj na pocetni zaslon.',
+            '- Chatbot ili AI savjetnik nije klasicni gumb u glavnom redoslijedu blokova. On je neutralan pomocni sloj koji se otvara iz male ikonice i ne treba ga tretirati kao prepreku fokusu.',
+            '- Ako aplikacija ima chatbot, smijes ga spomenuti kao pomocni alat za preporuku proizvoda i usmjeravanje, ali ga nemoj isticati kao glavni problem niti kao glavni prvi korak.',
+            '- Ako preporucujes Funnel, imaj na umu da Funnel u FCC-u moze imati video, ime, email, broj telefona i thank you stranicu.',
+            '- Ako cilj trazi vise povjerenja, preporuci i video, jasan tekst blok i jednostavan redoslijed blokova na vrhu aplikacije.',
+            '- U coach_ideas i dnevnim zadacima smijes predloziti i konkretne promjene na aplikaciji: Funnel, tekst blok, video, boje, jedan glavni gumb, drugi redoslijed blokova ili jacu WhatsApp logiku.',
+            '- Ako statistika pokazuje interes, ali nema prijava, kontkata ili WhatsApp koraka, plan mora reci kako da aplikacija bolje pretvori interes u stvarni kontakt.',
+            '- Ako nema dovoljno signala, plan i dalje mora biti konkretan, ali s fokusom na stvaranje kvalitetnog signala, ne na genericke savjete.',
+            '- Izbjegavaj pretrpavanje. Plan treba djelovati kao da coach zna sto je najvaznije, a ne kao da zeli ugurati 30 zadataka.',
+            '- Ako dobijes vizual weekly_focus_app.visual_context, koristi ga da potvrdis prvi ekran, trenutni raspored i ton aplikacije prije nego zakljucis da nesto nedostaje ili da je zastarjelo.',
+            '- Nemoj koristiti markdown, code blockove ni dodatne kljuceve.',
+            'Input JSON: ' . json_encode($ai_input, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_INVALID_UTF8_SUBSTITUTE),
+        ]);
+        $user_message_content = [
+            [
+                'type' => 'text',
+                'text' => $user_prompt,
+            ],
+        ];
+
+        if($supports_image_input) {
+            $added_image_urls = [];
+
+            foreach(['hero', 'middle', 'bottom'] as $segment_key) {
+                $segment_payload = (array) ($selected_visual_segments[$segment_key] ?? []);
+                $segment_visual_url = (string) ($segment_payload['primary_visual_url'] ?? '');
+
+                if($segment_visual_url === '' || isset($added_image_urls[$segment_visual_url])) {
+                    continue;
+                }
+
+                $user_message_content[] = [
+                    'type' => 'text',
+                    'text' => (string) (($segment_payload['title'] ?? $this->get_app_review_segment_title($segment_key)) . ': pregled ovog dijela aplikacije za weekly plan.'),
+                ];
+                $user_message_content[] = [
+                    'type' => 'image_url',
+                    'image_url' => [
+                        'url' => $segment_visual_url,
+                        'detail' => 'high',
+                    ],
+                ];
+
+                $added_image_urls[$segment_visual_url] = true;
+            }
+
+            if(empty($added_image_urls) && $selected_visual_url !== '' && $selected_visual_scope !== 'none') {
+                $user_message_content[] = [
+                    'type' => 'image_url',
+                    'image_url' => [
+                        'url' => $selected_visual_url,
+                        'detail' => 'high',
+                    ],
+                ];
+            }
+        }
 
         $response = Request::post(
             'https://api.openai.com/v1/chat/completions',
@@ -9001,48 +9250,7 @@ class AiPlan extends Controller {
                     ],
                     [
                         'role' => 'user',
-                        'content' => implode("\n\n", [
-                            'Na temelju tjednog check-ina, profila korisnika, analytics signala i postojece strukture aplikacije izradi konkretan 7-dnevni akcijski plan.',
-                            'Vrati samo JSON s kljucevima: headline, summary, focus, coach_intro, brutal_truth, power_move, why_this_week, encouragement, priority_channels, content_ideas, coach_ideas, do_not_do, daily_plan.',
-                            'Pravila:',
-                            '- Pisi kao vrhunski strategist-coach, ne kao robot. Recenice neka budu prirodne, ali zakljucci moraju biti inteligentni, jasni i jaki.',
-                            '- Nemoj davati slabe, predvidljive ili genericne savjete poput javi se nekim ljudima, budi aktivniji, objavi nesto ili pokusaj jos malo. Ako ne mozes biti pametniji od toga, plan nije dovoljno dobar.',
-                            '- Nemoj koristiti programerske, analiticke ni marketinske izraze koje pocetnik ne razumije, kao sto su direct, mobile, desktop, CTR, CTA, conversion rate i slicno.',
-                            '- Smijes koristiti rijec Funnel jer je to stvarni naziv gumba i funkcije u FCC-u.',
-                            '- Ako podatak moras spomenuti, prevedi ga u jednostavan svakodnevni jezik. Primjer: umjesto direct reci da ljudi najcesce dolaze sami, bez druge mreze ili oglasa. Umjesto mobile reci da vecina gleda preko mobitela. Umjesto CTA reci jasan poziv sto osoba treba napraviti dalje.',
-                            '- Rjesenja moraju biti logicna, jednostavna i laka za pratiti osobi koja nema iskustva s marketingom, ali moraju biti pametna i imati jasan razlog zasto bas to donosi rezultat.',
-                            '- Nemoj sastavljati gotove poruke, skripte, DM predloske ni tekstove za slanje. Fokus mora biti na idejama, smjeru, prioritetima i jednostavnim coaching prijedlozima.',
-                            '- coach_intro neka bude kratak uvod od 2 do 4 recenice koji osobi objasnjava sto vidis i zasto ovaj tjedan ne treba raditi previse nego tocno ono sto najvise pomaze.',
-                            '- brutal_truth neka bude jedna kratka, korisna i pomalo neugodna istina koju osoba treba cuti da prestane raditi stvari koje joj trenutno ne donose rezultat.',
-                            '- power_move neka bude jedan najjaci potez tjedna. Ne lista, nego jedna odluka ili promjena koja najvise pomice rezultat.',
-                            '- why_this_week neka objasni logiku plana na ljudski nacin: zasto je bas ovaj fokus dobar s obzirom na signal, kanale, publiku i trenutnu energiju.',
-                            '- encouragement neka bude kratka zavrsna coach poruka koja daje smjer i mirnocu, bez umjetnog hypea.',
-                            '- coach_ideas neka bude polje od 3 do 5 kratkih, jakih i neocitih coaching ideja. To ne smiju biti gotove poruke za kopiranje, nego smjerovi koji pokazuju zrelije razmisljanje od prosjecnog savjeta.',
-                            '- daily_plan mora biti polje od 7 dana, a svaki dan mora imati kljuceve day, title i tasks.',
-                            '- title za svaki dan neka zvuci kao smisleni dnevni fokus, ne kao mehanicki label.',
-                            '- tasks mora biti polje kratkih i konkretnih zadataka koje osoba stvarno moze napraviti taj dan, ali neka budu napisani prirodnim coaching jezikom, ne tehnickim ili robotskim tonom.',
-                            '- Ako predlazes da se osoba nekome javi, to smije biti samo kada postoji jasan razlog iz konteksta i mora biti precizno receno kome i zasto, bez generickog javi se ljudima.',
-                            '- Plan mora uzeti u obzir energiju, raspolozive kanale, ograniceno vrijeme, follow-up spremnost, top izvore i stvarne blokove/aplikacije koje korisnik vec ima.',
-                            '- Ako previous_cycle.outcome postoji, novi plan mora jasno pokazati da je naucio iz proslog tjedna: pojacaj ono sto je dalo najbolji odgovor, skrati ili ukloni ono gdje je zapelo i ugradi korisnikovu vlastitu prilagodbu za iduci tjedan.',
-                            '- Ako je prosli tjedan izvedba bila slaba ili plan nije ni krenuo, nemoj samo ponoviti isti pristup. Novi plan mora biti jednostavniji, uzi i realniji za osobu.',
-                            '- Ako je u proslog tjedna nesto dobro reagiralo, nemoj to zanemariti. Novi plan treba se nasloniti na taj signal umjesto da ide u potpuno novi smjer bez razloga.',
-                            '- Ako mentor_context.has_guidance postoji, uzmi to kao dodatnu procjenu mentora iz direktnog kontakta s osobom. To nije glavni orijentir, ali treba poostrinti realnost plana, razinu fokusa i procjenu discipline kada ima smisla.',
-                            '- Mentor smjernica je admin-only i sekundarni signal. Nemoj je slijediti slijepo ako je u ocitom sukobu sa stvarnim podacima, ali je koristi kad treba procijeniti je li osobi potreban strozi, uzi ili jednostavniji plan.',
-                            '- Ako korisnik vec ima Funnel ili Forever blokove, procijeni jesu li sada korisni ili samo kompliciraju put. Ako nema dovoljno strukture, reci sto prvo treba postaviti. Ako ima previse strukture, reci sto treba maknuti ili spustiti.',
-                            '- Ako input sadrzi main_app_structure.position_signals i ordered_block_previews, koristi njih kao izvor istine za stvarni redoslijed blokova. Nemoj reci da je nesto na vrhu, prvi blok ili prije videa ako to nije izricito potvrdeno tim signalima.',
-                            '- Ako je cilj skupljanje kontakata, regrutacija ili prijava, plan smije i treba preporuciti Funnel kao glavni tjedni fokus i glavni prvi korak aplikacije.',
-                            '- Nemoj preporucivati Save Contact, Contact Collector, Email Collector ni Dodaj na pocetni zaslon.',
-                            '- Chatbot ili AI savjetnik nije klasicni gumb u glavnom redoslijedu blokova. On je neutralan pomocni sloj koji se otvara iz male ikonice i ne treba ga tretirati kao prepreku fokusu.',
-                            '- Ako aplikacija ima chatbot, smijes ga spomenuti kao pomocni alat za preporuku proizvoda i usmjeravanje, ali ga nemoj isticati kao glavni problem niti kao glavni prvi korak.',
-                            '- Ako preporucujes Funnel, imaj na umu da Funnel u FCC-u moze imati video, ime, email, broj telefona i thank you stranicu.',
-                            '- Ako cilj trazi vise povjerenja, preporuci i video, jasan tekst blok i jednostavan redoslijed blokova na vrhu aplikacije.',
-                            '- U coach_ideas i dnevnim zadacima smijes predloziti i konkretne promjene na aplikaciji: Funnel, tekst blok, video, boje, jedan glavni gumb, drugi redoslijed blokova ili jacu WhatsApp logiku.',
-                            '- Ako statistikа pokazuje interes, ali nema prijava, kontkata ili WhatsApp koraka, plan mora reci kako da aplikacija bolje pretvori interes u stvarni kontakt.',
-                            '- Ako nema dovoljno signala, plan i dalje mora biti konkretan, ali s fokusom na stvaranje kvalitetnog signala, ne na genericke savjete.',
-                            '- Izbjegavaj pretrpavanje. Plan treba djelovati kao da coach zna sto je najvaznije, a ne kao da zeli ugurati 30 zadataka.',
-                            '- Nemoj koristiti markdown, code blockove ni dodatne kljuceve.',
-                            'Input JSON: ' . json_encode($ai_input, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_INVALID_UTF8_SUBSTITUTE),
-                        ])
+                        'content' => $user_message_content,
                     ],
                 ],
             ])
@@ -9064,13 +9272,13 @@ class AiPlan extends Controller {
         $used_fallback_plan = false;
 
         if(!is_array($decoded_plan)) {
-            $plan = $this->build_emergency_weekly_ai_plan($values, $weekly_checkin, $analytics_payload, $app_structure_payload, $previous_cycle_context, $mentor_guidance);
+            $plan = $this->build_emergency_weekly_ai_plan($values, $weekly_checkin, $analytics_payload, $app_structure_payload, $previous_cycle_context, $mentor_guidance, $latest_app_review);
             $used_fallback_plan = true;
         } else {
             try {
                 $plan = $this->validate_weekly_ai_plan_response($decoded_plan);
             } catch(\Throwable $exception) {
-                $plan = $this->build_emergency_weekly_ai_plan($values, $weekly_checkin, $analytics_payload, $app_structure_payload, $previous_cycle_context, $mentor_guidance);
+                $plan = $this->build_emergency_weekly_ai_plan($values, $weekly_checkin, $analytics_payload, $app_structure_payload, $previous_cycle_context, $mentor_guidance, $latest_app_review);
                 $used_fallback_plan = true;
             }
         }
@@ -9115,15 +9323,15 @@ class AiPlan extends Controller {
         $previous_weekly_cycle_context = $this->get_previous_weekly_cycle_context($weekly_checkins, $weekly_plans, $weekly_outcomes, $latest_weekly_checkin);
         $feedback_loop_payload = $this->get_feedback_loop_payload($previous_weekly_cycle_context);
 
+        $recovered_weekly_plan_generated = false;
+
         if($latest_weekly_checkin && !$latest_weekly_plan) {
             $mentor_guidance = $this->get_mentor_ai_guidance($this->user->preferences ?? null);
-            $recovered_plan = $this->build_emergency_weekly_ai_plan($values, $latest_weekly_checkin, $analytics_payload, $app_structure_payload, $previous_weekly_cycle_context, $mentor_guidance);
-            $recovered_plan['checkin_submitted_at'] = (string) ($latest_weekly_checkin['submitted_at'] ?? get_date());
-            $recovered_plan['generated_at'] = get_date();
-            $recovered_plan['model'] = 'fallback_recovery';
+            $recovered_plan = $this->build_recovery_weekly_plan($values, $latest_weekly_checkin, $analytics_payload, $app_structure_payload, $previous_weekly_cycle_context, $mentor_guidance, $latest_app_review_any, 'fallback_recovery');
 
             $weekly_plans = $this->upsert_weekly_plan($weekly_plans, $recovered_plan);
             $preferences->leader_ai_weekly_plans = $weekly_plans;
+            $recovered_weekly_plan_generated = true;
 
             db()->where('user_id', $this->user->user_id)->update('users', [
                 'preferences' => json_encode($preferences),
@@ -9143,6 +9351,11 @@ class AiPlan extends Controller {
         $ai_growth_access_payload = $this->get_ai_growth_access_payload($preferences, $app_structure_payload, $current_clicks_30d);
         $app_review_access_payload = (array) ($ai_growth_access_payload['app_review'] ?? []);
         $weekly_access_payload = (array) ($ai_growth_access_payload['weekly'] ?? []);
+        if($recovered_weekly_plan_generated && !empty($weekly_access_payload['uses_starter_credit'])) {
+            $preferences = $this->consume_ai_growth_starter_credit($preferences, 'weekly_plan');
+            $this->persist_ai_plan_preferences($preferences);
+            $this->user->preferences = $preferences;
+        }
         $growth_signal_30d = (int) ($ai_growth_access_payload['growth_signal_30d'] ?? 0);
         $cooldown_payload = $this->get_weekly_cooldown_payload($latest_weekly_checkin, (int) ($weekly_access_payload['cooldown_days'] ?? 0));
         $app_review_cooldown_payload = $this->get_cooldown_payload_by_days($latest_app_review_any['generated_at'] ?? null, (int) ($app_review_access_payload['cooldown_days'] ?? 0));
@@ -9392,31 +9605,43 @@ class AiPlan extends Controller {
                     array_unshift($weekly_checkins, $new_checkin);
                     $weekly_checkins = array_slice($weekly_checkins, 0, 12);
                     $preferences->leader_ai_weekly_checkins = $weekly_checkins;
+                    $this->persist_ai_plan_preferences($preferences);
+                    $this->user->preferences = $preferences;
 
                     $ai_plan_generated = false;
+                    $used_weekly_plan_fallback = false;
 
                     try {
-                        $new_weekly_plan = $this->generate_weekly_ai_plan($values, $new_checkin, $weekly_checkins, $weekly_plans, $weekly_outcomes, $analytics_payload, $app_structure_payload, $adaptive_question);
+                        $new_weekly_plan = $this->generate_weekly_ai_plan($values, $new_checkin, $weekly_checkins, $weekly_plans, $weekly_outcomes, $analytics_payload, $app_structure_payload, $adaptive_question, $app_reviews);
+                        $ai_plan_generated = true;
+                    } catch(\Throwable $exception) {
+                        $mentor_guidance = $this->get_mentor_ai_guidance($this->user->preferences ?? null);
+                        $new_weekly_plan = $this->build_recovery_weekly_plan($values, $new_checkin, $analytics_payload, $app_structure_payload, $this->get_previous_weekly_cycle_context($weekly_checkins, $weekly_plans, $weekly_outcomes, $new_checkin), $mentor_guidance, $this->get_latest_app_review($app_reviews), 'fallback_after_exception');
+                        $ai_plan_generated = true;
+                        $used_weekly_plan_fallback = true;
+
+                        \Altum\Logger::users($this->user->user_id, 'ai_plan.weekly_plan_fallback_after_exception');
+                    }
+
+                    if($ai_plan_generated) {
                         $weekly_plans = $this->upsert_weekly_plan($weekly_plans, $new_weekly_plan);
                         $preferences->leader_ai_weekly_plans = $weekly_plans;
+
                         if(!empty($weekly_access_payload['uses_starter_credit'])) {
                             $preferences = $this->consume_ai_growth_starter_credit($preferences, 'weekly_plan');
                         }
-                        $ai_plan_generated = true;
-                    } catch(\Throwable $exception) {
-                        Alerts::add_info($this->sanitize_ai_string($exception->getMessage(), 280) ?: l('ai_plan.ai_error_request_failed'));
+
+                        $this->persist_ai_plan_preferences($preferences);
+                        $this->user->preferences = $preferences;
                     }
-
-                    db()->where('user_id', $this->user->user_id)->update('users', [
-                        'preferences' => json_encode($preferences),
-                    ]);
-
-                    cache()->deleteItemsByTag('user_id=' . $this->user->user_id);
-                    cache()->deleteItem('user?user_id=' . $this->user->user_id);
 
                     \Altum\Logger::users($this->user->user_id, 'ai_plan.weekly_checkin_saved');
 
                     Alerts::add_success($ai_plan_generated ? l('ai_plan.weekly_success_message_phase_3') : l('ai_plan.weekly_success_message'));
+
+                    if($used_weekly_plan_fallback) {
+                        Alerts::add_info(l('ai_plan.weekly_fallback_message'));
+                    }
 
                     redirect('ai-plan?section=plan');
                 }

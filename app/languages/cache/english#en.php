@@ -1693,6 +1693,7 @@ return [
 	'ai_plan.weekly_now' => 'Available now',
 	'ai_plan.weekly_success_message' => 'Weekly check-in saved. The next one will open in 7 days.',
 	'ai_plan.weekly_success_message_phase_3' => 'Weekly check-in saved and the 7-day plan has been generated.',
+	'ai_plan.weekly_fallback_message' => 'AI processing stalled, so we immediately saved a safe fallback version of the plan. You can use it right away, and the next update will continue from it normally.',
 	'ai_plan.weekly_adaptive_title' => 'Adaptive question',
 	'ai_plan.weekly_locked_profile_title' => 'Finish the core profile first',
 	'ai_plan.weekly_locked_profile' => 'Before the weekly check-in, the user needs to complete the core AI profile from phase 1 so the system knows the goal, audience, and work style.',
