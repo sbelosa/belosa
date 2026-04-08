@@ -169,6 +169,14 @@ class OpsReadonly extends Controller {
         return array_values($list);
     }
 
+    private function get_assoc_array($value): array {
+        if(is_object($value)) {
+            return (array) $value;
+        }
+
+        return is_array($value) ? $value : [];
+    }
+
     private function first_available_datetime(array $item, array $fields): string {
         foreach($fields as $field) {
             $value = trim((string) ($item[$field] ?? ''));
@@ -504,9 +512,10 @@ class OpsReadonly extends Controller {
         $plan_feature_enabled = (bool) ($plan_settings->ai_growth_plan_is_enabled ?? false);
         $plan_feature_active = $plan_feature_enabled && $this->is_plan_active((string) ($user->plan_expiration_date ?? ''));
         $has_access = $plan_feature_active || $manual_tier_active !== '';
-        $latest_weekly_checkin = $weekly_checkins[0] ?? [];
-        $latest_weekly_plan = $weekly_plans[0] ?? [];
-        $latest_app_review = $app_reviews[0] ?? [];
+        $latest_weekly_checkin = $this->get_assoc_array($weekly_checkins[0] ?? []);
+        $latest_weekly_plan = $this->get_assoc_array($weekly_plans[0] ?? []);
+        $latest_app_review = $this->get_assoc_array($app_reviews[0] ?? []);
+        $latest_app_review_performance = $this->get_assoc_array($latest_app_review['performance_snapshot'] ?? []);
         $mentor_guidance = trim((string) ($mentor->ai_guidance ?? ''));
 
         return [
@@ -559,7 +568,7 @@ class OpsReadonly extends Controller {
                 'headline' => (string) ($latest_app_review['headline'] ?? ''),
                 'top_recommendation' => $this->excerpt((string) ($latest_app_review['top_recommendation'] ?? ''), 260),
                 'first_move' => $this->excerpt((string) ($latest_app_review['first_move'] ?? ''), 220),
-                'weighted_signal_score' => (int) (($latest_app_review['performance_snapshot']['weighted_signal_score'] ?? 0)),
+                'weighted_signal_score' => (int) ($latest_app_review_performance['weighted_signal_score'] ?? 0),
             ],
             'app_review_job' => [
                 'status' => (string) ($job->status ?? 'idle'),
