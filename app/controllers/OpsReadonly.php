@@ -600,13 +600,17 @@ class OpsReadonly extends Controller {
     private function get_cron_diagnostics_payload(): array {
         $cron_settings = $this->get_object(settings()->cron ?? null);
         $webhooks_settings = $this->get_object(settings()->webhooks ?? null);
+        $cron_key = trim((string) ($cron_settings->key ?? ''));
         $last_run_at = is_scalar($cron_settings->cron_datetime ?? null) ? (string) $cron_settings->cron_datetime : null;
         $last_reset_at = is_scalar($cron_settings->reset_date ?? null) ? (string) $cron_settings->reset_date : null;
         $stale_threshold_minutes = 15;
         $last_run_age_minutes = $this->get_datetime_age_minutes($last_run_at);
+        $cron_url = $cron_key !== '' ? url('cron?key=' . rawurlencode($cron_key)) : '';
+        $cron_curl_command = $cron_url !== '' ? 'curl -fsS "' . $cron_url . "\" >/dev/null 2>&1" : '';
+        $cron_wget_command = $cron_url !== '' ? 'wget -q -O - "' . $cron_url . "\" >/dev/null 2>&1" : '';
 
         return [
-            'key_configured' => trim((string) ($cron_settings->key ?? '')) !== '',
+            'key_configured' => $cron_key !== '',
             'last_run_at' => $last_run_at,
             'last_run_age_minutes' => $last_run_age_minutes,
             'last_run_processing_seconds' => isset($cron_settings->cron_datetime_processing) ? (float) $cron_settings->cron_datetime_processing : null,
@@ -615,6 +619,12 @@ class OpsReadonly extends Controller {
             'last_reset_processing_seconds' => isset($cron_settings->reset_date_processing) ? (float) $cron_settings->reset_date_processing : null,
             'stale_threshold_minutes' => $stale_threshold_minutes,
             'is_stale' => $last_run_age_minutes === null ? true : $last_run_age_minutes > $stale_threshold_minutes,
+            'recommended_interval_minutes' => 5,
+            'trigger_url' => $cron_url !== '' ? $cron_url : null,
+            'commands' => [
+                'curl' => $cron_curl_command !== '' ? $cron_curl_command : null,
+                'wget' => $cron_wget_command !== '' ? $cron_wget_command : null,
+            ],
             'webhooks' => [
                 'start_configured' => trim((string) ($webhooks_settings->cron_start ?? '')) !== '',
                 'end_configured' => trim((string) ($webhooks_settings->cron_end ?? '')) !== '',
@@ -637,9 +647,11 @@ class OpsReadonly extends Controller {
             'shared_openai_key_source' => $shared_api_key_source,
             'default_model' => $default_model !== '' ? $default_model : 'gpt-4o',
             'shared_ai_ready' => $shared_api_key_configured,
+            'feature_flag_is_runtime_blocker' => false,
             'note' => $shared_api_key_configured
                 ? 'Shared AI key is configured for server-side AI flows.'
                 : 'Shared OpenAI key is missing. AI flows that rely on server-side shared credentials can fail.',
+            'flag_usage_note' => 'AI_ENABLED is currently only a global indicator in config/health. AI Plan runtime depends on shared or personal OpenAI credentials and user plan access.',
         ];
     }
 
