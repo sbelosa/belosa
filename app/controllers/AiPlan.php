@@ -2093,6 +2093,7 @@ class AiPlan extends Controller {
         $additional['fcc_ai_review_summary'] = [
             'generated_at' => $review['generated_at'] ?? null,
             'review_key' => (string) ($review['review_key'] ?? ($review['generated_at'] ?? '')),
+            'analysis_mode' => in_array((string) ($review['analysis_mode'] ?? 'initial'), ['initial', 'evolution'], true) ? (string) ($review['analysis_mode'] ?? 'initial') : 'initial',
             'headline' => (string) ($review['headline'] ?? ''),
             'summary' => (string) ($review['summary'] ?? ''),
             'selected_app_name' => (string) ($review['selected_app_name'] ?? ''),

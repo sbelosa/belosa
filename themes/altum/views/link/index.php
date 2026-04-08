@@ -20,7 +20,23 @@ $fcc_ai_theme_bundle_ready = (bool) array_filter([
 ]);
 $fcc_ai_block_bundle_ready = !empty($fcc_ai_editor_payload['missing_block_recommendations']) || !empty($fcc_ai_editor_payload['copy_suggestions']) || !empty($fcc_ai_editor_payload['layout_actions']);
 $fcc_ai_bundle_restore_ready = !empty($fcc_ai_editor_payload['bundle_backup']['available']);
+$fcc_ai_review_summary = is_array($fcc_ai_editor_payload['review_summary'] ?? null) ? $fcc_ai_editor_payload['review_summary'] : [];
 $fcc_ai_review_summary_ready = !empty($fcc_ai_editor_payload['review_summary']);
+$fcc_ai_review_summary_analysis_mode = $fcc_ai_review_summary_ready && in_array((string) ($fcc_ai_review_summary['analysis_mode'] ?? 'initial'), ['initial', 'evolution'], true)
+    ? (string) ($fcc_ai_review_summary['analysis_mode'] ?? 'initial')
+    : 'initial';
+$fcc_ai_review_has_update_notice = $fcc_ai_review_summary_ready && $fcc_ai_review_summary_analysis_mode === 'evolution';
+$fcc_ai_review_update_notice_text = '';
+
+if($fcc_ai_review_has_update_notice) {
+    $fcc_ai_review_update_generated_at = !empty($fcc_ai_review_summary['generated_at'])
+        ? \Altum\Date::get((string) $fcc_ai_review_summary['generated_at'], 2)
+        : '';
+    $fcc_ai_review_update_notice_text = $fcc_ai_review_update_generated_at !== ''
+        ? sprintf(l('ai_plan.app_review_update_notice_text'), $fcc_ai_review_update_generated_at)
+        : l('ai_plan.app_review_update_notice_text_no_date');
+}
+
 $fcc_ai_actions_freshness = is_array($fcc_ai_editor_payload['freshness'] ?? null) ? $fcc_ai_editor_payload['freshness'] : [];
 $fcc_ai_actions_stale = !empty($fcc_ai_actions_freshness['is_stale']);
 $fcc_ai_actions_notice_level = (string) ($fcc_ai_actions_freshness['notice_level'] ?? ($fcc_ai_actions_stale ? 'info' : ''));
@@ -775,6 +791,12 @@ $fcc_short_link_editor_steps = $fcc_is_short_link_editor ? [
                             <span class="fcc-app-review-teaser-metric"><?= l('links.app_review_metric_products_short') ?> <?= nr((int) (($quality['performance']['product_clicks_30d'] ?? 0))) ?></span>
                             <span class="fcc-app-review-teaser-metric"><?= l('links.app_review_metric_funnel_short') ?> <?= nr((int) (($quality['performance']['funnel_registrations_30d'] ?? 0))) ?></span>
                         </div>
+                        <?php if($fcc_ai_review_has_update_notice): ?>
+                            <div class="alert alert-info mt-3 mb-0" style="border-radius:1rem;">
+                                <div class="font-weight-bold mb-1"><?= l('ai_plan.app_review_update_notice_title') ?></div>
+                                <div><?= htmlspecialchars($fcc_ai_review_update_notice_text, ENT_QUOTES, 'UTF-8') ?></div>
+                            </div>
+                        <?php endif ?>
                         <?php if($fcc_ai_review_teaser_actions_visible): ?>
                             <div class="fcc-app-review-teaser-actions">
                                 <button

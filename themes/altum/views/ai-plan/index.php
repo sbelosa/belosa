@@ -565,7 +565,29 @@
 
     return l('link.settings.ai_evolution_status_pending');
 }; ?>
-<?php $render_app_review_result_cards = static function(array $review, array $quality_payload) use ($app_review_color_palette_has_content, $render_app_review_color_palette, $app_review_theme_pack_has_content, $app_review_evolution_display, $app_review_block_attribution, $render_app_review_evolution_status): string {
+<?php $render_app_review_update_notice = static function(?array $review, string $extra_class = ''): string {
+    $review = is_array($review) ? $review : [];
+    $analysis_mode = in_array((string) ($review['analysis_mode'] ?? 'initial'), ['initial', 'evolution'], true) ? (string) ($review['analysis_mode'] ?? 'initial') : 'initial';
+
+    if($analysis_mode !== 'evolution') {
+        return '';
+    }
+
+    $generated_at = !empty($review['generated_at']) ? \Altum\Date::get((string) $review['generated_at'], 2) : '';
+    $notice_text = $generated_at !== ''
+        ? sprintf(l('ai_plan.app_review_update_notice_text'), $generated_at)
+        : l('ai_plan.app_review_update_notice_text_no_date');
+
+    ob_start();
+    ?>
+    <div class="ai-plan-tool-teaser-notice is-info<?= $extra_class !== '' ? ' ' . $extra_class : '' ?>">
+        <strong class="d-block mb-1"><?= l('ai_plan.app_review_update_notice_title') ?></strong>
+        <span><?= htmlspecialchars($notice_text, ENT_QUOTES, 'UTF-8') ?></span>
+    </div>
+    <?php
+    return (string) ob_get_clean();
+}; ?>
+<?php $render_app_review_result_cards = static function(array $review, array $quality_payload) use ($app_review_color_palette_has_content, $render_app_review_color_palette, $app_review_theme_pack_has_content, $app_review_evolution_display, $app_review_block_attribution, $render_app_review_evolution_status, $render_app_review_update_notice): string {
     $color_palette = is_array($review['color_palette'] ?? null) ? $review['color_palette'] : [];
     $has_color_palette = $app_review_color_palette_has_content($color_palette);
     $theme_pack = is_array($review['theme_pack'] ?? null) ? $review['theme_pack'] : [];
@@ -602,6 +624,8 @@
             </div>
 
             <div class="p-3 p-lg-4">
+                <?= $render_app_review_update_notice($review, 'mb-3') ?>
+
                 <div class="ai-plan-review-score">
                     <div class="ai-plan-review-score-main">
                         <div class="small text-muted"><?= l('ai_plan.app_review_quality_title') ?></div>
@@ -975,6 +999,18 @@
     $actions_stale = !empty($actions_freshness['is_stale']);
     $actions_notice_level = (string) ($actions_freshness['notice_level'] ?? ($actions_stale ? 'info' : ''));
     $actions_notification_id = 'ai-plan-app-review-actions-notification-' . $editor_link_id . ($compact ? '-compact' : '');
+    $latest_review_analysis_mode = $latest_review && in_array((string) ($latest_review['analysis_mode'] ?? 'initial'), ['initial', 'evolution'], true)
+        ? (string) ($latest_review['analysis_mode'] ?? 'initial')
+        : 'initial';
+    $show_update_notice = $latest_review_analysis_mode === 'evolution';
+    $update_notice_text = '';
+
+    if($show_update_notice) {
+        $update_generated_at = !empty($latest_review['generated_at']) ? \Altum\Date::get((string) $latest_review['generated_at'], 2) : '';
+        $update_notice_text = $update_generated_at !== ''
+            ? sprintf(l('ai_plan.app_review_update_notice_text'), $update_generated_at)
+            : l('ai_plan.app_review_update_notice_text_no_date');
+    }
 
     $summary_text = $latest_review ? (string) ($quality_payload['summary'] ?? '') : '';
     $reason_text = l('ai_plan.app_review_quality_teaser_reason');
@@ -1030,6 +1066,13 @@
                 <div class="ai-plan-tool-teaser-summary">
                     <?= htmlspecialchars($summary_text, ENT_QUOTES, 'UTF-8') ?>
                 </div>
+
+                <?php if($show_update_notice): ?>
+                    <div class="ai-plan-tool-teaser-notice is-info" style="margin-top:.85rem;">
+                        <strong class="d-block mb-1"><?= l('ai_plan.app_review_update_notice_title') ?></strong>
+                        <span><?= htmlspecialchars($update_notice_text, ENT_QUOTES, 'UTF-8') ?></span>
+                    </div>
+                <?php endif ?>
 
                 <?php if($show_editor_actions): ?>
                     <div class="ai-plan-tool-teaser-actions">
