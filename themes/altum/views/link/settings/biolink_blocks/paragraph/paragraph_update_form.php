@@ -3,7 +3,7 @@
 <?php
 $paragraph_text_color = verify_hex_color($row->settings->text_color ?? null) ? $row->settings->text_color : '#FFFFFF';
 $paragraph_background_color = verify_hex_color($row->settings->background_color ?? null) ? $row->settings->background_color : '#00000000';
-$paragraph_font_size = in_array((int) ($row->settings->font_size ?? 16), range(12, 40), true) ? (int) $row->settings->font_size : 16;
+$paragraph_font_size = in_array((int) ($row->settings->font_size ?? 16), range(12, 24), true) ? (int) $row->settings->font_size : 16;
 ?>
 
 <form id="<?= 'update_biolink_block_' . $row->biolink_block_id ?>" name="update_biolink_" method="post" role="form" data-type="<?= $row->type ?>">
@@ -16,7 +16,7 @@ $paragraph_font_size = in_array((int) ($row->settings->font_size ?? 16), range(1
 
     <div class="form-group">
         <label for="<?= 'paragraph_text_' . $row->biolink_block_id ?>"><i class="fas fa-fw fa-paragraph fa-sm text-muted mr-1"></i> <?= l('biolink_link.text') ?></label>
-        <textarea id="<?= 'paragraph_text_' . $row->biolink_block_id ?>" class="form-control quilljs" name="text" maxlength="10000"><?= bootstrap_to_quilljs($row->settings->text) ?></textarea>
+        <textarea id="<?= 'paragraph_text_' . $row->biolink_block_id ?>" class="form-control quilljs" name="text" maxlength="10000" data-paragraph-rich-text><?= bootstrap_to_quilljs($row->settings->text) ?></textarea>
     </div>
 
     <div class="form-group">
@@ -62,7 +62,7 @@ $paragraph_font_size = in_array((int) ($row->settings->font_size ?? 16), range(1
             id="<?= 'paragraph_font_size_' . $row->biolink_block_id ?>"
             type="number"
             min="12"
-            max="40"
+            max="24"
             step="1"
             name="font_size"
             class="form-control"

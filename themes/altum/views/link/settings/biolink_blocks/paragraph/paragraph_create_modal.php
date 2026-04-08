@@ -23,7 +23,7 @@
 
                     <div class="form-group">
                         <label for="paragraph_text"><i class="fas fa-fw fa-paragraph fa-sm text-muted mr-1"></i> <?= l('biolink_link.text') ?></label>
-                        <textarea id="paragraph_text" class="form-control quilljs" name="text" maxlength="10000"><p class="ql-align-center">&nbsp;</p></textarea>
+                        <textarea id="paragraph_text" class="form-control quilljs" name="text" maxlength="10000" data-paragraph-rich-text><p class="ql-align-center">&nbsp;</p></textarea>
                     </div>
 
                     <p class="small text-muted"><i class="fas fa-fw fa-sm fa-circle-info mr-1"></i> <?= l('link.create_info') ?></p>
@@ -48,47 +48,83 @@
 
 <script>
     'use strict';
+    window.initSharedQuillEditors = window.initSharedQuillEditors || (root => {
+        if(typeof Quill === 'undefined') {
+            return;
+        }
 
-/* find all textareas with the specific class */
-    const textarea_elements = document.querySelectorAll('textarea.quilljs');
+        const size_whitelist = ['12px', '14px', '16px', '18px', '20px', '22px', '24px'];
+        const Size = Quill.import('attributors/style/size');
+        Size.whitelist = size_whitelist;
+        Quill.register(Size, true);
 
-    textarea_elements.forEach(textarea_element => {
-        /* hide the original textarea */
-        textarea_element.style.display = 'none';
+        if(!document.getElementById('shared-quill-editor-sizes')) {
+            const style = document.createElement('style');
+            style.id = 'shared-quill-editor-sizes';
+            style.textContent = `
+                .ql-snow .ql-picker.ql-size { width: 82px; }
+                .ql-snow .ql-picker.ql-size .ql-picker-label::before,
+                .ql-snow .ql-picker.ql-size .ql-picker-item::before { content: '16 px'; }
+                .ql-snow .ql-picker.ql-size .ql-picker-label[data-value="12px"]::before,
+                .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="12px"]::before { content: '12 px'; }
+                .ql-snow .ql-picker.ql-size .ql-picker-label[data-value="14px"]::before,
+                .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="14px"]::before { content: '14 px'; }
+                .ql-snow .ql-picker.ql-size .ql-picker-label[data-value="16px"]::before,
+                .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="16px"]::before { content: '16 px'; }
+                .ql-snow .ql-picker.ql-size .ql-picker-label[data-value="18px"]::before,
+                .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="18px"]::before { content: '18 px'; }
+                .ql-snow .ql-picker.ql-size .ql-picker-label[data-value="20px"]::before,
+                .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="20px"]::before { content: '20 px'; }
+                .ql-snow .ql-picker.ql-size .ql-picker-label[data-value="22px"]::before,
+                .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="22px"]::before { content: '22 px'; }
+                .ql-snow .ql-picker.ql-size .ql-picker-label[data-value="24px"]::before,
+                .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="24px"]::before { content: '24 px'; }
+            `;
+            document.head.appendChild(style);
+        }
 
-        /* create a div for quill editor */
-        const quill_container = document.createElement('div');
-
-        /* apply default height and resizable style */
-        //quill_container.style.minHeight = '250px';
-        quill_container.style.resize = 'vertical';
-        quill_container.style.overflow = 'auto';
-
-        textarea_element.parentNode.insertBefore(quill_container, textarea_element.nextSibling);
-
-        /* initialize quill editor */
-        const quill_editor = new Quill(quill_container, {
-            theme: 'snow',
-            modules: {
-                toolbar: [
-                    [{ "size": ["small", false] }],
-                    ["bold", "italic", "underline", "strike"],
-                    [{ "color": [] }, { "background": [] }],
-                    [{ 'align': [] }],
-                    ["link"],
-                    ["clean"]
-                ]
+        (root || document).querySelectorAll('textarea.quilljs').forEach(textarea_element => {
+            if(textarea_element.dataset.quilljsInitialized) {
+                return;
             }
-        });
 
-        /* set initial value if textarea has content */
-        quill_editor.root.innerHTML = textarea_element.value;
+            textarea_element.dataset.quilljsInitialized = 'true';
+            textarea_element.style.display = 'none';
 
-        /* sync quill content to textarea on form submit */
-        textarea_element.closest('form').addEventListener('submit', function () {
-            textarea_element.value = quill_editor.root.innerHTML;
+            const quill_container = document.createElement('div');
+            quill_container.style.resize = 'vertical';
+            quill_container.style.overflow = 'auto';
+
+            textarea_element.parentNode.insertBefore(quill_container, textarea_element.nextSibling);
+
+            const quill_editor = new Quill(quill_container, {
+                theme: 'snow',
+                modules: {
+                    toolbar: [
+                        [{ size: size_whitelist }],
+                        ['bold', 'italic', 'underline', 'strike'],
+                        [{ color: [] }, { background: [] }],
+                        [{ align: [] }],
+                        ['link'],
+                        ['clean']
+                    ]
+                }
+            });
+
+            quill_editor.root.innerHTML = textarea_element.value || '';
+
+            const sync_content = () => {
+                textarea_element.value = quill_editor.root.innerHTML;
+                textarea_element.dispatchEvent(new Event('input', {bubbles: true}));
+                textarea_element.dispatchEvent(new Event('change', {bubbles: true}));
+            };
+
+            quill_editor.on('text-change', sync_content);
+            textarea_element.closest('form')?.addEventListener('submit', sync_content);
+            sync_content();
         });
     });
+
+    window.initSharedQuillEditors(document);
 </script>
 <?php \Altum\Event::add_content(ob_get_clean(), 'javascript', 'quilljs') ?>
-

@@ -4178,6 +4178,7 @@ $fcc_biolink_editor_tours = [
                 case 'paragraph':
                 case 'markdown':
                     extra_updating_and_potentially_color_inputs = ['text'];
+                    window.initSharedQuillEditors && window.initSharedQuillEditors(update_form_content);
                     break;
 
                 case 'avatar':
@@ -4540,11 +4541,11 @@ $fcc_biolink_editor_tours = [
 
                 color_pickr.off().on('change', hsva => {
                     $(color_input).val(hsva.toHEXA().toString());
-                    biolink_link.find('[data-text-color]').css('color', hsva.toHEXA().toString());
+                    biolink_link.find('[data-text-color]').css('color', hsva.toHEXA().toString()).css('--paragraph-text-color', hsva.toHEXA().toString());
                 });
 
                 bind_hex_color_input(color_input, color_pickr, color => {
-                    biolink_link.find('[data-text-color]').css('color', color);
+                    biolink_link.find('[data-text-color]').css('color', color).css('--paragraph-text-color', color);
                 });
             }
 
@@ -4553,12 +4554,14 @@ $fcc_biolink_editor_tours = [
             if(font_size_input && biolink_link.find('[data-font-size]').length) {
                 $(font_size_input).off().on('change input', event => {
                     let font_size = parseInt(event.currentTarget.value);
+                    let min_font_size = parseInt(event.currentTarget.getAttribute('min')) || 12;
+                    let max_font_size = parseInt(event.currentTarget.getAttribute('max')) || 40;
 
                     if(Number.isNaN(font_size)) {
                         return;
                     }
 
-                    font_size = Math.min(40, Math.max(12, font_size));
+                    font_size = Math.min(max_font_size, Math.max(min_font_size, font_size));
                     event.currentTarget.value = font_size;
                     biolink_link.find('[data-font-size]').css('font-size', `${font_size}px`);
                 });
