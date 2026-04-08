@@ -4178,7 +4178,6 @@ $fcc_biolink_editor_tours = [
                 case 'paragraph':
                 case 'markdown':
                     extra_updating_and_potentially_color_inputs = ['text'];
-                    window.initSharedQuillEditors && window.initSharedQuillEditors(update_form_content);
                     break;
 
                 case 'avatar':
@@ -4315,26 +4314,11 @@ $fcc_biolink_editor_tours = [
                 }
 
                 if(item_input) {
-                    $(item_input).off().on('input change paste keyup', event => {
+                    $(item_input).off().on('change paste keyup', event => {
                         let item_value = $(event.currentTarget).val();
-                        let is_rich_text_input = event.currentTarget.classList.contains('quilljs') || !!event.currentTarget.sharedQuillEditor;
 
                         if(biolink_link.find(`[data-${item}]`).length) {
-                            if(is_rich_text_input) {
-                                let item_html = event.currentTarget.sharedQuillEditor ? event.currentTarget.sharedQuillEditor.root.innerHTML : item_value;
-
-                                biolink_link.find(`[data-${item}]`).each(function() {
-                                    let rich_text_target = $(this).find('.ql-content');
-
-                                    if(rich_text_target.length) {
-                                        rich_text_target.html(item_html);
-                                    } else {
-                                        $(this).html(item_html);
-                                    }
-                                });
-                            } else {
-                                biolink_link.find(`[data-${item}]`).text(item_value);
-                            }
+                            biolink_link.find(`[data-${item}]`).text(item_value);
                         }
 
                         if(item === 'title' && biolink_link.find('[data-title-container]').length) {
@@ -4517,30 +4501,6 @@ $fcc_biolink_editor_tours = [
                 });
             }
 
-            let is_valid_hex_color = color => /^#(?:[0-9A-F]{3}|[0-9A-F]{4}|[0-9A-F]{6}|[0-9A-F]{8})$/i.test(color.trim());
-            let bind_hex_color_input = (color_input, color_pickr, update_preview) => {
-                if(!color_input) {
-                    return;
-                }
-
-                $(color_input).off('.hexsync').on('input.hexsync change.hexsync blur.hexsync', event => {
-                    let color = event.currentTarget.value.trim();
-
-                    if(color && color[0] !== '#') {
-                        color = `#${color}`;
-                    }
-
-                    event.currentTarget.value = color.toUpperCase();
-
-                    if(!is_valid_hex_color(color)) {
-                        return;
-                    }
-
-                    color_pickr.setColor(color);
-                    update_preview(color.toUpperCase());
-                });
-            };
-
             /* Text color */
             let text_color_pickr_element = update_form_content.querySelector('.text_color_pickr');
 
@@ -4555,15 +4515,8 @@ $fcc_biolink_editor_tours = [
                 });
 
                 color_pickr.off().on('change', hsva => {
-                    let color = hsva.toHEXA().toString();
-                    $(color_input).val(color);
-                    biolink_link.find('[data-text-color]').css('color', color).css('--paragraph-text-color', color);
-                    biolink_link.find('[data-text-color] .ql-content').css('color', color);
-                });
-
-                bind_hex_color_input(color_input, color_pickr, color => {
-                    biolink_link.find('[data-text-color]').css('color', color).css('--paragraph-text-color', color);
-                    biolink_link.find('[data-text-color] .ql-content').css('color', color);
+                    $(color_input).val(hsva.toHEXA().toString());
+                    biolink_link.find('[data-text-color]').css('color', hsva.toHEXA().toString());
                 });
             }
 
@@ -4572,14 +4525,12 @@ $fcc_biolink_editor_tours = [
             if(font_size_input && biolink_link.find('[data-font-size]').length) {
                 $(font_size_input).off().on('change input', event => {
                     let font_size = parseInt(event.currentTarget.value);
-                    let min_font_size = parseInt(event.currentTarget.getAttribute('min')) || 12;
-                    let max_font_size = parseInt(event.currentTarget.getAttribute('max')) || 40;
 
                     if(Number.isNaN(font_size)) {
                         return;
                     }
 
-                    font_size = Math.min(max_font_size, Math.max(min_font_size, font_size));
+                    font_size = Math.min(40, Math.max(12, font_size));
                     event.currentTarget.value = font_size;
                     biolink_link.find('[data-font-size]').css('font-size', `${font_size}px`);
                 });
@@ -4601,10 +4552,6 @@ $fcc_biolink_editor_tours = [
                 color_pickr.off().on('change', hsva => {
                     $(color_input).val(hsva.toHEXA().toString());
                     biolink_link.find('[data-background-color]').css('background-color', hsva.toHEXA().toString());
-                });
-
-                bind_hex_color_input(color_input, color_pickr, color => {
-                    biolink_link.find('[data-background-color]').css('background-color', color);
                 });
             }
 
