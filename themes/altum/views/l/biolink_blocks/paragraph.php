@@ -52,4 +52,16 @@ $paragraph_text_color = verify_hex_color($data->link->settings->text_color ?? nu
     #<?= 'biolink_block_id_' . $data->link->biolink_block_id ?> [data-text-color] .ql-content a {
         color: inherit;
     }
+
+    #<?= 'biolink_block_id_' . $data->link->biolink_block_id ?> [data-text-color] .ql-content .ql-color-white,
+    #<?= 'biolink_block_id_' . $data->link->biolink_block_id ?> [data-text-color] .ql-content [style*="color: rgb(255, 255, 255)"],
+    #<?= 'biolink_block_id_' . $data->link->biolink_block_id ?> [data-text-color] .ql-content [style*="color:rgb(255,255,255)"],
+    #<?= 'biolink_block_id_' . $data->link->biolink_block_id ?> [data-text-color] .ql-content [style*="color: #ffffff"],
+    #<?= 'biolink_block_id_' . $data->link->biolink_block_id ?> [data-text-color] .ql-content [style*="color:#ffffff"],
+    #<?= 'biolink_block_id_' . $data->link->biolink_block_id ?> [data-text-color] .ql-content [style*="color: #fff"],
+    #<?= 'biolink_block_id_' . $data->link->biolink_block_id ?> [data-text-color] .ql-content [style*="color:#fff"],
+    #<?= 'biolink_block_id_' . $data->link->biolink_block_id ?> [data-text-color] .ql-content [style*="color: white"],
+    #<?= 'biolink_block_id_' . $data->link->biolink_block_id ?> [data-text-color] .ql-content [style*="color:white"] {
+        color: var(--paragraph-text-color) !important;
+    }
 </style>
