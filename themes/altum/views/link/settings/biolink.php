@@ -4540,12 +4540,15 @@ $fcc_biolink_editor_tours = [
                 });
 
                 color_pickr.off().on('change', hsva => {
-                    $(color_input).val(hsva.toHEXA().toString());
-                    biolink_link.find('[data-text-color]').css('color', hsva.toHEXA().toString()).css('--paragraph-text-color', hsva.toHEXA().toString());
+                    let color = hsva.toHEXA().toString();
+                    $(color_input).val(color);
+                    biolink_link.find('[data-text-color]').css('color', color).css('--paragraph-text-color', color);
+                    biolink_link.find('[data-text-color] .ql-content, [data-text-color] .ql-content *').css('color', color);
                 });
 
                 bind_hex_color_input(color_input, color_pickr, color => {
                     biolink_link.find('[data-text-color]').css('color', color).css('--paragraph-text-color', color);
+                    biolink_link.find('[data-text-color] .ql-content, [data-text-color] .ql-content *').css('color', color);
                 });
             }
 
