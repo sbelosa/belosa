@@ -12,6 +12,42 @@ defined('ALTUMCODE') || die();
 
 class FccResults extends Controller {
 
+    private function get_visitor_conversion_map(string $period_start_datetime, string $qualified_click_condition_sql): array {
+        if(function_exists('fc_ensure_track_links_visitor_key_schema')) {
+            fc_ensure_track_links_visitor_key_schema();
+        }
+
+        $map = [];
+        $result = database()->query("SELECT
+                `visitor_rows`.`user_id`,
+                SUM(CASE WHEN `visitor_rows`.`has_biolink_visit` = 1 THEN 1 ELSE 0 END) AS `biolink_visitors`,
+                SUM(CASE WHEN `visitor_rows`.`has_biolink_visit` = 1 AND `visitor_rows`.`has_qualified_click` = 1 THEN 1 ELSE 0 END) AS `qualified_visitors`
+            FROM (
+                SELECT
+                    `track_links`.`user_id`,
+                    `track_links`.`visitor_key`,
+                    MAX(CASE WHEN `links`.`type` = 'biolink' THEN 1 ELSE 0 END) AS `has_biolink_visit`,
+                    MAX(CASE WHEN {$qualified_click_condition_sql} AND `track_links`.`is_unique` = 1 THEN 1 ELSE 0 END) AS `has_qualified_click`
+                FROM `track_links`
+                LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id`
+                LEFT JOIN `links` ON `track_links`.`link_id` = `links`.`link_id`
+                WHERE `track_links`.`datetime` >= '{$period_start_datetime}'
+                    AND `track_links`.`visitor_key` IS NOT NULL
+                    AND `track_links`.`visitor_key` != ''
+                GROUP BY `track_links`.`user_id`, `track_links`.`visitor_key`
+            ) AS `visitor_rows`
+            GROUP BY `visitor_rows`.`user_id`");
+
+        while($row = $result->fetch_object()) {
+            $map[(int) $row->user_id] = [
+                'biolink_visitors' => (int) ($row->biolink_visitors ?? 0),
+                'qualified_visitors' => (int) ($row->qualified_visitors ?? 0),
+            ];
+        }
+
+        return $map;
+    }
+
     /* Custom code: FC-2026-03-14: FCC results page and qualification metrics */
     private function is_active_pro_user(): bool {
         if(\Altum\Authentication::is_admin()) {
@@ -71,6 +107,10 @@ class FccResults extends Controller {
 
         $min_qualified_clicks = 15;
 
+        if(function_exists('fc_ensure_track_links_visitor_key_schema')) {
+            fc_ensure_track_links_visitor_key_schema();
+        }
+
         $forever_shop_block_types = array_values(array_unique(array_merge(
             \Altum\Link::get_monitored_forever_outbound_types(),
             ['link_forever_living_albania_kosovo']
@@ -88,6 +128,7 @@ class FccResults extends Controller {
         foreach($allowed_periods as $period_key => $period_days) {
             $period_start_datetime = $this->get_period_start_datetime($period_days);
             $period_previous_start_datetime = $this->get_previous_period_start_datetime($period_days);
+            $visitor_conversion_map = $this->get_visitor_conversion_map($period_start_datetime, $qualified_click_condition_sql);
 
             $previous_clicks_map = [];
             $previous_clicks_result = database()->query("SELECT `track_links`.`user_id`, COUNT(*) AS `total` FROM `track_links` LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id` WHERE `track_links`.`datetime` >= '{$period_previous_start_datetime}' AND `track_links`.`datetime` < '{$period_start_datetime}' AND `track_links`.`is_unique` = 1 AND {$qualified_click_condition_sql} GROUP BY `track_links`.`user_id`");
@@ -117,6 +158,8 @@ class FccResults extends Controller {
                 $app_clicks = (int) ($leaderboard_row->app_clicks ?? 0);
                 $blog_clicks = (int) ($leaderboard_row->blog_clicks ?? 0);
                 $biolink_visits = (int) ($leaderboard_row->biolink_visits ?? 0);
+                $biolink_visitors = (int) ($visitor_conversion_map[$user_id]['biolink_visitors'] ?? 0);
+                $qualified_visitors = (int) ($visitor_conversion_map[$user_id]['qualified_visitors'] ?? 0);
                 $previous_qualified_clicks = (int) ($previous_clicks_map[$user_id] ?? 0);
                 $trend_percent = $this->get_trend_percent($qualified_clicks, $previous_qualified_clicks);
 
@@ -128,7 +171,9 @@ class FccResults extends Controller {
                     'app_clicks' => $app_clicks,
                     'blog_clicks' => $blog_clicks,
                     'biolink_visits' => $biolink_visits,
-                    'ctr' => $biolink_visits > 0 ? round(($qualified_clicks / $biolink_visits) * 100, 2) : 0.0,
+                    'biolink_visitors' => $biolink_visitors,
+                    'qualified_visitors' => $qualified_visitors,
+                    'ctr' => $biolink_visitors > 0 ? round(($qualified_visitors / $biolink_visitors) * 100, 2) : null,
                     'previous_qualified_clicks' => $previous_qualified_clicks,
                     'trend_percent' => $trend_percent,
                     'is_top_three' => $rank <= 3,
@@ -154,6 +199,8 @@ class FccResults extends Controller {
             $current_user_app_clicks = (int) ($current_user_totals->app_clicks ?? 0);
             $current_user_blog_clicks = (int) ($current_user_totals->blog_clicks ?? 0);
             $current_user_biolink_visits = (int) ($current_user_totals->biolink_visits ?? 0);
+            $current_user_biolink_visitors = (int) ($visitor_conversion_map[$this->user->user_id]['biolink_visitors'] ?? 0);
+            $current_user_qualified_visitors = (int) ($visitor_conversion_map[$this->user->user_id]['qualified_visitors'] ?? 0);
             $current_user_previous_qualified_clicks = (int) ($previous_clicks_map[$this->user->user_id] ?? 0);
 
             $periods[$period_key] = [
@@ -166,7 +213,9 @@ class FccResults extends Controller {
                     'app_clicks' => $current_user_app_clicks,
                     'blog_clicks' => $current_user_blog_clicks,
                     'biolink_visits' => $current_user_biolink_visits,
-                    'ctr' => $current_user_biolink_visits > 0 ? round(($current_user_qualified_clicks / $current_user_biolink_visits) * 100, 2) : 0.0,
+                    'biolink_visitors' => $current_user_biolink_visitors,
+                    'qualified_visitors' => $current_user_qualified_visitors,
+                    'ctr' => $current_user_biolink_visitors > 0 ? round(($current_user_qualified_visitors / $current_user_biolink_visitors) * 100, 2) : null,
                     'previous_qualified_clicks' => $current_user_previous_qualified_clicks,
                     'trend_percent' => $this->get_trend_percent($current_user_qualified_clicks, $current_user_previous_qualified_clicks),
                     'is_qualified' => $current_user_qualified_clicks >= $min_qualified_clicks,

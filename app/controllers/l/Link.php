@@ -490,6 +490,9 @@ class Link extends Controller {
 	/* /Custom code: FC-2026-03-23 */
 
 	private function create_statistics() {
+		if(function_exists('fc_ensure_track_links_visitor_key_schema')) {
+			fc_ensure_track_links_visitor_key_schema();
+		}
 
 		if($this->is_monitored_forever_outbound_request()) {
 			if(isset($_GET['no_redirect'])) {
@@ -572,6 +575,7 @@ class Link extends Controller {
 		$utm_source = input_clean($_GET['utm_source'] ?? null);
 		$utm_medium = input_clean($_GET['utm_medium'] ?? null);
 		$utm_campaign = input_clean($_GET['utm_campaign'] ?? null);
+		$visitor_key = function_exists('fc_get_funnel_visitor_key') ? fc_get_funnel_visitor_key() : null;
 
 		if(!$utm_source && ($referrer['host'] ?? null) === 'qr') {
 			$utm_source = 'qr';
@@ -583,6 +587,7 @@ class Link extends Controller {
 			'link_id' => $this->type == 'link' ? $this->link->link_id : null,
 			'biolink_block_id' => $this->type == 'biolink_block' ? $this->link->biolink_block_id : null,
 			'project_id' => $this->link->project_id,
+			'visitor_key' => $visitor_key,
 			'continent_code' => $continent_code,
 			'country_code' => $country_code,
 			'city_name' => $city_name,

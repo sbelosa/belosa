@@ -61,6 +61,20 @@ class AdminLeaderOperatingSystem extends Controller {
         ");
     }
 
+    private function ensure_feedback_upload_directory_is_writable(): bool {
+        $directory_path = \Altum\Uploads::get_full_path('feedback_tickets');
+
+        if(!is_dir($directory_path)) {
+            @mkdir($directory_path, 0755, true);
+        }
+
+        if(!is_writable($directory_path)) {
+            @chmod($directory_path, 0755);
+        }
+
+        return is_dir($directory_path) && is_writable($directory_path);
+    }
+
     private function create_support_resolution_note(int $feedback_ticket_id, int $user_id): void {
         if($feedback_ticket_id <= 0 || $user_id <= 0) {
             return;
@@ -1116,6 +1130,7 @@ class AdminLeaderOperatingSystem extends Controller {
         $message = input_clean($_POST['support_reply_message'] ?? '', 10000);
         $communication_mode = input_clean($_POST['support_communication_mode'] ?? 'ticket', 16);
         $notification_title = input_clean($_POST['support_communication_title'] ?? '', 128);
+        $attachment = null;
 
         if($feedback_ticket_id <= 0) {
             Alerts::add_error('Odaberi valjani support ticket.');
@@ -1129,6 +1144,18 @@ class AdminLeaderOperatingSystem extends Controller {
 
         if(!in_array($communication_mode, ['ticket', 'notification', 'both'], true)) {
             Alerts::add_error('Način komunikacije nije valjan.');
+            redirect('admin/leader-operating-system' . (!empty($redirect_query) ? '?' . http_build_query($redirect_query) : ''));
+        }
+
+        if(!empty($_FILES['attachment']['name'])) {
+            if($this->ensure_feedback_upload_directory_is_writable()) {
+                $attachment = \Altum\Uploads::process_upload(null, 'feedback_tickets', 'attachment', 'attachment_remove', 5);
+            } else {
+                Alerts::add_warning(l('feedback_tickets.alert.upload_directory_not_writable'));
+            }
+        }
+
+        if(Alerts::has_field_errors() || Alerts::has_errors()) {
             redirect('admin/leader-operating-system' . (!empty($redirect_query) ? '?' . http_build_query($redirect_query) : ''));
         }
 
@@ -1154,7 +1181,7 @@ class AdminLeaderOperatingSystem extends Controller {
                 'admin_user_id' => $this->user->user_id,
                 'is_admin_reply' => 1,
                 'message' => $message,
-                'attachment' => null,
+                'attachment' => $attachment,
                 'datetime' => get_date(),
             ]);
 

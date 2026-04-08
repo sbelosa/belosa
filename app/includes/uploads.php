@@ -209,7 +209,7 @@ return [
 
     /* Custom code: FC-2026-03-08: feedback ticket attachments */
     'feedback_tickets' => [
-        'whitelisted_file_extensions' => ['jpg', 'jpeg', 'png', 'webp', 'avif'],
+        'whitelisted_file_extensions' => ['jpg', 'jpeg', 'png', 'gif', 'webp', 'avif', 'pdf', 'doc', 'docx', 'xls', 'xlsx', 'csv', 'txt'],
         'path' => 'feedback_tickets/',
     ],
     /* /Custom code: FC-2026-03-08 */

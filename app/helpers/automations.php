@@ -50,6 +50,18 @@ function fc_add_table_column_if_missing(string $table, string $column, string $d
 
     db()->rawQuery("ALTER TABLE `{$table}` ADD COLUMN {$definition}");
 }
+
+function fc_ensure_track_links_visitor_key_schema(): void {
+    static $is_ready = false;
+
+    if($is_ready) {
+        return;
+    }
+
+    fc_add_table_column_if_missing('track_links', 'visitor_key', "`visitor_key` varchar(64) NULL AFTER `project_id`");
+
+    $is_ready = true;
+}
 /* /Custom code: FC-2026-03-19 */
 
 function fc_ensure_email_automation_tables() {
@@ -524,6 +536,7 @@ function fc_cleanup_forever_click_integrity_data(): void {
 
 function fc_process_monitored_forever_click(array $payload): array {
     fc_ensure_forever_click_integrity_tables();
+    fc_ensure_track_links_visitor_key_schema();
 
     $user_id = (int) ($payload['user_id'] ?? 0);
     $project_id = isset($payload['project_id']) ? (int) $payload['project_id'] : null;
@@ -687,6 +700,7 @@ function fc_process_monitored_forever_click(array $payload): array {
         'link_id' => $link_id,
         'biolink_block_id' => $biolink_block_id,
         'project_id' => $project_id,
+        'visitor_key' => $context['visitor_key'],
         'continent_code' => $context['continent_code'],
         'country_code' => $context['country_code'],
         'city_name' => $context['city_name'],

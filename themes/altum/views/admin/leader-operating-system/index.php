@@ -3425,6 +3425,9 @@ $operations_tab_badge_total = (int) (($data->operations['totals']['pending_appro
                                             <span class="text-muted small"><?= !empty($message['datetime']) ? \Altum\Date::get($message['datetime'], 2) : '-' ?></span>
                                         </div>
                                         <div class="leader-os-conversation-message"><?= nl2br(htmlspecialchars((string) ($message['message'] ?? ''), ENT_QUOTES, 'UTF-8')) ?></div>
+                                        <?php if(!empty($message['attachment'])): ?>
+                                            <a href="<?= \Altum\Uploads::get_full_url('feedback_tickets') . $message['attachment'] ?>" target="_blank" class="d-inline-block mt-2"><?= l('feedback_tickets.view_attachment') ?></a>
+                                        <?php endif ?>
                                     </div>
                                 <?php endforeach ?>
                             </div>
@@ -3435,7 +3438,7 @@ $operations_tab_badge_total = (int) (($data->operations['totals']['pending_appro
                                     <div class="text-white small mb-2"><strong>AI prijedlog:</strong> <span id="leader_os_support_ai_recommendation"><?= htmlspecialchars((string) ($selected_ai['recommended_action'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></span></div>
                                     <div class="text-muted small"><strong>Tema:</strong> <span id="leader_os_support_ai_issue"><?= htmlspecialchars((string) ($selected_ai['core_issue'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></span> · <strong>Sažetak:</strong> <span id="leader_os_support_ai_summary"><?= htmlspecialchars((string) ($selected_ai['summary'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></span> · <strong>Webinar:</strong> <span id="leader_os_support_ai_webinar"><?= htmlspecialchars((string) ($selected_ai['webinar_candidate'] ?? 'ne'), ENT_QUOTES, 'UTF-8') ?> · <?= htmlspecialchars((string) ($selected_ai['webinar_reason'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></span></div>
                                 </div>
-                                <form action="<?= $leader_os_action_url ?>" method="post">
+                                <form action="<?= $leader_os_action_url ?>" method="post" enctype="multipart/form-data">
                                     <input type="hidden" name="global_token" value="<?= \Altum\Csrf::get('global_token') ?>" />
                                     <input type="hidden" id="leader_os_reply_ticket_id" name="feedback_ticket_id" value="<?= (int) ($selected_ticket['feedback_ticket_id'] ?? 0) ?>" />
                                     <input type="hidden" name="support_communication_mode" value="both" />
@@ -3443,6 +3446,10 @@ $operations_tab_badge_total = (int) (($data->operations['totals']['pending_appro
                                     <div>
                                         <label class="leader-os-field-label" for="leader_os_support_ticket_reply_message">Napiši odgovor ili dodatno pojašnjenje</label>
                                         <textarea id="leader_os_support_ticket_reply_message" name="support_reply_message" maxlength="10000" class="leader-os-textarea" required><?= htmlspecialchars((string) (($selected_ai['suggested_reply'] ?? '') ?: ''), ENT_QUOTES, 'UTF-8') ?></textarea>
+                                    </div>
+                                    <div class="mt-3">
+                                        <label class="leader-os-field-label" for="leader_os_support_ticket_attachment"><?= l('feedback_tickets.attachment_optional') ?></label>
+                                        <input id="leader_os_support_ticket_attachment" type="file" name="attachment" class="form-control" accept="<?= \Altum\Uploads::get_whitelisted_file_extensions_accept('feedback_tickets') ?>" />
                                     </div>
                                     <div class="d-flex justify-content-between align-items-center flex-wrap mt-3" style="gap:.75rem;">
                                         <div class="text-muted small">Odgovor se sprema u razgovor i korisnik ga odmah vidi u svojoj podršci.</div>
@@ -4787,6 +4794,8 @@ document.addEventListener('DOMContentLoaded', function () {
             const authorLabel = escapeHtml(message.author_label || (isAdmin ? 'Admin / mentor' : 'Suradnik'));
             const datetime = escapeHtml(message.datetime || '-');
             const body = escapeHtml(message.message || '').replace(/\\n/g, '<br>');
+            const attachment = escapeHtml(message.attachment || '');
+            const attachmentHtml = attachment ? `<a href="<?= \Altum\Uploads::get_full_url('feedback_tickets') ?>${attachment}" target="_blank" class="d-inline-block mt-2"><?= l('feedback_tickets.view_attachment') ?></a>` : '';
 
             return `
                 <div class="leader-os-conversation-item ${isAdmin ? 'is-admin' : ''}">
@@ -4795,6 +4804,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         <span class="text-muted small">${datetime}</span>
                     </div>
                     <div class="leader-os-conversation-message">${body}</div>
+                    ${attachmentHtml}
                 </div>
             `;
         }).join('');

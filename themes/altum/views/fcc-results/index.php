@@ -434,7 +434,7 @@
                                                 </div>
                                             </td>
                                             <td class="text-right font-weight-bold"><?= nr($entry['qualified_clicks']) ?></td>
-                                            <td class="text-right"><?= nr($entry['ctr']) ?>%</td>
+                                            <td class="text-right"><?= $entry['ctr'] === null ? '-' : nr($entry['ctr']) . '%' ?></td>
                                             <td class="text-right <?= $entry['trend_percent'] > 0 ? 'text-success' : ($entry['trend_percent'] < 0 ? 'text-danger' : 'text-muted') ?>">
                                                 <?php $trend_sign = $entry['trend_percent'] > 0 ? '+' : ''; ?>
                                                 <?= $trend_sign . nr($entry['trend_percent']) ?>%
@@ -489,7 +489,7 @@
                                 <?= l('fcc_results.you.ctr') ?>
                                 <span data-toggle="tooltip" title="<?= l('fcc_results.metrics_info.ctr') ?>"><i class="fas fa-info-circle fcc-help-icon"></i></span>
                             </span>
-                            <strong><?= nr($current_user_data['ctr']) ?>%</strong>
+                            <strong><?= $current_user_data['ctr'] === null ? '-' : nr($current_user_data['ctr']) . '%' ?></strong>
                         </div>
 
                         <?php if(!$current_user_data['is_qualified']): ?>
