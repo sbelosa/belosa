@@ -3824,8 +3824,17 @@ class LinkAjax extends Controller {
 
 	private function ensure_ai_bundle_backup(\stdClass $link, array $additional): array {
 		$existing_backup = $this->normalize_json_to_array($additional['fcc_ai_bundle_backup'] ?? []);
+		$current_review_key = trim((string) (($this->normalize_json_to_array($additional['fcc_ai_theme_apply_state'] ?? null)['active_review_key'] ?? '')));
+		$existing_review_key = trim((string) ($existing_backup['review_key'] ?? ''));
 
-		if(!empty($existing_backup['blocks']) && !empty($existing_backup['captured_at'])) {
+		if(
+			!empty($existing_backup['blocks'])
+			&& !empty($existing_backup['captured_at'])
+			&& (
+				$current_review_key === ''
+				|| ($existing_review_key !== '' && $existing_review_key === $current_review_key)
+			)
+		) {
 			return $additional;
 		}
 
