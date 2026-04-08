@@ -4317,9 +4317,24 @@ $fcc_biolink_editor_tours = [
                 if(item_input) {
                     $(item_input).off().on('change paste keyup', event => {
                         let item_value = $(event.currentTarget).val();
+                        let is_rich_text_input = event.currentTarget.classList.contains('quilljs') || !!event.currentTarget.sharedQuillEditor;
 
                         if(biolink_link.find(`[data-${item}]`).length) {
-                            biolink_link.find(`[data-${item}]`).text(item_value);
+                            if(is_rich_text_input) {
+                                let item_html = event.currentTarget.sharedQuillEditor ? event.currentTarget.sharedQuillEditor.root.innerHTML : item_value;
+
+                                biolink_link.find(`[data-${item}]`).each(function() {
+                                    let rich_text_target = $(this).find('.ql-content');
+
+                                    if(rich_text_target.length) {
+                                        rich_text_target.html(item_html);
+                                    } else {
+                                        $(this).html(item_html);
+                                    }
+                                });
+                            } else {
+                                biolink_link.find(`[data-${item}]`).text(item_value);
+                            }
                         }
 
                         if(item === 'title' && biolink_link.find('[data-title-container]').length) {

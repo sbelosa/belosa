@@ -117,6 +117,7 @@
                 }
             });
 
+            textarea_element.sharedQuillEditor = quill_editor;
             quill_editor.root.innerHTML = textarea_element.value || '';
 
             const sync_content = () => {
@@ -125,6 +126,7 @@
                 textarea_element.dispatchEvent(new Event('change', {bubbles: true}));
             };
 
+            textarea_element.sharedQuillSyncContent = sync_content;
             quill_editor.on('text-change', sync_content);
             textarea_element.closest('form')?.addEventListener('submit', sync_content);
             sync_content();
