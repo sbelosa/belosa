@@ -971,17 +971,109 @@ class OpsReadonly extends Controller {
         ]);
     }
 
+    private function resolve_collaborator_section(callable $resolver, $fallback, array &$section_errors, string $section) {
+        try {
+            return $resolver();
+        } catch(\Throwable $exception) {
+            $section_errors[$section] = $exception->getMessage();
+
+            return $fallback;
+        }
+    }
+
     private function get_collaborator_payload(object $user): array {
         $user_id = (int) ($user->user_id ?? 0);
-        $plan_summary = $this->get_plan_summary($user->plan_id ?? '', $user->plan_settings ?? null);
-        $is_active_pro = (string) ($user->plan_id ?? '') === '5' && $this->is_plan_active((string) ($user->plan_expiration_date ?? ''));
-        $meta_summary = $this->get_meta_summary($user->preferences ?? null, $is_active_pro);
-        $billing = new Billing();
-        $billing_summary = $billing->get_user_billing_summary($user_id);
         $billing_events_limit = $this->get_param_limit('billing_events_limit', 8, 1, 20);
-        $extra = $this->get_object($user->extra ?? null);
+        $section_errors = [];
 
-        return [
+        $plan = $this->resolve_collaborator_section(function() use ($user) {
+            $plan_summary = $this->get_plan_summary($user->plan_id ?? '', $user->plan_settings ?? null);
+            $is_active_pro = (string) ($user->plan_id ?? '') === '5' && $this->is_plan_active((string) ($user->plan_expiration_date ?? ''));
+
+            return [
+                'plan_id' => (string) ($user->plan_id ?? ''),
+                'plan_expiration_date' => $user->plan_expiration_date ?? null,
+                'is_plan_active' => $this->is_plan_active((string) ($user->plan_expiration_date ?? '')),
+                'is_active_pro' => $is_active_pro,
+                'payment_processor' => (string) ($user->payment_processor ?? ''),
+                'payment_subscription_id' => (string) ($user->payment_subscription_id ?? ''),
+                'summary' => $plan_summary,
+            ];
+        }, [
+            'plan_id' => (string) ($user->plan_id ?? ''),
+            'plan_expiration_date' => $user->plan_expiration_date ?? null,
+            'is_plan_active' => $this->is_plan_active((string) ($user->plan_expiration_date ?? '')),
+            'is_active_pro' => false,
+            'payment_processor' => (string) ($user->payment_processor ?? ''),
+            'payment_subscription_id' => (string) ($user->payment_subscription_id ?? ''),
+            'summary' => [],
+        ], $section_errors, 'plan');
+
+        $meta = $this->resolve_collaborator_section(function() use ($user, $plan) {
+            return $this->get_meta_summary($user->preferences ?? null, (bool) ($plan['is_active_pro'] ?? false));
+        }, [], $section_errors, 'meta');
+
+        $apps = $this->resolve_collaborator_section(function() use ($user_id) {
+            return $this->get_apps_payload($user_id);
+        }, [
+            'totals' => [
+                'total_biolinks' => 0,
+                'enabled_biolinks' => 0,
+                'total_blocks' => 0,
+                'total_links' => 0,
+                'total_projects' => 0,
+            ],
+            'main_app' => null,
+            'latest_updated_app' => null,
+            'apps' => [],
+        ], $section_errors, 'apps');
+
+        $ai = $this->resolve_collaborator_section(function() use ($user) {
+            return $this->get_ai_summary($user);
+        }, [
+            'has_access' => false,
+            'access_source' => 'unknown',
+            'plan_feature_enabled' => false,
+            'plan_feature_active' => false,
+            'manual_tier' => '',
+            'manual_tier_active' => '',
+            'manual_note' => '',
+            'manual_unlocked_at' => null,
+            'starter_app_review_used' => 0,
+            'starter_weekly_plan_used' => 0,
+            'counts' => [
+                'weekly_checkins' => 0,
+                'weekly_plans' => 0,
+                'app_reviews' => 0,
+            ],
+            'profile' => [],
+            'latest_weekly_checkin' => [],
+            'latest_weekly_plan' => [],
+            'latest_app_review' => [],
+            'app_review_job' => [],
+            'mentor_guidance' => [
+                'has_guidance' => false,
+                'preview' => '',
+                'length' => 0,
+            ],
+        ], $section_errors, 'ai');
+
+        $billing = $this->resolve_collaborator_section(function() use ($user_id, $user, $billing_events_limit) {
+            $billing_model = new Billing();
+            $extra = $this->get_object($user->extra ?? null);
+
+            return [
+                'stripe_customer_id' => (string) ($extra->stripe_customer_id ?? ''),
+                'summary' => $billing_model->get_user_billing_summary($user_id),
+                'events' => $billing_model->get_user_billing_events($user_id, $billing_events_limit),
+            ];
+        }, [
+            'stripe_customer_id' => '',
+            'summary' => [],
+            'events' => [],
+        ], $section_errors, 'billing');
+
+        $payload = [
             'user' => [
                 'user_id' => $user_id,
                 'name' => (string) ($user->name ?? ''),
@@ -996,29 +1088,23 @@ class OpsReadonly extends Controller {
                 'datetime' => $user->datetime ?? null,
                 'last_activity' => $user->last_activity ?? null,
             ],
-            'plan' => [
-                'plan_id' => (string) ($user->plan_id ?? ''),
-                'plan_expiration_date' => $user->plan_expiration_date ?? null,
-                'is_plan_active' => $this->is_plan_active((string) ($user->plan_expiration_date ?? '')),
-                'is_active_pro' => $is_active_pro,
-                'payment_processor' => (string) ($user->payment_processor ?? ''),
-                'payment_subscription_id' => (string) ($user->payment_subscription_id ?? ''),
-                'summary' => $plan_summary,
-            ],
-            'meta' => $meta_summary,
-            'apps' => $this->get_apps_payload($user_id),
-            'ai' => $this->get_ai_summary($user),
-            'billing' => [
-                'stripe_customer_id' => (string) ($extra->stripe_customer_id ?? ''),
-                'summary' => $billing_summary,
-                'events' => $billing->get_user_billing_events($user_id, $billing_events_limit),
-            ],
+            'plan' => $plan,
+            'meta' => $meta,
+            'apps' => $apps,
+            'ai' => $ai,
+            'billing' => $billing,
             'urls' => [
                 'admin_user_view' => url('admin/user-view/' . $user_id),
                 'admin_user_update' => url('admin/user-update/' . $user_id),
                 'los_detail' => url('admin/leader-operating-system-leader?user_id=' . $user_id . '&period=30d'),
             ],
         ];
+
+        if(!empty($section_errors)) {
+            $payload['section_errors'] = $section_errors;
+        }
+
+        return $payload;
     }
 
     public function index() {
