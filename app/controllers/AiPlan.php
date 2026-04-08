@@ -9259,35 +9259,6 @@ class AiPlan extends Controller {
             $app_review_editor_action_review = $latest_app_review;
         }
 
-        $selected_app_snapshot = $this->get_link_ai_editor_snapshot_by_id($selected_app_id);
-        $selected_app_review_reference_at = (string) (
-            $selected_app_review['generated_at']
-            ?? $latest_app_review['generated_at']
-            ?? $latest_app_review_any['generated_at']
-            ?? ''
-        );
-        $selected_app_review_freshness = $this->get_ai_bundle_freshness_payload(
-            (array) ($selected_app_snapshot['additional'] ?? []),
-            (string) ($selected_app_snapshot['last_datetime'] ?? ''),
-            $selected_app_review_reference_at
-        );
-
-        /* If the selected app changed after the latest saved review, allow an immediate fresh review. */
-        if(
-            !$has_weekly_limits_bypass
-            && $is_app_review_locked
-            && !empty($app_review_access_payload['can_generate'])
-            && !empty($selected_app_review_freshness['is_stale'])
-        ) {
-            $is_app_review_locked = false;
-            $app_review_next_at = null;
-            $app_review_countdown_days = null;
-            $app_review_cooldown_payload = [
-                'is_locked' => false,
-                'next_checkin_at' => null,
-            ];
-        }
-
         $selected_weekly_plan = $this->get_weekly_plan_by_generated_at($weekly_plans, $requested_plan_generated_at);
         $display_weekly_plan = $requested_plan_history_only ? null : ($selected_weekly_plan ?? $latest_weekly_plan);
         $display_weekly_outcome = $this->get_weekly_outcome_for_plan($weekly_outcomes, $display_weekly_plan);
