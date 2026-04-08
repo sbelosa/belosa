@@ -2,6 +2,12 @@
 
 set -euo pipefail
 
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [[ -f "${script_dir}/live_ops.env" ]]; then
+  # shellcheck disable=SC1091
+  source "${script_dir}/live_ops.env"
+fi
+
 if [[ $# -lt 1 ]]; then
   cat <<'EOF'
 Usage: scripts/prod_ops_fetch.sh <scope> [key=value ...]
@@ -32,6 +38,7 @@ curl_args=(
   --silent
   --show-error
   --fail
+  --location
   --get
   "$endpoint"
   --data-urlencode "scope=${scope}"

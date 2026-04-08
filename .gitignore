@@ -12,6 +12,8 @@
 !scripts/prod_ops_fetch.sh
 !scripts/prod_ops_logs.sh
 !scripts/live_readonly_mysql_user.sql.example
+!scripts/live_ops.env.example
+!scripts/ops-readonly-config.php.example
 !themes/
 !themes/**
 **/.DS_Store

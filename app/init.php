@@ -73,23 +73,46 @@ if(!defined('LOS_PRIVACY_HASH_SALT')) {
 }
 /* /Custom code: FC-2026-04-01 */
 
-/* Custom code: FC-2026-04-08: bootstrap readonly live ops access from environment */
-if(!defined('FCC_OPS_READONLY_ENABLED')) {
-    $fcc_ops_readonly_enabled = getenv('FCC_OPS_READONLY_ENABLED');
+/* Custom code: FC-2026-04-08: bootstrap readonly live ops access from environment or local root config */
+$fc_bootstrap_value = static function(array $keys, string $default = ''): string {
+    foreach($keys as $key) {
+        $value = getenv($key);
 
-    if($fcc_ops_readonly_enabled === false || $fcc_ops_readonly_enabled === '') {
-        $fcc_ops_readonly_enabled = $_SERVER['FCC_OPS_READONLY_ENABLED'] ?? '';
+        if($value !== false && trim((string) $value) !== '') {
+            return trim((string) $value);
+        }
+
+        if(isset($_SERVER[$key]) && trim((string) $_SERVER[$key]) !== '') {
+            return trim((string) $_SERVER[$key]);
+        }
+
+        if(isset($_ENV[$key]) && trim((string) $_ENV[$key]) !== '') {
+            return trim((string) $_ENV[$key]);
+        }
     }
 
-    define('FCC_OPS_READONLY_ENABLED', (int) $fcc_ops_readonly_enabled === 1);
+    return $default;
+};
+
+$ops_readonly_config_path = ROOT_PATH . 'ops-readonly-config.php';
+if(file_exists($ops_readonly_config_path)) {
+    require_once $ops_readonly_config_path;
+}
+
+if(!defined('FCC_OPS_READONLY_ENABLED')) {
+    $fcc_ops_readonly_enabled = $fc_bootstrap_value([
+        'FCC_OPS_READONLY_ENABLED',
+        'REDIRECT_FCC_OPS_READONLY_ENABLED',
+    ]);
+
+    define('FCC_OPS_READONLY_ENABLED', in_array(mb_strtolower($fcc_ops_readonly_enabled), ['1', 'true', 'on', 'yes'], true));
 }
 
 if(!defined('FCC_OPS_READONLY_KEY')) {
-    $fcc_ops_readonly_key = getenv('FCC_OPS_READONLY_KEY');
-
-    if($fcc_ops_readonly_key === false || $fcc_ops_readonly_key === '') {
-        $fcc_ops_readonly_key = $_SERVER['FCC_OPS_READONLY_KEY'] ?? '';
-    }
+    $fcc_ops_readonly_key = $fc_bootstrap_value([
+        'FCC_OPS_READONLY_KEY',
+        'REDIRECT_FCC_OPS_READONLY_KEY',
+    ]);
 
     define('FCC_OPS_READONLY_KEY', trim((string) $fcc_ops_readonly_key));
 }

@@ -1,0 +1,4 @@
+<?php
+
+define('FCC_OPS_READONLY_ENABLED', true);
+define('FCC_OPS_READONLY_KEY', 'PUT_YOUR_SECRET_KEY_HERE');

@@ -23,7 +23,20 @@ The endpoint is disabled by default.
 
 ## Live Setup
 
-Set these live environment values:
+Preferred method: create `public_html/ops-readonly-config.php` with:
+
+```php
+<?php
+
+define('FCC_OPS_READONLY_ENABLED', true);
+define('FCC_OPS_READONLY_KEY', 'your-long-random-secret');
+```
+
+Template:
+
+- [ops-readonly-config.php.example](/Users/stjepanbelosa/Documents/product/scripts/ops-readonly-config.php.example)
+
+Alternative method: set these live environment values:
 
 - `FCC_OPS_READONLY_ENABLED=1`
 - `FCC_OPS_READONLY_KEY=<strong-random-secret>`
@@ -32,7 +45,15 @@ The app reads these from `getenv()` and also from `$_SERVER`, so Apache/cPanel `
 
 ## Local Usage
 
-Set these local shell vars before calling the helper script:
+Create this local file first:
+
+- `scripts/live_ops.env`
+
+You can copy the template from:
+
+- [live_ops.env.example](/Users/stjepanbelosa/Documents/product/scripts/live_ops.env.example)
+
+Minimal content:
 
 ```bash
 export FCC_OPS_BASE_URL="https://your-live-domain.com"

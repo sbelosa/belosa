@@ -17,7 +17,24 @@ Your current GitHub workflow already does this on push to `main`:
 
 - [deploy-cpanel-ftp.yml](/Users/stjepanbelosa/Documents/product/.github/workflows/deploy-cpanel-ftp.yml)
 
-2. On the live server, set these environment values:
+2. Preferred method: on the live server create this file:
+
+- `public_html/ops-readonly-config.php`
+
+Content:
+
+```php
+<?php
+
+define('FCC_OPS_READONLY_ENABLED', true);
+define('FCC_OPS_READONLY_KEY', 'your-long-random-secret');
+```
+
+Template:
+
+- [ops-readonly-config.php.example](/Users/stjepanbelosa/Documents/product/scripts/ops-readonly-config.php.example)
+
+3. Alternative method, if your hosting really supports Apache env vars correctly, set these values:
 
 ```apacheconf
 SetEnv FCC_OPS_READONLY_ENABLED 1
@@ -26,16 +43,29 @@ SetEnv FCC_OPS_READONLY_KEY your-long-random-secret
 
 If you use cPanel/Apache, the easiest place is usually the live `.htaccess` in `public_html/` or an Apache include if your hosting provides one.
 
-3. Verify from the local workspace:
+4. In the local workspace create:
+
+- `scripts/live_ops.env`
+
+You can copy the template from:
+
+- [live_ops.env.example](/Users/stjepanbelosa/Documents/product/scripts/live_ops.env.example)
+
+Minimal content:
 
 ```bash
 export FCC_OPS_BASE_URL="https://your-live-domain.com"
 export FCC_OPS_READONLY_KEY="your-long-random-secret"
+```
+
+5. Verify from the local workspace:
+
+```bash
 scripts/prod_ops_fetch.sh health pretty=1
 scripts/prod_ops_fetch.sh overview pretty=1
 ```
 
-4. If you want log visibility too, create a read-only SSH account or key and set:
+6. If you want log visibility too, create a read-only SSH account or key and add these lines to `scripts/live_ops.env`:
 
 ```bash
 export FCC_LIVE_SSH_HOST="your-live-host"
@@ -52,7 +82,7 @@ scripts/prod_ops_logs.sh error 200
 scripts/prod_ops_logs.sh access 200
 ```
 
-5. If you want direct database read access in addition to the app endpoint, create a readonly MySQL user using:
+7. If you want direct database read access in addition to the app endpoint, create a readonly MySQL user using:
 
 - [live_readonly_mysql_user.sql.example](/Users/stjepanbelosa/Documents/product/scripts/live_readonly_mysql_user.sql.example)
 
@@ -113,7 +143,7 @@ Those should always be allowlisted and logged, not general write access.
 If you want the shortest route to value, do this first:
 
 1. deploy `app/`
-2. set `FCC_OPS_READONLY_ENABLED` and `FCC_OPS_READONLY_KEY`
+2. create `public_html/ops-readonly-config.php`
 3. optionally add readonly SSH for logs
 
 That alone will already make our support chats much faster and more concrete.
