@@ -486,6 +486,50 @@ class AdminLeaderOperatingSystemLeader extends Controller {
         ];
     }
 
+    private function get_app_webshop_block_types(): array {
+        $app_webshop_block_types = array_filter(\Altum\Link::get_monitored_forever_outbound_types(), static function($type) {
+            return $type !== 'link_forever_shop';
+        });
+
+        $app_webshop_block_types[] = 'link_forever_living_albania_kosovo';
+
+        return array_values(array_unique($app_webshop_block_types));
+    }
+
+    private function get_app_webshop_block_types_sql(): string {
+        return "'" . implode("', '", $this->get_app_webshop_block_types()) . "'";
+    }
+
+    private function get_blog_referral_mediums(): array {
+        return [
+            \Altum\Link::get_blog_cta_tracking_medium('product'),
+            \Altum\Link::get_blog_cta_tracking_medium('business'),
+        ];
+    }
+
+    private function get_blog_referral_mediums_sql(): string {
+        return "'" . implode("', '", $this->get_blog_referral_mediums()) . "'";
+    }
+
+    private function get_blog_referral_click_condition_sql(string $track_links_alias): string {
+        $blog_referral_mediums_sql = $this->get_blog_referral_mediums_sql();
+
+        return "({$track_links_alias}.`utm_medium` IN ({$blog_referral_mediums_sql}) AND {$track_links_alias}.`utm_campaign` LIKE 'blog_post:%')";
+    }
+
+    private function has_funnel_events_table(): bool {
+        static $has_funnel_events_table = null;
+
+        if($has_funnel_events_table !== null) {
+            return $has_funnel_events_table;
+        }
+
+        $result = database()->query("SHOW TABLES LIKE 'funnel_events'");
+        $has_funnel_events_table = (bool) ($result && $result->num_rows);
+
+        return $has_funnel_events_table;
+    }
+
     private function extract_forever_id_from_preferences($preferences): string {
         if(is_string($preferences)) {
             $preferences = json_decode($preferences ?? '{}');
@@ -1082,9 +1126,10 @@ class AdminLeaderOperatingSystemLeader extends Controller {
 
     private function get_chart_series(int $user_id, string $period_start_datetime, int $period_days, array $biolink_sets): array {
         $labels = [];
-        $shop_clicks = [];
-        $registrations = [];
-        $total_clicks = [];
+        $app_visits = [];
+        $app_shop_clicks = [];
+        $blog_clicks = [];
+        $funnel_registrations = [];
 
         $period_start = new \DateTimeImmutable($period_start_datetime);
         $date_index = [];
@@ -1094,19 +1139,22 @@ class AdminLeaderOperatingSystemLeader extends Controller {
             $date_key = $date->format('Y-m-d');
             $date_index[$date_key] = $day;
             $labels[] = $date->format('d.m.');
-            $shop_clicks[] = 0;
-            $registrations[] = 0;
-            $total_clicks[] = 0;
+            $app_visits[] = 0;
+            $app_shop_clicks[] = 0;
+            $blog_clicks[] = 0;
+            $funnel_registrations[] = 0;
         }
 
-                $shop_condition = \Altum\Link::get_forever_shop_click_condition_sql('`track_links`', '`biolinks_blocks`', $biolink_sets['forever_shop_block_types_sql']);
-                $registration_condition = \Altum\Link::get_forever_registration_click_condition_sql('`track_links`', '`biolinks_blocks`', $biolink_sets['forever_registration_block_types_sql']);
+        $app_webshop_block_types_sql = $this->get_app_webshop_block_types_sql();
+        $blog_referral_click_condition = $this->get_blog_referral_click_condition_sql('`track_links`');
+
         $result = database()->query("SELECT
             DATE(`track_links`.`datetime`) AS `date_key`,
-            COUNT(*) AS `total_clicks`,
-                        SUM(CASE WHEN `track_links`.`is_unique` = 1 AND {$shop_condition} THEN 1 ELSE 0 END) AS `shop_clicks`,
-                        SUM(CASE WHEN `track_links`.`is_unique` = 1 AND {$registration_condition} THEN 1 ELSE 0 END) AS `registration_clicks`
+            SUM(CASE WHEN `track_links`.`is_unique` = 1 AND `track_links`.`link_id` IS NOT NULL AND `track_links`.`biolink_block_id` IS NULL AND `links`.`type` = 'biolink' THEN 1 ELSE 0 END) AS `app_visits`,
+            SUM(CASE WHEN `track_links`.`is_unique` = 1 AND `biolinks_blocks`.`type` IN ({$app_webshop_block_types_sql}) THEN 1 ELSE 0 END) AS `app_shop_clicks`,
+            SUM(CASE WHEN `track_links`.`is_unique` = 1 AND {$blog_referral_click_condition} THEN 1 ELSE 0 END) AS `blog_clicks`
             FROM `track_links`
+            LEFT JOIN `links` ON `track_links`.`link_id` = `links`.`link_id`
             LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id`
             WHERE `track_links`.`datetime` >= '{$period_start_datetime}'
               AND `track_links`.`user_id` = {$user_id}
@@ -1120,17 +1168,151 @@ class AdminLeaderOperatingSystemLeader extends Controller {
             }
 
             $index = $date_index[$date_key];
-            $total_clicks[$index] = (int) ($row['total_clicks'] ?? 0);
-            $shop_clicks[$index] = (int) ($row['shop_clicks'] ?? 0);
-            $registrations[$index] = (int) ($row['registration_clicks'] ?? 0);
+            $app_visits[$index] = (int) ($row['app_visits'] ?? 0);
+            $app_shop_clicks[$index] = (int) ($row['app_shop_clicks'] ?? 0);
+            $blog_clicks[$index] = (int) ($row['blog_clicks'] ?? 0);
+        }
+
+        if($this->has_funnel_events_table()) {
+            $funnel_result = database()->query("SELECT
+                DATE(`datetime`) AS `date_key`,
+                COUNT(*) AS `total`
+            FROM `funnel_events`
+            WHERE `user_id` = {$user_id}
+              AND `event_type` = 'submit_success'
+              AND `datetime` >= '{$period_start_datetime}'
+            GROUP BY DATE(`datetime`)");
+
+            while($funnel_row = $funnel_result->fetch_assoc()) {
+                $date_key = (string) ($funnel_row['date_key'] ?? '');
+
+                if($date_key === '' || !isset($date_index[$date_key])) {
+                    continue;
+                }
+
+                $index = $date_index[$date_key];
+                $funnel_registrations[$index] = (int) ($funnel_row['total'] ?? 0);
+            }
         }
 
         return [
             'labels' => $labels,
-            'shop_clicks' => $shop_clicks,
-            'registrations' => $registrations,
-            'total_clicks' => $total_clicks,
+            'app_visits' => $app_visits,
+            'app_shop_clicks' => $app_shop_clicks,
+            'blog_clicks' => $blog_clicks,
+            'funnel_registrations' => $funnel_registrations,
         ];
+    }
+
+    private function get_country_signal_matrix_payload(int $user_id, int $period_days, string $period_key): array {
+        $period_start_datetime = $this->get_period_start_datetime($period_days);
+        $app_webshop_block_types_sql = $this->get_app_webshop_block_types_sql();
+        $blog_referral_click_condition = $this->get_blog_referral_click_condition_sql('`track_links`');
+        $rows_map = [];
+
+        $clicks_result = database()->query("SELECT
+            UPPER(TRIM(`track_links`.`country_code`)) AS `country_code`,
+            SUM(CASE WHEN `track_links`.`is_unique` = 1 AND `track_links`.`link_id` IS NOT NULL AND `track_links`.`biolink_block_id` IS NULL AND `links`.`type` = 'biolink' THEN 1 ELSE 0 END) AS `app_visits`,
+            SUM(CASE WHEN `track_links`.`is_unique` = 1 AND `biolinks_blocks`.`type` IN ({$app_webshop_block_types_sql}) THEN 1 ELSE 0 END) AS `app_shop_clicks`,
+            SUM(CASE WHEN `track_links`.`is_unique` = 1 AND {$blog_referral_click_condition} THEN 1 ELSE 0 END) AS `blog_clicks`
+        FROM `track_links`
+        LEFT JOIN `links` ON `track_links`.`link_id` = `links`.`link_id`
+        LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id`
+        WHERE `track_links`.`user_id` = {$user_id}
+          AND `track_links`.`datetime` >= '{$period_start_datetime}'
+          AND `track_links`.`country_code` IS NOT NULL
+          AND `track_links`.`country_code` != ''
+        GROUP BY `country_code`");
+
+        while($row = $clicks_result->fetch_object()) {
+            $country_code = trim((string) ($row->country_code ?? ''));
+
+            if($country_code === '') {
+                continue;
+            }
+
+            $rows_map[$country_code] = [
+                'country_code' => $country_code,
+                'country_name' => get_country_from_country_code($country_code),
+                'app_visits' => (int) ($row->app_visits ?? 0),
+                'app_shop_clicks' => (int) ($row->app_shop_clicks ?? 0),
+                'blog_clicks' => (int) ($row->blog_clicks ?? 0),
+                'funnel_registrations' => 0,
+            ];
+        }
+
+        if($this->has_funnel_events_table()) {
+            $funnel_result = database()->query("SELECT
+                UPPER(TRIM(`country_code`)) AS `country_code`,
+                COUNT(*) AS `total`
+            FROM `funnel_events`
+            WHERE `user_id` = {$user_id}
+              AND `event_type` = 'submit_success'
+              AND `datetime` >= '{$period_start_datetime}'
+              AND `country_code` IS NOT NULL
+              AND `country_code` != ''
+            GROUP BY `country_code`");
+
+            while($row = $funnel_result->fetch_object()) {
+                $country_code = trim((string) ($row->country_code ?? ''));
+
+                if($country_code === '') {
+                    continue;
+                }
+
+                if(!isset($rows_map[$country_code])) {
+                    $rows_map[$country_code] = [
+                        'country_code' => $country_code,
+                        'country_name' => get_country_from_country_code($country_code),
+                        'app_visits' => 0,
+                        'app_shop_clicks' => 0,
+                        'blog_clicks' => 0,
+                        'funnel_registrations' => 0,
+                    ];
+                }
+
+                $rows_map[$country_code]['funnel_registrations'] = (int) ($row->total ?? 0);
+            }
+        }
+
+        $rows = array_values(array_filter($rows_map, static function(array $row) {
+            return ((int) ($row['app_visits'] ?? 0)
+                + (int) ($row['app_shop_clicks'] ?? 0)
+                + (int) ($row['blog_clicks'] ?? 0)
+                + (int) ($row['funnel_registrations'] ?? 0)) > 0;
+        }));
+
+        usort($rows, static function(array $a, array $b) {
+            $total_a = (int) ($a['app_visits'] ?? 0) + (int) ($a['app_shop_clicks'] ?? 0) + (int) ($a['blog_clicks'] ?? 0) + (int) ($a['funnel_registrations'] ?? 0);
+            $total_b = (int) ($b['app_visits'] ?? 0) + (int) ($b['app_shop_clicks'] ?? 0) + (int) ($b['blog_clicks'] ?? 0) + (int) ($b['funnel_registrations'] ?? 0);
+
+            return ($total_b <=> $total_a)
+                ?: (($b['app_shop_clicks'] ?? 0) <=> ($a['app_shop_clicks'] ?? 0))
+                ?: (($b['blog_clicks'] ?? 0) <=> ($a['blog_clicks'] ?? 0))
+                ?: (($a['country_name'] ?? '') <=> ($b['country_name'] ?? ''));
+        });
+
+        return [
+            'period_key' => $period_key,
+            'period_days' => $period_days,
+            'rows' => $rows,
+            'totals' => [
+                'app_visits' => array_sum(array_column($rows, 'app_visits')),
+                'app_shop_clicks' => array_sum(array_column($rows, 'app_shop_clicks')),
+                'blog_clicks' => array_sum(array_column($rows, 'blog_clicks')),
+                'funnel_registrations' => array_sum(array_column($rows, 'funnel_registrations')),
+            ],
+        ];
+    }
+
+    private function get_country_signal_matrix_periods_payload(int $user_id): array {
+        $payload = [];
+
+        foreach(['1d' => 1, '7d' => 7, '30d' => 30, '90d' => 90] as $period_key => $period_days) {
+            $payload[$period_key] = $this->get_country_signal_matrix_payload($user_id, $period_days, $period_key);
+        }
+
+        return $payload;
     }
 
     private function get_growth_metrics(int $current, int $previous): array {
@@ -2886,6 +3068,8 @@ class AdminLeaderOperatingSystemLeader extends Controller {
         $score_history = $this->persist_score_snapshots((int) $user->user_id, $user->preferences ?? null, $periods);
         /* /Custom code: FC-2026-03-31 */
 
+        $country_signal_matrix_periods = $this->get_country_signal_matrix_periods_payload($user_id);
+
         return [
             'user_id' => (int) $user->user_id,
             'name' => (string) ($user->name ?? l('global.unknown')),
@@ -2909,6 +3093,7 @@ class AdminLeaderOperatingSystemLeader extends Controller {
             /* Custom code: FC-2026-03-31: Attach Phase 6 fraud intelligence payload */
             'fraud_intelligence' => $fraud_intelligence,
             /* /Custom code: FC-2026-03-31 */
+            'country_signal_matrix_periods' => $country_signal_matrix_periods,
             'periods' => $periods,
         ];
     }

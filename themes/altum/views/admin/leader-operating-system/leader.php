@@ -326,6 +326,85 @@
         min-height: 290px;
     }
 
+    .leader-os-country-periods {
+        display: inline-flex;
+        gap: 0.4rem;
+        flex-wrap: wrap;
+    }
+
+    .leader-os-country-period {
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        background: rgba(255, 255, 255, 0.05);
+        color: #ffffff;
+        border-radius: 999px;
+        padding: 0.38rem 0.72rem;
+        font-size: 0.78rem;
+        font-weight: 600;
+        line-height: 1;
+        cursor: pointer;
+    }
+
+    .leader-os-country-period.active {
+        border-color: rgba(45, 212, 191, 0.45);
+        background: rgba(45, 212, 191, 0.16);
+        color: #dffefa;
+    }
+
+    .leader-os-country-table-wrap {
+        max-height: 290px;
+        overflow: auto;
+    }
+
+    .leader-os-country-table {
+        width: 100%;
+        color: #ecf3ff;
+        margin-bottom: 0;
+    }
+
+    .leader-os-country-table thead th {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+        background: rgba(8, 13, 26, 0.96);
+        color: rgba(191, 211, 238, 0.82);
+        border-color: rgba(148, 163, 184, 0.08);
+        font-size: 0.74rem;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+
+    .leader-os-country-table td {
+        border-color: rgba(148, 163, 184, 0.08);
+        vertical-align: middle;
+    }
+
+    .leader-os-country-table tbody tr:hover {
+        background: rgba(124, 200, 255, 0.06);
+    }
+
+    .leader-os-country-name {
+        display: flex;
+        flex-direction: column;
+        gap: 0.12rem;
+    }
+
+    .leader-os-country-code {
+        color: rgba(191, 211, 238, 0.64);
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+    }
+
+    .leader-os-country-table-empty {
+        min-height: 220px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        color: rgba(191, 211, 238, 0.72);
+        font-size: 0.9rem;
+    }
+
     .leader-os-breakdown-trigger {
         cursor: pointer;
         transition: border-color 0.2s ease, transform 0.2s ease, background 0.2s ease;
@@ -1000,14 +1079,9 @@
     </div>
 <?php else: ?>
     <?php
-    $comparison_labels = [];
-    $comparison_shop_clicks = [];
-    $comparison_registrations = [];
-    foreach(['7d', '30d', '90d'] as $comparison_period_key) {
-        $comparison_labels[] = l('admin_leader_operating_system.period_' . $comparison_period_key);
-        $comparison_shop_clicks[] = (int) ($detail['periods'][$comparison_period_key]['forever_shop_clicks_period'] ?? 0);
-        $comparison_registrations[] = (int) ($detail['periods'][$comparison_period_key]['forever_registration_clicks_period'] ?? 0);
-    }
+    $country_matrix_periods = $detail['country_signal_matrix_periods'] ?? [];
+    $initial_country_period = isset($country_matrix_periods[$data->selected_period]) ? $data->selected_period : '30d';
+    $initial_country_matrix = $country_matrix_periods[$initial_country_period] ?? ['rows' => []];
     ?>
     <div class="card leader-os-detail-shell mb-4" id="leader-os-phase4">
         <div class="card-body">
@@ -1216,9 +1290,50 @@
                         <h3 class="h5 mb-1"><?= l('admin_leader_operating_system.leader.chart_compare_title') ?></h3>
                         <div class="text-muted small"><?= l('admin_leader_operating_system.leader.chart_compare_text') ?></div>
                     </div>
+                    <div class="leader-os-country-periods">
+                        <?php foreach(['1d', '7d', '30d', '90d'] as $country_period_key): ?>
+                            <button type="button" class="leader-os-country-period <?= $country_period_key === $initial_country_period ? 'active' : null ?>" data-country-period="<?= $country_period_key ?>">
+                                <?= l('admin_leader_operating_system.period_' . $country_period_key) ?>
+                            </button>
+                        <?php endforeach ?>
+                    </div>
                 </div>
-                <div class="leader-os-detail-chart-wrap">
-                    <canvas id="leader-os-detail-comparison-chart"></canvas>
+                <div class="leader-os-country-table-wrap">
+                    <table class="table table-sm leader-os-country-table">
+                        <thead>
+                            <tr>
+                                <th><?= l('admin_leader_operating_system.leader.country_table.country') ?></th>
+                                <th class="text-right"><?= l('admin_leader_operating_system.leader.chart_metric_app_visits') ?></th>
+                                <th class="text-right"><?= l('admin_leader_operating_system.leader.chart_metric_app_shop_clicks') ?></th>
+                                <th class="text-right"><?= l('admin_leader_operating_system.leader.chart_metric_blog_clicks') ?></th>
+                                <th class="text-right"><?= l('admin_leader_operating_system.leader.chart_metric_funnel_registrations') ?></th>
+                            </tr>
+                        </thead>
+                        <tbody id="leader-os-country-table-body">
+                            <?php if(empty($initial_country_matrix['rows'])): ?>
+                                <tr>
+                                    <td colspan="5">
+                                        <div class="leader-os-country-table-empty"><?= l('admin_leader_operating_system.leader.country_table.empty') ?></div>
+                                    </td>
+                                </tr>
+                            <?php else: ?>
+                                <?php foreach($initial_country_matrix['rows'] as $country_row): ?>
+                                    <tr>
+                                        <td>
+                                            <div class="leader-os-country-name">
+                                                <strong><?= htmlspecialchars((string) ($country_row['country_name'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></strong>
+                                                <span class="leader-os-country-code"><?= htmlspecialchars((string) ($country_row['country_code'] ?? ''), ENT_QUOTES, 'UTF-8') ?></span>
+                                            </div>
+                                        </td>
+                                        <td class="text-right"><?= nr((int) ($country_row['app_visits'] ?? 0)) ?></td>
+                                        <td class="text-right"><?= nr((int) ($country_row['app_shop_clicks'] ?? 0)) ?></td>
+                                        <td class="text-right"><?= nr((int) ($country_row['blog_clicks'] ?? 0)) ?></td>
+                                        <td class="text-right"><?= nr((int) ($country_row['funnel_registrations'] ?? 0)) ?></td>
+                                    </tr>
+                                <?php endforeach ?>
+                            <?php endif ?>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
@@ -2748,11 +2863,8 @@
     'use strict';
 
     const leaderOsSelectedChart = <?= json_encode($selected['chart']) ?>;
-    const leaderOsComparisonChart = {
-        labels: <?= json_encode($comparison_labels) ?>,
-        shopClicks: <?= json_encode($comparison_shop_clicks) ?>,
-        registrations: <?= json_encode($comparison_registrations) ?>,
-    };
+    const leaderOsCountrySignalMatrix = <?= json_encode($country_matrix_periods) ?>;
+    const leaderOsInitialCountryPeriod = <?= json_encode($initial_country_period) ?>;
     const leaderOsBreakdowns = <?= json_encode([
         'top_countries' => $selected['top_countries'],
         'top_cities' => $selected['top_cities'],
@@ -2763,6 +2875,15 @@
     ]) ?>;
     const leaderOsOpportunityActions = <?= json_encode($opportunity_actions ?? ['intro' => '', 'items' => []]) ?>;
     const leaderOsOutreachForm = document.querySelector('.leader-os-outreach-form');
+    const leaderOsCountryTableBody = document.getElementById('leader-os-country-table-body');
+    const leaderOsNumberFormatter = new Intl.NumberFormat('hr-HR');
+
+    const escapeLeaderOsHtml = value => String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
 
     const trendChartCanvas = document.getElementById('leader-os-detail-trend-chart');
     if(typeof Chart !== 'undefined' && trendChartCanvas) {
@@ -2772,20 +2893,36 @@
                 labels: leaderOsSelectedChart.labels,
                 datasets: [
                     {
-                        label: <?= json_encode(l('admin_leader_operating_system.leader.kpi_shop_clicks')) ?>,
-                        data: leaderOsSelectedChart.shop_clicks,
-                        borderColor: '#7cc8ff',
-                        backgroundColor: 'rgba(124, 200, 255, 0.18)',
+                        label: <?= json_encode(l('admin_leader_operating_system.leader.chart_metric_app_visits')) ?>,
+                        data: leaderOsSelectedChart.app_visits,
+                        borderColor: '#94a3ff',
+                        backgroundColor: 'rgba(148, 163, 255, 0.16)',
                         tension: 0.35,
                         fill: true,
                     },
                     {
-                        label: <?= json_encode(l('admin_leader_operating_system.leader.kpi_registrations')) ?>,
-                        data: leaderOsSelectedChart.registrations,
-                        borderColor: '#86efac',
-                        backgroundColor: 'rgba(134, 239, 172, 0.12)',
+                        label: <?= json_encode(l('admin_leader_operating_system.leader.chart_metric_app_shop_clicks')) ?>,
+                        data: leaderOsSelectedChart.app_shop_clicks,
+                        borderColor: '#7cc8ff',
+                        backgroundColor: 'rgba(124, 200, 255, 0.08)',
                         tension: 0.35,
-                        fill: true,
+                        fill: false,
+                    },
+                    {
+                        label: <?= json_encode(l('admin_leader_operating_system.leader.chart_metric_blog_clicks')) ?>,
+                        data: leaderOsSelectedChart.blog_clicks,
+                        borderColor: '#f9c74f',
+                        backgroundColor: 'rgba(249, 199, 79, 0.08)',
+                        tension: 0.35,
+                        fill: false,
+                    },
+                    {
+                        label: <?= json_encode(l('admin_leader_operating_system.leader.chart_metric_funnel_registrations')) ?>,
+                        data: leaderOsSelectedChart.funnel_registrations,
+                        borderColor: '#86efac',
+                        backgroundColor: 'rgba(134, 239, 172, 0.1)',
+                        tension: 0.35,
+                        fill: false,
                     },
                 ]
             },
@@ -2810,45 +2947,55 @@
         });
     }
 
-    const comparisonChartCanvas = document.getElementById('leader-os-detail-comparison-chart');
-    if(typeof Chart !== 'undefined' && comparisonChartCanvas) {
-        new Chart(comparisonChartCanvas, {
-            type: 'bar',
-            data: {
-                labels: leaderOsComparisonChart.labels,
-                datasets: [
-                    {
-                        label: <?= json_encode(l('admin_leader_operating_system.leader.kpi_shop_clicks')) ?>,
-                        data: leaderOsComparisonChart.shopClicks,
-                        backgroundColor: 'rgba(124, 200, 255, 0.72)',
-                        borderRadius: 8,
-                    },
-                    {
-                        label: <?= json_encode(l('admin_leader_operating_system.leader.kpi_registrations')) ?>,
-                        data: leaderOsComparisonChart.registrations,
-                        backgroundColor: 'rgba(134, 239, 172, 0.72)',
-                        borderRadius: 8,
-                    },
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {labels: {color: '#ecf3ff'}},
-                },
-                scales: {
-                    x: {
-                        ticks: {color: 'rgba(191, 211, 238, 0.72)'},
-                        grid: {display: false}
-                    },
-                    y: {
-                        ticks: {color: 'rgba(191, 211, 238, 0.72)', precision: 0},
-                        grid: {color: 'rgba(148, 163, 184, 0.08)'}
-                    }
-                }
-            }
+    const renderLeaderOsCountrySignalTable = periodKey => {
+        if(!leaderOsCountryTableBody) {
+            return;
+        }
+
+        const payload = leaderOsCountrySignalMatrix[periodKey] || leaderOsCountrySignalMatrix[leaderOsInitialCountryPeriod] || {rows: []};
+        const rows = Array.isArray(payload.rows) ? payload.rows : [];
+
+        if(!rows.length) {
+            leaderOsCountryTableBody.innerHTML = `
+                <tr>
+                    <td colspan="5">
+                        <div class="leader-os-country-table-empty"><?= addslashes(l('admin_leader_operating_system.leader.country_table.empty')) ?></div>
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+
+        leaderOsCountryTableBody.innerHTML = rows.map(row => `
+            <tr>
+                <td>
+                    <div class="leader-os-country-name">
+                        <strong>${escapeLeaderOsHtml(row.country_name || '-')}</strong>
+                        <span class="leader-os-country-code">${escapeLeaderOsHtml(row.country_code || '')}</span>
+                    </div>
+                </td>
+                <td class="text-right">${leaderOsNumberFormatter.format(Number(row.app_visits || 0))}</td>
+                <td class="text-right">${leaderOsNumberFormatter.format(Number(row.app_shop_clicks || 0))}</td>
+                <td class="text-right">${leaderOsNumberFormatter.format(Number(row.blog_clicks || 0))}</td>
+                <td class="text-right">${leaderOsNumberFormatter.format(Number(row.funnel_registrations || 0))}</td>
+            </tr>
+        `).join('');
+    };
+
+    document.querySelectorAll('[data-country-period]').forEach(button => {
+        button.addEventListener('click', () => {
+            const periodKey = button.getAttribute('data-country-period');
+
+            document.querySelectorAll('[data-country-period]').forEach(item => {
+                item.classList.toggle('active', item === button);
+            });
+
+            renderLeaderOsCountrySignalTable(periodKey);
         });
+    });
+
+    if(leaderOsCountryTableBody) {
+        renderLeaderOsCountrySignalTable(leaderOsInitialCountryPeriod);
     }
 
     $('#leader-os-breakdown-modal').on('show.bs.modal', event => {
