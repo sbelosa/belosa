@@ -1558,7 +1558,15 @@
     }
 
     .leader-os-overview-chart-wrap {
+        position: relative;
         min-height: 320px;
+        height: 320px;
+    }
+
+    .leader-os-overview-chart-wrap canvas {
+        width: 100% !important;
+        height: 100% !important;
+        display: block;
     }
 
     .leader-os-country-periods {
@@ -4540,8 +4548,14 @@ document.addEventListener('DOMContentLoaded', function () {
     };
 
     const overviewTeamSignalChartCanvas = document.getElementById('leader-os-overview-team-signal-chart');
-    if(typeof Chart !== 'undefined' && overviewTeamSignalChartCanvas) {
-        new Chart(overviewTeamSignalChartCanvas, {
+    let overviewTeamSignalChartInstance = null;
+
+    const initOverviewTeamSignalChart = () => {
+        if(typeof Chart === 'undefined' || !overviewTeamSignalChartCanvas || overviewTeamSignalChartInstance) {
+            return;
+        }
+
+        overviewTeamSignalChartInstance = new Chart(overviewTeamSignalChartCanvas, {
             type: 'line',
             data: {
                 labels: overviewTeamSignalChartPayload.labels || [],
@@ -4611,6 +4625,16 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             }
         });
+    };
+
+    if(overviewTeamSignalChartCanvas) {
+        initOverviewTeamSignalChart();
+
+        if(!overviewTeamSignalChartInstance) {
+            window.requestAnimationFrame(() => {
+                initOverviewTeamSignalChart();
+            });
+        }
     }
 
     const renderOverviewTeamCountrySignalTable = (periodKey) => {
