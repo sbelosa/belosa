@@ -465,7 +465,7 @@ class OpsReadonly extends Controller {
         $blocks = [];
 
         while($row = $result->fetch_object()) {
-            $settings = $this->get_assoc_array($row->settings ?? null);
+            $settings = $this->get_assoc_array($this->get_object($row->settings ?? null));
 
             $blocks[] = [
                 'biolink_block_id' => (int) ($row->biolink_block_id ?? 0),
@@ -507,14 +507,14 @@ class OpsReadonly extends Controller {
             ];
         }
 
-        $additional = $this->get_assoc_array($link->additional ?? null);
-        $settings = $this->get_assoc_array($link->settings ?? null);
-        $backup = $this->get_assoc_array($additional['fcc_ai_bundle_backup'] ?? []);
-        $bundle_last_restore = $this->get_assoc_array($additional['fcc_ai_bundle_last_restore'] ?? []);
-        $layout_backup = $this->get_assoc_array($additional['fcc_ai_layout_backup'] ?? []);
-        $layout_last_restore = $this->get_assoc_array($additional['fcc_ai_layout_last_restore'] ?? []);
-        $theme_apply_state = $this->get_assoc_array($additional['fcc_ai_theme_apply_state'] ?? []);
-        $review_summary = $this->get_assoc_array($additional['fcc_ai_review_summary'] ?? []);
+        $additional = $this->get_assoc_array($this->get_object($link->additional ?? null));
+        $settings = $this->get_assoc_array($this->get_object($link->settings ?? null));
+        $backup = $this->get_assoc_array($this->get_object($additional['fcc_ai_bundle_backup'] ?? []));
+        $bundle_last_restore = $this->get_assoc_array($this->get_object($additional['fcc_ai_bundle_last_restore'] ?? []));
+        $layout_backup = $this->get_assoc_array($this->get_object($additional['fcc_ai_layout_backup'] ?? []));
+        $layout_last_restore = $this->get_assoc_array($this->get_object($additional['fcc_ai_layout_last_restore'] ?? []));
+        $theme_apply_state = $this->get_assoc_array($this->get_object($additional['fcc_ai_theme_apply_state'] ?? []));
+        $review_summary = $this->get_assoc_array($this->get_object($additional['fcc_ai_review_summary'] ?? []));
         $current_blocks = $this->get_biolink_debug_blocks((int) ($link->link_id ?? 0));
         $backup_blocks = $this->get_list($backup['blocks'] ?? []);
 
@@ -540,7 +540,7 @@ class OpsReadonly extends Controller {
                 'review_key' => trim((string) ($backup['review_key'] ?? '')),
                 'biolink_theme_id' => (int) ($backup['biolink_theme_id'] ?? 0),
                 'blocks_total' => count($backup_blocks),
-                'link_settings' => $this->get_assoc_array($backup['link_settings'] ?? []),
+                'link_settings' => $this->get_assoc_array($this->get_object($backup['link_settings'] ?? [])),
                 'blocks' => $backup_blocks,
             ],
             'bundle_last_restore' => [
