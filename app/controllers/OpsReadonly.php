@@ -434,6 +434,137 @@ class OpsReadonly extends Controller {
         ];
     }
 
+    private function get_biolink_debug_link(int $user_id, int $requested_link_id = 0): ?object {
+        if($user_id <= 0) {
+            return null;
+        }
+
+        $where_link_id = $requested_link_id > 0 ? " AND `links`.`link_id` = {$requested_link_id}" : '';
+        $order_by = $requested_link_id > 0 ? '' : " ORDER BY `links`.`last_datetime` DESC, `links`.`datetime` DESC, `links`.`link_id` DESC";
+        $limit = ' LIMIT 1';
+
+        $result = database()->query("SELECT `links`.`link_id`, `links`.`user_id`, `links`.`domain_id`, `links`.`url`, `links`.`is_enabled`, `links`.`datetime`, `links`.`last_datetime`, `links`.`biolink_theme_id`, `links`.`settings`, `links`.`additional`, `domains`.`scheme`, `domains`.`host`, `domains`.`link_id` AS `domain_link_id`
+            FROM `links`
+            LEFT JOIN `domains` ON `links`.`domain_id` = `domains`.`domain_id`
+            WHERE `links`.`user_id` = {$user_id}
+              AND `links`.`type` = 'biolink'{$where_link_id}{$order_by}{$limit}");
+
+        return $result ? ($result->fetch_object() ?: null) : null;
+    }
+
+    private function get_biolink_debug_blocks(int $link_id): array {
+        if($link_id <= 0) {
+            return [];
+        }
+
+        $result = database()->query("SELECT `biolink_block_id`, `type`, `location_url`, `settings`, `order`, `is_enabled`, `datetime`, `last_datetime`
+            FROM `biolinks_blocks`
+            WHERE `link_id` = {$link_id}
+            ORDER BY `order` ASC, `biolink_block_id` ASC");
+
+        $blocks = [];
+
+        while($row = $result->fetch_object()) {
+            $settings = $this->get_assoc_array($row->settings ?? null);
+
+            $blocks[] = [
+                'biolink_block_id' => (int) ($row->biolink_block_id ?? 0),
+                'type' => (string) ($row->type ?? ''),
+                'location_url' => (string) ($row->location_url ?? ''),
+                'order' => (int) ($row->order ?? 0),
+                'is_enabled' => (int) ($row->is_enabled ?? 0),
+                'datetime' => $row->datetime ?? null,
+                'last_datetime' => $row->last_datetime ?? null,
+                'settings' => $settings,
+                'label_preview' => (string) (
+                    $settings['title']
+                    ?? $settings['heading']
+                    ?? $settings['text']
+                    ?? $settings['name']
+                    ?? $settings['button_text']
+                    ?? ''
+                ),
+            ];
+        }
+
+        return $blocks;
+    }
+
+    private function get_biolink_restore_debug_payload(object $user): array {
+        $user_id = (int) ($user->user_id ?? 0);
+        $requested_link_id = $this->get_param_int('link_id');
+        $link = $this->get_biolink_debug_link($user_id, $requested_link_id);
+
+        if(!$link) {
+            return [
+                'link' => null,
+                'current' => [
+                    'blocks' => [],
+                ],
+                'backup' => [
+                    'available' => false,
+                ],
+            ];
+        }
+
+        $additional = $this->get_assoc_array($link->additional ?? null);
+        $settings = $this->get_assoc_array($link->settings ?? null);
+        $backup = $this->get_assoc_array($additional['fcc_ai_bundle_backup'] ?? []);
+        $bundle_last_restore = $this->get_assoc_array($additional['fcc_ai_bundle_last_restore'] ?? []);
+        $layout_backup = $this->get_assoc_array($additional['fcc_ai_layout_backup'] ?? []);
+        $layout_last_restore = $this->get_assoc_array($additional['fcc_ai_layout_last_restore'] ?? []);
+        $theme_apply_state = $this->get_assoc_array($additional['fcc_ai_theme_apply_state'] ?? []);
+        $review_summary = $this->get_assoc_array($additional['fcc_ai_review_summary'] ?? []);
+        $current_blocks = $this->get_biolink_debug_blocks((int) ($link->link_id ?? 0));
+        $backup_blocks = $this->get_list($backup['blocks'] ?? []);
+
+        return [
+            'link' => [
+                'link_id' => (int) ($link->link_id ?? 0),
+                'slug' => (string) ($link->url ?? ''),
+                'public_url' => $this->build_public_link_url($link),
+                'is_enabled' => (int) ($link->is_enabled ?? 1) === 1,
+                'datetime' => $link->datetime ?? null,
+                'last_datetime' => $link->last_datetime ?? null,
+                'biolink_theme_id' => (int) ($link->biolink_theme_id ?? 0),
+            ],
+            'current' => [
+                'settings' => $settings,
+                'biolink_theme_id' => (int) ($link->biolink_theme_id ?? 0),
+                'blocks_total' => count($current_blocks),
+                'blocks' => $current_blocks,
+            ],
+            'backup' => [
+                'available' => !empty($backup_blocks) && !empty($backup['captured_at']),
+                'captured_at' => !empty($backup['captured_at']) ? (string) $backup['captured_at'] : null,
+                'review_key' => trim((string) ($backup['review_key'] ?? '')),
+                'biolink_theme_id' => (int) ($backup['biolink_theme_id'] ?? 0),
+                'blocks_total' => count($backup_blocks),
+                'link_settings' => $this->get_assoc_array($backup['link_settings'] ?? []),
+                'blocks' => $backup_blocks,
+            ],
+            'bundle_last_restore' => [
+                'restored_at' => !empty($bundle_last_restore['restored_at']) ? (string) $bundle_last_restore['restored_at'] : null,
+                'restored_blocks' => max(0, (int) ($bundle_last_restore['restored_blocks'] ?? 0)),
+                're_enabled_blocks' => max(0, (int) ($bundle_last_restore['re_enabled_blocks'] ?? 0)),
+                'hidden_new_blocks' => max(0, (int) ($bundle_last_restore['hidden_new_blocks'] ?? 0)),
+            ],
+            'layout_backup' => [
+                'available' => !empty($layout_backup['blocks']) && !empty($layout_backup['captured_at']),
+                'captured_at' => !empty($layout_backup['captured_at']) ? (string) $layout_backup['captured_at'] : null,
+                'review_key' => trim((string) ($layout_backup['review_key'] ?? '')),
+                'blocks_total' => count((array) ($layout_backup['blocks'] ?? [])),
+            ],
+            'layout_last_restore' => [
+                'restored_at' => !empty($layout_last_restore['restored_at']) ? (string) $layout_last_restore['restored_at'] : null,
+                'restored_blocks' => max(0, (int) ($layout_last_restore['restored_blocks'] ?? 0)),
+                're_enabled_blocks' => max(0, (int) ($layout_last_restore['re_enabled_blocks'] ?? 0)),
+            ],
+            'theme_apply_state' => $theme_apply_state,
+            'review_summary' => $review_summary,
+        ];
+    }
+
     private function get_meta_summary($preferences, bool $is_active_pro = false): array {
         $preferences = $this->get_object($preferences);
         $meta = $this->get_object($preferences->meta ?? null);
@@ -1102,6 +1233,17 @@ class OpsReadonly extends Controller {
             'apps' => $apps,
             'ai' => $ai,
             'billing' => $billing,
+            'restore_debug' => $this->resolve_collaborator_section(function() use ($user) {
+                return $this->get_biolink_restore_debug_payload($user);
+            }, [
+                'link' => null,
+                'current' => [
+                    'blocks' => [],
+                ],
+                'backup' => [
+                    'available' => false,
+                ],
+            ], $section_errors, 'restore_debug'),
             'urls' => [
                 'admin_user_view' => url('admin/user-view/' . $user_id),
                 'admin_user_update' => url('admin/user-update/' . $user_id),
