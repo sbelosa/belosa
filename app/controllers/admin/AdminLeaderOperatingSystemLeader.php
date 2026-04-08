@@ -2845,7 +2845,13 @@ class AdminLeaderOperatingSystemLeader extends Controller {
     /* /Custom code: FC-2026-03-31 */
 
     private function get_detail_payload(int $user_id): ?array {
-        $user = db()->where('user_id', $user_id)->where('type', 0)->getOne('users', ['user_id', 'name', 'email', 'preferences', 'extra', 'payment_processor', 'payment_subscription_id', 'plan_id', 'plan_expiration_date']);
+        $user_query = db()->where('user_id', $user_id);
+
+        if($user_id !== (int) ($this->user->user_id ?? 0)) {
+            $user_query->where('type', 0);
+        }
+
+        $user = $user_query->getOne('users', ['user_id', 'name', 'email', 'preferences', 'extra', 'payment_processor', 'payment_subscription_id', 'plan_id', 'plan_expiration_date']);
 
         if(!$user) {
             return null;

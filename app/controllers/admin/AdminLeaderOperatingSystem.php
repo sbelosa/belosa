@@ -5909,6 +5909,10 @@ class AdminLeaderOperatingSystem extends Controller {
         $previous_period_start_datetime = (new \DateTimeImmutable($period_start_datetime))->sub(new \DateInterval('P' . $period_days . 'D'))->format('Y-m-d H:i:s');
         $ninety_days_start_datetime = $this->get_period_start_datetime(90);
         $query_start_datetime = $period_days === 90 ? $previous_period_start_datetime : $ninety_days_start_datetime;
+        $los_self_user_id = (int) ($this->user->user_id ?? 0);
+        $los_user_scope_sql = $los_self_user_id > 0
+            ? "(`users`.`type` = 0 OR `users`.`user_id` = {$los_self_user_id})"
+            : "`users`.`type` = 0";
         $biolink_sets = $this->get_biolink_sets();
         $shop_condition = \Altum\Link::get_forever_shop_click_condition_sql('`track_links`', '`biolinks_blocks`', $biolink_sets['forever_shop_block_types_sql']);
         $registration_condition = \Altum\Link::get_forever_registration_click_condition_sql('`track_links`', '`biolinks_blocks`', $biolink_sets['forever_registration_block_types_sql']);
@@ -5933,7 +5937,7 @@ class AdminLeaderOperatingSystem extends Controller {
         FROM `users`
         LEFT JOIN `track_links` ON `track_links`.`user_id` = `users`.`user_id` AND `track_links`.`datetime` >= '{$query_start_datetime}'
         LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id`
-        WHERE `users`.`type` = 0
+        WHERE {$los_user_scope_sql}
         GROUP BY `users`.`user_id`
         ORDER BY `users`.`name` ASC");
 
