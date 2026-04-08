@@ -68,7 +68,7 @@ class Cron extends Controller {
         /* Database query */
         database()->query("UPDATE `settings` SET `value` = JSON_SET(`value`, '$.{$key}', '{$date}', '$.{$key}_processing', {$processing_time}) WHERE `key` = 'cron'");
 
-        /* Keep cached settings aligned with the latest cron heartbeat. */
+        /* Keep cached settings aligned with the latest cron heartbeat and ops diagnostics. */
         cache()->deleteItem('settings');
     }
 
