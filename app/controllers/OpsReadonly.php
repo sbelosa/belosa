@@ -207,6 +207,24 @@ class OpsReadonly extends Controller {
         return rtrim(mb_substr($value, 0, max(1, $limit - 1))) . '…';
     }
 
+    private function get_datetime_age_minutes(?string $datetime): ?int {
+        $datetime = trim((string) $datetime);
+
+        if($datetime === '') {
+            return null;
+        }
+
+        try {
+            $target = new \DateTimeImmutable($datetime);
+            $now = new \DateTimeImmutable();
+            $diff_seconds = max(0, $now->getTimestamp() - $target->getTimestamp());
+
+            return (int) floor($diff_seconds / 60);
+        } catch(\Throwable $exception) {
+            return null;
+        }
+    }
+
     private function is_plan_active(?string $plan_expiration_date): bool {
         $plan_expiration_date = trim((string) $plan_expiration_date);
 
@@ -579,9 +597,56 @@ class OpsReadonly extends Controller {
         return $events;
     }
 
+    private function get_cron_diagnostics_payload(): array {
+        $cron_settings = $this->get_object(settings()->cron ?? null);
+        $webhooks_settings = $this->get_object(settings()->webhooks ?? null);
+        $last_run_at = is_scalar($cron_settings->cron_datetime ?? null) ? (string) $cron_settings->cron_datetime : null;
+        $last_reset_at = is_scalar($cron_settings->reset_date ?? null) ? (string) $cron_settings->reset_date : null;
+        $stale_threshold_minutes = 15;
+        $last_run_age_minutes = $this->get_datetime_age_minutes($last_run_at);
+
+        return [
+            'key_configured' => trim((string) ($cron_settings->key ?? '')) !== '',
+            'last_run_at' => $last_run_at,
+            'last_run_age_minutes' => $last_run_age_minutes,
+            'last_run_processing_seconds' => isset($cron_settings->cron_datetime_processing) ? (float) $cron_settings->cron_datetime_processing : null,
+            'last_reset_at' => $last_reset_at,
+            'last_reset_age_minutes' => $this->get_datetime_age_minutes($last_reset_at),
+            'last_reset_processing_seconds' => isset($cron_settings->reset_date_processing) ? (float) $cron_settings->reset_date_processing : null,
+            'stale_threshold_minutes' => $stale_threshold_minutes,
+            'is_stale' => $last_run_age_minutes === null ? true : $last_run_age_minutes > $stale_threshold_minutes,
+            'webhooks' => [
+                'start_configured' => trim((string) ($webhooks_settings->cron_start ?? '')) !== '',
+                'end_configured' => trim((string) ($webhooks_settings->cron_end ?? '')) !== '',
+            ],
+        ];
+    }
+
+    private function get_ai_diagnostics_payload(): array {
+        $settings_main = $this->get_object(settings()->main ?? null);
+        $settings_aix = $this->get_object(settings()->aix ?? null);
+        $shared_aix_api_key = trim((string) ($settings_aix->openai_api_key ?? ''));
+        $shared_main_api_key = trim((string) ($settings_main->openai_api_key ?? ''));
+        $shared_api_key_source = $shared_aix_api_key !== '' ? 'aix' : ($shared_main_api_key !== '' ? 'main' : 'none');
+        $shared_api_key_configured = $shared_api_key_source !== 'none';
+        $default_model = trim((string) ($settings_main->openai_model ?? 'gpt-4o'));
+
+        return [
+            'feature_flag_enabled' => defined('AI_ENABLED') ? AI_ENABLED : false,
+            'shared_openai_key_configured' => $shared_api_key_configured,
+            'shared_openai_key_source' => $shared_api_key_source,
+            'default_model' => $default_model !== '' ? $default_model : 'gpt-4o',
+            'shared_ai_ready' => $shared_api_key_configured,
+            'note' => $shared_api_key_configured
+                ? 'Shared AI key is configured for server-side AI flows.'
+                : 'Shared OpenAI key is missing. AI flows that rely on server-side shared credentials can fail.',
+        ];
+    }
+
     private function get_health_payload(): array {
         $billing_dashboard = (new Billing())->get_dashboard_payload();
-        $cron_settings = $this->get_object(settings()->cron ?? null);
+        $cron_diagnostics = $this->get_cron_diagnostics_payload();
+        $ai_diagnostics = $this->get_ai_diagnostics_payload();
 
         return [
             'server_time' => get_date(),
@@ -593,16 +658,12 @@ class OpsReadonly extends Controller {
             'features' => [
                 'payment_enabled' => !empty(settings()->payment->is_enabled),
                 'stripe_enabled' => !empty(settings()->stripe->is_enabled),
-                'ai_enabled' => defined('AI_ENABLED') ? AI_ENABLED : false,
+                'ai_enabled' => $ai_diagnostics['feature_flag_enabled'] ?? false,
                 'brevo_enabled' => defined('BREVO_API_KEY') ? trim((string) BREVO_API_KEY) !== '' : false,
                 'ops_readonly_enabled' => FCC_OPS_READONLY_ENABLED,
             ],
-            'cron' => [
-                'last_run_at' => $cron_settings->cron_datetime ?? null,
-                'last_run_processing_seconds' => isset($cron_settings->cron_datetime_processing) ? (float) $cron_settings->cron_datetime_processing : null,
-                'last_reset_at' => $cron_settings->reset_date ?? null,
-                'last_reset_processing_seconds' => isset($cron_settings->reset_date_processing) ? (float) $cron_settings->reset_date_processing : null,
-            ],
+            'cron' => $cron_diagnostics,
+            'ai' => $ai_diagnostics,
             'billing' => [
                 'counts' => $billing_dashboard['counts'] ?? [],
                 'latest_event' => $this->get_recent_global_billing_events(1)[0] ?? null,
@@ -655,13 +716,20 @@ class OpsReadonly extends Controller {
             ];
         }
 
+        $cron_diagnostics = $this->get_cron_diagnostics_payload();
+        $ai_diagnostics = $this->get_ai_diagnostics_payload();
+
         return [
             'totals' => $totals,
             'plan_mix' => $plan_mix,
             'billing' => $billing_dashboard,
             'recent_billing_events' => $this->get_recent_global_billing_events(5),
             'health' => [
-                'cron_last_run_at' => $this->get_object(settings()->cron ?? null)->cron_datetime ?? null,
+                'cron_last_run_at' => $cron_diagnostics['last_run_at'] ?? null,
+                'cron_is_stale' => $cron_diagnostics['is_stale'] ?? true,
+                'cron_key_configured' => $cron_diagnostics['key_configured'] ?? false,
+                'shared_openai_key_configured' => $ai_diagnostics['shared_openai_key_configured'] ?? false,
+                'shared_ai_ready' => $ai_diagnostics['shared_ai_ready'] ?? false,
                 'ops_readonly_enabled' => FCC_OPS_READONLY_ENABLED,
             ],
         ];
