@@ -51,8 +51,8 @@ if(!empty($data->link->settings->video_url)) {
 <?php if($open_mode == 'popup'): ?>
     <?php ob_start() ?>
     <div class="modal fade" id="<?= 'lead_funnel_' . $data->link->biolink_block_id ?>" tabindex="-1" role="dialog" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg" role="document">
-            <div class="modal-content" data-lead-funnel-container data-biolink-block-id="<?= $data->link->biolink_block_id ?>" style="<?= $lead_funnel_popup_style ?>">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg lead-funnel-modal-dialog" role="document">
+            <div class="modal-content lead-funnel-modal-content" data-lead-funnel-container data-biolink-block-id="<?= $data->link->biolink_block_id ?>" style="<?= $lead_funnel_popup_style ?>">
 
                 <div class="modal-header">
                     <h5 class="modal-title" data-lead-funnel-popup-title><?= $data->link->settings->popup_title ?: $data->link->settings->name ?></h5>

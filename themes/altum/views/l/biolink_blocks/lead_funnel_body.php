@@ -7,21 +7,45 @@
     @font-face {font-family: 'Scriptorama'; src: url('<?= ASSETS_FULL_URL . 'css/fonts/scriptorama_tradeshow_jf_regular-webfont.woff2' ?>') format('woff2'), url('<?= ASSETS_FULL_URL . 'css/fonts/scriptorama_tradeshow_jf_regular-webfont.woff' ?>') format('woff'); font-weight: normal; font-style: normal;}
     @font-face {font-family: 'Helvetica Neue Medium'; src: url('<?= ASSETS_FULL_URL . 'css/fonts/helveticaneuemedium-webfont.woff2' ?>') format('woff2'), url('<?= ASSETS_FULL_URL . 'css/fonts/helveticaneuemedium-webfont.woff' ?>') format('woff'); font-weight: normal; font-style: normal;}
     @font-face {font-family: 'Helvetica Neue LT'; src: url('<?= ASSETS_FULL_URL . 'css/fonts/helveticaneuelt.woff2' ?>') format('woff2'), url('<?= ASSETS_FULL_URL . 'css/fonts/helveticaneuelt.woff' ?>') format('woff'); font-weight: normal; font-style: normal;}
-    .lead-funnel-video-wrapper {position: relative; width: 100%; padding-top: 56.25%; overflow: hidden; border-radius: 1.2rem; background: #000; box-shadow: 0 1rem 2.5rem rgba(15, 23, 42, 0.16);}
+    [data-lead-funnel-container] {background: var(--lead-funnel-background-color, #ffffff); color: var(--lead-funnel-text-color, #212529); position: relative; overflow: hidden;}
+    [data-lead-funnel-container]::before {content: ''; position: absolute; inset: 0; background:
+        radial-gradient(circle at top right, rgba(255,255,255,.18), transparent 32%),
+        radial-gradient(circle at bottom left, rgba(255,255,255,.08), transparent 28%);
+        pointer-events: none;}
+    [data-lead-funnel-container] .modal-header {position: relative; z-index: 1; padding: 1.2rem 1.35rem .4rem; border-bottom: 0; background: transparent;}
+    [data-lead-funnel-container] .modal-title {font-size: 1.45rem; line-height: 1.15; font-weight: 900; letter-spacing: -.02em; max-width: calc(100% - 3.5rem);}
+    [data-lead-funnel-container] .modal-body {position: relative; z-index: 1; padding: .45rem 1.35rem 1.35rem;}
+    [data-lead-funnel-container] .close {display: inline-flex; align-items: center; justify-content: center; width: 2.25rem; height: 2.25rem; border-radius: 999px; color: var(--lead-funnel-text-color, #212529); text-shadow: none; background: rgba(255,255,255,.16); border: 1px solid rgba(255,255,255,.18); opacity: 1; transition: transform .2s ease, background-color .2s ease;}
+    [data-lead-funnel-container] .close:hover {background: rgba(255,255,255,.26); transform: scale(1.04);}
+    .lead-funnel-stack {display: grid; gap: 1rem;}
+    .lead-funnel-intro-card,
+    .lead-funnel-video-card,
+    .lead-funnel-form-card,
+    .lead-funnel-thank-you-card {position: relative; overflow: hidden; border-radius: 1.45rem; border: 1px solid rgba(255,255,255,.18); background: linear-gradient(180deg, rgba(255,255,255,.16), rgba(255,255,255,.08)); box-shadow: 0 1.25rem 3rem rgba(15, 23, 42, 0.16), inset 0 1px 0 rgba(255,255,255,.12);}
+    .lead-funnel-intro-card::after,
+    .lead-funnel-form-card::after,
+    .lead-funnel-thank-you-card::after {content: ''; position: absolute; right: -3rem; top: -3rem; width: 9rem; height: 9rem; border-radius: 999px; background: radial-gradient(circle, rgba(255,255,255,.24), transparent 68%); pointer-events: none;}
+    .lead-funnel-intro-card {padding: 1rem 1.1rem;}
+    .lead-funnel-video-card {padding: .7rem;}
+    .lead-funnel-form-card,
+    .lead-funnel-thank-you-card {padding: 1rem;}
+    .lead-funnel-section-label {display: inline-flex; align-items: center; gap: .45rem; margin-bottom: .65rem; padding: .4rem .72rem; border-radius: 999px; border: 1px solid rgba(255,255,255,.18); background: rgba(15,23,42,.12); color: var(--lead-funnel-text-color, #212529); font-size: .72rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase;}
+    .lead-funnel-section-label i {font-size: .78rem; opacity: .92;}
+    .lead-funnel-video-wrapper {position: relative; width: 100%; padding-top: 56.25%; overflow: hidden; border-radius: 1.15rem; background: #000; box-shadow: 0 1rem 2.5rem rgba(15, 23, 42, 0.16);}
     .lead-funnel-video-wrapper iframe {position: absolute; inset: 0; width: 100%; height: 100%; border: 0;}
-    [data-lead-funnel-container] {background: var(--lead-funnel-background-color, #ffffff); color: var(--lead-funnel-text-color, #212529);}
-    [data-lead-funnel-container] .modal-header {border-bottom-color: rgba(0, 0, 0, 0.08);}
-    [data-lead-funnel-container] .close {color: var(--lead-funnel-text-color, #212529); text-shadow: none; opacity: .8;}
-    .lead-funnel-supporting-text {color: var(--lead-funnel-text-color, #212529); opacity: .82; font-size: .98rem; line-height: 1.65;}
+    .lead-funnel-video-caption {margin-top: .8rem; color: var(--lead-funnel-text-color, #212529); opacity: .78; font-size: .93rem; line-height: 1.55;}
+    .lead-funnel-supporting-text {color: var(--lead-funnel-text-color, #212529); opacity: .84; font-size: .98rem; line-height: 1.7;}
     .lead-funnel-submit-button,
-    .lead-funnel-thank-you-button {background: var(--lead-funnel-button-background-color, #007bff); border-color: var(--lead-funnel-button-background-color, #007bff); color: var(--lead-funnel-button-text-color, #ffffff); border-radius: 1rem; min-height: 3.7rem; font-size: 1.05rem; font-weight: 800; box-shadow: 0 1rem 2.2rem rgba(0,0,0,.16);}
+    .lead-funnel-thank-you-button {background: var(--lead-funnel-button-background-color, #007bff); border-color: transparent; color: var(--lead-funnel-button-text-color, #ffffff); border-radius: 1rem; min-height: 3.8rem; font-size: 1.02rem; font-weight: 900; letter-spacing: .01em; box-shadow: 0 1rem 2.2rem rgba(0,0,0,.16);}
     .lead-funnel-submit-button:hover,
     .lead-funnel-submit-button:focus,
     .lead-funnel-thank-you-button:hover,
     .lead-funnel-thank-you-button:focus {background: var(--lead-funnel-button-background-color, #007bff); border-color: var(--lead-funnel-button-background-color, #007bff); color: var(--lead-funnel-button-text-color, #ffffff); filter: brightness(0.95);}
-    .lead-funnel-thank-you {display: none; text-align: center; padding: 1rem 0;}
+    .lead-funnel-submit-button {margin-top: .2rem;}
+    .lead-funnel-submit-helper {margin-top: .85rem; color: var(--lead-funnel-text-color, #212529); opacity: .64; font-size: .85rem; text-align: center;}
+    .lead-funnel-thank-you {display: none; text-align: center; padding: 0;}
     .lead-funnel-thank-you.is-visible {display: block;}
-    .lead-funnel-page-card {background: var(--lead-funnel-background-color, #ffffff); color: var(--lead-funnel-text-color, #212529); border-radius: 1.75rem; border: 1px solid rgba(255,255,255,.16); box-shadow: 0 1.75rem 4rem rgba(0,0,0,0.14); overflow: hidden; backdrop-filter: blur(12px);}
+    .lead-funnel-page-card {background: var(--lead-funnel-background-color, #ffffff); color: var(--lead-funnel-text-color, #212529); border-radius: 1.85rem; border: 1px solid rgba(255,255,255,.16); box-shadow: 0 1.75rem 4rem rgba(0,0,0,0.14); overflow: hidden; backdrop-filter: blur(12px); position: relative;}
     .lead-funnel-page-header {padding: 1.35rem 1.35rem 0;}
     .lead-funnel-page-body {padding: 1.15rem 1.35rem 1.35rem;}
     .lead-funnel-page-back-link {color: var(--lead-funnel-text-color, #212529); opacity: .75;}
@@ -37,14 +61,14 @@
     [data-lead-funnel-container] .input-group {align-items: stretch;}
     [data-lead-funnel-container] .input-group-text,
     [data-lead-funnel-container] .form-control,
-    [data-lead-funnel-container] .custom-select {min-height: 3.2rem;}
+    [data-lead-funnel-container] .custom-select {min-height: 3.35rem;}
     [data-lead-funnel-container] .form-control,
-    [data-lead-funnel-container] .custom-select {border: 0; border-radius: 1rem; background: rgba(255,255,255,.96); color: var(--lead-funnel-text-color, #212529); box-shadow: 0 .5rem 1.4rem rgba(15, 23, 42, .08);}
+    [data-lead-funnel-container] .custom-select {border: 0; border-radius: 1rem; background: rgba(255,255,255,.97); color: var(--lead-funnel-text-color, #212529); box-shadow: 0 .5rem 1.4rem rgba(15, 23, 42, .08);}
     [data-lead-funnel-container] .form-control::placeholder {color: rgba(15, 23, 42, .52);}
-    [data-lead-funnel-container] .input-group-text {width: 3.15rem; justify-content: center; border: 0; border-radius: 1rem 0 0 1rem; background: rgba(255,255,255,.88); color: #c9ad58;}
+    [data-lead-funnel-container] .input-group-text {width: 3.15rem; justify-content: center; border: 0; border-radius: 1rem 0 0 1rem; background: rgba(255,255,255,.92); color: #c9ad58;}
     [data-lead-funnel-container] .input-group .form-control {border-radius: 0 1rem 1rem 0;}
     [data-lead-funnel-container] textarea.form-control {min-height: 7rem; padding-top: .95rem; padding-bottom: .95rem;}
-    .fcc-contact-capture {margin-bottom: 1rem; padding: .8rem; border-radius: 1.3rem; background: linear-gradient(180deg, rgba(255,255,255,.14), rgba(255,255,255,.08)); border: 1px solid rgba(255,255,255,.18); backdrop-filter: blur(10px); box-shadow: inset 0 1px 0 rgba(255,255,255,.1);}
+    .fcc-contact-capture {margin-bottom: 1rem; padding: .8rem; border-radius: 1.3rem; background: linear-gradient(180deg, rgba(255,255,255,.16), rgba(255,255,255,.08)); border: 1px solid rgba(255,255,255,.18); backdrop-filter: blur(10px); box-shadow: inset 0 1px 0 rgba(255,255,255,.1);}
     .fcc-contact-capture .custom-select,
     .fcc-contact-capture .form-control {border-radius: 1rem; min-height: 3.2rem; box-shadow: none;}
     .fcc-contact-capture .custom-select {padding-left: 1rem; padding-right: 2.4rem; font-weight: 700; font-size: .9rem;}
@@ -56,11 +80,20 @@
     .fcc-contact-capture-chip {display: inline-flex; align-items: center; justify-content: center; width: 100%; min-width: 0; min-height: 2.9rem; padding: .45rem .3rem; border-radius: 999px; border: 1px solid rgba(255,255,255,.26); background: rgba(255,255,255,.08); color: var(--lead-funnel-text-color, #212529); font-size: .84rem; font-weight: 800; cursor: pointer; transition: all .2s ease; white-space: nowrap;}
     .fcc-contact-capture-radio:checked + .fcc-contact-capture-chip {background: var(--lead-funnel-button-background-color, #007bff); border-color: var(--lead-funnel-button-background-color, #007bff); color: var(--lead-funnel-button-text-color, #ffffff); box-shadow: 0 .5rem 1.2rem rgba(0,0,0,.16);}
     .fcc-contact-capture-radio:focus + .fcc-contact-capture-chip {outline: 0; box-shadow: 0 0 0 .2rem rgba(0,123,255,.18);}
+    [data-lead-funnel-container] .custom-control-label {line-height: 1.55;}
+    [data-lead-funnel-container] a {color: inherit;}
     @media (max-width: 575.98px) {
+        [data-lead-funnel-container] .modal-header {padding: 1rem 1rem .35rem;}
+        [data-lead-funnel-container] .modal-title {font-size: 1.28rem;}
+        [data-lead-funnel-container] .modal-body {padding: .35rem 1rem 1rem;}
         .lead-funnel-page-header {padding: 1.15rem 1.1rem 0;}
         .lead-funnel-page-body {padding: 1rem 1.1rem 1.15rem;}
         .lead-funnel-page-card h1 {font-size: 2rem;}
         .lead-funnel-supporting-text {font-size: .95rem;}
+        .lead-funnel-intro-card,
+        .lead-funnel-form-card,
+        .lead-funnel-thank-you-card {padding: .95rem;}
+        .lead-funnel-video-card {padding: .55rem;}
     }
     [data-lead-funnel-container] .ql-content p:last-child,
     [data-lead-funnel-container] .ql-content ul:last-child,
@@ -175,119 +208,155 @@ $contact_channel_options = [
     <input type="hidden" name="token" value="<?= \Altum\Csrf::get() ?>" required="required" />
     <input type="hidden" name="biolink_block_id" value="<?= $data->link->biolink_block_id ?>" />
 
-    <?php if($popup_subtitle_has_html): ?>
-        <div class="lead-funnel-supporting-text ql-content" data-lead-funnel-popup-subtitle style="<?= !empty($popup_subtitle) ? null : 'display:none;' ?>"><?= $popup_subtitle ?></div>
-    <?php else: ?>
-        <div class="lead-funnel-supporting-text" data-lead-funnel-popup-subtitle style="<?= !empty($popup_subtitle) ? null : 'display:none;' ?>"><?= nl2br($popup_subtitle) ?></div>
-    <?php endif ?>
-
-    <?php if(!empty($data->embed_url)): ?>
-        <div class="lead-funnel-video-wrapper mb-4">
-            <iframe src="<?= $data->embed_url ?>" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen loading="lazy"></iframe>
-        </div>
-    <?php endif ?>
-
-    <?php if($description_has_html): ?>
-        <div class="mb-4 lead-funnel-supporting-text ql-content" data-lead-funnel-popup-description style="<?= !empty($description) ? null : 'display:none;' ?>"><?= $description ?></div>
-    <?php else: ?>
-        <div class="mb-4 lead-funnel-supporting-text" data-lead-funnel-popup-description style="<?= !empty($description) ? null : 'display:none;' ?>"><?= nl2br($description) ?></div>
-    <?php endif ?>
-
-    <?php if(!empty($data->link->settings->show_name)): ?>
-        <div class="form-group">
-            <div class="input-group">
-                <div class="input-group-prepend">
-                    <div class="input-group-text bg-gray-50"><i class="fas fa-fw fa-signature"></i></div>
-                </div>
-                <input type="text" class="form-control" name="name" maxlength="64" <?= !empty($data->link->settings->require_name) ? 'required="required"' : null ?> placeholder="<?= $data->link->settings->name_placeholder ?>" aria-label="<?= $data->link->settings->name_placeholder ?>" />
-            </div>
-        </div>
-    <?php endif ?>
-
-    <?php if(!empty($data->link->settings->show_email)): ?>
-        <div class="form-group">
-            <div class="input-group">
-                <div class="input-group-prepend">
-                    <div class="input-group-text bg-gray-50"><i class="fas fa-fw fa-envelope"></i></div>
-                </div>
-                <input type="email" class="form-control" name="email" maxlength="320" <?= !empty($data->link->settings->require_email) ? 'required="required"' : null ?> placeholder="<?= $data->link->settings->email_placeholder ?>" aria-label="<?= $data->link->settings->email_placeholder ?>" />
-            </div>
-        </div>
-    <?php endif ?>
-
-    <?php if(!empty($data->link->settings->show_phone)): ?>
-        <div class="fcc-contact-capture">
-            <div class="fcc-contact-capture-row">
-                <select class="custom-select" name="phone_country_code" required="required" aria-label="Država i pozivni broj">
-                    <?php foreach($contact_country_options as $country_code => $country_label): ?>
-                        <option value="<?= $country_code ?>" <?= $country_code == 'HR' ? 'selected="selected"' : null ?>><?= $country_label ?></option>
-                    <?php endforeach ?>
-                </select>
-            </div>
-            <div class="fcc-contact-capture-row">
-                <div class="input-group">
-                    <div class="input-group-prepend">
-                        <div class="input-group-text"><i class="fas fa-fw fa-phone-square-alt"></i></div>
-                    </div>
-                    <input type="tel" inputmode="tel" class="form-control" name="phone" maxlength="32" <?= !empty($data->link->settings->require_phone) ? 'required="required"' : null ?> placeholder="<?= $data->link->settings->phone_placeholder ?>" aria-label="<?= $data->link->settings->phone_placeholder ?>" />
-                </div>
-            </div>
-            <div class="fcc-contact-capture-row">
-                <div class="fcc-contact-capture-channels" role="radiogroup" aria-label="Najbrži kanal kontakta">
-                    <?php foreach($contact_channel_options as $channel_key => $channel_label): ?>
-                        <label class="mb-0">
-                            <input type="radio" class="fcc-contact-capture-radio" name="preferred_contact_channel" value="<?= $channel_key ?>" <?= $channel_key == 'whatsapp' ? 'checked="checked"' : null ?> />
-                            <span class="fcc-contact-capture-chip"><?= $channel_label ?></span>
-                        </label>
-                    <?php endforeach ?>
-                </div>
-            </div>
-        </div>
-    <?php endif ?>
-
-    <?php if(!empty($data->link->settings->show_message)): ?>
-        <div class="form-group">
-            <textarea class="form-control" name="message" maxlength="512" <?= !empty($data->link->settings->require_message) ? 'required="required"' : null ?> placeholder="<?= $data->link->settings->message_placeholder ?>" aria-label="<?= $data->link->settings->message_placeholder ?>"></textarea>
-        </div>
-    <?php endif ?>
-
-    <?php if($data->link->settings->show_agreement): ?>
-        <div class="custom-control custom-switch mb-3">
-            <input type="checkbox" id="<?= 'lead_funnel_agreement_' . $data->link->biolink_block_id ?>" name="agreement" class="custom-control-input" required="required" />
-            <label class="custom-control-label font-weight-normal" for="<?= 'lead_funnel_agreement_' . $data->link->biolink_block_id ?>">
-                <span data-lead-funnel-agreement-text class="<?= $agreement_text_has_html ? 'ql-content' : '' ?>"><?= $agreement_text_has_html ? $agreement_text : nl2br($agreement_text) ?></span>
-                <?php if(!empty($data->link->settings->agreement_url)): ?>
-                    <a href="<?= $data->link->settings->agreement_url ?>" target="_blank" rel="nofollow noreferrer"><i class="fas fa-fw fa-sm fa-external-link-alt"></i></a>
+    <div class="lead-funnel-stack">
+        <?php if(!empty($popup_subtitle)): ?>
+            <div class="lead-funnel-intro-card" data-lead-funnel-popup-subtitle>
+                <div class="lead-funnel-section-label"><i class="fas fa-bolt"></i><span><?= l('biolink_lead_funnel.section_intro') ?></span></div>
+                <?php if($popup_subtitle_has_html): ?>
+                    <div class="lead-funnel-supporting-text ql-content"><?= $popup_subtitle ?></div>
+                <?php else: ?>
+                    <div class="lead-funnel-supporting-text"><?= nl2br($popup_subtitle) ?></div>
                 <?php endif ?>
-            </label>
-        </div>
-    <?php endif ?>
+            </div>
+        <?php else: ?>
+            <div data-lead-funnel-popup-subtitle style="display:none;"></div>
+        <?php endif ?>
 
-    <?php if(settings()->captcha->biolink_is_enabled && settings()->captcha->type != 'basic'): ?>
-        <div class="form-group">
-            <?php (new \Altum\Captcha())->display() ?>
-        </div>
-    <?php endif ?>
+        <?php if(!empty($data->embed_url)): ?>
+            <div class="lead-funnel-video-card">
+                <div class="lead-funnel-video-wrapper">
+                    <iframe src="<?= $data->embed_url ?>" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen loading="lazy"></iframe>
+                </div>
 
-    <div class="text-center mt-4">
-        <button type="submit" name="submit" class="btn btn-block btn-lg lead-funnel-submit-button" data-is-ajax data-lead-funnel-submit-button><?= $data->link->settings->button_text ?></button>
+                <?php if(!empty($description)): ?>
+                    <?php if($description_has_html): ?>
+                        <div class="lead-funnel-video-caption ql-content" data-lead-funnel-popup-description><?= $description ?></div>
+                    <?php else: ?>
+                        <div class="lead-funnel-video-caption" data-lead-funnel-popup-description><?= nl2br($description) ?></div>
+                    <?php endif ?>
+                <?php else: ?>
+                    <div data-lead-funnel-popup-description style="display:none;"></div>
+                <?php endif ?>
+            </div>
+        <?php else: ?>
+            <?php if($description_has_html): ?>
+                <div class="lead-funnel-intro-card" data-lead-funnel-popup-description style="<?= !empty($description) ? null : 'display:none;' ?>">
+                    <div class="lead-funnel-section-label"><i class="fas fa-layer-group"></i><span><?= l('biolink_lead_funnel.section_benefits') ?></span></div>
+                    <div class="lead-funnel-supporting-text ql-content"><?= $description ?></div>
+                </div>
+            <?php else: ?>
+                <div class="lead-funnel-intro-card" data-lead-funnel-popup-description style="<?= !empty($description) ? null : 'display:none;' ?>">
+                    <div class="lead-funnel-section-label"><i class="fas fa-layer-group"></i><span><?= l('biolink_lead_funnel.section_benefits') ?></span></div>
+                    <div class="lead-funnel-supporting-text"><?= nl2br($description) ?></div>
+                </div>
+            <?php endif ?>
+        <?php endif ?>
+
+        <div class="lead-funnel-form-card">
+            <div class="lead-funnel-section-label"><i class="fas fa-paper-plane"></i><span><?= l('biolink_lead_funnel.section_form') ?></span></div>
+
+            <?php if(!empty($data->link->settings->show_name)): ?>
+                <div class="form-group">
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <div class="input-group-text bg-gray-50"><i class="fas fa-fw fa-signature"></i></div>
+                        </div>
+                        <input type="text" class="form-control" name="name" maxlength="64" <?= !empty($data->link->settings->require_name) ? 'required="required"' : null ?> placeholder="<?= $data->link->settings->name_placeholder ?>" aria-label="<?= $data->link->settings->name_placeholder ?>" />
+                    </div>
+                </div>
+            <?php endif ?>
+
+            <?php if(!empty($data->link->settings->show_email)): ?>
+                <div class="form-group">
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <div class="input-group-text bg-gray-50"><i class="fas fa-fw fa-envelope"></i></div>
+                        </div>
+                        <input type="email" class="form-control" name="email" maxlength="320" <?= !empty($data->link->settings->require_email) ? 'required="required"' : null ?> placeholder="<?= $data->link->settings->email_placeholder ?>" aria-label="<?= $data->link->settings->email_placeholder ?>" />
+                    </div>
+                </div>
+            <?php endif ?>
+
+            <?php if(!empty($data->link->settings->show_phone)): ?>
+                <div class="fcc-contact-capture">
+                    <div class="fcc-contact-capture-row">
+                        <select class="custom-select" name="phone_country_code" required="required" aria-label="Država i pozivni broj">
+                            <?php foreach($contact_country_options as $country_code => $country_label): ?>
+                                <option value="<?= $country_code ?>" <?= $country_code == 'HR' ? 'selected="selected"' : null ?>><?= $country_label ?></option>
+                            <?php endforeach ?>
+                        </select>
+                    </div>
+                    <div class="fcc-contact-capture-row">
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <div class="input-group-text"><i class="fas fa-fw fa-phone-square-alt"></i></div>
+                            </div>
+                            <input type="tel" inputmode="tel" class="form-control" name="phone" maxlength="32" <?= !empty($data->link->settings->require_phone) ? 'required="required"' : null ?> placeholder="<?= $data->link->settings->phone_placeholder ?>" aria-label="<?= $data->link->settings->phone_placeholder ?>" />
+                        </div>
+                    </div>
+                    <div class="fcc-contact-capture-row">
+                        <div class="fcc-contact-capture-channels" role="radiogroup" aria-label="Najbrži kanal kontakta">
+                            <?php foreach($contact_channel_options as $channel_key => $channel_label): ?>
+                                <label class="mb-0">
+                                    <input type="radio" class="fcc-contact-capture-radio" name="preferred_contact_channel" value="<?= $channel_key ?>" <?= $channel_key == 'whatsapp' ? 'checked="checked"' : null ?> />
+                                    <span class="fcc-contact-capture-chip"><?= $channel_label ?></span>
+                                </label>
+                            <?php endforeach ?>
+                        </div>
+                    </div>
+                </div>
+            <?php endif ?>
+
+            <?php if(!empty($data->link->settings->show_message)): ?>
+                <div class="form-group">
+                    <textarea class="form-control" name="message" maxlength="512" <?= !empty($data->link->settings->require_message) ? 'required="required"' : null ?> placeholder="<?= $data->link->settings->message_placeholder ?>" aria-label="<?= $data->link->settings->message_placeholder ?>"></textarea>
+                </div>
+            <?php endif ?>
+
+            <?php if($data->link->settings->show_agreement): ?>
+                <div class="custom-control custom-switch mb-3">
+                    <input type="checkbox" id="<?= 'lead_funnel_agreement_' . $data->link->biolink_block_id ?>" name="agreement" class="custom-control-input" required="required" />
+                    <label class="custom-control-label font-weight-normal" for="<?= 'lead_funnel_agreement_' . $data->link->biolink_block_id ?>">
+                        <span data-lead-funnel-agreement-text class="<?= $agreement_text_has_html ? 'ql-content' : '' ?>"><?= $agreement_text_has_html ? $agreement_text : nl2br($agreement_text) ?></span>
+                        <?php if(!empty($data->link->settings->agreement_url)): ?>
+                            <a href="<?= $data->link->settings->agreement_url ?>" target="_blank" rel="nofollow noreferrer"><i class="<?= 'fas fa-fw fa-sm fa-external-link-alt' ?>"></i></a>
+                        <?php endif ?>
+                    </label>
+                </div>
+            <?php endif ?>
+
+            <?php if(settings()->captcha->biolink_is_enabled && settings()->captcha->type != 'basic'): ?>
+                <div class="form-group">
+                    <?php (new \Altum\Captcha())->display() ?>
+                </div>
+            <?php endif ?>
+
+            <div class="text-center mt-4">
+                <button type="submit" name="submit" class="btn btn-block btn-lg lead-funnel-submit-button" data-is-ajax data-lead-funnel-submit-button><?= $data->link->settings->button_text ?></button>
+                <div class="lead-funnel-submit-helper"><?= l('biolink_lead_funnel.form_helper') ?></div>
+            </div>
+        </div>
     </div>
 </form>
 
 <div class="lead-funnel-thank-you" data-thank-you-screen>
-    <?php if(!empty($thank_you_title)): ?>
-        <div class="mb-3 <?= $thank_you_title_has_html ? 'ql-content' : '' ?>" data-lead-funnel-thank-you-title style="color: var(--lead-funnel-text-color); font-size: 1.5rem; font-weight: 600;"><?= $thank_you_title_has_html ? $thank_you_title : nl2br($thank_you_title) ?></div>
-    <?php endif ?>
+    <div class="lead-funnel-thank-you-card">
+        <div class="lead-funnel-section-label"><i class="fas fa-check-circle"></i><span><?= l('biolink_lead_funnel.section_success') ?></span></div>
 
-    <?php if(!empty($thank_you_text)): ?>
-        <?php if($thank_you_text_has_html): ?>
-            <div class="lead-funnel-supporting-text ql-content mb-4" data-lead-funnel-thank-you-text><?= $thank_you_text ?></div>
-        <?php else: ?>
-            <div class="lead-funnel-supporting-text mb-4" data-lead-funnel-thank-you-text><?= nl2br($thank_you_text) ?></div>
+        <?php if(!empty($thank_you_title)): ?>
+            <div class="mb-3 <?= $thank_you_title_has_html ? 'ql-content' : '' ?>" data-lead-funnel-thank-you-title style="color: var(--lead-funnel-text-color); font-size: 1.5rem; font-weight: 700;"><?= $thank_you_title_has_html ? $thank_you_title : nl2br($thank_you_title) ?></div>
         <?php endif ?>
-    <?php endif ?>
 
-    <a href="#" class="btn lead-funnel-thank-you-button d-none" data-thank-you-button><?= $data->link->settings->thank_you_button_text ?? l('biolink_lead_funnel.thank_you_button_text_default') ?></a>
+        <?php if(!empty($thank_you_text)): ?>
+            <?php if($thank_you_text_has_html): ?>
+                <div class="lead-funnel-supporting-text ql-content mb-4" data-lead-funnel-thank-you-text><?= $thank_you_text ?></div>
+            <?php else: ?>
+                <div class="lead-funnel-supporting-text mb-4" data-lead-funnel-thank-you-text><?= nl2br($thank_you_text) ?></div>
+            <?php endif ?>
+        <?php endif ?>
+
+        <a href="#" class="btn lead-funnel-thank-you-button d-none" data-thank-you-button><?= $data->link->settings->thank_you_button_text ?? l('biolink_lead_funnel.thank_you_button_text_default') ?></a>
+    </div>
 </div>
 
 <?php if(!\Altum\Event::exists_content_type_key('javascript', 'lead_funnel')): ?>
