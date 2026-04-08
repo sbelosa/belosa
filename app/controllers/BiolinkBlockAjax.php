@@ -1233,12 +1233,12 @@ class BiolinkBlockAjax extends Controller {
         $existing_settings = json_decode($biolink_block->settings ?? '');
         $existing_text_color = verify_hex_color($existing_settings->text_color ?? null) ? $existing_settings->text_color : '#ffffff';
         $existing_background_color = verify_hex_color($existing_settings->background_color ?? null) ? $existing_settings->background_color : '#00000000';
-        $existing_font_size = in_array((int) ($existing_settings->font_size ?? 16), range(12, 24), true) ? (int) $existing_settings->font_size : 16;
+        $existing_font_size = in_array((int) ($existing_settings->font_size ?? 16), range(10, 24), true) ? (int) $existing_settings->font_size : 16;
         $existing_text_alignment = in_array($existing_settings->text_alignment ?? 'center', ['center', 'left', 'right', 'justify']) ? $existing_settings->text_alignment : 'center';
 
         $_POST['text_color'] = !verify_hex_color($_POST['text_color']) ? $existing_text_color : $_POST['text_color'];
         $_POST['background_color'] = !verify_hex_color($_POST['background_color']) ? $existing_background_color : $_POST['background_color'];
-        $_POST['font_size'] = in_array((int) ($_POST['font_size'] ?? 0), range(12, 24), true) ? (int) $_POST['font_size'] : $existing_font_size;
+        $_POST['font_size'] = in_array((int) ($_POST['font_size'] ?? 0), range(10, 24), true) ? (int) $_POST['font_size'] : $existing_font_size;
         $_POST['text_alignment'] = in_array($_POST['text_alignment'] ?? $existing_text_alignment, ['center', 'left', 'right', 'justify']) ? query_clean($_POST['text_alignment'] ?? $existing_text_alignment) : 'center';
 
         $settings = json_encode([

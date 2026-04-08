@@ -4315,7 +4315,7 @@ $fcc_biolink_editor_tours = [
                 }
 
                 if(item_input) {
-                    $(item_input).off().on('change paste keyup', event => {
+                    $(item_input).off().on('input change paste keyup', event => {
                         let item_value = $(event.currentTarget).val();
                         let is_rich_text_input = event.currentTarget.classList.contains('quilljs') || !!event.currentTarget.sharedQuillEditor;
 
@@ -4558,12 +4558,12 @@ $fcc_biolink_editor_tours = [
                     let color = hsva.toHEXA().toString();
                     $(color_input).val(color);
                     biolink_link.find('[data-text-color]').css('color', color).css('--paragraph-text-color', color);
-                    biolink_link.find('[data-text-color] .ql-content, [data-text-color] .ql-content *').css('color', color);
+                    biolink_link.find('[data-text-color] .ql-content').css('color', color);
                 });
 
                 bind_hex_color_input(color_input, color_pickr, color => {
                     biolink_link.find('[data-text-color]').css('color', color).css('--paragraph-text-color', color);
-                    biolink_link.find('[data-text-color] .ql-content, [data-text-color] .ql-content *').css('color', color);
+                    biolink_link.find('[data-text-color] .ql-content').css('color', color);
                 });
             }
 

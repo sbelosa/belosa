@@ -53,7 +53,7 @@
             return;
         }
 
-        const size_whitelist = ['12px', '14px', '16px', '18px', '20px', '22px', '24px'];
+        const size_whitelist = ['10px', '12px', '14px', '16px', '18px', '20px', '22px', '24px'];
         const Size = Quill.import('attributors/style/size');
         Size.whitelist = size_whitelist;
         Quill.register(Size, true);
@@ -65,6 +65,8 @@
                 .ql-snow .ql-picker.ql-size { width: 82px; }
                 .ql-snow .ql-picker.ql-size .ql-picker-label::before,
                 .ql-snow .ql-picker.ql-size .ql-picker-item::before { content: '16 px'; }
+                .ql-snow .ql-picker.ql-size .ql-picker-label[data-value="10px"]::before,
+                .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="10px"]::before { content: '10 px'; }
                 .ql-snow .ql-picker.ql-size .ql-picker-label[data-value="12px"]::before,
                 .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="12px"]::before { content: '12 px'; }
                 .ql-snow .ql-picker.ql-size .ql-picker-label[data-value="14px"]::before,

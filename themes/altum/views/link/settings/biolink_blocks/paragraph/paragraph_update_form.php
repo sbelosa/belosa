@@ -3,7 +3,7 @@
 <?php
 $paragraph_text_color = verify_hex_color($row->settings->text_color ?? null) ? $row->settings->text_color : '#FFFFFF';
 $paragraph_background_color = verify_hex_color($row->settings->background_color ?? null) ? $row->settings->background_color : '#00000000';
-$paragraph_font_size = in_array((int) ($row->settings->font_size ?? 16), range(12, 24), true) ? (int) $row->settings->font_size : 16;
+$paragraph_font_size = in_array((int) ($row->settings->font_size ?? 16), range(10, 24), true) ? (int) $row->settings->font_size : 16;
 ?>
 
 <form id="<?= 'update_biolink_block_' . $row->biolink_block_id ?>" name="update_biolink_" method="post" role="form" data-type="<?= $row->type ?>">
@@ -61,7 +61,7 @@ $paragraph_font_size = in_array((int) ($row->settings->font_size ?? 16), range(1
         <input
             id="<?= 'paragraph_font_size_' . $row->biolink_block_id ?>"
             type="number"
-            min="12"
+            min="10"
             max="24"
             step="1"
             name="font_size"

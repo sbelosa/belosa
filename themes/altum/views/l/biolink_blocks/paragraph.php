@@ -5,7 +5,7 @@ if(empty($data->link->settings->border_shadow_style)) {
     $data->link->settings->border_shadow_style = 'none';
 }
 
-$font_size = in_array((int) ($data->link->settings->font_size ?? 16), range(12, 24), true) ? (int) $data->link->settings->font_size : 16;
+$font_size = in_array((int) ($data->link->settings->font_size ?? 16), range(10, 24), true) ? (int) $data->link->settings->font_size : 16;
 $text_alignment = in_array($data->link->settings->text_alignment ?? 'center', ['center', 'left', 'right', 'justify']) ? $data->link->settings->text_alignment : 'center';
 $paragraph_text_color = verify_hex_color($data->link->settings->text_color ?? null) ? $data->link->settings->text_color : '#FFFFFF';
 ?>
@@ -39,7 +39,17 @@ $paragraph_text_color = verify_hex_color($data->link->settings->text_color ?? nu
     }
 
     #<?= 'biolink_block_id_' . $data->link->biolink_block_id ?> [data-text-color] .ql-content,
-    #<?= 'biolink_block_id_' . $data->link->biolink_block_id ?> [data-text-color] .ql-content * {
-        color: var(--paragraph-text-color) !important;
+    #<?= 'biolink_block_id_' . $data->link->biolink_block_id ?> [data-text-color] .ql-content p,
+    #<?= 'biolink_block_id_' . $data->link->biolink_block_id ?> [data-text-color] .ql-content li,
+    #<?= 'biolink_block_id_' . $data->link->biolink_block_id ?> [data-text-color] .ql-content blockquote {
+        color: var(--paragraph-text-color);
+    }
+
+    #<?= 'biolink_block_id_' . $data->link->biolink_block_id ?> [data-text-color] .ql-content strong,
+    #<?= 'biolink_block_id_' . $data->link->biolink_block_id ?> [data-text-color] .ql-content em,
+    #<?= 'biolink_block_id_' . $data->link->biolink_block_id ?> [data-text-color] .ql-content u,
+    #<?= 'biolink_block_id_' . $data->link->biolink_block_id ?> [data-text-color] .ql-content s,
+    #<?= 'biolink_block_id_' . $data->link->biolink_block_id ?> [data-text-color] .ql-content a {
+        color: inherit;
     }
 </style>
