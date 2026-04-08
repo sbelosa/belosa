@@ -487,10 +487,7 @@ class AdminLeaderOperatingSystemLeader extends Controller {
     }
 
     private function get_app_webshop_block_types(): array {
-        $app_webshop_block_types = array_filter(\Altum\Link::get_monitored_forever_outbound_types(), static function($type) {
-            return $type !== 'link_forever_shop';
-        });
-
+        $app_webshop_block_types = \Altum\Link::get_monitored_forever_outbound_types();
         $app_webshop_block_types[] = 'link_forever_living_albania_kosovo';
 
         return array_values(array_unique($app_webshop_block_types));
@@ -498,6 +495,20 @@ class AdminLeaderOperatingSystemLeader extends Controller {
 
     private function get_app_webshop_block_types_sql(): string {
         return "'" . implode("', '", $this->get_app_webshop_block_types()) . "'";
+    }
+
+    private function get_country_table_key(?string $country_code): string {
+        $country_code = strtoupper(trim((string) $country_code));
+
+        return $country_code !== '' ? $country_code : '__unknown__';
+    }
+
+    private function get_country_table_name(string $country_key): string {
+        if($country_key === '__unknown__') {
+            return l('admin_leader_operating_system.leader.country_table.unknown');
+        }
+
+        return get_country_from_country_code($country_key);
     }
 
     private function get_blog_referral_mediums(): array {
@@ -1211,7 +1222,7 @@ class AdminLeaderOperatingSystemLeader extends Controller {
         $rows_map = [];
 
         $clicks_result = database()->query("SELECT
-            UPPER(TRIM(`track_links`.`country_code`)) AS `country_code`,
+            UPPER(TRIM(COALESCE(`track_links`.`country_code`, ''))) AS `country_code`,
             SUM(CASE WHEN `track_links`.`is_unique` = 1 AND `track_links`.`link_id` IS NOT NULL AND `track_links`.`biolink_block_id` IS NULL AND `links`.`type` = 'biolink' THEN 1 ELSE 0 END) AS `app_visits`,
             SUM(CASE WHEN `track_links`.`is_unique` = 1 AND `biolinks_blocks`.`type` IN ({$app_webshop_block_types_sql}) THEN 1 ELSE 0 END) AS `app_shop_clicks`,
             SUM(CASE WHEN `track_links`.`is_unique` = 1 AND {$blog_referral_click_condition} THEN 1 ELSE 0 END) AS `blog_clicks`
@@ -1220,20 +1231,14 @@ class AdminLeaderOperatingSystemLeader extends Controller {
         LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id`
         WHERE `track_links`.`user_id` = {$user_id}
           AND `track_links`.`datetime` >= '{$period_start_datetime}'
-          AND `track_links`.`country_code` IS NOT NULL
-          AND `track_links`.`country_code` != ''
         GROUP BY `country_code`");
 
         while($row = $clicks_result->fetch_object()) {
-            $country_code = trim((string) ($row->country_code ?? ''));
-
-            if($country_code === '') {
-                continue;
-            }
+            $country_code = $this->get_country_table_key($row->country_code ?? '');
 
             $rows_map[$country_code] = [
-                'country_code' => $country_code,
-                'country_name' => get_country_from_country_code($country_code),
+                'country_code' => $country_code === '__unknown__' ? '' : $country_code,
+                'country_name' => $this->get_country_table_name($country_code),
                 'app_visits' => (int) ($row->app_visits ?? 0),
                 'app_shop_clicks' => (int) ($row->app_shop_clicks ?? 0),
                 'blog_clicks' => (int) ($row->blog_clicks ?? 0),
@@ -1243,27 +1248,21 @@ class AdminLeaderOperatingSystemLeader extends Controller {
 
         if($this->has_funnel_events_table()) {
             $funnel_result = database()->query("SELECT
-                UPPER(TRIM(`country_code`)) AS `country_code`,
+                UPPER(TRIM(COALESCE(`country_code`, ''))) AS `country_code`,
                 COUNT(*) AS `total`
             FROM `funnel_events`
             WHERE `user_id` = {$user_id}
               AND `event_type` = 'submit_success'
               AND `datetime` >= '{$period_start_datetime}'
-              AND `country_code` IS NOT NULL
-              AND `country_code` != ''
             GROUP BY `country_code`");
 
             while($row = $funnel_result->fetch_object()) {
-                $country_code = trim((string) ($row->country_code ?? ''));
-
-                if($country_code === '') {
-                    continue;
-                }
+                $country_code = $this->get_country_table_key($row->country_code ?? '');
 
                 if(!isset($rows_map[$country_code])) {
                     $rows_map[$country_code] = [
-                        'country_code' => $country_code,
-                        'country_name' => get_country_from_country_code($country_code),
+                        'country_code' => $country_code === '__unknown__' ? '' : $country_code,
+                        'country_name' => $this->get_country_table_name($country_code),
                         'app_visits' => 0,
                         'app_shop_clicks' => 0,
                         'blog_clicks' => 0,
