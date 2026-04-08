@@ -225,6 +225,19 @@ class OpsReadonly extends Controller {
         }
     }
 
+    private function get_setting_object_from_database(string $key): \stdClass {
+        $escaped_key = database()->real_escape_string($key);
+        $result = database()->query("SELECT `value` FROM `settings` WHERE `key` = '{$escaped_key}' LIMIT 1");
+
+        if(!$result || !$result->num_rows) {
+            return (object) [];
+        }
+
+        $row = $result->fetch_object();
+
+        return $this->get_object($row->value ?? null);
+    }
+
     private function is_plan_active(?string $plan_expiration_date): bool {
         $plan_expiration_date = trim((string) $plan_expiration_date);
 
@@ -598,8 +611,8 @@ class OpsReadonly extends Controller {
     }
 
     private function get_cron_diagnostics_payload(): array {
-        $cron_settings = $this->get_object(settings()->cron ?? null);
-        $webhooks_settings = $this->get_object(settings()->webhooks ?? null);
+        $cron_settings = $this->get_setting_object_from_database('cron');
+        $webhooks_settings = $this->get_setting_object_from_database('webhooks');
         $cron_key = trim((string) ($cron_settings->key ?? ''));
         $last_run_at = is_scalar($cron_settings->cron_datetime ?? null) ? (string) $cron_settings->cron_datetime : null;
         $last_reset_at = is_scalar($cron_settings->reset_date ?? null) ? (string) $cron_settings->reset_date : null;
@@ -633,8 +646,8 @@ class OpsReadonly extends Controller {
     }
 
     private function get_ai_diagnostics_payload(): array {
-        $settings_main = $this->get_object(settings()->main ?? null);
-        $settings_aix = $this->get_object(settings()->aix ?? null);
+        $settings_main = $this->get_setting_object_from_database('main');
+        $settings_aix = $this->get_setting_object_from_database('aix');
         $shared_aix_api_key = trim((string) ($settings_aix->openai_api_key ?? ''));
         $shared_main_api_key = trim((string) ($settings_main->openai_api_key ?? ''));
         $shared_api_key_source = $shared_aix_api_key !== '' ? 'aix' : ($shared_main_api_key !== '' ? 'main' : 'none');
