@@ -2,6 +2,10 @@
 
 <!-- Custom code: FC-2026-03-31: Leader Operating System overview shell -->
 <style>
+    .leader-os-page {
+        color: #ecf3ff;
+    }
+
     .leader-os-shell {
         --leader-bg-0: #122029;
         --leader-bg-1: #152634;
@@ -195,6 +199,119 @@
     .leader-os-panel .text-muted,
     .leader-os-kpi .text-muted {
         color: var(--leader-text-soft) !important;
+    }
+
+    .leader-os-page .text-body,
+    .leader-os-page .text-dark,
+    .leader-os-page .text-reset,
+    .leader-os-page .text-black-50,
+    .leader-os-page .text-secondary {
+        color: rgba(220, 232, 245, 0.82) !important;
+    }
+
+    .leader-os-page .text-success {
+        color: #86efac !important;
+    }
+
+    .leader-os-page .text-info,
+    .leader-os-page .text-primary {
+        color: #89dbff !important;
+    }
+
+    .leader-os-page .text-warning {
+        color: #fcd97b !important;
+    }
+
+    .leader-os-page .text-danger {
+        color: #fca5a5 !important;
+    }
+
+    .leader-os-page label,
+    .leader-os-page .custom-control-label,
+    .leader-os-page .form-check-label {
+        color: #edf5ff;
+    }
+
+    .leader-os-page .form-control,
+    .leader-os-page .custom-select,
+    .leader-os-page .input-group-text {
+        border-color: rgba(134, 177, 216, 0.18);
+        background: linear-gradient(180deg, rgba(25, 37, 54, 0.92) 0%, rgba(18, 28, 41, 0.99) 100%);
+        color: #edf5ff;
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+    }
+
+    .leader-os-page .form-control::placeholder {
+        color: rgba(201, 217, 234, 0.56);
+    }
+
+    .leader-os-page .form-control:focus,
+    .leader-os-page .custom-select:focus {
+        background: linear-gradient(180deg, rgba(29, 45, 66, 0.96) 0%, rgba(18, 28, 41, 1) 100%);
+        color: #f8fbff;
+        border-color: rgba(94, 200, 255, 0.46);
+        box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.12);
+    }
+
+    .leader-os-page .custom-select option {
+        color: #111827;
+        background: #ffffff;
+    }
+
+    .leader-os-page input[type="file"].form-control {
+        padding: 0.4rem 0.55rem;
+    }
+
+    .leader-os-page input[type="file"].form-control::file-selector-button {
+        margin-right: 0.75rem;
+        border: 0;
+        border-radius: 0.7rem;
+        padding: 0.42rem 0.8rem;
+        background: linear-gradient(180deg, rgba(56, 189, 248, 0.24) 0%, rgba(37, 99, 235, 0.34) 100%);
+        color: #f8fbff;
+        font-weight: 700;
+    }
+
+    .leader-os-page .alert {
+        border-radius: 1rem;
+        border-width: 1px;
+        color: #f5f9ff;
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+    }
+
+    .leader-os-page .alert-success {
+        background: linear-gradient(180deg, rgba(22, 101, 52, 0.28) 0%, rgba(10, 30, 20, 0.94) 100%);
+        border-color: rgba(34, 197, 94, 0.28);
+    }
+
+    .leader-os-page .alert-danger {
+        background: linear-gradient(180deg, rgba(127, 29, 29, 0.32) 0%, rgba(44, 14, 20, 0.94) 100%);
+        border-color: rgba(248, 113, 113, 0.32);
+    }
+
+    .leader-os-page .alert-warning {
+        background: linear-gradient(180deg, rgba(120, 53, 15, 0.3) 0%, rgba(42, 24, 10, 0.94) 100%);
+        border-color: rgba(251, 191, 36, 0.32);
+    }
+
+    .leader-os-page .alert-info {
+        background: linear-gradient(180deg, rgba(30, 64, 175, 0.28) 0%, rgba(16, 28, 56, 0.94) 100%);
+        border-color: rgba(96, 165, 250, 0.3);
+    }
+
+    .leader-os-page .alert,
+    .leader-os-page .alert-heading,
+    .leader-os-page .alert p,
+    .leader-os-page .alert strong,
+    .leader-os-page .alert a,
+    .leader-os-page .alert .alert-link {
+        color: #f5f9ff !important;
+    }
+
+    .leader-os-page .close {
+        color: #f8fbff;
+        text-shadow: none;
+        opacity: 0.84;
     }
 
     .leader-os-pill {
@@ -1699,6 +1816,7 @@
     }
 </style>
 
+<div class="leader-os-page">
 <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center mb-3">
     <div>
         <h1 class="h3 mb-1"><?= l('admin_leader_operating_system.header') ?></h1>
@@ -4942,3 +5060,4 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 </script>
 <!-- /Custom code: FC-2026-03-31 -->
+</div>

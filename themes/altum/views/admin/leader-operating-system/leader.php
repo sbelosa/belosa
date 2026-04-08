@@ -2,6 +2,10 @@
 
 <!-- Custom code: FC-2026-03-31: Leader Operating System detail shell -->
 <style>
+    .leader-os-detail-page {
+        color: #ecf3ff;
+    }
+
     .leader-os-detail-shell {
         border: 1px solid rgba(148, 163, 184, 0.14);
         border-radius: 1.15rem;
@@ -84,6 +88,119 @@
     .leader-os-detail-shell .text-muted,
     .leader-os-detail-panel .text-muted {
         color: rgba(191, 211, 238, 0.72) !important;
+    }
+
+    .leader-os-detail-page .text-body,
+    .leader-os-detail-page .text-dark,
+    .leader-os-detail-page .text-reset,
+    .leader-os-detail-page .text-black-50,
+    .leader-os-detail-page .text-secondary {
+        color: rgba(220, 232, 245, 0.82) !important;
+    }
+
+    .leader-os-detail-page .text-success {
+        color: #86efac !important;
+    }
+
+    .leader-os-detail-page .text-info,
+    .leader-os-detail-page .text-primary {
+        color: #89dbff !important;
+    }
+
+    .leader-os-detail-page .text-warning {
+        color: #fcd97b !important;
+    }
+
+    .leader-os-detail-page .text-danger {
+        color: #fca5a5 !important;
+    }
+
+    .leader-os-detail-page label,
+    .leader-os-detail-page .custom-control-label,
+    .leader-os-detail-page .form-check-label {
+        color: #edf5ff;
+    }
+
+    .leader-os-detail-page .form-control,
+    .leader-os-detail-page .custom-select,
+    .leader-os-detail-page .input-group-text {
+        border-color: rgba(148, 163, 184, 0.16);
+        background: linear-gradient(180deg, rgba(25, 37, 54, 0.92) 0%, rgba(18, 28, 41, 0.99) 100%);
+        color: #edf5ff;
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+    }
+
+    .leader-os-detail-page .form-control::placeholder {
+        color: rgba(201, 217, 234, 0.56);
+    }
+
+    .leader-os-detail-page .form-control:focus,
+    .leader-os-detail-page .custom-select:focus {
+        background: linear-gradient(180deg, rgba(29, 45, 66, 0.96) 0%, rgba(18, 28, 41, 1) 100%);
+        color: #f8fbff;
+        border-color: rgba(124, 200, 255, 0.45);
+        box-shadow: 0 0 0 0.2rem rgba(124, 200, 255, 0.08);
+    }
+
+    .leader-os-detail-page .custom-select option {
+        color: #111827;
+        background: #ffffff;
+    }
+
+    .leader-os-detail-page input[type="file"].form-control {
+        padding: 0.4rem 0.55rem;
+    }
+
+    .leader-os-detail-page input[type="file"].form-control::file-selector-button {
+        margin-right: 0.75rem;
+        border: 0;
+        border-radius: 0.7rem;
+        padding: 0.42rem 0.8rem;
+        background: linear-gradient(180deg, rgba(56, 189, 248, 0.24) 0%, rgba(37, 99, 235, 0.34) 100%);
+        color: #f8fbff;
+        font-weight: 700;
+    }
+
+    .leader-os-detail-page .alert {
+        border-radius: 1rem;
+        border-width: 1px;
+        color: #f5f9ff;
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+    }
+
+    .leader-os-detail-page .alert-success {
+        background: linear-gradient(180deg, rgba(22, 101, 52, 0.28) 0%, rgba(10, 30, 20, 0.94) 100%);
+        border-color: rgba(34, 197, 94, 0.28);
+    }
+
+    .leader-os-detail-page .alert-danger {
+        background: linear-gradient(180deg, rgba(127, 29, 29, 0.32) 0%, rgba(44, 14, 20, 0.94) 100%);
+        border-color: rgba(248, 113, 113, 0.32);
+    }
+
+    .leader-os-detail-page .alert-warning {
+        background: linear-gradient(180deg, rgba(120, 53, 15, 0.3) 0%, rgba(42, 24, 10, 0.94) 100%);
+        border-color: rgba(251, 191, 36, 0.32);
+    }
+
+    .leader-os-detail-page .alert-info {
+        background: linear-gradient(180deg, rgba(30, 64, 175, 0.28) 0%, rgba(16, 28, 56, 0.94) 100%);
+        border-color: rgba(96, 165, 250, 0.3);
+    }
+
+    .leader-os-detail-page .alert,
+    .leader-os-detail-page .alert-heading,
+    .leader-os-detail-page .alert p,
+    .leader-os-detail-page .alert strong,
+    .leader-os-detail-page .alert a,
+    .leader-os-detail-page .alert .alert-link {
+        color: #f5f9ff !important;
+    }
+
+    .leader-os-detail-page .close {
+        color: #f8fbff;
+        text-shadow: none;
+        opacity: 0.84;
     }
 
     .leader-os-detail-kpi {
@@ -807,6 +924,7 @@
     }
 </style>
 
+<div class="leader-os-detail-page">
 <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center mb-3">
     <div>
         <h1 class="h3 mb-1"><?= l('admin_leader_operating_system.leader.header') ?></h1>
@@ -2823,3 +2941,4 @@
     <?php \Altum\Event::add_content(ob_get_clean(), 'javascript') ?>
 <?php endif ?>
 <!-- /Custom code: FC-2026-03-31 -->
+</div>
