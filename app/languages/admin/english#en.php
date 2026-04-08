@@ -1459,6 +1459,7 @@ return [
     'admin_leader_operating_system.leader.chart_metric_funnel_registrations' => 'Funnel registrations',
     'admin_leader_operating_system.leader.country_table.country' => 'Country',
     'admin_leader_operating_system.leader.country_table.empty' => 'No country-level clicks or funnel registrations were recorded for the selected period.',
+    'admin_leader_operating_system.leader.country_table.total' => 'Total',
     'admin_leader_operating_system.leader.country_table.unknown' => 'Unknown',
     'admin_leader_operating_system.leader.ai_generate' => 'Generate AI report',
     'admin_leader_operating_system.leader.ai_regenerate' => 'Regenerate report',

@@ -1621,6 +1621,19 @@
         vertical-align: middle;
     }
 
+    .leader-os-country-table tfoot th,
+    .leader-os-country-table tfoot td {
+        position: sticky;
+        bottom: 0;
+        z-index: 1;
+        background: linear-gradient(180deg, rgba(12, 18, 31, 0.98) 0%, rgba(8, 13, 24, 1) 100%);
+        color: #f4f9ff;
+        border-top: 1px solid rgba(124, 200, 255, 0.22);
+        border-bottom: 0;
+        font-weight: 800;
+        box-shadow: 0 -1px 0 rgba(255,255,255,0.03);
+    }
+
     .leader-os-country-table tbody tr:hover {
         background: rgba(124, 200, 255, 0.06);
     }
@@ -2050,6 +2063,12 @@ $leader_os_team_signal_chart = $data->overview['team_signal_chart'] ?? [
 $leader_os_team_country_matrix_periods = $data->overview['team_country_signal_matrix_periods'] ?? [];
 $leader_os_team_country_initial_period = isset($leader_os_team_country_matrix_periods[$data->selected_period]) ? $data->selected_period : '30d';
 $leader_os_team_country_initial_matrix = $leader_os_team_country_matrix_periods[$leader_os_team_country_initial_period] ?? ['rows' => []];
+$leader_os_team_country_initial_totals = $leader_os_team_country_initial_matrix['totals'] ?? [
+    'app_visits' => 0,
+    'app_shop_clicks' => 0,
+    'blog_clicks' => 0,
+    'funnel_registrations' => 0,
+];
 
 $support_tab_badge_total = (int) (($data->overview['support_center']['totals']['outstanding_total'] ?? 0));
 $operations_tab_badge_total = (int) (($data->operations['totals']['pending_approvals'] ?? 0) + ($data->operations['totals']['card_queue'] ?? 0));
@@ -2443,6 +2462,15 @@ $operations_tab_badge_total = (int) (($data->operations['totals']['pending_appro
                                     <?php endforeach ?>
                                 <?php endif ?>
                                 </tbody>
+                                <tfoot id="leader-os-overview-country-table-foot">
+                                <tr>
+                                    <th><?= l('admin_leader_operating_system.leader.country_table.total') ?></th>
+                                    <td class="text-right"><?= nr((int) ($leader_os_team_country_initial_totals['app_visits'] ?? 0)) ?></td>
+                                    <td class="text-right"><?= nr((int) ($leader_os_team_country_initial_totals['app_shop_clicks'] ?? 0)) ?></td>
+                                    <td class="text-right"><?= nr((int) ($leader_os_team_country_initial_totals['blog_clicks'] ?? 0)) ?></td>
+                                    <td class="text-right"><?= nr((int) ($leader_os_team_country_initial_totals['funnel_registrations'] ?? 0)) ?></td>
+                                </tr>
+                                </tfoot>
                             </table>
                         </div>
                     </div>
@@ -4541,6 +4569,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const overviewTeamCountrySignalMatrix = <?= json_encode($leader_os_team_country_matrix_periods, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
     const overviewTeamCountryInitialPeriod = <?= json_encode($leader_os_team_country_initial_period, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
     const overviewTeamCountryTableBody = document.getElementById('leader-os-overview-country-table-body');
+    const overviewTeamCountryTableFoot = document.getElementById('leader-os-overview-country-table-foot');
     const overviewTeamCountryPeriodButtons = Array.from(document.querySelectorAll('[data-overview-country-period]'));
     const overviewTeamNumberFormatter = typeof Intl !== 'undefined' && Intl.NumberFormat ? new Intl.NumberFormat('hr-HR') : null;
 
@@ -4646,6 +4675,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const payload = overviewTeamCountrySignalMatrix[periodKey] || overviewTeamCountrySignalMatrix[overviewTeamCountryInitialPeriod] || {rows: []};
         const rows = Array.isArray(payload.rows) ? payload.rows : [];
+        const totals = payload.totals && typeof payload.totals === 'object' ? payload.totals : {};
 
         if(!rows.length) {
             overviewTeamCountryTableBody.innerHTML = `
@@ -4655,23 +4685,34 @@ document.addEventListener('DOMContentLoaded', function () {
                     </td>
                 </tr>
             `;
-            return;
+        } else {
+            overviewTeamCountryTableBody.innerHTML = rows.map((row) => `
+                <tr>
+                    <td>
+                        <div class="leader-os-country-name">
+                            <strong>${escapeHtml(row.country_name || '-')}</strong>
+                            <span class="leader-os-country-code">${escapeHtml(row.country_code || '')}</span>
+                        </div>
+                    </td>
+                    <td class="text-right">${formatOverviewTeamNumber(row.app_visits || 0)}</td>
+                    <td class="text-right">${formatOverviewTeamNumber(row.app_shop_clicks || 0)}</td>
+                    <td class="text-right">${formatOverviewTeamNumber(row.blog_clicks || 0)}</td>
+                    <td class="text-right">${formatOverviewTeamNumber(row.funnel_registrations || 0)}</td>
+                </tr>
+            `).join('');
         }
 
-        overviewTeamCountryTableBody.innerHTML = rows.map((row) => `
-            <tr>
-                <td>
-                    <div class="leader-os-country-name">
-                        <strong>${escapeHtml(row.country_name || '-')}</strong>
-                        <span class="leader-os-country-code">${escapeHtml(row.country_code || '')}</span>
-                    </div>
-                </td>
-                <td class="text-right">${formatOverviewTeamNumber(row.app_visits || 0)}</td>
-                <td class="text-right">${formatOverviewTeamNumber(row.app_shop_clicks || 0)}</td>
-                <td class="text-right">${formatOverviewTeamNumber(row.blog_clicks || 0)}</td>
-                <td class="text-right">${formatOverviewTeamNumber(row.funnel_registrations || 0)}</td>
-            </tr>
-        `).join('');
+        if(overviewTeamCountryTableFoot) {
+            overviewTeamCountryTableFoot.innerHTML = `
+                <tr>
+                    <th><?= addslashes(l('admin_leader_operating_system.leader.country_table.total')) ?></th>
+                    <td class="text-right">${formatOverviewTeamNumber(totals.app_visits || 0)}</td>
+                    <td class="text-right">${formatOverviewTeamNumber(totals.app_shop_clicks || 0)}</td>
+                    <td class="text-right">${formatOverviewTeamNumber(totals.blog_clicks || 0)}</td>
+                    <td class="text-right">${formatOverviewTeamNumber(totals.funnel_registrations || 0)}</td>
+                </tr>
+            `;
+        }
     };
 
     if(overviewTeamCountryTableBody) {

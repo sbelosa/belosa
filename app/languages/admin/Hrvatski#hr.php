@@ -2872,6 +2872,7 @@ return [
 	'admin_leader_operating_system.leader.chart_metric_funnel_registrations' => 'Funnel prijave',
 	'admin_leader_operating_system.leader.country_table.country' => 'Zemlja',
 	'admin_leader_operating_system.leader.country_table.empty' => 'Za odabrani period nema zabilježenih klikova ili funnel prijava po državama.',
+	'admin_leader_operating_system.leader.country_table.total' => 'Ukupno',
 	'admin_leader_operating_system.leader.country_table.unknown' => 'Nepoznato',
 	'admin_leader_operating_system.leader.ai_generate' => 'Generiraj AI izvještaj',
 	'admin_leader_operating_system.leader.ai_regenerate' => 'Generiraj ponovno',
