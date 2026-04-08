@@ -1877,8 +1877,12 @@ class AiPlan extends Controller {
 
         return [
             'is_stale' => $is_stale,
+            'status' => $is_stale ? 'evolved' : 'aligned',
+            'has_changes_since_recommendation' => $is_stale,
             'recommended_at' => $recommended_at !== '' ? $recommended_at : null,
             'last_changed_at' => $last_datetime !== '' ? $last_datetime : null,
+            'notice_level' => $is_stale ? 'info' : '',
+            'analysis_mode_hint' => $is_stale ? 'evolution_on_current_live_app' : 'standard_continuation',
             'message' => $is_stale ? l('link.settings.ai_bundle_stale_notice') : '',
         ];
     }
@@ -7662,6 +7666,12 @@ class AiPlan extends Controller {
         $evolution_memory = $this->normalize_app_review_evolution_memory($selected_link_additional['fcc_ai_evolution_memory'] ?? []);
         $evolution_payload = $this->get_app_review_evolution_payload((array) ($quality_payload['performance'] ?? []), $previous_review, $evolution_memory, $review_generated_at, $selected_app_block_attribution);
         $evolution_payload = $this->sanitize_utf8_for_json($evolution_payload);
+        $current_app_state_payload = $this->get_ai_bundle_freshness_payload(
+            $selected_link_additional,
+            (string) (($selected_app['last_datetime'] ?? '') ?: ($selected_app['datetime'] ?? '')),
+            (string) ($previous_review['generated_at'] ?? '')
+        );
+        $current_app_state_payload = $this->sanitize_utf8_for_json($current_app_state_payload);
         $supports_image_input = $this->model_supports_image_input((string) ($credentials['model'] ?? ''));
 
         if($supports_image_input) {
@@ -7780,6 +7790,10 @@ class AiPlan extends Controller {
             '- Ako palette_feedback.note postoji, uzmi ga kao dodatni dokaz sto korisniku djeluje preglasno, prehladno, pretamno ili neusklađeno.',
             '- Ako je nesto primijenjeno i 7d ili 30d rezultat nije donio pomak, predlozi novi jasan korak umjesto ponavljanja istog savjeta.',
             '- Ako je nakon primjene vidljiv rast, zadrzi smjer i predlozi finu doradu, ne potpuni reset.',
+            '- Ako review_mode.current_app_state.has_changes_since_recommendation = true, to znaci da je korisnik vec doradjivao aplikaciju nakon zadnje AI preporuke. Tretiraj trenutnu live aplikaciju kao vazecu bazu za daljnju evoluciju, ne kao gresku, odstupanje ni razlog za reset.',
+            '- Kad je trenutna live aplikacija novija od zadnje preporuke, default je incremental refinement: zadrzi osnovni vizualni smjer, boje i strukturu ako ne postoje jaki dokazi da to steti fokusu, povjerenju ili rezultatu.',
+            '- U takvoj situaciji radije predlozi 1 do 3 manje, vrlo precizne nadogradnje s najvecim ucinkom nego novi veliki redesign. Novi reset palete, teme ili rasporeda koristi samo ako analytics, block_attribution, evolution i design_diagnostic jasno pokazu da je sadasnji smjer los.',
+            '- Ako korisnik nakon zadnje analize promijeni tekst, raspored, fotografiju ili boju, to smijes tumaciti kao valjanu korisnicku iteraciju. Sljedeca analiza treba unaprijediti tu verziju aplikacije, ne vracati je na staru preporuku.',
             '- U trust_builders reci kako vise povjerenja grade fotografija, video, jedan glavni korak, edukacija, Funnel i jasan redoslijed blokova.',
             (!empty($evolution_payload['has_previous_review'])
                 ? '- Ovo nije nova analiza od nule. Ovo je nadogradnja prethodne analize iste aplikacije. Ukratko reci sto je bolje nego prosli put, sto i dalje koci rezultat i koji je sada novi najbolji sljedeci korak.'
@@ -7790,7 +7804,9 @@ class AiPlan extends Controller {
             '- Ako nema vizuala, oslanjaj se samo na strukturu, redoslijed blokova i analitiku.',
             'Input JSON: ' . json_encode([
                 'current_review_input' => $ai_input,
-                'review_mode' => $evolution_payload,
+                'review_mode' => array_merge($evolution_payload, [
+                    'current_app_state' => $current_app_state_payload,
+                ]),
             ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_INVALID_UTF8_SUBSTITUTE),
         ]);
         $user_message_content = [

@@ -2952,7 +2952,7 @@ return [
 	'link.settings.ai_bundle_restore' => 'Restore previous state',
 	'link.settings.ai_bundle_restore_success' => 'The app has been restored to the previous state. Restored: %1$s, hidden new blocks: %2$s.',
 	'link.settings.ai_bundle_restore_missing' => 'There is no saved previous state to restore.',
-	'link.settings.ai_bundle_stale_notice' => 'The app has changed since the last AI analysis. These AI suggestions may no longer be fully fresh. You can still apply them, or run a new analysis first for more precise recommendations.',
+	'link.settings.ai_bundle_stale_notice' => 'The app has evolved since the last AI analysis. That is okay. The next analysis will use the current live app, your recent edits, and the latest click data to recommend the next upgrade. If you apply the saved AI changes now, keep in mind that they were prepared for an earlier version of the app and may overwrite some newer edits.',
 	'link.settings.ai_layout_apply' => 'Apply the AI layout',
 	'link.settings.ai_layout_apply_success' => 'The AI layout has been applied. Moved: %1$s, hidden: %2$s.',
 	'link.settings.ai_layout_apply_missing' => 'AI does not currently have a clear layout plan that can be safely applied automatically.',

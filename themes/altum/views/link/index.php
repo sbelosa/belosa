@@ -23,6 +23,7 @@ $fcc_ai_bundle_restore_ready = !empty($fcc_ai_editor_payload['bundle_backup']['a
 $fcc_ai_review_summary_ready = !empty($fcc_ai_editor_payload['review_summary']);
 $fcc_ai_actions_freshness = is_array($fcc_ai_editor_payload['freshness'] ?? null) ? $fcc_ai_editor_payload['freshness'] : [];
 $fcc_ai_actions_stale = !empty($fcc_ai_actions_freshness['is_stale']);
+$fcc_ai_actions_notice_level = (string) ($fcc_ai_actions_freshness['notice_level'] ?? ($fcc_ai_actions_stale ? 'info' : ''));
 $fcc_ai_review_teaser_actions_visible = $fcc_ai_review_summary_ready || $fcc_ai_theme_bundle_ready || $fcc_ai_block_bundle_ready || $fcc_ai_bundle_restore_ready;
 $fcc_ai_review_teaser_notification_id = 'fcc_app_review_ai_actions_notification';
 $fcc_app_review_next_step_payload = is_array($data->app_review_next_step_payload ?? null) ? $data->app_review_next_step_payload : [];
@@ -784,6 +785,7 @@ $fcc_short_link_editor_steps = $fcc_is_short_link_editor ? [
                                     data-notification-target="#<?= htmlspecialchars($fcc_ai_review_teaser_notification_id, ENT_QUOTES, 'UTF-8') ?>"
                                     data-ai-stale="<?= $fcc_ai_actions_stale ? '1' : '0' ?>"
                                     data-ai-stale-message="<?= htmlspecialchars((string) ($fcc_ai_actions_freshness['message'] ?? ''), ENT_QUOTES, 'UTF-8') ?>"
+                                    data-ai-notice-level="<?= htmlspecialchars($fcc_ai_actions_notice_level, ENT_QUOTES, 'UTF-8') ?>"
                                     <?= $fcc_ai_block_bundle_ready ? null : 'disabled="disabled"' ?>
                                 >
                                     <i class="fas fa-fw fa-layer-group"></i>
@@ -798,6 +800,7 @@ $fcc_short_link_editor_steps = $fcc_is_short_link_editor ? [
                                     data-notification-target="#<?= htmlspecialchars($fcc_ai_review_teaser_notification_id, ENT_QUOTES, 'UTF-8') ?>"
                                     data-ai-stale="<?= $fcc_ai_actions_stale ? '1' : '0' ?>"
                                     data-ai-stale-message="<?= htmlspecialchars((string) ($fcc_ai_actions_freshness['message'] ?? ''), ENT_QUOTES, 'UTF-8') ?>"
+                                    data-ai-notice-level="<?= htmlspecialchars($fcc_ai_actions_notice_level, ENT_QUOTES, 'UTF-8') ?>"
                                     <?= $fcc_ai_theme_bundle_ready ? null : 'disabled="disabled"' ?>
                                 >
                                     <i class="fas fa-fw fa-palette"></i>
@@ -818,7 +821,7 @@ $fcc_short_link_editor_steps = $fcc_is_short_link_editor ? [
                             </div>
 
                             <?php if($fcc_ai_actions_stale): ?>
-                                <div class="alert alert-warning mt-3 mb-0" style="border-radius:1rem;">
+                                <div class="alert <?= $fcc_ai_actions_notice_level === 'info' ? 'alert-info' : 'alert-warning' ?> mt-3 mb-0" style="border-radius:1rem;">
                                     <?= htmlspecialchars((string) ($fcc_ai_actions_freshness['message'] ?? ''), ENT_QUOTES, 'UTF-8') ?>
                                 </div>
                             <?php endif ?>
@@ -929,7 +932,7 @@ $fcc_short_link_editor_steps = $fcc_is_short_link_editor ? [
             const notification_container = notification_target ? document.querySelector(notification_target) : null;
 
             if((button.getAttribute('data-ai-stale') || '0') === '1' && notification_container) {
-                display_notifications(button.getAttribute('data-ai-stale-message') || <?= json_encode(l('link.settings.ai_bundle_stale_notice')) ?>, 'warning', notification_container);
+                display_notifications(button.getAttribute('data-ai-stale-message') || <?= json_encode(l('link.settings.ai_bundle_stale_notice')) ?>, button.getAttribute('data-ai-notice-level') || 'info', notification_container);
                 notification_container.scrollIntoView({behavior: 'smooth', block: 'nearest'});
             }
 
