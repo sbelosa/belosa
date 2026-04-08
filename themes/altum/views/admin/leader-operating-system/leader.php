@@ -737,6 +737,48 @@
         padding-bottom: 0;
         border-bottom: 0;
     }
+
+    .leader-os-billing-actions {
+        display: flex;
+        gap: 0.6rem;
+        flex-wrap: wrap;
+        margin-bottom: 1rem;
+    }
+
+    .leader-os-billing-note {
+        border: 1px solid rgba(124, 200, 255, 0.18);
+        border-radius: 0.95rem;
+        background: rgba(8, 17, 32, 0.82);
+        padding: 0.9rem;
+    }
+
+    .leader-os-billing-code {
+        font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        font-size: 0.78rem;
+        color: #dceaff;
+        overflow-wrap: anywhere;
+        word-break: break-word;
+    }
+
+    .leader-os-billing-invoice {
+        border: 1px solid rgba(148, 163, 184, 0.12);
+        border-radius: 0.95rem;
+        padding: 0.9rem;
+        background: rgba(8, 13, 26, 0.62);
+    }
+
+    .leader-os-billing-invoice + .leader-os-billing-invoice {
+        margin-top: 0.75rem;
+    }
+
+    .leader-os-billing-invoice-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.55rem;
+        margin-top: 0.45rem;
+        font-size: 0.76rem;
+        color: rgba(191, 211, 238, 0.72);
+    }
     /* /Custom code: FC-2026-03-31 */
 
     @media (max-width: 991.98px) {
@@ -795,6 +837,8 @@
 <?php $cohort_comparison = $data->cohort_comparison ?? []; ?>
 <?php $behavior_anomaly = $data->behavior_anomaly ?? []; ?>
 <?php $fraud_intelligence = $data->fraud_intelligence ?? []; ?>
+<?php $billing_summary = $data->billing_summary ?? []; ?>
+<?php $stripe_billing = $data->stripe_billing ?? []; ?>
 
 <div class="card leader-os-detail-shell mb-4">
     <div class="card-body">
@@ -858,6 +902,7 @@
             </div>
 
             <div class="leader-os-detail-jump-links">
+                <button type="button" class="btn btn-sm leader-os-detail-action leader-os-scroll-link" data-scroll-target="leader-os-stripe-billing"><?= l('admin_leader_operating_system.leader.open_stripe_billing') ?></button>
                 <button type="button" class="btn btn-sm leader-os-detail-action leader-os-scroll-link" data-scroll-target="leader-os-score-history"><?= l('admin_leader_operating_system.leader.open_score_history') ?></button>
                 <button type="button" class="btn btn-sm leader-os-detail-action leader-os-scroll-link" data-scroll-target="leader-os-cohort-comparison"><?= l('admin_leader_operating_system.leader.open_cohort_comparison') ?></button>
                 <button type="button" class="btn btn-sm leader-os-detail-action leader-os-scroll-link" data-scroll-target="leader-os-anomaly-radar"><?= l('admin_leader_operating_system.leader.open_anomaly_radar') ?></button>
@@ -867,6 +912,167 @@
             </div>
 
             <div class="text-muted small mt-3"><?= l('admin_leader_operating_system.leader.detail_panels_hint') ?></div>
+        </div>
+    </div>
+
+    <div class="card leader-os-detail-shell mb-4" id="leader-os-stripe-billing">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-12 col-xl-6 mb-3 mb-xl-0">
+                    <div class="leader-os-detail-panel h-100">
+                        <div class="d-flex justify-content-between align-items-start flex-wrap mb-3">
+                            <div>
+                                <h3 class="h5 mb-1"><?= l('admin_leader_operating_system.leader.stripe_title') ?></h3>
+                                <div class="text-muted small"><?= l('admin_leader_operating_system.leader.stripe_text') ?></div>
+                            </div>
+
+                            <div class="d-flex flex-wrap mt-2 mt-xl-0" style="gap:.5rem;">
+                                <span class="leader-os-detail-status status-<?= htmlspecialchars((string) ($stripe_billing['billing_state_class'] ?? 'dark'), ENT_QUOTES, 'UTF-8') ?>">
+                                    <?= l('admin_billing_risk.state_' . ($stripe_billing['billing_state'] ?? 'healthy')) ?>
+                                </span>
+                                <span class="leader-os-detail-status status-<?= htmlspecialchars((string) ($stripe_billing['status_class'] ?? 'dark'), ENT_QUOTES, 'UTF-8') ?>">
+                                    <?= htmlspecialchars((string) (($stripe_billing['status'] ?? '') ?: l('global.none')), ENT_QUOTES, 'UTF-8') ?>
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="leader-os-billing-actions">
+                            <?php if(!empty($stripe_billing['portal_available'])): ?>
+                                <form action="" method="post" target="_blank" class="d-inline-block">
+                                    <input type="hidden" name="token" value="<?= \Altum\Csrf::get() ?>" />
+                                    <button type="submit" name="open_stripe_customer_portal" value="1" class="btn btn-sm leader-os-ai-button"><?= l('admin_leader_operating_system.leader.stripe_portal_open') ?></button>
+                                </form>
+                            <?php else: ?>
+                                <span class="leader-os-detail-chip is-subtle"><?= l('admin_leader_operating_system.leader.stripe_portal_unavailable') ?></span>
+                            <?php endif ?>
+
+                            <?php if(!empty($stripe_billing['customer_dashboard_url'])): ?>
+                                <a href="<?= htmlspecialchars((string) $stripe_billing['customer_dashboard_url'], ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noopener noreferrer" class="btn btn-sm leader-os-detail-action"><?= l('admin_leader_operating_system.leader.stripe_dashboard_customer') ?></a>
+                            <?php endif ?>
+
+                            <?php if(!empty($stripe_billing['subscription_dashboard_url'])): ?>
+                                <a href="<?= htmlspecialchars((string) $stripe_billing['subscription_dashboard_url'], ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noopener noreferrer" class="btn btn-sm leader-os-detail-action"><?= l('admin_leader_operating_system.leader.stripe_dashboard_subscription') ?></a>
+                            <?php endif ?>
+                        </div>
+
+                        <?php if(!empty($stripe_billing['portal_error'])): ?>
+                            <div class="leader-os-billing-note mb-3">
+                                <?= htmlspecialchars((string) $stripe_billing['portal_error'], ENT_QUOTES, 'UTF-8') ?>
+                            </div>
+                        <?php else: ?>
+                            <div class="leader-os-billing-note mb-3">
+                                <?= l('admin_leader_operating_system.leader.stripe_portal_note') ?>
+                            </div>
+                        <?php endif ?>
+
+                        <div class="leader-os-detail-list">
+                            <div class="leader-os-detail-list-item">
+                                <span class="text-muted"><?= l('admin_leader_operating_system.leader.stripe_plan') ?></span>
+                                <strong class="text-right ml-3">
+                                    <?= htmlspecialchars((string) (($stripe_billing['plan_name'] ?? '') ?: l('global.none')), ENT_QUOTES, 'UTF-8') ?>
+                                    <?php if(!empty($stripe_billing['plan_price_label'])): ?>
+                                        <br /><small class="text-muted"><?= htmlspecialchars((string) $stripe_billing['plan_price_label'], ENT_QUOTES, 'UTF-8') ?></small>
+                                    <?php endif ?>
+                                </strong>
+                            </div>
+                            <div class="leader-os-detail-list-item">
+                                <span class="text-muted">
+                                    <?= !empty($stripe_billing['trial_end']) ? l('admin_leader_operating_system.leader.stripe_trial_end') : l('admin_leader_operating_system.leader.stripe_renews_at') ?>
+                                </span>
+                                <strong>
+                                    <?=
+                                        !empty($stripe_billing['trial_end'])
+                                            ? \Altum\Date::get($stripe_billing['trial_end'], 2)
+                                            : (!empty($stripe_billing['current_period_end']) ? \Altum\Date::get($stripe_billing['current_period_end'], 2) : l('global.none'))
+                                    ?>
+                                </strong>
+                            </div>
+                            <div class="leader-os-detail-list-item">
+                                <span class="text-muted"><?= l('admin_leader_operating_system.leader.stripe_cancel_at_period_end') ?></span>
+                                <strong>
+                                    <?= !empty($stripe_billing['cancel_at_period_end']) ? l('global.yes') : l('global.no') ?>
+                                    <?php if(!empty($stripe_billing['cancel_at'])): ?>
+                                        <br /><small class="text-muted"><?= \Altum\Date::get($stripe_billing['cancel_at'], 2) ?></small>
+                                    <?php endif ?>
+                                </strong>
+                            </div>
+                            <div class="leader-os-detail-list-item">
+                                <span class="text-muted"><?= l('admin_leader_operating_system.leader.stripe_customer_id') ?></span>
+                                <strong class="text-right ml-3">
+                                    <span class="leader-os-billing-code"><?= htmlspecialchars((string) (($stripe_billing['customer_id'] ?? '') ?: l('global.none')), ENT_QUOTES, 'UTF-8') ?></span>
+                                </strong>
+                            </div>
+                            <div class="leader-os-detail-list-item">
+                                <span class="text-muted"><?= l('admin_leader_operating_system.leader.stripe_subscription_id') ?></span>
+                                <strong class="text-right ml-3">
+                                    <span class="leader-os-billing-code"><?= htmlspecialchars((string) (($stripe_billing['subscription_id'] ?? '') ?: l('global.none')), ENT_QUOTES, 'UTF-8') ?></span>
+                                </strong>
+                            </div>
+                            <div class="leader-os-detail-list-item">
+                                <span class="text-muted"><?= l('admin_leader_operating_system.leader.stripe_last_failure') ?></span>
+                                <strong class="text-right ml-3"><?= htmlspecialchars((string) (($stripe_billing['last_failed_reason_text'] ?? '') ?: l('global.none')), ENT_QUOTES, 'UTF-8') ?></strong>
+                            </div>
+                            <div class="leader-os-detail-list-item">
+                                <span class="text-muted"><?= l('admin_leader_operating_system.leader.stripe_next_retry') ?></span>
+                                <strong><?= !empty($stripe_billing['next_retry_at']) ? \Altum\Date::get($stripe_billing['next_retry_at'], 2) : l('global.none') ?></strong>
+                            </div>
+                            <div class="leader-os-detail-list-item">
+                                <span class="text-muted"><?= l('admin_leader_operating_system.leader.stripe_grace_until') ?></span>
+                                <strong><?= !empty($stripe_billing['grace_until']) ? \Altum\Date::get($stripe_billing['grace_until'], 2) : l('global.none') ?></strong>
+                            </div>
+                            <div class="leader-os-detail-list-item">
+                                <span class="text-muted"><?= l('admin_leader_operating_system.leader.stripe_failed_attempts') ?></span>
+                                <strong><?= nr((int) ($stripe_billing['failed_attempts'] ?? 0)) ?></strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 col-xl-6">
+                    <div class="leader-os-detail-panel h-100">
+                        <div class="d-flex justify-content-between align-items-start flex-wrap mb-3">
+                            <div>
+                                <h3 class="h5 mb-1"><?= l('admin_leader_operating_system.leader.stripe_recent_invoices') ?></h3>
+                                <div class="text-muted small"><?= l('admin_leader_operating_system.leader.stripe_recent_invoices_text') ?></div>
+                            </div>
+
+                            <?php if(!empty($stripe_billing['last_invoice_dashboard_url'])): ?>
+                                <a href="<?= htmlspecialchars((string) $stripe_billing['last_invoice_dashboard_url'], ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noopener noreferrer" class="btn btn-sm leader-os-detail-action mt-2 mt-xl-0"><?= l('admin_leader_operating_system.leader.stripe_last_invoice_open') ?></a>
+                            <?php endif ?>
+                        </div>
+
+                        <?php if(empty($stripe_billing['recent_invoices'])): ?>
+                            <div class="text-muted small mb-0"><?= l('admin_leader_operating_system.leader.stripe_recent_invoices_empty') ?></div>
+                        <?php else: ?>
+                            <?php foreach($stripe_billing['recent_invoices'] as $invoice): ?>
+                                <div class="leader-os-billing-invoice">
+                                    <div class="d-flex justify-content-between align-items-start flex-wrap">
+                                        <div class="mr-3">
+                                            <div class="leader-os-billing-code"><?= htmlspecialchars((string) ($invoice['id'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                                            <div class="leader-os-billing-invoice-meta">
+                                                <span><?= htmlspecialchars((string) (($invoice['status'] ?? '') ?: l('global.none')), ENT_QUOTES, 'UTF-8') ?></span>
+                                                <span><?= !empty($invoice['created_at']) ? \Altum\Date::get($invoice['created_at'], 2) : l('global.none') ?></span>
+                                                <span><?= htmlspecialchars((string) (($invoice['total'] ?? '') ?: l('global.none')), ENT_QUOTES, 'UTF-8') ?></span>
+                                            </div>
+                                            <div class="text-muted small mt-2"><?= l('admin_leader_operating_system.leader.stripe_invoice_paid') ?>: <?= htmlspecialchars((string) (($invoice['amount_paid'] ?? '') ?: l('global.none')), ENT_QUOTES, 'UTF-8') ?></div>
+                                        </div>
+
+                                        <div class="d-flex flex-wrap mt-2 mt-xl-0" style="gap:.5rem;">
+                                            <?php if(!empty($invoice['hosted_invoice_url'])): ?>
+                                                <a href="<?= htmlspecialchars((string) $invoice['hosted_invoice_url'], ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noopener noreferrer" class="btn btn-sm leader-os-detail-action"><?= l('admin_leader_operating_system.leader.stripe_invoice_open') ?></a>
+                                            <?php endif ?>
+
+                                            <?php if(!empty($invoice['dashboard_url'])): ?>
+                                                <a href="<?= htmlspecialchars((string) $invoice['dashboard_url'], ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noopener noreferrer" class="btn btn-sm leader-os-detail-action"><?= l('admin_leader_operating_system.leader.stripe_dashboard_invoice') ?></a>
+                                            <?php endif ?>
+                                        </div>
+                                    </div>
+                                </div>
+                            <?php endforeach ?>
+                        <?php endif ?>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 

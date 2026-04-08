@@ -1275,6 +1275,19 @@ class Router {
                 ]
             ],
 
+            /* Custom code: FC-2026-04-08: production read-only diagnostics route */
+            'ops-readonly' => [
+                'controller' => 'OpsReadonly',
+                'settings' => [
+                    'no_authentication_check' => true,
+                    'has_view' => false,
+                    'no_browser_language_detection' => true,
+                    'allow_indexing' => false,
+					'allow_sessions' => false,
+                ]
+            ],
+            /* /Custom code: FC-2026-04-08 */
+
             'broadcast' => [
                 'controller' => 'Broadcast',
                 'settings' => [

@@ -73,6 +73,28 @@ if(!defined('LOS_PRIVACY_HASH_SALT')) {
 }
 /* /Custom code: FC-2026-04-01 */
 
+/* Custom code: FC-2026-04-08: bootstrap readonly live ops access from environment */
+if(!defined('FCC_OPS_READONLY_ENABLED')) {
+    $fcc_ops_readonly_enabled = getenv('FCC_OPS_READONLY_ENABLED');
+
+    if($fcc_ops_readonly_enabled === false || $fcc_ops_readonly_enabled === '') {
+        $fcc_ops_readonly_enabled = $_SERVER['FCC_OPS_READONLY_ENABLED'] ?? '';
+    }
+
+    define('FCC_OPS_READONLY_ENABLED', (int) $fcc_ops_readonly_enabled === 1);
+}
+
+if(!defined('FCC_OPS_READONLY_KEY')) {
+    $fcc_ops_readonly_key = getenv('FCC_OPS_READONLY_KEY');
+
+    if($fcc_ops_readonly_key === false || $fcc_ops_readonly_key === '') {
+        $fcc_ops_readonly_key = $_SERVER['FCC_OPS_READONLY_KEY'] ?? '';
+    }
+
+    define('FCC_OPS_READONLY_KEY', trim((string) $fcc_ops_readonly_key));
+}
+/* /Custom code: FC-2026-04-08 */
+
 /* Establish cookie / session on this path specifically */
 define('COOKIE_PATH', preg_replace('|https?://[^/]+|i', '', SITE_URL));
 

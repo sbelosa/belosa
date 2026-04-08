@@ -5,6 +5,13 @@
 !.github/workflows/**
 !app/
 !app/**
+!docs/
+!docs/production-ops-readonly.md
+!docs/production-live-access-setup.md
+!scripts/
+!scripts/prod_ops_fetch.sh
+!scripts/prod_ops_logs.sh
+!scripts/live_readonly_mysql_user.sql.example
 !themes/
 !themes/**
 **/.DS_Store

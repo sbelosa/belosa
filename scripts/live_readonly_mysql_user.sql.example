@@ -1,0 +1,12 @@
+-- FCC live readonly MySQL user example
+-- Replace placeholders before running on production.
+-- cPanel often requires prefixed usernames and may require host=localhost.
+
+CREATE USER IF NOT EXISTS 'fcc_codex_ro'@'localhost' IDENTIFIED BY 'CHANGE_ME_TO_A_LONG_RANDOM_PASSWORD';
+GRANT SELECT, SHOW VIEW ON `app`.* TO 'fcc_codex_ro'@'localhost';
+FLUSH PRIVILEGES;
+
+-- Optional safer variant for a specific caller host only:
+-- CREATE USER IF NOT EXISTS 'fcc_codex_ro'@'YOUR_STATIC_IP' IDENTIFIED BY 'CHANGE_ME_TO_A_LONG_RANDOM_PASSWORD';
+-- GRANT SELECT, SHOW VIEW ON `app`.* TO 'fcc_codex_ro'@'YOUR_STATIC_IP';
+-- FLUSH PRIVILEGES;

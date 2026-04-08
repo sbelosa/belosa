@@ -4,6 +4,7 @@
 namespace Altum\Controllers;
 
 use Altum\Alerts;
+use Altum\Models\Billing;
 use Altum\Response;
 use Altum\Title;
 
@@ -20,6 +21,441 @@ class AdminLeaderOperatingSystemLeader extends Controller {
         cache()->deleteItemsByTag('user_id=' . $user_id);
         cache()->deleteItem('user?user_id=' . $user_id);
         /* /Custom code: FC-2026-03-31 */
+    }
+
+    private function get_extra_object($extra): \stdClass {
+        if(is_string($extra)) {
+            $extra = json_decode($extra ?? '{}');
+        }
+
+        if(is_array($extra)) {
+            $extra = (object) $extra;
+        }
+
+        if(!$extra instanceof \stdClass) {
+            $extra = (object) $extra;
+        }
+
+        return $extra;
+    }
+
+    private function save_user_extra(int $user_id, \stdClass $extra): void {
+        db()->where('user_id', $user_id)->update('users', [
+            'extra' => json_encode($extra, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+        ]);
+
+        cache()->deleteItemsByTag('user_id=' . $user_id);
+        cache()->deleteItem('user?user_id=' . $user_id);
+    }
+
+    private function configure_stripe_api(): bool {
+        $secret_key = trim((string) (settings()->stripe->secret_key ?? ''));
+
+        if($secret_key === '') {
+            return false;
+        }
+
+        \Stripe\Stripe::setApiKey($secret_key);
+        \Stripe\Stripe::setApiVersion('2023-10-16');
+
+        return true;
+    }
+
+    private function is_test_stripe_mode(): bool {
+        $publishable_key = trim((string) (settings()->stripe->publishable_key ?? ''));
+        $secret_key = trim((string) (settings()->stripe->secret_key ?? ''));
+
+        return str_starts_with($publishable_key, 'pk_test_') || str_starts_with($secret_key, 'sk_test_');
+    }
+
+    private function get_stripe_dashboard_url(string $resource_type, ?string $resource_id): ?string {
+        $resource_id = trim((string) $resource_id);
+
+        if($resource_id === '') {
+            return null;
+        }
+
+        $dashboard_prefix = $this->is_test_stripe_mode() ? 'https://dashboard.stripe.com/test/' : 'https://dashboard.stripe.com/';
+
+        return $dashboard_prefix . trim($resource_type, '/') . '/' . rawurlencode($resource_id);
+    }
+
+    private function format_stripe_amount($amount_minor, ?string $currency): ?string {
+        if(!is_numeric($amount_minor) || !$currency) {
+            return null;
+        }
+
+        $currency = mb_strtoupper((string) $currency);
+        $is_zero_decimal = in_array($currency, get_zero_decimal_currencies_array(), true);
+        $amount = $is_zero_decimal ? (float) $amount_minor : ((float) $amount_minor / 100);
+
+        return nr($amount, $is_zero_decimal ? 0 : 2) . ' ' . $currency;
+    }
+
+    private function get_stripe_price_interval_label($price): ?string {
+        $recurring = is_object($price) ? ($price->recurring ?? null) : null;
+
+        if(!$recurring || !is_object($recurring)) {
+            return null;
+        }
+
+        $interval = (string) ($recurring->interval ?? '');
+        $interval_count = max(1, (int) ($recurring->interval_count ?? 1));
+
+        if($interval === 'day' && $interval_count === 30) {
+            return l('plan.custom_plan.monthly');
+        }
+
+        if($interval === 'day' && $interval_count === 365) {
+            return l('plan.custom_plan.annual');
+        }
+
+        if($interval === 'month' && $interval_count === 1) {
+            return l('plan.custom_plan.monthly');
+        }
+
+        if($interval === 'month' && $interval_count === 3) {
+            return l('plan.custom_plan.quarterly');
+        }
+
+        if($interval === 'month' && $interval_count === 6) {
+            return l('plan.custom_plan.biannual');
+        }
+
+        if($interval === 'month' && $interval_count === 12) {
+            return l('plan.custom_plan.annual');
+        }
+
+        if($interval === '') {
+            return null;
+        }
+
+        return $interval_count > 1 ? $interval_count . ' ' . $interval : ucfirst($interval);
+    }
+
+    private function get_stripe_status_class(?string $status): string {
+        return [
+            'active' => 'success',
+            'trialing' => 'info',
+            'past_due' => 'warning',
+            'unpaid' => 'danger',
+            'canceled' => 'dark',
+            'cancelled' => 'dark',
+            'incomplete' => 'warning',
+            'incomplete_expired' => 'dark',
+            'paused' => 'warning',
+        ][trim((string) $status)] ?? 'dark';
+    }
+
+    private function get_billing_state_class(?string $state): string {
+        return [
+            'healthy' => 'success',
+            'past_due' => 'warning',
+            'past_due_critical' => 'danger',
+            'access_revoked' => 'dark',
+            'recovered' => 'success',
+        ][trim((string) $state)] ?? 'dark';
+    }
+
+    private function persist_stripe_customer_id(int $user_id, ?string $stripe_customer_id): void {
+        if(!$stripe_customer_id || !str_starts_with($stripe_customer_id, 'cus_')) {
+            return;
+        }
+
+        $user = db()->where('user_id', $user_id)->getOne('users', ['extra']);
+
+        if(!$user) {
+            return;
+        }
+
+        $extra = $this->get_extra_object($user->extra ?? null);
+
+        if(($extra->stripe_customer_id ?? null) === $stripe_customer_id) {
+            return;
+        }
+
+        $extra->stripe_customer_id = $stripe_customer_id;
+        $this->save_user_extra($user_id, $extra);
+    }
+
+    private function resolve_stripe_customer_id(array $detail): ?string {
+        $extra = $this->get_extra_object($detail['extra'] ?? null);
+        $stored_customer_id = trim((string) ($extra->stripe_customer_id ?? ''));
+
+        if($stored_customer_id !== '' && str_starts_with($stored_customer_id, 'cus_')) {
+            try {
+                \Stripe\Customer::retrieve($stored_customer_id);
+                return $stored_customer_id;
+            } catch(\Throwable $exception) {
+                /* Fall through to secondary lookup paths. */
+            }
+        }
+
+        $subscription_id = trim((string) ($detail['payment_subscription_id'] ?? ''));
+        if($subscription_id !== '' && str_starts_with($subscription_id, 'sub_')) {
+            try {
+                $subscription = \Stripe\Subscription::retrieve($subscription_id);
+                $customer_id = is_string($subscription->customer ?? null) ? $subscription->customer : null;
+
+                if($customer_id) {
+                    $this->persist_stripe_customer_id((int) ($detail['user_id'] ?? 0), $customer_id);
+                    return $customer_id;
+                }
+            } catch(\Throwable $exception) {
+                /* Continue with email lookup if the stored subscription is stale. */
+            }
+        }
+
+        $email = trim((string) ($detail['email'] ?? ''));
+        if($email === '') {
+            return null;
+        }
+
+        $customers = \Stripe\Customer::all([
+            'email' => $email,
+            'limit' => 10,
+        ]);
+
+        if(count($customers->data) === 1) {
+            $customer_id = $customers->data[0]->id ?? null;
+
+            if($customer_id) {
+                $this->persist_stripe_customer_id((int) ($detail['user_id'] ?? 0), $customer_id);
+                return $customer_id;
+            }
+        }
+
+        $active_customer_ids = [];
+
+        foreach($customers->data as $customer) {
+            $subscriptions = \Stripe\Subscription::all([
+                'customer' => $customer->id,
+                'status' => 'all',
+                'limit' => 10,
+            ]);
+
+            foreach($subscriptions->data as $subscription) {
+                if(in_array($subscription->status ?? '', ['active', 'trialing', 'past_due', 'unpaid'], true)) {
+                    $active_customer_ids[$customer->id] = $customer->id;
+                    break;
+                }
+            }
+        }
+
+        if(count($active_customer_ids) === 1) {
+            $customer_id = array_values($active_customer_ids)[0];
+            $this->persist_stripe_customer_id((int) ($detail['user_id'] ?? 0), $customer_id);
+            return $customer_id;
+        }
+
+        return null;
+    }
+
+    private function resolve_stripe_subscription(array $detail, ?string $customer_id = null) {
+        $subscription_id = trim((string) ($detail['payment_subscription_id'] ?? ''));
+
+        if($subscription_id !== '' && str_starts_with($subscription_id, 'sub_')) {
+            try {
+                return \Stripe\Subscription::retrieve($subscription_id);
+            } catch(\Throwable $exception) {
+                /* Continue with customer-scoped fallback lookup. */
+            }
+        }
+
+        if(!$customer_id) {
+            return null;
+        }
+
+        $subscriptions = \Stripe\Subscription::all([
+            'customer' => $customer_id,
+            'status' => 'all',
+            'limit' => 10,
+        ]);
+
+        if(empty($subscriptions->data)) {
+            return null;
+        }
+
+        foreach(['active', 'trialing', 'past_due', 'unpaid', 'canceled', 'incomplete', 'incomplete_expired'] as $priority_status) {
+            foreach($subscriptions->data as $subscription) {
+                if(($subscription->status ?? null) === $priority_status) {
+                    return $subscription;
+                }
+            }
+        }
+
+        return $subscriptions->data[0] ?? null;
+    }
+
+    private function extract_stripe_product_name($price): string {
+        if(!is_object($price)) {
+            return '-';
+        }
+
+        $product = $price->product ?? null;
+
+        if(is_object($product) && !empty($product->name)) {
+            return (string) $product->name;
+        }
+
+        if(is_string($product) && $product !== '') {
+            try {
+                $product_object = \Stripe\Product::retrieve($product);
+
+                if(!empty($product_object->name)) {
+                    return (string) $product_object->name;
+                }
+            } catch(\Throwable $exception) {
+                /* Fallback to other labels below. */
+            }
+        }
+
+        if(!empty($price->nickname)) {
+            return (string) $price->nickname;
+        }
+
+        if(!empty($price->id)) {
+            return (string) $price->id;
+        }
+
+        return '-';
+    }
+
+    private function build_stripe_recent_invoices(?string $customer_id): array {
+        if(!$customer_id) {
+            return [];
+        }
+
+        $invoices = \Stripe\Invoice::all([
+            'customer' => $customer_id,
+            'limit' => 4,
+        ]);
+
+        $payload = [];
+
+        foreach($invoices->data as $invoice) {
+            $payload[] = [
+                'id' => (string) ($invoice->id ?? ''),
+                'status' => (string) ($invoice->status ?? ''),
+                'created_at' => !empty($invoice->created) ? date('Y-m-d H:i:s', (int) $invoice->created) : null,
+                'total' => $this->format_stripe_amount($invoice->total ?? null, $invoice->currency ?? null),
+                'amount_paid' => $this->format_stripe_amount($invoice->amount_paid ?? null, $invoice->currency ?? null),
+                'hosted_invoice_url' => (string) ($invoice->hosted_invoice_url ?? ''),
+                'dashboard_url' => $this->get_stripe_dashboard_url('invoices', $invoice->id ?? null),
+            ];
+        }
+
+        return $payload;
+    }
+
+    private function get_stripe_billing_payload(array $detail, array $billing_summary): array {
+        $payload = [
+            'processor' => (string) ($detail['payment_processor'] ?? ''),
+            'customer_id' => null,
+            'subscription_id' => trim((string) ($detail['payment_subscription_id'] ?? '')) ?: null,
+            'portal_available' => false,
+            'portal_error' => null,
+            'customer_dashboard_url' => null,
+            'subscription_dashboard_url' => $this->get_stripe_dashboard_url('subscriptions', $detail['payment_subscription_id'] ?? null),
+            'status' => (string) ($billing_summary['stripe_status'] ?? ''),
+            'status_class' => $this->get_stripe_status_class($billing_summary['stripe_status'] ?? null),
+            'billing_state' => (string) ($billing_summary['billing_state'] ?? 'healthy'),
+            'billing_state_class' => $this->get_billing_state_class($billing_summary['billing_state'] ?? null),
+            'plan_name' => null,
+            'plan_price_label' => null,
+            'price_id' => null,
+            'current_period_end' => $billing_summary['current_period_end'] ?? null,
+            'trial_end' => null,
+            'cancel_at_period_end' => false,
+            'cancel_at' => null,
+            'last_failed_reason_text' => $billing_summary['last_failed_reason_text'] ?? null,
+            'last_invoice_id' => $billing_summary['last_invoice_id'] ?? null,
+            'last_invoice_dashboard_url' => $this->get_stripe_dashboard_url('invoices', $billing_summary['last_invoice_id'] ?? null),
+            'last_payment_intent_id' => $billing_summary['last_payment_intent_id'] ?? null,
+            'failed_attempts' => (int) ($billing_summary['failed_attempts'] ?? 0),
+            'grace_until' => $billing_summary['grace_until'] ?? null,
+            'next_retry_at' => $billing_summary['next_retry_at'] ?? null,
+            'recent_invoices' => [],
+        ];
+
+        if(!$this->configure_stripe_api()) {
+            $payload['portal_error'] = l('admin_leader_operating_system.leader.stripe_not_configured');
+            return $payload;
+        }
+
+        try {
+            $customer_id = $this->resolve_stripe_customer_id($detail);
+
+            if($customer_id) {
+                $payload['customer_id'] = $customer_id;
+                $payload['portal_available'] = true;
+                $payload['customer_dashboard_url'] = $this->get_stripe_dashboard_url('customers', $customer_id);
+            }
+
+            $subscription = $this->resolve_stripe_subscription($detail, $customer_id);
+
+            if($subscription) {
+                $payload['subscription_id'] = (string) ($subscription->id ?? $payload['subscription_id']);
+                $payload['subscription_dashboard_url'] = $this->get_stripe_dashboard_url('subscriptions', $payload['subscription_id']);
+                $payload['status'] = (string) ($subscription->status ?? $payload['status']);
+                $payload['status_class'] = $this->get_stripe_status_class($payload['status']);
+                $payload['current_period_end'] = !empty($subscription->current_period_end) ? date('Y-m-d H:i:s', (int) $subscription->current_period_end) : $payload['current_period_end'];
+                $payload['trial_end'] = !empty($subscription->trial_end) ? date('Y-m-d H:i:s', (int) $subscription->trial_end) : null;
+                $payload['cancel_at_period_end'] = (bool) ($subscription->cancel_at_period_end ?? false);
+                $payload['cancel_at'] = !empty($subscription->cancel_at) ? date('Y-m-d H:i:s', (int) $subscription->cancel_at) : null;
+
+                $price = $subscription->items->data[0]->price ?? null;
+                $amount_label = is_object($price) ? $this->format_stripe_amount($price->unit_amount ?? null, $price->currency ?? null) : null;
+                $interval_label = $this->get_stripe_price_interval_label($price);
+                $payload['plan_name'] = $this->extract_stripe_product_name($price);
+                $payload['plan_price_label'] = implode(' / ', array_filter([$amount_label, $interval_label]));
+                $payload['price_id'] = is_object($price) ? (string) ($price->id ?? '') : null;
+
+                if(!$payload['customer_id'] && is_string($subscription->customer ?? null)) {
+                    $payload['customer_id'] = $subscription->customer;
+                    $payload['portal_available'] = true;
+                    $payload['customer_dashboard_url'] = $this->get_stripe_dashboard_url('customers', $subscription->customer);
+                    $this->persist_stripe_customer_id((int) ($detail['user_id'] ?? 0), $subscription->customer);
+                }
+            }
+
+            if($payload['customer_id']) {
+                $payload['recent_invoices'] = $this->build_stripe_recent_invoices($payload['customer_id']);
+            }
+
+            if(!$payload['portal_available']) {
+                $payload['portal_error'] = l('admin_leader_operating_system.leader.stripe_customer_missing');
+            }
+        } catch(\Throwable $exception) {
+            $payload['portal_error'] = trim((string) $exception->getMessage()) ?: l('global.error_message.basic');
+        }
+
+        return $payload;
+    }
+
+    private function create_stripe_portal_url(array $detail, string $return_url): string {
+        if(!$this->configure_stripe_api()) {
+            throw new \Exception(l('admin_leader_operating_system.leader.stripe_not_configured'));
+        }
+
+        $customer_id = $this->resolve_stripe_customer_id($detail);
+
+        if(!$customer_id) {
+            throw new \Exception(l('admin_leader_operating_system.leader.stripe_customer_missing'));
+        }
+
+        $session = \Stripe\BillingPortal\Session::create([
+            'customer' => $customer_id,
+            'return_url' => $return_url,
+        ]);
+
+        $portal_url = trim((string) ($session->url ?? ''));
+
+        if($portal_url === '') {
+            throw new \Exception(l('admin_leader_operating_system.leader.stripe_portal_session_failed'));
+        }
+
+        return $portal_url;
     }
 
     private function get_period_days(string $period_key): int {
@@ -2409,7 +2845,7 @@ class AdminLeaderOperatingSystemLeader extends Controller {
     /* /Custom code: FC-2026-03-31 */
 
     private function get_detail_payload(int $user_id): ?array {
-        $user = db()->where('user_id', $user_id)->where('type', 0)->getOne('users', ['user_id', 'name', 'email', 'preferences']);
+        $user = db()->where('user_id', $user_id)->where('type', 0)->getOne('users', ['user_id', 'name', 'email', 'preferences', 'extra', 'payment_processor', 'payment_subscription_id', 'plan_id', 'plan_expiration_date']);
 
         if(!$user) {
             return null;
@@ -2448,6 +2884,11 @@ class AdminLeaderOperatingSystemLeader extends Controller {
             'user_id' => (int) $user->user_id,
             'name' => (string) ($user->name ?? l('global.unknown')),
             'email' => (string) ($user->email ?? ''),
+            'extra' => $user->extra ?? null,
+            'payment_processor' => (string) ($user->payment_processor ?? ''),
+            'payment_subscription_id' => (string) ($user->payment_subscription_id ?? ''),
+            'plan_id' => (int) ($user->plan_id ?? 0),
+            'plan_expiration_date' => $user->plan_expiration_date ?? null,
             'forever_id' => $this->extract_forever_id_from_preferences($user->preferences ?? null),
             'admin_user_url' => url('admin/user-view/' . (int) $user->user_id),
             /* Custom code: FC-2026-03-31: Attach app structure to leader payload */
@@ -3977,6 +4418,8 @@ class AdminLeaderOperatingSystemLeader extends Controller {
         $selected_period = isset($_GET['period']) && in_array($_GET['period'], $allowed_periods, true) ? $_GET['period'] : '30d';
         $user_id = isset($_GET['user_id']) ? (int) $_GET['user_id'] : 0;
         $detail = $user_id > 0 ? $this->get_detail_payload($user_id) : null;
+        $billing_model = new Billing();
+        $billing_summary = $detail ? $billing_model->get_user_billing_summary((int) $detail['user_id']) : null;
 
         if($detail && $_SERVER['REQUEST_METHOD'] === 'POST' && (isset($_POST['save_mentor_actions']) || isset($_POST['toggle_follow_up']) || isset($_POST['mark_mentored_this_week']) || isset($_POST['reset_mentored_this_week']))) {
             if(!\Altum\Csrf::check()) {
@@ -4035,15 +4478,38 @@ class AdminLeaderOperatingSystemLeader extends Controller {
         }
         /* /Custom code: FC-2026-03-31 */
 
+        if($detail && $_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['open_stripe_customer_portal'])) {
+            if(!\Altum\Csrf::check()) {
+                \Altum\Alerts::add_error(l('global.error_message.invalid_csrf_token'));
+                redirect('admin/leader-operating-system-leader?user_id=' . $user_id . '&period=' . $selected_period . '#leader-os-stripe-billing');
+            }
+
+            try {
+                $portal_url = $this->create_stripe_portal_url(
+                    $detail,
+                    url('admin/leader-operating-system-leader?user_id=' . $user_id . '&period=' . $selected_period . '#leader-os-stripe-billing')
+                );
+
+                header('Location: ' . $portal_url);
+                die();
+            } catch(\Throwable $exception) {
+                \Altum\Alerts::add_error(trim((string) $exception->getMessage()) ?: l('admin_leader_operating_system.leader.stripe_portal_open_failed'));
+                redirect('admin/leader-operating-system-leader?user_id=' . $user_id . '&period=' . $selected_period . '#leader-os-stripe-billing');
+            }
+        }
+
         Title::set(l('admin_leader_operating_system.leader.title'));
 
         $ai_report = $detail ? $this->get_cached_ai_report((int) $detail['user_id'], $selected_period) : null;
+        $stripe_billing = ($detail && $billing_summary) ? $this->get_stripe_billing_payload($detail, $billing_summary) : null;
 
         $data = [
             'selected_period' => $selected_period,
             'period_options' => $allowed_periods,
             'overview_url' => url('admin/leader-operating-system?period=' . $selected_period),
             'detail' => $detail,
+            'billing_summary' => $billing_summary,
+            'stripe_billing' => $stripe_billing,
             'selected_payload' => $detail['periods'][$selected_period] ?? null,
             'opportunity_actions' => ($detail && !empty($detail['periods'][$selected_period])) ? $this->get_opportunity_actions_payload($detail['periods'][$selected_period]) : null,
             /* Custom code: FC-2026-03-31: V2 cohort comparison payload */
