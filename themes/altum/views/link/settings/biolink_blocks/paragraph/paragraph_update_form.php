@@ -1,5 +1,11 @@
 <?php defined('ALTUMCODE') || die() ?>
 
+<?php
+$paragraph_text_color = verify_hex_color($row->settings->text_color ?? null) ? $row->settings->text_color : '#FFFFFF';
+$paragraph_background_color = verify_hex_color($row->settings->background_color ?? null) ? $row->settings->background_color : '#00000000';
+$paragraph_font_size = in_array((int) ($row->settings->font_size ?? 16), range(12, 40), true) ? (int) $row->settings->font_size : 16;
+?>
+
 <form id="<?= 'update_biolink_block_' . $row->biolink_block_id ?>" name="update_biolink_" method="post" role="form" data-type="<?= $row->type ?>">
     <input type="hidden" name="token" value="<?= \Altum\Csrf::get() ?>" required="required" />
     <input type="hidden" name="request_type" value="update" />
@@ -15,14 +21,53 @@
 
     <div class="form-group">
         <label><i class="fas fa-fw fa-paint-brush fa-sm text-muted mr-1"></i> <?= l('biolink_link.text_color') ?></label>
-        <input type="hidden" name="text_color" class="form-control" value="<?= $row->settings->text_color ?>" required="required" />
-        <div class="text_color_pickr"></div>
+        <div class="d-flex align-items-center">
+            <div class="text_color_pickr mr-3"></div>
+            <input
+                type="text"
+                name="text_color"
+                class="form-control"
+                value="<?= $paragraph_text_color ?>"
+                maxlength="9"
+                placeholder="#FFFFFF"
+                spellcheck="false"
+                autocomplete="off"
+                required="required"
+            />
+        </div>
     </div>
 
     <div class="form-group">
         <label for="<?= 'paragraph_background_color_' . $row->biolink_block_id ?>"><i class="fas fa-fw fa-fill fa-sm text-muted mr-1"></i> <?= l('biolink_link.background_color') ?></label>
-        <input id="<?= 'paragraph_background_color_' . $row->biolink_block_id ?>" type="hidden" name="background_color" class="form-control" value="<?= $row->settings->background_color ?>" required="required" />
-        <div class="background_color_pickr"></div>
+        <div class="d-flex align-items-center">
+            <div class="background_color_pickr mr-3"></div>
+            <input
+                id="<?= 'paragraph_background_color_' . $row->biolink_block_id ?>"
+                type="text"
+                name="background_color"
+                class="form-control"
+                value="<?= $paragraph_background_color ?>"
+                maxlength="9"
+                placeholder="#00000000"
+                spellcheck="false"
+                autocomplete="off"
+                required="required"
+            />
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label for="<?= 'paragraph_font_size_' . $row->biolink_block_id ?>"><i class="fas fa-fw fa-font fa-sm text-muted mr-1"></i> <?= l('link.settings.font_size') ?></label>
+        <input
+            id="<?= 'paragraph_font_size_' . $row->biolink_block_id ?>"
+            type="number"
+            min="12"
+            max="40"
+            step="1"
+            name="font_size"
+            class="form-control"
+            value="<?= $paragraph_font_size ?>"
+        />
     </div>
 
     <button class="btn btn-block btn-gray-300 my-4" type="button" data-toggle="collapse" data-target="#<?= 'border_container_' . $row->biolink_block_id ?>" aria-expanded="false" aria-controls="<?= 'border_container_' . $row->biolink_block_id ?>">

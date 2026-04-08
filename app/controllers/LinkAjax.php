@@ -3394,6 +3394,7 @@ class LinkAjax extends Controller {
 					'text' => mb_substr((string) $paragraph_text, 0, 10000),
 					'text_color' => '#ffffff',
 					'background_color' => '#00000000',
+					'font_size' => 16,
 					'border_radius' => 'rounded',
 					'border_shadow_style' => 'none',
 					'border_shadow_color' => '#00000000',

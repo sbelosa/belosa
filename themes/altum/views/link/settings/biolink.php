@@ -4501,6 +4501,30 @@ $fcc_biolink_editor_tours = [
                 });
             }
 
+            let is_valid_hex_color = color => /^#(?:[0-9A-F]{3}|[0-9A-F]{4}|[0-9A-F]{6}|[0-9A-F]{8})$/i.test(color.trim());
+            let bind_hex_color_input = (color_input, color_pickr, update_preview) => {
+                if(!color_input) {
+                    return;
+                }
+
+                $(color_input).off('.hexsync').on('input.hexsync change.hexsync blur.hexsync', event => {
+                    let color = event.currentTarget.value.trim();
+
+                    if(color && color[0] !== '#') {
+                        color = `#${color}`;
+                    }
+
+                    event.currentTarget.value = color.toUpperCase();
+
+                    if(!is_valid_hex_color(color)) {
+                        return;
+                    }
+
+                    color_pickr.setColor(color);
+                    update_preview(color.toUpperCase());
+                });
+            };
+
             /* Text color */
             let text_color_pickr_element = update_form_content.querySelector('.text_color_pickr');
 
@@ -4517,6 +4541,10 @@ $fcc_biolink_editor_tours = [
                 color_pickr.off().on('change', hsva => {
                     $(color_input).val(hsva.toHEXA().toString());
                     biolink_link.find('[data-text-color]').css('color', hsva.toHEXA().toString());
+                });
+
+                bind_hex_color_input(color_input, color_pickr, color => {
+                    biolink_link.find('[data-text-color]').css('color', color);
                 });
             }
 
@@ -4552,6 +4580,10 @@ $fcc_biolink_editor_tours = [
                 color_pickr.off().on('change', hsva => {
                     $(color_input).val(hsva.toHEXA().toString());
                     biolink_link.find('[data-background-color]').css('background-color', hsva.toHEXA().toString());
+                });
+
+                bind_hex_color_input(color_input, color_pickr, color => {
+                    biolink_link.find('[data-background-color]').css('background-color', color);
                 });
             }
 

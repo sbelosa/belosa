@@ -1149,6 +1149,7 @@ class BiolinkBlockAjax extends Controller {
             'text' => $_POST['text'],
             'text_color' => '#ffffff',
             'background_color' => '#00000000',
+            'font_size' => 16,
             'border_radius' => 'rounded',
             'border_shadow_style' => 'none',
             'border_shadow_color' => '#00000000',
@@ -1229,16 +1230,29 @@ class BiolinkBlockAjax extends Controller {
             die();
         }
 
+        $existing_settings = json_decode($biolink_block->settings ?? '');
+        $existing_text_color = verify_hex_color($existing_settings->text_color ?? null) ? $existing_settings->text_color : '#ffffff';
+        $existing_background_color = verify_hex_color($existing_settings->background_color ?? null) ? $existing_settings->background_color : '#00000000';
+        $existing_font_size = in_array((int) ($existing_settings->font_size ?? 16), range(12, 40), true) ? (int) $existing_settings->font_size : 16;
+        $existing_text_alignment = in_array($existing_settings->text_alignment ?? 'center', ['center', 'left', 'right', 'justify']) ? $existing_settings->text_alignment : 'center';
+
+        $_POST['text_color'] = !verify_hex_color($_POST['text_color']) ? $existing_text_color : $_POST['text_color'];
+        $_POST['background_color'] = !verify_hex_color($_POST['background_color']) ? $existing_background_color : $_POST['background_color'];
+        $_POST['font_size'] = in_array((int) ($_POST['font_size'] ?? 0), range(12, 40), true) ? (int) $_POST['font_size'] : $existing_font_size;
+        $_POST['text_alignment'] = in_array($_POST['text_alignment'] ?? $existing_text_alignment, ['center', 'left', 'right', 'justify']) ? query_clean($_POST['text_alignment'] ?? $existing_text_alignment) : 'center';
+
         $settings = json_encode([
             'text' => $_POST['text'],
             'text_color' => $_POST['text_color'],
             'background_color' => $_POST['background_color'],
+            'font_size' => $_POST['font_size'],
             'border_radius' => $_POST['border_radius'],
             'border_width' => $_POST['border_width'],
             'border_style' => $_POST['border_style'],
             'border_color' => $_POST['border_color'],
             'border_shadow_style' => $_POST['border_shadow_style'],
             'border_shadow_color' => $_POST['border_shadow_color'],
+            'text_alignment' => $_POST['text_alignment'],
 
             /* Display settings */
             'display_continents' => $_POST['display_continents'],
