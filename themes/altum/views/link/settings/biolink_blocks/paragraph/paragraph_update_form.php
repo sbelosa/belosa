@@ -19,23 +19,7 @@ $paragraph_font_size = in_array((int) ($row->settings->font_size ?? 16), range(1
         <textarea id="<?= 'paragraph_text_' . $row->biolink_block_id ?>" class="form-control quilljs" name="text" maxlength="10000" data-paragraph-rich-text><?= bootstrap_to_quilljs($row->settings->text) ?></textarea>
     </div>
 
-    <div class="form-group">
-        <label><i class="fas fa-fw fa-paint-brush fa-sm text-muted mr-1"></i> <?= l('biolink_link.text_color') ?></label>
-        <div class="d-flex align-items-center">
-            <div class="text_color_pickr mr-3"></div>
-            <input
-                type="text"
-                name="text_color"
-                class="form-control"
-                value="<?= $paragraph_text_color ?>"
-                maxlength="9"
-                placeholder="#FFFFFF"
-                spellcheck="false"
-                autocomplete="off"
-                required="required"
-            />
-        </div>
-    </div>
+    <input type="hidden" name="text_color" value="<?= $paragraph_text_color ?>" required="required" />
 
     <div class="form-group">
         <label for="<?= 'paragraph_background_color_' . $row->biolink_block_id ?>"><i class="fas fa-fw fa-fill fa-sm text-muted mr-1"></i> <?= l('biolink_link.background_color') ?></label>
@@ -56,19 +40,7 @@ $paragraph_font_size = in_array((int) ($row->settings->font_size ?? 16), range(1
         </div>
     </div>
 
-    <div class="form-group">
-        <label for="<?= 'paragraph_font_size_' . $row->biolink_block_id ?>"><i class="fas fa-fw fa-font fa-sm text-muted mr-1"></i> <?= l('link.settings.font_size') ?></label>
-        <input
-            id="<?= 'paragraph_font_size_' . $row->biolink_block_id ?>"
-            type="number"
-            min="10"
-            max="24"
-            step="1"
-            name="font_size"
-            class="form-control"
-            value="<?= $paragraph_font_size ?>"
-        />
-    </div>
+    <input type="hidden" name="font_size" value="<?= $paragraph_font_size ?>" />
 
     <button class="btn btn-block btn-gray-300 my-4" type="button" data-toggle="collapse" data-target="#<?= 'border_container_' . $row->biolink_block_id ?>" aria-expanded="false" aria-controls="<?= 'border_container_' . $row->biolink_block_id ?>">
         <i class="fas fa-fw fa-square-full fa-sm mr-1"></i> <?= l('biolink_link.border_header') ?>
