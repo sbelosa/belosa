@@ -1619,6 +1619,7 @@ return [
 	'ai_plan.weekly_success_message' => 'Tjedni unos je spremljen. Sljedeći će se otvoriti za 7 dana.',
 	'ai_plan.weekly_success_message_phase_3' => 'Tjedni unos je spremljen i plan za 7 dana je generiran.',
 	'ai_plan.weekly_fallback_message' => 'AI obrada je zapela pa smo odmah spremili sigurnu verziju plana. Možeš ga koristiti odmah, a sljedeći update će ga normalno nadograditi.',
+	'ai_plan.preferences_persist_failed_message' => 'Plan je izrađen, ali spremanje nije prošlo kako treba. Osvježi stranicu i pokušaj ponovno. Ako se ovo ponovi, problem je u prevelikom AI historyju i to ćemo automatski sređivati kroz novi update.',
 	'ai_plan.weekly_adaptive_title' => 'Adaptivno pitanje',
 	'ai_plan.weekly_locked_profile_title' => 'Prvo dovrši bazni profil',
 	'ai_plan.weekly_locked_profile' => 'Prije tjednog unosa trebaš dovršiti osnovni AI profil iz prve faze kako bi sustav znao tvoj cilj, publiku i način rada.',

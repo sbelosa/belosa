@@ -889,13 +889,112 @@ class AiPlan extends Controller {
         return $preferences;
     }
 
-    private function persist_ai_plan_preferences(\stdClass $preferences): void {
-        db()->where('user_id', $this->user->user_id)->update('users', [
-            'preferences' => json_encode($preferences),
+    private function encode_ai_plan_preferences_for_storage(\stdClass $preferences): ?string {
+        $encoded = json_encode($preferences, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_INVALID_UTF8_SUBSTITUTE);
+
+        return is_string($encoded) ? $encoded : null;
+    }
+
+    private function limit_ai_plan_storage_list(\stdClass $preferences, string $key, int $limit): \stdClass {
+        $list = $preferences->{$key} ?? [];
+
+        if($list instanceof \stdClass) {
+            $list = (array) $list;
+        }
+
+        if(!is_array($list)) {
+            return $preferences;
+        }
+
+        $preferences->{$key} = array_values(array_slice($list, 0, max(0, $limit)));
+
+        return $preferences;
+    }
+
+    private function trim_ai_plan_preferences_for_storage(\stdClass $preferences, int $target_bytes = 60000): \stdClass {
+        $preferences = $this->get_preferences_object($preferences);
+        $encoded = $this->encode_ai_plan_preferences_for_storage($preferences);
+
+        if($encoded !== null && strlen($encoded) <= $target_bytes) {
+            return $preferences;
+        }
+
+        $trim_steps = [
+            ['leader_ai_theme_library', 10],
+            ['leader_ai_app_reviews', 10],
+            ['leader_ai_weekly_plans', 10],
+            ['leader_ai_weekly_outcomes', 10],
+            ['leader_ai_weekly_checkins', 10],
+            ['leader_ai_theme_library', 8],
+            ['leader_ai_app_reviews', 8],
+            ['leader_ai_weekly_plans', 8],
+            ['leader_ai_weekly_outcomes', 8],
+            ['leader_ai_weekly_checkins', 8],
+            ['leader_ai_theme_library', 6],
+            ['leader_ai_app_reviews', 6],
+            ['leader_ai_weekly_plans', 6],
+            ['leader_ai_weekly_outcomes', 6],
+            ['leader_ai_weekly_checkins', 6],
+            ['leader_ai_theme_library', 4],
+            ['leader_ai_app_reviews', 4],
+            ['leader_ai_weekly_plans', 4],
+            ['leader_ai_weekly_outcomes', 4],
+            ['leader_ai_weekly_checkins', 4],
+            ['leader_ai_theme_library', 3],
+            ['leader_ai_app_reviews', 3],
+            ['leader_ai_weekly_plans', 3],
+            ['leader_ai_weekly_outcomes', 3],
+            ['leader_ai_weekly_checkins', 3],
+        ];
+
+        foreach($trim_steps as [$key, $limit]) {
+            $preferences = $this->limit_ai_plan_storage_list($preferences, $key, $limit);
+            $encoded = $this->encode_ai_plan_preferences_for_storage($preferences);
+
+            if($encoded !== null && strlen($encoded) <= $target_bytes) {
+                return $preferences;
+            }
+        }
+
+        return $preferences;
+    }
+
+    private function persist_ai_plan_preferences(\stdClass $preferences): bool {
+        $preferences = $this->trim_ai_plan_preferences_for_storage($preferences);
+        $encoded = $this->encode_ai_plan_preferences_for_storage($preferences);
+
+        if($encoded === null) {
+            \Altum\Logger::users($this->user->user_id, 'ai_plan.preferences_encode_failed');
+            return false;
+        }
+
+        $result = db()->where('user_id', $this->user->user_id)->update('users', [
+            'preferences' => $encoded,
         ]);
+
+        if(!$result || !empty(database()->error)) {
+            $preferences = $this->trim_ai_plan_preferences_for_storage($preferences, 54000);
+            $encoded = $this->encode_ai_plan_preferences_for_storage($preferences);
+
+            if($encoded === null) {
+                \Altum\Logger::users($this->user->user_id, 'ai_plan.preferences_encode_failed_retry');
+                return false;
+            }
+
+            $result = db()->where('user_id', $this->user->user_id)->update('users', [
+                'preferences' => $encoded,
+            ]);
+
+            if(!$result || !empty(database()->error)) {
+                \Altum\Logger::users($this->user->user_id, 'ai_plan.preferences_persist_failed');
+                return false;
+            }
+        }
 
         cache()->deleteItemsByTag('user_id=' . $this->user->user_id);
         cache()->deleteItem('user?user_id=' . $this->user->user_id);
+
+        return true;
     }
 
     private function get_saved_ai_theme_library($preferences): array {
@@ -9333,12 +9432,7 @@ class AiPlan extends Controller {
             $preferences->leader_ai_weekly_plans = $weekly_plans;
             $recovered_weekly_plan_generated = true;
 
-            db()->where('user_id', $this->user->user_id)->update('users', [
-                'preferences' => json_encode($preferences),
-            ]);
-
-            cache()->deleteItemsByTag('user_id=' . $this->user->user_id);
-            cache()->deleteItem('user?user_id=' . $this->user->user_id);
+            $this->persist_ai_plan_preferences($preferences);
 
             $latest_weekly_plan = $this->get_latest_weekly_plan($weekly_plans, $latest_weekly_checkin);
             $latest_pending_outcome_plan = $this->get_latest_plan_missing_outcome($weekly_plans, $weekly_outcomes);
@@ -9605,8 +9699,13 @@ class AiPlan extends Controller {
                     array_unshift($weekly_checkins, $new_checkin);
                     $weekly_checkins = array_slice($weekly_checkins, 0, 12);
                     $preferences->leader_ai_weekly_checkins = $weekly_checkins;
-                    $this->persist_ai_plan_preferences($preferences);
+                    $checkin_persisted = $this->persist_ai_plan_preferences($preferences);
                     $this->user->preferences = $preferences;
+
+                    if(!$checkin_persisted) {
+                        Alerts::add_error(l('ai_plan.preferences_persist_failed_message'));
+                        redirect('ai-plan?section=weekly');
+                    }
 
                     $ai_plan_generated = false;
                     $used_weekly_plan_fallback = false;
@@ -9631,8 +9730,13 @@ class AiPlan extends Controller {
                             $preferences = $this->consume_ai_growth_starter_credit($preferences, 'weekly_plan');
                         }
 
-                        $this->persist_ai_plan_preferences($preferences);
+                        $plan_persisted = $this->persist_ai_plan_preferences($preferences);
                         $this->user->preferences = $preferences;
+
+                        if(!$plan_persisted) {
+                            Alerts::add_error(l('ai_plan.preferences_persist_failed_message'));
+                            redirect('ai-plan?section=plan');
+                        }
                     }
 
                     \Altum\Logger::users($this->user->user_id, 'ai_plan.weekly_checkin_saved');
