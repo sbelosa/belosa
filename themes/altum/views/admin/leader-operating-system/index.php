@@ -748,8 +748,14 @@
 
     .leader-os-toolbar {
         display: grid;
-        grid-template-columns: 1.4fr 0.9fr 0.9fr 0.9fr 0.9fr;
-        gap: 0.85rem;
+        grid-template-columns: minmax(260px, 1.45fr) repeat(4, minmax(150px, 1fr));
+        gap: 0.7rem;
+        align-items: end;
+    }
+
+    .leader-os-toolbar .small.text-muted {
+        font-size: 0.72rem;
+        margin-bottom: 0.35rem !important;
     }
 
     .leader-os-table {
@@ -4500,8 +4506,9 @@ $operations_tab_badge_total = (int) (($data->operations['totals']['pending_appro
         <form action="<?= url('admin/leader-operating-system') ?>" method="get">
             <input type="hidden" name="period" value="<?= $data->selected_period ?>" />
             <input type="hidden" name="tab" value="<?= $data->selected_tab ?>" />
+            <input type="hidden" name="fraud_status" value="all" />
 
-            <div class="leader-os-toolbar mb-3">
+            <div class="leader-os-toolbar mb-2">
                 <div>
                     <label class="small text-muted d-block mb-2"><?= l('admin_leader_operating_system.search_label') ?></label>
                     <input type="search" name="search" class="form-control" value="<?= input_clean($data->search_query) ?>" placeholder="<?= l('admin_leader_operating_system.search_placeholder') ?>" />
@@ -4512,6 +4519,15 @@ $operations_tab_badge_total = (int) (($data->operations['totals']['pending_appro
                     <select name="status" class="custom-select">
                         <?php foreach($data->status_options as $status_option): ?>
                             <option value="<?= $status_option ?>" <?= $data->selected_status === $status_option ? 'selected="selected"' : null ?>><?= l('admin_leader_operating_system.filter.' . $status_option) ?></option>
+                        <?php endforeach ?>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="small text-muted d-block mb-2"><?= l('admin_leader_operating_system.sort_label') ?></label>
+                    <select name="sort" class="custom-select">
+                        <?php foreach($data->sort_options as $sort_option): ?>
+                            <option value="<?= $sort_option ?>" <?= $data->selected_sort === $sort_option ? 'selected="selected"' : null ?>><?= htmlspecialchars((string) ($sort_labels[$sort_option] ?? ucfirst($sort_option)), ENT_QUOTES, 'UTF-8') ?></option>
                         <?php endforeach ?>
                     </select>
                 </div>
@@ -4533,30 +4549,12 @@ $operations_tab_badge_total = (int) (($data->operations['totals']['pending_appro
                         <?php endforeach ?>
                     </select>
                 </div>
-
-                <div>
-                    <label class="small text-muted d-block mb-2">Fraud status</label>
-                    <select name="fraud_status" class="custom-select">
-                        <?php foreach($data->fraud_status_options as $fraud_status_option): ?>
-                            <option value="<?= $fraud_status_option ?>" <?= $data->selected_fraud_status === $fraud_status_option ? 'selected="selected"' : null ?>><?= htmlspecialchars((string) ($fraud_filter_labels[$fraud_status_option] ?? ucfirst($fraud_status_option)), ENT_QUOTES, 'UTF-8') ?></option>
-                        <?php endforeach ?>
-                    </select>
-                </div>
-
-                <div>
-                    <label class="small text-muted d-block mb-2"><?= l('admin_leader_operating_system.sort_label') ?></label>
-                    <select name="sort" class="custom-select">
-                        <?php foreach($data->sort_options as $sort_option): ?>
-                            <option value="<?= $sort_option ?>" <?= $data->selected_sort === $sort_option ? 'selected="selected"' : null ?>><?= htmlspecialchars((string) ($sort_labels[$sort_option] ?? ucfirst($sort_option)), ENT_QUOTES, 'UTF-8') ?></option>
-                        <?php endforeach ?>
-                    </select>
-                </div>
             </div>
 
             <div class="d-flex align-items-center justify-content-between flex-wrap">
                 <div>
                     <?php foreach($data->status_options as $status_option): ?>
-                        <?php $chip_query = http_build_query(['period' => $data->selected_period, 'search' => $data->search_query, 'status' => $status_option, 'ai_status' => $data->selected_ai_status, 'anomaly_status' => $data->selected_anomaly_status, 'fraud_status' => $data->selected_fraud_status, 'sort' => $data->selected_sort, 'tab' => $data->selected_tab]); ?>
+                        <?php $chip_query = http_build_query(['period' => $data->selected_period, 'search' => $data->search_query, 'status' => $status_option, 'ai_status' => $data->selected_ai_status, 'anomaly_status' => $data->selected_anomaly_status, 'fraud_status' => 'all', 'sort' => $data->selected_sort, 'tab' => $data->selected_tab]); ?>
                         <a href="<?= url('admin/leader-operating-system?' . $chip_query) ?>" class="leader-os-filter-chip <?= $data->selected_status === $status_option ? 'active' : null ?>">
                             <?= l('admin_leader_operating_system.filter.' . $status_option) ?>
                         </a>
@@ -4567,7 +4565,7 @@ $operations_tab_badge_total = (int) (($data->operations['totals']['pending_appro
             </div>
 
             <!-- Custom code: FC-2026-03-31: LOS overview helper note -->
-            <div class="leader-os-inline-note mt-3"><?= l('admin_leader_operating_system.ai_filter_hint') ?></div>
+            <div class="leader-os-inline-note mt-2"><?= l('admin_leader_operating_system.ai_filter_hint') ?></div>
             <!-- /Custom code: FC-2026-03-31 -->
         </form>
 </div>
