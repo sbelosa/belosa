@@ -4299,16 +4299,6 @@ class AdminLeaderOperatingSystem extends Controller {
         ];
 
         $payload = [];
-        $clickCountsByRange = [
-            7 => [],
-            30 => [],
-            90 => [],
-        ];
-        $registrationCountsByRange = [
-            7 => [],
-            30 => [],
-            90 => [],
-        ];
         $leadCountsByRange = [
             7 => [],
             30 => [],
@@ -4322,43 +4312,9 @@ class AdminLeaderOperatingSystem extends Controller {
         $blog_mediums = $this->get_blog_cta_mediums();
         $product_medium = db()->escape($blog_mediums['product']);
         $business_medium = db()->escape($blog_mediums['business']);
-        $biolink_sets = $this->get_biolink_block_sets();
-        $shop_condition = \Altum\Link::get_forever_shop_click_condition_sql('`track_links`', '`biolinks_blocks`', $biolink_sets['forever_shop_block_types_sql']);
-        $registration_condition = \Altum\Link::get_forever_registration_click_condition_sql('`track_links`', '`biolinks_blocks`', $biolink_sets['forever_registration_block_types_sql']);
-        $outbound_condition = \Altum\Link::get_forever_outbound_click_condition_sql('`track_links`', '`biolinks_blocks`', $biolink_sets['forever_shop_block_types_sql'], $biolink_sets['forever_registration_block_types_sql']);
 
         foreach($ranges as $days => $start_datetime) {
             $escaped_start_datetime = db()->escape($start_datetime);
-            $click_result = database()->query("SELECT
-                    `track_links`.`user_id`,
-                    SUM(CASE WHEN `track_links`.`is_unique` = 1 AND {$outbound_condition} THEN 1 ELSE 0 END) AS `click_total`,
-                    SUM(CASE WHEN `track_links`.`is_unique` = 1 AND {$registration_condition} THEN 1 ELSE 0 END) AS `registration_total`
-                FROM `track_links`
-                LEFT JOIN `users` ON `track_links`.`user_id` = `users`.`user_id`
-                LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id`
-                WHERE `track_links`.`datetime` >= '{$escaped_start_datetime}'
-                  AND `users`.`type` = 0
-                GROUP BY `track_links`.`user_id`");
-
-            while($click_row = $click_result->fetch_assoc()) {
-                $user_id = (int) ($click_row['user_id'] ?? 0);
-
-                if($user_id <= 0) {
-                    continue;
-                }
-
-                $click_total = (int) ($click_row['click_total'] ?? 0);
-                $registration_total = (int) ($click_row['registration_total'] ?? 0);
-
-                if($click_total > 0) {
-                    $clickCountsByRange[$days][$user_id] = $click_total;
-                }
-
-                if($registration_total > 0) {
-                    $registrationCountsByRange[$days][$user_id] = $registration_total;
-                }
-            }
-
             $lead_result = database()->query("SELECT `data`.`user_id`, COUNT(*) AS `lead_total`
                 FROM `data`
                 LEFT JOIN `users` ON `data`.`user_id` = `users`.`user_id`
@@ -4424,46 +4380,10 @@ class AdminLeaderOperatingSystem extends Controller {
         }
 
         foreach($ranges as $days => $start_datetime) {
-            $click_total = array_sum($clickCountsByRange[$days]);
-            $registration_total = array_sum($registrationCountsByRange[$days]);
             $lead_total = array_sum($leadCountsByRange[$days]);
             $blog_total = array_sum($blogCountsByRange[$days]);
 
             $payload[(string) $days] = [
-                'clicks' => [
-                    'title' => 'Klikovi prema Foreveru · zadnjih ' . $days . ' dana',
-                    'summary_label' => 'Klikovi prema Foreveru',
-                    'summary_value' => nr($click_total),
-                    'summary_note' => 'Suradnika u signalu: ' . nr(count($clickCountsByRange[$days])) . ' · Klik na ime otvara detalj suradnika.',
-                    'items' => $this->map_drilldown_items(
-                        $rows,
-                        function($row) use ($clickCountsByRange, $days) {
-                            return (int) ($clickCountsByRange[$days][(int) ($row['user_id'] ?? 0)] ?? 0);
-                        },
-                        function($row) use ($clickCountsByRange, $days) {
-                            return (int) ($clickCountsByRange[$days][(int) ($row['user_id'] ?? 0)] ?? 0) > 0;
-                        },
-                        40,
-                        static fn($row, $metric) => 'Klikovi ' . nr((int) $metric)
-                    ),
-                ],
-                'registrations' => [
-                    'title' => 'Registracije · zadnjih ' . $days . ' dana',
-                    'summary_label' => 'Registracije',
-                    'summary_value' => nr($registration_total),
-                    'summary_note' => 'Suradnika u signalu: ' . nr(count($registrationCountsByRange[$days])) . ' · Klik na ime otvara detalj suradnika.',
-                    'items' => $this->map_drilldown_items(
-                        $rows,
-                        function($row) use ($registrationCountsByRange, $days) {
-                            return (int) ($registrationCountsByRange[$days][(int) ($row['user_id'] ?? 0)] ?? 0);
-                        },
-                        function($row) use ($registrationCountsByRange, $days) {
-                            return (int) ($registrationCountsByRange[$days][(int) ($row['user_id'] ?? 0)] ?? 0) > 0;
-                        },
-                        40,
-                        static fn($row, $metric) => 'Registracije ' . nr((int) $metric)
-                    ),
-                ],
                 'leads' => [
                     'title' => 'Leadovi · zadnjih ' . $days . ' dana',
                     'summary_label' => 'Leadovi',
