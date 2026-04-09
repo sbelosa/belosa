@@ -2820,6 +2820,7 @@ $operations_tab_badge_total = (int) (($data->operations['totals']['pending_appro
             </div>
         <?php endif ?>
 
+        <?php if(($data->selected_tab ?? 'overview') === 'analytics'): ?>
         <div class="row">
             <div class="col-12 col-lg-4 mb-3">
                 <?= $render_kpi_card('all_collaborators', l('admin_leader_operating_system.placeholder_kpi_1'), $data->overview['totals']['all_collaborators'] ?? 0, 'Ukupan roster u odabranom periodu', 'Team') ?>
@@ -2865,6 +2866,7 @@ $operations_tab_badge_total = (int) (($data->operations['totals']['pending_appro
                 <?= $render_kpi_card('total_funnel_leads_period', 'Funnel leadovi', (int) ($data->overview['totals']['total_funnel_leads_period'] ?? 0), 'Tko puni funnel u odabranom periodu', 'Funnel') ?>
             </div>
         </div>
+        <?php endif ?>
 
         <?php if(($data->selected_tab ?? 'overview') === 'overview'): ?>
             <div class="row mt-2">
