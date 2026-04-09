@@ -378,6 +378,19 @@
         vertical-align: middle;
     }
 
+    .leader-os-country-table tfoot th,
+    .leader-os-country-table tfoot td {
+        position: sticky;
+        bottom: 0;
+        z-index: 1;
+        background: linear-gradient(180deg, rgba(12, 18, 31, 0.98) 0%, rgba(8, 13, 24, 1) 100%);
+        color: #f4f9ff;
+        border-top: 1px solid rgba(124, 200, 255, 0.22);
+        border-bottom: 0;
+        font-weight: 800;
+        box-shadow: 0 -1px 0 rgba(255,255,255,0.03);
+    }
+
     .leader-os-country-table tbody tr:hover {
         background: rgba(124, 200, 255, 0.06);
     }
@@ -1082,6 +1095,12 @@
     $country_matrix_periods = $detail['country_signal_matrix_periods'] ?? [];
     $initial_country_period = isset($country_matrix_periods[$data->selected_period]) ? $data->selected_period : '30d';
     $initial_country_matrix = $country_matrix_periods[$initial_country_period] ?? ['rows' => []];
+    $initial_country_totals = $initial_country_matrix['totals'] ?? [
+        'app_visits' => 0,
+        'app_shop_clicks' => 0,
+        'blog_clicks' => 0,
+        'funnel_registrations' => 0,
+    ];
     ?>
     <div class="card leader-os-detail-shell mb-4" id="leader-os-phase4">
         <div class="card-body">
@@ -1333,6 +1352,15 @@
                                 <?php endforeach ?>
                             <?php endif ?>
                         </tbody>
+                        <tfoot id="leader-os-country-table-foot">
+                            <tr>
+                                <th><?= l('admin_leader_operating_system.leader.country_table.total') ?></th>
+                                <td class="text-right"><?= nr((int) ($initial_country_totals['app_visits'] ?? 0)) ?></td>
+                                <td class="text-right"><?= nr((int) ($initial_country_totals['app_shop_clicks'] ?? 0)) ?></td>
+                                <td class="text-right"><?= nr((int) ($initial_country_totals['blog_clicks'] ?? 0)) ?></td>
+                                <td class="text-right"><?= nr((int) ($initial_country_totals['funnel_registrations'] ?? 0)) ?></td>
+                            </tr>
+                        </tfoot>
                     </table>
                 </div>
             </div>
@@ -2876,6 +2904,7 @@
     const leaderOsOpportunityActions = <?= json_encode($opportunity_actions ?? ['intro' => '', 'items' => []]) ?>;
     const leaderOsOutreachForm = document.querySelector('.leader-os-outreach-form');
     const leaderOsCountryTableBody = document.getElementById('leader-os-country-table-body');
+    const leaderOsCountryTableFoot = document.getElementById('leader-os-country-table-foot');
     const leaderOsNumberFormatter = new Intl.NumberFormat('hr-HR');
 
     const escapeLeaderOsHtml = value => String(value ?? '')
@@ -2954,6 +2983,7 @@
 
         const payload = leaderOsCountrySignalMatrix[periodKey] || leaderOsCountrySignalMatrix[leaderOsInitialCountryPeriod] || {rows: []};
         const rows = Array.isArray(payload.rows) ? payload.rows : [];
+        const totals = payload.totals && typeof payload.totals === 'object' ? payload.totals : {};
 
         if(!rows.length) {
             leaderOsCountryTableBody.innerHTML = `
@@ -2963,23 +2993,34 @@
                     </td>
                 </tr>
             `;
-            return;
+        } else {
+            leaderOsCountryTableBody.innerHTML = rows.map(row => `
+                <tr>
+                    <td>
+                        <div class="leader-os-country-name">
+                            <strong>${escapeLeaderOsHtml(row.country_name || '-')}</strong>
+                            <span class="leader-os-country-code">${escapeLeaderOsHtml(row.country_code || '')}</span>
+                        </div>
+                    </td>
+                    <td class="text-right">${leaderOsNumberFormatter.format(Number(row.app_visits || 0))}</td>
+                    <td class="text-right">${leaderOsNumberFormatter.format(Number(row.app_shop_clicks || 0))}</td>
+                    <td class="text-right">${leaderOsNumberFormatter.format(Number(row.blog_clicks || 0))}</td>
+                    <td class="text-right">${leaderOsNumberFormatter.format(Number(row.funnel_registrations || 0))}</td>
+                </tr>
+            `).join('');
         }
 
-        leaderOsCountryTableBody.innerHTML = rows.map(row => `
-            <tr>
-                <td>
-                    <div class="leader-os-country-name">
-                        <strong>${escapeLeaderOsHtml(row.country_name || '-')}</strong>
-                        <span class="leader-os-country-code">${escapeLeaderOsHtml(row.country_code || '')}</span>
-                    </div>
-                </td>
-                <td class="text-right">${leaderOsNumberFormatter.format(Number(row.app_visits || 0))}</td>
-                <td class="text-right">${leaderOsNumberFormatter.format(Number(row.app_shop_clicks || 0))}</td>
-                <td class="text-right">${leaderOsNumberFormatter.format(Number(row.blog_clicks || 0))}</td>
-                <td class="text-right">${leaderOsNumberFormatter.format(Number(row.funnel_registrations || 0))}</td>
-            </tr>
-        `).join('');
+        if(leaderOsCountryTableFoot) {
+            leaderOsCountryTableFoot.innerHTML = `
+                <tr>
+                    <th><?= addslashes(l('admin_leader_operating_system.leader.country_table.total')) ?></th>
+                    <td class="text-right">${leaderOsNumberFormatter.format(Number(totals.app_visits || 0))}</td>
+                    <td class="text-right">${leaderOsNumberFormatter.format(Number(totals.app_shop_clicks || 0))}</td>
+                    <td class="text-right">${leaderOsNumberFormatter.format(Number(totals.blog_clicks || 0))}</td>
+                    <td class="text-right">${leaderOsNumberFormatter.format(Number(totals.funnel_registrations || 0))}</td>
+                </tr>
+            `;
+        }
     };
 
     document.querySelectorAll('[data-country-period]').forEach(button => {
