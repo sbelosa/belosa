@@ -2893,9 +2893,13 @@ class AdminLeaderOperatingSystem extends Controller {
             'positive_signal_total' => 0,
             'risk_after_touch_total' => 0,
             'top_positive' => [],
+            'top_risk_after_touch' => [],
+            'positive_rate_percent' => 0,
+            'risk_after_touch_rate_percent' => 0,
         ];
 
         $candidates = [];
+        $risk_candidates = [];
 
         foreach($rows as $row) {
             $has_recent_touch = !empty($row['mentored_this_week']) || !empty($row['last_contacted_at']) || !empty($row['latest_mentor_event_at']);
@@ -2920,14 +2924,23 @@ class AdminLeaderOperatingSystem extends Controller {
                 $payload['risk_after_touch_total']++;
             }
 
-            $candidates[] = [
+            $candidate_payload = [
                 'name' => (string) ($row['name'] ?? l('global.unknown')),
                 'detail_url' => (string) ($row['detail_url'] ?? ''),
                 'growth_percent' => $row['growth_percent'] ?? null,
                 'leader_os_score' => (int) ($row['leader_os_score'] ?? 0),
                 'status_label' => (string) ($row['status_label'] ?? ''),
                 'positive_signal' => $positive_signal,
+                'risk_score' => (int) ($row['risk_score'] ?? 0),
+                'anomaly_score' => (int) ($row['anomaly_score'] ?? 0),
+                'latest_mentor_event_summary' => (string) ($row['latest_mentor_event_summary'] ?? ''),
             ];
+
+            $candidates[] = $candidate_payload;
+
+            if($risk_after_touch) {
+                $risk_candidates[] = $candidate_payload;
+            }
         }
 
         usort($candidates, static function($a, $b) {
@@ -2936,9 +2949,22 @@ class AdminLeaderOperatingSystem extends Controller {
                 ?: (($b['leader_os_score'] ?? 0) <=> ($a['leader_os_score'] ?? 0));
         });
 
+        usort($risk_candidates, static function($a, $b) {
+            return (($b['risk_score'] ?? 0) <=> ($a['risk_score'] ?? 0))
+                ?: (($b['anomaly_score'] ?? 0) <=> ($a['anomaly_score'] ?? 0))
+                ?: ((float) ($b['growth_percent'] ?? -9999) <=> (float) ($a['growth_percent'] ?? -9999));
+        });
+
         foreach(array_slice($candidates, 0, 3) as $row) {
             $payload['top_positive'][] = $row;
         }
+
+        foreach(array_slice($risk_candidates, 0, 3) as $row) {
+            $payload['top_risk_after_touch'][] = $row;
+        }
+
+        $payload['positive_rate_percent'] = $payload['touched_total'] > 0 ? round(($payload['positive_signal_total'] / max(1, $payload['touched_total'])) * 100, 1) : 0;
+        $payload['risk_after_touch_rate_percent'] = $payload['touched_total'] > 0 ? round(($payload['risk_after_touch_total'] / max(1, $payload['touched_total'])) * 100, 1) : 0;
 
         return $payload;
     }
@@ -5073,14 +5099,23 @@ class AdminLeaderOperatingSystem extends Controller {
                 'mentored_this_week_total' => 0,
                 'needs_follow_up_total' => 0,
                 'stale_follow_up_total' => 0,
+                'recent_activity_total' => count($recent_coaching_rows),
+                'without_next_action_total' => 0,
+                'active_case_total' => 0,
+                'resolved_total' => 0,
             ],
             'top_actions' => [],
+            'top_reasons' => [],
             'recent_rows' => $recent_coaching_rows,
         ];
 
         $action_buckets = [];
+        $reason_buckets = [];
 
         foreach($rows as $row) {
+            $has_recent_touch = !empty($row['mentored_this_week']) || !empty($row['last_contacted_at']) || !empty($row['latest_mentor_event_at']);
+            $mentor_status = (string) ($row['mentor_status'] ?? 'pending_contact');
+
             if(!empty($row['mentored_this_week'])) {
                 $payload['totals']['mentored_this_week_total']++;
             }
@@ -5093,14 +5128,33 @@ class AdminLeaderOperatingSystem extends Controller {
                 $payload['totals']['stale_follow_up_total']++;
             }
 
+            if($has_recent_touch && trim((string) ($row['mentor_next_action'] ?? '')) === '') {
+                $payload['totals']['without_next_action_total']++;
+            }
+
+            if(in_array($mentor_status, ['in_progress', 'monitoring'], true)) {
+                $payload['totals']['active_case_total']++;
+            }
+
+            if($mentor_status === 'resolved') {
+                $payload['totals']['resolved_total']++;
+            }
+
             if(!empty($row['mentor_next_action'])) {
                 $this->increment_count_bucket($action_buckets, (string) $row['mentor_next_action']);
             } elseif(!empty($row['latest_mentor_event_summary'])) {
                 $this->increment_count_bucket($action_buckets, (string) $row['latest_mentor_event_summary']);
             }
+
+            if(!empty($row['combined_priority_reason'])) {
+                $this->increment_count_bucket($reason_buckets, (string) $row['combined_priority_reason']);
+            } elseif(!empty($row['queue_reason'])) {
+                $this->increment_count_bucket($reason_buckets, (string) $row['queue_reason']);
+            }
         }
 
         $payload['top_actions'] = $this->sort_count_buckets($action_buckets, 6);
+        $payload['top_reasons'] = $this->sort_count_buckets($reason_buckets, 6);
 
         return $payload;
     }
@@ -6356,6 +6410,10 @@ class AdminLeaderOperatingSystem extends Controller {
             'coaching_mentored_this_week_total' => $this->build_drilldown_payload('Mentorirani ovaj tjedan', $rows, static fn($row) => (int) ($row['leader_os_score'] ?? 0), static fn($row) => !empty($row['mentored_this_week']), 60, static fn($row, $metric) => 'LOS ' . nr((int) $metric)),
             'coaching_needs_follow_up_total' => $this->build_drilldown_payload('Trebaju follow-up', $rows, static fn($row) => (int) ($row['days_since_last_contact'] ?? 0), static fn($row) => !empty($row['needs_follow_up']), 60, static fn($row, $metric) => 'Zadnji kontakt prije ' . nr((int) $metric) . ' d'),
             'coaching_stale_follow_up_total' => $this->build_drilldown_payload('Stale follow-up', $rows, static fn($row) => (int) ($row['days_since_last_contact'] ?? 999), static fn($row) => !empty($row['needs_follow_up']) && (($row['days_since_last_contact'] ?? null) === null || (int) ($row['days_since_last_contact'] ?? 0) >= 7), 60, static fn($row, $metric) => ($metric === 999 ? 'Bez kontakta' : 'Bez follow-upa ' . nr((int) $metric) . ' d')),
+            'coaching_recent_activity_total' => $this->build_drilldown_payload('Nedavne coaching aktivnosti', $rows, static fn($row) => !empty($row['latest_mentor_event_at']) ? strtotime((string) $row['latest_mentor_event_at']) : null, static fn($row) => !empty($row['latest_mentor_event_at']), 60, static fn($row, $metric) => !empty($row['latest_mentor_event_at']) ? \Altum\Date::get((string) $row['latest_mentor_event_at'], 2) : 'Bez datuma'),
+            'coaching_without_next_action_total' => $this->build_drilldown_payload('Bez sljedećeg koraka', $rows, static fn($row) => (int) ($row['days_since_last_contact'] ?? 999), static fn($row) => (!empty($row['mentored_this_week']) || !empty($row['last_contacted_at']) || !empty($row['latest_mentor_event_at'])) && trim((string) ($row['mentor_next_action'] ?? '')) === '', 60, static fn($row, $metric) => ($metric === 999 ? 'Bez kontakta' : 'Kontakt prije ' . nr((int) $metric) . ' d')),
+            'coaching_active_case_total' => $this->build_drilldown_payload('Aktivni coaching slučajevi', $rows, static fn($row) => (int) ($row['leader_os_score'] ?? 0), static fn($row) => in_array((string) ($row['mentor_status'] ?? 'pending_contact'), ['in_progress', 'monitoring'], true), 60, static fn($row, $metric) => 'LOS ' . nr((int) $metric)),
+            'coaching_resolved_total' => $this->build_drilldown_payload('Riješeni coaching slučajevi', $rows, static fn($row) => (int) ($row['leader_os_score'] ?? 0), static fn($row) => (string) ($row['mentor_status'] ?? '') === 'resolved', 60, static fn($row, $metric) => 'LOS ' . nr((int) $metric)),
             'fraud_suspicious_affected_total' => [
                 'title' => 'Pogođeni suradnici',
                 'signal_total' => 0,

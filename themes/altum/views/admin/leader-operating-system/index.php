@@ -4256,8 +4256,8 @@ $operations_tab_badge_total = (int) (($data->operations['totals']['pending_appro
         <div class="d-flex justify-content-between align-items-center flex-wrap mb-3">
             <div>
                 <div class="text-uppercase small text-muted mb-2">Coaching</div>
-                <h2 class="h4 mb-1">Coaching command</h2>
-                <p class="text-muted mb-0">Pregled follow-up opterećenja, recent coaching touch-eva i akcija koje se najviše ponavljaju.</p>
+                <h2 class="h4 mb-1">Coaching centar</h2>
+                <p class="text-muted mb-0">Radni pregled coachinga: tko traži reakciju, gdje follow-up kasni i vidi li se pomak nakon mentorske intervencije.</p>
             </div>
         </div>
 
@@ -4274,7 +4274,7 @@ $operations_tab_badge_total = (int) (($data->operations['totals']['pending_appro
             <div class="leader-os-strategist-actions">
                 <div>
                     <div class="text-uppercase small text-muted mb-1">Tjedni briefing za mentora</div>
-                    <div class="text-muted small">Generiraj AI analizu iz aktualnog LOS snapshot-a i odmah dobij fokus, webinar temu, coaching prioritete i poruke za tim.</div>
+                    <div class="text-muted small">Generiraj ili osvježi AI strateški brief iz aktualnog LOS snapshot-a i odmah dobij fokus, prioritetne grupe, webinar temu i poruke za tim.</div>
                 </div>
                 <div class="leader-os-strategist-actions-forms">
                     <div class="leader-os-strategist-meta">
@@ -4396,36 +4396,60 @@ $operations_tab_badge_total = (int) (($data->operations['totals']['pending_appro
             </div>
         </div>
 
+        <div class="leader-os-inline-note mb-3">Klik na broj otvara popis suradnika iza tog signala. Ovaj tab najbolje čitaš redom: prioritetna lista, disciplina follow-upa, učinak coachinga i nedavne aktivnosti.</div>
+
+        <div class="row mb-2">
+            <div class="col-12 col-lg-3 mb-3">
+                <?= $render_kpi_card('coaching_queue_total', 'Coaching lista', (int) ($data->overview['coaching_dashboard']['totals']['queue_total'] ?? 0), 'Suradnici koje najprije otvaraš za coaching ili operativni zahvat', 'Coach') ?>
+            </div>
+            <div class="col-12 col-lg-3 mb-3">
+                <?= $render_kpi_card('coaching_needs_follow_up_total', 'Treba follow-up', (int) ($data->overview['coaching_dashboard']['totals']['needs_follow_up_total'] ?? 0), 'Suradnici kojima treba novi kontakt da coaching ne stane', 'Follow-up') ?>
+            </div>
+            <div class="col-12 col-lg-3 mb-3">
+                <?= $render_kpi_card('coaching_stale_follow_up_total', 'Kasni follow-up', (int) ($data->overview['coaching_dashboard']['totals']['stale_follow_up_total'] ?? 0), 'Follow-up slučajevi koji predugo stoje bez novog kontakta', 'Stale') ?>
+            </div>
+            <div class="col-12 col-lg-3 mb-3">
+                <?= $render_kpi_card('coaching_without_next_action_total', 'Bez sljedećeg koraka', (int) ($data->overview['coaching_dashboard']['totals']['without_next_action_total'] ?? 0), 'Coachinga je bilo, ali nije upisano što točno ide dalje', 'Korak') ?>
+            </div>
+        </div>
+
         <div class="row mb-4">
-                <div class="col-12 col-lg-3 mb-3">
-                    <?= $render_kpi_card('coaching_queue_total', 'Queue', (int) ($data->overview['coaching_dashboard']['totals']['queue_total'] ?? 0), 'Otvara coaching priority listu', 'Coach') ?>
-                </div>
-                <div class="col-12 col-lg-3 mb-3">
-                    <?= $render_kpi_card('coaching_mentored_this_week_total', 'Mentored this week', (int) ($data->overview['coaching_dashboard']['totals']['mentored_this_week_total'] ?? 0), 'Suradnici koji su imali recent coaching touch', 'Recent') ?>
-                </div>
-                <div class="col-12 col-lg-3 mb-3">
-                    <?= $render_kpi_card('coaching_needs_follow_up_total', 'Needs follow-up', (int) ($data->overview['coaching_dashboard']['totals']['needs_follow_up_total'] ?? 0), 'Tko traži novi coaching kontakt', 'Follow-up') ?>
-                </div>
-                <div class="col-12 col-lg-3 mb-3">
-                    <?= $render_kpi_card('coaching_stale_follow_up_total', 'Stale follow-up', (int) ($data->overview['coaching_dashboard']['totals']['stale_follow_up_total'] ?? 0), 'Tko je ostao predugo bez follow-upa', 'Stale') ?>
-                </div>
+            <div class="col-12 col-lg-3 mb-3">
+                <?= $render_kpi_card('coaching_active_case_total', 'Aktivni slučajevi', (int) ($data->overview['coaching_dashboard']['totals']['active_case_total'] ?? 0), 'Suradnici koji su trenutno u aktivnom coaching radu ili praćenju', 'Aktivno') ?>
+            </div>
+            <div class="col-12 col-lg-3 mb-3">
+                <?= $render_kpi_card('coaching_resolved_total', 'Riješeni', (int) ($data->overview['coaching_dashboard']['totals']['resolved_total'] ?? 0), 'Slučajevi koje si zatvorio ili označio riješenima', 'Zatvoreno') ?>
+            </div>
+            <div class="col-12 col-lg-3 mb-3">
+                <?= $render_kpi_card('coaching_recent_activity_total', 'Nedavne aktivnosti', (int) ($data->overview['coaching_dashboard']['totals']['recent_activity_total'] ?? 0), 'Zadnji coaching eventi koje vrijedi brzo pregledati', 'Nedavno') ?>
+            </div>
+            <div class="col-12 col-lg-3 mb-3">
+                <?= $render_kpi_card('coaching_mentored_this_week_total', 'Mentorirani ovaj tjedan', (int) ($data->overview['coaching_dashboard']['totals']['mentored_this_week_total'] ?? 0), 'Suradnici koji su ovaj tjedan imali stvarni mentorski touch', 'Week') ?>
+            </div>
         </div>
 
         <div class="leader-os-grid-2">
             <div class="leader-os-panel">
-                <div class="text-uppercase small text-muted mb-2">Top coaching actions</div>
-                <?= $render_mini_chart(($data->overview['coaching_dashboard']['top_actions'] ?? []), 0) ?>
+                <div class="text-uppercase small text-muted mb-2">Zašto coaching sada</div>
+                <h3 class="h5 mb-3">Glavni razlozi zbog kojih ljudi ulaze u coaching listu</h3>
+                <?= $render_mini_chart(($data->overview['coaching_dashboard']['top_reasons'] ?? []), 0) ?>
+
+                <div class="mt-3 pt-3 border-top border-dark">
+                    <div class="text-muted small mb-2">Najčešći sljedeći koraci</div>
+                    <?= $render_mini_chart(($data->overview['coaching_dashboard']['top_actions'] ?? []), 0) ?>
+                </div>
             </div>
 
             <div class="leader-os-panel">
-                <div class="text-uppercase small text-muted mb-2">Coaching ROI</div>
-                <div class="text-muted small mb-2">Touched: <strong class="text-white"><?= nr((int) ($data->overview['team_coaching_roi']['touched_total'] ?? 0)) ?></strong></div>
-                <div class="text-muted small mb-2">Pozitivan signal: <strong class="text-white"><?= nr((int) ($data->overview['team_coaching_roi']['positive_signal_total'] ?? 0)) ?></strong></div>
-                <div class="text-muted small">Rizik nakon touch-a: <strong class="text-white"><?= nr((int) ($data->overview['team_coaching_roi']['risk_after_touch_total'] ?? 0)) ?></strong></div>
+                <div class="text-uppercase small text-muted mb-2">Učinak coachinga</div>
+                <h3 class="h5 mb-3">Vidi li se pomak nakon mentorske intervencije</h3>
+                <div class="text-muted small mb-2">Dodirnuti coachingom: <strong class="text-white"><?= nr((int) ($data->overview['team_coaching_roi']['touched_total'] ?? 0)) ?></strong></div>
+                <div class="text-muted small mb-2">Pozitivan signal nakon touch-a: <strong class="text-white"><?= nr((int) ($data->overview['team_coaching_roi']['positive_signal_total'] ?? 0)) ?></strong> · <strong class="text-white"><?= nr((float) ($data->overview['team_coaching_roi']['positive_rate_percent'] ?? 0)) ?>%</strong></div>
+                <div class="text-muted small">I dalje u riziku nakon touch-a: <strong class="text-white"><?= nr((int) ($data->overview['team_coaching_roi']['risk_after_touch_total'] ?? 0)) ?></strong> · <strong class="text-white"><?= nr((float) ($data->overview['team_coaching_roi']['risk_after_touch_rate_percent'] ?? 0)) ?>%</strong></div>
 
                 <?php if(!empty($data->overview['team_coaching_roi']['top_positive'])): ?>
                     <div class="mt-3">
-                        <div class="text-muted small mb-2">Top coaching signal</div>
+                        <div class="text-muted small mb-2">Najbolji pomak nakon coachinga</div>
                         <?php foreach(($data->overview['team_coaching_roi']['top_positive'] ?? []) as $item): ?>
                             <div class="d-flex justify-content-between align-items-center py-1">
                                 <a href="<?= $item['detail_url'] ?>" class="leader-os-link"><?= htmlspecialchars((string) ($item['name'] ?? ''), ENT_QUOTES, 'UTF-8') ?></a>
@@ -4434,6 +4458,71 @@ $operations_tab_badge_total = (int) (($data->operations['totals']['pending_appro
                         <?php endforeach ?>
                     </div>
                 <?php endif ?>
+
+                <?php if(!empty($data->overview['team_coaching_roi']['top_risk_after_touch'])): ?>
+                    <div class="mt-3 pt-3 border-top border-dark">
+                        <div class="text-muted small mb-2">I dalje rizični nakon coachinga</div>
+                        <?php foreach(($data->overview['team_coaching_roi']['top_risk_after_touch'] ?? []) as $item): ?>
+                            <div class="d-flex justify-content-between align-items-center py-1">
+                                <a href="<?= $item['detail_url'] ?>" class="leader-os-link"><?= htmlspecialchars((string) ($item['name'] ?? ''), ENT_QUOTES, 'UTF-8') ?></a>
+                                <strong>Risk <?= nr((int) ($item['risk_score'] ?? 0)) ?></strong>
+                            </div>
+                        <?php endforeach ?>
+                    </div>
+                <?php endif ?>
+            </div>
+        </div>
+
+        <div class="leader-os-grid-2 mt-3">
+            <div class="leader-os-panel">
+                <div class="text-uppercase small text-muted mb-2">Nedavne coaching aktivnosti</div>
+                <h3 class="h5 mb-3">Što je zadnje rađeno i što ide dalje</h3>
+                <?php if(empty($data->overview['coaching_dashboard']['recent_rows'])): ?>
+                    <div class="text-muted small">Još nema zabilježenih nedavnih coaching aktivnosti.</div>
+                <?php else: ?>
+                    <?php foreach(($data->overview['coaching_dashboard']['recent_rows'] ?? []) as $recent_row): ?>
+                        <div class="py-2 border-top border-dark">
+                            <div class="d-flex justify-content-between align-items-center" style="gap:.75rem;">
+                                <a href="<?= $recent_row['detail_url'] ?>" class="leader-os-link"><?= htmlspecialchars((string) ($recent_row['name'] ?? ''), ENT_QUOTES, 'UTF-8') ?></a>
+                                <strong><?= !empty($recent_row['latest_mentor_event_at']) ? \Altum\Date::get($recent_row['latest_mentor_event_at'], 2) : '-' ?></strong>
+                            </div>
+                            <?php if(!empty($recent_row['latest_mentor_event_summary'])): ?>
+                                <div class="text-muted small mt-1"><?= htmlspecialchars((string) $recent_row['latest_mentor_event_summary'], ENT_QUOTES, 'UTF-8') ?></div>
+                            <?php endif ?>
+                            <div class="text-muted small mt-1">
+                                <?= !empty($recent_row['latest_mentor_event_admin']) ? 'Mentor: ' . htmlspecialchars((string) $recent_row['latest_mentor_event_admin'], ENT_QUOTES, 'UTF-8') : 'Mentor nije zabilježen' ?>
+                                <?php if(!empty($recent_row['mentor_next_action'])): ?>
+                                    · Sljedeći korak: <strong class="text-white"><?= htmlspecialchars((string) $recent_row['mentor_next_action'], ENT_QUOTES, 'UTF-8') ?></strong>
+                                <?php endif ?>
+                            </div>
+                        </div>
+                    <?php endforeach ?>
+                <?php endif ?>
+            </div>
+
+            <div class="leader-os-panel">
+                <div class="text-uppercase small text-muted mb-2">Grupe za poruke</div>
+                <h3 class="h5 mb-3">Kome sada možeš poslati ciljanu poruku</h3>
+                <div class="row">
+                    <div class="col-6 mb-3">
+                        <div class="text-muted small mb-1">Cijeli tim</div>
+                        <div class="h4 mb-0"><?= nr((int) ($data->overview['message_targets']['team']['count'] ?? 0)) ?></div>
+                    </div>
+                    <div class="col-6 mb-3">
+                        <div class="text-muted small mb-1">Risk grupa</div>
+                        <div class="h4 mb-0"><?= nr((int) ($data->overview['message_targets']['risk']['count'] ?? 0)) ?></div>
+                    </div>
+                    <div class="col-6">
+                        <div class="text-muted small mb-1">Rising grupa</div>
+                        <div class="h4 mb-0"><?= nr((int) ($data->overview['message_targets']['rising']['count'] ?? 0)) ?></div>
+                    </div>
+                    <div class="col-6">
+                        <div class="text-muted small mb-1">Priority grupa</div>
+                        <div class="h4 mb-0"><?= nr((int) ($data->overview['message_targets']['priority']['count'] ?? 0)) ?></div>
+                    </div>
+                </div>
+
+                <div class="leader-os-inline-note mt-3 mb-0">Ove grupe hrane donji Message Center. Najkorisnije su kada želiš odmah poslati različitu poruku risk, rising ili priority segmentu bez ručnog slaganja popisa.</div>
             </div>
         </div>
 
