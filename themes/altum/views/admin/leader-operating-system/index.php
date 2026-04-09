@@ -1101,6 +1101,63 @@
         padding: 1rem;
     }
 
+    .leader-os-queue-summary {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 0.85rem;
+        margin-bottom: 1rem;
+    }
+
+    .leader-os-queue-summary-card {
+        border: 1px solid rgba(125, 211, 252, 0.14);
+        border-radius: 0.95rem;
+        padding: 0.9rem 1rem;
+        background: linear-gradient(180deg, rgba(21, 33, 49, 0.92) 0%, rgba(14, 23, 34, 0.98) 100%);
+    }
+
+    .leader-os-queue-summary-label {
+        color: rgba(191, 211, 238, 0.72);
+        font-size: 0.76rem;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        margin-bottom: 0.25rem;
+    }
+
+    .leader-os-queue-summary-value {
+        color: #ffffff;
+        font-size: 1.6rem;
+        font-weight: 700;
+        line-height: 1;
+        margin-bottom: 0.25rem;
+    }
+
+    .leader-os-queue-summary-note {
+        color: rgba(191, 211, 238, 0.7);
+        font-size: 0.82rem;
+        line-height: 1.45;
+    }
+
+    .leader-os-message-group-trigger {
+        appearance: none;
+        cursor: pointer;
+        transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .leader-os-message-group-trigger:hover,
+    .leader-os-message-group-trigger:focus {
+        border-color: rgba(124, 200, 255, 0.55);
+        box-shadow: 0 0 0 1px rgba(124, 200, 255, 0.18);
+        outline: none;
+        text-decoration: none;
+    }
+
+    .leader-os-message-group-trigger.is-active {
+        border-color: rgba(94, 200, 255, 0.42);
+        background: linear-gradient(180deg, rgba(36, 97, 127, 0.54) 0%, rgba(28, 74, 103, 0.82) 100%);
+        color: #ffffff;
+    }
+
     .leader-os-queue-reason {
         color: rgba(191, 211, 238, 0.82);
         font-size: 0.88rem;
@@ -2907,6 +2964,289 @@ $render_summary_metric_chip = static function(array $metric_link) use ($data, $l
     return ob_get_clean();
 };
 
+$render_priority_queue_section = static function() use ($data, $leader_os_action_url) {
+    $selected_tab = (string) ($data->selected_tab ?? 'overview');
+
+    if(!in_array($selected_tab, ['overview', 'coaching'], true)) {
+        return '';
+    }
+
+    $queue_rows = (array) ($data->overview['queue_rows'] ?? []);
+    $queue_total = count($queue_rows);
+    $queue_ai_not_started_total = count(array_filter($queue_rows, static function($row) {
+        return (string) ($row['ai_usage_stage_key'] ?? 'inactive') === 'inactive';
+    }));
+    $queue_blocked_signal_total = count(array_filter($queue_rows, static function($row) {
+        return (int) ($row['blocked_attempts_total'] ?? 0) > 0;
+    }));
+    $queue_with_next_action_total = count(array_filter($queue_rows, static function($row) {
+        return trim((string) ($row['mentor_next_action'] ?? '')) !== '';
+    }));
+
+    $message_group_keys = ['team', 'risk', 'rising', 'priority'];
+    $individual_targets = array_values((array) ($data->overview['message_targets']['individual_targets'] ?? []));
+    $individual_targets_lookup = [];
+
+    foreach($individual_targets as $individual_target) {
+        $target_user_id = (int) ($individual_target['user_id'] ?? 0);
+
+        if($target_user_id <= 0) {
+            continue;
+        }
+
+        $individual_targets_lookup[$target_user_id] = [
+            'name' => (string) ($individual_target['name'] ?? l('global.unknown')),
+            'status_label' => (string) ($individual_target['status_label'] ?? ''),
+            'meta' => (string) ($individual_target['meta'] ?? ''),
+            'priority_score' => (int) ($individual_target['priority_score'] ?? 0),
+            'metric_display' => 'Prioritet ' . nr((int) ($individual_target['priority_score'] ?? 0)),
+        ];
+    }
+
+    ob_start();
+    ?>
+    <div class="card leader-os-shell mb-4">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center flex-wrap mb-3">
+                <div>
+                    <div class="text-uppercase small text-muted mb-2"><?= l('admin_leader_operating_system.section_queue') ?></div>
+                    <h2 class="h4 mb-1"><?= l('admin_leader_operating_system.queue_title') ?></h2>
+                    <p class="text-muted mb-0"><?= l('admin_leader_operating_system.queue_text') ?></p>
+                </div>
+            </div>
+
+            <?php if(empty($queue_rows)): ?>
+                <div class="leader-os-panel mb-0">
+                    <p class="text-muted mb-0"><?= l('admin_leader_operating_system.queue_empty') ?></p>
+                </div>
+            <?php else: ?>
+                <div class="leader-os-queue-summary">
+                    <div class="leader-os-queue-summary-card">
+                        <div class="leader-os-queue-summary-label">U fokusu</div>
+                        <div class="leader-os-queue-summary-value"><?= nr($queue_total) ?></div>
+                        <div class="leader-os-queue-summary-note">Prikazani prioritetni suradnici koje sada najbrže vrijedi otvoriti.</div>
+                    </div>
+
+                    <div class="leader-os-queue-summary-card">
+                        <div class="leader-os-queue-summary-label">Bez AI starta</div>
+                        <div class="leader-os-queue-summary-value"><?= nr($queue_ai_not_started_total) ?></div>
+                        <div class="leader-os-queue-summary-note">Suradnici koji još nisu stvarno pokrenuli AI ritam pa traže prvi impuls.</div>
+                    </div>
+
+                    <div class="leader-os-queue-summary-card">
+                        <div class="leader-os-queue-summary-label">Fraud signal</div>
+                        <div class="leader-os-queue-summary-value"><?= nr($queue_blocked_signal_total) ?></div>
+                        <div class="leader-os-queue-summary-note">Koliko ljudi iz ovog popisa ima blokirane pokušaje ili dodatni signal za provjeru.</div>
+                    </div>
+
+                    <div class="leader-os-queue-summary-card">
+                        <div class="leader-os-queue-summary-label">Sa sljedećim korakom</div>
+                        <div class="leader-os-queue-summary-value"><?= nr($queue_with_next_action_total) ?></div>
+                        <div class="leader-os-queue-summary-note">Već imaju upisan sljedeći potez, pa ih je lakše pratiti bez ponovnog razmišljanja.</div>
+                    </div>
+                </div>
+
+                <div class="leader-os-inline-note mb-3">Popis je sada odmah ispod filtera kako bi prvo vidio koga otvaraš. Kreni od najvećeg prioriteta, a u coaching tabu odmah ispod možeš i poslati poruku ciljanoj grupi.</div>
+
+                <div class="leader-os-queue-grid mb-4">
+                    <?php foreach($queue_rows as $queue_row): ?>
+                        <div class="leader-os-queue-card">
+                            <div class="d-flex justify-content-between align-items-start mb-2" style="gap:.75rem;">
+                                <div>
+                                    <div class="font-weight-bold"><?= $queue_row['name'] ?></div>
+                                    <div class="text-muted small"><?= $queue_row['email'] ?></div>
+                                    <div class="leader-os-ai-usage">
+                                        <span class="leader-os-status-badge leader-os-ai-usage-main <?= $queue_row['ai_usage_stage_class'] ?>"><?= htmlspecialchars((string) ($queue_row['ai_usage_stage_label'] ?? ''), ENT_QUOTES, 'UTF-8') ?></span>
+                                        <span class="leader-os-status-badge leader-os-anomaly-badge <?= $queue_row['anomaly_stage_class'] ?>"><?= htmlspecialchars((string) ($queue_row['anomaly_stage_label'] ?? ''), ENT_QUOTES, 'UTF-8') ?></span>
+                                        <?php foreach(($queue_row['ai_usage_badges'] ?? []) as $ai_usage_badge): ?>
+                                            <span class="leader-os-status-badge leader-os-ai-usage-badge <?= $ai_usage_badge['class'] ?>"><?= htmlspecialchars((string) ($ai_usage_badge['label'] ?? ''), ENT_QUOTES, 'UTF-8') ?></span>
+                                        <?php endforeach ?>
+                                    </div>
+                                </div>
+                                <span class="leader-os-status-badge status-<?= $queue_row['status_class'] ?>"><?= $queue_row['status_label'] ?></span>
+                            </div>
+
+                            <div class="leader-os-queue-reason mb-2"><?= htmlspecialchars((string) (($queue_row['combined_priority_reason'] ?? '') ?: ($queue_row['queue_reason'] ?? '')), ENT_QUOTES, 'UTF-8') ?></div>
+
+                            <div class="leader-os-queue-meta">
+                                <div class="text-muted small"><?= l('admin_leader_operating_system.queue_score') ?>: <strong class="text-white"><?= nr((int) (($queue_row['combined_priority_score'] ?? 0) ?: ($queue_row['queue_priority_score'] ?? 0))) ?></strong></div>
+                                <div class="text-muted small"><?= l('admin_leader_operating_system.queue_risk') ?>: <strong class="text-white"><?= nr((int) ($queue_row['risk_score'] ?? 0)) ?></strong></div>
+                                <div class="text-muted small"><?= l('admin_leader_operating_system.queue_anomaly') ?>: <strong class="text-white"><?= nr((int) ($queue_row['anomaly_score'] ?? 0)) ?></strong></div>
+                                <div class="text-muted small">Blocked attempts: <strong class="text-white"><?= nr((int) ($queue_row['blocked_attempts_total'] ?? 0)) ?></strong></div>
+                                <div class="text-muted small">AI status: <strong class="text-white"><?= htmlspecialchars((string) ($queue_row['ai_access_tier_label'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></strong></div>
+                                <div class="text-muted small">Klikovi i prijave 30d: <strong class="text-white"><?= nr((int) ($queue_row['ai_access_growth_signal_30d'] ?? 0)) ?></strong></div>
+                                <div class="text-muted small">Shop <?= nr((int) ($queue_row['ai_access_shop_clicks_30d'] ?? 0)) ?> · Funnel <?= nr((int) ($queue_row['ai_access_funnel_registrations_30d'] ?? 0)) ?> · WhatsApp <?= nr((int) ($queue_row['ai_access_whatsapp_contacts_30d'] ?? 0)) ?></div>
+                                <?php if(!empty($queue_row['last_contacted_at'])): ?>
+                                    <div class="text-muted small"><?= l('admin_leader_operating_system.queue_last_contact') ?>: <strong class="text-white"><?= \Altum\Date::get($queue_row['last_contacted_at'], 2) ?></strong></div>
+                                <?php endif ?>
+                                <?php if(!empty($queue_row['latest_mentor_event_summary'])): ?>
+                                    <div class="text-muted small"><?= l('admin_leader_operating_system.queue_last_event') ?>: <strong class="text-white"><?= htmlspecialchars((string) $queue_row['latest_mentor_event_summary'], ENT_QUOTES, 'UTF-8') ?></strong></div>
+                                <?php endif ?>
+                                <?php if(!empty($queue_row['mentor_history_total'])): ?>
+                                    <div class="text-muted small"><?= l('admin_leader_operating_system.queue_history_total') ?>: <strong class="text-white"><?= nr((int) $queue_row['mentor_history_total']) ?></strong></div>
+                                <?php endif ?>
+                                <?php if(!empty($queue_row['mentor_next_action'])): ?>
+                                    <div class="text-muted small"><?= l('admin_leader_operating_system.queue_next_action') ?>: <strong class="text-white"><?= htmlspecialchars((string) $queue_row['mentor_next_action'], ENT_QUOTES, 'UTF-8') ?></strong></div>
+                                <?php endif ?>
+                            </div>
+
+                            <div class="mt-3 d-flex flex-column">
+                                <a href="<?= $queue_row['detail_url'] ?>" class="leader-os-link"><?= l('admin_leader_operating_system.queue_open') ?></a>
+                                <a href="<?= $queue_row['admin_user_url'] ?>" class="leader-os-link text-muted"><?= l('admin_index.biolink_qualified_watch.open_profile') ?></a>
+                                <?php if($selected_tab === 'coaching'): ?>
+                                    <a href="#leader-os-message-center" class="leader-os-link text-muted leader-os-quick-message-trigger" data-user-id="<?= (int) ($queue_row['user_id'] ?? 0) ?>">Odaberi za poruku</a>
+                                <?php endif ?>
+                            </div>
+
+                            <?php if(!empty($queue_row['ai_access_is_pro'])): ?>
+                                <div class="leader-os-ai-access-actions">
+                                    <?php if(($queue_row['ai_access_tier_key'] ?? '') !== 'pro_active' && ($queue_row['ai_access_tier_key'] ?? '') !== 'pro_vip'): ?>
+                                        <form action="<?= $leader_os_action_url ?>" method="post">
+                                            <input type="hidden" name="global_token" value="<?= \Altum\Csrf::get('global_token') ?>" />
+                                            <input type="hidden" name="user_id" value="<?= (int) $queue_row['user_id'] ?>" />
+                                            <input type="hidden" name="los_ai_unlock_action" value="pro_active" />
+                                            <button type="submit" class="btn btn-sm leader-os-action-button is-primary">Otključaj Active</button>
+                                        </form>
+                                    <?php endif ?>
+                                    <?php if(($queue_row['ai_access_tier_key'] ?? '') !== 'pro_vip'): ?>
+                                        <form action="<?= $leader_os_action_url ?>" method="post">
+                                            <input type="hidden" name="global_token" value="<?= \Altum\Csrf::get('global_token') ?>" />
+                                            <input type="hidden" name="user_id" value="<?= (int) $queue_row['user_id'] ?>" />
+                                            <input type="hidden" name="los_ai_unlock_action" value="pro_vip" />
+                                            <button type="submit" class="btn btn-sm leader-os-action-button is-success">Otključaj VIP</button>
+                                        </form>
+                                    <?php endif ?>
+                                    <?php if(!empty($queue_row['ai_access_manual_tier'])): ?>
+                                        <form action="<?= $leader_os_action_url ?>" method="post">
+                                            <input type="hidden" name="global_token" value="<?= \Altum\Csrf::get('global_token') ?>" />
+                                            <input type="hidden" name="user_id" value="<?= (int) $queue_row['user_id'] ?>" />
+                                            <input type="hidden" name="los_ai_unlock_action" value="auto" />
+                                            <button type="submit" class="btn btn-sm leader-os-action-button">Vrati automatski</button>
+                                        </form>
+                                    <?php endif ?>
+                                </div>
+                            <?php endif ?>
+                        </div>
+                    <?php endforeach ?>
+                </div>
+
+                <?php if($selected_tab === 'coaching'): ?>
+                    <div class="leader-os-panel mb-0" id="leader-os-message-center">
+                        <div class="d-flex justify-content-between align-items-start flex-wrap mb-3" style="gap:1rem;">
+                            <div>
+                                <div class="text-uppercase small text-muted mb-2">Message Center</div>
+                                <div class="h5 mb-1">Jedan sustav za privatne i grupne poruke</div>
+                                <div class="text-muted small">Odaberi šalješ li poruku pojedinom suradniku ili grupi. Klik na grupu otvara popup s članovima i odmah priprema odabir za slanje.</div>
+                            </div>
+                            <span class="leader-os-status-badge status-info">Internal notification</span>
+                        </div>
+
+                        <div class="leader-os-segment-list">
+                            <?php foreach($message_group_keys as $group_key): ?>
+                                <?php $group = (array) ($data->overview['message_targets'][$group_key] ?? []); ?>
+                                <?php
+                                $group_items = [];
+                                foreach((array) ($group['user_ids'] ?? []) as $group_user_id) {
+                                    $group_user_id = (int) $group_user_id;
+
+                                    if($group_user_id > 0 && isset($individual_targets_lookup[$group_user_id])) {
+                                        $group_items[] = $individual_targets_lookup[$group_user_id];
+                                    }
+                                }
+
+                                usort($group_items, static function($a, $b) {
+                                    return (($b['priority_score'] ?? 0) <=> ($a['priority_score'] ?? 0))
+                                        ?: strcmp((string) ($a['name'] ?? ''), (string) ($b['name'] ?? ''));
+                                });
+
+                                $group_payload = htmlspecialchars(json_encode([
+                                    'title' => (string) (($group['label'] ?? ucfirst($group_key)) . ' · suradnici'),
+                                    'summary_label' => (string) ($group['label'] ?? ucfirst($group_key)),
+                                    'summary_value' => nr((int) ($group['count'] ?? 0)),
+                                    'summary_note' => 'Članovi ove grupe za slanje poruka. Klik na grupu i dolje odmah možeš poslati poruku cijelom segmentu.',
+                                    'items' => array_values($group_items),
+                                ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES), ENT_QUOTES, 'UTF-8');
+                                ?>
+                                <button
+                                    type="button"
+                                    class="leader-os-pill small leader-os-message-group-trigger"
+                                    data-group="<?= htmlspecialchars((string) $group_key, ENT_QUOTES, 'UTF-8') ?>"
+                                    data-drilldown="<?= $group_payload ?>"
+                                >
+                                    <?= htmlspecialchars((string) ($group['label'] ?? ucfirst($group_key)), ENT_QUOTES, 'UTF-8') ?>
+                                    <strong><?= nr((int) ($group['count'] ?? 0)) ?></strong>
+                                </button>
+                            <?php endforeach ?>
+                        </div>
+
+                        <form action="<?= $leader_os_action_url ?>" method="post" class="mt-3">
+                            <input type="hidden" name="global_token" value="<?= \Altum\Csrf::get('global_token') ?>" />
+
+                            <div class="leader-os-form-grid">
+                                <div>
+                                    <label class="leader-os-field-label" for="leader_os_message_target_mode">Način slanja</label>
+                                    <select id="leader_os_message_target_mode" name="message_target_mode" class="leader-os-select" required>
+                                        <option value="single">Pojedini suradnik</option>
+                                        <option value="group">Grupa suradnika</option>
+                                    </select>
+                                </div>
+
+                                <div id="leader_os_single_target_wrap">
+                                    <label class="leader-os-field-label" for="leader_os_target_user_id">Suradnik</label>
+                                    <select id="leader_os_target_user_id" name="message_target_user_id" class="leader-os-select">
+                                        <option value="">Odaberi suradnika</option>
+                                        <?php foreach($individual_targets as $target_row): ?>
+                                            <option value="<?= (int) ($target_row['user_id'] ?? 0) ?>">
+                                                <?= htmlspecialchars((string) ($target_row['name'] ?? ''), ENT_QUOTES, 'UTF-8') ?>
+                                                <?= !empty($target_row['meta']) ? ' - ' . htmlspecialchars((string) $target_row['meta'], ENT_QUOTES, 'UTF-8') : '' ?>
+                                            </option>
+                                        <?php endforeach ?>
+                                    </select>
+                                </div>
+
+                                <div id="leader_os_group_target_wrap" style="display:none;">
+                                    <label class="leader-os-field-label" for="leader_os_target_group">Grupa</label>
+                                    <select id="leader_os_target_group" name="message_target_group" class="leader-os-select">
+                                        <option value="">Odaberi grupu</option>
+                                        <?php foreach($message_group_keys as $group_key): ?>
+                                            <?php $group = (array) ($data->overview['message_targets'][$group_key] ?? []); ?>
+                                            <option value="<?= htmlspecialchars((string) $group_key, ENT_QUOTES, 'UTF-8') ?>">
+                                                <?= htmlspecialchars((string) ($group['label'] ?? ucfirst((string) $group_key)), ENT_QUOTES, 'UTF-8') ?> (<?= nr((int) ($group['count'] ?? 0)) ?>)
+                                            </option>
+                                        <?php endforeach ?>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label class="leader-os-field-label" for="leader_os_message_title">Naslov poruke</label>
+                                    <input id="leader_os_message_title" type="text" name="message_title" maxlength="128" class="leader-os-input" value="Tjedni fokus za tvoj sljedeći korak" required />
+                                </div>
+
+                                <div class="leader-os-form-grid-full">
+                                    <label class="leader-os-field-label" for="leader_os_message_description">Poruka</label>
+                                    <textarea id="leader_os_message_description" name="message_description" maxlength="1024" class="leader-os-textarea" required><?= htmlspecialchars((string) ($data->overview['team_strategist']['team_message_preview'] ?? ''), ENT_QUOTES, 'UTF-8') ?></textarea>
+                                </div>
+                            </div>
+
+                            <div class="d-flex align-items-center justify-content-between flex-wrap mt-3" style="gap:.75rem;">
+                                <div class="d-flex flex-wrap" style="gap:.5rem;">
+                                    <button type="button" class="btn btn-sm leader-os-action-button leader-os-template-trigger" data-mode="group" data-group="team" data-title="Tjedni fokus za cijeli tim" data-message="<?= htmlspecialchars((string) ($data->overview['team_strategist']['team_message_preview'] ?? ''), ENT_QUOTES, 'UTF-8') ?>">Učitaj tim poruku</button>
+                                    <button type="button" class="btn btn-sm leader-os-action-button leader-os-template-trigger" data-mode="group" data-group="risk" data-title="Fokus za risk grupu ovaj tjedan" data-message="<?= htmlspecialchars((string) ($data->overview['team_strategist']['risk_group_message_preview'] ?? ''), ENT_QUOTES, 'UTF-8') ?>">Učitaj risk poruku</button>
+                                    <button type="button" class="btn btn-sm leader-os-action-button leader-os-template-trigger" data-mode="group" data-group="rising" data-title="Momentum poruka za rising grupu" data-message="<?= htmlspecialchars((string) (($data->overview['team_strategist']['weekly_focus']['title'] ?? '') ? 'Ovaj tjedan koristi momentum koji već imaš i fokusiraj se na: ' . ($data->overview['team_strategist']['weekly_focus']['title'] ?? '') . '.' : ''), ENT_QUOTES, 'UTF-8') ?>">Učitaj rising poruku</button>
+                                </div>
+
+                                <button type="submit" name="send_message_center_message" value="1" class="btn btn-sm leader-os-action-button is-primary">Pošalji poruku</button>
+                            </div>
+                        </form>
+                    </div>
+                <?php endif ?>
+            <?php endif ?>
+        </div>
+    </div>
+    <?php
+    return ob_get_clean();
+};
+
 $leader_os_team_signal_chart = $data->overview['team_signal_chart'] ?? [
     'labels' => [],
     'app_visits' => [],
@@ -4154,7 +4494,7 @@ $operations_tab_badge_total = (int) (($data->operations['totals']['pending_appro
 </div>
 <?php endif ?>
 
-<?php if(in_array(($data->selected_tab ?? 'overview'), ['overview', 'coaching', 'fraud', 'collaborators'], true)): ?>
+<?php if(($data->selected_tab ?? 'overview') === 'collaborators'): ?>
 <div class="card leader-os-shell mb-4">
     <div class="card-body">
         <form action="<?= url('admin/leader-operating-system') ?>" method="get">
@@ -4233,6 +4573,8 @@ $operations_tab_badge_total = (int) (($data->operations['totals']['pending_appro
 </div>
 </div>
 <?php endif ?>
+
+<?= $render_priority_queue_section() ?>
 
 <?php if(($data->selected_tab ?? 'overview') === 'analytics'): ?>
 <div class="card leader-os-shell mb-4">
@@ -5161,7 +5503,7 @@ $operations_tab_badge_total = (int) (($data->operations['totals']['pending_appro
 </div>
 <?php endif ?>
 
-<?php if(in_array(($data->selected_tab ?? 'overview'), ['overview', 'coaching', 'fraud', 'collaborators'], true)): ?>
+<?php if(($data->selected_tab ?? 'overview') === 'collaborators'): ?>
 <div class="card leader-os-shell mb-4">
     <div class="card-body">
         <?php if(in_array(($data->selected_tab ?? 'overview'), ['overview', 'coaching'], true)): ?>
@@ -6259,6 +6601,10 @@ document.addEventListener('DOMContentLoaded', function () {
     };
 
     document.querySelectorAll('[data-drilldown]').forEach((trigger) => {
+        if (trigger.classList && trigger.classList.contains('leader-os-message-group-trigger')) {
+            return;
+        }
+
         bindDrilldownTrigger(trigger);
     });
 
@@ -6269,6 +6615,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const messageDescription = document.getElementById('leader_os_message_description');
     const singleTargetWrap = document.getElementById('leader_os_single_target_wrap');
     const groupTargetWrap = document.getElementById('leader_os_group_target_wrap');
+    const messageGroupTriggers = Array.from(document.querySelectorAll('.leader-os-message-group-trigger'));
 
     const syncMessageCenterMode = () => {
         if (!targetMode) {
@@ -6299,6 +6646,29 @@ document.addEventListener('DOMContentLoaded', function () {
         syncMessageCenterMode();
     }
 
+    const setActiveMessageGroupTrigger = (groupKey) => {
+        messageGroupTriggers.forEach((trigger) => {
+            const isActive = groupKey !== '' && trigger.getAttribute('data-group') === groupKey;
+            trigger.classList.toggle('is-active', isActive);
+        });
+    };
+
+    const applyMessageGroupSelection = (groupKey) => {
+        if (!groupKey || !groupSelect) {
+            setActiveMessageGroupTrigger('');
+            return;
+        }
+
+        if (targetMode) {
+            targetMode.value = 'group';
+            syncMessageCenterMode();
+        }
+
+        groupSelect.value = groupKey;
+        groupSelect.dispatchEvent(new Event('change'));
+        setActiveMessageGroupTrigger(groupKey);
+    };
+
     document.querySelectorAll('.leader-os-quick-message-trigger').forEach((trigger) => {
         trigger.addEventListener('click', function () {
             if (!prioritySelect) {
@@ -6316,6 +6686,17 @@ document.addEventListener('DOMContentLoaded', function () {
                 prioritySelect.value = userId;
                 prioritySelect.dispatchEvent(new Event('change'));
             }
+
+            setActiveMessageGroupTrigger('');
+        });
+    });
+
+    messageGroupTriggers.forEach((trigger) => {
+        trigger.addEventListener('click', function () {
+            const groupKey = this.getAttribute('data-group') || '';
+            applyMessageGroupSelection(groupKey);
+            populateDrilldown(this);
+            openModal();
         });
     });
 
@@ -6328,6 +6709,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             if (groupSelect && this.getAttribute('data-group')) {
                 groupSelect.value = this.getAttribute('data-group') || '';
+                setActiveMessageGroupTrigger(groupSelect.value);
             }
 
             if (messageTitle) {
@@ -6339,6 +6721,12 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
     });
+
+    if (groupSelect) {
+        groupSelect.addEventListener('change', function () {
+            setActiveMessageGroupTrigger(this.value || '');
+        });
+    }
 
     document.querySelectorAll('.leader-os-support-toggle').forEach((trigger) => {
         trigger.addEventListener('click', function () {
