@@ -383,12 +383,20 @@
         position: sticky;
         bottom: 0;
         z-index: 1;
-        background: linear-gradient(180deg, rgba(12, 18, 31, 0.98) 0%, rgba(8, 13, 24, 1) 100%);
+        background:
+            linear-gradient(180deg, rgba(18, 41, 61, 0.98) 0%, rgba(10, 22, 36, 1) 100%);
         color: #f4f9ff;
-        border-top: 1px solid rgba(124, 200, 255, 0.22);
+        border-top: 1px solid rgba(63, 224, 200, 0.34);
         border-bottom: 0;
         font-weight: 800;
-        box-shadow: 0 -1px 0 rgba(255,255,255,0.03);
+        box-shadow: 0 -10px 18px rgba(2, 6, 23, 0.32), inset 0 1px 0 rgba(255,255,255,0.05);
+    }
+
+    .leader-os-country-table tfoot th:first-child {
+        color: #dffefa;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        font-size: 0.76rem;
     }
 
     .leader-os-country-table tbody tr:hover {
