@@ -3667,48 +3667,180 @@ $operations_tab_badge_total = (int) (($data->operations['totals']['pending_appro
         <?php endif ?>
 
         <?php if(($data->selected_tab ?? 'overview') === 'ai'): ?>
+            <?php $ai_dashboard = $data->overview['team_ai_dashboard'] ?? []; ?>
+            <div class="leader-os-panel mt-2 mb-3">
+                <div class="d-flex justify-content-between align-items-start flex-wrap mb-3" style="gap:1rem;">
+                    <div>
+                        <div class="text-uppercase small text-muted mb-2">AI navike</div>
+                        <h3 class="h5 mb-1">AI putanja, zastoji i rezultat tima</h3>
+                        <div class="text-muted small">Ovdje vidiš tko stvarno ulazi u AI ritam, gdje staje i gdje AI već prati konkretan poslovni signal.</div>
+                    </div>
+                    <span class="leader-os-status-badge status-info"><?= htmlspecialchars(strtoupper((string) $data->selected_period), ENT_QUOTES, 'UTF-8') ?></span>
+                </div>
+
+                <div class="leader-os-inline-note mb-3">Klik na broj otvara popis suradnika iza tog signala. Gornji dio čita zadnje poznato AI stanje po suradniku, srednji dio pokazuje gdje AI zapinje, a donji dio povezuje AI s rezultatom u odabranom periodu.</div>
+
+                <div class="row">
+                    <div class="col-6 col-xl-3 mb-3">
+                        <?= $render_kpi_card('ai_profiles_total', '1. AI profil', (int) ($ai_dashboard['funnel']['profiles_total'] ?? 0), 'Tko je otvorio AI put kroz profil i dao osnovni kontekst', 'Start') ?>
+                    </div>
+                    <div class="col-6 col-xl-3 mb-3">
+                        <?= $render_kpi_card('ai_checkins_total', '2. Check-in', (int) ($ai_dashboard['funnel']['checkins_total'] ?? 0), 'Tko je stvarno ušao u tjedni AI ritam', 'Pulse') ?>
+                    </div>
+                    <div class="col-6 col-xl-3 mb-3">
+                        <?= $render_kpi_card('ai_plans_total', '3. Plan', (int) ($ai_dashboard['funnel']['plans_total'] ?? 0), 'Tko je AI pretvorio u konkretan tjedni plan rada', 'Plan') ?>
+                    </div>
+                    <div class="col-6 col-xl-3 mb-3">
+                        <?= $render_kpi_card('ai_outcomes_total', '4. Outcome', (int) ($ai_dashboard['funnel']['outcomes_total'] ?? 0), 'Tko zatvara krug i reflektira rezultat, blocker i sljedeću korekciju', 'Close') ?>
+                    </div>
+                </div>
+
+                <div class="leader-os-inline-note mb-0">
+                    Pretvorba kroz AI putanju:
+                    profil → check-in <strong class="text-white"><?= nr((float) ($ai_dashboard['funnel']['profile_to_checkin_rate'] ?? 0)) ?>%</strong>
+                    · check-in → plan <strong class="text-white"><?= nr((float) ($ai_dashboard['funnel']['checkin_to_plan_rate'] ?? 0)) ?>%</strong>
+                    · plan → outcome <strong class="text-white"><?= nr((float) ($ai_dashboard['funnel']['plan_to_outcome_rate'] ?? 0)) ?>%</strong>
+                </div>
+            </div>
+
+            <div class="leader-os-panel mb-3">
+                <div class="text-uppercase small text-muted mb-2">Gdje AI zapinje</div>
+                <h3 class="h5 mb-3">Točke na kojima suradnici najčešće stanu</h3>
+                <div class="row">
+                    <div class="col-6 col-xl-3 mb-3 mb-xl-0">
+                        <?= $render_kpi_card('ai_profile_only_total', 'Profil bez check-ina', (int) ($ai_dashboard['bottlenecks']['profile_only_total'] ?? 0), 'Otvorili su AI, ali još nisu krenuli u tjedni ritam', 'Gap') ?>
+                    </div>
+                    <div class="col-6 col-xl-3 mb-3 mb-xl-0">
+                        <?= $render_kpi_card('ai_checkin_waiting_plan_total', 'Check-in bez plana', (int) ($ai_dashboard['bottlenecks']['checkin_waiting_plan_total'] ?? 0), 'Postoji tjedni unos, ali nije završen u plan koji vodi akciji', 'Gap') ?>
+                    </div>
+                    <div class="col-6 col-xl-3">
+                        <?= $render_kpi_card('ai_plan_waiting_outcome_total', 'Plan bez outcomea', (int) ($ai_dashboard['bottlenecks']['plan_waiting_outcome_total'] ?? 0), 'Plan postoji, ali tjedan nije zatvoren refleksijom i korekcijom', 'Gap') ?>
+                    </div>
+                    <div class="col-6 col-xl-3">
+                        <?= $render_kpi_card('ai_stale_checkin_total', 'Stari AI ritam', (int) ($ai_dashboard['bottlenecks']['stale_checkin_total'] ?? 0), 'Suradnici koji su neko vrijeme koristili AI, ali im je ritam stao', 'Stale') ?>
+                    </div>
+                </div>
+            </div>
+
+            <div class="leader-os-panel mb-3">
+                <div class="text-uppercase small text-muted mb-2">AI i rezultat</div>
+                <h3 class="h5 mb-3">Pokazuje li AI stvarni poslovni signal</h3>
+                <div class="row">
+                    <div class="col-6 col-xl-3 mb-3 mb-xl-0">
+                        <?= $render_kpi_card('ai_resultful_total', 'AI s rezultatom', (int) ($ai_dashboard['results']['ai_resultful_total'] ?? 0), 'AI aktivni suradnici koji već imaju shop, funnel ili WhatsApp signal', 'Result') ?>
+                    </div>
+                    <div class="col-6 col-xl-3 mb-3 mb-xl-0">
+                        <?= $render_kpi_card('ai_active_no_result_total', 'AI bez rezultata', (int) ($ai_dashboard['results']['ai_active_no_result_total'] ?? 0), 'AI koriste, ali još ne vide stvarni izlaz prema rezultatu', 'Watch') ?>
+                    </div>
+                    <div class="col-6 col-xl-3">
+                        <?= $render_kpi_card('ai_pro_without_usage_total', 'PRO bez AI navike', (int) ($ai_dashboard['results']['ai_pro_without_usage_total'] ?? 0), 'Imaju pravo na AI, ali ga još nisu stvarno pokrenuli', 'PRO') ?>
+                    </div>
+                    <div class="col-6 col-xl-3">
+                        <?= $render_kpi_card('ai_strong_routine_total', 'Jak AI ritam', (int) ($ai_dashboard['results']['ai_strong_routine_total'] ?? 0), 'Zatvoren AI ciklus i jaka dosljednost rada', 'Strong') ?>
+                    </div>
+                </div>
+
+                <div class="leader-os-inline-note mb-0 mt-3">
+                    Udio AI aktivnih koji već imaju poslovni signal:
+                    <strong class="text-white"><?= nr((float) ($ai_dashboard['results']['ai_result_rate'] ?? 0)) ?>%</strong>
+                    · AI aktivni ukupno:
+                    <strong class="text-white"><?= nr((int) ($ai_dashboard['results']['ai_active_total'] ?? 0)) ?></strong>
+                </div>
+            </div>
+
+            <div class="leader-os-grid-2 mb-3">
+                <div class="leader-os-panel">
+                    <div class="text-uppercase small text-muted mb-2">Prioritet za coaching</div>
+                    <h3 class="h5 mb-3">Koga prvo otvaraš kada želiš podići AI disciplinu</h3>
+                    <?php if(empty($data->overview['team_ai_actions']['priority_collaborators'])): ?>
+                        <div class="text-muted small">Trenutno nema suradnika s dovoljno jakim kombiniranim AI rizikom za prioritetnu listu.</div>
+                    <?php else: ?>
+                        <?php foreach(($data->overview['team_ai_actions']['priority_collaborators'] ?? []) as $priority_row): ?>
+                            <div class="py-2 border-top border-dark">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <a href="<?= $priority_row['detail_url'] ?>" class="leader-os-link"><?= htmlspecialchars((string) ($priority_row['name'] ?? ''), ENT_QUOTES, 'UTF-8') ?></a>
+                                    <strong><?= nr((int) ($priority_row['priority_score'] ?? 0)) ?></strong>
+                                </div>
+                                <div class="text-muted small">
+                                    <?= htmlspecialchars((string) ($priority_row['reason'] ?? ''), ENT_QUOTES, 'UTF-8') ?>
+                                    · consistency <?= nr((int) ($priority_row['consistency_score'] ?? 0)) ?>
+                                    · risk <?= nr((int) ($priority_row['risk_score'] ?? 0)) ?>
+                                </div>
+                            </div>
+                        <?php endforeach ?>
+                    <?php endif ?>
+                </div>
+
+                <div class="leader-os-panel">
+                    <div class="text-uppercase small text-muted mb-2">Kako čitaš AI tab</div>
+                    <h3 class="h5 mb-3">Što ti ove kartice govore o timu</h3>
+                    <div class="text-muted small mb-2">Profil, Check-in, Plan i Outcome pokazuju koliko ljudi prolazi puni AI ciklus, a ne samo otvara AI.</div>
+                    <div class="text-muted small mb-2">Profil bez check-ina, Check-in bez plana i Plan bez outcomea otkrivaju točno gdje AI tok puca i gdje treba intervenirati.</div>
+                    <div class="text-muted small mb-2">AI s rezultatom i AI bez rezultata odvajaju aktivnost od stvarnog učinka, pa odmah vidiš gdje treba optimizirati izvedbu.</div>
+                    <div class="text-muted small mb-3">PRO bez AI navike ti pokazuje neiskorišten potencijal unutar postojećeg plaćenog sloja tima.</div>
+
+                    <div class="row">
+                        <div class="col-6 mb-3">
+                            <?= $render_kpi_card('coaching_mentored_this_week_total', 'Mentorirani ovaj tjedan', (int) ($data->overview['team_ai_habits']['mentored_this_week_total'] ?? 0), 'Tko je ovaj tjedan imao stvarni mentorski touch', 'Coach') ?>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <?= $render_kpi_card('coaching_needs_follow_up_total', 'Treba follow-up', (int) ($data->overview['coaching_dashboard']['totals']['needs_follow_up_total'] ?? 0), 'Suradnici kojima treba novi kontakt da AI ciklus ne stane', 'Follow-up') ?>
+                        </div>
+                    </div>
+
+                    <div class="leader-os-inline-note mb-0">
+                        Prosječni consistency tima:
+                        <strong class="text-white"><?= nr((float) ($data->overview['team_consistency']['average_score'] ?? 0)) ?></strong>
+                        · strong:
+                        <strong class="text-white"><?= nr((int) ($data->overview['team_consistency']['strong_total'] ?? 0)) ?></strong>
+                        · watch/low:
+                        <strong class="text-white"><?= nr((int) ($data->overview['team_consistency']['watch_total'] ?? 0)) ?></strong>
+                    </div>
+                </div>
+            </div>
+
             <div class="leader-os-grid-2 mt-2">
                 <div class="leader-os-panel">
-                    <div class="text-uppercase small text-muted mb-2">AI answers</div>
-                    <h3 class="h5 mb-3">Najčešći odabrani odgovori</h3>
+                    <div class="text-uppercase small text-muted mb-2">AI odgovori i izbori</div>
+                    <h3 class="h5 mb-3">Što suradnici najčešće biraju kada koriste AI</h3>
                     <div class="row">
                         <div class="col-12 col-lg-6 mb-3">
-                            <div class="text-muted small mb-2">Priority offer</div>
+                            <div class="text-muted small mb-2">Prioritetna ponuda</div>
                             <?= $render_mini_chart(($data->overview['team_ai_distributions']['top_priority_offers'] ?? []), 0) ?>
                         </div>
                         <div class="col-12 col-lg-6 mb-3">
-                            <div class="text-muted small mb-2">Active channels</div>
+                            <div class="text-muted small mb-2">Aktivni kanali</div>
                             <?= $render_mini_chart(($data->overview['team_ai_distributions']['top_active_channels'] ?? []), 0) ?>
                         </div>
                         <div class="col-12 col-lg-6">
-                            <div class="text-muted small mb-2">Follow-up readiness</div>
+                            <div class="text-muted small mb-2">Spremnost za follow-up</div>
                             <?= $render_mini_chart(($data->overview['team_ai_distributions']['top_follow_up_readiness'] ?? []), 0) ?>
                         </div>
                         <div class="col-12 col-lg-6">
-                            <div class="text-muted small mb-2">Weekly priority</div>
+                            <div class="text-muted small mb-2">Tjedni prioritet</div>
                             <?= $render_mini_chart(($data->overview['team_ai_distributions']['top_weekly_priorities'] ?? []), 0) ?>
                         </div>
                     </div>
                 </div>
 
                 <div class="leader-os-panel">
-                    <div class="text-uppercase small text-muted mb-2">AI execution</div>
-                    <h3 class="h5 mb-3">Commitment, follow-up i completion</h3>
+                    <div class="text-uppercase small text-muted mb-2">Execution i energija</div>
+                    <h3 class="h5 mb-3">Kako tim stvarno provodi AI plan</h3>
                     <div class="row">
                         <div class="col-12 col-lg-6 mb-3">
-                            <div class="text-muted small mb-2">Content commitment</div>
+                            <div class="text-muted small mb-2">Commitment na sadržaj</div>
                             <?= $render_mini_chart(($data->overview['team_ai_distributions']['top_content_commitment'] ?? []), 0) ?>
                         </div>
                         <div class="col-12 col-lg-6 mb-3">
-                            <div class="text-muted small mb-2">Follow-up volume</div>
+                            <div class="text-muted small mb-2">Volumen follow-upa</div>
                             <?= $render_mini_chart(($data->overview['team_ai_distributions']['top_follow_up_volume'] ?? []), 0) ?>
                         </div>
                         <div class="col-12 col-lg-6">
-                            <div class="text-muted small mb-2">Weekly energy</div>
+                            <div class="text-muted small mb-2">Tjedna energija</div>
                             <?= $render_mini_chart(($data->overview['team_ai_distributions']['top_weekly_energy'] ?? []), 0) ?>
                         </div>
                         <div class="col-12 col-lg-6">
-                            <div class="text-muted small mb-2">Completion level</div>
+                            <div class="text-muted small mb-2">Razina završavanja</div>
                             <?= $render_mini_chart(($data->overview['team_ai_distributions']['top_completion_levels'] ?? []), 0) ?>
                         </div>
                     </div>

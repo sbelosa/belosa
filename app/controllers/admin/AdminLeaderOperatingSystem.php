@@ -4957,6 +4957,115 @@ class AdminLeaderOperatingSystem extends Controller {
         return $payload;
     }
 
+    private function get_team_ai_dashboard_payload(array $rows): array {
+        $payload = [
+            'funnel' => [
+                'profiles_total' => 0,
+                'checkins_total' => 0,
+                'plans_total' => 0,
+                'outcomes_total' => 0,
+                'profile_to_checkin_rate' => 0,
+                'checkin_to_plan_rate' => 0,
+                'plan_to_outcome_rate' => 0,
+            ],
+            'bottlenecks' => [
+                'profile_only_total' => 0,
+                'checkin_waiting_plan_total' => 0,
+                'plan_waiting_outcome_total' => 0,
+                'stale_checkin_total' => 0,
+            ],
+            'results' => [
+                'ai_active_total' => 0,
+                'ai_resultful_total' => 0,
+                'ai_active_no_result_total' => 0,
+                'ai_pro_without_usage_total' => 0,
+                'ai_strong_routine_total' => 0,
+                'ai_result_rate' => 0,
+            ],
+        ];
+
+        foreach($rows as $row) {
+            $has_profile = !empty($row['has_profile']);
+            $has_checkin = !empty($row['has_checkin']);
+            $has_plan = !empty($row['has_plan']);
+            $has_outcome = trim((string) ($row['latest_outcome_completion_level'] ?? '')) !== '';
+            $ai_stage_key = (string) ($row['ai_usage_stage_key'] ?? 'inactive');
+            $ai_active = in_array($ai_stage_key, ['started', 'questionnaire', 'active'], true);
+            $days_since_last_checkin = $row['days_since_last_checkin'] ?? null;
+            $has_result_signal = (int) ($row['ai_access_growth_signal_30d'] ?? 0) > 0
+                || (int) ($row['ai_access_shop_clicks_30d'] ?? 0) > 0
+                || (int) ($row['ai_access_funnel_registrations_30d'] ?? 0) > 0
+                || (int) ($row['ai_access_whatsapp_contacts_30d'] ?? 0) > 0;
+
+            if($has_profile) {
+                $payload['funnel']['profiles_total']++;
+            }
+
+            if($has_checkin) {
+                $payload['funnel']['checkins_total']++;
+            }
+
+            if($has_plan) {
+                $payload['funnel']['plans_total']++;
+            }
+
+            if($has_outcome) {
+                $payload['funnel']['outcomes_total']++;
+            }
+
+            if($has_profile && !$has_checkin) {
+                $payload['bottlenecks']['profile_only_total']++;
+            }
+
+            if($has_checkin && !$has_plan) {
+                $payload['bottlenecks']['checkin_waiting_plan_total']++;
+            }
+
+            if($has_plan && !$has_outcome) {
+                $payload['bottlenecks']['plan_waiting_outcome_total']++;
+            }
+
+            if($has_checkin && $days_since_last_checkin !== null && (int) $days_since_last_checkin > 14) {
+                $payload['bottlenecks']['stale_checkin_total']++;
+            }
+
+            if($ai_active) {
+                $payload['results']['ai_active_total']++;
+            }
+
+            if($ai_active && $has_result_signal) {
+                $payload['results']['ai_resultful_total']++;
+            }
+
+            if($ai_active && !$has_result_signal) {
+                $payload['results']['ai_active_no_result_total']++;
+            }
+
+            if(!empty($row['is_active_pro']) && !$ai_active) {
+                $payload['results']['ai_pro_without_usage_total']++;
+            }
+
+            if($has_plan && $has_outcome && (string) ($row['consistency_state_key'] ?? '') === 'strong') {
+                $payload['results']['ai_strong_routine_total']++;
+            }
+        }
+
+        $payload['funnel']['profile_to_checkin_rate'] = $payload['funnel']['profiles_total'] > 0
+            ? round(($payload['funnel']['checkins_total'] / max(1, $payload['funnel']['profiles_total'])) * 100, 1)
+            : 0;
+        $payload['funnel']['checkin_to_plan_rate'] = $payload['funnel']['checkins_total'] > 0
+            ? round(($payload['funnel']['plans_total'] / max(1, $payload['funnel']['checkins_total'])) * 100, 1)
+            : 0;
+        $payload['funnel']['plan_to_outcome_rate'] = $payload['funnel']['plans_total'] > 0
+            ? round(($payload['funnel']['outcomes_total'] / max(1, $payload['funnel']['plans_total'])) * 100, 1)
+            : 0;
+        $payload['results']['ai_result_rate'] = $payload['results']['ai_active_total'] > 0
+            ? round(($payload['results']['ai_resultful_total'] / max(1, $payload['results']['ai_active_total'])) * 100, 1)
+            : 0;
+
+        return $payload;
+    }
+
     private function get_coaching_dashboard_payload(array $rows, array $queue_rows, array $recent_coaching_rows): array {
         $payload = [
             'totals' => [
@@ -6219,6 +6328,30 @@ class AdminLeaderOperatingSystem extends Controller {
 
                     return !empty($outcomes[0]);
                 }, 60, static fn($row, $metric) => 'Consistency ' . nr((int) $metric)),
+            'ai_profile_only_total' => $this->build_drilldown_payload('Profil otvoren, ali bez check-ina', $rows, static fn($row) => (int) ($row['leader_os_score'] ?? 0), static fn($row) => !empty($row['has_profile']) && empty($row['has_checkin']), 60, static fn($row, $metric) => 'LOS ' . nr((int) $metric)),
+            'ai_checkin_waiting_plan_total' => $this->build_drilldown_payload('Check-in postoji, ali plan nije generiran', $rows, static fn($row) => (int) ($row['days_since_last_checkin'] ?? 999), static fn($row) => !empty($row['has_checkin']) && empty($row['has_plan']), 60, static fn($row, $metric) => ($metric === 999 ? 'Bez datuma' : 'Check-in prije ' . nr((int) $metric) . ' d')),
+            'ai_plan_waiting_outcome_total' => $this->build_drilldown_payload('AI plan postoji, ali outcome nije zatvoren', $rows, static fn($row) => (int) ($row['consistency_score'] ?? 0), static fn($row) => !empty($row['has_plan']) && trim((string) ($row['latest_outcome_completion_level'] ?? '')) === '', 60, static fn($row, $metric) => 'Consistency ' . nr((int) $metric)),
+            'ai_stale_checkin_total' => $this->build_drilldown_payload('AI ritam je stao', $rows, static fn($row) => (int) ($row['days_since_last_checkin'] ?? 999), static fn($row) => !empty($row['has_checkin']) && (($row['days_since_last_checkin'] ?? null) !== null) && (int) ($row['days_since_last_checkin'] ?? 0) > 14, 60, static fn($row, $metric) => ($metric === 999 ? 'Bez datuma' : 'Zadnji check-in prije ' . nr((int) $metric) . ' d')),
+            'ai_resultful_total' => $this->build_drilldown_payload('AI aktivni koji već imaju rezultat', $rows, static fn($row) => (int) ($row['ai_access_growth_signal_30d'] ?? 0), static function($row) {
+                    $ai_active = in_array((string) ($row['ai_usage_stage_key'] ?? 'inactive'), ['started', 'questionnaire', 'active'], true);
+                    $has_result = (int) ($row['ai_access_growth_signal_30d'] ?? 0) > 0
+                        || (int) ($row['ai_access_shop_clicks_30d'] ?? 0) > 0
+                        || (int) ($row['ai_access_funnel_registrations_30d'] ?? 0) > 0
+                        || (int) ($row['ai_access_whatsapp_contacts_30d'] ?? 0) > 0;
+
+                    return $ai_active && $has_result;
+                }, 60, static fn($row, $metric) => 'Shop ' . nr((int) ($row['ai_access_shop_clicks_30d'] ?? 0)) . ' · Funnel ' . nr((int) ($row['ai_access_funnel_registrations_30d'] ?? 0)) . ' · WA ' . nr((int) ($row['ai_access_whatsapp_contacts_30d'] ?? 0))),
+            'ai_active_no_result_total' => $this->build_drilldown_payload('AI aktivni bez rezultata', $rows, static fn($row) => (int) ($row['days_since_last_checkin'] ?? 999), static function($row) {
+                    $ai_active = in_array((string) ($row['ai_usage_stage_key'] ?? 'inactive'), ['started', 'questionnaire', 'active'], true);
+                    $has_result = (int) ($row['ai_access_growth_signal_30d'] ?? 0) > 0
+                        || (int) ($row['ai_access_shop_clicks_30d'] ?? 0) > 0
+                        || (int) ($row['ai_access_funnel_registrations_30d'] ?? 0) > 0
+                        || (int) ($row['ai_access_whatsapp_contacts_30d'] ?? 0) > 0;
+
+                    return $ai_active && !$has_result;
+                }, 60, static fn($row, $metric) => ($metric === 999 ? 'Bez check-ina' : 'Zadnji check-in prije ' . nr((int) $metric) . ' d')),
+            'ai_pro_without_usage_total' => $this->build_drilldown_payload('PRO bez AI navike', $rows, static fn($row) => (int) ($row['leader_os_score'] ?? 0), static fn($row) => !empty($row['is_active_pro']) && !in_array((string) ($row['ai_usage_stage_key'] ?? 'inactive'), ['started', 'questionnaire', 'active'], true), 60, static fn($row, $metric) => 'LOS ' . nr((int) $metric)),
+            'ai_strong_routine_total' => $this->build_drilldown_payload('Jak AI ritam', $rows, static fn($row) => (int) ($row['consistency_score'] ?? 0), static fn($row) => !empty($row['has_plan']) && trim((string) ($row['latest_outcome_completion_level'] ?? '')) !== '' && (string) ($row['consistency_state_key'] ?? '') === 'strong', 60, static fn($row, $metric) => 'Consistency ' . nr((int) $metric)),
             'coaching_queue_total' => $this->build_drilldown_payload('Coaching queue', $rows, static fn($row) => (int) ($row['priority_score'] ?? 0), static fn($row) => !empty($row['queue_reason']), 60, static fn($row, $metric) => 'Priority ' . nr((int) $metric)),
             'coaching_mentored_this_week_total' => $this->build_drilldown_payload('Mentorirani ovaj tjedan', $rows, static fn($row) => (int) ($row['leader_os_score'] ?? 0), static fn($row) => !empty($row['mentored_this_week']), 60, static fn($row, $metric) => 'LOS ' . nr((int) $metric)),
             'coaching_needs_follow_up_total' => $this->build_drilldown_payload('Trebaju follow-up', $rows, static fn($row) => (int) ($row['days_since_last_contact'] ?? 0), static fn($row) => !empty($row['needs_follow_up']), 60, static fn($row, $metric) => 'Zadnji kontakt prije ' . nr((int) $metric) . ' d'),
@@ -7233,6 +7366,7 @@ class AdminLeaderOperatingSystem extends Controller {
         });
 
         $team_ai_habits = $this->get_team_ai_habits_payload($rows);
+        $team_ai_dashboard = $this->get_team_ai_dashboard_payload($rows);
         $team_ai_distributions = $this->get_team_ai_distribution_payload($rows);
         $team_ai_text_intelligence = $this->get_team_ai_text_intelligence_payload($rows);
         $team_ai_actions = $this->get_team_ai_action_payload($rows, $team_ai_text_intelligence);
@@ -7298,6 +7432,7 @@ class AdminLeaderOperatingSystem extends Controller {
             'activity_heatmap' => $activity_heatmap,
             'team_blog_forever' => $this->get_team_blog_forever_payload($period_start_datetime),
             'team_ai_habits' => $team_ai_habits,
+            'team_ai_dashboard' => $team_ai_dashboard,
             'team_ai_distributions' => $team_ai_distributions,
             'team_ai_text_intelligence' => $team_ai_text_intelligence,
             'team_ai_actions' => $team_ai_actions,
