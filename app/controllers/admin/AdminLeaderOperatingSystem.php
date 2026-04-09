@@ -3775,15 +3775,15 @@ class AdminLeaderOperatingSystem extends Controller {
                         ? nr($qualified_total) . ' kvalificiranih · ' . nr($active_collaborators) . ' aktivnih · ' . nr($active_pro_total) . ' PRO'
                         : nr($qualified_total) . ' qualified · ' . nr($active_collaborators) . ' active · ' . nr($active_pro_total) . ' PRO',
                     'what_it_shows' => $is_hr
-                        ? 'Koliko je tim dosljedan i kolika je njegova stvarno aktivna i monetizirana jezgra.'
+                        ? 'Dosljednost pokazuje koliko tim ima redovit ritam rada kroz check-in, plan, provedbu i praćenje rezultata. Jezgra tima pokazuje koliko ljudi stvarno nosi aktivnost i PRO bazu.'
                         : 'How consistent the team is and how large its truly active and monetized core is.',
                     'how_to_use' => $is_hr
-                        ? 'Koristi za procjenu koliko je rast održiv, a ne samo trenutno glasan.'
+                        ? 'Ako je broj nizak, tim ima slab ritam i rezultat teže postaje stabilan. Ako broj raste, znači da više suradnika radi redovito i da tim ima zdraviju bazu za daljnji rast.'
                         : 'Use it to judge whether growth is sustainable, not just currently loud.',
                     'metric_links' => [
-                        $build_metric_link('qualified', $is_hr ? 'Kvalificirani' : 'Qualified', nr($qualified_total), $is_hr ? 'Jezgra s dokazanim signalom aktivnosti u zadnjih 90 dana.' : 'The core with a proven activity signal in the last 90 days.'),
-                        $build_metric_link('active_collaborators', $is_hr ? 'Aktivni' : 'Active', nr($active_collaborators), $is_hr ? 'Suradnici koji su stvarno imali aktivnost u odabranom periodu.' : 'Collaborators who actually had activity in the selected period.'),
-                        $build_metric_link('active_pro_total', $is_hr ? 'PRO' : 'PRO', nr($active_pro_total), $is_hr ? 'Trenutno aktivni PRO računi koji nose monetizacijsku jezgru.' : 'Currently active PRO accounts representing the monetized core.'),
+                        $build_metric_link('qualified', $is_hr ? 'Kvalificirani' : 'Qualified', nr($qualified_total), $is_hr ? 'Suradnici s dokazanim signalom aktivnosti u zadnjih 90 dana. To je šira jezgra tima koja već pokazuje stvarni interes i smjer.' : 'The core with a proven activity signal in the last 90 days.'),
+                        $build_metric_link('active_collaborators', $is_hr ? 'Aktivni' : 'Active', nr($active_collaborators), $is_hr ? 'Suradnici koji su stvarno imali aktivnost u odabranom periodu. To pokazuje koliko jezgra tima trenutno radi, a ne samo postoji.' : 'Collaborators who actually had activity in the selected period.'),
+                        $build_metric_link('active_pro_total', $is_hr ? 'PRO' : 'PRO', nr($active_pro_total), $is_hr ? 'Trenutno aktivni PRO računi. To pokazuje koliko jezgra tima ima stvarnu i monetiziranu bazu.' : 'Currently active PRO accounts representing the monetized core.'),
                     ],
                     'tone' => $consistency_avg >= 55 ? 'success' : ($consistency_avg < 45 ? 'warning' : 'info'),
                 ],
