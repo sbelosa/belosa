@@ -210,11 +210,11 @@ $fcc_group_meta = [
 ];
 
 $fcc_group_blocks = [
-    'start' => ['heading', 'header', 'avatar', 'paragraph', 'image', 'video', 'countdown', 'link_app_switcher', 'link_back', 'anchor', 'loading'],
+    'start' => ['heading', 'header', 'avatar', 'paragraph', 'image', 'video', 'countdown', 'link_back', 'anchor', 'loading'],
     'contacts' => ['socials', 'email_collector', 'phone_collector', 'contact_collector', 'custom_html_whatsapp', 'link_save_contact', 'share', 'vcard', 'telegram', 'discord'],
     'sales' => ['link', 'featured_link', 'big_link', 'external_item', 'cta', 'coupon', 'paypal', 'donation', 'product', 'lead_funnel'],
     'business' => ['service', 'appointment_calendar', 'calendly', 'typeform', 'google_form', 'map', 'business_hours', 'review', 'faq', 'timeline', 'weather', 'counter', 'rss_feed'],
-    'forever' => ['link_forever_product', 'link_forever_shop', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo', 'link_discount', 'link_homescreen_android', 'link_homescreen_ios', 'custom_html_chatbot', 'custom_html_chatbot_pets'],
+    'forever' => ['link_app_switcher', 'link_forever_product', 'link_forever_shop', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo', 'link_discount', 'link_homescreen_android', 'link_homescreen_ios', 'custom_html_chatbot', 'custom_html_chatbot_pets'],
     'content' => ['modal_text', 'markdown', 'custom_html', 'image_grid', 'image_slider', 'image_comparison', 'divider', 'list', 'alert', 'audio', 'file', 'pdf_document', 'powerpoint_presentation', 'excel_spreadsheet', 'iframe', 'code', 'youtube_feed', 'facebook', 'instagram_media', 'tiktok_video', 'tiktok_profile', 'youtube', 'vimeo', 'twitch', 'soundcloud', 'spotify', 'applemusic', 'mixcloud', 'tidal', 'reddit', 'rumble', 'tumblr_post', 'twitter_tweet', 'twitter_video', 'twitter_profile', 'pinterest_profile', 'vk_video', 'bluesky_post', 'snapchat', 'canva', 'threads', 'text'],
 ];
 
