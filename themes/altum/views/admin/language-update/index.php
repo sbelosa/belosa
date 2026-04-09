@@ -388,7 +388,7 @@
                     'Authorization': `Bearer ${openai_api_key}`
                 },
                 body: JSON.stringify({
-                    'model': '<?= settings()->main->openai_model ?? 'gpt-4o' ?>',
+                    'model': '<?= htmlspecialchars(fc_get_resolved_openai_model(settings()->main->openai_model ?? ''), ENT_QUOTES, 'UTF-8') ?>',
                     'input':
                         `You are a professional translator. Translate the given text from English to ${language_to_translate_to}. ` +
                         `Keep all PHP sprintf placeholders (e.g., %1$s, %2$d) unchanged. ` +

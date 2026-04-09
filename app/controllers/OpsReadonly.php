@@ -792,13 +792,13 @@ class OpsReadonly extends Controller {
         $shared_main_api_key = trim((string) ($settings_main->openai_api_key ?? ''));
         $shared_api_key_source = $shared_aix_api_key !== '' ? 'aix' : ($shared_main_api_key !== '' ? 'main' : 'none');
         $shared_api_key_configured = $shared_api_key_source !== 'none';
-        $default_model = trim((string) ($settings_main->openai_model ?? 'gpt-4o'));
+        $default_model = fc_get_resolved_openai_model($settings_main->openai_model ?? '');
 
         return [
             'feature_flag_enabled' => defined('AI_ENABLED') ? AI_ENABLED : false,
             'shared_openai_key_configured' => $shared_api_key_configured,
             'shared_openai_key_source' => $shared_api_key_source,
-            'default_model' => $default_model !== '' ? $default_model : 'gpt-4o',
+            'default_model' => $default_model,
             'shared_ai_ready' => $shared_api_key_configured,
             'feature_flag_is_runtime_blocker' => false,
             'note' => $shared_api_key_configured

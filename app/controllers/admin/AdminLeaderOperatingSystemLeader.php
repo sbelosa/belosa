@@ -3877,11 +3877,11 @@ class AdminLeaderOperatingSystemLeader extends Controller {
 
     private function get_ai_credentials(): array {
         $api_key = trim((string) (settings()->main->openai_api_key ?? settings()->aix->openai_api_key ?? ''));
-        $model = trim((string) (settings()->main->openai_model ?? 'gpt-4o'));
+        $model = fc_get_resolved_openai_model(settings()->main->openai_model ?? '');
 
         return [
             'api_key' => $api_key,
-            'model' => $model !== '' ? $model : 'gpt-4o',
+            'model' => $model,
         ];
     }
 

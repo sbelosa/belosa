@@ -5554,11 +5554,11 @@ class AdminLeaderOperatingSystem extends Controller {
 
     private function get_ai_credentials(): array {
         $api_key = trim((string) (settings()->main->openai_api_key ?? settings()->aix->openai_api_key ?? ''));
-        $model = trim((string) (settings()->main->openai_model ?? 'gpt-4o'));
+        $model = fc_get_resolved_openai_model(settings()->main->openai_model ?? '');
 
         return [
             'api_key' => $api_key,
-            'model' => $model !== '' ? $model : 'gpt-4o',
+            'model' => $model,
         ];
     }
 
@@ -5862,11 +5862,187 @@ class AdminLeaderOperatingSystem extends Controller {
         return $normalized;
     }
 
+    private function build_team_strategist_delta_payload(array $current_snapshot, ?array $previous_snapshot = null): array {
+        $previous_snapshot = is_array($previous_snapshot) ? $previous_snapshot : [];
+
+        if(empty($previous_snapshot)) {
+            return [
+                'has_previous' => false,
+                'summary' => 'Ovo je prvi strategist briefing za ovaj period pa još nema usporedbe s prošlim AI izvještajem.',
+                'highlights' => [],
+            ];
+        }
+
+        $metric_map = [
+            [
+                'label' => 'Klikovi prema Foreveru',
+                'current' => (int) (($current_snapshot['executive']['shop_clicks'] ?? 0)),
+                'previous' => (int) (($previous_snapshot['executive']['shop_clicks'] ?? 0)),
+            ],
+            [
+                'label' => 'Registracije',
+                'current' => (int) (($current_snapshot['executive']['registrations'] ?? 0)),
+                'previous' => (int) (($previous_snapshot['executive']['registrations'] ?? 0)),
+            ],
+            [
+                'label' => 'Aktivni suradnici',
+                'current' => (int) (($current_snapshot['executive']['active_collaborators'] ?? 0)),
+                'previous' => (int) (($previous_snapshot['executive']['active_collaborators'] ?? 0)),
+            ],
+            [
+                'label' => 'Kvalificirani',
+                'current' => (int) (($current_snapshot['executive']['qualified'] ?? 0)),
+                'previous' => (int) (($previous_snapshot['executive']['qualified'] ?? 0)),
+            ],
+            [
+                'label' => 'Risk suradnici',
+                'current' => (int) (($current_snapshot['executive']['risk'] ?? 0)),
+                'previous' => (int) (($previous_snapshot['executive']['risk'] ?? 0)),
+            ],
+            [
+                'label' => 'Otvoreni support',
+                'current' => (int) (($current_snapshot['support']['open_total'] ?? 0)),
+                'previous' => (int) (($previous_snapshot['support']['open_total'] ?? 0)),
+            ],
+        ];
+
+        $highlights = [];
+
+        foreach($metric_map as $metric) {
+            $delta = (int) $metric['current'] - (int) $metric['previous'];
+
+            if($delta === 0) {
+                continue;
+            }
+
+            $highlights[] = [
+                'label' => (string) $metric['label'],
+                'current' => (int) $metric['current'],
+                'previous' => (int) $metric['previous'],
+                'delta' => $delta,
+                'direction' => $delta > 0 ? 'up' : 'down',
+                'summary' => sprintf(
+                    '%s %s za %s u odnosu na zadnji briefing.',
+                    (string) $metric['label'],
+                    $delta > 0 ? 'je porastao' : 'je pao',
+                    nr(abs($delta))
+                ),
+            ];
+        }
+
+        $current_top_country = trim((string) ($current_snapshot['analytics']['top_country'] ?? ''));
+        $previous_top_country = trim((string) ($previous_snapshot['analytics']['top_country'] ?? ''));
+        if($current_top_country !== '' && $current_top_country !== '-' && $current_top_country !== $previous_top_country) {
+            $highlights[] = [
+                'label' => 'Top tržište',
+                'current' => 0,
+                'previous' => 0,
+                'delta' => 0,
+                'direction' => 'shift',
+                'summary' => 'Top tržište se promijenilo na ' . $current_top_country . '.',
+            ];
+        }
+
+        $current_top_blocker = trim((string) ($current_snapshot['ai']['top_blocker'] ?? ''));
+        $previous_top_blocker = trim((string) ($previous_snapshot['ai']['top_blocker'] ?? ''));
+        if($current_top_blocker !== '' && $current_top_blocker !== '-' && $current_top_blocker !== $previous_top_blocker) {
+            $highlights[] = [
+                'label' => 'Top blocker',
+                'current' => 0,
+                'previous' => 0,
+                'delta' => 0,
+                'direction' => 'shift',
+                'summary' => 'Glavni AI blocker sada je: ' . $current_top_blocker . '.',
+            ];
+        }
+
+        $summary = 'Od zadnjeg strategist briefinga nema većeg pomaka u ključnim signalima.';
+        if(!empty($highlights)) {
+            $summary = implode(' ', array_slice(array_column($highlights, 'summary'), 0, 2));
+        }
+
+        return [
+            'has_previous' => true,
+            'summary' => $summary,
+            'highlights' => array_slice($highlights, 0, 5),
+        ];
+    }
+
+    private function get_team_strategist_recent_activity_rows(array $recent_rows, int $limit = 5): array {
+        $items = [];
+
+        foreach(array_slice($recent_rows, 0, $limit) as $row) {
+            $summary = trim((string) (($row['latest_mentor_event_summary'] ?? '') ?: ($row['mentor_next_action'] ?? '') ?: ($row['combined_priority_reason'] ?? '')));
+
+            $items[] = [
+                'name' => (string) ($row['name'] ?? l('global.unknown')),
+                'status' => (string) ($row['status_label'] ?? ''),
+                'summary' => $summary !== '' ? $this->sanitize_ai_string($summary, 180) : 'Nema još upisane sažete mentor bilješke.',
+                'latest_mentor_event_at' => (string) ($row['latest_mentor_event_at'] ?? ''),
+                'detail_url' => (string) ($row['detail_url'] ?? ''),
+            ];
+        }
+
+        return $items;
+    }
+
+    private function get_team_strategist_case_examples(array $overview_payload): array {
+        $examples = [];
+        $leaderboards = $overview_payload['team_leaderboards'] ?? [];
+        $queue_rows = (array) ($overview_payload['queue_rows'] ?? []);
+
+        $top_growth = (array) (($leaderboards['top_by_growth'] ?? [])[0] ?? []);
+        if(!empty($top_growth['name'])) {
+            $examples[] = [
+                'label' => 'Primjer rasta',
+                'name' => (string) ($top_growth['name'] ?? ''),
+                'reason' => 'Najizraženiji momentum u timu kroz rast i ukupni LOS signal.',
+                'detail_url' => (string) ($top_growth['detail_url'] ?? ''),
+            ];
+        }
+
+        $top_opportunity = (array) (($leaderboards['top_by_opportunity'] ?? [])[0] ?? []);
+        if(!empty($top_opportunity['name'])) {
+            $examples[] = [
+                'label' => 'Primjer prilike',
+                'name' => (string) ($top_opportunity['name'] ?? ''),
+                'reason' => 'Jak signal potencijala koji još nije pretvoren u puni rezultat.',
+                'detail_url' => (string) ($top_opportunity['detail_url'] ?? ''),
+            ];
+        }
+
+        $top_consistency = (array) (($leaderboards['top_by_consistency'] ?? [])[0] ?? []);
+        if(!empty($top_consistency['name'])) {
+            $examples[] = [
+                'label' => 'Primjer discipline',
+                'name' => (string) ($top_consistency['name'] ?? ''),
+                'reason' => 'Najstabilniji AI i izvedbeni ritam u promatranom periodu.',
+                'detail_url' => (string) ($top_consistency['detail_url'] ?? ''),
+            ];
+        }
+
+        if(!empty($queue_rows[0]['name'])) {
+            $top_queue = (array) $queue_rows[0];
+            $examples[] = [
+                'label' => 'Prvi za otvoriti',
+                'name' => (string) ($top_queue['name'] ?? ''),
+                'reason' => $this->sanitize_ai_string((string) (($top_queue['combined_priority_reason'] ?? '') ?: ($top_queue['queue_reason'] ?? 'Najveći coaching prioritet u timu.')), 180),
+                'detail_url' => (string) ($top_queue['detail_url'] ?? ''),
+            ];
+        }
+
+        return array_slice($examples, 0, 4);
+    }
+
     private function validate_team_strategist_response(array $response): array {
         $headline = $this->sanitize_ai_string((string) ($response['headline'] ?? ''), 140);
         $subheadline = $this->sanitize_ai_string((string) ($response['subheadline'] ?? ''), 260);
         $team_message_preview = $this->sanitize_ai_string((string) ($response['team_message_preview'] ?? ''), 420);
         $risk_group_message_preview = $this->sanitize_ai_string((string) ($response['risk_group_message_preview'] ?? ''), 420);
+        $main_risk = $this->sanitize_ai_string((string) ($response['main_risk'] ?? ''), 220);
+        $main_opportunity = $this->sanitize_ai_string((string) ($response['main_opportunity'] ?? ''), 220);
+        $open_first = $this->sanitize_ai_string((string) ($response['open_first'] ?? ''), 220);
+        $avoid_this_week = $this->sanitize_ai_string((string) ($response['avoid_this_week'] ?? ''), 220);
 
         $weekly_focus = is_array($response['weekly_focus'] ?? null) ? $response['weekly_focus'] : [];
         $recommended_webinar = is_array($response['recommended_webinar'] ?? null) ? $response['recommended_webinar'] : [];
@@ -5902,20 +6078,29 @@ class AdminLeaderOperatingSystem extends Controller {
             'kpis_to_watch' => $this->normalize_string_list($response['kpis_to_watch'] ?? [], 5),
             'team_message_preview' => $team_message_preview,
             'risk_group_message_preview' => $risk_group_message_preview,
+            'main_risk' => $main_risk !== '' ? $main_risk : 'Najveći rizik još nije jasno razdvojen u AI odgovoru pa ga treba čitati iz risk, support i coaching signala.',
+            'main_opportunity' => $main_opportunity !== '' ? $main_opportunity : 'Najveća prilika je ojačati ono gdje tim već ima signal, ali još ne pretvara dovoljno dobro interes u rezultat.',
+            'open_first' => $open_first !== '' ? $open_first : 'Prvo otvori najviši coaching prioritet i rising suradnike koji već imaju signal, ali zapinju u izvedbi.',
+            'avoid_this_week' => $avoid_this_week !== '' ? $avoid_this_week : 'Ovaj tjedan ne širi fokus na previše tema odjednom ako glavni problem još nije riješen.',
         ];
     }
 
-    private function build_team_strategist_ai_input(array $overview_payload, string $period_key): array {
+    private function build_team_strategist_ai_input(array $overview_payload, string $period_key, ?array $previous_report = null): array {
         $support_center = $overview_payload['support_center'] ?? [];
         $coaching_dashboard = $overview_payload['coaching_dashboard'] ?? [];
         $fraud_dashboard = $overview_payload['fraud_dashboard'] ?? [];
         $team_ai_habits = $overview_payload['team_ai_habits'] ?? [];
         $team_ai_actions = $overview_payload['team_ai_actions'] ?? [];
+        $message_targets = $overview_payload['message_targets'] ?? [];
+        $current_snapshot = (array) ($overview_payload['team_snapshot'] ?? []);
+        $previous_snapshot = is_array($previous_report['snapshot'] ?? null) ? (array) $previous_report['snapshot'] : [];
+        $signal_change = $this->build_team_strategist_delta_payload($current_snapshot, $previous_snapshot);
 
         return $this->sanitize_utf8_for_json([
             'period_key' => $period_key,
             'generated_at' => get_date(),
-            'team_snapshot' => $overview_payload['team_snapshot'] ?? [],
+            'team_snapshot' => $current_snapshot,
+            'change_from_last_report' => $signal_change,
             'executive_summary' => $overview_payload['executive_summary'] ?? [],
             'market_pulse' => [
                 'top_countries' => array_slice((array) ($overview_payload['team_analytics']['top_countries'] ?? []), 0, 5),
@@ -5940,6 +6125,8 @@ class AdminLeaderOperatingSystem extends Controller {
             'coaching' => [
                 'dashboard_totals' => $coaching_dashboard['totals'] ?? [],
                 'top_actions' => array_slice((array) ($coaching_dashboard['top_actions'] ?? []), 0, 5),
+                'top_reasons' => array_slice((array) ($coaching_dashboard['top_reasons'] ?? []), 0, 5),
+                'recent_activity_rows' => $this->get_team_strategist_recent_activity_rows((array) ($overview_payload['recent_coaching_rows'] ?? []), 5),
                 'coaching_roi' => $overview_payload['team_coaching_roi'] ?? [],
                 'top_priority_rows' => array_map(static function($row) {
                     return [
@@ -5951,6 +6138,12 @@ class AdminLeaderOperatingSystem extends Controller {
                         'anomaly_score' => (int) ($row['anomaly_score'] ?? 0),
                     ];
                 }, array_slice((array) ($overview_payload['queue_rows'] ?? []), 0, 8)),
+            ],
+            'message_targets' => [
+                'team_total' => (int) ($message_targets['team']['count'] ?? 0),
+                'risk_total' => (int) ($message_targets['risk']['count'] ?? 0),
+                'rising_total' => (int) ($message_targets['rising']['count'] ?? 0),
+                'priority_total' => (int) ($message_targets['priority']['count'] ?? 0),
             ],
             'support' => [
                 'totals' => $support_center['totals'] ?? [],
@@ -5993,11 +6186,12 @@ class AdminLeaderOperatingSystem extends Controller {
                     ];
                 }, array_slice((array) ($fraud_dashboard['top_risk_collaborators'] ?? []), 0, 6)),
             ],
+            'illustrative_cases' => $this->get_team_strategist_case_examples($overview_payload),
             'leaderboards' => [
-                'top_score' => array_slice((array) ($overview_payload['team_leaderboards']['top_score'] ?? []), 0, 5),
-                'top_opportunity' => array_slice((array) ($overview_payload['team_leaderboards']['top_opportunity'] ?? []), 0, 5),
-                'top_risk' => array_slice((array) ($overview_payload['team_leaderboards']['top_risk'] ?? []), 0, 5),
-                'top_consistency' => array_slice((array) ($overview_payload['team_leaderboards']['top_consistency'] ?? []), 0, 5),
+                'top_score' => array_slice((array) ($overview_payload['team_leaderboards']['top_by_score'] ?? []), 0, 5),
+                'top_opportunity' => array_slice((array) ($overview_payload['team_leaderboards']['top_by_opportunity'] ?? []), 0, 5),
+                'top_risk' => array_slice((array) ($overview_payload['team_leaderboards']['top_by_risk'] ?? []), 0, 5),
+                'top_consistency' => array_slice((array) ($overview_payload['team_leaderboards']['top_by_consistency'] ?? []), 0, 5),
             ],
         ]);
     }
@@ -6017,7 +6211,8 @@ class AdminLeaderOperatingSystem extends Controller {
             throw new \Exception('OpenAI API ključ nije postavljen u admin postavkama.');
         }
 
-        $ai_input = $this->build_team_strategist_ai_input($overview_payload, $period_key);
+        $previous_report = $this->get_cached_team_strategist_report($period_key);
+        $ai_input = $this->build_team_strategist_ai_input($overview_payload, $period_key, $previous_report);
 
         $response = \Unirest\Request::post(
             'https://api.openai.com/v1/chat/completions',
@@ -6039,12 +6234,18 @@ class AdminLeaderOperatingSystem extends Controller {
                         'role' => 'user',
                         'content' => implode("\n\n", [
                             'Analiziraj team snapshot iz FCC Leader Operating Systema i vrati konkretan tjedni strateški brief za admina/mentora.',
-                            'Vrati samo JSON sa sljedecim kljucevima: headline, subheadline, weekly_focus, recommended_webinar, strengths, weaknesses, next_actions, coaching_priorities, support_insights, kpis_to_watch, team_message_preview, risk_group_message_preview.',
+                            'Vrati samo JSON sa sljedecim kljucevima: headline, subheadline, weekly_focus, recommended_webinar, strengths, weaknesses, next_actions, coaching_priorities, support_insights, kpis_to_watch, main_risk, main_opportunity, open_first, avoid_this_week, team_message_preview, risk_group_message_preview.',
                             'weekly_focus mora imati kljuceve: title, reason, primary_kpi.',
                             'recommended_webinar mora imati kljuceve: title, why_now, agenda_points.',
                             'strengths, weaknesses, next_actions, coaching_priorities, support_insights, kpis_to_watch i recommended_webinar.agenda_points moraju biti polja kratkih konkretnih stringova.',
                             'Pravila:',
                             '- Zakljuci moraju biti strogo vezani uz dane podatke, ne genericki.',
+                            '- Uvijek uzmi u obzir change_from_last_report: sto se promijenilo od zadnjeg briefa i gdje je momentum ili pad.',
+                            '- Uvijek uzmi u obzir coaching.top_reasons, coaching.recent_activity_rows i illustrative_cases kako bi brief bio vezan uz stvarne ljude i stvarne razloge, a ne samo uz agregate.',
+                            '- main_risk neka bude jedna kratka, poslovno jasna recenica o najvecem trenutnom riziku za tim.',
+                            '- main_opportunity neka bude jedna kratka, poslovno jasna recenica o najvecem pomaku koji se sada moze dobiti.',
+                            '- open_first neka kaze kojeg tipa suradnika ili koju grupu mentor treba prvo otvoriti i zasto.',
+                            '- avoid_this_week neka kaze sto admin ovaj tjedan ne treba gurati jer bi rasprsilo fokus.',
                             '- Ako support teme ponavljaju istu nejasnocu, predlozi da to postane webinar, FAQ ili interna obavijest.',
                             '- Ako je glavni problem consistency, fokusiraj se na execution i tjedni ritam rada.',
                             '- Ako je glavni problem promet bez registracija, fokusiraj se na put od klika do prijave i follow-up.',
@@ -6155,6 +6356,7 @@ class AdminLeaderOperatingSystem extends Controller {
     private function get_team_strategist_payload(array $overview_payload): array {
         $period_key = (string) ($overview_payload['selected_period'] ?? '30d');
         $support_center = $overview_payload['support_center'] ?? [];
+        $current_snapshot = $this->get_team_snapshot_payload($overview_payload);
         $confirmed_webinar_total = (int) ($support_center['totals']['confirmed_webinar_total'] ?? 0);
         $confirmed_webinar_topic = trim((string) ($support_center['confirmed_webinar_tickets'][0]['subject'] ?? ''));
         if($confirmed_webinar_topic === '') {
@@ -6163,8 +6365,10 @@ class AdminLeaderOperatingSystem extends Controller {
         $cached_report = $this->get_cached_team_strategist_report($period_key);
 
         if($cached_report) {
+            $previous_snapshot = is_array($cached_report['snapshot'] ?? null) ? (array) $cached_report['snapshot'] : [];
             $cached_report['source'] = 'ai';
-            $cached_report['snapshot'] = $overview_payload['team_snapshot'] ?? ($cached_report['snapshot'] ?? []);
+            $cached_report['snapshot'] = $current_snapshot;
+            $cached_report['signal_change'] = $this->build_team_strategist_delta_payload($current_snapshot, $previous_snapshot);
 
             if($confirmed_webinar_total > 0 && $confirmed_webinar_topic !== '') {
                 $cached_report['weekly_focus']['title'] = 'Obraditi potvrđenu webinar temu iz podrške';
@@ -6177,10 +6381,16 @@ class AdminLeaderOperatingSystem extends Controller {
                 ))));
             }
 
+            $cached_report['main_risk'] = $cached_report['main_risk'] ?? 'Najveći rizik je da tim ima signal, ali bez dovoljno jasne izvedbe i follow-up discipline.';
+            $cached_report['main_opportunity'] = $cached_report['main_opportunity'] ?? 'Najveća prilika je pojačati ono gdje već postoji dokaz interesa i pretvoriti ga u prijavu ili kontakt.';
+            $cached_report['open_first'] = $cached_report['open_first'] ?? 'Prvo otvori suradnike iz coaching liste s najvećim prioritetom i rising signalom.';
+            $cached_report['avoid_this_week'] = $cached_report['avoid_this_week'] ?? 'Ovaj tjedan ne širi fokus na više paralelnih tema dok glavni blocker nije pod kontrolom.';
+            $cached_report['illustrative_cases'] = $this->get_team_strategist_case_examples($overview_payload);
+
             return $cached_report;
         }
 
-        $snapshot = $this->get_team_snapshot_payload($overview_payload);
+        $snapshot = $current_snapshot;
         $totals = $overview_payload['totals'] ?? [];
         $team_ai_habits = $overview_payload['team_ai_habits'] ?? [];
         $team_ai_actions = $overview_payload['team_ai_actions'] ?? [];
@@ -6263,8 +6473,14 @@ class AdminLeaderOperatingSystem extends Controller {
                 'Consistency score i broj zatvorenih AI ciklusa.',
                 'Broj otvorenih/stale support upita kroz tjedan.',
             ],
+            'main_risk' => 'Najveći rizik je da tim zadrži promet i interes, ali bez dovoljno jasnog puta do prijave i bez dosljednog follow-upa.',
+            'main_opportunity' => 'Najveća prilika je brzo pretvoriti postojeći interes u jasniji put prema prijavi, kontaktu i boljoj izvedbi.',
+            'open_first' => 'Prvo otvori risk grupu bez AI plana i suradnike koji imaju promet bez registracije ili funnel prijave.',
+            'avoid_this_week' => 'Ne uvodi više paralelnih tema i novih eksperimenata prije nego što se očisti glavni blocker u putu do rezultata.',
             'team_message_preview' => 'Ovaj tjedan fokus je na jednostavnijem putu do rezultata: manje raspršenosti, jasniji follow-up i jedna konkretna akcija koju svi mogu provesti odmah.',
             'risk_group_message_preview' => 'Ako imaš promet bez rezultata ili si zapela u executionu, ovaj tjedan ne širimo aktivnosti nego čistimo glavni blocker i put do prijave.',
+            'signal_change' => $this->build_team_strategist_delta_payload($snapshot, null),
+            'illustrative_cases' => $this->get_team_strategist_case_examples($overview_payload),
         ];
     }
 

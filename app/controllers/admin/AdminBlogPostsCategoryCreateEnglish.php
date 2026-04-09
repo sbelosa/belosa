@@ -49,7 +49,7 @@ class AdminBlogPostsCategoryCreateEnglish extends Controller {
         }
 
         $api_key = trim((string) (settings()->main->openai_api_key ?? settings()->aix->openai_api_key ?? ''));
-        $model = trim((string) (settings()->main->openai_model ?? 'gpt-4o'));
+        $model = fc_get_resolved_openai_model(settings()->main->openai_model ?? '');
 
         if($api_key === '') {
             Alerts::add_error(l('admin_ai.error_missing_api_key'));

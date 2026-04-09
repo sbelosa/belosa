@@ -24,6 +24,19 @@ function settings() {
     return \Altum\Settings::$settings;
 }
 
+function fc_get_resolved_openai_model($configured_model = null): string {
+    $model = trim((string) ($configured_model ?? (settings()->main->openai_model ?? '')));
+
+    if($model === '') {
+        return 'gpt-5.4';
+    }
+
+    return match($model) {
+        'gpt-5', 'gpt-5.1', 'gpt-5.2', 'gpt-5.2-chat-latest' => 'gpt-5.4',
+        default => $model,
+    };
+}
+
 function get_settings_custom_head_js($key = 'head_js') {
     $head_js = settings()->custom->{$key};
 

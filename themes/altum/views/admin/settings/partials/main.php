@@ -329,9 +329,10 @@
 
         <div class="form-group">
             <label for="openai_model"><i class="fas fa-fw fa-sm fa-robot text-muted mr-1"></i> <?= l('admin_settings.main.openai_model') ?></label>
+            <?php $current_openai_model = fc_get_resolved_openai_model(settings()->main->openai_model ?? ''); ?>
             <select id="openai_model" name="openai_model" class="custom-select">
-                <?php foreach(['gpt-5.2','gpt-5.1','gpt-5','gpt-5-mini','gpt-5-nano','gpt-4.1','gpt-4.1-mini'] as $model): ?>
-                    <option value="<?= $model ?>" <?= settings()->main->openai_model == $model ? 'selected="selected"' : null ?>><?= $model ?></option>
+                <?php foreach(['gpt-5.4','gpt-5.4-mini','gpt-5.4-nano','gpt-5.4-pro','gpt-5-mini','gpt-5-nano','gpt-4.1','gpt-4.1-mini'] as $model): ?>
+                    <option value="<?= $model ?>" <?= $current_openai_model == $model ? 'selected="selected"' : null ?>><?= $model ?></option>
                 <?php endforeach ?>
             </select>
         </div>

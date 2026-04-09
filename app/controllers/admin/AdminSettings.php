@@ -213,7 +213,7 @@ class AdminSettings extends Controller {
                 'favicon' => settings()->main->favicon ?? '',
                 'default_avatar' => settings()->main->default_avatar ?? '',
                 'openai_api_key' => $_POST['openai_api_key'],
-                'openai_model' => $_POST['openai_model'],
+                'openai_model' => fc_get_resolved_openai_model($_POST['openai_model'] ?? ''),
                 'force_https_is_enabled' => $_POST['force_https_is_enabled'],
                 'breadcrumbs_is_enabled' => isset($_POST['breadcrumbs_is_enabled']),
                 'display_pagination_when_no_pages' => isset($_POST['display_pagination_when_no_pages']),

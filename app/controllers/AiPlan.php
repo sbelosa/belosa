@@ -8760,11 +8760,11 @@ class AiPlan extends Controller {
         $personal_api_key = trim((string) ($this->user->preferences->openai_api_key ?? ''));
         $shared_api_key = trim((string) (settings()->aix->openai_api_key ?? settings()->main->openai_api_key ?? ''));
         $api_key = $this->user->plan_settings->exclusive_personal_api_keys ? $personal_api_key : $shared_api_key;
-        $model = trim((string) (settings()->main->openai_model ?? 'gpt-4o'));
+        $model = fc_get_resolved_openai_model(settings()->main->openai_model ?? '');
 
         return [
             'api_key' => $api_key,
-            'model' => $model !== '' ? $model : 'gpt-4o',
+            'model' => $model,
             'needs_personal_key' => (bool) $this->user->plan_settings->exclusive_personal_api_keys,
         ];
     }

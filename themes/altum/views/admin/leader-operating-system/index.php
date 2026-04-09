@@ -1215,6 +1215,35 @@
         background: linear-gradient(180deg, rgba(29, 43, 62, 0.9) 0%, rgba(18, 28, 41, 0.98) 100%);
     }
 
+    .leader-os-strategist-micro-label {
+        display: block;
+        margin-bottom: 0.38rem;
+        font-size: 0.72rem;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: rgba(191, 211, 238, 0.7);
+    }
+
+    .leader-os-strategist-micro-value {
+        color: #f8fbff;
+        font-weight: 700;
+        line-height: 1.45;
+    }
+
+    .leader-os-strategist-case-name {
+        display: block;
+        color: #f8fbff;
+        font-weight: 700;
+        margin-bottom: 0.3rem;
+    }
+
+    .leader-os-strategist-case-reason {
+        font-size: 0.8rem;
+        line-height: 1.45;
+        color: rgba(214, 227, 240, 0.76);
+    }
+
     .leader-os-support-ticket {
         padding: 0.9rem 1rem;
         border-radius: 0.95rem;
@@ -1874,13 +1903,20 @@
         gap: 1rem;
     }
 
+    .leader-os-grid-4 {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 1rem;
+    }
+
     @media (max-width: 1199.98px) {
         .leader-os-primary-grid {
             grid-template-columns: repeat(2, minmax(0, 1fr));
         }
 
         .leader-os-summary-signal-grid,
-        .leader-os-summary-detail-grid {
+        .leader-os-summary-detail-grid,
+        .leader-os-grid-4 {
             grid-template-columns: repeat(2, minmax(0, 1fr));
         }
 
@@ -2610,6 +2646,7 @@
 
         .leader-os-grid-2,
         .leader-os-grid-3,
+        .leader-os-grid-4,
         .leader-os-ops-grid,
         .leader-os-ops-meta {
             grid-template-columns: 1fr;
@@ -4479,6 +4516,49 @@ $operations_tab_badge_total = (int) (($data->operations['totals']['pending_appro
                     </div>
                 </div>
             </div>
+
+            <div class="leader-os-inline-note mt-3">
+                <strong>Što se promijenilo od zadnjeg briefinga:</strong>
+                <?= htmlspecialchars((string) ($data->overview['team_strategist']['signal_change']['summary'] ?? 'Još nema prethodnog strategist briefinga za usporedbu.'), ENT_QUOTES, 'UTF-8') ?>
+            </div>
+
+            <div class="leader-os-grid-4 mt-3">
+                <div class="leader-os-panel">
+                    <span class="leader-os-strategist-micro-label">Glavni rizik</span>
+                    <div class="leader-os-strategist-micro-value"><?= htmlspecialchars((string) ($data->overview['team_strategist']['main_risk'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></div>
+                </div>
+
+                <div class="leader-os-panel">
+                    <span class="leader-os-strategist-micro-label">Glavna prilika</span>
+                    <div class="leader-os-strategist-micro-value"><?= htmlspecialchars((string) ($data->overview['team_strategist']['main_opportunity'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></div>
+                </div>
+
+                <div class="leader-os-panel">
+                    <span class="leader-os-strategist-micro-label">Koga otvoriti prvo</span>
+                    <div class="leader-os-strategist-micro-value"><?= htmlspecialchars((string) ($data->overview['team_strategist']['open_first'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></div>
+                </div>
+
+                <div class="leader-os-panel">
+                    <span class="leader-os-strategist-micro-label">Ovaj tjedan ne guraj</span>
+                    <div class="leader-os-strategist-micro-value"><?= htmlspecialchars((string) ($data->overview['team_strategist']['avoid_this_week'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></div>
+                </div>
+            </div>
+
+            <?php if(!empty($data->overview['team_strategist']['illustrative_cases'])): ?>
+                <div class="leader-os-grid-4 mt-3">
+                    <?php foreach((array) ($data->overview['team_strategist']['illustrative_cases'] ?? []) as $case_item): ?>
+                        <div class="leader-os-panel">
+                            <span class="leader-os-strategist-micro-label"><?= htmlspecialchars((string) ($case_item['label'] ?? 'Primjer iz tima'), ENT_QUOTES, 'UTF-8') ?></span>
+                            <?php if(!empty($case_item['detail_url'])): ?>
+                                <a href="<?= htmlspecialchars((string) $case_item['detail_url'], ENT_QUOTES, 'UTF-8') ?>" class="leader-os-link leader-os-strategist-case-name"><?= htmlspecialchars((string) ($case_item['name'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></a>
+                            <?php else: ?>
+                                <span class="leader-os-strategist-case-name"><?= htmlspecialchars((string) ($case_item['name'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></span>
+                            <?php endif ?>
+                            <div class="leader-os-strategist-case-reason"><?= htmlspecialchars((string) ($case_item['reason'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></div>
+                        </div>
+                    <?php endforeach ?>
+                </div>
+            <?php endif ?>
 
             <div class="leader-os-grid-3 mt-3">
                 <div class="leader-os-panel">
