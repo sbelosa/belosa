@@ -1732,6 +1732,136 @@
         background: linear-gradient(90deg, rgba(56, 189, 248, 0.78) 0%, rgba(96, 165, 250, 0.92) 100%);
     }
 
+    .leader-os-compact-list {
+        display: grid;
+        gap: 0.7rem;
+    }
+
+    .leader-os-compact-list-row {
+        display: grid;
+        grid-template-columns: minmax(0, 180px) minmax(0, 1fr) 42px;
+        gap: 0.75rem;
+        align-items: center;
+    }
+
+    .leader-os-compact-list-label {
+        font-size: 0.82rem;
+        line-height: 1.35;
+        color: rgba(226, 232, 240, 0.92);
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .leader-os-compact-list-track {
+        position: relative;
+        height: 0.55rem;
+        border-radius: 999px;
+        background: rgba(30, 41, 59, 0.72);
+        overflow: hidden;
+    }
+
+    .leader-os-compact-list-fill {
+        position: absolute;
+        inset: 0 auto 0 0;
+        border-radius: 999px;
+        background: linear-gradient(90deg, rgba(45, 212, 191, 0.88) 0%, rgba(96, 165, 250, 0.88) 100%);
+    }
+
+    .leader-os-inline-stats {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0.75rem;
+    }
+
+    .leader-os-inline-stat {
+        border: 1px solid rgba(148, 163, 184, 0.14);
+        border-radius: 0.9rem;
+        padding: 0.85rem 0.9rem;
+        background: rgba(15, 23, 42, 0.38);
+    }
+
+    .leader-os-inline-stat-label {
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: rgba(191, 211, 238, 0.74);
+        margin-bottom: 0.25rem;
+    }
+
+    .leader-os-inline-stat-value {
+        font-size: 1.45rem;
+        font-weight: 700;
+        color: #f8fbff;
+    }
+
+    .leader-os-inline-stat-subtle {
+        font-size: 0.76rem;
+        color: rgba(191, 211, 238, 0.72);
+        margin-top: 0.2rem;
+    }
+
+    .leader-os-compact-actions {
+        display: grid;
+        gap: 0.6rem;
+    }
+
+    .leader-os-compact-action {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.75rem 0.85rem;
+        border: 1px solid rgba(148, 163, 184, 0.12);
+        border-radius: 0.9rem;
+        background: rgba(15, 23, 42, 0.34);
+    }
+
+    .leader-os-compact-action-label {
+        min-width: 0;
+        font-size: 0.82rem;
+        line-height: 1.35;
+        color: rgba(226, 232, 240, 0.92);
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .leader-os-compact-action-count {
+        flex-shrink: 0;
+        min-width: 2rem;
+        padding: 0.18rem 0.5rem;
+        border-radius: 999px;
+        text-align: center;
+        font-size: 0.76rem;
+        font-weight: 700;
+        color: #dbeafe;
+        background: rgba(59, 130, 246, 0.18);
+        border: 1px solid rgba(96, 165, 250, 0.22);
+    }
+
+    .leader-os-compact-person-list {
+        display: grid;
+        gap: 0.55rem;
+    }
+
+    .leader-os-compact-person {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.7rem 0.8rem;
+        border: 1px solid rgba(148, 163, 184, 0.12);
+        border-radius: 0.85rem;
+        background: rgba(15, 23, 42, 0.26);
+    }
+
+    .leader-os-compact-person strong {
+        color: #f8fbff;
+    }
+
     .leader-os-grid-2 {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1760,6 +1890,10 @@
 
         .leader-os-trend-summary {
             grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .leader-os-inline-stats {
+            grid-template-columns: 1fr;
         }
     }
 
@@ -2576,6 +2710,27 @@ $render_mini_chart = static function(array $items, int $max_total = 0, string $v
             <div class="leader-os-mini-chart-row">
                 <div class="leader-os-mini-chart-label"><?= htmlspecialchars((string) ($item['label'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
                 <div class="leader-os-mini-chart-track"><span class="leader-os-mini-chart-fill" style="width: <?= htmlspecialchars((string) $width, ENT_QUOTES, 'UTF-8') ?>%"></span></div>
+                <div class="leader-os-mini-chart-value text-right"><?= nr($value) ?></div>
+            </div>
+        <?php endforeach ?>
+    </div>
+    <?php
+    return ob_get_clean();
+};
+
+$render_compact_metric_list = static function(array $items, int $limit = 4, string $value_key = 'total') {
+    $items = array_slice($items, 0, $limit);
+    $fallback_max = !empty($items) ? max(array_map(static fn($item) => (int) ($item[$value_key] ?? 0), $items)) : 0;
+    $max_total = max(1, $fallback_max);
+    ob_start();
+    ?>
+    <div class="leader-os-compact-list">
+        <?php foreach($items as $item): ?>
+            <?php $value = (int) ($item[$value_key] ?? 0); ?>
+            <?php $width = min(100, round(($value / $max_total) * 100, 1)); ?>
+            <div class="leader-os-compact-list-row">
+                <div class="leader-os-compact-list-label"><?= htmlspecialchars((string) ($item['label'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                <div class="leader-os-compact-list-track"><span class="leader-os-compact-list-fill" style="width: <?= htmlspecialchars((string) $width, ENT_QUOTES, 'UTF-8') ?>%"></span></div>
                 <div class="leader-os-mini-chart-value text-right"><?= nr($value) ?></div>
             </div>
         <?php endforeach ?>
@@ -4431,43 +4586,90 @@ $operations_tab_badge_total = (int) (($data->operations['totals']['pending_appro
         <div class="leader-os-grid-2">
             <div class="leader-os-panel">
                 <div class="text-uppercase small text-muted mb-2">Zašto coaching sada</div>
-                <h3 class="h5 mb-3">Glavni razlozi zbog kojih ljudi ulaze u coaching listu</h3>
-                <?= $render_mini_chart(($data->overview['coaching_dashboard']['top_reasons'] ?? []), 0) ?>
+                <h3 class="h5 mb-2">Glavni razlozi ulaska u coaching listu</h3>
+                <div class="text-muted small mb-3">Najčešći okidači zbog kojih suradnik traži mentor fokus ili operativni follow-up.</div>
+                <?php if(empty($data->overview['coaching_dashboard']['top_reasons'])): ?>
+                    <div class="leader-os-inline-note mb-0">Trenutno nema dovoljno coaching signala za izdvajanje glavnih razloga.</div>
+                <?php else: ?>
+                    <?= $render_compact_metric_list(($data->overview['coaching_dashboard']['top_reasons'] ?? []), 4) ?>
+                <?php endif ?>
 
                 <div class="mt-3 pt-3 border-top border-dark">
                     <div class="text-muted small mb-2">Najčešći sljedeći koraci</div>
-                    <?= $render_mini_chart(($data->overview['coaching_dashboard']['top_actions'] ?? []), 0) ?>
+                    <?php if(empty($data->overview['coaching_dashboard']['top_actions'])): ?>
+                        <div class="leader-os-inline-note mb-0">Još nema dovoljno upisanih sljedećih koraka da bi se izdvojio obrazac.</div>
+                    <?php else: ?>
+                        <div class="leader-os-compact-actions">
+                            <?php foreach(array_slice((array) ($data->overview['coaching_dashboard']['top_actions'] ?? []), 0, 3) as $action_item): ?>
+                                <div class="leader-os-compact-action">
+                                    <div class="leader-os-compact-action-label"><?= htmlspecialchars((string) ($action_item['label'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                                    <div class="leader-os-compact-action-count"><?= nr((int) ($action_item['total'] ?? 0)) ?></div>
+                                </div>
+                            <?php endforeach ?>
+                        </div>
+                    <?php endif ?>
                 </div>
             </div>
 
             <div class="leader-os-panel">
                 <div class="text-uppercase small text-muted mb-2">Učinak coachinga</div>
-                <h3 class="h5 mb-3">Vidi li se pomak nakon mentorske intervencije</h3>
-                <div class="text-muted small mb-2">Dodirnuti coachingom: <strong class="text-white"><?= nr((int) ($data->overview['team_coaching_roi']['touched_total'] ?? 0)) ?></strong></div>
-                <div class="text-muted small mb-2">Pozitivan signal nakon touch-a: <strong class="text-white"><?= nr((int) ($data->overview['team_coaching_roi']['positive_signal_total'] ?? 0)) ?></strong> · <strong class="text-white"><?= nr((float) ($data->overview['team_coaching_roi']['positive_rate_percent'] ?? 0)) ?>%</strong></div>
-                <div class="text-muted small">I dalje u riziku nakon touch-a: <strong class="text-white"><?= nr((int) ($data->overview['team_coaching_roi']['risk_after_touch_total'] ?? 0)) ?></strong> · <strong class="text-white"><?= nr((float) ($data->overview['team_coaching_roi']['risk_after_touch_rate_percent'] ?? 0)) ?>%</strong></div>
+                <h3 class="h5 mb-2">Vidi li se pomak nakon mentorske intervencije</h3>
+                <div class="text-muted small mb-3">Brzi pregled koliko coaching dodir vodi prema pozitivnom signalu, a koliko slučajeva ostaje osjetljivo.</div>
 
-                <?php if(!empty($data->overview['team_coaching_roi']['top_positive'])): ?>
-                    <div class="mt-3">
-                        <div class="text-muted small mb-2">Najbolji pomak nakon coachinga</div>
-                        <?php foreach(($data->overview['team_coaching_roi']['top_positive'] ?? []) as $item): ?>
-                            <div class="d-flex justify-content-between align-items-center py-1">
-                                <a href="<?= $item['detail_url'] ?>" class="leader-os-link"><?= htmlspecialchars((string) ($item['name'] ?? ''), ENT_QUOTES, 'UTF-8') ?></a>
-                                <strong><?= ($item['growth_percent'] === null ? '-' : (($item['growth_percent'] > 0 ? '+' : '') . nr((float) $item['growth_percent']) . '%')) ?></strong>
-                            </div>
-                        <?php endforeach ?>
+                <div class="leader-os-inline-stats">
+                    <div class="leader-os-inline-stat">
+                        <div class="leader-os-inline-stat-label">Dodirnuti coachingom</div>
+                        <div class="leader-os-inline-stat-value"><?= nr((int) ($data->overview['team_coaching_roi']['touched_total'] ?? 0)) ?></div>
+                        <div class="leader-os-inline-stat-subtle">Ljudi koji su imali mentorski touch u promatranom prozoru.</div>
                     </div>
-                <?php endif ?>
 
-                <?php if(!empty($data->overview['team_coaching_roi']['top_risk_after_touch'])): ?>
-                    <div class="mt-3 pt-3 border-top border-dark">
-                        <div class="text-muted small mb-2">I dalje rizični nakon coachinga</div>
-                        <?php foreach(($data->overview['team_coaching_roi']['top_risk_after_touch'] ?? []) as $item): ?>
-                            <div class="d-flex justify-content-between align-items-center py-1">
-                                <a href="<?= $item['detail_url'] ?>" class="leader-os-link"><?= htmlspecialchars((string) ($item['name'] ?? ''), ENT_QUOTES, 'UTF-8') ?></a>
-                                <strong>Risk <?= nr((int) ($item['risk_score'] ?? 0)) ?></strong>
-                            </div>
-                        <?php endforeach ?>
+                    <div class="leader-os-inline-stat">
+                        <div class="leader-os-inline-stat-label">Pozitivan signal</div>
+                        <div class="leader-os-inline-stat-value"><?= nr((float) ($data->overview['team_coaching_roi']['positive_rate_percent'] ?? 0)) ?>%</div>
+                        <div class="leader-os-inline-stat-subtle"><?= nr((int) ($data->overview['team_coaching_roi']['positive_signal_total'] ?? 0)) ?> suradnika pokazuje rast ili zdrav signal nakon toucha.</div>
+                    </div>
+
+                    <div class="leader-os-inline-stat">
+                        <div class="leader-os-inline-stat-label">I dalje u riziku</div>
+                        <div class="leader-os-inline-stat-value"><?= nr((float) ($data->overview['team_coaching_roi']['risk_after_touch_rate_percent'] ?? 0)) ?>%</div>
+                        <div class="leader-os-inline-stat-subtle"><?= nr((int) ($data->overview['team_coaching_roi']['risk_after_touch_total'] ?? 0)) ?> suradnika i dalje traži pažnju nakon coachinga.</div>
+                    </div>
+                </div>
+
+                <?php $has_roi_lists = !empty($data->overview['team_coaching_roi']['top_positive']) || !empty($data->overview['team_coaching_roi']['top_risk_after_touch']); ?>
+                <?php if($has_roi_lists): ?>
+                    <div class="leader-os-grid-2 mt-3">
+                        <div>
+                            <div class="text-muted small mb-2">Najbolji pomak</div>
+                            <?php if(empty($data->overview['team_coaching_roi']['top_positive'])): ?>
+                                <div class="leader-os-inline-note mb-0">Još nema izdvojenih pomaka za ovaj period.</div>
+                            <?php else: ?>
+                                <div class="leader-os-compact-person-list">
+                                    <?php foreach(array_slice((array) ($data->overview['team_coaching_roi']['top_positive'] ?? []), 0, 2) as $item): ?>
+                                        <div class="leader-os-compact-person">
+                                            <a href="<?= $item['detail_url'] ?>" class="leader-os-link"><?= htmlspecialchars((string) ($item['name'] ?? ''), ENT_QUOTES, 'UTF-8') ?></a>
+                                            <strong><?= ($item['growth_percent'] === null ? '-' : (($item['growth_percent'] > 0 ? '+' : '') . nr((float) $item['growth_percent']) . '%')) ?></strong>
+                                        </div>
+                                    <?php endforeach ?>
+                                </div>
+                            <?php endif ?>
+                        </div>
+
+                        <div>
+                            <div class="text-muted small mb-2">I dalje osjetljivi</div>
+                            <?php if(empty($data->overview['team_coaching_roi']['top_risk_after_touch'])): ?>
+                                <div class="leader-os-inline-note mb-0">Nema izdvojenih rizičnih slučajeva nakon coachinga u ovom periodu.</div>
+                            <?php else: ?>
+                                <div class="leader-os-compact-person-list">
+                                    <?php foreach(array_slice((array) ($data->overview['team_coaching_roi']['top_risk_after_touch'] ?? []), 0, 2) as $item): ?>
+                                        <div class="leader-os-compact-person">
+                                            <a href="<?= $item['detail_url'] ?>" class="leader-os-link"><?= htmlspecialchars((string) ($item['name'] ?? ''), ENT_QUOTES, 'UTF-8') ?></a>
+                                            <strong>Risk <?= nr((int) ($item['risk_score'] ?? 0)) ?></strong>
+                                        </div>
+                                    <?php endforeach ?>
+                                </div>
+                            <?php endif ?>
+                        </div>
                     </div>
                 <?php endif ?>
             </div>

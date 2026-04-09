@@ -5146,10 +5146,8 @@ class AdminLeaderOperatingSystem extends Controller {
                 $this->increment_count_bucket($action_buckets, (string) $row['latest_mentor_event_summary']);
             }
 
-            if(!empty($row['combined_priority_reason'])) {
-                $this->increment_count_bucket($reason_buckets, (string) $row['combined_priority_reason']);
-            } elseif(!empty($row['queue_reason'])) {
-                $this->increment_count_bucket($reason_buckets, (string) $row['queue_reason']);
+            foreach($this->get_coaching_reason_labels_from_row($row) as $reason_label) {
+                $this->increment_count_bucket($reason_buckets, $reason_label);
             }
         }
 
@@ -5157,6 +5155,38 @@ class AdminLeaderOperatingSystem extends Controller {
         $payload['top_reasons'] = $this->sort_count_buckets($reason_buckets, 6);
 
         return $payload;
+    }
+
+    private function get_coaching_reason_labels_from_row(array $row): array {
+        $labels = [];
+
+        if(!empty($row['needs_follow_up']) && (($row['days_since_last_contact'] ?? null) === null || (int) ($row['days_since_last_contact'] ?? 0) >= 7)) {
+            $labels[] = 'Kasni follow-up';
+        } elseif(!empty($row['needs_follow_up'])) {
+            $labels[] = 'Treba follow-up';
+        } elseif(empty($row['has_profile'])) {
+            $labels[] = 'Čeka AI profil';
+        } elseif(empty($row['has_checkin'])) {
+            $labels[] = 'Čeka check-in';
+        } elseif(((int) ($row['risk_score'] ?? 0) >= 55) || (string) ($row['status_key'] ?? '') === 'risk') {
+            $labels[] = 'Risk signal';
+        } elseif((int) ($row['anomaly_score'] ?? 0) >= 55) {
+            $labels[] = 'Jak anomaly signal';
+        } elseif((int) ($row['anomaly_score'] ?? 0) >= 25) {
+            $labels[] = 'Anomaly watch';
+        } elseif(empty($row['mentored_this_week']) && (int) ($row['leader_os_score'] ?? 0) < 55) {
+            $labels[] = 'Bez recent mentor toucha';
+        } elseif((string) ($row['mentor_status'] ?? '') === 'in_progress') {
+            $labels[] = 'Aktivni coaching';
+        }
+
+        if((int) ($row['blocked_attempts_total'] ?? 0) >= 5) {
+            $labels[] = 'Fraud high signal';
+        } elseif((int) ($row['blocked_attempts_total'] ?? 0) > 0) {
+            $labels[] = 'Fraud watch signal';
+        }
+
+        return array_values(array_unique(array_filter($labels)));
     }
 
     private function has_feedback_tables(): bool {
