@@ -1259,6 +1259,7 @@ return [
 	'fcc_results.you.shop_clicks' => 'Kvalificirani klikovi',
 	'fcc_results.you.app_clicks' => 'FCC aplikacije',
 	'fcc_results.you.blog_clicks' => 'Blog -> Forever',
+	'fcc_results.you.funnel_contacts' => 'Funnel kontakti',
 		'fcc_results.you.ctr' => 'Stopa klika',
 	'fcc_results.you.to_qualification' => 'Do kvalifikacije',
 	'fcc_results.you.to_next_rank' => 'Do sljedeće pozicije',

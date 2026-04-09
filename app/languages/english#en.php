@@ -1528,6 +1528,7 @@ return [
 	'fcc_results.you.shop_clicks' => 'Qualified clicks',
 	'fcc_results.you.app_clicks' => 'FCC apps',
 	'fcc_results.you.blog_clicks' => 'Blog -> Forever',
+	'fcc_results.you.funnel_contacts' => 'Funnel contacts',
 		'fcc_results.you.ctr' => 'Click rate',
 	'fcc_results.you.to_qualification' => 'To qualification',
 	'fcc_results.you.to_next_rank' => 'To next rank',

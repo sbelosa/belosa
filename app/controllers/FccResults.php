@@ -48,6 +48,21 @@ class FccResults extends Controller {
         return $map;
     }
 
+    private function get_funnel_contacts_map(string $period_start_datetime): array {
+        $map = [];
+        $result = database()->query("SELECT `user_id`, COUNT(*) AS `total`
+            FROM `data`
+            WHERE `type` = 'lead_funnel'
+              AND `datetime` >= '{$period_start_datetime}'
+            GROUP BY `user_id`");
+
+        while($row = $result->fetch_object()) {
+            $map[(int) $row->user_id] = (int) ($row->total ?? 0);
+        }
+
+        return $map;
+    }
+
     /* Custom code: FC-2026-03-14: FCC results page and qualification metrics */
     private function is_active_pro_user(): bool {
         if(\Altum\Authentication::is_admin()) {
@@ -129,6 +144,7 @@ class FccResults extends Controller {
             $period_start_datetime = $this->get_period_start_datetime($period_days);
             $period_previous_start_datetime = $this->get_previous_period_start_datetime($period_days);
             $visitor_conversion_map = $this->get_visitor_conversion_map($period_start_datetime, $qualified_click_condition_sql);
+            $funnel_contacts_map = $this->get_funnel_contacts_map($period_start_datetime);
 
             $previous_clicks_map = [];
             $previous_clicks_result = database()->query("SELECT `track_links`.`user_id`, COUNT(*) AS `total` FROM `track_links` LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id` WHERE `track_links`.`datetime` >= '{$period_previous_start_datetime}' AND `track_links`.`datetime` < '{$period_start_datetime}' AND `track_links`.`is_unique` = 1 AND {$qualified_click_condition_sql} GROUP BY `track_links`.`user_id`");
@@ -157,6 +173,7 @@ class FccResults extends Controller {
                 $qualified_clicks = (int) ($leaderboard_row->qualified_clicks ?? 0);
                 $app_clicks = (int) ($leaderboard_row->app_clicks ?? 0);
                 $blog_clicks = (int) ($leaderboard_row->blog_clicks ?? 0);
+                $funnel_contacts = (int) ($funnel_contacts_map[$user_id] ?? 0);
                 $biolink_visits = (int) ($leaderboard_row->biolink_visits ?? 0);
                 $biolink_visitors = (int) ($visitor_conversion_map[$user_id]['biolink_visitors'] ?? 0);
                 $qualified_visitors = (int) ($visitor_conversion_map[$user_id]['qualified_visitors'] ?? 0);
@@ -170,6 +187,7 @@ class FccResults extends Controller {
                     'qualified_clicks' => $qualified_clicks,
                     'app_clicks' => $app_clicks,
                     'blog_clicks' => $blog_clicks,
+                    'funnel_contacts' => $funnel_contacts,
                     'biolink_visits' => $biolink_visits,
                     'biolink_visitors' => $biolink_visitors,
                     'qualified_visitors' => $qualified_visitors,
@@ -198,6 +216,7 @@ class FccResults extends Controller {
             $current_user_qualified_clicks = (int) ($current_user_totals->qualified_clicks ?? 0);
             $current_user_app_clicks = (int) ($current_user_totals->app_clicks ?? 0);
             $current_user_blog_clicks = (int) ($current_user_totals->blog_clicks ?? 0);
+            $current_user_funnel_contacts = (int) ($funnel_contacts_map[$this->user->user_id] ?? 0);
             $current_user_biolink_visits = (int) ($current_user_totals->biolink_visits ?? 0);
             $current_user_biolink_visitors = (int) ($visitor_conversion_map[$this->user->user_id]['biolink_visitors'] ?? 0);
             $current_user_qualified_visitors = (int) ($visitor_conversion_map[$this->user->user_id]['qualified_visitors'] ?? 0);
@@ -212,6 +231,7 @@ class FccResults extends Controller {
                     'qualified_clicks' => $current_user_qualified_clicks,
                     'app_clicks' => $current_user_app_clicks,
                     'blog_clicks' => $current_user_blog_clicks,
+                    'funnel_contacts' => $current_user_funnel_contacts,
                     'biolink_visits' => $current_user_biolink_visits,
                     'biolink_visitors' => $current_user_biolink_visitors,
                     'qualified_visitors' => $current_user_qualified_visitors,

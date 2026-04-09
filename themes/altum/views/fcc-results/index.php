@@ -487,6 +487,10 @@
                             <strong><?= nr($current_user_data['blog_clicks']) ?></strong>
                         </div>
                         <div class="fcc-stat-row">
+                            <span><?= l('fcc_results.you.funnel_contacts') ?></span>
+                            <strong><?= nr($current_user_data['funnel_contacts'] ?? 0) ?></strong>
+                        </div>
+                        <div class="fcc-stat-row">
                             <span>
                                 <?= l('fcc_results.you.ctr') ?>
                                 <span data-toggle="tooltip" title="<?= l('fcc_results.metrics_info.ctr') ?>"><i class="fas fa-info-circle fcc-help-icon"></i></span>
