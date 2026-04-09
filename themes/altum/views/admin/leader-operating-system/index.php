@@ -1904,6 +1904,62 @@
         line-height: 1;
     }
 
+    .leader-os-trend-summary-note {
+        margin-top: 0.45rem;
+        color: rgba(205, 221, 241, 0.68);
+        font-size: 0.78rem;
+        line-height: 1.4;
+    }
+
+    .leader-os-trend-insights {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 0.85rem;
+        margin-bottom: 1rem;
+    }
+
+    .leader-os-trend-insight-card {
+        border-radius: 1rem;
+        border: 1px solid rgba(148, 163, 184, 0.12);
+        background: linear-gradient(180deg, rgba(16, 25, 38, 0.82) 0%, rgba(9, 16, 27, 0.92) 100%);
+        padding: 0.95rem 1rem;
+    }
+
+    .leader-os-trend-insight-card.is-clickable {
+        cursor: pointer;
+        transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+    }
+
+    .leader-os-trend-insight-card.is-clickable:hover,
+    .leader-os-trend-insight-card.is-clickable:focus {
+        outline: none;
+        transform: translateY(-1px);
+        border-color: rgba(129, 197, 255, 0.28);
+        box-shadow: 0 0.9rem 1.8rem rgba(2, 6, 23, 0.16);
+    }
+
+    .leader-os-trend-insight-label {
+        color: rgba(200, 215, 233, 0.72);
+        font-size: 0.74rem;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        margin-bottom: 0.45rem;
+    }
+
+    .leader-os-trend-insight-value {
+        color: #f7fbff;
+        font-size: 1.3rem;
+        font-weight: 800;
+        line-height: 1.05;
+    }
+
+    .leader-os-trend-insight-note {
+        margin-top: 0.45rem;
+        color: rgba(205, 221, 241, 0.68);
+        font-size: 0.78rem;
+        line-height: 1.45;
+    }
+
     .leader-os-trend-chart-wrap {
         border-radius: 1.05rem;
         border: 1px solid rgba(148, 163, 184, 0.12);
@@ -1976,8 +2032,29 @@
     }
 
     .leader-os-status-chart-row {
+        border-radius: 1rem;
+        border: 1px solid rgba(148, 163, 184, 0.1);
+        background: linear-gradient(180deg, rgba(17, 26, 39, 0.72) 0%, rgba(11, 18, 29, 0.86) 100%);
+        padding: 0.75rem 0.85rem;
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.03);
+    }
+
+    .leader-os-status-chart-row.is-clickable {
+        cursor: pointer;
+        transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+    }
+
+    .leader-os-status-chart-row.is-clickable:hover,
+    .leader-os-status-chart-row.is-clickable:focus {
+        outline: none;
+        transform: translateY(-1px);
+        border-color: rgba(129, 197, 255, 0.28);
+        box-shadow: 0 0.9rem 1.8rem rgba(2, 6, 23, 0.16);
+    }
+
+    .leader-os-status-chart-main {
         display: grid;
-        grid-template-columns: 120px minmax(0, 1fr) 48px;
+        grid-template-columns: 120px minmax(0, 1fr) 88px;
         gap: 0.8rem;
         align-items: center;
     }
@@ -2016,10 +2093,66 @@
         text-align: right;
     }
 
+    .leader-os-status-chart-desc {
+        margin-top: 0.45rem;
+        color: rgba(205, 221, 241, 0.68);
+        font-size: 0.78rem;
+        line-height: 1.45;
+    }
+
     .leader-os-status-chart-note {
         margin-top: 0.95rem;
         color: rgba(205, 221, 241, 0.7);
         font-size: 0.8rem;
+    }
+
+    .leader-os-status-insights {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.8rem;
+        margin-top: 1rem;
+    }
+
+    .leader-os-status-insight-card {
+        border-radius: 1rem;
+        border: 1px solid rgba(148, 163, 184, 0.1);
+        background: linear-gradient(180deg, rgba(17, 26, 39, 0.72) 0%, rgba(11, 18, 29, 0.86) 100%);
+        padding: 0.9rem 1rem;
+    }
+
+    .leader-os-status-insight-card.is-clickable {
+        cursor: pointer;
+        transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+    }
+
+    .leader-os-status-insight-card.is-clickable:hover,
+    .leader-os-status-insight-card.is-clickable:focus {
+        outline: none;
+        transform: translateY(-1px);
+        border-color: rgba(129, 197, 255, 0.28);
+        box-shadow: 0 0.9rem 1.8rem rgba(2, 6, 23, 0.16);
+    }
+
+    .leader-os-status-insight-label {
+        color: rgba(200, 215, 233, 0.72);
+        font-size: 0.74rem;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        margin-bottom: 0.35rem;
+    }
+
+    .leader-os-status-insight-value {
+        color: #f7fbff;
+        font-size: 1.24rem;
+        font-weight: 800;
+        line-height: 1.05;
+    }
+
+    .leader-os-status-insight-note {
+        margin-top: 0.45rem;
+        color: rgba(205, 221, 241, 0.68);
+        font-size: 0.78rem;
+        line-height: 1.45;
     }
 
     .leader-os-overview-chart-wrap {
@@ -2132,45 +2265,6 @@
         text-align: center;
         color: rgba(191, 211, 238, 0.72);
         font-size: 0.9rem;
-    }
-
-    .leader-os-status-graph-wrap {
-        margin-top: 1rem;
-        border-top: 1px solid rgba(148, 163, 184, 0.12);
-        padding-top: 1rem;
-        border-radius: 1rem;
-        background: linear-gradient(180deg, rgba(18, 28, 41, 0.54) 0%, rgba(12, 20, 31, 0.18) 100%);
-    }
-
-    .leader-os-status-graph {
-        width: 100%;
-        height: auto;
-        display: block;
-    }
-
-    .leader-os-status-graph-axis {
-        fill: rgba(221, 233, 247, 0.78);
-        font-size: 12px;
-        font-family: inherit;
-    }
-
-    .leader-os-status-graph-value {
-        fill: #eff8ff;
-        font-size: 13px;
-        font-weight: 700;
-        font-family: inherit;
-    }
-
-    .leader-os-status-graph-label {
-        fill: rgba(221, 233, 247, 0.82);
-        font-size: 12px;
-        font-weight: 600;
-        font-family: inherit;
-    }
-
-    .leader-os-status-graph-grid {
-        stroke: rgba(148, 163, 184, 0.12);
-        stroke-width: 1;
     }
 
     .leader-os-heatmap {
@@ -3202,46 +3296,64 @@ $operations_tab_badge_total = (int) (($data->operations['totals']['pending_appro
         <?php if(($data->selected_tab ?? 'overview') === 'overview'): ?>
             <div class="row mt-2">
                 <div class="col-12 col-xl-8 mb-3">
-                    <div class="leader-os-panel leader-os-trend-panel">
-                        <div class="text-uppercase small text-muted mb-2">Trend tima</div>
+                    <div class="leader-os-panel leader-os-trend-panel" id="leader-os-team-trend-root" data-trend='<?= htmlspecialchars(json_encode(($data->overview['team_trend']['rows'] ?? []), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES), ENT_QUOTES, 'UTF-8') ?>'>
+                        <div class="text-uppercase small text-muted mb-2">Promet i rezultat tima</div>
                         <div class="leader-os-trend-toolbar">
-                            <h3 class="h5 mb-0">Klikovi, registracije, leadovi i blog -> Forever</h3>
+                            <h3 class="h5 mb-0">Promet prema Foreveru i stvarni rezultat</h3>
                             <div class="leader-os-trend-periods" id="leader-os-team-trend-periods">
                                 <button type="button" class="leader-os-trend-period is-active" data-days="7">7 dana</button>
                                 <button type="button" class="leader-os-trend-period" data-days="30">30 dana</button>
                                 <button type="button" class="leader-os-trend-period" data-days="90">90 dana</button>
                             </div>
                         </div>
-                        <div class="leader-os-trend-legend mb-3">
-                            <span class="leader-os-trend-legend-item"><span class="leader-os-trend-dot is-clicks"></span> Klikovi</span>
-                            <span class="leader-os-trend-legend-item"><span class="leader-os-trend-dot is-registrations"></span> Registracije</span>
-                            <span class="leader-os-trend-legend-item"><span class="leader-os-trend-dot is-leads"></span> Leadovi</span>
-                            <span class="leader-os-trend-legend-item"><span class="leader-os-trend-dot is-blog"></span> Blog -> Forever</span>
-                        </div>
+                        <div class="text-muted small mb-3">Ovdje vidiš koliko tim stvara prometa prema Foreveru, koliko ga pretvara u registracije i leadove te koliko je ljudi stvarno iza tog signala.</div>
                         <div class="leader-os-trend-summary" id="leader-os-team-trend-summary">
-                            <div class="leader-os-trend-summary-card">
-                                <div class="leader-os-trend-summary-label">Klikovi</div>
+                            <div class="leader-os-trend-summary-card is-clickable" role="button" tabindex="0" data-toggle="modal" data-target="#leader_os_drilldown_modal" data-trend-summary-card="clicks">
+                                <div class="leader-os-trend-summary-label">Klikovi prema Foreveru</div>
                                 <div class="leader-os-trend-summary-value" data-trend-total="clicks">0</div>
+                                <div class="leader-os-trend-summary-note" data-trend-meta="clicks">Klikni za popis suradnika.</div>
                             </div>
-                            <div class="leader-os-trend-summary-card">
+                            <div class="leader-os-trend-summary-card is-clickable" role="button" tabindex="0" data-toggle="modal" data-target="#leader_os_drilldown_modal" data-trend-summary-card="registrations">
                                 <div class="leader-os-trend-summary-label">Registracije</div>
                                 <div class="leader-os-trend-summary-value" data-trend-total="registrations">0</div>
+                                <div class="leader-os-trend-summary-note" data-trend-meta="registrations">Klikni za popis suradnika.</div>
                             </div>
                             <div class="leader-os-trend-summary-card is-clickable" role="button" tabindex="0" data-toggle="modal" data-target="#leader_os_drilldown_modal" data-trend-summary-card="leads">
-                                <div class="leader-os-trend-summary-label">Leadovi</div>
+                                <div class="leader-os-trend-summary-label">Funnel leadovi</div>
                                 <div class="leader-os-trend-summary-value" data-trend-total="leads">0</div>
+                                <div class="leader-os-trend-summary-note" data-trend-meta="leads">Klikni za popis suradnika.</div>
                             </div>
                             <div class="leader-os-trend-summary-card is-clickable" role="button" tabindex="0" data-toggle="modal" data-target="#leader_os_drilldown_modal" data-trend-summary-card="blog_forever">
                                 <div class="leader-os-trend-summary-label">Blog -> Forever</div>
                                 <div class="leader-os-trend-summary-value" data-trend-total="blog_forever">0</div>
+                                <div class="leader-os-trend-summary-note" data-trend-meta="blog_forever">Klikni za popis suradnika.</div>
                             </div>
                         </div>
-                        <div class="leader-os-trend-chart-wrap">
-                            <svg id="leader-os-team-trend-chart" class="leader-os-trend-chart" viewBox="0 0 920 300" role="img" aria-label="Trend tima kroz vrijeme" data-trend='<?= htmlspecialchars(json_encode(($data->overview['team_trend']['rows'] ?? []), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES), ENT_QUOTES, 'UTF-8') ?>'></svg>
-                            <div class="leader-os-trend-footer">
-                                <div class="leader-os-trend-note" id="leader-os-team-trend-note">Pregled zadnjih 7 dana.</div>
-                                <div class="leader-os-trend-note text-right" id="leader-os-team-trend-range"></div>
+                        <div class="leader-os-trend-insights" id="leader-os-team-trend-insights">
+                            <div class="leader-os-trend-insight-card is-clickable" role="button" tabindex="0" data-toggle="modal" data-target="#leader_os_drilldown_modal" data-trend-insight-card="clicks_contributors">
+                                <div class="leader-os-trend-insight-label">Suradnici s klikovima</div>
+                                <div class="leader-os-trend-insight-value" data-trend-insight-value="clicks_contributors">0</div>
+                                <div class="leader-os-trend-insight-note" data-trend-insight-note="clicks_contributors">Koliko ljudi je stvarno dovelo promet prema Foreveru.</div>
                             </div>
+                            <div class="leader-os-trend-insight-card is-clickable" role="button" tabindex="0" data-toggle="modal" data-target="#leader_os_drilldown_modal" data-trend-insight-card="registrations_contributors">
+                                <div class="leader-os-trend-insight-label">Suradnici s registracijama</div>
+                                <div class="leader-os-trend-insight-value" data-trend-insight-value="registrations_contributors">0</div>
+                                <div class="leader-os-trend-insight-note" data-trend-insight-note="registrations_contributors">Koliko ljudi je otvorilo stvarni registracijski signal.</div>
+                            </div>
+                            <div class="leader-os-trend-insight-card">
+                                <div class="leader-os-trend-insight-label">Stopa registracije</div>
+                                <div class="leader-os-trend-insight-value" data-trend-insight-value="registration_rate">0%</div>
+                                <div class="leader-os-trend-insight-note" data-trend-insight-note="registration_rate">Koliki dio klikova se pretvara u registracije.</div>
+                            </div>
+                            <div class="leader-os-trend-insight-card">
+                                <div class="leader-os-trend-insight-label">Najjači dan</div>
+                                <div class="leader-os-trend-insight-value" data-trend-insight-value="best_day">-</div>
+                                <div class="leader-os-trend-insight-note" data-trend-insight-note="best_day">Dan s najjačim ukupnim signalom u odabranom periodu.</div>
+                            </div>
+                        </div>
+                        <div class="leader-os-trend-footer">
+                            <div class="leader-os-trend-note" id="leader-os-team-trend-note">Pregled zadnjih 7 dana.</div>
+                            <div class="leader-os-trend-note text-right" id="leader-os-team-trend-range"></div>
                         </div>
                     </div>
                 </div>
@@ -3259,9 +3371,7 @@ $operations_tab_badge_total = (int) (($data->operations['totals']['pending_appro
                         </div>
                         <div id="leader-os-status-chart" class="leader-os-status-chart" data-status-distribution='<?= htmlspecialchars(json_encode(($data->overview['status_distribution']['ranges'] ?? []), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES), ENT_QUOTES, 'UTF-8') ?>'></div>
                         <div class="leader-os-status-chart-note" id="leader-os-status-chart-note">Pregled rasporeda tima u zadnjih 30 dana prema activity prozoru.</div>
-                        <div class="leader-os-status-graph-wrap">
-                            <svg id="leader-os-status-graph" class="leader-os-status-graph" viewBox="0 0 640 280" role="img" aria-label="Status distribucija grafa"></svg>
-                        </div>
+                        <div class="leader-os-status-insights" id="leader-os-status-insights"></div>
                     </div>
                 </div>
             </div>
@@ -5384,9 +5494,10 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    const teamTrendChart = document.getElementById('leader-os-team-trend-chart');
+    const teamTrendRoot = document.getElementById('leader-os-team-trend-root');
     const teamTrendPeriods = Array.from(document.querySelectorAll('.leader-os-trend-period'));
     const teamTrendSummaryCards = Array.from(document.querySelectorAll('[data-trend-summary-card]'));
+    const teamTrendInsightCards = Array.from(document.querySelectorAll('[data-trend-insight-card]'));
     const teamTrendNote = document.getElementById('leader-os-team-trend-note');
     const teamTrendRange = document.getElementById('leader-os-team-trend-range');
     const teamTrendTotalNodes = {
@@ -5395,21 +5506,32 @@ document.addEventListener('DOMContentLoaded', function () {
         leads: document.querySelector('[data-trend-total="leads"]'),
         blog_forever: document.querySelector('[data-trend-total="blog_forever"]')
     };
-
-    const trendMetricConfig = [
-        {key: 'clicks', label: 'Klikovi', color: '#57e389'},
-        {key: 'registrations', label: 'Registracije', color: '#68b7ff'},
-        {key: 'leads', label: 'Leadovi', color: '#f8d060'},
-        {key: 'blog_forever', label: 'Blog -> Forever', color: '#3fe0c8'}
-    ];
+    const teamTrendMetaNodes = {
+        clicks: document.querySelector('[data-trend-meta="clicks"]'),
+        registrations: document.querySelector('[data-trend-meta="registrations"]'),
+        leads: document.querySelector('[data-trend-meta="leads"]'),
+        blog_forever: document.querySelector('[data-trend-meta="blog_forever"]')
+    };
+    const teamTrendInsightValueNodes = {
+        clicks_contributors: document.querySelector('[data-trend-insight-value="clicks_contributors"]'),
+        registrations_contributors: document.querySelector('[data-trend-insight-value="registrations_contributors"]'),
+        registration_rate: document.querySelector('[data-trend-insight-value="registration_rate"]'),
+        best_day: document.querySelector('[data-trend-insight-value="best_day"]')
+    };
+    const teamTrendInsightNoteNodes = {
+        clicks_contributors: document.querySelector('[data-trend-insight-note="clicks_contributors"]'),
+        registrations_contributors: document.querySelector('[data-trend-insight-note="registrations_contributors"]'),
+        registration_rate: document.querySelector('[data-trend-insight-note="registration_rate"]'),
+        best_day: document.querySelector('[data-trend-insight-note="best_day"]')
+    };
 
     const teamTrendRows = (() => {
-        if (!teamTrendChart) {
+        if (!teamTrendRoot) {
             return [];
         }
 
         try {
-            const raw = teamTrendChart.getAttribute('data-trend') || '[]';
+            const raw = teamTrendRoot.getAttribute('data-trend') || '[]';
             const parsed = JSON.parse(raw);
             return Array.isArray(parsed) ? parsed : [];
         } catch (error) {
@@ -5418,7 +5540,7 @@ document.addEventListener('DOMContentLoaded', function () {
     })();
 
     const teamTrendSummaryDrilldowns = (() => {
-        if (!teamTrendChart) {
+        if (!teamTrendRoot) {
             return {};
         }
 
@@ -5439,75 +5561,81 @@ document.addEventListener('DOMContentLoaded', function () {
         return String(numericValue);
     };
 
-    const buildTrendPath = (points) => {
-        return points.map((point, index) => `${index === 0 ? 'M' : 'L'} ${point.x} ${point.y}`).join(' ');
+    const bindDrilldownTrigger = (trigger) => {
+        if (!trigger || trigger.dataset.drilldownBound === 'true') {
+            return;
+        }
+
+        trigger.dataset.drilldownBound = 'true';
+
+        trigger.addEventListener('click', function () {
+            populateDrilldown(this);
+            openModal();
+        });
+
+        trigger.addEventListener('keydown', function (event) {
+            if (event.key !== 'Enter' && event.key !== ' ') {
+                return;
+            }
+
+            event.preventDefault();
+            populateDrilldown(this);
+            openModal();
+        });
     };
 
-    const renderTeamTrendChart = (days) => {
-        if (!teamTrendChart || !teamTrendRows.length) {
+    const setDrilldownPayload = (element, payload, fallbackTitle) => {
+        if (!element) {
+            return;
+        }
+
+        const normalizedPayload = payload && typeof payload === 'object'
+            ? payload
+            : {
+                title: fallbackTitle || 'Suradnici',
+                items: []
+            };
+
+        element.setAttribute('data-drilldown', JSON.stringify(normalizedPayload));
+        bindDrilldownTrigger(element);
+    };
+
+    const renderTeamTrendPanel = (days) => {
+        if (!teamTrendRoot || !teamTrendRows.length) {
             return;
         }
 
         const windowDays = Number(days || 7);
         const rows = teamTrendRows.slice(-windowDays);
-        const width = 920;
-        const height = 300;
-        const padding = {top: 18, right: 18, bottom: 38, left: 28};
-        const plotWidth = width - padding.left - padding.right;
-        const plotHeight = height - padding.top - padding.bottom;
-        const maxValue = Math.max(5, ...rows.flatMap((row) => trendMetricConfig.map((metric) => Number(row[metric.key] || 0))));
-        const safeMax = maxValue <= 0 ? 5 : maxValue;
-        const xStep = rows.length > 1 ? plotWidth / (rows.length - 1) : plotWidth;
-
-        const horizontalGrid = [0, 0.25, 0.5, 0.75, 1].map((ratio) => {
-            const y = padding.top + plotHeight * ratio;
-            const value = Math.round(safeMax * (1 - ratio));
-
-            return `
-                <line class="leader-os-trend-grid-line" x1="${padding.left}" y1="${y}" x2="${width - padding.right}" y2="${y}"></line>
-                <text class="leader-os-trend-axis-text" x="${padding.left - 8}" y="${y + 4}" text-anchor="end">${formatTrendNumber(value)}</text>
-            `;
-        }).join('');
-
-        const labelIndexes = new Set([0, Math.max(0, Math.floor((rows.length - 1) * 0.25)), Math.max(0, Math.floor((rows.length - 1) * 0.5)), Math.max(0, Math.floor((rows.length - 1) * 0.75)), Math.max(0, rows.length - 1)]);
-        const verticalLabels = rows.map((row, index) => {
-            if (!labelIndexes.has(index)) {
-                return '';
-            }
-
-            const x = padding.left + xStep * index;
-            return `<text class="leader-os-trend-axis-text" x="${x}" y="${height - 12}" text-anchor="${index === 0 ? 'start' : (index === rows.length - 1 ? 'end' : 'middle')}">${escapeHtml(row.label || '')}</text>`;
-        }).join('');
-
-        const seriesMarkup = trendMetricConfig.map((metric) => {
-            const points = rows.map((row, index) => {
-                const value = Number(row[metric.key] || 0);
-                const x = padding.left + xStep * index;
-                const y = padding.top + plotHeight - ((value / safeMax) * plotHeight);
-                return {x, y, value};
-            });
-
-            const path = buildTrendPath(points);
-            const dots = points.map((point) => `<circle class="leader-os-trend-series-dot" cx="${point.x}" cy="${point.y}" r="4" fill="${metric.color}"></circle>`).join('');
-
-            return `
-                <path class="leader-os-trend-series-line is-${metric.key === 'blog_forever' ? 'blog' : metric.key}" d="${path}"></path>
-                ${dots}
-            `;
-        }).join('');
-
-        teamTrendChart.innerHTML = `
-            ${horizontalGrid}
-            ${seriesMarkup}
-            ${verticalLabels}
-        `;
-
         const totals = rows.reduce((carry, row) => {
-            trendMetricConfig.forEach((metric) => {
-                carry[metric.key] += Number(row[metric.key] || 0);
-            });
+            carry.clicks += Number(row.clicks || 0);
+            carry.registrations += Number(row.registrations || 0);
+            carry.leads += Number(row.leads || 0);
+            carry.blog_forever += Number(row.blog_forever || 0);
             return carry;
         }, {clicks: 0, registrations: 0, leads: 0, blog_forever: 0});
+        const periodDrilldowns = teamTrendSummaryDrilldowns[String(windowDays)] || {};
+        const clickContributors = Array.isArray(periodDrilldowns.clicks?.items) ? periodDrilldowns.clicks.items.length : 0;
+        const registrationContributors = Array.isArray(periodDrilldowns.registrations?.items) ? periodDrilldowns.registrations.items.length : 0;
+        const leadContributors = Array.isArray(periodDrilldowns.leads?.items) ? periodDrilldowns.leads.items.length : 0;
+        const blogContributors = Array.isArray(periodDrilldowns.blog_forever?.items) ? periodDrilldowns.blog_forever.items.length : 0;
+        const registrationRate = totals.clicks > 0 ? ((totals.registrations / totals.clicks) * 100) : 0;
+        const bestDay = rows.reduce((best, row) => {
+            const totalSignal = Number(row.clicks || 0) + Number(row.registrations || 0) + Number(row.leads || 0) + Number(row.blog_forever || 0);
+
+            if (!best || totalSignal > best.totalSignal) {
+                return {
+                    label: row.label || '',
+                    clicks: Number(row.clicks || 0),
+                    registrations: Number(row.registrations || 0),
+                    leads: Number(row.leads || 0),
+                    blog_forever: Number(row.blog_forever || 0),
+                    totalSignal
+                };
+            }
+
+            return best;
+        }, null);
 
         Object.keys(teamTrendTotalNodes).forEach((key) => {
             if (teamTrendTotalNodes[key]) {
@@ -5515,8 +5643,92 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
 
+        if (teamTrendMetaNodes.clicks) {
+            teamTrendMetaNodes.clicks.textContent = `${formatTrendNumber(clickContributors)} suradnika u signalu`;
+        }
+
+        if (teamTrendMetaNodes.registrations) {
+            teamTrendMetaNodes.registrations.textContent = `${formatTrendNumber(registrationContributors)} suradnika u signalu`;
+        }
+
+        if (teamTrendMetaNodes.leads) {
+            teamTrendMetaNodes.leads.textContent = `${formatTrendNumber(leadContributors)} suradnika u signalu`;
+        }
+
+        if (teamTrendMetaNodes.blog_forever) {
+            teamTrendMetaNodes.blog_forever.textContent = `${formatTrendNumber(blogContributors)} suradnika u signalu`;
+        }
+
+        teamTrendSummaryCards.forEach((card) => {
+            const metricKey = card.getAttribute('data-trend-summary-card') || '';
+            const payload = periodDrilldowns[metricKey] || null;
+            setDrilldownPayload(card, payload, metricKey);
+        });
+
+        if (teamTrendInsightValueNodes.clicks_contributors) {
+            teamTrendInsightValueNodes.clicks_contributors.textContent = formatTrendNumber(clickContributors);
+        }
+
+        if (teamTrendInsightNoteNodes.clicks_contributors) {
+            teamTrendInsightNoteNodes.clicks_contributors.textContent = `${formatTrendNumber(totals.clicks)} ukupnih klikova prema Foreveru u ovom periodu.`;
+        }
+
+        if (teamTrendInsightValueNodes.registrations_contributors) {
+            teamTrendInsightValueNodes.registrations_contributors.textContent = formatTrendNumber(registrationContributors);
+        }
+
+        if (teamTrendInsightNoteNodes.registrations_contributors) {
+            teamTrendInsightNoteNodes.registrations_contributors.textContent = `${formatTrendNumber(totals.registrations)} ukupnih registracijskih klikova u ovom periodu.`;
+        }
+
+        if (teamTrendInsightValueNodes.registration_rate) {
+            teamTrendInsightValueNodes.registration_rate.textContent = `${registrationRate.toFixed(1)}%`;
+        }
+
+        if (teamTrendInsightNoteNodes.registration_rate) {
+            teamTrendInsightNoteNodes.registration_rate.textContent = totals.clicks > 0
+                ? `${formatTrendNumber(totals.registrations)} registracija na ${formatTrendNumber(totals.clicks)} klikova.`
+                : 'Nema dovoljno klikova za izračun stope registracije.';
+        }
+
+        if (teamTrendInsightValueNodes.best_day) {
+            teamTrendInsightValueNodes.best_day.textContent = bestDay && bestDay.label ? bestDay.label : '-';
+        }
+
+        if (teamTrendInsightNoteNodes.best_day) {
+            teamTrendInsightNoteNodes.best_day.textContent = bestDay
+                ? `${formatTrendNumber(bestDay.clicks)} klikova · ${formatTrendNumber(bestDay.registrations)} registracija · ${formatTrendNumber(bestDay.leads)} leadova`
+                : 'Nema dovoljno signala za izdvajanje najjačeg dana.';
+        }
+
+        const contributorPayloads = {
+            clicks_contributors: periodDrilldowns.clicks ? {
+                title: `Suradnici s klikovima · zadnjih ${windowDays} dana`,
+                summary_label: 'Suradnici s klikovima',
+                summary_value: formatTrendNumber(clickContributors),
+                summary_note: `${formatTrendNumber(totals.clicks)} ukupnih klikova prema Foreveru · Klik na ime otvara detalj suradnika.`,
+                items: Array.isArray(periodDrilldowns.clicks.items) ? periodDrilldowns.clicks.items : []
+            } : null,
+            registrations_contributors: periodDrilldowns.registrations ? {
+                title: `Suradnici s registracijama · zadnjih ${windowDays} dana`,
+                summary_label: 'Suradnici s registracijama',
+                summary_value: formatTrendNumber(registrationContributors),
+                summary_note: `${formatTrendNumber(totals.registrations)} ukupnih registracijskih klikova · Klik na ime otvara detalj suradnika.`,
+                items: Array.isArray(periodDrilldowns.registrations.items) ? periodDrilldowns.registrations.items : []
+            } : null
+        };
+
+        teamTrendInsightCards.forEach((card) => {
+            const insightKey = card.getAttribute('data-trend-insight-card') || '';
+            const payload = contributorPayloads[insightKey] || null;
+
+            if (payload) {
+                setDrilldownPayload(card, payload, insightKey);
+            }
+        });
+
         if (teamTrendNote) {
-            teamTrendNote.textContent = `Pregled zadnjih ${windowDays} dana.`;
+            teamTrendNote.textContent = `Pregled zadnjih ${windowDays} dana. Klik na broj otvara popis suradnika iza signala.`;
         }
 
         if (teamTrendRange) {
@@ -5524,25 +5736,10 @@ document.addEventListener('DOMContentLoaded', function () {
             const last = rows[rows.length - 1]?.label || '';
             teamTrendRange.textContent = first && last ? `${first} → ${last}` : '';
         }
-
-        teamTrendSummaryCards.forEach((card) => {
-            const metricKey = card.getAttribute('data-trend-summary-card') || '';
-            const payload = teamTrendSummaryDrilldowns[String(windowDays)]?.[metricKey] || null;
-
-            if (!payload) {
-                card.setAttribute('data-drilldown', JSON.stringify({title: metricKey, items: []}));
-                return;
-            }
-
-            card.setAttribute('data-drilldown', JSON.stringify({
-                title: payload.title || metricKey,
-                items: Array.isArray(payload.items) ? payload.items : []
-            }));
-        });
     };
 
-    if (teamTrendChart && teamTrendPeriods.length && teamTrendRows.length) {
-        renderTeamTrendChart(7);
+    if (teamTrendRoot && teamTrendPeriods.length && teamTrendRows.length) {
+        renderTeamTrendPanel(7);
 
         teamTrendPeriods.forEach((button) => {
             button.addEventListener('click', function () {
@@ -5550,13 +5747,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 teamTrendPeriods.forEach((item) => item.classList.remove('is-active'));
                 this.classList.add('is-active');
-                renderTeamTrendChart(days);
+                renderTeamTrendPanel(days);
             });
         });
     }
 
     const statusChartRoot = document.getElementById('leader-os-status-chart');
-    const statusGraph = document.getElementById('leader-os-status-graph');
+    const statusInsightsRoot = document.getElementById('leader-os-status-insights');
     const statusPeriodButtons = Array.from(document.querySelectorAll('[data-status-days]'));
     const statusChartNote = document.getElementById('leader-os-status-chart-note');
     const statusDistributionRanges = (() => {
@@ -5578,101 +5775,69 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        const rows = Array.isArray(statusDistributionRanges[String(days)]) ? statusDistributionRanges[String(days)] : [];
+        const rangePayload = statusDistributionRanges[String(days)] && typeof statusDistributionRanges[String(days)] === 'object'
+            ? statusDistributionRanges[String(days)]
+            : {items: [], drilldowns: {}, insights: {}, summary_drilldowns: {}};
+        const rows = Array.isArray(rangePayload.items) ? rangePayload.items : [];
+        const drilldowns = rangePayload.drilldowns && typeof rangePayload.drilldowns === 'object' ? rangePayload.drilldowns : {};
+        const insights = rangePayload.insights && typeof rangePayload.insights === 'object' ? rangePayload.insights : {};
+        const summaryDrilldowns = rangePayload.summary_drilldowns && typeof rangePayload.summary_drilldowns === 'object' ? rangePayload.summary_drilldowns : {};
         const maxTotal = Math.max(1, ...rows.map((row) => Number(row.total || 0)));
 
         statusChartRoot.innerHTML = rows.map((row) => {
             const total = Number(row.total || 0);
             const width = Math.max(2, Math.min(100, (total / maxTotal) * 100));
             const key = String(row.key || 'stable');
+            const payload = drilldowns[key] || null;
+            const share = Number(row.share || 0);
+            const description = String(row.description || '');
+            const payloadAttr = payload ? ` data-drilldown="${escapeHtml(JSON.stringify(payload))}"` : '';
             return `
-                <div class="leader-os-status-chart-row">
-                    <div class="leader-os-status-chart-label">${escapeHtml(row.label || key)}</div>
-                    <div class="leader-os-status-chart-track">
-                        <span class="leader-os-status-chart-fill is-${escapeHtml(key)}" style="width:${width}%"></span>
+                <div class="leader-os-status-chart-row ${payload ? 'is-clickable leader-os-runtime-drilldown' : ''}" ${payload ? 'role="button" tabindex="0"' : ''}${payloadAttr}>
+                    <div class="leader-os-status-chart-main">
+                        <div class="leader-os-status-chart-label">${escapeHtml(row.label || key)}</div>
+                        <div class="leader-os-status-chart-track">
+                            <span class="leader-os-status-chart-fill is-${escapeHtml(key)}" style="width:${width}%"></span>
+                        </div>
+                        <div class="leader-os-status-chart-value">${formatTrendNumber(total)} · ${share.toFixed(1)}%</div>
                     </div>
-                    <div class="leader-os-status-chart-value">${formatTrendNumber(total)}</div>
+                    <div class="leader-os-status-chart-desc">${escapeHtml(description)}${payload ? ' Klikni za popis suradnika.' : ''}</div>
                 </div>
             `;
         }).join('');
 
+        statusChartRoot.querySelectorAll('.leader-os-runtime-drilldown').forEach((trigger) => {
+            bindDrilldownTrigger(trigger);
+        });
+
         if (statusChartNote) {
-            statusChartNote.textContent = `Pregled rasporeda tima u zadnjih ${days} dana prema activity prozoru.`;
+            statusChartNote.textContent = `Pregled rasporeda tima u zadnjih ${days} dana prema activity prozoru. Klik na status otvara popis suradnika.`;
         }
 
-        if (statusGraph) {
-            const width = 640;
-            const height = 280;
-            const padding = {top: 28, right: 22, bottom: 72, left: 54};
-            const plotWidth = width - padding.left - padding.right;
-            const plotHeight = height - padding.top - padding.bottom;
-            const barGap = 24;
-            const barWidth = rows.length ? Math.max(44, (plotWidth - (barGap * (rows.length - 1))) / rows.length) : 48;
+        if (statusInsightsRoot) {
+            const insightOrder = ['active_core', 'growth_pool', 'risk', 'inactive'];
+            statusInsightsRoot.innerHTML = insightOrder.map((insightKey) => {
+                const insight = insights[insightKey] || null;
+                const payload = summaryDrilldowns[insightKey] || null;
 
-            const colorByKey = {
-                inactive: '#8a9ab0',
-                stable: '#45d6b2',
-                rising: '#63a8ff',
-                high_potential: '#f5c85f',
-                risk: '#f38b67'
-            };
-
-            const gradientDefs = rows.map((row) => {
-                const key = String(row.key || 'stable');
-                const color = colorByKey[key] || '#68b7ff';
-                return `
-                    <linearGradient id="leader-os-status-grad-${key}" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stop-color="${color}" stop-opacity="0.98"></stop>
-                        <stop offset="100%" stop-color="${color}" stop-opacity="0.72"></stop>
-                    </linearGradient>
-                `;
-            }).join('');
-
-            const makeLabelTspans = (label, x, y) => {
-                const words = String(label || '').split(' ');
-                if (words.length <= 1) {
-                    return `<text class="leader-os-status-graph-label" x="${x}" y="${y}" text-anchor="middle">${escapeHtml(label || '')}</text>`;
+                if (!insight) {
+                    return '';
                 }
 
-                const firstLine = escapeHtml(words.slice(0, Math.ceil(words.length / 2)).join(' '));
-                const secondLine = escapeHtml(words.slice(Math.ceil(words.length / 2)).join(' '));
+                const payloadAttr = payload ? ` data-drilldown="${escapeHtml(JSON.stringify(payload))}"` : '';
 
                 return `
-                    <text class="leader-os-status-graph-label" x="${x}" y="${y}" text-anchor="middle">
-                        <tspan x="${x}" dy="0">${firstLine}</tspan>
-                        <tspan x="${x}" dy="15">${secondLine}</tspan>
-                    </text>
-                `;
-            };
-
-            const grid = [0, 0.5, 1].map((ratio) => {
-                const y = padding.top + plotHeight * ratio;
-                const value = Math.round(maxTotal * (1 - ratio));
-                return `
-                    <line class="leader-os-status-graph-grid" x1="${padding.left}" y1="${y}" x2="${width - padding.right}" y2="${y}"></line>
-                    <text class="leader-os-status-graph-axis" x="${padding.left - 12}" y="${y + 4}" text-anchor="end">${formatTrendNumber(value)}</text>
+                    <div class="leader-os-status-insight-card ${payload ? 'is-clickable leader-os-runtime-drilldown' : ''}" ${payload ? 'role="button" tabindex="0"' : ''}${payloadAttr}>
+                        <div class="leader-os-status-insight-label">${escapeHtml(insight.label || insightKey)}</div>
+                        <div class="leader-os-status-insight-value">${formatTrendNumber(insight.total || 0)} · ${(Number(insight.share || 0)).toFixed(1)}%</div>
+                        <div class="leader-os-status-insight-note">${escapeHtml(insight.description || '')}${payload ? ' Klikni za popis suradnika.' : ''}</div>
+                    </div>
                 `;
             }).join('');
 
-            const bars = rows.map((row, index) => {
-                const total = Number(row.total || 0);
-                const x = padding.left + index * (barWidth + barGap);
-                const barHeight = maxTotal > 0 ? (total / maxTotal) * plotHeight : 0;
-                const y = padding.top + plotHeight - barHeight;
-                const key = String(row.key || 'stable');
-                const centerX = x + (barWidth / 2);
-                const valueY = Math.max(padding.top - 8, y - 12);
-                const labelMarkup = makeLabelTspans(row.label || key, centerX, height - 26);
-
-                return `
-                    <rect x="${x}" y="${padding.top}" width="${barWidth}" height="${plotHeight}" rx="16" fill="rgba(255,255,255,0.03)"></rect>
-                    <rect x="${x}" y="${y}" width="${barWidth}" height="${barHeight}" rx="16" fill="url(#leader-os-status-grad-${key})"></rect>
-                    <text class="leader-os-status-graph-value" x="${centerX}" y="${valueY}" text-anchor="middle">${formatTrendNumber(total)}</text>
-                    ${labelMarkup}
-                `;
-            }).join('');
-
-            statusGraph.innerHTML = `<defs>${gradientDefs}</defs>${grid}${bars}`;
+            statusInsightsRoot.querySelectorAll('.leader-os-runtime-drilldown').forEach((trigger) => {
+                bindDrilldownTrigger(trigger);
+            });
         }
     };
 
@@ -5688,23 +5853,6 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         });
     }
-
-    teamTrendSummaryCards.forEach((card) => {
-        card.addEventListener('click', function () {
-            populateDrilldown(this);
-            openModal();
-        });
-
-        card.addEventListener('keydown', function (event) {
-            if (event.key !== 'Enter' && event.key !== ' ') {
-                return;
-            }
-
-            event.preventDefault();
-            populateDrilldown(this);
-            openModal();
-        });
-    });
 
     const openModal = () => {
         if (window.jQuery && typeof window.jQuery.fn.modal === 'function') {
@@ -5768,19 +5916,7 @@ document.addEventListener('DOMContentLoaded', function () {
     };
 
     document.querySelectorAll('[data-drilldown]').forEach((trigger) => {
-        trigger.addEventListener('click', function () {
-            populateDrilldown(this);
-        });
-
-        trigger.addEventListener('keydown', function (event) {
-            if (event.key !== 'Enter' && event.key !== ' ') {
-                return;
-            }
-
-            event.preventDefault();
-            populateDrilldown(this);
-            openModal();
-        });
+        bindDrilldownTrigger(trigger);
     });
 
     const targetMode = document.getElementById('leader_os_message_target_mode');

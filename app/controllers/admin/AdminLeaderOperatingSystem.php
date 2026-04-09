@@ -4299,6 +4299,16 @@ class AdminLeaderOperatingSystem extends Controller {
         ];
 
         $payload = [];
+        $clickCountsByRange = [
+            7 => [],
+            30 => [],
+            90 => [],
+        ];
+        $registrationCountsByRange = [
+            7 => [],
+            30 => [],
+            90 => [],
+        ];
         $leadCountsByRange = [
             7 => [],
             30 => [],
@@ -4312,9 +4322,43 @@ class AdminLeaderOperatingSystem extends Controller {
         $blog_mediums = $this->get_blog_cta_mediums();
         $product_medium = db()->escape($blog_mediums['product']);
         $business_medium = db()->escape($blog_mediums['business']);
+        $biolink_sets = $this->get_biolink_block_sets();
+        $shop_condition = \Altum\Link::get_forever_shop_click_condition_sql('`track_links`', '`biolinks_blocks`', $biolink_sets['forever_shop_block_types_sql']);
+        $registration_condition = \Altum\Link::get_forever_registration_click_condition_sql('`track_links`', '`biolinks_blocks`', $biolink_sets['forever_registration_block_types_sql']);
+        $outbound_condition = \Altum\Link::get_forever_outbound_click_condition_sql('`track_links`', '`biolinks_blocks`', $biolink_sets['forever_shop_block_types_sql'], $biolink_sets['forever_registration_block_types_sql']);
 
         foreach($ranges as $days => $start_datetime) {
             $escaped_start_datetime = db()->escape($start_datetime);
+            $click_result = database()->query("SELECT
+                    `track_links`.`user_id`,
+                    SUM(CASE WHEN `track_links`.`is_unique` = 1 AND {$outbound_condition} THEN 1 ELSE 0 END) AS `click_total`,
+                    SUM(CASE WHEN `track_links`.`is_unique` = 1 AND {$registration_condition} THEN 1 ELSE 0 END) AS `registration_total`
+                FROM `track_links`
+                LEFT JOIN `users` ON `track_links`.`user_id` = `users`.`user_id`
+                LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id`
+                WHERE `track_links`.`datetime` >= '{$escaped_start_datetime}'
+                  AND `users`.`type` = 0
+                GROUP BY `track_links`.`user_id`");
+
+            while($click_row = $click_result->fetch_assoc()) {
+                $user_id = (int) ($click_row['user_id'] ?? 0);
+
+                if($user_id <= 0) {
+                    continue;
+                }
+
+                $click_total = (int) ($click_row['click_total'] ?? 0);
+                $registration_total = (int) ($click_row['registration_total'] ?? 0);
+
+                if($click_total > 0) {
+                    $clickCountsByRange[$days][$user_id] = $click_total;
+                }
+
+                if($registration_total > 0) {
+                    $registrationCountsByRange[$days][$user_id] = $registration_total;
+                }
+            }
+
             $lead_result = database()->query("SELECT `data`.`user_id`, COUNT(*) AS `lead_total`
                 FROM `data`
                 LEFT JOIN `users` ON `data`.`user_id` = `users`.`user_id`
@@ -4380,9 +4424,51 @@ class AdminLeaderOperatingSystem extends Controller {
         }
 
         foreach($ranges as $days => $start_datetime) {
+            $click_total = array_sum($clickCountsByRange[$days]);
+            $registration_total = array_sum($registrationCountsByRange[$days]);
+            $lead_total = array_sum($leadCountsByRange[$days]);
+            $blog_total = array_sum($blogCountsByRange[$days]);
+
             $payload[(string) $days] = [
+                'clicks' => [
+                    'title' => 'Klikovi prema Foreveru · zadnjih ' . $days . ' dana',
+                    'summary_label' => 'Klikovi prema Foreveru',
+                    'summary_value' => nr($click_total),
+                    'summary_note' => 'Suradnika u signalu: ' . nr(count($clickCountsByRange[$days])) . ' · Klik na ime otvara detalj suradnika.',
+                    'items' => $this->map_drilldown_items(
+                        $rows,
+                        function($row) use ($clickCountsByRange, $days) {
+                            return (int) ($clickCountsByRange[$days][(int) ($row['user_id'] ?? 0)] ?? 0);
+                        },
+                        function($row) use ($clickCountsByRange, $days) {
+                            return (int) ($clickCountsByRange[$days][(int) ($row['user_id'] ?? 0)] ?? 0) > 0;
+                        },
+                        80,
+                        static fn($row, $metric) => 'Klikovi ' . nr((int) $metric)
+                    ),
+                ],
+                'registrations' => [
+                    'title' => 'Registracije · zadnjih ' . $days . ' dana',
+                    'summary_label' => 'Registracije',
+                    'summary_value' => nr($registration_total),
+                    'summary_note' => 'Suradnika u signalu: ' . nr(count($registrationCountsByRange[$days])) . ' · Klik na ime otvara detalj suradnika.',
+                    'items' => $this->map_drilldown_items(
+                        $rows,
+                        function($row) use ($registrationCountsByRange, $days) {
+                            return (int) ($registrationCountsByRange[$days][(int) ($row['user_id'] ?? 0)] ?? 0);
+                        },
+                        function($row) use ($registrationCountsByRange, $days) {
+                            return (int) ($registrationCountsByRange[$days][(int) ($row['user_id'] ?? 0)] ?? 0) > 0;
+                        },
+                        80,
+                        static fn($row, $metric) => 'Registracije ' . nr((int) $metric)
+                    ),
+                ],
                 'leads' => [
                     'title' => 'Leadovi · zadnjih ' . $days . ' dana',
+                    'summary_label' => 'Leadovi',
+                    'summary_value' => nr($lead_total),
+                    'summary_note' => 'Suradnika u signalu: ' . nr(count($leadCountsByRange[$days])) . ' · Klik na ime otvara detalj suradnika.',
                     'items' => $this->map_drilldown_items(
                         $rows,
                         function($row) use ($leadCountsByRange, $days) {
@@ -4397,6 +4483,9 @@ class AdminLeaderOperatingSystem extends Controller {
                 ],
                 'blog_forever' => [
                     'title' => 'Blog -> Forever · zadnjih ' . $days . ' dana',
+                    'summary_label' => 'Blog -> Forever',
+                    'summary_value' => nr($blog_total),
+                    'summary_note' => 'Suradnika u signalu: ' . nr(count($blogCountsByRange[$days])) . ' · Klik na ime otvara detalj suradnika.',
                     'items' => $this->map_drilldown_items(
                         $rows,
                         function($row) use ($blogCountsByRange, $days) {
@@ -4415,6 +4504,83 @@ class AdminLeaderOperatingSystem extends Controller {
         return $payload;
     }
 
+    private function build_status_distribution_drilldown_items(array $rows, string $status_key, string $start_datetime): array {
+        $items = [];
+
+        foreach($rows as $row) {
+            $last_click_at = trim((string) ($row['last_click_at'] ?? ''));
+            $derived_status_key = (string) ($row['status_key'] ?? 'stable');
+
+            if($last_click_at === '' || $last_click_at < $start_datetime) {
+                $derived_status_key = 'inactive';
+            }
+
+            if($derived_status_key !== $status_key) {
+                continue;
+            }
+
+            $metric = 0;
+            $metric_display = '';
+            $meta_parts = [];
+
+            switch($status_key) {
+                case 'rising':
+                    $metric = (float) ($row['growth_percent'] ?? 0);
+                    $metric_display = ($metric > 0 ? '+' : '') . nr($metric) . '% rast';
+                    $meta_parts[] = 'LOS ' . nr((int) ($row['leader_os_score'] ?? 0));
+                    break;
+
+                case 'high_potential':
+                    $metric = (int) ($row['opportunity_score'] ?? 0);
+                    $metric_display = 'Prilika ' . nr($metric);
+                    $meta_parts[] = 'LOS ' . nr((int) ($row['leader_os_score'] ?? 0));
+                    break;
+
+                case 'risk':
+                    $metric = (int) ($row['risk_score'] ?? 0);
+                    $metric_display = 'Rizik ' . nr($metric);
+                    $meta_parts[] = 'Anomaly ' . nr((int) ($row['anomaly_score'] ?? 0));
+                    break;
+
+                case 'inactive':
+                    $metric = (int) ($row['forever_shop_clicks_90d'] ?? 0);
+                    $metric_display = 'Shop 90d ' . nr($metric);
+                    $meta_parts[] = $last_click_at !== '' ? ('Zadnji klik ' . \Altum\Date::get($last_click_at, 2)) : 'Bez novijeg klika';
+                    break;
+
+                default:
+                    $metric = (int) ($row['leader_os_score'] ?? 0);
+                    $metric_display = 'LOS ' . nr($metric);
+                    $meta_parts[] = 'Rast ' . (($row['growth_percent'] ?? null) === null ? '-' : (($row['growth_percent'] > 0 ? '+' : '') . nr((float) ($row['growth_percent'] ?? 0)) . '%'));
+                    break;
+            }
+
+            if(!empty($row['strongest_country']) && ($row['strongest_country'] ?? '-') !== '-') {
+                $meta_parts[] = (string) ($row['strongest_country'] ?? '');
+            }
+
+            if(!empty($row['top_source_label'])) {
+                $meta_parts[] = (string) ($row['top_source_label'] ?? '');
+            }
+
+            $items[] = [
+                'name' => (string) ($row['name'] ?? l('global.unknown')),
+                'detail_url' => (string) ($row['detail_url'] ?? ''),
+                'status_label' => l('admin_leader_operating_system.status.' . $status_key),
+                'metric' => $metric,
+                'metric_display' => $metric_display,
+                'meta' => trim(implode(' · ', array_filter($meta_parts))),
+            ];
+        }
+
+        usort($items, static function($a, $b) {
+            return (($b['metric'] ?? 0) <=> ($a['metric'] ?? 0))
+                ?: strcmp((string) ($a['name'] ?? ''), (string) ($b['name'] ?? ''));
+        });
+
+        return array_slice($items, 0, 80);
+    }
+
     private function get_status_distribution_payload(array $rows): array {
         $ranges = [
             7 => (new \DateTimeImmutable('today'))->modify('-6 days')->format('Y-m-d 00:00:00'),
@@ -4422,6 +4588,13 @@ class AdminLeaderOperatingSystem extends Controller {
             90 => (new \DateTimeImmutable('today'))->modify('-89 days')->format('Y-m-d 00:00:00'),
         ];
 
+        $status_descriptions = [
+            'inactive' => 'Nema klik prema Foreveru u odabranom periodu.',
+            'stable' => 'Ima aktivnost, ali bez jačeg rasta ili izraženog rizika.',
+            'rising' => 'Pokazuje zdrav rast i spreman je za jači fokus.',
+            'high_potential' => 'Ima potencijal, ali još nije pretvorio signal u puni rezultat.',
+            'risk' => 'Traži coaching, praćenje ili operativni zahvat.',
+        ];
         $range_payload = [];
 
         foreach($ranges as $days => $start_datetime) {
@@ -4431,6 +4604,13 @@ class AdminLeaderOperatingSystem extends Controller {
                 'rising' => 0,
                 'high_potential' => 0,
                 'risk' => 0,
+            ];
+            $bucket_rows = [
+                'inactive' => [],
+                'stable' => [],
+                'rising' => [],
+                'high_potential' => [],
+                'risk' => [],
             ];
 
             foreach($rows as $row) {
@@ -4442,22 +4622,95 @@ class AdminLeaderOperatingSystem extends Controller {
                 }
 
                 $buckets[$status_key] = ($buckets[$status_key] ?? 0) + 1;
+                $bucket_rows[$status_key][] = $row;
             }
 
             $items = [];
+            $drilldowns = [];
             foreach($buckets as $status_key => $total) {
+                $share = !empty($rows) ? round(($total / max(1, count($rows))) * 100, 1) : 0;
+                $label = l('admin_leader_operating_system.status.' . $status_key);
                 $items[] = [
                     'key' => $status_key,
-                    'label' => l('admin_leader_operating_system.status.' . $status_key),
+                    'label' => $label,
                     'total' => (int) $total,
+                    'share' => $share,
+                    'description' => (string) ($status_descriptions[$status_key] ?? ''),
+                ];
+
+                $drilldowns[$status_key] = [
+                    'title' => $label . ' · zadnjih ' . $days . ' dana',
+                    'summary_label' => $label,
+                    'summary_value' => nr($total),
+                    'summary_note' => trim(implode(' · ', array_filter([
+                        (string) ($status_descriptions[$status_key] ?? ''),
+                        'Udio u timu: ' . nr($share) . '%',
+                        'Klik na ime otvara detalj suradnika.',
+                    ]))),
+                    'items' => $this->build_status_distribution_drilldown_items($rows, $status_key, $start_datetime),
                 ];
             }
 
-            $range_payload[(string) $days] = $items;
+            $active_core_total = (int) (($buckets['stable'] ?? 0) + ($buckets['rising'] ?? 0) + ($buckets['high_potential'] ?? 0) + ($buckets['risk'] ?? 0));
+            $growth_pool_total = (int) (($buckets['rising'] ?? 0) + ($buckets['high_potential'] ?? 0));
+            $risk_total = (int) ($buckets['risk'] ?? 0);
+            $inactive_total = (int) ($buckets['inactive'] ?? 0);
+            $all_total = max(1, count($rows));
+            $active_core_rows = array_merge($bucket_rows['stable'], $bucket_rows['rising'], $bucket_rows['high_potential'], $bucket_rows['risk']);
+            $growth_pool_rows = array_merge($bucket_rows['rising'], $bucket_rows['high_potential']);
+
+            $range_payload[(string) $days] = [
+                'items' => $items,
+                'drilldowns' => $drilldowns,
+                'insights' => [
+                    'active_core' => [
+                        'label' => 'Aktivna jezgra',
+                        'total' => $active_core_total,
+                        'share' => round(($active_core_total / $all_total) * 100, 1),
+                        'description' => 'Suradnici koji imaju neki aktualni signal rada u promatranom periodu.',
+                    ],
+                    'growth_pool' => [
+                        'label' => 'Rast + potencijal',
+                        'total' => $growth_pool_total,
+                        'share' => round(($growth_pool_total / $all_total) * 100, 1),
+                        'description' => 'Suradnici koji su najbliže zdravom rastu ili već pokazuju momentum.',
+                    ],
+                    'risk' => [
+                        'label' => 'Treba pažnju',
+                        'total' => $risk_total,
+                        'share' => round(($risk_total / $all_total) * 100, 1),
+                        'description' => 'Suradnici kojima sada najviše treba coaching ili operativni zahvat.',
+                    ],
+                    'inactive' => [
+                        'label' => 'Neaktivni',
+                        'total' => $inactive_total,
+                        'share' => round(($inactive_total / $all_total) * 100, 1),
+                        'description' => 'Suradnici bez klika prema Foreveru u promatranom periodu.',
+                    ],
+                ],
+                'summary_drilldowns' => [
+                    'active_core' => [
+                        'title' => 'Aktivna jezgra · zadnjih ' . $days . ' dana',
+                        'summary_label' => 'Aktivna jezgra',
+                        'summary_value' => nr($active_core_total),
+                        'summary_note' => 'Udio u timu: ' . nr(round(($active_core_total / $all_total) * 100, 1)) . '% · Suradnici s aktualnim signalom rada u promatranom periodu.',
+                        'items' => $this->map_drilldown_items($active_core_rows, static fn($row) => (int) ($row['leader_os_score'] ?? 0), null, 80, static fn($row, $metric) => 'LOS ' . nr((int) $metric)),
+                    ],
+                    'growth_pool' => [
+                        'title' => 'Rast + potencijal · zadnjih ' . $days . ' dana',
+                        'summary_label' => 'Rast + potencijal',
+                        'summary_value' => nr($growth_pool_total),
+                        'summary_note' => 'Udio u timu: ' . nr(round(($growth_pool_total / $all_total) * 100, 1)) . '% · Suradnici najbliži zdravom rastu ili skaliranju.',
+                        'items' => $this->map_drilldown_items($growth_pool_rows, static fn($row) => (float) (($row['growth_percent'] ?? null) ?? ($row['opportunity_score'] ?? 0)), null, 80, static fn($row, $metric) => (($row['growth_percent'] ?? null) !== null ? (($metric > 0 ? '+' : '') . nr((float) $metric) . '% rast') : ('Prilika ' . nr((int) $metric)))),
+                    ],
+                    'risk' => $drilldowns['risk'],
+                    'inactive' => $drilldowns['inactive'],
+                ],
+            ];
         }
 
         return [
-            'default' => $range_payload['30'] ?? [],
+            'default' => $range_payload['30']['items'] ?? [],
             'ranges' => $range_payload,
         ];
     }
