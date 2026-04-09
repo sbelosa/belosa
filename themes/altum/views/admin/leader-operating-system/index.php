@@ -226,6 +226,14 @@
         color: #fca5a5 !important;
     }
 
+    .leader-os-page .text-white,
+    .leader-os-page strong,
+    .leader-os-page b,
+    .leader-os-page .font-weight-bold,
+    .leader-os-page .font-weight-bolder {
+        color: #f8fbff !important;
+    }
+
     .leader-os-page label,
     .leader-os-page .custom-control-label,
     .leader-os-page .form-check-label {
