@@ -4443,7 +4443,7 @@ class AdminLeaderOperatingSystem extends Controller {
                         function($row) use ($clickCountsByRange, $days) {
                             return (int) ($clickCountsByRange[$days][(int) ($row['user_id'] ?? 0)] ?? 0) > 0;
                         },
-                        80,
+                        40,
                         static fn($row, $metric) => 'Klikovi ' . nr((int) $metric)
                     ),
                 ],
@@ -4460,7 +4460,7 @@ class AdminLeaderOperatingSystem extends Controller {
                         function($row) use ($registrationCountsByRange, $days) {
                             return (int) ($registrationCountsByRange[$days][(int) ($row['user_id'] ?? 0)] ?? 0) > 0;
                         },
-                        80,
+                        40,
                         static fn($row, $metric) => 'Registracije ' . nr((int) $metric)
                     ),
                 ],
@@ -4477,7 +4477,7 @@ class AdminLeaderOperatingSystem extends Controller {
                         function($row) use ($leadCountsByRange, $days) {
                             return (int) ($leadCountsByRange[$days][(int) ($row['user_id'] ?? 0)] ?? 0) > 0;
                         },
-                        80,
+                        40,
                         static fn($row, $metric) => 'Leadovi ' . nr((int) $metric)
                     ),
                 ],
@@ -4494,7 +4494,7 @@ class AdminLeaderOperatingSystem extends Controller {
                         function($row) use ($blogCountsByRange, $days) {
                             return (int) ($blogCountsByRange[$days][(int) ($row['user_id'] ?? 0)] ?? 0) > 0;
                         },
-                        80,
+                        40,
                         static fn($row, $metric) => 'Blog klikovi ' . nr((int) $metric)
                     ),
                 ],
@@ -4502,83 +4502,6 @@ class AdminLeaderOperatingSystem extends Controller {
         }
 
         return $payload;
-    }
-
-    private function build_status_distribution_drilldown_items(array $rows, string $status_key, string $start_datetime): array {
-        $items = [];
-
-        foreach($rows as $row) {
-            $last_click_at = trim((string) ($row['last_click_at'] ?? ''));
-            $derived_status_key = (string) ($row['status_key'] ?? 'stable');
-
-            if($last_click_at === '' || $last_click_at < $start_datetime) {
-                $derived_status_key = 'inactive';
-            }
-
-            if($derived_status_key !== $status_key) {
-                continue;
-            }
-
-            $metric = 0;
-            $metric_display = '';
-            $meta_parts = [];
-
-            switch($status_key) {
-                case 'rising':
-                    $metric = (float) ($row['growth_percent'] ?? 0);
-                    $metric_display = ($metric > 0 ? '+' : '') . nr($metric) . '% rast';
-                    $meta_parts[] = 'LOS ' . nr((int) ($row['leader_os_score'] ?? 0));
-                    break;
-
-                case 'high_potential':
-                    $metric = (int) ($row['opportunity_score'] ?? 0);
-                    $metric_display = 'Prilika ' . nr($metric);
-                    $meta_parts[] = 'LOS ' . nr((int) ($row['leader_os_score'] ?? 0));
-                    break;
-
-                case 'risk':
-                    $metric = (int) ($row['risk_score'] ?? 0);
-                    $metric_display = 'Rizik ' . nr($metric);
-                    $meta_parts[] = 'Anomaly ' . nr((int) ($row['anomaly_score'] ?? 0));
-                    break;
-
-                case 'inactive':
-                    $metric = (int) ($row['forever_shop_clicks_90d'] ?? 0);
-                    $metric_display = 'Shop 90d ' . nr($metric);
-                    $meta_parts[] = $last_click_at !== '' ? ('Zadnji klik ' . \Altum\Date::get($last_click_at, 2)) : 'Bez novijeg klika';
-                    break;
-
-                default:
-                    $metric = (int) ($row['leader_os_score'] ?? 0);
-                    $metric_display = 'LOS ' . nr($metric);
-                    $meta_parts[] = 'Rast ' . (($row['growth_percent'] ?? null) === null ? '-' : (($row['growth_percent'] > 0 ? '+' : '') . nr((float) ($row['growth_percent'] ?? 0)) . '%'));
-                    break;
-            }
-
-            if(!empty($row['strongest_country']) && ($row['strongest_country'] ?? '-') !== '-') {
-                $meta_parts[] = (string) ($row['strongest_country'] ?? '');
-            }
-
-            if(!empty($row['top_source_label'])) {
-                $meta_parts[] = (string) ($row['top_source_label'] ?? '');
-            }
-
-            $items[] = [
-                'name' => (string) ($row['name'] ?? l('global.unknown')),
-                'detail_url' => (string) ($row['detail_url'] ?? ''),
-                'status_label' => l('admin_leader_operating_system.status.' . $status_key),
-                'metric' => $metric,
-                'metric_display' => $metric_display,
-                'meta' => trim(implode(' · ', array_filter($meta_parts))),
-            ];
-        }
-
-        usort($items, static function($a, $b) {
-            return (($b['metric'] ?? 0) <=> ($a['metric'] ?? 0))
-                ?: strcmp((string) ($a['name'] ?? ''), (string) ($b['name'] ?? ''));
-        });
-
-        return array_slice($items, 0, 80);
     }
 
     private function get_status_distribution_payload(array $rows): array {
@@ -4626,7 +4549,6 @@ class AdminLeaderOperatingSystem extends Controller {
             }
 
             $items = [];
-            $drilldowns = [];
             foreach($buckets as $status_key => $total) {
                 $share = !empty($rows) ? round(($total / max(1, count($rows))) * 100, 1) : 0;
                 $label = l('admin_leader_operating_system.status.' . $status_key);
@@ -4636,18 +4558,6 @@ class AdminLeaderOperatingSystem extends Controller {
                     'total' => (int) $total,
                     'share' => $share,
                     'description' => (string) ($status_descriptions[$status_key] ?? ''),
-                ];
-
-                $drilldowns[$status_key] = [
-                    'title' => $label . ' · zadnjih ' . $days . ' dana',
-                    'summary_label' => $label,
-                    'summary_value' => nr($total),
-                    'summary_note' => trim(implode(' · ', array_filter([
-                        (string) ($status_descriptions[$status_key] ?? ''),
-                        'Udio u timu: ' . nr($share) . '%',
-                        'Klik na ime otvara detalj suradnika.',
-                    ]))),
-                    'items' => $this->build_status_distribution_drilldown_items($rows, $status_key, $start_datetime),
                 ];
             }
 
@@ -4661,7 +4571,6 @@ class AdminLeaderOperatingSystem extends Controller {
 
             $range_payload[(string) $days] = [
                 'items' => $items,
-                'drilldowns' => $drilldowns,
                 'insights' => [
                     'active_core' => [
                         'label' => 'Aktivna jezgra',
@@ -4694,17 +4603,29 @@ class AdminLeaderOperatingSystem extends Controller {
                         'summary_label' => 'Aktivna jezgra',
                         'summary_value' => nr($active_core_total),
                         'summary_note' => 'Udio u timu: ' . nr(round(($active_core_total / $all_total) * 100, 1)) . '% · Suradnici s aktualnim signalom rada u promatranom periodu.',
-                        'items' => $this->map_drilldown_items($active_core_rows, static fn($row) => (int) ($row['leader_os_score'] ?? 0), null, 80, static fn($row, $metric) => 'LOS ' . nr((int) $metric)),
+                        'items' => $this->map_drilldown_items($active_core_rows, static fn($row) => (int) ($row['leader_os_score'] ?? 0), null, 40, static fn($row, $metric) => 'LOS ' . nr((int) $metric)),
                     ],
                     'growth_pool' => [
                         'title' => 'Rast + potencijal · zadnjih ' . $days . ' dana',
                         'summary_label' => 'Rast + potencijal',
                         'summary_value' => nr($growth_pool_total),
                         'summary_note' => 'Udio u timu: ' . nr(round(($growth_pool_total / $all_total) * 100, 1)) . '% · Suradnici najbliži zdravom rastu ili skaliranju.',
-                        'items' => $this->map_drilldown_items($growth_pool_rows, static fn($row) => (float) (($row['growth_percent'] ?? null) ?? ($row['opportunity_score'] ?? 0)), null, 80, static fn($row, $metric) => (($row['growth_percent'] ?? null) !== null ? (($metric > 0 ? '+' : '') . nr((float) $metric) . '% rast') : ('Prilika ' . nr((int) $metric)))),
+                        'items' => $this->map_drilldown_items($growth_pool_rows, static fn($row) => (float) (($row['growth_percent'] ?? null) ?? ($row['opportunity_score'] ?? 0)), null, 40, static fn($row, $metric) => (($row['growth_percent'] ?? null) !== null ? (($metric > 0 ? '+' : '') . nr((float) $metric) . '% rast') : ('Prilika ' . nr((int) $metric)))),
                     ],
-                    'risk' => $drilldowns['risk'],
-                    'inactive' => $drilldowns['inactive'],
+                    'risk' => [
+                        'title' => 'Treba pažnju · zadnjih ' . $days . ' dana',
+                        'summary_label' => 'Treba pažnju',
+                        'summary_value' => nr($risk_total),
+                        'summary_note' => 'Udio u timu: ' . nr(round(($risk_total / $all_total) * 100, 1)) . '% · Suradnici kojima sada najviše treba coaching ili operativni zahvat.',
+                        'items' => $this->map_drilldown_items($bucket_rows['risk'], static fn($row) => (int) ($row['risk_score'] ?? 0), null, 40, static fn($row, $metric) => 'Rizik ' . nr((int) $metric)),
+                    ],
+                    'inactive' => [
+                        'title' => 'Neaktivni · zadnjih ' . $days . ' dana',
+                        'summary_label' => 'Neaktivni',
+                        'summary_value' => nr($inactive_total),
+                        'summary_note' => 'Udio u timu: ' . nr(round(($inactive_total / $all_total) * 100, 1)) . '% · Suradnici bez klika prema Foreveru u promatranom periodu.',
+                        'items' => $this->map_drilldown_items($bucket_rows['inactive'], static fn($row) => (int) ($row['forever_shop_clicks_90d'] ?? 0), null, 40, static fn($row, $metric) => 'Shop 90d ' . nr((int) $metric)),
+                    ],
                 ],
             ];
         }
