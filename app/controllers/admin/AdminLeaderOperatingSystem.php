@@ -4516,6 +4516,7 @@ class AdminLeaderOperatingSystem extends Controller {
             }
 
             $items = [];
+            $drilldowns = [];
             foreach($buckets as $status_key => $total) {
                 $share = !empty($rows) ? round(($total / max(1, count($rows))) * 100, 1) : 0;
                 $label = l('admin_leader_operating_system.status.' . $status_key);
@@ -4525,6 +4526,34 @@ class AdminLeaderOperatingSystem extends Controller {
                     'total' => (int) $total,
                     'share' => $share,
                     'description' => (string) ($status_descriptions[$status_key] ?? ''),
+                ];
+
+                $drilldown_metric_resolver = match($status_key) {
+                    'rising' => static fn($row) => (float) ($row['growth_percent'] ?? 0),
+                    'high_potential' => static fn($row) => (int) ($row['opportunity_score'] ?? 0),
+                    'risk' => static fn($row) => (int) ($row['risk_score'] ?? 0),
+                    'inactive' => static fn($row) => (int) ($row['forever_shop_clicks_90d'] ?? 0),
+                    default => static fn($row) => (int) ($row['leader_os_score'] ?? 0),
+                };
+
+                $drilldown_metric_display_resolver = match($status_key) {
+                    'rising' => static fn($row, $metric) => (($metric > 0 ? '+' : '') . nr((float) $metric) . '% rast'),
+                    'high_potential' => static fn($row, $metric) => 'Prilika ' . nr((int) $metric),
+                    'risk' => static fn($row, $metric) => 'Rizik ' . nr((int) $metric),
+                    'inactive' => static fn($row, $metric) => 'Shop 90d ' . nr((int) $metric),
+                    default => static fn($row, $metric) => 'LOS ' . nr((int) $metric),
+                };
+
+                $drilldowns[$status_key] = [
+                    'title' => $label . ' · zadnjih ' . $days . ' dana',
+                    'summary_label' => $label,
+                    'summary_value' => nr($total),
+                    'summary_note' => trim(implode(' · ', array_filter([
+                        (string) ($status_descriptions[$status_key] ?? ''),
+                        'Udio u timu: ' . nr($share) . '%',
+                        'Klik na ime otvara detalj suradnika.',
+                    ]))),
+                    'items' => $this->map_drilldown_items($bucket_rows[$status_key], $drilldown_metric_resolver, null, 40, $drilldown_metric_display_resolver),
                 ];
             }
 
@@ -4538,6 +4567,7 @@ class AdminLeaderOperatingSystem extends Controller {
 
             $range_payload[(string) $days] = [
                 'items' => $items,
+                'drilldowns' => $drilldowns,
                 'insights' => [
                     'active_core' => [
                         'label' => 'Aktivna jezgra',
@@ -6970,6 +7000,8 @@ class AdminLeaderOperatingSystem extends Controller {
             $rows[$index] = $candidate;
         }
 
+        $team_scope_rows = $rows;
+
         $rows = array_values(array_filter($rows, function($candidate) use ($status_filter, $ai_status_filter, $anomaly_status_filter) {
             if($status_filter !== 'all') {
                 $matches_filter = match($status_filter) {
@@ -7209,7 +7241,7 @@ class AdminLeaderOperatingSystem extends Controller {
         $team_momentum = $this->get_team_momentum_payload($rows);
         $team_trend_start_datetime = (new \DateTimeImmutable('today'))->modify('-89 days')->format('Y-m-d 00:00:00');
         $team_trend = $this->get_team_trend_payload($team_trend_start_datetime, '90d', $rows, $biolink_sets);
-        $status_distribution = $this->get_status_distribution_payload($rows);
+        $status_distribution = $this->get_status_distribution_payload($team_scope_rows);
         $team_leaderboards = $this->get_team_leaderboards_payload($rows);
         $countries_matrix = $this->get_countries_matrix_payload($period_start_datetime, $biolink_sets);
         $activity_heatmap = $this->get_activity_heatmap_payload($period_start_datetime, $rows, $biolink_sets);

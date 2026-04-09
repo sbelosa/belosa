@@ -5617,8 +5617,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const rangePayload = statusDistributionRanges[String(days)] && typeof statusDistributionRanges[String(days)] === 'object'
             ? statusDistributionRanges[String(days)]
-            : {items: [], insights: {}, summary_drilldowns: {}};
+            : {items: [], drilldowns: {}, insights: {}, summary_drilldowns: {}};
         const rows = Array.isArray(rangePayload.items) ? rangePayload.items : [];
+        const drilldowns = rangePayload.drilldowns && typeof rangePayload.drilldowns === 'object' ? rangePayload.drilldowns : {};
         const insights = rangePayload.insights && typeof rangePayload.insights === 'object' ? rangePayload.insights : {};
         const summaryDrilldowns = rangePayload.summary_drilldowns && typeof rangePayload.summary_drilldowns === 'object' ? rangePayload.summary_drilldowns : {};
         const maxTotal = Math.max(1, ...rows.map((row) => Number(row.total || 0)));
@@ -5627,10 +5628,12 @@ document.addEventListener('DOMContentLoaded', function () {
             const total = Number(row.total || 0);
             const width = Math.max(2, Math.min(100, (total / maxTotal) * 100));
             const key = String(row.key || 'stable');
+            const payload = drilldowns[key] || null;
             const share = Number(row.share || 0);
             const description = String(row.description || '');
+            const payloadAttr = payload ? ` data-drilldown="${escapeHtml(JSON.stringify(payload))}"` : '';
             return `
-                <div class="leader-os-status-chart-row">
+                <div class="leader-os-status-chart-row ${payload ? 'is-clickable leader-os-runtime-drilldown' : ''}" ${payload ? 'role="button" tabindex="0"' : ''}${payloadAttr}>
                     <div class="leader-os-status-chart-main">
                         <div class="leader-os-status-chart-label">${escapeHtml(row.label || key)}</div>
                         <div class="leader-os-status-chart-track">
@@ -5638,13 +5641,17 @@ document.addEventListener('DOMContentLoaded', function () {
                         </div>
                         <div class="leader-os-status-chart-value">${formatTrendNumber(total)} · ${share.toFixed(1)}%</div>
                     </div>
-                    <div class="leader-os-status-chart-desc">${escapeHtml(description)}</div>
+                    <div class="leader-os-status-chart-desc">${escapeHtml(description)}${payload ? ' Klikni za popis suradnika.' : ''}</div>
                 </div>
             `;
         }).join('');
 
+        statusChartRoot.querySelectorAll('.leader-os-runtime-drilldown').forEach((trigger) => {
+            bindDrilldownTrigger(trigger);
+        });
+
         if (statusChartNote) {
-            statusChartNote.textContent = `Pregled rasporeda tima u zadnjih ${days} dana prema activity prozoru. Detaljni popisi su dostupni kroz kartice ispod.`;
+            statusChartNote.textContent = `Pregled rasporeda tima u zadnjih ${days} dana prema activity prozoru. Klik na status ili karticu otvara popis suradnika.`;
         }
 
         if (statusInsightsRoot) {
