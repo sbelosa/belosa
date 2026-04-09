@@ -431,7 +431,27 @@ class User extends Model {
     /* Requires full user variable */
     public function process_user_plan_expiration_by_user($user) {
 
-        if((new \DateTime($user->plan_expiration_date)) < (new \DateTime()) && $user->plan_id != 'free') {
+        $extra = $user->extra ?? null;
+
+        if(is_string($extra)) {
+            $extra = json_decode($extra);
+        }
+
+        if(is_array($extra)) {
+            $extra = (object) $extra;
+        }
+
+        if(!is_object($extra)) {
+            $extra = (object) [];
+        }
+
+        $billing_state = (string) ($extra->billing_state ?? '');
+        $stripe_status = (string) ($extra->billing_stripe_status ?? '');
+        $has_recurring_billing_protection = !empty($user->payment_subscription_id)
+            || in_array($billing_state, [Billing::STATE_PAST_DUE, Billing::STATE_PAST_DUE_CRITICAL], true)
+            || in_array($stripe_status, ['trialing', 'past_due', 'unpaid'], true);
+
+        if((new \DateTime($user->plan_expiration_date)) < (new \DateTime()) && $user->plan_id != 'free' && !$has_recurring_billing_protection) {
 
             /* Switch the user to the default plan */
             db()->where('user_id', $user->user_id)->update('users', [
