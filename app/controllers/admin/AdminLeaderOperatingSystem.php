@@ -3346,42 +3346,421 @@ class AdminLeaderOperatingSystem extends Controller {
         return $payload;
     }
 
+    private function get_executive_summary_compare_map(array $overview_payload): array {
+        $map = [];
+
+        foreach((array) ($overview_payload['primary_team_kpis'] ?? []) as $kpi) {
+            $key = (string) ($kpi['key'] ?? '');
+
+            if($key === '') {
+                continue;
+            }
+
+            $map[$key] = (array) ($kpi['compare'] ?? []);
+        }
+
+        return $map;
+    }
+
+    private function get_executive_summary_focus_payload(array $overview_payload): array {
+        $is_hr = \Altum\Language::$code === 'hr';
+        $totals = $overview_payload['totals'] ?? [];
+        $team_consistency = $overview_payload['team_consistency'] ?? [];
+        $support_center = $overview_payload['support_center'] ?? [];
+        $fraud_dashboard = $overview_payload['fraud_dashboard'] ?? [];
+
+        $risk_total = (int) ($totals['risk'] ?? 0);
+        $rising_total = (int) ($totals['rising'] ?? 0);
+        $qualified_total = (int) ($totals['qualified'] ?? 0);
+        $shop_clicks_total = (int) ($totals['total_shop_clicks_period'] ?? 0);
+        $funnel_leads_total = (int) ($totals['total_funnel_leads_period'] ?? 0);
+        $capture_rate = $shop_clicks_total > 0 ? round(($funnel_leads_total / max(1, $shop_clicks_total)) * 100, 1) : 0;
+        $consistency_avg = (float) ($team_consistency['average_score'] ?? 0);
+        $high_anomaly_total = (int) ($totals['anomaly_high'] ?? 0);
+        $blocked_attempts_total = (int) ($fraud_dashboard['totals']['blocked_attempts_total'] ?? 0);
+        $stale_support_total = (int) (($support_center['totals']['stale_total'] ?? 0));
+        $top_support_theme = trim((string) ($support_center['top_themes'][0]['label'] ?? ''));
+
+        if($high_anomaly_total >= 3 || $blocked_attempts_total >= 10) {
+            return [
+                'focus' => [
+                    'key' => 'fraud_watch',
+                    'label' => $is_hr ? 'Zaštita prometa i provjera tima' : 'Traffic protection and team validation',
+                    'note' => $is_hr
+                        ? nr($blocked_attempts_total) . ' blokiranih pokušaja · ' . nr($high_anomaly_total) . ' high anomaly suradnika'
+                        : nr($blocked_attempts_total) . ' blocked attempts · ' . nr($high_anomaly_total) . ' high anomaly collaborators',
+                ],
+                'friction' => [
+                    'key' => 'fraud_pressure',
+                    'label' => $is_hr ? 'Suspicious patterni i anomaly signal' : 'Suspicious patterns and anomaly signal',
+                    'note' => $is_hr
+                        ? 'Prije scale-upa prvo validiraj najrizičnije klikove i suradnike.'
+                        : 'Validate the riskiest clicks and collaborators before scaling further.',
+                ],
+            ];
+        }
+
+        if($risk_total >= max(4, $rising_total)) {
+            return [
+                'focus' => [
+                    'key' => 'risk_stabilization',
+                    'label' => $is_hr ? 'Stabilizacija risk grupe' : 'Stabilize the risk segment',
+                    'note' => $is_hr
+                        ? nr($risk_total) . ' risk suradnika · consistency ' . nr($consistency_avg) . '/100'
+                        : nr($risk_total) . ' at-risk collaborators · consistency ' . nr($consistency_avg) . '/100',
+                ],
+                'friction' => [
+                    'key' => 'follow_up_gap',
+                    'label' => $is_hr ? 'Follow-up i execution rupa' : 'Follow-up and execution gap',
+                    'note' => $is_hr
+                        ? 'Risk segment je jači od growth segmenta i traži coaching prije novog scale-upa.'
+                        : 'The risk segment currently outweighs growth and needs coaching before new scale-up.',
+                ],
+            ];
+        }
+
+        if($stale_support_total >= 5 && $top_support_theme !== '') {
+            return [
+                'focus' => [
+                    'key' => 'support_clarity',
+                    'label' => $is_hr ? 'Jasnoća poruke i podrške' : 'Message clarity and support',
+                    'note' => $is_hr
+                        ? nr($stale_support_total) . ' stale ticketa · tema: ' . $top_support_theme
+                        : nr($stale_support_total) . ' stale tickets · theme: ' . $top_support_theme,
+                ],
+                'friction' => [
+                    'key' => 'repeated_confusion',
+                    'label' => $is_hr ? 'Ponavljajuće nejasnoće u timu' : 'Repeated team confusion',
+                    'note' => $is_hr
+                        ? 'Ista tema se vraća kroz podršku i traži jasniji webinar, FAQ ili internu poruku.'
+                        : 'The same issue keeps returning through support and needs a clearer webinar, FAQ, or internal update.',
+                ],
+            ];
+        }
+
+        if($shop_clicks_total >= 20 && $capture_rate < 10) {
+            return [
+                'focus' => [
+                    'key' => 'conversion',
+                    'label' => $is_hr ? 'Pretvaranje klikova u prijave' : 'Turn clicks into sign-ups',
+                    'note' => $is_hr
+                        ? nr($funnel_leads_total) . ' prijava na ' . nr($shop_clicks_total) . ' klikova · ' . nr($capture_rate) . '% capture rate'
+                        : nr($funnel_leads_total) . ' sign-ups from ' . nr($shop_clicks_total) . ' clicks · ' . nr($capture_rate) . '% capture rate',
+                ],
+                'friction' => [
+                    'key' => 'conversion_gap',
+                    'label' => $is_hr ? 'Klikovi bez dovoljnog funnel outputa' : 'Clicks without enough funnel output',
+                    'note' => $is_hr
+                        ? 'Promet postoji, ali put do prijave još nije dovoljno jasan i vođen.'
+                        : 'Traffic exists, but the path to sign-up is not yet clear and guided enough.',
+                ],
+            ];
+        }
+
+        if($consistency_avg < 45) {
+            return [
+                'focus' => [
+                    'key' => 'consistency',
+                    'label' => $is_hr ? 'Dosljednost i završavanje ciklusa' : 'Consistency and cycle completion',
+                    'note' => $is_hr
+                        ? 'Prosjek konzistentnosti tima je ' . nr($consistency_avg) . '/100'
+                        : 'Average team consistency is ' . nr($consistency_avg) . '/100',
+                ],
+                'friction' => [
+                    'key' => 'execution_rhythm',
+                    'label' => $is_hr ? 'Slab execution ritam' : 'Weak execution rhythm',
+                    'note' => $is_hr
+                        ? 'Planovi i aktivnosti postoje, ali se tjedni ciklus ne zatvara dovoljno dosljedno.'
+                        : 'Plans and activity exist, but the weekly cycle is not being closed consistently enough.',
+                ],
+            ];
+        }
+
+        if($rising_total >= max(3, $risk_total) && $qualified_total >= 5 && $consistency_avg >= 55) {
+            return [
+                'focus' => [
+                    'key' => 'growth',
+                    'label' => $is_hr ? 'Skaliranje onoga što već radi' : 'Scale what already works',
+                    'note' => $is_hr
+                        ? nr($rising_total) . ' suradnika u rastu · ' . nr($qualified_total) . ' kvalificiranih'
+                        : nr($rising_total) . ' rising collaborators · ' . nr($qualified_total) . ' qualified',
+                ],
+                'friction' => [
+                    'key' => 'quality_guard',
+                    'label' => $is_hr ? 'Zadržati kvalitetu pri rastu' : 'Keep quality while scaling',
+                    'note' => $is_hr
+                        ? 'Najveći rizik nije promet nego zadržavanje follow-upa i conversion kvalitete.'
+                        : 'The biggest risk is not traffic but maintaining follow-up and conversion quality.',
+                ],
+            ];
+        }
+
+        return [
+            'focus' => [
+                'key' => 'stability',
+                'label' => $is_hr ? 'Održavanje zdravog momentuma' : 'Maintain healthy momentum',
+                'note' => $is_hr
+                    ? 'Tim je stabilan i spreman za precizne optimizacije.'
+                    : 'The team is stable and ready for precise optimization.',
+            ],
+            'friction' => [
+                'key' => 'monitoring',
+                'label' => $is_hr ? 'Nema dominantne frikcije' : 'No dominant friction',
+                'note' => $is_hr
+                    ? 'Prati conversion kvalitetu i signale koji prvi odstupaju.'
+                    : 'Monitor conversion quality and the first signals that start to drift.',
+            ],
+        ];
+    }
+
+    private function get_executive_summary_action_payload(array $overview_payload, array $focus_payload): array {
+        $is_hr = \Altum\Language::$code === 'hr';
+        $totals = $overview_payload['totals'] ?? [];
+        $support_center = $overview_payload['support_center'] ?? [];
+        $compare_map = $this->get_executive_summary_compare_map($overview_payload);
+        $shop_compare_text = trim((string) (($compare_map['total_shop_clicks_period']['text'] ?? '')));
+        $funnel_compare_text = trim((string) (($compare_map['total_funnel_leads_period']['text'] ?? '')));
+        $risk_total = (int) ($totals['risk'] ?? 0);
+        $rising_total = (int) ($totals['rising'] ?? 0);
+
+        switch((string) ($focus_payload['key'] ?? 'stability')) {
+            case 'fraud_watch':
+                return [
+                    'eyebrow' => $is_hr ? 'Admin akcija sada' : 'Admin action now',
+                    'title' => $is_hr ? 'Prvo otvori Fraud i Risk listu' : 'Open the Fraud and Risk lists first',
+                    'subtitle' => $is_hr
+                        ? 'Pregledaj top suspicious pattern, blocked pokušaje i suradnike s najvećim anomaly signalom prije novih timskih akcija.'
+                        : 'Review the top suspicious patterns, blocked attempts, and collaborators with the highest anomaly signal before new team actions.',
+                    'note' => $is_hr
+                        ? 'Početni fokus: risk ' . nr($risk_total) . ' · rising ' . nr($rising_total)
+                        : 'Starting focus: risk ' . nr($risk_total) . ' · rising ' . nr($rising_total),
+                    'tone' => 'danger',
+                ];
+
+            case 'risk_stabilization':
+                return [
+                    'eyebrow' => $is_hr ? 'Admin akcija sada' : 'Admin action now',
+                    'title' => $is_hr ? 'Pokreni coaching follow-up za risk grupu' : 'Start coaching follow-up for the risk segment',
+                    'subtitle' => $is_hr
+                        ? 'Prioritet su suradnici s risk statusom, starim check-inom i slabijom konzistentnošću prije novih growth akcija.'
+                        : 'Prioritize collaborators with risk status, stale check-ins, and weaker consistency before new growth pushes.',
+                    'note' => $is_hr
+                        ? 'Risk je trenutno jači od growtha i zato coaching ima prednost.'
+                        : 'Risk currently outweighs growth, so coaching should come first.',
+                    'tone' => 'warning',
+                ];
+
+            case 'support_clarity':
+                return [
+                    'eyebrow' => $is_hr ? 'Admin akcija sada' : 'Admin action now',
+                    'title' => $is_hr ? 'Pretvori support temu u jasan timski odgovor' : 'Turn the support theme into a clear team answer',
+                    'subtitle' => $is_hr
+                        ? 'Pripremi kratku internu poruku, FAQ ili webinar oko teme koja se najviše ponavlja u podršci.'
+                        : 'Prepare a short internal message, FAQ, or webinar around the issue that repeats most often in support.',
+                    'note' => $is_hr
+                        ? 'Top support tema: ' . ((string) ($support_center['top_themes'][0]['label'] ?? '-'))
+                        : 'Top support topic: ' . ((string) ($support_center['top_themes'][0]['label'] ?? '-')),
+                    'tone' => 'info',
+                ];
+
+            case 'conversion':
+                return [
+                    'eyebrow' => $is_hr ? 'Admin akcija sada' : 'Admin action now',
+                    'title' => $is_hr ? 'Pregledaj top aplikacije s klikovima bez prijava' : 'Review top apps with clicks but no sign-ups',
+                    'subtitle' => $is_hr
+                        ? 'Promet postoji, pa sada treba očistiti CTA, funnel korak i follow-up tamo gdje klik postoji, ali prijava ne prati.'
+                        : 'Traffic exists, so the next move is to tighten CTA, funnel steps, and follow-up where clicks are happening but sign-ups are not.',
+                    'note' => $is_hr
+                        ? 'Klikovi: ' . ($shop_compare_text !== '' ? $shop_compare_text : '-') . ' · Funnel: ' . ($funnel_compare_text !== '' ? $funnel_compare_text : '-')
+                        : 'Clicks: ' . ($shop_compare_text !== '' ? $shop_compare_text : '-') . ' · Funnel: ' . ($funnel_compare_text !== '' ? $funnel_compare_text : '-'),
+                    'tone' => 'warning',
+                ];
+
+            case 'consistency':
+                return [
+                    'eyebrow' => $is_hr ? 'Admin akcija sada' : 'Admin action now',
+                    'title' => $is_hr ? 'Podigni consistency prije novog scale-upa' : 'Raise consistency before the next scale-up',
+                    'subtitle' => $is_hr
+                        ? 'Usmjeri coaching na check-in ritam, završavanje plana i zatvaranje outcome ciklusa.'
+                        : 'Focus coaching on check-in rhythm, plan completion, and closing the outcome loop.',
+                    'note' => $is_hr
+                        ? 'Bez jačeg ritma tim teže pretvara promet u stabilan rezultat.'
+                        : 'Without a stronger rhythm, the team struggles to turn traffic into stable outcomes.',
+                    'tone' => 'info',
+                ];
+
+            case 'growth':
+                return [
+                    'eyebrow' => $is_hr ? 'Admin akcija sada' : 'Admin action now',
+                    'title' => $is_hr ? 'Dupliciraj ono što radi na top tržištu' : 'Duplicate what works in the top market',
+                    'subtitle' => $is_hr
+                        ? 'Iskoristi rising suradnike i najjači market/source pattern kao model za ostatak tima.'
+                        : 'Use the rising collaborators and the strongest market/source pattern as the model for the rest of the team.',
+                    'note' => $is_hr
+                        ? 'Growth je zdrav, pa je sada prioritet standardizacija najboljeg obrasca.'
+                        : 'Growth is healthy, so the next priority is standardizing the best-performing pattern.',
+                    'tone' => 'success',
+                ];
+        }
+
+        return [
+            'eyebrow' => $is_hr ? 'Admin akcija sada' : 'Admin action now',
+            'title' => $is_hr ? 'Prati signal i reagiraj na prvo odstupanje' : 'Monitor the signal and react to the first deviation',
+            'subtitle' => $is_hr
+                ? 'Tim je stabilan, pa je najbolja akcija održati conversion kvalitetu, consistency i jasnu prioritizaciju.'
+                : 'The team is stable, so the best action is to preserve conversion quality, consistency, and clear prioritization.',
+            'note' => $is_hr
+                ? 'Najveća korist sada dolazi iz preciznih korekcija, ne iz širokih promjena.'
+                : 'The biggest gain now comes from precise corrections, not broad changes.',
+            'tone' => 'info',
+        ];
+    }
+
     private function get_executive_summary_payload(array $overview_payload): array {
+        $is_hr = \Altum\Language::$code === 'hr';
         $totals = $overview_payload['totals'] ?? [];
         $team_analytics = $overview_payload['team_analytics'] ?? [];
         $team_consistency = $overview_payload['team_consistency'] ?? [];
-        $team_ai_actions = $overview_payload['team_ai_actions'] ?? [];
         $fraud_dashboard = $overview_payload['fraud_dashboard'] ?? [];
-
-        $summary = [
-            'headline' => 'Tim je stabilan i spreman za rast.',
-            'subheadline' => 'Glavni fokus je zadržati momentum i pratiti conversion kvalitetu.',
-            'top_country' => $team_analytics['top_countries'][0]['label'] ?? '-',
-            'top_hour' => $team_analytics['top_hours'][0]['label'] ?? '-',
-            'top_source' => $team_analytics['top_sources'][0]['label'] ?? '-',
-            'focus_term' => $team_ai_actions['top_focus_terms'][0]['label'] ?? '-',
-            'friction_term' => $team_ai_actions['top_friction_terms'][0]['label'] ?? '-',
-        ];
+        $country_matrices = $overview_payload['team_country_signal_matrix_periods'] ?? [];
+        $selected_period = (string) ($overview_payload['selected_period'] ?? '30d');
+        $selected_country_matrix = $country_matrices[$selected_period] ?? ['rows' => [], 'totals' => []];
+        $top_country_row = $selected_country_matrix['rows'][0] ?? [];
+        $compare_map = $this->get_executive_summary_compare_map($overview_payload);
 
         $risk_total = (int) ($totals['risk'] ?? 0);
         $high_anomaly_total = (int) ($totals['anomaly_high'] ?? 0);
         $blocked_attempts_total = (int) ($fraud_dashboard['totals']['blocked_attempts_total'] ?? 0);
         $rising_total = (int) ($totals['rising'] ?? 0);
         $qualified_total = (int) ($totals['qualified'] ?? 0);
+        $active_collaborators = (int) ($totals['active_collaborators'] ?? 0);
+        $active_pro_total = (int) ($totals['active_pro_total'] ?? 0);
+        $shop_clicks_total = (int) ($totals['total_shop_clicks_period'] ?? 0);
+        $funnel_leads_total = (int) ($totals['total_funnel_leads_period'] ?? 0);
+        $capture_rate = $shop_clicks_total > 0 ? round(($funnel_leads_total / max(1, $shop_clicks_total)) * 100, 1) : 0;
         $consistency_avg = (float) ($team_consistency['average_score'] ?? 0);
+        $shop_compare_text = trim((string) (($compare_map['total_shop_clicks_period']['text'] ?? '')));
+        $funnel_compare_text = trim((string) (($compare_map['total_funnel_leads_period']['text'] ?? '')));
+
+        $status_key = 'stable';
+        $status_label = $is_hr ? 'Stabilno' : 'Stable';
+        $status_class = 'status-info';
+        $headline = $is_hr ? 'Tim je stabilan i spreman za preciznu optimizaciju.' : 'The team is stable and ready for precise optimization.';
+        $subheadline = $is_hr ? 'Glavni fokus je zadržati momentum, paziti na conversion kvalitetu i reagirati na prvo odstupanje.' : 'The main focus is to preserve momentum, watch conversion quality, and react to the first deviation.';
 
         if($high_anomaly_total >= 3 || $blocked_attempts_total >= 10) {
-            $summary['headline'] = 'Tim ima izražen fraud i anomaly pritisak.';
-            $summary['subheadline'] = 'Prvi fokus treba biti provjera suspicious patterna i najrizičnijih suradnika prije daljnjeg skaliranja.';
+            $status_key = 'fraud_watch';
+            $status_label = 'Fraud watch';
+            $status_class = 'status-danger';
+            $headline = $is_hr ? 'Tim ima izražen fraud i anomaly pritisak.' : 'The team is under visible fraud and anomaly pressure.';
+            $subheadline = $is_hr ? 'Prije daljnjeg scale-upa prvo provjeri suspicious pattern, blocked pokušaje i najrizičnije suradnike.' : 'Before any further scale-up, review suspicious patterns, blocked attempts, and the riskiest collaborators first.';
         } elseif($risk_total >= max(4, $rising_total)) {
-            $summary['headline'] = 'Tim traži pojačan coaching i stabilizaciju.';
-            $summary['subheadline'] = 'Risk segment je trenutno jači od growth segmenta pa treba prioritizirati follow-up, execution i consistency.';
+            $status_key = 'coaching';
+            $status_label = $is_hr ? 'Coaching fokus' : 'Coaching focus';
+            $status_class = 'status-warning';
+            $headline = $is_hr ? 'Tim traži stabilizaciju prije novog rasta.' : 'The team needs stabilization before the next growth push.';
+            $subheadline = $is_hr ? 'Risk segment je trenutno jači od growth segmenta pa coaching, follow-up i consistency trebaju imati prioritet.' : 'The risk segment currently outweighs growth, so coaching, follow-up, and consistency should come first.';
         } elseif($rising_total >= max(3, $risk_total) && $qualified_total >= 5 && $consistency_avg >= 55) {
-            $summary['headline'] = 'Tim pokazuje zdrav growth momentum.';
-            $summary['subheadline'] = 'Najveća prilika je ubrzati ono što već radi: top tržišta, top sate i suradnike s jakom konzistentnošću.';
+            $status_key = 'growth';
+            $status_label = $is_hr ? 'Growth momentum' : 'Growth momentum';
+            $status_class = 'status-success';
+            $headline = $is_hr ? 'Tim pokazuje zdrav momentum za scale-up.' : 'The team shows healthy momentum for scale-up.';
+            $subheadline = $is_hr ? 'Najveća prilika je duplicirati ono što već radi na top tržištu i u najjačem vremenu aktivnosti.' : 'The biggest opportunity is to duplicate what already works in the top market and top activity window.';
         }
 
-        return $summary;
+        $focus_payload = $this->get_executive_summary_focus_payload($overview_payload);
+        $action_payload = $this->get_executive_summary_action_payload($overview_payload, $focus_payload['focus'] ?? []);
+
+        $top_country_name = (string) ($top_country_row['country_name'] ?? ($team_analytics['top_countries'][0]['label'] ?? '-'));
+        $top_country_total = (int) (($top_country_row['app_visits'] ?? 0) + ($top_country_row['app_shop_clicks'] ?? 0) + ($top_country_row['blog_clicks'] ?? 0) + ($top_country_row['funnel_registrations'] ?? 0));
+        $top_source = $team_analytics['top_sources'][0] ?? ['label' => '-', 'total' => 0];
+        $top_hour = $team_analytics['top_hours'][0] ?? ['label' => '-', 'total' => 0];
+
+        return [
+            'status_key' => $status_key,
+            'status_label' => $status_label,
+            'status_class' => $status_class,
+            'headline' => $headline,
+            'subheadline' => $subheadline,
+            'top_country' => $top_country_name,
+            'top_hour' => (string) ($top_hour['label'] ?? '-'),
+            'top_source' => (string) ($top_source['label'] ?? '-'),
+            'focus_term' => (string) ($focus_payload['focus']['label'] ?? '-'),
+            'friction_term' => (string) ($focus_payload['friction']['label'] ?? '-'),
+            'signals' => [
+                [
+                    'label' => $is_hr ? 'Risk i anomaly' : 'Risk and anomaly',
+                    'value' => $is_hr ? nr($risk_total) . ' risk' : nr($risk_total) . ' risk',
+                    'note' => $is_hr
+                        ? nr($high_anomaly_total) . ' high anomaly · ' . nr($blocked_attempts_total) . ' blocked pokušaja'
+                        : nr($high_anomaly_total) . ' high anomaly · ' . nr($blocked_attempts_total) . ' blocked attempts',
+                    'tone' => ($high_anomaly_total >= 3 || $blocked_attempts_total >= 10) ? 'danger' : ($risk_total > 0 ? 'warning' : 'success'),
+                ],
+                [
+                    'label' => $is_hr ? 'Klikovi → prijave' : 'Clicks to sign-ups',
+                    'value' => $is_hr ? nr($funnel_leads_total) . ' leadova' : nr($funnel_leads_total) . ' leads',
+                    'note' => $is_hr
+                        ? nr($shop_clicks_total) . ' klikova · ' . nr($capture_rate) . '% capture rate'
+                        : nr($shop_clicks_total) . ' clicks · ' . nr($capture_rate) . '% capture rate',
+                    'tone' => ($shop_clicks_total >= 20 && $capture_rate < 10) ? 'warning' : ($capture_rate >= 15 ? 'success' : 'info'),
+                ],
+                [
+                    'label' => $is_hr ? 'Consistency i jezgra tima' : 'Consistency and core team',
+                    'value' => nr($consistency_avg) . '/100',
+                    'note' => $is_hr
+                        ? nr($qualified_total) . ' kvalificiranih · ' . nr($active_collaborators) . ' aktivnih · ' . nr($active_pro_total) . ' PRO'
+                        : nr($qualified_total) . ' qualified · ' . nr($active_collaborators) . ' active · ' . nr($active_pro_total) . ' PRO',
+                    'tone' => $consistency_avg >= 55 ? 'success' : ($consistency_avg < 45 ? 'warning' : 'info'),
+                ],
+            ],
+            'cards' => [
+                [
+                    'eyebrow' => $is_hr ? 'Top tržište i izvor' : 'Top market and source',
+                    'title' => $top_country_name,
+                    'subtitle' => $is_hr
+                        ? nr($top_country_total) . ' ukupnih signala · izvor: ' . (string) ($top_source['label'] ?? '-')
+                        : nr($top_country_total) . ' total signals · source: ' . (string) ($top_source['label'] ?? '-'),
+                    'note' => $is_hr
+                        ? 'Posjete ' . nr((int) ($top_country_row['app_visits'] ?? 0)) . ' · app klikovi ' . nr((int) ($top_country_row['app_shop_clicks'] ?? 0)) . ' · blog ' . nr((int) ($top_country_row['blog_clicks'] ?? 0)) . ' · funnel ' . nr((int) ($top_country_row['funnel_registrations'] ?? 0))
+                        : 'Visits ' . nr((int) ($top_country_row['app_visits'] ?? 0)) . ' · app clicks ' . nr((int) ($top_country_row['app_shop_clicks'] ?? 0)) . ' · blog ' . nr((int) ($top_country_row['blog_clicks'] ?? 0)) . ' · funnel ' . nr((int) ($top_country_row['funnel_registrations'] ?? 0)),
+                    'tone' => 'info',
+                ],
+                [
+                    'eyebrow' => $is_hr ? 'Top vrijeme aktivnosti' : 'Top activity window',
+                    'title' => (string) ($top_hour['label'] ?? '-'),
+                    'subtitle' => $is_hr
+                        ? nr((int) ($top_hour['total'] ?? 0)) . ' unique outbound klikova u najjačem satu'
+                        : nr((int) ($top_hour['total'] ?? 0)) . ' unique outbound clicks in the strongest hour',
+                    'note' => $is_hr
+                        ? 'Ovo pokazuje kada tim najčešće vodi promet prema Forever odredištima.'
+                        : 'This shows when the team most often drives traffic toward Forever destinations.',
+                    'tone' => 'info',
+                ],
+                [
+                    'eyebrow' => $is_hr ? 'Fokus i frikcija tima' : 'Team focus and friction',
+                    'title' => (string) ($focus_payload['focus']['label'] ?? '-'),
+                    'subtitle' => $is_hr
+                        ? 'Frikcija: ' . (string) ($focus_payload['friction']['label'] ?? '-')
+                        : 'Friction: ' . (string) ($focus_payload['friction']['label'] ?? '-'),
+                    'note' => trim(implode(' · ', array_filter([
+                        (string) ($focus_payload['focus']['note'] ?? ''),
+                        (string) ($focus_payload['friction']['note'] ?? ''),
+                    ]))),
+                    'tone' => 'warning',
+                ],
+                [
+                    'eyebrow' => (string) ($action_payload['eyebrow'] ?? ($is_hr ? 'Admin akcija sada' : 'Admin action now')),
+                    'title' => (string) ($action_payload['title'] ?? '-'),
+                    'subtitle' => (string) ($action_payload['subtitle'] ?? ''),
+                    'note' => trim(implode(' · ', array_filter([
+                        (string) ($action_payload['note'] ?? ''),
+                        $shop_compare_text !== '' ? ($is_hr ? 'Klikovi: ' : 'Clicks: ') . $shop_compare_text : '',
+                        $funnel_compare_text !== '' ? ($is_hr ? 'Funnel: ' : 'Funnel: ') . $funnel_compare_text : '',
+                    ]))),
+                    'tone' => (string) ($action_payload['tone'] ?? 'info'),
+                ],
+            ],
+        ];
     }
 
     private function get_team_momentum_payload(array $rows): array {

@@ -805,6 +805,11 @@
         border-color: rgba(94, 200, 255, 0.3);
     }
 
+    .leader-os-status-badge.status-danger {
+        background: linear-gradient(180deg, rgba(132, 36, 47, 0.78) 0%, rgba(90, 25, 35, 0.94) 100%);
+        border-color: rgba(248, 113, 113, 0.36);
+    }
+
     .leader-os-status-badge.status-dark {
         background: linear-gradient(180deg, rgba(55, 67, 85, 0.66) 0%, rgba(35, 45, 60, 0.88) 100%);
         border-color: rgba(148, 163, 184, 0.2);
@@ -817,6 +822,155 @@
 
     .leader-os-growth-positive {
         color: #86efac;
+    }
+
+    .leader-os-summary-top {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .leader-os-summary-statuses {
+        display: flex;
+        align-items: center;
+        gap: 0.55rem;
+        flex-wrap: wrap;
+        margin-bottom: 0.75rem;
+    }
+
+    .leader-os-summary-headline {
+        color: #f8fbff;
+        font-size: 1.35rem;
+        line-height: 1.1;
+        font-weight: 800;
+        letter-spacing: -0.03em;
+        margin-bottom: 0.35rem;
+    }
+
+    .leader-os-summary-subheadline {
+        color: rgba(214, 227, 240, 0.8);
+        font-size: 0.92rem;
+        line-height: 1.5;
+        max-width: 76ch;
+    }
+
+    .leader-os-summary-signal-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0.8rem;
+        margin-top: 1rem;
+    }
+
+    .leader-os-summary-signal {
+        border-radius: 1rem;
+        border: 1px solid rgba(148, 163, 184, 0.14);
+        background: linear-gradient(180deg, rgba(20, 30, 44, 0.74) 0%, rgba(10, 17, 28, 0.86) 100%);
+        padding: 0.9rem 1rem;
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.03);
+    }
+
+    .leader-os-summary-signal.is-success {
+        border-color: rgba(107, 227, 139, 0.22);
+    }
+
+    .leader-os-summary-signal.is-warning {
+        border-color: rgba(239, 200, 107, 0.24);
+    }
+
+    .leader-os-summary-signal.is-danger {
+        border-color: rgba(248, 113, 113, 0.24);
+    }
+
+    .leader-os-summary-signal.is-info {
+        border-color: rgba(94, 200, 255, 0.24);
+    }
+
+    .leader-os-summary-signal-label {
+        color: rgba(200, 215, 233, 0.72);
+        font-size: 0.74rem;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        margin-bottom: 0.4rem;
+    }
+
+    .leader-os-summary-signal-value {
+        color: #f8fbff;
+        font-size: 1.52rem;
+        line-height: 1;
+        font-weight: 800;
+        letter-spacing: -0.03em;
+    }
+
+    .leader-os-summary-signal-note {
+        margin-top: 0.45rem;
+        color: rgba(214, 227, 240, 0.72);
+        font-size: 0.82rem;
+        line-height: 1.42;
+    }
+
+    .leader-os-summary-detail-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 0.85rem;
+        margin-top: 1rem;
+    }
+
+    .leader-os-summary-detail-card {
+        border-radius: 1rem;
+        border: 1px solid rgba(148, 163, 184, 0.14);
+        background:
+            radial-gradient(circle at top right, rgba(94, 200, 255, 0.08), transparent 34%),
+            linear-gradient(180deg, rgba(19, 29, 44, 0.8) 0%, rgba(10, 16, 26, 0.9) 100%);
+        padding: 0.95rem 1rem;
+        min-height: 172px;
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.03);
+    }
+
+    .leader-os-summary-detail-card.is-success {
+        border-color: rgba(107, 227, 139, 0.22);
+    }
+
+    .leader-os-summary-detail-card.is-warning {
+        border-color: rgba(239, 200, 107, 0.24);
+    }
+
+    .leader-os-summary-detail-card.is-danger {
+        border-color: rgba(248, 113, 113, 0.24);
+    }
+
+    .leader-os-summary-detail-card.is-info {
+        border-color: rgba(94, 200, 255, 0.24);
+    }
+
+    .leader-os-summary-detail-eyebrow {
+        color: rgba(200, 215, 233, 0.7);
+        font-size: 0.74rem;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        margin-bottom: 0.45rem;
+    }
+
+    .leader-os-summary-detail-title {
+        color: #f8fbff;
+        font-size: 1.08rem;
+        line-height: 1.28;
+        font-weight: 800;
+        margin-bottom: 0.4rem;
+    }
+
+    .leader-os-summary-detail-subtitle {
+        color: rgba(220, 232, 245, 0.86);
+        font-size: 0.88rem;
+        line-height: 1.45;
+        margin-bottom: 0.55rem;
+    }
+
+    .leader-os-summary-detail-note {
+        color: rgba(214, 227, 240, 0.7);
+        font-size: 0.8rem;
+        line-height: 1.5;
     }
 
     .leader-os-growth-negative {
@@ -1525,6 +1679,11 @@
             grid-template-columns: repeat(2, minmax(0, 1fr));
         }
 
+        .leader-os-summary-signal-grid,
+        .leader-os-summary-detail-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
         .leader-os-support-workspace {
             grid-template-columns: 1fr;
         }
@@ -1540,6 +1699,11 @@
         }
 
         .leader-os-primary-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .leader-os-summary-signal-grid,
+        .leader-os-summary-detail-grid {
             grid-template-columns: 1fr;
         }
 
@@ -2793,30 +2957,46 @@ $operations_tab_badge_total = (int) (($data->operations['totals']['pending_appro
                 </div>
             </div>
 
+            <?php $leader_os_executive_summary = $data->overview['executive_summary'] ?? []; ?>
             <div class="leader-os-panel mb-4">
-                <div class="d-flex justify-content-between align-items-start flex-wrap" style="gap:1rem;">
+                <div class="leader-os-summary-top">
                     <div>
                         <div class="text-uppercase small text-muted mb-2">Executive summary</div>
-                        <h3 class="h5 mb-1"><?= htmlspecialchars((string) ($data->overview['executive_summary']['headline'] ?? ''), ENT_QUOTES, 'UTF-8') ?></h3>
-                        <div class="text-muted small"><?= htmlspecialchars((string) ($data->overview['executive_summary']['subheadline'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                        <div class="leader-os-summary-statuses">
+                            <span class="leader-os-status-badge <?= htmlspecialchars((string) ($leader_os_executive_summary['status_class'] ?? 'status-info'), ENT_QUOTES, 'UTF-8') ?>">
+                                <?= htmlspecialchars((string) ($leader_os_executive_summary['status_label'] ?? '-'), ENT_QUOTES, 'UTF-8') ?>
+                            </span>
+                            <span class="leader-os-status-badge status-info"><?= l('admin_leader_operating_system.period_' . ($data->selected_period ?? '30d')) ?></span>
+                        </div>
+                        <div class="leader-os-summary-headline"><?= htmlspecialchars((string) ($leader_os_executive_summary['headline'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                        <div class="leader-os-summary-subheadline"><?= htmlspecialchars((string) ($leader_os_executive_summary['subheadline'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
                     </div>
-                    <span class="leader-os-status-badge status-info"><?= htmlspecialchars((string) ($data->selected_period ?? '30d'), ENT_QUOTES, 'UTF-8') ?></span>
                 </div>
 
-                <div class="row mt-3">
-                    <div class="col-12 col-lg-4 mb-3 mb-lg-0">
-                        <div class="text-muted small mb-1">Top tržište / izvor</div>
-                        <div><strong><?= htmlspecialchars((string) ($data->overview['executive_summary']['top_country'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></strong> · <?= htmlspecialchars((string) ($data->overview['executive_summary']['top_source'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></div>
+                <?php if(!empty($leader_os_executive_summary['signals'])): ?>
+                    <div class="leader-os-summary-signal-grid">
+                        <?php foreach(($leader_os_executive_summary['signals'] ?? []) as $signal): ?>
+                            <div class="leader-os-summary-signal is-<?= htmlspecialchars((string) ($signal['tone'] ?? 'info'), ENT_QUOTES, 'UTF-8') ?>">
+                                <div class="leader-os-summary-signal-label"><?= htmlspecialchars((string) ($signal['label'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                                <div class="leader-os-summary-signal-value"><?= htmlspecialchars((string) ($signal['value'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></div>
+                                <div class="leader-os-summary-signal-note"><?= htmlspecialchars((string) ($signal['note'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                            </div>
+                        <?php endforeach ?>
                     </div>
-                    <div class="col-12 col-lg-4 mb-3 mb-lg-0">
-                        <div class="text-muted small mb-1">Top vrijeme aktivnosti</div>
-                        <div><strong><?= htmlspecialchars((string) ($data->overview['executive_summary']['top_hour'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></strong></div>
+                <?php endif ?>
+
+                <?php if(!empty($leader_os_executive_summary['cards'])): ?>
+                    <div class="leader-os-summary-detail-grid">
+                        <?php foreach(($leader_os_executive_summary['cards'] ?? []) as $summary_card): ?>
+                            <div class="leader-os-summary-detail-card is-<?= htmlspecialchars((string) ($summary_card['tone'] ?? 'info'), ENT_QUOTES, 'UTF-8') ?>">
+                                <div class="leader-os-summary-detail-eyebrow"><?= htmlspecialchars((string) ($summary_card['eyebrow'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                                <div class="leader-os-summary-detail-title"><?= htmlspecialchars((string) ($summary_card['title'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></div>
+                                <div class="leader-os-summary-detail-subtitle"><?= htmlspecialchars((string) ($summary_card['subtitle'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                                <div class="leader-os-summary-detail-note"><?= htmlspecialchars((string) ($summary_card['note'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                            </div>
+                        <?php endforeach ?>
                     </div>
-                    <div class="col-12 col-lg-4">
-                        <div class="text-muted small mb-1">Team focus / friction</div>
-                        <div><strong><?= htmlspecialchars((string) ($data->overview['executive_summary']['focus_term'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></strong> · <?= htmlspecialchars((string) ($data->overview['executive_summary']['friction_term'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></div>
-                    </div>
-                </div>
+                <?php endif ?>
             </div>
         <?php endif ?>
 
