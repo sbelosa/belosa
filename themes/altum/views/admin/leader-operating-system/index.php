@@ -4500,7 +4500,7 @@ $operations_tab_badge_total = (int) (($data->operations['totals']['pending_appro
 </div>
 <?php endif ?>
 
-<?php if(($data->selected_tab ?? 'overview') === 'collaborators'): ?>
+<?php if(in_array(($data->selected_tab ?? 'overview'), ['overview', 'coaching', 'fraud', 'collaborators'], true)): ?>
 <div class="card leader-os-shell mb-4">
     <div class="card-body">
         <form action="<?= url('admin/leader-operating-system') ?>" method="get">
