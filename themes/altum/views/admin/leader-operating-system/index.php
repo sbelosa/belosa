@@ -910,6 +910,76 @@
         line-height: 1.42;
     }
 
+    .leader-os-summary-guide {
+        margin-top: 0.7rem;
+        display: grid;
+        gap: 0.35rem;
+    }
+
+    .leader-os-summary-guide-line {
+        color: rgba(214, 227, 240, 0.74);
+        font-size: 0.78rem;
+        line-height: 1.45;
+    }
+
+    .leader-os-summary-guide-line strong {
+        color: #f8fbff;
+        font-weight: 700;
+    }
+
+    .leader-os-summary-metrics {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-top: 0.75rem;
+    }
+
+    .leader-os-summary-metric {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        padding: 0.5rem 0.7rem;
+        border-radius: 999px;
+        border: 1px solid rgba(148, 163, 184, 0.16);
+        background: rgba(11, 18, 28, 0.72);
+        color: #dbe7f5;
+        font-size: 0.76rem;
+        line-height: 1;
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.03);
+    }
+
+    .leader-os-summary-metric.is-clickable {
+        cursor: pointer;
+        transition: border-color 0.16s ease, transform 0.16s ease, background 0.16s ease;
+    }
+
+    .leader-os-summary-metric.is-clickable:hover,
+    .leader-os-summary-metric.is-clickable:focus {
+        outline: none;
+        transform: translateY(-1px);
+        border-color: rgba(94, 200, 255, 0.34);
+        background: rgba(15, 24, 36, 0.92);
+    }
+
+    .leader-os-summary-metric-label {
+        color: rgba(214, 227, 240, 0.74);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .leader-os-summary-metric-value {
+        color: #f8fbff;
+        font-weight: 800;
+        font-size: 0.83rem;
+    }
+
+    .leader-os-summary-metric-hint {
+        margin-top: 0.5rem;
+        color: rgba(170, 191, 212, 0.68);
+        font-size: 0.74rem;
+        line-height: 1.4;
+    }
+
     .leader-os-summary-detail-grid {
         display: grid;
         grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -2506,6 +2576,51 @@ $render_primary_kpi_card = static function(array $kpi) use ($data) {
     return ob_get_clean();
 };
 
+$leader_os_primary_kpi_map = [];
+foreach(($data->overview['primary_team_kpis'] ?? []) as $primary_kpi) {
+    $leader_os_primary_kpi_map[(string) ($primary_kpi['key'] ?? '')] = (array) $primary_kpi;
+}
+
+$render_summary_metric_chip = static function(array $metric_link) use ($data, $leader_os_primary_kpi_map) {
+    $key = (string) ($metric_link['key'] ?? '');
+    $label = (string) ($metric_link['label'] ?? '');
+    $value_display = (string) ($metric_link['value_display'] ?? '');
+    $description = trim((string) ($metric_link['description'] ?? ''));
+    $drilldown = $key !== '' ? ($data->overview['kpi_drilldowns'][$key] ?? null) : null;
+    $has_drilldown = is_array($drilldown);
+    $summary_note_parts = [];
+
+    if($description !== '') {
+        $summary_note_parts[] = $description;
+    }
+
+    if($key !== '' && !empty($leader_os_primary_kpi_map[$key]['compare']['text'])) {
+        $summary_note_parts[] = (string) ($leader_os_primary_kpi_map[$key]['compare']['text'] ?? '');
+    }
+
+    if($has_drilldown && !empty($drilldown['summary_note'])) {
+        $summary_note_parts[] = (string) ($drilldown['summary_note'] ?? '');
+    }
+
+    $summary_note_parts[] = 'Klik na ime otvara detalj suradnika.';
+    $payload = $has_drilldown ? htmlspecialchars(json_encode([
+        'title' => (string) ($drilldown['title'] ?? $label),
+        'summary_label' => $label,
+        'summary_value' => $value_display !== '' ? $value_display : (string) ($drilldown['signal_total_display'] ?? ''),
+        'summary_note' => implode(' · ', array_values(array_unique(array_filter($summary_note_parts)))),
+        'items' => array_values($drilldown['items'] ?? []),
+    ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES), ENT_QUOTES, 'UTF-8') : '';
+
+    ob_start();
+    ?>
+    <span class="leader-os-summary-metric <?= $has_drilldown ? 'is-clickable' : '' ?>" <?= $has_drilldown ? 'role="button" tabindex="0" data-toggle="modal" data-target="#leader_os_drilldown_modal" data-drilldown="' . $payload . '"' : '' ?>>
+        <span class="leader-os-summary-metric-label"><?= htmlspecialchars($label, ENT_QUOTES, 'UTF-8') ?></span>
+        <span class="leader-os-summary-metric-value"><?= htmlspecialchars($value_display, ENT_QUOTES, 'UTF-8') ?></span>
+    </span>
+    <?php
+    return ob_get_clean();
+};
+
 $leader_os_team_signal_chart = $data->overview['team_signal_chart'] ?? [
     'labels' => [],
     'app_visits' => [],
@@ -2961,7 +3076,7 @@ $operations_tab_badge_total = (int) (($data->operations['totals']['pending_appro
             <div class="leader-os-panel mb-4">
                 <div class="leader-os-summary-top">
                     <div>
-                        <div class="text-uppercase small text-muted mb-2">Executive summary</div>
+                        <div class="text-uppercase small text-muted mb-2">Sažetak tima</div>
                         <div class="leader-os-summary-statuses">
                             <span class="leader-os-status-badge <?= htmlspecialchars((string) ($leader_os_executive_summary['status_class'] ?? 'status-info'), ENT_QUOTES, 'UTF-8') ?>">
                                 <?= htmlspecialchars((string) ($leader_os_executive_summary['status_label'] ?? '-'), ENT_QUOTES, 'UTF-8') ?>
@@ -2980,6 +3095,24 @@ $operations_tab_badge_total = (int) (($data->operations['totals']['pending_appro
                                 <div class="leader-os-summary-signal-label"><?= htmlspecialchars((string) ($signal['label'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
                                 <div class="leader-os-summary-signal-value"><?= htmlspecialchars((string) ($signal['value'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></div>
                                 <div class="leader-os-summary-signal-note"><?= htmlspecialchars((string) ($signal['note'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                                <?php if(!empty($signal['what_it_shows']) || !empty($signal['how_to_use'])): ?>
+                                    <div class="leader-os-summary-guide">
+                                        <?php if(!empty($signal['what_it_shows'])): ?>
+                                            <div class="leader-os-summary-guide-line"><strong>Što pokazuje:</strong> <?= htmlspecialchars((string) ($signal['what_it_shows'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                                        <?php endif ?>
+                                        <?php if(!empty($signal['how_to_use'])): ?>
+                                            <div class="leader-os-summary-guide-line"><strong>Kako koristiš:</strong> <?= htmlspecialchars((string) ($signal['how_to_use'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                                        <?php endif ?>
+                                    </div>
+                                <?php endif ?>
+                                <?php if(!empty($signal['metric_links'])): ?>
+                                    <div class="leader-os-summary-metrics">
+                                        <?php foreach(($signal['metric_links'] ?? []) as $metric_link): ?>
+                                            <?= $render_summary_metric_chip((array) $metric_link) ?>
+                                        <?php endforeach ?>
+                                    </div>
+                                    <div class="leader-os-summary-metric-hint">Klik na broj otvara popis suradnika i objašnjenje signala.</div>
+                                <?php endif ?>
                             </div>
                         <?php endforeach ?>
                     </div>
@@ -2993,6 +3126,24 @@ $operations_tab_badge_total = (int) (($data->operations['totals']['pending_appro
                                 <div class="leader-os-summary-detail-title"><?= htmlspecialchars((string) ($summary_card['title'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></div>
                                 <div class="leader-os-summary-detail-subtitle"><?= htmlspecialchars((string) ($summary_card['subtitle'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
                                 <div class="leader-os-summary-detail-note"><?= htmlspecialchars((string) ($summary_card['note'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                                <?php if(!empty($summary_card['what_it_shows']) || !empty($summary_card['how_to_use'])): ?>
+                                    <div class="leader-os-summary-guide">
+                                        <?php if(!empty($summary_card['what_it_shows'])): ?>
+                                            <div class="leader-os-summary-guide-line"><strong>Što pokazuje:</strong> <?= htmlspecialchars((string) ($summary_card['what_it_shows'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                                        <?php endif ?>
+                                        <?php if(!empty($summary_card['how_to_use'])): ?>
+                                            <div class="leader-os-summary-guide-line"><strong>Kako koristiš:</strong> <?= htmlspecialchars((string) ($summary_card['how_to_use'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                                        <?php endif ?>
+                                    </div>
+                                <?php endif ?>
+                                <?php if(!empty($summary_card['metric_links'])): ?>
+                                    <div class="leader-os-summary-metrics">
+                                        <?php foreach(($summary_card['metric_links'] ?? []) as $metric_link): ?>
+                                            <?= $render_summary_metric_chip((array) $metric_link) ?>
+                                        <?php endforeach ?>
+                                    </div>
+                                    <div class="leader-os-summary-metric-hint">Klik na broj otvara popis suradnika i objašnjenje signala.</div>
+                                <?php endif ?>
                             </div>
                         <?php endforeach ?>
                     </div>

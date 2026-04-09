@@ -3387,14 +3387,14 @@ class AdminLeaderOperatingSystem extends Controller {
                     'key' => 'fraud_watch',
                     'label' => $is_hr ? 'Zaštita prometa i provjera tima' : 'Traffic protection and team validation',
                     'note' => $is_hr
-                        ? nr($blocked_attempts_total) . ' blokiranih pokušaja · ' . nr($high_anomaly_total) . ' high anomaly suradnika'
+                        ? nr($blocked_attempts_total) . ' blokiranih pokušaja · ' . nr($high_anomaly_total) . ' suradnika s jakim anomaly signalom'
                         : nr($blocked_attempts_total) . ' blocked attempts · ' . nr($high_anomaly_total) . ' high anomaly collaborators',
                 ],
                 'friction' => [
                     'key' => 'fraud_pressure',
-                    'label' => $is_hr ? 'Suspicious patterni i anomaly signal' : 'Suspicious patterns and anomaly signal',
+                    'label' => $is_hr ? 'Sumnjivi obrasci i anomaly signal' : 'Suspicious patterns and anomaly signal',
                     'note' => $is_hr
-                        ? 'Prije scale-upa prvo validiraj najrizičnije klikove i suradnike.'
+                        ? 'Prije novog širenja prvo provjeri najrizičnije klikove i suradnike.'
                         : 'Validate the riskiest clicks and collaborators before scaling further.',
                 ],
             ];
@@ -3404,16 +3404,16 @@ class AdminLeaderOperatingSystem extends Controller {
             return [
                 'focus' => [
                     'key' => 'risk_stabilization',
-                    'label' => $is_hr ? 'Stabilizacija risk grupe' : 'Stabilize the risk segment',
+                    'label' => $is_hr ? 'Stabilizacija rizične grupe' : 'Stabilize the risk segment',
                     'note' => $is_hr
-                        ? nr($risk_total) . ' risk suradnika · consistency ' . nr($consistency_avg) . '/100'
+                        ? nr($risk_total) . ' rizičnih suradnika · dosljednost ' . nr($consistency_avg) . '/100'
                         : nr($risk_total) . ' at-risk collaborators · consistency ' . nr($consistency_avg) . '/100',
                 ],
                 'friction' => [
                     'key' => 'follow_up_gap',
-                    'label' => $is_hr ? 'Follow-up i execution rupa' : 'Follow-up and execution gap',
+                    'label' => $is_hr ? 'Rupa u praćenju i provedbi' : 'Follow-up and execution gap',
                     'note' => $is_hr
-                        ? 'Risk segment je jači od growth segmenta i traži coaching prije novog scale-upa.'
+                        ? 'Rizični segment je jači od segmenta rasta i traži coaching prije novog širenja.'
                         : 'The risk segment currently outweighs growth and needs coaching before new scale-up.',
                 ],
             ];
@@ -3425,7 +3425,7 @@ class AdminLeaderOperatingSystem extends Controller {
                     'key' => 'support_clarity',
                     'label' => $is_hr ? 'Jasnoća poruke i podrške' : 'Message clarity and support',
                     'note' => $is_hr
-                        ? nr($stale_support_total) . ' stale ticketa · tema: ' . $top_support_theme
+                        ? nr($stale_support_total) . ' starih ticketa · tema: ' . $top_support_theme
                         : nr($stale_support_total) . ' stale tickets · theme: ' . $top_support_theme,
                 ],
                 'friction' => [
@@ -3444,12 +3444,12 @@ class AdminLeaderOperatingSystem extends Controller {
                     'key' => 'conversion',
                     'label' => $is_hr ? 'Pretvaranje klikova u prijave' : 'Turn clicks into sign-ups',
                     'note' => $is_hr
-                        ? nr($funnel_leads_total) . ' prijava na ' . nr($shop_clicks_total) . ' klikova · ' . nr($capture_rate) . '% capture rate'
+                        ? nr($funnel_leads_total) . ' prijava na ' . nr($shop_clicks_total) . ' klikova · ' . nr($capture_rate) . '% stopa prijave'
                         : nr($funnel_leads_total) . ' sign-ups from ' . nr($shop_clicks_total) . ' clicks · ' . nr($capture_rate) . '% capture rate',
                 ],
                 'friction' => [
                     'key' => 'conversion_gap',
-                    'label' => $is_hr ? 'Klikovi bez dovoljnog funnel outputa' : 'Clicks without enough funnel output',
+                    'label' => $is_hr ? 'Klikovi bez dovoljnog broja prijava' : 'Clicks without enough funnel output',
                     'note' => $is_hr
                         ? 'Promet postoji, ali put do prijave još nije dovoljno jasan i vođen.'
                         : 'Traffic exists, but the path to sign-up is not yet clear and guided enough.',
@@ -3461,14 +3461,14 @@ class AdminLeaderOperatingSystem extends Controller {
             return [
                 'focus' => [
                     'key' => 'consistency',
-                    'label' => $is_hr ? 'Dosljednost i završavanje ciklusa' : 'Consistency and cycle completion',
+                    'label' => $is_hr ? 'Dosljednost i zatvaranje ciklusa' : 'Consistency and cycle completion',
                     'note' => $is_hr
                         ? 'Prosjek konzistentnosti tima je ' . nr($consistency_avg) . '/100'
                         : 'Average team consistency is ' . nr($consistency_avg) . '/100',
                 ],
                 'friction' => [
                     'key' => 'execution_rhythm',
-                    'label' => $is_hr ? 'Slab execution ritam' : 'Weak execution rhythm',
+                    'label' => $is_hr ? 'Slab ritam provedbe' : 'Weak execution rhythm',
                     'note' => $is_hr
                         ? 'Planovi i aktivnosti postoje, ali se tjedni ciklus ne zatvara dovoljno dosljedno.'
                         : 'Plans and activity exist, but the weekly cycle is not being closed consistently enough.',
@@ -3487,9 +3487,9 @@ class AdminLeaderOperatingSystem extends Controller {
                 ],
                 'friction' => [
                     'key' => 'quality_guard',
-                    'label' => $is_hr ? 'Zadržati kvalitetu pri rastu' : 'Keep quality while scaling',
+                    'label' => $is_hr ? 'Zadržati kvalitetu tijekom rasta' : 'Keep quality while scaling',
                     'note' => $is_hr
-                        ? 'Najveći rizik nije promet nego zadržavanje follow-upa i conversion kvalitete.'
+                        ? 'Najveći rizik nije promet nego zadržavanje kvalitete praćenja i pretvorbe.'
                         : 'The biggest risk is not traffic but maintaining follow-up and conversion quality.',
                 ],
             ];
@@ -3507,7 +3507,7 @@ class AdminLeaderOperatingSystem extends Controller {
                 'key' => 'monitoring',
                 'label' => $is_hr ? 'Nema dominantne frikcije' : 'No dominant friction',
                 'note' => $is_hr
-                    ? 'Prati conversion kvalitetu i signale koji prvi odstupaju.'
+                    ? 'Prati kvalitetu pretvorbe i signale koji prvi odstupaju.'
                     : 'Monitor conversion quality and the first signals that start to drift.',
             ],
         ];
@@ -3527,12 +3527,12 @@ class AdminLeaderOperatingSystem extends Controller {
             case 'fraud_watch':
                 return [
                     'eyebrow' => $is_hr ? 'Admin akcija sada' : 'Admin action now',
-                    'title' => $is_hr ? 'Prvo otvori Fraud i Risk listu' : 'Open the Fraud and Risk lists first',
+                    'title' => $is_hr ? 'Prvo otvori listu prijevara i rizika' : 'Open the Fraud and Risk lists first',
                     'subtitle' => $is_hr
-                        ? 'Pregledaj top suspicious pattern, blocked pokušaje i suradnike s najvećim anomaly signalom prije novih timskih akcija.'
+                        ? 'Pregledaj sumnjive obrasce, blokirane pokušaje i suradnike s najvećim anomaly signalom prije novih timskih akcija.'
                         : 'Review the top suspicious patterns, blocked attempts, and collaborators with the highest anomaly signal before new team actions.',
                     'note' => $is_hr
-                        ? 'Početni fokus: risk ' . nr($risk_total) . ' · rising ' . nr($rising_total)
+                        ? 'Početni fokus: rizik ' . nr($risk_total) . ' · rast ' . nr($rising_total)
                         : 'Starting focus: risk ' . nr($risk_total) . ' · rising ' . nr($rising_total),
                     'tone' => 'danger',
                 ];
@@ -3540,12 +3540,12 @@ class AdminLeaderOperatingSystem extends Controller {
             case 'risk_stabilization':
                 return [
                     'eyebrow' => $is_hr ? 'Admin akcija sada' : 'Admin action now',
-                    'title' => $is_hr ? 'Pokreni coaching follow-up za risk grupu' : 'Start coaching follow-up for the risk segment',
+                    'title' => $is_hr ? 'Pokreni coaching praćenje za rizičnu grupu' : 'Start coaching follow-up for the risk segment',
                     'subtitle' => $is_hr
-                        ? 'Prioritet su suradnici s risk statusom, starim check-inom i slabijom konzistentnošću prije novih growth akcija.'
+                        ? 'Prioritet su suradnici s rizičnim statusom, starim check-inom i slabijom dosljednošću prije novih akcija rasta.'
                         : 'Prioritize collaborators with risk status, stale check-ins, and weaker consistency before new growth pushes.',
                     'note' => $is_hr
-                        ? 'Risk je trenutno jači od growtha i zato coaching ima prednost.'
+                        ? 'Rizik je trenutno jači od rasta i zato coaching ima prednost.'
                         : 'Risk currently outweighs growth, so coaching should come first.',
                     'tone' => 'warning',
                 ];
@@ -3553,12 +3553,12 @@ class AdminLeaderOperatingSystem extends Controller {
             case 'support_clarity':
                 return [
                     'eyebrow' => $is_hr ? 'Admin akcija sada' : 'Admin action now',
-                    'title' => $is_hr ? 'Pretvori support temu u jasan timski odgovor' : 'Turn the support theme into a clear team answer',
+                    'title' => $is_hr ? 'Pretvori temu iz podrške u jasan timski odgovor' : 'Turn the support theme into a clear team answer',
                     'subtitle' => $is_hr
                         ? 'Pripremi kratku internu poruku, FAQ ili webinar oko teme koja se najviše ponavlja u podršci.'
                         : 'Prepare a short internal message, FAQ, or webinar around the issue that repeats most often in support.',
                     'note' => $is_hr
-                        ? 'Top support tema: ' . ((string) ($support_center['top_themes'][0]['label'] ?? '-'))
+                        ? 'Glavna tema podrške: ' . ((string) ($support_center['top_themes'][0]['label'] ?? '-'))
                         : 'Top support topic: ' . ((string) ($support_center['top_themes'][0]['label'] ?? '-')),
                     'tone' => 'info',
                 ];
@@ -3568,10 +3568,10 @@ class AdminLeaderOperatingSystem extends Controller {
                     'eyebrow' => $is_hr ? 'Admin akcija sada' : 'Admin action now',
                     'title' => $is_hr ? 'Pregledaj top aplikacije s klikovima bez prijava' : 'Review top apps with clicks but no sign-ups',
                     'subtitle' => $is_hr
-                        ? 'Promet postoji, pa sada treba očistiti CTA, funnel korak i follow-up tamo gdje klik postoji, ali prijava ne prati.'
+                        ? 'Promet postoji, pa sada treba pojednostaviti poziv na akciju, prijavni korak i praćenje tamo gdje klik postoji, ali prijava ne prati.'
                         : 'Traffic exists, so the next move is to tighten CTA, funnel steps, and follow-up where clicks are happening but sign-ups are not.',
                     'note' => $is_hr
-                        ? 'Klikovi: ' . ($shop_compare_text !== '' ? $shop_compare_text : '-') . ' · Funnel: ' . ($funnel_compare_text !== '' ? $funnel_compare_text : '-')
+                        ? 'Klikovi: ' . ($shop_compare_text !== '' ? $shop_compare_text : '-') . ' · Prijave: ' . ($funnel_compare_text !== '' ? $funnel_compare_text : '-')
                         : 'Clicks: ' . ($shop_compare_text !== '' ? $shop_compare_text : '-') . ' · Funnel: ' . ($funnel_compare_text !== '' ? $funnel_compare_text : '-'),
                     'tone' => 'warning',
                 ];
@@ -3579,7 +3579,7 @@ class AdminLeaderOperatingSystem extends Controller {
             case 'consistency':
                 return [
                     'eyebrow' => $is_hr ? 'Admin akcija sada' : 'Admin action now',
-                    'title' => $is_hr ? 'Podigni consistency prije novog scale-upa' : 'Raise consistency before the next scale-up',
+                    'title' => $is_hr ? 'Podigni dosljednost prije novog rasta' : 'Raise consistency before the next scale-up',
                     'subtitle' => $is_hr
                         ? 'Usmjeri coaching na check-in ritam, završavanje plana i zatvaranje outcome ciklusa.'
                         : 'Focus coaching on check-in rhythm, plan completion, and closing the outcome loop.',
@@ -3592,12 +3592,12 @@ class AdminLeaderOperatingSystem extends Controller {
             case 'growth':
                 return [
                     'eyebrow' => $is_hr ? 'Admin akcija sada' : 'Admin action now',
-                    'title' => $is_hr ? 'Dupliciraj ono što radi na top tržištu' : 'Duplicate what works in the top market',
+                    'title' => $is_hr ? 'Dupliciraj ono što radi na glavnom tržištu' : 'Duplicate what works in the top market',
                     'subtitle' => $is_hr
-                        ? 'Iskoristi rising suradnike i najjači market/source pattern kao model za ostatak tima.'
+                        ? 'Iskoristi suradnike u rastu i najjači obrazac tržišta i izvora kao model za ostatak tima.'
                         : 'Use the rising collaborators and the strongest market/source pattern as the model for the rest of the team.',
                     'note' => $is_hr
-                        ? 'Growth je zdrav, pa je sada prioritet standardizacija najboljeg obrasca.'
+                        ? 'Rast je zdrav, pa je sada prioritet standardizacija najboljeg obrasca.'
                         : 'Growth is healthy, so the next priority is standardizing the best-performing pattern.',
                     'tone' => 'success',
                 ];
@@ -3607,7 +3607,7 @@ class AdminLeaderOperatingSystem extends Controller {
             'eyebrow' => $is_hr ? 'Admin akcija sada' : 'Admin action now',
             'title' => $is_hr ? 'Prati signal i reagiraj na prvo odstupanje' : 'Monitor the signal and react to the first deviation',
             'subtitle' => $is_hr
-                ? 'Tim je stabilan, pa je najbolja akcija održati conversion kvalitetu, consistency i jasnu prioritizaciju.'
+                ? 'Tim je stabilan, pa je najbolja akcija održati kvalitetu pretvorbe, dosljednost i jasnu prioritizaciju.'
                 : 'The team is stable, so the best action is to preserve conversion quality, consistency, and clear prioritization.',
             'note' => $is_hr
                 ? 'Najveća korist sada dolazi iz preciznih korekcija, ne iz širokih promjena.'
@@ -3641,35 +3641,79 @@ class AdminLeaderOperatingSystem extends Controller {
         $consistency_avg = (float) ($team_consistency['average_score'] ?? 0);
         $shop_compare_text = trim((string) (($compare_map['total_shop_clicks_period']['text'] ?? '')));
         $funnel_compare_text = trim((string) (($compare_map['total_funnel_leads_period']['text'] ?? '')));
+        $build_metric_link = static function(string $key, string $label, string $value_display, string $description = ''): array {
+            return [
+                'key' => $key,
+                'label' => $label,
+                'value_display' => $value_display,
+                'description' => $description,
+            ];
+        };
+        $focus_metric_links = [];
+
+        $resolve_focus_metric_links = static function(string $focus_key) use (
+            $is_hr,
+            $risk_total,
+            $high_anomaly_total,
+            $shop_clicks_total,
+            $funnel_leads_total,
+            $qualified_total,
+            $active_collaborators,
+            $active_pro_total,
+            $rising_total,
+            $build_metric_link
+        ): array {
+            return match($focus_key) {
+                'fraud_watch', 'risk_stabilization' => [
+                    $build_metric_link('risk', $is_hr ? 'Risk suradnici' : 'Risk collaborators', nr($risk_total), $is_hr ? 'Suradnici koji trenutno traže pažnju, coaching ili operativni zahvat.' : 'Collaborators who currently need attention, coaching, or intervention.'),
+                    $build_metric_link('anomaly_high', $is_hr ? 'Provjeri odmah' : 'Check now', nr($high_anomaly_total), $is_hr ? 'Suradnici s najjačim anomaly signalom koje prvo treba provjeriti.' : 'Collaborators with the strongest anomaly signal to review first.'),
+                ],
+                'conversion' => [
+                    $build_metric_link('total_shop_clicks_period', $is_hr ? 'Klikovi prema Foreveru' : 'Clicks toward Forever', nr($shop_clicks_total), $is_hr ? 'Ukupni klikovi iz aplikacija prema Forever odredištima u odabranom periodu.' : 'Total clicks from apps toward Forever destinations in the selected period.'),
+                    $build_metric_link('total_funnel_leads_period', $is_hr ? 'Funnel prijave' : 'Funnel sign-ups', nr($funnel_leads_total), $is_hr ? 'Koliko se tog interesa stvarno pretvorilo u ispunjene prijave.' : 'How much of that interest turned into completed sign-ups.'),
+                ],
+                'growth' => [
+                    $build_metric_link('rising', $is_hr ? 'U rastu' : 'Rising', nr($rising_total), $is_hr ? 'Suradnici koji trenutno pokazuju najzdraviji momentum za scale-up.' : 'Collaborators currently showing the healthiest growth momentum.'),
+                    $build_metric_link('qualified', $is_hr ? 'Kvalificirani' : 'Qualified', nr($qualified_total), $is_hr ? 'Jezgra tima s dokazanim signalom aktivnosti.' : 'The core of the team with a proven activity signal.'),
+                ],
+                'consistency', 'stability' => [
+                    $build_metric_link('qualified', $is_hr ? 'Kvalificirani' : 'Qualified', nr($qualified_total), $is_hr ? 'Jezgra tima koja već ima dokazani signal.' : 'The core team that already has a proven signal.'),
+                    $build_metric_link('active_collaborators', $is_hr ? 'Aktivni' : 'Active', nr($active_collaborators), $is_hr ? 'Suradnici koji su stvarno imali aktivnost u promatranom periodu.' : 'Collaborators who actually had activity in the observed period.'),
+                    $build_metric_link('active_pro_total', $is_hr ? 'Aktivni PRO' : 'Active PRO', nr($active_pro_total), $is_hr ? 'Trenutno aktivni PRO računi koji nose monetizacijsku jezgru tima.' : 'Currently active PRO accounts representing the monetized team base.'),
+                ],
+                default => [],
+            };
+        };
 
         $status_key = 'stable';
         $status_label = $is_hr ? 'Stabilno' : 'Stable';
         $status_class = 'status-info';
         $headline = $is_hr ? 'Tim je stabilan i spreman za preciznu optimizaciju.' : 'The team is stable and ready for precise optimization.';
-        $subheadline = $is_hr ? 'Glavni fokus je zadržati momentum, paziti na conversion kvalitetu i reagirati na prvo odstupanje.' : 'The main focus is to preserve momentum, watch conversion quality, and react to the first deviation.';
+        $subheadline = $is_hr ? 'Glavni fokus je zadržati momentum, paziti na kvalitetu pretvorbe i reagirati na prvo odstupanje.' : 'The main focus is to preserve momentum, watch conversion quality, and react to the first deviation.';
 
         if($high_anomaly_total >= 3 || $blocked_attempts_total >= 10) {
             $status_key = 'fraud_watch';
-            $status_label = 'Fraud watch';
+            $status_label = $is_hr ? 'Fraud nadzor' : 'Fraud watch';
             $status_class = 'status-danger';
             $headline = $is_hr ? 'Tim ima izražen fraud i anomaly pritisak.' : 'The team is under visible fraud and anomaly pressure.';
-            $subheadline = $is_hr ? 'Prije daljnjeg scale-upa prvo provjeri suspicious pattern, blocked pokušaje i najrizičnije suradnike.' : 'Before any further scale-up, review suspicious patterns, blocked attempts, and the riskiest collaborators first.';
+            $subheadline = $is_hr ? 'Prije daljnjeg rasta prvo provjeri sumnjive obrasce, blokirane pokušaje i najrizičnije suradnike.' : 'Before any further scale-up, review suspicious patterns, blocked attempts, and the riskiest collaborators first.';
         } elseif($risk_total >= max(4, $rising_total)) {
             $status_key = 'coaching';
-            $status_label = $is_hr ? 'Coaching fokus' : 'Coaching focus';
+            $status_label = $is_hr ? 'Fokus coachinga' : 'Coaching focus';
             $status_class = 'status-warning';
             $headline = $is_hr ? 'Tim traži stabilizaciju prije novog rasta.' : 'The team needs stabilization before the next growth push.';
-            $subheadline = $is_hr ? 'Risk segment je trenutno jači od growth segmenta pa coaching, follow-up i consistency trebaju imati prioritet.' : 'The risk segment currently outweighs growth, so coaching, follow-up, and consistency should come first.';
+            $subheadline = $is_hr ? 'Rizični segment je trenutno jači od segmenta rasta pa coaching, praćenje i dosljednost trebaju imati prioritet.' : 'The risk segment currently outweighs growth, so coaching, follow-up, and consistency should come first.';
         } elseif($rising_total >= max(3, $risk_total) && $qualified_total >= 5 && $consistency_avg >= 55) {
             $status_key = 'growth';
-            $status_label = $is_hr ? 'Growth momentum' : 'Growth momentum';
+            $status_label = $is_hr ? 'Momentum rasta' : 'Growth momentum';
             $status_class = 'status-success';
-            $headline = $is_hr ? 'Tim pokazuje zdrav momentum za scale-up.' : 'The team shows healthy momentum for scale-up.';
+            $headline = $is_hr ? 'Tim pokazuje zdrav ritam za daljnji rast.' : 'The team shows healthy momentum for scale-up.';
             $subheadline = $is_hr ? 'Najveća prilika je duplicirati ono što već radi na top tržištu i u najjačem vremenu aktivnosti.' : 'The biggest opportunity is to duplicate what already works in the top market and top activity window.';
         }
 
         $focus_payload = $this->get_executive_summary_focus_payload($overview_payload);
         $action_payload = $this->get_executive_summary_action_payload($overview_payload, $focus_payload['focus'] ?? []);
+        $focus_metric_links = $resolve_focus_metric_links((string) ($focus_payload['focus']['key'] ?? 'stability'));
 
         $top_country_name = (string) ($top_country_row['country_name'] ?? ($team_analytics['top_countries'][0]['label'] ?? '-'));
         $top_country_total = (int) (($top_country_row['app_visits'] ?? 0) + ($top_country_row['app_shop_clicks'] ?? 0) + ($top_country_row['blog_clicks'] ?? 0) + ($top_country_row['funnel_registrations'] ?? 0));
@@ -3689,27 +3733,58 @@ class AdminLeaderOperatingSystem extends Controller {
             'friction_term' => (string) ($focus_payload['friction']['label'] ?? '-'),
             'signals' => [
                 [
-                    'label' => $is_hr ? 'Risk i anomaly' : 'Risk and anomaly',
-                    'value' => $is_hr ? nr($risk_total) . ' risk' : nr($risk_total) . ' risk',
+                    'label' => $is_hr ? 'Rizik i anomaly' : 'Risk and anomaly',
+                    'value' => $is_hr ? nr($risk_total) . ' u riziku' : nr($risk_total) . ' risk',
                     'note' => $is_hr
-                        ? nr($high_anomaly_total) . ' high anomaly · ' . nr($blocked_attempts_total) . ' blocked pokušaja'
+                        ? nr($high_anomaly_total) . ' jak anomaly · ' . nr($blocked_attempts_total) . ' blokiranih pokušaja'
                         : nr($high_anomaly_total) . ' high anomaly · ' . nr($blocked_attempts_total) . ' blocked attempts',
+                    'what_it_shows' => $is_hr
+                        ? 'Koliko suradnika trenutno ulazi u risk zonu i koliko njih već ima jak anomaly signal ili blokirane pokušaje.'
+                        : 'How many collaborators are currently in the risk zone and how many already show a strong anomaly signal or blocked attempts.',
+                    'how_to_use' => $is_hr
+                        ? 'Ako ovo raste, prvo provjeri tko je unutra prije novih timskih akcija ili scale-upa.'
+                        : 'If this grows, review who is inside before any new team actions or scale-up.',
+                    'metric_links' => [
+                        $build_metric_link('risk', $is_hr ? 'Rizik' : 'Risk', nr($risk_total), $is_hr ? 'Suradnici koji traže pažnju, coaching ili operativni zahvat.' : 'Collaborators who need attention, coaching, or intervention.'),
+                        $build_metric_link('anomaly_high', $is_hr ? 'Jak anomaly' : 'High anomaly', nr($high_anomaly_total), $is_hr ? 'Suradnici koje treba provjeriti odmah zbog jakog anomaly signala.' : 'Collaborators to review immediately due to a strong anomaly signal.'),
+                    ],
                     'tone' => ($high_anomaly_total >= 3 || $blocked_attempts_total >= 10) ? 'danger' : ($risk_total > 0 ? 'warning' : 'success'),
                 ],
                 [
                     'label' => $is_hr ? 'Klikovi → prijave' : 'Clicks to sign-ups',
                     'value' => $is_hr ? nr($funnel_leads_total) . ' leadova' : nr($funnel_leads_total) . ' leads',
                     'note' => $is_hr
-                        ? nr($shop_clicks_total) . ' klikova · ' . nr($capture_rate) . '% capture rate'
+                        ? nr($shop_clicks_total) . ' klikova · ' . nr($capture_rate) . '% stopa prijave'
                         : nr($shop_clicks_total) . ' clicks · ' . nr($capture_rate) . '% capture rate',
+                    'what_it_shows' => $is_hr
+                        ? 'Koliko klikova prema Foreveru tim stvara i koliko ih se stvarno pretvara u funnel prijave.'
+                        : 'How many clicks toward Forever the team creates and how many actually turn into funnel sign-ups.',
+                    'how_to_use' => $is_hr
+                        ? 'Ako klikovi rastu, a prijave ne prate, problem je u CTA-u, funnel koraku ili follow-upu.'
+                        : 'If clicks grow but sign-ups do not, the issue is in the CTA, funnel step, or follow-up.',
+                    'metric_links' => [
+                        $build_metric_link('total_shop_clicks_period', $is_hr ? 'Klikovi' : 'Clicks', nr($shop_clicks_total), $is_hr ? 'Ukupni klikovi prema Forever odredištima u odabranom periodu.' : 'Total clicks toward Forever destinations in the selected period.'),
+                        $build_metric_link('total_funnel_leads_period', $is_hr ? 'Prijave' : 'Sign-ups', nr($funnel_leads_total), $is_hr ? 'Ispunjeni funnel obrasci u istom periodu.' : 'Completed funnel forms in the same period.'),
+                    ],
                     'tone' => ($shop_clicks_total >= 20 && $capture_rate < 10) ? 'warning' : ($capture_rate >= 15 ? 'success' : 'info'),
                 ],
                 [
-                    'label' => $is_hr ? 'Consistency i jezgra tima' : 'Consistency and core team',
+                    'label' => $is_hr ? 'Dosljednost i jezgra tima' : 'Consistency and core team',
                     'value' => nr($consistency_avg) . '/100',
                     'note' => $is_hr
                         ? nr($qualified_total) . ' kvalificiranih · ' . nr($active_collaborators) . ' aktivnih · ' . nr($active_pro_total) . ' PRO'
                         : nr($qualified_total) . ' qualified · ' . nr($active_collaborators) . ' active · ' . nr($active_pro_total) . ' PRO',
+                    'what_it_shows' => $is_hr
+                        ? 'Koliko je tim dosljedan i kolika je njegova stvarno aktivna i monetizirana jezgra.'
+                        : 'How consistent the team is and how large its truly active and monetized core is.',
+                    'how_to_use' => $is_hr
+                        ? 'Koristi za procjenu koliko je rast održiv, a ne samo trenutno glasan.'
+                        : 'Use it to judge whether growth is sustainable, not just currently loud.',
+                    'metric_links' => [
+                        $build_metric_link('qualified', $is_hr ? 'Kvalificirani' : 'Qualified', nr($qualified_total), $is_hr ? 'Jezgra s dokazanim signalom aktivnosti u zadnjih 90 dana.' : 'The core with a proven activity signal in the last 90 days.'),
+                        $build_metric_link('active_collaborators', $is_hr ? 'Aktivni' : 'Active', nr($active_collaborators), $is_hr ? 'Suradnici koji su stvarno imali aktivnost u odabranom periodu.' : 'Collaborators who actually had activity in the selected period.'),
+                        $build_metric_link('active_pro_total', $is_hr ? 'PRO' : 'PRO', nr($active_pro_total), $is_hr ? 'Trenutno aktivni PRO računi koji nose monetizacijsku jezgru.' : 'Currently active PRO accounts representing the monetized core.'),
+                    ],
                     'tone' => $consistency_avg >= 55 ? 'success' : ($consistency_avg < 45 ? 'warning' : 'info'),
                 ],
             ],
@@ -3723,6 +3798,12 @@ class AdminLeaderOperatingSystem extends Controller {
                     'note' => $is_hr
                         ? 'Posjete ' . nr((int) ($top_country_row['app_visits'] ?? 0)) . ' · app klikovi ' . nr((int) ($top_country_row['app_shop_clicks'] ?? 0)) . ' · blog ' . nr((int) ($top_country_row['blog_clicks'] ?? 0)) . ' · funnel ' . nr((int) ($top_country_row['funnel_registrations'] ?? 0))
                         : 'Visits ' . nr((int) ($top_country_row['app_visits'] ?? 0)) . ' · app clicks ' . nr((int) ($top_country_row['app_shop_clicks'] ?? 0)) . ' · blog ' . nr((int) ($top_country_row['blog_clicks'] ?? 0)) . ' · funnel ' . nr((int) ($top_country_row['funnel_registrations'] ?? 0)),
+                    'what_it_shows' => $is_hr
+                        ? 'Iz koje zemlje i iz kojeg izvora trenutno dolazi najviše korisnog signala u odabranom periodu.'
+                        : 'Which country and source currently produce the most useful signal in the selected period.',
+                    'how_to_use' => $is_hr
+                        ? 'To je market i izvor koji vrijedi proučiti i pokušati duplicirati na ostatak tima.'
+                        : 'This is the market and source worth studying and duplicating across the rest of the team.',
                     'tone' => 'info',
                 ],
                 [
@@ -3734,6 +3815,12 @@ class AdminLeaderOperatingSystem extends Controller {
                     'note' => $is_hr
                         ? 'Ovo pokazuje kada tim najčešće vodi promet prema Forever odredištima.'
                         : 'This shows when the team most often drives traffic toward Forever destinations.',
+                    'what_it_shows' => $is_hr
+                        ? 'Sat u kojem tim najčešće šalje najkorisniji promet prema Forever odredištima.'
+                        : 'The hour in which the team most often sends the most useful traffic toward Forever destinations.',
+                    'how_to_use' => $is_hr
+                        ? 'Koristi za timing objava, follow-upa, webinara i aktiviranja tima.'
+                        : 'Use it for timing posts, follow-ups, webinars, and team activation.',
                     'tone' => 'info',
                 ],
                 [
@@ -3746,6 +3833,13 @@ class AdminLeaderOperatingSystem extends Controller {
                         (string) ($focus_payload['focus']['note'] ?? ''),
                         (string) ($focus_payload['friction']['note'] ?? ''),
                     ]))),
+                    'what_it_shows' => $is_hr
+                        ? 'Što tim trenutno najviše pokušava postići i koji ga obrazac najviše koči.'
+                        : 'What the team is currently trying to achieve most and which pattern is holding it back.',
+                    'how_to_use' => $is_hr
+                        ? 'To ti daje temu za coaching, internu poruku, webinar ili sljedeću optimizaciju.'
+                        : 'This gives you the topic for coaching, an internal message, a webinar, or the next optimization.',
+                    'metric_links' => $focus_metric_links,
                     'tone' => 'warning',
                 ],
                 [
@@ -3757,6 +3851,13 @@ class AdminLeaderOperatingSystem extends Controller {
                         $shop_compare_text !== '' ? ($is_hr ? 'Klikovi: ' : 'Clicks: ') . $shop_compare_text : '',
                         $funnel_compare_text !== '' ? ($is_hr ? 'Funnel: ' : 'Funnel: ') . $funnel_compare_text : '',
                     ]))),
+                    'what_it_shows' => $is_hr
+                        ? 'Najkorisniji sljedeći potez koji trebaš napraviti na temelju aktualnih LOS signala.'
+                        : 'The most useful next move you should make based on the current LOS signals.',
+                    'how_to_use' => $is_hr
+                        ? 'Ako ovaj tjedan odradiš samo jednu stvar za tim, kreni od ove preporuke.'
+                        : 'If you only do one thing for the team this week, start with this recommendation.',
+                    'metric_links' => $focus_metric_links,
                     'tone' => (string) ($action_payload['tone'] ?? 'info'),
                 ],
             ],
@@ -6068,7 +6169,7 @@ class AdminLeaderOperatingSystem extends Controller {
                 'label' => 'Kvalificirani suradnici',
                 'value' => (int) ($totals['qualified'] ?? 0),
                 'value_display' => nr((int) ($totals['qualified'] ?? 0)),
-                'chip' => '90d signal',
+                'chip' => '90d baza',
                 'tooltip' => 'Suradnici koji imaju barem 15 klikova prema Foreveru u zadnjih 90 dana. To je baza tima s dokazanim signalom aktivnosti.',
                 'hint' => 'Pokazuje koliko tim ima stvarno aktivne jezgre.',
                 'compare' => [
@@ -6101,7 +6202,7 @@ class AdminLeaderOperatingSystem extends Controller {
                 'label' => 'Aktivni PRO',
                 'value' => $active_pro_total,
                 'value_display' => nr($active_pro_total),
-                'chip' => 'Now',
+                'chip' => 'Sada',
                 'tooltip' => 'Broj suradnika koji trenutno imaju aktivan PRO plan. Ovo je glavni monetizacijski snapshot tima.',
                 'hint' => 'Trenutno stanje aktivne PRO baze.',
                 'compare' => [
