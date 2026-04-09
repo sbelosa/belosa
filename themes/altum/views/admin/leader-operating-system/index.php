@@ -195,6 +195,213 @@
         text-decoration: none;
     }
 
+    .leader-os-primary-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .leader-os-primary-header-actions {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        flex-wrap: wrap;
+    }
+
+    .leader-os-primary-periods {
+        display: inline-flex;
+        gap: 0.45rem;
+        flex-wrap: wrap;
+    }
+
+    .leader-os-primary-period {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 56px;
+        padding: 0.38rem 0.72rem;
+        border-radius: 999px;
+        border: 1px solid rgba(129, 197, 255, 0.22);
+        background: rgba(23, 37, 54, 0.88);
+        color: #d9e7f7;
+        font-size: 0.76rem;
+        font-weight: 700;
+        text-decoration: none;
+        transition: all .18s ease;
+    }
+
+    .leader-os-primary-period:hover,
+    .leader-os-primary-period:focus {
+        color: #f8fbff;
+        text-decoration: none;
+        border-color: rgba(129, 197, 255, 0.4);
+    }
+
+    .leader-os-primary-period.active {
+        background: linear-gradient(180deg, rgba(31, 128, 167, 0.9) 0%, rgba(20, 84, 110, 0.98) 100%);
+        color: #f8fbff;
+        border-color: rgba(97, 218, 251, 0.42);
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 0.5rem 1.2rem rgba(16, 67, 88, 0.26);
+    }
+
+    .leader-os-primary-strip {
+        margin-bottom: 1.2rem;
+    }
+
+    .leader-os-primary-grid {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 0.95rem;
+    }
+
+    .leader-os-primary-card {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        gap: 0.65rem;
+        min-height: 168px;
+        border-radius: 1.2rem;
+        border: 1px solid rgba(129, 197, 255, 0.2);
+        background:
+            radial-gradient(circle at top right, rgba(94, 200, 255, 0.12), transparent 32%),
+            linear-gradient(180deg, rgba(29, 43, 63, 0.96) 0%, rgba(16, 25, 38, 0.99) 100%);
+        box-shadow: 0 1.25rem 2.4rem rgba(2, 6, 23, 0.18), inset 0 1px 0 rgba(255,255,255,0.04);
+        padding: 1rem 1rem 0.95rem;
+        overflow: hidden;
+    }
+
+    .leader-os-primary-card::before {
+        content: '';
+        position: absolute;
+        inset: 0 auto 0 0;
+        width: 4px;
+        background: linear-gradient(180deg, rgba(94, 200, 255, 0.92) 0%, rgba(63, 224, 200, 0.9) 52%, rgba(107, 227, 139, 0.84) 100%);
+    }
+
+    .leader-os-primary-card.is-clickable {
+        cursor: pointer;
+        transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+    }
+
+    .leader-os-primary-card.is-clickable:hover,
+    .leader-os-primary-card.is-clickable:focus {
+        transform: translateY(-2px);
+        border-color: rgba(129, 197, 255, 0.38);
+        box-shadow: 0 1.4rem 2.8rem rgba(2, 6, 23, 0.24), inset 0 0 0 1px rgba(94, 200, 255, 0.08);
+        outline: none;
+    }
+
+    .leader-os-primary-card-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 0.7rem;
+    }
+
+    .leader-os-primary-label {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.42rem;
+        font-size: 0.74rem;
+        font-weight: 800;
+        line-height: 1.2;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: rgba(220, 232, 245, 0.78);
+    }
+
+    .leader-os-primary-help {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 18px;
+        height: 18px;
+        border-radius: 999px;
+        border: 1px solid rgba(129, 197, 255, 0.24);
+        background: rgba(19, 30, 43, 0.74);
+        color: #9adfff;
+        font-size: 0.68rem;
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+    }
+
+    .leader-os-primary-chip {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.24rem 0.55rem;
+        border-radius: 999px;
+        border: 1px solid rgba(129, 197, 255, 0.22);
+        background: rgba(39, 61, 89, 0.82);
+        color: #edf5ff;
+        font-size: 0.68rem;
+        font-weight: 700;
+        flex-shrink: 0;
+    }
+
+    .leader-os-primary-value {
+        font-size: 2rem;
+        line-height: 0.95;
+        font-weight: 800;
+        letter-spacing: -0.04em;
+        color: #f8fbff;
+    }
+
+    .leader-os-primary-value small {
+        font-size: 0.92rem;
+        font-weight: 700;
+        letter-spacing: 0;
+        color: rgba(220, 232, 245, 0.68);
+        margin-left: 0.2rem;
+    }
+
+    .leader-os-primary-hint {
+        font-size: 0.8rem;
+        line-height: 1.38;
+        color: rgba(214, 227, 240, 0.72);
+        min-height: 2.2rem;
+    }
+
+    .leader-os-primary-compare {
+        margin-top: auto;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 0.6rem;
+        padding-top: 0.75rem;
+        border-top: 1px solid rgba(129, 197, 255, 0.12);
+    }
+
+    .leader-os-primary-compare-text {
+        font-size: 0.75rem;
+        line-height: 1.3;
+        color: rgba(214, 227, 240, 0.78);
+    }
+
+    .leader-os-primary-compare-text.is-up {
+        color: #8cf0b2;
+    }
+
+    .leader-os-primary-compare-text.is-down {
+        color: #ffb0a7;
+    }
+
+    .leader-os-primary-compare-text.is-flat,
+    .leader-os-primary-compare-text.is-snapshot {
+        color: rgba(214, 227, 240, 0.78);
+    }
+
+    .leader-os-primary-open {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.32rem;
+        font-size: 0.68rem;
+        font-weight: 700;
+        color: #b9ebff;
+        white-space: nowrap;
+    }
+
     .leader-os-shell .text-muted,
     .leader-os-panel .text-muted,
     .leader-os-kpi .text-muted {
@@ -1314,6 +1521,10 @@
     }
 
     @media (max-width: 1199.98px) {
+        .leader-os-primary-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
         .leader-os-support-workspace {
             grid-template-columns: 1fr;
         }
@@ -1324,6 +1535,18 @@
     }
 
     @media (max-width: 767.98px) {
+        .leader-os-primary-header {
+            flex-direction: column;
+        }
+
+        .leader-os-primary-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .leader-os-primary-card {
+            min-height: 0;
+        }
+
         .leader-os-trend-summary {
             grid-template-columns: 1fr;
         }
@@ -2069,6 +2292,56 @@ $render_kpi_card = static function(string $key, string $label, $value, string $h
     return ob_get_clean();
 };
 
+$render_primary_kpi_card = static function(array $kpi) use ($data) {
+    $key = (string) ($kpi['key'] ?? '');
+    $label = (string) ($kpi['label'] ?? '');
+    $value_display = (string) ($kpi['value_display'] ?? nr((float) ($kpi['value'] ?? 0)));
+    $hint = (string) ($kpi['hint'] ?? '');
+    $chip = (string) ($kpi['chip'] ?? '');
+    $tooltip = (string) ($kpi['tooltip'] ?? '');
+    $compare = is_array($kpi['compare'] ?? null) ? $kpi['compare'] : [];
+    $drilldown = $key !== '' ? ($data->overview['kpi_drilldowns'][$key] ?? null) : null;
+    $has_drilldown = is_array($drilldown);
+    $payload = $has_drilldown ? htmlspecialchars(json_encode([
+        'title' => (string) ($drilldown['title'] ?? $label),
+        'summary_label' => (string) $label,
+        'summary_value' => (string) ($drilldown['signal_total_display'] ?? $value_display),
+        'summary_note' => (string) ($drilldown['summary_note'] ?? 'Klik na ime otvara detalj suradnika.'),
+        'items' => array_values($drilldown['items'] ?? []),
+    ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES), ENT_QUOTES, 'UTF-8') : '';
+    $compare_mode = (string) ($compare['mode'] ?? 'snapshot');
+    $compare_direction = $compare_mode === 'period' ? (string) ($compare['direction'] ?? 'flat') : 'snapshot';
+    $compare_text = (string) ($compare['text'] ?? 'Klikni za popis suradnika');
+
+    ob_start();
+    ?>
+    <div class="leader-os-primary-card <?= $has_drilldown ? 'is-clickable' : '' ?>" <?= $has_drilldown ? 'role="button" tabindex="0" data-toggle="modal" data-target="#leader_os_drilldown_modal" data-drilldown="' . $payload . '"' : '' ?>>
+        <div class="leader-os-primary-card-top">
+            <div class="leader-os-primary-label">
+                <span><?= htmlspecialchars($label, ENT_QUOTES, 'UTF-8') ?></span>
+                <?php if($tooltip !== ''): ?>
+                    <span class="leader-os-primary-help" data-toggle="tooltip" title="<?= htmlspecialchars($tooltip, ENT_QUOTES, 'UTF-8') ?>">?</span>
+                <?php endif ?>
+            </div>
+            <?php if($chip !== ''): ?>
+                <span class="leader-os-primary-chip"><?= htmlspecialchars($chip, ENT_QUOTES, 'UTF-8') ?></span>
+            <?php endif ?>
+        </div>
+        <div class="leader-os-primary-value"><?= htmlspecialchars($value_display, ENT_QUOTES, 'UTF-8') ?></div>
+        <?php if($hint !== ''): ?>
+            <div class="leader-os-primary-hint"><?= htmlspecialchars($hint, ENT_QUOTES, 'UTF-8') ?></div>
+        <?php endif ?>
+        <div class="leader-os-primary-compare">
+            <div class="leader-os-primary-compare-text is-<?= htmlspecialchars($compare_direction, ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars($compare_text, ENT_QUOTES, 'UTF-8') ?></div>
+            <?php if($has_drilldown): ?>
+                <span class="leader-os-primary-open">Otvori popis</span>
+            <?php endif ?>
+        </div>
+    </div>
+    <?php
+    return ob_get_clean();
+};
+
 $leader_os_team_signal_chart = $data->overview['team_signal_chart'] ?? [
     'labels' => [],
     'app_visits' => [],
@@ -2410,6 +2683,33 @@ $operations_tab_badge_total = (int) (($data->operations['totals']['pending_appro
         </div>
 
         <?php if(($data->selected_tab ?? 'overview') === 'overview'): ?>
+            <div class="leader-os-primary-strip">
+                <div class="leader-os-primary-header">
+                    <div>
+                        <div class="text-uppercase small text-muted mb-2">Glavni timski pokazatelji</div>
+                        <h3 class="h5 mb-1">Na jednom mjestu vidiš smjer tima, kvalitetu baze i ključne business signale.</h3>
+                        <div class="text-muted small">Tooltip objašnjava što broj znači, a klik na karticu otvara popis suradnika iza tog signala.</div>
+                    </div>
+                    <div class="leader-os-primary-header-actions">
+                        <span class="leader-os-status-badge status-info"><?= l('admin_leader_operating_system.period_' . ($data->selected_period ?? '30d')) ?></span>
+                        <div class="leader-os-primary-periods">
+                            <?php foreach(($data->period_options ?? []) as $period_option): ?>
+                                <?php $primary_period_query = http_build_query(array_merge($leader_os_state_query, ['period' => $period_option, 'page' => 1])); ?>
+                                <a href="<?= url('admin/leader-operating-system?' . $primary_period_query) ?>" class="leader-os-primary-period <?= ($data->selected_period ?? '30d') === $period_option ? 'active' : null ?>">
+                                    <?= l('admin_leader_operating_system.period_' . $period_option) ?>
+                                </a>
+                            <?php endforeach ?>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="leader-os-primary-grid">
+                    <?php foreach(($data->overview['primary_team_kpis'] ?? []) as $primary_kpi): ?>
+                        <?= $render_primary_kpi_card((array) $primary_kpi) ?>
+                    <?php endforeach ?>
+                </div>
+            </div>
+
             <div class="row mb-4">
                 <div class="col-12 col-xl-8 mb-3">
                     <div class="leader-os-panel h-100">
@@ -4561,6 +4861,10 @@ $operations_tab_badge_total = (int) (($data->operations['totals']['pending_appro
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+    if (window.jQuery && typeof window.jQuery.fn.tooltip === 'function') {
+        window.jQuery('[data-toggle="tooltip"]').tooltip({container: 'body'});
+    }
+
     const modal = document.getElementById('leader_os_drilldown_modal');
     const modalTitle = document.getElementById('leader_os_drilldown_modal_title');
     const modalCount = document.getElementById('leader_os_drilldown_modal_count');

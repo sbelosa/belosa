@@ -1686,7 +1686,7 @@ class AdminLeaderOperatingSystem extends Controller {
         ];
     }
 
-    private function enrich_rows_with_app_signals(array $rows, string $period_start_datetime): array {
+    private function enrich_rows_with_app_signals(array $rows, string $period_start_datetime, ?string $previous_period_start_datetime = null): array {
         if(empty($rows)) {
             return $rows;
         }
@@ -1704,6 +1704,7 @@ class AdminLeaderOperatingSystem extends Controller {
             $rows[$index]['app_whatsapp_contacts_period'] = 0;
             $rows[$index]['app_product_clicks_period'] = 0;
             $rows[$index]['app_funnel_registrations_period'] = 0;
+            $rows[$index]['previous_app_funnel_registrations_period'] = 0;
             $rows[$index]['app_signal_score'] = 0;
         }
 
@@ -1803,6 +1804,29 @@ class AdminLeaderOperatingSystem extends Controller {
                     }
 
                     $rows[$row_index]['app_funnel_registrations_period'] += $total;
+                }
+
+                if($previous_period_start_datetime !== null) {
+                    $previous_funnel_result = database()->query("SELECT `biolink_block_id`, COUNT(*) AS `total`
+                    FROM `data`
+                    WHERE `type` = 'lead_funnel'
+                      AND `datetime` >= '{$previous_period_start_datetime}'
+                      AND `datetime` < '{$period_start_datetime}'
+                      AND `biolink_block_id` IN ({$funnel_block_ids_sql})
+                    GROUP BY `biolink_block_id`");
+
+                    while($previous_funnel_row = $previous_funnel_result->fetch_object()) {
+                        $block_id = (int) ($previous_funnel_row->biolink_block_id ?? 0);
+                        $total = (int) ($previous_funnel_row->total ?? 0);
+                        $user_id = (int) (($signal_targets[$block_id]['app_funnel_registrations_period'] ?? 0));
+                        $row_index = $row_map[$user_id] ?? null;
+
+                        if($row_index === null) {
+                            continue;
+                        }
+
+                        $rows[$row_index]['previous_app_funnel_registrations_period'] += $total;
+                    }
                 }
             }
         }
@@ -5451,7 +5475,7 @@ class AdminLeaderOperatingSystem extends Controller {
                 continue;
             }
 
-            if($summary_mode === 'sum_metric') {
+            if(in_array($summary_mode, ['sum_metric', 'average_metric'], true)) {
                 $signal_total += is_numeric($metric) ? (float) $metric : 0;
             }
 
@@ -5478,6 +5502,8 @@ class AdminLeaderOperatingSystem extends Controller {
 
         if($summary_mode === 'count') {
             $signal_total = $contributors_total;
+        } elseif($summary_mode === 'average_metric') {
+            $signal_total = $contributors_total > 0 ? round($signal_total / $contributors_total, 1) : 0;
         }
 
         $items = array_slice($all_items, 0, $limit);
@@ -5500,6 +5526,7 @@ class AdminLeaderOperatingSystem extends Controller {
 
     private function get_kpi_drilldowns_payload(array $rows, array $suspicious_clicks = []): array {
         $payload = [
+            'team_score_average' => $this->build_drilldown_payload('LOS score tima', $rows, static fn($row) => (int) ($row['leader_os_score'] ?? 0), null, 60, static fn($row, $metric) => 'LOS ' . nr((int) $metric), 'average_metric'),
             'all_collaborators' => $this->build_drilldown_payload('Svi suradnici', $rows, static fn($row) => (int) ($row['leader_os_score'] ?? 0), null, 60, static fn($row, $metric) => 'LOS ' . nr((int) $metric)),
             'qualified' => $this->build_drilldown_payload('Kvalificirani suradnici', $rows, static fn($row) => (int) ($row['forever_shop_clicks_90d'] ?? 0), static fn($row) => !empty($row['qualified']), 60, static fn($row, $metric) => 'Shop 90d ' . nr((int) $metric)),
             'rising' => $this->build_drilldown_payload('Suradnici u rastu', $rows, static fn($row) => (float) ($row['growth_percent'] ?? 0), static fn($row) => (string) ($row['status_key'] ?? '') === 'rising', 60, static fn($row, $metric) => (($metric > 0 ? '+' : '') . nr((float) $metric) . '% rast')),
@@ -5511,6 +5538,7 @@ class AdminLeaderOperatingSystem extends Controller {
             'total_registrations_period' => $this->build_drilldown_payload('Registracije u periodu', $rows, static fn($row) => (int) ($row['forever_registration_clicks_period'] ?? 0), static fn($row) => (int) ($row['forever_registration_clicks_period'] ?? 0) > 0, 60, static fn($row, $metric) => 'Registracije ' . nr((int) $metric), 'sum_metric'),
             'total_funnel_leads_period' => $this->build_drilldown_payload('Funnel leadovi', $rows, static fn($row) => (int) ($row['app_funnel_registrations_period'] ?? 0), static fn($row) => (int) ($row['app_funnel_registrations_period'] ?? 0) > 0, 60, static fn($row, $metric) => 'Leadovi ' . nr((int) $metric), 'sum_metric'),
             'total_shop_clicks_period' => $this->build_drilldown_payload('Webshop klikovi u periodu', $rows, static fn($row) => (int) ($row['forever_shop_clicks_period'] ?? 0), static fn($row) => (int) ($row['forever_shop_clicks_period'] ?? 0) > 0, 60, static fn($row, $metric) => 'Shop klikovi ' . nr((int) $metric), 'sum_metric'),
+            'active_pro_total' => $this->build_drilldown_payload('Aktivni PRO', $rows, static fn($row) => (int) ($row['leader_os_score'] ?? 0), static fn($row) => !empty($row['is_active_pro']), 60, static fn($row, $metric) => 'LOS ' . nr((int) $metric)),
             'ai_active_collaborators' => $this->build_drilldown_payload('AI aktivni suradnici', $rows, static fn($row) => (int) ($row['ai_access_growth_signal_30d'] ?? 0), static fn($row) => in_array((string) ($row['ai_usage_stage_key'] ?? 'inactive'), ['started', 'questionnaire', 'active'], true), 60, static fn($row, $metric) => 'AI signal ' . nr((int) $metric)),
             'ai_profiles_total' => $this->build_drilldown_payload('AI profili', $rows, static fn($row) => (int) ($row['leader_os_score'] ?? 0), function($row) {
                     $preferences = $this->get_preferences_object($row['preferences'] ?? null);
@@ -5610,6 +5638,99 @@ class AdminLeaderOperatingSystem extends Controller {
         $payload['fraud_blocked_attempts_total']['items'] = array_slice($fraud_blocked_attempt_items, 0, 60);
 
         return $payload;
+    }
+
+    private function get_primary_team_kpis_payload(array $rows, array $totals, string $period_key): array {
+        $team_score_average = !empty($rows)
+            ? round(array_sum(array_map(static fn($row) => (float) ($row['leader_os_score'] ?? 0), $rows)) / count($rows), 1)
+            : 0.0;
+        $active_pro_total = count(array_filter($rows, static fn($row) => !empty($row['is_active_pro'])));
+        $previous_shop_clicks_total = array_sum(array_map(static fn($row) => (int) ($row['previous_forever_shop_clicks_period'] ?? 0), $rows));
+        $previous_funnel_total = array_sum(array_map(static fn($row) => (int) ($row['previous_app_funnel_registrations_period'] ?? 0), $rows));
+
+        $build_period_compare = static function(int $current, int $previous): array {
+            $delta = $current - $previous;
+            $direction = $delta > 0 ? 'up' : ($delta < 0 ? 'down' : 'flat');
+
+            if($previous === 0 && $current > 0) {
+                $text = 'Novi signal u odnosu na prošli period';
+            } elseif($delta === 0) {
+                $text = 'Isto kao prošli period';
+            } else {
+                $text = 'Vs prošli period ' . ($delta > 0 ? '+' : '') . nr($delta);
+            }
+
+            return [
+                'mode' => 'period',
+                'current' => $current,
+                'previous' => $previous,
+                'delta' => $delta,
+                'direction' => $direction,
+                'text' => $text,
+            ];
+        };
+
+        return [
+            [
+                'key' => 'team_score_average',
+                'label' => 'LOS score tima',
+                'value' => $team_score_average,
+                'value_display' => nr($team_score_average) . '/100',
+                'chip' => 'Glavni signal',
+                'tooltip' => 'Prosjek LOS rezultata svih suradnika u odabranom periodu. Viši rezultat znači zdraviji tim, jači momentum i bolji put prema konverziji.',
+                'hint' => 'Glavni health score za praćenje smjera cijelog tima.',
+                'compare' => [
+                    'mode' => 'snapshot',
+                    'text' => 'Prosjek svih suradnika u odabranom periodu',
+                ],
+            ],
+            [
+                'key' => 'qualified',
+                'label' => 'Kvalificirani suradnici',
+                'value' => (int) ($totals['qualified'] ?? 0),
+                'value_display' => nr((int) ($totals['qualified'] ?? 0)),
+                'chip' => '90d signal',
+                'tooltip' => 'Suradnici koji imaju barem 15 klikova prema Foreveru u zadnjih 90 dana. To je baza tima s dokazanim signalom aktivnosti.',
+                'hint' => 'Pokazuje koliko tim ima stvarno aktivne jezgre.',
+                'compare' => [
+                    'mode' => 'snapshot',
+                    'text' => 'Snapshot signala u zadnjih 90 dana',
+                ],
+            ],
+            [
+                'key' => 'total_funnel_leads_period',
+                'label' => 'Funnel prijave',
+                'value' => (int) ($totals['total_funnel_leads_period'] ?? 0),
+                'value_display' => nr((int) ($totals['total_funnel_leads_period'] ?? 0)),
+                'chip' => strtoupper($period_key),
+                'tooltip' => 'Koliko je funnel obrazaca stvarno ispunjeno u odabranom periodu. Ovo je glavni lead output tima.',
+                'hint' => 'Najvažniji izlaz interesa iz timskih aplikacija.',
+                'compare' => $build_period_compare((int) ($totals['total_funnel_leads_period'] ?? 0), $previous_funnel_total),
+            ],
+            [
+                'key' => 'total_shop_clicks_period',
+                'label' => 'Klikovi prema Foreveru',
+                'value' => (int) ($totals['total_shop_clicks_period'] ?? 0),
+                'value_display' => nr((int) ($totals['total_shop_clicks_period'] ?? 0)),
+                'chip' => strtoupper($period_key),
+                'tooltip' => 'Ukupni klikovi iz aplikacija prema Forever odredištima u odabranom periodu. To je glavni signal namjere i interesa tima.',
+                'hint' => 'Pokazuje ide li promet prema stvarnom poslovnom cilju.',
+                'compare' => $build_period_compare((int) ($totals['total_shop_clicks_period'] ?? 0), $previous_shop_clicks_total),
+            ],
+            [
+                'key' => 'active_pro_total',
+                'label' => 'Aktivni PRO',
+                'value' => $active_pro_total,
+                'value_display' => nr($active_pro_total),
+                'chip' => 'Now',
+                'tooltip' => 'Broj suradnika koji trenutno imaju aktivan PRO plan. Ovo je glavni monetizacijski snapshot tima.',
+                'hint' => 'Trenutno stanje aktivne PRO baze.',
+                'compare' => [
+                    'mode' => 'snapshot',
+                    'text' => 'Trenutno aktivni PRO računi',
+                ],
+            ],
+        ];
     }
 
     private function get_message_targets_payload(array $rows, array $queue_rows = []): array {
@@ -6206,11 +6327,12 @@ class AdminLeaderOperatingSystem extends Controller {
                 'detail_url' => url('admin/leader-operating-system-leader?user_id=' . (int) ($row->user_id ?? 0) . '&period=' . $period_key),
                 'admin_user_url' => url('admin/user-view/' . (int) ($row->user_id ?? 0)),
             ];
+            $candidate['is_active_pro'] = $this->is_active_pro_row($candidate);
 
             $rows[] = $candidate;
         }
 
-        $rows = $this->enrich_rows_with_app_signals($rows, $period_start_datetime);
+        $rows = $this->enrich_rows_with_app_signals($rows, $period_start_datetime, $previous_period_start_datetime);
         $rows = $this->enrich_rows_with_ai_growth_signal($rows);
 
         foreach($rows as $index => $candidate) {
@@ -6397,6 +6519,7 @@ class AdminLeaderOperatingSystem extends Controller {
             'high_potential' => 0,
             'total_shop_clicks_period' => 0,
             'quality_ready' => 0,
+            'active_pro_total' => 0,
         ];
 
         foreach($rows as $row) {
@@ -6421,6 +6544,9 @@ class AdminLeaderOperatingSystem extends Controller {
             $totals['total_shop_clicks_period'] += (int) $row['forever_shop_clicks_period'];
             if((int) ($row['app_quality_score'] ?? 0) >= 70) {
                 $totals['quality_ready']++;
+            }
+            if(!empty($row['is_active_pro'])) {
+                $totals['active_pro_total']++;
             }
         }
 
@@ -6480,9 +6606,34 @@ class AdminLeaderOperatingSystem extends Controller {
         $support_center = $this->get_support_center_payload($all_rows);
         $selected_support_ticket = $this->get_selected_support_ticket_payload((int) ($_GET['support_ticket_id'] ?? 0));
 
+        $kpi_drilldowns = $this->get_kpi_drilldowns_payload($all_rows, $suspicious_clicks);
+        $primary_team_kpis = $this->get_primary_team_kpis_payload($all_rows, $totals, $period_key);
+
+        foreach($primary_team_kpis as $primary_kpi) {
+            $key = (string) ($primary_kpi['key'] ?? '');
+
+            if($key === '' || empty($kpi_drilldowns[$key])) {
+                continue;
+            }
+
+            $compare_payload = $primary_kpi['compare'] ?? [];
+            if(!empty($primary_kpi['value_display'])) {
+                $kpi_drilldowns[$key]['signal_total_display'] = (string) $primary_kpi['value_display'];
+            }
+            $summary_note_parts = [];
+
+            if(!empty($compare_payload['text'])) {
+                $summary_note_parts[] = (string) $compare_payload['text'];
+            }
+
+            $summary_note_parts[] = 'Klik na ime otvara detalj suradnika.';
+            $kpi_drilldowns[$key]['summary_note'] = implode(' · ', array_filter($summary_note_parts));
+        }
+
         $overview_payload = [
             'totals' => $totals,
-            'kpi_drilldowns' => $this->get_kpi_drilldowns_payload($all_rows, $suspicious_clicks),
+            'kpi_drilldowns' => $kpi_drilldowns,
+            'primary_team_kpis' => $primary_team_kpis,
             'selected_period' => $period_key,
             'team_signal_chart' => $this->get_team_signal_chart_payload($period_start_datetime, $this->get_period_days($period_key)),
             'team_country_signal_matrix_periods' => $this->get_team_country_signal_matrix_periods_payload(),
