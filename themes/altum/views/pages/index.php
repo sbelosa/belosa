@@ -90,7 +90,7 @@ $fcc_pages_cta_label = $fcc_is_hr_language ? 'Saznaj više' : 'Learn more';
                     <?php foreach($data->popular_pages as $row): ?>
                         <?php
                         $fcc_page_url = $row->type == 'internal'
-                            ? SITE_URL . ($row->language ? \Altum\Language::$active_languages[$row->language] . '/' : null) . 'page/' . $row->url
+                            ? fc_get_internal_page_url($row->url, $row->language)
                             : $row->url;
                         $fcc_page_target = $row->type == 'internal' ? '_self' : '_blank';
                         $fcc_page_image_url = $row->image_url ?? (!empty($row->image) ? \Altum\Uploads::get_full_url('pages') . $row->image : null);
@@ -335,4 +335,3 @@ $fcc_pages_cta_label = $fcc_is_hr_language ? 'Saznaj više' : 'Learn more';
         }
 </script>
 <?php \Altum\Event::add_content(ob_get_clean(), 'javascript') ?>
-

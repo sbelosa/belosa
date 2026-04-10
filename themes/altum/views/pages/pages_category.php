@@ -132,7 +132,7 @@ $fcc_pages_category_cta = $fcc_is_hr_language ? 'Saznaj više' : 'Learn more';
 
             <div class="fcc-pages-cluster__grid">
                 <?php foreach($data->foreverclub_landing_pages as $row): ?>
-                    <?php $row_url = $row->type == 'internal' ? SITE_URL . ($row->language ? \Altum\Language::$active_languages[$row->language] . '/' : null) . 'page/' . $row->url : $row->url; ?>
+                    <?php $row_url = $row->type == 'internal' ? fc_get_internal_page_url($row->url, $row->language) : $row->url; ?>
                     <a href="<?= $row_url ?>" class="fcc-pages-cluster__card">
                         <span class="fcc-pages-cluster__label"><?= $fcc_is_hr_language ? 'Landing vodič' : 'Landing guide' ?></span>
                         <h3><?= $row->title ?></h3>
@@ -151,7 +151,7 @@ $fcc_pages_category_cta = $fcc_is_hr_language ? 'Saznaj više' : 'Learn more';
             <?php foreach($data->pages as $row): ?>
                 <?php
                 $page_url = $row->type == 'internal'
-                    ? SITE_URL . ($row->language ? \Altum\Language::$active_languages[$row->language] . '/' : null) . 'page/' . $row->url
+                    ? fc_get_internal_page_url($row->url, $row->language)
                     : $row->url;
                 $page_target = $row->type == 'internal' ? '_self' : '_blank';
                 $page_image_url = $row->image_url ?? null;
@@ -807,7 +807,7 @@ $fcc_pages_category_cta = $fcc_is_hr_language ? 'Saznaj više' : 'Learn more';
                 {
                     "@type": "ListItem",
                     "position": <?= $index + 1 ?>,
-                    "url": <?= json_encode($row->type == 'internal' ? SITE_URL . ($row->language ? \Altum\Language::$active_languages[$row->language] . '/' : null) . 'page/' . $row->url : $row->url) ?>,
+                    "url": <?= json_encode($row->type == 'internal' ? fc_get_internal_page_url($row->url, $row->language) : $row->url) ?>,
                     "name": <?= json_encode($row->title) ?>
                 }<?= $index + 1 < count($data->pages ?? []) ? ',' : null ?>
                 <?php endforeach ?>

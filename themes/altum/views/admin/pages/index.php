@@ -175,7 +175,7 @@
 
                                         <span title="<?= remove_url_protocol_from_url($row->url) ?>"><?= string_truncate(remove_url_protocol_from_url($row->url), 32) ?></span>
 
-                                        <a href="<?= $row->type == 'internal' ? SITE_URL . ($row->language ? \Altum\Language::$active_languages[$row->language] . '/' : null) . 'page/' . $row->url : $row->url ?>" target="_blank" rel="noreferrer">
+                                        <a href="<?= $row->type == 'internal' ? fc_get_internal_page_url($row->url, $row->language) : $row->url ?>" target="_blank" rel="noreferrer">
                                             <i class="fas fa-fw fa-xs fa-external-link-alt text-muted ml-1"></i>
                                         </a>
                                     </div>

@@ -73,6 +73,42 @@ function db() {
     return \Altum\Database::$db;
 }
 
+/* Custom code: FC-2026-04-10: selected FCC pages use /pages/{slug} as public URL */
+function fc_pages_route_internal_page_slugs(): array {
+    static $slugs = [
+        'who-created-forever-card-club',
+        'stjepan-belosa',
+        'snjezana-belosa',
+    ];
+
+    return $slugs;
+}
+
+function fc_internal_page_uses_pages_route($slug): bool {
+    $slug = trim((string) $slug);
+
+    if($slug === '') {
+        return false;
+    }
+
+    return in_array($slug, fc_pages_route_internal_page_slugs(), true);
+}
+
+function fc_get_internal_page_url($slug, $language = null): string {
+    $slug = ltrim(trim((string) $slug), '/');
+    $language = fc_resolve_language_name($language);
+    $language_prefix = null;
+
+    if($language && isset(\Altum\Language::$active_languages[$language])) {
+        $language_prefix = \Altum\Language::$active_languages[$language] . '/';
+    }
+
+    $route_segment = fc_internal_page_uses_pages_route($slug) ? 'pages' : 'page';
+
+    return SITE_URL . ($language_prefix ?? '') . $route_segment . '/' . $slug;
+}
+/* /Custom code: FC-2026-04-10 */
+
 function database() {
     if(!\Altum\Database::$database) {
         \Altum\Database::initialize();

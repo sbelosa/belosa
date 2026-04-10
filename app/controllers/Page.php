@@ -276,7 +276,7 @@ class Page extends Controller {
         }) : null;
 
         /* Custom code: FC-2026-03-24: strengthen foreverclub page hub SEO and internal linking */
-        $page_url = SITE_URL . ($page->language ? ((\Altum\Language::$active_languages[$page->language] ?? null) ? \Altum\Language::$active_languages[$page->language] . '/' : null) : null) . 'page/' . $page->url;
+        $page_url = fc_get_internal_page_url($page->url, $page->language);
         $is_foreverclub_page = $pages_category && $pages_category->url === 'foreverclub';
         $related_pages = [];
         $foreverclub_semantics = null;
@@ -289,6 +289,11 @@ class Page extends Controller {
         $page_schema_about_entity = null;
         $page_profile_schema = null;
         $page_organization_schema = null;
+
+        if(fc_internal_page_uses_pages_route($page->url) && \Altum\Router::$controller_key === 'page') {
+            header('Location: ' . $page_url . (\Altum\Router::$original_request_query ? '?' . \Altum\Router::$original_request_query : null), true, 301);
+            die();
+        }
 
         if($is_foreverclub_page) {
             $related_pages_query = "
@@ -835,13 +840,7 @@ class Page extends Controller {
             }
 
             $build_internal_page_url = static function(string $slug, ?string $language_name): string {
-                $language_prefix = null;
-
-                if($language_name && isset(\Altum\Language::$active_languages[$language_name])) {
-                    $language_prefix = \Altum\Language::$active_languages[$language_name] . '/';
-                }
-
-                return SITE_URL . ($language_prefix ?? '') . 'page/' . $slug;
+                return fc_get_internal_page_url($slug, $language_name);
             };
 
             if(\Altum\Language::$code === 'hr') {

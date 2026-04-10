@@ -105,7 +105,7 @@ class Sitemap extends Controller {
 
             foreach ($pages as $page) {
                 $new_sitemap_urls[] = [
-                    'loc' => SITE_URL . ($page->language ? \Altum\Language::$active_languages[$page->language] . '/' : '') . 'page/' . $page->url,
+                    'loc' => fc_get_internal_page_url($page->url, $page->language),
                     'lastmod' => $page->last_datetime ?? $page->datetime ?? null,
                 ];
             }

@@ -302,7 +302,7 @@ $fcc_page_authors = $data->page_schema_authors ?? [];
 
             <div class="fcc-pathways__grid">
                 <?php foreach($data->foreverclub_pathways['core_pages'] as $row): ?>
-                    <?php $row_url = $row->type == 'internal' ? SITE_URL . ($row->language ? \Altum\Language::$active_languages[$row->language] . '/' : null) . 'page/' . $row->url : $row->url; ?>
+                    <?php $row_url = $row->type == 'internal' ? fc_get_internal_page_url($row->url, $row->language) : $row->url; ?>
                     <a href="<?= $row_url ?>" class="fcc-pathways__card">
                         <span class="fcc-pathways__tag"><?= l('fcc.page.pathways_core_tag') ?></span>
                         <h3><?= $row->title ?></h3>
@@ -313,7 +313,7 @@ $fcc_page_authors = $data->page_schema_authors ?? [];
                 <?php endforeach ?>
 
                 <?php foreach($data->foreverclub_pathways['landing_pages'] as $row): ?>
-                    <?php $row_url = $row->type == 'internal' ? SITE_URL . ($row->language ? \Altum\Language::$active_languages[$row->language] . '/' : null) . 'page/' . $row->url : $row->url; ?>
+                    <?php $row_url = $row->type == 'internal' ? fc_get_internal_page_url($row->url, $row->language) : $row->url; ?>
                     <a href="<?= $row_url ?>" class="fcc-pathways__card fcc-pathways__card--accent">
                         <span class="fcc-pathways__tag"><?= l('fcc.page.pathways_landing_tag') ?></span>
                         <h3><?= $row->title ?></h3>
@@ -336,7 +336,7 @@ $fcc_page_authors = $data->page_schema_authors ?? [];
 
             <div class="fcc-related-grid">
                 <?php foreach($data->related_pages as $row): ?>
-                    <?php $row_url = $row->type == 'internal' ? SITE_URL . ($row->language ? \Altum\Language::$active_languages[$row->language] . '/' : null) . 'page/' . $row->url : $row->url; ?>
+                    <?php $row_url = $row->type == 'internal' ? fc_get_internal_page_url($row->url, $row->language) : $row->url; ?>
                     <a href="<?= $row_url ?>" class="fcc-related-card">
                         <div>
                             <h3><?= $row->title ?></h3>
@@ -1212,7 +1212,7 @@ $fcc_page_authors = $data->page_schema_authors ?? [];
                     "@type": "ListItem",
                     "position": 3,
                     "name": "<?= $data->page->title ?>",
-                    "item": "<?= SITE_URL . ($data->page->language ? \Altum\Language::$active_languages[$data->page->language] . '/' : null) . 'page/' . $data->page->url ?>"
+                    "item": "<?= $data->page_url ?? fc_get_internal_page_url($data->page->url, $data->page->language) ?>"
                 }
             ]
         }
@@ -1224,17 +1224,17 @@ $fcc_page_authors = $data->page_schema_authors ?? [];
 $fcc_page_schema = [
     '@context' => 'https://schema.org',
     '@type' => 'Article',
-    '@id' => ($data->page_url ?? (SITE_URL . ($data->page->language ? \Altum\Language::$active_languages[$data->page->language] . '/' : null) . 'page/' . $data->page->url)) . '#article',
+    '@id' => ($data->page_url ?? fc_get_internal_page_url($data->page->url, $data->page->language)) . '#article',
     'headline' => $data->page->title,
     'name' => $data->page->title,
     'description' => $data->page->description ?: strip_tags($data->page->title),
-    'url' => $data->page_url ?? (SITE_URL . ($data->page->language ? \Altum\Language::$active_languages[$data->page->language] . '/' : null) . 'page/' . $data->page->url),
+    'url' => $data->page_url ?? fc_get_internal_page_url($data->page->url, $data->page->language),
     'datePublished' => !empty($data->page->datetime) ? date(DATE_ATOM, strtotime($data->page->datetime)) : null,
     'dateModified' => !empty($data->page->last_datetime) ? date(DATE_ATOM, strtotime($data->page->last_datetime)) : (!empty($data->page->datetime) ? date(DATE_ATOM, strtotime($data->page->datetime)) : null),
     'inLanguage' => \Altum\Language::$code,
     'mainEntityOfPage' => [
         '@type' => 'WebPage',
-        '@id' => $data->page_url ?? (SITE_URL . ($data->page->language ? \Altum\Language::$active_languages[$data->page->language] . '/' : null) . 'page/' . $data->page->url),
+        '@id' => $data->page_url ?? fc_get_internal_page_url($data->page->url, $data->page->language),
     ],
     'author' => !empty($data->page_schema_authors)
         ? (count($data->page_schema_authors) === 1 ? $data->page_schema_authors[0] : array_values($data->page_schema_authors))
@@ -1404,7 +1404,7 @@ if(!empty($data->is_foreverclub_page) && isset($fcc_howto_map[$data->page->url])
         'name' => $howto['name'],
         'description' => $howto['description'],
         'inLanguage' => \Altum\Language::$code,
-        'url' => $data->page_url ?? (SITE_URL . 'page/' . $data->page->url),
+        'url' => $data->page_url ?? fc_get_internal_page_url($data->page->url, $data->page->language),
         'step' => [],
     ];
 

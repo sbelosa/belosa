@@ -57,6 +57,20 @@ class Pages extends Controller {
 
             /* Redirect to pages if the category is not found */
             if(!$pages_category) {
+                if(fc_internal_page_uses_pages_route($pages_category_url)) {
+                    $page_controller = new \Altum\Controllers\Page([
+                        'params' => [$pages_category_url],
+                        'user' => $this->user ?? null,
+                    ]);
+
+                    $page_controller->index();
+                    \Altum\Router::$controller_key = 'page';
+                    \Altum\Router::$controller = 'Page';
+                    $this->views = $page_controller->views;
+
+                    return;
+                }
+
                 throw_404();
             }
 

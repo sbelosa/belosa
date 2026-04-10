@@ -57,7 +57,7 @@ INSERT INTO `pages` (
 
   <p><strong>Forever Card Club (FCC)</strong> nastao je iz vrlo praktične potrebe: kako neovisnom Forever partneru olakšati predstavljanje, dijeljenje preporuke, prikupljanje kontakta i nastavak razgovora bez stalnog slanja više različitih linkova i objašnjenja.</p>
 
-  <p>Forever Card Club razvijaju <a href="/page/stjepan-belosa">Stjepan Beloša</a> i <a href="/page/snjezana-belosa">Snježana Beloša</a>. FCC su gradili postupno, kroz stvarni rad s partnerima i kroz želju da cijeli digitalni put bude jednostavniji, jasniji i korisniji u svakodnevnoj praksi.</p>
+  <p>Forever Card Club razvijaju <a href="/pages/stjepan-belosa">Stjepan Beloša</a> i <a href="/pages/snjezana-belosa">Snježana Beloša</a>. FCC su gradili postupno, kroz stvarni rad s partnerima i kroz želju da cijeli digitalni put bude jednostavniji, jasniji i korisniji u svakodnevnoj praksi.</p>
 
   <h2>Odakle je krenula ideja?</h2>
 
@@ -84,13 +84,13 @@ INSERT INTO `pages` (
 
   <p>Stjepan Beloša jedan je od kreatora FCC-a, a njegov doprinos najviše se vidi u razvoju strukture sustava, poslovne logike i načina na koji se više različitih koraka spaja u jednu cjelinu. U FCC-u je važan dio njegova rada usmjeren na to da sustav bude smislen, funkcionalan i dovoljno jasan da partner iz njega stvarno može raditi.</p>
 
-  <p>Više o tome možete pročitati na profilu <a href="/page/stjepan-belosa">Stjepan Beloša</a>.</p>
+  <p>Više o tome možete pročitati na profilu <a href="/pages/stjepan-belosa">Stjepan Beloša</a>.</p>
 
   <h2>Uloga Snježane Beloše</h2>
 
   <p>Snježana Beloša jedna je od kreatorica FCC-a, a njezin doprinos najviše se vidi u praktičnom oblikovanju FCC iskustva, jasnoći sustava i načinu na koji partner i posjetitelj prolaze kroz sadržaj. Njezin je doprinos posebno važan ondje gdje sustav treba biti jednostavan za korištenje, prirodan u komunikaciji i primjenjiv u stvarnom radu.</p>
 
-  <p>Više o tome možete pročitati na profilu <a href="/page/snjezana-belosa">Snježana Beloša</a>.</p>
+  <p>Više o tome možete pročitati na profilu <a href="/pages/snjezana-belosa">Snježana Beloša</a>.</p>
 
   <h2>Što FCC danas obuhvaća?</h2>
 
@@ -114,8 +114,8 @@ INSERT INTO `pages` (
     <li><a href="/page/forever-card-club">Što je Forever Card Club</a></li>
     <li><a href="/page/about">O Forever Card Clubu</a></li>
     <li><a href="/page/how-it-works">Kako funkcionira Forever Card Club</a></li>
-    <li><a href="/page/stjepan-belosa">Profil: Stjepan Beloša</a></li>
-    <li><a href="/page/snjezana-belosa">Profil: Snježana Beloša</a></li>
+    <li><a href="/pages/stjepan-belosa">Profil: Stjepan Beloša</a></li>
+    <li><a href="/pages/snjezana-belosa">Profil: Snježana Beloša</a></li>
   </ul>
 
   <h2>Česta pitanja</h2>
@@ -164,7 +164,7 @@ INSERT INTO `pages` (
 
   <p><strong>Stjepan Beloša</strong> u FCC-u je najviše vezan uz dio sustava koji traži dobru strukturu, jasan poslovni tok i povezivanje više koraka u jednu cjelinu.</p>
 
-  <p>Širi kontekst razvoja FCC-a opisan je u članku <a href="/page/who-created-forever-card-club">Kako je nastao Forever Card Club i tko stoji iza sustava</a>.</p>
+  <p>Širi kontekst razvoja FCC-a opisan je u članku <a href="/pages/who-created-forever-card-club">Kako je nastao Forever Card Club i tko stoji iza sustava</a>.</p>
 
   <h2>Na čemu je njegov fokus u FCC-u?</h2>
 
@@ -190,8 +190,8 @@ INSERT INTO `pages` (
   <h2>Povezano u FCC sustavu</h2>
 
   <ul>
-    <li><a href="/page/who-created-forever-card-club">Kako je nastao FCC</a></li>
-    <li><a href="/page/snjezana-belosa">Profil: Snježana Beloša</a></li>
+    <li><a href="/pages/who-created-forever-card-club">Kako je nastao FCC</a></li>
+    <li><a href="/pages/snjezana-belosa">Profil: Snježana Beloša</a></li>
     <li><a href="/page/about">O Forever Card Clubu</a></li>
     <li><a href="/page/forever-card-club">Što je Forever Card Club</a></li>
   </ul>
@@ -239,7 +239,7 @@ INSERT INTO `pages` (
 
   <p><strong>Snježana Beloša</strong> u FCC-u je posebno vezana uz jasnoću sustava, način korištenja i tok kroz koji partner i posjetitelj prolaze kroz sadržaj i sljedeće korake.</p>
 
-  <p>Širi kontekst razvoja FCC-a opisan je u članku <a href="/page/who-created-forever-card-club">Kako je nastao Forever Card Club i tko stoji iza sustava</a>.</p>
+  <p>Širi kontekst razvoja FCC-a opisan je u članku <a href="/pages/who-created-forever-card-club">Kako je nastao Forever Card Club i tko stoji iza sustava</a>.</p>
 
   <h2>Na čemu je njezin fokus u FCC-u?</h2>
 
@@ -265,8 +265,8 @@ INSERT INTO `pages` (
   <h2>Povezano u FCC sustavu</h2>
 
   <ul>
-    <li><a href="/page/who-created-forever-card-club">Kako je nastao FCC</a></li>
-    <li><a href="/page/stjepan-belosa">Profil: Stjepan Beloša</a></li>
+    <li><a href="/pages/who-created-forever-card-club">Kako je nastao FCC</a></li>
+    <li><a href="/pages/stjepan-belosa">Profil: Stjepan Beloša</a></li>
     <li><a href="/page/about">O Forever Card Clubu</a></li>
     <li><a href="/page/forever-card-club">Što je Forever Card Club</a></li>
   </ul>
@@ -314,7 +314,7 @@ INSERT INTO `pages` (
 
   <p><strong>Forever Card Club (FCC)</strong> grew out of a very practical need: how to make presentation, referral sharing, contact capture, and follow-up easier for an independent Forever partner without relying on several different links and repeated manual explanations.</p>
 
-  <p>Forever Card Club was developed by <a href="/page/stjepan-belosa">Stjepan Beloša</a> and <a href="/page/snjezana-belosa">Snježana Beloša</a>. They built FCC step by step through real partner work and through the idea that the full digital path should feel simpler, clearer, and more useful in everyday practice.</p>
+  <p>Forever Card Club was developed by <a href="/en/pages/stjepan-belosa">Stjepan Beloša</a> and <a href="/en/pages/snjezana-belosa">Snježana Beloša</a>. They built FCC step by step through real partner work and through the idea that the full digital path should feel simpler, clearer, and more useful in everyday practice.</p>
 
   <h2>Where did the idea begin?</h2>
 
@@ -341,13 +341,13 @@ INSERT INTO `pages` (
 
   <p>Stjepan Beloša is one of the creators of FCC, with his contribution most visible in the structure of the system, its business logic, and the way several steps are brought together into one whole. Inside FCC, an important part of that work is making sure the system stays meaningful, functional, and useful in real partner work.</p>
 
-  <p>You can read more on the profile page <a href="/page/stjepan-belosa">Stjepan Beloša</a>.</p>
+  <p>You can read more on the profile page <a href="/en/pages/stjepan-belosa">Stjepan Beloša</a>.</p>
 
   <h2>The role of Snježana Beloša</h2>
 
   <p>Snježana Beloša is one of the creators of FCC, with her contribution most visible in the practical shaping of the FCC experience, the clarity of the system, and the way a partner and visitor move through content and next steps. Her contribution matters especially where the system needs to feel natural, easy to use, and relevant in real communication.</p>
 
-  <p>You can read more on the profile page <a href="/page/snjezana-belosa">Snježana Beloša</a>.</p>
+  <p>You can read more on the profile page <a href="/en/pages/snjezana-belosa">Snježana Beloša</a>.</p>
 
   <h2>What does FCC include today?</h2>
 
@@ -368,11 +368,11 @@ INSERT INTO `pages` (
   <h2>Related inside the FCC system</h2>
 
   <ul>
-    <li><a href="/page/forever-card-club">What is Forever Card Club</a></li>
-    <li><a href="/page/about">About Forever Card Club</a></li>
-    <li><a href="/page/how-it-works">How Forever Card Club works</a></li>
-    <li><a href="/page/stjepan-belosa">Profile: Stjepan Beloša</a></li>
-    <li><a href="/page/snjezana-belosa">Profile: Snježana Beloša</a></li>
+    <li><a href="/en/page/forever-card-club">What is Forever Card Club</a></li>
+    <li><a href="/en/page/about">About Forever Card Club</a></li>
+    <li><a href="/en/page/how-it-works">How Forever Card Club works</a></li>
+    <li><a href="/en/pages/stjepan-belosa">Profile: Stjepan Beloša</a></li>
+    <li><a href="/en/pages/snjezana-belosa">Profile: Snježana Beloša</a></li>
   </ul>
 
   <h2>Frequently asked questions</h2>
@@ -393,7 +393,7 @@ INSERT INTO `pages` (
 
   <p>Forever Card Club grew out of the idea that partners need a clearer and more connected digital system for everyday work. In that development, Stjepan Beloša and Snježana Beloša play an important role in shaping FCC into a system that makes sense both online and in person.</p>
 
-  <p><a href="/pages/foreverclub">See the other Forever Card Club guides</a>.</p>
+  <p><a href="/en/pages/foreverclub">See the other Forever Card Club guides</a>.</p>
 </section>',
     'internal',
     'hidden',
@@ -421,7 +421,7 @@ INSERT INTO `pages` (
 
   <p><strong>Stjepan Beloša</strong> is most closely tied to the part of FCC that depends on good structure, clear business logic, and the connection of several steps into one whole.</p>
 
-  <p>The wider context is described in the article <a href="/page/who-created-forever-card-club">How Forever Card Club was built and who created it</a>.</p>
+  <p>The wider context is described in the article <a href="/en/pages/who-created-forever-card-club">How Forever Card Club was built and who created it</a>.</p>
 
   <h2>What is his focus inside FCC?</h2>
 
@@ -447,10 +447,10 @@ INSERT INTO `pages` (
   <h2>Related inside the FCC system</h2>
 
   <ul>
-    <li><a href="/page/who-created-forever-card-club">How FCC was built</a></li>
-    <li><a href="/page/snjezana-belosa">Profile: Snježana Beloša</a></li>
-    <li><a href="/page/about">About Forever Card Club</a></li>
-    <li><a href="/page/forever-card-club">What is Forever Card Club</a></li>
+    <li><a href="/en/pages/who-created-forever-card-club">How FCC was built</a></li>
+    <li><a href="/en/pages/snjezana-belosa">Profile: Snježana Beloša</a></li>
+    <li><a href="/en/page/about">About Forever Card Club</a></li>
+    <li><a href="/en/page/forever-card-club">What is Forever Card Club</a></li>
   </ul>
 
   <h2>Frequently asked questions</h2>
@@ -468,7 +468,7 @@ INSERT INTO `pages` (
 
   <p>In the context of Forever Card Club, Stjepan Beloša plays an important role in the part of development that gives the system structure, direction, and functional logic. That contribution matters because FCC needs to be not only attractive, but also useful in real partner work.</p>
 
-  <p><a href="/pages/foreverclub">See the other Forever Card Club guides</a>.</p>
+  <p><a href="/en/pages/foreverclub">See the other Forever Card Club guides</a>.</p>
 </section>',
     'internal',
     'hidden',
@@ -496,7 +496,7 @@ INSERT INTO `pages` (
 
   <p><strong>Snježana Beloša</strong> is especially tied to the part of FCC that focuses on system clarity, everyday usability, and the flow through which the partner and visitor move through content and next steps.</p>
 
-  <p>The wider context is described in the article <a href="/page/who-created-forever-card-club">How Forever Card Club was built and who created it</a>.</p>
+  <p>The wider context is described in the article <a href="/en/pages/who-created-forever-card-club">How Forever Card Club was built and who created it</a>.</p>
 
   <h2>What is her focus inside FCC?</h2>
 
@@ -522,10 +522,10 @@ INSERT INTO `pages` (
   <h2>Related inside the FCC system</h2>
 
   <ul>
-    <li><a href="/page/who-created-forever-card-club">How FCC was built</a></li>
-    <li><a href="/page/stjepan-belosa">Profile: Stjepan Beloša</a></li>
-    <li><a href="/page/about">About Forever Card Club</a></li>
-    <li><a href="/page/forever-card-club">What is Forever Card Club</a></li>
+    <li><a href="/en/pages/who-created-forever-card-club">How FCC was built</a></li>
+    <li><a href="/en/pages/stjepan-belosa">Profile: Stjepan Beloša</a></li>
+    <li><a href="/en/page/about">About Forever Card Club</a></li>
+    <li><a href="/en/page/forever-card-club">What is Forever Card Club</a></li>
   </ul>
 
   <h2>Frequently asked questions</h2>
@@ -543,7 +543,7 @@ INSERT INTO `pages` (
 
   <p>In the context of Forever Card Club, Snježana Beloša plays an important role in the part of development that gives the system clarity, natural flow, and practical usability. That contribution matters because FCC needs to work well in real daily partner use.</p>
 
-  <p><a href="/pages/foreverclub">See the other Forever Card Club guides</a>.</p>
+  <p><a href="/en/pages/foreverclub">See the other Forever Card Club guides</a>.</p>
 </section>',
     'internal',
     'hidden',

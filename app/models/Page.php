@@ -63,7 +63,7 @@ class Page extends Model {
 
             if($page->type == 'internal') {
                 $page->target = '_self';
-                $page->url = SITE_URL . ($page->language ? \Altum\Language::$active_languages[$page->language] . '/' : null) . 'page/' . $page->url;
+                $page->url = fc_get_internal_page_url($page->url, $page->language);
             } else {
                 $page->target = $page->open_in_new_tab ? '_blank' : '_self';
             }
