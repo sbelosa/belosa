@@ -445,19 +445,19 @@ class Page extends Controller {
                         'keywords' => 'Forever Card Club pravna napomena, Forever Card Club neovisnost, službeni Forever web shop, Forever Living Products napomena'
                     ],
                     'who-created-forever-card-club' => [
-                        'title' => 'Tko je stvorio Forever Card Club (FCC) i kako je sustav nastao',
-                        'description' => 'Saznaj kako je nastao Forever Card Club, koji su problem Stjepan Beloša i Snježana Beloša željeli riješiti i kakvu danas imaju ulogu u razvoju FCC sustava.',
-                        'keywords' => 'tko je stvorio Forever Card Club, kreatori Forever Card Cluba, osnivači FCC-a, Stjepan Beloša, Snježana Beloša, kako je nastao FCC'
+                        'title' => 'Kako je nastao Forever Card Club i tko stoji iza sustava',
+                        'description' => 'Saznaj kako je Forever Card Club nastao iz stvarnih potreba u radu s partnerima te kakvu ulogu u razvoju sustava imaju Stjepan Beloša i Snježana Beloša.',
+                        'keywords' => 'kako je nastao Forever Card Club, tko stoji iza FCC-a, Stjepan Beloša, Snježana Beloša, kreatori Forever Card Cluba'
                     ],
                     'stjepan-belosa' => [
-                        'title' => 'Tko je Stjepan Beloša u Forever Card Clubu (FCC)',
-                        'description' => 'Profil Stjepana Beloše: njegova uloga u nastanku Forever Card Cluba, razvoju FCC sustava i strukturiranju digitalnih procesa za Forever partnere.',
-                        'keywords' => 'Stjepan Beloša, tko je Stjepan Beloša, Forever Card Club kreator, FCC kreator, Stjepan Beloša FCC'
+                        'title' => 'Stjepan Beloša i njegova uloga u Forever Card Clubu (FCC)',
+                        'description' => 'Upoznaj ulogu Stjepana Beloše u razvoju Forever Card Cluba i dio sustava u kojem se njegov doprinos najviše vidi.',
+                        'keywords' => 'Stjepan Beloša, Forever Card Club, FCC, uloga Stjepana Beloše, kreator FCC-a'
                     ],
                     'snjezana-belosa' => [
-                        'title' => 'Tko je Snježana Beloša u Forever Card Clubu (FCC)',
-                        'description' => 'Profil Snježane Beloše: njezina uloga u nastanku Forever Card Cluba, razvoju korisničkog iskustva i praktičnom oblikovanju FCC sustava za Forever partnere.',
-                        'keywords' => 'Snježana Beloša, tko je Snježana Beloša, Forever Card Club kreatorica, FCC kreatorica, Snježana Beloša FCC'
+                        'title' => 'Snježana Beloša i njezina uloga u Forever Card Clubu (FCC)',
+                        'description' => 'Upoznaj ulogu Snježane Beloše u razvoju Forever Card Cluba i dio sustava u kojem se njezin doprinos najviše vidi.',
+                        'keywords' => 'Snježana Beloša, Forever Card Club, FCC, uloga Snježane Beloše, kreatorica FCC-a'
                     ],
                 ];
 
@@ -528,39 +528,39 @@ class Page extends Controller {
                         'term_description' => 'AI asistenti za preporuku proizvoda su specijalizirani savjetnici unutar Forever Card Club sustava koji preporučuju kombinacije Forever proizvoda za ljude i životinje te korisnika vode prema odgovarajućem linku partnera za kupnju.'
                     ],
                     'who-created-forever-card-club' => [
-                        'heading' => 'Zašto je važno objasniti tko stoji iza FCC-a?',
-                        'summary' => 'Za Google, AI alate i ljude koji prvi put susreću sustav važno je razumjeti da FCC nije apstraktna marka bez konteksta. Forever Card Club nastao je iz konkretnog rada Stjepana Beloše i Snježane Beloše na digitalnom sustavu za Forever partnere.',
+                        'heading' => 'Kako je FCC nastao',
+                        'summary' => 'Forever Card Club nastao je iz potrebe da partner ima jedno jasno mjesto za predstavljanje, preporuku, kontakt i daljnji nastavak razgovora. U razvoju tog sustava važnu ulogu imaju Stjepan Beloša i Snježana Beloša.',
                         'facts' => [
-                            'Članak objašnjava kako je FCC nastao iz stvarnih poslovnih i komunikacijskih potreba.',
-                            'Vidljivo povezuje Stjepana Belošu i Snježanu Belošu s razvojem FCC sustava.',
-                            'Razlikuje podrijetlo sustava od promotivnih tvrdnji i fokusira se na činjenice.',
-                            'Pomaže tražilicama i AI alatima razumjeti odnos između ljudi, sustava i namjene FCC-a.'
+                            'FCC je nastajao postupno, iz stvarnih situacija u radu s partnerima i kupcima.',
+                            'Danas povezuje osobnu aplikaciju, pametne linkove, kontakte, AI podršku i NFC tok.',
+                            'Priča o nastanku pomaže razumjeti zašto je sustav složen kao jedan povezani proces.',
+                            'FCC razvijaju Stjepan Beloša i Snježana Beloša.'
                         ],
-                        'term_name' => 'Kreatori Forever Card Cluba',
-                        'term_alternate_names' => ['Stjepan Beloša i Snježana Beloša', 'osnivači FCC-a', 'tko stoji iza FCC-a'],
-                        'term_description' => 'Kreatori Forever Card Cluba su Stjepan Beloša i Snježana Beloša, koji su FCC razvili kao neovisni digitalni poslovni sustav za Forever Living Products partnere.'
+                        'term_name' => 'Forever Card Club',
+                        'term_alternate_names' => ['FCC', 'Forever Card Club (FCC)'],
+                        'term_description' => 'Forever Card Club je neovisni digitalni poslovni sustav za Forever Living Products partnere koji povezuje osobnu aplikaciju, pametne preporučne linkove, kontakte, AI podršku i offline nastavak kroz NFC karticu.'
                     ],
                     'stjepan-belosa' => [
-                        'heading' => 'Tko je Stjepan Beloša u FCC sustavu?',
-                        'summary' => 'Stjepan Beloša je jedan od kreatora Forever Card Cluba i dio tandema koji je FCC oblikovao kao digitalni poslovni sustav za Forever partnere. Njegova uloga u FCC-u vezana je uz strukturu sustava, poslovnu logiku i razvoj javno objašnjivih procesa.',
+                        'heading' => 'Uloga Stjepana Beloše u FCC-u',
+                        'summary' => 'Stjepan Beloša jedan je od kreatora FCC-a, a njegov doprinos najviše se vidi u strukturi sustava, poslovnoj logici i smjeru razvoja. Njegov rad pomaže da FCC više dijelova poslovnog procesa pretvori u jednu funkcionalnu cjelinu.',
                         'facts' => [
-                            'Povezan je s razvojem i definiranjem operativne logike FCC sustava.',
-                            'Sudjeluje u pretvaranju praktičnih poslovnih potreba u jasan digitalni proces.',
-                            'Njegov profil služi kao javna referenca za razumijevanje tko stoji iza FCC-a.',
-                            'Stranica je napisana informativno, a ne promotivno, kako bi bila čitljiva i ljudima i AI alatima.'
+                            'Njegov doprinos vidi se u strukturi i poslovnoj logici FCC sustava.',
+                            'Sudjeluje u oblikovanju procesa kojim se partner lakše predstavlja i vodi osobu prema sljedećem koraku.',
+                            'Važan je u dijelu koji određuje smjer razvoja i funkcionalnost sustava.',
+                            'FCC razvija zajedno sa Snježanom Belošom.'
                         ],
                         'term_name' => 'Stjepan Beloša',
                         'term_alternate_names' => ['Stjepan Belosa', 'kreator FCC-a', 'su-kreator Forever Card Cluba'],
                         'term_description' => 'Stjepan Beloša je su-kreator Forever Card Cluba, neovisnog digitalnog poslovnog sustava za Forever Living Products partnere.'
                     ],
                     'snjezana-belosa' => [
-                        'heading' => 'Tko je Snježana Beloša u FCC sustavu?',
-                        'summary' => 'Snježana Beloša je jedna od kreatorica Forever Card Cluba i dio tandema koji je FCC razvio kao praktičan digitalni sustav za Forever partnere. Njezina uloga vezana je uz stvarni korisnički tok, jasnoću sustava i njegovo praktično korištenje.',
+                        'heading' => 'Uloga Snježane Beloše u FCC-u',
+                        'summary' => 'Snježana Beloša jedna je od kreatorica FCC-a, a njezin doprinos najviše se vidi u jasnoći sustava, načinu korištenja i iskustvu kroz koje partner i posjetitelj prolaze.',
                         'facts' => [
-                            'Sudjeluje u oblikovanju načina na koji FCC izgleda i radi u praksi.',
-                            'Povezana je s razvojem korisničkog iskustva, strukture i upotrebljivosti sustava.',
-                            'Njezin profil daje jasan javni entitet koji povezuje osobu i FCC.',
-                            'Stranica je namjerno pisana kao urednički profil, a ne kao reklamni tekst.'
+                            'Njezin doprinos vidi se u praktičnom oblikovanju korisničkog iskustva u FCC-u.',
+                            'Važna je za jasnoću, upotrebljivost i prirodan tok sustava.',
+                            'Njezina uloga posebno dolazi do izražaja ondje gdje FCC treba biti razumljiv i jednostavan za svakodnevni rad.',
+                            'FCC razvija zajedno sa Stjepanom Belošom.'
                         ],
                         'term_name' => 'Snježana Beloša',
                         'term_alternate_names' => ['Snjezana Belosa', 'kreatorica FCC-a', 'su-kreatorica Forever Card Cluba'],
@@ -665,19 +665,19 @@ class Page extends Controller {
                         'keywords' => 'Forever Card Club disclaimer, independent Forever Card Club, official Forever webshop, Forever Living Products disclaimer, Forever Card Club legal notice'
                     ],
                     'who-created-forever-card-club' => [
-                        'title' => 'Who created Forever Card Club (FCC) and how the system was built',
-                        'description' => 'Learn how Forever Card Club was created, what problem Stjepan Beloša and Snježana Beloša were trying to solve, and what role they have in the FCC system today.',
-                        'keywords' => 'who created Forever Card Club, Forever Card Club creators, FCC founders, Stjepan Belosa, Snjezana Belosa, how FCC was created'
+                        'title' => 'How Forever Card Club was built and who created it',
+                        'description' => 'Learn how Forever Card Club grew out of practical partner needs and what role Stjepan Beloša and Snježana Beloša have in the development of the system.',
+                        'keywords' => 'how Forever Card Club was built, who created FCC, Stjepan Belosa, Snjezana Belosa, creators of Forever Card Club'
                     ],
                     'stjepan-belosa' => [
-                        'title' => 'Who is Stjepan Beloša in Forever Card Club (FCC)',
-                        'description' => 'A profile of Stjepan Beloša, his role in the origin of Forever Card Club, the development of the FCC system, and the structure behind its digital workflows for Forever partners.',
-                        'keywords' => 'Stjepan Belosa, who is Stjepan Belosa, Forever Card Club creator, FCC creator, Stjepan Belosa FCC'
+                        'title' => 'Stjepan Beloša and his role in Forever Card Club (FCC)',
+                        'description' => 'Learn about the role of Stjepan Beloša in the development of Forever Card Club and the part of the system where his contribution is most visible.',
+                        'keywords' => 'Stjepan Belosa, Forever Card Club, FCC, role of Stjepan Belosa, FCC creator'
                     ],
                     'snjezana-belosa' => [
-                        'title' => 'Who is Snježana Beloša in Forever Card Club (FCC)',
-                        'description' => 'A profile of Snježana Beloša, her role in the origin of Forever Card Club, the practical shaping of the FCC experience, and the system logic built for Forever partners.',
-                        'keywords' => 'Snjezana Belosa, who is Snjezana Belosa, Forever Card Club creator, FCC creator, Snjezana Belosa FCC'
+                        'title' => 'Snježana Beloša and her role in Forever Card Club (FCC)',
+                        'description' => 'Learn about the role of Snježana Beloša in the development of Forever Card Club and the part of the system where her contribution is most visible.',
+                        'keywords' => 'Snjezana Belosa, Forever Card Club, FCC, role of Snjezana Belosa, FCC creator'
                     ],
                 ];
 
@@ -748,39 +748,39 @@ class Page extends Controller {
                         'term_description' => 'AI product assistants are specialized advisors inside the Forever Card Club system that recommend Forever product combinations for people and pets and guide visitors toward the correct partner-linked webshop path.'
                     ],
                     'who-created-forever-card-club' => [
-                        'heading' => 'Why explain who stands behind FCC?',
-                        'summary' => 'For Google, AI tools, and new readers, it matters that FCC is not an abstract brand without context. Forever Card Club was built through the practical work of Stjepan Beloša and Snježana Beloša on a digital business system for Forever partners.',
+                        'heading' => 'How FCC was built',
+                        'summary' => 'Forever Card Club grew out of the need to give partners one clear place for presentation, referral logic, contact flow, and the next business step. Stjepan Beloša and Snježana Beloša have an important role in the development of that system.',
                         'facts' => [
-                            'The page explains how FCC grew from real business and communication problems.',
-                            'It visibly connects Stjepan Beloša and Snježana Beloša with the development of the FCC system.',
-                            'It focuses on factual origin and role definitions instead of promotional claims.',
-                            'It helps search and AI systems understand the relationship between people, the system, and the purpose of FCC.'
+                            'FCC took shape gradually through real partner and customer situations.',
+                            'Today it connects the personal app, smart links, contacts, AI support, and NFC flow.',
+                            'The origin story helps explain why FCC is built as one connected process.',
+                            'FCC was developed by Stjepan Beloša and Snježana Beloša.'
                         ],
-                        'term_name' => 'Creators of Forever Card Club',
-                        'term_alternate_names' => ['Stjepan Beloša and Snježana Beloša', 'FCC founders', 'who stands behind FCC'],
-                        'term_description' => 'The creators of Forever Card Club are Stjepan Beloša and Snježana Beloša, who developed FCC as an independent digital business system for Forever Living Products partners.'
+                        'term_name' => 'Forever Card Club',
+                        'term_alternate_names' => ['FCC', 'Forever Card Club (FCC)'],
+                        'term_description' => 'Forever Card Club is an independent digital business system for Forever Living Products partners that connects the personal app, smart referral links, contacts, AI support, and offline continuation through the NFC card.'
                     ],
                     'stjepan-belosa' => [
-                        'heading' => 'Who is Stjepan Beloša inside FCC?',
-                        'summary' => 'Stjepan Beloša is one of the creators of Forever Card Club and part of the pair that shaped FCC as a digital business system for Forever partners. His role is tied to the structure of the system, business logic, and turning complex workflows into clear public explanations.',
+                        'heading' => 'The role of Stjepan Beloša inside FCC',
+                        'summary' => 'Stjepan Beloša is one of the creators of FCC, with his contribution most visible in the system structure, business logic, and development direction. His work helps turn several business steps into one functional whole.',
                         'facts' => [
-                            'He is connected with the structure and operating logic of the FCC system.',
-                            'He helps translate practical business needs into a usable digital process.',
-                            'His profile acts as a public reference that ties a real person to FCC.',
-                            'The page is intentionally written as an editorial profile rather than promotional copy.'
+                            'His contribution can be seen in the structure and operating logic of the FCC system.',
+                            'He helps shape the process that leads a visitor from attention to the next step.',
+                            'A key part of his work is the direction and functionality of the system.',
+                            'He develops FCC together with Snježana Beloša.'
                         ],
                         'term_name' => 'Stjepan Beloša',
                         'term_alternate_names' => ['Stjepan Belosa', 'FCC creator', 'Forever Card Club co-creator'],
                         'term_description' => 'Stjepan Beloša is a co-creator of Forever Card Club, an independent digital business system for Forever Living Products partners.'
                     ],
                     'snjezana-belosa' => [
-                        'heading' => 'Who is Snježana Beloša inside FCC?',
-                        'summary' => 'Snježana Beloša is one of the creators of Forever Card Club and part of the pair that developed FCC as a practical digital system for Forever partners. Her role is tied to real user flow, system clarity, and how FCC works in everyday use.',
+                        'heading' => 'The role of Snježana Beloša inside FCC',
+                        'summary' => 'Snježana Beloša is one of the creators of FCC, with her contribution most visible in system clarity, usability, and the experience through which partners and visitors move.',
                         'facts' => [
-                            'She is connected with shaping how FCC feels and functions in practice.',
-                            'She contributes to the usability, clarity, and partner-facing structure of the system.',
-                            'Her profile creates a clear public entity that links the person and FCC.',
-                            'The page is intentionally written as an editorial profile, not an advertisement.'
+                            'Her contribution can be seen in the practical shaping of the FCC user experience.',
+                            'She plays an important role in the clarity, usability, and natural flow of the system.',
+                            'Her work matters where FCC needs to stay understandable and easy to use in everyday work.',
+                            'She develops FCC together with Stjepan Beloša.'
                         ],
                         'term_name' => 'Snježana Beloša',
                         'term_alternate_names' => ['Snjezana Belosa', 'FCC creator', 'Forever Card Club co-creator'],
@@ -879,7 +879,7 @@ class Page extends Controller {
                         'name' => 'Stjepan Beloša',
                         'url' => $build_internal_page_url('stjepan-belosa', $page->language),
                         'jobTitle' => 'Forever Card Club co-creator',
-                        'description' => 'Stjepan Beloša is a co-creator of Forever Card Club and one of the people who shaped FCC as a digital business system for Forever partners.',
+                        'description' => 'Stjepan Beloša is a co-creator of Forever Card Club and helped develop FCC as a digital business system for Forever partners.',
                         'knowsAbout' => [
                             'Forever Card Club',
                             'digital business systems for Forever partners',
@@ -891,7 +891,7 @@ class Page extends Controller {
                         'name' => 'Snježana Beloša',
                         'url' => $build_internal_page_url('snjezana-belosa', $page->language),
                         'jobTitle' => 'Forever Card Club co-creator',
-                        'description' => 'Snježana Beloša is a co-creator of Forever Card Club and one of the people who helped shape FCC into a practical and clear digital system for Forever partners.',
+                        'description' => 'Snježana Beloša is a co-creator of Forever Card Club and helped develop FCC into a practical and clear digital system for Forever partners.',
                         'knowsAbout' => [
                             'Forever Card Club',
                             'FCC user experience',
@@ -1014,8 +1014,8 @@ class Page extends Controller {
                             '@id' => $build_internal_page_url('who-created-forever-card-club', $page->language) . '#article',
                             'url' => $build_internal_page_url('who-created-forever-card-club', $page->language),
                             'name' => \Altum\Language::$code === 'hr'
-                                ? 'Tko je stvorio Forever Card Club i kako je sustav nastao'
-                                : 'Who created Forever Card Club and how the system was built',
+                                ? 'Kako je nastao Forever Card Club i tko stoji iza sustava'
+                                : 'How Forever Card Club was built and who created it',
                         ],
                     ],
                 ];
