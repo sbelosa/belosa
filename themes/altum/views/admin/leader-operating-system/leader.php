@@ -1229,6 +1229,41 @@ $last_checkin_label = !empty($latest_checkin['submitted_at']) ? \Altum\Date::get
 $latest_plan_label = !empty($latest_plan['generated_at']) ? \Altum\Date::get($latest_plan['generated_at'], 2) : l('global.none');
 $latest_outcome_label = !empty($latest_outcome['created_at']) ? \Altum\Date::get($latest_outcome['created_at'], 2) : l('global.none');
 $mentor_status_label = !empty($mentor_actions['status']) ? l('admin_leader_operating_system.leader.ai_plan_admin_status.' . $mentor_actions['status']) : l('global.none');
+$compare_7d = $detail['periods']['7d'] ?? [];
+$compare_30d = $detail['periods']['30d'] ?? [];
+$compare_90d = $detail['periods']['90d'] ?? [];
+$ai_admin_action_now = trim((string) (($ai_report['admin_action_now'] ?? '') ?: ($mentor_actions['next_action'] ?? '') ?: $main_opportunity_text));
+$ai_collaborator_action_this_week = trim((string) (($ai_report['collaborator_action_this_week'] ?? '') ?: ($selected['next_step'] ?? '')));
+$ai_progress_signal = trim((string) ($ai_report['progress_signal'] ?? ''));
+$ai_period_comparison_summary = trim((string) ($ai_report['period_comparison_summary'] ?? ''));
+$ai_what_to_stop_pushing = trim((string) ($ai_report['what_to_stop_pushing'] ?? ''));
+$ai_admin_note = trim((string) (($ai_report['admin_note'] ?? '') ?: ($mentor_actions['mentor_note'] ?? '')));
+
+if($ai_progress_signal === '') {
+    $growth_difference = (int) ($selected['growth_difference'] ?? 0);
+    $ai_progress_signal = $growth_difference > 0
+        ? 'Suradnik trenutno pokazuje rast u odnosu na prethodni isti period.'
+        : ($growth_difference < 0
+            ? 'Suradnik trenutno pokazuje pad u odnosu na prethodni isti period.'
+            : 'Signal je trenutno ravan i nema jasnog rasta u odnosu na prethodni isti period.');
+}
+
+if($ai_period_comparison_summary === '') {
+    $ai_period_comparison_summary = sprintf(
+        '7d: %s klikova / %s registracija · 30d: %s / %s · 90d: %s / %s.',
+        nr((int) ($compare_7d['forever_shop_clicks_period'] ?? 0)),
+        nr((int) ($compare_7d['forever_registration_clicks_period'] ?? 0)),
+        nr((int) ($compare_30d['forever_shop_clicks_period'] ?? 0)),
+        nr((int) ($compare_30d['forever_registration_clicks_period'] ?? 0)),
+        nr((int) ($compare_90d['forever_shop_clicks_period'] ?? 0)),
+        nr((int) ($compare_90d['forever_registration_clicks_period'] ?? 0))
+    );
+}
+
+if($ai_what_to_stop_pushing === '') {
+    $ai_what_to_stop_pushing = 'Ne širiti fokus na previše smjerova dok se ne ojača glavni put do rezultata.';
+}
+
 $render_detail_help = static function(string $tooltip): void {
     if($tooltip === '') {
         return;
@@ -2286,6 +2321,43 @@ $render_detail_help = static function(string $tooltip): void {
                     <div class="leader-os-detail-list-item">
                         <span class="text-muted">Mentoriran ovaj tjedan</span>
                         <strong><?= !empty($mentor_actions['mentored_this_week']) ? l('global.yes') : l('global.no') ?></strong>
+                    </div>
+                </div>
+
+                <div class="leader-os-cockpit-summary-grid mb-3">
+                    <div class="leader-os-cockpit-spotlight mt-0">
+                        <div class="leader-os-cockpit-label mb-2">
+                            Admin akcija sada
+                            <?php $render_detail_help('Što je: jedna konkretna stvar koju ti kao admin trebaš napraviti odmah. | Kako se računa: AI uzima u obzir promet, AI disciplinu, coaching status, billing i strukturu aplikacije. | Kako koristiš: ne razmišljaš od nule, nego odmah vidiš prvi najbolji potez.'); ?>
+                        </div>
+                        <div class="leader-os-cockpit-spotlight-text"><?= htmlspecialchars((string) ($ai_admin_action_now ?: l('global.none')), ENT_QUOTES, 'UTF-8') ?></div>
+                    </div>
+
+                    <div class="leader-os-cockpit-spotlight mt-0">
+                        <div class="leader-os-cockpit-label mb-2">
+                            Fokus suradnika ovaj tjedan
+                            <?php $render_detail_help('Što je: glavni tjedni zadatak koji suradnik treba provesti. | Kako se računa: AI bira jednu najvažniju akciju na temelju analitike, aplikacije i trenutnog smjera. | Kako koristiš: odmah znaš što tražiš od osobe ovaj tjedan.'); ?>
+                        </div>
+                        <div class="leader-os-cockpit-spotlight-text"><?= htmlspecialchars((string) ($ai_collaborator_action_this_week ?: l('global.none')), ENT_QUOTES, 'UTF-8') ?></div>
+                    </div>
+                </div>
+
+                <div class="leader-os-detail-list mb-3">
+                    <div class="leader-os-detail-list-item">
+                        <span class="text-muted">Signal napretka</span>
+                        <strong><?= htmlspecialchars((string) $ai_progress_signal, ENT_QUOTES, 'UTF-8') ?></strong>
+                    </div>
+                    <div class="leader-os-detail-list-item">
+                        <span class="text-muted">Usporedba 7d / 30d / 90d</span>
+                        <strong><?= htmlspecialchars((string) $ai_period_comparison_summary, ENT_QUOTES, 'UTF-8') ?></strong>
+                    </div>
+                    <div class="leader-os-detail-list-item">
+                        <span class="text-muted">Što sada ne gurati</span>
+                        <strong><?= htmlspecialchars((string) $ai_what_to_stop_pushing, ENT_QUOTES, 'UTF-8') ?></strong>
+                    </div>
+                    <div class="leader-os-detail-list-item">
+                        <span class="text-muted">Interna admin bilješka</span>
+                        <strong><?= htmlspecialchars((string) ($ai_admin_note ?: l('global.none')), ENT_QUOTES, 'UTF-8') ?></strong>
                     </div>
                 </div>
 

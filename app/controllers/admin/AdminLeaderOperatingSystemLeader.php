@@ -3940,10 +3940,16 @@ class AdminLeaderOperatingSystemLeader extends Controller {
                 'model' => trim((string) ($report['model'] ?? '')),
                 'headline' => trim((string) ($report['headline'] ?? '')),
                 'executive_summary' => trim((string) ($report['executive_summary'] ?? '')),
+                'progress_signal' => trim((string) ($report['progress_signal'] ?? '')),
+                'period_comparison_summary' => trim((string) ($report['period_comparison_summary'] ?? '')),
                 'email_subject' => trim((string) ($report['email_subject'] ?? '')),
                 'email_intro' => trim((string) ($report['email_intro'] ?? '')),
                 'email_body_points' => array_slice($email_body_points, 0, 5),
                 'email_cta' => trim((string) ($report['email_cta'] ?? '')),
+                'admin_action_now' => trim((string) ($report['admin_action_now'] ?? '')),
+                'collaborator_action_this_week' => trim((string) ($report['collaborator_action_this_week'] ?? '')),
+                'what_to_stop_pushing' => trim((string) ($report['what_to_stop_pushing'] ?? '')),
+                'admin_note' => trim((string) ($report['admin_note'] ?? '')),
             ];
         }
 
@@ -4005,10 +4011,16 @@ class AdminLeaderOperatingSystemLeader extends Controller {
             'model' => (string) ($report['model'] ?? ''),
             'headline' => (string) ($report['headline'] ?? ''),
             'executive_summary' => (string) ($report['executive_summary'] ?? ''),
+            'progress_signal' => (string) ($report['progress_signal'] ?? ''),
+            'period_comparison_summary' => (string) ($report['period_comparison_summary'] ?? ''),
             'email_subject' => (string) ($report['email_subject'] ?? ''),
             'email_intro' => (string) ($report['email_intro'] ?? ''),
             'email_body_points' => $report['email_body_points'] ?? [],
             'email_cta' => (string) ($report['email_cta'] ?? ''),
+            'admin_action_now' => (string) ($report['admin_action_now'] ?? ''),
+            'collaborator_action_this_week' => (string) ($report['collaborator_action_this_week'] ?? ''),
+            'what_to_stop_pushing' => (string) ($report['what_to_stop_pushing'] ?? ''),
+            'admin_note' => (string) ($report['admin_note'] ?? ''),
         ]);
 
         $preferences->leader_os_outreach = (object) [
@@ -4255,6 +4267,32 @@ class AdminLeaderOperatingSystemLeader extends Controller {
     private function build_ai_report_input(array $detail, array $payload, string $period_key): array {
         $behavior_anomaly = $this->get_behavior_anomaly_payload($payload, $detail['periods'] ?? [], $detail['app_structure'] ?? [], $period_key);
         $fraud_intelligence = $detail['fraud_intelligence'][$period_key] ?? $this->get_fraud_intelligence_payload((int) ($detail['user_id'] ?? 0), $period_key);
+        $ai_plan_admin = $detail['ai_plan_admin'] ?? [];
+        $mentor_actions = $ai_plan_admin['mentor_actions'] ?? [];
+        $consistency = $this->get_consistency_payload($payload, $ai_plan_admin);
+        $coaching_roi = !empty($detail['score_history'][$period_key]) ? $this->get_coaching_roi_payload($detail['score_history'][$period_key], $ai_plan_admin) : [];
+        $billing_model = new Billing();
+        $billing_summary = $billing_model->get_user_billing_summary((int) ($detail['user_id'] ?? 0));
+        $stripe_billing = $billing_summary ? $this->get_stripe_billing_payload($detail, $billing_summary) : [];
+        $period_comparison = [];
+
+        foreach(['7d', '30d', '90d'] as $comparison_key) {
+            $comparison_payload = $detail['periods'][$comparison_key] ?? [];
+
+            $period_comparison[$comparison_key] = [
+                'period_label' => l('admin_leader_operating_system.period_' . $comparison_key),
+                'leader_os_score' => (int) ($comparison_payload['leader_os_score'] ?? 0),
+                'status_label' => (string) ($comparison_payload['status_label'] ?? ''),
+                'total_clicks' => (int) ($comparison_payload['clicks_total_period'] ?? 0),
+                'webshop_clicks' => (int) ($comparison_payload['forever_shop_clicks_period'] ?? 0),
+                'registrations' => (int) ($comparison_payload['forever_registration_clicks_period'] ?? 0),
+                'blog_clicks' => (int) ($comparison_payload['blog_forever']['total_clicks'] ?? 0),
+                'app_visits' => (int) ($comparison_payload['app_visits_total'] ?? 0),
+                'registration_rate_percent' => (float) ($comparison_payload['registration_rate_percent'] ?? 0),
+                'risk_score' => (int) ($comparison_payload['risk_score'] ?? 0),
+                'growth_percent' => $comparison_payload['growth_percent'] ?? null,
+            ];
+        }
 
         return [
             'period_key' => $period_key,
@@ -4293,6 +4331,7 @@ class AdminLeaderOperatingSystemLeader extends Controller {
                 'status_label' => (string) ($payload['status_label'] ?? ''),
                 'qualified' => (bool) ($payload['qualified'] ?? false),
             ],
+            'period_comparison' => $period_comparison,
             'metrics' => [
                 'total_clicks' => (int) ($payload['clicks_total_period'] ?? 0),
                 'webshop_clicks' => (int) ($payload['forever_shop_clicks_period'] ?? 0),
@@ -4319,6 +4358,34 @@ class AdminLeaderOperatingSystemLeader extends Controller {
                 'top_device' => (string) ($payload['top_device_label'] ?? '-'),
                 'top_language' => (string) ($payload['top_language_label'] ?? '-'),
                 'next_step' => (string) ($payload['next_step'] ?? ''),
+            ],
+            'consistency' => [
+                'score' => (int) ($consistency['score'] ?? 0),
+                'state_label' => (string) ($consistency['state_label'] ?? ''),
+                'state_key' => (string) ($consistency['state_key'] ?? ''),
+                'completed_checkins' => (int) ($consistency['completed_checkins'] ?? 0),
+                'recent_outcomes' => (int) ($consistency['recent_outcomes'] ?? 0),
+            ],
+            'coaching' => [
+                'status_label' => $this->get_ai_plan_mentor_status_label((string) ($mentor_actions['status'] ?? 'pending_contact')),
+                'needs_follow_up' => (bool) ($mentor_actions['needs_follow_up'] ?? false),
+                'mentored_this_week' => (bool) ($mentor_actions['mentored_this_week'] ?? false),
+                'next_action' => (string) ($mentor_actions['next_action'] ?? ''),
+                'mentor_note' => (string) ($mentor_actions['mentor_note'] ?? ''),
+                'ai_guidance' => (string) ($mentor_actions['ai_guidance'] ?? ''),
+                'last_contacted_at' => $mentor_actions['last_contacted_at'] ?? null,
+                'signal_label' => (string) ($coaching_roi['signal_label'] ?? ''),
+                'score_delta' => $coaching_roi['score_delta'] ?? null,
+                'days_since_touch' => $coaching_roi['days_since_touch'] ?? null,
+            ],
+            'billing' => [
+                'plan_name' => (string) ($stripe_billing['plan_name'] ?? ''),
+                'status' => (string) ($stripe_billing['status'] ?? ''),
+                'billing_state' => (string) ($stripe_billing['billing_state'] ?? ''),
+                'failed_attempts' => (int) ($stripe_billing['failed_attempts'] ?? 0),
+                'cancel_at_period_end' => (bool) ($stripe_billing['cancel_at_period_end'] ?? false),
+                'current_period_end' => $stripe_billing['current_period_end'] ?? null,
+                'grace_until' => $stripe_billing['grace_until'] ?? null,
             ],
             /* Custom code: FC-2026-03-31: Feed anomaly radar into AI input */
             'anomaly_radar' => [
@@ -4482,9 +4549,15 @@ class AdminLeaderOperatingSystemLeader extends Controller {
         /* Custom code: FC-2026-03-31: Allow fuller AI report while keeping sectioned UI */
         $headline = $this->sanitize_ai_string($report['headline'] ?? '', 140);
         $executive_summary = $this->sanitize_ai_string($report['executive_summary'] ?? '', 900);
+        $progress_signal = $this->sanitize_ai_string($report['progress_signal'] ?? '', 220);
+        $period_comparison_summary = $this->sanitize_ai_string($report['period_comparison_summary'] ?? '', 320);
         $primary_risks = $this->normalize_ai_list($report['primary_risks'] ?? [], 4, 220);
         $opportunities = $this->normalize_ai_list($report['opportunities'] ?? [], 4, 220);
+        $admin_action_now = $this->sanitize_ai_string($report['admin_action_now'] ?? '', 240);
+        $collaborator_action_this_week = $this->sanitize_ai_string($report['collaborator_action_this_week'] ?? '', 240);
+        $what_to_stop_pushing = $this->sanitize_ai_string($report['what_to_stop_pushing'] ?? '', 240);
         $next_30_days = $this->normalize_ai_list($report['next_30_days'] ?? [], 5, 220);
+        $admin_note = $this->sanitize_ai_string($report['admin_note'] ?? '', 260);
         $email_subject = $this->sanitize_ai_string($report['email_subject'] ?? '', 160);
         $email_intro = $this->sanitize_ai_string($report['email_intro'] ?? '', 320);
         $email_body_points = $this->normalize_ai_list($report['email_body_points'] ?? [], 5, 240);
@@ -4495,12 +4568,26 @@ class AdminLeaderOperatingSystemLeader extends Controller {
             throw new \Exception(l('admin_leader_operating_system.leader.ai_error_invalid_response'));
         }
 
+        if($admin_action_now === '') {
+            $admin_action_now = $opportunities[0] ?? ($next_30_days[0] ?? '');
+        }
+
+        if($collaborator_action_this_week === '') {
+            $collaborator_action_this_week = $next_30_days[0] ?? '';
+        }
+
         return [
             'headline' => $headline,
             'executive_summary' => $executive_summary,
+            'progress_signal' => $progress_signal,
+            'period_comparison_summary' => $period_comparison_summary,
             'primary_risks' => $primary_risks,
             'opportunities' => $opportunities,
+            'admin_action_now' => $admin_action_now,
+            'collaborator_action_this_week' => $collaborator_action_this_week,
+            'what_to_stop_pushing' => $what_to_stop_pushing,
             'next_30_days' => $next_30_days,
+            'admin_note' => $admin_note,
             'email_subject' => $email_subject,
             'email_intro' => $email_intro,
             'email_body_points' => $email_body_points,
@@ -4548,14 +4635,21 @@ class AdminLeaderOperatingSystemLeader extends Controller {
                         'content' => implode("\n\n", [
                             'Analiziraj stvarno poslovanje suradnika na temelju analytics payload-a, strukture postojecih Forever Card aplikacija i blokova koje vec koristi.',
                             'Zakljuci sto treba promijeniti, sto zadrzati i koje parametre treba uzeti u obzir prije preporuke.',
-                            'Vrati samo valjan JSON s tocnim kljucevima: headline, executive_summary, primary_risks, opportunities, next_30_days, email_subject, email_intro, email_body_points, email_cta.',
+                            'Vrati samo valjan JSON s tocnim kljucevima: headline, executive_summary, progress_signal, period_comparison_summary, primary_risks, opportunities, admin_action_now, collaborator_action_this_week, what_to_stop_pushing, next_30_days, admin_note, email_subject, email_intro, email_body_points, email_cta.',
                             'Pravila:',
                             '- primary_risks, opportunities, next_30_days i email_body_points moraju biti polja kratkih, konkretnih stringova.',
+                            '- progress_signal mora biti 1 kratka recenica koja odmah govori ide li suradnik prema rastu, stagnaciji ili padu.',
+                            '- period_comparison_summary mora jasno usporediti 7d, 30d i 90d i objasniti smjer, ne samo nabrojati brojke.',
+                            '- admin_action_now mora biti 1 vrlo konkretna akcija koju admin treba napraviti odmah.',
+                            '- collaborator_action_this_week mora biti 1 vrlo konkretna tjedna obveza za suradnika.',
+                            '- what_to_stop_pushing mora reci sto sada ne treba gurati jer razvodnjava rezultat ili fokus.',
+                            '- admin_note mora biti kratka interna biljeska za admina, ne poruka za korisnika.',
                             '- Nemoj samo ponavljati unaprijed zadane taktike. Prvo analiziraj postojecu strukturu aplikacija i blokova, promet, izvore, zemlje, uredaje i funnel podatke, pa tek onda predlozi sto mijenjati.',
                             '- Ako suradnik vec koristi odredene blokove ili funnel, procijeni jesu li dobro iskoristeni i sto nedostaje.',
                             '- Ako promet dolazi iz odredenih izvora, predlozi koje drustvene mreze i koji format sadrzaja imaju najvise smisla. Ako nema dovoljno signala, to jasno reci i predlozi sto testirati.',
                             '- U preporukama mozes koristiti Forever Card pristup kada ima smisla: story s ugradenim linkom na aplikaciju, posebna aplikacija za odredeni proizvod, funnel za prodaju ili regrutaciju, te direktne poruke ljudima koji reagiraju na sadrzaj. Ali to koristi samo ako podaci i postojeca struktura to podupiru.',
                             '- Uvazi da vecina suradnika radi kroz izgradnju osobnog brenda i specificne modele rada.',
+                            '- Uvazi consistency, AI check-in / plan / outcome disciplinu, coaching status i billing health ako oni objasnjavaju pad ili zastoj.',
                             '- Nemoj davati genericke savjete. Povezi preporuke s onime sto vec postoji i onime sto nedostaje.',
                             '- Nemoj koristiti markdown, code blockove ni dodatne kljuceve.',
                             '- Izlaz ne mora biti kraci, ali treba biti pregledan i dobro podijeljen po sekcijama.',
@@ -4646,7 +4740,7 @@ class AdminLeaderOperatingSystemLeader extends Controller {
                 }
             }
 
-            redirect('admin/leader-operating-system-leader?user_id=' . $user_id . '&period=' . $selected_period . '#leader-os-ai-history');
+            redirect('admin/leader-operating-system-leader?user_id=' . $user_id . '&period=' . $selected_period . '#leader-os-ai-report');
         }
 
         /* Custom code: FC-2026-03-31: LOS outreach send flow */
