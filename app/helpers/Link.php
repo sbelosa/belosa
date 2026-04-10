@@ -1101,6 +1101,27 @@ class Link {
         return $click_type === 'business' ? 'blog_cta_business' : 'blog_cta_product';
     }
 
+    public static function get_fcc_results_qualified_block_types(): array {
+        return array_values(array_unique(array_merge(
+            self::get_monitored_forever_outbound_types(),
+            ['link_forever_living_albania_kosovo']
+        )));
+    }
+
+    public static function get_fcc_results_qualified_blog_mediums(): array {
+        return [
+            self::get_blog_cta_tracking_medium('product'),
+            self::get_blog_cta_tracking_medium('business'),
+        ];
+    }
+
+    public static function get_fcc_results_qualified_click_condition_sql(string $track_links_alias, string $biolinks_blocks_alias): string {
+        $qualified_block_types_sql = "'" . implode("','", self::get_fcc_results_qualified_block_types()) . "'";
+        $qualified_blog_mediums_sql = "'" . implode("','", self::get_fcc_results_qualified_blog_mediums()) . "'";
+
+        return "((COALESCE({$biolinks_blocks_alias}.`type`, '') IN ({$qualified_block_types_sql})) OR (COALESCE({$track_links_alias}.`utm_medium`, '') IN ({$qualified_blog_mediums_sql})))";
+    }
+
     public static function get_monitored_forever_outbound_types(): array {
         return [
             'link_forever_shop',

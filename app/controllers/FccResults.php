@@ -12,6 +12,12 @@ defined('ALTUMCODE') || die();
 
 class FccResults extends Controller {
 
+    private function get_active_pro_leaderboard_user_condition_sql(string $users_alias, string $now_datetime): string {
+        return "{$users_alias}.`status` = 1
+            AND LOWER(COALESCE(JSON_UNQUOTE(JSON_EXTRACT({$users_alias}.`plan_settings`, '$.ai_growth_plan_is_enabled')), '')) IN ('1', 'true')
+            AND ({$users_alias}.`plan_expiration_date` IS NULL OR {$users_alias}.`plan_expiration_date` = '' OR {$users_alias}.`plan_expiration_date` >= '{$now_datetime}')";
+    }
+
     private function get_visitor_conversion_map(string $period_start_datetime, string $qualified_click_condition_sql): array {
         if(function_exists('fc_ensure_track_links_visitor_key_schema')) {
             fc_ensure_track_links_visitor_key_schema();
@@ -126,17 +132,12 @@ class FccResults extends Controller {
             fc_ensure_track_links_visitor_key_schema();
         }
 
-        $forever_shop_block_types = array_values(array_unique(array_merge(
-            \Altum\Link::get_monitored_forever_outbound_types(),
-            ['link_forever_living_albania_kosovo']
-        )));
+        $forever_shop_block_types = \Altum\Link::get_fcc_results_qualified_block_types();
         $forever_shop_block_types_sql = "'" . implode("','", $forever_shop_block_types) . "'";
-        $blog_forever_mediums = [
-            \Altum\Link::get_blog_cta_tracking_medium('product'),
-            \Altum\Link::get_blog_cta_tracking_medium('business'),
-        ];
+        $blog_forever_mediums = \Altum\Link::get_fcc_results_qualified_blog_mediums();
         $blog_forever_mediums_sql = "'" . implode("','", $blog_forever_mediums) . "'";
-        $qualified_click_condition_sql = "((`biolinks_blocks`.`type` IN ({$forever_shop_block_types_sql})) OR (`track_links`.`utm_medium` IN ({$blog_forever_mediums_sql})))";
+        $qualified_click_condition_sql = \Altum\Link::get_fcc_results_qualified_click_condition_sql('`track_links`', '`biolinks_blocks`');
+        $active_pro_user_condition_sql = $this->get_active_pro_leaderboard_user_condition_sql('`users`', get_date());
 
         $periods = [];
 
@@ -163,6 +164,7 @@ class FccResults extends Controller {
                 LEFT JOIN `links` ON `track_links`.`link_id` = `links`.`link_id`
                 LEFT JOIN `users` ON `track_links`.`user_id` = `users`.`user_id`
                 WHERE `track_links`.`datetime` >= '{$period_start_datetime}'
+                  AND {$active_pro_user_condition_sql}
                 GROUP BY `track_links`.`user_id`
                 HAVING `qualified_clicks` >= {$min_qualified_clicks}
                 ORDER BY `qualified_clicks` DESC, `biolink_visits` DESC, `users`.`name` ASC");

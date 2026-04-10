@@ -413,6 +413,9 @@ class Cron extends Controller {
     }
 
     private function statistics_cleanup() {
+        $protected_fcc_qualified_click_retention_days = 90;
+        $qualified_click_condition_sql = \Altum\Link::get_fcc_results_qualified_click_condition_sql('`track_links`', '`biolinks_blocks`');
+        $protected_qualified_click_condition_sql = "(`track_links`.`is_unique` = 1 AND {$qualified_click_condition_sql})";
 
         /* Only clean users that have not been cleaned recently */
         $now_datetime = get_date();
@@ -432,7 +435,16 @@ class Cron extends Controller {
 
             /* Clear out old notification statistics logs */
             $x_days_ago_datetime = (new \DateTime())->modify('-' . ($user->plan_settings->track_links_retention ?? 90) . ' days')->format('Y-m-d H:i:s');
-            database()->query("DELETE FROM `track_links` WHERE `user_id` = {$user->user_id} AND `datetime` < '{$x_days_ago_datetime}'");
+            $protected_qualified_clicks_cutoff_datetime = (new \DateTime())->modify('-' . $protected_fcc_qualified_click_retention_days . ' days')->format('Y-m-d H:i:s');
+            database()->query("DELETE `track_links`
+                FROM `track_links`
+                LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id`
+                WHERE `track_links`.`user_id` = {$user->user_id}
+                  AND `track_links`.`datetime` < '{$x_days_ago_datetime}'
+                  AND (
+                    `track_links`.`datetime` < '{$protected_qualified_clicks_cutoff_datetime}'
+                    OR NOT {$protected_qualified_click_condition_sql}
+                  )");
 
             if(DEBUG) {
                 echo sprintf('statistics_cleanup() -> Statistics cleanup done for user_id %s', $user->user_id);
