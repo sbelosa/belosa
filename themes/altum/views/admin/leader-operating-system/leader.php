@@ -71,6 +71,142 @@
         line-height: 1.45;
     }
 
+    .leader-os-cockpit-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 0.95rem;
+    }
+
+    .leader-os-cockpit-card {
+        border-radius: 1rem;
+        border: 1px solid rgba(148, 163, 184, 0.12);
+        background: linear-gradient(180deg, rgba(9, 16, 29, 0.84) 0%, rgba(14, 22, 37, 0.94) 100%);
+        padding: 1rem;
+        min-height: 100%;
+    }
+
+    .leader-os-cockpit-label {
+        display: flex;
+        align-items: center;
+        gap: 0.45rem;
+        color: rgba(191, 211, 238, 0.78);
+        font-size: 0.74rem;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+    }
+
+    .leader-os-cockpit-help {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 1.05rem;
+        height: 1.05rem;
+        border-radius: 999px;
+        border: 1px solid rgba(125, 211, 252, 0.2);
+        background: rgba(14, 116, 144, 0.18);
+        color: #dff6ff;
+        font-size: 0.7rem;
+        font-weight: 700;
+        cursor: help;
+        flex-shrink: 0;
+    }
+
+    .leader-os-cockpit-value {
+        font-size: 2rem;
+        line-height: 1;
+        font-weight: 700;
+        color: #f8fbff;
+        margin-top: 0.55rem;
+    }
+
+    .leader-os-cockpit-meta {
+        color: rgba(191, 211, 238, 0.78);
+        font-size: 0.86rem;
+        margin-top: 0.45rem;
+        line-height: 1.5;
+    }
+
+    .leader-os-cockpit-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.78rem;
+        margin-top: 0.85rem;
+    }
+
+    .leader-os-cockpit-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 0.75rem;
+        padding-bottom: 0.72rem;
+        border-bottom: 1px solid rgba(148, 163, 184, 0.09);
+    }
+
+    .leader-os-cockpit-item:last-child {
+        padding-bottom: 0;
+        border-bottom: 0;
+    }
+
+    .leader-os-cockpit-item span {
+        color: rgba(191, 211, 238, 0.72);
+        font-size: 0.84rem;
+    }
+
+    .leader-os-cockpit-item strong {
+        color: #f8fbff;
+        font-size: 0.9rem;
+        line-height: 1.45;
+        text-align: right;
+    }
+
+    .leader-os-cockpit-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.65rem;
+        margin-top: 1rem;
+    }
+
+    .leader-os-cockpit-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.55rem;
+        margin-top: 0.85rem;
+    }
+
+    .leader-os-cockpit-summary-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1.25fr) minmax(0, 0.9fr);
+        gap: 1rem;
+    }
+
+    .leader-os-cockpit-spotlight {
+        border-radius: 0.95rem;
+        border: 1px solid rgba(96, 165, 250, 0.16);
+        background: rgba(8, 47, 73, 0.24);
+        padding: 0.9rem;
+        margin-top: 0.9rem;
+    }
+
+    .leader-os-cockpit-spotlight + .leader-os-cockpit-spotlight {
+        margin-top: 0.75rem;
+    }
+
+    .leader-os-cockpit-spotlight-title {
+        color: #9ddcff;
+        font-size: 0.76rem;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        margin-bottom: 0.42rem;
+    }
+
+    .leader-os-cockpit-spotlight-text {
+        color: #f8fbff;
+        font-size: 0.92rem;
+        line-height: 1.55;
+    }
+
     .leader-os-anomaly-score {
         font-size: 2.4rem;
         line-height: 1;
@@ -999,6 +1135,11 @@
     /* /Custom code: FC-2026-03-31 */
 
     @media (max-width: 991.98px) {
+        .leader-os-cockpit-grid,
+        .leader-os-cockpit-summary-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
         .leader-os-score-snapshot-grid {
             grid-template-columns: 1fr;
         }
@@ -1018,6 +1159,15 @@
     /* /Custom code: FC-2026-03-31 */
 
     @media (max-width: 767.98px) {
+        .leader-os-cockpit-grid,
+        .leader-os-cockpit-summary-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .leader-os-cockpit-value {
+            font-size: 1.7rem;
+        }
+
         .leader-os-detail-shell .card-body {
             padding: 0.95rem;
         }
@@ -1040,7 +1190,7 @@
 <?= \Altum\Alerts::output_alerts() ?>
 
 <?php $detail = $data->detail; ?>
-<?php $selected = $data->selected_payload; ?>
+<?php $selected = $data->selected_payload ?? []; ?>
 <?php $opportunity_actions = $data->opportunity_actions ?? null; ?>
 <?php $ai_report = $data->ai_report; ?>
 <?php $app_structure = $detail['app_structure'] ?? []; ?>
@@ -1055,13 +1205,43 @@
 <?php $cohort_comparison = $data->cohort_comparison ?? []; ?>
 <?php $behavior_anomaly = $data->behavior_anomaly ?? []; ?>
 <?php $fraud_intelligence = $data->fraud_intelligence ?? []; ?>
+<?php $fraud_action = $data->fraud_action ?? []; ?>
 <?php $billing_summary = $data->billing_summary ?? []; ?>
 <?php $stripe_billing = $data->stripe_billing ?? []; ?>
+<?php $consistency = $data->consistency ?? []; ?>
+<?php $coaching_roi = $data->coaching_roi ?? []; ?>
+<?php $ai_text_detail = $data->ai_text_detail ?? []; ?>
+<?php
+$latest_checkin = $ai_plan_admin['latest_checkin'] ?? [];
+$latest_plan = $ai_plan_admin['latest_plan'] ?? [];
+$latest_outcome = $ai_plan_admin['latest_outcome'] ?? [];
+$app_live_url = $app_structure['page_review']['public_url'] ?? ($app_structure['top_app_public_url'] ?? null);
+$main_opportunity_item = $opportunity_actions['items'][0] ?? [];
+$main_opportunity_label = (string) ($main_opportunity_item['label'] ?? l('global.none'));
+$main_opportunity_text = (string) ($main_opportunity_item['text'] ?? $selected['next_step']);
+$main_risk_label = (string) (($behavior_anomaly['top_concern'] ?? '') ?: ($fraud_intelligence['top_concern'] ?? '') ?: l('global.none'));
+$main_risk_text = (string) (($behavior_anomaly['signals'][0]['action'] ?? '') ?: ($fraud_action['text'] ?? '') ?: l('global.none'));
+$billing_period_label = !empty($stripe_billing['trial_end'])
+    ? \Altum\Date::get($stripe_billing['trial_end'], 2)
+    : (!empty($stripe_billing['current_period_end']) ? \Altum\Date::get($stripe_billing['current_period_end'], 2) : l('global.none'));
+$last_contacted_label = !empty($mentor_actions['last_contacted_at']) ? \Altum\Date::get($mentor_actions['last_contacted_at'], 2) : l('global.none');
+$last_checkin_label = !empty($latest_checkin['submitted_at']) ? \Altum\Date::get($latest_checkin['submitted_at'], 2) : l('global.none');
+$latest_plan_label = !empty($latest_plan['generated_at']) ? \Altum\Date::get($latest_plan['generated_at'], 2) : l('global.none');
+$latest_outcome_label = !empty($latest_outcome['created_at']) ? \Altum\Date::get($latest_outcome['created_at'], 2) : l('global.none');
+$mentor_status_label = !empty($mentor_actions['status']) ? l('admin_leader_operating_system.leader.ai_plan_admin_status.' . $mentor_actions['status']) : l('global.none');
+$render_detail_help = static function(string $tooltip): void {
+    if($tooltip === '') {
+        return;
+    }
+
+    echo '<span class="leader-os-cockpit-help" data-toggle="tooltip" title="' . htmlspecialchars($tooltip, ENT_QUOTES, 'UTF-8') . '">?</span>';
+};
+?>
 
 <div class="card leader-os-detail-shell mb-4">
     <div class="card-body">
         <div class="row align-items-center">
-            <div class="col-12 col-lg-8 mb-3 mb-lg-0">
+            <div class="col-12 col-xl-7 mb-3 mb-xl-0">
                 <div class="text-uppercase small text-muted mb-2"><?= l('admin_leader_operating_system.section_detail') ?></div>
                 <h2 class="h4 mb-2">
                     <?= $detail ? ($detail['name'] ?: $detail['email']) : l('admin_leader_operating_system.leader.no_user') ?>
@@ -1069,28 +1249,137 @@
                 <p class="text-muted mb-0">
                     <?= $detail ? l('admin_leader_operating_system.leader.selected_user') . ': #' . $detail['user_id'] . ' · ' . $detail['email'] . ' · Forever ID: ' . $detail['forever_id'] : l('admin_leader_operating_system.leader.missing') ?>
                 </p>
+                <div class="leader-os-cockpit-tags">
+                    <span class="leader-os-detail-status status-<?= htmlspecialchars((string) ($selected['status_class'] ?? 'dark'), ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars((string) ($selected['status_label'] ?? l('global.none')), ENT_QUOTES, 'UTF-8') ?></span>
+                    <?php if(!empty($consistency)): ?>
+                        <span class="leader-os-detail-chip is-subtle">Dosljednost · <?= nr((int) ($consistency['score'] ?? 0)) ?> · <?= htmlspecialchars((string) ($consistency['state_label'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></span>
+                    <?php endif ?>
+                    <span class="leader-os-detail-chip is-subtle">AI prioritet · <?= htmlspecialchars((string) (($ai_plan_admin['priority']['label'] ?? '') ?: l('global.none')), ENT_QUOTES, 'UTF-8') ?></span>
+                    <span class="leader-os-detail-chip is-subtle">Naplata · <?= htmlspecialchars((string) (($stripe_billing['billing_state'] ?? '') ? l('admin_billing_risk.state_' . $stripe_billing['billing_state']) : l('global.none')), ENT_QUOTES, 'UTF-8') ?></span>
+                    <?php if(!empty($stripe_billing['plan_name'])): ?>
+                        <span class="leader-os-detail-chip is-subtle"><?= htmlspecialchars((string) $stripe_billing['plan_name'], ENT_QUOTES, 'UTF-8') ?></span>
+                    <?php endif ?>
+                </div>
             </div>
 
-            <div class="col-12 col-lg-4 text-lg-right">
-                <?php if($selected): ?>
-                    <div class="d-flex justify-content-lg-end flex-wrap" style="gap:.5rem;">
-                        <span class="leader-os-detail-status status-<?= $selected['status_class'] ?>"><?= $selected['status_label'] ?></span>
-                        <span class="leader-os-detail-chip is-subtle"><?= sprintf(l('admin_leader_operating_system.leader.score_snapshot_total'), nr((int) ($score_history['total'] ?? 0))) ?></span>
-                        <?php if(!empty($behavior_anomaly['level_label']) && ($behavior_anomaly['signals_total'] ?? 0) > 0): ?>
-                            <span class="leader-os-detail-chip is-subtle"><?= htmlspecialchars((string) ($behavior_anomaly['level_label'] ?? ''), ENT_QUOTES, 'UTF-8') ?></span>
-                        <?php endif ?>
-                        <?php if(!empty($fraud_intelligence['level_label']) && ($fraud_intelligence['clusters_total'] ?? 0) > 0): ?>
-                            <span class="leader-os-detail-chip is-subtle"><?= htmlspecialchars((string) ($fraud_intelligence['level_label'] ?? ''), ENT_QUOTES, 'UTF-8') ?></span>
-                        <?php endif ?>
-                        <?php if(!empty($cohort_comparison['cohort_size'])): ?>
-                            <span class="leader-os-detail-chip is-subtle"><?= sprintf(l('admin_leader_operating_system.leader.cohort_size'), nr((int) ($cohort_comparison['cohort_size'] ?? 0))) ?></span>
-                        <?php endif ?>
-                    </div>
-                <?php else: ?>
-                    <span class="leader-os-detail-chip"><?= l('admin_leader_operating_system.overview_badge') ?></span>
-                <?php endif ?>
+            <div class="col-12 col-xl-5">
+                <div class="leader-os-detail-periods justify-content-xl-end">
+                    <?php foreach($data->period_options as $period_key): ?>
+                        <a href="<?= url('admin/leader-operating-system-leader?user_id=' . $detail['user_id'] . '&period=' . $period_key) ?>" class="leader-os-detail-period-link <?= $data->selected_period === $period_key ? 'active' : null ?>">
+                            <?= l('admin_leader_operating_system.period_' . $period_key) ?>
+                        </a>
+                    <?php endforeach ?>
+                </div>
+
+                <div class="leader-os-cockpit-actions justify-content-xl-end">
+                    <a href="<?= $data->overview_url ?>" class="btn btn-sm leader-os-detail-action"><?= l('admin_leader_operating_system.leader.back') ?></a>
+                    <a href="<?= htmlspecialchars((string) ($detail['admin_user_url'] ?? '#'), ENT_QUOTES, 'UTF-8') ?>" class="btn btn-sm leader-os-detail-action"><?= l('admin_leader_operating_system.leader.open_profile_user') ?></a>
+                    <?php if(!empty($app_live_url)): ?>
+                        <a href="<?= htmlspecialchars((string) $app_live_url, ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noopener noreferrer" class="btn btn-sm leader-os-detail-action">Otvori live aplikaciju</a>
+                    <?php endif ?>
+                    <button type="button" class="btn btn-sm leader-os-detail-action leader-os-scroll-link" data-scroll-target="leader-os-stripe-billing"><?= l('admin_leader_operating_system.leader.open_stripe_billing') ?></button>
+                    <button type="button" class="btn btn-sm leader-os-ai-button leader-os-scroll-link" data-scroll-target="leader-os-ai-report">Pokreni / otvori AI analizu</button>
+                    <button type="button" class="btn btn-sm leader-os-detail-action leader-os-scroll-link" data-scroll-target="leader-os-app-structure">Struktura aplikacije</button>
+                    <button type="button" class="btn btn-sm leader-os-detail-action leader-os-scroll-link" data-scroll-target="leader-os-outreach-panel">Pošalji poruku suradniku</button>
+                </div>
             </div>
         </div>
+
+        <div class="leader-os-cockpit-grid mt-4">
+            <div class="leader-os-cockpit-card">
+                <div class="leader-os-cockpit-label">
+                    Trenutno stanje
+                    <?php $render_detail_help('Što je: brzi pregled poslovnog zdravlja suradnika. | Kako se računa: kombinira LOS rezultat, status, consistency i zadnju aktivnost. | Kako koristiš: odmah vidiš je li osoba stabilna, pada ili traži brzu reakciju.'); ?>
+                </div>
+                <div class="leader-os-cockpit-value"><?= nr((int) ($selected['leader_os_score'] ?? 0)) ?>/100</div>
+                <div class="leader-os-cockpit-meta"><?= htmlspecialchars((string) ($selected['status_label'] ?? '-'), ENT_QUOTES, 'UTF-8') ?> · Zadnji klik: <?= !empty($selected['last_click_at']) ? \Altum\Date::get($selected['last_click_at'], 2) : l('global.none') ?></div>
+                <div class="leader-os-cockpit-list">
+                    <div class="leader-os-cockpit-item">
+                        <span>Dosljednost</span>
+                        <strong><?= !empty($consistency) ? (nr((int) ($consistency['score'] ?? 0)) . ' · ' . htmlspecialchars((string) ($consistency['state_label'] ?? '-'), ENT_QUOTES, 'UTF-8')) : l('global.none') ?></strong>
+                    </div>
+                    <div class="leader-os-cockpit-item">
+                        <span>Aktivni dani</span>
+                        <strong><?= nr((int) ($selected['active_days_total'] ?? 0)) ?></strong>
+                    </div>
+                    <div class="leader-os-cockpit-item">
+                        <span>Coaching signal</span>
+                        <strong><?= htmlspecialchars((string) ($coaching_roi['signal_label'] ?? l('global.none')), ENT_QUOTES, 'UTF-8') ?></strong>
+                    </div>
+                </div>
+            </div>
+
+            <div class="leader-os-cockpit-card">
+                <div class="leader-os-cockpit-label">
+                    Prodajni signal
+                    <?php $render_detail_help('Što je: mjeri stvarni put od interesa do Forever rezultata. | Kako se računa: gleda webshop klikove, registracije, stopu registracije i izvore prometa u odabranom periodu. | Kako koristiš: vidiš ima li suradnik promet bez rezultata ili rezultat koji treba skalirati.'); ?>
+                </div>
+                <div class="leader-os-cockpit-value"><?= nr((int) ($selected['forever_shop_clicks_period'] ?? 0)) ?></div>
+                <div class="leader-os-cockpit-meta">Klikovi prema Foreveru · Registracije <?= nr((int) ($selected['forever_registration_clicks_period'] ?? 0)) ?> · Stopa <?= nr((float) ($selected['registration_rate_percent'] ?? 0)) ?>%</div>
+                <div class="leader-os-cockpit-list">
+                    <div class="leader-os-cockpit-item">
+                        <span>Delta prema prošlom periodu</span>
+                        <strong><?= (($selected['growth_difference'] ?? 0) > 0 ? '+' : '') . nr((int) ($selected['growth_difference'] ?? 0)) ?></strong>
+                    </div>
+                    <div class="leader-os-cockpit-item">
+                        <span>Najjači izvor</span>
+                        <strong><?= htmlspecialchars((string) ($selected['top_source_label'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></strong>
+                    </div>
+                    <div class="leader-os-cockpit-item">
+                        <span>Najjače tržište</span>
+                        <strong><?= htmlspecialchars((string) ($selected['top_country_label'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></strong>
+                    </div>
+                </div>
+            </div>
+
+            <div class="leader-os-cockpit-card">
+                <div class="leader-os-cockpit-label">
+                    AI i coaching ritam
+                    <?php $render_detail_help('Što je: pokazuje prolazi li suradnik kroz AI ciklus i admin coaching. | Kako se računa: gleda AI profil, zadnji check-in, plan, outcome, admin status i zadnji kontakt. | Kako koristiš: brzo vidiš je li osoba zapela prije plana, u provedbi ili u follow-upu.'); ?>
+                </div>
+                <div class="leader-os-cockpit-value"><?= htmlspecialchars((string) (($ai_plan_admin['priority']['label'] ?? '') ?: l('global.none')), ENT_QUOTES, 'UTF-8') ?></div>
+                <div class="leader-os-cockpit-meta">Admin status · <?= htmlspecialchars((string) $mentor_status_label, ENT_QUOTES, 'UTF-8') ?></div>
+                <div class="leader-os-cockpit-list">
+                    <div class="leader-os-cockpit-item">
+                        <span>Zadnji check-in</span>
+                        <strong><?= htmlspecialchars((string) $last_checkin_label, ENT_QUOTES, 'UTF-8') ?></strong>
+                    </div>
+                    <div class="leader-os-cockpit-item">
+                        <span>Zadnji plan / outcome</span>
+                        <strong><?= htmlspecialchars((string) $latest_plan_label, ENT_QUOTES, 'UTF-8') ?> · <?= htmlspecialchars((string) $latest_outcome_label, ENT_QUOTES, 'UTF-8') ?></strong>
+                    </div>
+                    <div class="leader-os-cockpit-item">
+                        <span>Zadnji kontakt / sljedeći korak</span>
+                        <strong><?= htmlspecialchars((string) $last_contacted_label, ENT_QUOTES, 'UTF-8') ?><br><?= htmlspecialchars((string) (($mentor_actions['next_action'] ?? '') ?: l('global.none')), ENT_QUOTES, 'UTF-8') ?></strong>
+                    </div>
+                </div>
+            </div>
+
+            <div class="leader-os-cockpit-card">
+                <div class="leader-os-cockpit-label">
+                    Billing i plan
+                    <?php $render_detail_help('Što je: sažetak pretplate i billing zdravlja. | Kako se računa: koristi Stripe customer/subscription podatke, recovery stanje i broj neuspjelih pokušaja. | Kako koristiš: odmah vidiš je li poslovni pad možda billing problem, a ne promet ili AI.'); ?>
+                </div>
+                <div class="leader-os-cockpit-value"><?= htmlspecialchars((string) (($stripe_billing['plan_name'] ?? '') ?: l('global.none')), ENT_QUOTES, 'UTF-8') ?></div>
+                <div class="leader-os-cockpit-meta"><?= htmlspecialchars((string) (($stripe_billing['status'] ?? '') ?: l('global.none')), ENT_QUOTES, 'UTF-8') ?> · <?= htmlspecialchars((string) (($stripe_billing['plan_price_label'] ?? '') ?: ''), ENT_QUOTES, 'UTF-8') ?></div>
+                <div class="leader-os-cockpit-list">
+                    <div class="leader-os-cockpit-item">
+                        <span>Kraj tekućeg perioda</span>
+                        <strong><?= htmlspecialchars((string) $billing_period_label, ENT_QUOTES, 'UTF-8') ?></strong>
+                    </div>
+                    <div class="leader-os-cockpit-item">
+                        <span>Otkazivanje na kraju perioda</span>
+                        <strong><?= !empty($stripe_billing['cancel_at_period_end']) ? l('global.yes') : l('global.no') ?></strong>
+                    </div>
+                    <div class="leader-os-cockpit-item">
+                        <span>Neuspjeli pokušaji</span>
+                        <strong><?= nr((int) ($stripe_billing['failed_attempts'] ?? 0)) ?></strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="leader-os-detail-note mt-3">Kako čitaš ovaj vrh: prvo pogledaj <strong>Trenutno stanje</strong>, zatim <strong>Prodajni signal</strong>, pa <strong>AI i coaching ritam</strong> i tek onda provjeri je li problem možda u <strong>billingu</strong>. Tako najbrže vidiš je li suradnik zapinje u prometu, konverziji, provedbi ili naplati.</div>
     </div>
 </div>
 
@@ -1110,30 +1399,6 @@
         'funnel_registrations' => 0,
     ];
     ?>
-    <div class="card leader-os-detail-shell mb-4" id="leader-os-phase4">
-        <div class="card-body">
-            <div class="leader-os-detail-periods">
-                <?php foreach($data->period_options as $period_key): ?>
-                    <a href="<?= url('admin/leader-operating-system-leader?user_id=' . $detail['user_id'] . '&period=' . $period_key) ?>" class="leader-os-detail-period-link <?= $data->selected_period === $period_key ? 'active' : null ?>">
-                        <?= l('admin_leader_operating_system.period_' . $period_key) ?>
-                    </a>
-                <?php endforeach ?>
-            </div>
-
-            <div class="leader-os-detail-jump-links">
-                <button type="button" class="btn btn-sm leader-os-detail-action leader-os-scroll-link" data-scroll-target="leader-os-stripe-billing"><?= l('admin_leader_operating_system.leader.open_stripe_billing') ?></button>
-                <button type="button" class="btn btn-sm leader-os-detail-action leader-os-scroll-link" data-scroll-target="leader-os-score-history"><?= l('admin_leader_operating_system.leader.open_score_history') ?></button>
-                <button type="button" class="btn btn-sm leader-os-detail-action leader-os-scroll-link" data-scroll-target="leader-os-cohort-comparison"><?= l('admin_leader_operating_system.leader.open_cohort_comparison') ?></button>
-                <button type="button" class="btn btn-sm leader-os-detail-action leader-os-scroll-link" data-scroll-target="leader-os-anomaly-radar"><?= l('admin_leader_operating_system.leader.open_anomaly_radar') ?></button>
-                <button type="button" class="btn btn-sm leader-os-detail-action leader-os-scroll-link" data-scroll-target="leader-os-fraud-intelligence"><?= l('admin_leader_operating_system.leader.open_fraud_intelligence') ?></button>
-                <button type="button" class="btn btn-sm leader-os-detail-action leader-os-scroll-link" data-scroll-target="leader-os-app-structure"><?= l('admin_leader_operating_system.leader.open_structure_diagnostics') ?></button>
-                <button type="button" class="btn btn-sm leader-os-detail-action leader-os-scroll-link" data-scroll-target="leader-os-ai-history"><?= l('admin_leader_operating_system.leader.ai_open_history') ?></button>
-            </div>
-
-            <div class="text-muted small mt-3"><?= l('admin_leader_operating_system.leader.detail_panels_hint') ?></div>
-        </div>
-    </div>
-
     <div class="card leader-os-detail-shell mb-4" id="leader-os-stripe-billing">
         <div class="card-body">
             <div class="row">
@@ -1934,138 +2199,104 @@
     <?php endif ?>
 
     <div class="row">
-        <div class="col-12 col-xl-4 mb-3">
-            <div class="leader-os-detail-panel" id="leader-os-ai-report">
-                <h3 class="h5 mb-2"><?= l('admin_leader_operating_system.leader.panel_summary') ?></h3>
-                <div class="text-muted small mb-3"><?= l('admin_leader_operating_system.leader.panel_summary_text') ?></div>
-
-                <div class="leader-os-detail-list">
-                    <div class="leader-os-detail-list-item">
-                        <span class="text-muted"><?= l('admin_leader_operating_system.leader.strongest_market') ?></span>
-                        <strong><?= $selected['top_country_label'] ?></strong>
+        <div class="col-12 col-xl-7 mb-3">
+            <div class="leader-os-detail-panel h-100">
+                <div class="d-flex justify-content-between align-items-start flex-wrap mb-3" style="gap:.75rem;">
+                    <div>
+                        <h3 class="h5 mb-1">Operativni sažetak suradnika</h3>
+                        <div class="text-muted small">Najvažnije poslovne činjenice, glavni rizik i najbolji sljedeći potez na jednom mjestu.</div>
                     </div>
-                    <div class="leader-os-detail-list-item">
-                        <span class="text-muted"><?= l('admin_leader_operating_system.leader.strongest_source') ?></span>
-                        <strong><?= $selected['top_source_label'] ?></strong>
-                    </div>
-                    <div class="leader-os-detail-list-item">
-                        <span class="text-muted"><?= l('admin_leader_operating_system.leader.strongest_device') ?></span>
-                        <strong><?= $selected['top_device_label'] ?></strong>
-                    </div>
-                    <div class="leader-os-detail-list-item">
-                        <span class="text-muted"><?= l('admin_leader_operating_system.leader.next_step_label') ?></span>
-                        <strong><?= $selected['next_step'] ?></strong>
-                    </div>
-                    <?php if(!empty($data->consistency)): ?>
-                        <div class="leader-os-detail-list-item">
-                            <span class="text-muted">Consistency</span>
-                            <strong><?= nr((int) ($data->consistency['score'] ?? 0)) ?> · <?= htmlspecialchars((string) ($data->consistency['state_label'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></strong>
-                        </div>
-                    <?php endif ?>
+                    <span class="leader-os-detail-chip is-subtle"><?= l('admin_leader_operating_system.period_' . $data->selected_period) ?></span>
                 </div>
-            </div>
-        </div>
 
-        <div class="col-12 col-xl-4 mb-3">
-            <div class="leader-os-detail-panel">
-                <h3 class="h5 mb-2"><?= l('admin_leader_operating_system.leader.panel_analytics') ?></h3>
-                <div class="text-muted small mb-3"><?= l('admin_leader_operating_system.leader.panel_analytics_text') ?></div>
+                <div class="leader-os-cockpit-summary-grid">
+                    <div>
+                        <div class="leader-os-cockpit-spotlight">
+                            <div class="leader-os-cockpit-spotlight-title">Što trenutno radi</div>
+                            <div class="leader-os-cockpit-spotlight-text">
+                                <?= htmlspecialchars((string) (($ai_text_detail['focus_summary'] ?? '') ?: $selected['next_step']), ENT_QUOTES, 'UTF-8') ?>
+                            </div>
+                        </div>
 
-                <div class="leader-os-detail-list">
-                    <div class="leader-os-detail-list-item">
-                        <span class="text-muted"><?= l('admin_leader_operating_system.leader.total_clicks') ?></span>
-                        <strong><?= nr($selected['clicks_total_period']) ?></strong>
+                        <div class="leader-os-cockpit-spotlight">
+                            <div class="leader-os-cockpit-spotlight-title">Gdje najviše zapinje</div>
+                            <div class="leader-os-cockpit-spotlight-text">
+                                <strong><?= htmlspecialchars((string) $main_risk_label, ENT_QUOTES, 'UTF-8') ?></strong><br>
+                                <?= htmlspecialchars((string) $main_risk_text, ENT_QUOTES, 'UTF-8') ?>
+                            </div>
+                        </div>
+
+                        <div class="leader-os-cockpit-spotlight">
+                            <div class="leader-os-cockpit-spotlight-title">Što prvo promijeniti</div>
+                            <div class="leader-os-cockpit-spotlight-text">
+                                <strong><?= htmlspecialchars((string) $main_opportunity_label, ENT_QUOTES, 'UTF-8') ?></strong><br>
+                                <?= htmlspecialchars((string) $main_opportunity_text, ENT_QUOTES, 'UTF-8') ?>
+                            </div>
+                        </div>
                     </div>
-                    <div class="leader-os-detail-list-item">
-                        <span class="text-muted"><?= l('admin_leader_operating_system.leader.app_quality_score') ?></span>
-                        <strong><?= nr((int) ($selected['app_quality_score'] ?? 0)) ?> · <?= htmlspecialchars((string) ($selected['app_quality_stage_label'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></strong>
-                    </div>
-                    <div class="leader-os-detail-list-item">
-                        <span class="text-muted"><?= l('admin_leader_operating_system.leader.app_signal_shop') ?></span>
-                        <strong><?= nr((int) ($selected['app_shop_contacts_period'] ?? 0)) ?></strong>
-                    </div>
-                    <div class="leader-os-detail-list-item">
-                        <span class="text-muted"><?= l('admin_leader_operating_system.leader.app_signal_whatsapp') ?></span>
-                        <strong><?= nr((int) ($selected['app_whatsapp_contacts_period'] ?? 0)) ?></strong>
-                    </div>
-                    <div class="leader-os-detail-list-item">
-                        <span class="text-muted"><?= l('admin_leader_operating_system.leader.app_signal_products') ?></span>
-                        <strong><?= nr((int) ($selected['app_product_clicks_period'] ?? 0)) ?></strong>
-                    </div>
-                    <div class="leader-os-detail-list-item">
-                        <span class="text-muted"><?= l('admin_leader_operating_system.leader.app_signal_funnel') ?></span>
-                        <strong><?= nr((int) ($selected['app_funnel_registrations_period'] ?? 0)) ?></strong>
-                    </div>
-                    <div class="leader-os-detail-list-item">
-                        <span class="text-muted"><?= l('admin_leader_operating_system.leader.shop_share') ?></span>
-                        <strong><?= nr($selected['shop_share_percent']) ?>%</strong>
-                    </div>
-                    <div class="leader-os-detail-list-item">
-                        <span class="text-muted"><?= l('admin_leader_operating_system.leader.avg_daily_clicks') ?></span>
-                        <strong><?= nr($selected['avg_daily_shop_clicks']) ?></strong>
-                    </div>
-                    <div class="leader-os-detail-list-item">
-                        <span class="text-muted"><?= l('admin_leader_operating_system.leader.top_language') ?></span>
-                        <strong><?= $selected['top_language_label'] ?></strong>
-                    </div>
-                    <div class="leader-os-detail-list-item">
-                        <span class="text-muted">Top grad</span>
-                        <strong><?= htmlspecialchars((string) (($selected['top_cities'][0]['label'] ?? '-')), ENT_QUOTES, 'UTF-8') ?></strong>
-                    </div>
-                    <div class="leader-os-detail-list-item">
-                        <span class="text-muted"><?= l('admin_leader_operating_system.leader.funnel_active') ?></span>
-                        <strong><?= nr($selected['funnel']['active_funnels'] ?? 0) ?> / <?= nr($selected['funnel']['total_funnels'] ?? 0) ?></strong>
-                    </div>
-                    <div class="leader-os-detail-list-item">
-                        <span class="text-muted"><?= l('admin_leader_operating_system.leader.funnel_leads') ?></span>
-                        <strong><?= nr($selected['funnel']['total_leads'] ?? 0) ?> · <?= nr($selected['funnel']['conversion_rate'] ?? 0) ?>%</strong>
+
+                    <div>
+                        <div class="leader-os-detail-list">
+                            <div class="leader-os-detail-list-item">
+                                <span class="text-muted">Ukupni klikovi</span>
+                                <strong><?= nr((int) ($selected['clicks_total_period'] ?? 0)) ?></strong>
+                            </div>
+                            <div class="leader-os-detail-list-item">
+                                <span class="text-muted">Kvaliteta aplikacije</span>
+                                <strong><?= nr((int) ($selected['app_quality_score'] ?? 0)) ?> · <?= htmlspecialchars((string) ($selected['app_quality_stage_label'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></strong>
+                            </div>
+                            <div class="leader-os-detail-list-item">
+                                <span class="text-muted">Shop share / registracije</span>
+                                <strong><?= nr((float) ($selected['shop_share_percent'] ?? 0)) ?>% · <?= nr((float) ($selected['registration_rate_percent'] ?? 0)) ?>%</strong>
+                            </div>
+                            <div class="leader-os-detail-list-item">
+                                <span class="text-muted">App signal</span>
+                                <strong>Shop <?= nr((int) ($selected['app_shop_contacts_period'] ?? 0)) ?> · WA <?= nr((int) ($selected['app_whatsapp_contacts_period'] ?? 0)) ?> · Funnel <?= nr((int) ($selected['app_funnel_registrations_period'] ?? 0)) ?></strong>
+                            </div>
+                            <div class="leader-os-detail-list-item">
+                                <span class="text-muted">Top grad / jezik</span>
+                                <strong><?= htmlspecialchars((string) (($selected['top_cities'][0]['label'] ?? '-') . ' · ' . ($selected['top_language_label'] ?? '-')), ENT_QUOTES, 'UTF-8') ?></strong>
+                            </div>
+                            <div class="leader-os-detail-list-item">
+                                <span class="text-muted">Funnel aktivnost</span>
+                                <strong><?= nr((int) ($selected['funnel']['total_leads'] ?? 0)) ?> leadova · <?= nr((float) ($selected['funnel']['conversion_rate'] ?? 0)) ?>%</strong>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="col-12 col-xl-4 mb-3">
+        <div class="col-12 col-xl-5 mb-3">
             <div class="leader-os-detail-panel">
-                <h3 class="h5 mb-2"><?= l('admin_leader_operating_system.leader.panel_ai') ?></h3>
-                <div class="text-muted small mb-3"><?= l('admin_leader_operating_system.leader.panel_ai_text') ?></div>
+                <h3 class="h5 mb-2" id="leader-os-ai-report">AI analiza i akcijski centar</h3>
+                <div class="text-muted small mb-3">Ovdje pokrećeš individualnu AI analizu, pratiš zadnju verziju i odmah pripremaš poruku ili follow-up za suradnika.</div>
 
-                <!-- Custom code: FC-2026-03-31: LOS detail AI helper note -->
-                <div class="leader-os-detail-note mb-3"><?= l('admin_leader_operating_system.leader.panel_ai_helper') ?></div>
-                <!-- /Custom code: FC-2026-03-31 -->
+                <div class="leader-os-detail-note mb-3">Prvo pogledaj headline i executive summary, zatim `primarne rizike`, `prilike` i `sljedećih 30 dana`, pa iz istog profila pošalji poruku ili follow-up.</div>
 
-                <div class="leader-os-detail-list">
-                    <div>
-                        <div class="leader-os-detail-list-item">
-                            <span class="text-muted"><?= l('admin_leader_operating_system.leader.performance_score') ?></span>
-                            <strong><?= $selected['performance_score'] ?></strong>
-                        </div>
-                        <div class="leader-os-detail-meter"><span style="width: <?= max(0, min(100, $selected['performance_score'])) ?>%"></span></div>
+                <div class="leader-os-detail-list mb-3">
+                    <div class="leader-os-detail-list-item">
+                        <span class="text-muted">Admin status</span>
+                        <strong><?= htmlspecialchars((string) $mentor_status_label, ENT_QUOTES, 'UTF-8') ?></strong>
                     </div>
-
-                    <div>
-                        <div class="leader-os-detail-list-item">
-                            <span class="text-muted"><?= l('admin_leader_operating_system.leader.momentum_score') ?></span>
-                            <strong><?= $selected['momentum_score'] ?></strong>
-                        </div>
-                        <div class="leader-os-detail-meter"><span style="width: <?= max(0, min(100, $selected['momentum_score'])) ?>%"></span></div>
+                    <div class="leader-os-detail-list-item">
+                        <span class="text-muted">Treba follow-up</span>
+                        <strong><?= !empty($mentor_actions['needs_follow_up']) ? l('global.yes') : l('global.no') ?></strong>
                     </div>
-
-                    <div>
-                        <div class="leader-os-detail-list-item">
-                            <span class="text-muted"><?= l('admin_leader_operating_system.leader.risk_score') ?></span>
-                            <strong><?= $selected['risk_score'] ?></strong>
-                        </div>
-                        <div class="leader-os-detail-meter"><span style="width: <?= max(0, min(100, $selected['risk_score'])) ?>%"></span></div>
+                    <div class="leader-os-detail-list-item">
+                        <span class="text-muted">Mentoriran ovaj tjedan</span>
+                        <strong><?= !empty($mentor_actions['mentored_this_week']) ? l('global.yes') : l('global.no') ?></strong>
                     </div>
                 </div>
 
-                <div class="leader-os-ai-actions">
+                <div class="leader-os-ai-actions mb-3">
                     <?php if($ai_report): ?>
                         <form action="" method="post" class="mb-0">
                             <input type="hidden" name="token" value="<?= \Altum\Csrf::get() ?>" />
                             <button type="submit" name="regenerate_ai_report" value="1" class="btn btn-sm leader-os-detail-action"><?= l('admin_leader_operating_system.leader.ai_regenerate') ?></button>
                         </form>
                         <button type="button" class="btn btn-sm leader-os-detail-action leader-os-scroll-link" data-scroll-target="leader-os-ai-history"><?= l('admin_leader_operating_system.leader.ai_open_history') ?></button>
+                        <button type="button" class="btn btn-sm leader-os-detail-action leader-os-scroll-link" data-scroll-target="leader-os-phase4">Otvori coaching</button>
                     <?php else: ?>
                         <form action="" method="post" class="mb-0">
                             <input type="hidden" name="token" value="<?= \Altum\Csrf::get() ?>" />
@@ -2166,7 +2397,7 @@
         <div class="card-body">
             <div class="row">
                 <div class="col-12 col-xl-7 mb-3 mb-xl-0">
-                    <div class="leader-os-detail-panel h-100">
+                    <div class="leader-os-detail-panel h-100" id="leader-os-outreach-panel">
                         <h3 class="h5 mb-2"><?= l('admin_leader_operating_system.leader.outreach_panel') ?></h3>
                         <div class="text-muted small mb-3"><?= l('admin_leader_operating_system.leader.outreach_panel_text') ?></div>
 
@@ -2477,7 +2708,7 @@
     <!-- /Custom code: FC-2026-03-31 -->
 
     <!-- Custom code: FC-2026-03-31: Phase 4 admin coaching panel from AI Plan history -->
-    <div class="card leader-os-detail-shell mb-4">
+    <div class="card leader-os-detail-shell mb-4" id="leader-os-phase4">
         <div class="card-body">
             <?php if(!empty($data->coaching_roi)): ?>
                 <div class="leader-os-detail-panel mb-3">
@@ -3133,6 +3364,10 @@
             targetElement.scrollIntoView({behavior: 'smooth', block: 'start'});
         });
     });
+
+    if (window.jQuery && typeof window.jQuery.fn.tooltip === 'function') {
+        window.jQuery('[data-toggle="tooltip"]').tooltip({container: 'body'});
+    }
     </script>
     <?php \Altum\Event::add_content(ob_get_clean(), 'javascript') ?>
 <?php endif ?>
