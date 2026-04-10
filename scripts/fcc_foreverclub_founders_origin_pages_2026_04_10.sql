@@ -162,7 +162,7 @@ INSERT INTO `pages` (
     '<section class="fcc-article">
   <h1>Stjepan Beloša</h1>
 
-  <p><strong>Stjepan Beloša</strong> jedan je od kreatora Forever Card Cluba. U FCC-u njegov doprinos najviše dolazi do izražaja u dijelu sustava koji traži dobru strukturu, jasan poslovni tok i povezivanje više koraka u jednu cjelinu.</p>
+  <p><strong>Stjepan Beloša</strong> u FCC-u je najviše vezan uz dio sustava koji traži dobru strukturu, jasan poslovni tok i povezivanje više koraka u jednu cjelinu.</p>
 
   <p>Širi kontekst razvoja FCC-a opisan je u članku <a href="/page/who-created-forever-card-club">Kako je nastao Forever Card Club i tko stoji iza sustava</a>.</p>
 
@@ -185,7 +185,7 @@ INSERT INTO `pages` (
 
   <h2>Suradnja u razvoju FCC-a</h2>
 
-  <p>FCC se nije razvijao kao individualni projekt odvojen od prakse. Stjepan Beloša sustav razvija zajedno sa Snježanom Belošom, pri čemu se različiti dijelovi rada spajaju u zajednički smjer i konačno iskustvo sustava.</p>
+  <p>FCC se nije razvijao kao individualni projekt odvojen od prakse. Stjepan Beloša na razvoju sustava radi zajedno sa Snježanom Belošom, pri čemu se različiti dijelovi rada spajaju u zajednički smjer i konačno iskustvo sustava.</p>
 
   <h2>Povezano u FCC sustavu</h2>
 
@@ -198,8 +198,8 @@ INSERT INTO `pages` (
 
   <h2>Česta pitanja</h2>
 
-  <h3>Je li Stjepan Beloša jedan od kreatora FCC-a?</h3>
-  <p>Da. Stjepan Beloša jedan je od kreatora Forever Card Cluba.</p>
+  <h3>Koja je uloga Stjepana Beloše u FCC-u?</h3>
+  <p>Njegov se doprinos najviše vidi u strukturi sustava, poslovnoj logici i smjeru razvoja.</p>
 
   <h3>S kojim je dijelom sustava najviše povezan?</h3>
   <p>Najviše je povezan sa strukturom sustava, poslovnom logikom i načinom na koji više dijelova FCC-a radi kao jedna cjelina.</p>
@@ -237,7 +237,7 @@ INSERT INTO `pages` (
     '<section class="fcc-article">
   <h1>Snježana Beloša</h1>
 
-  <p><strong>Snježana Beloša</strong> jedna je od kreatorica Forever Card Cluba. U FCC-u njezin doprinos posebno dolazi do izražaja u jasnoći sustava, načinu korištenja i toku kroz koji partner i posjetitelj prolaze kroz sadržaj i sljedeće korake.</p>
+  <p><strong>Snježana Beloša</strong> u FCC-u je posebno vezana uz jasnoću sustava, način korištenja i tok kroz koji partner i posjetitelj prolaze kroz sadržaj i sljedeće korake.</p>
 
   <p>Širi kontekst razvoja FCC-a opisan je u članku <a href="/page/who-created-forever-card-club">Kako je nastao Forever Card Club i tko stoji iza sustava</a>.</p>
 
@@ -260,7 +260,7 @@ INSERT INTO `pages` (
 
   <h2>Suradnja u razvoju FCC-a</h2>
 
-  <p>FCC se razvijao kroz zajednički rad, a Snježana Beloša sustav razvija zajedno sa Stjepanom Belošom. Upravo ta kombinacija strukture, logike i praktične upotrebljivosti pomogla je da FCC dobije oblik koji danas ima.</p>
+  <p>FCC se razvijao kroz zajednički rad, a Snježana Beloša na razvoju sustava radi zajedno sa Stjepanom Belošom. Upravo ta kombinacija strukture, logike i praktične upotrebljivosti pomogla je da FCC dobije oblik koji danas ima.</p>
 
   <h2>Povezano u FCC sustavu</h2>
 
@@ -273,8 +273,8 @@ INSERT INTO `pages` (
 
   <h2>Česta pitanja</h2>
 
-  <h3>Je li Snježana Beloša jedna od kreatorica FCC-a?</h3>
-  <p>Da. Snježana Beloša jedna je od kreatorica Forever Card Cluba.</p>
+  <h3>Koja je uloga Snježane Beloše u FCC-u?</h3>
+  <p>Njezin se doprinos najviše vidi u jasnoći sustava, načinu korištenja i praktičnom iskustvu kroz koje partner i posjetitelj prolaze.</p>
 
   <h3>S kojim je dijelom sustava najviše povezana?</h3>
   <p>Najviše je povezana s jasnoćom sustava, načinom korištenja i praktičnim tokom kroz koji partner i posjetitelj prolaze kroz FCC iskustvo.</p>
@@ -419,7 +419,7 @@ INSERT INTO `pages` (
     '<section class="fcc-article">
   <h1>Stjepan Beloša</h1>
 
-  <p><strong>Stjepan Beloša</strong> is one of the creators of Forever Card Club. Inside FCC, his contribution is most visible in the part of the system that depends on good structure, clear business logic, and the connection of several steps into one whole.</p>
+  <p><strong>Stjepan Beloša</strong> is most closely tied to the part of FCC that depends on good structure, clear business logic, and the connection of several steps into one whole.</p>
 
   <p>The wider context is described in the article <a href="/page/who-created-forever-card-club">How Forever Card Club was built and who created it</a>.</p>
 
@@ -442,7 +442,7 @@ INSERT INTO `pages` (
 
   <h2>Shared work in the development of FCC</h2>
 
-  <p>FCC did not grow as an isolated individual project. Stjepan Beloša develops the system together with Snježana Beloša, and that shared work helped bring direction, structure, and practical value into the final system experience.</p>
+  <p>FCC did not grow as an isolated individual project. Stjepan Beloša works on the development of the system together with Snježana Beloša, and that shared work helped bring direction, structure, and practical value into the final system experience.</p>
 
   <h2>Related inside the FCC system</h2>
 
@@ -455,8 +455,8 @@ INSERT INTO `pages` (
 
   <h2>Frequently asked questions</h2>
 
-  <h3>Is Stjepan Beloša one of the creators of FCC?</h3>
-  <p>Yes. Stjepan Beloša is one of the creators of Forever Card Club.</p>
+  <h3>What is Stjepan Beloša\'s role inside FCC?</h3>
+  <p>His contribution is most visible in the structure of the system, its business logic, and its development direction.</p>
 
   <h3>Which part of the system is he most closely connected with?</h3>
   <p>He is most closely connected with the structure of the system, its business logic, and the way several FCC parts work together as one whole.</p>
@@ -494,7 +494,7 @@ INSERT INTO `pages` (
     '<section class="fcc-article">
   <h1>Snježana Beloša</h1>
 
-  <p><strong>Snježana Beloša</strong> is one of the creators of Forever Card Club. Inside FCC, her contribution is especially visible in system clarity, everyday usability, and the flow through which the partner and visitor move through content and next steps.</p>
+  <p><strong>Snježana Beloša</strong> is especially tied to the part of FCC that focuses on system clarity, everyday usability, and the flow through which the partner and visitor move through content and next steps.</p>
 
   <p>The wider context is described in the article <a href="/page/who-created-forever-card-club">How Forever Card Club was built and who created it</a>.</p>
 
@@ -517,7 +517,7 @@ INSERT INTO `pages` (
 
   <h2>Shared work in the development of FCC</h2>
 
-  <p>FCC developed through shared work, and Snježana Beloša develops the system together with Stjepan Beloša. That combination of structure, logic, and everyday usability helped shape FCC into the system it is today.</p>
+  <p>FCC developed through shared work, and Snježana Beloša works on the development of the system together with Stjepan Beloša. That combination of structure, logic, and everyday usability helped shape FCC into the system it is today.</p>
 
   <h2>Related inside the FCC system</h2>
 
@@ -530,8 +530,8 @@ INSERT INTO `pages` (
 
   <h2>Frequently asked questions</h2>
 
-  <h3>Is Snježana Beloša one of the creators of FCC?</h3>
-  <p>Yes. Snježana Beloša is one of the creators of Forever Card Club.</p>
+  <h3>What is Snježana Beloša\'s role inside FCC?</h3>
+  <p>Her contribution is most visible in system clarity, usability, and the practical experience through which partners and visitors move.</p>
 
   <h3>Which part of the system is she most closely connected with?</h3>
   <p>She is most closely connected with system clarity, everyday usability, and the practical flow through which the partner and visitor move inside the FCC experience.</p>

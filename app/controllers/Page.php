@@ -542,12 +542,12 @@ class Page extends Controller {
                     ],
                     'stjepan-belosa' => [
                         'heading' => 'Uloga Stjepana Beloše u FCC-u',
-                        'summary' => 'Stjepan Beloša jedan je od kreatora FCC-a, a njegov doprinos najviše se vidi u strukturi sustava, poslovnoj logici i smjeru razvoja. Njegov rad pomaže da FCC više dijelova poslovnog procesa pretvori u jednu funkcionalnu cjelinu.',
+                        'summary' => 'U FCC-u se doprinos Stjepana Beloše najviše vidi u strukturi sustava, poslovnoj logici i smjeru razvoja. Njegov rad pomaže da FCC više dijelova poslovnog procesa pretvori u jednu funkcionalnu cjelinu.',
                         'facts' => [
                             'Njegov doprinos vidi se u strukturi i poslovnoj logici FCC sustava.',
                             'Sudjeluje u oblikovanju procesa kojim se partner lakše predstavlja i vodi osobu prema sljedećem koraku.',
                             'Važan je u dijelu koji određuje smjer razvoja i funkcionalnost sustava.',
-                            'FCC razvija zajedno sa Snježanom Belošom.'
+                            'Na razvoju FCC-a radi zajedno sa Snježanom Belošom.'
                         ],
                         'term_name' => 'Stjepan Beloša',
                         'term_alternate_names' => ['Stjepan Belosa', 'kreator FCC-a', 'su-kreator Forever Card Cluba'],
@@ -555,12 +555,12 @@ class Page extends Controller {
                     ],
                     'snjezana-belosa' => [
                         'heading' => 'Uloga Snježane Beloše u FCC-u',
-                        'summary' => 'Snježana Beloša jedna je od kreatorica FCC-a, a njezin doprinos najviše se vidi u jasnoći sustava, načinu korištenja i iskustvu kroz koje partner i posjetitelj prolaze.',
+                        'summary' => 'U FCC-u se doprinos Snježane Beloše najviše vidi u jasnoći sustava, načinu korištenja i iskustvu kroz koje partner i posjetitelj prolaze.',
                         'facts' => [
                             'Njezin doprinos vidi se u praktičnom oblikovanju korisničkog iskustva u FCC-u.',
                             'Važna je za jasnoću, upotrebljivost i prirodan tok sustava.',
                             'Njezina uloga posebno dolazi do izražaja ondje gdje FCC treba biti razumljiv i jednostavan za svakodnevni rad.',
-                            'FCC razvija zajedno sa Stjepanom Belošom.'
+                            'Na razvoju FCC-a radi zajedno sa Stjepanom Belošom.'
                         ],
                         'term_name' => 'Snježana Beloša',
                         'term_alternate_names' => ['Snjezana Belosa', 'kreatorica FCC-a', 'su-kreatorica Forever Card Cluba'],
@@ -762,12 +762,12 @@ class Page extends Controller {
                     ],
                     'stjepan-belosa' => [
                         'heading' => 'The role of Stjepan Beloša inside FCC',
-                        'summary' => 'Stjepan Beloša is one of the creators of FCC, with his contribution most visible in the system structure, business logic, and development direction. His work helps turn several business steps into one functional whole.',
+                        'summary' => 'Inside FCC, Stjepan Beloša\'s contribution is most visible in the system structure, business logic, and development direction. His work helps turn several business steps into one functional whole.',
                         'facts' => [
                             'His contribution can be seen in the structure and operating logic of the FCC system.',
                             'He helps shape the process that leads a visitor from attention to the next step.',
                             'A key part of his work is the direction and functionality of the system.',
-                            'He develops FCC together with Snježana Beloša.'
+                            'He works on FCC together with Snježana Beloša.'
                         ],
                         'term_name' => 'Stjepan Beloša',
                         'term_alternate_names' => ['Stjepan Belosa', 'FCC creator', 'Forever Card Club co-creator'],
@@ -775,12 +775,12 @@ class Page extends Controller {
                     ],
                     'snjezana-belosa' => [
                         'heading' => 'The role of Snježana Beloša inside FCC',
-                        'summary' => 'Snježana Beloša is one of the creators of FCC, with her contribution most visible in system clarity, usability, and the experience through which partners and visitors move.',
+                        'summary' => 'Inside FCC, Snježana Beloša\'s contribution is most visible in system clarity, usability, and the experience through which partners and visitors move.',
                         'facts' => [
                             'Her contribution can be seen in the practical shaping of the FCC user experience.',
                             'She plays an important role in the clarity, usability, and natural flow of the system.',
                             'Her work matters where FCC needs to stay understandable and easy to use in everyday work.',
-                            'She develops FCC together with Stjepan Beloša.'
+                            'She works on FCC together with Stjepan Beloša.'
                         ],
                         'term_name' => 'Snježana Beloša',
                         'term_alternate_names' => ['Snjezana Belosa', 'FCC creator', 'Forever Card Club co-creator'],
