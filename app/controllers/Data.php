@@ -30,21 +30,16 @@ class Data extends Controller {
 
         \Altum\Authentication::guard();
 
-        $contact_data_types = ['email_collector', 'phone_collector', 'contact_collector', 'lead_funnel', 'appointment_calendar'];
-        $_GET['type'] = isset($_GET['type']) ? input_clean($_GET['type'], 32) : null;
-        if(!in_array($_GET['type'], $contact_data_types, true)) {
-            $_GET['type'] = null;
-        }
-
         $_GET['preferred_contact_channel'] = isset($_GET['preferred_contact_channel']) ? input_clean($_GET['preferred_contact_channel'], 32) : null;
         $allowed_contact_channels = ['whatsapp', 'viber', 'sms', 'phone', 'email'];
         if(!in_array($_GET['preferred_contact_channel'], $allowed_contact_channels, true)) {
             $_GET['preferred_contact_channel'] = null;
         }
 
-        $contact_data_types_sql = implode(', ', array_map(static function(string $type): string {
+        $excluded_data_types = ['leader_os_fraud_cluster', 'billing_event'];
+        $excluded_data_types_sql = implode(', ', array_map(static function(string $type): string {
             return "'" . database()->escape($type) . "'";
-        }, $contact_data_types));
+        }, $excluded_data_types));
 
         /* Prepare the filtering system */
         $filters = (new \Altum\Filters(['datum_id', 'biolink_block_id', 'link_id', 'project_id', 'user_id', 'type', 'is_enabled'], [], ['datum_id', 'datetime']));
@@ -58,7 +53,7 @@ class Data extends Controller {
         }
 
         /* Prepare the paginator */
-        $total_rows = database()->query("SELECT COUNT(*) AS `total` FROM `data` WHERE `user_id` = {$this->user->user_id} AND `type` IN ({$contact_data_types_sql}) {$preferred_channel_sql} {$filters->get_sql_where()}")->fetch_object()->total ?? 0;
+        $total_rows = database()->query("SELECT COUNT(*) AS `total` FROM `data` WHERE `user_id` = {$this->user->user_id} AND `type` NOT IN ({$excluded_data_types_sql}) {$preferred_channel_sql} {$filters->get_sql_where()}")->fetch_object()->total ?? 0;
         $paginator = (new \Altum\Paginator($total_rows, $filters->get_results_per_page(), $_GET['page'] ?? 1, url('data?' . $filters->get_get() . '&page=%d')));
 
         $normalize_phone = function($phone) {
@@ -144,7 +139,7 @@ class Data extends Controller {
             LEFT JOIN `links` ON `links`.`link_id` = `data`.`link_id`
             WHERE 
                 `data`.`user_id` = {$this->user->user_id} 
-                AND `data`.`type` IN ({$contact_data_types_sql})
+                AND `data`.`type` NOT IN ({$excluded_data_types_sql})
                 {$preferred_channel_sql}
                 {$filters->get_sql_where('data')} 
                     
