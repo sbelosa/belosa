@@ -462,6 +462,55 @@
             display: none;
         }
 
+        .fcc-contacts-mobile-list {
+            display: none;
+        }
+
+        .fcc-contact-mobile-card {
+            background:
+                radial-gradient(circle at 10% 0%, rgba(71, 224, 213, 0.05) 0%, rgba(71, 224, 213, 0) 28%),
+                linear-gradient(180deg, rgba(15, 22, 37, 0.98) 0%, rgba(10, 14, 24, 0.99) 100%);
+            border: 1px solid rgba(90, 201, 230, 0.08);
+            border-radius: 20px;
+            padding: 1rem;
+            box-shadow: 0 14px 30px rgba(4, 10, 24, 0.18);
+        }
+
+        .fcc-contact-mobile-card.is-highlighted {
+            border-color: rgba(245, 158, 11, 0.18);
+            box-shadow: inset 3px 0 0 rgba(245, 158, 11, 0.24), 0 14px 30px rgba(4, 10, 24, 0.18);
+        }
+
+        .fcc-contact-mobile-head {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.8rem;
+        }
+
+        .fcc-contact-mobile-head-copy {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .fcc-contact-mobile-status {
+            margin-top: 0.35rem;
+        }
+
+        .fcc-contact-mobile-section {
+            margin-top: 0.9rem;
+            padding-top: 0.85rem;
+            border-top: 1px solid rgba(95, 205, 231, 0.06);
+        }
+
+        .fcc-contact-mobile-section-title {
+            margin-bottom: 0.5rem;
+            color: #8fb5d0;
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            font-weight: 700;
+        }
+
         .fcc-contacts-table-card .table-custom th,
         .fcc-contacts-table-card .table-custom td {
             padding-top: 0.95rem;
@@ -534,61 +583,18 @@
                 font-size: 1.35rem;
             }
 
-            .fcc-contacts-table-card {
-                padding: 0.75rem;
-                border-radius: 20px;
-                overflow: visible;
-            }
-
-            .fcc-contacts-table-card .table-custom-container {
-                overflow: visible;
-            }
-
-            .fcc-contacts-table-card .table-custom,
-            .fcc-contacts-table-card .table-custom tbody,
-            .fcc-contacts-table-card .table-custom tr,
-            .fcc-contacts-table-card .table-custom td {
-                display: block;
-                width: 100%;
-            }
-
-            .fcc-contacts-table-card .table-custom thead {
-                display: none;
-            }
-
-            .fcc-contacts-table-card .table-custom tbody {
+            .fcc-contacts-mobile-list {
                 display: flex;
                 flex-direction: column;
                 gap: 0.9rem;
             }
 
-            .fcc-contacts-table-card .table-custom tbody tr {
-                border: 1px solid rgba(90, 201, 230, 0.08);
-                border-radius: 20px;
-                overflow: hidden;
-                background:
-                    radial-gradient(circle at 10% 0%, rgba(71, 224, 213, 0.05) 0%, rgba(71, 224, 213, 0) 28%),
-                    linear-gradient(180deg, rgba(15, 22, 37, 0.98) 0%, rgba(10, 14, 24, 0.99) 100%);
-                box-shadow: 0 14px 30px rgba(4, 10, 24, 0.18);
-            }
-
-            .fcc-contacts-table-card .table-custom tbody tr td {
-                padding: 0.9rem 0.95rem !important;
-                border-top: 0 !important;
-            }
-
-            .fcc-contacts-table-card .table-custom tbody tr td + td {
-                border-top: 1px solid rgba(95, 205, 231, 0.06) !important;
+            .fcc-contacts-table-card {
+                display: none;
             }
 
             .fcc-contact-mobile-label {
-                display: block;
-                margin-bottom: 0.55rem;
-                color: #8fb5d0;
-                font-size: 0.72rem;
-                text-transform: uppercase;
-                letter-spacing: 0.08em;
-                font-weight: 700;
+                display: none;
             }
 
             .fcc-contact-main {
@@ -654,9 +660,8 @@
             }
 
             .fcc-contact-secondary-actions {
-                justify-content: flex-start;
                 display: grid;
-                grid-template-columns: repeat(3, minmax(0, 1fr));
+                grid-template-columns: repeat(2, minmax(0, 1fr));
                 gap: 0.45rem;
             }
 
@@ -875,7 +880,108 @@
                 <input type="hidden" name="original_request" value="<?= base64_encode(\Altum\Router::$original_request) ?>" />
                 <input type="hidden" name="original_request_query" value="<?= base64_encode(\Altum\Router::$original_request_query) ?>" />
 
-                <div class="fcc-contacts-table-card">
+                <div class="fcc-contacts-mobile-list d-md-none">
+                    <?php foreach($data->data as $row): ?>
+                        <?php $fcc_contact_is_highlighted = $row->contact_status !== 'ready'; ?>
+                        <div class="fcc-contact-mobile-card <?= $fcc_contact_is_highlighted ? 'is-highlighted' : null ?>">
+                            <div class="fcc-contact-mobile-head">
+                                <div class="fcc-contact-avatar"><?= $row->initials ?: 'C' ?></div>
+
+                                <div class="fcc-contact-mobile-head-copy">
+                                    <div class="fcc-contact-name"><?= $row->contact_identity ?></div>
+
+                                    <?php if($row->contact_email): ?><div class="fcc-contact-line"><strong>Email:</strong> <?= $row->contact_email ?></div><?php endif ?>
+                                    <?php if($row->contact_phone): ?><div class="fcc-contact-line"><strong>Telefon:</strong> <?= $row->contact_phone ?></div><?php endif ?>
+
+                                    <?php if(!$row->contact_email && !$row->contact_phone && $row->contact_name): ?>
+                                        <div class="fcc-contact-line"><strong>Ime:</strong> <?= $row->contact_name ?></div>
+                                    <?php endif ?>
+
+                                    <div class="fcc-contact-mobile-status">
+                                        <div class="fcc-contact-status-badge <?= $row->contact_status === 'ready' ? 'is-ready' : 'is-review' ?>">
+                                            <i class="fas fa-fw <?= $row->contact_status === 'ready' ? 'fa-bolt' : 'fa-exclamation-circle' ?>"></i>
+                                            <?= $row->contact_status_label ?>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="fcc-contact-mobile-section">
+                                <div class="fcc-contact-mobile-section-title">Izvor kontakta</div>
+                                <div class="fcc-contact-source">
+                                    <div class="fcc-contact-source-title">
+                                        <?= $row->biolink_block_id ? string_truncate($row->settings->name ?? l('global.unknown'), 42) : ($row->source_label ?: l('global.unknown')) ?>
+                                    </div>
+                                    <div class="fcc-contact-meta">FCC aplikacija: <?= $row->app_name ?></div>
+                                    <?php if($row->preferred_contact_channel): ?>
+                                        <div class="fcc-contact-meta">Preferirani kontakt: <?= mb_strtoupper($row->preferred_contact_channel) ?></div>
+                                    <?php endif ?>
+                                    <?php if($row->source_context): ?>
+                                        <div class="fcc-contact-meta"><?= $row->source_context ?></div>
+                                    <?php endif ?>
+
+                                    <div class="fcc-contact-notes">
+                                        <?php if($row->contact_message): ?>
+                                            <div class="fcc-contact-note">Poruka: <?= string_truncate($row->contact_message, 90) ?></div>
+                                        <?php endif ?>
+                                        <?php if(!empty($row->extra_fields)): ?>
+                                            <?php foreach(array_slice($row->extra_fields, 0, 2) as $field): ?>
+                                                <div class="fcc-contact-note"><?= ucfirst(str_replace('_', ' ', $field['label'])) ?>: <?= string_truncate($field['value'], 70) ?></div>
+                                            <?php endforeach ?>
+                                        <?php endif ?>
+                                        <?php if(!$row->contact_message && empty($row->extra_fields)): ?>
+                                            <div class="fcc-contact-note">Kontakt je spremljen i spreman za obradu.</div>
+                                        <?php endif ?>
+                                    </div>
+
+                                    <div class="fcc-contact-tags">
+                                        <span class="fcc-contact-tag">
+                                            <i class="<?= $data->biolink_blocks[$row->type]['icon'] ?> fa-fw fa-sm"></i>
+                                            <?= l('link.biolink.blocks.' . $row->type) ?>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="fcc-contact-mobile-section">
+                                <div class="fcc-contact-mobile-section-title">Akcije</div>
+                                <div class="fcc-contact-actions">
+                                    <?php if($row->primary_action): ?>
+                                        <a href="<?= $row->primary_action['url'] ?>" target="_blank" rel="noopener noreferrer" class="fcc-contact-primary-action <?= $row->primary_action['class'] ?>">
+                                            <i class="<?= $row->primary_action['icon'] ?>"></i>
+                                            <?= $row->primary_action['label'] ?>
+                                        </a>
+                                    <?php endif ?>
+
+                                    <?php if(!empty($row->available_actions)): ?>
+                                        <div class="fcc-contact-secondary-actions">
+                                            <?php foreach($row->available_actions as $action): ?>
+                                                <?php if($row->primary_action && $action['key'] === $row->primary_action['key']) continue; ?>
+                                                <a href="<?= $action['url'] ?>" target="_blank" rel="noopener noreferrer" class="fcc-contact-secondary-action">
+                                                    <i class="<?= $action['icon'] ?>"></i>
+                                                    <?= $action['label'] ?>
+                                                </a>
+                                            <?php endforeach ?>
+                                        </div>
+                                    <?php endif ?>
+
+                                    <div class="fcc-contact-actions-footer">
+                                        <div class="fcc-contact-date">
+                                            <?= \Altum\Date::get($row->datetime, 2) ?><br />
+                                            <small><?= \Altum\Date::get_timeago($row->datetime) ?></small>
+                                        </div>
+
+                                        <div class="fcc-contact-actions-menu">
+                                            <?= include_view(THEME_PATH . 'views/data/datum_dropdown_button.php', ['id' => $row->datum_id, 'button_text_class' => 'text-muted']) ?>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    <?php endforeach ?>
+                </div>
+
+                <div class="fcc-contacts-table-card d-none d-md-block">
                     <div class="table-responsive table-custom-container">
                         <table class="table table-custom">
                             <thead>
