@@ -2,6 +2,7 @@
 
 <?php
 /* Custom code: FC-2026-02-26: contact page bilingual labels */
+$fcc_is_hr_page = \Altum\Language::$code === 'hr';
 $fcc_is_contact_page = mb_strtolower((string) $data->page->url) === 'contact';
 $fcc_contact_title = l('fcc.page.contact_title');
 $fcc_info_note = l('fcc.page.contact_note');
@@ -21,6 +22,7 @@ $fcc_contact_call = l('fcc.page.contact_call');
 $fcc_contact_email = l('fcc.page.contact_email');
 $fcc_contact_direct_title = l('fcc.page.contact_direct_title');
 $fcc_contact_direct_text = l('fcc.page.contact_direct_text');
+$fcc_page_authors = $data->page_schema_authors ?? [];
 /* /Custom code: FC-2026-02-26 */
 ?>
 
@@ -56,6 +58,20 @@ $fcc_contact_direct_text = l('fcc.page.contact_direct_text');
                     <span class="fcc-page-meta__item" data-toggle="tooltip" title="<?= sprintf(l('global.last_datetime_tooltip'), \Altum\Date::get($data->page->last_datetime, 2)) ?>">
                         <?= sprintf(l('global.datetime_tooltip'), \Altum\Date::get($data->page->datetime, 2)) ?>
                     </span>
+                    <?php if(!empty($fcc_page_authors)): ?>
+                        <span class="fcc-page-meta__item">
+                            <?= count($fcc_page_authors) > 1 ? ($fcc_is_hr_page ? 'Autori:' : 'Authors:') : ($fcc_is_hr_page ? 'Autor:' : 'Author:') ?>
+                            <?php foreach($fcc_page_authors as $index => $author): ?>
+                                <?php $author_url = $author['url'] ?? null; ?>
+                                <?php if($author_url && $author_url !== ($data->page_url ?? null)): ?>
+                                    <a href="<?= $author_url ?>"><?= $author['name'] ?></a>
+                                <?php else: ?>
+                                    <?= $author['name'] ?>
+                                <?php endif ?>
+                                <?= $index + 1 < count($fcc_page_authors) ? ', ' : null ?>
+                            <?php endforeach ?>
+                        </span>
+                    <?php endif ?>
                     <?php if($data->pages_category): ?>
                         <span class="fcc-page-meta__item">
                             <a href="<?= SITE_URL . ($data->pages_category->language ? \Altum\Language::$active_languages[$data->pages_category->language] . '/' : null) . 'pages/' . $data->pages_category->url ?>">
@@ -1208,6 +1224,7 @@ $fcc_contact_direct_text = l('fcc.page.contact_direct_text');
 $fcc_page_schema = [
     '@context' => 'https://schema.org',
     '@type' => 'Article',
+    '@id' => ($data->page_url ?? (SITE_URL . ($data->page->language ? \Altum\Language::$active_languages[$data->page->language] . '/' : null) . 'page/' . $data->page->url)) . '#article',
     'headline' => $data->page->title,
     'name' => $data->page->title,
     'description' => $data->page->description ?: strip_tags($data->page->title),
@@ -1219,13 +1236,17 @@ $fcc_page_schema = [
         '@type' => 'WebPage',
         '@id' => $data->page_url ?? (SITE_URL . ($data->page->language ? \Altum\Language::$active_languages[$data->page->language] . '/' : null) . 'page/' . $data->page->url),
     ],
-    'author' => [
-        '@type' => 'Organization',
-        'name' => 'Forever Card Club',
-        'url' => SITE_URL,
-    ],
+    'author' => !empty($data->page_schema_authors)
+        ? (count($data->page_schema_authors) === 1 ? $data->page_schema_authors[0] : array_values($data->page_schema_authors))
+        : [
+            '@type' => 'Organization',
+            '@id' => SITE_URL . '#fcc-organization',
+            'name' => 'Forever Card Club',
+            'url' => SITE_URL,
+        ],
     'publisher' => [
         '@type' => 'Organization',
+        '@id' => SITE_URL . '#fcc-organization',
         'name' => 'Forever Card Club',
         'url' => SITE_URL,
         'logo' => [
@@ -1246,14 +1267,23 @@ if(!empty($data->pages_category->title)) {
     $fcc_page_schema['articleSection'] = $data->pages_category->title;
 }
 
-if(!empty($data->is_foreverclub_page) && !empty($data->foreverclub_semantics)) {
-    $fcc_page_schema['about'] = [
-        '@type' => 'DefinedTerm',
-        '@id' => url('pages/foreverclub') . '#fcc-term',
-        'name' => $data->foreverclub_semantics['term_name'],
-        'alternateName' => $data->foreverclub_semantics['term_alternate_names'],
-        'description' => $data->foreverclub_semantics['term_description'],
-    ];
+if(!empty($data->page_schema_mentions)) {
+    $fcc_page_schema['mentions'] = array_values($data->page_schema_mentions);
+}
+
+if(!empty($data->is_foreverclub_page)) {
+    if(!empty($data->page_schema_about_entity)) {
+        $fcc_page_schema['about'] = $data->page_schema_about_entity;
+    } elseif(!empty($data->foreverclub_semantics)) {
+        $fcc_page_schema['about'] = [
+            '@type' => 'DefinedTerm',
+            '@id' => url('pages/foreverclub') . '#fcc-term',
+            'name' => $data->foreverclub_semantics['term_name'],
+            'alternateName' => $data->foreverclub_semantics['term_alternate_names'],
+            'description' => $data->foreverclub_semantics['term_description'],
+        ];
+    }
+
     $fcc_page_schema['isPartOf'] = [
         '@type' => 'CollectionPage',
         'name' => $data->pages_category->title ?? 'Forever Card Club',
@@ -1468,6 +1498,22 @@ if(!empty($data->is_foreverclub_page) && !empty($data->page->content) && class_e
 <?php ob_start() ?>
 <script type="application/ld+json">
     <?= json_encode($fcc_software_application_schema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) ?>
+</script>
+<?php \Altum\Event::add_content(ob_get_clean(), 'javascript') ?>
+<?php endif ?>
+
+<?php if(!empty($data->page_organization_schema)): ?>
+<?php ob_start() ?>
+<script type="application/ld+json">
+    <?= json_encode($data->page_organization_schema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) ?>
+</script>
+<?php \Altum\Event::add_content(ob_get_clean(), 'javascript') ?>
+<?php endif ?>
+
+<?php if(!empty($data->page_profile_schema)): ?>
+<?php ob_start() ?>
+<script type="application/ld+json">
+    <?= json_encode($data->page_profile_schema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) ?>
 </script>
 <?php \Altum\Event::add_content(ob_get_clean(), 'javascript') ?>
 <?php endif ?>

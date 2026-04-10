@@ -451,6 +451,17 @@
             justify-content: center;
         }
 
+        .fcc-contact-actions-footer {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+            align-items: stretch;
+        }
+
+        .fcc-contact-mobile-label {
+            display: none;
+        }
+
         .fcc-contacts-table-card .table-custom th,
         .fcc-contacts-table-card .table-custom td {
             padding-top: 0.95rem;
@@ -462,6 +473,224 @@
             .fcc-contact-source,
             .fcc-contact-actions {
                 min-width: unset;
+            }
+        }
+
+        @media (max-width: 767.98px) {
+            .fcc-contacts-shell {
+                gap: 1rem;
+            }
+
+            .fcc-contacts-header {
+                padding: 1.1rem 1rem;
+                border-radius: 20px;
+            }
+
+            .fcc-contacts-heading {
+                align-items: flex-start;
+            }
+
+            .fcc-contacts-heading-icon {
+                width: 2.55rem;
+                height: 2.55rem;
+                border-radius: 14px;
+            }
+
+            .fcc-contacts-heading-copy h1 {
+                font-size: 1.05rem;
+            }
+
+            .fcc-contacts-heading-copy p {
+                font-size: 0.86rem;
+                line-height: 1.45;
+            }
+
+            .fcc-contacts-toolbar {
+                width: 100%;
+            }
+
+            .fcc-contacts-toolbar > div {
+                flex: 1 1 calc(33.333% - 0.5rem);
+                min-width: 0;
+            }
+
+            .fcc-contacts-toolbar .btn,
+            .fcc-contacts-toolbar .dropdown,
+            .fcc-contacts-toolbar .btn-group {
+                width: 100%;
+            }
+
+            .fcc-contacts-action-btn {
+                min-height: 2.6rem;
+                border-radius: 12px;
+            }
+
+            .fcc-contacts-summary-card {
+                border-radius: 18px;
+                padding: 0.9rem 1rem;
+            }
+
+            .fcc-contacts-summary-value {
+                font-size: 1.35rem;
+            }
+
+            .fcc-contacts-table-card {
+                padding: 0.75rem;
+                border-radius: 20px;
+                overflow: visible;
+            }
+
+            .fcc-contacts-table-card .table-custom-container {
+                overflow: visible;
+            }
+
+            .fcc-contacts-table-card .table-custom,
+            .fcc-contacts-table-card .table-custom tbody,
+            .fcc-contacts-table-card .table-custom tr,
+            .fcc-contacts-table-card .table-custom td {
+                display: block;
+                width: 100%;
+            }
+
+            .fcc-contacts-table-card .table-custom thead {
+                display: none;
+            }
+
+            .fcc-contacts-table-card .table-custom tbody {
+                display: flex;
+                flex-direction: column;
+                gap: 0.9rem;
+            }
+
+            .fcc-contacts-table-card .table-custom tbody tr {
+                border: 1px solid rgba(90, 201, 230, 0.08);
+                border-radius: 20px;
+                overflow: hidden;
+                background:
+                    radial-gradient(circle at 10% 0%, rgba(71, 224, 213, 0.05) 0%, rgba(71, 224, 213, 0) 28%),
+                    linear-gradient(180deg, rgba(15, 22, 37, 0.98) 0%, rgba(10, 14, 24, 0.99) 100%);
+                box-shadow: 0 14px 30px rgba(4, 10, 24, 0.18);
+            }
+
+            .fcc-contacts-table-card .table-custom tbody tr td {
+                padding: 0.9rem 0.95rem !important;
+                border-top: 0 !important;
+            }
+
+            .fcc-contacts-table-card .table-custom tbody tr td + td {
+                border-top: 1px solid rgba(95, 205, 231, 0.06) !important;
+            }
+
+            .fcc-contact-mobile-label {
+                display: block;
+                margin-bottom: 0.55rem;
+                color: #8fb5d0;
+                font-size: 0.72rem;
+                text-transform: uppercase;
+                letter-spacing: 0.08em;
+                font-weight: 700;
+            }
+
+            .fcc-contact-main {
+                min-width: 0;
+                gap: 0.75rem;
+                align-items: flex-start;
+            }
+
+            .fcc-contact-avatar {
+                width: 2.65rem;
+                height: 2.65rem;
+                border-radius: 15px;
+            }
+
+            .fcc-contact-name {
+                font-size: 0.98rem;
+            }
+
+            .fcc-contact-line {
+                font-size: 0.85rem;
+            }
+
+            .fcc-contact-source,
+            .fcc-contact-actions {
+                min-width: 0;
+            }
+
+            .fcc-contact-source.is-emphasized,
+            .fcc-contact-actions.is-emphasized {
+                padding: 0;
+                border: 0;
+                border-radius: 0;
+                background: transparent;
+                box-shadow: none;
+            }
+
+            .fcc-contact-source.is-emphasized::before {
+                display: none;
+            }
+
+            .fcc-contact-source-title {
+                font-size: 1rem;
+                margin-bottom: 0.3rem;
+            }
+
+            .fcc-contact-meta,
+            .fcc-contact-note {
+                font-size: 0.84rem;
+            }
+
+            .fcc-contact-tags {
+                gap: 0.45rem;
+            }
+
+            .fcc-contact-tag {
+                font-size: 0.74rem;
+            }
+
+            .fcc-contact-primary-action {
+                min-height: 2.8rem;
+                border-radius: 14px;
+                font-size: 0.88rem;
+            }
+
+            .fcc-contact-secondary-actions {
+                justify-content: flex-start;
+                display: grid;
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+                gap: 0.45rem;
+            }
+
+            .fcc-contact-secondary-action {
+                justify-content: center;
+                padding: 0.45rem 0.35rem;
+                text-align: center;
+                font-size: 0.72rem;
+                min-height: 2.2rem;
+            }
+
+            .fcc-contact-actions-footer {
+                margin-top: 0.65rem;
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: flex-start;
+                gap: 0.75rem;
+            }
+
+            .fcc-contact-date {
+                margin-top: 0;
+                text-align: left;
+                font-size: 0.75rem;
+            }
+
+            .fcc-contact-actions-menu {
+                margin-top: 0;
+                justify-content: flex-end;
+                flex-shrink: 0;
+            }
+
+            .fcc-contacts-pagination {
+                margin-top: 0.65rem;
+                padding: 0;
             }
         }
 
@@ -674,6 +903,7 @@
                                     </td>
 
                                     <td>
+                                        <div class="fcc-contact-mobile-label">Kontakt</div>
                                         <div class="fcc-contact-main">
                                             <div class="fcc-contact-avatar"><?= $row->initials ?: 'C' ?></div>
 
@@ -691,6 +921,7 @@
                                     </td>
 
                                     <td>
+                                        <div class="fcc-contact-mobile-label">Izvor kontakta</div>
                                         <div class="fcc-contact-source <?= $fcc_contact_is_highlighted ? 'is-emphasized' : null ?>">
                                             <div class="fcc-contact-source-title">
                                                 <?= $row->biolink_block_id ? string_truncate($row->settings->name ?? l('global.unknown'), 42) : ($row->source_label ?: l('global.unknown')) ?>
@@ -729,6 +960,7 @@
                                     </td>
 
                                     <td>
+                                        <div class="fcc-contact-mobile-label">Akcije</div>
                                         <div class="fcc-contact-actions <?= $fcc_contact_is_highlighted ? 'is-emphasized' : null ?>">
                                             <?php if($row->primary_action): ?>
                                                 <a href="<?= $row->primary_action['url'] ?>" target="_blank" rel="noopener noreferrer" class="fcc-contact-primary-action <?= $row->primary_action['class'] ?>">
@@ -749,13 +981,15 @@
                                                 </div>
                                             <?php endif ?>
 
-                                            <div class="fcc-contact-date">
-                                                <?= \Altum\Date::get($row->datetime, 2) ?><br />
-                                                <small><?= \Altum\Date::get_timeago($row->datetime) ?></small>
-                                            </div>
+                                            <div class="fcc-contact-actions-footer">
+                                                <div class="fcc-contact-date">
+                                                    <?= \Altum\Date::get($row->datetime, 2) ?><br />
+                                                    <small><?= \Altum\Date::get_timeago($row->datetime) ?></small>
+                                                </div>
 
-                                            <div class="fcc-contact-actions-menu">
-                                                <?= include_view(THEME_PATH . 'views/data/datum_dropdown_button.php', ['id' => $row->datum_id, 'button_text_class' => 'text-muted']) ?>
+                                                <div class="fcc-contact-actions-menu">
+                                                    <?= include_view(THEME_PATH . 'views/data/datum_dropdown_button.php', ['id' => $row->datum_id, 'button_text_class' => 'text-muted']) ?>
+                                                </div>
                                             </div>
                                         </div>
                                     </td>
