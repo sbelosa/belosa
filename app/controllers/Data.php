@@ -30,6 +30,9 @@ class Data extends Controller {
 
         \Altum\Authentication::guard();
 
+        $system_data_where = " AND `type` != 'leader_os_fraud_cluster' AND `type` != 'billing_event'";
+        $system_data_where_for_alias = " AND `data`.`type` != 'leader_os_fraud_cluster' AND `data`.`type` != 'billing_event'";
+
         $_GET['preferred_contact_channel'] = isset($_GET['preferred_contact_channel']) ? input_clean($_GET['preferred_contact_channel'], 32) : null;
         $allowed_contact_channels = ['whatsapp', 'viber', 'sms', 'phone', 'email'];
         if(!in_array($_GET['preferred_contact_channel'], $allowed_contact_channels, true)) {
@@ -48,7 +51,7 @@ class Data extends Controller {
         }
 
         /* Prepare the paginator */
-        $total_rows = database()->query("SELECT COUNT(*) AS `total` FROM `data` WHERE `user_id` = {$this->user->user_id} {$preferred_channel_sql} {$filters->get_sql_where()}")->fetch_object()->total ?? 0;
+        $total_rows = database()->query("SELECT COUNT(*) AS `total` FROM `data` WHERE `user_id` = {$this->user->user_id} {$system_data_where} {$preferred_channel_sql} {$filters->get_sql_where()}")->fetch_object()->total ?? 0;
         $paginator = (new \Altum\Paginator($total_rows, $filters->get_results_per_page(), $_GET['page'] ?? 1, url('data?' . $filters->get_get() . '&page=%d')));
 
         $normalize_phone = function($phone) {
@@ -134,6 +137,7 @@ class Data extends Controller {
             LEFT JOIN `links` ON `links`.`link_id` = `data`.`link_id`
             WHERE 
                 `data`.`user_id` = {$this->user->user_id} 
+                {$system_data_where_for_alias}
                 {$preferred_channel_sql}
                 {$filters->get_sql_where('data')} 
                     
@@ -141,6 +145,10 @@ class Data extends Controller {
                 {$paginator->get_sql_limit()}
             ");
         while($row = $data_result->fetch_object()) {
+            if(in_array($row->type, ['leader_os_fraud_cluster', 'billing_event'], true)) {
+                continue;
+            }
+
             $row->data = json_decode($row->data);
             $row->settings = json_decode($row->settings ?? '');
             $row->biolink_block_name = $row->settings->name ?? null;
