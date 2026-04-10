@@ -271,9 +271,18 @@ class Page extends Controller {
         }
 
         /* Get the page category */
-        $pages_category = $page->pages_category_id ? \Altum\Cache::cache_function_result('pages_category?hash=' . md5($page->pages_category_id), 'pages_categories', function() use ($page) {
+        $source_pages_category = $page->pages_category_id ? \Altum\Cache::cache_function_result('pages_category?hash=' . md5($page->pages_category_id), 'pages_categories', function() use ($page) {
             return db()->where('pages_category_id', $page->pages_category_id)->getOne('pages_categories');
         }) : null;
+        $pages_category_cluster = $source_pages_category && !empty($source_pages_category->url)
+            ? fc_get_pages_category_cluster($source_pages_category->url, $language)
+            : ['category' => null, 'ids' => []];
+        $pages_category = $pages_category_cluster['category'] ?? $source_pages_category;
+        $pages_category_ids = $pages_category_cluster['ids'] ?? [];
+
+        if(!$pages_category_ids && !empty($source_pages_category->pages_category_id)) {
+            $pages_category_ids[] = (int) $source_pages_category->pages_category_id;
+        }
 
         /* Custom code: FC-2026-03-24: strengthen foreverclub page hub SEO and internal linking */
         $page_url = fc_get_internal_page_url($page->url, $page->language);
@@ -296,10 +305,11 @@ class Page extends Controller {
         }
 
         if($is_foreverclub_page) {
+            $pages_category_ids_sql = implode(',', array_map('intval', $pages_category_ids));
             $related_pages_query = "
                 SELECT `url`, `title`, `description`, `type`, `language`, `image`, `image_description`
                 FROM `pages`
-                WHERE `pages_category_id` = {$page->pages_category_id} AND `page_id` != {$page->page_id} AND (`language` = '{$language}' OR `language` IS NULL) AND `is_published` = 1
+                WHERE `pages_category_id` IN ({$pages_category_ids_sql}) AND `page_id` != {$page->page_id} AND (`language` = '{$language}' OR `language` IS NULL) AND `is_published` = 1
                 ORDER BY `order` ASC, `total_views` DESC
             ";
 

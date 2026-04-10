@@ -38,22 +38,8 @@ class Pages extends Controller {
         if($pages_category_url) {
 
             /* Pages category index */
-            $pages_category_query = "
-                SELECT *
-                FROM `pages_categories`
-                WHERE `url` = '{$pages_category_url}'
-                ORDER BY
-                    CASE
-                        WHEN `language` = '{$language}' THEN 0
-                        WHEN `language` IS NULL THEN 1
-                        ELSE 2
-                    END,
-                    `pages_category_id` ASC
-                LIMIT 1
-            ";
-            $pages_category = $pages_category_url ? \Altum\Cache::cache_function_result('pages_category?hash=' . md5($pages_category_query), 'pages_categories', function() use ($pages_category_query) {
-                return database()->query($pages_category_query)->fetch_object() ?? null;
-            }) : null;
+            $pages_category_cluster = fc_get_pages_category_cluster($pages_category_url, $language);
+            $pages_category = $pages_category_cluster['category'] ?? null;
 
             /* Redirect to pages if the category is not found */
             if(!$pages_category) {
@@ -77,24 +63,31 @@ class Pages extends Controller {
 
             /* Get the pages for this category */
             /* Custom code: FC-2026-02-24: pages thumbnails query */
-            $pages_language = $pages_category->language ?? $language;
+            $pages_language = fc_resolve_language_name($language) ?? $pages_category->language ?? $language;
+            $pages_category_ids = $pages_category_cluster['ids'] ?? [];
+
+            if(!$pages_category_ids && !empty($pages_category->pages_category_id)) {
+                $pages_category_ids[] = (int) $pages_category->pages_category_id;
+            }
+
+            $pages_category_ids_sql = implode(',', array_map('intval', $pages_category_ids));
 
             $pages_result_query = "
                 SELECT `url`, `title`, `description`, `total_views`, `type`, `language`, `plans_ids`, `image`, `image_description` 
                 FROM `pages` 
-                WHERE `pages_category_id` = {$pages_category->pages_category_id} AND (`language` = '{$pages_language}' OR `language` IS NULL) AND `is_published` = 1
+                WHERE `pages_category_id` IN ({$pages_category_ids_sql}) AND (`language` = '{$pages_language}' OR `language` IS NULL) AND `is_published` = 1
                 ORDER BY `order` ASC, `total_views` DESC
             ";
             /* /Custom code: FC-2026-02-24 */
 
-            $pages = \Altum\Cache::cache_function_result('pages?hash=' . md5($pages_result_query), 'pages', function() use ($pages_result_query, $pages_category, $pages_language) {
+            $pages = \Altum\Cache::cache_function_result('pages?hash=' . md5($pages_result_query), 'pages', function() use ($pages_result_query, $pages_category_ids_sql, $pages_language) {
                 $pages_result = database()->query($pages_result_query);
                 /* Custom code: FC-2026-02-24: fallback if thumbnail columns are missing */
                 if($pages_result === false) {
                     $fallback_query = "
                         SELECT `url`, `title`, `description`, `total_views`, `type`, `language`, `plans_ids`
                         FROM `pages`
-                        WHERE `pages_category_id` = {$pages_category->pages_category_id} AND (`language` = '{$pages_language}' OR `language` IS NULL) AND `is_published` = 1
+                        WHERE `pages_category_id` IN ({$pages_category_ids_sql}) AND (`language` = '{$pages_language}' OR `language` IS NULL) AND `is_published` = 1
                         ORDER BY `order` ASC, `total_views` DESC
                     ";
                     $pages_result = database()->query($fallback_query);

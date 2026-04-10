@@ -109,6 +109,64 @@ function fc_get_internal_page_url($slug, $language = null): string {
 }
 /* /Custom code: FC-2026-04-10 */
 
+/* Custom code: FC-2026-04-10: keep localized page categories grouped by shared slug */
+function fc_get_pages_category_cluster($category_url, $language = null): array {
+    static $clusters = [];
+
+    $category_url = trim((string) $category_url);
+    $language = fc_resolve_language_name($language);
+
+    if($category_url === '') {
+        return [
+            'category' => null,
+            'ids' => [],
+            'rows' => [],
+        ];
+    }
+
+    $cache_key = $category_url . '|' . ($language ?? '');
+
+    if(isset($clusters[$cache_key])) {
+        return $clusters[$cache_key];
+    }
+
+    $rows = \Altum\Cache::cache_function_result('pages_category_cluster?hash=' . md5($category_url), 'pages_categories', function() use ($category_url) {
+        return db()
+            ->where('url', $category_url)
+            ->orderBy('pages_category_id', 'ASC')
+            ->get('pages_categories') ?? [];
+    });
+
+    $rows = is_array($rows) ? $rows : [];
+    $preferred_category = null;
+    $fallback_category = null;
+    $ids = [];
+
+    foreach($rows as $row) {
+        $row_language = fc_resolve_language_name($row->language ?? null);
+        $row_id = (int) ($row->pages_category_id ?? 0);
+
+        if($row_id > 0) {
+            $ids[] = $row_id;
+        }
+
+        if($preferred_category === null && $language && $row_language === $language) {
+            $preferred_category = $row;
+        }
+
+        if($fallback_category === null && empty($row_language)) {
+            $fallback_category = $row;
+        }
+    }
+
+    return $clusters[$cache_key] = [
+        'category' => $preferred_category ?? $fallback_category ?? ($rows[0] ?? null),
+        'ids' => array_values(array_unique($ids)),
+        'rows' => $rows,
+    ];
+}
+/* /Custom code: FC-2026-04-10 */
+
 function database() {
     if(!\Altum\Database::$database) {
         \Altum\Database::initialize();
