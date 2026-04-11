@@ -4527,6 +4527,7 @@ Best regards, <br />
 	'fcc_ai.review.subtitle' => 'Bad signals appear here so you can open the full conversation right away and improve the AI communication.',
 	'fcc_ai.review.empty' => 'There are no answers marked for review right now.',
 	'fcc_ai.review.badge' => 'Bad answer',
+	'fcc_ai.review.resolve_success' => 'The signal has been marked as resolved.',
 	'fcc_ai.details.title' => 'Conversation details',
 	'fcc_ai.details.subtitle' => 'Open a conversation from the inbox on the left to review history and response signals.',
 	'fcc_ai.details.empty' => 'Select a conversation from the inbox to open the full thread, metadata, and any AI lead.',

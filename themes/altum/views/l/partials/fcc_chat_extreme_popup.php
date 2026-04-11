@@ -1105,7 +1105,7 @@ foreach(['hr', 'en', 'sl', 'bg'] as $fcc_chat_ui_language) {
 
                         <textarea name="message" maxlength="1000" placeholder="<?= htmlspecialchars($fcc_chat_lead_message_placeholder, ENT_QUOTES, 'UTF-8') ?>"></textarea>
 
-                        <button type="submit" class="fcc-chat-extreme__lead-submit"><?= htmlspecialchars($fcc_chat_lead_submit_label, ENT_QUOTES, 'UTF-8') ?></button>
+                        <button type="submit" class="fcc-chat-extreme__lead-submit" data-is-ajax="true"><?= htmlspecialchars($fcc_chat_lead_submit_label, ENT_QUOTES, 'UTF-8') ?></button>
                     </form>
                 </div>
             </section>
@@ -1121,7 +1121,7 @@ foreach(['hr', 'en', 'sl', 'bg'] as $fcc_chat_ui_language) {
                 autocomplete="off"
             />
 
-            <button type="submit" class="fcc-chat-extreme__send" aria-label="<?= htmlspecialchars($fcc_chat_send_label, ENT_QUOTES, 'UTF-8') ?>">
+            <button type="submit" class="fcc-chat-extreme__send" data-is-ajax="true" aria-label="<?= htmlspecialchars($fcc_chat_send_label, ENT_QUOTES, 'UTF-8') ?>">
                 <i class="fas fa-paper-plane" aria-hidden="true"></i>
             </button>
         </form>
@@ -1208,6 +1208,7 @@ foreach(['hr', 'en', 'sl', 'bg'] as $fcc_chat_ui_language) {
             const composerForm = document.getElementById(<?= json_encode($fcc_chat_form_id) ?>);
             const composerInput = composerForm ? composerForm.querySelector('input[name="message"]') : null;
             const sendButton = composerForm ? composerForm.querySelector('button[type="submit"]') : null;
+            const sendButtonDefaultHtml = sendButton ? sendButton.innerHTML : '';
             const closeButton = root.querySelector('[data-chat-extreme-close]');
             const leadCard = document.getElementById(<?= json_encode($fcc_chat_lead_id) ?>);
 
@@ -1264,6 +1265,20 @@ foreach(['hr', 'en', 'sl', 'bg'] as $fcc_chat_ui_language) {
                 wrapper.appendChild(bubble);
                 thread.appendChild(wrapper);
                 thread.scrollTop = thread.scrollHeight;
+            };
+
+            const resetSubmitButton = (button, defaultHtml = '') => {
+                if(!button) {
+                    return;
+                }
+
+                button.disabled = false;
+                button.classList.remove('disabled', 'container-disabled-simple');
+                button.removeAttribute('data-inner-text');
+
+                if(defaultHtml !== '') {
+                    button.innerHTML = defaultHtml;
+                }
             };
 
             const createToken = () => {
@@ -1439,7 +1454,7 @@ foreach(['hr', 'en', 'sl', 'bg'] as $fcc_chat_ui_language) {
                     isSending = false;
 
                     if(sendButton) {
-                        sendButton.disabled = false;
+                        resetSubmitButton(sendButton, sendButtonDefaultHtml);
                     }
                 }
             });
@@ -1453,6 +1468,7 @@ foreach(['hr', 'en', 'sl', 'bg'] as $fcc_chat_ui_language) {
         const composerForm = document.getElementById(<?= json_encode($fcc_chat_form_id) ?>);
         const composerInput = composerForm ? composerForm.querySelector('input[name="message"]') : null;
         const sendButton = composerForm ? composerForm.querySelector('button[type="submit"]') : null;
+        const sendButtonDefaultHtml = sendButton ? sendButton.innerHTML : '';
         const closeButton = root.querySelector('[data-chat-extreme-close]');
         const shortcutsRail = root.querySelector('[data-chat-extreme-shortcuts]');
         const leadCard = document.getElementById(<?= json_encode($fcc_chat_lead_id) ?>);
@@ -1462,6 +1478,7 @@ foreach(['hr', 'en', 'sl', 'bg'] as $fcc_chat_ui_language) {
         const leadToggle = leadCard ? leadCard.querySelector('[data-chat-extreme-lead-toggle]') : null;
         const leadForm = leadCard ? leadCard.querySelector('[data-chat-extreme-lead-form]') : null;
         const leadSubmitButton = leadForm ? leadForm.querySelector('button[type="submit"]') : null;
+        const leadSubmitButtonDefaultHtml = leadSubmitButton ? leadSubmitButton.innerHTML : '';
         const mobileMedia = window.matchMedia('(max-width: 576px)');
 
         if(!panel || !launcher || !thread || !composerForm || !composerInput) {
@@ -1615,6 +1632,20 @@ foreach(['hr', 'en', 'sl', 'bg'] as $fcc_chat_ui_language) {
             }
 
             return fallback;
+        };
+
+        const resetSubmitButton = (button, defaultHtml = '') => {
+            if(!button) {
+                return;
+            }
+
+            button.disabled = false;
+            button.classList.remove('disabled', 'container-disabled-simple');
+            button.removeAttribute('data-inner-text');
+
+            if(defaultHtml !== '') {
+                button.innerHTML = defaultHtml;
+            }
         };
 
         let uiCopy = {};
@@ -2620,6 +2651,9 @@ foreach(['hr', 'en', 'sl', 'bg'] as $fcc_chat_ui_language) {
 
             if(sendButton) {
                 sendButton.disabled = true;
+                sendButton.classList.remove('disabled', 'container-disabled-simple');
+                sendButton.removeAttribute('data-inner-text');
+                sendButton.innerHTML = sendButtonDefaultHtml;
             }
 
             appendMessage('user', message);
@@ -2651,7 +2685,7 @@ foreach(['hr', 'en', 'sl', 'bg'] as $fcc_chat_ui_language) {
                 }
 
                 if(sendButton) {
-                    sendButton.disabled = false;
+                    resetSubmitButton(sendButton, sendButtonDefaultHtml);
                 }
             }
         };
@@ -2672,6 +2706,9 @@ foreach(['hr', 'en', 'sl', 'bg'] as $fcc_chat_ui_language) {
 
             if(leadSubmitButton) {
                 leadSubmitButton.disabled = true;
+                leadSubmitButton.classList.remove('disabled', 'container-disabled-simple');
+                leadSubmitButton.removeAttribute('data-inner-text');
+                leadSubmitButton.innerHTML = leadSubmitButtonDefaultHtml;
             }
 
             try {
@@ -2708,7 +2745,7 @@ foreach(['hr', 'en', 'sl', 'bg'] as $fcc_chat_ui_language) {
                 state.isLeadSubmitting = false;
 
                 if(leadSubmitButton) {
-                    leadSubmitButton.disabled = false;
+                    resetSubmitButton(leadSubmitButton, leadSubmitButtonDefaultHtml);
                 }
             }
         };

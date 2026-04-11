@@ -4933,6 +4933,7 @@ Lijep pozdrav, <br />
 	'fcc_ai.review.subtitle' => 'Ovdje se pojavljuju loši signali kako bi odmah mogao otvoriti cijeli razgovor i doraditi AI komunikaciju.',
 	'fcc_ai.review.empty' => 'Trenutno nema odgovora označenih za provjeru.',
 	'fcc_ai.review.badge' => 'Loš odgovor',
+	'fcc_ai.review.resolve_success' => 'Signal je označen kao riješen.',
 	'fcc_ai.details.title' => 'Detalji razgovora',
 	'fcc_ai.details.subtitle' => 'Otvori razgovor iz inboxa lijevo kako bi vidio povijest i signal odgovora.',
 	'fcc_ai.details.empty' => 'Odaberi razgovor iz inboxa da otvoriš cijeli thread, meta podatke i eventualni AI lead.',

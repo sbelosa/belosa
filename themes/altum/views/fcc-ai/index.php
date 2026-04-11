@@ -28,7 +28,11 @@ $fcc_ai_build_hub_url = static function(array $overrides = []) use ($fcc_ai_filt
 };
 ?>
 
-<div class="container fcc-ai-shell">
+<div
+    class="container fcc-ai-shell"
+    data-review-resolve-url="<?= htmlspecialchars((string) ($data->review_resolve_endpoint ?? url('fcc-ai/resolve-feedback')), ENT_QUOTES, 'UTF-8') ?>"
+    data-csrf-token="<?= htmlspecialchars(\Altum\Csrf::get(), ENT_QUOTES, 'UTF-8') ?>"
+>
     <style>
         .fcc-ai-shell {
             --fcc-ai-gap: 1rem;
@@ -1009,22 +1013,30 @@ $fcc_ai_build_hub_url = static function(array $overrides = []) use ($fcc_ai_filt
         }
 
         .fcc-ai-review-item {
-            display: block;
+            display: grid;
+            gap: .75rem;
             padding: .95rem 1rem;
             border-radius: 1rem;
             background: rgba(255,255,255,.04);
             border: 1px solid rgba(255,255,255,.08);
-            color: var(--fcc-ai-text);
-            text-decoration: none;
             transition: transform .16s ease, border-color .16s ease, background-color .16s ease;
         }
 
         .fcc-ai-review-item:hover {
-            color: var(--fcc-ai-text);
-            text-decoration: none;
             transform: translateY(-1px);
             border-color: rgba(248, 113, 113, .28);
             background: rgba(255,255,255,.055);
+        }
+
+        .fcc-ai-review-item__body {
+            display: block;
+            color: var(--fcc-ai-text);
+            text-decoration: none;
+        }
+
+        .fcc-ai-review-item__body:hover {
+            color: var(--fcc-ai-text);
+            text-decoration: none;
         }
 
         .fcc-ai-review-item__top {
@@ -1056,6 +1068,15 @@ $fcc_ai_build_hub_url = static function(array $overrides = []) use ($fcc_ai_filt
             color: #fee2e2;
             font-size: .8rem;
             line-height: 1.5;
+        }
+
+        .fcc-ai-review-item__actions {
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .fcc-ai-review-item__resolve {
+            min-width: 150px;
         }
 
         .fcc-ai-recent-lead {
@@ -1465,7 +1486,11 @@ $fcc_ai_build_hub_url = static function(array $overrides = []) use ($fcc_ai_filt
 
                 <div class="fcc-ai-metric">
                     <div class="fcc-ai-metric__label"><?= l('fcc_ai.metric.review.label') ?></div>
-                    <div class="fcc-ai-metric__value"><?= nr((int) ($data->inbox_stats['negative_feedback_30d'] ?? 0)) ?></div>
+                    <div
+                        class="fcc-ai-metric__value"
+                        id="fcc-ai-review-metric-value"
+                        data-review-count="<?= (int) ($data->inbox_stats['negative_feedback_30d'] ?? 0) ?>"
+                    ><?= nr((int) ($data->inbox_stats['negative_feedback_30d'] ?? 0)) ?></div>
                     <div class="fcc-ai-metric__hint"><?= l('fcc_ai.metric.review.hint') ?></div>
                 </div>
             </div>
@@ -1800,12 +1825,19 @@ $fcc_ai_build_hub_url = static function(array $overrides = []) use ($fcc_ai_filt
                     </div>
 
                     <div class="card-body">
-                        <?php if(empty($data->review_items)): ?>
-                            <div class="fcc-ai-empty"><?= l('fcc_ai.review.empty') ?></div>
-                        <?php else: ?>
-                            <div class="fcc-ai-review-list">
-                                <?php foreach($data->review_items as $review_item): ?>
-                                    <a href="<?= htmlspecialchars((string) ($review_item->detail_url ?? url('fcc-ai')), ENT_QUOTES, 'UTF-8') ?>" class="fcc-ai-review-item fcc-ai-conversation-nav-link" data-conversation-public-id="<?= htmlspecialchars((string) ($review_item->conversation_public_id ?? ''), ENT_QUOTES, 'UTF-8') ?>">
+                        <div class="fcc-ai-review-list" data-fcc-ai-review-list <?= empty($data->review_items) ? 'hidden' : '' ?>>
+                            <?php foreach($data->review_items as $review_item): ?>
+                                <article
+                                    class="fcc-ai-review-item"
+                                    data-fcc-ai-review-item
+                                    data-feedback-id="<?= (int) ($review_item->feedback_id ?? 0) ?>"
+                                    data-conversation-public-id="<?= htmlspecialchars((string) ($review_item->conversation_public_id ?? ''), ENT_QUOTES, 'UTF-8') ?>"
+                                >
+                                    <a
+                                        href="<?= htmlspecialchars((string) ($review_item->detail_url ?? url('fcc-ai')), ENT_QUOTES, 'UTF-8') ?>"
+                                        class="fcc-ai-review-item__body fcc-ai-conversation-nav-link"
+                                        data-conversation-public-id="<?= htmlspecialchars((string) ($review_item->conversation_public_id ?? ''), ENT_QUOTES, 'UTF-8') ?>"
+                                    >
                                         <div class="fcc-ai-review-item__top">
                                             <div class="fcc-ai-review-item__title">
                                                 <span><?= htmlspecialchars((string) ($review_item->assistant_label ?? ''), ENT_QUOTES, 'UTF-8') ?></span>
@@ -1826,9 +1858,22 @@ $fcc_ai_build_hub_url = static function(array $overrides = []) use ($fcc_ai_filt
                                             <div class="fcc-ai-review-item__note"><?= htmlspecialchars((string) $review_item->note, ENT_QUOTES, 'UTF-8') ?></div>
                                         <?php endif ?>
                                     </a>
-                                <?php endforeach ?>
-                            </div>
-                        <?php endif ?>
+
+                                    <div class="fcc-ai-review-item__actions">
+                                        <button
+                                            type="button"
+                                            class="btn btn-outline-success btn-sm fcc-ai-review-item__resolve"
+                                            data-fcc-ai-review-resolve
+                                            data-feedback-id="<?= (int) ($review_item->feedback_id ?? 0) ?>"
+                                        >
+                                            <?= l('feedback_tickets.close_ticket') ?>
+                                        </button>
+                                    </div>
+                                </article>
+                            <?php endforeach ?>
+                        </div>
+
+                        <div class="fcc-ai-empty" data-fcc-ai-review-empty <?= empty($data->review_items) ? '' : 'hidden' ?>><?= l('fcc_ai.review.empty') ?></div>
                     </div>
                 </div>
             </div>
@@ -2329,14 +2374,126 @@ $fcc_ai_build_hub_url = static function(array $overrides = []) use ($fcc_ai_filt
             });
         };
 
+        const initFccAiReviewResolve = () => {
+            const shell = document.querySelector('.fcc-ai-shell');
+
+            if(!shell) {
+                return;
+            }
+
+            const resolveUrl = shell.dataset.reviewResolveUrl || '';
+            const csrfToken = shell.dataset.csrfToken || '';
+
+            if(!resolveUrl || !csrfToken) {
+                return;
+            }
+
+            const syncReviewEmptyState = () => {
+                const reviewList = shell.querySelector('[data-fcc-ai-review-list]');
+                const reviewEmpty = shell.querySelector('[data-fcc-ai-review-empty]');
+
+                if(!reviewList || !reviewEmpty) {
+                    return;
+                }
+
+                const hasItems = reviewList.querySelectorAll('[data-fcc-ai-review-item]').length > 0;
+                reviewList.hidden = !hasItems;
+                reviewEmpty.hidden = hasItems;
+            };
+
+            const decrementReviewMetric = () => {
+                const metricValue = document.getElementById('fcc-ai-review-metric-value');
+
+                if(!metricValue) {
+                    return;
+                }
+
+                const currentValue = Number(metricValue.dataset.reviewCount || metricValue.textContent || 0);
+                const nextValue = Math.max(0, currentValue - 1);
+                metricValue.dataset.reviewCount = String(nextValue);
+                metricValue.textContent = String(nextValue);
+            };
+
+            const showResolveError = (message) => {
+                if(typeof window.display_notifications === 'function') {
+                    window.display_notifications(message, 'error');
+                    return;
+                }
+
+                window.alert(message);
+            };
+
+            shell.addEventListener('click', async (event) => {
+                const resolveButton = event.target.closest('[data-fcc-ai-review-resolve]');
+
+                if(!resolveButton) {
+                    return;
+                }
+
+                event.preventDefault();
+                event.stopPropagation();
+
+                const feedbackId = Number(resolveButton.getAttribute('data-feedback-id') || 0);
+                const reviewItem = resolveButton.closest('[data-fcc-ai-review-item]');
+
+                if(feedbackId <= 0 || !reviewItem || resolveButton.disabled) {
+                    return;
+                }
+
+                const currentConversationId = new URL(window.location.href, window.location.origin).searchParams.get('conversation') || '';
+                const reviewConversationId = reviewItem.getAttribute('data-conversation-public-id') || '';
+                const originalLabel = resolveButton.innerHTML;
+
+                resolveButton.disabled = true;
+                resolveButton.classList.add('disabled', 'container-disabled-simple');
+                resolveButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
+
+                try {
+                    const response = await fetch(resolveUrl, {
+                        method: 'POST',
+                        credentials: 'same-origin',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        body: new URLSearchParams({
+                            token: csrfToken,
+                            feedback_id: String(feedbackId)
+                        }).toString()
+                    });
+
+                    const result = await response.json();
+
+                    if(!response.ok || result.status !== 'success') {
+                        throw new Error(Array.isArray(result.message) ? result.message.join(' ') : (result.message || 'Signal nije označen kao riješen.'));
+                    }
+
+                    reviewItem.remove();
+                    decrementReviewMetric();
+                    syncReviewEmptyState();
+
+                    if(reviewConversationId !== '' && currentConversationId === reviewConversationId) {
+                        loadConversationDetails(window.location.href, false);
+                    }
+                } catch(error) {
+                    resolveButton.disabled = false;
+                    resolveButton.classList.remove('disabled', 'container-disabled-simple');
+                    resolveButton.innerHTML = originalLabel;
+                    showResolveError(error.message || 'Signal nije označen kao riješen.');
+                }
+            });
+        };
+
         if(document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', () => {
                 initFccAiGuideAccordion();
                 initFccAiConversationLoader();
+                initFccAiReviewResolve();
             });
         } else {
             initFccAiGuideAccordion();
             initFccAiConversationLoader();
+            initFccAiReviewResolve();
         }
     })();
 </script>

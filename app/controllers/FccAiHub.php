@@ -356,6 +356,7 @@ class FccAiHub extends Controller {
             }
 
             $review_items[] = (object) [
+                'feedback_id' => (int) ($review_row->fcc_ai_message_feedback_id ?? 0),
                 'conversation_public_id' => (string) ($review_row->public_id ?? ''),
                 'assistant_label' => fcc_ai_get_assistant_label((string) ($review_row->assistant_type ?? '')),
                 'scope_label' => $scope_options[(string) ($review_row->scope ?? '')] ?? (string) ($review_row->scope ?? ''),
@@ -463,6 +464,7 @@ class FccAiHub extends Controller {
             'context_storage_key' => fcc_ai_get_public_context_storage_key(),
             'internal_continuation_storage_key' => fcc_ai_get_internal_storage_key(),
             'internal_context_storage_key' => fcc_ai_get_internal_context_storage_key(),
+            'review_resolve_endpoint' => url('fcc-ai/resolve-feedback'),
         ];
 
         Title::set(l('fcc_ai.page_title'));
@@ -541,6 +543,29 @@ class FccAiHub extends Controller {
             ]);
 
             Response::json('Feedback je spremljen.', 'success', $result);
+        } catch(\Throwable $exception) {
+            Response::json($exception->getMessage(), 'error');
+        }
+    }
+
+    public function resolve_feedback() {
+        \Altum\Authentication::guard();
+
+        if(empty($_POST)) {
+            die();
+        }
+
+        if(!\Altum\Csrf::check()) {
+            Response::json(l('global.error_message.invalid_csrf_token'), 'error');
+        }
+
+        try {
+            $result = fcc_ai_mark_feedback_resolved(
+                (int) ($_POST['feedback_id'] ?? 0),
+                (int) $this->user->user_id
+            );
+
+            Response::json(l('fcc_ai.review.resolve_success'), 'success', $result);
         } catch(\Throwable $exception) {
             Response::json($exception->getMessage(), 'error');
         }
