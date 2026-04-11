@@ -2426,7 +2426,7 @@ foreach(['hr', 'en', 'sl', 'bg'] as $fcc_chat_ui_language) {
 
             if(nextLeadCapture) {
                 state.pendingLeadCapture = {...nextLeadCapture};
-            } elseif(state.leadCaptured) {
+            } else if(state.leadCaptured) {
                 state.pendingLeadCapture = null;
             }
 
