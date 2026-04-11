@@ -2870,7 +2870,7 @@ $render_detail_help = static function(string $tooltip): void {
                     </div>
 
                     <div class="col-12 col-xl-8">
-                        <div class="leader-os-detail-panel h-100">
+                        <div class="leader-os-detail-panel h-100" id="leader-os-ai-reviews">
                             <div class="leader-os-ai-title">Odgovori za provjeru</div>
                             <?php if(empty($fcc_ai_detail['recent_negative_feedback'])): ?>
                                 <div class="text-muted small mb-0">Trenutno nema prijavljenih loših AI odgovora u odabranom periodu.</div>
@@ -2902,6 +2902,13 @@ $render_detail_help = static function(string $tooltip): void {
                                                 <span><?= htmlspecialchars((string) ($feedback_row['conversation_public_id'] ?? ''), ENT_QUOTES, 'UTF-8') ?></span>
                                                 <span><?= !empty($feedback_row['datetime']) ? \Altum\Date::get($feedback_row['datetime'], 2) : '-' ?></span>
                                             </div>
+                                            <form method="post" class="mt-3">
+                                                <input type="hidden" name="token" value="<?= \Altum\Csrf::get() ?>" />
+                                                <input type="hidden" name="feedback_id" value="<?= (int) ($feedback_row['feedback_id'] ?? 0) ?>" />
+                                                <button type="submit" name="resolve_ai_feedback" value="1" class="btn btn-outline-success btn-sm">
+                                                    <?= l('feedback_tickets.close_ticket') ?>
+                                                </button>
+                                            </form>
                                         </div>
                                     <?php endforeach ?>
                                 </div>

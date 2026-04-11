@@ -12,6 +12,30 @@ defined('ALTUMCODE') || die();
 
 class AdminLeaderOperatingSystemLeader extends Controller {
 
+    private function handle_fcc_ai_feedback_resolve_action(int $user_id, string $selected_period): void {
+        if(!isset($_POST['resolve_ai_feedback'])) {
+            return;
+        }
+
+        if(!\Altum\Csrf::check()) {
+            Alerts::add_error(l('global.error_message.invalid_csrf_token'));
+            redirect('admin/leader-operating-system-leader?user_id=' . $user_id . '&period=' . $selected_period . '#leader-os-ai-reviews');
+        }
+
+        try {
+            fcc_ai_mark_feedback_resolved_by_admin(
+                (int) ($_POST['feedback_id'] ?? 0),
+                (int) ($this->user->user_id ?? 0)
+            );
+
+            Alerts::add_success(l('fcc_ai.review.resolve_success'));
+        } catch(\Throwable $exception) {
+            Alerts::add_error(trim((string) $exception->getMessage()) ?: l('global.error_message.basic'));
+        }
+
+        redirect('admin/leader-operating-system-leader?user_id=' . $user_id . '&period=' . $selected_period . '#leader-os-ai-reviews');
+    }
+
     private function save_user_preferences(int $user_id, \stdClass $preferences): void {
         db()->where('user_id', $user_id)->update('users', [
             'preferences' => json_encode($preferences, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
@@ -4718,6 +4742,10 @@ class AdminLeaderOperatingSystemLeader extends Controller {
             }
 
             redirect('admin/leader-operating-system-leader?user_id=' . $user_id . '&period=' . $selected_period . '#leader-os-ai-report');
+        }
+
+        if($detail && $_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['resolve_ai_feedback'])) {
+            $this->handle_fcc_ai_feedback_resolve_action($user_id, $selected_period);
         }
 
         if($detail && $_SERVER['REQUEST_METHOD'] === 'POST' && (isset($_POST['generate_ai_report']) || isset($_POST['regenerate_ai_report']))) {

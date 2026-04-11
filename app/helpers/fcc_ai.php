@@ -8611,6 +8611,58 @@ function fcc_ai_mark_feedback_resolved(int $feedback_id, int $user_id): array {
     ];
 }
 
+function fcc_ai_mark_feedback_resolved_by_admin(int $feedback_id, int $admin_user_id): array {
+    fcc_ai_ensure_tables();
+
+    if($feedback_id <= 0 || $admin_user_id <= 0) {
+        throw new \RuntimeException('Signal za provjeru nije pronađen.');
+    }
+
+    $feedback = db()
+        ->where('fcc_ai_message_feedback_id', $feedback_id)
+        ->getOne('fcc_ai_message_feedback', [
+            'fcc_ai_message_feedback_id',
+            'fcc_ai_conversation_id',
+            'feedback_type',
+            'assistant_type',
+        ]);
+
+    if(!$feedback || (string) ($feedback->feedback_type ?? '') !== 'down') {
+        throw new \RuntimeException('Signal za provjeru nije pronađen.');
+    }
+
+    db()->where('fcc_ai_message_feedback_id', $feedback_id)->update('fcc_ai_message_feedback', [
+        'status' => 'resolved',
+        'last_datetime' => get_date(),
+    ]);
+
+    $conversation = fcc_ai_get_conversation_by_id((int) ($feedback->fcc_ai_conversation_id ?? 0));
+
+    if($conversation) {
+        fcc_ai_log_event([
+            'fcc_ai_conversation_id' => (int) ($conversation->fcc_ai_conversation_id ?? 0),
+            'user_id' => (int) ($conversation->user_id ?? 0),
+            'assistant_type' => (string) (($feedback->assistant_type ?? '') ?: ($conversation->assistant_type ?? '')),
+            'event_type' => 'feedback_resolved',
+            'link_id' => (int) ($conversation->link_id ?? 0),
+            'blog_post_id' => (int) ($conversation->blog_post_id ?? 0),
+            'meta' => [
+                'feedback_id' => $feedback_id,
+                'resolved_by' => 'admin',
+                'admin_user_id' => $admin_user_id,
+            ],
+        ]);
+
+        fcc_ai_refresh_conversation_insight((int) ($conversation->fcc_ai_conversation_id ?? 0));
+    }
+
+    return [
+        'feedback_id' => $feedback_id,
+        'status' => 'resolved',
+        'conversation_public_id' => (string) ($conversation->public_id ?? ''),
+    ];
+}
+
 function fcc_ai_increment_daily_stats(int $user_id, string $assistant_type, string $scope, array $increments = [], array $meta = []): void {
     $assistant_type = fcc_ai_validate_assistant_type($assistant_type);
 

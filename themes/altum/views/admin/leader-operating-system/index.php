@@ -4592,7 +4592,7 @@ $operations_tab_badge_total = (int) (($data->operations['totals']['pending_appro
                             <?php endif ?>
                         </div>
 
-                        <div class="leader-os-panel">
+                        <div class="leader-os-panel" id="los-ai-intelligence-reviews">
                             <div class="text-uppercase small text-muted mb-2">Odgovori za provjeru</div>
                             <h3 class="h5 mb-3">Loši signali koje treba otvoriti odmah</h3>
                             <?php if(empty($fcc_ai_team['recent_negative_feedback'])): ?>
@@ -4633,6 +4633,14 @@ $operations_tab_badge_total = (int) (($data->operations['totals']['pending_appro
                                                     <?php endforeach ?>
                                                 </div>
                                             <?php endif ?>
+
+                                            <form method="post" class="mt-3">
+                                                <input type="hidden" name="global_token" value="<?= \Altum\Csrf::get('global_token') ?>" />
+                                                <input type="hidden" name="feedback_id" value="<?= (int) ($feedback_row['feedback_id'] ?? 0) ?>" />
+                                                <button type="submit" name="los_resolve_ai_feedback" value="1" class="btn btn-outline-success btn-sm">
+                                                    <?= l('feedback_tickets.close_ticket') ?>
+                                                </button>
+                                            </form>
                                         </div>
                                     </details>
                                 <?php endforeach ?>

@@ -7512,6 +7512,30 @@ class AdminLeaderOperatingSystem extends Controller {
         redirect('admin/leader-operating-system' . (!empty($redirect_query) ? '?' . http_build_query($redirect_query) : ''));
     }
 
+    private function handle_fcc_ai_feedback_resolve_action(array $redirect_query): void {
+        if(!isset($_POST['los_resolve_ai_feedback'])) {
+            return;
+        }
+
+        if(!\Altum\Csrf::check('global_token')) {
+            Alerts::add_error(l('global.error_message.invalid_csrf_token'));
+            redirect('admin/leader-operating-system' . (!empty($redirect_query) ? '?' . http_build_query($redirect_query) : '') . '#los-ai-intelligence-reviews');
+        }
+
+        try {
+            fcc_ai_mark_feedback_resolved_by_admin(
+                (int) ($_POST['feedback_id'] ?? 0),
+                (int) ($this->user->user_id ?? 0)
+            );
+
+            Alerts::add_success(l('fcc_ai.review.resolve_success'));
+        } catch(\Throwable $exception) {
+            Alerts::add_error(trim((string) $exception->getMessage()) ?: l('global.error_message.basic'));
+        }
+
+        redirect('admin/leader-operating-system' . (!empty($redirect_query) ? '?' . http_build_query($redirect_query) : '') . '#los-ai-intelligence-reviews');
+    }
+
     private function handle_operations_card_action(array $redirect_query): void {
         if(!isset($_POST['los_mark_card_sent'])) {
             return;
@@ -8046,6 +8070,7 @@ class AdminLeaderOperatingSystem extends Controller {
         ];
 
         if(!empty($_POST)) {
+            $this->handle_fcc_ai_feedback_resolve_action($redirect_query);
             $this->handle_operations_rejection_action($redirect_query);
             $this->handle_operations_approval_action($redirect_query);
             $this->handle_operations_card_action($redirect_query);
