@@ -392,13 +392,21 @@ class FccAiHub extends Controller {
                 if(!empty($selected_conversation->link_id)) {
                     $selected_conversation_link = db()
                         ->where('link_id', (int) $selected_conversation->link_id)
-                        ->getOne('links', ['link_id', 'url', 'name']);
+                        ->getOne('links', ['link_id', 'url', 'location_url']);
+
+                    if(is_array($selected_conversation_link)) {
+                        $selected_conversation_link = (object) $selected_conversation_link;
+                    }
                 }
 
                 if(!empty($selected_conversation->blog_post_id)) {
                     $selected_conversation_blog_post = db()
                         ->where('blog_post_id', (int) $selected_conversation->blog_post_id)
                         ->getOne('blog_posts', ['blog_post_id', 'title', 'url', 'language']);
+
+                    if(is_array($selected_conversation_blog_post)) {
+                        $selected_conversation_blog_post = (object) $selected_conversation_blog_post;
+                    }
                 }
             } else {
                 $selected_conversation = null;
