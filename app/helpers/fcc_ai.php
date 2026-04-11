@@ -3460,6 +3460,360 @@ function fcc_ai_get_public_recommendation_theme_catalog(string $assistant_type):
     ];
 }
 
+function fcc_ai_get_public_localized_matrix_text(array $entry, string $key, string $language = 'hr'): string {
+    $language = fcc_ai_resolve_public_reply_language($language);
+    $value = $entry[$key] ?? '';
+
+    if(is_string($value)) {
+        return trim($value);
+    }
+
+    if(is_array($value)) {
+        return trim((string) ($value[$language] ?? $value['hr'] ?? $value['en'] ?? reset($value) ?? ''));
+    }
+
+    return '';
+}
+
+function fcc_ai_get_public_localized_matrix_lines(array $entry, string $key, string $language = 'hr'): array {
+    $language = fcc_ai_resolve_public_reply_language($language);
+    $value = $entry[$key] ?? [];
+
+    if(is_array($value)) {
+        $lines = $value[$language] ?? $value['hr'] ?? $value['en'] ?? $value;
+
+        if(is_array($lines)) {
+            return array_values(array_filter(array_map(static function($line) {
+                return trim((string) $line);
+            }, $lines)));
+        }
+    }
+
+    if(is_string($value) && trim($value) !== '') {
+        return [trim($value)];
+    }
+
+    return [];
+}
+
+function fcc_ai_get_product_advisor_recommendation_matrix(): array {
+    return [
+        'fatty_liver_support' => [
+            'patterns' => ['masna jetra', 'fatty liver', 'za masnu jetru', 'kaj bi trebal za masnu jetru', 'masnu jetru'],
+            'preferred_patterns' => ['aloe vera gel', 'aloe gel', 'aloe peaches', 'aloe mango', 'arctic sea', 'arctic', 'omega'],
+            'label' => [
+                'hr' => 'masna jetra i nutritivna rutina',
+                'en' => 'fatty liver and nutrition routine',
+            ],
+            'opening_note' => [
+                'hr' => 'Ako je fokus masna jetra, ovdje ne bih kao prvi smjer gurao opći program za mršavljenje nego aloe veru kao bazu i omega-3 kao dopunsku nutritivnu podršku.',
+                'en' => 'If the focus is fatty liver, I would not push a general weight-loss program as the first direction here. Aloe vera as the base plus omega-3 support is the cleaner nutrition-first route.',
+            ],
+            'recommendation_lines' => [
+                'hr' => [
+                    'Forever Aloe Vera Gel™ je ovdje glavni Forever smjer jer sadrži aloe veru i najlogičnije se uklapa u svakodnevnu probavnu i metaboličku rutinu.',
+                    'Forever Arctic Sea je dobra support opcija uz to jer donosi omega-3 masne kiseline kao dopunsku nutritivnu podršku uz glavni aloe smjer.',
+                ],
+                'en' => [
+                    'Forever Aloe Vera Gel™ is the clearest main Forever direction here because it contains aloe vera and fits a daily digestive and metabolic-support routine.',
+                    'Forever Arctic Sea is a strong support option on top because it brings omega-3 fatty acids as complementary nutritional support alongside the main aloe direction.',
+                ],
+            ],
+            'suppress_generic_questions' => true,
+        ],
+        'digestive_routine_support' => [
+            'patterns' => ['gastritis', 'gaszritis', 'nadutost', 'bloated stomach', 'bloating', 'problem sa želucem', 'problem sa zelucem', 'želudac', 'zeludac', 'iritabilnog kolona', 'iritabilni kolon', 'iritabilno crijevo', 'ibs', 'candida', 'kandida', 'problem sa želucem', 'problem sa želucem'],
+            'preferred_patterns' => ['aloe vera gel', 'aloe gel', 'aloe peaches', 'aloe mango', 'berry nectar', 'active pro b', 'pro b', 'pro-b', 'fiber'],
+            'label' => [
+                'hr' => 'želudac, nadutost i probavna rutina',
+                'en' => 'stomach, bloating and digestive routine',
+            ],
+            'opening_note' => [
+                'hr' => 'Kod želuca, nadutosti i sličnih probavnih pitanja smislenije je krenuti kroz aloe veru i probiotičku podršku nego odmah ići na šire metaboličke programe.',
+                'en' => 'For stomach, bloating and similar digestive questions, it makes more sense to start with aloe vera and probiotic support than to jump into broader metabolic programs.',
+            ],
+            'recommendation_lines' => [
+                'hr' => [
+                    'Forever Aloe Vera Gel™ je ovdje glavni Forever smjer jer sadrži aloe veru i često je prvi korak kada netko želi nježniju probavnu rutinu.',
+                    'Forever Active Pro B je logična support opcija uz to jer donosi probiotičku podršku za uredniju svakodnevnu probavu.',
+                ],
+                'en' => [
+                    'Forever Aloe Vera Gel™ is the clearest main direction here because it contains aloe vera and is often the first step when someone wants a gentler digestive routine.',
+                    'Forever Active Pro B is the logical support option on top because it adds probiotic support for steadier everyday digestion.',
+                ],
+            ],
+            'suppress_generic_questions' => true,
+        ],
+        'weight_loss_program' => [
+            'patterns' => ['mršav', 'mrsav', 'smrsam', 'smršam', 'za mrsavljenje', 'za mršavljenje', 'gubitak kilograma', '15 kg', 'pretila', 'protiv debljanja'],
+            'preferred_patterns' => ['c9', 'clean 9', 'tea', 'blossom', 'f15', 'lean'],
+            'label' => [
+                'hr' => 'mršavljenje i strukturirani program',
+                'en' => 'weight loss and structured program',
+            ],
+            'opening_note' => [
+                'hr' => 'Kod mršavljenja je ovdje najjasnije krenuti kroz strukturirani program, a ne kroz nasumičnu kombinaciju pojedinačnih proizvoda.',
+                'en' => 'For weight loss, the clearest route here is a structured program rather than a random mix of individual products.',
+            ],
+            'recommendation_lines' => [
+                'hr' => [
+                    'C9 Forever Living Products je glavni početni smjer za mršavljenje jer daje strukturirani start, jasan ritam i početni reset rutine.',
+                    'Aloe Blossom Herbal Tea može biti dobra support opcija uz to kada želite dodatni osjećaj lakoće i uredniju svakodnevnu rutinu.',
+                    'Nakon C9 najlogičniji nastavak je F15 ili Forever Lean, ovisno o tome želite li strukturirani nastavak programa ili jednostavniju dnevnu podršku.',
+                ],
+                'en' => [
+                    'C9 Forever Living Products is the main starting direction for weight loss because it gives a structured start, clear rhythm and an initial routine reset.',
+                    'Aloe Blossom Herbal Tea can be a useful support option on top when you want an extra sense of lightness and a steadier daily routine.',
+                    'After C9, the cleanest continuation is F15 or Forever Lean, depending on whether you want a more structured continuation or a simpler daily support route.',
+                ],
+            ],
+            'suppress_generic_questions' => true,
+        ],
+        'seasonal_allergy_support' => [
+            'patterns' => ['alergij', 'alergija', 'curi nos', 'sinus', 'pelud', 'pollen', 'cvetni prah', 'cvetnim prahom'],
+            'preferred_patterns' => ['immublend', 'immunblend', 'immune gummy', 'aloeturm', 'aloe turm', 'turm'],
+            'label' => [
+                'hr' => 'sezonska otpornost i alergijska rutina',
+                'en' => 'seasonal resilience and allergy routine',
+            ],
+            'opening_note' => [
+                'hr' => 'Ako je fokus sezonska alergijska rutina, ovdje ima više smisla ići na smjer otpornosti i dišnog sustava nego na općenit proizvod bez jasnog konteksta.',
+                'en' => 'If the focus is a seasonal allergy-style routine, it makes more sense here to go with resilience and respiratory-support directions than with a generic product suggestion.',
+            ],
+            'recommendation_lines' => [
+                'hr' => [
+                    'Forever ImmuBlend je ovdje najčišći glavni smjer jer sadrži aloe veru, laktoferin, vitamine C i D te pomoćne biljne sastojke za sezonsku rutinu otpornosti.',
+                    'Forever AloeTurm može biti dobra support opcija uz to kao dodatna dnevna podrška unutar iste šire rutine otpornosti.',
+                ],
+                'en' => [
+                    'Forever ImmuBlend is the clearest main direction here because it contains aloe vera, lactoferrin, vitamins C and D, plus supportive botanicals for a seasonal resilience routine.',
+                    'Forever AloeTurm can be a strong support option on top as an additional daily layer within the same broader resilience direction.',
+                ],
+            ],
+            'suppress_generic_questions' => true,
+        ],
+        'women_balance_support' => [
+            'patterns' => ['pms', 'menstrualne bolove', 'menstrualni bolovi', 'menstrualne', 'menstrual', 'menopauz', 'valunzi', 'žensko zdravlje', 'zensko zdravlje', 'ciklus'],
+            'preferred_patterns' => ['multi maca', 'multimaca', 'maca', 'vitolize women', 'arctic sea', 'omega'],
+            'label' => [
+                'hr' => 'ženski balans i hormonska rutina',
+                'en' => 'women balance and hormone routine',
+            ],
+            'opening_note' => [
+                'hr' => 'Kod PMS-a, menstrualne rutine i menopauzalnih simptoma preporuka treba ostati kroz ženski balans i svakodnevnu rutinu, bez tvrdnji da proizvod rješava bol ili stanje.',
+                'en' => 'For PMS, menstrual routine and menopause-style questions, the answer should stay inside women balance and daily routine support without presenting products as a solution for pain or a condition.',
+            ],
+            'recommendation_lines' => [
+                'hr' => [
+                    'Forever Multi Maca je ovdje glavni Forever smjer jer se najbolje uklapa u rutinu ženskog balansa, vitalnosti i svakodnevne hormonske podrške.',
+                    'Forever Vitolize Women može biti dobra support opcija kada uz to želite i širu nutritivnu podršku za ženski wellness i svakodnevni balans.',
+                ],
+                'en' => [
+                    'Forever Multi Maca is the clearest main Forever direction here because it fits best into a women-balance, vitality and everyday hormone-support routine.',
+                    'Forever Vitolize Women can be a useful support option on top when you also want broader nutritional support for women wellness and everyday balance.',
+                ],
+            ],
+            'suppress_generic_questions' => true,
+        ],
+        'headache_circulation_support' => [
+            'patterns' => ['glavobolj', 'migren', 'migrena', 'ceste glavobolje', 'česte glavobolje', 'ceste glavobolje'],
+            'preferred_patterns' => ['arctic sea', 'arctic', 'argi', 'forever argi'],
+            'label' => [
+                'hr' => 'glavobolje, migrene i cirkulacijska rutina',
+                'en' => 'headaches, migraines and circulation routine',
+            ],
+            'opening_note' => [
+                'hr' => 'Kod čestih glavobolja ili migrenoznog wellness konteksta ovdje ima više smisla gledati cirkulacijsku i nutritivnu podršku nego širiti odgovor na općenitu energiju.',
+                'en' => 'For frequent headaches or a migraine-style wellness context, it makes more sense here to look at circulation and nutritional support than to broaden the answer into general energy.',
+            ],
+            'recommendation_lines' => [
+                'hr' => [
+                    'Forever Arctic Sea je ovdje glavni Forever smjer jer sadrži omega-3 masne kiseline i često se uklapa u opću nutritivnu i cirkulacijsku rutinu.',
+                    'Forever ARGI+ je dobra support opcija uz to kada želite dodatni smjer prema cirkulaciji i svakodnevnoj vitalnosti.',
+                ],
+                'en' => [
+                    'Forever Arctic Sea is the clearest main Forever direction here because it contains omega-3 fatty acids and often fits a broader nutritional and circulation-support routine.',
+                    'Forever ARGI+ is a strong support option on top when you want an additional direction toward circulation and everyday vitality.',
+                ],
+            ],
+            'suppress_generic_questions' => true,
+        ],
+        'nerve_support_routine' => [
+            'patterns' => ['trigemin', 'zujanje u uhu', 'zujanje', 'tinnitus', 'oštećenj živaca', 'ostecenj zivaca', 'živac', 'zivac', 'sinaps'],
+            'preferred_patterns' => ['royal jelly', 'royal', 'arctic sea', 'arctic'],
+            'label' => [
+                'hr' => 'živčani wellness i svakodnevna podrška',
+                'en' => 'nerve wellness and daily support',
+            ],
+            'opening_note' => [
+                'hr' => 'Kod ovakvih pitanja ostajemo na općem wellness smjeru i ne ulazimo u neurološku procjenu, ali možemo usmjeriti na najlogičniji nutritivni Forever smjer.',
+                'en' => 'For these questions, stay in a general wellness lane and avoid neurological assessment, but still point toward the most logical nutritional Forever direction.',
+            ],
+            'recommendation_lines' => [
+                'hr' => [
+                    'Forever Royal Jelly je ovdje glavni Forever smjer jer sadrži matičnu mliječ i najčešće se bira kao opći nutritivni smjer za svakodnevnu vitalnost i živčani wellness kontekst.',
+                    'Forever Arctic Sea može biti dobra support opcija uz to kao dodatna nutritivna podrška svakodnevnoj rutini.',
+                ],
+                'en' => [
+                    'Forever Royal Jelly is the clearest main Forever direction here because it contains royal jelly and is often chosen as a general nutritional direction for everyday vitality and a nerve-wellness context.',
+                    'Forever Arctic Sea can be a useful support option on top as additional nutritional support within the everyday routine.',
+                ],
+            ],
+            'suppress_generic_questions' => true,
+        ],
+        'hair_skin_nails_support' => [
+            'patterns' => ['opadanje kose', 'hair loss', 'slabi nokti', 'suha koža', 'suha koza', 'tanke vlasi', 'slabu kosu', 'weak hair', 'dry skin'],
+            'preferred_patterns' => ['marine collagen', 'collagen', 'infinite', 'advanced skincare'],
+            'label' => [
+                'hr' => 'kosa, koža i nokti',
+                'en' => 'hair, skin and nails',
+            ],
+            'opening_note' => [
+                'hr' => 'Kad je fokus na kosi, koži i noktima, preporuka treba biti jasna i ne ići preširoko na opću kozmetiku ako postoji jači nutritivni Forever smjer.',
+                'en' => 'When the focus is hair, skin and nails, the recommendation should stay clear and not drift too broadly into generic cosmetics if there is a stronger nutritional Forever direction.',
+            ],
+            'recommendation_lines' => [
+                'hr' => [
+                    'Forever Marine Collagen je ovdje glavni Forever smjer jer spaja morski kolagen, vitamin C i biotin za širu rutinu kože, kose i noktiju.',
+                    'Ako je fokus i na jačoj njezi lica, Infinite By Forever Advanced Skincare može biti dobra support opcija uz taj nutritivni smjer.',
+                ],
+                'en' => [
+                    'Forever Marine Collagen is the clearest main Forever direction here because it combines marine collagen, vitamin C and biotin for a broader hair, skin and nail routine.',
+                    'If facial care is also a focus, Infinite By Forever Advanced Skincare can be a strong support option on top of that nutritional direction.',
+                ],
+            ],
+            'suppress_generic_questions' => true,
+        ],
+        'joint_mobility_support' => [
+            'patterns' => ['koljeno', 'koljena', 'skolen', 's kolenima', 'bol u kolenima', 'bol u koljenima', 'artroz', 'artrit', 'kuk', 'rotacije kuka', 'rotacija kuka'],
+            'preferred_patterns' => ['freedom', 'move', 'msm gel', 'aloe msm gel'],
+            'label' => [
+                'hr' => 'zglobovi i pokretljivost',
+                'en' => 'joints and mobility',
+            ],
+            'opening_note' => [
+                'hr' => 'Kod koljena i pokretljivosti najčišći Forever smjer je zglobna formula plus eventualna lokalna support opcija, a ne širenje na nepovezane wellness proizvode.',
+                'en' => 'For knees and mobility, the cleanest Forever direction is a joint-focused formula plus, if useful, a local support option rather than unrelated wellness products.',
+            ],
+            'recommendation_lines' => [
+                'hr' => [
+                    'Forever Freedom je ovdje glavni Forever smjer jer sadrži sastojke koji se najčešće vežu uz svakodnevnu podršku kretanju i pokretljivosti.',
+                    'Forever Aloe MSM Gel može biti dobra support opcija izvana kada postoji i lokalni osjećaj napetosti ili opterećenja.',
+                ],
+                'en' => [
+                    'Forever Freedom is the clearest main Forever direction here because it contains ingredients most often associated with everyday movement and mobility support.',
+                    'Forever Aloe MSM Gel can be a useful external support option when there is also a local feeling of strain or overload.',
+                ],
+            ],
+            'suppress_generic_questions' => true,
+        ],
+    ];
+}
+
+function fcc_ai_get_product_advisor_condition_matches(string $message, string $language = 'hr'): array {
+    $language = fcc_ai_resolve_public_reply_language($language, $message);
+    $haystack = mb_strtolower(trim($message . ' ' . implode(' ', fcc_ai_get_public_query_alias_phrases($message))));
+
+    if($haystack === '') {
+        return [];
+    }
+
+    $matches = [];
+
+    foreach(fcc_ai_get_product_advisor_recommendation_matrix() as $key => $entry) {
+        $score = 0;
+        $matched_patterns = [];
+
+        foreach((array) ($entry['patterns'] ?? []) as $pattern) {
+            $pattern = mb_strtolower(trim((string) $pattern));
+
+            if($pattern === '' || mb_stripos($haystack, $pattern) === false) {
+                continue;
+            }
+
+            $score += mb_strlen($pattern) >= 10 ? 40 : 22;
+            $matched_patterns[] = $pattern;
+        }
+
+        if($score <= 0) {
+            continue;
+        }
+
+        $matches[] = [
+            'key' => (string) $key,
+            'label' => fcc_ai_get_public_localized_matrix_text($entry, 'label', $language),
+            'opening_note' => fcc_ai_get_public_localized_matrix_text($entry, 'opening_note', $language),
+            'recommendation_lines' => fcc_ai_get_public_localized_matrix_lines($entry, 'recommendation_lines', $language),
+            'preferred_patterns' => array_values(array_filter(array_map(static function($pattern) {
+                return mb_strtolower(trim((string) $pattern));
+            }, (array) ($entry['preferred_patterns'] ?? [])))),
+            'suppress_generic_questions' => (bool) ($entry['suppress_generic_questions'] ?? false),
+            'score' => $score,
+            'matched_patterns' => array_values(array_unique($matched_patterns)),
+        ];
+    }
+
+    usort($matches, static function(array $a, array $b) {
+        return ($b['score'] <=> $a['score']) ?: strcmp((string) ($a['key'] ?? ''), (string) ($b['key'] ?? ''));
+    });
+
+    return array_slice($matches, 0, 2);
+}
+
+function fcc_ai_public_row_matches_condition_patterns(object $row, array $condition_matches): bool {
+    if(empty($condition_matches)) {
+        return false;
+    }
+
+    $haystack = mb_strtolower(implode(' ', array_filter([
+        (string) ($row->title ?? ''),
+        (string) ($row->url ?? ''),
+        (string) ($row->sku ?? ''),
+        (string) ($row->normalized_aliases ?? ''),
+    ])));
+
+    foreach($condition_matches as $condition_match) {
+        foreach((array) ($condition_match['preferred_patterns'] ?? []) as $pattern) {
+            $pattern = mb_strtolower(trim((string) $pattern));
+
+            if($pattern !== '' && mb_stripos($haystack, $pattern) !== false) {
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+function fcc_ai_public_row_condition_bonus(object $row, array $condition_matches): int {
+    if(empty($condition_matches)) {
+        return 0;
+    }
+
+    $haystack = mb_strtolower(implode(' ', array_filter([
+        (string) ($row->title ?? ''),
+        (string) ($row->url ?? ''),
+        (string) ($row->sku ?? ''),
+        (string) ($row->normalized_aliases ?? ''),
+    ])));
+    $bonus = 0;
+
+    foreach($condition_matches as $condition_match) {
+        foreach(array_values((array) ($condition_match['preferred_patterns'] ?? [])) as $index => $pattern) {
+            $pattern = mb_strtolower(trim((string) $pattern));
+
+            if($pattern === '' || mb_stripos($haystack, $pattern) === false) {
+                continue;
+            }
+
+            $bonus += max(6, 36 - ($index * 5));
+            break;
+        }
+    }
+
+    return $bonus;
+}
+
 function fcc_ai_get_public_article_feature_catalog(): array {
     return [
         [
@@ -3752,7 +4106,7 @@ function fcc_ai_public_suggestion_matches_patterns(array $suggestion, array $pat
     return false;
 }
 
-function fcc_ai_sort_public_knowledge_suggestions(array $suggestions, string $assistant_type, string $message, array $intent = [], array $theme_matches = []): array {
+function fcc_ai_sort_public_knowledge_suggestions(array $suggestions, string $assistant_type, string $message, array $intent = [], array $theme_matches = [], array $condition_matches = []): array {
     if($assistant_type !== 'product_advisor' || count($suggestions) <= 1) {
         return $suggestions;
     }
@@ -3763,23 +4117,33 @@ function fcc_ai_sort_public_knowledge_suggestions(array $suggestions, string $as
     }, $theme_matches)));
     $priority_groups = [];
 
+    foreach($condition_matches as $condition_match) {
+        $patterns = array_values(array_filter(array_map(static function($pattern) {
+            return mb_strtolower(trim((string) $pattern));
+        }, (array) ($condition_match['preferred_patterns'] ?? []))));
+
+        if(!empty($patterns)) {
+            $priority_groups[] = $patterns;
+        }
+    }
+
     if(
         in_array('weight_balance', $theme_keys, true)
         || fcc_ai_contains_keywords($message_haystack, ['mršav', 'mrsav', 'smrs', 'smrš', 'debljanj', 'kilogram', 'c9', 'f15', 'lean'])
     ) {
-        $priority_groups = [
+        $priority_groups = array_merge($priority_groups, [
             ['c9', 'clean 9'],
             ['f15'],
             ['lean'],
             ['dx4'],
             ['tea', 'blossom'],
             ['therm'],
-        ];
+        ]);
     } elseif(
         in_array('digestion', $theme_keys, true)
         || fcc_ai_contains_keywords($message_haystack, ['želud', 'zelud', 'stomach', 'bloated', 'bloating', 'nadut', 'podrig', 'candida', 'kandida', 'iritabil', 'ibs'])
     ) {
-        $priority_groups = fcc_ai_contains_keywords($message_haystack, ['candida', 'kandida', 'iritabil', 'ibs'])
+        $priority_groups = array_merge($priority_groups, fcc_ai_contains_keywords($message_haystack, ['candida', 'kandida', 'iritabil', 'ibs'])
             ? [
                 ['pro b', 'pro-b', 'active pro b'],
                 ['aloe vera gel', 'aloe peaches', 'aloe mango', 'berry nectar', 'aloe berry'],
@@ -3789,36 +4153,36 @@ function fcc_ai_sort_public_knowledge_suggestions(array $suggestions, string $as
                 ['aloe vera gel', 'aloe peaches', 'aloe mango', 'berry nectar', 'aloe berry'],
                 ['pro b', 'pro-b', 'active pro b'],
                 ['fiber'],
-            ];
+            ]);
     } elseif(in_array('women_balance', $theme_keys, true)) {
-        $priority_groups = [
+        $priority_groups = array_merge($priority_groups, [
             ['multi maca', 'maca'],
             ['vitolize women'],
             ['arctic'],
-        ];
+        ]);
     } elseif(in_array('nerve_support', $theme_keys, true)) {
-        $priority_groups = [
+        $priority_groups = array_merge($priority_groups, [
             ['royal jelly', 'royal'],
             ['arctic'],
-        ];
+        ]);
     } elseif(
         in_array('circulation_balance', $theme_keys, true)
         && fcc_ai_contains_keywords($message_haystack, ['glavobolj', 'migren'])
     ) {
-        $priority_groups = [
+        $priority_groups = array_merge($priority_groups, [
             ['arctic'],
             ['argi'],
             ['lycium'],
-        ];
+        ]);
     } elseif(in_array('vision_support', $theme_keys, true)) {
-        $priority_groups = [
+        $priority_groups = array_merge($priority_groups, [
             ['ivision'],
-        ];
+        ]);
     } elseif(
         in_array('skin_hair', $theme_keys, true)
         && fcc_ai_contains_keywords($message_haystack, ['hair', 'kosa', 'scars', 'scar', 'face', 'lice', 'stress', 'stres'])
     ) {
-        $priority_groups = fcc_ai_contains_keywords($message_haystack, ['opadanje kose', 'hair loss', 'kosa', 'nokti', 'suha koža', 'suha koza', 'dry skin'])
+        $priority_groups = array_merge($priority_groups, fcc_ai_contains_keywords($message_haystack, ['opadanje kose', 'hair loss', 'kosa', 'nokti', 'suha koža', 'suha koza', 'dry skin'])
             ? [
                 ['marine collagen'],
                 ['infinite', 'advanced skincare', 'restoring', 'firming'],
@@ -3830,7 +4194,7 @@ function fcc_ai_sort_public_knowledge_suggestions(array $suggestions, string $as
                 ['marine collagen'],
                 ['propolis'],
                 ['cooling lotion'],
-            ];
+            ]);
     }
 
     if(empty($priority_groups)) {
@@ -4022,7 +4386,10 @@ function fcc_ai_build_public_recommendation_payload(string $assistant_type, stri
         return !empty($suggestion['title']);
     }));
     $theme_matches = fcc_ai_get_public_theme_matches($assistant_type, $message, $language, $knowledge_suggestions);
-    $knowledge_suggestions = fcc_ai_sort_public_knowledge_suggestions($knowledge_suggestions, $assistant_type, $message, $intent, $theme_matches);
+    $condition_matches = $assistant_type === 'product_advisor'
+        ? fcc_ai_get_product_advisor_condition_matches($message, $language)
+        : [];
+    $knowledge_suggestions = fcc_ai_sort_public_knowledge_suggestions($knowledge_suggestions, $assistant_type, $message, $intent, $theme_matches, $condition_matches);
     $tokens = fcc_ai_extract_public_search_tokens($message);
     $raw_tokens = fcc_ai_extract_search_tokens($message);
     $needs_clarification = empty($theme_matches) && empty($knowledge_suggestions) && empty($intent['business']);
@@ -4133,6 +4500,24 @@ function fcc_ai_build_public_recommendation_payload(string $assistant_type, stri
             : 'Ako posjetitelj kupuje kroz preporuku suradnika, možeš spomenuti dostupnih 15% popusta kao partnersku pogodnost.';
     }
 
+    if($assistant_type === 'product_advisor' && !empty($condition_matches[0])) {
+        $primary_condition = $condition_matches[0];
+
+        if(!empty($primary_condition['opening_note'])) {
+            $opening_note = (string) $primary_condition['opening_note'];
+        }
+
+        if(!empty($primary_condition['recommendation_lines'])) {
+            $recommendation_lines = array_values(array_filter(array_map(static function($line) {
+                return trim((string) $line);
+            }, (array) $primary_condition['recommendation_lines'])));
+        }
+
+        if(!empty($primary_condition['suppress_generic_questions']) && !empty($recommendation_lines)) {
+            $question_lines = [];
+        }
+    }
+
     $system_brief_lines = [
         $assistant_type === 'pets_advisor'
             ? 'Recommendation structure: pet context -> simple ingredient/routine angle -> exact FCC article/product direction -> next safe step.'
@@ -4176,6 +4561,23 @@ function fcc_ai_build_public_recommendation_payload(string $assistant_type, stri
         $system_brief_lines[] = 'Matched themes: ' . implode('; ', array_filter($theme_line_parts));
     }
 
+    if(!empty($condition_matches)) {
+        $condition_line_parts = array_map(static function(array $condition_match) {
+            $label = trim((string) ($condition_match['label'] ?? ''));
+            $patterns = array_values(array_filter((array) ($condition_match['matched_patterns'] ?? [])));
+
+            if($label === '') {
+                $label = trim((string) ($condition_match['key'] ?? ''));
+            }
+
+            return !empty($patterns)
+                ? ($label . ' [' . implode(', ', array_slice($patterns, 0, 3)) . ']')
+                : $label;
+        }, $condition_matches);
+
+        $system_brief_lines[] = 'Matched recommendation profiles: ' . implode('; ', array_filter($condition_line_parts));
+    }
+
     if(!empty($recommendation_lines)) {
         $system_brief_lines[] = 'Stay close to these FCC directions: ' . implode(' | ', array_map(static function(string $line) {
             return preg_replace('/^[^:]+:\s*/u', '', $line) ?? $line;
@@ -4195,6 +4597,10 @@ function fcc_ai_build_public_recommendation_payload(string $assistant_type, stri
         'theme_keys' => array_values(array_filter(array_map(static function(array $theme_match) {
             return (string) ($theme_match['key'] ?? '');
         }, $theme_matches))),
+        'condition_matches' => $condition_matches,
+        'condition_keys' => array_values(array_filter(array_map(static function(array $condition_match) {
+            return (string) ($condition_match['key'] ?? '');
+        }, $condition_matches))),
         'opening_note' => $opening_note,
         'recommendation_lines' => $recommendation_lines,
         'question_lines' => $question_lines,
@@ -4511,6 +4917,9 @@ function fcc_ai_get_public_knowledge_suggestions(string $assistant_type, string 
     $referral_slug = trim((string) ($context['referral_slug'] ?? ''));
     $limit = max(1, min(5, $limit));
     $theme_matches = fcc_ai_get_public_theme_matches($assistant_type, $message, $reply_language);
+    $condition_matches = $assistant_type === 'product_advisor'
+        ? fcc_ai_get_product_advisor_condition_matches($message, $reply_language)
+        : [];
     $is_direct_product_lookup = $assistant_type === 'product_advisor' && fcc_ai_is_direct_product_lookup_message($message);
     $is_multi_product_compare = $assistant_type === 'product_advisor' && fcc_ai_is_multi_product_compare_request($message);
 
@@ -4558,7 +4967,10 @@ function fcc_ai_get_public_knowledge_suggestions(string $assistant_type, string 
                 continue;
             }
 
-            if(!empty($theme_matches) && !fcc_ai_public_row_matches_theme_patterns($row, $theme_matches)) {
+            $matches_theme = !empty($theme_matches) && fcc_ai_public_row_matches_theme_patterns($row, $theme_matches);
+            $matches_condition = !empty($condition_matches) && fcc_ai_public_row_matches_condition_patterns($row, $condition_matches);
+
+            if(!$matches_theme && !$matches_condition && !empty($theme_matches)) {
                 continue;
             }
 
@@ -4575,6 +4987,7 @@ function fcc_ai_get_public_knowledge_suggestions(string $assistant_type, string 
         }
 
         $score += fcc_ai_public_row_theme_bonus($row, $assistant_type, $theme_matches);
+        $score += fcc_ai_public_row_condition_bonus($row, $condition_matches);
 
         $candidates[] = [
             'row' => $row,
