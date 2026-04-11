@@ -2354,13 +2354,15 @@ class AiPlan extends Controller {
         $shop_contacts = (int) ($performance['shop_contacts_30d'] ?? $current_clicks_30d);
         $whatsapp_contacts = (int) ($performance['whatsapp_contacts_30d'] ?? 0);
         $funnel_registrations = (int) ($performance['funnel_registrations_30d'] ?? 0);
-        $growth_signal_30d = $shop_contacts + $whatsapp_contacts + $funnel_registrations;
+        $ai_chat_leads = (int) ($performance['ai_chat_leads_30d'] ?? 0);
+        $growth_signal_30d = $shop_contacts + $whatsapp_contacts + $funnel_registrations + $ai_chat_leads;
 
         return [
             'growth_signal_30d' => $growth_signal_30d,
             'shop_contacts_30d' => $shop_contacts,
             'whatsapp_contacts_30d' => $whatsapp_contacts,
             'funnel_registrations_30d' => $funnel_registrations,
+            'ai_chat_leads_30d' => $ai_chat_leads,
             'main_app_performance' => $performance,
         ];
     }
@@ -2378,6 +2380,7 @@ class AiPlan extends Controller {
                     'shop_contacts_30d' => 999,
                     'whatsapp_contacts_30d' => 999,
                     'funnel_registrations_30d' => 999,
+                    'ai_chat_leads_30d' => 999,
                 ],
                 'starter' => [
                     'app_review_used' => 0,
@@ -2439,6 +2442,7 @@ class AiPlan extends Controller {
                 'shop_contacts_30d' => (int) ($signal_payload['shop_contacts_30d'] ?? 0),
                 'whatsapp_contacts_30d' => (int) ($signal_payload['whatsapp_contacts_30d'] ?? 0),
                 'funnel_registrations_30d' => (int) ($signal_payload['funnel_registrations_30d'] ?? 0),
+                'ai_chat_leads_30d' => (int) ($signal_payload['ai_chat_leads_30d'] ?? 0),
             ],
             'starter' => [
                 'app_review_used' => (int) ($access_settings['starter_app_review_used'] ?? 0),
@@ -3578,13 +3582,17 @@ class AiPlan extends Controller {
         return $preview_images;
     }
 
+    private function get_app_review_contact_captures_30d(array $signals): int {
+        return (int) ($signals['funnel_registrations_30d'] ?? 0) + (int) ($signals['ai_chat_leads_30d'] ?? 0);
+    }
+
     private function calculate_app_review_weighted_signal_score(array $signals): int {
         $shop_contacts = (int) ($signals['shop_contacts_30d'] ?? 0);
         $whatsapp_contacts = (int) ($signals['whatsapp_contacts_30d'] ?? 0);
         $product_clicks = (int) ($signals['product_clicks_30d'] ?? 0);
-        $funnel_registrations = (int) ($signals['funnel_registrations_30d'] ?? 0);
+        $contact_captures = $this->get_app_review_contact_captures_30d($signals);
 
-        return $shop_contacts + $whatsapp_contacts + $product_clicks + ($funnel_registrations * 2);
+        return $shop_contacts + $whatsapp_contacts + $product_clicks + ($contact_captures * 2);
     }
 
     private function enrich_app_review_signal_snapshots(array $apps, string $period_start_datetime): array {
@@ -3608,6 +3616,8 @@ class AiPlan extends Controller {
             $app['whatsapp_contacts_30d'] = 0;
             $app['product_clicks_30d'] = 0;
             $app['funnel_registrations_30d'] = 0;
+            $app['ai_chat_leads_30d'] = 0;
+            $app['contact_captures_30d'] = 0;
             $app['weighted_signal_score'] = 0;
             $app['signal_map'] = $signal_map;
 
@@ -3673,7 +3683,16 @@ class AiPlan extends Controller {
             }
         }
 
+        $ai_chat_lead_counts = fcc_ai_get_chat_lead_counts_by_link_ids(array_keys($apps), $period_start_datetime);
+
+        foreach($ai_chat_lead_counts as $link_id => $total) {
+            if(isset($apps[$link_id])) {
+                $apps[$link_id]['ai_chat_leads_30d'] += (int) $total;
+            }
+        }
+
         foreach($apps as &$app) {
+            $app['contact_captures_30d'] = $this->get_app_review_contact_captures_30d($app);
             $app['weighted_signal_score'] = $this->calculate_app_review_weighted_signal_score($app);
         }
         unset($app);
@@ -6941,7 +6960,9 @@ class AiPlan extends Controller {
             'whatsapp_contacts_30d' => 10,
             'product_clicks_30d' => 8,
             'funnel_registrations_30d' => 4,
-            'weighted_signal_score' => 44,
+            'ai_chat_leads_30d' => 2,
+            'contact_captures_30d' => 6,
+            'weighted_signal_score' => 48,
         ];
     }
 
@@ -6949,7 +6970,7 @@ class AiPlan extends Controller {
         return (($b['weighted_signal_score'] ?? 0) <=> ($a['weighted_signal_score'] ?? 0))
             ?: (($b['shop_contacts_30d'] ?? 0) <=> ($a['shop_contacts_30d'] ?? 0))
             ?: (($b['whatsapp_contacts_30d'] ?? 0) <=> ($a['whatsapp_contacts_30d'] ?? 0))
-            ?: (($b['funnel_registrations_30d'] ?? 0) <=> ($a['funnel_registrations_30d'] ?? 0))
+            ?: (($b['contact_captures_30d'] ?? $this->get_app_review_contact_captures_30d($b)) <=> ($a['contact_captures_30d'] ?? $this->get_app_review_contact_captures_30d($a)))
             ?: (($b['product_clicks_30d'] ?? 0) <=> ($a['product_clicks_30d'] ?? 0))
             ?: ((string) ($a['url'] ?? '') <=> (string) ($b['url'] ?? ''));
     }
@@ -6963,6 +6984,8 @@ class AiPlan extends Controller {
                 'whatsapp_contacts_30d' => 0,
                 'product_clicks_30d' => 0,
                 'funnel_registrations_30d' => 0,
+                'ai_chat_leads_30d' => 0,
+                'contact_captures_30d' => 0,
                 'weighted_signal_score' => 0,
             ];
         }
@@ -6983,6 +7006,8 @@ class AiPlan extends Controller {
             'whatsapp_contacts_30d' => 0,
             'product_clicks_30d' => 0,
             'funnel_registrations_30d' => 0,
+            'ai_chat_leads_30d' => 0,
+            'contact_captures_30d' => 0,
             'weighted_signal_score' => 0,
         ];
     }
@@ -7071,6 +7096,8 @@ class AiPlan extends Controller {
             'whatsapp_contacts_30d' => 0,
             'product_clicks_30d' => 0,
             'funnel_registrations_30d' => 0,
+            'ai_chat_leads_30d' => 0,
+            'contact_captures_30d' => 0,
             'weighted_signal_score' => 0,
         ];
 
@@ -7079,6 +7106,8 @@ class AiPlan extends Controller {
             $totals['whatsapp_contacts_30d'] += (int) ($app['whatsapp_contacts_30d'] ?? 0);
             $totals['product_clicks_30d'] += (int) ($app['product_clicks_30d'] ?? 0);
             $totals['funnel_registrations_30d'] += (int) ($app['funnel_registrations_30d'] ?? 0);
+            $totals['ai_chat_leads_30d'] += (int) ($app['ai_chat_leads_30d'] ?? 0);
+            $totals['contact_captures_30d'] += (int) ($app['contact_captures_30d'] ?? $this->get_app_review_contact_captures_30d($app));
             $totals['weighted_signal_score'] += (int) ($app['weighted_signal_score'] ?? 0);
         }
 
@@ -7100,6 +7129,8 @@ class AiPlan extends Controller {
                 'whatsapp_contacts_30d' => (int) ($app['whatsapp_contacts_30d'] ?? 0),
                 'product_clicks_30d' => (int) ($app['product_clicks_30d'] ?? 0),
                 'funnel_registrations_30d' => (int) ($app['funnel_registrations_30d'] ?? 0),
+                'ai_chat_leads_30d' => (int) ($app['ai_chat_leads_30d'] ?? 0),
+                'contact_captures_30d' => (int) ($app['contact_captures_30d'] ?? $this->get_app_review_contact_captures_30d($app)),
                 'weighted_signal_score' => (int) ($app['weighted_signal_score'] ?? 0),
             ];
 
@@ -7114,6 +7145,8 @@ class AiPlan extends Controller {
                 'whatsapp_contacts_30d' => max(1, (int) round($totals['whatsapp_contacts_30d'] / $count)),
                 'product_clicks_30d' => max(1, (int) round($totals['product_clicks_30d'] / $count)),
                 'funnel_registrations_30d' => max(1, (int) round($totals['funnel_registrations_30d'] / $count)),
+                'ai_chat_leads_30d' => max(0, (int) round($totals['ai_chat_leads_30d'] / $count)),
+                'contact_captures_30d' => max(1, (int) round($totals['contact_captures_30d'] / $count)),
                 'weighted_signal_score' => max(1, (int) round($totals['weighted_signal_score'] / $count)),
             ],
             'peer_examples' => $peer_examples,
@@ -7142,19 +7175,21 @@ class AiPlan extends Controller {
 
     private function get_app_review_quality_payload_from_benchmark(array $performance, array $benchmark): array {
         $benchmark = !empty($benchmark) ? $benchmark : $this->get_default_app_review_benchmark();
+        $performance_contact_captures = (int) ($performance['contact_captures_30d'] ?? $this->get_app_review_contact_captures_30d($performance));
+        $benchmark_contact_captures = (int) ($benchmark['contact_captures_30d'] ?? $this->get_app_review_contact_captures_30d($benchmark));
 
         $ratios = [
             'shop_contacts_30d' => min(1.2, ((int) ($performance['shop_contacts_30d'] ?? 0)) / max(1, (int) ($benchmark['shop_contacts_30d'] ?? 1))),
             'whatsapp_contacts_30d' => min(1.2, ((int) ($performance['whatsapp_contacts_30d'] ?? 0)) / max(1, (int) ($benchmark['whatsapp_contacts_30d'] ?? 1))),
             'product_clicks_30d' => min(1.15, ((int) ($performance['product_clicks_30d'] ?? 0)) / max(1, (int) ($benchmark['product_clicks_30d'] ?? 1))),
-            'funnel_registrations_30d' => min(1.25, ((int) ($performance['funnel_registrations_30d'] ?? 0)) / max(1, (int) ($benchmark['funnel_registrations_30d'] ?? 1))),
+            'contact_captures_30d' => min(1.25, $performance_contact_captures / max(1, $benchmark_contact_captures)),
         ];
 
         $score = (int) round(min(100,
             ($ratios['shop_contacts_30d'] * 25) +
             ($ratios['whatsapp_contacts_30d'] * 25) +
             ($ratios['product_clicks_30d'] * 20) +
-            ($ratios['funnel_registrations_30d'] * 30)
+            ($ratios['contact_captures_30d'] * 30)
         ));
 
         $level_key = $score >= 80 ? 'strong' : ($score >= 60 ? 'growing' : 'foundation');
@@ -7180,8 +7215,8 @@ class AiPlan extends Controller {
             ],
             [
                 'label' => l('ai_plan.app_review_quality_metric_funnel_contacts'),
-                'current' => (int) ($performance['funnel_registrations_30d'] ?? 0),
-                'target' => (int) ($benchmark['funnel_registrations_30d'] ?? 0),
+                'current' => $performance_contact_captures,
+                'target' => $benchmark_contact_captures,
                 'format' => 'number',
             ],
         ];

@@ -1223,6 +1223,39 @@
         grid-column: 1 / -1;
     }
 
+    .leader-os-model-routing-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 1rem;
+    }
+
+    .leader-os-model-routing-card {
+        border: 1px solid rgba(134, 177, 216, 0.18);
+        border-radius: 1rem;
+        background: linear-gradient(180deg, rgba(24, 36, 54, 0.9) 0%, rgba(18, 28, 41, 0.96) 100%);
+        padding: 0.95rem;
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+    }
+
+    .leader-os-model-routing-card h4 {
+        margin-bottom: 0.25rem;
+        font-size: 1rem;
+    }
+
+    .leader-os-model-routing-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 0.75rem;
+        margin-bottom: 0.9rem;
+    }
+
+    .leader-os-model-routing-help {
+        color: rgba(191, 211, 238, 0.72);
+        font-size: 0.82rem;
+        line-height: 1.45;
+    }
+
     .leader-os-field-label {
         display: block;
         margin-bottom: 0.45rem;
@@ -2710,6 +2743,7 @@
         .leader-os-grid-2,
         .leader-os-grid-3,
         .leader-os-grid-4,
+        .leader-os-model-routing-grid,
         .leader-os-ops-grid,
         .leader-os-ops-meta {
             grid-template-columns: 1fr;
@@ -2773,6 +2807,7 @@ $tab_labels = [
     'collaborators' => 'Suradnici',
     'analytics' => 'Analitika',
     'ai' => 'AI navike',
+    'ai_intelligence' => 'AI Intelligence',
     'fraud' => 'Fraud i anomalije',
     'coaching' => 'Coaching',
     'support' => 'Podrška',
@@ -3080,8 +3115,8 @@ $render_priority_queue_section = static function() use ($data, $leader_os_action
                                 <div class="text-muted small"><?= l('admin_leader_operating_system.queue_anomaly') ?>: <strong class="text-white"><?= nr((int) ($queue_row['anomaly_score'] ?? 0)) ?></strong></div>
                                 <div class="text-muted small">Blocked attempts: <strong class="text-white"><?= nr((int) ($queue_row['blocked_attempts_total'] ?? 0)) ?></strong></div>
                                 <div class="text-muted small">AI status: <strong class="text-white"><?= htmlspecialchars((string) ($queue_row['ai_access_tier_label'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></strong></div>
-                                <div class="text-muted small">Klikovi i prijave 30d: <strong class="text-white"><?= nr((int) ($queue_row['ai_access_growth_signal_30d'] ?? 0)) ?></strong></div>
-                                <div class="text-muted small">Shop <?= nr((int) ($queue_row['ai_access_shop_clicks_30d'] ?? 0)) ?> · Funnel <?= nr((int) ($queue_row['ai_access_funnel_registrations_30d'] ?? 0)) ?> · WhatsApp <?= nr((int) ($queue_row['ai_access_whatsapp_contacts_30d'] ?? 0)) ?></div>
+                                <div class="text-muted small">Klikovi, prijave i AI chat kontakti 30d: <strong class="text-white"><?= nr((int) ($queue_row['ai_access_growth_signal_30d'] ?? 0)) ?></strong></div>
+                                <div class="text-muted small">Shop <?= nr((int) ($queue_row['ai_access_shop_clicks_30d'] ?? 0)) ?> · Funnel <?= nr((int) ($queue_row['ai_access_funnel_registrations_30d'] ?? 0)) ?> · AI chat <?= nr((int) ($queue_row['ai_access_ai_chat_leads_30d'] ?? 0)) ?> · WhatsApp <?= nr((int) ($queue_row['ai_access_whatsapp_contacts_30d'] ?? 0)) ?></div>
                                 <?php if(!empty($queue_row['last_contacted_at'])): ?>
                                     <div class="text-muted small"><?= l('admin_leader_operating_system.queue_last_contact') ?>: <strong class="text-white"><?= \Altum\Date::get($queue_row['last_contacted_at'], 2) ?></strong></div>
                                 <?php endif ?>
@@ -3576,7 +3611,7 @@ $operations_tab_badge_total = (int) (($data->operations['totals']['pending_appro
 </div>
 <?php endif ?>
 
-<?php if(in_array(($data->selected_tab ?? 'overview'), ['overview', 'analytics', 'ai'], true)): ?>
+<?php if(in_array(($data->selected_tab ?? 'overview'), ['overview', 'analytics', 'ai', 'ai_intelligence'], true)): ?>
 <div class="card leader-os-shell mb-4">
     <div class="card-body">
         <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-start mb-4">
@@ -3826,7 +3861,7 @@ $operations_tab_badge_total = (int) (($data->operations['totals']['pending_appro
             </div>
 
             <div class="col-12 col-lg-4 mb-3">
-                <?= $render_kpi_card('total_funnel_leads_period', 'Funnel leadovi', (int) ($data->overview['totals']['total_funnel_leads_period'] ?? 0), 'Tko puni funnel u odabranom periodu', 'Funnel') ?>
+                <?= $render_kpi_card('total_funnel_leads_period', 'Leadovi i AI chat kontakti', (int) ($data->overview['totals']['total_funnel_leads_period'] ?? 0), 'Tko puni funnel i AI chat kontakte u odabranom periodu', 'Lead') ?>
             </div>
         </div>
         <?php endif ?>
@@ -3844,7 +3879,7 @@ $operations_tab_badge_total = (int) (($data->operations['totals']['pending_appro
                                 <button type="button" class="leader-os-trend-period" data-days="90">90 dana</button>
                             </div>
                         </div>
-                        <div class="text-muted small mb-3">Ovdje vidiš koliko tim stvara prometa prema Foreveru, koliko ga pretvara u registracije i leadove te koliko je ljudi stvarno iza tog signala.</div>
+                        <div class="text-muted small mb-3">Ovdje vidiš koliko tim stvara prometa prema Foreveru, koliko ga pretvara u registracije, leadove i AI chat kontakte te koliko je ljudi stvarno iza tog signala.</div>
                         <div class="leader-os-trend-summary" id="leader-os-team-trend-summary">
                             <div class="leader-os-trend-summary-card is-clickable" role="button" tabindex="0" data-toggle="modal" data-target="#leader_os_drilldown_modal" data-trend-summary-card="clicks">
                                 <div class="leader-os-trend-summary-label">Klikovi prema Foreveru</div>
@@ -3857,7 +3892,7 @@ $operations_tab_badge_total = (int) (($data->operations['totals']['pending_appro
                                 <div class="leader-os-trend-summary-note" data-trend-meta="registrations">Klikni za popis suradnika.</div>
                             </div>
                             <div class="leader-os-trend-summary-card is-clickable" role="button" tabindex="0" data-toggle="modal" data-target="#leader_os_drilldown_modal" data-trend-summary-card="leads">
-                                <div class="leader-os-trend-summary-label">Funnel leadovi</div>
+                                <div class="leader-os-trend-summary-label">Leadovi i AI chat kontakti</div>
                                 <div class="leader-os-trend-summary-value" data-trend-total="leads">0</div>
                                 <div class="leader-os-trend-summary-note" data-trend-meta="leads">Klikni za popis suradnika.</div>
                             </div>
@@ -4383,6 +4418,379 @@ $operations_tab_badge_total = (int) (($data->operations['totals']['pending_appro
                         </div>
                     </div>
                 </div>
+            </div>
+            <div class="leader-os-panel mt-3">
+                <div class="d-flex justify-content-between align-items-start flex-wrap" style="gap:1rem;">
+                    <div>
+                        <div class="text-uppercase small text-muted mb-2">AI Intelligence</div>
+                        <h3 class="h5 mb-1">Chat inteligencija je sada u posebnoj rubrici</h3>
+                        <div class="text-muted small">Javni AI chatovi, top teme, loši odgovori za provjeru, AI leadovi i centralni model routing sada su izdvojeni u zaseban LOS tab kako bi `AI navike` ostale fokusirane na disciplinu, plan i izvedbu tima.</div>
+                    </div>
+                    <a href="<?= url('admin/leader-operating-system?' . http_build_query(array_merge($leader_os_state_query, ['tab' => 'ai_intelligence', 'page' => 1]))) ?>" class="btn btn-sm leader-os-action-button is-primary">Otvori AI Intelligence</a>
+                </div>
+            </div>
+        <?php endif ?>
+
+        <?php if(($data->selected_tab ?? 'overview') === 'ai_intelligence'): ?>
+            <?php $fcc_ai_team = $data->overview['fcc_ai_team'] ?? []; ?>
+            <?php $fcc_ai_model_routing = $data->fcc_ai_model_routing ?? []; ?>
+            <div class="leader-os-panel mt-2 mb-3">
+                <div class="d-flex justify-content-between align-items-start flex-wrap mb-3" style="gap:1rem;">
+                    <div>
+                        <div class="text-uppercase small text-muted mb-2">AI Intelligence</div>
+                        <h3 class="h5 mb-1">Javni asistenti, coach, teme i AI leadovi</h3>
+                        <div class="text-muted small">Ovdje vidiš što se stvarno događa u FCC AI chatovima: koje teme dominiraju, koji asistenti nose promet, gdje nastaju leadovi i koje odgovore treba odmah otvoriti i korigirati.</div>
+                    </div>
+                    <span class="leader-os-status-badge <?= !empty($fcc_ai_team['is_available']) ? 'status-success' : 'status-dark' ?>">
+                        <?= !empty($fcc_ai_team['is_available']) ? 'AI live' : 'AI offline' ?>
+                    </span>
+                </div>
+
+                <?php if(empty($fcc_ai_team['is_available'])): ?>
+                    <div class="text-muted small">FCC AI tablice još nisu dostupne na ovom okruženju.</div>
+                <?php else: ?>
+                    <div class="row mb-3">
+                        <div class="col-6 col-xl-3 mb-3">
+                            <?= $render_kpi_card('fcc_ai_conversations', 'AI razgovori', (int) ($fcc_ai_team['totals']['conversations'] ?? 0), 'Ukupni razgovori kroz coach i javne AI asistente u odabranom periodu', 'Chat') ?>
+                        </div>
+                        <div class="col-6 col-xl-3 mb-3">
+                            <?= $render_kpi_card('fcc_ai_public_conversations', 'Javni AI', (int) ($fcc_ai_team['totals']['public_conversations'] ?? 0), 'Razgovori na aplikacijama i blogu', 'Public') ?>
+                        </div>
+                        <div class="col-6 col-xl-3 mb-3">
+                            <?= $render_kpi_card('fcc_ai_coach_conversations', 'Coach', (int) ($fcc_ai_team['totals']['coach_conversations'] ?? 0), 'Interni coach razgovori unutar FCC-a', 'Coach') ?>
+                        </div>
+                        <div class="col-6 col-xl-3 mb-3">
+                            <?= $render_kpi_card('fcc_ai_leads', 'AI leadovi', (int) ($fcc_ai_team['totals']['leads'] ?? 0), 'Kontakti koje je AI pretvorio u stvarni follow-up signal', 'Lead') ?>
+                        </div>
+                    </div>
+
+                    <div class="leader-os-inline-note mb-3">
+                        Poruke ukupno:
+                        <strong class="text-white"><?= nr((int) ($fcc_ai_team['totals']['messages'] ?? 0)) ?></strong>
+                        · business leadovi:
+                        <strong class="text-white"><?= nr((int) ($fcc_ai_team['totals']['business_leads'] ?? 0)) ?></strong>
+                        · hot leadovi:
+                        <strong class="text-white"><?= nr((int) ($fcc_ai_team['totals']['hot_leads'] ?? 0)) ?></strong>
+                        · aktivni suradnici:
+                        <strong class="text-white"><?= nr((int) ($fcc_ai_team['totals']['active_users'] ?? 0)) ?></strong>
+                        · odgovori za provjeru:
+                        <strong class="text-white"><?= nr((int) ($fcc_ai_team['totals']['negative_feedback'] ?? 0)) ?></strong>
+                        · threadovi za review:
+                        <strong class="text-white"><?= nr((int) ($fcc_ai_team['totals']['review_conversations'] ?? 0)) ?></strong>
+                    </div>
+
+                    <div class="leader-os-grid-2">
+                        <div class="leader-os-panel">
+                            <div class="text-uppercase small text-muted mb-2">Po asistentu</div>
+                            <h3 class="h5 mb-3">Tko nosi razgovore i leadove</h3>
+                            <?php if(empty($fcc_ai_team['assistant_breakdown'])): ?>
+                                <div class="text-muted small">Još nema dovoljno AI prometa za breakdown.</div>
+                            <?php else: ?>
+                                <?php foreach(($fcc_ai_team['assistant_breakdown'] ?? []) as $assistant_row): ?>
+                                    <div class="py-2 border-top border-dark">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <strong><?= htmlspecialchars((string) ($assistant_row['label'] ?? ''), ENT_QUOTES, 'UTF-8') ?></strong>
+                                            <span><?= nr((int) ($assistant_row['conversations'] ?? 0)) ?> chatova</span>
+                                        </div>
+                                        <div class="text-muted small">
+                                            poruke <?= nr((int) ($assistant_row['messages'] ?? 0)) ?>
+                                            · leadovi <?= nr((int) ($assistant_row['leads'] ?? 0)) ?>
+                                            · business <?= nr((int) ($assistant_row['business_leads'] ?? 0)) ?>
+                                            · pozitivno <?= nr((int) ($assistant_row['positive_feedback'] ?? 0)) ?>
+                                            · za provjeru <?= nr((int) ($assistant_row['negative_feedback'] ?? 0)) ?>
+                                            · aktivni suradnici <?= nr((int) ($assistant_row['active_users'] ?? 0)) ?>
+                                        </div>
+                                    </div>
+                                <?php endforeach ?>
+                            <?php endif ?>
+                        </div>
+
+                        <div class="leader-os-panel">
+                            <div class="text-uppercase small text-muted mb-2">Top suradnici</div>
+                            <h3 class="h5 mb-3">Tko stvarno koristi FCC AI</h3>
+                            <?php if(empty($fcc_ai_team['top_users'])): ?>
+                                <div class="text-muted small">Još nema suradnika s dovoljno AI aktivnosti u periodu.</div>
+                            <?php else: ?>
+                                <?php foreach(($fcc_ai_team['top_users'] ?? []) as $user_row): ?>
+                                    <div class="py-2 border-top border-dark">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <a href="<?= $user_row['detail_url'] ?>" class="leader-os-link"><?= htmlspecialchars((string) ($user_row['name'] ?? ''), ENT_QUOTES, 'UTF-8') ?></a>
+                                            <strong><?= nr((int) ($user_row['conversations'] ?? 0)) ?></strong>
+                                        </div>
+                                        <div class="text-muted small">
+                                            coach <?= nr((int) ($user_row['coach_conversations'] ?? 0)) ?>
+                                            · javni AI <?= nr((int) ($user_row['public_conversations'] ?? 0)) ?>
+                                            · poruke <?= nr((int) ($user_row['messages'] ?? 0)) ?>
+                                            · leadovi <?= nr((int) ($user_row['leads'] ?? 0)) ?>
+                                            · review <?= nr((int) ($user_row['negative_feedback'] ?? 0)) ?>
+                                        </div>
+                                    </div>
+                                <?php endforeach ?>
+                            <?php endif ?>
+                        </div>
+                    </div>
+
+                    <div class="leader-os-grid-2 mt-3">
+                        <div class="leader-os-panel">
+                            <div class="text-uppercase small text-muted mb-2">Vrući AI leadovi</div>
+                            <h3 class="h5 mb-3">Koga je AI doveo s najjačim signalom</h3>
+                            <?php if(empty($fcc_ai_team['recent_hot_leads'])): ?>
+                                <div class="text-muted small">Još nema zabilježenih AI leadova u periodu.</div>
+                            <?php else: ?>
+                                <?php foreach(($fcc_ai_team['recent_hot_leads'] ?? []) as $lead_row): ?>
+                                    <div class="py-2 border-top border-dark">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <?php if(!empty($lead_row['detail_url'])): ?>
+                                                <a href="<?= $lead_row['detail_url'] ?>" class="leader-os-link"><?= htmlspecialchars((string) ($lead_row['owner_name'] ?? ''), ENT_QUOTES, 'UTF-8') ?></a>
+                                            <?php else: ?>
+                                                <strong><?= htmlspecialchars((string) ($lead_row['owner_name'] ?? ''), ENT_QUOTES, 'UTF-8') ?></strong>
+                                            <?php endif ?>
+                                            <span class="leader-os-status-badge status-info"><?= nr((int) ($lead_row['lead_score'] ?? 0)) ?></span>
+                                        </div>
+                                        <div class="text-muted small">
+                                            <?= htmlspecialchars((string) ($lead_row['assistant_label'] ?? ''), ENT_QUOTES, 'UTF-8') ?>
+                                            · <?= htmlspecialchars((string) ($lead_row['lead_type_label'] ?? ''), ENT_QUOTES, 'UTF-8') ?>
+                                            · <?= htmlspecialchars((string) ($lead_row['scope_label'] ?? ''), ENT_QUOTES, 'UTF-8') ?>
+                                        </div>
+                                        <div class="text-muted small">
+                                            <?= htmlspecialchars((string) (($lead_row['contact_name'] ?? '') !== '' ? $lead_row['contact_name'] : '-'), ENT_QUOTES, 'UTF-8') ?>
+                                            <?php if(!empty($lead_row['contact_value'])): ?>
+                                                · <?= htmlspecialchars((string) ($lead_row['contact_value'] ?? ''), ENT_QUOTES, 'UTF-8') ?>
+                                            <?php endif ?>
+                                        </div>
+                                    </div>
+                                <?php endforeach ?>
+                            <?php endif ?>
+                        </div>
+
+                        <div class="leader-os-panel">
+                            <div class="text-uppercase small text-muted mb-2">Kako čitaš ovaj blok</div>
+                            <h3 class="h5 mb-3">Što ti FCC AI brojke sada govore</h3>
+                            <div class="text-muted small mb-2">Ako javni AI razgovori rastu, a AI leadovi ne prate, najveći prostor je u CTA-u, ponudi lead capturea ili kvaliteti preporuke.</div>
+                            <div class="text-muted small mb-2">Ako coach razgovori rastu, a AI plan disciplina stoji, znači da suradnici traže pomoć, ali je još ne pretvaraju u tjednu izvedbu.</div>
+                            <div class="text-muted small mb-2">Ako jedan asistent nosi gotovo sav promet, to je signal gdje prvo trebaš brusiti prompt, ton i funnel nastavak.</div>
+                            <div class="text-muted small mb-0">Najzdraviji obrazac je: javni AI otvara interes, AI leadovi rastu, a coach pomaže suradnicima da taj interes kvalitetno preuzmu.</div>
+                        </div>
+                    </div>
+
+                    <div class="leader-os-grid-2 mt-3">
+                        <div class="leader-os-panel">
+                            <div class="text-uppercase small text-muted mb-2">Top AI teme</div>
+                            <h3 class="h5 mb-3">Što se najviše ponavlja u chatovima</h3>
+                            <?php if(empty($fcc_ai_team['top_topics'])): ?>
+                                <div class="text-muted small">Još nema dovoljno chat signala za pouzdan pregled tema.</div>
+                            <?php else: ?>
+                                <?php foreach(($fcc_ai_team['top_topics'] ?? []) as $topic_row): ?>
+                                    <div class="py-2 border-top border-dark">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <strong><?= htmlspecialchars((string) ($topic_row['label'] ?? ''), ENT_QUOTES, 'UTF-8') ?></strong>
+                                            <span><?= nr((int) ($topic_row['total'] ?? 0)) ?></span>
+                                        </div>
+                                        <div class="text-muted small">Tema koja se ponavlja kroz coach i javne AI razgovore te je dobar kandidat za doradu chata, FAQ ili webinar.</div>
+                                    </div>
+                                <?php endforeach ?>
+                            <?php endif ?>
+                        </div>
+
+                        <div class="leader-os-panel">
+                            <div class="text-uppercase small text-muted mb-2">Odgovori za provjeru</div>
+                            <h3 class="h5 mb-3">Loši signali koje treba otvoriti odmah</h3>
+                            <?php if(empty($fcc_ai_team['recent_negative_feedback'])): ?>
+                                <div class="text-muted small">Trenutno nema prijavljenih loših AI odgovora u odabranom periodu.</div>
+                            <?php else: ?>
+                                <?php foreach(($fcc_ai_team['recent_negative_feedback'] ?? []) as $feedback_row): ?>
+                                    <details class="mb-2">
+                                        <summary class="d-flex justify-content-between align-items-center" style="cursor:pointer;gap:.75rem;">
+                                            <span>
+                                                <strong><?= htmlspecialchars((string) ($feedback_row['owner_name'] ?? ''), ENT_QUOTES, 'UTF-8') ?></strong>
+                                                · <?= htmlspecialchars((string) ($feedback_row['assistant_label'] ?? ''), ENT_QUOTES, 'UTF-8') ?>
+                                                · <?= htmlspecialchars((string) ($feedback_row['reason_label'] ?? ''), ENT_QUOTES, 'UTF-8') ?>
+                                            </span>
+                                            <span class="text-muted small"><?= \Altum\Date::get((string) ($feedback_row['datetime'] ?? ''), 2) ?></span>
+                                        </summary>
+
+                                        <div class="pt-2">
+                                            <div class="text-muted small mb-2">
+                                                <?= htmlspecialchars((string) (($feedback_row['source_label'] ?? '') ?: ($feedback_row['scope_label'] ?? '-')), ENT_QUOTES, 'UTF-8') ?>
+                                                <?php if(!empty($feedback_row['detail_url'])): ?>
+                                                    · <a href="<?= $feedback_row['detail_url'] ?>" class="leader-os-link">Otvori profil suradnika</a>
+                                                <?php endif ?>
+                                            </div>
+                                            <div class="small text-white mb-2"><?= htmlspecialchars((string) ($feedback_row['message_excerpt'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                                            <?php if(!empty($feedback_row['note'])): ?>
+                                                <div class="text-muted small mb-2"><strong>Napomena:</strong> <?= htmlspecialchars((string) ($feedback_row['note'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                                            <?php endif ?>
+
+                                            <?php if(!empty($feedback_row['thread_preview'])): ?>
+                                                <div class="pl-2 border-left border-dark">
+                                                    <?php foreach(($feedback_row['thread_preview'] ?? []) as $thread_message): ?>
+                                                        <div class="mb-2">
+                                                            <div class="text-uppercase small text-muted">
+                                                                <?= htmlspecialchars((string) (($thread_message['role'] ?? '') === 'user' ? 'Korisnik' : (($thread_message['role'] ?? '') === 'assistant' ? 'AI' : 'Sustav')), ENT_QUOTES, 'UTF-8') ?>
+                                                            </div>
+                                                            <div class="small text-white"><?= htmlspecialchars((string) ($thread_message['content'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                                                        </div>
+                                                    <?php endforeach ?>
+                                                </div>
+                                            <?php endif ?>
+                                        </div>
+                                    </details>
+                                <?php endforeach ?>
+                            <?php endif ?>
+                        </div>
+                    </div>
+
+                    <div class="leader-os-panel mt-3">
+                        <div class="text-uppercase small text-muted mb-2">Korisno sada</div>
+                        <h3 class="h5 mb-3">Što ti FCC AI trenutno sugerira da prvo napraviš</h3>
+                        <?php if(empty($fcc_ai_team['useful_items'])): ?>
+                            <div class="text-muted small">Kad se skupi više AI signala, ovdje ćeš odmah vidjeti najkorisnije sljedeće poteze za tim.</div>
+                        <?php else: ?>
+                            <?php foreach(($fcc_ai_team['useful_items'] ?? []) as $useful_item): ?>
+                                <div class="py-2 border-top border-dark">
+                                    <div class="text-white small"><?= htmlspecialchars((string) $useful_item, ENT_QUOTES, 'UTF-8') ?></div>
+                                </div>
+                            <?php endforeach ?>
+                        <?php endif ?>
+                    </div>
+
+                    <div class="leader-os-grid-2 mt-3">
+                        <div class="leader-os-panel">
+                            <div class="text-uppercase small text-muted mb-2">Rastuće teme i webinari</div>
+                            <h3 class="h5 mb-3">Što sada vrijedi pretvoriti u edukaciju</h3>
+
+                            <div class="text-muted small mb-2">Rastuće teme pokazuju što se ubrzano pojačava kroz stvarne razgovore, a webinar prijedlozi pretvaraju te signale u konkretne teme za tim.</div>
+
+                            <div class="leader-os-detail-panel mb-3">
+                                <div class="leader-os-ai-title">Rastuće teme</div>
+                                <?php if(empty($fcc_ai_team['rising_topics'])): ?>
+                                    <div class="text-muted small mb-0">Još nema dovoljno signala da bi se izdvojile teme u rastu.</div>
+                                <?php else: ?>
+                                    <div class="leader-os-detail-list">
+                                        <?php foreach(($fcc_ai_team['rising_topics'] ?? []) as $topic_row): ?>
+                                            <div class="leader-os-detail-list-item">
+                                                <span><?= htmlspecialchars((string) ($topic_row['label'] ?? ''), ENT_QUOTES, 'UTF-8') ?></span>
+                                                <strong>+<?= nr((int) ($topic_row['delta_total'] ?? 0)) ?> · sada <?= nr((int) ($topic_row['current_total'] ?? 0)) ?></strong>
+                                            </div>
+                                        <?php endforeach ?>
+                                    </div>
+                                <?php endif ?>
+                            </div>
+
+                            <div class="leader-os-detail-panel">
+                                <div class="leader-os-ai-title">Webinar prijedlozi</div>
+                                <?php if(empty($fcc_ai_team['webinar_candidates'])): ?>
+                                    <div class="text-muted small mb-0">Kad tema dovoljno ojača kroz AI razgovore, ovdje će se pojaviti jasan webinar kandidat.</div>
+                                <?php else: ?>
+                                    <?php foreach(($fcc_ai_team['webinar_candidates'] ?? []) as $webinar_row): ?>
+                                        <div class="py-2 border-top border-dark">
+                                            <div class="font-weight-bold"><?= htmlspecialchars((string) ($webinar_row['title'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                                            <div class="text-muted small mt-2"><?= htmlspecialchars((string) ($webinar_row['why_now'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                                            <div class="text-white-50 small mt-2"><?= htmlspecialchars((string) ($webinar_row['agenda'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                                        </div>
+                                    <?php endforeach ?>
+                                <?php endif ?>
+                            </div>
+                        </div>
+
+                        <div class="leader-os-panel">
+                            <div class="text-uppercase small text-muted mb-2">Pomoć i rezultat</div>
+                            <h3 class="h5 mb-3">Koga treba otvoriti i koji AI nosi najbolji signal</h3>
+
+                            <div class="leader-os-detail-panel mb-3">
+                                <div class="leader-os-ai-title">Suradnici kojima treba pomoć</div>
+                                <?php if(empty($fcc_ai_team['help_watchlist'])): ?>
+                                    <div class="text-muted small mb-0">Trenutno nema suradnika s dovoljno jakim AI signalom za hitnu mentorsku intervenciju.</div>
+                                <?php else: ?>
+                                    <?php foreach(($fcc_ai_team['help_watchlist'] ?? []) as $watch_row): ?>
+                                        <div class="py-2 border-top border-dark">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <?php if(!empty($watch_row['detail_url'])): ?>
+                                                    <a href="<?= $watch_row['detail_url'] ?>" class="leader-os-link"><?= htmlspecialchars((string) ($watch_row['name'] ?? ''), ENT_QUOTES, 'UTF-8') ?></a>
+                                                <?php else: ?>
+                                                    <strong><?= htmlspecialchars((string) ($watch_row['name'] ?? ''), ENT_QUOTES, 'UTF-8') ?></strong>
+                                                <?php endif ?>
+                                                <span class="leader-os-kpi-chip"><?= nr((int) ($watch_row['help_score'] ?? 0)) ?></span>
+                                            </div>
+                                            <div class="text-muted small mt-2"><?= htmlspecialchars((string) ($watch_row['reason'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                                        </div>
+                                    <?php endforeach ?>
+                                <?php endif ?>
+                            </div>
+
+                            <div class="leader-os-detail-panel">
+                                <div class="leader-os-ai-title">Rezultati po asistentu</div>
+                                <?php if(empty($fcc_ai_team['assistant_performance'])): ?>
+                                    <div class="text-muted small mb-0">Kad se skupi više razgovora, ovdje ćeš vidjeti koji AI daje najviše rezultata i gdje ga još treba brusiti.</div>
+                                <?php else: ?>
+                                    <?php foreach(($fcc_ai_team['assistant_performance'] ?? []) as $assistant_row): ?>
+                                        <div class="py-2 border-top border-dark">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <strong><?= htmlspecialchars((string) ($assistant_row['label'] ?? ''), ENT_QUOTES, 'UTF-8') ?></strong>
+                                                <span class="leader-os-kpi-chip"><?= nr((int) ($assistant_row['result_score'] ?? 0)) ?></span>
+                                            </div>
+                                            <div class="text-muted small mt-2"><?= htmlspecialchars((string) ($assistant_row['summary'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                                            <div class="text-white-50 small mt-2"><?= htmlspecialchars((string) ($assistant_row['opportunity'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                                        </div>
+                                    <?php endforeach ?>
+                                <?php endif ?>
+                            </div>
+                        </div>
+                    </div>
+                <?php endif ?>
+            </div>
+
+            <div class="leader-os-panel mt-3">
+                <div class="d-flex justify-content-between align-items-start flex-wrap mb-3" style="gap:1rem;">
+                    <div>
+                        <div class="text-uppercase small text-muted mb-2">AI modeli</div>
+                        <h3 class="h5 mb-1">Centralni model routing za FCC AI</h3>
+                        <div class="text-muted small">Ovdje biraš koji model koristi svaki važan FCC AI tok. Ako neko polje ostaviš na nasljeđivanju, koristi se globalni OpenAI model iz admin postavki.</div>
+                    </div>
+                    <span class="leader-os-status-badge status-info"><?= htmlspecialchars((string) ($fcc_ai_model_routing['global_model'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></span>
+                </div>
+
+                <div class="leader-os-inline-note mb-3">
+                    Globalni fallback model:
+                    <strong class="text-white"><?= htmlspecialchars((string) ($fcc_ai_model_routing['global_model'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></strong>
+                    · ove postavke vrijede za chatove i ključne LOS AI analize.
+                </div>
+
+                <form action="<?= $leader_os_action_url ?>" method="post">
+                    <input type="hidden" name="global_token" value="<?= \Altum\Csrf::get('global_token') ?>" />
+
+                    <div class="leader-os-model-routing-grid">
+                        <?php foreach(($fcc_ai_model_routing['routes'] ?? []) as $route_row): ?>
+                            <div class="leader-os-model-routing-card">
+                                <div class="leader-os-model-routing-meta">
+                                    <div>
+                                        <h4><?= htmlspecialchars((string) ($route_row['label'] ?? ''), ENT_QUOTES, 'UTF-8') ?></h4>
+                                        <div class="leader-os-model-routing-help"><?= htmlspecialchars((string) ($route_row['description'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                                    </div>
+                                    <span class="leader-os-kpi-chip"><?= htmlspecialchars((string) ($route_row['resolved_model'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></span>
+                                </div>
+
+                                <label class="leader-os-field-label" for="leader_os_model_route_<?= htmlspecialchars((string) ($route_row['key'] ?? ''), ENT_QUOTES, 'UTF-8') ?>">Odabrani model</label>
+                                <select
+                                    id="leader_os_model_route_<?= htmlspecialchars((string) ($route_row['key'] ?? ''), ENT_QUOTES, 'UTF-8') ?>"
+                                    name="fcc_ai_model_routing[<?= htmlspecialchars((string) ($route_row['key'] ?? ''), ENT_QUOTES, 'UTF-8') ?>]"
+                                    class="leader-os-select"
+                                >
+                                    <?php foreach(($fcc_ai_model_routing['model_options'] ?? []) as $model_key => $model_label): ?>
+                                        <option value="<?= htmlspecialchars((string) $model_key, ENT_QUOTES, 'UTF-8') ?>" <?= (string) ($route_row['configured_model'] ?? '') === (string) $model_key ? 'selected="selected"' : '' ?>>
+                                            <?= htmlspecialchars((string) $model_label, ENT_QUOTES, 'UTF-8') ?>
+                                        </option>
+                                    <?php endforeach ?>
+                                </select>
+                            </div>
+                        <?php endforeach ?>
+                    </div>
+
+                    <div class="d-flex align-items-center justify-content-between flex-wrap mt-3" style="gap:.75rem;">
+                        <div class="text-muted small">Promjena modela utječe na nove AI odgovore i nove LOS AI analize nakon spremanja.</div>
+                        <button type="submit" name="save_fcc_ai_model_routing" value="1" class="btn btn-sm leader-os-action-button is-primary">Spremi AI modele</button>
+                    </div>
+                </form>
             </div>
         <?php endif ?>
 
@@ -5627,8 +6035,8 @@ $operations_tab_badge_total = (int) (($data->operations['totals']['pending_appro
                             <div class="text-muted small"><?= l('admin_leader_operating_system.queue_anomaly') ?>: <strong class="text-white"><?= nr((int) ($queue_row['anomaly_score'] ?? 0)) ?></strong></div>
                             <div class="text-muted small">Blocked attempts: <strong class="text-white"><?= nr((int) ($queue_row['blocked_attempts_total'] ?? 0)) ?></strong></div>
                             <div class="text-muted small">AI status: <strong class="text-white"><?= htmlspecialchars((string) ($queue_row['ai_access_tier_label'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></strong></div>
-                            <div class="text-muted small">Klikovi i prijave 30d: <strong class="text-white"><?= nr((int) ($queue_row['ai_access_growth_signal_30d'] ?? 0)) ?></strong></div>
-                            <div class="text-muted small">Shop <?= nr((int) ($queue_row['ai_access_shop_clicks_30d'] ?? 0)) ?> · Funnel <?= nr((int) ($queue_row['ai_access_funnel_registrations_30d'] ?? 0)) ?> · WhatsApp <?= nr((int) ($queue_row['ai_access_whatsapp_contacts_30d'] ?? 0)) ?></div>
+                            <div class="text-muted small">Klikovi, prijave i AI chat kontakti 30d: <strong class="text-white"><?= nr((int) ($queue_row['ai_access_growth_signal_30d'] ?? 0)) ?></strong></div>
+                            <div class="text-muted small">Shop <?= nr((int) ($queue_row['ai_access_shop_clicks_30d'] ?? 0)) ?> · Funnel <?= nr((int) ($queue_row['ai_access_funnel_registrations_30d'] ?? 0)) ?> · AI chat <?= nr((int) ($queue_row['ai_access_ai_chat_leads_30d'] ?? 0)) ?> · WhatsApp <?= nr((int) ($queue_row['ai_access_whatsapp_contacts_30d'] ?? 0)) ?></div>
                             <?php if(!empty($queue_row['last_contacted_at'])): ?>
                                 <div class="text-muted small"><?= l('admin_leader_operating_system.queue_last_contact') ?>: <strong class="text-white"><?= \Altum\Date::get($queue_row['last_contacted_at'], 2) ?></strong></div>
                             <?php endif ?>
@@ -5783,7 +6191,7 @@ $operations_tab_badge_total = (int) (($data->operations['totals']['pending_appro
                                                 <strong class="text-white"><?= nr((int) ($row['ai_access_growth_signal_30d'] ?? 0)) ?></strong>
                                             </div>
                                             <div class="leader-os-signal-thresholds">15 = Active · 50 = VIP</div>
-                                            <div class="text-muted small">Shop <?= nr((int) ($row['ai_access_shop_clicks_30d'] ?? 0)) ?> · Funnel <?= nr((int) ($row['ai_access_funnel_registrations_30d'] ?? 0)) ?> · WhatsApp <?= nr((int) ($row['ai_access_whatsapp_contacts_30d'] ?? 0)) ?></div>
+                                            <div class="text-muted small">Shop <?= nr((int) ($row['ai_access_shop_clicks_30d'] ?? 0)) ?> · Funnel <?= nr((int) ($row['ai_access_funnel_registrations_30d'] ?? 0)) ?> · AI chat <?= nr((int) ($row['ai_access_ai_chat_leads_30d'] ?? 0)) ?> · WhatsApp <?= nr((int) ($row['ai_access_whatsapp_contacts_30d'] ?? 0)) ?></div>
                                             <div class="text-muted small"><?= htmlspecialchars((string) ($row['ai_access_starter_label'] ?? ''), ENT_QUOTES, 'UTF-8') ?> · <?= htmlspecialchars((string) ($row['ai_access_source_label'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
                                             <?php if(!empty($row['ai_access_manual_expires_at'])): ?>
                                                 <div class="text-muted small">Ručni status traje do: <?= \Altum\Date::get($row['ai_access_manual_expires_at'], 2) ?></div>

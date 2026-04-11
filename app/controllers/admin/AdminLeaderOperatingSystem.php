@@ -515,6 +515,8 @@ class AdminLeaderOperatingSystem extends Controller {
             $rows[$index]['ai_shop_clicks_30d'] = 0;
             $rows[$index]['ai_whatsapp_contacts_30d'] = 0;
             $rows[$index]['ai_funnel_registrations_30d'] = 0;
+            $rows[$index]['ai_ai_chat_leads_30d'] = 0;
+            $rows[$index]['ai_contact_captures_30d'] = 0;
             $rows[$index]['ai_growth_signal_30d'] = 0;
         }
 
@@ -614,11 +616,23 @@ class AdminLeaderOperatingSystem extends Controller {
             }
         }
 
+        $ai_chat_lead_counts = fcc_ai_get_chat_lead_counts_by_user_ids(array_keys($row_map), $period_start_datetime);
+        foreach($ai_chat_lead_counts as $user_id => $total) {
+            $row_index = $row_map[(int) $user_id] ?? null;
+
+            if($row_index === null) {
+                continue;
+            }
+
+            $rows[$row_index]['ai_ai_chat_leads_30d'] += (int) $total;
+        }
+
         foreach($rows as $index => $row) {
+            $rows[$index]['ai_contact_captures_30d'] = (int) ($rows[$index]['ai_funnel_registrations_30d'] ?? 0) + (int) ($rows[$index]['ai_ai_chat_leads_30d'] ?? 0);
             $rows[$index]['ai_growth_signal_30d'] = (int) (
                 (int) ($row['ai_shop_clicks_30d'] ?? 0)
                 + (int) ($row['ai_whatsapp_contacts_30d'] ?? 0)
-                + (int) ($row['ai_funnel_registrations_30d'] ?? 0)
+                + (int) ($rows[$index]['ai_contact_captures_30d'] ?? 0)
             );
         }
 
@@ -673,6 +687,8 @@ class AdminLeaderOperatingSystem extends Controller {
             'ai_access_growth_signal_30d' => $growth_signal_30d,
             'ai_access_shop_clicks_30d' => (int) ($row['ai_shop_clicks_30d'] ?? 0),
             'ai_access_funnel_registrations_30d' => (int) ($row['ai_funnel_registrations_30d'] ?? 0),
+            'ai_access_ai_chat_leads_30d' => (int) ($row['ai_ai_chat_leads_30d'] ?? 0),
+            'ai_access_contact_captures_30d' => (int) ($row['ai_contact_captures_30d'] ?? (((int) ($row['ai_funnel_registrations_30d'] ?? 0)) + ((int) ($row['ai_ai_chat_leads_30d'] ?? 0)))),
             'ai_access_whatsapp_contacts_30d' => (int) ($row['ai_whatsapp_contacts_30d'] ?? 0),
             'ai_access_starter_app_review_used' => $starter_app_review_used,
             'ai_access_starter_weekly_plan_used' => $starter_weekly_plan_used,
@@ -758,6 +774,110 @@ class AdminLeaderOperatingSystem extends Controller {
             Alerts::add_success('AI pristup za ' . ($user->name ?: ('korisnika #' . $user_id)) . ' vraćen je na automatska pravila.');
         }
 
+        redirect('admin/leader-operating-system' . (!empty($redirect_query) ? '?' . http_build_query($redirect_query) : ''));
+    }
+
+    private function get_fcc_ai_model_route_definitions(): array {
+        return [
+            'coach' => [
+                'label' => 'FCC Coach',
+                'description' => 'Interni coach za suradnike unutar FCC-a i Tvojeg plana rasta.',
+            ],
+            'product_advisor' => [
+                'label' => 'AI za ljude',
+                'description' => 'Javni AI savjetnik za preporuke proizvoda i poslovnu suradnju.',
+            ],
+            'pets_advisor' => [
+                'label' => 'AI za ljubimce',
+                'description' => 'Javni AI savjetnik za pitanja o ljubimcima i proizvodima za rutinu.',
+            ],
+            'los_team_strategist' => [
+                'label' => 'LOS strategist',
+                'description' => 'Timska AI analiza za weekly focus, webinar i coaching prioritete.',
+            ],
+            'los_leader_detail' => [
+                'label' => 'LOS profil suradnika',
+                'description' => 'AI analiza pojedinačnog LOS profila suradnika.',
+            ],
+            'support_ticket_ai' => [
+                'label' => 'AI analiza podrške',
+                'description' => 'Sažetak support ticketa i prijedlog odgovora za admina.',
+            ],
+            'fallback' => [
+                'label' => 'Rezervni model',
+                'description' => 'Koristi se kada za pojedini AI tok nije odabran poseban model.',
+            ],
+        ];
+    }
+
+    private function get_fcc_ai_model_routing_payload(): array {
+        $route_definitions = $this->get_fcc_ai_model_route_definitions();
+        $routing = fcc_ai_get_model_routing_config();
+        $global_model = fcc_ai_get_global_default_model();
+        $model_options = array_merge(['' => 'Naslijedi globalni model (' . $global_model . ')'], array_combine(fcc_ai_get_available_models(), fcc_ai_get_available_models()));
+
+        $routes = [];
+        foreach($route_definitions as $route_key => $definition) {
+            $routes[] = [
+                'key' => $route_key,
+                'label' => (string) ($definition['label'] ?? $route_key),
+                'description' => (string) ($definition['description'] ?? ''),
+                'configured_model' => (string) ($routing[$route_key] ?? ''),
+                'resolved_model' => fcc_ai_resolve_model_route($route_key),
+            ];
+        }
+
+        return [
+            'global_model' => $global_model,
+            'model_options' => $model_options,
+            'routes' => $routes,
+        ];
+    }
+
+    private function save_fcc_ai_settings(array $payload): void {
+        $settings_value = json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        $existing_row = db()->where('`key`', 'fcc_ai')->getOne('settings');
+
+        if($existing_row) {
+            db()->where('`key`', 'fcc_ai')->update('settings', ['value' => $settings_value]);
+        } else {
+            db()->insert('settings', [
+                'key' => 'fcc_ai',
+                'value' => $settings_value,
+            ]);
+        }
+
+        cache()->deleteItem('settings');
+        cache()->deleteItemsByTag('leader_os_team_strategist');
+        cache()->deleteItemsByTag('leader_os_support_ticket_ai');
+        cache()->deleteItemsByTag('leader_os_ai_report');
+    }
+
+    private function handle_fcc_ai_model_routing_action(array $redirect_query): void {
+        if(!isset($_POST['save_fcc_ai_model_routing'])) {
+            return;
+        }
+
+        if(!\Altum\Csrf::check('global_token')) {
+            Alerts::add_error(l('global.error_message.invalid_csrf_token'));
+            redirect('admin/leader-operating-system' . (!empty($redirect_query) ? '?' . http_build_query($redirect_query) : ''));
+        }
+
+        $allowed_models = array_fill_keys(fcc_ai_get_available_models(), true);
+        $routing = fcc_ai_get_model_routing_defaults();
+
+        foreach(array_keys($routing) as $route_key) {
+            $candidate = trim((string) ($_POST['fcc_ai_model_routing'][$route_key] ?? ''));
+            $routing[$route_key] = $candidate !== '' && isset($allowed_models[$candidate]) ? fc_get_resolved_openai_model($candidate) : '';
+        }
+
+        $this->save_fcc_ai_settings([
+            'model_routing' => $routing,
+            'updated_at' => get_date(),
+            'updated_by_user_id' => (int) ($this->user->user_id ?? 0),
+        ]);
+
+        Alerts::add_success('FCC AI modeli su spremljeni.');
         redirect('admin/leader-operating-system' . (!empty($redirect_query) ? '?' . http_build_query($redirect_query) : ''));
     }
 
@@ -1660,12 +1780,16 @@ class AdminLeaderOperatingSystem extends Controller {
         return str_contains($location_url, 'wa.me') || str_contains($location_url, 'api.whatsapp.com');
     }
 
+    private function get_app_contact_captures_period(array $row): int {
+        return (int) ($row['app_funnel_registrations_period'] ?? 0) + (int) ($row['app_ai_chat_leads_period'] ?? 0);
+    }
+
     private function calculate_app_signal_score(array $row): int {
         return (int) (
             (int) ($row['app_shop_contacts_period'] ?? 0)
             + (int) ($row['app_whatsapp_contacts_period'] ?? 0)
             + (int) ($row['app_product_clicks_period'] ?? 0)
-            + ((int) ($row['app_funnel_registrations_period'] ?? 0) * 2)
+            + ($this->get_app_contact_captures_period($row) * 2)
         );
     }
 
@@ -1704,7 +1828,11 @@ class AdminLeaderOperatingSystem extends Controller {
             $rows[$index]['app_whatsapp_contacts_period'] = 0;
             $rows[$index]['app_product_clicks_period'] = 0;
             $rows[$index]['app_funnel_registrations_period'] = 0;
+            $rows[$index]['app_ai_chat_leads_period'] = 0;
+            $rows[$index]['app_contact_captures_period'] = 0;
             $rows[$index]['previous_app_funnel_registrations_period'] = 0;
+            $rows[$index]['previous_app_ai_chat_leads_period'] = 0;
+            $rows[$index]['previous_app_contact_captures_period'] = 0;
             $rows[$index]['app_signal_score'] = 0;
         }
 
@@ -1831,7 +1959,33 @@ class AdminLeaderOperatingSystem extends Controller {
             }
         }
 
+        $ai_chat_lead_counts = fcc_ai_get_chat_lead_counts_by_user_ids(array_keys($row_map), $period_start_datetime);
+        foreach($ai_chat_lead_counts as $user_id => $total) {
+            $row_index = $row_map[(int) $user_id] ?? null;
+
+            if($row_index === null) {
+                continue;
+            }
+
+            $rows[$row_index]['app_ai_chat_leads_period'] += (int) $total;
+        }
+
+        if($previous_period_start_datetime !== null) {
+            $previous_ai_chat_lead_counts = fcc_ai_get_chat_lead_counts_by_user_ids(array_keys($row_map), $previous_period_start_datetime, $period_start_datetime);
+            foreach($previous_ai_chat_lead_counts as $user_id => $total) {
+                $row_index = $row_map[(int) $user_id] ?? null;
+
+                if($row_index === null) {
+                    continue;
+                }
+
+                $rows[$row_index]['previous_app_ai_chat_leads_period'] += (int) $total;
+            }
+        }
+
         foreach($rows as $index => $row) {
+            $rows[$index]['app_contact_captures_period'] = $this->get_app_contact_captures_period($rows[$index]);
+            $rows[$index]['previous_app_contact_captures_period'] = (int) ($rows[$index]['previous_app_funnel_registrations_period'] ?? 0) + (int) ($rows[$index]['previous_app_ai_chat_leads_period'] ?? 0);
             $signal_score = $this->calculate_app_signal_score($row);
             $rows[$index]['app_signal_score'] = $signal_score;
             $rows[$index] = array_merge($rows[$index], $this->get_app_quality_payload($signal_score));
@@ -1905,7 +2059,7 @@ class AdminLeaderOperatingSystem extends Controller {
         $app_signal_score = (int) ($row['app_signal_score'] ?? 0);
         $whatsapp_contacts = (int) ($row['app_whatsapp_contacts_period'] ?? 0);
         $product_clicks = (int) ($row['app_product_clicks_period'] ?? 0);
-        $funnel_registrations = (int) ($row['app_funnel_registrations_period'] ?? 0);
+        $contact_captures = (int) ($row['app_contact_captures_period'] ?? $this->get_app_contact_captures_period($row));
         $growth = $row['growth_percent'];
         $shop_share = $total_clicks > 0 ? (($shop_clicks / $total_clicks) * 100) : 0;
         $registration_rate = $shop_clicks > 0 ? (($registration_clicks / $shop_clicks) * 100) : 0;
@@ -1936,7 +2090,7 @@ class AdminLeaderOperatingSystem extends Controller {
         if($growth !== null && $growth > 0 && $registration_rate < 10) {
             $opportunity_score += 15;
         }
-        if(($whatsapp_contacts + $product_clicks + ($funnel_registrations * 2)) >= 10 && $shop_clicks < 5) {
+        if(($whatsapp_contacts + $product_clicks + ($contact_captures * 2)) >= 10 && $shop_clicks < 5) {
             $opportunity_score += 18;
         }
         $opportunity_score = $this->clamp_score($opportunity_score);
@@ -3468,17 +3622,17 @@ class AdminLeaderOperatingSystem extends Controller {
             return [
                 'focus' => [
                     'key' => 'conversion',
-                    'label' => $is_hr ? 'Pretvaranje klikova u prijave' : 'Turn clicks into sign-ups',
+                    'label' => $is_hr ? 'Pretvaranje klikova u kontakte' : 'Turn clicks into contacts',
                     'note' => $is_hr
-                        ? nr($funnel_leads_total) . ' prijava na ' . nr($shop_clicks_total) . ' klikova · ' . nr($capture_rate) . '% stopa prijave'
-                        : nr($funnel_leads_total) . ' sign-ups from ' . nr($shop_clicks_total) . ' clicks · ' . nr($capture_rate) . '% capture rate',
+                        ? nr($funnel_leads_total) . ' prijava i AI chat kontakata na ' . nr($shop_clicks_total) . ' klikova · ' . nr($capture_rate) . '% stopa hvatanja kontakta'
+                        : nr($funnel_leads_total) . ' sign-ups and AI chat contacts from ' . nr($shop_clicks_total) . ' clicks · ' . nr($capture_rate) . '% capture rate',
                 ],
                 'friction' => [
                     'key' => 'conversion_gap',
-                    'label' => $is_hr ? 'Klikovi bez dovoljnog broja prijava' : 'Clicks without enough funnel output',
+                    'label' => $is_hr ? 'Klikovi bez dovoljnog broja kontakata' : 'Clicks without enough contact capture',
                     'note' => $is_hr
-                        ? 'Promet postoji, ali put do prijave još nije dovoljno jasan i vođen.'
-                        : 'Traffic exists, but the path to sign-up is not yet clear and guided enough.',
+                        ? 'Promet postoji, ali put do prijave ili AI chat kontakta još nije dovoljno jasan i vođen.'
+                        : 'Traffic exists, but the path to sign-up or AI chat contact is not yet clear and guided enough.',
                 ],
             ];
         }
@@ -3592,13 +3746,13 @@ class AdminLeaderOperatingSystem extends Controller {
             case 'conversion':
                 return [
                     'eyebrow' => $is_hr ? 'Admin akcija sada' : 'Admin action now',
-                    'title' => $is_hr ? 'Pregledaj top aplikacije s klikovima bez prijava' : 'Review top apps with clicks but no sign-ups',
+                    'title' => $is_hr ? 'Pregledaj top aplikacije s klikovima bez kontakata' : 'Review top apps with clicks but no contacts',
                     'subtitle' => $is_hr
-                        ? 'Promet postoji, pa sada treba pojednostaviti poziv na akciju, prijavni korak i praćenje tamo gdje klik postoji, ali prijava ne prati.'
-                        : 'Traffic exists, so the next move is to tighten CTA, funnel steps, and follow-up where clicks are happening but sign-ups are not.',
+                        ? 'Promet postoji, pa sada treba pojednostaviti poziv na akciju, prijavni korak i praćenje tamo gdje klik postoji, ali prijava ili AI chat kontakt ne prate.'
+                        : 'Traffic exists, so the next move is to tighten CTA, funnel steps, and follow-up where clicks are happening but sign-ups or AI chat contacts are not.',
                     'note' => $is_hr
-                        ? 'Klikovi: ' . ($shop_compare_text !== '' ? $shop_compare_text : '-') . ' · Prijave: ' . ($funnel_compare_text !== '' ? $funnel_compare_text : '-')
-                        : 'Clicks: ' . ($shop_compare_text !== '' ? $shop_compare_text : '-') . ' · Funnel: ' . ($funnel_compare_text !== '' ? $funnel_compare_text : '-'),
+                        ? 'Klikovi: ' . ($shop_compare_text !== '' ? $shop_compare_text : '-') . ' · Kontakti: ' . ($funnel_compare_text !== '' ? $funnel_compare_text : '-')
+                        : 'Clicks: ' . ($shop_compare_text !== '' ? $shop_compare_text : '-') . ' · Contacts: ' . ($funnel_compare_text !== '' ? $funnel_compare_text : '-'),
                     'tone' => 'warning',
                 ];
 
@@ -3696,7 +3850,7 @@ class AdminLeaderOperatingSystem extends Controller {
                 ],
                 'conversion' => [
                     $build_metric_link('total_shop_clicks_period', $is_hr ? 'Klikovi prema Foreveru' : 'Clicks toward Forever', nr($shop_clicks_total), $is_hr ? 'Ukupni klikovi iz aplikacija prema Forever odredištima u odabranom periodu.' : 'Total clicks from apps toward Forever destinations in the selected period.'),
-                    $build_metric_link('total_funnel_leads_period', $is_hr ? 'Funnel prijave' : 'Funnel sign-ups', nr($funnel_leads_total), $is_hr ? 'Koliko se tog interesa stvarno pretvorilo u ispunjene prijave.' : 'How much of that interest turned into completed sign-ups.'),
+                    $build_metric_link('total_funnel_leads_period', $is_hr ? 'Leadovi i AI chat kontakti' : 'Leads and AI chat contacts', nr($funnel_leads_total), $is_hr ? 'Koliko se tog interesa stvarno pretvorilo u prijave i kontakte uhvaćene kroz AI chat.' : 'How much of that interest turned into sign-ups and contacts captured through AI chat.'),
                 ],
                 'growth' => [
                     $build_metric_link('rising', $is_hr ? 'U rastu' : 'Rising', nr($rising_total), $is_hr ? 'Suradnici koji trenutno pokazuju najzdraviji momentum za scale-up.' : 'Collaborators currently showing the healthiest growth momentum.'),
@@ -3777,20 +3931,20 @@ class AdminLeaderOperatingSystem extends Controller {
                     'tone' => ($high_anomaly_total >= 3 || $blocked_attempts_total >= 10) ? 'danger' : ($risk_total > 0 ? 'warning' : 'success'),
                 ],
                 [
-                    'label' => $is_hr ? 'Klikovi → prijave' : 'Clicks to sign-ups',
-                    'value' => $is_hr ? nr($funnel_leads_total) . ' leadova' : nr($funnel_leads_total) . ' leads',
+                    'label' => $is_hr ? 'Klikovi → kontakti' : 'Clicks to contacts',
+                    'value' => $is_hr ? nr($funnel_leads_total) . ' leadova i AI kontakata' : nr($funnel_leads_total) . ' leads and AI contacts',
                     'note' => $is_hr
-                        ? nr($shop_clicks_total) . ' klikova · ' . nr($capture_rate) . '% stopa prijave'
+                        ? nr($shop_clicks_total) . ' klikova · ' . nr($capture_rate) . '% stopa hvatanja kontakta'
                         : nr($shop_clicks_total) . ' clicks · ' . nr($capture_rate) . '% capture rate',
                     'what_it_shows' => $is_hr
-                        ? 'Koliko klikova prema Foreveru tim stvara i koliko ih se stvarno pretvara u funnel prijave.'
-                        : 'How many clicks toward Forever the team creates and how many actually turn into funnel sign-ups.',
+                        ? 'Koliko klikova prema Foreveru tim stvara i koliko ih se stvarno pretvara u prijave i AI chat kontakte.'
+                        : 'How many clicks toward Forever the team creates and how many actually turn into sign-ups and AI chat contacts.',
                     'how_to_use' => $is_hr
-                        ? 'Ako klikovi rastu, a prijave ne prate, problem je u CTA-u, funnel koraku ili follow-upu.'
-                        : 'If clicks grow but sign-ups do not, the issue is in the CTA, funnel step, or follow-up.',
+                        ? 'Ako klikovi rastu, a prijave i AI chat kontakti ne prate, problem je u CTA-u, funnel koraku ili follow-upu.'
+                        : 'If clicks grow but sign-ups and AI chat contacts do not, the issue is in the CTA, funnel step, or follow-up.',
                     'metric_links' => [
                         $build_metric_link('total_shop_clicks_period', $is_hr ? 'Klikovi' : 'Clicks', nr($shop_clicks_total), $is_hr ? 'Ukupni klikovi prema Forever odredištima u odabranom periodu.' : 'Total clicks toward Forever destinations in the selected period.'),
-                        $build_metric_link('total_funnel_leads_period', $is_hr ? 'Prijave' : 'Sign-ups', nr($funnel_leads_total), $is_hr ? 'Ispunjeni funnel obrasci u istom periodu.' : 'Completed funnel forms in the same period.'),
+                        $build_metric_link('total_funnel_leads_period', $is_hr ? 'Prijave i AI chat kontakti' : 'Sign-ups and AI chat contacts', nr($funnel_leads_total), $is_hr ? 'Ispunjeni funnel obrasci i AI chat kontakti u istom periodu.' : 'Completed funnel forms and AI chat contacts in the same period.'),
                     ],
                     'tone' => ($shop_clicks_total >= 20 && $capture_rate < 10) ? 'warning' : ($capture_rate >= 15 ? 'success' : 'info'),
                 ],
@@ -4704,8 +4858,8 @@ class AdminLeaderOperatingSystem extends Controller {
         $payload['top_by_registrations'] = $this->map_leaderboard_rows($registration_rows, 'forever_registration_clicks_period');
 
         $lead_rows = $rows;
-        usort($lead_rows, static fn($a, $b) => (($b['app_funnel_registrations_period'] ?? 0) <=> ($a['app_funnel_registrations_period'] ?? 0)) ?: (($b['leader_os_score'] ?? 0) <=> ($a['leader_os_score'] ?? 0)));
-        $payload['top_by_funnel_leads'] = $this->map_leaderboard_rows($lead_rows, 'app_funnel_registrations_period');
+        usort($lead_rows, static fn($a, $b) => (($b['app_contact_captures_period'] ?? 0) <=> ($a['app_contact_captures_period'] ?? 0)) ?: (($b['leader_os_score'] ?? 0) <=> ($a['leader_os_score'] ?? 0)));
+        $payload['top_by_funnel_leads'] = $this->map_leaderboard_rows($lead_rows, 'app_contact_captures_period');
 
         $app_quality_rows = $rows;
         usort($app_quality_rows, static fn($a, $b) => (($b['app_quality_score'] ?? 0) <=> ($a['app_quality_score'] ?? 0)) ?: (($b['app_signal_score'] ?? 0) <=> ($a['app_signal_score'] ?? 0)));
@@ -5021,6 +5175,7 @@ class AdminLeaderOperatingSystem extends Controller {
             $has_result_signal = (int) ($row['ai_access_growth_signal_30d'] ?? 0) > 0
                 || (int) ($row['ai_access_shop_clicks_30d'] ?? 0) > 0
                 || (int) ($row['ai_access_funnel_registrations_30d'] ?? 0) > 0
+                || (int) ($row['ai_access_ai_chat_leads_30d'] ?? 0) > 0
                 || (int) ($row['ai_access_whatsapp_contacts_30d'] ?? 0) > 0;
 
             if($has_profile) {
@@ -5552,9 +5707,9 @@ class AdminLeaderOperatingSystem extends Controller {
         return $ticket_payload;
     }
 
-    private function get_ai_credentials(): array {
-        $api_key = trim((string) (settings()->main->openai_api_key ?? settings()->aix->openai_api_key ?? ''));
-        $model = fc_get_resolved_openai_model(settings()->main->openai_model ?? '');
+    private function get_ai_credentials(string $purpose = 'los_team_strategist'): array {
+        $api_key = fcc_ai_get_openai_api_key();
+        $model = fcc_ai_resolve_model_route($purpose);
 
         return [
             'api_key' => $api_key,
@@ -5736,7 +5891,7 @@ class AdminLeaderOperatingSystem extends Controller {
             }
         }
 
-        $credentials = $this->get_ai_credentials();
+        $credentials = $this->get_ai_credentials('support_ticket_ai');
 
         if($credentials['api_key'] === '') {
             return $fallback_report;
@@ -6089,6 +6244,7 @@ class AdminLeaderOperatingSystem extends Controller {
         $support_center = $overview_payload['support_center'] ?? [];
         $coaching_dashboard = $overview_payload['coaching_dashboard'] ?? [];
         $fraud_dashboard = $overview_payload['fraud_dashboard'] ?? [];
+        $fcc_ai_team = $overview_payload['fcc_ai_team'] ?? [];
         $team_ai_habits = $overview_payload['team_ai_habits'] ?? [];
         $team_ai_actions = $overview_payload['team_ai_actions'] ?? [];
         $message_targets = $overview_payload['message_targets'] ?? [];
@@ -6172,6 +6328,73 @@ class AdminLeaderOperatingSystem extends Controller {
                     ];
                 }, array_slice((array) ($support_center['recent_tickets'] ?? []), 0, 6)),
             ],
+            'fcc_ai_intelligence' => [
+                'totals' => [
+                    'conversations' => (int) ($fcc_ai_team['totals']['conversations'] ?? 0),
+                    'public_conversations' => (int) ($fcc_ai_team['totals']['public_conversations'] ?? 0),
+                    'coach_conversations' => (int) ($fcc_ai_team['totals']['coach_conversations'] ?? 0),
+                    'messages' => (int) ($fcc_ai_team['totals']['messages'] ?? 0),
+                    'leads' => (int) ($fcc_ai_team['totals']['leads'] ?? 0),
+                    'business_leads' => (int) ($fcc_ai_team['totals']['business_leads'] ?? 0),
+                    'hot_leads' => (int) ($fcc_ai_team['totals']['hot_leads'] ?? 0),
+                    'negative_feedback' => (int) ($fcc_ai_team['totals']['negative_feedback'] ?? 0),
+                    'review_conversations' => (int) ($fcc_ai_team['totals']['review_conversations'] ?? 0),
+                ],
+                'assistant_breakdown' => array_map(static function($assistant) {
+                    return [
+                        'label' => (string) ($assistant['label'] ?? ''),
+                        'conversations' => (int) ($assistant['conversations'] ?? 0),
+                        'messages' => (int) ($assistant['messages'] ?? 0),
+                        'leads' => (int) ($assistant['leads'] ?? 0),
+                        'business_leads' => (int) ($assistant['business_leads'] ?? 0),
+                        'negative_feedback' => (int) ($assistant['negative_feedback'] ?? 0),
+                    ];
+                }, array_slice((array) ($fcc_ai_team['assistant_breakdown'] ?? []), 0, 5)),
+                'top_topics' => array_slice((array) ($fcc_ai_team['top_topics'] ?? []), 0, 6),
+                'rising_topics' => array_slice((array) ($fcc_ai_team['rising_topics'] ?? []), 0, 6),
+                'webinar_candidates' => array_slice((array) ($fcc_ai_team['webinar_candidates'] ?? []), 0, 4),
+                'help_watchlist' => array_map(static function($user) {
+                    return [
+                        'name' => (string) ($user['name'] ?? ''),
+                        'reason' => (string) ($user['reason'] ?? ''),
+                        'help_score' => (int) ($user['help_score'] ?? 0),
+                        'coach_conversations' => (int) ($user['coach_conversations'] ?? 0),
+                        'public_conversations' => (int) ($user['public_conversations'] ?? 0),
+                        'leads' => (int) ($user['leads'] ?? 0),
+                        'negative_feedback' => (int) ($user['negative_feedback'] ?? 0),
+                    ];
+                }, array_slice((array) ($fcc_ai_team['help_watchlist'] ?? []), 0, 6)),
+                'assistant_performance' => array_map(static function($assistant) {
+                    return [
+                        'label' => (string) ($assistant['label'] ?? ''),
+                        'lead_rate' => (float) ($assistant['lead_rate'] ?? 0),
+                        'review_rate' => (float) ($assistant['review_rate'] ?? 0),
+                        'result_score' => (int) ($assistant['result_score'] ?? 0),
+                        'summary' => (string) ($assistant['summary'] ?? ''),
+                        'opportunity' => (string) ($assistant['opportunity'] ?? ''),
+                    ];
+                }, array_slice((array) ($fcc_ai_team['assistant_performance'] ?? []), 0, 5)),
+                'top_users' => array_map(static function($user) {
+                    return [
+                        'name' => (string) ($user['name'] ?? ''),
+                        'conversations' => (int) ($user['conversations'] ?? 0),
+                        'coach_conversations' => (int) ($user['coach_conversations'] ?? 0),
+                        'public_conversations' => (int) ($user['public_conversations'] ?? 0),
+                        'leads' => (int) ($user['leads'] ?? 0),
+                        'negative_feedback' => (int) ($user['negative_feedback'] ?? 0),
+                    ];
+                }, array_slice((array) ($fcc_ai_team['top_users'] ?? []), 0, 6)),
+                'review_queue' => array_map(static function($feedback) {
+                    return [
+                        'owner_name' => (string) ($feedback['owner_name'] ?? ''),
+                        'assistant_label' => (string) ($feedback['assistant_label'] ?? ''),
+                        'reason_label' => (string) ($feedback['reason_label'] ?? ''),
+                        'source_label' => (string) ($feedback['source_label'] ?? ''),
+                        'message_excerpt' => (string) ($feedback['message_excerpt'] ?? ''),
+                        'note' => (string) ($feedback['note'] ?? ''),
+                    ];
+                }, array_slice((array) ($fcc_ai_team['recent_negative_feedback'] ?? []), 0, 6)),
+            ],
             'fraud' => [
                 'totals' => $fraud_dashboard['totals'] ?? [],
                 'top_drivers' => array_slice((array) ($fraud_dashboard['top_anomaly_drivers'] ?? []), 0, 5),
@@ -6205,7 +6428,7 @@ class AdminLeaderOperatingSystem extends Controller {
             }
         }
 
-        $credentials = $this->get_ai_credentials();
+        $credentials = $this->get_ai_credentials('los_team_strategist');
 
         if($credentials['api_key'] === '') {
             throw new \Exception('OpenAI API ključ nije postavljen u admin postavkama.');
@@ -6242,11 +6465,13 @@ class AdminLeaderOperatingSystem extends Controller {
                             '- Zakljuci moraju biti strogo vezani uz dane podatke, ne genericki.',
                             '- Uvijek uzmi u obzir change_from_last_report: sto se promijenilo od zadnjeg briefa i gdje je momentum ili pad.',
                             '- Uvijek uzmi u obzir coaching.top_reasons, coaching.recent_activity_rows i illustrative_cases kako bi brief bio vezan uz stvarne ljude i stvarne razloge, a ne samo uz agregate.',
+                            '- Uvijek uzmi u obzir fcc_ai_intelligence.top_topics, review_queue i top_users kako bi prepoznao sto stvarni korisnici pitaju, koji odgovori stvaraju problem i gdje lezi webinar ili coaching prilika.',
                             '- main_risk neka bude jedna kratka, poslovno jasna recenica o najvecem trenutnom riziku za tim.',
                             '- main_opportunity neka bude jedna kratka, poslovno jasna recenica o najvecem pomaku koji se sada moze dobiti.',
                             '- open_first neka kaze kojeg tipa suradnika ili koju grupu mentor treba prvo otvoriti i zasto.',
                             '- avoid_this_week neka kaze sto admin ovaj tjedan ne treba gurati jer bi rasprsilo fokus.',
                             '- Ako support teme ponavljaju istu nejasnocu, predlozi da to postane webinar, FAQ ili interna obavijest.',
+                            '- Ako FCC AI chatovi otkrivaju novu ponavljajucu temu ili los signal u odgovorima, koristi to kao input za webinar, FAQ, prompt doradu ili mentorsku intervenciju.',
                             '- Ako je glavni problem consistency, fokusiraj se na execution i tjedni ritam rada.',
                             '- Ako je glavni problem promet bez registracija, fokusiraj se na put od klika do prijave i follow-up.',
                             '- Ako postoje rising suradnici i market championi, navedi kako ih koristiti kao primjer timu.',
@@ -6356,6 +6581,7 @@ class AdminLeaderOperatingSystem extends Controller {
     private function get_team_strategist_payload(array $overview_payload): array {
         $period_key = (string) ($overview_payload['selected_period'] ?? '30d');
         $support_center = $overview_payload['support_center'] ?? [];
+        $fcc_ai_team = $overview_payload['fcc_ai_team'] ?? [];
         $current_snapshot = $this->get_team_snapshot_payload($overview_payload);
         $confirmed_webinar_total = (int) ($support_center['totals']['confirmed_webinar_total'] ?? 0);
         $confirmed_webinar_topic = trim((string) ($support_center['confirmed_webinar_tickets'][0]['subject'] ?? ''));
@@ -6409,6 +6635,16 @@ class AdminLeaderOperatingSystem extends Controller {
             $focus_reason = 'U podršci je ručno potvrđena tema koja se pokazala dovoljno relevantnom za širi tim i zaslužuje mjesto u sljedećem webinaru.';
             $webinar_title = 'Tjedni webinar: ' . $confirmed_webinar_topic;
             $support_note = 'Potvrđene support teme sada imaju prioritet za webinar, FAQ i timsku poruku.';
+        } elseif(!empty($fcc_ai_team['webinar_candidates'][0]['title'])) {
+            $focus_title = 'Iskoristiti najjači AI webinar kandidat iz stvarnih razgovora';
+            $focus_reason = (string) ($fcc_ai_team['webinar_candidates'][0]['why_now'] ?? 'FCC AI razgovori sada jasno pokazuju što treba pretvoriti u webinar i jasniju edukaciju.');
+            $webinar_title = (string) ($fcc_ai_team['webinar_candidates'][0]['title'] ?? 'Tjedni webinar: AI tema');
+            $support_note = 'Rastuće AI teme, review red i suradnici kojima treba pomoć sada su izravni ulaz u webinar i coaching fokus.';
+        } elseif(!empty($fcc_ai_team['top_topics'][0]['label']) && (int) ($fcc_ai_team['totals']['conversations'] ?? 0) >= 8) {
+            $focus_title = 'Iskoristiti najaktualniju AI temu iz stvarnih razgovora';
+            $focus_reason = 'FCC AI razgovori sada već jasno pokazuju što korisnici i suradnici najviše pitaju, pa to treba pretvoriti u webinar, FAQ i bolju prompt logiku.';
+            $webinar_title = 'Tjedni webinar: ' . (string) ($fcc_ai_team['top_topics'][0]['label'] ?? 'najaktualnija AI tema');
+            $support_note = 'Najponavljanije AI teme i loši odgovori treba pretvarati u jasniji sadržaj, webinar i prompt poboljšanja.';
         } elseif((int) ($support_center['totals']['open_total'] ?? 0) >= 8 && !empty($support_center['top_themes'][0]['label'])) {
             $focus_title = 'Riješiti najčešću nejasnoću iz podrške';
             $focus_reason = 'Support upiti i dalje otvaraju istu temu, što znači da timu treba jasnije objašnjenje, primjer i centraliziran odgovor.';
@@ -6475,7 +6711,7 @@ class AdminLeaderOperatingSystem extends Controller {
             ],
             'main_risk' => 'Najveći rizik je da tim zadrži promet i interes, ali bez dovoljno jasnog puta do prijave i bez dosljednog follow-upa.',
             'main_opportunity' => 'Najveća prilika je brzo pretvoriti postojeći interes u jasniji put prema prijavi, kontaktu i boljoj izvedbi.',
-            'open_first' => 'Prvo otvori risk grupu bez AI plana i suradnike koji imaju promet bez registracije ili funnel prijave.',
+            'open_first' => 'Prvo otvori risk grupu bez AI plana i suradnike koji imaju promet bez registracije ili AI chat kontakta.',
             'avoid_this_week' => 'Ne uvodi više paralelnih tema i novih eksperimenata prije nego što se očisti glavni blocker u putu do rezultata.',
             'team_message_preview' => 'Ovaj tjedan fokus je na jednostavnijem putu do rezultata: manje raspršenosti, jasniji follow-up i jedna konkretna akcija koju svi mogu provesti odmah.',
             'risk_group_message_preview' => 'Ako imaš promet bez rezultata ili si zapela u executionu, ovaj tjedan ne širimo aktivnosti nego čistimo glavni blocker i put do prijave.',
@@ -6596,7 +6832,7 @@ class AdminLeaderOperatingSystem extends Controller {
             'quality_ready' => $this->build_drilldown_payload('Jake aplikacije', $rows, static fn($row) => (int) ($row['app_quality_score'] ?? 0), static fn($row) => (int) ($row['app_quality_score'] ?? 0) >= 70, 60, static fn($row, $metric) => 'App ' . nr((int) $metric)),
             'active_collaborators' => $this->build_drilldown_payload('Aktivni suradnici', $rows, static fn($row) => (int) ($row['clicks_total_period'] ?? 0), static fn($row) => (int) ($row['clicks_total_period'] ?? 0) > 0 || (int) ($row['active_days_total'] ?? 0) > 0, 60, static fn($row, $metric) => 'Klikovi ' . nr((int) $metric)),
             'total_registrations_period' => $this->build_drilldown_payload('Registracije u periodu', $rows, static fn($row) => (int) ($row['forever_registration_clicks_period'] ?? 0), static fn($row) => (int) ($row['forever_registration_clicks_period'] ?? 0) > 0, 60, static fn($row, $metric) => 'Registracije ' . nr((int) $metric), 'sum_metric'),
-            'total_funnel_leads_period' => $this->build_drilldown_payload('Funnel leadovi', $rows, static fn($row) => (int) ($row['app_funnel_registrations_period'] ?? 0), static fn($row) => (int) ($row['app_funnel_registrations_period'] ?? 0) > 0, 60, static fn($row, $metric) => 'Leadovi ' . nr((int) $metric), 'sum_metric'),
+            'total_funnel_leads_period' => $this->build_drilldown_payload('Leadovi i AI chat kontakti', $rows, static fn($row) => (int) ($row['app_contact_captures_period'] ?? 0), static fn($row) => (int) ($row['app_contact_captures_period'] ?? 0) > 0, 60, static fn($row, $metric) => 'Kontakti ' . nr((int) $metric), 'sum_metric'),
             'total_shop_clicks_period' => $this->build_drilldown_payload('Webshop klikovi u periodu', $rows, static fn($row) => (int) ($row['forever_shop_clicks_period'] ?? 0), static fn($row) => (int) ($row['forever_shop_clicks_period'] ?? 0) > 0, 60, static fn($row, $metric) => 'Shop klikovi ' . nr((int) $metric), 'sum_metric'),
             'active_pro_total' => $this->build_drilldown_payload('Aktivni PRO', $rows, static fn($row) => (int) ($row['leader_os_score'] ?? 0), static fn($row) => !empty($row['is_active_pro']), 60, static fn($row, $metric) => 'LOS ' . nr((int) $metric)),
             'ai_active_collaborators' => $this->build_drilldown_payload('AI aktivni suradnici', $rows, static fn($row) => (int) ($row['ai_access_growth_signal_30d'] ?? 0), static fn($row) => in_array((string) ($row['ai_usage_stage_key'] ?? 'inactive'), ['started', 'questionnaire', 'active'], true), 60, static fn($row, $metric) => 'AI signal ' . nr((int) $metric)),
@@ -6637,15 +6873,17 @@ class AdminLeaderOperatingSystem extends Controller {
                     $has_result = (int) ($row['ai_access_growth_signal_30d'] ?? 0) > 0
                         || (int) ($row['ai_access_shop_clicks_30d'] ?? 0) > 0
                         || (int) ($row['ai_access_funnel_registrations_30d'] ?? 0) > 0
+                        || (int) ($row['ai_access_ai_chat_leads_30d'] ?? 0) > 0
                         || (int) ($row['ai_access_whatsapp_contacts_30d'] ?? 0) > 0;
 
                     return $ai_active && $has_result;
-                }, 60, static fn($row, $metric) => 'Shop ' . nr((int) ($row['ai_access_shop_clicks_30d'] ?? 0)) . ' · Funnel ' . nr((int) ($row['ai_access_funnel_registrations_30d'] ?? 0)) . ' · WA ' . nr((int) ($row['ai_access_whatsapp_contacts_30d'] ?? 0))),
+                }, 60, static fn($row, $metric) => 'Shop ' . nr((int) ($row['ai_access_shop_clicks_30d'] ?? 0)) . ' · Funnel ' . nr((int) ($row['ai_access_funnel_registrations_30d'] ?? 0)) . ' · AI chat ' . nr((int) ($row['ai_access_ai_chat_leads_30d'] ?? 0)) . ' · WA ' . nr((int) ($row['ai_access_whatsapp_contacts_30d'] ?? 0))),
             'ai_active_no_result_total' => $this->build_drilldown_payload('AI aktivni bez rezultata', $rows, static fn($row) => (int) ($row['days_since_last_checkin'] ?? 999), static function($row) {
                     $ai_active = in_array((string) ($row['ai_usage_stage_key'] ?? 'inactive'), ['started', 'questionnaire', 'active'], true);
                     $has_result = (int) ($row['ai_access_growth_signal_30d'] ?? 0) > 0
                         || (int) ($row['ai_access_shop_clicks_30d'] ?? 0) > 0
                         || (int) ($row['ai_access_funnel_registrations_30d'] ?? 0) > 0
+                        || (int) ($row['ai_access_ai_chat_leads_30d'] ?? 0) > 0
                         || (int) ($row['ai_access_whatsapp_contacts_30d'] ?? 0) > 0;
 
                     return $ai_active && !$has_result;
@@ -6734,7 +6972,7 @@ class AdminLeaderOperatingSystem extends Controller {
             : 0.0;
         $active_pro_total = count(array_filter($rows, static fn($row) => !empty($row['is_active_pro'])));
         $previous_shop_clicks_total = array_sum(array_map(static fn($row) => (int) ($row['previous_forever_shop_clicks_period'] ?? 0), $rows));
-        $previous_funnel_total = array_sum(array_map(static fn($row) => (int) ($row['previous_app_funnel_registrations_period'] ?? 0), $rows));
+        $previous_funnel_total = array_sum(array_map(static fn($row) => (int) ($row['previous_app_contact_captures_period'] ?? 0), $rows));
 
         $build_period_compare = static function(int $current, int $previous): array {
             $delta = $current - $previous;
@@ -6787,12 +7025,12 @@ class AdminLeaderOperatingSystem extends Controller {
             ],
             [
                 'key' => 'total_funnel_leads_period',
-                'label' => 'Funnel prijave',
+                'label' => 'Leadovi i AI chat kontakti',
                 'value' => (int) ($totals['total_funnel_leads_period'] ?? 0),
                 'value_display' => nr((int) ($totals['total_funnel_leads_period'] ?? 0)),
                 'chip' => strtoupper($period_key),
-                'tooltip' => 'Koliko je funnel obrazaca stvarno ispunjeno u odabranom periodu. Ovo je glavni lead output tima.',
-                'hint' => 'Najvažniji izlaz interesa iz timskih aplikacija.',
+                'tooltip' => 'Koliko je u odabranom periodu stvarno uhvaćeno kontakata kroz funnel i AI chat. Ovo je glavni lead output tima.',
+                'hint' => 'Najvažniji izlaz interesa iz timskih aplikacija i AI chatova.',
                 'compare' => $build_period_compare((int) ($totals['total_funnel_leads_period'] ?? 0), $previous_funnel_total),
             ],
             [
@@ -7644,7 +7882,7 @@ class AdminLeaderOperatingSystem extends Controller {
             return (int) ($row['clicks_total_period'] ?? 0) > 0 || (int) ($row['active_days_total'] ?? 0) > 0;
         }));
         $totals['total_registrations_period'] = array_sum(array_map(static fn($row) => (int) ($row['forever_registration_clicks_period'] ?? 0), $rows));
-        $totals['total_funnel_leads_period'] = array_sum(array_map(static fn($row) => (int) ($row['app_funnel_registrations_period'] ?? 0), $rows));
+        $totals['total_funnel_leads_period'] = array_sum(array_map(static fn($row) => (int) ($row['app_contact_captures_period'] ?? 0), $rows));
         $totals['ai_active_collaborators'] = count(array_filter($rows, static function($row) {
             return in_array((string) ($row['ai_usage_stage_key'] ?? 'inactive'), ['started', 'questionnaire', 'active'], true);
         }));
@@ -7696,6 +7934,7 @@ class AdminLeaderOperatingSystem extends Controller {
         $coaching_dashboard = $this->get_coaching_dashboard_payload($all_rows, $queue_rows, $recent_coaching_rows);
         $support_center = $this->get_support_center_payload($all_rows);
         $selected_support_ticket = $this->get_selected_support_ticket_payload((int) ($_GET['support_ticket_id'] ?? 0));
+        $fcc_ai_team = fcc_ai_get_team_dashboard_payload($period_start_datetime, array_column($all_rows, 'user_id'), 8, \Altum\Language::$code, $period_key);
 
         $kpi_drilldowns = $this->get_kpi_drilldowns_payload($all_rows, $suspicious_clicks);
         $primary_team_kpis = $this->get_primary_team_kpis_payload($all_rows, $totals, $period_key);
@@ -7744,6 +7983,7 @@ class AdminLeaderOperatingSystem extends Controller {
             'team_coaching_roi' => $team_coaching_roi,
             'coaching_dashboard' => $coaching_dashboard,
             'support_center' => $support_center,
+            'fcc_ai_team' => $fcc_ai_team,
             'selected_support_ticket' => $selected_support_ticket,
             'message_targets' => $message_targets,
             'team_momentum' => $team_momentum,
@@ -7786,7 +8026,7 @@ class AdminLeaderOperatingSystem extends Controller {
         $selected_fraud_status = isset($_GET['fraud_status']) && in_array($_GET['fraud_status'], $allowed_fraud_statuses, true) ? $_GET['fraud_status'] : 'all';
         $allowed_sorts = ['leader_os', 'app_quality', 'fraud', 'shop_clicks', 'growth', 'registrations', 'risk', 'country', 'source', 'last_click'];
         $selected_sort = isset($_GET['sort']) && in_array($_GET['sort'], $allowed_sorts, true) ? $_GET['sort'] : 'leader_os';
-        $allowed_tabs = ['overview', 'operations', 'collaborators', 'analytics', 'ai', 'fraud', 'coaching', 'support'];
+        $allowed_tabs = ['overview', 'operations', 'collaborators', 'analytics', 'ai', 'ai_intelligence', 'fraud', 'coaching', 'support'];
         $selected_tab = isset($_GET['tab']) && in_array($_GET['tab'], $allowed_tabs, true) ? $_GET['tab'] : 'overview';
         $search_query = trim((string) ($_GET['search'] ?? ''));
         $page = max(1, (int) ($_GET['page'] ?? 1));
@@ -7809,6 +8049,7 @@ class AdminLeaderOperatingSystem extends Controller {
             $this->handle_operations_rejection_action($redirect_query);
             $this->handle_operations_approval_action($redirect_query);
             $this->handle_operations_card_action($redirect_query);
+            $this->handle_fcc_ai_model_routing_action($redirect_query);
             $this->handle_team_strategist_action($redirect_query);
             $this->handle_support_ticket_ai_action($redirect_query);
             $this->handle_support_ticket_reply_action($redirect_query);
@@ -7839,6 +8080,7 @@ class AdminLeaderOperatingSystem extends Controller {
             'selected_support_ticket_id' => $selected_support_ticket_id,
             'tab_options' => $allowed_tabs,
             'search_query' => $search_query,
+            'fcc_ai_model_routing' => $this->get_fcc_ai_model_routing_payload(),
             'operations' => $this->get_operations_payload($search_query),
             'overview' => $this->get_overview_payload($selected_period, $search_query, $selected_status, $selected_ai_status, $selected_anomaly_status, $selected_fraud_status, $selected_sort, $page),
         ];

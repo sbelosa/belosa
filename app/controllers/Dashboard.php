@@ -458,6 +458,7 @@ class Dashboard extends Controller {
         $forever_shop_clicks_prev_30d = (int) database()->query("SELECT COUNT(*) AS `total` FROM `track_links` LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id` WHERE `track_links`.`user_id` = {$this->user->user_id} AND `track_links`.`datetime` >= '{$previous_thirty_days_start_datetime}' AND `track_links`.`datetime` < '{$thirty_days_start_datetime}' {$unique_track_links_condition} AND {$forever_shop_condition}")->fetch_object()->total;
         $forever_registration_clicks_30d = (int) database()->query("SELECT COUNT(*) AS `total` FROM `track_links` LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id` WHERE `track_links`.`user_id` = {$this->user->user_id} AND `track_links`.`datetime` >= '{$thirty_days_start_datetime}' {$unique_track_links_condition} AND {$forever_registration_condition}")->fetch_object()->total;
         $forever_registration_clicks_prev_30d = (int) database()->query("SELECT COUNT(*) AS `total` FROM `track_links` LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id` WHERE `track_links`.`user_id` = {$this->user->user_id} AND `track_links`.`datetime` >= '{$previous_thirty_days_start_datetime}' AND `track_links`.`datetime` < '{$thirty_days_start_datetime}' {$unique_track_links_condition} AND {$forever_registration_condition}")->fetch_object()->total;
+        $ai_chat_leads_30d = (int) db()->where('user_id', $this->user->user_id)->where('type', 'ai_chat_lead')->where('datetime', $thirty_days_start_datetime, '>=')->getValue('data', 'COUNT(*)');
         $qualified_clicks_30d = (int) database()->query("SELECT COUNT(*) AS `total`
             FROM `track_links`
             LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id`
@@ -760,7 +761,7 @@ class Dashboard extends Controller {
         $signal_chart_leads_result = database()->query("SELECT DATE(`datetime`) AS `day`, COUNT(*) AS `total`
             FROM `data`
             WHERE `user_id` = {$this->user->user_id}
-              AND `type` = 'lead_funnel'
+              AND `type` IN ('lead_funnel', 'ai_chat_lead')
               AND `datetime` >= '{$thirty_days_start_datetime}'
             GROUP BY DATE(`datetime`)");
         while($signal_chart_lead_row = $signal_chart_leads_result->fetch_object()) {
@@ -848,6 +849,9 @@ class Dashboard extends Controller {
             'active_funnels_30d' => 0,
             'unique_clicks_30d' => 0,
             'leads_30d' => 0,
+            'funnel_leads_30d' => 0,
+            'ai_chat_leads_30d' => $ai_chat_leads_30d,
+            'contact_captures_30d' => $ai_chat_leads_30d,
             'conversion_rate_30d' => 0,
             'best_open_mode' => null,
             'best_thank_you_type' => null,
@@ -872,7 +876,7 @@ class Dashboard extends Controller {
             $hero_title = l('dashboard.hero.state.registration.title');
             $hero_description = l('dashboard.hero.state.registration.description');
             $next_focus = l('dashboard.hero.state.registration.next_focus');
-        } elseif(($dashboard_funnel_analytics['leads_30d'] ?? 0) > 0) {
+        } elseif(($dashboard_funnel_analytics['contact_captures_30d'] ?? 0) > 0) {
             $hero_title = l('dashboard.hero.state.leads.title');
             $hero_description = l('dashboard.hero.state.leads.description');
             $next_focus = l('dashboard.hero.state.leads.next_focus');
@@ -1114,6 +1118,7 @@ class Dashboard extends Controller {
                 $leads = (int) ($funnel_leads_map[$funnel_id]['total_leads'] ?? 0);
                 $dashboard_funnel_analytics['unique_clicks_30d'] += $unique_clicks;
                 $dashboard_funnel_analytics['leads_30d'] += $leads;
+                $dashboard_funnel_analytics['funnel_leads_30d'] += $leads;
 
                 if($unique_clicks > 0 || $leads > 0) {
                     $dashboard_funnel_analytics['active_funnels_30d']++;
@@ -1132,6 +1137,7 @@ class Dashboard extends Controller {
                 $thank_you_type_breakdown[$funnel->thank_you_type]['leads'] += $leads;
             }
 
+            $dashboard_funnel_analytics['contact_captures_30d'] = (int) ($dashboard_funnel_analytics['funnel_leads_30d'] ?? 0) + (int) ($dashboard_funnel_analytics['ai_chat_leads_30d'] ?? 0);
             $dashboard_funnel_analytics['conversion_rate_30d'] = $dashboard_funnel_analytics['unique_clicks_30d'] > 0 ? round(($dashboard_funnel_analytics['leads_30d'] / $dashboard_funnel_analytics['unique_clicks_30d']) * 100, 1) : 0;
 
             foreach($open_mode_breakdown as &$row) {
@@ -1190,6 +1196,8 @@ class Dashboard extends Controller {
             }
         }
 
+        $dashboard_funnel_analytics['contact_captures_30d'] = (int) ($dashboard_funnel_analytics['funnel_leads_30d'] ?? $dashboard_funnel_analytics['leads_30d'] ?? 0) + (int) ($dashboard_funnel_analytics['ai_chat_leads_30d'] ?? 0);
+
         if($qualified_clicks_30d < $growth_active_threshold) {
             $hero_title = l('dashboard.hero.state.building.title');
             $hero_description = l('dashboard.hero.state.building.description');
@@ -1198,7 +1206,7 @@ class Dashboard extends Controller {
             $hero_title = l('dashboard.hero.state.registration.title');
             $hero_description = l('dashboard.hero.state.registration.description');
             $next_focus = l('dashboard.hero.state.registration.next_focus');
-        } elseif(($dashboard_funnel_analytics['leads_30d'] ?? 0) > 0) {
+        } elseif(($dashboard_funnel_analytics['contact_captures_30d'] ?? 0) > 0) {
             $hero_title = l('dashboard.hero.state.leads.title');
             $hero_description = l('dashboard.hero.state.leads.description');
             $next_focus = l('dashboard.hero.state.leads.next_focus');
@@ -1333,6 +1341,9 @@ class Dashboard extends Controller {
                 'active_funnels_30d' => 2,
                 'unique_clicks_30d' => 74,
                 'leads_30d' => 11,
+                'funnel_leads_30d' => 11,
+                'ai_chat_leads_30d' => 3,
+                'contact_captures_30d' => 14,
                 'conversion_rate_30d' => 14.9,
                 'best_open_mode' => ['type' => 'page', 'leads' => 7, 'conversion_rate' => 18.4],
                 'best_thank_you_type' => ['type' => 'file_download', 'leads' => 6, 'conversion_rate' => 16.7],

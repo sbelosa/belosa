@@ -3875,9 +3875,9 @@ class AdminLeaderOperatingSystemLeader extends Controller {
     }
     /* /Custom code: FC-2026-03-31 */
 
-    private function get_ai_credentials(): array {
-        $api_key = trim((string) (settings()->main->openai_api_key ?? settings()->aix->openai_api_key ?? ''));
-        $model = fc_get_resolved_openai_model(settings()->main->openai_model ?? '');
+    private function get_ai_credentials(string $purpose = 'los_leader_detail'): array {
+        $api_key = fcc_ai_get_openai_api_key();
+        $model = fcc_ai_resolve_model_route($purpose);
 
         return [
             'api_key' => $api_key,
@@ -4809,6 +4809,7 @@ class AdminLeaderOperatingSystemLeader extends Controller {
             'consistency' => ($detail && !empty($detail['periods'][$selected_period])) ? $this->get_consistency_payload($detail['periods'][$selected_period], $detail['ai_plan_admin'] ?? []) : null,
             'coaching_roi' => ($detail && !empty($detail['score_history'][$selected_period])) ? $this->get_coaching_roi_payload($detail['score_history'][$selected_period], $detail['ai_plan_admin'] ?? []) : null,
             'ai_text_detail' => $detail ? $this->get_ai_text_detail_payload($detail['ai_plan_admin'] ?? []) : null,
+            'fcc_ai_detail' => $detail ? fcc_ai_get_user_dashboard_payload((int) ($detail['user_id'] ?? 0), $this->get_period_start_datetime($this->get_period_days($selected_period)), 6, \Altum\Language::$code) : null,
             'ai_report' => $ai_report,
             'los_outreach' => $detail ? $this->get_los_outreach_payload((int) $detail['user_id'], $selected_period, $ai_report, (string) ($detail['email'] ?? '')) : null,
         ];

@@ -9777,12 +9777,6 @@ class BiolinkBlockAjax extends Controller {
         $_POST['link_id'] = (int) $_POST['link_id'];
         $_POST['html'] = mb_substr(trim($_POST['html'] ?? ''), 0, $this->biolink_blocks['custom_html_chatbot']['max_length']);
 
-        /* Custom code: FC-2026-02-27: enforce default sales ai embed when html is empty */
-        if($_POST['html'] === '') {
-            $_POST['html'] = "<script async type='module' src='https://interfaces.zapier.com/assets/web-components/zapier-interfaces/zapier-interfaces.esm.js'></script>\n<zapier-interfaces-chatbot-embed is-popup='false' chatbot-id='cm8g6mg77000qyrrw89x3vadl'></zapier-interfaces-chatbot-embed>";
-        }
-        /* /Custom code: FC-2026-02-27 */
-
         if(!$link = db()->where('link_id', $_POST['link_id'])->where('user_id', $this->user->user_id)->getOne('links')) {
             die();
         }
@@ -9823,10 +9817,6 @@ class BiolinkBlockAjax extends Controller {
     private function create_biolink_custom_html_chatbot_pets() {
         $_POST['link_id'] = (int) $_POST['link_id'];
         $_POST['html'] = mb_substr(trim($_POST['html'] ?? ''), 0, $this->biolink_blocks['custom_html_chatbot_pets']['max_length']);
-
-        if($_POST['html'] === '') {
-            $_POST['html'] = "<script async type='module' src='https://interfaces.zapier.com/assets/web-components/zapier-interfaces/zapier-interfaces.esm.js'></script>\n<zapier-interfaces-chatbot-embed is-popup='false' chatbot-id='cm8owjjbg000r9mozayq4gksd'></zapier-interfaces-chatbot-embed>";
-        }
 
         if(!$link = db()->where('link_id', $_POST['link_id'])->where('user_id', $this->user->user_id)->getOne('links')) {
             die();
@@ -9871,10 +9861,6 @@ class BiolinkBlockAjax extends Controller {
             die();
         }
 
-        if($_POST['html'] === '') {
-            $_POST['html'] = "<script async type='module' src='https://interfaces.zapier.com/assets/web-components/zapier-interfaces/zapier-interfaces.esm.js'></script>\n<zapier-interfaces-chatbot-embed is-popup='false' chatbot-id='cm8g6mg77000qyrrw89x3vadl'></zapier-interfaces-chatbot-embed>";
-        }
-
         $settings = json_encode([
             'html' => $_POST['html'],
 
@@ -9907,10 +9893,6 @@ class BiolinkBlockAjax extends Controller {
 
         if(!$biolink_block = db()->where('biolink_block_id', $_POST['biolink_block_id'])->where('user_id', $this->user->user_id)->getOne('biolinks_blocks')) {
             die();
-        }
-
-        if($_POST['html'] === '') {
-            $_POST['html'] = "<script async type='module' src='https://interfaces.zapier.com/assets/web-components/zapier-interfaces/zapier-interfaces.esm.js'></script>\n<zapier-interfaces-chatbot-embed is-popup='false' chatbot-id='cm8owjjbg000r9mozayq4gksd'></zapier-interfaces-chatbot-embed>";
         }
 
         $settings = json_encode([

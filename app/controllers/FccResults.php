@@ -58,7 +58,7 @@ class FccResults extends Controller {
         $map = [];
         $result = database()->query("SELECT `user_id`, COUNT(*) AS `total`
             FROM `data`
-            WHERE `type` = 'lead_funnel'
+            WHERE `type` IN ('lead_funnel', 'ai_chat_lead')
               AND `datetime` >= '{$period_start_datetime}'
             GROUP BY `user_id`");
 
@@ -303,6 +303,7 @@ class FccResults extends Controller {
                 l('fcc_results.tips.item_4'),
                 l('fcc_results.tips.item_5'),
                 l('fcc_results.tips.item_6'),
+                l('fcc_results.tips.item_7'),
             ],
         ];
 

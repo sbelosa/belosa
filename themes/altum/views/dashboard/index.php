@@ -1520,6 +1520,7 @@ $dashboard_forever_products_url = fc_get_forever_products_blog_category_url(\Alt
         .dashboard-chart-card-header {
             flex-direction: column;
         }
+
     }
 
     @media (max-width: 767.98px) {
@@ -2104,11 +2105,14 @@ $dashboard_forever_products_url = fc_get_forever_products_blog_category_url(\Alt
                 conversion_registration_gap: <?= json_encode(l('dashboard.dynamic.conversion_registration_gap')) ?>,
                 conversion_leads: <?= json_encode(l('dashboard.dynamic.conversion_leads')) ?>,
                 conversion_default: <?= json_encode(l('dashboard.dynamic.conversion_default')) ?>,
+                contacts_breakdown_both: <?= json_encode(l('dashboard.dynamic.contacts_breakdown_both')) ?>,
+                contacts_breakdown_funnel_only: <?= json_encode(l('dashboard.dynamic.contacts_breakdown_funnel_only')) ?>,
+                contacts_breakdown_chat_only: <?= json_encode(l('dashboard.dynamic.contacts_breakdown_chat_only')) ?>,
                 conversion_best_opening: <?= json_encode(l('dashboard.dynamic.conversion_best_opening')) ?>,
                 conversion_best_thank_you: <?= json_encode(l('dashboard.dynamic.conversion_best_thank_you')) ?>,
                 strength_blog: <?= json_encode(l('dashboard.dynamic.strength_blog')) ?>,
                 strength_app: <?= json_encode(l('dashboard.dynamic.strength_app')) ?>,
-                strength_funnel: <?= json_encode(l('dashboard.dynamic.strength_funnel')) ?>,
+                strength_contacts: <?= json_encode(l('dashboard.dynamic.strength_contacts')) ?>,
                 strength_source: <?= json_encode(l('dashboard.dynamic.strength_source')) ?>,
                 strengths_empty: <?= json_encode(l('dashboard.focus.strengths.empty')) ?>,
                 blocker_active_gap: <?= json_encode(l('dashboard.dynamic.blocker_active_gap')) ?>,
@@ -2848,7 +2852,9 @@ $dashboard_forever_products_url = fc_get_forever_products_blog_category_url(\Alt
                 const dashboard_blog_qualified_clicks_30d = Number(dashboard_value(dashboard_forever_analytics.blog_qualified_clicks_30d, 0));
                 const dashboard_app_qualified_clicks_30d = Number(dashboard_value(dashboard_forever_analytics.app_qualified_clicks_30d, 0));
                 const dashboard_growth_active_threshold = Number(dashboard_value(dashboard_forever_analytics.growth_active_threshold, 15));
-                const dashboard_funnel_leads_30d = Number(dashboard_value(dashboard_funnel_analytics.leads_30d, 0));
+                const dashboard_funnel_leads_30d = Number(dashboard_value(dashboard_funnel_analytics.funnel_leads_30d, dashboard_value(dashboard_funnel_analytics.leads_30d, 0)));
+                const dashboard_ai_chat_leads_30d = Number(dashboard_value(dashboard_funnel_analytics.ai_chat_leads_30d, 0));
+                const dashboard_contact_captures_30d = Number(dashboard_value(dashboard_funnel_analytics.contact_captures_30d, (dashboard_funnel_leads_30d + dashboard_ai_chat_leads_30d)));
                 const dashboard_funnel_unique_clicks_30d = Number(dashboard_value(dashboard_funnel_analytics.unique_clicks_30d, 0));
                 const dashboard_support_repeated_issue_detected = !!dashboard_value(dashboard_support_summary.repeated_issue_detected, false);
                 const dashboard_support_unread_total = Number(dashboard_value(dashboard_support_summary.unread_total, 0));
@@ -2923,11 +2929,18 @@ $dashboard_forever_products_url = fc_get_forever_products_blog_category_url(\Alt
                 set_metric('#dashboard_biolink_visits_30d', dashboard_forever_analytics.biolink_visits_30d);
                 set_metric('#dashboard_qualified_clicks_30d', dashboard_forever_analytics.qualified_clicks_30d);
                 set_metric('#dashboard_forever_registration_clicks_30d', dashboard_forever_analytics.forever_registration_clicks_30d);
-                set_metric('#dashboard_funnel_leads_30d', dashboard_funnel_analytics.leads_30d);
+                set_metric('#dashboard_funnel_leads_30d', dashboard_contact_captures_30d);
                 set_delta('#dashboard_biolink_visits_delta', dashboard_forever_analytics.biolink_visits_delta_percent);
                 set_delta('#dashboard_qualified_clicks_delta', dashboard_forever_analytics.qualified_clicks_delta_percent);
                 set_delta('#dashboard_registration_clicks_delta', dashboard_forever_analytics.registration_clicks_delta_percent);
-                set_metric('#dashboard_funnel_conversion_rate_30d', dashboard_funnel_analytics.conversion_rate_30d, dashboard_i18n.conversion_rate_suffix);
+                const contactsBreakdown = dashboard_contact_captures_30d <= 0
+                    ? '—'
+                    : (dashboard_funnel_leads_30d > 0 && dashboard_ai_chat_leads_30d > 0
+                        ? dashboard_format(dashboard_i18n.templates.contacts_breakdown_both, {funnel: dashboard_nr(dashboard_funnel_leads_30d), chat: dashboard_nr(dashboard_ai_chat_leads_30d)})
+                        : (dashboard_funnel_leads_30d > 0
+                            ? dashboard_format(dashboard_i18n.templates.contacts_breakdown_funnel_only, {funnel: dashboard_nr(dashboard_funnel_leads_30d)})
+                            : dashboard_format(dashboard_i18n.templates.contacts_breakdown_chat_only, {chat: dashboard_nr(dashboard_ai_chat_leads_30d)})));
+                set_text('#dashboard_funnel_conversion_rate_30d', contactsBreakdown);
                 set_metric('#dashboard_active_remaining', dashboard_forever_analytics.to_active);
                 set_metric('#dashboard_vip_remaining', dashboard_forever_analytics.to_vip);
                 set_progress('#dashboard_active_progress_fill', dashboard_forever_analytics.active_progress_percent);
@@ -2959,7 +2972,7 @@ $dashboard_forever_products_url = fc_get_forever_products_blog_category_url(\Alt
 
                 const conversionSummary = dashboard_registration_clicks_30d <= 0 && dashboard_qualified_clicks_30d > 0
                     ? dashboard_i18n.templates.conversion_registration_gap
-                    : (dashboard_funnel_leads_30d > 0
+                    : (dashboard_contact_captures_30d > 0
                         ? dashboard_i18n.templates.conversion_leads
                         : dashboard_i18n.templates.conversion_default);
                 const openModeType = dashboard_nested_value(dashboard_funnel_analytics, ['best_open_mode', 'type'], null);
@@ -2982,8 +2995,8 @@ $dashboard_forever_products_url = fc_get_forever_products_blog_category_url(\Alt
                 if(dashboard_app_qualified_clicks_30d > 0) {
                     strengths.push(dashboard_format(dashboard_i18n.templates.strength_app, {count: dashboard_nr(dashboard_app_qualified_clicks_30d)}));
                 }
-                if(dashboard_funnel_leads_30d > 0) {
-                    strengths.push(dashboard_format(dashboard_i18n.templates.strength_funnel, {count: dashboard_nr(dashboard_funnel_leads_30d)}));
+                if(dashboard_contact_captures_30d > 0) {
+                    strengths.push(dashboard_format(dashboard_i18n.templates.strength_contacts, {count: dashboard_nr(dashboard_contact_captures_30d)}));
                 }
                 if(topSource && topSource.source) {
                     strengths.push(dashboard_format(dashboard_i18n.templates.strength_source, {source: dashboard_source_label(topSource.source)}));

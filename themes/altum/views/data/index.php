@@ -908,13 +908,19 @@
 
                             <div class="fcc-contact-mobile-section">
                                 <div class="fcc-contact-mobile-section-title">Izvor kontakta</div>
-                                <div class="fcc-contact-source">
-                                    <div class="fcc-contact-source-title">
-                                        <?= $row->biolink_block_id ? string_truncate($row->settings->name ?? l('global.unknown'), 42) : ($row->source_label ?: l('global.unknown')) ?>
-                                    </div>
+                                    <div class="fcc-contact-source">
+                                        <div class="fcc-contact-source-title">
+                                            <?= $row->biolink_block_id ? string_truncate($row->settings->name ?? l('global.unknown'), 42) : ($row->source_label ?: l('global.unknown')) ?>
+                                        </div>
                                     <div class="fcc-contact-meta">FCC aplikacija: <?= $row->app_name ?></div>
+                                    <?php if($row->is_ai_chat_lead): ?>
+                                        <div class="fcc-contact-meta text-info font-weight-bold">AI je doveo ovaj kontakt.</div>
+                                    <?php endif ?>
                                     <?php if($row->preferred_contact_channel): ?>
                                         <div class="fcc-contact-meta">Preferirani kontakt: <?= mb_strtoupper($row->preferred_contact_channel) ?></div>
+                                    <?php endif ?>
+                                    <?php if($row->contact_intent): ?>
+                                        <div class="fcc-contact-meta">Namjera: <?= htmlspecialchars((string) $row->contact_intent, ENT_QUOTES, 'UTF-8') ?></div>
                                     <?php endif ?>
                                     <?php if($row->source_context): ?>
                                         <div class="fcc-contact-meta"><?= $row->source_context ?></div>
@@ -936,8 +942,8 @@
 
                                     <div class="fcc-contact-tags">
                                         <span class="fcc-contact-tag">
-                                            <i class="<?= $data->biolink_blocks[$row->type]['icon'] ?> fa-fw fa-sm"></i>
-                                            <?= l('link.biolink.blocks.' . $row->type) ?>
+                                            <i class="<?= $row->type_icon ?> fa-fw fa-sm"></i>
+                                            <?= $row->type_label ?>
                                         </span>
                                     </div>
                                 </div>
@@ -1033,8 +1039,14 @@
                                                 <?= $row->biolink_block_id ? string_truncate($row->settings->name ?? l('global.unknown'), 42) : ($row->source_label ?: l('global.unknown')) ?>
                                             </div>
                                             <div class="fcc-contact-meta">FCC aplikacija: <?= $row->app_name ?></div>
+                                            <?php if($row->is_ai_chat_lead): ?>
+                                                <div class="fcc-contact-meta text-info font-weight-bold">AI je doveo ovaj kontakt.</div>
+                                            <?php endif ?>
                                             <?php if($row->preferred_contact_channel): ?>
                                                 <div class="fcc-contact-meta">Preferirani kontakt: <?= mb_strtoupper($row->preferred_contact_channel) ?></div>
+                                            <?php endif ?>
+                                            <?php if($row->contact_intent): ?>
+                                                <div class="fcc-contact-meta">Namjera: <?= htmlspecialchars((string) $row->contact_intent, ENT_QUOTES, 'UTF-8') ?></div>
                                             <?php endif ?>
                                             <?php if($row->source_context): ?>
                                                 <div class="fcc-contact-meta"><?= $row->source_context ?></div>
@@ -1058,8 +1070,8 @@
                                             </div>
                                             <div class="fcc-contact-tags">
                                                 <span class="fcc-contact-tag">
-                                                    <i class="<?= $data->biolink_blocks[$row->type]['icon'] ?> fa-fw fa-sm"></i>
-                                                    <?= l('link.biolink.blocks.' . $row->type) ?>
+                                                    <i class="<?= $row->type_icon ?> fa-fw fa-sm"></i>
+                                                    <?= $row->type_label ?>
                                                 </span>
                                             </div>
                                         </div>

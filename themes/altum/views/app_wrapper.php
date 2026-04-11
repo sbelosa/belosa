@@ -163,114 +163,28 @@
     <script defer src="<?= ASSETS_FULL_URL ?>js/help-widget.js?v=<?= PRODUCT_CODE ?>&fcce=20260405v1"></script>
     <!-- /Custom code: FC-2026-02-24 -->
 
-    <?php /* Custom code: FC-2026-02-27: logged-in Zapier chatbot embed in user zone */ ?>
+    <?php /* Custom code: FC-2026-04-10: internal FCC Coach popup */ ?>
     <?php if(is_logged_in()): ?>
-        <style>
-            .fcc-zapier-shell {
-                position: fixed;
-                right: 1rem;
-                bottom: 4.75rem;
-                width: min(380px, calc(100vw - 1.5rem));
-                height: min(680px, calc(100vh - 7.5rem));
-                background: #05070c;
-                border-radius: 1rem;
-                overflow: hidden;
-                box-shadow: 0 1rem 2.5rem rgba(0, 0, 0, .35);
-                z-index: 2147482000;
-                display: none;
-            }
-
-            .fcc-zapier-shell.is-open {
-                display: block;
-            }
-
-            .fcc-zapier-shell zapier-interfaces-chatbot-embed {
-                display: block;
-                width: 100%;
-                height: 100%;
-            }
-
-            .fcc-zapier-toggle {
-                position: fixed;
-                right: 1rem;
-                bottom: 1rem;
-                z-index: 2147482001;
-                border: 0;
-                border-radius: 999px;
-                padding: .75rem 1rem;
-                font-weight: 600;
-                color: #e7e9ee;
-                background: linear-gradient(180deg, rgba(33, 41, 52, 0.96), rgba(19, 24, 32, 0.96));
-                box-shadow: 0 10px 22px rgba(0, 0, 0, .34);
-                cursor: pointer;
-            }
-
-            .fcc-assist-dock .fcc-zapier-toggle {
-                position: static;
-                right: auto;
-                bottom: auto;
-                z-index: auto;
-                border-radius: 0;
-                padding: 0 .95rem;
-                color: var(--fcc-help-text);
-                background: transparent;
-                box-shadow: none;
-            }
-
-            @media (max-width: 576px) {
-                .fcc-zapier-shell {
-                    right: .75rem;
-                    left: .75rem;
-                    width: auto;
-                    bottom: 4.9rem;
-                    height: min(75vh, 640px);
-                }
-
-                .fcc-zapier-toggle {
-                    right: .75rem;
-                    bottom: .75rem;
-                }
-            }
-        </style>
-        <script async type='module' src='https://interfaces.zapier.com/assets/web-components/zapier-interfaces/zapier-interfaces.esm.js'></script>
-        <div id='fcc-zapier-shell' class='fcc-zapier-shell' aria-hidden='true'>
-            <zapier-interfaces-chatbot-embed is-popup='false' chatbot-id='cm8qedep5004ulsd3hioaty93'></zapier-interfaces-chatbot-embed>
-        </div>
-        <button type='button' id='fcc-zapier-toggle' class='fcc-zapier-toggle' aria-controls='fcc-zapier-shell' aria-expanded='false'>Ai Savjetnik</button>
-        <script>
-            (() => {
-                const shell = document.getElementById('fcc-zapier-shell');
-                const toggle = document.getElementById('fcc-zapier-toggle');
-
-                if(!shell || !toggle) return;
-
-                const isTutorialActive = () => document.body.classList.contains('fcc-tour-mode');
-
-                const setOpen = isOpen => {
-                    if(isOpen && isTutorialActive()) {
-                        return;
-                    }
-
-                    shell.classList.toggle('is-open', isOpen);
-                    shell.setAttribute('aria-hidden', isOpen ? 'false' : 'true');
-                    toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
-                    toggle.textContent = isOpen ? 'Zatvori AI' : 'Ai Savjetnik';
-                };
-
-                toggle.addEventListener('click', () => setOpen(!shell.classList.contains('is-open')));
-                document.addEventListener('keydown', event => {
-                    if(event.key === 'Escape') setOpen(false);
-                });
-
-                window.addEventListener('fcc:tutorial:state', event => {
-                    if(event && event.detail && event.detail.active) {
-                        setOpen(false);
-                    }
-                });
-            })();
-        </script>
+        <?= include_view(THEME_PATH . 'views/l/partials/fcc_chat_extreme_popup.php', [
+            'config' => [
+                'assistant_type' => 'coach',
+                'scope' => 'internal_coach',
+                'owner_name' => (string) ($this->user->name ?? ''),
+                'language_code' => \Altum\Language::$code ?? \Altum\Language::$default_code ?? 'hr',
+                'source_context' => 'FCC Coach popup',
+                'hide_without_context' => false,
+                'dom_id' => 'fcc-coach-chat-extreme',
+                'intro_label' => 'FCC Coach',
+                'storage_key' => fcc_ai_get_internal_storage_key(),
+                'context_storage_key' => fcc_ai_get_internal_context_storage_key(),
+                'conversation_url' => url('fcc-ai/coach-conversation'),
+                'message_url' => url('fcc-ai/coach-message'),
+                'lead_url' => '',
+                'lead_enabled' => false,
+            ],
+        ]) ?>
     <?php endif ?>
-    <?php /* /Custom code: FC-2026-02-27 */ ?>
+    <?php /* /Custom code: FC-2026-04-10 */ ?>
 
     <?= \Altum\Event::get_content('javascript') ?>
 

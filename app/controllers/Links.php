@@ -409,12 +409,16 @@ class Links extends Controller {
         return $signal_maps;
     }
 
+    private function get_app_review_contact_captures_30d(array $signals): int {
+        return (int) ($signals['funnel_registrations_30d'] ?? 0) + (int) ($signals['ai_chat_leads_30d'] ?? 0);
+    }
+
     private function calculate_app_review_weighted_signal_score(array $signals): int {
         return (int) (
             (int) ($signals['shop_contacts_30d'] ?? 0)
             + (int) ($signals['whatsapp_contacts_30d'] ?? 0)
             + (int) ($signals['product_clicks_30d'] ?? 0)
-            + ((int) ($signals['funnel_registrations_30d'] ?? 0) * 2)
+            + ($this->get_app_review_contact_captures_30d($signals) * 2)
         );
     }
 
@@ -439,6 +443,8 @@ class Links extends Controller {
             $app['whatsapp_contacts_30d'] = 0;
             $app['product_clicks_30d'] = 0;
             $app['funnel_registrations_30d'] = 0;
+            $app['ai_chat_leads_30d'] = 0;
+            $app['contact_captures_30d'] = 0;
             $app['weighted_signal_score'] = 0;
 
             foreach(($signal_map['shop_block_ids'] ?? []) as $block_id) {
@@ -503,7 +509,16 @@ class Links extends Controller {
             }
         }
 
+        $ai_chat_lead_counts = fcc_ai_get_chat_lead_counts_by_link_ids(array_keys($apps), $period_start_datetime);
+
+        foreach($ai_chat_lead_counts as $link_id => $total) {
+            if(isset($apps[$link_id])) {
+                $apps[$link_id]['ai_chat_leads_30d'] += (int) $total;
+            }
+        }
+
         foreach($apps as &$app) {
+            $app['contact_captures_30d'] = $this->get_app_review_contact_captures_30d($app);
             $app['weighted_signal_score'] = $this->calculate_app_review_weighted_signal_score($app);
         }
         unset($app);
@@ -515,7 +530,7 @@ class Links extends Controller {
         return (($b['weighted_signal_score'] ?? 0) <=> ($a['weighted_signal_score'] ?? 0))
             ?: (($b['shop_contacts_30d'] ?? 0) <=> ($a['shop_contacts_30d'] ?? 0))
             ?: (($b['whatsapp_contacts_30d'] ?? 0) <=> ($a['whatsapp_contacts_30d'] ?? 0))
-            ?: (($b['funnel_registrations_30d'] ?? 0) <=> ($a['funnel_registrations_30d'] ?? 0))
+            ?: (($b['contact_captures_30d'] ?? $this->get_app_review_contact_captures_30d($b)) <=> ($a['contact_captures_30d'] ?? $this->get_app_review_contact_captures_30d($a)))
             ?: (($b['product_clicks_30d'] ?? 0) <=> ($a['product_clicks_30d'] ?? 0))
             ?: ((string) ($a['url'] ?? '') <=> (string) ($b['url'] ?? ''));
     }
@@ -526,7 +541,9 @@ class Links extends Controller {
             'whatsapp_contacts_30d' => 10,
             'product_clicks_30d' => 8,
             'funnel_registrations_30d' => 4,
-            'weighted_signal_score' => 44,
+            'ai_chat_leads_30d' => 2,
+            'contact_captures_30d' => 6,
+            'weighted_signal_score' => 48,
         ];
     }
 
@@ -610,6 +627,8 @@ class Links extends Controller {
             'whatsapp_contacts_30d' => 0,
             'product_clicks_30d' => 0,
             'funnel_registrations_30d' => 0,
+            'ai_chat_leads_30d' => 0,
+            'contact_captures_30d' => 0,
             'weighted_signal_score' => 0,
         ];
 
@@ -618,6 +637,8 @@ class Links extends Controller {
             $totals['whatsapp_contacts_30d'] += (int) ($app['whatsapp_contacts_30d'] ?? 0);
             $totals['product_clicks_30d'] += (int) ($app['product_clicks_30d'] ?? 0);
             $totals['funnel_registrations_30d'] += (int) ($app['funnel_registrations_30d'] ?? 0);
+            $totals['ai_chat_leads_30d'] += (int) ($app['ai_chat_leads_30d'] ?? 0);
+            $totals['contact_captures_30d'] += (int) ($app['contact_captures_30d'] ?? $this->get_app_review_contact_captures_30d($app));
             $totals['weighted_signal_score'] += (int) ($app['weighted_signal_score'] ?? 0);
         }
 
@@ -646,6 +667,8 @@ class Links extends Controller {
                 'whatsapp_contacts_30d' => max(1, (int) round($totals['whatsapp_contacts_30d'] / $count)),
                 'product_clicks_30d' => max(1, (int) round($totals['product_clicks_30d'] / $count)),
                 'funnel_registrations_30d' => max(1, (int) round($totals['funnel_registrations_30d'] / $count)),
+                'ai_chat_leads_30d' => max(0, (int) round($totals['ai_chat_leads_30d'] / $count)),
+                'contact_captures_30d' => max(1, (int) round($totals['contact_captures_30d'] / $count)),
                 'weighted_signal_score' => max(1, (int) round($totals['weighted_signal_score'] / $count)),
             ],
             'peer_examples' => $peer_examples,
@@ -656,19 +679,21 @@ class Links extends Controller {
         $benchmark_payload = $this->get_app_review_benchmark_payload($selected_app);
         $benchmark = (array) ($benchmark_payload['benchmark'] ?? []);
         $performance = $selected_app;
+        $performance_contact_captures = (int) ($performance['contact_captures_30d'] ?? $this->get_app_review_contact_captures_30d($performance));
+        $benchmark_contact_captures = (int) ($benchmark['contact_captures_30d'] ?? $this->get_app_review_contact_captures_30d($benchmark));
 
         $ratios = [
             'shop_contacts_30d' => min(1.2, ((int) ($performance['shop_contacts_30d'] ?? 0)) / max(1, (int) ($benchmark['shop_contacts_30d'] ?? 1))),
             'whatsapp_contacts_30d' => min(1.2, ((int) ($performance['whatsapp_contacts_30d'] ?? 0)) / max(1, (int) ($benchmark['whatsapp_contacts_30d'] ?? 1))),
             'product_clicks_30d' => min(1.15, ((int) ($performance['product_clicks_30d'] ?? 0)) / max(1, (int) ($benchmark['product_clicks_30d'] ?? 1))),
-            'funnel_registrations_30d' => min(1.25, ((int) ($performance['funnel_registrations_30d'] ?? 0)) / max(1, (int) ($benchmark['funnel_registrations_30d'] ?? 1))),
+            'contact_captures_30d' => min(1.25, $performance_contact_captures / max(1, $benchmark_contact_captures)),
         ];
 
         $score = (int) round(min(100,
             ($ratios['shop_contacts_30d'] * 25) +
             ($ratios['whatsapp_contacts_30d'] * 25) +
             ($ratios['product_clicks_30d'] * 20) +
-            ($ratios['funnel_registrations_30d'] * 30)
+            ($ratios['contact_captures_30d'] * 30)
         ));
 
         $level_key = $score >= 80 ? 'strong' : ($score >= 60 ? 'growing' : 'foundation');
@@ -683,6 +708,8 @@ class Links extends Controller {
                 'whatsapp_contacts_30d' => (int) ($performance['whatsapp_contacts_30d'] ?? 0),
                 'product_clicks_30d' => (int) ($performance['product_clicks_30d'] ?? 0),
                 'funnel_registrations_30d' => (int) ($performance['funnel_registrations_30d'] ?? 0),
+                'ai_chat_leads_30d' => (int) ($performance['ai_chat_leads_30d'] ?? 0),
+                'contact_captures_30d' => $performance_contact_captures,
             ],
             'peer_examples' => (array) ($benchmark_payload['peer_examples'] ?? []),
         ];

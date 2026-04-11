@@ -121,149 +121,28 @@
     <script src="<?= ASSETS_FULL_URL ?>js/<?= $file ?>?v=<?= PRODUCT_CODE ?>"></script>
 <?php endforeach ?>
 
-<?php /* Custom code: FC-2026-02-27: logged-in Zapier chatbot embed on basic pages */ ?>
+<?php /* Custom code: FC-2026-04-10: internal FCC Coach popup on basic pages */ ?>
 <?php if(is_logged_in()): ?>
-    <style>
-        .fcc-zapier-shell {
-            position: fixed;
-            right: 1rem;
-            bottom: 5.75rem;
-            width: min(380px, calc(100vw - 1.5rem));
-            height: min(680px, calc(100vh - 7.5rem));
-            background: #05070c;
-            border-radius: 1rem;
-            overflow: hidden;
-            box-shadow: 0 1rem 2.5rem rgba(0, 0, 0, .35);
-            z-index: 2147482000;
-            display: none;
-        }
-
-        .fcc-zapier-shell.is-open {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .fcc-zapier-shell zapier-interfaces-chatbot-embed {
-            display: block;
-            width: 100%;
-            height: 100%;
-            flex: 1 1 auto;
-            min-height: 0;
-        }
-
-        .fcc-zapier-close-footer {
-            display: none;
-            align-items: center;
-            justify-content: center;
-            width: 100%;
-            padding: .75rem 1rem calc(.75rem + env(safe-area-inset-bottom, 0px));
-            border: 0;
-            border-top: 1px solid rgba(255, 255, 255, .15);
-            background: #0f1726;
-            color: #fff;
-            font-weight: 600;
-            cursor: pointer;
-            flex: 0 0 auto;
-        }
-
-        .fcc-zapier-toggle {
-            position: fixed;
-            right: 1rem;
-            bottom: 1rem;
-            z-index: 2147482001;
-            border: 0;
-            border-radius: 999px;
-            padding: .85rem 1.1rem;
-            font-weight: 600;
-            color: #fff;
-            background: #1f6feb;
-            box-shadow: 0 .5rem 1.2rem rgba(0, 0, 0, .28);
-            cursor: pointer;
-        }
-
-        @media (max-width: 576px) {
-            .fcc-zapier-shell {
-                right: 0;
-                left: 0;
-                top: 0;
-                bottom: 0;
-                width: 100vw;
-                max-width: 100vw;
-                height: 100dvh;
-                max-height: 100dvh;
-                border-radius: 0;
-                box-shadow: none;
-                overscroll-behavior: contain;
-                touch-action: pan-y;
-            }
-
-            .fcc-zapier-close-footer {
-                display: flex;
-            }
-
-            .fcc-zapier-toggle {
-                display: inline-flex;
-            }
-
-            body.fcc-chatbot-mobile-open {
-                overflow: hidden;
-                height: 100dvh;
-            }
-        }
-    </style>
-    <script async type='module' src='https://interfaces.zapier.com/assets/web-components/zapier-interfaces/zapier-interfaces.esm.js'></script>
-    <div id='fcc-zapier-shell' class='fcc-zapier-shell' aria-hidden='true'>
-        <zapier-interfaces-chatbot-embed is-popup='false' chatbot-id='cm8qedep5004ulsd3hioaty93'></zapier-interfaces-chatbot-embed>
-        <button type='button' id='fcc-zapier-close-footer' class='fcc-zapier-close-footer' aria-label='Zatvori chat'>Zatvori chat</button>
-    </div>
-    <button type='button' id='fcc-zapier-toggle' class='fcc-zapier-toggle' aria-controls='fcc-zapier-shell' aria-expanded='false'>Chat</button>
-    <script>
-        (() => {
-            const shell = document.getElementById('fcc-zapier-shell');
-            const toggle = document.getElementById('fcc-zapier-toggle');
-            const closeFooter = document.getElementById('fcc-zapier-close-footer');
-            const mobileMediaQuery = window.matchMedia('(max-width: 576px)');
-
-            if(!shell || !toggle) return;
-
-            document.body.classList.add('fcc-chatbot-present');
-
-            const setOpen = isOpen => {
-                shell.classList.toggle('is-open', isOpen);
-                shell.setAttribute('aria-hidden', isOpen ? 'false' : 'true');
-                toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
-                toggle.textContent = isOpen ? 'Zatvori chat' : 'Chat';
-
-                if(mobileMediaQuery.matches) {
-                    document.body.classList.toggle('fcc-chatbot-mobile-open', isOpen);
-                } else {
-                    document.body.classList.remove('fcc-chatbot-mobile-open');
-                }
-            };
-
-            const handleViewportChange = () => {
-                if(!mobileMediaQuery.matches) {
-                    document.body.classList.remove('fcc-chatbot-mobile-open');
-                } else if(shell.classList.contains('is-open')) {
-                    document.body.classList.add('fcc-chatbot-mobile-open');
-                }
-            };
-
-            toggle.addEventListener('click', () => setOpen(!shell.classList.contains('is-open')));
-            closeFooter?.addEventListener('click', () => setOpen(false));
-            document.addEventListener('keydown', event => {
-                if(event.key === 'Escape') setOpen(false);
-            });
-
-            if(mobileMediaQuery.addEventListener) {
-                mobileMediaQuery.addEventListener('change', handleViewportChange);
-            } else if(mobileMediaQuery.addListener) {
-                mobileMediaQuery.addListener(handleViewportChange);
-            }
-        })();
-    </script>
+    <?= include_view(THEME_PATH . 'views/l/partials/fcc_chat_extreme_popup.php', [
+        'config' => [
+            'assistant_type' => 'coach',
+            'scope' => 'internal_coach',
+            'owner_name' => (string) ($this->user->name ?? ''),
+            'language_code' => \Altum\Language::$code ?? \Altum\Language::$default_code ?? 'hr',
+            'source_context' => 'FCC Coach basic page popup',
+            'hide_without_context' => false,
+            'dom_id' => 'fcc-coach-chat-extreme-basic',
+            'intro_label' => 'FCC Coach',
+            'storage_key' => fcc_ai_get_internal_storage_key(),
+            'context_storage_key' => fcc_ai_get_internal_context_storage_key(),
+            'conversation_url' => url('fcc-ai/coach-conversation'),
+            'message_url' => url('fcc-ai/coach-message'),
+            'lead_url' => '',
+            'lead_enabled' => false,
+        ],
+    ]) ?>
 <?php endif ?>
-<?php /* /Custom code: FC-2026-02-27 */ ?>
+<?php /* /Custom code: FC-2026-04-10 */ ?>
 
 <?= \Altum\Event::get_content('javascript') ?>
 </body>

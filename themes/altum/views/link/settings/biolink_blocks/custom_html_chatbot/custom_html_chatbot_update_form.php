@@ -5,15 +5,17 @@
     <input type="hidden" name="request_type" value="update" />
     <input type="hidden" name="block_type" value="custom_html_chatbot" />
     <input type="hidden" name="biolink_block_id" value="<?= $row->biolink_block_id ?>" />
+    <input type="hidden" name="html" value="" />
 
     <div class="notification-container"></div>
 
-    <?php if (\Altum\Authentication::is_admin()): ?>
-        <div class="form-group">
-            <label for="<?= 'custom_html_chatbot_html_' . $row->biolink_block_id ?>"><i class="fa fa-fw fa-code fa-sm text-muted mr-1"></i> <?= l('create_biolink_custom_html_chatbot_modal.html') ?></label>
-            <textarea id="<?= 'custom_html_chatbot_html_' . $row->biolink_block_id ?>" name="html" class="form-control" maxlength="<?= $data->biolink_blocks['custom_html_chatbot']['max_length'] ?>"><?= $row->settings->html ?></textarea>
+    <div class="alert alert-info mb-4">
+        <div class="font-weight-bold mb-1">FCC AI popup</div>
+        <div class="small">
+            Ovaj blok je sada spojen na interni <strong>ChatExtreme AI za ljude</strong> sustav. Više ne trebaš lijepiti Zapier ili drugi HTML.
+            Ton, jezik i model uređuješ u <strong>FCC AI</strong> hubu.
         </div>
-    <?php endif; ?>
+    </div>
 
     <button class="btn btn-block btn-gray-300 my-4" type="button" data-toggle="collapse" data-target="#<?= 'display_settings_container_' . $row->biolink_block_id ?>" aria-expanded="false" aria-controls="<?= 'display_settings_container_' . $row->biolink_block_id ?>">
         <?= l('biolink_link.display_settings_header') ?>

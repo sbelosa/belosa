@@ -153,6 +153,9 @@ class Blog extends Controller {
 
 
             /* Custom code: FC-2026-02-26: robust blog referral resolution without hardcoded fallback */
+            $ai_chat_owner_link_id = 0;
+            $ai_chat_owner_user_id = 0;
+            $ai_chat_owner_name = '';
             $referral = null;
             $referral_key = null;
             $legacy_referral_slug = 'wpebe1grqr';
@@ -179,17 +182,18 @@ class Blog extends Controller {
 
             if(!\Altum\Authentication::check() && $referral_key) {
                 $resolved_user = null;
+                $resolved_biolink = null;
                 $resolved_biolink_url = null;
 
                 /* First support affiliate-style referral key */
-                $resolved_user = db()->where('referral_key', $referral_key)->where('status', 1)->getOne('users', ['user_id', 'status', 'plan_id', 'referral_key']);
+                $resolved_user = db()->where('referral_key', $referral_key)->where('status', 1)->getOne('users', ['user_id', 'status', 'plan_id', 'referral_key', 'name']);
 
                 /* Then support biolink slug referral */
                 if(!$resolved_user) {
-                    $resolved_biolink = db()->where('url', $referral_key)->where('type', 'biolink')->getOne('links', ['user_id', 'url']);
+                    $resolved_biolink = db()->where('url', $referral_key)->where('type', 'biolink')->getOne('links', ['link_id', 'user_id', 'url']);
 
                     if($resolved_biolink) {
-                        $resolved_user = db()->where('user_id', $resolved_biolink->user_id)->where('status', 1)->getOne('users', ['user_id', 'status', 'plan_id', 'referral_key']);
+                        $resolved_user = db()->where('user_id', $resolved_biolink->user_id)->where('status', 1)->getOne('users', ['user_id', 'status', 'plan_id', 'referral_key', 'name']);
                         $resolved_biolink_url = $resolved_biolink->url;
                     }
                 }
@@ -198,14 +202,14 @@ class Blog extends Controller {
                     if(!$resolved_biolink_url) {
                         $resolved_biolink_id = fc_get_user_main_biolink_id((int) $resolved_user->user_id);
                         if($resolved_biolink_id) {
-                            $resolved_biolink = db()->where('link_id', $resolved_biolink_id)->where('type', 'biolink')->getOne('links', ['url']);
+                            $resolved_biolink = db()->where('link_id', $resolved_biolink_id)->where('type', 'biolink')->getOne('links', ['link_id', 'url']);
                             if($resolved_biolink && !empty($resolved_biolink->url)) {
                                 $resolved_biolink_url = $resolved_biolink->url;
                             }
                         }
 
                         if(!$resolved_biolink_url) {
-                            $resolved_biolink = db()->where('user_id', $resolved_user->user_id)->where('type', 'biolink')->orderBy('link_id', 'ASC')->getOne('links', ['url']);
+                            $resolved_biolink = db()->where('user_id', $resolved_user->user_id)->where('type', 'biolink')->orderBy('link_id', 'ASC')->getOne('links', ['link_id', 'url']);
                             if($resolved_biolink && !empty($resolved_biolink->url)) {
                                 $resolved_biolink_url = $resolved_biolink->url;
                             }
@@ -216,6 +220,10 @@ class Blog extends Controller {
                         $referral = $resolved_biolink_url;
                         setcookie('referral', $resolved_biolink_url, time()+60*60*24*365, '/');
                     }
+
+                    $ai_chat_owner_link_id = (int) ($resolved_biolink->link_id ?? 0);
+                    $ai_chat_owner_user_id = (int) ($resolved_user->user_id ?? 0);
+                    $ai_chat_owner_name = trim((string) ($resolved_user->name ?? ''));
 
                     if(\Altum\Plugin::is_active('affiliate') && settings()->affiliate->is_enabled && !empty($resolved_user->referral_key)) {
                         settings()->affiliate->tracking_type = settings()->affiliate->tracking_type ?? 'first';
@@ -258,6 +266,10 @@ class Blog extends Controller {
                 if($biolink && !empty($biolink->url)) {
                     $referral = $biolink->url;
                 }
+
+                $ai_chat_owner_link_id = (int) ($biolink->link_id ?? 0);
+                $ai_chat_owner_user_id = (int) $user_id;
+                $ai_chat_owner_name = trim((string) ($this->user->name ?? ''));
 
                 if(\Altum\Authentication::is_pro()) {
                     $private = true;
@@ -373,6 +385,9 @@ class Blog extends Controller {
                 'tracked_webshop_link' => isset($tracked_webshop_link) && !empty($tracked_webshop_link) ? $tracked_webshop_link : null,
                 'blog_post_url' => $blog_post_url,
                 'share_url' => $share_url,
+                'ai_chat_owner_link_id' => $ai_chat_owner_link_id,
+                'ai_chat_owner_user_id' => $ai_chat_owner_user_id,
+                'ai_chat_owner_name' => $ai_chat_owner_name,
             ];
             /* /Custom code */
 

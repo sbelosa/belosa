@@ -789,7 +789,7 @@ $fcc_short_link_editor_steps = $fcc_is_short_link_editor ? [
                             <span class="fcc-app-review-teaser-metric"><?= l('links.app_review_metric_shop_short') ?> <?= nr((int) (($quality['performance']['shop_contacts_30d'] ?? 0))) ?></span>
                             <span class="fcc-app-review-teaser-metric"><?= l('links.app_review_metric_whatsapp_short') ?> <?= nr((int) (($quality['performance']['whatsapp_contacts_30d'] ?? 0))) ?></span>
                             <span class="fcc-app-review-teaser-metric"><?= l('links.app_review_metric_products_short') ?> <?= nr((int) (($quality['performance']['product_clicks_30d'] ?? 0))) ?></span>
-                            <span class="fcc-app-review-teaser-metric"><?= l('links.app_review_metric_funnel_short') ?> <?= nr((int) (($quality['performance']['funnel_registrations_30d'] ?? 0))) ?></span>
+                            <span class="fcc-app-review-teaser-metric"><?= l('links.app_review_metric_funnel_short') ?> <?= nr((int) (($quality['performance']['contact_captures_30d'] ?? 0))) ?></span>
                         </div>
                         <?php if($fcc_ai_review_has_update_notice): ?>
                             <div class="alert alert-info mt-3 mb-0" style="border-radius:1rem;">

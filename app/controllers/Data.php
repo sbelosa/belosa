@@ -62,6 +62,8 @@ class Data extends Controller {
             return preg_replace('/[^0-9+]/', '', (string) $phone);
         };
 
+        $biolink_blocks_catalog = require APP_PATH . 'includes/biolink_blocks.php';
+
         $build_contact_actions = function($phone, $email, $name, $app_name, $preferred_channel) use ($normalize_phone, $normalize_phone_with_plus) {
             $phone_digits = $normalize_phone($phone);
             $phone_plus = $normalize_phone_with_plus($phone);
@@ -161,6 +163,7 @@ class Data extends Controller {
             $row->preferred_contact_channel = trim((string) ($row->data->preferred_contact_channel ?? ''));
             $row->source_label = trim((string) ($row->data->source_label ?? ''));
             $row->source_context = trim((string) ($row->data->source_context ?? ''));
+            $row->contact_intent = trim((string) ($row->data->contact_intent ?? ''));
             $row->contact_identity = $row->contact_name ?: ($row->contact_email ?: ($row->contact_phone ?: l('global.unknown')));
             $row->initials = mb_strtoupper(mb_substr($row->contact_identity, 0, 2));
             $contact_actions = $build_contact_actions($row->contact_phone, $row->contact_email, $row->contact_name, $row->app_name, $row->preferred_contact_channel);
@@ -173,6 +176,19 @@ class Data extends Controller {
             $row->available_actions = $contact_actions['available_actions'];
             $row->contact_status = $row->primary_action ? 'ready' : 'needs_review';
             $row->contact_status_label = $row->primary_action ? 'Spreman za ' . $row->primary_action['label'] : 'Ručno provjeri kontakt';
+            $row->is_ai_chat_lead = $row->type === 'ai_chat_lead';
+
+            if($row->is_ai_chat_lead && $row->source_label === '') {
+                $row->source_label = 'AI chat';
+            }
+
+            if($row->is_ai_chat_lead) {
+                $row->type_icon = 'fas fa-robot';
+                $row->type_label = 'AI chat lead';
+            } else {
+                $row->type_icon = $biolink_blocks_catalog[$row->type]['icon'] ?? 'fas fa-database';
+                $row->type_label = l('link.biolink.blocks.' . $row->type);
+            }
 
             $excluded_keys = ['name', 'full_name', 'first_name', 'last_name', 'email', 'phone', 'phone_e164', 'phone_country_code', 'phone_dial_code', 'whatsapp', 'mobile', 'message', 'preferred_contact_channel', 'source_label', 'source_context', 'source_page_slug', 'source_page_url', 'contact_intent'];
             $row->extra_fields = [];
@@ -197,6 +213,33 @@ class Data extends Controller {
             $data[] = $row;
         }
 
+        $latest_contact_datum_id = (int) (database()->query("SELECT MAX(`datum_id`) AS `datum_id`
+            FROM `data`
+            WHERE `user_id` = {$this->user->user_id}
+              {$system_data_where}")->fetch_object()->datum_id ?? 0);
+
+        $preferences = $this->user->preferences ?? new \stdClass();
+        if(is_string($preferences)) {
+            $preferences = json_decode($preferences ?? '{}');
+        }
+        if(is_array($preferences)) {
+            $preferences = (object) $preferences;
+        }
+        if(!$preferences instanceof \stdClass) {
+            $preferences = (object) $preferences;
+        }
+
+        if($latest_contact_datum_id > (int) ($preferences->data_last_seen_datum_id ?? 0)) {
+            $preferences->data_last_seen_datum_id = $latest_contact_datum_id;
+
+            db()->where('user_id', $this->user->user_id)->update('users', [
+                'preferences' => json_encode($preferences),
+            ]);
+
+            $this->user->preferences = $preferences;
+            cache()->deleteItemsByTag('user_id=' . $this->user->user_id);
+        }
+
         /* Export handler */
         process_export_csv_new($data, ['datum_id', 'link_id', 'biolink_block_id', 'biolink_block_name', 'user_id', 'project_id', 'type', 'data', 'datetime'], ['data'], sprintf(l('data.title')));
         process_export_json($data, ['datum_id', 'link_id', 'biolink_block_id', 'biolink_block_name', 'user_id', 'project_id', 'type', 'data', 'datetime'], sprintf(l('data.title')));
@@ -210,7 +253,7 @@ class Data extends Controller {
             'total_data'        => $total_rows,
             'pagination'        => $pagination,
             'filters'           => $filters,
-            'biolink_blocks'    => require APP_PATH . 'includes/biolink_blocks.php',
+            'biolink_blocks'    => $biolink_blocks_catalog,
             'summary'           => $summary,
             'contact_channel_options' => [
                 'whatsapp' => 'WhatsApp',

@@ -1826,7 +1826,7 @@ if($fcc_links_type === 'biolink') {
                         <span class="fcc-links-main-metric"><?= l('links.app_review_metric_shop_short') ?> <?= nr((int) (($fcc_main_quality_payload['performance']['shop_contacts_30d'] ?? 0))) ?></span>
                         <span class="fcc-links-main-metric"><?= l('links.app_review_metric_whatsapp_short') ?> <?= nr((int) (($fcc_main_quality_payload['performance']['whatsapp_contacts_30d'] ?? 0))) ?></span>
                         <span class="fcc-links-main-metric"><?= l('links.app_review_metric_products_short') ?> <?= nr((int) (($fcc_main_quality_payload['performance']['product_clicks_30d'] ?? 0))) ?></span>
-                        <span class="fcc-links-main-metric"><?= l('links.app_review_metric_funnel_short') ?> <?= nr((int) (($fcc_main_quality_payload['performance']['funnel_registrations_30d'] ?? 0))) ?></span>
+                        <span class="fcc-links-main-metric"><?= l('links.app_review_metric_funnel_short') ?> <?= nr((int) (($fcc_main_quality_payload['performance']['contact_captures_30d'] ?? 0))) ?></span>
                     </div>
                 <?php endif ?>
 
@@ -2016,7 +2016,7 @@ if($fcc_links_type === 'biolink') {
                                             <span class="fcc-links-app-quality-stat"><?= l('links.app_review_metric_shop_short') ?> <?= nr((int) (($quality['performance']['shop_contacts_30d'] ?? 0))) ?></span>
                                             <span class="fcc-links-app-quality-stat"><?= l('links.app_review_metric_whatsapp_short') ?> <?= nr((int) (($quality['performance']['whatsapp_contacts_30d'] ?? 0))) ?></span>
                                             <span class="fcc-links-app-quality-stat"><?= l('links.app_review_metric_products_short') ?> <?= nr((int) (($quality['performance']['product_clicks_30d'] ?? 0))) ?></span>
-                                            <span class="fcc-links-app-quality-stat"><?= l('links.app_review_metric_funnel_short') ?> <?= nr((int) (($quality['performance']['funnel_registrations_30d'] ?? 0))) ?></span>
+                                            <span class="fcc-links-app-quality-stat"><?= l('links.app_review_metric_funnel_short') ?> <?= nr((int) (($quality['performance']['contact_captures_30d'] ?? 0))) ?></span>
                                         </div>
                                     <?php endif ?>
                                 </div>

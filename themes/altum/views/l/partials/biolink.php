@@ -412,31 +412,9 @@
                                 }
                             }
 
-                            if ($row->type == 'custom_html_chatbot') {
-                                /* Custom code: FC-2026-02-27: chatbot embed fallback only */
-                                $default_chatbot_embed = "<script async type='module' src='https://interfaces.zapier.com/assets/web-components/zapier-interfaces/zapier-interfaces.esm.js'></script>\n<zapier-interfaces-chatbot-embed is-popup='true' chatbot-id='cm8g6mg77000qyrrw89x3vadl'></zapier-interfaces-chatbot-embed>";
-                                if(!isset($row->settings) || !is_object($row->settings)) {
-                                    $row->settings = new \stdClass();
-                                }
-
-                                if(empty(trim((string) ($row->settings->html ?? '')))) {
-                                    $row->settings->html = $default_chatbot_embed;
-                                }
-                                /* /Custom code: FC-2026-02-27 */
-                            } 
-
-                            /* Custom code: FC-2026-02-27: pets chatbot embed fallback only */
-                            if ($row->type == 'custom_html_chatbot_pets') {
-                                $default_pets_chatbot_embed = "<script async type='module' src='https://interfaces.zapier.com/assets/web-components/zapier-interfaces/zapier-interfaces.esm.js'></script>\n<zapier-interfaces-chatbot-embed is-popup='true' chatbot-id='cm8owjjbg000r9mozayq4gksd'></zapier-interfaces-chatbot-embed>";
-                                if(!isset($row->settings) || !is_object($row->settings)) {
-                                    $row->settings = new \stdClass();
-                                }
-
-                                if(empty(trim((string) ($row->settings->html ?? '')))) {
-                                    $row->settings->html = $default_pets_chatbot_embed;
-                                }
+                            if(in_array($row->type, ['custom_html_chatbot', 'custom_html_chatbot_pets'], true) && (!isset($row->settings) || !is_object($row->settings))) {
+                                $row->settings = new \stdClass();
                             }
-                            /* /Custom code: FC-2026-02-27 */
 
                             /* /Custom code */
 

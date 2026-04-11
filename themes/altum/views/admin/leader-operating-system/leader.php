@@ -1673,7 +1673,7 @@ $render_detail_help = static function(string $tooltip): void {
                             </div>
                             <div class="leader-os-detail-list-item">
                                 <span class="text-muted">App signal</span>
-                                <strong>Shop <?= nr((int) ($selected['app_shop_contacts_period'] ?? 0)) ?> · WA <?= nr((int) ($selected['app_whatsapp_contacts_period'] ?? 0)) ?> · Funnel <?= nr((int) ($selected['app_funnel_registrations_period'] ?? 0)) ?></strong>
+                                <strong>Shop <?= nr((int) ($selected['app_shop_contacts_period'] ?? 0)) ?> · WA <?= nr((int) ($selected['app_whatsapp_contacts_period'] ?? 0)) ?> · Funnel <?= nr((int) ($selected['app_funnel_registrations_period'] ?? 0)) ?> · AI chat <?= nr((int) ($selected['app_ai_chat_leads_period'] ?? 0)) ?></strong>
                             </div>
                             <div class="leader-os-detail-list-item">
                                 <span class="text-muted">Top grad / jezik</span>
@@ -2709,6 +2709,269 @@ $render_detail_help = static function(string $tooltip): void {
         </div>
     </div>
     <!-- /Custom code: FC-2026-03-31 -->
+
+    <?php $fcc_ai_detail = $data->fcc_ai_detail ?? []; ?>
+    <div class="card leader-os-detail-shell mb-4" id="leader-os-ai-chats">
+        <div class="card-body">
+            <div class="leader-os-section-heading">
+                <div class="leader-os-section-heading-copy">
+                    <h3 class="h5 mb-1">FCC AI chatovi</h3>
+                    <div class="text-muted small">Pregled kako suradnik koristi coach i javne AI asistente, koliko razgovora vodi i dovodi li AI stvarne leadove.</div>
+                </div>
+                <span class="leader-os-detail-status <?= !empty($fcc_ai_detail['is_available']) ? 'status-success' : 'status-dark' ?>">
+                    <?= !empty($fcc_ai_detail['is_available']) ? 'AI live' : 'AI offline' ?>
+                </span>
+            </div>
+
+            <?php if(empty($fcc_ai_detail['is_available'])): ?>
+                <div class="text-muted small mb-0">FCC AI tablice još nisu dostupne na ovom okruženju.</div>
+            <?php else: ?>
+                <div class="row mb-3">
+                    <div class="col-6 col-xl-3 mb-3">
+                        <div class="leader-os-detail-panel h-100">
+                            <div class="leader-os-ai-title">Razgovori</div>
+                            <div class="leader-os-compact-value"><?= nr((int) ($fcc_ai_detail['totals']['conversations'] ?? 0)) ?></div>
+                            <div class="text-muted small">Coach <?= nr((int) ($fcc_ai_detail['totals']['coach_conversations'] ?? 0)) ?> · javni AI <?= nr((int) ($fcc_ai_detail['totals']['public_conversations'] ?? 0)) ?></div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-xl-3 mb-3">
+                        <div class="leader-os-detail-panel h-100">
+                            <div class="leader-os-ai-title">Poruke</div>
+                            <div class="leader-os-compact-value"><?= nr((int) ($fcc_ai_detail['totals']['messages'] ?? 0)) ?></div>
+                            <div class="text-muted small">user <?= nr((int) ($fcc_ai_detail['totals']['user_messages'] ?? 0)) ?> · assistant <?= nr((int) ($fcc_ai_detail['totals']['assistant_messages'] ?? 0)) ?></div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-xl-3 mb-3">
+                        <div class="leader-os-detail-panel h-100">
+                            <div class="leader-os-ai-title">AI leadovi</div>
+                            <div class="leader-os-compact-value"><?= nr((int) ($fcc_ai_detail['totals']['leads'] ?? 0)) ?></div>
+                            <div class="text-muted small">business <?= nr((int) ($fcc_ai_detail['totals']['business_leads'] ?? 0)) ?> · hot <?= nr((int) ($fcc_ai_detail['totals']['hot_leads'] ?? 0)) ?></div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-xl-3 mb-3">
+                        <div class="leader-os-detail-panel h-100">
+                            <div class="leader-os-ai-title">Captured threadovi</div>
+                            <div class="leader-os-compact-value"><?= nr((int) ($fcc_ai_detail['totals']['captured_threads'] ?? 0)) ?></div>
+                            <div class="text-muted small">Razgovori u kojima je AI već uhvatio lead ili handoff signal.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="leader-os-inline-note mb-3">
+                    Pozitivni signali:
+                    <strong class="text-white"><?= nr((int) ($fcc_ai_detail['totals']['positive_feedback'] ?? 0)) ?></strong>
+                    · odgovori za provjeru:
+                    <strong class="text-white"><?= nr((int) ($fcc_ai_detail['totals']['negative_feedback'] ?? 0)) ?></strong>
+                    · threadovi za review:
+                    <strong class="text-white"><?= nr((int) ($fcc_ai_detail['totals']['review_conversations'] ?? 0)) ?></strong>
+                </div>
+
+                <div class="row">
+                    <div class="col-12 col-xl-4 mb-3 mb-xl-0">
+                        <div class="leader-os-detail-panel h-100">
+                            <div class="leader-os-ai-title">Po asistentu</div>
+                            <?php if(empty($fcc_ai_detail['assistant_breakdown'])): ?>
+                                <div class="text-muted small mb-0">Još nema dovoljno aktivnosti za breakdown.</div>
+                            <?php else: ?>
+                                <div class="leader-os-detail-list">
+                                    <?php foreach(($fcc_ai_detail['assistant_breakdown'] ?? []) as $assistant_row): ?>
+                                        <div class="leader-os-detail-list-item">
+                                            <span><?= htmlspecialchars((string) ($assistant_row['label'] ?? ''), ENT_QUOTES, 'UTF-8') ?></span>
+                                            <strong>
+                                                <?= nr((int) ($assistant_row['conversations'] ?? 0)) ?> chatova
+                                                · <?= nr((int) ($assistant_row['leads'] ?? 0)) ?> leadova
+                                                · review <?= nr((int) ($assistant_row['negative_feedback'] ?? 0)) ?>
+                                            </strong>
+                                        </div>
+                                    <?php endforeach ?>
+                                </div>
+                            <?php endif ?>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-xl-4 mb-3 mb-xl-0">
+                        <div class="leader-os-detail-panel h-100">
+                            <div class="leader-os-ai-title">Zadnji razgovori</div>
+                            <?php if(empty($fcc_ai_detail['recent_conversations'])): ?>
+                                <div class="text-muted small mb-0">Još nema AI razgovora u odabranom periodu.</div>
+                            <?php else: ?>
+                                <div class="leader-os-phase4-history">
+                                    <?php foreach(($fcc_ai_detail['recent_conversations'] ?? []) as $conversation_row): ?>
+                                        <div class="leader-os-phase4-history-item">
+                                            <div class="font-weight-bold">
+                                                <?= htmlspecialchars((string) ($conversation_row['assistant_label'] ?? ''), ENT_QUOTES, 'UTF-8') ?>
+                                                · <?= htmlspecialchars((string) ($conversation_row['scope_label'] ?? ''), ENT_QUOTES, 'UTF-8') ?>
+                                            </div>
+                                            <div class="text-muted small mt-2">
+                                                <?= htmlspecialchars((string) (($conversation_row['last_user_preview'] ?? '') !== '' ? ($conversation_row['last_user_preview'] ?? '') : ($conversation_row['last_assistant_preview'] ?? '')), ENT_QUOTES, 'UTF-8') ?>
+                                            </div>
+                                            <div class="leader-os-phase4-history-meta">
+                                                <span>U: <?= nr((int) ($conversation_row['total_user_messages'] ?? 0)) ?> · A: <?= nr((int) ($conversation_row['total_assistant_messages'] ?? 0)) ?></span>
+                                                <span><?= !empty($conversation_row['activity_at']) ? \Altum\Date::get($conversation_row['activity_at'], 2) : '-' ?></span>
+                                            </div>
+                                        </div>
+                                    <?php endforeach ?>
+                                </div>
+                            <?php endif ?>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-xl-4">
+                        <div class="leader-os-detail-panel h-100">
+                            <div class="leader-os-ai-title">Zadnji AI leadovi</div>
+                            <?php if(empty($fcc_ai_detail['recent_leads'])): ?>
+                                <div class="text-muted small mb-0">Još nema AI leadova u odabranom periodu.</div>
+                            <?php else: ?>
+                                <div class="leader-os-phase4-history">
+                                    <?php foreach(($fcc_ai_detail['recent_leads'] ?? []) as $lead_row): ?>
+                                        <div class="leader-os-phase4-history-item">
+                                            <div class="font-weight-bold">
+                                                <?= htmlspecialchars((string) ($lead_row['lead_type_label'] ?? ''), ENT_QUOTES, 'UTF-8') ?>
+                                                · <?= nr((int) ($lead_row['lead_score'] ?? 0)) ?>
+                                            </div>
+                                            <div class="text-muted small mt-2">
+                                                <?= htmlspecialchars((string) (($lead_row['contact_name'] ?? '') !== '' ? ($lead_row['contact_name'] ?? '') : '-'), ENT_QUOTES, 'UTF-8') ?>
+                                                <?php if(!empty($lead_row['contact_value'])): ?>
+                                                    · <?= htmlspecialchars((string) ($lead_row['contact_value'] ?? ''), ENT_QUOTES, 'UTF-8') ?>
+                                                <?php endif ?>
+                                            </div>
+                                            <?php if(!empty($lead_row['message_preview'])): ?>
+                                                <div class="text-muted small mt-2"><?= htmlspecialchars((string) ($lead_row['message_preview'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                                            <?php endif ?>
+                                            <div class="leader-os-phase4-history-meta">
+                                                <span><?= htmlspecialchars((string) ($lead_row['assistant_label'] ?? ''), ENT_QUOTES, 'UTF-8') ?> · <?= htmlspecialchars((string) ($lead_row['scope_label'] ?? ''), ENT_QUOTES, 'UTF-8') ?></span>
+                                                <span><?= !empty($lead_row['datetime']) ? \Altum\Date::get($lead_row['datetime'], 2) : '-' ?></span>
+                                            </div>
+                                        </div>
+                                    <?php endforeach ?>
+                                </div>
+                            <?php endif ?>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mt-3">
+                    <div class="col-12 col-xl-4 mb-3 mb-xl-0">
+                        <div class="leader-os-detail-panel h-100">
+                            <div class="leader-os-ai-title">Top teme</div>
+                            <?php if(empty($fcc_ai_detail['top_topics'])): ?>
+                                <div class="text-muted small mb-0">Još nema dovoljno AI signala za pouzdan pregled tema.</div>
+                            <?php else: ?>
+                                <div class="leader-os-detail-list">
+                                    <?php foreach(($fcc_ai_detail['top_topics'] ?? []) as $topic_row): ?>
+                                        <div class="leader-os-detail-list-item">
+                                            <span><?= htmlspecialchars((string) ($topic_row['label'] ?? ''), ENT_QUOTES, 'UTF-8') ?></span>
+                                            <strong><?= nr((int) ($topic_row['total'] ?? 0)) ?></strong>
+                                        </div>
+                                    <?php endforeach ?>
+                                </div>
+                            <?php endif ?>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-xl-8">
+                        <div class="leader-os-detail-panel h-100">
+                            <div class="leader-os-ai-title">Odgovori za provjeru</div>
+                            <?php if(empty($fcc_ai_detail['recent_negative_feedback'])): ?>
+                                <div class="text-muted small mb-0">Trenutno nema prijavljenih loših AI odgovora u odabranom periodu.</div>
+                            <?php else: ?>
+                                <div class="leader-os-phase4-history">
+                                    <?php foreach(($fcc_ai_detail['recent_negative_feedback'] ?? []) as $feedback_row): ?>
+                                        <div class="leader-os-phase4-history-item">
+                                            <div class="font-weight-bold">
+                                                <?= htmlspecialchars((string) ($feedback_row['reason_label'] ?? 'Review'), ENT_QUOTES, 'UTF-8') ?>
+                                                · <?= htmlspecialchars((string) ($feedback_row['scope_label'] ?? ''), ENT_QUOTES, 'UTF-8') ?>
+                                            </div>
+                                            <div class="text-muted small mt-2">
+                                                <?= htmlspecialchars((string) ($feedback_row['message_excerpt'] ?? ''), ENT_QUOTES, 'UTF-8') ?>
+                                            </div>
+                                            <?php if(!empty($feedback_row['note'])): ?>
+                                                <div class="text-muted small mt-2"><strong>Napomena:</strong> <?= htmlspecialchars((string) ($feedback_row['note'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                                            <?php endif ?>
+                                            <?php if(!empty($feedback_row['thread_preview'])): ?>
+                                                <div class="mt-2 pl-2 border-left border-dark">
+                                                    <?php foreach(($feedback_row['thread_preview'] ?? []) as $thread_message): ?>
+                                                        <div class="text-muted small mb-2">
+                                                            <strong><?= htmlspecialchars((string) (($thread_message['role'] ?? '') === 'user' ? 'Korisnik' : (($thread_message['role'] ?? '') === 'assistant' ? 'AI' : 'Sustav')), ENT_QUOTES, 'UTF-8') ?>:</strong>
+                                                            <?= htmlspecialchars((string) ($thread_message['content'] ?? ''), ENT_QUOTES, 'UTF-8') ?>
+                                                        </div>
+                                                    <?php endforeach ?>
+                                                </div>
+                                            <?php endif ?>
+                                            <div class="leader-os-phase4-history-meta">
+                                                <span><?= htmlspecialchars((string) ($feedback_row['conversation_public_id'] ?? ''), ENT_QUOTES, 'UTF-8') ?></span>
+                                                <span><?= !empty($feedback_row['datetime']) ? \Altum\Date::get($feedback_row['datetime'], 2) : '-' ?></span>
+                                            </div>
+                                        </div>
+                                    <?php endforeach ?>
+                                </div>
+                            <?php endif ?>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mt-3">
+                    <div class="col-12 col-xl-4 mb-3 mb-xl-0">
+                        <div class="leader-os-detail-panel h-100">
+                            <div class="leader-os-ai-title">Korisno sada</div>
+                            <?php if(empty($fcc_ai_detail['useful_items'])): ?>
+                                <div class="text-muted small mb-0">Kad se skupi još malo AI aktivnosti, ovdje će se pojaviti najkorisniji sljedeći potezi za ovog suradnika.</div>
+                            <?php else: ?>
+                                <div class="leader-os-detail-list">
+                                    <?php foreach(($fcc_ai_detail['useful_items'] ?? []) as $useful_row): ?>
+                                        <div class="leader-os-detail-list-item">
+                                            <span><?= htmlspecialchars((string) ($useful_row['title'] ?? ''), ENT_QUOTES, 'UTF-8') ?></span>
+                                            <strong><?= htmlspecialchars((string) ($useful_row['text'] ?? ''), ENT_QUOTES, 'UTF-8') ?></strong>
+                                        </div>
+                                    <?php endforeach ?>
+                                </div>
+                            <?php endif ?>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-xl-4 mb-3 mb-xl-0">
+                        <div class="leader-os-detail-panel h-100">
+                            <div class="leader-os-ai-title">Rastuće teme</div>
+                            <?php if(empty($fcc_ai_detail['rising_topics'])): ?>
+                                <div class="text-muted small mb-0">Još nema dovoljno podataka za izdvajanje tema u rastu kod ovog suradnika.</div>
+                            <?php else: ?>
+                                <div class="leader-os-detail-list">
+                                    <?php foreach(($fcc_ai_detail['rising_topics'] ?? []) as $topic_row): ?>
+                                        <div class="leader-os-detail-list-item">
+                                            <span><?= htmlspecialchars((string) ($topic_row['label'] ?? ''), ENT_QUOTES, 'UTF-8') ?></span>
+                                            <strong>+<?= nr((int) ($topic_row['delta_total'] ?? 0)) ?> · <?= nr((int) ($topic_row['current_total'] ?? 0)) ?></strong>
+                                        </div>
+                                    <?php endforeach ?>
+                                </div>
+                            <?php endif ?>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-xl-4">
+                        <div class="leader-os-detail-panel h-100">
+                            <div class="leader-os-ai-title">AI obavijesti</div>
+                            <?php if(empty($fcc_ai_detail['recent_alerts'])): ?>
+                                <div class="text-muted small mb-0">Trenutno nema novih AI obavijesti za ovog suradnika.</div>
+                            <?php else: ?>
+                                <div class="leader-os-phase4-history">
+                                    <?php foreach(($fcc_ai_detail['recent_alerts'] ?? []) as $alert_row): ?>
+                                        <div class="leader-os-phase4-history-item">
+                                            <div class="font-weight-bold"><?= htmlspecialchars((string) ($alert_row['title'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                                            <div class="text-muted small mt-2"><?= htmlspecialchars((string) ($alert_row['description'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                                            <div class="leader-os-phase4-history-meta">
+                                                <span><?= !empty($alert_row['is_read']) ? 'Pregledano' : 'Novo' ?></span>
+                                                <span><?= !empty($alert_row['datetime']) ? \Altum\Date::get($alert_row['datetime'], 2) : '-' ?></span>
+                                            </div>
+                                        </div>
+                                    <?php endforeach ?>
+                                </div>
+                            <?php endif ?>
+                        </div>
+                    </div>
+                </div>
+            <?php endif ?>
+        </div>
+    </div>
 
     <div class="card leader-os-detail-shell mb-4">
         <div class="card-body">

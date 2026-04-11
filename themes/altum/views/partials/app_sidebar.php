@@ -6,6 +6,7 @@ $show_admin_only_sidebar_items = false;
 
 /* Custom code: FC-2026-03-08: user feedback replies counter for sidebar */
 $user_feedback_replies_count = 0;
+$user_new_contacts_count = 0;
 if(is_logged_in()) {
     try {
         $has_feedback_tickets_table_result = database()->query("SHOW TABLES LIKE 'feedback_tickets'");
@@ -14,6 +15,32 @@ if(is_logged_in()) {
         }
     } catch(\Throwable $exception) {
         $user_feedback_replies_count = 0;
+    }
+
+    try {
+        $sidebar_preferences = $this->user->preferences ?? new \stdClass();
+
+        if(is_string($sidebar_preferences)) {
+            $sidebar_preferences = json_decode($sidebar_preferences ?? '{}');
+        }
+
+        if(is_array($sidebar_preferences)) {
+            $sidebar_preferences = (object) $sidebar_preferences;
+        }
+
+        if(!$sidebar_preferences instanceof \stdClass) {
+            $sidebar_preferences = (object) $sidebar_preferences;
+        }
+
+        $last_seen_contact_datum_id = (int) ($sidebar_preferences->data_last_seen_datum_id ?? 0);
+        $user_new_contacts_count = (int) (database()->query("SELECT COUNT(*) AS `total`
+            FROM `data`
+            WHERE `user_id` = {$this->user->user_id}
+              AND `datum_id` > {$last_seen_contact_datum_id}
+              AND `type` != 'leader_os_fraud_cluster'
+              AND `type` != 'billing_event'")->fetch_object()->total ?? 0);
+    } catch(\Throwable $exception) {
+        $user_new_contacts_count = 0;
     }
 
     /* Custom code: FC-2026-03-23: sync funnels analytics sidebar access with lead funnel plan availability */
@@ -233,7 +260,11 @@ if(is_logged_in()) {
 
                 <?php if(settings()->links->biolinks_is_enabled): ?>
                     <li class="<?= \Altum\Router::$controller == 'Data' ? 'active' : null ?>">
-                        <a href="<?= url('data') ?>"><i class="fas fa-fw fa-sm fa-address-book mr-2"></i> <?= l('data.menu') ?></a>
+                        <a href="<?= url('data') ?>"><i class="fas fa-fw fa-sm fa-address-book mr-2"></i> <?= l('data.menu') ?>
+                            <?php if($user_new_contacts_count): ?>
+                                <span class="badge badge-primary ml-2"><?= nr($user_new_contacts_count) ?></span>
+                            <?php endif ?>
+                        </a>
                     </li>
 
                     <?php /* Custom code: FC-2026-03-08: user feedback tickets menu */ ?>
@@ -303,6 +334,11 @@ if(is_logged_in()) {
                     <a href="<?= url('ai-plan') ?>" id="fcc_dashboard_tour_sidebar_ai_plan" class="<?= $has_ai_growth_plan_access ? null : 'disabled pointer-events-all' ?>" <?= $has_ai_growth_plan_access ? null : get_plan_feature_disabled_info() ?>><i class="fas fa-fw fa-sm fa-brain mr-2"></i> <?= l('ai_plan.menu') ?></a>
                 </li>
                 <?php /* /Custom code: FC-2026-03-31 */ ?>
+                <li class="<?= \Altum\Router::$controller == 'FccAiHub' ? 'active' : null ?> app-sidebar-fcc-item">
+                    <a href="<?= url('fcc-ai') ?>" id="fcc_dashboard_tour_sidebar_fcc_ai">
+                        <i class="fas fa-fw fa-sm fa-robot mr-2"></i> FCC AI
+                    </a>
+                </li>
                 <?php $fcc_results_sidebar_is_active = \Altum\Router::$controller == 'FccResults'; ?>
                 <li class="<?= $fcc_results_sidebar_is_active ? 'active' : null ?> app-sidebar-fcc-item">
                     <a href="<?= url('fcc-results') ?>" id="fcc_dashboard_tour_sidebar_results">

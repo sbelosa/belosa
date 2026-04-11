@@ -68,6 +68,16 @@ class Router {
                 ]
             ],
 
+            'fcc-ai' => [
+                'controller' => 'FccAiPublic',
+                'settings' => [
+                    'no_authentication_check' => true,
+                    'has_view' => false,
+                    'no_browser_language_detection' => true,
+                    'allow_sessions' => false,
+                ]
+            ],
+
             'guest-payment-webhook' => [
                 'controller' => 'GuestPaymentWebhook',
                 'settings' => [
@@ -137,6 +147,16 @@ class Router {
                 ]
             ],
             /* /Custom code: FC-2026-03-31 */
+
+            /* Custom code: FC-2026-04-10: FCC AI scaffold hub */
+            'fcc-ai' => [
+                'controller' => 'FccAiHub',
+                'settings' => [
+                    'wrapper' => 'app_wrapper',
+                    'ads' => true,
+                ]
+            ],
+            /* /Custom code: FC-2026-04-10 */
 
             /* Custom code: FC-2026-04-01: standalone FCC app review page */
             'ai-app-review' => [

@@ -21,10 +21,7 @@
     /* Custom code: FC-2026-02-27: FCC education premium labels */
     $fcc_is_hr_language = \Altum\Language::$code === 'hr';
     $fcc_education_eyebrow = $fcc_is_hr_language ? 'Forever Edukacija' : 'Forever Education';
-    $fcc_education_stats_label_primary = $fcc_is_hr_language ? 'Koraci programa' : 'Program steps';
-    $fcc_education_stats_label_secondary = $fcc_is_hr_language ? 'Trenutna lekcija' : 'Current lesson';
-    $fcc_education_total_steps = (int) $video_count;
-    $fcc_education_current_step = $video_count > 0 ? ((int) $current_index + 1) : 0;
+    $fcc_education_brand_logo_url = ASSETS_FULL_URL . 'images/fcc-education-logo-wide.png';
 
     $fcc_sidebar_sections = $fcc_is_hr_language
         ? [
@@ -145,15 +142,8 @@
             <p class="fcc-education-subtitle mb-0"><?= $education_subtitle ?></p>
         </div>
 
-        <div class="fcc-education-hero__meta">
-            <div class="fcc-education-stat">
-                <div class="fcc-education-stat__value"><?= nr($fcc_education_total_steps) ?></div>
-                <div class="fcc-education-stat__label"><?= $fcc_education_stats_label_primary ?></div>
-            </div>
-            <div class="fcc-education-stat">
-                <div class="fcc-education-stat__value"><?= nr($fcc_education_current_step) ?></div>
-                <div class="fcc-education-stat__label"><?= $fcc_education_stats_label_secondary ?></div>
-            </div>
+        <div class="fcc-education-hero__brand">
+            <img src="<?= htmlspecialchars($fcc_education_brand_logo_url, ENT_QUOTES, 'UTF-8') ?>" alt="Forever Card Edukacija" class="fcc-education-hero__brand-logo" />
         </div>
     </section>
     <!-- /Custom code: FC-2026-02-27 -->
@@ -300,6 +290,14 @@
         max-width: 640px;
     }
 
+    .fcc-education-hero__brand {
+        flex: 0 1 360px;
+        min-width: min(100%, 320px);
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+    }
+
     .fcc-education-eyebrow {
         text-transform: uppercase;
         letter-spacing: 0.24em;
@@ -321,30 +319,12 @@
         line-height: 1.6;
     }
 
-    .fcc-education-hero__meta {
-        display: grid;
-        grid-auto-rows: minmax(0, auto);
-        gap: 12px;
-        min-width: 190px;
-    }
-
-    .fcc-education-stat {
-        background: rgba(255, 255, 255, 0.04);
-        border: 1px solid rgba(255, 255, 255, 0.06);
-        border-radius: 16px;
-        padding: 16px;
-    }
-
-    .fcc-education-stat__value {
-        font-size: 1.2rem;
-        font-weight: 600;
-        color: #fff;
-        margin-bottom: 6px;
-    }
-
-    .fcc-education-stat__label {
-        font-size: 0.85rem;
-        color: rgba(255, 255, 255, 0.6);
+    .fcc-education-hero__brand-logo {
+        display: block;
+        width: 100%;
+        max-width: 420px;
+        height: auto;
+        filter: drop-shadow(0 1.1rem 1.8rem rgba(0, 0, 0, 0.28));
     }
 
     .fcc-education-card {
@@ -480,9 +460,13 @@
             flex-direction: column;
         }
 
-        .fcc-education-hero__meta {
-            grid-template-columns: repeat(2, minmax(0, 1fr));
+        .fcc-education-hero__brand {
             min-width: 0;
+            justify-content: flex-start;
+        }
+
+        .fcc-education-hero__brand-logo {
+            max-width: 360px;
         }
     }
 
@@ -536,8 +520,8 @@
             border-radius: 18px;
         }
 
-        .fcc-education-hero__meta {
-            grid-template-columns: 1fr;
+        .fcc-education-hero__brand-logo {
+            max-width: 290px;
         }
 
         .fcc-education-sidebar-columns {

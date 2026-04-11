@@ -1088,9 +1088,7 @@ class LinkAjax extends Controller {
 	}
 
 	private function get_default_ai_chatbot_embed_html(string $block_type): string {
-		return $block_type === 'custom_html_chatbot_pets'
-			? "<script async type='module' src='https://interfaces.zapier.com/assets/web-components/zapier-interfaces/zapier-interfaces.esm.js'></script>\n<zapier-interfaces-chatbot-embed is-popup='false' chatbot-id='cm8owjjbg000r9mozayq4gksd'></zapier-interfaces-chatbot-embed>"
-			: "<script async type='module' src='https://interfaces.zapier.com/assets/web-components/zapier-interfaces/zapier-interfaces.esm.js'></script>\n<zapier-interfaces-chatbot-embed is-popup='false' chatbot-id='cm8g6mg77000qyrrw89x3vadl'></zapier-interfaces-chatbot-embed>";
+		return '';
 	}
 
 	private function normalize_ai_missing_block_type(string $block_type): string {
