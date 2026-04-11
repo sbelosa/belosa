@@ -1105,7 +1105,7 @@ foreach(['hr', 'en', 'sl', 'bg'] as $fcc_chat_ui_language) {
 
                         <textarea name="message" maxlength="1000" placeholder="<?= htmlspecialchars($fcc_chat_lead_message_placeholder, ENT_QUOTES, 'UTF-8') ?>"></textarea>
 
-                        <button type="submit" class="fcc-chat-extreme__lead-submit" data-is-ajax="true"><?= htmlspecialchars($fcc_chat_lead_submit_label, ENT_QUOTES, 'UTF-8') ?></button>
+                        <button type="submit" class="fcc-chat-extreme__lead-submit"><?= htmlspecialchars($fcc_chat_lead_submit_label, ENT_QUOTES, 'UTF-8') ?></button>
                     </form>
                 </div>
             </section>
@@ -1121,7 +1121,7 @@ foreach(['hr', 'en', 'sl', 'bg'] as $fcc_chat_ui_language) {
                 autocomplete="off"
             />
 
-            <button type="submit" class="fcc-chat-extreme__send" data-is-ajax="true" aria-label="<?= htmlspecialchars($fcc_chat_send_label, ENT_QUOTES, 'UTF-8') ?>">
+            <button type="submit" class="fcc-chat-extreme__send" aria-label="<?= htmlspecialchars($fcc_chat_send_label, ENT_QUOTES, 'UTF-8') ?>">
                 <i class="fas fa-paper-plane" aria-hidden="true"></i>
             </button>
         </form>
@@ -1194,6 +1194,258 @@ foreach(['hr', 'en', 'sl', 'bg'] as $fcc_chat_ui_language) {
         if(!root) {
             return;
         }
+
+        const emergencyInit = () => {
+            if(root.dataset.fccEmergencyBooted === '1') {
+                return;
+            }
+
+            root.dataset.fccEmergencyBooted = '1';
+
+            const panel = document.getElementById(<?= json_encode($fcc_chat_shell_id) ?>);
+            const launcher = document.getElementById(<?= json_encode($fcc_chat_toggle_id) ?>);
+            const thread = document.getElementById(<?= json_encode($fcc_chat_thread_id) ?>);
+            const composerForm = document.getElementById(<?= json_encode($fcc_chat_form_id) ?>);
+            const composerInput = composerForm ? composerForm.querySelector('input[name="message"]') : null;
+            const sendButton = composerForm ? composerForm.querySelector('button[type="submit"]') : null;
+            const closeButton = root.querySelector('[data-chat-extreme-close]');
+            const leadCard = document.getElementById(<?= json_encode($fcc_chat_lead_id) ?>);
+
+            if(!panel || !launcher || !thread || !composerForm || !composerInput) {
+                return;
+            }
+
+            if(leadCard) {
+                leadCard.hidden = true;
+            }
+
+            const assistantType = root.dataset.assistantType || 'product_advisor';
+            const scope = root.dataset.scope || 'public_app';
+            const linkId = Number(root.dataset.linkId || 0);
+            const blogPostId = Number(root.dataset.blogPostId || 0);
+            const ownerName = root.dataset.ownerName || '';
+            const conversationUrl = root.dataset.conversationUrl || '';
+            const messageUrl = root.dataset.messageUrl || '';
+            const storageKeyBase = root.dataset.storageKey || 'fcc_ai_public_conversation_id';
+            const contextStorageKeyBase = root.dataset.contextStorageKey || 'fcc_ai_public_context';
+            const sourceContext = root.dataset.sourceContext || 'FCC app popup chat';
+            const defaultWelcome = root.dataset.defaultWelcome || '';
+            const language = String(root.dataset.language || root.dataset.defaultLanguage || 'hr').trim().toLowerCase();
+            const visitorStorageKey = `fcc_ai_public_visitor_key:${assistantType}`;
+            const getConversationStorageKey = () => `${storageKeyBase}:${assistantType}:${linkId || 'shared'}`;
+            const getContextStorageKey = () => `${contextStorageKeyBase}:${assistantType}`;
+
+            let conversationPublicId = '';
+            let visitorKey = '';
+            let isSending = false;
+
+            const escapeHtml = value => String(value)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+
+            const renderMessageHtml = value => {
+                let html = escapeHtml(String(value || '').replace(/\r\n/g, '\n'));
+                html = html.replace(/\*\*([\s\S]+?)\*\*/g, '<strong>$1</strong>');
+                html = html.replace(/\n/g, '<br>');
+
+                return html;
+            };
+
+            const appendMessage = (role, content) => {
+                const wrapper = document.createElement('div');
+                wrapper.className = `fcc-chat-extreme__message is-${role === 'user' ? 'user' : role === 'system' ? 'system' : 'assistant'}`;
+
+                const bubble = document.createElement('div');
+                bubble.className = 'fcc-chat-extreme__bubble';
+                bubble.innerHTML = renderMessageHtml(content);
+                wrapper.appendChild(bubble);
+                thread.appendChild(wrapper);
+                thread.scrollTop = thread.scrollHeight;
+            };
+
+            const createToken = () => {
+                if(window.crypto && typeof window.crypto.randomUUID === 'function') {
+                    return window.crypto.randomUUID().replace(/-/g, '');
+                }
+
+                return `fcc${Date.now().toString(16)}${Math.random().toString(16).slice(2, 10)}`;
+            };
+
+            const currentPagePayload = () => {
+                const searchParams = new URLSearchParams(window.location.search);
+                const hashValue = window.location.hash ? window.location.hash.replace(/^#/, '') : '';
+
+                return {
+                    source_page_url: window.location.href,
+                    source_page_slug: window.location.pathname.replace(/^\/+|\/+$/g, ''),
+                    source_page_title: (document.title || '').trim(),
+                    source_page_section: (searchParams.get('section') || hashValue || '').trim(),
+                };
+            };
+
+            const persistConversation = details => {
+                if(!details || !details.conversation_public_id) {
+                    return;
+                }
+
+                conversationPublicId = String(details.conversation_public_id);
+
+                try {
+                    window.localStorage.setItem(getConversationStorageKey(), conversationPublicId);
+                    window.localStorage.setItem(getContextStorageKey(), JSON.stringify({
+                        conversation_public_id: conversationPublicId,
+                        link_id: linkId,
+                        owner_name: ownerName,
+                        assistant_type: assistantType,
+                        saved_at: Date.now(),
+                    }));
+                } catch(error) {
+                }
+            };
+
+            const postForm = async (url, payload) => {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                    body: new URLSearchParams(payload).toString(),
+                });
+
+                const result = await response.json();
+
+                if(!response.ok || result.status !== 'success') {
+                    throw new Error(Array.isArray(result.message) ? result.message.join(' ') : (result.message || 'Greška u komunikaciji.'));
+                }
+
+                return result.details || {};
+            };
+
+            const ensureConversation = async () => {
+                if(!conversationUrl) {
+                    return {};
+                }
+
+                if(conversationPublicId) {
+                    return {conversation_public_id: conversationPublicId};
+                }
+
+                const details = await postForm(conversationUrl, {
+                    assistant_type: assistantType,
+                    scope,
+                    conversation_public_id: conversationPublicId,
+                    link_id: linkId,
+                    blog_post_id: blogPostId,
+                    language,
+                    source_context: sourceContext,
+                    visitor_key: visitorKey,
+                    ...currentPagePayload(),
+                });
+
+                persistConversation(details);
+                return details;
+            };
+
+            const setOpen = isOpen => {
+                root.classList.toggle('is-open', !!isOpen);
+                panel.setAttribute('aria-hidden', isOpen ? 'false' : 'true');
+                launcher.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+
+                if(isOpen) {
+                    window.setTimeout(() => composerInput.focus(), 60);
+                }
+            };
+
+            root.__fccChatSetOpen = setOpen;
+
+            try {
+                conversationPublicId = window.localStorage.getItem(getConversationStorageKey()) || '';
+                visitorKey = window.localStorage.getItem(visitorStorageKey) || '';
+            } catch(error) {
+                conversationPublicId = '';
+                visitorKey = '';
+            }
+
+            if(!visitorKey) {
+                visitorKey = createToken();
+
+                try {
+                    window.localStorage.setItem(visitorStorageKey, visitorKey);
+                } catch(error) {
+                }
+            }
+
+            if(!thread.textContent.trim() && defaultWelcome) {
+                appendMessage('assistant', defaultWelcome);
+            }
+
+            launcher.addEventListener('click', () => setOpen(true));
+
+            if(closeButton) {
+                closeButton.addEventListener('click', () => setOpen(false));
+            }
+
+            composerForm.addEventListener('submit', async event => {
+                event.preventDefault();
+
+                const message = composerInput.value.trim();
+
+                if(!message || isSending || !messageUrl) {
+                    return;
+                }
+
+                composerInput.value = '';
+                appendMessage('user', message);
+                isSending = true;
+
+                if(sendButton) {
+                    sendButton.disabled = true;
+                }
+
+                try {
+                    await ensureConversation();
+
+                    const details = await postForm(messageUrl, {
+                        assistant_type: assistantType,
+                        scope,
+                        conversation_public_id: conversationPublicId,
+                        link_id: linkId,
+                        blog_post_id: blogPostId,
+                        language,
+                        source_context: sourceContext,
+                        visitor_key: visitorKey,
+                        message,
+                        ...currentPagePayload(),
+                    });
+
+                    persistConversation(details);
+
+                    const replyContent = String(
+                        (details.reply && details.reply.content)
+                        || (Array.isArray(details.messages) ? ((details.messages.slice().reverse().find(item => item && item.role === 'assistant' && (item.message_type || 'chat') === 'chat') || {}).content || '') : '')
+                        || ''
+                    ).trim();
+
+                    if(replyContent) {
+                        appendMessage('assistant', replyContent);
+                    }
+                } catch(error) {
+                    appendMessage('system', error.message || 'Chat trenutno nije dostupan.');
+                } finally {
+                    isSending = false;
+
+                    if(sendButton) {
+                        sendButton.disabled = false;
+                    }
+                }
+            });
+        };
+
+        try {
 
         const panel = document.getElementById(<?= json_encode($fcc_chat_shell_id) ?>);
         const launcher = document.getElementById(<?= json_encode($fcc_chat_toggle_id) ?>);
@@ -1409,6 +1661,23 @@ foreach(['hr', 'en', 'sl', 'bg'] as $fcc_chat_ui_language) {
             minTypingDelay: 1050,
         };
 
+        const state = {
+            bootPromise: null,
+            conversationPublicId: '',
+            visitorKey: '',
+            isOpen: false,
+            isSending: false,
+            isLeadSubmitting: false,
+            leadCaptured: false,
+            leadCardExpanded: true,
+            pendingLeadCapture: null,
+            scrollY: 0,
+            linkId: Number(config.linkId || 0),
+            ownerName: config.ownerName || '',
+            feedbackLoadingIds: new Set(),
+            renderedMessages: [],
+        };
+
         const kicker = root.querySelector('.fcc-chat-extreme__kicker');
         const launcherLabel = root.querySelector('.fcc-chat-extreme__launcher-label');
 
@@ -1512,23 +1781,6 @@ foreach(['hr', 'en', 'sl', 'bg'] as $fcc_chat_ui_language) {
         };
 
         applyLocalizedCopy(config.language);
-
-        const state = {
-            bootPromise: null,
-            conversationPublicId: '',
-            visitorKey: '',
-            isOpen: false,
-            isSending: false,
-            isLeadSubmitting: false,
-            leadCaptured: false,
-            leadCardExpanded: true,
-            pendingLeadCapture: null,
-            scrollY: 0,
-            linkId: Number(config.linkId || 0),
-            ownerName: config.ownerName || '',
-            feedbackLoadingIds: new Set(),
-            renderedMessages: [],
-        };
 
         const visitorStorageKey = `fcc_ai_public_visitor_key:${config.assistantType}`;
         const getConversationStorageKey = () => `${config.storageKeyBase}:${config.assistantType}:${state.linkId || 'shared'}`;
@@ -2535,5 +2787,9 @@ foreach(['hr', 'en', 'sl', 'bg'] as $fcc_chat_ui_language) {
                 setOpen(false);
             }
         });
+        } catch(error) {
+            console.error('FCC Chat bootstrap failed', error);
+            emergencyInit();
+        }
     })();
 </script>
