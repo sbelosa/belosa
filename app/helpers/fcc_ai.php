@@ -1720,6 +1720,36 @@ function fcc_ai_public_content_mentions_patterns(string $content, array $pattern
     return false;
 }
 
+function fcc_ai_public_has_conversion_cta(string $content, string $language = 'hr'): bool {
+    $patterns = $language === 'en'
+        ? [
+            'open the fcc article',
+            'fastest next step',
+            'next step is to open',
+            'continue from that exact direction',
+            'leave your contact',
+            'contact request',
+        ]
+        : ($language === 'sl'
+            ? [
+                'odpreti fcc članek',
+                'najhitrejši naslednji korak',
+                'naslednji korak je odpreti',
+                'pustite kontakt',
+                'kontaktni zahtevek',
+            ]
+            : [
+                'otvoriti fcc članak',
+                'najbrži sljedeći korak',
+                'sljedeći korak je otvoriti',
+                'ostavite kontakt',
+                'kontakt zahtjev',
+                'nastaviti baš iz tog smjera',
+            ]);
+
+    return fcc_ai_public_content_mentions_patterns($content, $patterns);
+}
+
 function fcc_ai_get_internal_coach_welcome_message(string $language = 'hr', string $user_name = ''): string {
     $language = fcc_ai_resolve_public_reply_language($language);
     $first_name = fcc_ai_extract_first_name($user_name);
@@ -2395,7 +2425,7 @@ function fcc_ai_get_message_feedback_map(array $message_ids, array $viewer_actor
     $totals_result = database()->query("SELECT
             `fcc_ai_message_id`,
             SUM(CASE WHEN `feedback_type` = 'up' THEN 1 ELSE 0 END) AS `positive_total`,
-            SUM(CASE WHEN `feedback_type` = 'down' THEN 1 ELSE 0 END) AS `negative_total`
+            SUM(CASE WHEN `feedback_type` = 'down' AND COALESCE(`status`, 'new') != 'resolved' THEN 1 ELSE 0 END) AS `negative_total`
         FROM `fcc_ai_message_feedback`
         WHERE `fcc_ai_message_id` IN ({$message_sql})
         GROUP BY `fcc_ai_message_id`");
@@ -3861,8 +3891,8 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
         ],
         'topical_feet_support' => [
             'patterns' => ['gljivice na nogama', 'gljivice na stopalima', 'gljivice na stopalu', 'njega stopala', 'stopala', 'stopalo', 'foot skin', 'foot care'],
-            'preferred_patterns' => ['propolis creme', 'aloe propolis', 'propolis', 'first spray'],
-            'primary_product' => 'Forever Aloe Propolis Creme',
+            'preferred_patterns' => ['aloe vera gelly', 'gelly', 'first spray', 'propolis creme', 'aloe propolis'],
+            'primary_product' => 'Forever Aloe Vera Gelly',
             'support_products' => ['Forever Aloe First Spray'],
             'label' => [
                 'hr' => 'lokalna njega kože stopala',
@@ -3874,11 +3904,11 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
             ],
             'recommendation_lines' => [
                 'hr' => [
-                    'Forever Aloe Propolis Creme je ovdje najbliži Forever smjer za opću lokalnu njegu kože stopala, bez predstavljanja proizvoda kao liječenja.',
+                    'Forever Aloe Vera Gelly je ovdje najbliži Forever smjer za opću lokalnu njegu kože stopala, bez predstavljanja proizvoda kao liječenja.',
                     'Forever Aloe First Spray može biti jednostavna dopunska opcija za nježnu svakodnevnu rutinu izvana.',
                 ],
                 'en' => [
-                    'Forever Aloe Propolis Creme is the closest Forever direction here for general topical foot-skin care, without presenting it as treatment.',
+                    'Forever Aloe Vera Gelly is the closest Forever direction here for general topical foot-skin care, without presenting it as treatment.',
                     'Forever Aloe First Spray can be a simple support option for a gentle everyday outer routine.',
                 ],
             ],
@@ -7955,6 +7985,7 @@ function fcc_ai_build_conversation_insight_payload(object $conversation, array $
 
     $feedback_totals = db()
         ->where('fcc_ai_conversation_id', (int) $conversation->fcc_ai_conversation_id)
+        ->where('status', 'resolved', '!=')
         ->get('fcc_ai_message_feedback', null, ['feedback_type']);
     $positive_feedback_total = 0;
     $negative_feedback_total = 0;
@@ -9043,7 +9074,7 @@ function fcc_ai_get_team_dashboard_payload(string $period_start_datetime, array 
             `u`.`name`,
             `f`.`assistant_type`,
             SUM(CASE WHEN `f`.`feedback_type` = 'up' THEN 1 ELSE 0 END) AS `positive_feedback`,
-            SUM(CASE WHEN `f`.`feedback_type` = 'down' THEN 1 ELSE 0 END) AS `negative_feedback`
+            SUM(CASE WHEN `f`.`feedback_type` = 'down' AND COALESCE(`f`.`status`, 'new') != 'resolved' THEN 1 ELSE 0 END) AS `negative_feedback`
         FROM `fcc_ai_message_feedback` AS `f`
         LEFT JOIN `users` AS `u` ON `u`.`user_id` = `f`.`user_id`
         WHERE COALESCE(`f`.`last_datetime`, `f`.`datetime`) >= '{$period_start_sql}'{$feedback_user_filter}
@@ -9218,6 +9249,7 @@ function fcc_ai_get_team_dashboard_payload(string $period_start_datetime, array 
         LEFT JOIN `fcc_ai_messages` AS `m` ON `m`.`fcc_ai_message_id` = `f`.`fcc_ai_message_id`
         LEFT JOIN `users` AS `u` ON `u`.`user_id` = `f`.`user_id`
         WHERE `f`.`feedback_type` = 'down'
+          AND COALESCE(`f`.`status`, 'new') != 'resolved'
           AND COALESCE(`f`.`last_datetime`, `f`.`datetime`) >= '{$period_start_sql}'{$feedback_user_filter}
         ORDER BY COALESCE(`f`.`last_datetime`, `f`.`datetime`) DESC
         LIMIT {$limit}");
@@ -9374,7 +9406,7 @@ function fcc_ai_get_user_dashboard_payload(int $user_id, string $period_start_da
     $feedback_aggregate_result = database()->query("SELECT
             `assistant_type`,
             SUM(CASE WHEN `feedback_type` = 'up' THEN 1 ELSE 0 END) AS `positive_feedback`,
-            SUM(CASE WHEN `feedback_type` = 'down' THEN 1 ELSE 0 END) AS `negative_feedback`
+            SUM(CASE WHEN `feedback_type` = 'down' AND COALESCE(`status`, 'new') != 'resolved' THEN 1 ELSE 0 END) AS `negative_feedback`
         FROM `fcc_ai_message_feedback`
         WHERE `user_id` = {$user_id}
           AND `assistant_type` != 'coach'
@@ -9523,6 +9555,7 @@ function fcc_ai_get_user_dashboard_payload(int $user_id, string $period_start_da
         WHERE `f`.`user_id` = {$user_id}
           AND COALESCE(`c`.`assistant_type`, '') != 'coach'
           AND `f`.`feedback_type` = 'down'
+          AND COALESCE(`f`.`status`, 'new') != 'resolved'
           AND COALESCE(`f`.`last_datetime`, `f`.`datetime`) >= '{$period_start_sql}'
         ORDER BY COALESCE(`f`.`last_datetime`, `f`.`datetime`) DESC
         LIMIT {$limit}");
@@ -9828,18 +9861,20 @@ function fcc_ai_handle_public_message(array $payload): array {
         return trim((string) $item);
     }, (array) ($recommendation_payload['support_products'] ?? []))));
 
-    if(
-        (string) ($conversation->assistant_type ?? '') === 'product_advisor'
-        && $recommendation_primary !== ''
-        && empty($intent['serious'])
+        if(
+            (string) ($conversation->assistant_type ?? '') === 'product_advisor'
+            && $recommendation_primary !== ''
+            && empty($intent['serious'])
         && empty($intent['medical_sensitive'])
         && empty($intent['special_population_sensitive'])
         && empty($intent['medication_interaction_sensitive'])
         && empty($intent['medication_replacement_sensitive'])
     ) {
         $anchor_patterns = array_merge([$recommendation_primary], $support_products);
+        $needs_anchor_note = !fcc_ai_public_content_mentions_patterns($reply_content, $anchor_patterns);
+        $needs_conversion_cta = !fcc_ai_public_has_conversion_cta($reply_content, $resolved_language);
 
-        if(!fcc_ai_public_content_mentions_patterns($reply_content, $anchor_patterns)) {
+        if($needs_anchor_note || $needs_conversion_cta) {
             $anchor_note = fcc_ai_get_public_recommendation_decision_note(
                 (string) ($conversation->assistant_type ?? 'product_advisor'),
                 $recommendation_payload,
