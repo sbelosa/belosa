@@ -3836,6 +3836,54 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
             ],
             'suppress_generic_questions' => true,
         ],
+        'oral_care_support' => [
+            'patterns' => ['paradentoz', 'desni', 'gingiv', 'krvarenje desni', 'povlačenje desni', 'povlacenje desni', 'oralna njega', 'usna šupljina', 'usna supljina', 'oral care'],
+            'preferred_patterns' => ['forever bright', 'bright', 'toothgel', 'toothpaste', 'zubna pasta'],
+            'primary_product' => 'Forever Bright® Toothgel',
+            'support_products' => [],
+            'label' => [
+                'hr' => 'oralna rutina i njega desni',
+                'en' => 'oral routine and gum care',
+            ],
+            'opening_note' => [
+                'hr' => 'Kod desni i oralne rutine ne bih proizvod predstavljao kao liječenje, ali ako tražite opći Forever smjer za svakodnevnu oralnu njegu, ovdje je važno ostati na točnom oral-care proizvodu iz baze.',
+                'en' => 'For gums and oral routine, I would not present a product as treatment, but if you want a general Forever direction for everyday oral care, it is important to stay with the exact oral-care product from the base.',
+            ],
+            'recommendation_lines' => [
+                'hr' => [
+                    'Forever Bright® Toothgel je ovdje glavni Forever smjer jer je točan proizvod iz baze za svakodnevnu oralnu rutinu i njegu usne šupljine.',
+                ],
+                'en' => [
+                    'Forever Bright® Toothgel is the clearest main Forever direction here because it is the exact product from the base for an everyday oral-care routine.',
+                ],
+            ],
+            'suppress_generic_questions' => true,
+        ],
+        'topical_feet_support' => [
+            'patterns' => ['gljivice na nogama', 'gljivice na stopalima', 'gljivice na stopalu', 'njega stopala', 'stopala', 'stopalo', 'foot skin', 'foot care'],
+            'preferred_patterns' => ['propolis creme', 'aloe propolis', 'propolis', 'first spray'],
+            'primary_product' => 'Forever Aloe Propolis Creme',
+            'support_products' => ['Forever Aloe First Spray'],
+            'label' => [
+                'hr' => 'lokalna njega kože stopala',
+                'en' => 'topical foot skin care',
+            ],
+            'opening_note' => [
+                'hr' => 'Ako je riječ o stopalima i lokalnoj njezi kože, ne bih išao na generičku skincare liniju za lice, nego na točniji topical smjer iz Forever baze.',
+                'en' => 'If the focus is feet and local skin care, I would not drift into generic facial skincare. The cleaner direction is the topical Forever route from the base.',
+            ],
+            'recommendation_lines' => [
+                'hr' => [
+                    'Forever Aloe Propolis Creme je ovdje najbliži Forever smjer za opću lokalnu njegu kože stopala, bez predstavljanja proizvoda kao liječenja.',
+                    'Forever Aloe First Spray može biti jednostavna dopunska opcija za nježnu svakodnevnu rutinu izvana.',
+                ],
+                'en' => [
+                    'Forever Aloe Propolis Creme is the closest Forever direction here for general topical foot-skin care, without presenting it as treatment.',
+                    'Forever Aloe First Spray can be a simple support option for a gentle everyday outer routine.',
+                ],
+            ],
+            'suppress_generic_questions' => true,
+        ],
         'oily_hair_topical_care' => [
             'patterns' => ['masna kosa', 'masnu kosu', 'masno vlasište', 'masno vlasiste', 'masno tjeme', 'masna vlasišta', 'masna vlasista', 'oily hair', 'greasy hair', 'masna kosa i vlasište'],
             'preferred_patterns' => ['jojoba shampoo', 'aloe jojoba shampoo', 'jojoba conditioner', 'aloe jojoba conditioner', 'shampoo', 'conditioner'],
@@ -5030,7 +5078,7 @@ function fcc_ai_has_high_risk_public_medical_context(string $message): bool {
         'karcinom', 'karcinoma', 'rak', 'kemoterap', 'transplant', 'transplat',
         'moždani udar', 'mozdani udar', 'moždanog udara', 'mozdanog udara', 'mozganski kap',
         'cellulitis', 'celulitis', 'polip', 'letrozol', 'reseligo', 'bazofil', 'urati', 'psa',
-        'štitna', 'stitna', 'štitnoj', 'stitnoj', 'miom', 'maternic', 'slabokrv', 'kolesterol', 'gljivic', 'alergij', 'iscrplj',
+        'štitna', 'stitna', 'štitnoj', 'stitnoj', 'miom', 'maternic', 'slabokrv',
         'tromboz', 'ulcerozn', 'kolitis', 'pankreas',
     ]);
 }
@@ -7290,6 +7338,7 @@ function fcc_ai_generate_public_reply(string $assistant_type, string $message, a
                 'knowledge_suggestions' => [],
             ];
         } elseif(!empty($intent['medical_sensitive'])) {
+            $has_high_risk_context = fcc_ai_has_high_risk_public_medical_context($message);
             $content_blocks[] = $language === 'en'
                 ? 'I can only stay in general educational guidance here. If this involves therapy, pregnancy, a diagnosed condition or stronger symptoms, it is important to check supplements with a doctor as well.'
                 : ($language === 'sl'
@@ -7299,11 +7348,11 @@ function fcc_ai_generate_public_reply(string $assistant_type, string $message, a
             $specific_product = trim((string) ($knowledge_suggestions[0]['title'] ?? ''));
             $specific_description = '';
 
-            if($specific_product === '') {
+            if(!$has_high_risk_context && $specific_product === '') {
                 $specific_product = fcc_ai_get_public_direct_product_lookup_title($message);
             }
 
-            if(!empty($knowledge_suggestions[0])) {
+            if(!$has_high_risk_context && !empty($knowledge_suggestions[0])) {
                 $specific_description = fcc_ai_build_safe_article_description(
                     $knowledge_suggestions[0],
                     $assistant_type,
@@ -7312,7 +7361,13 @@ function fcc_ai_generate_public_reply(string $assistant_type, string $message, a
                 );
             }
 
-            if($is_direct_product_lookup && $specific_product !== '') {
+            if($has_high_risk_context) {
+                $content_blocks[] = $language === 'en'
+                    ? 'For this type of higher-risk medical context, I would not narrow it to a specific product direction through chat. The safest next step is to confirm the situation with a doctor first, then continue only with a cautious general routine discussion if needed.'
+                    : ($language === 'sl'
+                        ? 'Pri tej vrsti bolj tveganega medicinskega konteksta tega ne bi ožil na konkreten izdelek preko klepeta. Najvarnejši naslednji korak je najprej potrditev pri zdravniku, nato pa po potrebi le previden pogovor o splošni rutini.'
+                        : 'Kod ovakvog višerizičnog medicinskog konteksta ne bih to sužavao na konkretan proizvod kroz chat. Najsigurniji sljedeći korak je prvo potvrda s liječnikom, a tek onda po potrebi oprezan razgovor o općoj rutini.');
+            } elseif($is_direct_product_lookup && $specific_product !== '') {
                 if($specific_description !== '') {
                     $content_blocks[] = $language === 'en'
                         ? 'If you are asking specifically about ' . $specific_product . ', I can keep it on a general level like this: ' . $specific_description . '.'
@@ -9690,6 +9745,8 @@ function fcc_ai_handle_public_message(array $payload): array {
     $recent_user_context = trim((string) ($contextual_message_bundle['recent_user_context'] ?? ''));
     $used_context_for_matching = !empty($contextual_message_bundle['used_context']);
     $intent = fcc_ai_detect_public_intent((string) $conversation->assistant_type, $message_for_matching);
+    $has_high_risk_medical_context = (string) ($conversation->assistant_type ?? '') === 'product_advisor'
+        && fcc_ai_has_high_risk_public_medical_context($message_for_matching);
     $knowledge_suggestions = fcc_ai_get_public_knowledge_suggestions((string) $conversation->assistant_type, $message_for_matching, [
         'language' => $resolved_language,
         'intent' => $intent,
@@ -9701,6 +9758,14 @@ function fcc_ai_handle_public_message(array $payload): array {
         'intent' => $intent,
         'knowledge_suggestions' => $knowledge_suggestions,
     ]);
+
+    if($has_high_risk_medical_context) {
+        $knowledge_suggestions = [];
+        $recommendation_payload['recommendation_lines'] = [];
+        $recommendation_payload['question_lines'] = [];
+        $recommendation_payload['primary_product'] = '';
+        $recommendation_payload['support_products'] = [];
+    }
 
     fcc_ai_log_message((int) $conversation->fcc_ai_conversation_id, 'user', $message, [
         'message_type' => 'chat',
@@ -9723,7 +9788,7 @@ function fcc_ai_handle_public_message(array $payload): array {
         'lead_status' => (string) ($conversation->lead_status ?? 'none'),
         'knowledge_suggestions' => $knowledge_suggestions,
         'recommendation_payload' => $recommendation_payload,
-        'recent_user_context' => $recent_user_context,
+        'recent_user_context' => $has_high_risk_medical_context ? '' : $recent_user_context,
     ]);
 
     $model_attempt = fcc_ai_try_generate_public_model_reply($conversation, [
@@ -9735,7 +9800,7 @@ function fcc_ai_handle_public_message(array $payload): array {
         'last_user_message' => $message,
         'knowledge_suggestions' => $knowledge_suggestions,
         'recommendation_payload' => $recommendation_payload,
-        'recent_user_context' => $recent_user_context,
+        'recent_user_context' => $has_high_risk_medical_context ? '' : $recent_user_context,
     ], $assistant);
 
     $reply_meta = [
