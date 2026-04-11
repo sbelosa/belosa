@@ -3318,6 +3318,50 @@ function fcc_ai_blog_row_is_topical(object $row): bool {
     ]);
 }
 
+function fcc_ai_get_theme_match_keys(array $theme_matches): array {
+    return array_values(array_filter(array_map(static function(array $theme_match) {
+        return trim((string) ($theme_match['key'] ?? ''));
+    }, $theme_matches)));
+}
+
+function fcc_ai_get_condition_match_keys(array $condition_matches): array {
+    return array_values(array_filter(array_map(static function(array $condition_match) {
+        return trim((string) ($condition_match['key'] ?? ''));
+    }, $condition_matches)));
+}
+
+function fcc_ai_product_context_allows_topical_suggestions(string $message, array $intent = [], array $theme_matches = [], array $condition_matches = [], bool $is_direct_product_lookup = false): bool {
+    $theme_keys = fcc_ai_get_theme_match_keys($theme_matches);
+    $condition_keys = fcc_ai_get_condition_match_keys($condition_matches);
+
+    if(
+        in_array('oral_care_support', $condition_keys, true)
+        || in_array('topical_feet_support', $condition_keys, true)
+        || in_array('oily_hair_topical_care', $condition_keys, true)
+        || in_array('hair_skin_nails_support', $condition_keys, true)
+        || in_array('skin_hair', $theme_keys, true)
+    ) {
+        return true;
+    }
+
+    if(
+        !$is_direct_product_lookup
+        && (
+            !empty($intent['serious'])
+            || !empty($intent['medical_sensitive'])
+            || fcc_ai_has_high_risk_public_medical_context($message)
+        )
+    ) {
+        return false;
+    }
+
+    if(!empty($intent['medical_sensitive']) && !$is_direct_product_lookup) {
+        return false;
+    }
+
+    return true;
+}
+
 function fcc_ai_get_public_direct_product_lookup_matches(string $message): array {
     $message = mb_strtolower(trim($message));
 
@@ -3883,6 +3927,32 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
                 ],
             ],
             'suppress_generic_questions' => true,
+        ],
+        'women_heavy_cycle_support' => [
+            'patterns' => ['obilna mjesečnica', 'obilne mjesečnice', 'obilna menstruacija', 'obilne menstruacije', 'jaka mjesečnica', 'jake mjesečnice', 'jako menstrualno krvarenje', 'obilno krvarenje', 'obilna krvarenja', 'menstrualni problemi', 'problemi s menstruacijom', 'bolna mjesečnica', 'bolne mjesečnice', 'bolna menstruacija', 'menstrualni bolovi', 'menstrualne bolove', 'pms'],
+            'preferred_patterns' => ['multi maca', 'multimaca', 'maca', 'vitolize women', 'woman'],
+            'primary_product' => 'Forever Multi Maca',
+            'support_products' => ['Forever Vitolize Women'],
+            'label' => [
+                'hr' => 'obilna mjesečnica i osjetljiviji ženski ciklus',
+                'en' => 'heavy cycle and a more sensitive women routine',
+            ],
+            'opening_note' => [
+                'hr' => 'Kod obilne, bolne ili osjetljivije mjesečnice prvi korak je provjeriti sve s liječnikom ili ginekologom, ali ako želite Forever support smjer za žensku rutinu, ovdje je važno ostati na smislenim proizvodima za taj kontekst, a ne skretati na nepovezanu njegu izvana.',
+                'en' => 'For a heavy, painful or more sensitive cycle, the first step is to align everything with a doctor or gynecologist, but if you want a Forever support direction for the women routine, it is important to stay with products that actually fit that context rather than drifting into unrelated topical care.',
+            ],
+            'recommendation_lines' => [
+                'hr' => [
+                    'Forever Multi Maca je ovdje glavni Forever smjer jer se najlogičnije uklapa u ženski balans, svakodnevnu vitalnost i rutinu ciklusa.',
+                    'Forever Vitolize Women može biti dobra support opcija kada uz to želite i širu nutritivnu podršku za žensku svakodnevnu rutinu.',
+                ],
+                'en' => [
+                    'Forever Multi Maca is the clearest main Forever direction here because it fits most naturally into women balance, everyday vitality and a steadier cycle-support routine.',
+                    'Forever Vitolize Women can be a useful support option on top when you also want broader nutritional support for an everyday women routine.',
+                ],
+            ],
+            'suppress_generic_questions' => true,
+            'sensitive_support_only' => true,
         ],
         'women_balance_support' => [
             'patterns' => ['pms', 'menstrualne bolove', 'menstrualni bolovi', 'menstrualne', 'menstrual', 'menopauz', 'valunzi', 'žensko zdravlje', 'zensko zdravlje', 'ciklus'],
@@ -5305,6 +5375,8 @@ function fcc_ai_has_high_risk_public_medical_context(string $message): bool {
         'cellulitis', 'celulitis', 'polip', 'letrozol', 'reseligo', 'bazofil', 'urati', 'psa',
         'štitna', 'stitna', 'štitnoj', 'stitnoj', 'miom', 'maternic', 'slabokrv',
         'tromboz', 'ulcerozn', 'kolitis', 'pankreas',
+        'graves', 'gravesova', 'nesvijest', 'nesvjestica', 'gubitak svijesti',
+        'obilna mjesečnica', 'obilna menstruacija', 'obilno krvarenje', 'jako krvarenje', 'krvarenje između ciklusa', 'menstrualno krvarenje',
     ]);
 }
 
@@ -5544,8 +5616,19 @@ function fcc_ai_get_public_knowledge_suggestions(string $assistant_type, string 
 
             $matches_theme = !empty($theme_matches) && fcc_ai_public_row_matches_theme_patterns($row, $theme_matches);
             $matches_condition = !empty($condition_matches) && fcc_ai_public_row_matches_condition_patterns($row, $condition_matches);
+            $allows_topical = fcc_ai_product_context_allows_topical_suggestions(
+                $message,
+                $intent,
+                $theme_matches,
+                $condition_matches,
+                $is_direct_product_lookup
+            );
 
             if(!$matches_theme && !$matches_condition && !empty($theme_matches)) {
+                continue;
+            }
+
+            if(!$allows_topical && fcc_ai_blog_row_is_topical($row)) {
                 continue;
             }
 
@@ -5795,6 +5878,7 @@ function fcc_ai_get_default_public_rules_prompt(string $assistant_type, string $
             'Za trudnoću, dojenje, djecu i slične osjetljive kontekste ne daj izravnu preporuku proizvoda, nego ostani na općoj informaciji i uputi na liječnika ili pedijatra.',
             'Kod dijagnoza, kemoterapije i drugih visokorizičnih medicinskih konteksta kreni mirnim liječnik-prvo wordingom, a ne rečenicama tipa "ne smijem" ili "ne mogu". Ako FCC recommendation matrix već ima mapiran Forever support smjer, ipak ga jasno spomeni kao opću nutritivnu ili rutinsku podršku koju korisnici često uključuju uz liječnički plan.',
             'U takvim high-risk slučajevima nemoj izbjegavati proizvode ako postoji mapirani FCC smjer. Umjesto toga napiši da se radi o općoj podršci rutini, kroz sastojke i iskustveni support smjer, nikad kao terapiju ili obećanje ishoda.',
+            'Kod ozbiljnijih internih ili medicinskih upita nemoj skretati na nepovezane topical, skincare ili cosmetic proizvode poput sunscreena, lipsa, scrubova, krema i sličnog, osim ako je pitanje izravno o koži, usnama, kosi, oralnoj njezi ili lokalnoj njezi izvana.',
             'Nikad ne postavljaj dijagnozu, ne propisuj terapiju, ne obećavaj ishod i ne predstavljaj proizvod kao liječenje.',
         ]);
 }
