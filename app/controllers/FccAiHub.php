@@ -82,6 +82,13 @@ class FccAiHub extends Controller {
                 Alerts::add_error(l('fcc_ai.alert.tone_not_supported'));
             }
 
+            if(
+                fcc_ai_prompt_attempts_to_override_guardrails($persona_prompt)
+                || fcc_ai_prompt_attempts_to_override_guardrails($rules_prompt)
+            ) {
+                Alerts::add_error(l('fcc_ai.alert.prompt_guardrails'));
+            }
+
             if(!Alerts::has_errors()) {
                 $assistant_settings = json_decode($assistant->settings ?? '{}');
 

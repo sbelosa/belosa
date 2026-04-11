@@ -4965,6 +4965,7 @@ Lijep pozdrav, <br />
 	'fcc_ai.alert.coach_admin_only' => 'Coach postavke nisu dostupne na ovom ekranu.',
 	'fcc_ai.alert.language_not_supported' => 'Odabrani jezik nije podržan.',
 	'fcc_ai.alert.tone_not_supported' => 'Odabrani ton nije podržan.',
+	'fcc_ai.alert.prompt_guardrails' => 'Ove upute nisu spremljene jer pokušavaju zaobići glavna FCC, sigurnosna ili compliance pravila.',
 	'fcc_ai.alert.saved' => 'AI postavke su spremljene.',
 
 ];

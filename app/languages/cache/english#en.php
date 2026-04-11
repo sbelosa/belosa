@@ -4559,6 +4559,7 @@ Best regards, <br />
 	'fcc_ai.alert.coach_admin_only' => 'Coach settings are not available on this screen.',
 	'fcc_ai.alert.language_not_supported' => 'The selected language is not supported.',
 	'fcc_ai.alert.tone_not_supported' => 'The selected tone is not supported.',
+	'fcc_ai.alert.prompt_guardrails' => 'These instructions were not saved because they try to override core FCC, safety, or compliance rules.',
 	'fcc_ai.alert.saved' => 'AI settings have been saved.',
 
 ];
