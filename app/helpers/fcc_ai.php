@@ -2806,6 +2806,121 @@ function fcc_ai_get_blog_knowledge_rows(): array {
     return $rows;
 }
 
+function fcc_ai_normalize_public_product_title(string $title): string {
+    $title = mb_strtolower(trim($title));
+
+    if($title === '') {
+        return '';
+    }
+
+    $title = str_replace(['™', '®', '©'], '', $title);
+    $title = preg_replace('/\s+/u', ' ', $title);
+
+    return trim((string) $title);
+}
+
+function fcc_ai_get_blog_row_by_public_product_title(string $product_title, string $language_name = 'Hrvatski'): ?object {
+    $normalized_title = fcc_ai_normalize_public_product_title($product_title);
+
+    if($normalized_title === '') {
+        return null;
+    }
+
+    $fallback_match = null;
+
+    foreach(fcc_ai_get_blog_knowledge_rows() as $row) {
+        if($language_name !== '' && (string) ($row->language ?? '') !== $language_name) {
+            continue;
+        }
+
+        $row_title = fcc_ai_normalize_public_product_title((string) ($row->title ?? ''));
+        $row_aliases = fcc_ai_normalize_public_product_title((string) ($row->search_aliases ?? ''));
+
+        if($row_title === $normalized_title) {
+            return $row;
+        }
+
+        if($row_title !== '' && (mb_stripos($row_title, $normalized_title) !== false || mb_stripos($normalized_title, $row_title) !== false)) {
+            $fallback_match = $fallback_match ?? $row;
+        }
+
+        if($row_aliases !== '' && mb_stripos($row_aliases, $normalized_title) !== false) {
+            $fallback_match = $fallback_match ?? $row;
+        }
+    }
+
+    return $fallback_match;
+}
+
+function fcc_ai_get_condition_priority_product_suggestions(array $condition_matches, string $language_name, string $reply_language, string $referral_slug, string $assistant_type, array $theme_matches, string $message, int $limit = 3): array {
+    if(empty($condition_matches)) {
+        return [];
+    }
+
+    $product_titles = [];
+    $message_haystack = mb_strtolower($message);
+
+    foreach($condition_matches as $condition_match) {
+        $primary_product = trim((string) ($condition_match['primary_product'] ?? ''));
+        if($primary_product !== '') {
+            $product_titles[] = $primary_product;
+        }
+
+        $support_products = array_values(array_filter(array_map(static function($item) {
+            return trim((string) $item);
+        }, (array) ($condition_match['support_products'] ?? []))));
+
+        if(
+            fcc_ai_contains_keywords($message_haystack, ['kemoterap', 'chemotherapy', 'mučnin', 'mucnin', 'nausea', 'probav', 'želud', 'zelud', 'digest'])
+            && in_array('Forever Active Pro B', $support_products, true)
+        ) {
+            $support_products = array_values(array_unique(array_merge(['Forever Active Pro B'], $support_products)));
+        }
+
+        $product_titles = array_merge($product_titles, $support_products);
+    }
+
+    $product_titles = array_values(array_unique(array_filter($product_titles)));
+
+    if(empty($product_titles)) {
+        return [];
+    }
+
+    $suggestions = [];
+    $used_urls = [];
+
+    foreach($product_titles as $index => $product_title) {
+        if(count($suggestions) >= max(1, $limit)) {
+            break;
+        }
+
+        $row = fcc_ai_get_blog_row_by_public_product_title($product_title, $language_name);
+
+        if(!$row || isset($used_urls[(string) $row->url])) {
+            continue;
+        }
+
+        $suggestions[] = [
+            'blog_post_id' => (int) $row->blog_post_id,
+            'title' => (string) $row->title,
+            'url' => fcc_ai_get_blog_post_public_url($row, $referral_slug),
+            'description' => fcc_ai_build_safe_article_description([
+                'title' => $row->title,
+                'url' => $row->url,
+                'description' => $row->description,
+                'sku' => $row->sku,
+            ], $assistant_type, $reply_language, $theme_matches),
+            'sku' => (string) $row->sku,
+            'kind' => $row->is_business_article ? 'business_article' : 'product_article',
+            'score' => 1000 - ($index * 10),
+        ];
+
+        $used_urls[(string) $row->url] = true;
+    }
+
+    return $suggestions;
+}
+
 function fcc_ai_get_public_query_alias_phrases(string $message): array {
     $message = mb_strtolower(trim($message));
 
@@ -3689,6 +3804,34 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
             ],
             'suppress_generic_questions' => true,
         ],
+        'oncology_support_routine' => [
+            'patterns' => ['onkolo', 'onkološki', 'onkološki bolesnici', 'karcinom', 'karcinoma', 'rak dojke', 'rak', 'kemoterap', 'chemotherapy', 'kemoterapija', 'onkološki bolesnik'],
+            'preferred_patterns' => ['aloe vera gel', 'aloe gel', 'lycium plus', 'lycium', 'immublend', 'immunblend', 'active pro b', 'pro b', 'pro-b'],
+            'primary_product' => 'Forever Aloe Vera Gel™',
+            'support_products' => ['Forever Lycium Plus', 'Forever ImmuBlend', 'Forever Active Pro B'],
+            'label' => [
+                'hr' => 'opća nutritivna podrška uz osjetljiviji medicinski kontekst',
+                'en' => 'general nutrition support within a more sensitive medical context',
+            ],
+            'opening_note' => [
+                'hr' => 'Kod onkološkog ili sličnog osjetljivog konteksta prvo ide usklađivanje s liječnikom, ali ako želite opći Forever support smjer koji korisnici često uključuju uz liječnički plan, ovdje ga ipak treba jasno navesti.',
+                'en' => 'For oncology-style or similarly sensitive contexts, doctor alignment comes first, but if you want a general Forever support direction that users often include alongside the medical plan, it should still be stated clearly here.',
+            ],
+            'recommendation_lines' => [
+                'hr' => [
+                    'Forever Aloe Vera Gel™ je ovdje glavni Forever smjer jer sadrži aloe veru i često je osnovni nutritivni napitak koji korisnici uključuju u svakodnevnu rutinu opće podrške organizmu.',
+                    'Forever Lycium Plus i Forever ImmuBlend često se gledaju kao dodatna nutritivna podrška jer donose antioksidativne i imunološki zanimljive sastojke za opću dnevnu rutinu, bez predstavljanja tih proizvoda kao terapije.',
+                    'Ako osoba prolazi kemoterapiju i probava je osjetljivija ili su prisutne mučnine, Forever Active Pro B je čest support smjer zbog probiotičke podrške svakodnevnoj probavnoj rutini.',
+                ],
+                'en' => [
+                    'Forever Aloe Vera Gel™ is the main Forever direction here because it contains aloe vera and is often used as a base nutrition drink inside a broader daily support routine.',
+                    'Forever Lycium Plus and Forever ImmuBlend are often viewed as extra nutrition support directions because they bring antioxidant and resilience-focused ingredients into the daily routine, without presenting them as therapy.',
+                    'If someone is going through chemotherapy and digestion feels more sensitive or nausea is part of the picture, Forever Active Pro B is a common support direction because of its probiotic routine role.',
+                ],
+            ],
+            'suppress_generic_questions' => true,
+            'sensitive_support_only' => true,
+        ],
         'weight_loss_program' => [
             'patterns' => ['mršav', 'mrsav', 'smrsam', 'smršam', 'za mrsavljenje', 'za mršavljenje', 'gubitak kilograma', '15 kg', 'pretila', 'protiv debljanja'],
             'preferred_patterns' => ['c9', 'clean 9', 'tea', 'blossom', 'f15', 'lean'],
@@ -3984,6 +4127,7 @@ function fcc_ai_get_product_advisor_condition_matches(string $message, string $l
                 return mb_strtolower(trim((string) $pattern));
             }, (array) ($entry['preferred_patterns'] ?? [])))),
             'suppress_generic_questions' => (bool) ($entry['suppress_generic_questions'] ?? false),
+            'sensitive_support_only' => (bool) ($entry['sensitive_support_only'] ?? false),
             'score' => $score,
             'matched_patterns' => array_values(array_unique($matched_patterns)),
         ];
@@ -4778,6 +4922,8 @@ function fcc_ai_build_public_recommendation_payload(string $assistant_type, stri
         }, array_slice($knowledge_suggestions, 1, 2))));
     }
 
+    $sensitive_support_only = !empty($condition_matches[0]['sensitive_support_only']);
+
     $system_brief_lines = [
         $assistant_type === 'pets_advisor'
             ? 'Recommendation structure: pet context -> simple ingredient/routine angle -> exact FCC article/product direction -> next safe step.'
@@ -4838,6 +4984,10 @@ function fcc_ai_build_public_recommendation_payload(string $assistant_type, stri
         $system_brief_lines[] = 'Matched recommendation profiles: ' . implode('; ', array_filter($condition_line_parts));
     }
 
+    if(!empty($intent['medical_sensitive']) && $sensitive_support_only) {
+        $system_brief_lines[] = 'Sensitive medical context matched a mapped FCC support profile. Start with a doctor-first note, then still mention the mapped Forever products as cautious support-only directions people commonly include in routine. Do not go silent on products, but never frame them as treatment.';
+    }
+
     if($primary_product !== '') {
         $system_brief_lines[] = 'Primary product anchor for this message: ' . $primary_product . '. Keep the recommendation centered on this direction unless a sensitive or medical rule blocks it.';
     }
@@ -4877,6 +5027,7 @@ function fcc_ai_build_public_recommendation_payload(string $assistant_type, stri
         'discount_note' => $discount_note,
         'primary_product' => $primary_product,
         'support_products' => $support_products,
+        'sensitive_support_only' => $sensitive_support_only,
         'system_brief' => implode("\n", array_filter($system_brief_lines)),
     ];
 }
@@ -5038,6 +5189,44 @@ function fcc_ai_get_public_recommendation_decision_note(string $assistant_type, 
         : ($language === 'sl'
             ? 'Če želite priporočilo ohraniti jasno, začnite z ' . $primary_product . ' kot glavno Forever smerjo.' . $support_text . $cta_tail
             : 'Ako želite preporuku zadržati jasnom, krenite s ' . $primary_product . ' kao glavnim Forever smjerom.' . $support_text . $cta_tail);
+}
+
+function fcc_ai_get_public_sensitive_support_note(array $recommendation_payload, string $language = 'hr', bool $has_article_cta = false): string {
+    $language = fcc_ai_resolve_public_reply_language($language);
+    $primary_product = trim((string) ($recommendation_payload['primary_product'] ?? ''));
+    $recommendation_lines = array_values(array_filter(array_map(static function($line) {
+        return trim((string) $line);
+    }, (array) ($recommendation_payload['recommendation_lines'] ?? []))));
+
+    if($primary_product === '' && empty($recommendation_lines)) {
+        return '';
+    }
+
+    $intro = $language === 'en'
+        ? 'If you want a cautious Forever support direction that people often include alongside the medical plan, the cleanest FCC routine looks like this:'
+        : ($language === 'sl'
+            ? 'Če želite previdno Forever podporno smer, ki jo ljudje pogosto vključijo ob zdravniškem načrtu, je najčistejša FCC rutina videti tako:'
+            : 'Ako želite oprezan Forever support smjer koji korisnici često uključuju uz liječnički plan, najčišća FCC rutina izgleda ovako:');
+
+    if(empty($recommendation_lines)) {
+        $recommendation_lines[] = ($language === 'en'
+            ? 'Start with '
+            : ($language === 'sl' ? 'Začnite z ' : 'Krenite s ')) . $primary_product . '.';
+    }
+
+    $formatted_lines = array_map(static function(string $line) {
+        return '- ' . preg_replace('/^[^:]+:\s*/u', '', $line);
+    }, array_slice($recommendation_lines, 0, 3));
+
+    $cta_tail = $has_article_cta
+        ? ($language === 'en'
+            ? "\n\nThe fastest next step is to open the FCC article below and continue from that exact product direction."
+            : ($language === 'sl'
+                ? "\n\nNajhitrejši naslednji korak je odpreti FCC članek spodaj in nadaljevati iz te točne smeri izdelka."
+                : "\n\nNajbrži sljedeći korak je otvoriti FCC članak ispod i nastaviti baš iz tog smjera proizvoda."))
+        : '';
+
+    return $intro . "\n" . implode("\n", $formatted_lines) . $cta_tail;
 }
 
 function fcc_ai_get_public_lead_saved_note(string $language = 'hr', string $owner_name = ''): string {
@@ -5435,6 +5624,45 @@ function fcc_ai_get_public_knowledge_suggestions(string $assistant_type, string 
         $used_slugs[$row->url] = true;
     }
 
+    if($assistant_type === 'product_advisor' && !empty($condition_matches)) {
+        $priority_limit = $is_direct_product_lookup ? ($is_multi_product_compare ? 2 : 1) : $limit;
+        $priority_suggestions = fcc_ai_get_condition_priority_product_suggestions(
+            $condition_matches,
+            $language_name,
+            $reply_language,
+            $referral_slug,
+            $assistant_type,
+            $theme_matches,
+            $message,
+            $priority_limit
+        );
+
+        if(!empty($priority_suggestions)) {
+            $merged_suggestions = [];
+            $used_priority_urls = [];
+
+            foreach(array_merge($priority_suggestions, $suggestions) as $suggestion) {
+                $suggestion_url = (string) ($suggestion['url'] ?? '');
+
+                if($suggestion_url !== '' && isset($used_priority_urls[$suggestion_url])) {
+                    continue;
+                }
+
+                $merged_suggestions[] = $suggestion;
+
+                if($suggestion_url !== '') {
+                    $used_priority_urls[$suggestion_url] = true;
+                }
+
+                if(count($merged_suggestions) >= $priority_limit) {
+                    break;
+                }
+            }
+
+            $suggestions = $merged_suggestions;
+        }
+    }
+
     return $suggestions;
 }
 
@@ -5539,6 +5767,8 @@ function fcc_ai_get_default_public_rules_prompt(string $assistant_type, string $
             'If the user shows collaboration interest, shift into simple business explanation, FCC system value and contact capture.',
             'If the user only wants personal follow-up, invite the contact form directly instead of continuing with a long recommendation.',
             'For pregnancy, breastfeeding, children or similar sensitive contexts, do not give a direct product recommendation. Stay with general ingredient information and encourage a doctor or pediatrician check first.',
+            'For diagnoses, chemotherapy and other high-risk medical contexts, start with a doctor-first note, but if the FCC recommendation matrix already maps a Forever support routine, still mention it clearly as general nutritional or routine support that users often include alongside the medical plan.',
+            'In those high-risk cases, do not avoid products when a mapped FCC support direction exists. Explain them as cautious routine support through ingredients and everyday use, never as treatment or an outcome promise.',
             'Never diagnose, prescribe, promise outcomes, or present products as treatment.',
         ]);
     }
@@ -5554,11 +5784,13 @@ function fcc_ai_get_default_public_rules_prompt(string $assistant_type, string $
         'Kad su važni objašnjenje ili kombinacije, glavni CTA neka bude FCC blog članak.',
         '15% popusta spomeni samo kada je relevantan za preporuku ili kupnju.',
         'Ako korisnik pokaže interes za suradnju, prebaci razgovor na jednostavno objašnjenje poslovne prilike, vrijednosti FCC sustava i kontakt.',
-        'Ako korisnik traži samo osobni kontakt, odmah ga pozovi na kontakt zahtjev bez dugog dodatnog objašnjavanja proizvoda.',
-        'Ako korisnik traži pomoć oko objava, reklamiranja ili poslovne komunikacije, ne piši mu gotov poslovni sadržaj u ovom javnom chatu nego ga usmjeri prema osobnom kontaktu sa suradnikom.',
-        'Za trudnoću, dojenje, djecu i slične osjetljive kontekste ne daj izravnu preporuku proizvoda, nego ostani na općoj informaciji i uputi na liječnika ili pedijatra.',
-        'Nikad ne postavljaj dijagnozu, ne propisuj terapiju, ne obećavaj ishod i ne predstavljaj proizvod kao liječenje.',
-    ]);
+            'Ako korisnik traži samo osobni kontakt, odmah ga pozovi na kontakt zahtjev bez dugog dodatnog objašnjavanja proizvoda.',
+            'Ako korisnik traži pomoć oko objava, reklamiranja ili poslovne komunikacije, ne piši mu gotov poslovni sadržaj u ovom javnom chatu nego ga usmjeri prema osobnom kontaktu sa suradnikom.',
+            'Za trudnoću, dojenje, djecu i slične osjetljive kontekste ne daj izravnu preporuku proizvoda, nego ostani na općoj informaciji i uputi na liječnika ili pedijatra.',
+            'Kod dijagnoza, kemoterapije i drugih visokorizičnih medicinskih konteksta kreni s liječnik-prvo napomenom, ali ako FCC recommendation matrix već ima mapiran Forever support smjer, ipak ga jasno spomeni kao opću nutritivnu ili rutinsku podršku koju korisnici često uključuju uz liječnički plan.',
+            'U takvim high-risk slučajevima nemoj izbjegavati proizvode ako postoji mapirani FCC smjer. Umjesto toga napiši da se radi o općoj podršci rutini, kroz sastojke i iskustveni support smjer, nikad kao terapiju ili obećanje ishoda.',
+            'Nikad ne postavljaj dijagnozu, ne propisuj terapiju, ne obećavaj ishod i ne predstavljaj proizvod kao liječenje.',
+        ]);
 }
 
 function fcc_ai_get_default_public_response_contract(string $assistant_type, string $language = 'hr'): string {
@@ -5628,6 +5860,7 @@ function fcc_ai_get_default_public_mode_examples(string $assistant_type, string 
         : implode("\n", [
             'Primjeri načina rada:',
             '- Ako posjetitelj traži preporuku proizvoda: objasni kroz cilj -> sastojak -> članak/proizvod -> sljedeći korak.',
+            '- Ako je upit high-risk (npr. dijagnoza ili kemoterapija): prvo liječnik-prvo napomena, zatim mapped Forever support proizvodi kao opća podrška rutini, pa CTA na FCC članak ili kontakt.',
             '- Ako posjetitelj pita za suradnju: objasni FCC sustav u dvije do tri praktične rečenice, pa pozovi na osobni nastavak razgovora.',
             '- Ako posjetitelj želi izravan kontakt: brzo prijeđi na kontakt zahtjev umjesto dugog dodatnog objašnjavanja proizvoda.',
         ]);
@@ -5645,6 +5878,7 @@ function fcc_ai_get_product_advisor_playbook(string $language = 'hr'): string {
             '4. Contact mode: when the visitor mainly wants personal support, stop expanding the recommendation and move directly to the contact request invitation.',
             '5. Mixed intent mode: if the visitor wants both product help and business details, give one short useful product direction, then shift toward contact and personal follow-up.',
             '6. Sensitive population mode: for pregnancy, breastfeeding or children, do not give a direct product recommendation. Stay with general ingredient information and encourage a doctor or pediatrician check first.',
+            '7. High-risk medical mode: for diagnoses, chemotherapy and similar contexts, open with doctor-first wording, then still name the mapped Forever support products from the FCC matrix as general routine support people often include alongside the medical plan.',
         ])
         : implode("\n", [
             'Operativni playbook za AI savjetnika za proizvode:',
@@ -5654,6 +5888,7 @@ function fcc_ai_get_product_advisor_playbook(string $language = 'hr'): string {
             '4. Režim kontakta: kada posjetitelj prvenstveno želi osobnu pomoć, prekini širenje preporuke i odmah prijeđi na poziv za kontakt zahtjev.',
             '5. Miješani interes: ako korisnik želi i preporuku proizvoda i detalje o suradnji, daj jedan kratak koristan smjer proizvoda, pa zatim prebaci razgovor prema kontaktu i osobnom nastavku.',
             '6. Osjetljiva populacija: kod trudnoće, dojenja ili djece nemoj dati izravnu preporuku proizvoda, nego ostani na općoj informaciji o sastavu i uputi na liječnika ili pedijatra.',
+            '7. High-risk medicinski kontekst: kod dijagnoza, kemoterapije i sličnih slučajeva prvo napiši liječnik-prvo napomenu, ali zatim ipak navedi mapped Forever support proizvode iz FCC matrice kao opću nutritivnu ili rutinsku podršku koju korisnici često uključuju uz plan liječnika.',
         ]);
 }
 
@@ -5666,6 +5901,7 @@ function fcc_ai_get_product_advisor_compliance_playbook(string $language = 'hr')
             '- Never say that a product heals, cures, treats or resolves a diagnosis.',
             '- Explain recommendations through goals, routines, ingredients and what the product contains.',
             '- Use language like: this is a reasonable direction, this ingredient is often chosen for, this product contains, this can fit a daily routine.',
+            '- For sensitive diagnoses, you may say that people often include certain products as general routine support alongside the medical plan, but never present them as therapy or a replacement for therapy.',
             '- Avoid strong promises, medical urgency claims or false certainty.',
             '- Keep discount mentions short and secondary, never as the main argument.',
         ])
@@ -5674,6 +5910,7 @@ function fcc_ai_get_product_advisor_compliance_playbook(string $language = 'hr')
             '- Nikad ne govori da proizvod liječi, uklanja ili rješava dijagnozu.',
             '- Preporuku objašnjavaj kroz cilj, rutinu, sastojke i ono što proizvod sadrži.',
             '- Koristi formulacije poput: ovo je razuman smjer, ovaj sastojak se često bira za, ovaj proizvod sadrži, ovo se može uklopiti u dnevnu rutinu.',
+            '- Kod osjetljivih dijagnoza možeš napisati da korisnici često uključuju određene proizvode kao opću podršku rutini uz liječnički plan, ali ih ne smiješ predstavljati kao terapiju ni zamjenu za terapiju.',
             '- Izbjegavaj jaka obećanja, medicinske tvrdnje i lažnu sigurnost.',
             '- Popust spominji kratko i sekundarno, nikada kao glavni argument preporuke.',
         ]);
@@ -5700,6 +5937,9 @@ function fcc_ai_get_product_advisor_reference_examples(string $language = 'hr'):
             '5. Direct contact example',
             'User: "Can the advisor contact me personally?"',
             'Assistant style: "Yes, absolutely. If you want personal guidance, the fastest next step is to leave your contact details and the partner can continue directly with product or business details."',
+            '6. High-risk example',
+            'User: "What would you recommend for oncology patients who use chemotherapy?"',
+            'Assistant style: "The first step here is still the doctor and oncology team, because I cannot present products as treatment or as something that replaces therapy. If you want only a cautious Forever support direction that users often include alongside the medical plan, the most common base direction is Forever Aloe Vera Gel, with Lycium Plus and ImmuBlend often added as broader daily support, and Active Pro B often considered when digestion feels more sensitive during therapy. The fastest next step is to open the FCC article below and continue from that exact product direction."',
         ]);
     }
 
@@ -5731,7 +5971,7 @@ function fcc_ai_get_product_advisor_reference_examples(string $language = 'hr'):
         'Stil odgovora: "Kod trudnoće je važno da dodatke prvo provjerite s liječnikom. Ovdje mogu dati samo opću informaciju o proizvodu i njegovom sastavu, ali ne bih davao izravnu preporuku bez stručne provjere."',
         '9. Primjer za ozbiljnije stanje',
         'Korisnik: "Onkološki bolesnici, preporuka rak dojke."',
-        'Stil odgovora: "Kod ovakvog stanja ne mogu davati preporuku kao da proizvod rješava dijagnozu. Najvažniji korak je razgovor s liječnikom, a ako želite, nakon toga mogu dati samo vrlo opću informaciju o sastojcima i općem wellness smjeru bez tvrdnji o liječenju."',
+        'Stil odgovora: "Kod ovakvog stanja prvo ide liječnik i onkolog, jer ovdje ne smijem govoriti kao da proizvod rješava dijagnozu ili mijenja terapiju. Ako želite samo opći Forever support smjer koji korisnici često uključuju uz liječnički plan, u praksi se najčešće gleda Forever Aloe Vera Gel kao osnovni nutritivni napitak, uz Lycium Plus i ImmuBlend kao dodatnu svakodnevnu podršku, a kod osjetljivije probave ili mučnina često i Active Pro B. Najbrži sljedeći korak je otvoriti FCC članak za te proizvode i po želji ostaviti kontakt za osobni nastavak razgovora."',
         '10. Primjer za poslovni sadržaj',
         'Korisnik: "Kako reklamirati Lycium Plus ili sastavi mi objavu?"',
         'Stil odgovora: "Za objave, reklamiranje i izgradnju Forever posla unutar FCC-a postoji poseban sustav podrške za suradnike. Ovaj javni chat nije zamišljen za izradu takvog sadržaja, ali mogu odmah pripremiti kontakt zahtjev kako bi vam partner osobno pokazao kako to funkcionira."',
@@ -6161,6 +6401,7 @@ function fcc_ai_build_public_system_prompt(string $assistant_type, array $contex
         $sections[] = 'When mentioning products, explain them through ingredients, routine support and simple next steps only.';
     } else {
         $sections[] = 'When recommending Forever products, explain the suggestion through wellness goals, active ingredients or bioactive compounds. You may say that a product contains certain ingredients and why that can make it a reasonable option, but never say it treats or heals a disease.';
+        $sections[] = 'For higher-risk medical contexts, start with a doctor-first note, but if the mapped FCC recommendation payload includes a support routine, still mention those exact Forever products as cautious support-only directions people often include alongside the medical plan. Do not drop products entirely unless the system gives no mapped product direction at all.';
         $sections[] = 'Limit recommendations to at most three products. If a combination is useful, present it as a combination and suggest the visitor can continue reading on the relevant FCC blog article before choosing products on Forever checkout.';
         $sections[] = 'If relevant, mention that ordering through the partner recommendation can include a 15% discount.';
         $sections[] = 'If the user shows interest in collaboration, sponsorship or personal follow-up, naturally invite them to leave contact details so the FCC partner can continue personally.';
@@ -7105,8 +7346,10 @@ function fcc_ai_generate_public_reply(string $assistant_type, string $message, a
                 ? 'I can share only general information about ingredients, routines and product choices. I cannot assess a diagnosis, treatment or medical urgency, so for stronger or persistent symptoms it is important to speak with a doctor.'
                 : 'Mogu podijeliti samo opće informacije o sastojcima, rutinama i izboru proizvoda. Ne mogu procjenjivati dijagnozu, liječenje ni hitnost stanja, zato je kod jačih ili dugotrajnih tegoba važno razgovarati s liječnikom.';
 
+            $has_high_risk_context = fcc_ai_has_high_risk_public_medical_context($message);
+
             if(
-                !fcc_ai_has_high_risk_public_medical_context($message)
+                !$has_high_risk_context
                 && !empty($knowledge_suggestions[0])
                 && (
                     $is_direct_product_lookup
@@ -7126,10 +7369,20 @@ function fcc_ai_generate_public_reply(string $assistant_type, string $message, a
                         ? 'If you want only a general Forever direction after the medical check, the closest FCC route here is ' . $specific_product . ' — ' . $specific_description . '.'
                         : 'Ako želite samo opći Forever smjer nakon liječničke procjene, najbliži FCC smjer ovdje je ' . $specific_product . ' — ' . $specific_description . '.';
                 }
-            } elseif(fcc_ai_has_high_risk_public_medical_context($message)) {
-                $content_blocks[] = $language === 'en'
-                    ? 'For situations like this, I would not narrow it further to a specific product until a doctor confirms what is appropriate.'
-                    : 'Kod ovakvog konteksta ne bih dodatno sužavao preporuku na konkretan proizvod dok liječnik ne potvrdi što je prikladno.';
+            } elseif($has_high_risk_context) {
+                $sensitive_support_note = fcc_ai_get_public_sensitive_support_note(
+                    $recommendation_payload,
+                    $language,
+                    !empty($knowledge_suggestions)
+                );
+
+                if($sensitive_support_note !== '') {
+                    $content_blocks[] = $sensitive_support_note;
+                } else {
+                    $content_blocks[] = $language === 'en'
+                        ? 'For situations like this, stay with doctor-first guidance, but it is still reasonable to mention only the most cautious Forever support directions as general routine support, never as treatment.'
+                        : 'Kod ovakvog konteksta zadrži liječnik-prvo smjer, ali i dalje ima smisla spomenuti samo najopreznije Forever support smjerove kao opću podršku rutini, nikada kao terapiju.';
+                }
             }
 
             if(!$lead_already_captured && ($intent['contact'] || $intent['medical_sensitive'])) {
@@ -7392,11 +7645,21 @@ function fcc_ai_generate_public_reply(string $assistant_type, string $message, a
             }
 
             if($has_high_risk_context) {
-                $content_blocks[] = $language === 'en'
-                    ? 'For this type of higher-risk medical context, I would not narrow it to a specific product direction through chat. The safest next step is to confirm the situation with a doctor first, then continue only with a cautious general routine discussion if needed.'
-                    : ($language === 'sl'
-                        ? 'Pri tej vrsti bolj tveganega medicinskega konteksta tega ne bi ožil na konkreten izdelek preko klepeta. Najvarnejši naslednji korak je najprej potrditev pri zdravniku, nato pa po potrebi le previden pogovor o splošni rutini.'
-                        : 'Kod ovakvog višerizičnog medicinskog konteksta ne bih to sužavao na konkretan proizvod kroz chat. Najsigurniji sljedeći korak je prvo potvrda s liječnikom, a tek onda po potrebi oprezan razgovor o općoj rutini.');
+                $sensitive_support_note = fcc_ai_get_public_sensitive_support_note(
+                    $recommendation_payload,
+                    $language,
+                    !empty($knowledge_suggestions)
+                );
+
+                if($sensitive_support_note !== '') {
+                    $content_blocks[] = $sensitive_support_note;
+                } else {
+                    $content_blocks[] = $language === 'en'
+                        ? 'For this type of higher-risk medical context, keep doctor-first guidance, but you can still mention only the most cautious Forever support directions as general routine support, never as treatment.'
+                        : ($language === 'sl'
+                            ? 'Pri tej vrsti bolj tveganega medicinskega konteksta ohrani smer zdravnik-prvo, a vseeno lahko omeniš le najbolj previdne Forever podporne smeri kot splošno podporo rutini, nikoli kot zdravljenje.'
+                            : 'Kod ovakvog višerizičnog medicinskog konteksta zadrži liječnik-prvo smjer, ali i dalje možeš spomenuti samo najopreznije Forever support smjerove kao opću podršku rutini, nikada kao terapiju.');
+                }
             } elseif($is_direct_product_lookup && $specific_product !== '') {
                 if($specific_description !== '') {
                     $content_blocks[] = $language === 'en'
@@ -9774,12 +10037,20 @@ function fcc_ai_handle_public_message(array $payload): array {
     $assistant = fcc_ai_get_assistant_by_id((int) ($conversation->fcc_ai_assistant_id ?? 0));
     $resolved_language = (string) ($conversation_state['language'] ?? $conversation->language ?? 'auto');
     $contextual_message_bundle = fcc_ai_build_contextual_public_message((int) ($conversation->fcc_ai_conversation_id ?? 0), $message);
-    $message_for_matching = trim((string) ($contextual_message_bundle['message'] ?? $message));
+    $current_user_message = trim((string) $message);
+    $message_for_matching = trim((string) ($contextual_message_bundle['message'] ?? $current_user_message));
     $recent_user_context = trim((string) ($contextual_message_bundle['recent_user_context'] ?? ''));
     $used_context_for_matching = !empty($contextual_message_bundle['used_context']);
     $intent = fcc_ai_detect_public_intent((string) $conversation->assistant_type, $message_for_matching);
     $has_high_risk_medical_context = (string) ($conversation->assistant_type ?? '') === 'product_advisor'
-        && fcc_ai_has_high_risk_public_medical_context($message_for_matching);
+        && fcc_ai_has_high_risk_public_medical_context($current_user_message);
+
+    if($has_high_risk_medical_context) {
+        $message_for_matching = $current_user_message;
+        $recent_user_context = '';
+        $used_context_for_matching = false;
+        $intent = fcc_ai_detect_public_intent((string) $conversation->assistant_type, $message_for_matching);
+    }
     $knowledge_suggestions = fcc_ai_get_public_knowledge_suggestions((string) $conversation->assistant_type, $message_for_matching, [
         'language' => $resolved_language,
         'intent' => $intent,
@@ -9791,14 +10062,6 @@ function fcc_ai_handle_public_message(array $payload): array {
         'intent' => $intent,
         'knowledge_suggestions' => $knowledge_suggestions,
     ]);
-
-    if($has_high_risk_medical_context) {
-        $knowledge_suggestions = [];
-        $recommendation_payload['recommendation_lines'] = [];
-        $recommendation_payload['question_lines'] = [];
-        $recommendation_payload['primary_product'] = '';
-        $recommendation_payload['support_products'] = [];
-    }
 
     fcc_ai_log_message((int) $conversation->fcc_ai_conversation_id, 'user', $message, [
         'message_type' => 'chat',
@@ -9860,12 +10123,13 @@ function fcc_ai_handle_public_message(array $payload): array {
     $support_products = array_values(array_filter(array_map(static function($item) {
         return trim((string) $item);
     }, (array) ($recommendation_payload['support_products'] ?? []))));
+    $allow_sensitive_support_anchor = !empty($recommendation_payload['sensitive_support_only']);
 
         if(
             (string) ($conversation->assistant_type ?? '') === 'product_advisor'
             && $recommendation_primary !== ''
             && empty($intent['serious'])
-        && empty($intent['medical_sensitive'])
+        && (empty($intent['medical_sensitive']) || $allow_sensitive_support_anchor)
         && empty($intent['special_population_sensitive'])
         && empty($intent['medication_interaction_sensitive'])
         && empty($intent['medication_replacement_sensitive'])
