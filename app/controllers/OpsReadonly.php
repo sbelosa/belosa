@@ -833,7 +833,7 @@ class OpsReadonly extends Controller {
                 'counts' => $billing_dashboard['counts'] ?? [],
                 'latest_event' => $this->get_recent_global_billing_events(1)[0] ?? null,
             ],
-            'allowed_scopes' => ['health', 'overview', 'plans', 'billing', 'collaborators', 'collaborator'],
+            'allowed_scopes' => ['health', 'overview', 'ai_feedback', 'plans', 'billing', 'collaborators', 'collaborator'],
         ];
     }
 
@@ -897,6 +897,128 @@ class OpsReadonly extends Controller {
                 'shared_ai_ready' => $ai_diagnostics['shared_ai_ready'] ?? false,
                 'ops_readonly_enabled' => FCC_OPS_READONLY_ENABLED,
             ],
+        ];
+    }
+
+    private function resolve_ai_period_key(): string {
+        $period = $this->get_param_string('period', '30d');
+
+        return in_array($period, ['7d', '30d', '90d'], true) ? $period : '30d';
+    }
+
+    private function resolve_ai_period_start_datetime(string $period_key): string {
+        return match($period_key) {
+            '7d' => (new \DateTimeImmutable('-7 days'))->format('Y-m-d H:i:s'),
+            '90d' => (new \DateTimeImmutable('-90 days'))->format('Y-m-d H:i:s'),
+            default => (new \DateTimeImmutable('-30 days'))->format('Y-m-d H:i:s'),
+        };
+    }
+
+    private function get_ai_feedback_payload(): array {
+        $period_key = $this->resolve_ai_period_key();
+        $period_start_datetime = $this->resolve_ai_period_start_datetime($period_key);
+        $limit = $this->get_param_limit('limit', 20, 1, 40);
+        $assistant_type_filter = trim((string) fcc_ai_validate_assistant_type($this->get_param_string('assistant_type')));
+        $reason_filter = trim((string) fcc_ai_normalize_feedback_reason($this->get_param_string('reason')));
+        $language = $this->get_param_string('language', 'hr');
+
+        $team_payload = fcc_ai_get_team_dashboard_payload($period_start_datetime, [], $limit, $language, $period_key);
+        $recent_negative_feedback = array_values(array_filter((array) ($team_payload['recent_negative_feedback'] ?? []), function(array $item) use ($assistant_type_filter, $reason_filter) {
+            if($assistant_type_filter !== '' && trim((string) ($item['assistant_type'] ?? '')) !== $assistant_type_filter) {
+                return false;
+            }
+
+            if($reason_filter !== '' && trim((string) ($item['reason'] ?? '')) !== $reason_filter) {
+                return false;
+            }
+
+            return true;
+        }));
+
+        $assistant_totals = [];
+        $reason_totals = [];
+        $owner_totals = [];
+
+        foreach($recent_negative_feedback as $item) {
+            $assistant_key = trim((string) ($item['assistant_type'] ?? 'unknown'));
+            $assistant_label = trim((string) ($item['assistant_label'] ?? $assistant_key));
+            $reason_key = trim((string) ($item['reason'] ?? 'other'));
+            $reason_label = trim((string) ($item['reason_label'] ?? $reason_key));
+            $owner_key = (int) ($item['user_id'] ?? 0);
+            $owner_label = trim((string) ($item['owner_name'] ?? 'Unknown'));
+
+            if(!isset($assistant_totals[$assistant_key])) {
+                $assistant_totals[$assistant_key] = [
+                    'assistant_type' => $assistant_key,
+                    'assistant_label' => $assistant_label,
+                    'total' => 0,
+                ];
+            }
+
+            if(!isset($reason_totals[$reason_key])) {
+                $reason_totals[$reason_key] = [
+                    'reason' => $reason_key,
+                    'reason_label' => $reason_label,
+                    'total' => 0,
+                ];
+            }
+
+            if(!isset($owner_totals[$owner_key])) {
+                $owner_totals[$owner_key] = [
+                    'user_id' => $owner_key,
+                    'owner_name' => $owner_label,
+                    'total' => 0,
+                ];
+            }
+
+            $assistant_totals[$assistant_key]['total']++;
+            $reason_totals[$reason_key]['total']++;
+            $owner_totals[$owner_key]['total']++;
+        }
+
+        usort($recent_negative_feedback, static function(array $a, array $b) {
+            return strcmp((string) ($b['datetime'] ?? ''), (string) ($a['datetime'] ?? ''));
+        });
+
+        $assistant_totals = array_values($assistant_totals);
+        usort($assistant_totals, static function(array $a, array $b) {
+            return (($b['total'] ?? 0) <=> ($a['total'] ?? 0))
+                ?: strcmp((string) ($a['assistant_label'] ?? ''), (string) ($b['assistant_label'] ?? ''));
+        });
+
+        $reason_totals = array_values($reason_totals);
+        usort($reason_totals, static function(array $a, array $b) {
+            return (($b['total'] ?? 0) <=> ($a['total'] ?? 0))
+                ?: strcmp((string) ($a['reason_label'] ?? ''), (string) ($b['reason_label'] ?? ''));
+        });
+
+        $owner_totals = array_values($owner_totals);
+        usort($owner_totals, static function(array $a, array $b) {
+            return (($b['total'] ?? 0) <=> ($a['total'] ?? 0))
+                ?: strcmp((string) ($a['owner_name'] ?? ''), (string) ($b['owner_name'] ?? ''));
+        });
+
+        return [
+            'period' => [
+                'key' => $period_key,
+                'start_datetime' => $period_start_datetime,
+            ],
+            'filters' => [
+                'assistant_type' => $assistant_type_filter,
+                'reason' => $reason_filter,
+            ],
+            'summary' => [
+                'negative_feedback_total' => count($recent_negative_feedback),
+                'assistant_breakdown' => $assistant_totals,
+                'reason_breakdown' => $reason_totals,
+                'owner_breakdown' => array_slice($owner_totals, 0, 12),
+            ],
+            'recent_negative_feedback' => $recent_negative_feedback,
+            'top_topics' => array_values(array_slice((array) ($team_payload['top_topics'] ?? []), 0, 10)),
+            'rising_topics' => array_values(array_slice((array) ($team_payload['rising_topics'] ?? []), 0, 10)),
+            'webinar_candidates' => array_values(array_slice((array) ($team_payload['webinar_candidates'] ?? []), 0, 8)),
+            'assistant_performance' => array_values(array_slice((array) ($team_payload['assistant_performance'] ?? []), 0, 8)),
+            'help_watchlist' => array_values(array_slice((array) ($team_payload['help_watchlist'] ?? []), 0, 8)),
         ];
     }
 
@@ -1272,6 +1394,10 @@ class OpsReadonly extends Controller {
                 $this->respond_success($scope, $this->get_overview_payload());
                 break;
 
+            case 'ai_feedback':
+                $this->respond_success($scope, $this->get_ai_feedback_payload());
+                break;
+
             case 'plans':
                 $this->respond_success($scope, $this->get_plans_payload());
                 break;
@@ -1303,7 +1429,7 @@ class OpsReadonly extends Controller {
 
             default:
                 $this->respond_error('invalid_scope', 'Readonly ops scope is invalid.', 422, [
-                    'allowed_scopes' => ['health', 'overview', 'plans', 'billing', 'collaborators', 'collaborator'],
+                    'allowed_scopes' => ['health', 'overview', 'ai_feedback', 'plans', 'billing', 'collaborators', 'collaborator'],
                 ]);
         }
     }
