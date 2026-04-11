@@ -1055,6 +1055,7 @@ foreach(['hr', 'en', 'sl', 'bg'] as $fcc_chat_ui_language) {
                 class="fcc-chat-extreme__close"
                 data-chat-extreme-close
                 aria-label="<?= htmlspecialchars($fcc_chat_close_label, ENT_QUOTES, 'UTF-8') ?>"
+                onclick="return window.fccChatExtremeToggle ? window.fccChatExtremeToggle(<?= htmlspecialchars(json_encode($fcc_chat_dom_id), ENT_QUOTES, 'UTF-8') ?>, false) : false;"
             >
                 <span aria-hidden="true">&times;</span>
             </button>
@@ -1137,6 +1138,7 @@ foreach(['hr', 'en', 'sl', 'bg'] as $fcc_chat_ui_language) {
             aria-controls="<?= htmlspecialchars($fcc_chat_shell_id, ENT_QUOTES, 'UTF-8') ?>"
             aria-expanded="false"
             aria-label="<?= htmlspecialchars($fcc_chat_toggle_label, ENT_QUOTES, 'UTF-8') ?>"
+            onclick="return window.fccChatExtremeToggle ? window.fccChatExtremeToggle(<?= htmlspecialchars(json_encode($fcc_chat_dom_id), ENT_QUOTES, 'UTF-8') ?>, true) : false;"
         >
             <img
                 src="<?= htmlspecialchars($fcc_chat_launcher_url, ENT_QUOTES, 'UTF-8') ?>"
@@ -1153,6 +1155,37 @@ foreach(['hr', 'en', 'sl', 'bg'] as $fcc_chat_ui_language) {
         <?php endif ?>
     </div>
 </div>
+
+<script>
+    window.fccChatExtremeToggle = window.fccChatExtremeToggle || function(rootId, forceOpen) {
+        const root = document.getElementById(rootId);
+
+        if(!root) {
+            return false;
+        }
+
+        if(typeof root.__fccChatSetOpen === 'function') {
+            root.__fccChatSetOpen(forceOpen);
+            return false;
+        }
+
+        const panel = root.querySelector('.fcc-chat-extreme__panel');
+        const launcher = root.querySelector('.fcc-chat-extreme__launcher');
+        const nextState = typeof forceOpen === 'boolean' ? forceOpen : !root.classList.contains('is-open');
+
+        root.classList.toggle('is-open', nextState);
+
+        if(panel) {
+            panel.setAttribute('aria-hidden', nextState ? 'false' : 'true');
+        }
+
+        if(launcher) {
+            launcher.setAttribute('aria-expanded', nextState ? 'true' : 'false');
+        }
+
+        return false;
+    };
+</script>
 
 <script>
     (() => {
@@ -2311,6 +2344,8 @@ foreach(['hr', 'en', 'sl', 'bg'] as $fcc_chat_ui_language) {
                 window.setTimeout(() => composerInput.focus(), 60);
             }
         };
+
+        root.__fccChatSetOpen = setOpen;
 
         const sendMessage = async message => {
             if(!message || state.isSending) {
