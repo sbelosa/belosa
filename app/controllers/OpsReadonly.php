@@ -1022,87 +1022,6 @@ class OpsReadonly extends Controller {
         ];
     }
 
-    private function resolve_ai_feedback_cleanup_2026_04_11(): array {
-        if($this->get_param_string('confirm') !== 'resolve') {
-            $this->respond_error('confirmation_required', 'Pass confirm=resolve to execute this cleanup.', 400, [
-                'scope' => 'ai_feedback_resolve_2026_04_11',
-            ]);
-        }
-
-        if(!fcc_ai_tables_ready()) {
-            $this->respond_error('fcc_ai_tables_missing', 'FCC AI tables are not available on this environment.', 500, [
-                'scope' => 'ai_feedback_resolve_2026_04_11',
-            ]);
-        }
-
-        $target_ids = [2, 3, 4, 5, 7, 8];
-        $ids_sql = implode(',', array_map('intval', $target_ids));
-
-        db()->rawQuery("UPDATE `fcc_ai_message_feedback`
-            SET
-                `status` = 'resolved',
-                `reviewed_at` = NOW(),
-                `last_datetime` = NOW()
-            WHERE `fcc_ai_message_feedback_id` IN ({$ids_sql})
-              AND `feedback_type` = 'down'");
-
-        db()->rawQuery("UPDATE `fcc_ai_conversation_insights` AS `ci`
-            LEFT JOIN (
-                SELECT
-                    `fcc_ai_conversation_id`,
-                    SUM(CASE WHEN `feedback_type` = 'up' THEN 1 ELSE 0 END) AS `positive_feedback_total`,
-                    SUM(CASE WHEN `feedback_type` = 'down' AND COALESCE(`status`, 'new') != 'resolved' THEN 1 ELSE 0 END) AS `negative_feedback_total`
-                FROM `fcc_ai_message_feedback`
-                GROUP BY `fcc_ai_conversation_id`
-            ) AS `fb`
-                ON `fb`.`fcc_ai_conversation_id` = `ci`.`fcc_ai_conversation_id`
-            SET
-                `ci`.`positive_feedback_total` = COALESCE(`fb`.`positive_feedback_total`, 0),
-                `ci`.`negative_feedback_total` = COALESCE(`fb`.`negative_feedback_total`, 0),
-                `ci`.`needs_review` = CASE
-                    WHEN COALESCE(`fb`.`negative_feedback_total`, 0) > 0 THEN 1
-                    ELSE 0
-                END,
-                `ci`.`quality_signal` = CASE
-                    WHEN COALESCE(`fb`.`negative_feedback_total`, 0) > 0 THEN 'needs_review'
-                    WHEN COALESCE(`fb`.`positive_feedback_total`, 0) > 0 THEN 'positive'
-                    WHEN COALESCE(`ci`.`intent`, '') != '' THEN `ci`.`intent`
-                    ELSE 'active'
-                END,
-                `ci`.`last_datetime` = NOW()
-            WHERE `ci`.`fcc_ai_conversation_id` IN (
-                SELECT DISTINCT `fcc_ai_conversation_id`
-                FROM `fcc_ai_message_feedback`
-                WHERE `fcc_ai_message_feedback_id` IN ({$ids_sql})
-            )");
-
-        $resolved_total_result = database()->query("SELECT COUNT(*) AS `total`
-            FROM `fcc_ai_message_feedback`
-            WHERE `fcc_ai_message_feedback_id` IN ({$ids_sql})
-              AND `status` = 'resolved'");
-        $resolved_total = (int) ($resolved_total_result->fetch_object()->total ?? 0);
-
-        $remaining_negative_result = database()->query("SELECT COUNT(*) AS `total`
-            FROM `fcc_ai_message_feedback`
-            WHERE `feedback_type` = 'down'
-              AND COALESCE(`status`, 'new') != 'resolved'");
-        $remaining_negative_total = (int) ($remaining_negative_result->fetch_object()->total ?? 0);
-
-        $remaining_product_result = database()->query("SELECT COUNT(*) AS `total`
-            FROM `fcc_ai_message_feedback`
-            WHERE `feedback_type` = 'down'
-              AND `assistant_type` = 'product_advisor'
-              AND COALESCE(`status`, 'new') != 'resolved'");
-        $remaining_product_total = (int) ($remaining_product_result->fetch_object()->total ?? 0);
-
-        return [
-            'target_feedback_ids' => $target_ids,
-            'resolved_total' => $resolved_total,
-            'remaining_negative_feedback_total' => $remaining_negative_total,
-            'remaining_product_feedback_total' => $remaining_product_total,
-        ];
-    }
-
     private function build_plan_catalog_entry(object $plan, array $user_counts, array $subscription_counts): array {
         $plan_settings = $this->get_object($plan->settings ?? null);
         $plan_prices = [];
@@ -1477,10 +1396,6 @@ class OpsReadonly extends Controller {
 
             case 'ai_feedback':
                 $this->respond_success($scope, $this->get_ai_feedback_payload());
-                break;
-
-            case 'ai_feedback_resolve_2026_04_11':
-                $this->respond_success($scope, $this->resolve_ai_feedback_cleanup_2026_04_11());
                 break;
 
             case 'plans':
