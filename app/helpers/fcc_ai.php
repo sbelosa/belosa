@@ -9058,7 +9058,7 @@ function fcc_ai_get_recent_user_alerts(int $user_id, int $limit = 4, bool $hide_
 
     $limit = max(1, min(8, $limit));
     $alerts = [];
-    $icon_sql = "'fas fa-comment-exclamation','fas fa-user-plus','fas fa-robot','fas fa-check-circle'";
+    $icon_sql = "'fas fa-comment-exclamation','fas fa-user-plus','fas fa-check-circle'";
     $query_limit = $hide_coach_review ? max(16, $limit * 4) : max(12, $limit * 3);
     $result = database()->query("SELECT
             `internal_notification_id`,
@@ -9080,11 +9080,38 @@ function fcc_ai_get_recent_user_alerts(int $user_id, int $limit = 4, bool $hide_
             'title' => (string) ($row['title'] ?? ''),
             'description' => (string) ($row['description'] ?? ''),
             'url' => (string) ($row['url'] ?? ''),
-            'icon' => (string) ($row['icon'] ?? 'fas fa-robot'),
+            'icon' => (string) ($row['icon'] ?? ''),
             'is_read' => (int) ($row['is_read'] ?? 0),
             'datetime' => (string) ($row['datetime'] ?? ''),
         ];
     }
+
+    $is_ai_alert = static function(array $alert): bool {
+        $icon = trim((string) ($alert['icon'] ?? ''));
+        $title = mb_strtolower(trim((string) ($alert['title'] ?? '')));
+        $url = mb_strtolower(trim((string) ($alert['url'] ?? '')));
+
+        if($icon === 'fas fa-comment-exclamation') {
+            return $url !== '' && strpos($url, 'fcc-ai?conversation=') !== false;
+        }
+
+        if($icon === 'fas fa-user-plus') {
+            return strpos($title, 'ai lead') !== false;
+        }
+
+        if($icon === 'fas fa-check-circle') {
+            return in_array($title, [
+                'ai improved thanks to your signal',
+                'ai je unaprijeđen zahvaljujući tvom signalu',
+                'ai je izboljšan zaradi vašega signala',
+                'ai е подобрен благодарение на вашия сигнал',
+            ], true);
+        }
+
+        return false;
+    };
+
+    $alerts = array_values(array_filter($alerts, $is_ai_alert));
 
     $extract_conversation_public_id = static function(string $url): string {
         if(trim($url) === '') {
@@ -9141,9 +9168,24 @@ function fcc_ai_get_recent_user_alerts(int $user_id, int $limit = 4, bool $hide_
 
     $alerts = array_values(array_filter($alerts, static function(array $alert) use ($hide_coach_review, $extract_conversation_public_id, $unresolved_feedback_by_public_id, $resolved_cutoff): bool {
         $icon = trim((string) ($alert['icon'] ?? ''));
+        $title = trim((string) ($alert['title'] ?? ''));
         $description = trim((string) ($alert['description'] ?? ''));
+        $url = trim((string) ($alert['url'] ?? ''));
 
-        if($icon === 'fas fa-comment-exclamation') {
+        $is_ai_review_alert = $icon === 'fas fa-comment-exclamation'
+            && ($url !== '' && strpos($url, 'fcc-ai?conversation=') !== false);
+
+        $is_ai_lead_alert = $icon === 'fas fa-user-plus'
+            && preg_match('/\bAI lead\b/ui', $title);
+
+        $is_ai_resolution_alert = $icon === 'fas fa-check-circle'
+            && preg_match('/^AI\b/ui', $title);
+
+        if(!$is_ai_review_alert && !$is_ai_lead_alert && !$is_ai_resolution_alert) {
+            return false;
+        }
+
+        if($is_ai_review_alert) {
             if($hide_coach_review && preg_match('/^Coach\b/u', $description)) {
                 return false;
             }
@@ -9159,7 +9201,7 @@ function fcc_ai_get_recent_user_alerts(int $user_id, int $limit = 4, bool $hide_
             }
         }
 
-        if($icon === 'fas fa-check-circle') {
+        if($is_ai_resolution_alert) {
             $datetime = (string) ($alert['datetime'] ?? '');
 
             if($datetime === '' || $datetime < $resolved_cutoff) {
