@@ -8672,6 +8672,8 @@ function fcc_ai_mark_feedback_resolved_by_admin(int $feedback_id, int $admin_use
             'fcc_ai_conversation_id',
             'feedback_type',
             'assistant_type',
+            'reason',
+            'note',
         ]);
 
     if(!$feedback || (string) ($feedback->feedback_type ?? '') !== 'down') {
@@ -8704,7 +8706,10 @@ function fcc_ai_mark_feedback_resolved_by_admin(int $feedback_id, int $admin_use
 
         if(fcc_ai_get_unresolved_feedback_total_for_conversation((int) ($conversation->fcc_ai_conversation_id ?? 0)) === 0) {
             fcc_ai_mark_review_notifications_read_for_conversation($conversation);
-            fcc_ai_notify_feedback_resolution_to_user($conversation);
+            fcc_ai_notify_feedback_resolution_to_user($conversation, [
+                'reason' => (string) ($feedback->reason ?? ''),
+                'note' => (string) ($feedback->note ?? ''),
+            ]);
         }
     }
 
@@ -8748,7 +8753,7 @@ function fcc_ai_mark_review_notifications_read_for_conversation(object $conversa
         ]);
 }
 
-function fcc_ai_notify_feedback_resolution_to_user(object $conversation): void {
+function fcc_ai_notify_feedback_resolution_to_user(object $conversation, array $feedback_context = []): void {
     $user_id = (int) ($conversation->user_id ?? 0);
     $assistant_type = trim((string) ($conversation->assistant_type ?? ''));
 
@@ -8766,14 +8771,36 @@ function fcc_ai_notify_feedback_resolution_to_user(object $conversation): void {
         default => 'AI je unaprijeđen zahvaljujući tvom signalu',
     };
 
+    $reason_label = fcc_ai_get_feedback_reason_label((string) ($feedback_context['reason'] ?? ''), $language);
+    $case_summary = trim((string) ($feedback_context['note'] ?? ''));
+
+    if($case_summary === '') {
+        $case_summary = $reason_label;
+    }
+
+    if($case_summary === '') {
+        $case_summary = match($language) {
+            'en' => 'this case',
+            'sl' => 'ta primer',
+            'bg' => 'този случай',
+            default => 'ovaj slučaj',
+        };
+    }
+
+    $case_summary = fcc_ai_excerpt($case_summary, 120);
     $description = match($language) {
-        'en' => 'Thanks to your signal, we improved ' . $assistant_label . ' and closed this case. No further action is needed from your side.',
-        'sl' => 'Na podlagi vašega signala smo izboljšali ' . $assistant_label . ' in ta primer zaprli. Z vaše strani ni potrebna dodatna akcija.',
-        'bg' => 'Благодарение на вашия сигнал подобрихме ' . $assistant_label . ' и затворихме този случай. Не е нужно допълнително действие от ваша страна.',
-        default => 'Na temelju tvog signala doradili smo ' . $assistant_label . ' i zatvorili ovaj slučaj. Nije potrebna dodatna radnja s tvoje strane.',
+        'en' => 'Thanks to your signal, we improved ' . $assistant_label . ' and closed this case: ' . $case_summary . '. No further action is needed from your side.',
+        'sl' => 'Na podlagi vašega signala smo izboljšali ' . $assistant_label . ' in zaprli ta primer: ' . $case_summary . '. Z vaše strani ni potrebna dodatna akcija.',
+        'bg' => 'Благодарение на вашия сигнал подобрихме ' . $assistant_label . ' и затворихме този случай: ' . $case_summary . '. Не е нужно допълнително действие от ваша страна.',
+        default => 'Na temelju tvog signala doradili smo ' . $assistant_label . ' i zatvorili ovaj slučaj: ' . $case_summary . '. Nije potrebna dodatna radnja s tvoje strane.',
     };
 
-    fcc_ai_push_internal_notification($user_id, 'user', $title, $description, '', 'fas fa-check-circle');
+    $url = '';
+    if(!empty($conversation->public_id)) {
+        $url = url('fcc-ai?conversation=' . urlencode((string) $conversation->public_id) . '#fcc-ai-alerts');
+    }
+
+    fcc_ai_push_internal_notification($user_id, 'user', $title, $description, $url, 'fas fa-check-circle');
 }
 
 function fcc_ai_increment_daily_stats(int $user_id, string $assistant_type, string $scope, array $increments = [], array $meta = []): void {
@@ -9058,7 +9085,7 @@ function fcc_ai_get_recent_user_alerts(int $user_id, int $limit = 4, bool $hide_
 
     $limit = max(1, min(8, $limit));
     $alerts = [];
-    $icon_sql = "'fas fa-comment-exclamation','fas fa-user-plus','fas fa-check-circle'";
+    $icon_sql = "'fas fa-user-plus','fas fa-check-circle'";
     $query_limit = $hide_coach_review ? max(16, $limit * 4) : max(12, $limit * 3);
     $result = database()->query("SELECT
             `internal_notification_id`,
@@ -9090,10 +9117,6 @@ function fcc_ai_get_recent_user_alerts(int $user_id, int $limit = 4, bool $hide_
         $icon = trim((string) ($alert['icon'] ?? ''));
         $title = mb_strtolower(trim((string) ($alert['title'] ?? '')));
         $url = mb_strtolower(trim((string) ($alert['url'] ?? '')));
-
-        if($icon === 'fas fa-comment-exclamation') {
-            return $url !== '' && strpos($url, 'fcc-ai?conversation=') !== false;
-        }
 
         if($icon === 'fas fa-user-plus') {
             return strpos($title, 'ai lead') !== false;
@@ -9129,51 +9152,11 @@ function fcc_ai_get_recent_user_alerts(int $user_id, int $limit = 4, bool $hide_
         return trim((string) ($query_payload['conversation'] ?? ''));
     };
 
-    $conversation_public_ids = [];
-    foreach($alerts as $alert) {
-        if((string) ($alert['icon'] ?? '') !== 'fas fa-comment-exclamation') {
-            continue;
-        }
-
-        $conversation_public_id = $extract_conversation_public_id((string) ($alert['url'] ?? ''));
-
-        if($conversation_public_id !== '') {
-            $conversation_public_ids[$conversation_public_id] = $conversation_public_id;
-        }
-    }
-
-    $unresolved_feedback_by_public_id = [];
-    if(!empty($conversation_public_ids)) {
-        $public_ids_sql = implode(',', array_map(static function(string $public_id): string {
-            return "'" . database()->real_escape_string($public_id) . "'";
-        }, array_values($conversation_public_ids)));
-
-        $feedback_result = database()->query("SELECT
-                `c`.`public_id`,
-                COUNT(*) AS `total`
-            FROM `fcc_ai_message_feedback` AS `f`
-            LEFT JOIN `fcc_ai_conversations` AS `c` ON `c`.`fcc_ai_conversation_id` = `f`.`fcc_ai_conversation_id`
-            WHERE `c`.`user_id` = {$user_id}
-              AND `c`.`public_id` IN ({$public_ids_sql})
-              AND `f`.`feedback_type` = 'down'
-              AND COALESCE(`f`.`status`, 'new') != 'resolved'
-            GROUP BY `c`.`public_id`");
-
-        while($feedback_result && $row = $feedback_result->fetch_assoc()) {
-            $unresolved_feedback_by_public_id[(string) ($row['public_id'] ?? '')] = (int) ($row['total'] ?? 0);
-        }
-    }
-
     $resolved_cutoff = (new \DateTimeImmutable('-5 days'))->format('Y-m-d H:i:s');
 
-    $alerts = array_values(array_filter($alerts, static function(array $alert) use ($hide_coach_review, $extract_conversation_public_id, $unresolved_feedback_by_public_id, $resolved_cutoff): bool {
+    $alerts = array_values(array_filter($alerts, static function(array $alert) use ($resolved_cutoff): bool {
         $icon = trim((string) ($alert['icon'] ?? ''));
         $title = trim((string) ($alert['title'] ?? ''));
-        $description = trim((string) ($alert['description'] ?? ''));
-        $url = trim((string) ($alert['url'] ?? ''));
-
-        $is_ai_review_alert = $icon === 'fas fa-comment-exclamation'
-            && ($url !== '' && strpos($url, 'fcc-ai?conversation=') !== false);
 
         $is_ai_lead_alert = $icon === 'fas fa-user-plus'
             && preg_match('/\bAI lead\b/ui', $title);
@@ -9181,24 +9164,8 @@ function fcc_ai_get_recent_user_alerts(int $user_id, int $limit = 4, bool $hide_
         $is_ai_resolution_alert = $icon === 'fas fa-check-circle'
             && preg_match('/^AI\b/ui', $title);
 
-        if(!$is_ai_review_alert && !$is_ai_lead_alert && !$is_ai_resolution_alert) {
+        if(!$is_ai_lead_alert && !$is_ai_resolution_alert) {
             return false;
-        }
-
-        if($is_ai_review_alert) {
-            if($hide_coach_review && preg_match('/^Coach\b/u', $description)) {
-                return false;
-            }
-
-            if((int) ($alert['is_read'] ?? 0) === 1) {
-                return false;
-            }
-
-            $conversation_public_id = $extract_conversation_public_id((string) ($alert['url'] ?? ''));
-
-            if($conversation_public_id !== '' && (($unresolved_feedback_by_public_id[$conversation_public_id] ?? 0) <= 0)) {
-                return false;
-            }
         }
 
         if($is_ai_resolution_alert) {
@@ -9211,6 +9178,69 @@ function fcc_ai_get_recent_user_alerts(int $user_id, int $limit = 4, bool $hide_
 
         return true;
     }));
+
+    return array_slice($alerts, 0, $limit);
+}
+
+function fcc_ai_build_user_recent_alerts(array $recent_negative_feedback, array $system_alerts, string $language = 'hr', int $limit = 4): array {
+    $language = fcc_ai_resolve_public_reply_language($language);
+    $limit = max(1, min(8, $limit));
+    $alerts = [];
+
+    $review_title = match($language) {
+        'en' => 'AI answer needs review',
+        'sl' => 'AI odgovor potrebuje pregled',
+        'bg' => 'AI отговорът изисква проверка',
+        default => 'AI odgovor traži provjeru',
+    };
+
+    foreach($recent_negative_feedback as $feedback_row) {
+        $assistant_label = trim((string) ($feedback_row['assistant_label'] ?? 'AI'));
+        $reason_label = trim((string) ($feedback_row['reason_label'] ?? ''));
+        $note = trim((string) ($feedback_row['note'] ?? ''));
+        $message_excerpt = trim((string) ($feedback_row['message_excerpt'] ?? ''));
+        $case_summary = $note !== '' ? $note : $message_excerpt;
+
+        if($case_summary === '') {
+            $case_summary = $reason_label;
+        }
+
+        $description = match($language) {
+            'en' => $assistant_label . ' received a review signal'
+                . ($reason_label !== '' ? ' (' . $reason_label . ')' : '')
+                . '.'
+                . ($case_summary !== '' ? ' Case: ' . $case_summary : ' Open the conversation and check what should be improved.'),
+            'sl' => $assistant_label . ' je prejel signal za pregled'
+                . ($reason_label !== '' ? ' (' . $reason_label . ')' : '')
+                . '.'
+                . ($case_summary !== '' ? ' Primer: ' . $case_summary : ' Odprite pogovor in preverite, kaj je treba izboljšati.'),
+            'bg' => $assistant_label . ' получи сигнал за проверка'
+                . ($reason_label !== '' ? ' (' . $reason_label . ')' : '')
+                . '.'
+                . ($case_summary !== '' ? ' Случай: ' . $case_summary : ' Отворете разговора и вижте какво трябва да се подобри.'),
+            default => $assistant_label . ' je dobio signal za provjeru'
+                . ($reason_label !== '' ? ' (' . $reason_label . ')' : '')
+                . '.'
+                . ($case_summary !== '' ? ' Slučaj: ' . $case_summary : ' Otvori razgovor i provjeri što treba doraditi.'),
+        };
+
+        $alerts[] = [
+            'title' => $review_title,
+            'description' => fcc_ai_excerpt($description, 220),
+            'url' => !empty($feedback_row['conversation_public_id']) ? url('fcc-ai?conversation=' . urlencode((string) $feedback_row['conversation_public_id']) . '#fcc-ai-review') : '',
+            'icon' => 'fas fa-comment-exclamation',
+            'is_read' => 0,
+            'datetime' => (string) ($feedback_row['datetime'] ?? ''),
+        ];
+    }
+
+    foreach($system_alerts as $alert_row) {
+        $alerts[] = $alert_row;
+    }
+
+    usort($alerts, static function(array $a, array $b) {
+        return strcmp((string) ($b['datetime'] ?? ''), (string) ($a['datetime'] ?? ''));
+    });
 
     return array_slice($alerts, 0, $limit);
 }
@@ -10263,6 +10293,7 @@ function fcc_ai_get_user_dashboard_payload(int $user_id, string $period_start_da
             `f`.`reason`,
             `f`.`note`,
             `f`.`datetime`,
+            `c`.`assistant_type`,
             `c`.`public_id`,
             `c`.`scope`,
             `m`.`content` AS `message_content`
@@ -10284,6 +10315,8 @@ function fcc_ai_get_user_dashboard_payload(int $user_id, string $period_start_da
             'feedback_id' => (int) ($row['fcc_ai_message_feedback_id'] ?? 0),
             'conversation_id' => $conversation_id,
             'conversation_public_id' => (string) ($row['public_id'] ?? ''),
+            'assistant_type' => (string) ($row['assistant_type'] ?? ''),
+            'assistant_label' => fcc_ai_get_assistant_label((string) ($row['assistant_type'] ?? '')),
             'scope_label' => fcc_ai_get_scope_label((string) ($row['scope'] ?? ''), $language),
             'reason_label' => fcc_ai_get_feedback_reason_label((string) ($row['reason'] ?? ''), $language),
             'note' => trim((string) ($row['note'] ?? '')),
@@ -10294,7 +10327,12 @@ function fcc_ai_get_user_dashboard_payload(int $user_id, string $period_start_da
     }
 
     $payload['rising_topics'] = fcc_ai_get_topic_trend_rows($period_start_datetime, [$user_id], $limit);
-    $payload['recent_alerts'] = fcc_ai_get_recent_user_alerts($user_id, 4, true);
+    $payload['recent_alerts'] = fcc_ai_build_user_recent_alerts(
+        $payload['recent_negative_feedback'],
+        fcc_ai_get_recent_user_alerts($user_id, 4, true),
+        $language,
+        4
+    );
     $payload['useful_items'] = fcc_ai_build_user_useful_items($payload, $language);
 
     return $payload;
