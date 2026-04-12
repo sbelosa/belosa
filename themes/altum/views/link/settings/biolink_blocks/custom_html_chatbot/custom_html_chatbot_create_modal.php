@@ -1,5 +1,6 @@
 <?php defined('ALTUMCODE') || die() ?>
 <!-- Custom code -->
+<?php $has_fcc_ai_plan_access = fcc_ai_user_has_public_ai_access($this->user); ?>
 <div class="modal fade" id="create_biolink_custom_html_chatbot" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" role="document">
         <div class="modal-content">
@@ -31,8 +32,14 @@
                         </div>
                     </div>
 
+                    <?php if(!$has_fcc_ai_plan_access): ?>
+                        <div class="alert alert-warning mt-4 mb-0">
+                            <?= l('global.info_message.plan_feature_no_access') ?>
+                        </div>
+                    <?php endif ?>
+
                     <div class="text-center mt-4">
-                        <button type="submit" name="submit" class="btn btn-block btn-primary" data-is-ajax><?= l('global.submit') ?></button>
+                        <button type="submit" name="submit" class="btn btn-block btn-primary" data-is-ajax <?= $has_fcc_ai_plan_access ? null : 'disabled="disabled"' ?>><?= l('global.submit') ?></button>
                     </div>
                 </form>
             </div>

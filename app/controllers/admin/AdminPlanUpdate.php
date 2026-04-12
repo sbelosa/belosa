@@ -137,6 +137,8 @@ class AdminPlanUpdate extends Controller {
                 'custom_branding' => isset($_POST['custom_branding']),
                 'statistics' => isset($_POST['statistics']),
                 'ai_growth_plan_is_enabled' => isset($_POST['ai_growth_plan_is_enabled']),
+                'fcc_ai_is_enabled' => isset($_POST['fcc_ai_is_enabled']),
+                'fcc_coach_is_enabled' => isset($_POST['fcc_coach_is_enabled']),
                 'temporary_url_is_enabled' => isset($_POST['temporary_url_is_enabled']),
                 'cloaking_is_enabled' => isset($_POST['cloaking_is_enabled']),
                 'app_linking_is_enabled' => isset($_POST['app_linking_is_enabled']),

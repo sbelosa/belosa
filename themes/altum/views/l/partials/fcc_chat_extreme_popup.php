@@ -239,6 +239,15 @@ foreach(['hr', 'en', 'sl', 'bg'] as $fcc_chat_ui_language) {
         z-index: 2147482000;
         font-family: "Avenir Next", "Segoe UI", sans-serif;
         pointer-events: none;
+        transition: opacity .18s ease, visibility 0s linear .18s, transform .18s ease;
+    }
+
+    .fcc-tour-mode .fcc-chat-extreme,
+    .fcc-chat-extreme.is-tutorial-hidden {
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(12px);
+        pointer-events: none;
     }
 
     .fcc-chat-extreme__launcher-stack {
@@ -2819,10 +2828,20 @@ foreach(['hr', 'en', 'sl', 'bg'] as $fcc_chat_ui_language) {
             }
         });
 
-        window.addEventListener('fcc:tutorial:state', event => {
-            if(event && event.detail && event.detail.active) {
+        const syncTutorialVisibility = isActive => {
+            root.classList.toggle('is-tutorial-hidden', !!isActive);
+
+            if(isActive) {
                 setOpen(false);
             }
+
+            syncLauncherStacking();
+        };
+
+        syncTutorialVisibility(document.body.classList.contains('fcc-tour-mode'));
+
+        window.addEventListener('fcc:tutorial:state', event => {
+            syncTutorialVisibility(!!(event && event.detail && event.detail.active));
         });
         } catch(error) {
             console.error('FCC Chat bootstrap failed', error);

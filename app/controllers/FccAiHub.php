@@ -24,8 +24,34 @@ defined('ALTUMCODE') || die();
 
 class FccAiHub extends Controller {
 
+    private function ensure_hub_access(): void {
+        if(fcc_ai_user_has_public_ai_access($this->user)) {
+            return;
+        }
+
+        Alerts::add_info(l('global.info_message.plan_feature_no_access'));
+        redirect('dashboard');
+    }
+
+    private function ensure_hub_json_access(): void {
+        if(fcc_ai_user_has_public_ai_access($this->user)) {
+            return;
+        }
+
+        Response::json(l('global.info_message.plan_feature_no_access'), 'error');
+    }
+
+    private function ensure_coach_json_access(): void {
+        if(fcc_ai_user_has_coach_access($this->user)) {
+            return;
+        }
+
+        Response::json(l('global.info_message.plan_feature_no_access'), 'error');
+    }
+
     public function index() {
         \Altum\Authentication::guard();
+        $this->ensure_hub_access();
 
         fcc_ai_ensure_tables();
         fcc_ai_seed_user_assistants((int) $this->user->user_id, (string) ($this->user->name ?? ''));
@@ -482,6 +508,7 @@ class FccAiHub extends Controller {
 
     public function coach_conversation() {
         \Altum\Authentication::guard();
+        $this->ensure_coach_json_access();
 
         if(empty($_POST)) {
             die();
@@ -506,6 +533,7 @@ class FccAiHub extends Controller {
 
     public function coach_message() {
         \Altum\Authentication::guard();
+        $this->ensure_coach_json_access();
 
         if(empty($_POST)) {
             die();
@@ -531,6 +559,7 @@ class FccAiHub extends Controller {
 
     public function coach_feedback() {
         \Altum\Authentication::guard();
+        $this->ensure_coach_json_access();
 
         if(empty($_POST)) {
             die();
@@ -557,6 +586,7 @@ class FccAiHub extends Controller {
 
     public function resolve_feedback() {
         \Altum\Authentication::guard();
+        $this->ensure_hub_json_access();
 
         if(empty($_POST)) {
             die();

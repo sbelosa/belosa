@@ -147,7 +147,7 @@
         <?php endforeach ?>
 
         <?php /* Custom code: FC-2026-04-10: internal FCC Coach popup on site pages */ ?>
-        <?php if(is_logged_in()): ?>
+        <?php if(is_logged_in() && fcc_ai_user_has_coach_access($this->user)): ?>
             <?= include_view(THEME_PATH . 'views/l/partials/fcc_chat_extreme_popup.php', [
                 'config' => [
                     'assistant_type' => 'coach',

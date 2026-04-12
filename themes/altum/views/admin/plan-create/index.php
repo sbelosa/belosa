@@ -626,6 +626,18 @@
                 </div>
 
                 <div class="form-group custom-control custom-switch">
+                    <input id="fcc_ai_is_enabled" name="fcc_ai_is_enabled" type="checkbox" class="custom-control-input">
+                    <label class="custom-control-label" for="fcc_ai_is_enabled"><?= l('admin_plans.plan.fcc_ai_is_enabled') ?></label>
+                    <div><small class="form-text text-muted"><?= l('admin_plans.plan.fcc_ai_is_enabled_help') ?></small></div>
+                </div>
+
+                <div class="form-group custom-control custom-switch">
+                    <input id="fcc_coach_is_enabled" name="fcc_coach_is_enabled" type="checkbox" class="custom-control-input">
+                    <label class="custom-control-label" for="fcc_coach_is_enabled"><?= l('admin_plans.plan.fcc_coach_is_enabled') ?></label>
+                    <div><small class="form-text text-muted"><?= l('admin_plans.plan.fcc_coach_is_enabled_help') ?></small></div>
+                </div>
+
+                <div class="form-group custom-control custom-switch">
                     <input id="temporary_url_is_enabled" name="temporary_url_is_enabled" type="checkbox" class="custom-control-input">
                     <label class="custom-control-label" for="temporary_url_is_enabled"><?= l('admin_plans.plan.temporary_url_is_enabled') ?></label>
                     <div><small class="form-text text-muted"><?= l('admin_plans.plan.temporary_url_is_enabled_help') ?></small></div>

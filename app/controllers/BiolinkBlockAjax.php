@@ -9777,6 +9777,10 @@ class BiolinkBlockAjax extends Controller {
         $_POST['link_id'] = (int) $_POST['link_id'];
         $_POST['html'] = mb_substr(trim($_POST['html'] ?? ''), 0, $this->biolink_blocks['custom_html_chatbot']['max_length']);
 
+        if(!fcc_ai_user_has_public_ai_access($this->user)) {
+            Response::json(l('global.info_message.plan_feature_no_access'), 'error');
+        }
+
         if(!$link = db()->where('link_id', $_POST['link_id'])->where('user_id', $this->user->user_id)->getOne('links')) {
             die();
         }
@@ -9817,6 +9821,10 @@ class BiolinkBlockAjax extends Controller {
     private function create_biolink_custom_html_chatbot_pets() {
         $_POST['link_id'] = (int) $_POST['link_id'];
         $_POST['html'] = mb_substr(trim($_POST['html'] ?? ''), 0, $this->biolink_blocks['custom_html_chatbot_pets']['max_length']);
+
+        if(!fcc_ai_user_has_public_ai_access($this->user)) {
+            Response::json(l('global.info_message.plan_feature_no_access'), 'error');
+        }
 
         if(!$link = db()->where('link_id', $_POST['link_id'])->where('user_id', $this->user->user_id)->getOne('links')) {
             die();

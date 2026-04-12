@@ -12,6 +12,11 @@ $chatbot_assistant_type = $is_pets_chatbot ? 'pets_advisor' : 'product_advisor';
 $chatbot_scope = 'public_app';
 $chatbot_owner_link_id = (int) ($data->link->link_id ?? $data->biolink->link_id ?? 0);
 $chatbot_owner_user_id = (int) ($data->link->user_id ?? $data->user->user_id ?? 0);
+
+if($chatbot_owner_user_id <= 0 || !fcc_ai_user_has_public_ai_access($chatbot_owner_user_id)) {
+    return;
+}
+
 $chatbot_owner_name = trim((string) ($data->user->name ?? ''));
 $chatbot_page_language_code = trim((string) ($data->link->settings->language_code ?? \Altum\Language::$code ?? \Altum\Language::$default_code ?? 'hr'));
 $chatbot_language_code = $chatbot_owner_user_id > 0

@@ -58,6 +58,8 @@ if(settings()->links->biolinks_is_enabled) {
 
     $features[] = 'funnels_analytics_is_enabled';
     $features[] = 'ai_growth_plan_is_enabled';
+    $features[] = 'fcc_ai_is_enabled';
+    $features[] = 'fcc_coach_is_enabled';
     /* /Custom code: FC-2026-03-23 */
 
     /* Biolinks extras */

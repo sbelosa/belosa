@@ -47,6 +47,7 @@ if(is_logged_in()) {
     $enabled_biolink_blocks = (object) ($this->user->plan_settings->enabled_biolink_blocks ?? []);
     $has_lead_funnel_access = (bool) ($enabled_biolink_blocks->lead_funnel ?? false);
     $has_ai_growth_plan_access = \Altum\Authentication::is_admin() || (bool) ($this->user->plan_settings->ai_growth_plan_is_enabled ?? false);
+    $has_fcc_ai_access = fcc_ai_user_has_public_ai_access($this->user);
     $ai_plan_preferences = $this->user->preferences ?? new \stdClass();
 
     if(is_string($ai_plan_preferences)) {
@@ -335,7 +336,7 @@ if(is_logged_in()) {
                 </li>
                 <?php /* /Custom code: FC-2026-03-31 */ ?>
                 <li class="<?= \Altum\Router::$controller == 'FccAiHub' ? 'active' : null ?> app-sidebar-fcc-item">
-                    <a href="<?= url('fcc-ai') ?>" id="fcc_dashboard_tour_sidebar_fcc_ai">
+                    <a href="<?= url('fcc-ai') ?>" id="fcc_dashboard_tour_sidebar_fcc_ai" class="<?= $has_fcc_ai_access ? null : 'disabled pointer-events-all' ?>" <?= $has_fcc_ai_access ? null : get_plan_feature_disabled_info() ?>>
                         <i class="fas fa-fw fa-sm fa-robot mr-2"></i> FCC AI
                     </a>
                 </li>

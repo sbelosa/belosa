@@ -814,6 +814,49 @@ function fcc_ai_get_public_assistant_default_language(int $user_id, string $assi
     return $fallback_language;
 }
 
+function fcc_ai_get_user_plan_settings($user): \stdClass {
+    if(is_numeric($user)) {
+        $user_id = (int) $user;
+        $user = $user_id > 0
+            ? db()->where('user_id', $user_id)->getOne('users', ['user_id', 'plan_settings'])
+            : null;
+    }
+
+    if(!$user || !is_object($user)) {
+        return (object) [];
+    }
+
+    return fcc_ai_to_object($user->plan_settings ?? null);
+}
+
+function fcc_ai_user_has_public_ai_access($user): bool {
+    if(\Altum\Authentication::is_admin()) {
+        return true;
+    }
+
+    $plan_settings = fcc_ai_get_user_plan_settings($user);
+
+    if(!property_exists($plan_settings, 'fcc_ai_is_enabled')) {
+        return true;
+    }
+
+    return (bool) ($plan_settings->fcc_ai_is_enabled ?? false);
+}
+
+function fcc_ai_user_has_coach_access($user): bool {
+    if(\Altum\Authentication::is_admin()) {
+        return true;
+    }
+
+    $plan_settings = fcc_ai_get_user_plan_settings($user);
+
+    if(!property_exists($plan_settings, 'fcc_coach_is_enabled')) {
+        return true;
+    }
+
+    return (bool) ($plan_settings->fcc_coach_is_enabled ?? false);
+}
+
 function fcc_ai_safe_settings_bucket(string $key): \stdClass {
     try {
         $settings = settings();
@@ -10095,6 +10138,10 @@ function fcc_ai_create_or_resume_public_conversation(array $payload): array {
         throw new \RuntimeException('Nepoznat AI assistant tip.');
     }
 
+    if(!fcc_ai_user_has_public_ai_access($user)) {
+        throw new \RuntimeException(l('global.info_message.plan_feature_no_access'));
+    }
+
     $scope = fcc_ai_normalize_scope((string) ($payload['scope'] ?? ($conversation->scope ?? '')), $assistant_type);
     $language = fcc_ai_normalize_language((string) ($payload['language'] ?? ($conversation->language ?? '')));
     $source_context = trim((string) ($payload['source_context'] ?? ''));
@@ -10846,6 +10893,10 @@ function fcc_ai_generate_internal_coach_reply(string $message, array $context = 
 function fcc_ai_create_or_resume_internal_coach_conversation(object $user, array $payload = []): array {
     fcc_ai_ensure_tables();
 
+    if(!fcc_ai_user_has_coach_access($user)) {
+        throw new \RuntimeException(l('global.info_message.plan_feature_no_access'));
+    }
+
     $assistant_type = 'coach';
     $scope = 'internal_coach';
     $conversation_public_id = trim((string) ($payload['conversation_public_id'] ?? ''));
@@ -11179,6 +11230,10 @@ function fcc_ai_capture_public_message_feedback(array $payload): array {
 
 function fcc_ai_capture_internal_coach_feedback(object $user, array $payload): array {
     fcc_ai_ensure_tables();
+
+    if(!fcc_ai_user_has_coach_access($user)) {
+        throw new \RuntimeException(l('global.info_message.plan_feature_no_access'));
+    }
 
     $conversation = db()
         ->where('public_id', trim((string) ($payload['conversation_public_id'] ?? '')))
