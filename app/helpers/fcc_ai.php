@@ -93,6 +93,104 @@ function fcc_ai_get_internal_context_storage_key(): string {
     return 'fcc_ai_internal_context';
 }
 
+function fcc_ai_normalize_user_preferences($preferences): \stdClass {
+    if(is_string($preferences)) {
+        $preferences = json_decode($preferences ?? '{}');
+    }
+
+    if(is_array($preferences)) {
+        $preferences = (object) $preferences;
+    }
+
+    if(!$preferences instanceof \stdClass) {
+        $preferences = (object) [];
+    }
+
+    return $preferences;
+}
+
+function fcc_ai_get_user_sidebar_signal_state(object $user): array {
+    $payload = [
+        'count' => 0,
+        'new_leads' => 0,
+        'new_feedback' => 0,
+        'latest_lead_id' => 0,
+        'latest_feedback_id' => 0,
+    ];
+
+    $user_id = (int) ($user->user_id ?? 0);
+    if($user_id <= 0 || !fcc_ai_tables_ready()) {
+        return $payload;
+    }
+
+    $preferences = fcc_ai_normalize_user_preferences($user->preferences ?? null);
+    $last_seen_lead_id = (int) ($preferences->fcc_ai_last_seen_lead_id ?? 0);
+    $last_seen_feedback_id = (int) ($preferences->fcc_ai_last_seen_feedback_id ?? 0);
+
+    $lead_row = database()->query("SELECT
+            MAX(`fcc_ai_lead_id`) AS `latest_id`,
+            COUNT(*) AS `total`
+        FROM `fcc_ai_leads`
+        WHERE `user_id` = {$user_id}
+          AND `fcc_ai_lead_id` > {$last_seen_lead_id}")->fetch_object();
+
+    if($lead_row) {
+        $payload['latest_lead_id'] = (int) ($lead_row->latest_id ?? 0);
+        $payload['new_leads'] = (int) ($lead_row->total ?? 0);
+    }
+
+    $feedback_row = database()->query("SELECT
+            MAX(`f`.`fcc_ai_message_feedback_id`) AS `latest_id`,
+            COUNT(*) AS `total`
+        FROM `fcc_ai_message_feedback` AS `f`
+        LEFT JOIN `fcc_ai_conversations` AS `c` ON `c`.`fcc_ai_conversation_id` = `f`.`fcc_ai_conversation_id`
+        WHERE `f`.`user_id` = {$user_id}
+          AND `f`.`fcc_ai_message_feedback_id` > {$last_seen_feedback_id}
+          AND `f`.`feedback_type` = 'down'
+          AND COALESCE(`f`.`status`, 'new') != 'resolved'
+          AND COALESCE(`c`.`assistant_type`, '') != 'coach'")->fetch_object();
+
+    if($feedback_row) {
+        $payload['latest_feedback_id'] = (int) ($feedback_row->latest_id ?? 0);
+        $payload['new_feedback'] = (int) ($feedback_row->total ?? 0);
+    }
+
+    $payload['count'] = (int) $payload['new_leads'] + (int) $payload['new_feedback'];
+
+    return $payload;
+}
+
+function fcc_ai_mark_user_sidebar_signals_seen(object $user): \stdClass {
+    $preferences = fcc_ai_normalize_user_preferences($user->preferences ?? null);
+    $user_id = (int) ($user->user_id ?? 0);
+
+    if($user_id <= 0 || !fcc_ai_tables_ready()) {
+        return $preferences;
+    }
+
+    $signal_state = fcc_ai_get_user_sidebar_signal_state($user);
+    $latest_lead_id = max((int) ($preferences->fcc_ai_last_seen_lead_id ?? 0), (int) ($signal_state['latest_lead_id'] ?? 0));
+    $latest_feedback_id = max((int) ($preferences->fcc_ai_last_seen_feedback_id ?? 0), (int) ($signal_state['latest_feedback_id'] ?? 0));
+
+    if(
+        $latest_lead_id <= (int) ($preferences->fcc_ai_last_seen_lead_id ?? 0)
+        && $latest_feedback_id <= (int) ($preferences->fcc_ai_last_seen_feedback_id ?? 0)
+    ) {
+        return $preferences;
+    }
+
+    $preferences->fcc_ai_last_seen_lead_id = $latest_lead_id;
+    $preferences->fcc_ai_last_seen_feedback_id = $latest_feedback_id;
+
+    db()->where('user_id', $user_id)->update('users', [
+        'preferences' => json_encode($preferences),
+    ]);
+
+    cache()->deleteItemsByTag('user_id=' . $user_id);
+
+    return $preferences;
+}
+
 function fcc_ai_generate_public_id(int $bytes = 18): string {
     try {
         return bin2hex(random_bytes($bytes));

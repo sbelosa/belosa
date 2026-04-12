@@ -55,6 +55,7 @@ class FccAiHub extends Controller {
 
         fcc_ai_ensure_tables();
         fcc_ai_seed_user_assistants((int) $this->user->user_id, (string) ($this->user->name ?? ''));
+        $this->user->preferences = fcc_ai_mark_user_sidebar_signals_seen($this->user);
         $is_admin = \Altum\Authentication::is_admin();
         $assistant_types = fcc_ai_get_assistant_types();
         $editable_assistant_types = fcc_ai_get_public_assistant_types();
