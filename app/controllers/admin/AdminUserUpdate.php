@@ -29,6 +29,8 @@ class AdminUserUpdate extends Controller {
             'fcc_featured_public_market' => "ALTER TABLE `links` ADD COLUMN `fcc_featured_public_market` VARCHAR(64) NULL DEFAULT NULL",
             'fcc_featured_public_use_case' => "ALTER TABLE `links` ADD COLUMN `fcc_featured_public_use_case` VARCHAR(128) NULL DEFAULT NULL",
             'fcc_featured_public_summary' => "ALTER TABLE `links` ADD COLUMN `fcc_featured_public_summary` VARCHAR(512) NULL DEFAULT NULL",
+            'fcc_featured_profile_form' => "ALTER TABLE `links` ADD COLUMN `fcc_featured_profile_form` MEDIUMTEXT NULL DEFAULT NULL",
+            'fcc_featured_profile_generated' => "ALTER TABLE `links` ADD COLUMN `fcc_featured_profile_generated` MEDIUMTEXT NULL DEFAULT NULL",
         ];
 
         foreach($required_columns as $column => $query) {
@@ -93,7 +95,8 @@ class AdminUserUpdate extends Controller {
             $_POST['fcc_featured_opt_in'] = (int) isset($_POST['fcc_featured_opt_in']);
             $_POST['fcc_featured_is_approved'] = (int) isset($_POST['fcc_featured_is_approved']);
             $_POST['fcc_featured_public_market'] = input_clean($_POST['fcc_featured_public_market'] ?? '', 64);
-            $_POST['fcc_featured_public_summary'] = input_clean($_POST['fcc_featured_public_summary'] ?? '', 220);
+            $_POST['fcc_featured_public_use_case'] = input_clean($_POST['fcc_featured_public_use_case'] ?? '', 128);
+            $_POST['fcc_featured_public_summary'] = input_clean($_POST['fcc_featured_public_summary'] ?? '', 420);
             $_POST['user_meta']['limited'] = $_POST['user_meta']['limited'] == 'on' ? 1 : null; /* Custom code */
 
             if(\Altum\Plugin::is_active('affiliate')) {
@@ -363,6 +366,7 @@ class AdminUserUpdate extends Controller {
                         'fcc_featured_opt_in' => $_POST['fcc_featured_opt_in'],
                         'fcc_featured_is_approved' => $_POST['fcc_featured_is_approved'],
                         'fcc_featured_public_market' => $_POST['fcc_featured_public_market'] ?: null,
+                        'fcc_featured_public_use_case' => $_POST['fcc_featured_public_use_case'] ?: null,
                         'fcc_featured_public_summary' => $_POST['fcc_featured_public_summary'] ?: null,
                     ]);
                 }

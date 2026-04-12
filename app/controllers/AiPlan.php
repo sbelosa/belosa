@@ -2580,7 +2580,9 @@ class AiPlan extends Controller {
                 'is_signal_qualified' => true,
                 'is_top_performer' => true,
                 'qualified_target' => 15,
-                'top_target' => 15,
+                'top_target' => 50,
+                'weekly_check_target' => 15,
+                'is_weekly_check_passed' => true,
                 'signal_breakdown' => [
                     'shop_contacts_30d' => 999,
                     'shop_contacts_7d' => 999,
@@ -2627,7 +2629,8 @@ class AiPlan extends Controller {
         $growth_signal_7d = (int) ($signal_payload['growth_signal_7d'] ?? 0);
         $manual_tier = $this->get_active_manual_ai_tier($access_settings);
         $has_active_signal = $growth_signal_30d >= 15 || in_array($manual_tier, ['qualified', 'top'], true);
-        $has_top_signal = $growth_signal_7d >= 15 || $manual_tier === 'top';
+        $has_top_signal = $growth_signal_30d >= 50 || $manual_tier === 'top';
+        $has_weekly_check = $growth_signal_7d >= 15;
         $starter_app_review_used = !empty($access_settings['starter_app_review_used']);
         $starter_weekly_plan_used = !empty($access_settings['starter_weekly_plan_used']);
         $starter_app_review_available = $is_pro && !$has_active_signal && !$starter_app_review_used;
@@ -2653,8 +2656,10 @@ class AiPlan extends Controller {
             'growth_signal_7d' => $growth_signal_7d,
             'is_signal_qualified' => $has_active_signal,
             'is_top_performer' => $has_top_signal,
+            'is_weekly_check_passed' => $has_weekly_check,
             'qualified_target' => 15,
-            'top_target' => 15,
+            'top_target' => 50,
+            'weekly_check_target' => 15,
             'signal_breakdown' => [
                 'shop_contacts_30d' => (int) ($signal_payload['shop_contacts_30d'] ?? 0),
                 'shop_contacts_7d' => (int) ($signal_payload['shop_contacts_7d'] ?? 0),

@@ -651,10 +651,12 @@ class OpsReadonly extends Controller {
             'ai_chat_leads_30d' => 0,
             'ai_chat_leads_7d' => 0,
             'qualified_target' => 15,
-            'top_target' => 15,
+            'top_target' => 50,
+            'weekly_check_target' => 15,
         ];
         $is_signal_qualified = (int) ($signal_summary['growth_signal_30d'] ?? 0) >= 15 || in_array($manual_tier_active, ['qualified', 'top'], true);
-        $is_top_performer = (int) ($signal_summary['growth_signal_7d'] ?? 0) >= 15 || $manual_tier_active === 'top';
+        $is_top_performer = (int) ($signal_summary['growth_signal_30d'] ?? 0) >= 50 || $manual_tier_active === 'top';
+        $is_weekly_check_passed = (int) ($signal_summary['growth_signal_7d'] ?? 0) >= 15;
         $access_tier = !$plan_feature_active ? 'beginner' : ($is_top_performer ? 'top' : ($is_signal_qualified ? 'qualified' : 'pro'));
         $coach_mode = fcc_ai_get_internal_coach_mode_payload($user, 'hr');
         $starter_app_review_used = min(1, max(0, (int) ($access->starter_app_review_used ?? (!empty($app_reviews) ? 1 : 0))));
@@ -698,9 +700,11 @@ class OpsReadonly extends Controller {
                 'ai_chat_leads_30d' => (int) ($signal_summary['ai_chat_leads_30d'] ?? 0),
                 'ai_chat_leads_7d' => (int) ($signal_summary['ai_chat_leads_7d'] ?? 0),
                 'qualified_target' => (int) ($signal_summary['qualified_target'] ?? 15),
-                'top_target' => (int) ($signal_summary['top_target'] ?? 15),
+                'top_target' => (int) ($signal_summary['top_target'] ?? 50),
+                'weekly_check_target' => (int) ($signal_summary['weekly_check_target'] ?? 15),
                 'is_signal_qualified' => $is_signal_qualified,
                 'is_top_performer' => $is_top_performer,
+                'is_weekly_check_passed' => $is_weekly_check_passed,
             ],
             'counts' => [
                 'weekly_checkins' => count($weekly_checkins),

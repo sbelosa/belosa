@@ -72,6 +72,163 @@ class AdminLeaderOperatingSystemLeader extends Controller {
         cache()->deleteItem('user?user_id=' . $user_id);
     }
 
+    private function get_featured_profile_main_biolink(int $user_id): ?object {
+        fcc_featured_ensure_columns();
+
+        if($user_id <= 0) {
+            return null;
+        }
+
+        $mapped_biolink_id = (int) (fc_get_user_main_biolink_id($user_id) ?? 0);
+        $select_sql = "
+            SELECT
+                `links`.*,
+                `domains`.`scheme`,
+                `domains`.`host`,
+                `domains`.`link_id` AS `domain_link_id`,
+                `users`.`name`,
+                `users`.`email`,
+                `users`.`preferences`,
+                `users`.`billing`,
+                `users`.`plan_id`,
+                `users`.`plan_settings`,
+                `users`.`plan_expiration_date`
+            FROM `links`
+            INNER JOIN `users` ON `users`.`user_id` = `links`.`user_id`
+            LEFT JOIN `domains` ON `links`.`domain_id` = `domains`.`domain_id`
+        ";
+
+        if($mapped_biolink_id > 0) {
+            $result = database()->query($select_sql . "
+                WHERE `links`.`user_id` = {$user_id}
+                  AND `links`.`link_id` = {$mapped_biolink_id}
+                  AND `links`.`type` = 'biolink'
+                LIMIT 1
+            ");
+            $biolink = $result ? $result->fetch_object() : null;
+
+            if($biolink) {
+                return $biolink;
+            }
+        }
+
+        $result = database()->query($select_sql . "
+            WHERE `links`.`user_id` = {$user_id}
+              AND `links`.`type` = 'biolink'
+            ORDER BY
+                CASE WHEN `links`.`is_enabled` = 1 THEN 0 ELSE 1 END ASC,
+                `links`.`datetime` ASC,
+                `links`.`link_id` ASC
+            LIMIT 1
+        ");
+
+        return $result ? ($result->fetch_object() ?: null) : null;
+    }
+
+    private function get_featured_profile_admin_payload(int $user_id): array {
+        $main_biolink = $this->get_featured_profile_main_biolink($user_id);
+
+        if(!$main_biolink) {
+            return [
+                'exists' => false,
+            ];
+        }
+
+        $link_id = (int) ($main_biolink->link_id ?? 0);
+        $signal_snapshot = fcc_ai_get_user_growth_signal_snapshot($user_id, $link_id);
+        $sales_link_summary = fcc_ai_get_user_sales_link_summary($main_biolink, \Altum\Language::$code);
+        $generated_profile = fcc_featured_decode_json_payload($main_biolink->fcc_featured_profile_generated ?? null);
+        $feature_labels = fcc_featured_get_case_study_feature_labels($link_id, \Altum\Language::$code);
+        $plan_settings = fcc_ai_get_user_plan_settings($main_biolink);
+        $has_growth_pro = !empty($plan_settings->ai_growth_plan_is_enabled ?? false)
+            && fcc_ai_is_plan_expiration_active((string) ($main_biolink->plan_expiration_date ?? ''));
+        $growth_signal_30d = max(0, (int) ($signal_snapshot['growth_signal_30d'] ?? 0));
+        $growth_signal_7d = max(0, (int) ($signal_snapshot['growth_signal_7d'] ?? 0));
+        $public_use_case = fcc_featured_get_effective_public_use_case((string) ($main_biolink->fcc_featured_public_use_case ?? ''), $generated_profile, $feature_labels, \Altum\Language::$code);
+        $public_summary = fcc_featured_get_effective_public_summary((string) ($main_biolink->fcc_featured_public_summary ?? ''), $generated_profile, $feature_labels, \Altum\Language::$code);
+        $profile_intro = trim((string) ($generated_profile['profile_intro'] ?? ''));
+        $meta_description = trim((string) ($generated_profile['meta_description'] ?? ''));
+        $profile_slug = fcc_featured_build_profile_slug((string) ($main_biolink->name ?? ''), $link_id);
+        $is_public_base_ready = $has_growth_pro
+            && !empty($main_biolink->is_enabled)
+            && !empty($main_biolink->fcc_featured_opt_in)
+            && !empty($main_biolink->fcc_featured_is_approved);
+        $is_featured_listed = $is_public_base_ready && $growth_signal_30d >= 15;
+        $is_recommended_sponsor = $is_featured_listed
+            && $growth_signal_30d >= 50
+            && !empty($sales_link_summary['has_valid_enabled_link']);
+
+        return [
+            'exists' => true,
+            'main_biolink_id' => $link_id,
+            'main_biolink_url' => (string) ($main_biolink->url ?? ''),
+            'public_app_url' => fcc_featured_build_public_app_url($main_biolink, $link_id),
+            'public_market' => fcc_featured_get_default_public_market($main_biolink),
+            'public_use_case' => $public_use_case,
+            'public_summary' => $public_summary,
+            'profile_intro' => $profile_intro,
+            'meta_description' => $meta_description,
+            'generated_at' => trim((string) ($generated_profile['generated_at'] ?? '')),
+            'generated_model' => trim((string) ($generated_profile['model'] ?? '')),
+            'feature_labels' => $feature_labels,
+            'growth_signal_30d' => $growth_signal_30d,
+            'growth_signal_7d' => $growth_signal_7d,
+            'featured_threshold_reached' => $growth_signal_30d >= 15,
+            'recommended_threshold_reached' => $growth_signal_30d >= 50,
+            'has_growth_pro' => $has_growth_pro,
+            'is_public_base_ready' => $is_public_base_ready,
+            'is_featured_listed' => $is_featured_listed,
+            'is_recommended_sponsor' => $is_recommended_sponsor,
+            'sales_link_ready' => !empty($sales_link_summary['has_valid_enabled_link']),
+            'sales_link_status_label' => (string) ($sales_link_summary['status_label'] ?? l('global.none')),
+            'sales_link_editor_url' => (string) ($sales_link_summary['editor_url'] ?? url('links')),
+            'opt_in_enabled' => !empty($main_biolink->fcc_featured_opt_in),
+            'is_approved' => !empty($main_biolink->fcc_featured_is_approved),
+            'profile_url' => $is_recommended_sponsor ? url('recommended-sponsors/' . $profile_slug) : '',
+            'featured_apps_url' => $is_featured_listed ? url('featured-apps') : '',
+            'generated_profile' => $generated_profile,
+        ];
+    }
+
+    private function save_featured_profile_admin(int $user_id): void {
+        $main_biolink = $this->get_featured_profile_main_biolink($user_id);
+
+        if(!$main_biolink) {
+            throw new \Exception('Glavna FCC aplikacija nije pronađena za ovog suradnika.');
+        }
+
+        $public_use_case = input_clean($_POST['fcc_featured_public_use_case'] ?? '', 128);
+        $public_summary = input_clean($_POST['fcc_featured_public_summary'] ?? '', 420);
+        $profile_intro = input_clean($_POST['fcc_featured_profile_intro'] ?? '', 880);
+        $meta_description = input_clean($_POST['fcc_featured_meta_description'] ?? '', 180);
+        $generated_profile = fcc_featured_decode_json_payload($main_biolink->fcc_featured_profile_generated ?? null);
+
+        foreach([
+            'public_use_case' => $public_use_case,
+            'public_summary' => $public_summary,
+            'profile_intro' => $profile_intro,
+            'meta_description' => $meta_description,
+        ] as $field => $value) {
+            if($value === '') {
+                unset($generated_profile[$field]);
+            } else {
+                $generated_profile[$field] = $value;
+            }
+        }
+
+        if(!empty($generated_profile)) {
+            $generated_profile['admin_updated_at'] = get_date();
+        }
+
+        db()->where('link_id', (int) $main_biolink->link_id)->where('user_id', $user_id)->update('links', [
+            'fcc_featured_public_use_case' => $public_use_case ?: null,
+            'fcc_featured_public_summary' => $public_summary ?: null,
+            'fcc_featured_profile_generated' => !empty($generated_profile) ? json_encode($generated_profile, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_INVALID_UTF8_SUBSTITUTE) : null,
+        ]);
+
+        fcc_featured_clear_public_cache($user_id, (int) $main_biolink->link_id);
+    }
+
     private function configure_stripe_api(): bool {
         $secret_key = trim((string) (settings()->stripe->secret_key ?? ''));
 
@@ -4729,6 +4886,21 @@ class AdminLeaderOperatingSystemLeader extends Controller {
         $billing_model = new Billing();
         $billing_summary = $detail ? $billing_model->get_user_billing_summary((int) $detail['user_id']) : null;
 
+        if($detail && $_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_featured_profile_admin'])) {
+            if(!\Altum\Csrf::check()) {
+                Alerts::add_error(l('global.error_message.invalid_csrf_token'));
+            } else {
+                try {
+                    $this->save_featured_profile_admin((int) $detail['user_id']);
+                    Alerts::add_success('FCC sponsor profil je spremljen i odmah osvježen na javnim stranicama.');
+                } catch(\Throwable $exception) {
+                    Alerts::add_error($this->sanitize_ai_string($exception->getMessage(), 280) ?: l('global.error_message.basic'));
+                }
+            }
+
+            redirect('admin/leader-operating-system-leader?user_id=' . $user_id . '&period=' . $selected_period . '#leader-os-featured-profile');
+        }
+
         if($detail && $_SERVER['REQUEST_METHOD'] === 'POST' && (isset($_POST['save_mentor_actions']) || isset($_POST['toggle_follow_up']) || isset($_POST['mark_mentored_this_week']) || isset($_POST['reset_mentored_this_week']))) {
             if(!\Altum\Csrf::check()) {
                 Alerts::add_error(l('global.error_message.invalid_csrf_token'));
@@ -4838,6 +5010,7 @@ class AdminLeaderOperatingSystemLeader extends Controller {
             'coaching_roi' => ($detail && !empty($detail['score_history'][$selected_period])) ? $this->get_coaching_roi_payload($detail['score_history'][$selected_period], $detail['ai_plan_admin'] ?? []) : null,
             'ai_text_detail' => $detail ? $this->get_ai_text_detail_payload($detail['ai_plan_admin'] ?? []) : null,
             'fcc_ai_detail' => $detail ? fcc_ai_get_user_dashboard_payload((int) ($detail['user_id'] ?? 0), $this->get_period_start_datetime($this->get_period_days($selected_period)), 6, \Altum\Language::$code) : null,
+            'featured_profile_admin' => $detail ? $this->get_featured_profile_admin_payload((int) $detail['user_id']) : null,
             'ai_report' => $ai_report,
             'los_outreach' => $detail ? $this->get_los_outreach_payload((int) $detail['user_id'], $selected_period, $ai_report, (string) ($detail['email'] ?? '')) : null,
         ];

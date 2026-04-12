@@ -300,7 +300,8 @@ class FccResults extends Controller {
         $ai_signal_30d = (int) ($ai_signal_period['qualified_clicks'] ?? 0);
         $ai_signal_7d = (int) ($ai_signal_period_7d['qualified_clicks'] ?? 0);
         $ai_active_threshold = 15;
-        $ai_featured_threshold_7d = 15;
+        $ai_featured_threshold_30d = 15;
+        $ai_weekly_check_threshold_7d = 15;
         $ai_vip_threshold = 50;
         $is_pro_ai_user = $this->is_active_pro_user();
         $ai_stage = $ai_signal_30d >= $ai_vip_threshold ? 'vip' : ($ai_signal_30d >= $ai_active_threshold ? 'active' : 'starter');
@@ -320,12 +321,15 @@ class FccResults extends Controller {
                 'app_clicks_30d' => (int) ($ai_signal_period['app_clicks'] ?? 0),
                 'blog_clicks_30d' => (int) ($ai_signal_period['blog_clicks'] ?? 0),
                 'active_threshold' => $ai_active_threshold,
-                'featured_threshold_7d' => $ai_featured_threshold_7d,
+                'featured_threshold_30d' => $ai_featured_threshold_30d,
+                'weekly_check_threshold_7d' => $ai_weekly_check_threshold_7d,
                 'vip_threshold' => $ai_vip_threshold,
                 'to_active' => max(0, $ai_active_threshold - $ai_signal_30d),
-                'to_featured_7d' => max(0, $ai_featured_threshold_7d - $ai_signal_7d),
+                'to_featured_30d' => max(0, $ai_featured_threshold_30d - $ai_signal_30d),
+                'to_weekly_check_7d' => max(0, $ai_weekly_check_threshold_7d - $ai_signal_7d),
                 'to_vip' => max(0, $ai_vip_threshold - $ai_signal_30d),
-                'is_featured_7d' => $ai_signal_7d >= $ai_featured_threshold_7d,
+                'is_featured_30d' => $ai_signal_30d >= $ai_featured_threshold_30d,
+                'is_weekly_check_7d' => $ai_signal_7d >= $ai_weekly_check_threshold_7d,
                 'has_experience_signal' => $ai_signal_30d >= $ai_vip_threshold,
                 'active_progress_percent' => min(100, round(($ai_signal_30d / max(1, $ai_active_threshold)) * 100)),
                 'vip_progress_percent' => min(100, round(($ai_signal_30d / max(1, $ai_vip_threshold)) * 100)),

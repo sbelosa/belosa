@@ -7,6 +7,8 @@ $fcc_is_short_links = $fcc_links_type === 'link';
 $fcc_main_featured = $data->main_biolink_featured ?? null;
 $fcc_main_auto_summary = $data->main_biolink_auto_summary ?? '';
 $fcc_main_biolink_row = $data->main_biolink_row ?? null;
+$fcc_main_featured_builder = $data->main_biolink_featured_builder ?? (($fcc_main_featured['profile_builder'] ?? null) ?: []);
+$fcc_main_signal_snapshot = $data->main_biolink_signal_snapshot ?? (($fcc_main_featured['signal_snapshot'] ?? null) ?: []);
 $fcc_additional_links = $fcc_is_biolink_links ? ($data->links ?? []) : [];
 $fcc_table_links = $fcc_is_biolink_links ? $fcc_additional_links : ($data->links ?? []);
 $fcc_has_renderable_links = $fcc_is_biolink_links ? (!empty($fcc_main_biolink_row) || !empty($fcc_additional_links)) : !empty($fcc_table_links);
@@ -72,7 +74,10 @@ if($fcc_is_biolink_links && $fcc_main_biolink_row && !$fcc_main_featured) {
         'opt_in' => (int) ($fcc_main_biolink_row->fcc_featured_opt_in ?? 1),
         'is_approved' => (int) ($fcc_main_biolink_row->fcc_featured_is_approved ?? 1),
         'public_market' => trim((string) ($fcc_main_biolink_row->fcc_featured_public_market ?? '')),
+        'public_use_case' => trim((string) ($fcc_main_biolink_row->fcc_featured_public_use_case ?? '')),
         'public_summary' => trim((string) ($fcc_main_biolink_row->fcc_featured_public_summary ?? '')),
+        'profile_form' => fcc_featured_decode_json_payload($fcc_main_biolink_row->fcc_featured_profile_form ?? null),
+        'generated_profile' => fcc_featured_decode_json_payload($fcc_main_biolink_row->fcc_featured_profile_generated ?? null),
         'feature_labels' => [],
     ];
 }
@@ -81,6 +86,8 @@ $fcc_main_header = l('links.biolink_workspace.main_header');
 $fcc_main_subheader = l('links.biolink_workspace.main_subheader');
 $fcc_main_toggle = l('links.biolink_workspace.main_toggle');
 $fcc_main_market = l('links.biolink_workspace.main_market');
+$fcc_main_use_case = l('account.settings.featured_apps_use_case');
+$fcc_main_use_case_help = l('account.settings.featured_apps_use_case_help');
 $fcc_main_summary = l('links.biolink_workspace.main_summary');
 $fcc_main_summary_help = l('links.biolink_workspace.main_summary_help');
 $fcc_main_detected = l('links.biolink_workspace.main_detected');
@@ -113,6 +120,55 @@ $fcc_short_links_guide_title = l('links.short_links.guide_title');
 $fcc_short_links_guide_text = l('links.short_links.guide_text');
 $fcc_short_links_total_label = l('links.short_links.total_label');
 $fcc_short_links_empty = l('links.short_links.empty');
+$fcc_featured_profile_form = $fcc_main_featured['profile_form'] ?? [
+    'who_you_help' => '',
+    'what_you_help_with' => '',
+    'how_you_work' => '',
+    'background' => '',
+    'what_people_should_know' => '',
+];
+$fcc_featured_generated_profile = $fcc_main_featured['generated_profile'] ?? (($fcc_main_featured_builder['generated_payload'] ?? null) ?: []);
+$fcc_featured_profile_unlock = !empty($fcc_main_featured_builder['is_unlocked']);
+$fcc_featured_profile_can_generate = !empty($fcc_main_featured_builder['can_generate_now']);
+$fcc_featured_profile_next_generate_at = (string) ($fcc_main_featured_builder['next_generate_at'] ?? '');
+$fcc_featured_profile_generated_at = (string) ($fcc_main_featured_builder['generated_at'] ?? '');
+$fcc_featured_profile_signal_now = (int) ($fcc_main_featured_builder['growth_signal_30d'] ?? ($fcc_main_signal_snapshot['growth_signal_30d'] ?? 0));
+$fcc_featured_profile_signal_target = (int) ($fcc_main_featured_builder['qualified_target'] ?? ($fcc_main_signal_snapshot['qualified_target'] ?? 15));
+$fcc_featured_profile_missing = (int) ($fcc_main_featured_builder['missing_to_unlock'] ?? max(0, $fcc_featured_profile_signal_target - $fcc_featured_profile_signal_now));
+$fcc_featured_profile_ai_title = l('links.biolink_workspace.featured_profile.ai_title');
+$fcc_featured_profile_ai_text = l('links.biolink_workspace.featured_profile.ai_text');
+$fcc_featured_profile_locked_text = l('links.biolink_workspace.featured_profile.locked_text');
+$fcc_featured_profile_unlock_progress = l('links.biolink_workspace.featured_profile.unlock_progress');
+$fcc_featured_profile_unlock_missing = l('links.biolink_workspace.featured_profile.unlock_missing');
+$fcc_featured_profile_who_label = l('links.biolink_workspace.featured_profile.who_label');
+$fcc_featured_profile_who_placeholder = l('links.biolink_workspace.featured_profile.who_placeholder');
+$fcc_featured_profile_what_label = l('links.biolink_workspace.featured_profile.what_label');
+$fcc_featured_profile_what_placeholder = l('links.biolink_workspace.featured_profile.what_placeholder');
+$fcc_featured_profile_how_label = l('links.biolink_workspace.featured_profile.how_label');
+$fcc_featured_profile_how_placeholder = l('links.biolink_workspace.featured_profile.how_placeholder');
+$fcc_featured_profile_background_label = l('links.biolink_workspace.featured_profile.background_label');
+$fcc_featured_profile_background_placeholder = l('links.biolink_workspace.featured_profile.background_placeholder');
+$fcc_featured_profile_takeaway_label = l('links.biolink_workspace.featured_profile.takeaway_label');
+$fcc_featured_profile_takeaway_placeholder = l('links.biolink_workspace.featured_profile.takeaway_placeholder');
+$fcc_featured_profile_generate = l('links.biolink_workspace.featured_profile.generate');
+$fcc_featured_profile_regenerate = l('links.biolink_workspace.featured_profile.regenerate');
+$fcc_featured_profile_save = l('links.biolink_workspace.featured_profile.save');
+$fcc_featured_profile_open = l('links.biolink_workspace.featured_profile.open');
+$fcc_featured_profile_open_locked = l('links.biolink_workspace.featured_profile.open_locked');
+$fcc_featured_profile_generated_label = l('links.biolink_workspace.featured_profile.generated_label');
+$fcc_featured_profile_intro_label = l('links.biolink_workspace.featured_profile.intro_label');
+$fcc_featured_profile_meta_label = l('links.biolink_workspace.featured_profile.meta_label');
+$fcc_featured_profile_cooldown = l('links.biolink_workspace.featured_profile.cooldown');
+$fcc_featured_profile_final_label = l('links.biolink_workspace.featured_profile.final_label');
+$fcc_featured_profile_final_help = l('links.biolink_workspace.featured_profile.final_help');
+$fcc_featured_profile_modal_title = l('links.biolink_workspace.featured_profile.modal_title');
+$fcc_featured_profile_modal_subtitle = l('links.biolink_workspace.featured_profile.modal_subtitle');
+$fcc_featured_profile_status_locked = l('links.biolink_workspace.featured_profile.status_locked');
+$fcc_featured_profile_status_ready = l('links.biolink_workspace.featured_profile.status_ready');
+$fcc_featured_profile_status_ready_text = l('links.biolink_workspace.featured_profile.status_ready_text');
+$fcc_featured_profile_status_generated_text = l('links.biolink_workspace.featured_profile.status_generated_text');
+$fcc_featured_profile_card_title = l('links.biolink_workspace.featured_profile.card_title');
+$fcc_featured_profile_card_text = l('links.biolink_workspace.featured_profile.card_text');
 
 $fcc_tour_storage_key = null;
 $fcc_tour_steps = [];
@@ -682,6 +738,155 @@ if($fcc_links_type === 'biolink') {
         -webkit-box-orient: vertical;
         -webkit-line-clamp: 4;
         overflow: hidden;
+    }
+
+    .fcc-featured-profile-card {
+        margin: 1.15rem 0;
+        padding: 1rem 1.05rem;
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.028);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .fcc-featured-profile-card__head {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: start;
+        justify-content: space-between;
+        gap: 0.85rem;
+    }
+
+    .fcc-featured-profile-card__status {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin: 0.95rem 0 0.75rem;
+    }
+
+    .fcc-featured-profile-builder {
+        padding: 1rem 1.05rem;
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.028);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .fcc-featured-profile-builder__head {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: start;
+        justify-content: space-between;
+        gap: 0.85rem;
+        margin-bottom: 1rem;
+    }
+
+    .fcc-featured-profile-builder__grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.95rem;
+    }
+
+    .fcc-featured-profile-builder__wide {
+        grid-column: 1 / -1;
+    }
+
+    .fcc-featured-profile-lock,
+    .fcc-featured-profile-generated,
+    .fcc-featured-profile-final {
+        border-radius: 16px;
+        padding: 0.95rem 1rem;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .fcc-featured-profile-lock__title {
+        margin-bottom: 0.45rem;
+        font-weight: 700;
+        color: #f2fbff;
+    }
+
+    .fcc-featured-profile-lock__bar {
+        height: 0.6rem;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.06);
+        overflow: hidden;
+    }
+
+    .fcc-featured-profile-lock__bar span {
+        display: block;
+        height: 100%;
+        border-radius: inherit;
+        background: linear-gradient(90deg, rgba(91, 220, 207, 0.9), rgba(80, 158, 255, 0.92));
+        box-shadow: 0 0 20px rgba(78, 183, 255, 0.22);
+    }
+
+    .fcc-featured-profile-generated__copy,
+    .fcc-featured-profile-generated__meta {
+        color: rgba(223, 236, 245, 0.84);
+        line-height: 1.72;
+    }
+
+    .fcc-featured-profile-generated__meta {
+        font-size: 0.95rem;
+    }
+
+    .fcc-featured-profile-modal {
+        background:
+            radial-gradient(circle at top left, rgba(72, 220, 214, 0.05) 0%, rgba(72, 220, 214, 0) 30%),
+            radial-gradient(circle at 88% 12%, rgba(61, 118, 255, 0.06) 0%, rgba(61, 118, 255, 0) 26%),
+            linear-gradient(180deg, rgba(14, 22, 40, 0.99) 0%, rgba(8, 13, 24, 0.995) 100%);
+        border: 1px solid rgba(90, 201, 230, 0.08);
+        color: #f2fbff;
+        border-radius: 22px;
+        box-shadow: 0 28px 56px rgba(4, 10, 24, 0.38);
+        overflow: hidden;
+    }
+
+    .fcc-featured-profile-dialog {
+        height: calc(100vh - 2rem);
+        max-width: 880px;
+    }
+
+    .fcc-featured-profile-dialog .modal-content {
+        height: 100%;
+    }
+
+    .fcc-featured-profile-modal__form {
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+        height: 100%;
+    }
+
+    .fcc-featured-profile-modal .modal-header,
+    .fcc-featured-profile-modal .modal-footer {
+        background: transparent;
+        flex-shrink: 0;
+    }
+
+    .fcc-featured-profile-modal .modal-body {
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+    }
+
+    .fcc-featured-profile-modal .modal-title {
+        color: #f6fcff;
+        font-size: 1.25rem;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+    }
+
+    .fcc-featured-profile-modal .close {
+        opacity: 0.86;
+        text-shadow: none;
+    }
+
+    .fcc-featured-profile-modal-open .modal-backdrop.show {
+        opacity: 1;
+        background: rgba(5, 10, 18, 0.58);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
     }
 
     .fcc-links-main-workspace {
@@ -1341,6 +1546,10 @@ if($fcc_links_type === 'biolink') {
     }
 
     @media (max-width: 1199px) {
+        .fcc-featured-profile-builder__grid {
+            grid-template-columns: 1fr;
+        }
+
         .fcc-links-guide-pills {
             grid-template-columns: repeat(2, minmax(0, 1fr));
         }
@@ -1365,6 +1574,11 @@ if($fcc_links_type === 'biolink') {
     }
 
     @media (max-width: 767px) {
+        .fcc-featured-profile-card__head {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
         .fcc-links-guide-pills {
             grid-template-columns: 1fr;
         }
@@ -1856,62 +2070,222 @@ if($fcc_links_type === 'biolink') {
                     <h3 class="fcc-links-section-title"><?= $fcc_main_header ?></h3>
                     <p class="fcc-links-section-copy"><?= $fcc_main_subheader ?></p>
 
-                    <form action="<?= url('links?type=biolink') ?>" method="post" role="form">
-                        <input type="hidden" name="token" value="<?= \Altum\Csrf::get() ?>" />
-                        <input type="hidden" name="fcc_main_biolink_featured_settings" value="1" />
-
-                        <div class="form-group custom-control custom-switch mb-3">
-                            <input id="fcc_featured_opt_in" name="fcc_featured_opt_in" type="checkbox" class="custom-control-input" <?= !empty($fcc_main_featured['opt_in']) ? 'checked="checked"' : null ?>>
-                            <label class="custom-control-label" for="fcc_featured_opt_in"><?= $fcc_main_toggle ?></label>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="fcc_featured_public_market"><i class="fas fa-fw fa-sm fa-globe-europe text-muted mr-1"></i> <?= $fcc_main_market ?></label>
-                            <input type="text" id="fcc_featured_public_market" name="fcc_featured_public_market" class="form-control" value="<?= $_POST['fcc_featured_public_market'] ?? ($fcc_main_featured['public_market'] ?? '') ?>" maxlength="64" />
-                        </div>
-
-                        <div class="form-group mb-3">
-                            <label for="fcc_featured_public_summary"><i class="fas fa-fw fa-sm fa-align-left text-muted mr-1"></i> <?= $fcc_main_summary ?></label>
-                            <textarea id="fcc_featured_public_summary" name="fcc_featured_public_summary" class="form-control" rows="4" maxlength="220"><?= $_POST['fcc_featured_public_summary'] ?? ($fcc_main_featured['public_summary'] ?? '') ?></textarea>
-                            <small class="form-text text-muted"><?= $fcc_main_summary_help ?></small>
-                        </div>
-
-                        <div class="fcc-main-app-featured-status <?= empty($fcc_main_featured['opt_in']) ? 'is-muted' : null ?>">
-                            <div class="font-weight-bold mb-2"><?= !empty($fcc_main_featured['opt_in']) ? $fcc_main_status_on : $fcc_main_status_off ?></div>
-
-                            <?php if(empty($fcc_main_featured['is_approved'])): ?>
-                                <div class="small text-muted mb-3"><?= $fcc_main_admin_hidden ?></div>
-                            <?php endif ?>
-
-                            <?php if(!empty($fcc_main_featured['public_market'])): ?>
-                                <div class="fcc-main-app-featured-meta mb-3">
-                                    <span class="fcc-main-app-featured-pill"><?= $fcc_main_market ?>: <?= $fcc_main_featured['public_market'] ?></span>
-                                </div>
-                            <?php endif ?>
-
-                            <?php if(!empty($fcc_main_featured['feature_labels'])): ?>
-                                <div class="small text-uppercase text-muted font-weight-bold mb-2"><?= $fcc_main_detected ?></div>
-                                <div class="fcc-main-app-featured-meta mb-3">
-                                    <?php $fcc_main_visible_tags = array_slice($fcc_main_featured['feature_labels'], 0, $fcc_main_visible_tags_limit); ?>
-                                    <?php $fcc_main_remaining_tags = max(0, count($fcc_main_featured['feature_labels']) - count($fcc_main_visible_tags)); ?>
-
-                                    <?php foreach($fcc_main_visible_tags as $feature_label): ?>
-                                        <span class="fcc-main-app-featured-tag"><?= $feature_label ?></span>
-                                    <?php endforeach ?>
-
-                                    <?php if($fcc_main_remaining_tags > 0): ?>
-                                        <span class="fcc-main-app-featured-pill"><?= sprintf($fcc_more_tags, $fcc_main_remaining_tags) ?></span>
-                                    <?php endif ?>
-                                </div>
-                            <?php endif ?>
-
-                            <div class="small text-muted mb-3 fcc-main-app-featured-preview">
-                                <?= !empty(trim((string) ($fcc_main_featured['public_summary'] ?? ''))) ? $fcc_main_featured['public_summary'] : $fcc_main_auto_summary ?>
+                    <div class="fcc-featured-profile-card">
+                        <div class="fcc-featured-profile-card__head">
+                            <div>
+                                <div class="fcc-links-section-title mb-2"><?= $fcc_featured_profile_card_title ?></div>
+                                <p class="fcc-links-section-copy mb-0"><?= $fcc_featured_profile_card_text ?></p>
                             </div>
+
+                            <button type="button" class="btn btn-outline-primary fcc-links-action-btn" data-toggle="modal" data-target="#fcc_featured_profile_modal">
+                                <?= $fcc_featured_profile_unlock ? $fcc_featured_profile_open : $fcc_featured_profile_open_locked ?>
+                            </button>
                         </div>
 
-                        <button type="submit" class="btn btn-primary fcc-links-action-btn mt-3"><?= $fcc_main_submit ?></button>
-                    </form>
+                        <?php if(!$fcc_featured_profile_unlock): ?>
+                            <div class="fcc-featured-profile-lock">
+                                <div class="fcc-featured-profile-lock__title"><?= $fcc_featured_profile_status_locked ?></div>
+                                <p class="text-muted mb-3"><?= $fcc_featured_profile_locked_text ?></p>
+                                <div class="fcc-featured-profile-lock__progress">
+                                    <div class="d-flex flex-wrap align-items-center justify-content-between mb-2">
+                                        <div class="small text-uppercase text-muted font-weight-bold"><?= $fcc_featured_profile_unlock_progress ?></div>
+                                        <span class="fcc-main-app-featured-pill"><?= $fcc_featured_profile_signal_now ?> / <?= $fcc_featured_profile_signal_target ?></span>
+                                    </div>
+                                    <div class="fcc-featured-profile-lock__bar">
+                                        <span style="width: <?= min(100, max(8, $fcc_featured_profile_signal_target > 0 ? ($fcc_featured_profile_signal_now / $fcc_featured_profile_signal_target) * 100 : 0)) ?>%"></span>
+                                    </div>
+                                    <div class="small text-muted mt-2"><?= sprintf($fcc_featured_profile_unlock_missing, nr($fcc_featured_profile_missing)) ?></div>
+                                </div>
+                            </div>
+                        <?php else: ?>
+                            <div class="fcc-featured-profile-card__status">
+                                <span class="fcc-main-app-featured-pill"><?= $fcc_featured_profile_status_ready ?></span>
+                                <span class="fcc-main-app-featured-pill"><?= $fcc_featured_profile_signal_now ?> / <?= $fcc_featured_profile_signal_target ?></span>
+                                <?php if($fcc_featured_profile_generated_at): ?>
+                                    <span class="fcc-main-app-featured-pill"><?= \Altum\Date::get($fcc_featured_profile_generated_at, 2) ?></span>
+                                <?php endif ?>
+                            </div>
+
+                            <div class="small text-muted mb-3">
+                                <?= !empty($fcc_featured_generated_profile) ? $fcc_featured_profile_status_generated_text : $fcc_featured_profile_status_ready_text ?>
+                            </div>
+                        <?php endif ?>
+                    </div>
+
+                    <div class="fcc-main-app-featured-status <?= empty($fcc_main_featured['opt_in']) ? 'is-muted' : null ?>">
+                        <div class="font-weight-bold mb-2"><?= !empty($fcc_main_featured['opt_in']) ? $fcc_main_status_on : $fcc_main_status_off ?></div>
+
+                        <?php if(empty($fcc_main_featured['is_approved'])): ?>
+                            <div class="small text-muted mb-3"><?= $fcc_main_admin_hidden ?></div>
+                        <?php endif ?>
+
+                        <?php if(!empty($fcc_main_featured['public_market'])): ?>
+                            <div class="fcc-main-app-featured-meta mb-3">
+                                <span class="fcc-main-app-featured-pill"><?= $fcc_main_market ?>: <?= $fcc_main_featured['public_market'] ?></span>
+                            </div>
+                        <?php endif ?>
+
+                        <?php if(!empty(trim((string) ($fcc_main_featured['public_use_case'] ?? '')))): ?>
+                            <div class="small text-muted mb-3">
+                                <strong><?= $fcc_main_use_case ?>:</strong> <?= $fcc_main_featured['public_use_case'] ?>
+                            </div>
+                        <?php endif ?>
+
+                        <?php if(!empty($fcc_main_featured['feature_labels'])): ?>
+                            <div class="small text-uppercase text-muted font-weight-bold mb-2"><?= $fcc_main_detected ?></div>
+                            <div class="fcc-main-app-featured-meta mb-3">
+                                <?php $fcc_main_visible_tags = array_slice($fcc_main_featured['feature_labels'], 0, $fcc_main_visible_tags_limit); ?>
+                                <?php $fcc_main_remaining_tags = max(0, count($fcc_main_featured['feature_labels']) - count($fcc_main_visible_tags)); ?>
+
+                                <?php foreach($fcc_main_visible_tags as $feature_label): ?>
+                                    <span class="fcc-main-app-featured-tag"><?= $feature_label ?></span>
+                                <?php endforeach ?>
+
+                                <?php if($fcc_main_remaining_tags > 0): ?>
+                                    <span class="fcc-main-app-featured-pill"><?= sprintf($fcc_more_tags, $fcc_main_remaining_tags) ?></span>
+                                <?php endif ?>
+                            </div>
+                        <?php endif ?>
+
+                        <div class="small text-muted mb-0 fcc-main-app-featured-preview">
+                            <?= !empty(trim((string) ($fcc_main_featured['public_summary'] ?? ''))) ? $fcc_main_featured['public_summary'] : $fcc_main_auto_summary ?>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal fade" id="fcc_featured_profile_modal" tabindex="-1" role="dialog" aria-hidden="true">
+                    <div class="modal-dialog modal-lg modal-dialog-scrollable fcc-featured-profile-dialog" role="document">
+                        <div class="modal-content fcc-featured-profile-modal">
+                            <form action="<?= url('links?type=biolink') ?>" method="post" role="form" class="fcc-featured-profile-modal__form">
+                                <input type="hidden" name="token" value="<?= \Altum\Csrf::get() ?>" />
+                                <input type="hidden" name="fcc_main_biolink_featured_settings" value="1" />
+
+                                <div class="modal-header border-0 pb-0">
+                                    <div>
+                                        <h5 class="modal-title"><?= $fcc_featured_profile_modal_title ?></h5>
+                                        <p class="text-muted mb-0 mt-2"><?= $fcc_featured_profile_modal_subtitle ?></p>
+                                    </div>
+                                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="<?= l('global.close') ?>">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+
+                                <div class="modal-body pt-3">
+                                    <div class="form-group custom-control custom-switch mb-3">
+                                        <input id="fcc_featured_opt_in_modal" name="fcc_featured_opt_in" type="checkbox" class="custom-control-input" <?= !empty($fcc_main_featured['opt_in']) ? 'checked="checked"' : null ?>>
+                                        <label class="custom-control-label" for="fcc_featured_opt_in_modal"><?= $fcc_main_toggle ?></label>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="fcc_featured_public_market_modal"><i class="fas fa-fw fa-sm fa-globe-europe text-muted mr-1"></i> <?= $fcc_main_market ?></label>
+                                        <input type="text" id="fcc_featured_public_market_modal" name="fcc_featured_public_market" class="form-control" value="<?= $_POST['fcc_featured_public_market'] ?? ($fcc_main_featured['public_market'] ?? '') ?>" maxlength="64" />
+                                    </div>
+
+                                    <div class="fcc-featured-profile-builder mb-3">
+                                        <div class="fcc-featured-profile-builder__head">
+                                            <div>
+                                                <div class="fcc-links-section-title mb-2"><?= $fcc_featured_profile_ai_title ?></div>
+                                                <p class="fcc-links-section-copy mb-0"><?= $fcc_featured_profile_ai_text ?></p>
+                                            </div>
+                                            <span class="fcc-main-app-featured-pill"><?= $fcc_featured_profile_signal_now ?> / <?= $fcc_featured_profile_signal_target ?></span>
+                                        </div>
+
+                                        <?php if(!$fcc_featured_profile_unlock): ?>
+                                            <div class="fcc-featured-profile-lock">
+                                                <div class="fcc-featured-profile-lock__title"><?= $fcc_featured_profile_status_locked ?></div>
+                                                <p class="text-muted mb-3"><?= $fcc_featured_profile_locked_text ?></p>
+                                                <div class="fcc-featured-profile-lock__progress">
+                                                    <div class="small text-uppercase text-muted font-weight-bold mb-2"><?= $fcc_featured_profile_unlock_progress ?></div>
+                                                    <div class="fcc-featured-profile-lock__bar">
+                                                        <span style="width: <?= min(100, max(8, $fcc_featured_profile_signal_target > 0 ? ($fcc_featured_profile_signal_now / $fcc_featured_profile_signal_target) * 100 : 0)) ?>%"></span>
+                                                    </div>
+                                                    <div class="small text-muted mt-2"><?= sprintf($fcc_featured_profile_unlock_missing, nr($fcc_featured_profile_missing)) ?></div>
+                                                </div>
+                                            </div>
+                                        <?php else: ?>
+                                            <div class="fcc-featured-profile-builder__grid">
+                                                <div class="form-group">
+                                                    <label for="fcc_featured_profile_who_you_help"><?= $fcc_featured_profile_who_label ?></label>
+                                                    <textarea id="fcc_featured_profile_who_you_help" name="who_you_help" class="form-control" rows="3" maxlength="220" placeholder="<?= htmlspecialchars($fcc_featured_profile_who_placeholder, ENT_QUOTES, 'UTF-8') ?>"><?= $_POST['who_you_help'] ?? ($fcc_featured_profile_form['who_you_help'] ?? '') ?></textarea>
+                                                </div>
+
+                                                <div class="form-group">
+                                                    <label for="fcc_featured_profile_what_you_help_with"><?= $fcc_featured_profile_what_label ?></label>
+                                                    <textarea id="fcc_featured_profile_what_you_help_with" name="what_you_help_with" class="form-control" rows="3" maxlength="220" placeholder="<?= htmlspecialchars($fcc_featured_profile_what_placeholder, ENT_QUOTES, 'UTF-8') ?>"><?= $_POST['what_you_help_with'] ?? ($fcc_featured_profile_form['what_you_help_with'] ?? '') ?></textarea>
+                                                </div>
+
+                                                <div class="form-group">
+                                                    <label for="fcc_featured_profile_how_you_work"><?= $fcc_featured_profile_how_label ?></label>
+                                                    <textarea id="fcc_featured_profile_how_you_work" name="how_you_work" class="form-control" rows="3" maxlength="220" placeholder="<?= htmlspecialchars($fcc_featured_profile_how_placeholder, ENT_QUOTES, 'UTF-8') ?>"><?= $_POST['how_you_work'] ?? ($fcc_featured_profile_form['how_you_work'] ?? '') ?></textarea>
+                                                </div>
+
+                                                <div class="form-group">
+                                                    <label for="fcc_featured_profile_background"><?= $fcc_featured_profile_background_label ?></label>
+                                                    <textarea id="fcc_featured_profile_background" name="background" class="form-control" rows="3" maxlength="220" placeholder="<?= htmlspecialchars($fcc_featured_profile_background_placeholder, ENT_QUOTES, 'UTF-8') ?>"><?= $_POST['background'] ?? ($fcc_featured_profile_form['background'] ?? '') ?></textarea>
+                                                </div>
+
+                                                <div class="form-group fcc-featured-profile-builder__wide">
+                                                    <label for="fcc_featured_profile_what_people_should_know"><?= $fcc_featured_profile_takeaway_label ?></label>
+                                                    <textarea id="fcc_featured_profile_what_people_should_know" name="what_people_should_know" class="form-control" rows="3" maxlength="220" placeholder="<?= htmlspecialchars($fcc_featured_profile_takeaway_placeholder, ENT_QUOTES, 'UTF-8') ?>"><?= $_POST['what_people_should_know'] ?? ($fcc_featured_profile_form['what_people_should_know'] ?? '') ?></textarea>
+                                                </div>
+                                            </div>
+
+                                            <?php if(!empty($fcc_featured_generated_profile)): ?>
+                                                <div class="fcc-featured-profile-generated mb-3">
+                                                    <div class="d-flex flex-wrap align-items-center justify-content-between mb-2">
+                                                        <div class="small text-uppercase text-muted font-weight-bold"><?= $fcc_featured_profile_generated_label ?></div>
+                                                        <?php if($fcc_featured_profile_generated_at): ?>
+                                                            <span class="fcc-main-app-featured-pill"><?= \Altum\Date::get($fcc_featured_profile_generated_at, 2) ?></span>
+                                                        <?php endif ?>
+                                                    </div>
+
+                                                    <?php if(!empty($fcc_featured_generated_profile['profile_intro'])): ?>
+                                                        <div class="small text-uppercase text-muted font-weight-bold mb-2"><?= $fcc_featured_profile_intro_label ?></div>
+                                                        <div class="fcc-featured-profile-generated__copy mb-3"><?= $fcc_featured_generated_profile['profile_intro'] ?></div>
+                                                    <?php endif ?>
+
+                                                    <?php if(!empty($fcc_featured_generated_profile['meta_description'])): ?>
+                                                        <div class="small text-uppercase text-muted font-weight-bold mb-2"><?= $fcc_featured_profile_meta_label ?></div>
+                                                        <div class="fcc-featured-profile-generated__meta"><?= $fcc_featured_generated_profile['meta_description'] ?></div>
+                                                    <?php endif ?>
+                                                </div>
+                                            <?php endif ?>
+
+                                            <div class="fcc-featured-profile-final">
+                                                <div class="small text-uppercase text-muted font-weight-bold mb-2"><?= $fcc_featured_profile_final_label ?></div>
+
+                                                <div class="form-group">
+                                                    <label for="fcc_featured_public_use_case"><i class="fas fa-fw fa-sm fa-briefcase text-muted mr-1"></i> <?= $fcc_main_use_case ?></label>
+                                                    <input type="text" id="fcc_featured_public_use_case" name="fcc_featured_public_use_case" class="form-control" value="<?= $_POST['fcc_featured_public_use_case'] ?? ($fcc_main_featured['public_use_case'] ?? '') ?>" maxlength="128" />
+                                                    <small class="form-text text-muted"><?= $fcc_main_use_case_help ?></small>
+                                                </div>
+
+                                                <div class="form-group mb-0">
+                                                    <label for="fcc_featured_public_summary"><i class="fas fa-fw fa-sm fa-align-left text-muted mr-1"></i> <?= $fcc_main_summary ?></label>
+                                                    <textarea id="fcc_featured_public_summary" name="fcc_featured_public_summary" class="form-control" rows="5" maxlength="420"><?= $_POST['fcc_featured_public_summary'] ?? ($fcc_main_featured['public_summary'] ?? '') ?></textarea>
+                                                    <small class="form-text text-muted"><?= $fcc_featured_profile_final_help ?></small>
+                                                </div>
+                                            </div>
+
+                                            <?php if($fcc_featured_profile_next_generate_at && !$fcc_featured_profile_can_generate): ?>
+                                                <div class="small text-muted mt-3"><?= sprintf($fcc_featured_profile_cooldown, \Altum\Date::get($fcc_featured_profile_next_generate_at, 2)) ?></div>
+                                            <?php endif ?>
+                                        <?php endif ?>
+                                    </div>
+                                </div>
+
+                                <div class="modal-footer border-0 pt-0">
+                                    <?php if($fcc_featured_profile_unlock): ?>
+                                        <button type="submit" name="fcc_generate_featured_profile" value="1" class="btn btn-outline-primary fcc-links-action-btn" <?= (!$fcc_featured_profile_can_generate && !empty($fcc_featured_generated_profile)) ? 'disabled="disabled"' : null ?>>
+                                            <?= !empty($fcc_featured_generated_profile) ? $fcc_featured_profile_regenerate : $fcc_featured_profile_generate ?>
+                                        </button>
+                                    <?php endif ?>
+
+                                    <button type="submit" class="btn btn-primary fcc-links-action-btn"><?= $fcc_featured_profile_save ?></button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
                 </div>
             <?php endif ?>
         </div>
@@ -2393,6 +2767,35 @@ document.addEventListener('DOMContentLoaded', () => {
     if(!hasSeenTour) {
         setTimeout(() => startTour({markAutoSeen: true}), 500);
     }
+});
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const modal = document.getElementById('fcc_featured_profile_modal');
+
+    if(!modal || typeof window.jQuery === 'undefined') {
+        return;
+    }
+
+    if(modal.parentNode !== document.body) {
+        document.body.appendChild(modal);
+    }
+
+    window.jQuery(modal).on('shown.bs.modal', () => {
+        document.body.classList.add('fcc-featured-profile-modal-open');
+    });
+
+    window.jQuery(modal).on('hidden.bs.modal', () => {
+        document.body.classList.remove('modal-open', 'fcc-featured-profile-modal-open');
+
+        document.querySelectorAll('.modal-backdrop').forEach(backdrop => {
+            backdrop.remove();
+        });
+    });
+
+    <?php if(isset($_GET['fcc_profile_modal']) && $_GET['fcc_profile_modal'] == '1'): ?>
+    window.jQuery(modal).modal('show');
+    <?php endif ?>
 });
 </script>
 <?php endif ?>

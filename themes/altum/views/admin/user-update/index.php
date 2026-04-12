@@ -26,6 +26,8 @@ $fcc_admin_featured_subheader = l('admin_user_update.fcc_featured_subheader');
 $fcc_admin_opt_in = l('admin_user_update.fcc_featured_opt_in');
 $fcc_admin_approved = l('admin_user_update.fcc_featured_approved');
 $fcc_admin_market = l('admin_user_update.fcc_featured_market');
+$fcc_admin_use_case = l('account.settings.featured_apps_use_case');
+$fcc_admin_use_case_help = l('account.settings.featured_apps_use_case_help');
 $fcc_admin_summary = l('admin_user_update.fcc_featured_summary');
 $fcc_admin_summary_help = l('admin_user_update.fcc_featured_summary_help');
 $fcc_admin_missing = l('admin_user_update.fcc_featured_missing');
@@ -122,9 +124,15 @@ $fcc_admin_missing = l('admin_user_update.fcc_featured_missing');
                     <input id="fcc_featured_public_market" type="text" name="fcc_featured_public_market" class="form-control" value="<?= $data->main_biolink->fcc_featured_public_market ?? '' ?>" maxlength="64" />
                 </div>
 
+                <div class="form-group">
+                    <label for="fcc_featured_public_use_case"><i class="fas fa-fw fa-sm fa-briefcase text-muted mr-1"></i> <?= $fcc_admin_use_case ?></label>
+                    <input id="fcc_featured_public_use_case" type="text" name="fcc_featured_public_use_case" class="form-control" value="<?= $data->main_biolink->fcc_featured_public_use_case ?? '' ?>" maxlength="128" />
+                    <small class="form-text text-muted"><?= $fcc_admin_use_case_help ?></small>
+                </div>
+
                 <div class="form-group mb-0">
                     <label for="fcc_featured_public_summary"><i class="fas fa-fw fa-sm fa-align-left text-muted mr-1"></i> <?= $fcc_admin_summary ?></label>
-                    <textarea id="fcc_featured_public_summary" name="fcc_featured_public_summary" class="form-control" rows="4" maxlength="220"><?= $data->main_biolink->fcc_featured_public_summary ?? '' ?></textarea>
+                    <textarea id="fcc_featured_public_summary" name="fcc_featured_public_summary" class="form-control" rows="4" maxlength="420"><?= $data->main_biolink->fcc_featured_public_summary ?? '' ?></textarea>
                     <small class="form-text text-muted"><?= $fcc_admin_summary_help ?></small>
                 </div>
                 <?php endif ?>

@@ -128,6 +128,16 @@ class Router {
             ],
             /* /Custom code: FC-2026-03-14 */
 
+            /* Custom code: FC-2026-04-12: public recommended FCC sponsors hub and profiles */
+            'recommended-sponsors' => [
+                'controller' => 'RecommendedSponsors',
+                'settings' => [
+                    'wrapper' => 'wrapper',
+                    'ads' => true,
+                ]
+            ],
+            /* /Custom code: FC-2026-04-12 */
+
             /* Custom code: FC-2026-02-24: FCC core education page */
             'fcc-education' => [
                 'controller' => 'FccEducation',

@@ -440,6 +440,64 @@
     <!-- /Custom code: FC-2026-03-24 -->
 <?php endif ?>
 
+<?php if(!empty($data->recommended_sponsors)): ?>
+    <?php $fcc_is_hr = \Altum\Language::$code === 'hr'; ?>
+    <div class="container mt-6">
+        <section class="card index-highly-rounded border-0 bg-gray-900 fcc-home-sponsors" data-aos="fade-up">
+            <div class="card-body fcc-home-sponsors__inner py-5">
+                <div class="fcc-home-sponsors__header">
+                    <div>
+                        <div class="fcc-home-sponsors__eyebrow"><?= $fcc_is_hr ? 'Preporučeni sponzori' : 'Recommended sponsors' ?></div>
+                        <h2><?= $fcc_is_hr ? 'Preporučeni FCC sponzori s aktivnim rezultatima' : 'Recommended FCC sponsors with active results' ?></h2>
+                        <p class="fcc-home-sponsors__intro mb-0">
+                            <?= $fcc_is_hr
+                                ? 'Na ovom popisu izdvajamo Forever partnere koji aktivno koriste FCC u praksi: imaju javnu i odobrenu glavnu FCC aplikaciju, valjani Forever prodajni link te 50+ kvalificiranih klikova i kontakata u zadnjih 30 dana. Njihovi javni profili mogu pomoći novim suradnicima koji traže sponzora s jasnim digitalnim sustavom, aktivnim radom i stvarnim primjerom kako se FCC koristi za preporuke, kontakte i rast poslovanja.'
+                                : 'This section highlights Forever partners who actively use FCC in practice: they have a public and approved main FCC app, a valid Forever sales link, and 50+ qualifying clicks and contacts in the last 30 days. Their public profiles can help new collaborators find a sponsor with a clear digital system, active execution, and a real example of how FCC is used for referrals, contact capture, and business growth.' ?>
+                        </p>
+                    </div>
+
+                    <a href="<?= url('recommended-sponsors') ?>" class="btn btn-outline-primary">
+                        <?= $fcc_is_hr ? 'Pogledaj sve preporučene sponzore' : 'View all recommended sponsors' ?>
+                    </a>
+                </div>
+
+                <div class="fcc-home-sponsors__grid">
+                    <?php foreach($data->recommended_sponsors as $sponsor): ?>
+                        <article class="fcc-home-sponsor-card">
+                            <div class="d-flex align-items-center mb-3">
+                                <img src="<?= $sponsor['display_image_url'] ?: $sponsor['default_image_url'] ?>" alt="<?= $sponsor['name'] ?>" class="fcc-home-sponsor-card__avatar rounded-circle mr-3" loading="lazy" />
+                                <div class="min-width-0">
+                                    <div class="font-weight-bold text-truncate"><?= $sponsor['name'] ?></div>
+                                    <div class="small text-muted text-truncate"><?= $sponsor['public_use_case'] ?></div>
+                                </div>
+                            </div>
+
+                            <div class="fcc-home-sponsor-card__meta mb-3">
+                                <?php if(!empty($sponsor['public_market'])): ?>
+                                    <span class="fcc-home-sponsor-card__pill"><?= $sponsor['public_market'] ?></span>
+                                <?php endif ?>
+                                <span class="fcc-home-sponsor-card__pill fcc-home-sponsor-card__pill--accent">50+ / 30d: <?= nr($sponsor['growth_signal_30d']) ?></span>
+                                <span class="fcc-home-sponsor-card__pill">7d: <?= nr($sponsor['growth_signal_7d']) ?></span>
+                            </div>
+
+                            <p class="fcc-home-sponsor-card__summary"><?= $sponsor['public_summary'] ?></p>
+
+                            <div class="d-flex flex-column flex-sm-row mt-auto">
+                                <a href="<?= $sponsor['profile_url'] ?>" class="btn btn-primary mr-sm-2 mb-2 mb-sm-0">
+                                    <?= $fcc_is_hr ? 'Sponsor profil' : 'Sponsor profile' ?>
+                                </a>
+                                <a href="<?= $sponsor['app_url'] ?>" target="_blank" rel="nofollow noopener" class="btn btn-outline-primary">
+                                    <?= $fcc_is_hr ? 'Glavna aplikacija' : 'Main app' ?>
+                                </a>
+                            </div>
+                        </article>
+                    <?php endforeach ?>
+                </div>
+            </div>
+        </section>
+    </div>
+<?php endif ?>
+
 <div class="py-3"></div>
 
 <div class="container mt-8">
@@ -1333,6 +1391,107 @@
         color: rgba(104, 232, 188, 0.96);
     }
 
+    .fcc-home-sponsors {
+        position: relative;
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        background:
+            radial-gradient(circle at top left, rgba(63, 216, 161, 0.08), transparent 24%),
+            radial-gradient(circle at bottom right, rgba(74, 167, 255, 0.1), transparent 22%),
+            linear-gradient(160deg, rgba(16, 21, 30, 0.98), rgba(8, 12, 18, 0.98));
+        box-shadow: 0 20px 48px rgba(0, 0, 0, 0.34);
+    }
+
+    .fcc-home-sponsors__inner {
+        position: relative;
+        z-index: 1;
+    }
+
+    .fcc-home-sponsors__header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .fcc-home-sponsors__eyebrow {
+        margin-bottom: 0.65rem;
+        font-size: 0.76rem;
+        font-weight: 700;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: rgba(104, 232, 188, 0.88);
+    }
+
+    .fcc-home-sponsors__header h2 {
+        margin-bottom: 0.7rem;
+        color: #f5f7ff;
+        font-size: clamp(1.55rem, 2.3vw, 2.1rem);
+    }
+
+    .fcc-home-sponsors__intro {
+        max-width: 54rem;
+        color: rgba(223, 228, 240, 0.78);
+        line-height: 1.65;
+    }
+
+    .fcc-home-sponsors__grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 1rem;
+    }
+
+    .fcc-home-sponsor-card {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        height: 100%;
+        padding: 1.15rem;
+        border-radius: 20px;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .fcc-home-sponsor-card__avatar {
+        width: 58px;
+        height: 58px;
+        object-fit: cover;
+    }
+
+    .fcc-home-sponsor-card__meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.4rem;
+    }
+
+    .fcc-home-sponsor-card__pill {
+        display: inline-flex;
+        align-items: center;
+        min-height: 1.8rem;
+        padding: 0.28rem 0.6rem;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.05);
+        color: rgba(240, 244, 251, 0.88);
+        font-size: 0.72rem;
+        font-weight: 700;
+        line-height: 1.2;
+        white-space: normal;
+        overflow-wrap: anywhere;
+    }
+
+    .fcc-home-sponsor-card__pill--accent {
+        background: rgba(255, 198, 0, 0.12);
+        color: #ffe7a1;
+    }
+
+    .fcc-home-sponsor-card__summary {
+        color: rgba(223, 228, 240, 0.78);
+        line-height: 1.6;
+        margin-bottom: 1rem;
+        overflow-wrap: anywhere;
+    }
+
     .fcc-home-flow {
         position: relative;
         overflow: hidden;
@@ -1488,6 +1647,7 @@
     }
 
     @media (max-width: 991px) {
+        .fcc-home-sponsors__grid,
         .fcc-home-flow__grid,
         .fcc-home-usecases__grid {
             grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1495,9 +1655,14 @@
     }
 
     @media (max-width: 767px) {
+        .fcc-home-sponsors__grid,
         .fcc-home-flow__grid,
         .fcc-home-usecases__grid {
             grid-template-columns: 1fr;
+        }
+
+        .fcc-home-sponsors__header {
+            flex-direction: column;
         }
 
         .fcc-home-flow__block h2 {
@@ -1777,6 +1942,30 @@
     ?>
     <?= json_encode($homepage_item_list, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?>
 </script>
+
+<?php if(!empty($data->recommended_sponsors)): ?>
+    <script type="application/ld+json">
+        <?php
+        $homepage_recommended_sponsors_list = [
+            '@context' => 'https://schema.org',
+            '@type' => 'ItemList',
+            'name' => \Altum\Language::$code === 'hr' ? 'Preporučeni FCC sponzori' : 'Recommended FCC Sponsors',
+            'url' => url('recommended-sponsors'),
+            'itemListElement' => [],
+        ];
+
+        foreach($data->recommended_sponsors as $index => $sponsor) {
+            $homepage_recommended_sponsors_list['itemListElement'][] = [
+                '@type' => 'ListItem',
+                'position' => $index + 1,
+                'name' => $sponsor['name'],
+                'url' => $sponsor['profile_url'],
+            ];
+        }
+        ?>
+        <?= json_encode($homepage_recommended_sponsors_list, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?>
+    </script>
+<?php endif ?>
 
 <script type="application/ld+json">
     {

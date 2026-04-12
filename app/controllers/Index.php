@@ -116,6 +116,8 @@ class Index extends Controller {
                 'hub_pages' => [
                     ['name' => 'Što je Forever Card Club?', 'url' => url('page/forever-card-club')],
                     ['name' => 'Kako funkcionira sustav', 'url' => url('page/how-it-works')],
+                    ['name' => 'Istaknute FCC aplikacije', 'url' => url('featured-apps')],
+                    ['name' => 'Preporučeni FCC sponzori', 'url' => url('recommended-sponsors')],
                     ['name' => 'Česta pitanja', 'url' => url('page/faq')],
                     ['name' => 'O nama', 'url' => url('page/about')],
                 ],
@@ -165,6 +167,8 @@ class Index extends Controller {
                 'hub_pages' => [
                     ['name' => 'What Is Forever Card Club?', 'url' => url('page/forever-card-club')],
                     ['name' => 'How the System Works', 'url' => url('page/how-it-works')],
+                    ['name' => 'Featured FCC Apps', 'url' => url('featured-apps')],
+                    ['name' => 'Recommended FCC Sponsors', 'url' => url('recommended-sponsors')],
                     ['name' => 'Frequently Asked Questions', 'url' => url('page/faq')],
                     ['name' => 'About Forever Card Club', 'url' => url('page/about')],
                 ],
@@ -281,6 +285,15 @@ class Index extends Controller {
 
         $tools_categories = require APP_PATH . 'includes/tools/categories.php';
         $enabled_tools = count(array_filter((array) settings()->tools->available_tools));
+        $recommended_sponsors = fcc_featured_get_catalog([
+            'language' => \Altum\Language::$code,
+            'min_signal_30d' => 50,
+            'experience_signal_target' => 50,
+            'weekly_check_target' => 15,
+            'require_experience_signal' => true,
+            'require_valid_sales_link' => true,
+            'limit' => 6,
+        ]);
 
         /* Get the available domains to use */
         $domains = (new Domain())->get_available_additional_domains();
@@ -302,6 +315,7 @@ class Index extends Controller {
             'share_url' => $this->append_referral_to_url(url(), $this->get_logged_in_referral_biolink_url()),
             /* Custom code: FC-2026-03-24: strengthen homepage SEO and AI semantics */
             'homepage_semantics' => $homepage_semantics,
+            'recommended_sponsors' => $recommended_sponsors,
             /* /Custom code: FC-2026-03-24 */
         ]));
 

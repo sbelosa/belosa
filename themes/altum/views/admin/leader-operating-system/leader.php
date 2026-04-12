@@ -1356,6 +1356,7 @@
 <?php $mentor_history = $ai_plan_admin['mentor_history'] ?? []; ?>
 <?php $mentor_ai_guidance_active = !empty($mentor_actions['ai_guidance']); ?>
 <?php $los_outreach = $data->los_outreach ?? []; ?>
+<?php $featured_profile_admin = $data->featured_profile_admin ?? []; ?>
 <?php $report_history = $los_outreach['report_history'] ?? []; ?>
 <?php $send_history = $los_outreach['send_history'] ?? []; ?>
 <?php $score_history = $detail['score_history'][$data->selected_period] ?? ['latest' => null, 'previous' => null, 'history' => [], 'total' => 0]; ?>
@@ -1482,6 +1483,9 @@ $render_detail_help = static function(string $tooltip): void {
                     <button type="button" class="btn btn-sm leader-os-detail-action leader-os-scroll-link" data-scroll-target="leader-os-stripe-billing"><?= l('admin_leader_operating_system.leader.open_stripe_billing') ?></button>
                     <button type="button" class="btn btn-sm leader-os-ai-button leader-os-scroll-link" data-scroll-target="leader-os-ai-report">Pokreni / otvori AI analizu</button>
                     <button type="button" class="btn btn-sm leader-os-detail-action leader-os-scroll-link" data-scroll-target="leader-os-app-structure">Struktura aplikacije</button>
+                    <?php if(!empty($featured_profile_admin['exists'])): ?>
+                        <button type="button" class="btn btn-sm leader-os-detail-action leader-os-scroll-link" data-scroll-target="leader-os-featured-profile">FCC sponsor profil</button>
+                    <?php endif ?>
                     <button type="button" class="btn btn-sm leader-os-detail-action leader-os-scroll-link" data-scroll-target="leader-os-outreach-panel">Pošalji poruku suradniku</button>
                 </div>
             </div>
@@ -1615,12 +1619,141 @@ $render_detail_help = static function(string $tooltip): void {
                 <button type="button" class="leader-os-section-link leader-os-scroll-link" data-scroll-target="leader-os-traffic">Promet i klikovi</button>
                 <button type="button" class="leader-os-section-link leader-os-scroll-link" data-scroll-target="leader-os-outreach-panel">Poruke i izvještaji</button>
                 <button type="button" class="leader-os-section-link leader-os-scroll-link" data-scroll-target="leader-os-app-structure">Aplikacija</button>
+                <?php if(!empty($featured_profile_admin['exists'])): ?>
+                    <button type="button" class="leader-os-section-link leader-os-scroll-link" data-scroll-target="leader-os-featured-profile">FCC sponsor profil</button>
+                <?php endif ?>
                 <button type="button" class="leader-os-section-link leader-os-scroll-link" data-scroll-target="leader-os-phase4">Coaching</button>
                 <button type="button" class="leader-os-section-link leader-os-scroll-link" data-scroll-target="leader-os-stripe-billing">Naplata</button>
                 <button type="button" class="leader-os-section-link leader-os-scroll-link" data-scroll-target="leader-os-deep-dive">Dodatna analitika</button>
             </div>
         </div>
     </div>
+
+    <?php if(!empty($featured_profile_admin['exists'])): ?>
+        <?php
+        $featured_profile_status_label = !empty($featured_profile_admin['is_recommended_sponsor'])
+            ? 'Live kao preporučeni sponsor'
+            : (!empty($featured_profile_admin['is_featured_listed'])
+                ? 'Live na Featured Apps'
+                : 'Javni profil još gradi uvjete');
+        $featured_profile_generated_label = !empty($featured_profile_admin['generated_at'])
+            ? \Altum\Date::get($featured_profile_admin['generated_at'], 2)
+            : 'Još nema spremljenog AI generiranja';
+        ?>
+        <div class="row mb-3" id="leader-os-featured-profile">
+            <div class="col-12 col-xl-5 mb-3">
+                <div class="leader-os-detail-panel h-100">
+                    <div class="d-flex justify-content-between align-items-start flex-wrap mb-3" style="gap:.75rem;">
+                        <div>
+                            <h3 class="h5 mb-1">FCC sponsor profil</h3>
+                            <div class="text-muted small">Ovdje vidiš i uređuješ javni AI profil koji FCC koristi za Featured Apps, preporučene sponsore i javne profile. AI generirani opis ima prioritet nad ručno upisanim tekstom i promjene ovdje idu odmah live.</div>
+                        </div>
+                        <span class="leader-os-detail-chip is-subtle"><?= htmlspecialchars($featured_profile_status_label, ENT_QUOTES, 'UTF-8') ?></span>
+                    </div>
+
+                    <div class="leader-os-detail-list">
+                        <div class="leader-os-detail-list-item">
+                            <span class="text-muted">Glavna FCC aplikacija</span>
+                            <strong><?= htmlspecialchars((string) (($featured_profile_admin['main_biolink_url'] ?? '') ?: '-'), ENT_QUOTES, 'UTF-8') ?></strong>
+                        </div>
+                        <div class="leader-os-detail-list-item">
+                            <span class="text-muted">15+ / 30d Featured Apps</span>
+                            <strong><?= !empty($featured_profile_admin['featured_threshold_reached']) ? 'Da' : 'Ne' ?> · signal <?= nr((int) ($featured_profile_admin['growth_signal_30d'] ?? 0)) ?></strong>
+                        </div>
+                        <div class="leader-os-detail-list-item">
+                            <span class="text-muted">50+ / 30d Preporučeni sponsor</span>
+                            <strong><?= !empty($featured_profile_admin['recommended_threshold_reached']) ? 'Da' : 'Ne' ?> · 7d provjera <?= nr((int) ($featured_profile_admin['growth_signal_7d'] ?? 0)) ?></strong>
+                        </div>
+                        <div class="leader-os-detail-list-item">
+                            <span class="text-muted">Forever prodajni link</span>
+                            <strong><?= htmlspecialchars((string) (($featured_profile_admin['sales_link_status_label'] ?? '') ?: l('global.none')), ENT_QUOTES, 'UTF-8') ?></strong>
+                        </div>
+                        <div class="leader-os-detail-list-item">
+                            <span class="text-muted">Javni prikaz / odobrenje</span>
+                            <strong><?= !empty($featured_profile_admin['opt_in_enabled']) ? 'Javno uključeno' : 'Javno isključeno' ?> · <?= !empty($featured_profile_admin['is_approved']) ? 'Odobreno' : 'Čeka odobrenje' ?></strong>
+                        </div>
+                        <div class="leader-os-detail-list-item">
+                            <span class="text-muted">Zadnji AI profil</span>
+                            <strong><?= htmlspecialchars($featured_profile_generated_label, ENT_QUOTES, 'UTF-8') ?></strong>
+                        </div>
+                    </div>
+
+                    <?php if(!empty($featured_profile_admin['feature_labels'])): ?>
+                        <div class="d-flex flex-wrap mt-3" style="gap:.45rem;">
+                            <?php foreach(($featured_profile_admin['feature_labels'] ?? []) as $feature_label): ?>
+                                <span class="leader-os-detail-chip is-subtle"><?= htmlspecialchars((string) $feature_label, ENT_QUOTES, 'UTF-8') ?></span>
+                            <?php endforeach ?>
+                        </div>
+                    <?php endif ?>
+
+                    <div class="leader-os-detail-note mt-3">Logika je sada jednostavna: 15+ signala u 30 dana stavlja glavnu aplikaciju na Featured Apps, a 50+ u 30 dana i valjan Forever prodajni link dižu suradnika u preporučene sponsore i naslovnicu. Ovaj panel ti daje jedno mjesto s kojeg možeš odmah doraditi javni AI profil.</div>
+
+                    <div class="d-flex flex-wrap mt-3" style="gap:.6rem;">
+                        <?php if(!empty($featured_profile_admin['public_app_url'])): ?>
+                            <a href="<?= htmlspecialchars((string) $featured_profile_admin['public_app_url'], ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noopener noreferrer" class="btn btn-sm leader-os-detail-action">Otvori live aplikaciju</a>
+                        <?php endif ?>
+                        <?php if(!empty($featured_profile_admin['featured_apps_url'])): ?>
+                            <a href="<?= htmlspecialchars((string) $featured_profile_admin['featured_apps_url'], ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noopener noreferrer" class="btn btn-sm leader-os-detail-action">Otvori Featured Apps</a>
+                        <?php endif ?>
+                        <?php if(!empty($featured_profile_admin['profile_url'])): ?>
+                            <a href="<?= htmlspecialchars((string) $featured_profile_admin['profile_url'], ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noopener noreferrer" class="btn btn-sm leader-os-detail-action">Otvori sponsor profil</a>
+                        <?php endif ?>
+                        <?php if(!empty($featured_profile_admin['sales_link_editor_url'])): ?>
+                            <a href="<?= htmlspecialchars((string) $featured_profile_admin['sales_link_editor_url'], ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noopener noreferrer" class="btn btn-sm leader-os-detail-action">Uredi sales link</a>
+                        <?php endif ?>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-xl-7 mb-3">
+                <div class="leader-os-detail-panel h-100">
+                    <div class="d-flex justify-content-between align-items-start flex-wrap mb-3" style="gap:.75rem;">
+                        <div>
+                            <h3 class="h5 mb-1">Uredi javni AI profil</h3>
+                            <div class="text-muted small">Ovo su tekstovi koji javno izlaze van. Kad ih spremiš, FCC odmah osvježi Featured Apps, preporučene sponsore i sponsor profil bez dodatnog odobravanja.</div>
+                        </div>
+                        <span class="leader-os-detail-chip is-subtle">AI prioritet aktivan</span>
+                    </div>
+
+                    <form action="" method="post">
+                        <input type="hidden" name="token" value="<?= \Altum\Csrf::get() ?>" />
+
+                        <div class="form-row">
+                            <div class="form-group col-12">
+                                <label class="small text-muted d-block mb-2">Kako koristi FCC</label>
+                                <input type="text" name="fcc_featured_public_use_case" class="form-control" maxlength="128" value="<?= htmlspecialchars((string) ($featured_profile_admin['public_use_case'] ?? ''), ENT_QUOTES, 'UTF-8') ?>" />
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group col-12">
+                                <label class="small text-muted d-block mb-2">Kratki javni opis</label>
+                                <textarea name="fcc_featured_public_summary" rows="4" class="form-control" maxlength="420"><?= htmlspecialchars((string) ($featured_profile_admin['public_summary'] ?? ''), ENT_QUOTES, 'UTF-8') ?></textarea>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group col-12">
+                                <label class="small text-muted d-block mb-2">Dulji intro za sponsor profil</label>
+                                <textarea name="fcc_featured_profile_intro" rows="6" class="form-control" maxlength="880"><?= htmlspecialchars((string) ($featured_profile_admin['profile_intro'] ?? ''), ENT_QUOTES, 'UTF-8') ?></textarea>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group col-12">
+                                <label class="small text-muted d-block mb-2">Meta opis za Google i AI indeksaciju</label>
+                                <textarea name="fcc_featured_meta_description" rows="3" class="form-control" maxlength="180"><?= htmlspecialchars((string) ($featured_profile_admin['meta_description'] ?? ''), ENT_QUOTES, 'UTF-8') ?></textarea>
+                            </div>
+                        </div>
+
+                        <div class="leader-os-detail-note mb-3">Ovdje uređuješ finalnu javnu verziju. Ako korisnik generira novi AI profil, ova verzija i dalje ostaje prioritet dok je ne promijeniš ili očistiš.</div>
+
+                        <button type="submit" name="save_featured_profile_admin" value="1" class="btn btn-sm leader-os-ai-button">Spremi FCC sponsor profil</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    <?php endif ?>
 
     <div class="row" id="leader-os-traffic">
         <div class="col-12 col-xl-6 mb-3">

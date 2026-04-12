@@ -78,6 +78,11 @@ class Sitemap extends Controller {
             $sitemap_urls[] = ['loc' => SITE_URL . 'directory', 'lastmod' => null];
         }
 
+        if(settings()->links->biolinks_is_enabled) {
+            $sitemap_urls[] = ['loc' => SITE_URL . 'featured-apps', 'lastmod' => null];
+            $sitemap_urls[] = ['loc' => SITE_URL . 'recommended-sponsors', 'lastmod' => null];
+        }
+
         if(settings()->tools->is_enabled && settings()->tools->access == 'everyone') {
             foreach ((require APP_PATH . 'includes/tools/tools.php') as $key => $value) {
                 if(settings()->tools->available_tools->{$key}) {
@@ -134,6 +139,28 @@ class Sitemap extends Controller {
                     'loc' => SITE_URL . ($blog_posts_category->language ? \Altum\Language::$active_languages[$blog_posts_category->language] . '/' : '') . 'blog/category/' . $blog_posts_category->url,
                     'lastmod' => null,
                 ];
+            }
+        }
+
+        if(settings()->links->biolinks_is_enabled) {
+            $recommended_sponsors = fcc_featured_get_catalog([
+                'language' => \Altum\Language::$code,
+                'min_signal_30d' => 50,
+                'experience_signal_target' => 50,
+                'weekly_check_target' => 15,
+                'require_experience_signal' => true,
+                'require_valid_sales_link' => true,
+            ]);
+
+            foreach($recommended_sponsors as $sponsor) {
+                foreach(\Altum\Language::$active_languages as $language_name => $language_code) {
+                    $prefix = settings()->main->default_language == $language_name ? '' : $language_code . '/';
+
+                    $new_sitemap_urls[] = [
+                        'loc' => SITE_URL . $prefix . 'recommended-sponsors/' . $sponsor['profile_slug'],
+                        'lastmod' => $sponsor['link_lastmod'] ?? null,
+                    ];
+                }
             }
         }
 

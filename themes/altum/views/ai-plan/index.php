@@ -1044,7 +1044,7 @@
                 : 'Analiza aplikacije je aktivna. Ovdje možeš pregledati zadnje preporuke i odmah pokrenuti novu analizu.')
             : 'Analiza aplikacije je otključana. Pokreni pregled kako bi AI provjerio redoslijed blokova i glavni put prema kontaktu.';
         $reason_text = $tier === 'top'
-            ? 'Tvoj AI status sada je u TOP zoni, a analiza aplikacije ostaje dostupna ' . $cadence_text . '.'
+            ? 'Tvoj AI status sada je u zoni preporučenih sponzora za naslovnicu, a analiza aplikacije ostaje dostupna ' . $cadence_text . '.'
             : 'Tvoj AI status sada uključuje novu analizu aplikacije ' . $cadence_text . '.';
     }
 
@@ -1623,16 +1623,20 @@
 <?php $coach_mode_label = (string) (($coach_mode_payload['title'] ?? '') ?: ($ai_growth_is_pro ? 'VIP Coach' : 'Beginner Coach')); ?>
 <?php $coach_mode_badge = (string) ($coach_mode_payload['coach_badge'] ?? ''); ?>
 <?php $ai_plan_unlock_target = 15; ?>
+<?php $ai_plan_sponsor_target = (int) ($ai_growth_access['top_target'] ?? 50); ?>
+<?php $ai_plan_weekly_check_target = (int) ($ai_growth_access['weekly_check_target'] ?? 15); ?>
+<?php $ai_growth_weekly_check_passed = !empty($ai_growth_access['is_weekly_check_passed']); ?>
 <?php $ai_plan_signal_missing = max(0, $ai_plan_unlock_target - $ai_growth_signal); ?>
-<?php $ai_plan_top_signal_missing = max(0, $ai_plan_unlock_target - $ai_growth_signal_7d); ?>
+<?php $ai_plan_sponsor_signal_missing = max(0, $ai_plan_sponsor_target - $ai_growth_signal); ?>
+<?php $ai_plan_top_signal_missing = max(0, $ai_plan_weekly_check_target - $ai_growth_signal_7d); ?>
 <?php $ai_plan_tier_label = $ai_growth_is_pro ? 'PRO' : 'Beginner'; ?>
 <?php if($ai_growth_tier === 'admin') $ai_plan_tier_label = 'Admin test'; ?>
 <?php $ai_plan_access_summary = 'Beginner Coach koristi osnovni paket inteligencije. Aktiviraj PRO ili trial da se prebaciš na VIP Coach i otključaš puni AI ciklus.'; ?>
 <?php if($ai_growth_is_pro) $ai_plan_access_summary = 'VIP Coach je aktivan jer je PRO uključen. Tjedni AI plan i AI analiza aplikacije otključavaju se kad skupiš 15+ klikova i kontakata u 30 dana.'; ?>
 <?php if($ai_growth_is_pro && $ai_growth_intro_app_review && $ai_growth_intro_weekly) $ai_plan_access_summary = 'VIP Coach je aktivan. Kao početni PRO unlock sada možeš odmah napraviti jednu analizu aplikacije i jedan prvi tjedni AI plan, a nakon toga te Coach vodi prema 15+ u 30 dana.'; ?>
 <?php if($ai_growth_is_pro && !$ai_growth_intro_app_review && $ai_growth_intro_weekly) $ai_plan_access_summary = 'VIP Coach je aktivan. Početna analiza aplikacije je već iskorištena, a prvi tjedni AI plan možeš otvoriti odmah. Nakon toga te Coach vodi prema 15+ u 30 dana.'; ?>
-<?php if(in_array($ai_growth_tier, ['qualified', 'top'], true)) $ai_plan_access_summary = 'VIP Coach je aktivan, a AI analiza aplikacije i tjedni AI plan dostupni su jednom tjedno dok držiš 15+ signal u 30 dana.'; ?>
-<?php if($ai_growth_tier === 'top') $ai_plan_access_summary = 'VIP Coach je aktivan, tjedni AI ciklus je otključan, a sada si i u TOP 15+ / 7 dana zoni za jaču vidljivost profila.'; ?>
+<?php if(in_array($ai_growth_tier, ['qualified', 'top'], true)) $ai_plan_access_summary = 'VIP Coach je aktivan, a AI analiza aplikacije i tjedni AI plan dostupni su jednom tjedno dok držiš 15+ signal u 30 dana. To te drži i na popisu Istaknutih aplikacija.'; ?>
+<?php if($ai_growth_tier === 'top') $ai_plan_access_summary = 'VIP Coach je aktivan, tjedni AI ciklus je otključan, a sada si i u 50+ / 30 dana zoni preporučenih sponzora za naslovnicu. Tvoj 15+ / 7 dana ostaje tjedna provjera ritma.'; ?>
 <?php if($ai_growth_tier === 'admin') $ai_plan_access_summary = 'Administratorski testni način ima puni pristup svim AI koracima.'; ?>
 <?php $ai_plan_guide_text = l('ai_plan.guide_profile_text'); ?>
 <?php if($ai_plan_recommended_section === 'weekly') $ai_plan_guide_text = $data->is_weekly_plan_eligible ? l('ai_plan.guide_weekly_text') : l('ai_plan.guide_weekly_locked_text'); ?>
@@ -1697,7 +1701,7 @@
     <?php $ai_plan_hero_status_label = $data->is_weekly_plan_eligible ? l('ai_plan.step_status_current') : l('ai_plan.step_status_locked'); ?>
     <?php $ai_plan_metric_unlock_value = $ai_plan_tier_label; ?>
     <?php $ai_plan_metric_next_value = $data->is_weekly_plan_eligible ? l('ai_plan.onboarding_step_3_title') : l('ai_plan.metric_next_after_signal'); ?>
-    <?php $ai_plan_metric_help_text = $data->is_weekly_plan_eligible ? $ai_plan_access_summary : ($ai_growth_is_pro ? 'Kad skupiš 15+ klikova i kontakata u 30 dana, otključavaš redovni tjedni AI ciklus. Za TOP vidljivost cilj je i 15+ u 7 dana.' : $ai_plan_access_summary); ?>
+    <?php $ai_plan_metric_help_text = $data->is_weekly_plan_eligible ? $ai_plan_access_summary : ($ai_growth_is_pro ? 'Kad skupiš 15+ klikova i kontakata u 30 dana, otključavaš redovni tjedni AI ciklus i ulaziš na popis Istaknutih aplikacija. Za preporučene sponzore na naslovnici ciljaš ' . nr($ai_plan_sponsor_target) . '+ u 30 dana, dok je 15+ u 7 dana samo tjedna provjera ritma.' : $ai_plan_access_summary); ?>
 <?php endif ?>
 <?php if($data->latest_weekly_checkin): ?>
     <?php $ai_plan_current_phase = 4; ?>

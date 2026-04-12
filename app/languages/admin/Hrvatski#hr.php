@@ -2092,7 +2092,7 @@ return [
 	'admin_index.biolink_analytics.user_top_countries_header' => 'Top zemlje za ovog suradnika',
 	/* Custom code: FC-2026-03-30: qualified collaborators coaching block labels */
 	'admin_index.biolink_qualified_watch.eyebrow' => 'Homepage qualification cockpit',
-	'admin_index.biolink_qualified_watch.header' => 'Kvalificirani suradnici za prikaz na naslovnici',
+	'admin_index.biolink_qualified_watch.header' => 'Kvalificirani suradnici za Istaknute aplikacije i naslovnicu',
 	'admin_index.biolink_qualified_watch.subheader' => 'Premium pregled suradnika koji su u zadnjih 90 dana ostvarili barem 15 jedinstvenih klikova prema Forever webshop linkovima, s fokusom na momentum, tržišta, izvore i smjer kretanja.',
 	'admin_index.biolink_qualified_watch.note' => 'Kvalifikacija je zaključana na zadnjih 90 dana i služi za coaching, selekciju i razumijevanje poslovnog smjera suradnika.',
 	'admin_index.biolink_qualified_watch.click_hint' => 'Klik na suradnika otvara detaljan 7/30/90 pregled s grafom, rastom, zemljama, gradovima, jezicima, satima aktivnosti i izvorima prometa.',

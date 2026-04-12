@@ -3202,7 +3202,7 @@ $render_priority_queue_section = static function() use ($data, $leader_os_action
                                             <input type="hidden" name="global_token" value="<?= \Altum\Csrf::get('global_token') ?>" />
                                             <input type="hidden" name="user_id" value="<?= (int) $queue_row['user_id'] ?>" />
                                             <input type="hidden" name="los_ai_unlock_action" value="top" />
-                                            <button type="submit" class="btn btn-sm leader-os-action-button is-success">Otključaj TOP</button>
+                                            <button type="submit" class="btn btn-sm leader-os-action-button is-success">Otključaj 50+</button>
                                         </form>
                                     <?php endif ?>
                                     <?php if(!empty($queue_row['ai_access_manual_tier'])): ?>
@@ -4568,7 +4568,7 @@ $operations_tab_badge_total = (int) (($data->operations['totals']['pending_appro
                                 <?= $render_kpi_card('mentor_serious_total', 'Ozbiljan i fokusiran', $ai_intelligence_serious_total, 'Drže 15+ signal i koriste AI ciklus kako treba', 'Strong') ?>
                             </div>
                             <div class="col-6 col-xl-3 mb-3">
-                                <?= $render_kpi_card('mentor_top_total', 'TOP momentum', $ai_intelligence_top_total, 'Imaju 15+ u 7 dana i vrijedi ih gurati u vidljivost', 'TOP') ?>
+                                <?= $render_kpi_card('mentor_top_total', 'Preporučeni sponzor', $ai_intelligence_top_total, 'Imaju 50+ u 30 dana i vrijedi ih gurati na naslovnicu i među preporučene sponzore', '50+') ?>
                             </div>
                         </div>
 
@@ -4603,7 +4603,7 @@ $operations_tab_badge_total = (int) (($data->operations['totals']['pending_appro
                                 <div class="text-muted small mb-2">`Blokiran setupom` znači da ne trebaš pričati o rastu dok glavni prodajni link nije ispravno složen.</div>
                                 <div class="text-muted small mb-2">`Raspršen fokus` znači da suradnik ima previše stranica ili aplikacija bez stvarnog smisla i treba cleanup.</div>
                                 <div class="text-muted small mb-2">`Ozbiljan i fokusiran` znači da vrijedi čuvati ritam, AI ciklus i fokus na glavnoj aplikaciji.</div>
-                                <div class="text-muted small mb-3">`TOP momentum` znači da ga možeš jače gurati prema vidljivosti, preporučenim sponzorima i zadržavanju ritma.</div>
+                                <div class="text-muted small mb-3">`Preporučeni sponzor` znači da drži 50+ u 30 dana i vrijedi ga jače gurati na naslovnicu, dok 15+ u 7 dana služi kao tjedna provjera ritma.</div>
                                 <div class="leader-os-inline-note mb-0">Ako želiš detalje po svim suradnicima, otvori `Suradnici`. Ako želiš radni redoslijed koga prvo kontaktiraš, otvori `Coaching`.</div>
                             </div>
                         </div>
@@ -6223,7 +6223,7 @@ $operations_tab_badge_total = (int) (($data->operations['totals']['pending_appro
                                         <input type="hidden" name="global_token" value="<?= \Altum\Csrf::get('global_token') ?>" />
                                         <input type="hidden" name="user_id" value="<?= (int) $queue_row['user_id'] ?>" />
                                         <input type="hidden" name="los_ai_unlock_action" value="top" />
-                                        <button type="submit" class="btn btn-sm leader-os-action-button is-success">Otključaj TOP</button>
+                                        <button type="submit" class="btn btn-sm leader-os-action-button is-success">Otključaj 50+</button>
                                     </form>
                                 <?php endif ?>
                                 <?php if(!empty($queue_row['ai_access_manual_tier'])): ?>
@@ -6316,7 +6316,9 @@ $operations_tab_badge_total = (int) (($data->operations['totals']['pending_appro
                             'starter_cycle', 'building_signal', 'pro_upgrade_ready' => 'is-info',
                             default => 'is-dark',
                         };
-                        $ai_signal_progress = min(100, max(0, ((int) ($row['ai_access_growth_signal_30d'] ?? 0) / 15) * 100));
+                        $ai_signal_total = (int) ($row['ai_access_growth_signal_30d'] ?? 0);
+                        $ai_signal_reference = $ai_signal_total >= 15 ? 50 : 15;
+                        $ai_signal_progress = min(100, max(0, ($ai_signal_total / max(1, $ai_signal_reference)) * 100));
                         ?>
                         <tr>
                             <td>
@@ -6345,9 +6347,9 @@ $operations_tab_badge_total = (int) (($data->operations['totals']['pending_appro
                                                 <div class="leader-os-signal-bar"><span style="width: <?= nr($ai_signal_progress) ?>%"></span></div>
                                                 <strong class="text-white"><?= nr((int) ($row['ai_access_growth_signal_30d'] ?? 0)) ?></strong>
                                             </div>
-                                            <div class="leader-os-signal-thresholds">15 / 30d = AI ciklus · 15 / 7d = TOP</div>
+                                            <div class="leader-os-signal-thresholds">15 / 30d = Featured Apps + AI ciklus · 50 / 30d = naslovnica · 15 / 7d = provjera</div>
                                             <div class="text-muted small">30d: Shop <?= nr((int) ($row['ai_access_shop_clicks_30d'] ?? 0)) ?> · Funnel <?= nr((int) ($row['ai_access_funnel_registrations_30d'] ?? 0)) ?> · AI chat <?= nr((int) ($row['ai_access_ai_chat_leads_30d'] ?? 0)) ?> · WhatsApp <?= nr((int) ($row['ai_access_whatsapp_contacts_30d'] ?? 0)) ?></div>
-                                            <div class="text-muted small">7d signal: <?= nr((int) ($row['ai_access_growth_signal_7d'] ?? 0)) ?> · Coach: <?= htmlspecialchars((string) ($row['ai_access_coach_label'] ?? '-'), ENT_QUOTES, 'UTF-8') ?> · <?= htmlspecialchars((string) ($row['ai_access_source_label'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                                            <div class="text-muted small">7d provjera: <?= nr((int) ($row['ai_access_growth_signal_7d'] ?? 0)) ?> · Coach: <?= htmlspecialchars((string) ($row['ai_access_coach_label'] ?? '-'), ENT_QUOTES, 'UTF-8') ?> · <?= htmlspecialchars((string) ($row['ai_access_source_label'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
                                             <?php if(!empty($row['ai_access_is_pro']) && !empty($row['ai_access_intro_cycle_available'])): ?>
                                                 <div class="text-muted small">Početni PRO unlock: analiza <?= !empty($row['ai_access_starter_app_review_available']) ? 'spremna' : 'iskorištena' ?> · plan <?= !empty($row['ai_access_starter_weekly_plan_available']) ? 'spreman' : 'iskorišten' ?></div>
                                             <?php endif ?>
@@ -6427,7 +6429,7 @@ $operations_tab_badge_total = (int) (($data->operations['totals']['pending_appro
                                                     <input type="hidden" name="global_token" value="<?= \Altum\Csrf::get('global_token') ?>" />
                                                     <input type="hidden" name="user_id" value="<?= (int) $row['user_id'] ?>" />
                                                     <input type="hidden" name="los_ai_unlock_action" value="top" />
-                                                    <button type="submit" class="btn btn-sm leader-os-action-button is-success">TOP</button>
+                                                    <button type="submit" class="btn btn-sm leader-os-action-button is-success">50+</button>
                                                 </form>
                                             <?php endif ?>
 

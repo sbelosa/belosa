@@ -2,11 +2,12 @@
 
 <?php $fcc_is_hr = \Altum\Language::$code === 'hr'; ?>
 <?php $featured_app_visible_tags_limit = 2; ?>
-<?php $featured_app_signal_30d_label = $fcc_is_hr ? '30d signal' : '30d signal'; ?>
+<?php $featured_app_weekly_check_label = $fcc_is_hr ? '7d provjera' : '7d check'; ?>
 <?php $featured_app_breakdown_label = $fcc_is_hr ? 'Klikovi' : 'Clicks'; ?>
 <?php $featured_app_contacts_label = $fcc_is_hr ? 'Kontakti' : 'Contacts'; ?>
 <?php $featured_app_funnel_label = $fcc_is_hr ? 'Funnel' : 'Funnel'; ?>
 <?php $featured_app_ai_leads_label = $fcc_is_hr ? 'AI leadovi' : 'AI leads'; ?>
+<?php $featured_app_weekly_breakdown_label = $fcc_is_hr ? '7d ritam' : '7d rhythm'; ?>
 
 <div class="container my-5 featured-apps-page">
     <section class="featured-apps-hero mb-4">
@@ -18,7 +19,7 @@
 
         <div class="featured-apps-note">
             <strong class="d-block mb-1"><?= l('featured_apps.notice_title') ?></strong>
-            <span><?= sprintf(l('featured_apps.notice_text'), nr($data->signal_target), nr($data->top_period_days), nr($data->experience_signal_target)) ?></span>
+            <span><?= sprintf(l('featured_apps.notice_text'), nr($data->signal_target), nr($data->qualified_period_days), nr($data->experience_signal_target), nr($data->weekly_check_target), nr($data->weekly_check_period_days)) ?></span>
         </div>
     </section>
 
@@ -55,20 +56,27 @@
                                     <span class="featured-app-pill"><?= l('featured_apps.market') ?>: <?= $app['public_market'] ?></span>
                                 <?php endif ?>
 
-                                <span class="featured-app-pill featured-app-pill--accent"><?= l('featured_apps.performance') ?> 7d: <?= nr($app['growth_signal_7d']) ?></span>
-                                <span class="featured-app-pill"><?= $featured_app_signal_30d_label ?>: <?= nr($app['growth_signal_30d']) ?></span>
+                                <span class="featured-app-pill featured-app-pill--accent"><?= l('featured_apps.performance') ?>: <?= nr($app['growth_signal_30d']) ?></span>
+                                <span class="featured-app-pill"><?= $featured_app_weekly_check_label ?>: <?= nr($app['growth_signal_7d']) ?></span>
+                                <?php if(!empty($app['has_weekly_check_7d'])): ?>
+                                    <span class="featured-app-pill"><?= $fcc_is_hr ? 'Ritam potvrđen' : 'Rhythm confirmed' ?></span>
+                                <?php endif ?>
                                 <?php if(!empty($app['has_experience_signal_30d'])): ?>
                                     <span class="featured-app-pill featured-app-pill--experience"><?= l('featured_apps.experience_badge') ?></span>
                                 <?php endif ?>
                             </div>
 
-                            <div class="small text-muted mb-3"><?= $featured_app_breakdown_label ?>: <?= nr($app['shop_contacts_7d']) ?> · <?= $featured_app_contacts_label ?>: <?= nr($app['whatsapp_contacts_7d']) ?> · <?= $featured_app_funnel_label ?>: <?= nr($app['funnel_registrations_7d']) ?> · <?= $featured_app_ai_leads_label ?>: <?= nr($app['ai_chat_leads_7d']) ?></div>
+                            <div class="small text-muted mb-3 featured-app-card__breakdown"><?= $featured_app_weekly_breakdown_label ?> · <?= $featured_app_breakdown_label ?>: <?= nr($app['shop_contacts_7d']) ?> · <?= $featured_app_contacts_label ?>: <?= nr($app['whatsapp_contacts_7d']) ?> · <?= $featured_app_funnel_label ?>: <?= nr($app['funnel_registrations_7d']) ?> · <?= $featured_app_ai_leads_label ?>: <?= nr($app['ai_chat_leads_7d']) ?></div>
 
                             <?php if(!empty($app['public_summary'])): ?>
                                 <div class="featured-app-section mb-3">
                                     <div class="featured-app-section__label"><?= l('featured_apps.case_study_label') ?></div>
                                     <p class="mb-0 text-muted featured-app-card__summary"><?= $app['public_summary'] ?></p>
                                 </div>
+                            <?php endif ?>
+
+                            <?php if(!empty(trim((string) ($app['public_use_case'] ?? '')))): ?>
+                                <div class="small text-muted mb-3"><strong><?= l('featured_apps.use_case') ?>:</strong> <?= $app['public_use_case'] ?></div>
                             <?php endif ?>
 
                             <?php if(!empty($app['feature_labels'])): ?>
@@ -99,11 +107,19 @@
                                 </div>
                             <?php endif ?>
 
-                            <div class="small text-muted mb-3"><?= l('featured_apps.official_note') ?></div>
+                            <div class="small text-muted mb-3 featured-app-card__official-note"><?= l('featured_apps.official_note') ?></div>
 
-                            <a href="<?= $app['app_url'] ?>" target="_blank" rel="nofollow noopener" class="btn btn-primary mt-auto">
-                                <?= l('featured_apps.view_app') ?>
-                            </a>
+                            <div class="d-flex flex-column flex-sm-row mt-auto">
+                                <?php if(!empty($app['has_experience_signal_30d']) && !empty($app['profile_url'])): ?>
+                                    <a href="<?= $app['profile_url'] ?>" class="btn btn-outline-primary mr-sm-2 mb-2 mb-sm-0">
+                                        <?= $fcc_is_hr ? 'Sponsor profil' : 'Sponsor profile' ?>
+                                    </a>
+                                <?php endif ?>
+
+                                <a href="<?= $app['app_url'] ?>" target="_blank" rel="nofollow noopener" class="btn btn-primary">
+                                    <?= l('featured_apps.view_app') ?>
+                                </a>
+                            </div>
                         </div>
                     </article>
                 </div>
@@ -150,6 +166,12 @@
     .featured-app-card {
         background: linear-gradient(160deg, rgba(18, 24, 34, 0.96), rgba(10, 14, 20, 0.98));
         color: #f5f7ff;
+        border-radius: 20px;
+        overflow: hidden;
+    }
+
+    .featured-app-card .card-body {
+        min-width: 0;
     }
 
     .featured-app-card__avatar {
@@ -163,11 +185,20 @@
         -webkit-box-orient: vertical;
         -webkit-line-clamp: 4;
         overflow: hidden;
+        overflow-wrap: anywhere;
+    }
+
+    .featured-app-card__breakdown,
+    .featured-app-card__official-note {
+        line-height: 1.45;
+        overflow-wrap: anywhere;
     }
 
     .featured-app-card__meta,
     .featured-app-tags {
         display: flex;
+        flex-wrap: wrap;
+        align-items: flex-start;
         gap: 0.35rem;
     }
 
@@ -184,7 +215,11 @@
         font-size: 0.7rem;
         font-weight: 700;
         line-height: 1.2;
-        white-space: nowrap;
+        max-width: 100%;
+        white-space: normal;
+        text-align: left;
+        justify-content: flex-start;
+        overflow-wrap: anywhere;
     }
 
     .featured-app-pill--accent {
@@ -211,6 +246,7 @@
 
     .featured-app-more {
         position: relative;
+        max-width: 100%;
     }
 
     .featured-app-more summary {
@@ -222,16 +258,20 @@
     }
 
     .featured-app-more__panel {
-        position: absolute;
-        top: calc(100% + 0.45rem);
-        right: 0;
+        position: static;
         z-index: 20;
-        min-width: 180px;
+        min-width: 0;
+        max-width: 100%;
+        margin-top: 0.45rem;
         padding: 0.7rem 0.75rem;
         border-radius: 14px;
         background: rgba(10, 14, 20, 0.98);
         border: 1px solid rgba(127, 227, 217, 0.14);
         box-shadow: 0 16px 36px rgba(0, 0, 0, 0.28);
+    }
+
+    .featured-app-more[open] {
+        flex-basis: 100%;
     }
 
     .featured-app-more__item {

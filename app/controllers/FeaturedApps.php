@@ -8,6 +8,9 @@
 
 namespace Altum\Controllers;
 
+use Altum\Meta;
+use Altum\Title;
+
 defined('ALTUMCODE') || die();
 
 class FeaturedApps extends Controller {
@@ -197,130 +200,30 @@ class FeaturedApps extends Controller {
 
     /* Custom code: FC-2026-03-14: public featured FCC apps page */
     public function index() {
-        $this->ensure_featured_app_columns();
-
         $signal_target = 15;
-        $top_period_days = 7;
         $qualified_period_days = 30;
+        $weekly_check_target = 15;
+        $weekly_check_period_days = 7;
         $experience_signal_target = 50;
+        $featured_apps = fcc_featured_get_catalog([
+            'language' => \Altum\Language::$code,
+            'min_signal_30d' => $signal_target,
+            'experience_signal_target' => $experience_signal_target,
+            'weekly_check_target' => $weekly_check_target,
+        ]);
 
-        $featured_apps = [];
-        $seen_featured_user_ids = [];
-        $seen_featured_link_ids = [];
-        $users_biolinks_latest_sql = \Altum\Link::get_users_biolinks_latest_subquery('users_biolinks');
-
-        $candidate_apps_result = database()->query("
-            SELECT
-                `main_link`.`link_id`,
-                `main_link`.`user_id`,
-                `main_link`.`url`,
-                `main_link`.`domain_id`,
-                `main_link`.`fcc_featured_public_market`,
-                `main_link`.`fcc_featured_public_summary`,
-                `domains`.`scheme`,
-                `domains`.`host`,
-                `domains`.`link_id` AS `domain_link_id`,
-                `users`.`plan_id`,
-                `users`.`plan_settings`,
-                `users`.`plan_expiration_date`,
-                `users`.`name`,
-                `users`.`email`,
-                `users`.`avatar`,
-                `users`.`preferences`,
-                `users`.`billing`
-            FROM {$users_biolinks_latest_sql}
-            INNER JOIN `links` AS `main_link` ON `main_link`.`link_id` = `users_biolinks`.`biolink_id`
-            INNER JOIN `users` ON `users`.`user_id` = `users_biolinks`.`user_id`
-            LEFT JOIN `domains` ON `main_link`.`domain_id` = `domains`.`domain_id`
-            WHERE `main_link`.`type` = 'biolink' AND `main_link`.`is_enabled` = 1 AND `main_link`.`fcc_featured_opt_in` = 1 AND `main_link`.`fcc_featured_is_approved` = 1
-            ORDER BY `users`.`name` ASC
-        ");
-
-        while($row = $candidate_apps_result->fetch_object()) {
-            $link_id = (int) ($row->link_id ?? 0);
-            $user_id = (int) ($row->user_id ?? 0);
-
-            if(
-                !$link_id
-                || !$user_id
-                || empty($row->url)
-                || isset($seen_featured_link_ids[$link_id])
-                || isset($seen_featured_user_ids[$user_id])
-            ) {
-                continue;
-            }
-
-            if(!fcc_ai_user_has_active_growth_pro($row)) {
-                continue;
-            }
-
-            $signal_snapshot = fcc_ai_get_user_growth_signal_snapshot($user_id, $link_id);
-            $growth_signal_7d = (int) ($signal_snapshot['growth_signal_7d'] ?? 0);
-            $growth_signal_30d = (int) ($signal_snapshot['growth_signal_30d'] ?? 0);
-
-            if($growth_signal_7d < $signal_target) {
-                continue;
-            }
-
-            $seen_featured_link_ids[$link_id] = true;
-            $seen_featured_user_ids[$user_id] = true;
-            $has_custom_domain = !empty($row->domain_id) && !empty($row->host) && !empty($row->scheme);
-            $app_url = $has_custom_domain
-                ? $row->scheme . $row->host . ((int) $row->domain_link_id === $link_id ? '' : '/' . $row->url)
-                : SITE_URL . $row->url;
-
-            $feature_labels = $this->get_case_study_feature_labels($link_id);
-
-            $featured_apps[] = [
-                'user_id' => $user_id,
-                'name' => (string) ($row->name ?? l('global.unknown')),
-                'email' => (string) ($row->email ?? ''),
-                'avatar' => (string) ($row->avatar ?? ''),
-                'display_image_url' => $this->resolve_display_image_for_link($link_id),
-                'default_image_url' => SITE_URL . 'uploads/logo/forever.png',
-                'generated_avatar_url' => get_user_avatar(null, (string) ($row->email ?? ($row->name ?? ''))),
-                'app_url' => $app_url,
-                'growth_signal_7d' => $growth_signal_7d,
-                'growth_signal_30d' => $growth_signal_30d,
-                'has_experience_signal_30d' => $growth_signal_30d >= $experience_signal_target,
-                'shop_contacts_7d' => (int) ($signal_snapshot['shop_contacts_7d'] ?? 0),
-                'whatsapp_contacts_7d' => (int) ($signal_snapshot['whatsapp_contacts_7d'] ?? 0),
-                'funnel_registrations_7d' => (int) ($signal_snapshot['funnel_registrations_7d'] ?? 0),
-                'ai_chat_leads_7d' => (int) ($signal_snapshot['ai_chat_leads_7d'] ?? 0),
-                'public_market' => $this->get_default_public_market($row),
-                'public_summary' => $this->get_public_summary((string) ($row->fcc_featured_public_summary ?? ''), $feature_labels),
-                'feature_labels' => $feature_labels,
-            ];
-        }
-
-        usort($featured_apps, static function(array $a, array $b) {
-            $signal_7d_compare = ((int) ($b['growth_signal_7d'] ?? 0)) <=> ((int) ($a['growth_signal_7d'] ?? 0));
-
-            if($signal_7d_compare !== 0) {
-                return $signal_7d_compare;
-            }
-
-            $experience_compare = ((int) (!empty($b['has_experience_signal_30d']))) <=> ((int) (!empty($a['has_experience_signal_30d'])));
-
-            if($experience_compare !== 0) {
-                return $experience_compare;
-            }
-
-            $signal_30d_compare = ((int) ($b['growth_signal_30d'] ?? 0)) <=> ((int) ($a['growth_signal_30d'] ?? 0));
-
-            if($signal_30d_compare !== 0) {
-                return $signal_30d_compare;
-            }
-
-            return strcmp((string) ($a['name'] ?? ''), (string) ($b['name'] ?? ''));
-        });
+        Title::set(l('featured_apps.title'));
+        Meta::set_description(l('featured_apps.subheader'));
+        Meta::set_canonical_url(url('featured-apps'));
+        Meta::set_robots('index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1');
 
         $view = new \Altum\View('featured-apps/index', (array) $this);
         $this->add_view_content('content', $view->run([
             'featured_apps' => $featured_apps,
             'signal_target' => $signal_target,
-            'top_period_days' => $top_period_days,
             'qualified_period_days' => $qualified_period_days,
+            'weekly_check_target' => $weekly_check_target,
+            'weekly_check_period_days' => $weekly_check_period_days,
             'experience_signal_target' => $experience_signal_target,
         ]));
     }

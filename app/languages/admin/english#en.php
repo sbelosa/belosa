@@ -679,7 +679,7 @@ return [
     'admin_index.biolink_analytics.user_top_countries_header' => 'Top countries for this collaborator',
     /* Custom code: FC-2026-03-30: qualified collaborators coaching block labels */
     'admin_index.biolink_qualified_watch.eyebrow' => 'Homepage qualification cockpit',
-    'admin_index.biolink_qualified_watch.header' => 'Qualified collaborators for homepage placement',
+    'admin_index.biolink_qualified_watch.header' => 'Qualified collaborators for Featured Apps and homepage sponsors',
     'admin_index.biolink_qualified_watch.subheader' => 'Premium overview of collaborators who generated at least 15 unique Forever webshop clicks in the last 90 days, focused on momentum, markets, sources, and business direction.',
     'admin_index.biolink_qualified_watch.note' => 'Qualification is locked to the last 90 days and is meant for coaching, selection, and understanding collaborator direction.',
     'admin_index.biolink_qualified_watch.click_hint' => 'Click a collaborator to open a full 7/30/90 view with chart, growth, countries, cities, languages, activity hours, and traffic sources.',

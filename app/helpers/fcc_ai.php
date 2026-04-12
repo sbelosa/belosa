@@ -1255,7 +1255,8 @@ function fcc_ai_get_user_growth_signal_snapshot(int $user_id, int $link_id = 0):
         'ai_chat_leads_30d' => 0,
         'ai_chat_leads_7d' => 0,
         'qualified_target' => 15,
-        'top_target' => 15,
+        'top_target' => 50,
+        'weekly_check_target' => 15,
     ];
 
     if($user_id <= 0) {
@@ -1869,7 +1870,7 @@ function fcc_ai_get_mentor_intelligence_stage_label(string $stage_key, string $l
             'starter_cycle' => 'PRO intro momentum',
             'building_signal' => 'Building the 15+ signal',
             'serious_focus' => 'Serious and focused',
-            'top_momentum' => 'TOP momentum',
+            'top_momentum' => 'Recommended sponsor',
             'scattered_focus' => 'Scattered focus',
             'pro_upgrade_ready' => 'Ready for PRO',
             'foundation' => 'Building the foundation',
@@ -1883,7 +1884,7 @@ function fcc_ai_get_mentor_intelligence_stage_label(string $stage_key, string $l
         'starter_cycle' => 'PRO intro momentum',
         'building_signal' => 'Gradi 15+ signal',
         'serious_focus' => 'Ozbiljan i fokusiran',
-        'top_momentum' => 'TOP momentum',
+        'top_momentum' => 'Preporučeni sponzor',
         'scattered_focus' => 'Rasprsen fokus',
         'pro_upgrade_ready' => 'Spreman za PRO',
         'foundation' => 'Gradi bazu',
@@ -1903,7 +1904,7 @@ function fcc_ai_get_mentor_intelligence_priority_label(string $priority_key, str
             'starter_unlock' => 'Initial PRO unlock',
             'signal_build' => '15+ signal build',
             'ai_cycle' => 'Weekly AI cycle',
-            'top_signal' => 'TOP 15+ / 7d',
+            'top_signal' => '50+ / 30d sponsor level',
             'pro_upgrade' => 'PRO activation',
             default => 'Next step',
         };
@@ -1915,7 +1916,7 @@ function fcc_ai_get_mentor_intelligence_priority_label(string $priority_key, str
         'starter_unlock' => 'Pocetni PRO unlock',
         'signal_build' => 'Gradnja 15+ signala',
         'ai_cycle' => 'Tjedni AI ciklus',
-        'top_signal' => 'TOP 15+ / 7d',
+        'top_signal' => '50+ / 30d status sponzora',
         'pro_upgrade' => 'Aktivacija PRO paketa',
         default => 'Sljedeci korak',
     };
@@ -1992,28 +1993,28 @@ function fcc_ai_get_user_mentor_intelligence_summary(object $user, array $contex
         $admin_action = $language === 'en'
             ? 'Review the portfolio with the collaborator, keep only the focused or business-relevant pages active, and archive the dead ends.'
             : 'Prodji s korisnikom portfelj, zadrzi samo fokusne ili poslovno bitne stranice aktivnima, a slijepa crijeva arhiviraj.';
-    } elseif($access_tier === 'top' || $growth_signal_7d >= 15) {
+    } elseif($access_tier === 'top' || $growth_signal_30d >= 50) {
         $stage_key = 'top_momentum';
         $priority_key = 'top_signal';
         $primary_url = url('ai-plan');
         $primary_url_label = $language === 'en' ? 'Open AI cycle' : 'Otvori AI ciklus';
         $next_action = $language === 'en'
-            ? 'Protect the 15+ / 7d rhythm and use the visibility on recommended sponsors and featured placements.'
-            : 'Zadrzi 15+ / 7d ritam i iskoristi vidljivost kroz preporucene sponzore i istaknute pozicije.';
+            ? 'Protect the 50+ / 30d sponsor status, keep the 7-day rhythm healthy, and use the visibility on the homepage plus recommended sponsors.'
+            : 'Zadrzi 50+ / 30d status preporucenog sponzora, cuvaj zdravi 7-dnevni ritam i iskoristi vidljivost na naslovnici i među preporucenim sponzorima.';
         $admin_action = $language === 'en'
-            ? 'Keep this collaborator on weekly review, preserve the rhythm, and use them as a visible top example.'
-            : 'Drzi ovog suradnika na tjednom pregledu, cuvaj ritam i iskoristi ga kao vidljiv TOP primjer.';
+            ? 'Keep this collaborator on weekly review, preserve the 50+ / 30d sponsor level, and use them as a visible homepage example.'
+            : 'Drzi ovog suradnika na tjednom pregledu, cuvaj 50+ / 30d razinu preporucenog sponzora i iskoristi ga kao vidljiv primjer za naslovnicu.';
     } elseif($access_tier === 'qualified' || $growth_signal_30d >= 15) {
         $stage_key = 'serious_focus';
         $priority_key = 'ai_cycle';
         $primary_url = url('ai-plan');
         $primary_url_label = $language === 'en' ? 'Open weekly AI' : 'Otvori tjedni AI';
         $next_action = $language === 'en'
-            ? 'Maintain the 15+ / 30d signal, use the weekly AI plan and keep the main app as the primary growth surface.'
-            : 'Odrzavaj 15+ / 30d signal, koristi tjedni AI plan i drzi glavnu aplikaciju kao glavno growth mjesto.';
+            ? 'Maintain the 15+ / 30d signal to stay on Featured Apps, use the weekly AI plan, and build toward 50+ / 30d for homepage recommended sponsor visibility.'
+            : 'Odrzavaj 15+ / 30d signal kako bi ostao na popisu Istaknutih aplikacija, koristi tjedni AI plan i gradi prema 50+ / 30d za vidljivost preporucenog sponzora na naslovnici.';
         $admin_action = $language === 'en'
-            ? 'Coach around execution discipline, weekly AI cadence and signal protection.'
-            : 'Mentorski drzi disciplinu izvedbe, tjedni AI ritam i zastitu signala.';
+            ? 'Coach around execution discipline, weekly AI cadence, staying above 15+ / 30d, and climbing toward 50+ / 30d.'
+            : 'Mentorski drzi disciplinu izvedbe, tjedni AI ritam, ostanak iznad 15+ / 30d i penjanje prema 50+ / 30d.';
     } elseif($is_pro && $intro_cycle_available) {
         $stage_key = 'starter_cycle';
         $priority_key = 'starter_unlock';
@@ -2563,7 +2564,8 @@ function fcc_ai_get_user_ai_plan_summary(object $user, string $language = 'hr'):
     $growth_signal_30d = (int) ($signal_snapshot['growth_signal_30d'] ?? 0);
     $growth_signal_7d = (int) ($signal_snapshot['growth_signal_7d'] ?? 0);
     $analysis_unlocked = $is_pro && ($growth_signal_30d >= 15 || in_array($manual_tier, ['qualified', 'top'], true));
-    $top_performer = $is_pro && ($growth_signal_7d >= 15 || $manual_tier === 'top');
+    $top_performer = $is_pro && ($growth_signal_30d >= 50 || $manual_tier === 'top');
+    $weekly_check_passed = $growth_signal_7d >= 15;
     $starter_app_review_used = min(1, max(0, (int) ($access->starter_app_review_used ?? (!empty($app_reviews) ? 1 : 0))));
     $starter_weekly_plan_used = min(1, max(0, (int) ($access->starter_weekly_plan_used ?? (!empty($weekly_plans) ? 1 : 0))));
     $starter_app_review_available = $is_pro && !$analysis_unlocked && !$starter_app_review_used;
@@ -2623,6 +2625,7 @@ function fcc_ai_get_user_ai_plan_summary(object $user, string $language = 'hr'):
             'label' => $access_label,
             'analysis_unlocked' => $analysis_unlocked,
             'top_performer' => $top_performer,
+            'weekly_check_passed' => $weekly_check_passed,
             'starter_cycle_available' => $starter_cycle_available,
             'starter_app_review_available' => $starter_app_review_available,
             'starter_weekly_plan_available' => $starter_weekly_plan_available,
@@ -2661,9 +2664,12 @@ function fcc_ai_get_user_ai_plan_summary(object $user, string $language = 'hr'):
             'ai_chat_leads_30d' => (int) ($signal_snapshot['ai_chat_leads_30d'] ?? 0),
             'ai_chat_leads_7d' => (int) ($signal_snapshot['ai_chat_leads_7d'] ?? 0),
             'qualified_target' => (int) ($signal_snapshot['qualified_target'] ?? 15),
-            'top_target' => (int) ($signal_snapshot['top_target'] ?? 15),
+            'top_target' => (int) ($signal_snapshot['top_target'] ?? 50),
+            'weekly_check_target' => (int) ($signal_snapshot['weekly_check_target'] ?? 15),
             'missing_to_qualified' => max(0, 15 - $growth_signal_30d),
-            'missing_to_top' => max(0, 15 - $growth_signal_7d),
+            'missing_to_top' => max(0, 50 - $growth_signal_30d),
+            'missing_to_weekly_check' => max(0, 15 - $growth_signal_7d),
+            'weekly_check_passed' => $weekly_check_passed,
         ],
         'profile' => [
             'submitted_at' => $profile->submitted_at ?? null,
@@ -2928,7 +2934,8 @@ function fcc_ai_get_internal_coach_page_context(array $payload, string $language
             'data' => $language === 'en' ? 'Contacts' : 'Kontakti',
             'fcc-ai' => $language === 'en' ? 'AI settings' : 'AI postavke',
             'account-plan' => $language === 'en' ? 'Account plan' : 'Plan paketa',
-            'featured-apps' => $language === 'en' ? 'Recommended sponsors' : 'Preporučeni sponzori',
+            'featured-apps' => $language === 'en' ? 'Featured Apps' : 'Istaknute aplikacije',
+            'recommended-sponsors' => $language === 'en' ? 'Recommended sponsors' : 'Preporučeni sponzori',
             'fcc-education' => $language === 'en' ? 'FCC education' : 'FCC edukacija',
             'blog' => $language === 'en' ? 'FCC blog' : 'FCC blog',
         ];
@@ -3019,8 +3026,14 @@ function fcc_ai_get_internal_coach_page_priority_instruction(array $page, string
 
     if($route === 'featured-apps') {
         return $language === 'en'
-            ? 'Page priority: connect visibility, public positioning and the 15+ in 7 days TOP signal to the collaborator\'s concrete next moves.'
-            : 'Prioritet stranice: poveži vidljivost, javno pozicioniranje i TOP signal 15+ u 7 dana s konkretnim sljedećim potezima suradnika.';
+            ? 'Page priority: explain that 15+ in 30 days is the first public proof layer for Featured Apps, while 50+ in 30 days is the main public goal because it unlocks homepage recommended sponsor positioning, stronger public brand visibility, and a cleaner Google/AI understanding of the collaborator through FCC. Treat 15+ in 7 days only as a rhythm confirmation.'
+            : 'Prioritet stranice: objasni da je 15+ u 30 dana prvi javni sloj dokaza za Istaknute aplikacije, dok je 50+ u 30 dana glavni javni cilj jer otključava poziciju preporučenog sponzora na naslovnici, jaču javnu vidljivost branda i jasniji Google/AI signal kroz FCC. 15+ u 7 dana tretiraj samo kao provjeru ritma.';
+    }
+
+    if($route === 'recommended-sponsors') {
+        return $language === 'en'
+            ? 'Page priority: explain that homepage recommended sponsors are the strongest FCC public layer, connect that to the 50+ / 30d signal, and show the collaborator why that matters for sponsor positioning, stronger personal brand visibility, and better Google/AI understanding through FCC. Then guide them toward protecting setup quality, public clarity, and weekly rhythm.'
+            : 'Prioritet stranice: objasni da su preporučeni sponzori na naslovnici najjači FCC javni sloj, poveži to s 50+ / 30d signalom i pokaži suradniku zašto je to važno za sponsor pozicioniranje, jaču vidljivost osobnog branda i bolju Google/AI razumljivost kroz FCC. Zatim ga vodi prema zaštiti kvalitete setupa, javne jasnoće i tjednog ritma.';
     }
 
     if($route === 'blog' && (str_contains($slug, 'blog/category/forever-proizvodi') || str_contains($slug, 'blog/category/forever-products'))) {
@@ -3085,9 +3098,14 @@ function fcc_ai_get_internal_coach_suggestions(array $context, string $message, 
             'description' => $language === 'en' ? 'Compare Beginner and PRO, including VIP Coach.' : 'Usporedi Beginner i PRO, uključujući VIP Coach.',
         ],
         'featured_apps' => [
-            'title' => $language === 'en' ? 'Recommended sponsors' : 'Preporučeni sponzori',
+            'title' => $language === 'en' ? 'Featured Apps' : 'Istaknute aplikacije',
             'url' => url('featured-apps'),
-            'description' => $language === 'en' ? 'See the TOP 15+ in 7 days showcase.' : 'Pogledaj TOP 15+ u 7 dana popis.',
+            'description' => $language === 'en' ? 'See the 15+ / 30d Featured Apps list as the first public proof layer and the path toward 50+ / 30d sponsor visibility.' : 'Pogledaj 15+ / 30d popis Istaknutih aplikacija kao prvi javni sloj dokaza i put prema 50+ / 30d sponsor vidljivosti.',
+        ],
+        'recommended_sponsors' => [
+            'title' => $language === 'en' ? 'Recommended sponsors' : 'Preporučeni sponzori',
+            'url' => url('recommended-sponsors'),
+            'description' => $language === 'en' ? 'See the 50+ / 30d homepage sponsor layer, public sponsor profiles, and the stronger FCC signal for Google/AI understanding of your brand.' : 'Pogledaj 50+ / 30d sloj sponsora za naslovnicu, javne sponsor profile i jači FCC signal za Google/AI razumijevanje tvog branda.',
         ],
         'education' => [
             'title' => $language === 'en' ? 'FCC education' : 'FCC edukacija',
@@ -3198,8 +3216,9 @@ function fcc_ai_get_internal_coach_suggestions(array $context, string $message, 
         $add_page('apps', 84);
     }
 
-    if(fcc_ai_contains_keywords($normalized_message, ['top', 'featured', 'preporu', 'sponsor', 'naslovn'])) {
+    if(fcc_ai_contains_keywords($normalized_message, ['top', 'featured', 'preporu', 'sponsor', 'sponzor', 'naslovn', 'brand', 'brend', 'google', 'indeks', 'index', 'chatgpt', 'ai search', 'vidljivost'])) {
         $add_page('featured_apps', 89);
+        $add_page('recommended_sponsors', 93);
     }
 
     if(fcc_ai_contains_keywords($normalized_message, ['proizvod', 'product', 'share', 'podijeli', 'kopir', 'copy link', 'referral', 'referr', 'foreverliving', 'forever proizvodi', 'forever products', 'link za preporuku', 'blok proizvoda'])) {
@@ -3536,7 +3555,7 @@ function fcc_ai_get_internal_coach_welcome_message(string $language = 'hr', stri
         }
 
         if($is_vip && $starter_app_review_available && $starter_weekly_plan_available) {
-            return 'Hi ' . $name_prefix . 'I am your VIP Coach. PRO is active, so I am using the strongest intelligence package. Right now you can immediately run one initial app review and one first weekly plan, and I will use that to guide you toward the next 15+ level.';
+            return 'Hi ' . $name_prefix . 'I am your VIP Coach. PRO is active, so I am using the strongest intelligence package. Right now you can immediately run one initial app review and one first weekly plan, and I will use that to guide you first toward 15+ / 30d and then toward the main public goal of 50+ / 30d sponsor visibility.';
         }
 
         if($is_vip && $starter_weekly_plan_available) {
@@ -3544,7 +3563,7 @@ function fcc_ai_get_internal_coach_welcome_message(string $language = 'hr', stri
         }
 
         return $is_vip
-            ? 'Hi ' . $name_prefix . 'I am your VIP Coach. PRO is active, so I am using the strongest intelligence package. I help you turn your plan, app, contacts and content into the clearest next move inside FCC, and I can also guide you toward 15+ signal, weekly AI cycles, and TOP visibility.'
+            ? 'Hi ' . $name_prefix . 'I am your VIP Coach. PRO is active, so I am using the strongest intelligence package. I help you turn your plan, app, contacts and content into the clearest next move inside FCC, and I can also guide you toward 15+ / 30d for Featured Apps, 50+ / 30d as the main public sponsor goal, stronger homepage visibility, and a healthy 7-day rhythm.'
             : 'Hi ' . $name_prefix . 'I am your Beginner Coach. Right now you are on the basic intelligence package, but I can already help you with the next move inside FCC, social content, follow-up, and app direction. When you activate PRO or trial, I switch into VIP Coach with the strongest intelligence package.';
     }
 
@@ -3553,7 +3572,7 @@ function fcc_ai_get_internal_coach_welcome_message(string $language = 'hr', stri
     }
 
     if($is_vip && $starter_app_review_available && $starter_weekly_plan_available) {
-        return 'Bok ' . $name_prefix . 'ja sam tvoj VIP Coach. PRO je aktivan pa sada koristim najjači paket inteligencije. Upravo sada možeš odmah napraviti jednu početnu analizu aplikacije i jedan prvi tjedni plan, a ja ću to iskoristiti da te vodim prema sljedećoj 15+ razini.';
+        return 'Bok ' . $name_prefix . 'ja sam tvoj VIP Coach. PRO je aktivan pa sada koristim najjači paket inteligencije. Upravo sada možeš odmah napraviti jednu početnu analizu aplikacije i jedan prvi tjedni plan, a ja ću to iskoristiti da te vodim prvo prema 15+ / 30d, a zatim i prema glavnom javnom cilju 50+ / 30d.';
     }
 
     if($is_vip && $starter_weekly_plan_available) {
@@ -3561,7 +3580,7 @@ function fcc_ai_get_internal_coach_welcome_message(string $language = 'hr', stri
     }
 
     return $is_vip
-        ? 'Bok ' . $name_prefix . 'ja sam tvoj VIP Coach. PRO je aktivan pa sada koristim najjači paket inteligencije. Pomažem ti pretvoriti plan, aplikaciju, kontakte i sadržaj u najjasniji sljedeći potez unutar FCC-a, a mogu te i voditi prema 15+ signalu, tjednom AI ciklusu i TOP vidljivosti.'
+        ? 'Bok ' . $name_prefix . 'ja sam tvoj VIP Coach. PRO je aktivan pa sada koristim najjači paket inteligencije. Pomažem ti pretvoriti plan, aplikaciju, kontakte i sadržaj u najjasniji sljedeći potez unutar FCC-a, a mogu te i voditi prema 15+ / 30d za Istaknute aplikacije, 50+ / 30d kao glavnom javnom sponsor cilju, jačoj vidljivosti na naslovnici i zdravom 7-dnevnom ritmu.'
         : 'Bok ' . $name_prefix . 'ja sam tvoj Beginner Coach. Trenutno si na osnovnom paketu inteligencije, ali ti i dalje mogu pomoći oko sljedećeg poteza u FCC-u, sadržaja za društvene mreže, follow-upa i smjera za aplikaciju. Kad aktiviraš PRO ili trial, prebacujem se u VIP Coach s najjačim paketom inteligencije.';
 }
 
@@ -4345,6 +4364,73 @@ function fcc_ai_get_internal_coach_portfolio_explainer(array $portfolio_summary 
         : 'Najbolji sljedeci potez je drzati jake aplikacije povezane s glavnom i ne rasipati fokus na stranice bez jasne poslovne uloge.';
 
     return implode("\n", $lines);
+}
+
+function fcc_ai_get_internal_coach_sponsor_visibility_explainer(array $ai_plan = [], string $language = 'hr'): string {
+    $language = fcc_ai_resolve_public_reply_language($language);
+    $access_summary = is_array($ai_plan['access_summary'] ?? null) ? $ai_plan['access_summary'] : [];
+    $signal_summary = is_array($ai_plan['signal_summary'] ?? null) ? $ai_plan['signal_summary'] : [];
+    $growth_signal_30d = max(0, (int) ($signal_summary['growth_signal_30d'] ?? 0));
+    $growth_signal_7d = max(0, (int) ($signal_summary['growth_signal_7d'] ?? 0));
+    $qualified_target = max(1, (int) ($signal_summary['qualified_target'] ?? 15));
+    $top_target = max($qualified_target, (int) ($signal_summary['top_target'] ?? 50));
+    $weekly_check_target = max(1, (int) ($signal_summary['weekly_check_target'] ?? 15));
+    $missing_to_qualified = max(0, (int) ($signal_summary['missing_to_qualified'] ?? max(0, $qualified_target - $growth_signal_30d)));
+    $missing_to_top = max(0, (int) ($signal_summary['missing_to_top'] ?? max(0, $top_target - $growth_signal_30d)));
+    $analysis_unlocked = !empty($access_summary['analysis_unlocked']);
+    $top_performer = !empty($access_summary['top_performer']);
+
+    if($language === 'en') {
+        if($top_performer) {
+            return implode("\n", [
+                $top_target . '+ / 30d is your main public FCC goal and you already hold it.',
+                'That is the simplest way for FCC to promote you as an active recommended sponsor on the homepage and through the public sponsor profile layer.',
+                'It also gives Google and AI systems a cleaner signal about who you are, how you work inside FCC, and why you are relevant as an active sponsor with real results.',
+                'The 15+ / 7d check stays only as a weekly rhythm confirmation: right now you are on ' . $growth_signal_7d . ' / ' . $weekly_check_target . '.',
+            ]);
+        }
+
+        if($analysis_unlocked) {
+            return implode("\n", [
+                $qualified_target . '+ / 30d is your first public proof layer because it keeps you on Featured Apps.',
+                'But the main public goal is ' . $top_target . '+ / 30d, because that is the simplest path for FCC to promote you as an active recommended sponsor on the homepage and through a public sponsor profile.',
+                'That helps strengthen your personal brand inside FCC and gives Google and AI chats a stronger signal that you are an active sponsor with real FCC results.',
+                'From where you are now, you are missing ' . $missing_to_top . ' to reach that sponsor level.',
+            ]);
+        }
+
+        return implode("\n", [
+            $qualified_target . '+ / 30d is the first public threshold because it places you on Featured Apps.',
+            'The main public goal is ' . $top_target . '+ / 30d, because that is the simplest way for FCC to promote you as an active recommended sponsor.',
+            'That public layer strengthens your sponsor profile, personal brand, and how Google and AI systems understand you through FCC.',
+            'Right now you are missing ' . $missing_to_qualified . ' to reach Featured Apps and ' . $missing_to_top . ' to reach the recommended sponsor layer.',
+        ]);
+    }
+
+    if($top_performer) {
+        return implode("\n", [
+            $top_target . '+ / 30d je tvoj glavni javni FCC cilj i ti ga već držiš.',
+            'To je najjednostavniji način da te FCC promovira kao aktivnog preporučenog sponzora na naslovnici i kroz javni sponsor profil.',
+            'Tako Google i AI sustavi dobivaju jasniji signal tko si, kako radiš unutar FCC-a i zašto si relevantan kao aktivan sponsor sa stvarnim rezultatima.',
+            'Prag ' . $qualified_target . '+ / 7d ostaje samo tjedna provjera ritma: trenutno si na ' . $growth_signal_7d . ' / ' . $weekly_check_target . '.',
+        ]);
+    }
+
+    if($analysis_unlocked) {
+        return implode("\n", [
+            $qualified_target . '+ / 30d je prvi javni sloj dokaza jer te drži na popisu Istaknutih aplikacija.',
+            'Ali glavni javni cilj je ' . $top_target . '+ / 30d, jer je to najjednostavniji put da te FCC promovira kao aktivnog preporučenog sponzora na naslovnici i kroz javni sponsor profil.',
+            'To ti diže osobni brand unutar FCC-a i daje Googleu i AI chatovima jači signal da si aktivan sponsor sa stvarnim FCC rezultatima.',
+            'Iz ove točke ti do tog sponsor cilja nedostaje još ' . $missing_to_top . '.',
+        ]);
+    }
+
+    return implode("\n", [
+        $qualified_target . '+ / 30d je prvi javni prag jer te on uvodi na Istaknute aplikacije.',
+        'Glavni javni cilj je ' . $top_target . '+ / 30d, jer je to najjednostavniji način da te FCC promovira kao aktivnog preporučenog sponzora.',
+        'Na taj način jačaš svoj javni profil, osobni brand i mogućnost da te Google i AI sustavi lakše prepoznaju kroz FCC kontekst.',
+        'Trenutno ti do ' . $qualified_target . '+ nedostaje još ' . $missing_to_qualified . ', a do ' . $top_target . '+ još ' . $missing_to_top . '.',
+    ]);
 }
 
 function fcc_ai_get_internal_coach_settings_explainer(string $language = 'hr'): string {
@@ -12924,6 +13010,7 @@ function fcc_ai_build_internal_coach_system_prompt(array $context = [], ?object 
                 'label' => (string) ($ai_plan['access_summary']['label'] ?? ''),
                 'analysis_unlocked' => (bool) ($ai_plan['access_summary']['analysis_unlocked'] ?? false),
                 'top_performer' => (bool) ($ai_plan['access_summary']['top_performer'] ?? false),
+                'weekly_check_passed' => (bool) ($ai_plan['access_summary']['weekly_check_passed'] ?? false),
                 'starter_cycle_available' => (bool) ($ai_plan['access_summary']['starter_cycle_available'] ?? false),
             ],
             'starter_summary' => [
@@ -12983,9 +13070,12 @@ function fcc_ai_build_internal_coach_system_prompt(array $context = [], ?object 
                 'growth_signal_30d' => (int) ($ai_plan['signal_summary']['growth_signal_30d'] ?? 0),
                 'growth_signal_7d' => (int) ($ai_plan['signal_summary']['growth_signal_7d'] ?? 0),
                 'qualified_target' => (int) ($ai_plan['signal_summary']['qualified_target'] ?? 15),
-                'top_target' => (int) ($ai_plan['signal_summary']['top_target'] ?? 15),
+                'top_target' => (int) ($ai_plan['signal_summary']['top_target'] ?? 50),
+                'weekly_check_target' => (int) ($ai_plan['signal_summary']['weekly_check_target'] ?? 15),
                 'missing_to_qualified' => (int) ($ai_plan['signal_summary']['missing_to_qualified'] ?? 0),
                 'missing_to_top' => (int) ($ai_plan['signal_summary']['missing_to_top'] ?? 0),
+                'missing_to_weekly_check' => (int) ($ai_plan['signal_summary']['missing_to_weekly_check'] ?? 0),
+                'weekly_check_passed' => (bool) ($ai_plan['signal_summary']['weekly_check_passed'] ?? false),
             ],
             'profile' => [
                 'primary_goal' => (string) ($ai_plan['profile']['primary_goal_label'] ?? ''),
@@ -13064,7 +13154,7 @@ function fcc_ai_build_internal_coach_system_prompt(array $context = [], ?object 
         'Output rules: when useful, include a ready-to-use asset such as a DM, story text, post idea, follow-up message, checklist or mini weekly plan. When the collaborator is stuck, break the task into the smallest possible next step.',
         'Sales link rule: if sales_link_summary says the Forever sales link is missing, invalid or disabled, treat that as the first operational priority before profile polishing, app review, weekly AI cycles or PRO upsell. Explain that both Beginner and PRO can use it, that the correct setup flow is Blocks -> Add block -> Forever Card Club -> Forever Web Shop -> create the user\'s own Link Builder URL on Foreverliving.com -> paste it into the block, and that without it FCC cannot drive real webshop recommendation results. Make clear that only the collaborator can create that link inside their own Foreverliving account.',
         'Portfolio rule: when the collaborator asks about too many apps, which app to focus on, how to connect niche pages, or what to disable, use portfolio_summary and portfolio_details. Recommend a focused portfolio, keep only apps with a clear business role or signal, and gently suggest disabling dead-end apps that have no meaningful traffic, result or purpose.',
-        'Coach commerce rule: help first. If the collaborator is on Beginner, you may gently mention PRO or trial only when it clearly unlocks the next value they want. If PRO is active and the initial app review or first weekly plan are still available, guide them through that intro cycle before pushing the 15+ signal. If PRO is active but the intro cycle is already spent and the 15+ signal is not there yet, focus on the fastest path to 15+ in 30 days. If the collaborator is already TOP 15+ in 7 days, help them protect momentum and visibility.',
+        'Coach commerce rule: help first. If the collaborator is on Beginner, you may gently mention PRO or trial only when it clearly unlocks the next value they want. If PRO is active and the initial app review or first weekly plan are still available, guide them through that intro cycle before pushing the 15+ signal. If PRO is active but the intro cycle is already spent and the 15+ signal is not there yet, focus on the fastest path to 15+ in 30 days. Once the collaborator holds 15+ / 30d, explain that this keeps them on Featured Apps as the first public proof layer, but that 50+ / 30d is the main public goal because FCC can promote them as an active recommended sponsor on the homepage and through public sponsor profiles. When relevant, explain that this also strengthens how Google and AI systems understand their brand and sponsor relevance through FCC. Treat 15+ / 7d as a weekly rhythm check, not as the main sponsor threshold.',
         'Availability rule: use availability_summary whenever you coach around app reviews or weekly plans. If something is available now, say it clearly. If it is locked, mention the exact next unlock time when provided and redirect the collaborator toward the best thing to do until then.',
         'Product referral rule: when relevant, explain the logged-in share/copy helper on Forever product blog articles. Tell the collaborator to use that helper instead of copying the raw URL. Beginner can use it for stories and direct recommendations. PRO can additionally use the FCC product recommendation block, and those outbound Forever clicks help build the 15+ signal.',
         $page_priority_instruction,
@@ -13172,9 +13262,12 @@ function fcc_ai_generate_internal_coach_reply(string $message, array $context = 
     $growth_signal_30d = (int) ($signal_summary['growth_signal_30d'] ?? 0);
     $growth_signal_7d = (int) ($signal_summary['growth_signal_7d'] ?? 0);
     $qualified_target = max(1, (int) ($signal_summary['qualified_target'] ?? 15));
-    $top_target = max(1, (int) ($signal_summary['top_target'] ?? 15));
+    $top_target = max(1, (int) ($signal_summary['top_target'] ?? 50));
+    $weekly_check_target = max(1, (int) ($signal_summary['weekly_check_target'] ?? 15));
     $missing_to_qualified = max(0, (int) ($signal_summary['missing_to_qualified'] ?? max(0, $qualified_target - $growth_signal_30d)));
-    $missing_to_top = max(0, (int) ($signal_summary['missing_to_top'] ?? max(0, $top_target - $growth_signal_7d)));
+    $missing_to_top = max(0, (int) ($signal_summary['missing_to_top'] ?? max(0, $top_target - $growth_signal_30d)));
+    $missing_to_weekly_check = max(0, (int) ($signal_summary['missing_to_weekly_check'] ?? max(0, $weekly_check_target - $growth_signal_7d)));
+    $weekly_check_passed = !empty($access_summary['weekly_check_passed']) || !empty($signal_summary['weekly_check_passed']) || $growth_signal_7d >= $weekly_check_target;
 
     $is_review_request = fcc_ai_contains_keywords($message, ['review', 'pregled', 'app', 'aplik', 'biolink', 'link']);
     $is_contacts_request = fcc_ai_contains_keywords($message, ['kontakt', 'lead', 'data', 'inbox', 'follow-up', 'follow up', 'dm', 'whatsapp']);
@@ -13189,6 +13282,8 @@ function fcc_ai_generate_internal_coach_reply(string $message, array $context = 
     $is_portfolio_cleanup_request = fcc_ai_contains_keywords($message, ['ugasi', 'isključi', 'iskljuci', 'obriši', 'obrisi', 'arhivir', 'archive', 'cleanup', 'slijepa crijeva', 'bez smisla']);
     $is_multi_app_request = fcc_ai_contains_keywords($message, ['previše aplik', 'vise aplik', 'više app', 'koliko aplik', 'koju aplik', 'koja aplik', 'dodatne aplik', 'niche app', 'nisna app', 'nišna app']);
     $is_app_connection_request = fcc_ai_contains_keywords($message, ['poveži aplik', 'povezi aplik', 'spoji aplik', 'glavna aplik', 'main app', 'dodatna app']);
+    $is_sponsor_visibility_request = in_array($page_route, ['featured-apps', 'recommended-sponsors'], true)
+        || fcc_ai_contains_keywords($message, ['featured', 'istaknut', 'preporu', 'sponsor', 'sponzor', 'naslovn', 'brand', 'brend', 'google', 'indeks', 'index', 'chatgpt', 'ai search', 'pretraga', 'pozicioniranje', 'vidljivost']);
     $is_product_referral_request = ($page_route === 'blog' && (str_contains($page_slug, 'blog/category/forever-proizvodi') || str_contains($page_slug, 'blog/category/forever-products')))
         || fcc_ai_contains_keywords($message, ['forever proizvodi', 'forever products', 'share', 'podijeli', 'kopir', 'copy link', 'referral', 'referr', 'preporukom', 'foreverliving', 'blok proizvoda', 'link za preporuku', 'preporuku za proizvod']);
     $is_followup_asset_request = $is_contacts_request || fcc_ai_contains_keywords($message, ['follow-up', 'follow up', 'dm', 'poruk', 'kontakt']);
@@ -13358,13 +13453,21 @@ function fcc_ai_generate_internal_coach_reply(string $message, array $context = 
 
         if($top_performer) {
             $blocks[] = $language === 'en'
-                ? 'You are already in the TOP signal zone with ' . $growth_signal_7d . ' in 7 days, which is the path toward recommended sponsor visibility.'
-                : 'Već si u TOP signal zoni s ' . $growth_signal_7d . ' u 7 dana, što te vodi prema vidljivosti među preporučenim sponzorima.';
+                ? 'You already hold the 50+ / 30d sponsor level with ' . $growth_signal_30d . ' in 30 days. The extra weekly check is ' . $growth_signal_7d . ' / ' . $weekly_check_target . ' in 7 days.'
+                : 'Vec drzis 50+ / 30d razinu preporucenog sponzora s ' . $growth_signal_30d . ' u 30 dana. Dodatna tjedna provjera ti je ' . $growth_signal_7d . ' / ' . $weekly_check_target . ' u 7 dana.';
+        } elseif($analysis_unlocked) {
+            $blocks[] = $language === 'en'
+                ? 'Right now you are on the 15+ / 30d AI level with ' . $growth_signal_30d . '. That keeps you eligible for Featured Apps, and the next sponsor target is ' . $top_target . ' / 30d. Your current 7-day check is ' . $growth_signal_7d . ' / ' . $weekly_check_target . '.'
+                : 'Trenutno si na 15+ / 30d AI razini s ' . $growth_signal_30d . '. To te drzi spremnim za popis Istaknutih aplikacija, a sljedeci sponsor cilj je ' . $top_target . ' / 30d. Tvoja trenutačna 7-dnevna provjera je ' . $growth_signal_7d . ' / ' . $weekly_check_target . '.';
         }
 
         $blocks[] = $language === 'en'
             ? 'If you want, I can take you straight to the best page for the next unlock step.'
             : 'Ako želiš, mogu te odmah odvesti na najbolju stranicu za sljedeći unlock korak.';
+    }
+
+    if($is_sponsor_visibility_request || ($is_pro_status_request && ($analysis_unlocked || $top_performer))) {
+        $blocks[] = fcc_ai_get_internal_coach_sponsor_visibility_explainer($ai_plan, $language);
     }
 
     if($is_sales_link_request) {
@@ -13530,12 +13633,18 @@ function fcc_ai_generate_internal_coach_reply(string $message, array $context = 
 
     if($top_performer) {
         $blocks[] = $language === 'en'
-            ? 'Your TOP focus now is to protect the 7-day rhythm so the profile stays strong for recommended sponsor visibility.'
-            : 'Tvoj TOP fokus sada je zadržati 7-dnevni ritam kako bi profil ostao jak za vidljivost među preporučenim sponzorima.';
+            ? 'Your sponsor focus now is to protect the 50+ / 30d level as your main public FCC asset, keep the homepage recommended sponsor visibility strong, and keep the 7-day rhythm healthy as a weekly check.'
+            : 'Tvoj sponsor fokus sada je zadržati 50+ / 30d razinu kao glavni javni FCC kapital, čuvati vidljivost preporučenog sponzora na naslovnici i držati 7-dnevni ritam zdravim kao tjednu provjeru.';
     } elseif($is_pro && $analysis_unlocked && !$top_performer) {
         $blocks[] = $language === 'en'
-            ? 'Once you hold ' . $top_target . '+ signal in 7 days, the next target is the TOP list and recommended sponsor visibility.'
-            : 'Kad održiš ' . $top_target . '+ signala u 7 dana, sljedeći cilj ti je TOP lista i vidljivost među preporučenim sponzorima.';
+            ? 'Stay above 15+ / 30d to remain on Featured Apps, but build toward ' . $top_target . '+ / 30d as the main public sponsor target. That is the simplest way for FCC to promote you as an active sponsor, strengthen your brand, and give Google and AI systems a clearer public signal. The 7-day check matters as weekly rhythm, not as the main sponsor threshold.'
+            : 'Ostani iznad 15+ / 30d kako bi ostao na popisu Istaknutih aplikacija, ali gradi prema ' . $top_target . '+ / 30d kao glavnom javnom sponsor cilju. To je najjednostavniji način da te FCC promovira kao aktivnog sponzora, ojača tvoj brand i da Googleu i AI sustavima jasniji javni signal. 7-dnevna provjera važna je kao tjedni ritam, ali nije glavni sponsor prag.';
+    }
+
+    if(!$top_performer && $analysis_unlocked && !$weekly_check_passed) {
+        $blocks[] = $language === 'en'
+            ? 'Your weekly rhythm check is still missing ' . $missing_to_weekly_check . ' to reach ' . $weekly_check_target . ' in 7 days. That does not block Featured Apps, but it is a good weekly confirmation signal.'
+            : 'Za tjednu provjeru ritma nedostaje ti jos ' . $missing_to_weekly_check . ' do ' . $weekly_check_target . ' u 7 dana. To ne blokira popis Istaknutih aplikacija, ali je dobar tjedni signal potvrde.';
     }
 
     if($is_portfolio_request && $portfolio_health_label !== '') {

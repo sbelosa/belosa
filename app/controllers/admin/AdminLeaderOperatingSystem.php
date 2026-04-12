@@ -720,7 +720,8 @@ class AdminLeaderOperatingSystem extends Controller {
         $analysis_interval_days = null;
         $coach_label = $is_pro ? 'VIP Coach' : 'Beginner Coach';
         $qualified_unlocked = $is_pro && ($growth_signal_30d >= 15 || in_array($manual_tier, ['qualified', 'top'], true));
-        $top_unlocked = $is_pro && ($growth_signal_7d >= 15 || $manual_tier === 'top');
+        $top_unlocked = $is_pro && ($growth_signal_30d >= 50 || $manual_tier === 'top');
+        $weekly_check_7d = $growth_signal_7d >= 15;
         $starter_app_review_used = !empty($access_settings['starter_app_review_used']);
         $starter_weekly_plan_used = !empty($access_settings['starter_weekly_plan_used']);
         $starter_app_review_available = $is_pro && !$qualified_unlocked && !$starter_app_review_used;
@@ -730,7 +731,7 @@ class AdminLeaderOperatingSystem extends Controller {
         if($is_pro) {
             if($top_unlocked) {
                 $tier_key = 'top';
-                $tier_label = 'TOP 15+ / 7d';
+                $tier_label = '50+ / 30d sponsor';
                 $tier_class = 'status-success';
                 $analysis_interval_days = 7;
             } elseif($qualified_unlocked) {
@@ -760,6 +761,7 @@ class AdminLeaderOperatingSystem extends Controller {
             'ai_access_growth_signal_7d' => $growth_signal_7d,
             'ai_access_signal_qualified' => $qualified_unlocked,
             'ai_access_top_unlocked' => $top_unlocked,
+            'ai_access_weekly_check_7d' => $weekly_check_7d,
             'ai_access_starter_app_review_available' => $starter_app_review_available,
             'ai_access_starter_weekly_plan_available' => $starter_weekly_plan_available,
             'ai_access_intro_cycle_available' => $intro_cycle_available,
@@ -931,11 +933,11 @@ class AdminLeaderOperatingSystem extends Controller {
         } elseif($action === 'top') {
             $this->create_user_internal_notification(
                 $user_id,
-                'Uključen ti je TOP signal',
-                'Uključen ti je TOP 15+ / 7 dana signal. Coach te sada vodi prema zadržavanju ritma i vidljivosti među preporučenim sponzorima.',
+                'Uključen ti je sponsor signal',
+                'Uključen ti je 50+ / 30 dana sponsor signal. Coach te sada vodi prema zadržavanju razine za naslovnicu i zdravom 7-dnevnom ritmu.',
                 url('ai-plan')
             );
-            Alerts::add_success('Ručno je uključen TOP signal za ' . ($user->name ?: ('korisnika #' . $user_id)) . '.');
+            Alerts::add_success('Ručno je uključen 50+ / 30d sponsor signal za ' . ($user->name ?: ('korisnika #' . $user_id)) . '.');
         } else {
             Alerts::add_success('AI pristup za ' . ($user->name ?: ('korisnika #' . $user_id)) . ' vraćen je na automatska pravila.');
         }

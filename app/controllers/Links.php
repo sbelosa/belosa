@@ -60,6 +60,8 @@ class Links extends Controller {
             'fcc_featured_public_market' => "ALTER TABLE `links` ADD COLUMN `fcc_featured_public_market` VARCHAR(64) NULL DEFAULT NULL",
             'fcc_featured_public_use_case' => "ALTER TABLE `links` ADD COLUMN `fcc_featured_public_use_case` VARCHAR(128) NULL DEFAULT NULL",
             'fcc_featured_public_summary' => "ALTER TABLE `links` ADD COLUMN `fcc_featured_public_summary` VARCHAR(512) NULL DEFAULT NULL",
+            'fcc_featured_profile_form' => "ALTER TABLE `links` ADD COLUMN `fcc_featured_profile_form` MEDIUMTEXT NULL DEFAULT NULL",
+            'fcc_featured_profile_generated' => "ALTER TABLE `links` ADD COLUMN `fcc_featured_profile_generated` MEDIUMTEXT NULL DEFAULT NULL",
         ];
 
         foreach($required_columns as $column => $query) {
@@ -267,6 +269,378 @@ class Links extends Controller {
 
     private function is_ai_profile_complete(array $values): bool {
         return (bool) ($values['primary_goal'] && $values['priority_offer'] && !empty($values['active_channels']) && $values['available_time'] && $values['biggest_blocker'] && $values['communication_style'] && $values['follow_up_readiness'] && $values['weekly_change']);
+    }
+
+    private function get_featured_profile_form_limits(): array {
+        return [
+            'who_you_help' => 220,
+            'what_you_help_with' => 220,
+            'how_you_work' => 220,
+            'background' => 220,
+            'what_people_should_know' => 220,
+        ];
+    }
+
+    private function get_featured_profile_form_values($source = null): array {
+        $values = [];
+
+        if(is_string($source)) {
+            $decoded = json_decode($source, true);
+            $source = is_array($decoded) ? $decoded : [];
+        } elseif(is_object($source)) {
+            $source = (array) $source;
+        } elseif(!is_array($source)) {
+            $source = [];
+        }
+
+        foreach($this->get_featured_profile_form_limits() as $field => $limit) {
+            $values[$field] = input_clean(trim((string) ($source[$field] ?? '')), $limit);
+        }
+
+        return $values;
+    }
+
+    private function get_featured_profile_generated_payload($value): array {
+        return fcc_featured_decode_json_payload($value);
+    }
+
+    private function get_featured_profile_builder_state(?object $main_biolink, array $signal_snapshot = []): array {
+        $qualified_target = max(15, (int) ($signal_snapshot['qualified_target'] ?? 15));
+        $growth_signal_30d = max(0, (int) ($signal_snapshot['growth_signal_30d'] ?? 0));
+        $generated_payload = $this->get_featured_profile_generated_payload($main_biolink->fcc_featured_profile_generated ?? null);
+        $generated_at = trim((string) ($generated_payload['generated_at'] ?? ''));
+        $can_generate_now = $growth_signal_30d >= $qualified_target;
+        $cooldown_days = 7;
+        $next_generate_at = '';
+
+        if($generated_at !== '') {
+            try {
+                $next_generate_date = new \DateTime($generated_at);
+                $next_generate_date->modify('+' . $cooldown_days . ' days');
+                $next_generate_at = $next_generate_date->format('Y-m-d H:i:s');
+
+                if($next_generate_date > new \DateTime()) {
+                    $can_generate_now = false;
+                }
+            } catch(\Throwable $exception) {
+                $next_generate_at = '';
+            }
+        }
+
+        return [
+            'is_unlocked' => $growth_signal_30d >= $qualified_target,
+            'growth_signal_30d' => $growth_signal_30d,
+            'qualified_target' => $qualified_target,
+            'missing_to_unlock' => max(0, $qualified_target - $growth_signal_30d),
+            'cooldown_days' => $cooldown_days,
+            'can_generate_now' => $can_generate_now,
+            'generated_at' => $generated_at,
+            'next_generate_at' => $next_generate_at,
+            'generated_payload' => $generated_payload,
+        ];
+    }
+
+    private function get_featured_profile_ai_credentials(): array {
+        $personal_api_key = trim((string) ($this->user->preferences->openai_api_key ?? ''));
+        $shared_api_key = trim((string) (settings()->aix->openai_api_key ?? settings()->main->openai_api_key ?? ''));
+        $api_key = !empty($this->user->plan_settings->exclusive_personal_api_keys ?? false) ? $personal_api_key : $shared_api_key;
+
+        return [
+            'api_key' => $api_key,
+            'model' => fc_get_resolved_openai_model(settings()->main->openai_model ?? ''),
+            'needs_personal_key' => (bool) ($this->user->plan_settings->exclusive_personal_api_keys ?? false),
+        ];
+    }
+
+    private function extract_featured_profile_json(string $content): ?array {
+        $decoded = json_decode($content, true);
+
+        if(is_array($decoded)) {
+            return $decoded;
+        }
+
+        $json_start = strpos($content, '{');
+        $json_end = strrpos($content, '}');
+
+        if($json_start === false || $json_end === false || $json_end <= $json_start) {
+            return null;
+        }
+
+        $json_candidate = substr($content, $json_start, $json_end - $json_start + 1);
+        $decoded_candidate = json_decode($json_candidate, true);
+
+        return is_array($decoded_candidate) ? $decoded_candidate : null;
+    }
+
+    private function sanitize_featured_profile_text(string $value, int $limit): string {
+        $value = str_replace(["\r\n", "\r"], "\n", $value);
+        $value = preg_replace('/[ \t]+/u', ' ', $value) ?? $value;
+        $value = preg_replace('/\n{3,}/u', "\n\n", $value) ?? $value;
+        $value = trim($value);
+        $value = preg_replace('/\s+/u', ' ', $value) ?? $value;
+
+        return input_clean($value, $limit);
+    }
+
+    private function build_featured_profile_fallback(object $main_biolink, array $form_values, array $feature_labels, array $signal_snapshot): array {
+        $language = \Altum\Language::$code === 'hr' ? 'hr' : 'en';
+        $name = trim((string) ($this->user->name ?? 'FCC partner'));
+        $who = trim((string) ($form_values['who_you_help'] ?? ''));
+        $what = trim((string) ($form_values['what_you_help_with'] ?? ''));
+        $how = trim((string) ($form_values['how_you_work'] ?? ''));
+        $background = trim((string) ($form_values['background'] ?? ''));
+        $takeaway = trim((string) ($form_values['what_people_should_know'] ?? ''));
+        $market = trim((string) ($main_biolink->fcc_featured_public_market ?? ''));
+        $feature_text = !empty($feature_labels) ? implode(', ', array_slice($feature_labels, 0, 3)) : '';
+        $growth_signal_30d = max(0, (int) ($signal_snapshot['growth_signal_30d'] ?? 0));
+
+        if($language === 'hr') {
+            $public_use_case = $what !== ''
+                ? 'Glavna FCC aplikacija za ' . mb_strtolower($what)
+                : (!empty($feature_text)
+                    ? 'Glavna FCC aplikacija za ' . mb_strtolower($feature_text)
+                    : 'Glavna FCC aplikacija za preporuke, kontakte i podršku novim suradnicima');
+
+            $summary_parts = [];
+
+            $summary_parts[] = $name . ' kroz FCC koristi glavnu aplikaciju za ' . ($what !== '' ? mb_strtolower($what) : 'jasan rad s preporukama i kontaktima') . '.';
+
+            if($who !== '') {
+                $summary_parts[] = 'Fokus je na podršci ' . mb_strtolower($who) . '.';
+            }
+
+            if($how !== '') {
+                $summary_parts[] = 'Pristup radu temelji se na ' . mb_strtolower($how) . '.';
+            }
+
+            $public_summary = implode(' ', array_slice($summary_parts, 0, 3));
+
+            $intro_parts = [];
+
+            if($background !== '') {
+                $intro_parts[] = $background;
+            }
+
+            $intro_parts[] = $name . ' koristi FCC kao praktičan sustav za preporuke, kontakte i jasne sljedeće korake.';
+
+            if($takeaway !== '') {
+                $intro_parts[] = $takeaway;
+            }
+
+            if($market !== '') {
+                $intro_parts[] = 'Profil je posebno relevantan za tržište: ' . $market . '.';
+            }
+
+            if($growth_signal_30d >= 50) {
+                $intro_parts[] = 'Rezultati u zadnjih 30 dana potvrđuju dosljedan rad kroz FCC i iskustvo koje može pomoći novim partnerima.';
+            } else {
+                $intro_parts[] = 'Aktivni signal u zadnjih 30 dana potvrđuje da je profil temeljen na stvarnom radu, a ne samo na općem opisu.';
+            }
+
+            $profile_intro = implode(' ', array_slice($intro_parts, 0, 4));
+            $meta_description = $name . ' koristi FCC za ' . ($what !== '' ? mb_strtolower($what) : 'preporuke, kontakte i mentorsku podršku') . ' kroz jasan i praktičan sustav rada.';
+        } else {
+            $public_use_case = $what !== ''
+                ? 'Main FCC app for ' . mb_strtolower($what)
+                : (!empty($feature_text)
+                    ? 'Main FCC app for ' . mb_strtolower($feature_text)
+                    : 'Main FCC app for referrals, contacts, and support for new collaborators');
+
+            $summary_parts = [];
+            $summary_parts[] = $name . ' uses the main FCC app for ' . ($what !== '' ? mb_strtolower($what) : 'clear referral and contact workflows') . '.';
+
+            if($who !== '') {
+                $summary_parts[] = 'The focus is on helping ' . mb_strtolower($who) . '.';
+            }
+
+            if($how !== '') {
+                $summary_parts[] = 'The working style is based on ' . mb_strtolower($how) . '.';
+            }
+
+            $public_summary = implode(' ', array_slice($summary_parts, 0, 3));
+
+            $intro_parts = [];
+
+            if($background !== '') {
+                $intro_parts[] = $background;
+            }
+
+            $intro_parts[] = $name . ' uses FCC as a practical system for referrals, contacts, and clear next steps.';
+
+            if($takeaway !== '') {
+                $intro_parts[] = $takeaway;
+            }
+
+            if($market !== '') {
+                $intro_parts[] = 'This profile is especially relevant for the following market: ' . $market . '.';
+            }
+
+            if($growth_signal_30d >= 50) {
+                $intro_parts[] = 'The last 30 days confirm consistent work through FCC and experience that can help new partners move faster.';
+            } else {
+                $intro_parts[] = 'The active 30-day signal shows that this profile is based on real use of FCC, not generic promotion.';
+            }
+
+            $profile_intro = implode(' ', array_slice($intro_parts, 0, 4));
+            $meta_description = $name . ' uses FCC for ' . ($what !== '' ? mb_strtolower($what) : 'referrals, contacts, and mentor support') . ' through a clear and practical workflow.';
+        }
+
+        return [
+            'public_use_case' => $this->sanitize_featured_profile_text($public_use_case, 128),
+            'public_summary' => $this->sanitize_featured_profile_text($public_summary, 420),
+            'profile_intro' => $this->sanitize_featured_profile_text($profile_intro, 880),
+            'meta_description' => $this->sanitize_featured_profile_text($meta_description, 180),
+        ];
+    }
+
+    private function build_featured_profile_ai_input(object $main_biolink, array $form_values, array $feature_labels, array $signal_snapshot, array $ai_profile_values): array {
+        return [
+            'language' => \Altum\Language::$code === 'hr' ? 'hr' : 'en',
+            'profile_goal' => 'Create an editorial FCC public profile for Featured Apps, recommended sponsors, schema, and search indexing.',
+            'owner' => [
+                'name' => (string) ($this->user->name ?? ''),
+                'market' => trim((string) ($main_biolink->fcc_featured_public_market ?? '')),
+            ],
+            'main_app' => [
+                'url' => (string) ($main_biolink->url ?? ''),
+                'public_use_case_current' => trim((string) ($main_biolink->fcc_featured_public_use_case ?? '')),
+                'public_summary_current' => trim((string) ($main_biolink->fcc_featured_public_summary ?? '')),
+                'feature_labels' => array_values(array_slice($feature_labels, 0, 5)),
+            ],
+            'signal_snapshot' => [
+                'growth_signal_30d' => (int) ($signal_snapshot['growth_signal_30d'] ?? 0),
+                'growth_signal_7d' => (int) ($signal_snapshot['growth_signal_7d'] ?? 0),
+                'qualified_target' => (int) ($signal_snapshot['qualified_target'] ?? 15),
+                'top_target' => (int) ($signal_snapshot['top_target'] ?? 50),
+            ],
+            'profile_form' => $form_values,
+            'leader_ai_profile' => $ai_profile_values,
+        ];
+    }
+
+    private function generate_featured_profile_content(object $main_biolink, array $form_values, array $feature_labels, array $signal_snapshot, array $ai_profile_values): array {
+        $fallback = $this->build_featured_profile_fallback($main_biolink, $form_values, $feature_labels, $signal_snapshot);
+        $credentials = $this->get_featured_profile_ai_credentials();
+
+        if($credentials['api_key'] === '') {
+            if($credentials['needs_personal_key']) {
+                throw new \Exception(sprintf(l('account_preferences.error_message.aix.openai_api_key'), '<a href="' . url('account-preferences') . '"><strong>' . l('account_preferences.menu') . '</strong></a>'));
+            }
+
+            throw new \Exception(\Altum\Language::$code === 'hr' ? 'OpenAI API ključ nije postavljen za generiranje FCC profila.' : 'The OpenAI API key is not configured for FCC profile generation.');
+        }
+
+        $language = \Altum\Language::$code === 'hr' ? 'hr' : 'en';
+        $input_payload = $this->build_featured_profile_ai_input($main_biolink, $form_values, $feature_labels, $signal_snapshot, $ai_profile_values);
+        $user_prompt = $language === 'hr'
+            ? implode("\n\n", [
+                'Vrati samo valjan JSON s ključevima: public_use_case, public_summary, profile_intro, meta_description.',
+                'Tvoj zadatak je napisati urednički FCC javni profil za indeksaciju, featured-apps i recommended-sponsors stranice.',
+                'Pravila:',
+                '- Piši isključivo na hrvatskom.',
+                '- Ton mora biti neutralan, urednički i people-first. Ovo nije reklama, oglas ni prodajni tekst.',
+                '- Profil mora objasniti kako osoba koristi FCC u praksi, kome može pomoći i zašto može biti relevantna novim suradnicima.',
+                '- Koristi samo ono što se može opravdati kroz input, stvarne FCC featuree i signal.',
+                '- Nemoj koristiti tvrdnje poput najbolji, broj 1, vrhunski, garantira, sigurno, brzo obogaćivanje i slično.',
+                '- Nemoj davati zaradne tvrdnje, medicinske tvrdnje ni hype jezik.',
+                '- Nemoj koristiti emojije, uskličnike, hashtagove, navodnike ni keyword stuffing.',
+                '- public_use_case neka bude kratka 1-linijska rečenica o tome kako glavna FCC aplikacija služi toj osobi u radu.',
+                '- public_summary neka bude 2 do 3 rečenice i neka stane u oko 220 do 420 znakova.',
+                '- profile_intro neka bude 3 do 5 rečenica za javni profil osobe. Mora zvučati jedinstveno, mirno i vjerodostojno.',
+                '- meta_description neka bude prirodan SEO opis do 180 znakova.',
+                '- Ako input sadrži osobne preferencije ili temu koju treba izbjeći, poštuj to.',
+                '- Profil mora zvučati kao opis partnera s iskustvom u FCC sustavu, ne kao pohvala ni samopromocija.',
+                'Input JSON: ' . json_encode($input_payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_INVALID_UTF8_SUBSTITUTE),
+            ])
+            : implode("\n\n", [
+                'Return only valid JSON with these keys: public_use_case, public_summary, profile_intro, meta_description.',
+                'Your task is to write an editorial FCC public profile for indexing, featured-apps, and recommended-sponsors pages.',
+                'Rules:',
+                '- Write only in English.',
+                '- The tone must be neutral, editorial, and people-first. This is not an ad or sales copy.',
+                '- The profile must explain how the person uses FCC in practice, who they can help, and why they may be relevant to new collaborators.',
+                '- Use only claims that can be supported by the input, real FCC features, and the signal snapshot.',
+                '- Do not use phrases like best, number one, guaranteed, instant results, or similar hype.',
+                '- Do not make income claims, medical claims, or use exaggerated language.',
+                '- Do not use emojis, exclamation marks, hashtags, quotation marks, or keyword stuffing.',
+                '- public_use_case should be a short one-line sentence about how the main FCC app serves this collaborator in practice.',
+                '- public_summary should be 2 to 3 sentences and fit roughly within 220 to 420 characters.',
+                '- profile_intro should be 3 to 5 sentences for the public profile page. It must feel unique, calm, and trustworthy.',
+                '- meta_description should be a natural SEO description up to 180 characters.',
+                '- Respect any personal preferences or boundaries from the input.',
+                '- The profile should read like a description of a collaborator with real FCC experience, not self-promotion.',
+                'Input JSON: ' . json_encode($input_payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_INVALID_UTF8_SUBSTITUTE),
+            ]);
+
+        try {
+            \Unirest\Request::timeout(30);
+
+            $response = \Unirest\Request::post(
+                'https://api.openai.com/v1/chat/completions',
+                [
+                    'Authorization' => 'Bearer ' . get_random_line_from_text($credentials['api_key']),
+                    'Content-Type' => 'application/json',
+                ],
+                \Unirest\Request\Body::json([
+                    'model' => $credentials['model'],
+                    'response_format' => [
+                        'type' => 'json_object',
+                    ],
+                    'messages' => [
+                        [
+                            'role' => 'system',
+                            'content' => $language === 'hr'
+                                ? 'Piši isključivo na hrvatskom. Ti si urednik FCC javnih profila. Tvoj posao je napisati miran, jasan i vjerodostojan profil koji pomaže korisniku i tražilicama razumjeti kako osoba koristi FCC. Vrati samo valjan JSON bez markdowna i bez dodatnih ključeva.'
+                                : 'Write only in English. You are the editor of FCC public profiles. Your task is to write calm, clear, trustworthy profile copy that helps users and search systems understand how this person uses FCC. Return only valid JSON with no markdown and no extra keys.',
+                        ],
+                        [
+                            'role' => 'user',
+                            'content' => $user_prompt,
+                        ],
+                    ],
+                    'max_completion_tokens' => 1200,
+                ])
+            );
+
+            if($response->code >= 400) {
+                throw new \Exception($response->body->error->message ?? 'OpenAI request failed.');
+            }
+
+            $content = trim((string) ($response->body->choices[0]->message->content ?? ''));
+
+            if(substr($content, 0, 3) === '```') {
+                $content = preg_replace('/^```[a-zA-Z0-9_-]*\s*/', '', $content);
+                $content = preg_replace('/\s*```$/', '', $content);
+                $content = trim($content);
+            }
+
+            $decoded = $this->extract_featured_profile_json($content);
+        } catch(\Throwable $exception) {
+            $decoded = null;
+        }
+
+        $generated = [
+            'public_use_case' => $this->sanitize_featured_profile_text((string) ($decoded['public_use_case'] ?? ''), 128),
+            'public_summary' => $this->sanitize_featured_profile_text((string) ($decoded['public_summary'] ?? ''), 420),
+            'profile_intro' => $this->sanitize_featured_profile_text((string) ($decoded['profile_intro'] ?? ''), 880),
+            'meta_description' => $this->sanitize_featured_profile_text((string) ($decoded['meta_description'] ?? ''), 180),
+        ];
+
+        foreach($generated as $key => $value) {
+            if($value === '') {
+                $generated[$key] = $fallback[$key] ?? '';
+            }
+        }
+
+        $generated['generated_at'] = get_date();
+        $generated['model'] = !empty($decoded) ? $credentials['model'] : 'fallback_local';
+        $generated['source_form'] = $form_values;
+        $generated['signal_snapshot'] = [
+            'growth_signal_30d' => (int) ($signal_snapshot['growth_signal_30d'] ?? 0),
+            'growth_signal_7d' => (int) ($signal_snapshot['growth_signal_7d'] ?? 0),
+        ];
+
+        return $generated;
     }
 
     private function decode_biolink_block_settings($settings): \stdClass {
@@ -732,24 +1106,82 @@ class Links extends Controller {
             }
 
             if(!$main_biolink) {
-                Alerts::add_error(\Altum\Language::$code === 'hr' ? 'Glavna Forever Card Aplikacija nije pronađena.' : 'The main Forever Card App could not be found.');
+                Alerts::add_error(l('links.biolink_workspace.featured_profile.error.main_missing'));
             }
 
             if(!Alerts::has_errors()) {
                 $featured_opt_in = (int) isset($_POST['fcc_featured_opt_in']);
                 $featured_market = input_clean($_POST['fcc_featured_public_market'] ?? '', 64);
-                $featured_summary = input_clean($_POST['fcc_featured_public_summary'] ?? '', 220);
-
-                db()->where('link_id', $main_biolink->link_id)->where('user_id', $this->user->user_id)->update('links', [
+                $featured_use_case = input_clean($_POST['fcc_featured_public_use_case'] ?? '', 128);
+                $featured_summary = input_clean($_POST['fcc_featured_public_summary'] ?? '', 420);
+                $profile_form_values = $this->get_featured_profile_form_values($_POST);
+                $signal_snapshot = fcc_ai_get_user_growth_signal_snapshot((int) $this->user->user_id, (int) $main_biolink->link_id);
+                $builder_state = $this->get_featured_profile_builder_state($main_biolink, $signal_snapshot);
+                $generate_requested = isset($_POST['fcc_generate_featured_profile']);
+                $stored_generated_payload = $this->get_featured_profile_generated_payload($main_biolink->fcc_featured_profile_generated ?? null);
+                $update_data = [
                     'fcc_featured_opt_in' => $featured_opt_in,
                     'fcc_featured_public_market' => $featured_market ?: null,
-                    'fcc_featured_public_summary' => $featured_summary ?: null,
-                ]);
+                    'fcc_featured_profile_form' => json_encode($profile_form_values, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_INVALID_UTF8_SUBSTITUTE),
+                ];
 
-                Alerts::add_success(\Altum\Language::$code === 'hr' ? 'Postavke javnog prikaza glavne Forever Card Aplikacije su spremljene.' : 'Public display settings for the main Forever Card App have been saved.');
+                if($builder_state['is_unlocked']) {
+                    $update_data['fcc_featured_public_use_case'] = $featured_use_case ?: null;
+                    $update_data['fcc_featured_public_summary'] = $featured_summary ?: null;
+                }
+
+                if($generate_requested && !$builder_state['is_unlocked']) {
+                    Alerts::add_error(l('links.biolink_workspace.featured_profile.error.unlock'));
+                }
+
+                if($generate_requested && $builder_state['is_unlocked'] && !$builder_state['can_generate_now']) {
+                    Alerts::add_error(l('links.biolink_workspace.featured_profile.error.cooldown'));
+                }
+
+                if($generate_requested && !Alerts::has_errors()) {
+                    $filled_fields = array_filter($profile_form_values, static function($value) {
+                        return mb_strlen(trim((string) $value)) >= 8;
+                    });
+
+                    if(count($filled_fields) < 4) {
+                        Alerts::add_error(l('links.biolink_workspace.featured_profile.error.min_fields'));
+                    }
+                }
+
+                if($generate_requested && !Alerts::has_errors()) {
+                    try {
+                        $feature_labels = $this->get_case_study_feature_labels((int) $main_biolink->link_id);
+                        $ai_profile_values = $this->get_ai_profile_values($this->user->preferences ?? null);
+                        $generated_profile = $this->generate_featured_profile_content($main_biolink, $profile_form_values, $feature_labels, $signal_snapshot, $ai_profile_values);
+
+                        $update_data['fcc_featured_public_use_case'] = $generated_profile['public_use_case'] ?: null;
+                        $update_data['fcc_featured_public_summary'] = $generated_profile['public_summary'] ?: null;
+                        $update_data['fcc_featured_profile_generated'] = json_encode($generated_profile, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_INVALID_UTF8_SUBSTITUTE);
+
+                        Alerts::add_success(l('links.biolink_workspace.featured_profile.success.generated'));
+                    } catch(\Throwable $exception) {
+                        Alerts::add_error($exception->getMessage());
+                    }
+                } else {
+                    if(!empty($stored_generated_payload)) {
+                        if($builder_state['is_unlocked']) {
+                            $stored_generated_payload['public_use_case'] = $featured_use_case;
+                            $stored_generated_payload['public_summary'] = $featured_summary;
+                            $stored_generated_payload['manually_refined_at'] = get_date();
+                            $update_data['fcc_featured_profile_generated'] = json_encode($stored_generated_payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_INVALID_UTF8_SUBSTITUTE);
+                        }
+                    }
+                }
+
+                db()->where('link_id', $main_biolink->link_id)->where('user_id', $this->user->user_id)->update('links', $update_data);
+                fcc_featured_clear_public_cache((int) $this->user->user_id, (int) $main_biolink->link_id);
+
+                if(!$generate_requested && !Alerts::has_errors()) {
+                    Alerts::add_success(l('links.biolink_workspace.featured_profile.success.saved'));
+                }
             }
 
-            redirect('links?type=biolink');
+            redirect('links?type=biolink' . ($generate_requested ? '&fcc_profile_modal=1' : ''));
         }
 
         /* Check for the plan limit */
@@ -924,13 +1356,22 @@ class Links extends Controller {
         $projects = (new \Altum\Models\Projects())->get_projects_by_user_id($this->user->user_id);
 
         $main_biolink_featured = null;
+        $main_biolink_signal_snapshot = [];
+        $main_biolink_featured_builder = [];
         if($main_biolink) {
+            $main_biolink_signal_snapshot = fcc_ai_get_user_growth_signal_snapshot((int) $this->user->user_id, (int) $main_biolink->link_id);
+            $main_biolink_featured_builder = $this->get_featured_profile_builder_state($main_biolink, $main_biolink_signal_snapshot);
             $main_biolink_featured = [
                 'link_id' => (int) $main_biolink->link_id,
                 'opt_in' => (int) ($main_biolink->fcc_featured_opt_in ?? 1),
                 'is_approved' => (int) ($main_biolink->fcc_featured_is_approved ?? 1),
                 'public_market' => trim((string) ($main_biolink->fcc_featured_public_market ?? '')) ?: $this->get_default_public_market($this->user),
+                'public_use_case' => trim((string) ($main_biolink->fcc_featured_public_use_case ?? '')),
                 'public_summary' => trim((string) ($main_biolink->fcc_featured_public_summary ?? '')),
+                'profile_form' => $this->get_featured_profile_form_values($main_biolink->fcc_featured_profile_form ?? null),
+                'generated_profile' => $main_biolink_featured_builder['generated_payload'] ?? [],
+                'profile_builder' => $main_biolink_featured_builder,
+                'signal_snapshot' => $main_biolink_signal_snapshot,
                 'feature_labels' => $this->get_case_study_feature_labels((int) $main_biolink->link_id),
             ];
         }
@@ -946,6 +1387,8 @@ class Links extends Controller {
             'main_biolink_featured' => $main_biolink_featured,
             'main_biolink_auto_summary' => $main_biolink_featured ? $this->get_auto_featured_summary($main_biolink_featured['feature_labels']) : null,
             'main_biolink_row' => $main_biolink_row,
+            'main_biolink_signal_snapshot' => $main_biolink_signal_snapshot,
+            'main_biolink_featured_builder' => $main_biolink_featured_builder,
             'app_review_is_accessible' => $app_review_is_accessible,
             'app_review_locked_reason' => $app_review_locked_reason,
             'app_review_page_url' => $app_review_page_url,
