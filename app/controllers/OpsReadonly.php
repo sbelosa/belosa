@@ -654,6 +654,19 @@ class OpsReadonly extends Controller {
             'top_target' => 50,
             'weekly_check_target' => 15,
         ];
+        $public_signal_summary = $user_id > 0 ? fcc_ai_get_user_public_visibility_signal_snapshot($user_id) : [
+            'qualified_clicks_30d' => 0,
+            'qualified_clicks_7d' => 0,
+            'app_clicks_30d' => 0,
+            'app_clicks_7d' => 0,
+            'blog_clicks_30d' => 0,
+            'blog_clicks_7d' => 0,
+            'qualified_target' => 15,
+            'top_target' => 50,
+            'weekly_check_target' => 15,
+            'growth_signal_30d' => 0,
+            'growth_signal_7d' => 0,
+        ];
         $is_signal_qualified = (int) ($signal_summary['growth_signal_30d'] ?? 0) >= 15 || in_array($manual_tier_active, ['qualified', 'top'], true);
         $is_top_performer = (int) ($signal_summary['growth_signal_30d'] ?? 0) >= 50 || $manual_tier_active === 'top';
         $is_weekly_check_passed = (int) ($signal_summary['growth_signal_7d'] ?? 0) >= 15;
@@ -669,6 +682,8 @@ class OpsReadonly extends Controller {
             'intro_cycle_available' => $starter_app_review_available || $starter_weekly_plan_available,
             'growth_signal_30d' => (int) ($signal_summary['growth_signal_30d'] ?? 0),
             'growth_signal_7d' => (int) ($signal_summary['growth_signal_7d'] ?? 0),
+            'public_signal_30d' => (int) ($public_signal_summary['growth_signal_30d'] ?? 0),
+            'public_signal_7d' => (int) ($public_signal_summary['growth_signal_7d'] ?? 0),
         ], 'hr');
 
         return [
@@ -705,6 +720,20 @@ class OpsReadonly extends Controller {
                 'is_signal_qualified' => $is_signal_qualified,
                 'is_top_performer' => $is_top_performer,
                 'is_weekly_check_passed' => $is_weekly_check_passed,
+            ],
+            'public_signal_summary' => [
+                'growth_signal_30d' => (int) ($public_signal_summary['growth_signal_30d'] ?? 0),
+                'growth_signal_7d' => (int) ($public_signal_summary['growth_signal_7d'] ?? 0),
+                'app_clicks_30d' => (int) ($public_signal_summary['app_clicks_30d'] ?? 0),
+                'app_clicks_7d' => (int) ($public_signal_summary['app_clicks_7d'] ?? 0),
+                'blog_clicks_30d' => (int) ($public_signal_summary['blog_clicks_30d'] ?? 0),
+                'blog_clicks_7d' => (int) ($public_signal_summary['blog_clicks_7d'] ?? 0),
+                'qualified_target' => (int) ($public_signal_summary['qualified_target'] ?? 15),
+                'top_target' => (int) ($public_signal_summary['top_target'] ?? 50),
+                'weekly_check_target' => (int) ($public_signal_summary['weekly_check_target'] ?? 15),
+                'is_signal_qualified' => (int) ($public_signal_summary['growth_signal_30d'] ?? 0) >= 15,
+                'is_top_performer' => (int) ($public_signal_summary['growth_signal_30d'] ?? 0) >= 50,
+                'is_weekly_check_passed' => (int) ($public_signal_summary['growth_signal_7d'] ?? 0) >= 15,
             ],
             'counts' => [
                 'weekly_checkins' => count($weekly_checkins),

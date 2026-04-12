@@ -135,7 +135,7 @@ class AdminLeaderOperatingSystemLeader extends Controller {
         }
 
         $link_id = (int) ($main_biolink->link_id ?? 0);
-        $signal_snapshot = fcc_ai_get_user_growth_signal_snapshot($user_id, $link_id);
+        $signal_snapshot = fcc_ai_get_user_public_visibility_signal_snapshot($user_id);
         $sales_link_summary = fcc_ai_get_user_sales_link_summary($main_biolink, \Altum\Language::$code);
         $generated_profile = fcc_featured_decode_json_payload($main_biolink->fcc_featured_profile_generated ?? null);
         $feature_labels = fcc_featured_get_case_study_feature_labels($link_id, \Altum\Language::$code);

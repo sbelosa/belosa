@@ -1115,7 +1115,7 @@ class Links extends Controller {
                 $featured_use_case = input_clean($_POST['fcc_featured_public_use_case'] ?? '', 128);
                 $featured_summary = input_clean($_POST['fcc_featured_public_summary'] ?? '', 420);
                 $profile_form_values = $this->get_featured_profile_form_values($_POST);
-                $signal_snapshot = fcc_ai_get_user_growth_signal_snapshot((int) $this->user->user_id, (int) $main_biolink->link_id);
+                $signal_snapshot = fcc_ai_get_user_public_visibility_signal_snapshot((int) $this->user->user_id);
                 $builder_state = $this->get_featured_profile_builder_state($main_biolink, $signal_snapshot);
                 $generate_requested = isset($_POST['fcc_generate_featured_profile']);
                 $stored_generated_payload = $this->get_featured_profile_generated_payload($main_biolink->fcc_featured_profile_generated ?? null);
@@ -1359,7 +1359,7 @@ class Links extends Controller {
         $main_biolink_signal_snapshot = [];
         $main_biolink_featured_builder = [];
         if($main_biolink) {
-            $main_biolink_signal_snapshot = fcc_ai_get_user_growth_signal_snapshot((int) $this->user->user_id, (int) $main_biolink->link_id);
+            $main_biolink_signal_snapshot = fcc_ai_get_user_public_visibility_signal_snapshot((int) $this->user->user_id);
             $main_biolink_featured_builder = $this->get_featured_profile_builder_state($main_biolink, $main_biolink_signal_snapshot);
             $main_biolink_featured = [
                 'link_id' => (int) $main_biolink->link_id,

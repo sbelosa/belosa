@@ -1377,6 +1377,65 @@ function fcc_ai_get_user_growth_signal_snapshot(int $user_id, int $link_id = 0):
     return $payload;
 }
 
+function fcc_ai_get_user_public_visibility_signal_snapshot(int $user_id): array {
+    $payload = [
+        'qualified_clicks_30d' => 0,
+        'qualified_clicks_7d' => 0,
+        'app_clicks_30d' => 0,
+        'app_clicks_7d' => 0,
+        'blog_clicks_30d' => 0,
+        'blog_clicks_7d' => 0,
+        'qualified_target' => 15,
+        'top_target' => 50,
+        'weekly_check_target' => 15,
+        /* Backward-compatible aliases for public-layer callers and views. */
+        'growth_signal_30d' => 0,
+        'growth_signal_7d' => 0,
+    ];
+
+    if($user_id <= 0) {
+        return $payload;
+    }
+
+    $qualified_block_types = \Altum\Link::get_fcc_results_qualified_block_types();
+    $qualified_block_types_sql = "'" . implode("','", array_map(static function($value) {
+        return database()->real_escape_string((string) $value);
+    }, $qualified_block_types)) . "'";
+    $blog_mediums = \Altum\Link::get_fcc_results_qualified_blog_mediums();
+    $blog_mediums_sql = "'" . implode("','", array_map(static function($value) {
+        return database()->real_escape_string((string) $value);
+    }, $blog_mediums)) . "'";
+    $qualified_click_condition_sql = \Altum\Link::get_fcc_results_qualified_click_condition_sql('`track_links`', '`biolinks_blocks`');
+
+    $periods = [
+        '30d' => (new \DateTimeImmutable())->sub(new \DateInterval('P29D'))->format('Y-m-d 00:00:00'),
+        '7d' => (new \DateTimeImmutable())->sub(new \DateInterval('P6D'))->format('Y-m-d 00:00:00'),
+    ];
+
+    foreach($periods as $period_key => $period_start_datetime) {
+        $result = database()->query("SELECT
+                SUM(CASE WHEN {$qualified_click_condition_sql} AND `track_links`.`is_unique` = 1 THEN 1 ELSE 0 END) AS `qualified_clicks`,
+                SUM(CASE WHEN `biolinks_blocks`.`type` IN ({$qualified_block_types_sql}) AND `track_links`.`is_unique` = 1 THEN 1 ELSE 0 END) AS `app_clicks`,
+                SUM(CASE WHEN `track_links`.`utm_medium` IN ({$blog_mediums_sql}) AND `track_links`.`is_unique` = 1 THEN 1 ELSE 0 END) AS `blog_clicks`
+            FROM `track_links`
+            LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id`
+            WHERE `track_links`.`user_id` = {$user_id}
+              AND `track_links`.`datetime` >= '{$period_start_datetime}'");
+
+        $row = $result ? $result->fetch_object() : null;
+        $qualified_clicks = max(0, (int) ($row->qualified_clicks ?? 0));
+        $app_clicks = max(0, (int) ($row->app_clicks ?? 0));
+        $blog_clicks = max(0, (int) ($row->blog_clicks ?? 0));
+
+        $payload['qualified_clicks_' . $period_key] = $qualified_clicks;
+        $payload['app_clicks_' . $period_key] = $app_clicks;
+        $payload['blog_clicks_' . $period_key] = $blog_clicks;
+        $payload['growth_signal_' . $period_key] = $qualified_clicks;
+    }
+
+    return $payload;
+}
+
 function fcc_ai_get_portfolio_health_label(string $health_key, string $language = 'hr'): string {
     $language = fcc_ai_resolve_public_reply_language($language);
     $health_key = trim(mb_strtolower($health_key));
@@ -1930,6 +1989,8 @@ function fcc_ai_get_user_mentor_intelligence_summary(object $user, array $contex
     $intro_cycle_available = !empty($context['intro_cycle_available']);
     $growth_signal_30d = max(0, (int) ($context['growth_signal_30d'] ?? 0));
     $growth_signal_7d = max(0, (int) ($context['growth_signal_7d'] ?? 0));
+    $public_signal_30d = max(0, (int) ($context['public_signal_30d'] ?? $growth_signal_30d));
+    $public_signal_7d = max(0, (int) ($context['public_signal_7d'] ?? $growth_signal_7d));
     $sales_link_summary = fcc_ai_get_user_sales_link_summary($user, $language);
     $portfolio_summary = fcc_ai_get_user_app_portfolio_summary($user, $language);
     $sales_status_key = trim((string) ($sales_link_summary['status_key'] ?? 'missing'));
@@ -1993,7 +2054,7 @@ function fcc_ai_get_user_mentor_intelligence_summary(object $user, array $contex
         $admin_action = $language === 'en'
             ? 'Review the portfolio with the collaborator, keep only the focused or business-relevant pages active, and archive the dead ends.'
             : 'Prodji s korisnikom portfelj, zadrzi samo fokusne ili poslovno bitne stranice aktivnima, a slijepa crijeva arhiviraj.';
-    } elseif($access_tier === 'top' || $growth_signal_30d >= 50) {
+    } elseif($access_tier === 'top' || $public_signal_30d >= 50) {
         $stage_key = 'top_momentum';
         $priority_key = 'top_signal';
         $primary_url = url('ai-plan');
@@ -2004,7 +2065,7 @@ function fcc_ai_get_user_mentor_intelligence_summary(object $user, array $contex
         $admin_action = $language === 'en'
             ? 'Keep this collaborator on weekly review, preserve the 50+ / 30d sponsor level, and use them as a visible homepage example.'
             : 'Drzi ovog suradnika na tjednom pregledu, cuvaj 50+ / 30d razinu preporucenog sponzora i iskoristi ga kao vidljiv primjer za naslovnicu.';
-    } elseif($access_tier === 'qualified' || $growth_signal_30d >= 15) {
+    } elseif($access_tier === 'qualified' || $public_signal_30d >= 15) {
         $stage_key = 'serious_focus';
         $priority_key = 'ai_cycle';
         $primary_url = url('ai-plan');
@@ -2561,11 +2622,14 @@ function fcc_ai_get_user_ai_plan_summary(object $user, string $language = 'hr'):
         (int) ($user->user_id ?? 0),
         (int) (fc_get_user_main_biolink_id((int) ($user->user_id ?? 0)) ?? 0)
     );
+    $public_signal_snapshot = fcc_ai_get_user_public_visibility_signal_snapshot((int) ($user->user_id ?? 0));
     $growth_signal_30d = (int) ($signal_snapshot['growth_signal_30d'] ?? 0);
     $growth_signal_7d = (int) ($signal_snapshot['growth_signal_7d'] ?? 0);
+    $public_signal_30d = (int) ($public_signal_snapshot['growth_signal_30d'] ?? 0);
+    $public_signal_7d = (int) ($public_signal_snapshot['growth_signal_7d'] ?? 0);
     $analysis_unlocked = $is_pro && ($growth_signal_30d >= 15 || in_array($manual_tier, ['qualified', 'top'], true));
-    $top_performer = $is_pro && ($growth_signal_30d >= 50 || $manual_tier === 'top');
-    $weekly_check_passed = $growth_signal_7d >= 15;
+    $top_performer = $is_pro && ($public_signal_30d >= 50 || $manual_tier === 'top');
+    $weekly_check_passed = $public_signal_7d >= 15;
     $starter_app_review_used = min(1, max(0, (int) ($access->starter_app_review_used ?? (!empty($app_reviews) ? 1 : 0))));
     $starter_weekly_plan_used = min(1, max(0, (int) ($access->starter_weekly_plan_used ?? (!empty($weekly_plans) ? 1 : 0))));
     $starter_app_review_available = $is_pro && !$analysis_unlocked && !$starter_app_review_used;
@@ -2669,6 +2733,21 @@ function fcc_ai_get_user_ai_plan_summary(object $user, string $language = 'hr'):
             'missing_to_qualified' => max(0, 15 - $growth_signal_30d),
             'missing_to_top' => max(0, 50 - $growth_signal_30d),
             'missing_to_weekly_check' => max(0, 15 - $growth_signal_7d),
+            'weekly_check_passed' => $weekly_check_passed,
+        ],
+        'public_signal_summary' => [
+            'growth_signal_30d' => $public_signal_30d,
+            'growth_signal_7d' => $public_signal_7d,
+            'app_clicks_30d' => (int) ($public_signal_snapshot['app_clicks_30d'] ?? 0),
+            'app_clicks_7d' => (int) ($public_signal_snapshot['app_clicks_7d'] ?? 0),
+            'blog_clicks_30d' => (int) ($public_signal_snapshot['blog_clicks_30d'] ?? 0),
+            'blog_clicks_7d' => (int) ($public_signal_snapshot['blog_clicks_7d'] ?? 0),
+            'qualified_target' => (int) ($public_signal_snapshot['qualified_target'] ?? 15),
+            'top_target' => (int) ($public_signal_snapshot['top_target'] ?? 50),
+            'weekly_check_target' => (int) ($public_signal_snapshot['weekly_check_target'] ?? 15),
+            'missing_to_qualified' => max(0, 15 - $public_signal_30d),
+            'missing_to_top' => max(0, 50 - $public_signal_30d),
+            'missing_to_weekly_check' => max(0, 15 - $public_signal_7d),
             'weekly_check_passed' => $weekly_check_passed,
         ],
         'profile' => [
@@ -4369,7 +4448,8 @@ function fcc_ai_get_internal_coach_portfolio_explainer(array $portfolio_summary 
 function fcc_ai_get_internal_coach_sponsor_visibility_explainer(array $ai_plan = [], string $language = 'hr'): string {
     $language = fcc_ai_resolve_public_reply_language($language);
     $access_summary = is_array($ai_plan['access_summary'] ?? null) ? $ai_plan['access_summary'] : [];
-    $signal_summary = is_array($ai_plan['signal_summary'] ?? null) ? $ai_plan['signal_summary'] : [];
+    $public_signal_summary = is_array($ai_plan['public_signal_summary'] ?? null) ? $ai_plan['public_signal_summary'] : [];
+    $signal_summary = !empty($public_signal_summary) ? $public_signal_summary : (is_array($ai_plan['signal_summary'] ?? null) ? $ai_plan['signal_summary'] : []);
     $growth_signal_30d = max(0, (int) ($signal_summary['growth_signal_30d'] ?? 0));
     $growth_signal_7d = max(0, (int) ($signal_summary['growth_signal_7d'] ?? 0));
     $qualified_target = max(1, (int) ($signal_summary['qualified_target'] ?? 15));
@@ -4378,7 +4458,7 @@ function fcc_ai_get_internal_coach_sponsor_visibility_explainer(array $ai_plan =
     $missing_to_qualified = max(0, (int) ($signal_summary['missing_to_qualified'] ?? max(0, $qualified_target - $growth_signal_30d)));
     $missing_to_top = max(0, (int) ($signal_summary['missing_to_top'] ?? max(0, $top_target - $growth_signal_30d)));
     $analysis_unlocked = !empty($access_summary['analysis_unlocked']);
-    $top_performer = !empty($access_summary['top_performer']);
+    $top_performer = !empty($access_summary['top_performer']) || $growth_signal_30d >= $top_target;
 
     if($language === 'en') {
         if($top_performer) {
@@ -13227,6 +13307,7 @@ function fcc_ai_generate_internal_coach_reply(string $message, array $context = 
     $availability_summary = $ai_plan['availability_summary'] ?? [];
     $coach_summary = $ai_plan['coach_summary'] ?? [];
     $signal_summary = $ai_plan['signal_summary'] ?? [];
+    $public_signal_summary = $ai_plan['public_signal_summary'] ?? [];
     $mentor_guidance = trim((string) ($ai_plan['mentor_guidance']['preview'] ?? ''));
     $normalized_message = mb_strtolower($message);
     $page_route = trim((string) ($page['route'] ?? ''));
@@ -13267,7 +13348,14 @@ function fcc_ai_generate_internal_coach_reply(string $message, array $context = 
     $missing_to_qualified = max(0, (int) ($signal_summary['missing_to_qualified'] ?? max(0, $qualified_target - $growth_signal_30d)));
     $missing_to_top = max(0, (int) ($signal_summary['missing_to_top'] ?? max(0, $top_target - $growth_signal_30d)));
     $missing_to_weekly_check = max(0, (int) ($signal_summary['missing_to_weekly_check'] ?? max(0, $weekly_check_target - $growth_signal_7d)));
-    $weekly_check_passed = !empty($access_summary['weekly_check_passed']) || !empty($signal_summary['weekly_check_passed']) || $growth_signal_7d >= $weekly_check_target;
+    $public_signal_30d = (int) ($public_signal_summary['growth_signal_30d'] ?? $growth_signal_30d);
+    $public_signal_7d = (int) ($public_signal_summary['growth_signal_7d'] ?? $growth_signal_7d);
+    $public_missing_to_qualified = max(0, (int) ($public_signal_summary['missing_to_qualified'] ?? max(0, $qualified_target - $public_signal_30d)));
+    $public_missing_to_top = max(0, (int) ($public_signal_summary['missing_to_top'] ?? max(0, $top_target - $public_signal_30d)));
+    $public_missing_to_weekly_check = max(0, (int) ($public_signal_summary['missing_to_weekly_check'] ?? max(0, $weekly_check_target - $public_signal_7d)));
+    $public_top_performer = $public_signal_30d >= $top_target;
+    $public_featured_ready = $public_signal_30d >= $qualified_target;
+    $weekly_check_passed = !empty($access_summary['weekly_check_passed']) || !empty($public_signal_summary['weekly_check_passed']) || !empty($signal_summary['weekly_check_passed']) || $public_signal_7d >= $weekly_check_target;
 
     $is_review_request = fcc_ai_contains_keywords($message, ['review', 'pregled', 'app', 'aplik', 'biolink', 'link']);
     $is_contacts_request = fcc_ai_contains_keywords($message, ['kontakt', 'lead', 'data', 'inbox', 'follow-up', 'follow up', 'dm', 'whatsapp']);
@@ -13451,14 +13539,14 @@ function fcc_ai_generate_internal_coach_reply(string $message, array $context = 
                 : 'Novi tjedni unos postaje dostupan ' . $weekly_next_label . ($weekly_countdown_days !== null ? ' (' . max(0, $weekly_countdown_days) . ' dana).' : '.');
         }
 
-        if($top_performer) {
+        if($public_top_performer) {
             $blocks[] = $language === 'en'
-                ? 'You already hold the 50+ / 30d sponsor level with ' . $growth_signal_30d . ' in 30 days. The extra weekly check is ' . $growth_signal_7d . ' / ' . $weekly_check_target . ' in 7 days.'
-                : 'Vec drzis 50+ / 30d razinu preporucenog sponzora s ' . $growth_signal_30d . ' u 30 dana. Dodatna tjedna provjera ti je ' . $growth_signal_7d . ' / ' . $weekly_check_target . ' u 7 dana.';
-        } elseif($analysis_unlocked) {
+                ? 'You already hold the 50+ / 30d sponsor level with ' . $public_signal_30d . ' in 30 days. The extra weekly check is ' . $public_signal_7d . ' / ' . $weekly_check_target . ' in 7 days.'
+                : 'Vec drzis 50+ / 30d razinu preporucenog sponzora s ' . $public_signal_30d . ' u 30 dana. Dodatna tjedna provjera ti je ' . $public_signal_7d . ' / ' . $weekly_check_target . ' u 7 dana.';
+        } elseif($analysis_unlocked || $public_featured_ready) {
             $blocks[] = $language === 'en'
-                ? 'Right now you are on the 15+ / 30d AI level with ' . $growth_signal_30d . '. That keeps you eligible for Featured Apps, and the next sponsor target is ' . $top_target . ' / 30d. Your current 7-day check is ' . $growth_signal_7d . ' / ' . $weekly_check_target . '.'
-                : 'Trenutno si na 15+ / 30d AI razini s ' . $growth_signal_30d . '. To te drzi spremnim za popis Istaknutih aplikacija, a sljedeci sponsor cilj je ' . $top_target . ' / 30d. Tvoja trenutačna 7-dnevna provjera je ' . $growth_signal_7d . ' / ' . $weekly_check_target . '.';
+                ? 'Right now you are on the 15+ / 30d public FCC level with ' . $public_signal_30d . '. That keeps you eligible for Featured Apps, and the next sponsor target is ' . $top_target . ' / 30d. Your current 7-day check is ' . $public_signal_7d . ' / ' . $weekly_check_target . '.'
+                : 'Trenutno si na 15+ / 30d javnoj FCC razini s ' . $public_signal_30d . '. To te drzi spremnim za popis Istaknutih aplikacija, a sljedeci sponsor cilj je ' . $top_target . ' / 30d. Tvoja trenutačna 7-dnevna provjera je ' . $public_signal_7d . ' / ' . $weekly_check_target . '.';
         }
 
         $blocks[] = $language === 'en'
@@ -13631,20 +13719,20 @@ function fcc_ai_generate_internal_coach_reply(string $message, array $context = 
             : 'Ako želiš dublju AI analizu aplikacije, tjedne AI planove i VIP Coach na najjačem paketu inteligencije, aktiviraj PRO ili barem besplatni trial.';
     }
 
-    if($top_performer) {
+    if($public_top_performer) {
         $blocks[] = $language === 'en'
             ? 'Your sponsor focus now is to protect the 50+ / 30d level as your main public FCC asset, keep the homepage recommended sponsor visibility strong, and keep the 7-day rhythm healthy as a weekly check.'
             : 'Tvoj sponsor fokus sada je zadržati 50+ / 30d razinu kao glavni javni FCC kapital, čuvati vidljivost preporučenog sponzora na naslovnici i držati 7-dnevni ritam zdravim kao tjednu provjeru.';
-    } elseif($is_pro && $analysis_unlocked && !$top_performer) {
+    } elseif($is_pro && ($analysis_unlocked || $public_featured_ready) && !$public_top_performer) {
         $blocks[] = $language === 'en'
             ? 'Stay above 15+ / 30d to remain on Featured Apps, but build toward ' . $top_target . '+ / 30d as the main public sponsor target. That is the simplest way for FCC to promote you as an active sponsor, strengthen your brand, and give Google and AI systems a clearer public signal. The 7-day check matters as weekly rhythm, not as the main sponsor threshold.'
             : 'Ostani iznad 15+ / 30d kako bi ostao na popisu Istaknutih aplikacija, ali gradi prema ' . $top_target . '+ / 30d kao glavnom javnom sponsor cilju. To je najjednostavniji način da te FCC promovira kao aktivnog sponzora, ojača tvoj brand i da Googleu i AI sustavima jasniji javni signal. 7-dnevna provjera važna je kao tjedni ritam, ali nije glavni sponsor prag.';
     }
 
-    if(!$top_performer && $analysis_unlocked && !$weekly_check_passed) {
+    if(!$public_top_performer && ($analysis_unlocked || $public_featured_ready) && !$weekly_check_passed) {
         $blocks[] = $language === 'en'
-            ? 'Your weekly rhythm check is still missing ' . $missing_to_weekly_check . ' to reach ' . $weekly_check_target . ' in 7 days. That does not block Featured Apps, but it is a good weekly confirmation signal.'
-            : 'Za tjednu provjeru ritma nedostaje ti jos ' . $missing_to_weekly_check . ' do ' . $weekly_check_target . ' u 7 dana. To ne blokira popis Istaknutih aplikacija, ali je dobar tjedni signal potvrde.';
+            ? 'Your weekly rhythm check is still missing ' . $public_missing_to_weekly_check . ' to reach ' . $weekly_check_target . ' in 7 days. That does not block Featured Apps, but it is a good weekly confirmation signal.'
+            : 'Za tjednu provjeru ritma nedostaje ti jos ' . $public_missing_to_weekly_check . ' do ' . $weekly_check_target . ' u 7 dana. To ne blokira popis Istaknutih aplikacija, ali je dobar tjedni signal potvrde.';
     }
 
     if($is_portfolio_request && $portfolio_health_label !== '') {
