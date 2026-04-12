@@ -119,6 +119,15 @@
     .fcc-results-page .fcc-chip-rising { background: rgba(34, 197, 94, 0.2); color: #92f6ba; }
     .fcc-results-page .fcc-chip-falling { background: rgba(239, 68, 68, 0.2); color: #ffb0b0; }
 
+    .fcc-results-page .fcc-stat-breakdown {
+        margin-top: -0.35rem;
+        margin-bottom: 0.55rem;
+        padding-left: 0.1rem;
+        color: rgba(226, 232, 240, 0.7);
+        font-size: 12px;
+        line-height: 1.45;
+    }
+
     .fcc-results-page .fcc-table th {
         border-top: 0;
         font-size: 12px;
@@ -487,8 +496,22 @@
                             <strong><?= nr($current_user_data['blog_clicks']) ?></strong>
                         </div>
                         <div class="fcc-stat-row">
-                            <span><?= l('fcc_results.you.funnel_contacts') ?></span>
-                            <strong><?= nr($current_user_data['funnel_contacts'] ?? 0) ?></strong>
+                            <span>
+                                <?= l('fcc_results.you.funnel_contacts') ?>
+                                <span data-toggle="tooltip" title="<?= l('fcc_results.metrics_info.total_contacts') ?>"><i class="fas fa-info-circle fcc-help-icon"></i></span>
+                            </span>
+                            <strong><?= nr($current_user_data['total_contacts'] ?? 0) ?></strong>
+                        </div>
+                        <div class="fcc-stat-breakdown">
+                            <?= sprintf(
+                                l('fcc_results.you.contacts_breakdown'),
+                                nr($current_user_data['funnel_contacts'] ?? 0),
+                                nr($current_user_data['ai_chat_contacts'] ?? 0)
+                            ) ?>
+                        </div>
+                        <div class="fcc-stat-row">
+                            <span><?= l('fcc_results.you.ai_chat_contacts') ?></span>
+                            <strong><?= nr($current_user_data['ai_chat_contacts'] ?? 0) ?></strong>
                         </div>
                         <div class="fcc-stat-row">
                             <span>

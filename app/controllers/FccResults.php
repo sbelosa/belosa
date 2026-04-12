@@ -54,16 +54,24 @@ class FccResults extends Controller {
         return $map;
     }
 
-    private function get_funnel_contacts_map(string $period_start_datetime): array {
+    private function get_contact_breakdown_map(string $period_start_datetime): array {
         $map = [];
-        $result = database()->query("SELECT `user_id`, COUNT(*) AS `total`
+        $result = database()->query("SELECT
+                `user_id`,
+                SUM(CASE WHEN `type` = 'lead_funnel' THEN 1 ELSE 0 END) AS `funnel_contacts`,
+                SUM(CASE WHEN `type` = 'ai_chat_lead' THEN 1 ELSE 0 END) AS `ai_chat_contacts`,
+                COUNT(*) AS `total`
             FROM `data`
             WHERE `type` IN ('lead_funnel', 'ai_chat_lead')
               AND `datetime` >= '{$period_start_datetime}'
             GROUP BY `user_id`");
 
         while($row = $result->fetch_object()) {
-            $map[(int) $row->user_id] = (int) ($row->total ?? 0);
+            $map[(int) $row->user_id] = [
+                'funnel_contacts' => (int) ($row->funnel_contacts ?? 0),
+                'ai_chat_contacts' => (int) ($row->ai_chat_contacts ?? 0),
+                'total_contacts' => (int) ($row->total ?? 0),
+            ];
         }
 
         return $map;
@@ -145,7 +153,7 @@ class FccResults extends Controller {
             $period_start_datetime = $this->get_period_start_datetime($period_days);
             $period_previous_start_datetime = $this->get_previous_period_start_datetime($period_days);
             $visitor_conversion_map = $this->get_visitor_conversion_map($period_start_datetime, $qualified_click_condition_sql);
-            $funnel_contacts_map = $this->get_funnel_contacts_map($period_start_datetime);
+            $contact_breakdown_map = $this->get_contact_breakdown_map($period_start_datetime);
 
             $previous_clicks_map = [];
             $previous_clicks_result = database()->query("SELECT `track_links`.`user_id`, COUNT(*) AS `total` FROM `track_links` LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id` WHERE `track_links`.`datetime` >= '{$period_previous_start_datetime}' AND `track_links`.`datetime` < '{$period_start_datetime}' AND `track_links`.`is_unique` = 1 AND {$qualified_click_condition_sql} GROUP BY `track_links`.`user_id`");
@@ -175,7 +183,14 @@ class FccResults extends Controller {
                 $qualified_clicks = (int) ($leaderboard_row->qualified_clicks ?? 0);
                 $app_clicks = (int) ($leaderboard_row->app_clicks ?? 0);
                 $blog_clicks = (int) ($leaderboard_row->blog_clicks ?? 0);
-                $funnel_contacts = (int) ($funnel_contacts_map[$user_id] ?? 0);
+                $contact_breakdown = $contact_breakdown_map[$user_id] ?? [
+                    'funnel_contacts' => 0,
+                    'ai_chat_contacts' => 0,
+                    'total_contacts' => 0,
+                ];
+                $funnel_contacts = (int) ($contact_breakdown['funnel_contacts'] ?? 0);
+                $ai_chat_contacts = (int) ($contact_breakdown['ai_chat_contacts'] ?? 0);
+                $total_contacts = (int) ($contact_breakdown['total_contacts'] ?? 0);
                 $biolink_visits = (int) ($leaderboard_row->biolink_visits ?? 0);
                 $biolink_visitors = (int) ($visitor_conversion_map[$user_id]['biolink_visitors'] ?? 0);
                 $qualified_visitors = (int) ($visitor_conversion_map[$user_id]['qualified_visitors'] ?? 0);
@@ -190,6 +205,8 @@ class FccResults extends Controller {
                     'app_clicks' => $app_clicks,
                     'blog_clicks' => $blog_clicks,
                     'funnel_contacts' => $funnel_contacts,
+                    'ai_chat_contacts' => $ai_chat_contacts,
+                    'total_contacts' => $total_contacts,
                     'biolink_visits' => $biolink_visits,
                     'biolink_visitors' => $biolink_visitors,
                     'qualified_visitors' => $qualified_visitors,
@@ -218,7 +235,14 @@ class FccResults extends Controller {
             $current_user_qualified_clicks = (int) ($current_user_totals->qualified_clicks ?? 0);
             $current_user_app_clicks = (int) ($current_user_totals->app_clicks ?? 0);
             $current_user_blog_clicks = (int) ($current_user_totals->blog_clicks ?? 0);
-            $current_user_funnel_contacts = (int) ($funnel_contacts_map[$this->user->user_id] ?? 0);
+            $current_user_contact_breakdown = $contact_breakdown_map[$this->user->user_id] ?? [
+                'funnel_contacts' => 0,
+                'ai_chat_contacts' => 0,
+                'total_contacts' => 0,
+            ];
+            $current_user_funnel_contacts = (int) ($current_user_contact_breakdown['funnel_contacts'] ?? 0);
+            $current_user_ai_chat_contacts = (int) ($current_user_contact_breakdown['ai_chat_contacts'] ?? 0);
+            $current_user_total_contacts = (int) ($current_user_contact_breakdown['total_contacts'] ?? 0);
             $current_user_biolink_visits = (int) ($current_user_totals->biolink_visits ?? 0);
             $current_user_biolink_visitors = (int) ($visitor_conversion_map[$this->user->user_id]['biolink_visitors'] ?? 0);
             $current_user_qualified_visitors = (int) ($visitor_conversion_map[$this->user->user_id]['qualified_visitors'] ?? 0);
@@ -234,6 +258,8 @@ class FccResults extends Controller {
                     'app_clicks' => $current_user_app_clicks,
                     'blog_clicks' => $current_user_blog_clicks,
                     'funnel_contacts' => $current_user_funnel_contacts,
+                    'ai_chat_contacts' => $current_user_ai_chat_contacts,
+                    'total_contacts' => $current_user_total_contacts,
                     'biolink_visits' => $current_user_biolink_visits,
                     'biolink_visitors' => $current_user_biolink_visitors,
                     'qualified_visitors' => $current_user_qualified_visitors,
