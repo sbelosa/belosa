@@ -617,6 +617,18 @@
                     <div class="small fcc-metric-note mb-0 fcc-ai-footnote">
                         <?= $ai_unlock['is_pro'] ? l('fcc_results.ai_widget.pro_note') : l('fcc_results.ai_widget.pro_required_note') ?>
                     </div>
+
+                    <?php if($data->selected_period === '7d'): ?>
+                        <div class="small fcc-metric-note mb-0 mt-3 fcc-ai-footnote">
+                            <?php if($ai_unlock['is_featured_7d'] && $ai_unlock['has_experience_signal']): ?>
+                                <?= l('fcc_results.ai_widget.featured_note_7d_experience') ?>
+                            <?php elseif($ai_unlock['is_featured_7d']): ?>
+                                <?= l('fcc_results.ai_widget.featured_note_7d_unlocked') ?>
+                            <?php else: ?>
+                                <?= l('fcc_results.ai_widget.featured_note_7d') ?>
+                            <?php endif ?>
+                        </div>
+                    <?php endif ?>
                 </div>
             </div>
 

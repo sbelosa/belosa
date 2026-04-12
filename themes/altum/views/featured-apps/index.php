@@ -18,7 +18,7 @@
 
         <div class="featured-apps-note">
             <strong class="d-block mb-1"><?= l('featured_apps.notice_title') ?></strong>
-            <span><?= sprintf(l('featured_apps.notice_text'), nr($data->signal_target), nr($data->top_period_days)) ?></span>
+            <span><?= sprintf(l('featured_apps.notice_text'), nr($data->signal_target), nr($data->top_period_days), nr($data->experience_signal_target)) ?></span>
         </div>
     </section>
 
@@ -57,6 +57,9 @@
 
                                 <span class="featured-app-pill featured-app-pill--accent"><?= l('featured_apps.performance') ?> 7d: <?= nr($app['growth_signal_7d']) ?></span>
                                 <span class="featured-app-pill"><?= $featured_app_signal_30d_label ?>: <?= nr($app['growth_signal_30d']) ?></span>
+                                <?php if(!empty($app['has_experience_signal_30d'])): ?>
+                                    <span class="featured-app-pill featured-app-pill--experience"><?= l('featured_apps.experience_badge') ?></span>
+                                <?php endif ?>
                             </div>
 
                             <div class="small text-muted mb-3"><?= $featured_app_breakdown_label ?>: <?= nr($app['shop_contacts_7d']) ?> · <?= $featured_app_contacts_label ?>: <?= nr($app['whatsapp_contacts_7d']) ?> · <?= $featured_app_funnel_label ?>: <?= nr($app['funnel_registrations_7d']) ?> · <?= $featured_app_ai_leads_label ?>: <?= nr($app['ai_chat_leads_7d']) ?></div>
@@ -187,6 +190,11 @@
     .featured-app-pill--accent {
         background: rgba(255, 198, 0, 0.1);
         color: #ffe9a7;
+    }
+
+    .featured-app-pill--experience {
+        background: rgba(104, 232, 188, 0.14);
+        color: #b9ffe8;
     }
 
     .featured-app-tag {

@@ -202,6 +202,7 @@ class FeaturedApps extends Controller {
         $signal_target = 15;
         $top_period_days = 7;
         $qualified_period_days = 30;
+        $experience_signal_target = 50;
 
         $featured_apps = [];
         $seen_featured_user_ids = [];
@@ -281,6 +282,7 @@ class FeaturedApps extends Controller {
                 'app_url' => $app_url,
                 'growth_signal_7d' => $growth_signal_7d,
                 'growth_signal_30d' => $growth_signal_30d,
+                'has_experience_signal_30d' => $growth_signal_30d >= $experience_signal_target,
                 'shop_contacts_7d' => (int) ($signal_snapshot['shop_contacts_7d'] ?? 0),
                 'whatsapp_contacts_7d' => (int) ($signal_snapshot['whatsapp_contacts_7d'] ?? 0),
                 'funnel_registrations_7d' => (int) ($signal_snapshot['funnel_registrations_7d'] ?? 0),
@@ -298,6 +300,12 @@ class FeaturedApps extends Controller {
                 return $signal_7d_compare;
             }
 
+            $experience_compare = ((int) (!empty($b['has_experience_signal_30d']))) <=> ((int) (!empty($a['has_experience_signal_30d'])));
+
+            if($experience_compare !== 0) {
+                return $experience_compare;
+            }
+
             $signal_30d_compare = ((int) ($b['growth_signal_30d'] ?? 0)) <=> ((int) ($a['growth_signal_30d'] ?? 0));
 
             if($signal_30d_compare !== 0) {
@@ -313,6 +321,7 @@ class FeaturedApps extends Controller {
             'signal_target' => $signal_target,
             'top_period_days' => $top_period_days,
             'qualified_period_days' => $qualified_period_days,
+            'experience_signal_target' => $experience_signal_target,
         ]));
     }
     /* /Custom code: FC-2026-03-14 */
