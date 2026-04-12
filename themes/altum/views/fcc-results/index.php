@@ -128,6 +128,22 @@
         color: rgba(226, 232, 240, 0.68);
     }
 
+    .fcc-results-page .fcc-stat-group {
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        padding: 0.55rem 0;
+    }
+
+    .fcc-results-page .fcc-stat-group .fcc-stat-row {
+        border-bottom: 0;
+        padding: 0;
+    }
+
+    .fcc-results-page .fcc-stat-group .fcc-stat-breakdown {
+        margin-top: 0.22rem;
+        margin-bottom: 0;
+        padding-left: 0.05rem;
+    }
+
     .fcc-results-page .fcc-table th {
         border-top: 0;
         font-size: 12px;
@@ -495,19 +511,21 @@
                             <span><?= l('fcc_results.you.blog_clicks') ?></span>
                             <strong><?= nr($current_user_data['blog_clicks']) ?></strong>
                         </div>
-                        <div class="fcc-stat-row">
-                            <span>
-                                <?= l('fcc_results.you.funnel_contacts') ?>
-                                <span data-toggle="tooltip" title="<?= l('fcc_results.metrics_info.total_contacts') ?>"><i class="fas fa-info-circle fcc-help-icon"></i></span>
-                            </span>
-                            <strong><?= nr($current_user_data['total_contacts'] ?? 0) ?></strong>
-                        </div>
-                        <div class="fcc-stat-breakdown">
-                            <?= sprintf(
-                                l('fcc_results.you.contacts_breakdown'),
-                                nr($current_user_data['funnel_contacts'] ?? 0),
-                                nr($current_user_data['ai_chat_contacts'] ?? 0)
-                            ) ?>
+                        <div class="fcc-stat-group">
+                            <div class="fcc-stat-row">
+                                <span>
+                                    <?= l('fcc_results.you.funnel_contacts') ?>
+                                    <span data-toggle="tooltip" title="<?= l('fcc_results.metrics_info.total_contacts') ?>"><i class="fas fa-info-circle fcc-help-icon"></i></span>
+                                </span>
+                                <strong><?= nr($current_user_data['total_contacts'] ?? 0) ?></strong>
+                            </div>
+                            <div class="fcc-stat-breakdown">
+                                <?= sprintf(
+                                    l('fcc_results.you.contacts_breakdown'),
+                                    nr($current_user_data['funnel_contacts'] ?? 0),
+                                    nr($current_user_data['ai_chat_contacts'] ?? 0)
+                                ) ?>
+                            </div>
                         </div>
                         <div class="fcc-stat-row">
                             <span>
