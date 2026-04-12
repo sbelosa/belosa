@@ -4482,6 +4482,23 @@ $operations_tab_badge_total = (int) (($data->operations['totals']['pending_appro
         <?php if(($data->selected_tab ?? 'overview') === 'ai_intelligence'): ?>
             <?php $fcc_ai_team = $data->overview['fcc_ai_team'] ?? []; ?>
             <?php $fcc_ai_model_routing = $data->fcc_ai_model_routing ?? []; ?>
+            <?php
+            $ai_intelligence_mentor_rows = array_values(array_filter((array) ($data->overview['queue_rows'] ?? []), static function($row) {
+                return !empty($row['ai_mentor_stage_label']);
+            }));
+            $ai_intelligence_blocked_total = count(array_filter($ai_intelligence_mentor_rows, static function($row) {
+                return (string) ($row['ai_mentor_stage_key'] ?? '') === 'blocked_setup';
+            }));
+            $ai_intelligence_scattered_total = count(array_filter($ai_intelligence_mentor_rows, static function($row) {
+                return (string) ($row['ai_mentor_stage_key'] ?? '') === 'scattered_focus';
+            }));
+            $ai_intelligence_serious_total = count(array_filter($ai_intelligence_mentor_rows, static function($row) {
+                return (string) ($row['ai_mentor_stage_key'] ?? '') === 'serious_focus';
+            }));
+            $ai_intelligence_top_total = count(array_filter($ai_intelligence_mentor_rows, static function($row) {
+                return (string) ($row['ai_mentor_stage_key'] ?? '') === 'top_momentum';
+            }));
+            ?>
             <div class="leader-os-panel mt-2 mb-3">
                 <div class="d-flex justify-content-between align-items-start flex-wrap mb-3" style="gap:1rem;">
                     <div>
@@ -4525,6 +4542,71 @@ $operations_tab_badge_total = (int) (($data->operations['totals']['pending_appro
                         <strong class="text-white"><?= nr((int) ($fcc_ai_team['totals']['negative_feedback'] ?? 0)) ?></strong>
                         · threadovi za review:
                         <strong class="text-white"><?= nr((int) ($fcc_ai_team['totals']['review_conversations'] ?? 0)) ?></strong>
+                    </div>
+
+                    <div class="leader-os-panel mt-3">
+                        <div class="d-flex justify-content-between align-items-start flex-wrap mb-3" style="gap:1rem;">
+                            <div>
+                                <div class="text-uppercase small text-muted mb-2">Coach mentor signal</div>
+                                <h3 class="h5 mb-1">Koga otvaraš prvo i zašto</h3>
+                                <div class="text-muted small">Ovo je novi sloj koji spaja Coach, AI growth pravila, sales link status i zdravlje portfelja. Ovdje odmah vidiš tko zapinje na setupu, tko je raspršen, a tko je ozbiljan i spreman za scale.</div>
+                            </div>
+                            <div class="d-flex flex-wrap" style="gap:.5rem;">
+                                <a href="<?= url('admin/leader-operating-system?' . http_build_query(array_merge($leader_os_state_query, ['tab' => 'coaching', 'page' => 1]))) ?>" class="btn btn-sm leader-os-action-button">Otvori Coaching</a>
+                                <a href="<?= url('admin/leader-operating-system?' . http_build_query(array_merge($leader_os_state_query, ['tab' => 'collaborators', 'page' => 1]))) ?>" class="btn btn-sm leader-os-action-button is-primary">Otvori Suradnike</a>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-6 col-xl-3 mb-3">
+                                <?= $render_kpi_card('mentor_blocked_setup_total', 'Blokiran setupom', $ai_intelligence_blocked_total, 'Prvi prioritet: nema valjanog Forever prodajnog linka ili je blok ugašen', 'Setup') ?>
+                            </div>
+                            <div class="col-6 col-xl-3 mb-3">
+                                <?= $render_kpi_card('mentor_scattered_total', 'Raspršen fokus', $ai_intelligence_scattered_total, 'Previše aplikacija bez smisla ili bez stvarnog signala', 'Focus') ?>
+                            </div>
+                            <div class="col-6 col-xl-3 mb-3">
+                                <?= $render_kpi_card('mentor_serious_total', 'Ozbiljan i fokusiran', $ai_intelligence_serious_total, 'Drže 15+ signal i koriste AI ciklus kako treba', 'Strong') ?>
+                            </div>
+                            <div class="col-6 col-xl-3 mb-3">
+                                <?= $render_kpi_card('mentor_top_total', 'TOP momentum', $ai_intelligence_top_total, 'Imaju 15+ u 7 dana i vrijedi ih gurati u vidljivost', 'TOP') ?>
+                            </div>
+                        </div>
+
+                        <div class="leader-os-grid-2">
+                            <div class="leader-os-panel">
+                                <div class="text-uppercase small text-muted mb-2">Prioritetni mentor slučajevi</div>
+                                <h3 class="h5 mb-3">Novi signal po suradniku</h3>
+                                <?php if(empty($ai_intelligence_mentor_rows)): ?>
+                                    <div class="text-muted small">Trenutno nema prioritetnih slučajeva s novim mentor signalom.</div>
+                                <?php else: ?>
+                                    <?php foreach(array_slice($ai_intelligence_mentor_rows, 0, 6) as $mentor_row): ?>
+                                        <div class="py-2 border-top border-dark">
+                                            <div class="d-flex justify-content-between align-items-center" style="gap:.75rem;">
+                                                <a href="<?= $mentor_row['detail_url'] ?>" class="leader-os-link"><?= htmlspecialchars((string) ($mentor_row['name'] ?? ''), ENT_QUOTES, 'UTF-8') ?></a>
+                                                <span class="leader-os-status-badge <?= htmlspecialchars((string) ($mentor_row['ai_mentor_stage_class'] ?? 'status-dark'), ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars((string) ($mentor_row['ai_mentor_stage_label'] ?? 'Mentor signal'), ENT_QUOTES, 'UTF-8') ?></span>
+                                            </div>
+                                            <div class="text-muted small mt-2">Sales link: <strong class="text-white"><?= htmlspecialchars((string) ($mentor_row['ai_mentor_sales_link_status_label'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></strong> · Portfelj: <strong class="text-white"><?= htmlspecialchars((string) ($mentor_row['ai_mentor_portfolio_health_label'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></strong></div>
+                                            <?php if(!empty($mentor_row['ai_mentor_focus_app_names']) || (int) ($mentor_row['ai_mentor_archive_candidate_count'] ?? 0) > 0): ?>
+                                                <div class="text-muted small mt-1">Fokus: <strong class="text-white"><?= htmlspecialchars((string) (($mentor_row['ai_mentor_focus_app_names'] ?? '') ?: nr((int) ($mentor_row['ai_mentor_focus_app_count'] ?? 0)) . ' aplikacije'), ENT_QUOTES, 'UTF-8') ?></strong><?php if((int) ($mentor_row['ai_mentor_archive_candidate_count'] ?? 0) > 0): ?> · Cleanup: <strong class="text-white"><?= nr((int) ($mentor_row['ai_mentor_archive_candidate_count'] ?? 0)) ?></strong><?php endif ?></div>
+                                            <?php endif ?>
+                                            <?php if(!empty($mentor_row['ai_mentor_admin_action'])): ?>
+                                                <div class="text-muted small mt-1">Što radiš: <strong class="text-white"><?= htmlspecialchars((string) ($mentor_row['ai_mentor_admin_action'] ?? ''), ENT_QUOTES, 'UTF-8') ?></strong></div>
+                                            <?php endif ?>
+                                        </div>
+                                    <?php endforeach ?>
+                                <?php endif ?>
+                            </div>
+
+                            <div class="leader-os-panel">
+                                <div class="text-uppercase small text-muted mb-2">Kako ovo čitaš</div>
+                                <h3 class="h5 mb-3">Što znači novi dio u AI Intelligence tabu</h3>
+                                <div class="text-muted small mb-2">`Blokiran setupom` znači da ne trebaš pričati o rastu dok glavni prodajni link nije ispravno složen.</div>
+                                <div class="text-muted small mb-2">`Raspršen fokus` znači da suradnik ima previše stranica ili aplikacija bez stvarnog smisla i treba cleanup.</div>
+                                <div class="text-muted small mb-2">`Ozbiljan i fokusiran` znači da vrijedi čuvati ritam, AI ciklus i fokus na glavnoj aplikaciji.</div>
+                                <div class="text-muted small mb-3">`TOP momentum` znači da ga možeš jače gurati prema vidljivosti, preporučenim sponzorima i zadržavanju ritma.</div>
+                                <div class="leader-os-inline-note mb-0">Ako želiš detalje po svim suradnicima, otvori `Suradnici`. Ako želiš radni redoslijed koga prvo kontaktiraš, otvori `Coaching`.</div>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="leader-os-grid-2">
