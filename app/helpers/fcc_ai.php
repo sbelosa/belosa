@@ -8645,6 +8645,10 @@ function fcc_ai_mark_feedback_resolved(int $feedback_id, int $user_id): array {
         ]);
 
         fcc_ai_refresh_conversation_insight((int) ($conversation->fcc_ai_conversation_id ?? 0));
+
+        if(fcc_ai_get_unresolved_feedback_total_for_conversation((int) ($conversation->fcc_ai_conversation_id ?? 0)) === 0) {
+            fcc_ai_mark_review_notifications_read_for_conversation($conversation);
+        }
     }
 
     return [
@@ -8697,6 +8701,11 @@ function fcc_ai_mark_feedback_resolved_by_admin(int $feedback_id, int $admin_use
         ]);
 
         fcc_ai_refresh_conversation_insight((int) ($conversation->fcc_ai_conversation_id ?? 0));
+
+        if(fcc_ai_get_unresolved_feedback_total_for_conversation((int) ($conversation->fcc_ai_conversation_id ?? 0)) === 0) {
+            fcc_ai_mark_review_notifications_read_for_conversation($conversation);
+            fcc_ai_notify_feedback_resolution_to_user($conversation);
+        }
     }
 
     return [
@@ -8704,6 +8713,67 @@ function fcc_ai_mark_feedback_resolved_by_admin(int $feedback_id, int $admin_use
         'status' => 'resolved',
         'conversation_public_id' => (string) ($conversation->public_id ?? ''),
     ];
+}
+
+function fcc_ai_get_unresolved_feedback_total_for_conversation(int $conversation_id): int {
+    if($conversation_id <= 0 || !fcc_ai_tables_ready()) {
+        return 0;
+    }
+
+    $conversation_id = (int) $conversation_id;
+    $result = database()->query("SELECT COUNT(*) AS `total`
+        FROM `fcc_ai_message_feedback`
+        WHERE `fcc_ai_conversation_id` = {$conversation_id}
+          AND `feedback_type` = 'down'
+          AND COALESCE(`status`, 'new') != 'resolved'");
+
+    return (int) (($result && ($row = $result->fetch_object())) ? ($row->total ?? 0) : 0);
+}
+
+function fcc_ai_mark_review_notifications_read_for_conversation(object $conversation): void {
+    $user_id = (int) ($conversation->user_id ?? 0);
+    $public_id = trim((string) ($conversation->public_id ?? ''));
+
+    if($user_id <= 0 || $public_id === '') {
+        return;
+    }
+
+    db()
+        ->where('user_id', $user_id)
+        ->where('for_who', 'user')
+        ->where('icon', 'fas fa-comment-exclamation')
+        ->where('url', '%conversation=' . $public_id . '%', 'LIKE')
+        ->update('internal_notifications', [
+            'is_read' => 1,
+        ]);
+}
+
+function fcc_ai_notify_feedback_resolution_to_user(object $conversation): void {
+    $user_id = (int) ($conversation->user_id ?? 0);
+    $assistant_type = trim((string) ($conversation->assistant_type ?? ''));
+
+    if($user_id <= 0 || $assistant_type === 'coach') {
+        return;
+    }
+
+    $language = fcc_ai_resolve_public_reply_language((string) ($conversation->language ?? \Altum\Language::$code ?? 'hr'));
+    $assistant_label = fcc_ai_get_assistant_label($assistant_type);
+
+    $title = match($language) {
+        'en' => 'AI improved thanks to your signal',
+        'sl' => 'AI je izboljšan zaradi vašega signala',
+        'bg' => 'AI е подобрен благодарение на вашия сигнал',
+        default => 'AI je unaprijeđen zahvaljujući tvom signalu',
+    };
+
+    $description = match($language) {
+        'en' => 'Thanks to your signal, we improved ' . $assistant_label . ' and closed this case. No further action is needed from your side.',
+        'sl' => 'Na podlagi vašega signala smo izboljšali ' . $assistant_label . ' in ta primer zaprli. Z vaše strani ni potrebna dodatna akcija.',
+        'bg' => 'Благодарение на вашия сигнал подобрихме ' . $assistant_label . ' и затворихме този случай. Не е нужно допълнително действие от ваша страна.',
+        default => 'Na temelju tvog signala doradili smo ' . $assistant_label . ' i zatvorili ovaj slučaj. Nije potrebna dodatna radnja s tvoje strane.',
+    };
+
+    fcc_ai_push_internal_notification($user_id, 'user', $title, $description, '', 'fas fa-check-circle');
 }
 
 function fcc_ai_increment_daily_stats(int $user_id, string $assistant_type, string $scope, array $increments = [], array $meta = []): void {
@@ -8988,8 +9058,8 @@ function fcc_ai_get_recent_user_alerts(int $user_id, int $limit = 4, bool $hide_
 
     $limit = max(1, min(8, $limit));
     $alerts = [];
-    $icon_sql = "'fas fa-comment-exclamation','fas fa-user-plus','fas fa-robot'";
-    $query_limit = $hide_coach_review ? max(12, $limit * 3) : $limit;
+    $icon_sql = "'fas fa-comment-exclamation','fas fa-user-plus','fas fa-robot','fas fa-check-circle'";
+    $query_limit = $hide_coach_review ? max(16, $limit * 4) : max(12, $limit * 3);
     $result = database()->query("SELECT
             `internal_notification_id`,
             `icon`,
@@ -9016,18 +9086,89 @@ function fcc_ai_get_recent_user_alerts(int $user_id, int $limit = 4, bool $hide_
         ];
     }
 
-    if($hide_coach_review) {
-        $alerts = array_values(array_filter($alerts, static function(array $alert): bool {
-            $icon = trim((string) ($alert['icon'] ?? ''));
-            $description = trim((string) ($alert['description'] ?? ''));
+    $extract_conversation_public_id = static function(string $url): string {
+        if(trim($url) === '') {
+            return '';
+        }
 
-            if($icon !== 'fas fa-comment-exclamation') {
-                return true;
+        $query = parse_url($url, PHP_URL_QUERY);
+
+        if(!is_string($query) || $query === '') {
+            return '';
+        }
+
+        parse_str($query, $query_payload);
+
+        return trim((string) ($query_payload['conversation'] ?? ''));
+    };
+
+    $conversation_public_ids = [];
+    foreach($alerts as $alert) {
+        if((string) ($alert['icon'] ?? '') !== 'fas fa-comment-exclamation') {
+            continue;
+        }
+
+        $conversation_public_id = $extract_conversation_public_id((string) ($alert['url'] ?? ''));
+
+        if($conversation_public_id !== '') {
+            $conversation_public_ids[$conversation_public_id] = $conversation_public_id;
+        }
+    }
+
+    $unresolved_feedback_by_public_id = [];
+    if(!empty($conversation_public_ids)) {
+        $public_ids_sql = implode(',', array_map(static function(string $public_id): string {
+            return "'" . database()->real_escape_string($public_id) . "'";
+        }, array_values($conversation_public_ids)));
+
+        $feedback_result = database()->query("SELECT
+                `c`.`public_id`,
+                COUNT(*) AS `total`
+            FROM `fcc_ai_message_feedback` AS `f`
+            LEFT JOIN `fcc_ai_conversations` AS `c` ON `c`.`fcc_ai_conversation_id` = `f`.`fcc_ai_conversation_id`
+            WHERE `c`.`user_id` = {$user_id}
+              AND `c`.`public_id` IN ({$public_ids_sql})
+              AND `f`.`feedback_type` = 'down'
+              AND COALESCE(`f`.`status`, 'new') != 'resolved'
+            GROUP BY `c`.`public_id`");
+
+        while($feedback_result && $row = $feedback_result->fetch_assoc()) {
+            $unresolved_feedback_by_public_id[(string) ($row['public_id'] ?? '')] = (int) ($row['total'] ?? 0);
+        }
+    }
+
+    $resolved_cutoff = (new \DateTimeImmutable('-5 days'))->format('Y-m-d H:i:s');
+
+    $alerts = array_values(array_filter($alerts, static function(array $alert) use ($hide_coach_review, $extract_conversation_public_id, $unresolved_feedback_by_public_id, $resolved_cutoff): bool {
+        $icon = trim((string) ($alert['icon'] ?? ''));
+        $description = trim((string) ($alert['description'] ?? ''));
+
+        if($icon === 'fas fa-comment-exclamation') {
+            if($hide_coach_review && preg_match('/^Coach\b/u', $description)) {
+                return false;
             }
 
-            return !preg_match('/^Coach\b/u', $description);
-        }));
-    }
+            if((int) ($alert['is_read'] ?? 0) === 1) {
+                return false;
+            }
+
+            $conversation_public_id = $extract_conversation_public_id((string) ($alert['url'] ?? ''));
+
+            if($conversation_public_id !== '' && (($unresolved_feedback_by_public_id[$conversation_public_id] ?? 0) <= 0)) {
+                return false;
+            }
+        }
+
+        if($icon === 'fas fa-check-circle') {
+            $datetime = (string) ($alert['datetime'] ?? '');
+
+            if($datetime === '' || $datetime < $resolved_cutoff) {
+                return false;
+            }
+        }
+
+        return true;
+    }));
 
     return array_slice($alerts, 0, $limit);
 }
