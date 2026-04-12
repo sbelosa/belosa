@@ -123,6 +123,11 @@
 
 <?php /* Custom code: FC-2026-04-10: internal FCC Coach popup on basic pages */ ?>
 <?php if(is_logged_in() && fcc_ai_user_has_coach_access($this->user)): ?>
+    <?php $fcc_internal_coach_ui = fcc_ai_get_internal_coach_ui_payload($this->user, \Altum\Language::$code ?? \Altum\Language::$default_code ?? 'hr'); ?>
+    <?php $fcc_internal_coach_ui_copy = []; ?>
+    <?php foreach(['hr', 'en', 'sl', 'bg'] as $fcc_internal_coach_ui_language): ?>
+        <?php $fcc_internal_coach_ui_copy[$fcc_internal_coach_ui_language] = fcc_ai_get_internal_coach_ui_payload($this->user, $fcc_internal_coach_ui_language); ?>
+    <?php endforeach ?>
     <?= include_view(THEME_PATH . 'views/l/partials/fcc_chat_extreme_popup.php', [
         'config' => [
             'assistant_type' => 'coach',
@@ -132,7 +137,15 @@
             'source_context' => 'FCC Coach basic page popup',
             'hide_without_context' => false,
             'dom_id' => 'fcc-coach-chat-extreme-basic',
-            'intro_label' => 'FCC Coach',
+            'assistant_title' => (string) ($fcc_internal_coach_ui['assistant_title'] ?? 'FCC Coach'),
+            'intro_label' => (string) ($fcc_internal_coach_ui['intro_label'] ?? 'FCC Coach'),
+            'launcher_label' => (string) ($fcc_internal_coach_ui['launcher_label'] ?? 'FCC Coach'),
+            'coach_badge' => (string) ($fcc_internal_coach_ui['coach_badge'] ?? ''),
+            'coach_notice' => (string) ($fcc_internal_coach_ui['coach_notice'] ?? ''),
+            'coach_mode_key' => (string) ($fcc_internal_coach_ui['coach_mode_key'] ?? ''),
+            'input_placeholder' => (string) ($fcc_internal_coach_ui['input_placeholder'] ?? ''),
+            'default_welcome' => (string) ($fcc_internal_coach_ui['default_welcome'] ?? ''),
+            'ui_copy_override' => $fcc_internal_coach_ui_copy,
             'storage_key' => fcc_ai_get_internal_storage_key(),
             'context_storage_key' => fcc_ai_get_internal_context_storage_key(),
             'conversation_url' => url('fcc-ai/coach-conversation'),

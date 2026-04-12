@@ -347,27 +347,6 @@ $fcc_get_visual_accent = static function(?string $block_color, string $group_col
 
 $fcc_grouped_blocks = array_fill_keys(array_keys($fcc_group_meta), []);
 $fcc_enabled_biolink_blocks = (object) ($this->user->plan_settings->enabled_biolink_blocks ?? []);
-$fcc_ai_editor_payload = $data->ai_editor_payload ?? [];
-$fcc_ai_missing_block_recommendations = is_array($fcc_ai_editor_payload['missing_block_recommendations'] ?? null) ? $fcc_ai_editor_payload['missing_block_recommendations'] : [];
-$fcc_ai_missing_copy = $fcc_is_hr ? [
-    'title' => 'AI blokovi koji nedostaju',
-    'text' => 'Ovdje vidiš što AI smatra da nedostaje ovoj aplikaciji. Dodaj i pripremi odmah ubacuje blok, smješta ga bliže preporučenoj poziciji i otvara ga za uređivanje.',
-    'priority' => 'Prioritet %s',
-    'position_after' => 'Preporučena pozicija: nakon %s',
-    'position_top' => 'Preporučena pozicija: pri vrhu aplikacije',
-    'add' => 'Dodaj i pripremi',
-    'open_picker' => 'Otvori u popisu blokova',
-    'kicker' => 'AI preporuka',
-] : [
-    'title' => 'Missing AI-recommended blocks',
-    'text' => 'This area shows what AI believes is missing from this app. Add and prepare inserts the block, places it closer to the recommended spot, and opens it for editing.',
-    'priority' => 'Priority %s',
-    'position_after' => 'Recommended position: after %s',
-    'position_top' => 'Recommended position: near the top of the app',
-    'add' => 'Add and prepare',
-    'open_picker' => 'Open in block picker',
-    'kicker' => 'AI recommendation',
-];
 ?>
 
 <?php /* Custom code: FC-2026-02-27: premium add-block modal styling */ ?>
@@ -811,86 +790,10 @@ $fcc_ai_missing_copy = $fcc_is_hr ? [
                     </button>
                 </div>
 
-                <div id="fcc_biolink_ai_missing_notification" class="notification-container mb-3"></div>
-
                 <div id="fcc_biolink_block_picker_intro" class="biolink-create-intro mb-3 fcc-biolink-tour-target">
                     <h6 class="mb-2"><?= $fcc_is_hr ? 'Dodaj blok po stvarnoj primjeni' : 'Add a block by real use case' ?></h6>
                     <p class="small text-muted mb-0"><?= $fcc_picker_copy['subheader'] ?></p>
                 </div>
-
-                <?php if(!empty($fcc_ai_missing_block_recommendations)): ?>
-                    <div class="mb-4">
-                        <div class="biolink-block-category-card card border-0 mb-3" style="--group-background: linear-gradient(135deg, rgba(13, 41, 56, .92), rgba(8, 22, 39, .96)); --group-soft-background: rgba(45, 212, 191, .10); --group-color: #2dd4bf;">
-                            <div class="card-body d-flex justify-content-between align-items-center flex-wrap">
-                                <div class="pr-3">
-                                    <span class="biolink-block-category-kicker"><?= $fcc_ai_missing_copy['kicker'] ?></span>
-                                    <div class="biolink-block-category-title"><?= $fcc_ai_missing_copy['title'] ?></div>
-                                    <p class="small mb-0 biolink-block-category-subtitle"><?= $fcc_ai_missing_copy['text'] ?></p>
-                                </div>
-
-                                <div class="d-flex align-items-center flex-wrap justify-content-end" style="gap: .75rem;">
-                                    <span class="biolink-block-category-count"><?= count($fcc_ai_missing_block_recommendations) . ' ' . $fcc_picker_copy['block_count'] ?></span>
-                                    <span class="biolink-block-category-icon">
-                                        <i class="fas fa-fw fa-wand-magic-sparkles fa-lg"></i>
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <?php foreach($fcc_ai_missing_block_recommendations as $fcc_ai_missing_block): ?>
-                                <?php
-                                $fcc_ai_missing_label = (string) (($fcc_ai_missing_block['label'] ?? '') ?: l('link.biolink.blocks.' . ($fcc_ai_missing_block['block_type'] ?? '')));
-                                $fcc_ai_missing_position_label = trim((string) ($fcc_ai_missing_block['insert_after_label'] ?? ''));
-                                $fcc_is_auto_add_supported = !empty($fcc_ai_missing_block['supports_auto_add']);
-                                ?>
-                                <div class="col-12 col-lg-6 mb-3">
-                                    <div class="biolink-ai-missing-card card border-0 h-100">
-                                        <div class="card-body">
-                                            <div class="biolink-ai-missing-kicker mb-2">
-                                                <i class="fas fa-fw fa-wand-magic-sparkles"></i>
-                                                <span><?= $fcc_ai_missing_copy['kicker'] ?></span>
-                                            </div>
-                                            <div class="biolink-ai-missing-title mb-2"><?= htmlspecialchars($fcc_ai_missing_label, ENT_QUOTES, 'UTF-8') ?></div>
-                                            <div class="small text-muted mb-2"><?= htmlspecialchars((string) ($fcc_ai_missing_block['why'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
-                                            <div class="biolink-ai-missing-meta mb-3">
-                                                <span class="biolink-ai-missing-badge"><?= sprintf($fcc_ai_missing_copy['priority'], nr((int) ($fcc_ai_missing_block['priority'] ?? 0))) ?></span>
-                                                <span class="biolink-ai-missing-badge">
-                                                    <?= $fcc_ai_missing_position_label !== ''
-                                                        ? sprintf($fcc_ai_missing_copy['position_after'], htmlspecialchars($fcc_ai_missing_position_label, ENT_QUOTES, 'UTF-8'))
-                                                        : $fcc_ai_missing_copy['position_top'] ?>
-                                                </span>
-                                            </div>
-
-                                            <?php if($fcc_is_auto_add_supported): ?>
-                                                <button
-                                                    type="button"
-                                                    class="btn btn-primary btn-block js-add-ai-missing-block-modal"
-                                                    data-link-id="<?= (int) ($data->link->link_id ?? 0) ?>"
-                                                    data-recommendation-key="<?= htmlspecialchars((string) ($fcc_ai_missing_block['recommendation_key'] ?? ''), ENT_QUOTES, 'UTF-8') ?>"
-                                                    data-block-type="<?= htmlspecialchars((string) ($fcc_ai_missing_block['block_type'] ?? ''), ENT_QUOTES, 'UTF-8') ?>"
-                                                >
-                                                    <i class="fas fa-fw fa-wand-magic-sparkles mr-1"></i> <?= $fcc_ai_missing_copy['add'] ?>
-                                                </button>
-                                            <?php else: ?>
-                                                <button
-                                                    type="button"
-                                                    class="btn btn-outline-light btn-block js-open-ai-block-picker-from-modal"
-                                                    data-block-type="<?= htmlspecialchars((string) ($fcc_ai_missing_block['block_type'] ?? ''), ENT_QUOTES, 'UTF-8') ?>"
-                                                    data-picker-search="<?= htmlspecialchars((string) ($fcc_ai_missing_block['picker_search'] ?? ''), ENT_QUOTES, 'UTF-8') ?>"
-                                                    data-block-group="<?= htmlspecialchars((string) ($fcc_ai_missing_block['preferred_group'] ?? ''), ENT_QUOTES, 'UTF-8') ?>"
-                                                    data-block-goal="<?= htmlspecialchars((string) ($fcc_ai_missing_block['preferred_goal'] ?? ''), ENT_QUOTES, 'UTF-8') ?>"
-                                                >
-                                                    <i class="fas fa-fw fa-plus-circle mr-1"></i> <?= $fcc_ai_missing_copy['open_picker'] ?>
-                                                </button>
-                                            <?php endif ?>
-                                        </div>
-                                    </div>
-                                </div>
-                            <?php endforeach ?>
-                        </div>
-                    </div>
-                <?php endif ?>
 
                 <div class="biolink-create-filters">
                     <form action="" method="get" role="form" id="fcc_biolink_block_picker_search_form" class="biolink-create-search mb-0 fcc-biolink-tour-target">

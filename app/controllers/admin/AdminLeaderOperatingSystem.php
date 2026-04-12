@@ -162,7 +162,7 @@ class AdminLeaderOperatingSystem extends Controller {
     }
 
     private function get_manual_ai_override_payload(array $access_settings): array {
-        $manual_tier = (string) ($access_settings['manual_tier'] ?? '');
+        $manual_tier = fcc_ai_normalize_manual_ai_tier((string) ($access_settings['manual_tier'] ?? ''));
         $manual_unlocked_at = (string) ($access_settings['manual_unlocked_at'] ?? '');
 
         if($manual_tier === '' || $manual_unlocked_at === '') {
@@ -501,7 +501,8 @@ class AdminLeaderOperatingSystem extends Controller {
             return $rows;
         }
 
-        $period_start_datetime = $this->get_period_start_datetime(30);
+        $period_start_30d = $this->get_period_start_datetime(30);
+        $period_start_7d = $this->get_period_start_datetime(7);
         $row_map = [];
 
         foreach($rows as $index => $row) {
@@ -513,11 +514,17 @@ class AdminLeaderOperatingSystem extends Controller {
 
             $row_map[$user_id] = $index;
             $rows[$index]['ai_shop_clicks_30d'] = 0;
+            $rows[$index]['ai_shop_clicks_7d'] = 0;
             $rows[$index]['ai_whatsapp_contacts_30d'] = 0;
+            $rows[$index]['ai_whatsapp_contacts_7d'] = 0;
             $rows[$index]['ai_funnel_registrations_30d'] = 0;
+            $rows[$index]['ai_funnel_registrations_7d'] = 0;
             $rows[$index]['ai_ai_chat_leads_30d'] = 0;
+            $rows[$index]['ai_ai_chat_leads_7d'] = 0;
             $rows[$index]['ai_contact_captures_30d'] = 0;
+            $rows[$index]['ai_contact_captures_7d'] = 0;
             $rows[$index]['ai_growth_signal_30d'] = 0;
+            $rows[$index]['ai_growth_signal_7d'] = 0;
         }
 
         if(empty($row_map)) {
@@ -565,7 +572,7 @@ class AdminLeaderOperatingSystem extends Controller {
             $block_ids_sql = implode(',', array_map('intval', array_keys($signal_targets)));
             $track_result = database()->query("SELECT `biolink_block_id`, COUNT(*) AS `total`
                 FROM `track_links`
-                WHERE `datetime` >= '{$period_start_datetime}'
+                WHERE `datetime` >= '{$period_start_30d}'
                   AND `is_unique` = 1
                   AND `biolink_block_id` IN ({$block_ids_sql})
                 GROUP BY `biolink_block_id`");
@@ -585,6 +592,28 @@ class AdminLeaderOperatingSystem extends Controller {
                 }
             }
 
+            $track_result_7d = database()->query("SELECT `biolink_block_id`, COUNT(*) AS `total`
+                FROM `track_links`
+                WHERE `datetime` >= '{$period_start_7d}'
+                  AND `is_unique` = 1
+                  AND `biolink_block_id` IN ({$block_ids_sql})
+                GROUP BY `biolink_block_id`");
+
+            while($track_result_7d && $track_row = $track_result_7d->fetch_object()) {
+                $block_id = (int) ($track_row->biolink_block_id ?? 0);
+                $total = (int) ($track_row->total ?? 0);
+
+                foreach(($signal_targets[$block_id] ?? []) as $signal_key => $user_id) {
+                    $row_index = $row_map[(int) $user_id] ?? null;
+
+                    if($row_index === null) {
+                        continue;
+                    }
+
+                    $rows[$row_index][str_replace('_30d', '_7d', $signal_key)] += $total;
+                }
+            }
+
             $funnel_block_ids = [];
             foreach($signal_targets as $block_id => $target_map) {
                 if(isset($target_map['ai_funnel_registrations_30d'])) {
@@ -597,7 +626,7 @@ class AdminLeaderOperatingSystem extends Controller {
                 $funnel_result = database()->query("SELECT `biolink_block_id`, COUNT(*) AS `total`
                     FROM `data`
                     WHERE `type` = 'lead_funnel'
-                      AND `datetime` >= '{$period_start_datetime}'
+                      AND `datetime` >= '{$period_start_30d}'
                       AND `biolink_block_id` IN ({$funnel_block_ids_sql})
                     GROUP BY `biolink_block_id`");
 
@@ -613,10 +642,30 @@ class AdminLeaderOperatingSystem extends Controller {
 
                     $rows[$row_index]['ai_funnel_registrations_30d'] += $total;
                 }
+
+                $funnel_result_7d = database()->query("SELECT `biolink_block_id`, COUNT(*) AS `total`
+                    FROM `data`
+                    WHERE `type` = 'lead_funnel'
+                      AND `datetime` >= '{$period_start_7d}'
+                      AND `biolink_block_id` IN ({$funnel_block_ids_sql})
+                    GROUP BY `biolink_block_id`");
+
+                while($funnel_result_7d && $funnel_row = $funnel_result_7d->fetch_object()) {
+                    $block_id = (int) ($funnel_row->biolink_block_id ?? 0);
+                    $total = (int) ($funnel_row->total ?? 0);
+                    $user_id = (int) (($signal_targets[$block_id]['ai_funnel_registrations_30d'] ?? 0));
+                    $row_index = $row_map[$user_id] ?? null;
+
+                    if($row_index === null) {
+                        continue;
+                    }
+
+                    $rows[$row_index]['ai_funnel_registrations_7d'] += $total;
+                }
             }
         }
 
-        $ai_chat_lead_counts = fcc_ai_get_chat_lead_counts_by_user_ids(array_keys($row_map), $period_start_datetime);
+        $ai_chat_lead_counts = fcc_ai_get_chat_lead_counts_by_user_ids(array_keys($row_map), $period_start_30d);
         foreach($ai_chat_lead_counts as $user_id => $total) {
             $row_index = $row_map[(int) $user_id] ?? null;
 
@@ -627,12 +676,29 @@ class AdminLeaderOperatingSystem extends Controller {
             $rows[$row_index]['ai_ai_chat_leads_30d'] += (int) $total;
         }
 
+        $ai_chat_lead_counts_7d = fcc_ai_get_chat_lead_counts_by_user_ids(array_keys($row_map), $period_start_7d);
+        foreach($ai_chat_lead_counts_7d as $user_id => $total) {
+            $row_index = $row_map[(int) $user_id] ?? null;
+
+            if($row_index === null) {
+                continue;
+            }
+
+            $rows[$row_index]['ai_ai_chat_leads_7d'] += (int) $total;
+        }
+
         foreach($rows as $index => $row) {
             $rows[$index]['ai_contact_captures_30d'] = (int) ($rows[$index]['ai_funnel_registrations_30d'] ?? 0) + (int) ($rows[$index]['ai_ai_chat_leads_30d'] ?? 0);
+            $rows[$index]['ai_contact_captures_7d'] = (int) ($rows[$index]['ai_funnel_registrations_7d'] ?? 0) + (int) ($rows[$index]['ai_ai_chat_leads_7d'] ?? 0);
             $rows[$index]['ai_growth_signal_30d'] = (int) (
                 (int) ($row['ai_shop_clicks_30d'] ?? 0)
                 + (int) ($row['ai_whatsapp_contacts_30d'] ?? 0)
                 + (int) ($rows[$index]['ai_contact_captures_30d'] ?? 0)
+            );
+            $rows[$index]['ai_growth_signal_7d'] = (int) (
+                (int) ($row['ai_shop_clicks_7d'] ?? 0)
+                + (int) ($row['ai_whatsapp_contacts_7d'] ?? 0)
+                + (int) ($rows[$index]['ai_contact_captures_7d'] ?? 0)
             );
         }
 
@@ -646,34 +712,40 @@ class AdminLeaderOperatingSystem extends Controller {
         $manual_override = $this->get_manual_ai_override_payload($access_settings);
         $manual_tier = (string) ($manual_override['tier'] ?? '');
         $growth_signal_30d = (int) ($row['ai_growth_signal_30d'] ?? 0);
-        $starter_app_review_used = (int) ($access_settings['starter_app_review_used'] ?? 0);
-        $starter_weekly_plan_used = (int) ($access_settings['starter_weekly_plan_used'] ?? 0);
+        $growth_signal_7d = (int) ($row['ai_growth_signal_7d'] ?? 0);
 
-        $tier_key = 'locked';
-        $tier_label = 'Bez PRO pristupa';
+        $tier_key = 'beginner';
+        $tier_label = 'Beginner';
         $tier_class = 'status-dark';
         $analysis_interval_days = null;
+        $coach_label = $is_pro ? 'VIP Coach' : 'Beginner Coach';
+        $qualified_unlocked = $is_pro && ($growth_signal_30d >= 15 || in_array($manual_tier, ['qualified', 'top'], true));
+        $top_unlocked = $is_pro && ($growth_signal_7d >= 15 || $manual_tier === 'top');
+        $starter_app_review_used = !empty($access_settings['starter_app_review_used']);
+        $starter_weekly_plan_used = !empty($access_settings['starter_weekly_plan_used']);
+        $starter_app_review_available = $is_pro && !$qualified_unlocked && !$starter_app_review_used;
+        $starter_weekly_plan_available = $is_pro && !$qualified_unlocked && !$starter_weekly_plan_used;
+        $intro_cycle_available = $starter_app_review_available || $starter_weekly_plan_available;
 
         if($is_pro) {
-            if($manual_tier === 'pro_vip' || $growth_signal_30d >= 50) {
-                $tier_key = 'pro_vip';
-                $tier_label = 'PRO VIP';
+            if($top_unlocked) {
+                $tier_key = 'top';
+                $tier_label = 'TOP 15+ / 7d';
                 $tier_class = 'status-success';
                 $analysis_interval_days = 7;
-            } elseif(in_array($manual_tier, ['pro_active', 'pro_vip'], true) || $growth_signal_30d >= 15) {
-                $tier_key = 'pro_active';
-                $tier_label = 'PRO Active';
+            } elseif($qualified_unlocked) {
+                $tier_key = 'qualified';
+                $tier_label = 'PRO + AI ciklus';
                 $tier_class = 'status-info';
-                $analysis_interval_days = 14;
+                $analysis_interval_days = 7;
             } else {
-                $tier_key = 'pro_start';
-                $tier_label = 'PRO Start';
+                $tier_key = 'pro';
+                $tier_label = $intro_cycle_available ? 'PRO + početni unlock' : 'PRO';
                 $tier_class = 'status-warning';
             }
         }
 
-        $source_label = $manual_tier !== '' ? 'Ručni unlock (30 dana)' : 'Automatski';
-        $starter_label = 'Analiza ' . ($starter_app_review_used ? 'iskorištena' : 'dostupna') . ' · Plan ' . ($starter_weekly_plan_used ? 'iskorišten' : 'dostupan');
+        $source_label = $manual_tier !== '' ? 'Ručni unlock (30 dana)' : ($intro_cycle_available ? 'Automatski + intro unlock' : 'Automatski');
 
         return [
             'ai_access_is_pro' => $is_pro,
@@ -684,16 +756,110 @@ class AdminLeaderOperatingSystem extends Controller {
             'ai_access_manual_tier' => $manual_tier,
             'ai_access_manual_expires_at' => $manual_override['expires_at'] ?? null,
             'ai_access_analysis_interval_days' => $analysis_interval_days,
+            'ai_access_coach_label' => $coach_label,
+            'ai_access_growth_signal_7d' => $growth_signal_7d,
+            'ai_access_signal_qualified' => $qualified_unlocked,
+            'ai_access_top_unlocked' => $top_unlocked,
+            'ai_access_starter_app_review_available' => $starter_app_review_available,
+            'ai_access_starter_weekly_plan_available' => $starter_weekly_plan_available,
+            'ai_access_intro_cycle_available' => $intro_cycle_available,
+            'ai_access_starter_app_review_used' => $starter_app_review_used ? 1 : 0,
+            'ai_access_starter_weekly_plan_used' => $starter_weekly_plan_used ? 1 : 0,
             'ai_access_growth_signal_30d' => $growth_signal_30d,
             'ai_access_shop_clicks_30d' => (int) ($row['ai_shop_clicks_30d'] ?? 0),
+            'ai_access_shop_clicks_7d' => (int) ($row['ai_shop_clicks_7d'] ?? 0),
             'ai_access_funnel_registrations_30d' => (int) ($row['ai_funnel_registrations_30d'] ?? 0),
+            'ai_access_funnel_registrations_7d' => (int) ($row['ai_funnel_registrations_7d'] ?? 0),
             'ai_access_ai_chat_leads_30d' => (int) ($row['ai_ai_chat_leads_30d'] ?? 0),
+            'ai_access_ai_chat_leads_7d' => (int) ($row['ai_ai_chat_leads_7d'] ?? 0),
             'ai_access_contact_captures_30d' => (int) ($row['ai_contact_captures_30d'] ?? (((int) ($row['ai_funnel_registrations_30d'] ?? 0)) + ((int) ($row['ai_ai_chat_leads_30d'] ?? 0)))),
+            'ai_access_contact_captures_7d' => (int) ($row['ai_contact_captures_7d'] ?? (((int) ($row['ai_funnel_registrations_7d'] ?? 0)) + ((int) ($row['ai_ai_chat_leads_7d'] ?? 0)))),
             'ai_access_whatsapp_contacts_30d' => (int) ($row['ai_whatsapp_contacts_30d'] ?? 0),
-            'ai_access_starter_app_review_used' => $starter_app_review_used,
-            'ai_access_starter_weekly_plan_used' => $starter_weekly_plan_used,
-            'ai_access_starter_label' => $starter_label,
+            'ai_access_whatsapp_contacts_7d' => (int) ($row['ai_whatsapp_contacts_7d'] ?? 0),
         ];
+    }
+
+    private function get_ai_mentor_intelligence_payload(array $row): array {
+        $user_id = (int) ($row['user_id'] ?? 0);
+
+        if($user_id <= 0) {
+            return [
+                'ai_mentor_stage_key' => 'foundation',
+                'ai_mentor_stage_label' => 'Mentor signal',
+                'ai_mentor_stage_class' => 'status-dark',
+                'ai_mentor_priority_key' => '',
+                'ai_mentor_priority_label' => '',
+                'ai_mentor_next_action' => '',
+                'ai_mentor_admin_action' => '',
+                'ai_mentor_sales_link_status_key' => 'missing',
+                'ai_mentor_sales_link_status_label' => 'Forever prodajni link nije postavljen',
+                'ai_mentor_sales_link_ready' => 0,
+                'ai_mentor_sales_link_priority_missing' => 1,
+                'ai_mentor_portfolio_health_key' => 'focused',
+                'ai_mentor_portfolio_health_label' => 'Pregled portfelja',
+                'ai_mentor_cleanup_needed' => 0,
+                'ai_mentor_total_apps' => 0,
+                'ai_mentor_focus_app_count' => 0,
+                'ai_mentor_archive_candidate_count' => 0,
+                'ai_mentor_recommended_focus_limit' => 3,
+                'ai_mentor_focus_app_names' => '',
+                'ai_mentor_archive_candidate_names' => '',
+                'ai_mentor_main_app_name' => '',
+            ];
+        }
+
+        $payload = fcc_ai_get_user_mentor_intelligence_summary((object) ['user_id' => $user_id], [
+            'is_pro' => !empty($row['ai_access_is_pro']) || $this->is_active_pro_row($row),
+            'access_tier' => (string) ($row['ai_access_tier_key'] ?? (!empty($row['ai_access_is_pro']) ? 'pro' : 'beginner')),
+            'intro_cycle_available' => !empty($row['ai_access_intro_cycle_available']),
+            'growth_signal_30d' => (int) ($row['ai_access_growth_signal_30d'] ?? $row['ai_growth_signal_30d'] ?? 0),
+            'growth_signal_7d' => (int) ($row['ai_access_growth_signal_7d'] ?? $row['ai_growth_signal_7d'] ?? 0),
+        ], 'hr');
+
+        return [
+            'ai_mentor_stage_key' => (string) ($payload['stage_key'] ?? 'foundation'),
+            'ai_mentor_stage_label' => (string) ($payload['stage_label'] ?? 'Mentor signal'),
+            'ai_mentor_stage_class' => (string) ($payload['stage_class'] ?? 'status-dark'),
+            'ai_mentor_priority_key' => (string) ($payload['priority_key'] ?? ''),
+            'ai_mentor_priority_label' => (string) ($payload['priority_label'] ?? ''),
+            'ai_mentor_next_action' => (string) ($payload['next_action'] ?? ''),
+            'ai_mentor_admin_action' => (string) ($payload['admin_action'] ?? ''),
+            'ai_mentor_sales_link_status_key' => (string) ($payload['sales_link_status_key'] ?? 'missing'),
+            'ai_mentor_sales_link_status_label' => (string) ($payload['sales_link_status_label'] ?? ''),
+            'ai_mentor_sales_link_ready' => !empty($payload['sales_link_ready']) ? 1 : 0,
+            'ai_mentor_sales_link_priority_missing' => !empty($payload['sales_link_priority_missing']) ? 1 : 0,
+            'ai_mentor_portfolio_health_key' => (string) ($payload['portfolio_health_key'] ?? 'focused'),
+            'ai_mentor_portfolio_health_label' => (string) ($payload['portfolio_health_label'] ?? ''),
+            'ai_mentor_cleanup_needed' => !empty($payload['cleanup_needed']) ? 1 : 0,
+            'ai_mentor_total_apps' => (int) ($payload['total_apps'] ?? 0),
+            'ai_mentor_focus_app_count' => (int) ($payload['focus_app_count'] ?? 0),
+            'ai_mentor_archive_candidate_count' => (int) ($payload['archive_candidate_count'] ?? 0),
+            'ai_mentor_recommended_focus_limit' => (int) ($payload['recommended_focus_limit'] ?? 3),
+            'ai_mentor_focus_app_names' => (string) ($payload['focus_app_names'] ?? ''),
+            'ai_mentor_archive_candidate_names' => (string) ($payload['archive_candidate_names'] ?? ''),
+            'ai_mentor_main_app_name' => (string) ($payload['main_app_name'] ?? ''),
+        ];
+    }
+
+    private function enrich_rows_with_ai_mentor_intelligence(array $rows): array {
+        static $cache = [];
+
+        foreach($rows as $index => $row) {
+            $user_id = (int) ($row['user_id'] ?? 0);
+
+            if($user_id <= 0) {
+                $rows[$index] = array_merge($row, $this->get_ai_mentor_intelligence_payload($row));
+                continue;
+            }
+
+            if(!array_key_exists($user_id, $cache)) {
+                $cache[$user_id] = $this->get_ai_mentor_intelligence_payload($row);
+            }
+
+            $rows[$index] = array_merge($row, $cache[$user_id]);
+        }
+
+        return $rows;
     }
 
     private function handle_ai_access_action(array $redirect_query): void {
@@ -708,7 +874,7 @@ class AdminLeaderOperatingSystem extends Controller {
 
         $user_id = (int) $_POST['user_id'];
         $action = input_clean($_POST['los_ai_unlock_action'] ?? '', 32);
-        $allowed_actions = ['pro_active', 'pro_vip', 'auto'];
+        $allowed_actions = ['qualified', 'top', 'auto'];
 
         if($user_id <= 0 || !in_array($action, $allowed_actions, true)) {
             Alerts::add_error('AI unlock akcija nije valjana.');
@@ -754,22 +920,22 @@ class AdminLeaderOperatingSystem extends Controller {
         cache()->deleteItemsByTag('user_id=' . $user_id);
         cache()->deleteItem('user?user_id=' . $user_id);
 
-        if($action === 'pro_active') {
+        if($action === 'qualified') {
             $this->create_user_internal_notification(
                 $user_id,
-                'Aktiviran ti je dodatni AI pristup',
-                'Otključan ti je PRO Active pristup. Sada imaš tjedni plan i novu analizu aplikacije svakih 14 dana.',
+                'Otključan ti je PRO AI ciklus',
+                'Otključani su ti tjedni AI plan i AI analiza aplikacije jednom tjedno. Coach te sada vodi prema održavanju 15+ signala.',
                 url('ai-plan')
             );
-            Alerts::add_success('Ručno je otključan PRO Active za ' . ($user->name ?: ('korisnika #' . $user_id)) . '.');
-        } elseif($action === 'pro_vip') {
+            Alerts::add_success('Ručno je otključan PRO AI ciklus za ' . ($user->name ?: ('korisnika #' . $user_id)) . '.');
+        } elseif($action === 'top') {
             $this->create_user_internal_notification(
                 $user_id,
-                'Aktiviran ti je VIP AI pristup',
-                'Otključan ti je PRO VIP pristup. Sada imaš tjedni plan i novu analizu aplikacije svakih 7 dana.',
+                'Uključen ti je TOP signal',
+                'Uključen ti je TOP 15+ / 7 dana signal. Coach te sada vodi prema zadržavanju ritma i vidljivosti među preporučenim sponzorima.',
                 url('ai-plan')
             );
-            Alerts::add_success('Ručno je otključan PRO VIP za ' . ($user->name ?: ('korisnika #' . $user_id)) . '.');
+            Alerts::add_success('Ručno je uključen TOP signal za ' . ($user->name ?: ('korisnika #' . $user_id)) . '.');
         } else {
             Alerts::add_success('AI pristup za ' . ($user->name ?: ('korisnika #' . $user_id)) . ' vraćen je na automatska pravila.');
         }
@@ -779,9 +945,13 @@ class AdminLeaderOperatingSystem extends Controller {
 
     private function get_fcc_ai_model_route_definitions(): array {
         return [
-            'coach' => [
-                'label' => 'FCC Coach',
-                'description' => 'Interni coach za suradnike unutar FCC-a i Tvojeg plana rasta.',
+            'coach_beginner' => [
+                'label' => 'Beginner Coach',
+                'description' => 'Coach za Beginner paket i osnovni paket inteligencije.',
+            ],
+            'coach_vip' => [
+                'label' => 'VIP Coach',
+                'description' => 'Coach za PRO ili trial paket i najjači paket inteligencije.',
             ],
             'product_advisor' => [
                 'label' => 'AI za ljude',
@@ -7954,6 +8124,8 @@ class AdminLeaderOperatingSystem extends Controller {
         $page = max(1, min($page, $total_pages));
         $offset = ($page - 1) * $per_page;
         $rows = array_slice($all_rows, $offset, $per_page);
+        $rows = $this->enrich_rows_with_ai_mentor_intelligence($rows);
+        $queue_rows = $this->enrich_rows_with_ai_mentor_intelligence($queue_rows);
 
         $coaching_dashboard = $this->get_coaching_dashboard_payload($all_rows, $queue_rows, $recent_coaching_rows);
         $support_center = $this->get_support_center_payload($all_rows);

@@ -2,6 +2,11 @@
 
 <?php $fcc_is_hr = \Altum\Language::$code === 'hr'; ?>
 <?php $featured_app_visible_tags_limit = 2; ?>
+<?php $featured_app_signal_30d_label = $fcc_is_hr ? '30d signal' : '30d signal'; ?>
+<?php $featured_app_breakdown_label = $fcc_is_hr ? 'Klikovi' : 'Clicks'; ?>
+<?php $featured_app_contacts_label = $fcc_is_hr ? 'Kontakti' : 'Contacts'; ?>
+<?php $featured_app_funnel_label = $fcc_is_hr ? 'Funnel' : 'Funnel'; ?>
+<?php $featured_app_ai_leads_label = $fcc_is_hr ? 'AI leadovi' : 'AI leads'; ?>
 
 <div class="container my-5 featured-apps-page">
     <section class="featured-apps-hero mb-4">
@@ -13,7 +18,7 @@
 
         <div class="featured-apps-note">
             <strong class="d-block mb-1"><?= l('featured_apps.notice_title') ?></strong>
-            <span><?= sprintf(l('featured_apps.notice_text'), nr($data->min_qualified_clicks), nr($data->period_days)) ?></span>
+            <span><?= sprintf(l('featured_apps.notice_text'), nr($data->signal_target), nr($data->top_period_days)) ?></span>
         </div>
     </section>
 
@@ -50,8 +55,11 @@
                                     <span class="featured-app-pill"><?= l('featured_apps.market') ?>: <?= $app['public_market'] ?></span>
                                 <?php endif ?>
 
-                                <span class="featured-app-pill featured-app-pill--accent"><?= l('featured_apps.performance') ?>: <?= nr($app['shop_clicks']) ?></span>
+                                <span class="featured-app-pill featured-app-pill--accent"><?= l('featured_apps.performance') ?> 7d: <?= nr($app['growth_signal_7d']) ?></span>
+                                <span class="featured-app-pill"><?= $featured_app_signal_30d_label ?>: <?= nr($app['growth_signal_30d']) ?></span>
                             </div>
+
+                            <div class="small text-muted mb-3"><?= $featured_app_breakdown_label ?>: <?= nr($app['shop_contacts_7d']) ?> · <?= $featured_app_contacts_label ?>: <?= nr($app['whatsapp_contacts_7d']) ?> · <?= $featured_app_funnel_label ?>: <?= nr($app['funnel_registrations_7d']) ?> · <?= $featured_app_ai_leads_label ?>: <?= nr($app['ai_chat_leads_7d']) ?></div>
 
                             <?php if(!empty($app['public_summary'])): ?>
                                 <div class="featured-app-section mb-3">

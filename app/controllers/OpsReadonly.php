@@ -601,19 +601,7 @@ class OpsReadonly extends Controller {
     }
 
     private function get_active_manual_ai_tier(\stdClass $access): string {
-        $manual_tier = trim((string) ($access->manual_tier ?? ''));
-        $manual_unlocked_at = trim((string) ($access->manual_unlocked_at ?? ''));
-
-        if($manual_tier === '' || $manual_unlocked_at === '') {
-            return '';
-        }
-
-        try {
-            $expires_at = (new \DateTimeImmutable($manual_unlocked_at))->modify('+30 days');
-            return $expires_at >= (new \DateTimeImmutable()) ? $manual_tier : '';
-        } catch(\Throwable $exception) {
-            return '';
-        }
+        return fcc_ai_get_active_manual_ai_tier($access);
     }
 
     private function get_ai_summary(object $user): array {
@@ -641,13 +629,45 @@ class OpsReadonly extends Controller {
 
         $manual_tier_active = $this->get_active_manual_ai_tier($access);
         $plan_feature_enabled = (bool) ($plan_settings->ai_growth_plan_is_enabled ?? false);
-        $plan_feature_active = $plan_feature_enabled && $this->is_plan_active((string) ($user->plan_expiration_date ?? ''));
+        $plan_feature_active = fcc_ai_user_has_active_growth_pro($user);
         $has_access = $plan_feature_active || $manual_tier_active !== '';
         $latest_weekly_checkin = $this->get_assoc_array($weekly_checkins[0] ?? []);
         $latest_weekly_plan = $this->get_assoc_array($weekly_plans[0] ?? []);
         $latest_app_review = $this->get_assoc_array($app_reviews[0] ?? []);
         $latest_app_review_performance = $this->get_assoc_array($latest_app_review['performance_snapshot'] ?? []);
         $mentor_guidance = trim((string) ($mentor->ai_guidance ?? ''));
+        $user_id = (int) ($user->user_id ?? 0);
+        $main_link_id = $user_id > 0 ? (int) (fc_get_user_main_biolink_id($user_id) ?? 0) : 0;
+        $signal_summary = $user_id > 0 ? fcc_ai_get_user_growth_signal_snapshot($user_id, $main_link_id) : [
+            'main_link_id' => 0,
+            'growth_signal_30d' => 0,
+            'growth_signal_7d' => 0,
+            'shop_contacts_30d' => 0,
+            'shop_contacts_7d' => 0,
+            'whatsapp_contacts_30d' => 0,
+            'whatsapp_contacts_7d' => 0,
+            'funnel_registrations_30d' => 0,
+            'funnel_registrations_7d' => 0,
+            'ai_chat_leads_30d' => 0,
+            'ai_chat_leads_7d' => 0,
+            'qualified_target' => 15,
+            'top_target' => 15,
+        ];
+        $is_signal_qualified = (int) ($signal_summary['growth_signal_30d'] ?? 0) >= 15 || in_array($manual_tier_active, ['qualified', 'top'], true);
+        $is_top_performer = (int) ($signal_summary['growth_signal_7d'] ?? 0) >= 15 || $manual_tier_active === 'top';
+        $access_tier = !$plan_feature_active ? 'beginner' : ($is_top_performer ? 'top' : ($is_signal_qualified ? 'qualified' : 'pro'));
+        $coach_mode = fcc_ai_get_internal_coach_mode_payload($user, 'hr');
+        $starter_app_review_used = min(1, max(0, (int) ($access->starter_app_review_used ?? (!empty($app_reviews) ? 1 : 0))));
+        $starter_weekly_plan_used = min(1, max(0, (int) ($access->starter_weekly_plan_used ?? (!empty($weekly_plans) ? 1 : 0))));
+        $starter_app_review_available = $plan_feature_active && !$is_signal_qualified && !$starter_app_review_used;
+        $starter_weekly_plan_available = $plan_feature_active && !$is_signal_qualified && !$starter_weekly_plan_used;
+        $mentor_intelligence = fcc_ai_get_user_mentor_intelligence_summary($user, [
+            'is_pro' => $plan_feature_active,
+            'access_tier' => $access_tier,
+            'intro_cycle_available' => $starter_app_review_available || $starter_weekly_plan_available,
+            'growth_signal_30d' => (int) ($signal_summary['growth_signal_30d'] ?? 0),
+            'growth_signal_7d' => (int) ($signal_summary['growth_signal_7d'] ?? 0),
+        ], 'hr');
 
         return [
             'has_access' => $has_access,
@@ -658,8 +678,30 @@ class OpsReadonly extends Controller {
             'manual_tier_active' => $manual_tier_active,
             'manual_note' => (string) ($access->manual_note ?? ''),
             'manual_unlocked_at' => $access->manual_unlocked_at ?? null,
-            'starter_app_review_used' => min(1, max(0, (int) ($access->starter_app_review_used ?? (!empty($app_reviews) ? 1 : 0)))),
-            'starter_weekly_plan_used' => min(1, max(0, (int) ($access->starter_weekly_plan_used ?? (!empty($weekly_plans) ? 1 : 0)))),
+            'starter_app_review_used' => $starter_app_review_used,
+            'starter_weekly_plan_used' => $starter_weekly_plan_used,
+            'starter_app_review_available' => $starter_app_review_available,
+            'starter_weekly_plan_available' => $starter_weekly_plan_available,
+            'starter_cycle_available' => $starter_app_review_available || $starter_weekly_plan_available,
+            'access_tier' => $access_tier,
+            'coach_mode' => $coach_mode,
+            'signal_summary' => [
+                'main_link_id' => (int) ($signal_summary['main_link_id'] ?? 0),
+                'growth_signal_30d' => (int) ($signal_summary['growth_signal_30d'] ?? 0),
+                'growth_signal_7d' => (int) ($signal_summary['growth_signal_7d'] ?? 0),
+                'shop_contacts_30d' => (int) ($signal_summary['shop_contacts_30d'] ?? 0),
+                'shop_contacts_7d' => (int) ($signal_summary['shop_contacts_7d'] ?? 0),
+                'whatsapp_contacts_30d' => (int) ($signal_summary['whatsapp_contacts_30d'] ?? 0),
+                'whatsapp_contacts_7d' => (int) ($signal_summary['whatsapp_contacts_7d'] ?? 0),
+                'funnel_registrations_30d' => (int) ($signal_summary['funnel_registrations_30d'] ?? 0),
+                'funnel_registrations_7d' => (int) ($signal_summary['funnel_registrations_7d'] ?? 0),
+                'ai_chat_leads_30d' => (int) ($signal_summary['ai_chat_leads_30d'] ?? 0),
+                'ai_chat_leads_7d' => (int) ($signal_summary['ai_chat_leads_7d'] ?? 0),
+                'qualified_target' => (int) ($signal_summary['qualified_target'] ?? 15),
+                'top_target' => (int) ($signal_summary['top_target'] ?? 15),
+                'is_signal_qualified' => $is_signal_qualified,
+                'is_top_performer' => $is_top_performer,
+            ],
             'counts' => [
                 'weekly_checkins' => count($weekly_checkins),
                 'weekly_plans' => count($weekly_plans),
@@ -714,6 +756,7 @@ class OpsReadonly extends Controller {
                 'preview' => $this->excerpt($mentor_guidance, 260),
                 'length' => mb_strlen($mentor_guidance),
             ],
+            'mentor_intelligence' => $mentor_intelligence,
         ];
     }
 
@@ -1303,6 +1346,12 @@ class OpsReadonly extends Controller {
             'manual_unlocked_at' => null,
             'starter_app_review_used' => 0,
             'starter_weekly_plan_used' => 0,
+            'starter_app_review_available' => false,
+            'starter_weekly_plan_available' => false,
+            'starter_cycle_available' => false,
+            'access_tier' => 'beginner',
+            'coach_mode' => [],
+            'signal_summary' => [],
             'counts' => [
                 'weekly_checkins' => 0,
                 'weekly_plans' => 0,
@@ -1318,6 +1367,7 @@ class OpsReadonly extends Controller {
                 'preview' => '',
                 'length' => 0,
             ],
+            'mentor_intelligence' => [],
         ], $section_errors, 'ai');
 
         $billing = $this->resolve_collaborator_section(function() use ($user_id, $user, $billing_events_limit) {

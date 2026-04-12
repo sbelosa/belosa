@@ -1696,6 +1696,46 @@
         background: linear-gradient(180deg, rgba(31, 41, 55, 0.18) 0%, rgba(15, 23, 42, 0.4) 100%);
     }
 
+    .leader-os-mentor-panel {
+        margin-top: 0.6rem;
+        padding: 0.72rem 0.85rem;
+        border-radius: 0.9rem;
+        border: 1px solid rgba(148, 163, 184, 0.12);
+        background: rgba(9, 16, 29, 0.48);
+    }
+
+    .leader-os-mentor-panel.is-success {
+        border-color: rgba(74, 222, 128, 0.24);
+        background: linear-gradient(180deg, rgba(20, 83, 45, 0.14) 0%, rgba(9, 16, 29, 0.44) 100%);
+    }
+
+    .leader-os-mentor-panel.is-warning {
+        border-color: rgba(251, 191, 36, 0.22);
+        background: linear-gradient(180deg, rgba(120, 53, 15, 0.14) 0%, rgba(9, 16, 29, 0.44) 100%);
+    }
+
+    .leader-os-mentor-panel.is-info {
+        border-color: rgba(96, 165, 250, 0.24);
+        background: linear-gradient(180deg, rgba(30, 64, 175, 0.12) 0%, rgba(9, 16, 29, 0.42) 100%);
+    }
+
+    .leader-os-mentor-panel.is-dark {
+        border-color: rgba(75, 85, 99, 0.24);
+        background: linear-gradient(180deg, rgba(31, 41, 55, 0.18) 0%, rgba(9, 16, 29, 0.42) 100%);
+    }
+
+    .leader-os-mentor-meta {
+        display: grid;
+        gap: 0.3rem;
+    }
+
+    .leader-os-mentor-badges {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.35rem;
+    }
+
     .leader-os-ai-access-actions {
         display: flex;
         flex-wrap: wrap;
@@ -3117,6 +3157,14 @@ $render_priority_queue_section = static function() use ($data, $leader_os_action
                                 <div class="text-muted small">AI status: <strong class="text-white"><?= htmlspecialchars((string) ($queue_row['ai_access_tier_label'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></strong></div>
                                 <div class="text-muted small">Klikovi, prijave i AI chat kontakti 30d: <strong class="text-white"><?= nr((int) ($queue_row['ai_access_growth_signal_30d'] ?? 0)) ?></strong></div>
                                 <div class="text-muted small">Shop <?= nr((int) ($queue_row['ai_access_shop_clicks_30d'] ?? 0)) ?> · Funnel <?= nr((int) ($queue_row['ai_access_funnel_registrations_30d'] ?? 0)) ?> · AI chat <?= nr((int) ($queue_row['ai_access_ai_chat_leads_30d'] ?? 0)) ?> · WhatsApp <?= nr((int) ($queue_row['ai_access_whatsapp_contacts_30d'] ?? 0)) ?></div>
+                                <div class="text-muted small">Mentor signal: <strong class="text-white"><?= htmlspecialchars((string) ($queue_row['ai_mentor_stage_label'] ?? 'Mentor signal'), ENT_QUOTES, 'UTF-8') ?></strong><?php if(!empty($queue_row['ai_mentor_priority_label'])): ?> · <?= htmlspecialchars((string) ($queue_row['ai_mentor_priority_label'] ?? ''), ENT_QUOTES, 'UTF-8') ?><?php endif ?></div>
+                                <div class="text-muted small">Sales link: <strong class="text-white"><?= htmlspecialchars((string) ($queue_row['ai_mentor_sales_link_status_label'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></strong> · Portfelj: <strong class="text-white"><?= htmlspecialchars((string) ($queue_row['ai_mentor_portfolio_health_label'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></strong></div>
+                                <?php if(!empty($queue_row['ai_mentor_focus_app_names']) || (int) ($queue_row['ai_mentor_archive_candidate_count'] ?? 0) > 0): ?>
+                                    <div class="text-muted small">Fokus: <strong class="text-white"><?= htmlspecialchars((string) (($queue_row['ai_mentor_focus_app_names'] ?? '') ?: nr((int) ($queue_row['ai_mentor_focus_app_count'] ?? 0)) . ' aplikacije'), ENT_QUOTES, 'UTF-8') ?></strong><?php if((int) ($queue_row['ai_mentor_archive_candidate_count'] ?? 0) > 0): ?> · Cleanup: <strong class="text-white"><?= nr((int) ($queue_row['ai_mentor_archive_candidate_count'] ?? 0)) ?></strong><?php endif ?></div>
+                                <?php endif ?>
+                                <?php if(!empty($queue_row['ai_mentor_admin_action'])): ?>
+                                    <div class="text-muted small">Mentor potez: <strong class="text-white"><?= htmlspecialchars((string) ($queue_row['ai_mentor_admin_action'] ?? ''), ENT_QUOTES, 'UTF-8') ?></strong></div>
+                                <?php endif ?>
                                 <?php if(!empty($queue_row['last_contacted_at'])): ?>
                                     <div class="text-muted small"><?= l('admin_leader_operating_system.queue_last_contact') ?>: <strong class="text-white"><?= \Altum\Date::get($queue_row['last_contacted_at'], 2) ?></strong></div>
                                 <?php endif ?>
@@ -3141,20 +3189,20 @@ $render_priority_queue_section = static function() use ($data, $leader_os_action
 
                             <?php if(!empty($queue_row['ai_access_is_pro'])): ?>
                                 <div class="leader-os-ai-access-actions">
-                                    <?php if(($queue_row['ai_access_tier_key'] ?? '') !== 'pro_active' && ($queue_row['ai_access_tier_key'] ?? '') !== 'pro_vip'): ?>
+                                    <?php if(($queue_row['ai_access_tier_key'] ?? '') !== 'qualified' && ($queue_row['ai_access_tier_key'] ?? '') !== 'top'): ?>
                                         <form action="<?= $leader_os_action_url ?>" method="post">
                                             <input type="hidden" name="global_token" value="<?= \Altum\Csrf::get('global_token') ?>" />
                                             <input type="hidden" name="user_id" value="<?= (int) $queue_row['user_id'] ?>" />
-                                            <input type="hidden" name="los_ai_unlock_action" value="pro_active" />
-                                            <button type="submit" class="btn btn-sm leader-os-action-button is-primary">Otključaj Active</button>
+                                            <input type="hidden" name="los_ai_unlock_action" value="qualified" />
+                                            <button type="submit" class="btn btn-sm leader-os-action-button is-primary">Otključaj 15+</button>
                                         </form>
                                     <?php endif ?>
-                                    <?php if(($queue_row['ai_access_tier_key'] ?? '') !== 'pro_vip'): ?>
+                                    <?php if(($queue_row['ai_access_tier_key'] ?? '') !== 'top'): ?>
                                         <form action="<?= $leader_os_action_url ?>" method="post">
                                             <input type="hidden" name="global_token" value="<?= \Altum\Csrf::get('global_token') ?>" />
                                             <input type="hidden" name="user_id" value="<?= (int) $queue_row['user_id'] ?>" />
-                                            <input type="hidden" name="los_ai_unlock_action" value="pro_vip" />
-                                            <button type="submit" class="btn btn-sm leader-os-action-button is-success">Otključaj VIP</button>
+                                            <input type="hidden" name="los_ai_unlock_action" value="top" />
+                                            <button type="submit" class="btn btn-sm leader-os-action-button is-success">Otključaj TOP</button>
                                         </form>
                                     <?php endif ?>
                                     <?php if(!empty($queue_row['ai_access_manual_tier'])): ?>
@@ -6045,6 +6093,17 @@ $operations_tab_badge_total = (int) (($data->operations['totals']['pending_appro
                             <div class="text-muted small">AI status: <strong class="text-white"><?= htmlspecialchars((string) ($queue_row['ai_access_tier_label'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></strong></div>
                             <div class="text-muted small">Klikovi, prijave i AI chat kontakti 30d: <strong class="text-white"><?= nr((int) ($queue_row['ai_access_growth_signal_30d'] ?? 0)) ?></strong></div>
                             <div class="text-muted small">Shop <?= nr((int) ($queue_row['ai_access_shop_clicks_30d'] ?? 0)) ?> · Funnel <?= nr((int) ($queue_row['ai_access_funnel_registrations_30d'] ?? 0)) ?> · AI chat <?= nr((int) ($queue_row['ai_access_ai_chat_leads_30d'] ?? 0)) ?> · WhatsApp <?= nr((int) ($queue_row['ai_access_whatsapp_contacts_30d'] ?? 0)) ?></div>
+                            <?php if(!empty($queue_row['ai_access_is_pro']) && !empty($queue_row['ai_access_intro_cycle_available'])): ?>
+                                <div class="text-muted small">Početni PRO unlock: analiza <?= !empty($queue_row['ai_access_starter_app_review_available']) ? 'spremna' : 'iskorištena' ?> · plan <?= !empty($queue_row['ai_access_starter_weekly_plan_available']) ? 'spreman' : 'iskorišten' ?></div>
+                            <?php endif ?>
+                            <div class="text-muted small">Mentor signal: <strong class="text-white"><?= htmlspecialchars((string) ($queue_row['ai_mentor_stage_label'] ?? 'Mentor signal'), ENT_QUOTES, 'UTF-8') ?></strong><?php if(!empty($queue_row['ai_mentor_priority_label'])): ?> · <?= htmlspecialchars((string) ($queue_row['ai_mentor_priority_label'] ?? ''), ENT_QUOTES, 'UTF-8') ?><?php endif ?></div>
+                            <div class="text-muted small">Sales link: <strong class="text-white"><?= htmlspecialchars((string) ($queue_row['ai_mentor_sales_link_status_label'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></strong> · Portfelj: <strong class="text-white"><?= htmlspecialchars((string) ($queue_row['ai_mentor_portfolio_health_label'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></strong></div>
+                            <?php if(!empty($queue_row['ai_mentor_focus_app_names']) || (int) ($queue_row['ai_mentor_archive_candidate_count'] ?? 0) > 0): ?>
+                                <div class="text-muted small">Fokus: <strong class="text-white"><?= htmlspecialchars((string) (($queue_row['ai_mentor_focus_app_names'] ?? '') ?: nr((int) ($queue_row['ai_mentor_focus_app_count'] ?? 0)) . ' aplikacije'), ENT_QUOTES, 'UTF-8') ?></strong><?php if((int) ($queue_row['ai_mentor_archive_candidate_count'] ?? 0) > 0): ?> · Cleanup: <strong class="text-white"><?= nr((int) ($queue_row['ai_mentor_archive_candidate_count'] ?? 0)) ?></strong><?php endif ?></div>
+                            <?php endif ?>
+                            <?php if(!empty($queue_row['ai_mentor_admin_action'])): ?>
+                                <div class="text-muted small">Mentor potez: <strong class="text-white"><?= htmlspecialchars((string) ($queue_row['ai_mentor_admin_action'] ?? ''), ENT_QUOTES, 'UTF-8') ?></strong></div>
+                            <?php endif ?>
                             <?php if(!empty($queue_row['last_contacted_at'])): ?>
                                 <div class="text-muted small"><?= l('admin_leader_operating_system.queue_last_contact') ?>: <strong class="text-white"><?= \Altum\Date::get($queue_row['last_contacted_at'], 2) ?></strong></div>
                             <?php endif ?>
@@ -6069,20 +6128,20 @@ $operations_tab_badge_total = (int) (($data->operations['totals']['pending_appro
 
                         <?php if(!empty($queue_row['ai_access_is_pro'])): ?>
                             <div class="leader-os-ai-access-actions">
-                                <?php if(($queue_row['ai_access_tier_key'] ?? '') !== 'pro_active' && ($queue_row['ai_access_tier_key'] ?? '') !== 'pro_vip'): ?>
+                                <?php if(($queue_row['ai_access_tier_key'] ?? '') !== 'qualified' && ($queue_row['ai_access_tier_key'] ?? '') !== 'top'): ?>
                                     <form action="<?= $leader_os_action_url ?>" method="post">
                                         <input type="hidden" name="global_token" value="<?= \Altum\Csrf::get('global_token') ?>" />
                                         <input type="hidden" name="user_id" value="<?= (int) $queue_row['user_id'] ?>" />
-                                        <input type="hidden" name="los_ai_unlock_action" value="pro_active" />
-                                        <button type="submit" class="btn btn-sm leader-os-action-button is-primary">Otključaj Active</button>
+                                        <input type="hidden" name="los_ai_unlock_action" value="qualified" />
+                                        <button type="submit" class="btn btn-sm leader-os-action-button is-primary">Otključaj 15+</button>
                                     </form>
                                 <?php endif ?>
-                                <?php if(($queue_row['ai_access_tier_key'] ?? '') !== 'pro_vip'): ?>
+                                <?php if(($queue_row['ai_access_tier_key'] ?? '') !== 'top'): ?>
                                     <form action="<?= $leader_os_action_url ?>" method="post">
                                         <input type="hidden" name="global_token" value="<?= \Altum\Csrf::get('global_token') ?>" />
                                         <input type="hidden" name="user_id" value="<?= (int) $queue_row['user_id'] ?>" />
-                                        <input type="hidden" name="los_ai_unlock_action" value="pro_vip" />
-                                        <button type="submit" class="btn btn-sm leader-os-action-button is-success">Otključaj VIP</button>
+                                        <input type="hidden" name="los_ai_unlock_action" value="top" />
+                                        <button type="submit" class="btn btn-sm leader-os-action-button is-success">Otključaj TOP</button>
                                     </form>
                                 <?php endif ?>
                                 <?php if(!empty($queue_row['ai_access_manual_tier'])): ?>
@@ -6164,12 +6223,18 @@ $operations_tab_badge_total = (int) (($data->operations['totals']['pending_appro
                         <?php $growth_class = $growth_percent === null ? '' : ($growth_percent >= 0 ? 'leader-os-growth-positive' : 'leader-os-growth-negative'); ?>
                         <?php
                         $ai_access_panel_class = match((string) ($row['ai_access_tier_key'] ?? 'locked')) {
-                            'pro_start' => 'is-start',
-                            'pro_active' => 'is-active',
-                            'pro_vip' => 'is-vip',
+                            'pro' => 'is-start',
+                            'qualified' => 'is-active',
+                            'top' => 'is-vip',
                             default => 'is-locked',
                         };
-                        $ai_signal_progress = min(100, max(0, ((int) ($row['ai_access_growth_signal_30d'] ?? 0) / 50) * 100));
+                        $mentor_panel_class = match((string) ($row['ai_mentor_stage_key'] ?? 'foundation')) {
+                            'top_momentum', 'serious_focus' => 'is-success',
+                            'blocked_setup', 'scattered_focus' => 'is-warning',
+                            'starter_cycle', 'building_signal', 'pro_upgrade_ready' => 'is-info',
+                            default => 'is-dark',
+                        };
+                        $ai_signal_progress = min(100, max(0, ((int) ($row['ai_access_growth_signal_30d'] ?? 0) / 15) * 100));
                         ?>
                         <tr>
                             <td>
@@ -6198,12 +6263,28 @@ $operations_tab_badge_total = (int) (($data->operations['totals']['pending_appro
                                                 <div class="leader-os-signal-bar"><span style="width: <?= nr($ai_signal_progress) ?>%"></span></div>
                                                 <strong class="text-white"><?= nr((int) ($row['ai_access_growth_signal_30d'] ?? 0)) ?></strong>
                                             </div>
-                                            <div class="leader-os-signal-thresholds">15 = Active · 50 = VIP</div>
-                                            <div class="text-muted small">Shop <?= nr((int) ($row['ai_access_shop_clicks_30d'] ?? 0)) ?> · Funnel <?= nr((int) ($row['ai_access_funnel_registrations_30d'] ?? 0)) ?> · AI chat <?= nr((int) ($row['ai_access_ai_chat_leads_30d'] ?? 0)) ?> · WhatsApp <?= nr((int) ($row['ai_access_whatsapp_contacts_30d'] ?? 0)) ?></div>
-                                            <div class="text-muted small"><?= htmlspecialchars((string) ($row['ai_access_starter_label'] ?? ''), ENT_QUOTES, 'UTF-8') ?> · <?= htmlspecialchars((string) ($row['ai_access_source_label'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                                            <div class="leader-os-signal-thresholds">15 / 30d = AI ciklus · 15 / 7d = TOP</div>
+                                            <div class="text-muted small">30d: Shop <?= nr((int) ($row['ai_access_shop_clicks_30d'] ?? 0)) ?> · Funnel <?= nr((int) ($row['ai_access_funnel_registrations_30d'] ?? 0)) ?> · AI chat <?= nr((int) ($row['ai_access_ai_chat_leads_30d'] ?? 0)) ?> · WhatsApp <?= nr((int) ($row['ai_access_whatsapp_contacts_30d'] ?? 0)) ?></div>
+                                            <div class="text-muted small">7d signal: <?= nr((int) ($row['ai_access_growth_signal_7d'] ?? 0)) ?> · Coach: <?= htmlspecialchars((string) ($row['ai_access_coach_label'] ?? '-'), ENT_QUOTES, 'UTF-8') ?> · <?= htmlspecialchars((string) ($row['ai_access_source_label'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                                            <?php if(!empty($row['ai_access_is_pro']) && !empty($row['ai_access_intro_cycle_available'])): ?>
+                                                <div class="text-muted small">Početni PRO unlock: analiza <?= !empty($row['ai_access_starter_app_review_available']) ? 'spremna' : 'iskorištena' ?> · plan <?= !empty($row['ai_access_starter_weekly_plan_available']) ? 'spreman' : 'iskorišten' ?></div>
+                                            <?php endif ?>
                                             <?php if(!empty($row['ai_access_manual_expires_at'])): ?>
                                                 <div class="text-muted small">Ručni status traje do: <?= \Altum\Date::get($row['ai_access_manual_expires_at'], 2) ?></div>
                                             <?php endif ?>
+                                        </div>
+                                    </div>
+                                    <div class="leader-os-mentor-panel <?= $mentor_panel_class ?>">
+                                        <div class="leader-os-mentor-meta">
+                                            <div class="leader-os-mentor-badges">
+                                                <span class="leader-os-status-badge <?= htmlspecialchars((string) ($row['ai_mentor_stage_class'] ?? 'status-dark'), ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars((string) ($row['ai_mentor_stage_label'] ?? 'Mentor signal'), ENT_QUOTES, 'UTF-8') ?></span>
+                                                <?php if(!empty($row['ai_mentor_priority_label'])): ?>
+                                                    <span class="leader-os-status-badge status-info"><?= htmlspecialchars((string) ($row['ai_mentor_priority_label'] ?? ''), ENT_QUOTES, 'UTF-8') ?></span>
+                                                <?php endif ?>
+                                            </div>
+                                            <div class="text-muted small">Sales link: <strong class="text-white"><?= htmlspecialchars((string) ($row['ai_mentor_sales_link_status_label'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></strong> · Portfelj: <strong class="text-white"><?= htmlspecialchars((string) ($row['ai_mentor_portfolio_health_label'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></strong></div>
+                                            <div class="text-muted small">Fokus aplikacije: <strong class="text-white"><?= nr((int) ($row['ai_mentor_focus_app_count'] ?? 0)) ?></strong><?php if(!empty($row['ai_mentor_focus_app_names'])): ?> · <?= htmlspecialchars((string) ($row['ai_mentor_focus_app_names'] ?? ''), ENT_QUOTES, 'UTF-8') ?><?php endif ?><?php if((int) ($row['ai_mentor_archive_candidate_count'] ?? 0) > 0): ?> · Cleanup: <strong class="text-white"><?= nr((int) ($row['ai_mentor_archive_candidate_count'] ?? 0)) ?></strong><?php endif ?></div>
+                                            <div class="text-muted small">Mentor potez: <strong class="text-white"><?= htmlspecialchars((string) ($row['ai_mentor_admin_action'] ?? ''), ENT_QUOTES, 'UTF-8') ?></strong></div>
                                         </div>
                                     </div>
                                     <!-- /Custom code: FC-2026-03-31 -->
@@ -6250,21 +6331,21 @@ $operations_tab_badge_total = (int) (($data->operations['totals']['pending_appro
                                     <a href="<?= $row['admin_user_url'] ?>" class="leader-os-link text-muted"><?= l('admin_index.biolink_qualified_watch.open_profile') ?></a>
                                     <?php if(!empty($row['ai_access_is_pro'])): ?>
                                         <div class="leader-os-ai-access-actions">
-                                            <?php if(($row['ai_access_tier_key'] ?? '') !== 'pro_active' && ($row['ai_access_tier_key'] ?? '') !== 'pro_vip'): ?>
+                                            <?php if(($row['ai_access_tier_key'] ?? '') !== 'qualified' && ($row['ai_access_tier_key'] ?? '') !== 'top'): ?>
                                                 <form action="<?= $leader_os_action_url ?>" method="post">
                                                     <input type="hidden" name="global_token" value="<?= \Altum\Csrf::get('global_token') ?>" />
                                                     <input type="hidden" name="user_id" value="<?= (int) $row['user_id'] ?>" />
-                                                    <input type="hidden" name="los_ai_unlock_action" value="pro_active" />
-                                                    <button type="submit" class="btn btn-sm leader-os-action-button is-primary">Active</button>
+                                                    <input type="hidden" name="los_ai_unlock_action" value="qualified" />
+                                                    <button type="submit" class="btn btn-sm leader-os-action-button is-primary">15+</button>
                                                 </form>
                                             <?php endif ?>
 
-                                            <?php if(($row['ai_access_tier_key'] ?? '') !== 'pro_vip'): ?>
+                                            <?php if(($row['ai_access_tier_key'] ?? '') !== 'top'): ?>
                                                 <form action="<?= $leader_os_action_url ?>" method="post">
                                                     <input type="hidden" name="global_token" value="<?= \Altum\Csrf::get('global_token') ?>" />
                                                     <input type="hidden" name="user_id" value="<?= (int) $row['user_id'] ?>" />
-                                                    <input type="hidden" name="los_ai_unlock_action" value="pro_vip" />
-                                                    <button type="submit" class="btn btn-sm leader-os-action-button is-success">VIP</button>
+                                                    <input type="hidden" name="los_ai_unlock_action" value="top" />
+                                                    <button type="submit" class="btn btn-sm leader-os-action-button is-success">TOP</button>
                                                 </form>
                                             <?php endif ?>
 

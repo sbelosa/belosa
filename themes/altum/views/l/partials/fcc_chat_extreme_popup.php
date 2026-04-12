@@ -23,10 +23,15 @@ $fcc_chat_lead_enabled = array_key_exists('lead_enabled', $fcc_chat_config)
 $fcc_chat_is_english = str_starts_with(mb_strtolower($fcc_chat_language_code), 'en');
 $fcc_chat_toggle_label = $fcc_chat_is_english ? 'Open ChatExtreme' : 'Otvori ChatExtreme';
 $fcc_chat_close_label = $fcc_chat_is_english ? 'Close chat' : 'Zatvori chat';
-$fcc_chat_intro_label = trim((string) ($fcc_chat_config['intro_label'] ?? ($fcc_chat_assistant_type === 'coach' ? 'FCC Coach' : 'Extreme Chat Ai')));
+$fcc_chat_assistant_title = trim((string) ($fcc_chat_config['assistant_title'] ?? ($fcc_chat_assistant_type === 'coach' ? 'FCC Coach' : 'Extreme Chat Ai')));
+$fcc_chat_intro_label = trim((string) ($fcc_chat_config['intro_label'] ?? $fcc_chat_assistant_title));
 $fcc_chat_input_placeholder = trim((string) ($fcc_chat_config['input_placeholder'] ?? ($fcc_chat_assistant_type === 'coach'
     ? ($fcc_chat_is_english ? 'How can I help you inside FCC?' : 'Kako ti mogu pomoći unutar FCC-a?')
     : ($fcc_chat_is_english ? 'What would you like to know?' : 'Što vas zanima?'))));
+$fcc_chat_coach_badge = trim((string) ($fcc_chat_config['coach_badge'] ?? ''));
+$fcc_chat_coach_notice = trim((string) ($fcc_chat_config['coach_notice'] ?? ''));
+$fcc_chat_coach_mode_key = trim((string) ($fcc_chat_config['coach_mode_key'] ?? ($fcc_chat_assistant_type === 'coach' ? 'default' : '')));
+$fcc_chat_ui_copy_override = is_array($fcc_chat_config['ui_copy_override'] ?? null) ? $fcc_chat_config['ui_copy_override'] : [];
 $fcc_chat_send_label = $fcc_chat_is_english ? 'Send' : 'Pošalji';
 $fcc_chat_lead_title = $fcc_chat_is_english ? 'Leave your contact' : 'Ostavite kontakt';
 $fcc_chat_lead_text = $fcc_chat_is_english ? 'The partner can continue personally.' : 'Suradnik može osobno nastaviti razgovor.';
@@ -72,7 +77,7 @@ $fcc_chat_feedback_saved_message = $fcc_chat_is_english
 $fcc_chat_launcher_label = trim((string) ($fcc_chat_config['launcher_label'] ?? ''));
 if($fcc_chat_launcher_label === '') {
     if($fcc_chat_assistant_type === 'coach') {
-        $fcc_chat_launcher_label = 'FCC Coach';
+        $fcc_chat_launcher_label = $fcc_chat_assistant_title;
     } elseif($fcc_chat_assistant_type === 'pets_advisor') {
         $fcc_chat_launcher_label = $fcc_chat_is_english ? 'AI Pets' : 'AI Ljubimci';
     } else {
@@ -88,19 +93,22 @@ if($fcc_chat_default_welcome === '') {
 
 $fcc_chat_ui_copy = [];
 foreach(['hr', 'en', 'sl', 'bg'] as $fcc_chat_ui_language) {
+    $fcc_chat_ui_override = is_array($fcc_chat_ui_copy_override[$fcc_chat_ui_language] ?? null)
+        ? $fcc_chat_ui_copy_override[$fcc_chat_ui_language]
+        : [];
     $fcc_chat_ui_is_english = $fcc_chat_ui_language === 'en';
     $fcc_chat_ui_intro_label = $fcc_chat_assistant_type === 'coach'
-        ? 'FCC Coach'
+        ? (string) ($fcc_chat_ui_override['intro_label'] ?? $fcc_chat_intro_label)
         : ($fcc_chat_assistant_type === 'pets_advisor' ? 'Extreme Chat Pets' : 'Extreme Chat Ai');
 
     if($fcc_chat_assistant_type === 'coach') {
-        $fcc_chat_ui_launcher_label = 'FCC Coach';
-        $fcc_chat_ui_input_placeholder = match($fcc_chat_ui_language) {
+        $fcc_chat_ui_launcher_label = (string) ($fcc_chat_ui_override['launcher_label'] ?? $fcc_chat_launcher_label);
+        $fcc_chat_ui_input_placeholder = (string) ($fcc_chat_ui_override['input_placeholder'] ?? match($fcc_chat_ui_language) {
             'sl' => 'Kako ti lahko pomagam znotraj FCC-ja?',
             'bg' => 'Как мога да помогна във FCC?',
             'en' => 'How can I help you inside FCC?',
             default => 'Kako ti mogu pomoći unutar FCC-a?',
-        };
+        });
     } elseif($fcc_chat_assistant_type === 'pets_advisor') {
         $fcc_chat_ui_launcher_label = match($fcc_chat_ui_language) {
             'sl' => 'AI ljubljenčki',
@@ -133,6 +141,9 @@ foreach(['hr', 'en', 'sl', 'bg'] as $fcc_chat_ui_language) {
         'introLabel' => $fcc_chat_ui_intro_label,
         'launcherLabel' => $fcc_chat_ui_launcher_label,
         'inputPlaceholder' => $fcc_chat_ui_input_placeholder,
+        'assistantTitle' => (string) ($fcc_chat_ui_override['assistant_title'] ?? $fcc_chat_assistant_title),
+        'coachBadge' => (string) ($fcc_chat_ui_override['coach_badge'] ?? $fcc_chat_coach_badge),
+        'coachNotice' => (string) ($fcc_chat_ui_override['coach_notice'] ?? $fcc_chat_coach_notice),
         'leadTitle' => match($fcc_chat_ui_language) {
             'sl' => 'Pustite kontakt',
             'bg' => 'Оставете контакт',
@@ -225,7 +236,7 @@ foreach(['hr', 'en', 'sl', 'bg'] as $fcc_chat_ui_language) {
             default => 'Hvala, feedback je spremljen.',
         },
         'defaultWelcome' => $fcc_chat_assistant_type === 'coach'
-            ? fcc_ai_get_internal_coach_welcome_message($fcc_chat_ui_language, $fcc_chat_owner_name)
+            ? (string) ($fcc_chat_ui_override['default_welcome'] ?? fcc_ai_get_internal_coach_welcome_message($fcc_chat_ui_language, $fcc_chat_owner_name))
             : fcc_ai_get_public_welcome_message($fcc_chat_assistant_type, $fcc_chat_ui_language),
     ];
 }
@@ -383,6 +394,33 @@ foreach(['hr', 'en', 'sl', 'bg'] as $fcc_chat_ui_language) {
         font-weight: 800;
         letter-spacing: .01em;
         line-height: 1.05;
+    }
+
+    .fcc-chat-extreme__coach-badge {
+        display: inline-flex;
+        align-items: center;
+        max-width: fit-content;
+        margin-top: .35rem;
+        padding: .28rem .6rem;
+        border-radius: 999px;
+        background: rgba(125, 243, 230, .12);
+        border: 1px solid rgba(125, 243, 230, .16);
+        color: rgba(220, 255, 249, .94);
+        font-size: .68rem;
+        font-weight: 700;
+        letter-spacing: .04em;
+        line-height: 1.2;
+    }
+
+    .fcc-chat-extreme__coach-notice {
+        margin: 0 1rem .75rem;
+        padding: .72rem .8rem;
+        border-radius: 14px;
+        background: rgba(255, 255, 255, .05);
+        border: 1px solid rgba(255, 255, 255, .08);
+        color: rgba(241, 248, 255, .82);
+        font-size: .78rem;
+        line-height: 1.5;
     }
 
     .fcc-chat-extreme__close {
@@ -579,6 +617,20 @@ foreach(['hr', 'en', 'sl', 'bg'] as $fcc_chat_ui_language) {
         word-break: break-word;
         white-space: pre-line;
         text-align: left;
+    }
+
+    .fcc-chat-extreme__inline-link {
+        color: #7ff3e6;
+        text-decoration: underline;
+        text-decoration-color: rgba(127, 243, 230, .45);
+        text-underline-offset: 2px;
+        transition: color .15s ease, text-decoration-color .15s ease;
+    }
+
+    .fcc-chat-extreme__inline-link:hover,
+    .fcc-chat-extreme__inline-link:focus {
+        color: #b6fff7;
+        text-decoration-color: rgba(182, 255, 247, .7);
     }
 
     .fcc-chat-extreme__message.is-assistant .fcc-chat-extreme__bubble {
@@ -1033,6 +1085,10 @@ foreach(['hr', 'en', 'sl', 'bg'] as $fcc_chat_ui_language) {
     data-source-context="<?= htmlspecialchars($fcc_chat_source_context, ENT_QUOTES, 'UTF-8') ?>"
     data-lead-success="<?= htmlspecialchars($fcc_chat_lead_success_message, ENT_QUOTES, 'UTF-8') ?>"
     data-default-welcome="<?= htmlspecialchars($fcc_chat_default_welcome, ENT_QUOTES, 'UTF-8') ?>"
+    data-assistant-title="<?= htmlspecialchars($fcc_chat_assistant_title, ENT_QUOTES, 'UTF-8') ?>"
+    data-coach-badge="<?= htmlspecialchars($fcc_chat_coach_badge, ENT_QUOTES, 'UTF-8') ?>"
+    data-coach-notice="<?= htmlspecialchars($fcc_chat_coach_notice, ENT_QUOTES, 'UTF-8') ?>"
+    data-coach-mode-key="<?= htmlspecialchars($fcc_chat_coach_mode_key, ENT_QUOTES, 'UTF-8') ?>"
     data-ui-copy="<?= htmlspecialchars(json_encode($fcc_chat_ui_copy, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES), ENT_QUOTES, 'UTF-8') ?>"
     data-hide-without-context="<?= $fcc_chat_hide_without_context ? '1' : '0' ?>"
     data-lead-enabled="<?= $fcc_chat_lead_enabled ? '1' : '0' ?>"
@@ -1047,7 +1103,10 @@ foreach(['hr', 'en', 'sl', 'bg'] as $fcc_chat_ui_language) {
             <?php if($fcc_chat_assistant_type === 'coach'): ?>
                 <div class="fcc-chat-extreme__coach-brand">
                     <div class="fcc-chat-extreme__coach-brand-tag">Forever Card Club</div>
-                    <div id="<?= htmlspecialchars($fcc_chat_dom_id . '-title', ENT_QUOTES, 'UTF-8') ?>" class="fcc-chat-extreme__coach-brand-title">FCC Coach</div>
+                    <div id="<?= htmlspecialchars($fcc_chat_dom_id . '-title', ENT_QUOTES, 'UTF-8') ?>" class="fcc-chat-extreme__coach-brand-title" data-chat-extreme-assistant-title><?= htmlspecialchars($fcc_chat_assistant_title, ENT_QUOTES, 'UTF-8') ?></div>
+                    <?php if($fcc_chat_coach_badge !== ''): ?>
+                        <div class="fcc-chat-extreme__coach-badge" data-chat-extreme-coach-badge><?= htmlspecialchars($fcc_chat_coach_badge, ENT_QUOTES, 'UTF-8') ?></div>
+                    <?php endif ?>
                 </div>
             <?php else: ?>
                 <img
@@ -1256,9 +1315,40 @@ foreach(['hr', 'en', 'sl', 'bg'] as $fcc_chat_ui_language) {
                 .replace(/"/g, '&quot;')
                 .replace(/'/g, '&#039;');
 
+            const isSameOriginNavigationTarget = href => {
+                try {
+                    const parsed = new URL(String(href || ''), window.location.origin);
+                    return parsed.origin === window.location.origin;
+                } catch(error) {
+                    return false;
+                }
+            };
+
+            const buildInlineLinkHtml = rawUrl => {
+                let url = String(rawUrl || '');
+                let trailing = '';
+
+                while(url && /[),.;!?]$/.test(url)) {
+                    trailing = `${url.slice(-1)}${trailing}`;
+                    url = url.slice(0, -1);
+                }
+
+                if(!url) {
+                    return escapeHtml(rawUrl || '');
+                }
+
+                const normalizedHref = /^https?:\/\//i.test(url) ? url : `https://${url}`;
+                const sameOrigin = isSameOriginNavigationTarget(normalizedHref);
+                const target = sameOrigin ? '_self' : '_blank';
+                const rel = sameOrigin ? 'noopener' : 'noopener noreferrer';
+
+                return `<a class="fcc-chat-extreme__inline-link" href="${escapeHtml(normalizedHref)}" target="${target}" rel="${rel}">${escapeHtml(url)}</a>${escapeHtml(trailing)}`;
+            };
+
             const renderMessageHtml = value => {
                 let html = escapeHtml(String(value || '').replace(/\r\n/g, '\n'));
                 html = html.replace(/\*\*([\s\S]+?)\*\*/g, '<strong>$1</strong>');
+                html = html.replace(/((?:https?:\/\/|www\.)[^\s<]+)/gi, match => buildInlineLinkHtml(match));
                 html = html.replace(/\n/g, '<br>');
 
                 return html;
@@ -1687,6 +1777,10 @@ foreach(['hr', 'en', 'sl', 'bg'] as $fcc_chat_ui_language) {
             sourceContext: root.dataset.sourceContext || 'FCC app popup chat',
             leadSuccessMessage: root.dataset.leadSuccess || 'Kontakt je spremljen.',
             defaultWelcome: root.dataset.defaultWelcome || '',
+            assistantTitle: root.dataset.assistantTitle || '',
+            coachBadge: root.dataset.coachBadge || '',
+            coachNotice: root.dataset.coachNotice || '',
+            coachModeKey: root.dataset.coachModeKey || '',
             hideWithoutContext: root.dataset.hideWithoutContext === '1',
             leadEnabled: root.dataset.leadEnabled === '1',
             feedbackSavedMessage: <?= json_encode($fcc_chat_feedback_saved_message) ?>,
@@ -1719,11 +1813,61 @@ foreach(['hr', 'en', 'sl', 'bg'] as $fcc_chat_ui_language) {
         };
 
         const kicker = root.querySelector('.fcc-chat-extreme__kicker');
+        const assistantTitle = root.querySelector('[data-chat-extreme-assistant-title]');
+        const coachBadge = root.querySelector('[data-chat-extreme-coach-badge]');
+        const coachNotice = root.querySelector('[data-chat-extreme-coach-notice]');
         const launcherLabel = root.querySelector('.fcc-chat-extreme__launcher-label');
 
         const getUiCopy = language => {
             const resolvedLanguage = normalizePublicLanguageCode(language || config.language || config.defaultLanguage || 'hr');
             return uiCopy[resolvedLanguage] || uiCopy[config.defaultLanguage] || uiCopy.hr || {};
+        };
+
+        const applyCoachModeDetails = mode => {
+            if(!mode || typeof mode !== 'object' || config.assistantType !== 'coach') {
+                return;
+            }
+
+            if(typeof mode.mode_key === 'string' && mode.mode_key) {
+                config.coachModeKey = mode.mode_key;
+                root.dataset.coachModeKey = mode.mode_key;
+            }
+
+            if(typeof mode.assistant_title === 'string' && mode.assistant_title) {
+                config.assistantTitle = mode.assistant_title;
+                root.dataset.assistantTitle = mode.assistant_title;
+            }
+
+            if(typeof mode.coach_badge === 'string') {
+                config.coachBadge = mode.coach_badge;
+                root.dataset.coachBadge = mode.coach_badge;
+            }
+
+            if(typeof mode.coach_notice === 'string') {
+                config.coachNotice = mode.coach_notice;
+                root.dataset.coachNotice = mode.coach_notice;
+            }
+
+            const activeLanguage = normalizePublicLanguageCode(config.language || config.defaultLanguage || 'hr');
+            const activeCopy = {...(uiCopy[activeLanguage] || {})};
+
+            if(config.assistantTitle) {
+                activeCopy.assistantTitle = config.assistantTitle;
+                activeCopy.launcherLabel = mode.launcher_label || activeCopy.launcherLabel || config.assistantTitle;
+                activeCopy.introLabel = mode.intro_label || activeCopy.introLabel || config.assistantTitle;
+            }
+
+            if(typeof config.coachBadge === 'string') {
+                activeCopy.coachBadge = config.coachBadge;
+            }
+
+            if(typeof config.coachNotice === 'string') {
+                activeCopy.coachNotice = config.coachNotice;
+            }
+
+            if(Object.keys(activeCopy).length) {
+                uiCopy[activeLanguage] = activeCopy;
+            }
         };
 
         const applyLocalizedCopy = language => {
@@ -1750,8 +1894,22 @@ foreach(['hr', 'en', 'sl', 'bg'] as $fcc_chat_ui_language) {
                 kicker.textContent = copy.introLabel;
             }
 
-            if(launcherLabel && config.assistantType !== 'coach' && copy.launcherLabel) {
+            if(assistantTitle && copy.assistantTitle) {
+                assistantTitle.textContent = copy.assistantTitle;
+            }
+
+            if(launcherLabel && copy.launcherLabel) {
                 launcherLabel.textContent = copy.launcherLabel;
+            }
+
+            if(coachBadge && typeof copy.coachBadge === 'string') {
+                coachBadge.textContent = copy.coachBadge;
+                coachBadge.hidden = copy.coachBadge === '';
+            }
+
+            if(coachNotice && typeof copy.coachNotice === 'string') {
+                coachNotice.textContent = copy.coachNotice;
+                coachNotice.hidden = copy.coachNotice === '';
             }
 
             if(composerInput && copy.inputPlaceholder) {
@@ -1833,6 +1991,36 @@ foreach(['hr', 'en', 'sl', 'bg'] as $fcc_chat_ui_language) {
             .replace(/"/g, '&quot;')
             .replace(/'/g, '&#039;');
 
+        const isSameOriginNavigationTarget = href => {
+            try {
+                const parsed = new URL(String(href || ''), window.location.origin);
+                return parsed.origin === window.location.origin;
+            } catch(error) {
+                return false;
+            }
+        };
+
+        const buildInlineLinkHtml = rawUrl => {
+            let url = String(rawUrl || '');
+            let trailing = '';
+
+            while(url && /[),.;!?]$/.test(url)) {
+                trailing = `${url.slice(-1)}${trailing}`;
+                url = url.slice(0, -1);
+            }
+
+            if(!url) {
+                return escapeHtml(rawUrl || '');
+            }
+
+            const normalizedHref = /^https?:\/\//i.test(url) ? url : `https://${url}`;
+            const sameOrigin = isSameOriginNavigationTarget(normalizedHref);
+            const target = sameOrigin ? '_self' : '_blank';
+            const rel = sameOrigin ? 'noopener' : 'noopener noreferrer';
+
+            return `<a class="fcc-chat-extreme__inline-link" href="${escapeHtml(normalizedHref)}" target="${target}" rel="${rel}">${escapeHtml(url)}</a>${escapeHtml(trailing)}`;
+        };
+
         const renderMessageHtml = (value, options = {}) => {
             const config = options && typeof options === 'object' ? options : {};
             let text = String(value || '').replace(/\r\n/g, '\n');
@@ -1851,6 +2039,7 @@ foreach(['hr', 'en', 'sl', 'bg'] as $fcc_chat_ui_language) {
 
             let html = escapeHtml(text);
             html = html.replace(/\*\*([\s\S]+?)\*\*/g, '<strong>$1</strong>');
+            html = html.replace(/((?:https?:\/\/|www\.)[^\s<]+)/gi, match => buildInlineLinkHtml(match));
             html = html.replace(/\n/g, '<br>');
 
             return html;
@@ -2061,8 +2250,8 @@ foreach(['hr', 'en', 'sl', 'bg'] as $fcc_chat_ui_language) {
                 const link = document.createElement('a');
                 link.className = 'fcc-chat-extreme__shortcut';
                 link.href = suggestion.url;
-                link.target = '_self';
-                link.rel = 'noopener';
+                link.target = isSameOriginNavigationTarget(suggestion.url) ? '_self' : '_blank';
+                link.rel = isSameOriginNavigationTarget(suggestion.url) ? 'noopener' : 'noopener noreferrer';
                 link.setAttribute('aria-label', suggestion.title);
 
                 const eyebrow = document.createElement('div');
@@ -2120,8 +2309,8 @@ foreach(['hr', 'en', 'sl', 'bg'] as $fcc_chat_ui_language) {
                 const link = document.createElement('a');
                 link.className = 'fcc-chat-extreme__suggestion';
                 link.href = suggestion.url;
-                link.target = '_self';
-                link.rel = 'noopener';
+                link.target = isSameOriginNavigationTarget(suggestion.url) ? '_self' : '_blank';
+                link.rel = isSameOriginNavigationTarget(suggestion.url) ? 'noopener' : 'noopener noreferrer';
                 link.textContent = suggestion.title;
                 link.setAttribute('aria-label', suggestion.title);
                 container.appendChild(link);
@@ -2500,6 +2689,11 @@ foreach(['hr', 'en', 'sl', 'bg'] as $fcc_chat_ui_language) {
         const applyConversationDetails = (details, shouldRenderMessages = true) => {
             if(!details || typeof details !== 'object') {
                 return;
+            }
+
+            if(details.coach_mode && typeof details.coach_mode === 'object') {
+                applyCoachModeDetails(details.coach_mode);
+                applyLocalizedCopy(config.language);
             }
 
             if(Number(details.link_id || 0) > 0) {

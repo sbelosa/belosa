@@ -986,8 +986,11 @@
 }; ?>
 <?php $render_app_review_teaser_card = static function(string $page_url, bool $is_profile_complete, bool $is_accessible, string $locked_reason, ?array $latest_review, array $quality_payload, array $ai_growth_access = [], bool $is_app_review_locked = false, ?string $app_review_next_at = null, bool $compact = false, array $editor_actions = []): string {
     $tier = (string) ($ai_growth_access['tier'] ?? 'none');
+    $is_pro = !empty($ai_growth_access['is_pro']);
+    $is_signal_qualified = !empty($ai_growth_access['is_signal_qualified']);
     $starter = (array) ($ai_growth_access['starter'] ?? []);
-    $starter_app_review_remaining = (int) ($starter['app_review_remaining'] ?? 0);
+    $intro_app_review_available = !empty($starter['app_review_available']);
+    $intro_weekly_available = !empty($starter['weekly_plan_available']);
     $review_cooldown_days = (int) (($ai_growth_access['app_review']['cooldown_days'] ?? 0));
     $growth_signal_30d = (int) ($ai_growth_access['growth_signal_30d'] ?? 0);
     $editor_link_id = max(0, (int) ($editor_actions['link_id'] ?? 0));
@@ -1018,29 +1021,31 @@
     if(!$is_profile_complete) {
         $summary_text = l('ai_plan.app_review_locked_profile');
         $reason_text = 'Prvo dovrši profil kako bi AI znao cilj, publiku i fokus aplikacije.';
+    } elseif($intro_app_review_available) {
+        $summary_text = 'Početni PRO unlock je aktivan. Jednu početnu AI analizu aplikacije možeš pokrenuti odmah.';
+        $reason_text = $intro_weekly_available
+            ? 'Nakon ove analize otvara ti se i prvi tjedni plan, a Coach iz toga dobiva puno jači kontekst za sljedećih 7 dana.'
+            : 'Coach će iz ove analize dobiti jasniji kontekst za tvoje sljedeće poteze i put prema 15+ signalu.';
     } elseif(!$is_accessible) {
         $summary_text = $locked_reason;
-        if($tier === 'pro_start') {
-            $summary_text = $starter_app_review_remaining > 0
-                ? 'PRO Start uključuje 1 početnu analizu glavne FCC aplikacije.'
-                : 'Početna analiza je iskorištena. Nova analiza se ponovno otključava kad skupiš 15+ klikova, prijava i AI chat kontakata u zadnjih 30 dana.';
-        }
-        $reason_text = $tier === 'none'
+        $reason_text = !$is_pro
             ? 'AI analiza aplikacije dostupna je unutar aktivnog PRO paketa.'
-            : 'Klikovi, prijave i AI chat kontakti trenutno su na ' . nr($growth_signal_30d) . '.';
-    } elseif($tier === 'pro_start') {
+            : 'Klikovi, prijave i AI chat kontakti trenutno su na ' . nr($growth_signal_30d) . ' od potrebnih 15.';
+    } elseif($is_pro && !$is_signal_qualified) {
         $summary_text = $latest_review
-            ? 'Početna analiza je spremljena. Sljedeća analiza se otključava kad skupiš 15+ klikova, prijava i AI chat kontakata u zadnjih 30 dana.'
-            : 'PRO Start uključuje 1 početnu analizu glavne FCC aplikacije kako bi odmah dobio jasan smjer promjena.';
-        $reason_text = 'Nakon 15+ klikova, prijava i AI chat kontakata otključavaš redovni ritam analiza i tjednih planova.';
-    } elseif(in_array($tier, ['pro_active', 'pro_vip', 'admin'], true)) {
-        $cadence_text = in_array($tier, ['pro_active', 'pro_vip'], true) ? 'svakih 7 dana' : 'bez ograničenja u testnom modu';
+            ? 'PRO je aktivan, ali nova analiza se ponovno otključava kad dođeš na 15+ klikova i kontakata u zadnjih 30 dana.'
+            : 'PRO je aktivan. Kad dođeš na 15+ klikova i kontakata u zadnjih 30 dana, otključavaš AI analizu aplikacije jednom tjedno.';
+        $reason_text = 'Coach te sada vodi prema 15+ kako bi se otvorio puni AI ciklus.';
+    } elseif(in_array($tier, ['qualified', 'top', 'admin'], true)) {
+        $cadence_text = in_array($tier, ['qualified', 'top'], true) ? 'svakih 7 dana' : 'bez ograničenja u testnom modu';
         $summary_text = $latest_review
             ? ($is_app_review_locked
                 ? 'Zadnja analiza je spremljena. Nova analiza aplikacije otključava se ' . $cadence_text . '.'
                 : 'Analiza aplikacije je aktivna. Ovdje možeš pregledati zadnje preporuke i odmah pokrenuti novu analizu.')
             : 'Analiza aplikacije je otključana. Pokreni pregled kako bi AI provjerio redoslijed blokova i glavni put prema kontaktu.';
-        $reason_text = 'Tvoj AI status sada uključuje novu analizu aplikacije ' . $cadence_text . '.';
+        $reason_text = $tier === 'top'
+            ? 'Tvoj AI status sada je u TOP zoni, a analiza aplikacije ostaje dostupna ' . $cadence_text . '.'
+            : 'Tvoj AI status sada uključuje novu analizu aplikacije ' . $cadence_text . '.';
     }
 
     ob_start();
@@ -1607,28 +1612,34 @@
 <?php $ai_growth_tier = (string) ($ai_growth_access['tier'] ?? 'none'); ?>
 <?php $ai_growth_is_pro = (bool) ($ai_growth_access['is_pro'] ?? false); ?>
 <?php $ai_growth_signal = (int) ($data->growth_signal_30d ?? ($ai_growth_access['growth_signal_30d'] ?? 0)); ?>
-<?php $ai_growth_starter = (array) ($ai_growth_access['starter'] ?? []); ?>
+<?php $ai_growth_signal_7d = (int) ($data->growth_signal_7d ?? ($ai_growth_access['growth_signal_7d'] ?? 0)); ?>
 <?php $ai_growth_weekly = (array) ($ai_growth_access['weekly'] ?? []); ?>
 <?php $ai_growth_app_review = (array) ($ai_growth_access['app_review'] ?? []); ?>
+<?php $ai_growth_starter = (array) ($ai_growth_access['starter'] ?? []); ?>
+<?php $ai_growth_intro_app_review = !empty($ai_growth_starter['app_review_available']); ?>
+<?php $ai_growth_intro_weekly = !empty($ai_growth_starter['weekly_plan_available']); ?>
+<?php $ai_growth_intro_cycle = $ai_growth_intro_app_review || $ai_growth_intro_weekly; ?>
+<?php $coach_mode_payload = (array) ($data->coach_mode_payload ?? []); ?>
+<?php $coach_mode_label = (string) (($coach_mode_payload['title'] ?? '') ?: ($ai_growth_is_pro ? 'VIP Coach' : 'Beginner Coach')); ?>
+<?php $coach_mode_badge = (string) ($coach_mode_payload['coach_badge'] ?? ''); ?>
 <?php $ai_plan_unlock_target = 15; ?>
-<?php $ai_plan_vip_target = 50; ?>
 <?php $ai_plan_signal_missing = max(0, $ai_plan_unlock_target - $ai_growth_signal); ?>
-<?php $ai_plan_tier_label = 'Bez AI pristupa'; ?>
-<?php if($ai_growth_tier === 'pro_start') $ai_plan_tier_label = 'PRO Start'; ?>
-<?php if($ai_growth_tier === 'pro_active') $ai_plan_tier_label = 'PRO Active'; ?>
-<?php if($ai_growth_tier === 'pro_vip') $ai_plan_tier_label = 'PRO VIP'; ?>
+<?php $ai_plan_top_signal_missing = max(0, $ai_plan_unlock_target - $ai_growth_signal_7d); ?>
+<?php $ai_plan_tier_label = $ai_growth_is_pro ? 'PRO' : 'Beginner'; ?>
 <?php if($ai_growth_tier === 'admin') $ai_plan_tier_label = 'Admin test'; ?>
-<?php $ai_plan_access_summary = 'Za AI analizu aplikacije i tjedni plan potreban je aktivan PRO paket.'; ?>
-<?php if($ai_growth_tier === 'pro_start') $ai_plan_access_summary = 'PRO Start uključuje 1 početnu analizu FCC aplikacije i 1 prvi tjedni plan.'; ?>
-<?php if($ai_growth_tier === 'pro_active') $ai_plan_access_summary = 'PRO Active je otključan. Tjedni plan je aktivan, a nova analiza aplikacije dostupna je svakih 7 dana.'; ?>
-<?php if($ai_growth_tier === 'pro_vip') $ai_plan_access_summary = 'PRO VIP je otključan. Tjedni plan je aktivan, a nova analiza aplikacije dostupna je svakih 7 dana.'; ?>
+<?php $ai_plan_access_summary = 'Beginner Coach koristi osnovni paket inteligencije. Aktiviraj PRO ili trial da se prebaciš na VIP Coach i otključaš puni AI ciklus.'; ?>
+<?php if($ai_growth_is_pro) $ai_plan_access_summary = 'VIP Coach je aktivan jer je PRO uključen. Tjedni AI plan i AI analiza aplikacije otključavaju se kad skupiš 15+ klikova i kontakata u 30 dana.'; ?>
+<?php if($ai_growth_is_pro && $ai_growth_intro_app_review && $ai_growth_intro_weekly) $ai_plan_access_summary = 'VIP Coach je aktivan. Kao početni PRO unlock sada možeš odmah napraviti jednu analizu aplikacije i jedan prvi tjedni AI plan, a nakon toga te Coach vodi prema 15+ u 30 dana.'; ?>
+<?php if($ai_growth_is_pro && !$ai_growth_intro_app_review && $ai_growth_intro_weekly) $ai_plan_access_summary = 'VIP Coach je aktivan. Početna analiza aplikacije je već iskorištena, a prvi tjedni AI plan možeš otvoriti odmah. Nakon toga te Coach vodi prema 15+ u 30 dana.'; ?>
+<?php if(in_array($ai_growth_tier, ['qualified', 'top'], true)) $ai_plan_access_summary = 'VIP Coach je aktivan, a AI analiza aplikacije i tjedni AI plan dostupni su jednom tjedno dok držiš 15+ signal u 30 dana.'; ?>
+<?php if($ai_growth_tier === 'top') $ai_plan_access_summary = 'VIP Coach je aktivan, tjedni AI ciklus je otključan, a sada si i u TOP 15+ / 7 dana zoni za jaču vidljivost profila.'; ?>
 <?php if($ai_growth_tier === 'admin') $ai_plan_access_summary = 'Administratorski testni način ima puni pristup svim AI koracima.'; ?>
 <?php $ai_plan_guide_text = l('ai_plan.guide_profile_text'); ?>
 <?php if($ai_plan_recommended_section === 'weekly') $ai_plan_guide_text = $data->is_weekly_plan_eligible ? l('ai_plan.guide_weekly_text') : l('ai_plan.guide_weekly_locked_text'); ?>
 <?php if($ai_plan_recommended_section === 'plan') $ai_plan_guide_text = $data->latest_weekly_plan ? l('ai_plan.guide_outcome_text') : l('ai_plan.guide_plan_text'); ?>
 <?php $ai_plan_profile_status = !$data->is_profile_complete ? 'current' : 'done'; ?>
 <?php $ai_plan_app_review_status = !$data->is_profile_complete ? 'locked' : (!empty($data->latest_app_review) ? 'done' : 'current'); ?>
-<?php $ai_plan_weekly_status = !$data->is_profile_complete ? 'locked' : (empty($data->latest_app_review) ? 'locked' : (!$data->latest_weekly_checkin ? 'current' : 'done')); ?>
+<?php $ai_plan_weekly_status = !$data->is_profile_complete ? 'locked' : (empty($data->latest_app_review) ? 'locked' : ((!$data->is_weekly_plan_eligible && !$data->latest_weekly_checkin) ? 'locked' : (!$data->latest_weekly_checkin ? 'current' : 'done'))); ?>
 <?php $ai_plan_plan_status = !$data->latest_weekly_checkin ? 'locked' : 'current'; ?>
 <?php if($data->latest_weekly_plan && $data->latest_weekly_outcome) $ai_plan_plan_status = 'done'; ?>
 <?php if($data->latest_weekly_checkin && !$data->latest_weekly_plan) $ai_plan_plan_status = 'current'; ?>
@@ -1652,9 +1663,10 @@
 <?php if($ai_plan_current_step === 'app_review') $ai_plan_status_focus_value = l('ai_plan.onboarding_step_2_title'); ?>
 <?php if($ai_plan_current_step === 'weekly') $ai_plan_status_focus_value = l('ai_plan.onboarding_step_3_title'); ?>
 <?php if($ai_plan_current_step === 'plan') $ai_plan_status_focus_value = l('ai_plan.onboarding_step_4_title'); ?>
-<?php if($data->is_profile_complete && !$data->is_weekly_plan_eligible) $ai_plan_status_text = $ai_growth_is_pro ? 'PRO Start je aktivan. Nakon prvih 15 klikova, prijava i AI chat kontakata otključavaš puni tjedni AI plan i redovni ritam rada.' : 'Za tjedni AI plan i analizu aplikacije potreban je aktivan PRO paket.'; ?>
-<?php if($data->is_profile_complete && empty($data->latest_app_review)) $ai_plan_status_text = l('ai_plan.onboarding_step_2_text'); ?>
-<?php if(!empty($data->latest_app_review) && $data->is_weekly_plan_eligible && !$data->latest_weekly_checkin) $ai_plan_status_text = l('ai_plan.status_card_text_weekly'); ?>
+<?php if($data->is_profile_complete && !$data->is_weekly_plan_eligible) $ai_plan_status_text = $ai_growth_is_pro ? 'PRO je aktivan i VIP Coach je uključen. Kad dođeš do 15+ klikova i kontakata u zadnjih 30 dana, otključavaš puni tjedni AI plan i AI analizu aplikacije.' : 'Za tjedni AI plan i analizu aplikacije potreban je aktivan PRO paket ili trial.'; ?>
+<?php if($data->is_profile_complete && empty($data->latest_app_review)) $ai_plan_status_text = $ai_growth_intro_app_review ? 'Početni PRO unlock je aktivan. Sada prvo pokreni analizu aplikacije kako bi Coach dobio jasan smjer i bazu za prvi tjedni plan.' : l('ai_plan.onboarding_step_2_text'); ?>
+<?php if(!empty($data->latest_app_review) && $ai_growth_intro_weekly && !$data->latest_weekly_checkin) $ai_plan_status_text = 'Početna analiza je spremna. Sada pošalji prvi tjedni unos kako bi AI složio plan koji koristi i coach rezime i tvoju zadnju analizu.'; ?>
+<?php if(!empty($data->latest_app_review) && $data->is_weekly_plan_eligible && !$data->latest_weekly_checkin && !$ai_growth_intro_weekly) $ai_plan_status_text = l('ai_plan.status_card_text_weekly'); ?>
 <?php if($data->latest_weekly_checkin && !$data->latest_weekly_plan) $ai_plan_status_text = l('ai_plan.status_card_text_plan_pending'); ?>
 <?php if($data->latest_weekly_plan && !$data->latest_weekly_outcome) $ai_plan_status_text = l('ai_plan.status_card_text_execute'); ?>
 <?php if($data->latest_weekly_outcome) $ai_plan_status_text = l('ai_plan.status_card_text_complete'); ?>
@@ -1670,22 +1682,22 @@
 <?php if($data->is_profile_complete && empty($data->latest_app_review)): ?>
     <?php $ai_plan_current_phase = 2; ?>
     <?php $ai_plan_hero_title = l('ai_plan.onboarding_step_2_title'); ?>
-    <?php $ai_plan_hero_text = l('ai_plan.onboarding_step_2_text'); ?>
+    <?php $ai_plan_hero_text = $ai_growth_intro_app_review ? 'Početni PRO unlock je aktivan. Napravi sada prvu AI analizu aplikacije kako bi Coach odmah dobio bolji pregled što si složio, što ti je najvažnije i što treba ući u prvi tjedni plan.' : l('ai_plan.onboarding_step_2_text'); ?>
     <?php $ai_plan_hero_status_class = 'active'; ?>
     <?php $ai_plan_hero_status_label = l('ai_plan.step_status_current'); ?>
     <?php $ai_plan_metric_unlock_value = $ai_plan_tier_label; ?>
     <?php $ai_plan_metric_next_value = l('ai_plan.onboarding_step_2_title'); ?>
-    <?php $ai_plan_metric_help_text = $ai_growth_tier === 'pro_start' ? 'PRO Start sada otključava tvoju 1 početnu analizu glavne FCC aplikacije.' : $ai_plan_access_summary; ?>
+    <?php $ai_plan_metric_help_text = $ai_plan_access_summary; ?>
 <?php endif ?>
 <?php if(!empty($data->latest_app_review) && !$data->latest_weekly_checkin): ?>
     <?php $ai_plan_current_phase = 3; ?>
     <?php $ai_plan_hero_title = l('ai_plan.onboarding_step_3_title'); ?>
-    <?php $ai_plan_hero_text = $data->is_weekly_plan_eligible ? l('ai_plan.onboarding_step_3_text') : l('ai_plan.guide_weekly_locked_text'); ?>
+    <?php $ai_plan_hero_text = $data->is_weekly_plan_eligible ? ($ai_growth_intro_weekly ? 'Početna analiza je gotova. Sada pošalji prvi tjedni unos i AI će složiti plan koji koristi tvoju analizu aplikacije i rezime coach komunikacije.' : l('ai_plan.onboarding_step_3_text')) : l('ai_plan.guide_weekly_locked_text'); ?>
     <?php $ai_plan_hero_status_class = $data->is_weekly_plan_eligible ? 'active' : 'locked'; ?>
     <?php $ai_plan_hero_status_label = $data->is_weekly_plan_eligible ? l('ai_plan.step_status_current') : l('ai_plan.step_status_locked'); ?>
     <?php $ai_plan_metric_unlock_value = $ai_plan_tier_label; ?>
     <?php $ai_plan_metric_next_value = $data->is_weekly_plan_eligible ? l('ai_plan.onboarding_step_3_title') : l('ai_plan.metric_next_after_signal'); ?>
-    <?php $ai_plan_metric_help_text = $data->is_weekly_plan_eligible ? $ai_plan_access_summary : ($ai_growth_is_pro ? 'Kad skupiš 15+ klikova, prijava i AI chat kontakata u 30 dana, otključavaš redovni tjedni AI ciklus.' : $ai_plan_access_summary); ?>
+    <?php $ai_plan_metric_help_text = $data->is_weekly_plan_eligible ? $ai_plan_access_summary : ($ai_growth_is_pro ? 'Kad skupiš 15+ klikova i kontakata u 30 dana, otključavaš redovni tjedni AI ciklus. Za TOP vidljivost cilj je i 15+ u 7 dana.' : $ai_plan_access_summary); ?>
 <?php endif ?>
 <?php if($data->latest_weekly_checkin): ?>
     <?php $ai_plan_current_phase = 4; ?>
@@ -1731,8 +1743,10 @@
 <?php $ai_plan_review_unlock_value = l('ai_plan.sidebar_ready_now'); ?>
 <?php if(!$data->is_profile_complete): ?>
     <?php $ai_plan_review_unlock_value = l('ai_plan.sidebar_unlock_after_profile'); ?>
+<?php elseif($ai_growth_intro_app_review): ?>
+    <?php $ai_plan_review_unlock_value = 'Početni PRO unlock'; ?>
 <?php elseif(!$app_review_is_accessible): ?>
-    <?php $ai_plan_review_unlock_value = $ai_growth_is_pro ? 'Na 15+ klikova, prijava i AI chat kontakata' : 'Samo za PRO'; ?>
+    <?php $ai_plan_review_unlock_value = $ai_growth_is_pro ? 'Na 15+ klikova i kontakata u 30 dana' : 'Samo za PRO'; ?>
 <?php elseif(!empty($data->latest_app_review) && $data->app_review_is_locked): ?>
     <?php $ai_plan_review_unlock_value = sprintf(l('ai_plan.sidebar_unlock_in_days'), nr(max(0, (int) ($data->app_review_countdown_days ?? 0)))); ?>
 <?php endif ?>
@@ -1743,7 +1757,7 @@
 <?php elseif(empty($data->latest_app_review)): ?>
     <?php $ai_plan_weekly_unlock_value = l('ai_plan.sidebar_unlock_after_app_review'); ?>
 <?php elseif(!$data->is_weekly_plan_eligible): ?>
-    <?php $ai_plan_weekly_unlock_value = $ai_growth_is_pro ? 'Čeka 15+ klikova, prijava i AI chat kontakata' : 'Samo za PRO'; ?>
+    <?php $ai_plan_weekly_unlock_value = $ai_growth_is_pro ? 'Čeka 15+ klikova i kontakata u 30 dana' : 'Samo za PRO'; ?>
 <?php elseif($data->weekly_is_locked): ?>
     <?php $ai_plan_weekly_unlock_value = sprintf(l('ai_plan.sidebar_unlock_in_days'), nr(max(0, (int) ($data->weekly_countdown_days ?? 0)))); ?>
 <?php endif ?>
@@ -1762,12 +1776,20 @@
     if(!$data->is_profile_complete) {
         $ai_plan_app_review_step_title = '2. Analiza glavne FCC aplikacije';
         $ai_plan_app_review_step_text = 'Ovaj korak se otključava čim spremiš osnovu i odabereš glavni fokus.';
+    } elseif($ai_growth_intro_app_review) {
+        $ai_plan_app_review_step_status_class = 'review-ready';
+        $ai_plan_app_review_step_status_label = 'Početni unlock';
+        $ai_plan_app_review_step_title = '2. Pokreni početnu AI analizu aplikacije';
+        $ai_plan_app_review_step_text = 'Ovdje sada koristiš početni PRO unlock. Prva analiza daje Coachu jasan pregled aplikacije i bolju bazu za prvi tjedni plan.';
+        $ai_plan_app_review_step_meta_label = 'Prva analiza';
+        $ai_plan_app_review_step_meta_value = 'Možeš pokrenuti odmah';
+        $ai_plan_app_review_step_meta_value_class = 'is-highlight';
     } elseif(!$app_review_is_accessible) {
         $ai_plan_app_review_step_status_class = 'locked';
         $ai_plan_app_review_step_status_label = $ai_growth_is_pro ? 'Čeka signal' : 'Samo za PRO';
         $ai_plan_app_review_step_title = '2. Analiza glavne FCC aplikacije';
         $ai_plan_app_review_step_text = $ai_growth_is_pro
-            ? 'Početna analiza je iskorištena. Nova analiza se ponovno otključava kad skupiš 15+ klikova, prijava i AI chat kontakata u zadnjih 30 dana.'
+            ? 'PRO je aktivan, ali nova analiza se otključava kad skupiš 15+ klikova i kontakata u zadnjih 30 dana.'
             : 'AI analiza aplikacije dostupna je unutar aktivnog PRO paketa.';
         $ai_plan_app_review_step_meta_label = 'Klikovi, prijave i AI chat kontakti';
         $ai_plan_app_review_step_meta_value = nr($ai_growth_signal) . ' / ' . $ai_plan_unlock_target;
@@ -1776,11 +1798,9 @@
         $ai_plan_app_review_step_status_class = 'review-ready';
         $ai_plan_app_review_step_status_label = 'Dostupno sada';
         $ai_plan_app_review_step_title = '2. Pregledaj plan i izradi novu analizu';
-        $ai_plan_app_review_step_text = $ai_growth_tier === 'pro_start'
-            ? 'Tu pregledaš početnu analizu glavne FCC aplikacije.'
-            : 'Tu pregledaš zadnje upute za promjene i odmah možeš pokrenuti novu analizu aplikacije.';
+        $ai_plan_app_review_step_text = 'Tu pregledaš zadnje upute za promjene i odmah možeš pokrenuti novu analizu aplikacije.';
         $ai_plan_app_review_step_meta_label = 'Nova analiza';
-        $ai_plan_app_review_step_meta_value = $ai_growth_tier === 'pro_start' ? '1 početna analiza' : 'Možeš pokrenuti odmah';
+        $ai_plan_app_review_step_meta_value = 'Možeš pokrenuti odmah';
         $ai_plan_app_review_step_meta_value_class = 'is-highlight';
     } elseif($data->latest_app_review && $data->app_review_is_locked) {
         $ai_plan_app_review_step_status_class = 'review-waiting';
@@ -1813,8 +1833,8 @@
     $ai_plan_onboarding_step_1_status_label = !$data->is_profile_complete ? 'Sada' : 'Gotovo';
     $ai_plan_onboarding_step_2_status_class = !$data->is_profile_complete ? 'locked' : (!empty($data->latest_app_review) ? 'done' : 'current');
     $ai_plan_onboarding_step_2_status_label = !$data->is_profile_complete ? 'Čeka' : (!empty($data->latest_app_review) ? 'Gotovo' : 'Sada');
-    $ai_plan_onboarding_step_3_status_class = !$data->is_profile_complete ? 'locked' : (empty($data->latest_app_review) ? 'locked' : (!$data->latest_weekly_checkin ? 'current' : 'done'));
-    $ai_plan_onboarding_step_3_status_label = !$data->is_profile_complete || empty($data->latest_app_review) ? 'Čeka' : (!$data->latest_weekly_checkin ? 'Sada' : 'Gotovo');
+    $ai_plan_onboarding_step_3_status_class = !$data->is_profile_complete ? 'locked' : (empty($data->latest_app_review) ? 'locked' : ((!$data->is_weekly_plan_eligible && !$data->latest_weekly_checkin) ? 'locked' : (!$data->latest_weekly_checkin ? 'current' : 'done')));
+    $ai_plan_onboarding_step_3_status_label = !$data->is_profile_complete || empty($data->latest_app_review) || (!$data->is_weekly_plan_eligible && !$data->latest_weekly_checkin) ? 'Čeka' : (!$data->latest_weekly_checkin ? 'Sada' : 'Gotovo');
 
     $ai_plan_profile_card_status_class = 'done';
     $ai_plan_profile_card_status_label = 'Profil spreman';
@@ -1822,24 +1842,26 @@
     $ai_plan_profile_card_text = 'Tu uređuješ cilj, publiku, fokus i smjer po kojem AI slaže ostale preporuke.';
     $ai_plan_profile_card_meta = !empty($values['updated_at']) ? \Altum\Date::get($values['updated_at'], 1) : 'Spremno sada';
 
-    $ai_plan_review_card_status_class = !$app_review_is_accessible ? 'locked' : (!$data->app_review_is_locked ? 'review-ready' : 'review-waiting');
-    $ai_plan_review_card_status_label = !$app_review_is_accessible ? ($ai_growth_is_pro ? 'Čeka signal' : 'Samo za PRO') : (!$data->app_review_is_locked ? 'Dostupno sada' : 'Pregled spreman');
+    $ai_plan_review_card_status_class = $ai_growth_intro_app_review ? 'review-ready' : (!$app_review_is_accessible ? 'locked' : (!$data->app_review_is_locked ? 'review-ready' : 'review-waiting'));
+    $ai_plan_review_card_status_label = $ai_growth_intro_app_review ? 'Početni unlock' : (!$app_review_is_accessible ? ($ai_growth_is_pro ? 'Čeka signal' : 'Samo za PRO') : (!$data->app_review_is_locked ? 'Dostupno sada' : 'Pregled spreman'));
     $ai_plan_review_card_title = 'Analiza FCC aplikacije';
-    $ai_plan_review_card_text = !$app_review_is_accessible
+    $ai_plan_review_card_text = $ai_growth_intro_app_review
+        ? 'Prva PRO analiza dostupna je odmah. Pokreni je sada kako bi AI i Coach dobili jasan plan promjena i bolju bazu za prvi tjedni plan.'
+        : (!$app_review_is_accessible
         ? ($ai_growth_is_pro
-            ? 'Početna analiza je iskorištena. Nova analiza se ponovno otključava na 15+ klikova, prijava i AI chat kontakata u 30 dana.'
+            ? 'PRO je aktivan, ali analiza se otključava na 15+ klikova i kontakata u 30 dana.'
             : 'AI analiza aplikacije dostupna je samo unutar aktivnog PRO paketa.')
         : (!$data->app_review_is_locked
-            ? ($ai_growth_tier === 'pro_start'
-                ? 'Tu otvaraš svoju početnu AI analizu glavne aplikacije.'
-                : 'Otvori zadnju analizu, pregledaj preporuke i po želji odmah pokreni novu.')
-            : 'Ovdje su spremljene zadnje preporuke, a nova analiza se otključava po isteku termina.');
+            ? 'Otvori zadnju analizu, pregledaj preporuke i po želji odmah pokreni novu.'
+            : 'Ovdje su spremljene zadnje preporuke, a nova analiza se otključava po isteku termina.'));
     $ai_plan_review_card_last = $ai_plan_app_review_last_generated ?: 'Još nema analize';
-    $ai_plan_review_card_next = !$app_review_is_accessible
+    $ai_plan_review_card_next = $ai_growth_intro_app_review
+        ? 'Pokreni prvu analizu'
+        : (!$app_review_is_accessible
         ? ($ai_growth_is_pro ? (nr($ai_growth_signal) . ' / ' . $ai_plan_unlock_target . ' signala') : 'Aktiviraj PRO')
         : (!$data->app_review_is_locked
-            ? ($ai_growth_tier === 'pro_start' ? '1 početna analiza' : 'Možeš pokrenuti odmah')
-            : (!empty($data->app_review_next_at) ? \Altum\Date::get($data->app_review_next_at, 1) : 'Čeka novi termin'));
+            ? 'Možeš pokrenuti odmah'
+            : (!empty($data->app_review_next_at) ? \Altum\Date::get($data->app_review_next_at, 1) : 'Čeka novi termin')));
 
     $ai_plan_has_pending_outcome = !empty($data->latest_pending_outcome_plan);
     $ai_plan_weekly_card_status_class = $ai_plan_has_pending_outcome ? 'review-waiting' : ($data->latest_weekly_plan ? 'done' : 'current');
@@ -1873,7 +1895,7 @@
 
     <?= \Altum\Alerts::output_alerts() ?>
 
-    <div class="card ai-plan-card ai-plan-hero mb-4"><div class="card-body"><div class="row align-items-center"><div class="col-12 col-xl-8 mb-3 mb-xl-0"><div class="ai-plan-hero-copy"><div class="d-flex flex-wrap align-items-center mb-2" style="gap:.5rem;"><span class="ai-plan-chip active"><?= l('ai_plan.phase_label') ?> <?= $ai_plan_current_phase ?></span><span class="ai-plan-chip <?= $ai_plan_hero_status_class ?>"><?= $ai_plan_hero_status_label ?></span><?php if($data->latest_weekly_plan): ?><span class="ai-plan-chip success"><?= l('ai_plan.status_plan_ready') ?></span><?php elseif($data->weekly_is_locked && $data->latest_weekly_checkin): ?><span class="ai-plan-chip locked"><?= l('ai_plan.weekly_status_cooldown') ?></span><?php endif ?></div><h2 class="h4 mb-2"><?= $ai_plan_hero_title ?></h2><p class="text-muted mb-3"><?= $ai_plan_hero_text ?></p><?php if($data->is_profile_complete && !$data->is_weekly_plan_eligible): ?><div class="small text-muted mb-3"><?= $ai_growth_is_pro ? 'Za puni tjedni AI plan treba ti još ' . nr($ai_plan_signal_missing) . ' klikova, prijava i AI chat kontakata u zadnjih 30 dana.' : 'Za AI planove i analize aplikacije aktiviraj PRO paket.' ?></div><?php endif ?><a href="<?= $ai_plan_primary_cta_url ?>" class="btn btn-primary"><?= $ai_plan_primary_cta_label ?></a></div></div><div class="col-12 col-xl-4"><div class="ai-plan-card ai-plan-hero-summary p-3 h-100"><div class="ai-plan-stat-row"><span class="text-muted small">Klikovi, prijave i AI chat kontakti u 30 dana</span><strong><?= nr($ai_growth_signal) ?></strong></div><div class="ai-plan-stat-row"><span class="text-muted small">AI status</span><strong><?= $ai_plan_metric_unlock_value ?></strong></div><div class="ai-plan-stat-row"><span class="text-muted small"><?= $ai_plan_metric_next_label ?></span><strong><?= $ai_plan_metric_next_value ?></strong></div><div class="small text-muted mt-3 mb-0"><?= $ai_plan_metric_help_text ?></div></div></div></div></div></div>
+    <div class="card ai-plan-card ai-plan-hero mb-4"><div class="card-body"><div class="row align-items-center"><div class="col-12 col-xl-8 mb-3 mb-xl-0"><div class="ai-plan-hero-copy"><div class="d-flex flex-wrap align-items-center mb-2" style="gap:.5rem;"><span class="ai-plan-chip active"><?= l('ai_plan.phase_label') ?> <?= $ai_plan_current_phase ?></span><span class="ai-plan-chip <?= $ai_plan_hero_status_class ?>"><?= $ai_plan_hero_status_label ?></span><?php if($data->latest_weekly_plan): ?><span class="ai-plan-chip success"><?= l('ai_plan.status_plan_ready') ?></span><?php elseif($data->weekly_is_locked && $data->latest_weekly_checkin): ?><span class="ai-plan-chip locked"><?= l('ai_plan.weekly_status_cooldown') ?></span><?php endif ?></div><h2 class="h4 mb-2"><?= $ai_plan_hero_title ?></h2><p class="text-muted mb-3"><?= $ai_plan_hero_text ?></p><?php if($data->is_profile_complete && $ai_growth_intro_cycle && !$data->latest_weekly_checkin): ?><div class="small text-muted mb-3"><?= empty($data->latest_app_review) ? 'Početni PRO unlock sada ti otvara prvu analizu aplikacije, a odmah nakon nje i prvi tjedni AI plan.' : 'Početna analiza je spremljena. Sada iskoristi prvi tjedni plan dok je početni PRO unlock još aktivan.' ?></div><?php elseif($data->is_profile_complete && !$data->is_weekly_plan_eligible): ?><div class="small text-muted mb-3"><?= $ai_growth_is_pro ? 'Za puni tjedni AI plan treba ti još ' . nr($ai_plan_signal_missing) . ' klikova, prijava i AI chat kontakata u zadnjih 30 dana.' : 'Za AI planove i analize aplikacije aktiviraj PRO paket.' ?></div><?php endif ?><a href="<?= $ai_plan_primary_cta_url ?>" class="btn btn-primary"><?= $ai_plan_primary_cta_label ?></a></div></div><div class="col-12 col-xl-4"><div class="ai-plan-card ai-plan-hero-summary p-3 h-100"><div class="ai-plan-stat-row"><span class="text-muted small">Klikovi, prijave i AI chat kontakti u 30 dana</span><strong><?= nr($ai_growth_signal) ?></strong></div><div class="ai-plan-stat-row"><span class="text-muted small">AI status</span><strong><?= $ai_plan_metric_unlock_value ?></strong></div><div class="ai-plan-stat-row"><span class="text-muted small"><?= $ai_plan_metric_next_label ?></span><strong><?= $ai_plan_metric_next_value ?></strong></div><div class="small text-muted mt-3 mb-0"><?= $ai_plan_metric_help_text ?></div></div></div></div></div></div>
 
             <div class="card ai-plan-card ai-plan-guide-card mb-4">
                 <div class="card-body">
@@ -1896,13 +1918,13 @@
                             <a href="<?= htmlspecialchars($ai_plan_step_app_review_url, ENT_QUOTES, 'UTF-8') ?>" class="ai-plan-step-card <?= $ai_plan_onboarding_step_2_status_class ?> <?= $app_review_is_accessible ? '' : 'ai-plan-disabled-link disabled' ?>"<?= $app_review_is_accessible ? '' : ' data-tooltip title="' . htmlspecialchars($app_review_locked_reason, ENT_QUOTES, 'UTF-8') . '" onclick="event.preventDefault();"' ?>>
                                 <span class="ai-plan-step-status <?= $ai_plan_onboarding_step_2_status_class ?>"><?= $ai_plan_onboarding_step_2_status_label ?></span>
                                 <div class="font-weight-bold">2. Analiza glavne FCC aplikacije</div>
-                                <div class="text-muted small"><?= !$data->is_profile_complete ? 'Ovaj korak se otključava čim spremiš osnovu i odabereš glavni fokus.' : (!empty($data->latest_app_review) ? 'Analiza je napravljena i spremna za pregled preporuka.' : ($ai_growth_is_pro ? 'PRO Start ovdje otključava tvoju 1 početnu analizu glavne FCC aplikacije.' : 'AI analiza aplikacije dostupna je samo unutar aktivnog PRO paketa.')) ?></div>
+                                <div class="text-muted small"><?= !$data->is_profile_complete ? 'Ovaj korak se otključava čim spremiš osnovu i odabereš glavni fokus.' : (!empty($data->latest_app_review) ? 'Analiza je napravljena i spremna za pregled preporuka.' : ($ai_growth_intro_app_review ? 'PRO je aktivan i početna analiza glavne FCC aplikacije dostupna ti je odmah.' : ($ai_growth_is_pro ? 'PRO je aktivan. Analiza glavne FCC aplikacije otključava se kad skupiš 15+ klikova i kontakata u zadnjih 30 dana.' : 'AI analiza aplikacije dostupna je samo unutar aktivnog PRO paketa ili triala.'))) ?></div>
                             </a>
 
                             <a href="<?= htmlspecialchars($ai_plan_step_weekly_url, ENT_QUOTES, 'UTF-8') ?>" class="ai-plan-step-card <?= $ai_plan_onboarding_step_3_status_class ?><?= $ai_plan_onboarding_step_3_status_class === 'locked' ? ' ai-plan-disabled-link disabled' : '' ?>"<?= $ai_plan_onboarding_step_3_status_class === 'locked' ? ' data-tooltip title="' . htmlspecialchars(l('ai_plan.onboarding_step_3_locked'), ENT_QUOTES, 'UTF-8') . '" onclick="event.preventDefault();"' : '' ?>>
                                 <span class="ai-plan-step-status <?= $ai_plan_onboarding_step_3_status_class ?>"><?= $ai_plan_onboarding_step_3_status_label ?></span>
                                 <div class="font-weight-bold">3. Pokreni prvi tjedan</div>
-                                <div class="text-muted small"><?= $ai_growth_is_pro ? 'PRO Start uključuje 1 prvi tjedni plan. Nakon 15+ klikova, prijava i AI chat kontakata otključavaš puni tjedni AI ciklus.' : 'Ispuni kratki tjedni unos i dobij jasan plan rada za sljedećih 7 dana.' ?></div>
+                                <div class="text-muted small"><?= $ai_growth_is_pro ? ($ai_growth_intro_weekly ? 'VIP Coach je aktivan. Nakon prve analize odmah otključavaš i prvi tjedni AI plan, a poslije toga te Coach vodi prema 15+ u 30 dana.' : 'VIP Coach je aktivan jer imaš PRO. Kad skupiš 15+ klikova i kontakata u zadnjih 30 dana, otključavaš tjedni AI plan i AI analizu aplikacije jednom tjedno.') : 'Ispuni kratki tjedni unos i dobij jasan plan rada za sljedećih 7 dana. Za puni AI ciklus aktiviraj PRO ili trial.' ?></div>
                             </a>
                         </div>
 

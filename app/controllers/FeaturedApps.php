@@ -199,22 +199,16 @@ class FeaturedApps extends Controller {
     public function index() {
         $this->ensure_featured_app_columns();
 
-        $min_qualified_clicks = 15;
-        $period_days = 30;
-        $period_start_datetime = (new \DateTime())->modify('-' . ($period_days - 1) . ' days')->format('Y-m-d 00:00:00');
-
-        $forever_shop_block_types = array_values(array_unique(array_merge(
-            \Altum\Link::get_monitored_forever_outbound_types(),
-            ['link_forever_living_albania_kosovo']
-        )));
-        $forever_shop_block_types_sql = "'" . implode("','", $forever_shop_block_types) . "'";
+        $signal_target = 15;
+        $top_period_days = 7;
+        $qualified_period_days = 30;
 
         $featured_apps = [];
         $seen_featured_user_ids = [];
         $seen_featured_link_ids = [];
         $users_biolinks_latest_sql = \Altum\Link::get_users_biolinks_latest_subquery('users_biolinks');
 
-        $qualified_apps_result = database()->query("
+        $candidate_apps_result = database()->query("
             SELECT
                 `main_link`.`link_id`,
                 `main_link`.`user_id`,
@@ -225,40 +219,23 @@ class FeaturedApps extends Controller {
                 `domains`.`scheme`,
                 `domains`.`host`,
                 `domains`.`link_id` AS `domain_link_id`,
-                `users`.`name`,
-                `users`.`email`,
-                `users`.`avatar`,
-                `users`.`preferences`,
-                `users`.`billing`,
-                COUNT(`track_links`.`id`) AS `shop_clicks`
-            FROM {$users_biolinks_latest_sql}
-            INNER JOIN `links` AS `main_link` ON `main_link`.`link_id` = `users_biolinks`.`biolink_id`
-            INNER JOIN `users` ON `users`.`user_id` = `users_biolinks`.`user_id`
-            LEFT JOIN `domains` ON `main_link`.`domain_id` = `domains`.`domain_id`
-            LEFT JOIN `links` AS `all_biolinks` ON `all_biolinks`.`user_id` = `users_biolinks`.`user_id` AND `all_biolinks`.`type` = 'biolink' AND `all_biolinks`.`is_enabled` = 1
-            LEFT JOIN `biolinks_blocks` ON `biolinks_blocks`.`link_id` = `all_biolinks`.`link_id` AND `biolinks_blocks`.`type` IN ({$forever_shop_block_types_sql})
-            LEFT JOIN `track_links` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id` AND `track_links`.`datetime` >= '{$period_start_datetime}' AND `track_links`.`is_unique` = 1
-            WHERE `main_link`.`type` = 'biolink' AND `main_link`.`is_enabled` = 1 AND `main_link`.`fcc_featured_opt_in` = 1 AND `main_link`.`fcc_featured_is_approved` = 1
-            GROUP BY
-                `main_link`.`link_id`,
-                `main_link`.`user_id`,
-                `main_link`.`url`,
-                `main_link`.`domain_id`,
-                `main_link`.`fcc_featured_public_market`,
-                `main_link`.`fcc_featured_public_summary`,
-                `domains`.`scheme`,
-                `domains`.`host`,
-                `domains`.`link_id`,
+                `users`.`plan_id`,
+                `users`.`plan_settings`,
+                `users`.`plan_expiration_date`,
                 `users`.`name`,
                 `users`.`email`,
                 `users`.`avatar`,
                 `users`.`preferences`,
                 `users`.`billing`
-            HAVING `shop_clicks` >= {$min_qualified_clicks}
-            ORDER BY `shop_clicks` DESC, `users`.`name` ASC
+            FROM {$users_biolinks_latest_sql}
+            INNER JOIN `links` AS `main_link` ON `main_link`.`link_id` = `users_biolinks`.`biolink_id`
+            INNER JOIN `users` ON `users`.`user_id` = `users_biolinks`.`user_id`
+            LEFT JOIN `domains` ON `main_link`.`domain_id` = `domains`.`domain_id`
+            WHERE `main_link`.`type` = 'biolink' AND `main_link`.`is_enabled` = 1 AND `main_link`.`fcc_featured_opt_in` = 1 AND `main_link`.`fcc_featured_is_approved` = 1
+            ORDER BY `users`.`name` ASC
         ");
 
-        while($row = $qualified_apps_result->fetch_object()) {
+        while($row = $candidate_apps_result->fetch_object()) {
             $link_id = (int) ($row->link_id ?? 0);
             $user_id = (int) ($row->user_id ?? 0);
 
@@ -272,9 +249,20 @@ class FeaturedApps extends Controller {
                 continue;
             }
 
+            if(!fcc_ai_user_has_active_growth_pro($row)) {
+                continue;
+            }
+
+            $signal_snapshot = fcc_ai_get_user_growth_signal_snapshot($user_id, $link_id);
+            $growth_signal_7d = (int) ($signal_snapshot['growth_signal_7d'] ?? 0);
+            $growth_signal_30d = (int) ($signal_snapshot['growth_signal_30d'] ?? 0);
+
+            if($growth_signal_7d < $signal_target) {
+                continue;
+            }
+
             $seen_featured_link_ids[$link_id] = true;
             $seen_featured_user_ids[$user_id] = true;
-
             $has_custom_domain = !empty($row->domain_id) && !empty($row->host) && !empty($row->scheme);
             $app_url = $has_custom_domain
                 ? $row->scheme . $row->host . ((int) $row->domain_link_id === $link_id ? '' : '/' . $row->url)
@@ -291,18 +279,40 @@ class FeaturedApps extends Controller {
                 'default_image_url' => SITE_URL . 'uploads/logo/forever.png',
                 'generated_avatar_url' => get_user_avatar(null, (string) ($row->email ?? ($row->name ?? ''))),
                 'app_url' => $app_url,
-                'shop_clicks' => (int) ($row->shop_clicks ?? 0),
+                'growth_signal_7d' => $growth_signal_7d,
+                'growth_signal_30d' => $growth_signal_30d,
+                'shop_contacts_7d' => (int) ($signal_snapshot['shop_contacts_7d'] ?? 0),
+                'whatsapp_contacts_7d' => (int) ($signal_snapshot['whatsapp_contacts_7d'] ?? 0),
+                'funnel_registrations_7d' => (int) ($signal_snapshot['funnel_registrations_7d'] ?? 0),
+                'ai_chat_leads_7d' => (int) ($signal_snapshot['ai_chat_leads_7d'] ?? 0),
                 'public_market' => $this->get_default_public_market($row),
                 'public_summary' => $this->get_public_summary((string) ($row->fcc_featured_public_summary ?? ''), $feature_labels),
                 'feature_labels' => $feature_labels,
             ];
         }
 
+        usort($featured_apps, static function(array $a, array $b) {
+            $signal_7d_compare = ((int) ($b['growth_signal_7d'] ?? 0)) <=> ((int) ($a['growth_signal_7d'] ?? 0));
+
+            if($signal_7d_compare !== 0) {
+                return $signal_7d_compare;
+            }
+
+            $signal_30d_compare = ((int) ($b['growth_signal_30d'] ?? 0)) <=> ((int) ($a['growth_signal_30d'] ?? 0));
+
+            if($signal_30d_compare !== 0) {
+                return $signal_30d_compare;
+            }
+
+            return strcmp((string) ($a['name'] ?? ''), (string) ($b['name'] ?? ''));
+        });
+
         $view = new \Altum\View('featured-apps/index', (array) $this);
         $this->add_view_content('content', $view->run([
             'featured_apps' => $featured_apps,
-            'min_qualified_clicks' => $min_qualified_clicks,
-            'period_days' => $period_days,
+            'signal_target' => $signal_target,
+            'top_period_days' => $top_period_days,
+            'qualified_period_days' => $qualified_period_days,
         ]));
     }
     /* /Custom code: FC-2026-03-14 */

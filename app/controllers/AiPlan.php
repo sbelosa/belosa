@@ -113,25 +113,7 @@ class AiPlan extends Controller {
     }
 
     private function is_active_pro_user(): bool {
-        if(\Altum\Authentication::is_admin()) {
-            return true;
-        }
-
-        if(empty($this->user->plan_settings->ai_growth_plan_is_enabled ?? false)) {
-            return false;
-        }
-
-        $plan_expiration_date = (string) ($this->user->plan_expiration_date ?? '');
-
-        if($plan_expiration_date === '') {
-            return true;
-        }
-
-        try {
-            return (new \DateTimeImmutable($plan_expiration_date)) >= (new \DateTimeImmutable());
-        } catch(\Throwable $exception) {
-            return false;
-        }
+        return fcc_ai_user_has_active_growth_pro($this->user);
     }
 
     private function get_ai_growth_access_settings($preferences): array {
@@ -170,19 +152,10 @@ class AiPlan extends Controller {
     }
 
     private function get_active_manual_ai_tier(array $access_settings): string {
-        $manual_tier = (string) ($access_settings['manual_tier'] ?? '');
-        $manual_unlocked_at = (string) ($access_settings['manual_unlocked_at'] ?? '');
-
-        if($manual_tier === '' || $manual_unlocked_at === '') {
-            return '';
-        }
-
-        try {
-            $expires_at = (new \DateTimeImmutable($manual_unlocked_at))->modify('+30 days');
-            return $expires_at >= (new \DateTimeImmutable()) ? $manual_tier : '';
-        } catch(\Throwable $exception) {
-            return '';
-        }
+        return fcc_ai_get_active_manual_ai_tier((object) [
+            'manual_tier' => (string) ($access_settings['manual_tier'] ?? ''),
+            'manual_unlocked_at' => (string) ($access_settings['manual_unlocked_at'] ?? ''),
+        ]);
     }
 
     private function consume_ai_growth_starter_credit(\stdClass $preferences, string $credit_key): \stdClass {
@@ -651,6 +624,130 @@ class AiPlan extends Controller {
         ];
     }
 
+    private function get_internal_coach_context_payload(int $user_id): array {
+        $payload = [
+            'has_recent_activity' => false,
+            'last_touch_at' => null,
+            'conversation_count' => 0,
+            'recent_topics' => [],
+            'recent_challenges' => [],
+            'recent_user_messages' => [],
+            'recent_assistant_guidance' => [],
+            'summary' => '',
+        ];
+
+        if($user_id <= 0) {
+            return $payload;
+        }
+
+        fcc_ai_ensure_tables();
+
+        $coach_conversation_total = (int) db()
+            ->where('user_id', $user_id)
+            ->where('assistant_type', 'coach')
+            ->where('scope', 'internal_coach')
+            ->getValue('fcc_ai_conversations', 'COUNT(*)');
+
+        $payload['conversation_count'] = $coach_conversation_total;
+
+        $insights_result = database()->query("
+            SELECT
+                `primary_topic_label`,
+                `summary`,
+                `core_issue`,
+                COALESCE(`last_datetime`, `datetime`) AS `activity_at`
+            FROM `fcc_ai_conversation_insights`
+            WHERE `user_id` = {$user_id}
+              AND COALESCE(`assistant_type`, '') = 'coach'
+              AND COALESCE(`scope`, '') = 'internal_coach'
+            ORDER BY COALESCE(`last_datetime`, `datetime`) DESC
+            LIMIT 4
+        ");
+
+        if($insights_result) {
+            while($row = $insights_result->fetch_object()) {
+                if(empty($payload['last_touch_at']) && !empty($row->activity_at)) {
+                    $payload['last_touch_at'] = (string) $row->activity_at;
+                }
+
+                $topic_label = trim((string) ($row->primary_topic_label ?? ''));
+                if($topic_label !== '' && !in_array($topic_label, $payload['recent_topics'], true)) {
+                    $payload['recent_topics'][] = $topic_label;
+                }
+
+                $core_issue = trim((string) ($row->core_issue ?? ''));
+                if($core_issue !== '' && !in_array($core_issue, $payload['recent_challenges'], true)) {
+                    $payload['recent_challenges'][] = fcc_ai_excerpt($core_issue, 180);
+                }
+            }
+        }
+
+        $messages_result = database()->query("
+            SELECT
+                `fcc_ai_messages`.`role`,
+                `fcc_ai_messages`.`content`
+            FROM `fcc_ai_messages`
+            INNER JOIN `fcc_ai_conversations`
+                ON `fcc_ai_conversations`.`fcc_ai_conversation_id` = `fcc_ai_messages`.`fcc_ai_conversation_id`
+            WHERE `fcc_ai_conversations`.`user_id` = {$user_id}
+              AND COALESCE(`fcc_ai_conversations`.`assistant_type`, '') = 'coach'
+              AND COALESCE(`fcc_ai_conversations`.`scope`, '') = 'internal_coach'
+              AND COALESCE(`fcc_ai_messages`.`message_type`, 'chat') = 'chat'
+              AND `fcc_ai_messages`.`role` IN ('user', 'assistant')
+            ORDER BY `fcc_ai_messages`.`fcc_ai_message_id` DESC
+            LIMIT 12
+        ");
+
+        if($messages_result) {
+            while($row = $messages_result->fetch_object()) {
+                $content = trim((string) ($row->content ?? ''));
+                $role = trim((string) ($row->role ?? ''));
+
+                if($content === '' || !in_array($role, ['user', 'assistant'], true)) {
+                    continue;
+                }
+
+                $excerpt = fcc_ai_excerpt($content, 180);
+
+                if($role === 'user' && !in_array($excerpt, $payload['recent_user_messages'], true)) {
+                    $payload['recent_user_messages'][] = $excerpt;
+                }
+
+                if($role === 'assistant' && !in_array($excerpt, $payload['recent_assistant_guidance'], true)) {
+                    $payload['recent_assistant_guidance'][] = $excerpt;
+                }
+            }
+        }
+
+        $payload['recent_topics'] = array_slice($payload['recent_topics'], 0, 3);
+        $payload['recent_challenges'] = array_slice($payload['recent_challenges'], 0, 3);
+        $payload['recent_user_messages'] = array_slice($payload['recent_user_messages'], 0, 3);
+        $payload['recent_assistant_guidance'] = array_slice($payload['recent_assistant_guidance'], 0, 3);
+        $payload['has_recent_activity'] = !empty($payload['last_touch_at']) || $coach_conversation_total > 0;
+
+        $summary_parts = [];
+
+        if($payload['has_recent_activity']) {
+            $summary_parts[] = 'Coach je aktivan i ima sažetak prethodne komunikacije.';
+        }
+
+        if(!empty($payload['recent_topics'])) {
+            $summary_parts[] = 'Zadnje teme: ' . implode(', ', $payload['recent_topics']) . '.';
+        }
+
+        if(!empty($payload['recent_challenges'])) {
+            $summary_parts[] = 'Zadnje prepoznate blokade: ' . implode(' | ', $payload['recent_challenges']) . '.';
+        }
+
+        if(!empty($payload['recent_assistant_guidance'])) {
+            $summary_parts[] = 'Zadnji smjer koji je coach dao: ' . $payload['recent_assistant_guidance'][0] . '.';
+        }
+
+        $payload['summary'] = trim(implode(' ', $summary_parts));
+
+        return $payload;
+    }
+
     private function upsert_weekly_plan(array $weekly_plans, array $new_plan): array {
         $checkin_submitted_at = (string) ($new_plan['checkin_submitted_at'] ?? '');
         $updated_plans = [];
@@ -668,8 +765,8 @@ class AiPlan extends Controller {
         return array_slice($updated_plans, 0, 12);
     }
 
-    private function build_recovery_weekly_plan(array $values, array $weekly_checkin, array $analytics_payload, array $app_structure_payload, ?array $previous_cycle_context = null, array $mentor_guidance = [], ?array $latest_app_review = null, string $model = 'fallback_recovery'): array {
-        $recovery_plan = $this->build_emergency_weekly_ai_plan($values, $weekly_checkin, $analytics_payload, $app_structure_payload, $previous_cycle_context, $mentor_guidance, $latest_app_review);
+    private function build_recovery_weekly_plan(array $values, array $weekly_checkin, array $analytics_payload, array $app_structure_payload, ?array $previous_cycle_context = null, array $mentor_guidance = [], ?array $latest_app_review = null, array $coach_context = [], string $model = 'fallback_recovery'): array {
+        $recovery_plan = $this->build_emergency_weekly_ai_plan($values, $weekly_checkin, $analytics_payload, $app_structure_payload, $previous_cycle_context, $mentor_guidance, $latest_app_review, $coach_context);
         $recovery_plan['checkin_submitted_at'] = (string) ($weekly_checkin['submitted_at'] ?? get_date());
         $recovery_plan['generated_at'] = get_date();
         $recovery_plan['model'] = $model;
@@ -2348,9 +2445,106 @@ class AiPlan extends Controller {
         }
     }
 
+    private function get_ai_growth_signal_window_payload(array $selected_app, int $days): array {
+        $days = max(1, $days);
+        $link_id = (int) ($selected_app['link_id'] ?? 0);
+
+        if(!$link_id) {
+            return [
+                'growth_signal' => 0,
+                'shop_contacts' => 0,
+                'whatsapp_contacts' => 0,
+                'funnel_registrations' => 0,
+                'ai_chat_leads' => 0,
+            ];
+        }
+
+        $period_start_datetime = (new \DateTimeImmutable())->sub(new \DateInterval('P' . ($days - 1) . 'D'))->format('Y-m-d 00:00:00');
+        $tracked_blocks = [
+            'shop' => [],
+            'whatsapp' => [],
+            'funnel' => [],
+        ];
+        $blocks_result = database()->query("SELECT `biolink_block_id`, `type`, `settings`
+            FROM `biolinks_blocks`
+            WHERE `link_id` = {$link_id}
+              AND `is_enabled` = 1");
+
+        while($blocks_result && $row = $blocks_result->fetch_object()) {
+            $block_id = (int) ($row->biolink_block_id ?? 0);
+            $type = trim((string) ($row->type ?? ''));
+            $settings = fcc_ai_decode_biolink_block_settings($row->settings ?? null);
+
+            if($block_id <= 0 || $type === '') {
+                continue;
+            }
+
+            if(in_array($type, ['link_discount', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo', 'link_forever_shop'], true)) {
+                $tracked_blocks['shop'][] = $block_id;
+            }
+
+            if($type === 'lead_funnel') {
+                $tracked_blocks['funnel'][] = $block_id;
+            }
+
+            if($this->is_app_review_whatsapp_block($type, $settings)) {
+                $tracked_blocks['whatsapp'][] = $block_id;
+            }
+        }
+
+        $shop_contacts = 0;
+        $whatsapp_contacts = 0;
+        $funnel_registrations = 0;
+
+        $tracked_click_blocks = array_values(array_unique(array_merge($tracked_blocks['shop'], $tracked_blocks['whatsapp'])));
+        if(!empty($tracked_click_blocks)) {
+            $block_ids_sql = implode(',', array_map('intval', $tracked_click_blocks));
+            $track_result = database()->query("SELECT `biolink_block_id`, COUNT(*) AS `total`
+                FROM `track_links`
+                WHERE `datetime` >= '{$period_start_datetime}'
+                  AND `is_unique` = 1
+                  AND `biolink_block_id` IN ({$block_ids_sql})
+                GROUP BY `biolink_block_id`");
+
+            while($track_result && $track_row = $track_result->fetch_object()) {
+                $block_id = (int) ($track_row->biolink_block_id ?? 0);
+                $total = (int) ($track_row->total ?? 0);
+
+                if(in_array($block_id, $tracked_blocks['shop'], true)) {
+                    $shop_contacts += $total;
+                }
+
+                if(in_array($block_id, $tracked_blocks['whatsapp'], true)) {
+                    $whatsapp_contacts += $total;
+                }
+            }
+        }
+
+        if(!empty($tracked_blocks['funnel'])) {
+            $funnel_ids_sql = implode(',', array_map('intval', $tracked_blocks['funnel']));
+            $funnel_result = database()->query("SELECT COUNT(*) AS `total`
+                FROM `data`
+                WHERE `type` = 'lead_funnel'
+                  AND `datetime` >= '{$period_start_datetime}'
+                  AND `biolink_block_id` IN ({$funnel_ids_sql})");
+            $funnel_registrations = (int) ($funnel_result ? ($funnel_result->fetch_object()->total ?? 0) : 0);
+        }
+
+        $ai_chat_leads = (int) (fcc_ai_get_chat_lead_counts_by_link_ids([$link_id], $period_start_datetime)[$link_id] ?? 0);
+
+        return [
+            'growth_signal' => $shop_contacts + $whatsapp_contacts + $funnel_registrations + $ai_chat_leads,
+            'shop_contacts' => $shop_contacts,
+            'whatsapp_contacts' => $whatsapp_contacts,
+            'funnel_registrations' => $funnel_registrations,
+            'ai_chat_leads' => $ai_chat_leads,
+        ];
+    }
+
     private function get_ai_growth_signal_payload(array $app_structure_payload, int $current_clicks_30d): array {
         $main_app = $this->get_main_app_for_review($app_structure_payload) ?? [];
         $performance = $this->get_app_review_performance_snapshot($main_app);
+        $signal_7d = $this->get_ai_growth_signal_window_payload($main_app, 7);
         $shop_contacts = (int) ($performance['shop_contacts_30d'] ?? $current_clicks_30d);
         $whatsapp_contacts = (int) ($performance['whatsapp_contacts_30d'] ?? 0);
         $funnel_registrations = (int) ($performance['funnel_registrations_30d'] ?? 0);
@@ -2359,10 +2553,15 @@ class AiPlan extends Controller {
 
         return [
             'growth_signal_30d' => $growth_signal_30d,
+            'growth_signal_7d' => (int) ($signal_7d['growth_signal'] ?? 0),
             'shop_contacts_30d' => $shop_contacts,
+            'shop_contacts_7d' => (int) ($signal_7d['shop_contacts'] ?? 0),
             'whatsapp_contacts_30d' => $whatsapp_contacts,
+            'whatsapp_contacts_7d' => (int) ($signal_7d['whatsapp_contacts'] ?? 0),
             'funnel_registrations_30d' => $funnel_registrations,
+            'funnel_registrations_7d' => (int) ($signal_7d['funnel_registrations'] ?? 0),
             'ai_chat_leads_30d' => $ai_chat_leads,
+            'ai_chat_leads_7d' => (int) ($signal_7d['ai_chat_leads'] ?? 0),
             'main_app_performance' => $performance,
         ];
     }
@@ -2375,18 +2574,31 @@ class AiPlan extends Controller {
                 'tier' => 'admin',
                 'is_admin_testing' => true,
                 'is_pro' => true,
+                'coach_mode' => 'vip',
                 'growth_signal_30d' => 999,
+                'growth_signal_7d' => 999,
+                'is_signal_qualified' => true,
+                'is_top_performer' => true,
+                'qualified_target' => 15,
+                'top_target' => 15,
                 'signal_breakdown' => [
                     'shop_contacts_30d' => 999,
+                    'shop_contacts_7d' => 999,
                     'whatsapp_contacts_30d' => 999,
+                    'whatsapp_contacts_7d' => 999,
                     'funnel_registrations_30d' => 999,
+                    'funnel_registrations_7d' => 999,
                     'ai_chat_leads_30d' => 999,
+                    'ai_chat_leads_7d' => 999,
                 ],
                 'starter' => [
                     'app_review_used' => 0,
                     'weekly_plan_used' => 0,
                     'app_review_remaining' => 1,
                     'weekly_plan_remaining' => 1,
+                    'app_review_available' => true,
+                    'weekly_plan_available' => true,
+                    'has_any_available' => true,
                 ],
                 'weekly' => [
                     'has_access' => true,
@@ -2412,62 +2624,72 @@ class AiPlan extends Controller {
         $access_settings = $this->get_ai_growth_access_settings($preferences);
         $signal_payload = $this->get_ai_growth_signal_payload($app_structure_payload, $current_clicks_30d);
         $growth_signal_30d = (int) ($signal_payload['growth_signal_30d'] ?? 0);
+        $growth_signal_7d = (int) ($signal_payload['growth_signal_7d'] ?? 0);
         $manual_tier = $this->get_active_manual_ai_tier($access_settings);
-        $has_active_signal = $growth_signal_30d >= 15;
-        $has_vip_signal = $growth_signal_30d >= 50;
+        $has_active_signal = $growth_signal_30d >= 15 || in_array($manual_tier, ['qualified', 'top'], true);
+        $has_top_signal = $growth_signal_7d >= 15 || $manual_tier === 'top';
+        $starter_app_review_used = !empty($access_settings['starter_app_review_used']);
+        $starter_weekly_plan_used = !empty($access_settings['starter_weekly_plan_used']);
+        $starter_app_review_available = $is_pro && !$has_active_signal && !$starter_app_review_used;
+        $starter_weekly_plan_available = $is_pro && !$has_active_signal && !$starter_weekly_plan_used;
 
-        $tier = 'none';
+        $tier = 'beginner';
         if($is_pro) {
-            $tier = 'pro_start';
-
-            if($has_vip_signal || $manual_tier === 'pro_vip') {
-                $tier = 'pro_vip';
-            } elseif($has_active_signal || in_array($manual_tier, ['pro_active', 'pro_vip'], true)) {
-                $tier = 'pro_active';
-            }
+            $tier = $has_top_signal ? 'top' : ($has_active_signal ? 'qualified' : 'pro');
         }
 
-        $starter_app_review_remaining = $is_pro ? max(0, 1 - (int) ($access_settings['starter_app_review_used'] ?? 0)) : 0;
-        $starter_weekly_remaining = $is_pro ? max(0, 1 - (int) ($access_settings['starter_weekly_plan_used'] ?? 0)) : 0;
-        $has_recurring_weekly = in_array($tier, ['pro_active', 'pro_vip'], true);
-        $has_recurring_app_review = in_array($tier, ['pro_active', 'pro_vip'], true);
+        $has_recurring_weekly = $is_pro && $has_active_signal;
+        $has_recurring_app_review = $is_pro && $has_active_signal;
+        $has_intro_weekly = $starter_weekly_plan_available && !$has_recurring_weekly;
+        $has_intro_app_review = $starter_app_review_available && !$has_recurring_app_review;
         $app_review_cooldown_days = $has_recurring_app_review ? 7 : 0;
 
         return [
             'tier' => $tier,
             'is_admin_testing' => false,
             'is_pro' => $is_pro,
+            'coach_mode' => $is_pro ? 'vip' : 'beginner',
             'growth_signal_30d' => $growth_signal_30d,
+            'growth_signal_7d' => $growth_signal_7d,
+            'is_signal_qualified' => $has_active_signal,
+            'is_top_performer' => $has_top_signal,
+            'qualified_target' => 15,
+            'top_target' => 15,
             'signal_breakdown' => [
                 'shop_contacts_30d' => (int) ($signal_payload['shop_contacts_30d'] ?? 0),
+                'shop_contacts_7d' => (int) ($signal_payload['shop_contacts_7d'] ?? 0),
                 'whatsapp_contacts_30d' => (int) ($signal_payload['whatsapp_contacts_30d'] ?? 0),
+                'whatsapp_contacts_7d' => (int) ($signal_payload['whatsapp_contacts_7d'] ?? 0),
                 'funnel_registrations_30d' => (int) ($signal_payload['funnel_registrations_30d'] ?? 0),
+                'funnel_registrations_7d' => (int) ($signal_payload['funnel_registrations_7d'] ?? 0),
                 'ai_chat_leads_30d' => (int) ($signal_payload['ai_chat_leads_30d'] ?? 0),
+                'ai_chat_leads_7d' => (int) ($signal_payload['ai_chat_leads_7d'] ?? 0),
             ],
             'starter' => [
-                'app_review_used' => (int) ($access_settings['starter_app_review_used'] ?? 0),
-                'weekly_plan_used' => (int) ($access_settings['starter_weekly_plan_used'] ?? 0),
-                'app_review_remaining' => $starter_app_review_remaining,
-                'weekly_plan_remaining' => $starter_weekly_remaining,
+                'app_review_used' => $starter_app_review_used ? 1 : 0,
+                'weekly_plan_used' => $starter_weekly_plan_used ? 1 : 0,
+                'app_review_remaining' => $has_intro_app_review ? 1 : 0,
+                'weekly_plan_remaining' => $has_intro_weekly ? 1 : 0,
+                'app_review_available' => $has_intro_app_review,
+                'weekly_plan_available' => $has_intro_weekly,
+                'has_any_available' => $has_intro_app_review || $has_intro_weekly,
             ],
             'weekly' => [
-                'has_access' => $is_pro && ($starter_weekly_remaining > 0 || $has_recurring_weekly),
-                'uses_starter_credit' => $is_pro && $starter_weekly_remaining > 0 && !$has_recurring_weekly,
+                'has_access' => $has_recurring_weekly || $has_intro_weekly,
+                'uses_starter_credit' => $has_intro_weekly,
                 'is_recurring' => $has_recurring_weekly,
                 'cooldown_days' => $has_recurring_weekly ? 7 : 0,
             ],
             'app_review' => [
-                'has_access' => $is_pro,
-                'can_generate' => $is_pro && ($starter_app_review_remaining > 0 || $has_recurring_app_review),
-                'uses_starter_credit' => $is_pro && $starter_app_review_remaining > 0 && !$has_recurring_app_review,
+                'has_access' => $has_recurring_app_review || $has_intro_app_review,
+                'can_generate' => $has_recurring_app_review || $has_intro_app_review,
+                'uses_starter_credit' => $has_intro_app_review,
                 'is_recurring' => $has_recurring_app_review,
                 'cooldown_days' => $app_review_cooldown_days,
                 'can_select_any_app' => $is_pro && $has_recurring_app_review && $multi_app_mode_enabled,
                 'multi_app_mode_enabled' => $multi_app_mode_enabled,
                 'is_phase_one_main_app_mode' => !$multi_app_mode_enabled || !$has_recurring_app_review,
-                'plan_label_key' => $tier === 'pro_vip'
-                    ? 'ai_plan.app_review_plan_vip'
-                    : ($tier === 'pro_active' ? 'ai_plan.app_review_plan_active' : 'ai_plan.app_review_plan_beginner'),
+                'plan_label_key' => !$is_pro ? 'ai_plan.app_review_plan_beginner' : 'ai_plan.app_review_plan_pro',
             ],
         ];
     }
@@ -6832,7 +7054,7 @@ class AiPlan extends Controller {
         ];
     }
 
-    private function build_app_review_ai_input(array $values, array $analytics_payload, array $app_structure_payload, int $current_clicks_30d, string $request_context = '', ?array $selected_app = null, array $selected_app_block_attribution = [], ?array $previous_review = null): array {
+    private function build_app_review_ai_input(array $values, array $analytics_payload, array $app_structure_payload, int $current_clicks_30d, string $request_context = '', ?array $selected_app = null, array $selected_app_block_attribution = [], ?array $previous_review = null, array $coach_context = []): array {
         $selected_app = $selected_app ?? $this->get_selected_app($app_structure_payload);
         $goal_type = $this->get_effective_app_review_goal_type($values, $request_context, $selected_app);
         $selected_app_block_attribution = !empty($selected_app_block_attribution)
@@ -6950,6 +7172,16 @@ class AiPlan extends Controller {
             'fcc_goal_system' => $fcc_goal_system,
             'fcc_core_block_policy' => $fcc_core_block_policy,
             'fcc_block_catalog' => $this->get_app_review_block_catalog_payload(),
+            'coach_context' => [
+                'has_recent_activity' => !empty($coach_context['has_recent_activity']),
+                'last_touch_at' => $coach_context['last_touch_at'] ?? null,
+                'conversation_count' => (int) ($coach_context['conversation_count'] ?? 0),
+                'summary' => (string) ($coach_context['summary'] ?? ''),
+                'recent_topics' => array_values(array_filter((array) ($coach_context['recent_topics'] ?? []), 'is_string')),
+                'recent_challenges' => array_values(array_filter((array) ($coach_context['recent_challenges'] ?? []), 'is_string')),
+                'recent_user_messages' => array_values(array_filter((array) ($coach_context['recent_user_messages'] ?? []), 'is_string')),
+                'recent_assistant_guidance' => array_values(array_filter((array) ($coach_context['recent_assistant_guidance'] ?? []), 'is_string')),
+            ],
             'request_context' => $request_context,
         ];
     }
@@ -7931,7 +8163,7 @@ class AiPlan extends Controller {
         ];
     }
 
-    private function generate_app_review(array $values, array $analytics_payload, array $app_structure_payload, int $current_clicks_30d, string $request_context = '', ?array $selected_app = null, ?array $previous_review = null): array {
+    private function generate_app_review(array $values, array $analytics_payload, array $app_structure_payload, int $current_clicks_30d, string $request_context = '', ?array $selected_app = null, ?array $previous_review = null, array $coach_context = []): array {
         $credentials = $this->get_ai_credentials();
 
         if($credentials['api_key'] === '') {
@@ -7945,7 +8177,7 @@ class AiPlan extends Controller {
         $selected_app = $selected_app ?? $this->get_selected_app($app_structure_payload) ?? $this->get_default_app_summary();
         $selected_app_block_attribution = $this->get_app_review_block_attribution_payload($selected_app);
         $review_generated_at = get_date();
-        $ai_input = $this->build_app_review_ai_input($values, $analytics_payload, $app_structure_payload, $current_clicks_30d, $request_context, $selected_app, $selected_app_block_attribution, $previous_review);
+        $ai_input = $this->build_app_review_ai_input($values, $analytics_payload, $app_structure_payload, $current_clicks_30d, $request_context, $selected_app, $selected_app_block_attribution, $previous_review, $coach_context);
         $ai_input = $this->sanitize_utf8_for_json($ai_input);
         $quality_payload = $this->get_app_review_quality_payload($selected_app, $current_clicks_30d);
         $selected_link_additional = $this->get_link_additional_by_id((int) ($selected_app['link_id'] ?? 0));
@@ -8076,6 +8308,8 @@ class AiPlan extends Controller {
             '- Ako palette_feedback.note postoji, uzmi ga kao dodatni dokaz sto korisniku djeluje preglasno, prehladno, pretamno ili neusklađeno.',
             '- Ako je nesto primijenjeno i 7d ili 30d rezultat nije donio pomak, predlozi novi jasan korak umjesto ponavljanja istog savjeta.',
             '- Ako je nakon primjene vidljiv rast, zadrzi smjer i predlozi finu doradu, ne potpuni reset.',
+            '- Ako coach_context.has_recent_activity = true, uzmi zadnje coach teme, blokade i preporuke kao dodatni signal iz stvarne komunikacije s korisnikom. Ugradi ih kad su u skladu s analyticsom, ciljem i live aplikacijom.',
+            '- coach_context je sekundarni kontekst. Ako je u sukobu s realnim signalom i stvarnom live aplikacijom, prednost imaju analytics, block_attribution i trenutačna aplikacija.',
             '- Ako review_mode.current_app_state.has_changes_since_recommendation = true, to znaci da je korisnik vec doradjivao aplikaciju nakon zadnje AI preporuke. Tretiraj trenutnu live aplikaciju kao vazecu bazu za daljnju evoluciju, ne kao gresku, odstupanje ni razlog za reset.',
             '- Kad je trenutna live aplikacija novija od zadnje preporuke, default je incremental refinement: zadrzi osnovni vizualni smjer, boje i strukturu ako ne postoje jaki dokazi da to steti fokusu, povjerenju ili rezultatu.',
             '- U takvoj situaciji radije predlozi 1 do 3 manje, vrlo precizne nadogradnje s najvecim ucinkom nego novi veliki redesign. Novi reset palete, teme ili rasporeda koristi samo ako analytics, block_attribution, evolution i design_diagnostic jasno pokazu da je sadasnji smjer los.',
@@ -8222,6 +8456,14 @@ class AiPlan extends Controller {
         $review['block_attribution_snapshot'] = $selected_app_block_attribution;
         $review['signal_protection_summary'] = $this->build_app_review_signal_protection_summary($selected_app_block_attribution, (array) ($review['layout_actions'] ?? []));
         $review['analysis_mode'] = !empty($evolution_payload['has_previous_review']) ? 'evolution' : 'initial';
+        $review['coach_context_snapshot'] = [
+            'has_recent_activity' => !empty($coach_context['has_recent_activity']),
+            'last_touch_at' => $coach_context['last_touch_at'] ?? null,
+            'summary' => (string) ($coach_context['summary'] ?? ''),
+            'recent_topics' => array_values(array_slice((array) ($coach_context['recent_topics'] ?? []), 0, 3)),
+            'recent_challenges' => array_values(array_slice((array) ($coach_context['recent_challenges'] ?? []), 0, 3)),
+            'recent_assistant_guidance' => array_values(array_slice((array) ($coach_context['recent_assistant_guidance'] ?? []), 0, 3)),
+        ];
 
         return $review;
     }
@@ -8928,7 +9170,7 @@ class AiPlan extends Controller {
         return array_values(array_unique($guardrails));
     }
 
-    private function build_weekly_ai_plan_input(array $values, array $weekly_checkin, array $analytics_payload, array $app_structure_payload, array $adaptive_question, ?array $previous_cycle_context = null, array $mentor_guidance = [], ?array $latest_app_review = null): array {
+    private function build_weekly_ai_plan_input(array $values, array $weekly_checkin, array $analytics_payload, array $app_structure_payload, array $adaptive_question, ?array $previous_cycle_context = null, array $mentor_guidance = [], ?array $latest_app_review = null, array $coach_context = []): array {
         $labels = $this->get_option_labels($values, $weekly_checkin);
         $analytics_payload['webshop_clicks'] = (int) $this->get_last_30_days_shop_clicks();
         $goal_type = $this->get_goal_type($values);
@@ -9022,6 +9264,16 @@ class AiPlan extends Controller {
                 'guidance' => (string) ($mentor_guidance['guidance'] ?? ''),
                 'weight' => 'secondary',
                 'visibility' => 'admin_only',
+            ],
+            'coach_context' => [
+                'has_recent_activity' => !empty($coach_context['has_recent_activity']),
+                'last_touch_at' => $coach_context['last_touch_at'] ?? null,
+                'conversation_count' => (int) ($coach_context['conversation_count'] ?? 0),
+                'summary' => (string) ($coach_context['summary'] ?? ''),
+                'recent_topics' => array_values(array_filter((array) ($coach_context['recent_topics'] ?? []), 'is_string')),
+                'recent_challenges' => array_values(array_filter((array) ($coach_context['recent_challenges'] ?? []), 'is_string')),
+                'recent_user_messages' => array_values(array_filter((array) ($coach_context['recent_user_messages'] ?? []), 'is_string')),
+                'recent_assistant_guidance' => array_values(array_filter((array) ($coach_context['recent_assistant_guidance'] ?? []), 'is_string')),
             ],
             'strategy_guardrails' => $this->get_strategy_guardrails($values, $weekly_checkin, $analytics_payload, $app_structure_payload, $previous_cycle_context, $mentor_guidance),
         ];
@@ -9125,7 +9377,7 @@ class AiPlan extends Controller {
         ];
     }
 
-    private function build_emergency_weekly_ai_plan(array $values, array $weekly_checkin, array $analytics_payload, array $app_structure_payload, ?array $previous_cycle_context = null, array $mentor_guidance = [], ?array $latest_app_review = null): array {
+    private function build_emergency_weekly_ai_plan(array $values, array $weekly_checkin, array $analytics_payload, array $app_structure_payload, ?array $previous_cycle_context = null, array $mentor_guidance = [], ?array $latest_app_review = null, array $coach_context = []): array {
         $labels = $this->get_option_labels($values, $weekly_checkin);
         $goal_type = $this->get_goal_type($values);
         $guardrails = $this->get_strategy_guardrails($values, $weekly_checkin, $analytics_payload, $app_structure_payload, $previous_cycle_context, $mentor_guidance);
@@ -9216,6 +9468,9 @@ class AiPlan extends Controller {
         if($is_low_energy) {
             $coach_ideas[] = 'Održi isti jednostavan ritam cijeli tjedan umjesto da svaki dan smišljaš novi smjer.';
         }
+        if(!empty($coach_context['summary'])) {
+            $coach_ideas[] = 'Zadrži kontinuitet s onim što je Coach već prepoznao: ' . fcc_ai_excerpt((string) $coach_context['summary'], 170);
+        }
         $coach_ideas = array_slice(array_values(array_unique(array_filter(array_merge($coach_ideas, array_slice($guardrails, 0, 2))))), 0, 5);
 
         $do_not_do = [
@@ -9251,10 +9506,17 @@ class AiPlan extends Controller {
             'coach_ideas' => $coach_ideas,
             'do_not_do' => $do_not_do,
             'daily_plan' => $daily_plan,
+            'coach_context_snapshot' => [
+                'has_recent_activity' => !empty($coach_context['has_recent_activity']),
+                'last_touch_at' => $coach_context['last_touch_at'] ?? null,
+                'summary' => (string) ($coach_context['summary'] ?? ''),
+                'recent_topics' => array_values(array_slice((array) ($coach_context['recent_topics'] ?? []), 0, 3)),
+                'recent_challenges' => array_values(array_slice((array) ($coach_context['recent_challenges'] ?? []), 0, 3)),
+            ],
         ];
     }
 
-    private function generate_weekly_ai_plan(array $values, array $weekly_checkin, array $weekly_checkins, array $weekly_plans, array $weekly_outcomes, array $analytics_payload, array $app_structure_payload, array $adaptive_question, array $app_reviews = []): array {
+    private function generate_weekly_ai_plan(array $values, array $weekly_checkin, array $weekly_checkins, array $weekly_plans, array $weekly_outcomes, array $analytics_payload, array $app_structure_payload, array $adaptive_question, array $app_reviews = [], array $coach_context = []): array {
         $credentials = $this->get_ai_credentials();
 
         if($credentials['api_key'] === '') {
@@ -9268,7 +9530,7 @@ class AiPlan extends Controller {
         $previous_cycle_context = $this->get_previous_weekly_cycle_context($weekly_checkins, $weekly_plans, $weekly_outcomes, $weekly_checkin);
         $mentor_guidance = $this->get_mentor_ai_guidance($this->user->preferences ?? null);
         $latest_app_review = $this->get_latest_app_review($app_reviews);
-        $ai_input = $this->build_weekly_ai_plan_input($values, $weekly_checkin, $analytics_payload, $app_structure_payload, $adaptive_question, $previous_cycle_context, $mentor_guidance, $latest_app_review);
+        $ai_input = $this->build_weekly_ai_plan_input($values, $weekly_checkin, $analytics_payload, $app_structure_payload, $adaptive_question, $previous_cycle_context, $mentor_guidance, $latest_app_review, $coach_context);
         $ai_input = $this->sanitize_utf8_for_json($ai_input);
         $supports_image_input = $this->model_supports_image_input((string) ($credentials['model'] ?? ''));
         $focus_visual_context = (array) ($ai_input['weekly_focus_app']['visual_context'] ?? []);
@@ -9302,6 +9564,8 @@ class AiPlan extends Controller {
             '- Ako je u proslog tjedna nesto dobro reagiralo, nemoj to zanemariti. Novi plan treba se nasloniti na taj signal umjesto da ide u potpuno novi smjer bez razloga.',
             '- Ako mentor_context.has_guidance postoji, uzmi to kao dodatnu procjenu mentora iz direktnog kontakta s osobom. To nije glavni orijentir, ali treba poostrinti realnost plana, razinu fokusa i procjenu discipline kada ima smisla.',
             '- Mentor smjernica je admin-only i sekundarni signal. Nemoj je slijediti slijepo ako je u ocitom sukobu sa stvarnim podacima, ali je koristi kad treba procijeniti je li osobi potreban strozi, uzi ili jednostavniji plan.',
+            '- Ako coach_context.has_recent_activity = true, novi plan mora vidjeti kontinuitet s onim što je Coach već komunicirao. Ugradi zadnje teme, prepreke i preporuke kad pomažu realnijem i jačem planu.',
+            '- coach_context je sekundarni signal iz stvarne komunikacije. Ako je u sukobu s realnim signalom, analytics i trenutačna live aplikacija imaju prednost.',
             '- weekly_focus_app.current_structure i main_app_structure opisuju stvarnu trenutnu live aplikaciju koju ovaj tjedan treba komentirati. To ima prednost nad starim planovima i starim analizama.',
             '- latest_app_review i previous_cycle sluze samo kao povijest. Nemoj tvrditi da nesto trenutno postoji, nedostaje ili je na vrhu samo zato sto je bilo spomenuto u starijoj analizi ili starom planu.',
             '- Ako weekly_focus_app.current_state_against_latest_review.has_changes_since_recommendation = true ili weekly_focus_app.current_state_against_previous_plan.has_changes_since_recommendation = true, to znaci da je aplikacija mijenjana nakon zadnje analize ili zadnjeg plana. U tom slucaju trenutna live aplikacija je izvor istine, a stare preporuke su samo povijest.',
@@ -9406,19 +9670,27 @@ class AiPlan extends Controller {
         $used_fallback_plan = false;
 
         if(!is_array($decoded_plan)) {
-            $plan = $this->build_emergency_weekly_ai_plan($values, $weekly_checkin, $analytics_payload, $app_structure_payload, $previous_cycle_context, $mentor_guidance, $latest_app_review);
+            $plan = $this->build_emergency_weekly_ai_plan($values, $weekly_checkin, $analytics_payload, $app_structure_payload, $previous_cycle_context, $mentor_guidance, $latest_app_review, $coach_context);
             $used_fallback_plan = true;
         } else {
             try {
                 $plan = $this->validate_weekly_ai_plan_response($decoded_plan);
             } catch(\Throwable $exception) {
-                $plan = $this->build_emergency_weekly_ai_plan($values, $weekly_checkin, $analytics_payload, $app_structure_payload, $previous_cycle_context, $mentor_guidance, $latest_app_review);
+                $plan = $this->build_emergency_weekly_ai_plan($values, $weekly_checkin, $analytics_payload, $app_structure_payload, $previous_cycle_context, $mentor_guidance, $latest_app_review, $coach_context);
                 $used_fallback_plan = true;
             }
         }
         $plan['checkin_submitted_at'] = $weekly_checkin['submitted_at'] ?? get_date();
         $plan['generated_at'] = get_date();
         $plan['model'] = $used_fallback_plan ? 'fallback_local' : $credentials['model'];
+        $plan['coach_context_snapshot'] = [
+            'has_recent_activity' => !empty($coach_context['has_recent_activity']),
+            'last_touch_at' => $coach_context['last_touch_at'] ?? null,
+            'summary' => (string) ($coach_context['summary'] ?? ''),
+            'recent_topics' => array_values(array_slice((array) ($coach_context['recent_topics'] ?? []), 0, 3)),
+            'recent_challenges' => array_values(array_slice((array) ($coach_context['recent_challenges'] ?? []), 0, 3)),
+            'recent_assistant_guidance' => array_values(array_slice((array) ($coach_context['recent_assistant_guidance'] ?? []), 0, 3)),
+        ];
 
         return $plan;
     }
@@ -9456,12 +9728,13 @@ class AiPlan extends Controller {
         $latest_pending_outcome = $this->get_weekly_outcome_for_plan($weekly_outcomes, $latest_pending_outcome_plan);
         $previous_weekly_cycle_context = $this->get_previous_weekly_cycle_context($weekly_checkins, $weekly_plans, $weekly_outcomes, $latest_weekly_checkin);
         $feedback_loop_payload = $this->get_feedback_loop_payload($previous_weekly_cycle_context);
+        $coach_context_payload = $this->get_internal_coach_context_payload((int) $this->user->user_id);
 
         $recovered_weekly_plan_generated = false;
 
         if($latest_weekly_checkin && !$latest_weekly_plan) {
             $mentor_guidance = $this->get_mentor_ai_guidance($this->user->preferences ?? null);
-            $recovered_plan = $this->build_recovery_weekly_plan($values, $latest_weekly_checkin, $analytics_payload, $app_structure_payload, $previous_weekly_cycle_context, $mentor_guidance, $latest_app_review_any, 'fallback_recovery');
+            $recovered_plan = $this->build_recovery_weekly_plan($values, $latest_weekly_checkin, $analytics_payload, $app_structure_payload, $previous_weekly_cycle_context, $mentor_guidance, $latest_app_review_any, $coach_context_payload, 'fallback_recovery');
 
             $weekly_plans = $this->upsert_weekly_plan($weekly_plans, $recovered_plan);
             $preferences->leader_ai_weekly_plans = $weekly_plans;
@@ -9484,8 +9757,12 @@ class AiPlan extends Controller {
             $preferences = $this->consume_ai_growth_starter_credit($preferences, 'weekly_plan');
             $this->persist_ai_plan_preferences($preferences);
             $this->user->preferences = $preferences;
+            $ai_growth_access_payload = $this->get_ai_growth_access_payload($preferences, $app_structure_payload, $current_clicks_30d);
+            $app_review_access_payload = (array) ($ai_growth_access_payload['app_review'] ?? []);
+            $weekly_access_payload = (array) ($ai_growth_access_payload['weekly'] ?? []);
         }
         $growth_signal_30d = (int) ($ai_growth_access_payload['growth_signal_30d'] ?? 0);
+        $growth_signal_7d = (int) ($ai_growth_access_payload['growth_signal_7d'] ?? 0);
         $cooldown_payload = $this->get_weekly_cooldown_payload($latest_weekly_checkin, (int) ($weekly_access_payload['cooldown_days'] ?? 0));
         $app_review_cooldown_payload = $this->get_cooldown_payload_by_days($latest_app_review_any['generated_at'] ?? null, (int) ($app_review_access_payload['cooldown_days'] ?? 0));
         $is_profile_complete = $this->is_profile_complete($values);
@@ -9506,7 +9783,11 @@ class AiPlan extends Controller {
         $is_app_review_accessible = $has_weekly_limits_bypass || ($is_profile_complete && !empty($app_review_access_payload['has_access']));
         $app_review_locked_reason = !$is_profile_complete
             ? l('ai_plan.app_review_locked_entry_tooltip')
-            : (!empty($app_review_access_payload['has_access']) ? '' : l('ai_plan.app_review_locked_pro'));
+            : (!empty($app_review_access_payload['has_access'])
+                ? ''
+                : ($ai_growth_access_payload['is_pro']
+                    ? sprintf(l('ai_plan.app_review_locked_signal'), 15, nr($growth_signal_30d))
+                    : l('ai_plan.app_review_locked_pro')));
         $app_review_context = input_clean($_POST['app_review_context'] ?? '', 800);
         $requested_selected_app_id = (int) ($_POST['app_review_selected_link_id'] ?? ($_GET['app_review_selected_link_id'] ?? 0));
         $requested_app_review_generated_at = input_clean($_GET['app_review_generated_at'] ?? '', 32);
@@ -9746,11 +10027,11 @@ class AiPlan extends Controller {
                     $used_weekly_plan_fallback = false;
 
                     try {
-                        $new_weekly_plan = $this->generate_weekly_ai_plan($values, $new_checkin, $weekly_checkins, $weekly_plans, $weekly_outcomes, $analytics_payload, $app_structure_payload, $adaptive_question, $app_reviews);
+                        $new_weekly_plan = $this->generate_weekly_ai_plan($values, $new_checkin, $weekly_checkins, $weekly_plans, $weekly_outcomes, $analytics_payload, $app_structure_payload, $adaptive_question, $app_reviews, $coach_context_payload);
                         $ai_plan_generated = true;
                     } catch(\Throwable $exception) {
                         $mentor_guidance = $this->get_mentor_ai_guidance($this->user->preferences ?? null);
-                        $new_weekly_plan = $this->build_recovery_weekly_plan($values, $new_checkin, $analytics_payload, $app_structure_payload, $this->get_previous_weekly_cycle_context($weekly_checkins, $weekly_plans, $weekly_outcomes, $new_checkin), $mentor_guidance, $this->get_latest_app_review($app_reviews), 'fallback_after_exception');
+                        $new_weekly_plan = $this->build_recovery_weekly_plan($values, $new_checkin, $analytics_payload, $app_structure_payload, $this->get_previous_weekly_cycle_context($weekly_checkins, $weekly_plans, $weekly_outcomes, $new_checkin), $mentor_guidance, $this->get_latest_app_review($app_reviews), $coach_context_payload, 'fallback_after_exception');
                         $ai_plan_generated = true;
                         $used_weekly_plan_fallback = true;
 
@@ -9823,7 +10104,7 @@ class AiPlan extends Controller {
                     $previous_app_review = $this->get_latest_app_review_for_link($app_reviews, $selected_app_id);
 
                     try {
-                        $new_app_review = $this->generate_app_review($values, $analytics_payload, $app_structure_payload, $current_clicks_30d, $app_review_context, $selected_app, $previous_app_review);
+                        $new_app_review = $this->generate_app_review($values, $analytics_payload, $app_structure_payload, $current_clicks_30d, $app_review_context, $selected_app, $previous_app_review, $coach_context_payload);
                         $generated_review_at = (string) ($new_app_review['generated_at'] ?? '');
                         $app_reviews = $this->upsert_app_review($app_reviews, $new_app_review);
                         $preferences->leader_ai_app_reviews = $app_reviews;
@@ -10015,6 +10296,8 @@ class AiPlan extends Controller {
             'feedback_loop_payload' => $feedback_loop_payload,
             'current_clicks_30d' => $current_clicks_30d,
             'growth_signal_30d' => $growth_signal_30d,
+            'growth_signal_7d' => $growth_signal_7d,
+            'coach_mode_payload' => fcc_ai_get_internal_coach_mode_payload($this->user, \Altum\Language::$code ?? 'hr'),
             'analytics_payload' => $analytics_payload,
             'signal_summary_payload' => $signal_summary_payload,
             'app_structure_payload' => $app_structure_payload,
