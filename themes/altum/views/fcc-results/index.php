@@ -119,13 +119,37 @@
     .fcc-results-page .fcc-chip-rising { background: rgba(34, 197, 94, 0.2); color: #92f6ba; }
     .fcc-results-page .fcc-chip-falling { background: rgba(239, 68, 68, 0.2); color: #ffb0b0; }
 
+    .fcc-results-page .fcc-stat-group {
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        padding: 0.55rem 0 0.7rem;
+    }
+
+    .fcc-results-page .fcc-stat-group:last-child {
+        border-bottom: 0;
+    }
+
+    .fcc-results-page .fcc-stat-group .fcc-stat-row {
+        border-bottom: 0;
+        padding: 0;
+    }
+
     .fcc-results-page .fcc-stat-breakdown {
-        margin-top: -0.35rem;
-        margin-bottom: 0.55rem;
-        padding-left: 0.1rem;
-        color: rgba(226, 232, 240, 0.7);
+        margin-top: 0.45rem;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.45rem;
+    }
+
+    .fcc-results-page .fcc-stat-chip {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.28rem 0.62rem;
+        border-radius: 999px;
         font-size: 12px;
-        line-height: 1.45;
+        font-weight: 600;
+        color: rgba(226, 232, 240, 0.86);
+        background: rgba(127, 215, 208, 0.08);
+        border: 1px solid rgba(127, 215, 208, 0.16);
     }
 
     .fcc-results-page .fcc-table th {
@@ -495,23 +519,18 @@
                             <span><?= l('fcc_results.you.blog_clicks') ?></span>
                             <strong><?= nr($current_user_data['blog_clicks']) ?></strong>
                         </div>
-                        <div class="fcc-stat-row">
-                            <span>
-                                <?= l('fcc_results.you.funnel_contacts') ?>
-                                <span data-toggle="tooltip" title="<?= l('fcc_results.metrics_info.total_contacts') ?>"><i class="fas fa-info-circle fcc-help-icon"></i></span>
-                            </span>
-                            <strong><?= nr($current_user_data['total_contacts'] ?? 0) ?></strong>
-                        </div>
-                        <div class="fcc-stat-breakdown">
-                            <?= sprintf(
-                                l('fcc_results.you.contacts_breakdown'),
-                                nr($current_user_data['funnel_contacts'] ?? 0),
-                                nr($current_user_data['ai_chat_contacts'] ?? 0)
-                            ) ?>
-                        </div>
-                        <div class="fcc-stat-row">
-                            <span><?= l('fcc_results.you.ai_chat_contacts') ?></span>
-                            <strong><?= nr($current_user_data['ai_chat_contacts'] ?? 0) ?></strong>
+                        <div class="fcc-stat-group">
+                            <div class="fcc-stat-row">
+                                <span>
+                                    <?= l('fcc_results.you.funnel_contacts') ?>
+                                    <span data-toggle="tooltip" title="<?= l('fcc_results.metrics_info.total_contacts') ?>"><i class="fas fa-info-circle fcc-help-icon"></i></span>
+                                </span>
+                                <strong><?= nr($current_user_data['total_contacts'] ?? 0) ?></strong>
+                            </div>
+                            <div class="fcc-stat-breakdown">
+                                <span class="fcc-stat-chip">Funnel <?= nr($current_user_data['funnel_contacts'] ?? 0) ?></span>
+                                <span class="fcc-stat-chip">AI chat <?= nr($current_user_data['ai_chat_contacts'] ?? 0) ?></span>
+                            </div>
                         </div>
                         <div class="fcc-stat-row">
                             <span>
