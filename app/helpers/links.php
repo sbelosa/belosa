@@ -16,8 +16,65 @@
 
 defined('ALTUMCODE') || die();
 
+function fc_normalize_site_url($url): string {
+    $url = trim((string) $url);
+
+    if($url === '') {
+        return '';
+    }
+
+    if(!preg_match('#^https?://#i', $url)) {
+        $url = 'https://' . ltrim($url, '/');
+    }
+
+    return rtrim($url, '/') . '/';
+}
+
+function fc_site_url_points_to_localhost($url): bool {
+    $normalized_url = fc_normalize_site_url($url);
+
+    if($normalized_url === '') {
+        return false;
+    }
+
+    $host = mb_strtolower((string) parse_url($normalized_url, PHP_URL_HOST));
+
+    return in_array($host, ['localhost', '127.0.0.1', '0.0.0.0', '::1', 'host.docker.internal'], true);
+}
+
+function fc_get_site_url(): string {
+    static $resolved_site_url = null;
+
+    if($resolved_site_url !== null) {
+        return $resolved_site_url;
+    }
+
+    if(!empty($_SERVER['HTTP_HOST'])) {
+        $is_https = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || (int) ($_SERVER['SERVER_PORT'] ?? 80) === 443;
+        $scheme = $is_https ? 'https://' : 'http://';
+        return $resolved_site_url = $scheme . rtrim((string) $_SERVER['HTTP_HOST'], '/') . '/';
+    }
+
+    $candidates = [
+        getenv('SITE_URL_FALLBACK') ?: '',
+        defined('SITE_URL') ? SITE_URL : '',
+        getenv('SITE_URL') ?: '',
+        'https://forevercard.club/',
+    ];
+
+    foreach($candidates as $candidate) {
+        $candidate = fc_normalize_site_url($candidate);
+
+        if($candidate !== '' && !fc_site_url_points_to_localhost($candidate)) {
+            return $resolved_site_url = $candidate;
+        }
+    }
+
+    return $resolved_site_url = fc_normalize_site_url((defined('SITE_URL') ? SITE_URL : '') ?: 'https://forevercard.club/');
+}
+
 function url($append = '') {
-    return SITE_URL . (\Altum\Language::$default_name != \Altum\Language::$name ? \Altum\Language::$code . '/' : null)  . $append;
+    return fc_get_site_url() . (\Altum\Language::$default_name != \Altum\Language::$name ? \Altum\Language::$code . '/' : null)  . $append;
 }
 
 function redirect($append = '', $no_language_code = false, $response_code = 0) {
@@ -41,7 +98,7 @@ function redirect($append = '', $no_language_code = false, $response_code = 0) {
         }
     }
 
-    header('Location: ' . SITE_URL . $language_code . $where_to, true, $response_code);
+    header('Location: ' . fc_get_site_url() . $language_code . $where_to, true, $response_code);
 
     die();
 }

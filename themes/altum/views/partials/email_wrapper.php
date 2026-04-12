@@ -324,7 +324,8 @@
                 <!-- START FOOTER -->
                 <div class="footer">
                     <p class="content-block powered-by mb0">
-                        <?= sprintf(l('global.emails.copyright', $data->language), date('Y'), '<a href="' . url() . '">' . settings()->main->title . '</a>' . ' • ' . rtrim(remove_url_protocol_from_url(SITE_URL), '/')) ?>
+                        <?php $email_site_url = fc_get_site_url(); ?>
+                        <?= sprintf(l('global.emails.copyright', $data->language), date('Y'), '<a href="' . url() . '">' . settings()->main->title . '</a>' . ' • ' . rtrim(remove_url_protocol_from_url($email_site_url), '/')) ?>
                     </p>
                 </div>
                 <!-- END FOOTER -->
