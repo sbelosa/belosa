@@ -909,7 +909,7 @@ class OpsReadonly extends Controller {
                 'counts' => $billing_dashboard['counts'] ?? [],
                 'latest_event' => $this->get_recent_global_billing_events(1)[0] ?? null,
             ],
-            'allowed_scopes' => ['health', 'overview', 'ai_feedback', 'plans', 'billing', 'collaborators', 'collaborator'],
+            'allowed_scopes' => ['health', 'overview', 'ai_feedback', 'plans', 'billing', 'collaborators', 'fcc_signal_notifications', 'collaborator'],
         ];
     }
 
@@ -1273,6 +1273,70 @@ class OpsReadonly extends Controller {
         ];
     }
 
+    private function get_fcc_signal_notifications_payload(): array {
+        $query = $this->get_param_string('query');
+        $limit = $this->get_param_limit('limit', 25, 1, 100);
+        $where = "`type` = 0 AND (
+            JSON_EXTRACT(`preferences`, '$.fcc_public_signal_notifications.qualified_unlock_sent_at') IS NOT NULL
+            OR JSON_EXTRACT(`preferences`, '$.fcc_public_signal_notifications.qualified_reminder_sent_at') IS NOT NULL
+            OR JSON_EXTRACT(`preferences`, '$.fcc_public_signal_notifications.top_unlock_sent_at') IS NOT NULL
+            OR JSON_EXTRACT(`preferences`, '$.fcc_public_signal_notifications.top_reminder_sent_at') IS NOT NULL
+        )";
+
+        if($query !== '') {
+            $escaped_query = database()->real_escape_string($query);
+            $where .= " AND (`name` LIKE '%{$escaped_query}%' OR `email` LIKE '%{$escaped_query}%')";
+        }
+
+        $results = [];
+        $result = database()->query("SELECT
+                `user_id`,
+                `name`,
+                `email`,
+                JSON_UNQUOTE(JSON_EXTRACT(`preferences`, '$.fcc_public_signal_notifications.qualified_unlock_sent_at')) AS `qualified_unlock_sent_at`,
+                JSON_UNQUOTE(JSON_EXTRACT(`preferences`, '$.fcc_public_signal_notifications.qualified_reminder_sent_at')) AS `qualified_reminder_sent_at`,
+                JSON_UNQUOTE(JSON_EXTRACT(`preferences`, '$.fcc_public_signal_notifications.top_unlock_sent_at')) AS `top_unlock_sent_at`,
+                JSON_UNQUOTE(JSON_EXTRACT(`preferences`, '$.fcc_public_signal_notifications.top_reminder_sent_at')) AS `top_reminder_sent_at`,
+                JSON_UNQUOTE(JSON_EXTRACT(`preferences`, '$.fcc_public_signal_notifications.qualified_reentry_admin_notified_at')) AS `qualified_reentry_admin_notified_at`,
+                JSON_UNQUOTE(JSON_EXTRACT(`preferences`, '$.fcc_public_signal_notifications.top_reentry_admin_notified_at')) AS `top_reentry_admin_notified_at`,
+                JSON_UNQUOTE(JSON_EXTRACT(`preferences`, '$.fcc_public_signal_notifications.last_evaluated_at')) AS `last_evaluated_at`
+            FROM `users`
+            WHERE {$where}
+            ORDER BY COALESCE(
+                JSON_UNQUOTE(JSON_EXTRACT(`preferences`, '$.fcc_public_signal_notifications.top_unlock_sent_at')),
+                JSON_UNQUOTE(JSON_EXTRACT(`preferences`, '$.fcc_public_signal_notifications.qualified_unlock_sent_at')),
+                ''
+            ) DESC, `user_id` DESC
+            LIMIT {$limit}");
+
+        while($row = $result->fetch_object()) {
+            $public_signal = fcc_ai_get_user_public_visibility_signal_snapshot((int) ($row->user_id ?? 0));
+
+            $results[] = [
+                'user_id' => (int) ($row->user_id ?? 0),
+                'name' => (string) ($row->name ?? ''),
+                'email' => (string) ($row->email ?? ''),
+                'qualified_unlock_sent_at' => $row->qualified_unlock_sent_at ?: null,
+                'qualified_reminder_sent_at' => $row->qualified_reminder_sent_at ?: null,
+                'top_unlock_sent_at' => $row->top_unlock_sent_at ?: null,
+                'top_reminder_sent_at' => $row->top_reminder_sent_at ?: null,
+                'qualified_reentry_admin_notified_at' => $row->qualified_reentry_admin_notified_at ?: null,
+                'top_reentry_admin_notified_at' => $row->top_reentry_admin_notified_at ?: null,
+                'last_evaluated_at' => $row->last_evaluated_at ?: null,
+                'public_signal_30d' => (int) ($public_signal['growth_signal_30d'] ?? 0),
+                'public_signal_7d' => (int) ($public_signal['growth_signal_7d'] ?? 0),
+                'qualified_target' => (int) ($public_signal['qualified_target'] ?? 15),
+                'top_target' => (int) ($public_signal['top_target'] ?? 50),
+            ];
+        }
+
+        return [
+            'query' => $query,
+            'results_total' => count($results),
+            'results' => $results,
+        ];
+    }
+
     private function get_collaborator_user(): ?object {
         $user_id = $this->get_param_int('user_id');
         $email = $this->get_param_string('email');
@@ -1493,6 +1557,10 @@ class OpsReadonly extends Controller {
                 $this->respond_success($scope, $this->get_collaborators_payload());
                 break;
 
+            case 'fcc_signal_notifications':
+                $this->respond_success($scope, $this->get_fcc_signal_notifications_payload());
+                break;
+
             case 'collaborator':
                 $user = $this->get_collaborator_user();
 
@@ -1512,7 +1580,7 @@ class OpsReadonly extends Controller {
 
             default:
                 $this->respond_error('invalid_scope', 'Readonly ops scope is invalid.', 422, [
-                    'allowed_scopes' => ['health', 'overview', 'ai_feedback', 'plans', 'billing', 'collaborators', 'collaborator'],
+                    'allowed_scopes' => ['health', 'overview', 'ai_feedback', 'plans', 'billing', 'collaborators', 'fcc_signal_notifications', 'collaborator'],
                 ]);
         }
     }

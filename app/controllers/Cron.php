@@ -892,6 +892,40 @@ class Cron extends Controller {
         );
     }
 
+    private function dispatch_fcc_public_signal_admin_reentry_notification(object $user, array $visibility, string $tier): void {
+        $user_id = (int) ($user->user_id ?? 0);
+        if($user_id <= 0) {
+            return;
+        }
+
+        $language = fcc_ai_resolve_public_reply_language((string) ($user->language ?? 'hr'));
+        $public_signal_30d = max(0, (int) ($visibility['public_signal_30d'] ?? 0));
+        $featured_ready = !empty($visibility['featured_apps_eligible']);
+        $sponsor_ready = !empty($visibility['recommended_sponsor_eligible']);
+        $profile_complete = !empty($visibility['generated_profile_complete']);
+        $sales_link_ready = !empty($visibility['sales_link_ready']);
+        $los_url = url('admin/leader-operating-system-leader?user_id=' . $user_id . '&period=30d') . '#leader-os-featured-profile';
+
+        if($language === 'en') {
+            $title = $tier === 'top' ? 'Returned to 50+ sponsor signal' : 'Returned to 15+ featured signal';
+            $description = trim(($user->name ?? ('User #' . $user_id)) . ' is back at ' . ($tier === 'top' ? '50+' : '15+') . ' public signal in the last 30 days (' . nr($public_signal_30d) . '). No new email was sent. '
+                . 'Featured ready: ' . ($featured_ready ? 'yes' : 'no') . ' · Sponsor ready: ' . ($sponsor_ready ? 'yes' : 'no') . ' · AI profile: ' . ($profile_complete ? 'ready' : 'incomplete') . ' · Sales link: ' . ($sales_link_ready ? 'ready' : 'missing'));
+        } else {
+            $title = $tier === 'top' ? 'Povratak na 50+ sponsor signal' : 'Povratak na 15+ signal istaknutih aplikacija';
+            $description = trim(($user->name ?? ('Korisnik #' . $user_id)) . ' se vratio na ' . ($tier === 'top' ? '50+' : '15+') . ' javni signal u zadnjih 30 dana (' . nr($public_signal_30d) . '). Novi mail nije poslan. '
+                . 'Istaknute aplikacije: ' . ($featured_ready ? 'spremno' : 'nije spremno') . ' · Preporučeni sponzor: ' . ($sponsor_ready ? 'spremno' : 'nije spremno') . ' · AI profil: ' . ($profile_complete ? 'spreman' : 'nedovršen') . ' · Prodajni link: ' . ($sales_link_ready ? 'aktivan' : 'nedostaje'));
+        }
+
+        fcc_ai_push_internal_notification(
+            null,
+            'admin',
+            $title,
+            $description,
+            $los_url,
+            'fas fa-bell'
+        );
+    }
+
     private function fcc_public_signal_notifications() {
         $users = db()
             ->where('status', 1)
@@ -910,12 +944,16 @@ class Cron extends Controller {
             $has_growth_pro = !empty($visibility['has_growth_pro']);
             $profile_complete = !empty($visibility['generated_profile_complete']);
             $sales_link_ready = !empty($visibility['sales_link_ready']);
+            $qualified_already_handled = !empty($state['qualified_unlock_sent_at']) || !empty($state['top_unlock_sent_at']);
+            $top_already_handled = !empty($state['top_unlock_sent_at']);
 
             if(!$has_growth_pro) {
                 $state['qualified_unlock_sent_at'] = '';
                 $state['qualified_reminder_sent_at'] = '';
                 $state['top_unlock_sent_at'] = '';
                 $state['top_reminder_sent_at'] = '';
+                $state['qualified_reentry_admin_notified_at'] = '';
+                $state['top_reentry_admin_notified_at'] = '';
                 $state['last_public_signal_30d'] = $public_signal_30d;
                 $state['last_public_signal_7d'] = $public_signal_7d;
                 $state['last_evaluated_at'] = get_date();
@@ -925,16 +963,27 @@ class Cron extends Controller {
 
             $crossed_top = $public_signal_30d >= $top_target
                 && $last_public_signal_30d < $top_target
-                && empty($state['top_unlock_sent_at']);
-            $crossed_qualified = !$crossed_top
+                && !$top_already_handled;
+            $reentered_top = $public_signal_30d >= $top_target
+                && $last_public_signal_30d < $top_target
+                && $top_already_handled;
+            $crossed_qualified = !$crossed_top && !$reentered_top
                 && $public_signal_30d >= $qualified_target
                 && $last_public_signal_30d < $qualified_target
-                && empty($state['qualified_unlock_sent_at']);
+                && !$qualified_already_handled;
+            $reentered_qualified = !$crossed_top && !$reentered_top
+                && $public_signal_30d >= $qualified_target
+                && $last_public_signal_30d < $qualified_target
+                && $qualified_already_handled;
 
             if($crossed_qualified) {
                 $this->dispatch_fcc_public_signal_message($user, $visibility, 'qualified_unlocked');
                 $state['qualified_unlock_sent_at'] = get_date();
                 $state['qualified_reminder_sent_at'] = '';
+                $state['qualified_reentry_admin_notified_at'] = '';
+            } elseif($reentered_qualified) {
+                $this->dispatch_fcc_public_signal_admin_reentry_notification($user, $visibility, 'qualified');
+                $state['qualified_reentry_admin_notified_at'] = get_date();
             } elseif(
                 $public_signal_30d >= $qualified_target
                 && $public_signal_30d < $top_target
@@ -951,6 +1000,10 @@ class Cron extends Controller {
                 $this->dispatch_fcc_public_signal_message($user, $visibility, 'top_unlocked');
                 $state['top_unlock_sent_at'] = get_date();
                 $state['top_reminder_sent_at'] = '';
+                $state['top_reentry_admin_notified_at'] = '';
+            } elseif($reentered_top) {
+                $this->dispatch_fcc_public_signal_admin_reentry_notification($user, $visibility, 'top');
+                $state['top_reentry_admin_notified_at'] = get_date();
             } elseif(
                 $public_signal_30d >= $top_target
                 && (!$profile_complete || !$sales_link_ready)

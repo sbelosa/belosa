@@ -378,6 +378,8 @@ function fcc_featured_get_public_signal_notification_state($preferences): array 
         'qualified_reminder_sent_at' => '',
         'top_unlock_sent_at' => '',
         'top_reminder_sent_at' => '',
+        'qualified_reentry_admin_notified_at' => '',
+        'top_reentry_admin_notified_at' => '',
         'last_evaluated_at' => '',
     ], $state);
 }
