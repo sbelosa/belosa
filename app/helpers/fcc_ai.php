@@ -916,7 +916,7 @@ function fcc_ai_get_user_plan_settings($user): \stdClass {
     if(is_numeric($user)) {
         $user_id = (int) $user;
         $user = $user_id > 0
-            ? db()->where('user_id', $user_id)->getOne('users', ['user_id', 'plan_settings'])
+            ? db()->where('user_id', $user_id)->getOne('users', ['user_id', 'plan_id', 'plan_settings'])
             : null;
     }
 
@@ -924,7 +924,36 @@ function fcc_ai_get_user_plan_settings($user): \stdClass {
         return (object) [];
     }
 
-    return fcc_ai_to_object($user->plan_settings ?? null);
+    $current_plan_settings = fcc_ai_to_object($user->plan_settings ?? null);
+    $resolved_plan_settings = null;
+    $plan_id = (string) ($user->plan_id ?? '');
+
+    if($plan_id === 'free') {
+        $resolved_plan_settings = fcc_ai_to_object(settings()->plan_free->settings ?? null);
+    } elseif($plan_id === 'custom') {
+        $resolved_plan_settings = fcc_ai_to_object(settings()->plan_custom->settings ?? null);
+    } elseif(is_numeric($plan_id) && (int) $plan_id > 0) {
+        $plan_row = db()->where('plan_id', (int) $plan_id)->getOne('plans', ['plan_id', 'settings']);
+
+        if($plan_row && isset($plan_row->settings)) {
+            $resolved_plan_settings = fcc_ai_to_object($plan_row->settings ?? null);
+        }
+    }
+
+    if(!$resolved_plan_settings instanceof \stdClass || empty((array) $resolved_plan_settings)) {
+        return $current_plan_settings;
+    }
+
+    $user_id = (int) ($user->user_id ?? 0);
+    if($user_id > 0 && json_encode($current_plan_settings) !== json_encode($resolved_plan_settings)) {
+        db()->where('user_id', $user_id)->update('users', [
+            'plan_settings' => json_encode($resolved_plan_settings),
+        ]);
+
+        cache()->deleteItemsByTag('user_id=' . $user_id);
+    }
+
+    return $resolved_plan_settings;
 }
 
 function fcc_ai_user_has_public_ai_access($user): bool {
