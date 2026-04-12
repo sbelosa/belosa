@@ -9245,7 +9245,7 @@ function fcc_ai_build_user_recent_alerts(array $recent_negative_feedback, array 
     return array_slice($alerts, 0, $limit);
 }
 
-function fcc_ai_get_topic_trend_rows(string $period_start_datetime, array $allowed_user_ids = [], int $limit = 6): array {
+function fcc_ai_get_topic_trend_rows(string $period_start_datetime, array $allowed_user_ids = [], int $limit = 6, bool $exclude_coach = false): array {
     if(!fcc_ai_tables_ready()) {
         return [];
     }
@@ -9259,6 +9259,7 @@ function fcc_ai_get_topic_trend_rows(string $period_start_datetime, array $allow
     })));
     $user_sql = $allowed_user_ids ? implode(',', $allowed_user_ids) : '';
     $user_filter = $user_sql !== '' ? " AND `user_id` IN ({$user_sql})" : '';
+    $coach_filter = $exclude_coach ? " AND COALESCE(`assistant_type`, '') != 'coach' AND COALESCE(`scope`, '') != 'internal_coach'" : '';
     $limit = max(1, min(12, $limit));
 
     $current_topics = [];
@@ -9267,7 +9268,7 @@ function fcc_ai_get_topic_trend_rows(string $period_start_datetime, array $allow
             `primary_topic_label`,
             COUNT(*) AS `total`
         FROM `fcc_ai_conversation_insights`
-        WHERE COALESCE(`last_datetime`, `datetime`) >= '{$current_start_sql}'{$user_filter}
+        WHERE COALESCE(`last_datetime`, `datetime`) >= '{$current_start_sql}'{$user_filter}{$coach_filter}
           AND `primary_topic` IS NOT NULL
           AND `primary_topic` != ''
         GROUP BY `primary_topic`, `primary_topic_label`");
@@ -9294,7 +9295,7 @@ function fcc_ai_get_topic_trend_rows(string $period_start_datetime, array $allow
             COUNT(*) AS `total`
         FROM `fcc_ai_conversation_insights`
         WHERE COALESCE(`last_datetime`, `datetime`) >= '{$previous_start_sql}'
-          AND COALESCE(`last_datetime`, `datetime`) < '{$previous_end_sql}'{$user_filter}
+          AND COALESCE(`last_datetime`, `datetime`) < '{$previous_end_sql}'{$user_filter}{$coach_filter}
           AND `primary_topic` IS NOT NULL
           AND `primary_topic` != ''
         GROUP BY `primary_topic`");
@@ -10191,6 +10192,8 @@ function fcc_ai_get_user_dashboard_payload(int $user_id, string $period_start_da
             COUNT(*) AS `total`
         FROM `fcc_ai_conversation_insights`
         WHERE `user_id` = {$user_id}
+          AND COALESCE(`assistant_type`, '') != 'coach'
+          AND COALESCE(`scope`, '') != 'internal_coach'
           AND COALESCE(`last_datetime`, `datetime`) >= '{$period_start_sql}'
           AND `primary_topic` IS NOT NULL
           AND `primary_topic` != ''
@@ -10326,7 +10329,7 @@ function fcc_ai_get_user_dashboard_payload(int $user_id, string $period_start_da
         ];
     }
 
-    $payload['rising_topics'] = fcc_ai_get_topic_trend_rows($period_start_datetime, [$user_id], $limit);
+    $payload['rising_topics'] = fcc_ai_get_topic_trend_rows($period_start_datetime, [$user_id], $limit, true);
     $payload['recent_alerts'] = fcc_ai_build_user_recent_alerts(
         $payload['recent_negative_feedback'],
         fcc_ai_get_recent_user_alerts($user_id, 4, true),
