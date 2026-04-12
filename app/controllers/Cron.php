@@ -91,6 +91,10 @@ class Cron extends Controller {
         $this->email_automations_send();
         /* /Custom code: FC-2026-03-18 */
 
+        /* Custom code: FC-2026-04-12: FCC public signal notifications */
+        $this->fcc_public_signal_notifications();
+        /* /Custom code: FC-2026-04-12 */
+
         /* Custom code: FC-2026-03-17: billing risk grace period escalation and revoke */
         $this->billing_risk_monitor();
         /* /Custom code: FC-2026-03-17 */
@@ -847,6 +851,125 @@ class Cron extends Controller {
         }
     }
     /* /Custom code: FC-2026-03-18 */
+
+    /* Custom code: FC-2026-04-12: public FCC signal email + notification automation */
+    private function is_datetime_older_than(?string $datetime, int $hours): bool {
+        $datetime = trim((string) ($datetime ?? ''));
+
+        if($datetime === '') {
+            return false;
+        }
+
+        try {
+            $threshold = (new \DateTimeImmutable($datetime))->modify('+' . max(1, $hours) . ' hours');
+            return $threshold <= new \DateTimeImmutable();
+        } catch(\Throwable $exception) {
+            return false;
+        }
+    }
+
+    private function dispatch_fcc_public_signal_message(object $user, array $visibility, string $event_key): void {
+        if(empty($user->email) || !filter_var($user->email, FILTER_VALIDATE_EMAIL)) {
+            return;
+        }
+
+        $language = fcc_ai_resolve_public_reply_language((string) ($user->language ?? 'hr'));
+        $message = fcc_featured_build_signal_email_message($event_key, $visibility, $language);
+
+        send_mail($user->email, $message['subject'], $message['body'], [
+            'anti_phishing_code' => $user->anti_phishing_code ?? null,
+            'language' => $language,
+            'return_transport_result' => true,
+        ]);
+
+        fcc_ai_push_internal_notification(
+            (int) ($user->user_id ?? 0),
+            'user',
+            (string) ($message['notification_title'] ?? ''),
+            (string) ($message['notification_description'] ?? ''),
+            (string) ($message['notification_url'] ?? ''),
+            'fas fa-bullhorn'
+        );
+    }
+
+    private function fcc_public_signal_notifications() {
+        $users = db()
+            ->where('status', 1)
+            ->where('email', '', '!=')
+            ->get('users', 500, ['user_id', 'name', 'email', 'language', 'anti_phishing_code', 'preferences', 'plan_id', 'plan_settings', 'plan_expiration_date']) ?? [];
+
+        foreach($users as $user) {
+            $preferences = fcc_ai_normalize_user_preferences($user->preferences ?? null);
+            $state = fcc_featured_get_public_signal_notification_state($preferences);
+            $visibility = fcc_featured_get_user_public_profile_state($user, (string) ($user->language ?? 'hr'));
+            $public_signal_30d = max(0, (int) ($visibility['public_signal_30d'] ?? 0));
+            $public_signal_7d = max(0, (int) ($visibility['public_signal_7d'] ?? 0));
+            $qualified_target = max(15, (int) ($visibility['qualified_target'] ?? 15));
+            $top_target = max($qualified_target, (int) ($visibility['top_target'] ?? 50));
+            $last_public_signal_30d = max(0, (int) ($state['last_public_signal_30d'] ?? 0));
+            $has_growth_pro = !empty($visibility['has_growth_pro']);
+            $profile_complete = !empty($visibility['generated_profile_complete']);
+            $sales_link_ready = !empty($visibility['sales_link_ready']);
+
+            if(!$has_growth_pro) {
+                $state['qualified_unlock_sent_at'] = '';
+                $state['qualified_reminder_sent_at'] = '';
+                $state['top_unlock_sent_at'] = '';
+                $state['top_reminder_sent_at'] = '';
+                $state['last_public_signal_30d'] = $public_signal_30d;
+                $state['last_public_signal_7d'] = $public_signal_7d;
+                $state['last_evaluated_at'] = get_date();
+                fcc_featured_save_public_signal_notification_state((int) $user->user_id, $preferences, $state);
+                continue;
+            }
+
+            $crossed_top = $public_signal_30d >= $top_target
+                && $last_public_signal_30d < $top_target
+                && empty($state['top_unlock_sent_at']);
+            $crossed_qualified = !$crossed_top
+                && $public_signal_30d >= $qualified_target
+                && $last_public_signal_30d < $qualified_target
+                && empty($state['qualified_unlock_sent_at']);
+
+            if($crossed_qualified) {
+                $this->dispatch_fcc_public_signal_message($user, $visibility, 'qualified_unlocked');
+                $state['qualified_unlock_sent_at'] = get_date();
+                $state['qualified_reminder_sent_at'] = '';
+            } elseif(
+                $public_signal_30d >= $qualified_target
+                && $public_signal_30d < $top_target
+                && !$profile_complete
+                && !empty($state['qualified_unlock_sent_at'])
+                && empty($state['qualified_reminder_sent_at'])
+                && $this->is_datetime_older_than((string) $state['qualified_unlock_sent_at'], 72)
+            ) {
+                $this->dispatch_fcc_public_signal_message($user, $visibility, 'qualified_reminder');
+                $state['qualified_reminder_sent_at'] = get_date();
+            }
+
+            if($crossed_top) {
+                $this->dispatch_fcc_public_signal_message($user, $visibility, 'top_unlocked');
+                $state['top_unlock_sent_at'] = get_date();
+                $state['top_reminder_sent_at'] = '';
+            } elseif(
+                $public_signal_30d >= $top_target
+                && (!$profile_complete || !$sales_link_ready)
+                && !empty($state['top_unlock_sent_at'])
+                && empty($state['top_reminder_sent_at'])
+                && $this->is_datetime_older_than((string) $state['top_unlock_sent_at'], 72)
+            ) {
+                $this->dispatch_fcc_public_signal_message($user, $visibility, 'top_reminder');
+                $state['top_reminder_sent_at'] = get_date();
+            }
+
+            $state['last_public_signal_30d'] = $public_signal_30d;
+            $state['last_public_signal_7d'] = $public_signal_7d;
+            $state['last_evaluated_at'] = get_date();
+
+            fcc_featured_save_public_signal_notification_state((int) $user->user_id, $preferences, $state);
+        }
+    }
+    /* /Custom code: FC-2026-04-12 */
 
     private function users_plan_expiry_reminder() {
         if(!settings()->payment->user_plan_expiry_reminder) {
