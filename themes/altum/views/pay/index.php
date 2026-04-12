@@ -71,11 +71,8 @@ $pay_plan_has_feature = static function($plan_settings, string $feature_key): bo
 
     return match($feature_key) {
         'ai_growth_plan_is_enabled' => !empty($plan_settings->ai_growth_plan_is_enabled),
+        'fcc_ai_is_enabled' => !empty($plan_settings->fcc_ai_is_enabled),
         'lead_funnel' => !empty($enabled_biolink_blocks['lead_funnel']),
-        'funnels_analytics_is_enabled' => !empty($plan_settings->funnels_analytics_is_enabled) && !empty($enabled_biolink_blocks['lead_funnel']),
-        'link_discount' => !empty($enabled_biolink_blocks['link_discount']),
-        'link_forever_product' => !empty($enabled_biolink_blocks['link_forever_product']),
-        'link_save_contact' => !empty($enabled_biolink_blocks['link_save_contact']),
         'custom_html_whatsapp' => !empty($enabled_biolink_blocks['custom_html_whatsapp']),
         default => false,
     };
@@ -83,11 +80,8 @@ $pay_plan_has_feature = static function($plan_settings, string $feature_key): bo
 
 $pay_feature_labels = [
     'ai_growth_plan_is_enabled' => l('global.plan_settings.ai_growth_plan_is_enabled'),
+    'fcc_ai_is_enabled' => l('global.plan_settings.fcc_ai_is_enabled'),
     'lead_funnel' => l('plan_features.forever.label.lead_funnel'),
-    'funnels_analytics_is_enabled' => l('plan_features.forever.label.funnels_analytics_is_enabled'),
-    'link_discount' => l('plan_features.forever.label.link_discount'),
-    'link_forever_product' => l('plan_features.forever.label.link_forever_product'),
-    'link_save_contact' => l('plan_features.forever.label.link_save_contact'),
     'custom_html_whatsapp' => l('plan_features.forever.label.custom_html_whatsapp'),
 ];
 

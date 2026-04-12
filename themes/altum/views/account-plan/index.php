@@ -104,6 +104,8 @@ $plan_has_feature = static function($plan_settings, string $feature_key): bool {
 
     return match($feature_key) {
         'ai_growth_plan_is_enabled' => !empty($plan_settings->ai_growth_plan_is_enabled),
+        'fcc_ai_is_enabled' => !empty($plan_settings->fcc_ai_is_enabled),
+        'fcc_coach_is_enabled' => !empty($plan_settings->fcc_coach_is_enabled),
         'lead_funnel' => !empty($enabled_biolink_blocks['lead_funnel']),
         'link_forever_shop' => !empty($enabled_biolink_blocks['link_forever_shop']),
         'link_forever_product' => !empty($enabled_biolink_blocks['link_forever_product']),
@@ -117,19 +119,27 @@ $plan_has_feature = static function($plan_settings, string $feature_key): bool {
 
 $premium_feature_labels = [
     'ai_growth_plan_is_enabled' => l('global.plan_settings.ai_growth_plan_is_enabled'),
+    'fcc_ai_is_enabled' => l('global.plan_settings.fcc_ai_is_enabled'),
+    'fcc_coach_is_enabled' => l('global.plan_settings.fcc_coach_is_enabled'),
     'lead_funnel' => l('plan_features.forever.label.lead_funnel'),
     'funnels_analytics_is_enabled' => l('plan_features.forever.label.funnels_analytics_is_enabled'),
     'link_forever_shop' => l('plan_features.forever.label.link_forever_shop'),
-    'link_forever_product' => l('plan_features.forever.label.link_forever_product'),
     'link_discount' => l('plan_features.forever.label.link_discount'),
     'link_save_contact' => l('plan_features.forever.label.link_save_contact'),
     'custom_html_whatsapp' => l('plan_features.forever.label.custom_html_whatsapp'),
 ];
 
-$get_plan_highlights = static function($plan_settings) use ($premium_feature_labels, $plan_has_feature, $get_limit_label): array {
+$premium_highlight_feature_labels = [
+    'ai_growth_plan_is_enabled' => l('global.plan_settings.ai_growth_plan_is_enabled'),
+    'lead_funnel' => l('plan_features.forever.label.lead_funnel'),
+    'fcc_ai_is_enabled' => l('global.plan_settings.fcc_ai_is_enabled'),
+    'custom_html_whatsapp' => l('plan_features.forever.label.custom_html_whatsapp'),
+];
+
+$get_plan_highlights = static function($plan_settings) use ($premium_highlight_feature_labels, $plan_has_feature, $get_limit_label): array {
     $highlights = [];
 
-    foreach($premium_feature_labels as $feature_key => $feature_label) {
+    foreach($premium_highlight_feature_labels as $feature_key => $feature_label) {
         if($plan_has_feature($plan_settings, $feature_key)) {
             $highlights[] = $feature_label;
         }
@@ -146,10 +156,10 @@ $get_plan_highlights = static function($plan_settings) use ($premium_feature_lab
     return array_slice(array_values(array_unique($highlights)), 0, 6);
 };
 
-$get_unlocks = static function($current_settings, $target_settings) use ($premium_feature_labels, $plan_has_feature, $get_limit_label): array {
+$get_unlocks = static function($current_settings, $target_settings) use ($premium_highlight_feature_labels, $plan_has_feature, $get_limit_label): array {
     $unlocks = [];
 
-    foreach($premium_feature_labels as $feature_key => $feature_label) {
+    foreach($premium_highlight_feature_labels as $feature_key => $feature_label) {
         if(!$plan_has_feature($current_settings, $feature_key) && $plan_has_feature($target_settings, $feature_key)) {
             $unlocks[] = $feature_label;
         }
@@ -253,6 +263,18 @@ if($suggested_plan) {
             'type' => 'boolean',
             'current' => $plan_has_feature($current_plan_settings, 'ai_growth_plan_is_enabled'),
             'suggested' => $plan_has_feature($suggested_plan_settings, 'ai_growth_plan_is_enabled'),
+        ],
+        [
+            'label' => l('global.plan_settings.fcc_ai_is_enabled'),
+            'type' => 'boolean',
+            'current' => $plan_has_feature($current_plan_settings, 'fcc_ai_is_enabled'),
+            'suggested' => $plan_has_feature($suggested_plan_settings, 'fcc_ai_is_enabled'),
+        ],
+        [
+            'label' => l('global.plan_settings.fcc_coach_is_enabled'),
+            'type' => 'boolean',
+            'current' => $plan_has_feature($current_plan_settings, 'fcc_coach_is_enabled'),
+            'suggested' => $plan_has_feature($suggested_plan_settings, 'fcc_coach_is_enabled'),
         ],
         [
             'label' => l('plan_features.forever.label.lead_funnel'),

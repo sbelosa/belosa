@@ -37,6 +37,8 @@ $forever_plan_feature_keys = [
     'enabled_biolink_block__link_back',
     'funnels_analytics_is_enabled',
     'ai_growth_plan_is_enabled',
+    'fcc_ai_is_enabled',
+    'fcc_coach_is_enabled',
 ];
 
 $forever_plan_feature_labels = [
@@ -53,6 +55,8 @@ $forever_plan_feature_labels = [
     'enabled_biolink_block__link_back' => l('plan_features.forever.label.link_back'),
     'funnels_analytics_is_enabled' => l('plan_features.forever.label.funnels_analytics_is_enabled'),
     'ai_growth_plan_is_enabled' => l('plan_features.forever.label.ai_growth_plan_is_enabled'),
+    'fcc_ai_is_enabled' => l('plan_features.forever.label.fcc_ai_is_enabled'),
+    'fcc_coach_is_enabled' => l('plan_features.forever.label.fcc_coach_is_enabled'),
 ];
 
 $forever_plan_feature_help = [
@@ -69,6 +73,8 @@ $forever_plan_feature_help = [
     'enabled_biolink_block__link_back' => l('plan_features.forever.help.link_back'),
     'funnels_analytics_is_enabled' => l('plan_features.forever.help.funnels_analytics_is_enabled'),
     'ai_growth_plan_is_enabled' => l('plan_features.forever.help.ai_growth_plan_is_enabled'),
+    'fcc_ai_is_enabled' => l('plan_features.forever.help.fcc_ai_is_enabled'),
+    'fcc_coach_is_enabled' => l('plan_features.forever.help.fcc_coach_is_enabled'),
 ];
 
 $has_rendered_forever_plan_feature_group = false;
@@ -163,6 +169,32 @@ $has_rendered_forever_plan_feature_group = false;
                 <i class="fas fa-fw fa-sm mr-3 <?= $has_ai_growth_plan_access ? 'fa-check-circle text-success' : 'fa-times-circle text-muted' ?>"></i>
                 <div class="<?= $has_ai_growth_plan_access ? null : 'text-muted' ?>">
                     <?= $forever_plan_feature_labels[$feature] ?? l('global.plan_settings.ai_growth_plan_is_enabled') ?>
+                    <?php if(!empty($forever_plan_feature_help[$feature])): ?>
+                        <span class="ml-1" data-toggle="tooltip" title="<?= $forever_plan_feature_help[$feature] ?>"><i class="fas fa-fw fa-xs fa-circle-question text-gray-500"></i></span>
+                    <?php endif ?>
+                </div>
+            </li>
+        <?php endif ?>
+
+        <?php if($is_enabled && $feature == 'fcc_ai_is_enabled'): ?>
+            <?php $has_fcc_ai_access = !empty($data->plan_settings->fcc_ai_is_enabled); ?>
+            <li class="d-flex align-items-baseline mb-2">
+                <i class="fas fa-fw fa-sm mr-3 <?= $has_fcc_ai_access ? 'fa-check-circle text-success' : 'fa-times-circle text-muted' ?>"></i>
+                <div class="<?= $has_fcc_ai_access ? null : 'text-muted' ?>">
+                    <?= $forever_plan_feature_labels[$feature] ?? l('global.plan_settings.fcc_ai_is_enabled') ?>
+                    <?php if(!empty($forever_plan_feature_help[$feature])): ?>
+                        <span class="ml-1" data-toggle="tooltip" title="<?= $forever_plan_feature_help[$feature] ?>"><i class="fas fa-fw fa-xs fa-circle-question text-gray-500"></i></span>
+                    <?php endif ?>
+                </div>
+            </li>
+        <?php endif ?>
+
+        <?php if($is_enabled && $feature == 'fcc_coach_is_enabled'): ?>
+            <?php $has_fcc_coach_access = !empty($data->plan_settings->fcc_coach_is_enabled); ?>
+            <li class="d-flex align-items-baseline mb-2">
+                <i class="fas fa-fw fa-sm mr-3 <?= $has_fcc_coach_access ? 'fa-check-circle text-success' : 'fa-times-circle text-muted' ?>"></i>
+                <div class="<?= $has_fcc_coach_access ? null : 'text-muted' ?>">
+                    <?= $forever_plan_feature_labels[$feature] ?? l('global.plan_settings.fcc_coach_is_enabled') ?>
                     <?php if(!empty($forever_plan_feature_help[$feature])): ?>
                         <span class="ml-1" data-toggle="tooltip" title="<?= $forever_plan_feature_help[$feature] ?>"><i class="fas fa-fw fa-xs fa-circle-question text-gray-500"></i></span>
                     <?php endif ?>
