@@ -5308,6 +5308,14 @@ function fcc_ai_get_public_query_alias_phrases(string $message): array {
         $aliases[] = 'forever aloe vera gel';
     }
 
+    if(fcc_ai_contains_keywords($message, ['aloe lips', 'forever aloe lips', 'balzam za usne'])) {
+        $aliases[] = 'forever aloe lips';
+    }
+
+    if(fcc_ai_contains_keywords($message, ['liquid soap', 'aloe liquid soap', 'tekući sapun', 'tekuci sapun', 'sapun za ruke i tijelo'])) {
+        $aliases[] = 'forever aloe liquid soap';
+    }
+
     if(fcc_ai_contains_keywords($message, ['aloe mango', 'mango napitak', 'napitak aloe mango', '8364'])) {
         $aliases[] = 'forever aloe mango';
     }
@@ -5734,6 +5742,8 @@ function fcc_ai_get_public_direct_product_lookup_matches(string $message): array
         'bright' => ['aloe pasta', 'forever bright', 'toothpaste', 'pasta za zube na bazi aloe', 'pastu za zube', 'zubna pasta'],
         'aloe_first' => ['aloe first'],
         'aloe_gel' => ['aloe vera gel', 'aloe vero gel', 'kako piti aloju', 'aloe vera sirup', 'aloe sirup'],
+        'aloe_lips' => ['aloe lips', 'forever aloe lips', 'balzam za usne'],
+        'liquid_soap' => ['liquid soap', 'aloe liquid soap', 'tekući sapun', 'tekuci sapun', 'sapun za ruke i tijelo'],
         'aloe_mango' => ['aloe mango', 'forever aloe mango', 'mango napitak', 'napitak aloe mango', '8364'],
         'aloeturm' => ['aloeturm', 'aloe turm', 'forever aloeturm', 'aloe therm'],
         'aloe_gelly' => ['aloe gelly'],
@@ -5784,6 +5794,8 @@ function fcc_ai_get_public_direct_product_lookup_titles(): array {
         'bright' => 'Forever Bright® Toothgel',
         'aloe_first' => 'Forever Aloe First Spray',
         'aloe_gel' => 'Forever Aloe Vera Gel™',
+        'aloe_lips' => 'Forever Aloe Lips',
+        'liquid_soap' => 'Forever Aloe Liquid Soap',
         'aloe_mango' => 'Forever Aloe Mango™',
         'aloeturm' => 'Forever AloeTurm',
         'aloe_gelly' => 'Forever Aloe Vera Gelly',
@@ -5796,7 +5808,7 @@ function fcc_ai_get_public_direct_product_lookup_titles(): array {
         'f15' => 'Forever F15',
         'omega' => 'Forever Arctic Sea',
         'dx4' => 'Forever DX4',
-        'nectar' => 'Forever Aloe Berry Nectar',
+        'nectar' => 'Forever Aloe Berry Nectar®',
         'q10' => 'Forever Nutra Q10',
         'proargi' => 'Forever ARGI+',
         'garlic' => 'Forever Garlic-Thyme',
@@ -6298,6 +6310,66 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
             ],
             'suppress_generic_questions' => true,
         ],
+        'urinary_tract_support' => [
+            'patterns' => ['urinarni trakt', 'urinarnog trakta', 'urinarni sustav', 'mokraćni trakt', 'mokracni trakt', 'mokraćnog trakta', 'mokracnog trakta', 'mokraćni sustav', 'mokracni sustav', 'upala mokraćnih puteva', 'upala mokracnih puteva', 'upala mjehura', 'cistitis', 'urinarni problemi', 'mokraćni problemi', 'mokracni problemi'],
+            'preferred_patterns' => ['berry nectar', 'aloe berry nectar', 'berry', 'blossom herbal tea', 'herbal tea', 'tea'],
+            'primary_product' => 'Forever Aloe Berry Nectar®',
+            'support_products' => ['Aloe Blossom Herbal Tea'],
+            'label' => [
+                'hr' => 'urinarni trakt i dnevna aloe rutina',
+                'en' => 'urinary tract and daily aloe routine',
+            ],
+            'opening_note' => [
+                'hr' => 'Kod urinarnog trakta preporuka treba ostati jasna i jednostavna: aloe berry smjer kao baza iznutra, a čaj kao svakodnevna support rutina uz to.',
+                'en' => 'For urinary-tract questions, the recommendation should stay clear and simple: the aloe berry direction as the inside base, with tea as the everyday support routine on top.',
+            ],
+            'recommendation_lines' => [
+                'hr' => [
+                    'Forever Aloe Berry Nectar® je ovdje glavni Forever smjer jer spaja aloe veru i brusnicu kao najčešći osnovni napitak za svakodnevnu rutinu urinarnog trakta.',
+                    'Aloe Blossom Herbal Tea je logična support opcija uz to kao dodatna dnevna rutina koju možete piti toplu ili kao ledeni čaj.',
+                ],
+                'en' => [
+                    'Forever Aloe Berry Nectar® is the main Forever direction here because it combines aloe vera and cranberry as the most common base drink for an everyday urinary-tract routine.',
+                    'Aloe Blossom Herbal Tea is the logical support option on top as an additional daily routine that can be enjoyed warm or as iced tea.',
+                ],
+            ],
+            'monthly_quantity_note' => [
+                'hr' => 'Ako želite odmah okvir za mjesec dana, ovdje se najčešće gleda 3 x Forever Aloe Berry Nectar® i 1 pakiranje Aloe Blossom Herbal Tea. Ako želite, mogu vam odmah napisati i najjednostavniji dnevni raspored korištenja.',
+                'en' => 'If you want a simple one-month frame right away, this is most often positioned as 3 x Forever Aloe Berry Nectar® and 1 pack of Aloe Blossom Herbal Tea. If you want, I can also write the simplest daily usage rhythm.',
+            ],
+            'suppress_generic_questions' => true,
+            'lock_product_scope' => true,
+        ],
+        'herpes_support' => [
+            'patterns' => ['herpes', 'herpesa', 'herpes na usni', 'herpes na usnama', 'herpes na usnici', 'herpes na ustima', 'herpes usna', 'herpes usne'],
+            'preferred_patterns' => ['aloe lips', 'lips', 'aloe vera gel', 'aloe gel', 'avg'],
+            'primary_product' => 'Forever Aloe Lips',
+            'support_products' => ['Forever Aloe Vera Gel™'],
+            'label' => [
+                'hr' => 'herpes i kombinacija izvana plus iznutra',
+                'en' => 'herpes and a topical-plus-inside combination',
+            ],
+            'opening_note' => [
+                'hr' => 'Kod herpesa preporuka treba biti jasna: Aloe Lips kao glavni smjer izvana, a aloe vera gel kao unutarnja dnevna rutina uz to kada želite podići i širu otpornost organizma.',
+                'en' => 'For herpes-style questions, the recommendation should stay clear: Aloe Lips as the main topical direction, with aloe vera gel as the inside daily routine on top when broader resilience support is also wanted.',
+            ],
+            'recommendation_lines' => [
+                'hr' => [
+                    'Forever Aloe Lips je ovdje glavni Forever smjer jer je to najlogičnija lokalna preporuka za usne i područje herpesa.',
+                    'Forever Aloe Vera Gel™ je dobra dopunska preporuka iznutra kada uz to želite i jednostavniju mjesečnu aloe rutinu za imunitet i opću otpornost organizma.',
+                ],
+                'en' => [
+                    'Forever Aloe Lips is the main Forever direction here because it is the cleanest local recommendation for the lips and herpes-prone area.',
+                    'Forever Aloe Vera Gel™ is a useful inside support option when you also want a simple monthly aloe routine for immunity and broader resilience.',
+                ],
+            ],
+            'monthly_quantity_note' => [
+                'hr' => 'Ako želite odmah okvir za mjesec dana, ovdje se najčešće gleda 3 x Forever Aloe Vera Gel™ za mjesec dana, dok Forever Aloe Lips ostaje lokalna podrška izvana.',
+                'en' => 'If you want a simple one-month frame right away, this is most often positioned as 3 x Forever Aloe Vera Gel™ for the month, while Forever Aloe Lips stays the topical support direction.',
+            ],
+            'suppress_generic_questions' => true,
+            'lock_product_scope' => true,
+        ],
         'oncology_support_routine' => [
             'patterns' => ['onkolo', 'onkološki', 'onkološki bolesnici', 'karcinom', 'karcinoma', 'rak dojke', 'rak', 'kemoterap', 'chemotherapy', 'kemoterapija', 'onkološki bolesnik'],
             'preferred_patterns' => ['aloe vera gel', 'aloe gel', 'lycium plus', 'lycium', 'immublend', 'immunblend', 'active pro b', 'pro b', 'pro-b'],
@@ -6352,6 +6424,36 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
                 ],
             ],
             'suppress_generic_questions' => true,
+        ],
+        'immunity_support_routine' => [
+            'patterns' => ['imunitet', 'slab imunitet', 'pad imuniteta', 'slaba otpornost', 'otpornost organizma', 'otpornost', 'obrana organizma', 'obrambeni sustav', 'slabiji imunitet', 'ceste prehlade', 'česte prehlade', 'cesto bolestan', 'često bolestan'],
+            'preferred_patterns' => ['aloe vera gel', 'aloe mango', 'aloe peaches', 'aloe berry nectar', 'daily', 'immune gummy'],
+            'primary_product' => 'Forever Aloe Vera Gel™',
+            'support_products' => ['Forever Immune Gummy', 'Forever Daily'],
+            'label' => [
+                'hr' => 'imunitet i dnevna nutritivna rutina',
+                'en' => 'immunity and a daily nutrition routine',
+            ],
+            'opening_note' => [
+                'hr' => 'Kod klasičnih pitanja o imunitetu ovdje je najbolje ostati na čistoj kombinaciji: aloe napitak kao baza, a uz to jedan jednostavan support smjer za dnevnu rutinu.',
+                'en' => 'For classic immunity questions, the cleanest route here is to keep a simple combination: an aloe drink as the base, plus one simple support direction for the daily routine.',
+            ],
+            'recommendation_lines' => [
+                'hr' => [
+                    'Forever Aloe Vera Gel™ je ovdje glavni Forever smjer kao osnovni aloe napitak za svakodnevnu rutinu imuniteta, a po želji isti ritam može ići i kroz druge AVG okuse poput manga ili peaches varijante.',
+                    'Forever Immune Gummy ili Forever Daily imaju smisla kao support opcija uz to, ovisno o tome želite li jednostavniji gummy smjer ili klasičan vitaminsko-mineralni dodatak za svaki dan.',
+                ],
+                'en' => [
+                    'Forever Aloe Vera Gel™ is the main Forever direction here as the base aloe drink for an everyday immunity routine, and the same rhythm can also be followed with other AVG flavors such as mango or peaches if preferred.',
+                    'Forever Immune Gummy or Forever Daily make sense as support options on top, depending on whether you want a simpler gummy direction or a classic daily vitamin-and-mineral route.',
+                ],
+            ],
+            'monthly_quantity_note' => [
+                'hr' => 'Ako želite odmah okvir za mjesec dana, ovdje se najčešće kreće s 3 x Forever Aloe Vera Gel™ za mjesec dana, a uz to se bira jedan support smjer: Forever Immune Gummy ili Forever Daily.',
+                'en' => 'If you want a simple one-month frame right away, this is most often started with 3 x Forever Aloe Vera Gel™ for the month, plus one support direction: Forever Immune Gummy or Forever Daily.',
+            ],
+            'suppress_generic_questions' => true,
+            'lock_product_scope' => true,
         ],
         'seasonal_allergy_support' => [
             'patterns' => ['alergij', 'alergija', 'curi nos', 'sinus', 'pelud', 'pollen', 'cvetni prah', 'cvetnim prahom'],
@@ -6511,9 +6613,9 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
         ],
         'psoriasis_support' => [
             'patterns' => ['psorijaza', 'psorijazu', 'psorijaz', 'psoriasis'],
-            'preferred_patterns' => ['aloe vera gel', 'aloe gel', 'arctic sea', 'arctic', 'first spray', 'aloe first', 'aloe propolis creme', 'propolis creme'],
+            'preferred_patterns' => ['aloe vera gel', 'aloe gel', 'arctic sea', 'arctic', 'first spray', 'aloe first', 'liquid soap', 'aloe liquid soap', 'aloe propolis creme', 'propolis creme'],
             'primary_product' => 'Forever Aloe Vera Gel™',
-            'support_products' => ['Forever Arctic Sea', 'Forever Aloe First Spray', 'Aloe Propolis Creme'],
+            'support_products' => ['Forever Arctic Sea', 'Forever Aloe First Spray', 'Forever Aloe Liquid Soap', 'Aloe Propolis Creme'],
             'label' => [
                 'hr' => 'psorijaza i ciljana rutina kože',
                 'en' => 'psoriasis-style skin routine',
@@ -6526,17 +6628,17 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
                 'hr' => [
                     'Forever Aloe Vera Gel™ je ovdje glavni Forever smjer jer se najčešće koristi kao baza iznutra kada želite složiti jednostavniju mjesečnu aloe rutinu.',
                     'Forever Arctic Sea je važna dopunska preporuka uz to jer donosi omega-3 masne kiseline kao dodatnu nutritivnu podršku koži iznutra.',
-                    'Forever Aloe First Spray i Aloe Propolis Creme ovdje imaju smisla kao dodatna njega izvana, tek nakon što unutarnju aloe rutinu postavite kao osnovu.',
+                    'Forever Aloe First Spray, Forever Aloe Liquid Soap i Aloe Propolis Creme ovdje imaju smisla kao dodatna njega izvana, tek nakon što unutarnju aloe rutinu postavite kao osnovu.',
                 ],
                 'en' => [
                     'Forever Aloe Vera Gel™ is the main Forever direction here because it is most often used as the inside base when you want to build a simpler monthly aloe routine.',
                     'Forever Arctic Sea is an important complementary recommendation on top because it brings omega-3 fatty acids as additional nutritional skin support from the inside.',
-                    'Forever Aloe First Spray and Aloe Propolis Creme make sense here as outer-care support only after the inside aloe routine is set as the base.',
+                    'Forever Aloe First Spray, Forever Aloe Liquid Soap and Aloe Propolis Creme make sense here as outer-care support only after the inside aloe routine is set as the base.',
                 ],
             ],
             'monthly_quantity_note' => [
-                'hr' => 'Ako želite odmah okvir za mjesec dana, ovdje se najčešće gleda 3 x Forever Aloe Vera Gel™ i 1 kutija Forever Arctic Sea, a Aloe First Spray i Aloe Propolis Creme ostaju kao vanjska podrška po potrebi.',
-                'en' => 'If you want a simple one-month frame right away, this is most often positioned as 3 x Forever Aloe Vera Gel™ and 1 box of Forever Arctic Sea, while Aloe First Spray and Aloe Propolis Creme stay as external support as needed.',
+                'hr' => 'Ako želite odmah okvir za mjesec dana, ovdje se najčešće gleda 3 x Forever Aloe Vera Gel™ i 1 kutija Forever Arctic Sea, a Aloe First Spray, Forever Aloe Liquid Soap i Aloe Propolis Creme ostaju kao vanjska podrška po potrebi.',
+                'en' => 'If you want a simple one-month frame right away, this is most often positioned as 3 x Forever Aloe Vera Gel™ and 1 box of Forever Arctic Sea, while Aloe First Spray, Forever Aloe Liquid Soap and Aloe Propolis Creme stay as external support as needed.',
             ],
             'suppress_generic_questions' => true,
             'sensitive_support_only' => true,
@@ -6544,9 +6646,9 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
         ],
         'dermatitis_support' => [
             'patterns' => ['dermatitis', 'dermatit', 'atopijski dermatitis', 'atopijsk', 'ekcem', 'eczema'],
-            'preferred_patterns' => ['aloe vera gel', 'aloe gel', 'arctic sea', 'arctic', 'first spray', 'aloe first', 'aloe propolis creme', 'propolis creme'],
+            'preferred_patterns' => ['aloe vera gel', 'aloe gel', 'arctic sea', 'arctic', 'first spray', 'aloe first', 'liquid soap', 'aloe liquid soap', 'aloe propolis creme', 'propolis creme'],
             'primary_product' => 'Forever Aloe Vera Gel™',
-            'support_products' => ['Forever Arctic Sea', 'Forever Aloe First Spray', 'Aloe Propolis Creme'],
+            'support_products' => ['Forever Arctic Sea', 'Forever Aloe First Spray', 'Forever Aloe Liquid Soap', 'Aloe Propolis Creme'],
             'label' => [
                 'hr' => 'dermatitis i rutina kože',
                 'en' => 'dermatitis-style skin routine',
@@ -6559,17 +6661,17 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
                 'hr' => [
                     'Forever Aloe Vera Gel™ je ovdje glavni Forever smjer kao baza iznutra jer se najčešće koristi kada želite jednostavniju aloe rutinu za kožu i probavni balans.',
                     'Forever Arctic Sea je važna dopunska nutritivna podrška uz to kada želite dodatni smjer prema koži iznutra.',
-                    'Forever Aloe First Spray i Aloe Propolis Creme imaju smisla tek kao dodatna njega izvana kada uz unutarnju rutinu želite i nježniju lokalnu podršku koži.',
+                    'Forever Aloe First Spray, Forever Aloe Liquid Soap i Aloe Propolis Creme imaju smisla tek kao dodatna njega izvana kada uz unutarnju rutinu želite i nježniju lokalnu podršku koži.',
                 ],
                 'en' => [
                     'Forever Aloe Vera Gel™ is the main Forever direction here as the inside base because it is often used when you want a simpler aloe routine for skin and digestive balance.',
                     'Forever Arctic Sea is an important complementary nutrition support on top when you want an extra inside-skin direction.',
-                    'Forever Aloe First Spray and Aloe Propolis Creme make sense only as additional outer-care support when you want gentler local skin care alongside the inside routine.',
+                    'Forever Aloe First Spray, Forever Aloe Liquid Soap and Aloe Propolis Creme make sense only as additional outer-care support when you want gentler local skin care alongside the inside routine.',
                 ],
             ],
             'monthly_quantity_note' => [
-                'hr' => 'Ako želite odmah okvir za mjesec dana, ovdje se najčešće gleda 3 x Forever Aloe Vera Gel™ i 1 kutija Forever Arctic Sea, a Aloe First Spray i Aloe Propolis Creme ostaju kao vanjska podrška po potrebi.',
-                'en' => 'If you want a simple one-month frame right away, this is most often positioned as 3 x Forever Aloe Vera Gel™ and 1 box of Forever Arctic Sea, while Aloe First Spray and Aloe Propolis Creme stay as external support as needed.',
+                'hr' => 'Ako želite odmah okvir za mjesec dana, ovdje se najčešće gleda 3 x Forever Aloe Vera Gel™ i 1 kutija Forever Arctic Sea, a Aloe First Spray, Forever Aloe Liquid Soap i Aloe Propolis Creme ostaju kao vanjska podrška po potrebi.',
+                'en' => 'If you want a simple one-month frame right away, this is most often positioned as 3 x Forever Aloe Vera Gel™ and 1 box of Forever Arctic Sea, while Aloe First Spray, Forever Aloe Liquid Soap and Aloe Propolis Creme stay as external support as needed.',
             ],
             'suppress_generic_questions' => true,
             'sensitive_support_only' => true,
@@ -7710,7 +7812,7 @@ function fcc_ai_build_public_recommendation_payload(string $assistant_type, stri
     }
 
     if(!empty($support_products)) {
-        $system_brief_lines[] = 'Support products only if they truly help the routine: ' . implode(' | ', array_slice($support_products, 0, 2)) . '.';
+        $system_brief_lines[] = 'Support products only if they truly help the routine: ' . implode(' | ', array_slice($support_products, 0, 3)) . '.';
     }
 
     if($monthly_quantity_note !== '') {
@@ -7930,10 +8032,10 @@ function fcc_ai_get_public_recommendation_decision_note(string $assistant_type, 
     $support_text = '';
     if(!empty($support_products)) {
         $support_text = $language === 'en'
-            ? ' Keep ' . implode(' + ', array_slice($support_products, 0, 2)) . ' as support only if you want to round out the routine.'
+            ? ' Keep ' . implode(' + ', array_slice($support_products, 0, 3)) . ' as support only if you want to round out the routine.'
             : ($language === 'sl'
-                ? ' ' . implode(' + ', array_slice($support_products, 0, 2)) . ' glejte kot podporo le, če želite zaokrožiti rutino.'
-                : ' ' . implode(' + ', array_slice($support_products, 0, 2)) . ' gledajte kao dopunsku podršku samo ako želite zaokružiti rutinu.');
+                ? ' ' . implode(' + ', array_slice($support_products, 0, 3)) . ' glejte kot podporo le, če želite zaokrožiti rutino.'
+                : ' ' . implode(' + ', array_slice($support_products, 0, 3)) . ' gledajte kao dopunsku podršku samo ako želite zaokružiti rutinu.');
     }
 
     $cta_tail = $has_article_cta
@@ -7959,14 +8061,71 @@ function fcc_ai_get_public_monthly_quantity_offer_note(string $language = 'hr', 
             ? 'If you want, I can also write the simplest monthly quantities and usage rhythm for this exact recommendation.'
             : ($language === 'sl'
                 ? 'Če želite, lahko zapišem tudi najbolj preproste mesečne količine in ritem uporabe za to točno priporočilo.'
-                : 'Ako želite, mogu vam odmah napisati i najjednostavnije mjesečne količine te ritam korištenja baš za ovu preporuku.');
+                : 'Ako želite, mogu vam odmah napisati i najjednostavnije mjesečne količine te ritam korištenja baš za ovu preporuku, kako biste lakše odlučili što uzeti kao prvi korak.');
     }
 
     return $language === 'en'
         ? 'If you want, I can also write the simplest monthly quantities and usage rhythm for these products.'
         : ($language === 'sl'
             ? 'Če želite, lahko zapišem tudi najbolj preproste mesečne količine in ritem uporabe za te izdelke.'
-            : 'Ako želite, mogu vam odmah napisati i najjednostavnije mjesečne količine te ritam korištenja za ove proizvode.');
+            : 'Ako želite, mogu vam odmah napisati i najjednostavnije mjesečne količine te ritam korištenja za ove proizvode, kako biste lakše odlučili što uzeti kao prvi korak.');
+}
+
+function fcc_ai_get_public_product_routine_note_by_titles(array $product_titles, string $language = 'hr'): string {
+    $language = fcc_ai_resolve_public_reply_language($language);
+    $normalized_titles = array_values(array_filter(array_map(static function($title) {
+        return mb_strtolower(trim((string) $title));
+    }, $product_titles)));
+
+    if(empty($normalized_titles)) {
+        return '';
+    }
+
+    $has_aloe_drink = false;
+    $has_tea = false;
+    $has_daily = false;
+
+    foreach($normalized_titles as $title) {
+        if(fcc_ai_contains_keywords($title, ['aloe vera gel', 'aloe mango', 'aloe peaches', 'aloe berry nectar'])) {
+            $has_aloe_drink = true;
+        }
+
+        if(fcc_ai_contains_keywords($title, ['aloe blossom herbal tea'])) {
+            $has_tea = true;
+        }
+
+        if(fcc_ai_contains_keywords($title, ['forever daily'])) {
+            $has_daily = true;
+        }
+    }
+
+    $notes = [];
+
+    if($has_aloe_drink) {
+        $notes[] = $language === 'en'
+            ? 'For aloe drinks, the simplest daily rhythm is usually 0.5 dcl twice per day.'
+            : ($language === 'sl'
+                ? 'Pri aloe napitkih je najpreprostejši dnevni ritem običajno 0,5 dcl dvakrat na dan.'
+                : 'Za aloe napitke najjednostavniji dnevni ritam je najčešće 0,5 dcl 2x dnevno.');
+    }
+
+    if($has_tea) {
+        $notes[] = $language === 'en'
+            ? 'Aloe Blossom Herbal Tea is simplest to prepare as 1 tea bag in 1 to 1.5 liters of water, and it can be enjoyed warm or as iced tea.'
+            : ($language === 'sl'
+                ? 'Aloe Blossom Herbal Tea je najlažje pripraviti z 1 vrečko na 1 do 1,5 litra vode in ga piti toplega ali kot ledeni čaj.'
+                : 'Aloe Blossom Herbal Tea najjednostavnije je kuhati 1 vrećicu na 1-1,5 litara vode i može se piti topao ili kao ledeni čaj.');
+    }
+
+    if($has_daily) {
+        $notes[] = $language === 'en'
+            ? 'Forever Daily is typically used as 1 tablet per day.'
+            : ($language === 'sl'
+                ? 'Forever Daily se najpogosteje uporablja kot 1 tableta na dan.'
+                : 'Forever Daily se najčešće uzima kao 1 tableta dnevno.');
+    }
+
+    return trim(implode(' ', $notes));
 }
 
 function fcc_ai_get_public_sensitive_support_note(array $recommendation_payload, string $language = 'hr', bool $has_article_cta = false): string {
@@ -8111,6 +8270,9 @@ function fcc_ai_get_public_lead_saved_note(string $language = 'hr', string $owne
 function fcc_ai_get_public_product_usage_note(array $knowledge_suggestions, string $language = 'hr'): string {
     $language = fcc_ai_resolve_public_reply_language($language);
     $primary = $knowledge_suggestions[0] ?? [];
+    $product_titles = array_values(array_filter(array_map(static function($suggestion) {
+        return trim((string) ($suggestion['title'] ?? ''));
+    }, $knowledge_suggestions)));
     $haystack = mb_strtolower(implode(' ', array_filter([
         (string) ($primary['title'] ?? ''),
         (string) ($primary['url'] ?? ''),
@@ -8121,13 +8283,19 @@ function fcc_ai_get_public_product_usage_note(array $knowledge_suggestions, stri
         return '';
     }
 
+    $specific_routine_note = fcc_ai_get_public_product_routine_note_by_titles($product_titles, $language);
+
+    if($specific_routine_note !== '') {
+        return $specific_routine_note;
+    }
+
     if(fcc_ai_contains_keywords($haystack, ['bright', 'toothpaste'])) {
         return $language === 'en'
             ? 'This product is typically used within an everyday oral-care routine, according to the instructions on the packaging.'
             : 'Ovaj proizvod se najčešće koristi u svakodnevnoj oralnoj rutini, prema uputama na pakiranju.';
     }
 
-    if(fcc_ai_contains_keywords($haystack, ['first spray', 'gelly', 'creme', 'cream', 'lotion', 'spray'])) {
+    if(fcc_ai_contains_keywords($haystack, ['first spray', 'gelly', 'creme', 'cream', 'lotion', 'spray', 'liquid soap', 'aloe lips', 'lips'])) {
         return $language === 'en'
             ? 'This product is usually used locally or topically according to the instructions on the packaging.'
             : 'Ovaj proizvod se najčešće koristi lokalno ili površinski, prema uputama na pakiranju.';
@@ -8634,7 +8802,9 @@ function fcc_ai_get_default_public_rules_prompt(string $assistant_type, string $
             'Ask at most two short questions when more context is needed, and avoid asking if the user goal is already clear.',
             'Recommend at most three product/article directions, ideally as one main direction plus one or two support options.',
             'Recommend only Forever products and FCC articles that exist in the available knowledge context. If there is no exact product match, stay with the closest available Forever direction and explain it through ingredients or bioactive compounds without inventing products.',
+            'When the FCC recommendation matrix already maps a clear product stack for the problem, stay inside that exact stack and do not drift into generic fallback products.',
             'Use this structure whenever possible: goal -> ingredient or bioactive angle -> FCC article direction -> next step.',
+            'When monthly quantities or a daily rhythm are already known from the FCC matrix or product routine notes, include them naturally. If not, offer to write them out next.',
             'Prefer the FCC blog article as the main CTA when explanation or combinations matter.',
             'Mention the 15% discount only when relevant to recommendation or purchase flow.',
             'If the user shows collaboration interest, shift into simple business explanation, FCC system value and contact capture.',
@@ -8653,7 +8823,9 @@ function fcc_ai_get_default_public_rules_prompt(string $assistant_type, string $
         'Ako korisnik napiše samo stanje ili simptom poput visokog šećera, tlaka, masne jetre, dermatitisa ili sličnog nejasnog konteksta, postavi kratka podpitanja prije preciznije preporuke.',
         'Ako korisnik napiše samo naziv proizvoda ili ga napiše nejasno, prvo objasni opći smjer proizvoda i po potrebi postavi jedno kratko pitanje što točno želi postići.',
         'Preporučuj samo Forever proizvode i FCC članke koji postoje u dostupnoj bazi. Ako nemaš točan podudaran proizvod, uzmi najbliži postojeći Forever smjer i objasni ga kroz sastojak ili bioaktivnu tvar, bez izmišljanja drugih proizvoda.',
+        'Kada FCC recommendation matrix već ima jasan stack proizvoda za taj problem, ostani unutar tog stacka i nemoj skliznuti na generičke fallback proizvode.',
         'Kad god možeš, koristi ovu strukturu: cilj -> sastojak ili bioaktivna tvar -> FCC članak -> sljedeći korak.',
+        'Kada su mjesečne količine ili dnevni ritam već poznati iz FCC matrice ili product routine note sloja, uključi ih prirodno u odgovor. Ako još nisu jasni, ponudi da ih odmah napišeš kao sljedeći korak.',
         'Kad su važni objašnjenje ili kombinacije, glavni CTA neka bude FCC blog članak.',
         '15% popusta spomeni samo kada je relevantan za preporuku ili kupnju.',
         'Ako korisnik pokaže interes za suradnju, prebaci razgovor na jednostavno objašnjenje poslovne prilike, vrijednosti FCC sustava i kontakt.',
@@ -8694,14 +8866,14 @@ function fcc_ai_get_default_public_response_contract(string $assistant_type, str
             '1. Briefly reflect the visitor goal.',
             '2. Give one main product direction through ingredients or bioactive compounds.',
             '3. Add one or two support options only when they make the recommendation clearer.',
-            '4. Finish with one clear next step: continue on the FCC article, ask a short clarifying question, or leave contact details.',
+            '4. Finish with one clear next step: continue on the FCC article, clarify what to order first, or leave contact details.',
         ])
         : implode("\n", [
             'Poželjni tok odgovora:',
             '1. Kratko prepoznaj cilj posjetitelja.',
             '2. Daj jedan glavni smjer proizvoda kroz sastojke ili bioaktivne tvari.',
             '3. Dodaj jednu ili dvije support opcije samo kada time preporuka postaje jasnija.',
-            '4. Završi jednim jasnim sljedećim korakom: FCC članak, kratko pojašnjenje ili ostavljanje kontakta.',
+            '4. Završi jednim jasnim sljedećim korakom: FCC članak, pojašnjenje što uzeti kao prvi korak ili ostavljanje kontakta.',
         ]);
 }
 
@@ -8753,6 +8925,7 @@ function fcc_ai_get_product_advisor_playbook(string $language = 'hr'): string {
             '5. Mixed intent mode: if the visitor wants both product help and business details, give one short useful product direction, then shift toward contact and personal follow-up.',
             '6. Sensitive population mode: for pregnancy, breastfeeding or children, do not give a direct product recommendation. Stay with general ingredient information and encourage a doctor or pediatrician check first.',
             '7. High-risk medical mode: for diagnoses, chemotherapy and similar contexts, open with calm doctor-first wording, not with refusal-style language, then still name the mapped Forever support products from the FCC matrix as general routine support people often include alongside the medical plan.',
+            '8. Decision mode: when the mapped recommendation is already clear, help the visitor choose what to start with now, mention known monthly quantities if available, and offer to write the simplest usage rhythm next.',
         ])
         : implode("\n", [
             'Operativni playbook za AI savjetnika za proizvode:',
@@ -8763,6 +8936,7 @@ function fcc_ai_get_product_advisor_playbook(string $language = 'hr'): string {
             '5. Miješani interes: ako korisnik želi i preporuku proizvoda i detalje o suradnji, daj jedan kratak koristan smjer proizvoda, pa zatim prebaci razgovor prema kontaktu i osobnom nastavku.',
             '6. Osjetljiva populacija: kod trudnoće, dojenja ili djece nemoj dati izravnu preporuku proizvoda, nego ostani na općoj informaciji o sastavu i uputi na liječnika ili pedijatra.',
             '7. High-risk medicinski kontekst: kod dijagnoza, kemoterapije i sličnih slučajeva prvo napiši mirnu liječnik-prvo napomenu, a ne odbijajući tekst tipa "ne smijem", ali zatim ipak navedi mapped Forever support proizvode iz FCC matrice kao opću nutritivnu ili rutinsku podršku koju korisnici često uključuju uz plan liječnika.',
+            '8. Režim odluke: kada je mapped preporuka već jasna, pomozi posjetitelju odlučiti što uzeti kao prvi korak, spomeni poznate mjesečne količine kad postoje i po potrebi odmah ponudi najjednostavniji dnevni raspored korištenja.',
         ]);
 }
 
@@ -9277,6 +9451,8 @@ function fcc_ai_build_public_system_prompt(string $assistant_type, array $contex
         $sections[] = 'When recommending Forever products, explain the suggestion through the user goal, everyday support, active ingredients or bioactive compounds. You may say that a product contains certain ingredients and why that can make it a reasonable option, but never say it treats or heals a disease.';
         $sections[] = 'For higher-risk medical contexts, start with calm doctor-first wording, not with refusal language. If the mapped FCC recommendation payload includes a support routine, still mention those exact Forever products as cautious support-only directions people often include alongside the medical plan. Do not drop products entirely unless the system gives no mapped product direction at all.';
         $sections[] = 'Limit recommendations to at most three products. If a combination is useful, present it as a combination and suggest the visitor can continue reading on the relevant FCC blog article before choosing products on Forever checkout.';
+        $sections[] = 'When the FCC matrix already maps a clear product stack, stay inside that stack and help the visitor decide on the cleanest first order instead of drifting into generic alternatives.';
+        $sections[] = 'If monthly quantities or usage rhythm are already known from the FCC matrix or product routine notes, include them naturally. If they are not known yet, offer to write them out next.';
         $sections[] = 'If relevant, mention that ordering through the partner recommendation can include a 15% discount.';
         $sections[] = 'If the user shows interest in collaboration, sponsorship or personal follow-up, naturally invite them to leave contact details so the FCC partner can continue personally.';
     }
@@ -10488,11 +10664,15 @@ function fcc_ai_generate_public_reply(string $assistant_type, string $message, a
             ];
         } elseif(!empty($intent['medical_sensitive'])) {
             $has_high_risk_context = fcc_ai_has_high_risk_public_medical_context($message);
-            $content_blocks[] = $language === 'en'
-                ? 'Here it makes sense to stay with general educational guidance. If the situation includes therapy, pregnancy, a diagnosis or stronger symptoms, it is important to align supplements with a doctor as well.'
-                : ($language === 'sl'
-                    ? 'Tukaj je smiselno ostati pri splošnih izobraževalnih usmeritvah. Če gre za terapijo, nosečnost, diagnozo ali močnejše simptome, je pomembno dodatke uskladiti tudi z zdravnikom.'
-                    : 'Ovdje ima smisla ostati u općim edukativnim smjernicama. Ako je riječ o terapiji, trudnoći, dijagnozi ili jačim simptomima, važno je dodatke uskladiti i s liječnikom.');
+            $has_mapped_medical_direction = !empty($recommendation_payload['primary_product']) || !empty($recommendation_payload['recommendation_lines']) || !empty($recommendation_payload['opening_note']);
+
+            if(!$has_mapped_medical_direction) {
+                $content_blocks[] = $language === 'en'
+                    ? 'Here it makes sense to stay with general educational guidance. If the situation includes therapy, pregnancy, a diagnosis or stronger symptoms, it is important to align supplements with a doctor as well.'
+                    : ($language === 'sl'
+                        ? 'Tukaj je smiselno ostati pri splošnih izobraževalnih usmeritvah. Če gre za terapijo, nosečnost, diagnozo ali močnejše simptome, je pomembno dodatke uskladiti tudi z zdravnikom.'
+                        : 'Ovdje ima smisla ostati u općim edukativnim smjernicama. Ako je riječ o terapiji, trudnoći, dijagnozi ili jačim simptomima, važno je dodatke uskladiti i s liječnikom.');
+            }
 
             $specific_product = trim((string) ($knowledge_suggestions[0]['title'] ?? ''));
             $specific_description = '';
@@ -10647,11 +10827,21 @@ function fcc_ai_generate_public_reply(string $assistant_type, string $message, a
 
         if($assistant_type === 'product_advisor' && !empty($recommendation_payload['recommendation_lines']) && empty($recommendation_payload['question_lines'])) {
             $monthly_quantity_note = trim((string) ($recommendation_payload['monthly_quantity_note'] ?? ''));
+            $routine_note = fcc_ai_get_public_product_routine_note_by_titles(array_values(array_filter(array_merge(
+                [trim((string) ($recommendation_payload['primary_product'] ?? ''))],
+                array_values(array_filter(array_map(static function($item) {
+                    return trim((string) $item);
+                }, (array) ($recommendation_payload['support_products'] ?? []))))
+            ))), $language);
 
             if($monthly_quantity_note !== '') {
                 $content_blocks[] = $monthly_quantity_note;
             } elseif(empty($intent['business']) && empty($intent['contact'])) {
                 $content_blocks[] = fcc_ai_get_public_monthly_quantity_offer_note($language, false);
+            }
+
+            if($routine_note !== '' && !$is_direct_product_lookup) {
+                $content_blocks[] = $routine_note;
             }
         }
 
