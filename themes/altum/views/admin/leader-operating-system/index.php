@@ -4481,6 +4481,7 @@ $operations_tab_badge_total = (int) (($data->operations['totals']['pending_appro
 
         <?php if(($data->selected_tab ?? 'overview') === 'ai_intelligence'): ?>
             <?php $fcc_ai_team = $data->overview['fcc_ai_team'] ?? []; ?>
+            <?php $fcc_ai_usage_trend = $fcc_ai_team['usage_trend'] ?? []; ?>
             <?php $fcc_ai_model_routing = $data->fcc_ai_model_routing ?? []; ?>
             <?php
             $ai_intelligence_mentor_rows = array_values(array_filter((array) ($data->overview['queue_rows'] ?? []), static function($row) {
@@ -4542,6 +4543,68 @@ $operations_tab_badge_total = (int) (($data->operations['totals']['pending_appro
                         <strong class="text-white"><?= nr((int) ($fcc_ai_team['totals']['negative_feedback'] ?? 0)) ?></strong>
                         · threadovi za review:
                         <strong class="text-white"><?= nr((int) ($fcc_ai_team['totals']['review_conversations'] ?? 0)) ?></strong>
+                    </div>
+
+                    <div class="leader-os-panel leader-os-trend-panel mt-3" id="leader-os-ai-usage-root">
+                        <div class="text-uppercase small text-muted mb-2">Upotreba chatova</div>
+                        <div class="leader-os-trend-toolbar">
+                            <div>
+                                <h3 class="h5 mb-1">Sva tri AI chata kroz dane</h3>
+                                <div class="text-muted small">Ovdje pratiš koliko se svaki chat stvarno koristi kroz zadnjih 7, 30 ili 90 dana i gdje se usage najviše pojačava.</div>
+                            </div>
+                            <div class="leader-os-trend-periods" id="leader-os-ai-usage-periods">
+                                <button type="button" class="leader-os-trend-period" data-ai-usage-days="7">7</button>
+                                <button type="button" class="leader-os-trend-period is-active" data-ai-usage-days="30">30</button>
+                                <button type="button" class="leader-os-trend-period" data-ai-usage-days="90">90</button>
+                            </div>
+                        </div>
+
+                        <div class="leader-os-trend-legend mb-3">
+                            <span class="leader-os-trend-legend-item">
+                                <span class="leader-os-trend-dot is-registrations"></span>
+                                <?= htmlspecialchars((string) ($fcc_ai_usage_trend['assistant_labels']['product_advisor'] ?? 'AI za ljude'), ENT_QUOTES, 'UTF-8') ?>
+                            </span>
+                            <span class="leader-os-trend-legend-item">
+                                <span class="leader-os-trend-dot is-leads"></span>
+                                <?= htmlspecialchars((string) ($fcc_ai_usage_trend['assistant_labels']['pets_advisor'] ?? 'AI za ljubimce'), ENT_QUOTES, 'UTF-8') ?>
+                            </span>
+                            <span class="leader-os-trend-legend-item">
+                                <span class="leader-os-trend-dot is-blog"></span>
+                                <?= htmlspecialchars((string) ($fcc_ai_usage_trend['assistant_labels']['coach'] ?? 'Coach'), ENT_QUOTES, 'UTF-8') ?>
+                            </span>
+                        </div>
+
+                        <div class="leader-os-trend-summary mb-3">
+                            <div class="leader-os-trend-summary-card">
+                                <div class="leader-os-trend-summary-label"><?= htmlspecialchars((string) ($fcc_ai_usage_trend['assistant_labels']['product_advisor'] ?? 'AI za ljude'), ENT_QUOTES, 'UTF-8') ?></div>
+                                <div class="leader-os-trend-summary-value" data-ai-usage-total="product_advisor">0</div>
+                                <div class="leader-os-trend-summary-note">Javni produktni chat na aplikaciji i blogu.</div>
+                            </div>
+                            <div class="leader-os-trend-summary-card">
+                                <div class="leader-os-trend-summary-label"><?= htmlspecialchars((string) ($fcc_ai_usage_trend['assistant_labels']['pets_advisor'] ?? 'AI za ljubimce'), ENT_QUOTES, 'UTF-8') ?></div>
+                                <div class="leader-os-trend-summary-value" data-ai-usage-total="pets_advisor">0</div>
+                                <div class="leader-os-trend-summary-note">Savjetnik za ljubimce i pet pitanja.</div>
+                            </div>
+                            <div class="leader-os-trend-summary-card">
+                                <div class="leader-os-trend-summary-label"><?= htmlspecialchars((string) ($fcc_ai_usage_trend['assistant_labels']['coach'] ?? 'Coach'), ENT_QUOTES, 'UTF-8') ?></div>
+                                <div class="leader-os-trend-summary-value" data-ai-usage-total="coach">0</div>
+                                <div class="leader-os-trend-summary-note">Interni FCC Coach razgovori suradnika.</div>
+                            </div>
+                            <div class="leader-os-trend-summary-card">
+                                <div class="leader-os-trend-summary-label"><?= htmlspecialchars((string) ($fcc_ai_usage_trend['assistant_labels']['total'] ?? 'Ukupno'), ENT_QUOTES, 'UTF-8') ?></div>
+                                <div class="leader-os-trend-summary-value" data-ai-usage-total="total">0</div>
+                                <div class="leader-os-trend-summary-note">Sva tri AI toka zajedno u odabranom prozoru.</div>
+                            </div>
+                        </div>
+
+                        <div class="leader-os-overview-chart-wrap">
+                            <canvas id="leader-os-ai-usage-chart"></canvas>
+                        </div>
+
+                        <div class="leader-os-trend-footer mt-3">
+                            <div class="leader-os-trend-note" id="leader-os-ai-usage-note">Pregled zadnjih 30 dana korištenja chatova.</div>
+                            <div class="leader-os-trend-note text-right" id="leader-os-ai-usage-range"></div>
+                        </div>
                     </div>
 
                     <div class="leader-os-panel mt-3">
@@ -6595,6 +6658,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const overviewTeamSignalChartPayload = <?= json_encode($leader_os_team_signal_chart, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
     const overviewTeamCountrySignalMatrix = <?= json_encode($leader_os_team_country_matrix_periods, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
     const overviewTeamCountryInitialPeriod = <?= json_encode($leader_os_team_country_initial_period, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
+    const aiUsageTrendPayload = <?= json_encode($data->overview['fcc_ai_team']['usage_trend'] ?? ['rows' => [], 'assistant_labels' => []], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
     const overviewTeamCountryTableBody = document.getElementById('leader-os-overview-country-table-body');
     const overviewTeamCountryTableFoot = document.getElementById('leader-os-overview-country-table-foot');
     const overviewTeamCountryPeriodButtons = Array.from(document.querySelectorAll('[data-overview-country-period]'));
@@ -6759,7 +6823,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     const teamTrendRoot = document.getElementById('leader-os-team-trend-root');
-    const teamTrendPeriods = Array.from(document.querySelectorAll('.leader-os-trend-period'));
+    const teamTrendPeriods = Array.from(document.querySelectorAll('#leader-os-team-trend-periods .leader-os-trend-period'));
     const teamTrendSummaryCards = Array.from(document.querySelectorAll('[data-trend-summary-card]'));
     const teamTrendInsightCards = Array.from(document.querySelectorAll('[data-trend-insight-card]'));
     const teamTrendNote = document.getElementById('leader-os-team-trend-note');
@@ -7012,6 +7076,151 @@ document.addEventListener('DOMContentLoaded', function () {
                 teamTrendPeriods.forEach((item) => item.classList.remove('is-active'));
                 this.classList.add('is-active');
                 renderTeamTrendPanel(days);
+            });
+        });
+    }
+
+    const aiUsageRoot = document.getElementById('leader-os-ai-usage-root');
+    const aiUsageChartCanvas = document.getElementById('leader-os-ai-usage-chart');
+    const aiUsagePeriodButtons = Array.from(document.querySelectorAll('#leader-os-ai-usage-periods [data-ai-usage-days]'));
+    const aiUsageRows = Array.isArray(aiUsageTrendPayload.rows) ? aiUsageTrendPayload.rows : [];
+    const aiUsageLabels = aiUsageTrendPayload.assistant_labels && typeof aiUsageTrendPayload.assistant_labels === 'object'
+        ? aiUsageTrendPayload.assistant_labels
+        : {};
+    const aiUsageTotalNodes = {
+        product_advisor: document.querySelector('[data-ai-usage-total="product_advisor"]'),
+        pets_advisor: document.querySelector('[data-ai-usage-total="pets_advisor"]'),
+        coach: document.querySelector('[data-ai-usage-total="coach"]'),
+        total: document.querySelector('[data-ai-usage-total="total"]')
+    };
+    const aiUsageNote = document.getElementById('leader-os-ai-usage-note');
+    const aiUsageRange = document.getElementById('leader-os-ai-usage-range');
+    let aiUsageChartInstance = null;
+
+    const renderAiUsageChart = (rows) => {
+        if(typeof Chart === 'undefined' || !aiUsageChartCanvas) {
+            return;
+        }
+
+        if(aiUsageChartInstance) {
+            aiUsageChartInstance.destroy();
+            aiUsageChartInstance = null;
+        }
+
+        aiUsageChartInstance = new Chart(aiUsageChartCanvas, {
+            type: 'line',
+            data: {
+                labels: rows.map((row) => row.label || ''),
+                datasets: [
+                    {
+                        label: aiUsageLabels.product_advisor || 'AI za ljude',
+                        data: rows.map((row) => Number(row.product_advisor || 0)),
+                        borderColor: '#68b7ff',
+                        backgroundColor: 'rgba(104, 183, 255, 0.16)',
+                        tension: 0.35,
+                        fill: true,
+                    },
+                    {
+                        label: aiUsageLabels.pets_advisor || 'AI za ljubimce',
+                        data: rows.map((row) => Number(row.pets_advisor || 0)),
+                        borderColor: '#f8d060',
+                        backgroundColor: 'rgba(248, 208, 96, 0.12)',
+                        tension: 0.35,
+                        fill: false,
+                    },
+                    {
+                        label: aiUsageLabels.coach || 'Coach',
+                        data: rows.map((row) => Number(row.coach || 0)),
+                        borderColor: '#3fe0c8',
+                        backgroundColor: 'rgba(63, 224, 200, 0.12)',
+                        tension: 0.35,
+                        fill: false,
+                    },
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: '#ecf3ff'
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        ticks: {
+                            color: 'rgba(191, 211, 238, 0.72)'
+                        },
+                        grid: {
+                            color: 'rgba(148, 163, 184, 0.08)'
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            color: 'rgba(191, 211, 238, 0.72)',
+                            precision: 0
+                        },
+                        grid: {
+                            color: 'rgba(148, 163, 184, 0.08)'
+                        }
+                    }
+                }
+            }
+        });
+    };
+
+    const renderAiUsagePanel = (days) => {
+        if(!aiUsageRoot || !aiUsageRows.length) {
+            return;
+        }
+
+        const windowDays = Number(days || 30);
+        const rows = aiUsageRows.slice(-windowDays);
+        const totals = rows.reduce((carry, row) => {
+            carry.product_advisor += Number(row.product_advisor || 0);
+            carry.pets_advisor += Number(row.pets_advisor || 0);
+            carry.coach += Number(row.coach || 0);
+            carry.total += Number(row.total || 0);
+            return carry;
+        }, {
+            product_advisor: 0,
+            pets_advisor: 0,
+            coach: 0,
+            total: 0
+        });
+
+        Object.keys(aiUsageTotalNodes).forEach((key) => {
+            if(aiUsageTotalNodes[key]) {
+                aiUsageTotalNodes[key].textContent = formatTrendNumber(totals[key] || 0);
+            }
+        });
+
+        if(aiUsageNote) {
+            aiUsageNote.textContent = `Pregled zadnjih ${windowDays} dana korištenja chatova. Zbroj pokazuje koliko je razgovora svaki AI tok otvorio kroz dane.`;
+        }
+
+        if(aiUsageRange) {
+            const first = rows[0]?.label || '';
+            const last = rows[rows.length - 1]?.label || '';
+            aiUsageRange.textContent = first && last ? `${first} → ${last}` : '';
+        }
+
+        renderAiUsageChart(rows);
+    };
+
+    if(aiUsageRoot && aiUsagePeriodButtons.length && aiUsageRows.length) {
+        renderAiUsagePanel(30);
+
+        aiUsagePeriodButtons.forEach((button) => {
+            button.addEventListener('click', function () {
+                const days = Number(this.getAttribute('data-ai-usage-days') || 30);
+
+                aiUsagePeriodButtons.forEach((item) => item.classList.remove('is-active'));
+                this.classList.add('is-active');
+                renderAiUsagePanel(days);
             });
         });
     }

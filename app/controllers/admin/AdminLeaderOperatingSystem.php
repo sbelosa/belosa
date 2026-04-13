@@ -4643,6 +4643,84 @@ class AdminLeaderOperatingSystem extends Controller {
         return $payload;
     }
 
+    private function get_fcc_ai_usage_trend_payload(string $period_start_datetime, array $allowed_user_ids = []): array {
+        $payload = [
+            'rows' => [],
+            'assistant_labels' => [
+                'product_advisor' => 'AI za ljude',
+                'pets_advisor' => 'AI za ljubimce',
+                'coach' => 'Coach',
+                'total' => 'Ukupno',
+            ],
+        ];
+
+        $trend_rows = [];
+        $cursor = new \DateTimeImmutable(substr($period_start_datetime, 0, 10) . ' 00:00:00');
+        $today = new \DateTimeImmutable('today');
+
+        while($cursor <= $today) {
+            $date_key = $cursor->format('Y-m-d');
+            $trend_rows[$date_key] = [
+                'date' => $date_key,
+                'label' => $cursor->format('d.m.'),
+                'product_advisor' => 0,
+                'pets_advisor' => 0,
+                'coach' => 0,
+                'total' => 0,
+            ];
+
+            $cursor = $cursor->modify('+1 day');
+        }
+
+        $allowed_user_ids = array_values(array_filter(array_map('intval', $allowed_user_ids), static fn($user_id) => $user_id > 0));
+        if(empty($allowed_user_ids)) {
+            $payload['rows'] = array_values($trend_rows);
+            return $payload;
+        }
+
+        $period_start_date = db()->escape(substr($period_start_datetime, 0, 10));
+        $allowed_user_ids_sql = implode(',', $allowed_user_ids);
+
+        $result = database()->query("SELECT
+            `fcc_ai_daily_stats`.`stat_date` AS `trend_date`,
+            `fcc_ai_daily_stats`.`assistant_type` AS `assistant_type`,
+            SUM(`fcc_ai_daily_stats`.`conversations`) AS `conversations`
+        FROM `fcc_ai_daily_stats`
+        LEFT JOIN `users` ON `fcc_ai_daily_stats`.`user_id` = `users`.`user_id`
+        WHERE `fcc_ai_daily_stats`.`stat_date` >= '{$period_start_date}'
+          AND `fcc_ai_daily_stats`.`assistant_type` IN ('product_advisor', 'pets_advisor', 'coach')
+          AND `fcc_ai_daily_stats`.`user_id` IN ({$allowed_user_ids_sql})
+          AND `users`.`type` = 0
+        GROUP BY `trend_date`, `assistant_type`
+        ORDER BY `trend_date` ASC");
+
+        if($result) {
+            while($row = $result->fetch_assoc()) {
+                $date_key = (string) ($row['trend_date'] ?? '');
+                $assistant_type = (string) ($row['assistant_type'] ?? '');
+
+                if($date_key === '' || !isset($trend_rows[$date_key])) {
+                    continue;
+                }
+
+                if(!array_key_exists($assistant_type, $payload['assistant_labels'])) {
+                    continue;
+                }
+
+                $trend_rows[$date_key][$assistant_type] = (int) ($row['conversations'] ?? 0);
+            }
+        }
+
+        foreach($trend_rows as &$trend_row) {
+            $trend_row['total'] = (int) ($trend_row['product_advisor'] ?? 0) + (int) ($trend_row['pets_advisor'] ?? 0) + (int) ($trend_row['coach'] ?? 0);
+        }
+        unset($trend_row);
+
+        $payload['rows'] = array_values($trend_rows);
+
+        return $payload;
+    }
+
     private function get_team_trend_summary_drilldowns_payload(array $rows): array {
         $ranges = [
             7 => (new \DateTimeImmutable('today'))->modify('-6 days')->format('Y-m-d 00:00:00'),
@@ -8133,6 +8211,20 @@ class AdminLeaderOperatingSystem extends Controller {
         $support_center = $this->get_support_center_payload($all_rows);
         $selected_support_ticket = $this->get_selected_support_ticket_payload((int) ($_GET['support_ticket_id'] ?? 0));
         $fcc_ai_team = fcc_ai_get_team_dashboard_payload($period_start_datetime, array_column($all_rows, 'user_id'), 8, \Altum\Language::$code, $period_key);
+        if(!is_array($fcc_ai_team)) {
+            $fcc_ai_team = [];
+        }
+        $fcc_ai_team['usage_trend'] = !empty($fcc_ai_team['is_available'])
+            ? $this->get_fcc_ai_usage_trend_payload($team_trend_start_datetime, array_column($all_rows, 'user_id'))
+            : [
+                'rows' => [],
+                'assistant_labels' => [
+                    'product_advisor' => 'AI za ljude',
+                    'pets_advisor' => 'AI za ljubimce',
+                    'coach' => 'Coach',
+                    'total' => 'Ukupno',
+                ],
+            ];
 
         $kpi_drilldowns = $this->get_kpi_drilldowns_payload($all_rows, $suspicious_clicks);
         $primary_team_kpis = $this->get_primary_team_kpis_payload($all_rows, $totals, $period_key);
