@@ -5248,13 +5248,90 @@ function fcc_ai_should_reset_public_problem_context(string $assistant_type, stri
     );
 
     if(empty($current_condition_keys) || empty($previous_condition_keys)) {
-        return false;
+        $current_theme_keys = array_values(array_filter(array_map(static function(array $theme_match) {
+            return (string) ($theme_match['key'] ?? '');
+        }, fcc_ai_get_public_theme_matches($assistant_type, $current_message, $language))));
+        $previous_theme_keys = array_values(array_filter(array_map(static function(array $theme_match) {
+            return (string) ($theme_match['key'] ?? '');
+        }, fcc_ai_get_public_theme_matches($assistant_type, $previous_user_message, $language))));
+
+        if(empty($current_theme_keys) || empty($previous_theme_keys)) {
+            return false;
+        }
+
+        sort($current_theme_keys);
+        sort($previous_theme_keys);
+
+        return $current_theme_keys !== $previous_theme_keys;
     }
 
     sort($current_condition_keys);
     sort($previous_condition_keys);
 
     return $current_condition_keys !== $previous_condition_keys;
+}
+
+function fcc_ai_is_public_product_utility_request(string $message): bool {
+    return fcc_ai_contains_keywords($message, [
+        'jelovnik',
+        'plan po danima',
+        'po danima i obrocima',
+        'obrocima',
+        'točan plan',
+        'tocan plan',
+        'točan jelovnik',
+        'tocan jelovnik',
+        'plan prehrane',
+        'popis za kupnju',
+        'lista za kupnju',
+        'shopping list',
+        'grocery list',
+        'koliko kcal',
+        'kolik9 kcal',
+        'kcal',
+        'koliko kalor',
+        'kalor',
+        'koliko meni kcal treba',
+        'daily kcal',
+        'meal plan',
+        'meal prep',
+        'kalorijski deficit',
+        'kcal dnevno',
+    ]);
+}
+
+function fcc_ai_is_public_calorie_request(string $message): bool {
+    return fcc_ai_contains_keywords($message, [
+        'koliko kcal',
+        'kolik9 kcal',
+        'kcal',
+        'koliko kalor',
+        'kalor',
+        'koliko meni kcal treba',
+        'daily kcal',
+        'kalorijski deficit',
+        'kcal dnevno',
+    ]);
+}
+
+function fcc_ai_is_public_meal_plan_request(string $message): bool {
+    return fcc_ai_contains_keywords($message, [
+        'jelovnik',
+        'plan po danima',
+        'po danima i obrocima',
+        'obrocima',
+        'točan plan',
+        'tocan plan',
+        'točan jelovnik',
+        'tocan jelovnik',
+        'plan prehrane',
+        'popis za kupnju',
+        'lista za kupnju',
+        'shopping list',
+        'grocery list',
+        'meal plan',
+        'meal prep',
+    ]);
 }
 
 function fcc_ai_contains_keywords(string $content, array $keywords): bool {
@@ -6255,7 +6332,30 @@ function fcc_ai_is_public_product_usage_request(string $message): bool {
         'za što bi preporučio', 'za sto bi preporucio', 'za što bi mi preporučio', 'za sto bi mi preporucio',
         'za što bi mi prvenstveno preporučio', 'za sto bi mi prvenstveno preporucio', 'prvenstveno preporučio', 'prvenstveno preporucio',
         'svojstva', 'bonitet', 'bonitete', 'primjena', 'preporuka za korištenje', 'preporuka za koristenje',
+        'omjer', 'ratio', 'epa', 'dha', 'miligr', 'koliko mg', 'koliko ima mg', 'što sadrži', 'sto sadrzi', 'sastav',
     ]);
+}
+
+function fcc_ai_get_public_direct_product_fact_note(string $product_title, string $message, string $language = 'hr'): string {
+    $language = fcc_ai_resolve_public_reply_language($language);
+    $normalized_title = mb_strtolower(trim($product_title));
+
+    if(
+        $normalized_title === ''
+        || !fcc_ai_contains_keywords($message, ['omjer', 'ratio', 'epa', 'dha', 'miligr', 'mg'])
+    ) {
+        return '';
+    }
+
+    if(fcc_ai_contains_keywords($normalized_title, ['arctic sea'])) {
+        return match($language) {
+            'en' => 'For Forever Arctic Sea, the safest FCC fact here is to keep EPA and DHA as a balanced 1:1 omega-3 direction. If you want the exact mg breakdown per capsule or per daily serving, it is best to read it directly from the current product label so we do not guess declaration numbers.',
+            'sl' => 'Pri Forever Arctic Sea je najbolj varna FCC informacija ta, da EPA in DHA držimo kot uravnoteženo 1:1 omega-3 smer. Če želite točen prikaz v mg na kapsulo ali dnevni odmerek, je najbolje pogledati aktualno deklaracijo na embalaži, da ne ugibamo številk.',
+            default => 'Kod Forever Arctic Sea najsigurnije je ostati na tome da se EPA i DHA u FCC komunikaciji vode kao uravnotežen 1:1 omega-3 smjer. Ako želite točan prikaz u mg po kapsuli ili dnevnoj dozi, najbolje je pogledati aktualnu deklaraciju na pakiranju kako ne bismo nagađali brojke.',
+        };
+    }
+
+    return '';
 }
 
 function fcc_ai_is_public_language_switch_only_request(string $message): bool {
@@ -6744,7 +6844,7 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
             'lock_product_scope' => true,
         ],
         'thyroid_balance_support' => [
-            'patterns' => ['štitnjača', 'stitnjaca', 'štitna', 'stitna', 'hashimoto', 'hipotireoza', 'usporen rad štitne', 'usporen rad stitne'],
+            'patterns' => ['štitnjača', 'stitnjaca', 'štitna', 'stitna', 'štitnici', 'stitnici', 'štitn', 'stitn', 'ščitnica', 'ščitnici', 'ščitnico', 'ščitnice', 'ščitn', 'scitnica', 'scitnici', 'scitnico', 'scitnice', 'scitn', 'hashimoto', 'hoshimoto', 'hashimot', 'hipotireoza', 'hipertireoza', 'hipertireoza stitnjace', 'hipertireoz', 'hipertiroid', 'hipotiroid', 'usporen rad štitne', 'usporen rad stitne', 'pojačan rad štitne', 'pojacan rad stitne'],
             'preferred_patterns' => ['aloe vera gel', 'aloe gel', 'arctic sea', 'omega', 'multi maca'],
             'primary_product' => 'Forever Aloe Vera Gel™',
             'support_products' => ['Forever Arctic Sea', 'Forever Multi Maca'],
@@ -6753,8 +6853,8 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
                 'en' => 'thyroid and hormonal nutrition routine',
             ],
             'opening_note' => [
-                'hr' => 'Kod štitnjače prvo ide liječnik i nalaz, ali ako želite Forever support smjer, ovdje ga treba zadržati na aloe veri, omega-3 i hormonski orijentiranoj nutritivnoj podršci.',
-                'en' => 'For thyroid questions, doctor guidance and lab context come first, but if you want a Forever support direction, it should stay centered on aloe vera, omega-3 and hormone-oriented nutritional support.',
+                'hr' => 'Kod štitnjače, Hashimota ili hipertireoze prvi korak su liječnik i nalazi, ali ako želite Forever support smjer, ovdje ga treba zadržati na aloe veri, omega-3 i jednostavnoj hormonski orijentiranoj nutritivnoj podršci, bez skretanja na vitamine za djecu ili opće immunity fallbackove.',
+                'en' => 'For thyroid, Hashimoto or hyperthyroid questions, doctor guidance and lab context come first, but if you want a Forever support direction, it should stay centered on aloe vera, omega-3 and simple hormone-oriented nutritional support without drifting into children vitamins or generic immunity fallbacks.',
             ],
             'recommendation_lines' => [
                 'hr' => [
@@ -7102,7 +7202,7 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
             'patterns' => ['obilna mjesečnica', 'obilne mjesečnice', 'obilna menstruacija', 'obilne menstruacije', 'jaka mjesečnica', 'jake mjesečnice', 'jako menstrualno krvarenje', 'obilno krvarenje', 'obilna krvarenja', 'menstrualni problemi', 'problemi s menstruacijom', 'bolna mjesečnica', 'bolne mjesečnice', 'bolna menstruacija', 'menstrualni bolovi', 'menstrualne bolove', 'pms'],
             'preferred_patterns' => ['aloe vera gel', 'aloe peaches', 'aloe mango', 'berry nectar', 'multi maca', 'multimaca', 'maca', 'vitolize women', 'woman'],
             'primary_product' => 'Forever Aloe Vera Gel™',
-            'support_products' => ['Forever Aloe Peaches', 'Forever Aloe Mango™', 'Forever Aloe Berry Nectar®', 'Forever Multi Maca', 'Forever Vitolize Women'],
+            'support_products' => ['Forever Multi Maca', 'Forever Vitolize Women', 'Forever Aloe Peaches', 'Forever Aloe Mango™', 'Forever Aloe Berry Nectar®'],
             'label' => [
                 'hr' => 'obilna mjesečnica i osjetljiviji ženski ciklus',
                 'en' => 'heavy cycle and a more sensitive women routine',
@@ -7132,10 +7232,10 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
             'lock_product_scope' => true,
         ],
         'women_balance_support' => [
-            'patterns' => ['pms', 'menstrualne bolove', 'menstrualni bolovi', 'menstrualne', 'menstrual', 'menopauz', 'valunzi', 'žensko zdravlje', 'zensko zdravlje', 'ciklus'],
+            'patterns' => ['pms', 'menstrualne bolove', 'menstrualni bolovi', 'menstrualne', 'menstrual', 'menopauz', 'perimenopauz', 'valunzi', 'žensko zdravlje', 'zensko zdravlje', 'ciklus'],
             'preferred_patterns' => ['aloe vera gel', 'aloe peaches', 'aloe mango', 'berry nectar', 'multi maca', 'multimaca', 'maca', 'vitolize women', 'arctic sea', 'omega'],
             'primary_product' => 'Forever Aloe Vera Gel™',
-            'support_products' => ['Forever Aloe Peaches', 'Forever Aloe Mango™', 'Forever Aloe Berry Nectar®', 'Forever Multi Maca', 'Forever Vitolize Women'],
+            'support_products' => ['Forever Multi Maca', 'Forever Vitolize Women', 'Forever Aloe Peaches', 'Forever Aloe Mango™', 'Forever Aloe Berry Nectar®'],
             'label' => [
                 'hr' => 'ženski balans i hormonska rutina',
                 'en' => 'women balance and hormone routine',
@@ -7161,6 +7261,69 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
                 'en' => 'If you want a one-month frame, this is most often positioned as 3 x one of the aloe drinks (Forever Aloe Vera Gel™, Aloe Peaches, Aloe Mango™, or Aloe Berry Nectar®), 1 x Forever Multi Maca and 1 x Forever Vitolize Women.',
             ],
             'suppress_generic_questions' => true,
+            'lock_product_scope' => true,
+        ],
+        'brittle_nails_support' => [
+            'patterns' => ['krhki nokti', 'krhkim noktima', 'slabi nokti', 'slabim noktima', 'pucaju nokti', 'pucanje noktiju', 'lomljivi nokti', 'lomljivim noktima', 'nokti pucaju', 'krhki nokt', 'slabi nokt', 'lomljivi nokt'],
+            'preferred_patterns' => ['marine collagen', 'firming serum', 'advanced skincare'],
+            'primary_product' => 'Forever Marine Collagen',
+            'support_products' => ['Infinite By Forever Advanced Skincare', 'Infinite by Forever Firming Serum'],
+            'label' => [
+                'hr' => 'krhki nokti i rutina kolagena',
+                'en' => 'brittle nails and a collagen-focused routine',
+            ],
+            'opening_note' => [
+                'hr' => 'Kod krhkih noktiju preporuka bi trebala krenuti od kolagena, vitamina C i biotina kao baze iznutra, a tek nakon toga po želji dodati skincare support smjer.',
+                'en' => 'For brittle nails, the recommendation should start from collagen, vitamin C and biotin as the inside base, and only then optionally add a skincare support direction.',
+            ],
+            'recommendation_lines' => [
+                'hr' => [
+                    'Forever Marine Collagen je ovdje glavni Forever smjer jer najizravnije pokriva kolagen, vitamin C i biotin kao bazu za rutinu noktiju, kože i kose.',
+                    'Infinite By Forever Advanced Skincare ili Infinite by Forever Firming Serum imaju smisla tek kao dodatna support opcija ako uz nokte želite i jači fokus na njegu kože.',
+                ],
+                'en' => [
+                    'Forever Marine Collagen is the main Forever direction here because it most directly covers collagen, vitamin C and biotin as the base for a nails, skin and hair routine.',
+                    'Infinite By Forever Advanced Skincare or Infinite by Forever Firming Serum make sense only as the extra support option if you also want a stronger skincare focus on top of the nail routine.',
+                ],
+            ],
+            'monthly_quantity_note' => [
+                'hr' => 'Ako želite okvir za mjesec dana, ovdje se najčešće gleda 1 x Forever Marine Collagen, a skincare dio ostaje dodatna nadogradnja po želji.',
+                'en' => 'If you want a one-month frame, this is most often positioned as 1 x Forever Marine Collagen, while the skincare side stays the optional upgrade.',
+            ],
+            'suppress_generic_questions' => true,
+            'lock_product_scope' => true,
+        ],
+        'capillary_leg_support' => [
+            'patterns' => ['kapilare na nogama', 'kapilare na stopalima', 'kapilare na gležnjevima', 'kapilare na gleznjevima', 'kapilara na nogama', 'kapilara na stopalima', 'kapilara', 'kapilar', 'sitne žile', 'sitne zile', 'sitnih žila', 'sitnih zil', 'vidljive žile', 'vidljive zile', 'vidljive sitne žile', 'vidljive sitne zile', 'vidljivih sitnih žila', 'vidljivih sitnih zil', 'žila na nogama', 'zila na nogama', 'žile na nogama', 'zile na nogama', 'žilice', 'zilice', 'gležnjevi', 'gleznjevi', 'stopala'],
+            'preferred_patterns' => ['aloe vera gel', 'aloe gel', 'arctic sea', 'gelly', 'first spray'],
+            'primary_product' => 'Forever Aloe Vera Gel™',
+            'support_products' => ['Forever Arctic Sea', 'Forever Aloe Vera Gelly', 'Forever Aloe First Spray'],
+            'label' => [
+                'hr' => 'kapilare, sitne žile i rutina iznutra plus izvana',
+                'en' => 'capillaries, visible small veins and an inside-plus-topical routine',
+            ],
+            'opening_note' => [
+                'hr' => 'Kod vidljivih sitnih žila i kapilara preporuka ne bi trebala ostati samo na lokalnoj njezi kože. Ako želite Forever support smjer, ovdje ima više logike krenuti iznutra kroz aloe bazu i omega-3, a vanjsku njegu dodati tek kao dopunu.',
+                'en' => 'For visible small veins and capillaries, the recommendation should not stay only on topical skin care. If you want a Forever support direction, it makes more sense here to start from the inside with an aloe base plus omega-3, and add topical care only as a complement.',
+            ],
+            'recommendation_lines' => [
+                'hr' => [
+                    'Forever Aloe Vera Gel™ je ovdje glavni Forever smjer kao aloe baza iznutra i najčešće se gleda 3 litre za mjesec dana, odnosno 0,5 dcl 2x dnevno.',
+                    'Forever Arctic Sea je važna support opcija uz to kao omega-3 smjer koji se često uključuje kod vena, kapilara i dnevne cirkulacijske rutine.',
+                    'Forever Aloe Vera Gelly i Forever Aloe First Spray imaju smisla tek kao dodatna vanjska rutina kada uz unutarnju bazu želite i nježnu lokalnu njegu kože.',
+                ],
+                'en' => [
+                    'Forever Aloe Vera Gel™ is the main Forever direction here as the inside aloe base, and people most often look at 3 liters for the month, meaning 0.5 dcl twice daily.',
+                    'Forever Arctic Sea is the important support option on top as the omega-3 direction often included for veins, capillaries and an everyday circulation routine.',
+                    'Forever Aloe Vera Gelly and Forever Aloe First Spray make sense only as the extra outer routine when you also want gentle local skin care on top of the inside base.',
+                ],
+            ],
+            'monthly_quantity_note' => [
+                'hr' => 'Ako želite okvir za mjesec dana, ovdje se najčešće gleda 3 x Forever Aloe Vera Gel™, 1 kutija Forever Arctic Sea, a izvana po potrebi 1 x Forever Aloe Vera Gelly i 1 x Forever Aloe First Spray.',
+                'en' => 'If you want a one-month frame, this is most often positioned as 3 x Forever Aloe Vera Gel™, 1 box of Forever Arctic Sea, and optionally 1 x Forever Aloe Vera Gelly plus 1 x Forever Aloe First Spray for the outer routine.',
+            ],
+            'suppress_generic_questions' => true,
+            'sensitive_support_only' => true,
             'lock_product_scope' => true,
         ],
         'pcos_support' => [
@@ -7499,6 +7662,71 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
                 ],
             ],
             'suppress_generic_questions' => true,
+        ],
+        'back_spine_support' => [
+            'patterns' => ['bol u leđima', 'bol u ledjima', 'bolive u leđima', 'bolive u ledjima', 'leđa', 'ledja', 'leđima', 'ledjima', 'vratna hrbtenica', 'vratno hrbtenico', 'vratne hrbtenice', 'vratni del hrbtenice', 'vratna kralježnica', 'vratna kraljeznica', 'kralježnica', 'kraljeznica', 'kralježnic', 'kraljeznic', 'hrbtenica', 'hrbtenice', 'hrbtenico', 'hrbtenic', 'lumbago', 'lumbo', 'išijas', 'išijasa', 'isijas', 'isijasa', 'sciatica'],
+            'preferred_patterns' => ['freedom', 'move', 'active ha', 'msm gel', 'cooling lotion'],
+            'primary_product' => 'Forever Freedom®',
+            'support_products' => ['ESM Complex / Forever Move', 'Forever Aloe MSM Gel'],
+            'label' => [
+                'hr' => 'leđa, kralježnica i išijas',
+                'en' => 'back, spine and sciatica support',
+            ],
+            'opening_note' => [
+                'hr' => 'Kod leđa, vratne kralježnice i išijasa prvi korak su liječnik ili fizioterapeut, ali ako želite Forever support smjer, ovdje preporuka mora ostati na zglobno-mobility proizvodima i lokalnoj podršci, bez skretanja na probavne ili druge nepovezane proizvode.',
+                'en' => 'For back, cervical-spine and sciatica-style questions, doctor or physiotherapist comes first, but if you want a Forever support direction, the recommendation must stay on joint-mobility products plus local support, without drifting into digestion or other unrelated products.',
+            ],
+            'recommendation_lines' => [
+                'hr' => [
+                    'Forever Freedom® je ovdje glavni Forever smjer jer se najčešće bira kao osnovni proizvod za svakodnevnu pokretljivost, zglobove i opterećenje kralježnice.',
+                    'ESM Complex / Forever Move je logična support opcija uz to kada želite dodatni smjer za hrskavicu, zglobove i dugoročniju rutinu pokretljivosti.',
+                    'Forever Aloe MSM Gel može biti jednostavna vanjska dopuna kada postoji lokalna napetost, ukočenost ili osjetljivost duž leđa i mišića.',
+                ],
+                'en' => [
+                    'Forever Freedom® is the main Forever direction here because it is most often chosen as the base product for everyday mobility, joints and spinal load support.',
+                    'ESM Complex / Forever Move is the logical support option on top when you want an extra direction for cartilage, joints and a longer-term mobility routine.',
+                    'Forever Aloe MSM Gel can be the simple outer add-on when there is local tension, stiffness or sensitivity through the back and muscles.',
+                ],
+            ],
+            'monthly_quantity_note' => [
+                'hr' => 'Ako želite okvir za mjesec dana, ovdje se najčešće gleda 3 x Forever Freedom®, 1 x ESM Complex / Forever Move i po potrebi 1 x Forever Aloe MSM Gel za vanjsku rutinu.',
+                'en' => 'If you want a one-month frame, this is most often positioned as 3 x Forever Freedom®, 1 x ESM Complex / Forever Move and, if useful, 1 x Forever Aloe MSM Gel for the outer routine.',
+            ],
+            'suppress_generic_questions' => true,
+            'sensitive_support_only' => true,
+            'lock_product_scope' => true,
+        ],
+        'mobility_alternative_support' => [
+            'patterns' => ['ne podnosim freedom', 'freedom ne godi', 'freedom mi ne godi', 'freedom ne odgovara', 'freedom ne godi želucu', 'freedom ne godi zelucu', 'alternativa freedomu', 'zamjena za freedom', 'umjesto freedoma', 'ako freedom ne odgovara'],
+            'preferred_patterns' => ['move', 'esm', 'active ha', 'msm gel'],
+            'primary_product' => 'ESM Complex / Forever Move',
+            'support_products' => ['Forever Active HA', 'Forever Aloe MSM Gel'],
+            'label' => [
+                'hr' => 'alternativa ako Freedom ne odgovara',
+                'en' => 'alternative if Freedom does not fit',
+            ],
+            'opening_note' => [
+                'hr' => 'Ako osoba jasno kaže da joj Freedom ne odgovara ili ga ne podnosi, preporuka ne bi trebala ostati na Freedomu nego odmah prijeći na najlogičniju Forever alternativu za isti cilj.',
+                'en' => 'If someone clearly says Freedom does not suit them or they cannot tolerate it, the recommendation should not stay on Freedom but move directly to the most logical Forever alternative for the same goal.',
+            ],
+            'recommendation_lines' => [
+                'hr' => [
+                    'ESM Complex / Forever Move je ovdje glavni Forever smjer kao najčišća alternativa kada Freedom ne odgovara želucu ili općoj rutini.',
+                    'Forever Active HA može biti dobra support opcija uz to kada želite dodatni smjer za hijaluronsku kiselinu i pokretljivost.',
+                    'Forever Aloe MSM Gel može ostati vanjska dopuna ako uz to želite i lokalnu njegu zglobova ili mišića.',
+                ],
+                'en' => [
+                    'ESM Complex / Forever Move is the main Forever direction here as the cleanest alternative when Freedom does not suit the stomach or the wider routine.',
+                    'Forever Active HA can be a strong support option on top when you want an extra hyaluronic-acid direction for mobility.',
+                    'Forever Aloe MSM Gel can stay as the outer add-on if you also want local joint or muscle support.',
+                ],
+            ],
+            'monthly_quantity_note' => [
+                'hr' => 'Ako želite okvir za mjesec dana, ovdje se najčešće kreće s 1 x ESM Complex / Forever Move, a po potrebi se dodaje 1 x Forever Active HA i 1 x Forever Aloe MSM Gel za vanjsku rutinu.',
+                'en' => 'If you want a one-month frame, people most often start with 1 x ESM Complex / Forever Move and, if useful, add 1 x Forever Active HA plus 1 x Forever Aloe MSM Gel for the outer routine.',
+            ],
+            'suppress_generic_questions' => true,
+            'lock_product_scope' => true,
         ],
         'neuro_mobility_support' => [
             'patterns' => ['multipla', 'multiplu', 'multipla skleroza', 'multiple skleroze', 'multiple sclerosis', 'spazmi', 'spazam', 'spazme', 'ukoče', 'ukoce', 'ukočen', 'ukocen', 'ne hoda', 'ne može hodati', 'ne moze hodati'],
@@ -8886,6 +9114,7 @@ function fcc_ai_build_public_recommendation_payload(string $assistant_type, stri
     $intent = isset($context['intent']) && is_array($context['intent'])
         ? $context['intent']
         : fcc_ai_detect_public_intent($assistant_type, $message);
+    $skip_product_tail = $assistant_type === 'product_advisor' && fcc_ai_is_public_product_utility_request($message);
     $knowledge_suggestions = array_values(array_filter($context['knowledge_suggestions'] ?? [], static function($suggestion) {
         return !empty($suggestion['title']);
     }));
@@ -9059,6 +9288,17 @@ function fcc_ai_build_public_recommendation_payload(string $assistant_type, stri
         }
     }
 
+    if($skip_product_tail) {
+        $opening_note = '';
+        $recommendation_lines = [];
+        $question_lines = [];
+        $primary_product = '';
+        $support_products = [];
+        $monthly_quantity_note = '';
+        $discount_note = '';
+        $knowledge_suggestions = [];
+    }
+
     if($primary_product === '' && !empty($knowledge_suggestions[0]['title'])) {
         $primary_product = trim((string) ($knowledge_suggestions[0]['title'] ?? ''));
         $support_products = array_values(array_filter(array_map(static function($suggestion) {
@@ -9164,6 +9404,10 @@ function fcc_ai_build_public_recommendation_payload(string $assistant_type, stri
         $system_brief_lines[] = 'Ask these questions before finalizing a recommendation: ' . implode(' ', $question_lines);
     }
 
+    if($skip_product_tail) {
+        $system_brief_lines[] = 'This is a utility-style planning or calorie request. Answer the practical question directly and do not append product recommendation tails, monthly quantity notes, article CTAs, or checkout-oriented follow-up unless the visitor explicitly asks to turn it into a Forever recommendation.';
+    }
+
     if($combination_note !== '') {
         $system_brief_lines[] = $combination_note;
     }
@@ -9187,6 +9431,7 @@ function fcc_ai_build_public_recommendation_payload(string $assistant_type, stri
         'support_products' => $support_products,
         'monthly_quantity_note' => $monthly_quantity_note,
         'sensitive_support_only' => $sensitive_support_only,
+        'skip_product_tail' => $skip_product_tail,
         'system_brief' => implode("\n", array_filter($system_brief_lines)),
     ];
 }
@@ -9700,10 +9945,10 @@ function fcc_ai_get_public_product_routine_note_by_titles(array $product_titles,
 
     if($has_freedom) {
         $notes[] = $language === 'en'
-            ? 'Forever Freedom® is most often used as 0.5 dcl twice per day.'
+            ? 'Forever Freedom® is usually kept on the daily serving from the label, and if you want I can also write the simplest month plan for it.'
             : ($language === 'sl'
-                ? 'Forever Freedom® se najpogosteje uporablja kot 0,5 dcl 2x dnevno.'
-                : 'Forever Freedom® se najčešće uzima kao 0,5 dcl 2x dnevno.');
+                ? 'Forever Freedom® se najpogosteje drži dnevne porcije z deklaracije, po želji pa lahko napišem tudi najpreprostejši mesečni razpored.'
+                : 'Forever Freedom® se najčešće drži dnevne porcije s deklaracije, a ako želite mogu odmah napisati i najjednostavniji mjesečni raspored.');
     }
 
     if($has_focus) {
@@ -11075,7 +11320,7 @@ function fcc_ai_build_public_system_prompt(string $assistant_type, array $contex
     }
 
     if($owner_name !== '') {
-        $sections[] = 'The human follow-up partner is ' . $owner_name . '. If the visitor wants personal help, refer to ' . $owner_name . ' as the person who can continue.';
+        $sections[] = 'The human follow-up partner is ' . $owner_name . '. Mention ' . $owner_name . ' only if the visitor explicitly asks for personal continuation, direct contact, business details, or collaboration. Do not append the partner name at the end of a normal product recommendation.';
 
         if($language === 'hr') {
             $owner_with_name = fcc_ai_get_owner_name_reference($owner_name, 'hr', 'with');
@@ -11362,10 +11607,81 @@ function fcc_ai_generate_public_reply(string $assistant_type, string $message, a
     ];
     $is_direct_product_lookup = $assistant_type === 'product_advisor' && fcc_ai_is_direct_product_lookup_message($message);
     $is_explicit_monthly_quantity_request = $assistant_type === 'product_advisor' && fcc_ai_is_explicit_monthly_quantity_request($message);
+    $skip_product_tail = !empty($recommendation_payload['skip_product_tail']);
+
+    if($skip_product_tail) {
+        $knowledge_suggestions = [];
+    }
 
     $is_direct_contact_request = !empty($intent['contact']) && !$intent['business'] && !fcc_ai_contains_keywords($message, [
         'probav', 'energ', 'imunit', 'zglob', 'težin', 'tezin', 'mobility', 'digestion', 'energy', 'weight', 'skin', 'dlaka', 'koža', 'koza'
     ]);
+
+    if($assistant_type === 'product_advisor' && $skip_product_tail) {
+        $is_calorie_request = fcc_ai_is_public_calorie_request($message);
+        $is_meal_plan_request = fcc_ai_is_public_meal_plan_request($message);
+
+        if($is_calorie_request) {
+            $content_blocks[] = $language === 'en'
+                ? 'For calories and meal structure, I can help practically and directly, without pushing products into the answer.'
+                : ($language === 'sl'
+                    ? 'Pri kalorijah in prehranskem planu lahko pomagam praktično in neposredno, brez potiskanja izdelkov v odgovor.'
+                    : 'Kod kalorija i plana prehrane mogu pomoći praktično i direktno, bez guranja proizvoda u odgovor.');
+
+            $content_blocks[] = $language === 'en'
+                ? "To estimate your daily kcal frame accurately, send me:\n- sex and age\n- height and weight\n- your goal (fat loss, maintenance or gain)\n- how active you are during the week"
+                : ($language === 'sl'
+                    ? "Da natančneje ocenim vaš dnevni kcal okvir, mi pošljite:\n- spol in starost\n- višino in težo\n- cilj (hujšanje, vzdrževanje ali pridobivanje)\n- kako aktivni ste čez teden"
+                    : "Da preciznije procijenim vaš dnevni kcal okvir, pošaljite mi:\n- spol i dob\n- visinu i težinu\n- cilj (mršavljenje, održavanje ili dobivanje kilograma)\n- koliko ste aktivni tijekom tjedna");
+
+            return [
+                'content' => trim(implode("\n\n", array_filter($content_blocks))),
+                'language' => $language,
+                'lead_capture' => $lead_capture,
+                'intent' => $intent,
+                'recommendation_payload' => $recommendation_payload,
+                'knowledge_suggestions' => [],
+            ];
+        }
+
+        if($is_meal_plan_request) {
+            $content_blocks[] = $language === 'en'
+                ? 'I can prepare a simple plan by days and meals, but to make it actually useful I need a few short details first.'
+                : ($language === 'sl'
+                    ? 'Lahko pripravim preprost plan po dnevih in obrokih, vendar za res uporaben odgovor najprej potrebujem nekaj kratkih podatkov.'
+                    : 'Mogu složiti jednostavan plan po danima i obrocima, ali da bude stvarno koristan prvo trebam nekoliko kratkih podataka.');
+
+            $content_blocks[] = $language === 'en'
+                ? "Send me:\n- your goal (fat loss, maintenance or gain)\n- sex and age\n- height and weight\n- how many meals suit you best\n- any foods you avoid or want included"
+                : ($language === 'sl'
+                    ? "Pošljite mi:\n- cilj (hujšanje, vzdrževanje ali pridobivanje)\n- spol in starost\n- višino in težo\n- koliko obrokov vam najbolj ustreza\n- katera živila želite izključiti ali vključiti"
+                    : "Pošaljite mi:\n- cilj (mršavljenje, održavanje ili dobivanje kilograma)\n- spol i dob\n- visinu i težinu\n- koliko vam obroka najviše odgovara\n- koje namirnice želite izbjegavati ili obavezno uključiti");
+
+            return [
+                'content' => trim(implode("\n\n", array_filter($content_blocks))),
+                'language' => $language,
+                'lead_capture' => $lead_capture,
+                'intent' => $intent,
+                'recommendation_payload' => $recommendation_payload,
+                'knowledge_suggestions' => [],
+            ];
+        }
+
+        $content_blocks[] = $language === 'en'
+            ? 'I can help with the practical part first, without turning this into a product recommendation too early.'
+            : ($language === 'sl'
+                ? 'Najprej lahko pomagam s praktičnim delom, brez da to prehitro spremenim v priporočilo izdelkov.'
+                : 'Mogu prvo pomoći s praktičnim dijelom, bez da ovo prerano pretvorim u preporuku proizvoda.');
+
+        return [
+            'content' => trim(implode("\n\n", array_filter($content_blocks))),
+            'language' => $language,
+            'lead_capture' => $lead_capture,
+            'intent' => $intent,
+            'recommendation_payload' => $recommendation_payload,
+            'knowledge_suggestions' => [],
+        ];
+    }
 
     if($assistant_type === 'pets_advisor') {
         if($intent['serious']) {
@@ -11946,6 +12262,9 @@ function fcc_ai_generate_public_reply(string $assistant_type, string $message, a
             }
 
             $product_title = trim((string) ($primary_suggestion['title'] ?? ''));
+            $product_fact_note = $product_title !== ''
+                ? fcc_ai_get_public_direct_product_fact_note($product_title, $message, $language)
+                : '';
             $product_description = $product_title !== ''
                 ? fcc_ai_build_safe_article_description(
                     $primary_suggestion,
@@ -11958,7 +12277,9 @@ function fcc_ai_generate_public_reply(string $assistant_type, string $message, a
                 ? fcc_ai_get_public_product_usage_note([$primary_suggestion], $language)
                 : '';
 
-            if($product_title !== '' && $product_description !== '') {
+            if($product_fact_note !== '') {
+                $content_blocks[] = $product_fact_note;
+            } elseif($product_title !== '' && $product_description !== '') {
                 $content_blocks[] = $language === 'en'
                     ? 'For ' . $product_title . ', the simplest explanation is this: ' . $product_description . '.'
                     : 'Za ' . $product_title . ' najjednostavnije objašnjenje je ovo: ' . $product_description . '.';
@@ -11968,7 +12289,13 @@ function fcc_ai_generate_public_reply(string $assistant_type, string $message, a
                     : 'Za ' . $product_title . ' najjednostavnije je ostati na općem objašnjenju kroz svakodnevnu rutinu i sastojke, bez jakih tvrdnji.';
             }
 
-            if($usage_note !== '') {
+            if(
+                $usage_note !== ''
+                && (
+                    $product_fact_note === ''
+                    || fcc_ai_contains_keywords($message, ['kako koristiti', 'kako se koristi', 'kako piti', 'how to use', 'how to take', 'uzima', 'uzima'])
+                )
+            ) {
                 $content_blocks[] = $usage_note;
             }
 
@@ -12279,6 +12606,7 @@ function fcc_ai_generate_public_reply(string $assistant_type, string $message, a
             ];
         } elseif(!empty($intent['medical_sensitive'])) {
             $has_high_risk_context = fcc_ai_has_high_risk_public_medical_context($message);
+            $has_locked_condition_scope = fcc_ai_condition_locks_product_scope((array) ($recommendation_payload['condition_matches'] ?? []));
             $has_mapped_medical_direction = !empty($recommendation_payload['primary_product']) || !empty($recommendation_payload['recommendation_lines']) || !empty($recommendation_payload['opening_note']);
 
             if(!$has_mapped_medical_direction) {
@@ -12321,7 +12649,7 @@ function fcc_ai_generate_public_reply(string $assistant_type, string $message, a
                             ? 'Pri tej vrsti bolj tveganega medicinskega konteksta ohrani smer zdravnik-prvo, a vseeno lahko omeniš le najbolj previdne Forever podporne smeri kot splošno podporo rutini, nikoli kot zdravljenje.'
                             : 'Kod ovakvog višerizičnog medicinskog konteksta zadrži liječnik-prvo smjer, ali i dalje možeš spomenuti samo najopreznije Forever support smjerove kao opću podršku rutini, nikada kao terapiju.');
                 }
-            } elseif($is_direct_product_lookup && $specific_product !== '') {
+            } elseif($is_direct_product_lookup && $specific_product !== '' && !$has_locked_condition_scope) {
                 if($specific_description !== '') {
                     $content_blocks[] = $language === 'en'
                         ? 'If you are asking specifically about ' . $specific_product . ', I can keep it on a general level like this: ' . $specific_description . '.'
@@ -12346,6 +12674,8 @@ function fcc_ai_generate_public_reply(string $assistant_type, string $message, a
                 in_array('skin_hair', $theme_keys, true)
                 && fcc_ai_contains_keywords($message, ['opadanje kose', 'hair loss', 'kosa', 'nokti', 'suha koža', 'suha koza', 'dry skin'])
             ) {
+                $recommendation_payload['primary_product'] = 'Forever Marine Collagen';
+                $recommendation_payload['support_products'] = ['Infinite By Forever Advanced Skincare'];
                 $recommendation_payload['recommendation_lines'] = $language === 'en'
                     ? [
                         'Forever Marine Collagen is the clearest Forever direction here because it is built around marine collagen, vitamin C and biotin for a broader skin, hair and nail routine.',
@@ -12359,6 +12689,8 @@ function fcc_ai_generate_public_reply(string $assistant_type, string $message, a
                 in_array('skin_hair', $theme_keys, true)
                 && fcc_ai_contains_keywords($message, ['pigmentacijske', 'pigment', 'mrlje na licu', 'lice', 'njegu lica', 'njega lica', 'face'])
             ) {
+                $recommendation_payload['primary_product'] = 'Infinite By Forever Advanced Skincare';
+                $recommendation_payload['support_products'] = ['Forever Marine Collagen'];
                 $recommendation_payload['recommendation_lines'] = $language === 'en'
                     ? [
                         'For facial care, the cleanest Forever direction here is Infinite By Forever Advanced Skincare because it is positioned as a fuller skincare routine.',
@@ -12372,6 +12704,8 @@ function fcc_ai_generate_public_reply(string $assistant_type, string $message, a
                 in_array('mobility', $theme_keys, true)
                 || fcc_ai_contains_keywords($message, ['koljeno', 'koljena', 'skolen', 's kolenima'])
             ) {
+                $recommendation_payload['primary_product'] = 'Forever Freedom®';
+                $recommendation_payload['support_products'] = ['Forever Aloe MSM Gel'];
                 $recommendation_payload['recommendation_lines'] = $language === 'en'
                     ? [
                         'For knees and everyday mobility, Forever Freedom is the clearest Forever direction because it is built around ingredients commonly linked with movement support.',
@@ -12385,6 +12719,8 @@ function fcc_ai_generate_public_reply(string $assistant_type, string $message, a
                 in_array('immunity', $theme_keys, true)
                 && fcc_ai_contains_keywords($message, ['alergij', 'alergija', 'curi nos', 'sinus', 'pelud', 'pollen', 'cvetni prah'])
             ) {
+                $recommendation_payload['primary_product'] = 'Forever ImmuBlend';
+                $recommendation_payload['support_products'] = ['Forever AloeTurm'];
                 $recommendation_payload['recommendation_lines'] = $language === 'en'
                     ? [
                         'For a seasonal allergy-style routine, Forever ImmuBlend is the clearest Forever direction because it combines aloe vera, lactoferrin, vitamins C and D, plus supportive botanical ingredients.',
@@ -12440,7 +12776,7 @@ function fcc_ai_generate_public_reply(string $assistant_type, string $message, a
             }
         }
 
-        if($assistant_type === 'product_advisor' && !empty($recommendation_payload['recommendation_lines']) && empty($recommendation_payload['question_lines'])) {
+        if($assistant_type === 'product_advisor' && !$skip_product_tail && !empty($recommendation_payload['recommendation_lines']) && empty($recommendation_payload['question_lines'])) {
             $monthly_quantity_note = trim((string) ($recommendation_payload['monthly_quantity_note'] ?? ''));
             $routine_note = fcc_ai_get_public_product_routine_note_by_titles(array_values(array_filter(array_merge(
                 [trim((string) ($recommendation_payload['primary_product'] ?? ''))],
@@ -12483,6 +12819,7 @@ function fcc_ai_generate_public_reply(string $assistant_type, string $message, a
             && empty($intent['special_population_sensitive'])
             && empty($intent['medication_interaction_sensitive'])
             && empty($intent['medication_replacement_sensitive'])
+            && !$skip_product_tail
             && !$is_explicit_monthly_quantity_request
         ) {
             $decision_note = fcc_ai_get_public_recommendation_decision_note(
@@ -12522,7 +12859,7 @@ function fcc_ai_generate_public_reply(string $assistant_type, string $message, a
         }
     }
 
-    $hide_article_followup = empty($recommendation_payload['recommendation_lines']) && !empty($recommendation_payload['question_lines']);
+    $hide_article_followup = $skip_product_tail || (empty($recommendation_payload['recommendation_lines']) && !empty($recommendation_payload['question_lines']));
 
     if($hide_article_followup) {
         $knowledge_suggestions = [];
@@ -15090,6 +15427,10 @@ function fcc_ai_handle_public_message(array $payload): array {
         'knowledge_suggestions' => $knowledge_suggestions,
     ]);
 
+    if(!empty($recommendation_payload['skip_product_tail'])) {
+        $knowledge_suggestions = [];
+    }
+
     $is_joint_topical_followup = (string) ($conversation->assistant_type ?? '') === 'product_advisor'
         && fcc_ai_is_topical_joint_followup_request($current_user_message)
         && fcc_ai_contains_keywords($message_for_matching, ['hrskavic', 'koljen', 'zglob', 'kuk', 'artroz', 'artrit', 'pokretljiv']);
@@ -15212,16 +15553,34 @@ function fcc_ai_handle_public_message(array $payload): array {
     }
 
     $reply_content = trim((string) ($reply['content'] ?? ''));
+    $owner_name = trim((string) ($user->name ?? ''));
+
+    if(
+        (string) ($conversation->assistant_type ?? '') === 'product_advisor'
+        && $owner_name !== ''
+        && empty($intent['business'])
+        && empty($intent['contact'])
+        && empty($reply['lead_capture']['recommended'])
+        && mb_stripos($reply_content, $owner_name) !== false
+    ) {
+        $reply_blocks = preg_split('/\n\s*\n/u', $reply_content) ?: [];
+        $reply_blocks = array_values(array_filter($reply_blocks, static function($block) use ($owner_name) {
+            return mb_stripos((string) $block, $owner_name) === false;
+        }));
+        $reply_content = trim(implode("\n\n", $reply_blocks));
+    }
+
     $recommendation_primary = trim((string) ($recommendation_payload['primary_product'] ?? ''));
     $support_products = array_values(array_filter(array_map(static function($item) {
         return trim((string) $item);
     }, (array) ($recommendation_payload['support_products'] ?? []))));
     $allow_sensitive_support_anchor = !empty($recommendation_payload['sensitive_support_only']);
 
-        if(
+    if(
             (string) ($conversation->assistant_type ?? '') === 'product_advisor'
             && $recommendation_primary !== ''
             && empty($intent['serious'])
+        && empty($recommendation_payload['skip_product_tail'])
         && (empty($intent['medical_sensitive']) || $allow_sensitive_support_anchor)
         && empty($intent['special_population_sensitive'])
         && empty($intent['medication_interaction_sensitive'])
