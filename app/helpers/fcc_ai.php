@@ -5667,7 +5667,7 @@ function fcc_ai_get_public_direct_product_lookup_titles(): array {
         'b12' => 'Forever B12 Plus',
         'lycium' => 'Forever Lycium Plus',
         'bright' => 'Forever Bright® Toothgel',
-        'aloe_first' => 'Forever Aloe First',
+        'aloe_first' => 'Forever Aloe First Spray',
         'aloe_gel' => 'Forever Aloe Vera Gel™',
         'aloe_mango' => 'Forever Aloe Mango™',
         'aloeturm' => 'Forever AloeTurm',
@@ -6124,6 +6124,10 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
                     'Forever Arctic Sea is a strong support option on top because it brings omega-3 fatty acids as complementary nutritional support alongside the main aloe direction.',
                 ],
             ],
+            'monthly_quantity_note' => [
+                'hr' => 'Ako želite odmah okvir za mjesec dana, ovdje se najčešće preporuči 3 x Forever Aloe Vera Gel™ i 1 kutija Forever Arctic Sea. Ako želite, mogu vam odmah napisati i najjednostavniji dnevni raspored korištenja.',
+                'en' => 'If you want a simple one-month frame right away, this is most often positioned as 3 x Forever Aloe Vera Gel™ and 1 box of Forever Arctic Sea. If you want, I can also outline the simplest daily usage rhythm.',
+            ],
             'suppress_generic_questions' => true,
         ],
         'kidney_stone_support' => [
@@ -6335,10 +6339,10 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
             'suppress_generic_questions' => true,
         ],
         'nerve_support_routine' => [
-            'patterns' => ['trigemin', 'zujanje u uhu', 'zujanje', 'tinnitus', 'oštećenj živaca', 'ostecenj zivaca', 'živac', 'zivac', 'sinaps'],
-            'preferred_patterns' => ['royal jelly', 'royal', 'arctic sea', 'arctic'],
-            'primary_product' => 'Forever Royal Jelly',
-            'support_products' => ['Forever Arctic Sea'],
+            'patterns' => ['trigemin', 'zujanje u uhu', 'zujanje', 'tinnitus', 'oštećenj živaca', 'ostecenj zivaca', 'živac', 'zivac', 'sinaps', 'pareza facialis', 'facialis', 'pareza', 'neurološ', 'neurolos'],
+            'preferred_patterns' => ['aloe vera gel', 'aloe gel', 'arctic sea', 'arctic', 'royal jelly', 'royal'],
+            'primary_product' => 'Forever Aloe Vera Gel™',
+            'support_products' => ['Forever Arctic Sea', 'Forever Royal Jelly'],
             'label' => [
                 'hr' => 'živčani sustav i svakodnevna podrška',
                 'en' => 'nerve wellness and daily support',
@@ -6349,15 +6353,18 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
             ],
             'recommendation_lines' => [
                 'hr' => [
-                    'Forever Royal Jelly je ovdje glavni Forever smjer jer sadrži matičnu mliječ i najčešće se bira kao opći nutritivni smjer za svakodnevnu vitalnost i podršku živčanom sustavu.',
-                    'Forever Arctic Sea može biti dobra support opcija uz to kao dodatna nutritivna podrška svakodnevnoj rutini.',
+                    'Forever Aloe Vera Gel™ je ovdje glavni Forever smjer kao osnovni dnevni nutritivni napitak za jednostavnu rutinu opće podrške organizmu.',
+                    'Forever Arctic Sea je dobra support opcija uz to kao omega-3 nutritivna podrška koja se često uključuje u svakodnevnu rutinu kod neurološki osjetljivijih pitanja.',
+                    'Forever Royal Jelly je ovdje važna dodatna preporuka jer sadrži matičnu mliječ i često se uključuje kao nutritivna podrška kada je fokus na živčanom sustavu i svakodnevnoj vitalnosti.',
                 ],
                 'en' => [
-                    'Forever Royal Jelly is the clearest main Forever direction here because it contains royal jelly and is often chosen as a general nutritional direction for everyday vitality and a nerve-wellness context.',
-                    'Forever Arctic Sea can be a useful support option on top as additional nutritional support within the everyday routine.',
+                    'Forever Aloe Vera Gel™ is the main Forever direction here as a base daily nutrition drink for a simple general-support routine.',
+                    'Forever Arctic Sea is a useful support option on top as omega-3 nutritional support that often fits into an everyday routine when the context feels more neurologically sensitive.',
+                    'Forever Royal Jelly is an important additional recommendation here because it contains royal jelly and is often included as nutritional support when the focus is the nervous system and everyday vitality.',
                 ],
             ],
             'suppress_generic_questions' => true,
+            'lock_product_scope' => true,
         ],
         'hair_skin_nails_support' => [
             'patterns' => ['opadanje kose', 'hair loss', 'slabi nokti', 'suha koža', 'suha koza', 'tanke vlasi', 'slabu kosu', 'weak hair', 'dry skin'],
@@ -6383,6 +6390,35 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
                 ],
             ],
             'suppress_generic_questions' => true,
+        ],
+        'cartilage_mobility_support' => [
+            'patterns' => ['oštećena hrskavica', 'ostecena hrskavica', 'uništena hrskavica', 'unistena hrskavica', 'hrskavica na oba kuka', 'oštećenu hrskavicu', 'ostecenu hrskavicu'],
+            'preferred_patterns' => ['freedom', 'active ha', 'ha', 'esm', 'move'],
+            'primary_product' => 'Forever Freedom®',
+            'support_products' => ['Forever Active HA', 'ESM Complex / Forever Move'],
+            'label' => [
+                'hr' => 'hrskavica, zglobovi i potpora pokretljivosti',
+                'en' => 'cartilage, joints and mobility support',
+            ],
+            'opening_note' => [
+                'hr' => 'Kod hrskavice i ovakvih zglobnih pitanja prvi korak je liječnik ili fizijatar, ali ako želite Forever support smjer, ovdje preporuka treba ostati na zglobnoj formuli i dopunskoj podršci za hrskavicu, bez odlaska na nepovezane napitke.',
+                'en' => 'For cartilage and joint-style questions, doctor or physiatrist comes first, but if you want a Forever support direction here, the recommendation should stay on a joint-focused formula and complementary cartilage support without drifting into unrelated drink products.',
+            ],
+            'recommendation_lines' => [
+                'hr' => [
+                    'Forever Freedom® je ovdje glavni Forever smjer jer sadrži glukozamin, hondroitin i MSM te se najčešće bira kao osnovni proizvod za svakodnevnu pokretljivost i potporu zglobovima.',
+                    'Forever Active HA može biti odlična support opcija uz to kada želite dodatni smjer za hijaluronsku kiselinu i svakodnevnu rutinu pokretljivosti.',
+                    'ESM Complex / Forever Move može biti dodatni korak ako želite jaču dopunsku podršku za zglobove i hrskavicu unutar iste rutine.',
+                ],
+                'en' => [
+                    'Forever Freedom® is the main Forever direction here because it contains glucosamine, chondroitin and MSM and is most often chosen as the base product for everyday mobility and joint support.',
+                    'Forever Active HA can be an excellent support option on top when you want an additional hyaluronic-acid direction inside the daily mobility routine.',
+                    'ESM Complex / Forever Move can be the extra step if you want stronger complementary support for joints and cartilage within the same routine.',
+                ],
+            ],
+            'suppress_generic_questions' => true,
+            'sensitive_support_only' => true,
+            'lock_product_scope' => true,
         ],
         'joint_mobility_support' => [
             'patterns' => ['koljeno', 'koljena', 'skolen', 's kolenima', 'bol u kolenima', 'bol u koljenima', 'artroz', 'artrit', 'kuk', 'rotacije kuka', 'rotacija kuka'],
@@ -6434,6 +6470,34 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
             ],
             'suppress_generic_questions' => true,
             'sensitive_support_only' => true,
+            'lock_product_scope' => true,
+        ],
+        'post_depilation_skin_support' => [
+            'patterns' => ['urastanje dlaka', 'urastamnje dlaka', 'urastale dlake', 'nakon depilacije', 'poslije depilacije', 'posle depilacije', 'depilation'],
+            'preferred_patterns' => ['first spray', 'aloe first', 'msm gel', 'aloe msm gel', 'liquid soap', 'propolis creme'],
+            'primary_product' => 'Forever Aloe First Spray',
+            'support_products' => ['Forever Aloe MSM Gel', 'Forever Aloe Liquid Soap', 'Forever Aloe Propolis Creme'],
+            'label' => [
+                'hr' => 'aftercare nakon depilacije i urastanje dlaka',
+                'en' => 'post-depilation aftercare and ingrown hairs',
+            ],
+            'opening_note' => [
+                'hr' => 'Kod urastanja dlaka nakon depilacije preporuka treba ostati strogo na topical aftercare rutini, bez odlaska na nepovezane dodatke prehrani.',
+                'en' => 'For ingrown hairs after depilation, the recommendation should stay strictly inside a topical aftercare routine without drifting into unrelated supplements.',
+            ],
+            'recommendation_lines' => [
+                'hr' => [
+                    'Forever Aloe First Spray je ovdje glavni Forever smjer jer je najlogičniji prvi korak za nježnu aftercare rutinu kože nakon depilacije.',
+                    'Forever Aloe MSM Gel može ostati uz to kao support opcija kada želite dodatnu topikalnu njegu na osjetljivijem području.',
+                    'Forever Aloe Liquid Soap je koristan dodatak za nježno održavanje rutine, a Aloe Propolis Creme može doći kao sljedeći korak ako želite još hranjiviju kremastu njegu izvana.',
+                ],
+                'en' => [
+                    'Forever Aloe First Spray is the main Forever direction here because it is the cleanest first step for a gentle post-depilation aftercare routine.',
+                    'Forever Aloe MSM Gel can stay on top of that as a support option when you want extra topical care on a more sensitive area.',
+                    'Forever Aloe Liquid Soap is a useful addition for keeping the routine gentle, while Aloe Propolis Creme can come as the next step if you want richer cream-based care from the outside.',
+                ],
+            ],
+            'suppress_generic_questions' => true,
             'lock_product_scope' => true,
         ],
         'oral_care_support' => [
@@ -6553,6 +6617,7 @@ function fcc_ai_get_product_advisor_condition_matches(string $message, string $l
             'preferred_patterns' => array_values(array_filter(array_map(static function($pattern) {
                 return mb_strtolower(trim((string) $pattern));
             }, (array) ($entry['preferred_patterns'] ?? [])))),
+            'monthly_quantity_note' => fcc_ai_get_public_localized_matrix_text($entry, 'monthly_quantity_note', $language),
             'suppress_generic_questions' => (bool) ($entry['suppress_generic_questions'] ?? false),
             'sensitive_support_only' => (bool) ($entry['sensitive_support_only'] ?? false),
             'lock_product_scope' => array_key_exists('lock_product_scope', $entry) ? (bool) $entry['lock_product_scope'] : true,
@@ -7337,6 +7402,7 @@ function fcc_ai_build_public_recommendation_payload(string $assistant_type, stri
     $combination_note = '';
     $primary_product = '';
     $support_products = [];
+    $monthly_quantity_note = '';
     if(count($recommendation_lines) >= 2) {
         $combination_note = $assistant_type === 'pets_advisor'
             ? ($language === 'en'
@@ -7369,6 +7435,10 @@ function fcc_ai_build_public_recommendation_payload(string $assistant_type, stri
             $recommendation_lines = array_values(array_filter(array_map(static function($line) {
                 return trim((string) $line);
             }, (array) $primary_condition['recommendation_lines'])));
+        }
+
+        if(!empty($primary_condition['monthly_quantity_note'])) {
+            $monthly_quantity_note = trim((string) $primary_condition['monthly_quantity_note']);
         }
 
         if(!empty($primary_condition['suppress_generic_questions']) && !empty($recommendation_lines)) {
@@ -7459,6 +7529,10 @@ function fcc_ai_build_public_recommendation_payload(string $assistant_type, stri
         $system_brief_lines[] = 'Support products only if they truly help the routine: ' . implode(' | ', array_slice($support_products, 0, 2)) . '.';
     }
 
+    if($monthly_quantity_note !== '') {
+        $system_brief_lines[] = 'If it fits the flow, include this monthly quantity guidance or offer to write it out next: ' . $monthly_quantity_note;
+    }
+
     if($locked_condition_scope && !empty($allowed_condition_products)) {
         $system_brief_lines[] = 'Allowed Forever product scope for this exact message: ' . implode(' | ', array_slice($allowed_condition_products, 0, 4)) . '. Do not mention any other product, article line, skincare range, cosmetic line or fallback product outside this set.';
     }
@@ -7498,6 +7572,7 @@ function fcc_ai_build_public_recommendation_payload(string $assistant_type, stri
         'discount_note' => $discount_note,
         'primary_product' => $primary_product,
         'support_products' => $support_products,
+        'monthly_quantity_note' => $monthly_quantity_note,
         'sensitive_support_only' => $sensitive_support_only,
         'system_brief' => implode("\n", array_filter($system_brief_lines)),
     ];
@@ -7690,6 +7765,24 @@ function fcc_ai_get_public_recommendation_decision_note(string $assistant_type, 
         : ($language === 'sl'
             ? 'Če želite priporočilo ohraniti jasno, začnite z ' . $primary_product . ' kot glavno Forever smerjo.' . $support_text . $cta_tail
             : 'Ako želite preporuku zadržati jasnom, krenite s ' . $primary_product . ' kao glavnim Forever smjerom.' . $support_text . $cta_tail);
+}
+
+function fcc_ai_get_public_monthly_quantity_offer_note(string $language = 'hr', bool $has_specific_note = false): string {
+    $language = fcc_ai_resolve_public_reply_language($language);
+
+    if($has_specific_note) {
+        return $language === 'en'
+            ? 'If you want, I can also write the simplest monthly quantities and usage rhythm for this exact recommendation.'
+            : ($language === 'sl'
+                ? 'Če želite, lahko zapišem tudi najbolj preproste mesečne količine in ritem uporabe za to točno priporočilo.'
+                : 'Ako želite, mogu vam odmah napisati i najjednostavnije mjesečne količine te ritam korištenja baš za ovu preporuku.');
+    }
+
+    return $language === 'en'
+        ? 'If you want, I can also write the simplest monthly quantities and usage rhythm for these products.'
+        : ($language === 'sl'
+            ? 'Če želite, lahko zapišem tudi najbolj preproste mesečne količine in ritem uporabe za te izdelke.'
+            : 'Ako želite, mogu vam odmah napisati i najjednostavnije mjesečne količine te ritam korištenja za ove proizvode.');
 }
 
 function fcc_ai_get_public_sensitive_support_note(array $recommendation_payload, string $language = 'hr', bool $has_article_cta = false): string {
@@ -10311,6 +10404,16 @@ function fcc_ai_generate_public_reply(string $assistant_type, string $message, a
 
             if($usage_note !== '') {
                 $content_blocks[] = $usage_note;
+            }
+        }
+
+        if($assistant_type === 'product_advisor' && !empty($recommendation_payload['recommendation_lines']) && empty($recommendation_payload['question_lines'])) {
+            $monthly_quantity_note = trim((string) ($recommendation_payload['monthly_quantity_note'] ?? ''));
+
+            if($monthly_quantity_note !== '') {
+                $content_blocks[] = $monthly_quantity_note;
+            } elseif(empty($intent['business']) && empty($intent['contact'])) {
+                $content_blocks[] = fcc_ai_get_public_monthly_quantity_offer_note($language, false);
             }
         }
 
