@@ -6126,6 +6126,33 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
             ],
             'suppress_generic_questions' => true,
         ],
+        'kidney_stone_support' => [
+            'patterns' => ['kamenac u bubregu', 'kamenca u bubregu', 'kamen u bubregu', 'kameni u bubregu', 'kamenci u bubregu', 'kamen u bubrezima', 'kamenci u bubrezima', 'bubrežni kamenac', 'bubrezni kamenac', 'kamenami', 'ledvinami'],
+            'preferred_patterns' => ['aloe vera gel', 'aloe gel', 'arctic sea', 'arctic', 'omega'],
+            'primary_product' => 'Forever Aloe Vera Gel™',
+            'support_products' => ['Forever Arctic Sea'],
+            'label' => [
+                'hr' => 'kamenac u bubregu i oprezna nutritivna podrška',
+                'en' => 'kidney stone context and cautious nutritional support',
+            ],
+            'opening_note' => [
+                'hr' => 'Kod kamenca u bubregu važno je prvo pratiti liječničke upute i unos tekućine, ali ako želite Forever support smjer, ovdje preporuka treba ostati vrlo usko na aloe veri kao glavnom smjeru i Arctic Sea kao dopunskoj nutritivnoj podršci.',
+                'en' => 'With a kidney stone context, medical guidance and hydration come first, but if you want a Forever support direction here, the recommendation should stay very tight around aloe vera as the main direction and Arctic Sea as complementary nutritional support.',
+            ],
+            'recommendation_lines' => [
+                'hr' => [
+                    'Forever Aloe Vera Gel™ je ovdje glavni Forever smjer jer se najčešće bira kao osnovni nutritivni napitak i jednostavna dnevna rutina uz povećan unos tekućine.',
+                    'Forever Arctic Sea može biti dopunska support opcija uz to kao omega-3 nutritivna podrška, ali glavni fokus i dalje treba ostati na aloe vera gelu i liječničkim uputama.',
+                ],
+                'en' => [
+                    'Forever Aloe Vera Gel™ is the main Forever direction here because it is most often chosen as a base nutrition drink and a simple daily routine alongside better hydration.',
+                    'Forever Arctic Sea can be an additional support option as omega-3 nutritional support, but the main focus should still stay on aloe vera gel plus medical guidance.',
+                ],
+            ],
+            'suppress_generic_questions' => true,
+            'sensitive_support_only' => true,
+            'lock_product_scope' => true,
+        ],
         'digestive_routine_support' => [
             'patterns' => ['gastritis', 'gaszritis', 'nadutost', 'bloated stomach', 'bloating', 'problem sa želucem', 'problem sa zelucem', 'želudac', 'zeludac', 'iritabilnog kolona', 'iritabilni kolon', 'iritabilno crijevo', 'ibs', 'candida', 'kandida', 'problem sa želucem', 'problem sa želucem'],
             'preferred_patterns' => ['aloe vera gel', 'aloe gel', 'aloe peaches', 'aloe mango', 'berry nectar', 'active pro b', 'pro b', 'pro-b', 'fiber'],
@@ -6382,6 +6409,33 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
             ],
             'suppress_generic_questions' => true,
         ],
+        'neuro_mobility_support' => [
+            'patterns' => ['multipla', 'multiplu', 'multipla skleroza', 'multiple skleroze', 'multiple sclerosis', 'spazmi', 'spazam', 'spazme', 'ukoče', 'ukoce', 'ukočen', 'ukocen', 'ne hoda', 'ne može hodati', 'ne moze hodati'],
+            'preferred_patterns' => ['freedom', 'move', 'msm gel', 'aloe msm gel'],
+            'primary_product' => 'Forever Freedom®',
+            'support_products' => ['Forever Aloe MSM Gel'],
+            'label' => [
+                'hr' => 'spazmi, ukočenost i oprezna podrška pokretljivosti',
+                'en' => 'spasms, stiffness and cautious mobility support',
+            ],
+            'opening_note' => [
+                'hr' => 'Kod multiple, spazama ili izražene ukočenosti prvi korak je liječnik i neurolog, ali ako želite oprezan Forever support smjer za svakodnevnu pokretljivost, ovdje preporuka mora ostati samo na smislenoj kombinaciji za kretanje i lokalnu podršku.',
+                'en' => 'With MS-style context, spasms or stronger stiffness, doctor and neurologist come first, but if you want a cautious Forever support direction for everyday mobility, the recommendation must stay only on a sensible mobility and local-support combination.',
+            ],
+            'recommendation_lines' => [
+                'hr' => [
+                    'Forever Freedom® je ovdje glavni Forever smjer jer se najlogičnije uklapa u svakodnevnu rutinu pokretljivosti i potpore kretanju.',
+                    'Forever Aloe MSM Gel može biti dopunska support opcija izvana kada postoji izražena napetost, ukočenost ili lokalno opterećenje nogu i mišića.',
+                ],
+                'en' => [
+                    'Forever Freedom® is the main Forever direction here because it fits most naturally into an everyday mobility and movement-support routine.',
+                    'Forever Aloe MSM Gel can be an additional external support option when there is strong tension, stiffness or local overload in the legs and muscles.',
+                ],
+            ],
+            'suppress_generic_questions' => true,
+            'sensitive_support_only' => true,
+            'lock_product_scope' => true,
+        ],
         'oral_care_support' => [
             'patterns' => ['paradentoz', 'desni', 'gingiv', 'krvarenje desni', 'povlačenje desni', 'povlacenje desni', 'oralna njega', 'usna šupljina', 'usna supljina', 'oral care'],
             'preferred_patterns' => ['forever bright', 'bright', 'toothgel', 'toothpaste', 'zubna pasta'],
@@ -6501,6 +6555,7 @@ function fcc_ai_get_product_advisor_condition_matches(string $message, string $l
             }, (array) ($entry['preferred_patterns'] ?? [])))),
             'suppress_generic_questions' => (bool) ($entry['suppress_generic_questions'] ?? false),
             'sensitive_support_only' => (bool) ($entry['sensitive_support_only'] ?? false),
+            'lock_product_scope' => array_key_exists('lock_product_scope', $entry) ? (bool) $entry['lock_product_scope'] : true,
             'score' => $score,
             'matched_patterns' => array_values(array_unique($matched_patterns)),
         ];
@@ -7329,6 +7384,8 @@ function fcc_ai_build_public_recommendation_payload(string $assistant_type, stri
     }
 
     $sensitive_support_only = !empty($condition_matches[0]['sensitive_support_only']);
+    $locked_condition_scope = $assistant_type === 'product_advisor' && fcc_ai_condition_locks_product_scope($condition_matches);
+    $allowed_condition_products = $locked_condition_scope ? fcc_ai_get_condition_allowed_product_titles($condition_matches) : [];
 
     $system_brief_lines = [
         $assistant_type === 'pets_advisor'
@@ -7402,10 +7459,18 @@ function fcc_ai_build_public_recommendation_payload(string $assistant_type, stri
         $system_brief_lines[] = 'Support products only if they truly help the routine: ' . implode(' | ', array_slice($support_products, 0, 2)) . '.';
     }
 
+    if($locked_condition_scope && !empty($allowed_condition_products)) {
+        $system_brief_lines[] = 'Allowed Forever product scope for this exact message: ' . implode(' | ', array_slice($allowed_condition_products, 0, 4)) . '. Do not mention any other product, article line, skincare range, cosmetic line or fallback product outside this set.';
+    }
+
     if(!empty($recommendation_lines)) {
         $system_brief_lines[] = 'Stay close to these FCC directions: ' . implode(' | ', array_map(static function(string $line) {
             return preg_replace('/^[^:]+:\s*/u', '', $line) ?? $line;
         }, $recommendation_lines));
+    }
+
+    if($locked_condition_scope && (!empty($intent['medical_sensitive']) || !empty($intent['serious']))) {
+        $system_brief_lines[] = 'This is a serious or medical-sensitive case with a locked product scope. Do not append any second recommendation block, do not add unrelated alternatives later in the answer, and do not drift into generic fallback products.';
     }
 
     if(!empty($question_lines)) {
@@ -7555,6 +7620,36 @@ function fcc_ai_filter_condition_priority_suggestions(array $suggestions, array 
     }
 
     return array_slice($priority, 0, max(1, $limit));
+}
+
+function fcc_ai_condition_locks_product_scope(array $condition_matches): bool {
+    foreach($condition_matches as $condition_match) {
+        if(!empty($condition_match['lock_product_scope'])) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+function fcc_ai_get_condition_allowed_product_titles(array $condition_matches): array {
+    $titles = [];
+
+    foreach($condition_matches as $condition_match) {
+        $primary_product = trim((string) ($condition_match['primary_product'] ?? ''));
+        if($primary_product !== '') {
+            $titles[] = $primary_product;
+        }
+
+        foreach((array) ($condition_match['support_products'] ?? []) as $support_product) {
+            $support_product = trim((string) $support_product);
+            if($support_product !== '') {
+                $titles[] = $support_product;
+            }
+        }
+    }
+
+    return array_values(array_unique($titles));
 }
 
 function fcc_ai_get_public_recommendation_decision_note(string $assistant_type, array $recommendation_payload, string $language = 'hr', bool $has_article_cta = false): string {
@@ -8062,7 +8157,15 @@ function fcc_ai_get_public_knowledge_suggestions(string $assistant_type, string 
             $priority_limit
         );
 
+        if(fcc_ai_condition_locks_product_scope($condition_matches) && empty($priority_suggestions)) {
+            return [];
+        }
+
         if(!empty($priority_suggestions)) {
+            if(fcc_ai_condition_locks_product_scope($condition_matches)) {
+                return array_slice($priority_suggestions, 0, $priority_limit);
+            }
+
             $merged_suggestions = [];
             $used_priority_urls = [];
 
@@ -9093,6 +9196,9 @@ function fcc_ai_generate_public_reply(string $assistant_type, string $message, a
             'intent' => $intent,
             'knowledge_suggestions' => $knowledge_suggestions,
         ]);
+    $locked_condition_scope = $assistant_type === 'product_advisor'
+        && fcc_ai_condition_locks_product_scope((array) ($recommendation_payload['condition_matches'] ?? []));
+    $condition_locked_knowledge_suggestions = $locked_condition_scope ? $knowledge_suggestions : [];
 
     $content_blocks = [];
     $lead_capture = [
@@ -9134,7 +9240,7 @@ function fcc_ai_generate_public_reply(string $assistant_type, string $message, a
                 'lead_capture' => $lead_capture,
                 'intent' => $intent,
                 'recommendation_payload' => $recommendation_payload,
-                'knowledge_suggestions' => [],
+                'knowledge_suggestions' => $condition_locked_knowledge_suggestions,
             ];
         }
 
@@ -9774,9 +9880,11 @@ function fcc_ai_generate_public_reply(string $assistant_type, string $message, a
                 : 'Kod jačih, dugotrajnijih ili ozbiljnijih tegoba normalan prvi korak je razgovor s liječnikom kako bi cijeli kontekst i plan terapije ostali jasni.';
 
             $has_high_risk_context = fcc_ai_has_high_risk_public_medical_context($message);
+            $has_locked_condition_scope = fcc_ai_condition_locks_product_scope((array) ($recommendation_payload['condition_matches'] ?? []));
 
             if(
                 !$has_high_risk_context
+                && !$has_locked_condition_scope
                 && !empty($knowledge_suggestions[0])
                 && (
                     $is_direct_product_lookup
@@ -9796,7 +9904,7 @@ function fcc_ai_generate_public_reply(string $assistant_type, string $message, a
                         ? 'If you want only a general Forever direction after the medical check, the closest FCC route here is ' . $specific_product . ' — ' . $specific_description . '.'
                         : 'Ako želite samo opći Forever smjer nakon liječničke procjene, najbliži FCC smjer ovdje je ' . $specific_product . ' — ' . $specific_description . '.';
                 }
-            } elseif($has_high_risk_context) {
+            } elseif($has_high_risk_context || $has_locked_condition_scope) {
                 $sensitive_support_note = fcc_ai_get_public_sensitive_support_note(
                     $recommendation_payload,
                     $language,
@@ -9829,7 +9937,7 @@ function fcc_ai_generate_public_reply(string $assistant_type, string $message, a
                 'lead_capture' => $lead_capture,
                 'intent' => $intent,
                 'recommendation_payload' => $recommendation_payload,
-                'knowledge_suggestions' => [],
+                'knowledge_suggestions' => $condition_locked_knowledge_suggestions,
             ];
         } elseif(!empty($intent['water_retention_sensitive'])) {
             $content_blocks[] = $language === 'en'
@@ -9857,7 +9965,7 @@ function fcc_ai_generate_public_reply(string $assistant_type, string $message, a
                 'lead_capture' => $lead_capture,
                 'intent' => $intent,
                 'recommendation_payload' => $recommendation_payload,
-                'knowledge_suggestions' => [],
+                'knowledge_suggestions' => $condition_locked_knowledge_suggestions,
             ];
         } elseif(!empty($intent['medication_interaction_sensitive'])) {
             $specific_product = trim((string) ($knowledge_suggestions[0]['title'] ?? ''));
@@ -9921,7 +10029,7 @@ function fcc_ai_generate_public_reply(string $assistant_type, string $message, a
                 'lead_capture' => $lead_capture,
                 'intent' => $intent,
                 'recommendation_payload' => $recommendation_payload,
-                'knowledge_suggestions' => [],
+                'knowledge_suggestions' => $condition_locked_knowledge_suggestions,
             ];
         } elseif(!empty($intent['medication_replacement_sensitive'])) {
             $content_blocks[] = $language === 'en'
@@ -9951,7 +10059,7 @@ function fcc_ai_generate_public_reply(string $assistant_type, string $message, a
                 'lead_capture' => $lead_capture,
                 'intent' => $intent,
                 'recommendation_payload' => $recommendation_payload,
-                'knowledge_suggestions' => [],
+                'knowledge_suggestions' => $condition_locked_knowledge_suggestions,
             ];
         } elseif(!empty($intent['iron_deficiency_sensitive'])) {
             $content_blocks[] = $language === 'en'
@@ -9979,7 +10087,7 @@ function fcc_ai_generate_public_reply(string $assistant_type, string $message, a
                 'lead_capture' => $lead_capture,
                 'intent' => $intent,
                 'recommendation_payload' => $recommendation_payload,
-                'knowledge_suggestions' => [],
+                'knowledge_suggestions' => $condition_locked_knowledge_suggestions,
             ];
         } elseif(!empty($intent['special_population_sensitive'])) {
             $specific_product = trim((string) ($knowledge_suggestions[0]['title'] ?? ''));
@@ -10045,7 +10153,7 @@ function fcc_ai_generate_public_reply(string $assistant_type, string $message, a
                 'lead_capture' => $lead_capture,
                 'intent' => $intent,
                 'recommendation_payload' => $recommendation_payload,
-                'knowledge_suggestions' => [],
+                'knowledge_suggestions' => $condition_locked_knowledge_suggestions,
             ];
         } elseif(!empty($intent['medical_sensitive'])) {
             $has_high_risk_context = fcc_ai_has_high_risk_public_medical_context($message);
