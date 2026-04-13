@@ -40,8 +40,13 @@ $fcc_chat_lead_email_placeholder = 'Email';
 $fcc_chat_lead_phone_placeholder = $fcc_chat_is_english ? 'WhatsApp or phone' : 'WhatsApp ili telefon';
 $fcc_chat_lead_message_placeholder = $fcc_chat_is_english ? 'Short note or goal' : 'Kratka poruka ili cilj';
 $fcc_chat_lead_submit_label = $fcc_chat_is_english ? 'Send contact' : 'Pošalji kontakt';
+$fcc_chat_lead_toggle_open_text = $fcc_chat_is_english ? 'Open' : 'Otvori';
+$fcc_chat_lead_toggle_close_text = $fcc_chat_is_english ? 'Hide' : 'Spusti';
 $fcc_chat_lead_toggle_open_label = $fcc_chat_is_english ? 'Open contact form' : 'Otvori kontakt formu';
 $fcc_chat_lead_toggle_close_label = $fcc_chat_is_english ? 'Collapse contact form' : 'Spusti kontakt formu';
+$fcc_chat_lead_collapsed_hint = $fcc_chat_is_english
+    ? 'Open the form when you want to leave your contact, or continue chatting below.'
+    : 'Otvori formu kad želiš ostaviti kontakt ili nastavi razgovor ispod.';
 $fcc_chat_lead_consent_label = $fcc_chat_is_english
     ? 'I agree that the partner may contact me.'
     : 'Slažem se da me suradnik može kontaktirati.';
@@ -180,6 +185,18 @@ foreach(['hr', 'en', 'sl', 'bg'] as $fcc_chat_ui_language) {
             'en' => 'Send contact',
             default => 'Pošalji kontakt',
         },
+        'leadToggleOpenText' => match($fcc_chat_ui_language) {
+            'sl' => 'Odpri',
+            'bg' => 'Отвори',
+            'en' => 'Open',
+            default => 'Otvori',
+        },
+        'leadToggleCloseText' => match($fcc_chat_ui_language) {
+            'sl' => 'Skrij',
+            'bg' => 'Свий',
+            'en' => 'Hide',
+            default => 'Spusti',
+        },
         'leadToggleOpenLabel' => match($fcc_chat_ui_language) {
             'sl' => 'Odpri kontaktni obrazec',
             'bg' => 'Отвори контактната форма',
@@ -191,6 +208,12 @@ foreach(['hr', 'en', 'sl', 'bg'] as $fcc_chat_ui_language) {
             'bg' => 'Свий контактната форма',
             'en' => 'Collapse contact form',
             default => 'Spusti kontakt formu',
+        },
+        'leadCollapsedHint' => match($fcc_chat_ui_language) {
+            'sl' => 'Odpri obrazec, ko želiš pustiti kontakt, ali nadaljuj klepet spodaj.',
+            'bg' => 'Отвори формата, когато искаш да оставиш контакт, или продължи чата отдолу.',
+            'en' => 'Open the form when you want to leave your contact, or continue chatting below.',
+            default => 'Otvori formu kad želiš ostaviti kontakt ili nastavi razgovor ispod.',
         },
         'leadSuccessMessage' => match($fcc_chat_ui_language) {
             'sl' => 'Hvala. Vaš kontakt je shranjen in partner lahko nadaljuje pogovor.',
@@ -880,11 +903,13 @@ foreach(['hr', 'en', 'sl', 'bg'] as $fcc_chat_ui_language) {
         color: #ffffff;
         font-size: .95rem;
         font-weight: 700;
+        line-height: 1.25;
     }
 
     .fcc-chat-extreme__lead-toggle {
-        width: 30px;
-        height: 30px;
+        min-width: 74px;
+        height: 32px;
+        padding: 0 .72rem;
         flex: 0 0 auto;
         border: 1px solid rgba(125, 149, 255, .28);
         border-radius: 999px;
@@ -893,6 +918,7 @@ foreach(['hr', 'en', 'sl', 'bg'] as $fcc_chat_ui_language) {
         display: inline-flex;
         align-items: center;
         justify-content: center;
+        gap: .42rem;
         cursor: pointer;
         transition: transform .15s ease, border-color .15s ease, background-color .15s ease;
     }
@@ -906,10 +932,18 @@ foreach(['hr', 'en', 'sl', 'bg'] as $fcc_chat_ui_language) {
 
     .fcc-chat-extreme__lead-toggle i {
         transition: transform .18s ease;
+        font-size: .72rem;
     }
 
     .fcc-chat-extreme__lead.is-collapsed .fcc-chat-extreme__lead-toggle i {
         transform: rotate(180deg);
+    }
+
+    .fcc-chat-extreme__lead-toggle-text {
+        font-size: .72rem;
+        font-weight: 800;
+        letter-spacing: .02em;
+        line-height: 1;
     }
 
     .fcc-chat-extreme__lead-body {
@@ -926,6 +960,23 @@ foreach(['hr', 'en', 'sl', 'bg'] as $fcc_chat_ui_language) {
         color: #e7e2d8;
         font-size: .86rem;
         line-height: 1.45;
+    }
+
+    .fcc-chat-extreme__lead-collapsed-hint {
+        display: none;
+        color: rgba(231, 226, 216, .82);
+        font-size: .8rem;
+        line-height: 1.42;
+        padding-top: .1rem;
+        cursor: pointer;
+    }
+
+    .fcc-chat-extreme__lead.is-collapsed .fcc-chat-extreme__lead-collapsed-hint {
+        display: block;
+    }
+
+    .fcc-chat-extreme__lead.is-collapsed .fcc-chat-extreme__lead-header {
+        cursor: pointer;
     }
 
     .fcc-chat-extreme__lead-form {
@@ -1150,9 +1201,11 @@ foreach(['hr', 'en', 'sl', 'bg'] as $fcc_chat_ui_language) {
                         aria-expanded="true"
                         aria-label="<?= htmlspecialchars($fcc_chat_lead_toggle_close_label, ENT_QUOTES, 'UTF-8') ?>"
                     >
+                        <span class="fcc-chat-extreme__lead-toggle-text" data-chat-extreme-lead-toggle-text><?= htmlspecialchars($fcc_chat_lead_toggle_close_text, ENT_QUOTES, 'UTF-8') ?></span>
                         <i class="fas fa-chevron-up" aria-hidden="true"></i>
                     </button>
                 </div>
+                <div class="fcc-chat-extreme__lead-collapsed-hint" data-chat-extreme-lead-collapsed-hint><?= htmlspecialchars($fcc_chat_lead_collapsed_hint, ENT_QUOTES, 'UTF-8') ?></div>
 
                 <div class="fcc-chat-extreme__lead-body" data-chat-extreme-lead-body>
                     <div class="fcc-chat-extreme__lead-text" data-chat-extreme-lead-text><?= htmlspecialchars($fcc_chat_lead_text, ENT_QUOTES, 'UTF-8') ?></div>
@@ -1614,8 +1667,10 @@ foreach(['hr', 'en', 'sl', 'bg'] as $fcc_chat_ui_language) {
         const leadCard = document.getElementById(<?= json_encode($fcc_chat_lead_id) ?>);
         const leadTitle = leadCard ? leadCard.querySelector('[data-chat-extreme-lead-title]') : null;
         const leadText = leadCard ? leadCard.querySelector('[data-chat-extreme-lead-text]') : null;
+        const leadCollapsedHint = leadCard ? leadCard.querySelector('[data-chat-extreme-lead-collapsed-hint]') : null;
         const leadBody = leadCard ? leadCard.querySelector('[data-chat-extreme-lead-body]') : null;
         const leadToggle = leadCard ? leadCard.querySelector('[data-chat-extreme-lead-toggle]') : null;
+        const leadToggleText = leadCard ? leadCard.querySelector('[data-chat-extreme-lead-toggle-text]') : null;
         const leadForm = leadCard ? leadCard.querySelector('[data-chat-extreme-lead-form]') : null;
         const leadSubmitButton = leadForm ? leadForm.querySelector('button[type="submit"]') : null;
         const leadSubmitButtonDefaultHtml = leadSubmitButton ? leadSubmitButton.innerHTML : '';
@@ -1830,8 +1885,11 @@ foreach(['hr', 'en', 'sl', 'bg'] as $fcc_chat_ui_language) {
             feedbackNegativeLabel: <?= json_encode($fcc_chat_feedback_negative_label) ?>,
             feedbackReasonTitle: <?= json_encode($fcc_chat_feedback_reason_title) ?>,
             feedbackReasonOptions: <?= json_encode($fcc_chat_feedback_reason_options, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>,
+            leadToggleOpenText: <?= json_encode($fcc_chat_lead_toggle_open_text) ?>,
+            leadToggleCloseText: <?= json_encode($fcc_chat_lead_toggle_close_text) ?>,
             leadToggleOpenLabel: <?= json_encode($fcc_chat_lead_toggle_open_label) ?>,
             leadToggleCloseLabel: <?= json_encode($fcc_chat_lead_toggle_close_label) ?>,
+            leadCollapsedHint: <?= json_encode($fcc_chat_lead_collapsed_hint) ?>,
             preTypingPause: 950,
             minTypingDelay: 1050,
         };
@@ -1844,7 +1902,7 @@ foreach(['hr', 'en', 'sl', 'bg'] as $fcc_chat_ui_language) {
             isSending: false,
             isLeadSubmitting: false,
             leadCaptured: false,
-            leadCardExpanded: true,
+            leadCardExpanded: false,
             pendingLeadCapture: null,
             scrollY: 0,
             linkId: Number(config.linkId || 0),
@@ -1988,12 +2046,24 @@ foreach(['hr', 'en', 'sl', 'bg'] as $fcc_chat_ui_language) {
                     submitButton.textContent = copy.leadSubmitLabel;
                 }
 
+                if(copy.leadToggleOpenText) {
+                    config.leadToggleOpenText = copy.leadToggleOpenText;
+                }
+
+                if(copy.leadToggleCloseText) {
+                    config.leadToggleCloseText = copy.leadToggleCloseText;
+                }
+
                 if(copy.leadToggleOpenLabel) {
                     config.leadToggleOpenLabel = copy.leadToggleOpenLabel;
                 }
 
                 if(copy.leadToggleCloseLabel) {
                     config.leadToggleCloseLabel = copy.leadToggleCloseLabel;
+                }
+
+                if(copy.leadCollapsedHint) {
+                    config.leadCollapsedHint = copy.leadCollapsedHint;
                 }
 
                 if(channelSelect) {
@@ -2017,6 +2087,13 @@ foreach(['hr', 'en', 'sl', 'bg'] as $fcc_chat_ui_language) {
             leadBody.hidden = !state.leadCardExpanded;
             leadToggle.setAttribute('aria-expanded', state.leadCardExpanded ? 'true' : 'false');
             leadToggle.setAttribute('aria-label', state.leadCardExpanded ? config.leadToggleCloseLabel : config.leadToggleOpenLabel);
+            if(leadToggleText) {
+                leadToggleText.textContent = state.leadCardExpanded ? config.leadToggleCloseText : config.leadToggleOpenText;
+            }
+            if(leadCollapsedHint) {
+                leadCollapsedHint.hidden = state.leadCardExpanded;
+                leadCollapsedHint.textContent = config.leadCollapsedHint;
+            }
         };
 
         applyLocalizedCopy(config.language);
@@ -2721,8 +2798,8 @@ foreach(['hr', 'en', 'sl', 'bg'] as $fcc_chat_ui_language) {
             const responseLeadCapture = details.reply && details.reply.lead_capture ? details.reply.lead_capture : null;
 
             if(responseLeadCapture && responseLeadCapture.recommended) {
-                await delay(280);
-                syncLeadCard(responseLeadCapture, {autoOpen: true});
+                await delay(1400);
+                syncLeadCard(responseLeadCapture, {autoReveal: true});
                 scrollThreadToBottom();
             } else {
                 syncLeadCard(responseLeadCapture);
@@ -2766,6 +2843,8 @@ foreach(['hr', 'en', 'sl', 'bg'] as $fcc_chat_ui_language) {
 
             if(options.autoOpen) {
                 setLeadExpanded(true);
+            } else if(options.autoReveal && leadCard.hidden === false) {
+                setLeadExpanded(false);
             }
         };
 
@@ -3079,7 +3158,29 @@ foreach(['hr', 'en', 'sl', 'bg'] as $fcc_chat_ui_language) {
             });
         }
 
-        setLeadExpanded(true);
+        if(leadCollapsedHint) {
+            leadCollapsedHint.addEventListener('click', () => {
+                setLeadExpanded(true);
+            });
+        }
+
+        if(leadCard) {
+            const leadHeader = leadCard.querySelector('.fcc-chat-extreme__lead-header');
+
+            if(leadHeader) {
+                leadHeader.addEventListener('click', event => {
+                    if(event.target instanceof HTMLElement && event.target.closest('[data-chat-extreme-lead-toggle]')) {
+                        return;
+                    }
+
+                    if(!state.leadCardExpanded) {
+                        setLeadExpanded(true);
+                    }
+                });
+            }
+        }
+
+        setLeadExpanded(false);
 
         const syncViewportState = () => {
             if(!mobileMedia.matches) {
