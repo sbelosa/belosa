@@ -4809,6 +4809,23 @@ function fcc_ai_is_low_context_follow_up_message(string $message): bool {
     }
 
     if(count(fcc_ai_extract_search_tokens($message)) <= 4) {
+        if(fcc_ai_contains_keywords($message, [
+            'što je dobro',
+            'sto je dobro',
+            'što se preporuča',
+            'što se preporučuje',
+            'sto se preporuca',
+            'preporuka za',
+            'što koristiti',
+            'sto koristiti',
+            'imam problem',
+            'imam',
+            'kod ',
+            'za ',
+        ])) {
+            return false;
+        }
+
         return true;
     }
 
@@ -4873,6 +4890,104 @@ function fcc_ai_build_contextual_public_message(int $conversation_id, string $me
         'recent_user_context' => $recent_user_context,
         'used_context' => true,
     ];
+}
+
+function fcc_ai_get_previous_public_user_message(int $conversation_id, string $current_message = ''): string {
+    if($conversation_id <= 0) {
+        return '';
+    }
+
+    $current_message = trim($current_message);
+    $messages = array_reverse(fcc_ai_get_conversation_messages($conversation_id, 16));
+
+    foreach($messages as $row) {
+        if(($row['role'] ?? '') !== 'user') {
+            continue;
+        }
+
+        $content = trim((string) ($row['content'] ?? ''));
+
+        if($content === '' || ($current_message !== '' && $content === $current_message)) {
+            continue;
+        }
+
+        return $content;
+    }
+
+    return '';
+}
+
+function fcc_ai_is_explicit_monthly_quantity_request(string $message): bool {
+    return fcc_ai_contains_keywords($message, [
+        'za mjesec dana',
+        'za mesec dana',
+        'mjesec dana',
+        'mesec dana',
+        'mjesečn',
+        'mjesecnu',
+        'mjesečnu',
+        'month supply',
+        'for a month',
+        'monthly quantity',
+        'koliko mi treba',
+        'koliko mi je potrebno',
+        'koliko toga treba',
+        'kolika količina',
+        'kolike količine',
+        'koliko komada',
+    ]);
+}
+
+function fcc_ai_is_topical_joint_followup_request(string $message): bool {
+    return fcc_ai_contains_keywords($message, [
+        'krema',
+        'gel',
+        'gela',
+        'lokalno',
+        'izvana',
+        'namazati',
+        'mazati',
+        'mazanje',
+        'cooling lotion',
+        'msm gel',
+        'što mogu još mazati',
+        'sto mogu jos mazati',
+        'što još izvana',
+        'sto jos izvana',
+    ]);
+}
+
+function fcc_ai_should_reset_public_problem_context(string $assistant_type, string $current_message, string $previous_user_message = '', string $language = 'hr'): bool {
+    if($assistant_type !== 'product_advisor') {
+        return false;
+    }
+
+    $current_message = trim($current_message);
+    $previous_user_message = trim($previous_user_message);
+
+    if($current_message === '' || $previous_user_message === '') {
+        return false;
+    }
+
+    if(fcc_ai_is_low_context_follow_up_message($current_message) || fcc_ai_is_explicit_monthly_quantity_request($current_message)) {
+        return false;
+    }
+
+    $current_condition_keys = fcc_ai_get_condition_match_keys(
+        fcc_ai_get_product_advisor_condition_matches($current_message, $language)
+    );
+    $previous_condition_keys = fcc_ai_get_condition_match_keys(
+        fcc_ai_get_product_advisor_condition_matches($previous_user_message, $language)
+    );
+
+    if(empty($current_condition_keys) || empty($previous_condition_keys)) {
+        return false;
+    }
+
+    sort($current_condition_keys);
+    sort($previous_condition_keys);
+
+    return $current_condition_keys !== $previous_condition_keys;
 }
 
 function fcc_ai_contains_keywords(string $content, array $keywords): bool {
@@ -6129,6 +6244,7 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
                 'en' => 'If you want a simple one-month frame right away, this is most often positioned as 3 x Forever Aloe Vera Gel™ and 1 box of Forever Arctic Sea. If you want, I can also outline the simplest daily usage rhythm.',
             ],
             'suppress_generic_questions' => true,
+            'lock_product_scope' => true,
         ],
         'kidney_stone_support' => [
             'patterns' => ['kamenac u bubregu', 'kamenca u bubregu', 'kamen u bubregu', 'kameni u bubregu', 'kamenci u bubregu', 'kamen u bubrezima', 'kamenci u bubrezima', 'bubrežni kamenac', 'bubrezni kamenac', 'kamenami', 'ledvinami'],
@@ -6344,25 +6460,25 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
             'primary_product' => 'Forever Aloe Vera Gel™',
             'support_products' => ['Forever Arctic Sea', 'Forever Royal Jelly', 'Forever B12 Plus'],
             'label' => [
-                'hr' => 'živčani sustav i svakodnevna podrška',
-                'en' => 'nerve wellness and daily support',
+                'hr' => 'živčani sustav i nutritivna podrška',
+                'en' => 'nervous system nutrition support',
             ],
             'opening_note' => [
-                'hr' => 'Kod ovakvih pitanja ostajemo na općem smjeru svakodnevne podrške i ne ulazimo u neurološku procjenu, ali možemo usmjeriti na najlogičniji nutritivni Forever smjer.',
-                'en' => 'For these questions, stay in a general wellness lane and avoid neurological assessment, but still point toward the most logical nutritional Forever direction.',
+                'hr' => 'Kod neuroloških ili živčanih pitanja prvi korak je liječnik ili neurolog, ali ako želite Forever smjer koji se najčešće koristi kao nutritivna podrška, ovdje ga treba jasno navesti i zadržati fokus na proizvodima za taj kontekst.',
+                'en' => 'For neurological or nerve-focused questions, doctor or neurologist comes first, but if you want the Forever direction most often used as nutritional support, it should be stated clearly and stay focused on products that fit this context.',
             ],
             'recommendation_lines' => [
                 'hr' => [
-                    'Forever Aloe Vera Gel™ je ovdje glavni Forever smjer kao osnovni dnevni nutritivni napitak za jednostavnu rutinu opće podrške organizmu.',
-                    'Forever Arctic Sea je dobra support opcija uz to kao omega-3 nutritivna podrška koja se često uključuje u svakodnevnu rutinu kod neurološki osjetljivijih pitanja.',
-                    'Forever Royal Jelly je ovdje važna dodatna preporuka jer sadrži matičnu mliječ i često se uključuje kao nutritivna podrška kada je fokus na živčanom sustavu i svakodnevnoj vitalnosti.',
-                    'Forever B12 Plus može biti dobra dodatna support opcija kada je fokus na oštećenim ili osjetljivijim živcima, jer se vitamin B12 često veže uz svakodnevnu nutritivnu podršku živčanom sustavu.',
+                    'Forever Aloe Vera Gel™ je ovdje glavni Forever smjer kao osnovni nutritivni napitak koji korisnici često uključe kao prvi korak.',
+                    'Forever Arctic Sea je važna dodatna preporuka zbog omega-3 masnih kiselina kada želite širu nutritivnu podršku živčanom sustavu.',
+                    'Forever Royal Jelly je ovdje posebno smislen dodatak jer se matična mliječ često uključuje kada je fokus na živcima, facialisu i općoj vitalnosti.',
+                    'Forever B12 Plus je dobar dodatni smjer kada je riječ o oštećenim, osjetljivim ili upaljenim živcima jer se vitamin B12 često veže uz nutritivnu podršku regeneraciji živčanog sustava.',
                 ],
                 'en' => [
-                    'Forever Aloe Vera Gel™ is the main Forever direction here as a base daily nutrition drink for a simple general-support routine.',
-                    'Forever Arctic Sea is a useful support option on top as omega-3 nutritional support that often fits into an everyday routine when the context feels more neurologically sensitive.',
-                    'Forever Royal Jelly is an important additional recommendation here because it contains royal jelly and is often included as nutritional support when the focus is the nervous system and everyday vitality.',
-                    'Forever B12 Plus can be a strong extra support option when the focus is damaged or irritated nerves, because vitamin B12 is often associated with everyday nutritional support for the nervous system.',
+                    'Forever Aloe Vera Gel™ is the main Forever direction here as a base nutrition drink that people often include as the first step.',
+                    'Forever Arctic Sea is an important additional recommendation because omega-3 fatty acids are often used when a broader nutritional support direction for the nervous system is wanted.',
+                    'Forever Royal Jelly is especially relevant here because royal jelly is often included when the focus is nerves, facial nerve support and broader vitality.',
+                    'Forever B12 Plus is a strong additional direction when the context includes damaged, sensitive or inflamed nerves, because vitamin B12 is commonly linked with nutritional support for nerve regeneration.',
                 ],
             ],
             'suppress_generic_questions' => true,
@@ -6392,6 +6508,35 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
                 ],
             ],
             'suppress_generic_questions' => true,
+        ],
+        'psoriasis_support' => [
+            'patterns' => ['psorijaza', 'psorijazu', 'psorijaz', 'psoriasis'],
+            'preferred_patterns' => ['aloe propolis creme', 'propolis creme', 'aloe vera gelly', 'gelly', 'aloe vera gel', 'aloe gel'],
+            'primary_product' => 'Aloe Propolis Creme',
+            'support_products' => ['Forever Aloe Vera Gelly', 'Forever Aloe Vera Gel™'],
+            'label' => [
+                'hr' => 'psorijaza i ciljana njega kože',
+                'en' => 'psoriasis-style skin support',
+            ],
+            'opening_note' => [
+                'hr' => 'Kod psorijaze prvi korak je dermatolog i postojeća terapija, ali ako želite Forever smjer koji ljudi najčešće gledaju uz svakodnevnu njegu kože, ovdje preporuka treba ostati na točnoj aloe/propolis rutini, a ne otići na facial skincare liniju.',
+                'en' => 'With a psoriasis context, dermatologist guidance and the current therapy come first, but if you want the Forever direction people most often look at for everyday skin support, the recommendation should stay on the aloe/propolis route rather than drift into a facial skincare line.',
+            ],
+            'recommendation_lines' => [
+                'hr' => [
+                    'Aloe Propolis Creme je ovdje glavni Forever smjer za lokalnu njegu jer se najčešće gleda kada je cilj bogatija krema izvana i nježnija svakodnevna rutina kože.',
+                    'Forever Aloe Vera Gelly može biti dobra support opcija uz to kada želite laganiji aloe sloj izvana tijekom dana.',
+                    'Forever Aloe Vera Gel™ može se gledati kao dopunski nutritivni smjer iznutra ako želite jednostavnu aloe rutinu uz lokalnu njegu.',
+                ],
+                'en' => [
+                    'Aloe Propolis Creme is the main Forever direction here for local care because it is most often considered when the goal is richer outer care and a gentler everyday skin routine.',
+                    'Forever Aloe Vera Gelly can be a useful support option on top when you want a lighter aloe layer on the skin during the day.',
+                    'Forever Aloe Vera Gel™ can be viewed as the complementary inside-nutrition direction if you want a simple aloe routine alongside the topical care.',
+                ],
+            ],
+            'suppress_generic_questions' => true,
+            'sensitive_support_only' => true,
+            'lock_product_scope' => true,
         ],
         'cartilage_mobility_support' => [
             'patterns' => ['oštećena hrskavica', 'ostecena hrskavica', 'uništena hrskavica', 'unistena hrskavica', 'hrskavica na oba kuka', 'oštećenu hrskavicu', 'ostecenu hrskavicu'],
@@ -7831,6 +7976,74 @@ function fcc_ai_get_public_sensitive_support_note(array $recommendation_payload,
     return $intro . "\n" . implode("\n", $formatted_lines) . $outro . $cta_tail;
 }
 
+function fcc_ai_get_public_support_request_lead_capture(string $language = 'hr', string $variant = 'generic'): array {
+    $language = fcc_ai_resolve_public_reply_language($language);
+
+    $copy = match($variant) {
+        'medical_followup' => match($language) {
+            'en' => [
+                'headline' => 'Would you like to continue this case personally?',
+                'text' => 'Leave your contact and the partner can go through this specific situation, the products, and the next step with you after the medical consultation.',
+            ],
+            'sl' => [
+                'headline' => 'Želite osebno nadaljevati glede tega primera?',
+                'text' => 'Pustite kontakt in partner lahko z vami osebno pregleda ta konkreten primer, izdelke in naslednji korak po zdravniškem posvetu.',
+            ],
+            'bg' => [
+                'headline' => 'Искате ли личен разговор по този конкретен случай?',
+                'text' => 'Оставете контакт и партньорът може да мине лично с вас през този конкретен случай, продуктите и следващата стъпка след консултацията с лекар.',
+            ],
+            default => [
+                'headline' => 'Želite osobni nastavak razgovora o ovom problemu?',
+                'text' => 'Ostavite kontakt pa partner može s vama osobno proći ovaj konkretan slučaj, proizvode i sljedeći korak nakon liječničke konzultacije.',
+            ],
+        },
+        'medical_after_check' => match($language) {
+            'en' => [
+                'headline' => 'Would you like a personal follow-up after the medical check?',
+                'text' => 'Leave your contact and the partner can continue this specific case with you once the medical step is clarified.',
+            ],
+            'sl' => [
+                'headline' => 'Želite osebni nadaljnji stik po zdravstvenem pregledu?',
+                'text' => 'Pustite kontakt in partner lahko z vami nadaljuje ta konkretni primer, ko bo zdravstveni korak razjasnjen.',
+            ],
+            'bg' => [
+                'headline' => 'Искате ли личен разговор след медицинската проверка?',
+                'text' => 'Оставете контакт и партньорът може да продължи този конкретен случай с вас, когато медицинската стъпка бъде изяснена.',
+            ],
+            default => [
+                'headline' => 'Želite osobni nastavak razgovora nakon liječničke provjere?',
+                'text' => 'Ostavite kontakt pa partner može s vama nastaviti baš ovaj konkretan slučaj nakon što medicinski korak bude razjašnjen.',
+            ],
+        },
+        default => match($language) {
+            'en' => [
+                'headline' => 'Would you like a personal follow-up?',
+                'text' => 'Leave your contact and the partner can help you directly.',
+            ],
+            'sl' => [
+                'headline' => 'Želite osebni nadaljnji stik?',
+                'text' => 'Pustite kontakt in partner vam lahko pomaga neposredno.',
+            ],
+            'bg' => [
+                'headline' => 'Искате ли лично продължение на разговора?',
+                'text' => 'Оставете контакт и партньорът може да ви помогне директно.',
+            ],
+            default => [
+                'headline' => 'Želite osobni nastavak razgovora?',
+                'text' => 'Ostavite kontakt i partner vam može pomoći izravno.',
+            ],
+        },
+    };
+
+    return [
+        'recommended' => true,
+        'lead_type' => 'support_request',
+        'headline' => (string) ($copy['headline'] ?? ''),
+        'text' => (string) ($copy['text'] ?? ''),
+    ];
+}
+
 function fcc_ai_get_public_lead_saved_note(string $language = 'hr', string $owner_name = ''): string {
     $language = fcc_ai_resolve_public_reply_language($language);
     $first_name = fcc_ai_extract_first_name($owner_name);
@@ -9146,7 +9359,34 @@ function fcc_ai_build_conversation_model_messages(object $conversation, string $
     return $messages;
 }
 
-function fcc_ai_build_public_model_messages(object $conversation, string $system_prompt, int $history_limit = 14): array {
+function fcc_ai_build_public_model_messages(object $conversation, string $system_prompt, int $history_limit = 14, array $context = []): array {
+    if(!empty($context['reset_history'])) {
+        $messages = [
+            [
+                'role' => 'system',
+                'content' => $system_prompt,
+            ]
+        ];
+
+        foreach(array_reverse(fcc_ai_get_conversation_messages((int) $conversation->fcc_ai_conversation_id, 8)) as $history_message) {
+            $role = trim((string) ($history_message['role'] ?? ''));
+            $message_type = trim((string) ($history_message['message_type'] ?? 'chat'));
+            $content = trim((string) ($history_message['content'] ?? ''));
+
+            if($role !== 'user' || !in_array($message_type, ['welcome', 'chat'], true) || $content === '') {
+                continue;
+            }
+
+            $messages[] = [
+                'role' => 'user',
+                'content' => $content,
+            ];
+            break;
+        }
+
+        return $messages;
+    }
+
     return fcc_ai_build_conversation_model_messages($conversation, $system_prompt, $history_limit, ['welcome', 'chat']);
 }
 
@@ -9257,7 +9497,7 @@ function fcc_ai_send_openai_chat_messages(string $model, array $messages, string
 function fcc_ai_try_generate_public_model_reply(object $conversation, array $context = [], ?object $assistant = null): array {
     $model = fcc_ai_resolve_assistant_model($assistant);
     $system_prompt = fcc_ai_build_public_system_prompt((string) $conversation->assistant_type, $context, $assistant);
-    $messages = fcc_ai_build_public_model_messages($conversation, $system_prompt);
+    $messages = fcc_ai_build_public_model_messages($conversation, $system_prompt, 14, $context);
 
     if(count($messages) < 2) {
         return [
@@ -9303,6 +9543,7 @@ function fcc_ai_generate_public_reply(string $assistant_type, string $message, a
         'text' => '',
     ];
     $is_direct_product_lookup = $assistant_type === 'product_advisor' && fcc_ai_is_direct_product_lookup_message($message);
+    $is_explicit_monthly_quantity_request = $assistant_type === 'product_advisor' && fcc_ai_is_explicit_monthly_quantity_request($message);
 
     $is_direct_contact_request = !empty($intent['contact']) && !$intent['business'] && !fcc_ai_contains_keywords($message, [
         'probav', 'energ', 'imunit', 'zglob', 'težin', 'tezin', 'mobility', 'digestion', 'energy', 'weight', 'skin', 'dlaka', 'koža', 'koza'
@@ -9949,14 +10190,7 @@ function fcc_ai_generate_public_reply(string $assistant_type, string $message, a
                     : 'Nakon toga, ako želite, i dalje mogu objasniti samo opće Forever smjerove iz FCC baze, bez predstavljanja proizvoda kao terapije.');
 
             if(!$lead_already_captured) {
-                $lead_capture = [
-                    'recommended' => true,
-                    'lead_type' => 'support_request',
-                    'headline' => $language === 'en' ? 'Would you like a personal follow-up later?' : 'Želite osobni nastavak razgovora kasnije?',
-                    'text' => $language === 'en'
-                        ? 'Leave your contact and the partner can continue with general information after the professional check.'
-                        : 'Ostavite kontakt i partner može nastaviti s općim informacijama nakon stručne provjere.',
-                ];
+                $lead_capture = fcc_ai_get_public_support_request_lead_capture($language, 'medical_after_check');
             }
 
             return [
@@ -10016,14 +10250,7 @@ function fcc_ai_generate_public_reply(string $assistant_type, string $message, a
             }
 
             if(!$lead_already_captured && ($intent['contact'] || $intent['medical_sensitive'])) {
-                $lead_capture = [
-                    'recommended' => true,
-                    'lead_type' => 'support_request',
-                    'headline' => $language === 'en' ? 'Would you like a personal follow-up later?' : 'Želite osobni nastavak razgovora kasnije?',
-                    'text' => $language === 'en'
-                        ? 'Leave your contact and the partner can continue with general information after the medical step is handled.'
-                        : 'Ostavite kontakt i partner može nastaviti s općim informacijama nakon što riješite medicinski korak.',
-                ];
+                $lead_capture = fcc_ai_get_public_support_request_lead_capture($language, 'medical_followup');
             }
 
             return [
@@ -10108,14 +10335,7 @@ function fcc_ai_generate_public_reply(string $assistant_type, string $message, a
             }
 
             if(!$lead_already_captured) {
-                $lead_capture = [
-                    'recommended' => true,
-                    'lead_type' => 'support_request',
-                    'headline' => $language === 'en' ? 'Would you like a personal follow-up later?' : 'Želite osobni nastavak razgovora kasnije?',
-                    'text' => $language === 'en'
-                        ? 'Leave your contact and the partner can continue with general information after the professional check.'
-                        : 'Ostavite kontakt i partner može nastaviti s općim informacijama nakon stručne provjere.',
-                ];
+                $lead_capture = fcc_ai_get_public_support_request_lead_capture($language, 'medical_after_check');
             }
 
             return [
@@ -10136,14 +10356,7 @@ function fcc_ai_generate_public_reply(string $assistant_type, string $message, a
                 : 'Ako želite nakon toga, i dalje mogu objasniti Forever proizvod samo kroz sastojke i opću podršku rutini, bez tvrdnji da rješava bol.';
 
             if(!$lead_already_captured) {
-                $lead_capture = [
-                    'recommended' => true,
-                    'lead_type' => 'support_request',
-                    'headline' => $language === 'en' ? 'Would you like a personal follow-up later?' : 'Želite osobni nastavak razgovora kasnije?',
-                    'text' => $language === 'en'
-                        ? 'Leave your contact and the partner can continue with general information after the professional check.'
-                        : 'Ostavite kontakt i partner može nastaviti s općim informacijama nakon stručne provjere.',
-                ];
+                $lead_capture = fcc_ai_get_public_support_request_lead_capture($language, 'medical_after_check');
 
                 $content_blocks[] = fcc_ai_get_public_user_contact_invite_note($assistant_type, $language, $owner_name);
             }
@@ -10166,14 +10379,7 @@ function fcc_ai_generate_public_reply(string $assistant_type, string $message, a
                 : 'Najsigurniji sljedeći korak je prvo liječnički pregled ili uvid u nalaze, posebno kod starije osobe. Nakon toga, ako želite, mogu objasniti samo opće nutritivne smjerove podrške iz FCC baze.';
 
             if(!$lead_already_captured) {
-                $lead_capture = [
-                    'recommended' => true,
-                    'lead_type' => 'support_request',
-                    'headline' => $language === 'en' ? 'Would you like a personal follow-up later?' : 'Želite osobni nastavak razgovora kasnije?',
-                    'text' => $language === 'en'
-                        ? 'Leave your contact and the partner can continue with general information after the medical check.'
-                        : 'Ostavite kontakt i partner može nastaviti s općim informacijama nakon liječničke provjere.',
-                ];
+                $lead_capture = fcc_ai_get_public_support_request_lead_capture($language, 'medical_after_check');
             }
 
             return [
@@ -10230,14 +10436,7 @@ function fcc_ai_generate_public_reply(string $assistant_type, string $message, a
             }
 
             if(!$lead_already_captured && ($intent['contact'] || $intent['medical_sensitive'] || $intent['product'])) {
-                $lead_capture = [
-                    'recommended' => true,
-                    'lead_type' => 'support_request',
-                    'headline' => $language === 'en' ? 'Would you like a personal follow-up later?' : 'Želite osobni nastavak razgovora kasnije?',
-                    'text' => $language === 'en'
-                        ? 'Leave your contact and the partner can continue with general information after the professional check.'
-                        : 'Ostavite kontakt i partner može nastaviti s općim informacijama nakon stručne provjere.',
-                ];
+                $lead_capture = fcc_ai_get_public_support_request_lead_capture($language, 'medical_after_check');
 
                 $content_blocks[] = fcc_ai_get_public_user_contact_invite_note($assistant_type, $language, $owner_name);
             }
@@ -10442,6 +10641,7 @@ function fcc_ai_generate_public_reply(string $assistant_type, string $message, a
             && empty($intent['special_population_sensitive'])
             && empty($intent['medication_interaction_sensitive'])
             && empty($intent['medication_replacement_sensitive'])
+            && !$is_explicit_monthly_quantity_request
         ) {
             $decision_note = fcc_ai_get_public_recommendation_decision_note(
                 $assistant_type,
@@ -13014,10 +13214,17 @@ function fcc_ai_handle_public_message(array $payload): array {
     $recent_user_context = trim((string) ($contextual_message_bundle['recent_user_context'] ?? ''));
     $used_context_for_matching = !empty($contextual_message_bundle['used_context']);
     $intent = fcc_ai_detect_public_intent((string) $conversation->assistant_type, $message_for_matching);
+    $previous_user_message = fcc_ai_get_previous_public_user_message((int) ($conversation->fcc_ai_conversation_id ?? 0), $current_user_message);
+    $should_reset_problem_context = fcc_ai_should_reset_public_problem_context(
+        (string) ($conversation->assistant_type ?? ''),
+        $current_user_message,
+        $previous_user_message,
+        $resolved_language
+    );
     $has_high_risk_medical_context = (string) ($conversation->assistant_type ?? '') === 'product_advisor'
         && fcc_ai_has_high_risk_public_medical_context($current_user_message);
 
-    if($has_high_risk_medical_context) {
+    if($has_high_risk_medical_context || $should_reset_problem_context) {
         $message_for_matching = $current_user_message;
         $recent_user_context = '';
         $used_context_for_matching = false;
@@ -13034,6 +13241,70 @@ function fcc_ai_handle_public_message(array $payload): array {
         'intent' => $intent,
         'knowledge_suggestions' => $knowledge_suggestions,
     ]);
+
+    $is_joint_topical_followup = (string) ($conversation->assistant_type ?? '') === 'product_advisor'
+        && fcc_ai_is_topical_joint_followup_request($current_user_message)
+        && fcc_ai_contains_keywords($message_for_matching, ['hrskavic', 'koljen', 'zglob', 'kuk', 'artroz', 'artrit', 'pokretljiv']);
+
+    if($is_joint_topical_followup) {
+        $topical_condition_match = [
+            'key' => 'joint_topical_followup',
+            'label' => $resolved_language === 'en' ? 'joint care from the outside' : ($resolved_language === 'sl' ? 'lokalna nega sklepov' : 'lokalna njega zglobova'),
+            'opening_note' => $resolved_language === 'en'
+                ? 'If you already have the main joint direction from the inside and are now asking what to use from the outside, the cleaner Forever next step is to stay on the local joint-care route.'
+                : ($resolved_language === 'sl'
+                    ? 'Če glavno smer za sklepe že imate od znotraj in zdaj sprašujete, kaj uporabiti zunaj, je najbolj čista naslednja Forever smer ostati na lokalni negi sklepov.'
+                    : 'Ako glavni smjer za zglobove već imate iznutra i sada pitate što koristiti izvana, najčišći sljedeći Forever korak je ostati na lokalnoj njezi zglobova.'),
+            'recommendation_lines' => $resolved_language === 'en'
+                ? [
+                    'Forever Aloe Cooling Lotion is the clearest first external direction here when you want a calmer local routine for joints and overload.',
+                    'Forever Aloe MSM Gel can stay next to that as an additional topical support option if you want a second local layer.',
+                ]
+                : ($resolved_language === 'sl'
+                    ? [
+                        'Forever Aloe Cooling Lotion je tukaj najbolj čista prva zunanja smer, ko želite mirnejšo lokalno rutino za sklepe in obremenitev.',
+                        'Forever Aloe MSM Gel lahko ostane ob tem kot dodatna topikalna podporna možnost, če želite še drugo lokalno plast.',
+                    ]
+                    : [
+                        'Forever Aloe Cooling Lotion je ovdje najčišći prvi vanjski smjer kada želite mirniju lokalnu rutinu za zglobove i opterećenje.',
+                        'Forever Aloe MSM Gel može ostati uz to kao dodatna topikalna support opcija ako želite još jedan lokalni sloj.',
+                    ]),
+            'primary_product' => 'Forever Aloe Cooling Lotion',
+            'support_products' => ['Forever Aloe MSM Gel'],
+            'matched_patterns' => ['lokalno', 'krema', 'zglobovi'],
+            'lock_product_scope' => true,
+            'sensitive_support_only' => true,
+        ];
+
+        $knowledge_suggestions = fcc_ai_get_condition_priority_product_suggestions(
+            [$topical_condition_match],
+            fcc_ai_get_blog_language_name($resolved_language),
+            $resolved_language,
+            trim((string) ($link->url ?? '')),
+            (string) ($conversation->assistant_type ?? 'product_advisor'),
+            [],
+            $message_for_matching,
+            3
+        );
+
+        $recommendation_payload = [
+            'theme_matches' => [],
+            'theme_keys' => ['mobility'],
+            'condition_matches' => [$topical_condition_match],
+            'condition_keys' => ['joint_topical_followup'],
+            'opening_note' => (string) $topical_condition_match['opening_note'],
+            'recommendation_lines' => (array) $topical_condition_match['recommendation_lines'],
+            'question_lines' => [],
+            'needs_clarification' => false,
+            'combination_note' => '',
+            'discount_note' => '',
+            'primary_product' => 'Forever Aloe Cooling Lotion',
+            'support_products' => ['Forever Aloe MSM Gel'],
+            'monthly_quantity_note' => '',
+            'sensitive_support_only' => true,
+            'system_brief' => 'Primary product anchor for this exact message: Forever Aloe Cooling Lotion. Allowed Forever product scope for this exact message: Forever Aloe Cooling Lotion | Forever Aloe MSM Gel. Do not mention other skincare, sunscreen, face-care, ingestible drinks, or unrelated fallback products.',
+        ];
+    }
 
     fcc_ai_log_message((int) $conversation->fcc_ai_conversation_id, 'user', $message, [
         'message_type' => 'chat',
@@ -13057,6 +13328,7 @@ function fcc_ai_handle_public_message(array $payload): array {
         'knowledge_suggestions' => $knowledge_suggestions,
         'recommendation_payload' => $recommendation_payload,
         'recent_user_context' => $has_high_risk_medical_context ? '' : $recent_user_context,
+        'reset_history' => $should_reset_problem_context,
     ]);
 
     $model_attempt = fcc_ai_try_generate_public_model_reply($conversation, [
@@ -13069,6 +13341,7 @@ function fcc_ai_handle_public_message(array $payload): array {
         'knowledge_suggestions' => $knowledge_suggestions,
         'recommendation_payload' => $recommendation_payload,
         'recent_user_context' => $has_high_risk_medical_context ? '' : $recent_user_context,
+        'reset_history' => $should_reset_problem_context,
     ], $assistant);
 
     $reply_meta = [
