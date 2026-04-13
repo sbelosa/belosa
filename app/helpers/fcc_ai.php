@@ -5508,6 +5508,18 @@ function fcc_ai_get_public_query_alias_phrases(string $message): array {
         $aliases[] = 'metabolic balance insulin resistance';
     }
 
+    if(fcc_ai_contains_keywords($message, ['tromboz', 'tromoz'])) {
+        $aliases[] = 'thrombosis support aloe vera gel arctic sea';
+    }
+
+    if(fcc_ai_contains_keywords($message, ['hemoroid', 'hemorrhoid'])) {
+        $aliases[] = 'hemorrhoid support aloe vera gel peaches pro b herbal tea aloe vera gelly';
+    }
+
+    if(fcc_ai_contains_keywords($message, ['nature min', 'naturemin', 'nature-min'])) {
+        $aliases[] = 'nature min trace minerals electrolyte mineral balance';
+    }
+
     if(fcc_ai_contains_keywords($message, ['mršav', 'mrsav', 'mršavljenje', 'mrsavljenje', 'weight loss', 'smrs', 'smrš', 'debljanje', 'kilograma', 'mesec dana', 'mjesec dana'])) {
         $aliases[] = 'c9 structured weight routine';
     }
@@ -5734,6 +5746,8 @@ function fcc_ai_get_public_direct_product_lookup_matches(string $message): array
     }
 
     $catalog = [
+        'nature_min' => ['nature min', 'nature-min', 'naturemin'],
+        'calcium' => ['forever calcium', 'calcium'],
         'therm' => ['therm', 'term food'],
         'lean' => ['lean', 'forever lean'],
         'royal_jelly' => ['rojal', 'royal jelly', 'royal keli', 'royal kelly'],
@@ -5786,6 +5800,7 @@ function fcc_ai_get_public_direct_product_lookup_matches(string $message): array
         'fields_of_greens' => ['forever fields of greens', 'fields of greens'],
         'bee_pollen' => ['forever bee pollen', 'bee pollen'],
         'active_ha' => ['forever active ha', 'active ha'],
+        'move' => ['forever move', 'esm complex'],
         'freedom' => ['forever freedom'],
         'epiblanc' => ['forever epiblanc', 'epiblanc'],
         'hydrating_serum' => ['forever hydrating serum', 'hydrating serum'],
@@ -5812,6 +5827,8 @@ function fcc_ai_get_public_direct_product_lookup_matches(string $message): array
 
 function fcc_ai_get_public_direct_product_lookup_titles(): array {
     return [
+        'nature_min' => 'Forever Nature Min',
+        'calcium' => 'Forever Calcium',
         'therm' => 'Forever Therm™',
         'lean' => 'Forever Lean®',
         'royal_jelly' => 'Forever Royal Jelly',
@@ -5864,6 +5881,7 @@ function fcc_ai_get_public_direct_product_lookup_titles(): array {
         'fields_of_greens' => 'Forever Fields of Greens',
         'bee_pollen' => 'Forever Bee Pollen',
         'active_ha' => 'Forever Active HA',
+        'move' => 'ESM Complex / Forever Move',
         'freedom' => 'Forever Freedom®',
         'epiblanc' => 'Forever Epiblanc',
         'hydrating_serum' => 'Forever Hydrating Serum',
@@ -6544,6 +6562,10 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
                     'Forever Active Pro B is the logical support option on top because it adds probiotic support for steadier everyday digestion.',
                 ],
             ],
+            'monthly_quantity_note' => [
+                'hr' => 'Ako želite okvir za mjesec dana, ovdje se najčešće gleda 3 x Forever Aloe Vera Gel™ i 1 x Forever Active Pro B.',
+                'en' => 'If you want a one-month frame, this is most often positioned as 3 x Forever Aloe Vera Gel™ and 1 x Forever Active Pro B.',
+            ],
             'suppress_generic_questions' => true,
         ],
         'urinary_tract_support' => [
@@ -6811,54 +6833,68 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
         ],
         'women_heavy_cycle_support' => [
             'patterns' => ['obilna mjesečnica', 'obilne mjesečnice', 'obilna menstruacija', 'obilne menstruacije', 'jaka mjesečnica', 'jake mjesečnice', 'jako menstrualno krvarenje', 'obilno krvarenje', 'obilna krvarenja', 'menstrualni problemi', 'problemi s menstruacijom', 'bolna mjesečnica', 'bolne mjesečnice', 'bolna menstruacija', 'menstrualni bolovi', 'menstrualne bolove', 'pms'],
-            'preferred_patterns' => ['multi maca', 'multimaca', 'maca', 'vitolize women', 'woman'],
-            'primary_product' => 'Forever Multi Maca',
-            'support_products' => ['Forever Vitolize Women'],
+            'preferred_patterns' => ['aloe vera gel', 'aloe peaches', 'aloe mango', 'berry nectar', 'multi maca', 'multimaca', 'maca', 'vitolize women', 'woman'],
+            'primary_product' => 'Forever Aloe Vera Gel™',
+            'support_products' => ['Forever Aloe Peaches', 'Forever Aloe Mango™', 'Forever Aloe Berry Nectar®', 'Forever Multi Maca', 'Forever Vitolize Women'],
             'label' => [
                 'hr' => 'obilna mjesečnica i osjetljiviji ženski ciklus',
                 'en' => 'heavy cycle and a more sensitive women routine',
             ],
             'opening_note' => [
-                'hr' => 'Kod obilne, bolne ili osjetljivije mjesečnice prvi korak je provjeriti sve s liječnikom ili ginekologom, ali ako želite Forever support smjer za žensku rutinu, ovdje je važno ostati na smislenim proizvodima za taj kontekst, a ne skretati na nepovezanu njegu izvana.',
-                'en' => 'For a heavy, painful or more sensitive cycle, the first step is to align everything with a doctor or gynecologist, but if you want a Forever support direction for the women routine, it is important to stay with products that actually fit that context rather than drifting into unrelated topical care.',
+                'hr' => 'Kod obilne, bolne ili osjetljivije mjesečnice prvi korak je provjeriti sve s liječnikom ili ginekologom, ali ako želite Forever support smjer za žensku rutinu, ovdje baza treba krenuti s jednim aloe napitkom kroz mjesec dana, a suplementi se nadograđuju na tu osnovu.',
+                'en' => 'For a heavy, painful or more sensitive cycle, the first step is to align everything with a doctor or gynecologist, but if you want a Forever support direction for the women routine, the base should start with one aloe drink through the month, with supplements layered on top of that foundation.',
             ],
             'recommendation_lines' => [
                 'hr' => [
-                    'Forever Multi Maca je ovdje glavni Forever smjer jer se najlogičnije uklapa u ženski balans, svakodnevnu vitalnost i rutinu ciklusa.',
-                    'Forever Vitolize Women može biti dobra support opcija kada uz to želite i širu nutritivnu podršku za žensku svakodnevnu rutinu.',
+                    'Forever Aloe Vera Gel™ je ovdje glavni Forever smjer kao aloe baza iznutra i ovdje se najčešće kreće s 3 litre za mjesec dana, odnosno 0,5 dcl 2x dnevno. Ako osobi više odgovara okus, ista aloe osnova može biti i Forever Aloe Peaches, Aloe Mango™ ili Aloe Berry Nectar®.',
+                    'Forever Multi Maca je važna support opcija uz to jer se najlogičnije uklapa u ženski balans, svakodnevnu vitalnost i rutinu ciklusa.',
+                    'Forever Vitolize Women može biti dodatna support opcija kada uz to želite i širu nutritivnu podršku za žensku svakodnevnu rutinu.',
                 ],
                 'en' => [
-                    'Forever Multi Maca is the clearest main Forever direction here because it fits most naturally into women balance, everyday vitality and a steadier cycle-support routine.',
-                    'Forever Vitolize Women can be a useful support option on top when you also want broader nutritional support for an everyday women routine.',
+                    'Forever Aloe Vera Gel™ is the main Forever direction here as the inside aloe base, and people most often start with 3 liters for the month, meaning 0.5 dcl twice daily. If someone prefers flavor, the same aloe base can also be Forever Aloe Peaches, Aloe Mango™, or Aloe Berry Nectar®.',
+                    'Forever Multi Maca is an important support option on top because it fits most naturally into women balance, everyday vitality and a steadier cycle-support routine.',
+                    'Forever Vitolize Women can be the extra support option when you also want broader nutritional support for an everyday women routine.',
                 ],
+            ],
+            'monthly_quantity_note' => [
+                'hr' => 'Ako želite odmah okvir za mjesec dana, ovdje se najčešće gleda 3 x jedan od aloe napitaka (Forever Aloe Vera Gel™, Aloe Peaches, Aloe Mango™ ili Aloe Berry Nectar®), 1 x Forever Multi Maca i 1 x Forever Vitolize Women.',
+                'en' => 'If you want a simple one-month frame right away, this is most often positioned as 3 x one of the aloe drinks (Forever Aloe Vera Gel™, Aloe Peaches, Aloe Mango™, or Aloe Berry Nectar®), 1 x Forever Multi Maca and 1 x Forever Vitolize Women.',
             ],
             'suppress_generic_questions' => true,
             'sensitive_support_only' => true,
+            'lock_product_scope' => true,
         ],
         'women_balance_support' => [
             'patterns' => ['pms', 'menstrualne bolove', 'menstrualni bolovi', 'menstrualne', 'menstrual', 'menopauz', 'valunzi', 'žensko zdravlje', 'zensko zdravlje', 'ciklus'],
-            'preferred_patterns' => ['multi maca', 'multimaca', 'maca', 'vitolize women', 'arctic sea', 'omega'],
-            'primary_product' => 'Forever Multi Maca',
-            'support_products' => ['Forever Vitolize Women'],
+            'preferred_patterns' => ['aloe vera gel', 'aloe peaches', 'aloe mango', 'berry nectar', 'multi maca', 'multimaca', 'maca', 'vitolize women', 'arctic sea', 'omega'],
+            'primary_product' => 'Forever Aloe Vera Gel™',
+            'support_products' => ['Forever Aloe Peaches', 'Forever Aloe Mango™', 'Forever Aloe Berry Nectar®', 'Forever Multi Maca', 'Forever Vitolize Women'],
             'label' => [
                 'hr' => 'ženski balans i hormonska rutina',
                 'en' => 'women balance and hormone routine',
             ],
             'opening_note' => [
-                'hr' => 'Kod PMS-a, menstrualne rutine i menopauzalnih simptoma preporuka treba ostati kroz ženski balans i svakodnevnu rutinu, bez tvrdnji da proizvod rješava bol ili stanje.',
-                'en' => 'For PMS, menstrual routine and menopause-style questions, the answer should stay inside women balance and daily routine support without presenting products as a solution for pain or a condition.',
+                'hr' => 'Kod PMS-a, menstrualne rutine i menopauzalnih simptoma preporuka treba ostati kroz aloe bazu iznutra plus ženski balans, bez tvrdnji da proizvod rješava bol ili stanje.',
+                'en' => 'For PMS, menstrual routine and menopause-style questions, the answer should stay inside an aloe base from the inside plus women-balance support, without presenting products as a solution for pain or a condition.',
             ],
             'recommendation_lines' => [
                 'hr' => [
-                    'Forever Multi Maca je ovdje glavni Forever smjer jer se najbolje uklapa u rutinu ženskog balansa, vitalnosti i svakodnevne hormonske podrške.',
-                    'Forever Vitolize Women može biti dobra support opcija kada uz to želite i širu nutritivnu podršku za ženski balans i svakodnevnu ravnotežu.',
+                    'Forever Aloe Vera Gel™ je ovdje glavni Forever smjer kao aloe baza iznutra i ovdje se najčešće kreće s 3 litre za mjesec dana, odnosno 0,5 dcl 2x dnevno. Ako osobi više odgovara okus, ista aloe osnova može biti i Forever Aloe Peaches, Aloe Mango™ ili Aloe Berry Nectar®.',
+                    'Forever Multi Maca je važna support opcija uz to jer se najbolje uklapa u rutinu ženskog balansa, vitalnosti i svakodnevne hormonske podrške.',
+                    'Forever Vitolize Women može biti dodatna support opcija kada uz to želite i širu nutritivnu podršku za ženski balans i svakodnevnu ravnotežu.',
                 ],
                 'en' => [
-                    'Forever Multi Maca is the clearest main Forever direction here because it fits best into a women-balance, vitality and everyday hormone-support routine.',
-                    'Forever Vitolize Women can be a useful support option on top when you also want broader nutritional support for women wellness and everyday balance.',
+                    'Forever Aloe Vera Gel™ is the main Forever direction here as the inside aloe base, and people most often start with 3 liters for the month, meaning 0.5 dcl twice daily. If someone prefers flavor, the same aloe base can also be Forever Aloe Peaches, Aloe Mango™, or Aloe Berry Nectar®.',
+                    'Forever Multi Maca is the important support option on top because it fits best into a women-balance, vitality and everyday hormone-support routine.',
+                    'Forever Vitolize Women can be the extra support option when you also want broader nutritional support for women balance and everyday stability.',
                 ],
             ],
+            'monthly_quantity_note' => [
+                'hr' => 'Ako želite okvir za mjesec dana, ovdje se najčešće gleda 3 x jedan od aloe napitaka (Forever Aloe Vera Gel™, Aloe Peaches, Aloe Mango™ ili Aloe Berry Nectar®), 1 x Forever Multi Maca i 1 x Forever Vitolize Women.',
+                'en' => 'If you want a one-month frame, this is most often positioned as 3 x one of the aloe drinks (Forever Aloe Vera Gel™, Aloe Peaches, Aloe Mango™, or Aloe Berry Nectar®), 1 x Forever Multi Maca and 1 x Forever Vitolize Women.',
+            ],
             'suppress_generic_questions' => true,
+            'lock_product_scope' => true,
         ],
         'pcos_support' => [
             'patterns' => ['pcos', 'policistični jajnici', 'policisticni jajnici', 'ciste na jajnicima', 'ciste na jajnicima', 'jajnici', 'ciste na jajniku'],
@@ -6976,6 +7012,10 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
                     'Forever B12 Plus is a strong additional direction when the context includes damaged, sensitive or inflamed nerves, because vitamin B12 is commonly linked with nutritional support for nerve regeneration.',
                 ],
             ],
+            'monthly_quantity_note' => [
+                'hr' => 'Ako želite okvir za mjesec dana, ovdje se najčešće gleda 3 x Forever Aloe Vera Gel™, 1 kutija Forever Arctic Sea, 1 x Forever Royal Jelly i 1 x Forever B12 Plus.',
+                'en' => 'If you want a one-month frame, this is most often positioned as 3 x Forever Aloe Vera Gel™, 1 box of Forever Arctic Sea, 1 x Forever Royal Jelly and 1 x Forever B12 Plus.',
+            ],
             'suppress_generic_questions' => true,
             'lock_product_scope' => true,
         ],
@@ -7075,6 +7115,68 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
             ],
             'suppress_generic_questions' => true,
             'sensitive_support_only' => true,
+            'lock_product_scope' => true,
+        ],
+        'bone_strength_support' => [
+            'patterns' => ['jačanje kostiju', 'jacanje kostiju', 'slabe kosti', 'za kosti', 'kosti', 'gustoća kostiju', 'gustoca kostiju', 'osteopor', 'koštana gustoća', 'kostiju'],
+            'preferred_patterns' => ['calcium', 'nature min', 'active ha', 'esm', 'move'],
+            'primary_product' => 'Forever Calcium',
+            'support_products' => ['Forever Nature Min', 'Forever Active HA', 'ESM Complex / Forever Move'],
+            'label' => [
+                'hr' => 'kosti, minerali i svakodnevna rutina potpore',
+                'en' => 'bones, minerals and an everyday support routine',
+            ],
+            'opening_note' => [
+                'hr' => 'Kad je fokus na jačanju kostiju, preporuka ne bi trebala ostati samo na kalciju niti skretati na čaj, nego zadržati fokus na kalciju, mineralima i dopunskoj rutini za kosti i zglobove.',
+                'en' => 'When the focus is bone strength, the recommendation should not stay on calcium alone or drift into tea, but keep the emphasis on calcium, minerals and the supporting routine for bones and joints.',
+            ],
+            'recommendation_lines' => [
+                'hr' => [
+                    'Forever Calcium je ovdje glavni Forever smjer jer spaja kalcij, vitamin D, magnezij i prateće minerale za svakodnevnu rutinu kostiju i zuba.',
+                    'Forever Nature Min je važna support opcija uz to jer donosi esencijalne minerale i minerale u tragovima iz prirodnih morskih naslaga kada želite širu mineralnu ravnotežu.',
+                    'Forever Active HA i ESM Complex / Forever Move mogu biti dodatni support smjerovi kada uz kosti želite i jaču svakodnevnu rutinu za zglobove, hrskavicu i pokretljivost.',
+                ],
+                'en' => [
+                    'Forever Calcium is the main Forever direction here because it combines calcium, vitamin D, magnesium and supporting minerals for an everyday bones-and-teeth routine.',
+                    'Forever Nature Min is the important support option on top because it brings essential minerals and trace minerals from natural marine deposits when you want broader mineral balance.',
+                    'Forever Active HA and ESM Complex / Forever Move can be the extra support directions when you also want a stronger everyday routine for joints, cartilage and mobility.',
+                ],
+            ],
+            'monthly_quantity_note' => [
+                'hr' => 'Ako želite okvir za mjesec dana, ovdje se najčešće gleda 1 x Forever Calcium, 1 x Forever Nature Min, 1 x Forever Active HA i po potrebi 1 x ESM Complex / Forever Move.',
+                'en' => 'If you want a one-month frame, this is most often positioned as 1 x Forever Calcium, 1 x Forever Nature Min, 1 x Forever Active HA and, if useful, 1 x ESM Complex / Forever Move.',
+            ],
+            'suppress_generic_questions' => true,
+            'lock_product_scope' => true,
+        ],
+        'nature_min_mineral_support' => [
+            'patterns' => ['nature min', 'naturemin', 'nature-min'],
+            'preferred_patterns' => ['nature min', 'calcium', 'active ha', 'esm', 'move'],
+            'primary_product' => 'Forever Nature Min',
+            'support_products' => ['Forever Calcium', 'Forever Active HA', 'ESM Complex / Forever Move'],
+            'label' => [
+                'hr' => 'Nature Min i mineralna ravnoteža',
+                'en' => 'Nature Min and mineral balance',
+            ],
+            'opening_note' => [
+                'hr' => 'Ako pitate baš za Forever Nature Min, odgovor treba ostati na glavnoj namjeni tog proizvoda: mineralna ravnoteža, elektroliti i svakodnevna multimineralna podrška, a ne otići u generičke ili kozmetičke fallbackove.',
+                'en' => 'If you are asking specifically about Forever Nature Min, the answer should stay on the main purpose of that product: mineral balance, electrolytes and everyday multimineral support, without drifting into generic or cosmetic fallback products.',
+            ],
+            'recommendation_lines' => [
+                'hr' => [
+                    'Forever Nature Min je ovdje glavni Forever smjer jer sadrži esencijalne minerale i minerale u tragovima iz prirodnih morskih naslaga pa se najčešće preporučuje kada je cilj mineralna ravnoteža, elektroliti i šira svakodnevna multimineralna podrška.',
+                    'Forever Calcium može biti logična support opcija uz to kada je naglasak više na kostima i zubima, dok Forever Active HA ili ESM Complex / Forever Move imaju više smisla kada uz mineralni smjer želite i dodatnu rutinu za zglobove i pokretljivost.',
+                ],
+                'en' => [
+                    'Forever Nature Min is the main Forever direction here because it contains essential minerals and trace minerals from natural marine deposits, so it is most often recommended when the goal is mineral balance, electrolytes and broader everyday multimineral support.',
+                    'Forever Calcium can be the logical support option when the emphasis is more on bones and teeth, while Forever Active HA or ESM Complex / Forever Move make more sense when you also want an extra routine for joints and mobility on top of the mineral direction.',
+                ],
+            ],
+            'monthly_quantity_note' => [
+                'hr' => 'Ako želite jednostavan okvir za mjesec dana, ovdje se najčešće kreće s 1 x Forever Nature Min, a po cilju se uz to može dodati 1 x Forever Calcium ili 1 x Forever Active HA / ESM Complex / Forever Move.',
+                'en' => 'If you want a simple one-month frame, people most often start with 1 x Forever Nature Min, and depending on the goal, add 1 x Forever Calcium or 1 x Forever Active HA / ESM Complex / Forever Move.',
+            ],
+            'suppress_generic_questions' => true,
             'lock_product_scope' => true,
         ],
         'cartilage_mobility_support' => [
@@ -7235,7 +7337,7 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
             'suppress_generic_questions' => true,
         ],
         'diabetes_balance_support' => [
-            'patterns' => ['dijabetes', 'diabetes', 'inzulinska rezistencija', 'insulinska rezistencija', 'inzulinsk', 'rezistencij', 'šećer u krvi', 'secer u krvi', 'disbalans šećera', 'disbalans secera', 'metabolički sindrom', 'metabolicki sindrom'],
+            'patterns' => ['dijabetes', 'diabetes', 'inzulinska rezistencija', 'insulinska rezistencija', 'inzulinsk', 'rezistencij', 'šećer u krvi', 'secer u krvi', 'disbalans šećera', 'disbalans secera', 'visoki šećer', 'visok šećer', 'visoki secer', 'visok secer', 'povišen šećer', 'povisen secer', 'metabolički sindrom', 'metabolicki sindrom'],
             'preferred_patterns' => ['aloe vera gel', 'aloe gel', 'fields of greens', 'blossom herbal tea', 'tea'],
             'primary_product' => 'Forever Aloe Vera Gel™',
             'support_products' => ['Forever Fields of Greens', 'Aloe Blossom Herbal Tea'],
@@ -7363,6 +7465,37 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
             'sensitive_support_only' => true,
             'lock_product_scope' => true,
         ],
+        'thrombosis_support' => [
+            'patterns' => ['tromboza', 'tromboze', 'trombozi', 'tromboz', 'tromoza', 'tromoze', 'tromozi'],
+            'preferred_patterns' => ['aloe vera gel', 'aloe gel', 'arctic sea', 'arctic', 'omega'],
+            'primary_product' => 'Forever Aloe Vera Gel™',
+            'support_products' => ['Forever Arctic Sea'],
+            'label' => [
+                'hr' => 'tromboza i vrlo oprezna nutritivna podrška',
+                'en' => 'thrombosis and very cautious nutritional support',
+            ],
+            'opening_note' => [
+                'hr' => 'Kod tromboze prvi korak su liječnik i terapija, ali ako želite Forever support smjer koji ostaje na temi i ne skreće na nevažne proizvode, ovdje preporuka treba ostati vrlo usko na aloe veri kao osnovi i Arctic Sea kao dopunskoj nutritivnoj podršci.',
+                'en' => 'With thrombosis, doctor guidance and therapy come first, but if you want a Forever support direction that stays on topic and does not drift into unrelated products, the recommendation should stay very tight around aloe vera as the base and Arctic Sea as complementary nutritional support.',
+            ],
+            'recommendation_lines' => [
+                'hr' => [
+                    'Forever Aloe Vera Gel™ je ovdje glavni Forever smjer kao osnovni aloe napitak koji korisnici najčešće uključe kao bazu iznutra i ovdje se najčešće kreće s 3 litre za mjesec dana, odnosno 0,5 dcl 2x dnevno.',
+                    'Forever Arctic Sea je važna support opcija uz to zbog omega-3 masnih kiselina i najčešće ide kao 1 kutija za mjesec dana.',
+                ],
+                'en' => [
+                    'Forever Aloe Vera Gel™ is the main Forever direction here as the base aloe drink that people most often include as the inside foundation, and they most often start with 3 liters for the month, meaning 0.5 dcl twice daily.',
+                    'Forever Arctic Sea is the important support option on top because of the omega-3 direction and usually goes as 1 box for the month.',
+                ],
+            ],
+            'monthly_quantity_note' => [
+                'hr' => 'Ako želite odmah okvir za mjesec dana, ovdje se najčešće gleda 3 x Forever Aloe Vera Gel™ i 1 kutija Forever Arctic Sea.',
+                'en' => 'If you want a simple one-month frame right away, this is most often positioned as 3 x Forever Aloe Vera Gel™ and 1 box of Forever Arctic Sea.',
+            ],
+            'suppress_generic_questions' => true,
+            'sensitive_support_only' => true,
+            'lock_product_scope' => true,
+        ],
         'asthma_bronchial_support' => [
             'patterns' => ['astma', 'bronhitis', 'bronhijalna astma', 'problemi s disanjem', 'otežano disanje', 'otegano disanje'],
             'preferred_patterns' => ['berry nectar', 'aloe berry nectar', 'garlic-thyme', 'garlic thyme'],
@@ -7458,31 +7591,33 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
             'lock_product_scope' => true,
         ],
         'hemorrhoid_support_routine' => [
-            'patterns' => ['hemoroid', 'hemoroidi', 'hemorrhoid', 'hemorrhoids'],
-            'preferred_patterns' => ['aloe vera gel', 'aloe gel', 'pro b', 'pro-b', 'fiber'],
+            'patterns' => ['hemoroid', 'hemoroidi', 'hemeroid', 'hemeroidi', 'hemeroide', 'hemorrhoid', 'hemorrhoids'],
+            'preferred_patterns' => ['aloe vera gel', 'aloe gel', 'aloe peaches', 'peaches', 'pro b', 'pro-b', 'tea', 'blossom herbal tea', 'aloe gelly'],
             'primary_product' => 'Forever Aloe Vera Gel™',
-            'support_products' => ['Forever Active Pro B', 'Forever Fiber'],
+            'support_products' => ['Forever Aloe Peaches', 'Forever Active Pro B', 'Aloe Blossom Herbal Tea', 'Forever Aloe Vera Gelly'],
             'label' => [
                 'hr' => 'hemoroidi i probavna rutina',
                 'en' => 'hemorrhoids and digestive routine',
             ],
             'opening_note' => [
-                'hr' => 'Kod hemoroida preporuka treba ostati na aloe veri, probiotičkoj podršci i vlaknima, bez skretanja na nepovezane proizvode.',
-                'en' => 'For hemorrhoids, the recommendation should stay on aloe vera, probiotic support and fiber without drifting into unrelated products.',
+                'hr' => 'Kod hemoroida preporuka treba ostati na aloe veri kao bazi iznutra, probiotičkoj podršci i eventualno čaju, a kod vanjskih hemoroida može se dodati i aloe gelly kao lokalna njega izvana.',
+                'en' => 'For hemorrhoids, the recommendation should stay on aloe vera as the inside base, probiotic support and, if useful, tea, while an external hemorrhoid context can also include aloe gelly as topical care from the outside.',
             ],
             'recommendation_lines' => [
                 'hr' => [
-                    'Forever Aloe Vera Gel™ je ovdje glavni Forever smjer kao aloe baza za svakodnevnu rutinu.',
-                    'Forever Active Pro B i Forever Fiber imaju smisla kao support opcije kada želite dodatnu podršku probavi i redovitijoj stolici.',
+                    'Forever Aloe Vera Gel™ je ovdje glavni Forever smjer kao aloe baza iznutra, a ako osobi više odgovara okus, isti smjer može biti i Forever Aloe Peaches.',
+                    'Forever Active Pro B je važna support opcija uz to kada želite dodatnu probiotičku podršku crijevnoj ravnoteži.',
+                    'Aloe Blossom Herbal Tea može biti dodatni dnevni smjer uz to, a kod vanjskih hemoroida Forever Aloe Vera Gelly se može dodati kao lokalna podrška izvana.',
                 ],
                 'en' => [
-                    'Forever Aloe Vera Gel™ is the main Forever direction here as the aloe base for the daily routine.',
-                    'Forever Active Pro B and Forever Fiber make sense as support options when you also want extra support for digestion and more regular stools.',
+                    'Forever Aloe Vera Gel™ is the main Forever direction here as the inside aloe base, and if someone prefers flavor, the same direction can also be Forever Aloe Peaches.',
+                    'Forever Active Pro B is the important support option on top when you also want probiotic support for gut balance.',
+                    'Aloe Blossom Herbal Tea can be the extra daily direction on top, while Forever Aloe Vera Gelly can be added as topical support in an external hemorrhoid context.',
                 ],
             ],
             'monthly_quantity_note' => [
-                'hr' => 'Ako želite okvir za mjesec dana, ovdje se najčešće gleda 3 x Forever Aloe Vera Gel™, 1 x Forever Active Pro B i 1 x Forever Fiber.',
-                'en' => 'If you want a one-month frame, this is most often positioned as 3 x Forever Aloe Vera Gel™, 1 x Forever Active Pro B and 1 x Forever Fiber.',
+                'hr' => 'Ako želite okvir za mjesec dana, ovdje se najčešće gleda 3 x Forever Aloe Vera Gel™ ili Aloe Peaches, 1 x Forever Active Pro B, 1 pakiranje Aloe Blossom Herbal Tea i po potrebi 1 x Forever Aloe Vera Gelly za vanjsku rutinu.',
+                'en' => 'If you want a one-month frame, this is most often positioned as 3 x Forever Aloe Vera Gel™ or Aloe Peaches, 1 x Forever Active Pro B, 1 pack of Aloe Blossom Herbal Tea and, if useful, 1 x Forever Aloe Vera Gelly for the outer routine.',
             ],
             'suppress_generic_questions' => true,
             'sensitive_support_only' => true,
@@ -7963,6 +8098,30 @@ function fcc_ai_get_public_article_feature_catalog(): array {
             'routine' => [
                 'hr' => 'pa ima smisla kada želite opću mineralnu podršku u svakodnevnoj rutini',
                 'en' => 'so it makes sense when you want general mineral support in an everyday routine',
+            ],
+        ],
+        [
+            'patterns' => ['nature min', 'nature-min', 'naturemin'],
+            'contains' => ['hr' => 'esencijalne minerale i minerale u tragovima iz prirodnih morskih naslaga', 'en' => 'essential minerals and trace minerals from natural marine deposits'],
+            'routine' => [
+                'hr' => 'pa se najčešće gleda kada je cilj mineralna ravnoteža, elektroliti i šira svakodnevna multimineralna podrška',
+                'en' => 'so it is most often viewed when the goal is mineral balance, electrolytes and broader everyday multimineral support',
+            ],
+        ],
+        [
+            'patterns' => ['active ha', 'hyaluronic'],
+            'contains' => ['hr' => 'hijaluronsku kiselinu, đumbir i kurkumu', 'en' => 'hyaluronic acid, ginger and turmeric'],
+            'routine' => [
+                'hr' => 'pa se često bira u aktivnoj dnevnoj rutini za zglobove, pokretljivost i potporu kretanju',
+                'en' => 'so it is often chosen in an active everyday routine for joints, mobility and movement support',
+            ],
+        ],
+        [
+            'patterns' => ['forever move', 'esm complex', 'move'],
+            'contains' => ['hr' => 'NEM membranu ljuske jajeta i kurkumin', 'en' => 'NEM eggshell membrane and curcumin'],
+            'routine' => [
+                'hr' => 'pa se često gleda kao dugoročniji smjer za pokretljivost, zglobove i svakodnevno kretanje',
+                'en' => 'so it is often viewed as a longer-term direction for mobility, joints and everyday movement',
             ],
         ],
         [
@@ -9005,6 +9164,8 @@ function fcc_ai_get_public_product_routine_note_by_titles(array $product_titles,
     $has_bee_pollen = false;
     $has_lycium = false;
     $has_focus = false;
+    $has_nature_min = false;
+    $has_calcium = false;
 
     foreach($normalized_titles as $title) {
         if(fcc_ai_contains_keywords($title, ['aloe vera gel', 'aloe mango', 'aloe peaches', 'aloe berry nectar'])) {
@@ -9097,6 +9258,14 @@ function fcc_ai_get_public_product_routine_note_by_titles(array $product_titles,
 
         if(fcc_ai_contains_keywords($title, ['forever focus', 'focus'])) {
             $has_focus = true;
+        }
+
+        if(fcc_ai_contains_keywords($title, ['nature min'])) {
+            $has_nature_min = true;
+        }
+
+        if(fcc_ai_contains_keywords($title, ['forever calcium', 'calcium'])) {
+            $has_calcium = true;
         }
     }
 
@@ -9276,6 +9445,22 @@ function fcc_ai_get_public_product_routine_note_by_titles(array $product_titles,
             : ($language === 'sl'
                 ? 'Forever Focus se najpogosteje uporablja kot 1 kapsula na dan, običajno zjutraj.'
                 : 'Forever Focus se najčešće uzima kao 1 kapsula dnevno, najčešće ujutro.');
+    }
+
+    if($has_nature_min) {
+        $notes[] = $language === 'en'
+            ? 'Forever Nature Min is most often used as 4 tablets per day.'
+            : ($language === 'sl'
+                ? 'Forever Nature Min se najpogosteje uporablja kot 4 tablete na dan.'
+                : 'Forever Nature Min se najčešće uzima kao 4 tablete dnevno.');
+    }
+
+    if($has_calcium) {
+        $notes[] = $language === 'en'
+            ? 'Forever Calcium is most often used as 3 tablets per day with water.'
+            : ($language === 'sl'
+                ? 'Forever Calcium se najpogosteje uporablja kot 3 tablete na dan z vodo.'
+                : 'Forever Calcium se najčešće uzima kao 3 tablete dnevno uz vodu.');
     }
 
     return trim(implode(' ', $notes));
