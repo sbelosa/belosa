@@ -7012,7 +7012,7 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
             'lock_product_scope' => true,
         ],
         'psoriasis_support' => [
-            'patterns' => ['psorijaza', 'psorijazu', 'psorijaz', 'psoriasis'],
+            'patterns' => ['psorijaza', 'psorijazu', 'psorijaz', 'psoriaza', 'psoriazu', 'psoriaz', 'psoriasis'],
             'preferred_patterns' => ['aloe vera gel', 'aloe gel', 'arctic sea', 'arctic', 'first spray', 'aloe first', 'liquid soap', 'aloe liquid soap', 'aloe propolis creme', 'propolis creme'],
             'primary_product' => 'Forever Aloe Vera Gel™',
             'support_products' => ['Forever Arctic Sea', 'Forever Aloe First Spray', 'Forever Aloe Liquid Soap', 'Aloe Propolis Creme'],
@@ -8507,6 +8507,11 @@ function fcc_ai_build_public_recommendation_payload(string $assistant_type, stri
     $question_lines = [];
     $is_condition_like_request = $assistant_type === 'product_advisor'
         && fcc_ai_contains_keywords($message, ['šeć', 'šečer', 'secer', 'sečer', 'glukoz', 'inzulin', 'insulin', 'jetr', 'liver', 'tlak', 'pressure', 'vena', 'vene', 'proširen', 'prosiren', 'dermatit', 'herpes', 'kosa', 'vlasi', 'heliko', 'artrit', 'lumb', 'vrat', 'bubreg', 'stolica', 'nos', 'sinus', 'umor', 'željez', 'zeljez', 'pms', 'menstru', 'komolec', 'elbow']);
+    $needs_generic_topical_skin_clarification = $assistant_type === 'product_advisor'
+        && empty($condition_matches)
+        && !$is_direct_product_lookup
+        && fcc_ai_contains_keywords($message, ['vanjska njega kože', 'vanjska njega koze', 'vanjsku njegu kože', 'vanjsku njegu koze', 'lokalna njega kože', 'lokalna njega koze', 'njegu kože', 'njegu koze', 'njega kože', 'njega koze'])
+        && !fcc_ai_contains_keywords($message, ['lice', 'lica', 'face', 'tijelo', 'body', 'kosa', 'hair', 'vlasi', 'psorijaz', 'psoriaz', 'dermatit', 'herpes', 'opeklin', 'sunce', 'sunca', 'sun', 'pigment', 'mrlj', 'ožilj', 'ozilj']);
 
     if($assistant_type === 'pets_advisor' && ($needs_pet_context || (count($tokens) <= 2 && empty($theme_matches)))) {
         if(!$has_pet_type || !$has_pet_age_context) {
@@ -8534,6 +8539,13 @@ function fcc_ai_build_public_recommendation_payload(string $assistant_type, stri
         $question_lines[] = $language === 'en'
             ? 'Is this just general guidance, or are you also using therapy and want a cautious direction only?'
             : 'Je li ovo samo opća smjernica ili već koristite terapiju pa želite samo oprezan smjer preporuke?';
+    } elseif($needs_generic_topical_skin_clarification) {
+        $question_lines[] = $language === 'en'
+            ? 'Do you mean general body-skin care, or a specific issue such as dermatitis, psoriasis, herpes, or a sensitive irritated area?'
+            : 'Mislite li na opću njegu kože tijela ili na konkretan problem poput dermatitisa, psorijaze, herpesa ili osjetljivog nadraženog područja?';
+        $question_lines[] = $language === 'en'
+            ? 'Do you want a routine for everyday care, or a more targeted direction for a visible skin problem?'
+            : 'Želite li rutinu za svakodnevnu njegu ili ciljani smjer za vidljiv problem na koži?';
     } elseif($is_direct_product_lookup && empty($intent['business']) && empty($intent['contact'])) {
         $question_lines[] = $language === 'en'
             ? 'Do you want a quick explanation of what this product is usually chosen for, or are you asking for a goal-specific recommendation?'
@@ -8541,6 +8553,11 @@ function fcc_ai_build_public_recommendation_payload(string $assistant_type, stri
     }
 
     $question_lines = array_slice(array_values(array_unique(array_filter($question_lines))), 0, 2);
+
+    if($needs_generic_topical_skin_clarification) {
+        $recommendation_lines = [];
+        $knowledge_suggestions = [];
+    }
 
     $opening_note = '';
     if($is_multi_product_compare) {
@@ -8561,6 +8578,12 @@ function fcc_ai_build_public_recommendation_payload(string $assistant_type, stri
         $opening_note = $language === 'en'
             ? 'The safest way to recommend products here is through wellness goals, ingredients, and a simple next step.'
             : 'Najsigurniji način preporuke ovdje ide kroz glavni cilj, sastojke i jednostavan sljedeći korak.';
+    }
+
+    if($needs_generic_topical_skin_clarification) {
+        $opening_note = $language === 'en'
+            ? 'For a broad outer skin-care question, the cleanest next step is to first clarify whether you mean general daily care or a concrete skin issue, so the recommendation does not drift into the wrong product.'
+            : 'Kod ovako širokog upita za vanjsku njegu kože, najčišći sljedeći korak je prvo razjasniti mislite li na opću svakodnevnu njegu ili na konkretan kožni problem, kako preporuka ne bi otišla u krivom smjeru.';
     }
 
     $combination_note = '';
@@ -12045,6 +12068,12 @@ function fcc_ai_generate_public_reply(string $assistant_type, string $message, a
 
             $content_blocks[] = fcc_ai_get_public_user_contact_invite_note($assistant_type, $language, $owner_name);
         }
+    }
+
+    $hide_article_followup = empty($recommendation_payload['recommendation_lines']) && !empty($recommendation_payload['question_lines']);
+
+    if($hide_article_followup) {
+        $knowledge_suggestions = [];
     }
 
     if($knowledge_suggestions) {
