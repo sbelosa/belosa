@@ -5236,7 +5236,7 @@ function fcc_ai_should_reset_public_problem_context(string $assistant_type, stri
         return false;
     }
 
-    if(fcc_ai_is_low_context_follow_up_message($current_message) || fcc_ai_is_explicit_monthly_quantity_request($current_message)) {
+    if(fcc_ai_is_explicit_monthly_quantity_request($current_message)) {
         return false;
     }
 
@@ -5247,28 +5247,44 @@ function fcc_ai_should_reset_public_problem_context(string $assistant_type, stri
         fcc_ai_get_product_advisor_condition_matches($previous_user_message, $language)
     );
 
-    if(empty($current_condition_keys) || empty($previous_condition_keys)) {
-        $current_theme_keys = array_values(array_filter(array_map(static function(array $theme_match) {
-            return (string) ($theme_match['key'] ?? '');
-        }, fcc_ai_get_public_theme_matches($assistant_type, $current_message, $language))));
-        $previous_theme_keys = array_values(array_filter(array_map(static function(array $theme_match) {
-            return (string) ($theme_match['key'] ?? '');
-        }, fcc_ai_get_public_theme_matches($assistant_type, $previous_user_message, $language))));
+    $current_theme_keys = array_values(array_filter(array_map(static function(array $theme_match) {
+        return (string) ($theme_match['key'] ?? '');
+    }, fcc_ai_get_public_theme_matches($assistant_type, $current_message, $language))));
+    $previous_theme_keys = array_values(array_filter(array_map(static function(array $theme_match) {
+        return (string) ($theme_match['key'] ?? '');
+    }, fcc_ai_get_public_theme_matches($assistant_type, $previous_user_message, $language))));
 
-        if(empty($current_theme_keys) || empty($previous_theme_keys)) {
-            return false;
+    if(!empty($current_condition_keys) && !empty($previous_condition_keys)) {
+        sort($current_condition_keys);
+        sort($previous_condition_keys);
+
+        if($current_condition_keys !== $previous_condition_keys) {
+            return true;
         }
+    }
 
+    if(!empty($current_theme_keys) && !empty($previous_theme_keys)) {
         sort($current_theme_keys);
         sort($previous_theme_keys);
 
-        return $current_theme_keys !== $previous_theme_keys;
+        if($current_theme_keys !== $previous_theme_keys) {
+            return true;
+        }
     }
 
-    sort($current_condition_keys);
-    sort($previous_condition_keys);
+    if(fcc_ai_is_low_context_follow_up_message($current_message)) {
+        return false;
+    }
 
-    return $current_condition_keys !== $previous_condition_keys;
+    if(!empty($current_condition_keys) || !empty($previous_condition_keys)) {
+        return false;
+    }
+
+    if(!empty($current_theme_keys) || !empty($previous_theme_keys)) {
+        return false;
+    }
+
+    return false;
 }
 
 function fcc_ai_is_public_product_utility_request(string $message): bool {
