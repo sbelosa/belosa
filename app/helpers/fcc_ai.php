@@ -6547,7 +6547,7 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
             'suppress_generic_questions' => true,
         ],
         'urinary_tract_support' => [
-            'patterns' => ['urinarni trakt', 'urinarnog trakta', 'urinarni sustav', 'mokraćni trakt', 'mokracni trakt', 'mokraćnog trakta', 'mokracnog trakta', 'mokraćni sustav', 'mokracni sustav', 'upala mokraćnih puteva', 'upala mokracnih puteva', 'upala mjehura', 'cistitis', 'urinarni problemi', 'mokraćni problemi', 'mokracni problemi'],
+            'patterns' => ['urinarni trakt', 'urinarnog trakta', 'urinarni sustav', 'urinarn', 'mokraćni trakt', 'mokracni trakt', 'mokraćnog trakta', 'mokracnog trakta', 'mokraćni sustav', 'mokracni sustav', 'mokraćn', 'mokracn', 'upala mokraćnih puteva', 'upala mokracnih puteva', 'putev', 'upala mjehura', 'mjehur', 'cistitis', 'cistit', 'urinarni problemi', 'mokraćni problemi', 'mokracni problemi'],
             'preferred_patterns' => ['berry nectar', 'aloe berry nectar', 'berry', 'blossom herbal tea', 'herbal tea', 'tea'],
             'primary_product' => 'Forever Aloe Berry Nectar®',
             'support_products' => ['Aloe Blossom Herbal Tea'],
@@ -7235,7 +7235,7 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
             'suppress_generic_questions' => true,
         ],
         'diabetes_balance_support' => [
-            'patterns' => ['dijabetes', 'diabetes', 'inzulinska rezistencija', 'insulinska rezistencija', 'šećer u krvi', 'secer u krvi', 'metabolički sindrom', 'metabolicki sindrom'],
+            'patterns' => ['dijabetes', 'diabetes', 'inzulinska rezistencija', 'insulinska rezistencija', 'inzulinsk', 'rezistencij', 'šećer u krvi', 'secer u krvi', 'disbalans šećera', 'disbalans secera', 'metabolički sindrom', 'metabolicki sindrom'],
             'preferred_patterns' => ['aloe vera gel', 'aloe gel', 'fields of greens', 'blossom herbal tea', 'tea'],
             'primary_product' => 'Forever Aloe Vera Gel™',
             'support_products' => ['Forever Fields of Greens', 'Aloe Blossom Herbal Tea'],
@@ -7268,7 +7268,7 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
             'lock_product_scope' => true,
         ],
         'anemia_support_routine' => [
-            'patterns' => ['anemija', 'slabokrvnost', 'manjak željeza', 'manjak zeljeza', 'željezo', 'zeljezo', 'slaba krvna slika'],
+            'patterns' => ['anemija', 'anemij', 'slabokrvnost', 'slabokrv', 'manjak željeza', 'manjak zeljeza', 'manjk', 'željezo', 'zeljezo', 'željez', 'zeljez', 'slaba krvna slika'],
             'preferred_patterns' => ['berry nectar', 'aloe berry nectar', 'gummy', 'immune gummy'],
             'primary_product' => 'Forever Aloe Berry Nectar®',
             'support_products' => ['Forever Immune Gummy'],
@@ -11714,12 +11714,22 @@ function fcc_ai_generate_public_reply(string $assistant_type, string $message, a
             ];
         } elseif(!empty($intent['iron_deficiency_sensitive'])) {
             $content_blocks[] = $language === 'en'
-                ? 'When the question is about iron deficiency or low iron, I cannot offer a precise Forever product recommendation here because the cause and current therapy matter a lot.'
-                : 'Kada je pitanje vezano uz manjak željeza ili nizak željezni status, ovdje ne mogu dati preciznu Forever preporuku proizvoda jer su uzrok i postojeća terapija jako važni.';
+                ? 'When the question is about iron deficiency or low iron, the first step is always a doctor review or lab check because the cause and current therapy matter a lot.'
+                : 'Kada je pitanje vezano uz manjak željeza ili nizak željezni status, prvi korak su liječnik i nalazi jer su uzrok i postojeća terapija jako važni.';
 
             $content_blocks[] = $language === 'en'
-                ? 'The safest next step is a doctor check or lab review first, especially for an older person. After that, if you want, I can still explain only general nutritional support directions from the FCC base.'
-                : 'Najsigurniji sljedeći korak je prvo liječnički pregled ili uvid u nalaze, posebno kod starije osobe. Nakon toga, ako želite, mogu objasniti samo opće nutritivne smjerove podrške iz FCC baze.';
+                ? 'After that, if you want a cautious Forever support direction from the FCC base, I can still stay on the berry aloe drink and daily vitamin support route, without presenting those products as therapy.'
+                : 'Nakon toga, ako želite oprezan Forever support smjer iz FCC baze, i dalje mogu ostati na berry aloe napitku i dnevnoj vitaminskoj podršci, bez predstavljanja tih proizvoda kao terapije.';
+
+            if(!empty($recommendation_payload['recommendation_lines'])) {
+                $content_blocks[] = $language === 'en'
+                    ? "A cautious Forever support direction here would be:\n- " . implode("\n- ", (array) $recommendation_payload['recommendation_lines'])
+                    : "Oprezan Forever support smjer ovdje bio bi:\n- " . implode("\n- ", (array) $recommendation_payload['recommendation_lines']);
+            }
+
+            if(!empty($recommendation_payload['monthly_quantity_note'])) {
+                $content_blocks[] = (string) $recommendation_payload['monthly_quantity_note'];
+            }
 
             if(!$lead_already_captured) {
                 $lead_capture = fcc_ai_get_public_support_request_lead_capture($language, 'medical_after_check');
