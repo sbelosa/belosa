@@ -1345,8 +1345,49 @@ foreach(['hr', 'en', 'sl', 'bg'] as $fcc_chat_ui_language) {
                 return `<a class="fcc-chat-extreme__inline-link" href="${escapeHtml(normalizedHref)}" target="${target}" rel="${rel}">${escapeHtml(url)}</a>${escapeHtml(trailing)}`;
             };
 
+            const formatDenseProductText = rawValue => {
+                let text = String(rawValue || '').replace(/\r\n/g, '\n');
+
+                if(text.includes('\n- ') || text.includes('\n• ')) {
+                    return text;
+                }
+
+                const foreverMatches = text.match(/\bForever\s+[A-Z0-9]/g) || [];
+
+                if(foreverMatches.length < 2) {
+                    return text;
+                }
+
+                if(!/(preporu|smjer|support|rutina|routine|najčeš|najces|glavni|dodatn|daily|korak)/i.test(text)) {
+                    return text;
+                }
+
+                const replacements = [
+                    [/(najčešće se gleda)\s+(Forever\s+)/giu, '$1:\n- $2'],
+                    [/(najcesce se gleda)\s+(Forever\s+)/giu, '$1:\n- $2'],
+                    [/(glavni(?:\s+Forever)?\s+smjer(?:\s+ovdje)?\s+(?:je|ide))\s+(Forever\s+)/giu, '$1:\n- $2'],
+                    [/(kao glavni(?:\s+Forever)?\s+smjer(?:\s+ovdje)?\s+(?:je|ide))\s+(Forever\s+)/giu, '$1:\n- $2'],
+                    [/(kao osnovni(?:\s+Forever)?\s+smjer(?:\s+ovdje)?\s+(?:je|ide))\s+(Forever\s+)/giu, '$1:\n- $2'],
+                    [/(kao glavna preporuka(?:\s+ovdje)?\s+(?:je|ide))\s+(Forever\s+)/giu, '$1:\n- $2'],
+                    [/,\s+uz\s+(Forever\s+)/giu, '\n- $1'],
+                    [/\s+uz\s+(Forever\s+)/giu, '\n- $1'],
+                    [/,\s+a po potrebi i\s+(Forever\s+)/giu, '\n- $1'],
+                    [/\s+a po potrebi i\s+(Forever\s+)/giu, '\n- $1'],
+                    [/,\s+te\s+(Forever\s+)/giu, '\n- $1'],
+                    [/\s+te\s+(Forever\s+)/giu, '\n- $1'],
+                    [/,\s+i\s+(Forever\s+)/giu, '\n- $1'],
+                    [/\s+i\s+(Forever\s+)/giu, '\n- $1'],
+                ];
+
+                replacements.forEach(([pattern, replacement]) => {
+                    text = text.replace(pattern, replacement);
+                });
+
+                return text.replace(/\n{3,}/g, '\n\n');
+            };
+
             const renderMessageHtml = value => {
-                let html = escapeHtml(String(value || '').replace(/\r\n/g, '\n'));
+                let html = escapeHtml(formatDenseProductText(value));
                 html = html.replace(/\*\*([\s\S]+?)\*\*/g, '<strong>$1</strong>');
                 html = html.replace(/((?:https?:\/\/|www\.)[^\s<]+)/gi, match => buildInlineLinkHtml(match));
                 html = html.replace(/\n/g, '<br>');
@@ -2021,9 +2062,51 @@ foreach(['hr', 'en', 'sl', 'bg'] as $fcc_chat_ui_language) {
             return `<a class="fcc-chat-extreme__inline-link" href="${escapeHtml(normalizedHref)}" target="${target}" rel="${rel}">${escapeHtml(url)}</a>${escapeHtml(trailing)}`;
         };
 
+        const formatDenseProductText = (rawValue, options = {}) => {
+            const config = options && typeof options === 'object' ? options : {};
+            let text = String(rawValue || '').replace(/\r\n/g, '\n');
+
+            if(config.streaming || text.includes('\n- ') || text.includes('\n• ')) {
+                return text;
+            }
+
+            const foreverMatches = text.match(/\bForever\s+[A-Z0-9]/g) || [];
+
+            if(foreverMatches.length < 2) {
+                return text;
+            }
+
+            if(!/(preporu|smjer|support|rutina|routine|najčeš|najces|glavni|dodatn|daily|korak)/i.test(text)) {
+                return text;
+            }
+
+            const replacements = [
+                [/(najčešće se gleda)\s+(Forever\s+)/giu, '$1:\n- $2'],
+                [/(najcesce se gleda)\s+(Forever\s+)/giu, '$1:\n- $2'],
+                [/(glavni(?:\s+Forever)?\s+smjer(?:\s+ovdje)?\s+(?:je|ide))\s+(Forever\s+)/giu, '$1:\n- $2'],
+                [/(kao glavni(?:\s+Forever)?\s+smjer(?:\s+ovdje)?\s+(?:je|ide))\s+(Forever\s+)/giu, '$1:\n- $2'],
+                [/(kao osnovni(?:\s+Forever)?\s+smjer(?:\s+ovdje)?\s+(?:je|ide))\s+(Forever\s+)/giu, '$1:\n- $2'],
+                [/(kao glavna preporuka(?:\s+ovdje)?\s+(?:je|ide))\s+(Forever\s+)/giu, '$1:\n- $2'],
+                [/,\s+uz\s+(Forever\s+)/giu, '\n- $1'],
+                [/\s+uz\s+(Forever\s+)/giu, '\n- $1'],
+                [/,\s+a po potrebi i\s+(Forever\s+)/giu, '\n- $1'],
+                [/\s+a po potrebi i\s+(Forever\s+)/giu, '\n- $1'],
+                [/,\s+te\s+(Forever\s+)/giu, '\n- $1'],
+                [/\s+te\s+(Forever\s+)/giu, '\n- $1'],
+                [/,\s+i\s+(Forever\s+)/giu, '\n- $1'],
+                [/\s+i\s+(Forever\s+)/giu, '\n- $1'],
+            ];
+
+            replacements.forEach(([pattern, replacement]) => {
+                text = text.replace(pattern, replacement);
+            });
+
+            return text.replace(/\n{3,}/g, '\n\n');
+        };
+
         const renderMessageHtml = (value, options = {}) => {
             const config = options && typeof options === 'object' ? options : {};
-            let text = String(value || '').replace(/\r\n/g, '\n');
+            let text = formatDenseProductText(value, config);
 
             if(config.streaming) {
                 const boldMatches = text.match(/\*\*/g) || [];
