@@ -6511,28 +6511,65 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
         ],
         'psoriasis_support' => [
             'patterns' => ['psorijaza', 'psorijazu', 'psorijaz', 'psoriasis'],
-            'preferred_patterns' => ['aloe propolis creme', 'propolis creme', 'aloe vera gelly', 'gelly', 'aloe vera gel', 'aloe gel'],
-            'primary_product' => 'Aloe Propolis Creme',
-            'support_products' => ['Forever Aloe Vera Gelly', 'Forever Aloe Vera Gel™'],
+            'preferred_patterns' => ['aloe vera gel', 'aloe gel', 'arctic sea', 'arctic', 'first spray', 'aloe first', 'aloe propolis creme', 'propolis creme'],
+            'primary_product' => 'Forever Aloe Vera Gel™',
+            'support_products' => ['Forever Arctic Sea', 'Forever Aloe First Spray', 'Aloe Propolis Creme'],
             'label' => [
-                'hr' => 'psorijaza i ciljana njega kože',
-                'en' => 'psoriasis-style skin support',
+                'hr' => 'psorijaza i ciljana rutina kože',
+                'en' => 'psoriasis-style skin routine',
             ],
             'opening_note' => [
-                'hr' => 'Kod psorijaze prvi korak je dermatolog i postojeća terapija, ali ako želite Forever smjer koji ljudi najčešće gledaju uz svakodnevnu njegu kože, ovdje preporuka treba ostati na točnoj aloe/propolis rutini, a ne otići na facial skincare liniju.',
-                'en' => 'With a psoriasis context, dermatologist guidance and the current therapy come first, but if you want the Forever direction people most often look at for everyday skin support, the recommendation should stay on the aloe/propolis route rather than drift into a facial skincare line.',
+                'hr' => 'Kod psorijaze prvi korak je dermatolog i postojeća terapija, ali ako želite Forever smjer koji ljudi najčešće gledaju uz svakodnevnu rutinu kože, ovdje baza treba ići iznutra, a proizvodi izvana dolaze tek kao dodatak istoj rutini.',
+                'en' => 'With a psoriasis context, dermatologist guidance and the current therapy come first, but if you want the Forever direction people most often look at for everyday skin support, the base should start from the inside and the outer products should come only as support on top of that routine.',
             ],
             'recommendation_lines' => [
                 'hr' => [
-                    'Aloe Propolis Creme je ovdje glavni Forever smjer za lokalnu njegu jer se najčešće gleda kada je cilj bogatija krema izvana i nježnija svakodnevna rutina kože.',
-                    'Forever Aloe Vera Gelly može biti dobra support opcija uz to kada želite laganiji aloe sloj izvana tijekom dana.',
-                    'Forever Aloe Vera Gel™ može se gledati kao dopunski nutritivni smjer iznutra ako želite jednostavnu aloe rutinu uz lokalnu njegu.',
+                    'Forever Aloe Vera Gel™ je ovdje glavni Forever smjer jer se najčešće koristi kao baza iznutra kada želite složiti jednostavniju mjesečnu aloe rutinu.',
+                    'Forever Arctic Sea je važna dopunska preporuka uz to jer donosi omega-3 masne kiseline kao dodatnu nutritivnu podršku koži iznutra.',
+                    'Forever Aloe First Spray i Aloe Propolis Creme ovdje imaju smisla kao dodatna njega izvana, tek nakon što unutarnju aloe rutinu postavite kao osnovu.',
                 ],
                 'en' => [
-                    'Aloe Propolis Creme is the main Forever direction here for local care because it is most often considered when the goal is richer outer care and a gentler everyday skin routine.',
-                    'Forever Aloe Vera Gelly can be a useful support option on top when you want a lighter aloe layer on the skin during the day.',
-                    'Forever Aloe Vera Gel™ can be viewed as the complementary inside-nutrition direction if you want a simple aloe routine alongside the topical care.',
+                    'Forever Aloe Vera Gel™ is the main Forever direction here because it is most often used as the inside base when you want to build a simpler monthly aloe routine.',
+                    'Forever Arctic Sea is an important complementary recommendation on top because it brings omega-3 fatty acids as additional nutritional skin support from the inside.',
+                    'Forever Aloe First Spray and Aloe Propolis Creme make sense here as outer-care support only after the inside aloe routine is set as the base.',
                 ],
+            ],
+            'monthly_quantity_note' => [
+                'hr' => 'Ako želite odmah okvir za mjesec dana, ovdje se najčešće gleda 3 x Forever Aloe Vera Gel™ i 1 kutija Forever Arctic Sea, a Aloe First Spray i Aloe Propolis Creme ostaju kao vanjska podrška po potrebi.',
+                'en' => 'If you want a simple one-month frame right away, this is most often positioned as 3 x Forever Aloe Vera Gel™ and 1 box of Forever Arctic Sea, while Aloe First Spray and Aloe Propolis Creme stay as external support as needed.',
+            ],
+            'suppress_generic_questions' => true,
+            'sensitive_support_only' => true,
+            'lock_product_scope' => true,
+        ],
+        'dermatitis_support' => [
+            'patterns' => ['dermatitis', 'dermatit', 'atopijski dermatitis', 'atopijsk', 'ekcem', 'eczema'],
+            'preferred_patterns' => ['aloe vera gel', 'aloe gel', 'arctic sea', 'arctic', 'first spray', 'aloe first', 'aloe propolis creme', 'propolis creme'],
+            'primary_product' => 'Forever Aloe Vera Gel™',
+            'support_products' => ['Forever Arctic Sea', 'Forever Aloe First Spray', 'Aloe Propolis Creme'],
+            'label' => [
+                'hr' => 'dermatitis i rutina kože',
+                'en' => 'dermatitis-style skin routine',
+            ],
+            'opening_note' => [
+                'hr' => 'Kod dermatitisa i sličnih jačih kožnih pitanja prvi korak je liječnik ili dermatolog, ali ako želite Forever smjer, baza preporuke i ovdje treba ići iznutra, a topical proizvodi tek kao dopuna izvana.',
+                'en' => 'For dermatitis and similar stronger skin questions, doctor or dermatologist comes first, but if you want a Forever direction here, the base should also start from the inside while topical products come only as external support.',
+            ],
+            'recommendation_lines' => [
+                'hr' => [
+                    'Forever Aloe Vera Gel™ je ovdje glavni Forever smjer kao baza iznutra jer se najčešće koristi kada želite jednostavniju aloe rutinu za kožu i probavni balans.',
+                    'Forever Arctic Sea je važna dopunska nutritivna podrška uz to kada želite dodatni smjer prema koži iznutra.',
+                    'Forever Aloe First Spray i Aloe Propolis Creme imaju smisla tek kao dodatna njega izvana kada uz unutarnju rutinu želite i nježniju lokalnu podršku koži.',
+                ],
+                'en' => [
+                    'Forever Aloe Vera Gel™ is the main Forever direction here as the inside base because it is often used when you want a simpler aloe routine for skin and digestive balance.',
+                    'Forever Arctic Sea is an important complementary nutrition support on top when you want an extra inside-skin direction.',
+                    'Forever Aloe First Spray and Aloe Propolis Creme make sense only as additional outer-care support when you want gentler local skin care alongside the inside routine.',
+                ],
+            ],
+            'monthly_quantity_note' => [
+                'hr' => 'Ako želite odmah okvir za mjesec dana, ovdje se najčešće gleda 3 x Forever Aloe Vera Gel™ i 1 kutija Forever Arctic Sea, a Aloe First Spray i Aloe Propolis Creme ostaju kao vanjska podrška po potrebi.',
+                'en' => 'If you want a simple one-month frame right away, this is most often positioned as 3 x Forever Aloe Vera Gel™ and 1 box of Forever Arctic Sea, while Aloe First Spray and Aloe Propolis Creme stay as external support as needed.',
             ],
             'suppress_generic_questions' => true,
             'sensitive_support_only' => true,
