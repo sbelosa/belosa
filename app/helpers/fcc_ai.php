@@ -6339,10 +6339,10 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
             'suppress_generic_questions' => true,
         ],
         'nerve_support_routine' => [
-            'patterns' => ['trigemin', 'zujanje u uhu', 'zujanje', 'tinnitus', 'oštećenj živaca', 'ostecenj zivaca', 'živac', 'zivac', 'sinaps', 'pareza facialis', 'facialis', 'pareza', 'neurološ', 'neurolos'],
-            'preferred_patterns' => ['aloe vera gel', 'aloe gel', 'arctic sea', 'arctic', 'royal jelly', 'royal'],
+            'patterns' => ['trigemin', 'zujanje u uhu', 'zujanje', 'tinnitus', 'oštećenj živaca', 'ostecenj zivaca', 'oštećeni živci', 'osteceni zivci', 'oštećene živce', 'ostecene zivce', 'upaljeni živci', 'upaljen živac', 'upaljeni zivci', 'upaljen zivac', 'upaljene živce', 'upaljene zivce', 'upala živca', 'upala zivca', 'živac', 'zivac', 'sinaps', 'pareza facialis', 'facialis', 'pareza', 'neurološ', 'neurolos', 'neuralg'],
+            'preferred_patterns' => ['aloe vera gel', 'aloe gel', 'arctic sea', 'arctic', 'royal jelly', 'royal', 'b12'],
             'primary_product' => 'Forever Aloe Vera Gel™',
-            'support_products' => ['Forever Arctic Sea', 'Forever Royal Jelly'],
+            'support_products' => ['Forever Arctic Sea', 'Forever Royal Jelly', 'Forever B12 Plus'],
             'label' => [
                 'hr' => 'živčani sustav i svakodnevna podrška',
                 'en' => 'nerve wellness and daily support',
@@ -6356,11 +6356,13 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
                     'Forever Aloe Vera Gel™ je ovdje glavni Forever smjer kao osnovni dnevni nutritivni napitak za jednostavnu rutinu opće podrške organizmu.',
                     'Forever Arctic Sea je dobra support opcija uz to kao omega-3 nutritivna podrška koja se često uključuje u svakodnevnu rutinu kod neurološki osjetljivijih pitanja.',
                     'Forever Royal Jelly je ovdje važna dodatna preporuka jer sadrži matičnu mliječ i često se uključuje kao nutritivna podrška kada je fokus na živčanom sustavu i svakodnevnoj vitalnosti.',
+                    'Forever B12 Plus može biti dobra dodatna support opcija kada je fokus na oštećenim ili osjetljivijim živcima, jer se vitamin B12 često veže uz svakodnevnu nutritivnu podršku živčanom sustavu.',
                 ],
                 'en' => [
                     'Forever Aloe Vera Gel™ is the main Forever direction here as a base daily nutrition drink for a simple general-support routine.',
                     'Forever Arctic Sea is a useful support option on top as omega-3 nutritional support that often fits into an everyday routine when the context feels more neurologically sensitive.',
                     'Forever Royal Jelly is an important additional recommendation here because it contains royal jelly and is often included as nutritional support when the focus is the nervous system and everyday vitality.',
+                    'Forever B12 Plus can be a strong extra support option when the focus is damaged or irritated nerves, because vitamin B12 is often associated with everyday nutritional support for the nervous system.',
                 ],
             ],
             'suppress_generic_questions' => true,
