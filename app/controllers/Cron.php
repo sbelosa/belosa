@@ -868,19 +868,27 @@ class Cron extends Controller {
         }
     }
 
-    private function dispatch_fcc_public_signal_message(object $user, array $visibility, string $event_key): void {
+    private function dispatch_fcc_public_signal_message(object $user, array $visibility, string $event_key): bool {
         if(empty($user->email) || !filter_var($user->email, FILTER_VALIDATE_EMAIL)) {
-            return;
+            return false;
         }
 
         $language = fcc_ai_resolve_public_reply_language((string) ($user->language ?? 'hr'));
         $message = fcc_featured_build_signal_email_message($event_key, $visibility, $language);
 
-        send_mail($user->email, $message['subject'], $message['body'], [
+        $transport_result = send_mail($user->email, $message['subject'], $message['body'], [
             'anti_phishing_code' => $user->anti_phishing_code ?? null,
             'language' => $language,
             'return_transport_result' => true,
         ]);
+
+        $is_sent = is_object($transport_result)
+            ? !empty($transport_result->success)
+            : (bool) $transport_result;
+
+        if(!$is_sent) {
+            return false;
+        }
 
         fcc_ai_push_internal_notification(
             (int) ($user->user_id ?? 0),
@@ -890,6 +898,8 @@ class Cron extends Controller {
             (string) ($message['notification_url'] ?? ''),
             'fas fa-bullhorn'
         );
+
+        return true;
     }
 
     private function dispatch_fcc_public_signal_admin_reentry_notification(object $user, array $visibility, string $tier): void {
@@ -977,10 +987,11 @@ class Cron extends Controller {
                 && $qualified_already_handled;
 
             if($crossed_qualified) {
-                $this->dispatch_fcc_public_signal_message($user, $visibility, 'qualified_unlocked');
-                $state['qualified_unlock_sent_at'] = get_date();
-                $state['qualified_reminder_sent_at'] = '';
-                $state['qualified_reentry_admin_notified_at'] = '';
+                if($this->dispatch_fcc_public_signal_message($user, $visibility, 'qualified_unlocked')) {
+                    $state['qualified_unlock_sent_at'] = get_date();
+                    $state['qualified_reminder_sent_at'] = '';
+                    $state['qualified_reentry_admin_notified_at'] = '';
+                }
             } elseif($reentered_qualified) {
                 $this->dispatch_fcc_public_signal_admin_reentry_notification($user, $visibility, 'qualified');
                 $state['qualified_reentry_admin_notified_at'] = get_date();
@@ -992,15 +1003,17 @@ class Cron extends Controller {
                 && empty($state['qualified_reminder_sent_at'])
                 && $this->is_datetime_older_than((string) $state['qualified_unlock_sent_at'], 72)
             ) {
-                $this->dispatch_fcc_public_signal_message($user, $visibility, 'qualified_reminder');
-                $state['qualified_reminder_sent_at'] = get_date();
+                if($this->dispatch_fcc_public_signal_message($user, $visibility, 'qualified_reminder')) {
+                    $state['qualified_reminder_sent_at'] = get_date();
+                }
             }
 
             if($crossed_top) {
-                $this->dispatch_fcc_public_signal_message($user, $visibility, 'top_unlocked');
-                $state['top_unlock_sent_at'] = get_date();
-                $state['top_reminder_sent_at'] = '';
-                $state['top_reentry_admin_notified_at'] = '';
+                if($this->dispatch_fcc_public_signal_message($user, $visibility, 'top_unlocked')) {
+                    $state['top_unlock_sent_at'] = get_date();
+                    $state['top_reminder_sent_at'] = '';
+                    $state['top_reentry_admin_notified_at'] = '';
+                }
             } elseif($reentered_top) {
                 $this->dispatch_fcc_public_signal_admin_reentry_notification($user, $visibility, 'top');
                 $state['top_reentry_admin_notified_at'] = get_date();
@@ -1011,8 +1024,9 @@ class Cron extends Controller {
                 && empty($state['top_reminder_sent_at'])
                 && $this->is_datetime_older_than((string) $state['top_unlock_sent_at'], 72)
             ) {
-                $this->dispatch_fcc_public_signal_message($user, $visibility, 'top_reminder');
-                $state['top_reminder_sent_at'] = get_date();
+                if($this->dispatch_fcc_public_signal_message($user, $visibility, 'top_reminder')) {
+                    $state['top_reminder_sent_at'] = get_date();
+                }
             }
 
             $state['last_public_signal_30d'] = $public_signal_30d;

@@ -88,6 +88,74 @@ function process_send_mail_template($title, $content, $data = []) {
     ];
 }
 
+function fc_mail_normalize_site_url($url): string {
+    $url = trim((string) $url);
+
+    if($url === '') {
+        return '';
+    }
+
+    if(!preg_match('#^https?://#i', $url)) {
+        $url = 'https://' . ltrim($url, '/');
+    }
+
+    return rtrim($url, '/') . '/';
+}
+
+function fc_mail_is_local_host($host): bool {
+    $host = mb_strtolower(trim((string) $host));
+
+    return in_array($host, ['localhost', '127.0.0.1', '0.0.0.0', '::1', 'host.docker.internal'], true);
+}
+
+function fc_mail_is_local_environment(): bool {
+    foreach([
+        getenv('SITE_URL') ?: '',
+        defined('SITE_URL') ? SITE_URL : '',
+    ] as $candidate) {
+        $candidate = fc_mail_normalize_site_url($candidate);
+
+        if($candidate === '') {
+            continue;
+        }
+
+        $host = (string) parse_url($candidate, PHP_URL_HOST);
+
+        if(fc_mail_is_local_host($host)) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+function fc_mail_allow_local_outbound(array $data = []): bool {
+    if(!empty($data['allow_local_send'])) {
+        return true;
+    }
+
+    return (int) (getenv('ALLOW_LOCAL_OUTBOUND_MAIL') ?: 0) === 1;
+}
+
+function fc_mail_should_block_outbound(array $data = []): bool {
+    return fc_mail_is_local_environment() && !fc_mail_allow_local_outbound($data);
+}
+
+function fc_mail_build_blocked_transport_result(string $message): \stdClass {
+    $result = new \stdClass();
+    $result->success = false;
+    $result->status_code = 0;
+    $result->response_body = null;
+    $result->response_json = null;
+    $result->curl_error = $message;
+    $result->payload = null;
+    $result->message_id = null;
+    $result->ErrorInfo = $message;
+    $result->errors = [$message];
+
+    return $result;
+}
+
 function send_server_mail($to, $from, $title, $content, $reply_to = null) {
 
     $headers = "From: " . settings()->smtp->from_name . " <" . strip_tags($from) . ">\r\n";
@@ -351,6 +419,22 @@ function send_automation_mail($to, $title, $content, $data = [], $reply_to = nul
 /* /Custom code: FC-2026-03-18 */
 
 function send_mail($to, $title, $content, $data = [], $reply_to = null, $debug = false) {
+    $should_return_transport_result = $debug || !empty($data['return_transport_result']);
+
+    if(fc_mail_should_block_outbound((array) $data)) {
+        $message = 'Outbound mail is blocked in local environment.';
+
+        fc_log_mail_transport_error('local_guard', $message, [
+            'subject' => $title,
+            'to' => $to,
+        ]);
+
+        if($should_return_transport_result) {
+            return fc_mail_build_blocked_transport_result($message);
+        }
+
+        return false;
+    }
 
     if(get_mail_transport() === 'brevo_api' && !empty(get_brevo_api_key())) {
         return send_brevo_mail($to, $title, $content, $data, $reply_to, $debug);

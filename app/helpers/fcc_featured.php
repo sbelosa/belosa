@@ -807,6 +807,7 @@ function fcc_featured_send_signal_preview_emails(string $recipient_email, string
         $transport_result = send_mail($recipient_email, $message['subject'], $message['body'], [
             'language' => $language,
             'return_transport_result' => true,
+            'allow_local_send' => true,
         ]);
 
         $results[] = [

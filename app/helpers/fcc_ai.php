@@ -109,6 +109,163 @@ function fcc_ai_normalize_user_preferences($preferences): \stdClass {
     return $preferences;
 }
 
+function fcc_ai_get_internal_coach_campaigns(): array {
+    static $campaigns = null;
+
+    if($campaigns !== null) {
+        return $campaigns;
+    }
+
+    $path = APP_PATH . 'includes/fcc_ai_internal_campaigns.php';
+    if(file_exists($path)) {
+        $loaded = require $path;
+        $campaigns = is_array($loaded) ? array_values(array_filter($loaded, 'is_array')) : [];
+    } else {
+        $campaigns = [];
+    }
+
+    return $campaigns;
+}
+
+function fcc_ai_get_internal_coach_campaign_field(array $campaign, string $field, string $language = 'hr', $default = '') {
+    $language = fcc_ai_resolve_public_reply_language($language);
+    $value = $campaign[$field] ?? $default;
+
+    if(is_array($value) && (isset($value['hr']) || isset($value['en']) || isset($value['sl']) || isset($value['bg']))) {
+        return $value[$language] ?? $value['hr'] ?? $value['en'] ?? $default;
+    }
+
+    return $value;
+}
+
+function fcc_ai_parse_campaign_datetime(string $value, string $fallback = ''): ?\DateTimeImmutable {
+    $value = trim($value);
+
+    if($value === '') {
+        $value = trim($fallback);
+    }
+
+    if($value === '') {
+        return null;
+    }
+
+    try {
+        return new \DateTimeImmutable($value, new \DateTimeZone(date_default_timezone_get() ?: 'Europe/Zagreb'));
+    } catch(\Throwable $exception) {
+        try {
+            return new \DateTimeImmutable($value);
+        } catch(\Throwable $secondary_exception) {
+            return null;
+        }
+    }
+}
+
+function fcc_ai_is_internal_coach_campaign_active(array $campaign, ?\DateTimeImmutable $now = null): bool {
+    $now = $now ?: new \DateTimeImmutable('now', new \DateTimeZone(date_default_timezone_get() ?: 'Europe/Zagreb'));
+    $starts_at = fcc_ai_parse_campaign_datetime((string) ($campaign['starts_at'] ?? ''));
+    $ends_at = fcc_ai_parse_campaign_datetime((string) ($campaign['ends_at'] ?? ''), '9999-12-31 23:59:59');
+
+    if($starts_at && $now < $starts_at) {
+        return false;
+    }
+
+    if($ends_at && $now > $ends_at) {
+        return false;
+    }
+
+    return true;
+}
+
+function fcc_ai_format_internal_coach_campaign_period(array $campaign, string $language = 'hr'): string {
+    $language = fcc_ai_resolve_public_reply_language($language);
+    $starts_at = fcc_ai_parse_campaign_datetime((string) ($campaign['starts_at'] ?? ''));
+    $ends_at = fcc_ai_parse_campaign_datetime((string) ($campaign['ends_at'] ?? ''));
+
+    if(!$starts_at && !$ends_at) {
+        return '';
+    }
+
+    if($language === 'en') {
+        $start_label = $starts_at ? $starts_at->format('M j, Y') : '';
+        $end_label = $ends_at ? $ends_at->format('M j, Y') : '';
+
+        if($start_label !== '' && $end_label !== '') {
+            return $start_label . ' - ' . $end_label;
+        }
+
+        return $start_label !== '' ? $start_label : $end_label;
+    }
+
+    $start_label = $starts_at ? $starts_at->format('d.m.Y.') : '';
+    $end_label = $ends_at ? $ends_at->format('d.m.Y.') : '';
+
+    if($start_label !== '' && $end_label !== '') {
+        return $start_label . ' - ' . $end_label;
+    }
+
+    return $start_label !== '' ? $start_label : $end_label;
+}
+
+function fcc_ai_get_active_internal_coach_campaign($user = null, string $language = 'hr'): array {
+    $language = fcc_ai_resolve_public_reply_language($language);
+    $campaigns = fcc_ai_get_internal_coach_campaigns();
+
+    if(empty($campaigns)) {
+        return [];
+    }
+
+    usort($campaigns, static function(array $a, array $b) {
+        return ((int) ($b['priority'] ?? 0) <=> (int) ($a['priority'] ?? 0));
+    });
+
+    $active_campaign = null;
+    foreach($campaigns as $campaign) {
+        if(fcc_ai_is_internal_coach_campaign_active($campaign)) {
+            $active_campaign = $campaign;
+            break;
+        }
+    }
+
+    if(!$active_campaign) {
+        return [];
+    }
+
+    $user_id = is_object($user) ? (int) ($user->user_id ?? 0) : 0;
+    $main_link_id = 0;
+    if($user_id > 0 && function_exists('fc_get_user_main_biolink_id')) {
+        $main_link_id = (int) (fc_get_user_main_biolink_id($user_id) ?? 0);
+    }
+
+    $primary_url = $main_link_id > 0
+        ? url('link/' . $main_link_id . '?tab=blocks')
+        : url('links?type=biolink');
+    $offer_labels = fcc_ai_get_internal_coach_campaign_field($active_campaign, 'offer_labels', $language, []);
+    $setup_steps = fcc_ai_get_internal_coach_campaign_field($active_campaign, 'setup_steps', $language, []);
+
+    return [
+        'id' => (string) ($active_campaign['id'] ?? ''),
+        'title' => (string) fcc_ai_get_internal_coach_campaign_field($active_campaign, 'title', $language, ''),
+        'eyebrow' => (string) fcc_ai_get_internal_coach_campaign_field($active_campaign, 'eyebrow', $language, ''),
+        'summary' => (string) fcc_ai_get_internal_coach_campaign_field($active_campaign, 'summary', $language, ''),
+        'welcome_line' => (string) fcc_ai_get_internal_coach_campaign_field($active_campaign, 'welcome_line', $language, ''),
+        'period_label' => fcc_ai_format_internal_coach_campaign_period($active_campaign, $language),
+        'primary_url' => $primary_url,
+        'primary_label' => (string) fcc_ai_get_internal_coach_campaign_field($active_campaign, 'primary_label', $language, ''),
+        'primary_description' => (string) fcc_ai_get_internal_coach_campaign_field($active_campaign, 'primary_description', $language, ''),
+        'prompt_label' => (string) fcc_ai_get_internal_coach_campaign_field($active_campaign, 'prompt_label', $language, ''),
+        'prompt' => (string) fcc_ai_get_internal_coach_campaign_field($active_campaign, 'prompt', $language, ''),
+        'setup_steps' => is_array($setup_steps) ? array_values(array_filter(array_map(static function($step) {
+            return is_scalar($step) ? trim((string) $step) : '';
+        }, $setup_steps))) : [],
+        'offer_labels' => is_array($offer_labels) ? array_values(array_filter(array_map(static function($offer) {
+            return is_scalar($offer) ? trim((string) $offer) : '';
+        }, $offer_labels))) : [],
+        'offer_urls' => array_values(array_filter(array_map(static function($url) {
+            return is_scalar($url) ? trim((string) $url) : '';
+        }, (array) ($active_campaign['offer_urls'] ?? [])))),
+    ];
+}
+
 function fcc_ai_get_user_sidebar_signal_state(object $user): array {
     $payload = [
         'count' => 0,
@@ -2292,6 +2449,7 @@ function fcc_ai_get_internal_coach_mode_payload($user, string $language = 'hr'):
 function fcc_ai_get_internal_coach_ui_payload($user, string $language = 'hr'): array {
     $language = fcc_ai_resolve_public_reply_language($language);
     $mode = fcc_ai_get_internal_coach_mode_payload($user, $language);
+    $active_campaign = fcc_ai_get_active_internal_coach_campaign($user, $language);
 
     return [
         'coach_mode_key' => (string) ($mode['mode_key'] ?? 'beginner'),
@@ -2308,8 +2466,10 @@ function fcc_ai_get_internal_coach_ui_payload($user, string $language = 'hr'): a
             (string) ($user->name ?? ''),
             [
                 'coach_summary' => $mode,
+                'active_campaign' => $active_campaign,
             ]
         ),
+        'active_campaign' => $active_campaign,
     ];
 }
 
@@ -2618,6 +2778,7 @@ function fcc_ai_get_user_ai_plan_summary(object $user, string $language = 'hr'):
     $coach_summary = fcc_ai_get_internal_coach_mode_payload($user, $language);
     $sales_link_summary = fcc_ai_get_user_sales_link_summary($user, $language);
     $portfolio_summary = fcc_ai_get_user_app_portfolio_summary($user, $language);
+    $active_campaign = fcc_ai_get_active_internal_coach_campaign($user, $language);
     $signal_snapshot = fcc_ai_get_user_growth_signal_snapshot(
         (int) ($user->user_id ?? 0),
         (int) (fc_get_user_main_biolink_id((int) ($user->user_id ?? 0)) ?? 0)
@@ -2697,6 +2858,7 @@ function fcc_ai_get_user_ai_plan_summary(object $user, string $language = 'hr'):
         'coach_summary' => $coach_summary,
         'sales_link_summary' => $sales_link_summary,
         'portfolio_summary' => $portfolio_summary,
+        'active_campaign' => $active_campaign,
         'starter_summary' => [
             'app_review_used' => $starter_app_review_used,
             'weekly_plan_used' => $starter_weekly_plan_used,
@@ -3130,6 +3292,7 @@ function fcc_ai_get_internal_coach_suggestions(array $context, string $message, 
     $language = fcc_ai_resolve_public_reply_language((string) ($context['language'] ?? 'hr'), $message);
     $ai_plan_summary = $context['ai_plan'] ?? [];
     $sales_link_summary = is_array($ai_plan_summary['sales_link_summary'] ?? null) ? $ai_plan_summary['sales_link_summary'] : [];
+    $active_campaign = is_array($ai_plan_summary['active_campaign'] ?? null) ? $ai_plan_summary['active_campaign'] : [];
     $page = $context['page'] ?? [];
     $page_route = trim((string) ($page['route'] ?? ''));
     $page_section = trim((string) ($page['section'] ?? ''));
@@ -3216,6 +3379,14 @@ function fcc_ai_get_internal_coach_suggestions(array $context, string $message, 
         ],
     ];
 
+    if(!empty($active_campaign['id']) && !empty($active_campaign['primary_url'])) {
+        $pages['active_campaign'] = [
+            'title' => (string) ($active_campaign['title'] ?? ($language === 'en' ? 'Current promotion' : 'Aktualna akcija')),
+            'url' => (string) ($active_campaign['primary_url'] ?? url('links?type=biolink')),
+            'description' => (string) ($active_campaign['primary_description'] ?? $active_campaign['summary'] ?? ''),
+        ];
+    }
+
     $latest_app_review = $ai_plan_summary['latest_app_review'] ?? [];
     if(!empty($latest_app_review['selected_link_id'])) {
         $pages['reviewed_app'] = [
@@ -3289,6 +3460,10 @@ function fcc_ai_get_internal_coach_suggestions(array $context, string $message, 
         $add_page('account_plan', 98);
     }
 
+    if(!empty($active_campaign['id']) && ($normalized_message === '' || fcc_ai_contains_keywords($normalized_message, ['akcij', 'promo', 'popust', 'challenge', 'izazov', 'aloe', 'pro-b', '4 pack', 'paket aloe', 'kampanj']))) {
+        $add_page('active_campaign', 103);
+    }
+
     if(fcc_ai_contains_keywords($normalized_message, ['prodajni link', 'sales link', 'webshop', 'web shop', 'link builder', 'thealoeveraco', 'popust', 'discount', 'forever web shop', 'forever web trgovina'])) {
         $add_page('sales_link_setup', 101);
         $add_page('education', 87);
@@ -3322,6 +3497,10 @@ function fcc_ai_get_internal_coach_suggestions(array $context, string $message, 
     if($page_route === 'dashboard') {
         $add_page('apps', 84);
         $add_page('contacts', 82);
+
+        if(!empty($active_campaign['id'])) {
+            $add_page('active_campaign', 81);
+        }
     }
 
     if($page_route === 'links' || $page_route === 'link') {
@@ -3623,44 +3802,63 @@ function fcc_ai_get_internal_coach_welcome_message(string $language = 'hr', stri
     $coach_summary = is_array($context['coach_summary'] ?? null) ? $context['coach_summary'] : [];
     $starter_summary = is_array($context['starter_summary'] ?? null) ? $context['starter_summary'] : [];
     $sales_link_summary = is_array($context['sales_link_summary'] ?? null) ? $context['sales_link_summary'] : [];
+    $active_campaign = is_array($context['active_campaign'] ?? null) ? $context['active_campaign'] : [];
     $is_vip = !empty($coach_summary['is_vip']);
     $starter_app_review_available = !empty($starter_summary['app_review_available']);
     $starter_weekly_plan_available = !empty($starter_summary['weekly_plan_available']);
     $sales_link_missing = !empty($sales_link_summary['is_priority_missing']);
+    $campaign_line = '';
+
+    if(!empty($active_campaign['id'])) {
+        $campaign_welcome = trim((string) ($active_campaign['welcome_line'] ?? ''));
+        $campaign_title = trim((string) ($active_campaign['title'] ?? ''));
+
+        if($campaign_welcome !== '') {
+            $campaign_line = $sales_link_missing
+                ? ($language === 'en'
+                    ? ' First fix the Forever sales link, and right after that I can help you turn the current promotion into a dedicated app button, story and DM follow-up.'
+                    : ' Prvo sredi Forever prodajni link, a odmah nakon toga mogu ti pomoći da aktualnu akciju pretvoriš u poseban gumb na aplikaciji, story i DM follow-up.')
+                : ' ' . $campaign_welcome;
+        } elseif($campaign_title !== '') {
+            $campaign_line = $language === 'en'
+                ? ' The active promotion right now is ' . $campaign_title . '.'
+                : ' Trenutačno je aktivna akcija ' . $campaign_title . '.';
+        }
+    }
 
     if($language === 'en') {
         if($sales_link_missing) {
-            return 'Hi ' . $name_prefix . 'I am your ' . ($is_vip ? 'VIP Coach' : 'Beginner Coach') . '. Before anything else, we need to activate your Forever sales link, because without that block FCC cannot drive real webshop clicks and product recommendation results. I will guide you through it step by step.';
+            return 'Hi ' . $name_prefix . 'I am your ' . ($is_vip ? 'VIP Coach' : 'Beginner Coach') . '. Before anything else, we need to activate your Forever sales link, because without that block FCC cannot drive real webshop clicks and product recommendation results. I will guide you through it step by step.' . $campaign_line;
         }
 
         if($is_vip && $starter_app_review_available && $starter_weekly_plan_available) {
-            return 'Hi ' . $name_prefix . 'I am your VIP Coach. PRO is active, so I am using the strongest intelligence package. Right now you can immediately run one initial app review and one first weekly plan, and I will use that to guide you first toward 15+ / 30d and then toward the main public goal of 50+ / 30d sponsor visibility.';
+            return 'Hi ' . $name_prefix . 'I am your VIP Coach. PRO is active, so I am using the strongest intelligence package. Right now you can immediately run one initial app review and one first weekly plan, and I will use that to guide you first toward 15+ / 30d and then toward the main public goal of 50+ / 30d sponsor visibility.' . $campaign_line;
         }
 
         if($is_vip && $starter_weekly_plan_available) {
-            return 'Hi ' . $name_prefix . 'I am your VIP Coach. PRO is active, so I am using the strongest intelligence package. Your initial app review is already in place, and your first weekly plan is available now so we can turn it into a focused next 7 days.';
+            return 'Hi ' . $name_prefix . 'I am your VIP Coach. PRO is active, so I am using the strongest intelligence package. Your initial app review is already in place, and your first weekly plan is available now so we can turn it into a focused next 7 days.' . $campaign_line;
         }
 
         return $is_vip
-            ? 'Hi ' . $name_prefix . 'I am your VIP Coach. PRO is active, so I am using the strongest intelligence package. I help you turn your plan, app, contacts and content into the clearest next move inside FCC, and I can also guide you toward 15+ / 30d for Featured Apps, 50+ / 30d as the main public sponsor goal, stronger homepage visibility, and a healthy 7-day rhythm.'
-            : 'Hi ' . $name_prefix . 'I am your Beginner Coach. Right now you are on the basic intelligence package, but I can already help you with the next move inside FCC, social content, follow-up, and app direction. When you activate PRO or trial, I switch into VIP Coach with the strongest intelligence package.';
+            ? 'Hi ' . $name_prefix . 'I am your VIP Coach. PRO is active, so I am using the strongest intelligence package. I help you turn your plan, app, contacts and content into the clearest next move inside FCC, and I can also guide you toward 15+ / 30d for Featured Apps, 50+ / 30d as the main public sponsor goal, stronger homepage visibility, and a healthy 7-day rhythm.' . $campaign_line
+            : 'Hi ' . $name_prefix . 'I am your Beginner Coach. Right now you are on the basic intelligence package, but I can already help you with the next move inside FCC, social content, follow-up, and app direction. When you activate PRO or trial, I switch into VIP Coach with the strongest intelligence package.' . $campaign_line;
     }
 
     if($sales_link_missing) {
-        return 'Bok ' . $name_prefix . 'ja sam tvoj ' . ($is_vip ? 'VIP Coach' : 'Beginner Coach') . '. Prije svega trebamo aktivirati tvoj Forever prodajni link, jer bez tog bloka FCC ne može graditi stvarne webshop klikove i rezultate preporuke proizvoda. Vodit ću te kroz to korak po korak.';
+        return 'Bok ' . $name_prefix . 'ja sam tvoj ' . ($is_vip ? 'VIP Coach' : 'Beginner Coach') . '. Prije svega trebamo aktivirati tvoj Forever prodajni link, jer bez tog bloka FCC ne može graditi stvarne webshop klikove i rezultate preporuke proizvoda. Vodit ću te kroz to korak po korak.' . $campaign_line;
     }
 
     if($is_vip && $starter_app_review_available && $starter_weekly_plan_available) {
-        return 'Bok ' . $name_prefix . 'ja sam tvoj VIP Coach. PRO je aktivan pa sada koristim najjači paket inteligencije. Upravo sada možeš odmah napraviti jednu početnu analizu aplikacije i jedan prvi tjedni plan, a ja ću to iskoristiti da te vodim prvo prema 15+ / 30d, a zatim i prema glavnom javnom cilju 50+ / 30d.';
+        return 'Bok ' . $name_prefix . 'ja sam tvoj VIP Coach. PRO je aktivan pa sada koristim najjači paket inteligencije. Upravo sada možeš odmah napraviti jednu početnu analizu aplikacije i jedan prvi tjedni plan, a ja ću to iskoristiti da te vodim prvo prema 15+ / 30d, a zatim i prema glavnom javnom cilju 50+ / 30d.' . $campaign_line;
     }
 
     if($is_vip && $starter_weekly_plan_available) {
-        return 'Bok ' . $name_prefix . 'ja sam tvoj VIP Coach. PRO je aktivan pa sada koristim najjači paket inteligencije. Početna analiza aplikacije je već spremna, a prvi tjedni plan možeš otvoriti odmah kako bismo složili fokusiranih sljedećih 7 dana.';
+        return 'Bok ' . $name_prefix . 'ja sam tvoj VIP Coach. PRO je aktivan pa sada koristim najjači paket inteligencije. Početna analiza aplikacije je već spremna, a prvi tjedni plan možeš otvoriti odmah kako bismo složili fokusiranih sljedećih 7 dana.' . $campaign_line;
     }
 
     return $is_vip
-        ? 'Bok ' . $name_prefix . 'ja sam tvoj VIP Coach. PRO je aktivan pa sada koristim najjači paket inteligencije. Pomažem ti pretvoriti plan, aplikaciju, kontakte i sadržaj u najjasniji sljedeći potez unutar FCC-a, a mogu te i voditi prema 15+ / 30d za Istaknute aplikacije, 50+ / 30d kao glavnom javnom sponsor cilju, jačoj vidljivosti na naslovnici i zdravom 7-dnevnom ritmu.'
-        : 'Bok ' . $name_prefix . 'ja sam tvoj Beginner Coach. Trenutno si na osnovnom paketu inteligencije, ali ti i dalje mogu pomoći oko sljedećeg poteza u FCC-u, sadržaja za društvene mreže, follow-upa i smjera za aplikaciju. Kad aktiviraš PRO ili trial, prebacujem se u VIP Coach s najjačim paketom inteligencije.';
+        ? 'Bok ' . $name_prefix . 'ja sam tvoj VIP Coach. PRO je aktivan pa sada koristim najjači paket inteligencije. Pomažem ti pretvoriti plan, aplikaciju, kontakte i sadržaj u najjasniji sljedeći potez unutar FCC-a, a mogu te i voditi prema 15+ / 30d za Istaknute aplikacije, 50+ / 30d kao glavnom javnom sponsor cilju, jačoj vidljivosti na naslovnici i zdravom 7-dnevnom ritmu.' . $campaign_line
+        : 'Bok ' . $name_prefix . 'ja sam tvoj Beginner Coach. Trenutno si na osnovnom paketu inteligencije, ali ti i dalje mogu pomoći oko sljedećeg poteza u FCC-u, sadržaja za društvene mreže, follow-upa i smjera za aplikaciju. Kad aktiviraš PRO ili trial, prebacujem se u VIP Coach s najjačim paketom inteligencije.' . $campaign_line;
 }
 
 function fcc_ai_get_default_internal_coach_persona_prompt(string $language = 'hr'): string {
@@ -4511,6 +4709,75 @@ function fcc_ai_get_internal_coach_sponsor_visibility_explainer(array $ai_plan =
         'Na taj način jačaš svoj javni profil, osobni brand i mogućnost da te Google i AI sustavi lakše prepoznaju kroz FCC kontekst.',
         'Trenutno ti do ' . $qualified_target . '+ nedostaje još ' . $missing_to_qualified . ', a do ' . $top_target . '+ još ' . $missing_to_top . '.',
     ]);
+}
+
+function fcc_ai_get_internal_coach_campaign_explainer(array $campaign = [], array $ai_plan = [], string $language = 'hr'): string {
+    $language = fcc_ai_resolve_public_reply_language($language);
+
+    if(empty($campaign['id'])) {
+        return '';
+    }
+
+    $sales_link_summary = is_array($ai_plan['sales_link_summary'] ?? null) ? $ai_plan['sales_link_summary'] : [];
+    $sales_link_ready = !empty($sales_link_summary['has_valid_enabled_link']);
+    $campaign_title = trim((string) ($campaign['title'] ?? ''));
+    $campaign_period_label = trim((string) ($campaign['period_label'] ?? ''));
+    $campaign_summary = trim((string) ($campaign['summary'] ?? ''));
+    $setup_steps = array_values(array_filter((array) ($campaign['setup_steps'] ?? []), static function($step) {
+        return is_scalar($step) && trim((string) $step) !== '';
+    }));
+
+    if($language === 'en') {
+        $lines = [];
+        $lines[] = $campaign_title !== ''
+            ? $campaign_title . ($campaign_period_label !== '' ? ' is active through ' . $campaign_period_label . '.' : ' is active right now.')
+            : 'There is an active Forever promotion right now.';
+
+        if($campaign_summary !== '') {
+            $lines[] = $campaign_summary;
+        }
+
+        if(!$sales_link_ready) {
+            $lines[] = 'First fix your Forever sales link setup, and immediately after that use this promotion through a dedicated app button or link block.';
+        } else {
+            $lines[] = 'The cleanest move is to place this offer on your main FCC app through a dedicated button or link block and connect it to your own personal Link Builder URL.';
+        }
+
+        $lines[] = 'Do not paste the raw Forever product URL into your app, because without your own Link Builder URL the recommendation path and signal are not truly yours.';
+
+        foreach(array_slice($setup_steps, 0, 3) as $step) {
+            $lines[] = '- ' . $step;
+        }
+
+        $lines[] = 'If you want, I can now turn this promotion into a story angle, a DM follow-up and a simple CTA for your app.';
+
+        return implode("\n", array_filter($lines));
+    }
+
+    $lines = [];
+    $lines[] = $campaign_title !== ''
+        ? $campaign_title . ($campaign_period_label !== '' ? ' traje do ' . $campaign_period_label . '.' : ' je aktivna upravo sada.')
+        : 'Trenutačno je aktivna posebna Forever akcija.';
+
+    if($campaign_summary !== '') {
+        $lines[] = $campaign_summary;
+    }
+
+    if(!$sales_link_ready) {
+        $lines[] = 'Prvo sredi osnovni Forever prodajni link, a odmah nakon toga iskoristi ovu akciju kroz poseban gumb ili link blok na aplikaciji.';
+    } else {
+        $lines[] = 'Najčišći potez sada je da ovu ponudu postaviš na svoju glavnu FCC aplikaciju kroz poseban gumb ili link blok i povežeš je sa svojim osobnim Link Builder URL-om.';
+    }
+
+    $lines[] = 'Nemoj lijepiti običan Forever URL u aplikaciju, jer bez tvog osobnog Link Builder URL-a preporučni put i signal nisu stvarno tvoji.';
+
+    foreach(array_slice($setup_steps, 0, 3) as $step) {
+        $lines[] = '- ' . $step;
+    }
+
+    $lines[] = 'Ako želiš, iz ove akcije ti odmah mogu složiti story smjer, DM follow-up i jednostavan CTA za aplikaciju.';
+
+    return implode("\n", array_filter($lines));
 }
 
 function fcc_ai_get_internal_coach_settings_explainer(string $language = 'hr'): string {
@@ -10203,7 +10470,7 @@ function fcc_ai_get_default_public_response_contract(string $assistant_type, str
             'Preferred response flow:',
             '1. Briefly reflect the visitor goal.',
             '2. Give one main product direction through ingredients or bioactive compounds.',
-            '3. Add one or two support options only when they make the recommendation clearer.',
+                '3. Add one or two support options only when they make the recommendation clearer.',
             '4. Finish with one clear next step: continue on the FCC article, clarify what to order first, or leave contact details.',
         ])
         : implode("\n", [
@@ -15070,6 +15337,7 @@ function fcc_ai_ensure_internal_coach_welcome_message(int $conversation_id, arra
         'coach_summary' => $coach_summary,
         'starter_summary' => is_array($context['ai_plan']['starter_summary'] ?? null) ? $context['ai_plan']['starter_summary'] : [],
         'sales_link_summary' => is_array($context['ai_plan']['sales_link_summary'] ?? null) ? $context['ai_plan']['sales_link_summary'] : [],
+        'active_campaign' => is_array($context['ai_plan']['active_campaign'] ?? null) ? $context['ai_plan']['active_campaign'] : [],
     ]);
     $welcome_meta = [
         'message_type' => 'welcome',
@@ -15139,6 +15407,7 @@ function fcc_ai_build_internal_coach_system_prompt(array $context = [], ?object 
     $current_step = fcc_ai_get_internal_coach_current_step($ai_plan);
     $page_priority_instruction = fcc_ai_get_internal_coach_page_priority_instruction($page, $language);
     $include_portfolio_details = fcc_ai_internal_coach_should_include_portfolio_details((string) ($context['last_user_message'] ?? ''), $page);
+    $active_campaign = is_array($ai_plan['active_campaign'] ?? null) ? $ai_plan['active_campaign'] : [];
     $context_snapshot = [
         'current_page' => [
             'label' => (string) ($page['label'] ?? ''),
@@ -15266,6 +15535,23 @@ function fcc_ai_build_internal_coach_system_prompt(array $context = [], ?object 
         'available_pages' => $available_pages,
     ];
 
+    if(!empty($active_campaign['id'])) {
+        $context_snapshot['ai_plan']['active_campaign'] = [
+            'id' => (string) ($active_campaign['id'] ?? ''),
+            'title' => (string) ($active_campaign['title'] ?? ''),
+            'period_label' => (string) ($active_campaign['period_label'] ?? ''),
+            'summary' => (string) ($active_campaign['summary'] ?? ''),
+            'primary_url' => (string) ($active_campaign['primary_url'] ?? ''),
+            'primary_label' => (string) ($active_campaign['primary_label'] ?? ''),
+            'offer_labels' => array_slice(array_values(array_filter((array) ($active_campaign['offer_labels'] ?? []), static function($offer) {
+                return is_scalar($offer) && trim((string) $offer) !== '';
+            })), 0, 5),
+            'setup_steps' => array_slice(array_values(array_filter((array) ($active_campaign['setup_steps'] ?? []), static function($step) {
+                return is_scalar($step) && trim((string) $step) !== '';
+            })), 0, 4),
+        ];
+    }
+
     if($include_portfolio_details) {
         $context_snapshot['ai_plan']['portfolio_details'] = [
             'focus_apps' => array_map(static function($app) {
@@ -15300,6 +15586,7 @@ function fcc_ai_build_internal_coach_system_prompt(array $context = [], ?object 
         'Response rules: always identify the most useful next move; prefer action over explanation; if the user asks for a DM, caption, story angle, checklist, follow-up or action plan, write it directly; if the user is vague, narrow the answer to one best move instead of giving a wide overview.',
         'Output rules: when useful, include a ready-to-use asset such as a DM, story text, post idea, follow-up message, checklist or mini weekly plan. When the collaborator is stuck, break the task into the smallest possible next step.',
         'Sales link rule: if sales_link_summary says the Forever sales link is missing, invalid or disabled, treat that as the first operational priority before profile polishing, app review, weekly AI cycles or PRO upsell. Explain that both Beginner and PRO can use it, that the correct setup flow is Blocks -> Add block -> Forever Card Club -> Forever Web Shop -> create the user\'s own Link Builder URL on Foreverliving.com -> paste it into the block, and that without it FCC cannot drive real webshop recommendation results. Make clear that only the collaborator can create that link inside their own Foreverliving account.',
+        'Campaign rule: if active_campaign exists and the question is about growth, content, story ideas, DMs, products, clicks, traffic, app blocks, promotions, offers, or what should happen next, use that current campaign as a concrete time-sensitive opportunity. The preferred move is to place the campaign on the main FCC app through a dedicated button or link block with the collaborator\'s own personal Link Builder URL. Never tell them to paste or share a raw Forever product URL without their own personal Link Builder URL.',
         'Portfolio rule: when the collaborator asks about too many apps, which app to focus on, how to connect niche pages, or what to disable, use portfolio_summary and portfolio_details. Recommend a focused portfolio, keep only apps with a clear business role or signal, and gently suggest disabling dead-end apps that have no meaningful traffic, result or purpose.',
         'Coach commerce rule: help first. If the collaborator is on Beginner, you may gently mention PRO or trial only when it clearly unlocks the next value they want. If PRO is active and the initial app review or first weekly plan are still available, guide them through that intro cycle before pushing the 15+ signal. If PRO is active but the intro cycle is already spent and the 15+ signal is not there yet, focus on the fastest path to 15+ in 30 days. Once the collaborator holds 15+ / 30d, explain that this keeps them on Featured Apps as the first public proof layer, but that 50+ / 30d is the main public goal because FCC can promote them as an active recommended sponsor on the homepage and through public sponsor profiles. When relevant, explain that this also strengthens how Google and AI systems understand their brand and sponsor relevance through FCC. Treat 15+ / 7d as a weekly rhythm check, not as the main sponsor threshold.',
         'Availability rule: use availability_summary whenever you coach around app reviews or weekly plans. If something is available now, say it clearly. If it is locked, mention the exact next unlock time when provided and redirect the collaborator toward the best thing to do until then.',
@@ -15375,6 +15662,7 @@ function fcc_ai_generate_internal_coach_reply(string $message, array $context = 
     $coach_summary = $ai_plan['coach_summary'] ?? [];
     $signal_summary = $ai_plan['signal_summary'] ?? [];
     $public_signal_summary = $ai_plan['public_signal_summary'] ?? [];
+    $active_campaign = is_array($ai_plan['active_campaign'] ?? null) ? $ai_plan['active_campaign'] : [];
     $mentor_guidance = trim((string) ($ai_plan['mentor_guidance']['preview'] ?? ''));
     $normalized_message = mb_strtolower($message);
     $page_route = trim((string) ($page['route'] ?? ''));
@@ -15423,6 +15711,7 @@ function fcc_ai_generate_internal_coach_reply(string $message, array $context = 
     $public_top_performer = $public_signal_30d >= $top_target;
     $public_featured_ready = $public_signal_30d >= $qualified_target;
     $weekly_check_passed = !empty($access_summary['weekly_check_passed']) || !empty($public_signal_summary['weekly_check_passed']) || !empty($signal_summary['weekly_check_passed']) || $public_signal_7d >= $weekly_check_target;
+    $campaign_active = !empty($active_campaign['id']);
 
     $is_review_request = fcc_ai_contains_keywords($message, ['review', 'pregled', 'app', 'aplik', 'biolink', 'link']);
     $is_contacts_request = fcc_ai_contains_keywords($message, ['kontakt', 'lead', 'data', 'inbox', 'follow-up', 'follow up', 'dm', 'whatsapp']);
@@ -15437,6 +15726,8 @@ function fcc_ai_generate_internal_coach_reply(string $message, array $context = 
     $is_portfolio_cleanup_request = fcc_ai_contains_keywords($message, ['ugasi', 'isključi', 'iskljuci', 'obriši', 'obrisi', 'arhivir', 'archive', 'cleanup', 'slijepa crijeva', 'bez smisla']);
     $is_multi_app_request = fcc_ai_contains_keywords($message, ['previše aplik', 'vise aplik', 'više app', 'koliko aplik', 'koju aplik', 'koja aplik', 'dodatne aplik', 'niche app', 'nisna app', 'nišna app']);
     $is_app_connection_request = fcc_ai_contains_keywords($message, ['poveži aplik', 'povezi aplik', 'spoji aplik', 'glavna aplik', 'main app', 'dodatna app']);
+    $is_campaign_request = $campaign_active && fcc_ai_contains_keywords($message, ['akcij', 'promo', 'popust', 'izazov', 'challenge', 'aloe', 'pro-b', '4 pack', 'paket aloe', 'kampanj', 'transformacij']);
+    $is_next_move_request = fcc_ai_contains_keywords($message, ['što sad', 'sto sad', 'što dalje', 'sto dalje', 'šta dalje', 'sta dalje', 'sljedeći korak', 'sljedeci korak', 'next step', 'next move', 'what now', 'what should i do']);
     $is_sponsor_visibility_request = in_array($page_route, ['featured-apps', 'recommended-sponsors'], true)
         || fcc_ai_contains_keywords($message, ['featured', 'istaknut', 'preporu', 'sponsor', 'sponzor', 'naslovn', 'brand', 'brend', 'google', 'indeks', 'index', 'chatgpt', 'ai search', 'pretraga', 'pozicioniranje', 'vidljivost']);
     $is_product_referral_request = ($page_route === 'blog' && (str_contains($page_slug, 'blog/category/forever-proizvodi') || str_contains($page_slug, 'blog/category/forever-products')))
@@ -15456,6 +15747,13 @@ function fcc_ai_generate_internal_coach_reply(string $message, array $context = 
         $blocks[] = $language === 'en'
             ? $coach_label . ' is currently running on the ' . $coach_badge . '.'
             : $coach_label . ' trenutno radi na paketu: ' . $coach_badge . '.';
+    }
+
+    if($campaign_active && ($is_campaign_request || $is_product_referral_request || ($is_content_request && fcc_ai_contains_keywords($message, ['story', 'caption', 'dm', 'objav', 'poruk'])) || ($is_next_move_request && !$sales_link_priority_missing))) {
+        $campaign_block = fcc_ai_get_internal_coach_campaign_explainer($active_campaign, $ai_plan, $language);
+        if($campaign_block !== '') {
+            $blocks[] = $campaign_block;
+        }
     }
 
     if($should_lead_with_step && $current_step === 'sales_link') {
