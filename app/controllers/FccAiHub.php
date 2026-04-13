@@ -191,6 +191,7 @@ class FccAiHub extends Controller {
                 WHERE `f`.`user_id` = " . (int) $this->user->user_id . "
                   AND `f`.`feedback_type` = 'down'
                   AND COALESCE(`f`.`status`, 'new') != 'resolved'
+                  AND " . fcc_ai_get_feedback_visibility_sql('f') . "
                   AND COALESCE(`c`.`assistant_type`, '') != 'coach'
             ")->fetch_object()->total,
             'openai_ready' => fcc_ai_get_openai_api_key() !== '',
@@ -275,6 +276,7 @@ class FccAiHub extends Controller {
                             WHERE `f`.`fcc_ai_conversation_id` = `c`.`fcc_ai_conversation_id`
                               AND `f`.`feedback_type` = 'down'
                               AND COALESCE(`f`.`status`, 'new') != 'resolved'
+                              AND " . fcc_ai_get_feedback_visibility_sql('f') . "
                         )
                     END
                 ) AS `negative_feedback_total`
@@ -334,6 +336,7 @@ class FccAiHub extends Controller {
                     WHERE `f`.`user_id` = " . (int) $this->user->user_id . "
                       AND `f`.`feedback_type` = 'down'
                       AND COALESCE(`f`.`status`, 'new') != 'resolved'
+                      AND " . fcc_ai_get_feedback_visibility_sql('f') . "
                       AND COALESCE(`fc`.`assistant_type`, '') != 'coach'
                       AND COALESCE(`f`.`last_datetime`, `f`.`datetime`) >= '{$cutoff_datetime_escaped}'
                 ) AS `negative_feedback_30d`
@@ -375,6 +378,7 @@ class FccAiHub extends Controller {
               AND COALESCE(`c`.`assistant_type`, '') != 'coach'
               AND `f`.`feedback_type` = 'down'
               AND COALESCE(`f`.`status`, 'new') != 'resolved'
+              AND " . fcc_ai_get_feedback_visibility_sql('f') . "
               AND COALESCE(`f`.`last_datetime`, `f`.`datetime`) >= '{$cutoff_datetime_escaped}'
             ORDER BY COALESCE(`f`.`last_datetime`, `f`.`datetime`) DESC
             LIMIT 12

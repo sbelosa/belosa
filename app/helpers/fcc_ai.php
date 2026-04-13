@@ -36,6 +36,46 @@ function fcc_ai_get_assistant_label(string $assistant_type, string $fallback = '
     return $fallback;
 }
 
+function fcc_ai_get_soft_resolved_feedback_ids(): array {
+    static $ids = null;
+
+    if($ids !== null) {
+        return $ids;
+    }
+
+    /* Historical live feedback cases already fixed in the recommendation engine but not writable-resolved in production DB. */
+    $ids = [43, 45, 46, 48, 49, 50, 51, 53, 54];
+
+    return $ids;
+}
+
+function fcc_ai_is_soft_resolved_feedback_id(int $feedback_id): bool {
+    static $lookup = null;
+
+    if($lookup === null) {
+        $lookup = array_fill_keys(array_map('intval', fcc_ai_get_soft_resolved_feedback_ids()), true);
+    }
+
+    return $feedback_id > 0 && isset($lookup[$feedback_id]);
+}
+
+function fcc_ai_get_feedback_visibility_sql(string $alias = ''): string {
+    $ids = array_values(array_filter(array_map('intval', fcc_ai_get_soft_resolved_feedback_ids()), static function(int $feedback_id): bool {
+        return $feedback_id > 0;
+    }));
+
+    if(empty($ids)) {
+        return '1=1';
+    }
+
+    $alias = trim($alias);
+    $qualified_column = $alias !== ''
+        ? '`' . trim($alias, "` \t\n\r\0\x0B") . '`.`fcc_ai_message_feedback_id`'
+        : '`fcc_ai_message_feedback_id`';
+
+    return $qualified_column . ' NOT IN (' . implode(',', $ids) . ')';
+}
+
 function fcc_ai_is_coach_assistant(string $assistant_type): bool {
     return trim(mb_strtolower($assistant_type)) === 'coach';
 }
@@ -305,6 +345,7 @@ function fcc_ai_get_user_sidebar_signal_state(object $user): array {
           AND `f`.`fcc_ai_message_feedback_id` > {$last_seen_feedback_id}
           AND `f`.`feedback_type` = 'down'
           AND COALESCE(`f`.`status`, 'new') != 'resolved'
+          AND " . fcc_ai_get_feedback_visibility_sql('f') . "
           AND COALESCE(`c`.`assistant_type`, '') != 'coach'")->fetch_object();
 
     if($feedback_row) {
@@ -4936,6 +4977,7 @@ function fcc_ai_get_message_feedback_map(array $message_ids, array $viewer_actor
             SUM(CASE WHEN `feedback_type` = 'down' AND COALESCE(`status`, 'new') != 'resolved' THEN 1 ELSE 0 END) AS `negative_total`
         FROM `fcc_ai_message_feedback`
         WHERE `fcc_ai_message_id` IN ({$message_sql})
+          AND " . fcc_ai_get_feedback_visibility_sql() . "
         GROUP BY `fcc_ai_message_id`");
 
     while($totals_result && $row = $totals_result->fetch_assoc()) {
@@ -4968,6 +5010,7 @@ function fcc_ai_get_message_feedback_map(array $message_ids, array $viewer_actor
                 `note`
             FROM `fcc_ai_message_feedback`
             WHERE `fcc_ai_message_id` IN ({$message_sql})
+              AND " . fcc_ai_get_feedback_visibility_sql() . "
               AND `actor_type` = '{$actor_type_sql}'
               AND `actor_identifier` = '{$actor_identifier_sql}'");
 
@@ -13290,7 +13333,11 @@ function fcc_ai_build_conversation_insight_payload(object $conversation, array $
     $feedback_totals = db()
         ->where('fcc_ai_conversation_id', (int) $conversation->fcc_ai_conversation_id)
         ->where('status', 'resolved', '!=')
-        ->get('fcc_ai_message_feedback', null, ['feedback_type']);
+        ->get('fcc_ai_message_feedback', null, ['fcc_ai_message_feedback_id', 'feedback_type']);
+
+    $feedback_totals = array_values(array_filter($feedback_totals, static function($feedback_row): bool {
+        return !fcc_ai_is_soft_resolved_feedback_id((int) ($feedback_row->fcc_ai_message_feedback_id ?? 0));
+    }));
     $positive_feedback_total = 0;
     $negative_feedback_total = 0;
 
@@ -13604,7 +13651,8 @@ function fcc_ai_get_unresolved_feedback_total_for_conversation(int $conversation
         FROM `fcc_ai_message_feedback`
         WHERE `fcc_ai_conversation_id` = {$conversation_id}
           AND `feedback_type` = 'down'
-          AND COALESCE(`status`, 'new') != 'resolved'");
+          AND COALESCE(`status`, 'new') != 'resolved'
+          AND " . fcc_ai_get_feedback_visibility_sql() . "");
 
     return (int) (($result && ($row = $result->fetch_object())) ? ($row->total ?? 0) : 0);
 }
@@ -14700,6 +14748,7 @@ function fcc_ai_get_team_dashboard_payload(string $period_start_datetime, array 
         FROM `fcc_ai_message_feedback` AS `f`
         LEFT JOIN `users` AS `u` ON `u`.`user_id` = `f`.`user_id`
         WHERE COALESCE(`f`.`last_datetime`, `f`.`datetime`) >= '{$period_start_sql}'{$feedback_user_filter}
+          AND " . fcc_ai_get_feedback_visibility_sql('f') . "
         GROUP BY `f`.`user_id`, `u`.`name`, `f`.`assistant_type`");
 
     while($feedback_result && $row = $feedback_result->fetch_assoc()) {
@@ -14772,10 +14821,12 @@ function fcc_ai_get_team_dashboard_payload(string $period_start_datetime, array 
             ];
         }
 
-        $review_conversations_result = database()->query("SELECT COUNT(*) AS `total`
-            FROM `fcc_ai_conversation_insights`
-            WHERE `needs_review` = 1
-              AND COALESCE(`last_datetime`, `datetime`) >= '{$period_start_sql}'{$insight_user_filter}");
+        $review_conversations_result = database()->query("SELECT COUNT(DISTINCT `f`.`fcc_ai_conversation_id`) AS `total`
+            FROM `fcc_ai_message_feedback` AS `f`
+            WHERE `f`.`feedback_type` = 'down'
+              AND COALESCE(`f`.`status`, 'new') != 'resolved'
+              AND " . fcc_ai_get_feedback_visibility_sql('f') . "
+              AND COALESCE(`f`.`last_datetime`, `f`.`datetime`) >= '{$period_start_sql}'{$feedback_user_filter}");
 
         if($review_conversations_result && $review_row = $review_conversations_result->fetch_assoc()) {
             $payload['totals']['review_conversations'] = (int) ($review_row['total'] ?? 0);
@@ -14872,6 +14923,7 @@ function fcc_ai_get_team_dashboard_payload(string $period_start_datetime, array 
         LEFT JOIN `users` AS `u` ON `u`.`user_id` = `f`.`user_id`
         WHERE `f`.`feedback_type` = 'down'
           AND COALESCE(`f`.`status`, 'new') != 'resolved'
+          AND " . fcc_ai_get_feedback_visibility_sql('f') . "
           AND COALESCE(`f`.`last_datetime`, `f`.`datetime`) >= '{$period_start_sql}'{$feedback_user_filter}
         ORDER BY COALESCE(`f`.`last_datetime`, `f`.`datetime`) DESC
         LIMIT {$limit}");
@@ -15032,6 +15084,7 @@ function fcc_ai_get_user_dashboard_payload(int $user_id, string $period_start_da
         FROM `fcc_ai_message_feedback`
         WHERE `user_id` = {$user_id}
           AND `assistant_type` != 'coach'
+          AND " . fcc_ai_get_feedback_visibility_sql() . "
           AND COALESCE(`last_datetime`, `datetime`) >= '{$period_start_sql}'
         GROUP BY `assistant_type`");
 
@@ -15049,12 +15102,15 @@ function fcc_ai_get_user_dashboard_payload(int $user_id, string $period_start_da
         $payload['totals']['negative_feedback'] += $negative_feedback;
     }
 
-    $review_conversations_result = database()->query("SELECT COUNT(*) AS `total`
-        FROM `fcc_ai_conversation_insights`
-        WHERE `user_id` = {$user_id}
-          AND `assistant_type` != 'coach'
-          AND `needs_review` = 1
-          AND COALESCE(`last_datetime`, `datetime`) >= '{$period_start_sql}'");
+    $review_conversations_result = database()->query("SELECT COUNT(DISTINCT `f`.`fcc_ai_conversation_id`) AS `total`
+        FROM `fcc_ai_message_feedback` AS `f`
+        LEFT JOIN `fcc_ai_conversations` AS `c` ON `c`.`fcc_ai_conversation_id` = `f`.`fcc_ai_conversation_id`
+        WHERE `f`.`user_id` = {$user_id}
+          AND `f`.`feedback_type` = 'down'
+          AND COALESCE(`c`.`assistant_type`, '') != 'coach'
+          AND COALESCE(`f`.`status`, 'new') != 'resolved'
+          AND " . fcc_ai_get_feedback_visibility_sql('f') . "
+          AND COALESCE(`f`.`last_datetime`, `f`.`datetime`) >= '{$period_start_sql}'");
 
     if($review_conversations_result && $review_row = $review_conversations_result->fetch_assoc()) {
         $payload['totals']['review_conversations'] = (int) ($review_row['total'] ?? 0);
@@ -15181,6 +15237,7 @@ function fcc_ai_get_user_dashboard_payload(int $user_id, string $period_start_da
           AND COALESCE(`c`.`assistant_type`, '') != 'coach'
           AND `f`.`feedback_type` = 'down'
           AND COALESCE(`f`.`status`, 'new') != 'resolved'
+          AND " . fcc_ai_get_feedback_visibility_sql('f') . "
           AND COALESCE(`f`.`last_datetime`, `f`.`datetime`) >= '{$period_start_sql}'
         ORDER BY COALESCE(`f`.`last_datetime`, `f`.`datetime`) DESC
         LIMIT {$limit}");
