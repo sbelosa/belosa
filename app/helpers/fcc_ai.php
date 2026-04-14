@@ -5158,6 +5158,67 @@ function fcc_ai_is_low_context_follow_up_message(string $message): bool {
     ]);
 }
 
+function fcc_ai_is_ambiguous_same_problem_followup_request(string $message): bool {
+    $message = trim($message);
+
+    if($message === '') {
+        return false;
+    }
+
+    if(
+        fcc_ai_is_explicit_monthly_quantity_request($message)
+        || fcc_ai_is_public_product_utility_request($message)
+        || fcc_ai_is_direct_product_lookup_message($message)
+    ) {
+        return false;
+    }
+
+    $has_follow_up_signal = fcc_ai_contains_keywords($message, [
+        'ima li još',
+        'ima li jos',
+        'još neka',
+        'jos neka',
+        'još nešto',
+        'jos nesto',
+        'još uz to',
+        'jos uz to',
+        'uz to',
+        'dodatno',
+        'još jedan',
+        'jos jedan',
+        'postoji li još',
+        'postoji li jos',
+        'ima li neka',
+        'ima li jos neka',
+    ]);
+
+    if(!$has_follow_up_signal) {
+        return false;
+    }
+
+    return fcc_ai_contains_keywords($message, [
+        'krema',
+        'cream',
+        'creme',
+        'gel',
+        'gelly',
+        'spray',
+        'sprej',
+        'sapun',
+        'soap',
+        'šampon',
+        'sampon',
+        'shampoo',
+        'lotion',
+        'lokalno',
+        'izvana',
+        'mazati',
+        'njega',
+        'njegu',
+        'proizvod',
+    ]);
+}
+
 function fcc_ai_build_contextual_public_message(int $conversation_id, string $message): array {
     $message = trim($message);
 
@@ -5248,6 +5309,29 @@ function fcc_ai_is_explicit_monthly_quantity_request(string $message): bool {
     ]);
 }
 
+function fcc_ai_is_generic_topical_followup_request(string $message): bool {
+    return fcc_ai_contains_keywords($message, [
+        'krema',
+        'cream',
+        'creme',
+        'gel',
+        'gelly',
+        'spray',
+        'sprej',
+        'sapun',
+        'soap',
+        'šampon',
+        'sampon',
+        'shampoo',
+        'lotion',
+        'lokalno',
+        'izvana',
+        'mazati',
+        'njega',
+        'njegu',
+    ]);
+}
+
 function fcc_ai_is_topical_joint_followup_request(string $message): bool {
     return fcc_ai_contains_keywords($message, [
         'krema',
@@ -5265,6 +5349,84 @@ function fcc_ai_is_topical_joint_followup_request(string $message): bool {
         'što još izvana',
         'sto jos izvana',
     ]);
+}
+
+function fcc_ai_is_topical_support_product_title(string $title): bool {
+    return fcc_ai_contains_keywords($title, [
+        'creme',
+        'cream',
+        'gel',
+        'gelly',
+        'spray',
+        'soap',
+        'shampoo',
+        'rinse',
+        'lotion',
+        'oil',
+        'lips',
+        'sunscreen',
+        'toothgel',
+        'condition',
+        'propolis',
+    ]);
+}
+
+function fcc_ai_is_cream_like_support_product_title(string $title): bool {
+    return fcc_ai_contains_keywords($title, [
+        'creme',
+        'cream',
+        'gelly',
+        'propolis',
+        'lotion',
+        'gel',
+    ]);
+}
+
+function fcc_ai_get_condition_followup_support_products(array $condition_matches, string $message = ''): array {
+    $titles = array_values(array_unique(array_filter(fcc_ai_get_condition_allowed_product_titles($condition_matches), static function($title) {
+        return fcc_ai_is_topical_support_product_title((string) $title);
+    })));
+
+    if(empty($titles)) {
+        return [];
+    }
+
+    $message = trim($message);
+    $prefer_cream = fcc_ai_contains_keywords($message, ['krema', 'cream', 'creme']);
+    $prefer_spray = fcc_ai_contains_keywords($message, ['spray', 'sprej']);
+    $prefer_cleanse = fcc_ai_contains_keywords($message, ['sapun', 'soap', 'šampon', 'sampon', 'shampoo', 'pranje', 'čišćen', 'ciscen']);
+
+    usort($titles, static function(string $a, string $b) use ($prefer_cream, $prefer_spray, $prefer_cleanse): int {
+        $score = static function(string $title) use ($prefer_cream, $prefer_spray, $prefer_cleanse): int {
+            $value = 0;
+
+            if($prefer_cream && fcc_ai_is_cream_like_support_product_title($title)) {
+                $value += 20;
+            }
+
+            if($prefer_spray && fcc_ai_contains_keywords($title, ['spray'])) {
+                $value += 20;
+            }
+
+            if($prefer_cleanse && fcc_ai_contains_keywords($title, ['soap', 'shampoo', 'rinse'])) {
+                $value += 20;
+            }
+
+            if(fcc_ai_contains_keywords($title, ['propolis creme'])) {
+                $value += 4;
+            }
+
+            if(fcc_ai_contains_keywords($title, ['spray', 'gelly', 'gel', 'lotion'])) {
+                $value += 2;
+            }
+
+            return $value;
+        };
+
+        return $score($b) <=> $score($a);
+    });
+
+    return array_slice(array_values(array_unique($titles)), 0, 3);
 }
 
 function fcc_ai_is_public_recommendation_correction_message(string $message): bool {
@@ -9402,6 +9564,8 @@ function fcc_ai_build_public_recommendation_payload(string $assistant_type, stri
         ? $context['intent']
         : fcc_ai_detect_public_intent($assistant_type, $message);
     $correction_follow_up = !empty($context['correction_follow_up']);
+    $same_problem_followup_clarification = !empty($context['same_problem_followup_clarification']);
+    $follow_up_message = trim((string) ($context['follow_up_message'] ?? ''));
     $skip_product_tail = $assistant_type === 'product_advisor' && fcc_ai_is_public_product_utility_request($message);
     $knowledge_suggestions = array_values(array_filter($context['knowledge_suggestions'] ?? [], static function($suggestion) {
         return !empty($suggestion['title']);
@@ -9576,6 +9740,61 @@ function fcc_ai_build_public_recommendation_payload(string $assistant_type, stri
         }
     }
 
+    if($same_problem_followup_clarification && $assistant_type === 'product_advisor' && !empty($condition_matches)) {
+        $followup_support_products = fcc_ai_get_condition_followup_support_products($condition_matches, $follow_up_message);
+        $primary_followup_product = trim((string) ($followup_support_products[0] ?? ''));
+        $secondary_followup_product = trim((string) ($followup_support_products[1] ?? ''));
+        $is_topical_followup = fcc_ai_is_generic_topical_followup_request($follow_up_message);
+
+        $opening_note = $language === 'en'
+            ? 'Before I drift into the wrong direction, I want to confirm whether this follow-up is still about the same problem or a new separate skin issue.'
+            : ($language === 'sl'
+                ? 'Preden grem v napačno smer, želim najprej preveriti, ali je to nadaljevanje iste težave ali novo ločeno vprašanje glede kože.'
+                : 'Samo da ne odemo u krivom smjeru, ovdje prvo trebam potvrditi pitate li i dalje za isti problem ili za novi zasebni kožni upit.');
+
+        $recommendation_lines = [];
+
+        if($is_topical_followup && $primary_followup_product !== '') {
+            $recommendation_lines[] = $language === 'en'
+                ? "If you still mean the same problem, the cleanest next local Forever step here is {$primary_followup_product}."
+                : ($language === 'sl'
+                    ? "Če še vedno mislite na isto težavo, je tukaj najbolj čist naslednji lokalni Forever korak {$primary_followup_product}."
+                    : "Ako i dalje mislite na isti problem, najlogičniji sljedeći lokalni Forever korak ovdje je {$primary_followup_product}.");
+
+            if($secondary_followup_product !== '') {
+                $recommendation_lines[] = $language === 'en'
+                    ? "{$secondary_followup_product} can stay next to that only as additional support inside the same routine."
+                    : ($language === 'sl'
+                        ? "{$secondary_followup_product} lahko ostane uz to samo kot dodatna podpora znotraj iste rutine."
+                        : "{$secondary_followup_product} može ostati uz to samo kao dodatna podrška unutar iste rutine.");
+            }
+        } elseif($primary_product !== '') {
+            $recommendation_lines[] = $language === 'en'
+                ? "If this is still the same problem, I would keep the recommendation inside the same mapped Forever direction and not switch to a new cosmetic routine."
+                : ($language === 'sl'
+                    ? "Če gre še vedno za isti problem, priporočilo ohranim znotraj iste mapirane Forever smeri in ga ne preusmerjam v novo kozmetično rutino."
+                    : "Ako je i dalje riječ o istom problemu, preporuku bih zadržao unutar istog mapiranog Forever smjera i ne bih je prebacivao na novu kozmetičku rutinu.");
+        }
+
+        $question_lines = [
+            $language === 'en'
+                ? 'Do you still mean the same problem, or are you asking about a new separate skin issue?'
+                : ($language === 'sl'
+                    ? 'Ali še vedno mislite na isto težavo ali sprašujete za novo ločeno vprašanje kože?'
+                    : 'Mislite li i dalje na isti problem ili pitate za novi zasebni problem kože?'),
+            $language === 'en'
+                ? 'If it is still the same problem, do you want one more topical product, or should I keep only the simplest routine?'
+                : ($language === 'sl'
+                    ? 'Če gre še vedno za isti problem, želite še en lokalni izdelek ali naj ohranim samo najbolj preprosto rutino?'
+                    : 'Ako je i dalje isti problem, želite li još jedan lokalni proizvod ili da ostanem samo na najjednostavnijoj rutini?'),
+        ];
+
+        $monthly_quantity_note = '';
+        $knowledge_suggestions = [];
+        $combination_note = '';
+        $discount_note = '';
+    }
+
     if($skip_product_tail) {
         $opening_note = '';
         $recommendation_lines = [];
@@ -9697,6 +9916,10 @@ function fcc_ai_build_public_recommendation_payload(string $assistant_type, stri
         $system_brief_lines[] = 'The visitor is correcting a previous wrong recommendation. Ignore the names of wrong products mentioned in the correction itself and restate only the exact mapped Forever direction for the original problem.';
     }
 
+    if($same_problem_followup_clarification) {
+        $system_brief_lines[] = 'This turn is an ambiguous follow-up to the same problem. First clarify whether the visitor still means the same condition or a new separate issue. If it is the same condition, stay strictly inside the same mapped Forever scope and do not drift into generic face-care, anti-age, sunscreen, or unrelated cosmetic products.';
+    }
+
     if(!empty($question_lines)) {
         $system_brief_lines[] = 'Ask these questions before finalizing a recommendation: ' . implode(' ', $question_lines);
     }
@@ -9729,6 +9952,7 @@ function fcc_ai_build_public_recommendation_payload(string $assistant_type, stri
         'monthly_quantity_note' => $monthly_quantity_note,
         'sensitive_support_only' => $sensitive_support_only,
         'skip_product_tail' => $skip_product_tail,
+        'same_problem_followup_clarification' => $same_problem_followup_clarification,
         'system_brief' => implode("\n", array_filter($system_brief_lines)),
     ];
 }
@@ -11959,9 +12183,15 @@ function fcc_ai_generate_public_reply(string $assistant_type, string $message, a
             'intent' => $intent,
             'knowledge_suggestions' => $knowledge_suggestions,
         ]);
+    $same_problem_followup_clarification = !empty($recommendation_payload['same_problem_followup_clarification']);
     $locked_condition_scope = $assistant_type === 'product_advisor'
         && fcc_ai_condition_locks_product_scope((array) ($recommendation_payload['condition_matches'] ?? []));
     $condition_locked_knowledge_suggestions = $locked_condition_scope ? $knowledge_suggestions : [];
+
+    if($same_problem_followup_clarification) {
+        $knowledge_suggestions = [];
+        $condition_locked_knowledge_suggestions = [];
+    }
 
     $content_blocks = [];
     $lead_capture = [
@@ -13264,7 +13494,9 @@ function fcc_ai_generate_public_reply(string $assistant_type, string $message, a
             }
         }
 
-        $combination_note = fcc_ai_get_public_user_combination_note($assistant_type, $language, count($recommendation_payload['recommendation_lines'] ?? []));
+        $combination_note = !$same_problem_followup_clarification
+            ? fcc_ai_get_public_user_combination_note($assistant_type, $language, count($recommendation_payload['recommendation_lines'] ?? []))
+            : '';
         if($combination_note !== '') {
             $content_blocks[] = $combination_note;
         }
@@ -15844,12 +16076,28 @@ function fcc_ai_handle_public_message(array $payload): array {
     $used_context_for_matching = !empty($contextual_message_bundle['used_context']);
     $intent = fcc_ai_detect_public_intent((string) $conversation->assistant_type, $message_for_matching);
     $previous_user_message = fcc_ai_get_previous_public_user_message((int) ($conversation->fcc_ai_conversation_id ?? 0), $current_user_message);
+    $current_condition_keys = fcc_ai_get_condition_match_keys(
+        fcc_ai_get_product_advisor_effective_condition_matches($current_user_message, $resolved_language)
+    );
+    $previous_condition_keys = fcc_ai_get_condition_match_keys(
+        fcc_ai_get_product_advisor_effective_condition_matches($previous_user_message, $resolved_language)
+    );
     $is_recommendation_correction_followup = (string) ($conversation->assistant_type ?? '') === 'product_advisor'
         && $previous_user_message !== ''
         && fcc_ai_is_public_recommendation_correction_message($current_user_message);
+    $is_same_problem_followup_clarification = (string) ($conversation->assistant_type ?? '') === 'product_advisor'
+        && $previous_user_message !== ''
+        && empty($current_condition_keys)
+        && !empty($previous_condition_keys)
+        && fcc_ai_is_ambiguous_same_problem_followup_request($current_user_message);
 
     if($is_recommendation_correction_followup) {
         $message_for_matching = fcc_ai_build_public_correction_followup_message($previous_user_message);
+        $recent_user_context = $previous_user_message;
+        $used_context_for_matching = true;
+        $intent = fcc_ai_detect_public_intent((string) $conversation->assistant_type, $previous_user_message);
+    } elseif($is_same_problem_followup_clarification) {
+        $message_for_matching = $previous_user_message . "\n\nFollow-up clarification needed: " . $current_user_message;
         $recent_user_context = $previous_user_message;
         $used_context_for_matching = true;
         $intent = fcc_ai_detect_public_intent((string) $conversation->assistant_type, $previous_user_message);
@@ -15864,7 +16112,7 @@ function fcc_ai_handle_public_message(array $payload): array {
     $has_high_risk_medical_context = (string) ($conversation->assistant_type ?? '') === 'product_advisor'
         && fcc_ai_has_high_risk_public_medical_context($current_user_message);
 
-    if($has_high_risk_medical_context || $should_reset_problem_context) {
+    if(($has_high_risk_medical_context || $should_reset_problem_context) && !$is_same_problem_followup_clarification) {
         $message_for_matching = $current_user_message;
         $recent_user_context = '';
         $used_context_for_matching = false;
@@ -15881,6 +16129,8 @@ function fcc_ai_handle_public_message(array $payload): array {
         'intent' => $intent,
         'knowledge_suggestions' => $knowledge_suggestions,
         'correction_follow_up' => $is_recommendation_correction_followup,
+        'same_problem_followup_clarification' => $is_same_problem_followup_clarification,
+        'follow_up_message' => $current_user_message,
     ]);
 
     if(!empty($recommendation_payload['skip_product_tail'])) {
@@ -15975,22 +16225,31 @@ function fcc_ai_handle_public_message(array $payload): array {
         'recent_user_context' => $has_high_risk_medical_context ? '' : $recent_user_context,
         'reset_history' => $should_reset_problem_context,
         'correction_follow_up' => $is_recommendation_correction_followup,
+        'same_problem_followup_clarification' => $is_same_problem_followup_clarification,
     ]);
 
-    $model_attempt = fcc_ai_try_generate_public_model_reply($conversation, [
-        'language' => $resolved_language,
-        'scope' => (string) ($conversation->scope ?? 'public_app'),
-        'source_context' => (string) ($payload['source_context'] ?? ''),
-        'blog_post_id' => (int) ($conversation->blog_post_id ?? 0),
-        'owner_name' => (string) ($user->name ?? ''),
-        'last_user_message' => $is_recommendation_correction_followup ? $message_for_matching : $message,
-        'knowledge_suggestions' => $knowledge_suggestions,
-        'recommendation_payload' => $recommendation_payload,
-        'recent_user_context' => $has_high_risk_medical_context ? '' : $recent_user_context,
-        'reset_history' => $should_reset_problem_context,
-        'correction_follow_up' => $is_recommendation_correction_followup,
-        'override_user_message' => $is_recommendation_correction_followup ? $message_for_matching : '',
-    ], $assistant);
+    $model_attempt = [
+        'success' => false,
+        'reason' => $is_same_problem_followup_clarification ? 'local_same_problem_clarification' : 'local_preview',
+    ];
+
+    if(!$is_same_problem_followup_clarification) {
+        $model_attempt = fcc_ai_try_generate_public_model_reply($conversation, [
+            'language' => $resolved_language,
+            'scope' => (string) ($conversation->scope ?? 'public_app'),
+            'source_context' => (string) ($payload['source_context'] ?? ''),
+            'blog_post_id' => (int) ($conversation->blog_post_id ?? 0),
+            'owner_name' => (string) ($user->name ?? ''),
+            'last_user_message' => $is_recommendation_correction_followup ? $message_for_matching : $message,
+            'knowledge_suggestions' => $knowledge_suggestions,
+            'recommendation_payload' => $recommendation_payload,
+            'recent_user_context' => $has_high_risk_medical_context ? '' : $recent_user_context,
+            'reset_history' => $should_reset_problem_context,
+            'correction_follow_up' => $is_recommendation_correction_followup,
+            'same_problem_followup_clarification' => $is_same_problem_followup_clarification,
+            'override_user_message' => $is_recommendation_correction_followup ? $message_for_matching : '',
+        ], $assistant);
+    }
 
     $reply_meta = [
         'provider' => 'local_preview',

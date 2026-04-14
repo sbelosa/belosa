@@ -593,10 +593,10 @@ foreach(['hr', 'en', 'sl', 'bg'] as $fcc_chat_ui_language) {
 
     .fcc-chat-extreme__thread {
         overflow-y: auto;
-        padding: 0 1rem .15rem;
+        padding: .1rem 1rem .25rem;
         display: flex;
         flex-direction: column;
-        gap: .75rem;
+        gap: .92rem;
         min-height: 0;
         flex: 1 1 auto;
         scrollbar-width: thin;
@@ -631,19 +631,19 @@ foreach(['hr', 'en', 'sl', 'bg'] as $fcc_chat_ui_language) {
     }
 
     .fcc-chat-extreme__bubble {
-        max-width: 88%;
-        padding: 1rem 1.05rem;
+        max-width: 86%;
+        padding: 1.05rem 1.12rem;
         border-radius: 14px;
         color: #ffffff;
-        font-size: 1rem;
-        line-height: 1.52;
+        font-size: 1.01rem;
+        line-height: 1.62;
         word-break: break-word;
         white-space: pre-line;
         text-align: left;
     }
 
     .fcc-chat-extreme__paragraph {
-        margin: 0 0 .88rem;
+        margin: 0 0 1rem;
     }
 
     .fcc-chat-extreme__paragraph:last-child {
@@ -651,7 +651,7 @@ foreach(['hr', 'en', 'sl', 'bg'] as $fcc_chat_ui_language) {
     }
 
     .fcc-chat-extreme__section {
-        margin: 0 0 .9rem;
+        margin: 0 0 1rem;
     }
 
     .fcc-chat-extreme__section:last-child {
@@ -660,7 +660,7 @@ foreach(['hr', 'en', 'sl', 'bg'] as $fcc_chat_ui_language) {
 
     .fcc-chat-extreme__section-label {
         display: block;
-        margin-bottom: .38rem;
+        margin-bottom: .48rem;
         color: #88efe4;
         font-size: .74rem;
         font-weight: 800;
@@ -670,6 +670,7 @@ foreach(['hr', 'en', 'sl', 'bg'] as $fcc_chat_ui_language) {
 
     .fcc-chat-extreme__section-text {
         color: inherit;
+        line-height: 1.6;
     }
 
     .fcc-chat-extreme__list {
@@ -677,7 +678,7 @@ foreach(['hr', 'en', 'sl', 'bg'] as $fcc_chat_ui_language) {
         padding-left: 1.05rem;
         display: flex;
         flex-direction: column;
-        gap: .34rem;
+        gap: .42rem;
     }
 
     .fcc-chat-extreme__list li {
