@@ -5463,6 +5463,86 @@ function fcc_ai_get_condition_followup_support_products(array $condition_matches
     return array_slice(array_values(array_unique($titles)), 0, 3);
 }
 
+function fcc_ai_condition_requires_freedom_without_aloe_gel(array $condition_keys): bool {
+    foreach($condition_keys as $condition_key) {
+        $condition_key = trim((string) $condition_key);
+
+        if(in_array($condition_key, [
+            'psoriasis_arthritis_combo_support',
+            'cartilage_mobility_support',
+            'joint_mobility_support',
+            'spine_mobility_support',
+            'freedom_alternative_support',
+            'fibromyalgia_support',
+        ], true)) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+function fcc_ai_apply_freedom_recipe_guardrail(array $payload): array {
+    $condition_keys = array_values(array_filter(array_map(static function($item) {
+        return trim((string) $item);
+    }, (array) ($payload['condition_keys'] ?? []))));
+
+    if(!fcc_ai_condition_requires_freedom_without_aloe_gel($condition_keys)) {
+        return $payload;
+    }
+
+    $primary_product = trim((string) ($payload['primary_product'] ?? ''));
+    $support_products = array_values(array_filter(array_map(static function($item) {
+        return trim((string) $item);
+    }, (array) ($payload['support_products'] ?? []))));
+
+    $contains_freedom = $primary_product === 'Forever Freedom®' || in_array('Forever Freedom®', $support_products, true);
+
+    if(!$contains_freedom) {
+        return $payload;
+    }
+
+    if($primary_product === 'Forever Aloe Vera Gel™') {
+        $primary_product = 'Forever Freedom®';
+    }
+
+    $support_products = array_values(array_filter($support_products, static function($title) {
+        return $title !== 'Forever Aloe Vera Gel™';
+    }));
+
+    $payload['primary_product'] = $primary_product;
+    $payload['support_products'] = $support_products;
+
+    if(!empty($payload['recommendation_lines'])) {
+        $payload['recommendation_lines'] = array_values(array_filter(array_map(static function($line) {
+            $line = trim((string) $line);
+
+            if($line === '') {
+                return '';
+            }
+
+            if(stripos($line, 'Forever Aloe Vera Gel') !== false) {
+                return '';
+            }
+
+            return $line;
+        }, (array) $payload['recommendation_lines'])));
+    }
+
+    $monthly_quantity_note = trim((string) ($payload['monthly_quantity_note'] ?? ''));
+
+    if($monthly_quantity_note !== '' && stripos($monthly_quantity_note, 'Forever Aloe Vera Gel') !== false) {
+        $monthly_quantity_note = preg_replace('/\s*,?\s*3 x Forever Aloe Vera Gel™\s*,?/u', '', $monthly_quantity_note);
+        $monthly_quantity_note = preg_replace('/\s{i,u}1 kutija Forever Arctic Sea/u', ' i 1 kutija Forever Arctic Sea', $monthly_quantity_note);
+        $monthly_quantity_note = preg_replace('/,\s*,/u', ',', $monthly_quantity_note);
+        $monthly_quantity_note = preg_replace('/\s{2,}/u', ' ', (string) $monthly_quantity_note);
+        $monthly_quantity_note = trim((string) $monthly_quantity_note, " \t\n\r\0\x0B,");
+        $payload['monthly_quantity_note'] = $monthly_quantity_note;
+    }
+
+    return $payload;
+}
+
 function fcc_ai_is_public_recommendation_correction_message(string $message): bool {
     return fcc_ai_contains_keywords($message, [
         'kriva preporuka',
@@ -7768,32 +7848,32 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
         ],
         'psoriasis_arthritis_combo_support' => [
             'patterns' => ['luskavica', 'luskavico', 'luskavici', 'luskavice', 'psorijaz', 'psoriaz', 'artritis', 'arttritis', 'arthritis'],
-            'preferred_patterns' => ['aloe vera gel', 'aloe gel', 'arctic sea', 'freedom', 'aloe first', 'propolis creme'],
-            'primary_product' => 'Forever Aloe Vera Gel™',
-            'support_products' => ['Forever Arctic Sea', 'Forever Freedom®', 'Forever Aloe First Spray', 'Aloe Propolis Creme'],
+            'preferred_patterns' => ['freedom', 'arctic sea', 'aloe first', 'propolis creme'],
+            'primary_product' => 'Forever Freedom®',
+            'support_products' => ['Forever Arctic Sea', 'Forever Aloe First Spray', 'Aloe Propolis Creme'],
             'label' => [
                 'hr' => 'psorijaza/luskavica i artritis u istoj rutini',
                 'en' => 'psoriasis and arthritis inside one routine',
             ],
             'opening_note' => [
-                'hr' => 'Kad su zajedno prisutni luskavica/psorijaza i artritis, preporuka ne bi trebala otići u generički vitamin D smjer niti na dječje proizvode, nego zadržati fokus na aloe bazi, omega-3 podršci, zglobnoj formuli i po potrebi vanjskoj rutini kože.',
-                'en' => 'When psoriasis-style skin issues and arthritis are mentioned together, the recommendation should not drift into a generic vitamin-D direction or children products, but stay focused on the aloe base, omega-3 support, a joint formula and, if useful, the outer skin routine.',
+                'hr' => 'Kad su zajedno prisutni luskavica/psorijaza i artritis, preporuka ne bi trebala otići u generički vitamin D smjer niti na dječje proizvode. Ako je zglobni dio važan, ovdje se rutina sidri na Freedom kao glavni smjer, a kožna njega ostaje dopuna izvana.',
+                'en' => 'When psoriasis-style skin issues and arthritis are mentioned together, the recommendation should not drift into a generic vitamin-D direction or children products. If the joint side is important, the routine should anchor on Freedom as the main direction, while the skin care stays a topical add-on.',
             ],
             'recommendation_lines' => [
                 'hr' => [
-                    'Forever Aloe Vera Gel™ je ovdje glavni Forever smjer kao baza iznutra i ovdje se najčešće kreće s 3 litre za mjesec dana, odnosno 0,5 dcl 2x dnevno.',
-                    'Forever Arctic Sea je važna dodatna preporuka jer se omega-3 smjer dobro uklapa kad želite istovremeno podržati kožu iznutra i opću svakodnevnu nutritivnu rutinu.',
-                    'Forever Freedom® ima smisla kao glavni zglobni support uz to kada je artritis dio iste priče, a ako su kožne promjene aktivne izvana, Forever Aloe First Spray i Aloe Propolis Creme ostaju najlogičnija lokalna dopuna.',
+                    'Forever Freedom® je ovdje glavni Forever smjer jer se kod kostiju, hrskavice, artritisa i pokretljivosti rutina zadržava na zglobnoj formuli, ne na aloe napitku.',
+                    'Forever Arctic Sea je važna dodatna preporuka kada želite i omega-3 nutritivnu podršku uz istu rutinu.',
+                    'Ako su kožne promjene aktivne izvana, Forever Aloe First Spray i Aloe Propolis Creme ostaju najlogičnija lokalna dopuna uz isti smjer.',
                 ],
                 'en' => [
-                    'Forever Aloe Vera Gel™ is the main Forever direction here as the inside base, and people most often start with 3 liters for the month, meaning 0.5 dcl twice daily.',
-                    'Forever Arctic Sea is the important complementary recommendation because the omega-3 direction fits well when you want to support the skin from the inside while keeping a broader everyday nutrition routine.',
-                    'Forever Freedom® makes sense as the joint-support product when arthritis is part of the same story, and if the skin symptoms are active externally, Forever Aloe First Spray and Aloe Propolis Creme remain the cleanest topical add-on.',
+                    'Forever Freedom® is the main Forever direction here because when bones, cartilage, arthritis and mobility are part of the same story, the routine should stay centered on the joint formula rather than an aloe drink.',
+                    'Forever Arctic Sea is the important complementary recommendation when you also want an omega-3 nutrition layer inside the same routine.',
+                    'If the skin symptoms are active externally, Forever Aloe First Spray and Aloe Propolis Creme remain the cleanest topical add-on on top of that direction.',
                 ],
             ],
             'monthly_quantity_note' => [
-                'hr' => 'Ako želite jednostavan okvir za mjesec dana, ovdje se najčešće gleda 3 x Forever Aloe Vera Gel™, 1 kutija Forever Arctic Sea, 3 x Forever Freedom®, a po potrebi 1 x Forever Aloe First Spray i 1 x Aloe Propolis Creme za vanjsku rutinu.',
-                'en' => 'If you want a simple one-month frame, this is most often positioned as 3 x Forever Aloe Vera Gel™, 1 box of Forever Arctic Sea, 3 x Forever Freedom®, and, if useful, 1 x Forever Aloe First Spray plus 1 x Aloe Propolis Creme for the outer routine.',
+                'hr' => 'Ako želite jednostavan okvir za mjesec dana, ovdje se najčešće gleda 3 x Forever Freedom®, 1 kutija Forever Arctic Sea, a po potrebi 1 x Forever Aloe First Spray i 1 x Aloe Propolis Creme za vanjsku rutinu.',
+                'en' => 'If you want a simple one-month frame, this is most often positioned as 3 x Forever Freedom®, 1 box of Forever Arctic Sea, and, if useful, 1 x Forever Aloe First Spray plus 1 x Aloe Propolis Creme for the outer routine.',
             ],
             'suppress_generic_questions' => true,
             'sensitive_support_only' => true,
@@ -9961,6 +10041,25 @@ function fcc_ai_build_public_recommendation_payload(string $assistant_type, stri
     $locked_condition_scope = $assistant_type === 'product_advisor' && fcc_ai_condition_locks_product_scope($condition_matches);
     $special_population_support_allowed = $assistant_type === 'product_advisor' && fcc_ai_condition_allows_special_population_support($condition_matches);
     $allowed_condition_products = $locked_condition_scope ? fcc_ai_get_condition_allowed_product_titles($condition_matches) : [];
+
+    $guardrailed_payload = fcc_ai_apply_freedom_recipe_guardrail([
+        'condition_keys' => array_values(array_filter(array_map(static function(array $condition_match) {
+            return trim((string) ($condition_match['key'] ?? ''));
+        }, $condition_matches))),
+        'primary_product' => $primary_product,
+        'support_products' => $support_products,
+        'recommendation_lines' => $recommendation_lines,
+        'monthly_quantity_note' => $monthly_quantity_note,
+    ]);
+
+    $primary_product = trim((string) ($guardrailed_payload['primary_product'] ?? $primary_product));
+    $support_products = array_values(array_filter(array_map(static function($item) {
+        return trim((string) $item);
+    }, (array) ($guardrailed_payload['support_products'] ?? $support_products))));
+    $recommendation_lines = array_values(array_filter(array_map(static function($line) {
+        return trim((string) $line);
+    }, (array) ($guardrailed_payload['recommendation_lines'] ?? $recommendation_lines))));
+    $monthly_quantity_note = trim((string) ($guardrailed_payload['monthly_quantity_note'] ?? $monthly_quantity_note));
 
     $system_brief_lines = [
         $assistant_type === 'pets_advisor'
