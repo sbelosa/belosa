@@ -5267,6 +5267,61 @@ function fcc_ai_is_topical_joint_followup_request(string $message): bool {
     ]);
 }
 
+function fcc_ai_is_public_recommendation_correction_message(string $message): bool {
+    return fcc_ai_contains_keywords($message, [
+        'kriva preporuka',
+        'krivo',
+        'pogrešna preporuka',
+        'pogresna preporuka',
+        'to nema veze',
+        'nema veze',
+        'zašto preporučuješ',
+        'zasto preporucujes',
+        'zašto preporučaš',
+        'zasto preporucas',
+        'ne bih ih trebao preporučivati',
+        'ne bih ih trebao preporucivati',
+        'nebi ih trebao preporučivati',
+        'nebi ih trebao preporucivati',
+        'ispravi preporuku',
+        'ispravi odgovor',
+    ]);
+}
+
+function fcc_ai_build_public_correction_followup_message(string $previous_user_message): string {
+    $previous_user_message = trim($previous_user_message);
+
+    if($previous_user_message === '') {
+        return '';
+    }
+
+    return $previous_user_message . "\n\nCorrection request: previous recommendation was wrong. Keep only the exact mapped Forever recommendation for the same problem and ignore any wrong product names mentioned while correcting the answer.";
+}
+
+function fcc_ai_is_child_daily_support_request(string $message): bool {
+    $has_child_context = fcc_ai_contains_keywords($message, [
+        'dijete', 'djetet', 'dječ', 'djec', 'child', 'children', 'kids', 'baby', 'beb', 'otrok', 'otroku', 'otroke',
+    ]);
+
+    if(!$has_child_context) {
+        return false;
+    }
+
+    $has_daily_support_goal = fcc_ai_contains_keywords($message, [
+        'vitamin', 'vitamini', 'svakodnevn', 'daily', 'imunit', 'otporn', 'podrška organizmu', 'podrska organizmu',
+        'jačanje organizma', 'jacanje organizma', 'rutinu', 'rutina', 'opća podrška', 'opca podrska',
+    ]);
+
+    if(!$has_daily_support_goal) {
+        return false;
+    }
+
+    return !fcc_ai_contains_keywords($message, [
+        'pelensk', 'osip', 'temperatur', 'fever', 'krvar', 'proljev', 'povra', 'povrac', 'dermatit', 'psorijaz',
+        'alergij', 'astma', 'jak bol', 'jaku bol', 'tegob',
+    ]);
+}
+
 function fcc_ai_should_reset_public_problem_context(string $assistant_type, string $current_message, string $previous_user_message = '', string $language = 'hr'): bool {
     if($assistant_type !== 'product_advisor') {
         return false;
@@ -5284,10 +5339,10 @@ function fcc_ai_should_reset_public_problem_context(string $assistant_type, stri
     }
 
     $current_condition_keys = fcc_ai_get_condition_match_keys(
-        fcc_ai_get_product_advisor_condition_matches($current_message, $language)
+        fcc_ai_get_product_advisor_effective_condition_matches($current_message, $language)
     );
     $previous_condition_keys = fcc_ai_get_condition_match_keys(
-        fcc_ai_get_product_advisor_condition_matches($previous_user_message, $language)
+        fcc_ai_get_product_advisor_effective_condition_matches($previous_user_message, $language)
     );
 
     $current_theme_keys = array_values(array_filter(array_map(static function(array $theme_match) {
@@ -6872,7 +6927,7 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
             'lock_product_scope' => true,
         ],
         'cholesterol_support' => [
-            'patterns' => ['kolesterol', 'visoki kolesterol', 'povišen kolesterol', 'povisen kolesterol', 'dislipidem', 'triglicerid'],
+            'patterns' => ['kolesterol', 'visoki kolesterol', 'povišen kolesterol', 'povisen kolesterol', 'dislipidem', 'triglicerid', 'trigliceridi', 'masnoće u krvi', 'masnoce u krvi', 'povišene masnoće u krvi', 'povisene masnoce u krvi', 'masti u krvi', 'povišene masnoće', 'povisene masnoce'],
             'preferred_patterns' => ['aloe vera gel', 'aloe gel', 'arctic sea', 'omega'],
             'primary_product' => 'Forever Aloe Vera Gel™',
             'support_products' => ['Forever Arctic Sea'],
@@ -7137,6 +7192,34 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
                 'en' => 'If you want a simple one-month frame right away, this is most often started with 3 x Forever Aloe Vera Gel™ for the month, plus one support direction: Forever Immune Gummy or Forever Daily.',
             ],
             'suppress_generic_questions' => true,
+            'lock_product_scope' => true,
+        ],
+        'children_daily_vitamins_support' => [
+            'patterns' => ['forever kids', 'kids vitam', 'vitamini za djecu', 'vitamini za dijete', 'dječji vitam', 'djecji vitam', 'child vitamins', 'kids vitamins', 'otrok vitam', 'otroku vitam'],
+            'preferred_patterns' => ['forever kids', 'kids'],
+            'primary_product' => 'Forever Kids',
+            'support_products' => [],
+            'label' => [
+                'hr' => 'dječja dnevna rutina i vitaminska podrška',
+                'en' => 'children daily routine and vitamin support',
+            ],
+            'opening_note' => [
+                'hr' => 'Kod opće dnevne rutine za dijete prvi korak je pedijatar ako postoje jače tegobe ili terapija, ali za jednostavan vitaminski smjer ovdje preporuka treba ostati na jednom jasnom dječjem proizvodu iz baze.',
+                'en' => 'For a child’s general daily routine, the first step is a pediatrician if stronger symptoms or therapy are involved, but for a simple vitamin direction the recommendation here should stay on one clear children product from the base.',
+            ],
+            'recommendation_lines' => [
+                'hr' => [
+                    'Forever Kids je ovdje glavni Forever smjer kada želite jednostavniji dječji vitaminski dodatak za svakodnevnu rutinu i opću nutritivnu podršku.',
+                    'Kod djece je i dalje važno doziranje i prikladnost pratiti prema dobi i deklaraciji, a po potrebi to dodatno potvrditi s pedijatrom.',
+                ],
+                'en' => [
+                    'Forever Kids is the main Forever direction here when you want a simpler children vitamin product for a daily routine and general nutrition support.',
+                    'For children, it still matters to follow age suitability and the label instructions, and to confirm with a pediatrician when needed.',
+                ],
+            ],
+            'suppress_generic_questions' => true,
+            'sensitive_support_only' => true,
+            'allow_special_population_support' => true,
             'lock_product_scope' => true,
         ],
         'seasonal_allergy_support' => [
@@ -7419,7 +7502,7 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
             'lock_product_scope' => true,
         ],
         'prostate_support' => [
-            'patterns' => ['prostata', 'prostate', 'prostatitis', 'povećana prostata', 'povecana prostata', 'problemi s prostatom'],
+            'patterns' => ['prostat', 'prostata', 'prostatu', 'prostate', 'prostatitis', 'prostatit', 'povećana prostata', 'povecana prostata', 'problemi s prostatom', 'problemi sa prostatom', 'upala prostate', 'mokrenje kod prostate'],
             'preferred_patterns' => ['berry nectar', 'aloe berry nectar', 'vitolize men'],
             'primary_product' => 'Forever Aloe Berry Nectar®',
             'support_products' => ['Forever Vitolize Men'],
@@ -7447,6 +7530,36 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
             ],
             'suppress_generic_questions' => true,
             'sensitive_support_only' => true,
+            'lock_product_scope' => true,
+        ],
+        'seborrhea_scalp_support' => [
+            'patterns' => ['seboreja', 'seboreju', 'seborei', 'seborrhea', 'seboreic', 'seboreični', 'seboreicni', 'vlasište', 'vlasiste', 'vlasištu', 'vlasistu', 'masno vlasište', 'masno vlasiste', 'perut', 'prhut'],
+            'preferred_patterns' => ['jojoba shampoo', 'aloe-jojoba shampoo', 'conditioning rinse', 'jojoba conditioner'],
+            'primary_product' => 'Forever Aloe-Jojoba Shampoo',
+            'support_products' => ['Aloe Jojoba Conditioning Rinse'],
+            'label' => [
+                'hr' => 'seboreja vlasišta i nježna rutina vlasišta',
+                'en' => 'scalp seborrhea and a gentle scalp-care routine',
+            ],
+            'opening_note' => [
+                'hr' => 'Kod seboreje vlasišta preporuka treba ostati na nježnoj rutini vlasišta i kose, bez skretanja na gelove za mišiće ili nepovezane proizvode.',
+                'en' => 'For scalp seborrhea, the recommendation should stay on a gentle scalp-and-hair routine without drifting into muscle gels or unrelated products.',
+            ],
+            'recommendation_lines' => [
+                'hr' => [
+                    'Forever Aloe-Jojoba Shampoo je ovdje glavni Forever smjer jer nježno čisti vlasište, donosi aloe veru i jojobu te se najlogičnije uklapa u rutinu kod peruti, svrbeža i osjetljivijeg vlasišta.',
+                    'Aloe Jojoba Conditioning Rinse može biti dopunska support opcija uz to kada želite i dodatnu njegu kose i vlasišta nakon pranja.',
+                ],
+                'en' => [
+                    'Forever Aloe-Jojoba Shampoo is the main Forever direction here because it gently cleanses the scalp, brings aloe vera and jojoba, and fits most naturally into a routine for dandruff, itchiness and a more sensitive scalp.',
+                    'Aloe Jojoba Conditioning Rinse can be the support option on top when you also want extra hair-and-scalp care after washing.',
+                ],
+            ],
+            'monthly_quantity_note' => [
+                'hr' => 'Ako želite okvir za mjesec dana, ovdje se najčešće gleda 1 x Forever Aloe-Jojoba Shampoo, a po potrebi i 1 x Aloe Jojoba Conditioning Rinse.',
+                'en' => 'If you want a one-month frame, this is most often positioned as 1 x Forever Aloe-Jojoba Shampoo and, if useful, 1 x Aloe Jojoba Conditioning Rinse.',
+            ],
+            'suppress_generic_questions' => true,
             'lock_product_scope' => true,
         ],
         'headache_circulation_support' => [
@@ -7840,6 +7953,38 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
                 ],
             ],
             'suppress_generic_questions' => true,
+            'lock_product_scope' => true,
+        ],
+        'diaper_rash_support' => [
+            'patterns' => ['pelenski osip', 'pelenskog osipa', 'pelenskog područja', 'pelenskog podrucja', 'pelensko područje', 'pelensko podrucje', 'osip od pelena', 'pelene', 'područje pelena', 'podrucje pelena', 'pelenski dermatitis'],
+            'preferred_patterns' => ['first spray', 'aloe first', 'aloe gelly', 'gelly', 'propolis creme', 'aloe propolis'],
+            'primary_product' => 'Forever Aloe First Spray',
+            'support_products' => ['Forever Aloe Vera Gelly', 'Aloe Propolis Creme'],
+            'label' => [
+                'hr' => 'pelensko područje i nježna lokalna njega',
+                'en' => 'diaper area and gentle local care',
+            ],
+            'opening_note' => [
+                'hr' => 'Kod pelenskog područja preporuka treba ostati na vrlo nježnoj lokalnoj njezi i ne bi smjela skretati na anti-age ili generičke skincare proizvode za lice.',
+                'en' => 'For the diaper area, the recommendation should stay on very gentle local care and should not drift into anti-age or generic facial skincare products.',
+            ],
+            'recommendation_lines' => [
+                'hr' => [
+                    'Forever Aloe First Spray je ovdje najčišći glavni Forever smjer za nježnu lokalnu rutinu pelenskog područja.',
+                    'Forever Aloe Vera Gelly može biti dopunska support opcija kada želite umirujući aloe sloj izvana, a Aloe Propolis Creme ima smisla kao dodatni kremasti korak ako želite hranjiviju njegu kože.',
+                ],
+                'en' => [
+                    'Forever Aloe First Spray is the cleanest main Forever direction here for a gentle local routine in the diaper area.',
+                    'Forever Aloe Vera Gelly can be the support option when you want a soothing aloe layer from the outside, while Aloe Propolis Creme makes sense as the extra cream-based step when you want richer skin care.',
+                ],
+            ],
+            'monthly_quantity_note' => [
+                'hr' => 'Ako želite okvir za mjesec dana, ovdje se najčešće gleda 1 x Forever Aloe First Spray, a po potrebi 1 x Forever Aloe Vera Gelly i 1 x Aloe Propolis Creme.',
+                'en' => 'If you want a one-month frame, this is most often positioned as 1 x Forever Aloe First Spray and, if useful, 1 x Forever Aloe Vera Gelly plus 1 x Aloe Propolis Creme.',
+            ],
+            'suppress_generic_questions' => true,
+            'sensitive_support_only' => true,
+            'allow_special_population_support' => true,
             'lock_product_scope' => true,
         ],
         'oral_care_support' => [
@@ -8473,11 +8618,86 @@ function fcc_ai_get_product_advisor_condition_matches(string $message, string $l
             'monthly_quantity_note' => fcc_ai_get_public_localized_matrix_text($entry, 'monthly_quantity_note', $language),
             'suppress_generic_questions' => (bool) ($entry['suppress_generic_questions'] ?? false),
             'sensitive_support_only' => (bool) ($entry['sensitive_support_only'] ?? false),
+            'allow_special_population_support' => (bool) ($entry['allow_special_population_support'] ?? false),
             'lock_product_scope' => array_key_exists('lock_product_scope', $entry) ? (bool) $entry['lock_product_scope'] : true,
             'score' => $score,
             'matched_patterns' => array_values(array_unique($matched_patterns)),
         ];
     }
+
+    usort($matches, static function(array $a, array $b) {
+        return ($b['score'] <=> $a['score']) ?: strcmp((string) ($a['key'] ?? ''), (string) ($b['key'] ?? ''));
+    });
+
+    return array_slice($matches, 0, 2);
+}
+
+function fcc_ai_get_product_advisor_condition_match_by_key(string $key, string $language = 'hr', array $matched_patterns = [], int $score = 220): array {
+    $matrix = fcc_ai_get_product_advisor_recommendation_matrix();
+    $entry = $matrix[$key] ?? null;
+
+    if(!is_array($entry)) {
+        return [];
+    }
+
+    return [
+        'key' => (string) $key,
+        'label' => fcc_ai_get_public_localized_matrix_text($entry, 'label', $language),
+        'opening_note' => fcc_ai_get_public_localized_matrix_text($entry, 'opening_note', $language),
+        'recommendation_lines' => fcc_ai_get_public_localized_matrix_lines($entry, 'recommendation_lines', $language),
+        'primary_product' => trim((string) ($entry['primary_product'] ?? '')),
+        'support_products' => array_values(array_filter(array_map(static function($item) {
+            return trim((string) $item);
+        }, (array) ($entry['support_products'] ?? [])))),
+        'preferred_patterns' => array_values(array_filter(array_map(static function($pattern) {
+            return mb_strtolower(trim((string) $pattern));
+        }, (array) ($entry['preferred_patterns'] ?? [])))),
+        'monthly_quantity_note' => fcc_ai_get_public_localized_matrix_text($entry, 'monthly_quantity_note', $language),
+        'suppress_generic_questions' => (bool) ($entry['suppress_generic_questions'] ?? false),
+        'sensitive_support_only' => (bool) ($entry['sensitive_support_only'] ?? false),
+        'allow_special_population_support' => (bool) ($entry['allow_special_population_support'] ?? false),
+        'lock_product_scope' => array_key_exists('lock_product_scope', $entry) ? (bool) $entry['lock_product_scope'] : true,
+        'score' => $score,
+        'matched_patterns' => array_values(array_unique(array_filter(array_map(static function($pattern) {
+            return mb_strtolower(trim((string) $pattern));
+        }, $matched_patterns)))),
+    ];
+}
+
+function fcc_ai_get_product_advisor_effective_condition_matches(string $message, string $language = 'hr'): array {
+    $matches = fcc_ai_get_product_advisor_condition_matches($message, $language);
+
+    if(fcc_ai_is_child_daily_support_request($message)) {
+        $matches[] = fcc_ai_get_product_advisor_condition_match_by_key(
+            'children_daily_vitamins_support',
+            $language,
+            ['dijete', 'vitamini'],
+            240
+        );
+    }
+
+    $merged_matches = [];
+
+    foreach($matches as $match) {
+        if(empty($match['key'])) {
+            continue;
+        }
+
+        $key = (string) $match['key'];
+
+        if(!isset($merged_matches[$key])) {
+            $merged_matches[$key] = $match;
+            continue;
+        }
+
+        $merged_matches[$key]['score'] = max((int) ($merged_matches[$key]['score'] ?? 0), (int) ($match['score'] ?? 0));
+        $merged_matches[$key]['matched_patterns'] = array_values(array_unique(array_merge(
+            (array) ($merged_matches[$key]['matched_patterns'] ?? []),
+            (array) ($match['matched_patterns'] ?? [])
+        )));
+    }
+
+    $matches = array_values($merged_matches);
 
     usort($matches, static function(array $a, array $b) {
         return ($b['score'] <=> $a['score']) ?: strcmp((string) ($a['key'] ?? ''), (string) ($b['key'] ?? ''));
@@ -9173,13 +9393,14 @@ function fcc_ai_build_public_recommendation_payload(string $assistant_type, stri
     $intent = isset($context['intent']) && is_array($context['intent'])
         ? $context['intent']
         : fcc_ai_detect_public_intent($assistant_type, $message);
+    $correction_follow_up = !empty($context['correction_follow_up']);
     $skip_product_tail = $assistant_type === 'product_advisor' && fcc_ai_is_public_product_utility_request($message);
     $knowledge_suggestions = array_values(array_filter($context['knowledge_suggestions'] ?? [], static function($suggestion) {
         return !empty($suggestion['title']);
     }));
     $theme_matches = fcc_ai_get_public_theme_matches($assistant_type, $message, $language, $knowledge_suggestions);
     $condition_matches = $assistant_type === 'product_advisor'
-        ? fcc_ai_get_product_advisor_condition_matches($message, $language)
+        ? fcc_ai_get_product_advisor_effective_condition_matches($message, $language)
         : [];
     $knowledge_suggestions = fcc_ai_sort_public_knowledge_suggestions($knowledge_suggestions, $assistant_type, $message, $intent, $theme_matches, $condition_matches);
     if($assistant_type === 'product_advisor' && !empty($condition_matches)) {
@@ -9367,6 +9588,7 @@ function fcc_ai_build_public_recommendation_payload(string $assistant_type, stri
 
     $sensitive_support_only = !empty($condition_matches[0]['sensitive_support_only']);
     $locked_condition_scope = $assistant_type === 'product_advisor' && fcc_ai_condition_locks_product_scope($condition_matches);
+    $special_population_support_allowed = $assistant_type === 'product_advisor' && fcc_ai_condition_allows_special_population_support($condition_matches);
     $allowed_condition_products = $locked_condition_scope ? fcc_ai_get_condition_allowed_product_titles($condition_matches) : [];
 
     $system_brief_lines = [
@@ -9377,7 +9599,9 @@ function fcc_ai_build_public_recommendation_payload(string $assistant_type, stri
     ];
 
     if(!empty($intent['special_population_sensitive'])) {
-        $system_brief_lines[] = 'Sensitive population context detected (pregnancy, breastfeeding or child). Do not give a direct product recommendation. Stay with general ingredient information and ask for a doctor or pediatrician check first.';
+        $system_brief_lines[] = $special_population_support_allowed
+            ? 'Sensitive population context detected. Start with doctor-or-pediatrician-first wording, but because this message matches an approved child-safe FCC profile, you may still mention only that exact mapped Forever direction as cautious routine support. Do not drift outside the mapped child-safe products.'
+            : 'Sensitive population context detected (pregnancy, breastfeeding or child). Do not give a direct product recommendation. Stay with general ingredient information and ask for a doctor or pediatrician check first.';
     }
 
     if(!empty($intent['medication_replacement_sensitive'])) {
@@ -9457,6 +9681,10 @@ function fcc_ai_build_public_recommendation_payload(string $assistant_type, stri
 
     if($locked_condition_scope && (!empty($intent['medical_sensitive']) || !empty($intent['serious']))) {
         $system_brief_lines[] = 'This is a serious or medical-sensitive case with a locked product scope. Do not append any second recommendation block, do not add unrelated alternatives later in the answer, and do not drift into generic fallback products.';
+    }
+
+    if($correction_follow_up) {
+        $system_brief_lines[] = 'The visitor is correcting a previous wrong recommendation. Ignore the names of wrong products mentioned in the correction itself and restate only the exact mapped Forever direction for the original problem.';
     }
 
     if(!empty($question_lines)) {
@@ -9624,6 +9852,16 @@ function fcc_ai_condition_locks_product_scope(array $condition_matches): bool {
     return false;
 }
 
+function fcc_ai_condition_allows_special_population_support(array $condition_matches): bool {
+    foreach($condition_matches as $condition_match) {
+        if(!empty($condition_match['allow_special_population_support'])) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 function fcc_ai_get_condition_allowed_product_titles(array $condition_matches): array {
     $titles = [];
 
@@ -9737,6 +9975,7 @@ function fcc_ai_get_public_product_routine_note_by_titles(array $product_titles,
     $has_focus = false;
     $has_nature_min = false;
     $has_calcium = false;
+    $has_kids = false;
 
     foreach($normalized_titles as $title) {
         if(fcc_ai_contains_keywords($title, ['aloe vera gel', 'aloe mango', 'aloe peaches', 'aloe berry nectar'])) {
@@ -9838,6 +10077,10 @@ function fcc_ai_get_public_product_routine_note_by_titles(array $product_titles,
         if(fcc_ai_contains_keywords($title, ['forever calcium', 'calcium'])) {
             $has_calcium = true;
         }
+
+        if(fcc_ai_contains_keywords($title, ['forever kids'])) {
+            $has_kids = true;
+        }
     }
 
     $notes = [];
@@ -9922,12 +10165,24 @@ function fcc_ai_get_public_product_routine_note_by_titles(array $product_titles,
                 : 'Forever Absorbent-D se najčešće uzima kao 1 tableta 2x dnevno uz obrok.');
     }
 
-    if($has_multi_maca || $has_vitolize) {
+    if($has_multi_maca && $has_vitolize) {
         $notes[] = $language === 'en'
             ? 'Forever Multi Maca and Vitolize products are most often positioned as 2 capsules per day.'
             : ($language === 'sl'
                 ? 'Forever Multi Maca in Vitolize izdelki se najpogosteje uporabljajo kot 2 kapsuli na dan.'
                 : 'Forever Multi Maca i Vitolize proizvodi se najčešće uzimaju kao 2 kapsule dnevno.');
+    } elseif($has_multi_maca) {
+        $notes[] = $language === 'en'
+            ? 'Forever Multi Maca is most often positioned as 2 capsules per day.'
+            : ($language === 'sl'
+                ? 'Forever Multi Maca se najpogosteje uporablja kot 2 kapsuli na dan.'
+                : 'Forever Multi Maca se najčešće uzima kao 2 kapsule dnevno.');
+    } elseif($has_vitolize) {
+        $notes[] = $language === 'en'
+            ? 'Vitolize products are most often positioned as 2 capsules per day.'
+            : ($language === 'sl'
+                ? 'Vitolize izdelki se najpogosteje uporabljajo kot 2 kapsuli na dan.'
+                : 'Vitolize proizvodi se najčešće uzimaju kao 2 kapsule dnevno.');
     }
 
     if($has_vision) {
@@ -10032,6 +10287,14 @@ function fcc_ai_get_public_product_routine_note_by_titles(array $product_titles,
             : ($language === 'sl'
                 ? 'Forever Calcium se najpogosteje uporablja kot 3 tablete na dan z vodo.'
                 : 'Forever Calcium se najčešće uzima kao 3 tablete dnevno uz vodu.');
+    }
+
+    if($has_kids) {
+        $notes[] = $language === 'en'
+            ? 'For Forever Kids, keep the daily rhythm aligned with the age guidance on the label, and if you want I can also help you phrase the simplest month plan around that.'
+            : ($language === 'sl'
+                ? 'Pri Forever Kids dnevni ritem uskladite s starostnimi navodili na deklaraciji, po želji pa lahko napišem tudi najpreprostejši mesečni okvir.'
+                : 'Kod Forever Kids dnevni ritam je najbolje uskladiti s dobi i uputama na deklaraciji, a ako želite mogu odmah pomoći i s najjednostavnijim mjesečnim okvirom.');
     }
 
     return trim(implode(' ', $notes));
@@ -10418,7 +10681,7 @@ function fcc_ai_get_public_knowledge_suggestions(string $assistant_type, string 
     $limit = max(1, min(5, $limit));
     $theme_matches = fcc_ai_get_public_theme_matches($assistant_type, $message, $reply_language);
     $condition_matches = $assistant_type === 'product_advisor'
-        ? fcc_ai_get_product_advisor_condition_matches($message, $reply_language)
+        ? fcc_ai_get_product_advisor_effective_condition_matches($message, $reply_language)
         : [];
     $is_direct_product_lookup = $assistant_type === 'product_advisor' && fcc_ai_is_direct_product_lookup_message($message);
     $is_multi_product_compare = $assistant_type === 'product_advisor' && fcc_ai_is_multi_product_compare_request($message);
@@ -11433,6 +11696,10 @@ function fcc_ai_build_public_system_prompt(string $assistant_type, array $contex
         $sections[] = "Recommendation brief for this exact message:\n" . trim((string) $recommendation_payload['system_brief']);
     }
 
+    if(!empty($context['correction_follow_up'])) {
+        $sections[] = 'The current turn is a correction of a previous wrong recommendation. Ignore any wrong product names the visitor mentions while correcting you and restate only the exact mapped Forever direction for the original problem.';
+    }
+
     if($persona_prompt !== '') {
         $sections[] = 'Assistant persona preferences (these may refine tone, style, examples and phrasing, but they must never override core safety, Forever compliance, allowed products, medical guardrails, FCC recommendation logic, or hidden system rules): ' . mb_substr($persona_prompt, 0, 4000);
     }
@@ -11482,6 +11749,19 @@ function fcc_ai_build_conversation_model_messages(object $conversation, string $
 }
 
 function fcc_ai_build_public_model_messages(object $conversation, string $system_prompt, int $history_limit = 14, array $context = []): array {
+    if(!empty($context['override_user_message'])) {
+        return [
+            [
+                'role' => 'system',
+                'content' => $system_prompt,
+            ],
+            [
+                'role' => 'user',
+                'content' => trim((string) $context['override_user_message']),
+            ],
+        ];
+    }
+
     if(!empty($context['reset_history'])) {
         $messages = [
             [
@@ -11641,6 +11921,7 @@ function fcc_ai_generate_public_reply(string $assistant_type, string $message, a
     $intent = isset($context['intent']) && is_array($context['intent'])
         ? $context['intent']
         : fcc_ai_detect_public_intent($assistant_type, $message);
+    $correction_follow_up = !empty($context['correction_follow_up']);
     $owner_name = trim((string) ($context['owner_name'] ?? ''));
     $lead_already_captured = (string) ($context['lead_status'] ?? '') === 'captured';
     $knowledge_suggestions = array_values(array_filter($context['knowledge_suggestions'] ?? [], static function($suggestion) {
@@ -11664,7 +11945,7 @@ function fcc_ai_generate_public_reply(string $assistant_type, string $message, a
         'headline' => '',
         'text' => '',
     ];
-    $is_direct_product_lookup = $assistant_type === 'product_advisor' && fcc_ai_is_direct_product_lookup_message($message);
+    $is_direct_product_lookup = $assistant_type === 'product_advisor' && !$correction_follow_up && fcc_ai_is_direct_product_lookup_message($message);
     $is_explicit_monthly_quantity_request = $assistant_type === 'product_advisor' && fcc_ai_is_explicit_monthly_quantity_request($message);
     $skip_product_tail = !empty($recommendation_payload['skip_product_tail']);
 
@@ -11675,6 +11956,14 @@ function fcc_ai_generate_public_reply(string $assistant_type, string $message, a
     $is_direct_contact_request = !empty($intent['contact']) && !$intent['business'] && !fcc_ai_contains_keywords($message, [
         'probav', 'energ', 'imunit', 'zglob', 'težin', 'tezin', 'mobility', 'digestion', 'energy', 'weight', 'skin', 'dlaka', 'koža', 'koza'
     ]);
+
+    if($assistant_type === 'product_advisor' && $correction_follow_up) {
+        $content_blocks[] = $language === 'en'
+            ? 'You are right to flag that. I am correcting the recommendation and staying only inside the exact mapped Forever direction for this problem.'
+            : ($language === 'sl'
+                ? 'Prav je, da ste to označili. Popravljam priporočilo in ostajam samo znotraj natančno mapirane Forever smeri za ta problem.'
+                : 'U pravu ste što ste to označili. Ispravljam preporuku i ovdje ostajem samo unutar točno mapiranog Forever smjera za ovaj problem.');
+    }
 
     if($assistant_type === 'product_advisor' && $skip_product_tail) {
         $is_calorie_request = fcc_ai_is_public_calorie_request($message);
@@ -12605,6 +12894,51 @@ function fcc_ai_generate_public_reply(string $assistant_type, string $message, a
                 'knowledge_suggestions' => $condition_locked_knowledge_suggestions,
             ];
         } elseif(!empty($intent['special_population_sensitive'])) {
+            $allows_special_population_support = fcc_ai_condition_allows_special_population_support((array) ($recommendation_payload['condition_matches'] ?? []));
+
+            if($allows_special_population_support && !empty($recommendation_payload['recommendation_lines'])) {
+                $content_blocks[] = $language === 'en'
+                    ? 'Because this involves a child or another sensitive context, the normal first step is still a doctor or pediatrician check. But if you want the mapped Forever direction that stays inside a cautious daily-support routine, it looks like this:'
+                    : ($language === 'sl'
+                        ? 'Ker gre za otroka ali drug občutljiv kontekst, je normalen prvi korak še vedno pregled pri zdravniku ali pediatru. Če pa želite mapirano Forever smer, ki ostaja znotraj previdne dnevne podporne rutine, je videti tako:'
+                        : 'Budući da je riječ o djetetu ili drugom osjetljivom kontekstu, normalan prvi korak je i dalje liječnik ili pedijatar. Ali ako želite mapirani Forever smjer koji ostaje unutar oprezne dnevne rutine podrške, ovdje on izgleda ovako:');
+
+                $content_blocks[] = $language === 'en'
+                    ? "A cautious Forever direction here:\n- " . implode("\n- ", (array) $recommendation_payload['recommendation_lines'])
+                    : ($language === 'sl'
+                        ? "Previdna Forever smer tukaj:\n- " . implode("\n- ", (array) $recommendation_payload['recommendation_lines'])
+                        : "Oprezan Forever smjer ovdje:\n- " . implode("\n- ", (array) $recommendation_payload['recommendation_lines']));
+
+                if(!empty($recommendation_payload['monthly_quantity_note'])) {
+                    $content_blocks[] = (string) $recommendation_payload['monthly_quantity_note'];
+                } else {
+                    $routine_note = fcc_ai_get_public_product_routine_note_by_titles(array_values(array_filter(array_merge(
+                        [trim((string) ($recommendation_payload['primary_product'] ?? ''))],
+                        array_values(array_filter(array_map(static function($item) {
+                            return trim((string) $item);
+                        }, (array) ($recommendation_payload['support_products'] ?? []))))
+                    ))), $language);
+
+                    if($routine_note !== '') {
+                        $content_blocks[] = $routine_note;
+                    }
+                }
+
+                if(!$lead_already_captured && ($intent['contact'] || $intent['medical_sensitive'] || $intent['product'])) {
+                    $lead_capture = fcc_ai_get_public_support_request_lead_capture($language, 'medical_after_check');
+                    $content_blocks[] = fcc_ai_get_public_user_contact_invite_note($assistant_type, $language, $owner_name);
+                }
+
+                return [
+                    'content' => trim(implode("\n\n", array_filter($content_blocks))),
+                    'language' => $language,
+                    'lead_capture' => $lead_capture,
+                    'intent' => $intent,
+                    'recommendation_payload' => $recommendation_payload,
+                    'knowledge_suggestions' => $condition_locked_knowledge_suggestions,
+                ];
+            }
+
             $specific_product = trim((string) ($knowledge_suggestions[0]['title'] ?? ''));
             $specific_description = '';
 
@@ -12797,7 +13131,11 @@ function fcc_ai_generate_public_reply(string $assistant_type, string $message, a
             }
         }
 
-        if(!empty($intent['medical_sensitive']) && fcc_ai_contains_keywords($message, ['mokren', 'nekontrolisano mokrenje', 'nekontrolirano mokrenje'])) {
+        if(
+            !empty($intent['medical_sensitive'])
+            && fcc_ai_contains_keywords($message, ['mokren', 'nekontrolisano mokrenje', 'nekontrolirano mokrenje'])
+            && !fcc_ai_condition_locks_product_scope((array) ($recommendation_payload['condition_matches'] ?? []))
+        ) {
             $recommendation_payload['opening_note'] = $language === 'en'
                 ? 'For questions like this, it is safer to first understand whether this is a new, stronger, or medically evaluated issue before narrowing to a supplement direction.'
                 : ($language === 'sl'
@@ -12827,7 +13165,7 @@ function fcc_ai_generate_public_reply(string $assistant_type, string $message, a
                     : "Siguran smjer preporuke za sada:\n- " . implode("\n- ", $recommendation_payload['recommendation_lines']));
         }
 
-        if(fcc_ai_is_direct_product_lookup_message($message) && !empty($knowledge_suggestions) && !fcc_ai_is_multi_product_compare_request($message)) {
+        if(!$correction_follow_up && fcc_ai_is_direct_product_lookup_message($message) && !empty($knowledge_suggestions) && !fcc_ai_is_multi_product_compare_request($message)) {
             $usage_note = fcc_ai_get_public_product_usage_note($knowledge_suggestions, $language);
 
             if($usage_note !== '') {
@@ -15473,6 +15811,17 @@ function fcc_ai_handle_public_message(array $payload): array {
     $used_context_for_matching = !empty($contextual_message_bundle['used_context']);
     $intent = fcc_ai_detect_public_intent((string) $conversation->assistant_type, $message_for_matching);
     $previous_user_message = fcc_ai_get_previous_public_user_message((int) ($conversation->fcc_ai_conversation_id ?? 0), $current_user_message);
+    $is_recommendation_correction_followup = (string) ($conversation->assistant_type ?? '') === 'product_advisor'
+        && $previous_user_message !== ''
+        && fcc_ai_is_public_recommendation_correction_message($current_user_message);
+
+    if($is_recommendation_correction_followup) {
+        $message_for_matching = fcc_ai_build_public_correction_followup_message($previous_user_message);
+        $recent_user_context = $previous_user_message;
+        $used_context_for_matching = true;
+        $intent = fcc_ai_detect_public_intent((string) $conversation->assistant_type, $previous_user_message);
+    }
+
     $should_reset_problem_context = fcc_ai_should_reset_public_problem_context(
         (string) ($conversation->assistant_type ?? ''),
         $current_user_message,
@@ -15498,6 +15847,7 @@ function fcc_ai_handle_public_message(array $payload): array {
         'language' => $resolved_language,
         'intent' => $intent,
         'knowledge_suggestions' => $knowledge_suggestions,
+        'correction_follow_up' => $is_recommendation_correction_followup,
     ]);
 
     if(!empty($recommendation_payload['skip_product_tail'])) {
@@ -15591,6 +15941,7 @@ function fcc_ai_handle_public_message(array $payload): array {
         'recommendation_payload' => $recommendation_payload,
         'recent_user_context' => $has_high_risk_medical_context ? '' : $recent_user_context,
         'reset_history' => $should_reset_problem_context,
+        'correction_follow_up' => $is_recommendation_correction_followup,
     ]);
 
     $model_attempt = fcc_ai_try_generate_public_model_reply($conversation, [
@@ -15599,11 +15950,13 @@ function fcc_ai_handle_public_message(array $payload): array {
         'source_context' => (string) ($payload['source_context'] ?? ''),
         'blog_post_id' => (int) ($conversation->blog_post_id ?? 0),
         'owner_name' => (string) ($user->name ?? ''),
-        'last_user_message' => $message,
+        'last_user_message' => $is_recommendation_correction_followup ? $message_for_matching : $message,
         'knowledge_suggestions' => $knowledge_suggestions,
         'recommendation_payload' => $recommendation_payload,
         'recent_user_context' => $has_high_risk_medical_context ? '' : $recent_user_context,
         'reset_history' => $should_reset_problem_context,
+        'correction_follow_up' => $is_recommendation_correction_followup,
+        'override_user_message' => $is_recommendation_correction_followup ? $message_for_matching : '',
     ], $assistant);
 
     $reply_meta = [
