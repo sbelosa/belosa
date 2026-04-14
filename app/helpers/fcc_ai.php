@@ -5219,6 +5219,40 @@ function fcc_ai_is_ambiguous_same_problem_followup_request(string $message): boo
     ]);
 }
 
+function fcc_ai_is_broad_beauty_request(string $message): bool {
+    $message = trim($message);
+
+    if($message === '') {
+        return false;
+    }
+
+    if(!fcc_ai_contains_keywords($message, [
+        'ljepot',
+        'beauty',
+        'beauti',
+        'kozmetik',
+        'njega',
+        'rutina',
+        'za suprugu',
+        'za ženu',
+        'za zenu',
+        'za nju',
+    ])) {
+        return false;
+    }
+
+    if(fcc_ai_contains_keywords($message, [
+        'psorijaz', 'psoriaz', 'dermatit', 'ekcem', 'herpes', 'sebore', 'perut', 'kosa', 'vlasi',
+        'pigment', 'mrlje', 'lice', 'lica', 'face', 'anti age', 'anti-age', 'bore', 'akne', 'prišt', 'prist',
+        'suha koža', 'suha koza', 'masna koža', 'masna koza', 'tijelo', 'body', 'ožilj', 'ozilj',
+        'sunce', 'sunca', 'spf', 'sunscreen', 'lip', 'usne', 'lips',
+    ])) {
+        return false;
+    }
+
+    return true;
+}
+
 function fcc_ai_build_contextual_public_message(int $conversation_id, string $message): array {
     $message = trim($message);
 
@@ -9565,6 +9599,8 @@ function fcc_ai_build_public_recommendation_payload(string $assistant_type, stri
         : fcc_ai_detect_public_intent($assistant_type, $message);
     $correction_follow_up = !empty($context['correction_follow_up']);
     $same_problem_followup_clarification = !empty($context['same_problem_followup_clarification']);
+    $broad_beauty_followup_clarification = !empty($context['broad_beauty_followup_clarification']);
+    $previous_condition_context_exists = !empty($context['previous_condition_context_exists']);
     $follow_up_message = trim((string) ($context['follow_up_message'] ?? ''));
     $skip_product_tail = $assistant_type === 'product_advisor' && fcc_ai_is_public_product_utility_request($message);
     $knowledge_suggestions = array_values(array_filter($context['knowledge_suggestions'] ?? [], static function($suggestion) {
@@ -9793,6 +9829,48 @@ function fcc_ai_build_public_recommendation_payload(string $assistant_type, stri
         $knowledge_suggestions = [];
         $combination_note = '';
         $discount_note = '';
+    }
+
+    if($assistant_type === 'product_advisor' && ($broad_beauty_followup_clarification || fcc_ai_is_broad_beauty_request($message))) {
+        $opening_note = $language === 'en'
+            ? 'To keep the recommendation serious and useful, I would first narrow down what kind of beauty routine you actually mean before I mention products.'
+            : ($language === 'sl'
+                ? 'Da ostane priporočilo resno in uporabno, bi najprej zožil, kakšno beauty rutino pravzaprav mislite, preden omenim izdelke.'
+                : 'Da preporuka ostane ozbiljna i korisna, ovdje bih prvo suzio na kakvu beauty rutinu zapravo mislite prije nego spomenem proizvode.');
+
+        $recommendation_lines = [];
+        $knowledge_suggestions = [];
+        $monthly_quantity_note = '';
+        $combination_note = '';
+        $discount_note = '';
+
+        if($previous_condition_context_exists) {
+            $question_lines = [
+                $language === 'en'
+                    ? 'Do you still mean the same problem we were discussing, or is this now a separate beauty routine question?'
+                    : ($language === 'sl'
+                        ? 'Ali še vedno mislite na isto težavo, o kateri sva govorila, ali je to zdaj ločeno beauty vprašanje?'
+                        : 'Mislite li i dalje na isti problem o kojem smo pričali ili je ovo sada zaseban beauty upit?'),
+                $language === 'en'
+                    ? 'If it is a separate beauty routine, is the focus face care, body care, hair/scalp, hydration, anti-age, or something else?'
+                    : ($language === 'sl'
+                        ? 'Če gre za ločeno beauty rutino, ali je fokus nega obraza, telesa, las/lasišča, hidratacija, anti-age ali nekaj drugega?'
+                        : 'Ako je to zasebna beauty rutina, je li fokus njega lica, tijela, kose/vlasišta, hidratacija, anti-age ili nešto drugo?'),
+            ];
+        } else {
+            $question_lines = [
+                $language === 'en'
+                    ? 'Do you mean face care, body care, hair/scalp care, or a visible skin problem that needs a more targeted direction?'
+                    : ($language === 'sl'
+                        ? 'Ali mislite na nego obraza, telesa, las/lasišča ali na vidno težavo kože koja traži precizniji smer?'
+                        : 'Mislite li na njegu lica, tijela, kose/vlasišta ili na vidljiv problem kože koji traži precizniji smjer?'),
+                $language === 'en'
+                    ? 'Is the main goal hydration, anti-age, sensitive skin support, hair repair, or something else?'
+                    : ($language === 'sl'
+                        ? 'Ali je glavni cilj hidratacija, anti-age, podpora občutljivi koži, obnova las ali nekaj drugega?'
+                        : 'Je li glavni cilj hidratacija, anti-age, podrška osjetljivoj koži, obnova kose ili nešto drugo?'),
+            ];
+        }
     }
 
     if($skip_product_tail) {
@@ -16090,6 +16168,13 @@ function fcc_ai_handle_public_message(array $payload): array {
         && empty($current_condition_keys)
         && !empty($previous_condition_keys)
         && fcc_ai_is_ambiguous_same_problem_followup_request($current_user_message);
+    $is_broad_beauty_followup_clarification = (string) ($conversation->assistant_type ?? '') === 'product_advisor'
+        && fcc_ai_is_broad_beauty_request($current_user_message)
+        && (
+            $previous_user_message !== ''
+            || !empty($current_condition_keys)
+            || !empty($previous_condition_keys)
+        );
 
     if($is_recommendation_correction_followup) {
         $message_for_matching = fcc_ai_build_public_correction_followup_message($previous_user_message);
@@ -16101,6 +16186,11 @@ function fcc_ai_handle_public_message(array $payload): array {
         $recent_user_context = $previous_user_message;
         $used_context_for_matching = true;
         $intent = fcc_ai_detect_public_intent((string) $conversation->assistant_type, $previous_user_message);
+    } elseif($is_broad_beauty_followup_clarification && $previous_user_message !== '') {
+        $message_for_matching = $previous_user_message . "\n\nBeauty clarification needed: " . $current_user_message;
+        $recent_user_context = $previous_user_message;
+        $used_context_for_matching = true;
+        $intent = fcc_ai_detect_public_intent((string) $conversation->assistant_type, $current_user_message);
     }
 
     $should_reset_problem_context = fcc_ai_should_reset_public_problem_context(
@@ -16112,7 +16202,7 @@ function fcc_ai_handle_public_message(array $payload): array {
     $has_high_risk_medical_context = (string) ($conversation->assistant_type ?? '') === 'product_advisor'
         && fcc_ai_has_high_risk_public_medical_context($current_user_message);
 
-    if(($has_high_risk_medical_context || $should_reset_problem_context) && !$is_same_problem_followup_clarification) {
+    if(($has_high_risk_medical_context || $should_reset_problem_context) && !$is_same_problem_followup_clarification && !$is_broad_beauty_followup_clarification) {
         $message_for_matching = $current_user_message;
         $recent_user_context = '';
         $used_context_for_matching = false;
@@ -16130,6 +16220,8 @@ function fcc_ai_handle_public_message(array $payload): array {
         'knowledge_suggestions' => $knowledge_suggestions,
         'correction_follow_up' => $is_recommendation_correction_followup,
         'same_problem_followup_clarification' => $is_same_problem_followup_clarification,
+        'broad_beauty_followup_clarification' => $is_broad_beauty_followup_clarification,
+        'previous_condition_context_exists' => !empty($previous_condition_keys),
         'follow_up_message' => $current_user_message,
     ]);
 
@@ -16226,14 +16318,15 @@ function fcc_ai_handle_public_message(array $payload): array {
         'reset_history' => $should_reset_problem_context,
         'correction_follow_up' => $is_recommendation_correction_followup,
         'same_problem_followup_clarification' => $is_same_problem_followup_clarification,
+        'broad_beauty_followup_clarification' => $is_broad_beauty_followup_clarification,
     ]);
 
     $model_attempt = [
         'success' => false,
-        'reason' => $is_same_problem_followup_clarification ? 'local_same_problem_clarification' : 'local_preview',
+        'reason' => ($is_same_problem_followup_clarification || $is_broad_beauty_followup_clarification) ? 'local_context_clarification' : 'local_preview',
     ];
 
-    if(!$is_same_problem_followup_clarification) {
+    if(!$is_same_problem_followup_clarification && !$is_broad_beauty_followup_clarification) {
         $model_attempt = fcc_ai_try_generate_public_model_reply($conversation, [
             'language' => $resolved_language,
             'scope' => (string) ($conversation->scope ?? 'public_app'),
@@ -16247,6 +16340,7 @@ function fcc_ai_handle_public_message(array $payload): array {
             'reset_history' => $should_reset_problem_context,
             'correction_follow_up' => $is_recommendation_correction_followup,
             'same_problem_followup_clarification' => $is_same_problem_followup_clarification,
+            'broad_beauty_followup_clarification' => $is_broad_beauty_followup_clarification,
             'override_user_message' => $is_recommendation_correction_followup ? $message_for_matching : '',
         ], $assistant);
     }
