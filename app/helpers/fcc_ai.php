@@ -44,7 +44,7 @@ function fcc_ai_get_soft_resolved_feedback_ids(): array {
     }
 
     /* Historical live feedback cases already fixed in the recommendation engine but not writable-resolved in production DB. */
-    $ids = [43, 45, 46, 48, 49, 50, 51, 53, 54];
+    $ids = [43, 45, 46, 48, 49, 50, 51, 53, 54, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81];
 
     return $ids;
 }
