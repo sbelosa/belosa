@@ -2045,6 +2045,237 @@
         gap: 1rem;
     }
 
+    .leader-os-ai-control-counts {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 0.7rem;
+        width: 100%;
+    }
+
+    .leader-os-ai-control-count {
+        border: 1px solid rgba(129, 197, 255, 0.16);
+        border-radius: 0.95rem;
+        padding: 0.75rem 0.85rem;
+        background: rgba(15, 23, 42, 0.28);
+        min-height: 86px;
+    }
+
+    .leader-os-ai-control-count-label {
+        font-size: 0.68rem;
+        letter-spacing: 0.09em;
+        text-transform: uppercase;
+        color: rgba(216, 229, 243, 0.7);
+        margin-bottom: 0.35rem;
+        font-weight: 700;
+    }
+
+    .leader-os-ai-control-count-value {
+        font-size: 1.45rem;
+        line-height: 1;
+        font-weight: 800;
+        color: #f8fbff;
+        margin-bottom: 0.3rem;
+    }
+
+    .leader-os-ai-control-count-note {
+        font-size: 0.76rem;
+        color: rgba(211, 223, 237, 0.68);
+        line-height: 1.3;
+    }
+
+    .leader-os-ai-action-list {
+        display: grid;
+        gap: 0.7rem;
+    }
+
+    .leader-os-ai-action-item {
+        display: flex;
+        gap: 0.7rem;
+        align-items: flex-start;
+        padding: 0.75rem 0.8rem;
+        border-radius: 0.9rem;
+        border: 1px solid rgba(129, 197, 255, 0.14);
+        background: rgba(16, 27, 39, 0.28);
+    }
+
+    .leader-os-ai-action-index {
+        width: 26px;
+        height: 26px;
+        border-radius: 999px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(50, 108, 152, 0.5);
+        border: 1px solid rgba(129, 197, 255, 0.24);
+        color: #f2f7ff;
+        font-size: 0.72rem;
+        font-weight: 800;
+        flex-shrink: 0;
+    }
+
+    .leader-os-ai-topic-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.45rem;
+        margin-top: 0.65rem;
+    }
+
+    .leader-os-ai-topic-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.28rem 0.55rem;
+        border-radius: 999px;
+        border: 1px solid rgba(129, 197, 255, 0.18);
+        background: rgba(20, 34, 49, 0.72);
+        color: #ecf4ff;
+        font-size: 0.72rem;
+        font-weight: 700;
+    }
+
+    .leader-os-ai-queue-list {
+        display: grid;
+        gap: 0.75rem;
+    }
+
+    .leader-os-ai-queue-card {
+        border: 1px solid rgba(129, 197, 255, 0.14);
+        border-radius: 0.95rem;
+        padding: 0.8rem 0.85rem;
+        background: rgba(11, 19, 31, 0.34);
+    }
+
+    .leader-os-ai-queue-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.45rem;
+        margin-top: 0.45rem;
+        color: rgba(214, 226, 239, 0.72);
+        font-size: 0.76rem;
+    }
+
+    .leader-os-ai-thread-preview {
+        margin-top: 0.75rem;
+        padding-left: 0.85rem;
+        border-left: 1px solid rgba(129, 197, 255, 0.16);
+        display: grid;
+        gap: 0.55rem;
+    }
+
+    .leader-os-ai-thread-preview-item {
+        font-size: 0.76rem;
+        line-height: 1.45;
+        color: rgba(229, 238, 249, 0.9);
+    }
+
+    .leader-os-ai-thread-preview-item strong {
+        color: #9adfff;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        font-size: 0.66rem;
+        margin-right: 0.35rem;
+    }
+
+    .leader-os-inbox-tabs {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.6rem;
+        margin-bottom: 1rem;
+    }
+
+    .leader-os-inbox-tab {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        border-radius: 999px;
+        border: 1px solid rgba(129, 197, 255, 0.18);
+        background: rgba(15, 23, 42, 0.68);
+        color: #dbe9f9;
+        padding: 0.42rem 0.8rem;
+        font-size: 0.78rem;
+        font-weight: 700;
+        transition: all 0.18s ease;
+        cursor: pointer;
+    }
+
+    .leader-os-inbox-tab:hover,
+    .leader-os-inbox-tab:focus {
+        color: #ffffff;
+        border-color: rgba(129, 197, 255, 0.34);
+        background: rgba(17, 35, 54, 0.78);
+        outline: none;
+    }
+
+    .leader-os-inbox-tab.is-active {
+        color: #ffffff;
+        border-color: rgba(63, 224, 200, 0.34);
+        background: linear-gradient(180deg, rgba(16, 79, 102, 0.78) 0%, rgba(10, 40, 56, 0.9) 100%);
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.06);
+    }
+
+    .leader-os-inbox-tab-count {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 22px;
+        height: 22px;
+        padding: 0 0.45rem;
+        border-radius: 999px;
+        border: 1px solid rgba(129, 197, 255, 0.18);
+        background: rgba(255, 255, 255, 0.08);
+        color: #f8fbff;
+        font-size: 0.72rem;
+        font-weight: 800;
+    }
+
+    .leader-os-inbox-panel {
+        display: none;
+    }
+
+    .leader-os-inbox-panel.is-active {
+        display: block;
+    }
+
+    .leader-os-thread-card {
+        border-radius: 0.95rem;
+        border: 1px solid rgba(148, 163, 184, 0.12);
+        background: rgba(11, 18, 32, 0.72);
+        padding: 0.85rem 0.9rem;
+    }
+
+    .leader-os-thread-card + .leader-os-thread-card {
+        margin-top: 0.75rem;
+    }
+
+    .leader-os-thread-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 0.8rem;
+        margin-bottom: 0.55rem;
+    }
+
+    .leader-os-thread-card-title {
+        color: #f8fbff;
+        font-weight: 800;
+    }
+
+    .leader-os-thread-card-meta {
+        color: rgba(191, 211, 238, 0.68);
+        font-size: 0.75rem;
+        text-align: right;
+    }
+
+    .leader-os-thread-card-copy {
+        color: rgba(229, 238, 249, 0.92);
+        font-size: 0.82rem;
+        line-height: 1.52;
+    }
+
+    .leader-os-thread-card-copy + .leader-os-thread-card-copy {
+        margin-top: 0.45rem;
+    }
+
     @media (max-width: 1199.98px) {
         .leader-os-primary-grid {
             grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -2052,7 +2283,8 @@
 
         .leader-os-summary-signal-grid,
         .leader-os-summary-detail-grid,
-        .leader-os-grid-4 {
+        .leader-os-grid-4,
+        .leader-os-ai-control-counts {
             grid-template-columns: repeat(2, minmax(0, 1fr));
         }
 
@@ -2079,7 +2311,8 @@
         }
 
         .leader-os-summary-signal-grid,
-        .leader-os-summary-detail-grid {
+        .leader-os-summary-detail-grid,
+        .leader-os-ai-control-counts {
             grid-template-columns: 1fr;
         }
 
@@ -4481,6 +4714,8 @@ $operations_tab_badge_total = (int) (($data->operations['totals']['pending_appro
 
         <?php if(($data->selected_tab ?? 'overview') === 'ai_intelligence'): ?>
             <?php $fcc_ai_team = $data->overview['fcc_ai_team'] ?? []; ?>
+            <?php $fcc_ai_control_tower = $fcc_ai_team['control_tower'] ?? []; ?>
+            <?php $fcc_ai_executive_report = $fcc_ai_team['executive_report'] ?? []; ?>
             <?php $fcc_ai_usage_trend = $fcc_ai_team['usage_trend'] ?? []; ?>
             <?php $fcc_ai_model_routing = $data->fcc_ai_model_routing ?? []; ?>
             <?php
@@ -4543,6 +4778,526 @@ $operations_tab_badge_total = (int) (($data->operations['totals']['pending_appro
                         <strong class="text-white"><?= nr((int) ($fcc_ai_team['totals']['negative_feedback'] ?? 0)) ?></strong>
                         · threadovi za review:
                         <strong class="text-white"><?= nr((int) ($fcc_ai_team['totals']['review_conversations'] ?? 0)) ?></strong>
+                    </div>
+
+                    <div class="leader-os-panel mb-3">
+                        <div class="d-flex justify-content-between align-items-start flex-wrap mb-3" style="gap:1rem;">
+                            <div style="max-width:58rem;">
+                                <div class="text-uppercase small text-muted mb-2">AI Executive Report</div>
+                                <h3 class="h5 mb-1"><?= htmlspecialchars((string) ($fcc_ai_executive_report['headline'] ?? 'AI executive report'), ENT_QUOTES, 'UTF-8') ?></h3>
+                                <div class="text-muted small"><?= htmlspecialchars((string) ($fcc_ai_executive_report['summary'] ?? 'Ovdje dobivaš 3-5 najvažnijih promjena na razini tima bez kopanja po cijelom tabu.'), ENT_QUOTES, 'UTF-8') ?></div>
+                            </div>
+                            <div class="leader-os-inline-note mb-0">Ovaj sloj spaja `review`, `suspektne threadove`, `mentor signal`, `conversion gap` i `lead prilike` u jedan jasan admin digest.</div>
+                        </div>
+
+                        <div class="leader-os-grid-2">
+                            <div class="leader-os-panel">
+                                <div class="text-uppercase small text-muted mb-2">Alerti i prilike</div>
+                                <h3 class="h5 mb-3">Što gori, a što vrijedi gurati</h3>
+                                <?php if(empty($fcc_ai_executive_report['alerts']) && empty($fcc_ai_executive_report['opportunities'])): ?>
+                                    <div class="text-muted small">Kad baza uhvati više svježih AI razgovora, ovdje ćeš dobiti najvažnije timske alerte i prilike.</div>
+                                <?php else: ?>
+                                    <div class="leader-os-ai-queue-list">
+                                        <?php foreach(array_slice((array) ($fcc_ai_executive_report['alerts'] ?? []), 0, 3) as $alert_row): ?>
+                                            <div class="leader-os-ai-queue-card">
+                                                <div class="d-flex justify-content-between align-items-start" style="gap:.75rem;">
+                                                    <strong><?= htmlspecialchars((string) ($alert_row['title'] ?? ''), ENT_QUOTES, 'UTF-8') ?></strong>
+                                                    <span class="leader-os-status-badge <?= htmlspecialchars((string) ($alert_row['severity_class'] ?? 'status-warning'), ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars((string) ($alert_row['severity_label'] ?? 'Alert'), ENT_QUOTES, 'UTF-8') ?></span>
+                                                </div>
+                                                <div class="text-white-50 small mt-2"><?= htmlspecialchars((string) ($alert_row['text'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                                            </div>
+                                        <?php endforeach ?>
+
+                                        <?php foreach(array_slice((array) ($fcc_ai_executive_report['opportunities'] ?? []), 0, 3) as $opportunity_row): ?>
+                                            <div class="leader-os-ai-queue-card">
+                                                <div class="d-flex justify-content-between align-items-start" style="gap:.75rem;">
+                                                    <strong><?= htmlspecialchars((string) ($opportunity_row['title'] ?? ''), ENT_QUOTES, 'UTF-8') ?></strong>
+                                                    <span class="leader-os-status-badge <?= htmlspecialchars((string) ($opportunity_row['severity_class'] ?? 'status-info'), ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars((string) ($opportunity_row['severity_label'] ?? 'Prilika'), ENT_QUOTES, 'UTF-8') ?></span>
+                                                </div>
+                                                <div class="text-white-50 small mt-2"><?= htmlspecialchars((string) ($opportunity_row['text'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                                            </div>
+                                        <?php endforeach ?>
+                                    </div>
+                                <?php endif ?>
+                            </div>
+
+                            <div class="leader-os-panel">
+                                <div class="text-uppercase small text-muted mb-2">Fokus ljudi i promjene</div>
+                                <h3 class="h5 mb-3">Koga otvaraš i što mijenjaš prvo</h3>
+                                <?php if(empty($fcc_ai_executive_report['focus_users']) && empty($fcc_ai_executive_report['next_moves'])): ?>
+                                    <div class="text-muted small">Još nema dovoljno signala za fokus listu i kratki admin digest.</div>
+                                <?php else: ?>
+                                    <?php if(!empty($fcc_ai_executive_report['focus_users'])): ?>
+                                        <div class="leader-os-ai-queue-list mb-3">
+                                            <?php foreach(($fcc_ai_executive_report['focus_users'] ?? []) as $focus_row): ?>
+                                                <div class="leader-os-ai-queue-card">
+                                                    <div class="d-flex justify-content-between align-items-start" style="gap:.75rem;">
+                                                        <?php if(!empty($focus_row['detail_url'])): ?>
+                                                            <a href="<?= $focus_row['detail_url'] ?>" class="leader-os-link"><?= htmlspecialchars((string) ($focus_row['name'] ?? ''), ENT_QUOTES, 'UTF-8') ?></a>
+                                                        <?php else: ?>
+                                                            <strong><?= htmlspecialchars((string) ($focus_row['name'] ?? ''), ENT_QUOTES, 'UTF-8') ?></strong>
+                                                        <?php endif ?>
+                                                        <span class="leader-os-status-badge status-info"><?= htmlspecialchars((string) ($focus_row['label'] ?? 'Fokus'), ENT_QUOTES, 'UTF-8') ?></span>
+                                                    </div>
+                                                    <div class="text-white-50 small mt-2"><?= htmlspecialchars((string) ($focus_row['reason'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                                                </div>
+                                            <?php endforeach ?>
+                                        </div>
+                                    <?php endif ?>
+
+                                    <?php if(!empty($fcc_ai_executive_report['next_moves'])): ?>
+                                        <div class="leader-os-ai-action-list">
+                                            <?php foreach(($fcc_ai_executive_report['next_moves'] ?? []) as $move_index => $move_row): ?>
+                                                <div class="leader-os-ai-action-item">
+                                                    <span class="leader-os-ai-action-index"><?= (int) $move_index + 1 ?></span>
+                                                    <div class="text-white small"><?= htmlspecialchars((string) $move_row, ENT_QUOTES, 'UTF-8') ?></div>
+                                                </div>
+                                            <?php endforeach ?>
+                                        </div>
+                                    <?php endif ?>
+                                <?php endif ?>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="leader-os-panel mt-3" id="leader-os-ai-control-tower">
+                        <div class="d-flex justify-content-between align-items-start flex-wrap mb-3" style="gap:1rem;">
+                            <div style="max-width: 58rem;">
+                                <div class="text-uppercase small text-muted mb-2">AI Control Tower</div>
+                                <h3 class="h5 mb-1"><?= htmlspecialchars((string) ($fcc_ai_control_tower['headline'] ?? 'Team AI control tower'), ENT_QUOTES, 'UTF-8') ?></h3>
+                                <div class="text-muted small"><?= htmlspecialchars((string) ($fcc_ai_control_tower['executive_summary'] ?? 'Ovdje vidiš gdje kvaliteta puca, gdje Coach zapinje i gdje javni AI ima stvaran conversion signal.'), ENT_QUOTES, 'UTF-8') ?></div>
+                            </div>
+                            <div class="leader-os-inline-note mb-0">Ovo je operativni sloj iznad svih AI brojki: tko traži intervenciju, gdje je conversion gap i koje threadove trebaš otvoriti odmah.</div>
+                        </div>
+
+                        <div class="leader-os-ai-control-counts mb-3">
+                            <div class="leader-os-ai-control-count">
+                                <div class="leader-os-ai-control-count-label">Review queue</div>
+                                <div class="leader-os-ai-control-count-value"><?= nr((int) ($fcc_ai_control_tower['counts']['review_threads'] ?? 0)) ?></div>
+                                <div class="leader-os-ai-control-count-note">Otvoreni slučajevi gdje je odgovor već označen za doradu.</div>
+                            </div>
+                            <div class="leader-os-ai-control-count">
+                                <div class="leader-os-ai-control-count-label">Suspektni threadovi</div>
+                                <div class="leader-os-ai-control-count-value"><?= nr((int) ($fcc_ai_control_tower['counts']['suspicious_threads'] ?? 0)) ?></div>
+                                <div class="leader-os-ai-control-count-note">Compliance, prompt-break i osjetljivi razgovori koji traže pregled.</div>
+                            </div>
+                            <div class="leader-os-ai-control-count">
+                                <div class="leader-os-ai-control-count-label">Coach prioriteti</div>
+                                <div class="leader-os-ai-control-count-value"><?= nr((int) ($fcc_ai_control_tower['counts']['coach_priority'] ?? 0)) ?></div>
+                                <div class="leader-os-ai-control-count-note">Suradnici koji traže pomoć, ali još ne pretvaraju savjet u izvedbu.</div>
+                            </div>
+                            <div class="leader-os-ai-control-count">
+                                <div class="leader-os-ai-control-count-label">Javni AI prioriteti</div>
+                                <div class="leader-os-ai-control-count-value"><?= nr((int) ($fcc_ai_control_tower['counts']['public_priority'] ?? 0)) ?></div>
+                                <div class="leader-os-ai-control-count-note">Aplikacije s prometom bez dovoljno jakog CTA-a, leadova ili kvalitete.</div>
+                            </div>
+                            <div class="leader-os-ai-control-count">
+                                <div class="leader-os-ai-control-count-label">Vrući leadovi</div>
+                                <div class="leader-os-ai-control-count-value"><?= nr((int) ($fcc_ai_control_tower['counts']['lead_threads'] ?? 0)) ?></div>
+                                <div class="leader-os-ai-control-count-note">Najjači AI signali koje vrijedi brzo spojiti s mentorstvom i follow-upom.</div>
+                            </div>
+                        </div>
+
+                        <div class="leader-os-panel mb-3">
+                            <div class="text-uppercase small text-muted mb-2">Što mijenjaš sada</div>
+                            <h3 class="h5 mb-3">AI sažetak promjena za admina</h3>
+                            <?php if(empty($fcc_ai_control_tower['admin_changes'])): ?>
+                                <div class="text-muted small">Kad se skupi više team AI signala, ovdje ćeš dobiti jasan redoslijed poteza bez ručnog kopanja po chatu.</div>
+                            <?php else: ?>
+                                <div class="leader-os-ai-action-list">
+                                    <?php foreach(($fcc_ai_control_tower['admin_changes'] ?? []) as $change_index => $change_text): ?>
+                                        <div class="leader-os-ai-action-item">
+                                            <span class="leader-os-ai-action-index"><?= (int) $change_index + 1 ?></span>
+                                            <div class="text-white small"><?= htmlspecialchars((string) $change_text, ENT_QUOTES, 'UTF-8') ?></div>
+                                        </div>
+                                    <?php endforeach ?>
+                                </div>
+                            <?php endif ?>
+                        </div>
+
+                        <div class="leader-os-grid-2">
+                            <div class="leader-os-panel">
+                                <div class="text-uppercase small text-muted mb-2">Coach lane</div>
+                                <h3 class="h5 mb-1">Gdje pomoć zapinje</h3>
+                                <div class="text-muted small mb-2"><?= htmlspecialchars((string) ($fcc_ai_control_tower['coach']['summary'] ?? 'Coach lane još nema dovoljno signala.'), ENT_QUOTES, 'UTF-8') ?></div>
+                                <div class="text-white small mb-2"><strong>Glavni blocker:</strong> <?= htmlspecialchars((string) ($fcc_ai_control_tower['coach']['blocker'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></div>
+                                <div class="text-white-50 small mb-3"><strong>Što radiš:</strong> <?= htmlspecialchars((string) ($fcc_ai_control_tower['coach']['next_admin_move'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></div>
+
+                                <?php if(!empty($fcc_ai_control_tower['coach']['top_topics'])): ?>
+                                    <div class="leader-os-ai-topic-chips mb-3">
+                                        <?php foreach(($fcc_ai_control_tower['coach']['top_topics'] ?? []) as $topic_row): ?>
+                                            <span class="leader-os-ai-topic-chip"><?= htmlspecialchars((string) ($topic_row['label'] ?? ''), ENT_QUOTES, 'UTF-8') ?> · <?= nr((int) ($topic_row['total'] ?? 0)) ?></span>
+                                        <?php endforeach ?>
+                                    </div>
+                                <?php endif ?>
+
+                                <?php if(empty($fcc_ai_control_tower['coach']['queue'])): ?>
+                                    <div class="text-muted small">Trenutno nema Coach prioritetnih slučajeva koji traže poseban admin follow-up.</div>
+                                <?php else: ?>
+                                    <div class="leader-os-ai-queue-list">
+                                        <?php foreach(($fcc_ai_control_tower['coach']['queue'] ?? []) as $queue_row): ?>
+                                            <div class="leader-os-ai-queue-card">
+                                                <div class="d-flex justify-content-between align-items-start" style="gap:.75rem;">
+                                                    <?php if(!empty($queue_row['detail_url'])): ?>
+                                                        <a href="<?= $queue_row['detail_url'] ?>" class="leader-os-link"><?= htmlspecialchars((string) ($queue_row['name'] ?? ''), ENT_QUOTES, 'UTF-8') ?></a>
+                                                    <?php else: ?>
+                                                        <strong><?= htmlspecialchars((string) ($queue_row['name'] ?? ''), ENT_QUOTES, 'UTF-8') ?></strong>
+                                                    <?php endif ?>
+                                                    <span class="leader-os-status-badge status-warning">Coach prioritet</span>
+                                                </div>
+                                                <div class="leader-os-ai-queue-meta">
+                                                    <span>Coach <?= nr((int) ($queue_row['coach_conversations'] ?? 0)) ?></span>
+                                                    <span>Javni AI <?= nr((int) ($queue_row['public_conversations'] ?? 0)) ?></span>
+                                                    <span>Leadovi <?= nr((int) ($queue_row['leads'] ?? 0)) ?></span>
+                                                    <span>Review <?= nr((int) ($queue_row['negative_feedback'] ?? 0)) ?></span>
+                                                </div>
+                                                <div class="text-white-50 small mt-2"><?= htmlspecialchars((string) ($queue_row['reason'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                                            </div>
+                                        <?php endforeach ?>
+                                    </div>
+                                <?php endif ?>
+                            </div>
+
+                            <div class="leader-os-panel">
+                                <div class="text-uppercase small text-muted mb-2">Javni AI lane</div>
+                                <h3 class="h5 mb-1">Gdje conversion i kvaliteta pucaju</h3>
+                                <div class="text-muted small mb-2"><?= htmlspecialchars((string) ($fcc_ai_control_tower['public_ai']['summary'] ?? 'Javni AI lane još nema dovoljno signala.'), ENT_QUOTES, 'UTF-8') ?></div>
+                                <div class="text-white small mb-2"><strong>Glavni blocker:</strong> <?= htmlspecialchars((string) ($fcc_ai_control_tower['public_ai']['blocker'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></div>
+                                <div class="text-white-50 small mb-3"><strong>Što radiš:</strong> <?= htmlspecialchars((string) ($fcc_ai_control_tower['public_ai']['next_admin_move'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></div>
+
+                                <?php if(!empty($fcc_ai_control_tower['public_ai']['top_topics'])): ?>
+                                    <div class="leader-os-ai-topic-chips mb-3">
+                                        <?php foreach(($fcc_ai_control_tower['public_ai']['top_topics'] ?? []) as $topic_row): ?>
+                                            <span class="leader-os-ai-topic-chip"><?= htmlspecialchars((string) ($topic_row['label'] ?? ''), ENT_QUOTES, 'UTF-8') ?> · <?= nr((int) ($topic_row['total'] ?? 0)) ?></span>
+                                        <?php endforeach ?>
+                                    </div>
+                                <?php endif ?>
+
+                                <?php if(empty($fcc_ai_control_tower['public_ai']['queue'])): ?>
+                                    <div class="text-muted small">Trenutno nema javnih AI slučajeva s jasnim conversion gapom ili review signalom.</div>
+                                <?php else: ?>
+                                    <div class="leader-os-ai-queue-list">
+                                        <?php foreach(($fcc_ai_control_tower['public_ai']['queue'] ?? []) as $queue_row): ?>
+                                            <div class="leader-os-ai-queue-card">
+                                                <div class="d-flex justify-content-between align-items-start" style="gap:.75rem;">
+                                                    <?php if(!empty($queue_row['detail_url'])): ?>
+                                                        <a href="<?= $queue_row['detail_url'] ?>" class="leader-os-link"><?= htmlspecialchars((string) ($queue_row['name'] ?? ''), ENT_QUOTES, 'UTF-8') ?></a>
+                                                    <?php else: ?>
+                                                        <strong><?= htmlspecialchars((string) ($queue_row['name'] ?? ''), ENT_QUOTES, 'UTF-8') ?></strong>
+                                                    <?php endif ?>
+                                                    <span class="leader-os-status-badge status-info">Public prioritet</span>
+                                                </div>
+                                                <div class="leader-os-ai-queue-meta">
+                                                    <span>Javni AI <?= nr((int) ($queue_row['public_conversations'] ?? 0)) ?></span>
+                                                    <span>Coach <?= nr((int) ($queue_row['coach_conversations'] ?? 0)) ?></span>
+                                                    <span>Leadovi <?= nr((int) ($queue_row['leads'] ?? 0)) ?></span>
+                                                    <span>Business <?= nr((int) ($queue_row['business_leads'] ?? 0)) ?></span>
+                                                    <span>Review <?= nr((int) ($queue_row['negative_feedback'] ?? 0)) ?></span>
+                                                </div>
+                                                <div class="text-white-50 small mt-2"><?= htmlspecialchars((string) ($queue_row['reason'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                                            </div>
+                                        <?php endforeach ?>
+                                    </div>
+                                <?php endif ?>
+                            </div>
+                        </div>
+
+                        <div class="leader-os-grid-2 mt-3">
+                            <div class="leader-os-panel">
+                                <div class="text-uppercase small text-muted mb-2">Suspektni i review threadovi</div>
+                                <h3 class="h5 mb-3">Najlošiji chatovi koje vrijedi otvoriti sada</h3>
+                                <?php if(empty($fcc_ai_control_tower['suspicious_threads']) && empty($fcc_ai_control_tower['review_threads'])): ?>
+                                    <div class="text-muted small">Trenutno nema suspektnih ni review slučajeva u vrhu AI prometa.</div>
+                                <?php else: ?>
+                                    <?php foreach(array_slice((array) ($fcc_ai_control_tower['suspicious_threads'] ?? []), 0, 3) as $thread_row): ?>
+                                        <details class="leader-os-ai-queue-card mb-2">
+                                            <summary class="d-flex justify-content-between align-items-center" style="cursor:pointer;gap:.75rem;">
+                                                <span>
+                                                    <strong><?= htmlspecialchars((string) (($thread_row['owner_name'] ?? '') ?: 'Suradnik'), ENT_QUOTES, 'UTF-8') ?></strong>
+                                                    · <?= htmlspecialchars((string) ($thread_row['assistant_label'] ?? 'AI'), ENT_QUOTES, 'UTF-8') ?>
+                                                    <?php if(!empty($thread_row['primary_topic_label'])): ?>
+                                                        · <?= htmlspecialchars((string) ($thread_row['primary_topic_label'] ?? ''), ENT_QUOTES, 'UTF-8') ?>
+                                                    <?php endif ?>
+                                                </span>
+                                                <span class="leader-os-status-badge status-warning"><?= htmlspecialchars((string) (($thread_row['suspicion']['top_label'] ?? '') ?: 'Suspektno'), ENT_QUOTES, 'UTF-8') ?></span>
+                                            </summary>
+                                            <div class="leader-os-ai-queue-meta">
+                                                <span><?= htmlspecialchars((string) ($thread_row['scope_label'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></span>
+                                                <?php if(!empty($thread_row['quality_badge']['label'])): ?>
+                                                    <span><?= htmlspecialchars((string) ($thread_row['quality_badge']['label'] ?? ''), ENT_QUOTES, 'UTF-8') ?></span>
+                                                <?php endif ?>
+                                                <?php if(!empty($thread_row['source_label'])): ?>
+                                                    <span><?= htmlspecialchars((string) ($thread_row['source_label'] ?? ''), ENT_QUOTES, 'UTF-8') ?></span>
+                                                <?php endif ?>
+                                            </div>
+                                            <div class="text-white-50 small mt-2"><?= htmlspecialchars((string) (($thread_row['summary'] ?? '') ?: ($thread_row['core_issue'] ?? 'Otvoriti thread i provjeriti što je izazvalo sumnju ili potrebu za reviewem.')), ENT_QUOTES, 'UTF-8') ?></div>
+                                            <?php if(!empty($thread_row['detail_url'])): ?>
+                                                <div class="small mt-2"><a href="<?= $thread_row['detail_url'] ?>" class="leader-os-link">Otvori LOS detalj suradnika</a></div>
+                                            <?php endif ?>
+                                            <?php if(!empty($thread_row['thread_preview'])): ?>
+                                                <div class="leader-os-ai-thread-preview">
+                                                    <?php foreach(($thread_row['thread_preview'] ?? []) as $preview_row): ?>
+                                                        <div class="leader-os-ai-thread-preview-item">
+                                                            <strong><?= htmlspecialchars((string) (($preview_row['role'] ?? '') === 'user' ? 'Korisnik' : (($preview_row['role'] ?? '') === 'assistant' ? 'AI' : 'Sustav')), ENT_QUOTES, 'UTF-8') ?></strong>
+                                                            <?= htmlspecialchars((string) ($preview_row['content'] ?? ''), ENT_QUOTES, 'UTF-8') ?>
+                                                        </div>
+                                                    <?php endforeach ?>
+                                                </div>
+                                            <?php endif ?>
+                                        </details>
+                                    <?php endforeach ?>
+
+                                    <?php foreach(array_slice((array) ($fcc_ai_control_tower['review_threads'] ?? []), 0, 3) as $review_row): ?>
+                                        <details class="leader-os-ai-queue-card mb-2">
+                                            <summary class="d-flex justify-content-between align-items-center" style="cursor:pointer;gap:.75rem;">
+                                                <span>
+                                                    <strong><?= htmlspecialchars((string) ($review_row['owner_name'] ?? 'Suradnik'), ENT_QUOTES, 'UTF-8') ?></strong>
+                                                    · <?= htmlspecialchars((string) ($review_row['assistant_label'] ?? 'AI'), ENT_QUOTES, 'UTF-8') ?>
+                                                    · <?= htmlspecialchars((string) ($review_row['reason_label'] ?? 'Review'), ENT_QUOTES, 'UTF-8') ?>
+                                                </span>
+                                                <span class="leader-os-status-badge status-danger">Review</span>
+                                            </summary>
+                                            <div class="leader-os-ai-queue-meta">
+                                                <?php if(!empty($review_row['scope_label'])): ?>
+                                                    <span><?= htmlspecialchars((string) ($review_row['scope_label'] ?? ''), ENT_QUOTES, 'UTF-8') ?></span>
+                                                <?php endif ?>
+                                                <?php if(!empty($review_row['source_label'])): ?>
+                                                    <span><?= htmlspecialchars((string) ($review_row['source_label'] ?? ''), ENT_QUOTES, 'UTF-8') ?></span>
+                                                <?php endif ?>
+                                                <?php if(!empty($review_row['detail_url'])): ?>
+                                                    <span><a href="<?= $review_row['detail_url'] ?>" class="leader-os-link">Otvori profil</a></span>
+                                                <?php endif ?>
+                                            </div>
+                                            <div class="text-white-50 small mt-2"><?= htmlspecialchars((string) (($review_row['note'] ?? '') ?: ($review_row['message_excerpt'] ?? 'Otvoriti slučaj i doraditi AI odgovor.')), ENT_QUOTES, 'UTF-8') ?></div>
+                                            <?php if(!empty($review_row['thread_preview'])): ?>
+                                                <div class="leader-os-ai-thread-preview">
+                                                    <?php foreach(($review_row['thread_preview'] ?? []) as $preview_row): ?>
+                                                        <div class="leader-os-ai-thread-preview-item">
+                                                            <strong><?= htmlspecialchars((string) (($preview_row['role'] ?? '') === 'user' ? 'Korisnik' : (($preview_row['role'] ?? '') === 'assistant' ? 'AI' : 'Sustav')), ENT_QUOTES, 'UTF-8') ?></strong>
+                                                            <?= htmlspecialchars((string) ($preview_row['content'] ?? ''), ENT_QUOTES, 'UTF-8') ?>
+                                                        </div>
+                                                    <?php endforeach ?>
+                                                </div>
+                                            <?php endif ?>
+                                        </details>
+                                    <?php endforeach ?>
+                                <?php endif ?>
+                            </div>
+
+                            <div class="leader-os-panel">
+                                <div class="text-uppercase small text-muted mb-2">Lead / conversion prozor</div>
+                                <h3 class="h5 mb-3">Koga vrijedi otvoriti dok je signal vruć</h3>
+                                <?php if(empty($fcc_ai_control_tower['lead_threads'])): ?>
+                                    <div class="text-muted small">Trenutno nema vrućih AI leadova u vrhu perioda.</div>
+                                <?php else: ?>
+                                    <div class="leader-os-ai-queue-list">
+                                        <?php foreach(($fcc_ai_control_tower['lead_threads'] ?? []) as $lead_row): ?>
+                                            <div class="leader-os-ai-queue-card">
+                                                <div class="d-flex justify-content-between align-items-start" style="gap:.75rem;">
+                                                    <?php if(!empty($lead_row['detail_url'])): ?>
+                                                        <a href="<?= $lead_row['detail_url'] ?>" class="leader-os-link"><?= htmlspecialchars((string) ($lead_row['owner_name'] ?? ''), ENT_QUOTES, 'UTF-8') ?></a>
+                                                    <?php else: ?>
+                                                        <strong><?= htmlspecialchars((string) ($lead_row['owner_name'] ?? ''), ENT_QUOTES, 'UTF-8') ?></strong>
+                                                    <?php endif ?>
+                                                    <span class="leader-os-status-badge status-success"><?= nr((int) ($lead_row['lead_score'] ?? 0)) ?></span>
+                                                </div>
+                                                <div class="leader-os-ai-queue-meta">
+                                                    <span><?= htmlspecialchars((string) ($lead_row['assistant_label'] ?? ''), ENT_QUOTES, 'UTF-8') ?></span>
+                                                    <span><?= htmlspecialchars((string) ($lead_row['lead_type_label'] ?? ''), ENT_QUOTES, 'UTF-8') ?></span>
+                                                    <span><?= htmlspecialchars((string) ($lead_row['scope_label'] ?? ''), ENT_QUOTES, 'UTF-8') ?></span>
+                                                </div>
+                                                <div class="text-white-50 small mt-2">
+                                                    <?= htmlspecialchars((string) (($lead_row['contact_name'] ?? '') !== '' ? $lead_row['contact_name'] : '-'), ENT_QUOTES, 'UTF-8') ?>
+                                                    <?php if(!empty($lead_row['contact_value'])): ?>
+                                                        · <?= htmlspecialchars((string) ($lead_row['contact_value'] ?? ''), ENT_QUOTES, 'UTF-8') ?>
+                                                    <?php endif ?>
+                                                </div>
+                                            </div>
+                                        <?php endforeach ?>
+                                    </div>
+                                <?php endif ?>
+                            </div>
+                        </div>
+
+                        <?php $team_inbox = $fcc_ai_control_tower['inbox'] ?? []; ?>
+                        <?php $team_inbox_tabs = array_values((array) ($team_inbox['tabs'] ?? [])); ?>
+                        <?php $team_inbox_active_tab = !empty($team_inbox_tabs[0]['key']) ? (string) $team_inbox_tabs[0]['key'] : 'coach'; ?>
+                        <div class="leader-os-panel mt-3" id="leader-os-ai-team-inbox">
+                            <div class="d-flex justify-content-between align-items-start flex-wrap mb-3" style="gap:1rem;">
+                                <div>
+                                    <div class="text-uppercase small text-muted mb-2">Team Chat Review Inbox</div>
+                                    <h3 class="h5 mb-1">Svi važni AI threadovi na jednom mjestu</h3>
+                                    <div class="text-muted small">Ovdje bez otvaranja svakog suradnika možeš odvojeno pregledati Coach threadove, javne AI razgovore, suspektne slučajeve, review queue i lead/conversion signal.</div>
+                                </div>
+                                <div class="leader-os-inline-note mb-0">Kad prepoznaš zanimljiv slučaj, klik na ime vodi ravno na LOS detalj tog suradnika.</div>
+                            </div>
+
+                            <div class="leader-os-inbox-tabs" data-inbox-root="leader-os-ai-team-inbox">
+                                <?php foreach($team_inbox_tabs as $tab_row): ?>
+                                    <?php $tab_key = (string) ($tab_row['key'] ?? ''); ?>
+                                    <button type="button" class="leader-os-inbox-tab <?= $tab_key === $team_inbox_active_tab ? 'is-active' : '' ?>" data-inbox-target="<?= htmlspecialchars($tab_key, ENT_QUOTES, 'UTF-8') ?>">
+                                        <span><?= htmlspecialchars((string) ($tab_row['label'] ?? $tab_key), ENT_QUOTES, 'UTF-8') ?></span>
+                                        <span class="leader-os-inbox-tab-count"><?= nr((int) ($tab_row['count'] ?? 0)) ?></span>
+                                    </button>
+                                <?php endforeach ?>
+                            </div>
+
+                            <div class="leader-os-inbox-panel <?= $team_inbox_active_tab === 'coach' ? 'is-active' : '' ?>" data-inbox-panel="coach">
+                                <?php if(empty($team_inbox['coach_threads'])): ?>
+                                    <div class="text-muted small">Trenutno nema Coach threadova u vrhu prometa.</div>
+                                <?php else: ?>
+                                    <?php foreach(($team_inbox['coach_threads'] ?? []) as $thread_row): ?>
+                                        <div class="leader-os-thread-card">
+                                            <div class="leader-os-thread-card-header">
+                                                <div class="leader-os-thread-card-title">
+                                                    <?php if(!empty($thread_row['detail_url'])): ?>
+                                                        <a href="<?= $thread_row['detail_url'] ?>" class="leader-os-link"><?= htmlspecialchars((string) (($thread_row['owner_name'] ?? '') ?: 'Suradnik'), ENT_QUOTES, 'UTF-8') ?></a>
+                                                    <?php else: ?>
+                                                        <?= htmlspecialchars((string) (($thread_row['owner_name'] ?? '') ?: 'Suradnik'), ENT_QUOTES, 'UTF-8') ?>
+                                                    <?php endif ?>
+                                                    <?php if(!empty($thread_row['primary_topic_label'])): ?>
+                                                        <span class="text-white-50">· <?= htmlspecialchars((string) ($thread_row['primary_topic_label'] ?? ''), ENT_QUOTES, 'UTF-8') ?></span>
+                                                    <?php endif ?>
+                                                </div>
+                                                <div class="leader-os-thread-card-meta">
+                                                    <?= htmlspecialchars((string) ($thread_row['quality_badge']['label'] ?? 'Coach'), ENT_QUOTES, 'UTF-8') ?><br />
+                                                    <?= \Altum\Date::get((string) ($thread_row['activity_at'] ?? ''), 2) ?>
+                                                </div>
+                                            </div>
+                                            <div class="leader-os-thread-card-copy"><?= htmlspecialchars((string) (($thread_row['summary'] ?? '') ?: ($thread_row['last_user_preview'] ?? '')), ENT_QUOTES, 'UTF-8') ?></div>
+                                            <?php if(!empty($thread_row['core_issue'])): ?>
+                                                <div class="leader-os-thread-card-copy"><strong>Zapinjanje:</strong> <?= htmlspecialchars((string) ($thread_row['core_issue'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                                            <?php endif ?>
+                                        </div>
+                                    <?php endforeach ?>
+                                <?php endif ?>
+                            </div>
+
+                            <div class="leader-os-inbox-panel <?= $team_inbox_active_tab === 'public_ai' ? 'is-active' : '' ?>" data-inbox-panel="public_ai">
+                                <?php if(empty($team_inbox['public_threads'])): ?>
+                                    <div class="text-muted small">Trenutno nema javnih AI threadova u vrhu prometa.</div>
+                                <?php else: ?>
+                                    <?php foreach(($team_inbox['public_threads'] ?? []) as $thread_row): ?>
+                                        <div class="leader-os-thread-card">
+                                            <div class="leader-os-thread-card-header">
+                                                <div class="leader-os-thread-card-title">
+                                                    <?php if(!empty($thread_row['detail_url'])): ?>
+                                                        <a href="<?= $thread_row['detail_url'] ?>" class="leader-os-link"><?= htmlspecialchars((string) (($thread_row['owner_name'] ?? '') ?: 'Suradnik'), ENT_QUOTES, 'UTF-8') ?></a>
+                                                    <?php else: ?>
+                                                        <?= htmlspecialchars((string) (($thread_row['owner_name'] ?? '') ?: 'Suradnik'), ENT_QUOTES, 'UTF-8') ?>
+                                                    <?php endif ?>
+                                                    <?php if(!empty($thread_row['primary_topic_label'])): ?>
+                                                        <span class="text-white-50">· <?= htmlspecialchars((string) ($thread_row['primary_topic_label'] ?? ''), ENT_QUOTES, 'UTF-8') ?></span>
+                                                    <?php endif ?>
+                                                </div>
+                                                <div class="leader-os-thread-card-meta">
+                                                    <?= htmlspecialchars((string) ($thread_row['outcome_badge']['label'] ?? ($thread_row['quality_badge']['label'] ?? 'Javni AI')), ENT_QUOTES, 'UTF-8') ?><br />
+                                                    <?= \Altum\Date::get((string) ($thread_row['activity_at'] ?? ''), 2) ?>
+                                                </div>
+                                            </div>
+                                            <div class="leader-os-thread-card-copy"><?= htmlspecialchars((string) (($thread_row['summary'] ?? '') ?: ($thread_row['last_user_preview'] ?? '')), ENT_QUOTES, 'UTF-8') ?></div>
+                                            <?php if(!empty($thread_row['core_issue'])): ?>
+                                                <div class="leader-os-thread-card-copy"><strong>Glavni problem:</strong> <?= htmlspecialchars((string) ($thread_row['core_issue'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                                            <?php endif ?>
+                                            <?php if(!empty($thread_row['source_label'])): ?>
+                                                <div class="leader-os-thread-card-copy"><strong>Izvor:</strong> <?= htmlspecialchars((string) ($thread_row['source_label'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                                            <?php endif ?>
+                                        </div>
+                                    <?php endforeach ?>
+                                <?php endif ?>
+                            </div>
+
+                            <div class="leader-os-inbox-panel <?= $team_inbox_active_tab === 'suspicious' ? 'is-active' : '' ?>" data-inbox-panel="suspicious">
+                                <?php if(empty($team_inbox['suspicious_threads'])): ?>
+                                    <div class="text-muted small">Trenutno nema suspektnih AI threadova u vrhu perioda.</div>
+                                <?php else: ?>
+                                    <?php foreach(($team_inbox['suspicious_threads'] ?? []) as $thread_row): ?>
+                                        <div class="leader-os-thread-card">
+                                            <div class="leader-os-thread-card-header">
+                                                <div class="leader-os-thread-card-title">
+                                                    <?php if(!empty($thread_row['detail_url'])): ?>
+                                                        <a href="<?= $thread_row['detail_url'] ?>" class="leader-os-link"><?= htmlspecialchars((string) (($thread_row['owner_name'] ?? '') ?: 'Suradnik'), ENT_QUOTES, 'UTF-8') ?></a>
+                                                    <?php else: ?>
+                                                        <?= htmlspecialchars((string) (($thread_row['owner_name'] ?? '') ?: 'Suradnik'), ENT_QUOTES, 'UTF-8') ?>
+                                                    <?php endif ?>
+                                                    <?php if(!empty($thread_row['primary_topic_label'])): ?>
+                                                        <span class="text-white-50">· <?= htmlspecialchars((string) ($thread_row['primary_topic_label'] ?? ''), ENT_QUOTES, 'UTF-8') ?></span>
+                                                    <?php endif ?>
+                                                </div>
+                                                <div class="leader-os-thread-card-meta">
+                                                    <?= htmlspecialchars((string) (($thread_row['suspicion']['top_label'] ?? '') ?: 'Suspektno'), ENT_QUOTES, 'UTF-8') ?><br />
+                                                    <?= \Altum\Date::get((string) ($thread_row['activity_at'] ?? ''), 2) ?>
+                                                </div>
+                                            </div>
+                                            <div class="leader-os-thread-card-copy"><?= htmlspecialchars((string) (($thread_row['core_issue'] ?? '') ?: ($thread_row['summary'] ?? '')), ENT_QUOTES, 'UTF-8') ?></div>
+                                            <?php if(!empty($thread_row['suspicion']['flags'])): ?>
+                                                <div class="leader-os-thread-card-copy"><strong>Rizici:</strong> <?= htmlspecialchars((string) implode(', ', array_map(static function($flag) { return (string) ($flag['label'] ?? 'signal'); }, (array) ($thread_row['suspicion']['flags'] ?? []))), ENT_QUOTES, 'UTF-8') ?></div>
+                                            <?php endif ?>
+                                        </div>
+                                    <?php endforeach ?>
+                                <?php endif ?>
+                            </div>
+
+                            <div class="leader-os-inbox-panel <?= $team_inbox_active_tab === 'review' ? 'is-active' : '' ?>" data-inbox-panel="review">
+                                <?php if(empty($team_inbox['review_threads'])): ?>
+                                    <div class="text-muted small">Trenutno nema review slučajeva u vrhu perioda.</div>
+                                <?php else: ?>
+                                    <?php foreach(($team_inbox['review_threads'] ?? []) as $review_row): ?>
+                                        <div class="leader-os-thread-card">
+                                            <div class="leader-os-thread-card-header">
+                                                <div class="leader-os-thread-card-title">
+                                                    <?= htmlspecialchars((string) (($review_row['owner_name'] ?? '') ?: 'Suradnik'), ENT_QUOTES, 'UTF-8') ?>
+                                                    <span class="text-white-50">· <?= htmlspecialchars((string) (($review_row['reason_label'] ?? '') ?: 'Review'), ENT_QUOTES, 'UTF-8') ?></span>
+                                                </div>
+                                                <div class="leader-os-thread-card-meta">
+                                                    <?= htmlspecialchars((string) (($review_row['assistant_label'] ?? '') ?: 'AI'), ENT_QUOTES, 'UTF-8') ?><br />
+                                                    <?= \Altum\Date::get((string) ($review_row['datetime'] ?? ''), 2) ?>
+                                                </div>
+                                            </div>
+                                            <div class="leader-os-thread-card-copy"><?= htmlspecialchars((string) ($review_row['message_excerpt'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                                            <?php if(!empty($review_row['note'])): ?>
+                                                <div class="leader-os-thread-card-copy"><strong>Napomena:</strong> <?= htmlspecialchars((string) ($review_row['note'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                                            <?php endif ?>
+                                            <?php if(!empty($review_row['source_label'])): ?>
+                                                <div class="leader-os-thread-card-copy"><strong>Izvor:</strong> <?= htmlspecialchars((string) ($review_row['source_label'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                                            <?php endif ?>
+                                        </div>
+                                    <?php endforeach ?>
+                                <?php endif ?>
+                            </div>
+
+                            <div class="leader-os-inbox-panel <?= $team_inbox_active_tab === 'leads' ? 'is-active' : '' ?>" data-inbox-panel="leads">
+                                <?php if(empty($team_inbox['lead_threads'])): ?>
+                                    <div class="text-muted small">Trenutno nema lead/conversion threadova u vrhu perioda.</div>
+                                <?php else: ?>
+                                    <?php foreach(($team_inbox['lead_threads'] ?? []) as $lead_row): ?>
+                                        <div class="leader-os-thread-card">
+                                            <div class="leader-os-thread-card-header">
+                                                <div class="leader-os-thread-card-title">
+                                                    <?php if(!empty($lead_row['detail_url'])): ?>
+                                                        <a href="<?= $lead_row['detail_url'] ?>" class="leader-os-link"><?= htmlspecialchars((string) (($lead_row['owner_name'] ?? '') ?: 'Suradnik'), ENT_QUOTES, 'UTF-8') ?></a>
+                                                    <?php else: ?>
+                                                        <?= htmlspecialchars((string) (($lead_row['owner_name'] ?? '') ?: 'Suradnik'), ENT_QUOTES, 'UTF-8') ?>
+                                                    <?php endif ?>
+                                                    <span class="text-white-50">· <?= htmlspecialchars((string) (($lead_row['lead_type_label'] ?? '') ?: 'AI lead'), ENT_QUOTES, 'UTF-8') ?></span>
+                                                </div>
+                                                <div class="leader-os-thread-card-meta">
+                                                    Score <?= nr((int) ($lead_row['lead_score'] ?? 0)) ?><br />
+                                                    <?= htmlspecialchars((string) (($lead_row['assistant_label'] ?? '') ?: 'AI'), ENT_QUOTES, 'UTF-8') ?>
+                                                </div>
+                                            </div>
+                                            <div class="leader-os-thread-card-copy">
+                                                <?= htmlspecialchars((string) (($lead_row['contact_name'] ?? '') !== '' ? $lead_row['contact_name'] : '-'), ENT_QUOTES, 'UTF-8') ?>
+                                                <?php if(!empty($lead_row['contact_value'])): ?>
+                                                    · <?= htmlspecialchars((string) ($lead_row['contact_value'] ?? ''), ENT_QUOTES, 'UTF-8') ?>
+                                                <?php endif ?>
+                                            </div>
+                                            <div class="leader-os-thread-card-copy"><?= htmlspecialchars((string) ($lead_row['scope_label'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                                        </div>
+                                    <?php endforeach ?>
+                                <?php endif ?>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="leader-os-panel leader-os-trend-panel mt-3" id="leader-os-ai-usage-root">
@@ -7539,6 +8294,29 @@ document.addEventListener('DOMContentLoaded', function () {
             this.textContent = shouldOpen
                 ? (this.getAttribute('data-close-label') || 'Sakrij')
                 : (this.getAttribute('data-open-label') || 'Otvori');
+        });
+    });
+
+    document.querySelectorAll('[data-inbox-root]').forEach(inboxRoot => {
+        const tabs = Array.from(inboxRoot.querySelectorAll('.leader-os-inbox-tab'));
+        const panels = Array.from(inboxRoot.parentElement.querySelectorAll('.leader-os-inbox-panel'));
+
+        const activateInboxTab = targetKey => {
+            tabs.forEach(tab => {
+                const isActive = tab.getAttribute('data-inbox-target') === targetKey;
+                tab.classList.toggle('is-active', isActive);
+            });
+
+            panels.forEach(panel => {
+                const isActive = panel.getAttribute('data-inbox-panel') === targetKey;
+                panel.classList.toggle('is-active', isActive);
+            });
+        };
+
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                activateInboxTab(tab.getAttribute('data-inbox-target') || '');
+            });
         });
     });
 

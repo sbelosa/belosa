@@ -1095,6 +1095,50 @@ class OpsReadonly extends Controller {
             'webinar_candidates' => array_values(array_slice((array) ($team_payload['webinar_candidates'] ?? []), 0, 8)),
             'assistant_performance' => array_values(array_slice((array) ($team_payload['assistant_performance'] ?? []), 0, 8)),
             'help_watchlist' => array_values(array_slice((array) ($team_payload['help_watchlist'] ?? []), 0, 8)),
+            'control_tower' => [
+                'headline' => (string) ($team_payload['control_tower']['headline'] ?? ''),
+                'executive_summary' => (string) ($team_payload['control_tower']['executive_summary'] ?? ''),
+                'admin_changes' => array_values(array_slice((array) ($team_payload['control_tower']['admin_changes'] ?? []), 0, 6)),
+                'counts' => [
+                    'review_threads' => (int) ($team_payload['control_tower']['counts']['review_threads'] ?? 0),
+                    'suspicious_threads' => (int) ($team_payload['control_tower']['counts']['suspicious_threads'] ?? 0),
+                    'coach_priority' => (int) ($team_payload['control_tower']['counts']['coach_priority'] ?? 0),
+                    'public_priority' => (int) ($team_payload['control_tower']['counts']['public_priority'] ?? 0),
+                    'lead_threads' => (int) ($team_payload['control_tower']['counts']['lead_threads'] ?? 0),
+                ],
+                'coach' => [
+                    'summary' => (string) ($team_payload['control_tower']['coach']['summary'] ?? ''),
+                    'blocker' => (string) ($team_payload['control_tower']['coach']['blocker'] ?? ''),
+                    'next_admin_move' => (string) ($team_payload['control_tower']['coach']['next_admin_move'] ?? ''),
+                    'top_topics' => array_values(array_slice((array) ($team_payload['control_tower']['coach']['top_topics'] ?? []), 0, 4)),
+                    'queue' => array_values(array_slice((array) ($team_payload['control_tower']['coach']['queue'] ?? []), 0, 5)),
+                ],
+                'public_ai' => [
+                    'summary' => (string) ($team_payload['control_tower']['public_ai']['summary'] ?? ''),
+                    'blocker' => (string) ($team_payload['control_tower']['public_ai']['blocker'] ?? ''),
+                    'next_admin_move' => (string) ($team_payload['control_tower']['public_ai']['next_admin_move'] ?? ''),
+                    'top_topics' => array_values(array_slice((array) ($team_payload['control_tower']['public_ai']['top_topics'] ?? []), 0, 4)),
+                    'queue' => array_values(array_slice((array) ($team_payload['control_tower']['public_ai']['queue'] ?? []), 0, 5)),
+                ],
+                'suspicious_threads' => array_values(array_slice((array) ($team_payload['control_tower']['suspicious_threads'] ?? []), 0, 5)),
+                'lead_threads' => array_values(array_slice((array) ($team_payload['control_tower']['lead_threads'] ?? []), 0, 5)),
+                'inbox' => [
+                    'tabs' => array_values(array_slice((array) ($team_payload['control_tower']['inbox']['tabs'] ?? []), 0, 5)),
+                    'coach_threads' => array_values(array_slice((array) ($team_payload['control_tower']['inbox']['coach_threads'] ?? []), 0, 5)),
+                    'public_threads' => array_values(array_slice((array) ($team_payload['control_tower']['inbox']['public_threads'] ?? []), 0, 5)),
+                    'suspicious_threads' => array_values(array_slice((array) ($team_payload['control_tower']['inbox']['suspicious_threads'] ?? []), 0, 5)),
+                    'review_threads' => array_values(array_slice((array) ($team_payload['control_tower']['inbox']['review_threads'] ?? []), 0, 5)),
+                    'lead_threads' => array_values(array_slice((array) ($team_payload['control_tower']['inbox']['lead_threads'] ?? []), 0, 5)),
+                ],
+            ],
+            'executive_report' => [
+                'headline' => (string) ($team_payload['executive_report']['headline'] ?? ''),
+                'summary' => (string) ($team_payload['executive_report']['summary'] ?? ''),
+                'alerts' => array_values(array_slice((array) ($team_payload['executive_report']['alerts'] ?? []), 0, 5)),
+                'opportunities' => array_values(array_slice((array) ($team_payload['executive_report']['opportunities'] ?? []), 0, 5)),
+                'focus_users' => array_values(array_slice((array) ($team_payload['executive_report']['focus_users'] ?? []), 0, 4)),
+                'next_moves' => array_values(array_slice((array) ($team_payload['executive_report']['next_moves'] ?? []), 0, 5)),
+            ],
         ];
     }
 

@@ -6644,6 +6644,113 @@ class AdminLeaderOperatingSystem extends Controller {
                         'note' => (string) ($feedback['note'] ?? ''),
                     ];
                 }, array_slice((array) ($fcc_ai_team['recent_negative_feedback'] ?? []), 0, 6)),
+                'control_tower' => [
+                    'headline' => (string) (($fcc_ai_team['control_tower']['headline'] ?? '') ?: ''),
+                    'executive_summary' => (string) (($fcc_ai_team['control_tower']['executive_summary'] ?? '') ?: ''),
+                    'admin_changes' => array_slice(array_values(array_map(static function($item) {
+                        return (string) $item;
+                    }, (array) ($fcc_ai_team['control_tower']['admin_changes'] ?? []))), 0, 6),
+                    'counts' => [
+                        'review_threads' => (int) ($fcc_ai_team['control_tower']['counts']['review_threads'] ?? 0),
+                        'suspicious_threads' => (int) ($fcc_ai_team['control_tower']['counts']['suspicious_threads'] ?? 0),
+                        'coach_priority' => (int) ($fcc_ai_team['control_tower']['counts']['coach_priority'] ?? 0),
+                        'public_priority' => (int) ($fcc_ai_team['control_tower']['counts']['public_priority'] ?? 0),
+                        'lead_threads' => (int) ($fcc_ai_team['control_tower']['counts']['lead_threads'] ?? 0),
+                    ],
+                    'coach' => [
+                        'summary' => (string) ($fcc_ai_team['control_tower']['coach']['summary'] ?? ''),
+                        'blocker' => (string) ($fcc_ai_team['control_tower']['coach']['blocker'] ?? ''),
+                        'next_admin_move' => (string) ($fcc_ai_team['control_tower']['coach']['next_admin_move'] ?? ''),
+                        'top_topics' => array_slice((array) ($fcc_ai_team['control_tower']['coach']['top_topics'] ?? []), 0, 4),
+                        'queue' => array_map(static function($row) {
+                            return [
+                                'name' => (string) ($row['name'] ?? ''),
+                                'coach_conversations' => (int) ($row['coach_conversations'] ?? 0),
+                                'public_conversations' => (int) ($row['public_conversations'] ?? 0),
+                                'leads' => (int) ($row['leads'] ?? 0),
+                                'negative_feedback' => (int) ($row['negative_feedback'] ?? 0),
+                                'reason' => (string) ($row['reason'] ?? ''),
+                            ];
+                        }, array_slice((array) ($fcc_ai_team['control_tower']['coach']['queue'] ?? []), 0, 5)),
+                    ],
+                    'public_ai' => [
+                        'summary' => (string) ($fcc_ai_team['control_tower']['public_ai']['summary'] ?? ''),
+                        'blocker' => (string) ($fcc_ai_team['control_tower']['public_ai']['blocker'] ?? ''),
+                        'next_admin_move' => (string) ($fcc_ai_team['control_tower']['public_ai']['next_admin_move'] ?? ''),
+                        'top_topics' => array_slice((array) ($fcc_ai_team['control_tower']['public_ai']['top_topics'] ?? []), 0, 4),
+                        'queue' => array_map(static function($row) {
+                            return [
+                                'name' => (string) ($row['name'] ?? ''),
+                                'coach_conversations' => (int) ($row['coach_conversations'] ?? 0),
+                                'public_conversations' => (int) ($row['public_conversations'] ?? 0),
+                                'leads' => (int) ($row['leads'] ?? 0),
+                                'business_leads' => (int) ($row['business_leads'] ?? 0),
+                                'negative_feedback' => (int) ($row['negative_feedback'] ?? 0),
+                                'reason' => (string) ($row['reason'] ?? ''),
+                            ];
+                        }, array_slice((array) ($fcc_ai_team['control_tower']['public_ai']['queue'] ?? []), 0, 5)),
+                    ],
+                    'suspicious_threads' => array_map(static function($row) {
+                        return [
+                            'owner_name' => (string) ($row['owner_name'] ?? ''),
+                            'assistant_label' => (string) ($row['assistant_label'] ?? ''),
+                            'primary_topic_label' => (string) ($row['primary_topic_label'] ?? ''),
+                            'scope_label' => (string) ($row['scope_label'] ?? ''),
+                            'summary' => (string) ($row['summary'] ?? ''),
+                            'core_issue' => (string) ($row['core_issue'] ?? ''),
+                            'suspicion_label' => (string) ($row['suspicion']['top_label'] ?? ''),
+                            'suspicion_score' => (int) ($row['suspicion']['score'] ?? 0),
+                        ];
+                    }, array_slice((array) ($fcc_ai_team['control_tower']['suspicious_threads'] ?? []), 0, 5)),
+                    'lead_threads' => array_map(static function($row) {
+                        return [
+                            'owner_name' => (string) ($row['owner_name'] ?? ''),
+                            'assistant_label' => (string) ($row['assistant_label'] ?? ''),
+                            'lead_type_label' => (string) ($row['lead_type_label'] ?? ''),
+                            'lead_score' => (int) ($row['lead_score'] ?? 0),
+                            'contact_name' => (string) ($row['contact_name'] ?? ''),
+                            'contact_value' => (string) ($row['contact_value'] ?? ''),
+                        ];
+                    }, array_slice((array) ($fcc_ai_team['control_tower']['lead_threads'] ?? []), 0, 5)),
+                    'inbox' => [
+                        'tabs' => array_slice((array) ($fcc_ai_team['control_tower']['inbox']['tabs'] ?? []), 0, 5),
+                        'coach_threads' => array_map(static function($row) {
+                            return [
+                                'owner_name' => (string) ($row['owner_name'] ?? ''),
+                                'assistant_label' => (string) ($row['assistant_label'] ?? ''),
+                                'primary_topic_label' => (string) ($row['primary_topic_label'] ?? ''),
+                                'summary' => (string) ($row['summary'] ?? ''),
+                                'core_issue' => (string) ($row['core_issue'] ?? ''),
+                                'activity_at' => (string) ($row['activity_at'] ?? ''),
+                            ];
+                        }, array_slice((array) ($fcc_ai_team['control_tower']['inbox']['coach_threads'] ?? []), 0, 5)),
+                        'public_threads' => array_map(static function($row) {
+                            return [
+                                'owner_name' => (string) ($row['owner_name'] ?? ''),
+                                'assistant_label' => (string) ($row['assistant_label'] ?? ''),
+                                'primary_topic_label' => (string) ($row['primary_topic_label'] ?? ''),
+                                'summary' => (string) ($row['summary'] ?? ''),
+                                'core_issue' => (string) ($row['core_issue'] ?? ''),
+                                'source_label' => (string) ($row['source_label'] ?? ''),
+                                'activity_at' => (string) ($row['activity_at'] ?? ''),
+                            ];
+                        }, array_slice((array) ($fcc_ai_team['control_tower']['inbox']['public_threads'] ?? []), 0, 5)),
+                    ],
+                ],
+                'executive_report' => [
+                    'headline' => (string) ($fcc_ai_team['executive_report']['headline'] ?? ''),
+                    'summary' => (string) ($fcc_ai_team['executive_report']['summary'] ?? ''),
+                    'alerts' => array_slice((array) ($fcc_ai_team['executive_report']['alerts'] ?? []), 0, 5),
+                    'opportunities' => array_slice((array) ($fcc_ai_team['executive_report']['opportunities'] ?? []), 0, 5),
+                    'focus_users' => array_map(static function($row) {
+                        return [
+                            'name' => (string) ($row['name'] ?? ''),
+                            'label' => (string) ($row['label'] ?? ''),
+                            'reason' => (string) ($row['reason'] ?? ''),
+                        ];
+                    }, array_slice((array) ($fcc_ai_team['executive_report']['focus_users'] ?? []), 0, 4)),
+                    'next_moves' => array_values(array_slice((array) ($fcc_ai_team['executive_report']['next_moves'] ?? []), 0, 5)),
+                ],
             ],
             'fraud' => [
                 'totals' => $fraud_dashboard['totals'] ?? [],
@@ -8225,6 +8332,9 @@ class AdminLeaderOperatingSystem extends Controller {
                     'total' => 'Ukupno',
                 ],
             ];
+        $fcc_ai_team['executive_report'] = !empty($fcc_ai_team['is_available'])
+            ? fcc_ai_build_team_executive_report_payload($fcc_ai_team, $queue_rows, \Altum\Language::$code, 5)
+            : [];
 
         $kpi_drilldowns = $this->get_kpi_drilldowns_payload($all_rows, $suspicious_clicks);
         $primary_team_kpis = $this->get_primary_team_kpis_payload($all_rows, $totals, $period_key);

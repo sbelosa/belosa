@@ -14519,6 +14519,205 @@ function fcc_ai_get_conversation_role_preview(int $conversation_id, string $role
     return $message ? fcc_ai_excerpt((string) ($message->content ?? ''), $limit) : '';
 }
 
+function fcc_ai_get_conversation_insight_map(array $conversation_ids): array {
+    if(empty($conversation_ids) || !fcc_ai_tables_ready()) {
+        return [];
+    }
+
+    $conversation_ids = array_values(array_unique(array_filter(array_map('intval', $conversation_ids), static function(int $conversation_id): bool {
+        return $conversation_id > 0;
+    })));
+
+    if(empty($conversation_ids)) {
+        return [];
+    }
+
+    $map = [];
+    $result = database()->query("SELECT
+            `fcc_ai_conversation_id`,
+            `primary_topic`,
+            `primary_topic_label`,
+            `intent`,
+            `summary`,
+            `core_issue`,
+            `outcome_signal`,
+            `quality_signal`,
+            `needs_review`,
+            `meta`,
+            `last_datetime`
+        FROM `fcc_ai_conversation_insights`
+        WHERE `fcc_ai_conversation_id` IN (" . implode(',', $conversation_ids) . ")");
+
+    while($result && $row = $result->fetch_assoc()) {
+        $conversation_id = (int) ($row['fcc_ai_conversation_id'] ?? 0);
+
+        if($conversation_id <= 0) {
+            continue;
+        }
+
+        $row['needs_review'] = !empty($row['needs_review']);
+        $row['meta'] = fcc_ai_to_array($row['meta'] ?? '{}');
+        $map[$conversation_id] = $row;
+    }
+
+    return $map;
+}
+
+function fcc_ai_get_quality_signal_badge(string $quality_signal, string $language = 'hr'): array {
+    $quality_signal = trim((string) $quality_signal);
+    $language = fcc_ai_resolve_public_reply_language($language);
+
+    return match($quality_signal) {
+        'needs_review' => [
+            'label' => $language === 'en' ? 'Needs review' : 'Traži provjeru',
+            'class' => 'status-warning',
+        ],
+        'validated' => [
+            'label' => $language === 'en' ? 'Validated' : 'Potvrđeno',
+            'class' => 'status-success',
+        ],
+        default => [
+            'label' => $language === 'en' ? 'Neutral' : 'Neutralno',
+            'class' => 'status-dark',
+        ],
+    };
+}
+
+function fcc_ai_get_outcome_signal_badge(string $outcome_signal, string $language = 'hr'): array {
+    $outcome_signal = trim((string) $outcome_signal);
+    $language = fcc_ai_resolve_public_reply_language($language);
+
+    return match($outcome_signal) {
+        'lead_captured' => [
+            'label' => $language === 'en' ? 'Lead captured' : 'Lead uhvaćen',
+            'class' => 'status-success',
+        ],
+        'needs_review' => [
+            'label' => $language === 'en' ? 'Review case' : 'Review slučaj',
+            'class' => 'status-warning',
+        ],
+        'business_interest' => [
+            'label' => $language === 'en' ? 'Business intent' : 'Poslovni interes',
+            'class' => 'status-info',
+        ],
+        'mixed_interest' => [
+            'label' => $language === 'en' ? 'Mixed intent' : 'Kombinirani interes',
+            'class' => 'status-info',
+        ],
+        'product_interest' => [
+            'label' => $language === 'en' ? 'Product intent' : 'Interes za proizvode',
+            'class' => 'status-info',
+        ],
+        'coach_help' => [
+            'label' => $language === 'en' ? 'Coach help' : 'Coach pomoć',
+            'class' => 'status-dark',
+        ],
+        default => [
+            'label' => $language === 'en' ? 'Active thread' : 'Aktivan thread',
+            'class' => 'status-dark',
+        ],
+    };
+}
+
+function fcc_ai_detect_thread_suspicion(array $thread_row, string $language = 'hr'): array {
+    $language = fcc_ai_resolve_public_reply_language($language);
+    $text = mb_strtolower(trim(implode(' ', array_filter([
+        (string) ($thread_row['summary'] ?? ''),
+        (string) ($thread_row['core_issue'] ?? ''),
+        (string) ($thread_row['last_user_preview'] ?? ''),
+        (string) ($thread_row['last_assistant_preview'] ?? ''),
+    ]))));
+
+    $flags = [];
+    $score = 0;
+
+    $append_flag = static function(string $key, string $label, int $weight) use (&$flags, &$score): void {
+        if(!isset($flags[$key])) {
+            $flags[$key] = [
+                'key' => $key,
+                'label' => $label,
+                'weight' => $weight,
+            ];
+            $score += $weight;
+        }
+    };
+
+    if($text !== '') {
+        if(preg_match('/\b(lijek|lijekovi|terapij|dijagnoz|doktor|liječ|lijec|izliječ|izlijec|bolest|trudn|dojen|nuspojav|krvni tlak|štitnjača|stitnjaca)\b/ui', $text)) {
+            $append_flag('compliance_health', $language === 'en' ? 'Health / compliance sensitive' : 'Zdravstveno / compliance osjetljivo', 65);
+        }
+
+        if(preg_match('/\b(zarada|zaraditi|provizij|bonus|plaća|placa|mjesečno|mjesecno|income|earn|guaranteed income|1000 ?e|500 ?e)\b/ui', $text)) {
+            $append_flag('compliance_income', $language === 'en' ? 'Income-claim sensitive' : 'Osjetljivo na income claim', 65);
+        }
+
+        if(preg_match('/\b(ignore|zanemari|prompt|system prompt|pravila|upute sustava|developer message|otkrij pravila)\b/ui', $text)) {
+            $append_flag('prompt_break', $language === 'en' ? 'Prompt-break attempt' : 'Pokušaj zaobilaženja pravila', 70);
+        }
+
+        if(preg_match('/\b(ne radi|glupo|katastrofa|prevara|laž|laz|bezveze|užas|uzas|frustrir|ljut|idiot)\b/ui', $text)) {
+            $append_flag('friction_spike', $language === 'en' ? 'Frustration spike' : 'Skok frustracije', 40);
+        }
+    }
+
+    if(
+        trim((string) ($thread_row['scope'] ?? '')) === 'internal_coach'
+        && (int) ($thread_row['total_user_messages'] ?? 0) >= 5
+        && trim((string) ($thread_row['outcome_signal'] ?? '')) !== 'lead_captured'
+        && empty($thread_row['needs_review'])
+    ) {
+        $append_flag('coach_dependency', $language === 'en' ? 'Coach dependency pattern' : 'Pattern ovisnosti o Coachu', 30);
+    }
+
+    $flags = array_values($flags);
+    usort($flags, static function(array $a, array $b) {
+        return (($b['weight'] ?? 0) <=> ($a['weight'] ?? 0))
+            ?: strcmp((string) ($a['label'] ?? ''), (string) ($b['label'] ?? ''));
+    });
+
+    return [
+        'score' => $score,
+        'is_suspicious' => $score >= 50,
+        'top_label' => (string) ($flags[0]['label'] ?? ''),
+        'flags' => array_map(static function(array $flag): array {
+            return [
+                'key' => (string) ($flag['key'] ?? ''),
+                'label' => (string) ($flag['label'] ?? ''),
+            ];
+        }, $flags),
+    ];
+}
+
+function fcc_ai_build_chat_intelligence_thread_row(array $conversation_row, array $insight_map = [], string $language = 'hr'): array {
+    $conversation_id = (int) ($conversation_row['conversation_id'] ?? 0);
+    $insight = $insight_map[$conversation_id] ?? [];
+    $summary = trim((string) ($insight['summary'] ?? ''));
+    $core_issue = trim((string) ($insight['core_issue'] ?? ''));
+    $primary_topic_label = trim((string) (($insight['primary_topic_label'] ?? '') ?: ($insight['primary_topic'] ?? '')));
+    $quality_signal = trim((string) ($insight['quality_signal'] ?? 'neutral'));
+    $outcome_signal = trim((string) ($insight['outcome_signal'] ?? (($conversation_row['lead_status'] ?? '') === 'captured' ? 'lead_captured' : 'active')));
+    $needs_review = !empty($insight['needs_review']);
+
+    $row = array_merge($conversation_row, [
+        'summary' => $summary !== '' ? $summary : (string) ($conversation_row['last_user_preview'] ?? ''),
+        'core_issue' => $core_issue !== '' ? $core_issue : (string) ($conversation_row['last_user_preview'] ?? ''),
+        'primary_topic_label' => $primary_topic_label !== '' ? $primary_topic_label : ($language === 'en' ? 'General' : 'Opće'),
+        'intent' => (string) ($insight['intent'] ?? ''),
+        'quality_signal' => $quality_signal,
+        'quality_badge' => fcc_ai_get_quality_signal_badge($quality_signal, $language),
+        'outcome_signal' => $outcome_signal,
+        'outcome_badge' => fcc_ai_get_outcome_signal_badge($outcome_signal, $language),
+        'needs_review' => $needs_review,
+        'source_page_title' => (string) (($insight['meta']['source_page_title'] ?? '') ?: ($insight['meta']['source_context'] ?? '')),
+        'last_user_preview' => (string) ($conversation_row['last_user_preview'] ?? ''),
+        'last_assistant_preview' => (string) ($conversation_row['last_assistant_preview'] ?? ''),
+    ]);
+
+    $row['suspicion'] = fcc_ai_detect_thread_suspicion($row, $language);
+
+    return $row;
+}
+
 function fcc_ai_get_period_window_from_start(string $period_start_datetime): array {
     try {
         $now = new \DateTimeImmutable('now');
@@ -15148,6 +15347,715 @@ function fcc_ai_build_team_useful_items(array $team_payload, string $language = 
     return array_slice(array_values(array_unique(array_filter($items))), 0, max(1, min(6, $limit)));
 }
 
+function fcc_ai_get_team_recent_conversation_rows(string $period_start_datetime, array $allowed_user_ids = [], int $limit = 12, string $language = 'hr', string $detail_period = '30d'): array {
+    if(!fcc_ai_tables_ready()) {
+        return [];
+    }
+
+    $language = fcc_ai_resolve_public_reply_language($language);
+    $limit = max(1, min(30, $limit));
+    $period_start_datetime = trim($period_start_datetime) !== '' ? trim($period_start_datetime) : date('Y-m-d 00:00:00', strtotime('-30 days'));
+    $period_start_sql = db()->escape($period_start_datetime);
+    $allowed_user_ids = array_values(array_unique(array_filter(array_map('intval', $allowed_user_ids), static function($user_id) {
+        return $user_id > 0;
+    })));
+    $user_sql = $allowed_user_ids ? implode(',', $allowed_user_ids) : '';
+    $conversation_user_filter = $user_sql !== '' ? " AND `c`.`user_id` IN ({$user_sql})" : '';
+    $rows = [];
+
+    $conversation_result = database()->query("SELECT
+            `c`.`fcc_ai_conversation_id`,
+            `c`.`assistant_type`,
+            `c`.`scope`,
+            `c`.`public_id`,
+            `c`.`lead_status`,
+            `c`.`total_user_messages`,
+            `c`.`total_assistant_messages`,
+            `c`.`meta` AS `conversation_meta`,
+            COALESCE(`c`.`last_message_at`, `c`.`last_datetime`, `c`.`datetime`) AS `activity_at`,
+            `a`.`display_name` AS `assistant_display_name`,
+            `u`.`user_id`,
+            `u`.`name` AS `owner_name`
+        FROM `fcc_ai_conversations` AS `c`
+        LEFT JOIN `fcc_ai_assistants` AS `a` ON `a`.`fcc_ai_assistant_id` = `c`.`fcc_ai_assistant_id`
+        LEFT JOIN `users` AS `u` ON `u`.`user_id` = `c`.`user_id`
+        WHERE COALESCE(`c`.`last_message_at`, `c`.`last_datetime`, `c`.`datetime`) >= '{$period_start_sql}'{$conversation_user_filter}
+        ORDER BY `activity_at` DESC
+        LIMIT {$limit}");
+
+    while($conversation_result && $row = $conversation_result->fetch_assoc()) {
+        $assistant_type = (string) ($row['assistant_type'] ?? '');
+        $assistant_label = trim((string) ($row['assistant_display_name'] ?? ''));
+
+        if($assistant_label === '') {
+            $assistant_label = fcc_ai_get_assistant_label($assistant_type);
+        }
+
+        $conversation_id = (int) ($row['fcc_ai_conversation_id'] ?? 0);
+        $user_id = (int) ($row['user_id'] ?? 0);
+        $conversation_meta = json_decode((string) ($row['conversation_meta'] ?? '{}'), true) ?: [];
+
+        $rows[] = [
+            'conversation_id' => $conversation_id,
+            'user_id' => $user_id,
+            'owner_name' => (string) ($row['owner_name'] ?? l('global.unknown')),
+            'detail_url' => $user_id > 0 ? url('admin/leader-operating-system-leader?user_id=' . $user_id . '&period=' . urlencode($detail_period)) . '#leader-os-chat-review-inbox' : '',
+            'assistant_type' => $assistant_type,
+            'assistant_label' => $assistant_label,
+            'scope' => (string) ($row['scope'] ?? ''),
+            'scope_label' => fcc_ai_get_scope_label((string) ($row['scope'] ?? ''), $language),
+            'lead_status' => (string) ($row['lead_status'] ?? 'none'),
+            'total_user_messages' => (int) ($row['total_user_messages'] ?? 0),
+            'total_assistant_messages' => (int) ($row['total_assistant_messages'] ?? 0),
+            'last_user_preview' => fcc_ai_get_conversation_role_preview($conversation_id, 'user'),
+            'last_assistant_preview' => fcc_ai_get_conversation_role_preview($conversation_id, 'assistant'),
+            'thread_preview' => $conversation_id > 0 ? array_slice(fcc_ai_get_conversation_messages($conversation_id, 12), -8) : [],
+            'activity_at' => (string) ($row['activity_at'] ?? ''),
+            'public_id' => (string) ($row['public_id'] ?? ''),
+            'source_label' => trim((string) (($conversation_meta['source_page_title'] ?? '') ?: ($conversation_meta['source_context'] ?? ''))),
+        ];
+    }
+
+    if(empty($rows)) {
+        return [];
+    }
+
+    $insight_map = fcc_ai_get_conversation_insight_map(array_map(static function(array $row): int {
+        return (int) ($row['conversation_id'] ?? 0);
+    }, $rows));
+
+    return array_map(static function(array $row) use ($insight_map, $language): array {
+        return fcc_ai_build_chat_intelligence_thread_row($row, $insight_map, $language);
+    }, $rows);
+}
+
+function fcc_ai_build_team_control_tower_payload(array $team_payload, string $language = 'hr', int $limit = 6): array {
+    $language = fcc_ai_resolve_public_reply_language($language);
+    $limit = max(3, min(10, $limit));
+    $recent_threads = array_values((array) ($team_payload['recent_threads'] ?? []));
+    $top_users = array_values((array) ($team_payload['top_users'] ?? []));
+    $help_watchlist = array_values((array) ($team_payload['help_watchlist'] ?? []));
+    $recent_negative_feedback = array_values((array) ($team_payload['recent_negative_feedback'] ?? []));
+    $recent_hot_leads = array_values((array) ($team_payload['recent_hot_leads'] ?? []));
+    $rising_topics = array_values((array) ($team_payload['rising_topics'] ?? []));
+    $top_topics = array_values((array) ($team_payload['top_topics'] ?? []));
+
+    $payload = [
+        'headline' => '',
+        'executive_summary' => '',
+        'admin_changes' => [],
+        'counts' => [
+            'review_threads' => 0,
+            'suspicious_threads' => 0,
+            'coach_priority' => 0,
+            'public_priority' => 0,
+            'lead_threads' => 0,
+        ],
+        'coach' => [
+            'summary' => '',
+            'blocker' => '',
+            'next_admin_move' => '',
+            'top_topics' => [],
+            'queue' => [],
+        ],
+        'public_ai' => [
+            'summary' => '',
+            'blocker' => '',
+            'next_admin_move' => '',
+            'top_topics' => [],
+            'queue' => [],
+        ],
+        'suspicious_threads' => [],
+        'review_threads' => [],
+        'lead_threads' => array_slice($recent_hot_leads, 0, $limit),
+        'inbox' => [
+            'tabs' => [],
+            'coach_threads' => [],
+            'public_threads' => [],
+            'suspicious_threads' => [],
+            'review_threads' => [],
+            'lead_threads' => [],
+        ],
+    ];
+
+    if(empty($recent_threads) && empty($recent_negative_feedback) && empty($recent_hot_leads)) {
+        $payload['headline'] = 'Još nema dovoljno AI signala za team control tower.';
+        $payload['executive_summary'] = 'Kad se skupi više razgovora, leadova i review slučajeva, ovdje ćeš odmah vidjeti gdje treba intervenirati.';
+        return $payload;
+    }
+
+    $top_users_map = [];
+    foreach($top_users as $user_row) {
+        $top_users_map[(int) ($user_row['user_id'] ?? 0)] = $user_row;
+    }
+
+    $coach_topics = [];
+    $public_topics = [];
+    $coach_thread_total = 0;
+    $public_thread_total = 0;
+    $public_conversion_threads = 0;
+    $coach_threads = [];
+    $public_threads = [];
+    $suspicious_threads = [];
+
+    foreach($recent_threads as $thread_row) {
+        $scope = trim((string) ($thread_row['scope'] ?? ''));
+        $topic_label = trim((string) ($thread_row['primary_topic_label'] ?? ''));
+        $quality_signal = (string) ($thread_row['quality_signal'] ?? 'neutral');
+        $outcome_signal = (string) ($thread_row['outcome_signal'] ?? '');
+        $is_coach = $scope === 'internal_coach';
+
+        if($is_coach) {
+            $coach_thread_total++;
+            $coach_threads[] = $thread_row;
+            if($topic_label !== '') {
+                $coach_topics[$topic_label] = ($coach_topics[$topic_label] ?? 0) + 1;
+            }
+        } else {
+            $public_thread_total++;
+            $public_threads[] = $thread_row;
+            if($topic_label !== '') {
+                $public_topics[$topic_label] = ($public_topics[$topic_label] ?? 0) + 1;
+            }
+            if(in_array($outcome_signal, ['lead_captured', 'business_interest', 'mixed_interest'], true)) {
+                $public_conversion_threads++;
+            }
+        }
+
+        if(!empty($thread_row['needs_review']) || !empty($thread_row['suspicion']['is_suspicious']) || (int) ($thread_row['suspicion']['score'] ?? 0) >= 40 || $quality_signal === 'needs_review') {
+            $suspicious_threads[] = $thread_row;
+        }
+    }
+
+    arsort($coach_topics);
+    arsort($public_topics);
+
+    $coach_topic_rows = array_map(static function(string $label, int $total): array {
+        return ['label' => $label, 'total' => $total];
+    }, array_keys($coach_topics), array_values($coach_topics));
+    $public_topic_rows = array_map(static function(string $label, int $total): array {
+        return ['label' => $label, 'total' => $total];
+    }, array_keys($public_topics), array_values($public_topics));
+
+    $coach_queue = [];
+    foreach($help_watchlist as $watch_row) {
+        $user_id = (int) ($watch_row['user_id'] ?? 0);
+        $user_row = $top_users_map[$user_id] ?? [];
+        $coach_conversations = (int) ($user_row['coach_conversations'] ?? ($watch_row['coach_conversations'] ?? 0));
+        $public_conversations = (int) ($user_row['public_conversations'] ?? ($watch_row['public_conversations'] ?? 0));
+        $leads = (int) ($user_row['leads'] ?? ($watch_row['leads'] ?? 0));
+        $negative_feedback = (int) ($user_row['negative_feedback'] ?? ($watch_row['negative_feedback'] ?? 0));
+
+        if($coach_conversations < 2 && $negative_feedback <= 0) {
+            continue;
+        }
+
+        $reason = trim((string) ($watch_row['reason'] ?? ''));
+        if($negative_feedback > 1) {
+            $reason = 'Coach i AI signal zajedno pokazuju više review slučajeva pa ovoj osobi treba precizniji mentorski follow-up.';
+        } elseif($coach_conversations >= 3 && $leads === 0) {
+            $reason = 'Coach je aktivan, ali se pomoć još ne pretvara u execution i jasan rezultatski signal.';
+        } elseif($reason === '') {
+            $reason = 'Vrijedi otvoriti zadnje Coach razgovore i srezati fokus na jedan mjerljiv potez.';
+        }
+
+        $coach_queue[] = [
+            'user_id' => $user_id,
+            'name' => (string) ($watch_row['name'] ?? ($user_row['name'] ?? l('global.unknown'))),
+            'detail_url' => (string) (($watch_row['detail_url'] ?? '') ?: ($user_row['detail_url'] ?? '')),
+            'coach_conversations' => $coach_conversations,
+            'public_conversations' => $public_conversations,
+            'leads' => $leads,
+            'negative_feedback' => $negative_feedback,
+            'reason' => $reason,
+        ];
+    }
+
+    usort($coach_queue, static function(array $a, array $b) {
+        return (($b['coach_conversations'] ?? 0) <=> ($a['coach_conversations'] ?? 0))
+            ?: (($b['negative_feedback'] ?? 0) <=> ($a['negative_feedback'] ?? 0))
+            ?: (($a['leads'] ?? 0) <=> ($b['leads'] ?? 0));
+    });
+
+    $public_queue = [];
+    foreach($top_users as $user_row) {
+        $public_conversations = (int) ($user_row['public_conversations'] ?? 0);
+        $coach_conversations = (int) ($user_row['coach_conversations'] ?? 0);
+        $leads = (int) ($user_row['leads'] ?? 0);
+        $business_leads = (int) ($user_row['business_leads'] ?? 0);
+        $negative_feedback = (int) ($user_row['negative_feedback'] ?? 0);
+
+        if($public_conversations < 2) {
+            continue;
+        }
+
+        $reason = '';
+        if($negative_feedback > 0) {
+            $reason = 'Javni AI već ima review signal, pa prvo treba doraditi jasnoću odgovora i sljedeći korak.';
+        } elseif($public_conversations >= 3 && $leads === 0) {
+            $reason = 'Razgovori postoje, ali još ne prelaze u lead. Fokus je na CTA-u i conversion putu.';
+        } elseif($leads > 0 && $business_leads === 0) {
+            $reason = 'Leadovi dolaze, ali još ne nose dovoljno jak business signal. Vrijedi dotjerati positioning i kvalifikaciju.';
+        }
+
+        if($reason === '') {
+            continue;
+        }
+
+        $public_queue[] = [
+            'user_id' => (int) ($user_row['user_id'] ?? 0),
+            'name' => (string) ($user_row['name'] ?? l('global.unknown')),
+            'detail_url' => (string) ($user_row['detail_url'] ?? ''),
+            'coach_conversations' => $coach_conversations,
+            'public_conversations' => $public_conversations,
+            'leads' => $leads,
+            'business_leads' => $business_leads,
+            'negative_feedback' => $negative_feedback,
+            'reason' => $reason,
+        ];
+    }
+
+    usort($public_queue, static function(array $a, array $b) {
+        return (($b['negative_feedback'] ?? 0) <=> ($a['negative_feedback'] ?? 0))
+            ?: (($b['public_conversations'] ?? 0) <=> ($a['public_conversations'] ?? 0))
+            ?: (($a['leads'] ?? 0) <=> ($b['leads'] ?? 0));
+    });
+
+    usort($suspicious_threads, static function(array $a, array $b) {
+        return (((int) ($b['suspicion']['score'] ?? 0)) <=> ((int) ($a['suspicion']['score'] ?? 0)))
+            ?: (((int) ($b['needs_review'] ?? 0)) <=> ((int) ($a['needs_review'] ?? 0)))
+            ?: strcmp((string) ($b['activity_at'] ?? ''), (string) ($a['activity_at'] ?? ''));
+    });
+
+    $review_threads = array_map(static function(array $feedback_row): array {
+        return [
+            'owner_name' => (string) ($feedback_row['owner_name'] ?? l('global.unknown')),
+            'detail_url' => (string) ($feedback_row['detail_url'] ?? ''),
+            'assistant_label' => (string) ($feedback_row['assistant_label'] ?? 'AI'),
+            'scope_label' => (string) ($feedback_row['scope_label'] ?? ''),
+            'reason_label' => (string) ($feedback_row['reason_label'] ?? ''),
+            'note' => (string) ($feedback_row['note'] ?? ''),
+            'message_excerpt' => (string) ($feedback_row['message_excerpt'] ?? ''),
+            'source_label' => (string) ($feedback_row['source_label'] ?? ''),
+            'datetime' => (string) ($feedback_row['datetime'] ?? ''),
+            'thread_preview' => $feedback_row['thread_preview'] ?? [],
+        ];
+    }, $recent_negative_feedback);
+
+    $coach_top_topic = (string) ($coach_topic_rows[0]['label'] ?? '');
+    $public_top_topic = (string) (($public_topic_rows[0]['label'] ?? '') ?: ($top_topics[0]['label'] ?? ''));
+    $review_total = (int) ($team_payload['totals']['review_conversations'] ?? 0);
+    $negative_feedback_total = (int) ($team_payload['totals']['negative_feedback'] ?? 0);
+    $lead_total = (int) ($team_payload['totals']['leads'] ?? 0);
+    $hot_lead_total = (int) ($team_payload['totals']['hot_leads'] ?? 0);
+
+    if($review_total > 0) {
+        $payload['admin_changes'][] = 'Prvo otvori AI review slučajeve jer se kvaliteta odgovora već javno lomi na stvarnim threadovima.';
+    }
+
+    if(!empty($suspicious_threads)) {
+        $payload['admin_changes'][] = 'Pregledaj suspektne razgovore i provjeri traže li doradu compliance copyja, prompt zaštite ili jasnija pravila.';
+    }
+
+    if(!empty($coach_queue)) {
+        $payload['admin_changes'][] = 'Za Coach prioritetne suradnike svedi pomoć na jedan jasan tjedni potez i provjeri jesu li ga stvarno odradili.';
+    }
+
+    if(!empty($public_queue)) {
+        $payload['admin_changes'][] = 'Doradi CTA i conversion put na javnim AI aplikacijama gdje razgovori postoje, ali lead još ne dolazi ili je slab.';
+    }
+
+    if(!empty($rising_topics[0]['label'])) {
+        $payload['admin_changes'][] = 'Tema "' . (string) $rising_topics[0]['label'] . '" trenutno raste i vrijedi je pretvoriti u sadržaj, FAQ ili webinar.';
+    } elseif($public_top_topic !== '') {
+        $payload['admin_changes'][] = 'Najviše javnog interesa sada ide prema temi "' . $public_top_topic . '", pa nju vrijedi prvu brusiti.';
+    }
+
+    if($hot_lead_total > 0) {
+        $payload['admin_changes'][] = 'Postoje vrući AI leadovi, pa ih vrijedi odmah spojiti s mentorstvom i nastavkom follow-upa.';
+    }
+
+    $payload['coach']['summary'] = $coach_thread_total === 0
+        ? 'Coach još nema dovoljno aktivnih threadova za team zaključak.'
+        : (!empty($coach_queue)
+            ? 'Coach se koristi, ali dio suradnika ostaje u petlji pomoći bez dovoljno izvedbe i stvarnog pomaka.'
+            : 'Coach razgovori pokazuju uredan ritam pomoći bez jačeg signala zastoja.');
+    $payload['coach']['blocker'] = !empty($coach_queue)
+        ? 'Glavni team blocker je execution: savjet postoji, ali dio suradnika ne pretvara Coach u provedivu tjednu akciju.'
+        : ($coach_top_topic !== '' ? 'Najčešća Coach tema je "' . $coach_top_topic . '".' : 'Još nema dominantnog Coach blockera.');
+    $payload['coach']['next_admin_move'] = !empty($coach_queue)
+        ? 'Otvori prioritetne Coach suradnike i svedi svaki slučaj na jedan sljedeći potez s rokom.'
+        : 'Nastavi pratiti Coach teme i pretvarati ih u jasne tjedne zadatke.';
+    $payload['coach']['top_topics'] = array_slice($coach_topic_rows, 0, 4);
+    $payload['coach']['queue'] = array_slice($coach_queue, 0, $limit);
+
+    $payload['public_ai']['summary'] = $public_thread_total === 0
+        ? 'Javni AI još nema dovoljno razgovora za team zaključak.'
+        : ($lead_total > 0
+            ? 'Javni AI već donosi interes i leadove, ali na dijelu aplikacija i dalje postoji conversion gap ili review signal.'
+            : 'Javni AI razgovori postoje, ali conversion i kvaliteta još nisu dovoljno stabilni na svim aplikacijama.');
+    $payload['public_ai']['blocker'] = $negative_feedback_total > 0
+        ? 'Glavni blocker je kvaliteta dijela odgovora i potreba za jačim sljedećim korakom.'
+        : (!empty($public_queue)
+            ? 'Glavni blocker je conversion: promet i pitanja postoje, ali lead i business signal još ne prate svugdje.'
+            : ($public_top_topic !== '' ? 'Najjači javni interes sada ide prema temi "' . $public_top_topic . '".' : 'Još nema dominantnog blockera javnog AI-ja.'));
+    $payload['public_ai']['next_admin_move'] = !empty($public_queue)
+        ? 'Prvo otvori javne AI slučajeve s prometom bez leadova i dotjeraj CTA, ponudu i positioning.'
+        : 'Zadrži najjaču temu i pretvori je u bolji FAQ, CTA i lead capture put.';
+    $payload['public_ai']['top_topics'] = array_slice($public_top_topic !== '' ? $public_topic_rows : $top_topics, 0, 4);
+    $payload['public_ai']['queue'] = array_slice($public_queue, 0, $limit);
+
+    $payload['suspicious_threads'] = array_slice($suspicious_threads, 0, $limit);
+    $payload['review_threads'] = array_slice($review_threads, 0, $limit);
+    $payload['counts']['review_threads'] = count($review_threads);
+    $payload['counts']['suspicious_threads'] = count($suspicious_threads);
+    $payload['counts']['coach_priority'] = count($coach_queue);
+    $payload['counts']['public_priority'] = count($public_queue);
+    $payload['counts']['lead_threads'] = count($recent_hot_leads);
+    $payload['inbox'] = [
+        'tabs' => [
+            [
+                'key' => 'coach',
+                'label' => $language === 'en' ? 'Coach' : 'Coach',
+                'count' => min(count($coach_threads), $limit),
+            ],
+            [
+                'key' => 'public_ai',
+                'label' => $language === 'en' ? 'Public AI' : 'AI za ljude',
+                'count' => min(count($public_threads), $limit),
+            ],
+            [
+                'key' => 'suspicious',
+                'label' => $language === 'en' ? 'Suspicious' : 'Suspektni',
+                'count' => min(count($suspicious_threads), $limit),
+            ],
+            [
+                'key' => 'review',
+                'label' => $language === 'en' ? 'Review' : 'Review',
+                'count' => min(count($review_threads), $limit),
+            ],
+            [
+                'key' => 'leads',
+                'label' => $language === 'en' ? 'Lead / conversion' : 'Lead / conversion',
+                'count' => min(count($recent_hot_leads), $limit),
+            ],
+        ],
+        'coach_threads' => array_slice($coach_threads, 0, $limit),
+        'public_threads' => array_slice($public_threads, 0, $limit),
+        'suspicious_threads' => array_slice($suspicious_threads, 0, $limit),
+        'review_threads' => array_slice($review_threads, 0, $limit),
+        'lead_threads' => array_slice($recent_hot_leads, 0, $limit),
+    ];
+
+    $payload['headline'] = $review_total > 0 && !empty($suspicious_threads)
+        ? 'AI promet raste, ali prva admin intervencija su quality i suspektni threadovi.'
+        : (!empty($public_queue) && $lead_total === 0
+            ? 'Interes postoji, ali javni AI još propušta conversion i traži oštriji put do leada.'
+            : (!empty($coach_queue)
+                ? 'Coach je aktivan, ali dio suradnika još vrti pomoć bez jasnog execution pomaka.'
+                : ($lead_total > 0
+                    ? 'AI već daje rezultat, a sada ga treba održati kroz kvalitetu, CTA i mentorsko preuzimanje.'
+                    : 'AI chatovi daju jasan timski signal gdje treba otvoriti razgovore i što prvo promijeniti.')));
+
+    $summary_parts = [];
+    if($coach_thread_total > 0) {
+        $summary_parts[] = 'Coach threadovi ' . nr($coach_thread_total) . ($coach_top_topic !== '' ? ' · top tema "' . $coach_top_topic . '"' : '');
+    }
+    if($public_thread_total > 0) {
+        $summary_parts[] = 'Javni AI threadovi ' . nr($public_thread_total) . ($public_top_topic !== '' ? ' · top tema "' . $public_top_topic . '"' : '');
+    }
+    if($lead_total > 0) {
+        $summary_parts[] = 'AI leadovi ' . nr($lead_total) . ' · vrući ' . nr($hot_lead_total);
+    }
+    if($review_total > 0) {
+        $summary_parts[] = 'Review slučajevi ' . nr($review_total);
+    }
+    if(!empty($suspicious_threads)) {
+        $summary_parts[] = 'Suspektni threadovi ' . nr(count($suspicious_threads));
+    }
+
+    $payload['executive_summary'] = !empty($summary_parts)
+        ? implode(' · ', $summary_parts) . '.'
+        : 'Još nema dovoljno AI signala za pouzdan team summary.';
+    $payload['admin_changes'] = array_values(array_slice(array_unique(array_filter($payload['admin_changes'])), 0, 6));
+
+    return $payload;
+}
+
+function fcc_ai_build_team_executive_report_payload(array $team_payload, array $queue_rows = [], string $language = 'hr', int $limit = 5): array {
+    $language = fcc_ai_resolve_public_reply_language($language);
+    $limit = max(3, min(8, $limit));
+    $control_tower = (array) ($team_payload['control_tower'] ?? []);
+    $mentor_rows = array_values(array_filter($queue_rows, static function($row) {
+        return !empty($row['ai_mentor_stage_label']);
+    }));
+    $blocked_rows = array_values(array_filter($mentor_rows, static function($row) {
+        return (string) ($row['ai_mentor_stage_key'] ?? '') === 'blocked_setup';
+    }));
+    $top_rows = array_values(array_filter($mentor_rows, static function($row) {
+        return (string) ($row['ai_mentor_stage_key'] ?? '') === 'top_momentum';
+    }));
+    $serious_rows = array_values(array_filter($mentor_rows, static function($row) {
+        return (string) ($row['ai_mentor_stage_key'] ?? '') === 'serious_focus';
+    }));
+    $scattered_rows = array_values(array_filter($mentor_rows, static function($row) {
+        return (string) ($row['ai_mentor_stage_key'] ?? '') === 'scattered_focus';
+    }));
+
+    $payload = [
+        'headline' => (string) ($control_tower['headline'] ?? ''),
+        'summary' => (string) ($control_tower['executive_summary'] ?? ''),
+        'alerts' => [],
+        'opportunities' => [],
+        'focus_users' => [],
+        'next_moves' => array_values(array_slice((array) ($control_tower['admin_changes'] ?? []), 0, $limit)),
+    ];
+
+    if((int) ($control_tower['counts']['review_threads'] ?? 0) > 0) {
+        $payload['alerts'][] = [
+            'severity_class' => 'status-danger',
+            'severity_label' => 'Hitno',
+            'title' => 'Review queue već pokazuje gdje kvaliteta puca',
+            'text' => 'Postoji ' . nr((int) ($control_tower['counts']['review_threads'] ?? 0)) . ' review slučajeva koje vrijedi otvoriti prije daljnjeg scalea AI-ja.',
+        ];
+    }
+
+    if((int) ($control_tower['counts']['suspicious_threads'] ?? 0) > 0) {
+        $payload['alerts'][] = [
+            'severity_class' => 'status-warning',
+            'severity_label' => 'Rizik',
+            'title' => 'Suspektni threadovi traže compliance pregled',
+            'text' => 'Trenutno imaš ' . nr((int) ($control_tower['counts']['suspicious_threads'] ?? 0)) . ' threadova sa sumnjivim ili osjetljivim signalom koje vrijedi pregledati.',
+        ];
+    }
+
+    if(!empty($blocked_rows)) {
+        $payload['alerts'][] = [
+            'severity_class' => 'status-warning',
+            'severity_label' => 'Setup',
+            'title' => 'Dio tima još je blokiran osnovnim setupom',
+            'text' => nr(count($blocked_rows)) . ' suradnika još nema valjan prodajni put ili im je setup blokiran, pa im scale trenutno nema smisla.',
+        ];
+    }
+
+    if((int) ($control_tower['counts']['public_priority'] ?? 0) > 0) {
+        $payload['alerts'][] = [
+            'severity_class' => 'status-info',
+            'severity_label' => 'Conversion',
+            'title' => 'Javni AI ima promet, ali conversion još curi',
+            'text' => 'Na ' . nr((int) ($control_tower['counts']['public_priority'] ?? 0)) . ' slučajeva treba doraditi CTA, lead capture ili positioning.',
+        ];
+    }
+
+    if(!empty($team_payload['rising_topics'][0]['label'])) {
+        $payload['opportunities'][] = [
+            'severity_class' => 'status-info',
+            'severity_label' => 'Tema',
+            'title' => 'Tema "' . (string) ($team_payload['rising_topics'][0]['label'] ?? '') . '" sada ubrzano raste',
+            'text' => 'To je najčišći kandidat za novi webinar, FAQ ili doradu AI skripte dok interes još raste.',
+        ];
+    }
+
+    if(!empty($top_rows)) {
+        $payload['opportunities'][] = [
+            'severity_class' => 'status-success',
+            'severity_label' => 'Sponsor',
+            'title' => 'Tim već ima ljude spremne za jači sponsor positioning',
+            'text' => nr(count($top_rows)) . ' suradnika drži top momentum i vrijedi ih jače isticati kroz sponsor vidljivost i primjer rada.',
+        ];
+    }
+
+    if((int) ($team_payload['totals']['hot_leads'] ?? 0) > 0) {
+        $payload['opportunities'][] = [
+            'severity_class' => 'status-success',
+            'severity_label' => 'Lead',
+            'title' => 'AI već donosi vruće leadove',
+            'text' => 'Imaš ' . nr((int) ($team_payload['totals']['hot_leads'] ?? 0)) . ' vrućih leadova koje vrijedi brzo spojiti s mentorstvom i follow-upom.',
+        ];
+    }
+
+    $focus_users = [];
+    if(!empty($blocked_rows[0])) {
+        $focus_users[] = [
+            'name' => (string) ($blocked_rows[0]['name'] ?? ''),
+            'detail_url' => (string) ($blocked_rows[0]['detail_url'] ?? ''),
+            'label' => (string) (($blocked_rows[0]['ai_mentor_stage_label'] ?? '') ?: 'Blokiran setupom'),
+            'reason' => (string) (($blocked_rows[0]['ai_mentor_admin_action'] ?? '') ?: 'Prvo riješi setup i prodajni put.'),
+        ];
+    }
+    if(!empty($control_tower['coach']['queue'][0])) {
+        $focus_users[] = [
+            'name' => (string) ($control_tower['coach']['queue'][0]['name'] ?? ''),
+            'detail_url' => (string) ($control_tower['coach']['queue'][0]['detail_url'] ?? ''),
+            'label' => 'Coach prioritet',
+            'reason' => (string) ($control_tower['coach']['queue'][0]['reason'] ?? ''),
+        ];
+    }
+    if(!empty($control_tower['public_ai']['queue'][0])) {
+        $focus_users[] = [
+            'name' => (string) ($control_tower['public_ai']['queue'][0]['name'] ?? ''),
+            'detail_url' => (string) ($control_tower['public_ai']['queue'][0]['detail_url'] ?? ''),
+            'label' => 'Public prioritet',
+            'reason' => (string) ($control_tower['public_ai']['queue'][0]['reason'] ?? ''),
+        ];
+    }
+    if(!empty($top_rows[0])) {
+        $focus_users[] = [
+            'name' => (string) ($top_rows[0]['name'] ?? ''),
+            'detail_url' => (string) ($top_rows[0]['detail_url'] ?? ''),
+            'label' => (string) (($top_rows[0]['ai_mentor_stage_label'] ?? '') ?: 'Preporučeni sponzor'),
+            'reason' => (string) (($top_rows[0]['ai_mentor_admin_action'] ?? '') ?: 'Vrijedi ga gurati kao dokaz rezultata i mentor primjer.'),
+        ];
+    } elseif(!empty($serious_rows[0])) {
+        $focus_users[] = [
+            'name' => (string) ($serious_rows[0]['name'] ?? ''),
+            'detail_url' => (string) ($serious_rows[0]['detail_url'] ?? ''),
+            'label' => (string) (($serious_rows[0]['ai_mentor_stage_label'] ?? '') ?: 'Ozbiljan i fokusiran'),
+            'reason' => (string) (($serious_rows[0]['ai_mentor_admin_action'] ?? '') ?: 'Vrijedi ga zadržati u ritmu i pratiti scale.'),
+        ];
+    } elseif(!empty($scattered_rows[0])) {
+        $focus_users[] = [
+            'name' => (string) ($scattered_rows[0]['name'] ?? ''),
+            'detail_url' => (string) ($scattered_rows[0]['detail_url'] ?? ''),
+            'label' => (string) (($scattered_rows[0]['ai_mentor_stage_label'] ?? '') ?: 'Raspršen fokus'),
+            'reason' => (string) (($scattered_rows[0]['ai_mentor_admin_action'] ?? '') ?: 'Treba cleanup i jači fokus na jednu glavnu aplikaciju.'),
+        ];
+    }
+
+    $seen_focus_users = [];
+    $payload['focus_users'] = array_values(array_filter(array_map(static function(array $row) use (&$seen_focus_users) {
+        $name_key = trim((string) ($row['name'] ?? ''));
+        if($name_key === '' || isset($seen_focus_users[$name_key])) {
+            return null;
+        }
+        $seen_focus_users[$name_key] = true;
+        return $row;
+    }, $focus_users)));
+
+    if(trim((string) $payload['headline']) === '') {
+        $payload['headline'] = !empty($payload['alerts'][0]['title'])
+            ? (string) $payload['alerts'][0]['title']
+            : 'AI executive report još čeka jači signal.';
+    }
+
+    if(trim((string) $payload['summary']) === '') {
+        $parts = [];
+        if(!empty($payload['alerts'])) {
+            $parts[] = 'Najveći rizik sada je "' . (string) ($payload['alerts'][0]['title'] ?? '') . '".';
+        }
+        if(!empty($payload['opportunities'])) {
+            $parts[] = 'Najveća prilika je "' . (string) ($payload['opportunities'][0]['title'] ?? '') . '".';
+        }
+        $payload['summary'] = !empty($parts) ? implode(' ', $parts) : 'Još nema dovoljno signala za team executive report.';
+    }
+
+    $payload['alerts'] = array_values(array_slice($payload['alerts'], 0, $limit));
+    $payload['opportunities'] = array_values(array_slice($payload['opportunities'], 0, $limit));
+    $payload['focus_users'] = array_values(array_slice($payload['focus_users'], 0, min(4, $limit)));
+    $payload['next_moves'] = array_values(array_slice($payload['next_moves'], 0, $limit));
+
+    return $payload;
+}
+
+function fcc_ai_build_user_executive_report_payload(array $dossier, string $language = 'hr', int $limit = 5): array {
+    $language = fcc_ai_resolve_public_reply_language($language);
+    $limit = max(3, min(8, $limit));
+
+    $payload = [
+        'headline' => (string) ($dossier['headline'] ?? ''),
+        'summary' => (string) ($dossier['executive_summary'] ?? ''),
+        'alerts' => [],
+        'opportunities' => [],
+        'next_moves' => array_values(array_slice((array) ($dossier['admin_changes'] ?? []), 0, $limit)),
+        'working' => array_values(array_slice((array) ($dossier['strengths'] ?? []), 0, 3)),
+        'blocking' => array_values(array_slice((array) ($dossier['weaknesses'] ?? []), 0, 3)),
+    ];
+
+    $review_total = count((array) ($dossier['review_threads'] ?? []));
+    $suspicious_total = count((array) ($dossier['suspicious_threads'] ?? []));
+    $public_threads_total = count((array) ($dossier['public_ai']['threads'] ?? []));
+    $coach_threads_total = count((array) ($dossier['coach']['threads'] ?? []));
+    $public_top_topic = (string) ($dossier['public_ai']['top_topics'][0]['label'] ?? '');
+    $coach_top_topic = (string) ($dossier['coach']['top_topics'][0]['label'] ?? '');
+
+    if($review_total > 0) {
+        $payload['alerts'][] = [
+            'severity_class' => 'status-danger',
+            'severity_label' => 'Review',
+            'title' => 'Dio javnih odgovora traži ručni pregled',
+            'text' => 'Otvoreno je ' . nr($review_total) . ' review slučajeva i to je prvi signal koji treba zatvoriti prije daljnjeg scalea ovog profila.',
+        ];
+    }
+
+    if($suspicious_total > 0) {
+        $payload['alerts'][] = [
+            'severity_class' => 'status-warning',
+            'severity_label' => 'Rizik',
+            'title' => 'Postoje suspektni ili osjetljivi chatovi',
+            'text' => 'Trenutno ima ' . nr($suspicious_total) . ' threadova koji traže dodatni compliance ili prompt pregled.',
+        ];
+    }
+
+    if($coach_threads_total >= 3 && empty($dossier['strengths'])) {
+        $payload['alerts'][] = [
+            'severity_class' => 'status-warning',
+            'severity_label' => 'Coach',
+            'title' => 'Coach aktivnost još nema dovoljno jasan rezultat',
+            'text' => 'Suradnik traži pomoć, ali još nema dovoljno signala da se to pretvara u izvedbu i napredak.',
+        ];
+    }
+
+    if(!empty($dossier['strengths'][0])) {
+        $payload['opportunities'][] = [
+            'severity_class' => 'status-success',
+            'severity_label' => 'Radi',
+            'title' => 'Postoji jasan signal što već funkcionira',
+            'text' => (string) ($dossier['strengths'][0] ?? ''),
+        ];
+    }
+
+    if($public_top_topic !== '') {
+        $payload['opportunities'][] = [
+            'severity_class' => 'status-info',
+            'severity_label' => 'Tema',
+            'title' => 'Publika najviše reagira na temu "' . $public_top_topic . '"',
+            'text' => 'To je tema koju vrijedi prvu pretvoriti u jači CTA, FAQ ili sadržajni fokus.',
+        ];
+    }
+
+    if($coach_top_topic !== '') {
+        $payload['opportunities'][] = [
+            'severity_class' => 'status-info',
+            'severity_label' => 'Coach',
+            'title' => 'Coach se najviše vrti oko teme "' . $coach_top_topic . '"',
+            'text' => 'Vrijedi srezati tu temu na jedan konkretan tjedni potez koji suradnik mora odraditi.',
+        ];
+    }
+
+    if(trim((string) $payload['headline']) === '') {
+        $payload['headline'] = !empty($payload['alerts'][0]['title'])
+            ? (string) ($payload['alerts'][0]['title'] ?? '')
+            : 'AI executive report za ovog suradnika još čeka jači signal.';
+    }
+
+    if(trim((string) $payload['summary']) === '') {
+        $summary_parts = [];
+        if(!empty($payload['alerts'][0]['title'])) {
+            $summary_parts[] = 'Najveći rizik je "' . (string) ($payload['alerts'][0]['title'] ?? '') . '".';
+        }
+        if(!empty($payload['opportunities'][0]['title'])) {
+            $summary_parts[] = 'Najveća prilika je "' . (string) ($payload['opportunities'][0]['title'] ?? '') . '".';
+        }
+        $payload['summary'] = !empty($summary_parts) ? implode(' ', $summary_parts) : 'Još nema dovoljno signala za dublji executive report ovog suradnika.';
+    }
+
+    $payload['alerts'] = array_values(array_slice($payload['alerts'], 0, $limit));
+    $payload['opportunities'] = array_values(array_slice($payload['opportunities'], 0, $limit));
+    $payload['next_moves'] = array_values(array_slice($payload['next_moves'], 0, $limit));
+
+    return $payload;
+}
+
 function fcc_ai_build_user_useful_items(array $dashboard_payload, string $language = 'hr'): array {
     $language = fcc_ai_resolve_public_reply_language($language);
     $items = [];
@@ -15229,6 +16137,8 @@ function fcc_ai_get_team_dashboard_payload(string $period_start_datetime, array 
         'help_watchlist' => [],
         'assistant_performance' => [],
         'useful_items' => [],
+        'recent_threads' => [],
+        'control_tower' => [],
     ];
 
     if(!fcc_ai_tables_ready()) {
@@ -15639,6 +16549,8 @@ function fcc_ai_get_team_dashboard_payload(string $period_start_datetime, array 
     $payload['help_watchlist'] = fcc_ai_build_help_watchlist($payload['top_users'], $language, $limit);
     $payload['assistant_performance'] = fcc_ai_build_assistant_performance_rows($payload['assistant_breakdown'], $language, $limit);
     $payload['useful_items'] = fcc_ai_build_team_useful_items($payload, $language, 4);
+    $payload['recent_threads'] = fcc_ai_get_team_recent_conversation_rows($period_start_datetime, $allowed_user_ids, max($limit * 2, 12), $language, $detail_period);
+    $payload['control_tower'] = fcc_ai_build_team_control_tower_payload($payload, $language, $limit);
 
     return $payload;
 }
@@ -15857,15 +16769,27 @@ function fcc_ai_get_user_dashboard_payload(int $user_id, string $period_start_da
         $payload['recent_conversations'][] = [
             'conversation_id' => $conversation_id,
             'assistant_label' => $assistant_label,
+            'scope' => (string) ($row['scope'] ?? ''),
             'scope_label' => fcc_ai_get_scope_label((string) ($row['scope'] ?? ''), $language),
             'lead_status' => (string) ($row['lead_status'] ?? 'none'),
             'total_user_messages' => (int) ($row['total_user_messages'] ?? 0),
             'total_assistant_messages' => (int) ($row['total_assistant_messages'] ?? 0),
             'last_user_preview' => fcc_ai_get_conversation_role_preview($conversation_id, 'user'),
             'last_assistant_preview' => fcc_ai_get_conversation_role_preview($conversation_id, 'assistant'),
+            'thread_preview' => $conversation_id > 0 ? array_slice(fcc_ai_get_conversation_messages($conversation_id, 12), -8) : [],
             'activity_at' => (string) ($row['activity_at'] ?? ''),
             'public_id' => (string) ($row['public_id'] ?? ''),
         ];
+    }
+
+    if(!empty($payload['recent_conversations'])) {
+        $insight_map = fcc_ai_get_conversation_insight_map(array_map(static function(array $row): int {
+            return (int) ($row['conversation_id'] ?? 0);
+        }, $payload['recent_conversations']));
+
+        $payload['recent_conversations'] = array_map(static function(array $row) use ($insight_map, $language): array {
+            return fcc_ai_build_chat_intelligence_thread_row($row, $insight_map, $language);
+        }, $payload['recent_conversations']);
     }
 
     $lead_result = database()->query("SELECT
@@ -15949,6 +16873,309 @@ function fcc_ai_get_user_dashboard_payload(int $user_id, string $period_start_da
         4
     );
     $payload['useful_items'] = fcc_ai_build_user_useful_items($payload, $language);
+
+    return $payload;
+}
+
+function fcc_ai_get_user_chat_intelligence_payload(int $user_id, string $period_start_datetime, int $limit = 6, string $language = 'hr'): array {
+    $language = fcc_ai_resolve_public_reply_language($language);
+    $limit = max(3, min(12, $limit));
+    $dashboard = fcc_ai_get_user_dashboard_payload($user_id, $period_start_datetime, max(8, $limit * 2), $language);
+
+    $payload = [
+        'is_available' => !empty($dashboard['is_available']),
+        'headline' => '',
+        'executive_summary' => '',
+        'coach' => [
+            'summary' => '',
+            'blocker' => '',
+            'next_admin_move' => '',
+            'next_user_move' => '',
+            'top_topics' => [],
+            'threads' => [],
+        ],
+        'public_ai' => [
+            'summary' => '',
+            'blocker' => '',
+            'next_admin_move' => '',
+            'next_user_move' => '',
+            'top_topics' => [],
+            'threads' => [],
+        ],
+        'strengths' => [],
+        'weaknesses' => [],
+        'admin_changes' => [],
+        'risky_threads' => [],
+        'suspicious_threads' => [],
+        'review_threads' => [],
+        'source' => $dashboard,
+    ];
+
+    if(empty($dashboard['is_available'])) {
+        return $payload;
+    }
+
+    $period_start_sql = db()->escape(trim($period_start_datetime) !== '' ? trim($period_start_datetime) : date('Y-m-d 00:00:00', strtotime('-30 days')));
+    $coach_topics = [];
+    $public_topics = [];
+    $coach_thread_total = 0;
+    $public_thread_total = 0;
+    $coach_review_total = 0;
+    $public_review_total = 0;
+    $public_captured_total = 0;
+
+    $insight_result = database()->query("SELECT
+            `fcc_ai_conversation_id`,
+            `scope`,
+            `primary_topic`,
+            `primary_topic_label`,
+            `intent`,
+            `outcome_signal`,
+            `quality_signal`
+        FROM `fcc_ai_conversation_insights`
+        WHERE `user_id` = {$user_id}
+          AND COALESCE(`last_datetime`, `datetime`) >= '{$period_start_sql}'");
+
+    while($insight_result && $row = $insight_result->fetch_assoc()) {
+        $scope = (string) ($row['scope'] ?? 'public_app');
+        $topic_label = trim((string) (($row['primary_topic_label'] ?? '') ?: ($row['primary_topic'] ?? '')));
+        $quality_signal = (string) ($row['quality_signal'] ?? 'neutral');
+        $outcome_signal = (string) ($row['outcome_signal'] ?? '');
+
+        if($scope === 'internal_coach') {
+            $coach_thread_total++;
+            if($quality_signal === 'needs_review') {
+                $coach_review_total++;
+            }
+            if($topic_label !== '') {
+                $coach_topics[$topic_label] = ($coach_topics[$topic_label] ?? 0) + 1;
+            }
+        } else {
+            $public_thread_total++;
+            if($quality_signal === 'needs_review') {
+                $public_review_total++;
+            }
+            if($outcome_signal === 'lead_captured') {
+                $public_captured_total++;
+            }
+            if($topic_label !== '') {
+                $public_topics[$topic_label] = ($public_topics[$topic_label] ?? 0) + 1;
+            }
+        }
+    }
+
+    arsort($coach_topics);
+    arsort($public_topics);
+
+    $coach_topic_rows = array_map(static function(string $label, int $total): array {
+        return ['label' => $label, 'total' => $total];
+    }, array_keys($coach_topics), array_values($coach_topics));
+    $public_topic_rows = array_map(static function(string $label, int $total): array {
+        return ['label' => $label, 'total' => $total];
+    }, array_keys($public_topics), array_values($public_topics));
+
+    $coach_threads = array_values(array_filter(($dashboard['recent_conversations'] ?? []), static function(array $row): bool {
+        return (string) ($row['scope_label'] ?? '') === 'Coach' || trim((string) ($row['scope'] ?? '')) === 'internal_coach';
+    }));
+    $public_threads = array_values(array_filter(($dashboard['recent_conversations'] ?? []), static function(array $row): bool {
+        return !((string) ($row['scope_label'] ?? '') === 'Coach' || trim((string) ($row['scope'] ?? '')) === 'internal_coach');
+    }));
+
+    $risky_threads = [];
+    foreach($dashboard['recent_conversations'] ?? [] as $thread_row) {
+        $is_risky = !empty($thread_row['needs_review'])
+            || !empty($thread_row['suspicion']['is_suspicious'])
+            || (int) ($thread_row['suspicion']['score'] ?? 0) >= 40;
+
+        if($is_risky) {
+            $risky_threads[] = $thread_row;
+        }
+    }
+
+    usort($risky_threads, static function(array $a, array $b) {
+        return (((int) ($b['suspicion']['score'] ?? 0)) <=> ((int) ($a['suspicion']['score'] ?? 0)))
+            ?: (((int) ($b['needs_review'] ?? 0)) <=> ((int) ($a['needs_review'] ?? 0)))
+            ?: strcmp((string) ($b['activity_at'] ?? ''), (string) ($a['activity_at'] ?? ''));
+    });
+
+    $suspicious_threads = array_values(array_filter($risky_threads, static function(array $thread_row): bool {
+        return !empty($thread_row['suspicion']['is_suspicious']);
+    }));
+
+    $review_threads = [];
+    foreach(($dashboard['recent_negative_feedback'] ?? []) as $feedback_row) {
+        $review_threads[] = [
+            'assistant_label' => (string) ($feedback_row['assistant_label'] ?? 'AI'),
+            'scope_label' => (string) ($feedback_row['scope_label'] ?? ''),
+            'reason_label' => (string) ($feedback_row['reason_label'] ?? ''),
+            'note' => (string) ($feedback_row['note'] ?? ''),
+            'message_excerpt' => (string) ($feedback_row['message_excerpt'] ?? ''),
+            'datetime' => (string) ($feedback_row['datetime'] ?? ''),
+            'thread_preview' => $feedback_row['thread_preview'] ?? [],
+        ];
+    }
+
+    $coach_top_topic = (string) ($coach_topic_rows[0]['label'] ?? '');
+    $public_top_topic = (string) ($public_topic_rows[0]['label'] ?? '');
+    $total_leads = (int) ($dashboard['totals']['leads'] ?? 0);
+    $review_total = (int) ($dashboard['totals']['review_conversations'] ?? 0);
+
+    if($public_captured_total > 0) {
+        $payload['strengths'][] = 'Javni AI već hvata konkretne leadove i ima vidljiv conversion signal.';
+    }
+
+    if($public_top_topic !== '' && $public_thread_total >= 2) {
+        $payload['strengths'][] = 'Publika pokazuje jasan interes za temu "' . $public_top_topic . '", što daje dobar fokus za sadržaj i CTA.';
+    }
+
+    if($coach_top_topic !== '' && $coach_review_total === 0 && $coach_thread_total >= 2) {
+        $payload['strengths'][] = 'Coach komunikacija je fokusirana oko teme "' . $coach_top_topic . '" bez review signala.';
+    }
+
+    if($review_total > 0) {
+        $payload['weaknesses'][] = 'Dio javnih AI odgovora traži doradu jer korisnici signaliziraju nejasnoću ili slabiji odgovor.';
+    }
+
+    if($coach_thread_total >= 3 && $total_leads === 0) {
+        $payload['weaknesses'][] = 'Coach se koristi, ali još nema dovoljno execution signala koji bi se pretvorio u lead ili jasan pomak.';
+    }
+
+    if($public_thread_total >= 4 && $public_captured_total === 0) {
+        $payload['weaknesses'][] = 'Javni AI ima razgovore, ali još ne pretvara interes u uhvaćeni lead.';
+    }
+
+    if(count($public_topics) >= 4) {
+        $payload['weaknesses'][] = 'Pitanja publike su raspršena kroz više tema pa positioning i sljedeći korak nisu dovoljno oštri.';
+    }
+
+    if($review_total > 0) {
+        $payload['admin_changes'][] = 'Prvo otvori review queue i doradi odgovore koji već imaju signal lošeg odgovora.';
+    }
+
+    if(!empty($suspicious_threads)) {
+        $payload['admin_changes'][] = 'Pregledaj suspektne razgovore i provjeri traže li doradu pravila, compliance copyja ili prompt zaštite.';
+    }
+
+    if($coach_thread_total >= 3 && $total_leads === 0) {
+        $payload['admin_changes'][] = 'Pošalji mentorski follow-up i svedi Coach fokus na jedan provedivi tjedni potez.';
+    }
+
+    if($public_thread_total >= 4 && $public_captured_total === 0) {
+        $payload['admin_changes'][] = 'Doradi lead capture CTA i sljedeći korak na javnoj FCC aplikaciji jer razgovori postoje bez conversiona.';
+    }
+
+    if($public_top_topic !== '') {
+        $payload['admin_changes'][] = 'Pretvori temu "' . $public_top_topic . '" u jači script, FAQ ili sadržaj koji će AI i suradnik koristiti dosljednije.';
+    }
+
+    $payload['coach']['summary'] = $coach_thread_total === 0
+        ? 'Coach se još ne koristi dovoljno da bi dao pouzdan signal.'
+        : ($coach_thread_total >= 3 && $total_leads === 0
+            ? 'Coach je aktivan, ali razgovori još ne prelaze dovoljno jasno u execution i rezultat.'
+            : 'Coach signal pokazuje gdje suradnik aktivno traži pomoć i na kojim temama mu treba vodstvo.');
+    $payload['coach']['blocker'] = $coach_thread_total >= 3 && $total_leads === 0
+        ? 'Glavni blocker je provedba: puno Coach angažmana, ali premalo rezultatskog pomaka.'
+        : ($coach_top_topic !== '' ? 'Najviše se vrti tema "' . $coach_top_topic . '".' : 'Još nema dominantnog Coach blockera.');
+    $payload['coach']['next_admin_move'] = $coach_thread_total > 0
+        ? 'Provjeri zadnje Coach threadove i svedi sljedeći mentorski potez na jednu konkretnu tjednu obvezu.'
+        : 'Prvo potakni suradnika da aktivno koristi Coach na stvarnom tjednom cilju.';
+    $payload['coach']['next_user_move'] = $coach_thread_total >= 3 && $total_leads === 0
+        ? 'Prevesti zadnji Coach savjet u jednu mjerljivu akciju ovaj tjedan.'
+        : 'Nastaviti Coach kroz jednu jasnu temu i jedan konkretan sljedeći korak.';
+    $payload['coach']['top_topics'] = array_slice($coach_topic_rows, 0, 4);
+    $payload['coach']['threads'] = array_slice($coach_threads, 0, $limit);
+
+    $payload['public_ai']['summary'] = $public_thread_total === 0
+        ? 'Javni AI još nema dovoljno razgovora za pouzdan signal.'
+        : ($public_captured_total > 0
+            ? 'Javni AI već pokazuje conversion potencijal kroz uhvaćene leadove i ponavljajuće teme publike.'
+            : 'Javni AI ima razgovore, ali još traži oštriji positioning i jači conversion put.');
+    $payload['public_ai']['blocker'] = $review_total > 0
+        ? 'Glavni blocker je kvaliteta dijela javnih odgovora i potreba za jasnijim sljedećim korakom.'
+        : ($public_thread_total >= 4 && $public_captured_total === 0
+            ? 'Glavni blocker je conversion: interes postoji, ali CTA i lead capture još nisu dovoljno jaki.'
+            : ($public_top_topic !== '' ? 'Najviše interesa dolazi kroz temu "' . $public_top_topic . '".' : 'Još nema dominantnog javnog AI blockera.'));
+    $payload['public_ai']['next_admin_move'] = $public_thread_total > 0
+        ? 'Pregledaj javne threadove s najviše interesa i uskladi CTA, FAQ ili skriptu oko najjače teme.'
+        : 'Prvo dovedi više javnih AI razgovora kroz bolju vidljivost AI bloka.';
+    $payload['public_ai']['next_user_move'] = $public_captured_total > 0
+        ? 'Zadržati temu koja već hvata leadove i pojačati sadržaj oko nje.'
+        : 'Pojačati jedan jasan CTA i jednu glavnu temu koja vodi prema kontaktu ili preporuci.';
+    $payload['public_ai']['top_topics'] = array_slice($public_topic_rows, 0, 4);
+    $payload['public_ai']['threads'] = array_slice($public_threads, 0, $limit);
+
+    $payload['risky_threads'] = array_slice($risky_threads, 0, $limit);
+    $payload['suspicious_threads'] = array_slice($suspicious_threads, 0, $limit);
+    $payload['review_threads'] = array_slice($review_threads, 0, $limit);
+
+    $payload['headline'] = $public_captured_total > 0
+        ? 'AI već daje rezultat, ali traži čišće upravljanje temama i review signalima.'
+        : ($coach_thread_total >= 3 && $total_leads === 0
+            ? 'Suradnik traži dosta Coach pomoći, ali to se još ne pretvara u jasan execution signal.'
+            : ($review_total > 0
+                ? 'Najveći operativni problem trenutno su javni AI odgovori koji traže provjeru.'
+                : 'AI signal je aktivan, ali treba jasnije odvojiti teme, conversion put i mentorski fokus.'));
+
+    $summary_parts = [];
+    if($coach_thread_total > 0) {
+        $summary_parts[] = 'Coach razgovori: ' . nr($coach_thread_total) . ($coach_top_topic !== '' ? ' · najviše se vrti "' . $coach_top_topic . '"' : '');
+    }
+    if($public_thread_total > 0) {
+        $summary_parts[] = 'Javni AI razgovori: ' . nr($public_thread_total) . ($public_top_topic !== '' ? ' · top tema "' . $public_top_topic . '"' : '');
+    }
+    if($public_captured_total > 0) {
+        $summary_parts[] = 'Uhvaćeni public leadovi: ' . nr($public_captured_total);
+    }
+    if($review_total > 0) {
+        $summary_parts[] = 'Review threadovi: ' . nr($review_total);
+    }
+    if(!empty($suspicious_threads)) {
+        $summary_parts[] = 'Suspektni razgovori: ' . nr(count($suspicious_threads));
+    }
+
+    $payload['executive_summary'] = !empty($summary_parts)
+        ? implode(' · ', $summary_parts) . '.'
+        : 'Još nema dovoljno AI signala za dublji admin zaključak.';
+
+    $payload['strengths'] = array_values(array_slice(array_unique(array_filter($payload['strengths'])), 0, 4));
+    $payload['weaknesses'] = array_values(array_slice(array_unique(array_filter($payload['weaknesses'])), 0, 4));
+    $payload['admin_changes'] = array_values(array_slice(array_unique(array_filter($payload['admin_changes'])), 0, 5));
+
+    $payload['inbox'] = [
+        'tabs' => [
+            [
+                'key' => 'coach',
+                'label' => $language === 'en' ? 'Coach' : 'Coach',
+                'count' => count($payload['coach']['threads'] ?? []),
+            ],
+            [
+                'key' => 'public_ai',
+                'label' => $language === 'en' ? 'Public AI' : 'AI za ljude',
+                'count' => count($payload['public_ai']['threads'] ?? []),
+            ],
+            [
+                'key' => 'suspicious',
+                'label' => $language === 'en' ? 'Suspicious' : 'Suspektni',
+                'count' => count($payload['suspicious_threads'] ?? []),
+            ],
+            [
+                'key' => 'review',
+                'label' => $language === 'en' ? 'Review' : 'Review',
+                'count' => count($payload['review_threads'] ?? []),
+            ],
+            [
+                'key' => 'leads',
+                'label' => $language === 'en' ? 'Lead / conversion' : 'Lead / conversion',
+                'count' => count($dashboard['recent_leads'] ?? []),
+            ],
+        ],
+        'coach_threads' => array_slice($payload['coach']['threads'] ?? [], 0, $limit),
+        'public_threads' => array_slice($payload['public_ai']['threads'] ?? [], 0, $limit),
+        'suspicious_threads' => array_slice($payload['suspicious_threads'] ?? [], 0, $limit),
+        'review_threads' => array_slice($payload['review_threads'] ?? [], 0, $limit),
+        'lead_threads' => array_slice($dashboard['recent_leads'] ?? [], 0, $limit),
+    ];
+    $payload['executive_report'] = fcc_ai_build_user_executive_report_payload($payload, $language, 5);
 
     return $payload;
 }

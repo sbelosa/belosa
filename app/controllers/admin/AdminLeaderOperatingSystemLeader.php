@@ -4456,6 +4456,12 @@ class AdminLeaderOperatingSystemLeader extends Controller {
         $billing_summary = $billing_model->get_user_billing_summary((int) ($detail['user_id'] ?? 0));
         $stripe_billing = $billing_summary ? $this->get_stripe_billing_payload($detail, $billing_summary) : [];
         $period_comparison = [];
+        $chat_intelligence = fcc_ai_get_user_chat_intelligence_payload(
+            (int) ($detail['user_id'] ?? 0),
+            $this->get_period_start_datetime($this->get_period_days($period_key)),
+            6,
+            \Altum\Language::$code
+        );
 
         foreach(['7d', '30d', '90d'] as $comparison_key) {
             $comparison_payload = $detail['periods'][$comparison_key] ?? [];
@@ -4567,6 +4573,48 @@ class AdminLeaderOperatingSystemLeader extends Controller {
                 'cancel_at_period_end' => (bool) ($stripe_billing['cancel_at_period_end'] ?? false),
                 'current_period_end' => $stripe_billing['current_period_end'] ?? null,
                 'grace_until' => $stripe_billing['grace_until'] ?? null,
+            ],
+            'chat_intelligence' => [
+                'headline' => (string) ($chat_intelligence['headline'] ?? ''),
+                'executive_summary' => (string) ($chat_intelligence['executive_summary'] ?? ''),
+                'executive_report' => [
+                    'headline' => (string) ($chat_intelligence['executive_report']['headline'] ?? ''),
+                    'summary' => (string) ($chat_intelligence['executive_report']['summary'] ?? ''),
+                    'alerts' => array_values($chat_intelligence['executive_report']['alerts'] ?? []),
+                    'opportunities' => array_values($chat_intelligence['executive_report']['opportunities'] ?? []),
+                    'next_moves' => array_values($chat_intelligence['executive_report']['next_moves'] ?? []),
+                ],
+                'coach_summary' => (string) ($chat_intelligence['coach']['summary'] ?? ''),
+                'coach_blocker' => (string) ($chat_intelligence['coach']['blocker'] ?? ''),
+                'coach_next_admin_move' => (string) ($chat_intelligence['coach']['next_admin_move'] ?? ''),
+                'public_summary' => (string) ($chat_intelligence['public_ai']['summary'] ?? ''),
+                'public_blocker' => (string) ($chat_intelligence['public_ai']['blocker'] ?? ''),
+                'public_next_admin_move' => (string) ($chat_intelligence['public_ai']['next_admin_move'] ?? ''),
+                'strengths' => array_values($chat_intelligence['strengths'] ?? []),
+                'weaknesses' => array_values($chat_intelligence['weaknesses'] ?? []),
+                'admin_changes' => array_values($chat_intelligence['admin_changes'] ?? []),
+                'coach_top_topics' => array_map(static function($row) {
+                    return [
+                        'label' => (string) ($row['label'] ?? ''),
+                        'total' => (int) ($row['total'] ?? 0),
+                    ];
+                }, array_slice($chat_intelligence['coach']['top_topics'] ?? [], 0, 4)),
+                'public_top_topics' => array_map(static function($row) {
+                    return [
+                        'label' => (string) ($row['label'] ?? ''),
+                        'total' => (int) ($row['total'] ?? 0),
+                    ];
+                }, array_slice($chat_intelligence['public_ai']['top_topics'] ?? [], 0, 4)),
+                'risky_threads' => array_map(static function($row) {
+                    return [
+                        'topic' => (string) ($row['primary_topic_label'] ?? ''),
+                        'summary' => (string) ($row['summary'] ?? ''),
+                        'core_issue' => (string) ($row['core_issue'] ?? ''),
+                        'quality' => (string) ($row['quality_badge']['label'] ?? ''),
+                        'outcome' => (string) ($row['outcome_badge']['label'] ?? ''),
+                        'suspicion' => (string) ($row['suspicion']['top_label'] ?? ''),
+                    ];
+                }, array_slice($chat_intelligence['risky_threads'] ?? [], 0, 4)),
             ],
             /* Custom code: FC-2026-03-31: Feed anomaly radar into AI input */
             'anomaly_radar' => [
@@ -4987,6 +5035,8 @@ class AdminLeaderOperatingSystemLeader extends Controller {
         $ai_report = $detail ? $this->get_cached_ai_report((int) $detail['user_id'], $selected_period) : null;
         $stripe_billing = ($detail && $billing_summary) ? $this->get_stripe_billing_payload($detail, $billing_summary) : null;
 
+        $period_start_datetime = $this->get_period_start_datetime($this->get_period_days($selected_period));
+
         $data = [
             'selected_period' => $selected_period,
             'period_options' => $allowed_periods,
@@ -5009,7 +5059,8 @@ class AdminLeaderOperatingSystemLeader extends Controller {
             'consistency' => ($detail && !empty($detail['periods'][$selected_period])) ? $this->get_consistency_payload($detail['periods'][$selected_period], $detail['ai_plan_admin'] ?? []) : null,
             'coaching_roi' => ($detail && !empty($detail['score_history'][$selected_period])) ? $this->get_coaching_roi_payload($detail['score_history'][$selected_period], $detail['ai_plan_admin'] ?? []) : null,
             'ai_text_detail' => $detail ? $this->get_ai_text_detail_payload($detail['ai_plan_admin'] ?? []) : null,
-            'fcc_ai_detail' => $detail ? fcc_ai_get_user_dashboard_payload((int) ($detail['user_id'] ?? 0), $this->get_period_start_datetime($this->get_period_days($selected_period)), 6, \Altum\Language::$code) : null,
+            'fcc_ai_detail' => $detail ? fcc_ai_get_user_dashboard_payload((int) ($detail['user_id'] ?? 0), $period_start_datetime, 6, \Altum\Language::$code) : null,
+            'fcc_ai_dossier' => $detail ? fcc_ai_get_user_chat_intelligence_payload((int) ($detail['user_id'] ?? 0), $period_start_datetime, 6, \Altum\Language::$code) : null,
             'featured_profile_admin' => $detail ? $this->get_featured_profile_admin_payload((int) $detail['user_id']) : null,
             'ai_report' => $ai_report,
             'los_outreach' => $detail ? $this->get_los_outreach_payload((int) $detail['user_id'], $selected_period, $ai_report, (string) ($detail['email'] ?? '')) : null,

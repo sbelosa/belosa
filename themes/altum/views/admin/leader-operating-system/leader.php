@@ -77,6 +77,198 @@
         gap: 0.65rem;
     }
 
+    .leader-os-zone-shell {
+        border-radius: 1.05rem;
+        border: 1px solid rgba(148, 163, 184, 0.12);
+        background: linear-gradient(180deg, rgba(9, 16, 29, 0.82) 0%, rgba(8, 13, 24, 0.92) 100%);
+        padding: 1rem 1.05rem;
+    }
+
+    .leader-os-zone-shell + .leader-os-zone-shell {
+        margin-top: 1rem;
+    }
+
+    .leader-os-zone-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 0.9rem;
+        margin-bottom: 0.9rem;
+    }
+
+    .leader-os-zone-copy {
+        min-width: 0;
+    }
+
+    .leader-os-zone-eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        color: #9ddcff;
+        font-size: 0.76rem;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin-bottom: 0.45rem;
+    }
+
+    .leader-os-zone-note {
+        color: rgba(191, 211, 238, 0.76);
+        font-size: 0.84rem;
+        line-height: 1.55;
+    }
+
+    .leader-os-zone-grid {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 0.85rem;
+    }
+
+    .leader-os-zone-card {
+        display: flex;
+        flex-direction: column;
+        gap: 0.55rem;
+        min-height: 100%;
+        border-radius: 0.95rem;
+        border: 1px solid rgba(148, 163, 184, 0.1);
+        background: rgba(8, 13, 26, 0.72);
+        padding: 0.9rem;
+        transition: border-color 0.18s ease, background 0.18s ease, transform 0.18s ease;
+    }
+
+    .leader-os-zone-card:hover {
+        text-decoration: none;
+        border-color: rgba(125, 211, 252, 0.3);
+        background: rgba(11, 22, 39, 0.9);
+        transform: translateY(-1px);
+    }
+
+    button.leader-os-zone-card {
+        width: 100%;
+        text-align: left;
+        color: inherit;
+        cursor: pointer;
+    }
+
+    .leader-os-zone-card-title {
+        color: #f8fbff;
+        font-size: 0.95rem;
+        font-weight: 700;
+        line-height: 1.35;
+    }
+
+    .leader-os-zone-card-copy {
+        color: rgba(220, 232, 245, 0.78);
+        font-size: 0.82rem;
+        line-height: 1.55;
+    }
+
+    .leader-os-zone-card-tag {
+        display: inline-flex;
+        align-self: flex-start;
+        align-items: center;
+        padding: 0.24rem 0.55rem;
+        border-radius: 999px;
+        background: rgba(124, 200, 255, 0.14);
+        border: 1px solid rgba(124, 200, 255, 0.22);
+        color: #dff6ff;
+        font-size: 0.72rem;
+        font-weight: 700;
+    }
+
+    .leader-os-priority-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0.95rem;
+        margin-bottom: 1rem;
+    }
+
+    .leader-os-priority-card {
+        border-radius: 1rem;
+        border: 1px solid rgba(148, 163, 184, 0.12);
+        background: linear-gradient(180deg, rgba(7, 12, 24, 0.82) 0%, rgba(13, 21, 38, 0.94) 100%);
+        padding: 1rem;
+    }
+
+    .leader-os-priority-card .leader-os-cockpit-label {
+        margin-bottom: 0.55rem;
+    }
+
+    .leader-os-priority-card-copy {
+        color: rgba(236, 243, 255, 0.92);
+        font-size: 0.92rem;
+        line-height: 1.6;
+    }
+
+    .leader-os-priority-card-copy strong {
+        color: #ffffff;
+    }
+
+    .leader-os-priority-card-meta {
+        margin-top: 0.75rem;
+        color: rgba(191, 211, 238, 0.72);
+        font-size: 0.82rem;
+        line-height: 1.5;
+    }
+
+    .leader-os-collapsible {
+        border: 1px solid rgba(148, 163, 184, 0.12);
+        border-radius: 0.95rem;
+        background: rgba(8, 13, 26, 0.52);
+        overflow: hidden;
+    }
+
+    .leader-os-collapsible + .leader-os-collapsible {
+        margin-top: 0.85rem;
+    }
+
+    .leader-os-collapsible > summary {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 0.85rem;
+        cursor: pointer;
+        list-style: none;
+        padding: 0.95rem 1rem;
+        color: #f8fbff;
+        font-weight: 700;
+    }
+
+    .leader-os-collapsible > summary::-webkit-details-marker {
+        display: none;
+    }
+
+    .leader-os-collapsible > summary::after {
+        content: '+';
+        flex-shrink: 0;
+        color: #9ddcff;
+        font-size: 1rem;
+        line-height: 1;
+        margin-top: 0.1rem;
+    }
+
+    .leader-os-collapsible[open] > summary::after {
+        content: '−';
+    }
+
+    .leader-os-collapsible-copy {
+        color: rgba(191, 211, 238, 0.74);
+        font-size: 0.8rem;
+        font-weight: 500;
+        line-height: 1.5;
+        margin-top: 0.3rem;
+    }
+
+    .leader-os-collapsible-body {
+        padding: 0 1rem 1rem;
+        border-top: 1px solid rgba(148, 163, 184, 0.08);
+    }
+
+    .leader-os-collapsible-body .leader-os-detail-note:first-child,
+    .leader-os-collapsible-body .leader-os-ai-title:first-child {
+        margin-top: 1rem;
+    }
+
     .leader-os-section-link {
         display: inline-flex;
         align-items: center;
@@ -860,6 +1052,33 @@
         background: rgba(127, 29, 29, 0.28);
     }
 
+    .leader-os-exec-card {
+        border-radius: 1rem;
+        border: 1px solid rgba(148, 163, 184, 0.12);
+        background: rgba(7, 12, 24, 0.62);
+        padding: 1rem;
+        height: 100%;
+    }
+
+    .leader-os-exec-list {
+        display: grid;
+        gap: 0.75rem;
+    }
+
+    .leader-os-exec-item {
+        border-radius: 0.9rem;
+        border: 1px solid rgba(148, 163, 184, 0.1);
+        background: rgba(15, 23, 42, 0.62);
+        padding: 0.8rem 0.85rem;
+    }
+
+    .leader-os-exec-item-copy {
+        color: rgba(224, 234, 246, 0.82);
+        font-size: 0.82rem;
+        line-height: 1.5;
+        margin-top: 0.45rem;
+    }
+
     .leader-os-phase4-priority.priority-medium {
         border-color: rgba(251, 191, 36, 0.35);
         background: rgba(120, 53, 15, 0.28);
@@ -948,6 +1167,124 @@
         margin-top: 0.55rem;
         font-size: 0.76rem;
         color: rgba(191, 211, 238, 0.72);
+    }
+
+    .leader-os-inbox-tabs {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.6rem;
+        margin-bottom: 1rem;
+    }
+
+    .leader-os-inbox-tab {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        padding: 0.58rem 0.9rem;
+        border-radius: 999px;
+        border: 1px solid rgba(96, 165, 250, 0.18);
+        background: rgba(8, 13, 26, 0.62);
+        color: #dceaff;
+        font-size: 0.8rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.18s ease;
+    }
+
+    .leader-os-inbox-tab:hover,
+    .leader-os-inbox-tab:focus {
+        color: #ffffff;
+        border-color: rgba(124, 200, 255, 0.38);
+        background: rgba(10, 25, 46, 0.86);
+        outline: none;
+    }
+
+    .leader-os-inbox-tab.is-active {
+        color: #ffffff;
+        border-color: rgba(124, 200, 255, 0.45);
+        background: linear-gradient(180deg, rgba(24, 87, 134, 0.86) 0%, rgba(10, 41, 69, 0.96) 100%);
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 0.8rem 1.4rem rgba(8, 29, 52, 0.28);
+    }
+
+    .leader-os-inbox-tab-count {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 1.4rem;
+        height: 1.4rem;
+        padding: 0 0.35rem;
+        border-radius: 999px;
+        background: rgba(255,255,255,0.12);
+        color: #ffffff;
+        font-size: 0.72rem;
+        font-weight: 800;
+    }
+
+    .leader-os-inbox-panel {
+        display: none;
+    }
+
+    .leader-os-inbox-panel.is-active {
+        display: block;
+    }
+
+    .leader-os-thread-card {
+        border: 1px solid rgba(148, 163, 184, 0.12);
+        border-radius: 0.95rem;
+        background: rgba(7, 12, 24, 0.62);
+        padding: 0.95rem 1rem;
+    }
+
+    .leader-os-thread-card + .leader-os-thread-card {
+        margin-top: 0.8rem;
+    }
+
+    .leader-os-thread-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 0.8rem;
+        margin-bottom: 0.55rem;
+    }
+
+    .leader-os-thread-card-title {
+        font-weight: 700;
+        color: #f8fbff;
+    }
+
+    .leader-os-thread-card-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.45rem;
+        margin-bottom: 0.6rem;
+    }
+
+    .leader-os-thread-card-copy {
+        color: rgba(220, 232, 245, 0.84);
+        font-size: 0.85rem;
+        line-height: 1.55;
+    }
+
+    .leader-os-thread-card-copy + .leader-os-thread-card-copy {
+        margin-top: 0.45rem;
+    }
+
+    .leader-os-thread-preview {
+        display: grid;
+        gap: 0.5rem;
+        margin-top: 0.8rem;
+    }
+
+    .leader-os-thread-preview-item {
+        border-left: 2px solid rgba(96, 165, 250, 0.22);
+        padding-left: 0.65rem;
+        color: rgba(220, 232, 245, 0.78);
+        font-size: 0.82rem;
+        line-height: 1.5;
+    }
+
+    .leader-os-thread-preview-item strong {
+        color: #ffffff;
     }
 
     .leader-os-outreach-form .form-control {
@@ -1281,6 +1618,8 @@
     /* /Custom code: FC-2026-03-31 */
 
     @media (max-width: 991.98px) {
+        .leader-os-zone-grid,
+        .leader-os-priority-grid,
         .leader-os-cockpit-grid,
         .leader-os-cockpit-summary-grid,
         .leader-os-compact-grid {
@@ -1315,6 +1654,8 @@
     /* /Custom code: FC-2026-03-31 */
 
     @media (max-width: 767.98px) {
+        .leader-os-zone-grid,
+        .leader-os-priority-grid,
         .leader-os-cockpit-grid,
         .leader-os-cockpit-summary-grid,
         .leader-os-compact-grid {
@@ -1604,31 +1945,119 @@ $render_detail_help = static function(string $tooltip): void {
         'blog_clicks' => 0,
         'funnel_registrations' => 0,
     ];
+    $public_profile_summary_label = !empty($featured_profile_admin['exists'])
+        ? (!empty($featured_profile_admin['is_recommended_sponsor'])
+            ? 'Live kao preporučeni sponsor'
+            : (!empty($featured_profile_admin['is_featured_listed']) ? 'Live na Featured Apps' : 'Javni profil još nije spreman'))
+        : 'Nema aktivnog javnog FCC profila';
+    $public_profile_summary_text = !empty($featured_profile_admin['exists'])
+        ? sprintf(
+            '15+ / 30d: %s · 50+ / 30d: %s · Sales link: %s.',
+            (string) (($featured_profile_admin['featured_status_label'] ?? '') ?: 'Ne'),
+            (string) (($featured_profile_admin['sponsor_status_label'] ?? '') ?: 'Ne'),
+            (string) (($featured_profile_admin['sales_link_status_label'] ?? '') ?: l('global.none'))
+        )
+        : 'Kad suradnik dobije dovoljno javnog signala, ovdje ćeš odmah vidjeti Featured i sponsor status.';
     ?>
     <div class="card leader-os-detail-shell mb-4">
         <div class="card-body">
-            <div class="leader-os-section-heading">
-                <div class="leader-os-section-heading-copy">
-                    <h3 class="h5 mb-1">Kako čitaš ovaj profil</h3>
-                    <div class="text-muted small">Kreni od AI analize i operativnog sažetka, zatim pogledaj promet i aplikaciju, pa coaching i naplatu. Dubinska analitika ostaje na dnu za detaljno kopanje.</div>
+            <div class="leader-os-zone-shell">
+                <div class="leader-os-zone-header">
+                    <div class="leader-os-zone-copy">
+                        <div class="leader-os-zone-eyebrow">Radna mapa suradnika</div>
+                        <h3 class="h5 mb-1">Sve je složeno po zonama, ne po slučajnim panelima</h3>
+                        <div class="leader-os-zone-note">Kreni od zone <strong>Prioriteti i akcije</strong>, zatim otvori <strong>Mentorstvo i follow-up</strong>, pa <strong>Javni profil i aplikaciju</strong>. Tek nakon toga gledaj <strong>AI i chatove</strong> i na kraju <strong>dubinsku analitiku</strong>.</div>
+                    </div>
+                    <span class="leader-os-detail-chip is-subtle"><?= l('admin_leader_operating_system.period_' . $data->selected_period) ?></span>
                 </div>
-            </div>
 
-            <div class="leader-os-section-nav">
-                <button type="button" class="leader-os-section-link leader-os-scroll-link" data-scroll-target="leader-os-ai-report">AI analiza</button>
-                <button type="button" class="leader-os-section-link leader-os-scroll-link" data-scroll-target="leader-os-traffic">Promet i klikovi</button>
-                <button type="button" class="leader-os-section-link leader-os-scroll-link" data-scroll-target="leader-os-outreach-panel">Poruke i izvještaji</button>
-                <button type="button" class="leader-os-section-link leader-os-scroll-link" data-scroll-target="leader-os-app-structure">Aplikacija</button>
-                <?php if(!empty($featured_profile_admin['exists'])): ?>
-                    <button type="button" class="leader-os-section-link leader-os-scroll-link" data-scroll-target="leader-os-featured-profile">FCC sponsor profil</button>
-                <?php endif ?>
-                <button type="button" class="leader-os-section-link leader-os-scroll-link" data-scroll-target="leader-os-phase4">Coaching</button>
-                <button type="button" class="leader-os-section-link leader-os-scroll-link" data-scroll-target="leader-os-stripe-billing">Naplata</button>
-                <button type="button" class="leader-os-section-link leader-os-scroll-link" data-scroll-target="leader-os-deep-dive">Dodatna analitika</button>
+                <div class="leader-os-zone-grid">
+                    <button type="button" class="leader-os-zone-card leader-os-scroll-link" data-scroll-target="leader-os-traffic">
+                        <span class="leader-os-zone-card-tag">1. Prioriteti</span>
+                        <div class="leader-os-zone-card-title">Što je važno sada</div>
+                        <div class="leader-os-zone-card-copy">Operativni sažetak, AI analiza i prvi najbolji admin potez za ovog suradnika.</div>
+                    </button>
+
+                    <button type="button" class="leader-os-zone-card leader-os-scroll-link" data-scroll-target="leader-os-phase4">
+                        <span class="leader-os-zone-card-tag">2. Mentorstvo</span>
+                        <div class="leader-os-zone-card-title">Coach i follow-up</div>
+                        <div class="leader-os-zone-card-copy">Tjedni AI plan, mentor status, coaching ROI i što trebaš komunicirati suradniku.</div>
+                    </button>
+
+                    <button type="button" class="leader-os-zone-card leader-os-scroll-link" data-scroll-target="leader-os-app-structure">
+                        <span class="leader-os-zone-card-tag">3. Javni sloj</span>
+                        <div class="leader-os-zone-card-title">Profil i aplikacija</div>
+                        <div class="leader-os-zone-card-copy">Javni AI profil, Featured / sponsor status i struktura glavne aplikacije.</div>
+                    </button>
+
+                    <button type="button" class="leader-os-zone-card leader-os-scroll-link" data-scroll-target="leader-os-ai-dossier">
+                        <span class="leader-os-zone-card-tag">4. AI i chatovi</span>
+                        <div class="leader-os-zone-card-title">Razgovori i signali</div>
+                        <div class="leader-os-zone-card-copy">Dossier, review inbox, sumnjivi threadovi i stvarni AI uvid u osobu i publiku.</div>
+                    </button>
+
+                    <button type="button" class="leader-os-zone-card leader-os-scroll-link" data-scroll-target="leader-os-deep-dive">
+                        <span class="leader-os-zone-card-tag">5. Deep dive</span>
+                        <div class="leader-os-zone-card-title">Analitika i usporedbe</div>
+                        <div class="leader-os-zone-card-copy">Billing, trendovi, score povijest, cohort usporedba i detaljni breakdowni klikova.</div>
+                    </button>
+                </div>
+
+                <div class="leader-os-section-nav mt-3">
+                    <button type="button" class="leader-os-section-link leader-os-scroll-link" data-scroll-target="leader-os-ai-report">AI analiza</button>
+                    <button type="button" class="leader-os-section-link leader-os-scroll-link" data-scroll-target="leader-os-outreach-panel">Poruke i izvještaji</button>
+                    <button type="button" class="leader-os-section-link leader-os-scroll-link" data-scroll-target="leader-os-app-structure">Aplikacija</button>
+                    <?php if(!empty($featured_profile_admin['exists'])): ?>
+                        <button type="button" class="leader-os-section-link leader-os-scroll-link" data-scroll-target="leader-os-featured-profile">FCC sponsor profil</button>
+                    <?php endif ?>
+                    <button type="button" class="leader-os-section-link leader-os-scroll-link" data-scroll-target="leader-os-chat-review-inbox">Chat inbox</button>
+                    <button type="button" class="leader-os-section-link leader-os-scroll-link" data-scroll-target="leader-os-stripe-billing">Naplata</button>
+                </div>
             </div>
         </div>
     </div>
 
+    <div class="leader-os-zone-shell mb-4" id="leader-os-priority-zone">
+        <div class="leader-os-zone-header">
+            <div class="leader-os-zone-copy">
+                <div class="leader-os-zone-eyebrow">Zona 1</div>
+                <h3 class="h5 mb-1">Prioriteti i akcije</h3>
+                <div class="leader-os-zone-note">Ovo je radni vrh detalja suradnika. Ovdje prvo vidiš što trenutno radi, gdje zapinje i koji je sljedeći admin potez, bez kopanja po svim donjim blokovima.</div>
+            </div>
+            <span class="leader-os-detail-status status-info">Operativni cockpit</span>
+        </div>
+
+        <div class="leader-os-priority-grid">
+            <div class="leader-os-priority-card">
+                <div class="leader-os-cockpit-label">Što trenutno radi</div>
+                <div class="leader-os-priority-card-copy">
+                    <strong><?= htmlspecialchars((string) ($main_opportunity_label ?: 'Fokus'), ENT_QUOTES, 'UTF-8') ?></strong><br>
+                    <?= htmlspecialchars((string) ($ai_focus_summary ?: l('global.none')), ENT_QUOTES, 'UTF-8') ?>
+                </div>
+                <div class="leader-os-priority-card-meta">Status: <?= htmlspecialchars((string) ($selected['status_label'] ?? l('global.none')), ENT_QUOTES, 'UTF-8') ?> · Dosljednost: <?= !empty($consistency) ? nr((int) ($consistency['score'] ?? 0)) . ' · ' . htmlspecialchars((string) ($consistency['state_label'] ?? '-'), ENT_QUOTES, 'UTF-8') : l('global.none') ?></div>
+            </div>
+
+            <div class="leader-os-priority-card">
+                <div class="leader-os-cockpit-label">Što admin radi sada</div>
+                <div class="leader-os-priority-card-copy">
+                    <strong>Admin akcija</strong><br>
+                    <?= htmlspecialchars((string) ($ai_admin_action_now ?: l('global.none')), ENT_QUOTES, 'UTF-8') ?>
+                </div>
+                <div class="leader-os-priority-card-meta">Suradnik ovaj tjedan: <?= htmlspecialchars((string) ($ai_collaborator_action_this_week ?: l('global.none')), ENT_QUOTES, 'UTF-8') ?></div>
+            </div>
+
+            <div class="leader-os-priority-card">
+                <div class="leader-os-cockpit-label">Javni status i setup</div>
+                <div class="leader-os-priority-card-copy">
+                    <strong><?= htmlspecialchars((string) $public_profile_summary_label, ENT_QUOTES, 'UTF-8') ?></strong><br>
+                    <?= htmlspecialchars((string) $public_profile_summary_text, ENT_QUOTES, 'UTF-8') ?>
+                </div>
+                <div class="leader-os-priority-card-meta">Billing: <?= htmlspecialchars((string) (($stripe_billing['plan_name'] ?? '') ?: l('global.none')), ENT_QUOTES, 'UTF-8') ?> · Najjači izvor: <?= htmlspecialchars((string) ($selected['top_source_label'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></div>
+            </div>
+        </div>
+    </div>
+
+    <?php ob_start(); ?>
     <?php if(!empty($featured_profile_admin['exists'])): ?>
         <?php
         $featured_profile_status_label = !empty($featured_profile_admin['is_recommended_sponsor'])
@@ -1642,7 +2071,7 @@ $render_detail_help = static function(string $tooltip): void {
         ?>
         <div class="row mb-3" id="leader-os-featured-profile">
             <div class="col-12 col-xl-5 mb-3">
-                <div class="leader-os-detail-panel h-100">
+                <div class="leader-os-detail-panel">
                     <div class="d-flex justify-content-between align-items-start flex-wrap mb-3" style="gap:.75rem;">
                         <div>
                             <h3 class="h5 mb-1">FCC sponsor profil</h3>
@@ -1706,54 +2135,59 @@ $render_detail_help = static function(string $tooltip): void {
             </div>
 
             <div class="col-12 col-xl-7 mb-3">
-                <div class="leader-os-detail-panel h-100">
-                    <div class="d-flex justify-content-between align-items-start flex-wrap mb-3" style="gap:.75rem;">
-                        <div>
-                            <h3 class="h5 mb-1">Uredi javni AI profil</h3>
-                            <div class="text-muted small">Ovo su tekstovi koji javno izlaze van. Kad ih spremiš, FCC odmah osvježi Featured Apps, preporučene sponsore i sponsor profil bez dodatnog odobravanja.</div>
-                        </div>
-                        <span class="leader-os-detail-chip is-subtle">AI prioritet aktivan</span>
-                    </div>
-
-                    <form action="" method="post">
-                        <input type="hidden" name="token" value="<?= \Altum\Csrf::get() ?>" />
-
-                        <div class="form-row">
-                            <div class="form-group col-12">
-                                <label class="small text-muted d-block mb-2">Kako koristi FCC</label>
-                                <input type="text" name="fcc_featured_public_use_case" class="form-control" maxlength="128" value="<?= htmlspecialchars((string) ($featured_profile_admin['public_use_case'] ?? ''), ENT_QUOTES, 'UTF-8') ?>" />
+                <div class="leader-os-detail-panel">
+                    <details class="leader-os-collapsible" open>
+                        <summary>
+                            <div>
+                                <div class="h5 mb-1">Uredi javni AI profil</div>
+                                <div class="leader-os-collapsible-copy">Ovo su javni tekstovi za Featured Apps, preporučene sponsore i sponsor profil. Ostavio sam ih u posebnom editoru da ne guše ostatak detalja suradnika.</div>
                             </div>
+                            <span class="leader-os-detail-chip is-subtle">AI prioritet aktivan</span>
+                        </summary>
+
+                        <div class="leader-os-collapsible-body">
+                            <form action="" method="post">
+                                <input type="hidden" name="token" value="<?= \Altum\Csrf::get() ?>" />
+
+                                <div class="form-row">
+                                    <div class="form-group col-12">
+                                        <label class="small text-muted d-block mb-2">Kako koristi FCC</label>
+                                        <input type="text" name="fcc_featured_public_use_case" class="form-control" maxlength="128" value="<?= htmlspecialchars((string) ($featured_profile_admin['public_use_case'] ?? ''), ENT_QUOTES, 'UTF-8') ?>" />
+                                    </div>
+                                </div>
+
+                                <div class="form-row">
+                                    <div class="form-group col-12">
+                                        <label class="small text-muted d-block mb-2">Kratki javni opis</label>
+                                        <textarea name="fcc_featured_public_summary" rows="4" class="form-control" maxlength="420"><?= htmlspecialchars((string) ($featured_profile_admin['public_summary'] ?? ''), ENT_QUOTES, 'UTF-8') ?></textarea>
+                                    </div>
+                                </div>
+
+                                <div class="form-row">
+                                    <div class="form-group col-12">
+                                        <label class="small text-muted d-block mb-2">Dulji intro za sponsor profil</label>
+                                        <textarea name="fcc_featured_profile_intro" rows="6" class="form-control" maxlength="880"><?= htmlspecialchars((string) ($featured_profile_admin['profile_intro'] ?? ''), ENT_QUOTES, 'UTF-8') ?></textarea>
+                                    </div>
+                                </div>
+
+                                <div class="form-row">
+                                    <div class="form-group col-12">
+                                        <label class="small text-muted d-block mb-2">Meta opis za Google i AI indeksaciju</label>
+                                        <textarea name="fcc_featured_meta_description" rows="3" class="form-control" maxlength="180"><?= htmlspecialchars((string) ($featured_profile_admin['meta_description'] ?? ''), ENT_QUOTES, 'UTF-8') ?></textarea>
+                                    </div>
+                                </div>
+
+                                <div class="leader-os-detail-note mb-3">Ovdje uređuješ finalnu javnu verziju. Ako korisnik generira novi AI profil, ova verzija i dalje ostaje prioritet dok je ne promijeniš ili očistiš.</div>
+
+                                <button type="submit" name="save_featured_profile_admin" value="1" class="btn btn-sm leader-os-ai-button">Spremi FCC sponsor profil</button>
+                            </form>
                         </div>
-
-                        <div class="form-row">
-                            <div class="form-group col-12">
-                                <label class="small text-muted d-block mb-2">Kratki javni opis</label>
-                                <textarea name="fcc_featured_public_summary" rows="4" class="form-control" maxlength="420"><?= htmlspecialchars((string) ($featured_profile_admin['public_summary'] ?? ''), ENT_QUOTES, 'UTF-8') ?></textarea>
-                            </div>
-                        </div>
-
-                        <div class="form-row">
-                            <div class="form-group col-12">
-                                <label class="small text-muted d-block mb-2">Dulji intro za sponsor profil</label>
-                                <textarea name="fcc_featured_profile_intro" rows="6" class="form-control" maxlength="880"><?= htmlspecialchars((string) ($featured_profile_admin['profile_intro'] ?? ''), ENT_QUOTES, 'UTF-8') ?></textarea>
-                            </div>
-                        </div>
-
-                        <div class="form-row">
-                            <div class="form-group col-12">
-                                <label class="small text-muted d-block mb-2">Meta opis za Google i AI indeksaciju</label>
-                                <textarea name="fcc_featured_meta_description" rows="3" class="form-control" maxlength="180"><?= htmlspecialchars((string) ($featured_profile_admin['meta_description'] ?? ''), ENT_QUOTES, 'UTF-8') ?></textarea>
-                            </div>
-                        </div>
-
-                        <div class="leader-os-detail-note mb-3">Ovdje uređuješ finalnu javnu verziju. Ako korisnik generira novi AI profil, ova verzija i dalje ostaje prioritet dok je ne promijeniš ili očistiš.</div>
-
-                        <button type="submit" name="save_featured_profile_admin" value="1" class="btn btn-sm leader-os-ai-button">Spremi FCC sponsor profil</button>
-                    </form>
+                    </details>
                 </div>
             </div>
         </div>
     <?php endif ?>
+    <?php $leader_os_featured_profile_markup = ob_get_clean(); ?>
 
     <div class="row" id="leader-os-traffic">
         <div class="col-12 col-xl-6 mb-3">
@@ -1963,11 +2397,12 @@ $render_detail_help = static function(string $tooltip): void {
         </div>
     </div>
 
+    <?php ob_start(); ?>
     <div class="card leader-os-detail-shell mb-4" id="leader-os-stripe-billing">
         <div class="card-body">
             <div class="row">
                 <div class="col-12 col-xl-6 mb-3 mb-xl-0">
-                    <div class="leader-os-detail-panel h-100">
+                    <div class="leader-os-detail-panel">
                         <div class="d-flex justify-content-between align-items-start flex-wrap mb-3">
                             <div>
                                 <h3 class="h5 mb-1"><?= l('admin_leader_operating_system.leader.stripe_title') ?></h3>
@@ -2077,7 +2512,7 @@ $render_detail_help = static function(string $tooltip): void {
                 </div>
 
                 <div class="col-12 col-xl-6">
-                    <div class="leader-os-detail-panel h-100">
+                    <div class="leader-os-detail-panel">
                         <div class="d-flex justify-content-between align-items-start flex-wrap mb-3">
                             <div>
                                 <h3 class="h5 mb-1"><?= l('admin_leader_operating_system.leader.stripe_recent_invoices') ?></h3>
@@ -2123,10 +2558,12 @@ $render_detail_help = static function(string $tooltip): void {
             </div>
         </div>
     </div>
+    <?php $leader_os_stripe_billing_markup = ob_get_clean(); ?>
 
+    <?php ob_start(); ?>
     <div class="row">
         <div class="col-12 col-xl-8 mb-3">
-            <div class="leader-os-detail-panel h-100">
+            <div class="leader-os-detail-panel">
                 <div class="d-flex justify-content-between align-items-center flex-wrap mb-3">
                     <div>
                         <h3 class="h5 mb-1"><?= l('admin_leader_operating_system.leader.chart_main_title') ?></h3>
@@ -2140,7 +2577,7 @@ $render_detail_help = static function(string $tooltip): void {
         </div>
 
         <div class="col-12 col-xl-4 mb-3">
-            <div class="leader-os-detail-panel h-100">
+            <div class="leader-os-detail-panel">
                 <div class="d-flex justify-content-between align-items-center flex-wrap mb-3">
                     <div>
                         <h3 class="h5 mb-1"><?= l('admin_leader_operating_system.leader.chart_compare_title') ?></h3>
@@ -2203,13 +2640,25 @@ $render_detail_help = static function(string $tooltip): void {
             </div>
         </div>
     </div>
+    <?php $leader_os_trend_markup = ob_get_clean(); ?>
+
+    <div class="leader-os-zone-shell mb-4" id="leader-os-mentor-zone">
+        <div class="leader-os-zone-header">
+            <div class="leader-os-zone-copy">
+                <div class="leader-os-zone-eyebrow">Zona 2</div>
+                <h3 class="h5 mb-1">Mentorstvo i follow-up</h3>
+                <div class="leader-os-zone-note">Ovdje pratiš što je suradnik zadnje dobio od mentora, kako izgleda coaching ritam i kada mu šalješ poruku, izvještaj ili novi konkretan zadatak.</div>
+            </div>
+            <span class="leader-os-detail-status status-warning">Mentorski rad</span>
+        </div>
+    </div>
 
     <!-- Custom code: FC-2026-03-31: LOS outreach review and history panel -->
     <div class="card leader-os-detail-shell mb-4">
         <div class="card-body">
             <div class="row">
                 <div class="col-12 col-xl-7 mb-3 mb-xl-0">
-                    <div class="leader-os-detail-panel h-100" id="leader-os-outreach-panel">
+                    <div class="leader-os-detail-panel" id="leader-os-outreach-panel">
                         <h3 class="h5 mb-2">Pošalji poruku i AI izvještaj</h3>
                         <div class="text-muted small mb-3">Ovdje koristiš zadnji AI nacrt, po potrebi ga urediš i šalješ suradniku kao privatnu poruku ili izvještaj.</div>
 
@@ -2231,94 +2680,118 @@ $render_detail_help = static function(string $tooltip): void {
                                 </div>
                             </div>
 
-                            <form action="" method="post" class="leader-os-outreach-form">
-                                <input type="hidden" name="token" value="<?= \Altum\Csrf::get() ?>" />
+                            <details class="leader-os-collapsible" open>
+                                <summary>
+                                    <div>
+                                        <div><?= l('admin_leader_operating_system.leader.outreach_send') ?></div>
+                                        <div class="leader-os-collapsible-copy">Otvori editor za slanje privatne poruke ili AI izvještaja suradniku.</div>
+                                    </div>
+                                    <span class="leader-os-detail-chip is-subtle">Email / poruka</span>
+                                </summary>
 
-                                <div class="form-group">
-                                    <label class="small text-muted d-block mb-2"><?= l('admin_leader_operating_system.leader.outreach_email') ?></label>
-                                    <input type="email" name="outreach_email" class="form-control" maxlength="320" value="<?= htmlspecialchars((string) ($los_outreach['draft_email'] ?? $detail['email']), ENT_QUOTES, 'UTF-8') ?>" />
+                                <div class="leader-os-collapsible-body">
+                                    <form action="" method="post" class="leader-os-outreach-form">
+                                        <input type="hidden" name="token" value="<?= \Altum\Csrf::get() ?>" />
+
+                                        <div class="form-group">
+                                            <label class="small text-muted d-block mb-2"><?= l('admin_leader_operating_system.leader.outreach_email') ?></label>
+                                            <input type="email" name="outreach_email" class="form-control" maxlength="320" value="<?= htmlspecialchars((string) ($los_outreach['draft_email'] ?? $detail['email']), ENT_QUOTES, 'UTF-8') ?>" />
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label class="small text-muted d-block mb-2"><?= l('admin_leader_operating_system.leader.outreach_subject') ?></label>
+                                            <input type="text" name="outreach_subject" class="form-control" maxlength="320" value="<?= htmlspecialchars((string) ($los_outreach['draft_subject'] ?? ''), ENT_QUOTES, 'UTF-8') ?>" />
+                                        </div>
+
+                                        <div class="form-group mb-3">
+                                            <label class="small text-muted d-block mb-2"><?= l('admin_leader_operating_system.leader.outreach_body') ?></label>
+                                            <textarea name="outreach_body" rows="9" class="form-control" maxlength="12000"><?= htmlspecialchars((string) ($los_outreach['draft_body'] ?? ''), ENT_QUOTES, 'UTF-8') ?></textarea>
+                                        </div>
+
+                                        <button type="submit" name="send_ai_report" value="1" class="btn btn-sm leader-os-ai-button"><?= l('admin_leader_operating_system.leader.outreach_send') ?></button>
+                                    </form>
                                 </div>
-
-                                <div class="form-group">
-                                    <label class="small text-muted d-block mb-2"><?= l('admin_leader_operating_system.leader.outreach_subject') ?></label>
-                                    <input type="text" name="outreach_subject" class="form-control" maxlength="320" value="<?= htmlspecialchars((string) ($los_outreach['draft_subject'] ?? ''), ENT_QUOTES, 'UTF-8') ?>" />
-                                </div>
-
-                                <div class="form-group mb-3">
-                                    <label class="small text-muted d-block mb-2"><?= l('admin_leader_operating_system.leader.outreach_body') ?></label>
-                                    <textarea name="outreach_body" rows="9" class="form-control" maxlength="12000"><?= htmlspecialchars((string) ($los_outreach['draft_body'] ?? ''), ENT_QUOTES, 'UTF-8') ?></textarea>
-                                </div>
-
-                                <button type="submit" name="send_ai_report" value="1" class="btn btn-sm leader-os-ai-button"><?= l('admin_leader_operating_system.leader.outreach_send') ?></button>
-                            </form>
+                            </details>
                         <?php endif ?>
                     </div>
                 </div>
 
                 <div class="col-12 col-xl-5">
-                    <div class="leader-os-detail-panel h-100" id="leader-os-ai-history">
+                    <div class="leader-os-detail-panel" id="leader-os-ai-history">
                         <h3 class="h5 mb-2">Povijest AI izvještaja i slanja</h3>
                         <div class="text-muted small mb-3">Ovdje vidiš sve generirane verzije izvještaja i zadnja slanja za ovog suradnika.</div>
 
                         <?php if(empty($report_history) && empty($send_history)): ?>
                             <div class="text-muted small mb-0"><?= l('admin_leader_operating_system.leader.outreach_history_empty') ?></div>
                         <?php else: ?>
-                            <div class="leader-os-outreach-history">
-                                <?php if(!empty($report_history)): ?>
-                                    <div class="leader-os-ai-title mb-1"><?= l('admin_leader_operating_system.leader.outreach_report_history') ?></div>
-                                    <?php foreach($report_history as $report_item): ?>
-                                        <div class="leader-os-outreach-history-item">
-                                            <div class="d-flex justify-content-between align-items-start mb-1" style="gap:.75rem;">
-                                                <div class="font-weight-bold"><?= htmlspecialchars((string) ($report_item['headline'] ?? $report_item['email_subject'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></div>
-                                                <?php if(!empty($report_item['version_number'])): ?>
-                                                    <span class="leader-os-detail-chip is-subtle"><?= sprintf(l('admin_leader_operating_system.leader.report_version'), nr((int) $report_item['version_number'])) ?></span>
-                                                <?php endif ?>
-                                            </div>
-                                            <div class="text-muted small mb-1"><?= !empty($report_item['generated_at']) ? \Altum\Date::get($report_item['generated_at'], 2) : '-' ?></div>
-                                            <div class="text-muted small"><?= htmlspecialchars((string) ($report_item['email_subject'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
-                                            <button
-                                                type="button"
-                                                class="btn btn-sm leader-os-detail-action leader-os-load-report mt-2"
-                                                data-email="<?= htmlspecialchars((string) ($los_outreach['draft_email'] ?? $detail['email']), ENT_QUOTES, 'UTF-8') ?>"
-                                                data-subject="<?= htmlspecialchars((string) ($report_item['email_subject'] ?? ''), ENT_QUOTES, 'UTF-8') ?>"
-                                                data-body="<?= htmlspecialchars(implode("\n\n", array_filter([
-                                                    (string) ($report_item['email_intro'] ?? ''),
-                                                    !empty($report_item['email_body_points']) ? implode("\n", array_map(static function($item) {
-                                                        return '- ' . $item;
-                                                    }, (array) $report_item['email_body_points'])) : '',
-                                                    (string) ($report_item['email_cta'] ?? ''),
-                                                ])), ENT_QUOTES, 'UTF-8') ?>"
-                                            >
-                                                <?= l('admin_leader_operating_system.leader.outreach_use_report') ?>
-                                            </button>
-                                        </div>
-                                    <?php endforeach ?>
-                                <?php endif ?>
+                            <details class="leader-os-collapsible" open>
+                                <summary>
+                                    <div>
+                                        <div>Povijest izvještaja i slanja</div>
+                                        <div class="leader-os-collapsible-copy">Otvori kad želiš uzeti stari AI nacrt, usporediti verzije ili vidjeti što je točno poslano suradniku.</div>
+                                    </div>
+                                    <span class="leader-os-detail-chip is-subtle"><?= nr((int) (count($report_history) + count($send_history))) ?> zapisa</span>
+                                </summary>
 
-                                <?php if(!empty($send_history)): ?>
-                                    <div class="leader-os-ai-title mb-1 mt-2"><?= l('admin_leader_operating_system.leader.outreach_send_history') ?></div>
-                                    <?php foreach($send_history as $send_item): ?>
-                                        <div class="leader-os-outreach-history-item">
-                                            <div class="d-flex justify-content-between align-items-start mb-2" style="gap:.75rem;">
-                                                <div>
-                                                    <div class="font-weight-bold"><?= htmlspecialchars((string) ($send_item['subject'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></div>
-                                                    <div class="text-muted small"><?= htmlspecialchars((string) ($send_item['email_address'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                                <div class="leader-os-collapsible-body">
+                                    <div class="leader-os-outreach-history">
+                                        <?php if(!empty($report_history)): ?>
+                                            <div class="leader-os-ai-title mb-1"><?= l('admin_leader_operating_system.leader.outreach_report_history') ?></div>
+                                            <?php foreach($report_history as $report_item): ?>
+                                                <div class="leader-os-outreach-history-item">
+                                                    <div class="d-flex justify-content-between align-items-start mb-1" style="gap:.75rem;">
+                                                        <div class="font-weight-bold"><?= htmlspecialchars((string) ($report_item['headline'] ?? $report_item['email_subject'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></div>
+                                                        <?php if(!empty($report_item['version_number'])): ?>
+                                                            <span class="leader-os-detail-chip is-subtle"><?= sprintf(l('admin_leader_operating_system.leader.report_version'), nr((int) $report_item['version_number'])) ?></span>
+                                                        <?php endif ?>
+                                                    </div>
+                                                    <div class="text-muted small mb-1"><?= !empty($report_item['generated_at']) ? \Altum\Date::get($report_item['generated_at'], 2) : '-' ?></div>
+                                                    <div class="text-muted small"><?= htmlspecialchars((string) ($report_item['email_subject'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                                                    <button
+                                                        type="button"
+                                                        class="btn btn-sm leader-os-detail-action leader-os-load-report mt-2"
+                                                        data-email="<?= htmlspecialchars((string) ($los_outreach['draft_email'] ?? $detail['email']), ENT_QUOTES, 'UTF-8') ?>"
+                                                        data-subject="<?= htmlspecialchars((string) ($report_item['email_subject'] ?? ''), ENT_QUOTES, 'UTF-8') ?>"
+                                                        data-body="<?= htmlspecialchars(implode("\n\n", array_filter([
+                                                            (string) ($report_item['email_intro'] ?? ''),
+                                                            !empty($report_item['email_body_points']) ? implode("\n", array_map(static function($item) {
+                                                                return '- ' . $item;
+                                                            }, (array) $report_item['email_body_points'])) : '',
+                                                            (string) ($report_item['email_cta'] ?? ''),
+                                                        ])), ENT_QUOTES, 'UTF-8') ?>"
+                                                    >
+                                                        <?= l('admin_leader_operating_system.leader.outreach_use_report') ?>
+                                                    </button>
                                                 </div>
-                                                <div class="d-flex flex-column align-items-end" style="gap:.35rem;">
-                                                    <span class="leader-os-outreach-status"><?= htmlspecialchars((string) ($send_item['status'] ?? 'sent'), ENT_QUOTES, 'UTF-8') ?></span>
-                                                    <?php if(!empty($send_item['report_version_number'])): ?>
-                                                        <span class="leader-os-detail-chip is-subtle"><?= sprintf(l('admin_leader_operating_system.leader.report_version_short'), nr((int) $send_item['report_version_number'])) ?></span>
+                                            <?php endforeach ?>
+                                        <?php endif ?>
+
+                                        <?php if(!empty($send_history)): ?>
+                                            <div class="leader-os-ai-title mb-1 mt-2"><?= l('admin_leader_operating_system.leader.outreach_send_history') ?></div>
+                                            <?php foreach($send_history as $send_item): ?>
+                                                <div class="leader-os-outreach-history-item">
+                                                    <div class="d-flex justify-content-between align-items-start mb-2" style="gap:.75rem;">
+                                                        <div>
+                                                            <div class="font-weight-bold"><?= htmlspecialchars((string) ($send_item['subject'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></div>
+                                                            <div class="text-muted small"><?= htmlspecialchars((string) ($send_item['email_address'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                                                        </div>
+                                                        <div class="d-flex flex-column align-items-end" style="gap:.35rem;">
+                                                            <span class="leader-os-outreach-status"><?= htmlspecialchars((string) ($send_item['status'] ?? 'sent'), ENT_QUOTES, 'UTF-8') ?></span>
+                                                            <?php if(!empty($send_item['report_version_number'])): ?>
+                                                                <span class="leader-os-detail-chip is-subtle"><?= sprintf(l('admin_leader_operating_system.leader.report_version_short'), nr((int) $send_item['report_version_number'])) ?></span>
+                                                            <?php endif ?>
+                                                        </div>
+                                                    </div>
+                                                    <div class="text-muted small mb-1"><?= !empty($send_item['sent_at']) ? \Altum\Date::get($send_item['sent_at'], 2) : '-' ?></div>
+                                                    <?php if(!empty($send_item['body_snapshot'])): ?>
+                                                        <div class="text-muted small"><?= nl2br(htmlspecialchars(mb_substr((string) $send_item['body_snapshot'], 0, 220), ENT_QUOTES, 'UTF-8')) ?><?= mb_strlen((string) $send_item['body_snapshot']) > 220 ? '…' : '' ?></div>
                                                     <?php endif ?>
                                                 </div>
-                                            </div>
-                                            <div class="text-muted small mb-1"><?= !empty($send_item['sent_at']) ? \Altum\Date::get($send_item['sent_at'], 2) : '-' ?></div>
-                                            <?php if(!empty($send_item['body_snapshot'])): ?>
-                                                <div class="text-muted small"><?= nl2br(htmlspecialchars(mb_substr((string) $send_item['body_snapshot'], 0, 220), ENT_QUOTES, 'UTF-8')) ?><?= mb_strlen((string) $send_item['body_snapshot']) > 220 ? '…' : '' ?></div>
-                                            <?php endif ?>
-                                        </div>
-                                    <?php endforeach ?>
-                                <?php endif ?>
-                            </div>
+                                            <?php endforeach ?>
+                                        <?php endif ?>
+                                    </div>
+                                </div>
+                            </details>
                         <?php endif ?>
                     </div>
                 </div>
@@ -2327,12 +2800,23 @@ $render_detail_help = static function(string $tooltip): void {
     </div>
     <!-- /Custom code: FC-2026-03-31 -->
 
+    <div class="leader-os-zone-shell mb-4" id="leader-os-profile-zone">
+        <div class="leader-os-zone-header">
+            <div class="leader-os-zone-copy">
+                <div class="leader-os-zone-eyebrow">Zona 3</div>
+                <h3 class="h5 mb-1">Javni profil i aplikacija</h3>
+                <div class="leader-os-zone-note">Ovdje uređuješ javnu sliku suradnika i provjeravaš podržava li glavna aplikacija stvarni rast: sponsor status, javni AI profil, strukturu i CTA logiku.</div>
+            </div>
+            <span class="leader-os-detail-status status-info">Javni sloj</span>
+        </div>
+    </div>
+
     <!-- Custom code: FC-2026-03-31: Show current app structure used as AI context -->
     <div class="card leader-os-detail-shell mb-4" id="leader-os-app-structure">
         <div class="card-body">
             <div class="row">
                 <div class="col-12 col-xl-5 mb-3 mb-xl-0">
-                    <div class="leader-os-detail-panel h-100">
+                    <div class="leader-os-detail-panel">
                         <h3 class="h5 mb-2"><?= l('admin_leader_operating_system.leader.panel_app_structure') ?></h3>
                         <div class="text-muted small mb-3"><?= l('admin_leader_operating_system.leader.panel_app_structure_text') ?></div>
 
@@ -2419,7 +2903,7 @@ $render_detail_help = static function(string $tooltip): void {
                 </div>
 
                 <div class="col-12 col-xl-7">
-                    <div class="leader-os-detail-panel h-100">
+                    <div class="leader-os-detail-panel">
                         <div class="leader-os-design-review-grid">
                             <div class="leader-os-design-review-box">
                                 <h3 class="h5 mb-2"><?= l('admin_leader_operating_system.leader.page_review_title') ?></h3>
@@ -2519,6 +3003,8 @@ $render_detail_help = static function(string $tooltip): void {
     </div>
     <!-- /Custom code: FC-2026-03-31 -->
 
+    <?= $leader_os_featured_profile_markup ?>
+
     <!-- Custom code: FC-2026-03-31: Phase 4 admin coaching panel from AI Plan history -->
     <div class="card leader-os-detail-shell mb-4" id="leader-os-phase4">
         <div class="card-body">
@@ -2569,7 +3055,7 @@ $render_detail_help = static function(string $tooltip): void {
 
             <div class="row">
                 <div class="col-12 col-xl-5 mb-3 mb-xl-0">
-                    <div class="leader-os-detail-panel h-100">
+                    <div class="leader-os-detail-panel">
                         <div class="d-flex justify-content-between align-items-start flex-wrap mb-3">
                             <div>
                                 <h3 class="h5 mb-2"><?= l('admin_leader_operating_system.leader.panel_ai_plan_coaching') ?></h3>
@@ -2592,90 +3078,14 @@ $render_detail_help = static function(string $tooltip): void {
                                     <span class="leader-os-detail-chip"><?= l('admin_leader_operating_system.leader.ai_plan_ai_guidance_active') ?></span>
                                 </div>
                             <?php endif ?>
-                            <form action="" method="post" class="leader-os-phase4-form mb-3">
-                                <input type="hidden" name="token" value="<?= \Altum\Csrf::get() ?>" />
-
-                                <div class="leader-os-phase4-quick-actions">
-                                    <button type="submit" name="toggle_follow_up" value="1" class="btn btn-sm leader-os-detail-action">
-                                        <?= !empty($mentor_actions['needs_follow_up']) ? l('admin_leader_operating_system.leader.ai_plan_follow_up_remove') : l('admin_leader_operating_system.leader.ai_plan_follow_up_mark') ?>
-                                    </button>
-
-                                    <?php if(!empty($mentor_actions['mentored_this_week'])): ?>
-                                        <button type="submit" name="reset_mentored_this_week" value="1" class="btn btn-sm leader-os-detail-action">
-                                            <?= l('admin_leader_operating_system.leader.ai_plan_mentored_reset') ?>
-                                        </button>
-                                    <?php else: ?>
-                                        <button type="submit" name="mark_mentored_this_week" value="1" class="btn btn-sm leader-os-ai-button">
-                                            <?= l('admin_leader_operating_system.leader.ai_plan_mentored_mark') ?>
-                                        </button>
-                                    <?php endif ?>
-                                </div>
-
-                                <div class="leader-os-detail-list mb-3">
-                                    <div class="leader-os-detail-list-item">
-                                        <span class="text-muted"><?= l('admin_leader_operating_system.leader.ai_plan_follow_up_status') ?></span>
-                                        <strong><?= !empty($mentor_actions['needs_follow_up']) ? l('global.yes') : l('global.no') ?></strong>
-                                    </div>
-                                    <div class="leader-os-detail-list-item">
-                                        <span class="text-muted"><?= l('admin_leader_operating_system.leader.ai_plan_mentored_status') ?></span>
-                                        <strong><?= !empty($mentor_actions['mentored_this_week']) ? l('global.yes') : l('global.no') ?></strong>
-                                    </div>
-                                </div>
-
-                                <div class="form-group">
-                                    <label class="small text-muted d-block mb-2"><?= l('admin_leader_operating_system.leader.ai_plan_admin_status') ?></label>
-                                    <select name="mentor_status" class="custom-select">
-                                        <?php foreach(['pending_contact', 'in_progress', 'monitoring', 'resolved'] as $mentor_status): ?>
-                                            <option value="<?= $mentor_status ?>" <?= (($mentor_actions['status'] ?? 'pending_contact') === $mentor_status) ? 'selected="selected"' : null ?>><?= l('admin_leader_operating_system.leader.ai_plan_admin_status.' . $mentor_status) ?></option>
-                                        <?php endforeach ?>
-                                    </select>
-                                </div>
-
-                                <div class="form-group">
-                                    <label class="small text-muted d-block mb-2"><?= l('admin_leader_operating_system.leader.ai_plan_next_action') ?></label>
-                                    <input type="text" name="mentor_next_action" maxlength="280" class="form-control" value="<?= htmlspecialchars((string) ($mentor_actions['next_action'] ?? ''), ENT_QUOTES, 'UTF-8') ?>" placeholder="<?= l('admin_leader_operating_system.leader.ai_plan_next_action_placeholder') ?>" />
-                                </div>
-
-                                <div class="form-group mb-3">
-                                    <label class="small text-muted d-block mb-2"><?= l('admin_leader_operating_system.leader.ai_plan_private_note') ?></label>
-                                    <textarea name="mentor_note" rows="4" maxlength="2000" class="form-control" placeholder="<?= l('admin_leader_operating_system.leader.ai_plan_private_note_placeholder') ?>"><?= htmlspecialchars((string) ($mentor_actions['mentor_note'] ?? ''), ENT_QUOTES, 'UTF-8') ?></textarea>
-                                </div>
-
-                                <!-- Custom code: FC-2026-03-31: Separate mentor AI guidance from private note -->
-                                <div class="form-group mb-3">
-                                    <label class="small text-muted d-block mb-2"><?= l('admin_leader_operating_system.leader.ai_plan_ai_guidance') ?></label>
-                                    <textarea name="mentor_ai_guidance" rows="4" maxlength="2400" class="form-control" placeholder="<?= l('admin_leader_operating_system.leader.ai_plan_ai_guidance_placeholder') ?>"><?= htmlspecialchars((string) ($mentor_actions['ai_guidance'] ?? ''), ENT_QUOTES, 'UTF-8') ?></textarea>
-                                    <div class="text-muted small mt-2 mb-0"><?= l('admin_leader_operating_system.leader.ai_plan_ai_guidance_help') ?></div>
-                                </div>
-                                <!-- /Custom code: FC-2026-03-31 -->
-
-                                <button type="submit" name="save_mentor_actions" value="1" class="btn btn-sm leader-os-ai-button"><?= l('admin_leader_operating_system.leader.ai_plan_save_actions') ?></button>
-                            </form>
-
-                            <div class="leader-os-phase4-note mb-3">
-                                <div class="leader-os-ai-title"><?= l('admin_leader_operating_system.leader.ai_plan_mentor_note') ?></div>
-                                <div class="mb-2"><?= htmlspecialchars((string) ($ai_plan_admin['mentor_note'] ?? l('admin_leader_operating_system.leader.ai_plan_no_mentor_note')), ENT_QUOTES, 'UTF-8') ?></div>
-                                <div class="text-muted small mb-0"><?= htmlspecialchars((string) ($ai_plan_admin['priority']['reason'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
-
-                                <div class="leader-os-ai-title mt-3"><?= l('admin_leader_operating_system.leader.ai_plan_ai_guidance_summary') ?></div>
-                                <div class="mb-2"><?= htmlspecialchars((string) (($mentor_actions['ai_guidance'] ?? '') ?: l('admin_leader_operating_system.leader.ai_plan_no_ai_guidance')), ENT_QUOTES, 'UTF-8') ?></div>
-                                <div class="text-muted small mb-0"><?= l('admin_leader_operating_system.leader.ai_plan_ai_guidance_summary_text') ?></div>
-                            </div>
-
                             <div class="leader-os-detail-list mb-3">
                                 <div class="leader-os-detail-list-item">
-                                    <span class="text-muted"><?= l('admin_leader_operating_system.leader.ai_plan_history_total') ?></span>
-                                    <strong><?= nr((int) ($ai_plan_admin['history_total'] ?? 0)) ?></strong>
+                                    <span class="text-muted"><?= l('admin_leader_operating_system.leader.ai_plan_follow_up_status') ?></span>
+                                    <strong><?= !empty($mentor_actions['needs_follow_up']) ? l('global.yes') : l('global.no') ?></strong>
                                 </div>
                                 <div class="leader-os-detail-list-item">
-                                    <span class="text-muted"><?= l('admin_leader_operating_system.leader.ai_plan_last_checkin_gap') ?></span>
-                                    <strong>
-                                        <?php if($ai_plan_admin['days_since_last_checkin'] !== null): ?>
-                                            <?= sprintf(l('admin_leader_operating_system.leader.ai_plan_days_ago'), nr((int) $ai_plan_admin['days_since_last_checkin'])) ?>
-                                        <?php else: ?>
-                                            -
-                                        <?php endif ?>
-                                    </strong>
+                                    <span class="text-muted"><?= l('admin_leader_operating_system.leader.ai_plan_mentored_status') ?></span>
+                                    <strong><?= !empty($mentor_actions['mentored_this_week']) ? l('global.yes') : l('global.no') ?></strong>
                                 </div>
                                 <div class="leader-os-detail-list-item">
                                     <span class="text-muted"><?= l('admin_leader_operating_system.leader.ai_plan_last_contacted') ?></span>
@@ -2683,53 +3093,138 @@ $render_detail_help = static function(string $tooltip): void {
                                 </div>
                             </div>
 
-                            <div class="leader-os-ai-title"><?= l('admin_leader_operating_system.leader.ai_plan_profile_snapshot') ?></div>
-                            <div class="leader-os-detail-list">
-                                <div class="leader-os-detail-list-item">
-                                    <span class="text-muted"><?= l('ai_plan.primary_goal') ?></span>
-                                    <strong><?= htmlspecialchars((string) (($ai_plan_admin['profile']['primary_goal_label'] ?? '-')), ENT_QUOTES, 'UTF-8') ?></strong>
-                                </div>
-                                <div class="leader-os-detail-list-item">
-                                    <span class="text-muted"><?= l('ai_plan.priority_offer') ?></span>
-                                    <strong><?= htmlspecialchars((string) (($ai_plan_admin['profile']['priority_offer_label'] ?? '-')), ENT_QUOTES, 'UTF-8') ?></strong>
-                                </div>
-                                <div class="leader-os-detail-list-item">
-                                    <span class="text-muted"><?= l('ai_plan.biggest_blocker') ?></span>
-                                    <strong><?= htmlspecialchars((string) (($ai_plan_admin['profile']['biggest_blocker_label'] ?? '-')), ENT_QUOTES, 'UTF-8') ?></strong>
-                                </div>
-                                <div class="leader-os-detail-list-item">
-                                    <span class="text-muted"><?= l('ai_plan.active_channels') ?></span>
-                                    <strong><?= htmlspecialchars((string) (($ai_plan_admin['profile']['active_channels_label'] ?? '-')), ENT_QUOTES, 'UTF-8') ?></strong>
-                                </div>
+                            <div class="leader-os-phase4-note mb-3">
+                                <div class="leader-os-ai-title"><?= l('admin_leader_operating_system.leader.ai_plan_mentor_note') ?></div>
+                                <div class="mb-2"><?= htmlspecialchars((string) ($ai_plan_admin['mentor_note'] ?? l('admin_leader_operating_system.leader.ai_plan_no_mentor_note')), ENT_QUOTES, 'UTF-8') ?></div>
+                                <div class="text-muted small mb-0"><?= htmlspecialchars((string) ($ai_plan_admin['priority']['reason'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
                             </div>
 
-                            <div class="leader-os-ai-title mt-3"><?= l('admin_leader_operating_system.leader.ai_plan_history_title') ?></div>
-                            <div class="text-muted small mb-3"><?= l('admin_leader_operating_system.leader.ai_plan_history_text') ?></div>
+                            <details class="leader-os-collapsible" open>
+                                <summary>
+                                    <div>
+                                        <div><?= l('admin_leader_operating_system.leader.ai_plan_mentor_actions') ?></div>
+                                        <div class="leader-os-collapsible-copy">Otvori za uređivanje follow-up statusa, admin bilješke, AI guidancea i pregleda povijesti mentoriranja.</div>
+                                    </div>
+                                    <span class="leader-os-detail-chip is-subtle"><?= nr((int) ($ai_plan_admin['history_total'] ?? 0)) ?> zapisa</span>
+                                </summary>
 
-                            <?php if(empty($mentor_history)): ?>
-                                <div class="text-muted small mb-0"><?= l('admin_leader_operating_system.leader.ai_plan_history_empty') ?></div>
-                            <?php else: ?>
-                                <div class="leader-os-phase4-history">
-                                    <?php foreach($mentor_history as $history_item): ?>
-                                        <div class="leader-os-phase4-history-item">
-                                            <div class="font-weight-bold"><?= htmlspecialchars((string) ($history_item['summary'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
-                                            <?php if(!empty($history_item['details'])): ?>
-                                                <div class="text-muted small mt-2"><?= htmlspecialchars((string) ($history_item['details'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                                <div class="leader-os-collapsible-body">
+                                    <form action="" method="post" class="leader-os-phase4-form mb-3">
+                                        <input type="hidden" name="token" value="<?= \Altum\Csrf::get() ?>" />
+
+                                        <div class="leader-os-phase4-quick-actions">
+                                            <button type="submit" name="toggle_follow_up" value="1" class="btn btn-sm leader-os-detail-action">
+                                                <?= !empty($mentor_actions['needs_follow_up']) ? l('admin_leader_operating_system.leader.ai_plan_follow_up_remove') : l('admin_leader_operating_system.leader.ai_plan_follow_up_mark') ?>
+                                            </button>
+
+                                            <?php if(!empty($mentor_actions['mentored_this_week'])): ?>
+                                                <button type="submit" name="reset_mentored_this_week" value="1" class="btn btn-sm leader-os-detail-action">
+                                                    <?= l('admin_leader_operating_system.leader.ai_plan_mentored_reset') ?>
+                                                </button>
+                                            <?php else: ?>
+                                                <button type="submit" name="mark_mentored_this_week" value="1" class="btn btn-sm leader-os-ai-button">
+                                                    <?= l('admin_leader_operating_system.leader.ai_plan_mentored_mark') ?>
+                                                </button>
                                             <?php endif ?>
-                                            <div class="leader-os-phase4-history-meta">
-                                                <span><?= !empty($history_item['admin_name']) ? htmlspecialchars((string) $history_item['admin_name'], ENT_QUOTES, 'UTF-8') : 'Admin' ?></span>
-                                                <span><?= !empty($history_item['created_at']) ? \Altum\Date::get($history_item['created_at'], 2) : '-' ?></span>
-                                            </div>
                                         </div>
-                                    <?php endforeach ?>
+
+                                        <div class="form-group">
+                                            <label class="small text-muted d-block mb-2"><?= l('admin_leader_operating_system.leader.ai_plan_admin_status') ?></label>
+                                            <select name="mentor_status" class="custom-select">
+                                                <?php foreach(['pending_contact', 'in_progress', 'monitoring', 'resolved'] as $mentor_status): ?>
+                                                    <option value="<?= $mentor_status ?>" <?= (($mentor_actions['status'] ?? 'pending_contact') === $mentor_status) ? 'selected="selected"' : null ?>><?= l('admin_leader_operating_system.leader.ai_plan_admin_status.' . $mentor_status) ?></option>
+                                                <?php endforeach ?>
+                                            </select>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label class="small text-muted d-block mb-2"><?= l('admin_leader_operating_system.leader.ai_plan_next_action') ?></label>
+                                            <input type="text" name="mentor_next_action" maxlength="280" class="form-control" value="<?= htmlspecialchars((string) ($mentor_actions['next_action'] ?? ''), ENT_QUOTES, 'UTF-8') ?>" placeholder="<?= l('admin_leader_operating_system.leader.ai_plan_next_action_placeholder') ?>" />
+                                        </div>
+
+                                        <div class="form-group mb-3">
+                                            <label class="small text-muted d-block mb-2"><?= l('admin_leader_operating_system.leader.ai_plan_private_note') ?></label>
+                                            <textarea name="mentor_note" rows="4" maxlength="2000" class="form-control" placeholder="<?= l('admin_leader_operating_system.leader.ai_plan_private_note_placeholder') ?>"><?= htmlspecialchars((string) ($mentor_actions['mentor_note'] ?? ''), ENT_QUOTES, 'UTF-8') ?></textarea>
+                                        </div>
+
+                                        <div class="form-group mb-3">
+                                            <label class="small text-muted d-block mb-2"><?= l('admin_leader_operating_system.leader.ai_plan_ai_guidance') ?></label>
+                                            <textarea name="mentor_ai_guidance" rows="4" maxlength="2400" class="form-control" placeholder="<?= l('admin_leader_operating_system.leader.ai_plan_ai_guidance_placeholder') ?>"><?= htmlspecialchars((string) ($mentor_actions['ai_guidance'] ?? ''), ENT_QUOTES, 'UTF-8') ?></textarea>
+                                            <div class="text-muted small mt-2 mb-0"><?= l('admin_leader_operating_system.leader.ai_plan_ai_guidance_help') ?></div>
+                                        </div>
+
+                                        <button type="submit" name="save_mentor_actions" value="1" class="btn btn-sm leader-os-ai-button"><?= l('admin_leader_operating_system.leader.ai_plan_save_actions') ?></button>
+                                    </form>
+
+                                    <div class="leader-os-ai-title"><?= l('admin_leader_operating_system.leader.ai_plan_ai_guidance_summary') ?></div>
+                                    <div class="mb-3"><?= htmlspecialchars((string) (($mentor_actions['ai_guidance'] ?? '') ?: l('admin_leader_operating_system.leader.ai_plan_no_ai_guidance')), ENT_QUOTES, 'UTF-8') ?></div>
+
+                                    <div class="leader-os-detail-list mb-3">
+                                        <div class="leader-os-detail-list-item">
+                                            <span class="text-muted"><?= l('admin_leader_operating_system.leader.ai_plan_history_total') ?></span>
+                                            <strong><?= nr((int) ($ai_plan_admin['history_total'] ?? 0)) ?></strong>
+                                        </div>
+                                        <div class="leader-os-detail-list-item">
+                                            <span class="text-muted"><?= l('admin_leader_operating_system.leader.ai_plan_last_checkin_gap') ?></span>
+                                            <strong>
+                                                <?php if($ai_plan_admin['days_since_last_checkin'] !== null): ?>
+                                                    <?= sprintf(l('admin_leader_operating_system.leader.ai_plan_days_ago'), nr((int) $ai_plan_admin['days_since_last_checkin'])) ?>
+                                                <?php else: ?>
+                                                    -
+                                                <?php endif ?>
+                                            </strong>
+                                        </div>
+                                    </div>
+
+                                    <div class="leader-os-ai-title"><?= l('admin_leader_operating_system.leader.ai_plan_profile_snapshot') ?></div>
+                                    <div class="leader-os-detail-list mb-3">
+                                        <div class="leader-os-detail-list-item">
+                                            <span class="text-muted"><?= l('ai_plan.primary_goal') ?></span>
+                                            <strong><?= htmlspecialchars((string) (($ai_plan_admin['profile']['primary_goal_label'] ?? '-')), ENT_QUOTES, 'UTF-8') ?></strong>
+                                        </div>
+                                        <div class="leader-os-detail-list-item">
+                                            <span class="text-muted"><?= l('ai_plan.priority_offer') ?></span>
+                                            <strong><?= htmlspecialchars((string) (($ai_plan_admin['profile']['priority_offer_label'] ?? '-')), ENT_QUOTES, 'UTF-8') ?></strong>
+                                        </div>
+                                        <div class="leader-os-detail-list-item">
+                                            <span class="text-muted"><?= l('ai_plan.biggest_blocker') ?></span>
+                                            <strong><?= htmlspecialchars((string) (($ai_plan_admin['profile']['biggest_blocker_label'] ?? '-')), ENT_QUOTES, 'UTF-8') ?></strong>
+                                        </div>
+                                        <div class="leader-os-detail-list-item">
+                                            <span class="text-muted"><?= l('ai_plan.active_channels') ?></span>
+                                            <strong><?= htmlspecialchars((string) (($ai_plan_admin['profile']['active_channels_label'] ?? '-')), ENT_QUOTES, 'UTF-8') ?></strong>
+                                        </div>
+                                    </div>
+
+                                    <div class="leader-os-ai-title mt-3"><?= l('admin_leader_operating_system.leader.ai_plan_history_title') ?></div>
+                                    <div class="text-muted small mb-3"><?= l('admin_leader_operating_system.leader.ai_plan_history_text') ?></div>
+
+                                    <?php if(empty($mentor_history)): ?>
+                                        <div class="text-muted small mb-0"><?= l('admin_leader_operating_system.leader.ai_plan_history_empty') ?></div>
+                                    <?php else: ?>
+                                        <div class="leader-os-phase4-history">
+                                            <?php foreach($mentor_history as $history_item): ?>
+                                                <div class="leader-os-phase4-history-item">
+                                                    <div class="font-weight-bold"><?= htmlspecialchars((string) ($history_item['summary'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                                                    <?php if(!empty($history_item['details'])): ?>
+                                                        <div class="text-muted small mt-2"><?= htmlspecialchars((string) ($history_item['details'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                                                    <?php endif ?>
+                                                    <div class="leader-os-phase4-history-meta">
+                                                        <span><?= !empty($history_item['admin_name']) ? htmlspecialchars((string) $history_item['admin_name'], ENT_QUOTES, 'UTF-8') : 'Admin' ?></span>
+                                                        <span><?= !empty($history_item['created_at']) ? \Altum\Date::get($history_item['created_at'], 2) : '-' ?></span>
+                                                    </div>
+                                                </div>
+                                            <?php endforeach ?>
+                                        </div>
+                                    <?php endif ?>
                                 </div>
-                            <?php endif ?>
+                            </details>
                         <?php endif ?>
                     </div>
                 </div>
 
                 <div class="col-12 col-xl-7">
-                    <div class="leader-os-detail-panel h-100">
+                    <div class="leader-os-detail-panel">
                         <?php if(!empty($ai_plan_admin['latest_checkin'])): ?>
                             <div class="row mb-3">
                                 <div class="col-12 col-lg-6 mb-3 mb-lg-0">
@@ -2843,6 +3338,657 @@ $render_detail_help = static function(string $tooltip): void {
     </div>
     <!-- /Custom code: FC-2026-03-31 -->
 
+    <?php $fcc_ai_dossier = $data->fcc_ai_dossier ?? []; ?>
+    <div class="leader-os-zone-shell mb-4" id="leader-os-ai-zone">
+        <div class="leader-os-zone-header">
+            <div class="leader-os-zone-copy">
+                <div class="leader-os-zone-eyebrow">Zona 4</div>
+                <h3 class="h5 mb-1">AI i chat inteligencija</h3>
+                <div class="leader-os-zone-note">Ovdje vidiš što suradnik traži od Coacha, što publika pita javni AI, gdje postoje leadovi, review slučajevi ili sumnjivi threadovi te što iz toga trebaš promijeniti.</div>
+            </div>
+            <span class="leader-os-detail-status status-info">AI signali</span>
+        </div>
+    </div>
+
+    <?php if(!empty($fcc_ai_dossier['is_available'])): ?>
+        <div class="card leader-os-detail-shell mb-4" id="leader-os-ai-dossier">
+            <div class="card-body">
+                <div class="leader-os-section-heading">
+                    <div class="leader-os-section-heading-copy">
+                        <h3 class="h5 mb-1">AI dossier i chat inteligencija</h3>
+                        <div class="text-muted small">Operativni sažetak iz Coach i javnih AI razgovora: gdje osoba zapinje, što već radi dobro i što admin treba promijeniti odmah.</div>
+                    </div>
+                    <span class="leader-os-detail-status status-info">Chat intelligence</span>
+                </div>
+
+                <div class="leader-os-detail-note mb-3">
+                    <strong><?= htmlspecialchars((string) ($fcc_ai_dossier['headline'] ?? ''), ENT_QUOTES, 'UTF-8') ?></strong>
+                    <?php if(!empty($fcc_ai_dossier['executive_summary'])): ?>
+                        <br><?= htmlspecialchars((string) ($fcc_ai_dossier['executive_summary'] ?? ''), ENT_QUOTES, 'UTF-8') ?>
+                    <?php endif ?>
+                </div>
+
+                <?php $fcc_ai_exec = $fcc_ai_dossier['executive_report'] ?? []; ?>
+                <div class="row mb-3">
+                    <div class="col-12 col-xl-6 mb-3 mb-xl-0">
+                        <div class="leader-os-exec-card">
+                            <div class="leader-os-ai-title">AI Executive Report</div>
+                            <div class="h6 mb-2"><?= htmlspecialchars((string) ($fcc_ai_exec['headline'] ?? 'AI executive report'), ENT_QUOTES, 'UTF-8') ?></div>
+                            <div class="text-muted small mb-3"><?= htmlspecialchars((string) ($fcc_ai_exec['summary'] ?? 'Ovdje dobivaš sažetak što gori, što radi i koji su najvažniji potezi za ovog suradnika.'), ENT_QUOTES, 'UTF-8') ?></div>
+
+                            <?php if(empty($fcc_ai_exec['alerts']) && empty($fcc_ai_exec['opportunities'])): ?>
+                                <div class="text-muted small mb-0">Kad se skupi još malo svježih chat signala, ovdje ćeš dobiti konkretne alerte i prilike za ovu osobu.</div>
+                            <?php else: ?>
+                                <div class="leader-os-exec-list">
+                                    <?php foreach(array_slice((array) ($fcc_ai_exec['alerts'] ?? []), 0, 3) as $alert_row): ?>
+                                        <div class="leader-os-exec-item">
+                                            <div class="d-flex justify-content-between align-items-start" style="gap:.75rem;">
+                                                <strong><?= htmlspecialchars((string) ($alert_row['title'] ?? ''), ENT_QUOTES, 'UTF-8') ?></strong>
+                                                <span class="leader-os-detail-status <?= htmlspecialchars((string) ($alert_row['severity_class'] ?? 'status-warning'), ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars((string) ($alert_row['severity_label'] ?? 'Alert'), ENT_QUOTES, 'UTF-8') ?></span>
+                                            </div>
+                                            <div class="leader-os-exec-item-copy"><?= htmlspecialchars((string) ($alert_row['text'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                                        </div>
+                                    <?php endforeach ?>
+
+                                    <?php foreach(array_slice((array) ($fcc_ai_exec['opportunities'] ?? []), 0, 3) as $opportunity_row): ?>
+                                        <div class="leader-os-exec-item">
+                                            <div class="d-flex justify-content-between align-items-start" style="gap:.75rem;">
+                                                <strong><?= htmlspecialchars((string) ($opportunity_row['title'] ?? ''), ENT_QUOTES, 'UTF-8') ?></strong>
+                                                <span class="leader-os-detail-status <?= htmlspecialchars((string) ($opportunity_row['severity_class'] ?? 'status-info'), ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars((string) ($opportunity_row['severity_label'] ?? 'Prilika'), ENT_QUOTES, 'UTF-8') ?></span>
+                                            </div>
+                                            <div class="leader-os-exec-item-copy"><?= htmlspecialchars((string) ($opportunity_row['text'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                                        </div>
+                                    <?php endforeach ?>
+                                </div>
+                            <?php endif ?>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-xl-6">
+                        <div class="leader-os-exec-card">
+                            <div class="leader-os-ai-title">Admin digest za ovu osobu</div>
+                            <?php if(empty($fcc_ai_exec['next_moves']) && empty($fcc_ai_exec['working']) && empty($fcc_ai_exec['blocking'])): ?>
+                                <div class="text-muted small mb-0">Još nema dovoljno signala za kraći admin digest ove osobe.</div>
+                            <?php else: ?>
+                                <?php if(!empty($fcc_ai_exec['working'])): ?>
+                                    <div class="leader-os-ai-title mb-2">Što radi</div>
+                                    <ul class="leader-os-ai-list mb-3">
+                                        <?php foreach(($fcc_ai_exec['working'] ?? []) as $row): ?>
+                                            <li><?= htmlspecialchars((string) $row, ENT_QUOTES, 'UTF-8') ?></li>
+                                        <?php endforeach ?>
+                                    </ul>
+                                <?php endif ?>
+
+                                <?php if(!empty($fcc_ai_exec['blocking'])): ?>
+                                    <div class="leader-os-ai-title mb-2">Što koči</div>
+                                    <ul class="leader-os-ai-list mb-3">
+                                        <?php foreach(($fcc_ai_exec['blocking'] ?? []) as $row): ?>
+                                            <li><?= htmlspecialchars((string) $row, ENT_QUOTES, 'UTF-8') ?></li>
+                                        <?php endforeach ?>
+                                    </ul>
+                                <?php endif ?>
+
+                                <?php if(!empty($fcc_ai_exec['next_moves'])): ?>
+                                    <div class="leader-os-ai-title mb-2">Što radiš sljedeće</div>
+                                    <div class="leader-os-detail-list">
+                                        <?php foreach(($fcc_ai_exec['next_moves'] ?? []) as $move_row): ?>
+                                            <div class="leader-os-detail-list-item">
+                                                <span>Prioritet</span>
+                                                <strong><?= htmlspecialchars((string) $move_row, ENT_QUOTES, 'UTF-8') ?></strong>
+                                            </div>
+                                        <?php endforeach ?>
+                                    </div>
+                                <?php endif ?>
+                            <?php endif ?>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-12 col-xl-6 mb-3 mb-xl-0">
+                        <div class="leader-os-detail-panel">
+                            <div class="leader-os-ai-title">Što admin treba napraviti sada</div>
+                            <?php if(empty($fcc_ai_dossier['admin_changes'])): ?>
+                                <div class="text-muted small mb-0">Kad se skupi još malo chat signala, ovdje će se pojaviti prioritetne promjene.</div>
+                            <?php else: ?>
+                                <div class="leader-os-detail-list">
+                                    <?php foreach(($fcc_ai_dossier['admin_changes'] ?? []) as $change_row): ?>
+                                        <div class="leader-os-detail-list-item">
+                                            <span>Prioritet</span>
+                                            <strong><?= htmlspecialchars((string) $change_row, ENT_QUOTES, 'UTF-8') ?></strong>
+                                        </div>
+                                    <?php endforeach ?>
+                                </div>
+                            <?php endif ?>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-xl-6">
+                        <div class="leader-os-detail-panel">
+                            <div class="leader-os-ai-title">Jake i slabe strane iz chatova</div>
+                            <div class="row">
+                                <div class="col-12 col-lg-6 mb-3 mb-lg-0">
+                                    <div class="leader-os-cockpit-spotlight mt-0">
+                                        <div class="leader-os-cockpit-label mb-2">Jake strane</div>
+                                        <?php if(empty($fcc_ai_dossier['strengths'])): ?>
+                                            <div class="text-muted small mb-0">Još nema dovoljno signala za pouzdane jake strane.</div>
+                                        <?php else: ?>
+                                            <ul class="leader-os-ai-list mb-0">
+                                                <?php foreach(($fcc_ai_dossier['strengths'] ?? []) as $strength_row): ?>
+                                                    <li><?= htmlspecialchars((string) $strength_row, ENT_QUOTES, 'UTF-8') ?></li>
+                                                <?php endforeach ?>
+                                            </ul>
+                                        <?php endif ?>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-lg-6">
+                                    <div class="leader-os-cockpit-spotlight mt-0">
+                                        <div class="leader-os-cockpit-label mb-2">Slabe strane</div>
+                                        <?php if(empty($fcc_ai_dossier['weaknesses'])): ?>
+                                            <div class="text-muted small mb-0">Trenutno nema izraženih slabosti iz chat signala.</div>
+                                        <?php else: ?>
+                                            <ul class="leader-os-ai-list mb-0">
+                                                <?php foreach(($fcc_ai_dossier['weaknesses'] ?? []) as $weakness_row): ?>
+                                                    <li><?= htmlspecialchars((string) $weakness_row, ENT_QUOTES, 'UTF-8') ?></li>
+                                                <?php endforeach ?>
+                                            </ul>
+                                        <?php endif ?>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-12 col-xl-6 mb-3 mb-xl-0">
+                        <div class="leader-os-detail-panel">
+                            <div class="leader-os-ai-title">Coach signal</div>
+                            <div class="text-muted small mb-3"><?= htmlspecialchars((string) ($fcc_ai_dossier['coach']['summary'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+
+                            <div class="leader-os-detail-list mb-3">
+                                <div class="leader-os-detail-list-item">
+                                    <span>Glavni blocker</span>
+                                    <strong><?= htmlspecialchars((string) (($fcc_ai_dossier['coach']['blocker'] ?? '') ?: '-'), ENT_QUOTES, 'UTF-8') ?></strong>
+                                </div>
+                                <div class="leader-os-detail-list-item">
+                                    <span>Admin potez</span>
+                                    <strong><?= htmlspecialchars((string) (($fcc_ai_dossier['coach']['next_admin_move'] ?? '') ?: '-'), ENT_QUOTES, 'UTF-8') ?></strong>
+                                </div>
+                                <div class="leader-os-detail-list-item">
+                                    <span>Potez suradnika</span>
+                                    <strong><?= htmlspecialchars((string) (($fcc_ai_dossier['coach']['next_user_move'] ?? '') ?: '-'), ENT_QUOTES, 'UTF-8') ?></strong>
+                                </div>
+                            </div>
+
+                            <?php if(!empty($fcc_ai_dossier['coach']['top_topics'])): ?>
+                                <div class="leader-os-ai-title mb-2">Top Coach teme</div>
+                                <div class="leader-os-detail-list mb-3">
+                                    <?php foreach(($fcc_ai_dossier['coach']['top_topics'] ?? []) as $topic_row): ?>
+                                        <div class="leader-os-detail-list-item">
+                                            <span><?= htmlspecialchars((string) ($topic_row['label'] ?? ''), ENT_QUOTES, 'UTF-8') ?></span>
+                                            <strong><?= nr((int) ($topic_row['total'] ?? 0)) ?></strong>
+                                        </div>
+                                    <?php endforeach ?>
+                                </div>
+                            <?php endif ?>
+
+                            <details class="leader-os-collapsible mt-3">
+                                <summary>
+                                    <div>
+                                        <div>Zadnji Coach threadovi</div>
+                                        <div class="leader-os-collapsible-copy">Otvori detalje tek kad želiš vidjeti što se točno vrti u razgovorima i gdje osoba zapinje.</div>
+                                    </div>
+                                    <span class="leader-os-detail-chip is-subtle"><?= nr((int) count($fcc_ai_dossier['coach']['threads'] ?? [])) ?> threadova</span>
+                                </summary>
+                                <div class="leader-os-collapsible-body">
+                                    <?php if(empty($fcc_ai_dossier['coach']['threads'])): ?>
+                                        <div class="text-muted small mb-0">Još nema dovoljno Coach razgovora u odabranom periodu.</div>
+                                    <?php else: ?>
+                                        <div class="leader-os-phase4-history">
+                                            <?php foreach(($fcc_ai_dossier['coach']['threads'] ?? []) as $thread_row): ?>
+                                                <div class="leader-os-phase4-history-item">
+                                                    <div class="d-flex flex-wrap mb-2" style="gap:.45rem;">
+                                                        <span class="leader-os-detail-status <?= htmlspecialchars((string) (($thread_row['quality_badge']['class'] ?? 'status-dark')), ENT_QUOTES, 'UTF-8') ?>">
+                                                            <?= htmlspecialchars((string) (($thread_row['quality_badge']['label'] ?? '')), ENT_QUOTES, 'UTF-8') ?>
+                                                        </span>
+                                                        <span class="leader-os-detail-status <?= htmlspecialchars((string) (($thread_row['outcome_badge']['class'] ?? 'status-dark')), ENT_QUOTES, 'UTF-8') ?>">
+                                                            <?= htmlspecialchars((string) (($thread_row['outcome_badge']['label'] ?? '')), ENT_QUOTES, 'UTF-8') ?>
+                                                        </span>
+                                                    </div>
+                                                    <div class="font-weight-bold"><?= htmlspecialchars((string) ($thread_row['primary_topic_label'] ?? 'Opće'), ENT_QUOTES, 'UTF-8') ?></div>
+                                                    <div class="text-muted small mt-2"><?= htmlspecialchars((string) (($thread_row['summary'] ?? '') ?: ($thread_row['last_user_preview'] ?? '')), ENT_QUOTES, 'UTF-8') ?></div>
+                                                    <?php if(!empty($thread_row['core_issue'])): ?>
+                                                        <div class="text-muted small mt-2"><strong>Zapinjanje:</strong> <?= htmlspecialchars((string) ($thread_row['core_issue'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                                                    <?php endif ?>
+                                                    <div class="leader-os-phase4-history-meta">
+                                                        <span>U: <?= nr((int) ($thread_row['total_user_messages'] ?? 0)) ?> · A: <?= nr((int) ($thread_row['total_assistant_messages'] ?? 0)) ?></span>
+                                                        <span><?= !empty($thread_row['activity_at']) ? \Altum\Date::get($thread_row['activity_at'], 2) : '-' ?></span>
+                                                    </div>
+                                                </div>
+                                            <?php endforeach ?>
+                                        </div>
+                                    <?php endif ?>
+                                </div>
+                            </details>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-xl-6">
+                        <div class="leader-os-detail-panel">
+                            <div class="leader-os-ai-title">AI za ljude</div>
+                            <div class="text-muted small mb-3"><?= htmlspecialchars((string) ($fcc_ai_dossier['public_ai']['summary'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+
+                            <div class="leader-os-detail-list mb-3">
+                                <div class="leader-os-detail-list-item">
+                                    <span>Glavni blocker</span>
+                                    <strong><?= htmlspecialchars((string) (($fcc_ai_dossier['public_ai']['blocker'] ?? '') ?: '-'), ENT_QUOTES, 'UTF-8') ?></strong>
+                                </div>
+                                <div class="leader-os-detail-list-item">
+                                    <span>Admin potez</span>
+                                    <strong><?= htmlspecialchars((string) (($fcc_ai_dossier['public_ai']['next_admin_move'] ?? '') ?: '-'), ENT_QUOTES, 'UTF-8') ?></strong>
+                                </div>
+                                <div class="leader-os-detail-list-item">
+                                    <span>Potez suradnika</span>
+                                    <strong><?= htmlspecialchars((string) (($fcc_ai_dossier['public_ai']['next_user_move'] ?? '') ?: '-'), ENT_QUOTES, 'UTF-8') ?></strong>
+                                </div>
+                            </div>
+
+                            <?php if(!empty($fcc_ai_dossier['public_ai']['top_topics'])): ?>
+                                <div class="leader-os-ai-title mb-2">Top teme publike</div>
+                                <div class="leader-os-detail-list mb-3">
+                                    <?php foreach(($fcc_ai_dossier['public_ai']['top_topics'] ?? []) as $topic_row): ?>
+                                        <div class="leader-os-detail-list-item">
+                                            <span><?= htmlspecialchars((string) ($topic_row['label'] ?? ''), ENT_QUOTES, 'UTF-8') ?></span>
+                                            <strong><?= nr((int) ($topic_row['total'] ?? 0)) ?></strong>
+                                        </div>
+                                    <?php endforeach ?>
+                                </div>
+                            <?php endif ?>
+
+                            <details class="leader-os-collapsible mt-3">
+                                <summary>
+                                    <div>
+                                        <div>Zadnji javni AI threadovi</div>
+                                        <div class="leader-os-collapsible-copy">Ovdje otvaraš konkretne teme publike tek kad želiš ući u sadržaj, leadove ili suspektne upite.</div>
+                                    </div>
+                                    <span class="leader-os-detail-chip is-subtle"><?= nr((int) count($fcc_ai_dossier['public_ai']['threads'] ?? [])) ?> threadova</span>
+                                </summary>
+                                <div class="leader-os-collapsible-body">
+                                    <?php if(empty($fcc_ai_dossier['public_ai']['threads'])): ?>
+                                        <div class="text-muted small mb-0">Još nema dovoljno javnih AI razgovora u odabranom periodu.</div>
+                                    <?php else: ?>
+                                        <div class="leader-os-phase4-history">
+                                            <?php foreach(($fcc_ai_dossier['public_ai']['threads'] ?? []) as $thread_row): ?>
+                                                <div class="leader-os-phase4-history-item">
+                                                    <div class="d-flex flex-wrap mb-2" style="gap:.45rem;">
+                                                        <span class="leader-os-detail-status <?= htmlspecialchars((string) (($thread_row['quality_badge']['class'] ?? 'status-dark')), ENT_QUOTES, 'UTF-8') ?>">
+                                                            <?= htmlspecialchars((string) (($thread_row['quality_badge']['label'] ?? '')), ENT_QUOTES, 'UTF-8') ?>
+                                                        </span>
+                                                        <span class="leader-os-detail-status <?= htmlspecialchars((string) (($thread_row['outcome_badge']['class'] ?? 'status-dark')), ENT_QUOTES, 'UTF-8') ?>">
+                                                            <?= htmlspecialchars((string) (($thread_row['outcome_badge']['label'] ?? '')), ENT_QUOTES, 'UTF-8') ?>
+                                                        </span>
+                                                        <?php if(!empty($thread_row['suspicion']['top_label'])): ?>
+                                                            <span class="leader-os-detail-status status-warning"><?= htmlspecialchars((string) ($thread_row['suspicion']['top_label'] ?? ''), ENT_QUOTES, 'UTF-8') ?></span>
+                                                        <?php endif ?>
+                                                    </div>
+                                                    <div class="font-weight-bold"><?= htmlspecialchars((string) ($thread_row['primary_topic_label'] ?? 'Opće'), ENT_QUOTES, 'UTF-8') ?></div>
+                                                    <div class="text-muted small mt-2"><?= htmlspecialchars((string) (($thread_row['summary'] ?? '') ?: ($thread_row['last_user_preview'] ?? '')), ENT_QUOTES, 'UTF-8') ?></div>
+                                                    <?php if(!empty($thread_row['core_issue'])): ?>
+                                                        <div class="text-muted small mt-2"><strong>Glavni problem:</strong> <?= htmlspecialchars((string) ($thread_row['core_issue'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                                                    <?php endif ?>
+                                                    <div class="leader-os-phase4-history-meta">
+                                                        <span><?= htmlspecialchars((string) ($thread_row['assistant_label'] ?? ''), ENT_QUOTES, 'UTF-8') ?></span>
+                                                        <span><?= !empty($thread_row['activity_at']) ? \Altum\Date::get($thread_row['activity_at'], 2) : '-' ?></span>
+                                                    </div>
+                                                </div>
+                                            <?php endforeach ?>
+                                        </div>
+                                    <?php endif ?>
+                                </div>
+                            </details>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-12 col-xl-6 mb-3 mb-xl-0">
+                        <div class="leader-os-detail-panel">
+                            <div class="leader-os-ai-title">Suspektni i rizični chatovi</div>
+                            <details class="leader-os-collapsible mt-3">
+                                <summary>
+                                    <div>
+                                        <div>Rizični threadovi</div>
+                                        <div class="leader-os-collapsible-copy">Otvaraš ih kad želiš procijeniti posebne upite, sumnjive obrasce ili temu koja traži brzu provjeru.</div>
+                                    </div>
+                                    <span class="leader-os-detail-chip is-subtle"><?= nr((int) count($fcc_ai_dossier['risky_threads'] ?? [])) ?> slučajeva</span>
+                                </summary>
+                                <div class="leader-os-collapsible-body">
+                                    <?php if(empty($fcc_ai_dossier['risky_threads'])): ?>
+                                        <div class="text-muted small mb-0">Trenutno nema rizičnih ili suspektnih razgovora u zadnjem periodu.</div>
+                                    <?php else: ?>
+                                        <div class="leader-os-phase4-history">
+                                            <?php foreach(($fcc_ai_dossier['risky_threads'] ?? []) as $thread_row): ?>
+                                                <div class="leader-os-phase4-history-item">
+                                                    <div class="d-flex flex-wrap mb-2" style="gap:.45rem;">
+                                                        <span class="leader-os-detail-status <?= htmlspecialchars((string) (($thread_row['quality_badge']['class'] ?? 'status-dark')), ENT_QUOTES, 'UTF-8') ?>">
+                                                            <?= htmlspecialchars((string) (($thread_row['quality_badge']['label'] ?? '')), ENT_QUOTES, 'UTF-8') ?>
+                                                        </span>
+                                                        <?php if(!empty($thread_row['suspicion']['top_label'])): ?>
+                                                            <span class="leader-os-detail-status status-warning"><?= htmlspecialchars((string) ($thread_row['suspicion']['top_label'] ?? ''), ENT_QUOTES, 'UTF-8') ?></span>
+                                                        <?php endif ?>
+                                                    </div>
+                                                    <div class="font-weight-bold"><?= htmlspecialchars((string) ($thread_row['primary_topic_label'] ?? 'Opće'), ENT_QUOTES, 'UTF-8') ?></div>
+                                                    <div class="text-muted small mt-2"><?= htmlspecialchars((string) (($thread_row['core_issue'] ?? '') ?: ($thread_row['summary'] ?? '')), ENT_QUOTES, 'UTF-8') ?></div>
+                                                    <?php if(!empty($thread_row['suspicion']['flags'])): ?>
+                                                        <div class="text-muted small mt-2">
+                                                            <strong>Rizik:</strong>
+                                                            <?= htmlspecialchars((string) implode(', ', array_map(static function($flag) {
+                                                                return (string) ($flag['label'] ?? '');
+                                                            }, $thread_row['suspicion']['flags'] ?? [])), ENT_QUOTES, 'UTF-8') ?>
+                                                        </div>
+                                                    <?php endif ?>
+                                                    <div class="leader-os-phase4-history-meta">
+                                                        <span><?= htmlspecialchars((string) ($thread_row['scope_label'] ?? ''), ENT_QUOTES, 'UTF-8') ?></span>
+                                                        <span><?= !empty($thread_row['activity_at']) ? \Altum\Date::get($thread_row['activity_at'], 2) : '-' ?></span>
+                                                    </div>
+                                                </div>
+                                            <?php endforeach ?>
+                                        </div>
+                                    <?php endif ?>
+                                </div>
+                            </details>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-xl-6">
+                        <div class="leader-os-detail-panel">
+                            <div class="leader-os-ai-title">Lošiji chatovi i review queue</div>
+                            <details class="leader-os-collapsible mt-3">
+                                <summary>
+                                    <div>
+                                        <div>Review slučajevi</div>
+                                        <div class="leader-os-collapsible-copy">Otvori kad želiš pregledati lošije odgovore, otvorene review oznake i posebne slučajeve za ručnu odluku.</div>
+                                    </div>
+                                    <span class="leader-os-detail-chip is-subtle"><?= nr((int) count($fcc_ai_dossier['review_threads'] ?? [])) ?> slučajeva</span>
+                                </summary>
+                                <div class="leader-os-collapsible-body">
+                                    <?php if(empty($fcc_ai_dossier['review_threads'])): ?>
+                                        <div class="text-muted small mb-0">Trenutno nema otvorenih review slučajeva.</div>
+                                    <?php else: ?>
+                                        <div class="leader-os-phase4-history">
+                                            <?php foreach(($fcc_ai_dossier['review_threads'] ?? []) as $review_row): ?>
+                                                <div class="leader-os-phase4-history-item">
+                                                    <div class="font-weight-bold">
+                                                        <?= htmlspecialchars((string) (($review_row['reason_label'] ?? '') ?: 'Review'), ENT_QUOTES, 'UTF-8') ?>
+                                                        <?php if(!empty($review_row['scope_label'])): ?>
+                                                            · <?= htmlspecialchars((string) ($review_row['scope_label'] ?? ''), ENT_QUOTES, 'UTF-8') ?>
+                                                        <?php endif ?>
+                                                    </div>
+                                                    <div class="text-muted small mt-2"><?= htmlspecialchars((string) ($review_row['message_excerpt'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                                                    <?php if(!empty($review_row['note'])): ?>
+                                                        <div class="text-muted small mt-2"><strong>Napomena:</strong> <?= htmlspecialchars((string) ($review_row['note'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                                                    <?php endif ?>
+                                                    <div class="leader-os-phase4-history-meta">
+                                                        <span><?= htmlspecialchars((string) ($review_row['assistant_label'] ?? ''), ENT_QUOTES, 'UTF-8') ?></span>
+                                                        <span><?= !empty($review_row['datetime']) ? \Altum\Date::get($review_row['datetime'], 2) : '-' ?></span>
+                                                    </div>
+                                                </div>
+                                            <?php endforeach ?>
+                                        </div>
+                                    <?php endif ?>
+                                </div>
+                            </details>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    <?php endif ?>
+
+    <?php $fcc_ai_inbox = $fcc_ai_dossier['inbox'] ?? []; ?>
+    <?php if(!empty($fcc_ai_dossier['is_available']) && !empty($fcc_ai_inbox)): ?>
+        <?php
+        $inbox_tabs = $fcc_ai_inbox['tabs'] ?? [];
+        $active_inbox_tab = 'coach';
+        foreach($inbox_tabs as $inbox_tab_row) {
+            if((int) ($inbox_tab_row['count'] ?? 0) > 0) {
+                $active_inbox_tab = (string) ($inbox_tab_row['key'] ?? 'coach');
+                break;
+            }
+        }
+        ?>
+        <div class="card leader-os-detail-shell mb-4" id="leader-os-chat-review-inbox">
+            <div class="card-body">
+                <div class="leader-os-section-heading">
+                    <div class="leader-os-section-heading-copy">
+                        <h3 class="h5 mb-1">Chat Review Inbox</h3>
+                        <div class="text-muted small">Odvojeni pregled Coach, javnih AI, suspektnih, review i conversion razgovora s brzim thread uvidom.</div>
+                    </div>
+                    <span class="leader-os-detail-status status-info">Inbox</span>
+                </div>
+
+                <div class="leader-os-inbox-tabs" data-inbox-root="leader-os-chat-review-inbox">
+                    <?php foreach($inbox_tabs as $inbox_tab_row): ?>
+                        <?php $tab_key = (string) ($inbox_tab_row['key'] ?? 'coach'); ?>
+                        <button type="button" class="leader-os-inbox-tab <?= $tab_key === $active_inbox_tab ? 'is-active' : '' ?>" data-inbox-target="<?= htmlspecialchars($tab_key, ENT_QUOTES, 'UTF-8') ?>">
+                            <span><?= htmlspecialchars((string) ($inbox_tab_row['label'] ?? ''), ENT_QUOTES, 'UTF-8') ?></span>
+                            <span class="leader-os-inbox-tab-count"><?= nr((int) ($inbox_tab_row['count'] ?? 0)) ?></span>
+                        </button>
+                    <?php endforeach ?>
+                </div>
+
+                <div class="leader-os-inbox-panel <?= $active_inbox_tab === 'coach' ? 'is-active' : '' ?>" data-inbox-panel="coach">
+                    <?php if(empty($fcc_ai_inbox['coach_threads'])): ?>
+                        <div class="text-muted small mb-0">Još nema Coach threadova u odabranom periodu.</div>
+                    <?php else: ?>
+                        <?php foreach(($fcc_ai_inbox['coach_threads'] ?? []) as $thread_row): ?>
+                            <div class="leader-os-thread-card">
+                                <div class="leader-os-thread-card-header">
+                                    <div class="leader-os-thread-card-title"><?= htmlspecialchars((string) ($thread_row['primary_topic_label'] ?? 'Opće'), ENT_QUOTES, 'UTF-8') ?></div>
+                                    <div class="leader-os-thread-card-meta">
+                                        <span class="leader-os-detail-status <?= htmlspecialchars((string) (($thread_row['quality_badge']['class'] ?? 'status-dark')), ENT_QUOTES, 'UTF-8') ?>">
+                                            <?= htmlspecialchars((string) (($thread_row['quality_badge']['label'] ?? '')), ENT_QUOTES, 'UTF-8') ?>
+                                        </span>
+                                        <span class="leader-os-detail-status <?= htmlspecialchars((string) (($thread_row['outcome_badge']['class'] ?? 'status-dark')), ENT_QUOTES, 'UTF-8') ?>">
+                                            <?= htmlspecialchars((string) (($thread_row['outcome_badge']['label'] ?? '')), ENT_QUOTES, 'UTF-8') ?>
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="leader-os-thread-card-copy"><?= htmlspecialchars((string) (($thread_row['summary'] ?? '') ?: ($thread_row['last_user_preview'] ?? '')), ENT_QUOTES, 'UTF-8') ?></div>
+                                <?php if(!empty($thread_row['core_issue'])): ?>
+                                    <div class="leader-os-thread-card-copy"><strong>Zapinjanje:</strong> <?= htmlspecialchars((string) ($thread_row['core_issue'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                                <?php endif ?>
+                                <div class="leader-os-phase4-history-meta">
+                                    <span>U: <?= nr((int) ($thread_row['total_user_messages'] ?? 0)) ?> · A: <?= nr((int) ($thread_row['total_assistant_messages'] ?? 0)) ?></span>
+                                    <span><?= !empty($thread_row['activity_at']) ? \Altum\Date::get($thread_row['activity_at'], 2) : '-' ?></span>
+                                </div>
+                                <?php if(!empty($thread_row['thread_preview'])): ?>
+                                    <details class="leader-os-ai-details mt-2">
+                                        <summary>Otvori thread</summary>
+                                        <div class="leader-os-thread-preview">
+                                            <?php foreach(($thread_row['thread_preview'] ?? []) as $message_row): ?>
+                                                <div class="leader-os-thread-preview-item">
+                                                    <strong><?= htmlspecialchars((string) (($message_row['role'] ?? '') === 'user' ? 'Korisnik' : (($message_row['role'] ?? '') === 'assistant' ? 'AI' : 'Sustav')), ENT_QUOTES, 'UTF-8') ?>:</strong>
+                                                    <?= htmlspecialchars((string) ($message_row['content'] ?? ''), ENT_QUOTES, 'UTF-8') ?>
+                                                </div>
+                                            <?php endforeach ?>
+                                        </div>
+                                    </details>
+                                <?php endif ?>
+                            </div>
+                        <?php endforeach ?>
+                    <?php endif ?>
+                </div>
+
+                <div class="leader-os-inbox-panel <?= $active_inbox_tab === 'public_ai' ? 'is-active' : '' ?>" data-inbox-panel="public_ai">
+                    <?php if(empty($fcc_ai_inbox['public_threads'])): ?>
+                        <div class="text-muted small mb-0">Još nema javnih AI threadova u odabranom periodu.</div>
+                    <?php else: ?>
+                        <?php foreach(($fcc_ai_inbox['public_threads'] ?? []) as $thread_row): ?>
+                            <div class="leader-os-thread-card">
+                                <div class="leader-os-thread-card-header">
+                                    <div class="leader-os-thread-card-title"><?= htmlspecialchars((string) ($thread_row['primary_topic_label'] ?? 'Opće'), ENT_QUOTES, 'UTF-8') ?></div>
+                                    <div class="leader-os-thread-card-meta">
+                                        <span class="leader-os-detail-status <?= htmlspecialchars((string) (($thread_row['quality_badge']['class'] ?? 'status-dark')), ENT_QUOTES, 'UTF-8') ?>">
+                                            <?= htmlspecialchars((string) (($thread_row['quality_badge']['label'] ?? '')), ENT_QUOTES, 'UTF-8') ?>
+                                        </span>
+                                        <span class="leader-os-detail-status <?= htmlspecialchars((string) (($thread_row['outcome_badge']['class'] ?? 'status-dark')), ENT_QUOTES, 'UTF-8') ?>">
+                                            <?= htmlspecialchars((string) (($thread_row['outcome_badge']['label'] ?? '')), ENT_QUOTES, 'UTF-8') ?>
+                                        </span>
+                                        <?php if(!empty($thread_row['suspicion']['top_label'])): ?>
+                                            <span class="leader-os-detail-status status-warning"><?= htmlspecialchars((string) ($thread_row['suspicion']['top_label'] ?? ''), ENT_QUOTES, 'UTF-8') ?></span>
+                                        <?php endif ?>
+                                    </div>
+                                </div>
+                                <div class="leader-os-thread-card-copy"><?= htmlspecialchars((string) (($thread_row['summary'] ?? '') ?: ($thread_row['last_user_preview'] ?? '')), ENT_QUOTES, 'UTF-8') ?></div>
+                                <?php if(!empty($thread_row['core_issue'])): ?>
+                                    <div class="leader-os-thread-card-copy"><strong>Glavni problem:</strong> <?= htmlspecialchars((string) ($thread_row['core_issue'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                                <?php endif ?>
+                                <?php if(!empty($thread_row['source_page_title'])): ?>
+                                    <div class="leader-os-thread-card-copy"><strong>Izvor:</strong> <?= htmlspecialchars((string) ($thread_row['source_page_title'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                                <?php endif ?>
+                                <div class="leader-os-phase4-history-meta">
+                                    <span><?= htmlspecialchars((string) ($thread_row['assistant_label'] ?? ''), ENT_QUOTES, 'UTF-8') ?></span>
+                                    <span><?= !empty($thread_row['activity_at']) ? \Altum\Date::get($thread_row['activity_at'], 2) : '-' ?></span>
+                                </div>
+                                <?php if(!empty($thread_row['thread_preview'])): ?>
+                                    <details class="leader-os-ai-details mt-2">
+                                        <summary>Otvori thread</summary>
+                                        <div class="leader-os-thread-preview">
+                                            <?php foreach(($thread_row['thread_preview'] ?? []) as $message_row): ?>
+                                                <div class="leader-os-thread-preview-item">
+                                                    <strong><?= htmlspecialchars((string) (($message_row['role'] ?? '') === 'user' ? 'Korisnik' : (($message_row['role'] ?? '') === 'assistant' ? 'AI' : 'Sustav')), ENT_QUOTES, 'UTF-8') ?>:</strong>
+                                                    <?= htmlspecialchars((string) ($message_row['content'] ?? ''), ENT_QUOTES, 'UTF-8') ?>
+                                                </div>
+                                            <?php endforeach ?>
+                                        </div>
+                                    </details>
+                                <?php endif ?>
+                            </div>
+                        <?php endforeach ?>
+                    <?php endif ?>
+                </div>
+
+                <div class="leader-os-inbox-panel <?= $active_inbox_tab === 'suspicious' ? 'is-active' : '' ?>" data-inbox-panel="suspicious">
+                    <?php if(empty($fcc_ai_inbox['suspicious_threads'])): ?>
+                        <div class="text-muted small mb-0">Trenutno nema suspektnih threadova.</div>
+                    <?php else: ?>
+                        <?php foreach(($fcc_ai_inbox['suspicious_threads'] ?? []) as $thread_row): ?>
+                            <div class="leader-os-thread-card">
+                                <div class="leader-os-thread-card-header">
+                                    <div class="leader-os-thread-card-title"><?= htmlspecialchars((string) ($thread_row['primary_topic_label'] ?? 'Opće'), ENT_QUOTES, 'UTF-8') ?></div>
+                                    <div class="leader-os-thread-card-meta">
+                                        <span class="leader-os-detail-status status-warning"><?= htmlspecialchars((string) ($thread_row['suspicion']['top_label'] ?? 'Suspektno'), ENT_QUOTES, 'UTF-8') ?></span>
+                                        <span class="leader-os-detail-status <?= htmlspecialchars((string) (($thread_row['quality_badge']['class'] ?? 'status-dark')), ENT_QUOTES, 'UTF-8') ?>">
+                                            <?= htmlspecialchars((string) (($thread_row['quality_badge']['label'] ?? '')), ENT_QUOTES, 'UTF-8') ?>
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="leader-os-thread-card-copy"><?= htmlspecialchars((string) (($thread_row['core_issue'] ?? '') ?: ($thread_row['summary'] ?? '')), ENT_QUOTES, 'UTF-8') ?></div>
+                                <?php if(!empty($thread_row['suspicion']['flags'])): ?>
+                                    <div class="leader-os-thread-card-copy"><strong>Rizici:</strong> <?= htmlspecialchars((string) implode(', ', array_map(static function($flag) {
+                                        return (string) ($flag['label'] ?? '');
+                                    }, $thread_row['suspicion']['flags'] ?? [])), ENT_QUOTES, 'UTF-8') ?></div>
+                                <?php endif ?>
+                                <div class="leader-os-phase4-history-meta">
+                                    <span><?= htmlspecialchars((string) ($thread_row['scope_label'] ?? ''), ENT_QUOTES, 'UTF-8') ?></span>
+                                    <span><?= !empty($thread_row['activity_at']) ? \Altum\Date::get($thread_row['activity_at'], 2) : '-' ?></span>
+                                </div>
+                                <?php if(!empty($thread_row['thread_preview'])): ?>
+                                    <details class="leader-os-ai-details mt-2">
+                                        <summary>Otvori thread</summary>
+                                        <div class="leader-os-thread-preview">
+                                            <?php foreach(($thread_row['thread_preview'] ?? []) as $message_row): ?>
+                                                <div class="leader-os-thread-preview-item">
+                                                    <strong><?= htmlspecialchars((string) (($message_row['role'] ?? '') === 'user' ? 'Korisnik' : (($message_row['role'] ?? '') === 'assistant' ? 'AI' : 'Sustav')), ENT_QUOTES, 'UTF-8') ?>:</strong>
+                                                    <?= htmlspecialchars((string) ($message_row['content'] ?? ''), ENT_QUOTES, 'UTF-8') ?>
+                                                </div>
+                                            <?php endforeach ?>
+                                        </div>
+                                    </details>
+                                <?php endif ?>
+                            </div>
+                        <?php endforeach ?>
+                    <?php endif ?>
+                </div>
+
+                <div class="leader-os-inbox-panel <?= $active_inbox_tab === 'review' ? 'is-active' : '' ?>" data-inbox-panel="review">
+                    <?php if(empty($fcc_ai_inbox['review_threads'])): ?>
+                        <div class="text-muted small mb-0">Trenutno nema otvorenih review slučajeva.</div>
+                    <?php else: ?>
+                        <?php foreach(($fcc_ai_inbox['review_threads'] ?? []) as $review_row): ?>
+                            <div class="leader-os-thread-card">
+                                <div class="leader-os-thread-card-header">
+                                    <div class="leader-os-thread-card-title"><?= htmlspecialchars((string) (($review_row['reason_label'] ?? '') ?: 'Review'), ENT_QUOTES, 'UTF-8') ?></div>
+                                    <div class="leader-os-thread-card-meta">
+                                        <?php if(!empty($review_row['scope_label'])): ?>
+                                            <span class="leader-os-detail-status status-warning"><?= htmlspecialchars((string) ($review_row['scope_label'] ?? ''), ENT_QUOTES, 'UTF-8') ?></span>
+                                        <?php endif ?>
+                                    </div>
+                                </div>
+                                <div class="leader-os-thread-card-copy"><?= htmlspecialchars((string) ($review_row['message_excerpt'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                                <?php if(!empty($review_row['note'])): ?>
+                                    <div class="leader-os-thread-card-copy"><strong>Napomena:</strong> <?= htmlspecialchars((string) ($review_row['note'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                                <?php endif ?>
+                                <?php if(!empty($review_row['thread_preview'])): ?>
+                                    <details class="leader-os-ai-details mt-2">
+                                        <summary>Otvori thread</summary>
+                                        <div class="leader-os-thread-preview">
+                                            <?php foreach(($review_row['thread_preview'] ?? []) as $message_row): ?>
+                                                <div class="leader-os-thread-preview-item">
+                                                    <strong><?= htmlspecialchars((string) (($message_row['role'] ?? '') === 'user' ? 'Korisnik' : (($message_row['role'] ?? '') === 'assistant' ? 'AI' : 'Sustav')), ENT_QUOTES, 'UTF-8') ?>:</strong>
+                                                    <?= htmlspecialchars((string) ($message_row['content'] ?? ''), ENT_QUOTES, 'UTF-8') ?>
+                                                </div>
+                                            <?php endforeach ?>
+                                        </div>
+                                    </details>
+                                <?php endif ?>
+                                <div class="leader-os-phase4-history-meta">
+                                    <span><?= htmlspecialchars((string) ($review_row['assistant_label'] ?? ''), ENT_QUOTES, 'UTF-8') ?></span>
+                                    <span><?= !empty($review_row['datetime']) ? \Altum\Date::get($review_row['datetime'], 2) : '-' ?></span>
+                                </div>
+                            </div>
+                        <?php endforeach ?>
+                    <?php endif ?>
+                </div>
+
+                <div class="leader-os-inbox-panel <?= $active_inbox_tab === 'leads' ? 'is-active' : '' ?>" data-inbox-panel="leads">
+                    <?php if(empty($fcc_ai_inbox['lead_threads'])): ?>
+                        <div class="text-muted small mb-0">Još nema AI lead / conversion signala u odabranom periodu.</div>
+                    <?php else: ?>
+                        <?php foreach(($fcc_ai_inbox['lead_threads'] ?? []) as $lead_row): ?>
+                            <div class="leader-os-thread-card">
+                                <div class="leader-os-thread-card-header">
+                                    <div class="leader-os-thread-card-title"><?= htmlspecialchars((string) (($lead_row['lead_type_label'] ?? '') ?: 'AI lead'), ENT_QUOTES, 'UTF-8') ?></div>
+                                    <div class="leader-os-thread-card-meta">
+                                        <span class="leader-os-detail-status status-success">Score <?= nr((int) ($lead_row['lead_score'] ?? 0)) ?></span>
+                                        <?php if(!empty($lead_row['scope_label'])): ?>
+                                            <span class="leader-os-detail-status status-info"><?= htmlspecialchars((string) ($lead_row['scope_label'] ?? ''), ENT_QUOTES, 'UTF-8') ?></span>
+                                        <?php endif ?>
+                                    </div>
+                                </div>
+                                <div class="leader-os-thread-card-copy">
+                                    <?= htmlspecialchars((string) (($lead_row['contact_name'] ?? '') !== '' ? ($lead_row['contact_name'] ?? '') : '-'), ENT_QUOTES, 'UTF-8') ?>
+                                    <?php if(!empty($lead_row['contact_value'])): ?>
+                                        · <?= htmlspecialchars((string) ($lead_row['contact_value'] ?? ''), ENT_QUOTES, 'UTF-8') ?>
+                                    <?php endif ?>
+                                </div>
+                                <?php if(!empty($lead_row['message_preview'])): ?>
+                                    <div class="leader-os-thread-card-copy"><?= htmlspecialchars((string) ($lead_row['message_preview'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                                <?php endif ?>
+                                <div class="leader-os-phase4-history-meta">
+                                    <span><?= htmlspecialchars((string) ($lead_row['assistant_label'] ?? ''), ENT_QUOTES, 'UTF-8') ?></span>
+                                    <span><?= !empty($lead_row['datetime']) ? \Altum\Date::get($lead_row['datetime'], 2) : '-' ?></span>
+                                </div>
+                            </div>
+                        <?php endforeach ?>
+                    <?php endif ?>
+                </div>
+            </div>
+        </div>
+    <?php endif ?>
+
     <?php $fcc_ai_detail = $data->fcc_ai_detail ?? []; ?>
     <div class="card leader-os-detail-shell mb-4" id="leader-os-ai-chats">
         <div class="card-body">
@@ -2861,28 +4007,28 @@ $render_detail_help = static function(string $tooltip): void {
             <?php else: ?>
                 <div class="row mb-3">
                     <div class="col-6 col-xl-3 mb-3">
-                        <div class="leader-os-detail-panel h-100">
+                        <div class="leader-os-detail-panel">
                             <div class="leader-os-ai-title">Razgovori</div>
                             <div class="leader-os-compact-value"><?= nr((int) ($fcc_ai_detail['totals']['conversations'] ?? 0)) ?></div>
                             <div class="text-muted small">Coach <?= nr((int) ($fcc_ai_detail['totals']['coach_conversations'] ?? 0)) ?> · javni AI <?= nr((int) ($fcc_ai_detail['totals']['public_conversations'] ?? 0)) ?></div>
                         </div>
                     </div>
                     <div class="col-6 col-xl-3 mb-3">
-                        <div class="leader-os-detail-panel h-100">
+                        <div class="leader-os-detail-panel">
                             <div class="leader-os-ai-title">Poruke</div>
                             <div class="leader-os-compact-value"><?= nr((int) ($fcc_ai_detail['totals']['messages'] ?? 0)) ?></div>
                             <div class="text-muted small">user <?= nr((int) ($fcc_ai_detail['totals']['user_messages'] ?? 0)) ?> · assistant <?= nr((int) ($fcc_ai_detail['totals']['assistant_messages'] ?? 0)) ?></div>
                         </div>
                     </div>
                     <div class="col-6 col-xl-3 mb-3">
-                        <div class="leader-os-detail-panel h-100">
+                        <div class="leader-os-detail-panel">
                             <div class="leader-os-ai-title">AI leadovi</div>
                             <div class="leader-os-compact-value"><?= nr((int) ($fcc_ai_detail['totals']['leads'] ?? 0)) ?></div>
                             <div class="text-muted small">business <?= nr((int) ($fcc_ai_detail['totals']['business_leads'] ?? 0)) ?> · hot <?= nr((int) ($fcc_ai_detail['totals']['hot_leads'] ?? 0)) ?></div>
                         </div>
                     </div>
                     <div class="col-6 col-xl-3 mb-3">
-                        <div class="leader-os-detail-panel h-100">
+                        <div class="leader-os-detail-panel">
                             <div class="leader-os-ai-title">Captured threadovi</div>
                             <div class="leader-os-compact-value"><?= nr((int) ($fcc_ai_detail['totals']['captured_threads'] ?? 0)) ?></div>
                             <div class="text-muted small">Razgovori u kojima je AI već uhvatio lead ili handoff signal.</div>
@@ -2901,7 +4047,7 @@ $render_detail_help = static function(string $tooltip): void {
 
                 <div class="row">
                     <div class="col-12 col-xl-4 mb-3 mb-xl-0">
-                        <div class="leader-os-detail-panel h-100">
+                        <div class="leader-os-detail-panel">
                             <div class="leader-os-ai-title">Po asistentu</div>
                             <?php if(empty($fcc_ai_detail['assistant_breakdown'])): ?>
                                 <div class="text-muted small mb-0">Još nema dovoljno aktivnosti za breakdown.</div>
@@ -2923,7 +4069,7 @@ $render_detail_help = static function(string $tooltip): void {
                     </div>
 
                     <div class="col-12 col-xl-4 mb-3 mb-xl-0">
-                        <div class="leader-os-detail-panel h-100">
+                        <div class="leader-os-detail-panel">
                             <div class="leader-os-ai-title">Zadnji razgovori</div>
                             <?php if(empty($fcc_ai_detail['recent_conversations'])): ?>
                                 <div class="text-muted small mb-0">Još nema AI razgovora u odabranom periodu.</div>
@@ -2950,7 +4096,7 @@ $render_detail_help = static function(string $tooltip): void {
                     </div>
 
                     <div class="col-12 col-xl-4">
-                        <div class="leader-os-detail-panel h-100">
+                        <div class="leader-os-detail-panel">
                             <div class="leader-os-ai-title">Zadnji AI leadovi</div>
                             <?php if(empty($fcc_ai_detail['recent_leads'])): ?>
                                 <div class="text-muted small mb-0">Još nema AI leadova u odabranom periodu.</div>
@@ -2985,7 +4131,7 @@ $render_detail_help = static function(string $tooltip): void {
 
                 <div class="row mt-3">
                     <div class="col-12 col-xl-4 mb-3 mb-xl-0">
-                        <div class="leader-os-detail-panel h-100">
+                        <div class="leader-os-detail-panel">
                             <div class="leader-os-ai-title">Top teme</div>
                             <?php if(empty($fcc_ai_detail['top_topics'])): ?>
                                 <div class="text-muted small mb-0">Još nema dovoljno AI signala za pouzdan pregled tema.</div>
@@ -3003,7 +4149,7 @@ $render_detail_help = static function(string $tooltip): void {
                     </div>
 
                     <div class="col-12 col-xl-8">
-                        <div class="leader-os-detail-panel h-100" id="leader-os-ai-reviews">
+                        <div class="leader-os-detail-panel" id="leader-os-ai-reviews">
                             <div class="leader-os-ai-title">Odgovori za provjeru</div>
                             <?php if(empty($fcc_ai_detail['recent_negative_feedback'])): ?>
                                 <div class="text-muted small mb-0">Trenutno nema prijavljenih loših AI odgovora u odabranom periodu.</div>
@@ -3052,7 +4198,7 @@ $render_detail_help = static function(string $tooltip): void {
 
                 <div class="row mt-3">
                     <div class="col-12 col-xl-4 mb-3 mb-xl-0">
-                        <div class="leader-os-detail-panel h-100">
+                        <div class="leader-os-detail-panel">
                             <div class="leader-os-ai-title">Korisno sada</div>
                             <?php if(empty($fcc_ai_detail['useful_items'])): ?>
                                 <div class="text-muted small mb-0">Kad se skupi još malo AI aktivnosti, ovdje će se pojaviti najkorisniji sljedeći potezi za ovog suradnika.</div>
@@ -3070,7 +4216,7 @@ $render_detail_help = static function(string $tooltip): void {
                     </div>
 
                     <div class="col-12 col-xl-4 mb-3 mb-xl-0">
-                        <div class="leader-os-detail-panel h-100">
+                        <div class="leader-os-detail-panel">
                             <div class="leader-os-ai-title">Rastuće teme</div>
                             <?php if(empty($fcc_ai_detail['rising_topics'])): ?>
                                 <div class="text-muted small mb-0">Još nema dovoljno podataka za izdvajanje tema u rastu kod ovog suradnika.</div>
@@ -3088,7 +4234,7 @@ $render_detail_help = static function(string $tooltip): void {
                     </div>
 
                     <div class="col-12 col-xl-4">
-                        <div class="leader-os-detail-panel h-100">
+                        <div class="leader-os-detail-panel">
                             <div class="leader-os-ai-title">AI obavijesti</div>
                             <?php if(empty($fcc_ai_detail['recent_alerts'])): ?>
                                 <div class="text-muted small mb-0">Trenutno nema novih AI obavijesti za ovog suradnika.</div>
@@ -3112,6 +4258,20 @@ $render_detail_help = static function(string $tooltip): void {
             <?php endif ?>
         </div>
     </div>
+
+    <div class="leader-os-zone-shell mb-4" id="leader-os-deep-dive-zone">
+        <div class="leader-os-zone-header">
+            <div class="leader-os-zone-copy">
+                <div class="leader-os-zone-eyebrow">Zona 5</div>
+                <h3 class="h5 mb-1">Dubinska analitika i kontrola kvalitete</h3>
+                <div class="leader-os-zone-note">Ovo je analitički podrum: billing, trendovi, score povijest, cohort usporedbe i breakdowni prometa. Gledaš ga tek kad gore već znaš glavni prioritet.</div>
+            </div>
+            <span class="leader-os-detail-status status-dark">Deep dive</span>
+        </div>
+    </div>
+
+    <?= $leader_os_stripe_billing_markup ?>
+    <?= $leader_os_trend_markup ?>
 
     <div class="card leader-os-detail-shell mb-4">
         <div class="card-body">
@@ -3180,8 +4340,8 @@ $render_detail_help = static function(string $tooltip): void {
     </div>
 
     <div class="leader-os-section-divider" id="leader-os-deep-dive">
-        <h3 class="h5">Dodatna analitika</h3>
-        <span class="leader-os-detail-chip is-subtle">Za dublju usporedbu i povijest</span>
+        <h3 class="h5">Povijest i usporedbe</h3>
+        <span class="leader-os-detail-chip is-subtle">Dublja usporedba, score promjene i breakdown detalji</span>
     </div>
 
     <!-- Custom code: FC-2026-03-31: LOS score snapshot panel -->
@@ -3365,7 +4525,7 @@ $render_detail_help = static function(string $tooltip): void {
                 <?php foreach(['7d', '30d', '90d'] as $period_key): ?>
                     <?php $period_payload = $detail['periods'][$period_key]; ?>
                     <div class="col-12 col-lg-4 mb-3 mb-lg-0">
-                        <div class="leader-os-detail-panel h-100">
+                        <div class="leader-os-detail-panel">
                             <div class="text-uppercase small text-muted mb-2"><?= l('admin_leader_operating_system.period_' . $period_key) ?></div>
                             <div class="h4 mb-2"><?= nr($period_payload['forever_shop_clicks_period']) ?> <?= l('admin_leader_operating_system.leader.snapshot_shop_clicks') ?></div>
                             <div class="text-muted small mb-2"><?= l('admin_leader_operating_system.leader.snapshot_registrations') ?>: <?= nr($period_payload['forever_registration_clicks_period']) ?></div>
@@ -3387,10 +4547,12 @@ $render_detail_help = static function(string $tooltip): void {
         'top_browsers' => l('admin_leader_operating_system.leader.breakdown_browsers'),
     ]; ?>
 
+    <div class="leader-os-detail-note mb-3">Klik na bilo koju breakdown karticu otvara popup s punim detaljima za taj segment. Tako brzo vidiš sažetak na stranici, a tek po potrebi ulaziš u detaljniji prikaz zemalja, gradova, izvora, jezika, uređaja ili preglednika.</div>
+
     <div class="row">
         <?php foreach($breakdown_map as $breakdown_key => $breakdown_title): ?>
             <div class="col-12 col-xl-3 mb-3">
-                <div class="leader-os-detail-panel h-100 leader-os-breakdown-trigger" role="button" tabindex="0" data-toggle="modal" data-target="#leader-os-breakdown-modal" data-breakdown-key="<?= $breakdown_key ?>" data-breakdown-title="<?= input_clean($breakdown_title) ?>">
+                <div class="leader-os-detail-panel leader-os-breakdown-trigger" role="button" tabindex="0" data-toggle="modal" data-target="#leader-os-breakdown-modal" data-breakdown-key="<?= $breakdown_key ?>" data-breakdown-title="<?= input_clean($breakdown_title) ?>">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h3 class="h6 mb-0"><?= $breakdown_title ?></h3>
                         <span class="leader-os-breakdown-hint"><?= l('admin_leader_operating_system.leader.breakdown_open') ?></span>
@@ -3690,6 +4852,29 @@ $render_detail_help = static function(string $tooltip): void {
             }
 
             targetElement.scrollIntoView({behavior: 'smooth', block: 'start'});
+        });
+    });
+
+    document.querySelectorAll('[data-inbox-root]').forEach(inboxRoot => {
+        const tabs = Array.from(inboxRoot.querySelectorAll('.leader-os-inbox-tab'));
+        const panels = Array.from(inboxRoot.parentElement.querySelectorAll('.leader-os-inbox-panel'));
+
+        const activateInboxTab = targetKey => {
+            tabs.forEach(tab => {
+                const isActive = tab.getAttribute('data-inbox-target') === targetKey;
+                tab.classList.toggle('is-active', isActive);
+            });
+
+            panels.forEach(panel => {
+                const isActive = panel.getAttribute('data-inbox-panel') === targetKey;
+                panel.classList.toggle('is-active', isActive);
+            });
+        };
+
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                activateInboxTab(tab.getAttribute('data-inbox-target') || '');
+            });
         });
     });
 
