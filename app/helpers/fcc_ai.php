@@ -44,7 +44,7 @@ function fcc_ai_get_soft_resolved_feedback_ids(): array {
     }
 
     /* Historical live feedback cases already fixed in the recommendation engine but not writable-resolved in production DB. */
-    $ids = [43, 45, 46, 48, 49, 50, 51, 53, 54, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81];
+    $ids = [43, 45, 46, 48, 49, 50, 51, 53, 54, 60, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81];
 
     return $ids;
 }
@@ -7766,6 +7766,39 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
             'suppress_generic_questions' => true,
             'lock_product_scope' => true,
         ],
+        'psoriasis_arthritis_combo_support' => [
+            'patterns' => ['luskavica', 'luskavico', 'luskavici', 'luskavice', 'psorijaz', 'psoriaz', 'artritis', 'arttritis', 'arthritis'],
+            'preferred_patterns' => ['aloe vera gel', 'aloe gel', 'arctic sea', 'freedom', 'aloe first', 'propolis creme'],
+            'primary_product' => 'Forever Aloe Vera Gel™',
+            'support_products' => ['Forever Arctic Sea', 'Forever Freedom®', 'Forever Aloe First Spray', 'Aloe Propolis Creme'],
+            'label' => [
+                'hr' => 'psorijaza/luskavica i artritis u istoj rutini',
+                'en' => 'psoriasis and arthritis inside one routine',
+            ],
+            'opening_note' => [
+                'hr' => 'Kad su zajedno prisutni luskavica/psorijaza i artritis, preporuka ne bi trebala otići u generički vitamin D smjer niti na dječje proizvode, nego zadržati fokus na aloe bazi, omega-3 podršci, zglobnoj formuli i po potrebi vanjskoj rutini kože.',
+                'en' => 'When psoriasis-style skin issues and arthritis are mentioned together, the recommendation should not drift into a generic vitamin-D direction or children products, but stay focused on the aloe base, omega-3 support, a joint formula and, if useful, the outer skin routine.',
+            ],
+            'recommendation_lines' => [
+                'hr' => [
+                    'Forever Aloe Vera Gel™ je ovdje glavni Forever smjer kao baza iznutra i ovdje se najčešće kreće s 3 litre za mjesec dana, odnosno 0,5 dcl 2x dnevno.',
+                    'Forever Arctic Sea je važna dodatna preporuka jer se omega-3 smjer dobro uklapa kad želite istovremeno podržati kožu iznutra i opću svakodnevnu nutritivnu rutinu.',
+                    'Forever Freedom® ima smisla kao glavni zglobni support uz to kada je artritis dio iste priče, a ako su kožne promjene aktivne izvana, Forever Aloe First Spray i Aloe Propolis Creme ostaju najlogičnija lokalna dopuna.',
+                ],
+                'en' => [
+                    'Forever Aloe Vera Gel™ is the main Forever direction here as the inside base, and people most often start with 3 liters for the month, meaning 0.5 dcl twice daily.',
+                    'Forever Arctic Sea is the important complementary recommendation because the omega-3 direction fits well when you want to support the skin from the inside while keeping a broader everyday nutrition routine.',
+                    'Forever Freedom® makes sense as the joint-support product when arthritis is part of the same story, and if the skin symptoms are active externally, Forever Aloe First Spray and Aloe Propolis Creme remain the cleanest topical add-on.',
+                ],
+            ],
+            'monthly_quantity_note' => [
+                'hr' => 'Ako želite jednostavan okvir za mjesec dana, ovdje se najčešće gleda 3 x Forever Aloe Vera Gel™, 1 kutija Forever Arctic Sea, 3 x Forever Freedom®, a po potrebi 1 x Forever Aloe First Spray i 1 x Aloe Propolis Creme za vanjsku rutinu.',
+                'en' => 'If you want a simple one-month frame, this is most often positioned as 3 x Forever Aloe Vera Gel™, 1 box of Forever Arctic Sea, 3 x Forever Freedom®, and, if useful, 1 x Forever Aloe First Spray plus 1 x Aloe Propolis Creme for the outer routine.',
+            ],
+            'suppress_generic_questions' => true,
+            'sensitive_support_only' => true,
+            'lock_product_scope' => true,
+        ],
         'headache_circulation_support' => [
             'patterns' => ['glavobolj', 'migren', 'migrena', 'ceste glavobolje', 'česte glavobolje', 'ceste glavobolje'],
             'preferred_patterns' => ['arctic sea', 'arctic', 'argi', 'forever argi'],
@@ -7858,7 +7891,7 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
             'lock_product_scope' => true,
         ],
         'psoriasis_support' => [
-            'patterns' => ['psorijaza', 'psorijazu', 'psorijaz', 'psoriaza', 'psoriazu', 'psoriaz', 'psoriasis'],
+            'patterns' => ['psorijaza', 'psorijazu', 'psorijaz', 'psoriaza', 'psoriazu', 'psoriaz', 'psoriasis', 'luskavica', 'luskavico', 'luskavici', 'luskavice'],
             'preferred_patterns' => ['aloe vera gel', 'aloe gel', 'arctic sea', 'arctic', 'first spray', 'aloe first', 'liquid soap', 'aloe liquid soap', 'aloe propolis creme', 'propolis creme'],
             'primary_product' => 'Forever Aloe Vera Gel™',
             'support_products' => ['Forever Arctic Sea', 'Forever Aloe First Spray', 'Forever Aloe Liquid Soap', 'Aloe Propolis Creme'],
@@ -7953,6 +7986,39 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
                 'en' => 'If you want a one-month frame, this is most often positioned as 1 x Forever Calcium, 1 x Forever Nature Min, 1 x Forever Active HA and, if useful, 1 x ESM Complex / Forever Move.',
             ],
             'suppress_generic_questions' => true,
+            'lock_product_scope' => true,
+        ],
+        'fracture_bone_healing_support' => [
+            'patterns' => ['lom noge', 'lom u gležnju', 'lom u gleznju', 'lom gležnja', 'lom gleznja', 'prijelom noge', 'prijelom gležnja', 'prijelom gleznja', 'prelom noge', 'prelom gležnja', 'prelom gleznja', 'fraktura', 'gips', 'sportska povreda'],
+            'preferred_patterns' => ['calcium', 'nature min', 'active ha', 'move', 'esm'],
+            'primary_product' => 'Forever Calcium',
+            'support_products' => ['Forever Nature Min', 'Forever Active HA', 'ESM Complex / Forever Move'],
+            'label' => [
+                'hr' => 'prijelom, kost i svakodnevna nutritivna podrška oporavku',
+                'en' => 'fracture, bone and everyday nutrition support during recovery',
+            ],
+            'opening_note' => [
+                'hr' => 'Kod prijeloma noge i gipsa prvi korak su ortoped i plan oporavka koji je već postavljen, ali ako želite Forever support smjer, ovdje fokus mora ostati na kostima, mineralima i zglobnoj rutini, bez odlaska na kozmetiku ili nepovezane proizvode.',
+                'en' => 'For a leg fracture and a cast, the first step is the orthopedist and the recovery plan already in place, but if you want a Forever support direction, the focus here must stay on bones, minerals and the joint-support routine rather than cosmetics or unrelated products.',
+            ],
+            'recommendation_lines' => [
+                'hr' => [
+                    'Forever Calcium je ovdje glavni Forever smjer jer spaja kalcij, vitamin D, magnezij i prateće minerale za svakodnevnu rutinu kostiju tijekom oporavka.',
+                    'Forever Nature Min je važna support opcija uz to kada želite širu mineralnu ravnotežu i dodatnu podršku kostima kroz multimineralni smjer.',
+                    'Forever Active HA i ESM Complex / Forever Move imaju smisla kao dodatni support smjerovi kada uz kost želite podržati i zglob, hrskavicu i pokretljivost tijekom oporavka.',
+                ],
+                'en' => [
+                    'Forever Calcium is the main Forever direction here because it combines calcium, vitamin D, magnesium and supporting minerals for the everyday bone routine during recovery.',
+                    'Forever Nature Min is the important support option on top when you want broader mineral balance and extra bone support through the multimineral direction.',
+                    'Forever Active HA and ESM Complex / Forever Move make sense as the extra support directions when you also want to support the joint, cartilage and mobility during recovery.',
+                ],
+            ],
+            'monthly_quantity_note' => [
+                'hr' => 'Ako želite okvir za mjesec dana, ovdje se najčešće gleda 1 x Forever Calcium, 1 x Forever Nature Min, 1 x Forever Active HA i po potrebi 1 x ESM Complex / Forever Move.',
+                'en' => 'If you want a one-month frame, this is most often positioned as 1 x Forever Calcium, 1 x Forever Nature Min, 1 x Forever Active HA and, if useful, 1 x ESM Complex / Forever Move.',
+            ],
+            'suppress_generic_questions' => true,
+            'sensitive_support_only' => true,
             'lock_product_scope' => true,
         ],
         'nature_min_mineral_support' => [
