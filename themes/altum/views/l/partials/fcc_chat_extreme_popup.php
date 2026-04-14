@@ -642,6 +642,48 @@ foreach(['hr', 'en', 'sl', 'bg'] as $fcc_chat_ui_language) {
         text-align: left;
     }
 
+    .fcc-chat-extreme__paragraph {
+        margin: 0 0 .88rem;
+    }
+
+    .fcc-chat-extreme__paragraph:last-child {
+        margin-bottom: 0;
+    }
+
+    .fcc-chat-extreme__section {
+        margin: 0 0 .9rem;
+    }
+
+    .fcc-chat-extreme__section:last-child {
+        margin-bottom: 0;
+    }
+
+    .fcc-chat-extreme__section-label {
+        display: block;
+        margin-bottom: .38rem;
+        color: #88efe4;
+        font-size: .74rem;
+        font-weight: 800;
+        letter-spacing: .08em;
+        text-transform: uppercase;
+    }
+
+    .fcc-chat-extreme__section-text {
+        color: inherit;
+    }
+
+    .fcc-chat-extreme__list {
+        margin: 0;
+        padding-left: 1.05rem;
+        display: flex;
+        flex-direction: column;
+        gap: .34rem;
+    }
+
+    .fcc-chat-extreme__list li {
+        margin: 0;
+    }
+
     .fcc-chat-extreme__inline-link {
         color: #7ff3e6;
         text-decoration: underline;
@@ -1439,14 +1481,43 @@ foreach(['hr', 'en', 'sl', 'bg'] as $fcc_chat_ui_language) {
                 return text.replace(/\n{3,}/g, '\n\n');
             };
 
-            const renderMessageHtml = value => {
-                let html = escapeHtml(formatDenseProductText(value));
+            const renderInlineMessageHtml = value => {
+                let html = escapeHtml(value);
                 html = html.replace(/\*\*([\s\S]+?)\*\*/g, '<strong>$1</strong>');
                 html = html.replace(/((?:https?:\/\/|www\.)[^\s<]+)/gi, match => buildInlineLinkHtml(match));
-                html = html.replace(/\n/g, '<br>');
 
                 return html;
             };
+
+            const renderMessageBodyHtml = body => {
+                const lines = String(body || '').split('\n').map(line => line.trim()).filter(Boolean);
+
+                if(lines.length && lines.every(line => /^[-•]\s+/.test(line))) {
+                    return `<ul class="fcc-chat-extreme__list">${lines.map(line => `<li>${renderInlineMessageHtml(line.replace(/^[-•]\s+/, ''))}</li>`).join('')}</ul>`;
+                }
+
+                return `<div class="fcc-chat-extreme__section-text">${renderInlineMessageHtml(String(body || '')).replace(/\n/g, '<br>')}</div>`;
+            };
+
+            const renderStructuredMessageHtml = value => {
+                const blocks = String(value || '').split(/\n{2,}/).map(block => block.trim()).filter(Boolean);
+
+                if(!blocks.length) {
+                    return '';
+                }
+
+                return blocks.map(block => {
+                    const sectionMatch = block.match(/^([^\n:]{2,48}):\n([\s\S]+)$/);
+
+                    if(sectionMatch) {
+                        return `<div class="fcc-chat-extreme__section"><div class="fcc-chat-extreme__section-label">${renderInlineMessageHtml(sectionMatch[1].trim())}</div>${renderMessageBodyHtml(sectionMatch[2].trim())}</div>`;
+                    }
+
+                    return `<p class="fcc-chat-extreme__paragraph">${renderInlineMessageHtml(block).replace(/\n/g, '<br>')}</p>`;
+                }).join('');
+            };
+
+            const renderMessageHtml = value => renderStructuredMessageHtml(formatDenseProductText(value));
 
             const appendMessage = (role, content) => {
                 const wrapper = document.createElement('div');
@@ -2181,6 +2252,42 @@ foreach(['hr', 'en', 'sl', 'bg'] as $fcc_chat_ui_language) {
             return text.replace(/\n{3,}/g, '\n\n');
         };
 
+        const renderInlineMessageHtml = value => {
+            let html = escapeHtml(value);
+            html = html.replace(/\*\*([\s\S]+?)\*\*/g, '<strong>$1</strong>');
+            html = html.replace(/((?:https?:\/\/|www\.)[^\s<]+)/gi, match => buildInlineLinkHtml(match));
+
+            return html;
+        };
+
+        const renderMessageBodyHtml = body => {
+            const lines = String(body || '').split('\n').map(line => line.trim()).filter(Boolean);
+
+            if(lines.length && lines.every(line => /^[-•]\s+/.test(line))) {
+                return `<ul class="fcc-chat-extreme__list">${lines.map(line => `<li>${renderInlineMessageHtml(line.replace(/^[-•]\s+/, ''))}</li>`).join('')}</ul>`;
+            }
+
+            return `<div class="fcc-chat-extreme__section-text">${renderInlineMessageHtml(String(body || '')).replace(/\n/g, '<br>')}</div>`;
+        };
+
+        const renderStructuredMessageHtml = value => {
+            const blocks = String(value || '').split(/\n{2,}/).map(block => block.trim()).filter(Boolean);
+
+            if(!blocks.length) {
+                return '';
+            }
+
+            return blocks.map(block => {
+                const sectionMatch = block.match(/^([^\n:]{2,48}):\n([\s\S]+)$/);
+
+                if(sectionMatch) {
+                    return `<div class="fcc-chat-extreme__section"><div class="fcc-chat-extreme__section-label">${renderInlineMessageHtml(sectionMatch[1].trim())}</div>${renderMessageBodyHtml(sectionMatch[2].trim())}</div>`;
+                }
+
+                return `<p class="fcc-chat-extreme__paragraph">${renderInlineMessageHtml(block).replace(/\n/g, '<br>')}</p>`;
+            }).join('');
+        };
+
         const renderMessageHtml = (value, options = {}) => {
             const config = options && typeof options === 'object' ? options : {};
             let text = formatDenseProductText(value, config);
@@ -2195,14 +2302,11 @@ foreach(['hr', 'en', 'sl', 'bg'] as $fcc_chat_ui_language) {
                         text = `${text.slice(0, lastBoldIndex)}${text.slice(lastBoldIndex + 2)}`;
                     }
                 }
+
+                return renderInlineMessageHtml(text).replace(/\n/g, '<br>');
             }
 
-            let html = escapeHtml(text);
-            html = html.replace(/\*\*([\s\S]+?)\*\*/g, '<strong>$1</strong>');
-            html = html.replace(/((?:https?:\/\/|www\.)[^\s<]+)/gi, match => buildInlineLinkHtml(match));
-            html = html.replace(/\n/g, '<br>');
-
-            return html;
+            return renderStructuredMessageHtml(text);
         };
 
         const createToken = () => {
