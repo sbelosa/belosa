@@ -10110,7 +10110,6 @@ class AiPlan extends Controller {
 
                     try {
                         $new_app_review = $this->generate_app_review($values, $analytics_payload, $app_structure_payload, $current_clicks_30d, $app_review_context, $selected_app, $previous_app_review, $coach_context_payload);
-                        $generated_review_at = (string) ($new_app_review['generated_at'] ?? '');
                         $app_reviews = $this->upsert_app_review($app_reviews, $new_app_review);
                         $preferences->leader_ai_app_reviews = $app_reviews;
                         $preferences = $this->sync_app_review_assets_to_editor($selected_app_id, $new_app_review, $preferences);
@@ -10125,10 +10124,16 @@ class AiPlan extends Controller {
                             'selected_link_id' => $selected_app_id,
                             'error_message' => '',
                         ]);
-                        $this->persist_ai_plan_preferences($preferences);
+                        $app_review_persisted = $this->persist_ai_plan_preferences($preferences);
 
-                        \Altum\Logger::users($this->user->user_id, 'ai_plan.app_review_generated');
-                        Alerts::add_success(l('ai_plan.app_review_success_message'));
+                        if(!$app_review_persisted) {
+                            \Altum\Logger::users($this->user->user_id, 'ai_plan.app_review_persist_failed');
+                            Alerts::add_error(l('ai_plan.preferences_persist_failed_message'));
+                        } else {
+                            $generated_review_at = (string) ($new_app_review['generated_at'] ?? '');
+                            \Altum\Logger::users($this->user->user_id, 'ai_plan.app_review_generated');
+                            Alerts::add_success(l('ai_plan.app_review_success_message'));
+                        }
                     } catch(\Throwable $exception) {
                         $preferences = $this->set_app_review_job_status($preferences, [
                             'status' => 'idle',
