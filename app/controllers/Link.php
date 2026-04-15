@@ -2843,14 +2843,41 @@ class Link extends Controller {
         ];
     }
 
+    private function get_active_ai_bundle_review_key(array $additional): string {
+        return trim((string) (($this->normalize_json_to_array($additional['fcc_ai_theme_apply_state'] ?? null)['active_review_key'] ?? '')));
+    }
+
+    private function is_ai_bundle_backup_usable(array $backup, string $review_key = ''): bool {
+        if(empty($backup['blocks']) || empty($backup['captured_at'])) {
+            return false;
+        }
+
+        $backup_review_key = trim((string) ($backup['review_key'] ?? ''));
+
+        return $review_key === '' || $backup_review_key === '' || $backup_review_key === $review_key;
+    }
+
     private function get_ai_bundle_backup_payload(array $additional): array {
+        $review_key = $this->get_active_ai_bundle_review_key($additional);
         $backup = $this->normalize_json_to_array($additional['fcc_ai_bundle_backup'] ?? []);
+        $baseline_backup = $this->normalize_json_to_array($additional['fcc_ai_bundle_baseline_backup'] ?? []);
+        $resolved_backup = [];
+        $source = '';
+
+        if($this->is_ai_bundle_backup_usable($backup, $review_key)) {
+            $resolved_backup = $backup;
+            $source = 'working';
+        } elseif($this->is_ai_bundle_backup_usable($baseline_backup, $review_key)) {
+            $resolved_backup = $baseline_backup;
+            $source = 'baseline';
+        }
 
         return [
-            'available' => !empty($backup['blocks']) && !empty($backup['captured_at']),
-            'captured_at' => !empty($backup['captured_at']) ? (string) $backup['captured_at'] : null,
-            'total_blocks' => count((array) ($backup['blocks'] ?? [])),
-            'review_key' => trim((string) ($backup['review_key'] ?? '')),
+            'available' => !empty($resolved_backup),
+            'captured_at' => !empty($resolved_backup['captured_at']) ? (string) $resolved_backup['captured_at'] : null,
+            'total_blocks' => count((array) ($resolved_backup['blocks'] ?? [])),
+            'review_key' => trim((string) ($resolved_backup['review_key'] ?? '')),
+            'source' => $source,
         ];
     }
 
@@ -3008,19 +3035,37 @@ class Link extends Controller {
             $block_catalog,
             $missing_block_recommendations
         );
+        $theme_pack = $this->normalize_ai_theme_pack($additional['fcc_ai_theme_pack'] ?? []);
+        $bundle_backup = $this->get_ai_bundle_backup_payload($additional);
+        $layout_actions = $this->build_effective_ai_layout_actions($additional, $block_catalog, $primary_block_plan, $missing_block_recommendations, (int) ($link->link_id ?? 0), $preferences);
+        $can_apply_blocks = !empty($copy_suggestions) || !empty($layout_actions) || !empty($missing_block_recommendations);
+        $can_apply_colors = (bool) array_filter([
+            (string) ($theme_pack['background_color'] ?? ''),
+            (string) ($theme_pack['gradient_start'] ?? ''),
+            (string) ($theme_pack['gradient_end'] ?? ''),
+            (string) ($theme_pack['heading_color'] ?? ''),
+            (string) ($theme_pack['text_color'] ?? ''),
+            (string) ($theme_pack['primary_block_background'] ?? ''),
+            (string) ($theme_pack['secondary_blocks_background'] ?? ''),
+        ]);
+        $can_restore = !empty($bundle_backup['available']);
 
         return [
-            'theme_pack' => $this->normalize_ai_theme_pack($additional['fcc_ai_theme_pack'] ?? []),
+            'theme_pack' => $theme_pack,
             'primary_block_plan' => $primary_block_plan,
             'copy_suggestions' => $copy_suggestions,
-            'layout_actions' => $this->build_effective_ai_layout_actions($additional, $block_catalog, $primary_block_plan, $missing_block_recommendations, (int) ($link->link_id ?? 0), $preferences),
+            'layout_actions' => $layout_actions,
             'missing_block_recommendations' => $missing_block_recommendations,
             'block_patch_pack' => $this->normalize_json_to_array($additional['fcc_ai_block_patch_pack'] ?? []),
             'theme_apply_state' => $this->normalize_json_to_array($additional['fcc_ai_theme_apply_state'] ?? []),
             'review_summary' => $this->normalize_json_to_array($additional['fcc_ai_review_summary'] ?? []),
             'evolution' => $this->get_ai_evolution_payload($additional, $current_performance, (int) ($link->link_id ?? 0), $current_block_attribution),
             'layout_backup' => $this->get_ai_layout_backup_payload($additional),
-            'bundle_backup' => $this->get_ai_bundle_backup_payload($additional),
+            'bundle_backup' => $bundle_backup,
+            'can_apply_blocks' => $can_apply_blocks,
+            'can_apply_colors' => $can_apply_colors,
+            'can_restore' => $can_restore,
+            'can_attempt_restore' => $can_restore || $can_apply_blocks || $can_apply_colors,
             'freshness' => $this->get_ai_bundle_freshness_payload($additional, (string) ($link->last_datetime ?? '')),
             'block_attribution' => $this->normalize_ai_block_attribution_payload($current_block_attribution),
             'theme_library_key' => trim((string) ($additional['fcc_ai_theme_library_key'] ?? '')),

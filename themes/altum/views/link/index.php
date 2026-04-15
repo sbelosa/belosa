@@ -18,8 +18,13 @@ $fcc_ai_theme_bundle_ready = (bool) array_filter([
     (string) ($fcc_ai_theme_pack['primary_block_background'] ?? ''),
     (string) ($fcc_ai_theme_pack['secondary_blocks_background'] ?? ''),
 ]);
-$fcc_ai_block_bundle_ready = !empty($fcc_ai_editor_payload['missing_block_recommendations']) || !empty($fcc_ai_editor_payload['copy_suggestions']) || !empty($fcc_ai_editor_payload['layout_actions']);
-$fcc_ai_bundle_restore_ready = !empty($fcc_ai_editor_payload['bundle_backup']['available']);
+$fcc_ai_block_bundle_ready = array_key_exists('can_apply_blocks', $fcc_ai_editor_payload)
+    ? !empty($fcc_ai_editor_payload['can_apply_blocks'])
+    : (!empty($fcc_ai_editor_payload['missing_block_recommendations']) || !empty($fcc_ai_editor_payload['copy_suggestions']) || !empty($fcc_ai_editor_payload['layout_actions']));
+$fcc_ai_bundle_restore_ready = !empty($fcc_ai_editor_payload['bundle_backup']['available']) || !empty($fcc_ai_editor_payload['can_restore']);
+$fcc_ai_can_attempt_restore = array_key_exists('can_attempt_restore', $fcc_ai_editor_payload)
+    ? !empty($fcc_ai_editor_payload['can_attempt_restore'])
+    : ($fcc_ai_bundle_restore_ready || $fcc_ai_block_bundle_ready || $fcc_ai_theme_bundle_ready);
 $fcc_ai_review_summary = is_array($fcc_ai_editor_payload['review_summary'] ?? null) ? $fcc_ai_editor_payload['review_summary'] : [];
 $fcc_ai_review_summary_ready = !empty($fcc_ai_editor_payload['review_summary']);
 $fcc_ai_review_summary_analysis_mode = $fcc_ai_review_summary_ready && in_array((string) ($fcc_ai_review_summary['analysis_mode'] ?? 'initial'), ['initial', 'evolution'], true)
@@ -835,7 +840,7 @@ $fcc_short_link_editor_steps = $fcc_is_short_link_editor ? [
                                     data-request-type="restore_ai_bundle_backup"
                                     data-link-id="<?= (int) $data->link->link_id ?>"
                                     data-notification-target="#<?= htmlspecialchars($fcc_ai_review_teaser_notification_id, ENT_QUOTES, 'UTF-8') ?>"
-                                    <?= $fcc_ai_bundle_restore_ready ? null : 'disabled="disabled"' ?>
+                                    <?= $fcc_ai_can_attempt_restore ? null : 'disabled="disabled"' ?>
                                 >
                                     <i class="fas fa-fw fa-undo"></i>
                                     <span><?= htmlspecialchars(l('link.settings.ai_bundle_restore'), ENT_QUOTES, 'UTF-8') ?></span>
