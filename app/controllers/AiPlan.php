@@ -4430,6 +4430,70 @@ class AiPlan extends Controller {
         return $normalized_items;
     }
 
+    private function normalize_ai_final_block_plan($value): array {
+        if($value instanceof \stdClass) {
+            $value = (array) $value;
+        }
+
+        if(!is_array($value)) {
+            return [];
+        }
+
+        $normalized = [];
+        $allowed_actions = ['move_up', 'move_down', 'keep_top', 'keep_after_primary', 'consider_remove', 'hide_for_now', 'add_block', 'swap_order', 'keep', 'add'];
+
+        foreach($value as $index => $item) {
+            if($item instanceof \stdClass) {
+                $item = (array) $item;
+            }
+
+            if(!is_array($item)) {
+                continue;
+            }
+
+            $label = $this->normalize_app_review_visible_copy((string) ($item['label'] ?? ''));
+            $block_type = trim((string) ($item['block_type'] ?? $item['type'] ?? ''));
+            $reason = trim((string) ($item['reason'] ?? $item['why'] ?? ''));
+
+            if($label === '' || ($block_type === '' && (int) ($item['block_id'] ?? 0) <= 0)) {
+                continue;
+            }
+
+            $planned_action = trim((string) ($item['planned_action'] ?? $item['action'] ?? 'keep'));
+            if(!in_array($planned_action, $allowed_actions, true)) {
+                $planned_action = 'keep';
+            }
+
+            $normalized[] = [
+                'display_order' => max(1, (int) ($item['display_order'] ?? ($index + 1))),
+                'block_id' => max(0, (int) ($item['block_id'] ?? 0)),
+                'block_type' => $block_type,
+                'label' => $label,
+                'source' => trim((string) ($item['source'] ?? 'existing')),
+                'status' => trim((string) ($item['status'] ?? '')),
+                'planned_action' => $planned_action,
+                'reason' => $reason,
+                'include_on_app' => array_key_exists('include_on_app', $item) ? !empty($item['include_on_app']) : !in_array($planned_action, ['hide_for_now', 'consider_remove'], true),
+                'position' => max(0, (int) ($item['position'] ?? 0)),
+                'insert_after_block_id' => max(0, (int) ($item['insert_after_block_id'] ?? 0)),
+                'insert_after_type' => trim((string) ($item['insert_after_type'] ?? '')),
+                'insert_after_label' => $this->normalize_app_review_visible_copy((string) ($item['insert_after_label'] ?? '')),
+            ];
+
+            if(count($normalized) >= 24) {
+                break;
+            }
+        }
+
+        usort($normalized, static function(array $a, array $b): int {
+            return ((int) ($a['display_order'] ?? 0) <=> (int) ($b['display_order'] ?? 0))
+                ?: ((int) ($a['position'] ?? 0) <=> (int) ($b['position'] ?? 0))
+                ?: strcmp((string) ($a['label'] ?? ''), (string) ($b['label'] ?? ''));
+        });
+
+        return $normalized;
+    }
+
     private function normalize_app_review_matching_key(string $value): string {
         $value = mb_strtolower(trim($value));
 
