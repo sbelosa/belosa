@@ -1548,6 +1548,83 @@ class LinkAjax extends Controller {
 		return $this->normalize_ai_final_block_plan($additional['fcc_ai_final_block_plan'] ?? []);
 	}
 
+	private function get_ai_final_plan_scope(array $additional): array {
+		$final_block_plan = $this->get_ai_final_block_plan($additional);
+		$included_block_ids = [];
+		$included_block_types = [];
+
+		foreach($final_block_plan as $item) {
+			if(empty($item['include_on_app'])) {
+				continue;
+			}
+
+			$block_id = (int) ($item['block_id'] ?? 0);
+			$block_type = trim((string) ($item['block_type'] ?? ''));
+
+			if($block_id > 0) {
+				$included_block_ids[] = $block_id;
+			}
+
+			if($block_type !== '') {
+				$included_block_types[] = $block_type;
+			}
+		}
+
+		return [
+			'has_plan' => !empty($final_block_plan),
+			'included_block_ids' => array_values(array_unique($included_block_ids)),
+			'included_block_types' => array_values(array_unique($included_block_types)),
+		];
+	}
+
+	private function filter_ai_copy_suggestions_by_plan_scope(array $copy_suggestions, array $plan_scope): array {
+		if(empty($plan_scope['has_plan'])) {
+			return $copy_suggestions;
+		}
+
+		$allowed_block_ids = array_map('intval', (array) ($plan_scope['included_block_ids'] ?? []));
+		$allowed_block_types = array_map('strval', (array) ($plan_scope['included_block_types'] ?? []));
+
+		return array_values(array_filter($copy_suggestions, static function($item) use ($allowed_block_ids, $allowed_block_types): bool {
+			if(!is_array($item)) {
+				return false;
+			}
+
+			$block_id = (int) ($item['block_id'] ?? 0);
+			$block_type = trim((string) ($item['block_type'] ?? ''));
+
+			if($block_id > 0) {
+				return in_array($block_id, $allowed_block_ids, true);
+			}
+
+			return $block_type !== '' && in_array($block_type, $allowed_block_types, true);
+		}));
+	}
+
+	private function filter_ai_block_patch_pack_by_plan_scope(array $block_patch_pack, array $plan_scope): array {
+		if(empty($plan_scope['has_plan'])) {
+			return $block_patch_pack;
+		}
+
+		$allowed_block_ids = array_map('intval', (array) ($plan_scope['included_block_ids'] ?? []));
+		$allowed_block_types = array_map('strval', (array) ($plan_scope['included_block_types'] ?? []));
+
+		return array_values(array_filter($block_patch_pack, static function($item) use ($allowed_block_ids, $allowed_block_types): bool {
+			if(!is_array($item)) {
+				return false;
+			}
+
+			$block_id = (int) ($item['block_id'] ?? 0);
+			$block_type = trim((string) ($item['block_type'] ?? ''));
+
+			if($block_id > 0) {
+				return in_array($block_id, $allowed_block_ids, true);
+			}
+
+			return $block_type !== '' && in_array($block_type, $allowed_block_types, true);
+		}));
+	}
+
 	private function get_ai_copy_supported_fields_by_block_type(string $block_type): array {
 		$block_type = trim($block_type);
 
@@ -5936,6 +6013,7 @@ class LinkAjax extends Controller {
 		$settings = $this->normalize_json_to_array($link->settings ?? null);
 		$additional = $this->normalize_json_to_array($link->additional ?? null);
 		$additional = $this->ensure_ai_bundle_backup($link, $additional);
+		$plan_scope = $this->get_ai_final_plan_scope($additional);
 
 		if(($theme_pack['background_mode'] ?? 'color') === 'gradient' && $theme_pack['gradient_start'] !== '' && $theme_pack['gradient_end'] !== '') {
 			$settings['background_type'] = 'gradient';
@@ -5981,6 +6059,13 @@ class LinkAjax extends Controller {
 			$result = database()->query("SELECT `biolink_block_id`, `type`, `settings` FROM `biolinks_blocks` WHERE `link_id` = {$link->link_id} AND `type` IN ({$themable_types_sql})");
 
 			while($biolink_block = $result->fetch_object()) {
+				if(
+					!empty($plan_scope['has_plan'])
+					&& !in_array((int) ($biolink_block->biolink_block_id ?? 0), (array) ($plan_scope['included_block_ids'] ?? []), true)
+				) {
+					continue;
+				}
+
 				$block_settings = $this->normalize_json_to_array($biolink_block->settings ?? null);
 				$updated_block_settings = $this->apply_ai_secondary_theme_to_block_settings($block_settings, (string) ($biolink_block->type ?? ''), $theme_pack);
 
@@ -5999,7 +6084,10 @@ class LinkAjax extends Controller {
 		$raw_missing_block_recommendations = $this->build_ai_missing_block_recommendations($additional, $block_catalog, $raw_primary_block_plan);
 		$primary_block_plan = $this->get_effective_ai_primary_block_plan($additional, $block_catalog, $raw_missing_block_recommendations, (int) $link->link_id, $this->user->preferences ?? null);
 		$missing_block_recommendations = $this->build_ai_missing_block_recommendations($additional, $block_catalog, $primary_block_plan);
-		$block_patch_pack = $this->normalize_ai_block_patch_pack($additional['fcc_ai_block_patch_pack'] ?? []);
+		$block_patch_pack = $this->filter_ai_block_patch_pack_by_plan_scope(
+			$this->normalize_ai_block_patch_pack($additional['fcc_ai_block_patch_pack'] ?? []),
+			$plan_scope
+		);
 		$primary_block_id = $this->resolve_ai_primary_block_id((int) $link->link_id, $primary_block_plan);
 		$primary_updated = false;
 
@@ -6367,12 +6455,16 @@ class LinkAjax extends Controller {
 		$additional = $this->normalize_json_to_array($link->additional ?? null);
 		$additional = $this->ensure_ai_bundle_backup($link, $additional);
 		$block_catalog = $this->get_ai_editor_block_catalog((int) $link->link_id);
+		$plan_scope = $this->get_ai_final_plan_scope($additional);
 		$raw_primary_block_plan = $this->normalize_ai_primary_block_plan($additional['fcc_ai_primary_block_plan'] ?? []);
 		$raw_copy_suggestions = $this->normalize_ai_copy_suggestions($additional['fcc_ai_copy_suggestions'] ?? []);
 		$missing_block_recommendations = $this->build_ai_missing_block_recommendations($additional, $block_catalog, $raw_primary_block_plan);
 		$primary_block_plan = $this->get_effective_ai_primary_block_plan($additional, $block_catalog, $missing_block_recommendations, (int) $link->link_id, $this->user->preferences ?? null);
 		$missing_block_recommendations = $this->build_ai_missing_block_recommendations($additional, $block_catalog, $primary_block_plan);
-		$block_patch_pack = $this->normalize_ai_block_patch_pack($additional['fcc_ai_block_patch_pack'] ?? []);
+		$block_patch_pack = $this->filter_ai_block_patch_pack_by_plan_scope(
+			$this->normalize_ai_block_patch_pack($additional['fcc_ai_block_patch_pack'] ?? []),
+			$plan_scope
+		);
 		$existing_chatbot_block = $this->get_first_ai_catalog_block_by_types($block_catalog, $this->get_ai_chatbot_block_types(), false);
 		$has_disabled_chatbot = !empty($existing_chatbot_block['block_id']) && (int) ($existing_chatbot_block['is_enabled'] ?? 0) !== 1;
 
@@ -6432,6 +6524,8 @@ class LinkAjax extends Controller {
 		}
 
 		$block_catalog = $this->get_ai_editor_block_catalog((int) $link->link_id);
+		$plan_scope = $this->get_ai_final_plan_scope($additional);
+		$raw_copy_suggestions = $this->filter_ai_copy_suggestions_by_plan_scope($raw_copy_suggestions, $plan_scope);
 		$copy_summary = $this->apply_ai_copy_suggestions_to_blocks((int) $link->link_id, $raw_copy_suggestions, $block_catalog);
 		$block_catalog = $this->get_ai_editor_block_catalog((int) $link->link_id);
 		$plan_sequence = $this->get_ai_final_plan_sequence_blocks($additional, $block_catalog);

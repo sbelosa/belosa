@@ -831,12 +831,16 @@ class AiPlan extends Controller {
                 $signal_protection_summary = $this->build_app_review_signal_protection_summary($block_attribution_snapshot, $layout_actions);
             }
             $missing_block_recommendations = $this->normalize_app_review_missing_block_recommendations($review['missing_block_recommendations'] ?? []);
-            $final_block_plan = $this->build_app_review_final_block_plan(
-                $block_attribution_snapshot,
-                $layout_actions,
-                $this->normalize_app_review_visible_list(array_values(array_filter((array) ($review['ideal_block_order'] ?? []), 'is_scalar'))),
-                $missing_block_recommendations
-            );
+            $final_block_plan = $this->normalize_ai_final_block_plan($review['final_block_plan'] ?? []);
+
+            if(empty($final_block_plan)) {
+                $final_block_plan = $this->build_app_review_final_block_plan(
+                    $block_attribution_snapshot,
+                    $layout_actions,
+                    $this->normalize_app_review_visible_list(array_values(array_filter((array) ($review['ideal_block_order'] ?? []), 'is_scalar'))),
+                    $missing_block_recommendations
+                );
+            }
 
             $normalized[] = [
                 'generated_at' => $review['generated_at'] ?? null,
@@ -1187,8 +1191,10 @@ class AiPlan extends Controller {
             'block_patch_pack' => $this->compact_app_review_block_patch_pack_for_storage($normalized_review['block_patch_pack'] ?? [], $aggressive ? 2 : 3, $aggressive ? 2 : 3),
             'copy_suggestions' => $this->compact_app_review_copy_suggestions_for_storage($normalized_review['copy_suggestions'] ?? [], $aggressive ? 2 : 3),
             'layout_actions' => $this->compact_app_review_layout_actions_for_storage($normalized_review['layout_actions'] ?? [], $aggressive ? 2 : 3),
+            'missing_block_recommendations' => $this->normalize_app_review_missing_block_recommendations($normalized_review['missing_block_recommendations'] ?? []),
             'block_attribution_snapshot' => $this->compact_app_review_block_attribution_for_storage($normalized_review['block_attribution_snapshot'] ?? [], $aggressive),
             'signal_protection_summary' => $this->compact_app_review_signal_protection_for_storage($normalized_review['signal_protection_summary'] ?? [], $aggressive),
+            'final_block_plan' => $this->normalize_ai_final_block_plan($normalized_review['final_block_plan'] ?? []),
         ];
     }
 
@@ -2467,7 +2473,10 @@ class AiPlan extends Controller {
             $ideal_block_order = $this->normalize_app_review_visible_list((array) ($review['ideal_block_order'] ?? []));
         }
 
-        $final_block_plan = is_array($additional['fcc_ai_final_block_plan'] ?? null) ? $additional['fcc_ai_final_block_plan'] : [];
+        $final_block_plan = $this->normalize_ai_final_block_plan($additional['fcc_ai_final_block_plan'] ?? []);
+        if(empty($final_block_plan) && !empty($review)) {
+            $final_block_plan = $this->normalize_ai_final_block_plan($review['final_block_plan'] ?? []);
+        }
         if(empty($final_block_plan) && !empty($review)) {
             $final_block_plan = $this->build_app_review_final_block_plan(
                 (array) ($review['block_attribution_snapshot'] ?? []),
@@ -2658,12 +2667,16 @@ class AiPlan extends Controller {
                 (array) ($review['layout_actions'] ?? [])
             )
         );
-        $final_block_plan = $this->build_app_review_final_block_plan(
-            (array) ($review['block_attribution_snapshot'] ?? []),
-            (array) ($review['layout_actions'] ?? []),
-            (array) ($review['ideal_block_order'] ?? []),
-            (array) ($review['missing_block_recommendations'] ?? [])
-        );
+        $final_block_plan = $this->normalize_ai_final_block_plan($review['final_block_plan'] ?? []);
+
+        if(empty($final_block_plan)) {
+            $final_block_plan = $this->build_app_review_final_block_plan(
+                (array) ($review['block_attribution_snapshot'] ?? []),
+                (array) ($review['layout_actions'] ?? []),
+                (array) ($review['ideal_block_order'] ?? []),
+                (array) ($review['missing_block_recommendations'] ?? [])
+            );
+        }
 
         $additional['fcc_ai_theme_pack'] = $theme_pack;
         $additional['fcc_ai_primary_block_plan'] = $this->normalize_app_review_primary_block_plan($review['primary_block_plan'] ?? []);
