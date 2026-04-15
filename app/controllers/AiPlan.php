@@ -2941,6 +2941,23 @@ class AiPlan extends Controller {
         $additional['fcc_ai_theme_apply_state']['recommended_at'] = $review['generated_at'] ?? null;
         $additional['fcc_ai_theme_apply_state']['active_review_key'] = (string) ($evolution_cycle['review_key'] ?? '');
 
+        $existing_backup = $this->normalize_json_to_array($additional['fcc_ai_bundle_backup'] ?? []);
+        $existing_backup_review_key = trim((string) ($existing_backup['review_key'] ?? ''));
+        $current_review_key = trim((string) ($additional['fcc_ai_theme_apply_state']['active_review_key'] ?? ''));
+
+        if(
+            empty($existing_backup['blocks'])
+            || empty($existing_backup['captured_at'])
+            || ($current_review_key !== '' && $existing_backup_review_key !== $current_review_key)
+        ) {
+            $link_row = [
+                'link_id' => $selected_link_id,
+                'settings' => $this->normalize_json_to_array($link->settings ?? null),
+                'biolink_theme_id' => (int) ($link->biolink_theme_id ?? 0),
+            ];
+            $additional['fcc_ai_bundle_backup'] = $this->build_ai_editor_bundle_backup($link_row, $additional);
+        }
+
         db()->where('link_id', $selected_link_id)->where('user_id', $this->user->user_id)->update('links', [
             'additional' => json_encode($additional),
         ]);
