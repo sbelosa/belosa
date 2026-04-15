@@ -1082,6 +1082,89 @@ class AiPlan extends Controller {
         return $compacted;
     }
 
+    private function compact_app_review_missing_block_recommendations_for_storage($value, bool $aggressive = false): array {
+        $items = $this->normalize_app_review_missing_block_recommendations($value);
+        $limit = $aggressive ? 3 : 4;
+        $why_limit = $aggressive ? 120 : 180;
+        $compacted = [];
+
+        foreach(array_slice($items, 0, max(0, $limit)) as $item) {
+            $block_type = $this->sanitize_ai_string($item['block_type'] ?? '', 64);
+            $why = $this->normalize_app_review_channel_copy($this->sanitize_ai_string($item['why'] ?? '', $why_limit));
+
+            if($block_type === '' || $why === '') {
+                continue;
+            }
+
+            $row = [
+                'recommendation_key' => $this->sanitize_ai_string($item['recommendation_key'] ?? '', 64),
+                'block_type' => $block_type,
+                'role_key' => $this->sanitize_ai_string($item['role_key'] ?? '', 64),
+                'label' => $this->normalize_app_review_visible_copy($this->sanitize_ai_string($item['label'] ?? '', 120)),
+                'why' => $why,
+                'priority' => max(1, min(9, (int) ($item['priority'] ?? 1))),
+            ];
+
+            if(!empty($item['allow_existing_type'])) {
+                $row['allow_existing_type'] = true;
+            }
+
+            if((int) ($item['insert_after_block_id'] ?? 0) > 0) {
+                $row['insert_after_block_id'] = max(0, (int) ($item['insert_after_block_id'] ?? 0));
+            }
+
+            $insert_after_type = $this->sanitize_ai_string($item['insert_after_type'] ?? '', 64);
+            if($insert_after_type !== '') {
+                $row['insert_after_type'] = $insert_after_type;
+            }
+
+            $insert_after_label = $this->normalize_app_review_visible_copy($this->sanitize_ai_string($item['insert_after_label'] ?? '', 120));
+            if($insert_after_label !== '') {
+                $row['insert_after_label'] = $insert_after_label;
+            }
+
+            $compacted[] = $row;
+        }
+
+        return $compacted;
+    }
+
+    private function compact_app_review_final_block_plan_for_storage($value, bool $aggressive = false, int $limit = 24): array {
+        $items = $this->normalize_ai_final_block_plan($value);
+        $reason_limit = $aggressive ? 120 : 180;
+        $compacted = [];
+
+        foreach(array_slice($items, 0, max(0, $limit)) as $item) {
+            $block_id = max(0, (int) ($item['block_id'] ?? 0));
+            $block_type = $this->sanitize_ai_string($item['block_type'] ?? '', 64);
+            $label = $this->normalize_app_review_visible_copy($this->sanitize_ai_string($item['label'] ?? '', 140));
+
+            if($label === '' || ($block_id <= 0 && $block_type === '')) {
+                continue;
+            }
+
+            $row = [
+                'display_order' => max(1, (int) ($item['display_order'] ?? 0)),
+                'block_id' => $block_id,
+                'block_type' => $block_type,
+                'label' => $label,
+                'source' => $this->sanitize_ai_string($item['source'] ?? 'existing', 32),
+                'status' => $this->sanitize_ai_string($item['status'] ?? '', 32),
+                'planned_action' => $this->sanitize_ai_string($item['planned_action'] ?? 'keep', 32),
+                'include_on_app' => array_key_exists('include_on_app', $item) ? !empty($item['include_on_app']) : true,
+            ];
+
+            $reason = $this->normalize_app_review_channel_copy($this->sanitize_ai_string($item['reason'] ?? '', $reason_limit));
+            if($reason !== '') {
+                $row['reason'] = $reason;
+            }
+
+            $compacted[] = $row;
+        }
+
+        return $compacted;
+    }
+
     private function compact_app_review_block_attribution_for_storage($value, bool $aggressive = false): array {
         $payload = $this->normalize_app_review_block_attribution_payload($value);
         $top_limit = $aggressive ? 2 : 3;
@@ -1191,10 +1274,10 @@ class AiPlan extends Controller {
             'block_patch_pack' => $this->compact_app_review_block_patch_pack_for_storage($normalized_review['block_patch_pack'] ?? [], $aggressive ? 2 : 3, $aggressive ? 2 : 3),
             'copy_suggestions' => $this->compact_app_review_copy_suggestions_for_storage($normalized_review['copy_suggestions'] ?? [], $aggressive ? 2 : 3),
             'layout_actions' => $this->compact_app_review_layout_actions_for_storage($normalized_review['layout_actions'] ?? [], $aggressive ? 2 : 3),
-            'missing_block_recommendations' => $this->normalize_app_review_missing_block_recommendations($normalized_review['missing_block_recommendations'] ?? []),
+            'missing_block_recommendations' => $this->compact_app_review_missing_block_recommendations_for_storage($normalized_review['missing_block_recommendations'] ?? [], $aggressive),
             'block_attribution_snapshot' => $this->compact_app_review_block_attribution_for_storage($normalized_review['block_attribution_snapshot'] ?? [], $aggressive),
             'signal_protection_summary' => $this->compact_app_review_signal_protection_for_storage($normalized_review['signal_protection_summary'] ?? [], $aggressive),
-            'final_block_plan' => $this->normalize_ai_final_block_plan($normalized_review['final_block_plan'] ?? []),
+            'final_block_plan' => $this->compact_app_review_final_block_plan_for_storage($normalized_review['final_block_plan'] ?? [], $aggressive),
         ];
     }
 
@@ -1289,6 +1372,16 @@ class AiPlan extends Controller {
             ['leader_ai_weekly_plans', 3],
             ['leader_ai_weekly_outcomes', 3],
             ['leader_ai_weekly_checkins', 3],
+            ['leader_ai_theme_library', 2],
+            ['leader_ai_app_reviews', 2],
+            ['leader_ai_weekly_plans', 2],
+            ['leader_ai_weekly_outcomes', 2],
+            ['leader_ai_weekly_checkins', 2],
+            ['leader_ai_theme_library', 1],
+            ['leader_ai_app_reviews', 1],
+            ['leader_ai_weekly_plans', 1],
+            ['leader_ai_weekly_outcomes', 1],
+            ['leader_ai_weekly_checkins', 1],
         ];
 
         foreach($trim_steps as [$key, $limit]) {
@@ -1331,8 +1424,28 @@ class AiPlan extends Controller {
             ]);
 
             if(!$result || !empty(database()->error)) {
-                \Altum\Logger::users($this->user->user_id, 'ai_plan.preferences_persist_failed');
-                return false;
+                $preferences = $this->trim_ai_plan_preferences_for_storage($preferences, 40000, true);
+                $preferences = $this->limit_ai_plan_storage_list($preferences, 'leader_ai_app_reviews', 1);
+                $preferences = $this->limit_ai_plan_storage_list($preferences, 'leader_ai_theme_library', 2);
+                $preferences = $this->limit_ai_plan_storage_list($preferences, 'leader_ai_weekly_plans', 2);
+                $preferences = $this->limit_ai_plan_storage_list($preferences, 'leader_ai_weekly_outcomes', 2);
+                $preferences = $this->limit_ai_plan_storage_list($preferences, 'leader_ai_weekly_checkins', 2);
+                $preferences = $this->compact_ai_plan_app_reviews_for_storage($preferences, true, true);
+                $encoded = $this->encode_ai_plan_preferences_for_storage($preferences);
+
+                if($encoded === null) {
+                    \Altum\Logger::users($this->user->user_id, 'ai_plan.preferences_encode_failed_final_retry');
+                    return false;
+                }
+
+                $result = db()->where('user_id', $this->user->user_id)->update('users', [
+                    'preferences' => $encoded,
+                ]);
+
+                if(!$result || !empty(database()->error)) {
+                    \Altum\Logger::users($this->user->user_id, 'ai_plan.preferences_persist_failed');
+                    return false;
+                }
             }
         }
 
