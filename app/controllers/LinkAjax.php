@@ -1491,6 +1491,63 @@ class LinkAjax extends Controller {
 		return array_slice($normalized, 0, 6);
 	}
 
+	private function normalize_ai_final_block_plan($value): array {
+		$value = $this->normalize_json_to_array($value);
+		$normalized = [];
+		$allowed_actions = ['move_up', 'move_down', 'keep_top', 'keep_after_primary', 'consider_remove', 'hide_for_now', 'add_block', 'swap_order', 'keep', 'add'];
+
+		foreach($value as $index => $item) {
+			if(!is_array($item)) {
+				continue;
+			}
+
+			$label = $this->normalize_ai_visible_copy($item['label'] ?? '');
+			$block_type = trim((string) ($item['block_type'] ?? $item['type'] ?? ''));
+			$reason = trim((string) ($item['reason'] ?? $item['why'] ?? ''));
+
+			if($label === '' || ($block_type === '' && (int) ($item['block_id'] ?? 0) <= 0)) {
+				continue;
+			}
+
+			$planned_action = trim((string) ($item['planned_action'] ?? $item['action'] ?? 'keep'));
+			if(!in_array($planned_action, $allowed_actions, true)) {
+				$planned_action = 'keep';
+			}
+
+			$normalized[] = [
+				'display_order' => max(1, (int) ($item['display_order'] ?? ($index + 1))),
+				'block_id' => max(0, (int) ($item['block_id'] ?? 0)),
+				'block_type' => $block_type,
+				'label' => $label,
+				'source' => trim((string) ($item['source'] ?? 'existing')),
+				'status' => trim((string) ($item['status'] ?? '')),
+				'planned_action' => $planned_action,
+				'reason' => $reason,
+				'include_on_app' => array_key_exists('include_on_app', $item) ? !empty($item['include_on_app']) : !in_array($planned_action, ['hide_for_now', 'consider_remove'], true),
+				'position' => max(0, (int) ($item['position'] ?? 0)),
+				'insert_after_block_id' => max(0, (int) ($item['insert_after_block_id'] ?? 0)),
+				'insert_after_type' => trim((string) ($item['insert_after_type'] ?? '')),
+				'insert_after_label' => $this->normalize_ai_visible_copy($item['insert_after_label'] ?? ''),
+			];
+
+			if(count($normalized) >= 24) {
+				break;
+			}
+		}
+
+		usort($normalized, static function(array $a, array $b): int {
+			return ((int) ($a['display_order'] ?? 0) <=> (int) ($b['display_order'] ?? 0))
+				?: ((int) ($a['position'] ?? 0) <=> (int) ($b['position'] ?? 0))
+				?: strcmp((string) ($a['label'] ?? ''), (string) ($b['label'] ?? ''));
+		});
+
+		return $normalized;
+	}
+
+	private function get_ai_final_block_plan(array $additional): array {
+		return $this->normalize_ai_final_block_plan($additional['fcc_ai_final_block_plan'] ?? []);
+	}
+
 	private function get_ai_copy_supported_fields_by_block_type(string $block_type): array {
 		$block_type = trim($block_type);
 
@@ -2915,6 +2972,100 @@ class LinkAjax extends Controller {
 		return $ordered_blocks;
 	}
 
+	private function get_ai_final_plan_sequence_blocks(array $additional, array $block_catalog): array {
+		$final_block_plan = $this->get_ai_final_block_plan($additional);
+
+		if(empty($final_block_plan) || empty($block_catalog)) {
+			return [];
+		}
+
+		$ordered_blocks = [];
+		$used_ids = [];
+		$append_unique = static function(array $block) use (&$ordered_blocks, &$used_ids): void {
+			$block_id = (int) ($block['block_id'] ?? 0);
+
+			if($block_id <= 0 || in_array($block_id, $used_ids, true)) {
+				return;
+			}
+
+			$ordered_blocks[] = $block;
+			$used_ids[] = $block_id;
+		};
+
+		foreach($final_block_plan as $plan_item) {
+			$available_blocks = array_values(array_filter($block_catalog, static function(array $block) use ($used_ids): bool {
+				return !in_array((int) ($block['block_id'] ?? 0), $used_ids, true);
+			}));
+
+			if(empty($available_blocks)) {
+				break;
+			}
+
+			$matched_block = [];
+			$requested_block_id = (int) ($plan_item['block_id'] ?? 0);
+			$requested_block_type = trim((string) ($plan_item['block_type'] ?? ''));
+			$requested_label = $this->normalize_ai_visible_copy((string) ($plan_item['label'] ?? ''));
+			$requested_label_key = $this->normalize_ai_matching_key($requested_label);
+
+			if($requested_block_id > 0) {
+				foreach($available_blocks as $block) {
+					if((int) ($block['block_id'] ?? 0) === $requested_block_id) {
+						$matched_block = $block;
+						break;
+					}
+				}
+			}
+
+			if(empty($matched_block) && $requested_block_type !== '' && $requested_label !== '') {
+				foreach($available_blocks as $block) {
+					$label_key = $this->normalize_ai_matching_key((string) ($block['label'] ?? ''));
+
+					if(
+						(string) ($block['type'] ?? '') === $requested_block_type
+						&& $label_key !== ''
+						&& ($label_key === $requested_label_key || str_contains($label_key, $requested_label_key) || str_contains($requested_label_key, $label_key))
+					) {
+						$matched_block = $block;
+						break;
+					}
+				}
+			}
+
+			if(empty($matched_block) && $requested_block_type !== '') {
+				foreach($available_blocks as $block) {
+					if((string) ($block['type'] ?? '') === $requested_block_type) {
+						$matched_block = $block;
+						break;
+					}
+				}
+			}
+
+			if(empty($matched_block) && $requested_label !== '') {
+				foreach($available_blocks as $block) {
+					$label_key = $this->normalize_ai_matching_key((string) ($block['label'] ?? ''));
+
+					if($requested_label_key !== '' && $label_key !== '' && ($label_key === $requested_label_key || str_contains($label_key, $requested_label_key) || str_contains($requested_label_key, $label_key))) {
+						$matched_block = $block;
+						break;
+					}
+				}
+			}
+
+			if(empty($matched_block)) {
+				continue;
+			}
+
+			$matched_block['ai_plan_include_on_app'] = !empty($plan_item['include_on_app']);
+			$matched_block['ai_plan_action'] = (string) ($plan_item['planned_action'] ?? 'keep');
+			$matched_block['ai_plan_reason'] = (string) ($plan_item['reason'] ?? '');
+			$matched_block['ai_plan_source'] = (string) ($plan_item['source'] ?? 'existing');
+
+			$append_unique($matched_block);
+		}
+
+		return $ordered_blocks;
+	}
+
 	private function apply_ai_plan_sequence_to_blocks(int $link_id, array $blocks, array $plan_sequence_blocks, int $primary_block_id = 0, array $additional = []): array {
 		$current_map = [];
 		$protected_core_block_ids = $this->get_ai_protected_core_block_ids($blocks);
@@ -2925,11 +3076,22 @@ class LinkAjax extends Controller {
 		}
 
 		$visible_ids = [];
+		$explicit_hidden_ids = [];
 		foreach($plan_sequence_blocks as $block) {
 			$block_id = (int) ($block['block_id'] ?? 0);
+			$include_on_app = array_key_exists('ai_plan_include_on_app', $block) ? !empty($block['ai_plan_include_on_app']) : true;
+			$planned_action = trim((string) ($block['ai_plan_action'] ?? ''));
 
-			if($block_id > 0 && isset($current_map[$block_id]) && !in_array($block_id, $visible_ids, true)) {
+			if($block_id <= 0 || !isset($current_map[$block_id])) {
+				continue;
+			}
+
+			if($include_on_app && !in_array($block_id, $visible_ids, true)) {
 				$visible_ids[] = $block_id;
+			}
+
+			if((!$include_on_app || in_array($planned_action, ['hide_for_now', 'consider_remove'], true)) && !in_array($block_id, $explicit_hidden_ids, true)) {
+				$explicit_hidden_ids[] = $block_id;
 			}
 		}
 
@@ -2984,6 +3146,12 @@ class LinkAjax extends Controller {
 		});
 
 		$ordered_all_ids = $visible_ids;
+		foreach($explicit_hidden_ids as $block_id) {
+			if($block_id > 0 && !in_array($block_id, $ordered_all_ids, true)) {
+				$ordered_all_ids[] = $block_id;
+			}
+		}
+
 		foreach($remaining_blocks as $block) {
 			$block_id = (int) ($block['biolink_block_id'] ?? 0);
 
@@ -3005,7 +3173,14 @@ class LinkAjax extends Controller {
 			$current_block = $current_map[$block_id];
 			$updates = [];
 			$new_order = $index + 1;
-			$should_enable = (in_array($block_id, $visible_ids, true) || in_array($block_id, $protected_block_ids, true)) ? 1 : 0;
+			$current_enabled = (int) ($current_block['is_enabled'] ?? 0);
+			$should_enable = $current_enabled;
+
+			if(in_array($block_id, $visible_ids, true) || in_array($block_id, $protected_block_ids, true)) {
+				$should_enable = 1;
+			} elseif(in_array($block_id, $explicit_hidden_ids, true)) {
+				$should_enable = 0;
+			}
 
 			if((int) ($current_block['order'] ?? 0) !== $new_order) {
 				$updates['order'] = $new_order;
@@ -6259,7 +6434,12 @@ class LinkAjax extends Controller {
 		$block_catalog = $this->get_ai_editor_block_catalog((int) $link->link_id);
 		$copy_summary = $this->apply_ai_copy_suggestions_to_blocks((int) $link->link_id, $raw_copy_suggestions, $block_catalog);
 		$block_catalog = $this->get_ai_editor_block_catalog((int) $link->link_id);
-		$plan_sequence = $this->get_ai_plan_sequence_blocks($additional, $block_catalog, (int) $link->link_id, $this->user->preferences ?? null);
+		$plan_sequence = $this->get_ai_final_plan_sequence_blocks($additional, $block_catalog);
+
+		if(empty($plan_sequence)) {
+			$plan_sequence = $this->get_ai_plan_sequence_blocks($additional, $block_catalog, (int) $link->link_id, $this->user->preferences ?? null);
+		}
+
 		$primary_block_id = $this->resolve_ai_primary_block_id((int) $link->link_id, $primary_block_plan);
 		$full_snapshot = $this->get_biolink_blocks_full_snapshot((int) $link->link_id);
 		$layout_summary = $this->apply_ai_plan_sequence_to_blocks((int) $link->link_id, $full_snapshot, $plan_sequence, $primary_block_id, $additional);
@@ -6720,6 +6900,18 @@ class LinkAjax extends Controller {
 		/* Check for any errors */
 		if(!$link = db()->where('link_id', $_POST['link_id'])->where('user_id', $this->user->user_id)->getOne('links')) {
 			die();
+		}
+
+		$main_biolink_id = (int) (fc_get_user_main_biolink_id((int) $this->user->user_id) ?? 0);
+		$is_locked_main_biolink = $main_biolink_id > 0 && $main_biolink_id === (int) $link->link_id;
+
+		if($is_locked_main_biolink) {
+			$domain_id = (int) ($link->domain_id ?? 0);
+			$_POST['url'] = (string) ($link->url ?? '');
+			$_POST['is_main_link'] = $domain_id
+				&& isset($domains[$domain_id])
+				&& (int) ($domains[$domain_id]->type ?? 0) === 0
+				&& (int) ($domains[$domain_id]->link_id ?? 0) === (int) $link->link_id;
 		}
 
 		/* Existing projects */

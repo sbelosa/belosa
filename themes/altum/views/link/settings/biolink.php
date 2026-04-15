@@ -1387,7 +1387,10 @@ $fcc_biolink_editor_tours = [
                                 <div class="input-group">
                                     <div class="input-group-prepend">
 										<?php if (!empty($data->domains)): ?>
-                                            <select name="domain_id" class="appearance-none custom-select form-control input-group-text">
+                                            <?php if($fcc_biolink_editor_is_main): ?>
+                                                <input type="hidden" name="domain_id" value="<?= (int) ($data->link->domain_id ?? 0) ?>" />
+                                            <?php endif ?>
+                                            <select name="domain_id" class="appearance-none custom-select form-control input-group-text" <?= $fcc_biolink_editor_is_main ? 'disabled="disabled"' : null ?>>
 												<?php if(settings()->links->main_domain_is_enabled || \Altum\Authentication::is_admin()): ?>
                                                     <option value=" " <?= $data->link->domain ? 'selected="selected"' : null ?> data-full-url="<?= SITE_URL ?>"><?= remove_url_protocol_from_url(SITE_URL) ?></option>
 												<?php endif ?>
@@ -1411,19 +1414,32 @@ $fcc_biolink_editor_tours = [
                                             maxlength="256"
                                             onchange="update_this_value(this, get_slug)"
                                             onkeyup="update_this_value(this, get_slug)"
-										<?= !$this->user->plan_settings->custom_url || ($data->biolink_main && $data->biolink_main->biolink_id == $data->link->link_id) ? 'readonly="readonly"' : null ?>
+										<?= !$this->user->plan_settings->custom_url || $fcc_biolink_editor_is_main ? 'readonly="readonly"' : null ?>
 										<?= $this->user->plan_settings->custom_url ? null : get_plan_feature_disabled_info() ?>
                                     />
                                     <!-- /Custom code -->
                                 </div>
-                                <small class="form-text text-muted"><?= l('link.settings.url_help') ?></small>
+                                <small class="form-text text-muted">
+                                    <?= l('link.settings.url_help') ?>
+                                    <?php if($fcc_biolink_editor_is_main): ?>
+                                        <br /><?= l('link.settings.url_help_main_biolink_locked') ?>
+                                    <?php endif ?>
+                                </small>
                             </div>
 
 							<?php if (!empty($data->domains)): ?>
                                 <div id="is_main_link_wrapper" class="form-group custom-control custom-switch <?= $data->link->domain_id && $data->domains[$data->link->domain_id]->type == '0' ? null : 'd-none' ?>">
-                                    <input id="is_main_link" name="is_main_link" type="checkbox" class="custom-control-input" <?= $data->link->domain_id && $data->domains[$data->link->domain_id]->link_id == $data->link->link_id ? 'checked="checked"' : null ?>>
+                                    <?php if($fcc_biolink_editor_is_main && $data->link->domain_id && $data->domains[$data->link->domain_id]->link_id == $data->link->link_id): ?>
+                                        <input type="hidden" name="is_main_link" value="1" />
+                                    <?php endif ?>
+                                    <input id="is_main_link" name="is_main_link" type="checkbox" class="custom-control-input" <?= $data->link->domain_id && $data->domains[$data->link->domain_id]->link_id == $data->link->link_id ? 'checked="checked"' : null ?> <?= $fcc_biolink_editor_is_main ? 'disabled="disabled"' : null ?>>
                                     <label class="custom-control-label" for="is_main_link"><?= l('link.settings.is_main_link') ?></label>
-                                    <small class="form-text text-muted"><?= l('link.settings.is_main_link_help') ?></small>
+                                    <small class="form-text text-muted">
+                                        <?= l('link.settings.is_main_link_help') ?>
+                                        <?php if($fcc_biolink_editor_is_main): ?>
+                                            <br /><?= l('link.settings.url_help_main_biolink_locked') ?>
+                                        <?php endif ?>
+                                    </small>
                                 </div>
 							<?php endif ?>
 

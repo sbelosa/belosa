@@ -101,6 +101,15 @@
     .ai-plan-shell .ai-plan-review-order-item { display:flex; gap:.85rem; align-items:flex-start; border-bottom:1px solid rgba(148,163,184,.08); padding-bottom:.65rem; }
     .ai-plan-shell .ai-plan-review-order-item:last-child { border-bottom:0; padding-bottom:0; }
     .ai-plan-shell .ai-plan-review-order-step { width:1.6rem; height:1.6rem; flex:0 0 1.6rem; display:inline-flex; align-items:center; justify-content:center; border-radius:999px; font-size:.78rem; font-weight:700; background:rgba(125,211,252,.16); color:#0369a1; }
+    .ai-plan-shell .ai-plan-review-order-copy { flex:1; min-width:0; }
+    .ai-plan-shell .ai-plan-review-order-top { display:flex; flex-wrap:wrap; align-items:center; gap:.45rem; margin-bottom:.3rem; }
+    .ai-plan-shell .ai-plan-review-order-name { color:#f8fafc; font-weight:700; line-height:1.45; }
+    .ai-plan-shell .ai-plan-review-order-reason { color:rgba(203,213,225,.84); font-size:.92rem; line-height:1.58; }
+    .ai-plan-shell .ai-plan-review-order-badge { display:inline-flex; align-items:center; padding:.28rem .58rem; border-radius:999px; font-size:.69rem; font-weight:800; line-height:1.2; letter-spacing:.05em; text-transform:uppercase; border:1px solid rgba(148,163,184,.18); background:rgba(15,23,42,.38); color:rgba(226,232,240,.92); }
+    .ai-plan-shell .ai-plan-review-order-badge.is-keep { color:#dcfce7; background:rgba(20,83,45,.28); border-color:rgba(74,222,128,.24); }
+    .ai-plan-shell .ai-plan-review-order-badge.is-shift { color:#e0f2fe; background:rgba(8,47,73,.34); border-color:rgba(56,189,248,.24); }
+    .ai-plan-shell .ai-plan-review-order-badge.is-add { color:#ccfbf1; background:rgba(17,94,89,.3); border-color:rgba(45,212,191,.24); }
+    .ai-plan-shell .ai-plan-review-order-badge.is-hide { color:#fde68a; background:rgba(120,53,15,.28); border-color:rgba(251,191,36,.22); }
     .ai-plan-shell .ai-plan-inline-meta { display:flex; flex-wrap:wrap; gap:.5rem; margin-bottom:1rem; }
     .ai-plan-shell .ai-plan-soft-box { border:1px solid rgba(148,163,184,.12); border-radius:.9rem; padding:.85rem 1rem; background:rgba(255,255,255,.02); }
     .ai-plan-shell .ai-plan-preview-card { border:1px solid rgba(148,163,184,.12); border-radius:1rem; background:linear-gradient(160deg, rgba(255,255,255,.025), rgba(255,255,255,.01)); overflow:hidden; min-height:100%; display:flex; flex-direction:column; }
@@ -554,6 +563,7 @@
 }; ?>
 <?php $app_review_evolution_display = is_array($data->app_review_evolution_payload ?? null) ? $data->app_review_evolution_payload : []; ?>
 <?php $app_review_block_attribution = is_array($data->app_review_block_attribution_payload ?? null) ? $data->app_review_block_attribution_payload : []; ?>
+<?php $app_review_evolution_display_measurements = is_array($app_review_evolution_display['display_measurements'] ?? null) ? $app_review_evolution_display['display_measurements'] : []; ?>
 <?php $render_app_review_evolution_status = static function(string $status): string {
     if($status === 'measured') {
         return l('link.settings.ai_evolution_status_measured');
@@ -599,10 +609,36 @@
         $primary_block_plan['label'] ?? '',
         $primary_block_plan['reason'] ?? '',
     ]);
+    $final_block_plan = array_values(array_filter((array) ($review['final_block_plan'] ?? []), 'is_array'));
     $copy_suggestions = is_array($review['copy_suggestions'] ?? null) ? $review['copy_suggestions'] : [];
     $layout_actions = is_array($review['layout_actions'] ?? null) ? $review['layout_actions'] : [];
     $signal_protection_summary = is_array($review['signal_protection_summary'] ?? null) ? $review['signal_protection_summary'] : [];
     $evolution_active_cycle = is_array($app_review_evolution_display['active_cycle'] ?? null) ? $app_review_evolution_display['active_cycle'] : [];
+    $get_final_plan_badges = static function(array $item): array {
+        $action = (string) ($item['planned_action'] ?? 'keep');
+        $source = (string) ($item['source'] ?? 'existing');
+        $include_on_app = array_key_exists('include_on_app', $item) ? !empty($item['include_on_app']) : true;
+        $badges = [];
+
+        if(!$include_on_app || in_array($action, ['hide_for_now', 'consider_remove'], true)) {
+            $badges[] = ['label' => 'Privremeno niže', 'class' => 'is-hide'];
+        } elseif($source === 'missing' || in_array($action, ['add', 'add_block'], true)) {
+            $badges[] = ['label' => 'Dodaje se', 'class' => 'is-add'];
+        } elseif(in_array($action, ['move_up', 'move_down', 'swap_order', 'keep_after_primary', 'keep_top'], true)) {
+            $badges[] = ['label' => 'Novi redoslijed', 'class' => 'is-shift'];
+        } else {
+            $badges[] = ['label' => 'Zadržava se', 'class' => 'is-keep'];
+        }
+
+        $status = trim((string) ($item['status'] ?? ''));
+        if(in_array($status, ['high_signal', 'contributing'], true)) {
+            $badges[] = ['label' => 'Donosi rezultat', 'class' => 'is-keep'];
+        } elseif($status === 'supporting') {
+            $badges[] = ['label' => 'Trust / podrška', 'class' => 'is-shift'];
+        }
+
+        return $badges;
+    };
     ob_start();
     ?>
     <div class="ai-plan-review-results">
@@ -711,10 +747,44 @@
                     <details class="ai-plan-review-disclosure" data-accordion-item="app-review-details">
                         <summary><?= l('ai_plan.app_review_block_order') ?></summary>
                         <div class="ai-plan-review-disclosure-body">
+                            <p class="ai-plan-review-disclosure-note mb-3">Ovo je točan finalni popis blokova koje AI želi ostaviti na aplikaciji nakon importa, redom kako trebaju stajati. Ako se neki postojeći blok privremeno spušta ili miče iz fokusa, razlog je napisan odmah ispod njega.</p>
                             <div class="ai-plan-review-order mb-0">
-                                <?php foreach(($review['ideal_block_order'] ?? []) as $index => $item): ?>
-                                    <div class="ai-plan-review-order-item"><span class="ai-plan-review-order-step"><?= $index + 1 ?></span><div><?= htmlspecialchars((string) $item, ENT_QUOTES, 'UTF-8') ?></div></div>
-                                <?php endforeach ?>
+                                <?php if(!empty($final_block_plan)): ?>
+                                    <?php foreach($final_block_plan as $index => $item): ?>
+                                        <?php $item_label = trim((string) ($item['label'] ?? '')); ?>
+                                        <?php if($item_label === '') continue; ?>
+                                        <?php $item_reason = trim((string) ($item['reason'] ?? '')); ?>
+                                        <?php $badges = $get_final_plan_badges($item); ?>
+                                        <div class="ai-plan-review-order-item">
+                                            <span class="ai-plan-review-order-step"><?= $index + 1 ?></span>
+                                            <div class="ai-plan-review-order-copy">
+                                                <div class="ai-plan-review-order-top">
+                                                    <span class="ai-plan-review-order-name"><?= htmlspecialchars($item_label, ENT_QUOTES, 'UTF-8') ?></span>
+                                                    <?php foreach($badges as $badge): ?>
+                                                        <span class="ai-plan-review-order-badge <?= htmlspecialchars((string) ($badge['class'] ?? ''), ENT_QUOTES, 'UTF-8') ?>">
+                                                            <?= htmlspecialchars((string) ($badge['label'] ?? ''), ENT_QUOTES, 'UTF-8') ?>
+                                                        </span>
+                                                    <?php endforeach ?>
+                                                </div>
+                                                <?php if($item_reason !== ''): ?>
+                                                    <div class="ai-plan-review-order-reason"><?= htmlspecialchars($item_reason, ENT_QUOTES, 'UTF-8') ?></div>
+                                                <?php endif ?>
+                                            </div>
+                                        </div>
+                                    <?php endforeach ?>
+                                <?php else: ?>
+                                    <?php foreach(($review['ideal_block_order'] ?? []) as $index => $item): ?>
+                                        <div class="ai-plan-review-order-item">
+                                            <span class="ai-plan-review-order-step"><?= $index + 1 ?></span>
+                                            <div class="ai-plan-review-order-copy">
+                                                <div class="ai-plan-review-order-top">
+                                                    <span class="ai-plan-review-order-name"><?= htmlspecialchars((string) $item, ENT_QUOTES, 'UTF-8') ?></span>
+                                                    <span class="ai-plan-review-order-badge is-shift">Glavni redoslijed</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    <?php endforeach ?>
+                                <?php endif ?>
                             </div>
                         </div>
                     </details>
@@ -840,19 +910,24 @@
                                         </p>
                                     </div>
                                     <?php foreach(['evaluation_7d' => l('link.settings.ai_evolution_window_7d'), 'evaluation_30d' => l('link.settings.ai_evolution_window_30d')] as $measurement_key => $measurement_label): ?>
-                                        <?php $measurement = is_array($evolution_active_cycle[$measurement_key] ?? null) ? $evolution_active_cycle[$measurement_key] : []; ?>
+                                        <?php $measurement = is_array($app_review_evolution_display_measurements[$measurement_key] ?? null) ? $app_review_evolution_display_measurements[$measurement_key] : (is_array($evolution_active_cycle[$measurement_key] ?? null) ? $evolution_active_cycle[$measurement_key] : []); ?>
                                         <div class="ai-plan-review-detail-card">
                                             <h3><?= htmlspecialchars($measurement_label, ENT_QUOTES, 'UTF-8') ?></h3>
                                             <p class="mb-2 font-weight-bold"><?= $render_app_review_evolution_status((string) ($measurement['status'] ?? 'pending')) ?></p>
                                             <p class="mb-2 text-muted">
                                                 <?php if(!empty($measurement['measured_at'])): ?>
                                                     <?= \Altum\Date::get($measurement['measured_at'], 2) ?>
+                                                <?php elseif(!empty($measurement['source_recommended_at']) && empty($measurement['is_from_active_cycle'])): ?>
+                                                    <?= \Altum\Date::get((string) $measurement['source_recommended_at'], 2) ?>
                                                 <?php elseif(($measurement['status'] ?? 'pending') === 'ready'): ?>
                                                     <?= l('link.settings.ai_evolution_ready_text') ?>
                                                 <?php else: ?>
                                                     <?= l('link.settings.ai_evolution_waiting_measurement') ?>
                                                 <?php endif ?>
                                             </p>
+                                            <?php if(!empty($measurement['source_note'])): ?>
+                                                <p class="ai-plan-review-disclosure-note mb-2"><?= htmlspecialchars((string) $measurement['source_note'], ENT_QUOTES, 'UTF-8') ?></p>
+                                            <?php endif ?>
                                             <p class="mb-0"><?= htmlspecialchars((string) ($measurement['summary'] ?? l('link.settings.ai_evolution_result_same')), ENT_QUOTES, 'UTF-8') ?></p>
                                         </div>
                                     <?php endforeach ?>

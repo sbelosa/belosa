@@ -830,6 +830,13 @@ class AiPlan extends Controller {
             if(empty($signal_protection_summary['has_items']) && !empty($block_attribution_snapshot['has_blocks'])) {
                 $signal_protection_summary = $this->build_app_review_signal_protection_summary($block_attribution_snapshot, $layout_actions);
             }
+            $missing_block_recommendations = $this->normalize_app_review_missing_block_recommendations($review['missing_block_recommendations'] ?? []);
+            $final_block_plan = $this->build_app_review_final_block_plan(
+                $block_attribution_snapshot,
+                $layout_actions,
+                $this->normalize_app_review_visible_list(array_values(array_filter((array) ($review['ideal_block_order'] ?? []), 'is_scalar'))),
+                $missing_block_recommendations
+            );
 
             $normalized[] = [
                 'generated_at' => $review['generated_at'] ?? null,
@@ -871,8 +878,10 @@ class AiPlan extends Controller {
                 'block_patch_pack' => $this->normalize_app_review_block_patch_pack($review['block_patch_pack'] ?? []),
                 'copy_suggestions' => $this->normalize_app_review_copy_suggestions($review['copy_suggestions'] ?? []),
                 'layout_actions' => $layout_actions,
+                'missing_block_recommendations' => $missing_block_recommendations,
                 'block_attribution_snapshot' => $block_attribution_snapshot,
                 'signal_protection_summary' => $signal_protection_summary,
+                'final_block_plan' => $final_block_plan,
             ];
         }
 
@@ -2458,9 +2467,19 @@ class AiPlan extends Controller {
             $ideal_block_order = $this->normalize_app_review_visible_list((array) ($review['ideal_block_order'] ?? []));
         }
 
+        $final_block_plan = is_array($additional['fcc_ai_final_block_plan'] ?? null) ? $additional['fcc_ai_final_block_plan'] : [];
+        if(empty($final_block_plan) && !empty($review)) {
+            $final_block_plan = $this->build_app_review_final_block_plan(
+                (array) ($review['block_attribution_snapshot'] ?? []),
+                (array) ($review['layout_actions'] ?? []),
+                (array) ($review['ideal_block_order'] ?? []),
+                (array) ($review['missing_block_recommendations'] ?? [])
+            );
+        }
+
         $bundle_backup = $this->normalize_json_to_array($additional['fcc_ai_bundle_backup'] ?? []);
 
-        $payload['can_apply_blocks'] = !empty($copy_suggestions) || !empty($layout_actions) || !empty($missing_block_recommendations) || !empty($ideal_block_order);
+        $payload['can_apply_blocks'] = !empty($copy_suggestions) || !empty($layout_actions) || !empty($missing_block_recommendations) || !empty($ideal_block_order) || !empty($final_block_plan);
         $payload['can_apply_colors'] = !empty($theme_pack);
         $payload['can_restore'] = !empty($bundle_backup['captured_at']);
         $payload['has_any'] = $payload['can_apply_blocks'] || $payload['can_apply_colors'] || $payload['can_restore'];
@@ -2521,12 +2540,48 @@ class AiPlan extends Controller {
             return [
                 'has_memory' => false,
                 'active_cycle' => null,
+                'display_measurements' => [],
                 'recent_measured_cycles' => [],
             ];
         }
 
         foreach(['evaluation_7d', 'evaluation_30d'] as $measurement_key) {
             $active_cycle[$measurement_key]['summary'] = $this->summarize_app_review_evolution_delta((array) ($active_cycle[$measurement_key]['delta'] ?? []));
+        }
+
+        $display_measurements = [];
+        foreach(['evaluation_7d', 'evaluation_30d'] as $measurement_key) {
+            $active_measurement = is_array($active_cycle[$measurement_key] ?? null) ? $active_cycle[$measurement_key] : [];
+            $active_measurement['summary'] = $this->summarize_app_review_evolution_delta((array) ($active_measurement['delta'] ?? []));
+            $active_measurement['source_recommended_at'] = $active_cycle['recommended_at'] ?? null;
+            $active_measurement['is_from_active_cycle'] = true;
+            $active_measurement['source_note'] = '';
+
+            if(!empty($active_measurement['measured_at'])) {
+                $display_measurements[$measurement_key] = $active_measurement;
+                continue;
+            }
+
+            $fallback_measurement = $active_measurement;
+
+            foreach($memory as $cycle) {
+                $measurement = is_array($cycle[$measurement_key] ?? null) ? $cycle[$measurement_key] : [];
+
+                if(empty($measurement['measured_at'])) {
+                    continue;
+                }
+
+                $measurement['summary'] = $this->summarize_app_review_evolution_delta((array) ($measurement['delta'] ?? []));
+                $measurement['source_recommended_at'] = $cycle['recommended_at'] ?? null;
+                $measurement['is_from_active_cycle'] = ((string) ($cycle['review_key'] ?? '')) === ((string) ($active_cycle['review_key'] ?? ''));
+                $measurement['source_note'] = $measurement['is_from_active_cycle']
+                    ? ''
+                    : 'Prikazan je zadnji izmjereni rezultat prethodnog AI ciklusa dok nova analiza još čeka svoje mjerenje.';
+                $fallback_measurement = $measurement;
+                break;
+            }
+
+            $display_measurements[$measurement_key] = $fallback_measurement;
         }
 
         $recent_measured_cycles = [];
@@ -2553,6 +2608,7 @@ class AiPlan extends Controller {
         return [
             'has_memory' => true,
             'active_cycle' => $active_cycle,
+            'display_measurements' => $display_measurements,
             'recent_measured_cycles' => $recent_measured_cycles,
         ];
     }
@@ -2602,6 +2658,12 @@ class AiPlan extends Controller {
                 (array) ($review['layout_actions'] ?? [])
             )
         );
+        $final_block_plan = $this->build_app_review_final_block_plan(
+            (array) ($review['block_attribution_snapshot'] ?? []),
+            (array) ($review['layout_actions'] ?? []),
+            (array) ($review['ideal_block_order'] ?? []),
+            (array) ($review['missing_block_recommendations'] ?? [])
+        );
 
         $additional['fcc_ai_theme_pack'] = $theme_pack;
         $additional['fcc_ai_primary_block_plan'] = $this->normalize_app_review_primary_block_plan($review['primary_block_plan'] ?? []);
@@ -2610,6 +2672,7 @@ class AiPlan extends Controller {
         $additional['fcc_ai_layout_actions'] = $this->normalize_app_review_layout_actions($review['layout_actions'] ?? []);
         $additional['fcc_ai_missing_block_recommendations'] = $this->normalize_app_review_missing_block_recommendations($review['missing_block_recommendations'] ?? []);
         $additional['fcc_ai_ideal_block_order'] = $this->normalize_app_review_visible_list((array) ($review['ideal_block_order'] ?? []));
+        $additional['fcc_ai_final_block_plan'] = $final_block_plan;
         $additional['fcc_ai_core_block_policy'] = $this->normalize_json_to_array($review['fcc_core_block_policy'] ?? []);
         $additional['fcc_ai_signal_protection_summary'] = $signal_protection_summary;
         $additional['fcc_ai_evolution_memory'] = $evolution_memory;
@@ -5640,6 +5703,375 @@ class AiPlan extends Controller {
 
         return $normalized;
     }
+
+    private function build_app_review_final_block_plan(array $block_attribution_payload, array $layout_actions = [], array $ideal_block_order = [], array $missing_block_recommendations = []): array {
+        $block_attribution_payload = $this->normalize_app_review_block_attribution_payload($block_attribution_payload);
+        $layout_actions = $this->enforce_app_review_signal_safe_layout_actions(
+            $this->normalize_app_review_layout_actions($layout_actions),
+            $block_attribution_payload
+        );
+        $ideal_block_order = $this->normalize_app_review_visible_list($ideal_block_order);
+        $missing_block_recommendations = $this->normalize_app_review_missing_block_recommendations($missing_block_recommendations);
+
+        $all_blocks = array_values(array_filter((array) ($block_attribution_payload['all_blocks'] ?? []), 'is_array'));
+
+        if(empty($all_blocks) && empty($missing_block_recommendations)) {
+            return [];
+        }
+
+        usort($all_blocks, static function(array $a, array $b): int {
+            return ((int) ($a['position'] ?? 0) <=> (int) ($b['position'] ?? 0))
+                ?: ((int) ($a['block_id'] ?? 0) <=> (int) ($b['block_id'] ?? 0));
+        });
+
+        $action_map = [];
+        foreach($layout_actions as $action) {
+            $block_id = (int) ($action['block_id'] ?? 0);
+
+            if($block_id <= 0 || isset($action_map[$block_id])) {
+                continue;
+            }
+
+            $action_map[$block_id] = [
+                'action' => (string) ($action['action'] ?? ''),
+                'why' => (string) ($action['why'] ?? ''),
+            ];
+        }
+
+        $find_matching_block = function(string $item, array $available_blocks): array {
+            $item = trim($item);
+
+            if($item === '' || empty($available_blocks)) {
+                return [];
+            }
+
+            $item_key = $this->normalize_app_review_matching_key($item);
+            $word_count = count(array_filter(preg_split('/\s+/u', $item) ?: []));
+            $looks_like_name = $word_count >= 2
+                && $word_count <= 4
+                && !$this->app_review_text_has_any($item, ['avatar', 'fotografija', 'video', 'whatsapp', 'shop', 'webshop', 'proizvod', 'prijava', 'funnel', 'suradnja']);
+
+            $match_first = static function(array $blocks, callable $predicate): array {
+                foreach($blocks as $block) {
+                    if($predicate($block)) {
+                        return $block;
+                    }
+                }
+
+                return [];
+            };
+
+            if($this->app_review_text_has_any($item, ['avatar', 'profilna', 'fotografija', 'fotka', 'slika'])) {
+                return $match_first($available_blocks, static fn(array $block): bool => in_array((string) ($block['type'] ?? ''), ['avatar', 'image', 'header'], true));
+            }
+
+            if($this->app_review_text_has_any($item, ['ime i prezime', 'puno ime', 'prezime']) || $looks_like_name) {
+                $match = $match_first($available_blocks, fn(array $block): bool =>
+                    in_array((string) ($block['type'] ?? ''), ['heading', 'paragraph'], true)
+                    && (
+                        (string) ($block['role'] ?? '') === 'trust_content'
+                        || count(array_filter(preg_split('/\s+/u', (string) ($block['label'] ?? '')) ?: [])) >= 2
+                    )
+                );
+
+                if(!empty($match)) {
+                    return $match;
+                }
+            }
+
+            if($this->app_review_text_has_any($item, ['trust', 'povjerenje', 'uvod', 'kratka poruka', 'kratki naslov', 'odlomak'])) {
+                $match = $match_first($available_blocks, static fn(array $block): bool =>
+                    (string) ($block['role'] ?? '') === 'trust_content'
+                    || in_array((string) ($block['type'] ?? ''), ['paragraph', 'markdown', 'heading'], true)
+                );
+
+                if(!empty($match)) {
+                    return $match;
+                }
+            }
+
+            if($this->app_review_text_has_any($item, ['start paket', 'start-paket', 'partner', 'suradnik', 'postani forever', 'upis', 'registracija'])) {
+                $match = $match_first($available_blocks, fn(array $block): bool =>
+                    in_array((string) ($block['type'] ?? ''), ['link_forever_product', 'link'], true)
+                    && $this->app_review_text_has_any((string) ($block['label'] ?? ''), ['start paket', 'start-paket', 'partner', 'suradnik', 'upis', 'registracija'])
+                );
+
+                if(!empty($match)) {
+                    return $match;
+                }
+            }
+
+            if($this->app_review_text_has_any($item, ['video', 'vimeo', 'youtube'])) {
+                return $match_first($available_blocks, static fn(array $block): bool =>
+                    in_array((string) ($block['type'] ?? ''), ['video', 'youtube', 'vimeo'], true)
+                    || (string) ($block['role'] ?? '') === 'video'
+                );
+            }
+
+            if($this->app_review_text_has_any($item, ['prijava', 'funnel', 'formular', 'obrazac', 'suradnja'])) {
+                $match = $match_first($available_blocks, static fn(array $block): bool =>
+                    (string) ($block['role'] ?? '') === 'lead_capture'
+                    || (string) ($block['type'] ?? '') === 'lead_funnel'
+                );
+
+                if(!empty($match)) {
+                    return $match;
+                }
+            }
+
+            if($this->app_review_text_has_any($item, ['whatsapp'])) {
+                $match = $match_first($available_blocks, static fn(array $block): bool =>
+                    (string) ($block['role'] ?? '') === 'whatsapp'
+                    || (string) ($block['type'] ?? '') === 'custom_html_whatsapp'
+                );
+
+                if(!empty($match)) {
+                    return $match;
+                }
+            }
+
+            if($this->app_review_text_has_any($item, ['društvene', 'drustvene', 'mreže', 'mreze', 'social', 'kontakti'])) {
+                $match = $match_first($available_blocks, static fn(array $block): bool =>
+                    (string) ($block['role'] ?? '') === 'social_contact'
+                    || (string) ($block['type'] ?? '') === 'socials'
+                );
+
+                if(!empty($match)) {
+                    return $match;
+                }
+            }
+
+            if($this->app_review_text_has_any($item, ['webshop', 'web shop', 'shop', 'popust', 'forever webshop'])) {
+                $match = $match_first($available_blocks, static fn(array $block): bool =>
+                    (string) ($block['role'] ?? '') === 'shop'
+                    || in_array((string) ($block['type'] ?? ''), ['link_discount', 'link_forever_shop', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo'], true)
+                );
+
+                if(!empty($match)) {
+                    return $match;
+                }
+            }
+
+            if($this->app_review_text_has_any($item, ['proizvod', 'proizvodi'])) {
+                $match = $match_first($available_blocks, static fn(array $block): bool =>
+                    (string) ($block['role'] ?? '') === 'product'
+                    || (string) ($block['type'] ?? '') === 'link_forever_product'
+                );
+
+                if(!empty($match)) {
+                    return $match;
+                }
+            }
+
+            return $match_first($available_blocks, fn(array $block): bool => $item_key !== '' && $this->normalize_app_review_matching_key((string) ($block['label'] ?? '')) !== '' && (
+                $this->normalize_app_review_matching_key((string) ($block['label'] ?? '')) === $item_key
+                || str_contains($this->normalize_app_review_matching_key((string) ($block['label'] ?? '')), $item_key)
+                || str_contains($item_key, $this->normalize_app_review_matching_key((string) ($block['label'] ?? '')))
+            ));
+        };
+
+        $ideal_sequence_ids = [];
+        $used_ids = [];
+
+        foreach($ideal_block_order as $item) {
+            $available_blocks = array_values(array_filter($all_blocks, static function(array $block) use ($used_ids): bool {
+                return !in_array((int) ($block['block_id'] ?? 0), $used_ids, true);
+            }));
+            $matched_block = $find_matching_block((string) $item, $available_blocks);
+            $matched_block_id = (int) ($matched_block['block_id'] ?? 0);
+
+            if($matched_block_id <= 0) {
+                continue;
+            }
+
+            $ideal_sequence_ids[] = $matched_block_id;
+            $used_ids[] = $matched_block_id;
+        }
+
+        $hidden_ids = [];
+        foreach($all_blocks as $block) {
+            $block_id = (int) ($block['block_id'] ?? 0);
+            $status = (string) ($block['status'] ?? '');
+            $planned_action = (string) (($action_map[$block_id]['action'] ?? ''));
+
+            if(
+                $block_id > 0
+                && in_array($planned_action, ['hide_for_now', 'consider_remove'], true)
+                && !in_array($block_id, $ideal_sequence_ids, true)
+                && !in_array($status, ['high_signal', 'contributing', 'supporting'], true)
+            ) {
+                $hidden_ids[$block_id] = true;
+            }
+        }
+
+        $included_ids = [];
+        foreach($ideal_sequence_ids as $block_id) {
+            $included_ids[$block_id] = true;
+        }
+
+        foreach($all_blocks as $block) {
+            $block_id = (int) ($block['block_id'] ?? 0);
+            $status = (string) ($block['status'] ?? '');
+
+            if($block_id <= 0 || isset($included_ids[$block_id]) || isset($hidden_ids[$block_id])) {
+                continue;
+            }
+
+            if(in_array($status, ['high_signal', 'contributing', 'supporting'], true)) {
+                $included_ids[$block_id] = true;
+            }
+        }
+
+        foreach($all_blocks as $block) {
+            $block_id = (int) ($block['block_id'] ?? 0);
+
+            if($block_id <= 0 || isset($included_ids[$block_id]) || isset($hidden_ids[$block_id])) {
+                continue;
+            }
+
+            $included_ids[$block_id] = true;
+        }
+
+        $hidden_plan_rows = [];
+        $ordered_plan_rows = [];
+
+        $build_existing_plan_row = function(array $block, bool $include_on_app, bool $is_ideal_anchor = false) use ($action_map): array {
+            $block_id = (int) ($block['block_id'] ?? 0);
+            $status = (string) ($block['status'] ?? '');
+            $planned_action = (string) (($action_map[$block_id]['action'] ?? ''));
+            $planned_why = trim((string) (($action_map[$block_id]['why'] ?? '')));
+
+            if($include_on_app) {
+                if(in_array($planned_action, ['hide_for_now', 'consider_remove'], true) || $planned_action === '') {
+                    $planned_action = in_array($status, ['high_signal', 'contributing'], true)
+                        ? 'keep'
+                        : ($status === 'supporting' ? 'keep_after_primary' : 'keep');
+                }
+            } elseif(!in_array($planned_action, ['hide_for_now', 'consider_remove'], true)) {
+                $planned_action = 'hide_for_now';
+            }
+
+            $reason = $planned_why;
+            if($reason === '') {
+                if($is_ideal_anchor && $include_on_app) {
+                    $reason = 'AI ga izričito zadržava u konačnom rasporedu jer i dalje ima jasnu ulogu u putu korisnika.';
+                } elseif(!$include_on_app) {
+                    $reason = (string) ($block['reason'] ?? 'Ovaj blok se privremeno miče iz fokusa kako bi narednih 7 dana glavni put bio čišći i mjerljiviji.');
+                } elseif($status === 'supporting') {
+                    $reason = 'Ovaj blok ostaje kao trust ili prijelazni korak iako nije glavni klik-magnet.';
+                } else {
+                    $reason = (string) ($block['reason'] ?? 'Ovaj blok ostaje na aplikaciji jer i dalje ima ulogu u rezultatu, povjerenju ili prijelazu prema glavnom koraku.');
+                }
+            }
+
+            return [
+                'block_id' => $block_id,
+                'block_type' => (string) ($block['type'] ?? ''),
+                'label' => $this->normalize_app_review_visible_copy((string) (($block['label'] ?? '') ?: ($block['type'] ?? 'Blok'))),
+                'source' => 'existing',
+                'status' => $status,
+                'planned_action' => $planned_action,
+                'reason' => $this->normalize_app_review_channel_copy($reason),
+                'include_on_app' => $include_on_app,
+                'position' => max(0, (int) ($block['position'] ?? 0)),
+            ];
+        };
+
+        $append_missing_rows_for_anchor = function(int $anchor_block_id) use (&$ordered_plan_rows, &$missing_block_recommendations) {
+            $matched = [];
+            $remaining = [];
+
+            foreach($missing_block_recommendations as $item) {
+                $insert_after_block_id = (int) ($item['insert_after_block_id'] ?? 0);
+
+                if($anchor_block_id > 0 && $insert_after_block_id === $anchor_block_id) {
+                    $matched[] = $item;
+                } else {
+                    $remaining[] = $item;
+                }
+            }
+
+            $missing_block_recommendations = $remaining;
+
+            foreach($matched as $item) {
+                $ordered_plan_rows[] = [
+                    'block_id' => 0,
+                    'block_type' => (string) ($item['block_type'] ?? ''),
+                    'label' => $this->normalize_app_review_visible_copy((string) (($item['label'] ?? '') ?: ($item['block_type'] ?? 'Blok'))),
+                    'source' => 'missing',
+                    'status' => 'missing_recommended',
+                    'planned_action' => 'add',
+                    'reason' => $this->normalize_app_review_channel_copy((string) ($item['why'] ?? '')),
+                    'include_on_app' => true,
+                    'position' => 0,
+                    'insert_after_block_id' => $insert_after_block_id,
+                    'insert_after_type' => (string) ($item['insert_after_type'] ?? ''),
+                    'insert_after_label' => (string) ($item['insert_after_label'] ?? ''),
+                ];
+            }
+        };
+
+        foreach($ideal_sequence_ids as $block_id) {
+            foreach($all_blocks as $block) {
+                if((int) ($block['block_id'] ?? 0) !== $block_id) {
+                    continue;
+                }
+
+                $ordered_plan_rows[] = $build_existing_plan_row($block, true, true);
+                $append_missing_rows_for_anchor($block_id);
+                break;
+            }
+        }
+
+        foreach($all_blocks as $block) {
+            $block_id = (int) ($block['block_id'] ?? 0);
+
+            if($block_id <= 0 || in_array($block_id, $ideal_sequence_ids, true) || isset($hidden_ids[$block_id]) || !isset($included_ids[$block_id])) {
+                continue;
+            }
+
+            $ordered_plan_rows[] = $build_existing_plan_row($block, true, false);
+            $append_missing_rows_for_anchor($block_id);
+        }
+
+        foreach($missing_block_recommendations as $item) {
+            $ordered_plan_rows[] = [
+                'block_id' => 0,
+                'block_type' => (string) ($item['block_type'] ?? ''),
+                'label' => $this->normalize_app_review_visible_copy((string) (($item['label'] ?? '') ?: ($item['block_type'] ?? 'Blok'))),
+                'source' => 'missing',
+                'status' => 'missing_recommended',
+                'planned_action' => 'add',
+                'reason' => $this->normalize_app_review_channel_copy((string) ($item['why'] ?? '')),
+                'include_on_app' => true,
+                'position' => 0,
+                'insert_after_block_id' => (int) ($item['insert_after_block_id'] ?? 0),
+                'insert_after_type' => (string) ($item['insert_after_type'] ?? ''),
+                'insert_after_label' => (string) ($item['insert_after_label'] ?? ''),
+            ];
+        }
+
+        foreach($all_blocks as $block) {
+            $block_id = (int) ($block['block_id'] ?? 0);
+
+            if($block_id <= 0 || !isset($hidden_ids[$block_id])) {
+                continue;
+            }
+
+            $hidden_plan_rows[] = $build_existing_plan_row($block, false, false);
+        }
+
+        $final_plan = array_values(array_filter(array_merge($ordered_plan_rows, $hidden_plan_rows), static function(array $item): bool {
+            return trim((string) ($item['label'] ?? '')) !== '';
+        }));
+
+        foreach($final_plan as $index => &$item) {
+            $item['display_order'] = $index + 1;
+        }
+        unset($item);
+
+        return array_slice($final_plan, 0, 24);
+    }
     /* /Custom code: FC-2026-03-31 */
 
     private function get_goal_type(array $values): string {
@@ -8460,6 +8892,8 @@ class AiPlan extends Controller {
             '- summary neka bude kratak pregled od najvise 4 recenice.',
             '- priority_actions mora imati 3 do 4 vrlo konkretne preporuke koje odmah govore sto promijeniti i zasto ce to pomoci.',
             '- ideal_block_order mora imati 5 do 8 kratkih stavki i mora slijediti najbolji red za cilj korisnika.',
+            '- ideal_block_order mora biti u skladu sa stvarnim finalnim rasporedom. Ako neki blok ostaje aktivan i ima jasnu ulogu u rezultatu, povjerenju ili prijelazu, nemoj ga mentalno izbaciti iz plana dok ga istovremeno zadrzavas kroz druge preporuke.',
+            '- Ako predlazes da se postojeci blok privremeno makne iz fokusa, to mora biti jasno objasnjeno kroz layout_actions reason ili through block_attribution signal, kako bi admin i korisnik razumjeli zasto se to radi narednih 7 dana.',
             '- design_notes mora imati 2 do 5 konkretnih savjeta za boje, tekst blokove, video, kontrast i vizualni dojam.',
             '- color_palette mora biti objekt s kljucevima: background, heading, text, primary_block_text, primary_block_background, primary_block_border, primary_block_shadow, secondary_blocks_text, secondary_blocks_background, secondary_blocks_border, secondary_blocks_shadow.',
             '- Svaka vrijednost unutar color_palette mora biti jedna kratka recenica s konkretnim hex kodom i kratkim razlogom zasto ta boja odgovara cilju i dojmu aplikacije.',
@@ -8520,6 +8954,7 @@ class AiPlan extends Controller {
             '- Koristi fcc_block_catalog da procijenis koji blokovi imaju smisla za cilj, koji smetaju fokusu i sto bi vrijedilo dodati, pomaknuti ili ugasiti.',
             '- selected_app.block_attribution pokazuje koji blokovi trenutno donose signal, a koji su visoko postavljeni bez rezultata. To koristi kao stvarni dokaz sto pomaze, a sto odmaze.',
             '- Ako selected_app.block_attribution pokazuje da blok ima status high_signal ili contributing, nemoj predlagati hide_for_now ni consider_remove za taj blok. Takav blok smijes zadrzati, doraditi ili pomaknuti, ali ne gasiti.',
+            '- Ako blok nema jak klik signal, ali ima trust ili prijelaznu ulogu poput videa, imena vlasnika, uvodnog trust teksta, WhatsApp rezervnog puta ili drustvenog dokaza, radije ga zadrzi i pomakni nego da ga gasis odmah na prvu.',
             '- Ako je blok focus_risk ili critical_focus_risk, radije prvo predlozi move_down i jasniji fokus. Gasenje ili skrivanje koristi samo za ocite viskove bez signala.',
             '- Ako predlazes tekst blokove, reci jednostavno sto trebaju poruciti: kome je aplikacija namijenjena, sto osoba dobiva i koji je sljedeci korak.',
             '- Glavni blok u color_palette tretiraj kao prvi i najvazniji prodajni ili kontaktni blok koji vodi osobu na sljedeci korak.',

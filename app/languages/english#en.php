@@ -2575,6 +2575,7 @@ return [
 	'link_delete_modal.subheader' => 'All data related to the link will be completely deleted. This action cannot be undone.',
 	'link_delete_modal.success_message' => 'Link deletion was performed successfully.',
 	'link_delete_modal.error_message.main_biolink_locked' => 'The main NFC Forever Card App cannot be deleted.',
+	'link.settings.url_help_main_biolink_locked' => 'The main NFC Forever Card link is locked so the physical NFC card always opens the same app. URL and domain changes are not allowed on this main link.',
 	'data.title' => 'Contacts',
 	'data.menu' => 'Contacts',
 	'data.breadcrumb' => 'Contacts',

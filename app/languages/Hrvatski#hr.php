@@ -2254,6 +2254,7 @@ return [
 	'link_delete_modal.subheader' => 'Svi podaci povezani s linkom bit će trajno obrisani. Ova radnja se ne može poništiti.',
 	'link_delete_modal.success_message' => 'Brisanje linka je uspješno izvršeno.',
 	'link_delete_modal.error_message.main_biolink_locked' => 'Glavnu NFC Forever Card Aplikaciju nije moguće obrisati.',
+	'link.settings.url_help_main_biolink_locked' => 'Glavni NFC Forever Card link je zaključan kako bi fizička NFC kartica uvijek otvarala istu aplikaciju. Na ovom glavnom linku nije dopuštena promjena URL-a ni domene.',
 	'data.title' => 'Kontakti',
 	'data.menu' => 'Kontakti',
 	'data.breadcrumb' => 'Kontakti',
