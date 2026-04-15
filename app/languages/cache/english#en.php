@@ -1758,6 +1758,7 @@ return [
 	'ai_plan.weekly_success_message_phase_3' => 'Weekly check-in saved and the 7-day plan has been generated.',
 	'ai_plan.weekly_fallback_message' => 'AI processing stalled, so we immediately saved a safe fallback version of the plan. You can use it right away, and the next update will continue from it normally.',
 	'ai_plan.preferences_persist_failed_message' => 'The plan was generated, but saving did not complete correctly. Refresh the page and try again. If this repeats, the issue is likely an oversized AI history and the new update will trim it automatically.',
+	'ai_plan.app_review_persist_failed_message' => 'The app AI analysis was generated, but saving did not complete correctly. Refresh the page and try again. If this repeats, the system will automatically trim older AI history so the new analysis can be stored.',
 	'ai_plan.weekly_adaptive_title' => 'Adaptive question',
 	'ai_plan.weekly_locked_profile_title' => 'Finish the core profile first',
 	'ai_plan.weekly_locked_profile' => 'Before the weekly check-in, the user needs to complete the core AI profile from phase 1 so the system knows the goal, audience, and work style.',

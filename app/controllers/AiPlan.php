@@ -1008,12 +1008,244 @@ class AiPlan extends Controller {
         return $preferences;
     }
 
-    private function trim_ai_plan_preferences_for_storage(\stdClass $preferences, int $target_bytes = 60000): \stdClass {
+    private function compact_app_review_copy_suggestions_for_storage($value, int $limit = 3): array {
+        $items = $this->normalize_app_review_copy_suggestions($value);
+        $compacted = [];
+
+        foreach(array_slice($items, 0, max(0, $limit)) as $item) {
+            $compacted[] = [
+                'block_id' => (int) ($item['block_id'] ?? 0),
+                'block_type' => (string) ($item['block_type'] ?? ''),
+                'field' => (string) ($item['field'] ?? ''),
+                'label' => (string) ($item['label'] ?? ''),
+                'value' => (string) ($item['value'] ?? ''),
+                'reason' => (string) ($item['reason'] ?? ''),
+            ];
+        }
+
+        return $compacted;
+    }
+
+    private function compact_app_review_layout_actions_for_storage($value, int $limit = 3): array {
+        $items = $this->normalize_app_review_layout_actions($value);
+        $compacted = [];
+
+        foreach(array_slice($items, 0, max(0, $limit)) as $item) {
+            $compacted[] = [
+                'action' => (string) ($item['action'] ?? ''),
+                'block_id' => (int) ($item['block_id'] ?? 0),
+                'block_type' => (string) ($item['block_type'] ?? ''),
+                'label' => (string) ($item['label'] ?? ''),
+                'why' => (string) ($item['why'] ?? ''),
+            ];
+        }
+
+        return $compacted;
+    }
+
+    private function compact_app_review_block_patch_pack_for_storage($value, int $limit = 3, int $settings_limit = 3): array {
+        $items = $this->normalize_app_review_block_patch_pack($value);
+        $compacted = [];
+
+        foreach(array_slice($items, 0, max(0, $limit)) as $item) {
+            $settings = [];
+
+            foreach(array_slice((array) ($item['settings'] ?? []), 0, max(0, $settings_limit), true) as $setting_key => $setting_value) {
+                if(!is_scalar($setting_value)) {
+                    continue;
+                }
+
+                $settings[(string) $setting_key] = (string) $setting_value;
+            }
+
+            $compacted[] = [
+                'block_id' => (int) ($item['block_id'] ?? 0),
+                'block_type' => (string) ($item['block_type'] ?? ''),
+                'reason' => (string) ($item['reason'] ?? ''),
+                'settings' => $settings,
+            ];
+        }
+
+        return $compacted;
+    }
+
+    private function compact_app_review_block_attribution_for_storage($value, bool $aggressive = false): array {
+        $payload = $this->normalize_app_review_block_attribution_payload($value);
+        $top_limit = $aggressive ? 2 : 3;
+        $risk_limit = $aggressive ? 2 : 3;
+        $all_limit = $aggressive ? 4 : 6;
+
+        $map_row = static function(array $item): array {
+            return [
+                'block_id' => (int) ($item['block_id'] ?? 0),
+                'position' => (int) ($item['position'] ?? 0),
+                'type' => (string) ($item['type'] ?? ''),
+                'label' => (string) ($item['label'] ?? ''),
+                'role' => (string) ($item['role'] ?? ''),
+                'signal_score' => (int) ($item['signal_score'] ?? 0),
+                'status' => (string) ($item['status'] ?? ''),
+                'reason' => (string) ($item['reason'] ?? ''),
+            ];
+        };
+
+        $top_signal_blocks = array_map($map_row, array_slice((array) ($payload['top_signal_blocks'] ?? []), 0, $top_limit));
+        $focus_risk_blocks = array_map($map_row, array_slice((array) ($payload['focus_risk_blocks'] ?? []), 0, $risk_limit));
+
+        $all_blocks_seed = !empty($payload['all_blocks'])
+            ? array_slice((array) $payload['all_blocks'], 0, $all_limit)
+            : array_slice(array_merge($top_signal_blocks, $focus_risk_blocks), 0, $all_limit);
+
+        return [
+            'summary' => [
+                'tracked_blocks' => (int) (($payload['summary']['tracked_blocks'] ?? 0)),
+                'signal_blocks' => (int) (($payload['summary']['signal_blocks'] ?? 0)),
+                'focus_risk_blocks' => (int) (($payload['summary']['focus_risk_blocks'] ?? 0)),
+                'zero_signal_blocks' => (int) (($payload['summary']['zero_signal_blocks'] ?? 0)),
+            ],
+            'top_signal_blocks' => $top_signal_blocks,
+            'focus_risk_blocks' => $focus_risk_blocks,
+            'all_blocks' => array_map($map_row, $all_blocks_seed),
+        ];
+    }
+
+    private function compact_app_review_signal_protection_for_storage($value, bool $aggressive = false): array {
+        $payload = $this->normalize_app_review_signal_protection_summary($value);
+        $item_limit = $aggressive ? 2 : 3;
+
+        $map_row = static function(array $item): array {
+            return [
+                'block_id' => (int) ($item['block_id'] ?? 0),
+                'label' => (string) ($item['label'] ?? ''),
+                'status' => (string) ($item['status'] ?? ''),
+                'planned_action' => (string) ($item['planned_action'] ?? ''),
+                'reason' => (string) ($item['reason'] ?? ''),
+            ];
+        };
+
+        return [
+            'summary' => (string) ($payload['summary'] ?? ''),
+            'protected_block_ids' => array_slice(array_values((array) ($payload['protected_block_ids'] ?? [])), 0, $aggressive ? 4 : 6),
+            'kept_signal_blocks' => array_map($map_row, array_slice((array) ($payload['kept_signal_blocks'] ?? []), 0, $item_limit)),
+            'repositioned_focus_blocks' => array_map($map_row, array_slice((array) ($payload['repositioned_focus_blocks'] ?? []), 0, $item_limit)),
+        ];
+    }
+
+    private function compact_single_app_review_for_storage($review, bool $aggressive = false): array {
+        $normalized_reviews = $this->get_saved_app_reviews((object) [
+            'leader_ai_app_reviews' => [$review],
+        ]);
+
+        $normalized_review = $normalized_reviews[0] ?? [];
+
+        if(empty($normalized_review)) {
+            return [];
+        }
+
+        $list_limit = $aggressive ? 2 : 3;
+        $order_limit = $aggressive ? 4 : 6;
+
+        return [
+            'generated_at' => $normalized_review['generated_at'] ?? null,
+            'review_key' => (string) ($normalized_review['review_key'] ?? ($normalized_review['generated_at'] ?? '')),
+            'model' => (string) ($normalized_review['model'] ?? ''),
+            'selected_link_id' => (int) ($normalized_review['selected_link_id'] ?? 0),
+            'selected_app_url' => (string) ($normalized_review['selected_app_url'] ?? ''),
+            'selected_app_name' => (string) ($normalized_review['selected_app_name'] ?? ''),
+            'request_context' => (string) ($normalized_review['request_context'] ?? ''),
+            'goal_type' => (string) ($normalized_review['goal_type'] ?? ''),
+            'growth_stage' => (string) ($normalized_review['growth_stage'] ?? ''),
+            'analysis_mode' => (string) ($normalized_review['analysis_mode'] ?? 'initial'),
+            'quality_score' => (int) ($normalized_review['quality_score'] ?? 0),
+            'quality_level' => (string) ($normalized_review['quality_level'] ?? 'foundation'),
+            'performance_snapshot' => $this->normalize_app_review_performance_snapshot($normalized_review['performance_snapshot'] ?? []),
+            'headline' => (string) ($normalized_review['headline'] ?? ''),
+            'summary' => (string) ($normalized_review['summary'] ?? ''),
+            'biggest_bottleneck' => (string) ($normalized_review['biggest_bottleneck'] ?? ''),
+            'top_recommendation' => (string) ($normalized_review['top_recommendation'] ?? ''),
+            'weekly_focus' => (string) ($normalized_review['weekly_focus'] ?? ''),
+            'first_move' => (string) ($normalized_review['first_move'] ?? ''),
+            'next_move' => (string) ($normalized_review['next_move'] ?? ''),
+            'do_not_touch' => (string) ($normalized_review['do_not_touch'] ?? ''),
+            'priority_actions' => array_slice((array) ($normalized_review['priority_actions'] ?? []), 0, $list_limit),
+            'ideal_block_order' => array_slice((array) ($normalized_review['ideal_block_order'] ?? []), 0, $order_limit),
+            'design_notes' => array_slice((array) ($normalized_review['design_notes'] ?? []), 0, $list_limit),
+            'keep_doing' => array_slice((array) ($normalized_review['keep_doing'] ?? []), 0, $list_limit),
+            'funnel_blueprint' => array_slice((array) ($normalized_review['funnel_blueprint'] ?? []), 0, $list_limit),
+            'color_palette' => $this->normalize_app_review_color_palette($normalized_review['color_palette'] ?? []),
+            'trust_builders' => array_slice((array) ($normalized_review['trust_builders'] ?? []), 0, $list_limit),
+            'theme_pack' => $this->normalize_app_review_theme_pack($normalized_review['theme_pack'] ?? [], (array) ($normalized_review['color_palette'] ?? [])),
+            'primary_block_plan' => $this->normalize_app_review_primary_block_plan($normalized_review['primary_block_plan'] ?? []),
+            'block_patch_pack' => $this->compact_app_review_block_patch_pack_for_storage($normalized_review['block_patch_pack'] ?? [], $aggressive ? 2 : 3, $aggressive ? 2 : 3),
+            'copy_suggestions' => $this->compact_app_review_copy_suggestions_for_storage($normalized_review['copy_suggestions'] ?? [], $aggressive ? 2 : 3),
+            'layout_actions' => $this->compact_app_review_layout_actions_for_storage($normalized_review['layout_actions'] ?? [], $aggressive ? 2 : 3),
+            'block_attribution_snapshot' => $this->compact_app_review_block_attribution_for_storage($normalized_review['block_attribution_snapshot'] ?? [], $aggressive),
+            'signal_protection_summary' => $this->compact_app_review_signal_protection_for_storage($normalized_review['signal_protection_summary'] ?? [], $aggressive),
+        ];
+    }
+
+    private function compact_ai_plan_app_reviews_for_storage(\stdClass $preferences, bool $compact_latest = false, bool $aggressive = false): \stdClass {
+        $app_reviews = $preferences->leader_ai_app_reviews ?? [];
+
+        if($app_reviews instanceof \stdClass) {
+            $app_reviews = (array) $app_reviews;
+        }
+
+        if(!is_array($app_reviews) || empty($app_reviews)) {
+            return $preferences;
+        }
+
+        $compacted_reviews = [];
+
+        foreach(array_values($app_reviews) as $index => $review) {
+            if($index === 0 && !$compact_latest) {
+                $compacted_reviews[] = $review;
+                continue;
+            }
+
+            $compacted_reviews[] = $this->compact_single_app_review_for_storage($review, $aggressive);
+        }
+
+        $preferences->leader_ai_app_reviews = $compacted_reviews;
+
+        return $preferences;
+    }
+
+    private function trim_ai_plan_preferences_for_storage(\stdClass $preferences, int $target_bytes = 60000, bool $force_aggressive = false): \stdClass {
         $preferences = $this->get_preferences_object($preferences);
         $encoded = $this->encode_ai_plan_preferences_for_storage($preferences);
 
         if($encoded !== null && strlen($encoded) <= $target_bytes) {
             return $preferences;
+        }
+
+        $preferences = $this->compact_ai_plan_app_reviews_for_storage($preferences, false, false);
+        $encoded = $this->encode_ai_plan_preferences_for_storage($preferences);
+
+        if($encoded !== null && strlen($encoded) <= $target_bytes) {
+            return $preferences;
+        }
+
+        $preferences = $this->compact_ai_plan_app_reviews_for_storage($preferences, false, true);
+        $encoded = $this->encode_ai_plan_preferences_for_storage($preferences);
+
+        if($encoded !== null && strlen($encoded) <= $target_bytes) {
+            return $preferences;
+        }
+
+        if($force_aggressive) {
+            $preferences = $this->compact_ai_plan_app_reviews_for_storage($preferences, true, true);
+            $encoded = $this->encode_ai_plan_preferences_for_storage($preferences);
+
+            if($encoded !== null && strlen($encoded) <= $target_bytes) {
+                return $preferences;
+            }
+        } else {
+            $preferences = $this->compact_ai_plan_app_reviews_for_storage($preferences, true, false);
+            $encoded = $this->encode_ai_plan_preferences_for_storage($preferences);
+
+            if($encoded !== null && strlen($encoded) <= $target_bytes) {
+                return $preferences;
+            }
         }
 
         $trim_steps = [
@@ -1046,6 +1278,7 @@ class AiPlan extends Controller {
 
         foreach($trim_steps as [$key, $limit]) {
             $preferences = $this->limit_ai_plan_storage_list($preferences, $key, $limit);
+            $preferences = $this->compact_ai_plan_app_reviews_for_storage($preferences, $force_aggressive || $limit <= 4, $force_aggressive || $limit <= 6);
             $encoded = $this->encode_ai_plan_preferences_for_storage($preferences);
 
             if($encoded !== null && strlen($encoded) <= $target_bytes) {
@@ -1070,7 +1303,7 @@ class AiPlan extends Controller {
         ]);
 
         if(!$result || !empty(database()->error)) {
-            $preferences = $this->trim_ai_plan_preferences_for_storage($preferences, 54000);
+            $preferences = $this->trim_ai_plan_preferences_for_storage($preferences, 50000, true);
             $encoded = $this->encode_ai_plan_preferences_for_storage($preferences);
 
             if($encoded === null) {
@@ -10128,7 +10361,7 @@ class AiPlan extends Controller {
 
                         if(!$app_review_persisted) {
                             \Altum\Logger::users($this->user->user_id, 'ai_plan.app_review_persist_failed');
-                            Alerts::add_error(l('ai_plan.preferences_persist_failed_message'));
+                            Alerts::add_error(l('ai_plan.app_review_persist_failed_message'));
                         } else {
                             $generated_review_at = (string) ($new_app_review['generated_at'] ?? '');
                             \Altum\Logger::users($this->user->user_id, 'ai_plan.app_review_generated');
