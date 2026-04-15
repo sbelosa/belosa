@@ -1085,6 +1085,7 @@
     $can_apply_blocks = !empty($editor_actions['can_apply_blocks']);
     $can_apply_colors = !empty($editor_actions['can_apply_colors']);
     $can_restore = !empty($editor_actions['can_restore']);
+    $can_attempt_restore = $editor_link_id > 0 && ($can_restore || $can_apply_blocks || $can_apply_colors);
     $actions_freshness = (array) ($editor_actions['freshness'] ?? []);
     $actions_stale = !empty($actions_freshness['is_stale']);
     $actions_notice_level = (string) ($actions_freshness['notice_level'] ?? ($actions_stale ? 'info' : ''));
@@ -1204,7 +1205,7 @@
                             data-request-type="restore_ai_bundle_backup"
                             data-link-id="<?= $editor_link_id ?>"
                             data-notification-target="#<?= htmlspecialchars($actions_notification_id, ENT_QUOTES, 'UTF-8') ?>"
-                            <?= $can_restore ? null : 'disabled="disabled"' ?>
+                            <?= $can_attempt_restore ? null : 'disabled="disabled"' ?>
                         >
                             <i class="fas fa-fw fa-undo"></i>
                             <span><?= htmlspecialchars(l('link.settings.ai_bundle_restore'), ENT_QUOTES, 'UTF-8') ?></span>
