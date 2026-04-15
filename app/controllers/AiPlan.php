@@ -1154,6 +1154,24 @@ class AiPlan extends Controller {
                 'include_on_app' => array_key_exists('include_on_app', $item) ? !empty($item['include_on_app']) : true,
             ];
 
+            if((int) ($item['position'] ?? 0) > 0) {
+                $row['position'] = max(0, (int) ($item['position'] ?? 0));
+            }
+
+            if((int) ($item['insert_after_block_id'] ?? 0) > 0) {
+                $row['insert_after_block_id'] = max(0, (int) ($item['insert_after_block_id'] ?? 0));
+            }
+
+            $insert_after_type = $this->sanitize_ai_string($item['insert_after_type'] ?? '', 64);
+            if($insert_after_type !== '') {
+                $row['insert_after_type'] = $insert_after_type;
+            }
+
+            $insert_after_label = $this->normalize_app_review_visible_copy($this->sanitize_ai_string($item['insert_after_label'] ?? '', 140));
+            if($insert_after_label !== '') {
+                $row['insert_after_label'] = $insert_after_label;
+            }
+
             $reason = $this->normalize_app_review_channel_copy($this->sanitize_ai_string($item['reason'] ?? '', $reason_limit));
             if($reason !== '') {
                 $row['reason'] = $reason;
@@ -2410,6 +2428,91 @@ class AiPlan extends Controller {
         ];
     }
 
+    private function get_biolink_blocks_full_snapshot_for_ai_editor(int $selected_link_id): array {
+        if($selected_link_id <= 0) {
+            return [];
+        }
+
+        $result = database()->query("SELECT `biolink_block_id`, `type`, `location_url`, `settings`, `order`, `is_enabled`
+            FROM `biolinks_blocks`
+            WHERE `user_id` = {$this->user->user_id} AND `link_id` = {$selected_link_id}
+            ORDER BY `order` ASC, `biolink_block_id` ASC");
+        $blocks = [];
+
+        if($result) {
+            while($row = $result->fetch_object()) {
+                $blocks[] = [
+                    'biolink_block_id' => (int) ($row->biolink_block_id ?? 0),
+                    'type' => (string) ($row->type ?? ''),
+                    'location_url' => trim((string) ($row->location_url ?? '')),
+                    'settings' => $this->normalize_json_to_array($row->settings ?? null),
+                    'order' => (int) ($row->order ?? 0),
+                    'is_enabled' => (int) ($row->is_enabled ?? 0),
+                ];
+            }
+        }
+
+        return $blocks;
+    }
+
+    private function build_ai_editor_bundle_backup(array $link, array $additional): array {
+        $review_key = trim((string) (($this->normalize_json_to_array($additional['fcc_ai_theme_apply_state'] ?? null)['active_review_key'] ?? '')));
+
+        return [
+            'captured_at' => get_date(),
+            'review_key' => $review_key,
+            'link_settings' => $this->normalize_json_to_array($link['settings'] ?? null),
+            'biolink_theme_id' => (int) ($link['biolink_theme_id'] ?? 0),
+            'blocks' => $this->get_biolink_blocks_full_snapshot_for_ai_editor((int) ($link['link_id'] ?? 0)),
+        ];
+    }
+
+    private function ensure_app_review_editor_backup_exists(int $selected_link_id, array $additional): array {
+        if($selected_link_id <= 0) {
+            return $additional;
+        }
+
+        $existing_backup = $this->normalize_json_to_array($additional['fcc_ai_bundle_backup'] ?? []);
+        if(!empty($existing_backup['blocks']) && !empty($existing_backup['captured_at'])) {
+            return $additional;
+        }
+
+        $link = db()->where('link_id', $selected_link_id)->where('user_id', $this->user->user_id)->getOne('links', ['link_id', 'settings', 'additional', 'biolink_theme_id', 'last_datetime']);
+
+        if(!$link) {
+            return $additional;
+        }
+
+        $link_row = [
+            'link_id' => (int) ($link->link_id ?? 0),
+            'settings' => $this->normalize_json_to_array($link->settings ?? null),
+            'biolink_theme_id' => (int) ($link->biolink_theme_id ?? 0),
+        ];
+        $current_additional = $this->normalize_json_to_array($link->additional ?? null);
+        $current_additional['fcc_ai_bundle_backup'] = $this->build_ai_editor_bundle_backup($link_row, $current_additional);
+
+        db()->where('link_id', $selected_link_id)->where('user_id', $this->user->user_id)->update('links', [
+            'additional' => json_encode($current_additional),
+            'last_datetime' => !empty($link->last_datetime) ? $link->last_datetime : get_date(),
+        ]);
+
+        return $current_additional;
+    }
+
+    private function filter_actionable_app_review_final_block_plan(array $final_block_plan): array {
+        return array_values(array_filter($final_block_plan, static function(array $item): bool {
+            $block_id = (int) ($item['block_id'] ?? 0);
+            $source = trim((string) ($item['source'] ?? ''));
+            $planned_action = trim((string) ($item['planned_action'] ?? ''));
+
+            if($block_id > 0) {
+                return true;
+            }
+
+            return $source === 'missing' || in_array($planned_action, ['add', 'add_block'], true);
+        }));
+    }
+
     private function get_ai_bundle_freshness_payload(array $additional, ?string $last_datetime = null, ?string $fallback_recommended_at = null): array {
         $apply_state = $this->normalize_json_to_array($additional['fcc_ai_theme_apply_state'] ?? []);
         $review_summary = $this->normalize_json_to_array($additional['fcc_ai_review_summary'] ?? []);
@@ -2540,12 +2643,18 @@ class AiPlan extends Controller {
     }
 
     private function get_app_review_editor_actions_payload(int $selected_link_id, ?array $review = null): array {
+        $review_key = !empty($review)
+            ? trim((string) ($review['review_key'] ?? ($review['generated_at'] ?? '')))
+            : '';
+
         $payload = [
             'link_id' => max(0, $selected_link_id),
+            'review_key' => $review_key,
             'can_apply_blocks' => false,
             'can_apply_colors' => false,
             'can_restore' => false,
             'has_any' => false,
+            'resolved_final_block_plan' => [],
             'freshness' => [
                 'is_stale' => false,
                 'recommended_at' => null,
@@ -2599,12 +2708,19 @@ class AiPlan extends Controller {
             );
         }
 
+        $resolved_final_block_plan = $this->filter_actionable_app_review_final_block_plan($final_block_plan);
+
+        if(empty($additional['fcc_ai_bundle_backup']) && (!empty($theme_pack) || !empty($copy_suggestions) || !empty($layout_actions) || !empty($missing_block_recommendations) || !empty($ideal_block_order) || !empty($resolved_final_block_plan))) {
+            $additional = $this->ensure_app_review_editor_backup_exists($selected_link_id, $additional);
+        }
+
         $bundle_backup = $this->normalize_json_to_array($additional['fcc_ai_bundle_backup'] ?? []);
 
         $payload['can_apply_blocks'] = !empty($copy_suggestions) || !empty($layout_actions) || !empty($missing_block_recommendations) || !empty($ideal_block_order) || !empty($final_block_plan);
         $payload['can_apply_colors'] = !empty($theme_pack);
         $payload['can_restore'] = !empty($bundle_backup['captured_at']);
         $payload['has_any'] = $payload['can_apply_blocks'] || $payload['can_apply_colors'] || $payload['can_restore'];
+        $payload['resolved_final_block_plan'] = $resolved_final_block_plan;
         $payload['freshness'] = $this->get_ai_bundle_freshness_payload(
             $additional,
             (string) ($link_snapshot['last_datetime'] ?? ''),
@@ -10743,6 +10859,23 @@ class AiPlan extends Controller {
 
         if(!$app_review_editor_action_review && !empty($latest_app_review) && (int) ($latest_app_review['selected_link_id'] ?? 0) === $selected_app_id) {
             $app_review_editor_action_review = $latest_app_review;
+        }
+
+        if($selected_app_id > 0 && !empty($app_review_editor_action_review)) {
+            $editor_additional = $this->get_link_additional_by_id($selected_app_id);
+            $editor_review_summary = $this->normalize_json_to_array($editor_additional['fcc_ai_review_summary'] ?? []);
+            $editor_review_key = trim((string) ($editor_review_summary['review_key'] ?? ''));
+            $expected_review_key = trim((string) ($app_review_editor_action_review['review_key'] ?? ($app_review_editor_action_review['generated_at'] ?? '')));
+            $editor_needs_sync =
+                empty($editor_additional['fcc_ai_final_block_plan'])
+                || empty($editor_additional['fcc_ai_theme_pack'])
+                || ($expected_review_key !== '' && $editor_review_key !== '' && $editor_review_key !== $expected_review_key)
+                || ($expected_review_key !== '' && $editor_review_key === '');
+
+            if($editor_needs_sync) {
+                $preferences = $this->sync_app_review_assets_to_editor($selected_app_id, $app_review_editor_action_review, $preferences);
+                $this->user->preferences = $preferences;
+            }
         }
 
         $selected_weekly_plan = $this->get_weekly_plan_by_generated_at($weekly_plans, $requested_plan_generated_at);

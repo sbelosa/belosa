@@ -1544,12 +1544,20 @@ class LinkAjax extends Controller {
 		return $normalized;
 	}
 
-	private function get_ai_final_block_plan(array $additional): array {
-		return $this->normalize_ai_final_block_plan($additional['fcc_ai_final_block_plan'] ?? []);
+	private function get_ai_final_block_plan(array $additional, int $link_id = 0, $preferences = null): array {
+		$direct_plan = $this->normalize_ai_final_block_plan($additional['fcc_ai_final_block_plan'] ?? []);
+
+		if(!empty($direct_plan)) {
+			return $direct_plan;
+		}
+
+		$latest_review = $this->get_latest_saved_ai_review_for_link($link_id, $preferences);
+
+		return $this->normalize_ai_final_block_plan($latest_review['final_block_plan'] ?? []);
 	}
 
-	private function get_ai_final_plan_scope(array $additional): array {
-		$final_block_plan = $this->get_ai_final_block_plan($additional);
+	private function get_ai_final_plan_scope(array $additional, int $link_id = 0, $preferences = null): array {
+		$final_block_plan = $this->get_ai_final_block_plan($additional, $link_id, $preferences);
 		$included_block_ids = [];
 		$included_block_types = [];
 
@@ -1575,6 +1583,71 @@ class LinkAjax extends Controller {
 			'included_block_ids' => array_values(array_unique($included_block_ids)),
 			'included_block_types' => array_values(array_unique($included_block_types)),
 		];
+	}
+
+	private function get_ai_missing_block_recommendation_plan_key(array $recommendation): string {
+		$recommendation_key = trim((string) ($recommendation['recommendation_key'] ?? ''));
+		if($recommendation_key !== '') {
+			return 'recommendation:' . $recommendation_key;
+		}
+
+		$role_key = trim((string) ($recommendation['role_key'] ?? ''));
+		if($role_key !== '') {
+			return 'role:' . $role_key;
+		}
+
+		$block_type = trim((string) ($recommendation['block_type'] ?? ''));
+		$label_key = $this->normalize_ai_matching_key((string) ($recommendation['label'] ?? ''));
+
+		return 'type:' . $block_type . '|label:' . $label_key;
+	}
+
+	private function get_ai_final_plan_missing_item_key(array $item): string {
+		$block_type = trim((string) ($item['block_type'] ?? ''));
+		$label_key = $this->normalize_ai_matching_key((string) ($item['label'] ?? ''));
+
+		return 'type:' . $block_type . '|label:' . $label_key;
+	}
+
+	private function filter_ai_missing_block_recommendations_by_plan_scope(array $recommendations, array $additional, int $link_id = 0, $preferences = null): array {
+		$final_block_plan = $this->get_ai_final_block_plan($additional, $link_id, $preferences);
+
+		if(empty($final_block_plan)) {
+			return $recommendations;
+		}
+
+		$allowed_missing_keys = [];
+
+		foreach($final_block_plan as $item) {
+			if(empty($item['include_on_app'])) {
+				continue;
+			}
+
+			$planned_action = trim((string) ($item['planned_action'] ?? ''));
+			$is_missing_row = (int) ($item['block_id'] ?? 0) <= 0 || (string) ($item['source'] ?? '') === 'missing';
+
+			if(!$is_missing_row && !in_array($planned_action, ['add', 'add_block'], true)) {
+				continue;
+			}
+
+			$allowed_missing_keys[] = $this->get_ai_final_plan_missing_item_key($item);
+		}
+
+		$allowed_missing_keys = array_values(array_unique(array_filter($allowed_missing_keys)));
+
+		if(empty($allowed_missing_keys)) {
+			return [];
+		}
+
+		return array_values(array_filter($recommendations, function($item) use ($allowed_missing_keys): bool {
+			if(!is_array($item)) {
+				return false;
+			}
+
+			$item_key = $this->get_ai_missing_block_recommendation_plan_key($item);
+
+			return $item_key !== '' && in_array($item_key, $allowed_missing_keys, true);
+		}));
 	}
 
 	private function filter_ai_copy_suggestions_by_plan_scope(array $copy_suggestions, array $plan_scope): array {
@@ -3049,8 +3122,8 @@ class LinkAjax extends Controller {
 		return $ordered_blocks;
 	}
 
-	private function get_ai_final_plan_sequence_blocks(array $additional, array $block_catalog): array {
-		$final_block_plan = $this->get_ai_final_block_plan($additional);
+	private function get_ai_final_plan_sequence_blocks(array $additional, array $block_catalog, int $link_id = 0, $preferences = null): array {
+		$final_block_plan = $this->get_ai_final_block_plan($additional, $link_id, $preferences);
 
 		if(empty($final_block_plan) || empty($block_catalog)) {
 			return [];
@@ -3109,11 +3182,12 @@ class LinkAjax extends Controller {
 			}
 
 			if(empty($matched_block) && $requested_block_type !== '') {
-				foreach($available_blocks as $block) {
-					if((string) ($block['type'] ?? '') === $requested_block_type) {
-						$matched_block = $block;
-						break;
-					}
+				$type_matches = array_values(array_filter($available_blocks, static function(array $block) use ($requested_block_type): bool {
+					return (string) ($block['type'] ?? '') === $requested_block_type;
+				}));
+
+				if(count($type_matches) === 1) {
+					$matched_block = $type_matches[0];
 				}
 			}
 
@@ -6013,7 +6087,7 @@ class LinkAjax extends Controller {
 		$settings = $this->normalize_json_to_array($link->settings ?? null);
 		$additional = $this->normalize_json_to_array($link->additional ?? null);
 		$additional = $this->ensure_ai_bundle_backup($link, $additional);
-		$plan_scope = $this->get_ai_final_plan_scope($additional);
+		$plan_scope = $this->get_ai_final_plan_scope($additional, (int) $link->link_id, $this->user->preferences ?? null);
 
 		if(($theme_pack['background_mode'] ?? 'color') === 'gradient' && $theme_pack['gradient_start'] !== '' && $theme_pack['gradient_end'] !== '') {
 			$settings['background_type'] = 'gradient';
@@ -6081,9 +6155,19 @@ class LinkAjax extends Controller {
 
 		$block_catalog = $this->get_ai_editor_block_catalog((int) $link->link_id);
 		$raw_primary_block_plan = $this->normalize_ai_primary_block_plan($additional['fcc_ai_primary_block_plan'] ?? []);
-		$raw_missing_block_recommendations = $this->build_ai_missing_block_recommendations($additional, $block_catalog, $raw_primary_block_plan);
+		$raw_missing_block_recommendations = $this->filter_ai_missing_block_recommendations_by_plan_scope(
+			$this->build_ai_missing_block_recommendations($additional, $block_catalog, $raw_primary_block_plan),
+			$additional,
+			(int) $link->link_id,
+			$this->user->preferences ?? null
+		);
 		$primary_block_plan = $this->get_effective_ai_primary_block_plan($additional, $block_catalog, $raw_missing_block_recommendations, (int) $link->link_id, $this->user->preferences ?? null);
-		$missing_block_recommendations = $this->build_ai_missing_block_recommendations($additional, $block_catalog, $primary_block_plan);
+		$missing_block_recommendations = $this->filter_ai_missing_block_recommendations_by_plan_scope(
+			$this->build_ai_missing_block_recommendations($additional, $block_catalog, $primary_block_plan),
+			$additional,
+			(int) $link->link_id,
+			$this->user->preferences ?? null
+		);
 		$block_patch_pack = $this->filter_ai_block_patch_pack_by_plan_scope(
 			$this->normalize_ai_block_patch_pack($additional['fcc_ai_block_patch_pack'] ?? []),
 			$plan_scope
@@ -6455,12 +6539,22 @@ class LinkAjax extends Controller {
 		$additional = $this->normalize_json_to_array($link->additional ?? null);
 		$additional = $this->ensure_ai_bundle_backup($link, $additional);
 		$block_catalog = $this->get_ai_editor_block_catalog((int) $link->link_id);
-		$plan_scope = $this->get_ai_final_plan_scope($additional);
+		$plan_scope = $this->get_ai_final_plan_scope($additional, (int) $link->link_id, $this->user->preferences ?? null);
 		$raw_primary_block_plan = $this->normalize_ai_primary_block_plan($additional['fcc_ai_primary_block_plan'] ?? []);
 		$raw_copy_suggestions = $this->normalize_ai_copy_suggestions($additional['fcc_ai_copy_suggestions'] ?? []);
-		$missing_block_recommendations = $this->build_ai_missing_block_recommendations($additional, $block_catalog, $raw_primary_block_plan);
+		$missing_block_recommendations = $this->filter_ai_missing_block_recommendations_by_plan_scope(
+			$this->build_ai_missing_block_recommendations($additional, $block_catalog, $raw_primary_block_plan),
+			$additional,
+			(int) $link->link_id,
+			$this->user->preferences ?? null
+		);
 		$primary_block_plan = $this->get_effective_ai_primary_block_plan($additional, $block_catalog, $missing_block_recommendations, (int) $link->link_id, $this->user->preferences ?? null);
-		$missing_block_recommendations = $this->build_ai_missing_block_recommendations($additional, $block_catalog, $primary_block_plan);
+		$missing_block_recommendations = $this->filter_ai_missing_block_recommendations_by_plan_scope(
+			$this->build_ai_missing_block_recommendations($additional, $block_catalog, $primary_block_plan),
+			$additional,
+			(int) $link->link_id,
+			$this->user->preferences ?? null
+		);
 		$block_patch_pack = $this->filter_ai_block_patch_pack_by_plan_scope(
 			$this->normalize_ai_block_patch_pack($additional['fcc_ai_block_patch_pack'] ?? []),
 			$plan_scope
@@ -6524,11 +6618,11 @@ class LinkAjax extends Controller {
 		}
 
 		$block_catalog = $this->get_ai_editor_block_catalog((int) $link->link_id);
-		$plan_scope = $this->get_ai_final_plan_scope($additional);
+		$plan_scope = $this->get_ai_final_plan_scope($additional, (int) $link->link_id, $this->user->preferences ?? null);
 		$raw_copy_suggestions = $this->filter_ai_copy_suggestions_by_plan_scope($raw_copy_suggestions, $plan_scope);
 		$copy_summary = $this->apply_ai_copy_suggestions_to_blocks((int) $link->link_id, $raw_copy_suggestions, $block_catalog);
 		$block_catalog = $this->get_ai_editor_block_catalog((int) $link->link_id);
-		$plan_sequence = $this->get_ai_final_plan_sequence_blocks($additional, $block_catalog);
+		$plan_sequence = $this->get_ai_final_plan_sequence_blocks($additional, $block_catalog, (int) $link->link_id, $this->user->preferences ?? null);
 
 		if(empty($plan_sequence)) {
 			$plan_sequence = $this->get_ai_plan_sequence_blocks($additional, $block_catalog, (int) $link->link_id, $this->user->preferences ?? null);

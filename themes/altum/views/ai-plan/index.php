@@ -597,7 +597,7 @@
     <?php
     return (string) ob_get_clean();
 }; ?>
-<?php $render_app_review_result_cards = static function(array $review, array $quality_payload) use ($app_review_color_palette_has_content, $render_app_review_color_palette, $app_review_theme_pack_has_content, $app_review_evolution_display, $app_review_block_attribution, $render_app_review_evolution_status, $render_app_review_update_notice): string {
+<?php $render_app_review_result_cards = static function(array $review, array $quality_payload) use ($app_review_color_palette_has_content, $render_app_review_color_palette, $app_review_theme_pack_has_content, $app_review_evolution_display, $app_review_block_attribution, $render_app_review_evolution_status, $render_app_review_update_notice, $app_review_editor_actions): string {
     $color_palette = is_array($review['color_palette'] ?? null) ? $review['color_palette'] : [];
     $has_color_palette = $app_review_color_palette_has_content($color_palette);
     $theme_pack = is_array($review['theme_pack'] ?? null) ? $review['theme_pack'] : [];
@@ -609,7 +609,12 @@
         $primary_block_plan['label'] ?? '',
         $primary_block_plan['reason'] ?? '',
     ]);
-    $final_block_plan = array_values(array_filter((array) ($review['final_block_plan'] ?? []), 'is_array'));
+    $current_review_key = trim((string) ($review['review_key'] ?? ($review['generated_at'] ?? '')));
+    $editor_review_key = trim((string) ($app_review_editor_actions['review_key'] ?? ''));
+    $resolved_editor_plan = ($editor_review_key !== '' && $editor_review_key === $current_review_key)
+        ? (array) ($app_review_editor_actions['resolved_final_block_plan'] ?? [])
+        : [];
+    $final_block_plan = array_values(array_filter((array) ($resolved_editor_plan ?: ($review['final_block_plan'] ?? [])), 'is_array'));
     $copy_suggestions = is_array($review['copy_suggestions'] ?? null) ? $review['copy_suggestions'] : [];
     $layout_actions = is_array($review['layout_actions'] ?? null) ? $review['layout_actions'] : [];
     $signal_protection_summary = is_array($review['signal_protection_summary'] ?? null) ? $review['signal_protection_summary'] : [];
@@ -618,13 +623,20 @@
         $action = (string) ($item['planned_action'] ?? 'keep');
         $source = (string) ($item['source'] ?? 'existing');
         $include_on_app = array_key_exists('include_on_app', $item) ? !empty($item['include_on_app']) : true;
+        $display_order = max(1, (int) ($item['display_order'] ?? 0));
+        $current_position = max(0, (int) ($item['position'] ?? 0));
+        $position_delta = $current_position > 0 ? abs($display_order - $current_position) : 0;
         $badges = [];
+        $is_missing = $source === 'missing' || in_array($action, ['add', 'add_block'], true);
+        $is_hidden = !$include_on_app || in_array($action, ['hide_for_now', 'consider_remove'], true);
+        $is_meaningful_reorder = in_array($action, ['move_up', 'move_down', 'swap_order'], true)
+            || (in_array($action, ['keep_top', 'keep_after_primary'], true) && $position_delta >= 2);
 
-        if(!$include_on_app || in_array($action, ['hide_for_now', 'consider_remove'], true)) {
+        if($is_hidden) {
             $badges[] = ['label' => 'Privremeno niže', 'class' => 'is-hide'];
-        } elseif($source === 'missing' || in_array($action, ['add', 'add_block'], true)) {
+        } elseif($is_missing) {
             $badges[] = ['label' => 'Dodaje se', 'class' => 'is-add'];
-        } elseif(in_array($action, ['move_up', 'move_down', 'swap_order', 'keep_after_primary', 'keep_top'], true)) {
+        } elseif($is_meaningful_reorder) {
             $badges[] = ['label' => 'Novi redoslijed', 'class' => 'is-shift'];
         } else {
             $badges[] = ['label' => 'Zadržava se', 'class' => 'is-keep'];
@@ -747,7 +759,7 @@
                     <details class="ai-plan-review-disclosure" data-accordion-item="app-review-details">
                         <summary><?= l('ai_plan.app_review_block_order') ?></summary>
                         <div class="ai-plan-review-disclosure-body">
-                            <p class="ai-plan-review-disclosure-note mb-3">Ovo je točan finalni popis blokova koje AI želi ostaviti na aplikaciji nakon importa, redom kako trebaju stajati. Ako se neki postojeći blok privremeno spušta ili miče iz fokusa, razlog je napisan odmah ispod njega.</p>
+                            <p class="ai-plan-review-disclosure-note mb-3">Ovo je točan popis blokova koje će AI editor stvarno slagati i mijenjati na aplikaciji, redom kako trebaju stajati nakon importa. Ako se neki postojeći blok privremeno spušta ili miče iz fokusa, razlog je napisan odmah ispod njega.</p>
                             <div class="ai-plan-review-order mb-0">
                                 <?php if(!empty($final_block_plan)): ?>
                                     <?php foreach($final_block_plan as $index => $item): ?>
@@ -2518,6 +2530,14 @@
                                     renderAiPlanEditorNotice(notificationContainer, response.message || '', response.status);
 
                                     if(response.status === 'success') {
+                                        if(requestType === 'apply_ai_block_bundle' || requestType === 'apply_ai_color_bundle') {
+                                            actionButtons.forEach(function(actionButton) {
+                                                if((actionButton.getAttribute('data-request-type') || '') === 'restore_ai_bundle_backup') {
+                                                    actionButton.removeAttribute('disabled');
+                                                }
+                                            });
+                                        }
+
                                         window.setTimeout(function() {
                                             window.location.reload();
                                         }, 850);
