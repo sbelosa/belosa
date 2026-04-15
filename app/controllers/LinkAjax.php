@@ -4146,23 +4146,43 @@ class LinkAjax extends Controller {
 		];
 	}
 
+	private function get_active_ai_bundle_review_key(array $additional): string {
+		return trim((string) (($this->normalize_json_to_array($additional['fcc_ai_theme_apply_state'] ?? null)['active_review_key'] ?? '')));
+	}
+
+	private function is_ai_bundle_backup_usable(array $backup, string $review_key = ''): bool {
+		if(empty($backup['blocks']) || empty($backup['captured_at'])) {
+			return false;
+		}
+
+		$backup_review_key = trim((string) ($backup['review_key'] ?? ''));
+
+		return $review_key === '' || $backup_review_key === '' || $backup_review_key === $review_key;
+	}
+
+	private function get_ai_bundle_baseline_backup(array $additional, string $review_key = ''): array {
+		$baseline_backup = $this->normalize_json_to_array($additional['fcc_ai_bundle_baseline_backup'] ?? []);
+
+		return $this->is_ai_bundle_backup_usable($baseline_backup, $review_key) ? $baseline_backup : [];
+	}
+
 	private function ensure_ai_bundle_backup(\stdClass $link, array $additional): array {
 		$existing_backup = $this->normalize_json_to_array($additional['fcc_ai_bundle_backup'] ?? []);
-		$current_review_key = trim((string) (($this->normalize_json_to_array($additional['fcc_ai_theme_apply_state'] ?? null)['active_review_key'] ?? '')));
-		$existing_review_key = trim((string) ($existing_backup['review_key'] ?? ''));
+		$baseline_backup = $this->normalize_json_to_array($additional['fcc_ai_bundle_baseline_backup'] ?? []);
+		$current_review_key = $this->get_active_ai_bundle_review_key($additional);
+		$has_existing_backup = $this->is_ai_bundle_backup_usable($existing_backup, $current_review_key);
+		$has_baseline_backup = $this->is_ai_bundle_backup_usable($baseline_backup, $current_review_key);
 
-		if(
-			!empty($existing_backup['blocks'])
-			&& !empty($existing_backup['captured_at'])
-			&& (
-				$current_review_key === ''
-				|| ($existing_review_key !== '' && $existing_review_key === $current_review_key)
-			)
-		) {
+		if($has_existing_backup && $has_baseline_backup) {
 			return $additional;
 		}
 
-		$additional['fcc_ai_bundle_backup'] = $this->build_ai_bundle_backup($link, $additional);
+		$resolved_backup = $has_existing_backup ? $existing_backup : $this->build_ai_bundle_backup($link, $additional);
+		$additional['fcc_ai_bundle_backup'] = $resolved_backup;
+
+		if(!$has_baseline_backup) {
+			$additional['fcc_ai_bundle_baseline_backup'] = $resolved_backup;
+		}
 
 		return $additional;
 	}
@@ -6997,7 +7017,13 @@ class LinkAjax extends Controller {
 		}
 
 		$additional = $this->normalize_json_to_array($link->additional ?? null);
+		$current_review_key = $this->get_active_ai_bundle_review_key($additional);
 		$backup = $this->normalize_json_to_array($additional['fcc_ai_bundle_backup'] ?? []);
+
+		if(!$this->is_ai_bundle_backup_usable($backup, $current_review_key)) {
+			$backup = $this->get_ai_bundle_baseline_backup($additional, $current_review_key);
+		}
+
 		$backup_blocks = array_values(array_filter((array) ($backup['blocks'] ?? []), 'is_array'));
 
 		if(empty($backup_blocks) || empty($backup['captured_at'])) {

@@ -2467,13 +2467,18 @@ class AiPlan extends Controller {
         ];
     }
 
-    private function ensure_app_review_editor_backup_exists(int $selected_link_id, array $additional): array {
-        if($selected_link_id <= 0) {
-            return $additional;
+    private function is_app_review_editor_backup_usable(array $backup, string $review_key = ''): bool {
+        if(empty($backup['blocks']) || empty($backup['captured_at'])) {
+            return false;
         }
 
-        $existing_backup = $this->normalize_json_to_array($additional['fcc_ai_bundle_backup'] ?? []);
-        if(!empty($existing_backup['blocks']) && !empty($existing_backup['captured_at'])) {
+        $backup_review_key = trim((string) ($backup['review_key'] ?? ''));
+
+        return $review_key === '' || $backup_review_key === '' || $backup_review_key === $review_key;
+    }
+
+    private function ensure_app_review_editor_backup_exists(int $selected_link_id, array $additional): array {
+        if($selected_link_id <= 0) {
             return $additional;
         }
 
@@ -2483,13 +2488,28 @@ class AiPlan extends Controller {
             return $additional;
         }
 
+        $current_additional = $this->normalize_json_to_array($link->additional ?? null);
+        $current_review_key = trim((string) (($this->normalize_json_to_array($current_additional['fcc_ai_theme_apply_state'] ?? null)['active_review_key'] ?? '')));
+        $existing_backup = $this->normalize_json_to_array($current_additional['fcc_ai_bundle_backup'] ?? []);
+        $baseline_backup = $this->normalize_json_to_array($current_additional['fcc_ai_bundle_baseline_backup'] ?? []);
+        $has_existing_backup = $this->is_app_review_editor_backup_usable($existing_backup, $current_review_key);
+        $has_baseline_backup = $this->is_app_review_editor_backup_usable($baseline_backup, $current_review_key);
+
+        if($has_existing_backup && $has_baseline_backup) {
+            return $current_additional;
+        }
+
         $link_row = [
             'link_id' => (int) ($link->link_id ?? 0),
             'settings' => $this->normalize_json_to_array($link->settings ?? null),
             'biolink_theme_id' => (int) ($link->biolink_theme_id ?? 0),
         ];
-        $current_additional = $this->normalize_json_to_array($link->additional ?? null);
-        $current_additional['fcc_ai_bundle_backup'] = $this->build_ai_editor_bundle_backup($link_row, $current_additional);
+        $resolved_backup = $has_existing_backup ? $existing_backup : $this->build_ai_editor_bundle_backup($link_row, $current_additional);
+        $current_additional['fcc_ai_bundle_backup'] = $resolved_backup;
+
+        if(!$has_baseline_backup) {
+            $current_additional['fcc_ai_bundle_baseline_backup'] = $resolved_backup;
+        }
 
         db()->where('link_id', $selected_link_id)->where('user_id', $this->user->user_id)->update('links', [
             'additional' => json_encode($current_additional),
@@ -2709,16 +2729,23 @@ class AiPlan extends Controller {
         }
 
         $resolved_final_block_plan = $this->filter_actionable_app_review_final_block_plan($final_block_plan);
-
-        if(empty($additional['fcc_ai_bundle_backup']) && (!empty($theme_pack) || !empty($copy_suggestions) || !empty($layout_actions) || !empty($missing_block_recommendations) || !empty($ideal_block_order) || !empty($resolved_final_block_plan))) {
-            $additional = $this->ensure_app_review_editor_backup_exists($selected_link_id, $additional);
-        }
-
+        $active_review_key = trim((string) (($this->normalize_json_to_array($additional['fcc_ai_theme_apply_state'] ?? null)['active_review_key'] ?? $review_key)));
         $bundle_backup = $this->normalize_json_to_array($additional['fcc_ai_bundle_backup'] ?? []);
+        $baseline_backup = $this->normalize_json_to_array($additional['fcc_ai_bundle_baseline_backup'] ?? []);
+        $has_restore_backup = $this->is_app_review_editor_backup_usable($bundle_backup, $active_review_key)
+            || $this->is_app_review_editor_backup_usable($baseline_backup, $active_review_key);
+
+        if((!$has_restore_backup) && (!empty($theme_pack) || !empty($copy_suggestions) || !empty($layout_actions) || !empty($missing_block_recommendations) || !empty($ideal_block_order) || !empty($resolved_final_block_plan))) {
+            $additional = $this->ensure_app_review_editor_backup_exists($selected_link_id, $additional);
+            $bundle_backup = $this->normalize_json_to_array($additional['fcc_ai_bundle_backup'] ?? []);
+            $baseline_backup = $this->normalize_json_to_array($additional['fcc_ai_bundle_baseline_backup'] ?? []);
+            $has_restore_backup = $this->is_app_review_editor_backup_usable($bundle_backup, $active_review_key)
+                || $this->is_app_review_editor_backup_usable($baseline_backup, $active_review_key);
+        }
 
         $payload['can_apply_blocks'] = !empty($copy_suggestions) || !empty($layout_actions) || !empty($missing_block_recommendations) || !empty($ideal_block_order) || !empty($final_block_plan);
         $payload['can_apply_colors'] = !empty($theme_pack);
-        $payload['can_restore'] = !empty($bundle_backup['captured_at']);
+        $payload['can_restore'] = $has_restore_backup;
         $payload['has_any'] = $payload['can_apply_blocks'] || $payload['can_apply_colors'] || $payload['can_restore'];
         $payload['resolved_final_block_plan'] = $resolved_final_block_plan;
         $payload['freshness'] = $this->get_ai_bundle_freshness_payload(
@@ -2875,7 +2902,7 @@ class AiPlan extends Controller {
             $theme_library_entry
         );
 
-        $link = db()->where('link_id', $selected_link_id)->where('user_id', $this->user->user_id)->getOne('links', ['link_id', 'additional']);
+        $link = db()->where('link_id', $selected_link_id)->where('user_id', $this->user->user_id)->getOne('links', ['link_id', 'additional', 'settings', 'biolink_theme_id']);
 
         if(!$link) {
             return $preferences;
@@ -2941,21 +2968,24 @@ class AiPlan extends Controller {
         $additional['fcc_ai_theme_apply_state']['recommended_at'] = $review['generated_at'] ?? null;
         $additional['fcc_ai_theme_apply_state']['active_review_key'] = (string) ($evolution_cycle['review_key'] ?? '');
 
-        $existing_backup = $this->normalize_json_to_array($additional['fcc_ai_bundle_backup'] ?? []);
-        $existing_backup_review_key = trim((string) ($existing_backup['review_key'] ?? ''));
         $current_review_key = trim((string) ($additional['fcc_ai_theme_apply_state']['active_review_key'] ?? ''));
+        $existing_backup = $this->normalize_json_to_array($additional['fcc_ai_bundle_backup'] ?? []);
+        $baseline_backup = $this->normalize_json_to_array($additional['fcc_ai_bundle_baseline_backup'] ?? []);
+        $has_existing_backup = $this->is_app_review_editor_backup_usable($existing_backup, $current_review_key);
+        $has_baseline_backup = $this->is_app_review_editor_backup_usable($baseline_backup, $current_review_key);
 
-        if(
-            empty($existing_backup['blocks'])
-            || empty($existing_backup['captured_at'])
-            || ($current_review_key !== '' && $existing_backup_review_key !== $current_review_key)
-        ) {
+        if(!$has_existing_backup || !$has_baseline_backup) {
             $link_row = [
                 'link_id' => $selected_link_id,
                 'settings' => $this->normalize_json_to_array($link->settings ?? null),
                 'biolink_theme_id' => (int) ($link->biolink_theme_id ?? 0),
             ];
-            $additional['fcc_ai_bundle_backup'] = $this->build_ai_editor_bundle_backup($link_row, $additional);
+            $resolved_backup = $has_existing_backup ? $existing_backup : $this->build_ai_editor_bundle_backup($link_row, $additional);
+            $additional['fcc_ai_bundle_backup'] = $resolved_backup;
+
+            if(!$has_baseline_backup) {
+                $additional['fcc_ai_bundle_baseline_backup'] = $resolved_backup;
+            }
         }
 
         db()->where('link_id', $selected_link_id)->where('user_id', $this->user->user_id)->update('links', [
