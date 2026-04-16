@@ -1161,6 +1161,8 @@ foreach(['hr', 'en', 'sl', 'bg'] as $fcc_chat_ui_language) {
         .fcc-chat-extreme__composer {
             max-width: 100%;
             overflow-x: hidden;
+            -webkit-text-size-adjust: 100%;
+            text-size-adjust: 100%;
         }
 
         .fcc-chat-extreme {
@@ -1252,6 +1254,18 @@ foreach(['hr', 'en', 'sl', 'bg'] as $fcc_chat_ui_language) {
             contain: layout paint style;
             backface-visibility: hidden;
             -webkit-backface-visibility: hidden;
+        }
+
+        .fcc-chat-extreme__input,
+        .fcc-chat-extreme__lead-form input,
+        .fcc-chat-extreme__lead-form textarea,
+        .fcc-chat-extreme__lead-form select {
+            font-size: 16px !important;
+            line-height: 1.35;
+        }
+
+        .fcc-chat-extreme__send {
+            flex: 0 0 52px;
         }
 
         .fcc-chat-extreme__panel::before {
