@@ -119,6 +119,28 @@ function qa_v2_contains_any(string $content, array $needles): bool {
     return false;
 }
 
+function qa_v2_contains_any_phrase(string $content, array $phrases): bool {
+    $content = mb_strtolower(trim($content));
+
+    if($content === '') {
+        return false;
+    }
+
+    foreach($phrases as $phrase) {
+        $phrase = mb_strtolower(trim((string) $phrase));
+
+        if($phrase === '') {
+            continue;
+        }
+
+        if(preg_match('/(^|[^\p{L}\p{N}_])' . preg_quote($phrase, '/') . '([^\p{L}\p{N}_]|$)/u', $content)) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 function qa_v2_normalize_list(array $items): array {
     return array_values(array_filter(array_map(static function($item) {
         return trim((string) $item);
@@ -345,7 +367,7 @@ function qa_v2_evaluate_turn(array $turn, array $result): array {
             $findings,
             'reply',
             'Reply should not contain forbidden drift signals.',
-            !qa_v2_contains_any($reply, (array) $expect['reply']['forbid_any']),
+            !qa_v2_contains_any_phrase($reply, (array) $expect['reply']['forbid_any']),
             4
         );
     }
@@ -409,7 +431,7 @@ function qa_v2_evaluate_conversation(array $scenario, array $turnResults): array
             $findings,
             'conversation',
             'Combined conversation replies should not contain forbidden drift.',
-            !qa_v2_contains_any($allReplies, (array) $conversationExpect['reply_forbid_any']),
+            !qa_v2_contains_any_phrase($allReplies, (array) $conversationExpect['reply_forbid_any']),
             4
         );
     }
