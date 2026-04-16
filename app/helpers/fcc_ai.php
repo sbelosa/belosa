@@ -5209,6 +5209,14 @@ function fcc_ai_is_low_context_follow_up_message(string $message): bool {
         return true;
     }
 
+    if(
+        fcc_ai_is_ambiguous_same_problem_followup_request($message)
+        || fcc_ai_is_public_business_hesitation_followup_request($message)
+        || fcc_ai_is_public_owner_help_followup_request($message)
+    ) {
+        return true;
+    }
+
     if(count(fcc_ai_extract_search_tokens($message)) <= 4) {
         if(fcc_ai_contains_keywords($message, [
             'što je dobro',
@@ -10340,6 +10348,15 @@ function fcc_ai_build_public_recommendation_payload(string $assistant_type, stri
     $broad_beauty_followup_clarification = !empty($context['broad_beauty_followup_clarification']);
     $previous_condition_context_exists = !empty($context['previous_condition_context_exists']);
     $follow_up_message = trim((string) ($context['follow_up_message'] ?? ''));
+    if(
+        !$same_problem_followup_clarification
+        && $assistant_type === 'product_advisor'
+        && $previous_condition_context_exists
+        && $follow_up_message !== ''
+        && fcc_ai_is_ambiguous_same_problem_followup_request($follow_up_message)
+    ) {
+        $same_problem_followup_clarification = true;
+    }
     $skip_product_tail = $assistant_type === 'product_advisor' && fcc_ai_is_public_product_utility_request($message);
     $knowledge_suggestions = array_values(array_filter($context['knowledge_suggestions'] ?? [], static function($suggestion) {
         return !empty($suggestion['title']);
@@ -12604,6 +12621,8 @@ function fcc_ai_detect_public_intent(string $assistant_type, string $message): a
     ]) || fcc_ai_contains_word_keywords($message, [
         'team', 'tim', 'join',
     ]);
+    $business_hesitation_followup = $assistant_type === 'product_advisor' && fcc_ai_is_public_business_hesitation_followup_request($raw_message);
+    $owner_help_followup = $assistant_type === 'product_advisor' && fcc_ai_is_public_owner_help_followup_request($raw_message);
     $strong_business_interest = fcc_ai_contains_keywords($message, [
         'zanima me suradnja', 'interesira me suradnja', 'više info o suradnji', 'vise info o suradnji',
         'zanima me poslovna suradnja', 'poslovna suradnja', 'kako funkcionira suradnja',
@@ -12615,7 +12634,8 @@ function fcc_ai_detect_public_intent(string $assistant_type, string $message): a
         'kako poceti zaradjivati', 'kako mogu zarađivati', 'kako mogu zaradjivati',
         'zarađivati preko aplikacije', 'zaradjivati preko aplikacije', 'zarada preko aplikacije',
         'je li ovo mlm', 'je li ovo piramida', 'mlm prevara', 'piramida ili mlm',
-    ]);
+    ]) || $business_hesitation_followup || $owner_help_followup;
+    $business = $business || $business_hesitation_followup || $owner_help_followup;
     $contact = fcc_ai_contains_keywords($message, [
         'kontakt', 'kontaktir', 'nazovi', 'call me', 'reach me', 'whatsapp',
         'viber', 'email me', 'contact me', 'broj', 'phone', 'javi se', 'javi mi se',
@@ -12776,6 +12796,10 @@ function fcc_ai_detect_public_intent(string $assistant_type, string $message): a
         && ($strong_business_interest || ($business && !$explicit_product_request))
         && !$support_request
         && !$business_content_request;
+
+    if($assistant_type === 'product_advisor' && ($business_primary || $business_hesitation_followup || $owner_help_followup) && !$explicit_product_request) {
+        $product = false;
+    }
 
     $lead_type = 'product_interest';
 
@@ -14356,10 +14380,10 @@ function fcc_ai_generate_public_reply(string $assistant_type, string $message, a
         } elseif(!empty($intent['medical_sensitive'])) {
             if($is_direct_cure_claim_question) {
                 $content_blocks[] = $language === 'en'
-                    ? 'No. Aloe vera is not a medicine, it does not cure diabetes, and I would not present it as a diabetes treatment or as a replacement for therapy.'
+                    ? 'No. Aloe vera is not a medicine, and I would not present it as something that solves diabetes or takes over the role of prescribed therapy.'
                     : ($language === 'sl'
-                        ? 'Ne. Aloe vera ni zdravilo, ne zdravi sladkorne bolezni in je ne bi predstavljal kot terapijo ali kot zamenjavo za zdravljenje.'
-                        : 'Ne. Aloe vera nije lijek, ne liječi dijabetes i ne bih je predstavljao kao terapiju za dijabetes niti kao zamjenu za terapiju.');
+                        ? 'Ne. Aloe vera ni zdravilo in je ne bi predstavljal kot nekaj, kar rešuje sladkorno bolezen ali prevzema vlogo predpisane terapije.'
+                        : 'Ne. Aloe vera nije lijek i ne bih je predstavljao kao nešto što rješava dijabetes niti kao nešto što preuzima ulogu propisane terapije.');
             }
 
             $has_high_risk_context = fcc_ai_has_high_risk_public_medical_context($message);
@@ -18458,6 +18482,9 @@ function fcc_ai_handle_public_message(array $payload): array {
         && fcc_ai_is_public_business_hesitation_followup_request($current_user_message);
     $is_owner_help_followup = (string) ($conversation->assistant_type ?? '') === 'product_advisor'
         && fcc_ai_is_public_owner_help_followup_request($current_user_message);
+    $is_direct_cure_claim_question = (string) ($conversation->assistant_type ?? '') === 'product_advisor'
+        && fcc_ai_contains_keywords($current_user_message, ['izliječ', 'izlijec', 'liječi', 'lijeci', 'cure', 'heals'])
+        && !empty($intent['medical_sensitive']);
     $is_business_followup_clarification = (string) ($conversation->assistant_type ?? '') === 'product_advisor'
         && $recent_business_context_message !== ''
         && (
@@ -18645,12 +18672,21 @@ function fcc_ai_handle_public_message(array $payload): array {
         'broad_beauty_followup_clarification' => $is_broad_beauty_followup_clarification,
     ]);
 
+    $should_force_local_reply = $is_same_problem_followup_clarification
+        || $is_business_followup_clarification
+        || $is_business_hesitation_followup
+        || $is_broad_beauty_followup_clarification
+        || !empty($intent['business_primary'])
+        || !empty($intent['medication_interaction_sensitive'])
+        || $is_direct_cure_claim_question
+        || !empty($recommendation_payload['question_lines']);
+
     $model_attempt = [
         'success' => false,
-        'reason' => ($is_same_problem_followup_clarification || $is_business_followup_clarification || $is_broad_beauty_followup_clarification || !empty($intent['business_primary'])) ? 'local_context_clarification' : 'local_preview',
+        'reason' => $should_force_local_reply ? 'local_context_clarification' : 'local_preview',
     ];
 
-    if(!$is_same_problem_followup_clarification && !$is_business_followup_clarification && !$is_broad_beauty_followup_clarification && empty($intent['business_primary'])) {
+    if(!$should_force_local_reply) {
         $model_attempt = fcc_ai_try_generate_public_model_reply($conversation, [
             'language' => $resolved_language,
             'scope' => (string) ($conversation->scope ?? 'public_app'),

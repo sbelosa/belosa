@@ -504,6 +504,10 @@ foreach($scenarios as $scenario) {
             'source_context' => 'qa_framework_v2',
         ]);
 
+        if(!empty($result['conversation_public_id'])) {
+            $conversationPublicId = (string) $result['conversation_public_id'];
+        }
+
         $evaluation = qa_v2_evaluate_turn($turn, $result);
         $turnResults[] = [
             'index' => $index + 1,
