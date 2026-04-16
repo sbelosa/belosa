@@ -5433,7 +5433,15 @@ function fcc_ai_get_recent_public_business_context_message(int $conversation_id,
     foreach($recent_user_messages as $candidate_message) {
         $candidate_intent = fcc_ai_detect_public_intent($assistant_type, $candidate_message);
 
-        if(!empty($candidate_intent['business_primary'])) {
+        if(
+            !empty($candidate_intent['business_primary'])
+            || (
+                !empty($candidate_intent['business'])
+                && empty($candidate_intent['explicit_product_request'])
+                && empty($candidate_intent['support_request'])
+            )
+            || (string) ($candidate_intent['lead_type'] ?? '') === 'business_interest'
+        ) {
             return trim((string) $candidate_message);
         }
     }
@@ -5548,6 +5556,37 @@ function fcc_ai_is_broad_beauty_request(string $message): bool {
         'pigment', 'mrlje', 'lice', 'lica', 'face', 'anti age', 'anti-age', 'bore', 'akne', 'prišt', 'prist',
         'suha koža', 'suha koza', 'masna koža', 'masna koza', 'tijelo', 'body', 'ožilj', 'ozilj',
         'sunce', 'sunca', 'spf', 'sunscreen', 'lip', 'usne', 'lips',
+    ])) {
+        return false;
+    }
+
+    return true;
+}
+
+function fcc_ai_is_vague_general_support_request(string $message): bool {
+    $message = trim($message);
+
+    if($message === '') {
+        return false;
+    }
+
+    if(!fcc_ai_contains_keywords($message, [
+        'ne osjećam se baš najbolje', 'ne osjecam se bas najbolje',
+        'ne osjećam se najbolje', 'ne osjecam se najbolje',
+        'ne osjećam se dobro', 'ne osjecam se dobro',
+        'ne osjećam se baš dobro', 'ne osjecam se bas dobro',
+        'zadnje vrijeme', 'u zadnje vrijeme', 'lately', 'not feeling well',
+        'not feeling my best', 'feel off lately',
+    ])) {
+        return false;
+    }
+
+    if(fcc_ai_contains_keywords($message, [
+        'tlak', 'pressure', 'šeć', 'secer', 'dijabet', 'jetr', 'liver', 'psorijaz', 'psoriaz',
+        'dermatit', 'herpes', 'artrit', 'hrskavic', 'koljen', 'bubreg', 'urinar', 'mjehur',
+        'prostata', 'štitn', 'stitn', 'pelud', 'alergij', 'menstru', 'pms', 'candida', 'kandida',
+        'helico', 'heliko', 'gastrit', 'živc', 'zivc', 'facialis', 'kosa', 'vlasi', 'lice',
+        'proizvod', 'product', 'surad', 'business', 'kontakt',
     ])) {
         return false;
     }
@@ -10328,6 +10367,8 @@ function fcc_ai_build_public_recommendation_payload(string $assistant_type, stri
         && (!$has_pet_type || (!$has_pet_goal_context && !$has_pet_age_context));
     $is_direct_product_lookup = $assistant_type === 'product_advisor' && fcc_ai_is_direct_product_lookup_message($message);
     $is_multi_product_compare = $assistant_type === 'product_advisor' && fcc_ai_is_multi_product_compare_request($message);
+    $is_generic_start_product_request = $assistant_type === 'product_advisor'
+        && fcc_ai_contains_keywords($message, ['najbolji proizvod za početak', 'najbolji proizvod za pocetak', 'best product to start', 'best product for the start', 'best product for a start']);
     $business_primary = $assistant_type === 'product_advisor' && !empty($intent['business_primary']);
     $business_mixed_with_product = $business_primary && !empty($intent['explicit_product_request']);
 
@@ -10356,6 +10397,11 @@ function fcc_ai_build_public_recommendation_payload(string $assistant_type, stri
         && !$is_direct_product_lookup
         && fcc_ai_contains_keywords($message, ['vanjska njega kože', 'vanjska njega koze', 'vanjsku njegu kože', 'vanjsku njegu koze', 'lokalna njega kože', 'lokalna njega koze', 'njegu kože', 'njegu koze', 'njega kože', 'njega koze'])
         && !fcc_ai_contains_keywords($message, ['lice', 'lica', 'face', 'tijelo', 'body', 'kosa', 'hair', 'vlasi', 'psorijaz', 'psoriaz', 'dermatit', 'herpes', 'opeklin', 'sunce', 'sunca', 'sun', 'pigment', 'mrlj', 'ožilj', 'ozilj']);
+    $needs_vague_general_support_clarification = $assistant_type === 'product_advisor'
+        && empty($condition_matches)
+        && !$is_direct_product_lookup
+        && !$business_primary
+        && fcc_ai_is_vague_general_support_request($message);
 
     if($assistant_type === 'pets_advisor' && ($needs_pet_context || (count($tokens) <= 2 && empty($theme_matches)))) {
         if(!$has_pet_type || !$has_pet_age_context) {
@@ -10383,6 +10429,13 @@ function fcc_ai_build_public_recommendation_payload(string $assistant_type, stri
         $question_lines[] = $language === 'en'
             ? 'Is this just general guidance, or are you also using therapy and want a cautious direction only?'
             : 'Je li ovo samo opća smjernica ili već koristite terapiju pa želite samo oprezan smjer preporuke?';
+    } elseif($needs_vague_general_support_clarification) {
+        $question_lines[] = $language === 'en'
+            ? 'What is bothering you most right now: digestion, energy, sleep, stress, skin, circulation, or something else?'
+            : 'Što trenutno najviše osjećate kao problem: probavu, energiju, san, stres, kožu, cirkulaciju ili nešto drugo?';
+        $question_lines[] = $language === 'en'
+            ? 'Is the recommendation for you personally, or for someone else, and is there already a diagnosis or therapy in the background?'
+            : 'Je li preporuka za vas osobno ili za nekog drugog, i postoji li već neka dijagnoza ili terapija u pozadini?';
     } elseif($needs_generic_topical_skin_clarification) {
         $question_lines[] = $language === 'en'
             ? 'Do you mean general body-skin care, or a specific issue such as dermatitis, psoriasis, herpes, or a sensitive irritated area?'
@@ -10398,7 +10451,7 @@ function fcc_ai_build_public_recommendation_payload(string $assistant_type, stri
 
     $question_lines = array_slice(array_values(array_unique(array_filter($question_lines))), 0, 2);
 
-    if($needs_generic_topical_skin_clarification) {
+    if($needs_vague_general_support_clarification || $needs_generic_topical_skin_clarification) {
         $recommendation_lines = [];
         $knowledge_suggestions = [];
     }
@@ -10424,7 +10477,11 @@ function fcc_ai_build_public_recommendation_payload(string $assistant_type, stri
             : 'Najsigurniji način preporuke ovdje ide kroz glavni cilj, sastojke i jednostavan sljedeći korak.';
     }
 
-    if($needs_generic_topical_skin_clarification) {
+    if($needs_vague_general_support_clarification) {
+        $opening_note = $language === 'en'
+            ? 'The cleanest way not to guess here is to first narrow down what is actually bothering you most, and only then suggest the right Forever direction.'
+            : 'Najčišći način da ovdje ne nagađam je da prvo suzim što vas točno najviše muči, pa tek onda preporučim pravi Forever smjer.';
+    } elseif($needs_generic_topical_skin_clarification) {
         $opening_note = $language === 'en'
             ? 'For a broad outer skin-care question, the cleanest next step is to first clarify whether you mean general daily care or a concrete skin issue, so the recommendation does not drift into the wrong product.'
             : 'Kod ovako širokog upita za vanjsku njegu kože, najčišći sljedeći korak je prvo razjasniti mislite li na opću svakodnevnu njegu ili na konkretan kožni problem, kako preporuka ne bi otišla u krivom smjeru.';
@@ -10477,6 +10534,28 @@ function fcc_ai_build_public_recommendation_payload(string $assistant_type, stri
         }
     }
 
+    if($assistant_type === 'product_advisor' && $is_generic_start_product_request && empty($condition_matches) && !$business_primary) {
+        $opening_note = $language === 'en'
+            ? 'When someone asks for the simplest first product, the cleanest answer is to stay on one broad Forever entry direction and only then narrow it based on the goal.'
+            : 'Kad netko pita koji je najjednostavniji prvi proizvod za početak, najčišći odgovor je ostati na jednom širokom Forever ulaznom smjeru i tek ga onda suziti prema cilju.';
+        $primary_product = 'Forever Aloe Vera Gel™';
+        $support_products = [];
+        $recommendation_lines = $language === 'en'
+            ? ['Forever Aloe Vera Gel™ is the cleanest first Forever direction when you want one simple product to start with, because it fits the broadest everyday routine from digestion to general nutritional support.']
+            : ['Forever Aloe Vera Gel™ je najčišći prvi Forever smjer kada želite jedan jednostavan proizvod za početak, jer se uklapa u najširu svakodnevnu rutinu od probave do opće nutritivne podrške.'];
+        $question_lines = $language === 'en'
+            ? ['If you want, tell me whether your main goal is digestion, immunity, energy, skin or weight balance, and I will narrow it down for you.']
+            : ['Ako želite, napišite je li vam glavni cilj probava, imunitet, energija, koža ili kontrola težine, pa ću suziti najbolji prvi odabir.'];
+        $monthly_quantity_note = $language === 'en'
+            ? 'If you want a one-month frame, people most often start with 3 x Forever Aloe Vera Gel™.'
+            : 'Ako želite okvir za mjesec dana, ovdje se najčešće kreće s 3 x Forever Aloe Vera Gel™.';
+        $discount_note = $language === 'en'
+            ? 'If the visitor buys through the partner recommendation flow, mention the available 15% discount as a partner benefit.'
+            : 'Ako posjetitelj kupuje kroz preporuku suradnika, možeš spomenuti dostupnih 15% popusta kao partnersku pogodnost.';
+        $knowledge_suggestions = [];
+        $combination_note = '';
+    }
+
     if($same_problem_followup_clarification && $assistant_type === 'product_advisor' && !empty($condition_matches)) {
         $followup_support_products = fcc_ai_get_condition_followup_support_products($condition_matches, $follow_up_message);
         $primary_followup_product = trim((string) ($followup_support_products[0] ?? ''));
@@ -10492,6 +10571,8 @@ function fcc_ai_build_public_recommendation_payload(string $assistant_type, stri
         $recommendation_lines = [];
 
         if($is_topical_followup && $primary_followup_product !== '') {
+            $primary_product = $primary_followup_product;
+            $support_products = array_values(array_filter(array_slice($followup_support_products, 1, 2)));
             $recommendation_lines[] = $language === 'en'
                 ? "If you still mean the same problem, the cleanest next local Forever step here is {$primary_followup_product}."
                 : ($language === 'sl'
@@ -12550,7 +12631,7 @@ function fcc_ai_detect_public_intent(string $assistant_type, string $message): a
     $product = $explicit_product_request || $assistant_type === 'product_advisor';
     $business_content_request = $assistant_type === 'product_advisor' && fcc_ai_contains_keywords($message, [
         'reklamir', 'reklamirati', 'objavu', 'objava', 'caption', 'story', 'copy', 'tekst objave',
-        'sastavi mi objavu', 'napravi objavu', 'promote', 'marketing', 'advertis', 'post', 'dm poruku', 'dm',
+        'sastavi mi objavu', 'napravi objavu', 'promote', 'marketing', 'advertis', 'dm poruku', 'dm',
         'naš detoks', 'nas detoks', 'kako da im pomognemo', 'mnogo žena govori', 'mnogo zena govori',
         'žene su mi', 'zene su mi', 'daj mi naučno rješenje', 'daj mi naucno rjesenje',
     ]);
@@ -14275,10 +14356,10 @@ function fcc_ai_generate_public_reply(string $assistant_type, string $message, a
         } elseif(!empty($intent['medical_sensitive'])) {
             if($is_direct_cure_claim_question) {
                 $content_blocks[] = $language === 'en'
-                    ? 'No. Aloe vera is not a medicine and I would not present it as a diabetes treatment or as a replacement for therapy.'
+                    ? 'No. Aloe vera is not a medicine, it does not cure diabetes, and I would not present it as a diabetes treatment or as a replacement for therapy.'
                     : ($language === 'sl'
-                        ? 'Ne. Aloe vera ni zdravilo in je ne bi predstavljal kot terapijo za sladkorno bolezen ali kot zamenjavo za zdravljenje.'
-                        : 'Ne. Aloe vera nije lijek i ne bih je predstavljao kao terapiju za dijabetes niti kao zamjenu za terapiju.');
+                        ? 'Ne. Aloe vera ni zdravilo, ne zdravi sladkorne bolezni in je ne bi predstavljal kot terapijo ali kot zamenjavo za zdravljenje.'
+                        : 'Ne. Aloe vera nije lijek, ne liječi dijabetes i ne bih je predstavljao kao terapiju za dijabetes niti kao zamjenu za terapiju.');
             }
 
             $has_high_risk_context = fcc_ai_has_high_risk_public_medical_context($message);
