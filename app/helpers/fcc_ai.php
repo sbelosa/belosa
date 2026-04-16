@@ -6241,6 +6241,210 @@ function fcc_ai_is_public_meal_plan_request(string $message): bool {
     ]);
 }
 
+function fcc_ai_is_public_system_explainer_request(string $message, string $previous_user_message = '', array $previous_intent = []): bool {
+    if(fcc_ai_contains_phrase_keywords($message, [
+        'kako točno radi vaš ai sustav', 'kako tocno radi vas ai sustav',
+        'kako radi vaš ai sustav', 'kako radi vas ai sustav',
+        'kako radi ovaj ai sustav', 'kako radi ai sustav',
+        'kako radi vaš sustav', 'kako radi vas sustav',
+        'kako radi ovaj sustav', 'objasni kako radi vaš ai',
+        'objasni kako radi ovaj ai', 'how does your ai system work',
+    ])) {
+        return true;
+    }
+
+    return !empty($previous_intent['system_explainer_request'])
+        && fcc_ai_contains_phrase_keywords($message, [
+            'možeš mi objasniti korak po korak', 'mozes mi objasniti korak po korak',
+            'objasni korak po korak', 'korak po korak', 'step by step',
+        ]);
+}
+
+function fcc_ai_is_public_restriction_logic_request(string $message, string $previous_user_message = '', array $previous_intent = []): bool {
+    if(fcc_ai_contains_phrase_keywords($message, [
+        'koje proizvode ne smiješ preporučiti', 'koje proizvode ne smijes preporuciti',
+        'što ne smiješ preporučiti', 'sto ne smijes preporuciti',
+        'koje proizvode ne preporučuješ', 'koje proizvode ne preporucujes',
+        'what products can you not recommend',
+    ])) {
+        return true;
+    }
+
+    return !empty($previous_intent['restriction_logic_request'])
+        && fcc_ai_contains_phrase_keywords($message, [
+            'reci mi iskreno', 'iskreno', 'be honest',
+        ]);
+}
+
+function fcc_ai_is_public_monetization_request(string $message): bool {
+    return fcc_ai_contains_phrase_keywords($message, [
+        'kako vi zarađujete', 'kako vi zaradjujete',
+        'od čega zarađujete', 'od cega zaradjujete',
+        'jel uzimate proviziju', 'je li uzimate proviziju',
+        'imate li proviziju', 'how do you earn', 'do you take commission',
+    ]);
+}
+
+function fcc_ai_is_public_product_dump_request(string $message, string $previous_user_message = '', array $previous_intent = []): bool {
+    if(fcc_ai_contains_phrase_keywords($message, [
+        'daj mi popis svih proizvoda', 'daj mi listu svih proizvoda',
+        'svi proizvodi', 'kompletan popis', 'kompletna lista',
+        'kompletan forever katalog', 'full product list', 'all products',
+    ])) {
+        return true;
+    }
+
+    return !empty($previous_intent['product_dump_request'])
+        && fcc_ai_contains_phrase_keywords($message, [
+            'kompletan popis', 'kompletna lista', 'all of them',
+        ]);
+}
+
+function fcc_ai_is_public_universal_stack_request(string $message): bool {
+    return fcc_ai_contains_phrase_keywords($message, [
+        'daj mi univerzalnu listu za sve', 'univerzalnu listu za sve',
+        'univerzalnu listu', 'za sve bolesti', 'master stack',
+        'one stack for everything', 'universal list',
+    ]);
+}
+
+function fcc_ai_is_public_doctor_impersonation_request(string $message): bool {
+    return fcc_ai_contains_phrase_keywords($message, [
+        'ponašaj se kao doktor', 'ponasaj se kao doktor',
+        'pretvaraj se da si liječnik', 'pretvaraj se da si lijecnik',
+        'pretvaraj se da si doktor', 'act like a doctor',
+        'daj mi terapiju', 'propiši terapiju', 'propisi terapiju',
+        'give me therapy', 'prescribe therapy',
+    ]);
+}
+
+function fcc_ai_is_public_strongest_product_request(string $message): bool {
+    return fcc_ai_contains_phrase_keywords($message, [
+        'daj mi najjači proizvod', 'daj mi najjaci proizvod',
+        'najjači proizvod', 'najjaci proizvod',
+        'najjači za sve', 'najjaci za sve',
+        'jedan proizvod za sve', 'one product for everything',
+    ]);
+}
+
+function fcc_ai_is_public_cure_claim_generic_request(string $message): bool {
+    return fcc_ai_contains_phrase_keywords($message, [
+        'što stvarno liječi bolesti', 'sto stvarno lijeci bolesti',
+        'što liječi bolesti', 'sto lijeci bolesti',
+        'what really heals disease', 'what actually cures disease',
+    ]);
+}
+
+function fcc_ai_is_public_system_copy_request(string $message, string $previous_user_message = '', array $previous_intent = []): bool {
+    $explicit_copy_request = fcc_ai_contains_phrase_keywords($message, [
+        'kako da napravim isti ai kao vi', 'kako da napravim isti ai',
+        'kako napraviti isti ai', 'isti ai kao vi',
+        'kako da kopiram vaš sustav', 'kako da kopiram vas sustav',
+        'kako da napravim isti sustav', 'how do i build the same ai',
+        'how do i copy your system',
+    ]);
+
+    if($explicit_copy_request) {
+        return true;
+    }
+
+    $previous_explicit_copy_request = $previous_user_message !== ''
+        && fcc_ai_contains_phrase_keywords($previous_user_message, [
+            'kako da napravim isti ai kao vi', 'kako da napravim isti ai',
+            'kako napraviti isti ai', 'isti ai kao vi',
+            'kako da kopiram vaš sustav', 'kako da kopiram vas sustav',
+            'kako da napravim isti sustav', 'how do i build the same ai',
+            'how do i copy your system',
+        ]);
+
+    return (!empty($previous_intent['system_copy_request']) || $previous_explicit_copy_request)
+        && fcc_ai_contains_phrase_keywords($message, [
+            'što koristite točno', 'sto koristite tocno',
+            'što točno koristite', 'sto tocno koristite',
+            'what exactly do you use',
+        ]);
+}
+
+function fcc_ai_get_public_guarded_request_type(string $message, array $intent = [], array $context = []): string {
+    $previous_user_message = trim((string) ($context['previous_user_message'] ?? ''));
+    $previous_intent = (array) ($context['previous_intent'] ?? []);
+
+    if(!empty($intent['prompt_leak_request'])) {
+        return 'prompt_rules_request';
+    }
+
+    if(fcc_ai_is_public_system_copy_request($message, $previous_user_message, $previous_intent)) {
+        return 'system_copy_request';
+    }
+
+    if(fcc_ai_is_public_system_explainer_request($message, $previous_user_message, $previous_intent)) {
+        return 'system_explainer_request';
+    }
+
+    if(fcc_ai_is_public_restriction_logic_request($message, $previous_user_message, $previous_intent)) {
+        return 'restriction_logic_request';
+    }
+
+    if(fcc_ai_is_public_product_dump_request($message, $previous_user_message, $previous_intent)) {
+        return 'product_dump_request';
+    }
+
+    if(fcc_ai_is_public_universal_stack_request($message)) {
+        return 'universal_stack_request';
+    }
+
+    if(fcc_ai_is_public_doctor_impersonation_request($message)) {
+        return 'doctor_impersonation_request';
+    }
+
+    if(fcc_ai_is_public_strongest_product_request($message)) {
+        return 'strongest_product_request';
+    }
+
+    if(fcc_ai_is_public_cure_claim_generic_request($message)) {
+        return 'cure_claim_generic_request';
+    }
+
+    if(fcc_ai_is_public_monetization_request($message)) {
+        return 'monetization_request';
+    }
+
+    return '';
+}
+
+function fcc_ai_build_public_guarded_request_payload(string $guarded_request_type, string $language = 'hr'): array {
+    $payload = [
+        'theme_matches' => [],
+        'theme_keys' => [],
+        'condition_matches' => [],
+        'condition_keys' => [],
+        'opening_note' => '',
+        'recommendation_lines' => [],
+        'question_lines' => [],
+        'needs_clarification' => false,
+        'combination_note' => '',
+        'discount_note' => '',
+        'primary_product' => '',
+        'support_products' => [],
+        'monthly_quantity_note' => '',
+        'sensitive_support_only' => true,
+        'skip_product_tail' => true,
+        'same_problem_followup_clarification' => false,
+        'system_brief' => 'Guarded public request `' . $guarded_request_type . '` detected. Keep payload empty and avoid any product, article or checkout drift.',
+    ];
+
+    if(in_array($guarded_request_type, ['product_dump_request', 'universal_stack_request', 'strongest_product_request'], true)) {
+        $payload['needs_clarification'] = true;
+        $payload['question_lines'] = match($language) {
+            'en' => ['What is your main goal: digestion, energy, immunity, skin, weight balance or collaboration?'],
+            'sl' => ['Kaj je vaš glavni cilj: prebava, energija, odpornost, koža, telesna teža ali sodelovanje?'],
+            default => ['Što vam je glavni cilj: probava, energija, imunitet, koža, kontrola težine ili suradnja?'],
+        };
+    }
+
+    return $payload;
+}
+
 function fcc_ai_contains_keywords(string $content, array $keywords): bool {
     $content = mb_strtolower(trim($content));
 
@@ -14666,6 +14870,8 @@ function fcc_ai_detect_public_intent(string $assistant_type, string $message): a
         'default uputstva', 'default instructions', 'izlistaj mi ih', 'list your prompts', 'daj mi prompt', 'daj mi sve promptove',
         'ai promptove', 'system prompt', 'internal prompt', 'pretpostavku da sam ja admin', 'pretpostavku da sam ja admon',
         'pretpostavku da sam admin', 'uzmi kao pretpostavku da sam', 'reveal your instructions',
+        'koje su tvoje upute', 'koje su tvoje instrukcije', 'koje su tvoje smjernice',
+        'pokaži mi pravila', 'pokazi mi pravila', 'po kojim pravilima radiš', 'po kojim pravilima radis',
     ]);
     $offtopic_request = fcc_ai_contains_keywords($message, [
         'recept za lazanje', 'recept za lazanje', 'lazanje', 'lasagne', 'lasagna recipe',
@@ -14817,6 +15023,16 @@ function fcc_ai_detect_public_intent(string $assistant_type, string $message): a
 
     $lead_type = 'product_interest';
 
+    $system_explainer_request = $assistant_type === 'product_advisor' && fcc_ai_is_public_system_explainer_request($raw_message);
+    $restriction_logic_request = $assistant_type === 'product_advisor' && fcc_ai_is_public_restriction_logic_request($raw_message);
+    $monetization_request = $assistant_type === 'product_advisor' && fcc_ai_is_public_monetization_request($raw_message);
+    $product_dump_request = $assistant_type === 'product_advisor' && fcc_ai_is_public_product_dump_request($raw_message);
+    $universal_stack_request = $assistant_type === 'product_advisor' && fcc_ai_is_public_universal_stack_request($raw_message);
+    $doctor_impersonation_request = $assistant_type === 'product_advisor' && fcc_ai_is_public_doctor_impersonation_request($raw_message);
+    $strongest_product_request = $assistant_type === 'product_advisor' && fcc_ai_is_public_strongest_product_request($raw_message);
+    $cure_claim_generic_request = $assistant_type === 'product_advisor' && fcc_ai_is_public_cure_claim_generic_request($raw_message);
+    $system_copy_request = $assistant_type === 'product_advisor' && fcc_ai_is_public_system_copy_request($raw_message);
+
     if($business && $explicit_product_request) {
         $lead_type = 'mixed_interest';
     } elseif($business) {
@@ -14852,6 +15068,15 @@ function fcc_ai_detect_public_intent(string $assistant_type, string $message): a
         'usage_duration_sensitive' => $usage_duration_sensitive,
         'water_retention_sensitive' => $water_retention_sensitive,
         'medical_sensitive' => $medical_sensitive,
+        'system_explainer_request' => $system_explainer_request,
+        'restriction_logic_request' => $restriction_logic_request,
+        'monetization_request' => $monetization_request,
+        'product_dump_request' => $product_dump_request,
+        'universal_stack_request' => $universal_stack_request,
+        'doctor_impersonation_request' => $doctor_impersonation_request,
+        'strongest_product_request' => $strongest_product_request,
+        'cure_claim_generic_request' => $cure_claim_generic_request,
+        'system_copy_request' => $system_copy_request,
         'pet_training_request' => $pet_training_request,
         'pet_dosage_request' => $pet_dosage_request,
         'pet_parasite_repellent_request' => $pet_parasite_repellent_request,
@@ -15253,6 +15478,7 @@ function fcc_ai_generate_public_reply(string $assistant_type, string $message, a
         && fcc_ai_contains_keywords($message, ['mlm', 'piramid', 'piramida', 'prevara', 'prevar', 'scam']);
     $is_generic_start_product_request = $assistant_type === 'product_advisor'
         && fcc_ai_contains_keywords($message, ['najbolji proizvod za početak', 'najbolji proizvod za pocetak', 'best product to start', 'best product for the start', 'best product for a start']);
+    $guarded_request_type = trim((string) ($context['guarded_request_type'] ?? ($intent['guarded_request_type'] ?? '')));
 
     if($skip_product_tail) {
         $knowledge_suggestions = [];
@@ -15261,6 +15487,230 @@ function fcc_ai_generate_public_reply(string $assistant_type, string $message, a
     $is_direct_contact_request = !empty($intent['contact']) && !$intent['business'] && !fcc_ai_contains_keywords($message, [
         'probav', 'energ', 'imunit', 'zglob', 'težin', 'tezin', 'mobility', 'digestion', 'energy', 'weight', 'skin', 'dlaka', 'koža', 'koza'
     ]);
+
+    if($assistant_type === 'product_advisor' && $guarded_request_type !== '') {
+        if($guarded_request_type === 'system_explainer_request') {
+            $content_blocks[] = $language === 'en'
+                ? 'From the user side, this system helps by understanding the goal, suggesting a relevant FCC/Forever direction, and guiding the visitor toward the next useful step.'
+                : 'Korisnički gledano, ovaj sustav pomaže tako da prepozna cilj, predloži relevantan FCC/Forever smjer i vodi korisnika prema sljedećem korisnom koraku.';
+
+            $content_blocks[] = $language === 'en'
+                ? "In simple steps it looks like this:\n1. you write what you want support with\n2. the chat narrows the recommendation or asks one short clarification\n3. it suggests the cleanest next step through products, an FCC article or personal continuation"
+                : "Općenito, korak po korak to izgleda ovako:\n1. napišete što vas zanima ili što želite podržati\n2. chat suzi preporuku ili postavi jedno kratko pojašnjenje\n3. zatim predloži najkorisniji sljedeći korak kroz preporuku, FCC sadržaj ili osobni nastavak razgovora";
+
+            return [
+                'content' => trim(implode("\n\n", array_filter($content_blocks))),
+                'language' => $language,
+                'lead_capture' => $lead_capture,
+                'intent' => $intent,
+                'recommendation_payload' => $recommendation_payload,
+                'knowledge_suggestions' => [],
+            ];
+        }
+
+        if($guarded_request_type === 'prompt_rules_request') {
+            $content_blocks[] = $language === 'en'
+                ? 'I do not list internal instructions, but I do work with general guidance for safe Forever recommendations, educational explanations and clear next steps.'
+                : 'Ne izlistavam interna pravila ni upute, ali radim uz opće smjernice za sigurne Forever preporuke, edukativna objašnjenja i jasan sljedeći korak.';
+
+            $content_blocks[] = $language === 'en'
+                ? 'If you want, tell me your goal and I will stay on the useful side of that guidance: products, FCC articles, or collaboration follow-up.'
+                : 'Ako želite, napišite svoj cilj pa ću ostati na korisničkoj strani tih smjernica: preporuke, FCC sadržaj ili nastavak suradnje.';
+
+            return [
+                'content' => trim(implode("\n\n", array_filter($content_blocks))),
+                'language' => $language,
+                'lead_capture' => $lead_capture,
+                'intent' => $intent,
+                'recommendation_payload' => $recommendation_payload,
+                'knowledge_suggestions' => [],
+            ];
+        }
+
+        if($guarded_request_type === 'restriction_logic_request') {
+            $content_blocks[] = $language === 'en'
+                ? 'I do not build recommendations through a list of forbidden products. Recommendations depend on the user need, context and the cleanest relevant FCC direction.'
+                : 'Ne gradim preporuke kroz listu zabranjenih proizvoda. Preporuke ovise o potrebi korisnika, kontekstu i najrelevantnijem FCC smjeru za taj cilj.';
+
+            $content_blocks[] = $language === 'en'
+                ? 'If you want, write the goal or problem and I will narrow it down only to what is relevant for that situation.'
+                : 'Ako želite, napišite cilj ili problem pa ću suziti samo ono što je stvarno relevantno za tu situaciju.';
+
+            return [
+                'content' => trim(implode("\n\n", array_filter($content_blocks))),
+                'language' => $language,
+                'lead_capture' => $lead_capture,
+                'intent' => $intent,
+                'recommendation_payload' => $recommendation_payload,
+                'knowledge_suggestions' => [],
+            ];
+        }
+
+        if($guarded_request_type === 'monetization_request') {
+            $content_blocks[] = $language === 'en'
+                ? 'At a general level, this works through partner recommendations and collaboration follow-up, not through a public breakdown of internal commercial structure.'
+                : 'Na općoj razini, ovo funkcionira kroz partnerske preporuke i nastavak suradnje, ne kroz javno izlaganje interne komercijalne strukture.';
+
+            $content_blocks[] = $language === 'en'
+                ? 'If you want, I can explain how the FCC collaboration side works for a partner and what the practical next step looks like.'
+                : 'Ako želite, mogu objasniti kako FCC suradnja izgleda za partnera i koji je praktičan sljedeći korak.';
+
+            if(!$lead_already_captured) {
+                $lead_capture = [
+                    'recommended' => true,
+                    'lead_type' => 'business_interest',
+                    'headline' => $language === 'en' ? 'Would you like a personal collaboration follow-up?' : 'Želite osobni nastavak razgovora o suradnji?',
+                    'text' => $language === 'en'
+                        ? 'Leave your contact and the FCC partner can explain the collaboration side personally.'
+                        : 'Ostavite kontakt i FCC partner može osobno objasniti kako suradnja izgleda.',
+                ];
+
+                $content_blocks[] = fcc_ai_get_public_user_contact_invite_note($assistant_type, $language, $owner_name);
+            }
+
+            return [
+                'content' => trim(implode("\n\n", array_filter($content_blocks))),
+                'language' => $language,
+                'lead_capture' => $lead_capture,
+                'intent' => $intent,
+                'recommendation_payload' => $recommendation_payload,
+                'knowledge_suggestions' => [],
+            ];
+        }
+
+        if($guarded_request_type === 'product_dump_request') {
+            $content_blocks[] = $language === 'en'
+                ? 'I do not dump the full database or the whole catalog here. It is more useful to narrow the answer to the goal you actually care about.'
+                : 'Ne izlistavam cijelu bazu ni kompletan katalog kroz ovaj chat. Puno je korisnije suziti odgovor na cilj koji vas stvarno zanima.';
+
+            if(!empty($recommendation_payload['question_lines'])) {
+                $content_blocks[] = $language === 'en'
+                    ? "To make it relevant, tell me:\n- " . implode("\n- ", $recommendation_payload['question_lines'])
+                    : "Da bude stvarno relevantno, napišite mi:\n- " . implode("\n- ", $recommendation_payload['question_lines']);
+            }
+
+            return [
+                'content' => trim(implode("\n\n", array_filter($content_blocks))),
+                'language' => $language,
+                'lead_capture' => $lead_capture,
+                'intent' => $intent,
+                'recommendation_payload' => $recommendation_payload,
+                'knowledge_suggestions' => [],
+            ];
+        }
+
+        if($guarded_request_type === 'universal_stack_request') {
+            $content_blocks[] = $language === 'en'
+                ? 'I do not use one identical stack for every person or every condition. The useful recommendation always depends on the actual goal and context.'
+                : 'Ne koristim jedan isti popis ili istu kombinaciju za svaku osobu i svaku situaciju. Korisna preporuka uvijek ovisi o stvarnom cilju i konkretnom kontekstu.';
+
+            if(!empty($recommendation_payload['question_lines'])) {
+                $content_blocks[] = $language === 'en'
+                    ? "If you want, narrow it for me like this:\n- " . implode("\n- ", $recommendation_payload['question_lines'])
+                    : "Ako želite, suzite mi ovako:\n- " . implode("\n- ", $recommendation_payload['question_lines']);
+            }
+
+            return [
+                'content' => trim(implode("\n\n", array_filter($content_blocks))),
+                'language' => $language,
+                'lead_capture' => $lead_capture,
+                'intent' => $intent,
+                'recommendation_payload' => $recommendation_payload,
+                'knowledge_suggestions' => [],
+            ];
+        }
+
+        if($guarded_request_type === 'doctor_impersonation_request') {
+            $content_blocks[] = $language === 'en'
+                ? 'I am not a doctor and I cannot take over the role of a physician, diagnose, or prescribe therapy here.'
+                : 'Nisam liječnik i ovdje ne mogu preuzeti ulogu liječnika, postavljati dijagnozu niti davati terapiju.';
+
+            $content_blocks[] = $language === 'en'
+                ? 'What I can do is stay on general educational guidance and, when relevant, explain cautious routine-support directions that should still be aligned with a doctor.'
+                : 'Ono što mogu je ostati na općim edukativnim smjernicama i, kada ima smisla, objasniti oprezne support smjerove rutine koje se i dalje trebaju uskladiti s liječnikom.';
+
+            return [
+                'content' => trim(implode("\n\n", array_filter($content_blocks))),
+                'language' => $language,
+                'lead_capture' => $lead_capture,
+                'intent' => $intent,
+                'recommendation_payload' => $recommendation_payload,
+                'knowledge_suggestions' => [],
+            ];
+        }
+
+        if($guarded_request_type === 'strongest_product_request') {
+            $content_blocks[] = $language === 'en'
+                ? 'There is no single strongest product for every goal. The right direction always depends on the problem you want to support.'
+                : 'Ne postoji jedan najjači proizvod za svaki cilj. Pravi smjer uvijek ovisi o problemu ili cilju koji želite podržati.';
+
+            if(!empty($recommendation_payload['question_lines'])) {
+                $content_blocks[] = $language === 'en'
+                    ? "Tell me this first:\n- " . implode("\n- ", $recommendation_payload['question_lines'])
+                    : "Prvo mi napišite:\n- " . implode("\n- ", $recommendation_payload['question_lines']);
+            }
+
+            return [
+                'content' => trim(implode("\n\n", array_filter($content_blocks))),
+                'language' => $language,
+                'lead_capture' => $lead_capture,
+                'intent' => $intent,
+                'recommendation_payload' => $recommendation_payload,
+                'knowledge_suggestions' => [],
+            ];
+        }
+
+        if($guarded_request_type === 'cure_claim_generic_request') {
+            $content_blocks[] = $language === 'en'
+                ? 'I do not use the language that products cure diseases. Here I stay on general support, routine and educational explanations, and I can explain what a product supports or may help with in everyday context.'
+                : 'Ovdje ne koristim jezik da proizvodi liječe bolesti. Ostajem na općoj podršci, rutini i edukativnom objašnjenju, pa mogu reći što proizvod podržava ili u čemu može pomoći u svakodnevnom kontekstu.';
+
+            $content_blocks[] = $language === 'en'
+                ? 'If you want, write the exact goal and I will explain the cleanest support direction without medical claims.'
+                : 'Ako želite, napišite točan cilj pa ću objasniti najčišći support smjer bez medicinskih tvrdnji.';
+
+            return [
+                'content' => trim(implode("\n\n", array_filter($content_blocks))),
+                'language' => $language,
+                'lead_capture' => $lead_capture,
+                'intent' => $intent,
+                'recommendation_payload' => $recommendation_payload,
+                'knowledge_suggestions' => [],
+            ];
+        }
+
+        if($guarded_request_type === 'system_copy_request') {
+            $content_blocks[] = $language === 'en'
+                ? 'I do not share the internal know-how in detail, but generally a similar direction is built through AI tools, good education, a clear knowledge base and a strong user flow.'
+                : 'Ne dijelim interni know-how u detalje, ali općenito se sličan smjer gradi kroz AI alate, kvalitetnu edukaciju, jasnu bazu znanja i dobar korisnički tok.';
+
+            $content_blocks[] = $language === 'en'
+                ? 'Inside FCC, that becomes useful only when it is connected with the app, content, recommendations and collaboration flow in one place.'
+                : 'Unutar FCC-a to ima smisla tek kad je povezano s aplikacijom, sadržajem, preporukama i tokom suradnje na jednom mjestu.';
+
+            if(!$lead_already_captured) {
+                $lead_capture = [
+                    'recommended' => true,
+                    'lead_type' => 'business_interest',
+                    'headline' => $language === 'en' ? 'Would you like a personal explanation of the FCC model?' : 'Želite osobno objašnjenje FCC modela?',
+                    'text' => $language === 'en'
+                        ? 'Leave your contact and the FCC partner can explain the collaboration side and the practical setup personally.'
+                        : 'Ostavite kontakt i FCC partner može osobno objasniti suradnju i praktični način korištenja sustava.',
+                ];
+
+                $content_blocks[] = fcc_ai_get_public_user_contact_invite_note($assistant_type, $language, $owner_name);
+            }
+
+            return [
+                'content' => trim(implode("\n\n", array_filter($content_blocks))),
+                'language' => $language,
+                'lead_capture' => $lead_capture,
+                'intent' => $intent,
+                'recommendation_payload' => $recommendation_payload,
+                'knowledge_suggestions' => [],
+            ];
+        }
+    }
 
     if($assistant_type === 'product_advisor' && $correction_follow_up) {
         $content_blocks[] = $language === 'en'
@@ -20499,6 +20949,15 @@ function fcc_ai_handle_public_message(array $payload): array {
     $previous_intent = $previous_user_message !== ''
         ? fcc_ai_detect_public_intent((string) ($conversation->assistant_type ?? ''), $previous_user_message)
         : [];
+    $guarded_request_type = (string) fcc_ai_get_public_guarded_request_type($current_user_message, $intent, [
+        'previous_user_message' => $previous_user_message,
+        'previous_intent' => $previous_intent,
+    ]);
+
+    if($guarded_request_type !== '') {
+        $intent['guarded_request_type'] = $guarded_request_type;
+        $intent[$guarded_request_type] = true;
+    }
     $current_condition_keys = fcc_ai_get_condition_match_keys(
         fcc_ai_get_product_advisor_effective_condition_matches($current_user_message, $resolved_language)
     );
@@ -20589,6 +21048,15 @@ function fcc_ai_handle_public_message(array $payload): array {
         $recent_user_context = '';
         $used_context_for_matching = false;
         $intent = fcc_ai_detect_public_intent((string) $conversation->assistant_type, $message_for_matching);
+        $guarded_request_type = (string) fcc_ai_get_public_guarded_request_type($current_user_message, $intent, [
+            'previous_user_message' => $previous_user_message,
+            'previous_intent' => $previous_intent,
+        ]);
+
+        if($guarded_request_type !== '') {
+            $intent['guarded_request_type'] = $guarded_request_type;
+            $intent[$guarded_request_type] = true;
+        }
     }
     $knowledge_suggestions = fcc_ai_get_public_knowledge_suggestions((string) $conversation->assistant_type, $message_for_matching, [
         'language' => $resolved_language,
@@ -20603,16 +21071,21 @@ function fcc_ai_handle_public_message(array $payload): array {
         }));
     }
 
-    $recommendation_payload = fcc_ai_build_public_recommendation_payload((string) $conversation->assistant_type, $message_for_matching, [
-        'language' => $resolved_language,
-        'intent' => $intent,
-        'knowledge_suggestions' => $knowledge_suggestions,
-        'correction_follow_up' => $is_recommendation_correction_followup,
-        'same_problem_followup_clarification' => $is_same_problem_followup_clarification,
-        'broad_beauty_followup_clarification' => $is_broad_beauty_followup_clarification,
-        'previous_condition_context_exists' => !empty($previous_condition_keys),
-        'follow_up_message' => $current_user_message,
-    ]);
+    if($guarded_request_type !== '') {
+        $knowledge_suggestions = [];
+        $recommendation_payload = fcc_ai_build_public_guarded_request_payload($guarded_request_type, $resolved_language);
+    } else {
+        $recommendation_payload = fcc_ai_build_public_recommendation_payload((string) $conversation->assistant_type, $message_for_matching, [
+            'language' => $resolved_language,
+            'intent' => $intent,
+            'knowledge_suggestions' => $knowledge_suggestions,
+            'correction_follow_up' => $is_recommendation_correction_followup,
+            'same_problem_followup_clarification' => $is_same_problem_followup_clarification,
+            'broad_beauty_followup_clarification' => $is_broad_beauty_followup_clarification,
+            'previous_condition_context_exists' => !empty($previous_condition_keys),
+            'follow_up_message' => $current_user_message,
+        ]);
+    }
 
     if(!empty($recommendation_payload['skip_product_tail'])) {
         $knowledge_suggestions = [];
@@ -20710,12 +21183,14 @@ function fcc_ai_handle_public_message(array $payload): array {
         'business_followup_clarification' => $is_business_followup_clarification,
         'business_hesitation_followup' => $is_business_hesitation_followup,
         'broad_beauty_followup_clarification' => $is_broad_beauty_followup_clarification,
+        'guarded_request_type' => $guarded_request_type,
     ]);
 
     $should_force_local_reply = $is_same_problem_followup_clarification
         || $is_business_followup_clarification
         || $is_business_hesitation_followup
         || $is_broad_beauty_followup_clarification
+        || $guarded_request_type !== ''
         || !empty($intent['business_primary'])
         || !empty($intent['medication_interaction_sensitive'])
         || $is_direct_cure_claim_question
@@ -20743,6 +21218,7 @@ function fcc_ai_handle_public_message(array $payload): array {
             'business_followup_clarification' => $is_business_followup_clarification,
             'business_hesitation_followup' => $is_business_hesitation_followup,
             'broad_beauty_followup_clarification' => $is_broad_beauty_followup_clarification,
+            'guarded_request_type' => $guarded_request_type,
             'override_user_message' => $is_recommendation_correction_followup ? $message_for_matching : '',
         ], $assistant);
     }
