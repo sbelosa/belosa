@@ -9,7 +9,7 @@ $fcc_ai_is_admin = (bool) ($data->is_admin ?? false);
 $fcc_ai_editable_assistant_types = is_array($data->editable_assistant_types ?? null) ? $data->editable_assistant_types : (array) ($data->assistant_types ?? []);
 $fcc_ai_apps_url = url('links?type=biolink');
 $fcc_ai_hero_intro = l($fcc_ai_is_admin ? 'fcc_ai.hero_intro_admin' : 'fcc_ai.hero_intro_user');
-$fcc_ai_brand_logo_url = ASSETS_FULL_URL . 'images/chat-extreme-logo-wide.png';
+$fcc_ai_brand_logo_url = ASSETS_FULL_URL . 'images/fcc-preporuka-logo-wide.png';
 $fcc_ai_useful_items = is_array($data->useful_items ?? null) ? $data->useful_items : [];
 $fcc_ai_recent_alerts = is_array($data->recent_alerts ?? null) ? $data->recent_alerts : [];
 $fcc_ai_rising_topics = is_array($data->rising_topics ?? null) ? $data->rising_topics : [];

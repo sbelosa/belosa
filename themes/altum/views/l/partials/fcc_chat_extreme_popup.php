@@ -65,15 +65,21 @@ $fcc_chat_message_url = trim((string) ($fcc_chat_config['message_url'] ?? url('l
 $fcc_chat_feedback_url = trim((string) ($fcc_chat_config['feedback_url'] ?? ($fcc_chat_assistant_type === 'coach' ? url('fcc-ai/coach-feedback') : url('l/fcc-ai/feedback'))));
 $fcc_chat_lead_url = trim((string) ($fcc_chat_config['lead_url'] ?? url('l/fcc-ai/lead')));
 $fcc_chat_default_logo_url = SITE_URL . ASSETS_URL_PATH . 'images/chat-extreme-logo.png';
+$fcc_chat_product_advisor_logo_url = SITE_URL . ASSETS_URL_PATH . 'images/fcc-preporuka-logo.png';
 $fcc_chat_coach_logo_url = SITE_URL . ASSETS_URL_PATH . 'images/fcc-coach-logo-wide.png';
-$fcc_chat_logo_url = $fcc_chat_assistant_type === 'coach' ? $fcc_chat_coach_logo_url : $fcc_chat_default_logo_url;
+$fcc_chat_logo_url = $fcc_chat_assistant_type === 'coach'
+    ? $fcc_chat_coach_logo_url
+    : ($fcc_chat_is_product_advisor ? $fcc_chat_product_advisor_logo_url : $fcc_chat_default_logo_url);
 $fcc_chat_logo_alt = $fcc_chat_assistant_type === 'coach'
     ? 'Forever Card Club'
     : ($fcc_chat_is_product_advisor ? 'FCC Preporuka' : 'ChatExtreme');
 $fcc_chat_default_launcher_url = SITE_URL . ASSETS_URL_PATH . 'images/chat-extreme-owl.png';
+$fcc_chat_product_advisor_launcher_url = SITE_URL . ASSETS_URL_PATH . 'images/fcc-preporuka-launcher.png';
 $fcc_chat_default_launcher_fallback_url = SITE_URL . ASSETS_URL_PATH . 'images/sovica.png';
 $fcc_chat_coach_launcher_url = SITE_URL . ASSETS_URL_PATH . 'images/fcc-coach-launcher-v2.png';
-$fcc_chat_launcher_url = $fcc_chat_assistant_type === 'coach' ? $fcc_chat_coach_launcher_url : $fcc_chat_default_launcher_url;
+$fcc_chat_launcher_url = $fcc_chat_assistant_type === 'coach'
+    ? $fcc_chat_coach_launcher_url
+    : ($fcc_chat_is_product_advisor ? $fcc_chat_product_advisor_launcher_url : $fcc_chat_default_launcher_url);
 $fcc_chat_launcher_fallback_url = $fcc_chat_default_launcher_fallback_url;
 $fcc_chat_feedback_positive_label = $fcc_chat_is_english ? 'Good answer' : 'Dobar odgovor';
 $fcc_chat_feedback_negative_label = $fcc_chat_is_english ? 'Bad answer' : 'Loš odgovor';
