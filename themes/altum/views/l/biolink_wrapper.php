@@ -2,6 +2,17 @@
 <!DOCTYPE html>
 <html lang="<?= $this->link->settings->language_code ?? \Altum\Language::$default_code ?>" class="link-html" dir="<?= l('direction') ?>">
     <head>
+        <?php
+        $fcc_theme_custom_css = '';
+
+        if($this->is_preview && !empty($this->biolink_theme->settings->additional->custom_css ?? '')) {
+            $fcc_theme_custom_css = \Altum\Link::get_scoped_biolink_theme_custom_css($this->biolink_theme->settings->additional->custom_css ?? '');
+        } elseif((!$this->is_preview || !$this->biolink_theme) && $this->link->biolink_theme_id && !empty($this->link->additional->custom_css)) {
+            $fcc_theme_custom_css = \Altum\Link::get_scoped_biolink_theme_custom_css($this->link->additional->custom_css ?? '');
+        }
+
+        $fcc_theme_safe_layout_active = $fcc_theme_custom_css !== '' || !empty($this->link->biolink_theme_id) || ($this->is_preview && !empty($this->biolink_theme));
+        ?>
         <title><?= \Altum\Title::get() ?></title>
         <base href="<?= SITE_URL; ?>">
         <meta charset="UTF-8">
@@ -93,12 +104,42 @@
             <style><?= $this->link->settings->custom_css ?></style>
         <?php endif ?>
 
-        <?php if($this->is_preview && !empty($this->biolink_theme->settings->additional->custom_css ?? '')): ?>
-            <style><?= $this->biolink_theme->settings->additional->custom_css ?></style>
+        <?php if($fcc_theme_safe_layout_active): ?>
+            <style>
+                html.link-html,
+                body.link-body {
+                    max-width: 100%;
+                    overflow-x: hidden !important;
+                }
+
+                .fcc-biolink-theme-scope {
+                    max-width: 100%;
+                    overflow-x: hidden !important;
+                }
+
+                .fcc-biolink-theme-scope img,
+                .fcc-biolink-theme-scope video,
+                .fcc-biolink-theme-scope iframe,
+                .fcc-biolink-theme-scope .embed-responsive,
+                .fcc-biolink-theme-scope .ratio {
+                    max-width: 100%;
+                }
+
+                @media (max-width: 576px) {
+                    .fcc-biolink-theme-scope,
+                    .fcc-biolink-theme-scope .container,
+                    .fcc-biolink-theme-scope .row,
+                    .fcc-biolink-theme-scope .link-content,
+                    .fcc-biolink-theme-scope main {
+                        max-width: 100% !important;
+                        overflow-x: hidden !important;
+                    }
+                }
+            </style>
         <?php endif ?>
 
-        <?php if((!$this->is_preview || !$this->biolink_theme) && $this->link->biolink_theme_id && !empty($this->link->additional->custom_css)): ?>
-            <style><?= $this->link->additional->custom_css ?></style>
+        <?php if($fcc_theme_custom_css !== ''): ?>
+            <style><?= $fcc_theme_custom_css ?></style>
         <?php endif ?>
     </head>
 

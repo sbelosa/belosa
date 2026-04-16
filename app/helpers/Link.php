@@ -297,6 +297,207 @@ class Link {
         return ['class' => $class, 'style' => $style];
     }
 
+    public static function get_scoped_biolink_theme_custom_css(?string $css, string $scope_selector = '.fcc-biolink-theme-scope'): string {
+        $css = trim((string) $css);
+
+        if($css === '') {
+            return '';
+        }
+
+        return trim(self::scope_biolink_theme_css_rules($css, trim($scope_selector) ?: '.fcc-biolink-theme-scope'));
+    }
+
+    private static function scope_biolink_theme_css_rules(string $css, string $scope_selector): string {
+        $result = '';
+        $length = strlen($css);
+        $offset = 0;
+
+        while($offset < $length) {
+            if(substr($css, $offset, 2) === '/*') {
+                $comment_end = strpos($css, '*/', $offset + 2);
+                if($comment_end === false) {
+                    $result .= substr($css, $offset);
+                    break;
+                }
+
+                $result .= substr($css, $offset, $comment_end - $offset + 2);
+                $offset = $comment_end + 2;
+                continue;
+            }
+
+            $current_character = $css[$offset];
+
+            if(trim($current_character) === '') {
+                $result .= $current_character;
+                $offset++;
+                continue;
+            }
+
+            if($current_character === '@') {
+                [$rule_output, $next_offset] = self::consume_biolink_theme_at_rule($css, $offset, $scope_selector);
+                $result .= $rule_output;
+                $offset = $next_offset;
+                continue;
+            }
+
+            $selector_start = $offset;
+            while($offset < $length && $css[$offset] !== '{') {
+                $offset++;
+            }
+
+            if($offset >= $length) {
+                $result .= substr($css, $selector_start);
+                break;
+            }
+
+            $selector_list = trim(substr($css, $selector_start, $offset - $selector_start));
+            [$block_body, $next_offset] = self::consume_biolink_theme_block($css, $offset);
+
+            if($selector_list === '') {
+                $result .= '{' . $block_body . '}';
+            } else {
+                $result .= self::scope_biolink_theme_selector_list($selector_list, $scope_selector) . '{' . $block_body . '}';
+            }
+
+            $offset = $next_offset;
+        }
+
+        return $result;
+    }
+
+    private static function consume_biolink_theme_at_rule(string $css, int $offset, string $scope_selector): array {
+        $length = strlen($css);
+        $rule_start = $offset;
+
+        while($offset < $length && $css[$offset] !== '{' && $css[$offset] !== ';') {
+            $offset++;
+        }
+
+        if($offset >= $length) {
+            return [substr($css, $rule_start), $length];
+        }
+
+        if($css[$offset] === ';') {
+            return [substr($css, $rule_start, $offset - $rule_start + 1), $offset + 1];
+        }
+
+        $at_rule_header = trim(substr($css, $rule_start, $offset - $rule_start));
+        [$block_body, $next_offset] = self::consume_biolink_theme_block($css, $offset);
+
+        if(preg_match('/^@(media|supports|container|layer|document)\b/i', $at_rule_header)) {
+            return [$at_rule_header . '{' . self::scope_biolink_theme_css_rules($block_body, $scope_selector) . '}', $next_offset];
+        }
+
+        return [$at_rule_header . '{' . $block_body . '}', $next_offset];
+    }
+
+    private static function consume_biolink_theme_block(string $css, int $opening_brace_offset): array {
+        $length = strlen($css);
+        $depth = 0;
+        $offset = $opening_brace_offset;
+        $block_start = $opening_brace_offset + 1;
+        while($offset < $length) {
+            $character = $css[$offset];
+
+            if(substr($css, $offset, 2) === '/*') {
+                $comment_end = strpos($css, '*/', $offset + 2);
+                if($comment_end === false) {
+                    return [substr($css, $block_start), $length];
+                }
+
+                $offset = $comment_end + 2;
+                continue;
+            }
+
+            if($character === '{') {
+                $depth++;
+            } elseif($character === '}') {
+                $depth--;
+
+                if($depth === 0) {
+                    return [substr($css, $block_start, $offset - $block_start), $offset + 1];
+                }
+            } elseif($character === '"' || $character === '\'') {
+                $quote = $character;
+                $offset++;
+
+                while($offset < $length) {
+                    if($css[$offset] === '\\') {
+                        $offset += 2;
+                        continue;
+                    }
+
+                    if($css[$offset] === $quote) {
+                        break;
+                    }
+
+                    $offset++;
+                }
+            }
+
+            $offset++;
+        }
+
+        return [substr($css, $block_start), $length];
+    }
+
+    private static function scope_biolink_theme_selector_list(string $selector_list, string $scope_selector): string {
+        $selectors = [];
+        $buffer = '';
+        $depth_parentheses = 0;
+        $depth_brackets = 0;
+        $length = strlen($selector_list);
+
+        for($index = 0; $index < $length; $index++) {
+            $character = $selector_list[$index];
+
+            if($character === '(') {
+                $depth_parentheses++;
+            } elseif($character === ')' && $depth_parentheses > 0) {
+                $depth_parentheses--;
+            } elseif($character === '[') {
+                $depth_brackets++;
+            } elseif($character === ']' && $depth_brackets > 0) {
+                $depth_brackets--;
+            }
+
+            if($character === ',' && $depth_parentheses === 0 && $depth_brackets === 0) {
+                $selectors[] = self::scope_biolink_theme_single_selector($buffer, $scope_selector);
+                $buffer = '';
+                continue;
+            }
+
+            $buffer .= $character;
+        }
+
+        if(trim($buffer) !== '') {
+            $selectors[] = self::scope_biolink_theme_single_selector($buffer, $scope_selector);
+        }
+
+        $selectors = array_values(array_unique(array_filter($selectors, static fn($selector) => trim((string) $selector) !== '')));
+
+        return implode(', ', $selectors);
+    }
+
+    private static function scope_biolink_theme_single_selector(string $selector, string $scope_selector): string {
+        $selector = trim($selector);
+
+        if($selector === '') {
+            return '';
+        }
+
+        $selector = preg_replace('/:root\b/i', $scope_selector, $selector) ?? $selector;
+        $selector = preg_replace('/(^|[\s>+~,(])html(?=$|[\s>+~#.:\[])/i', '$1' . $scope_selector, $selector) ?? $selector;
+        $selector = preg_replace('/(^|[\s>+~,(])body(?=$|[\s>+~#.:\[])/i', '$1' . $scope_selector, $selector) ?? $selector;
+        $selector = trim(preg_replace('/' . preg_quote($scope_selector, '/') . '\s+' . preg_quote($scope_selector, '/') . '/', $scope_selector, $selector) ?? $selector);
+
+        if(str_contains($selector, $scope_selector)) {
+            return $selector;
+        }
+
+        return $scope_selector . ' ' . $selector;
+    }
+
     public static function get_biolink($tthis, $link, $user = null, $biolink_blocks = null) {
 
         /* Determine the background of the biolink */

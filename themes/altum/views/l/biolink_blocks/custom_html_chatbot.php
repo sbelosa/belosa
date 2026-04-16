@@ -33,6 +33,7 @@ $chatbot_input_placeholder = $is_pets_chatbot
     : ($chatbot_is_english ? 'What would you like to know?' : 'Što vas zanima?');
 ?>
 
+<?php ob_start() ?>
 <?= include_view(THEME_PATH . 'views/l/partials/fcc_chat_extreme_popup.php', [
     'config' => [
         'assistant_type' => $chatbot_assistant_type,
@@ -48,3 +49,4 @@ $chatbot_input_placeholder = $is_pets_chatbot
         'input_placeholder' => $chatbot_input_placeholder,
     ],
 ]) ?>
+<?php \Altum\Event::add_content(ob_get_clean(), 'modals', 'fcc_chatbot_' . $chatbot_dom_id) ?>

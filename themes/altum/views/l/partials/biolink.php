@@ -52,6 +52,7 @@
 
 <div id="backdrop" class="link-body-backdrop" style="<?= $data->link->design->backdrop_style ?>"></div>
 
+<div class="fcc-biolink-theme-scope">
 <div class="container animate__animated animate__fadeIn <?= isset($_GET['preview']) ? 'container-disabled-simple' : null ?>">
     <?php require THEME_PATH . 'views/l/partials/biolink_top_left_buttons.php' ?>
     <?php require THEME_PATH . 'views/l/partials/biolink_share.php' ?>
@@ -466,6 +467,7 @@
 
         </div>
     </div>
+</div>
 </div>
 
 <?= \Altum\Event::get_content('modals') ?>
