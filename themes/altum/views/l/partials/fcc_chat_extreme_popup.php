@@ -11,6 +11,7 @@ $fcc_chat_owner_name = trim((string) ($fcc_chat_config['owner_name'] ?? ''));
 $fcc_chat_language_code = trim((string) ($fcc_chat_config['language_code'] ?? \Altum\Language::$code ?? \Altum\Language::$default_code ?? 'hr'));
 $fcc_chat_source_context = trim((string) ($fcc_chat_config['source_context'] ?? ($fcc_chat_scope === 'public_blog' ? 'FCC blog article' : 'FCC app popup chat')));
 $fcc_chat_hide_without_context = !empty($fcc_chat_config['hide_without_context']);
+$fcc_chat_is_product_advisor = $fcc_chat_assistant_type === 'product_advisor';
 $fcc_chat_dom_id = trim((string) ($fcc_chat_config['dom_id'] ?? ('fcc-chat-extreme-' . md5($fcc_chat_assistant_type . '|' . $fcc_chat_scope . '|' . $fcc_chat_link_id . '|' . $fcc_chat_blog_post_id))));
 $fcc_chat_shell_id = $fcc_chat_dom_id . '-shell';
 $fcc_chat_toggle_id = $fcc_chat_dom_id . '-toggle';
@@ -21,9 +22,11 @@ $fcc_chat_lead_enabled = array_key_exists('lead_enabled', $fcc_chat_config)
     ? !empty($fcc_chat_config['lead_enabled'])
     : !empty($fcc_chat_definition['supports_lead_capture']);
 $fcc_chat_is_english = str_starts_with(mb_strtolower($fcc_chat_language_code), 'en');
-$fcc_chat_toggle_label = $fcc_chat_is_english ? 'Open ChatExtreme' : 'Otvori ChatExtreme';
+$fcc_chat_toggle_label = $fcc_chat_is_product_advisor
+    ? ($fcc_chat_is_english ? 'Open FCC Preporuka' : 'Otvori FCC Preporuka')
+    : ($fcc_chat_is_english ? 'Open ChatExtreme' : 'Otvori ChatExtreme');
 $fcc_chat_close_label = $fcc_chat_is_english ? 'Close chat' : 'Zatvori chat';
-$fcc_chat_assistant_title = trim((string) ($fcc_chat_config['assistant_title'] ?? ($fcc_chat_assistant_type === 'coach' ? 'FCC Coach' : 'Extreme Chat Ai')));
+$fcc_chat_assistant_title = trim((string) ($fcc_chat_config['assistant_title'] ?? ($fcc_chat_assistant_type === 'coach' ? 'FCC Coach' : ($fcc_chat_is_product_advisor ? 'FCC Preporuka' : 'Extreme Chat Pets'))));
 $fcc_chat_intro_label = trim((string) ($fcc_chat_config['intro_label'] ?? $fcc_chat_assistant_title));
 $fcc_chat_message_maxlength = $fcc_chat_assistant_type === 'coach' ? 2000 : 1000;
 $fcc_chat_input_placeholder = trim((string) ($fcc_chat_config['input_placeholder'] ?? ($fcc_chat_assistant_type === 'coach'
@@ -64,7 +67,9 @@ $fcc_chat_lead_url = trim((string) ($fcc_chat_config['lead_url'] ?? url('l/fcc-a
 $fcc_chat_default_logo_url = SITE_URL . ASSETS_URL_PATH . 'images/chat-extreme-logo.png';
 $fcc_chat_coach_logo_url = SITE_URL . ASSETS_URL_PATH . 'images/fcc-coach-logo-wide.png';
 $fcc_chat_logo_url = $fcc_chat_assistant_type === 'coach' ? $fcc_chat_coach_logo_url : $fcc_chat_default_logo_url;
-$fcc_chat_logo_alt = $fcc_chat_assistant_type === 'coach' ? 'Forever Card Club' : 'ChatExtreme';
+$fcc_chat_logo_alt = $fcc_chat_assistant_type === 'coach'
+    ? 'Forever Card Club'
+    : ($fcc_chat_is_product_advisor ? 'FCC Preporuka' : 'ChatExtreme');
 $fcc_chat_default_launcher_url = SITE_URL . ASSETS_URL_PATH . 'images/chat-extreme-owl.png';
 $fcc_chat_default_launcher_fallback_url = SITE_URL . ASSETS_URL_PATH . 'images/sovica.png';
 $fcc_chat_coach_launcher_url = SITE_URL . ASSETS_URL_PATH . 'images/fcc-coach-launcher-v2.png';
@@ -87,7 +92,7 @@ if($fcc_chat_launcher_label === '') {
     } elseif($fcc_chat_assistant_type === 'pets_advisor') {
         $fcc_chat_launcher_label = $fcc_chat_is_english ? 'AI Pets' : 'AI Ljubimci';
     } else {
-        $fcc_chat_launcher_label = $fcc_chat_is_english ? 'Ask the Owl' : 'Pitaj Sovicu';
+        $fcc_chat_launcher_label = 'FCC Preporuka';
     }
 }
 $fcc_chat_default_welcome = trim((string) ($fcc_chat_config['default_welcome'] ?? ''));
@@ -105,7 +110,7 @@ foreach(['hr', 'en', 'sl', 'bg'] as $fcc_chat_ui_language) {
     $fcc_chat_ui_is_english = $fcc_chat_ui_language === 'en';
     $fcc_chat_ui_intro_label = $fcc_chat_assistant_type === 'coach'
         ? (string) ($fcc_chat_ui_override['intro_label'] ?? $fcc_chat_intro_label)
-        : ($fcc_chat_assistant_type === 'pets_advisor' ? 'Extreme Chat Pets' : 'Extreme Chat Ai');
+        : ($fcc_chat_assistant_type === 'pets_advisor' ? 'Extreme Chat Pets' : 'FCC Preporuka');
 
     if($fcc_chat_assistant_type === 'coach') {
         $fcc_chat_ui_launcher_label = (string) ($fcc_chat_ui_override['launcher_label'] ?? $fcc_chat_launcher_label);
@@ -129,12 +134,7 @@ foreach(['hr', 'en', 'sl', 'bg'] as $fcc_chat_ui_language) {
             default => 'Napišite nešto o ljubimcu',
         };
     } else {
-        $fcc_chat_ui_launcher_label = match($fcc_chat_ui_language) {
-            'sl' => 'Vprašaj sovico',
-            'bg' => 'Попитай совата',
-            'en' => 'Ask the Owl',
-            default => 'Pitaj Sovicu',
-        };
+        $fcc_chat_ui_launcher_label = 'FCC Preporuka';
         $fcc_chat_ui_input_placeholder = match($fcc_chat_ui_language) {
             'sl' => 'Kaj vas zanima?',
             'bg' => 'Какво ви интересува?',

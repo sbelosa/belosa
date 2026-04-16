@@ -544,7 +544,7 @@ $fcc_blog_chat_language_code = !empty($data->ai_chat_owner_user_id)
             'source_context' => 'FCC blog article',
             'hide_without_context' => true,
             'dom_id' => 'fcc-blog-chat-extreme-' . (int) ($data->blog_post->blog_post_id ?? 0),
-            'intro_label' => 'Extreme Chat Ai',
+            'intro_label' => 'FCC Preporuka',
         ],
     ]) ?>
 <?php endif ?>

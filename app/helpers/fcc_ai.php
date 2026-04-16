@@ -11379,8 +11379,8 @@ function fcc_ai_get_public_welcome_message(string $assistant_type, string $langu
     }
 
     return $language === 'en'
-        ? 'Hi! I am AI Chat Extreme. I can help you choose a sensible product direction, understand the ingredient angle behind it, and if needed explain the FCC business opportunity. Tell me what you want to support and I will guide you with safe, simple next steps.'
-        : 'Bok! Ja sam AI Chat Extreme. Mogu vam pomoći odabrati razuman smjer proizvoda, objasniti zašto određeni sastojci imaju smisla i po potrebi približiti FCC poslovnu priliku. Napišite što želite podržati, a ja ću vas voditi kroz siguran i jednostavan sljedeći korak.';
+        ? 'Hi! I am FCC Preporuka. I can help you choose a sensible Forever product direction, explain why certain ingredients make sense, and if needed point you toward the FCC business opportunity. Tell me what you want to support and I will guide you with safe, simple next steps.'
+        : 'Bok! Ja sam FCC Preporuka. Mogu vam pomoći odabrati razuman Forever smjer proizvoda, objasniti zašto određeni sastojci imaju smisla i po potrebi približiti FCC poslovnu priliku. Napišite što želite podržati, a ja ću vas voditi kroz siguran i jednostavan sljedeći korak.';
 }
 
 function fcc_ai_get_default_public_persona_prompt(string $assistant_type, string $language = 'hr'): string {
@@ -12084,7 +12084,7 @@ function fcc_ai_build_public_system_prompt(string $assistant_type, array $contex
         'sl' => 'Slovenian',
         default => 'Croatian',
     };
-    $assistant_label = trim((string) ($assistant->display_name ?? fcc_ai_get_assistant_label($assistant_type, 'ChatExtreme')));
+    $assistant_label = trim((string) ($assistant->display_name ?? fcc_ai_get_assistant_label($assistant_type, $assistant_type === 'product_advisor' ? 'FCC Preporuka' : 'ChatExtreme')));
     $owner_name = trim((string) ($context['owner_name'] ?? ''));
     $scope = trim((string) ($context['scope'] ?? 'public_app'));
     $source_context = trim((string) ($context['source_context'] ?? ''));
@@ -12097,7 +12097,7 @@ function fcc_ai_build_public_system_prompt(string $assistant_type, array $contex
     $rules_prompt = $rules_prompt !== '' ? $rules_prompt : fcc_ai_get_default_public_rules_prompt($assistant_type, $language);
 
     $sections = [
-        'You are ' . ($assistant_label !== '' ? $assistant_label : 'ChatExtreme') . ', the public ChatExtreme assistant inside Forever Card Club.',
+        'You are ' . ($assistant_label !== '' ? $assistant_label : ($assistant_type === 'product_advisor' ? 'FCC Preporuka' : 'ChatExtreme')) . ', the public ' . ($assistant_type === 'product_advisor' ? 'FCC Preporuka' : 'ChatExtreme') . ' assistant inside Forever Card Club.',
         'Always reply in ' . $language_label . '. Keep replies warm, clear and mobile-friendly. Prefer one to three short paragraphs, or a very short flat list when listing products or next steps. Ask at most two follow-up questions when more context is required.',
         'Tone: ' . ($tone !== '' ? $tone : 'consultative') . '.',
         'Core safety rules: share only general educational information, never diagnose, prescribe, cure, promise outcomes, or replace a doctor or veterinarian. Avoid disease-treatment claims and avoid framing products as medical therapy.',

@@ -5688,7 +5688,7 @@ return [
 	'biolink_link_save_contact.subheader' => 'Save contact',
 	'biolink_link_app_switcher.subheader' => 'App switcher',
 	'biolink_link_back.subheader' => 'Back button',
-	'biolink_custom_html_chatbot.subheader' => 'Chatbot',
+	'biolink_custom_html_chatbot.subheader' => 'FCC Preporuka',
 	'biolink_link_discount.subheader' => 'Discount',
 	'biolink_link_homescreen_android.subheader' => 'Add to home screen - Android',
 	'biolink_link_homescreen_ios.subheader' => 'Add to home screen - iOS',

@@ -4522,7 +4522,7 @@ return [
 	'biolink_link_save_contact.subheader' => 'Spremi kontakt',
 	'biolink_link_app_switcher.subheader' => 'Prebacivač aplikacija',
 	'biolink_link_back.subheader' => 'Gumb povratak',
-	'biolink_custom_html_chatbot.subheader' => 'Ai Sovica',
+	'biolink_custom_html_chatbot.subheader' => 'FCC Preporuka',
 	'biolink_link_discount.subheader' => 'Popust',
 	'biolink_link_homescreen_android.subheader' => 'Dodaj na početni zaslon - Android',
 	'biolink_link_homescreen_ios.subheader' => 'Dodaj na početni zaslon - iOS',

@@ -27,7 +27,7 @@ $chatbot_dom_id = 'fcc-chatbot-' . $block_unique_id;
 $chatbot_source_context = $is_pets_chatbot
     ? ($chatbot_is_english ? 'FCC pet app popup chat' : 'FCC pet app popup chat')
     : ($chatbot_is_english ? 'FCC app popup chat' : 'FCC app popup chat');
-$chatbot_intro_label = $is_pets_chatbot ? 'Extreme Chat Pets' : 'Extreme Chat Ai';
+$chatbot_intro_label = $is_pets_chatbot ? 'Extreme Chat Pets' : 'FCC Preporuka';
 $chatbot_input_placeholder = $is_pets_chatbot
     ? ($chatbot_is_english ? 'Tell me about your pet' : 'Napišite nešto o ljubimcu')
     : ($chatbot_is_english ? 'What would you like to know?' : 'Što vas zanima?');
