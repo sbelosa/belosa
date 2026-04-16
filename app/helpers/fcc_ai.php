@@ -12454,7 +12454,10 @@ function fcc_ai_detect_public_intent(string $assistant_type, string $message): a
         'without leash', 'off leash', 'bez leash', 'bez povodca', 'leash', 'povodac', 'povodca', 'dog training', 'trening psa', 'trening psa bez',
     ]);
     $pet_dosage_request = $assistant_type === 'pets_advisor'
-        && !empty(fcc_ai_get_public_direct_product_lookup_matches($raw_message))
+        && (
+            !empty(fcc_ai_get_public_direct_product_lookup_matches($raw_message))
+            || fcc_ai_contains_keywords($message, ['aloe', 'aloe vera', 'omega', 'omeg', 'pro-b', 'prob'])
+        )
         && (
             fcc_ai_contains_keywords($message, ['koliko', 'how much', 'dose', 'dosage', 'doza', 'ml', 'kapsul', 'capsule', 'koliko aloe', 'koliko omege'])
             || preg_match('/\b\d+\s?(kg|kila|kilo|kilograma?)\b/iu', $raw_message)
@@ -13089,12 +13092,6 @@ function fcc_ai_generate_public_reply(string $assistant_type, string $message, a
                 : ($language === 'sl'
                     ? "Jednostavna smer je:\n- najprej vadite odpoklic na dolgem povodcu\n- vsak prihod takoj nagradite\n- brez povodca spuščajte samo na ograjenem ali zelo varnem prostoru\n- trening naj bo kratek in dosleden"
                     : "Jednostavan smjer je:\n- prvo vježbati povratak na dugu lajnu\n- svaki povratak odmah nagraditi\n- bez povodca puštati samo u ograđenom ili vrlo sigurnom prostoru\n- trening neka bude kratak i dosljedan");
-
-            $content_blocks[] = $language === 'en'
-                ? 'If you want, I can also help separately with a product-oriented routine for digestion, mobility, skin/coat or general vitality.'
-                : ($language === 'sl'
-                    ? 'Če želite, lahko ločeno pomagam tudi s produktno usmerjeno rutino za prebavo, gibljivost, kožo/dlako ali splošno vitalnost.'
-                    : 'Ako želite, mogu zasebno pomoći i s produktno usmjerenom rutinom za probavu, pokretljivost, kožu/dlaku ili opću vitalnost.');
 
             return [
                 'content' => trim(implode("\n\n", array_filter($content_blocks))),
