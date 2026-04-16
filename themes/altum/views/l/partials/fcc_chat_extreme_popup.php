@@ -1166,10 +1166,29 @@ foreach(['hr', 'en', 'sl', 'bg'] as $fcc_chat_ui_language) {
             border-width: 0;
             box-shadow: none;
             transform: translateY(100%);
+            -webkit-transform: translateY(100%);
+            isolation: isolate;
+            contain: layout paint style;
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+        }
+
+        .fcc-chat-extreme__panel::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: #434343;
+            z-index: 0;
+        }
+
+        .fcc-chat-extreme__panel > * {
+            position: relative;
+            z-index: 1;
         }
 
         .fcc-chat-extreme.is-open .fcc-chat-extreme__panel {
-            transform: translateY(0);
+            transform: none;
+            -webkit-transform: none;
         }
 
         .fcc-chat-extreme__header {
@@ -1180,12 +1199,15 @@ foreach(['hr', 'en', 'sl', 'bg'] as $fcc_chat_ui_language) {
         .fcc-chat-extreme__kicker,
         .fcc-chat-extreme__shortcuts,
         .fcc-chat-extreme__thread,
+        .fcc-chat-extreme__lead,
         .fcc-chat-extreme__composer {
             background: #434343;
+            background-image: none;
         }
 
         .fcc-chat-extreme__composer {
             background: #434343;
+            background-image: none;
         }
 
         .fcc-chat-extreme__shortcuts {
