@@ -7983,6 +7983,36 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
             ],
             'suppress_generic_questions' => true,
         ],
+        'cellulite_program_support' => [
+            'patterns' => ['celulit', 'cellulite', 'imam celulit'],
+            'preferred_patterns' => ['c9', 'garcinia', 'therm'],
+            'primary_product' => 'C9 Forever Living Products',
+            'support_products' => ['Forever Garcinia Plus', 'Forever Therm'],
+            'label' => [
+                'hr' => 'celulit i strukturirani start kroz program',
+                'en' => 'cellulite and a structured program start',
+            ],
+            'opening_note' => [
+                'hr' => 'Kad je fokus na celulitu i metabolizmu, odgovor treba ostati motivirajući, ali realan: program, ritam i rutina, bez obećavanja instant rezultata.',
+                'en' => 'When the focus is cellulite and metabolism, the answer should stay motivating but realistic: program, rhythm and routine, without promising instant results.',
+            ],
+            'recommendation_lines' => [
+                'hr' => [
+                    'C9 Forever Living Products je ovdje glavni Forever smjer jer daje strukturirani početak, jasan ritam i program s kojim je najlakše krenuti kada želite raditi na celulitu, metabolizmu i svakodnevnim navikama.',
+                    'Forever Garcinia Plus i Forever Therm imaju smisla kao support opcije uz to kada želite jači programski smjer, ali bez nerealnih obećanja o instant rezultatima.',
+                ],
+                'en' => [
+                    'C9 Forever Living Products is the main Forever direction here because it gives a structured start, a clear rhythm and a program that is easiest to begin with when you want to work on cellulite, metabolism and everyday habits.',
+                    'Forever Garcinia Plus and Forever Therm make sense as support options on top when you want a stronger program-style direction, but without unrealistic promises of instant results.',
+                ],
+            ],
+            'monthly_quantity_note' => [
+                'hr' => 'Ako želite prvi konkretan korak, ovdje se najčešće kreće s 1 x C9 programom, a nakon toga se po cilju dodaju 1 x Forever Garcinia Plus i 1 x Forever Therm.',
+                'en' => 'If you want the first concrete step, people most often start here with 1 x C9 program and then, depending on the goal, add 1 x Forever Garcinia Plus and 1 x Forever Therm.',
+            ],
+            'suppress_generic_questions' => true,
+            'lock_product_scope' => true,
+        ],
         'immunity_support_routine' => [
             'patterns' => ['imunitet', 'slab imunitet', 'pad imuniteta', 'slaba otpornost', 'otpornost organizma', 'otpornost', 'obrana organizma', 'obrambeni sustav', 'slabiji imunitet', 'ceste prehlade', 'česte prehlade', 'cesto bolestan', 'često bolestan'],
             'preferred_patterns' => ['aloe vera gel', 'aloe mango', 'aloe peaches', 'aloe berry nectar', 'immublend', 'immunblend', 'immune blend', 'absorbent c', 'vitamin c'],
@@ -8174,7 +8204,7 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
             'lock_product_scope' => true,
         ],
         'acne_gut_inside_first_support' => [
-            'patterns' => ['akne i probav', 'akne i probavu', 'akne i lošu probavu', 'akne i losu probavu', 'akne i nadut', 'akne i crijev', 'problematičnu kožu i probav', 'problematicnu kozu i probav', 'akne i želud', 'akne i zelud'],
+            'patterns' => ['imam akne', 'akne', 'stalno mi izlaze', 'akne i probav', 'akne i probavu', 'akne i lošu probavu', 'akne i losu probavu', 'akne i nadut', 'akne i crijev', 'problematičnu kožu i probav', 'problematicnu kozu i probav', 'akne i želud', 'akne i zelud'],
             'preferred_patterns' => ['aloe vera gel', 'aloe gel', 'pro b', 'pro-b', 'arctic sea', 'arctic', 'aloe first', 'propolis creme'],
             'primary_product' => 'Forever Aloe Vera Gel™',
             'support_products' => ['Forever Active Pro B', 'Forever Arctic Sea', 'Forever Aloe First Spray', 'Aloe Propolis Creme'],
@@ -8520,31 +8550,31 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
             'lock_product_scope' => true,
         ],
         'brittle_nails_support' => [
-            'patterns' => ['krhki nokti', 'krhkim noktima', 'slabi nokti', 'slabim noktima', 'pucaju nokti', 'pucanje noktiju', 'lomljivi nokti', 'lomljivim noktima', 'nokti pucaju', 'krhki nokt', 'slabi nokt', 'lomljivi nokt'],
-            'preferred_patterns' => ['marine collagen', 'firming serum', 'advanced skincare'],
-            'primary_product' => 'Forever Marine Collagen',
-            'support_products' => ['Infinite By Forever Advanced Skincare', 'Infinite by Forever Firming Serum'],
+            'patterns' => ['krhki nokti', 'krhkim noktima', 'slabi nokti', 'slabim noktima', 'nokti su mi slabi', 'slabi su mi nokti', 'pucaju nokti', 'pucanje noktiju', 'nokti mi pucaju', 'lomljivi nokti', 'lomljivim noktima', 'nokti pucaju', 'krhki nokt', 'slabi nokt', 'lomljivi nokt'],
+            'preferred_patterns' => ['nature min', 'marine collagen'],
+            'primary_product' => 'Forever Nature Min',
+            'support_products' => ['Forever Marine Collagen'],
             'label' => [
-                'hr' => 'krhki nokti i rutina kolagena',
-                'en' => 'brittle nails and a collagen-focused routine',
+                'hr' => 'krhki nokti i mineralna rutina',
+                'en' => 'brittle nails and a mineral-focused routine',
             ],
             'opening_note' => [
-                'hr' => 'Kod krhkih noktiju preporuka bi trebala krenuti od kolagena, vitamina C i biotina kao baze iznutra, a tek nakon toga po želji dodati skincare support smjer.',
-                'en' => 'For brittle nails, the recommendation should start from collagen, vitamin C and biotin as the inside base, and only then optionally add a skincare support direction.',
+                'hr' => 'Kod slabih i pucajućih noktiju najlogičnije je krenuti od mineralne baze, a kolagen ostaje dopunski nutritivni korak za širu rutinu noktiju, kože i kose.',
+                'en' => 'For weak and splitting nails, the cleanest route is to start from a mineral base, while collagen remains the complementary nutritional step for a broader nails, skin and hair routine.',
             ],
             'recommendation_lines' => [
                 'hr' => [
-                    'Forever Marine Collagen je ovdje glavni Forever smjer jer najizravnije pokriva kolagen, vitamin C i biotin kao bazu za rutinu noktiju, kože i kose.',
-                    'Infinite By Forever Advanced Skincare ili Infinite by Forever Firming Serum imaju smisla tek kao dodatna support opcija ako uz nokte želite i jači fokus na njegu kože.',
+                    'Forever Nature Min je ovdje glavni Forever smjer jer donosi esencijalne minerale i minerale u tragovima koji imaju najviše smisla kao baza kada su nokti slabi, lomljivi ili pucaju.',
+                    'Forever Marine Collagen ima smisla kao support opcija uz to kada uz mineralni smjer želite i dodatnu nutritivnu podršku za nokte, kosu i kožu.',
                 ],
                 'en' => [
-                    'Forever Marine Collagen is the main Forever direction here because it most directly covers collagen, vitamin C and biotin as the base for a nails, skin and hair routine.',
-                    'Infinite By Forever Advanced Skincare or Infinite by Forever Firming Serum make sense only as the extra support option if you also want a stronger skincare focus on top of the nail routine.',
+                    'Forever Nature Min is the main Forever direction here because it brings essential minerals and trace minerals that make the most sense as the base when nails are weak, brittle or splitting.',
+                    'Forever Marine Collagen makes sense as the support option on top when you also want extra nutritional support for nails, hair and skin.',
                 ],
             ],
             'monthly_quantity_note' => [
-                'hr' => 'Ako želite okvir za mjesec dana, ovdje se najčešće gleda 1 x Forever Marine Collagen, a skincare dio ostaje dodatna nadogradnja po želji.',
-                'en' => 'If you want a one-month frame, this is most often positioned as 1 x Forever Marine Collagen, while the skincare side stays the optional upgrade.',
+                'hr' => 'Ako želite okvir za mjesec dana, ovdje se najčešće gleda 1 x Forever Nature Min i 1 x Forever Marine Collagen.',
+                'en' => 'If you want a one-month frame, this is most often positioned as 1 x Forever Nature Min and 1 x Forever Marine Collagen.',
             ],
             'suppress_generic_questions' => true,
             'lock_product_scope' => true,
@@ -8838,10 +8868,10 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
             'lock_product_scope' => true,
         ],
         'hair_loss_inside_out_support' => [
-            'patterns' => ['opada mi kosa', 'ispada mi kosa', 'kosa mi opada', 'hair is falling out', 'hair loss', 'opadanje kose'],
-            'preferred_patterns' => ['marine collagen', 'aloe vera gel', 'jojoba shampoo', 'jojoba conditioner'],
+            'patterns' => ['jako mi opada kosa', 'opada mi kosa', 'ispada mi kosa', 'kosa mi opada', 'hair is falling out', 'hair loss', 'opadanje kose'],
+            'preferred_patterns' => ['marine collagen', 'aloe vera gel', 'jojoba shampoo', 'aloe first', 'first spray'],
             'primary_product' => 'Forever Marine Collagen',
-            'support_products' => ['Forever Aloe Vera Gel™', 'Forever Aloe-Jojoba Shampoo', 'Aloe Jojoba Conditioning Rinse'],
+            'support_products' => ['Forever Aloe Vera Gel™', 'Forever Aloe-Jojoba Shampoo', 'Forever Aloe First Spray'],
             'label' => [
                 'hr' => 'opadanje kose, inside-out rutina',
                 'en' => 'hair loss, inside-out routine',
@@ -8854,17 +8884,17 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
                 'hr' => [
                     'Forever Marine Collagen je ovdje glavni Forever smjer kao inside-first baza za kvalitetu kose, kože i noktiju.',
                     'Forever Aloe Vera Gel™ ima smisla kao support opcija uz to kada želite zaokružiti jednostavniju nutritivnu rutinu iznutra.',
-                    'Forever Aloe-Jojoba Shampoo i Aloe Jojoba Conditioning Rinse imaju smisla kao vanjska rutina kada uz nutritivni smjer želite i nježniju njegu vlasišta i kose izvana.',
+                    'Forever Aloe-Jojoba Shampoo i Forever Aloe First Spray imaju smisla kao vanjska rutina kada uz nutritivni smjer želite i nježniju njegu vlasišta i kose izvana.',
                 ],
                 'en' => [
                     'Forever Marine Collagen is the main Forever direction here as the inside-first base for the quality of hair, skin and nails.',
                     'Forever Aloe Vera Gel™ makes sense as the support option on top when you also want a simpler nutritional routine from the inside.',
-                    'Forever Aloe-Jojoba Shampoo and Aloe Jojoba Conditioning Rinse make sense as the topical routine when you also want gentler scalp and hair care from the outside.',
+                    'Forever Aloe-Jojoba Shampoo and Forever Aloe First Spray make sense as the topical routine when you also want gentler scalp and hair care from the outside.',
                 ],
             ],
             'monthly_quantity_note' => [
-                'hr' => 'Ako želite okvir za mjesec dana, ovdje se najčešće gleda 1 x Forever Marine Collagen, 3 x Forever Aloe Vera Gel™, 1 x Forever Aloe-Jojoba Shampoo i 1 x Aloe Jojoba Conditioning Rinse.',
-                'en' => 'If you want a one-month frame, this is most often positioned as 1 x Forever Marine Collagen, 3 x Forever Aloe Vera Gel™, 1 x Forever Aloe-Jojoba Shampoo and 1 x Aloe Jojoba Conditioning Rinse.',
+                'hr' => 'Ako želite okvir za mjesec dana, ovdje se najčešće gleda 1 x Forever Marine Collagen, 3 x Forever Aloe Vera Gel™, 1 x Forever Aloe-Jojoba Shampoo i 1 x Forever Aloe First Spray.',
+                'en' => 'If you want a one-month frame, this is most often positioned as 1 x Forever Marine Collagen, 3 x Forever Aloe Vera Gel™, 1 x Forever Aloe-Jojoba Shampoo and 1 x Forever Aloe First Spray.',
             ],
             'suppress_generic_questions' => true,
             'lock_product_scope' => true,
@@ -8937,9 +8967,9 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
         ],
         'bone_strength_support' => [
             'patterns' => ['jačanje kostiju', 'jacanje kostiju', 'slabe kosti', 'za kosti', 'kosti', 'gustoća kostiju', 'gustoca kostiju', 'osteopor', 'koštana gustoća', 'kostiju'],
-            'preferred_patterns' => ['calcium', 'nature min', 'active ha', 'esm', 'move'],
+            'preferred_patterns' => ['calcium', 'nature min', 'freedom'],
             'primary_product' => 'Forever Calcium',
-            'support_products' => ['Forever Nature Min', 'Forever Active HA', 'ESM Complex / Forever Move'],
+            'support_products' => ['Forever Nature Min', 'Forever Freedom®'],
             'label' => [
                 'hr' => 'kosti, minerali i svakodnevna rutina potpore',
                 'en' => 'bones, minerals and an everyday support routine',
@@ -8952,17 +8982,17 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
                 'hr' => [
                     'Forever Calcium je ovdje glavni Forever smjer jer spaja kalcij, vitamin D, magnezij i prateće minerale za svakodnevnu rutinu kostiju i zuba.',
                     'Forever Nature Min je važna support opcija uz to jer donosi esencijalne minerale i minerale u tragovima iz prirodnih morskih naslaga kada želite širu mineralnu ravnotežu.',
-                    'Forever Active HA i ESM Complex / Forever Move mogu biti dodatni support smjerovi kada uz kosti želite i jaču svakodnevnu rutinu za zglobove, hrskavicu i pokretljivost.',
+                    'Forever Freedom® može biti logična support opcija kada uz kost i gustoću želite podržati i svakodnevnu pokretljivost, ukočenost i opterećenje zglobova.',
                 ],
                 'en' => [
                     'Forever Calcium is the main Forever direction here because it combines calcium, vitamin D, magnesium and supporting minerals for an everyday bones-and-teeth routine.',
                     'Forever Nature Min is the important support option on top because it brings essential minerals and trace minerals from natural marine deposits when you want broader mineral balance.',
-                    'Forever Active HA and ESM Complex / Forever Move can be the extra support directions when you also want a stronger everyday routine for joints, cartilage and mobility.',
+                    'Forever Freedom® can be the logical support option when, alongside bone density, you also want to support everyday mobility, stiffness and joint load.',
                 ],
             ],
             'monthly_quantity_note' => [
-                'hr' => 'Ako želite okvir za mjesec dana, ovdje se najčešće gleda 1 x Forever Calcium, 1 x Forever Nature Min, 1 x Forever Active HA i po potrebi 1 x ESM Complex / Forever Move.',
-                'en' => 'If you want a one-month frame, this is most often positioned as 1 x Forever Calcium, 1 x Forever Nature Min, 1 x Forever Active HA and, if useful, 1 x ESM Complex / Forever Move.',
+                'hr' => 'Ako želite okvir za mjesec dana, ovdje se najčešće gleda 1 x Forever Calcium, 1 x Forever Nature Min i 3 x Forever Freedom®.',
+                'en' => 'If you want a one-month frame, this is most often positioned as 1 x Forever Calcium, 1 x Forever Nature Min and 3 x Forever Freedom®.',
             ],
             'suppress_generic_questions' => true,
             'lock_product_scope' => true,
@@ -9060,10 +9090,10 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
             'lock_product_scope' => true,
         ],
         'joint_mobility_support' => [
-            'patterns' => ['koljeno', 'koljena', 'skolen', 's kolenima', 'bol u kolenima', 'bol u koljenima', 'artroz', 'artrit', 'kuk', 'rotacije kuka', 'rotacija kuka'],
-            'preferred_patterns' => ['freedom', 'move', 'msm gel', 'aloe msm gel'],
+            'patterns' => ['zglob', 'zglobovi', 'bole me zglobovi', 'koljeno', 'koljena', 'skolen', 's kolenima', 'bol u kolenima', 'bol u koljenima', 'artroz', 'artrit', 'kuk', 'rotacije kuka', 'rotacija kuka'],
+            'preferred_patterns' => ['freedom', 'active ha', 'ha', 'msm gel', 'aloe msm gel'],
             'primary_product' => 'Forever Freedom®',
-            'support_products' => ['Forever Aloe MSM Gel'],
+            'support_products' => ['Forever Active HA', 'Forever Aloe MSM Gel'],
             'label' => [
                 'hr' => 'zglobovi i pokretljivost',
                 'en' => 'joints and mobility',
@@ -9075,14 +9105,21 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
             'recommendation_lines' => [
                 'hr' => [
                     'Forever Freedom je ovdje glavni Forever smjer jer sadrži sastojke koji se najčešće vežu uz svakodnevnu podršku kretanju i pokretljivosti.',
-                    'Forever Aloe MSM Gel može biti dobra support opcija izvana kada postoji i lokalni osjećaj napetosti ili opterećenja.',
+                    'Forever Active HA je važna support opcija uz to kada želite dodatni smjer za hijaluronsku kiselinu, zglobove i svakodnevnu pokretljivost.',
+                    'Forever Aloe MSM Gel može biti dobra dodatna lokalna support opcija izvana kada postoji i osjećaj napetosti ili opterećenja.',
                 ],
                 'en' => [
                     'Forever Freedom is the clearest main Forever direction here because it contains ingredients most often associated with everyday movement and mobility support.',
-                    'Forever Aloe MSM Gel can be a useful external support option when there is also a local feeling of strain or overload.',
+                    'Forever Active HA is the important support option on top when you want an extra hyaluronic-acid direction for joints and everyday mobility.',
+                    'Forever Aloe MSM Gel can be a useful extra local support option when there is also a feeling of strain or overload.',
                 ],
             ],
             'suppress_generic_questions' => true,
+            'monthly_quantity_note' => [
+                'hr' => 'Ako želite okvir za mjesec dana, ovdje se najčešće gleda 3 x Forever Freedom®, 1 x Forever Active HA i po potrebi 1 x Forever Aloe MSM Gel.',
+                'en' => 'If you want a one-month frame, this is most often positioned as 3 x Forever Freedom®, 1 x Forever Active HA and, if useful, 1 x Forever Aloe MSM Gel.',
+            ],
+            'lock_product_scope' => true,
         ],
         'back_spine_support' => [
             'patterns' => ['bol u leđima', 'bol u ledjima', 'bolive u leđima', 'bolive u ledjima', 'leđa', 'ledja', 'leđima', 'ledjima', 'vratna hrbtenica', 'vratno hrbtenico', 'vratne hrbtenice', 'vratni del hrbtenice', 'vratna kralježnica', 'vratna kraljeznica', 'kralježnica', 'kraljeznica', 'kralježnic', 'kraljeznic', 'hrbtenica', 'hrbtenice', 'hrbtenico', 'hrbtenic', 'lumbago', 'lumbo', 'išijas', 'išijasa', 'isijas', 'isijasa', 'sciatica'],
@@ -9115,6 +9152,36 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
             ],
             'suppress_generic_questions' => true,
             'sensitive_support_only' => true,
+            'lock_product_scope' => true,
+        ],
+        'muscle_recovery_support' => [
+            'patterns' => ['bole me mišići', 'bole me misici', 'mišići me bole', 'misici me bole', 'upala mišića', 'upala misica', 'nakon treninga', 'muscle pain', 'sore muscles'],
+            'preferred_patterns' => ['cooling lotion', 'aloe cooling lotion', 'freedom'],
+            'primary_product' => 'Forever Aloe Cooling Lotion',
+            'support_products' => ['Forever Freedom®'],
+            'label' => [
+                'hr' => 'mišići, opterećenje i lokalni oporavak',
+                'en' => 'muscles, overload and local recovery',
+            ],
+            'opening_note' => [
+                'hr' => 'Kad je fokus na bolnim mišićima, pogotovo nakon treninga ili napora, preporuka treba ostati praktična: lokalni smjer izvana plus jednostavna podrška pokretljivosti.',
+                'en' => 'When the focus is sore muscles, especially after training or effort, the recommendation should stay practical: a local outer direction plus simple mobility support.',
+            ],
+            'recommendation_lines' => [
+                'hr' => [
+                    'Forever Aloe Cooling Lotion je ovdje glavni Forever smjer kao praktičan prvi lokalni korak kada želite smiriti osjećaj opterećenja i napetosti u mišićima.',
+                    'Forever Freedom® ima smisla kao support opcija uz to kada uz lokalni korak želite i širu svakodnevnu rutinu za pokretljivost i opterećenje mišićno-zglobnog sustava.',
+                ],
+                'en' => [
+                    'Forever Aloe Cooling Lotion is the main Forever direction here as the practical first local step when you want to calm the feeling of overload and tension in the muscles.',
+                    'Forever Freedom® makes sense as the support option on top when, alongside the local step, you also want a broader everyday routine for mobility and muscle-joint load.',
+                ],
+            ],
+            'monthly_quantity_note' => [
+                'hr' => 'Ako želite okvir za mjesec dana, ovdje se najčešće gleda 1 x Forever Aloe Cooling Lotion i 3 x Forever Freedom®.',
+                'en' => 'If you want a one-month frame, this is most often positioned as 1 x Forever Aloe Cooling Lotion and 3 x Forever Freedom®.',
+            ],
+            'suppress_generic_questions' => true,
             'lock_product_scope' => true,
         ],
         'mobility_alternative_support' => [
@@ -9764,10 +9831,10 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
             'lock_product_scope' => true,
         ],
         'skin_aging_inside_out_support' => [
-            'patterns' => ['bore i lošu kožu', 'bore i losu kozu', 'bore i suhu kožu', 'bore i suhu kozu', 'loša koža i bore', 'losa koza i bore'],
-            'preferred_patterns' => ['marine collagen', 'aloe vera gel', 'bio-cellulose mask', 'firming serum'],
+            'patterns' => ['pojavile su mi se bore', 'imam bore', 'bore', 'bore i lošu kožu', 'bore i losu kozu', 'bore i suhu kožu', 'bore i suhu kozu', 'loša koža i bore', 'losa koza i bore'],
+            'preferred_patterns' => ['marine collagen', 'aloe vera gel', 'bio-cellulose mask'],
             'primary_product' => 'Forever Marine Collagen',
-            'support_products' => ['Forever Aloe Vera Gel™', 'Aloe Bio-Cellulose Mask', 'Infinite Firming Serum'],
+            'support_products' => ['Forever Aloe Vera Gel™', 'Aloe Bio-Cellulose Mask'],
             'label' => [
                 'hr' => 'bore i lošija kvaliteta kože',
                 'en' => 'wrinkles and lower skin quality',
@@ -9780,17 +9847,17 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
                 'hr' => [
                     'Forever Marine Collagen je ovdje glavni Forever smjer kao nutritivna baza za čvrstoću, elastičnost i opću kvalitetu kože.',
                     'Forever Aloe Vera Gel™ može biti dobra support opcija uz to kada želite i aloe bazu iznutra kao dio iste daily routine.',
-                    'Infinite Firming Serum i Aloe Bio-Cellulose Mask imaju smisla kao vanjska anti-age nadogradnja kada želite precizniju rutinu za bore i svježiji izgled kože.',
+                    'Aloe Bio-Cellulose Mask ima smisla kao elegantna vanjska anti-age nadogradnja kada želite intenzivniji tjedni boost svježine, hidratacije i izgleda kože.',
                 ],
                 'en' => [
                     'Forever Marine Collagen is the main Forever direction here as the nutritional base for firmness, elasticity and overall skin quality.',
                     'Forever Aloe Vera Gel™ can be a useful support option on top when you also want an inside aloe base as part of the same daily routine.',
-                    'Infinite Firming Serum and Aloe Bio-Cellulose Mask make sense as the outer anti-age upgrade when you want a more precise routine for wrinkles and a fresher skin look.',
+                    'Aloe Bio-Cellulose Mask makes sense as the elegant outer anti-age upgrade when you want a stronger weekly boost for freshness, hydration and skin appearance.',
                 ],
             ],
             'monthly_quantity_note' => [
-                'hr' => 'Ako želite okvir za mjesec dana, ovdje se najčešće gleda 1 x Forever Marine Collagen, 3 x Forever Aloe Vera Gel™, 1 x Infinite Firming Serum i 1 x Aloe Bio-Cellulose Mask.',
-                'en' => 'If you want a one-month frame, this is most often positioned as 1 x Forever Marine Collagen, 3 x Forever Aloe Vera Gel™, 1 x Infinite Firming Serum and 1 x Aloe Bio-Cellulose Mask.',
+                'hr' => 'Ako želite okvir za mjesec dana, ovdje se najčešće gleda 1 x Forever Marine Collagen, 3 x Forever Aloe Vera Gel™ i 1 x Aloe Bio-Cellulose Mask.',
+                'en' => 'If you want a one-month frame, this is most often positioned as 1 x Forever Marine Collagen, 3 x Forever Aloe Vera Gel™ and 1 x Aloe Bio-Cellulose Mask.',
             ],
             'suppress_generic_questions' => true,
             'lock_product_scope' => true,
@@ -9823,6 +9890,38 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
             'monthly_quantity_note' => [
                 'hr' => 'Ako želite okvir za mjesec dana, ovdje se najčešće gleda 1 x Aloe Body Lotion i 1 x Aloe Body Wash, a Aloe Lotion ostaje dodatna opcija po želji.',
                 'en' => 'If you want a one-month frame, this is most often positioned as 1 x Aloe Body Lotion and 1 x Aloe Body Wash, while Aloe Lotion stays the optional extra.',
+            ],
+            'suppress_generic_questions' => true,
+            'lock_product_scope' => true,
+        ],
+        'dry_skin_inside_out_support' => [
+            'patterns' => ['imam jako suhu kožu', 'imam jako suhu kozu', 'jako suha koža', 'jako suha koza', 'suha koža', 'suha koza', 'dehidrirana koža', 'dehidrirana koza', 'koža mi puca', 'koza mi puca'],
+            'preferred_patterns' => ['aloe vera gel', 'moisturizing lotion', 'propolis creme'],
+            'primary_product' => 'Forever Aloe Vera Gel™',
+            'support_products' => ['Aloe Moisturizing Lotion', 'Aloe Propolis Creme'],
+            'label' => [
+                'hr' => 'suha i dehidrirana koža, inside-out rutina',
+                'en' => 'dry and dehydrated skin, inside-out routine',
+            ],
+            'opening_note' => [
+                'hr' => 'Kad je fokus jako suha ili ispucala koža, najlogičnije je spojiti aloe bazu iznutra s jednostavnom umirujućom rutinom izvana.',
+                'en' => 'When the focus is very dry or cracking skin, the most logical route is to combine an inside aloe base with a simple soothing outer routine.',
+            ],
+            'recommendation_lines' => [
+                'hr' => [
+                    'Forever Aloe Vera Gel™ je ovdje glavni Forever smjer kao aloe baza iznutra kada želite krenuti inside-out i prvo podržati kožu iz svakodnevne nutritivne rutine.',
+                    'Aloe Moisturizing Lotion ima smisla kao glavna vanjska support opcija kada želite bogatiju svakodnevnu hidrataciju i osjećaj smirenja kože.',
+                    'Aloe Propolis Creme može biti dodatni lokalni korak kada je koža već ispucala, osjetljiva ili traži jači zaštitni sloj izvana.',
+                ],
+                'en' => [
+                    'Forever Aloe Vera Gel™ is the main Forever direction here as the inside aloe base when you want an inside-out start and first support the skin through an everyday nutritional routine.',
+                    'Aloe Moisturizing Lotion makes sense as the main outer support option when you want richer everyday hydration and a calmer skin feel.',
+                    'Aloe Propolis Creme can be the additional local step when the skin is already cracking, sensitive or needs a stronger protective layer from the outside.',
+                ],
+            ],
+            'monthly_quantity_note' => [
+                'hr' => 'Ako želite okvir za mjesec dana, ovdje se najčešće gleda 3 x Forever Aloe Vera Gel™, 1 x Aloe Moisturizing Lotion i po potrebi 1 x Aloe Propolis Creme.',
+                'en' => 'If you want a one-month frame, this is most often positioned as 3 x Forever Aloe Vera Gel™, 1 x Aloe Moisturizing Lotion and, if useful, 1 x Aloe Propolis Creme.',
             ],
             'suppress_generic_questions' => true,
             'lock_product_scope' => true,
@@ -10002,6 +10101,15 @@ function fcc_ai_get_product_advisor_effective_condition_matches(string $message,
         );
     }
 
+    if(fcc_ai_contains_keywords($message, ['akne', 'prišt', 'prist', 'problematičnu kožu', 'problematicnu kozu', 'problematična koža', 'problematicna koza'])) {
+        $matches[] = fcc_ai_get_product_advisor_condition_match_by_key(
+            'acne_gut_inside_first_support',
+            $language,
+            ['akne', 'inside-first'],
+            286
+        );
+    }
+
     if(
         fcc_ai_contains_keywords($message, ['osip', 'alergij', 'svrbi me koža', 'svrbi me koza', 'svrbež kože', 'svrbez koze'])
         && fcc_ai_contains_keywords($message, ['alergij', 'osip', 'svrbi'])
@@ -10064,12 +10172,60 @@ function fcc_ai_get_product_advisor_effective_condition_matches(string $message,
         );
     }
 
-    if(fcc_ai_contains_keywords($message, ['opada mi kosa', 'ispada mi kosa', 'kosa mi opada'])) {
+    if(fcc_ai_contains_keywords($message, ['bore', 'pojavile su mi se bore', 'imam bore'])) {
+        $matches[] = fcc_ai_get_product_advisor_condition_match_by_key(
+            'skin_aging_inside_out_support',
+            $language,
+            ['bore'],
+            289
+        );
+    }
+
+    if(fcc_ai_contains_keywords($message, ['suha koža', 'suha koza', 'jako suhu kožu', 'jako suhu kozu', 'koža mi puca', 'koza mi puca'])) {
+        $matches[] = fcc_ai_get_product_advisor_condition_match_by_key(
+            'dry_skin_inside_out_support',
+            $language,
+            ['suha koža'],
+            288
+        );
+    }
+
+    if(fcc_ai_contains_keywords($message, ['jako mi opada kosa', 'opada mi kosa', 'ispada mi kosa', 'kosa mi opada'])) {
         $matches[] = fcc_ai_get_product_advisor_condition_match_by_key(
             'hair_loss_inside_out_support',
             $language,
             ['opadanje kose'],
-            284
+            289
+        );
+    }
+
+    if(
+        fcc_ai_contains_keywords($message, ['nokt'])
+        && fcc_ai_contains_keywords($message, ['slabi', 'krhki', 'pucaju', 'lomljivi'])
+    ) {
+        $matches[] = fcc_ai_get_product_advisor_condition_match_by_key(
+            'brittle_nails_support',
+            $language,
+            ['nokti', 'slabi'],
+            287
+        );
+    }
+
+    if(fcc_ai_contains_keywords($message, ['bole me mišići', 'bole me misici', 'mišići me bole', 'misici me bole', 'nakon treninga'])) {
+        $matches[] = fcc_ai_get_product_advisor_condition_match_by_key(
+            'muscle_recovery_support',
+            $language,
+            ['mišići', 'trening'],
+            291
+        );
+    }
+
+    if(fcc_ai_contains_keywords($message, ['celulit', 'cellulite'])) {
+        $matches[] = fcc_ai_get_product_advisor_condition_match_by_key(
+            'cellulite_program_support',
+            $language,
+            ['celulit'],
+            287
         );
     }
 
