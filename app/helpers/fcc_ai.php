@@ -7918,8 +7918,70 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
             'suppress_generic_questions' => true,
             'lock_product_scope' => true,
         ],
+        'general_energy_support' => [
+            'patterns' => ['stalni umor', 'kronični umor', 'kronicni umor', 'pad energije', 'pad energije kroz dan', 'manjak energije', 'nedostatak energije', 'bez energije', 'slaba energija', 'umor kroz dan', 'fatigue all day', 'low energy through the day'],
+            'preferred_patterns' => ['aloe vera gel', 'aloe gel', 'royal jelly', 'arctic sea'],
+            'primary_product' => 'Forever Aloe Vera Gel™',
+            'support_products' => ['Forever Royal Jelly', 'Forever Arctic Sea'],
+            'label' => [
+                'hr' => 'stalni umor i pad energije kroz dan',
+                'en' => 'constant fatigue and low daytime energy',
+            ],
+            'opening_note' => [
+                'hr' => 'Kad su glavni problem stalni umor i pad energije kroz dan, preporuka treba ostati na jednostavnom nutritivnom smjeru, ali ima smisla kroz razgovor provjeriti i san, prehranu te dnevni ritam.',
+                'en' => 'When the main problem is constant fatigue and lower daytime energy, the recommendation should stay on a simple nutritional direction, but it also makes sense to clarify sleep, food intake and daily rhythm.',
+            ],
+            'recommendation_lines' => [
+                'hr' => [
+                    'Forever Aloe Vera Gel™ je ovdje glavni Forever smjer kao osnovni aloe napitak za svakodnevnu nutritivnu rutinu.',
+                    'Forever Royal Jelly ima smisla kao support opcija kada želite dodatni smjer prema energiji, vitalnosti i živčanom sustavu.',
+                    'Forever Arctic Sea može biti dobra dopunska podrška kada želite i omega-3 smjer uz isti dnevni ritam.',
+                ],
+                'en' => [
+                    'Forever Aloe Vera Gel™ is the main Forever direction here as the base aloe drink for the daily nutrition routine.',
+                    'Forever Royal Jelly makes sense as a support option when you want an extra direction toward energy, vitality and nervous-system support.',
+                    'Forever Arctic Sea can be a good additional layer when you also want an omega-3 direction inside the same daily rhythm.',
+                ],
+            ],
+            'monthly_quantity_note' => [
+                'hr' => 'Ako želite okvir za mjesec dana, ovdje se najčešće gleda 3 x Forever Aloe Vera Gel™, 1 x Forever Royal Jelly i 1 kutija Forever Arctic Sea.',
+                'en' => 'If you want a one-month frame, this is most often positioned as 3 x Forever Aloe Vera Gel™, 1 x Forever Royal Jelly and 1 box of Forever Arctic Sea.',
+            ],
+            'lock_product_scope' => true,
+        ],
+        'digestion_energy_support' => [
+            'patterns' => ['nadut i bez energije', 'nadutost i manjak energije', 'loša probava i manjak energije', 'losa probava i manjak energije', 'nadut i loša probava', 'nadut i losa probava', 'bloating and low energy', 'poor digestion and low energy'],
+            'preferred_patterns' => ['aloe vera gel', 'aloe gel', 'pro b', 'pro-b', 'royal jelly'],
+            'primary_product' => 'Forever Aloe Vera Gel™',
+            'support_products' => ['Forever Active Pro B', 'Forever Royal Jelly'],
+            'label' => [
+                'hr' => 'probava plus pad energije kroz dan',
+                'en' => 'digestion plus lower energy through the day',
+            ],
+            'opening_note' => [
+                'hr' => 'Kad se zajedno javljaju nadutost, loša probava i manjak energije, preporuka treba prvo smiriti probavni ritam, a tek onda dodati jednostavan support za energiju.',
+                'en' => 'When bloating, poor digestion and low energy show up together, the recommendation should first calm the digestive rhythm and only then add a simple support direction for energy.',
+            ],
+            'recommendation_lines' => [
+                'hr' => [
+                    'Forever Aloe Vera Gel™ je ovdje glavni Forever smjer kao aloe baza iznutra za svakodnevnu probavnu rutinu.',
+                    'Forever Active Pro B ima smisla kao support opcija uz to kada želite smireniji probavni ritam i uredniju crijevnu rutinu.',
+                    'Forever Royal Jelly može biti treći, lakši support smjer ako uz probavu želite i dodatnu podršku energiji i vitalnosti.',
+                ],
+                'en' => [
+                    'Forever Aloe Vera Gel™ is the main Forever direction here as the inside aloe base for the daily digestive routine.',
+                    'Forever Active Pro B makes sense as the support option on top when you want a calmer digestive rhythm and a steadier gut routine.',
+                    'Forever Royal Jelly can be the lighter third support direction if you also want extra help for energy and vitality on top of digestion.',
+                ],
+            ],
+            'monthly_quantity_note' => [
+                'hr' => 'Ako želite okvir za mjesec dana, ovdje se najčešće gleda 3 x Forever Aloe Vera Gel™, 1 x Forever Active Pro B i po želji 1 x Forever Royal Jelly.',
+                'en' => 'If you want a one-month frame, this is most often positioned as 3 x Forever Aloe Vera Gel™, 1 x Forever Active Pro B and, if wanted, 1 x Forever Royal Jelly.',
+            ],
+            'lock_product_scope' => true,
+        ],
         'children_daily_vitamins_support' => [
-            'patterns' => ['forever kids', 'kids vitam', 'vitamini za djecu', 'vitamini za dijete', 'dječji vitam', 'djecji vitam', 'child vitamins', 'kids vitamins', 'otrok vitam', 'otroku vitam'],
+            'patterns' => ['forever kids', 'kids vitam', 'vitamini za djecu', 'vitamini za dijete', 'dječji vitam', 'djecji vitam', 'child vitamins', 'kids vitamins', 'otrok vitam', 'otroku vitam', 'koje proizvode smije koristiti dijete', 'što smije koristiti dijete', 'sta smije koristiti dijete', 'dijete od 5 godina', 'dijete od 6 godina', 'dijete od 7 godina', 'dječja rutina', 'djecja rutina'],
             'preferred_patterns' => ['forever kids', 'kids', 'aloe mango', 'aloe peaches'],
             'primary_product' => 'Forever Kids',
             'support_products' => ['Forever Aloe Mango™', 'Forever Aloe Peaches'],
@@ -7950,6 +8012,37 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
             'suppress_generic_questions' => true,
             'sensitive_support_only' => true,
             'allow_special_population_support' => true,
+            'lock_product_scope' => true,
+        ],
+        'fitness_performance_support' => [
+            'patterns' => ['treniram svaki dan', 'treniram svaki dan', 'oporavak nakon treninga', 'oporavak i više snage', 'oporavak i vise snage', 'više snage', 'vise snage', 'sportski oporavak', 'recovery after training', 'train every day', 'daily training', 'workout recovery', 'more strength'],
+            'preferred_patterns' => ['argi+', 'aloe vera gel', 'aloe gel', 'royal jelly'],
+            'primary_product' => 'Forever ARGI+',
+            'support_products' => ['Forever Aloe Vera Gel™', 'Forever Royal Jelly'],
+            'label' => [
+                'hr' => 'trening, oporavak i više snage',
+                'en' => 'training, recovery and more strength',
+            ],
+            'opening_note' => [
+                'hr' => 'Kad je fokus trening svaki dan, oporavak i više snage, preporuka treba ostati na sportskom ritmu: što ide za performanse, što ide kao nutritivna baza i treba li uz to još nešto za svakodnevni oporavak.',
+                'en' => 'When the focus is daily training, recovery and more strength, the recommendation should stay on a training-oriented rhythm: what fits performance, what stays as the nutrition base, and whether an extra recovery layer is useful.',
+            ],
+            'recommendation_lines' => [
+                'hr' => [
+                    'Forever ARGI+ je ovdje glavni Forever smjer kada želite dodatni fokus na performanse, dnevnu vitalnost i osjećaj više snage tijekom aktivne rutine.',
+                    'Forever Aloe Vera Gel™ ima smisla kao nutritivna baza iznutra kada uz to želite jednostavniji dnevni ritam hidracije i oporavka.',
+                    'Forever Royal Jelly može biti dobra support opcija kada želite dodatni smjer prema vitalnosti i općem oporavku organizma.',
+                ],
+                'en' => [
+                    'Forever ARGI+ is the main Forever direction here when you want an extra focus on performance, everyday vitality and a stronger-feeling training rhythm.',
+                    'Forever Aloe Vera Gel™ makes sense as the inside nutrition base when you also want a simpler daily hydration and recovery rhythm.',
+                    'Forever Royal Jelly can be a useful support option when you want an extra direction toward vitality and broader recovery.',
+                ],
+            ],
+            'monthly_quantity_note' => [
+                'hr' => 'Ako želite okvir za mjesec dana, ovdje se najčešće gleda 1 x Forever ARGI+, 3 x Forever Aloe Vera Gel™ i 1 x Forever Royal Jelly.',
+                'en' => 'If you want a one-month frame, this is most often positioned as 1 x Forever ARGI+, 3 x Forever Aloe Vera Gel™ and 1 x Forever Royal Jelly.',
+            ],
             'lock_product_scope' => true,
         ],
         'seasonal_allergy_support' => [
@@ -9474,6 +9567,18 @@ function fcc_ai_get_product_advisor_effective_condition_matches(string $message,
         );
     }
 
+    if(
+        fcc_ai_contains_keywords($message, ['nadut', 'nadutost', 'bloating', 'probav', 'lošu probavu', 'losu probavu', 'loša probava', 'losa probava'])
+        && fcc_ai_contains_keywords($message, ['manjak energije', 'pad energije', 'bez energije', 'low energy', 'umor'])
+    ) {
+        $matches[] = fcc_ai_get_product_advisor_condition_match_by_key(
+            'digestion_energy_support',
+            $language,
+            ['nadutost', 'probava', 'energija'],
+            265
+        );
+    }
+
     $merged_matches = [];
 
     foreach($matches as $match) {
@@ -10467,6 +10572,57 @@ function fcc_ai_build_public_recommendation_payload(string $assistant_type, stri
                         : 'Je li glavni cilj hidratacija, anti-age, podrška osjetljivoj koži, obnova kose ili nešto drugo?'),
             ];
         }
+    }
+
+    if(
+        $assistant_type === 'product_advisor'
+        && !empty($condition_matches)
+        && in_array('general_energy_support', array_values(array_filter(array_map(static function(array $condition_match) {
+            return trim((string) ($condition_match['key'] ?? ''));
+        }, $condition_matches))), true)
+    ) {
+        $question_lines = [
+            $language === 'en'
+                ? 'Is the bigger problem sleep and recovery, or weak meals and hydration through the day?'
+                : 'Je li veći problem san i oporavak ili slabija prehrana i hidracija kroz dan?',
+            $language === 'en'
+                ? 'Do you want a steadier daily energy rhythm, or are you also looking for better recovery after activity?'
+                : 'Želite li stabilniju energiju kroz dan ili uz to tražite i bolji oporavak nakon aktivnosti?'
+        ];
+    }
+
+    if(
+        $assistant_type === 'product_advisor'
+        && !empty($condition_matches)
+        && in_array('fitness_performance_support', array_values(array_filter(array_map(static function(array $condition_match) {
+            return trim((string) ($condition_match['key'] ?? ''));
+        }, $condition_matches))), true)
+    ) {
+        $question_lines = [
+            $language === 'en'
+                ? 'Is your bigger goal recovery after training, more strength during training, or both?'
+                : 'Je li vam veći cilj oporavak nakon treninga, više snage tijekom treninga ili oboje?',
+            $language === 'en'
+                ? 'Do you want the simplest first order, or should I also write the monthly rhythm and usage next?'
+                : 'Želite li najjednostavniji prvi odabir ili da vam odmah napišem i mjesečni ritam te način primjene?'
+        ];
+    }
+
+    if(
+        $assistant_type === 'product_advisor'
+        && !empty($condition_matches)
+        && in_array('digestion_energy_support', array_values(array_filter(array_map(static function(array $condition_match) {
+            return trim((string) ($condition_match['key'] ?? ''));
+        }, $condition_matches))), true)
+    ) {
+        $question_lines = [
+            $language === 'en'
+                ? 'Is the bigger problem bloating after meals, irregular digestion, or both equally?'
+                : 'Je li veći problem nadutost nakon obroka, neredovita probava ili vam je oboje jednako izraženo?',
+            $language === 'en'
+                ? 'Do you want the cleanest first step for digestion, or should I also include the monthly rhythm and the lighter energy add-on?'
+                : 'Želite li najčišći prvi korak za probavu ili da odmah uključim i mjesečni ritam te lakši dodatak za energiju?'
+        ];
     }
 
     if($skip_product_tail) {
@@ -12360,9 +12516,10 @@ function fcc_ai_detect_public_intent(string $assistant_type, string $message): a
 
     $business = fcc_ai_contains_keywords($message, [
         'surad', 'posao', 'biznis', 'business', 'collab', 'collaboration', 'partner',
-        'prilika', 'opportunity', 'zarad', 'income', 'raditi',
+        'prilika', 'opportunity', 'zarad', 'zarađ', 'zaradj', 'income', 'raditi',
         'affiliate', 'network', 'sponzor', 'partnerstvo', 'rad od kuće', 'rad od kuce',
         'dodatna zarada', 'dodatni prihod', 'business opportunity', 'poslovna prilika',
+        'mlm', 'piramid', 'piramida', 'prevara', 'prevar', 'scam',
     ]) || fcc_ai_contains_word_keywords($message, [
         'team', 'tim', 'join',
     ]);
@@ -12373,6 +12530,10 @@ function fcc_ai_detect_public_intent(string $assistant_type, string $message): a
         'kako postati partner', 'želim suradnju', 'zelim suradnju', 'želim graditi posao',
         'zelim graditi posao', 'zanima me business', 'business opportunity', 'join the team',
         'rad od kuće', 'rad od kuce', 'dodatna zarada', 'dodatni prihod',
+        'kako mogu početi zarađivati', 'kako mogu poceti zaradjivati', 'kako početi zarađivati',
+        'kako poceti zaradjivati', 'kako mogu zarađivati', 'kako mogu zaradjivati',
+        'zarađivati preko aplikacije', 'zaradjivati preko aplikacije', 'zarada preko aplikacije',
+        'je li ovo mlm', 'je li ovo piramida', 'mlm prevara', 'piramida ili mlm',
     ]);
     $contact = fcc_ai_contains_keywords($message, [
         'kontakt', 'kontaktir', 'nazovi', 'call me', 'reach me', 'whatsapp',
@@ -12966,6 +13127,13 @@ function fcc_ai_generate_public_reply(string $assistant_type, string $message, a
     $business_primary = $assistant_type === 'product_advisor' && !empty($intent['business_primary']);
     $business_mixed_with_product = $business_primary && !empty($intent['explicit_product_request']);
     $owner_help_followup_request = $assistant_type === 'product_advisor' && fcc_ai_is_public_owner_help_followup_request($message);
+    $is_direct_cure_claim_question = $assistant_type === 'product_advisor'
+        && fcc_ai_contains_keywords($message, ['izliječ', 'izlijec', 'liječi', 'lijeci', 'cure', 'heals'])
+        && !empty($intent['medical_sensitive']);
+    $is_business_skepticism_request = $assistant_type === 'product_advisor'
+        && fcc_ai_contains_keywords($message, ['mlm', 'piramid', 'piramida', 'prevara', 'prevar', 'scam']);
+    $is_generic_start_product_request = $assistant_type === 'product_advisor'
+        && fcc_ai_contains_keywords($message, ['najbolji proizvod za početak', 'najbolji proizvod za pocetak', 'best product to start', 'best product for the start', 'best product for a start']);
 
     if($skip_product_tail) {
         $knowledge_suggestions = [];
@@ -13544,6 +13712,42 @@ function fcc_ai_generate_public_reply(string $assistant_type, string $message, a
         }
 
         if($business_primary) {
+            if($is_business_skepticism_request) {
+                $content_blocks[] = $language === 'en'
+                    ? 'It is fair to ask that directly. FCC is not presented here as a promise of easy money or pressure-based selling, but as a system that helps a partner keep recommendations, articles, contacts and follow-up in one place.'
+                    : 'Skroz je legitimno to pitati direktno. FCC se ovdje ne predstavlja kao obećanje lake zarade ni kao pritisak na prodaju, nego kao sustav koji partneru pomaže držati preporuke, članke, kontakte i follow-up na jednom mjestu.';
+
+                $content_blocks[] = $language === 'en'
+                    ? 'The collaboration side is still based on the Forever partner model, but the main point of FCC is to make the work clearer, more structured and less chaotic for both the partner and the visitor.'
+                    : 'Suradnja je i dalje vezana uz Forever partnerski model, ali poanta FCC-a je da cijeli rad bude jasniji, strukturiraniji i manje kaotičan i za partnera i za posjetitelja.';
+
+                $content_blocks[] = $language === 'en'
+                    ? 'If you want, I can explain in simple steps how collaboration really looks, what the partner actually does, and where the personal support comes in.'
+                    : 'Ako želite, mogu jednostavno objasniti kako suradnja stvarno izgleda, što partner zapravo radi i gdje dolazi osobna podrška.';
+
+                if(!$lead_already_captured) {
+                    $lead_capture = [
+                        'recommended' => true,
+                        'lead_type' => 'business_interest',
+                        'headline' => $language === 'en' ? 'Would you like a personal explanation?' : 'Želite osobno objašnjenje suradnje?',
+                        'text' => $language === 'en'
+                            ? 'Leave your contact and the partner can explain the collaboration model personally.'
+                            : 'Ostavite kontakt i partner vam može osobno objasniti kako suradnja izgleda.',
+                    ];
+
+                    $content_blocks[] = fcc_ai_get_public_user_contact_invite_note($assistant_type, $language, $owner_name);
+                }
+
+                return [
+                    'content' => trim(implode("\n\n", array_filter($content_blocks))),
+                    'language' => $language,
+                    'lead_capture' => $lead_capture,
+                    'intent' => $intent,
+                    'recommendation_payload' => $recommendation_payload,
+                    'knowledge_suggestions' => $knowledge_suggestions,
+                ];
+            }
+
             if($business_hesitation_followup) {
                 $content_blocks[] = $language === 'en'
                     ? 'That is completely okay. If you are still exploring whether this is right for you, the cleanest way forward is still to keep the focus on collaboration and what the first steps actually look like, without adding unrelated product directions.'
@@ -14069,6 +14273,14 @@ function fcc_ai_generate_public_reply(string $assistant_type, string $message, a
                 'knowledge_suggestions' => $condition_locked_knowledge_suggestions,
             ];
         } elseif(!empty($intent['medical_sensitive'])) {
+            if($is_direct_cure_claim_question) {
+                $content_blocks[] = $language === 'en'
+                    ? 'No. Aloe vera is not a medicine and I would not present it as a diabetes treatment or as a replacement for therapy.'
+                    : ($language === 'sl'
+                        ? 'Ne. Aloe vera ni zdravilo in je ne bi predstavljal kot terapijo za sladkorno bolezen ali kot zamenjavo za zdravljenje.'
+                        : 'Ne. Aloe vera nije lijek i ne bih je predstavljao kao terapiju za dijabetes niti kao zamjenu za terapiju.');
+            }
+
             $has_high_risk_context = fcc_ai_has_high_risk_public_medical_context($message);
             $has_locked_condition_scope = fcc_ai_condition_locks_product_scope((array) ($recommendation_payload['condition_matches'] ?? []));
             $has_mapped_medical_direction = !empty($recommendation_payload['primary_product']) || !empty($recommendation_payload['recommendation_lines']) || !empty($recommendation_payload['opening_note']);
@@ -14199,6 +14411,25 @@ function fcc_ai_generate_public_reply(string $assistant_type, string $message, a
                             'Za sezonsku allergy rutinu, Forever ImmuBlend je najčišći Forever smjer jer spaja aloe veru, laktoferin, vitamine C i D te pomoćne biljne sastojke.',
                             'Ako želiš jednostavnu dopunsku opciju uz to, AloeTurm može biti dodatni dnevni smjer unutar iste šire rutine otpornosti.',
                         ]);
+            } elseif($is_generic_start_product_request) {
+                $recommendation_payload['primary_product'] = 'Forever Aloe Vera Gel™';
+                $recommendation_payload['support_products'] = [];
+                $recommendation_payload['opening_note'] = $language === 'en'
+                    ? 'When someone asks for the simplest first product, the cleanest answer is to stay on one broad Forever entry direction and then narrow it based on their goal.'
+                    : 'Kad netko pita koji je najjednostavniji prvi proizvod za početak, najčišći odgovor je ostati na jednom širokom Forever ulaznom smjeru pa ga tek onda suziti prema cilju.';
+                $recommendation_payload['recommendation_lines'] = $language === 'en'
+                    ? [
+                        'Forever Aloe Vera Gel™ is the cleanest first Forever direction when you want one simple product to start with, because it fits the broadest everyday routine from digestion to general nutritional support.',
+                    ]
+                    : [
+                        'Forever Aloe Vera Gel™ je najčišći prvi Forever smjer kada želite jedan jednostavan proizvod za početak, jer se uklapa u najširu svakodnevnu rutinu od probave do opće nutritivne podrške.',
+                    ];
+                $recommendation_payload['question_lines'] = $language === 'en'
+                    ? ['If you want, tell me whether your main goal is digestion, immunity, energy, skin or weight balance, and I will narrow it down for you.']
+                    : ['Ako želite, napišite je li vam glavni cilj probava, imunitet, energija, koža ili kontrola težine, pa ću suziti najbolji prvi odabir.'];
+                $recommendation_payload['monthly_quantity_note'] = $language === 'en'
+                    ? 'If you want a one-month frame, people most often start with 3 x Forever Aloe Vera Gel™.'
+                    : 'Ako želite okvir za mjesec dana, ovdje se najčešće kreće s 3 x Forever Aloe Vera Gel™.';
             }
         }
 
