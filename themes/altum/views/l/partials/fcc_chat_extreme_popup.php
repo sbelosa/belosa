@@ -1165,31 +1165,37 @@ foreach(['hr', 'en', 'sl', 'bg'] as $fcc_chat_ui_language) {
 
         .fcc-chat-extreme {
             left: auto;
-            right: .75rem;
-            bottom: calc(.75rem + var(--fcc-chat-widget-offset, 0px));
-            width: auto;
-            max-width: 76px;
+            right: auto;
+            bottom: auto;
+            width: 0;
+            height: 0;
+            max-width: none;
             overflow: visible;
         }
 
         .fcc-chat-extreme__launcher-stack {
             width: auto;
-            align-items: flex-end;
+            align-items: center;
             padding-right: 0;
         }
 
         .fcc-chat-extreme__launcher {
-            width: 58px;
-            height: 58px;
+            width: 76px;
+            height: 76px;
         }
 
         .fcc-chat-extreme__launcher img {
-            width: 58px;
-            height: 58px;
+            width: 76px;
+            height: 76px;
         }
 
         .fcc-chat-extreme__launcher-label {
-            display: none;
+            display: inline-flex;
+            margin-top: .12rem;
+            max-width: 102px;
+            padding: .08rem .38rem;
+            font-size: .7rem;
+            min-height: 0;
         }
 
         .fcc-chat-extreme::before {
@@ -1210,8 +1216,8 @@ foreach(['hr', 'en', 'sl', 'bg'] as $fcc_chat_ui_language) {
 
         .fcc-chat-extreme:not(.is-open) {
             top: auto;
-            left: auto;
-            right: calc(.45rem + env(safe-area-inset-right));
+            left: calc(.45rem + env(safe-area-inset-left));
+            right: auto;
             bottom: calc(.45rem + env(safe-area-inset-bottom) + var(--fcc-chat-widget-offset, 0px));
             width: 0;
             height: 0;
@@ -1221,7 +1227,7 @@ foreach(['hr', 'en', 'sl', 'bg'] as $fcc_chat_ui_language) {
 
         .fcc-chat-extreme:not(.is-open) .fcc-chat-extreme__launcher-stack {
             position: absolute;
-            right: 0;
+            left: 0;
             bottom: 0;
             width: auto;
         }
