@@ -725,6 +725,16 @@ foreach(['hr', 'en', 'sl', 'bg'] as $fcc_chat_ui_language) {
         text-align: center;
     }
 
+    .fcc-chat-extreme__launcher-stack.is-product-advisor .fcc-chat-extreme__launcher-label {
+        background: transparent;
+        border: 0;
+        box-shadow: none;
+        padding: 0;
+        max-width: none;
+        color: #eefcf9;
+        text-shadow: 0 2px 10px rgba(8, 12, 18, .55);
+    }
+
     .fcc-chat-extreme__suggestions {
         max-width: 88%;
         display: flex;
@@ -1299,7 +1309,7 @@ foreach(['hr', 'en', 'sl', 'bg'] as $fcc_chat_ui_language) {
     </section>
 
     <div
-        class="fcc-chat-extreme__launcher-stack<?= $fcc_chat_assistant_type === 'coach' ? ' is-coach' : '' ?>"
+        class="fcc-chat-extreme__launcher-stack<?= $fcc_chat_assistant_type === 'coach' ? ' is-coach' : '' ?><?= $fcc_chat_is_product_advisor ? ' is-product-advisor' : '' ?>"
         data-chat-extreme-launcher-stack
     >
         <button
