@@ -25,6 +25,7 @@ $fcc_chat_toggle_label = $fcc_chat_is_english ? 'Open ChatExtreme' : 'Otvori Cha
 $fcc_chat_close_label = $fcc_chat_is_english ? 'Close chat' : 'Zatvori chat';
 $fcc_chat_assistant_title = trim((string) ($fcc_chat_config['assistant_title'] ?? ($fcc_chat_assistant_type === 'coach' ? 'FCC Coach' : 'Extreme Chat Ai')));
 $fcc_chat_intro_label = trim((string) ($fcc_chat_config['intro_label'] ?? $fcc_chat_assistant_title));
+$fcc_chat_message_maxlength = $fcc_chat_assistant_type === 'coach' ? 2000 : 1000;
 $fcc_chat_input_placeholder = trim((string) ($fcc_chat_config['input_placeholder'] ?? ($fcc_chat_assistant_type === 'coach'
     ? ($fcc_chat_is_english ? 'How can I help you inside FCC?' : 'Kako ti mogu pomoći unutar FCC-a?')
     : ($fcc_chat_is_english ? 'What would you like to know?' : 'Što vas zanima?'))));
@@ -1280,7 +1281,7 @@ foreach(['hr', 'en', 'sl', 'bg'] as $fcc_chat_ui_language) {
                 type="text"
                 name="message"
                 class="fcc-chat-extreme__input"
-                maxlength="1000"
+                maxlength="<?= (int) $fcc_chat_message_maxlength ?>"
                 placeholder="<?= htmlspecialchars($fcc_chat_input_placeholder, ENT_QUOTES, 'UTF-8') ?>"
                 autocomplete="off"
             />

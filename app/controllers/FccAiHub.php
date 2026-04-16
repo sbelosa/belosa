@@ -553,7 +553,7 @@ class FccAiHub extends Controller {
                 'source_page_slug' => input_clean((string) ($_POST['source_page_slug'] ?? ''), 255),
                 'source_page_title' => input_clean((string) ($_POST['source_page_title'] ?? ''), 255),
                 'source_page_section' => input_clean((string) ($_POST['source_page_section'] ?? ''), 64),
-                'message' => input_clean((string) ($_POST['message'] ?? ''), 4000),
+                'message' => input_clean((string) ($_POST['message'] ?? ''), 2000),
             ]);
 
             Response::json('FCC Coach odgovor je spreman.', 'success', $result);
