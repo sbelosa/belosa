@@ -9775,6 +9775,8 @@ function fcc_ai_build_public_recommendation_payload(string $assistant_type, stri
         && (!$has_pet_type || (!$has_pet_goal_context && !$has_pet_age_context));
     $is_direct_product_lookup = $assistant_type === 'product_advisor' && fcc_ai_is_direct_product_lookup_message($message);
     $is_multi_product_compare = $assistant_type === 'product_advisor' && fcc_ai_is_multi_product_compare_request($message);
+    $business_primary = $assistant_type === 'product_advisor' && !empty($intent['business_primary']);
+    $business_mixed_with_product = $business_primary && !empty($intent['explicit_product_request']);
 
     $recommendation_lines = [];
     foreach(array_slice($knowledge_suggestions, 0, $is_direct_product_lookup ? ($is_multi_product_compare ? 2 : 1) : 3) as $index => $suggestion) {
@@ -10030,7 +10032,27 @@ function fcc_ai_build_public_recommendation_payload(string $assistant_type, stri
         $knowledge_suggestions = [];
     }
 
-    if($primary_product === '' && !empty($knowledge_suggestions[0]['title'])) {
+    if($business_primary) {
+        $knowledge_suggestions = array_values(array_filter($knowledge_suggestions, static function(array $suggestion) {
+            return (string) ($suggestion['kind'] ?? '') === 'business_article';
+        }));
+        $opening_note = $business_mixed_with_product
+            ? ($language === 'en'
+                ? 'I can see that collaboration is the main topic here. Before we drift into products, the more useful next step is to stay on how the FCC business flow works and what happens next if you want personal guidance.'
+                : 'Vidim da je ovdje glavni fokus suradnja. Prije nego odemo u proizvode, korisnije je ostati na tome kako FCC poslovni tok funkcionira i koji je sljedeći korak ako želite osobno vodstvo.')
+            : ($language === 'en'
+                ? 'Here the main focus is collaboration, so the cleaner next step is to stay on how the FCC business flow works and what happens next if you want personal guidance.'
+                : 'Ovdje je glavni fokus suradnja, pa je najčišći sljedeći korak ostati na tome kako FCC poslovni tok funkcionira i koji je sljedeći korak ako želite osobno vodstvo.');
+        $recommendation_lines = [];
+        $question_lines = [];
+        $primary_product = '';
+        $support_products = [];
+        $monthly_quantity_note = '';
+        $combination_note = '';
+        $discount_note = '';
+    }
+
+    if(!$business_primary && $primary_product === '' && !empty($knowledge_suggestions[0]['title'])) {
         $primary_product = trim((string) ($knowledge_suggestions[0]['title'] ?? ''));
         $support_products = array_values(array_filter(array_map(static function($suggestion) {
             return trim((string) ($suggestion['title'] ?? ''));
@@ -10089,6 +10111,16 @@ function fcc_ai_build_public_recommendation_payload(string $assistant_type, stri
             'sl' => 'Slovenian',
             default => 'Croatian',
         } . '.';
+    }
+
+    if($business_primary) {
+        $system_brief_lines[] = 'Business-first mode is active. The visitor is primarily interested in collaboration, sponsorship, business details, or personal business follow-up.';
+        $system_brief_lines[] = 'Do not recommend product routines, ingredient stacks, monthly quantities, health support combinations, or checkout-oriented product bundles in this answer.';
+        $system_brief_lines[] = 'Explain the FCC business flow in two or three practical sentences, keep the main focus on collaboration, and move naturally toward personal follow-up and contact capture.';
+
+        if($business_mixed_with_product) {
+            $system_brief_lines[] = 'The visitor also mentioned product terms, but collaboration is still the priority. At most acknowledge that product guidance can come after the business explanation; do not drift into a product routine now.';
+        }
     }
 
     if($is_multi_product_compare) {
@@ -11166,6 +11198,7 @@ function fcc_ai_get_public_knowledge_suggestions(string $assistant_type, string 
     $intent = isset($context['intent']) && is_array($context['intent'])
         ? $context['intent']
         : fcc_ai_detect_public_intent($assistant_type, $message);
+    $business_primary = $assistant_type === 'product_advisor' && !empty($intent['business_primary']);
     $exclude_blog_post_id = (int) ($context['exclude_blog_post_id'] ?? 0);
     $referral_slug = trim((string) ($context['referral_slug'] ?? ''));
     $limit = max(1, min(5, $limit));
@@ -11319,7 +11352,7 @@ function fcc_ai_get_public_knowledge_suggestions(string $assistant_type, string 
         $used_slugs[$row->url] = true;
     }
 
-    if($assistant_type === 'product_advisor' && !empty($condition_matches)) {
+    if($assistant_type === 'product_advisor' && !empty($condition_matches) && !$business_primary) {
         $priority_limit = $is_direct_product_lookup ? ($is_multi_product_compare ? 2 : 1) : $limit;
         $priority_suggestions = fcc_ai_get_condition_priority_product_suggestions(
             $condition_matches,
@@ -11364,6 +11397,12 @@ function fcc_ai_get_public_knowledge_suggestions(string $assistant_type, string 
 
             $suggestions = $merged_suggestions;
         }
+    }
+
+    if($business_primary) {
+        $suggestions = array_values(array_filter($suggestions, static function(array $suggestion) {
+            return (string) ($suggestion['kind'] ?? '') === 'business_article';
+        }));
     }
 
     return $suggestions;
@@ -11563,6 +11602,7 @@ function fcc_ai_get_default_public_mode_examples(string $assistant_type, string 
             'Mode examples:',
             '- If the visitor asks for product help: explain through goal -> ingredient -> article/product direction -> next step.',
             '- If the visitor asks about collaboration: explain the FCC system in two or three practical sentences, then invite personal follow-up.',
+            '- If collaboration is the main topic, keep the answer on collaboration and do not drift into product routines unless the visitor explicitly asks to return to products after that.',
             '- If the visitor wants direct contact: move to contact capture quickly instead of adding a long product explanation first.',
         ])
         : implode("\n", [
@@ -11570,6 +11610,7 @@ function fcc_ai_get_default_public_mode_examples(string $assistant_type, string 
             '- Ako posjetitelj traži preporuku proizvoda: objasni kroz cilj -> sastojak -> članak/proizvod -> sljedeći korak.',
             '- Ako je upit high-risk (npr. dijagnoza ili kemoterapija): prvo liječnik-prvo napomena, zatim mapped Forever support proizvodi kao opća podrška rutini, pa CTA na FCC članak ili kontakt.',
             '- Ako posjetitelj pita za suradnju: objasni FCC sustav u dvije do tri praktične rečenice, pa pozovi na osobni nastavak razgovora.',
+            '- Ako je suradnja glavni fokus: zadrži odgovor na suradnji i nemoj ubacivati produktne rutine osim ako posjetitelj izričito ne traži da se poslije vratiš i na proizvode.',
             '- Ako posjetitelj želi izravan kontakt: brzo prijeđi na kontakt zahtjev umjesto dugog dodatnog objašnjavanja proizvoda.',
         ]);
 }
@@ -11584,10 +11625,11 @@ function fcc_ai_get_product_advisor_playbook(string $language = 'hr'): string {
             '2. Combination mode: frame the answer as one main direction plus one or two support options only when the combination clearly helps the visitor understand the routine.',
             '3. Business opportunity mode: explain the FCC system in simple, practical terms such as recommendations, blog flow, contacts and follow-up, then move toward personal continuation.',
             '4. Contact mode: when the visitor mainly wants personal support, stop expanding the recommendation and move directly to the contact request invitation.',
-            '5. Mixed intent mode: if the visitor wants both product help and business details, give one short useful product direction, then shift toward contact and personal follow-up.',
-            '6. Sensitive population mode: for pregnancy, breastfeeding or children, do not give a direct product recommendation. Stay with general ingredient information and encourage a doctor or pediatrician check first.',
-            '7. High-risk medical mode: for diagnoses, chemotherapy and similar contexts, open with calm doctor-first wording, not with refusal-style language, then still name the mapped Forever support products from the FCC matrix as general routine support people often include alongside the medical plan.',
-            '8. Decision mode: when the mapped recommendation is already clear, help the visitor choose what to start with now, mention known monthly quantities if available, and offer to write the simplest usage rhythm next.',
+            '5. Collaboration-first mode: if collaboration is the main topic, keep the answer on collaboration and do not drift into product routines or monthly quantities.',
+            '6. Mixed intent mode: if the visitor truly wants both product help and business details, acknowledge the product side briefly but still keep the main answer on collaboration and personal follow-up.',
+            '7. Sensitive population mode: for pregnancy, breastfeeding or children, do not give a direct product recommendation. Stay with general ingredient information and encourage a doctor or pediatrician check first.',
+            '8. High-risk medical mode: for diagnoses, chemotherapy and similar contexts, open with calm doctor-first wording, not with refusal-style language, then still name the mapped Forever support products from the FCC matrix as general routine support people often include alongside the medical plan.',
+            '9. Decision mode: when the mapped recommendation is already clear, help the visitor choose what to start with now, mention known monthly quantities if available, and offer to write the simplest usage rhythm next.',
         ])
         : implode("\n", [
             'Operativni playbook za AI savjetnika za proizvode:',
@@ -11595,10 +11637,11 @@ function fcc_ai_get_product_advisor_playbook(string $language = 'hr'): string {
             '2. Režim kombinacije: odgovor složi kao jedan glavni smjer plus jednu ili dvije support opcije samo kada ta kombinacija stvarno pomaže razumjeti rutinu.',
             '3. Režim poslovne prilike: objasni FCC sustav jednostavno i praktično, kroz preporuke, blog tok, kontakte i follow-up, pa prirodno prijeđi prema osobnom nastavku razgovora.',
             '4. Režim kontakta: kada posjetitelj prvenstveno želi osobnu pomoć, prekini širenje preporuke i odmah prijeđi na poziv za kontakt zahtjev.',
-            '5. Miješani interes: ako korisnik želi i preporuku proizvoda i detalje o suradnji, daj jedan kratak koristan smjer proizvoda, pa zatim prebaci razgovor prema kontaktu i osobnom nastavku.',
-            '6. Osjetljiva populacija: kod trudnoće, dojenja ili djece nemoj dati izravnu preporuku proizvoda, nego ostani na općoj informaciji o sastavu i uputi na liječnika ili pedijatra.',
-            '7. High-risk medicinski kontekst: kod dijagnoza, kemoterapije i sličnih slučajeva prvo napiši mirnu liječnik-prvo napomenu, a ne odbijajući tekst tipa "ne smijem", ali zatim ipak navedi mapped Forever support proizvode iz FCC matrice kao opću nutritivnu ili rutinsku podršku koju korisnici često uključuju uz plan liječnika.',
-            '8. Režim odluke: kada je mapped preporuka već jasna, pomozi posjetitelju odlučiti što uzeti kao prvi korak, spomeni poznate mjesečne količine kad postoje i po potrebi odmah ponudi najjednostavniji dnevni raspored korištenja.',
+            '5. Režim suradnja-prvo: ako je suradnja glavni fokus, zadrži odgovor na suradnji i nemoj ubacivati produktne rutine ni mjesečne količine.',
+            '6. Miješani interes: ako korisnik stvarno želi i preporuku proizvoda i detalje o suradnji, produktni dio samo kratko priznaj, ali glavni odgovor i dalje zadrži na suradnji i osobnom nastavku.',
+            '7. Osjetljiva populacija: kod trudnoće, dojenja ili djece nemoj dati izravnu preporuku proizvoda, nego ostani na općoj informaciji o sastavu i uputi na liječnika ili pedijatra.',
+            '8. High-risk medicinski kontekst: kod dijagnoza, kemoterapije i sličnih slučajeva prvo napiši mirnu liječnik-prvo napomenu, a ne odbijajući tekst tipa "ne smijem", ali zatim ipak navedi mapped Forever support proizvode iz FCC matrice kao opću nutritivnu ili rutinsku podršku koju korisnici često uključuju uz plan liječnika.',
+            '9. Režim odluke: kada je mapped preporuka već jasna, pomozi posjetitelju odlučiti što uzeti kao prvi korak, spomeni poznate mjesečne količine kad postoje i po potrebi odmah ponudi najjednostavniji dnevni raspored korištenja.',
         ]);
 }
 
@@ -11870,9 +11913,18 @@ function fcc_ai_detect_public_intent(string $assistant_type, string $message): a
     $business = fcc_ai_contains_keywords($message, [
         'surad', 'posao', 'biznis', 'business', 'collab', 'collaboration', 'partner',
         'prilika', 'opportunity', 'zarad', 'income', 'raditi',
-        'affiliate', 'network', 'sponzor',
+        'affiliate', 'network', 'sponzor', 'partnerstvo', 'rad od kuće', 'rad od kuce',
+        'dodatna zarada', 'dodatni prihod', 'business opportunity', 'poslovna prilika',
     ]) || fcc_ai_contains_word_keywords($message, [
         'team', 'tim', 'join',
+    ]);
+    $strong_business_interest = fcc_ai_contains_keywords($message, [
+        'zanima me suradnja', 'interesira me suradnja', 'više info o suradnji', 'vise info o suradnji',
+        'zanima me poslovna suradnja', 'poslovna suradnja', 'kako funkcionira suradnja',
+        'kako ide suradnja', 'kako krenuti u suradnju', 'kako postati suradnik',
+        'kako postati partner', 'želim suradnju', 'zelim suradnju', 'želim graditi posao',
+        'zelim graditi posao', 'zanima me business', 'business opportunity', 'join the team',
+        'rad od kuće', 'rad od kuce', 'dodatna zarada', 'dodatni prihod',
     ]);
     $contact = fcc_ai_contains_keywords($message, [
         'kontakt', 'kontaktir', 'nazovi', 'call me', 'reach me', 'whatsapp',
@@ -11881,11 +11933,12 @@ function fcc_ai_detect_public_intent(string $assistant_type, string $message): a
     $discount = fcc_ai_contains_keywords($message, [
         'popust', '15%', 'discount', 'price', 'cijena', 'koliko košta', 'koliko kosta',
     ]);
-    $product = fcc_ai_contains_keywords($message, [
+    $explicit_product_request = fcc_ai_contains_keywords($message, [
         'proizvod', 'proizvodi', 'product', 'products', 'aloe', 'gel', 'vitamin',
         'supplement', 'dodatak', 'routine', 'rutina', 'preporuk', 'recommend',
         'probav', 'energ', 'imunit', 'skin', 'koža', 'koza',
-    ]) || $assistant_type === 'product_advisor';
+    ]);
+    $product = $explicit_product_request || $assistant_type === 'product_advisor';
     $business_content_request = $assistant_type === 'product_advisor' && fcc_ai_contains_keywords($message, [
         'reklamir', 'reklamirati', 'objavu', 'objava', 'caption', 'story', 'copy', 'tekst objave',
         'sastavi mi objavu', 'napravi objavu', 'promote', 'marketing', 'advertis', 'post', 'dm poruku', 'dm',
@@ -12026,9 +12079,14 @@ function fcc_ai_detect_public_intent(string $assistant_type, string $message): a
         }
     }
 
+    $business_primary = $assistant_type === 'product_advisor'
+        && ($strong_business_interest || ($business && !$explicit_product_request))
+        && !$support_request
+        && !$business_content_request;
+
     $lead_type = 'product_interest';
 
-    if($business && $product) {
+    if($business && $explicit_product_request) {
         $lead_type = 'mixed_interest';
     } elseif($business) {
         $lead_type = 'business_interest';
@@ -12046,6 +12104,7 @@ function fcc_ai_detect_public_intent(string $assistant_type, string $message): a
         'card_review_request' => $card_review_request,
         'contact' => $contact,
         'discount' => $discount,
+        'explicit_product_request' => $explicit_product_request,
         'external_brand_request' => $external_brand_request,
         'language_request' => $language_request,
         'medication_interaction_sensitive' => $medication_interaction_sensitive,
@@ -12068,6 +12127,7 @@ function fcc_ai_detect_public_intent(string $assistant_type, string $message): a
         'pet_oral_sensitive' => $pet_oral_sensitive,
         'pet_digestive_sensitive' => $pet_digestive_sensitive,
         'product' => $product,
+        'business_primary' => $business_primary,
         'serious' => $serious,
         'lead_type' => $lead_type,
     ];
@@ -12446,6 +12506,8 @@ function fcc_ai_generate_public_reply(string $assistant_type, string $message, a
     $is_direct_product_lookup = $assistant_type === 'product_advisor' && !$correction_follow_up && fcc_ai_is_direct_product_lookup_message($message);
     $is_explicit_monthly_quantity_request = $assistant_type === 'product_advisor' && fcc_ai_is_explicit_monthly_quantity_request($message);
     $skip_product_tail = !empty($recommendation_payload['skip_product_tail']);
+    $business_primary = $assistant_type === 'product_advisor' && !empty($intent['business_primary']);
+    $business_mixed_with_product = $business_primary && !empty($intent['explicit_product_request']);
 
     if($skip_product_tail) {
         $knowledge_suggestions = [];
@@ -13026,6 +13088,46 @@ function fcc_ai_generate_public_reply(string $assistant_type, string $message, a
                 'intent' => $intent,
                 'recommendation_payload' => $recommendation_payload,
                 'knowledge_suggestions' => [],
+            ];
+        }
+
+        if($business_primary) {
+            $content_blocks[] = $business_mixed_with_product
+                ? ($language === 'en'
+                    ? 'I can see that collaboration is the main topic here. To keep the conversation useful, I would first stay on how the FCC business flow works and what the simplest next step is if you want personal guidance.'
+                    : 'Vidim da je ovdje glavni fokus suradnja. Da razgovor ostane koristan, prvo bih ostao na tome kako FCC poslovni tok funkcionira i koji je najjednostavniji sljedeći korak ako želite osobno vodstvo.')
+                : ($language === 'en'
+                    ? 'Great, I will keep the focus on collaboration here. The cleanest next step is to stay on how the FCC business flow works and what happens if you want personal guidance.'
+                    : 'Odlično, ovdje ću zadržati fokus na suradnji. Najčišći sljedeći korak je ostati na tome kako FCC poslovni tok funkcionira i što se događa ako želite osobno vodstvo.');
+
+            $content_blocks[] = $language === 'en'
+                ? 'Inside FCC, the partner can use a shareable app, blog content, chat flow, contacts and follow-up in one place, so the business conversation does not stay only on messages but moves into a simple working system.'
+                : 'Unutar FCC-a partner može koristiti dijeljivu aplikaciju, blog sadržaj, chat tok, kontakte i follow-up na jednom mjestu, tako da poslovni razgovor ne ostane samo na porukama nego prelazi u jednostavan radni sustav.';
+
+            $content_blocks[] = $language === 'en'
+                ? 'If you want concrete details for your situation, the most useful next step is to leave contact details so the FCC partner can continue personally with you around collaboration.'
+                : 'Ako želite konkretne detalje za svoju situaciju, najkorisniji sljedeći korak je ostaviti kontakt podatke kako bi FCC partner osobno nastavio razgovor s vama oko suradnje.';
+
+            if(!$lead_already_captured) {
+                $lead_capture = [
+                    'recommended' => true,
+                    'lead_type' => 'business_interest',
+                    'headline' => $language === 'en' ? 'Would you like a personal business follow-up?' : 'Želite osobni nastavak razgovora o suradnji?',
+                    'text' => $language === 'en'
+                        ? 'Leave your contact and the partner will continue with collaboration details personally.'
+                        : 'Ostavite kontakt i partner će osobno nastaviti razgovor s detaljima o suradnji.',
+                ];
+
+                $content_blocks[] = fcc_ai_get_public_user_contact_invite_note($assistant_type, $language, $owner_name);
+            }
+
+            return [
+                'content' => trim(implode("\n\n", array_filter($content_blocks))),
+                'language' => $language,
+                'lead_capture' => $lead_capture,
+                'intent' => $intent,
+                'recommendation_payload' => $recommendation_payload,
+                'knowledge_suggestions' => $knowledge_suggestions,
             ];
         }
 
@@ -17606,6 +17708,13 @@ function fcc_ai_handle_public_message(array $payload): array {
         'exclude_blog_post_id' => (int) ($conversation->blog_post_id ?? 0),
         'referral_slug' => trim((string) ($link->url ?? '')),
     ]);
+
+    if((string) ($conversation->assistant_type ?? '') === 'product_advisor' && !empty($intent['business_primary'])) {
+        $knowledge_suggestions = array_values(array_filter($knowledge_suggestions, static function(array $suggestion) {
+            return (string) ($suggestion['kind'] ?? '') === 'business_article';
+        }));
+    }
+
     $recommendation_payload = fcc_ai_build_public_recommendation_payload((string) $conversation->assistant_type, $message_for_matching, [
         'language' => $resolved_language,
         'intent' => $intent,
