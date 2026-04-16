@@ -134,6 +134,30 @@
                         max-width: 100% !important;
                         overflow-x: hidden !important;
                     }
+
+                    .fcc-biolink-theme-scope > .container {
+                        width: 100% !important;
+                        margin-left: auto !important;
+                        margin-right: auto !important;
+                        padding-left: 15px !important;
+                        padding-right: 15px !important;
+                    }
+
+                    .fcc-biolink-theme-scope > .container > .row {
+                        margin-left: 0 !important;
+                        margin-right: 0 !important;
+                        justify-content: center !important;
+                    }
+
+                    .fcc-biolink-theme-scope .link-content {
+                        float: none !important;
+                        margin-left: auto !important;
+                        margin-right: auto !important;
+                        padding-left: 0 !important;
+                        padding-right: 0 !important;
+                        flex: 0 0 100% !important;
+                        max-width: 100% !important;
+                    }
                 }
             </style>
         <?php endif ?>

@@ -1180,19 +1180,19 @@ foreach(['hr', 'en', 'sl', 'bg'] as $fcc_chat_ui_language) {
         }
 
         .fcc-chat-extreme__launcher {
-            width: 76px;
-            height: 76px;
+            width: 82px;
+            height: 82px;
         }
 
         .fcc-chat-extreme__launcher img {
-            width: 76px;
-            height: 76px;
+            width: 82px;
+            height: 82px;
         }
 
         .fcc-chat-extreme__launcher-label {
             display: inline-flex;
             margin-top: .12rem;
-            max-width: 102px;
+            max-width: 112px;
             padding: .08rem .38rem;
             font-size: .7rem;
             min-height: 0;
@@ -1216,8 +1216,8 @@ foreach(['hr', 'en', 'sl', 'bg'] as $fcc_chat_ui_language) {
 
         .fcc-chat-extreme:not(.is-open) {
             top: auto;
-            left: calc(.45rem + env(safe-area-inset-left));
-            right: auto;
+            left: auto;
+            right: calc(.45rem + env(safe-area-inset-right));
             bottom: calc(.45rem + env(safe-area-inset-bottom) + var(--fcc-chat-widget-offset, 0px));
             width: 0;
             height: 0;
@@ -1227,7 +1227,7 @@ foreach(['hr', 'en', 'sl', 'bg'] as $fcc_chat_ui_language) {
 
         .fcc-chat-extreme:not(.is-open) .fcc-chat-extreme__launcher-stack {
             position: absolute;
-            left: 0;
+            right: 0;
             bottom: 0;
             width: auto;
         }
