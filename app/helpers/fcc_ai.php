@@ -7115,7 +7115,7 @@ function fcc_ai_get_public_direct_product_lookup_titles(): array {
         'cooling_lotion' => 'Forever Aloe Cooling Lotion',
         'heat_lotion' => 'Forever Aloe Heat Lotion',
         'msm_gel' => 'Forever Aloe MSM Gel',
-        'ivision' => 'Forever IVision',
+        'ivision' => 'Forever Vision',
         'c9' => 'C9 Forever Living Products',
         'absorbent_d' => 'Forever Absorbent-D',
         'multi_maca' => 'Forever Multi Maca',
@@ -7565,10 +7565,10 @@ function fcc_ai_get_public_localized_matrix_lines(array $entry, string $key, str
 function fcc_ai_get_product_advisor_recommendation_matrix(): array {
     return [
         'fatty_liver_support' => [
-            'patterns' => ['masna jetra', 'fatty liver', 'za masnu jetru', 'kaj bi trebal za masnu jetru', 'masnu jetru'],
-            'preferred_patterns' => ['aloe vera gel', 'aloe gel', 'aloe peaches', 'aloe mango', 'arctic sea', 'arctic', 'omega'],
+            'patterns' => ['masna jetra', 'fatty liver', 'za masnu jetru', 'kaj bi trebal za masnu jetru', 'masnu jetru', 'imam problema s jetrom', 'problem s jetrom', 'problema s jetrom', 'jetrom'],
+            'preferred_patterns' => ['aloe vera gel', 'aloe gel', 'aloe peaches', 'aloe mango', 'arctic sea', 'arctic', 'omega', 'garlic-thyme', 'garlic thyme', 'garlic'],
             'primary_product' => 'Forever Aloe Vera Gel™',
-            'support_products' => ['Forever Arctic Sea'],
+            'support_products' => ['Forever Arctic Sea', 'Forever Garlic-Thyme'],
             'label' => [
                 'hr' => 'masna jetra i nutritivna rutina',
                 'en' => 'fatty liver and nutrition routine',
@@ -7581,15 +7581,49 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
                 'hr' => [
                     'Forever Aloe Vera Gel™ je ovdje glavni Forever smjer jer sadrži aloe veru i najlogičnije se uklapa u svakodnevnu probavnu i metaboličku rutinu.',
                     'Forever Arctic Sea je dobra support opcija uz to jer donosi omega-3 masne kiseline kao dopunsku nutritivnu podršku uz glavni aloe smjer.',
+                    'Forever Garlic-Thyme može biti dodatni support smjer kada želite zadržati preporuku unutar starijeg Forever obrasca za jetru, cirkulaciju i svakodnevnu nutritivnu rutinu.',
                 ],
                 'en' => [
                     'Forever Aloe Vera Gel™ is the clearest main Forever direction here because it contains aloe vera and fits a daily digestive and metabolic-support routine.',
                     'Forever Arctic Sea is a strong support option on top because it brings omega-3 fatty acids as complementary nutritional support alongside the main aloe direction.',
+                    'Forever Garlic-Thyme can be the extra support direction when you want to keep the recommendation closer to the older Forever framework for liver, circulation and a simple daily nutrition routine.',
                 ],
             ],
             'monthly_quantity_note' => [
-                'hr' => 'Ako želite odmah okvir za mjesec dana, ovdje se najčešće preporuči 3 x Forever Aloe Vera Gel™ i 1 kutija Forever Arctic Sea. Ako želite, mogu vam odmah napisati i najjednostavniji dnevni raspored korištenja.',
-                'en' => 'If you want a simple one-month frame right away, this is most often positioned as 3 x Forever Aloe Vera Gel™ and 1 box of Forever Arctic Sea. If you want, I can also outline the simplest daily usage rhythm.',
+                'hr' => 'Ako želite odmah okvir za mjesec dana, ovdje se najčešće preporuči 3 x Forever Aloe Vera Gel™ , 1 kutija Forever Arctic Sea i 1 x Forever Garlic-Thyme. Ako želite, mogu vam odmah napisati i najjednostavniji dnevni raspored korištenja.',
+                'en' => 'If you want a simple one-month frame right away, this is most often positioned as 3 x Forever Aloe Vera Gel™, 1 box of Forever Arctic Sea and 1 x Forever Garlic-Thyme. If you want, I can also outline the simplest daily usage rhythm.',
+            ],
+            'suppress_generic_questions' => true,
+            'lock_product_scope' => true,
+        ],
+        'bloating_gas_support' => [
+            'patterns' => ['stalno sam nadut', 'nadut sam', 'nadutost i plinovi', 'nadutost i gasovi', 'imam plinove', 'imam i plinove', 'plinovi', 'gasovi'],
+            'preferred_patterns' => ['aloe vera gel', 'aloe gel', 'pro b', 'pro-b', 'fields of greens', 'fields'],
+            'primary_product' => 'Forever Aloe Vera Gel™',
+            'support_products' => ['Forever Active Pro B', 'Forever Fields of Greens'],
+            'label' => [
+                'hr' => 'nadutost, plinovi i smirenija probavna rutina',
+                'en' => 'bloating, gas and a calmer digestive routine',
+            ],
+            'opening_note' => [
+                'hr' => 'Kad su glavni problem nadutost i plinovi, preporuka treba ostati jednostavna: aloe vera kao baza, probiotička podrška i nutritivna zelena rutina kao dopuna.',
+                'en' => 'When bloating and gas are the main problem, the recommendation should stay simple: aloe vera as the base, probiotic support and a green nutritional direction as the add-on.',
+            ],
+            'recommendation_lines' => [
+                'hr' => [
+                    'Forever Aloe Vera Gel™ je ovdje glavni Forever smjer kao aloe baza za smireniju svakodnevnu probavnu rutinu.',
+                    'Forever Active Pro B ima smisla kao glavna support opcija uz to kada želite uredniju crijevnu ravnotežu i smireniji ritam probave.',
+                    'Forever Fields of Greens može biti dodatni support smjer kada uz to želite i jednostavniju zelenu nutritivnu podršku za svakodnevni ritam.',
+                ],
+                'en' => [
+                    'Forever Aloe Vera Gel™ is the main Forever direction here as the aloe base for a calmer everyday digestive routine.',
+                    'Forever Active Pro B makes sense as the main support option on top when you want steadier gut balance and a calmer digestion rhythm.',
+                    'Forever Fields of Greens can be the extra support direction when you also want a simpler green nutritional layer in the same everyday rhythm.',
+                ],
+            ],
+            'monthly_quantity_note' => [
+                'hr' => 'Ako želite okvir za mjesec dana, ovdje se najčešće gleda 3 x Forever Aloe Vera Gel™, 1 x Forever Active Pro B i 1 x Forever Fields of Greens.',
+                'en' => 'If you want a one-month frame, this is most often positioned as 3 x Forever Aloe Vera Gel™, 1 x Forever Active Pro B and 1 x Forever Fields of Greens.',
             ],
             'suppress_generic_questions' => true,
             'lock_product_scope' => true,
@@ -8046,6 +8080,36 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
             ],
             'lock_product_scope' => true,
         ],
+        'simple_low_energy_support' => [
+            'patterns' => ['nemam energije', 'stalno sam umoran', 'stalno sam umorna', 'bez energije sam', 'nemam snage'],
+            'preferred_patterns' => ['aloe vera gel', 'aloe gel', 'immune gummy', 'gummy'],
+            'primary_product' => 'Forever Aloe Vera Gel™',
+            'support_products' => ['Forever Immune Gummy'],
+            'label' => [
+                'hr' => 'manjak energije i jednostavna dnevna rutina',
+                'en' => 'low energy and a simple daily routine',
+            ],
+            'opening_note' => [
+                'hr' => 'Kad korisnik vrlo jednostavno kaže da nema energije ili da je stalno umoran, najčišći odgovor je ostati na aloe bazi i jednom laganom vitaminskom support proizvodu.',
+                'en' => 'When a user simply says they have no energy or feel tired all the time, the cleanest answer is to stay on an aloe base plus one light vitamin-support product.',
+            ],
+            'recommendation_lines' => [
+                'hr' => [
+                    'Forever Aloe Vera Gel™ je ovdje glavni Forever smjer kao osnovni aloe napitak za jednostavniju dnevnu nutritivnu rutinu.',
+                    'Forever Immune Gummy ima smisla kao support opcija kada želite laganiji vitaminski dodatak uz isti svakodnevni ritam.',
+                ],
+                'en' => [
+                    'Forever Aloe Vera Gel™ is the main Forever direction here as the base aloe drink for a simpler daily nutritional routine.',
+                    'Forever Immune Gummy makes sense as the support option when you want a lighter vitamin add-on inside the same everyday rhythm.',
+                ],
+            ],
+            'monthly_quantity_note' => [
+                'hr' => 'Ako želite okvir za mjesec dana, ovdje se najčešće gleda 3 x Forever Aloe Vera Gel™ i 1 x Forever Immune Gummy.',
+                'en' => 'If you want a one-month frame, this is most often positioned as 3 x Forever Aloe Vera Gel™ and 1 x Forever Immune Gummy.',
+            ],
+            'suppress_generic_questions' => true,
+            'lock_product_scope' => true,
+        ],
         'stress_focus_energy_support' => [
             'patterns' => ['pod stresom i bez energije', 'stres i bez energije', 'stres i manjak energije', 'stres i nedostatak energije', 'bez energije i stres', 'nemam fokus', 'manjak fokusa', 'bez fokusa', 'slab fokus'],
             'preferred_patterns' => ['royal jelly', 'aloe vera gel', 'arctic sea'],
@@ -8234,10 +8298,10 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
             'suppress_generic_questions' => true,
         ],
         'skin_allergy_inside_out_support' => [
-            'patterns' => ['osip i alergije', 'osip i alergija', 'alergije i osip', 'alergijski osip', 'svrbi me koža', 'svrbi me koza', 'svrbež kože', 'svrbez koze'],
+            'patterns' => ['osip i alergije', 'osip i alergija', 'alergije i osip', 'alergijski osip', 'svrbi me koža', 'svrbi me koza', 'svrbež kože', 'svrbez koze', 'alergija na koži', 'alergiju na koži', 'alergija na kozi', 'alergiju na kozi'],
             'preferred_patterns' => ['aloe vera gel', 'bee pollen', 'absorbent-c', 'aloe first', 'propolis creme'],
             'primary_product' => 'Forever Aloe Vera Gel™',
-            'support_products' => ['Forever Bee Pollen', 'Forever Absorbent-C', 'Forever Aloe First Spray', 'Aloe Propolis Creme'],
+            'support_products' => ['Forever Bee Pollen', 'Forever Absorbent-C', 'Forever Aloe First Spray', 'Forever Aloe Vera Gelly', 'Aloe Propolis Creme'],
             'label' => [
                 'hr' => 'alergije, osip i umirujuća rutina kože',
                 'en' => 'allergies, rash and a calming skin routine',
@@ -8250,17 +8314,17 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
                 'hr' => [
                     'Forever Aloe Vera Gel™ je ovdje glavni Forever smjer kao inside-first aloe baza za svakodnevnu rutinu iznutra.',
                     'Forever Bee Pollen i Forever Absorbent-C imaju smisla kao glavne support opcije kada želite nutritivnu podršku otpornosti organizma i sezonskom opterećenju.',
-                    'Ako želite i dodatak izvana, Forever Aloe First Spray i Aloe Propolis Creme imaju smisla kao umirujuća vanjska rutina uz isti inside-first smjer.',
+                    'Ako želite i dodatak izvana, Forever Aloe First Spray i Forever Aloe Vera Gelly imaju smisla kao umirujuća vanjska rutina uz isti inside-first smjer, a Aloe Propolis Creme može ostati dodatni kremasti korak po potrebi.',
                 ],
                 'en' => [
                     'Forever Aloe Vera Gel™ is the main Forever direction here as the inside-first aloe base for the daily routine.',
                     'Forever Bee Pollen and Forever Absorbent-C make sense as the main support options when you want nutritional support for resilience and seasonal load.',
-                    'If you also want an outer add-on, Forever Aloe First Spray and Aloe Propolis Creme make sense as the calming topical routine on top of the same inside-first direction.',
+                    'If you also want an outer add-on, Forever Aloe First Spray and Forever Aloe Vera Gelly make sense as the calming topical routine on top of the same inside-first direction, while Aloe Propolis Creme can remain the extra cream-like step if useful.',
                 ],
             ],
             'monthly_quantity_note' => [
-                'hr' => 'Ako želite okvir za mjesec dana, ovdje se najčešće gleda 3 x Forever Aloe Vera Gel™, 1 x Forever Bee Pollen i 1 x Forever Absorbent-C, a izvana po potrebi Forever Aloe First Spray i Aloe Propolis Creme.',
-                'en' => 'If you want a one-month frame, this is most often positioned as 3 x Forever Aloe Vera Gel™, 1 x Forever Bee Pollen and 1 x Forever Absorbent-C, with Forever Aloe First Spray and Aloe Propolis Creme outside if useful.',
+                'hr' => 'Ako želite okvir za mjesec dana, ovdje se najčešće gleda 3 x Forever Aloe Vera Gel™, 1 x Forever Bee Pollen i 1 x Forever Absorbent-C, a izvana po potrebi Forever Aloe First Spray, Forever Aloe Vera Gelly i Aloe Propolis Creme.',
+                'en' => 'If you want a one-month frame, this is most often positioned as 3 x Forever Aloe Vera Gel™, 1 x Forever Bee Pollen and 1 x Forever Absorbent-C, with Forever Aloe First Spray, Forever Aloe Vera Gelly and Aloe Propolis Creme outside if useful.',
             ],
             'suppress_generic_questions' => true,
             'lock_product_scope' => true,
@@ -8363,7 +8427,7 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
         'vision_support_routine' => [
             'patterns' => ['slabiji vid', 'slab vid', 'problemi s vidom', 'umorne oči', 'umorne oci', 'vid', 'vida', 'očima', 'ocima', 'degeneracija mrežnice', 'degeneracija mreznice'],
             'preferred_patterns' => ['vision', 'ivision', 'arctic sea', 'omega'],
-            'primary_product' => 'Forever IVision',
+            'primary_product' => 'Forever Vision',
             'support_products' => ['Forever Arctic Sea'],
             'label' => [
                 'hr' => 'vid i nutritivna podrška',
@@ -8375,17 +8439,17 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
             ],
             'recommendation_lines' => [
                 'hr' => [
-                    'Forever IVision je ovdje glavni Forever smjer jer je najbliži proizvod iz baze za svakodnevnu nutritivnu podršku vidu.',
+                    'Forever Vision je ovdje glavni Forever smjer jer je najbliži proizvod iz baze za svakodnevnu nutritivnu podršku vidu.',
                     'Forever Arctic Sea može biti dobra support opcija uz to kao omega-3 smjer za širu dnevnu rutinu.',
                 ],
                 'en' => [
-                    'Forever IVision is the clearest main Forever direction here because it is the closest product in the base for everyday nutritional vision support.',
+                    'Forever Vision is the clearest main Forever direction here because it is the closest product in the base for everyday nutritional vision support.',
                     'Forever Arctic Sea can be a useful support option on top as the omega-3 direction for a broader daily routine.',
                 ],
             ],
             'monthly_quantity_note' => [
-                'hr' => 'Ako želite okvir za mjesec dana, ovdje se najčešće gleda 1 x Forever IVision i 1 kutija Forever Arctic Sea.',
-                'en' => 'If you want a one-month frame, this is most often positioned as 1 x Forever IVision and 1 box of Forever Arctic Sea.',
+                'hr' => 'Ako želite okvir za mjesec dana, ovdje se najčešće gleda 1 x Forever Vision i 1 kutija Forever Arctic Sea.',
+                'en' => 'If you want a one-month frame, this is most often positioned as 1 x Forever Vision and 1 box of Forever Arctic Sea.',
             ],
             'suppress_generic_questions' => true,
             'lock_product_scope' => true,
@@ -9022,9 +9086,9 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
         ],
         'back_spine_support' => [
             'patterns' => ['bol u leđima', 'bol u ledjima', 'bolive u leđima', 'bolive u ledjima', 'leđa', 'ledja', 'leđima', 'ledjima', 'vratna hrbtenica', 'vratno hrbtenico', 'vratne hrbtenice', 'vratni del hrbtenice', 'vratna kralježnica', 'vratna kraljeznica', 'kralježnica', 'kraljeznica', 'kralježnic', 'kraljeznic', 'hrbtenica', 'hrbtenice', 'hrbtenico', 'hrbtenic', 'lumbago', 'lumbo', 'išijas', 'išijasa', 'isijas', 'isijasa', 'sciatica'],
-            'preferred_patterns' => ['freedom', 'move', 'active ha', 'msm gel', 'cooling lotion'],
+            'preferred_patterns' => ['freedom', 'active ha', 'cooling lotion', 'aloe cooling lotion'],
             'primary_product' => 'Forever Freedom®',
-            'support_products' => ['ESM Complex / Forever Move', 'Forever Aloe MSM Gel'],
+            'support_products' => ['Forever Active HA', 'Forever Aloe Cooling Lotion'],
             'label' => [
                 'hr' => 'leđa, kralježnica i išijas',
                 'en' => 'back, spine and sciatica support',
@@ -9036,18 +9100,18 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
             'recommendation_lines' => [
                 'hr' => [
                     'Forever Freedom® je ovdje glavni Forever smjer jer se najčešće bira kao osnovni proizvod za svakodnevnu pokretljivost, zglobove i opterećenje kralježnice.',
-                    'ESM Complex / Forever Move je logična support opcija uz to kada želite dodatni smjer za hrskavicu, zglobove i dugoročniju rutinu pokretljivosti.',
-                    'Forever Aloe MSM Gel može biti jednostavna vanjska dopuna kada postoji lokalna napetost, ukočenost ili osjetljivost duž leđa i mišića.',
+                    'Forever Active HA je logična support opcija uz to kada želite dodatni smjer za zglobove, hijaluronsku kiselinu i svakodnevnu pokretljivost.',
+                    'Forever Aloe Cooling Lotion može biti jednostavna vanjska dopuna kada postoji lokalna napetost, ukočenost ili osjetljivost duž leđa i mišića.',
                 ],
                 'en' => [
                     'Forever Freedom® is the main Forever direction here because it is most often chosen as the base product for everyday mobility, joints and spinal load support.',
-                    'ESM Complex / Forever Move is the logical support option on top when you want an extra direction for cartilage, joints and a longer-term mobility routine.',
-                    'Forever Aloe MSM Gel can be the simple outer add-on when there is local tension, stiffness or sensitivity through the back and muscles.',
+                    'Forever Active HA is the logical support option on top when you want an extra direction for joints, hyaluronic acid and everyday mobility.',
+                    'Forever Aloe Cooling Lotion can be the simple outer add-on when there is local tension, stiffness or sensitivity through the back and muscles.',
                 ],
             ],
             'monthly_quantity_note' => [
-                'hr' => 'Ako želite okvir za mjesec dana, ovdje se najčešće gleda 3 x Forever Freedom®, 1 x ESM Complex / Forever Move i po potrebi 1 x Forever Aloe MSM Gel za vanjsku rutinu.',
-                'en' => 'If you want a one-month frame, this is most often positioned as 3 x Forever Freedom®, 1 x ESM Complex / Forever Move and, if useful, 1 x Forever Aloe MSM Gel for the outer routine.',
+                'hr' => 'Ako želite okvir za mjesec dana, ovdje se najčešće gleda 3 x Forever Freedom®, 1 x Forever Active HA i po potrebi 1 x Forever Aloe Cooling Lotion za vanjsku rutinu.',
+                'en' => 'If you want a one-month frame, this is most often positioned as 3 x Forever Freedom®, 1 x Forever Active HA and, if useful, 1 x Forever Aloe Cooling Lotion for the outer routine.',
             ],
             'suppress_generic_questions' => true,
             'sensitive_support_only' => true,
@@ -9317,7 +9381,7 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
             'lock_product_scope' => true,
         ],
         'varicose_veins_support' => [
-            'patterns' => ['proširene vene', 'prosirene vene', 'varikozne vene', 'težina u nogama', 'tezina u nogama', 'oticanje nogu', 'oticanje nogu', 'sklonost trombozi'],
+            'patterns' => ['proširene vene', 'prosirene vene', 'varikozne vene', 'težina u nogama', 'tezina u nogama', 'oticanje nogu', 'oticanje nogu', 'sklonost trombozi', 'loša cirkulacija', 'losa cirkulacija', 'imam lošu cirkulaciju', 'imam losu cirkulaciju', 'slaba cirkulacija', 'slaba mi je cirkulacija'],
             'preferred_patterns' => ['aloe vera gel', 'aloe gel', 'arctic sea', 'argi', 'argi+'],
             'primary_product' => 'Forever Aloe Vera Gel™',
             'support_products' => ['Forever Arctic Sea', 'Forever ARGI+'],
@@ -10031,6 +10095,16 @@ function fcc_ai_get_product_advisor_effective_condition_matches(string $message,
     }
 
     $matches = array_values($merged_matches);
+
+    $match_keys = array_values(array_filter(array_map(static function(array $match) {
+        return trim((string) ($match['key'] ?? ''));
+    }, $matches)));
+
+    if(in_array('diabetes_balance_support', $match_keys, true)) {
+        $matches = array_values(array_filter($matches, static function(array $match) {
+            return (string) ($match['key'] ?? '') !== 'simple_low_energy_support';
+        }));
+    }
 
     usort($matches, static function(array $a, array $b) {
         return ($b['score'] <=> $a['score']) ?: strcmp((string) ($a['key'] ?? ''), (string) ($b['key'] ?? ''));
@@ -11798,10 +11872,10 @@ function fcc_ai_get_public_product_routine_note_by_titles(array $product_titles,
 
     if($has_vision) {
         $notes[] = $language === 'en'
-            ? 'Forever IVision is most often used as 1 tablet twice per day.'
+            ? 'Forever Vision is most often used as 1 tablet twice per day.'
             : ($language === 'sl'
-                ? 'Forever IVision se najpogosteje uporablja kot 1 tableta 2x dnevno.'
-                : 'Forever IVision se najčešće uzima kao 1 tableta 2x dnevno.');
+                ? 'Forever Vision se najpogosteje uporablja kot 1 tableta 2x dnevno.'
+                : 'Forever Vision se najčešće uzima kao 1 tableta 2x dnevno.');
     }
 
     if($has_marine_collagen) {
@@ -18941,6 +19015,11 @@ function fcc_ai_handle_public_message(array $payload): array {
             || !empty($current_condition_keys)
             || !empty($previous_condition_keys)
         );
+    $is_low_context_condition_followup = (string) ($conversation->assistant_type ?? '') === 'product_advisor'
+        && $used_context_for_matching
+        && empty($current_condition_keys)
+        && !empty($previous_condition_keys)
+        && fcc_ai_is_low_context_follow_up_message($current_user_message);
 
     if($is_recommendation_correction_followup) {
         $message_for_matching = fcc_ai_build_public_correction_followup_message($previous_user_message);
@@ -18982,7 +19061,7 @@ function fcc_ai_handle_public_message(array $payload): array {
     $has_high_risk_medical_context = (string) ($conversation->assistant_type ?? '') === 'product_advisor'
         && fcc_ai_has_high_risk_public_medical_context($current_user_message);
 
-    if(($has_high_risk_medical_context || $should_reset_problem_context) && !$is_same_problem_followup_clarification && !$is_broad_beauty_followup_clarification) {
+    if(($has_high_risk_medical_context || $should_reset_problem_context) && !$is_same_problem_followup_clarification && !$is_broad_beauty_followup_clarification && !$is_low_context_condition_followup) {
         $message_for_matching = $current_user_message;
         $recent_user_context = '';
         $used_context_for_matching = false;
