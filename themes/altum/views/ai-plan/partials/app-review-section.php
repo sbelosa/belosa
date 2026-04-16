@@ -94,7 +94,7 @@
 
                         <div class="form-group mb-0">
                             <label for="app_review_context" class="font-weight-bold"><?= l('ai_plan.app_review_context') ?></label>
-                            <textarea id="app_review_context" name="app_review_context" class="form-control" rows="4" maxlength="800" placeholder="<?= l('ai_plan.app_review_context_placeholder') ?>"><?= htmlspecialchars((string) ($data->app_review_context ?? ''), ENT_QUOTES, 'UTF-8') ?></textarea>
+                            <textarea id="app_review_context" name="app_review_context" class="form-control" rows="4" maxlength="1600" placeholder="<?= l('ai_plan.app_review_context_placeholder') ?>"><?= htmlspecialchars((string) ($data->app_review_context ?? ''), ENT_QUOTES, 'UTF-8') ?></textarea>
                         </div>
 
                         <div class="ai-plan-processing-box" id="ai-plan-app-review-processing" style="display:none;">

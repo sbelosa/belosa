@@ -8501,21 +8501,21 @@ class AiPlan extends Controller {
     }
 
     private function validate_app_review_response(array $review, ?array $selected_app = null): array {
-        $headline = $this->normalize_app_review_channel_copy($this->sanitize_ai_string($review['headline'] ?? $review['title'] ?? '', 140));
-        $summary = $this->normalize_app_review_channel_copy($this->sanitize_ai_string($review['summary'] ?? $review['overview'] ?? '', 600));
-        $biggest_bottleneck = $this->normalize_app_review_channel_copy($this->sanitize_ai_string($review['biggest_bottleneck'] ?? $review['main_problem'] ?? '', 220));
-        $top_recommendation = $this->normalize_app_review_channel_copy($this->sanitize_ai_string($review['top_recommendation'] ?? $review['power_move'] ?? '', 320));
-        $weekly_focus = $this->normalize_app_review_channel_copy($this->sanitize_ai_string($review['weekly_focus'] ?? $review['next_focus'] ?? '', 240));
-        $priority_actions = $this->normalize_app_review_channel_list($this->normalize_ai_list($review['priority_actions'] ?? $review['quick_wins'] ?? [], 4, 200));
-        $ideal_block_order = $this->normalize_app_review_visible_list($this->normalize_ai_list($review['ideal_block_order'] ?? $review['recommended_block_order'] ?? [], 8, 120));
-        $design_notes = $this->normalize_app_review_channel_list($this->normalize_ai_list($review['design_notes'] ?? $review['visual_notes'] ?? $review['color_advice'] ?? [], 5, 220));
-        $keep_doing = $this->normalize_app_review_channel_list($this->normalize_ai_list($review['keep_doing'] ?? $review['strengths_to_keep'] ?? [], 4, 180));
-        $first_move = $this->normalize_app_review_channel_copy($this->sanitize_ai_string($review['first_move'] ?? $review['do_first'] ?? $top_recommendation, 180));
-        $next_move = $this->normalize_app_review_channel_copy($this->sanitize_ai_string($review['next_move'] ?? $review['do_next'] ?? $weekly_focus, 180));
-        $do_not_touch = $this->normalize_app_review_channel_copy($this->sanitize_ai_string($review['do_not_touch'] ?? $review['dont_break'] ?? ($keep_doing[0] ?? ''), 180));
-        $funnel_blueprint = $this->normalize_app_review_channel_list($this->normalize_ai_list($review['funnel_blueprint'] ?? $review['funnel_plan'] ?? $review['lead_flow'] ?? [], 4, 220));
+        $headline = $this->normalize_app_review_channel_copy($this->sanitize_ai_string($review['headline'] ?? $review['title'] ?? '', 180));
+        $summary = $this->normalize_app_review_channel_copy($this->sanitize_ai_string($review['summary'] ?? $review['overview'] ?? '', 1000));
+        $biggest_bottleneck = $this->normalize_app_review_channel_copy($this->sanitize_ai_string($review['biggest_bottleneck'] ?? $review['main_problem'] ?? '', 320));
+        $top_recommendation = $this->normalize_app_review_channel_copy($this->sanitize_ai_string($review['top_recommendation'] ?? $review['power_move'] ?? '', 480));
+        $weekly_focus = $this->normalize_app_review_channel_copy($this->sanitize_ai_string($review['weekly_focus'] ?? $review['next_focus'] ?? '', 320));
+        $priority_actions = $this->normalize_app_review_channel_list($this->normalize_ai_list($review['priority_actions'] ?? $review['quick_wins'] ?? [], 4, 260));
+        $ideal_block_order = $this->normalize_app_review_visible_list($this->normalize_ai_list($review['ideal_block_order'] ?? $review['recommended_block_order'] ?? [], 8, 140));
+        $design_notes = $this->normalize_app_review_channel_list($this->normalize_ai_list($review['design_notes'] ?? $review['visual_notes'] ?? $review['color_advice'] ?? [], 5, 260));
+        $keep_doing = $this->normalize_app_review_channel_list($this->normalize_ai_list($review['keep_doing'] ?? $review['strengths_to_keep'] ?? [], 4, 220));
+        $first_move = $this->normalize_app_review_channel_copy($this->sanitize_ai_string($review['first_move'] ?? $review['do_first'] ?? $top_recommendation, 260));
+        $next_move = $this->normalize_app_review_channel_copy($this->sanitize_ai_string($review['next_move'] ?? $review['do_next'] ?? $weekly_focus, 260));
+        $do_not_touch = $this->normalize_app_review_channel_copy($this->sanitize_ai_string($review['do_not_touch'] ?? $review['dont_break'] ?? ($keep_doing[0] ?? ''), 260));
+        $funnel_blueprint = $this->normalize_app_review_channel_list($this->normalize_ai_list($review['funnel_blueprint'] ?? $review['funnel_plan'] ?? $review['lead_flow'] ?? [], 4, 260));
         $color_palette = $this->normalize_app_review_color_palette($review['color_palette'] ?? $review['color_direction'] ?? $review['palette'] ?? []);
-        $trust_builders = $this->normalize_app_review_channel_list($this->normalize_ai_list($review['trust_builders'] ?? $review['trust_elements'] ?? $review['trust_plan'] ?? [], 5, 200));
+        $trust_builders = $this->normalize_app_review_channel_list($this->normalize_ai_list($review['trust_builders'] ?? $review['trust_elements'] ?? $review['trust_plan'] ?? [], 5, 240));
         $primary_action_fallback = $selected_app ? $this->get_app_review_primary_action_block_snapshot($selected_app) : [];
         $theme_pack = $this->normalize_app_review_theme_pack($review['theme_pack'] ?? $review['design_system'] ?? [], $color_palette);
         $color_palette = $this->sync_app_review_color_palette_with_theme_pack($color_palette, $theme_pack);
@@ -9824,7 +9824,7 @@ class AiPlan extends Controller {
 
         $summary_steps = preg_split('/(?<=[\.!?])\s+/', $summary) ?: [];
         foreach($summary_steps as $summary_step) {
-            $summary_step = $this->sanitize_ai_string($summary_step, 180);
+            $summary_step = $this->sanitize_ai_string($summary_step, 240);
 
             if($summary_step !== '') {
                 $tasks_pool[] = $summary_step;
@@ -9844,14 +9844,14 @@ class AiPlan extends Controller {
         }
 
         foreach($coach_ideas as $coach_idea) {
-            $coach_idea = $this->sanitize_ai_string($coach_idea, 180);
+            $coach_idea = $this->sanitize_ai_string($coach_idea, 240);
 
             if($coach_idea !== '') {
                 $tasks_pool[] = $coach_idea;
             }
         }
 
-        $next_steps = $this->normalize_ai_list($plan['next_steps'] ?? $plan['action_steps'] ?? $plan['tasks'] ?? [], 7, 180);
+        $next_steps = $this->normalize_ai_list($plan['next_steps'] ?? $plan['action_steps'] ?? $plan['tasks'] ?? [], 7, 240);
         foreach($next_steps as $step) {
             $tasks_pool[] = $step;
         }
@@ -9924,7 +9924,7 @@ class AiPlan extends Controller {
             $value = (array) $value;
         }
 
-        $tasks = $this->normalize_ai_list($value, 4, 180);
+        $tasks = $this->normalize_ai_list($value, 4, 240);
 
         if(!empty($tasks)) {
             return $tasks;
@@ -9963,14 +9963,14 @@ class AiPlan extends Controller {
             }
 
             if(is_array($value[$field]) || is_object($value[$field])) {
-                $collected_tasks = array_merge($collected_tasks, $this->normalize_ai_list($value[$field], 4, 180));
+                $collected_tasks = array_merge($collected_tasks, $this->normalize_ai_list($value[$field], 4, 240));
                 continue;
             }
 
             $collected_tasks[] = $value[$field];
         }
 
-        return $this->normalize_ai_list($collected_tasks, 4, 180);
+        return $this->normalize_ai_list($collected_tasks, 4, 240);
     }
 
     private function normalize_daily_plan($value): array {
@@ -9998,7 +9998,7 @@ class AiPlan extends Controller {
                 : '';
 
             if(is_scalar($day_plan)) {
-                $title = $this->sanitize_ai_string($day_plan, 120);
+                $title = $this->sanitize_ai_string($day_plan, 160);
 
                 if($title === '') {
                     continue;
@@ -10030,7 +10030,7 @@ class AiPlan extends Controller {
                 ?? $day_plan['to_do']
                 ?? []
             );
-            $title = $this->sanitize_ai_string($day_plan['title'] ?? $day_plan['focus'] ?? $day_plan['headline'] ?? $day_plan['main_task'] ?? $day_plan['main_focus'] ?? '', 120);
+            $title = $this->sanitize_ai_string($day_plan['title'] ?? $day_plan['focus'] ?? $day_plan['headline'] ?? $day_plan['main_task'] ?? $day_plan['main_focus'] ?? '', 160);
             $day = $this->sanitize_ai_string($day_plan['day'] ?? $day_plan['label'] ?? $day ?: ('Dan ' . ($index + 1)), 40);
 
             if($title === '' && !empty($tasks)) {
@@ -10315,7 +10315,7 @@ class AiPlan extends Controller {
             $plan['main_focus'] ?? '',
             $plan['power_move'] ?? '',
             $plan['leverage_move'] ?? '',
-        ], 140);
+        ], 180);
         $summary = $this->build_weekly_text_fallback([
             $plan['summary'] ?? '',
             $plan['overview'] ?? '',
@@ -10325,45 +10325,45 @@ class AiPlan extends Controller {
             $plan['opening_note'] ?? '',
             $plan['why_this_week'] ?? '',
             $plan['strategic_explanation'] ?? '',
-        ], 900);
+        ], 1200);
         $focus = $this->build_weekly_text_fallback([
             $plan['focus'] ?? '',
             $plan['main_focus'] ?? '',
             $headline,
             $plan['power_move'] ?? '',
-        ], 180);
+        ], 240);
         $coach_intro = $this->build_weekly_text_fallback([
             $plan['coach_intro'] ?? '',
             $plan['intro'] ?? '',
             $plan['opening_note'] ?? '',
             $summary,
-        ], 420);
-        $brutal_truth = $this->sanitize_ai_string($plan['brutal_truth'] ?? $plan['hard_truth'] ?? $plan['uncomfortable_truth'] ?? '', 320);
-        $power_move = $this->sanitize_ai_string($plan['power_move'] ?? $plan['leverage_move'] ?? $plan['best_move'] ?? '', 320);
+        ], 600);
+        $brutal_truth = $this->sanitize_ai_string($plan['brutal_truth'] ?? $plan['hard_truth'] ?? $plan['uncomfortable_truth'] ?? '', 420);
+        $power_move = $this->sanitize_ai_string($plan['power_move'] ?? $plan['leverage_move'] ?? $plan['best_move'] ?? '', 420);
         $why_this_week = $this->build_weekly_text_fallback([
             $plan['why_this_week'] ?? '',
             $plan['strategic_explanation'] ?? '',
             $plan['reasoning'] ?? '',
             $summary,
-        ], 500);
+        ], 700);
         $encouragement = $this->build_weekly_text_fallback([
             $plan['encouragement'] ?? '',
             $plan['mindset_note'] ?? '',
             $plan['closing_note'] ?? '',
-        ], 320);
-        $priority_channels = $this->normalize_ai_list($plan['priority_channels'] ?? $plan['channels'] ?? [], 4, 80);
-        $content_ideas = $this->normalize_ai_list($plan['content_ideas'] ?? $plan['content_plan'] ?? $plan['content_suggestions'] ?? [], 5, 180);
-        $coach_ideas = $this->normalize_ai_list($plan['coach_ideas'] ?? $plan['next_move_ideas'] ?? $plan['recommendation_ideas'] ?? [], 5, 180);
+        ], 420);
+        $priority_channels = $this->normalize_ai_list($plan['priority_channels'] ?? $plan['channels'] ?? [], 4, 100);
+        $content_ideas = $this->normalize_ai_list($plan['content_ideas'] ?? $plan['content_plan'] ?? $plan['content_suggestions'] ?? [], 5, 240);
+        $coach_ideas = $this->normalize_ai_list($plan['coach_ideas'] ?? $plan['next_move_ideas'] ?? $plan['recommendation_ideas'] ?? [], 5, 240);
 
         if(empty($coach_ideas)) {
-            $legacy_follow_up_idea = $this->sanitize_ai_string($plan['follow_up_script'] ?? $plan['message_script'] ?? $plan['dm_script'] ?? '', 180);
+            $legacy_follow_up_idea = $this->sanitize_ai_string($plan['follow_up_script'] ?? $plan['message_script'] ?? $plan['dm_script'] ?? '', 240);
 
             if($legacy_follow_up_idea !== '') {
                 $coach_ideas = [$legacy_follow_up_idea];
             }
         }
 
-        $do_not_do = $this->normalize_ai_list($plan['do_not_do'] ?? $plan['avoid'] ?? $plan['warnings'] ?? [], 4, 180);
+        $do_not_do = $this->normalize_ai_list($plan['do_not_do'] ?? $plan['avoid'] ?? $plan['warnings'] ?? [], 4, 240);
         $daily_plan = $this->normalize_daily_plan($plan['daily_plan'] ?? $plan['week_plan'] ?? $plan['seven_day_plan'] ?? $plan['days'] ?? $plan['daily_actions'] ?? []);
 
         if(count($daily_plan) < 3) {
@@ -10814,7 +10814,7 @@ class AiPlan extends Controller {
                 : ($ai_growth_access_payload['is_pro']
                     ? sprintf(l('ai_plan.app_review_locked_signal'), 15, nr($growth_signal_30d))
                     : l('ai_plan.app_review_locked_pro')));
-        $app_review_context = input_clean($_POST['app_review_context'] ?? '', 800);
+        $app_review_context = input_clean($_POST['app_review_context'] ?? '', 1600);
         $requested_selected_app_id = (int) ($_POST['app_review_selected_link_id'] ?? ($_GET['app_review_selected_link_id'] ?? 0));
         $requested_app_review_generated_at = input_clean($_GET['app_review_generated_at'] ?? '', 32);
         $requested_plan_generated_at = input_clean($_GET['plan_generated_at'] ?? '', 32);
@@ -11009,9 +11009,9 @@ class AiPlan extends Controller {
                 $weekly_values['follow_up_volume'] = $this->normalize_single_choice($_POST['follow_up_volume'] ?? null, $weekly_options['follow_up_volume']);
                 $weekly_values['ai_need'] = $this->normalize_single_choice($this->normalize_ai_need_value($_POST['ai_need'] ?? null), $weekly_options['ai_need']);
                 $weekly_values['weekly_energy'] = $this->normalize_single_choice($_POST['weekly_energy'] ?? null, $weekly_options['weekly_energy']);
-                $weekly_values['weekly_context'] = input_clean($_POST['weekly_context'] ?? '', 800);
+                $weekly_values['weekly_context'] = input_clean($_POST['weekly_context'] ?? '', 1600);
                 $weekly_values['adaptive_question_key'] = (string) ($adaptive_question['key'] ?? '');
-                $weekly_values['adaptive_answer'] = input_clean($_POST['adaptive_answer'] ?? '', 800);
+                $weekly_values['adaptive_answer'] = input_clean($_POST['adaptive_answer'] ?? '', 1600);
 
                 if(!$weekly_values['weekly_priority']) Alerts::add_field_error('weekly_priority', l('ai_plan.error.weekly_priority'));
                 if(!$weekly_values['content_commitment']) Alerts::add_field_error('content_commitment', l('ai_plan.error.content_commitment'));
