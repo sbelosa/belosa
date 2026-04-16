@@ -44,7 +44,7 @@ function fcc_ai_get_soft_resolved_feedback_ids(): array {
     }
 
     /* Historical live feedback cases already fixed in the recommendation engine but not writable-resolved in production DB. */
-    $ids = [43, 45, 46, 48, 49, 50, 51, 53, 54, 60, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81];
+    $ids = [43, 45, 46, 48, 49, 50, 51, 53, 54, 60, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 87, 89, 91, 100, 101, 102, 105];
 
     return $ids;
 }
@@ -5478,7 +5478,18 @@ function fcc_ai_is_internal_coach_product_positioning_request(string $message): 
         return false;
     }
 
+    if(
+        fcc_ai_contains_keywords($message, ['proizvod', 'produkt', 'product'])
+        && fcc_ai_contains_keywords($message, ['koristiti', 'uporabiti', 'preporučiti', 'preporuciti', 'recommend'])
+    ) {
+        return true;
+    }
+
     return fcc_ai_contains_keywords($message, [
+        'za što se koristi', 'za sto se koristi',
+        'za što se sve koristi', 'za sto se sve koristi',
+        'za što se može koristiti', 'za sto se moze koristiti',
+        'za što se sve može koristiti', 'za sto se sve moze koristiti',
         'za što se može preporučiti', 'za sto se moze preporuciti',
         'za što se sve može preporučiti', 'za sto se sve moze preporuciti',
         'za što mogu preporučiti', 'za sto mogu preporuciti',
@@ -5549,6 +5560,27 @@ function fcc_ai_internal_coach_confident_product_subject_match(string $subject, 
     $overlap = array_intersect($subject_tokens, $title_tokens);
 
     return count($overlap) >= max(1, min(2, count($subject_tokens)));
+}
+
+function fcc_ai_is_internal_coach_last_click_urgency_request(string $message): bool {
+    return fcc_ai_contains_keywords($message, [
+        'još jedan klik', 'jos jedan klik', '1 klik', 'jedan klik', 'en klik', 'še en klik', 'se en klik',
+        'do liste', 'na listi', 'na listu', 'do seznama', 'na seznamu',
+    ]);
+}
+
+function fcc_ai_is_internal_coach_slovenian_soft_closing_request(string $message, string $language = 'hr'): bool {
+    $language = fcc_ai_resolve_public_reply_language($language);
+
+    if($language !== 'sl') {
+        return false;
+    }
+
+    return fcc_ai_contains_keywords($message, [
+        'zaključ', 'zakljuc', 'završn', 'zavrsn', 'closing line', 'closing lines',
+        'rečenic', 'recenic', 'zaključna poved', 'zakljucna poved', 'brand',
+        'mehke', 'mehki', 'mehkejše', 'mehkejse',
+    ]);
 }
 
 function fcc_ai_is_broad_beauty_request(string $message): bool {
@@ -12587,6 +12619,16 @@ function fcc_ai_is_public_bee_pollen_allergy_conflict_request(string $message): 
         && fcc_ai_contains_keywords($message, ['alergij', 'alergija', 'pelud', 'pollen']);
 }
 
+function fcc_ai_is_public_f15_variant_request(string $message): bool {
+    return fcc_ai_contains_keywords($message, ['f15', 'forever f15'])
+        && fcc_ai_contains_keywords($message, [
+            'okus', 'okus aloe', 'okus aloje', 'flavor', 'taste',
+            'birati', 'odabrati', 'izabrati', 'can i choose', 'can you choose',
+            'drugu alou', 'druga aloja', 'drugu aloe', 'other aloe', 'different aloe',
+            'žuta', 'zuta', 'mango', 'peaches', 'berry',
+        ]);
+}
+
 function fcc_ai_build_public_recommendation_payload(string $assistant_type, string $message, array $context = []): array {
     $language = fcc_ai_resolve_public_reply_language((string) ($context['language'] ?? 'auto'), $message);
     $intent = isset($context['intent']) && is_array($context['intent'])
@@ -15618,6 +15660,7 @@ function fcc_ai_generate_public_reply(string $assistant_type, string $message, a
         && !empty($intent['medical_sensitive']);
     $is_business_skepticism_request = $assistant_type === 'product_advisor'
         && fcc_ai_contains_keywords($message, ['mlm', 'piramid', 'piramida', 'prevara', 'prevar', 'scam']);
+    $is_f15_variant_request = $assistant_type === 'product_advisor' && fcc_ai_is_public_f15_variant_request($message);
     $is_generic_start_product_request = $assistant_type === 'product_advisor'
         && fcc_ai_contains_keywords($message, ['najbolji proizvod za početak', 'najbolji proizvod za pocetak', 'best product to start', 'best product for the start', 'best product for a start']);
     $guarded_request_type = trim((string) ($context['guarded_request_type'] ?? ($intent['guarded_request_type'] ?? '')));
@@ -16518,11 +16561,15 @@ function fcc_ai_generate_public_reply(string $assistant_type, string $message, a
         }
 
         if($intent['business']) {
+            $business_knowledge_suggestions = array_values(array_filter($knowledge_suggestions, static function(array $suggestion) {
+                return (string) ($suggestion['kind'] ?? '') === 'business_article';
+            }));
+
             $content_blocks[] = $language === 'en'
                 ? 'Great, I can help with the business opportunity as well. The simplest next step is to briefly explain how the FCC system helps with recommendations, contacts and follow-up, then invite a personal conversation.'
                 : 'Odlično, mogu pomoći i oko poslovne prilike. Najjednostavniji sljedeći korak je kratko objasniti kako FCC sustav pomaže u preporukama, kontaktima i follow-upu, a zatim pozvati na osobni razgovor.';
 
-            if($knowledge_suggestions) {
+            if($business_knowledge_suggestions) {
                 $content_blocks[] = $language === 'en'
                     ? 'A good next step is to continue through one of the related FCC business articles shown below.'
                     : 'Dobar sljedeći korak je nastaviti kroz jedan od povezanih FCC poslovnih članaka prikazanih ispod.';
@@ -16549,7 +16596,37 @@ function fcc_ai_generate_public_reply(string $assistant_type, string $message, a
                 'lead_capture' => $lead_capture,
                 'intent' => $intent,
                 'recommendation_payload' => $recommendation_payload,
-                'knowledge_suggestions' => $knowledge_suggestions,
+                'knowledge_suggestions' => $business_knowledge_suggestions,
+            ];
+        }
+
+        if($is_f15_variant_request) {
+            $recommendation_payload['primary_product'] = '';
+            $recommendation_payload['support_products'] = [];
+            $recommendation_payload['recommendation_lines'] = [];
+            $recommendation_payload['monthly_quantity_note'] = '';
+            $recommendation_payload['question_lines'] = [];
+            $recommendation_payload['skip_product_tail'] = true;
+
+            $content_blocks[] = $language === 'en'
+                ? 'For F15 package questions like this, I would not guess the aloe flavor or package composition up front, because that can vary by market and by the exact package version.'
+                : 'Kod F15 pitanja poput ovoga ne bih nagađao okus aloe ni sastav paketa unaprijed, jer to može varirati po tržištu i po točnoj verziji paketa.';
+
+            $content_blocks[] = $language === 'en'
+                ? 'The important practical answer is this: I would not claim that it is always only the yellow aloe, and I would not claim that the flavor can always be chosen freely either.'
+                : 'Važan praktičan odgovor ovdje je: ne bih tvrdio da je uvijek samo žuta aloe, ali ne bih ni tvrdio da se okus uvijek može slobodno birati.';
+
+            $content_blocks[] = $language === 'en'
+                ? 'The cleanest next step is to check the exact market or the specific F15 package, and then I can tell you precisely which aloe goes inside and whether there is a flavor choice.'
+                : 'Najčišći sljedeći korak je provjeriti točno tržište ili konkretan F15 paket, pa vam tada mogu precizno reći koja aloe ide unutra i postoji li izbor okusa.';
+
+            return [
+                'content' => trim(implode("\n\n", array_filter($content_blocks))),
+                'language' => $language,
+                'lead_capture' => $lead_capture,
+                'intent' => $intent,
+                'recommendation_payload' => $recommendation_payload,
+                'knowledge_suggestions' => [],
             ];
         }
 
@@ -17254,6 +17331,8 @@ function fcc_ai_generate_public_reply(string $assistant_type, string $message, a
             && !empty($recommendation_payload['recommendation_lines'])
             && empty($recommendation_payload['question_lines'])
             && empty($intent['serious'])
+            && empty($intent['business'])
+            && empty($intent['business_content_request'])
             && empty($intent['medical_sensitive'])
             && empty($intent['special_population_sensitive'])
             && empty($intent['medication_interaction_sensitive'])
@@ -21412,6 +21491,8 @@ function fcc_ai_handle_public_message(array $payload): array {
             (string) ($conversation->assistant_type ?? '') === 'product_advisor'
             && $recommendation_primary !== ''
             && empty($intent['serious'])
+        && empty($intent['business'])
+        && empty($intent['business_content_request'])
         && empty($recommendation_payload['skip_product_tail'])
         && (empty($intent['medical_sensitive']) || $allow_sensitive_support_anchor)
         && empty($intent['special_population_sensitive'])
@@ -21936,6 +22017,13 @@ function fcc_ai_generate_internal_coach_reply(string $message, array $context = 
     }
     $coach_product_lookup = is_array($coach_product_lookup_matches[0] ?? null) ? $coach_product_lookup_matches[0] : [];
     if(empty($coach_product_lookup) && $coach_positioning_subject !== '') {
+        $coach_subject_tokens = fcc_ai_extract_search_tokens($coach_positioning_subject);
+        $allow_subject_suggestion_fallback = count($coach_subject_tokens) >= 2;
+
+        if(!$allow_subject_suggestion_fallback) {
+            $coach_subject_suggestions = [];
+            $coach_subject_suggestion = [];
+        } else {
         $coach_subject_intent = fcc_ai_detect_public_intent('product_advisor', $coach_positioning_subject);
         $coach_subject_suggestions = fcc_ai_get_public_knowledge_suggestions('product_advisor', $coach_positioning_subject, [
             'language' => $language,
@@ -21954,6 +22042,7 @@ function fcc_ai_generate_internal_coach_reply(string $message, array $context = 
                 'description' => (string) ($coach_subject_suggestion['description'] ?? ''),
                 'url' => (string) ($coach_subject_suggestion['url'] ?? ''),
             ];
+        }
         }
     }
     $coach_recognized_product_title = trim((string) ($coach_product_lookup['title'] ?? ''));
@@ -22112,6 +22201,60 @@ function fcc_ai_generate_internal_coach_reply(string $message, array $context = 
         ];
     }
 
+    if(fcc_ai_is_internal_coach_last_click_urgency_request($message)) {
+        $content = $language === 'en'
+            ? implode("\n\n", [
+                'If you are literally one click away from the list, do not spread wider content now. The fastest move is direct follow-up with warm people who already reacted, viewed stories or asked something earlier.',
+                "Do only these 3 things now:\n- open Contacts and pick 5 warm people\n- send one short DM with the link again\n- ask one simple question that invites a reply instead of posting a new broad promo",
+                'Use a message like this:\n"Hey, I am one click away from the list and thought of you because this could genuinely be useful. If you want, I will send you the shortest overview and the link right away."',
+                'Best next step now: send this to 5 warm contacts before making any new story or post.',
+            ])
+            : ($language === 'sl'
+                ? implode("\n\n", [
+                    'Če ti manjka samo še en klik do seznama, zdaj ne širi nove vsebine na široko. Najhitrejša poteza je direkten follow-up toplim ljudem, ki so že reagirali, pogledali story ali prej nekaj vprašali.',
+                    "Zdaj naredi samo te 3 stvari:\n- odpri Kontakte in izberi 5 toplih ljudi\n- pošlji jim eno kratko DM sporočilo z linkom\n- postavi eno preprosto vprašanje, ki vabi odgovor, namesto nove splošne objave",
+                    "Uporabi lahko to sporočilo:\n\"Hej, manjka mi še en klik do seznama in sem se spomnila nate, ker mislim, da bi ti to lahko bilo koristno. Če želiš, ti takoj pošljem najkrajši pregled in link.\"",
+                    'Najboljša naslednja poteza zdaj: to pošlji 5 toplim kontaktom še pred novim storyjem ali objavo.',
+                ])
+                : implode("\n\n", [
+                    'Ako ti doslovno fali još jedan klik do liste, sada nemoj širiti novi sadržaj na široko. Najbrži potez je direktan follow-up toplim ljudima koji su već reagirali, pogledali story ili ranije nešto pitali.',
+                    "Sada napravi samo ove 3 stvari:\n- otvori Kontakte i odaberi 5 toplih ljudi\n- pošalji im jednu kratku DM poruku s linkom\n- postavi jedno jednostavno pitanje koje poziva na odgovor, umjesto nove opće objave",
+                    "Možeš poslati ovakvu poruku:\n\"Hej, fali mi još jedan klik do liste i sjetila sam se tebe jer mislim da bi ti ovo stvarno moglo biti korisno. Ako želiš, odmah ti pošaljem najkraći pregled i link.\"",
+                    'Najbolji sljedeći korak sada: pošalji to na 5 toplih kontakata prije novog storyja ili objave.',
+                ]));
+
+        return [
+            'content' => $content,
+            'language' => $language,
+            'knowledge_suggestions' => [],
+            'reply_mode' => 'conversion_urgency',
+            'force_local_preview' => true,
+            'next_step' => $language === 'en'
+                ? 'Send the short DM to 5 warm contacts now.'
+                : ($language === 'sl'
+                    ? 'Zdaj pošlji kratko DM sporočilo 5 toplim kontaktom.'
+                    : 'Sada pošalji kratku DM poruku na 5 toplih kontakata.'),
+        ];
+    }
+
+    if(fcc_ai_is_internal_coach_slovenian_soft_closing_request($message, $language)) {
+        $content = implode("\n\n", [
+            'Če želiš mehkejše zaključne povedi v dobri slovenščini, jih drži kratke, tople in naravne, brez mešanja jezikov ter brez preveč prodajnega pritiska.',
+            "Uporabi lahko kaj takega:\n- Če želiš, ti lahko to razložim še bolj preprosto.\n- Če ti je to blizu, mi mirno piši in pogledava skupaj.\n- Če želiš, ti pošljem še krajšo verzijo za story ali DM.",
+            'Najboljši ton je: umirjen, jasen, prijazen in dovolj samozavesten, da ne zveni neodločno ali preveč umetno.',
+            'Najboljša naslednja poteza zdaj: povej mi, ali želiš 3 zaključke za story, DM ali objavo, pa jih napišem čisto v slovenščini.',
+        ]);
+
+        return [
+            'content' => $content,
+            'language' => $language,
+            'knowledge_suggestions' => [],
+            'reply_mode' => 'slovenian_closing_copy',
+            'force_local_preview' => true,
+            'next_step' => 'Povej mi, ali želiš 3 zaključke za story, DM ali objavo.',
+        ];
+    }
+
     if($needs_content_brief) {
         $content = $language === 'en'
             ? implode("\n\n", [
@@ -22124,7 +22267,7 @@ function fcc_ai_generate_internal_coach_reply(string $message, array $context = 
                 ? implode("\n\n", [
                     'To ti lahko napišem, vendar najprej potrebujem zelo kratek brief, da besedilo ne bo generično.',
                     'Pošlji mi samo te 4 stvari v eni vrstici ali alinejah: komu je namenjeno, kaj želiš promovirati, kakšen je cilj in kakšen CTA želiš.',
-                    'Primer: "Za nove partnerje, Aloe+ akcija, cilj je interes v DM, CTA je piši mi za detalje."',
+                    'Primer: "Za nove partnerje, Aloe+ akcija, cilj je interes v DM, CTA je piši mi za podrobnosti."',
                     'Najboljša naslednja poteza zdaj: pošlji 4-točkovni brief in takoj napišem končno verzijo.',
                 ])
                 : implode("\n\n", [
