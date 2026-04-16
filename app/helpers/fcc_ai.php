@@ -3915,6 +3915,16 @@ function fcc_ai_get_default_internal_coach_persona_prompt(string $language = 'hr
         ]);
     }
 
+    if($language === 'sl') {
+        return implode("\n", [
+            'Ti si topel, praktičen in akcijsko usmerjen FCC Coach.',
+            'Zveniš kot podporen poslovni mentor, ki razume kontekst sodelavca znotraj Forever Card Cluba.',
+            'Razlagaj preprosto, zmanjšuj občutek preobremenjenosti in vodi sodelavca do ene jasne naslednje poteze.',
+            'Ko sodelavec prosi za pomoč pri vsebini ali komunikaciji, napiši konkreten predlog namesto splošnega nasveta.',
+            'Tvoj ton naj bo spodbuden, miren in samozavesten. Bodi natančen in nikoli prazen.',
+        ]);
+    }
+
     return implode("\n", [
         'Ti si topao, praktičan i akcijski usmjeren FCC Coach.',
         'Zvuči kao podržavajući poslovni mentor koji poznaje kontekst suradnika unutar Forever Card Cluba.',
@@ -3939,6 +3949,25 @@ function fcc_ai_get_default_internal_coach_rules_prompt(string $language = 'hr')
             'If the collaborator seems stuck, reduce the task to the smallest useful next action.',
             'If the question is vague, choose the most valuable move based on the current page and explain why briefly.',
             'End with a clear next action whenever it helps the collaborator move faster.',
+            'Stay fully inside the selected reply language. Do not mix Croatian, Slovenian, Bulgarian or English inside the same answer unless you are quoting an exact UI label.',
+            'If the collaborator asks how to position or recommend a product and the product name is unclear, ask for the exact product name, article or screenshot before suggesting use cases.',
+        ]);
+    }
+
+    if($language === 'sl') {
+        return implode("\n", [
+            'Ostani znotraj FCC poslovnega coachinga, pomoči na platformi, podpore za vsebino in follow-up komunikacijo.',
+            'Kot glavni vir resnice uporabljaj trenutno stran in AI Plan kontekst.',
+            'Vedno pomagaj sodelavcu odločiti se, kaj naj naredi zdaj, ne samo kaj nekaj pomeni.',
+            'Če uporabnik prosi za DM, caption, objavo, story, follow-up ali mini plan, to napiši takoj.',
+            'Predlagaj en do tri naslednje korake. Uporabnika ne zasipaj s široko teorijo.',
+            'Ne obnašaj se kot javni AI svetovalec za izdelke in ne podajaj medicinskih trditev ali nasvetov za zdravljenje.',
+            'Ne izmišljaj strani, analitike, nastavitev ali možnosti, ki jih ni v danem kontekstu.',
+            'Če sodelavec deluje blokirano, razbij nalogo na najmanjšo uporabno naslednjo akcijo.',
+            'Če je vprašanje nejasno, izberi najbolj dragoceno naslednjo potezo glede na trenutno stran in na kratko razloži zakaj.',
+            'Ko pomaga hitrosti izvedbe, končaj odgovor z enim jasnim naslednjim korakom.',
+            'Odgovarjaj samo v slovenščini in ne mešaj hrvaških ali drugih izrazov, razen če navajaš natančno ime gumba ali strani v UI-ju.',
+            'Če sodelavec sprašuje, kako priporočati izdelek, pa ime izdelka ni jasno, najprej zahtevaj točno ime izdelka, članek ali posnetek zaslona, preden predlagaš načine uporabe.',
         ]);
     }
 
@@ -3953,6 +3982,8 @@ function fcc_ai_get_default_internal_coach_rules_prompt(string $language = 'hr')
         'Ako suradnik djeluje blokirano, razbij zadatak na najmanju korisnu sljedeću akciju.',
         'Ako je upit nejasan, odaberi najvrjedniji sljedeći potez prema trenutnoj stranici i kratko objasni zašto.',
         'Kad god je korisno, završi odgovor jasnim sljedećim korakom.',
+        'Odgovaraj samo na odabranom jeziku i nemoj miješati hrvatski, slovenski, bugarski ili engleski unutar iste poruke osim kada citiraš točan UI naziv.',
+        'Ako suradnik pita kako preporučiti proizvod, a naziv proizvoda nije potpuno jasan, prvo traži točan naziv proizvoda, članak ili screenshot prije nego sugeriraš upotrebu.',
     ]);
 }
 
@@ -3968,6 +3999,18 @@ function fcc_ai_get_default_internal_coach_response_contract(string $language = 
             '- When the user asks for text, write the text directly instead of only describing it.',
             '- Avoid long intros and avoid repeating context the collaborator already sees on the page.',
             '- End with one clear next step whenever it helps the collaborator move faster.',
+        ]);
+    }
+
+    if($language === 'sl') {
+        return implode("\n", [
+            'Coach response contract:',
+            '- Večina odgovorov naj bo kratkih in operativnih.',
+            '- Prednost daj enemu od teh formatov: kratka razlaga + naslednja poteza, mini checklist, pripravljeno sporočilo ali preprost mini plan za teden.',
+            '- Ko je uporabnik blokiran, razbij nalogo na najmanjšo uporabno naslednjo akcijo.',
+            '- Ko uporabnik prosi za besedilo, ga napiši takoj, namesto da samo opisuješ, kaj bi lahko napisal.',
+            '- Izogibaj se dolgim uvodom in ne ponavljaj konteksta, ki ga sodelavec že vidi na strani.',
+            '- Ko pomaga hitrosti izvedbe, končaj odgovor z enim jasnim naslednjim korakom.',
         ]);
     }
 
@@ -3997,6 +4040,21 @@ function fcc_ai_get_internal_coach_operating_playbook(string $language = 'hr'): 
             '7. Blocked mode: calm the collaborator down, simplify the situation and give one move they can finish fast.',
             '8. Product referral mode: explain the logged-in share helper on product blog articles, tell the collaborator to use copy/share instead of the raw URL, and connect Beginner sharing with the PRO product block and 15+ click-building.',
             '9. Sales link mode: if the Forever sales link is missing, invalid or disabled, make that the first priority before other growth advice because FCC cannot drive webshop recommendation results without it.',
+        ]);
+    }
+
+    if($language === 'sl') {
+        return implode("\n", [
+            'FCC Coach operativni playbook:',
+            '1. Dashboard način: prepoznaj eno najboljšo naslednjo potezo in poskrbi, da je izvedljiva že danes.',
+            '2. AI profil način: vodi po poljih, dokler cilj, ponudba, kanali, blokada in stil niso jasni.',
+            '3. Tedenski način: pretvori trenutno situacijo v en tedenski fokus in eno power move potezo.',
+            '4. Način aplikacije: izboljšaj samo naslednjo najbolj vredno stvar na aplikaciji, ne vsega naenkrat.',
+            '5. Način kontaktov: predlagaj, komu najprej poslati follow-up, kaj poslati in kako premakniti interes naprej.',
+            '6. Način vsebine: če sodelavec prosi za caption, story, DM ali follow-up, takoj napiši uporaben prvi draft.',
+            '7. Način blokade: umiri situacijo, jo poenostavi in daj eno potezo, ki jo uporabnik lahko hitro zaključi.',
+            '8. Način priporočila izdelka: razloži prijavljeni share helper na blog člankih o izdelkih, povej sodelavcu naj uporablja copy/share namesto navadnega URL-ja in poveži Beginner deljenje s PRO blokom izdelkov ter gradnjo 15+ klikov.',
+            '9. Način prodajnega linka: če Forever prodajni link manjka, je neveljaven ali izklopljen, naj bo to prva prioriteta pred ostalimi growth nasveti, ker brez njega FCC ne more graditi webshop rezultatov priporočil.',
         ]);
     }
 
@@ -5217,6 +5275,137 @@ function fcc_ai_is_ambiguous_same_problem_followup_request(string $message): boo
         'njegu',
         'proizvod',
     ]);
+}
+
+function fcc_ai_is_public_business_followup_clarification_request(string $message): bool {
+    $message = trim($message);
+
+    if($message === '') {
+        return false;
+    }
+
+    if(
+        fcc_ai_is_direct_product_lookup_message($message)
+        || fcc_ai_contains_keywords($message, [
+            'proizvod', 'proizvodi', 'product', 'products', 'aloe', 'gel', 'vitamin',
+            'routine', 'rutina', 'preporuk', 'recommend', 'probav', 'energ', 'imunit',
+            'koža', 'koza', 'skin', 'mršav', 'mrsav', 'detoks', 'digest', 'immune',
+        ])
+    ) {
+        return false;
+    }
+
+    return fcc_ai_contains_keywords($message, [
+        'tko je', 'ko je', 'who is',
+        'kako mi može pomoći', 'kako mi moze pomoci',
+        'kako mi ona može pomoći', 'kako mi ona moze pomoci',
+        'kako mi on može pomoći', 'kako mi on moze pomoci',
+        'kako mi partner može pomoći', 'kako mi partner moze pomoci',
+        'kako to ide dalje', 'što onda', 'sto onda',
+        'što dalje s tim', 'sto dalje s tim', 'što dalje ako', 'sto dalje ako',
+        'još malo trebam razmisliti', 'jos malo trebam razmisliti',
+        'moram razmisliti', 'zanimljivo je', 'zanimljivo moram priznati',
+        'how can she help', 'how can he help', 'how can the partner help',
+        'what happens next', 'tell me more about her', 'tell me more about him',
+    ]);
+}
+
+function fcc_ai_is_public_owner_help_followup_request(string $message): bool {
+    $message = trim($message);
+
+    if($message === '') {
+        return false;
+    }
+
+    return fcc_ai_contains_keywords($message, [
+        'tko je', 'ko je', 'who is',
+        'kako mi može pomoći', 'kako mi moze pomoci',
+        'kako mi ona može pomoći', 'kako mi ona moze pomoci',
+        'kako mi on može pomoći', 'kako mi on moze pomoci',
+        'kako mi partner može pomoći', 'kako mi partner moze pomoci',
+        'how can she help', 'how can he help', 'how can the partner help',
+        'tell me more about her', 'tell me more about him',
+    ]);
+}
+
+function fcc_ai_is_internal_coach_product_positioning_request(string $message): bool {
+    $message = trim($message);
+
+    if($message === '') {
+        return false;
+    }
+
+    return fcc_ai_contains_keywords($message, [
+        'za što se može preporučiti', 'za sto se moze preporuciti',
+        'za što se sve može preporučiti', 'za sto se sve moze preporuciti',
+        'za što mogu preporučiti', 'za sto mogu preporuciti',
+        'za što bi preporučio', 'za sto bi preporucio',
+        'kome preporučiti', 'kome preporuciti',
+        'kada preporučiti', 'kada preporuciti',
+        'kako preporučiti', 'kako preporuciti',
+        'kako ga preporučiti', 'kako ga preporuciti',
+        'kako ga predstaviti',
+        'što da kažem za', 'sto da kazem za',
+        'šta da kažem za', 'sta da kazem za',
+        'što reći za', 'sto reci za',
+        'how should i position', 'how should i recommend',
+        'what should i say about',
+    ]);
+}
+
+function fcc_ai_extract_internal_coach_positioning_subject(string $message): string {
+    $message = trim($message);
+
+    if($message === '') {
+        return '';
+    }
+
+    $patterns = [
+        '/\bproizvod\s+(.+?)[\?\.\!]*$/iu',
+        '/\bprodukt\s+(.+?)[\?\.\!]*$/iu',
+        '/\babout\s+(.+?)[\?\.\!]*$/iu',
+    ];
+
+    foreach($patterns as $pattern) {
+        if(preg_match($pattern, $message, $matches)) {
+            $candidate = trim((string) ($matches[1] ?? ''));
+            $candidate = trim($candidate, " \t\n\r\0\x0B\"'“”‘’");
+
+            if($candidate !== '') {
+                return $candidate;
+            }
+        }
+    }
+
+    return '';
+}
+
+function fcc_ai_internal_coach_confident_product_subject_match(string $subject, string $title): bool {
+    $subject = mb_strtolower(trim($subject));
+    $title = mb_strtolower(trim($title));
+
+    if($subject === '' || $title === '') {
+        return false;
+    }
+
+    if(str_contains($title, $subject) || str_contains($subject, $title)) {
+        return true;
+    }
+
+    $subject_tokens = array_values(array_filter(preg_split('/[^[:alnum:]]+/u', $subject) ?: [], static function($token) {
+        return mb_strlen((string) $token) >= 4;
+    }));
+    $title_tokens = array_values(array_filter(preg_split('/[^[:alnum:]]+/u', $title) ?: [], static function($token) {
+        return mb_strlen((string) $token) >= 4;
+    }));
+
+    if(empty($subject_tokens) || empty($title_tokens)) {
+        return false;
+    }
+
+    $overlap = array_intersect($subject_tokens, $title_tokens);
+
+    return count($overlap) >= max(1, min(2, count($subject_tokens)));
 }
 
 function fcc_ai_is_broad_beauty_request(string $message): bool {
@@ -12508,6 +12697,7 @@ function fcc_ai_generate_public_reply(string $assistant_type, string $message, a
     $skip_product_tail = !empty($recommendation_payload['skip_product_tail']);
     $business_primary = $assistant_type === 'product_advisor' && !empty($intent['business_primary']);
     $business_mixed_with_product = $business_primary && !empty($intent['explicit_product_request']);
+    $owner_help_followup_request = $assistant_type === 'product_advisor' && fcc_ai_is_public_owner_help_followup_request($message);
 
     if($skip_product_tail) {
         $knowledge_suggestions = [];
@@ -13099,6 +13289,15 @@ function fcc_ai_generate_public_reply(string $assistant_type, string $message, a
                 : ($language === 'en'
                     ? 'Great, I will keep the focus on collaboration here. The cleanest next step is to stay on how the FCC business flow works and what happens if you want personal guidance.'
                     : 'Odlično, ovdje ću zadržati fokus na suradnji. Najčišći sljedeći korak je ostati na tome kako FCC poslovni tok funkcionira i što se događa ako želite osobno vodstvo.');
+
+            if($owner_help_followup_request && $owner_name !== '') {
+                $owner_first_name = fcc_ai_extract_first_name($owner_name);
+                $content_blocks[] = $language === 'en'
+                    ? (($owner_first_name !== '' ? $owner_first_name : $owner_name) . ' is the FCC partner behind this app, so the main value is personal guidance: explaining how the system fits your goals, how the first steps look, and how to continue without guesswork.')
+                    : ($language === 'sl'
+                        ? (($owner_first_name !== '' ? $owner_first_name : $owner_name) . ' je FCC partner za to aplikacijo, zato je glavna vrednost osebno vodenje: razloži, kako se sistem ujema z vašimi cilji, kako izgledajo prvi koraki in kako nadaljevati brez ugibanja.')
+                        : (($owner_first_name !== '' ? $owner_first_name : $owner_name) . ' je FCC partner iza ove aplikacije, pa je glavna vrijednost osobno vodstvo: može objasniti kako se sustav uklapa u vaše ciljeve, kako izgledaju prvi koraci i kako dalje bez nagađanja.'));
+            }
 
             $content_blocks[] = $language === 'en'
                 ? 'Inside FCC, the partner can use a shareable app, blog content, chat flow, contacts and follow-up in one place, so the business conversation does not stay only on messages but moves into a simple working system.'
@@ -17648,6 +17847,9 @@ function fcc_ai_handle_public_message(array $payload): array {
     $used_context_for_matching = !empty($contextual_message_bundle['used_context']);
     $intent = fcc_ai_detect_public_intent((string) $conversation->assistant_type, $message_for_matching);
     $previous_user_message = fcc_ai_get_previous_public_user_message((int) ($conversation->fcc_ai_conversation_id ?? 0), $current_user_message);
+    $previous_intent = $previous_user_message !== ''
+        ? fcc_ai_detect_public_intent((string) ($conversation->assistant_type ?? ''), $previous_user_message)
+        : [];
     $current_condition_keys = fcc_ai_get_condition_match_keys(
         fcc_ai_get_product_advisor_effective_condition_matches($current_user_message, $resolved_language)
     );
@@ -17662,6 +17864,10 @@ function fcc_ai_handle_public_message(array $payload): array {
         && empty($current_condition_keys)
         && !empty($previous_condition_keys)
         && fcc_ai_is_ambiguous_same_problem_followup_request($current_user_message);
+    $is_business_followup_clarification = (string) ($conversation->assistant_type ?? '') === 'product_advisor'
+        && $previous_user_message !== ''
+        && !empty($previous_intent['business_primary'])
+        && fcc_ai_is_public_business_followup_clarification_request($current_user_message);
     $is_broad_beauty_followup_clarification = (string) ($conversation->assistant_type ?? '') === 'product_advisor'
         && fcc_ai_is_broad_beauty_request($current_user_message)
         && (
@@ -17680,6 +17886,19 @@ function fcc_ai_handle_public_message(array $payload): array {
         $recent_user_context = $previous_user_message;
         $used_context_for_matching = true;
         $intent = fcc_ai_detect_public_intent((string) $conversation->assistant_type, $previous_user_message);
+    } elseif($is_business_followup_clarification) {
+        $message_for_matching = $previous_user_message . "\n\nBusiness follow-up clarification needed: " . $current_user_message;
+        $recent_user_context = $previous_user_message;
+        $used_context_for_matching = true;
+        $intent = is_array($previous_intent) ? $previous_intent : fcc_ai_detect_public_intent((string) $conversation->assistant_type, $previous_user_message);
+        $intent['business'] = true;
+        $intent['business_primary'] = true;
+        $intent['business_content_request'] = false;
+        $intent['support_request'] = false;
+        $intent['card_review_request'] = false;
+        $intent['explicit_product_request'] = false;
+        $intent['product'] = false;
+        $intent['lead_type'] = 'business_interest';
     } elseif($is_broad_beauty_followup_clarification && $previous_user_message !== '') {
         $message_for_matching = $previous_user_message . "\n\nBeauty clarification needed: " . $current_user_message;
         $recent_user_context = $previous_user_message;
@@ -17824,10 +18043,10 @@ function fcc_ai_handle_public_message(array $payload): array {
 
     $model_attempt = [
         'success' => false,
-        'reason' => ($is_same_problem_followup_clarification || $is_broad_beauty_followup_clarification) ? 'local_context_clarification' : 'local_preview',
+        'reason' => ($is_same_problem_followup_clarification || $is_business_followup_clarification || $is_broad_beauty_followup_clarification) ? 'local_context_clarification' : 'local_preview',
     ];
 
-    if(!$is_same_problem_followup_clarification && !$is_broad_beauty_followup_clarification) {
+    if(!$is_same_problem_followup_clarification && !$is_business_followup_clarification && !$is_broad_beauty_followup_clarification) {
         $model_attempt = fcc_ai_try_generate_public_model_reply($conversation, [
             'language' => $resolved_language,
             'scope' => (string) ($conversation->scope ?? 'public_app'),
@@ -18254,11 +18473,12 @@ function fcc_ai_build_internal_coach_system_prompt(array $context = [], ?object 
         'Primary mission: turn uncertainty into the clearest next business move inside FCC. You are not here to impress with broad theory. You are here to help the collaborator move forward now.',
         'Core jobs: guide the collaborator through AI Plan and Your growth plan; explain the current FCC page and what to do on it; help improve apps, contacts and follow-up; create practical content and communication assets; keep the collaborator aligned with the next weekly move.',
         'Always reply in ' . $language_label . '. Keep replies warm, practical, confident and specific to the current FCC page. Prefer one to three short paragraphs, or a short flat list when steps are clearer that way.',
+        'Language purity rule: stay fully inside ' . $language_label . ' in the final answer. Do not mix Croatian, Slovenian, Bulgarian or English in the same reply unless you are quoting an exact UI label, product name or system label that exists in the provided context.',
         'Tone: ' . ($tone !== '' ? $tone : 'supportive') . '.',
         'Response rules: always identify the most useful next move; prefer action over explanation; if the user asks for a DM, caption, story angle, checklist, follow-up or action plan, write it directly; if the user is vague, narrow the answer to one best move instead of giving a wide overview.',
         'Output rules: when useful, include a ready-to-use asset such as a DM, story text, post idea, follow-up message, checklist or mini weekly plan. When the collaborator is stuck, break the task into the smallest possible next step.',
         'Sales link rule: if sales_link_summary says the Forever sales link is missing, invalid or disabled, treat that as the first operational priority before profile polishing, app review, weekly AI cycles or PRO upsell. Explain that both Beginner and PRO can use it, that the correct setup flow is Blocks -> Add block -> Forever Card Club -> Forever Web Shop -> create the user\'s own Link Builder URL on Foreverliving.com -> paste it into the block, and that without it FCC cannot drive real webshop recommendation results. Make clear that only the collaborator can create that link inside their own Foreverliving account.',
-        'Campaign rule: if active_campaign exists and the question is about growth, content, story ideas, DMs, products, clicks, traffic, app blocks, promotions, offers, or what should happen next, use that current campaign as a concrete time-sensitive opportunity. The preferred move is to place the campaign on the main FCC app through a dedicated button or link block with the collaborator\'s own personal Link Builder URL. Never tell them to paste or share a raw Forever product URL without their own personal Link Builder URL.',
+        'Campaign rule: use active_campaign only when the collaborator explicitly asks about the current campaign, promo, challenge, offer or a campaign-specific content task. Do not inject the active campaign into generic questions about clicks, traffic, publishing rhythm or general next steps unless the collaborator clearly points to that campaign. When campaign context is explicitly requested, the preferred move is to place the campaign on the main FCC app through a dedicated button or link block with the collaborator\'s own personal Link Builder URL. Never tell them to paste or share a raw Forever product URL without their own personal Link Builder URL.',
         'Portfolio rule: when the collaborator asks about too many apps, which app to focus on, how to connect niche pages, or what to disable, use portfolio_summary and portfolio_details. Recommend a focused portfolio, keep only apps with a clear business role or signal, and gently suggest disabling dead-end apps that have no meaningful traffic, result or purpose.',
         'Coach commerce rule: help first. If the collaborator is on Beginner, you may gently mention PRO or trial only when it clearly unlocks the next value they want. If PRO is active and the initial app review or first weekly plan are still available, guide them through that intro cycle before pushing the 15+ signal. If PRO is active but the intro cycle is already spent and the 15+ signal is not there yet, focus on the fastest path to 15+ in 30 days. Once the collaborator holds 15+ / 30d, explain that this keeps them on Featured Apps as the first public proof layer, but that 50+ / 30d is the main public goal because FCC can promote them as an active recommended sponsor on the homepage and through public sponsor profiles. When relevant, explain that this also strengthens how Google and AI systems understand their brand and sponsor relevance through FCC. Treat 15+ / 7d as a weekly rhythm check, not as the main sponsor threshold.',
         'Availability rule: use availability_summary whenever you coach around app reviews or weekly plans. If something is available now, say it clearly. If it is locked, mention the exact next unlock time when provided and redirect the collaborator toward the best thing to do until then.',
@@ -18398,7 +18618,41 @@ function fcc_ai_generate_internal_coach_reply(string $message, array $context = 
     $is_portfolio_cleanup_request = fcc_ai_contains_keywords($message, ['ugasi', 'isključi', 'iskljuci', 'obriši', 'obrisi', 'arhivir', 'archive', 'cleanup', 'slijepa crijeva', 'bez smisla']);
     $is_multi_app_request = fcc_ai_contains_keywords($message, ['previše aplik', 'vise aplik', 'više app', 'koliko aplik', 'koju aplik', 'koja aplik', 'dodatne aplik', 'niche app', 'nisna app', 'nišna app']);
     $is_app_connection_request = fcc_ai_contains_keywords($message, ['poveži aplik', 'povezi aplik', 'spoji aplik', 'glavna aplik', 'main app', 'dodatna app']);
-    $is_campaign_request = $campaign_active && fcc_ai_contains_keywords($message, ['akcij', 'promo', 'popust', 'izazov', 'challenge', 'aloe', 'pro-b', '4 pack', 'paket aloe', 'kampanj', 'transformacij']);
+    $coach_positioning_subject = fcc_ai_extract_internal_coach_positioning_subject($message);
+    $coach_product_lookup_matches = fcc_ai_get_public_direct_product_lookup_matches($message);
+    if(empty($coach_product_lookup_matches) && $coach_positioning_subject !== '') {
+        $coach_product_lookup_matches = fcc_ai_get_public_direct_product_lookup_matches($coach_positioning_subject);
+    }
+    $coach_product_lookup = is_array($coach_product_lookup_matches[0] ?? null) ? $coach_product_lookup_matches[0] : [];
+    if(empty($coach_product_lookup) && $coach_positioning_subject !== '') {
+        $coach_subject_intent = fcc_ai_detect_public_intent('product_advisor', $coach_positioning_subject);
+        $coach_subject_suggestions = fcc_ai_get_public_knowledge_suggestions('product_advisor', $coach_positioning_subject, [
+            'language' => $language,
+            'intent' => $coach_subject_intent,
+        ]);
+        $coach_subject_suggestion = is_array($coach_subject_suggestions[0] ?? null) ? $coach_subject_suggestions[0] : [];
+        if(
+            !empty($coach_subject_suggestion)
+            && fcc_ai_internal_coach_confident_product_subject_match(
+                $coach_positioning_subject,
+                (string) ($coach_subject_suggestion['title'] ?? '')
+            )
+        ) {
+            $coach_product_lookup = [
+                'title' => (string) ($coach_subject_suggestion['title'] ?? ''),
+                'description' => (string) ($coach_subject_suggestion['description'] ?? ''),
+                'url' => (string) ($coach_subject_suggestion['url'] ?? ''),
+            ];
+        }
+    }
+    $coach_recognized_product_title = trim((string) ($coach_product_lookup['title'] ?? ''));
+    $coach_recognized_product_description = trim((string) ($coach_product_lookup['description'] ?? ''));
+    $coach_recognized_product_url = trim((string) ($coach_product_lookup['url'] ?? ''));
+    $is_product_positioning_request = fcc_ai_is_internal_coach_product_positioning_request($message);
+    $is_campaign_request = $campaign_active && fcc_ai_contains_keywords($message, [
+        'akcij', 'promo', 'izazov', 'challenge', 'kampanj', 'campaign', 'offer', 'ponud',
+        'trenutna akcija', 'ova akcija', 'ovaj izazov', 'current campaign',
+    ]);
     $is_next_move_request = fcc_ai_contains_keywords($message, ['što sad', 'sto sad', 'što dalje', 'sto dalje', 'šta dalje', 'sta dalje', 'sljedeći korak', 'sljedeci korak', 'next step', 'next move', 'what now', 'what should i do']);
     $is_sponsor_visibility_request = in_array($page_route, ['featured-apps', 'recommended-sponsors'], true)
         || fcc_ai_contains_keywords($message, ['featured', 'istaknut', 'preporu', 'sponsor', 'sponzor', 'naslovn', 'brand', 'brend', 'google', 'indeks', 'index', 'chatgpt', 'ai search', 'pretraga', 'pozicioniranje', 'vidljivost']);
@@ -18406,6 +18660,92 @@ function fcc_ai_generate_internal_coach_reply(string $message, array $context = 
         || fcc_ai_contains_keywords($message, ['forever proizvodi', 'forever products', 'share', 'podijeli', 'kopir', 'copy link', 'referral', 'referr', 'preporukom', 'foreverliving', 'blok proizvoda', 'link za preporuku', 'preporuku za proizvod']);
     $is_followup_asset_request = $is_contacts_request || fcc_ai_contains_keywords($message, ['follow-up', 'follow up', 'dm', 'poruk', 'kontakt']);
     $should_lead_with_step = !$is_contacts_request && !$is_content_request && !$is_settings_request && !$is_blocked_request;
+
+    if($is_product_positioning_request) {
+        if($coach_recognized_product_title === '') {
+            $content = $language === 'en'
+                ? implode("\n\n", [
+                    'Before I suggest positioning angles, I need the exact product name because I do not want to guess and send you into a wrong recommendation.',
+                    'Send me one of these and I will keep it precise: the exact Forever product name, the FCC article link, or a screenshot/photo of the product.',
+                    'As soon as I have that, I can give you three things only: for whom it fits best, when it makes sense to mention it, and one short DM line you can use naturally.',
+                ])
+                : ($language === 'sl'
+                    ? implode("\n\n", [
+                        'Preden predlagam kote priporočanja, potrebujem točno ime izdelka, ker nočem ugibati in te poslati v napačno priporočilo.',
+                        'Pošlji mi eno od tega in ostal bom natančen: točno ime Forever izdelka, povezavo do FCC članka ali screenshot/fotografijo izdelka.',
+                        'Takoj ko to dobim, ti pripravim samo 3 stvari: komu najbolj ustreza, kdaj ga je smiselno omeniti in eno kratko DM poved, ki jo lahko uporabiš naravno.',
+                    ])
+                    : implode("\n\n", [
+                        'Prije nego predložim kut preporuke, trebam točan naziv proizvoda jer ne želim nagađati i poslati te u krivom smjeru.',
+                        'Pošalji mi jedno od ovoga i ostat ću precizan: točan naziv Forever proizvoda, link na FCC članak ili screenshot/fotku proizvoda.',
+                        'Čim to dobijem, složit ću ti samo 3 stvari: kome najbolje odgovara, kada ga ima smisla spomenuti i jednu kratku DM rečenicu koju možeš prirodno koristiti.',
+                    ]));
+
+            return [
+                'content' => $content,
+                'language' => $language,
+                'knowledge_suggestions' => [],
+            ];
+        }
+
+        $product_line = $coach_recognized_product_description !== ''
+            ? $coach_recognized_product_description
+            : ($language === 'en'
+                ? 'stay strictly on the official FCC product angle and do not widen it beyond the verified context'
+                : ($language === 'sl'
+                    ? 'ostani strogo znotraj uradnega FCC kota izdelka in ga ne širi izven preverjenega konteksta'
+                    : 'ostani strogo unutar službenog FCC kuta proizvoda i ne širi ga izvan provjerenog konteksta'));
+
+        $dm_line = $language === 'en'
+            ? 'If this sounds close to your situation, I can send you the cleanest short explanation and where it fits naturally.'
+            : ($language === 'sl'
+                ? 'Če se to sliši blizu vaši situaciji, vam lahko pošljem najbolj čisto kratko razlago in kam se naravno uklopi.'
+                : 'Ako ti ovo zvuči blisko situaciji osobe, mogu ti poslati najčišće kratko objašnjenje i gdje se prirodno uklapa.');
+
+        $content = $language === 'en'
+            ? implode("\n\n", [
+                'If you mean ' . $coach_recognized_product_title . ', keep it simple and stay inside the official FCC angle for that product.',
+                'The safest positioning line is: ' . $product_line . '.',
+                'Use it like this:\n- for people whose need clearly matches that angle\n- only in the context already confirmed by the FCC product/article base\n- without widening the claim beyond that official product story',
+                'Short DM line:\n"' . $dm_line . '"',
+                $coach_recognized_product_url !== ''
+                    ? 'If you want, next I can turn this into one story angle and one shorter message from the exact FCC article.'
+                    : 'If you want, next I can turn this into one story angle and one shorter message.',
+            ])
+            : ($language === 'sl'
+                ? implode("\n\n", [
+                    'Če misliš na ' . $coach_recognized_product_title . ', ostani preprost in znotraj uradnega FCC kota za ta izdelek.',
+                    'Najvarnejša pozicionirna rečenica je: ' . $product_line . '.',
+                    "Uporabi ga takole:\n- za ljudi, pri katerih se potreba jasno ujema s tem kotom\n- samo znotraj konteksta, ki je že potrjen v FCC bazi izdelka ali članka\n- brez širjenja trditve preko te uradne zgodbe izdelka",
+                    'Kratka DM poved:\n"' . $dm_line . '"',
+                    $coach_recognized_product_url !== ''
+                        ? 'Če želiš, ti to zdaj pretvorim še v story kot in eno krajšo poruku iz točnega FCC članka.'
+                        : 'Če želiš, ti to zdaj pretvorim še v story kot in eno krajšo poruku.',
+                ])
+                : implode("\n\n", [
+                    'Ako misliš na ' . $coach_recognized_product_title . ', drži ga jednostavno i unutar službenog FCC kuta za taj proizvod.',
+                    'Najsigurnija pozicijska rečenica je: ' . $product_line . '.',
+                    "Koristi ga ovako:\n- za osobe kod kojih se potreba jasno poklapa s tim kutom\n- samo unutar konteksta koji je već potvrđen u FCC bazi proizvoda ili članka\n- bez širenja tvrdnje izvan te službene priče o proizvodu",
+                    'Kratka DM rečenica:\n"' . $dm_line . '"',
+                    $coach_recognized_product_url !== ''
+                        ? 'Ako želiš, ovo ti sada mogu pretvoriti i u story kut i jednu kraću poruku iz točnog FCC članka.'
+                        : 'Ako želiš, ovo ti sada mogu pretvoriti i u story kut i jednu kraću poruku.',
+                ]));
+
+        $positioning_suggestions = [];
+        if($coach_recognized_product_url !== '') {
+            $positioning_suggestions[] = [
+                'title' => $coach_recognized_product_title,
+                'url' => $coach_recognized_product_url,
+            ];
+        }
+
+        return [
+            'content' => $content,
+            'language' => $language,
+            'knowledge_suggestions' => $positioning_suggestions,
+        ];
+    }
 
     $blocks = [];
 
@@ -18421,7 +18761,7 @@ function fcc_ai_generate_internal_coach_reply(string $message, array $context = 
             : $coach_label . ' trenutno radi na paketu: ' . $coach_badge . '.';
     }
 
-    if($campaign_active && ($is_campaign_request || $is_product_referral_request || ($is_content_request && fcc_ai_contains_keywords($message, ['story', 'caption', 'dm', 'objav', 'poruk'])) || ($is_next_move_request && !$sales_link_priority_missing))) {
+    if($campaign_active && ($is_campaign_request || ($is_product_referral_request && fcc_ai_contains_keywords($message, ['akcij', 'promo', 'kampanj', 'campaign', 'offer', 'ponud'])) || ($is_content_request && fcc_ai_contains_keywords($message, ['akcij', 'promo', 'kampanj', 'campaign', 'offer', 'ponud'])))) {
         $campaign_block = fcc_ai_get_internal_coach_campaign_explainer($active_campaign, $ai_plan, $language);
         if($campaign_block !== '') {
             $blocks[] = $campaign_block;
