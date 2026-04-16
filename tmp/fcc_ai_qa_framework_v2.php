@@ -161,6 +161,19 @@ function qa_v2_payload_products_blob(array $payload): string {
     return implode(' | ', array_values(array_unique(array_filter($parts))));
 }
 
+function qa_v2_payload_product_count(array $payload): int {
+    $products = [];
+
+    $primary = trim((string) ($payload['primary_product'] ?? ''));
+    if($primary !== '') {
+        $products[] = $primary;
+    }
+
+    $products = array_merge($products, qa_v2_normalize_list((array) ($payload['support_products'] ?? [])));
+
+    return count(array_values(array_unique(array_filter($products))));
+}
+
 function qa_v2_slugify(string $value): string {
     $value = mb_strtolower(trim($value));
     $value = preg_replace('/[^a-z0-9]+/u', '_', $value) ?? '';
@@ -295,6 +308,26 @@ function qa_v2_evaluate_turn(array $turn, array $result): array {
                 implode(' | ', qa_v2_normalize_list((array) ($payload['support_products'] ?? []))),
                 (array) $expect['payload']['support_all']
             ),
+            2
+        );
+    }
+
+    if(isset($expect['payload']['support_max'])) {
+        qa_v2_add_finding(
+            $findings,
+            'payload',
+            'Support products count should stay within the allowed maximum.',
+            count(qa_v2_normalize_list((array) ($payload['support_products'] ?? []))) <= (int) $expect['payload']['support_max'],
+            2
+        );
+    }
+
+    if(isset($expect['payload']['product_count_max'])) {
+        qa_v2_add_finding(
+            $findings,
+            'payload',
+            'Total mapped product count should stay within the allowed maximum.',
+            qa_v2_payload_product_count($payload) <= (int) $expect['payload']['product_count_max'],
             2
         );
     }

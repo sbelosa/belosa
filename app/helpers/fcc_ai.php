@@ -9280,7 +9280,7 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
             'lock_product_scope' => true,
         ],
         'sleep_support_routine' => [
-            'patterns' => ['nesanica', 'poremećaj spavanja', 'poremecaj spavanja', 'problem sa spavanjem', 'problem sa snom', 'spavanje', 'sleep', 'ne mogu spavati'],
+            'patterns' => ['nesanica', 'nesanic', 'poremećaj spavanja', 'poremecaj spavanja', 'problem sa spavanjem', 'problem sa snom', 'spavanje', 'sleep', 'ne mogu spavati', 'budim se često', 'budim se cesto'],
             'preferred_patterns' => ['blossom herbal tea', 'tea', 'royal jelly', 'rojal'],
             'primary_product' => 'Aloe Blossom Herbal Tea',
             'support_products' => ['Forever Royal Jelly'],
@@ -11191,6 +11191,15 @@ function fcc_ai_get_product_advisor_condition_match_by_key(string $key, string $
 function fcc_ai_get_product_advisor_effective_condition_matches(string $message, string $language = 'hr'): array {
     $matches = fcc_ai_get_product_advisor_condition_matches($message, $language);
 
+    if(fcc_ai_is_public_contradictory_bowel_request($message)) {
+        $matches[] = fcc_ai_get_product_advisor_condition_match_by_key(
+            'digestive_routine_support',
+            $language,
+            ['proljev', 'zatvor', 'ibs-like'],
+            320
+        );
+    }
+
     if(fcc_ai_is_child_daily_support_request($message)) {
         $matches[] = fcc_ai_get_product_advisor_condition_match_by_key(
             'children_daily_vitamins_support',
@@ -11230,6 +11239,21 @@ function fcc_ai_get_product_advisor_effective_condition_matches(string $message,
             $language,
             ['nadutost', 'probava', 'energija'],
             265
+        );
+    }
+
+    if(
+        fcc_ai_contains_keywords($message, ['nesanica', 'nesanic', 'ne mogu spavati'])
+        || (
+            fcc_ai_contains_keywords($message, ['spavanje', 'san', 'snom'])
+            && fcc_ai_contains_keywords($message, ['budim se', 'budim se često', 'budim se cesto', 'često se budim', 'cesto se budim'])
+        )
+    ) {
+        $matches[] = fcc_ai_get_product_advisor_condition_match_by_key(
+            'sleep_support_routine',
+            $language,
+            ['nesanica', 'san'],
+            300
         );
     }
 
@@ -11827,9 +11851,21 @@ function fcc_ai_get_product_advisor_effective_condition_matches(string $message,
         }));
     }
 
+    if(fcc_ai_is_public_contradictory_bowel_request($message) && in_array('digestive_routine_support', $match_keys, true)) {
+        $matches = array_values(array_filter($matches, static function(array $match) {
+            return (string) ($match['key'] ?? '') !== 'constipation_fiber_support';
+        }));
+    }
+
     if(in_array('diabetes_balance_support', $match_keys, true)) {
         $matches = array_values(array_filter($matches, static function(array $match) {
             return (string) ($match['key'] ?? '') !== 'simple_low_energy_support';
+        }));
+    }
+
+    if(in_array('sleep_support_routine', $match_keys, true)) {
+        $matches = array_values(array_filter($matches, static function(array $match) {
+            return !in_array((string) ($match['key'] ?? ''), ['general_energy_support', 'simple_low_energy_support', 'stress_focus_energy_support'], true);
         }));
     }
 
@@ -12522,6 +12558,35 @@ function fcc_ai_prompt_attempts_to_override_guardrails(string $prompt): bool {
     ]);
 }
 
+function fcc_ai_is_public_contradictory_bowel_request(string $message): bool {
+    return fcc_ai_contains_keywords($message, ['proljev', 'diarr', 'rijetka stolica', 'rijetke stolice'])
+        && fcc_ai_contains_keywords($message, ['zatvor', 'tvrda stolica', 'spora probava', 'spori rad crijeva']);
+}
+
+function fcc_ai_is_public_aloe_no_effect_request(string $message): bool {
+    return fcc_ai_contains_keywords($message, ['aloe', 'aloe vera', 'avg'])
+        && fcc_ai_contains_keywords($message, [
+            'nema efekta',
+            'bez efekta',
+            'ne djeluje',
+            'ne deluje',
+            'nije pomoglo',
+            'nije pomogla',
+            'nije pomogao',
+            'ne pomaže',
+            'ne pomaze',
+            'no effect',
+            "doesn't help",
+            'doesnt help',
+            'not helping',
+        ]);
+}
+
+function fcc_ai_is_public_bee_pollen_allergy_conflict_request(string $message): bool {
+    return fcc_ai_contains_keywords($message, ['bee pollen', 'pčelinji pelud', 'pcelinji pelud'])
+        && fcc_ai_contains_keywords($message, ['alergij', 'alergija', 'pelud', 'pollen']);
+}
+
 function fcc_ai_build_public_recommendation_payload(string $assistant_type, string $message, array $context = []): array {
     $language = fcc_ai_resolve_public_reply_language((string) ($context['language'] ?? 'auto'), $message);
     $intent = isset($context['intent']) && is_array($context['intent'])
@@ -12532,6 +12597,8 @@ function fcc_ai_build_public_recommendation_payload(string $assistant_type, stri
     $broad_beauty_followup_clarification = !empty($context['broad_beauty_followup_clarification']);
     $previous_condition_context_exists = !empty($context['previous_condition_context_exists']);
     $follow_up_message = trim((string) ($context['follow_up_message'] ?? ''));
+    $is_aloe_no_effect_request = $assistant_type === 'product_advisor' && fcc_ai_is_public_aloe_no_effect_request($message);
+    $is_bee_pollen_allergy_conflict = $assistant_type === 'product_advisor' && fcc_ai_is_public_bee_pollen_allergy_conflict_request($message);
     if(
         !$same_problem_followup_clarification
         && $assistant_type === 'product_advisor'
@@ -12949,6 +13016,81 @@ function fcc_ai_build_public_recommendation_payload(string $assistant_type, stri
     $locked_condition_scope = $assistant_type === 'product_advisor' && fcc_ai_condition_locks_product_scope($condition_matches);
     $special_population_support_allowed = $assistant_type === 'product_advisor' && fcc_ai_condition_allows_special_population_support($condition_matches);
     $allowed_condition_products = $locked_condition_scope ? fcc_ai_get_condition_allowed_product_titles($condition_matches) : [];
+
+    if($assistant_type === 'product_advisor' && !empty($intent['special_population_sensitive']) && !$special_population_support_allowed) {
+        $opening_note = $language === 'en'
+            ? 'Because this involves pregnancy, breastfeeding, or another sensitive context, I would not give a direct product recommendation here before a doctor or pediatrician check.'
+            : ($language === 'sl'
+                ? 'Ker gre tukaj za nosečnost, dojenje ali drug občutljiv kontekst, tukaj ne bi dal neposrednega priporočila izdelka brez potrditve zdravnika ali pediatra.'
+                : 'Budući da je ovdje riječ o trudnoći, dojenju ili drugom osjetljivom kontekstu, ovdje ne bih davao izravnu preporuku proizvoda bez potvrde liječnika ili pedijatra.');
+        $recommendation_lines = [];
+        $question_lines = [];
+        $primary_product = '';
+        $support_products = [];
+        $monthly_quantity_note = '';
+        $combination_note = '';
+        $discount_note = '';
+
+        if(!$is_direct_product_lookup) {
+            $knowledge_suggestions = [];
+        }
+    }
+
+    if($assistant_type === 'product_advisor' && $is_aloe_no_effect_request) {
+        $opening_note = $language === 'en'
+            ? 'Before I repeat the same aloe direction, I would first check whether the issue is the product choice, the dose, the duration, or the actual goal.'
+            : ($language === 'sl'
+                ? 'Preden ponovim isto aloe smer, bi najprej preveril, ali je težava v izbiri izdelka, odmerku, trajanju ali v tem, kaj sploh želite doseči.'
+                : 'Prije nego ponovim isti aloe smjer, prvo bih provjerio je li problem u izboru proizvoda, dozi, trajanju ili u tome što točno želite postići.');
+        $recommendation_lines = [];
+        $primary_product = '';
+        $support_products = [];
+        $monthly_quantity_note = '';
+        $knowledge_suggestions = [];
+        $combination_note = '';
+        $discount_note = '';
+        $question_lines = [
+            $language === 'en'
+                ? 'Which aloe product are you already using, in what dose, and how long have you been taking it?'
+                : ($language === 'sl'
+                    ? 'Kateri aloe izdelek že uporabljate, v kakšnem odmerku in kako dolgo ga že jemljete?'
+                    : 'Koji aloe proizvod već koristite, u kojoj dozi i koliko dugo ga uzimate?'),
+            $language === 'en'
+                ? 'What is the exact goal: digestion, skin, immunity, energy, or something else, and is there already a diagnosis or therapy in the background?'
+                : ($language === 'sl'
+                    ? 'Kaj je natančen cilj: prebava, koža, imuniteta, energija ali nekaj drugega, in ali je v ozadju že diagnoza ali terapija?'
+                    : 'Što je točno cilj: probava, koža, imunitet, energija ili nešto drugo, i postoji li već dijagnoza ili terapija u pozadini?'),
+        ];
+    }
+
+    if($assistant_type === 'product_advisor' && $is_bee_pollen_allergy_conflict) {
+        $opening_note = $language === 'en'
+            ? 'Because you are mentioning allergy together with Bee Pollen, I would stay careful here and would not present Bee Pollen as the automatic first step.'
+            : ($language === 'sl'
+                ? 'Ker omenjate alergijo skupaj z Bee Pollen, bi tukaj ostal previden in Bee Pollen ne bi predstavil kot samodejni prvi korak.'
+                : 'Budući da zajedno spominjete alergiju i Bee Pollen, ovdje bih ostao oprezan i Bee Pollen ne bih predstavljao kao automatski prvi korak.');
+        $recommendation_lines = $language === 'en'
+            ? [
+                'If the allergy is active or this is a pollen-sensitive context, Bee Pollen should not be the first recommendation without extra caution.',
+                'The safer next step is to first clarify what kind of allergy this is and then narrow the routine without forcing bee-based products.',
+            ]
+            : ($language === 'sl'
+                ? [
+                    'Če je alergija aktivna ali gre za občutljivost na cvetni prah, Bee Pollen ne bi smel biti prva priporočena smer brez dodatne previdnosti.',
+                    'Varnejši naslednji korak je najprej razjasniti, za kakšno alergijo gre, in šele nato zožiti rutino brez vsiljevanja čebeljih izdelkov.',
+                ]
+                : [
+                    'Ako je alergija aktivna ili je riječ o osjetljivosti na pelud, Bee Pollen ne bi trebao biti prvi preporučeni smjer bez dodatnog opreza.',
+                    'Sigurniji sljedeći korak je prvo razjasniti o kakvoj je alergiji riječ pa tek onda suziti rutinu bez forsiranja pčelinjih proizvoda.',
+                ]);
+        $question_lines = [];
+        $primary_product = '';
+        $support_products = [];
+        $monthly_quantity_note = '';
+        $knowledge_suggestions = [];
+        $combination_note = '';
+        $discount_note = '';
+    }
 
     $guardrailed_payload = fcc_ai_apply_freedom_recipe_guardrail([
         'condition_keys' => array_values(array_filter(array_map(static function(array $condition_match) {
