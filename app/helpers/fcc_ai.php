@@ -8332,6 +8332,66 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
             'suppress_generic_questions' => true,
             'lock_product_scope' => true,
         ],
+        'allergic_cough_support' => [
+            'patterns' => ['alergijski kašalj', 'alergijski kasalj', 'iritira grlo', 'alergijski nadražaj grla'],
+            'preferred_patterns' => ['berry nectar', 'aloe berry nectar', 'bee propolis'],
+            'primary_product' => 'Forever Aloe Berry Nectar®',
+            'support_products' => ['Forever Bee Propolis'],
+            'label' => [
+                'hr' => 'alergijski kašalj i grlo',
+                'en' => 'allergic cough and throat irritation',
+            ],
+            'opening_note' => [
+                'hr' => 'Kad je fokus alergijski kašalj i nadraženo grlo, preporuka treba ostati jednostavna i smirujuća, bez širenja na nepovezane proizvode.',
+                'en' => 'When the focus is allergic cough and throat irritation, the recommendation should stay simple and soothing without expanding into unrelated products.',
+            ],
+            'recommendation_lines' => [
+                'hr' => [
+                    'Forever Aloe Berry Nectar® je ovdje glavni Forever smjer kao aloe baza koju ljudi često biraju kada žele nježniji dnevni ritam za grlo i dišni sustav.',
+                    'Forever Bee Propolis ima smisla kao support opcija uz to kada želite dodatni propolis smjer za grlo i svakodnevnu rutinu.',
+                ],
+                'en' => [
+                    'Forever Aloe Berry Nectar® is the main Forever direction here as the aloe base people often choose when they want a gentler daily rhythm for the throat and respiratory system.',
+                    'Forever Bee Propolis makes sense as the support option on top when you want an extra propolis direction for the throat and everyday routine.',
+                ],
+            ],
+            'monthly_quantity_note' => [
+                'hr' => 'Ako želite okvir za mjesec dana, ovdje se najčešće gleda 3 x Forever Aloe Berry Nectar® i 1 x Forever Bee Propolis.',
+                'en' => 'If you want a one-month frame, this is most often positioned as 3 x Forever Aloe Berry Nectar® and 1 x Forever Bee Propolis.',
+            ],
+            'suppress_generic_questions' => true,
+            'lock_product_scope' => true,
+        ],
+        'contact_dermatitis_local_support' => [
+            'patterns' => ['osip od kozmetike', 'reakcija na kozmetiku', 'kozmetike', 'koža me peče', 'koza me pece'],
+            'preferred_patterns' => ['aloe vera gelly', 'aloe first', 'first spray'],
+            'primary_product' => 'Forever Aloe Vera Gelly',
+            'support_products' => ['Forever Aloe First Spray'],
+            'label' => [
+                'hr' => 'kontaktni dermatitis i lokalna njega',
+                'en' => 'contact dermatitis and local care',
+            ],
+            'opening_note' => [
+                'hr' => 'Kad je reakcija vezana uz kozmetiku i peckanje kože, najčišći smjer je ostati na nježnoj lokalnoj rutini bez širenja na unutarnje suplemente.',
+                'en' => 'When the reaction is tied to cosmetics and burning skin, the cleanest route is to stay on a gentle local routine without expanding into internal supplements.',
+            ],
+            'recommendation_lines' => [
+                'hr' => [
+                    'Forever Aloe Vera Gelly je ovdje glavni Forever smjer kao umirujući lokalni gel za osjetljivu i nadraženu kožu.',
+                    'Forever Aloe First Spray ima smisla kao support opcija uz to kada želite lagan prvi korak izvana prije gelly sloja.',
+                ],
+                'en' => [
+                    'Forever Aloe Vera Gelly is the main Forever direction here as the soothing local gel for sensitive and irritated skin.',
+                    'Forever Aloe First Spray makes sense as the support option on top when you want a light first outer step before the gelly layer.',
+                ],
+            ],
+            'monthly_quantity_note' => [
+                'hr' => 'Ako želite jednostavan okvir, ovdje se najčešće gleda 1 x Forever Aloe Vera Gelly i 1 x Forever Aloe First Spray.',
+                'en' => 'If you want a simple frame, this is most often positioned as 1 x Forever Aloe Vera Gelly and 1 x Forever Aloe First Spray.',
+            ],
+            'suppress_generic_questions' => true,
+            'lock_product_scope' => true,
+        ],
         'skin_allergy_arctic_support' => [
             'patterns' => ['alergija na koži', 'alergiju na koži', 'alergija na kozi', 'alergiju na kozi', 'svrbi i crveno je'],
             'preferred_patterns' => ['aloe vera gel', 'arctic sea', 'bee pollen', 'absorbent-c', 'aloe first', 'aloe vera gelly'],
@@ -8362,6 +8422,221 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
             'monthly_quantity_note' => [
                 'hr' => 'Ako želite okvir za mjesec dana, ovdje se najčešće gleda 3 x Forever Aloe Vera Gel™, 1 kutija Forever Arctic Sea, 1 x Forever Bee Pollen i 1 x Forever Absorbent-C, a izvana 1 x Forever Aloe First Spray i 1 x Forever Aloe Vera Gelly.',
                 'en' => 'If you want a one-month frame, this is most often positioned as 3 x Forever Aloe Vera Gel™, 1 box of Forever Arctic Sea, 1 x Forever Bee Pollen and 1 x Forever Absorbent-C, plus 1 x Forever Aloe First Spray and 1 x Forever Aloe Vera Gelly for the outer routine.',
+            ],
+            'suppress_generic_questions' => true,
+            'lock_product_scope' => true,
+        ],
+        'dry_eye_allergy_support' => [
+            'patterns' => ['oči su mi suhe i peku', 'oci su mi suhe i peku', 'suhe oči', 'suhe oci', 'moguće alergija', 'moguce alergija'],
+            'preferred_patterns' => ['arctic sea', 'aloe vera gel'],
+            'primary_product' => 'Forever Arctic Sea',
+            'support_products' => ['Forever Aloe Vera Gel™'],
+            'label' => [
+                'hr' => 'suhe i osjetljive oči u alergijskom kontekstu',
+                'en' => 'dry and sensitive eyes in an allergy context',
+            ],
+            'opening_note' => [
+                'hr' => 'Kad su oči suhe, peku i korisnik sumnja na alergijski kontekst, preporuka treba ostati vrlo jednostavna i nutritivno usmjerena.',
+                'en' => 'When the eyes are dry, burning, and the user suspects an allergy context, the recommendation should stay very simple and nutritionally focused.',
+            ],
+            'recommendation_lines' => [
+                'hr' => [
+                    'Forever Arctic Sea je ovdje glavni Forever smjer kada želite omega-3 nutritivnu podršku osjetljivim očima i dnevnoj rutini.',
+                    'Forever Aloe Vera Gel™ ima smisla kao support opcija uz to kao aloe baza iznutra za širu svakodnevnu rutinu.',
+                ],
+                'en' => [
+                    'Forever Arctic Sea is the main Forever direction here when you want omega-3 nutritional support for sensitive eyes and the daily routine.',
+                    'Forever Aloe Vera Gel™ makes sense as the support option on top as the inside aloe base for the broader everyday routine.',
+                ],
+            ],
+            'monthly_quantity_note' => [
+                'hr' => 'Ako želite okvir za mjesec dana, ovdje se najčešće gleda 1 kutija Forever Arctic Sea i 3 x Forever Aloe Vera Gel™.',
+                'en' => 'If you want a one-month frame, this is most often positioned as 1 box of Forever Arctic Sea and 3 x Forever Aloe Vera Gel™.',
+            ],
+            'suppress_generic_questions' => true,
+            'lock_product_scope' => true,
+        ],
+        'insect_bite_local_support' => [
+            'patterns' => ['ubo me komarac', 'ubod komarca', 'nateklo je', 'svrbi jako', 'ugriz komarca'],
+            'preferred_patterns' => ['aloe vera gelly', 'aloe first', 'first spray'],
+            'primary_product' => 'Forever Aloe Vera Gelly',
+            'support_products' => ['Forever Aloe First Spray'],
+            'label' => [
+                'hr' => 'lokalna reakcija na ubod insekta',
+                'en' => 'local insect-bite reaction',
+            ],
+            'opening_note' => [
+                'hr' => 'Kad je riječ o lokalnoj reakciji na ubod insekta, preporuka treba ostati praktična i lokalna, bez širenja na unutarnje proizvode.',
+                'en' => 'When this is a local insect-bite reaction, the recommendation should stay practical and local without expanding into internal products.',
+            ],
+            'recommendation_lines' => [
+                'hr' => [
+                    'Forever Aloe Vera Gelly je ovdje glavni Forever smjer kao umirujući lokalni gel na otečenom i nadraženom mjestu.',
+                    'Forever Aloe First Spray ima smisla kao support opcija kada želite lagani prvi korak izvana prije gelly sloja.',
+                ],
+                'en' => [
+                    'Forever Aloe Vera Gelly is the main Forever direction here as the soothing local gel for the swollen and irritated area.',
+                    'Forever Aloe First Spray makes sense as the support option when you want a light first outer step before the gelly layer.',
+                ],
+            ],
+            'monthly_quantity_note' => [
+                'hr' => 'Ako želite jednostavan okvir, ovdje se najčešće gleda 1 x Forever Aloe Vera Gelly i 1 x Forever Aloe First Spray.',
+                'en' => 'If you want a simple frame, this is most often positioned as 1 x Forever Aloe Vera Gelly and 1 x Forever Aloe First Spray.',
+            ],
+            'suppress_generic_questions' => true,
+            'lock_product_scope' => true,
+        ],
+        'child_rash_local_support' => [
+            'patterns' => ['dijete ima osip', 'dijete ima alergijski osip', 'što smijem koristiti', 'sto smijem koristiti'],
+            'preferred_patterns' => ['aloe vera gelly', 'aloe first', 'first spray'],
+            'primary_product' => 'Forever Aloe Vera Gelly',
+            'support_products' => ['Forever Aloe First Spray'],
+            'label' => [
+                'hr' => 'dječji osip i lokalna oprezna rutina',
+                'en' => 'child rash and a cautious local routine',
+            ],
+            'opening_note' => [
+                'hr' => 'Kad je riječ o djetetu i osipu, odgovor treba biti oprezan i ostati na blagoj lokalnoj rutini, bez jačih suplementnih kombinacija.',
+                'en' => 'When this is about a child with a rash, the answer should be cautious and stay on a mild local routine without stronger supplement combinations.',
+            ],
+            'recommendation_lines' => [
+                'hr' => [
+                    'Forever Aloe Vera Gelly je ovdje glavni Forever smjer kao najnježniji lokalni korak izvana kada želite krenuti oprezno.',
+                    'Forever Aloe First Spray ima smisla kao support opcija uz to kada želite lagan zaštitnički korak izvana prije gelly sloja.',
+                ],
+                'en' => [
+                    'Forever Aloe Vera Gelly is the main Forever direction here as the gentlest local outer step when you want to start cautiously.',
+                    'Forever Aloe First Spray makes sense as the support option on top when you want a light protective outer step before the gelly layer.',
+                ],
+            ],
+            'monthly_quantity_note' => [
+                'hr' => 'Ako želite jednostavan okvir, ovdje se najčešće gleda 1 x Forever Aloe Vera Gelly i 1 x Forever Aloe First Spray.',
+                'en' => 'If you want a simple frame, this is most often positioned as 1 x Forever Aloe Vera Gelly and 1 x Forever Aloe First Spray.',
+            ],
+            'suppress_generic_questions' => true,
+            'sensitive_support_only' => true,
+            'lock_product_scope' => true,
+        ],
+        'cold_weather_skin_support' => [
+            'patterns' => ['puca od hladnoće', 'puca od hladnoce', 'crvena je stalno', 'hladnoća', 'hladnoca'],
+            'preferred_patterns' => ['aloe vera gel', 'propolis creme', 'arctic sea'],
+            'primary_product' => 'Forever Aloe Vera Gel™',
+            'support_products' => ['Aloe Propolis Creme', 'Forever Arctic Sea'],
+            'label' => [
+                'hr' => 'hladnoća, crvenilo i zaštita kože',
+                'en' => 'cold weather, redness and skin protection',
+            ],
+            'opening_note' => [
+                'hr' => 'Kad koža puca od hladnoće i stalno je crvena, preporuka treba spojiti aloe bazu iznutra s jačom zaštitnom rutinom izvana.',
+                'en' => 'When the skin cracks from cold weather and stays red, the recommendation should combine an inside aloe base with a stronger protective outer routine.',
+            ],
+            'recommendation_lines' => [
+                'hr' => [
+                    'Forever Aloe Vera Gel™ je ovdje glavni Forever smjer kao aloe baza iznutra kada želite inside-out podršku koži.',
+                    'Aloe Propolis Creme ima smisla kao glavna vanjska support opcija kada koži treba zaštitni i umirujući sloj izvana.',
+                    'Forever Arctic Sea može biti dodatna support opcija uz to kada želite i nutritivni omega-3 smjer za istu rutinu.',
+                ],
+                'en' => [
+                    'Forever Aloe Vera Gel™ is the main Forever direction here as the inside aloe base when you want inside-out skin support.',
+                    'Aloe Propolis Creme makes sense as the main outer support option when the skin needs a protective and soothing outer layer.',
+                    'Forever Arctic Sea can be the additional support option on top when you also want the omega-3 nutrition direction in the same routine.',
+                ],
+            ],
+            'monthly_quantity_note' => [
+                'hr' => 'Ako želite okvir za mjesec dana, ovdje se najčešće gleda 3 x Forever Aloe Vera Gel™, 1 x Aloe Propolis Creme i 1 kutija Forever Arctic Sea.',
+                'en' => 'If you want a one-month frame, this is most often positioned as 3 x Forever Aloe Vera Gel™, 1 x Aloe Propolis Creme and 1 box of Forever Arctic Sea.',
+            ],
+            'suppress_generic_questions' => true,
+            'lock_product_scope' => true,
+        ],
+        'allergic_sinus_support' => [
+            'patterns' => ['sinusima zbog alergije', 'sinusi zbog alergije', 'začepljeni sinusi od alergije', 'zacepljeni sinusi od alergije'],
+            'preferred_patterns' => ['berry nectar', 'aloe berry nectar', 'garlic-thyme'],
+            'primary_product' => 'Forever Aloe Berry Nectar®',
+            'support_products' => ['Forever Garlic-Thyme'],
+            'label' => [
+                'hr' => 'alergijski sinusi i začepljenost',
+                'en' => 'allergic sinuses and congestion',
+            ],
+            'opening_note' => [
+                'hr' => 'Kad su sinusi dio alergijskog problema, preporuka treba ostati u dišnom i sinusnom smjeru, bez skretanja na opću alergijsku rutinu.',
+                'en' => 'When sinuses are part of the allergy problem, the recommendation should stay in the respiratory and sinus direction without drifting into the broader allergy routine.',
+            ],
+            'recommendation_lines' => [
+                'hr' => [
+                    'Forever Aloe Berry Nectar® je ovdje glavni Forever smjer kao aloe napitak koji se često bira za svakodnevnu rutinu dišnog sustava i sinusa.',
+                    'Forever Garlic-Thyme ima smisla kao support opcija uz to kada želite dodatni biljni smjer za dišni sustav i začepljenost.',
+                ],
+                'en' => [
+                    'Forever Aloe Berry Nectar® is the main Forever direction here as the aloe drink often chosen for an everyday respiratory and sinus routine.',
+                    'Forever Garlic-Thyme makes sense as the support option on top when you want an extra herbal direction for the respiratory system and congestion.',
+                ],
+            ],
+            'monthly_quantity_note' => [
+                'hr' => 'Ako želite okvir za mjesec dana, ovdje se najčešće gleda 3 x Forever Aloe Berry Nectar® i 1 x Forever Garlic-Thyme.',
+                'en' => 'If you want a one-month frame, this is most often positioned as 3 x Forever Aloe Berry Nectar® and 1 x Forever Garlic-Thyme.',
+            ],
+            'suppress_generic_questions' => true,
+            'lock_product_scope' => true,
+        ],
+        'post_shower_skin_routine' => [
+            'patterns' => ['nakon tuširanja', 'nakon tusiranja', 'svrbi me koža nakon tuširanja', 'svrbi me koza nakon tusiranja'],
+            'preferred_patterns' => ['moisturizing lotion', 'aloe vera gelly'],
+            'primary_product' => 'Aloe Moisturizing Lotion',
+            'support_products' => ['Forever Aloe Vera Gelly'],
+            'label' => [
+                'hr' => 'svrbež nakon tuširanja i body rutina',
+                'en' => 'post-shower itching and a body routine',
+            ],
+            'opening_note' => [
+                'hr' => 'Kad je koža suha i svrbi nakon tuširanja, odgovor treba ostati na jednostavnoj vanjskoj rutini, a ne širiti se odmah na suplemente.',
+                'en' => 'When the skin is dry and itchy after showering, the answer should stay on a simple outer routine rather than immediately expanding into supplements.',
+            ],
+            'recommendation_lines' => [
+                'hr' => [
+                    'Aloe Moisturizing Lotion je ovdje glavni Forever smjer kada želite bogatiju hidrataciju kože nakon tuširanja.',
+                    'Forever Aloe Vera Gelly ima smisla kao support opcija uz to kada želite i lagani umirujući gel na osjetljivijim dijelovima kože.',
+                ],
+                'en' => [
+                    'Aloe Moisturizing Lotion is the main Forever direction here when you want richer skin hydration after showering.',
+                    'Forever Aloe Vera Gelly makes sense as the support option on top when you also want a light soothing gel on more sensitive skin areas.',
+                ],
+            ],
+            'monthly_quantity_note' => [
+                'hr' => 'Ako želite jednostavan okvir, ovdje se najčešće gleda 1 x Aloe Moisturizing Lotion i 1 x Forever Aloe Vera Gelly.',
+                'en' => 'If you want a simple frame, this is most often positioned as 1 x Aloe Moisturizing Lotion and 1 x Forever Aloe Vera Gelly.',
+            ],
+            'suppress_generic_questions' => true,
+            'lock_product_scope' => true,
+        ],
+        'allergy_fatigue_support' => [
+            'patterns' => ['alergije i stalno sam umoran', 'alergije i stalno sam umorna', 'alergija i stalno sam umoran', 'alergija i stalno sam umorna'],
+            'preferred_patterns' => ['aloe vera gel', 'bee pollen', 'royal jelly'],
+            'primary_product' => 'Forever Aloe Vera Gel™',
+            'support_products' => ['Forever Bee Pollen', 'Forever Royal Jelly'],
+            'label' => [
+                'hr' => 'alergije i pad energije',
+                'en' => 'allergies and low energy',
+            ],
+            'opening_note' => [
+                'hr' => 'Kad se zajedno javljaju alergije i umor, preporuka treba ostati na aloe bazi, nutritivnoj podršci otpornosti i jednom jasnom smjeru za energiju.',
+                'en' => 'When allergies and fatigue show up together, the recommendation should stay on an aloe base, nutritional resilience support and one clear energy direction.',
+            ],
+            'recommendation_lines' => [
+                'hr' => [
+                    'Forever Aloe Vera Gel™ je ovdje glavni Forever smjer kao aloe baza iznutra za svakodnevnu rutinu.',
+                    'Forever Bee Pollen ima smisla kao support opcija kada želite nutritivni smjer za sezonsku otpornost i alergijsko opterećenje.',
+                    'Forever Royal Jelly može biti dodatna support opcija kada uz isti smjer želite i fokus na energiju i vitalnost.',
+                ],
+                'en' => [
+                    'Forever Aloe Vera Gel™ is the main Forever direction here as the inside aloe base for the everyday routine.',
+                    'Forever Bee Pollen makes sense as the support option when you want the nutritional direction for seasonal resilience and allergy load.',
+                    'Forever Royal Jelly can be the additional support option when you also want a focus on energy and vitality inside the same direction.',
+                ],
+            ],
+            'monthly_quantity_note' => [
+                'hr' => 'Ako želite okvir za mjesec dana, ovdje se najčešće gleda 3 x Forever Aloe Vera Gel™, 1 x Forever Bee Pollen i 1 x Forever Royal Jelly.',
+                'en' => 'If you want a one-month frame, this is most often positioned as 3 x Forever Aloe Vera Gel™, 1 x Forever Bee Pollen and 1 x Forever Royal Jelly.',
             ],
             'suppress_generic_questions' => true,
             'lock_product_scope' => true,
@@ -10333,12 +10608,147 @@ function fcc_ai_get_product_advisor_effective_condition_matches(string $message,
         );
     }
 
+    if(
+        fcc_ai_contains_keywords($message, ['alergijski kašalj', 'alergijski kasalj'])
+        || (
+            fcc_ai_contains_keywords($message, ['kaš', 'kasalj', 'grlo'])
+            && fcc_ai_contains_keywords($message, ['alergij', 'iritira grlo'])
+        )
+    ) {
+        $matches[] = fcc_ai_get_product_advisor_condition_match_by_key(
+            'allergic_cough_support',
+            $language,
+            ['alergijski kašalj', 'grlo'],
+            299
+        );
+    }
+
+    if(
+        fcc_ai_contains_keywords($message, ['osip od kozmetike', 'reakcija na kozmetiku'])
+        || (
+            fcc_ai_contains_keywords($message, ['kozmetik'])
+            && fcc_ai_contains_keywords($message, ['osip', 'peče', 'pece'])
+        )
+    ) {
+        $matches[] = fcc_ai_get_product_advisor_condition_match_by_key(
+            'contact_dermatitis_local_support',
+            $language,
+            ['kozmetika', 'lokalno'],
+            299
+        );
+    }
+
     if(fcc_ai_contains_keywords($message, ['koprivnjača', 'koprivnjaca', 'koprivnj', 'svrbi me cijelo tijelo'])) {
         $matches[] = fcc_ai_get_product_advisor_condition_match_by_key(
             'hives_local_support',
             $language,
             ['koprivnjača'],
             296
+        );
+    }
+
+    if(
+        fcc_ai_contains_keywords($message, ['oči su mi suhe i peku', 'oci su mi suhe i peku', 'suhe oči', 'suhe oci'])
+        || (
+            fcc_ai_contains_keywords($message, ['oči', 'oci'])
+            && fcc_ai_contains_keywords($message, ['suhe', 'peku', 'alergij'])
+        )
+    ) {
+        $matches[] = fcc_ai_get_product_advisor_condition_match_by_key(
+            'dry_eye_allergy_support',
+            $language,
+            ['oči', 'alergija'],
+            298
+        );
+    }
+
+    if(
+        fcc_ai_contains_keywords($message, ['ubo me komarac', 'ubod komarca', 'ugriz komarca'])
+        || (
+            fcc_ai_contains_keywords($message, ['komarac', 'komarca', 'ubod', 'ubo'])
+            && fcc_ai_contains_keywords($message, ['nateklo', 'svrbi'])
+        )
+    ) {
+        $matches[] = fcc_ai_get_product_advisor_condition_match_by_key(
+            'insect_bite_local_support',
+            $language,
+            ['ubod', 'lokalno'],
+            298
+        );
+    }
+
+    if(
+        fcc_ai_contains_keywords($message, ['dijete ima osip'])
+        || (
+            fcc_ai_contains_keywords($message, ['dijete', 'djetet', 'otrok'])
+            && fcc_ai_contains_keywords($message, ['osip', 'što smijem koristiti', 'sto smijem koristiti'])
+        )
+    ) {
+        $matches[] = fcc_ai_get_product_advisor_condition_match_by_key(
+            'child_rash_local_support',
+            $language,
+            ['dijete', 'osip'],
+            300
+        );
+    }
+
+    if(
+        fcc_ai_contains_keywords($message, ['puca od hladnoće', 'puca od hladnoce', 'crvena je stalno'])
+        || (
+            fcc_ai_contains_keywords($message, ['hladnoć', 'hladnoc'])
+            && fcc_ai_contains_keywords($message, ['puca', 'crvena'])
+        )
+    ) {
+        $matches[] = fcc_ai_get_product_advisor_condition_match_by_key(
+            'cold_weather_skin_support',
+            $language,
+            ['hladnoća', 'koža'],
+            297
+        );
+    }
+
+    if(
+        fcc_ai_contains_keywords($message, ['sinusima zbog alergije', 'sinusi zbog alergije', 'začepljeni sinusi od alergije', 'zacepljeni sinusi od alergije'])
+        || (
+            fcc_ai_contains_keywords($message, ['sinus'])
+            && fcc_ai_contains_keywords($message, ['alergij', 'začeplj', 'zaceplj'])
+        )
+    ) {
+        $matches[] = fcc_ai_get_product_advisor_condition_match_by_key(
+            'allergic_sinus_support',
+            $language,
+            ['sinusi', 'alergija'],
+            299
+        );
+    }
+
+    if(
+        fcc_ai_contains_keywords($message, ['nakon tuširanja', 'nakon tusiranja'])
+        || (
+            fcc_ai_contains_keywords($message, ['tuš', 'tus'])
+            && fcc_ai_contains_keywords($message, ['svrbi', 'suha'])
+        )
+    ) {
+        $matches[] = fcc_ai_get_product_advisor_condition_match_by_key(
+            'post_shower_skin_routine',
+            $language,
+            ['tuširanje', 'suha koža'],
+            298
+        );
+    }
+
+    if(
+        fcc_ai_contains_keywords($message, ['alergije i stalno sam umoran', 'alergije i stalno sam umorna', 'alergija i stalno sam umoran', 'alergija i stalno sam umorna'])
+        || (
+            fcc_ai_contains_keywords($message, ['alergij'])
+            && fcc_ai_contains_keywords($message, ['umoran', 'umorna', 'nemam energije'])
+        )
+    ) {
+        $matches[] = fcc_ai_get_product_advisor_condition_match_by_key(
+            'allergy_fatigue_support',
+            $language,
+            ['alergije', 'umor'],
+            298
         );
     }
 
