@@ -7762,7 +7762,7 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
             'lock_product_scope' => true,
         ],
         'acid_reflux_support' => [
-            'patterns' => ['žgaravica', 'zgaravica', 'refluks', 'gerb', 'kiselina', 'reflux acid', 'acid reflux'],
+            'patterns' => ['žgaravica', 'žgaravic', 'zgaravica', 'zgaravic', 'refluks', 'refluksom', 'gerb', 'kiselina', 'reflux acid', 'acid reflux'],
             'preferred_patterns' => ['aloe vera gel', 'aloe gel', 'pro b', 'pro-b'],
             'primary_product' => 'Forever Aloe Vera Gel™',
             'support_products' => ['Forever Active Pro B'],
@@ -7792,7 +7792,7 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
             'lock_product_scope' => true,
         ],
         'digestive_routine_support' => [
-            'patterns' => ['gastritis', 'gaszritis', 'nadutost', 'bloated stomach', 'bloating', 'problem sa želucem', 'problem sa zelucem', 'želudac', 'zeludac', 'iritabilnog kolona', 'iritabilni kolon', 'iritabilno crijevo', 'ibs', 'candida', 'kandida', 'problem sa želucem', 'problem sa želucem'],
+            'patterns' => ['gastritis', 'gaszritis', 'nadutost', 'bloated stomach', 'bloating', 'problem sa želucem', 'problem sa zelucem', 'želudac', 'zeludac', 'iritabilnog kolona', 'iritabilni kolon', 'iritabilno crijevo', 'ibs', 'problem sa želucem', 'problem sa želucem'],
             'preferred_patterns' => ['aloe vera gel', 'aloe gel', 'aloe peaches', 'aloe mango', 'berry nectar', 'active pro b', 'pro b', 'pro-b', 'fiber'],
             'primary_product' => 'Forever Aloe Vera Gel™',
             'support_products' => ['Forever Active Pro B'],
@@ -7937,9 +7937,9 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
         ],
         'immunity_support_routine' => [
             'patterns' => ['imunitet', 'slab imunitet', 'pad imuniteta', 'slaba otpornost', 'otpornost organizma', 'otpornost', 'obrana organizma', 'obrambeni sustav', 'slabiji imunitet', 'ceste prehlade', 'česte prehlade', 'cesto bolestan', 'često bolestan'],
-            'preferred_patterns' => ['aloe vera gel', 'aloe mango', 'aloe peaches', 'aloe berry nectar', 'daily', 'immune gummy'],
+            'preferred_patterns' => ['aloe vera gel', 'aloe mango', 'aloe peaches', 'aloe berry nectar', 'immublend', 'immunblend', 'immune blend', 'absorbent c', 'vitamin c'],
             'primary_product' => 'Forever Aloe Vera Gel™',
-            'support_products' => ['Forever Immune Gummy', 'Forever Daily'],
+            'support_products' => ['Forever ImmuBlend', 'Forever Absorbent-C'],
             'label' => [
                 'hr' => 'imunitet i dnevna nutritivna rutina',
                 'en' => 'immunity and a daily nutrition routine',
@@ -7951,16 +7951,18 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
             'recommendation_lines' => [
                 'hr' => [
                     'Forever Aloe Vera Gel™ je ovdje glavni Forever smjer kao osnovni aloe napitak za svakodnevnu rutinu imuniteta, a po želji isti ritam može ići i kroz druge AVG okuse poput manga ili peaches varijante.',
-                    'Forever Immune Gummy ili Forever Daily imaju smisla kao support opcija uz to, ovisno o tome želite li jednostavniji gummy smjer ili klasičan vitaminsko-mineralni dodatak za svaki dan.',
+                    'Forever ImmuBlend ima smisla kao glavna support opcija uz to jer spaja aloe veru, laktoferin te vitamine C i D kao čišći immunity support smjer.',
+                    'Forever Absorbent-C je logična dodatna support opcija kada uz to želite i jednostavniji vitamin C smjer u istoj dnevnoj rutini.',
                 ],
                 'en' => [
                     'Forever Aloe Vera Gel™ is the main Forever direction here as the base aloe drink for an everyday immunity routine, and the same rhythm can also be followed with other AVG flavors such as mango or peaches if preferred.',
-                    'Forever Immune Gummy or Forever Daily make sense as support options on top, depending on whether you want a simpler gummy direction or a classic daily vitamin-and-mineral route.',
+                    'Forever ImmuBlend makes sense as the main support option on top because it combines aloe vera, lactoferrin, and vitamins C and D into a cleaner immunity-support direction.',
+                    'Forever Absorbent-C is the logical extra support option when you also want a simple vitamin C direction inside the same daily routine.',
                 ],
             ],
             'monthly_quantity_note' => [
-                'hr' => 'Ako želite odmah okvir za mjesec dana, ovdje se najčešće kreće s 3 x Forever Aloe Vera Gel™ za mjesec dana, a uz to se bira jedan support smjer: Forever Immune Gummy ili Forever Daily.',
-                'en' => 'If you want a simple one-month frame right away, this is most often started with 3 x Forever Aloe Vera Gel™ for the month, plus one support direction: Forever Immune Gummy or Forever Daily.',
+                'hr' => 'Ako želite odmah okvir za mjesec dana, ovdje se najčešće kreće s 3 x Forever Aloe Vera Gel™, 1 x Forever ImmuBlend i 1 x Forever Absorbent-C.',
+                'en' => 'If you want a simple one-month frame right away, this is most often started with 3 x Forever Aloe Vera Gel™, 1 x Forever ImmuBlend, and 1 x Forever Absorbent-C.',
             ],
             'suppress_generic_questions' => true,
             'lock_product_scope' => true,
@@ -8025,6 +8027,40 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
                 'hr' => 'Ako želite okvir za mjesec dana, ovdje se najčešće gleda 3 x Forever Aloe Vera Gel™, 1 x Forever Active Pro B i po želji 1 x Forever Royal Jelly.',
                 'en' => 'If you want a one-month frame, this is most often positioned as 3 x Forever Aloe Vera Gel™, 1 x Forever Active Pro B and, if wanted, 1 x Forever Royal Jelly.',
             ],
+            'lock_product_scope' => true,
+        ],
+        'acne_gut_inside_first_support' => [
+            'patterns' => ['akne i probav', 'akne i probavu', 'akne i lošu probavu', 'akne i losu probavu', 'akne i nadut', 'akne i crijev', 'problematičnu kožu i probav', 'problematicnu kozu i probav', 'akne i želud', 'akne i zelud'],
+            'preferred_patterns' => ['aloe vera gel', 'aloe gel', 'pro b', 'pro-b', 'arctic sea', 'arctic', 'aloe first', 'propolis creme'],
+            'primary_product' => 'Forever Aloe Vera Gel™',
+            'support_products' => ['Forever Active Pro B', 'Forever Arctic Sea', 'Forever Aloe First Spray', 'Aloe Propolis Creme'],
+            'label' => [
+                'hr' => 'akne plus probava, inside-first rutina',
+                'en' => 'acne plus digestion, inside-first routine',
+            ],
+            'opening_note' => [
+                'hr' => 'Kad se zajedno javljaju akne i loša probava, preporuka treba prvo krenuti iznutra kroz aloe i probavnu rutinu, a lokalna njega dolazi tek kao dopuna ako zatreba.',
+                'en' => 'When acne and poor digestion show up together, the recommendation should first start from the inside through aloe and a digestion-focused routine, while topical care comes only as an add-on if needed.',
+            ],
+            'recommendation_lines' => [
+                'hr' => [
+                    'Forever Aloe Vera Gel™ je ovdje glavni Forever smjer kao inside-first aloe baza za svakodnevnu probavnu i kožnu rutinu iznutra.',
+                    'Forever Active Pro B je važna support opcija uz to kada želite uredniju crijevnu ravnotežu i smireniji probavni ritam.',
+                    'Forever Arctic Sea može biti dodatna support opcija kada želite i širu nutritivnu podršku koži iznutra, ne samo lokalnu njegu izvana.',
+                    'Ako kasnije želite i lokalni dodatak, Forever Aloe First Spray ili Aloe Propolis Creme imaju više smisla tek kao vanjska dopuna uz ovu inside-first rutinu.',
+                ],
+                'en' => [
+                    'Forever Aloe Vera Gel™ is the main Forever direction here as the inside-first aloe base for a daily digestion-and-skin routine from the inside.',
+                    'Forever Active Pro B is an important support option on top when you want steadier gut balance and a calmer digestive rhythm.',
+                    'Forever Arctic Sea can be the extra support option when you also want broader nutritional skin support from the inside, not just topical care from the outside.',
+                    'If you later want a topical add-on as well, Forever Aloe First Spray or Aloe Propolis Creme make more sense only as the outer layer on top of this inside-first routine.',
+                ],
+            ],
+            'monthly_quantity_note' => [
+                'hr' => 'Ako želite okvir za mjesec dana, ovdje se najčešće gleda 3 x Forever Aloe Vera Gel™, 1 x Forever Active Pro B i 1 kutija Forever Arctic Sea.',
+                'en' => 'If you want a one-month frame, this is most often positioned as 3 x Forever Aloe Vera Gel™, 1 x Forever Active Pro B and 1 box of Forever Arctic Sea.',
+            ],
+            'suppress_generic_questions' => true,
             'lock_product_scope' => true,
         ],
         'children_daily_vitamins_support' => [
@@ -8470,8 +8506,8 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
         'headache_circulation_support' => [
             'patterns' => ['glavobolj', 'migren', 'migrena', 'ceste glavobolje', 'česte glavobolje', 'ceste glavobolje'],
             'preferred_patterns' => ['arctic sea', 'arctic', 'argi', 'forever argi'],
-            'primary_product' => 'Forever Arctic Sea',
-            'support_products' => ['Forever ARGI+'],
+            'primary_product' => 'Forever ARGI+',
+            'support_products' => ['Forever Arctic Sea'],
             'label' => [
                 'hr' => 'glavobolje, migrene i cirkulacijska rutina',
                 'en' => 'headaches, migraines and circulation routine',
@@ -8482,15 +8518,20 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
             ],
             'recommendation_lines' => [
                 'hr' => [
-                    'Forever Arctic Sea je ovdje glavni Forever smjer jer sadrži omega-3 masne kiseline i često se uklapa u opću nutritivnu i cirkulacijsku rutinu.',
-                    'Forever ARGI+ je dobra support opcija uz to kada želite dodatni smjer prema cirkulaciji i svakodnevnoj vitalnosti.',
+                    'Forever ARGI+ je ovdje glavni Forever smjer kada želite jači fokus na cirkulacijsku rutinu i svakodnevnu vitalnost kod migrenoznog konteksta.',
+                    'Forever Arctic Sea je važna support opcija uz to zbog omega-3 masnih kiselina i šire nutritivne podrške istoj rutini.',
                 ],
                 'en' => [
-                    'Forever Arctic Sea is the clearest main Forever direction here because it contains omega-3 fatty acids and often fits a broader nutritional and circulation-support routine.',
-                    'Forever ARGI+ is a strong support option on top when you want an additional direction toward circulation and everyday vitality.',
+                    'Forever ARGI+ is the clearest main Forever direction here when you want a stronger focus on circulation and everyday vitality in a migraine-style context.',
+                    'Forever Arctic Sea is the important support option on top because of the omega-3 direction and broader nutritional support for the same routine.',
                 ],
             ],
+            'monthly_quantity_note' => [
+                'hr' => 'Ako želite okvir za mjesec dana, ovdje se najčešće gleda 1 x Forever ARGI+ i 1 kutija Forever Arctic Sea.',
+                'en' => 'If you want a one-month frame, this is most often positioned as 1 x Forever ARGI+ and 1 box of Forever Arctic Sea.',
+            ],
             'suppress_generic_questions' => true,
+            'lock_product_scope' => true,
         ],
         'nerve_support_routine' => [
             'patterns' => ['trigemin', 'zujanje u uhu', 'zujanje', 'tinnitus', 'oštećenj živaca', 'ostecenj zivaca', 'oštećeni živci', 'osteceni zivci', 'oštećene živce', 'ostecene zivce', 'upaljeni živci', 'upaljen živac', 'upaljeni zivci', 'upaljen zivac', 'upaljene živce', 'upaljene zivce', 'upala živca', 'upala zivca', 'živac', 'zivac', 'sinaps', 'pareza facialis', 'facialis', 'pareza', 'neurološ', 'neurolos', 'neuralg'],
@@ -9196,7 +9237,7 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
             'lock_product_scope' => true,
         ],
         'candida_support_routine' => [
-            'patterns' => ['candida albicans', 'candida', 'kandida', 'gljivične infekcije', 'gljivicne infekcije', 'prekomjeran rast gljivica'],
+            'patterns' => ['candida albicans', 'candida', 'kandida', 'kandid', 'gljivične infekcije', 'gljivicne infekcije', 'prekomjeran rast gljivica'],
             'preferred_patterns' => ['aloe vera gel', 'aloe gel', 'pro b', 'pro-b', 'hand & face soap', 'hand and face soap', 'first spray', 'aloe first', 'aloe gelly'],
             'primary_product' => 'Forever Aloe Vera Gel™',
             'support_products' => ['Forever Active Pro B', 'Forever Aloe Liquid Soap', 'Forever Aloe First Spray', 'Forever Aloe Vera Gelly'],
@@ -9623,6 +9664,18 @@ function fcc_ai_get_product_advisor_effective_condition_matches(string $message,
             $language,
             ['nadutost', 'probava', 'energija'],
             265
+        );
+    }
+
+    if(
+        fcc_ai_contains_keywords($message, ['akne', 'prišt', 'prist', 'problematičnu kožu', 'problematicnu kozu', 'problematična koža', 'problematicna koza'])
+        && fcc_ai_contains_keywords($message, ['probav', 'nadut', 'crijev', 'želud', 'zelud'])
+    ) {
+        $matches[] = fcc_ai_get_product_advisor_condition_match_by_key(
+            'acne_gut_inside_first_support',
+            $language,
+            ['akne', 'probava', 'inside-first'],
+            275
         );
     }
 
@@ -12618,6 +12671,7 @@ function fcc_ai_detect_public_intent(string $assistant_type, string $message): a
         'affiliate', 'network', 'sponzor', 'partnerstvo', 'rad od kuće', 'rad od kuce',
         'dodatna zarada', 'dodatni prihod', 'business opportunity', 'poslovna prilika',
         'mlm', 'piramid', 'piramida', 'prevara', 'prevar', 'scam',
+        'prodavati', 'prodavat', 'prodaja', 'selling', 'sell',
     ]) || fcc_ai_contains_word_keywords($message, [
         'team', 'tim', 'join',
     ]);
@@ -12633,6 +12687,8 @@ function fcc_ai_detect_public_intent(string $assistant_type, string $message): a
         'kako mogu početi zarađivati', 'kako mogu poceti zaradjivati', 'kako početi zarađivati',
         'kako poceti zaradjivati', 'kako mogu zarađivati', 'kako mogu zaradjivati',
         'zarađivati preko aplikacije', 'zaradjivati preko aplikacije', 'zarada preko aplikacije',
+        'kako mogu to prodavati', 'kako mogu prodavati', 'kako to prodavati', 'prodavati ovo',
+        'how can i sell this', 'how do i sell this', 'selling this',
         'je li ovo mlm', 'je li ovo piramida', 'mlm prevara', 'piramida ili mlm',
     ]) || $business_hesitation_followup || $owner_help_followup;
     $business = $business || $business_hesitation_followup || $owner_help_followup;
@@ -12796,6 +12852,15 @@ function fcc_ai_detect_public_intent(string $assistant_type, string $message): a
         && ($strong_business_interest || ($business && !$explicit_product_request))
         && !$support_request
         && !$business_content_request;
+
+    $business_sales_message = $assistant_type === 'product_advisor'
+        && $business_primary
+        && fcc_ai_contains_keywords($message, ['prodavati', 'prodavat', 'prodaja', 'sell', 'selling']);
+
+    if($business_sales_message) {
+        $explicit_product_request = false;
+        $product = false;
+    }
 
     if($assistant_type === 'product_advisor' && ($business_primary || $business_hesitation_followup || $owner_help_followup) && !$explicit_product_request) {
         $product = false;
@@ -14165,6 +14230,11 @@ function fcc_ai_generate_public_reply(string $assistant_type, string $message, a
         } elseif(!empty($intent['medication_interaction_sensitive'])) {
             $specific_product = trim((string) ($knowledge_suggestions[0]['title'] ?? ''));
             $specific_description = '';
+            $sensitive_support_note = fcc_ai_get_public_sensitive_support_note(
+                $recommendation_payload,
+                $language,
+                !empty($knowledge_suggestions)
+            );
 
             if($specific_product === '') {
                 $specific_product = fcc_ai_get_public_direct_product_lookup_title($message);
@@ -14190,6 +14260,22 @@ function fcc_ai_generate_public_reply(string $assistant_type, string $message, a
                 : ($language === 'sl'
                     ? 'Najbolj varen naslednji korak je, da dodatke potrdite z zdravnikom ali farmacevtom, ki pozna celotno terapijo. Nato vam lahko po želji še vedno razložim Forever izdelek samo skozi njegove sestavine in splošno vlogo v rutini.'
                     : 'Najsigurniji sljedeći korak je dodatke potvrditi s liječnikom ili ljekarnikom koji poznaje cijelu terapiju. Nakon toga, ako želite, i dalje mogu objasniti Forever proizvod samo kroz sastojke i njegovu opću ulogu u rutini.');
+
+            if($sensitive_support_note !== '') {
+                $content_blocks[] = $language === 'en'
+                    ? 'If the doctor or pharmacist confirms the routine fits your therapy, the mapped Forever support direction here still stays on this cautious scope: ' . $sensitive_support_note
+                    : ($language === 'sl'
+                        ? 'Če zdravnik ali farmacevt potrdi, da se rutina ujema s terapijo, mapped Forever support smer tukaj še vedno ostaja v tem previdnem okviru: ' . $sensitive_support_note
+                        : 'Ako liječnik ili ljekarnik potvrdi da se rutina uklapa uz terapiju, mapped Forever support smjer ovdje i dalje ostaje unutar ovog opreznog okvira: ' . $sensitive_support_note);
+            }
+
+            if(!empty($recommendation_payload['monthly_quantity_note'])) {
+                $content_blocks[] = $language === 'en'
+                    ? 'If you want, after that same check I can also keep it practical through this one-month frame: ' . trim((string) $recommendation_payload['monthly_quantity_note'])
+                    : ($language === 'sl'
+                        ? 'Če želite, lahko po isti potrditvi ostanem tudi praktičen s tem mesečnim okvirom: ' . trim((string) $recommendation_payload['monthly_quantity_note'])
+                        : 'Ako želite, nakon iste te potvrde mogu to zadržati i praktično kroz ovaj mjesečni okvir: ' . trim((string) $recommendation_payload['monthly_quantity_note']));
+            }
 
             if($is_direct_product_lookup && $specific_product !== '') {
                 if($specific_description !== '') {
