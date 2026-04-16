@@ -280,6 +280,7 @@ foreach(['hr', 'en', 'sl', 'bg'] as $fcc_chat_ui_language) {
         z-index: 2147482000;
         font-family: "Avenir Next", "Segoe UI", sans-serif;
         pointer-events: none;
+        max-width: calc(100vw - 1rem);
         transition: opacity .18s ease, visibility 0s linear .18s, transform .18s ease;
     }
 
@@ -347,6 +348,7 @@ foreach(['hr', 'en', 'sl', 'bg'] as $fcc_chat_ui_language) {
         right: 0;
         bottom: 0;
         width: min(390px, calc(100vw - 1rem));
+        max-width: calc(100vw - 1rem);
         height: min(690px, calc(100vh - 1rem));
         min-height: 620px;
         background: #434343;
@@ -392,6 +394,8 @@ foreach(['hr', 'en', 'sl', 'bg'] as $fcc_chat_ui_language) {
         gap: .75rem;
         padding: 1rem 1rem .45rem;
         flex: 0 0 auto;
+        max-width: 100%;
+        overflow-x: hidden;
     }
 
     .fcc-chat-extreme__brand {
@@ -600,6 +604,7 @@ foreach(['hr', 'en', 'sl', 'bg'] as $fcc_chat_ui_language) {
 
     .fcc-chat-extreme__thread {
         overflow-y: auto;
+        overflow-x: hidden;
         padding: .1rem 1rem .25rem;
         display: flex;
         flex-direction: column;
@@ -645,6 +650,7 @@ foreach(['hr', 'en', 'sl', 'bg'] as $fcc_chat_ui_language) {
         font-size: 1.01rem;
         line-height: 1.62;
         word-break: break-word;
+        overflow-wrap: anywhere;
         white-space: pre-line;
         text-align: left;
     }
@@ -1094,6 +1100,8 @@ foreach(['hr', 'en', 'sl', 'bg'] as $fcc_chat_ui_language) {
         align-items: center;
         background: linear-gradient(180deg, rgba(67, 67, 67, 0) 0%, rgba(67, 67, 67, .78) 22%, rgba(67, 67, 67, 1) 100%);
         flex: 0 0 auto;
+        max-width: 100%;
+        overflow-x: hidden;
     }
 
     .fcc-chat-extreme__input {
@@ -1136,28 +1144,43 @@ foreach(['hr', 'en', 'sl', 'bg'] as $fcc_chat_ui_language) {
     }
 
     @media (max-width: 576px) {
+        .fcc-chat-extreme,
+        .fcc-chat-extreme__panel,
+        .fcc-chat-extreme__header,
+        .fcc-chat-extreme__kicker,
+        .fcc-chat-extreme__thread,
+        .fcc-chat-extreme__lead,
+        .fcc-chat-extreme__composer {
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+
         .fcc-chat-extreme::before {
             display: none;
             content: none;
         }
 
         .fcc-chat-extreme.is-open {
-            inset: 0;
-            right: auto;
-            bottom: auto;
-            width: 100vw;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            width: 100%;
             height: 100dvh;
+            max-width: 100%;
+            overflow: hidden;
         }
 
         .fcc-chat-extreme {
             right: .75rem;
             bottom: calc(.75rem + var(--fcc-chat-widget-offset, 0px));
+            left: auto;
         }
 
         .fcc-chat-extreme__panel {
             position: fixed;
             inset: 0;
-            width: 100vw;
+            width: auto;
             height: 100dvh;
             min-height: 100dvh;
             z-index: 1;
@@ -1165,6 +1188,7 @@ foreach(['hr', 'en', 'sl', 'bg'] as $fcc_chat_ui_language) {
             border-radius: 0;
             border-width: 0;
             box-shadow: none;
+            overflow-x: hidden;
             transform: translateY(100%);
             -webkit-transform: translateY(100%);
             isolation: isolate;
@@ -1194,6 +1218,10 @@ foreach(['hr', 'en', 'sl', 'bg'] as $fcc_chat_ui_language) {
         .fcc-chat-extreme__header {
             padding-top: calc(.8rem + env(safe-area-inset-top));
             background: #434343;
+        }
+
+        .fcc-chat-extreme__brand {
+            max-width: min(188px, calc(100vw - 5.75rem));
         }
 
         .fcc-chat-extreme__kicker,
