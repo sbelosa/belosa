@@ -65,7 +65,7 @@ $fcc_chat_message_url = trim((string) ($fcc_chat_config['message_url'] ?? url('l
 $fcc_chat_feedback_url = trim((string) ($fcc_chat_config['feedback_url'] ?? ($fcc_chat_assistant_type === 'coach' ? url('fcc-ai/coach-feedback') : url('l/fcc-ai/feedback'))));
 $fcc_chat_lead_url = trim((string) ($fcc_chat_config['lead_url'] ?? url('l/fcc-ai/lead')));
 $fcc_chat_default_logo_url = SITE_URL . ASSETS_URL_PATH . 'images/chat-extreme-logo.png';
-$fcc_chat_product_advisor_logo_url = SITE_URL . ASSETS_URL_PATH . 'images/fcc-preporuka-logo.png';
+$fcc_chat_product_advisor_logo_url = SITE_URL . ASSETS_URL_PATH . 'images/fcc-preporuka-chat-logo.png';
 $fcc_chat_coach_logo_url = SITE_URL . ASSETS_URL_PATH . 'images/fcc-coach-logo-wide.png';
 $fcc_chat_logo_url = $fcc_chat_assistant_type === 'coach'
     ? $fcc_chat_coach_logo_url
