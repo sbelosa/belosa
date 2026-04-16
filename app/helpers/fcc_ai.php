@@ -19661,6 +19661,7 @@ function fcc_ai_create_or_resume_internal_coach_conversation(object $user, array
     $scope = 'internal_coach';
     $conversation_public_id = trim((string) ($payload['conversation_public_id'] ?? ''));
     $conversation = null;
+    $resume_source = 'new';
 
     if($conversation_public_id !== '') {
         $conversation = db()
@@ -19669,6 +19670,18 @@ function fcc_ai_create_or_resume_internal_coach_conversation(object $user, array
             ->where('assistant_type', $assistant_type)
             ->where('scope', $scope)
             ->getOne('fcc_ai_conversations');
+
+        if($conversation) {
+            $resume_source = 'client_thread';
+        }
+    }
+
+    if(!$conversation) {
+        $conversation = fcc_ai_get_latest_internal_coach_conversation_for_user((int) $user->user_id);
+
+        if($conversation) {
+            $resume_source = 'server_last_active';
+        }
     }
 
     $language = fcc_ai_normalize_language((string) ($payload['language'] ?? ($conversation->language ?? 'auto')));
@@ -19708,6 +19721,7 @@ function fcc_ai_create_or_resume_internal_coach_conversation(object $user, array
             'event_type' => 'conversation_resumed',
             'meta' => [
                 'scope' => $scope,
+                'resume_source' => $resume_source,
                 'source_page_url' => (string) ($page['url'] ?? ''),
                 'source_page_route' => (string) ($page['route'] ?? ''),
                 'source_page_section' => (string) ($page['section'] ?? ''),
@@ -19733,6 +19747,7 @@ function fcc_ai_create_or_resume_internal_coach_conversation(object $user, array
             'storage_key' => fcc_ai_get_internal_storage_key(),
             'context_storage_key' => fcc_ai_get_internal_context_storage_key(),
             'is_resumed' => true,
+            'resume_source' => $resume_source,
             'coach_mode' => $ai_plan['coach_summary'] ?? [],
             'messages' => $messages,
         ];
@@ -19794,6 +19809,7 @@ function fcc_ai_create_or_resume_internal_coach_conversation(object $user, array
         'storage_key' => fcc_ai_get_internal_storage_key(),
         'context_storage_key' => fcc_ai_get_internal_context_storage_key(),
         'is_resumed' => false,
+        'resume_source' => $resume_source,
         'coach_mode' => $ai_plan['coach_summary'] ?? [],
         'messages' => $messages,
     ];
