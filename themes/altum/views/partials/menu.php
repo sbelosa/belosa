@@ -148,7 +148,7 @@ if(is_logged_in() && in_array($fcc_share_route, ['index', 'blog', 'page'], true)
                         <?php include_view(THEME_PATH . 'views/partials/internal_notifications_js.php', ['has_pending_internal_notifications' => $this->user->has_pending_internal_notifications]) ?>
                     <?php endif ?>
 
-                    <li class="nav-item dropdown">
+                    <li class="nav-item dropdown d-none d-lg-flex">
                         <a class="nav-link dropdown-toggle d-flex align-items-center" data-toggle="dropdown" href="#" aria-haspopup="true" aria-expanded="false">
                             <img src="<?= get_user_avatar($this->user->avatar, $this->user->email) ?>" class="navbar-avatar mr-2" loading="lazy" />
                             <?= $this->user->name ?>
@@ -281,6 +281,129 @@ if(is_logged_in() && in_array($fcc_share_route, ['index', 'blog', 'page'], true)
                                     <div class="dropdown-divider"></div>
                                     <a class="dropdown-item" href="<?= url('logout') ?>"><i class="fas fa-fw fa-sm fa-sign-out-alt mr-2"></i> <?= l('global.menu.logout') ?></a>
                                 </div>
+                            </div>
+                        </div>
+                    </li>
+
+                    <li class="nav-item d-lg-none fcc-mobile-account-nav">
+                        <button
+                            type="button"
+                            class="nav-link btn btn-link fcc-mobile-account-toggle"
+                            data-toggle="collapse"
+                            data-target="#fcc_mobile_account_menu"
+                            aria-expanded="false"
+                            aria-controls="fcc_mobile_account_menu"
+                        >
+                            <span class="d-flex align-items-center min-width-0">
+                                <img src="<?= get_user_avatar($this->user->avatar, $this->user->email) ?>" class="navbar-avatar mr-2" loading="lazy" />
+                                <span class="text-truncate"><?= $this->user->name ?></span>
+                            </span>
+                            <span class="ml-2 caret"></span>
+                        </button>
+
+                        <div class="collapse fcc-mobile-account-panel" id="fcc_mobile_account_menu">
+                            <div class="fcc-mobile-account-panel__inner">
+                                <div class="fcc-mobile-account-header">
+                                    <div class="font-weight-bold text-truncate"><?= $this->user->name ?></div>
+                                    <div class="fcc-mobile-account-header__email text-truncate"><?= $this->user->email ?></div>
+                                </div>
+
+                                <div class="dropdown-divider my-0"></div>
+
+                                <?php if(settings()->links->biolinks_is_enabled): ?>
+                                    <a href="<?= url('links?type=biolink') ?>" class="dropdown-item"><i class="fas fa-fw fa-sm fa-hashtag mr-2"></i> <?= l('links.menu.biolink') ?></a>
+                                <?php endif ?>
+
+                                <?php if(settings()->links->shortener_is_enabled): ?>
+                                    <a href="<?= url('links?type=link') ?>" class="dropdown-item"><i class="fas fa-fw fa-sm fa-link mr-2"></i> <?= l('links.menu.link') ?></a>
+                                <?php endif ?>
+
+                                <?php if(settings()->links->files_is_enabled): ?>
+                                    <a href="<?= url('links?type=file') ?>" class="dropdown-item"><i class="fas fa-fw fa-sm fa-file mr-2"></i> <?= l('links.menu.file') ?></a>
+                                <?php endif ?>
+
+                                <?php if(settings()->links->vcards_is_enabled): ?>
+                                    <a href="<?= url('links?type=vcard') ?>" class="dropdown-item"><i class="fas fa-fw fa-sm fa-id-card mr-2"></i> <?= l('links.menu.vcard') ?></a>
+                                <?php endif ?>
+
+                                <?php if(settings()->links->events_is_enabled): ?>
+                                    <a href="<?= url('links?type=event') ?>" class="dropdown-item"><i class="fas fa-fw fa-sm fa-calendar mr-2"></i> <?= l('links.menu.event') ?></a>
+                                <?php endif ?>
+
+                                <?php if(settings()->links->static_is_enabled): ?>
+                                    <a href="<?= url('links?type=static') ?>" class="dropdown-item"><i class="fas fa-fw fa-sm fa-file-code mr-2"></i> <?= l('links.menu.static') ?></a>
+                                <?php endif ?>
+
+                                <?php if(settings()->codes->qr_codes_is_enabled): ?>
+                                    <a href="<?= url('qr-codes') ?>" class="dropdown-item"><i class="fas fa-fw fa-sm fa-qrcode mr-2"></i> <?= l('qr_codes.menu') ?></a>
+                                <?php endif ?>
+
+                                <?php if(\Altum\Plugin::is_active('aix')): ?>
+                                    <div class="dropdown-divider my-0"></div>
+                                <?php endif ?>
+
+                                <?php if(\Altum\Plugin::is_active('aix') && settings()->aix->documents_is_enabled): ?>
+                                    <a href="<?= url('documents') ?>" class="dropdown-item"><i class="fas fa-fw fa-sm fa-robot mr-2"></i> <?= l('documents.menu') ?></a>
+                                <?php endif ?>
+
+                                <?php if(\Altum\Plugin::is_active('aix') && settings()->aix->images_is_enabled): ?>
+                                    <a href="<?= url('images') ?>" class="dropdown-item"><i class="fas fa-fw fa-sm fa-icons mr-2"></i> <?= l('images.menu') ?></a>
+                                <?php endif ?>
+
+                                <?php if(\Altum\Plugin::is_active('aix') && settings()->aix->transcriptions_is_enabled): ?>
+                                    <a href="<?= url('transcriptions') ?>" class="dropdown-item"><i class="fas fa-fw fa-sm fa-microphone-alt mr-2"></i> <?= l('transcriptions.menu') ?></a>
+                                <?php endif ?>
+
+                                <?php if(\Altum\Plugin::is_active('aix') && settings()->aix->syntheses_is_enabled): ?>
+                                    <a href="<?= url('syntheses') ?>" class="dropdown-item"><i class="fas fa-fw fa-sm fa-voicemail mr-2"></i> <?= l('syntheses.menu') ?></a>
+                                <?php endif ?>
+
+                                <?php if(\Altum\Plugin::is_active('aix') && settings()->aix->chats_is_enabled): ?>
+                                    <a href="<?= url('chats') ?>" class="dropdown-item"><i class="fas fa-fw fa-sm fa-comments mr-2"></i> <?= l('chats.menu') ?></a>
+                                <?php endif ?>
+
+                                <?php if(\Altum\Plugin::is_active('email-signatures') && settings()->signatures->is_enabled): ?>
+                                    <a href="<?= url('signatures') ?>" class="dropdown-item"><i class="fas fa-fw fa-sm fa-file-signature mr-2"></i> <?= l('signatures.menu') ?></a>
+                                <?php endif ?>
+
+                                <?php if(!\Altum\Teams::is_delegated()): ?>
+                                    <div class="dropdown-divider my-0"></div>
+
+                                    <?php if(\Altum\Authentication::is_admin()): ?>
+                                        <a class="dropdown-item" href="<?= url('admin') ?>"><i class="fas fa-fw fa-sm fa-fingerprint text-primary mr-2"></i> <?= l('global.menu.admin') ?></a>
+                                    <?php endif ?>
+
+                                    <a class="dropdown-item" href="<?= url('account') ?>"><i class="fas fa-fw fa-sm fa-user-cog mr-2"></i> <?= l('account.menu') ?></a>
+                                    <a class="dropdown-item" href="<?= url('account-preferences') ?>"><i class="fas fa-fw fa-sm fa-sliders-h mr-2"></i> <?= l('account_preferences.menu') ?></a>
+                                    <a class="dropdown-item" href="<?= url('account-plan') ?>"><i class="fas fa-fw fa-sm fa-box-open mr-2"></i> <?= l('account_plan.menu') ?></a>
+
+                                    <?php if(settings()->payment->is_enabled): ?>
+                                        <a class="dropdown-item" href="<?= url('account-payments') ?>"><i class="fas fa-fw fa-sm fa-credit-card mr-2"></i> <?= l('account_payments.menu') ?></a>
+
+                                        <?php if(\Altum\Plugin::is_active('affiliate') && settings()->affiliate->is_enabled): ?>
+                                            <a class="dropdown-item" href="<?= url('referrals') ?>"><i class="fas fa-fw fa-sm fa-wallet mr-2"></i> <?= l('referrals.menu') ?></a>
+                                        <?php endif ?>
+                                    <?php endif ?>
+
+                                    <?php if(settings()->main->api_is_enabled): ?>
+                                        <a class="dropdown-item" href="<?= url('account-api') ?>"><i class="fas fa-fw fa-sm fa-code mr-2"></i> <?= l('account_api.menu') ?></a>
+                                    <?php endif ?>
+
+                                    <?php if(\Altum\Plugin::is_active('teams')): ?>
+                                        <a class="dropdown-item" href="<?= url('teams-system') ?>"><i class="fas fa-fw fa-sm fa-user-shield mr-2"></i> <?= l('teams_system.menu') ?></a>
+                                    <?php endif ?>
+
+                                    <?php if(settings()->sso->is_enabled && settings()->sso->display_menu_items && count((array) settings()->sso->websites)): ?>
+                                        <div class="dropdown-divider my-0"></div>
+
+                                        <?php foreach(settings()->sso->websites as $website): ?>
+                                            <a href="<?= url('sso/switch?to=' . $website->id) ?>" class="dropdown-item"><i class="<?= $website->icon ?> fa-fw fa-sm mr-2"></i> <?= sprintf(l('sso.menu'), $website->name) ?></a>
+                                        <?php endforeach ?>
+                                    <?php endif ?>
+                                <?php endif ?>
+
+                                <div class="dropdown-divider my-0"></div>
+                                <a class="dropdown-item" href="<?= url('logout') ?>"><i class="fas fa-fw fa-sm fa-sign-out-alt mr-2"></i> <?= l('global.menu.logout') ?></a>
                             </div>
                         </div>
                     </li>
@@ -490,6 +613,74 @@ if(is_logged_in() && in_array($fcc_share_route, ['index', 'blog', 'page'], true)
         z-index: 1085;
     }
 
+    .fcc-mobile-account-nav {
+        width: 100%;
+    }
+
+    .fcc-mobile-account-toggle {
+        width: 100%;
+        padding: 0.7rem 0 !important;
+        border: 0 !important;
+        background: transparent !important;
+        color: rgba(255, 255, 255, 0.84) !important;
+        text-align: left;
+        text-decoration: none !important;
+        box-shadow: none !important;
+    }
+
+    .fcc-mobile-account-toggle:hover,
+    .fcc-mobile-account-toggle:focus {
+        color: #9efbf1 !important;
+        text-decoration: none !important;
+    }
+
+    .fcc-mobile-account-toggle .caret {
+        transition: transform 0.2s ease;
+    }
+
+    .fcc-mobile-account-toggle[aria-expanded="true"] .caret {
+        transform: rotate(180deg);
+    }
+
+    .fcc-mobile-account-panel {
+        width: 100%;
+    }
+
+    .fcc-mobile-account-panel__inner {
+        margin-top: 0.55rem;
+        border: 1px solid rgba(68, 196, 181, 0.12);
+        border-radius: 1rem;
+        overflow: hidden;
+        background:
+            radial-gradient(120% 160% at 0% 0%, rgba(74, 208, 189, 0.08), transparent 36%),
+            linear-gradient(180deg, rgba(14, 18, 28, 0.96), rgba(10, 13, 20, 0.98));
+        box-shadow: 0 14px 34px rgba(0, 0, 0, 0.22);
+    }
+
+    .fcc-mobile-account-header {
+        padding: 0.9rem 1rem 0.85rem;
+        color: rgba(241, 246, 251, 0.95);
+    }
+
+    .fcc-mobile-account-header__email {
+        margin-top: 0.15rem;
+        color: rgba(192, 205, 217, 0.74);
+        font-size: 0.82rem;
+    }
+
+    .fcc-mobile-account-panel .dropdown-item {
+        padding: 0.78rem 1rem;
+        color: rgba(241, 246, 251, 0.9);
+        white-space: normal;
+    }
+
+    .fcc-mobile-account-panel .dropdown-item:hover,
+    .fcc-mobile-account-panel .dropdown-item:focus {
+        background: rgba(255, 255, 255, 0.045);
+        color: #9efbf1;
+        text-decoration: none;
+    }
+
     .fcc-navbar-shell--with-share-row .dropdown-menu.dropdown-menu-right {
         margin-top: 1rem;
     }
@@ -526,6 +717,10 @@ if(is_logged_in() && in_array($fcc_share_route, ['index', 'blog', 'page'], true)
         .fcc-navbar-shell .navbar-nav .nav-link {
             display: flex;
             align-items: center;
+            justify-content: space-between;
+        }
+
+        .fcc-navbar-shell .navbar-nav .fcc-mobile-account-toggle {
             justify-content: space-between;
         }
 
@@ -578,7 +773,7 @@ if(is_logged_in() && in_array($fcc_share_route, ['index', 'blog', 'page'], true)
 
         .fcc-navbar-shell--with-share-row {
             border-radius: 1.15rem;
-            overflow: hidden;
+            overflow: visible;
         }
 
         .fcc-navbar-shell--with-share-row #navbar {
@@ -632,6 +827,7 @@ if(is_logged_in() && in_array($fcc_share_route, ['index', 'blog', 'page'], true)
     @media (max-width: 575px) {
         .fcc-navbar-shell--with-share-row {
             border-radius: 1.05rem;
+            overflow: visible;
         }
 
         .fcc-navbar-share-row__inner {
