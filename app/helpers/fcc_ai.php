@@ -8537,9 +8537,9 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
         ],
         'weight_loss_program' => [
             'patterns' => ['mršav', 'mrsav', 'smrsam', 'smršam', 'za mrsavljenje', 'za mršavljenje', 'gubitak kilograma', '15 kg', 'pretila', 'protiv debljanja'],
-            'preferred_patterns' => ['c9', 'clean 9', 'tea', 'blossom', 'f15', 'lean'],
+            'preferred_patterns' => ['c9', 'clean 9', 'garcinia', 'therm'],
             'primary_product' => 'C9 Forever Living Products',
-            'support_products' => ['Aloe Blossom Herbal Tea', 'Forever F15', 'Forever Lean®'],
+            'support_products' => ['Forever Garcinia Plus', 'Forever Therm™'],
             'label' => [
                 'hr' => 'mršavljenje i strukturirani program',
                 'en' => 'weight loss and structured program',
@@ -8551,22 +8551,305 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
             'recommendation_lines' => [
                 'hr' => [
                     'C9 Forever Living Products je glavni početni smjer za mršavljenje jer daje strukturirani start, jasan ritam i početni reset rutine.',
-                    'Aloe Blossom Herbal Tea može biti dobra support opcija uz to kada želite dodatni osjećaj lakoće i uredniju svakodnevnu rutinu.',
-                    'Nakon C9 najlogičniji nastavak je F15 ili Forever Lean, ovisno o tome želite li strukturirani nastavak programa ili jednostavniju dnevnu podršku.',
+                    'Forever Garcinia Plus i Forever Therm™ imaju smisla kao support opcije uz to kada želite jači programski smjer za apetit i metabolizam, ali bez obećavanja brzih rezultata.',
+                    'Najlogičnije je krenuti kroz C9 kao program, a tek onda po potrebi zaokružiti rutinu kroz Garcinia Plus i Forever Therm™.',
                 ],
                 'en' => [
                     'C9 Forever Living Products is the main starting direction for weight loss because it gives a structured start, clear rhythm and an initial routine reset.',
-                    'Aloe Blossom Herbal Tea can be a useful support option on top when you want an extra sense of lightness and a steadier daily routine.',
-                    'After C9, the cleanest continuation is F15 or Forever Lean, depending on whether you want a more structured continuation or a simpler daily support route.',
+                    'Forever Garcinia Plus and Forever Therm™ make sense as the support options on top when you want a stronger program-style direction for appetite and metabolism, but without promising fast results.',
+                    'The cleanest route is to start through C9 as the program and only then round out the routine with Garcinia Plus and Forever Therm™ if needed.',
                 ],
             ],
+            'monthly_quantity_note' => [
+                'hr' => 'Ako želite okvir za prvi mjesec, ovdje se najčešće kreće s 1 x C9 programom, a po potrebi se dodaju 1 x Forever Garcinia Plus i 1 x Forever Therm™.',
+                'en' => 'If you want a first-month frame, people most often start here with 1 x C9 program and then, if needed, add 1 x Forever Garcinia Plus and 1 x Forever Therm™.',
+            ],
             'suppress_generic_questions' => true,
+            'lock_product_scope' => true,
+        ],
+        'weight_loss_digestive_phase_support' => [
+            'patterns' => ['mršaviti ali imam lošu probavu', 'mrsaviti ali imam losu probavu', 'želim smršaviti ali imam lošu probavu', 'zelim smrsaviti ali imam losu probavu', 'želim smršaviti ali imam probavu', 'smršaviti i loša probava'],
+            'preferred_patterns' => ['aloe vera gel', 'active pro b', 'pro b', 'fiber', 'garcinia'],
+            'primary_product' => 'Forever Aloe Vera Gel™',
+            'support_products' => ['Forever Active Pro B', 'Forever Fiber', 'Forever Garcinia Plus'],
+            'label' => [
+                'hr' => 'mršavljenje uz sporu probavu i fazni pristup',
+                'en' => 'weight loss with slower digestion and a phased approach',
+            ],
+            'opening_note' => [
+                'hr' => 'Kad težina i probava idu zajedno, ovdje je pametnije prvo smiriti probavni ritam pa tek onda pojačavati metabolički smjer. Zato aloe baza, probiotik i vlakna trebaju ići prije jačih weight-loss dodataka.',
+                'en' => 'When weight and digestion go together, it is smarter here to calm the digestive rhythm first and only then strengthen the metabolic direction. That is why the aloe base, probiotic and fiber should come before stronger weight-loss add-ons.',
+            ],
+            'recommendation_lines' => [
+                'hr' => [
+                    'Forever Aloe Vera Gel™ je ovdje glavni Forever smjer kao aloe baza iznutra kada želite lakši probavni i weight-balance start bez prevelikog pritiska na rutinu.',
+                    'Forever Active Pro B i Forever Fiber imaju smisla kao prve support opcije uz to kada želite smiriti nadutost, probavu i osjećaj težine prije jačeg weight-loss koraka.',
+                    'Forever Garcinia Plus ovdje ima više smisla kao kasniji dodatak, tek kada probavni dio sjedne i kad želite zaokružiti fazni pristup mršavljenju.',
+                ],
+                'en' => [
+                    'Forever Aloe Vera Gel™ is the main Forever direction here as the inside aloe base when you want an easier digestive and weight-balance start without putting too much pressure on the routine.',
+                    'Forever Active Pro B and Forever Fiber make sense as the first support options on top when you want to calm bloating, digestion and that heavy feeling before a stronger weight-loss step.',
+                    'Forever Garcinia Plus makes more sense here as a later add-on, only after the digestive side settles and you want to complete a phased weight-loss approach.',
+                ],
+            ],
+            'monthly_quantity_note' => [
+                'hr' => 'Ako želite okvir za prvi mjesec, ovdje se najčešće gleda 3 x Forever Aloe Vera Gel™, 1 x Forever Active Pro B i 1 x Forever Fiber, a Garcinia Plus ostaje za kasniju fazu po potrebi.',
+                'en' => 'If you want a first-month frame, this is most often positioned as 3 x Forever Aloe Vera Gel™, 1 x Forever Active Pro B and 1 x Forever Fiber, while Garcinia Plus stays for a later phase if needed.',
+            ],
+            'suppress_generic_questions' => true,
+            'lock_product_scope' => true,
+        ],
+        'belly_fat_weight_support' => [
+            'patterns' => ['masnoću na trbuhu', 'masnocu na trbuhu', 'masnoća na trbuhu', 'masnoca na trbuhu', 'mast na trbuhu', 'salce na trbuhu'],
+            'preferred_patterns' => ['garcinia', 'therm', 'aloe vera gel'],
+            'primary_product' => 'Forever Garcinia Plus',
+            'support_products' => ['Forever Therm™', 'Forever Aloe Vera Gel™'],
+            'label' => [
+                'hr' => 'trbuh, apetit i ciljani weight-loss smjer',
+                'en' => 'belly fat, appetite, and a targeted weight-loss direction',
+            ],
+            'opening_note' => [
+                'hr' => 'Kad je fokus baš na masnim naslagama na trbuhu, odgovor ne treba bježati u beauty ili kreme, nego ostati na dodatku za apetit i metabolizam uz aloe bazu iznutra.',
+                'en' => 'When the focus is specifically belly fat, the answer should not drift into beauty or creams, but stay on appetite and metabolism support with an inside aloe base.',
+            ],
+            'recommendation_lines' => [
+                'hr' => [
+                    'Forever Garcinia Plus je ovdje glavni Forever smjer kada želite čišći fokus na apetit i svakodnevnu kontrolu unosa kao prvi korak.',
+                    'Forever Therm™ ima smisla kao support opcija uz to kada želite jači metabolički ritam, a Forever Aloe Vera Gel™ može ostati jednostavna aloe baza iznutra uz isti plan.',
+                ],
+                'en' => [
+                    'Forever Garcinia Plus is the main Forever direction here when you want a cleaner focus on appetite and everyday intake control as the first step.',
+                    'Forever Therm™ makes sense as the support option on top when you also want a stronger metabolic rhythm, while Forever Aloe Vera Gel™ can stay as the simple inside aloe base inside the same plan.',
+                ],
+            ],
+            'monthly_quantity_note' => [
+                'hr' => 'Ako želite okvir za mjesec dana, ovdje se najčešće gleda 1 x Forever Garcinia Plus, 1 x Forever Therm™ i 3 x Forever Aloe Vera Gel™.',
+                'en' => 'If you want a one-month frame, this is most often positioned as 1 x Forever Garcinia Plus, 1 x Forever Therm™ and 3 x Forever Aloe Vera Gel™.',
+            ],
+            'suppress_generic_questions' => true,
+            'lock_product_scope' => true,
+        ],
+        'emotional_eating_weight_support' => [
+            'patterns' => ['jedem iz dosade', 'stalno jedem iz dosade', 'emocionalno jedenje', 'jedem iz stresa', 'ne mogu se kontrolirati s hranom'],
+            'preferred_patterns' => ['garcinia', 'royal jelly'],
+            'primary_product' => 'Forever Garcinia Plus',
+            'support_products' => ['Forever Royal Jelly'],
+            'label' => [
+                'hr' => 'emocionalno jedenje i kontrola apetita',
+                'en' => 'emotional eating and appetite control',
+            ],
+            'opening_note' => [
+                'hr' => 'Kad problem nije samo hrana nego i obrazac posezanja za hranom iz dosade ili napetosti, odgovor treba biti razumijevajući i ostati na kontroli apetita plus blaža podrška živčanom sustavu.',
+                'en' => 'When the issue is not only food but also the pattern of reaching for food out of boredom or tension, the answer should stay understanding and focus on appetite control plus gentler nervous-system support.',
+            ],
+            'recommendation_lines' => [
+                'hr' => [
+                    'Forever Garcinia Plus je ovdje glavni Forever smjer kada želite smireniji fokus na apetit i lakšu kontrolu impulsa prema hrani.',
+                    'Forever Royal Jelly ima smisla kao support opcija uz to kada želite i blaži support za dnevni ritam, napetost i osjećaj preopterećenja koji često prate emocionalno jedenje.',
+                ],
+                'en' => [
+                    'Forever Garcinia Plus is the main Forever direction here when you want a calmer focus on appetite and easier control over food-related impulses.',
+                    'Forever Royal Jelly makes sense as the support option on top when you also want a gentler support for daily rhythm, tension, and that overloaded feeling that often comes with emotional eating.',
+                ],
+            ],
+            'monthly_quantity_note' => [
+                'hr' => 'Ako želite okvir za mjesec dana, ovdje se najčešće gleda 1 x Forever Garcinia Plus i 1 x Forever Royal Jelly.',
+                'en' => 'If you want a one-month frame, this is most often positioned as 1 x Forever Garcinia Plus and 1 x Forever Royal Jelly.',
+            ],
+            'suppress_generic_questions' => true,
+            'lock_product_scope' => true,
+        ],
+        'slow_metabolism_weight_support' => [
+            'patterns' => ['spor metabolizam', 'spori metabolizam', 'usporen metabolizam', 'teško mršavim', 'tesko mrsavim'],
+            'preferred_patterns' => ['therm', 'garcinia', 'aloe vera gel'],
+            'primary_product' => 'Forever Therm™',
+            'support_products' => ['Forever Garcinia Plus', 'Forever Aloe Vera Gel™'],
+            'label' => [
+                'hr' => 'usporen metabolizam i jači metabolički smjer',
+                'en' => 'slow metabolism and a stronger metabolic direction',
+            ],
+            'opening_note' => [
+                'hr' => 'Kad je naglasak baš na usporenom metabolizmu i teškom mršavljenju, odgovor treba biti stručan i usmjeren na metabolički ritam, ali i dalje bez obećavanja čuda.',
+                'en' => 'When the focus is specifically on slow metabolism and difficult weight loss, the answer should be expert and centered on metabolic rhythm, but still without promising miracles.',
+            ],
+            'recommendation_lines' => [
+                'hr' => [
+                    'Forever Therm™ je ovdje glavni Forever smjer kada želite najjači fokus na metabolički ritam i energiju weight-loss rutine.',
+                    'Forever Garcinia Plus ima smisla kao support opcija uz to za apetit, a Forever Aloe Vera Gel™ može ostati jednostavna aloe baza iznutra uz isti plan.',
+                ],
+                'en' => [
+                    'Forever Therm™ is the main Forever direction here when you want the strongest focus on metabolic rhythm and the energy side of a weight-loss routine.',
+                    'Forever Garcinia Plus makes sense as the support option on top for appetite, while Forever Aloe Vera Gel™ can remain the simple inside aloe base within the same plan.',
+                ],
+            ],
+            'monthly_quantity_note' => [
+                'hr' => 'Ako želite okvir za mjesec dana, ovdje se najčešće gleda 1 x Forever Therm™, 1 x Forever Garcinia Plus i 3 x Forever Aloe Vera Gel™.',
+                'en' => 'If you want a one-month frame, this is most often positioned as 1 x Forever Therm™, 1 x Forever Garcinia Plus and 3 x Forever Aloe Vera Gel™.',
+            ],
+            'suppress_generic_questions' => true,
+            'lock_product_scope' => true,
+        ],
+        'postpartum_weight_support' => [
+            'patterns' => ['nakon poroda', 'po porodu', 'poslije poroda', 'posle poroda'],
+            'preferred_patterns' => ['aloe vera gel', 'garcinia'],
+            'primary_product' => 'Forever Aloe Vera Gel™',
+            'support_products' => ['Forever Garcinia Plus'],
+            'label' => [
+                'hr' => 'postupan weight-loss smjer nakon poroda',
+                'en' => 'a gradual postpartum weight-loss direction',
+            ],
+            'opening_note' => [
+                'hr' => 'Nakon poroda ovdje je važnije ići postepeno i oprezno, bez agresivnih dodataka kao prvog koraka. Aloe baza iznutra je čišći prvi smjer, a Garcinia tek kasnija opcija ako liječnik potvrdi da ima smisla.',
+                'en' => 'After childbirth, it is more important here to move gradually and cautiously, without aggressive products as the first step. An inside aloe base is the cleaner first direction, while Garcinia becomes only a later option if a doctor confirms it makes sense.',
+            ],
+            'recommendation_lines' => [
+                'hr' => [
+                    'Forever Aloe Vera Gel™ je ovdje glavni Forever smjer kao nježna aloe baza iznutra kada želite postupan start nakon poroda.',
+                    'Forever Garcinia Plus ima više smisla tek kasnije, ako se rutina stabilizira i ako stručna provjera potvrdi da je to dobar sljedeći korak.',
+                ],
+                'en' => [
+                    'Forever Aloe Vera Gel™ is the main Forever direction here as the gentle inside aloe base when you want a gradual start after childbirth.',
+                    'Forever Garcinia Plus makes more sense only later, once the routine stabilizes and professional confirmation says it is a good next step.',
+                ],
+            ],
+            'monthly_quantity_note' => [
+                'hr' => 'Ako želite oprezan prvi mjesec, ovdje se najčešće gleda 3 x Forever Aloe Vera Gel™, a Garcinia Plus ostaje kao kasnija opcija nakon stručne potvrde.',
+                'en' => 'If you want a cautious first month, this is most often positioned as 3 x Forever Aloe Vera Gel™, while Garcinia Plus stays as a later option after professional confirmation.',
+            ],
+            'suppress_generic_questions' => true,
+            'sensitive_support_only' => true,
+            'allow_special_population_support' => true,
+            'lock_product_scope' => true,
+        ],
+        'yo_yo_weight_support' => [
+            'patterns' => ['stalno se debljam i mršavim', 'stalno se debljam i mrsavim', 'jo-jo efekt', 'jojo efekt', 'ne mogu zadržati težinu', 'ne mogu zadrzati tezinu'],
+            'preferred_patterns' => ['aloe vera gel', 'active pro b', 'fiber', 'garcinia'],
+            'primary_product' => 'Forever Aloe Vera Gel™',
+            'support_products' => ['Forever Active Pro B', 'Forever Fiber', 'Forever Garcinia Plus'],
+            'label' => [
+                'hr' => 'jo-jo efekt i stabilizacija rutine',
+                'en' => 'yo-yo effect and routine stabilization',
+            ],
+            'opening_note' => [
+                'hr' => 'Kad je problem vraćanje kilograma, odgovor ne treba krenuti najagresivnijim weight-loss dodatkom, nego stabilizacijom probave, rutine i apetita.',
+                'en' => 'When the issue is weight regain, the answer should not start with the most aggressive weight-loss add-on, but with stabilizing digestion, routine and appetite.',
+            ],
+            'recommendation_lines' => [
+                'hr' => [
+                    'Forever Aloe Vera Gel™ je ovdje glavni Forever smjer kao aloe baza iznutra kada želite mirniji restart i stabilizaciju rutine.',
+                    'Forever Active Pro B i Forever Fiber imaju smisla kao prve support opcije za stabilniji probavni ritam i uredniji osjećaj sitosti.',
+                    'Forever Garcinia Plus ovdje ima smisla kao dodatni korak tek nakon toga, kada želite podršku apetitu bez da Therm bude prvi izbor.',
+                ],
+                'en' => [
+                    'Forever Aloe Vera Gel™ is the main Forever direction here as the inside aloe base when you want a calmer reset and routine stabilization.',
+                    'Forever Active Pro B and Forever Fiber make sense as the first support options for a steadier digestive rhythm and a cleaner satiety feeling.',
+                    'Forever Garcinia Plus makes sense here as an extra step only after that, when you want appetite support without making Therm the first choice.',
+                ],
+            ],
+            'monthly_quantity_note' => [
+                'hr' => 'Ako želite okvir za mjesec dana, ovdje se najčešće gleda 3 x Forever Aloe Vera Gel™, 1 x Forever Active Pro B, 1 x Forever Fiber i po potrebi 1 x Forever Garcinia Plus.',
+                'en' => 'If you want a one-month frame, this is most often positioned as 3 x Forever Aloe Vera Gel™, 1 x Forever Active Pro B, 1 x Forever Fiber and, if needed, 1 x Forever Garcinia Plus.',
+            ],
+            'suppress_generic_questions' => true,
+            'lock_product_scope' => true,
+        ],
+        'night_eating_weight_support' => [
+            'patterns' => ['jedem navečer', 'jedem navecer', 'jedem noću', 'jedem nocu', 'noćno jedenje', 'nocno jedenje'],
+            'preferred_patterns' => ['garcinia', 'aloe vera gel'],
+            'primary_product' => 'Forever Garcinia Plus',
+            'support_products' => ['Forever Aloe Vera Gel™'],
+            'label' => [
+                'hr' => 'večernji apetit i noćno jedenje',
+                'en' => 'evening appetite and night eating',
+            ],
+            'opening_note' => [
+                'hr' => 'Kad je problem večernje jedenje, odgovor treba ostati praktičan i usmjeren na apetit, bez da Therm odmah ide kao prvi proizvod.',
+                'en' => 'When the problem is evening eating, the answer should stay practical and centered on appetite, without making Therm the first product right away.',
+            ],
+            'recommendation_lines' => [
+                'hr' => [
+                    'Forever Garcinia Plus je ovdje glavni Forever smjer kada želite jednostavniji prvi korak za kontrolu apetita navečer.',
+                    'Forever Aloe Vera Gel™ ima smisla kao support opcija uz to kao aloe baza iznutra koja drži rutinu jednostavnom i lakšom za pratiti.',
+                ],
+                'en' => [
+                    'Forever Garcinia Plus is the main Forever direction here when you want a simpler first step for controlling appetite in the evening.',
+                    'Forever Aloe Vera Gel™ makes sense as the support option on top as the inside aloe base that keeps the routine simple and easier to follow.',
+                ],
+            ],
+            'monthly_quantity_note' => [
+                'hr' => 'Ako želite okvir za mjesec dana, ovdje se najčešće gleda 1 x Forever Garcinia Plus i 3 x Forever Aloe Vera Gel™.',
+                'en' => 'If you want a one-month frame, this is most often positioned as 1 x Forever Garcinia Plus and 3 x Forever Aloe Vera Gel™.',
+            ],
+            'suppress_generic_questions' => true,
+            'lock_product_scope' => true,
+        ],
+        'weight_loss_low_energy_support' => [
+            'patterns' => ['mršaviti ali nemam energije', 'mrsaviti ali nemam energije', 'želim smršaviti ali nemam energije', 'zelim smrsaviti ali nemam energije', 'želim smršaviti ali sam bez energije', 'mrsavljenje i umor'],
+            'preferred_patterns' => ['aloe vera gel', 'royal jelly', 'therm'],
+            'primary_product' => 'Forever Aloe Vera Gel™',
+            'support_products' => ['Forever Royal Jelly', 'Forever Therm™'],
+            'label' => [
+                'hr' => 'mršavljenje uz slabiju energiju',
+                'en' => 'weight loss with lower energy',
+            ],
+            'opening_note' => [
+                'hr' => 'Kad osoba želi mršaviti, ali je bez energije, odgovor treba ostati balansiran: prvo aloe baza i podrška vitalnosti, a tek kasnije jači metabolički dodatak.',
+                'en' => 'When someone wants to lose weight but feels low on energy, the answer should stay balanced: first the aloe base and vitality support, and only later a stronger metabolic add-on.',
+            ],
+            'recommendation_lines' => [
+                'hr' => [
+                    'Forever Aloe Vera Gel™ je ovdje glavni Forever smjer kao aloe baza iznutra za lakši start rutine bez dodatnog pritiska na energiju.',
+                    'Forever Royal Jelly ima smisla kao glavna support opcija uz to kada želite podići dnevni ritam i vitalnost prije jačeg weight-loss koraka.',
+                    'Forever Therm™ ovdje ima više smisla kao kasniji dodatak, ne kao prvi proizvod, kad se energija i rutina već poslože.',
+                ],
+                'en' => [
+                    'Forever Aloe Vera Gel™ is the main Forever direction here as the inside aloe base for an easier routine start without adding extra pressure on energy.',
+                    'Forever Royal Jelly makes sense as the main support option on top when you want to lift daily rhythm and vitality before a stronger weight-loss step.',
+                    'Forever Therm™ makes more sense here as a later add-on, not as the first product, once energy and routine are already in place.',
+                ],
+            ],
+            'monthly_quantity_note' => [
+                'hr' => 'Ako želite okvir za prvi mjesec, ovdje se najčešće gleda 3 x Forever Aloe Vera Gel™, 1 x Forever Royal Jelly, a Forever Therm™ ostaje za kasniju fazu po potrebi.',
+                'en' => 'If you want a first-month frame, this is most often positioned as 3 x Forever Aloe Vera Gel™, 1 x Forever Royal Jelly, while Forever Therm™ stays for a later phase if needed.',
+            ],
+            'suppress_generic_questions' => true,
+            'lock_product_scope' => true,
+        ],
+        'weight_maintenance_support' => [
+            'patterns' => ['želim održavati', 'zelim odrzavati', 'održavati težinu', 'odrzavati tezinu', 'održavanje težine', 'odrzavanje tezine', 'održavati kilograme', 'odrzavati kilograme'],
+            'preferred_patterns' => ['aloe vera gel', 'active pro b', 'fiber'],
+            'primary_product' => 'Forever Aloe Vera Gel™',
+            'support_products' => ['Forever Active Pro B', 'Forever Fiber'],
+            'label' => [
+                'hr' => 'održavanje težine i dugoročna rutina',
+                'en' => 'weight maintenance and a long-term routine',
+            ],
+            'opening_note' => [
+                'hr' => 'Kad je cilj održavanje nakon mršavljenja, odgovor ne treba vraćati osobu odmah na C9, nego na dugoročniju aloe, probavnu i satiety rutinu.',
+                'en' => 'When the goal is maintenance after weight loss, the answer should not send the person straight back to C9, but toward a longer-term aloe, digestion and satiety routine.',
+            ],
+            'recommendation_lines' => [
+                'hr' => [
+                    'Forever Aloe Vera Gel™ je ovdje glavni Forever smjer kao aloe baza iznutra za održavanje jednostavne dnevne rutine.',
+                    'Forever Active Pro B i Forever Fiber imaju smisla kao support opcije uz to kada želite dugoročnije održati probavni ritam, sitost i stabilnost navika.',
+                ],
+                'en' => [
+                    'Forever Aloe Vera Gel™ is the main Forever direction here as the inside aloe base for maintaining a simple everyday routine.',
+                    'Forever Active Pro B and Forever Fiber make sense as the support options on top when you want to maintain digestive rhythm, satiety and habit stability over the longer term.',
+                ],
+            ],
+            'monthly_quantity_note' => [
+                'hr' => 'Ako želite okvir za mjesec dana, ovdje se najčešće gleda 3 x Forever Aloe Vera Gel™, 1 x Forever Active Pro B i 1 x Forever Fiber.',
+                'en' => 'If you want a one-month frame, this is most often positioned as 3 x Forever Aloe Vera Gel™, 1 x Forever Active Pro B and 1 x Forever Fiber.',
+            ],
+            'suppress_generic_questions' => true,
+            'lock_product_scope' => true,
         ],
         'cellulite_program_support' => [
             'patterns' => ['celulit', 'cellulite', 'imam celulit'],
             'preferred_patterns' => ['c9', 'garcinia', 'therm'],
             'primary_product' => 'C9 Forever Living Products',
-            'support_products' => ['Forever Garcinia Plus', 'Forever Therm'],
+            'support_products' => ['Forever Garcinia Plus', 'Forever Therm™'],
             'label' => [
                 'hr' => 'celulit i strukturirani start kroz program',
                 'en' => 'cellulite and a structured program start',
@@ -8578,16 +8861,16 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
             'recommendation_lines' => [
                 'hr' => [
                     'C9 Forever Living Products je ovdje glavni Forever smjer jer daje strukturirani početak, jasan ritam i program s kojim je najlakše krenuti kada želite raditi na celulitu, metabolizmu i svakodnevnim navikama.',
-                    'Forever Garcinia Plus i Forever Therm imaju smisla kao support opcije uz to kada želite jači programski smjer, ali bez nerealnih obećanja o instant rezultatima.',
+                    'Forever Garcinia Plus i Forever Therm™ imaju smisla kao support opcije uz to kada želite jači programski smjer, ali bez nerealnih obećanja o instant rezultatima.',
                 ],
                 'en' => [
                     'C9 Forever Living Products is the main Forever direction here because it gives a structured start, a clear rhythm and a program that is easiest to begin with when you want to work on cellulite, metabolism and everyday habits.',
-                    'Forever Garcinia Plus and Forever Therm make sense as support options on top when you want a stronger program-style direction, but without unrealistic promises of instant results.',
+                    'Forever Garcinia Plus and Forever Therm™ make sense as support options on top when you want a stronger program-style direction, but without unrealistic promises of instant results.',
                 ],
             ],
             'monthly_quantity_note' => [
-                'hr' => 'Ako želite prvi konkretan korak, ovdje se najčešće kreće s 1 x C9 programom, a nakon toga se po cilju dodaju 1 x Forever Garcinia Plus i 1 x Forever Therm.',
-                'en' => 'If you want the first concrete step, people most often start here with 1 x C9 program and then, depending on the goal, add 1 x Forever Garcinia Plus and 1 x Forever Therm.',
+                'hr' => 'Ako želite prvi konkretan korak, ovdje se najčešće kreće s 1 x C9 programom, a nakon toga se po cilju dodaju 1 x Forever Garcinia Plus i 1 x Forever Therm™.',
+                'en' => 'If you want the first concrete step, people most often start here with 1 x C9 program and then, depending on the goal, add 1 x Forever Garcinia Plus and 1 x Forever Therm™.',
             ],
             'suppress_generic_questions' => true,
             'lock_product_scope' => true,
@@ -8874,6 +9157,482 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
             'monthly_quantity_note' => [
                 'hr' => 'Ako želite okvir za mjesec dana, ovdje se najčešće gleda 1 x Forever Kids, a po želji i 3 x jedan aloe okus kao baza iznutra: Forever Aloe Mango™ ili Forever Aloe Peaches.',
                 'en' => 'If you want a one-month frame, this is most often positioned as 1 x Forever Kids and, if wanted, 3 x one flavored aloe drink as the inside base: Forever Aloe Mango™ or Forever Aloe Peaches.',
+            ],
+            'suppress_generic_questions' => true,
+            'sensitive_support_only' => true,
+            'allow_special_population_support' => true,
+            'lock_product_scope' => true,
+        ],
+        'child_dry_skin_local_support' => [
+            'patterns' => ['dijete ima suhu kožu', 'dijete ima suhu kozu', 'suha koža kod djeteta', 'suha koza kod djeteta', 'peruta se'],
+            'preferred_patterns' => ['aloe vera gelly', 'moisturizing lotion'],
+            'primary_product' => 'Forever Aloe Vera Gelly',
+            'support_products' => ['Aloe Moisturizing Lotion'],
+            'label' => [
+                'hr' => 'dječja suha koža i nježna lokalna rutina',
+                'en' => 'child dry skin and a gentle local routine',
+            ],
+            'opening_note' => [
+                'hr' => 'Kad dijete ima suhu kožu ili perutanje, preporuka treba ostati nježna i jednostavna: umirujući gel plus lagana hidratantna rutina, bez agresivnih proizvoda.',
+                'en' => 'When a child has dry or flaky skin, the recommendation should stay gentle and simple: a soothing gel plus a light hydration routine, without aggressive products.',
+            ],
+            'recommendation_lines' => [
+                'hr' => [
+                    'Forever Aloe Vera Gelly je ovdje glavni Forever smjer kao najnježniji lokalni gel kada želite umiriti suhu i osjetljivu kožu djeteta.',
+                    'Aloe Moisturizing Lotion ima smisla kao support opcija uz to kada želite dodatnu hidrataciju i nježniju dnevnu rutinu njege.',
+                ],
+                'en' => [
+                    'Forever Aloe Vera Gelly is the main Forever direction here as the gentlest local gel when you want to calm a child’s dry and sensitive skin.',
+                    'Aloe Moisturizing Lotion makes sense as the support option on top when you want extra hydration and a gentler everyday care routine.',
+                ],
+            ],
+            'monthly_quantity_note' => [
+                'hr' => 'Ako želite jednostavnu rutinu, ovdje se najčešće gleda 1 x Forever Aloe Vera Gelly i 1 x Aloe Moisturizing Lotion.',
+                'en' => 'If you want a simple routine, this is most often positioned as 1 x Forever Aloe Vera Gelly and 1 x Aloe Moisturizing Lotion.',
+            ],
+            'suppress_generic_questions' => true,
+            'sensitive_support_only' => true,
+            'allow_special_population_support' => true,
+            'lock_product_scope' => true,
+        ],
+        'child_red_sensitive_skin_support' => [
+            'patterns' => ['dijete ima crvenilo', 'crvenilo kod djeteta', 'svrbi ga koža', 'svrbi ga koza', 'dijete se češe', 'dijete se cese'],
+            'preferred_patterns' => ['aloe vera gelly', 'aloe first', 'first spray'],
+            'primary_product' => 'Forever Aloe Vera Gelly',
+            'support_products' => ['Forever Aloe First Spray'],
+            'label' => [
+                'hr' => 'dječje crvenilo, svrbež i umirujuća lokalna rutina',
+                'en' => 'child redness, itchiness and a soothing local routine',
+            ],
+            'opening_note' => [
+                'hr' => 'Kad je riječ o dječjem crvenilu, svrbežu ili vrlo osjetljivoj koži, odgovor treba ostati umirujući i potpuno lokalni, bez nepotrebnih dodataka iznutra.',
+                'en' => 'When this is about child redness, itchiness, or very sensitive skin, the answer should stay soothing and completely topical, without unnecessary internal add-ons.',
+            ],
+            'recommendation_lines' => [
+                'hr' => [
+                    'Forever Aloe Vera Gelly je ovdje glavni Forever smjer kao nježan lokalni gel za svakodnevno umirivanje kože.',
+                    'Forever Aloe First Spray ima smisla kao support opcija uz to kada želite lagani prvi korak izvana prije gelly sloja ili kroz dan.',
+                ],
+                'en' => [
+                    'Forever Aloe Vera Gelly is the main Forever direction here as the gentle local gel for everyday skin soothing.',
+                    'Forever Aloe First Spray makes sense as the support option on top when you want a light first outer step before the gelly layer or during the day.',
+                ],
+            ],
+            'monthly_quantity_note' => [
+                'hr' => 'Ako želite jednostavnu rutinu, ovdje se najčešće gleda 1 x Forever Aloe Vera Gelly i 1 x Forever Aloe First Spray.',
+                'en' => 'If you want a simple routine, this is most often positioned as 1 x Forever Aloe Vera Gelly and 1 x Forever Aloe First Spray.',
+            ],
+            'suppress_generic_questions' => true,
+            'sensitive_support_only' => true,
+            'allow_special_population_support' => true,
+            'lock_product_scope' => true,
+        ],
+        'child_general_sensitive_skin_support' => [
+            'patterns' => ['dijete ima osjetljivu kožu', 'dijete ima osjetljivu kozu', 'osjetljiva koža kod djeteta', 'osjetljiva koza kod djeteta', 'reagira na sve'],
+            'preferred_patterns' => ['aloe vera gelly', 'moisturizing lotion'],
+            'primary_product' => 'Forever Aloe Vera Gelly',
+            'support_products' => ['Aloe Moisturizing Lotion'],
+            'label' => [
+                'hr' => 'dječja osjetljiva koža i nježna rutina',
+                'en' => 'child sensitive skin and a gentle routine',
+            ],
+            'opening_note' => [
+                'hr' => 'Kad dijete općenito ima osjetljivu kožu koja reagira na sve, preporuka treba ostati nježna, lokalna i usmjerena na svakodnevnu zaštitu kožne barijere.',
+                'en' => 'When a child generally has sensitive skin that reacts to everything, the recommendation should stay gentle, topical, and focused on supporting the everyday skin barrier.',
+            ],
+            'recommendation_lines' => [
+                'hr' => [
+                    'Forever Aloe Vera Gelly je ovdje glavni Forever smjer kao nježan lokalni gel za umirivanje osjetljive kože.',
+                    'Aloe Moisturizing Lotion ima smisla kao support opcija uz to kada želite dodatnu hidrataciju i nježniju dnevnu rutinu njege.',
+                ],
+                'en' => [
+                    'Forever Aloe Vera Gelly is the main Forever direction here as the gentle local gel for calming sensitive skin.',
+                    'Aloe Moisturizing Lotion makes sense as the support option on top when you want extra hydration and a gentler daily care routine.',
+                ],
+            ],
+            'monthly_quantity_note' => [
+                'hr' => 'Ako želite jednostavnu rutinu, ovdje se najčešće gleda 1 x Forever Aloe Vera Gelly i 1 x Aloe Moisturizing Lotion.',
+                'en' => 'If you want a simple routine, this is most often positioned as 1 x Forever Aloe Vera Gelly and 1 x Aloe Moisturizing Lotion.',
+            ],
+            'suppress_generic_questions' => true,
+            'sensitive_support_only' => true,
+            'allow_special_population_support' => true,
+            'lock_product_scope' => true,
+        ],
+        'child_immunity_support' => [
+            'patterns' => ['dijete je stalno bolesno', 'dijete stalno bolesno', 'slab imunitet kod djeteta', 'slab imunitet djeteta', 'prehlađeno dijete', 'prehladeno dijete', 'dijete je prehlađeno', 'dijete je prehladeno', 'često bolesno dijete', 'cesto bolesno dijete'],
+            'preferred_patterns' => ['aloe vera gel', 'forever kids', 'absorbent-c'],
+            'primary_product' => 'Forever Aloe Vera Gel™',
+            'support_products' => ['Forever Kids', 'Forever Absorbent-C'],
+            'label' => [
+                'hr' => 'dječji imunitet i blaga nutritivna rutina',
+                'en' => 'child immunity and a gentle nutrition routine',
+            ],
+            'opening_note' => [
+                'hr' => 'Kod djece i imuniteta preporuka treba ostati vrlo nježna i jednostavna: aloe baza, jedan dječji vitaminski proizvod i po potrebi lagan vitamin C smjer.',
+                'en' => 'With children and immunity, the recommendation should stay very gentle and simple: an aloe base, one children vitamin product, and if useful a light vitamin C direction.',
+            ],
+            'recommendation_lines' => [
+                'hr' => [
+                    'Forever Aloe Vera Gel™ je ovdje glavni Forever smjer kao nježna aloe baza iznutra za svakodnevnu rutinu.',
+                    'Forever Kids ima smisla kao glavna support opcija uz to kada želite jednostavniji dječji vitaminski smjer.',
+                    'Forever Absorbent-C može biti dodatna support opcija kada uz to želite i laganiji vitamin C smjer, bez odlaska na jače immunity kombinacije za odrasle.',
+                ],
+                'en' => [
+                    'Forever Aloe Vera Gel™ is the main Forever direction here as the gentle inside aloe base for an everyday routine.',
+                    'Forever Kids makes sense as the main support option on top when you want a simpler child vitamin direction.',
+                    'Forever Absorbent-C can be the extra support option when you also want a lighter vitamin C direction without moving into stronger adult immunity combinations.',
+                ],
+            ],
+            'monthly_quantity_note' => [
+                'hr' => 'Ako želite okvir za mjesec dana, ovdje se najčešće gleda 3 x Forever Aloe Vera Gel™, 1 x Forever Kids i 1 x Forever Absorbent-C.',
+                'en' => 'If you want a one-month frame, this is most often positioned as 3 x Forever Aloe Vera Gel™, 1 x Forever Kids and 1 x Forever Absorbent-C.',
+            ],
+            'suppress_generic_questions' => true,
+            'sensitive_support_only' => true,
+            'allow_special_population_support' => true,
+            'lock_product_scope' => true,
+        ],
+        'child_digestive_support' => [
+            'patterns' => ['dijete ima problema s probavom', 'probava kod djeteta', 'naduto je', 'nadutost kod djeteta', 'nadut trbuh kod djeteta'],
+            'preferred_patterns' => ['aloe vera gel', 'active pro b', 'pro b'],
+            'primary_product' => 'Forever Aloe Vera Gel™',
+            'support_products' => ['Forever Active Pro B'],
+            'label' => [
+                'hr' => 'dječja probava i oprezan support smjer',
+                'en' => 'child digestion and a cautious support direction',
+            ],
+            'opening_note' => [
+                'hr' => 'Kad dijete ima osjetljivu probavu ili nadutost, odgovor treba ostati jednostavan i blag: aloe baza iznutra plus probiotik, bez da vlakna odmah idu kao prvi korak.',
+                'en' => 'When a child has sensitive digestion or bloating, the answer should stay simple and gentle: an inside aloe base plus a probiotic, without making fiber the first step.',
+            ],
+            'recommendation_lines' => [
+                'hr' => [
+                    'Forever Aloe Vera Gel™ je ovdje glavni Forever smjer kao nježna aloe baza iznutra za svakodnevnu probavnu rutinu.',
+                    'Forever Active Pro B ima smisla kao glavna support opcija uz to kada želite jednostavniji probiotički support smjer za probavu.',
+                ],
+                'en' => [
+                    'Forever Aloe Vera Gel™ is the main Forever direction here as the gentle inside aloe base for an everyday digestive routine.',
+                    'Forever Active Pro B makes sense as the main support option on top when you want a simpler probiotic support direction for digestion.',
+                ],
+            ],
+            'monthly_quantity_note' => [
+                'hr' => 'Ako želite okvir za mjesec dana, ovdje se najčešće gleda 3 x Forever Aloe Vera Gel™ i 1 x Forever Active Pro B.',
+                'en' => 'If you want a one-month frame, this is most often positioned as 3 x Forever Aloe Vera Gel™ and 1 x Forever Active Pro B.',
+            ],
+            'suppress_generic_questions' => true,
+            'sensitive_support_only' => true,
+            'allow_special_population_support' => true,
+            'lock_product_scope' => true,
+        ],
+        'child_post_bath_skin_support' => [
+            'patterns' => ['nakon kupanja za dijete', 'što koristiti nakon kupanja za dijete', 'sto koristiti nakon kupanja za dijete'],
+            'preferred_patterns' => ['moisturizing lotion', 'aloe first', 'first spray'],
+            'primary_product' => 'Aloe Moisturizing Lotion',
+            'support_products' => ['Forever Aloe First Spray'],
+            'label' => [
+                'hr' => 'dječja njega kože nakon kupanja',
+                'en' => 'child skin care after bathing',
+            ],
+            'opening_note' => [
+                'hr' => 'Kad pitate baš za dijete nakon kupanja, preporuka treba ostati na nježnoj hidrataciji i laganom umirujućem support koraku izvana.',
+                'en' => 'When you are asking specifically for a child after bathing, the recommendation should stay on gentle hydration and a light soothing support step from the outside.',
+            ],
+            'recommendation_lines' => [
+                'hr' => [
+                    'Aloe Moisturizing Lotion je ovdje glavni Forever smjer kada želite nježniju hidrataciju kože nakon kupanja.',
+                    'Forever Aloe First Spray ima smisla kao support opcija uz to kada želite lagan umirujući korak na osjetljivijim dijelovima kože.',
+                ],
+                'en' => [
+                    'Aloe Moisturizing Lotion is the main Forever direction here when you want gentler skin hydration after bathing.',
+                    'Forever Aloe First Spray makes sense as the support option on top when you want a light soothing step on more sensitive skin areas.',
+                ],
+            ],
+            'monthly_quantity_note' => [
+                'hr' => 'Ako želite jednostavnu rutinu, ovdje se najčešće gleda 1 x Aloe Moisturizing Lotion i 1 x Forever Aloe First Spray.',
+                'en' => 'If you want a simple routine, this is most often positioned as 1 x Aloe Moisturizing Lotion and 1 x Forever Aloe First Spray.',
+            ],
+            'suppress_generic_questions' => true,
+            'sensitive_support_only' => true,
+            'allow_special_population_support' => true,
+            'lock_product_scope' => true,
+        ],
+        'child_haircare_support' => [
+            'patterns' => ['kosa je suha kod djeteta', 'suha kosa kod djeteta', 'teško se raščešljava', 'tesko se rascesljava', 'teško se češlja', 'tesko se ceslja'],
+            'preferred_patterns' => ['aloe-jojoba shampoo', 'jojoba shampoo', 'conditioning rinse', 'conditioner'],
+            'primary_product' => 'Forever Aloe-Jojoba Shampoo',
+            'support_products' => ['Aloe Jojoba Conditioning Rinse'],
+            'label' => [
+                'hr' => 'dječja kosa i nježna haircare rutina',
+                'en' => 'child hair and a gentle haircare routine',
+            ],
+            'opening_note' => [
+                'hr' => 'Kad je riječ o suhoj dječjoj kosi i teškom raščešljavanju, odgovor treba ostati lokalno na blagoj haircare rutini, bez odlaska na suplemente.',
+                'en' => 'When this is about dry child hair and difficult detangling, the answer should stay locally on a mild haircare routine, without drifting into supplements.',
+            ],
+            'recommendation_lines' => [
+                'hr' => [
+                    'Forever Aloe-Jojoba Shampoo je ovdje glavni Forever smjer kao nježniji šampon za svakodnevnu rutinu.',
+                    'Aloe Jojoba Conditioning Rinse ima smisla kao support opcija uz to kada želite lakše raščešljavanje i mekši osjećaj kose.',
+                ],
+                'en' => [
+                    'Forever Aloe-Jojoba Shampoo is the main Forever direction here as the gentler shampoo for an everyday routine.',
+                    'Aloe Jojoba Conditioning Rinse makes sense as the support option on top when you want easier detangling and a softer feel to the hair.',
+                ],
+            ],
+            'monthly_quantity_note' => [
+                'hr' => 'Ako želite jednostavnu rutinu, ovdje se najčešće gleda 1 x Forever Aloe-Jojoba Shampoo i 1 x Aloe Jojoba Conditioning Rinse.',
+                'en' => 'If you want a simple routine, this is most often positioned as 1 x Forever Aloe-Jojoba Shampoo and 1 x Aloe Jojoba Conditioning Rinse.',
+            ],
+            'suppress_generic_questions' => true,
+            'sensitive_support_only' => true,
+            'allow_special_population_support' => true,
+            'lock_product_scope' => true,
+        ],
+        'child_low_appetite_support' => [
+            'patterns' => ['dijete ne želi jesti', 'dijete ne zeli jesti', 'slab apetit kod djeteta', 'dijete slab apetit'],
+            'preferred_patterns' => ['aloe vera gel', 'forever kids'],
+            'primary_product' => 'Forever Aloe Vera Gel™',
+            'support_products' => ['Forever Kids'],
+            'label' => [
+                'hr' => 'dječji apetit i jednostavna nutritivna rutina',
+                'en' => 'child appetite and a simple nutrition routine',
+            ],
+            'opening_note' => [
+                'hr' => 'Kad dijete slabo jede, preporuka treba ostati jednostavna i nježna: aloe baza iznutra plus jedan dječji vitaminski smjer, bez agresivnih dodataka.',
+                'en' => 'When a child is not eating well, the recommendation should stay simple and gentle: an inside aloe base plus one child vitamin direction, without aggressive add-ons.',
+            ],
+            'recommendation_lines' => [
+                'hr' => [
+                    'Forever Aloe Vera Gel™ je ovdje glavni Forever smjer kao aloe baza iznutra za jednostavniju rutinu.',
+                    'Forever Kids ima smisla kao support opcija uz to kada želite i lagan dječji vitaminski dodatak u istoj rutini.',
+                ],
+                'en' => [
+                    'Forever Aloe Vera Gel™ is the main Forever direction here as the inside aloe base for a simpler routine.',
+                    'Forever Kids makes sense as the support option on top when you also want a light child vitamin add-on in the same routine.',
+                ],
+            ],
+            'monthly_quantity_note' => [
+                'hr' => 'Ako želite okvir za mjesec dana, ovdje se najčešće gleda 3 x Forever Aloe Vera Gel™ i 1 x Forever Kids.',
+                'en' => 'If you want a one-month frame, this is most often positioned as 3 x Forever Aloe Vera Gel™ and 1 x Forever Kids.',
+            ],
+            'suppress_generic_questions' => true,
+            'sensitive_support_only' => true,
+            'allow_special_population_support' => true,
+            'lock_product_scope' => true,
+        ],
+        'child_low_energy_support' => [
+            'patterns' => ['dijete je stalno umorno', 'dijete je stalno umorna', 'dijete nema energije', 'nema energije kod djeteta'],
+            'preferred_patterns' => ['aloe vera gel', 'forever kids'],
+            'primary_product' => 'Forever Aloe Vera Gel™',
+            'support_products' => ['Forever Kids'],
+            'label' => [
+                'hr' => 'dječja energija i lagana dnevna rutina',
+                'en' => 'child energy and a light daily routine',
+            ],
+            'opening_note' => [
+                'hr' => 'Kad je dijete stalno umorno, odgovor treba ostati nježan i jednostavan: aloe baza plus jedan dječji vitaminski smjer, bez agresivnih energetskih proizvoda.',
+                'en' => 'When a child is constantly tired, the answer should stay gentle and simple: an aloe base plus one child vitamin direction, without aggressive energy products.',
+            ],
+            'recommendation_lines' => [
+                'hr' => [
+                    'Forever Aloe Vera Gel™ je ovdje glavni Forever smjer kao nježna aloe baza iznutra za svakodnevnu rutinu.',
+                    'Forever Kids ima smisla kao support opcija uz to kada želite jednostavniji vitaminski support smjer prilagođen dječjoj rutini.',
+                ],
+                'en' => [
+                    'Forever Aloe Vera Gel™ is the main Forever direction here as the gentle inside aloe base for an everyday routine.',
+                    'Forever Kids makes sense as the support option on top when you want a simpler vitamin support direction suited to a child routine.',
+                ],
+            ],
+            'monthly_quantity_note' => [
+                'hr' => 'Ako želite okvir za mjesec dana, ovdje se najčešće gleda 3 x Forever Aloe Vera Gel™ i 1 x Forever Kids.',
+                'en' => 'If you want a one-month frame, this is most often positioned as 3 x Forever Aloe Vera Gel™ and 1 x Forever Kids.',
+            ],
+            'suppress_generic_questions' => true,
+            'sensitive_support_only' => true,
+            'allow_special_population_support' => true,
+            'lock_product_scope' => true,
+        ],
+        'child_sunburn_local_support' => [
+            'patterns' => ['dijete je izgorilo na suncu', 'dijete izgorelo na suncu', 'izgorilo na suncu kod djeteta', 'opekline od sunca kod djeteta', 'koža je crvena nakon sunca'],
+            'preferred_patterns' => ['aloe vera gelly', 'aloe first', 'first spray'],
+            'primary_product' => 'Forever Aloe Vera Gelly',
+            'support_products' => ['Forever Aloe First Spray'],
+            'label' => [
+                'hr' => 'dječje crvenilo nakon sunca i lokalna njega',
+                'en' => 'child redness after sun and local care',
+            ],
+            'opening_note' => [
+                'hr' => 'Kad dijete izgori na suncu ili je koža crvena nakon sunca, odgovor treba ostati potpuno lokalni i umirujući.',
+                'en' => 'When a child gets sunburned or the skin becomes red after sun exposure, the answer should stay fully topical and soothing.',
+            ],
+            'recommendation_lines' => [
+                'hr' => [
+                    'Forever Aloe Vera Gelly je ovdje glavni Forever smjer kao umirujući lokalni gel za crvenu i osjetljivu kožu.',
+                    'Forever Aloe First Spray ima smisla kao support opcija uz to kada želite lagani prvi korak izvana prije gelly sloja.',
+                ],
+                'en' => [
+                    'Forever Aloe Vera Gelly is the main Forever direction here as the soothing local gel for red and sensitive skin.',
+                    'Forever Aloe First Spray makes sense as the support option on top when you want a light first outer step before the gelly layer.',
+                ],
+            ],
+            'monthly_quantity_note' => [
+                'hr' => 'Ako želite jednostavnu rutinu, ovdje se najčešće gleda 1 x Forever Aloe Vera Gelly i 1 x Forever Aloe First Spray.',
+                'en' => 'If you want a simple routine, this is most often positioned as 1 x Forever Aloe Vera Gelly and 1 x Forever Aloe First Spray.',
+            ],
+            'suppress_generic_questions' => true,
+            'sensitive_support_only' => true,
+            'allow_special_population_support' => true,
+            'lock_product_scope' => true,
+        ],
+        'child_bumps_local_support' => [
+            'patterns' => ['dijete se udarilo', 'dijete se udarila', 'udarilo se dijete', 'nateklo je kod djeteta', 'oteklo je kod djeteta'],
+            'preferred_patterns' => ['aloe vera gelly', 'aloe first', 'first spray'],
+            'primary_product' => 'Forever Aloe Vera Gelly',
+            'support_products' => ['Forever Aloe First Spray'],
+            'label' => [
+                'hr' => 'dječje udarce i oteklina kao lokalna rutina',
+                'en' => 'child bumps and swelling as a local routine',
+            ],
+            'opening_note' => [
+                'hr' => 'Kad se dijete udari i mjesto natekne, odgovor treba ostati praktičan i lokalno usmjeren.',
+                'en' => 'When a child gets bumped and the area swells, the answer should stay practical and locally focused.',
+            ],
+            'recommendation_lines' => [
+                'hr' => [
+                    'Forever Aloe Vera Gelly je ovdje glavni Forever smjer kao umirujući lokalni gel za nadraženo i nateklo mjesto.',
+                    'Forever Aloe First Spray ima smisla kao support opcija uz to kada želite lagani prvi korak izvana prije gelly sloja.',
+                ],
+                'en' => [
+                    'Forever Aloe Vera Gelly is the main Forever direction here as the soothing local gel for the irritated and swollen area.',
+                    'Forever Aloe First Spray makes sense as the support option on top when you want a light first outer step before the gelly layer.',
+                ],
+            ],
+            'monthly_quantity_note' => [
+                'hr' => 'Ako želite jednostavnu rutinu, ovdje se najčešće gleda 1 x Forever Aloe Vera Gelly i 1 x Forever Aloe First Spray.',
+                'en' => 'If you want a simple routine, this is most often positioned as 1 x Forever Aloe Vera Gelly and 1 x Forever Aloe First Spray.',
+            ],
+            'suppress_generic_questions' => true,
+            'sensitive_support_only' => true,
+            'allow_special_population_support' => true,
+            'lock_product_scope' => true,
+        ],
+        'child_cold_support' => [
+            'patterns' => ['dijete je prehlađeno', 'dijete je prehladeno', 'prehlađeno dijete', 'prehladeno dijete', 'prehlada kod djeteta'],
+            'preferred_patterns' => ['aloe vera gel', 'forever kids'],
+            'primary_product' => 'Forever Aloe Vera Gel™',
+            'support_products' => ['Forever Kids'],
+            'label' => [
+                'hr' => 'dječja prehlada i blaga nutritivna rutina',
+                'en' => 'child cold and a gentle nutrition routine',
+            ],
+            'opening_note' => [
+                'hr' => 'Kod blaže dječje prehlade preporuka treba ostati nježna i jednostavna: aloe baza plus jedan dječji vitaminski smjer, bez agresivnih kombinacija.',
+                'en' => 'For a milder child cold, the recommendation should stay gentle and simple: an aloe base plus one child vitamin direction, without aggressive combinations.',
+            ],
+            'recommendation_lines' => [
+                'hr' => [
+                    'Forever Aloe Vera Gel™ je ovdje glavni Forever smjer kao nježna aloe baza iznutra za svakodnevnu rutinu.',
+                    'Forever Kids ima smisla kao support opcija uz to kada želite jednostavniji dječji vitaminski smjer dok dijete prolazi blaže sezonske tegobe.',
+                ],
+                'en' => [
+                    'Forever Aloe Vera Gel™ is the main Forever direction here as the gentle inside aloe base for an everyday routine.',
+                    'Forever Kids makes sense as the support option on top when you want a simpler child vitamin direction while the child goes through milder seasonal issues.',
+                ],
+            ],
+            'monthly_quantity_note' => [
+                'hr' => 'Ako želite okvir za mjesec dana, ovdje se najčešće gleda 3 x Forever Aloe Vera Gel™ i 1 x Forever Kids.',
+                'en' => 'If you want a one-month frame, this is most often positioned as 3 x Forever Aloe Vera Gel™ and 1 x Forever Kids.',
+            ],
+            'suppress_generic_questions' => true,
+            'sensitive_support_only' => true,
+            'allow_special_population_support' => true,
+            'lock_product_scope' => true,
+        ],
+        'after_bath_skin_support' => [
+            'patterns' => ['nakon kupanja', 'poslije kupanja', 'posle kupanja'],
+            'preferred_patterns' => ['moisturizing lotion', 'aloe first', 'first spray'],
+            'primary_product' => 'Aloe Moisturizing Lotion',
+            'support_products' => ['Forever Aloe First Spray'],
+            'label' => [
+                'hr' => 'njega kože nakon kupanja',
+                'en' => 'skin care after bathing',
+            ],
+            'opening_note' => [
+                'hr' => 'Kad pitate što koristiti nakon kupanja, najčišći smjer je ostati na hidratantnoj rutini i laganom umirujućem support koraku.',
+                'en' => 'When you ask what to use after bathing, the cleanest direction is to stay on a hydrating routine and a light soothing support step.',
+            ],
+            'recommendation_lines' => [
+                'hr' => [
+                    'Aloe Moisturizing Lotion je ovdje glavni Forever smjer kada želite nježniju hidrataciju nakon kupanja.',
+                    'Forever Aloe First Spray ima smisla kao support opcija uz to kada želite lagani umirujući korak na osjetljivijim dijelovima kože.',
+                ],
+                'en' => [
+                    'Aloe Moisturizing Lotion is the main Forever direction here when you want gentler hydration after bathing.',
+                    'Forever Aloe First Spray makes sense as the support option on top when you want a light soothing step on more sensitive skin areas.',
+                ],
+            ],
+            'monthly_quantity_note' => [
+                'hr' => 'Ako želite jednostavnu rutinu, ovdje se najčešće gleda 1 x Aloe Moisturizing Lotion i 1 x Forever Aloe First Spray.',
+                'en' => 'If you want a simple routine, this is most often positioned as 1 x Aloe Moisturizing Lotion and 1 x Forever Aloe First Spray.',
+            ],
+            'suppress_generic_questions' => true,
+            'lock_product_scope' => true,
+        ],
+        'child_dry_lips_support' => [
+            'patterns' => ['dijete ima suhe usne', 'dijete ima suve usne', 'suhe usne kod djeteta', 'usne suhe kod djeteta', 'usne pucaju kod djeteta'],
+            'preferred_patterns' => ['aloe lips'],
+            'primary_product' => 'Forever Aloe Lips',
+            'support_products' => [],
+            'label' => [
+                'hr' => 'dječje usne i jednostavna lokalna njega',
+                'en' => 'child lips and simple local care',
+            ],
+            'opening_note' => [
+                'hr' => 'Kad je riječ samo o suhim ili ispucalim usnama kod djeteta, odgovor treba ostati jednostavan i direktan.',
+                'en' => 'When this is only about dry or cracked lips in a child, the answer should stay simple and direct.',
+            ],
+            'recommendation_lines' => [
+                'hr' => [
+                    'Forever Aloe Lips je ovdje glavni Forever smjer kao najjednostavniji lokalni korak za suhe i ispucale usne.',
+                ],
+                'en' => [
+                    'Forever Aloe Lips is the main Forever direction here as the simplest local step for dry and cracked lips.',
+                ],
+            ],
+            'monthly_quantity_note' => [
+                'hr' => 'Ako želite najjednostavnije rješenje, ovdje se najčešće gleda 1 x Forever Aloe Lips.',
+                'en' => 'If you want the simplest solution, this is most often positioned as 1 x Forever Aloe Lips.',
+            ],
+            'suppress_generic_questions' => true,
+            'sensitive_support_only' => true,
+            'allow_special_population_support' => true,
+            'lock_product_scope' => true,
+        ],
+        'child_oral_care_support' => [
+            'patterns' => ['dijete ima osjetljive desni', 'osjetljive desni kod djeteta', 'desni krvare kod djeteta', 'krvare desni kod djeteta'],
+            'preferred_patterns' => ['forever bright', 'toothgel', 'bright'],
+            'primary_product' => 'Forever Bright® Toothgel',
+            'support_products' => [],
+            'label' => [
+                'hr' => 'dječje desni i nježna oralna rutina',
+                'en' => 'child gums and a gentle oral routine',
+            ],
+            'opening_note' => [
+                'hr' => 'Kad je riječ o osjetljivim desnima kod djeteta, preporuka treba ostati vrlo jednostavna i usmjerena na nježnu oralnu rutinu.',
+                'en' => 'When this is about sensitive gums in a child, the recommendation should stay very simple and focused on a gentle oral routine.',
+            ],
+            'recommendation_lines' => [
+                'hr' => [
+                    'Forever Bright® Toothgel je ovdje glavni Forever smjer kao nježniji proizvod za svakodnevnu oralnu rutinu i njegu desni.',
+                ],
+                'en' => [
+                    'Forever Bright® Toothgel is the main Forever direction here as the gentler product for an everyday oral routine and gum care.',
+                ],
+            ],
+            'monthly_quantity_note' => [
+                'hr' => 'Ako želite najjednostavniju rutinu, ovdje se najčešće gleda 1 x Forever Bright® Toothgel.',
+                'en' => 'If you want the simplest routine, this is most often positioned as 1 x Forever Bright® Toothgel.',
             ],
             'suppress_generic_questions' => true,
             'sensitive_support_only' => true,
@@ -11523,6 +12282,54 @@ function fcc_ai_get_product_advisor_effective_condition_matches(string $message,
     }
 
     if(
+        fcc_ai_contains_keywords($message, ['dijete', 'djetet', 'dječ', 'djec', 'otrok'])
+        && fcc_ai_contains_keywords($message, ['osjetljivu kožu', 'osjetljivu kozu', 'reagira na sve'])
+    ) {
+        $matches[] = fcc_ai_get_product_advisor_condition_match_by_key(
+            'child_general_sensitive_skin_support',
+            $language,
+            ['dijete', 'osjetljiva koža'],
+            302
+        );
+    }
+
+    if(
+        fcc_ai_contains_keywords($message, ['dijete', 'djetet', 'dječ', 'djec', 'otrok'])
+        && fcc_ai_contains_keywords($message, ['prehlađeno', 'prehladeno', 'prehlada'])
+    ) {
+        $matches[] = fcc_ai_get_product_advisor_condition_match_by_key(
+            'child_cold_support',
+            $language,
+            ['dijete', 'prehlada'],
+            303
+        );
+    }
+
+    if(
+        fcc_ai_contains_keywords($message, ['dijete', 'djetet', 'dječ', 'djec', 'otrok'])
+        && fcc_ai_contains_keywords($message, ['desni', 'krvare'])
+    ) {
+        $matches[] = fcc_ai_get_product_advisor_condition_match_by_key(
+            'child_oral_care_support',
+            $language,
+            ['dijete', 'desni'],
+            303
+        );
+    }
+
+    if(
+        fcc_ai_contains_keywords($message, ['nakon kupanja', 'poslije kupanja', 'posle kupanja'])
+        && fcc_ai_contains_keywords($message, ['dijete', 'djetet', 'dječ', 'djec', 'otrok', 'za dijete'])
+    ) {
+        $matches[] = fcc_ai_get_product_advisor_condition_match_by_key(
+            'child_post_bath_skin_support',
+            $language,
+            ['kupanje', 'dijete'],
+            303
+        );
+    }
+
+    if(
         fcc_ai_contains_keywords($message, ['stres', 'stress'])
         && fcc_ai_contains_keywords($message, ['bez energije', 'manjak energije', 'nedostatak energije', 'pad energije'])
     ) {
@@ -11646,6 +12453,115 @@ function fcc_ai_get_product_advisor_effective_condition_matches(string $message,
             $language,
             ['apetit'],
             302
+        );
+    }
+
+    if(
+        fcc_ai_contains_keywords($message, ['želim smršaviti', 'zelim smrsaviti', 'mršavljenje', 'mrsavljenje'])
+        && fcc_ai_contains_keywords($message, ['lošu probavu', 'losu probavu', 'probavu', 'nadut'])
+    ) {
+        $matches[] = fcc_ai_get_product_advisor_condition_match_by_key(
+            'weight_loss_digestive_phase_support',
+            $language,
+            ['mršavljenje', 'probava'],
+            301
+        );
+    }
+
+    if(
+        fcc_ai_contains_keywords($message, ['masnoću na trbuhu', 'masnocu na trbuhu', 'masnoća na trbuhu', 'masnoca na trbuhu', 'salce na trbuhu', 'mast na trbuhu'])
+    ) {
+        $matches[] = fcc_ai_get_product_advisor_condition_match_by_key(
+            'belly_fat_weight_support',
+            $language,
+            ['trbuh', 'weight'],
+            301
+        );
+    }
+
+    if(
+        fcc_ai_contains_keywords($message, ['jedem iz dosade', 'stalno jedem iz dosade', 'emocionalno jedenje'])
+        || (
+            fcc_ai_contains_keywords($message, ['jedem', 'hrana'])
+            && fcc_ai_contains_keywords($message, ['dosade', 'ne mogu se kontrolirati'])
+        )
+    ) {
+        $matches[] = fcc_ai_get_product_advisor_condition_match_by_key(
+            'emotional_eating_weight_support',
+            $language,
+            ['apetit', 'emocionalno'],
+            301
+        );
+    }
+
+    if(
+        fcc_ai_contains_keywords($message, ['spor metabolizam', 'spori metabolizam', 'usporen metabolizam'])
+        || (
+            fcc_ai_contains_keywords($message, ['metabol'])
+            && fcc_ai_contains_keywords($message, ['teško mršavim', 'tesko mrsavim'])
+        )
+    ) {
+        $matches[] = fcc_ai_get_product_advisor_condition_match_by_key(
+            'slow_metabolism_weight_support',
+            $language,
+            ['metabolizam'],
+            301
+        );
+    }
+
+    if(
+        fcc_ai_contains_keywords($message, ['nakon poroda', 'po porodu', 'poslije poroda', 'posle poroda'])
+        && fcc_ai_contains_keywords($message, ['mršav', 'mrsav'])
+    ) {
+        $matches[] = fcc_ai_get_product_advisor_condition_match_by_key(
+            'postpartum_weight_support',
+            $language,
+            ['porod', 'mršavljenje'],
+            304
+        );
+    }
+
+    if(
+        fcc_ai_contains_keywords($message, ['stalno se debljam i mršavim', 'stalno se debljam i mrsavim', 'jo-jo efekt', 'jojo efekt', 'ne mogu zadržati težinu', 'ne mogu zadrzati tezinu'])
+    ) {
+        $matches[] = fcc_ai_get_product_advisor_condition_match_by_key(
+            'yo_yo_weight_support',
+            $language,
+            ['težina', 'stabilizacija'],
+            301
+        );
+    }
+
+    if(
+        fcc_ai_contains_keywords($message, ['jedem navečer', 'jedem navecer', 'jedem noću', 'jedem nocu', 'noćno jedenje', 'nocno jedenje'])
+    ) {
+        $matches[] = fcc_ai_get_product_advisor_condition_match_by_key(
+            'night_eating_weight_support',
+            $language,
+            ['navečer', 'apetit'],
+            301
+        );
+    }
+
+    if(
+        fcc_ai_contains_keywords($message, ['želim smršaviti ali nemam energije', 'zelim smrsaviti ali nemam energije', 'mršaviti ali nemam energije', 'mrsaviti ali nemam energije'])
+    ) {
+        $matches[] = fcc_ai_get_product_advisor_condition_match_by_key(
+            'weight_loss_low_energy_support',
+            $language,
+            ['mršavljenje', 'energija'],
+            301
+        );
+    }
+
+    if(
+        fcc_ai_contains_keywords($message, ['smršavio sam i želim održavati', 'smrsavio sam i zelim odrzavati', 'održavati težinu', 'odrzavati tezinu', 'održavanje težine', 'odrzavanje tezine'])
+    ) {
+        $matches[] = fcc_ai_get_product_advisor_condition_match_by_key(
+            'weight_maintenance_support',
+            $language,
+            ['održavanje', 'težina'],
+            301
         );
     }
 
@@ -12179,6 +13095,99 @@ function fcc_ai_get_product_advisor_effective_condition_matches(string $message,
     if(in_array('sleep_support_routine', $match_keys, true)) {
         $matches = array_values(array_filter($matches, static function(array $match) {
             return !in_array((string) ($match['key'] ?? ''), ['general_energy_support', 'simple_low_energy_support', 'stress_focus_energy_support'], true);
+        }));
+    }
+
+    if(array_intersect($match_keys, [
+        'weight_loss_digestive_phase_support',
+        'belly_fat_weight_support',
+        'emotional_eating_weight_support',
+        'slow_metabolism_weight_support',
+        'postpartum_weight_support',
+        'yo_yo_weight_support',
+        'night_eating_weight_support',
+        'weight_loss_low_energy_support',
+        'weight_maintenance_support',
+    ])) {
+        $matches = array_values(array_filter($matches, static function(array $match) {
+            return !in_array((string) ($match['key'] ?? ''), [
+                'weight_loss_program',
+                'cellulite_program_support',
+                'simple_low_energy_support',
+                'general_energy_support',
+                'stress_focus_energy_support',
+                'physical_endurance_support',
+                'digestion_energy_support',
+                'digestive_routine_support',
+                'post_meal_digestion_support',
+                'low_appetite_nutrition_support',
+            ], true);
+        }));
+    }
+
+    if(array_intersect($match_keys, [
+        'child_dry_skin_local_support',
+        'child_red_sensitive_skin_support',
+        'child_general_sensitive_skin_support',
+        'child_immunity_support',
+        'child_digestive_support',
+        'child_post_bath_skin_support',
+        'child_haircare_support',
+        'child_low_appetite_support',
+        'child_low_energy_support',
+        'child_sunburn_local_support',
+        'child_bumps_local_support',
+        'child_cold_support',
+        'child_dry_lips_support',
+        'child_oral_care_support',
+        'child_rash_local_support',
+    ])) {
+        $matches = array_values(array_filter($matches, static function(array $match) {
+            return !in_array((string) ($match['key'] ?? ''), [
+                'children_daily_vitamins_support',
+                'oral_care_support',
+                'after_bath_skin_support',
+                'sensitive_red_skin_support',
+                'itchy_skin_local_support',
+                'dry_skin_inside_out_support',
+                'seborrhea_scalp_support',
+                'immunity_support_routine',
+                'simple_low_energy_support',
+                'general_energy_support',
+                'low_appetite_nutrition_support',
+                'recovery_after_illness_support',
+                'digestive_routine_support',
+                'post_meal_digestion_support',
+            ], true);
+        }));
+    }
+
+    if(in_array('child_red_sensitive_skin_support', $match_keys, true)) {
+        $matches = array_values(array_filter($matches, static function(array $match) {
+            return (string) ($match['key'] ?? '') !== 'child_general_sensitive_skin_support';
+        }));
+    }
+
+    if(in_array('child_sunburn_local_support', $match_keys, true)) {
+        $matches = array_values(array_filter($matches, static function(array $match) {
+            return !in_array((string) ($match['key'] ?? ''), [
+                'child_general_sensitive_skin_support',
+                'child_red_sensitive_skin_support',
+            ], true);
+        }));
+    }
+
+    if(in_array('child_cold_support', $match_keys, true)) {
+        $matches = array_values(array_filter($matches, static function(array $match) {
+            return !in_array((string) ($match['key'] ?? ''), [
+                'child_immunity_support',
+            ], true);
+        }));
+    }
+
+    if(in_array('child_oral_care_support', $match_keys, true)) {
+        $matches = array_values(array_filter($matches, static function(array $match) {
+            return (string) ($match['key'] ?? '') !== 'oral_care_support';
         }));
     }
 
@@ -21488,6 +22497,49 @@ function fcc_ai_handle_public_message(array $payload): array {
         && empty($current_condition_keys)
         && !empty($previous_condition_keys)
         && fcc_ai_is_ambiguous_same_problem_followup_request($current_user_message);
+    $weight_context_followup_keys = [
+        'weight_loss_digestive_phase_support',
+        'belly_fat_weight_support',
+        'emotional_eating_weight_support',
+        'slow_metabolism_weight_support',
+        'postpartum_weight_support',
+        'yo_yo_weight_support',
+        'night_eating_weight_support',
+        'weight_loss_low_energy_support',
+        'weight_maintenance_support',
+    ];
+    $child_context_followup_keys = [
+        'child_dry_skin_local_support',
+        'child_red_sensitive_skin_support',
+        'child_general_sensitive_skin_support',
+        'child_immunity_support',
+        'child_digestive_support',
+        'child_post_bath_skin_support',
+        'child_haircare_support',
+        'child_low_appetite_support',
+        'child_low_energy_support',
+        'child_sunburn_local_support',
+        'child_bumps_local_support',
+        'child_cold_support',
+        'child_dry_lips_support',
+        'child_oral_care_support',
+        'child_rash_local_support',
+        'after_bath_skin_support',
+    ];
+    $is_weight_context_followup = (string) ($conversation->assistant_type ?? '') === 'product_advisor'
+        && $previous_user_message !== ''
+        && !empty(array_intersect($weight_context_followup_keys, $previous_condition_keys))
+        && fcc_ai_is_low_context_follow_up_message($current_user_message);
+    $is_child_context_followup = (string) ($conversation->assistant_type ?? '') === 'product_advisor'
+        && $previous_user_message !== ''
+        && (
+            !empty(array_intersect($child_context_followup_keys, $previous_condition_keys))
+            || fcc_ai_contains_keywords($previous_user_message, ['dijete', 'djetet', 'dječ', 'djec', 'otrok', 'beba', 'beb'])
+        )
+        && (
+            fcc_ai_is_low_context_follow_up_message($current_user_message)
+            || fcc_ai_contains_keywords($current_user_message, ['za dijete', 'za djecu', 'za bebu'])
+        );
     $is_physical_endurance_followup = (string) ($conversation->assistant_type ?? '') === 'product_advisor'
         && $previous_user_message !== ''
         && in_array('simple_low_energy_support', $current_condition_keys, true)
@@ -21526,6 +22578,16 @@ function fcc_ai_handle_public_message(array $payload): array {
 
     if($is_recommendation_correction_followup) {
         $message_for_matching = fcc_ai_build_public_correction_followup_message($previous_user_message);
+        $recent_user_context = $previous_user_message;
+        $used_context_for_matching = true;
+        $intent = fcc_ai_detect_public_intent((string) $conversation->assistant_type, $previous_user_message);
+    } elseif($is_child_context_followup) {
+        $message_for_matching = $previous_user_message . "\n\nChild follow-up: " . $current_user_message;
+        $recent_user_context = $previous_user_message;
+        $used_context_for_matching = true;
+        $intent = fcc_ai_detect_public_intent((string) $conversation->assistant_type, $message_for_matching);
+    } elseif($is_weight_context_followup) {
+        $message_for_matching = $previous_user_message . "\n\nWeight follow-up: " . $current_user_message;
         $recent_user_context = $previous_user_message;
         $used_context_for_matching = true;
         $intent = fcc_ai_detect_public_intent((string) $conversation->assistant_type, $previous_user_message);
@@ -21569,7 +22631,7 @@ function fcc_ai_handle_public_message(array $payload): array {
     $has_high_risk_medical_context = (string) ($conversation->assistant_type ?? '') === 'product_advisor'
         && fcc_ai_has_high_risk_public_medical_context($current_user_message);
 
-    if(($has_high_risk_medical_context || $should_reset_problem_context) && !$is_same_problem_followup_clarification && !$is_broad_beauty_followup_clarification && !$is_low_context_condition_followup) {
+    if(($has_high_risk_medical_context || $should_reset_problem_context) && !$is_same_problem_followup_clarification && !$is_broad_beauty_followup_clarification && !$is_low_context_condition_followup && !$is_weight_context_followup && !$is_child_context_followup) {
         $message_for_matching = $current_user_message;
         $recent_user_context = '';
         $used_context_for_matching = false;
