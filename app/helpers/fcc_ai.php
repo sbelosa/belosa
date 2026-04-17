@@ -44,7 +44,7 @@ function fcc_ai_get_soft_resolved_feedback_ids(): array {
     }
 
     /* Historical live feedback cases already fixed in the recommendation engine but not writable-resolved in production DB. */
-    $ids = [43, 45, 46, 48, 49, 50, 51, 53, 54, 60, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 87, 89, 91, 100, 101, 102, 105];
+    $ids = [43, 45, 46, 48, 49, 50, 51, 53, 54, 60, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 87, 89, 91, 100, 101, 102, 105, 107, 108, 109, 110, 111, 112, 113, 114];
 
     return $ids;
 }
@@ -7276,7 +7276,7 @@ function fcc_ai_get_public_direct_product_lookup_matches(string $message): array
         'moisturizing_lotion' => ['aloe moisturizing lotion', 'moisturizing lotion'],
         'aloe_mango' => ['aloe mango', 'forever aloe mango', 'mango napitak', 'napitak aloe mango', '8364'],
         'aloeturm' => ['aloeturm', 'aloe turm', 'forever aloeturm', 'aloe therm'],
-        'aloe_gelly' => ['aloe gelly'],
+        'aloe_gelly' => ['aloe gelly', 'aloe vera gelly', 'forever aloe vera gelly'],
         'bio_cellulose_mask' => ['aloe bio-cellulose mask', 'bio-cellulose mask', 'bio cellulose mask'],
         'marine_mask' => ['forever marine mask', 'marine mask'],
         'propolis' => ['propolis', 'bee propolis'],
@@ -7286,8 +7286,9 @@ function fcc_ai_get_public_direct_product_lookup_matches(string $message): array
         'immublend' => ['immublend', 'immunblend', 'immu blend', 'immun blend'],
         'immune_gummy' => ['immune gummy', 'imune gummy', 'immune gummi', 'forever gummy', 'gummy'],
         'f15' => ['f15', 'forever f15'],
+        'vital5' => ['vital5', 'vital 5', 'forever vital5', 'forever vital 5'],
         'omega' => ['omega', 'arctic sea'],
-        'dx4' => ['dx4'],
+        'dx4' => ['dx4', 'forever dx4', 'dx4 paket', 'dx4 package', 'dx4 program'],
         'nectar' => ['nektar', 'berry nectar', 'aloe berry nectar', 'berry neektar', 'betty neektar', 'betty nektar', 'aloe berry neektar'],
         'q10' => ['q10', 'coq10', 'co q10', 'nutra q10', 'cardio health'],
         'proargi' => ['proargi-9', 'proargi 9', 'proargi-9+', 'proargi 9+'],
@@ -7370,6 +7371,7 @@ function fcc_ai_get_public_direct_product_lookup_titles(): array {
         'immublend' => 'Forever ImmuBlend',
         'immune_gummy' => 'Forever Immune Gummy',
         'f15' => 'Forever F15',
+        'vital5' => 'Vital5® paket',
         'omega' => 'Forever Arctic Sea',
         'dx4' => 'Forever DX4',
         'nectar' => 'Forever Aloe Berry Nectar®',
@@ -7427,6 +7429,118 @@ function fcc_ai_get_public_direct_product_lookup_title(string $message): string 
     }
 
     return '';
+}
+
+function fcc_ai_get_public_special_direct_product_payload(string $message, string $language = 'hr'): array {
+    $language = fcc_ai_resolve_public_reply_language($language);
+    $matches = fcc_ai_get_public_direct_product_lookup_matches($message);
+
+    if(empty($matches)) {
+        return [];
+    }
+
+    if(in_array('vital5', $matches, true)) {
+        return [
+            'primary_product' => 'Vital5® paket',
+            'support_products' => [],
+            'opening_note' => $language === 'en'
+                ? 'If you are asking specifically about Vital5, it makes sense to stay on the package itself and what is inside it, rather than drifting into an unrelated single product.'
+                : 'Ako pitate baš za Vital5, ovdje ima smisla ostati na samom paketu i onome što sadrži, bez skretanja na nepovezan pojedinačni proizvod.',
+            'recommendation_lines' => $language === 'en'
+                ? [
+                    'Vital5® is a ready-made 5-product Forever package that is usually positioned as a simple reset-and-foundation routine, not as one isolated product.',
+                    'In practice, it includes one aloe base as the foundation of the package, most often Forever Aloe Vera Gel™ but in some markets also Berry, Peaches or Freedom variants, plus Forever Daily, Forever Active Pro B, Forever Arctic Sea and Forever ARGI+®.',
+                    'It makes the most sense when someone wants a complete 5-product routine for digestion, nutritional foundation, daily vitality and easier consistency in one package.',
+                ]
+                : [
+                    'Vital5® je gotov 5-proizvodni Forever paket koji se najčešće gleda kao jednostavniji reset organizma i slaganje jake dnevne baze, a ne kao jedan izdvojeni proizvod.',
+                    'U praksi uključuje 1 aloe bazu kao temelj paketa, najčešće Forever Aloe Vera Gel™, a na nekim tržištima i Berry, Peaches ili Freedom varijantu, uz Forever Daily, Forever Active Pro B, Forever Arctic Sea i Forever ARGI+®.',
+                    'Najviše smisla ima kada osoba želi kompletan 5-proizvodni paket za probavnu, nutritivnu i dnevnu rutinu bez slaganja svega pojedinačno.',
+                ],
+            'question_lines' => [],
+            'monthly_quantity_note' => '',
+            'clear_knowledge_suggestions' => true,
+            'force_local_reply' => true,
+        ];
+    }
+
+    if(in_array('dx4', $matches, true)) {
+        return [
+            'primary_product' => 'Forever DX4',
+            'support_products' => [],
+            'opening_note' => $language === 'en'
+                ? 'If you are asking specifically about DX4, the cleanest answer is to explain the whole 4-day package and its contents, not to reduce it to a generic single-product recommendation.'
+                : 'Ako pitate baš za DX4, najčišći odgovor je objasniti cijeli 4-dnevni paket i njegov sadržaj, a ne svesti ga na generičnu preporuku jednog proizvoda.',
+            'recommendation_lines' => $language === 'en'
+                ? [
+                    'Forever DX4 is a 4-day reset-and-detox style program for body and routine, not a classic standalone product.',
+                    'It lasts 4 days and includes Forever Aloe Vera Gel™, Forever Plant Protein™, Forever Therm Plus™, Forever DuoPure™, Forever Multi Fizz™, Forever Sensatiable™ and Forever LemonBlast™.',
+                    'It makes the most sense when someone wants a short structured reset with guided intake and a ready-made package, rather than a loose everyday routine without a program.',
+                ]
+                : [
+                    'Forever DX4 je 4-dnevni paket za detoksikaciju i resetiranje organizma, a ne klasični pojedinačni proizvod.',
+                    'Traje 4 dana i u paketu dolaze Forever Aloe Vera Gel™, Forever Plant Protein™, Forever Therm Plus™, Forever DuoPure™, Forever Multi Fizz™, Forever Sensatiable™ i Forever LemonBlast™.',
+                    'Najviše smisla ima kada osoba želi kratki strukturirani reset uz vođeni plan unosa i gotov program, a ne samo opću svakodnevnu rutinu bez jasnog okvira.',
+                ],
+            'question_lines' => [],
+            'monthly_quantity_note' => '',
+            'clear_knowledge_suggestions' => true,
+            'force_local_reply' => true,
+        ];
+    }
+
+    if(in_array('aloe_gelly', $matches, true)) {
+        return [
+            'primary_product' => 'Forever Aloe Vera Gelly',
+            'support_products' => [],
+            'opening_note' => $language === 'en'
+                ? 'If you are asking specifically about Aloe Vera Gelly, the cleanest answer is to keep it on its real topical role for the skin.'
+                : 'Ako pitate baš za Aloe Vera Gelly, najčišći odgovor je zadržati ga na njegovoj stvarnoj lokalnoj ulozi za kožu.',
+            'recommendation_lines' => $language === 'en'
+                ? [
+                    'Forever Aloe Vera Gelly is primarily a topical aloe gel for sensitive, irritated or dry skin, when you want a simple soothing outer step.',
+                    'It is most often positioned for sun-exposed skin, minor burns, cuts, scratches, insect bites and similar everyday skin situations where you want an aloe-based gel layer from the outside.',
+                    'The simplest use is locally on clean skin as needed, without turning it into a claim that the product treats a diagnosis.',
+                ]
+                : [
+                    'Forever Aloe Vera Gelly je prvenstveno lokalni aloe gel za osjetljivu, nadraženu ili suhu kožu kada želite jednostavan umirujući korak izvana.',
+                    'Najčešće se gleda kod kože nakon sunca, manjih opeklina, porezotina, ogrebotina, uboda insekata i sličnih svakodnevnih situacija na koži gdje želite aloe gel kao vanjski sloj.',
+                    'Najjednostavnije se koristi lokalno na čistu kožu po potrebi, bez pretvaranja proizvoda u tvrdnju da rješava dijagnozu.',
+                ],
+            'question_lines' => [],
+            'monthly_quantity_note' => '',
+            'clear_knowledge_suggestions' => true,
+            'force_local_reply' => true,
+        ];
+    }
+
+    return [];
+}
+
+function fcc_ai_get_public_user_safe_opening_note(string $opening_note, string $language = 'hr'): string {
+    $language = fcc_ai_resolve_public_reply_language($language);
+    $opening_note = trim($opening_note);
+
+    if($opening_note === '') {
+        return '';
+    }
+
+    $normalized = mb_strtolower($opening_note);
+
+    if(fcc_ai_contains_keywords($normalized, [
+        'preporuka treba',
+        'odgovor treba',
+        'recommendation should',
+        'answer should',
+        'kad su glavni problem',
+        'kad je glavni problem',
+        'when the main problem is',
+        'when the question is specifically',
+    ])) {
+        return '';
+    }
+
+    return $opening_note;
 }
 
 function fcc_ai_get_unlock_cooldown_payload(?string $submitted_at, int $days = 7): array {
@@ -9163,11 +9277,45 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
             'allow_special_population_support' => true,
             'lock_product_scope' => true,
         ],
+        'baby_skin_care_routine_support' => [
+            'patterns' => ['što se preporuča kod beba za njegu kože', 'sto se preporuca kod beba za njegu koze', 'što se preporučuje kod beba za njegu kože', 'sto se preporucuje kod beba za njegu koze', 'beba za njegu kože', 'beba za njegu koze', 'bebe za njegu kože', 'bebe za njegu koze'],
+            'preferred_patterns' => ['aloe vera gelly', 'moisturizing lotion', 'liquid soap'],
+            'primary_product' => 'Forever Aloe Vera Gelly',
+            'support_products' => ['Aloe Moisturizing Lotion', 'Forever Aloe Liquid Soap'],
+            'label' => [
+                'hr' => 'nježna baby rutina za kožu',
+                'en' => 'gentle baby skin routine',
+            ],
+            'opening_note' => [
+                'hr' => 'Kod beba i svakodnevne njege kože preporuka treba ostati na vrlo blagoj lokalnoj rutini za pranje, umirivanje i hidrataciju kože.',
+                'en' => 'For babies and everyday skin care, the recommendation should stay on a very gentle local routine for cleansing, soothing and hydrating the skin.',
+            ],
+            'recommendation_lines' => [
+                'hr' => [
+                    'Forever Aloe Vera Gelly je ovdje glavni Forever smjer kao najnježniji aloe gel za umirujući lokalni korak na osjetljivoj dječjoj koži.',
+                    'Aloe Moisturizing Lotion ima smisla kao važna support opcija uz to kada želite laganu hidrataciju i svakodnevno održavanje kožne barijere.',
+                    'Forever Aloe Liquid Soap je logičan dodatak za nježno pranje kože kada želite da cijela rutina ostane blaga i jednostavna.',
+                ],
+                'en' => [
+                    'Forever Aloe Vera Gelly is the main Forever direction here as the gentlest aloe gel for a soothing local step on sensitive baby skin.',
+                    'Aloe Moisturizing Lotion makes sense as the key support option on top when you want light hydration and everyday skin-barrier care.',
+                    'Forever Aloe Liquid Soap is the logical add-on for gentle cleansing when you want the whole routine to stay mild and simple.',
+                ],
+            ],
+            'monthly_quantity_note' => [
+                'hr' => 'Ako želite jednostavnu rutinu, ovdje se najčešće gleda 1 x Forever Aloe Vera Gelly, 1 x Aloe Moisturizing Lotion i 1 x Forever Aloe Liquid Soap.',
+                'en' => 'If you want a simple routine, this is most often positioned as 1 x Forever Aloe Vera Gelly, 1 x Aloe Moisturizing Lotion and 1 x Forever Aloe Liquid Soap.',
+            ],
+            'suppress_generic_questions' => true,
+            'sensitive_support_only' => true,
+            'allow_special_population_support' => true,
+            'lock_product_scope' => true,
+        ],
         'child_dry_skin_local_support' => [
             'patterns' => ['dijete ima suhu kožu', 'dijete ima suhu kozu', 'suha koža kod djeteta', 'suha koza kod djeteta', 'peruta se'],
-            'preferred_patterns' => ['aloe vera gelly', 'moisturizing lotion'],
+            'preferred_patterns' => ['aloe vera gelly', 'moisturizing lotion', 'liquid soap'],
             'primary_product' => 'Forever Aloe Vera Gelly',
-            'support_products' => ['Aloe Moisturizing Lotion'],
+            'support_products' => ['Aloe Moisturizing Lotion', 'Forever Aloe Liquid Soap'],
             'label' => [
                 'hr' => 'dječja suha koža i nježna lokalna rutina',
                 'en' => 'child dry skin and a gentle local routine',
@@ -9180,15 +9328,17 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
                 'hr' => [
                     'Forever Aloe Vera Gelly je ovdje glavni Forever smjer kao najnježniji lokalni gel kada želite umiriti suhu i osjetljivu kožu djeteta.',
                     'Aloe Moisturizing Lotion ima smisla kao support opcija uz to kada želite dodatnu hidrataciju i nježniju dnevnu rutinu njege.',
+                    'Forever Aloe Liquid Soap je koristan dodatak kada želite i nježno pranje kože bez dodatnog isušivanja.',
                 ],
                 'en' => [
                     'Forever Aloe Vera Gelly is the main Forever direction here as the gentlest local gel when you want to calm a child’s dry and sensitive skin.',
                     'Aloe Moisturizing Lotion makes sense as the support option on top when you want extra hydration and a gentler everyday care routine.',
+                    'Forever Aloe Liquid Soap is a useful extra when you also want gentle skin cleansing without adding dryness.',
                 ],
             ],
             'monthly_quantity_note' => [
-                'hr' => 'Ako želite jednostavnu rutinu, ovdje se najčešće gleda 1 x Forever Aloe Vera Gelly i 1 x Aloe Moisturizing Lotion.',
-                'en' => 'If you want a simple routine, this is most often positioned as 1 x Forever Aloe Vera Gelly and 1 x Aloe Moisturizing Lotion.',
+                'hr' => 'Ako želite jednostavnu rutinu, ovdje se najčešće gleda 1 x Forever Aloe Vera Gelly, 1 x Aloe Moisturizing Lotion i 1 x Forever Aloe Liquid Soap.',
+                'en' => 'If you want a simple routine, this is most often positioned as 1 x Forever Aloe Vera Gelly, 1 x Aloe Moisturizing Lotion and 1 x Forever Aloe Liquid Soap.',
             ],
             'suppress_generic_questions' => true,
             'sensitive_support_only' => true,
@@ -9913,6 +10063,38 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
             'monthly_quantity_note' => [
                 'hr' => 'Ako želite okvir za mjesec dana, ovdje se najčešće gleda 3 x Forever Aloe Vera Gel™, 1 x Aloe Propolis Creme i 1 kutija Forever Arctic Sea.',
                 'en' => 'If you want a one-month frame, this is most often positioned as 3 x Forever Aloe Vera Gel™, 1 x Aloe Propolis Creme and 1 box of Forever Arctic Sea.',
+            ],
+            'suppress_generic_questions' => true,
+            'lock_product_scope' => true,
+        ],
+        'family_travel_skin_essentials_support' => [
+            'patterns' => ['idem na more', 'što mi treba za zaštitu', 'sto mi treba za zastitu', 'osnovni proizvodi za more', 'za kuću i obitelj', 'za kucu i obitelj', 'torba za plažu', 'torba za plazu'],
+            'preferred_patterns' => ['aloe first', 'first spray', 'aloe sunscreen', 'aloe vera gelly'],
+            'primary_product' => 'Forever Aloe First Spray',
+            'support_products' => ['Forever Aloe Sunscreen', 'Forever Aloe Vera Gelly'],
+            'label' => [
+                'hr' => 'more, kuća i obitelj te osnovni proizvodi za kožu',
+                'en' => 'travel, home and family skin essentials',
+            ],
+            'opening_note' => [
+                'hr' => 'Kad je cilj složiti osnovne proizvode za more, kuću i obitelj, preporuka treba ostati praktična: zaštita, umirujući prvi korak izvana i jednostavan gel za kožu.',
+                'en' => 'When the goal is to build the basic products for the beach, home and family, the recommendation should stay practical: protection, a soothing first outer step and a simple skin gel.',
+            ],
+            'recommendation_lines' => [
+                'hr' => [
+                    'Forever Aloe First Spray je ovdje glavni Forever smjer jer je jedan od najpraktičnijih proizvoda za svaku kuću i obitelj kada želite imati prvi aloe korak za opekotine, porezotine, ubode insekata i slične svakodnevne situacije na koži.',
+                    'Forever Aloe Sunscreen ima smisla kao glavna support opcija uz to kada želite stvarnu zaštitu kože od sunca tijekom boravka na moru.',
+                    'Forever Aloe Vera Gelly je logičan dodatak za umirujući aloe gel izvana nakon sunca ili kada koža traži jednostavnu njegu i hlađenje.',
+                ],
+                'en' => [
+                    'Forever Aloe First Spray is the main Forever direction here because it is one of the most practical products for any home and family when you want the first aloe-based outer step for burns, cuts, insect bites and similar everyday skin situations.',
+                    'Forever Aloe Sunscreen makes sense as the main support option on top when you want real sun protection during time at the beach.',
+                    'Forever Aloe Vera Gelly is the logical add-on as a soothing aloe gel from the outside after sun exposure or when the skin needs a simple calming step.',
+                ],
+            ],
+            'monthly_quantity_note' => [
+                'hr' => 'Ako želite jednostavan paket za put ili kuću, ovdje se najčešće gleda 1 x Forever Aloe First Spray, 1 x Forever Aloe Sunscreen i 1 x Forever Aloe Vera Gelly.',
+                'en' => 'If you want a simple travel or home pack, this is most often positioned as 1 x Forever Aloe First Spray, 1 x Forever Aloe Sunscreen and 1 x Forever Aloe Vera Gelly.',
             ],
             'suppress_generic_questions' => true,
             'lock_product_scope' => true,
@@ -10802,10 +10984,10 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
             'lock_product_scope' => true,
         ],
         'fracture_bone_healing_support' => [
-            'patterns' => ['lom noge', 'lom u gležnju', 'lom u gleznju', 'lom gležnja', 'lom gleznja', 'prijelom noge', 'prijelom gležnja', 'prijelom gleznja', 'prelom noge', 'prelom gležnja', 'prelom gleznja', 'fraktura', 'gips', 'sportska povreda'],
-            'preferred_patterns' => ['calcium', 'nature min', 'active ha', 'move', 'esm'],
+            'patterns' => ['lom noge', 'lom u gležnju', 'lom u gleznju', 'lom gležnja', 'lom gleznja', 'prijelom noge', 'prijelom gležnja', 'prijelom gleznja', 'prelom noge', 'prelom gležnja', 'prelom gleznja', 'slomljena ruka', 'slomljene ruke', 'slomljenu ruku', 'slomio ruku', 'prijelom ruke', 'prelom ruke', 'fraktura ruke', 'gips na ruci', 'gips na nozi', 'fraktura', 'gips', 'sportska povreda'],
+            'preferred_patterns' => ['calcium', 'nature min', 'freedom', 'active ha', 'move', 'esm'],
             'primary_product' => 'Forever Calcium',
-            'support_products' => ['Forever Nature Min', 'Forever Active HA', 'ESM Complex / Forever Move'],
+            'support_products' => ['Forever Nature Min', 'Forever Freedom®', 'Forever Active HA', 'ESM Complex / Forever Move'],
             'label' => [
                 'hr' => 'prijelom, kost i svakodnevna nutritivna podrška oporavku',
                 'en' => 'fracture, bone and everyday nutrition support during recovery',
@@ -10818,17 +11000,52 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
                 'hr' => [
                     'Forever Calcium je ovdje glavni Forever smjer jer spaja kalcij, vitamin D, magnezij i prateće minerale za svakodnevnu rutinu kostiju tijekom oporavka.',
                     'Forever Nature Min je važna support opcija uz to kada želite širu mineralnu ravnotežu i dodatnu podršku kostima kroz multimineralni smjer.',
+                    'Forever Freedom® ima smisla kao support opcija kada uz oporavak kosti želite podržati i svakodnevnu pokretljivost, zglobno opterećenje i osjećaj ukočenosti tijekom oporavka.',
                     'Forever Active HA i ESM Complex / Forever Move imaju smisla kao dodatni support smjerovi kada uz kost želite podržati i zglob, hrskavicu i pokretljivost tijekom oporavka.',
                 ],
                 'en' => [
                     'Forever Calcium is the main Forever direction here because it combines calcium, vitamin D, magnesium and supporting minerals for the everyday bone routine during recovery.',
                     'Forever Nature Min is the important support option on top when you want broader mineral balance and extra bone support through the multimineral direction.',
+                    'Forever Freedom® makes sense as a support option when, alongside bone recovery, you also want to support everyday mobility, joint load and stiffness during recovery.',
                     'Forever Active HA and ESM Complex / Forever Move make sense as the extra support directions when you also want to support the joint, cartilage and mobility during recovery.',
                 ],
             ],
             'monthly_quantity_note' => [
-                'hr' => 'Ako želite okvir za mjesec dana, ovdje se najčešće gleda 1 x Forever Calcium, 1 x Forever Nature Min, 1 x Forever Active HA i po potrebi 1 x ESM Complex / Forever Move.',
-                'en' => 'If you want a one-month frame, this is most often positioned as 1 x Forever Calcium, 1 x Forever Nature Min, 1 x Forever Active HA and, if useful, 1 x ESM Complex / Forever Move.',
+                'hr' => 'Ako želite okvir za mjesec dana, ovdje se najčešće gleda 1 x Forever Calcium, 1 x Forever Nature Min, 3 x Forever Freedom®, 1 x Forever Active HA i po potrebi 1 x ESM Complex / Forever Move.',
+                'en' => 'If you want a one-month frame, this is most often positioned as 1 x Forever Calcium, 1 x Forever Nature Min, 3 x Forever Freedom®, 1 x Forever Active HA and, if useful, 1 x ESM Complex / Forever Move.',
+            ],
+            'suppress_generic_questions' => true,
+            'sensitive_support_only' => true,
+            'lock_product_scope' => true,
+        ],
+        'limb_joint_pain_support' => [
+            'patterns' => ['bolovi u rukama i nogama', 'bolove u rukama i nogama', 'bole me ruke i noge', 'ruke i noge me bole', 'ruke i noge bole'],
+            'preferred_patterns' => ['freedom', 'active ha', 'cooling lotion'],
+            'primary_product' => 'Forever Freedom®',
+            'support_products' => ['Forever Active HA', 'Forever Aloe Cooling Lotion'],
+            'label' => [
+                'hr' => 'bolovi u rukama i nogama te svakodnevna pokretljivost',
+                'en' => 'arm and leg pain plus everyday mobility',
+            ],
+            'opening_note' => [
+                'hr' => 'Kod bolova u rukama i nogama prvi korak je provjeriti uzrok ako bol traje, pojačava se ili je praćena otokom i trncima, ali ako želite Forever support smjer za svakodnevnu pokretljivost, odgovor treba ostati na Freedom rutini.',
+                'en' => 'When arm and leg pain is involved, the first step is to check the cause if the pain lasts, gets stronger or comes with swelling or tingling, but if you want a Forever support direction for everyday mobility, the answer should stay on the Freedom routine.',
+            ],
+            'recommendation_lines' => [
+                'hr' => [
+                    'Forever Freedom® je ovdje glavni Forever smjer kada želite zadržati fokus na svakodnevnoj pokretljivosti i opterećenju zglobova.',
+                    'Forever Active HA ima smisla kao support opcija uz to kada želite dodatnu hijaluronsku podršku za zglobove i kretanje.',
+                    'Forever Aloe Cooling Lotion može biti jednostavna vanjska dopuna kada postoji osjećaj napetosti ili težine u rukama i nogama.',
+                ],
+                'en' => [
+                    'Forever Freedom® is the main Forever direction here when you want to keep the focus on everyday mobility and joint load.',
+                    'Forever Active HA makes sense as the support option on top when you want extra hyaluronic-acid support for joints and movement.',
+                    'Forever Aloe Cooling Lotion can be the simple outer add-on when there is a feeling of tension or heaviness in the arms and legs.',
+                ],
+            ],
+            'monthly_quantity_note' => [
+                'hr' => 'Ako želite okvir za mjesec dana, ovdje se najčešće gleda 3 x Forever Freedom®, 1 x Forever Active HA i po potrebi 1 x Forever Aloe Cooling Lotion.',
+                'en' => 'If you want a one-month frame, this is most often positioned as 3 x Forever Freedom®, 1 x Forever Active HA and, if useful, 1 x Forever Aloe Cooling Lotion.',
             ],
             'suppress_generic_questions' => true,
             'sensitive_support_only' => true,
@@ -12786,6 +13003,21 @@ function fcc_ai_get_product_advisor_effective_condition_matches(string $message,
     }
 
     if(
+        fcc_ai_contains_keywords($message, ['što se preporuča kod beba za njegu kože', 'sto se preporuca kod beba za njegu koze', 'što se preporučuje kod beba za njegu kože', 'sto se preporucuje kod beba za njegu koze'])
+        || (
+            fcc_ai_contains_keywords($message, ['beba', 'bebe', 'bebi'])
+            && fcc_ai_contains_keywords($message, ['njegu kože', 'njegu koze', 'njega kože', 'njega koze'])
+        )
+    ) {
+        $matches[] = fcc_ai_get_product_advisor_condition_match_by_key(
+            'baby_skin_care_routine_support',
+            $language,
+            ['beba', 'njega kože'],
+            301
+        );
+    }
+
+    if(
         fcc_ai_contains_keywords($message, ['puca od hladnoće', 'puca od hladnoce', 'crvena je stalno'])
         || (
             fcc_ai_contains_keywords($message, ['hladnoć', 'hladnoc'])
@@ -12797,6 +13029,40 @@ function fcc_ai_get_product_advisor_effective_condition_matches(string $message,
             $language,
             ['hladnoća', 'koža'],
             297
+        );
+    }
+
+    if(
+        fcc_ai_contains_keywords($message, ['idem na more', 'idem na more, što mi treba za zaštitu', 'idem na more, sto mi treba za zastitu'])
+        && fcc_ai_contains_keywords($message, ['zaštitu', 'zastitu', 'osnovni proizvodi', 'kuću i obitelj', 'kucu i obitelj'])
+    ) {
+        $matches[] = fcc_ai_get_product_advisor_condition_match_by_key(
+            'family_travel_skin_essentials_support',
+            $language,
+            ['more', 'zaštita', 'aloe first'],
+            302
+        );
+    }
+
+    if(
+        fcc_ai_contains_keywords($message, ['slomljena ruka', 'slomljene ruke', 'slomljenu ruku', 'slomio ruku', 'prijelom ruke', 'prelom ruke', 'fraktura ruke', 'gips na ruci'])
+    ) {
+        $matches[] = fcc_ai_get_product_advisor_condition_match_by_key(
+            'fracture_bone_healing_support',
+            $language,
+            ['prijelom ruke', 'freedom'],
+            303
+        );
+    }
+
+    if(
+        fcc_ai_contains_keywords($message, ['bolovi u rukama i nogama', 'bolove u rukama i nogama', 'bole me ruke i noge', 'ruke i noge me bole', 'ruke i noge bole'])
+    ) {
+        $matches[] = fcc_ai_get_product_advisor_condition_match_by_key(
+            'limb_joint_pain_support',
+            $language,
+            ['ruke', 'noge', 'freedom'],
+            302
         );
     }
 
@@ -13971,6 +14237,7 @@ function fcc_ai_build_public_recommendation_payload(string $assistant_type, stri
         && fcc_ai_contains_keywords($message, ['najbolji proizvod za početak', 'najbolji proizvod za pocetak', 'best product to start', 'best product for the start', 'best product for a start']);
     $business_primary = $assistant_type === 'product_advisor' && !empty($intent['business_primary']);
     $business_mixed_with_product = $business_primary && !empty($intent['explicit_product_request']);
+    $force_local_reply = false;
 
     $recommendation_lines = [];
     foreach(array_slice($knowledge_suggestions, 0, $is_direct_product_lookup ? ($is_multi_product_compare ? 2 : 1) : 3) as $index => $suggestion) {
@@ -14131,6 +14398,32 @@ function fcc_ai_build_public_recommendation_payload(string $assistant_type, stri
 
         if(!empty($primary_condition['suppress_generic_questions']) && !empty($recommendation_lines)) {
             $question_lines = [];
+        }
+    }
+
+    if($assistant_type === 'product_advisor' && $is_direct_product_lookup) {
+        $special_direct_product_payload = fcc_ai_get_public_special_direct_product_payload($message, $language);
+
+        if(!empty($special_direct_product_payload)) {
+            $opening_note = trim((string) ($special_direct_product_payload['opening_note'] ?? ''));
+            $primary_product = trim((string) ($special_direct_product_payload['primary_product'] ?? ''));
+            $support_products = array_values(array_filter(array_map(static function($item) {
+                return trim((string) $item);
+            }, (array) ($special_direct_product_payload['support_products'] ?? []))));
+            $recommendation_lines = array_values(array_filter(array_map(static function($line) {
+                return trim((string) $line);
+            }, (array) ($special_direct_product_payload['recommendation_lines'] ?? []))));
+            $question_lines = array_values(array_filter(array_map(static function($line) {
+                return trim((string) $line);
+            }, (array) ($special_direct_product_payload['question_lines'] ?? []))));
+            $monthly_quantity_note = trim((string) ($special_direct_product_payload['monthly_quantity_note'] ?? ''));
+            $force_local_reply = !empty($special_direct_product_payload['force_local_reply']);
+
+            if(!empty($special_direct_product_payload['clear_knowledge_suggestions'])) {
+                $knowledge_suggestions = [];
+                $discount_note = '';
+                $combination_note = '';
+            }
         }
     }
 
@@ -14316,6 +14609,8 @@ function fcc_ai_build_public_recommendation_payload(string $assistant_type, stri
         $discount_note = '';
         $knowledge_suggestions = [];
     }
+
+    $opening_note = fcc_ai_get_public_user_safe_opening_note($opening_note, $language);
 
     if($business_primary) {
         $knowledge_suggestions = array_values(array_filter($knowledge_suggestions, static function(array $suggestion) {
@@ -14784,6 +15079,7 @@ function fcc_ai_build_public_recommendation_payload(string $assistant_type, stri
         'support_products' => $support_products,
         'monthly_quantity_note' => $monthly_quantity_note,
         'sensitive_support_only' => $sensitive_support_only,
+        'force_local_reply' => $force_local_reply,
         'skip_product_tail' => $skip_product_tail,
         'same_problem_followup_clarification' => $same_problem_followup_clarification,
         'system_brief' => implode("\n", array_filter($system_brief_lines)),
@@ -14962,6 +15258,10 @@ function fcc_ai_get_public_recommendation_decision_note(string $assistant_type, 
     }, (array) ($recommendation_payload['support_products'] ?? []))));
 
     if($primary_product === '') {
+        return '';
+    }
+
+    if(fcc_ai_contains_keywords($primary_product, ['vital5', 'dx4'])) {
         return '';
     }
 
@@ -17371,6 +17671,34 @@ function fcc_ai_generate_public_reply(string $assistant_type, string $message, a
                 'knowledge_suggestions' => [],
             ];
         }
+    }
+
+    if($assistant_type === 'product_advisor' && !empty($recommendation_payload['force_local_reply'])) {
+        if(!empty($recommendation_payload['opening_note'])) {
+            $content_blocks[] = trim((string) $recommendation_payload['opening_note']);
+        }
+
+        if(!empty($recommendation_payload['recommendation_lines'])) {
+            $content_blocks[] = ($language === 'en'
+                ? "Main explanation:\n- "
+                : "Glavno objašnjenje:\n- ")
+                . implode("\n- ", array_map(static function($line) {
+                    return trim((string) $line);
+                }, (array) $recommendation_payload['recommendation_lines']));
+        }
+
+        if(!empty($recommendation_payload['monthly_quantity_note'])) {
+            $content_blocks[] = trim((string) $recommendation_payload['monthly_quantity_note']);
+        }
+
+        return [
+            'content' => trim(implode("\n\n", array_filter($content_blocks))),
+            'language' => $language,
+            'lead_capture' => $lead_capture,
+            'intent' => $intent,
+            'recommendation_payload' => $recommendation_payload,
+            'knowledge_suggestions' => [],
+        ];
     }
 
     if($assistant_type === 'product_advisor' && $correction_follow_up) {
@@ -22952,6 +23280,7 @@ function fcc_ai_handle_public_message(array $payload): array {
         || $is_business_hesitation_followup
         || $is_broad_beauty_followup_clarification
         || $guarded_request_type !== ''
+        || !empty($recommendation_payload['force_local_reply'])
         || !empty($intent['business_primary'])
         || !empty($intent['medication_interaction_sensitive'])
         || $is_direct_cure_claim_question
