@@ -13125,7 +13125,21 @@ function fcc_ai_build_public_recommendation_payload(string $assistant_type, stri
                     'Ako je alergija aktivna ili je riječ o osjetljivosti na pelud, Bee Pollen ne bi trebao biti prvi preporučeni smjer bez dodatnog opreza.',
                     'Sigurniji sljedeći korak je prvo razjasniti o kakvoj je alergiji riječ pa tek onda suziti rutinu bez forsiranja pčelinjih proizvoda.',
                 ]);
-        $question_lines = [];
+        $question_lines = $language === 'en'
+            ? [
+                'Is this mainly a pollen allergy, a food reaction, or a skin reaction?',
+                'Are the symptoms active right now, or are you asking more generally about what would be a safe first step?',
+            ]
+            : ($language === 'sl'
+                ? [
+                    'Ali gre predvsem za alergijo na cvetni prah, reakcijo na hrano ali kožno reakcijo?',
+                    'So simptomi aktivni prav zdaj ali sprašujete bolj splošno, kaj bi bil varen prvi korak?',
+                ]
+                : [
+                    'Radi li se prije svega o alergiji na pelud, reakciji na hranu ili kožnoj reakciji?',
+                    'Jesu li simptomi aktivni baš sada ili pitate općenito što bi bio siguran prvi korak?',
+                ]);
+        $needs_clarification = true;
         $primary_product = '';
         $support_products = [];
         $monthly_quantity_note = '';
