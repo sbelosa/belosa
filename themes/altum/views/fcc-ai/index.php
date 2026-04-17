@@ -9,7 +9,7 @@ $fcc_ai_is_admin = (bool) ($data->is_admin ?? false);
 $fcc_ai_editable_assistant_types = is_array($data->editable_assistant_types ?? null) ? $data->editable_assistant_types : (array) ($data->assistant_types ?? []);
 $fcc_ai_apps_url = url('links?type=biolink');
 $fcc_ai_hero_intro = l($fcc_ai_is_admin ? 'fcc_ai.hero_intro_admin' : 'fcc_ai.hero_intro_user');
-$fcc_ai_brand_logo_url = ASSETS_FULL_URL . 'images/fcc-preporuka-logo-wide.png';
+$fcc_ai_brand_logo_url = ASSETS_FULL_URL . 'images/chat-extreme-logo-wide.png';
 $fcc_ai_useful_items = is_array($data->useful_items ?? null) ? $data->useful_items : [];
 $fcc_ai_recent_alerts = is_array($data->recent_alerts ?? null) ? $data->recent_alerts : [];
 $fcc_ai_rising_topics = is_array($data->rising_topics ?? null) ? $data->rising_topics : [];
@@ -149,8 +149,8 @@ $fcc_ai_build_hub_url = static function(array $overrides = []) use ($fcc_ai_filt
         }
 
         .fcc-ai-hero__side {
-            flex: 0 1 360px;
-            min-width: min(100%, 320px);
+            flex: 0 1 300px;
+            min-width: min(100%, 280px);
             display: flex;
             flex-direction: column;
             align-items: flex-end;
@@ -182,8 +182,8 @@ $fcc_ai_build_hub_url = static function(array $overrides = []) use ($fcc_ai_filt
         }
 
         .fcc-ai-hero__brand-card {
-            width: min(100%, 360px);
-            padding: .95rem 1rem;
+            width: min(100%, 300px);
+            padding: .9rem .95rem .85rem;
             border-radius: 1.1rem;
             border: 1px solid rgba(255, 255, 255, .1);
             background:
@@ -192,18 +192,22 @@ $fcc_ai_build_hub_url = static function(array $overrides = []) use ($fcc_ai_filt
                 linear-gradient(155deg, rgba(255, 255, 255, .06), rgba(255, 255, 255, .018));
             box-shadow: inset 0 1px 0 rgba(255,255,255,.05), 0 1rem 2rem rgba(2, 8, 23, .16);
             backdrop-filter: blur(10px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
         .fcc-ai-hero__brand-label {
             display: inline-flex;
             align-items: center;
             gap: .4rem;
-            margin-bottom: .65rem;
+            margin-bottom: .55rem;
             font-size: .72rem;
             font-weight: 800;
             letter-spacing: .08em;
             text-transform: uppercase;
             color: rgba(219, 234, 254, .88);
+            align-self: flex-start;
         }
 
         .fcc-ai-hero__brand-label::before {
@@ -218,19 +222,20 @@ $fcc_ai_build_hub_url = static function(array $overrides = []) use ($fcc_ai_filt
         .fcc-ai-hero__brand-logo {
             display: block;
             width: 100%;
-            max-width: 300px;
+            max-width: 220px;
             height: auto;
-            margin-left: auto;
-            filter: drop-shadow(0 1rem 1.6rem rgba(2, 8, 23, .24));
+            margin: 0 auto;
+            filter: drop-shadow(0 .75rem 1.2rem rgba(2, 8, 23, .22));
         }
 
         .fcc-ai-hero__brand-copy {
-            margin-top: .55rem;
+            margin-top: .6rem;
             margin-bottom: 0;
             font-size: .8rem;
             line-height: 1.5;
             color: rgba(226, 232, 240, .78);
-            text-align: right;
+            text-align: center;
+            max-width: 230px;
         }
 
         .fcc-ai-metrics {
@@ -1409,12 +1414,13 @@ $fcc_ai_build_hub_url = static function(array $overrides = []) use ($fcc_ai_filt
             }
 
             .fcc-ai-hero__brand-logo {
-                max-width: 260px;
-                margin-left: 0;
+                max-width: 210px;
+                margin-left: auto;
+                margin-right: auto;
             }
 
             .fcc-ai-hero__brand-copy {
-                text-align: left;
+                text-align: center;
             }
 
             .fcc-ai-action-grid {
