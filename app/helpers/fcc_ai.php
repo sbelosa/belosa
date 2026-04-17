@@ -7271,6 +7271,7 @@ function fcc_ai_get_public_direct_product_lookup_matches(string $message): array
         'liquid_soap' => ['liquid soap', 'aloe liquid soap', 'tekući sapun', 'tekuci sapun', 'sapun za ruke i tijelo'],
         'body_lotion' => ['aloe body lotion', 'body lotion'],
         'body_wash' => ['aloe body wash', 'body wash'],
+        'ever_shield' => ['aloe ever-shield deodorant', 'ever-shield deodorant', 'ever shield deodorant', 'aloe ever-shield'],
         'aloe_lotion' => ['aloe lotion'],
         'moisturizing_lotion' => ['aloe moisturizing lotion', 'moisturizing lotion'],
         'aloe_mango' => ['aloe mango', 'forever aloe mango', 'mango napitak', 'napitak aloe mango', '8364'],
@@ -7354,6 +7355,7 @@ function fcc_ai_get_public_direct_product_lookup_titles(): array {
         'liquid_soap' => 'Forever Aloe Liquid Soap',
         'body_lotion' => 'Aloe Body Lotion',
         'body_wash' => 'Aloe Body Wash',
+        'ever_shield' => 'Aloe Ever-Shield Deodorant',
         'aloe_lotion' => 'Aloe Lotion',
         'moisturizing_lotion' => 'Aloe Moisturizing Lotion',
         'aloe_mango' => 'Forever Aloe Mango™',
@@ -8046,6 +8048,37 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
             'sensitive_support_only' => true,
             'lock_product_scope' => true,
         ],
+        'triglyceride_support' => [
+            'patterns' => ['povišeni trigliceridi', 'poviseni trigliceridi', 'visoki trigliceridi', 'povišene trigliceride', 'povisene trigliceride', 'povišene trigliceridi', 'povisene trigliceridi', 'trigliceridi', 'trigliceride'],
+            'preferred_patterns' => ['arctic sea', 'omega', 'aloe vera gel', 'aloe gel'],
+            'primary_product' => 'Forever Arctic Sea',
+            'support_products' => ['Forever Aloe Vera Gel™'],
+            'label' => [
+                'hr' => 'trigliceridi i omega-3 nutritivna rutina',
+                'en' => 'triglycerides and omega-3 nutrition routine',
+            ],
+            'opening_note' => [
+                'hr' => 'Kad se spominju baš trigliceridi, preporuka treba ići prvo na omega-3 smjer, a aloe ostaje support baza iznutra.',
+                'en' => 'When triglycerides are mentioned specifically, the recommendation should start with the omega-3 direction first, while aloe remains the inside support base.',
+            ],
+            'recommendation_lines' => [
+                'hr' => [
+                    'Forever Arctic Sea je ovdje glavni Forever smjer kada želite omega-3 nutritivnu podršku kao najčišći prvi korak kod povišenih triglicerida.',
+                    'Forever Aloe Vera Gel™ ima smisla kao support opcija uz to kao aloe baza iznutra za jednostavniju svakodnevnu rutinu.',
+                ],
+                'en' => [
+                    'Forever Arctic Sea is the main Forever direction here when you want omega-3 nutritional support as the clearest first step for elevated triglycerides.',
+                    'Forever Aloe Vera Gel™ makes sense as the support option on top as the inside aloe base for a simpler everyday routine.',
+                ],
+            ],
+            'monthly_quantity_note' => [
+                'hr' => 'Ako želite okvir za mjesec dana, ovdje se najčešće gleda 1 kutija Forever Arctic Sea i 3 x Forever Aloe Vera Gel™.',
+                'en' => 'If you want a one-month frame, this is most often positioned as 1 box of Forever Arctic Sea and 3 x Forever Aloe Vera Gel™.',
+            ],
+            'suppress_generic_questions' => true,
+            'sensitive_support_only' => true,
+            'lock_product_scope' => true,
+        ],
         'thyroid_balance_support' => [
             'patterns' => ['štitnjača', 'stitnjaca', 'štitna', 'stitna', 'štitnici', 'stitnici', 'štitn', 'stitn', 'ščitnica', 'ščitnici', 'ščitnico', 'ščitnice', 'ščitn', 'scitnica', 'scitnici', 'scitnico', 'scitnice', 'scitn', 'hashimoto', 'hoshimoto', 'hashimot', 'hipotireoza', 'hipertireoza', 'hipertireoza stitnjace', 'hipertireoz', 'hipertiroid', 'hipotiroid', 'usporen rad štitne', 'usporen rad stitne', 'pojačan rad štitne', 'pojacan rad stitne'],
             'preferred_patterns' => ['aloe vera gel', 'aloe gel', 'arctic sea', 'omega', 'multi maca'],
@@ -8410,6 +8443,36 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
             'suppress_generic_questions' => true,
             'lock_product_scope' => true,
         ],
+        'post_meal_digestion_support' => [
+            'patterns' => ['teško mi pada hrana', 'tesko mi pada hrana', 'hrana mi teško pada', 'hrana mi tesko pada', 'teško mi pada obrok', 'tesko mi pada obrok', 'težina nakon jela', 'tezina nakon jela', 'težina poslije jela', 'tezina poslije jela'],
+            'preferred_patterns' => ['aloe vera gel', 'aloe gel', 'active pro b', 'pro b', 'pro-b'],
+            'primary_product' => 'Forever Aloe Vera Gel™',
+            'support_products' => ['Forever Active Pro B'],
+            'label' => [
+                'hr' => 'težina nakon obroka i smirivanje probave',
+                'en' => 'heaviness after meals and calming digestion',
+            ],
+            'opening_note' => [
+                'hr' => 'Kad hrana teško pada i ostaje osjećaj težine nakon obroka, preporuka treba ostati na aloe bazi i probiotičkoj podršci, bez skretanja na programe za težinu.',
+                'en' => 'When food feels heavy and there is a lingering sense of heaviness after meals, the recommendation should stay on an aloe base plus probiotic support, without drifting into weight-control programs.',
+            ],
+            'recommendation_lines' => [
+                'hr' => [
+                    'Forever Aloe Vera Gel™ je ovdje glavni Forever smjer kao nježna aloe baza iznutra za svakodnevnu probavnu rutinu.',
+                    'Forever Active Pro B ima smisla kao support opcija uz to kada želite smireniji probavni ritam i uredniji osjećaj nakon obroka.',
+                ],
+                'en' => [
+                    'Forever Aloe Vera Gel™ is the main Forever direction here as the gentle inside aloe base for the everyday digestive routine.',
+                    'Forever Active Pro B makes sense as the support option on top when you want a calmer digestive rhythm and a steadier after-meal feeling.',
+                ],
+            ],
+            'monthly_quantity_note' => [
+                'hr' => 'Ako želite okvir za mjesec dana, ovdje se najčešće gleda 3 x Forever Aloe Vera Gel™ i 1 x Forever Active Pro B.',
+                'en' => 'If you want a one-month frame, this is most often positioned as 3 x Forever Aloe Vera Gel™ and 1 x Forever Active Pro B.',
+            ],
+            'suppress_generic_questions' => true,
+            'lock_product_scope' => true,
+        ],
         'oncology_pain_support' => [
             'patterns' => ['bolove zbog bolesti', 'bolovi zbog bolesti', 'imam bolove zbog bolesti', 'upala zbog bolesti', 'bol i upala zbog bolesti'],
             'preferred_patterns' => ['aloe vera gel', 'arctic sea', 'cooling lotion'],
@@ -8627,7 +8690,7 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
             'lock_product_scope' => true,
         ],
         'simple_low_energy_support' => [
-            'patterns' => ['nemam energije', 'stalno sam umoran', 'stalno sam umorna', 'bez energije sam', 'nemam snage'],
+            'patterns' => ['nemam energije', 'stalno sam umoran', 'stalno sam umorna', 'bez energije sam'],
             'preferred_patterns' => ['aloe vera gel', 'aloe gel', 'immune gummy', 'gummy'],
             'primary_product' => 'Forever Aloe Vera Gel™',
             'support_products' => ['Forever Immune Gummy'],
@@ -8652,6 +8715,36 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
             'monthly_quantity_note' => [
                 'hr' => 'Ako želite okvir za mjesec dana, ovdje se najčešće gleda 3 x Forever Aloe Vera Gel™ i 1 x Forever Immune Gummy.',
                 'en' => 'If you want a one-month frame, this is most often positioned as 3 x Forever Aloe Vera Gel™ and 1 x Forever Immune Gummy.',
+            ],
+            'suppress_generic_questions' => true,
+            'lock_product_scope' => true,
+        ],
+        'physical_endurance_support' => [
+            'patterns' => ['brzo se umaram', 'brzo se umorim', 'brzo se zamaram', 'fizički rad me iscrpi', 'fizicki rad me iscrpi', 'umor pri fizičkom radu', 'umor pri fizickom radu', 'brzo se iscrpim', 'nemam snage'],
+            'preferred_patterns' => ['argi+', 'aloe vera gel', 'aloe gel'],
+            'primary_product' => 'Forever ARGI+',
+            'support_products' => ['Forever Aloe Vera Gel™'],
+            'label' => [
+                'hr' => 'brzi umor pri fizičkom radu i izdržljivost',
+                'en' => 'quick fatigue during physical work and endurance',
+            ],
+            'opening_note' => [
+                'hr' => 'Kad je glavni problem brzi umor pri radu ili naporu, preporuka treba ostati na smjeru za izdržljivost i dnevnu snagu, bez odlaska na kozmetiku ili opće fallbackove za energiju.',
+                'en' => 'When the main problem is quick fatigue during work or effort, the recommendation should stay on an endurance-and-daily-strength direction without drifting into cosmetics or generic energy fallbacks.',
+            ],
+            'recommendation_lines' => [
+                'hr' => [
+                    'Forever ARGI+ je ovdje glavni Forever smjer kada želite najjači fokus na dnevnu izdržljivost, prokrvljenost i osjećaj više snage pri naporu.',
+                    'Forever Aloe Vera Gel™ ima smisla kao support opcija uz to kao jednostavna aloe baza iznutra za svakodnevni ritam hidracije i nutritivne rutine.',
+                ],
+                'en' => [
+                    'Forever ARGI+ is the main Forever direction here when you want the strongest focus on daily endurance, circulation and a stronger-feeling effort rhythm.',
+                    'Forever Aloe Vera Gel™ makes sense as the support option on top as the simple inside aloe base for hydration and the everyday nutritional routine.',
+                ],
+            ],
+            'monthly_quantity_note' => [
+                'hr' => 'Ako želite okvir za mjesec dana, ovdje se najčešće gleda 1 x Forever ARGI+ i 3 x Forever Aloe Vera Gel™.',
+                'en' => 'If you want a one-month frame, this is most often positioned as 1 x Forever ARGI+ and 3 x Forever Aloe Vera Gel™.',
             ],
             'suppress_generic_questions' => true,
             'lock_product_scope' => true,
@@ -9375,7 +9468,7 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
             'lock_product_scope' => true,
         ],
         'cold_extremities_circulation_support' => [
-            'patterns' => ['hladne ruke', 'hladne noge', 'hladne ruke i noge', 'stalno su mi hladne ruke i noge', 'slaba cirkulacija', 'slaba mi je cirkulacija', 'hladni dlanovi', 'hladna stopala'],
+            'patterns' => ['hladne ruke', 'hladne noge', 'hladne ruke i noge', 'stalno su mi hladne ruke i noge', 'ruke su mi stalno hladne', 'stalno su mi hladne ruke', 'ruke su mi hladne', 'noge su mi hladne', 'slaba cirkulacija', 'slaba mi je cirkulacija', 'hladni dlanovi', 'hladna stopala'],
             'preferred_patterns' => ['argi', 'argi+', 'arctic sea', 'aloe vera gel'],
             'primary_product' => 'Forever ARGI+',
             'support_products' => ['Forever Arctic Sea', 'Forever Aloe Vera Gel™'],
@@ -10373,8 +10466,41 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
             'sensitive_support_only' => true,
             'lock_product_scope' => true,
         ],
+        'anxiety_tension_support' => [
+            'patterns' => ['anksioznost', 'anksiozan', 'anksiozna', 'stalno sam napet', 'stalno sam napeta', 'napet sam', 'napeta sam', 'unutarnja napetost'],
+            'preferred_patterns' => ['royal jelly', 'aloe vera gel', 'arctic sea'],
+            'primary_product' => 'Forever Royal Jelly',
+            'support_products' => ['Forever Aloe Vera Gel™', 'Forever Arctic Sea'],
+            'label' => [
+                'hr' => 'anksioznost, napetost i mirnija dnevna rutina',
+                'en' => 'anxiety, tension and a calmer daily routine',
+            ],
+            'opening_note' => [
+                'hr' => 'Kad je fokus na anksioznosti i stalnoj napetosti, preporuka treba ostati vrlo smirena i jednostavna: royal jelly kao glavni nutritivni smjer, uz aloe bazu i omega-3 kao dopunu istoj rutini.',
+                'en' => 'When the focus is anxiety and ongoing tension, the recommendation should stay very calm and simple: royal jelly as the main nutritional direction, with an aloe base and omega-3 as additions to the same routine.',
+            ],
+            'recommendation_lines' => [
+                'hr' => [
+                    'Forever Royal Jelly je ovdje glavni Forever smjer kada želite najčišći support prema živčanom sustavu, vitalnosti i svakodnevnoj otpornosti na napetost.',
+                    'Forever Aloe Vera Gel™ ima smisla kao support opcija uz to kao nježna aloe baza iznutra za jednostavniju dnevnu rutinu.',
+                    'Forever Arctic Sea može biti dodatna support opcija kada uz isti smjer želite i omega-3 nutritivnu podršku.',
+                ],
+                'en' => [
+                    'Forever Royal Jelly is the main Forever direction here when you want the cleanest support route for the nervous system, vitality and everyday resilience against tension.',
+                    'Forever Aloe Vera Gel™ makes sense as the support option on top as the gentle inside aloe base for a simpler daily routine.',
+                    'Forever Arctic Sea can be the additional support option when you also want the omega-3 nutritional direction inside the same routine.',
+                ],
+            ],
+            'monthly_quantity_note' => [
+                'hr' => 'Ako želite okvir za mjesec dana, ovdje se najčešće gleda 1 x Forever Royal Jelly, 3 x Forever Aloe Vera Gel™ i 1 kutija Forever Arctic Sea.',
+                'en' => 'If you want a one-month frame, this is most often positioned as 1 x Forever Royal Jelly, 3 x Forever Aloe Vera Gel™ and 1 box of Forever Arctic Sea.',
+            ],
+            'suppress_generic_questions' => true,
+            'sensitive_support_only' => true,
+            'lock_product_scope' => true,
+        ],
         'stress_resilience_support' => [
-            'patterns' => ['kronični umor', 'kronicni umor', 'anksioznost', 'mentalna iscrpljenost', 'otpornost na stres', 'pod stresom', 'jak stres', 'stres i umor'],
+            'patterns' => ['kronični umor', 'kronicni umor', 'mentalna iscrpljenost', 'otpornost na stres', 'pod stresom', 'jak stres', 'stres i umor'],
             'preferred_patterns' => ['aloe vera gel', 'aloe gel', 'royal jelly', 'arctic sea'],
             'primary_product' => 'Forever Aloe Vera Gel™',
             'support_products' => ['Forever Royal Jelly', 'Forever Arctic Sea'],
@@ -10406,7 +10532,7 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
             'lock_product_scope' => true,
         ],
         'varicose_veins_support' => [
-            'patterns' => ['proširene vene', 'prosirene vene', 'varikozne vene', 'težina u nogama', 'tezina u nogama', 'oticanje nogu', 'oticanje nogu', 'sklonost trombozi', 'loša cirkulacija', 'losa cirkulacija', 'imam lošu cirkulaciju', 'imam losu cirkulaciju', 'slaba cirkulacija', 'slaba mi je cirkulacija'],
+            'patterns' => ['proširene vene', 'prosirene vene', 'varikozne vene', 'težina u nogama', 'tezina u nogama', 'oticanje nogu', 'oticanje nogu', 'sklonost trombozi', 'loša cirkulacija', 'losa cirkulacija', 'imam lošu cirkulaciju', 'imam losu cirkulaciju', 'slaba cirkulacija', 'slaba mi je cirkulacija', 'natečene noge', 'natecene noge', 'noge su mi natečene', 'noge su mi natecene', 'otekle noge', 'noge su mi otečene', 'noge su mi otecene'],
             'preferred_patterns' => ['aloe vera gel', 'aloe gel', 'arctic sea', 'argi', 'argi+'],
             'primary_product' => 'Forever Aloe Vera Gel™',
             'support_products' => ['Forever Arctic Sea', 'Forever ARGI+'],
@@ -10558,6 +10684,67 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
             'monthly_quantity_note' => [
                 'hr' => 'Ako želite okvir za mjesec dana, ovdje se najčešće gleda 3 x Forever Aloe Vera Gel™, 1 x Forever ImmuBlend i 1 x Forever Absorbent-C, a Bee Pollen ostaje samo opcionalna dopuna uz jasnu napomenu.',
                 'en' => 'If you want a one-month frame, this is most often positioned as 3 x Forever Aloe Vera Gel™, 1 x Forever ImmuBlend and 1 x Forever Absorbent-C, while Bee Pollen stays only an optional add-on with a clear caveat.',
+            ],
+            'suppress_generic_questions' => true,
+            'lock_product_scope' => true,
+        ],
+        'depressive_mood_support' => [
+            'patterns' => ['nemam volje ni za što', 'nemam volje ni za sta', 'nemam volje', 'bezvoljan', 'bezvoljna', 'potišten', 'potisten', 'depresivno raspoloženje', 'depresivno raspolozenje'],
+            'preferred_patterns' => ['royal jelly', 'arctic sea'],
+            'primary_product' => 'Forever Royal Jelly',
+            'support_products' => ['Forever Arctic Sea'],
+            'label' => [
+                'hr' => 'psihički pad i depresivno raspoloženje',
+                'en' => 'mental low mood and depressive-style state',
+            ],
+            'opening_note' => [
+                'hr' => 'Kad je glavni problem psihički pad i manjak volje, preporuka treba ostati vrlo empatična i oprezna: royal jelly kao glavni nutritivni smjer, uz omega-3 kao jednostavnu dopunu iste rutine.',
+                'en' => 'When the main problem is low mood and loss of motivation, the recommendation should stay very empathetic and cautious: royal jelly as the main nutritional direction, with omega-3 as the simple add-on in the same routine.',
+            ],
+            'recommendation_lines' => [
+                'hr' => [
+                    'Forever Royal Jelly je ovdje glavni Forever smjer kada želite jednostavniji support prema vitalnosti, živčanom sustavu i svakodnevnom ritmu.',
+                    'Forever Arctic Sea ima smisla kao support opcija uz to kada želite i omega-3 nutritivni smjer kao mirnu dopunu istoj rutini.',
+                ],
+                'en' => [
+                    'Forever Royal Jelly is the main Forever direction here when you want a simpler support route toward vitality, the nervous system and everyday rhythm.',
+                    'Forever Arctic Sea makes sense as the support option on top when you also want the omega-3 nutritional direction as a calm addition to the same routine.',
+                ],
+            ],
+            'monthly_quantity_note' => [
+                'hr' => 'Ako želite okvir za mjesec dana, ovdje se najčešće gleda 1 x Forever Royal Jelly i 1 kutija Forever Arctic Sea.',
+                'en' => 'If you want a one-month frame, this is most often positioned as 1 x Forever Royal Jelly and 1 box of Forever Arctic Sea.',
+            ],
+            'suppress_generic_questions' => true,
+            'sensitive_support_only' => true,
+            'lock_product_scope' => true,
+        ],
+        'concentration_focus_support' => [
+            'patterns' => ['ne mogu se koncentrirati', 'nemogu se koncentrirati', 'ne mogu se skoncentrirati', 'stalno sam rastresen', 'stalno sam rastresena', 'rastresen sam', 'rastresena sam', 'smanjena koncentracija'],
+            'preferred_patterns' => ['focus', 'royal jelly'],
+            'primary_product' => 'Forever Focus',
+            'support_products' => ['Forever Royal Jelly'],
+            'label' => [
+                'hr' => 'koncentracija, fokus i mentalna jasnoća',
+                'en' => 'concentration, focus and mental clarity',
+            ],
+            'opening_note' => [
+                'hr' => 'Kad je glavni problem koncentracija i rastresenost, preporuka treba ostati vrlo jasna: Focus kao glavni smjer, a Royal Jelly kao jednostavna nutritivna dopuna bez stimulativnog driftanja.',
+                'en' => 'When the main problem is concentration and distractibility, the recommendation should stay very clear: Focus as the main direction, with Royal Jelly as the simple nutritional add-on without stimulant drift.',
+            ],
+            'recommendation_lines' => [
+                'hr' => [
+                    'Forever Focus je ovdje glavni Forever smjer kada želite najjasniji fokus na mentalnu jasnoću, dnevnu koncentraciju i manje rastresenosti.',
+                    'Forever Royal Jelly ima smisla kao support opcija uz to kada želite i nutritivni smjer prema vitalnosti i živčanom sustavu.',
+                ],
+                'en' => [
+                    'Forever Focus is the main Forever direction here when you want the clearest focus on mental clarity, daily concentration and less distractibility.',
+                    'Forever Royal Jelly makes sense as the support option on top when you also want the nutritional direction toward vitality and the nervous system.',
+                ],
+            ],
+            'monthly_quantity_note' => [
+                'hr' => 'Ako želite okvir za mjesec dana, ovdje se najčešće gleda 1 x Forever Focus i 1 x Forever Royal Jelly.',
+                'en' => 'If you want a one-month frame, this is most often positioned as 1 x Forever Focus and 1 x Forever Royal Jelly.',
             ],
             'suppress_generic_questions' => true,
             'lock_product_scope' => true,
@@ -10946,6 +11133,70 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
             'suppress_generic_questions' => true,
             'lock_product_scope' => true,
         ],
+        'cracked_hands_skin_support' => [
+            'patterns' => ['pucaju mi ruke', 'pucaju mi šake', 'pucaju mi sake', 'ispucale ruke', 'ruke su mi ispucale', 'ruke su mi jako suhe', 'ruke su mi suhe'],
+            'preferred_patterns' => ['propolis creme', 'aloe vera gel', 'liquid soap'],
+            'primary_product' => 'Aloe Propolis Creme',
+            'support_products' => ['Forever Aloe Vera Gel™', 'Forever Aloe Liquid Soap'],
+            'label' => [
+                'hr' => 'ispucale ruke i zaštitna rutina',
+                'en' => 'cracked hands and a protective routine',
+            ],
+            'opening_note' => [
+                'hr' => 'Kad ruke pucaju i jako su suhe, preporuka treba ostati praktična: zaštitna krema izvana, nježno pranje i aloe baza iznutra, bez agresivnih suplementnih kombinacija.',
+                'en' => 'When the hands are cracking and very dry, the recommendation should stay practical: a protective cream outside, gentle cleansing and an inside aloe base, without aggressive supplement combinations.',
+            ],
+            'recommendation_lines' => [
+                'hr' => [
+                    'Aloe Propolis Creme je ovdje glavni Forever smjer kao zaštitna i hranjiva krema kada koža ruku puca i traži jači sloj izvana.',
+                    'Forever Aloe Vera Gel™ ima smisla kao support opcija uz to kao aloe baza iznutra za inside-out smjer njege kože.',
+                    'Forever Aloe Liquid Soap ima smisla kao dodatni korak kada želite i nježnije pranje ruku bez dodatnog isušivanja.',
+                ],
+                'en' => [
+                    'Aloe Propolis Creme is the main Forever direction here as the protective and nourishing cream when the skin on the hands is cracking and needs a stronger outer layer.',
+                    'Forever Aloe Vera Gel™ makes sense as the support option on top as the inside aloe base for the inside-out skin-support direction.',
+                    'Forever Aloe Liquid Soap makes sense as the extra step when you also want gentler hand cleansing without added drying.',
+                ],
+            ],
+            'monthly_quantity_note' => [
+                'hr' => 'Ako želite okvir za mjesec dana, ovdje se najčešće gleda 1 x Aloe Propolis Creme, 3 x Forever Aloe Vera Gel™ i 1 x Forever Aloe Liquid Soap.',
+                'en' => 'If you want a one-month frame, this is most often positioned as 1 x Aloe Propolis Creme, 3 x Forever Aloe Vera Gel™ and 1 x Forever Aloe Liquid Soap.',
+            ],
+            'suppress_generic_questions' => true,
+            'lock_product_scope' => true,
+        ],
+        'dull_complexion_support' => [
+            'patterns' => ['lice mi izgleda umorno', 'umorno mi izgleda lice', 'siv ten', 'ten mi je siv', 'bez sjaja mi je lice', 'umoran ten', 'lice bez sjaja'],
+            'preferred_patterns' => ['aloe vera gel', 'marine collagen', 'bio-cellulose mask'],
+            'primary_product' => 'Forever Aloe Vera Gel™',
+            'support_products' => ['Forever Marine Collagen', 'Aloe Bio-Cellulose Mask'],
+            'label' => [
+                'hr' => 'umoran ten i inside-out rutina svježine',
+                'en' => 'tired complexion and an inside-out freshness routine',
+            ],
+            'opening_note' => [
+                'hr' => 'Kad lice izgleda umorno i ten djeluje siv ili bez sjaja, preporuka treba krenuti iznutra kroz aloe i kolagen, a maska ostaje elegantna vanjska nadogradnja.',
+                'en' => 'When the face looks tired and the complexion seems dull or without glow, the recommendation should start from the inside through aloe and collagen, while the mask stays as the elegant outer upgrade.',
+            ],
+            'recommendation_lines' => [
+                'hr' => [
+                    'Forever Aloe Vera Gel™ je ovdje glavni Forever smjer kao aloe baza iznutra za svakodnevnu nutritivnu rutinu kože.',
+                    'Forever Marine Collagen ima smisla kao support opcija uz to kada želite dodatni smjer prema kvaliteti kože, svježini i elastičnosti.',
+                    'Aloe Bio-Cellulose Mask ima smisla kao dodatni korak kada želite i brži vanjski boost svježine i hidratacije lica.',
+                ],
+                'en' => [
+                    'Forever Aloe Vera Gel™ is the main Forever direction here as the inside aloe base for the everyday skin-support nutrition routine.',
+                    'Forever Marine Collagen makes sense as the support option on top when you also want the extra direction toward skin quality, glow and elasticity.',
+                    'Aloe Bio-Cellulose Mask makes sense as the extra step when you also want a quicker outer boost of freshness and facial hydration.',
+                ],
+            ],
+            'monthly_quantity_note' => [
+                'hr' => 'Ako želite okvir za mjesec dana, ovdje se najčešće gleda 3 x Forever Aloe Vera Gel™, 1 x Forever Marine Collagen i 1 x Aloe Bio-Cellulose Mask.',
+                'en' => 'If you want a one-month frame, this is most often positioned as 3 x Forever Aloe Vera Gel™, 1 x Forever Marine Collagen and 1 x Aloe Bio-Cellulose Mask.',
+            ],
+            'suppress_generic_questions' => true,
+            'lock_product_scope' => true,
+        ],
         'oily_face_skin_support' => [
             'patterns' => ['masna koža', 'masna koza', 'masnu kožu', 'masnu kozu', 'sjaji mi se lice', 'masno lice', 'lice mi se sjaji'],
             'preferred_patterns' => ['activator', 'soothing gel moisturizer', 'restoring creme'],
@@ -11098,6 +11349,36 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
             'monthly_quantity_note' => [
                 'hr' => 'Ako želite okvir za mjesec dana, ovdje se najčešće gleda 1 x Awakening Eye Cream i 1 x Aloe Bio-Cellulose Mask.',
                 'en' => 'If you want a one-month frame, this is most often positioned as 1 x Awakening Eye Cream and 1 x Aloe Bio-Cellulose Mask.',
+            ],
+            'suppress_generic_questions' => true,
+            'lock_product_scope' => true,
+        ],
+        'excessive_sweating_support' => [
+            'patterns' => ['jako se znojim', 'pretjerano se znojim', 'prekomjerno znojenje', 'prekomjerno se znojim', 'pojačano znojenje', 'pojacano znojenje'],
+            'preferred_patterns' => ['ever-shield deodorant', 'aloe ever-shield', 'aloe vera gel'],
+            'primary_product' => 'Aloe Ever-Shield Deodorant',
+            'support_products' => ['Forever Aloe Vera Gel™'],
+            'label' => [
+                'hr' => 'prekomjerno znojenje i jednostavna rutina',
+                'en' => 'excessive sweating and a simple routine',
+            ],
+            'opening_note' => [
+                'hr' => 'Kad je fokus na prekomjernom znojenju, preporuka treba ostati praktična i jednostavna: ciljani deodorant izvana, a aloe baza može ostati samo blagi nutritivni support iznutra.',
+                'en' => 'When the focus is excessive sweating, the recommendation should stay practical and simple: a targeted deodorant outside, while the aloe base can remain only a gentle nutritional support from the inside.',
+            ],
+            'recommendation_lines' => [
+                'hr' => [
+                    'Aloe Ever-Shield Deodorant je ovdje glavni Forever smjer kada želite jednostavniji i praktičan prvi korak za svakodnevno znojenje i neugodu.',
+                    'Forever Aloe Vera Gel™ ima smisla kao support opcija uz to kao aloe baza iznutra za opću svakodnevnu rutinu.',
+                ],
+                'en' => [
+                    'Aloe Ever-Shield Deodorant is the main Forever direction here when you want a simpler and practical first step for everyday sweating and discomfort.',
+                    'Forever Aloe Vera Gel™ makes sense as the support option on top as the inside aloe base for the general everyday routine.',
+                ],
+            ],
+            'monthly_quantity_note' => [
+                'hr' => 'Ako želite okvir za mjesec dana, ovdje se najčešće gleda 1 x Aloe Ever-Shield Deodorant i 3 x Forever Aloe Vera Gel™.',
+                'en' => 'If you want a one-month frame, this is most often positioned as 1 x Aloe Ever-Shield Deodorant and 3 x Forever Aloe Vera Gel™.',
             ],
             'suppress_generic_questions' => true,
             'lock_product_scope' => true,
@@ -21207,6 +21488,11 @@ function fcc_ai_handle_public_message(array $payload): array {
         && empty($current_condition_keys)
         && !empty($previous_condition_keys)
         && fcc_ai_is_ambiguous_same_problem_followup_request($current_user_message);
+    $is_physical_endurance_followup = (string) ($conversation->assistant_type ?? '') === 'product_advisor'
+        && $previous_user_message !== ''
+        && in_array('simple_low_energy_support', $current_condition_keys, true)
+        && in_array('physical_endurance_support', $previous_condition_keys, true)
+        && fcc_ai_is_low_context_follow_up_message($current_user_message);
     $is_business_hesitation_followup = (string) ($conversation->assistant_type ?? '') === 'product_advisor'
         && fcc_ai_is_public_business_hesitation_followup_request($current_user_message);
     $is_owner_help_followup = (string) ($conversation->assistant_type ?? '') === 'product_advisor'
@@ -21240,6 +21526,11 @@ function fcc_ai_handle_public_message(array $payload): array {
 
     if($is_recommendation_correction_followup) {
         $message_for_matching = fcc_ai_build_public_correction_followup_message($previous_user_message);
+        $recent_user_context = $previous_user_message;
+        $used_context_for_matching = true;
+        $intent = fcc_ai_detect_public_intent((string) $conversation->assistant_type, $previous_user_message);
+    } elseif($is_physical_endurance_followup) {
+        $message_for_matching = $previous_user_message . "\n\nPhysical endurance follow-up: " . $current_user_message;
         $recent_user_context = $previous_user_message;
         $used_context_for_matching = true;
         $intent = fcc_ai_detect_public_intent((string) $conversation->assistant_type, $previous_user_message);
