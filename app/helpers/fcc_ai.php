@@ -44,7 +44,7 @@ function fcc_ai_get_soft_resolved_feedback_ids(): array {
     }
 
     /* Historical live feedback cases already fixed in the recommendation engine but not writable-resolved in production DB. */
-    $ids = [43, 45, 46, 48, 49, 50, 51, 53, 54, 60, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 87, 89, 91, 100, 101, 102, 105, 107, 108, 109, 110, 111, 112, 113, 114];
+    $ids = [43, 45, 46, 48, 49, 50, 51, 53, 54, 60, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 87, 89, 91, 100, 101, 102, 105, 107, 108, 109, 110, 111, 112, 113, 114, 115];
 
     return $ids;
 }
@@ -14812,7 +14812,7 @@ function fcc_ai_build_public_recommendation_payload(string $assistant_type, stri
             $needs_broad_direction_clarification = true;
         } elseif(
             fcc_ai_contains_keywords($message, ['želim smršaviti ali ne ide', 'zelim smrsaviti ali ne ide', 'želim smršaviti i ne ide', 'zelim smrsaviti i ne ide'])
-            || in_array(trim(mb_strtolower($message)), ['želim smršaviti', 'zelim smrsaviti'], true)
+            || in_array(trim(mb_strtolower($message)), ['želim smršaviti', 'zelim smrsaviti', 'želim skinuti kile', 'zelim skinuti kile', 'skinuti kile'], true)
         ) {
             $opening_note = $language === 'en'
                 ? 'When weight loss is stuck, the bottleneck can be different, so I would first check whether this is more about appetite, metabolism, or digestion.'
