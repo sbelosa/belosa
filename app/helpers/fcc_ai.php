@@ -14438,6 +14438,144 @@ function fcc_ai_build_public_recommendation_payload(string $assistant_type, stri
         $discount_note = '';
     }
 
+    $needs_broad_direction_clarification = false;
+    if($assistant_type === 'product_advisor') {
+        if(
+            fcc_ai_contains_keywords($message, ['nakon jela', 'nakon obroka'])
+            && fcc_ai_contains_keywords($message, ['umoran', 'umorna', 'umor'])
+        ) {
+            $opening_note = $language === 'en'
+                ? 'Because tiredness after eating can point in more than one direction, the cleanest next step is to first separate digestion from energy drop.'
+                : 'Budući da umor nakon jela može voditi u više različitih smjerova, najčišći sljedeći korak je prvo razdvojiti probavu od pada energije.';
+            $question_lines = [
+                $language === 'en'
+                    ? 'Is this more about heaviness in the stomach, or a sudden drop in energy?'
+                    : 'Radi li se više o težini u želucu ili naglom padu energije?',
+            ];
+            $needs_broad_direction_clarification = true;
+        } elseif(
+            fcc_ai_contains_keywords($message, ['imam problema s kožom', 'imam problema s kozom', 'problem s kožom', 'problem s kozom'])
+            && !fcc_ai_contains_keywords($message, ['akne', 'suha', 'suhu', 'osjetljiv', 'dermatit', 'psorij', 'herpes', 'crvenilo'])
+        ) {
+            $opening_note = $language === 'en'
+                ? 'Skin problems can lead to very different routines, so the cleaner step is to first narrow down what type of skin issue you mean.'
+                : 'Problemi s kožom mogu voditi u potpuno različite rutine, pa je čišći sljedeći korak prvo razjasniti na kakav problem točno mislite.';
+            $question_lines = [
+                $language === 'en'
+                    ? 'Is this more about acne, dryness, or skin sensitivity?'
+                    : 'Radi li se više o aknama, suhoći ili osjetljivosti kože?',
+            ];
+            $needs_broad_direction_clarification = true;
+        } elseif(
+            fcc_ai_contains_keywords($message, ['leđa', 'leda', 'tijelo'])
+            && fcc_ai_contains_keywords($message, ['bol', 'bole'])
+        ) {
+            $opening_note = $language === 'en'
+                ? 'Before I push this into the wrong category, I want to first separate muscle strain from a joint-style issue.'
+                : 'Prije nego ovo gurnem u krivu kategoriju, prvo želim razdvojiti radi li se više o mišićima ili o zglobovima.';
+            $question_lines = [
+                $language === 'en'
+                    ? 'Is this more about muscles, or about joints?'
+                    : 'Radi li se više o mišićima ili zglobovima?',
+            ];
+            $needs_broad_direction_clarification = true;
+        } elseif(
+            fcc_ai_contains_keywords($message, ['imam problema s probavom', 'imam problem s probavom', 'problem s probavom'])
+            && !fcc_ai_contains_keywords($message, ['zatvor', 'nadut', 'želud', 'zelud', 'gastrit', 'ibs', 'proljev'])
+        ) {
+            $opening_note = $language === 'en'
+                ? 'Digestive trouble can mean different directions, so I would first narrow down the main pattern instead of forcing one generic package.'
+                : 'Problemi s probavom mogu značiti različite smjerove, pa bih prvo suzio glavni obrazac umjesto da dam jedan generički paket.';
+            $question_lines = [
+                $language === 'en'
+                    ? 'Is the main issue constipation, bloating, or a sensitive stomach?'
+                    : 'Je li problem više zatvor, nadutost ili osjetljiv želudac?',
+            ];
+            $needs_broad_direction_clarification = true;
+        } elseif(
+            fcc_ai_contains_keywords($message, ['želim smršaviti ali ne ide', 'zelim smrsaviti ali ne ide', 'želim smršaviti i ne ide', 'zelim smrsaviti i ne ide'])
+        ) {
+            $opening_note = $language === 'en'
+                ? 'When weight loss is stuck, the bottleneck can be different, so I would first check whether this is more about appetite, metabolism, or digestion.'
+                : 'Kad mršavljenje zapne, uzrok može biti različit, pa bih prvo provjerio je li problem više apetit, metabolizam ili probava.';
+            $question_lines = [
+                $language === 'en'
+                    ? 'Is the main issue appetite, slow metabolism, or digestion?'
+                    : 'Je li problem više apetit, spor metabolizam ili probava?',
+            ];
+            $needs_broad_direction_clarification = true;
+        } elseif(
+            fcc_ai_contains_keywords($message, ['stalno sam umoran', 'stalno sam umorna'])
+            && !fcc_ai_contains_keywords($message, ['stres', 'anksioz', 'depres', 'štitnja', 'stitnja', 'trudna', 'nakon jela', 'nakon obroka'])
+        ) {
+            $opening_note = $language === 'en'
+                ? 'Because constant fatigue can come from different directions, I would first separate physical tiredness from mental stress.'
+                : 'Budući da stalan umor može dolaziti iz različitih smjerova, prvo bih razdvojio fizički umor od mentalnog stresa.';
+            $question_lines = [
+                $language === 'en'
+                    ? 'Is this more physical fatigue, or more mental stress?'
+                    : 'Radi li se više o fizičkom umoru ili mentalnom stresu?',
+            ];
+            $needs_broad_direction_clarification = true;
+        } elseif(
+            fcc_ai_contains_keywords($message, ['imam problema s kosom', 'problem s kosom'])
+            && !fcc_ai_contains_keywords($message, ['opada', 'ispada', 'suha', 'rast', 'tanka', 'stanjuje'])
+        ) {
+            $opening_note = $language === 'en'
+                ? 'Hair problems can lead to different product directions, so I would first narrow down whether this is about loss, dryness, or weak growth.'
+                : 'Problemi s kosom mogu voditi u različite smjerove proizvoda, pa bih prvo suzio radi li se o opadanju, suhoći ili slabom rastu.';
+            $question_lines = [
+                $language === 'en'
+                    ? 'Is this about hair loss, dryness, or weak growth?'
+                    : 'Radi li se o opadanju, suhoći ili slabom rastu?',
+            ];
+            $needs_broad_direction_clarification = true;
+        } elseif(trim(mb_strtolower($message)) === 'bole me zglobovi') {
+            $opening_note = $language === 'en'
+                ? 'Before I give a generic joint answer, I would first check whether this is more occasional pain or more chronic stiffness.'
+                : 'Prije nego dam generički odgovor za zglobove, prvo bih provjerio radi li se više o povremenoj boli ili kroničnoj ukočenosti.';
+            $question_lines = [
+                $language === 'en'
+                    ? 'Is this more occasional pain, or more chronic stiffness?'
+                    : 'Radi li se o povremenoj boli ili kroničnoj ukočenosti?',
+            ];
+            $needs_broad_direction_clarification = true;
+        } elseif(
+            fcc_ai_contains_keywords($message, ['želim bolju kožu lica', 'zelim bolju kozu lica', 'bolju kožu lica', 'bolju kozu lica'])
+        ) {
+            $opening_note = $language === 'en'
+                ? 'Face-care goals can go in very different directions, so I would first narrow down whether the goal is hydration, cleansing, or anti-age.'
+                : 'Kod kože lica cilj može ići u više različitih smjerova, pa bih prvo suzio je li cilj hidratacija, čišćenje ili anti-age.';
+            $question_lines = [
+                $language === 'en'
+                    ? 'Is the goal more hydration, cleansing, or anti-age?'
+                    : 'Je li cilj više hidratacija, čišćenje ili anti-age?',
+            ];
+            $needs_broad_direction_clarification = true;
+        } elseif(trim(mb_strtolower($message)) === 'imam slab imunitet') {
+            $opening_note = $language === 'en'
+                ? 'Weak immunity can overlap with energy and recovery, so I would first check whether this shows up more as repeated colds or as general fatigue.'
+                : 'Slab imunitet se često preklapa s energijom i oporavkom, pa bih prvo provjerio radi li se više o čestim prehladama ili o općem umoru organizma.';
+            $question_lines = [
+                $language === 'en'
+                    ? 'Is this more about frequent colds, or general fatigue in the body?'
+                    : 'Radi li se o čestim prehladama ili općem umoru organizma?',
+            ];
+            $needs_broad_direction_clarification = true;
+        }
+    }
+
+    if($needs_broad_direction_clarification) {
+        $recommendation_lines = [];
+        $primary_product = '';
+        $support_products = [];
+        $monthly_quantity_note = '';
+        $knowledge_suggestions = [];
+        $combination_note = '';
+        $discount_note = '';
+        $needs_clarification = true;
+    }
+
     $guardrailed_payload = fcc_ai_apply_freedom_recipe_guardrail([
         'condition_keys' => array_values(array_filter(array_map(static function(array $condition_match) {
             return trim((string) ($condition_match['key'] ?? ''));
@@ -18454,6 +18592,7 @@ function fcc_ai_generate_public_reply(string $assistant_type, string $message, a
         if(
             $assistant_type === 'product_advisor'
             && empty($recommendation_payload['recommendation_lines'])
+            && empty($recommendation_payload['question_lines'])
             && empty($intent['serious'])
             && empty($intent['medication_interaction_sensitive'])
         ) {
