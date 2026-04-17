@@ -503,6 +503,69 @@ if(is_logged_in() && in_array($fcc_share_route, ['index', 'blog', 'page'], true)
             position: relative;
         }
 
+        .fcc-navbar-shell,
+        .fcc-navbar-shell--with-share-row {
+            overflow: visible;
+        }
+
+        .fcc-navbar-shell .navbar-collapse {
+            padding-top: 0.75rem;
+        }
+
+        .fcc-navbar-shell .navbar-nav {
+            width: 100%;
+            align-items: stretch !important;
+        }
+
+        .fcc-navbar-shell .navbar-nav .nav-item,
+        .fcc-navbar-shell .navbar-nav .nav-link,
+        .fcc-navbar-shell .navbar-nav .dropdown {
+            width: 100%;
+        }
+
+        .fcc-navbar-shell .navbar-nav .nav-link {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .fcc-navbar-shell .navbar-nav .nav-item.dropdown > .nav-link.dropdown-toggle {
+            gap: 0.65rem;
+        }
+
+        .fcc-navbar-shell .navbar-nav .nav-item.dropdown > .nav-link .navbar-avatar {
+            flex-shrink: 0;
+        }
+
+        .fcc-navbar-shell .dropdown-menu,
+        .fcc-navbar-shell .dropdown-menu.dropdown-menu-right,
+        .fcc-navbar-shell #internal_notifications_content.dropdown-menu {
+            position: static !important;
+            inset: auto !important;
+            transform: none !important;
+            float: none !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            min-width: 0 !important;
+            margin: 0.55rem 0 0.2rem 0 !important;
+            border-radius: 1rem;
+            overflow: hidden;
+            box-shadow: 0 14px 34px rgba(0, 0, 0, 0.22);
+        }
+
+        .fcc-navbar-shell #internal_notifications_content.dropdown-menu {
+            padding-left: 1rem !important;
+            padding-right: 1rem !important;
+        }
+
+        .fcc-navbar-shell .dropdown-menu .d-flex.flex-column.flex-lg-row {
+            display: block !important;
+        }
+
+        .fcc-navbar-shell .dropdown-menu .pr-lg-3 {
+            padding-right: 0 !important;
+        }
+
         .fcc-navbar-share-row__buttons {
             z-index: 8;
         }
