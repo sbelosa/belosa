@@ -347,6 +347,15 @@ $fcc_get_visual_accent = static function(?string $block_color, string $group_col
 
 $fcc_grouped_blocks = array_fill_keys(array_keys($fcc_group_meta), []);
 $fcc_enabled_biolink_blocks = (object) ($this->user->plan_settings->enabled_biolink_blocks ?? []);
+$fcc_block_picker_coach_notice = $fcc_is_hr
+    ? [
+        'title' => 'Coach je privremeno pauziran dok dodaješ blokove',
+        'text' => 'Dok je otvoren odabir blokova, VIP coach u previewu ne može primati poruke. Zatvori ovaj prozor i coach odmah nastavlja raditi normalno.',
+    ]
+    : [
+        'title' => 'Coach is temporarily paused while you add blocks',
+        'text' => 'While the block picker is open, the VIP coach inside preview cannot receive messages. Close this window and the coach will continue working normally.',
+    ];
 ?>
 
 <?php /* Custom code: FC-2026-02-27: premium add-block modal styling */ ?>
@@ -416,6 +425,45 @@ $fcc_enabled_biolink_blocks = (object) ($this->user->plan_settings->enabled_biol
         color: #f8fbff;
         font-weight: 800;
         letter-spacing: -.02em;
+    }
+
+    #biolink_link_create_modal .biolink-create-coach-notice {
+        display: flex;
+        align-items: flex-start;
+        gap: .8rem;
+        margin-bottom: 1.1rem;
+        border-radius: 1rem;
+        border: 1px solid rgba(94, 234, 212, .18);
+        background: linear-gradient(135deg, rgba(12, 56, 58, .88), rgba(17, 33, 54, .92));
+        box-shadow: inset 0 1px 0 rgba(255,255,255,.05), 0 .75rem 1.75rem rgba(2, 6, 23, .16);
+        padding: .95rem 1rem;
+    }
+
+    #biolink_link_create_modal .biolink-create-coach-notice-icon {
+        width: 2.35rem;
+        height: 2.35rem;
+        border-radius: .85rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 auto;
+        background: rgba(94, 234, 212, .14);
+        border: 1px solid rgba(94, 234, 212, .22);
+        color: #86efac;
+    }
+
+    #biolink_link_create_modal .biolink-create-coach-notice-title {
+        color: #f8fbff;
+        font-weight: 800;
+        letter-spacing: -.02em;
+        margin-bottom: .2rem;
+    }
+
+    #biolink_link_create_modal .biolink-create-coach-notice-text {
+        color: rgba(226, 236, 248, .82);
+        font-size: .9rem;
+        line-height: 1.55;
+        margin-bottom: 0;
     }
 
     #biolink_link_create_modal .biolink-create-filters {
@@ -795,6 +843,16 @@ $fcc_enabled_biolink_blocks = (object) ($this->user->plan_settings->enabled_biol
                     <p class="small text-muted mb-0"><?= $fcc_picker_copy['subheader'] ?></p>
                 </div>
 
+                <div class="biolink-create-coach-notice">
+                    <div class="biolink-create-coach-notice-icon" aria-hidden="true">
+                        <i class="fas fa-comment-dots"></i>
+                    </div>
+                    <div>
+                        <div class="biolink-create-coach-notice-title"><?= htmlspecialchars($fcc_block_picker_coach_notice['title'], ENT_QUOTES, 'UTF-8') ?></div>
+                        <p class="biolink-create-coach-notice-text"><?= htmlspecialchars($fcc_block_picker_coach_notice['text'], ENT_QUOTES, 'UTF-8') ?></p>
+                    </div>
+                </div>
+
                 <div class="biolink-create-filters">
                     <form action="" method="get" role="form" id="fcc_biolink_block_picker_search_form" class="biolink-create-search mb-0 fcc-biolink-tour-target">
                         <div id="fcc_biolink_block_picker_search_wrap" class="form-group mb-0 fcc-biolink-tour-target">
@@ -1097,11 +1155,15 @@ $fcc_enabled_biolink_blocks = (object) ($this->user->plan_settings->enabled_biol
         });
 
         $('#biolink_link_create_modal').on('shown.bs.modal', () => {
+            document.body.classList.add('fcc-biolink-block-picker-open');
+            document.getElementById('fcc_biolink_preview_iframe_shell')?.classList.add('is-coach-paused');
             searchInput.focus();
             applyFilters();
         });
 
         $('#biolink_link_create_modal').on('hidden.bs.modal', () => {
+            document.body.classList.remove('fcc-biolink-block-picker-open');
+            document.getElementById('fcc_biolink_preview_iframe_shell')?.classList.remove('is-coach-paused');
             resetFilters();
             applyFilters();
             setAiNotification('', 'success');

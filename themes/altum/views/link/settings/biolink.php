@@ -319,6 +319,15 @@ $fcc_ai_evolution_active_cycle = is_array($fcc_ai_evolution_payload['active_cycl
 $fcc_ai_evolution_recent_cycles = is_array($fcc_ai_evolution_payload['recent_cycles'] ?? null) ? $fcc_ai_evolution_payload['recent_cycles'] : [];
 $fcc_ai_block_signal_blocks = is_array($fcc_ai_block_attribution['top_signal_blocks'] ?? null) ? $fcc_ai_block_attribution['top_signal_blocks'] : [];
 $fcc_ai_block_focus_risks = is_array($fcc_ai_block_attribution['focus_risk_blocks'] ?? null) ? $fcc_ai_block_attribution['focus_risk_blocks'] : [];
+$fcc_biolink_preview_coach_pause_copy = $fcc_is_hr
+    ? [
+        'title' => 'Coach je privremeno pauziran',
+        'text' => 'Zatvori "Dodaj blok" i coach će odmah ponovno primati poruke.',
+    ]
+    : [
+        'title' => 'Coach is temporarily paused',
+        'text' => 'Close "Add block" and the coach will immediately receive messages again.',
+    ];
 $fcc_ai_has_theme = (bool) array_filter([
     $fcc_ai_theme_pack['background_color'] ?? '',
     $fcc_ai_theme_pack['gradient_start'] ?? '',
@@ -1119,6 +1128,56 @@ $fcc_biolink_editor_tours = [
     body[data-theme-style='dark'] #biolink_blocks .biolink-editor-block .biolink-editor-expanded,
     body[data-theme-style='dark'] #biolink_blocks .biolink_block.card .biolink-editor-expanded {
         border-top-color: #3b4a60;
+    }
+
+    .biolink-preview-iframe-container {
+        position: relative;
+    }
+
+    .fcc-biolink-preview-coach-notice {
+        position: absolute;
+        inset: 1rem 1rem auto 1rem;
+        z-index: 8;
+        display: none;
+        align-items: flex-start;
+        gap: .8rem;
+        border-radius: 1rem;
+        border: 1px solid rgba(94, 234, 212, .22);
+        background: linear-gradient(135deg, rgba(10, 38, 43, .94), rgba(12, 27, 45, .96));
+        box-shadow: 0 1rem 2rem rgba(2, 6, 23, .26);
+        padding: .95rem 1rem;
+        color: #eff8ff;
+    }
+
+    .biolink-preview-iframe-container.is-coach-paused .fcc-biolink-preview-coach-notice {
+        display: flex;
+    }
+
+    .fcc-biolink-preview-coach-notice-icon {
+        width: 2.2rem;
+        height: 2.2rem;
+        border-radius: .8rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 auto;
+        background: rgba(94, 234, 212, .16);
+        border: 1px solid rgba(94, 234, 212, .24);
+        color: #5eead4;
+    }
+
+    .fcc-biolink-preview-coach-notice-title {
+        color: #f8fbff;
+        font-weight: 800;
+        letter-spacing: -.02em;
+        margin-bottom: .15rem;
+    }
+
+    .fcc-biolink-preview-coach-notice-text {
+        margin: 0;
+        color: rgba(224, 235, 249, .84);
+        font-size: .86rem;
+        line-height: 1.5;
     }
 
     .fcc-biolink-tour-target {
@@ -2430,8 +2489,17 @@ $fcc_biolink_editor_tours = [
     <div class="col-12 col-xl-6 mt-5 mt-xl-0 d-flex justify-content-center justify-content-xl-end">
         <div class="biolink-preview-container">
             <div class="biolink-preview sticky">
-                <div class="biolink-preview-iframe-container">
+                <div id="fcc_biolink_preview_iframe_shell" class="biolink-preview-iframe-container">
                     <div id="biolink_preview_iframe_loading" class="biolink-preview-iframe-loading d-none"><div class="spinner-border bg-primary" role="status"></div></div>
+                    <div class="fcc-biolink-preview-coach-notice" id="fcc_biolink_preview_coach_notice" aria-live="polite">
+                        <div class="fcc-biolink-preview-coach-notice-icon" aria-hidden="true">
+                            <i class="fas fa-comment-dots"></i>
+                        </div>
+                        <div>
+                            <div class="fcc-biolink-preview-coach-notice-title"><?= htmlspecialchars($fcc_biolink_preview_coach_pause_copy['title'], ENT_QUOTES, 'UTF-8') ?></div>
+                            <p class="fcc-biolink-preview-coach-notice-text"><?= htmlspecialchars($fcc_biolink_preview_coach_pause_copy['text'], ENT_QUOTES, 'UTF-8') ?></p>
+                        </div>
+                    </div>
                     <iframe id="biolink_preview_iframe" class="biolink-preview-iframe fcc-biolink-tour-target" src="<?= SITE_URL . 'l/link?link_id=' . $data->link->link_id . '&preview=' . md5($data->link->user_id) ?>"></iframe>
                 </div>
             </div>
