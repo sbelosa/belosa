@@ -5693,7 +5693,7 @@ class AdminLeaderOperatingSystem extends Controller {
 
         if(!empty($ticket_ids)) {
             $ticket_ids_sql = implode(',', array_map('intval', $ticket_ids));
-            $messages_result = database()->query("SELECT `feedback_ticket_id`, `message`, `is_admin_reply`
+            $messages_result = database()->query("SELECT `feedback_ticket_id`, `message`, `is_admin_reply`, `attachment`, `datetime`
                 FROM `feedback_ticket_messages`
                 WHERE `feedback_ticket_id` IN ({$ticket_ids_sql})
                 ORDER BY `feedback_ticket_message_id` ASC");
@@ -5708,6 +5708,9 @@ class AdminLeaderOperatingSystem extends Controller {
                 $messages_by_ticket_id[$feedback_ticket_id][] = [
                     'message' => (string) ($message['message'] ?? ''),
                     'is_admin_reply' => (int) ($message['is_admin_reply'] ?? 0),
+                    'author_label' => (int) ($message['is_admin_reply'] ?? 0) === 1 ? 'Admin / mentor' : 'Suradnik',
+                    'datetime' => (string) ($message['datetime'] ?? ''),
+                    'attachment' => (string) ($message['attachment'] ?? ''),
                 ];
             }
         }
