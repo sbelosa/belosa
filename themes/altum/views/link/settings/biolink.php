@@ -321,12 +321,12 @@ $fcc_ai_block_signal_blocks = is_array($fcc_ai_block_attribution['top_signal_blo
 $fcc_ai_block_focus_risks = is_array($fcc_ai_block_attribution['focus_risk_blocks'] ?? null) ? $fcc_ai_block_attribution['focus_risk_blocks'] : [];
 $fcc_biolink_preview_coach_pause_copy = $fcc_is_hr
     ? [
-        'title' => 'Coach je privremeno pauziran',
-        'text' => 'Zatvori "Dodaj blok" i coach će odmah ponovno primati poruke.',
+        'title' => 'Coach je privremeno zatvoren',
+        'text' => 'Otvoreni coach zatvoren je dok biraš blokove. Kad zatvoriš "Dodaj blok", možeš ga odmah ponovno otvoriti.',
     ]
     : [
-        'title' => 'Coach is temporarily paused',
-        'text' => 'Close "Add block" and the coach will immediately receive messages again.',
+        'title' => 'Coach is temporarily closed',
+        'text' => 'An open coach is closed while you pick blocks. Once you close "Add block", you can open it again right away.',
     ];
 $fcc_ai_has_theme = (bool) array_filter([
     $fcc_ai_theme_pack['background_color'] ?? '',

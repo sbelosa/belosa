@@ -349,12 +349,12 @@ $fcc_grouped_blocks = array_fill_keys(array_keys($fcc_group_meta), []);
 $fcc_enabled_biolink_blocks = (object) ($this->user->plan_settings->enabled_biolink_blocks ?? []);
 $fcc_block_picker_coach_notice = $fcc_is_hr
     ? [
-        'title' => 'Coach je privremeno pauziran dok dodaješ blokove',
-        'text' => 'Dok je otvoren odabir blokova, VIP coach u previewu ne može primati poruke. Zatvori ovaj prozor i coach odmah nastavlja raditi normalno.',
+        'title' => 'Coach je privremeno zatvoren',
+        'text' => 'Otvoreni VIP coach zatvoren je dok biraš blokove. Kad zatvoriš ovaj prozor, možeš ga odmah ponovno otvoriti i nastaviti razgovor.',
     ]
     : [
-        'title' => 'Coach is temporarily paused while you add blocks',
-        'text' => 'While the block picker is open, the VIP coach inside preview cannot receive messages. Close this window and the coach will continue working normally.',
+        'title' => 'Coach is temporarily closed',
+        'text' => 'An open VIP coach is closed while you pick blocks. As soon as you close this window, you can open it again and continue the conversation.',
     ];
 ?>
 
@@ -428,7 +428,7 @@ $fcc_block_picker_coach_notice = $fcc_is_hr
     }
 
     #biolink_link_create_modal .biolink-create-coach-notice {
-        display: flex;
+        display: none;
         align-items: flex-start;
         gap: .8rem;
         margin-bottom: 1.1rem;
@@ -437,6 +437,10 @@ $fcc_block_picker_coach_notice = $fcc_is_hr
         background: linear-gradient(135deg, rgba(12, 56, 58, .88), rgba(17, 33, 54, .92));
         box-shadow: inset 0 1px 0 rgba(255,255,255,.05), 0 .75rem 1.75rem rgba(2, 6, 23, .16);
         padding: .95rem 1rem;
+    }
+
+    #biolink_link_create_modal .biolink-create-coach-notice.is-active {
+        display: flex;
     }
 
     #biolink_link_create_modal .biolink-create-coach-notice-icon {
@@ -843,7 +847,7 @@ $fcc_block_picker_coach_notice = $fcc_is_hr
                     <p class="small text-muted mb-0"><?= $fcc_picker_copy['subheader'] ?></p>
                 </div>
 
-                <div class="biolink-create-coach-notice">
+                <div class="biolink-create-coach-notice" id="fcc_biolink_block_picker_coach_notice">
                     <div class="biolink-create-coach-notice-icon" aria-hidden="true">
                         <i class="fas fa-comment-dots"></i>
                     </div>
@@ -1154,16 +1158,66 @@ $fcc_block_picker_coach_notice = $fcc_is_hr
             });
         });
 
+        const coachPauseNotice = document.getElementById('fcc_biolink_block_picker_coach_notice');
+        const previewShell = document.getElementById('fcc_biolink_preview_iframe_shell');
+        let coachWasOpenBeforeBlockPicker = false;
+
+        const getPreviewCoachRoots = () => {
+            const previewIframe = document.getElementById('biolink_preview_iframe');
+
+            if(!previewIframe) {
+                return [];
+            }
+
+            try {
+                const previewDocument = previewIframe.contentDocument || previewIframe.contentWindow?.document;
+
+                if(!previewDocument) {
+                    return [];
+                }
+
+                return Array.from(previewDocument.querySelectorAll('[data-fcc-chat-extreme].is-coach'));
+            } catch(error) {
+                return [];
+            }
+        };
+
+        const setCoachPauseUi = isPaused => {
+            previewShell?.classList.toggle('is-coach-paused', isPaused);
+            coachPauseNotice?.classList.toggle('is-active', isPaused);
+        };
+
+        const closeOpenCoachIfNeeded = () => {
+            const openCoachRoots = getPreviewCoachRoots().filter(root => root.classList.contains('is-open'));
+
+            if(!openCoachRoots.length) {
+                return false;
+            }
+
+            openCoachRoots.forEach(root => {
+                if(typeof root.__fccChatSetOpen === 'function') {
+                    root.__fccChatSetOpen(false);
+                    return;
+                }
+
+                root.classList.remove('is-open');
+            });
+
+            return true;
+        };
+
         $('#biolink_link_create_modal').on('shown.bs.modal', () => {
             document.body.classList.add('fcc-biolink-block-picker-open');
-            document.getElementById('fcc_biolink_preview_iframe_shell')?.classList.add('is-coach-paused');
+            coachWasOpenBeforeBlockPicker = closeOpenCoachIfNeeded();
+            setCoachPauseUi(coachWasOpenBeforeBlockPicker);
             searchInput.focus();
             applyFilters();
         });
 
         $('#biolink_link_create_modal').on('hidden.bs.modal', () => {
             document.body.classList.remove('fcc-biolink-block-picker-open');
-            document.getElementById('fcc_biolink_preview_iframe_shell')?.classList.remove('is-coach-paused');
+            coachWasOpenBeforeBlockPicker = false;
+            setCoachPauseUi(false);
             resetFilters();
             applyFilters();
             setAiNotification('', 'success');
