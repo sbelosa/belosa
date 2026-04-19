@@ -1644,6 +1644,87 @@
         color: #f1f5f9;
     }
 
+    .leader-os-support-thread-card .leader-os-support-attachment {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.85rem;
+        margin-top: 0.9rem;
+        padding: 0.8rem 0.9rem;
+        border-radius: 0.9rem;
+        border: 1px solid rgba(120, 184, 233, 0.2);
+        background: linear-gradient(180deg, rgba(18, 32, 47, 0.95) 0%, rgba(12, 24, 38, 0.98) 100%);
+    }
+
+    .leader-os-support-thread-card .leader-os-support-attachment-meta {
+        min-width: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        flex: 1 1 auto;
+    }
+
+    .leader-os-support-thread-card .leader-os-support-attachment-icon {
+        width: 2.25rem;
+        height: 2.25rem;
+        border-radius: 0.8rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(71, 185, 255, 0.12);
+        border: 1px solid rgba(111, 197, 255, 0.22);
+        color: #97e3ff;
+        font-size: 1rem;
+        flex: 0 0 auto;
+    }
+
+    .leader-os-support-thread-card .leader-os-support-attachment-copy {
+        min-width: 0;
+        flex: 1 1 auto;
+    }
+
+    .leader-os-support-thread-card .leader-os-support-attachment-label {
+        color: rgba(191, 211, 238, 0.82);
+        font-size: 0.76rem;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin-bottom: 0.15rem;
+    }
+
+    .leader-os-support-thread-card .leader-os-support-attachment-name {
+        color: #f8fbff;
+        font-size: 0.94rem;
+        font-weight: 600;
+        word-break: break-word;
+    }
+
+    .leader-os-support-thread-card .leader-os-support-attachment-action {
+        flex: 0 0 auto;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 2.35rem;
+        padding: 0.55rem 0.9rem;
+        border-radius: 0.8rem;
+        border: 1px solid rgba(95, 194, 255, 0.26);
+        background: rgba(37, 80, 111, 0.34);
+        color: #9fe7ff !important;
+        font-weight: 600;
+        text-decoration: none !important;
+        white-space: nowrap;
+    }
+
+    @media (max-width: 767.98px) {
+        .leader-os-support-thread-card .leader-os-support-attachment {
+            align-items: stretch;
+            flex-direction: column;
+        }
+
+        .leader-os-support-thread-card .leader-os-support-attachment-action {
+            width: 100%;
+        }
+    }
+
     /* Custom code: FC-2026-03-31: LOS overview AI usage badges */
     .leader-os-ai-usage {
         display: flex;
@@ -6714,7 +6795,17 @@ $operations_tab_badge_total = (int) (($data->operations['totals']['pending_appro
                                         </div>
                                         <div class="leader-os-conversation-message"><?= nl2br(htmlspecialchars((string) ($message['message'] ?? ''), ENT_QUOTES, 'UTF-8')) ?></div>
                                         <?php if(!empty($message['attachment'])): ?>
-                                            <a href="<?= \Altum\Uploads::get_full_url('feedback_tickets') . $message['attachment'] ?>" target="_blank" class="d-inline-block mt-2"><?= l('feedback_tickets.view_attachment') ?></a>
+                                            <?php $attachment_name = basename((string) $message['attachment']); ?>
+                                            <div class="leader-os-support-attachment">
+                                                <div class="leader-os-support-attachment-meta">
+                                                    <div class="leader-os-support-attachment-icon" aria-hidden="true">📎</div>
+                                                    <div class="leader-os-support-attachment-copy">
+                                                        <div class="leader-os-support-attachment-label">Privitak</div>
+                                                        <div class="leader-os-support-attachment-name"><?= htmlspecialchars($attachment_name, ENT_QUOTES, 'UTF-8') ?></div>
+                                                    </div>
+                                                </div>
+                                                <a href="<?= \Altum\Uploads::get_full_url('feedback_tickets') . $message['attachment'] ?>" target="_blank" rel="noopener noreferrer" class="leader-os-support-attachment-action"><?= l('feedback_tickets.view_attachment') ?></a>
+                                            </div>
                                         <?php endif ?>
                                     </div>
                                 <?php endforeach ?>
@@ -8365,13 +8456,43 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
+        const renderAttachment = (attachmentPath) => {
+            if (!attachmentPath) {
+                return '';
+            }
+
+            const attachment = String(attachmentPath);
+            let fileName = attachment.split('/').pop() || attachment;
+
+            try {
+                fileName = decodeURIComponent(fileName);
+            } catch (error) {
+                fileName = fileName;
+            }
+
+            const safeAttachment = escapeHtml(attachment);
+            const safeFileName = escapeHtml(fileName);
+
+            return `
+                <div class="leader-os-support-attachment">
+                    <div class="leader-os-support-attachment-meta">
+                        <div class="leader-os-support-attachment-icon" aria-hidden="true">📎</div>
+                        <div class="leader-os-support-attachment-copy">
+                            <div class="leader-os-support-attachment-label">Privitak</div>
+                            <div class="leader-os-support-attachment-name">${safeFileName}</div>
+                        </div>
+                    </div>
+                    <a href="<?= \Altum\Uploads::get_full_url('feedback_tickets') ?>${safeAttachment}" target="_blank" rel="noopener noreferrer" class="leader-os-support-attachment-action"><?= l('feedback_tickets.view_attachment') ?></a>
+                </div>
+            `;
+        };
+
         supportConversation.innerHTML = messages.map((message) => {
             const isAdmin = Number(message.is_admin_reply || 0) === 1 || message.is_admin_reply === true;
             const authorLabel = escapeHtml(message.author_label || (isAdmin ? 'Admin / mentor' : 'Suradnik'));
             const datetime = escapeHtml(message.datetime || '-');
             const body = escapeHtml(message.message || '').replace(/\\n/g, '<br>');
-            const attachment = escapeHtml(message.attachment || '');
-            const attachmentHtml = attachment ? `<a href="<?= \Altum\Uploads::get_full_url('feedback_tickets') ?>${attachment}" target="_blank" class="d-inline-block mt-2"><?= l('feedback_tickets.view_attachment') ?></a>` : '';
+            const attachmentHtml = renderAttachment(message.attachment || '');
 
             return `
                 <div class="leader-os-conversation-item ${isAdmin ? 'is-admin' : ''}">
