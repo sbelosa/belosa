@@ -1162,24 +1162,39 @@ $fcc_block_picker_coach_notice = $fcc_is_hr
         const previewShell = document.getElementById('fcc_biolink_preview_iframe_shell');
         let coachWasOpenBeforeBlockPicker = false;
 
-        const getPreviewCoachRoots = () => {
+        const getCoachRoots = () => {
             const previewIframe = document.getElementById('biolink_preview_iframe');
+            const rootMap = new Map();
 
-            if(!previewIframe) {
-                return [];
-            }
-
-            try {
-                const previewDocument = previewIframe.contentDocument || previewIframe.contentWindow?.document;
-
-                if(!previewDocument) {
-                    return [];
+            Array.from(document.querySelectorAll('[data-fcc-chat-extreme].is-coach')).forEach(root => {
+                if(root?.id) {
+                    rootMap.set(root.id, root);
+                    return;
                 }
 
-                return Array.from(previewDocument.querySelectorAll('[data-fcc-chat-extreme].is-coach'));
-            } catch(error) {
-                return [];
+                rootMap.set(`parent-${rootMap.size}`, root);
+            });
+
+            if(previewIframe) {
+                try {
+                    const previewDocument = previewIframe.contentDocument || previewIframe.contentWindow?.document;
+
+                    if(previewDocument) {
+                        Array.from(previewDocument.querySelectorAll('[data-fcc-chat-extreme].is-coach')).forEach(root => {
+                            if(root?.id) {
+                                rootMap.set(`iframe-${root.id}`, root);
+                                return;
+                            }
+
+                            rootMap.set(`iframe-${rootMap.size}`, root);
+                        });
+                    }
+                } catch(error) {
+                    /* Preview iframe can be temporarily unavailable during reload. */
+                }
             }
+
+            return Array.from(rootMap.values());
         };
 
         const setCoachPauseUi = isPaused => {
@@ -1188,7 +1203,7 @@ $fcc_block_picker_coach_notice = $fcc_is_hr
         };
 
         const closeOpenCoachIfNeeded = () => {
-            const openCoachRoots = getPreviewCoachRoots().filter(root => root.classList.contains('is-open'));
+            const openCoachRoots = getCoachRoots().filter(root => root.classList.contains('is-open'));
 
             if(!openCoachRoots.length) {
                 return false;
