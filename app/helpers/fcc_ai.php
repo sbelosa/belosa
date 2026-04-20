@@ -6336,6 +6336,7 @@ function fcc_ai_is_public_condition_usage_followup_request(string $message): boo
 
     return fcc_ai_contains_keywords($message, [
         'upute', 'uputu', 'način primjene', 'nacin primjene', 'kako piti', 'kako pit',
+        'kako biti', 'kako bit',
         'kako se pije', 'kako se uzima', 'kako koristiti', 'raspored', 'u svakodnevnici',
         'dnevni raspored', 'doziranje', 'koliko puta dnevno', 'how to use', 'how to take',
     ]);
@@ -7285,7 +7286,7 @@ function fcc_ai_get_public_query_alias_phrases(string $message): array {
         $aliases[] = 'aloe vera';
     }
 
-    if(fcc_ai_contains_keywords($message, ['aloe vero gel', 'aloe vera gel', 'aloe gel', 'kako piti aloju', 'aloe vera sirup', 'aloe sirup'])) {
+    if(fcc_ai_contains_keywords($message, ['aloe vero gel', 'aloe vera gel', 'aloe gel', 'kako piti aloju', 'kako piti aloe gel', 'kako biti aloe gel', 'aloe vera sirup', 'aloe sirup'])) {
         $aliases[] = 'forever aloe vera gel';
     }
 
@@ -7738,7 +7739,7 @@ function fcc_ai_get_public_direct_product_lookup_matches(string $message): array
         'bright' => ['aloe pasta', 'forever bright', 'toothpaste', 'pasta za zube na bazi aloe', 'pastu za zube', 'zubna pasta'],
         'activator' => ['aloe activator', 'activator'],
         'aloe_first' => ['aloe first'],
-        'aloe_gel' => ['aloe vera gel', 'aloe vero gel', 'kako piti aloju', 'aloe vera sirup', 'aloe sirup'],
+        'aloe_gel' => ['aloe vera gel', 'aloe vero gel', 'aloe gel', 'kako piti aloju', 'kako piti aloe gel', 'kako biti aloe gel', 'kako bit aloe gel', 'aloe vera sirup', 'aloe sirup'],
         'aloe_lips' => ['aloe lips', 'forever aloe lips', 'balzam za usne'],
         'liquid_soap' => ['liquid soap', 'aloe liquid soap', 'tekući sapun', 'tekuci sapun', 'sapun za ruke i tijelo'],
         'body_lotion' => ['aloe body lotion', 'body lotion'],
@@ -8084,7 +8085,7 @@ function fcc_ai_is_direct_product_lookup_message(string $message): bool {
 function fcc_ai_is_public_product_usage_request(string $message): bool {
     return fcc_ai_contains_keywords($message, [
         'kako koristiti', 'kak koristiti', 'kako se koristi', 'zasto se koristi', 'zašto se koristi',
-        'how to use', 'how do i use', 'kako piti', 'how to take', 'opis', 'opisi mi', 'što je', 'sto je',
+        'how to use', 'how do i use', 'kako piti', 'kako biti', 'kako bit', 'how to take', 'opis', 'opisi mi', 'što je', 'sto je',
         'čemu služi', 'cemu sluzi', 'koliko dugo', 'mogu li piti dugo', 'mogu li se piti',
         'za što bi preporučio', 'za sto bi preporucio', 'za što bi mi preporučio', 'za sto bi mi preporucio',
         'za što bi mi prvenstveno preporučio', 'za sto bi mi prvenstveno preporucio', 'prvenstveno preporučio', 'prvenstveno preporucio',
@@ -9397,6 +9398,42 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
             'monthly_quantity_note' => [
                 'hr' => 'Ako želite okvir za mjesec dana, ovdje se najčešće gleda 1 x Forever Garcinia Plus i 3 x Forever Aloe Vera Gel™.',
                 'en' => 'If you want a one-month frame, this is most often positioned as 1 x Forever Garcinia Plus and 3 x Forever Aloe Vera Gel™.',
+            ],
+            'suppress_generic_questions' => true,
+            'lock_product_scope' => true,
+        ],
+        'sweet_craving_appetite_support' => [
+            'patterns' => [
+                'želju za slatkim', 'zelju za slatkim',
+                'želja za slatkim', 'zelja za slatkim',
+                'žudnja za slatkim', 'zudnja za slatkim',
+                'napad na slatko', 'napadi na slatko',
+                'manje slatkog',
+            ],
+            'preferred_patterns' => ['garcinia', 'aloe vera gel'],
+            'primary_product' => 'Forever Garcinia Plus',
+            'support_products' => ['Forever Aloe Vera Gel™'],
+            'label' => [
+                'hr' => 'želja za slatkim i kontrola apetita',
+                'en' => 'sweet cravings and appetite control',
+            ],
+            'opening_note' => [
+                'hr' => 'Kad je glavni problem želja za slatkim, odgovor ne bi trebao bježati u generičku probavnu aloe rutinu, nego ostati na smjeru kontrole apetita i stabilnijeg dnevnog ritma.',
+                'en' => 'When the main issue is sweet cravings, the answer should not drift into a generic digestive aloe routine, but stay on appetite control and a steadier daily rhythm.',
+            ],
+            'recommendation_lines' => [
+                'hr' => [
+                    'Forever Garcinia Plus je ovdje glavni Forever smjer kada želite čišći prvi korak za kontrolu apetita i lakše smanjenje impulsa prema slatkom.',
+                    'Forever Aloe Vera Gel™ može imati smisla kao jednostavna aloe baza iznutra uz isti plan, ali ne bi trebao preuzeti glavnu ulogu ispred Garcinia smjera.',
+                ],
+                'en' => [
+                    'Forever Garcinia Plus is the main Forever direction here when you want a cleaner first step for appetite control and easier reduction of sweet cravings.',
+                    'Forever Aloe Vera Gel™ can make sense as the simple inside aloe base inside the same plan, but it should not take over the main role ahead of the Garcinia direction.',
+                ],
+            ],
+            'monthly_quantity_note' => [
+                'hr' => 'Ako želite okvir za mjesec dana, ovdje se najčešće gleda 1 x Forever Garcinia Plus i 3 x Forever Aloe Vera Gel™ kao jednostavna aloe baza uz isti plan.',
+                'en' => 'If you want a one-month frame, this is most often positioned as 1 x Forever Garcinia Plus and 3 x Forever Aloe Vera Gel™ as the simple aloe base inside the same plan.',
             ],
             'suppress_generic_questions' => true,
             'lock_product_scope' => true,
@@ -19088,7 +19125,7 @@ function fcc_ai_generate_public_reply(string $assistant_type, string $message, a
                 $usage_note !== ''
                 && (
                     $product_fact_note === ''
-                    || fcc_ai_contains_keywords($message, ['kako koristiti', 'kako se koristi', 'kako piti', 'how to use', 'how to take', 'uzima', 'uzima'])
+                    || fcc_ai_contains_keywords($message, ['kako koristiti', 'kako se koristi', 'kako piti', 'kako biti', 'kako bit', 'how to use', 'how to take', 'uzima', 'uzima'])
                 )
             ) {
                 $content_blocks[] = $usage_note;
@@ -19104,6 +19141,17 @@ function fcc_ai_generate_public_reply(string $assistant_type, string $message, a
                 $content_blocks[] = $language === 'en'
                     ? 'If you want, write the exact Forever product name and I will explain what it is usually used for and how it fits into a general routine.'
                     : 'Ako želite, napišite točan Forever proizvod i objasnit ću za što se najčešće koristi i kako se uklapa u opću rutinu.';
+            }
+
+            $recommendation_payload['opening_note'] = '';
+            $recommendation_payload['recommendation_lines'] = [];
+            $recommendation_payload['question_lines'] = [];
+            $recommendation_payload['support_products'] = [];
+            $recommendation_payload['monthly_quantity_note'] = '';
+            $recommendation_payload['force_local_reply'] = true;
+            $recommendation_payload['skip_product_tail'] = true;
+            if($product_title !== '') {
+                $recommendation_payload['primary_product'] = $product_title;
             }
 
             return [
@@ -23909,6 +23957,7 @@ function fcc_ai_handle_public_message(array $payload): array {
         || $is_small_talk_message
         || $is_condition_explanation_followup
         || $is_condition_usage_followup
+        || !empty($intent['usage_howto_request'])
         || $is_business_followup_clarification
         || $is_business_hesitation_followup
         || $is_broad_beauty_followup_clarification
