@@ -182,6 +182,62 @@ class Data extends Controller {
                 $row->source_label = 'AI chat';
             }
 
+            if($row->type === 'lead_funnel') {
+                $source_key = trim((string) ($row->data->source_key ?? ''));
+                $contact_intent_key = trim((string) ($row->data->contact_intent_key ?? ''));
+
+                if($row->source_label === '') {
+                    switch($source_key) {
+                        case 'vip_demo_access':
+                            $row->source_label = l('vip_funnel.contacts.source.vip_demo_access');
+                            break;
+
+                        case 'vip_funnel':
+                        default:
+                            $row->source_label = l('vip_funnel.contacts.source.vip_funnel');
+                            break;
+                    }
+                }
+
+                if($row->contact_intent === '') {
+                    switch($contact_intent_key) {
+                        case 'demo_request':
+                            $row->contact_intent = l('vip_funnel.contacts.intent.demo_request');
+                            break;
+
+                        case 'demo_active':
+                            $row->contact_intent = l('vip_funnel.contacts.intent.demo_active');
+                            break;
+
+                        case 'demo_converted':
+                            $row->contact_intent = l('vip_funnel.contacts.intent.demo_converted');
+                            break;
+
+                        case 'demo_archived':
+                            $row->contact_intent = l('vip_funnel.contacts.intent.demo_archived');
+                            break;
+
+                        case 'funnel_lead':
+                        default:
+                            $row->contact_intent = l('vip_funnel.contacts.intent.funnel_lead');
+                            break;
+                    }
+                }
+
+                if($row->source_context === '') {
+                    $context_parts = array_values(array_filter([
+                        trim((string) ($row->data->funnel_name ?? '')),
+                        trim((string) ($row->data->funnel_step_title ?? '')),
+                    ], static function($value) {
+                        return $value !== '';
+                    }));
+
+                    if(!empty($context_parts)) {
+                        $row->source_context = implode(' • ', $context_parts);
+                    }
+                }
+            }
+
             if($row->is_ai_chat_lead) {
                 $row->type_icon = 'fas fa-robot';
                 $row->type_label = 'AI chat lead';

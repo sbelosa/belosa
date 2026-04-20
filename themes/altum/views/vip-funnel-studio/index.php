@@ -1603,6 +1603,127 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
         gap: 1rem;
     }
 
+    .vf-analytics-layout {
+        display: grid;
+        gap: 1rem;
+    }
+
+    .vf-analytics-split {
+        display: grid;
+        grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+        gap: 1rem;
+    }
+
+    .vf-analytics-table-wrap {
+        overflow-x: auto;
+        border-radius: 1rem;
+        border: 1px solid rgba(255,255,255,0.08);
+        background: rgba(255,255,255,0.02);
+    }
+
+    .vf-analytics-table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 680px;
+    }
+
+    .vf-analytics-table th,
+    .vf-analytics-table td {
+        padding: .78rem .85rem;
+        border-bottom: 1px solid rgba(255,255,255,0.06);
+        text-align: left;
+        vertical-align: top;
+    }
+
+    .vf-analytics-table th {
+        font-size: .76rem;
+        text-transform: uppercase;
+        letter-spacing: .08em;
+        color: rgba(205, 220, 238, 0.68);
+        font-weight: 800;
+        white-space: nowrap;
+    }
+
+    .vf-analytics-table td {
+        color: rgba(236, 243, 255, 0.9);
+        font-size: .92rem;
+    }
+
+    .vf-analytics-table tbody tr:last-child td {
+        border-bottom: 0;
+    }
+
+    .vf-analytics-step-title {
+        font-weight: 800;
+        color: #f6fbff;
+    }
+
+    .vf-analytics-step-sub {
+        margin-top: .22rem;
+        font-size: .8rem;
+        color: rgba(205, 220, 238, 0.64);
+    }
+
+    .vf-analytics-rate {
+        display: inline-flex;
+        align-items: center;
+        padding: .24rem .55rem;
+        border-radius: 999px;
+        background: rgba(103,216,201,0.12);
+        color: #95efe2;
+        font-weight: 800;
+        font-size: .82rem;
+    }
+
+    .vf-analytics-muted {
+        color: rgba(205, 220, 238, 0.62);
+    }
+
+    .vf-analytics-list {
+        display: grid;
+        gap: .85rem;
+    }
+
+    .vf-analytics-list-item {
+        padding: .95rem 1rem;
+        border-radius: 1rem;
+        border: 1px solid rgba(255,255,255,0.08);
+        background: rgba(255,255,255,0.03);
+    }
+
+    .vf-analytics-list-top {
+        display: flex;
+        justify-content: space-between;
+        gap: .8rem;
+        align-items: flex-start;
+    }
+
+    .vf-analytics-list-title {
+        font-weight: 800;
+        color: #f7fbff;
+    }
+
+    .vf-analytics-list-sub {
+        margin-top: .2rem;
+        font-size: .84rem;
+        color: rgba(205, 220, 238, 0.66);
+    }
+
+    .vf-analytics-list-meta {
+        margin-top: .55rem;
+        display: flex;
+        flex-wrap: wrap;
+        gap: .45rem;
+    }
+
+    .vf-analytics-empty {
+        padding: 1rem;
+        border-radius: 1rem;
+        border: 1px dashed rgba(255,255,255,0.12);
+        background: rgba(255,255,255,0.02);
+        color: rgba(205, 220, 238, 0.6);
+    }
+
     .vf-note {
         padding: .95rem 1rem;
         border-radius: 1rem;
@@ -1616,6 +1737,7 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
         .vf-grid,
         .vf-builder-columns,
         .vf-two,
+        .vf-analytics-split,
         .vf-action-card__main-grid,
         .vf-hero {
             grid-template-columns: minmax(0, 1fr);
@@ -1707,20 +1829,20 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
 
     <div class="vf-kpi-grid">
         <div class="vf-kpi">
-            <div class="vf-kpi__label">Pregledi</div>
+            <div class="vf-kpi__label"><?= l('vip_funnel.analytics.top.views') ?></div>
             <div class="vf-kpi__value"><?= nr((int) ($analytics['views'] ?? 0)) ?></div>
         </div>
         <div class="vf-kpi">
-            <div class="vf-kpi__label">Submitovi</div>
+            <div class="vf-kpi__label"><?= l('vip_funnel.analytics.top.submits') ?></div>
             <div class="vf-kpi__value"><?= nr((int) ($analytics['submits'] ?? 0)) ?></div>
         </div>
         <div class="vf-kpi">
-            <div class="vf-kpi__label">Leadovi</div>
+            <div class="vf-kpi__label"><?= l('vip_funnel.analytics.top.leads') ?></div>
             <div class="vf-kpi__value"><?= nr((int) ($analytics['leads'] ?? 0)) ?></div>
         </div>
         <div class="vf-kpi">
-            <div class="vf-kpi__label">A/B Winner</div>
-            <div class="vf-kpi__value"><?= $e((string) (($analytics['ab']['winner'] ?? '') !== '' ? 'Varijanta ' . ($analytics['ab']['winner'] ?? '') : '—')) ?></div>
+            <div class="vf-kpi__label"><?= l('vip_funnel.analytics.top.ab_winner') ?></div>
+            <div class="vf-kpi__value"><?= $e((string) (($analytics['ab']['winner'] ?? '') !== '' ? sprintf(l('vip_funnel.analytics.variant_label'), ($analytics['ab']['winner'] ?? '')) : '—')) ?></div>
         </div>
     </div>
 
@@ -1728,9 +1850,9 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
         <div class="vf-tabs" id="vf_tabs"></div>
 
         <div class="vf-actions">
-            <a href="<?= $e($data->demo_access_url ?? url('vip-funnel-demo-access')) ?>" class="vf-btn vf-btn--ghost">VIP Demo Access</a>
-            <button type="button" class="vf-btn vf-btn--primary" data-vf-save-button="1">Spremi cijeli funnel</button>
-            <button type="submit" class="vf-btn vf-btn--danger" data-vf-reset-button="1" name="reset_vip_funnel_studio" value="1">Vrati početni studio</button>
+            <a href="<?= $e($data->demo_access_url ?? url('vip-funnel-demo-access')) ?>" class="vf-btn vf-btn--ghost"><?= l('vip_funnel.analytics.demo_access_button') ?></a>
+            <button type="button" class="vf-btn vf-btn--primary" data-vf-save-button="1"><?= l('vip_funnel.analytics.save_button') ?></button>
+            <button type="submit" class="vf-btn vf-btn--danger" data-vf-reset-button="1" name="reset_vip_funnel_studio" value="1"><?= l('vip_funnel.analytics.reset_button') ?></button>
         </div>
     </div>
 
@@ -1743,12 +1865,12 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
 
     <div class="vf-bottombar">
         <div class="vf-bottombar__hint">
-            <div class="vf-bottombar__eyebrow">Brzo spremanje</div>
-            <div class="vf-bottombar__text">Kad završiš s uređivanjem ovog dijela, spremi funnel odmah ovdje bez vraćanja na vrh stranice.</div>
+            <div class="vf-bottombar__eyebrow"><?= l('vip_funnel.analytics.quick_save_title') ?></div>
+            <div class="vf-bottombar__text"><?= l('vip_funnel.analytics.quick_save_text') ?></div>
         </div>
 
         <div class="vf-actions">
-            <button type="button" class="vf-btn vf-btn--primary" data-vf-save-button="1">Spremi cijeli funnel</button>
+            <button type="button" class="vf-btn vf-btn--primary" data-vf-save-button="1"><?= l('vip_funnel.analytics.save_button') ?></button>
         </div>
     </div>
 </form>
@@ -1798,6 +1920,116 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
         'imageUploadUploading' => l('vip_funnel.alert.image_uploading'),
         'imageUploaded' => l('vip_funnel.alert.image_uploaded'),
         'imageUploadFailed' => l('vip_funnel.alert.image_upload_failed'),
+    ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
+    const analyticsMessages = <?= json_encode([
+        'landingTab' => l('vip_funnel.analytics.tab.landing'),
+        'stepDefault' => l('vip_funnel.analytics.tab.step_default'),
+        'addStepTitle' => l('vip_funnel.analytics.tab.add_step'),
+        'analyticsTab' => l('vip_funnel.analytics.tab.analytics'),
+        'overviewTitle' => l('vip_funnel.analytics.overview.title'),
+        'overviewSub' => l('vip_funnel.analytics.overview.subheader'),
+        'views' => l('vip_funnel.analytics.top.views'),
+        'uniqueVisitors' => l('vip_funnel.analytics.overview.unique_visitors'),
+        'submits' => l('vip_funnel.analytics.top.submits'),
+        'leads' => l('vip_funnel.analytics.top.leads'),
+        'advances' => l('vip_funnel.analytics.overview.advances'),
+        'contactsSynced' => l('vip_funnel.analytics.overview.contacts_synced'),
+        'submitRate' => l('vip_funnel.analytics.overview.submit_rate'),
+        'leadRate' => l('vip_funnel.analytics.overview.lead_rate'),
+        'bestStep' => l('vip_funnel.analytics.overview.best_step'),
+        'bestSelection' => l('vip_funnel.analytics.overview.best_selection'),
+        'stepsTitle' => l('vip_funnel.analytics.steps.title'),
+        'stepsSub' => l('vip_funnel.analytics.steps.subheader'),
+        'selectionsTitle' => l('vip_funnel.analytics.selections.title'),
+        'selectionsSub' => l('vip_funnel.analytics.selections.subheader'),
+        'abTitle' => l('vip_funnel.analytics.ab.title'),
+        'abSub' => l('vip_funnel.analytics.ab.subheader'),
+        'demoTitle' => l('vip_funnel.analytics.demo.title'),
+        'demoSub' => l('vip_funnel.analytics.demo.subheader'),
+        'recentEventsTitle' => l('vip_funnel.analytics.recent.title'),
+        'recentEventsSub' => l('vip_funnel.analytics.recent.subheader'),
+        'recentDemoTitle' => l('vip_funnel.analytics.demo_recent.title'),
+        'recentDemoSub' => l('vip_funnel.analytics.demo_recent.subheader'),
+        'emptyRows' => l('vip_funnel.analytics.empty'),
+        'emptyRecent' => l('vip_funnel.analytics.recent.empty'),
+        'emptyDemoRecent' => l('vip_funnel.analytics.demo_recent.empty'),
+        'tableStep' => l('vip_funnel.analytics.table.step'),
+        'tablePhase' => l('vip_funnel.analytics.table.phase'),
+        'tablePath' => l('vip_funnel.analytics.table.path'),
+        'tableViews' => l('vip_funnel.analytics.table.views'),
+        'tableVisitors' => l('vip_funnel.analytics.table.visitors'),
+        'tableSubmits' => l('vip_funnel.analytics.table.submits'),
+        'tableLeads' => l('vip_funnel.analytics.table.leads'),
+        'tableAdvances' => l('vip_funnel.analytics.table.advances'),
+        'tableRate' => l('vip_funnel.analytics.table.rate'),
+        'tableSelection' => l('vip_funnel.analytics.table.selection'),
+        'tableSelectionLabel' => l('vip_funnel.analytics.table.selection_label'),
+        'tableVariant' => l('vip_funnel.analytics.table.variant'),
+        'winner' => l('vip_funnel.analytics.top.ab_winner'),
+        'winnerNone' => l('vip_funnel.analytics.winner_none'),
+        'variantLabel' => l('vip_funnel.analytics.variant_label'),
+        'variantA' => l('vip_funnel.analytics.variant_a'),
+        'variantB' => l('vip_funnel.analytics.variant_b'),
+        'requests' => l('vip_funnel.analytics.demo.requests'),
+        'approved' => l('vip_funnel.analytics.demo.approved'),
+        'live' => l('vip_funnel.analytics.demo.live'),
+        'converted' => l('vip_funnel.analytics.demo.converted'),
+        'archived' => l('vip_funnel.analytics.demo.archived'),
+        'activationRate' => l('vip_funnel.analytics.demo.activation_rate'),
+        'conversionRate' => l('vip_funnel.analytics.demo.conversion_rate'),
+        'eventAt' => l('vip_funnel.analytics.recent.at'),
+        'eventBy' => l('vip_funnel.analytics.demo_recent.by'),
+    ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
+    const studioMessages = <?= json_encode([
+        'landingTitle' => l('vip_funnel.studio.landing.title'),
+        'landingSub' => l('vip_funnel.studio.landing.sub'),
+        'landingNote' => l('vip_funnel.studio.landing.note'),
+        'stepDefaultTitle' => l('vip_funnel.studio.step.default_title'),
+        'stepSub' => l('vip_funnel.studio.step.sub'),
+        'stepBuilderTitle' => l('vip_funnel.studio.step.builder_title'),
+        'stepBuilderSub' => l('vip_funnel.studio.step.builder_sub'),
+        'stepEmptyAdd' => l('vip_funnel.studio.step.empty_add'),
+        'stepEmptySelect' => l('vip_funnel.studio.step.empty_select'),
+        'stepToolbar' => l('vip_funnel.studio.step_meta.toolbar'),
+        'stepDelete' => l('vip_funnel.studio.step_meta.delete'),
+        'stepSettings' => l('vip_funnel.studio.step_meta.section'),
+        'stepTitleLabel' => l('vip_funnel.studio.step_meta.title_label'),
+        'stepSummaryLabel' => l('vip_funnel.studio.step_meta.summary_label'),
+        'stepBadgeLabel' => l('vip_funnel.studio.step_meta.badge_label'),
+        'stepPhaseLabel' => l('vip_funnel.studio.step_meta.phase_label'),
+        'stepPathLabel' => l('vip_funnel.studio.step_meta.path_label'),
+        'stepLegacyCtaLabel' => l('vip_funnel.studio.step_meta.legacy_cta_label'),
+        'surfaceDesignTitle' => l('vip_funnel.studio.surface.design_title'),
+        'surfaceDesignSub' => l('vip_funnel.studio.surface.design_sub'),
+        'surfaceNameLabel' => l('vip_funnel.studio.surface.name_label'),
+        'surfaceBackgroundLabel' => l('vip_funnel.studio.surface.background_label'),
+        'surfaceColorLabel' => l('vip_funnel.studio.surface.surface_label'),
+        'surfaceTextColorLabel' => l('vip_funnel.studio.surface.text_label'),
+        'surfaceAccentLabel' => l('vip_funnel.studio.surface.accent_label'),
+        'surfaceWidthLabel' => l('vip_funnel.studio.surface.max_width_label'),
+        'surfaceAbLabel' => l('vip_funnel.studio.surface.ab_distribution_label'),
+        'surfaceShowProgress' => l('vip_funnel.studio.surface.show_progress'),
+        'surfaceAbEnabled' => l('vip_funnel.studio.surface.ab_enabled'),
+        'surfaceEditVariantA' => l('vip_funnel.studio.surface.edit_variant_a'),
+        'surfaceEditVariantB' => l('vip_funnel.studio.surface.edit_variant_b'),
+        'surfaceBlocksTitle' => l('vip_funnel.studio.surface.blocks_title'),
+        'surfaceBlocksSub' => l('vip_funnel.studio.surface.blocks_sub'),
+        'surfaceSubmitNoteSurvey' => l('vip_funnel.studio.surface.submit_note_survey'),
+        'surfaceSubmitNoteForm' => l('vip_funnel.studio.surface.submit_note_form'),
+        'surfaceAddSubmitButton' => l('vip_funnel.studio.surface.add_submit_button'),
+        'surfaceBlocksEmpty' => l('vip_funnel.studio.surface.blocks_empty'),
+        'surfaceAddBlockButton' => l('vip_funnel.studio.surface.add_block_button'),
+        'surfaceTemplatesTitle' => l('vip_funnel.studio.surface.templates_title'),
+        'surfaceTemplatesSub' => l('vip_funnel.studio.surface.templates_sub'),
+        'surfaceEditorTitle' => l('vip_funnel.studio.surface.editor_title'),
+        'surfaceEditorSub' => l('vip_funnel.studio.surface.editor_sub'),
+        'surfaceEditorEmpty' => l('vip_funnel.studio.surface.editor_empty'),
+        'blockNoDesc' => l('vip_funnel.studio.block.no_desc'),
+        'blockWidthHint' => l('vip_funnel.studio.block.width_hint'),
+        'blockAutoSubmit' => l('vip_funnel.studio.block.auto_submit'),
+        'galleryTitle' => l('vip_funnel.studio.gallery.title'),
+        'galleryHint' => l('vip_funnel.studio.gallery.hint'),
+        'galleryEmpty' => l('vip_funnel.studio.gallery.empty'),
     ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
     let vipFunnelImageGalleryEntries = Array.isArray(imageGalleryEntries) ? imageGalleryEntries.slice() : [];
 
@@ -1925,7 +2157,19 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
     }
 
     function numberFormat(value) {
-        return new Intl.NumberFormat('hr-HR').format(Number(value || 0));
+        return new Intl.NumberFormat(document.documentElement.lang || 'hr-HR').format(Number(value || 0));
+    }
+
+    function rateFormat(value) {
+        return `${Number(value || 0).toFixed(1)}%`;
+    }
+
+    function variantLabel(value) {
+        if(!value) {
+            return analyticsMessages.winnerNone;
+        }
+
+        return analyticsMessages.variantLabel.replace('%s', String(value).toUpperCase());
     }
 
     function coerceFieldValue(fieldElement) {
@@ -2210,7 +2454,7 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
 
         if(!state.payload.landing_page) {
             state.payload.landing_page = defaultSurface();
-            state.payload.landing_page.name = 'Glavna stranica funnela';
+            state.payload.landing_page.name = studioMessages.landingTitle;
         }
 
         if(!Array.isArray(state.payload.paths)) {
@@ -2342,7 +2586,7 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
 
     function getCurrentSurface() {
         if(state.screen === 'landing') {
-            state.payload.landing_page = normalizeSurface(state.payload.landing_page, 'Glavna stranica funnela');
+            state.payload.landing_page = normalizeSurface(state.payload.landing_page, studioMessages.landingTitle);
             return state.payload.landing_page;
         }
 
@@ -2386,7 +2630,7 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
 
     function setCurrentSurface(surface) {
         if(state.screen === 'landing') {
-            state.payload.landing_page = normalizeSurface(surface, 'Glavna stranica funnela');
+            state.payload.landing_page = normalizeSurface(surface, studioMessages.landingTitle);
             return;
         }
 
@@ -2793,7 +3037,7 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
             });
         };
 
-        const landing = normalizeSurface(state.payload.landing_page || defaultSurface(), 'Glavna stranica funnela');
+        const landing = normalizeSurface(state.payload.landing_page || defaultSurface(), studioMessages.landingTitle);
         inspectBlocks(landing.blocks || [], {page_role: 'landing', variant_key: 'a'});
         if(landing.ab_enabled && Array.isArray(landing.variant_b_blocks)) {
             inspectBlocks(landing.variant_b_blocks || [], {page_role: 'landing', variant_key: 'b'});
@@ -3020,7 +3264,7 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
 
         tabsRoot.innerHTML = `
             <button type="button" class="vf-tab ${state.screen === 'landing' ? 'is-active' : ''}" data-vf-screen="landing">
-                Glavna stranica funnela
+                ${escapeHtml(analyticsMessages.landingTab)}
             </button>
 
             ${steps.map((step, index) => {
@@ -3034,18 +3278,18 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
                 >
                     <span class="vf-step-tab__index">${index + 1}</span>
                     <span class="vf-step-tab__main">
-                        <span class="vf-step-tab__phase">${escapeHtml(phase?.title || 'Korak')}</span>
-                        <span class="vf-step-tab__label">${escapeHtml(step.title || `Korak ${index + 1}`)}</span>
+                        <span class="vf-step-tab__phase">${escapeHtml(phase?.title || analyticsMessages.stepDefault)}</span>
+                        <span class="vf-step-tab__label">${escapeHtml(step.title || `${analyticsMessages.stepDefault} ${index + 1}`)}</span>
                     </span>
                     <span class="vf-step-tab__grip" aria-hidden="true">⋮⋮</span>
                 </button>
             `;
             }).join('')}
 
-            <button type="button" class="vf-tab vf-tab--add" data-vf-add-step-rail="1" title="Dodaj novu funnel stranicu">+</button>
+            <button type="button" class="vf-tab vf-tab--add" data-vf-add-step-rail="1" title="${escapeHtml(analyticsMessages.addStepTitle)}">+</button>
 
             <button type="button" class="vf-tab ${state.screen === 'analytics' ? 'is-active' : ''}" data-vf-screen="analytics">
-                Analitika i A/B
+                ${escapeHtml(analyticsMessages.analyticsTab)}
             </button>
         `;
     }
@@ -3070,12 +3314,12 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
             <div class="vf-card">
                 <div class="vf-card__head">
                     <div>
-                        <h2 class="vf-card__title">Glavna stranica funnela</h2>
-                        <div class="vf-card__sub">Ovdje slažeš prvi landing dojam: hero, tekst, video, slike, CTA-e, survey, countdown i capture polja.</div>
+                        <h2 class="vf-card__title">${escapeHtml(studioMessages.landingTitle)}</h2>
+                        <div class="vf-card__sub">${escapeHtml(studioMessages.landingSub)}</div>
                     </div>
                 </div>
                 <div class="vf-card__body">
-                    <div class="vf-note">Nakon završetka funnela, dodaj <strong>Funnel 2.0 start blok</strong> na FCC Aplikaciju. Taj blok automatski otvara upravo ovu ulaznu stranicu.</div>
+                    <div class="vf-note">${studioMessages.landingNote}</div>
                     ${renderSurfaceBuilder(surface, 'landing')}
                 </div>
             </div>
@@ -3088,70 +3332,307 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
             <div class="vf-card">
                 <div class="vf-card__head">
                     <div>
-                        <h2 class="vf-card__title">${activeStep ? escapeHtml(activeStep.title || 'Nova funnel stranica') : 'Nova funnel stranica'}</h2>
-                        <div class="vf-card__sub">Svaka funnel stranica sada se uređuje kao zaseban page tab. Ovdje podešavaš postavke te stranice, a ispod odmah uređuješ njezin sadržaj i logiku.</div>
+                        <h2 class="vf-card__title">${activeStep ? escapeHtml(activeStep.title || studioMessages.stepDefaultTitle) : escapeHtml(studioMessages.stepDefaultTitle)}</h2>
+                        <div class="vf-card__sub">${escapeHtml(studioMessages.stepSub)}</div>
                     </div>
                 </div>
                 <div class="vf-card__body">
-                    ${activeStep ? renderStepMetaEditor(activeStep) : '<div class="vf-empty">Dodaj prvi korak i zatim ga uredi.</div>'}
+                    ${activeStep ? renderStepMetaEditor(activeStep) : `<div class="vf-empty">${escapeHtml(studioMessages.stepEmptyAdd)}</div>`}
                 </div>
             </div>
 
             <div class="vf-card">
                 <div class="vf-card__head">
                     <div>
-                        <h2 class="vf-card__title">Builder ove stranice</h2>
-                        <div class="vf-card__sub">Odabrana funnel stranica koristi isti builder kao glavni landing page, pa je cijeli sustav pregledan i logično povezan.</div>
+                        <h2 class="vf-card__title">${escapeHtml(studioMessages.stepBuilderTitle)}</h2>
+                        <div class="vf-card__sub">${escapeHtml(studioMessages.stepBuilderSub)}</div>
                     </div>
                 </div>
                 <div class="vf-card__body">
-                    ${activeStep ? renderSurfaceBuilder(getRenderableSurface(), 'step') : '<div class="vf-empty">Odaberi korak za uređivanje.</div>'}
+                    ${activeStep ? renderSurfaceBuilder(getRenderableSurface(), 'step') : `<div class="vf-empty">${escapeHtml(studioMessages.stepEmptySelect)}</div>`}
                 </div>
             </div>
         `;
     }
 
     function renderAnalyticsWorkspace() {
-        const ab = state.analytics.ab || {};
-        const bestStep = state.analytics.best_step || null;
+        const analytics = state.analytics || {};
+        const ab = analytics.ab || {};
+        const bestStep = analytics.best_step || null;
+        const bestSelection = analytics.best_selection || null;
+        const steps = Array.isArray(analytics.steps) ? analytics.steps : [];
+        const selections = Array.isArray(analytics.selections) ? analytics.selections : [];
+        const demo = analytics.demo || {};
+        const recentEvents = Array.isArray(analytics.recent_events) ? analytics.recent_events : [];
+        const recentDemoEvents = Array.isArray(demo.recent_events) ? demo.recent_events : [];
+
+        const stepsTable = steps.length ? `
+            <div class="vf-analytics-table-wrap">
+                <table class="vf-analytics-table">
+                    <thead>
+                        <tr>
+                            <th>${escapeHtml(analyticsMessages.tableStep)}</th>
+                            <th>${escapeHtml(analyticsMessages.tablePhase)}</th>
+                            <th>${escapeHtml(analyticsMessages.tablePath)}</th>
+                            <th>${escapeHtml(analyticsMessages.tableViews)}</th>
+                            <th>${escapeHtml(analyticsMessages.tableVisitors)}</th>
+                            <th>${escapeHtml(analyticsMessages.tableSubmits)}</th>
+                            <th>${escapeHtml(analyticsMessages.tableLeads)}</th>
+                            <th>${escapeHtml(analyticsMessages.tableAdvances)}</th>
+                            <th>${escapeHtml(analyticsMessages.tableRate)}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${steps.map((item) => `
+                            <tr>
+                                <td>
+                                    <div class="vf-analytics-step-title">${escapeHtml(item.title || item.step_key || analyticsMessages.stepDefault)}</div>
+                                    <div class="vf-analytics-step-sub">${escapeHtml(item.step_key || '')}</div>
+                                </td>
+                                <td>${escapeHtml(item.phase_title || '—')}</td>
+                                <td>${escapeHtml(item.path_title || '—')}</td>
+                                <td>${numberFormat(item.views || 0)}</td>
+                                <td>${numberFormat(item.visitors || 0)}</td>
+                                <td>${numberFormat(item.submits || 0)}</td>
+                                <td>${numberFormat(item.leads || 0)}</td>
+                                <td>${numberFormat(item.advances || 0)}</td>
+                                <td><span class="vf-analytics-rate">${rateFormat(item.submit_rate || 0)}</span></td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+        ` : `<div class="vf-analytics-empty">${escapeHtml(analyticsMessages.emptyRows)}</div>`;
+
+        const selectionsTable = selections.length ? `
+            <div class="vf-analytics-table-wrap">
+                <table class="vf-analytics-table">
+                    <thead>
+                        <tr>
+                            <th>${escapeHtml(analyticsMessages.tableSelectionLabel)}</th>
+                            <th>${escapeHtml(analyticsMessages.tableSelection)}</th>
+                            <th>${escapeHtml(analyticsMessages.tableSubmits)}</th>
+                            <th>${escapeHtml(analyticsMessages.tableLeads)}</th>
+                            <th>${escapeHtml(analyticsMessages.tableAdvances)}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${selections.map((item) => `
+                            <tr>
+                                <td>
+                                    <div class="vf-analytics-step-title">${escapeHtml(item.label || item.selection_key || '—')}</div>
+                                </td>
+                                <td><span class="vf-chip">${escapeHtml(item.selection_key || '')}</span></td>
+                                <td>${numberFormat(item.submits || 0)}</td>
+                                <td>${numberFormat(item.leads || 0)}</td>
+                                <td>${numberFormat(item.advances || 0)}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+        ` : `<div class="vf-analytics-empty">${escapeHtml(analyticsMessages.emptyRows)}</div>`;
+
+        const recentEventList = recentEvents.length ? `
+            <div class="vf-analytics-list">
+                ${recentEvents.map((item) => `
+                    <div class="vf-analytics-list-item">
+                        <div class="vf-analytics-list-top">
+                            <div>
+                                <div class="vf-analytics-list-title">${escapeHtml(item.event_type_label || item.event_type || '')}</div>
+                                <div class="vf-analytics-list-sub">${escapeHtml(item.step_title || item.step_key || '')}</div>
+                            </div>
+                            <span class="vf-chip">${escapeHtml(variantLabel(item.variant_key || ''))}</span>
+                        </div>
+                        <div class="vf-analytics-list-meta">
+                            ${item.label ? `<span class="vf-chip">${escapeHtml(item.label)}</span>` : ''}
+                            <span class="vf-chip">${escapeHtml(analyticsMessages.eventAt)}: ${escapeHtml(item.datetime || '')}</span>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        ` : `<div class="vf-analytics-empty">${escapeHtml(analyticsMessages.emptyRecent)}</div>`;
+
+        const recentDemoList = recentDemoEvents.length ? `
+            <div class="vf-analytics-list">
+                ${recentDemoEvents.map((item) => `
+                    <div class="vf-analytics-list-item">
+                        <div class="vf-analytics-list-top">
+                            <div>
+                                <div class="vf-analytics-list-title">${escapeHtml(item.event_label || item.event_key || '')}</div>
+                                <div class="vf-analytics-list-sub">${escapeHtml(item.lead_name || '')}</div>
+                            </div>
+                            <span class="vf-chip">${escapeHtml(analyticsMessages.eventAt)}: ${escapeHtml(item.datetime || '')}</span>
+                        </div>
+                        ${item.actor_name ? `<div class="vf-analytics-list-meta"><span class="vf-chip">${escapeHtml(analyticsMessages.eventBy)}: ${escapeHtml(item.actor_name)}</span></div>` : ''}
+                    </div>
+                `).join('')}
+            </div>
+        ` : `<div class="vf-analytics-empty">${escapeHtml(analyticsMessages.emptyDemoRecent)}</div>`;
+
         return `
-            <div class="vf-card">
-                <div class="vf-card__head">
-                    <div>
-                        <h2 class="vf-card__title">Analitika i A/B pregled</h2>
-                        <div class="vf-card__sub">Odmah vidiš što privlači više pregleda, što bolje konvertira i koja varijanta pobjeđuje.</div>
+            <div class="vf-analytics-layout">
+                <div class="vf-card">
+                    <div class="vf-card__head">
+                        <div>
+                            <h2 class="vf-card__title">${escapeHtml(analyticsMessages.overviewTitle)}</h2>
+                            <div class="vf-card__sub">${escapeHtml(analyticsMessages.overviewSub)}</div>
+                        </div>
+                    </div>
+                    <div class="vf-card__body">
+                        <div class="vf-analytics-grid">
+                            <div class="vf-kpi">
+                                <div class="vf-kpi__label">${escapeHtml(analyticsMessages.views)}</div>
+                                <div class="vf-kpi__value">${numberFormat(analytics.views || 0)}</div>
+                            </div>
+                            <div class="vf-kpi">
+                                <div class="vf-kpi__label">${escapeHtml(analyticsMessages.uniqueVisitors)}</div>
+                                <div class="vf-kpi__value">${numberFormat(analytics.unique_visitors || 0)}</div>
+                            </div>
+                            <div class="vf-kpi">
+                                <div class="vf-kpi__label">${escapeHtml(analyticsMessages.submits)}</div>
+                                <div class="vf-kpi__value">${numberFormat(analytics.submits || 0)}</div>
+                            </div>
+                            <div class="vf-kpi">
+                                <div class="vf-kpi__label">${escapeHtml(analyticsMessages.leads)}</div>
+                                <div class="vf-kpi__value">${numberFormat(analytics.leads || 0)}</div>
+                            </div>
+                            <div class="vf-kpi">
+                                <div class="vf-kpi__label">${escapeHtml(analyticsMessages.advances)}</div>
+                                <div class="vf-kpi__value">${numberFormat(analytics.advances || 0)}</div>
+                            </div>
+                            <div class="vf-kpi">
+                                <div class="vf-kpi__label">${escapeHtml(analyticsMessages.contactsSynced)}</div>
+                                <div class="vf-kpi__value">${numberFormat(analytics.contacts_in_data || 0)}</div>
+                            </div>
+                        </div>
+
+                        <div class="vf-card-actions" style="margin-top:1rem;">
+                            <span class="vf-chip">${escapeHtml(analyticsMessages.submitRate)}: ${rateFormat(analytics.submit_rate || 0)}</span>
+                            <span class="vf-chip">${escapeHtml(analyticsMessages.leadRate)}: ${rateFormat(analytics.lead_rate || 0)}</span>
+                            <span class="vf-chip">${escapeHtml(analyticsMessages.bestStep)}: ${escapeHtml(bestStep ? (bestStep.title || bestStep.step_key || analyticsMessages.winnerNone) : analyticsMessages.winnerNone)}</span>
+                            <span class="vf-chip">${escapeHtml(analyticsMessages.bestSelection)}: ${escapeHtml(bestSelection ? (bestSelection.label || bestSelection.selection_key || analyticsMessages.winnerNone) : analyticsMessages.winnerNone)}</span>
+                        </div>
                     </div>
                 </div>
-                <div class="vf-card__body">
-                    <div class="vf-analytics-grid">
-                        <div class="vf-kpi">
-                            <div class="vf-kpi__label">Ukupni pregledi</div>
-                            <div class="vf-kpi__value">${numberFormat(state.analytics.views || 0)}</div>
+
+                <div class="vf-analytics-split">
+                    <div class="vf-card">
+                        <div class="vf-card__head">
+                            <div>
+                                <h2 class="vf-card__title">${escapeHtml(analyticsMessages.stepsTitle)}</h2>
+                                <div class="vf-card__sub">${escapeHtml(analyticsMessages.stepsSub)}</div>
+                            </div>
                         </div>
-                        <div class="vf-kpi">
-                            <div class="vf-kpi__label">Ukupni submitovi</div>
-                            <div class="vf-kpi__value">${numberFormat(state.analytics.submits || 0)}</div>
+                        <div class="vf-card__body">${stepsTable}</div>
+                    </div>
+
+                    <div class="vf-card">
+                        <div class="vf-card__head">
+                            <div>
+                                <h2 class="vf-card__title">${escapeHtml(analyticsMessages.selectionsTitle)}</h2>
+                                <div class="vf-card__sub">${escapeHtml(analyticsMessages.selectionsSub)}</div>
+                            </div>
                         </div>
-                        <div class="vf-kpi">
-                            <div class="vf-kpi__label">Lead capture</div>
-                            <div class="vf-kpi__value">${numberFormat(state.analytics.leads || 0)}</div>
+                        <div class="vf-card__body">${selectionsTable}</div>
+                    </div>
+                </div>
+
+                <div class="vf-analytics-split">
+                    <div class="vf-card">
+                        <div class="vf-card__head">
+                            <div>
+                                <h2 class="vf-card__title">${escapeHtml(analyticsMessages.abTitle)}</h2>
+                                <div class="vf-card__sub">${escapeHtml(analyticsMessages.abSub)}</div>
+                            </div>
                         </div>
-                        <div class="vf-kpi">
-                            <div class="vf-kpi__label">Najgledaniji korak</div>
-                            <div class="vf-kpi__value">${bestStep ? escapeHtml(bestStep.step_key) : '—'}</div>
+                        <div class="vf-card__body">
+                            <div class="vf-analytics-grid">
+                                <div class="vf-kpi">
+                                    <div class="vf-kpi__label">${escapeHtml(analyticsMessages.variantA)} · ${escapeHtml(analyticsMessages.views)}</div>
+                                    <div class="vf-kpi__value">${numberFormat(ab.a_views || 0)}</div>
+                                </div>
+                                <div class="vf-kpi">
+                                    <div class="vf-kpi__label">${escapeHtml(analyticsMessages.variantB)} · ${escapeHtml(analyticsMessages.views)}</div>
+                                    <div class="vf-kpi__value">${numberFormat(ab.b_views || 0)}</div>
+                                </div>
+                                <div class="vf-kpi">
+                                    <div class="vf-kpi__label">${escapeHtml(analyticsMessages.variantA)} · ${escapeHtml(analyticsMessages.submits)}</div>
+                                    <div class="vf-kpi__value">${numberFormat(ab.a_submits || 0)}</div>
+                                </div>
+                                <div class="vf-kpi">
+                                    <div class="vf-kpi__label">${escapeHtml(analyticsMessages.variantB)} · ${escapeHtml(analyticsMessages.submits)}</div>
+                                    <div class="vf-kpi__value">${numberFormat(ab.b_submits || 0)}</div>
+                                </div>
+                            </div>
+                            <div class="vf-card-actions" style="margin-top:1rem;">
+                                <span class="vf-chip">${escapeHtml(analyticsMessages.variantA)}: ${rateFormat(ab.a_rate || 0)}</span>
+                                <span class="vf-chip">${escapeHtml(analyticsMessages.variantB)}: ${rateFormat(ab.b_rate || 0)}</span>
+                                <span class="vf-chip">${escapeHtml(analyticsMessages.winner)}: ${escapeHtml(variantLabel(ab.winner || ''))}</span>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="vf-card-actions" style="margin-top:1rem;">
-                        <span class="vf-chip">Varijanta A pregledi: ${numberFormat(ab.a_views || 0)}</span>
-                        <span class="vf-chip">Varijanta B pregledi: ${numberFormat(ab.b_views || 0)}</span>
-                        <span class="vf-chip">Varijanta A submit: ${numberFormat(ab.a_submits || 0)}</span>
-                        <span class="vf-chip">Varijanta B submit: ${numberFormat(ab.b_submits || 0)}</span>
-                        <span class="vf-chip">Pobjednik: ${escapeHtml((ab.winner || '') !== '' ? 'Varijanta ' + ab.winner : '—')}</span>
+                    <div class="vf-card">
+                        <div class="vf-card__head">
+                            <div>
+                                <h2 class="vf-card__title">${escapeHtml(analyticsMessages.demoTitle)}</h2>
+                                <div class="vf-card__sub">${escapeHtml(analyticsMessages.demoSub)}</div>
+                            </div>
+                        </div>
+                        <div class="vf-card__body">
+                            <div class="vf-analytics-grid">
+                                <div class="vf-kpi">
+                                    <div class="vf-kpi__label">${escapeHtml(analyticsMessages.requests)}</div>
+                                    <div class="vf-kpi__value">${numberFormat(demo.requests || 0)}</div>
+                                </div>
+                                <div class="vf-kpi">
+                                    <div class="vf-kpi__label">${escapeHtml(analyticsMessages.approved)}</div>
+                                    <div class="vf-kpi__value">${numberFormat(demo.approved || 0)}</div>
+                                </div>
+                                <div class="vf-kpi">
+                                    <div class="vf-kpi__label">${escapeHtml(analyticsMessages.live)}</div>
+                                    <div class="vf-kpi__value">${numberFormat(demo.live || 0)}</div>
+                                </div>
+                                <div class="vf-kpi">
+                                    <div class="vf-kpi__label">${escapeHtml(analyticsMessages.converted)}</div>
+                                    <div class="vf-kpi__value">${numberFormat(demo.converted || 0)}</div>
+                                </div>
+                                <div class="vf-kpi">
+                                    <div class="vf-kpi__label">${escapeHtml(analyticsMessages.archived)}</div>
+                                    <div class="vf-kpi__value">${numberFormat(demo.archived || 0)}</div>
+                                </div>
+                                <div class="vf-kpi">
+                                    <div class="vf-kpi__label">${escapeHtml(analyticsMessages.activationRate)}</div>
+                                    <div class="vf-kpi__value">${rateFormat(demo.activation_rate || 0)}</div>
+                                </div>
+                            </div>
+                            <div class="vf-card-actions" style="margin-top:1rem;">
+                                <span class="vf-chip">${escapeHtml(analyticsMessages.conversionRate)}: ${rateFormat(demo.conversion_rate || 0)}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="vf-analytics-split">
+                    <div class="vf-card">
+                        <div class="vf-card__head">
+                            <div>
+                                <h2 class="vf-card__title">${escapeHtml(analyticsMessages.recentEventsTitle)}</h2>
+                                <div class="vf-card__sub">${escapeHtml(analyticsMessages.recentEventsSub)}</div>
+                            </div>
+                        </div>
+                        <div class="vf-card__body">${recentEventList}</div>
                     </div>
 
-                    <div class="vf-note" style="margin-top:1rem;">
-                        Uključi A/B na landingu ili pojedinom koraku, zatim uređuj <strong>Varijantu A</strong> i <strong>Varijantu B</strong> unutar buildera. Sustav već prati pregleda i submitove po varijanti.
+                    <div class="vf-card">
+                        <div class="vf-card__head">
+                            <div>
+                                <h2 class="vf-card__title">${escapeHtml(analyticsMessages.recentDemoTitle)}</h2>
+                                <div class="vf-card__sub">${escapeHtml(analyticsMessages.recentDemoSub)}</div>
+                            </div>
+                        </div>
+                        <div class="vf-card__body">${recentDemoList}</div>
                     </div>
                 </div>
             </div>
@@ -3202,25 +3683,25 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
         return `
             <div class="vf-stack">
                 <div class="vf-step-toolbar">
-                    <div class="vf-step-toolbar__meta">Uredi naziv, opis i osnovnu logiku ove funnel stranice. Redoslijed stranica mijenjaš gore mišem, a ovu stranicu možeš ovdje i obrisati.</div>
-                    <button type="button" class="vf-btn vf-btn--danger" data-vf-delete-current-step="${escapeHtml(step.id)}">Obriši ovu stranicu</button>
+                    <div class="vf-step-toolbar__meta">${escapeHtml(studioMessages.stepToolbar)}</div>
+                    <button type="button" class="vf-btn vf-btn--danger" data-vf-delete-current-step="${escapeHtml(step.id)}">${escapeHtml(studioMessages.stepDelete)}</button>
                 </div>
-                <div class="vf-section-label">Postavke ove stranice</div>
+                <div class="vf-section-label">${escapeHtml(studioMessages.stepSettings)}</div>
                 <div class="vf-field">
-                    <label>Naslov stranice</label>
+                    <label>${escapeHtml(studioMessages.stepTitleLabel)}</label>
                     <input type="text" data-vf-step-field="title" value="${escapeHtml(step.title || '')}" />
                 </div>
                 <div class="vf-field">
-                    <label>Kratki opis stranice</label>
+                    <label>${escapeHtml(studioMessages.stepSummaryLabel)}</label>
                     <textarea data-vf-step-field="summary">${escapeHtml(step.summary || '')}</textarea>
                 </div>
                 <div class="vf-two">
                     <div class="vf-field">
-                        <label>Badge / oznaka</label>
+                        <label>${escapeHtml(studioMessages.stepBadgeLabel)}</label>
                         <input type="text" data-vf-step-field="preview_badge" value="${escapeHtml(step.preview_badge || '')}" />
                     </div>
                     <div class="vf-field">
-                        <label>Faza stranice</label>
+                        <label>${escapeHtml(studioMessages.stepPhaseLabel)}</label>
                         <select data-vf-step-phase-select="1">
                             ${phaseDefinitions.map(phase => `<option value="${escapeHtml(phase.key)}" ${String(step.phase_key || '') === String(phase.key) ? 'selected' : ''}>${escapeHtml(phase.title)}</option>`).join('')}
                         </select>
@@ -3228,14 +3709,14 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
                 </div>
                 <div class="vf-two">
                     <div class="vf-field">
-                        <label>Put / smjer</label>
+                        <label>${escapeHtml(studioMessages.stepPathLabel)}</label>
                         <select data-vf-step-field="path_key">
                             ${pathOptions.map(path => `<option value="${escapeHtml(path.path_key)}" ${step.path_key === path.path_key ? 'selected' : ''}>${escapeHtml(path.title)}</option>`).join('')}
                         </select>
                     </div>
                 </div>
                 <div class="vf-field">
-                    <label>Primarni legacy CTA</label>
+                    <label>${escapeHtml(studioMessages.stepLegacyCtaLabel)}</label>
                     <input type="text" data-vf-step-field="cta" value="${escapeHtml(step.cta || '')}" />
                 </div>
             </div>
@@ -3254,59 +3735,59 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
                 <div class="vf-stack">
                     <div class="vf-card" style="box-shadow:none;">
                         <div class="vf-card__head">
-                            <div>
-                                <h3 class="vf-card__title">Dizajn i logika stranice</h3>
-                                <div class="vf-card__sub">Ovdje određuješ kako izgleda stranica, koji joj je cilj i koristi li A/B varijante.</div>
+                        <div>
+                                <h3 class="vf-card__title">${escapeHtml(studioMessages.surfaceDesignTitle)}</h3>
+                                <div class="vf-card__sub">${escapeHtml(studioMessages.surfaceDesignSub)}</div>
                             </div>
                         </div>
                         <div class="vf-card__body vf-stack">
                             <div class="vf-field">
-                                <label>Naziv stranice</label>
+                                <label>${escapeHtml(studioMessages.surfaceNameLabel)}</label>
                                 <input type="text" data-vf-surface-field="name" value="${escapeHtml(surface.name || '')}" />
                             </div>
 
                             <div class="vf-two">
                                 <div class="vf-field">
-                                    <label>Pozadina stranice</label>
+                                    <label>${escapeHtml(studioMessages.surfaceBackgroundLabel)}</label>
                                     <input type="color" data-vf-surface-field="background_color" value="${escapeHtml(surface.background_color || '#0f172a')}" />
                                 </div>
                                 <div class="vf-field">
-                                    <label>Boja površine</label>
+                                    <label>${escapeHtml(studioMessages.surfaceColorLabel)}</label>
                                     <input type="color" data-vf-surface-field="surface_color" value="${escapeHtml(surface.surface_color || '#152132')}" />
                                 </div>
                             </div>
 
                             <div class="vf-two">
                                 <div class="vf-field">
-                                    <label>Boja teksta</label>
+                                    <label>${escapeHtml(studioMessages.surfaceTextColorLabel)}</label>
                                     <input type="color" data-vf-surface-field="text_color" value="${escapeHtml(surface.text_color || '#eef4ff')}" />
                                 </div>
                                 <div class="vf-field">
-                                    <label>Naglasak</label>
+                                    <label>${escapeHtml(studioMessages.surfaceAccentLabel)}</label>
                                     <input type="color" data-vf-surface-field="accent_color" value="${escapeHtml(surface.accent_color || '#67d8c9')}" />
                                 </div>
                             </div>
 
                             <div class="vf-two">
                                 <div class="vf-field">
-                                    <label>Širina layouta</label>
+                                    <label>${escapeHtml(studioMessages.surfaceWidthLabel)}</label>
                                     <select data-vf-surface-field="max_width">
                                         ${Object.entries(pageWidthOptions).map(([key, label]) => `<option value="${escapeHtml(key)}" ${surface.max_width === key ? 'selected' : ''}>${escapeHtml(label)}</option>`).join('')}
                                     </select>
                                 </div>
                                 <div class="vf-field">
-                                    <label>A/B raspodjela za B (%)</label>
+                                    <label>${escapeHtml(studioMessages.surfaceAbLabel)}</label>
                                     <input type="number" min="5" max="95" data-vf-surface-field="ab_distribution" value="${escapeHtml(surface.ab_distribution || 50)}" />
                                 </div>
                             </div>
 
-                            <label class="vf-toggle"><input type="checkbox" data-vf-surface-toggle="show_progress" ${surface.show_progress ? 'checked' : ''}> Prikaži progres koraka</label>
-                            ${allowAB ? `<label class="vf-toggle"><input type="checkbox" data-vf-surface-toggle="ab_enabled" ${surface.ab_enabled ? 'checked' : ''}> Uključi A/B varijantu na ovoj stranici</label>` : ''}
+                            <label class="vf-toggle"><input type="checkbox" data-vf-surface-toggle="show_progress" ${surface.show_progress ? 'checked' : ''}> ${escapeHtml(studioMessages.surfaceShowProgress)}</label>
+                            ${allowAB ? `<label class="vf-toggle"><input type="checkbox" data-vf-surface-toggle="ab_enabled" ${surface.ab_enabled ? 'checked' : ''}> ${escapeHtml(studioMessages.surfaceAbEnabled)}</label>` : ''}
 
                             ${surface.ab_enabled ? `
                                 <div class="vf-inline">
-                                    <button type="button" class="vf-btn ${state.activeVariant === 'a' ? 'vf-btn--primary' : ''}" data-vf-variant="a">Uredi varijantu A</button>
-                                    <button type="button" class="vf-btn ${state.activeVariant === 'b' ? 'vf-btn--primary' : ''}" data-vf-variant="b">Uredi varijantu B</button>
+                                    <button type="button" class="vf-btn ${state.activeVariant === 'a' ? 'vf-btn--primary' : ''}" data-vf-variant="a">${escapeHtml(studioMessages.surfaceEditVariantA)}</button>
+                                    <button type="button" class="vf-btn ${state.activeVariant === 'b' ? 'vf-btn--primary' : ''}" data-vf-variant="b">${escapeHtml(studioMessages.surfaceEditVariantB)}</button>
                                 </div>
                             ` : ''}
                         </div>
@@ -3315,16 +3796,16 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
                     <div class="vf-card" style="box-shadow:none;">
                         <div class="vf-card__head">
                             <div>
-                                <h3 class="vf-card__title">Blokovi stranice</h3>
-                                <div class="vf-card__sub">Dodaj koliko god blokova trebaš i složi moderni landing ili funnel korak po svom scenariju.</div>
+                                <h3 class="vf-card__title">${escapeHtml(studioMessages.surfaceBlocksTitle)}</h3>
+                                <div class="vf-card__sub">${escapeHtml(studioMessages.surfaceBlocksSub)}</div>
                             </div>
                         </div>
                         <div class="vf-card__body">
                             ${(hasCaptureFields || hasDeferredSurvey) && !hasSubmitAction ? `
                                 <div class="vf-note" style="margin-bottom:.95rem;">
-                                    ${hasDeferredSurvey && !hasCaptureFields ? 'Ova stranica ima radio upitnik, ali još nema završni submit gumb. Dodaj ga jednim klikom kako bi osoba mogla završiti upitnik i otići na pravi sljedeći korak.' : 'Ova stranica ima formu ili upitnik, ali još nema pravi submit gumb. Dodaj ga jednim klikom pa će osoba moći poslati podatke i nastaviti dalje.'}
+                                    ${escapeHtml(hasDeferredSurvey && !hasCaptureFields ? studioMessages.surfaceSubmitNoteSurvey : studioMessages.surfaceSubmitNoteForm)}
                                     <div class="vf-card-actions" style="margin-top:.75rem;">
-                                        <button type="button" class="vf-btn vf-btn--primary" data-vf-add-submit-cta="1">Dodaj submit gumb</button>
+                                        <button type="button" class="vf-btn vf-btn--primary" data-vf-add-submit-cta="1">${escapeHtml(studioMessages.surfaceAddSubmitButton)}</button>
                                     </div>
                                 </div>
                             ` : ''}
@@ -3332,10 +3813,10 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
                                 <select id="vf_add_block_select_${scope}">
                                     ${Object.entries(pageBlockTypes).map(([key, label]) => `<option value="${escapeHtml(key)}">${escapeHtml(label)}</option>`).join('')}
                                 </select>
-                                <button type="button" class="vf-btn vf-btn--primary" data-vf-add-block="${scope}">Dodaj blok</button>
+                                <button type="button" class="vf-btn vf-btn--primary" data-vf-add-block="${scope}">${escapeHtml(studioMessages.surfaceAddBlockButton)}</button>
                             </div>
                             <div class="vf-blocks-list" data-vf-block-dropzone="${escapeHtml(scope)}">
-                                ${blocks.length ? blocks.map(block => renderBlockCard(block)).join('') : '<div class="vf-empty">Još nema blokova. Dodaj prvi i izgradi ovu stranicu po svom scenariju.</div>'}
+                                ${blocks.length ? blocks.map(block => renderBlockCard(block)).join('') : `<div class="vf-empty">${escapeHtml(studioMessages.surfaceBlocksEmpty)}</div>`}
                             </div>
                         </div>
                     </div>
@@ -3343,8 +3824,8 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
                     <div class="vf-card" style="box-shadow:none;">
                         <div class="vf-card__head">
                             <div>
-                                <h3 class="vf-card__title">Gotovi predlošci</h3>
-                                <div class="vf-card__sub">Za početak uzmi gotov landing ili survey raspored pa ga dodatno prilagodi.</div>
+                                <h3 class="vf-card__title">${escapeHtml(studioMessages.surfaceTemplatesTitle)}</h3>
+                                <div class="vf-card__sub">${escapeHtml(studioMessages.surfaceTemplatesSub)}</div>
                             </div>
                         </div>
                         <div class="vf-card__body">
@@ -3364,12 +3845,12 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
                     <div class="vf-card" style="box-shadow:none;">
                         <div class="vf-card__head">
                             <div>
-                                <h3 class="vf-card__title">Editor odabranog bloka</h3>
-                                <div class="vf-card__sub">Ovdje uređuješ funkciju bloka, sadržaj, stil, gumbe, survey logiku i countdown postavke.</div>
+                                <h3 class="vf-card__title">${escapeHtml(studioMessages.surfaceEditorTitle)}</h3>
+                                <div class="vf-card__sub">${escapeHtml(studioMessages.surfaceEditorSub)}</div>
                             </div>
                         </div>
                         <div class="vf-card__body">
-                            ${activeBlock ? renderBlockEditor(activeBlock) : '<div class="vf-empty">Odaberi blok za uređivanje.</div>'}
+                            ${activeBlock ? renderBlockEditor(activeBlock) : `<div class="vf-empty">${escapeHtml(studioMessages.surfaceEditorEmpty)}</div>`}
                         </div>
                     </div>
                 </div>
@@ -3392,7 +3873,7 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
                         <div class="vf-chip-row">
                             <span class="vf-chip">${escapeHtml(pageBlockTypes[block.type] || block.type)}</span>
                             <span class="vf-chip vf-chip--soft">${escapeHtml(getBlockWidthLabel(block.layout_width || 'full'))}</span>
-                            ${isSystemSubmitBlock(block) ? '<span class="vf-chip vf-chip--accent">Auto submit</span>' : ''}
+                            ${isSystemSubmitBlock(block) ? `<span class="vf-chip vf-chip--accent">${escapeHtml(studioMessages.blockAutoSubmit)}</span>` : ''}
                             ${block.required ? '<span class="vf-chip">Obavezno</span>' : ''}
                         </div>
                     </div>
@@ -3404,8 +3885,8 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
                     </div>
                 </div>
                 <div class="vf-block-card__title">${escapeHtml(block.title || block.label || 'Blok')}</div>
-                <div class="vf-block-card__text">${escapeHtml(block.text || block.placeholder || 'Bez opisa.')}</div>
-                <div class="vf-block-card__hint">Klikni širinu gore i blok će se odmah presložiti. Zatim povuci sljedeći blok uz njega gdje želiš.</div>
+                <div class="vf-block-card__text">${escapeHtml(block.text || block.placeholder || studioMessages.blockNoDesc)}</div>
+                <div class="vf-block-card__hint">${escapeHtml(studioMessages.blockWidthHint)}</div>
                 <div class="vf-card-actions">
                     <button type="button" data-vf-block-duplicate="${escapeHtml(block.id)}">Dupliciraj</button>
                     <button type="button" data-vf-block-up="${escapeHtml(block.id)}">Gore</button>
@@ -3423,8 +3904,8 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
             <div class="vf-media-gallery">
                 <div class="vf-media-gallery__head">
                     <div>
-                        <h4 class="vf-media-gallery__title">Moja galerija</h4>
-                        <div class="vf-field__hint">Klikni već učitanu sliku da je odmah postaviš u ovaj blok. Svaka nova uploadana slika ostaje ovdje za ponovno korištenje.</div>
+                        <h4 class="vf-media-gallery__title">${escapeHtml(studioMessages.galleryTitle)}</h4>
+                        <div class="vf-field__hint">${escapeHtml(studioMessages.galleryHint)}</div>
                     </div>
                 </div>
                 ${entries.length ? `
@@ -3448,7 +3929,7 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
                     </div>
                 ` : `
                     <div class="vf-media-gallery__empty">
-                        Ovdje će se prikazati slike koje si već učitao u VIP Funnel. Nakon prvog uploada možeš ih ponovno birati bez novog učitavanja.
+                        ${escapeHtml(studioMessages.galleryEmpty)}
                     </div>
                 `}
             </div>

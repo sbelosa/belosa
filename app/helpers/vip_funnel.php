@@ -2691,7 +2691,7 @@ function vip_funnel_get_studio_seed_payload($user = null): array {
     $owner_options = function_exists('vip_funnel_demo_get_owner_options') ? vip_funnel_demo_get_owner_options($user) : [];
     $default_owner_user_id = (int) array_key_first($owner_options ?: [((int) ($user->user_id ?? 0)) => '']);
     $landing_page = vip_funnel_normalize_page_surface_payload([
-        'name' => 'Glavna stranica funnela',
+        'name' => l('vip_funnel.studio.landing.title'),
         'background_color' => '#0e1624',
         'surface_color' => '#151f31',
         'text_color' => '#eef4ff',
@@ -2721,7 +2721,7 @@ function vip_funnel_get_studio_seed_payload($user = null): array {
                 ],
             ],
         ],
-    ], 'Glavna stranica funnela');
+    ], l('vip_funnel.studio.landing.title'));
 
     return vip_funnel_normalize_studio_payload([
         'funnel' => [
@@ -2857,7 +2857,7 @@ function vip_funnel_normalize_studio_payload($payload, $user = null): array {
             'offer_promise' => '',
             'why_now' => '',
         ],
-        'landing_page' => vip_funnel_get_default_page_surface_payload('Glavna stranica funnela'),
+        'landing_page' => vip_funnel_get_default_page_surface_payload(l('vip_funnel.studio.landing.title')),
         'paths' => vip_funnel_get_default_paths_payload(),
         'board' => vip_funnel_get_studio_seed_board_payload(),
         'products' => [
@@ -2911,7 +2911,7 @@ function vip_funnel_normalize_studio_payload($payload, $user = null): array {
         }
     }
 
-    $payload['landing_page'] = vip_funnel_normalize_page_surface_payload($raw_landing_page ?? $seed['landing_page'], 'Glavna stranica funnela');
+    $payload['landing_page'] = vip_funnel_normalize_page_surface_payload($raw_landing_page ?? $seed['landing_page'], l('vip_funnel.studio.landing.title'));
     $payload['paths'] = vip_funnel_normalize_paths_payload($raw_paths ?? $seed['paths']);
     $payload['board'] = vip_funnel_normalize_board_payload($raw_board ?? $seed['board']);
     $payload['defaults']['owner_user_id'] = (int) ($payload['defaults']['owner_user_id'] ?? ($user->user_id ?? 0));
@@ -3376,10 +3376,13 @@ function vip_funnel_ensure_runtime_schema(): void {
         fc_add_table_column_if_missing('vip_funnel_runs', 'variant_key', "`variant_key` varchar(8) NULL AFTER `visitor_key`");
         fc_add_table_column_if_missing('vip_funnel_runs', 'current_step_key', "`current_step_key` varchar(128) NULL AFTER `current_card_id`");
         fc_add_table_column_if_missing('vip_leads', 'visitor_key', "`visitor_key` varchar(64) NULL AFTER `owner_user_id`");
+        fc_add_table_column_if_missing('vip_leads', 'vip_funnel_id', "`vip_funnel_id` bigint unsigned NULL AFTER `owner_user_id`");
         fc_add_table_column_if_missing('vip_leads', 'lead_name', "`lead_name` varchar(160) NULL AFTER `visitor_key`");
         fc_add_table_column_if_missing('vip_leads', 'full_name', "`full_name` varchar(160) NULL AFTER `lead_name`");
         fc_add_table_column_if_missing('vip_leads', 'lead_email', "`lead_email` varchar(320) NULL AFTER `full_name`");
         fc_add_table_column_if_missing('vip_leads', 'lead_phone', "`lead_phone` varchar(64) NULL AFTER `lead_email`");
+        fc_add_table_column_if_missing('vip_leads', 'source_step_key', "`source_step_key` varchar(128) NULL AFTER `vip_funnel_id`");
+        fc_add_table_column_if_missing('vip_leads', 'selection_value', "`selection_value` varchar(160) NULL AFTER `source_step_key`");
     }
 
     database()->query("
@@ -3409,19 +3412,151 @@ function vip_funnel_ensure_runtime_schema(): void {
     ");
 }
 
-function vip_funnel_get_analytics_snapshot(int $funnel_id = 0): array {
+function vip_funnel_get_analytics_step_registry(array $payload = []): array {
+    $payload = vip_funnel_normalize_studio_payload($payload);
+    $phase_definitions = vip_funnel_get_phase_definitions();
+    $path_titles = [];
+
+    foreach((array) ($payload['paths'] ?? []) as $path) {
+        $path = vip_funnel_to_array($path);
+        $path_key = (string) ($path['path_key'] ?? '');
+
+        if($path_key === '') {
+            continue;
+        }
+
+        $path_titles[$path_key] = (string) ($path['title'] ?? $path_key);
+    }
+
+    $registry = [
+        'landing' => [
+            'title' => trim((string) ($payload['landing_page']['name'] ?? ($payload['overview']['headline'] ?? ($payload['funnel']['name'] ?? l('vip_funnel.analytics.landing_title'))))),
+            'phase_key' => 'landing',
+            'phase_title' => l('vip_funnel.analytics.landing_phase'),
+            'path_key' => '',
+            'path_title' => '',
+        ],
+    ];
+
+    foreach((array) ($payload['board'] ?? []) as $phase) {
+        $phase = vip_funnel_to_array($phase);
+        $phase_key = (string) ($phase['key'] ?? '');
+        $phase_title = (string) ($phase_definitions[$phase_key]['title'] ?? ucfirst($phase_key));
+
+        foreach((array) ($phase['steps'] ?? []) as $step) {
+            $step = vip_funnel_to_array($step);
+            $step_id = (string) ($step['id'] ?? '');
+
+            if($step_id === '') {
+                continue;
+            }
+
+            $path_key = (string) ($step['path_key'] ?? '');
+
+            $registry[$step_id] = [
+                'title' => trim((string) ($step['title'] ?? $step_id)),
+                'phase_key' => $phase_key,
+                'phase_title' => $phase_title,
+                'path_key' => $path_key,
+                'path_title' => (string) ($path_titles[$path_key] ?? ''),
+            ];
+        }
+    }
+
+    return $registry;
+}
+
+function vip_funnel_collect_selection_labels_from_surface(array $surface = [], array &$map = []): void {
+    $surface = vip_funnel_normalize_page_surface_payload($surface);
+    $block_groups = [
+        (array) ($surface['blocks'] ?? []),
+        (array) ($surface['variant_b_blocks'] ?? []),
+    ];
+
+    foreach($block_groups as $blocks) {
+        foreach($blocks as $block) {
+            $block = vip_funnel_to_array($block);
+            $type = (string) ($block['type'] ?? '');
+
+            if(!in_array($type, ['survey', 'radio_survey'], true)) {
+                continue;
+            }
+
+            foreach((array) ($block['options'] ?? []) as $option) {
+                $option = vip_funnel_to_array($option);
+                $value = trim((string) ($option['value'] ?? ''));
+                $label = trim((string) ($option['label'] ?? ''));
+
+                if($value === '' || $label === '' || isset($map[$value])) {
+                    continue;
+                }
+
+                $map[$value] = $label;
+            }
+        }
+    }
+}
+
+function vip_funnel_get_analytics_selection_label_map(array $payload = []): array {
+    $payload = vip_funnel_normalize_studio_payload($payload);
+    $map = [];
+
+    vip_funnel_collect_selection_labels_from_surface((array) ($payload['landing_page'] ?? []), $map);
+
+    foreach((array) ($payload['board'] ?? []) as $phase) {
+        $phase = vip_funnel_to_array($phase);
+
+        foreach((array) ($phase['steps'] ?? []) as $step) {
+            $step = vip_funnel_to_array($step);
+            vip_funnel_collect_selection_labels_from_surface((array) ($step['page'] ?? []), $map);
+        }
+    }
+
+    return $map;
+}
+
+function vip_funnel_get_public_event_type_labels(): array {
+    return [
+        'view' => l('vip_funnel.analytics.event.view'),
+        'submit' => l('vip_funnel.analytics.event.submit'),
+        'lead_capture' => l('vip_funnel.analytics.event.lead_capture'),
+        'advance' => l('vip_funnel.analytics.event.advance'),
+    ];
+}
+
+function vip_funnel_get_analytics_snapshot(int $funnel_id = 0, array $payload = []): array {
     $snapshot = [
         'views' => 0,
+        'unique_visitors' => 0,
         'submits' => 0,
         'advances' => 0,
         'leads' => 0,
+        'submit_rate' => 0,
+        'lead_rate' => 0,
+        'contacts_in_data' => 0,
         'best_step' => null,
+        'best_selection' => null,
         'ab' => [
             'a_views' => 0,
             'b_views' => 0,
             'a_submits' => 0,
             'b_submits' => 0,
+            'a_rate' => 0,
+            'b_rate' => 0,
             'winner' => '',
+        ],
+        'steps' => [],
+        'selections' => [],
+        'recent_events' => [],
+        'demo' => [
+            'requests' => 0,
+            'approved' => 0,
+            'live' => 0,
+            'converted' => 0,
+            'archived' => 0,
+            'activation_rate' => 0,
+            'conversion_rate' => 0,
+            'recent_events' => [],
         ],
     ];
 
@@ -3435,8 +3570,12 @@ function vip_funnel_get_analytics_snapshot(int $funnel_id = 0): array {
         return $snapshot;
     }
 
+    $step_registry = vip_funnel_get_analytics_step_registry($payload);
+    $selection_labels = vip_funnel_get_analytics_selection_label_map($payload);
+
     $totals_result = database()->query("SELECT
             SUM(CASE WHEN `event_type` = 'view' THEN 1 ELSE 0 END) AS `views`,
+            COUNT(DISTINCT CASE WHEN `event_type` = 'view' THEN `visitor_key` END) AS `unique_visitors`,
             SUM(CASE WHEN `event_type` = 'submit' THEN 1 ELSE 0 END) AS `submits`,
             SUM(CASE WHEN `event_type` = 'advance' THEN 1 ELSE 0 END) AS `advances`,
             SUM(CASE WHEN `event_type` = 'lead_capture' THEN 1 ELSE 0 END) AS `leads`,
@@ -3450,6 +3589,7 @@ function vip_funnel_get_analytics_snapshot(int $funnel_id = 0): array {
 
     if($totals) {
         $snapshot['views'] = (int) ($totals->views ?? 0);
+        $snapshot['unique_visitors'] = (int) ($totals->unique_visitors ?? 0);
         $snapshot['submits'] = (int) ($totals->submits ?? 0);
         $snapshot['advances'] = (int) ($totals->advances ?? 0);
         $snapshot['leads'] = (int) ($totals->leads ?? 0);
@@ -3468,16 +3608,199 @@ function vip_funnel_get_analytics_snapshot(int $funnel_id = 0): array {
     $best_step = $best_step_result ? $best_step_result->fetch_object() : null;
 
     if($best_step) {
+        $best_step_key = (string) ($best_step->step_key ?? '');
         $snapshot['best_step'] = [
-            'step_key' => (string) ($best_step->step_key ?? ''),
+            'step_key' => $best_step_key,
+            'title' => (string) (($step_registry[$best_step_key]['title'] ?? $best_step_key) ?: $best_step_key),
             'views' => (int) ($best_step->total ?? 0),
         ];
     }
 
+    $snapshot['submit_rate'] = $snapshot['views'] > 0 ? round(($snapshot['submits'] / max(1, $snapshot['views'])) * 100, 1) : 0;
+    $snapshot['lead_rate'] = $snapshot['views'] > 0 ? round(($snapshot['leads'] / max(1, $snapshot['views'])) * 100, 1) : 0;
+
     $a_rate = $snapshot['ab']['a_views'] > 0 ? ($snapshot['ab']['a_submits'] / max(1, $snapshot['ab']['a_views'])) : 0;
     $b_rate = $snapshot['ab']['b_views'] > 0 ? ($snapshot['ab']['b_submits'] / max(1, $snapshot['ab']['b_views'])) : 0;
+    $snapshot['ab']['a_rate'] = round($a_rate * 100, 1);
+    $snapshot['ab']['b_rate'] = round($b_rate * 100, 1);
     if($snapshot['ab']['a_views'] || $snapshot['ab']['b_views']) {
         $snapshot['ab']['winner'] = $b_rate > $a_rate ? 'B' : 'A';
+    }
+
+    $step_result = database()->query("SELECT
+            `step_key`,
+            MAX(`page_role`) AS `page_role`,
+            COUNT(DISTINCT CASE WHEN `event_type` = 'view' THEN `visitor_key` END) AS `visitors`,
+            SUM(CASE WHEN `event_type` = 'view' THEN 1 ELSE 0 END) AS `views`,
+            SUM(CASE WHEN `event_type` = 'submit' THEN 1 ELSE 0 END) AS `submits`,
+            SUM(CASE WHEN `event_type` = 'lead_capture' THEN 1 ELSE 0 END) AS `leads`,
+            SUM(CASE WHEN `event_type` = 'advance' THEN 1 ELSE 0 END) AS `advances`,
+            SUM(CASE WHEN `variant_key` = 'a' AND `event_type` = 'view' THEN 1 ELSE 0 END) AS `a_views`,
+            SUM(CASE WHEN `variant_key` = 'b' AND `event_type` = 'view' THEN 1 ELSE 0 END) AS `b_views`
+        FROM `vip_funnel_events`
+        WHERE `vip_funnel_id` = " . (int) $funnel_id . "
+        GROUP BY `step_key`
+        ORDER BY `views` DESC, `step_key` ASC");
+
+    while($step_result && ($row = $step_result->fetch_object())) {
+        $step_key = (string) ($row->step_key ?? '');
+        $meta = $step_registry[$step_key] ?? [
+            'title' => $step_key,
+            'phase_key' => '',
+            'phase_title' => '',
+            'path_key' => '',
+            'path_title' => '',
+        ];
+
+        $views = (int) ($row->views ?? 0);
+        $submits = (int) ($row->submits ?? 0);
+        $leads = (int) ($row->leads ?? 0);
+
+        $snapshot['steps'][] = [
+            'step_key' => $step_key,
+            'title' => (string) ($meta['title'] ?? $step_key),
+            'page_role' => (string) ($row->page_role ?? 'step'),
+            'phase_key' => (string) ($meta['phase_key'] ?? ''),
+            'phase_title' => (string) ($meta['phase_title'] ?? ''),
+            'path_key' => (string) ($meta['path_key'] ?? ''),
+            'path_title' => (string) ($meta['path_title'] ?? ''),
+            'visitors' => (int) ($row->visitors ?? 0),
+            'views' => $views,
+            'submits' => $submits,
+            'leads' => $leads,
+            'advances' => (int) ($row->advances ?? 0),
+            'submit_rate' => $views > 0 ? round(($submits / max(1, $views)) * 100, 1) : 0,
+            'lead_rate' => $views > 0 ? round(($leads / max(1, $views)) * 100, 1) : 0,
+            'a_views' => (int) ($row->a_views ?? 0),
+            'b_views' => (int) ($row->b_views ?? 0),
+        ];
+    }
+
+    $selection_result = database()->query("SELECT
+            COALESCE(NULLIF(JSON_UNQUOTE(JSON_EXTRACT(`meta`, '$.selection')), ''), NULLIF(`event_label`, ''), '') AS `selection_key`,
+            SUM(CASE WHEN `event_type` = 'submit' THEN 1 ELSE 0 END) AS `submits`,
+            SUM(CASE WHEN `event_type` = 'lead_capture' THEN 1 ELSE 0 END) AS `leads`,
+            SUM(CASE WHEN `event_type` = 'advance' THEN 1 ELSE 0 END) AS `advances`
+        FROM `vip_funnel_events`
+        WHERE `vip_funnel_id` = " . (int) $funnel_id . "
+        GROUP BY `selection_key`
+        HAVING `selection_key` <> ''
+        ORDER BY `submits` DESC, `leads` DESC, `selection_key` ASC");
+
+    while($selection_result && ($row = $selection_result->fetch_object())) {
+        $selection_key = trim((string) ($row->selection_key ?? ''));
+        if($selection_key === '') {
+            continue;
+        }
+
+        $selection_row = [
+            'selection_key' => $selection_key,
+            'label' => (string) ($selection_labels[$selection_key] ?? $selection_key),
+            'submits' => (int) ($row->submits ?? 0),
+            'leads' => (int) ($row->leads ?? 0),
+            'advances' => (int) ($row->advances ?? 0),
+        ];
+
+        if($snapshot['best_selection'] === null) {
+            $snapshot['best_selection'] = $selection_row;
+        }
+
+        $snapshot['selections'][] = $selection_row;
+    }
+
+    $recent_result = database()->query("SELECT
+            `step_key`,
+            `page_role`,
+            `event_type`,
+            `event_label`,
+            `variant_key`,
+            `meta`,
+            `datetime`
+        FROM `vip_funnel_events`
+        WHERE `vip_funnel_id` = " . (int) $funnel_id . "
+        ORDER BY `vip_funnel_event_id` DESC
+        LIMIT 12");
+
+    $event_type_labels = vip_funnel_get_public_event_type_labels();
+
+    while($recent_result && ($row = $recent_result->fetch_object())) {
+        $step_key = (string) ($row->step_key ?? '');
+        $meta = vip_funnel_to_array($row->meta ?? []);
+        $selection_key = trim((string) ($meta['selection'] ?? ''));
+        $event_label = trim((string) ($row->event_label ?? ''));
+        $label_key = $selection_key !== '' ? $selection_key : $event_label;
+
+        $snapshot['recent_events'][] = [
+            'datetime' => (string) ($row->datetime ?? ''),
+            'event_type' => (string) ($row->event_type ?? ''),
+            'event_type_label' => (string) ($event_type_labels[(string) ($row->event_type ?? '')] ?? ucfirst((string) ($row->event_type ?? ''))),
+            'step_key' => $step_key,
+            'step_title' => (string) (($step_registry[$step_key]['title'] ?? $step_key) ?: $step_key),
+            'variant_key' => strtoupper((string) ($row->variant_key ?? 'a')),
+            'label' => (string) ($selection_labels[$label_key] ?? ($label_key !== '' ? $label_key : '')),
+        ];
+    }
+
+    if(vip_funnel_has_table('data')) {
+        $contacts_result = database()->query("SELECT COUNT(*) AS `total`
+            FROM `data`
+            WHERE `type` = 'lead_funnel'
+              AND JSON_UNQUOTE(JSON_EXTRACT(`data`, '$.vip_funnel_id')) = '" . (int) $funnel_id . "'");
+        $snapshot['contacts_in_data'] = (int) ($contacts_result ? ($contacts_result->fetch_object()->total ?? 0) : 0);
+    }
+
+    if(vip_funnel_demo_schema_is_ready()) {
+        $demo_totals_result = database()->query("SELECT
+                SUM(CASE WHEN `vip_demo_accounts`.`status` = 'requested' THEN 1 ELSE 0 END) AS `requests`,
+                SUM(CASE WHEN `vip_demo_accounts`.`status` = 'approved' THEN 1 ELSE 0 END) AS `approved`,
+                SUM(CASE WHEN `vip_demo_accounts`.`status` IN ('active', 'expiring', 'paused') THEN 1 ELSE 0 END) AS `live`,
+                SUM(CASE WHEN `vip_demo_accounts`.`status` = 'converted' THEN 1 ELSE 0 END) AS `converted`,
+                SUM(CASE WHEN `vip_demo_accounts`.`status` IN ('expired', 'closed', 'rejected') THEN 1 ELSE 0 END) AS `archived`
+            FROM `vip_demo_accounts`
+            INNER JOIN `vip_leads` ON `vip_leads`.`vip_lead_id` = `vip_demo_accounts`.`vip_lead_id`
+            WHERE `vip_leads`.`vip_funnel_id` = " . (int) $funnel_id);
+        $demo_totals = $demo_totals_result ? $demo_totals_result->fetch_object() : null;
+
+        if($demo_totals) {
+            $snapshot['demo']['requests'] = (int) ($demo_totals->requests ?? 0);
+            $snapshot['demo']['approved'] = (int) ($demo_totals->approved ?? 0);
+            $snapshot['demo']['live'] = (int) ($demo_totals->live ?? 0);
+            $snapshot['demo']['converted'] = (int) ($demo_totals->converted ?? 0);
+            $snapshot['demo']['archived'] = (int) ($demo_totals->archived ?? 0);
+        }
+
+        $demo_base = $snapshot['demo']['requests'] + $snapshot['demo']['approved'] + $snapshot['demo']['live'] + $snapshot['demo']['converted'] + $snapshot['demo']['archived'];
+        $snapshot['demo']['activation_rate'] = $demo_base > 0 ? round((($snapshot['demo']['live'] + $snapshot['demo']['converted']) / max(1, $demo_base)) * 100, 1) : 0;
+        $snapshot['demo']['conversion_rate'] = $demo_base > 0 ? round(($snapshot['demo']['converted'] / max(1, $demo_base)) * 100, 1) : 0;
+
+        $demo_event_labels = vip_funnel_demo_get_event_labels();
+        $demo_recent_result = database()->query("SELECT
+                `vip_demo_events`.`event_key`,
+                `vip_demo_events`.`datetime`,
+                `actors`.`name` AS `actor_name`,
+                `vip_leads`.`lead_name`,
+                `vip_leads`.`full_name`,
+                `vip_leads`.`payload` AS `lead_payload`
+            FROM `vip_demo_events`
+            INNER JOIN `vip_demo_accounts` ON `vip_demo_accounts`.`vip_demo_account_id` = `vip_demo_events`.`vip_demo_account_id`
+            INNER JOIN `vip_leads` ON `vip_leads`.`vip_lead_id` = `vip_demo_accounts`.`vip_lead_id`
+            LEFT JOIN `users` AS `actors` ON `actors`.`user_id` = `vip_demo_events`.`actor_user_id`
+            WHERE `vip_leads`.`vip_funnel_id` = " . (int) $funnel_id . "
+            ORDER BY `vip_demo_events`.`vip_demo_event_id` DESC
+            LIMIT 10");
+
+        while($demo_recent_result && ($row = $demo_recent_result->fetch_object())) {
+            $lead_payload = vip_funnel_to_array($row->lead_payload ?? []);
+            $lead_name = trim((string) ($row->lead_name ?? '')) ?: trim((string) ($row->full_name ?? '')) ?: trim((string) ($lead_payload['lead_name'] ?? ''));
+
+            $snapshot['demo']['recent_events'][] = [
+                'datetime' => (string) ($row->datetime ?? ''),
+                'event_key' => (string) ($row->event_key ?? ''),
+                'event_label' => (string) ($demo_event_labels[(string) ($row->event_key ?? '')] ?? ucfirst((string) ($row->event_key ?? ''))),
+                'lead_name' => $lead_name,
+                'actor_name' => trim((string) ($row->actor_name ?? '')),
+            ];
+        }
     }
 
     return $snapshot;
@@ -3486,6 +3809,9 @@ function vip_funnel_get_analytics_snapshot(int $funnel_id = 0): array {
 function vip_funnel_get_studio_state($user = null): array {
     $schema_ready = vip_funnel_studio_schema_is_ready();
     vip_funnel_ensure_runtime_schema();
+    if($user) {
+        vip_funnel_backfill_owner_runtime_contacts((int) ($user->user_id ?? 0));
+    }
     $payload = $schema_ready ? vip_funnel_studio_load_from_database($user) : vip_funnel_get_user_studio_full_payload($user);
     $payload = vip_funnel_normalize_studio_payload($payload, $user);
     $funnel_row = $schema_ready && $user ? vip_funnel_studio_get_primary_funnel_row((int) ($user->user_id ?? 0)) : null;
@@ -3499,7 +3825,7 @@ function vip_funnel_get_studio_state($user = null): array {
         'paths' => $payload['paths'],
         'funnel' => $payload['funnel'],
         'results' => vip_funnel_get_results_snapshot($user, (int) ($funnel_row->vip_funnel_id ?? 0)),
-        'analytics' => vip_funnel_get_analytics_snapshot((int) ($funnel_row->vip_funnel_id ?? 0)),
+        'analytics' => vip_funnel_get_analytics_snapshot((int) ($funnel_row->vip_funnel_id ?? 0), $payload),
         'funnel_row' => $funnel_row,
         'card_type_options' => vip_funnel_get_card_type_options(),
         'visibility_options' => vip_funnel_get_visibility_options(),
@@ -3778,7 +4104,7 @@ function vip_funnel_get_public_step_state(int $user_id = 0, string $requested_st
 
     $page_role = $current_step_id === '' ? 'landing' : 'step';
     $surface = $page_role === 'landing'
-        ? vip_funnel_normalize_page_surface_payload($payload['landing_page'] ?? [], 'Glavna stranica funnela')
+        ? vip_funnel_normalize_page_surface_payload($payload['landing_page'] ?? [], l('vip_funnel.studio.landing.title'))
         : vip_funnel_normalize_page_surface_payload($active_step['page'] ?? [], (string) ($active_step['title'] ?? 'Funnel stranica'));
     if($page_role === 'step' && empty($surface['blocks'])) {
         $surface = vip_funnel_build_surface_from_legacy_step($active_step, (string) ($active_step['title'] ?? 'Funnel stranica'));
@@ -4014,6 +4340,314 @@ function vip_funnel_get_public_radio_field_map(array $blocks): array {
     return $map;
 }
 
+function vip_funnel_resolve_state_funnel_id(array $state = []): int {
+    $payload = vip_funnel_to_array($state['payload'] ?? []);
+    $funnel_id = (int) (($state['funnel_row']['vip_funnel_id'] ?? 0) ?: ($payload['funnel_row']['vip_funnel_id'] ?? 0));
+
+    if($funnel_id <= 0 && vip_funnel_studio_schema_is_ready()) {
+        $funnel = vip_funnel_studio_get_primary_funnel_row((int) ($state['user_id'] ?? 0));
+        $funnel_id = (int) ($funnel->vip_funnel_id ?? 0);
+    }
+
+    return $funnel_id;
+}
+
+function vip_funnel_get_contact_intent_key(string $source_key = 'vip_funnel', string $demo_status = ''): string {
+    if($source_key === 'vip_demo_access') {
+        switch($demo_status) {
+            case 'active':
+            case 'expiring':
+            case 'paused':
+                return 'demo_active';
+
+            case 'converted':
+                return 'demo_converted';
+
+            case 'expired':
+            case 'closed':
+            case 'rejected':
+                return 'demo_archived';
+
+            default:
+                return 'demo_request';
+        }
+    }
+
+    return $demo_status === 'converted' ? 'demo_converted' : 'funnel_lead';
+}
+
+function vip_funnel_find_contact_datum(int $user_id = 0, int $vip_lead_id = 0, string $lead_email = '', string $lead_phone = '', string $visitor_key = ''): ?\stdClass {
+    if($user_id <= 0 || !vip_funnel_has_table('data')) {
+        return null;
+    }
+
+    $conditions = [];
+
+    if($vip_lead_id > 0) {
+        $conditions[] = "JSON_UNQUOTE(JSON_EXTRACT(`data`, '$.vip_lead_id')) = '" . (int) $vip_lead_id . "'";
+    }
+
+    if($lead_email !== '') {
+        $conditions[] = "JSON_UNQUOTE(JSON_EXTRACT(`data`, '$.email')) = '" . database()->real_escape_string($lead_email) . "'";
+    }
+
+    if($lead_phone !== '') {
+        $conditions[] = "JSON_UNQUOTE(JSON_EXTRACT(`data`, '$.phone')) = '" . database()->real_escape_string($lead_phone) . "'";
+    }
+
+    if($visitor_key !== '') {
+        $conditions[] = "JSON_UNQUOTE(JSON_EXTRACT(`data`, '$.visitor_key')) = '" . database()->real_escape_string($visitor_key) . "'";
+    }
+
+    if(empty($conditions)) {
+        return null;
+    }
+
+    $sql = "SELECT `datum_id`, `data`
+        FROM `data`
+        WHERE `user_id` = " . (int) $user_id . "
+          AND `type` = 'lead_funnel'
+          AND (" . implode(' OR ', $conditions) . ")
+        ORDER BY `datum_id` DESC
+        LIMIT 1";
+
+    $result = database()->query($sql);
+
+    return $result ? $result->fetch_object() : null;
+}
+
+function vip_funnel_merge_contact_payload(array $existing = [], array $payload = []): array {
+    foreach($payload as $key => $value) {
+        if(is_array($value)) {
+            if(!empty($value) || !isset($existing[$key])) {
+                $existing[$key] = $value;
+            }
+            continue;
+        }
+
+        if($value !== '' && $value !== null) {
+            $existing[$key] = $value;
+            continue;
+        }
+
+        if(!array_key_exists($key, $existing)) {
+            $existing[$key] = $value;
+        }
+    }
+
+    return $existing;
+}
+
+function vip_funnel_sync_contact_data_entry(int $user_id = 0, array $payload = []): int {
+    if($user_id <= 0 || !vip_funnel_has_table('data')) {
+        return 0;
+    }
+
+    $vip_lead_id = (int) ($payload['vip_lead_id'] ?? 0);
+    $lead_email = trim((string) ($payload['email'] ?? ''));
+    $lead_phone = trim((string) ($payload['phone'] ?? ''));
+    $visitor_key = trim((string) ($payload['visitor_key'] ?? ''));
+    $existing = vip_funnel_find_contact_datum($user_id, $vip_lead_id, $lead_email, $lead_phone, $visitor_key);
+    $stored_payload = $existing ? vip_funnel_to_array($existing->data ?? []) : [];
+    $merged_payload = vip_funnel_merge_contact_payload($stored_payload, $payload);
+
+    if($existing) {
+        db()->where('datum_id', (int) $existing->datum_id)->update('data', [
+            'data' => vip_funnel_json_encode($merged_payload),
+            'datetime' => get_date(),
+        ]);
+
+        return (int) $existing->datum_id;
+    }
+
+    return (int) db()->insert('data', [
+        'biolink_block_id' => null,
+        'link_id' => null,
+        'project_id' => null,
+        'user_id' => $user_id,
+        'type' => 'lead_funnel',
+        'data' => vip_funnel_json_encode($merged_payload),
+        'datetime' => get_date(),
+    ]);
+}
+
+function vip_funnel_sync_contact_data_from_lead_id(int $vip_lead_id = 0, array $context = []): int {
+    if($vip_lead_id <= 0 || !vip_funnel_demo_schema_is_ready()) {
+        return 0;
+    }
+
+    $lead = db()->where('vip_lead_id', $vip_lead_id)->getOne('vip_leads');
+
+    if(!$lead) {
+        return 0;
+    }
+
+    $lead_payload = vip_funnel_to_array($lead->payload ?? []);
+    $funnel_context = vip_funnel_to_array($lead_payload['funnel_context'] ?? []);
+    $contact_origin = vip_funnel_to_array($lead_payload['contact_origin'] ?? []);
+    $meta = vip_funnel_to_array($lead_payload['meta'] ?? []);
+    $captured_fields = vip_funnel_to_array($lead_payload['captured_fields'] ?? []);
+    $demo_status = trim((string) ($context['demo_status'] ?? ($lead->demo_status ?? '')));
+    $source_key = trim((string) ($contact_origin['source_key'] ?? ($lead->source === 'vip_funnel_public' ? 'vip_funnel' : 'vip_demo_access')));
+    $source_label = trim((string) ($contact_origin['source_label'] ?? ($source_key === 'vip_demo_access' ? l('vip_funnel.contacts.source.vip_demo_access') : l('vip_funnel.contacts.source.vip_funnel'))));
+    $funnel_name = trim((string) ($funnel_context['funnel_name'] ?? ''));
+    $step_title = trim((string) ($funnel_context['step_title'] ?? ''));
+    $source_context = trim((string) ($contact_origin['source_context'] ?? ''));
+
+    if($source_context === '') {
+        $parts = array_values(array_filter([$funnel_name, $step_title], static function($value) {
+            return trim((string) $value) !== '';
+        }));
+
+        if(!empty($parts)) {
+            $source_context = implode(' • ', $parts);
+        }
+    }
+
+    $contact_payload = [
+        'vip_lead_id' => (int) $vip_lead_id,
+        'vip_funnel_id' => (int) ($lead->vip_funnel_id ?? ($funnel_context['vip_funnel_id'] ?? 0)),
+        'source' => (string) ($lead->source ?? ''),
+        'source_key' => $source_key,
+        'source_label' => $source_label,
+        'source_context' => $source_context,
+        'contact_intent_key' => vip_funnel_get_contact_intent_key($source_key, $demo_status),
+        'name' => trim((string) ($lead->lead_name ?? ($captured_fields['name'] ?? ''))),
+        'full_name' => trim((string) ($lead->full_name ?? ($captured_fields['full_name'] ?? ''))),
+        'email' => trim((string) ($lead->lead_email ?? ($captured_fields['email'] ?? ''))),
+        'phone' => trim((string) ($lead->lead_phone ?? ($captured_fields['phone'] ?? ''))),
+        'visitor_key' => trim((string) ($lead->visitor_key ?? ($funnel_context['visitor_key'] ?? ''))),
+        'interest_type' => (string) ($lead->interest_type ?? ''),
+        'business_readiness' => (string) ($lead->business_readiness ?? ''),
+        'product_goal' => (string) ($lead->product_goal ?? ''),
+        'selection' => trim((string) ($lead->selection_value ?? ($meta['selection'] ?? $lead->product_goal ?? ''))),
+        'radio_answers' => vip_funnel_to_array($meta['radio_answers'] ?? []),
+        'demo_status' => $demo_status,
+        'demo_account_id' => (int) ($context['vip_demo_account_id'] ?? 0),
+        'demo_workspace_url' => trim((string) ($context['workspace_url'] ?? '')),
+        'demo_login_email' => trim((string) ($context['login_email'] ?? ($lead_payload['demo_login_email'] ?? ''))),
+        'funnel_name' => $funnel_name,
+        'funnel_slug' => trim((string) ($funnel_context['funnel_slug'] ?? '')),
+        'funnel_step_key' => trim((string) ($lead->source_step_key ?? ($funnel_context['step_key'] ?? ''))),
+        'funnel_step_title' => $step_title,
+        'funnel_page_role' => trim((string) ($funnel_context['page_role'] ?? '')),
+        'funnel_page_url' => trim((string) ($funnel_context['page_url'] ?? '')),
+        'variant_key' => trim((string) ($funnel_context['variant_key'] ?? '')),
+    ];
+
+    return vip_funnel_sync_contact_data_entry((int) ($lead->owner_user_id ?? 0), $contact_payload);
+}
+
+function vip_funnel_backfill_owner_runtime_contacts(int $owner_user_id = 0): array {
+    if($owner_user_id <= 0 || !vip_funnel_demo_schema_is_ready()) {
+        return ['updated' => 0, 'synced' => 0];
+    }
+
+    vip_funnel_ensure_runtime_schema();
+
+    $result = database()->query("
+        SELECT *
+        FROM `vip_leads`
+        WHERE `owner_user_id` = " . (int) $owner_user_id . "
+        ORDER BY `vip_lead_id` ASC
+    ");
+
+    if(!$result) {
+        return ['updated' => 0, 'synced' => 0];
+    }
+
+    $updated = 0;
+    $synced = 0;
+
+    while($lead = $result->fetch_object()) {
+        $payload = vip_funnel_to_array($lead->payload ?? []);
+        $captured_fields = vip_funnel_to_array($payload['captured_fields'] ?? []);
+        $meta = vip_funnel_to_array($payload['meta'] ?? []);
+        $funnel_context = vip_funnel_to_array($payload['funnel_context'] ?? []);
+        $contact_origin = vip_funnel_to_array($payload['contact_origin'] ?? []);
+
+        $update = [];
+
+        $resolved_funnel_id = (int) ($lead->vip_funnel_id ?? 0);
+        if($resolved_funnel_id <= 0) {
+            $resolved_funnel_id = (int) ($funnel_context['vip_funnel_id'] ?? 0);
+            if($resolved_funnel_id > 0) {
+                $update['vip_funnel_id'] = $resolved_funnel_id;
+            }
+        }
+
+        $resolved_step_key = trim((string) ($lead->source_step_key ?? ''));
+        if($resolved_step_key === '') {
+            $resolved_step_key = trim((string) ($funnel_context['step_key'] ?? ($funnel_context['page_key'] ?? ($payload['page_key'] ?? ''))));
+            if($resolved_step_key !== '') {
+                $update['source_step_key'] = $resolved_step_key;
+            }
+        }
+
+        $resolved_selection = trim((string) ($lead->selection_value ?? ''));
+        if($resolved_selection === '') {
+            $resolved_selection = trim((string) ($meta['selection'] ?? ($lead->product_goal ?? '')));
+            if($resolved_selection !== '') {
+                $update['selection_value'] = $resolved_selection;
+            }
+        }
+
+        $resolved_name = trim((string) ($lead->lead_name ?? ''));
+        if($resolved_name === '') {
+            $resolved_name = trim((string) ($payload['lead_name'] ?? ($captured_fields['name'] ?? '')));
+            if($resolved_name !== '') {
+                $update['lead_name'] = $resolved_name;
+            }
+        }
+
+        $resolved_full_name = trim((string) ($lead->full_name ?? ''));
+        if($resolved_full_name === '') {
+            $resolved_full_name = trim((string) ($payload['full_name'] ?? ($captured_fields['full_name'] ?? $resolved_name)));
+            if($resolved_full_name !== '') {
+                $update['full_name'] = $resolved_full_name;
+            }
+        }
+
+        $resolved_email = trim((string) ($lead->lead_email ?? ''));
+        if($resolved_email === '') {
+            $resolved_email = trim((string) ($payload['lead_email'] ?? ($captured_fields['email'] ?? '')));
+            if($resolved_email !== '') {
+                $update['lead_email'] = $resolved_email;
+            }
+        }
+
+        $resolved_phone = trim((string) ($lead->lead_phone ?? ''));
+        if($resolved_phone === '') {
+            $resolved_phone = trim((string) ($payload['lead_phone'] ?? ($captured_fields['phone'] ?? '')));
+            if($resolved_phone !== '') {
+                $update['lead_phone'] = $resolved_phone;
+            }
+        }
+
+        if(empty($contact_origin)) {
+            $payload['contact_origin'] = [
+                'source_key' => $lead->source === 'vip_funnel_public' ? 'vip_funnel' : 'vip_demo_access',
+                'source_label' => $lead->source === 'vip_funnel_public' ? l('vip_funnel.contacts.source.vip_funnel') : l('vip_funnel.contacts.source.vip_demo_access'),
+            ];
+            $update['payload'] = vip_funnel_json_encode($payload);
+        }
+
+        if(!empty($update)) {
+            db()->where('vip_lead_id', (int) $lead->vip_lead_id)->update('vip_leads', $update);
+            $updated++;
+        }
+
+        $synced += vip_funnel_sync_contact_data_from_lead_id((int) $lead->vip_lead_id, [
+            'demo_status' => (string) ($lead->demo_status ?? ''),
+        ]) ? 1 : 0;
+    }
+
+    return [
+        'updated' => $updated,
+        'synced' => $synced,
+    ];
+}
+
 function vip_funnel_upsert_public_lead(array $state, array $fields = [], array $meta = []): int {
     if(!vip_funnel_demo_schema_is_ready()) {
         return 0;
@@ -4021,11 +4655,19 @@ function vip_funnel_upsert_public_lead(array $state, array $fields = [], array $
 
     vip_funnel_ensure_runtime_schema();
     $owner_user_id = (int) ($state['user_id'] ?? 0);
+    $vip_funnel_id = vip_funnel_resolve_state_funnel_id($state);
     $visitor_key = trim((string) ($state['viewer_key'] ?? ''));
     $lead_email = trim((string) ($fields['email'] ?? ''));
     $lead_phone = trim((string) ($fields['phone'] ?? ''));
     $lead_name = trim((string) ($fields['name'] ?? ''));
     $full_name = trim((string) ($fields['full_name'] ?? ($lead_name !== '' ? $lead_name : '')));
+    $payload_state = vip_funnel_to_array($state['payload'] ?? []);
+    $funnel_name = trim((string) ($payload_state['funnel']['name'] ?? ''));
+    $funnel_slug = trim((string) ($state['slug'] ?? ($payload_state['funnel']['slug'] ?? '')));
+    $step_title = trim((string) ($state['active']['title'] ?? ''));
+    $page_key = trim((string) ($state['page_key'] ?? ''));
+    $page_role = trim((string) ($state['page_role'] ?? 'landing'));
+    $selection_value = trim((string) ($meta['selection'] ?? ''));
 
     $query = db()->where('owner_user_id', $owner_user_id);
     if($lead_email !== '') {
@@ -4042,10 +4684,29 @@ function vip_funnel_upsert_public_lead(array $state, array $fields = [], array $
         'variant_key' => (string) ($state['variant_key'] ?? 'a'),
         'captured_fields' => $fields,
         'meta' => $meta,
+        'funnel_context' => [
+            'vip_funnel_id' => $vip_funnel_id,
+            'funnel_name' => $funnel_name,
+            'funnel_slug' => $funnel_slug,
+            'page_key' => $page_key,
+            'page_role' => $page_role,
+            'step_key' => $page_key,
+            'step_title' => $step_title,
+            'page_url' => trim((string) ($state['canonical_url'] ?? '')),
+            'visitor_key' => $visitor_key,
+            'variant_key' => (string) ($state['variant_key'] ?? 'a'),
+        ],
+        'contact_origin' => [
+            'source_key' => 'vip_funnel',
+            'source_label' => l('vip_funnel.contacts.source.vip_funnel'),
+        ],
     ]);
 
     if($existing) {
         db()->where('vip_lead_id', (int) $existing->vip_lead_id)->update('vip_leads', [
+            'vip_funnel_id' => $vip_funnel_id > 0 ? $vip_funnel_id : ($existing->vip_funnel_id ?? null),
+            'source_step_key' => $page_key !== '' ? $page_key : ($existing->source_step_key ?? null),
+            'selection_value' => $selection_value !== '' ? $selection_value : ($existing->selection_value ?? null),
             'visitor_key' => $visitor_key !== '' ? $visitor_key : ($existing->visitor_key ?? null),
             'lead_name' => $lead_name !== '' ? $lead_name : ($existing->lead_name ?? null),
             'full_name' => $full_name !== '' ? $full_name : ($existing->full_name ?? null),
@@ -4055,12 +4716,19 @@ function vip_funnel_upsert_public_lead(array $state, array $fields = [], array $
             'last_datetime' => get_date(),
         ]);
 
+        vip_funnel_sync_contact_data_from_lead_id((int) $existing->vip_lead_id, [
+            'demo_status' => (string) ($existing->demo_status ?? 'captured'),
+        ]);
+
         return (int) $existing->vip_lead_id;
     }
 
     $lead_id = (int) db()->insert('vip_leads', [
         'user_id' => $owner_user_id,
         'owner_user_id' => $owner_user_id,
+        'vip_funnel_id' => $vip_funnel_id > 0 ? $vip_funnel_id : null,
+        'source_step_key' => $page_key !== '' ? $page_key : null,
+        'selection_value' => $selection_value !== '' ? $selection_value : null,
         'visitor_key' => $visitor_key !== '' ? $visitor_key : null,
         'lead_name' => $lead_name !== '' ? $lead_name : null,
         'full_name' => $full_name !== '' ? $full_name : null,
@@ -4077,23 +4745,8 @@ function vip_funnel_upsert_public_lead(array $state, array $fields = [], array $
     ]);
 
     if($lead_id > 0) {
-        db()->insert('data', [
-            'biolink_block_id' => null,
-            'link_id' => null,
-            'project_id' => null,
-            'user_id' => $owner_user_id,
-            'type' => 'lead_funnel',
-            'data' => vip_funnel_json_encode([
-                'name' => $lead_name,
-                'full_name' => $full_name,
-                'email' => $lead_email,
-                'phone' => $lead_phone,
-                'source' => 'vip_funnel_public',
-                'page_key' => (string) ($state['page_key'] ?? ''),
-                'selection' => (string) ($meta['selection'] ?? ''),
-                'radio_answers' => vip_funnel_to_array($meta['radio_answers'] ?? []),
-            ]),
-            'datetime' => get_date(),
+        vip_funnel_sync_contact_data_from_lead_id($lead_id, [
+            'demo_status' => 'captured',
         ]);
     }
 
@@ -4126,7 +4779,7 @@ function vip_funnel_process_public_submission(array $state, array $post = []): a
         }
 
         if($type === 'email_field' && $value !== '' && !filter_var($value, FILTER_VALIDATE_EMAIL)) {
-            $errors[] = 'Email';
+            $errors[] = l('global.email');
             continue;
         }
 
@@ -4196,7 +4849,7 @@ function vip_funnel_process_public_submission(array $state, array $post = []): a
     if(!empty($errors)) {
         return [
             'success' => false,
-            'message' => 'Molimo ispuni obavezna polja: ' . implode(', ', array_unique($errors)),
+            'message' => sprintf(l('vip_funnel.public.alert.required_fields'), implode(', ', array_unique($errors))),
         ];
     }
 
@@ -4868,131 +5521,21 @@ function vip_funnel_demo_resolve_start_package_offer($user = null, ?string $page
 }
 
 function vip_funnel_demo_get_locked_module_config(string $module_key): array {
-    $is_hr = (\Altum\Language::$code ?? 'hr') === 'hr';
+    $modules = ['vip_funnel', 'ai_plan', 'account_plan', 'account_payments', 'payment_processors', 'default'];
+    $map = [];
 
-    $map = $is_hr ? [
-        'vip_funnel' => [
-            'eyebrow' => 'VIP Funnel',
-            'title' => 'VIP Funnel se otključava nakon aktivacije Start Paketa',
-            'message' => 'Ovdje se slažu prodajni, recruitment i demo tokovi koji kasnije mogu raditi za tvoj posao i tim. U demo računu dobivaš dojam sustava, ali puni builder i stvarna aktivacija otključavaju se tek kad kreneš ozbiljno.',
-            'features' => [
-                'Složi vlastite prodajne i recruitment funnele bez improvizacije.',
-                'Pokreni tokove za proizvode, demo pristup i poslovnu suradnju.',
-                'Kasnije dupliciraj sustav za svoj tim iz jednog centralnog modela.',
-            ],
-        ],
-        'ai_plan' => [
-            'eyebrow' => 'Tvoj plan rasta',
-            'title' => 'AI analize i planovi rasta otključavaju se uz puni pristup',
-            'message' => 'Tvoj plan rasta pretvara profil, aplikaciju i rezultate u konkretne AI preporuke, planove i sljedeće poteze. U demo računu vidiš temelj sustava, a puni AI pregled i akcijski planovi dolaze nakon aktivacije.',
-            'features' => [
-                'AI pregled aplikacije i ponude s konkretnim poboljšanjima.',
-                'Tjedni planovi rasta, fokus i preporučeni sljedeći potezi.',
-                'Jasniji smjer za prodaju, praćenje ljudi i razvoj posla.',
-            ],
-        ],
-        'account_plan' => [
-            'eyebrow' => 'Paketi i aktivacija',
-            'title' => 'Ovdje se kasnije aktivira puni pristup FCC sustavu',
-            'message' => 'U demo računu ovaj dio ostaje zaključan jer je sljedeći pravi korak Start Paket preko preporuke mentora. Tek tada se otključava puni sustav, alati i sve što je potrebno za ozbiljan rad.',
-            'features' => [
-                'Aktivacija punog FCC pristupa i premium modula.',
-                'Jasan prijelaz iz demo iskustva u stvaran radni račun.',
-                'Povezivanje pristupa s preporukom mentora i Start Paket tokom.',
-            ],
-        ],
-        'account_payments' => [
-            'eyebrow' => 'Plaćanja i aktivacije',
-            'title' => 'Stvarna plaćanja i računi nisu dostupni u demo računu',
-            'message' => 'Ovaj dio služi za praćenje aktivacija, uplata i računa nakon što imaš puni pristup. U demo računu ga držimo zaključanim kako bi iskustvo ostalo čisto, sigurno i fokusirano na odluku.',
-            'features' => [
-                'Pregled uplata, aktivacija i računa na jednom mjestu.',
-                'Sigurni podaci tek nakon stvarne aktivacije računa.',
-                'Jasna veza između paketa, pristupa i aktivnog poslovnog rada.',
-            ],
-        ],
-        'payment_processors' => [
-            'eyebrow' => 'Naplata i checkout',
-            'title' => 'Payment linkovi i naplata otključavaju se kad kreneš ozbiljno',
-            'message' => 'Ovdje se inače spajaju naplate, payment linkovi i checkout opcije za tvoju FCC aplikaciju. U demo računu taj dio ostaje zaključan jer najprije trebaš aktivirati puni pristup i svoj Start Paket.',
-            'features' => [
-                'Poveži naplatu sa svojom aplikacijom i offerima.',
-                'Dodaj checkout opcije i payment linkove za stvaran rad.',
-                'Pretvori interes u konkretnu prodaju tek kad je račun aktiviran.',
-            ],
-        ],
-        'default' => [
-            'eyebrow' => 'Premium modul',
-            'title' => 'Ovaj dio se otključava nakon aktivacije punog pristupa',
-            'message' => 'Demo račun ti pokazuje kako FCC sustav radi iznutra. Premium dijelovi se otključavaju nakon Start Paketa i pune aktivacije računa.',
-            'features' => [
-                'Otključaj sve premium module iz stvarnog računa.',
-                'Poveži svoj pristup s preporukom mentora.',
-                'Kreni dalje iz dema prema pravom radu i rezultatima.',
-            ],
-        ],
-    ] : [
-        'vip_funnel' => [
-            'eyebrow' => 'VIP Funnel',
-            'title' => 'VIP Funnel unlocks after the Start Package is activated',
-            'message' => 'This is where the main sales, recruitment, and demo flows are built. The demo account shows the direction, while the full builder and live business activation unlock after you move forward seriously.',
-            'features' => [
-                'Build your own sales and recruitment funnels without improvisation.',
-                'Launch flows for products, demo access, and business onboarding.',
-                'Later duplicate the same engine across your team from one core model.',
-            ],
-        ],
-        'ai_plan' => [
-            'eyebrow' => 'Your Growth Plan',
-            'title' => 'AI analysis and growth plans unlock with full access',
-            'message' => 'Your Growth Plan turns your profile, app, and results into practical AI recommendations and next moves. The demo shows the foundation, while the full AI review and action plans unlock after activation.',
-            'features' => [
-                'AI review of your app and offer with concrete fixes.',
-                'Weekly growth plans, focus, and suggested next moves.',
-                'Clearer direction for sales, follow-up, and business growth.',
-            ],
-        ],
-        'account_plan' => [
-            'eyebrow' => 'Plans and Activation',
-            'title' => 'This is where full FCC access gets activated later',
-            'message' => 'In the demo account this section stays locked because the next real step is the Start Package through your mentor referral. That is what unlocks the full system and tools.',
-            'features' => [
-                'Activate full FCC access and premium modules.',
-                'Move from demo experience into a real working account.',
-                'Connect your access with the Start Package and mentor referral.',
-            ],
-        ],
-        'account_payments' => [
-            'eyebrow' => 'Payments and Activation',
-            'title' => 'Real payments and invoices are not available in the demo account',
-            'message' => 'This area is used for activation, payments, and invoices after full access is live. In the demo it stays locked so the experience remains clean and focused on the decision.',
-            'features' => [
-                'See activations, payments, and invoices in one place.',
-                'Use real billing only after the account is fully activated.',
-                'Keep the link between package, access, and live business clear.',
-            ],
-        ],
-        'payment_processors' => [
-            'eyebrow' => 'Checkout and Payments',
-            'title' => 'Payment links and checkout unlock when you go live',
-            'message' => 'This is where payment links and checkout options are connected to your FCC app. In the demo account it stays locked because full access and the Start Package come first.',
-            'features' => [
-                'Connect checkout with your app and offers.',
-                'Add payment options and links for real business use.',
-                'Turn interest into real sales after activation.',
-            ],
-        ],
-        'default' => [
-            'eyebrow' => 'Premium module',
-            'title' => 'This area unlocks after full access is activated',
-            'message' => 'Your demo account shows how FCC works from the inside. Premium parts unlock after the Start Package and full account activation.',
-            'features' => [
-                'Unlock all premium modules from a live account.',
-                'Connect your access with your mentor referral.',
-                'Move from demo into real work and results.',
-            ],
-        ],
-    ];
+    foreach($modules as $key) {
+        $map[$key] = [
+            'eyebrow' => l('vip_funnel.demo_lock.modules.' . $key . '.eyebrow'),
+            'title' => l('vip_funnel.demo_lock.modules.' . $key . '.title'),
+            'message' => l('vip_funnel.demo_lock.modules.' . $key . '.message'),
+            'features' => array_values(array_filter([
+                l('vip_funnel.demo_lock.modules.' . $key . '.feature_1'),
+                l('vip_funnel.demo_lock.modules.' . $key . '.feature_2'),
+                l('vip_funnel.demo_lock.modules.' . $key . '.feature_3'),
+            ])),
+        ];
+    }
 
     return $map[$module_key] ?? $map['default'];
 }
@@ -5004,8 +5547,6 @@ function vip_funnel_demo_get_locked_module_payload($user = null, string $module_
 
     $module = vip_funnel_demo_get_locked_module_config($module_key);
     $offer = vip_funnel_demo_resolve_start_package_offer($user, (string) (\Altum\Language::$code ?? \Altum\Language::$default_code));
-    $is_hr = (\Altum\Language::$code ?? 'hr') === 'hr';
-
     return (object) [
         'module_key' => $module_key,
         'eyebrow' => (string) ($module['eyebrow'] ?? ''),
@@ -5015,21 +5556,17 @@ function vip_funnel_demo_get_locked_module_payload($user = null, string $module_
         'badge' => vip_funnel_demo_get_locked_badge_label(),
         'primary_url' => (string) ($offer['primary_url'] ?? ''),
         'secondary_url' => (string) ($offer['secondary_url'] ?? ''),
-        'primary_label' => $is_hr ? 'Naruči Start Paket' : 'Order the Start Package',
-        'secondary_label' => $is_hr ? 'Pogledaj vodič za Start Paket' : 'Open the Start Package guide',
+        'primary_label' => l('vip_funnel.demo_lock.primary_label'),
+        'secondary_label' => l('vip_funnel.demo_lock.secondary_label'),
         'whatsapp_url' => (string) ($offer['owner_whatsapp_url'] ?? ''),
-        'whatsapp_label' => $is_hr ? 'Pošalji WhatsApp sponzoru' : 'Message your sponsor on WhatsApp',
+        'whatsapp_label' => l('vip_funnel.demo_lock.whatsapp_label'),
         'owner_name' => (string) ($offer['owner_name'] ?? ''),
         'owner_phone' => (string) ($offer['owner_phone'] ?? ''),
-        'offer_title' => (string) ($offer['title'] ?? ($is_hr ? 'Start Paket' : 'Start Package')),
-        'footnote' => $is_hr
-            ? 'Nakon aktivacije Start Paketa dodjeljuje se Forever ID i otključava puni FCC sustav, edukacija i poslovni alati.'
-            : 'After the Start Package is activated, the Forever ID is assigned and the full FCC system, onboarding, and business tools unlock.',
+        'offer_title' => (string) ($offer['title'] ?? l('vip_funnel.demo_lock.offer_title')),
+        'footnote' => l('vip_funnel.demo_lock.footnote'),
         'back_url' => (string) ($options['back_url'] ?? url('dashboard')),
-        'back_label' => (string) ($options['back_label'] ?? ($is_hr ? 'Natrag na demo račun' : 'Back to the demo account')),
-        'banner_text' => $is_hr
-            ? 'Kad odlučiš krenuti ozbiljno, aktivacija Start Paketa otključava puni FCC sustav, edukaciju, poslovne alate i tvoj radni račun.'
-            : 'When you decide to move forward seriously, activating the Start Package unlocks the full FCC system, onboarding, business tools, and your live account.',
+        'back_label' => (string) ($options['back_label'] ?? l('vip_funnel.demo_lock.back_label')),
+        'banner_text' => l('vip_funnel.demo_lock.banner_text'),
     ];
 }
 
@@ -5048,17 +5585,15 @@ function vip_funnel_demo_get_global_banner_payload($user = null, ?string $route_
         return null;
     }
 
-    $is_hr = (\Altum\Language::$code ?? 'hr') === 'hr';
-    $payload->eyebrow = $is_hr ? 'Demo račun' : 'Demo account';
-    $payload->title = $is_hr
-        ? 'Tvoj demo račun pokazuje kako FCC sustav radi iznutra'
-        : 'Your demo account shows how FCC works from the inside';
-    $payload->message = $is_hr
-        ? 'Ovdje možeš doživjeti kako FCC sustav izgleda u praksi i kako te vodi kroz aplikaciju, edukaciju i radni tijek. Kada poželiš aktivirati puni pristup, sljedeći korak je Start Paket preko preporučenog sponzora.'
-        : 'Here you can experience how FCC works in practice and how it guides you through the app, onboarding, and workflow. When you decide to activate full access, the next step is the Start Package through your recommended sponsor.';
-    $payload->features = $is_hr
-        ? ['VIP Funnel', 'Tvoj plan rasta', 'Aktivacija paketa', 'Naplata i checkout']
-        : ['VIP Funnel', 'Growth Plan', 'Plan activation', 'Payments and checkout'];
+    $payload->eyebrow = l('vip_funnel.demo_lock.global.eyebrow');
+    $payload->title = l('vip_funnel.demo_lock.global.title');
+    $payload->message = l('vip_funnel.demo_lock.global.message');
+    $payload->features = array_values(array_filter([
+        l('vip_funnel.demo_lock.global.feature_vip_funnel'),
+        l('vip_funnel.demo_lock.global.feature_growth_plan'),
+        l('vip_funnel.demo_lock.global.feature_plan_activation'),
+        l('vip_funnel.demo_lock.global.feature_payments'),
+    ]));
 
     return $payload;
 }
@@ -5607,6 +6142,7 @@ function vip_funnel_demo_create_request($user = null, array $input = []): array 
         return ['success' => false, 'message' => l('vip_funnel.demo.alert.schema_missing')];
     }
 
+    vip_funnel_ensure_runtime_schema();
     $lead_name = trim(input_clean((string) ($input['lead_name'] ?? ''), 120));
     $lead_email = trim(input_clean((string) ($input['lead_email'] ?? ''), 320));
     $demo_login_email = trim(input_clean((string) ($input['demo_login_email'] ?? ''), 320));
@@ -5661,6 +6197,13 @@ function vip_funnel_demo_create_request($user = null, array $input = []): array 
         $lead_id = (int) db()->insert('vip_leads', [
             'user_id' => $actor_user_id > 0 ? $actor_user_id : 0,
             'owner_user_id' => $owner_user_id > 0 ? $owner_user_id : null,
+            'vip_funnel_id' => null,
+            'source_step_key' => null,
+            'selection_value' => $product_goal !== '' ? $product_goal : null,
+            'lead_name' => $lead_name,
+            'full_name' => $lead_name,
+            'lead_email' => $lead_email,
+            'lead_phone' => $lead_phone !== '' ? $lead_phone : null,
             'source' => $source,
             'interest_type' => $interest_type,
             'business_readiness' => $business_readiness,
@@ -5673,6 +6216,12 @@ function vip_funnel_demo_create_request($user = null, array $input = []): array 
                 'lead_phone' => $lead_phone,
                 'forever_id' => $forever_id,
                 'notes' => $notes,
+                'contact_origin' => [
+                    'source_key' => 'vip_demo_access',
+                    'source_label' => l('vip_funnel.contacts.source.vip_demo_access'),
+                    'source_context' => l('vip_funnel.contacts.source.vip_demo_access'),
+                    'contact_intent_key' => 'demo_request',
+                ],
             ]),
             'datetime' => get_date(),
             'last_datetime' => get_date(),
@@ -5709,6 +6258,10 @@ function vip_funnel_demo_create_request($user = null, array $input = []): array 
             'lead_email' => $lead_email,
             'interest_type' => $interest_type,
             'owner_user_id' => $owner_user_id,
+        ]);
+        vip_funnel_sync_contact_data_from_lead_id($lead_id, [
+            'vip_demo_account_id' => $account_id,
+            'demo_status' => $demo_status,
         ]);
 
         db()->commit();
@@ -5862,6 +6415,12 @@ function vip_funnel_demo_apply_action($user = null, int $account_id = 0, string 
         }
 
         vip_funnel_demo_log_event($account_id, $actor_user_id, $event_key, $event_payload);
+        vip_funnel_sync_contact_data_from_lead_id((int) $account->vip_lead_id, [
+            'vip_demo_account_id' => $account_id,
+            'demo_status' => (string) ($update_payload['status'] ?? $account->status),
+            'workspace_url' => (string) ($access_sync['settings_payload']['workspace_url'] ?? ''),
+            'login_email' => (string) ($access_sync['settings_payload']['login_email'] ?? ''),
+        ]);
 
         db()->commit();
 
@@ -5952,6 +6511,9 @@ function vip_funnel_demo_get_dashboard($user = null): array {
     }
 
     vip_funnel_demo_sync_statuses();
+    if($user) {
+        vip_funnel_backfill_owner_runtime_contacts((int) ($user->user_id ?? 0));
+    }
 
     $result = database()->query("
         SELECT

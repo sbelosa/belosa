@@ -907,20 +907,20 @@
                             </div>
 
                             <div class="fcc-contact-mobile-section">
-                                <div class="fcc-contact-mobile-section-title">Izvor kontakta</div>
+                                <div class="fcc-contact-mobile-section-title"><?= l('vip_funnel.contacts.data.section.source') ?></div>
                                     <div class="fcc-contact-source">
                                         <div class="fcc-contact-source-title">
                                             <?= $row->biolink_block_id ? string_truncate($row->settings->name ?? l('global.unknown'), 42) : ($row->source_label ?: l('global.unknown')) ?>
                                         </div>
-                                    <div class="fcc-contact-meta">FCC aplikacija: <?= $row->app_name ?></div>
+                                    <div class="fcc-contact-meta"><?= l('vip_funnel.contacts.data.label.app') ?>: <?= $row->app_name ?></div>
                                     <?php if($row->is_ai_chat_lead): ?>
-                                        <div class="fcc-contact-meta text-info font-weight-bold">AI je doveo ovaj kontakt.</div>
+                                        <div class="fcc-contact-meta text-info font-weight-bold"><?= l('vip_funnel.contacts.data.note.ai_origin') ?></div>
                                     <?php endif ?>
                                     <?php if($row->preferred_contact_channel): ?>
-                                        <div class="fcc-contact-meta">Preferirani kontakt: <?= mb_strtoupper($row->preferred_contact_channel) ?></div>
+                                        <div class="fcc-contact-meta"><?= l('vip_funnel.contacts.data.label.preferred_channel') ?>: <?= mb_strtoupper($row->preferred_contact_channel) ?></div>
                                     <?php endif ?>
                                     <?php if($row->contact_intent): ?>
-                                        <div class="fcc-contact-meta">Namjera: <?= htmlspecialchars((string) $row->contact_intent, ENT_QUOTES, 'UTF-8') ?></div>
+                                        <div class="fcc-contact-meta"><?= l('vip_funnel.contacts.data.label.intent') ?>: <?= htmlspecialchars((string) $row->contact_intent, ENT_QUOTES, 'UTF-8') ?></div>
                                     <?php endif ?>
                                     <?php if($row->source_context): ?>
                                         <div class="fcc-contact-meta"><?= $row->source_context ?></div>
@@ -928,7 +928,7 @@
 
                                     <div class="fcc-contact-notes">
                                         <?php if($row->contact_message): ?>
-                                            <div class="fcc-contact-note">Poruka: <?= string_truncate($row->contact_message, 90) ?></div>
+                                            <div class="fcc-contact-note"><?= l('vip_funnel.contacts.data.label.message') ?>: <?= string_truncate($row->contact_message, 90) ?></div>
                                         <?php endif ?>
                                         <?php if(!empty($row->extra_fields)): ?>
                                             <?php foreach(array_slice($row->extra_fields, 0, 2) as $field): ?>
@@ -936,7 +936,7 @@
                                             <?php endforeach ?>
                                         <?php endif ?>
                                         <?php if(!$row->contact_message && empty($row->extra_fields)): ?>
-                                            <div class="fcc-contact-note">Kontakt je spremljen i spreman za obradu.</div>
+                                            <div class="fcc-contact-note"><?= l('vip_funnel.contacts.data.note.ready') ?></div>
                                         <?php endif ?>
                                     </div>
 
@@ -950,7 +950,7 @@
                             </div>
 
                             <div class="fcc-contact-mobile-section">
-                                <div class="fcc-contact-mobile-section-title">Akcije</div>
+                                <div class="fcc-contact-mobile-section-title"><?= l('vip_funnel.contacts.data.section.actions') ?></div>
                                 <div class="fcc-contact-actions">
                                     <?php if($row->primary_action): ?>
                                         <a href="<?= $row->primary_action['url'] ?>" target="_blank" rel="noopener noreferrer" class="fcc-contact-primary-action <?= $row->primary_action['class'] ?>">
@@ -998,9 +998,9 @@
                                         <label class="custom-control-label" for="bulk_select_all"></label>
                                     </div>
                                 </th>
-                                <th>Kontakt</th>
-                                <th>Izvor kontakta</th>
-                                <th>Akcije</th>
+                                <th><?= l('vip_funnel.contacts.data.section.contact') ?></th>
+                                <th><?= l('vip_funnel.contacts.data.section.source') ?></th>
+                                <th><?= l('vip_funnel.contacts.data.section.actions') ?></th>
                             </tr>
                             </thead>
                             <tbody>
@@ -1015,38 +1015,38 @@
                                     </td>
 
                                     <td>
-                                        <div class="fcc-contact-mobile-label">Kontakt</div>
+                                        <div class="fcc-contact-mobile-label"><?= l('vip_funnel.contacts.data.section.contact') ?></div>
                                         <div class="fcc-contact-main">
                                             <div class="fcc-contact-avatar"><?= $row->initials ?: 'C' ?></div>
 
                                             <div>
                                                 <div class="fcc-contact-name"><?= $row->contact_identity ?></div>
 
-                                                <?php if($row->contact_email): ?><div class="fcc-contact-line"><strong>Email:</strong> <?= $row->contact_email ?></div><?php endif ?>
-                                                <?php if($row->contact_phone): ?><div class="fcc-contact-line"><strong>Telefon:</strong> <?= $row->contact_phone ?></div><?php endif ?>
+                                                <?php if($row->contact_email): ?><div class="fcc-contact-line"><strong><?= l('vip_funnel.contacts.data.label.email') ?>:</strong> <?= $row->contact_email ?></div><?php endif ?>
+                                                <?php if($row->contact_phone): ?><div class="fcc-contact-line"><strong><?= l('vip_funnel.contacts.data.label.phone') ?>:</strong> <?= $row->contact_phone ?></div><?php endif ?>
 
                                                 <?php if(!$row->contact_email && !$row->contact_phone && $row->contact_name): ?>
-                                                    <div class="fcc-contact-line"><strong>Ime:</strong> <?= $row->contact_name ?></div>
+                                                    <div class="fcc-contact-line"><strong><?= l('vip_funnel.contacts.data.label.name') ?>:</strong> <?= $row->contact_name ?></div>
                                                 <?php endif ?>
                                             </div>
                                         </div>
                                     </td>
 
                                     <td>
-                                        <div class="fcc-contact-mobile-label">Izvor kontakta</div>
+                                        <div class="fcc-contact-mobile-label"><?= l('vip_funnel.contacts.data.section.source') ?></div>
                                         <div class="fcc-contact-source <?= $fcc_contact_is_highlighted ? 'is-emphasized' : null ?>">
                                             <div class="fcc-contact-source-title">
                                                 <?= $row->biolink_block_id ? string_truncate($row->settings->name ?? l('global.unknown'), 42) : ($row->source_label ?: l('global.unknown')) ?>
                                             </div>
-                                            <div class="fcc-contact-meta">FCC aplikacija: <?= $row->app_name ?></div>
+                                            <div class="fcc-contact-meta"><?= l('vip_funnel.contacts.data.label.app') ?>: <?= $row->app_name ?></div>
                                             <?php if($row->is_ai_chat_lead): ?>
-                                                <div class="fcc-contact-meta text-info font-weight-bold">AI je doveo ovaj kontakt.</div>
+                                                <div class="fcc-contact-meta text-info font-weight-bold"><?= l('vip_funnel.contacts.data.note.ai_origin') ?></div>
                                             <?php endif ?>
                                             <?php if($row->preferred_contact_channel): ?>
-                                                <div class="fcc-contact-meta">Preferirani kontakt: <?= mb_strtoupper($row->preferred_contact_channel) ?></div>
+                                                <div class="fcc-contact-meta"><?= l('vip_funnel.contacts.data.label.preferred_channel') ?>: <?= mb_strtoupper($row->preferred_contact_channel) ?></div>
                                             <?php endif ?>
                                             <?php if($row->contact_intent): ?>
-                                                <div class="fcc-contact-meta">Namjera: <?= htmlspecialchars((string) $row->contact_intent, ENT_QUOTES, 'UTF-8') ?></div>
+                                                <div class="fcc-contact-meta"><?= l('vip_funnel.contacts.data.label.intent') ?>: <?= htmlspecialchars((string) $row->contact_intent, ENT_QUOTES, 'UTF-8') ?></div>
                                             <?php endif ?>
                                             <?php if($row->source_context): ?>
                                                 <div class="fcc-contact-meta"><?= $row->source_context ?></div>
@@ -1057,7 +1057,7 @@
                                             </div>
                                             <div class="fcc-contact-notes">
                                                 <?php if($row->contact_message): ?>
-                                                    <div class="fcc-contact-note">Poruka: <?= string_truncate($row->contact_message, 90) ?></div>
+                                                    <div class="fcc-contact-note"><?= l('vip_funnel.contacts.data.label.message') ?>: <?= string_truncate($row->contact_message, 90) ?></div>
                                                 <?php endif ?>
                                                 <?php if(!empty($row->extra_fields)): ?>
                                                     <?php foreach(array_slice($row->extra_fields, 0, 2) as $field): ?>
@@ -1065,7 +1065,7 @@
                                                     <?php endforeach ?>
                                                 <?php endif ?>
                                                 <?php if(!$row->contact_message && empty($row->extra_fields)): ?>
-                                                    <div class="fcc-contact-note">Kontakt je spremljen i spreman za obradu.</div>
+                                                    <div class="fcc-contact-note"><?= l('vip_funnel.contacts.data.note.ready') ?></div>
                                                 <?php endif ?>
                                             </div>
                                             <div class="fcc-contact-tags">
@@ -1078,7 +1078,7 @@
                                     </td>
 
                                     <td>
-                                        <div class="fcc-contact-mobile-label">Akcije</div>
+                                        <div class="fcc-contact-mobile-label"><?= l('vip_funnel.contacts.data.section.actions') ?></div>
                                         <div class="fcc-contact-actions <?= $fcc_contact_is_highlighted ? 'is-emphasized' : null ?>">
                                             <?php if($row->primary_action): ?>
                                                 <a href="<?= $row->primary_action['url'] ?>" target="_blank" rel="noopener noreferrer" class="fcc-contact-primary-action <?= $row->primary_action['class'] ?>">
