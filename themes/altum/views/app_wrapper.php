@@ -106,6 +106,25 @@
             <div class="py-4 p-lg-5">
                 <?php require THEME_PATH . 'views/partials/ads_header.php' ?>
 
+                <?php if(is_logged_in() && function_exists('vip_funnel_demo_get_global_banner_payload')): ?>
+                    <?php
+                    $vip_demo_global_banner = null;
+                    try {
+                        $vip_demo_global_banner = vip_funnel_demo_get_global_banner_payload($this->user, \Altum\Router::$controller_key ?? '');
+                    } catch(\Throwable $exception) {
+                        error_log('vip_demo_global_banner_failed: ' . $exception->getMessage());
+                        $vip_demo_global_banner = null;
+                    }
+                    ?>
+                    <?php if($vip_demo_global_banner): ?>
+                        <div class="container mb-4">
+                            <?= include_view(THEME_PATH . 'views/partials/vip_demo_global_banner.php', [
+                                'banner' => $vip_demo_global_banner,
+                            ]) ?>
+                        </div>
+                    <?php endif ?>
+                <?php endif ?>
+
                 <main class="altum-animate altum-animate-fill-none altum-animate-fade-in">
                     <?= $this->views['content'] ?>
                 </main>

@@ -59,6 +59,257 @@ class Blog extends Controller {
         return $url . (parse_url($url, PHP_URL_QUERY) ? '&' : '?') . http_build_query(['ref' => $referral]);
     }
 
+    private function resolve_referral_to_biolink_slug(?string $referral_key = null): ?string {
+        $referral_key = query_clean(trim((string) ($referral_key ?? '')));
+
+        if($referral_key === '') {
+            return null;
+        }
+
+        $resolved_biolink = db()->where('url', $referral_key)->where('type', 'biolink')->getOne('links', ['link_id', 'user_id', 'url']);
+
+        if($resolved_biolink && !empty($resolved_biolink->url)) {
+            return (string) $resolved_biolink->url;
+        }
+
+        $resolved_user = db()->where('referral_key', $referral_key)->where('status', 1)->getOne('users', ['user_id']);
+
+        if(!$resolved_user) {
+            return null;
+        }
+
+        $resolved_biolink_id = fc_get_user_main_biolink_id((int) $resolved_user->user_id);
+        if($resolved_biolink_id) {
+            $resolved_biolink = db()->where('link_id', $resolved_biolink_id)->where('type', 'biolink')->getOne('links', ['url']);
+
+            if($resolved_biolink && !empty($resolved_biolink->url)) {
+                return (string) $resolved_biolink->url;
+            }
+        }
+
+        $resolved_biolink = db()->where('user_id', (int) $resolved_user->user_id)->where('type', 'biolink')->orderBy('link_id', 'ASC')->getOne('links', ['url']);
+
+        return ($resolved_biolink && !empty($resolved_biolink->url)) ? (string) $resolved_biolink->url : null;
+    }
+
+    private function build_localized_public_url(string $path, ?string $language = null): string {
+        $path = ltrim($path, '/');
+        $language = $language && isset(\Altum\Language::$active_languages[$language]) ? $language : null;
+
+        if($language && settings()->main->default_language != $language) {
+            return SITE_URL . \Altum\Language::$active_languages[$language] . '/' . $path;
+        }
+
+        return SITE_URL . $path;
+    }
+
+    private function normalize_blog_search_intent_value(string $value): string {
+        $value = trim($value);
+        $value = function_exists('mb_strtolower') ? mb_strtolower($value, 'UTF-8') : strtolower($value);
+        $value = strtr($value, [
+            'č' => 'c',
+            'ć' => 'c',
+            'ž' => 'z',
+            'š' => 's',
+            'đ' => 'dj',
+        ]);
+        $value = preg_replace('/\s+/u', ' ', $value);
+
+        return trim((string) $value);
+    }
+
+    private function is_start_package_intent_query(?string $search): bool {
+        if(!$search || trim($search) === '') {
+            return false;
+        }
+
+        $normalized_search = $this->normalize_blog_search_intent_value($search);
+
+        foreach([
+            'suradnja',
+            'poslovna suradnja',
+            'pocetak',
+            'pokretanje',
+            'start',
+            'start paket',
+            'starter pack',
+            '30 popusta',
+            '30 popust',
+            '30 posto',
+            '30%',
+            'registracija',
+            'business partner',
+            'business',
+            'partner',
+            'discount',
+        ] as $needle) {
+            if(str_contains($normalized_search, $needle)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function get_blog_index_alternate_urls(): array {
+        $alternate_urls = [
+            'x-default' => SITE_URL . 'blog',
+        ];
+
+        foreach(\Altum\Language::$active_languages as $language_name => $language_code) {
+            $alternate_urls[$language_code] = $this->build_localized_public_url('blog', $language_name);
+        }
+
+        return $alternate_urls;
+    }
+
+    private function get_blog_post_alternate_urls(object $blog_post): array {
+        $rows = db()
+            ->where('url', (string) $blog_post->url)
+            ->where('is_published', 1)
+            ->get('blog_posts', null, ['url', 'language']);
+
+        $alternate_urls = [];
+        $default_language = settings()->main->default_language;
+        $fallback_url = $this->build_localized_public_url('blog/' . $blog_post->url, $blog_post->language ?? null);
+        $default_url = null;
+
+        foreach($rows as $row) {
+            $row_language = $row->language ?? null;
+            $row_url = $this->build_localized_public_url('blog/' . $row->url, $row_language);
+
+            if($row_language && isset(\Altum\Language::$active_languages[$row_language])) {
+                $language_code = \Altum\Language::$active_languages[$row_language];
+                $alternate_urls[$language_code] = $row_url;
+
+                if($row_language === $default_language) {
+                    $default_url = $row_url;
+                }
+            } elseif(!$default_url) {
+                $default_url = $row_url;
+            }
+        }
+
+        $alternate_urls['x-default'] = $default_url ?? $fallback_url;
+
+        return $alternate_urls;
+    }
+
+    private function get_blog_category_alternate_urls(object $blog_posts_category): array {
+        $rows = db()
+            ->where('url', (string) $blog_posts_category->url)
+            ->get('blog_posts_categories', null, ['url', 'language']);
+
+        $alternate_urls = [];
+        $default_language = settings()->main->default_language;
+        $fallback_url = $this->build_localized_public_url('blog/category/' . $blog_posts_category->url, $blog_posts_category->language ?? null);
+        $default_url = null;
+
+        foreach($rows as $row) {
+            $row_language = $row->language ?? null;
+            $row_url = $this->build_localized_public_url('blog/category/' . $row->url, $row_language);
+
+            if($row_language && isset(\Altum\Language::$active_languages[$row_language])) {
+                $language_code = \Altum\Language::$active_languages[$row_language];
+                $alternate_urls[$language_code] = $row_url;
+
+                if($row_language === $default_language) {
+                    $default_url = $row_url;
+                }
+            } elseif(!$default_url) {
+                $default_url = $row_url;
+            }
+        }
+
+        $alternate_urls['x-default'] = $default_url ?? $fallback_url;
+
+        return $alternate_urls;
+    }
+
+    private function get_related_blog_posts(object $blog_post, string $language): array {
+        $blog_post_id = (int) ($blog_post->blog_post_id ?? 0);
+        $blog_posts_category_id = (int) ($blog_post->blog_posts_category_id ?? 0);
+        $language = db()->escape($language);
+        $requires_product_context = trim((string) ($blog_post->webshop_links ?? '')) !== '';
+        $related_posts = [];
+
+        if($blog_posts_category_id > 0) {
+            $product_only_condition = $requires_product_context ? "AND COALESCE(`webshop_links`, '') NOT IN ('', '{}')" : '';
+
+            $category_query = "
+                SELECT
+                    `blog_post_id`,
+                    `blog_posts_category_id`,
+                    `title`,
+                    `description`,
+                    `url`,
+                    `language`,
+                    `image`,
+                    `image_description`,
+                    `total_views`,
+                    `datetime`,
+                    `last_datetime`,
+                    `webshop_links`,
+                    `sku`
+                FROM `blog_posts`
+                WHERE
+                    `blog_post_id` != {$blog_post_id}
+                    AND `blog_posts_category_id` = {$blog_posts_category_id}
+                    AND `is_published` = 1
+                    AND (`language` = '{$language}' OR `language` IS NULL)
+                    {$product_only_condition}
+                ORDER BY `total_views` DESC, `last_datetime` DESC, `blog_post_id` DESC
+                LIMIT 4
+            ";
+
+            $category_result = database()->query($category_query);
+
+            while($row = $category_result->fetch_object()) {
+                $related_posts[] = $row;
+            }
+        }
+
+        if(count($related_posts) < 4 && $requires_product_context) {
+            $excluded_ids = array_map(static function($row) {
+                return (int) ($row->blog_post_id ?? 0);
+            }, $related_posts);
+            $excluded_ids[] = $blog_post_id;
+            $excluded_ids = implode(', ', array_unique(array_filter($excluded_ids)));
+
+            $fallback_query = "
+                SELECT
+                    `blog_post_id`,
+                    `blog_posts_category_id`,
+                    `title`,
+                    `description`,
+                    `url`,
+                    `language`,
+                    `image`,
+                    `image_description`,
+                    `total_views`,
+                    `datetime`,
+                    `last_datetime`,
+                    `webshop_links`,
+                    `sku`
+                FROM `blog_posts`
+                WHERE
+                    `blog_post_id` NOT IN ({$excluded_ids})
+                    AND `is_published` = 1
+                    AND (`language` = '{$language}' OR `language` IS NULL)
+                    AND COALESCE(`webshop_links`, '') NOT IN ('', '{}')
+                ORDER BY `total_views` DESC, `last_datetime` DESC, `blog_post_id` DESC
+                LIMIT " . max(0, 4 - count($related_posts));
+
+            $fallback_result = database()->query($fallback_query);
+
+            while($row = $fallback_result->fetch_object()) {
+                $related_posts[] = $row;
+            }
+        }
+
+        return $related_posts;
+    }
+
     public function index() {
 
         if(!settings()->content->blog_is_enabled) {
@@ -120,13 +371,16 @@ class Blog extends Controller {
             }
 
             $blog_post_url = SITE_URL . ($blog_post->language ? ((\Altum\Language::$active_languages[$blog_post->language] ?? null) ? \Altum\Language::$active_languages[$blog_post->language] . '/' : null) : null) . 'blog/' . $blog_post->url;
+            $blog_post_shop_context = fc_blog_shop_context_normalize($blog_post->shop_context ?? null);
+            $blog_post_public_bundle = fc_build_blog_post_public_bundle($blog_post, $blog_posts_category, $blog_post_shop_context, \Altum\Language::$code ?? ($blog_post->language ?? null));
 
             /* Set a custom title */
-            Title::set(sprintf(l('blog.blog_post.title'), $blog_post->title));
+            $blog_post_title_is_full = stripos($blog_post_public_bundle['meta_title'], settings()->main->title) !== false;
+            Title::set($blog_post_public_bundle['meta_title'], $blog_post_title_is_full);
 
             /* Meta */
-            Meta::set_description(string_truncate($blog_post->description ?: strip_tags($blog_post->title), 160));
-            Meta::set_keywords($blog_post->keywords);
+            Meta::set_description($blog_post_public_bundle['meta_description']);
+            Meta::set_keywords($blog_post_public_bundle['meta_keywords']);
             Meta::set_canonical_url($blog_post_url);
             Meta::set_robots('index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1');
             if($blog_post->image) {
@@ -271,6 +525,27 @@ class Blog extends Controller {
                 $ai_chat_owner_user_id = (int) $user_id;
                 $ai_chat_owner_name = trim((string) ($this->user->name ?? ''));
 
+                /* Preserve explicit referral from URL even for logged-in viewers, e.g. demo users inside another sponsor's flow. */
+                if(isset($_GET['ref']) && trim((string) $_GET['ref']) !== '') {
+                    $explicit_referral = $this->resolve_referral_to_biolink_slug((string) $_GET['ref']);
+
+                    if($explicit_referral) {
+                        $referral = $explicit_referral;
+                        setcookie('referral', $explicit_referral, time()+60*60*24*365, '/');
+
+                        $explicit_biolink = db()->where('url', $explicit_referral)->where('type', 'biolink')->getOne('links', ['link_id', 'user_id']);
+                        if($explicit_biolink) {
+                            $ai_chat_owner_link_id = (int) ($explicit_biolink->link_id ?? 0);
+                            $ai_chat_owner_user_id = (int) ($explicit_biolink->user_id ?? 0);
+
+                            $explicit_owner = db()->where('user_id', $ai_chat_owner_user_id)->getOne('users', ['name']);
+                            if($explicit_owner && !empty($explicit_owner->name)) {
+                                $ai_chat_owner_name = trim((string) $explicit_owner->name);
+                            }
+                        }
+                    }
+                }
+
                 if(\Altum\Authentication::is_pro()) {
                     $private = true;
                 }
@@ -370,6 +645,9 @@ class Blog extends Controller {
                 $share_url .= (parse_url($share_url, PHP_URL_QUERY) ? '&' : '?') . http_build_query(['ref' => $referral]);
             }
 
+            $alternate_urls = $this->get_blog_post_alternate_urls($blog_post);
+            $related_blog_posts = $this->get_related_blog_posts($blog_post, $language);
+
             $data = [
                 'blog_posts_popular' => $blog_posts_popular,
                 'blog_post' => $blog_post,
@@ -388,6 +666,9 @@ class Blog extends Controller {
                 'ai_chat_owner_link_id' => $ai_chat_owner_link_id,
                 'ai_chat_owner_user_id' => $ai_chat_owner_user_id,
                 'ai_chat_owner_name' => $ai_chat_owner_name,
+                'alternate_urls' => $alternate_urls,
+                'related_blog_posts' => $related_blog_posts,
+                'blog_post_public_bundle' => $blog_post_public_bundle,
             ];
             /* /Custom code */
 
@@ -409,10 +690,19 @@ class Blog extends Controller {
             /* /Custom code */
 
             $blog_posts_category_query = "
-                SELECT * 
-                FROM `blog_posts_categories`
-                WHERE (`url` = '{$url}' AND `language` = '{$language}') OR (`url` = '{$url}' AND `language` IS NULL)
-                ORDER BY `language` DESC
+                SELECT
+                    `c`.*,
+                    COUNT(`p`.`blog_post_id`) AS `published_posts`
+                FROM `blog_posts_categories` AS `c`
+                LEFT JOIN `blog_posts` AS `p`
+                    ON `p`.`blog_posts_category_id` = `c`.`blog_posts_category_id`
+                   AND `p`.`is_published` = 1
+                WHERE (`c`.`url` = '{$url}' AND `c`.`language` = '{$language}') OR (`c`.`url` = '{$url}' AND `c`.`language` IS NULL)
+                GROUP BY `c`.`blog_posts_category_id`
+                ORDER BY
+                    CASE WHEN `c`.`language` = '{$language}' THEN 1 ELSE 0 END DESC,
+                    `published_posts` DESC,
+                    `c`.`blog_posts_category_id` ASC
             ";
             $blog_posts_category = \Altum\Cache::cache_function_result('blog_posts_category?hash=' . md5($blog_posts_category_query), 'blog_posts_categories', function() use ($blog_posts_category_query) {
                 return database()->query($blog_posts_category_query)->fetch_object() ?? null;
@@ -422,24 +712,19 @@ class Blog extends Controller {
                 throw_404();
             }
 
+            $category_shop_context = fc_blog_category_shop_context_normalize($blog_posts_category->shop_context ?? null);
+            $is_forever_products_category_listing = in_array((string) ($blog_posts_category->url ?? ''), ['forever-products', 'forever-proizvodi'], true)
+                || (($category_shop_context['page_role'] ?? '') === 'shop_hub');
+
             /* Get the posts */
             /* Prepare the filtering system */
             $filters = (new \Altum\Filters());
             $filters->set_default_order_by('datetime', $this->user->preferences->default_order_type ?? settings()->main->default_order_type);
             $filters->set_default_results_per_page($this->user->preferences->default_results_per_page ?? settings()->main->default_results_per_page);
+            $category_indexing_bundle = fc_build_blog_category_indexing_bundle($blog_posts_category);
 
-            /* Prepare the paginator */
-            $total_rows_query = "SELECT COUNT(*) AS `total` FROM `blog_posts` WHERE `blog_posts_category_id` = {$blog_posts_category->blog_posts_category_id} AND (`language` = '{$language}' OR `language` IS NULL) AND `is_published` = 1 {$filters->get_sql_where()}";
-            $total_rows = \Altum\Cache::cache_function_result('blog_posts_count?hash=' . md5($total_rows_query), 'blog_posts', function() use ($total_rows_query) {
-                return database()->query($total_rows_query)->fetch_object()->total ?? 0;
-            });
-            $paginator = (new \Altum\Paginator($total_rows, $filters->get_results_per_page(), $_GET['page'] ?? 1, url('blog/category/' . $blog_posts_category->url . '?' . $filters->get_get() . '&page=%d')));
-
-            /* Blog posts query */            
+            /* Blog posts query */
             /* Custom code */
-            /* Get the blog posts child categories */
-            $blog_posts_child_categories = db()->where('blog_posts_parent_id', $blog_posts_category->blog_posts_category_id)->get('blog_posts_categories', null, ['blog_posts_category_id']);
-
             /* Get all the categories */
             $blog_posts_main_categories = db()->where('blog_posts_parent_id', null, 'IS')->where('language', $language)->orderBy('datetime')->get('blog_posts_categories', null, ['blog_posts_category_id', 'blog_posts_parent_id', 'title', 'url', 'language']);
    
@@ -454,8 +739,9 @@ class Blog extends Controller {
             /* Get all the subcategories */
             $blog_posts_subcategories = db()->where('blog_posts_parent_id', null, 'IS NOT')->where('language', $language)->get('blog_posts_categories', null, ['blog_posts_category_id', 'blog_posts_parent_id', 'title', 'url', 'language']);         
 
-            $child_categories_array = (new BlogPostsCategories())->get_blog_category_children($blog_posts_category->blog_posts_category_id);            
-            
+            $child_categories_array = (new BlogPostsCategories())->get_blog_category_children($blog_posts_category->blog_posts_category_id);
+            $child_categories_array_list = array_values(array_unique(array_filter(array_map('intval', $category_indexing_bundle['same_url_category_ids'] ?? []))));
+
             if ($child_categories_array) {
                 foreach($child_categories_array as $child_category) {
                     if(isset($child_category->blog_posts_category_id)) {
@@ -474,13 +760,9 @@ class Blog extends Controller {
                     }                    
                                      
                 }      
-                
-                $child_categories_array_list[] = $blog_posts_category->blog_posts_category_id;
-                
-                $blog_posts_child_categories_list = implode(', ', $child_categories_array_list);  
-                
+
                 if(sizeof($child_categories_array_list) == 1) {            
-                    $child_categories_array = (new BlogPostsCategories())->get_blog_category_children($blog_posts_child_categories_list);            
+                    $child_categories_array = (new BlogPostsCategories())->get_blog_category_children($blog_posts_category->blog_posts_category_id);
                     
                     foreach($child_categories_array as $child_category) {
                         if(isset($child_category->blog_posts_category_id)) {
@@ -488,13 +770,25 @@ class Blog extends Controller {
                         }                
                         
                     }
-                    $child_categories_array_list[] = $blog_posts_category->blog_posts_category_id;
-                    $blog_posts_child_categories_list = implode(', ', $child_categories_array_list); 
                 }
     
-            } else {
-                $blog_posts_child_categories_list = $blog_posts_category->blog_posts_category_id;
             }
+
+            $child_categories_array_list[] = $blog_posts_category->blog_posts_category_id;
+            $child_categories_array_list = array_values(array_unique(array_filter(array_map('intval', $child_categories_array_list))));
+
+            if(!$child_categories_array_list) {
+                $child_categories_array_list = [(int) $blog_posts_category->blog_posts_category_id];
+            }
+
+            $blog_posts_child_categories_list = implode(', ', $child_categories_array_list);
+
+            /* Prepare the paginator */
+            $total_rows_query = "SELECT COUNT(*) AS `total` FROM `blog_posts` WHERE `blog_posts_category_id` IN ({$blog_posts_child_categories_list}) AND (`language` = '{$language}' OR `language` IS NULL) AND `is_published` = 1 {$filters->get_sql_where()}";
+            $total_rows = \Altum\Cache::cache_function_result('blog_posts_count?hash=' . md5($total_rows_query), 'blog_posts', function() use ($total_rows_query) {
+                return database()->query($total_rows_query)->fetch_object()->total ?? 0;
+            });
+            $paginator = (new \Altum\Paginator($total_rows, $filters->get_results_per_page(), $_GET['page'] ?? 1, url('blog/category/' . $blog_posts_category->url . '?' . $filters->get_get() . '&page=%d')));
             
             $blog_posts_result_query = "
                 SELECT * 
@@ -524,12 +818,63 @@ class Blog extends Controller {
             /* Prepare the pagination view */
             $pagination = (new \Altum\View('partials/pagination', (array) $this))->run(['paginator' => $paginator]);
 
+            if($is_forever_products_category_listing && $total_rows > count($blog_posts)) {
+                $blog_posts_full_listing_query = "
+                    SELECT
+                        `blog_post_id`,
+                        `blog_posts_category_id`,
+                        `title`,
+                        `url`,
+                        `description`,
+                        `image`,
+                        `image_description`,
+                        `datetime`,
+                        `last_datetime`,
+                        `total_views`,
+                        `language`,
+                        `webshop_links`,
+                        `sku`,
+                        `keywords`,
+                        `search_aliases`
+                    FROM `blog_posts`
+                    WHERE `blog_posts_category_id` IN ({$blog_posts_child_categories_list}) AND (`language` = '{$language}' OR `language` IS NULL) AND `is_published` = 1 {$filters->get_sql_where()}
+                    {$filters->get_sql_order_by()}
+                ";
+
+                $blog_posts = \Altum\Cache::cache_function_result('blog_posts_full_listing?hash=' . md5($blog_posts_full_listing_query), 'blog_posts', function() use ($blog_posts_full_listing_query) {
+                    $blog_posts_result = database()->query($blog_posts_full_listing_query);
+                    $blog_posts = [];
+
+                    while($row = $blog_posts_result->fetch_object()) {
+                        $blog_posts[] = $row;
+                    }
+
+                    return $blog_posts;
+                });
+
+                $pagination = null;
+            }
+
 
 
             /* Get popular posts */
             $blog_posts_popular = settings()->content->blog_popular_widget_is_enabled ? (new BlogPosts())->get_popular_blog_posts_by_language($language) : [];
 
             $blog_posts_category_url = SITE_URL . ($blog_posts_category->language ? ((\Altum\Language::$active_languages[$blog_posts_category->language] ?? null) ? \Altum\Language::$active_languages[$blog_posts_category->language] . '/' : null) : null) . 'blog/category/' . $blog_posts_category->url;
+            $blog_posts_direct_children_result = database()->query("
+                SELECT `blog_posts_category_id`, `title`, `description`, `url`, `language`
+                FROM `blog_posts_categories`
+                WHERE `blog_posts_parent_id` = {$blog_posts_category->blog_posts_category_id}
+                  AND (`language` = '{$language}' OR `language` IS NULL)
+                ORDER BY `order` ASC, `blog_posts_category_id` ASC
+            ");
+            $blog_posts_direct_children = [];
+
+            while($row = $blog_posts_direct_children_result->fetch_object()) {
+                $blog_posts_direct_children[] = $row;
+            }
+
+            $category_public_bundle = fc_build_blog_category_public_bundle($blog_posts_category, $blog_posts, $blog_posts_direct_children, $category_shop_context, \Altum\Language::$code ?? 'en');
 
             $social_image = null;
             foreach($blog_posts as $blog_post_item) {
@@ -540,12 +885,18 @@ class Blog extends Controller {
             }
 
             /* Set a custom title */
-            Title::set(sprintf(l('blog.blog_posts_category.title'), $blog_posts_category->title));
+            $category_title_is_full = stripos($category_public_bundle['meta_title'], settings()->main->title) !== false;
+            Title::set($category_public_bundle['meta_title'], $category_title_is_full);
 
             /* Meta */
-            Meta::set_description(string_truncate($blog_posts_category->description ?: $blog_posts_category->title, 160));
+            $is_paginated_category_page = (int) ($_GET['page'] ?? 1) > 1;
+            $category_meta_robots = (!$category_indexing_bundle['should_index'] || $is_paginated_category_page)
+                ? 'noindex,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1'
+                : 'index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1';
+            Meta::set_description($category_public_bundle['meta_description']);
+            Meta::set_keywords($category_public_bundle['meta_keywords']);
             Meta::set_canonical_url($blog_posts_category_url);
-            Meta::set_robots('index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1');
+            Meta::set_robots($category_meta_robots);
             if($social_image) {
                 Meta::set_social_image($social_image);
             }
@@ -564,7 +915,10 @@ class Blog extends Controller {
                 'blog_posts_main_categories' => $blog_posts_main_categories,
                 'blog_posts_parents' => $blog_posts_parent_categories,
                 'blog_posts_subcategories' => $blog_posts_subcategories,
+                'blog_posts_direct_children' => $blog_posts_direct_children,
                 'blog_posts_category_url' => $blog_posts_category_url,
+                'alternate_urls' => $this->get_blog_category_alternate_urls($blog_posts_category),
+                'category_public_bundle' => $category_public_bundle,
                 /* /Custom code */
             ];
 
@@ -593,18 +947,23 @@ class Blog extends Controller {
             $search = isset($_GET['search']) ? trim(query_clean($_GET['search'])) : null;
             $search = $search ? mb_substr($search, 0, 256) : null;
             $search_escaped = $search ? db()->escape(mb_strtolower($search)) : null;
+            $start_package_intent_query = $this->is_start_package_intent_query($search);
             $search_aliases_column_sql = $blog_posts_has_search_aliases_column ? "COALESCE(`search_aliases`, '')" : "''";
+            $start_package_where_sql = $start_package_intent_query ? " OR LOWER(`url`) = 'start-paket'" : '';
+            $start_package_score_sql = $start_package_intent_query ? "WHEN LOWER(`url`) = 'start-paket' THEN 200" : '';
             $search_where = $search ? "
                 AND (
                     LOWER(`title`) LIKE '%{$search_escaped}%'
                     OR LOWER({$search_aliases_column_sql}) LIKE '%{$search_escaped}%'
                     OR LOWER(COALESCE(`keywords`, '')) LIKE '%{$search_escaped}%'
                     OR LOWER(COALESCE(`sku`, '')) LIKE '%{$search_escaped}%'
+                    {$start_package_where_sql}
                 )
             " : null;
 
             $search_score_sql = $search ? "
                 CASE
+                    {$start_package_score_sql}
                     WHEN LOWER(`title`) = '{$search_escaped}' THEN 120
                     WHEN LOWER(`title`) LIKE '{$search_escaped}%' THEN 100
                     WHEN CONCAT(',', REPLACE(LOWER({$search_aliases_column_sql}), ', ', ','), ',') LIKE '%,{$search_escaped},%' THEN 90
@@ -684,6 +1043,8 @@ class Blog extends Controller {
                 Meta::set_robots('noindex');
             }
 
+            Meta::set_link_alternate(false);
+
             /* Prepare the view */
             $data = [
                 'blog_posts' => $blog_posts,
@@ -698,7 +1059,8 @@ class Blog extends Controller {
                 /* Custom code */
                 'blog_posts_main_categories' => $blog_posts_main_categories,
                 'blog_posts_parents' => $blog_posts_parent_categories,
-                'blog_posts_subcategories' => $blog_posts_subcategories  
+                'blog_posts_subcategories' => $blog_posts_subcategories,
+                'alternate_urls' => $this->get_blog_index_alternate_urls(),
                 /* /Custom code */
             ];
 
@@ -812,8 +1174,11 @@ class Blog extends Controller {
 
         $language = Language::$name;
         $search_escaped = db()->escape(mb_strtolower($search));
+        $start_package_intent_query = $this->is_start_package_intent_query($search);
         $search_aliases_select_sql = $blog_posts_has_search_aliases_column ? '`search_aliases`' : "'' AS `search_aliases`";
         $search_aliases_column_sql = $blog_posts_has_search_aliases_column ? "COALESCE(`search_aliases`, '')" : "''";
+        $start_package_where_sql = $start_package_intent_query ? " OR LOWER(`url`) = 'start-paket'" : '';
+        $start_package_score_sql = $start_package_intent_query ? "WHEN LOWER(`url`) = 'start-paket' THEN 200" : '';
 
         $suggestions_result_query = "
             SELECT
@@ -828,6 +1193,7 @@ class Blog extends Controller {
                 `keywords`,
                 `sku`,
                 CASE
+                    {$start_package_score_sql}
                     WHEN LOWER(`title`) = '{$search_escaped}' THEN 120
                     WHEN LOWER(`title`) LIKE '{$search_escaped}%' THEN 100
                     WHEN CONCAT(',', REPLACE(LOWER({$search_aliases_column_sql}), ', ', ','), ',') LIKE '%,{$search_escaped},%' THEN 90
@@ -845,6 +1211,7 @@ class Blog extends Controller {
                     OR LOWER({$search_aliases_column_sql}) LIKE '%{$search_escaped}%'
                     OR LOWER(COALESCE(`keywords`, '')) LIKE '%{$search_escaped}%'
                     OR LOWER(COALESCE(`sku`, '')) LIKE '%{$search_escaped}%'
+                    {$start_package_where_sql}
                 )
             ORDER BY `search_score` DESC, `datetime` DESC
             LIMIT 8
@@ -858,7 +1225,12 @@ class Blog extends Controller {
             $matched_by = 'title';
             $matched_term = $row->title;
 
-            if(!(mb_stripos($row->title, $search) !== false)) {
+            if($start_package_intent_query && mb_strtolower((string) ($row->url ?? '')) === 'start-paket') {
+                $matched_by = 'intent';
+                $matched_term = $row->title;
+            }
+
+            if($matched_by !== 'intent' && !(mb_stripos($row->title, $search) !== false)) {
                 $aliases = array_filter(array_map('trim', explode(',', (string) ($row->search_aliases ?? ''))));
 
                 foreach($aliases as $alias) {
@@ -888,6 +1260,55 @@ class Blog extends Controller {
 
         Response::json('', 'success', ['results' => $results]);
         /* /Custom code: FC-2026-03-09 */
+    }
+
+    public function interactions_ajax() {
+
+        if(empty($_POST)) {
+            throw_404();
+        }
+
+        if(!settings()->content->blog_is_enabled) {
+            throw_404();
+        }
+
+        if(!\Altum\Csrf::check('global_token')) {
+            Response::json(l('global.error_message.invalid_csrf_token'), 'error');
+        }
+
+        $event_type = input_clean($_POST['event_type'] ?? '', 32);
+        $page_type = input_clean($_POST['page_type'] ?? '', 32);
+        $component = input_clean($_POST['component'] ?? '', 64);
+        $event_label = input_clean($_POST['event_label'] ?? '', 128);
+        $blog_post_id = (int) ($_POST['blog_post_id'] ?? 0);
+        $blog_posts_category_id = (int) ($_POST['blog_posts_category_id'] ?? 0);
+        $event_data = $_POST['event_data'] ?? null;
+
+        if(is_string($event_data) && $event_data !== '') {
+            $decoded_event_data = json_decode($event_data, true);
+            $event_data = is_array($decoded_event_data) ? $decoded_event_data : ['value' => input_clean($event_data, 700)];
+        }
+
+        if($blog_post_id > 0 && !db()->where('blog_post_id', $blog_post_id)->where('is_published', 1)->has('blog_posts')) {
+            $blog_post_id = 0;
+        }
+
+        if($blog_posts_category_id > 0 && !db()->where('blog_posts_category_id', $blog_posts_category_id)->has('blog_posts_categories')) {
+            $blog_posts_category_id = 0;
+        }
+
+        fc_track_blog_journey_event([
+            'event_type' => $event_type,
+            'page_type' => $page_type,
+            'component' => $component,
+            'event_label' => $event_label,
+            'blog_post_id' => $blog_post_id,
+            'blog_posts_category_id' => $blog_posts_category_id,
+            'event_data' => $event_data,
+            'page_url' => input_clean($_POST['page_url'] ?? '', 2048),
+        ]);
+
+        Response::json('', 'success');
     }
 
 }

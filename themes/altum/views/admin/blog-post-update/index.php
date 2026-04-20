@@ -156,6 +156,136 @@
 
             <!-- /Custom code -->
 
+            <button class="btn btn-block btn-gray-200 font-size-little-small font-weight-450 my-4" type="button" data-toggle="collapse" data-target="#shop_context_container" aria-expanded="false" aria-controls="shop_context_container">
+                <i class="fas fa-fw fa-store fa-sm mr-1"></i> Shop landing sadržaj
+            </button>
+
+            <div class="collapse" id="shop_context_container">
+                <?php if(!$data->blog_shop_context_supported): ?>
+                    <div class="alert alert-info">
+                        Strukturirana shop polja će biti aktivna nakon lokalne SQL migracije za stupac <code>blog_posts.shop_context</code>.
+                    </div>
+                <?php endif ?>
+
+                <div class="form-group">
+                    <label for="shop_context_page_role"><i class="fas fa-fw fa-sm fa-sitemap text-muted mr-1"></i> Tip landing stranice</label>
+                    <select id="shop_context_page_role" name="shop_context_page_role" class="custom-select">
+                        <option value="" <?= ($data->shop_context_form->page_role ?? '') === '' ? 'selected="selected"' : null ?>>Standardno</option>
+                        <option value="product" <?= ($data->shop_context_form->page_role ?? '') === 'product' ? 'selected="selected"' : null ?>>Product landing</option>
+                        <option value="business_start" <?= ($data->shop_context_form->page_role ?? '') === 'business_start' ? 'selected="selected"' : null ?>>Start suradnje / Start paket</option>
+                    </select>
+                    <small class="form-text text-muted">Koristi se za posebne layoute poput Start paketa i jačih product landing stranica.</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="shop_context_trust_note"><i class="fas fa-fw fa-sm fa-shield-alt text-muted mr-1"></i> Kratka napomena ispod hero sekcije</label>
+                    <textarea id="shop_context_trust_note" name="shop_context_trust_note" class="form-control" rows="3" placeholder="Npr. Ova stranica pomaže brzo razumjeti što korisnik dobiva i koji je najbolji sljedeći korak."><?= e($data->shop_context_form->trust_note ?? '') ?></textarea>
+                </div>
+
+                <div class="row">
+                    <div class="col-12 col-lg-6">
+                        <div class="form-group">
+                            <label for="shop_context_meta_title"><i class="fas fa-fw fa-sm fa-heading text-muted mr-1"></i> SEO meta naslov</label>
+                            <input id="shop_context_meta_title" type="text" name="shop_context_meta_title" class="form-control" value="<?= e($data->shop_context_form->meta_title ?? '') ?>" maxlength="180" placeholder="Ako ostane prazno, koristi se SEO fallback prema naslovu i kategoriji." />
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-lg-6">
+                        <div class="form-group">
+                            <label for="shop_context_meta_keywords"><i class="fas fa-fw fa-sm fa-key text-muted mr-1"></i> SEO meta ključne riječi</label>
+                            <input id="shop_context_meta_keywords" type="text" name="shop_context_meta_keywords" class="form-control" value="<?= e($data->shop_context_form->meta_keywords ?? '') ?>" maxlength="255" placeholder="Ako ostane prazno, koristi se kombinacija proizvoda, kategorije i aliasa." />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="shop_context_meta_description"><i class="fas fa-fw fa-sm fa-align-left text-muted mr-1"></i> SEO meta opis</label>
+                    <textarea id="shop_context_meta_description" name="shop_context_meta_description" class="form-control" rows="3" placeholder="Ako ostane prazno, koristi se opis proizvoda ili generirani SEO sažetak."><?= e($data->shop_context_form->meta_description ?? '') ?></textarea>
+                </div>
+
+                <div class="row">
+                    <div class="col-12 col-lg-6">
+                        <div class="form-group">
+                            <label for="shop_context_decision_title"><i class="fas fa-fw fa-sm fa-user-check text-muted mr-1"></i> Naslov sekcije “Za koga je”</label>
+                            <input id="shop_context_decision_title" type="text" name="shop_context_decision_title" class="form-control" value="<?= e($data->shop_context_form->decision_title ?? '') ?>" maxlength="160" />
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-lg-6">
+                        <div class="form-group">
+                            <label for="shop_context_checks_title"><i class="fas fa-fw fa-sm fa-list-check text-muted mr-1"></i> Naslov sekcije “Na brzinu provjerite”</label>
+                            <input id="shop_context_checks_title" type="text" name="shop_context_checks_title" class="form-control" value="<?= e($data->shop_context_form->checks_title ?? '') ?>" maxlength="160" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="shop_context_summary_cards"><i class="fas fa-fw fa-sm fa-th-large text-muted mr-1"></i> Kartice sažetka</label>
+                    <textarea id="shop_context_summary_cards" name="shop_context_summary_cards" class="form-control" rows="5" placeholder="Status | Forever poslovni suradnik&#10;Popust | Put prema 30% popusta"><?= e($data->shop_context_form->summary_cards ?? '') ?></textarea>
+                    <small class="form-text text-muted">Jedan red = jedna kartica. Format: <code>Label | Vrijednost</code>.</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="shop_context_ideal_for"><i class="fas fa-fw fa-sm fa-bullseye text-muted mr-1"></i> Za koga je stranica</label>
+                    <textarea id="shop_context_ideal_for" name="shop_context_ideal_for" class="form-control" rows="5" placeholder="Ako želite postati Forever poslovni suradnik.&#10;Ako tražite glavni korak za registraciju i početak."><?= e($data->shop_context_form->ideal_for ?? '') ?></textarea>
+                    <small class="form-text text-muted">Jedan red = jedna točka koja se prikazuje u decision bloku.</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="shop_context_quick_checks"><i class="fas fa-fw fa-sm fa-check-double text-muted mr-1"></i> Brze provjere / ključne informacije</label>
+                    <textarea id="shop_context_quick_checks" name="shop_context_quick_checks" class="form-control" rows="5" placeholder="Registracija i narudžba vode na tržište korisnika.&#10;Otvara se put prema 30% popusta."><?= e($data->shop_context_form->quick_checks ?? '') ?></textarea>
+                    <small class="form-text text-muted">Jedan red = jedna stavka u quick-check bloku.</small>
+                </div>
+
+                <div class="row">
+                    <div class="col-12 col-lg-6">
+                        <div class="form-group">
+                            <label for="shop_context_action_title"><i class="fas fa-fw fa-sm fa-bolt text-muted mr-1"></i> Naslov CTA bloka</label>
+                            <input id="shop_context_action_title" type="text" name="shop_context_action_title" class="form-control" value="<?= e($data->shop_context_form->action_title ?? '') ?>" maxlength="160" />
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-lg-6">
+                        <div class="form-group">
+                            <label for="shop_context_primary_cta_label"><i class="fas fa-fw fa-sm fa-mouse-pointer text-muted mr-1"></i> Tekst glavnog CTA gumba</label>
+                            <input id="shop_context_primary_cta_label" type="text" name="shop_context_primary_cta_label" class="form-control" value="<?= e($data->shop_context_form->primary_cta_label ?? '') ?>" maxlength="120" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="shop_context_action_subtitle"><i class="fas fa-fw fa-sm fa-align-left text-muted mr-1"></i> Podnaslov CTA bloka</label>
+                    <textarea id="shop_context_action_subtitle" name="shop_context_action_subtitle" class="form-control" rows="3" placeholder="Npr. Ovaj korak vodi direktno na registraciju i narudžbu Start paketa u zemlji korisnika."><?= e($data->shop_context_form->action_subtitle ?? '') ?></textarea>
+                </div>
+
+                <div class="row">
+                    <div class="col-12 col-lg-6">
+                        <div class="form-group">
+                            <label for="shop_context_secondary_cta_label"><i class="fas fa-fw fa-sm fa-arrow-right text-muted mr-1"></i> Tekst pomoćnog CTA gumba</label>
+                            <input id="shop_context_secondary_cta_label" type="text" name="shop_context_secondary_cta_label" class="form-control" value="<?= e($data->shop_context_form->secondary_cta_label ?? '') ?>" maxlength="120" />
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-lg-6">
+                        <div class="form-group">
+                            <label for="shop_context_related_eyebrow"><i class="fas fa-fw fa-sm fa-tags text-muted mr-1"></i> Eyebrow povezanih sadržaja</label>
+                            <input id="shop_context_related_eyebrow" type="text" name="shop_context_related_eyebrow" class="form-control" value="<?= e($data->shop_context_form->related_eyebrow ?? '') ?>" maxlength="80" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="shop_context_related_title"><i class="fas fa-fw fa-sm fa-link text-muted mr-1"></i> Naslov povezanih sadržaja</label>
+                    <input id="shop_context_related_title" type="text" name="shop_context_related_title" class="form-control" value="<?= e($data->shop_context_form->related_title ?? '') ?>" maxlength="180" />
+                </div>
+
+                <div class="form-group">
+                    <label for="shop_context_faq"><i class="fas fa-fw fa-sm fa-question-circle text-muted mr-1"></i> Strukturirani FAQ</label>
+                    <textarea id="shop_context_faq" name="shop_context_faq" class="form-control" rows="6" placeholder="Kako započeti? | Klikom na glavni gumb otvara se registracija i narudžba za tržište korisnika.&#10;Dobiva li se Forever ID? | Da, kroz ovaj proces nova osoba dobiva svoj Forever ID."><?= e($data->shop_context_form->faq ?? '') ?></textarea>
+                    <small class="form-text text-muted">Jedan red = jedno pitanje i odgovor. Format: <code>Pitanje | Odgovor</code>.</small>
+                </div>
+            </div>
+
             <div class="form-group custom-control custom-switch">
                 <input id="is_published" name="is_published" type="checkbox" class="custom-control-input" <?= $data->blog_post->is_published ? 'checked="checked"' : null ?>>
                 <label class="custom-control-label" for="is_published"><?= l('admin_blog.is_published') ?></label>
@@ -341,4 +471,3 @@
     'has_dynamic_resource_name' => true,
     'path' => 'admin/blog-posts/delete/'
 ]), 'modals'); ?>
-

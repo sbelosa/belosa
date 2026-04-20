@@ -139,6 +139,7 @@ class AdminPlanUpdate extends Controller {
                 'ai_growth_plan_is_enabled' => isset($_POST['ai_growth_plan_is_enabled']),
                 'fcc_ai_is_enabled' => isset($_POST['fcc_ai_is_enabled']),
                 'fcc_coach_is_enabled' => isset($_POST['fcc_coach_is_enabled']),
+                'vip_funnel_core_is_enabled' => isset($_POST['vip_funnel_core_is_enabled']),
                 'temporary_url_is_enabled' => isset($_POST['temporary_url_is_enabled']),
                 'cloaking_is_enabled' => isset($_POST['cloaking_is_enabled']),
                 'app_linking_is_enabled' => isset($_POST['app_linking_is_enabled']),

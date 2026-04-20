@@ -13,8 +13,659 @@ if(isset($data->referral) && $data->referral) {
 }
 
 $share_url = $data->share_url ?? $fcc_blog_post_url;
+$fcc_blog_product_cta_url = $data->tracked_webshop_link ?: ($data->webshop_link ?: null);
+$fcc_blog_contact_cta_url = !empty($data->referral) ? url($data->referral) : null;
+$fcc_blog_primary_cta_url = $fcc_blog_product_cta_url ?: $fcc_blog_contact_cta_url;
+$fcc_blog_shop_context = fc_blog_shop_context_normalize($data->blog_post->shop_context ?? null);
+$fcc_blog_public_bundle = (array) ($data->blog_post_public_bundle ?? []);
+$fcc_shop_page_role = (string) ($fcc_blog_shop_context['page_role'] ?? '');
+$fcc_is_start_package_context = in_array(mb_strtolower((string) ($data->blog_post->url ?? '')), ['start-paket', 'start-package'], true) || $fcc_shop_page_role === 'business_start';
+$fcc_is_product_context = !empty($fcc_blog_product_cta_url)
+    || !empty($data->blog_post->sku)
+    || in_array((string) ($data->blog_posts_category->url ?? ''), ['forever-products', 'forever-proizvodi'], true)
+    || in_array($fcc_shop_page_role, ['product', 'business_start'], true);
+
+$fcc_webshop_links = json_decode($data->blog_post->webshop_links ?? '{}', true) ?: [];
+$fcc_webshop_markets = array_values(array_filter(array_keys($fcc_webshop_links), static function($market_code) use ($fcc_webshop_links) {
+    return !empty($fcc_webshop_links[$market_code]);
+}));
+$fcc_market_count = count($fcc_webshop_markets);
+$fcc_uses_global_market_display = $fcc_is_product_context && !$fcc_is_start_package_context;
+$fcc_global_market_display_value = $fcc_uses_global_market_display ? '151+' : null;
+$fcc_global_market_display_chip = \Altum\Language::$code === 'hr' ? '151+ tržišta' : '151+ markets';
+$fcc_global_market_display_detail = \Altum\Language::$code === 'hr' ? '151+ tržišta svijeta' : '151+ countries worldwide';
+$fcc_related_blog_posts = !empty($data->related_blog_posts) ? array_values($data->related_blog_posts) : [];
+
+$fcc_rendered_blog_content = (new \Altum\Shortcodes)->display_shortcodes($data->blog_post->content, $data->referral ?? null);
+$fcc_blog_toc = [];
+$fcc_blog_key_sections = [];
+
+if($fcc_rendered_blog_content !== '' && class_exists('DOMDocument')) {
+    $dom = new \DOMDocument();
+    $previous_state = libxml_use_internal_errors(true);
+
+    if($dom->loadHTML('<?xml encoding="utf-8" ?><div id="fcc_blog_content_root">' . $fcc_rendered_blog_content . '</div>', LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD)) {
+        $xpath = new \DOMXPath($dom);
+        $root = $xpath->query('//*[@id="fcc_blog_content_root"]')->item(0);
+        $heading_nodes = $xpath->query('//*[@id="fcc_blog_content_root"]//*[self::h2 or self::h3]');
+        $heading_index = 0;
+
+        foreach($heading_nodes as $heading_node) {
+            $heading_text = trim(html_entity_decode(strip_tags($dom->saveHTML($heading_node)), ENT_QUOTES | ENT_HTML5, 'UTF-8'));
+
+            if($heading_text === '') {
+                continue;
+            }
+
+            $heading_index++;
+            $heading_id = 'fcc-blog-section-' . $heading_index;
+            $heading_node->setAttribute('id', $heading_id);
+
+            $fcc_blog_toc[] = [
+                'id' => $heading_id,
+                'title' => $heading_text,
+                'level' => $heading_node->nodeName,
+            ];
+        }
+
+        if($root) {
+            $rendered_html = '';
+
+            foreach($root->childNodes as $child_node) {
+                $rendered_html .= $dom->saveHTML($child_node);
+            }
+
+            $fcc_rendered_blog_content = $rendered_html;
+        }
+    }
+
+    libxml_clear_errors();
+    libxml_use_internal_errors($previous_state);
+}
+
+$fcc_blog_key_sections = array_slice(array_map(static function($toc_item) {
+    return $toc_item['title'];
+}, array_filter($fcc_blog_toc, static function($toc_item) {
+    return ($toc_item['level'] ?? '') === 'h2';
+})), 0, 3);
+
+if(empty($fcc_blog_key_sections)) {
+    $fcc_blog_key_sections = array_slice(array_map(static function($toc_item) {
+        return $toc_item['title'];
+    }, $fcc_blog_toc), 0, 3);
+}
+
+$fcc_post_alternate_urls = is_array($data->alternate_urls ?? null) ? $data->alternate_urls : [];
+$fcc_blog_toc_current_url = $_SERVER['REQUEST_URI'] ?? $fcc_blog_post_url;
+$fcc_blog_microcopy = \Altum\Language::$code === 'hr'
+    ? [
+        'summary_label' => 'Što dobivate',
+        'summary_value' => 'Sažetak proizvoda i praktičan vodič',
+        'trust_note' => 'Na ovoj stranici brzo možete vidjeti čemu je proizvod namijenjen, što ga izdvaja i koji vam sljedeći koraci mogu pomoći pri odabiru prije narudžbe.',
+        'related_eyebrow' => 'Možda bi vas moglo zanimati',
+        'related_title' => 'Još proizvoda koji bi vam mogli odgovarati',
+        'card_eyebrow_product' => 'Forever proizvod',
+        'card_eyebrow_guide' => 'Praktičan vodič',
+        'card_available_badge' => 'Dostupno za narudžbu',
+        'card_market_singular' => 'tržište',
+        'card_market_plural' => 'tržišta',
+        'card_cta' => 'Pogledaj detalje',
+        'decision_eyebrow' => 'Brži odabir',
+        'decision_title' => 'Kome je ovaj vodič najkorisniji',
+        'checks_eyebrow' => 'Na brzinu provjerite',
+        'checks_title' => 'Najvažnije informacije prije sljedećeg koraka',
+        'action_title' => 'Želite odmah prijeći na sljedeći korak?',
+        'action_subtitle' => 'Glavni gumb vodi na službeni Forever webshop za vašu zemlju, gdje možete naručiti ovaj proizvod, ili prvo usporedite slične Forever proizvode.',
+        'action_primary' => 'Otvori Forever webshop i naruči',
+        'action_compare' => 'Usporedi slične proizvode',
+        'action_faq' => 'Skrolaj na česta pitanja',
+        'action_guide' => 'Preskoči na vodič',
+        'decision_point_1' => 'Ako želite prije odluke brzo razumjeti čemu je %s namijenjen.',
+        'decision_point_2' => 'Ako vam je važno provjeriti osnovne informacije bez dugog traženja kroz više stranica.',
+        'decision_point_3' => 'Ako uspoređujete više Forever proizvoda i želite lakše suziti izbor.',
+        'decision_point_3_single' => 'Ako želite jasan pregled prije nego odlučite je li ovo pravi proizvod za vas.',
+        'check_markets' => 'Dostupnost: %s',
+        'check_sku' => 'SKU oznaka: %s',
+        'check_category' => 'Kategorija: %s',
+        'check_section' => 'Tema vodiča: %s',
+        'comparison_eyebrow' => 'Usporedba',
+        'comparison_title' => 'Pogledajte slične proizvode na jednom mjestu',
+        'comparison_subtitle' => 'Ako još vagate između nekoliko opcija, ovaj pregled pomaže da brže odlučite koji vodič otvoriti sljedeći.',
+        'comparison_current' => 'Trenutno otvoreno',
+        'comparison_ready' => 'Dostupno za narudžbu',
+        'comparison_markets' => '%s tržišta',
+        'comparison_market_single' => '%s tržište',
+        'comparison_cta' => 'Otvori proizvod',
+        'faq_title' => 'Česta pitanja',
+        'faq_subtitle' => 'Kratki odgovori na pitanja koja korisnici najčešće imaju prije odluke.',
+    ]
+    : [
+        'summary_label' => 'What you get',
+        'summary_value' => 'Product overview and practical guide',
+        'trust_note' => 'This page helps visitors quickly understand what the product is for, what stands out about it, and which next steps may help before placing an order.',
+        'related_eyebrow' => 'You may also like',
+        'related_title' => 'More products that may suit you',
+        'card_eyebrow_product' => 'Forever product',
+        'card_eyebrow_guide' => 'Practical guide',
+        'card_available_badge' => 'Ready to order',
+        'card_market_singular' => 'market',
+        'card_market_plural' => 'markets',
+        'card_cta' => 'View details',
+        'decision_eyebrow' => 'Faster decisions',
+        'decision_title' => 'Who this guide helps most',
+        'checks_eyebrow' => 'Quick check',
+        'checks_title' => 'The key details before the next step',
+        'action_title' => 'Ready for the next step?',
+        'action_subtitle' => 'The main button opens the official Forever webshop for the visitor market, where this product can be ordered, or visitors can compare similar Forever products first.',
+        'action_primary' => 'Open Forever webshop and order',
+        'action_compare' => 'Compare similar products',
+        'action_faq' => 'Jump to FAQ',
+        'action_guide' => 'Jump to guide',
+        'decision_point_1' => 'If you want to quickly understand what %s is meant for before deciding.',
+        'decision_point_2' => 'If you want the key details in one place without searching across several pages.',
+        'decision_point_3' => 'If you are comparing several Forever products and want to narrow the choice faster.',
+        'decision_point_3_single' => 'If you want a clear overview before deciding whether this is the right product for you.',
+        'check_markets' => 'Availability: %s',
+        'check_sku' => 'SKU: %s',
+        'check_category' => 'Category: %s',
+        'check_section' => 'Guide topic: %s',
+        'comparison_eyebrow' => 'Comparison',
+        'comparison_title' => 'See similar products in one place',
+        'comparison_subtitle' => 'If you are still choosing between a few options, this overview helps you decide which guide to open next.',
+        'comparison_current' => 'Currently open',
+        'comparison_ready' => 'Ready to order',
+        'comparison_markets' => '%s markets',
+        'comparison_market_single' => '%s market',
+        'comparison_cta' => 'Open product',
+        'faq_title' => 'Frequently asked questions',
+        'faq_subtitle' => 'Short answers to the questions visitors most often have before deciding.',
+    ];
+
+if($fcc_is_start_package_context) {
+    $fcc_blog_microcopy = array_merge($fcc_blog_microcopy, \Altum\Language::$code === 'hr'
+        ? [
+            'summary_value' => 'Registracija, Start paket i poslovni početak',
+            'trust_note' => 'Ovo je glavni početni članak za poslovnu suradnju. Klik vodi prema registraciji i narudžbi Start paketa na odgovarajućem Forever tržištu korisnika.',
+            'related_eyebrow' => 'Sljedeći koraci',
+            'related_title' => 'Još vodiča za početak suradnje',
+            'decision_title' => 'Kome je Start paket pravi prvi korak',
+            'checks_title' => 'Što dobivate s ovim početkom',
+            'action_title' => 'Želite pokrenuti suradnju i aktivirati benefite?',
+            'action_subtitle' => 'Ovaj korak vodi direktno na registraciju i narudžbu Start paketa u zemlji korisnika, uz otvaranje poslovnog statusa i FCC benefita.',
+            'action_primary' => 'Registriraj se i naruči Start paket',
+            'action_compare' => 'Pogledaj sljedeće korake',
+            'action_guide' => 'Pogledaj što dobivaš',
+            'decision_point_1' => 'Ako želite postati Forever poslovni suradnik i krenuti kroz službeni početni paket.',
+            'decision_point_2' => 'Ako vam je cilj otvoriti put prema 30% popusta i aktivirati vlastiti Forever ID.',
+            'decision_point_3' => 'Ako tražite glavni članak za početak suradnje, registraciju i uključivanje u FCC sustav.',
+            'decision_point_3_single' => 'Ako tražite glavni članak za početak suradnje, registraciju i uključivanje u FCC sustav.',
+            'comparison_title' => 'Korisni sljedeći koraci nakon odluke za početak',
+            'comparison_subtitle' => 'Nakon Start paketa, ovi vodiči pomažu razumjeti sustav, alate i prve poslovne korake.',
+        ]
+        : [
+            'summary_value' => 'Registration, starter pack, and business launch',
+            'trust_note' => 'This is the main starting article for business partnership. The main click leads directly to registration and starter pack ordering in the visitor’s matching Forever market.',
+            'related_eyebrow' => 'Next steps',
+            'related_title' => 'More guides for getting started',
+            'decision_title' => 'Who the Start Package is best for',
+            'checks_title' => 'What you get with this start',
+            'action_title' => 'Ready to start the partnership and unlock benefits?',
+            'action_subtitle' => 'This step leads directly to registration and starter pack ordering in the visitor’s market, while opening business status and FCC benefits.',
+            'action_primary' => 'Register and order the Start Package',
+            'action_compare' => 'See the next steps',
+            'action_guide' => 'See what you get',
+            'decision_point_1' => 'If you want to become a Forever business partner through the official starter pack path.',
+            'decision_point_2' => 'If your goal is to open the path toward a 30% discount and activate your Forever ID.',
+            'decision_point_3' => 'If you are looking for the main article for partnership, registration, and entry into the FCC system.',
+            'decision_point_3_single' => 'If you are looking for the main article for partnership, registration, and entry into the FCC system.',
+            'comparison_title' => 'Useful next steps after choosing to start',
+            'comparison_subtitle' => 'After the Start Package, these guides help explain the system, tools, and the first business steps.',
+        ]
+    );
+}
+
+$fcc_shop_context_microcopy_overrides = array_filter([
+    'trust_note' => $fcc_blog_shop_context['trust_note'] ?? '',
+    'decision_title' => $fcc_blog_shop_context['decision_title'] ?? '',
+    'checks_title' => $fcc_blog_shop_context['checks_title'] ?? '',
+    'action_title' => $fcc_blog_shop_context['action_title'] ?? '',
+    'action_subtitle' => $fcc_blog_shop_context['action_subtitle'] ?? '',
+    'action_primary' => $fcc_blog_shop_context['primary_cta_label'] ?? '',
+    'related_eyebrow' => $fcc_blog_shop_context['related_eyebrow'] ?? '',
+    'related_title' => $fcc_blog_shop_context['related_title'] ?? '',
+], static function($value) {
+    return trim((string) $value) !== '';
+});
+
+if($fcc_shop_context_microcopy_overrides) {
+    $fcc_blog_microcopy = array_merge($fcc_blog_microcopy, $fcc_shop_context_microcopy_overrides);
+}
+
+$fcc_normalize_related_text = static function($text, int $limit = 160): string {
+    $text = trim((string) $text);
+
+    if($text === '') {
+        return '';
+    }
+
+    $text = html_entity_decode(strip_tags($text), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+    $text = preg_replace('/\s+/u', ' ', $text);
+    $text = trim((string) $text);
+
+    if($text === '') {
+        return '';
+    }
+
+    if(function_exists('mb_strlen') && function_exists('mb_substr')) {
+        if(mb_strlen($text) <= $limit) {
+            return $text;
+        }
+
+        return rtrim(mb_substr($text, 0, max(1, $limit - 1))) . '…';
+    }
+
+    if(strlen($text) <= $limit) {
+        return $text;
+    }
+
+    return rtrim(substr($text, 0, max(1, $limit - 3))) . '...';
+};
+$fcc_blog_faq_items = [];
+$fcc_shop_context_faq_items = !empty($fcc_blog_shop_context['faq']) ? array_values($fcc_blog_shop_context['faq']) : [];
+$fcc_has_faq_heading = false;
+
+if(!empty($data->blog_post->content) && class_exists('DOMDocument')) {
+    $dom = new \DOMDocument();
+    $previous_state = libxml_use_internal_errors(true);
+
+    if($dom->loadHTML('<?xml encoding="utf-8" ?>' . $data->blog_post->content, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD)) {
+        $in_faq_section = false;
+
+        foreach($dom->childNodes as $node) {
+            if(!in_array($node->nodeName, ['h2', 'h3', 'p'], true)) {
+                continue;
+            }
+
+            $node_text = trim(html_entity_decode(strip_tags($dom->saveHTML($node)), ENT_QUOTES | ENT_HTML5, 'UTF-8'));
+
+            if($node->nodeName === 'h2') {
+                $normalized_heading = function_exists('mb_strtolower') ? mb_strtolower($node_text, 'UTF-8') : strtolower($node_text);
+                $in_faq_section = in_array($normalized_heading, ['česta pitanja', 'frequently asked questions'], true);
+                $fcc_has_faq_heading = $fcc_has_faq_heading || $in_faq_section;
+                continue;
+            }
+
+            if(!$in_faq_section) {
+                continue;
+            }
+
+            if($node->nodeName === 'h3') {
+                $fcc_blog_faq_items[] = [
+                    'question' => $node_text,
+                    'answer' => '',
+                ];
+                continue;
+            }
+
+            if($node->nodeName === 'p' && !empty($fcc_blog_faq_items)) {
+                $last_index = array_key_last($fcc_blog_faq_items);
+
+                if($last_index !== null && $fcc_blog_faq_items[$last_index]['answer'] === '') {
+                    $fcc_blog_faq_items[$last_index]['answer'] = $node_text;
+                }
+            }
+        }
+    }
+
+    libxml_clear_errors();
+    libxml_use_internal_errors($previous_state);
+}
+
+$fcc_blog_faq_items = array_values(array_filter($fcc_blog_faq_items, static function($item) {
+    return !empty($item['question']) && !empty($item['answer']);
+}));
+
+$fcc_normalize_heading_text = static function($value): string {
+    $value = trim((string) $value);
+    return function_exists('mb_strtolower') ? mb_strtolower($value, 'UTF-8') : strtolower($value);
+};
+
+$fcc_effective_blog_faq_items = !empty($fcc_shop_context_faq_items) ? $fcc_shop_context_faq_items : $fcc_blog_faq_items;
+
+if($fcc_has_faq_heading || !empty($fcc_effective_blog_faq_items)) {
+    $filtered_toc = [];
+    $remove_faq_toc_children = false;
+
+    foreach($fcc_blog_toc as $toc_item) {
+        $normalized_title = $fcc_normalize_heading_text($toc_item['title'] ?? '');
+        $is_h2 = ($toc_item['level'] ?? '') === 'h2';
+
+        if(in_array($normalized_title, ['česta pitanja', 'frequently asked questions'], true)) {
+            $remove_faq_toc_children = true;
+            continue;
+        }
+
+        if($remove_faq_toc_children && $is_h2) {
+            $remove_faq_toc_children = false;
+        }
+
+        if($remove_faq_toc_children) {
+            continue;
+        }
+
+        $filtered_toc[] = $toc_item;
+    }
+
+    $fcc_blog_toc = array_values($filtered_toc);
+
+    $fcc_blog_key_sections = array_slice(array_map(static function($toc_item) {
+        return $toc_item['title'];
+    }, array_filter($fcc_blog_toc, static function($toc_item) {
+        return ($toc_item['level'] ?? '') === 'h2';
+    })), 0, 3);
+
+    if(empty($fcc_blog_key_sections)) {
+        $fcc_blog_key_sections = array_slice(array_map(static function($toc_item) {
+            return $toc_item['title'];
+        }, $fcc_blog_toc), 0, 3);
+    }
+
+    if($fcc_has_faq_heading && $fcc_rendered_blog_content !== '' && class_exists('DOMDocument')) {
+        $dom = new \DOMDocument();
+        $previous_state = libxml_use_internal_errors(true);
+
+        if($dom->loadHTML('<?xml encoding="utf-8" ?><div id="fcc_blog_render_root">' . $fcc_rendered_blog_content . '</div>', LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD)) {
+            $xpath = new \DOMXPath($dom);
+            $root = $xpath->query('//*[@id="fcc_blog_render_root"]')->item(0);
+
+            if($root) {
+                $remove_mode = false;
+                $nodes_to_remove = [];
+
+                foreach(iterator_to_array($root->childNodes) as $child_node) {
+                    if($child_node->nodeName === 'h2') {
+                        $heading_text = trim(html_entity_decode(strip_tags($dom->saveHTML($child_node)), ENT_QUOTES | ENT_HTML5, 'UTF-8'));
+                        $normalized_heading = $fcc_normalize_heading_text($heading_text);
+
+                        if($normalized_heading === 'česta pitanja' || $normalized_heading === 'frequently asked questions') {
+                            $remove_mode = true;
+                            $nodes_to_remove[] = $child_node;
+                            continue;
+                        }
+
+                        if($remove_mode) {
+                            break;
+                        }
+                    }
+
+                    if($remove_mode) {
+                        $nodes_to_remove[] = $child_node;
+                    }
+                }
+
+                foreach($nodes_to_remove as $node_to_remove) {
+                    if($node_to_remove->parentNode === $root) {
+                        $root->removeChild($node_to_remove);
+                    }
+                }
+
+                $rendered_html = '';
+
+                foreach($root->childNodes as $child_node) {
+                    $rendered_html .= $dom->saveHTML($child_node);
+                }
+
+                $fcc_rendered_blog_content = $rendered_html;
+            }
+        }
+
+        libxml_clear_errors();
+        libxml_use_internal_errors($previous_state);
+    }
+}
+
+$fcc_blog_faq_items = $fcc_effective_blog_faq_items;
+
+$fcc_get_blog_product_card_state = static function($blog_post) use ($fcc_blog_microcopy, $fcc_normalize_related_text, $fcc_uses_global_market_display, $fcc_global_market_display_chip): array {
+    $webshop_links = json_decode($blog_post->webshop_links ?? '{}', true) ?: [];
+    $market_count = count(array_filter($webshop_links, static function($url) {
+        return !empty($url);
+    }));
+    $shop_ready = $market_count > 0;
+    $chips = [];
+
+    if($shop_ready) {
+        $chips[] = $fcc_blog_microcopy['card_available_badge'];
+    }
+
+    if($market_count > 0) {
+        $chips[] = $fcc_uses_global_market_display
+            ? $fcc_global_market_display_chip
+            : ($market_count . ' ' . ($market_count === 1 ? $fcc_blog_microcopy['card_market_singular'] : $fcc_blog_microcopy['card_market_plural']));
+    }
+
+    return [
+        'shop_ready' => $shop_ready,
+        'market_count' => $market_count,
+        'eyebrow' => $shop_ready || !empty($blog_post->sku) ? $fcc_blog_microcopy['card_eyebrow_product'] : $fcc_blog_microcopy['card_eyebrow_guide'],
+        'chips' => $chips,
+        'description' => $fcc_normalize_related_text($blog_post->description ?? ''),
+        'cta' => $fcc_blog_microcopy['card_cta'],
+    ];
+};
+$fcc_get_related_card_state = $fcc_get_blog_product_card_state;
+$fcc_current_product_state = $fcc_get_blog_product_card_state($data->blog_post);
+$fcc_product_decision_points = [
+    sprintf($fcc_blog_microcopy['decision_point_1'], $data->blog_post->title),
+    $fcc_blog_microcopy['decision_point_2'],
+    !empty($fcc_related_blog_posts) ? $fcc_blog_microcopy['decision_point_3'] : $fcc_blog_microcopy['decision_point_3_single'],
+];
+$fcc_product_quick_checks = [];
+$fcc_product_summary_cards = [];
+
+if($fcc_is_start_package_context) {
+    $fcc_product_summary_cards = \Altum\Language::$code === 'hr'
+        ? [
+            ['label' => 'Status', 'value' => 'Forever poslovni suradnik'],
+            ['label' => 'Popust', 'value' => 'Put prema 30% popusta'],
+            ['label' => 'Dobivate', 'value' => 'Forever ID i FCC benefite'],
+            ['label' => 'Korak', 'value' => 'Registracija i narudžba u vašoj zemlji'],
+        ]
+        : [
+            ['label' => 'Status', 'value' => 'Forever business partner'],
+            ['label' => 'Discount', 'value' => 'Path toward a 30% discount'],
+            ['label' => 'You get', 'value' => 'Forever ID and FCC benefits'],
+            ['label' => 'Step', 'value' => 'Registration and ordering in the visitor market'],
+        ];
+} else {
+    $fcc_product_summary_cards[] = [
+        'label' => $fcc_blog_microcopy['summary_label'],
+        'value' => $fcc_blog_microcopy['summary_value'],
+    ];
+
+    if(!empty($data->blog_post->sku)) {
+        $fcc_product_summary_cards[] = [
+            'label' => 'SKU',
+            'value' => $data->blog_post->sku,
+        ];
+    }
+
+    if($fcc_market_count > 0) {
+        $fcc_product_summary_cards[] = [
+            'label' => \Altum\Language::$code === 'hr' ? 'Dostupna tržišta' : 'Available markets',
+            'value' => $fcc_global_market_display_value ?: ($fcc_market_count . '+'),
+        ];
+    }
+
+    if(!empty($data->blog_posts_category->title)) {
+        $fcc_product_summary_cards[] = [
+            'label' => \Altum\Language::$code === 'hr' ? 'Kategorija' : 'Category',
+            'value' => $data->blog_posts_category->title,
+        ];
+    }
+}
+
+if($fcc_is_start_package_context) {
+    $fcc_product_quick_checks = \Altum\Language::$code === 'hr'
+        ? [
+            'Nova osoba se kroz ovaj paket upisuje u Forever i postaje poslovni suradnik.',
+            'Otvara se put prema 30% popusta i svim ključnim poslovnim benefitima.',
+            'Registracija i narudžba vode direktno na odgovarajuće Forever tržište korisnika.',
+            'Paket je povezan s FCC sustavom i služi kao glavni početni korak za suradnju.',
+        ]
+        : [
+            'A new person joins Forever through this package and becomes a business partner.',
+            'It opens the path toward a 30% discount and the core business benefits.',
+            'Registration and ordering lead directly to the matching Forever market for the visitor.',
+            'The package is tied to the FCC system and serves as the main starting step for partnership.',
+        ];
+} else {
+    if($fcc_market_count > 0) {
+        $fcc_product_quick_checks[] = sprintf(
+            $fcc_blog_microcopy['check_markets'],
+            $fcc_global_market_display_detail ?: (
+                $fcc_market_count === 1
+                    ? sprintf($fcc_blog_microcopy['comparison_market_single'], $fcc_market_count)
+                    : sprintf($fcc_blog_microcopy['comparison_markets'], $fcc_market_count)
+            )
+        );
+    }
+
+    if(!empty($data->blog_post->sku)) {
+        $fcc_product_quick_checks[] = sprintf($fcc_blog_microcopy['check_sku'], $data->blog_post->sku);
+    }
+
+    if(!empty($data->blog_posts_category->title)) {
+        $fcc_product_quick_checks[] = sprintf($fcc_blog_microcopy['check_category'], $data->blog_posts_category->title);
+    }
+
+    foreach(array_slice($fcc_blog_key_sections, 0, 3) as $key_section) {
+        $fcc_product_quick_checks[] = sprintf($fcc_blog_microcopy['check_section'], $key_section);
+    }
+}
+
+if(!empty($fcc_blog_shop_context['summary_cards'])) {
+    $fcc_product_summary_cards = array_values($fcc_blog_shop_context['summary_cards']);
+}
+
+if(!empty($fcc_blog_shop_context['ideal_for'])) {
+    $fcc_product_decision_points = array_values($fcc_blog_shop_context['ideal_for']);
+}
+
+if(!empty($fcc_blog_shop_context['quick_checks'])) {
+    $fcc_product_quick_checks = array_values($fcc_blog_shop_context['quick_checks']);
+}
+
+if($fcc_uses_global_market_display && $fcc_market_count > 0) {
+    $market_summary_labels = \Altum\Language::$code === 'hr'
+        ? ['Dostupna tržišta']
+        : ['Available markets'];
+    $market_summary_found = false;
+
+    foreach($fcc_product_summary_cards as &$summary_card) {
+        if(in_array((string) ($summary_card['label'] ?? ''), $market_summary_labels, true)) {
+            $summary_card['value'] = $fcc_global_market_display_value;
+            $market_summary_found = true;
+        }
+    }
+    unset($summary_card);
+
+    if(!$market_summary_found) {
+        $fcc_product_summary_cards[] = [
+            'label' => $market_summary_labels[0],
+            'value' => $fcc_global_market_display_value,
+        ];
+    }
+
+    $market_quick_check_prefix = \Altum\Language::$code === 'hr' ? 'Dostupnost:' : 'Availability:';
+    $market_quick_check_found = false;
+
+    foreach($fcc_product_quick_checks as $quick_check) {
+        if(stripos((string) $quick_check, $market_quick_check_prefix) === 0) {
+            $market_quick_check_found = true;
+            break;
+        }
+    }
+
+    if(!$market_quick_check_found) {
+        array_unshift($fcc_product_quick_checks, sprintf($fcc_blog_microcopy['check_markets'], $fcc_global_market_display_detail));
+    }
+}
+
+$fcc_product_compare_rows = [[
+    'title' => $data->blog_post->title,
+    'url' => $fcc_blog_post_url,
+    'is_current' => true,
+    'state' => $fcc_current_product_state,
+]];
+
+foreach(array_slice($fcc_related_blog_posts, 0, 3) as $related_blog_post) {
+    $fcc_product_compare_rows[] = [
+        'title' => $related_blog_post->title,
+        'url' => SITE_URL . ($related_blog_post->language ? \Altum\Language::$active_languages[$related_blog_post->language] . '/' : null) . 'blog/' . $related_blog_post->url,
+        'is_current' => false,
+        'state' => $fcc_get_blog_product_card_state($related_blog_post),
+    ];
+}
+
+$fcc_action_secondary_target = null;
+$fcc_action_secondary_label = null;
+$fcc_action_tertiary_target = null;
+$fcc_action_tertiary_label = null;
+
+if($fcc_is_start_package_context) {
+    if(!empty($fcc_related_blog_posts)) {
+        $fcc_action_secondary_target = 'fcc-start-next-steps';
+        $fcc_action_secondary_label = $fcc_blog_microcopy['action_compare'];
+    } elseif(!empty($fcc_blog_faq_items)) {
+        $fcc_action_secondary_target = 'fcc-product-faq';
+        $fcc_action_secondary_label = $fcc_blog_microcopy['action_faq'];
+    } else {
+        $fcc_action_secondary_target = !empty($fcc_blog_toc[0]['id']) ? $fcc_blog_toc[0]['id'] : 'fcc-product-guide';
+        $fcc_action_secondary_label = $fcc_blog_microcopy['action_guide'];
+    }
+
+    if(!empty($fcc_related_blog_posts) && !empty($fcc_blog_faq_items)) {
+        $fcc_action_tertiary_target = 'fcc-product-faq';
+        $fcc_action_tertiary_label = $fcc_blog_microcopy['action_faq'];
+    }
+} elseif(count($fcc_product_compare_rows) > 1) {
+    $fcc_action_secondary_target = 'fcc-product-comparison';
+    $fcc_action_secondary_label = $fcc_blog_microcopy['action_compare'];
+
+    if(!empty($fcc_blog_faq_items)) {
+        $fcc_action_tertiary_target = 'fcc-product-faq';
+        $fcc_action_tertiary_label = $fcc_blog_microcopy['action_faq'];
+    }
+} elseif(!empty($fcc_blog_faq_items)) {
+    $fcc_action_secondary_target = 'fcc-product-faq';
+    $fcc_action_secondary_label = $fcc_blog_microcopy['action_faq'];
+} else {
+    $fcc_action_secondary_target = !empty($fcc_blog_toc[0]['id']) ? $fcc_blog_toc[0]['id'] : 'fcc-product-guide';
+    $fcc_action_secondary_label = $fcc_blog_microcopy['action_guide'];
+}
+
+$fcc_primary_cta_label = !empty($fcc_blog_shop_context['primary_cta_label'])
+    ? $fcc_blog_shop_context['primary_cta_label']
+    : ($fcc_blog_product_cta_url
+    ? ($fcc_is_start_package_context
+        ? $fcc_blog_microcopy['action_primary']
+        : (($data->blog_post->blog_post_id != 406 && $data->blog_post->blog_post_id != 407) ? sprintf(l('blog.buy_product')) : sprintf(l('blog.start_business'))))
+    : sprintf(l('blog.more_info.heading')));
+
+if(!empty($fcc_blog_shop_context['secondary_cta_label']) && $fcc_action_secondary_target) {
+    $fcc_action_secondary_label = $fcc_blog_shop_context['secondary_cta_label'];
+}
 /* /Custom code: FC-2026-02-26 */
 ?>
+
+<?php if($fcc_post_alternate_urls): ?>
+    <?php ob_start() ?>
+    <?php foreach($fcc_post_alternate_urls as $hreflang => $href): ?>
+        <link rel="alternate" hreflang="<?= e($hreflang) ?>" href="<?= e($href) ?>" />
+    <?php endforeach ?>
+    <?php \Altum\Event::add_content(ob_get_clean(), 'head') ?>
+<?php endif ?>
 
 <?php ob_start() ?>
 <style>
@@ -163,6 +814,10 @@ $share_url = $data->share_url ?? $fcc_blog_post_url;
         padding-left: 1.3rem;
     }
 
+    .fcc-blog-post-content [id^="fcc-blog-section-"] {
+        scroll-margin-top: 7.25rem;
+    }
+
     .fcc-blog-post-content .ql-content li + li {
         margin-top: 0.45rem;
     }
@@ -254,12 +909,144 @@ $share_url = $data->share_url ?? $fcc_blog_post_url;
                         </div>
                     </div>
 
-                    <div class="blog-post-content fcc-blog-post-content">
+                    <?php if($fcc_is_product_context): ?>
+                        <div class="fcc-product-summary mb-4">
+                            <div class="fcc-product-summary-grid">
+                                <?php foreach($fcc_product_summary_cards as $summary_card): ?>
+                                    <div class="fcc-product-summary-card">
+                                        <span class="fcc-product-summary-label"><?= e($summary_card['label']) ?></span>
+                                        <strong class="fcc-product-summary-value"><?= e($summary_card['value']) ?></strong>
+                                    </div>
+                                <?php endforeach ?>
+                            </div>
+
+                            <div class="fcc-product-trust-note">
+                                <?= $fcc_blog_microcopy['trust_note'] ?>
+                            </div>
+                        </div>
+
+                        <section class="fcc-product-decision-panel mb-4" id="fcc-product-next-step">
+                            <div class="row">
+                                <div class="col-12 col-lg-6 mb-3 mb-lg-0">
+                                    <article class="fcc-product-decision-card h-100">
+                                        <span class="fcc-related-eyebrow"><?= $fcc_blog_microcopy['decision_eyebrow'] ?></span>
+                                        <h2 class="fcc-related-title"><?= $fcc_blog_microcopy['decision_title'] ?></h2>
+
+                                        <ul class="fcc-product-decision-list">
+                                            <?php foreach($fcc_product_decision_points as $decision_point): ?>
+                                                <li><?= e($decision_point) ?></li>
+                                            <?php endforeach ?>
+                                        </ul>
+                                    </article>
+                                </div>
+
+                                <div class="col-12 col-lg-6">
+                                    <article class="fcc-product-decision-card h-100">
+                                        <span class="fcc-related-eyebrow"><?= $fcc_blog_microcopy['checks_eyebrow'] ?></span>
+                                        <h2 class="fcc-related-title"><?= $fcc_blog_microcopy['checks_title'] ?></h2>
+
+                                        <div class="fcc-product-checks-list">
+                                            <?php foreach($fcc_product_quick_checks as $quick_check): ?>
+                                                <div class="fcc-product-check-chip"><?= e($quick_check) ?></div>
+                                            <?php endforeach ?>
+                                        </div>
+                                    </article>
+                                </div>
+                            </div>
+
+                            <?php if($fcc_blog_primary_cta_url || $fcc_action_secondary_target || $fcc_action_tertiary_target): ?>
+                                <div class="fcc-product-action-band">
+                                    <div class="fcc-product-action-copy">
+                                        <h2 class="fcc-related-title mb-2"><?= $fcc_blog_microcopy['action_title'] ?></h2>
+                                        <p class="fcc-category-shop-note mb-0"><?= $fcc_blog_microcopy['action_subtitle'] ?></p>
+                                    </div>
+
+                                    <div class="fcc-product-action-buttons">
+                                        <?php if($fcc_blog_primary_cta_url): ?>
+                                            <a
+                                                target="_blank"
+                                                href="<?= $fcc_blog_primary_cta_url ?>"
+                                                class="fcc-product-action-btn is-primary"
+                                                data-fcc-blog-event="product_primary_cta_click"
+                                                data-fcc-blog-component="action_band_primary_cta"
+                                                data-fcc-blog-label="<?= e($fcc_primary_cta_label) ?>"
+                                            >
+                                                <i class="fas fa-shopping-cart mr-2"></i>
+                                                <?= e($fcc_primary_cta_label) ?>
+                                            </a>
+                                        <?php endif ?>
+
+                                        <?php if($fcc_action_secondary_target && $fcc_action_secondary_label): ?>
+                                            <a
+                                                href="<?= e($fcc_blog_toc_current_url . '#' . $fcc_action_secondary_target) ?>"
+                                                class="fcc-product-action-btn"
+                                                data-fcc-scroll-target="<?= e($fcc_action_secondary_target) ?>"
+                                                data-fcc-blog-event="product_secondary_action_click"
+                                                data-fcc-blog-component="action_band_secondary"
+                                                data-fcc-blog-label="<?= e($fcc_action_secondary_label) ?>"
+                                            >
+                                                <?= $fcc_action_secondary_label ?>
+                                            </a>
+                                        <?php endif ?>
+
+                                        <?php if($fcc_action_tertiary_target && $fcc_action_tertiary_label): ?>
+                                            <a
+                                                href="<?= e($fcc_blog_toc_current_url . '#' . $fcc_action_tertiary_target) ?>"
+                                                class="fcc-product-action-btn"
+                                                data-fcc-scroll-target="<?= e($fcc_action_tertiary_target) ?>"
+                                                data-fcc-blog-event="product_secondary_action_click"
+                                                data-fcc-blog-component="action_band_tertiary"
+                                                data-fcc-blog-label="<?= e($fcc_action_tertiary_label) ?>"
+                                            >
+                                                <?= $fcc_action_tertiary_label ?>
+                                            </a>
+                                        <?php endif ?>
+                                    </div>
+                                </div>
+                            <?php endif ?>
+                        </section>
+                    <?php endif ?>
+
+                    <?php if(!empty($fcc_blog_toc)): ?>
+                        <nav class="fcc-blog-toc mb-4" id="fcc-product-guide-nav" aria-label="<?= \Altum\Language::$code === 'hr' ? 'Sadržaj članka' : 'Article table of contents' ?>">
+                            <div class="fcc-blog-toc-header">
+                                <span class="fcc-blog-toc-eyebrow"><?= \Altum\Language::$code === 'hr' ? 'Brza navigacija' : 'Quick navigation' ?></span>
+                                <h2 class="fcc-blog-toc-title"><?= \Altum\Language::$code === 'hr' ? 'Što ćete pronaći u ovom vodiču' : 'What you will find in this guide' ?></h2>
+                            </div>
+
+                            <div class="fcc-blog-toc-grid">
+                                <?php foreach($fcc_blog_toc as $toc_item): ?>
+                                    <a
+                                        href="<?= e($fcc_blog_toc_current_url . '#' . $toc_item['id']) ?>"
+                                        class="fcc-blog-toc-link <?= ($toc_item['level'] ?? '') === 'h3' ? 'is-child' : null ?>"
+                                        data-fcc-scroll-target="<?= e($toc_item['id']) ?>"
+                                        data-fcc-blog-event="product_jump_click"
+                                        data-fcc-blog-component="quick_navigation"
+                                        data-fcc-blog-label="<?= e($toc_item['title']) ?>"
+                                    >
+                                        <?= e($toc_item['title']) ?>
+                                    </a>
+                                <?php endforeach ?>
+                            </div>
+                        </nav>
+                    <?php endif ?>
+
+                    <div class="blog-post-content fcc-blog-post-content" id="fcc-product-guide">
                         <p><?= $data->blog_post->description ?></p>
 
-                        <!-- Custom code -->
+                        <?php if(!empty($fcc_blog_key_sections)): ?>
+                            <div class="fcc-blog-highlights">
+                                <div class="fcc-blog-highlights-title"><?= \Altum\Language::$code === 'hr' ? 'Glavne teme ovog vodiča' : 'Main topics in this guide' ?></div>
+                                <div class="fcc-blog-highlights-list">
+                                    <?php foreach($fcc_blog_key_sections as $key_section): ?>
+                                        <span class="fcc-blog-highlight-chip"><?= e($key_section) ?></span>
+                                    <?php endforeach ?>
+                                </div>
+                            </div>
+                        <?php endif ?>
+
                         <div class="ql-content">
-                            <?= (new \Altum\Shortcodes)->display_shortcodes($data->blog_post->content, $data->referral ?? null) ?>                                
+                            <?= $fcc_rendered_blog_content ?>
                         </div>
 
                         <?php if (!empty($data->referral)): ?>                            
@@ -267,8 +1054,42 @@ $share_url = $data->share_url ?? $fcc_blog_post_url;
                             <?php $referral_full_url = url($data->referral); ?>
                             <p><?= '<a target="_blank" href="' . $referral_full_url . '">' . $referral_full_url . '</a>' ?></p>
                         <?php endif; ?>                
-                        <!-- /Custom code -->
                     </div>
+
+                    <?php if(!empty($fcc_blog_faq_items)): ?>
+                        <section class="fcc-product-faq-card mt-4" id="fcc-product-faq">
+                            <div class="fcc-product-faq-card-body">
+                                <span class="fcc-related-eyebrow"><?= $fcc_blog_microcopy['faq_title'] ?></span>
+                                <h2 class="fcc-related-title"><?= $fcc_blog_microcopy['faq_title'] ?></h2>
+                                <p class="fcc-category-shop-note mb-0"><?= $fcc_blog_microcopy['faq_subtitle'] ?></p>
+
+                                <div class="accordion mt-3" id="fcc-product-faq-accordion">
+                                    <?php foreach($fcc_blog_faq_items as $faq_index => $faq_item): ?>
+                                        <div class="fcc-category-faq-item">
+                                            <button
+                                                class="fcc-category-faq-question"
+                                                type="button"
+                                                data-toggle="collapse"
+                                                data-target="#fcc-product-faq-answer-<?= $faq_index ?>"
+                                                aria-expanded="<?= $faq_index === 0 ? 'true' : 'false' ?>"
+                                                aria-controls="fcc-product-faq-answer-<?= $faq_index ?>"
+                                                data-fcc-faq-track="1"
+                                                data-fcc-blog-label="<?= e($faq_item['question']) ?>"
+                                            >
+                                                <?= e($faq_item['question']) ?>
+                                            </button>
+
+                                            <div id="fcc-product-faq-answer-<?= $faq_index ?>" class="collapse <?= $faq_index === 0 ? 'show' : null ?>" data-parent="#fcc-product-faq-accordion">
+                                                <div class="fcc-category-faq-answer">
+                                                    <?= e($faq_item['answer']) ?>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    <?php endforeach ?>
+                                </div>
+                            </div>
+                        </section>
+                    <?php endif ?>
 
                     <?= include_view(THEME_PATH . 'views/blog/ratings.php', [
                         'blog_post' => $data->blog_post,
@@ -279,20 +1100,19 @@ $share_url = $data->share_url ?? $fcc_blog_post_url;
             <?php if(settings()->content->blog_share_is_enabled): ?>
                 <div class="card mt-4 fcc-glass-card fcc-share-card">
                     <div class="card-body">
-                        <?php
-                        /* Custom code: FC-2026-03-09: place primary product CTA above main share block */
-                        $blog_product_cta_url = $data->tracked_webshop_link ?: ($data->webshop_link ?: null);
-                        $blog_contact_cta_url = !empty($data->referral) ? url($data->referral) : null;
-                        $blog_cta_url = $blog_product_cta_url ?: $blog_contact_cta_url;
-                        /* /Custom code: FC-2026-03-09 */
-                        ?>
-                        <?php if ($blog_cta_url): ?>
-                            <a target="_blank" href="<?= $blog_cta_url ?>" class="mb-4 btn btn-block btn-primary link-btn link-hover-animation link-btn-rounded animate__animated animate__ animate__false animate__delay-2s fcc-cta-btn fcc-cta-btn-primary">
+                        <?php if ($fcc_blog_primary_cta_url): ?>
+                            <a
+                                target="_blank"
+                                href="<?= $fcc_blog_primary_cta_url ?>"
+                                class="mb-4 btn btn-block btn-primary link-btn link-hover-animation link-btn-rounded animate__animated animate__ animate__false animate__delay-2s fcc-cta-btn fcc-cta-btn-primary"
+                                data-fcc-blog-event="product_primary_cta_click"
+                                data-fcc-blog-component="share_card_primary_cta"
+                                data-fcc-blog-label="<?= e($fcc_primary_cta_label) ?>"
+                            >
                                 <span data-icon="">
                                      <i class="fas fa-shopping-cart mr-1"></i>
                                 </span>
-                                <span data-name=""><?= $blog_product_cta_url ? (($data->blog_post->blog_post_id != 406 && $data->blog_post->blog_post_id != 407) ? sprintf(l('blog.buy_product')) : sprintf(l('blog.start_business'))) : sprintf(l('blog.more_info.heading')); ?>
-                                </span>
+                                <span data-name=""><?= $fcc_primary_cta_label ?></span>
                             </a>
                         <?php endif; ?>
 
@@ -381,6 +1201,153 @@ $share_url = $data->share_url ?? $fcc_blog_post_url;
                     </a>
                 </div>
             <?php endif; ?>                        
+
+            <?php if(!$fcc_is_start_package_context && count($fcc_product_compare_rows) > 1): ?>
+                <section class="card mt-4 fcc-glass-card fcc-product-comparison-card" id="fcc-product-comparison">
+                    <div class="card-body">
+                        <div class="fcc-related-header">
+                            <span class="fcc-related-eyebrow"><?= $fcc_blog_microcopy['comparison_eyebrow'] ?></span>
+                            <h2 class="fcc-related-title"><?= $fcc_blog_microcopy['comparison_title'] ?></h2>
+                            <p class="fcc-category-shop-note mb-0"><?= $fcc_blog_microcopy['comparison_subtitle'] ?></p>
+                        </div>
+
+                        <div class="fcc-product-compare-list">
+                            <?php foreach($fcc_product_compare_rows as $comparison_row): ?>
+                                <article class="fcc-product-compare-row <?= $comparison_row['is_current'] ? 'is-current' : null ?>">
+                                    <div class="fcc-product-compare-main">
+                                        <div class="fcc-product-compare-topline">
+                                            <span class="fcc-product-card-eyebrow"><?= $comparison_row['state']['eyebrow'] ?></span>
+                                            <?php if($comparison_row['is_current']): ?>
+                                                <span class="fcc-product-compare-badge"><?= $fcc_blog_microcopy['comparison_current'] ?></span>
+                                            <?php endif ?>
+                                        </div>
+
+                                        <h3 class="fcc-product-compare-title"><?= e($comparison_row['title']) ?></h3>
+                                        <p class="fcc-product-compare-text mb-0"><?= e($comparison_row['state']['description']) ?></p>
+                                    </div>
+
+                                    <div class="fcc-product-compare-meta">
+                                        <?php if($comparison_row['state']['shop_ready']): ?>
+                                            <span class="fcc-product-card-chip"><?= $fcc_blog_microcopy['comparison_ready'] ?></span>
+                                        <?php endif ?>
+
+                                        <?php if($comparison_row['state']['market_count'] > 0): ?>
+                                            <span class="fcc-product-card-chip">
+                                                <?= e($fcc_global_market_display_chip ?: sprintf(
+                                                    $comparison_row['state']['market_count'] === 1 ? $fcc_blog_microcopy['comparison_market_single'] : $fcc_blog_microcopy['comparison_markets'],
+                                                    $comparison_row['state']['market_count']
+                                                )) ?>
+                                            </span>
+                                        <?php endif ?>
+                                    </div>
+
+                                    <div class="fcc-product-compare-actions">
+                                        <?php if($comparison_row['is_current']): ?>
+                                            <a
+                                                href="<?= e($fcc_blog_toc_current_url . '#fcc-product-guide') ?>"
+                                                class="fcc-product-card-cta"
+                                                data-fcc-scroll-target="fcc-product-guide"
+                                                data-fcc-blog-event="product_jump_click"
+                                                data-fcc-blog-component="comparison_current"
+                                                data-fcc-blog-label="<?= e($fcc_blog_microcopy['action_guide']) ?>"
+                                            >
+                                                <?= $fcc_blog_microcopy['action_guide'] ?>
+                                                <i class="fas fa-fw fa-arrow-right ml-1"></i>
+                                            </a>
+                                        <?php else: ?>
+                                            <a
+                                                href="<?= e($comparison_row['url']) ?>"
+                                                class="fcc-product-card-cta"
+                                                data-fcc-blog-event="product_compare_click"
+                                                data-fcc-blog-component="comparison_card"
+                                                data-fcc-blog-label="<?= e($comparison_row['title']) ?>"
+                                            >
+                                                <?= $fcc_blog_microcopy['comparison_cta'] ?>
+                                                <i class="fas fa-fw fa-arrow-right ml-1"></i>
+                                            </a>
+                                        <?php endif ?>
+                                    </div>
+                                </article>
+                            <?php endforeach ?>
+                        </div>
+                    </div>
+                </section>
+            <?php endif ?>
+
+            <?php if(!empty($fcc_related_blog_posts)): ?>
+                <section class="card mt-4 fcc-glass-card fcc-related-card" <?= $fcc_is_start_package_context ? 'id="fcc-start-next-steps"' : null ?>>
+                    <div class="card-body">
+                        <div class="fcc-related-header">
+                            <span class="fcc-related-eyebrow"><?= $fcc_blog_microcopy['related_eyebrow'] ?></span>
+                            <h2 class="fcc-related-title"><?= $fcc_blog_microcopy['related_title'] ?></h2>
+                        </div>
+
+                        <div class="row">
+                            <?php foreach($fcc_related_blog_posts as $related_blog_post): ?>
+                                <?php $fcc_related_card_state = $fcc_get_related_card_state($related_blog_post); ?>
+                                <div class="col-12 col-md-6 mb-3">
+                                    <article
+                                        class="fcc-related-product-card h-100"
+                                        data-fcc-product-card="1"
+                                        data-fcc-shop-ready="<?= $fcc_related_card_state['shop_ready'] ? '1' : '0' ?>"
+                                        data-fcc-market-count="<?= (int) $fcc_related_card_state['market_count'] ?>"
+                                        data-fcc-title="<?= e($related_blog_post->title) ?>"
+                                    >
+                                        <?php if(!empty($related_blog_post->image)): ?>
+                                            <a
+                                                href="<?= SITE_URL . ($related_blog_post->language ? \Altum\Language::$active_languages[$related_blog_post->language] . '/' : null) . 'blog/' . $related_blog_post->url ?>"
+                                                class="fcc-related-product-image-link"
+                                                data-fcc-blog-event="product_related_click"
+                                                data-fcc-blog-component="related_image"
+                                                data-fcc-blog-post-id="<?= (int) $related_blog_post->blog_post_id ?>"
+                                                data-fcc-blog-label="<?= e($related_blog_post->title) ?>"
+                                            >
+                                                <img src="<?= \Altum\Uploads::get_full_url('blog') . $related_blog_post->image ?>" class="fcc-related-product-image" alt="<?= e($related_blog_post->image_description ?? $related_blog_post->title) ?>" loading="lazy" decoding="async" />
+                                            </a>
+                                        <?php endif ?>
+
+                                        <div class="fcc-related-product-body">
+                                            <span class="fcc-product-card-eyebrow"><?= $fcc_related_card_state['eyebrow'] ?></span>
+                                            <a
+                                                href="<?= SITE_URL . ($related_blog_post->language ? \Altum\Language::$active_languages[$related_blog_post->language] . '/' : null) . 'blog/' . $related_blog_post->url ?>"
+                                                class="fcc-related-product-link"
+                                                data-fcc-blog-event="product_related_click"
+                                                data-fcc-blog-component="related_title"
+                                                data-fcc-blog-post-id="<?= (int) $related_blog_post->blog_post_id ?>"
+                                                data-fcc-blog-label="<?= e($related_blog_post->title) ?>"
+                                            >
+                                                <?= $related_blog_post->title ?>
+                                            </a>
+
+                                            <?php if(!empty($fcc_related_card_state['chips'])): ?>
+                                                <div class="fcc-product-card-meta">
+                                                    <?php foreach($fcc_related_card_state['chips'] as $chip): ?>
+                                                        <span class="fcc-product-card-chip"><?= e($chip) ?></span>
+                                                    <?php endforeach ?>
+                                                </div>
+                                            <?php endif ?>
+
+                                            <p class="fcc-related-product-text mb-0"><?= e($fcc_related_card_state['description']) ?></p>
+
+                                            <a
+                                                href="<?= SITE_URL . ($related_blog_post->language ? \Altum\Language::$active_languages[$related_blog_post->language] . '/' : null) . 'blog/' . $related_blog_post->url ?>"
+                                                class="fcc-product-card-cta"
+                                                data-fcc-blog-event="product_related_click"
+                                                data-fcc-blog-component="related_cta"
+                                                data-fcc-blog-post-id="<?= (int) $related_blog_post->blog_post_id ?>"
+                                                data-fcc-blog-label="<?= e($related_blog_post->title) ?>"
+                                            >
+                                                <?= $fcc_related_card_state['cta'] ?>
+                                                <i class="fas fa-fw fa-arrow-right ml-1"></i>
+                                            </a>
+                                        </div>
+                                    </article>
+                                </div>
+                            <?php endforeach ?>
+                        </div>
+                    </div>
+                </section>
+            <?php endif ?>
          
             <?php if($data->blog_posts_category): ?>
                 <?php /* Custom code: FC-2026-03-09: keep back button as secondary CTA */ ?>
@@ -493,12 +1460,28 @@ $share_url = $data->share_url ?? $fcc_blog_post_url;
                     </div>
                 <?php endif ?>
             </div>
-                </div>
+            </div>
         <?php endif ?>
     </div>
 </div>
 </div>
 <!-- /Custom code: FC-2026-02-26 -->
+
+<?php if($fcc_blog_primary_cta_url && $fcc_is_product_context): ?>
+    <div class="fcc-mobile-sticky-cta d-lg-none">
+        <a
+            target="_blank"
+            href="<?= $fcc_blog_primary_cta_url ?>"
+            class="fcc-mobile-sticky-cta-btn"
+            data-fcc-blog-event="product_sticky_cta_click"
+            data-fcc-blog-component="mobile_sticky_cta"
+            data-fcc-blog-label="<?= e($fcc_primary_cta_label) ?>"
+        >
+            <i class="fas fa-shopping-cart mr-2"></i>
+            <span><?= $fcc_primary_cta_label ?></span>
+        </a>
+    </div>
+<?php endif ?>
 
 <div class="fcc-referral-tour-backdrop" id="fcc_referral_tour_backdrop">
     <div class="fcc-referral-tour-backdrop-segment" data-segment="top"></div>
@@ -580,70 +1563,83 @@ $fcc_blog_chat_language_code = !empty($data->ai_chat_owner_user_id)
 <?php
 $fcc_blog_faq_schema = null;
 
-if(!empty($data->blog_post->content) && class_exists('DOMDocument')) {
-    $faq_items = [];
-    $dom = new \DOMDocument();
-    $previous_state = libxml_use_internal_errors(true);
+if(!empty($fcc_blog_faq_items)) {
+    $fcc_blog_faq_schema = [
+        '@context' => 'https://schema.org',
+        '@type' => 'FAQPage',
+        'mainEntity' => array_map(static function($item) {
+            return [
+                '@type' => 'Question',
+                'name' => $item['question'],
+                'acceptedAnswer' => [
+                    '@type' => 'Answer',
+                    'text' => $item['answer'],
+                ],
+            ];
+        }, $fcc_blog_faq_items),
+    ];
+}
 
-    if($dom->loadHTML('<?xml encoding="utf-8" ?>' . $data->blog_post->content, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD)) {
-        $in_faq_section = false;
+$fcc_blog_product_schema = null;
 
-        foreach($dom->childNodes as $node) {
-            if(!in_array($node->nodeName, ['h2', 'h3', 'p'], true)) {
-                continue;
-            }
+if($fcc_is_product_context) {
+    $fcc_blog_product_schema = [
+        '@context' => 'https://schema.org',
+        '@type' => 'Product',
+        'name' => (string) $data->blog_post->title,
+        'description' => (string) $data->blog_post->description,
+        'url' => (string) $fcc_blog_post_url,
+        'brand' => [
+            '@type' => 'Brand',
+            'name' => 'Forever Living Products',
+        ],
+        'mainEntityOfPage' => $fcc_blog_post_url,
+        'isRelatedTo' => [
+            '@type' => 'WebPage',
+            'name' => settings()->main->title,
+            'url' => SITE_URL,
+        ],
+    ];
 
-            $node_text = trim(html_entity_decode(strip_tags($dom->saveHTML($node)), ENT_QUOTES | ENT_HTML5, 'UTF-8'));
-
-            if($node->nodeName === 'h2') {
-                $normalized_heading = function_exists('mb_strtolower') ? mb_strtolower($node_text, 'UTF-8') : strtolower($node_text);
-                $in_faq_section = in_array($normalized_heading, ['česta pitanja', 'frequently asked questions'], true);
-                continue;
-            }
-
-            if(!$in_faq_section) {
-                continue;
-            }
-
-            if($node->nodeName === 'h3') {
-                $faq_items[] = [
-                    'question' => $node_text,
-                    'answer' => '',
-                ];
-                continue;
-            }
-
-            if($node->nodeName === 'p' && !empty($faq_items)) {
-                $last_index = array_key_last($faq_items);
-
-                if($last_index !== null && $faq_items[$last_index]['answer'] === '') {
-                    $faq_items[$last_index]['answer'] = $node_text;
-                }
-            }
-        }
+    if(!empty($data->blog_post->sku)) {
+        $fcc_blog_product_schema['sku'] = (string) $data->blog_post->sku;
     }
 
-    libxml_clear_errors();
-    libxml_use_internal_errors($previous_state);
+    if($data->blog_post->image) {
+        $fcc_blog_product_schema['image'] = [\Altum\Uploads::get_full_url('blog') . $data->blog_post->image];
+    }
 
-    $faq_items = array_values(array_filter($faq_items, static function($item) {
-        return !empty($item['question']) && !empty($item['answer']);
-    }));
+    if(!empty($data->blog_posts_category->title)) {
+        $fcc_blog_product_schema['category'] = (string) $data->blog_posts_category->title;
+    }
 
-    if(!empty($faq_items)) {
-        $fcc_blog_faq_schema = [
-            '@context' => 'https://schema.org',
-            '@type' => 'FAQPage',
-            'mainEntity' => array_map(static function($item) {
-                return [
-                    '@type' => 'Question',
-                    'name' => $item['question'],
-                    'acceptedAnswer' => [
-                        '@type' => 'Answer',
-                        'text' => $item['answer'],
-                    ],
-                ];
-            }, $faq_items),
+    if(!empty($fcc_product_summary_cards)) {
+        $fcc_blog_product_schema['additionalProperty'] = array_values(array_filter(array_map(static function($item) {
+            if(empty($item['label']) || empty($item['value'])) {
+                return null;
+            }
+
+            return [
+                '@type' => 'PropertyValue',
+                'name' => (string) $item['label'],
+                'value' => (string) $item['value'],
+            ];
+        }, $fcc_product_summary_cards)));
+    }
+
+    if($fcc_blog_product_cta_url) {
+        $fcc_blog_product_schema['offers'] = [
+            '@type' => 'Offer',
+            'url' => $fcc_blog_product_cta_url,
+            'availability' => 'https://schema.org/InStock',
+        ];
+    }
+
+    if(settings()->content->blog_ratings_is_enabled && $data->blog_post->total_ratings > 0) {
+        $fcc_blog_product_schema['aggregateRating'] = [
+            '@type' => 'AggregateRating',
+            'ratingValue' => (string) $data->blog_post->average_rating,
+            'reviewCount' => (string) $data->blog_post->total_ratings,
         ];
     }
 }
@@ -653,16 +1649,16 @@ if(!empty($data->blog_post->content) && class_exists('DOMDocument')) {
     {
         "@context": "https://schema.org",
         "@type": "BlogPosting",
-        "headline": "<?= $data->blog_post->title ?>",
-        "description": "<?= $data->blog_post->description ?>",
-        "url": "<?= $fcc_blog_post_url ?>",
+        "headline": <?= json_encode($data->blog_post->title, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?>,
+        "description": <?= json_encode($fcc_blog_public_bundle['schema_description'] ?? ($data->blog_post->description ?? ''), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?>,
+        "url": <?= json_encode($fcc_blog_post_url, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?>,
     <?php if($data->blog_post->image): ?>
-        "image": "<?= \Altum\Uploads::get_full_url('blog') . $data->blog_post->image ?>",
+        "image": <?= json_encode(\Altum\Uploads::get_full_url('blog') . $data->blog_post->image, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?>,
         <?php endif ?>
     "author": {
         "@type": "Person",
-        "name": "<?= settings()->main->title ?>",
-            "url": "<?= SITE_URL ?>"
+        "name": <?= json_encode(settings()->main->title, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?>,
+            "url": <?= json_encode(SITE_URL, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?>
         },
 
     <?php if(settings()->content->blog_ratings_is_enabled && $data->blog_post->total_ratings > 0): ?>
@@ -671,29 +1667,29 @@ if(!empty($data->blog_post->content) && class_exists('DOMDocument')) {
             "ratingValue": "<?= $data->blog_post->average_rating ?>",
             "reviewCount": "<?= $data->blog_post->total_ratings ?>",
             "itemReviewed" : {
-                "@type": "Book",
-                "name": "<?= $data->blog_post->title ?>"
+                "@type": "<?= $fcc_is_product_context ? 'Product' : 'Article' ?>",
+                "name": <?= json_encode($data->blog_post->title, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?>
             }
         },
         <?php endif ?>
 
     "publisher": {
         "@type": "Organization",
-        "name": "<?= settings()->main->title ?>"
+        "name": <?= json_encode(settings()->main->title, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?>
     <?php if(settings()->main->{'logo_' . \Altum\ThemeStyle::get()} != ''): ?>
             ,"logo": {
                 "@type": "ImageObject",
-                "url": "<?= settings()->main->{'logo_' . \Altum\ThemeStyle::get() . '_full_url'} ?>"
+                "url": <?= json_encode(settings()->main->{'logo_' . \Altum\ThemeStyle::get() . '_full_url'}, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?>
             }
             <?php endif ?>
     },
     "datePublished": "<?= (new \DateTime($data->blog_post->datetime))->format('Y-m-d\TH:i:sP') ?>",
         "dateModified": "<?= (new \DateTime($data->blog_post->last_datetime))->format('Y-m-d\TH:i:sP') ?>",
-        "keywords": "<?= $data->blog_post->keywords ?>",
+        "keywords": <?= json_encode($fcc_blog_public_bundle['meta_keywords'] ?? ($data->blog_post->keywords ?? ''), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?>,
         "wordCount": "<?= str_word_count($data->blog_post->content ?? '') ?>",
         "mainEntityOfPage": {
             "@type": "WebPage",
-            "@id": "<?= $fcc_blog_post_url ?>"
+            "@id": <?= json_encode($fcc_blog_post_url, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?>
         }
     }
 </script>
@@ -703,6 +1699,138 @@ if(!empty($data->blog_post->content) && class_exists('DOMDocument')) {
     <?= json_encode($fcc_blog_faq_schema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) ?>
 </script>
 <?php endif ?>
+
+<?php if($fcc_blog_product_schema): ?>
+<script type="application/ld+json">
+    <?= json_encode($fcc_blog_product_schema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) ?>
+</script>
+<?php endif ?>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const trackingUrl = `${url}blog/interactions_ajax`;
+    const blogPostId = <?= (int) ($data->blog_post->blog_post_id ?? 0) ?>;
+    const blogCategoryId = <?= (int) ($data->blog_posts_category->blog_posts_category_id ?? 0) ?>;
+    const pageUrl = <?= json_encode($fcc_blog_post_url) ?> || window.location.href;
+    const scrollLinks = document.querySelectorAll('[data-fcc-scroll-target]');
+
+    const trackEvent = (eventType, payload = {}) => {
+        if(!window.global_token || !eventType || !blogPostId) {
+            return;
+        }
+
+        const form = new FormData();
+        form.set('global_token', global_token);
+        form.set('event_type', eventType);
+        form.set('page_type', 'post');
+        form.set('blog_post_id', String(blogPostId));
+        form.set('page_url', pageUrl || window.location.href);
+
+        if(blogCategoryId) {
+            form.set('blog_posts_category_id', String(blogCategoryId));
+        }
+
+        if(payload.blog_post_id) {
+            form.set('blog_post_id', String(payload.blog_post_id));
+        }
+
+        if(payload.component) {
+            form.set('component', payload.component);
+        }
+
+        if(payload.label) {
+            form.set('event_label', payload.label);
+        }
+
+        if(payload.event_data) {
+            form.set('event_data', JSON.stringify(payload.event_data));
+        }
+
+        if(navigator.sendBeacon) {
+            navigator.sendBeacon(trackingUrl, form);
+            return;
+        }
+
+        fetch(trackingUrl, {
+            method: 'post',
+            body: form,
+            keepalive: true,
+        }).catch(() => {});
+    };
+
+    document.querySelectorAll('[data-fcc-blog-event]').forEach((element) => {
+        element.addEventListener('click', () => {
+            trackEvent(element.dataset.fccBlogEvent || '', {
+                blog_post_id: parseInt(element.dataset.fccBlogPostId || '0', 10),
+                component: element.dataset.fccBlogComponent || '',
+                label: element.dataset.fccBlogLabel || element.textContent.trim(),
+                event_data: {
+                    target: element.getAttribute('href') || element.getAttribute('data-fcc-scroll-target') || '',
+                }
+            });
+        });
+    });
+
+    document.querySelectorAll('[data-fcc-faq-track]').forEach((button) => {
+        button.addEventListener('click', () => {
+            if(button.getAttribute('aria-expanded') === 'true') {
+                return;
+            }
+
+            trackEvent('product_faq_open', {
+                component: 'faq_accordion',
+                label: button.dataset.fccBlogLabel || button.textContent.trim(),
+            });
+        });
+    });
+
+    if(!scrollLinks.length) {
+        return;
+    }
+
+    const scrollToTarget = (targetId, updateHash = true) => {
+        if(!targetId) {
+            return false;
+        }
+
+        const target = document.getElementById(targetId);
+
+        if(!target) {
+            return false;
+        }
+
+        target.scrollIntoView({behavior: 'smooth', block: 'start', inline: 'nearest'});
+
+        if(updateHash && window.history && typeof window.history.replaceState === 'function') {
+            const nextUrl = `${window.location.pathname}${window.location.search}#${encodeURIComponent(targetId)}`;
+            window.history.replaceState(null, '', nextUrl);
+        }
+
+        return true;
+    };
+
+    scrollLinks.forEach((link) => {
+        link.addEventListener('click', (event) => {
+            const targetId = link.getAttribute('data-fcc-scroll-target');
+
+            if(!targetId || !document.getElementById(targetId)) {
+                return;
+            }
+
+            event.preventDefault();
+            scrollToTarget(targetId);
+        });
+    });
+
+    if(window.location.hash) {
+        const targetId = decodeURIComponent(window.location.hash.replace(/^#/, ''));
+
+        if(targetId && document.getElementById(targetId)) {
+            window.setTimeout(() => scrollToTarget(targetId, false), 120);
+        }
+    }
+});
+</script>
 
 <script>
     'use strict';

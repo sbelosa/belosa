@@ -258,6 +258,163 @@ function fc_ensure_funnel_analytics_tables(): void {
     $is_ready = true;
 }
 
+function fc_ensure_blog_journey_events_table(): void {
+    static $is_ready = false;
+
+    if($is_ready) {
+        return;
+    }
+
+    db()->rawQuery("CREATE TABLE IF NOT EXISTS `blog_journey_events` (
+        `blog_journey_event_id` bigint unsigned NOT NULL AUTO_INCREMENT,
+        `visitor_key` varchar(64) NOT NULL,
+        `user_id` int unsigned NULL,
+        `blog_post_id` bigint unsigned NULL,
+        `blog_posts_category_id` bigint unsigned NULL,
+        `page_type` varchar(32) NOT NULL,
+        `event_type` varchar(32) NOT NULL,
+        `component` varchar(64) NULL,
+        `event_label` varchar(128) NULL,
+        `page_url` text NULL,
+        `referrer_host` varchar(128) NULL,
+        `referrer_path` text NULL,
+        `utm_source` varchar(128) NULL,
+        `utm_medium` varchar(128) NULL,
+        `utm_campaign` varchar(128) NULL,
+        `device_type` varchar(32) NULL,
+        `browser_language` varchar(8) NULL,
+        `browser_name` varchar(64) NULL,
+        `os_name` varchar(64) NULL,
+        `continent_code` varchar(8) NULL,
+        `country_code` varchar(8) NULL,
+        `city_name` varchar(128) NULL,
+        `event_data` longtext NULL,
+        `datetime` datetime NOT NULL,
+        PRIMARY KEY (`blog_journey_event_id`),
+        KEY `blog_post_id` (`blog_post_id`),
+        KEY `blog_posts_category_id` (`blog_posts_category_id`),
+        KEY `event_type` (`event_type`),
+        KEY `page_type` (`page_type`),
+        KEY `datetime` (`datetime`),
+        KEY `visitor_key` (`visitor_key`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+    $is_ready = true;
+}
+
+function fc_track_blog_journey_event(array $payload): void {
+    try {
+        fc_ensure_blog_journey_events_table();
+
+        $allowed_event_types = [
+            'category_filter',
+            'category_search',
+            'category_sort',
+            'category_reset',
+            'category_card_click',
+            'category_featured_click',
+            'product_jump_click',
+            'product_related_click',
+            'product_compare_click',
+            'product_faq_open',
+            'product_primary_cta_click',
+            'product_sticky_cta_click',
+            'product_secondary_action_click',
+        ];
+
+        $event_type = input_clean($payload['event_type'] ?? '', 32);
+        $page_type = input_clean($payload['page_type'] ?? '', 32);
+
+        if(!in_array($event_type, $allowed_event_types, true) || !in_array($page_type, ['category', 'post'], true)) {
+            return;
+        }
+
+        $blog_post_id = (int) ($payload['blog_post_id'] ?? 0);
+        $blog_posts_category_id = (int) ($payload['blog_posts_category_id'] ?? 0);
+
+        if(!$blog_post_id && !$blog_posts_category_id) {
+            return;
+        }
+
+        $visitor_key = input_clean($payload['visitor_key'] ?? fc_get_funnel_visitor_key(), 64);
+
+        if(!$visitor_key) {
+            return;
+        }
+
+        $whichbrowser = get_whichbrowser();
+
+        if(($whichbrowser->device->type ?? null) === 'bot') {
+            return;
+        }
+
+        $browser_name = $whichbrowser->browser->name ?? null;
+        $os_name = $whichbrowser->os->name ?? null;
+        $browser_language = isset($_SERVER['HTTP_ACCEPT_LANGUAGE']) ? mb_substr($_SERVER['HTTP_ACCEPT_LANGUAGE'], 0, 2) : null;
+        $device_type = get_this_device_type();
+
+        try {
+            $maxmind = (get_maxmind_reader_city())->get(get_ip());
+        } catch(\Exception $exception) {
+            $maxmind = null;
+        }
+
+        $continent_code = isset($maxmind['continent']) ? ($maxmind['continent']['code'] ?? null) : null;
+        $country_code = isset($maxmind['country']) ? ($maxmind['country']['iso_code'] ?? null) : null;
+        $city_name = isset($maxmind['city']) ? ($maxmind['city']['names']['en'] ?? null) : null;
+
+        $referrer_host = null;
+        $referrer_path = null;
+
+        if(isset($_SERVER['HTTP_REFERER'])) {
+            $parsed_referrer = parse_url($_SERVER['HTTP_REFERER']);
+
+            if(is_array($parsed_referrer)) {
+                $referrer_host = $parsed_referrer['host'] ?? null;
+                $referrer_path = $parsed_referrer['path'] ?? null;
+            }
+        }
+
+        $event_data = $payload['event_data'] ?? null;
+
+        if(is_array($event_data) || is_object($event_data)) {
+            $event_data = json_encode($event_data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        }
+
+        if(!is_string($event_data) || trim($event_data) === '') {
+            $event_data = null;
+        }
+
+        db()->insert('blog_journey_events', [
+            'visitor_key' => $visitor_key,
+            'user_id' => is_logged_in() ? (int) user()->user_id : null,
+            'blog_post_id' => $blog_post_id ?: null,
+            'blog_posts_category_id' => $blog_posts_category_id ?: null,
+            'page_type' => $page_type,
+            'event_type' => $event_type,
+            'component' => input_clean($payload['component'] ?? '', 64) ?: null,
+            'event_label' => input_clean($payload['event_label'] ?? '', 128) ?: null,
+            'page_url' => input_clean($payload['page_url'] ?? '', 2048) ?: null,
+            'referrer_host' => $referrer_host,
+            'referrer_path' => $referrer_path,
+            'utm_source' => input_clean($_REQUEST['utm_source'] ?? ($payload['utm_source'] ?? null), 128),
+            'utm_medium' => input_clean($_REQUEST['utm_medium'] ?? ($payload['utm_medium'] ?? null), 128),
+            'utm_campaign' => input_clean($_REQUEST['utm_campaign'] ?? ($payload['utm_campaign'] ?? null), 128),
+            'device_type' => $device_type,
+            'browser_language' => $browser_language,
+            'browser_name' => $browser_name,
+            'os_name' => $os_name,
+            'continent_code' => $continent_code,
+            'country_code' => $country_code,
+            'city_name' => $city_name,
+            'event_data' => $event_data,
+            'datetime' => get_date(),
+        ]);
+    } catch(\Throwable $exception) {
+        error_log('[Blog Journey Events] ' . $exception->getMessage() . ' @ ' . $exception->getFile() . ':' . $exception->getLine());
+    }
+}
+
 /* Custom code: FC-2026-03-31: Phase 6 privacy-safe fraud helpers */
 function fc_get_privacy_hash_salt(): string {
     if(defined('LOS_PRIVACY_HASH_SALT')) {

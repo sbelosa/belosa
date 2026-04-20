@@ -347,6 +347,18 @@ $fcc_get_visual_accent = static function(?string $block_color, string $group_col
 
 $fcc_grouped_blocks = array_fill_keys(array_keys($fcc_group_meta), []);
 $fcc_enabled_biolink_blocks = (object) ($this->user->plan_settings->enabled_biolink_blocks ?? []);
+$vip_funnel_access_state = function_exists('vip_funnel_resolve_access_state')
+    ? vip_funnel_resolve_access_state($this->user)
+    : (object) ['can_access' => false, 'locked_reason' => 'testing'];
+$fcc_get_locked_tooltip_attributes = static function(string $tooltip_title): string {
+    $tooltip_title = htmlspecialchars($tooltip_title, ENT_QUOTES, 'UTF-8');
+
+    return <<<ALTUM
+        data-toggle="tooltip"
+        title="{$tooltip_title}"
+        onclick="event.preventDefault();return false;"
+    ALTUM;
+};
 $fcc_block_picker_coach_notice = $fcc_is_hr
     ? [
         'title' => 'Coach je privremeno zatvoren',
@@ -890,6 +902,23 @@ $fcc_block_picker_coach_notice = $fcc_is_hr
 
                     <?php
                     $is_block_enabled_for_plan = (bool) ($fcc_enabled_biolink_blocks->{$key} ?? false);
+                    $block_card_attributes = $is_block_enabled_for_plan ? null : get_plan_feature_disabled_info();
+                    $block_button_attributes = 'data-dismiss="modal" data-toggle="modal" data-target="#create_biolink_' . $key . '"';
+                    $block_subtitle = l('biolink_' . $key . '.subheader');
+
+                    if($key === 'vip_funnel_hub') {
+                        $is_block_enabled_for_plan = (bool) ($vip_funnel_access_state->can_access ?? false);
+
+                        if(!$is_block_enabled_for_plan && (($vip_funnel_access_state->locked_reason ?? null) === 'testing')) {
+                            $block_card_attributes = $fcc_get_locked_tooltip_attributes(l('vip_funnel.block_gate.testing_tooltip'));
+                            $block_button_attributes = 'onclick="event.preventDefault();return false;"';
+                            $block_subtitle = l('vip_funnel.block_gate.testing_card_subtitle');
+                        } elseif(!$is_block_enabled_for_plan) {
+                            $block_card_attributes = get_plan_feature_disabled_info();
+                            $block_button_attributes = 'onclick="event.preventDefault();return false;"';
+                        }
+                    }
+
                     $assigned_group_keys = $fcc_get_groups($key, $value);
                     $primary_group_key = $assigned_group_keys[0] ?? 'content';
                     $primary_group_meta = $fcc_group_meta[$primary_group_key] ?? reset($fcc_group_meta);
@@ -924,15 +953,13 @@ $fcc_block_picker_coach_notice = $fcc_is_hr
                             data-block-id="<?= $key ?>"
                             data-block-name="<?= l('link.biolink.blocks.' . $key) ?>"
                             style="--group-color: <?= $group_meta['color'] ?>; --block-accent: <?= htmlspecialchars($block_visual_accent, ENT_QUOTES) ?>;"
-                            <?= $is_block_enabled_for_plan ? null : get_plan_feature_disabled_info() ?>
+                            <?= $is_block_enabled_for_plan ? null : $block_card_attributes ?>
                         >
                             <button
                                 type="button"
-                                data-dismiss="modal"
-                                data-toggle="modal"
-                                data-target="#create_biolink_<?= $key ?>"
+                                <?= $block_button_attributes ?>
                                 data-tooltip
-                                title="<?= l('biolink_' . $key . '.subheader') ?>"
+                                title="<?= htmlspecialchars($block_subtitle, ENT_QUOTES, 'UTF-8') ?>"
                                 class="btn btn-light btn-block btn-lg text-left d-flex align-items-center biolink-create-block-btn <?= $is_block_enabled_for_plan ? null : 'container-disabled' ?>"
                             >
                                 <span class="biolink-create-block-icon">
@@ -965,9 +992,16 @@ $fcc_block_picker_coach_notice = $fcc_is_hr
                                             <?php foreach($goal_labels as $goal_label): ?>
                                                 <span class="biolink-create-block-goal"><?= $goal_label ?></span>
                                             <?php endforeach ?>
+                                            <?php if($key === 'vip_funnel_hub' && !$is_block_enabled_for_plan && (($vip_funnel_access_state->locked_reason ?? null) === 'testing')): ?>
+                                                <span class="biolink-create-block-goal"><?= l('vip_funnel.block_gate.testing_badge') ?></span>
+                                            <?php endif ?>
+                                        </span>
+                                    <?php elseif($key === 'vip_funnel_hub' && !$is_block_enabled_for_plan && (($vip_funnel_access_state->locked_reason ?? null) === 'testing')): ?>
+                                        <span class="biolink-create-block-goals">
+                                            <span class="biolink-create-block-goal"><?= l('vip_funnel.block_gate.testing_badge') ?></span>
                                         </span>
                                     <?php endif ?>
-                                    <small class="text-muted biolink-create-block-subtitle"><?= l('biolink_' . $key . '.subheader') ?></small>
+                                    <small class="text-muted biolink-create-block-subtitle"><?= $block_subtitle ?></small>
                                 </span>
                             </button>
                         </div>

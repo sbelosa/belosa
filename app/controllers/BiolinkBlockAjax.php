@@ -30,7 +30,7 @@ class BiolinkBlockAjax extends Controller {
     public $biolink_block = null;
     public $total_biolink_blocks = 0;
     /* Custom code: FC-2026-03-06: remove legacy albania_kosovo alias block from available block types */
-    public $individual_blocks = ['link_app_switcher', 'link_back', 'link_forever_shop', 'link_forever_product', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_discount', 'link_homescreen_android', 'link_homescreen_ios', 'link_save_contact', 'custom_html_chatbot', 'custom_html_chatbot_pets', 'custom_html_whatsapp', 'link', 'featured_link', 'heading', 'big_link', 'paragraph', 'business_hours', 'markdown', 'avatar', 'socials', 'email_collector', 'rss_feed', 'custom_html', 'vcard', 'image', 'image_grid', 'divider', 'list', 'alert', 'faq', 'timeline', 'review', 'image_slider', 'discord', 'countdown', 'cta', 'external_item', 'share', 'coupon', 'youtube_feed', 'paypal', 'phone_collector', 'contact_collector', 'lead_funnel', 'donation', 'product', 'service', 'map', 'iframe', 'header', 'appointment_calendar', 'modal_text', 'image_comparison', 'weather', 'code', 'counter', 'loading'];
+    public $individual_blocks = ['link_app_switcher', 'link_back', 'link_forever_shop', 'link_forever_product', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_discount', 'link_homescreen_android', 'link_homescreen_ios', 'link_save_contact', 'custom_html_chatbot', 'custom_html_chatbot_pets', 'custom_html_whatsapp', 'link', 'featured_link', 'heading', 'big_link', 'paragraph', 'business_hours', 'markdown', 'avatar', 'socials', 'email_collector', 'rss_feed', 'custom_html', 'vcard', 'image', 'image_grid', 'divider', 'list', 'alert', 'faq', 'timeline', 'review', 'image_slider', 'discord', 'countdown', 'cta', 'external_item', 'share', 'coupon', 'youtube_feed', 'paypal', 'phone_collector', 'contact_collector', 'lead_funnel', 'vip_funnel_hub', 'donation', 'product', 'service', 'map', 'iframe', 'header', 'appointment_calendar', 'modal_text', 'image_comparison', 'weather', 'code', 'counter', 'loading'];
     /* /Custom code: FC-2026-03-06 */
     /* Custom code: FC-2026-03-09: restore embeddable block types for Vimeo and other embeds */
     public $embeddable_blocks = ['telegram', 'anchor', 'applemusic', 'soundcloud', 'threads', 'snapchat', 'spotify', 'tidal', 'mixcloud', 'kick', 'tiktok_video', 'vk_video', 'typeform', 'calendly', 'tiktok_profile', 'twitch', 'twitter_tweet', 'twitter_video', 'twitter_profile', 'pinterest_profile', 'vimeo', 'youtube', 'instagram_media', 'facebook', 'reddit', 'rumble', 'tumblr_post', 'bluesky_post', 'canva', 'google_form'];
@@ -49,6 +49,18 @@ class BiolinkBlockAjax extends Controller {
     }
 
     private function validate_block_access_for_current_plan(string $block_type): void {
+        if($block_type === 'vip_funnel_hub' && function_exists('vip_funnel_resolve_access_state')) {
+            $vip_funnel_access_state = vip_funnel_resolve_access_state($this->user);
+
+            if(!empty($vip_funnel_access_state->can_access)) {
+                return;
+            }
+
+            if(($vip_funnel_access_state->locked_reason ?? null) === 'testing') {
+                Response::json(l('vip_funnel.block_gate.testing_message'), 'error');
+            }
+        }
+
         if($this->is_block_enabled_for_current_plan($block_type)) {
             return;
         }
@@ -6424,6 +6436,164 @@ class BiolinkBlockAjax extends Controller {
         Response::json(l('global.success_message.update2'), 'success', ['images' => ['image' => $image_url]]);
     }
     /* /Custom code: FC-2026-03-23 */
+
+    /* Custom code: FC-2026-04-19: VIP Funnel Hub public foundation block */
+    private function create_biolink_vip_funnel_hub() {
+        $_POST['link_id'] = (int) $_POST['link_id'];
+        $_POST['name'] = mb_substr(query_clean($_POST['name'] ?? ''), 0, 128);
+        $_POST['location_url'] = get_url($_POST['location_url'] ?? '');
+
+        if(!$link = db()->where('link_id', $_POST['link_id'])->where('user_id', $this->user->user_id)->getOne('links')) {
+            die();
+        }
+
+        if($_POST['location_url']) {
+            $this->check_location_url($_POST['location_url']);
+        }
+
+        $type = 'vip_funnel_hub';
+        $settings = json_encode([
+            'name' => $_POST['name'],
+            'image' => '',
+            'text_color' => '#ffffff',
+            'text_alignment' => 'left',
+            'background_color' => '#101826',
+            'border_shadow_style' => 'subtle',
+            'border_shadow_color' => '#00000010',
+            'border_width' => 0,
+            'border_style' => 'solid',
+            'border_color' => '#101826',
+            'border_radius' => 'rounded',
+            'animation' => false,
+            'animation_runs' => 'repeat-1',
+            'icon' => 'fas fa-diagram-project',
+            'columns' => 1,
+            'kicker' => 'Funnel 2.0',
+            'title' => 'Pokreni svoj sljedeći korak uz vođeni Funnel 2.0 sustav',
+            'subtitle' => 'Jasan put za proizvode, online posao i doživljaj sustava bez preopterećenja.',
+            'primary_cta_text' => 'Odaberi svoj smjer',
+            'secondary_cta_text' => 'Zatraži VIP pregled',
+            'secondary_url' => '',
+            'show_paths' => true,
+
+            /* Display settings */
+            'display_continents' => [],
+            'display_countries' => [],
+            'display_cities' => [],
+            'display_devices' => [],
+            'display_languages' => [],
+            'display_operating_systems' => [],
+            'display_browsers' => [],
+        ]);
+
+        $settings = $this->process_biolink_theme_id_settings($link, $settings, $type);
+
+        db()->insert('biolinks_blocks', [
+            'user_id' => $this->user->user_id,
+            'link_id' => $_POST['link_id'],
+            'type' => $type,
+            'location_url' => $_POST['location_url'],
+            'settings' => $settings,
+            'order' => settings()->links->biolinks_new_blocks_position == 'top' ? -$this->total_biolink_blocks : $this->total_biolink_blocks,
+            'datetime' => get_date(),
+        ]);
+
+        cache()->deleteItem('biolink_blocks?link_id=' . $_POST['link_id']);
+
+        Response::json('', 'success', ['url' => url('link/' . $_POST['link_id'] . '?tab=blocks')]);
+    }
+
+    private function update_biolink_vip_funnel_hub() {
+        $_POST['biolink_block_id'] = (int) $_POST['biolink_block_id'];
+        $_POST['location_url'] = get_url($_POST['location_url'] ?? '');
+        $_POST['secondary_url'] = get_url($_POST['secondary_url'] ?? '');
+        $_POST['name'] = mb_substr(query_clean($_POST['name'] ?? ''), 0, 128);
+        $_POST['kicker'] = mb_substr(input_clean($_POST['kicker'] ?? ''), 0, 80);
+        $_POST['title'] = mb_substr(input_clean($_POST['title'] ?? ''), 0, 160);
+        $_POST['subtitle'] = trim(strip_tags(mb_substr((string) ($_POST['subtitle'] ?? ''), 0, 500)));
+        $_POST['primary_cta_text'] = mb_substr(input_clean($_POST['primary_cta_text'] ?? ''), 0, 120);
+        $_POST['secondary_cta_text'] = mb_substr(input_clean($_POST['secondary_cta_text'] ?? ''), 0, 120);
+        $_POST['show_paths'] = (int) isset($_POST['show_paths']);
+        $_POST['border_radius'] = in_array($_POST['border_radius'], ['straight', 'round', 'rounded']) ? query_clean($_POST['border_radius']) : 'rounded';
+        $_POST['border_width'] = in_array($_POST['border_width'], [0, 1, 2, 3, 4, 5]) ? (int) $_POST['border_width'] : 0;
+        $_POST['border_style'] = in_array($_POST['border_style'], ['solid', 'dashed', 'double', 'inset', 'outset']) ? query_clean($_POST['border_style']) : 'solid';
+        $_POST['border_color'] = !verify_hex_color($_POST['border_color']) ? '#101826' : $_POST['border_color'];
+        $_POST['border_shadow_style'] = in_array($_POST['border_shadow_style'], ['none', 'subtle', 'strong', 'hard']) ? query_clean($_POST['border_shadow_style']) : 'none';
+        $_POST['border_shadow_color'] = !verify_hex_color($_POST['border_shadow_color']) ? '#000000' : $_POST['border_shadow_color'];
+        $_POST['animation'] = in_array($_POST['animation'], require APP_PATH . 'includes/biolink_animations.php') || $_POST['animation'] == 'false' ? query_clean($_POST['animation']) : false;
+        $_POST['animation_runs'] = isset($_POST['animation_runs']) && in_array($_POST['animation_runs'], ['repeat-1', 'repeat-2', 'repeat-3', 'infinite']) ? query_clean($_POST['animation_runs']) : false;
+        $_POST['icon'] = query_clean($_POST['icon'] ?? '');
+        $_POST['text_color'] = !verify_hex_color($_POST['text_color']) ? '#ffffff' : $_POST['text_color'];
+        $_POST['text_alignment'] = in_array($_POST['text_alignment'], ['center', 'left', 'right', 'justify']) ? query_clean($_POST['text_alignment']) : 'left';
+        $_POST['background_color'] = !verify_hex_color($_POST['background_color']) ? '#101826' : $_POST['background_color'];
+        $_POST['columns'] = isset($_POST['columns']) && in_array($_POST['columns'], [1, 2]) ? (int) $_POST['columns'] : 1;
+
+        $this->process_display_settings();
+
+        $biolink_block = $this->biolink_block;
+
+        if($_POST['name'] === '' || $_POST['title'] === '') {
+            Response::json(l('global.error_message.empty_fields'), 'error');
+        }
+
+        if($_POST['location_url']) {
+            $this->check_location_url($_POST['location_url']);
+        }
+
+        if($_POST['secondary_url']) {
+            $this->check_location_url($_POST['secondary_url']);
+        }
+
+        $db_image = $this->handle_image_upload($biolink_block->settings->image ?? '', 'block_thumbnail_images/', settings()->links->thumbnail_image_size_limit);
+        $image_url = $db_image ? \Altum\Uploads::get_full_url('block_thumbnail_images') . $db_image : null;
+
+        $settings = json_encode([
+            'name' => $_POST['name'],
+            'image' => $db_image,
+            'text_color' => $_POST['text_color'],
+            'text_alignment' => $_POST['text_alignment'],
+            'background_color' => $_POST['background_color'],
+            'border_radius' => $_POST['border_radius'],
+            'border_width' => $_POST['border_width'],
+            'border_style' => $_POST['border_style'],
+            'border_color' => $_POST['border_color'],
+            'border_shadow_style' => $_POST['border_shadow_style'],
+            'border_shadow_color' => $_POST['border_shadow_color'],
+            'animation' => $_POST['animation'],
+            'animation_runs' => $_POST['animation_runs'],
+            'icon' => $_POST['icon'],
+            'columns' => $_POST['columns'],
+            'kicker' => $_POST['kicker'],
+            'title' => $_POST['title'],
+            'subtitle' => $_POST['subtitle'],
+            'primary_cta_text' => $_POST['primary_cta_text'],
+            'secondary_cta_text' => $_POST['secondary_cta_text'],
+            'secondary_url' => $_POST['secondary_url'],
+            'show_paths' => $_POST['show_paths'],
+
+            /* Display settings */
+            'display_continents' => $_POST['display_continents'],
+            'display_countries' => $_POST['display_countries'],
+            'display_cities' => $_POST['display_cities'],
+            'display_devices' => $_POST['display_devices'],
+            'display_languages' => $_POST['display_languages'],
+            'display_operating_systems' => $_POST['display_operating_systems'],
+            'display_browsers' => $_POST['display_browsers'],
+        ]);
+
+        db()->where('biolink_block_id', $_POST['biolink_block_id'])->update('biolinks_blocks', [
+            'location_url' => $_POST['location_url'],
+            'settings' => $settings,
+            'start_date' => $_POST['start_date'],
+            'end_date' => $_POST['end_date'],
+            'last_datetime' => get_date(),
+        ]);
+
+        cache()->deleteItem('biolink_blocks?link_id=' . $biolink_block->link_id);
+
+        Response::json(l('global.success_message.update2'), 'success', ['images' => ['image' => $image_url], 'location_url' => $_POST['location_url']]);
+    }
+    /* /Custom code: FC-2026-04-19 */
 
     private function create_biolink_appointment_calendar() {
         $_POST['link_id'] = (int) $_POST['link_id'];

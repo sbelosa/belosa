@@ -99,6 +99,10 @@ class Cron extends Controller {
         $this->billing_risk_monitor();
         /* /Custom code: FC-2026-03-17 */
 
+        /* Custom code: FC-2026-04-19: VIP demo lifecycle maintenance */
+        $this->vip_funnel_demo_lifecycle_maintenance();
+        /* /Custom code: FC-2026-04-19 */
+
         /* Custom code: FC-2026-03-31: Phase 6 cleanup for privacy-safe funnel fraud traces */
         $this->leader_operating_system_fraud_cleanup();
         /* /Custom code: FC-2026-03-31 */
@@ -151,6 +155,24 @@ class Cron extends Controller {
         }
     }
     /* /Custom code: FC-2026-03-17 */
+
+    /* Custom code: FC-2026-04-19: enforce VIP demo expiry and status transitions in background */
+    private function vip_funnel_demo_lifecycle_maintenance() {
+        if(!function_exists('vip_funnel_demo_run_maintenance')) {
+            return;
+        }
+
+        $result = vip_funnel_demo_run_maintenance();
+
+        if(DEBUG && ((int) ($result['expired'] ?? 0) > 0 || (int) ($result['expiring'] ?? 0) > 0)) {
+            echo sprintf(
+                'vip_funnel_demo_lifecycle_maintenance() -> expired %s, expiring %s',
+                (int) ($result['expired'] ?? 0),
+                (int) ($result['expiring'] ?? 0)
+            );
+        }
+    }
+    /* /Custom code: FC-2026-04-19 */
 
     /* Custom code: FC-2026-03-31: purge short-lived LOS fraud traces automatically */
     private function leader_operating_system_fraud_cleanup() {

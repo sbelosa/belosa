@@ -4,18 +4,27 @@
 /* Custom code: FC-2026-02-26: EN/HR widget titles */
 $fcc_blog_categories_title = \Altum\Language::$code == 'hr' ? 'Kategorije' : 'Categories';
 $fcc_blog_popular_title = \Altum\Language::$code == 'hr' ? 'Popularni postovi' : 'Popular posts';
-$fcc_blog_hero_badge = \Altum\Language::$code == 'hr' ? 'Digitalni vodiči' : 'Digital guides';
-$fcc_blog_hero_title = \Altum\Language::$code == 'hr' ? 'Blog koji vodi kroz Forever Card Club sustav' : 'A blog that guides users through the Forever Card Club system';
-$fcc_blog_hero_subtitle = \Altum\Language::$code == 'hr' ? 'Jasni koraci, konkretni savjeti i aktualne objave na jednom mjestu.' : 'Clear steps, practical advice, and latest updates in one place.';
+$fcc_blog_hero_badge = \Altum\Language::$code == 'hr' ? 'Praktični vodiči' : 'Practical guides';
+$fcc_blog_hero_title = \Altum\Language::$code == 'hr' ? 'Lakše pronađite ono što vas zanima' : 'Find what matters to you more easily';
+$fcc_blog_hero_subtitle = \Altum\Language::$code == 'hr' ? 'Preporuke proizvoda, korisni savjeti i jasni vodiči na jednom mjestu.' : 'Product recommendations, practical advice, and clear guides in one place.';
 $fcc_blog_cta_latest = \Altum\Language::$code == 'hr' ? 'Najnoviji članci' : 'Latest articles';
 $fcc_blog_cta_popular = \Altum\Language::$code == 'hr' ? 'Popularni postovi' : 'Popular posts';
 $fcc_blog_quick_topics = \Altum\Language::$code == 'hr' ? 'Brze teme' : 'Quick topics';
-$fcc_blog_featured_title = \Altum\Language::$code == 'hr' ? 'Izdvojeno' : 'Featured';
-$fcc_blog_latest_title = \Altum\Language::$code == 'hr' ? 'Sve objave' : 'All posts';
-$fcc_blog_read_more = \Altum\Language::$code == 'hr' ? 'Pročitaj više' : 'Read more';
+$fcc_blog_featured_title = \Altum\Language::$code == 'hr' ? 'Preporučeno za vas' : 'Recommended for you';
+$fcc_blog_latest_title = \Altum\Language::$code == 'hr' ? 'Najnovije objave' : 'Latest posts';
+$fcc_blog_read_more = \Altum\Language::$code == 'hr' ? 'Otvori vodič' : 'Open guide';
 $fcc_blog_home_url = url('blog');
+$fcc_index_alternate_urls = is_array($data->alternate_urls ?? null) ? $data->alternate_urls : [];
 /* /Custom code: FC-2026-02-26 */
 ?>
+
+<?php if($fcc_index_alternate_urls): ?>
+    <?php ob_start() ?>
+    <?php foreach($fcc_index_alternate_urls as $hreflang => $href): ?>
+        <link rel="alternate" hreflang="<?= e($hreflang) ?>" href="<?= e($href) ?>" />
+    <?php endforeach ?>
+    <?php \Altum\Event::add_content(ob_get_clean(), 'head') ?>
+<?php endif ?>
 
 <!-- Custom code: FC-2026-02-26: FCC premium blog index layout -->
 <div class="fcc-blog-page-bg">
@@ -150,6 +159,10 @@ $fcc_blog_home_url = url('blog');
                                                 </p>
 
                                                 <p class="m-0 fcc-post-desc"><?= $blog_post->description ?></p>
+                                                <a href="<?= SITE_URL . ($blog_post->language ? \Altum\Language::$active_languages[$blog_post->language] . '/' : null) . 'blog/' . $blog_post->url ?>" class="fcc-read-more-link mt-3 d-inline-flex align-items-center">
+                                                    <?= $fcc_blog_read_more ?>
+                                                    <i class="fas fa-fw fa-arrow-right ml-1"></i>
+                                                </a>
                                             </div>
                                         </article>
                                     </div>
@@ -222,6 +235,10 @@ $fcc_blog_home_url = url('blog');
                                 </p>
 
                                 <p class="m-0 fcc-post-desc"><?= $blog_post->description ?></p>
+                                <a href="<?= SITE_URL . ($blog_post->language ? \Altum\Language::$active_languages[$blog_post->language] . '/' : null) . 'blog/' . $blog_post->url ?>" class="fcc-read-more-link mt-3 d-inline-flex align-items-center">
+                                    <?= $fcc_blog_read_more ?>
+                                    <i class="fas fa-fw fa-arrow-right ml-1"></i>
+                                </a>
                             </div>
                         </div>
                     <?php endforeach ?>

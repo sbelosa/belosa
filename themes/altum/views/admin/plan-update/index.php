@@ -690,6 +690,12 @@
                 </div>
 
                 <div class="form-group custom-control custom-switch">
+                    <input id="vip_funnel_core_is_enabled" name="vip_funnel_core_is_enabled" type="checkbox" class="custom-control-input" <?= !empty($data->plan->settings->vip_funnel_core_is_enabled) ? 'checked="checked"' : null ?>>
+                    <label class="custom-control-label" for="vip_funnel_core_is_enabled"><?= l('admin_plans.plan.vip_funnel_core_is_enabled') ?></label>
+                    <div><small class="form-text text-muted"><?= l('admin_plans.plan.vip_funnel_core_is_enabled_help') ?></small></div>
+                </div>
+
+                <div class="form-group custom-control custom-switch">
                     <input id="temporary_url_is_enabled" name="temporary_url_is_enabled" type="checkbox" class="custom-control-input" <?= $data->plan->settings->temporary_url_is_enabled ? 'checked="checked"' : null ?>>
                     <label class="custom-control-label" for="temporary_url_is_enabled"><?= l('admin_plans.plan.temporary_url_is_enabled') ?></label>
                     <div><small class="form-text text-muted"><?= l('admin_plans.plan.temporary_url_is_enabled_help') ?></small></div>

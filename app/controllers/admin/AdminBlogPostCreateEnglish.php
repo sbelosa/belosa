@@ -72,6 +72,8 @@ class AdminBlogPostCreateEnglish extends Controller {
                 $blog_posts_has_search_aliases_column = (bool) count(db()->rawQuery("SHOW COLUMNS FROM `blog_posts` LIKE 'search_aliases'"));
             }
 
+            $blog_posts_has_shop_context_column = fc_blog_posts_has_shop_context_column();
+
             $source_category = null;
             if($blog_post->blog_posts_category_id) {
                 $source_category = db()->where('blog_posts_category_id', $blog_post->blog_posts_category_id)->getOne('blog_posts_categories');
@@ -108,6 +110,10 @@ class AdminBlogPostCreateEnglish extends Controller {
                 $blog_post_data['search_aliases'] = mb_substr(implode(', ', $search_aliases_array), 0, 2000);
             }
 
+            if($blog_posts_has_shop_context_column) {
+                $blog_post_data['shop_context'] = fc_blog_shop_context_encode($translated_fields['shop_context'] ?? []);
+            }
+
             db()->insert('blog_posts', $blog_post_data);
             $new_blog_post_id = db()->getInsertId();
 
@@ -132,6 +138,7 @@ class AdminBlogPostCreateEnglish extends Controller {
     }
 
     private function translate_fields($blog_post, string $target_language, string $model, string $api_key): array {
+        $include_shop_context = fc_blog_posts_has_shop_context_column();
         $fields = [
             'title' => (string) ($blog_post->title ?? ''),
             'description' => (string) ($blog_post->description ?? ''),
@@ -141,17 +148,30 @@ class AdminBlogPostCreateEnglish extends Controller {
             'content' => (string) ($blog_post->content ?? ''),
         ];
 
+        if($include_shop_context) {
+            $fields['shop_context'] = fc_blog_shop_context_normalize($blog_post->shop_context ?? null);
+        }
+
+        $response_keys = ['title', 'description', 'keywords', 'search_aliases', 'image_description', 'content'];
+        if($include_shop_context) {
+            $response_keys[] = 'shop_context';
+        }
+
         $source_language = !empty($blog_post->language) ? $blog_post->language : 'Croatian';
 
         $prompt = [
             'Translate the provided blog post fields from ' . $source_language . ' to ' . $target_language . '.',
-            'Return only a valid JSON object with these exact keys: title, description, keywords, search_aliases, image_description, content.',
+            'Return only a valid JSON object with these exact keys: ' . implode(', ', $response_keys) . '.',
             'Preserve all HTML structure, attributes, CSS classes, inline styles, placeholders, shortcodes, bracket tokens, line breaks, and entities.',
             'Do not translate or modify URLs, webshop links, image filenames, SKU codes, product codes, brand names, or Forever product names.',
             'Translate only human-readable text that should appear to readers in English.',
             'If a field is empty, keep it empty.',
             'Input JSON:' . json_encode($fields, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
         ];
+
+        if($include_shop_context) {
+            $prompt[] = 'Inside shop_context, preserve the same keys and array structure. Translate only human-readable string values, and never translate the page_role value.';
+        }
 
         $response = \Unirest\Request::post(
             'https://api.openai.com/v1/chat/completions',
@@ -192,6 +212,14 @@ class AdminBlogPostCreateEnglish extends Controller {
             }
 
             $translated_fields[$field] = is_string($translated_fields[$field]) ? trim($translated_fields[$field]) : '';
+        }
+
+        if($include_shop_context) {
+            if(!array_key_exists('shop_context', $translated_fields)) {
+                throw new \Exception('Translated response is missing the shop_context field.');
+            }
+
+            $translated_fields['shop_context'] = fc_blog_shop_context_normalize($translated_fields['shop_context']);
         }
 
         return $translated_fields;

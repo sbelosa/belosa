@@ -35,6 +35,7 @@ if(settings()->links->biolinks_is_enabled) {
 
     $visible_synced_biolink_feature_order = [
         'lead_funnel',
+        'vip_funnel_hub',
         'link_app_switcher',
         'link_forever_shop',
         'link_forever_product',
@@ -60,6 +61,7 @@ if(settings()->links->biolinks_is_enabled) {
     $features[] = 'ai_growth_plan_is_enabled';
     $features[] = 'fcc_ai_is_enabled';
     $features[] = 'fcc_coach_is_enabled';
+    $features[] = 'vip_funnel_core_is_enabled';
     /* /Custom code: FC-2026-03-23 */
 
     /* Biolinks extras */

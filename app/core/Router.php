@@ -168,6 +168,33 @@ class Router {
             ],
             /* /Custom code: FC-2026-04-10 */
 
+            /* Custom code: FC-2026-04-19: VIP Funnel Core studio */
+            'vip-funnel-studio' => [
+                'controller' => 'VipFunnelStudio',
+                'settings' => [
+                    'wrapper' => 'app_wrapper',
+                    'ads' => true,
+                ]
+            ],
+
+            'vip-funnel-demo-access' => [
+                'controller' => 'VipFunnelDemoAccess',
+                'settings' => [
+                    'wrapper' => 'app_wrapper',
+                    'ads' => true,
+                ]
+            ],
+
+            'vip-funnel' => [
+                'controller' => 'VipFunnel',
+                'settings' => [
+                    'no_authentication_check' => true,
+                    'wrapper' => 'wrapper',
+                    'ads' => true,
+                ]
+            ],
+            /* /Custom code: FC-2026-04-19 */
+
             /* Custom code: FC-2026-04-01: standalone FCC app review page */
             'ai-app-review' => [
                 'controller' => 'AiPlan',

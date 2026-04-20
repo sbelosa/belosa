@@ -348,11 +348,11 @@
     </button>
 
     <div class="collapse" data-parent="#links" id="file_size_limits_container">
-        <?php foreach(['avatar', 'background', 'favicon', 'seo_image', 'thumbnail_image', 'image', 'audio', 'video', 'file', 'product_file', 'static', 'pwa_icon', 'branded_button_icon', 'offline_payment_proof'] as $key): ?>
+        <?php foreach(['avatar', 'background', 'favicon', 'seo_image', 'thumbnail_image', 'image', 'vip_funnel_image', 'audio', 'video', 'file', 'product_file', 'static', 'pwa_icon', 'branded_button_icon', 'offline_payment_proof'] as $key): ?>
             <div class="form-group">
                 <label for="<?= $key . '_size_limit' ?>"><?= l('admin_settings.links.' . $key . '_size_limit') ?></label>
                 <div class="input-group">
-                    <input id="<?= $key . '_size_limit' ?>" type="number" min="0" max="<?= get_max_upload() ?>" step="any" name="<?= $key . '_size_limit' ?>" class="form-control" value="<?= settings()->links->{$key . '_size_limit'} ?>" />
+                    <input id="<?= $key . '_size_limit' ?>" type="number" min="0" max="<?= get_max_upload() ?>" step="any" name="<?= $key . '_size_limit' ?>" class="form-control" value="<?= settings()->links->{$key . '_size_limit'} ?? ($key === 'vip_funnel_image' ? 3 : get_max_upload()) ?>" />
                     <div class="input-group-append">
                         <span class="input-group-text"><?= l('global.mb') ?></span>
                     </div>

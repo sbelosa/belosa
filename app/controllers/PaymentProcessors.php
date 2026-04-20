@@ -30,6 +30,12 @@ class PaymentProcessors extends Controller {
 
         \Altum\Authentication::guard();
 
+        if(vip_funnel_demo_render_locked_route($this, $this->user, 'payment_processors', [
+            'back_url' => url('dashboard'),
+        ])) {
+            return;
+        }
+
         /* Prepare the filtering system */
         $filters = (new \Altum\Filters(['payment_processor_id', 'processor', 'is_enabled'], ['name'], ['payment_processor_id', 'last_datetime', 'datetime', 'name']));
         $filters->set_default_order_by($this->user->preferences->payment_processors_default_order_by, $this->user->preferences->default_order_type ?? settings()->main->default_order_type);
@@ -71,6 +77,11 @@ class PaymentProcessors extends Controller {
     public function bulk() {
 
         \Altum\Authentication::guard();
+
+        if(vip_funnel_demo_is_sandbox_user($this->user)) {
+            Alerts::add_info(vip_funnel_demo_get_locked_action_message('payment_processors'));
+            redirect('payment-processors');
+        }
 
         /* Check for any errors */
         if (empty($_POST)) {
@@ -131,6 +142,11 @@ class PaymentProcessors extends Controller {
     public function delete() {
 
         \Altum\Authentication::guard();
+
+        if(vip_funnel_demo_is_sandbox_user($this->user)) {
+            Alerts::add_info(vip_funnel_demo_get_locked_action_message('payment_processors'));
+            redirect('payment-processors');
+        }
 
         /* Team checks */
         if(\Altum\Teams::is_delegated() && !\Altum\Teams::has_access('delete.payment_processors')) {

@@ -17,6 +17,7 @@
                     <option value="<?= url('admin/settings/content') ?>" <?= $data->method == 'content' ? 'selected="selected"' : null ?>>📝 <?= l('admin_settings.content.tab') ?></option>
                     <option value="<?= url('admin/settings/links') ?>" <?= $data->method == 'links' ? 'selected="selected"' : null ?>>🔗 <?= l('admin_settings.links.tab') ?></option>
                     <option value="<?= url('admin/settings/forever') ?>" <?= $data->method == 'forever' ? 'selected="selected"' : null ?>>🌍 <?= l('admin_settings.forever.tab') ?></option>
+                    <option value="<?= url('admin/settings/vip_funnel') ?>" <?= $data->method == 'vip_funnel' ? 'selected="selected"' : null ?>>🚀 <?= l('admin_settings.vip_funnel.tab') ?></option>
                     <option value="<?= url('admin/settings/tools') ?>" <?= $data->method == 'tools' ? 'selected="selected"' : null ?>>🛠️ <?= l('admin_settings.tools.tab') ?></option>
                     <option value="<?= url('admin/settings/codes') ?>" <?= $data->method == 'codes' ? 'selected="selected"' : null ?>>💻 <?= l('admin_settings.codes.tab') ?></option>
                     <option value="<?= url('admin/settings/notification_handlers') ?>" <?= $data->method == 'notification_handlers' ? 'selected="selected"' : null ?>>🧩 <?= l('admin_settings.notification_handlers.tab') ?></option>
@@ -97,6 +98,7 @@
                     <a class="nav-link <?= $data->method == 'content' ? 'active' : null ?>" href="<?= url('admin/settings/content') ?>"><i class="fas fa-fw fa-sm fa-blog mr-2"></i> <?= l('admin_settings.content.tab') ?></a>
                     <a class="nav-link <?= $data->method == 'links' ? 'active' : null ?>" href="<?= url('admin/settings/links') ?>"><i class="fas fa-fw fa-sm fa-link mr-2"></i> <?= l('admin_settings.links.tab') ?></a>
                     <a class="nav-link <?= $data->method == 'forever' ? 'active' : null ?>" href="<?= url('admin/settings/forever') ?>"><i class="fas fa-fw fa-sm fa-globe mr-2"></i> <?= l('admin_settings.forever.tab') ?></a>
+                    <a class="nav-link <?= $data->method == 'vip_funnel' ? 'active' : null ?>" href="<?= url('admin/settings/vip_funnel') ?>"><i class="fas fa-fw fa-sm fa-rocket mr-2"></i> <?= l('admin_settings.vip_funnel.tab') ?></a>
                     <a class="nav-link <?= $data->method == 'tools' ? 'active' : null ?>" href="<?= url('admin/settings/tools') ?>"><i class="fas fa-fw fa-sm fa-tools mr-2"></i> <?= l('admin_settings.tools.tab') ?></a>
                     <a class="nav-link <?= $data->method == 'codes' ? 'active' : null ?>" href="<?= url('admin/settings/codes') ?>"><i class="fas fa-fw fa-sm fa-qrcode mr-2"></i> <?= l('admin_settings.codes.tab') ?></a>
                     <a class="nav-link <?= $data->method == 'notification_handlers' ? 'active' : null ?>" href="<?= url('admin/settings/notification_handlers') ?>"><i class="fas fa-fw fa-sm fa-bell mr-2"></i> <?= l('admin_settings.notification_handlers.tab') ?></a>

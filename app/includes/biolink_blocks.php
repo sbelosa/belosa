@@ -147,6 +147,19 @@ $default_blocks = [
     ],
     /* /Custom code: FC-2026-03-23 */
 
+    /* Custom code: FC-2026-04-19: VIP Funnel Hub public foundation block */
+    'vip_funnel_hub' => [
+        'type' => 'default',
+        'icon' => 'fas fa-diagram-project',
+        'color' => '#14b8a6',
+        'has_statistics' => true,
+        'themable' => true,
+        'display_dynamic_name' => 'name',
+        'whitelisted_thumbnail_image_extensions' => ['jpg', 'jpeg', 'png', 'svg', 'gif', 'webp', 'avif'],
+        'category' => 'forever',
+    ],
+    /* /Custom code: FC-2026-04-19 */
+
     'modal_text' => [
         'type' => 'default',
         'icon' => 'fas fa-book-open',

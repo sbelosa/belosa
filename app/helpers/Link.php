@@ -1220,6 +1220,14 @@ class Link {
                 break;
             /* /Custom code: FC-2026-03-30 */
 
+            /* Custom code: FC-2026-04-19: VIP Funnel Hub lives in the theme, not ultimate-blocks */
+            case 'vip_funnel_hub':
+
+                $view_path = THEME_PATH . 'views/l/biolink_blocks/vip_funnel_hub.php';
+
+                break;
+            /* /Custom code: FC-2026-04-19 */
+
             case 'discord':
             case 'facebook':
             case 'reddit':

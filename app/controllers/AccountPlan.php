@@ -28,6 +28,12 @@ class AccountPlan extends Controller {
 
         \Altum\Authentication::guard();
 
+        if(vip_funnel_demo_render_locked_route($this, $this->user, 'account_plan', [
+            'back_url' => url('dashboard'),
+        ])) {
+            return;
+        }
+
         /* Get the account header menu */
         $menu = new \Altum\View('partials/account_header_menu', (array) $this);
         $this->add_view_content('account_header_menu', $menu->run());
@@ -95,6 +101,11 @@ class AccountPlan extends Controller {
     public function cancel_subscription() {
 
         \Altum\Authentication::guard();
+
+        if(vip_funnel_demo_is_sandbox_user($this->user)) {
+            Alerts::add_info(vip_funnel_demo_get_locked_action_message('account_plan'));
+            redirect('account-plan');
+        }
 
         if(!\Altum\Csrf::check()) {
             Alerts::add_error(l('global.error_message.invalid_csrf_token'));

@@ -13,6 +13,18 @@ $fcc_products_category_url = fc_get_forever_products_blog_category_url();
 $fcc_share_is_visible = false;
 $fcc_share_url = null;
 $fcc_share_route = \Altum\Router::$controller_key ?? null;
+$fcc_is_demo_sandbox_user = false;
+$fcc_demo_badge_label = null;
+if(is_logged_in()) {
+    try {
+        $fcc_is_demo_sandbox_user = vip_funnel_demo_is_sandbox_user($this->user);
+        $fcc_demo_badge_label = $fcc_is_demo_sandbox_user ? vip_funnel_demo_get_locked_badge_label() : null;
+    } catch(\Throwable $exception) {
+        error_log('vip_demo_menu_state_failed: ' . $exception->getMessage());
+        $fcc_is_demo_sandbox_user = false;
+        $fcc_demo_badge_label = null;
+    }
+}
 
 if(is_logged_in() && in_array($fcc_share_route, ['index', 'blog', 'page'], true)) {
     $fcc_user_id = \Altum\Authentication::check();
@@ -251,10 +263,10 @@ if(is_logged_in() && in_array($fcc_share_route, ['index', 'blog', 'page'], true)
 
                                         <a class="dropdown-item" href="<?= url('account-preferences') ?>"><i class="fas fa-fw fa-sm fa-sliders-h mr-2"></i> <?= l('account_preferences.menu') ?></a>
 
-                                        <a class="dropdown-item" href="<?= url('account-plan') ?>"><i class="fas fa-fw fa-sm fa-box-open mr-2"></i> <?= l('account_plan.menu') ?></a>
+                                        <a class="dropdown-item" href="<?= url('account-plan') ?>"><i class="fas fa-fw fa-sm fa-box-open mr-2"></i> <?= l('account_plan.menu') ?><?php if($fcc_demo_badge_label): ?><span class="badge badge-warning ml-2"><?= $fcc_demo_badge_label ?></span><?php endif ?></a>
 
                                         <?php if(settings()->payment->is_enabled): ?>
-                                            <a class="dropdown-item" href="<?= url('account-payments') ?>"><i class="fas fa-fw fa-sm fa-credit-card mr-2"></i> <?= l('account_payments.menu') ?></a>
+                                            <a class="dropdown-item" href="<?= url('account-payments') ?>"><i class="fas fa-fw fa-sm fa-credit-card mr-2"></i> <?= l('account_payments.menu') ?><?php if($fcc_demo_badge_label): ?><span class="badge badge-warning ml-2"><?= $fcc_demo_badge_label ?></span><?php endif ?></a>
 
                                             <?php if(\Altum\Plugin::is_active('affiliate') && settings()->affiliate->is_enabled): ?>
                                                 <a class="dropdown-item" href="<?= url('referrals') ?>"><i class="fas fa-fw fa-sm fa-wallet mr-2"></i> <?= l('referrals.menu') ?></a>
@@ -375,10 +387,10 @@ if(is_logged_in() && in_array($fcc_share_route, ['index', 'blog', 'page'], true)
 
                                     <a class="dropdown-item" href="<?= url('account') ?>"><i class="fas fa-fw fa-sm fa-user-cog mr-2"></i> <?= l('account.menu') ?></a>
                                     <a class="dropdown-item" href="<?= url('account-preferences') ?>"><i class="fas fa-fw fa-sm fa-sliders-h mr-2"></i> <?= l('account_preferences.menu') ?></a>
-                                    <a class="dropdown-item" href="<?= url('account-plan') ?>"><i class="fas fa-fw fa-sm fa-box-open mr-2"></i> <?= l('account_plan.menu') ?></a>
+                                    <a class="dropdown-item" href="<?= url('account-plan') ?>"><i class="fas fa-fw fa-sm fa-box-open mr-2"></i> <?= l('account_plan.menu') ?><?php if($fcc_demo_badge_label): ?><span class="badge badge-warning ml-2"><?= $fcc_demo_badge_label ?></span><?php endif ?></a>
 
                                     <?php if(settings()->payment->is_enabled): ?>
-                                        <a class="dropdown-item" href="<?= url('account-payments') ?>"><i class="fas fa-fw fa-sm fa-credit-card mr-2"></i> <?= l('account_payments.menu') ?></a>
+                                        <a class="dropdown-item" href="<?= url('account-payments') ?>"><i class="fas fa-fw fa-sm fa-credit-card mr-2"></i> <?= l('account_payments.menu') ?><?php if($fcc_demo_badge_label): ?><span class="badge badge-warning ml-2"><?= $fcc_demo_badge_label ?></span><?php endif ?></a>
 
                                         <?php if(\Altum\Plugin::is_active('affiliate') && settings()->affiliate->is_enabled): ?>
                                             <a class="dropdown-item" href="<?= url('referrals') ?>"><i class="fas fa-fw fa-sm fa-wallet mr-2"></i> <?= l('referrals.menu') ?></a>

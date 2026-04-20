@@ -10724,6 +10724,12 @@ class AiPlan extends Controller {
     public function index() {
         \Altum\Authentication::guard();
 
+        if(vip_funnel_demo_render_locked_route($this, $this->user, 'ai_plan', [
+            'back_url' => url('dashboard'),
+        ])) {
+            return;
+        }
+
         if(!\Altum\Authentication::is_admin() && empty($this->user->plan_settings->ai_growth_plan_is_enabled ?? false)) {
             Alerts::add_error(l('global.info_message.plan_feature_no_access') . (settings()->payment->is_enabled ? ' <a href="' . url('plan') . '" class="font-weight-bold text-reset">' . l('global.info_message.plan_upgrade') . '.</a>' : null));
             redirect('account-plan');

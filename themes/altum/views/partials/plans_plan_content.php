@@ -39,6 +39,7 @@ $forever_plan_feature_keys = [
     'ai_growth_plan_is_enabled',
     'fcc_ai_is_enabled',
     'fcc_coach_is_enabled',
+    'vip_funnel_core_is_enabled',
 ];
 
 $forever_plan_feature_labels = [
@@ -57,6 +58,7 @@ $forever_plan_feature_labels = [
     'ai_growth_plan_is_enabled' => l('plan_features.forever.label.ai_growth_plan_is_enabled'),
     'fcc_ai_is_enabled' => l('plan_features.forever.label.fcc_ai_is_enabled'),
     'fcc_coach_is_enabled' => l('plan_features.forever.label.fcc_coach_is_enabled'),
+    'vip_funnel_core_is_enabled' => l('plan_features.forever.label.vip_funnel_core_is_enabled'),
 ];
 
 $forever_plan_feature_help = [
@@ -75,6 +77,7 @@ $forever_plan_feature_help = [
     'ai_growth_plan_is_enabled' => l('plan_features.forever.help.ai_growth_plan_is_enabled'),
     'fcc_ai_is_enabled' => l('plan_features.forever.help.fcc_ai_is_enabled'),
     'fcc_coach_is_enabled' => l('plan_features.forever.help.fcc_coach_is_enabled'),
+    'vip_funnel_core_is_enabled' => l('plan_features.forever.help.vip_funnel_core_is_enabled'),
 ];
 
 $has_rendered_forever_plan_feature_group = false;
@@ -200,6 +203,19 @@ $has_rendered_forever_plan_feature_group = false;
                     <?php endif ?>
                 </div>
                 <i class="fas fa-fw fa-sm <?= $has_fcc_coach_access ? 'fa-check-circle text-success' : 'fa-times-circle text-muted' ?>"></i>
+            </li>
+        <?php endif ?>
+
+        <?php if($is_enabled && $feature == 'vip_funnel_core_is_enabled' && settings()->links->biolinks_is_enabled): ?>
+            <?php $has_vip_funnel_access = !empty($data->plan_settings->vip_funnel_core_is_enabled); ?>
+            <li>
+                <div class="<?= $has_vip_funnel_access ? null : 'text-muted' ?>">
+                    <?= $forever_plan_feature_labels[$feature] ?? l('global.plan_settings.vip_funnel_core_is_enabled') ?>
+                    <?php if(!empty($forever_plan_feature_help[$feature])): ?>
+                        <span class="ml-1" data-toggle="tooltip" title="<?= $forever_plan_feature_help[$feature] ?>"><i class="fas fa-fw fa-xs fa-circle-question text-gray-500"></i></span>
+                    <?php endif ?>
+                </div>
+                <i class="fas fa-fw fa-sm <?= $has_vip_funnel_access ? 'fa-check-circle text-success' : 'fa-times-circle text-muted' ?>"></i>
             </li>
         <?php endif ?>
         <?php /* /Custom code: FC-2026-03-23 */ ?>

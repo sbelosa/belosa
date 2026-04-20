@@ -30,6 +30,11 @@ class PaymentProcessorCreate extends Controller {
 
         \Altum\Authentication::guard();
 
+        if(vip_funnel_demo_is_sandbox_user($this->user)) {
+            Alerts::add_info(vip_funnel_demo_get_locked_action_message('payment_processors'));
+            redirect('payment-processors');
+        }
+
         /* Team checks */
         if(\Altum\Teams::is_delegated() && !\Altum\Teams::has_access('create.payment_processors')) {
             Alerts::add_error(l('global.info_message.team_no_access'));

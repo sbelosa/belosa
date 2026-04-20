@@ -326,6 +326,15 @@
                             /* Custom code: FC-2026-03-06: strict plan-based final block visibility */
                             $is_biolink_block_enabled_for_plan = (bool) ($data->user->plan_settings->enabled_biolink_blocks->{$row->type} ?? false);
 
+                            if(
+                                !$is_biolink_block_enabled_for_plan &&
+                                $row->type === 'vip_funnel_hub' &&
+                                function_exists('vip_funnel_user_can_publish_public_hub') &&
+                                vip_funnel_user_can_publish_public_hub($data->user)
+                            ) {
+                                $is_biolink_block_enabled_for_plan = true;
+                            }
+
                             if(!$is_biolink_block_enabled_for_plan) {
                                 continue;
                             }

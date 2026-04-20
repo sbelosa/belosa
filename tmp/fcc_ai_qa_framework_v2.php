@@ -365,6 +365,16 @@ function qa_v2_evaluate_turn(array $turn, array $result): array {
         );
     }
 
+    if(isset($expect['payload']['question_lines_max'])) {
+        qa_v2_add_finding(
+            $findings,
+            'payload',
+            'Question lines count should stay within the allowed maximum.',
+            count((array) ($payload['question_lines'] ?? [])) <= (int) $expect['payload']['question_lines_max'],
+            2
+        );
+    }
+
     if(!empty($expect['payload']['question_contains_any'])) {
         qa_v2_add_finding(
             $findings,

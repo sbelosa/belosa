@@ -25,6 +25,12 @@ class AccountPayments extends Controller {
 
         \Altum\Authentication::guard();
 
+        if(vip_funnel_demo_render_locked_route($this, $this->user, 'account_payments', [
+            'back_url' => url('dashboard'),
+        ])) {
+            return;
+        }
+
         if(!settings()->payment->is_enabled) {
             throw_404();
         }

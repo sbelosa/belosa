@@ -8,6 +8,8 @@ $show_admin_only_sidebar_items = false;
 $user_feedback_replies_count = 0;
 $user_new_contacts_count = 0;
 $user_fcc_ai_signal_count = 0;
+$is_vip_demo_sandbox_user = false;
+$vip_demo_locked_badge = null;
 if(is_logged_in()) {
     try {
         $has_feedback_tickets_table_result = database()->query("SHOW TABLES LIKE 'feedback_tickets'");
@@ -49,6 +51,23 @@ if(is_logged_in()) {
     $has_lead_funnel_access = (bool) ($enabled_biolink_blocks->lead_funnel ?? false);
     $has_ai_growth_plan_access = \Altum\Authentication::is_admin() || (bool) ($this->user->plan_settings->ai_growth_plan_is_enabled ?? false);
     $has_fcc_ai_access = fcc_ai_user_has_public_ai_access($this->user);
+    try {
+        $is_vip_demo_sandbox_user = vip_funnel_demo_is_sandbox_user($this->user);
+        $vip_demo_locked_badge = $is_vip_demo_sandbox_user ? vip_funnel_demo_get_locked_badge_label() : null;
+    } catch(\Throwable $exception) {
+        error_log('vip_demo_sidebar_state_failed: ' . $exception->getMessage());
+        $is_vip_demo_sandbox_user = false;
+        $vip_demo_locked_badge = null;
+    }
+    $vip_funnel_access = vip_funnel_resolve_access_state($this->user);
+    $vip_funnel_sidebar_badge = null;
+    if($is_vip_demo_sandbox_user) {
+        $vip_funnel_sidebar_badge = $vip_demo_locked_badge;
+    } elseif(!$vip_funnel_access->can_access && $vip_funnel_access->show_sidebar_entry) {
+        $vip_funnel_sidebar_badge = $vip_funnel_access->locked_reason === 'plan'
+            ? l('vip_funnel.badge_plan')
+            : l('vip_funnel.badge_testing');
+    }
     if($has_fcc_ai_access) {
         try {
             $fcc_ai_sidebar_signal_state = fcc_ai_get_user_sidebar_signal_state($this->user);
@@ -289,7 +308,7 @@ if(is_logged_in()) {
 
                     <?php if(\Altum\Plugin::is_active('payment-blocks')): ?>
                         <li class="<?= in_array(\Altum\Router::$controller, ['PaymentProcessors', 'PaymentProcessorUpdate', 'PaymentProcessorCreate']) ? 'active' : null ?>">
-                            <a href="<?= url('payment-processors') ?>"><i class="fas fa-fw fa-sm fa-credit-card mr-2"></i> <?= l('payment_processors.menu') ?></a>
+                            <a href="<?= url('payment-processors') ?>"><i class="fas fa-fw fa-sm fa-credit-card mr-2"></i> <?= l('payment_processors.menu') ?><?php if($vip_demo_locked_badge): ?><span class="badge badge-warning ml-2"><?= $vip_demo_locked_badge ?></span><?php endif ?></a>
                         </li>
                         <li class="<?= \Altum\Router::$controller == 'GuestsPayments' ? 'active' : null ?>">
                             <a href="<?= url('guests-payments') ?>"><i class="fas fa-fw fa-sm fa-coins mr-2"></i> <?= l('guests_payments.menu') ?></a>
@@ -341,9 +360,20 @@ if(is_logged_in()) {
                 </li>
                 <?php /* Custom code: FC-2026-03-31: Next step sidebar entry above FCC results */ ?>
                 <li class="<?= (\Altum\Router::$controller_key ?? null) === 'ai-plan' ? 'active' : null ?> app-sidebar-fcc-item">
-                    <a href="<?= url('ai-plan') ?>" id="fcc_dashboard_tour_sidebar_ai_plan" class="<?= $has_ai_growth_plan_access ? null : 'disabled pointer-events-all' ?>" <?= $has_ai_growth_plan_access ? null : get_plan_feature_disabled_info() ?>><i class="fas fa-fw fa-sm fa-brain mr-2"></i> <?= l('ai_plan.menu') ?></a>
+                    <?php $ai_plan_sidebar_clickable = $is_vip_demo_sandbox_user || $has_ai_growth_plan_access; ?>
+                    <a href="<?= url('ai-plan') ?>" id="fcc_dashboard_tour_sidebar_ai_plan" class="<?= $ai_plan_sidebar_clickable ? null : 'disabled pointer-events-all' ?>" <?= $ai_plan_sidebar_clickable ? null : get_plan_feature_disabled_info() ?>><i class="fas fa-fw fa-sm fa-brain mr-2"></i> <?= l('ai_plan.menu') ?><?php if($vip_demo_locked_badge): ?><span class="badge badge-warning ml-2"><?= $vip_demo_locked_badge ?></span><?php endif ?></a>
                 </li>
                 <?php /* /Custom code: FC-2026-03-31 */ ?>
+                <?php if($vip_funnel_access->show_sidebar_entry || $is_vip_demo_sandbox_user): ?>
+                    <li class="<?= (\Altum\Router::$controller_key ?? null) === 'vip-funnel-studio' ? 'active' : null ?> app-sidebar-fcc-item">
+                        <a href="<?= url('vip-funnel-studio') ?>" id="fcc_dashboard_tour_sidebar_vip_funnel">
+                            <i class="fas fa-fw fa-sm fa-project-diagram mr-2"></i> <?= l('vip_funnel.menu') ?>
+                            <?php if($vip_funnel_sidebar_badge): ?>
+                                <span class="badge badge-warning ml-2"><?= $vip_funnel_sidebar_badge ?></span>
+                            <?php endif ?>
+                        </a>
+                    </li>
+                <?php endif ?>
                 <li class="<?= \Altum\Router::$controller == 'FccAiHub' ? 'active' : null ?> app-sidebar-fcc-item">
                     <a href="<?= url('fcc-ai') ?>" id="fcc_dashboard_tour_sidebar_fcc_ai" class="<?= $has_fcc_ai_access ? null : 'disabled pointer-events-all' ?>" <?= $has_fcc_ai_access ? null : get_plan_feature_disabled_info() ?>>
                         <i class="fas fa-fw fa-sm fa-robot mr-2"></i> FCC AI
@@ -399,10 +429,10 @@ if(is_logged_in()) {
 
                     <a class="dropdown-item <?= in_array(\Altum\Router::$controller, ['AccountPreferences']) ? 'active' : null ?>" href="<?= url('account-preferences') ?>"><i class="fas fa-fw fa-sm fa-sliders-h mr-2"></i> <?= l('account_preferences.menu') ?></a>
 
-                    <a class="dropdown-item <?= in_array(\Altum\Router::$controller, ['AccountPlan']) ? 'active' : null ?>" href="<?= url('account-plan') ?>"><i class="fas fa-fw fa-sm fa-box-open mr-2"></i> <?= l('account_plan.menu') ?></a>
+                    <a class="dropdown-item <?= in_array(\Altum\Router::$controller, ['AccountPlan']) ? 'active' : null ?>" href="<?= url('account-plan') ?>"><i class="fas fa-fw fa-sm fa-box-open mr-2"></i> <?= l('account_plan.menu') ?><?php if($vip_demo_locked_badge): ?><span class="badge badge-warning ml-2"><?= $vip_demo_locked_badge ?></span><?php endif ?></a>
 
                     <?php if(settings()->payment->is_enabled): ?>
-                        <a class="dropdown-item <?= in_array(\Altum\Router::$controller, ['AccountPayments']) ? 'active' : null ?>" href="<?= url('account-payments') ?>"><i class="fas fa-fw fa-sm fa-credit-card mr-2"></i> <?= l('account_payments.menu') ?></a>
+                        <a class="dropdown-item <?= in_array(\Altum\Router::$controller, ['AccountPayments']) ? 'active' : null ?>" href="<?= url('account-payments') ?>"><i class="fas fa-fw fa-sm fa-credit-card mr-2"></i> <?= l('account_payments.menu') ?><?php if($vip_demo_locked_badge): ?><span class="badge badge-warning ml-2"><?= $vip_demo_locked_badge ?></span><?php endif ?></a>
 
                         <?php if(\Altum\Plugin::is_active('affiliate') && settings()->affiliate->is_enabled): ?>
                             <a class="dropdown-item <?= in_array(\Altum\Router::$controller, ['Referrals']) ? 'active' : null ?>" href="<?= url('referrals') ?>"><i class="fas fa-fw fa-sm fa-wallet mr-2"></i> <?= l('referrals.menu') ?></a>

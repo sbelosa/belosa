@@ -45,6 +45,32 @@ class AdminBlogPostsCategoryUpdate extends Controller {
             $_POST['description'] = input_clean($_POST['description'], 256);
             $_POST['language'] = !empty($_POST['language']) ? input_clean($_POST['language']) : null;
             $_POST['order'] = (int) $_POST['order'] ?? 0;
+            $shop_context_supported = fc_blog_posts_categories_has_shop_context_column();
+            $shop_context = $shop_context_supported ? fc_blog_category_shop_context_encode([
+                'page_role' => $_POST['shop_context_page_role'] ?? '',
+                'hero_badge' => $_POST['shop_context_hero_badge'] ?? '',
+                'hero_subtitle' => $_POST['shop_context_hero_subtitle'] ?? '',
+                'hero_note' => $_POST['shop_context_hero_note'] ?? '',
+                'meta_title' => $_POST['shop_context_meta_title'] ?? '',
+                'meta_description' => $_POST['shop_context_meta_description'] ?? '',
+                'meta_keywords' => $_POST['shop_context_meta_keywords'] ?? '',
+                'subcategories_title' => $_POST['shop_context_subcategories_title'] ?? '',
+                'guide_title' => $_POST['shop_context_guide_title'] ?? '',
+                'featured_title' => $_POST['shop_context_featured_title'] ?? '',
+                'discovery_eyebrow' => $_POST['shop_context_discovery_eyebrow'] ?? '',
+                'discovery_title' => $_POST['shop_context_discovery_title'] ?? '',
+                'discovery_subtitle' => $_POST['shop_context_discovery_subtitle'] ?? '',
+                'seo_title' => $_POST['shop_context_seo_title'] ?? '',
+                'faq_title' => $_POST['shop_context_faq_title'] ?? '',
+                'product_count_label' => $_POST['shop_context_product_count_label'] ?? '',
+                'shop_ready_count_label' => $_POST['shop_context_shop_ready_count_label'] ?? '',
+                'market_count_label' => $_POST['shop_context_market_count_label'] ?? '',
+                'guide_items' => fc_blog_shop_context_parse_pairs_text($_POST['shop_context_guide_items'] ?? '', 'title', 'text', 6, 160, 420),
+                'seo_paragraphs' => fc_blog_shop_context_parse_list_text($_POST['shop_context_seo_paragraphs'] ?? '', 6, 700),
+                'faq_items' => fc_blog_shop_context_parse_pairs_text($_POST['shop_context_faq_items'] ?? '', 'q', 'a', 10, 180, 700),
+                'featured_post_urls' => fc_blog_shop_context_parse_list_text($_POST['shop_context_featured_post_urls'] ?? '', 8, 256),
+                'filter_chips' => fc_blog_shop_context_parse_pairs_text($_POST['shop_context_filter_chips'] ?? '', 'label', 'terms', 5, 80, 220),
+            ]) : null;
 
             //ALTUMCODE:DEMO if(DEMO) Alerts::add_error('This command is blocked on the demo.');
 
@@ -79,7 +105,7 @@ class AdminBlogPostsCategoryUpdate extends Controller {
                 }                
                 /* /Custom code */
                 /* Database query */
-                db()->where('blog_posts_category_id', $blog_posts_category_id)->update('blog_posts_categories', [
+                $blog_posts_category_data = [
                     /* Custom code */
                     'blog_posts_parent_id' => $_POST['parent_id'],
                     'visibility' => $_POST['visibility'],
@@ -91,7 +117,13 @@ class AdminBlogPostsCategoryUpdate extends Controller {
                     'language' => $_POST['language'],
                     'order' => $_POST['order'],
                     'last_datetime' => get_date(),
-                ]);
+                ];
+
+                if($shop_context_supported) {
+                    $blog_posts_category_data['shop_context'] = $shop_context;
+                }
+
+                db()->where('blog_posts_category_id', $blog_posts_category_id)->update('blog_posts_categories', $blog_posts_category_data);
 
                 /* Set a nice success message */
                 Alerts::add_success(sprintf(l('global.success_message.update1'), '<strong>' . $_POST['title'] . '</strong>'));
@@ -103,10 +135,55 @@ class AdminBlogPostsCategoryUpdate extends Controller {
             }
         }
 
+        $shop_context_form_data = fc_blog_category_shop_context_to_form_data($blog_posts_category->shop_context ?? null);
+
+        if(!empty($_POST)) {
+            $shop_context_form_data = array_merge($shop_context_form_data, [
+                'page_role' => (string) ($_POST['shop_context_page_role'] ?? ''),
+                'hero_badge' => (string) ($_POST['shop_context_hero_badge'] ?? ''),
+                'hero_subtitle' => (string) ($_POST['shop_context_hero_subtitle'] ?? ''),
+                'hero_note' => (string) ($_POST['shop_context_hero_note'] ?? ''),
+                'meta_title' => (string) ($_POST['shop_context_meta_title'] ?? ''),
+                'meta_description' => (string) ($_POST['shop_context_meta_description'] ?? ''),
+                'meta_keywords' => (string) ($_POST['shop_context_meta_keywords'] ?? ''),
+                'subcategories_title' => (string) ($_POST['shop_context_subcategories_title'] ?? ''),
+                'guide_title' => (string) ($_POST['shop_context_guide_title'] ?? ''),
+                'featured_title' => (string) ($_POST['shop_context_featured_title'] ?? ''),
+                'discovery_eyebrow' => (string) ($_POST['shop_context_discovery_eyebrow'] ?? ''),
+                'discovery_title' => (string) ($_POST['shop_context_discovery_title'] ?? ''),
+                'discovery_subtitle' => (string) ($_POST['shop_context_discovery_subtitle'] ?? ''),
+                'seo_title' => (string) ($_POST['shop_context_seo_title'] ?? ''),
+                'faq_title' => (string) ($_POST['shop_context_faq_title'] ?? ''),
+                'product_count_label' => (string) ($_POST['shop_context_product_count_label'] ?? ''),
+                'shop_ready_count_label' => (string) ($_POST['shop_context_shop_ready_count_label'] ?? ''),
+                'market_count_label' => (string) ($_POST['shop_context_market_count_label'] ?? ''),
+                'guide_items' => (string) ($_POST['shop_context_guide_items'] ?? ''),
+                'seo_paragraphs' => (string) ($_POST['shop_context_seo_paragraphs'] ?? ''),
+                'faq_items' => (string) ($_POST['shop_context_faq_items'] ?? ''),
+                'featured_post_urls' => (string) ($_POST['shop_context_featured_post_urls'] ?? ''),
+                'filter_chips' => (string) ($_POST['shop_context_filter_chips'] ?? ''),
+            ]);
+        }
+
+        $shop_context_completion = fc_blog_category_shop_context_completion([
+            'page_role' => $shop_context_form_data['page_role'] ?? '',
+            'hero_subtitle' => $shop_context_form_data['hero_subtitle'] ?? '',
+            'meta_title' => $shop_context_form_data['meta_title'] ?? '',
+            'meta_description' => $shop_context_form_data['meta_description'] ?? '',
+            'meta_keywords' => $shop_context_form_data['meta_keywords'] ?? '',
+            'featured_post_urls' => fc_blog_shop_context_parse_list_text($shop_context_form_data['featured_post_urls'] ?? '', 8, 256),
+            'filter_chips' => fc_blog_shop_context_parse_pairs_text($shop_context_form_data['filter_chips'] ?? '', 'label', 'terms', 5, 80, 220),
+            'seo_paragraphs' => fc_blog_shop_context_parse_list_text($shop_context_form_data['seo_paragraphs'] ?? '', 6, 700),
+            'faq_items' => fc_blog_shop_context_parse_pairs_text($shop_context_form_data['faq_items'] ?? '', 'q', 'a', 10, 180, 700),
+        ]);
+
         /* Main View */
         $data = [
             'blog_posts_category' => $blog_posts_category,
-            'blog_posts_parent_categories' => $blog_posts_parent_categories /* Custom code */
+            'blog_posts_parent_categories' => $blog_posts_parent_categories, /* Custom code */
+            'blog_category_shop_context_supported' => fc_blog_posts_categories_has_shop_context_column(),
+            'shop_context_form' => (object) $shop_context_form_data,
+            'shop_context_completion' => $shop_context_completion,
         ];
 
         $view = new \Altum\View('admin/blog-posts-category-update/index', (array) $this);

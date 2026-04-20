@@ -2311,6 +2311,7 @@ class AdminSettings extends Controller {
             $_POST['seo_image_size_limit'] = $_POST['seo_image_size_limit'] > get_max_upload() || $_POST['seo_image_size_limit'] < 0 ? get_max_upload() : (float) $_POST['seo_image_size_limit'];
             $_POST['thumbnail_image_size_limit'] = $_POST['thumbnail_image_size_limit'] > get_max_upload() || $_POST['thumbnail_image_size_limit'] < 0 ? get_max_upload() : (float) $_POST['thumbnail_image_size_limit'];
             $_POST['image_size_limit'] = $_POST['image_size_limit'] > get_max_upload() || $_POST['image_size_limit'] < 0 ? get_max_upload() : (float) $_POST['image_size_limit'];
+            $_POST['vip_funnel_image_size_limit'] = $_POST['vip_funnel_image_size_limit'] > get_max_upload() || $_POST['vip_funnel_image_size_limit'] < 0 ? get_max_upload() : (float) $_POST['vip_funnel_image_size_limit'];
             $_POST['audio_size_limit'] = $_POST['audio_size_limit'] > get_max_upload() || $_POST['audio_size_limit'] < 0 ? get_max_upload() : (float) $_POST['audio_size_limit'];
             $_POST['video_size_limit'] = $_POST['video_size_limit'] > get_max_upload() || $_POST['video_size_limit'] < 0 ? get_max_upload() : (float) $_POST['video_size_limit'];
             $_POST['file_size_limit'] = $_POST['file_size_limit'] > get_max_upload() || $_POST['file_size_limit'] < 0 ? get_max_upload() : (float) $_POST['file_size_limit'];
@@ -2389,6 +2390,7 @@ class AdminSettings extends Controller {
                 'seo_image_size_limit' => $_POST['seo_image_size_limit'],
                 'thumbnail_image_size_limit' => $_POST['thumbnail_image_size_limit'],
                 'image_size_limit' => $_POST['image_size_limit'],
+                'vip_funnel_image_size_limit' => $_POST['vip_funnel_image_size_limit'],
                 'audio_size_limit' => $_POST['audio_size_limit'],
                 'video_size_limit' => $_POST['video_size_limit'],
                 'file_size_limit' => $_POST['file_size_limit'],
@@ -2454,6 +2456,42 @@ class AdminSettings extends Controller {
             'method' => 'forever',
             'payment_processors' => $payment_processors,
         ]));
+    }
+
+    public function vip_funnel() {
+        $this->process();
+
+        if(!empty($_POST)) {
+            if(!\Altum\Csrf::check()) {
+                Alerts::add_error(l('global.error_message.invalid_csrf_token'));
+            }
+
+            $value = json_encode([
+                'rollout_mode' => vip_funnel_normalize_rollout_mode((string) ($_POST['rollout_mode'] ?? 'testing_visible_locked')),
+                'visible_when_locked' => isset($_POST['visible_when_locked']),
+                'show_sidebar_entry_when_locked' => isset($_POST['show_sidebar_entry_when_locked']),
+                'pilot_allowed_user_ids' => vip_funnel_parse_user_ids((string) ($_POST['pilot_allowed_user_ids'] ?? '')),
+                'default_demo_days' => max(1, min(30, (int) ($_POST['default_demo_days'] ?? 5))),
+                'demo_request_requires_approval' => isset($_POST['demo_request_requires_approval']),
+            ]);
+
+            if(!Alerts::has_field_errors() && !Alerts::has_errors()) {
+                $existing_setting = db()->where('`key`', 'vip_funnel')->getOne('settings', ['key']);
+
+                if($existing_setting) {
+                    db()->where('`key`', 'vip_funnel')->update('settings', ['value' => $value]);
+                } else {
+                    db()->insert('settings', [
+                        'key' => 'vip_funnel',
+                        'value' => $value
+                    ]);
+                }
+
+                $this->after_update_settings('vip_funnel');
+            }
+
+            redirect('admin/settings/vip_funnel');
+        }
     }
 
     public function tools() {

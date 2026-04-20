@@ -126,6 +126,10 @@ return [
     /* :) */
     'block_thumbnail_images' => [],
     'block_images' => [],
+    'vip_funnel_images' => [
+        'whitelisted_file_extensions' => ['jpg', 'jpeg', 'png', 'svg', 'gif', 'webp', 'avif'],
+        'path' => 'block_images/',
+    ],
     'avatars' => [],
     'products_files' => [],
     'backgrounds' => [],

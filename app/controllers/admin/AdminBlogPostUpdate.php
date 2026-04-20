@@ -53,6 +53,29 @@ class AdminBlogPostUpdate extends Controller {
             $_POST['search_aliases'] = mb_substr(implode(', ', $search_aliases_array), 0, 2000);
             /* /Custom code: FC-2026-03-09 */
 
+            /* Custom code: FC-2026-04-19: normalize structured shop landing context */
+            $shop_context_supported = fc_blog_posts_has_shop_context_column();
+            $shop_context = $shop_context_supported ? fc_blog_shop_context_encode([
+                'page_role' => $_POST['shop_context_page_role'] ?? '',
+                'trust_note' => $_POST['shop_context_trust_note'] ?? '',
+                'decision_title' => $_POST['shop_context_decision_title'] ?? '',
+                'checks_title' => $_POST['shop_context_checks_title'] ?? '',
+                'action_title' => $_POST['shop_context_action_title'] ?? '',
+                'action_subtitle' => $_POST['shop_context_action_subtitle'] ?? '',
+                'primary_cta_label' => $_POST['shop_context_primary_cta_label'] ?? '',
+                'secondary_cta_label' => $_POST['shop_context_secondary_cta_label'] ?? '',
+                'related_eyebrow' => $_POST['shop_context_related_eyebrow'] ?? '',
+                'related_title' => $_POST['shop_context_related_title'] ?? '',
+                'meta_title' => $_POST['shop_context_meta_title'] ?? '',
+                'meta_description' => $_POST['shop_context_meta_description'] ?? '',
+                'meta_keywords' => $_POST['shop_context_meta_keywords'] ?? '',
+                'summary_cards' => fc_blog_shop_context_parse_pairs_text($_POST['shop_context_summary_cards'] ?? '', 'label', 'value', 6, 120, 220),
+                'ideal_for' => fc_blog_shop_context_parse_list_text($_POST['shop_context_ideal_for'] ?? '', 6, 240),
+                'quick_checks' => fc_blog_shop_context_parse_list_text($_POST['shop_context_quick_checks'] ?? '', 8, 240),
+                'faq' => fc_blog_shop_context_parse_pairs_text($_POST['shop_context_faq'] ?? '', 'question', 'answer', 10, 180, 700),
+            ]) : null;
+            /* /Custom code: FC-2026-04-19 */
+
             /* Custom code */
             $_POST['webshop_links'] = json_encode([
                 'hr' => $_POST['webshop_links_hr'],                    
@@ -127,6 +150,10 @@ class AdminBlogPostUpdate extends Controller {
                 if($blog_posts_has_search_aliases_column) {
                     $blog_post_data['search_aliases'] = $_POST['search_aliases'];
                 }
+
+                if($shop_context_supported) {
+                    $blog_post_data['shop_context'] = $shop_context;
+                }
                 /* /Custom code: FC-2026-03-09 */
 
                 /* Database query */
@@ -157,6 +184,30 @@ class AdminBlogPostUpdate extends Controller {
         $blog_posts_subcategories = db()->where('blog_posts_parent_id', null, 'IS NOT')->get('blog_posts_categories', null, ['blog_posts_category_id', 'blog_posts_parent_id', 'title']);
         /* /Custom code */
 
+        $shop_context_form_data = fc_blog_shop_context_to_form_data($blog_post->shop_context ?? null);
+
+        if(!empty($_POST)) {
+            $shop_context_form_data = array_merge($shop_context_form_data, [
+                'page_role' => (string) ($_POST['shop_context_page_role'] ?? ''),
+                'trust_note' => (string) ($_POST['shop_context_trust_note'] ?? ''),
+                'decision_title' => (string) ($_POST['shop_context_decision_title'] ?? ''),
+                'checks_title' => (string) ($_POST['shop_context_checks_title'] ?? ''),
+                'action_title' => (string) ($_POST['shop_context_action_title'] ?? ''),
+                'action_subtitle' => (string) ($_POST['shop_context_action_subtitle'] ?? ''),
+                'primary_cta_label' => (string) ($_POST['shop_context_primary_cta_label'] ?? ''),
+                'secondary_cta_label' => (string) ($_POST['shop_context_secondary_cta_label'] ?? ''),
+                'related_eyebrow' => (string) ($_POST['shop_context_related_eyebrow'] ?? ''),
+                'related_title' => (string) ($_POST['shop_context_related_title'] ?? ''),
+                'meta_title' => (string) ($_POST['shop_context_meta_title'] ?? ''),
+                'meta_description' => (string) ($_POST['shop_context_meta_description'] ?? ''),
+                'meta_keywords' => (string) ($_POST['shop_context_meta_keywords'] ?? ''),
+                'summary_cards' => (string) ($_POST['shop_context_summary_cards'] ?? ''),
+                'ideal_for' => (string) ($_POST['shop_context_ideal_for'] ?? ''),
+                'quick_checks' => (string) ($_POST['shop_context_quick_checks'] ?? ''),
+                'faq' => (string) ($_POST['shop_context_faq'] ?? ''),
+            ]);
+        }
+
         /* Main View */
         $data = [
             'blog_posts_main_categories' => $blog_posts_main_categories,
@@ -164,6 +215,8 @@ class AdminBlogPostUpdate extends Controller {
             'blog_posts_subcategories' => $blog_posts_subcategories,            
             'blog_post' => $blog_post,
             'webshop_links' => json_decode($blog_post->webshop_links),
+            'blog_shop_context_supported' => fc_blog_posts_has_shop_context_column(),
+            'shop_context_form' => (object) $shop_context_form_data,
         ];
 
         $view = new \Altum\View('admin/blog-post-update/index', (array) $this);
