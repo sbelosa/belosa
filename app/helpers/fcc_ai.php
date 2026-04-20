@@ -746,6 +746,227 @@ function fcc_ai_excerpt(string $value, int $limit = 220): string {
     return rtrim(mb_substr($value, 0, max(1, $limit - 1))) . '…';
 }
 
+function fcc_ai_compact_biolink_signal_row($item, int $label_limit = 160, int $reason_limit = 180): array {
+    $item = fcc_ai_to_array($item);
+
+    return [
+        'block_id' => max(0, (int) ($item['block_id'] ?? 0)),
+        'position' => max(0, (int) ($item['position'] ?? 0)),
+        'type' => trim((string) ($item['type'] ?? '')),
+        'label' => fcc_ai_excerpt((string) ($item['label'] ?? ''), $label_limit),
+        'role' => trim((string) ($item['role'] ?? '')),
+        'signal_score' => max(0, (int) ($item['signal_score'] ?? 0)),
+        'status' => trim((string) ($item['status'] ?? '')),
+        'reason' => fcc_ai_excerpt((string) ($item['reason'] ?? ''), $reason_limit),
+    ];
+}
+
+function fcc_ai_compact_biolink_signal_rows(array $items, int $limit, int $label_limit = 160, int $reason_limit = 180): array {
+    $rows = [];
+
+    foreach(array_slice(array_values($items), 0, max(0, $limit)) as $item) {
+        $row = fcc_ai_compact_biolink_signal_row($item, $label_limit, $reason_limit);
+
+        if(($row['block_id'] ?? 0) <= 0 && ($row['label'] ?? '') === '' && ($row['type'] ?? '') === '') {
+            continue;
+        }
+
+        $rows[] = $row;
+    }
+
+    return $rows;
+}
+
+function fcc_ai_compact_biolink_block_attribution_payload($payload, bool $aggressive = false, bool $preserve_all_blocks = true): array {
+    $payload = fcc_ai_to_array($payload);
+    $summary = fcc_ai_to_array($payload['summary'] ?? []);
+
+    $result = [
+        'summary' => [
+            'tracked_blocks' => max(0, (int) ($summary['tracked_blocks'] ?? 0)),
+            'signal_blocks' => max(0, (int) ($summary['signal_blocks'] ?? 0)),
+            'focus_risk_blocks' => max(0, (int) ($summary['focus_risk_blocks'] ?? 0)),
+            'zero_signal_blocks' => max(0, (int) ($summary['zero_signal_blocks'] ?? 0)),
+        ],
+        'top_signal_blocks' => fcc_ai_compact_biolink_signal_rows((array) ($payload['top_signal_blocks'] ?? []), $aggressive ? 2 : 3),
+        'focus_risk_blocks' => fcc_ai_compact_biolink_signal_rows((array) ($payload['focus_risk_blocks'] ?? []), $aggressive ? 2 : 3),
+    ];
+
+    if($preserve_all_blocks) {
+        $result['all_blocks'] = fcc_ai_compact_biolink_signal_rows((array) ($payload['all_blocks'] ?? []), $aggressive ? 8 : 12);
+    }
+
+    return $result;
+}
+
+function fcc_ai_compact_biolink_block_delta_summary($summary, bool $aggressive = false): array {
+    $summary = fcc_ai_to_array($summary);
+    $map_delta_rows = static function(array $items, int $limit): array {
+        $rows = [];
+
+        foreach(array_slice(array_values($items), 0, max(0, $limit)) as $item) {
+            $item = fcc_ai_to_array($item);
+            $rows[] = [
+                'block_id' => max(0, (int) ($item['block_id'] ?? 0)),
+                'label' => fcc_ai_excerpt((string) ($item['label'] ?? ''), 160),
+                'type' => trim((string) ($item['type'] ?? '')),
+                'previous_signal' => max(0, (int) ($item['previous_signal'] ?? 0)),
+                'current_signal' => max(0, (int) ($item['current_signal'] ?? 0)),
+                'delta_signal' => (int) ($item['delta_signal'] ?? 0),
+                'direction' => trim((string) ($item['direction'] ?? 'same')),
+            ];
+        }
+
+        return $rows;
+    };
+
+    return [
+        'top_gainers' => $map_delta_rows((array) ($summary['top_gainers'] ?? []), $aggressive ? 2 : 3),
+        'top_decliners' => $map_delta_rows((array) ($summary['top_decliners'] ?? []), $aggressive ? 2 : 3),
+        'current_top_blocks' => fcc_ai_compact_biolink_signal_rows((array) ($summary['current_top_blocks'] ?? []), $aggressive ? 2 : 3),
+        'focus_risk_blocks' => fcc_ai_compact_biolink_signal_rows((array) ($summary['focus_risk_blocks'] ?? []), $aggressive ? 2 : 3),
+    ];
+}
+
+function fcc_ai_compact_biolink_evolution_measurement($measurement, bool $aggressive = false): array {
+    $measurement = fcc_ai_to_array($measurement);
+    $performance = fcc_ai_to_array($measurement['performance'] ?? []);
+    $delta_items = [];
+
+    foreach(array_slice(array_values((array) ($measurement['delta'] ?? [])), 0, $aggressive ? 3 : 5) as $item) {
+        $item = fcc_ai_to_array($item);
+
+        if(empty($item['metric'])) {
+            continue;
+        }
+
+        $delta_items[] = [
+            'metric' => trim((string) ($item['metric'] ?? '')),
+            'previous' => (int) ($item['previous'] ?? 0),
+            'current' => (int) ($item['current'] ?? 0),
+            'delta' => (int) ($item['delta'] ?? 0),
+            'direction' => trim((string) ($item['direction'] ?? 'same')),
+        ];
+    }
+
+    return [
+        'status' => trim((string) ($measurement['status'] ?? '')),
+        'measured_at' => !empty($measurement['measured_at']) ? (string) $measurement['measured_at'] : null,
+        'performance' => $performance,
+        'delta' => $delta_items,
+        'block_summary' => fcc_ai_compact_biolink_block_delta_summary($measurement['block_summary'] ?? [], $aggressive),
+    ];
+}
+
+function fcc_ai_compact_biolink_evolution_memory($memory, bool $aggressive = false): array {
+    $memory = fcc_ai_to_array($memory);
+    $limit = $aggressive ? 4 : 6;
+    $preserve_full_baseline_cycles = $aggressive ? 1 : 2;
+    $compacted = [];
+
+    foreach(array_slice(array_values($memory), 0, $limit) as $index => $cycle) {
+        $cycle = fcc_ai_to_array($cycle);
+        $recommended = fcc_ai_to_array($cycle['recommended'] ?? []);
+        $applied = fcc_ai_to_array($cycle['applied'] ?? []);
+
+        $compacted[] = [
+            'review_key' => trim((string) ($cycle['review_key'] ?? '')),
+            'recommended_at' => !empty($cycle['recommended_at']) ? (string) $cycle['recommended_at'] : null,
+            'analysis_mode' => trim((string) ($cycle['analysis_mode'] ?? 'initial')),
+            'quality_score' => max(0, (int) ($cycle['quality_score'] ?? 0)),
+            'quality_level' => trim((string) ($cycle['quality_level'] ?? 'foundation')),
+            'performance_before' => fcc_ai_to_array($cycle['performance_before'] ?? []),
+            'block_attribution_before' => fcc_ai_compact_biolink_block_attribution_payload(
+                $cycle['block_attribution_before'] ?? [],
+                $aggressive,
+                $index < $preserve_full_baseline_cycles
+            ),
+            'recommended' => [
+                'headline' => fcc_ai_excerpt((string) ($recommended['headline'] ?? ''), 220),
+                'summary' => fcc_ai_excerpt((string) ($recommended['summary'] ?? ''), $aggressive ? 220 : 320),
+                'top_recommendation' => fcc_ai_excerpt((string) ($recommended['top_recommendation'] ?? ''), 260),
+                'first_move' => fcc_ai_excerpt((string) ($recommended['first_move'] ?? ''), 220),
+                'next_move' => fcc_ai_excerpt((string) ($recommended['next_move'] ?? ''), 220),
+                'theme_name' => fcc_ai_excerpt((string) ($recommended['theme_name'] ?? ''), 120),
+                'theme_summary' => fcc_ai_excerpt((string) ($recommended['theme_summary'] ?? ''), 220),
+                'primary_block' => fcc_ai_to_array($recommended['primary_block'] ?? []),
+                'layout_actions' => array_slice(array_values((array) ($recommended['layout_actions'] ?? [])), 0, $aggressive ? 2 : 3),
+            ],
+            'applied' => [
+                'theme_applied_at' => !empty($applied['theme_applied_at']) ? (string) $applied['theme_applied_at'] : null,
+                'primary_applied_at' => !empty($applied['primary_applied_at']) ? (string) $applied['primary_applied_at'] : null,
+                'layout_applied_at' => !empty($applied['layout_applied_at']) ? (string) $applied['layout_applied_at'] : null,
+                'layout_reverted_at' => !empty($applied['layout_reverted_at']) ? (string) $applied['layout_reverted_at'] : null,
+                'theme_key' => trim((string) ($applied['theme_key'] ?? '')),
+                'layout_summary' => fcc_ai_to_array($applied['layout_summary'] ?? []),
+                'layout_rollback_summary' => fcc_ai_to_array($applied['layout_rollback_summary'] ?? []),
+            ],
+            'evaluation_7d' => fcc_ai_compact_biolink_evolution_measurement($cycle['evaluation_7d'] ?? [], $aggressive),
+            'evaluation_30d' => fcc_ai_compact_biolink_evolution_measurement($cycle['evaluation_30d'] ?? [], $aggressive),
+        ];
+    }
+
+    return $compacted;
+}
+
+function fcc_ai_compact_biolink_additional_payload(array $additional, bool $aggressive = false): array {
+    $additional = array_filter($additional, static function($value) {
+        if(is_array($value)) {
+            return !empty($value);
+        }
+
+        return !($value === null || $value === '');
+    });
+
+    $baseline_backup = fcc_ai_to_array($additional['fcc_ai_bundle_baseline_backup'] ?? []);
+    $working_backup = fcc_ai_to_array($additional['fcc_ai_bundle_backup'] ?? []);
+
+    if(!empty($baseline_backup) && !empty($working_backup)) {
+        unset($additional['fcc_ai_bundle_backup']);
+    }
+
+    if(!empty($additional['fcc_ai_evolution_memory'])) {
+        $additional['fcc_ai_evolution_memory'] = fcc_ai_compact_biolink_evolution_memory($additional['fcc_ai_evolution_memory'], $aggressive);
+    }
+
+    foreach([
+        'fcc_ai_layout_actions' => $aggressive ? 3 : 5,
+        'fcc_ai_copy_suggestions' => $aggressive ? 3 : 5,
+        'fcc_ai_block_patch_pack' => $aggressive ? 2 : 4,
+        'fcc_ai_missing_block_recommendations' => $aggressive ? 3 : 5,
+        'fcc_ai_final_block_plan' => $aggressive ? 12 : 18,
+        'fcc_ai_ideal_block_order' => $aggressive ? 6 : 10,
+    ] as $key => $limit) {
+        if(!isset($additional[$key]) || !is_array($additional[$key])) {
+            continue;
+        }
+
+        $additional[$key] = array_values(array_slice($additional[$key], 0, $limit));
+    }
+
+    return array_filter($additional, static function($value) {
+        if(is_array($value)) {
+            return !empty($value);
+        }
+
+        return !($value === null || $value === '');
+    });
+}
+
+function fcc_ai_prepare_biolink_additional_for_storage(array $additional, int $target_bytes = 60000): ?string {
+    $normalized = fcc_ai_compact_biolink_additional_payload($additional, false);
+    $encoded = empty($normalized) ? null : json_encode($normalized);
+
+    if($encoded === null || strlen($encoded) <= $target_bytes) {
+        return $encoded;
+    }
+
+    $normalized = fcc_ai_compact_biolink_additional_payload($additional, true);
+    $encoded = empty($normalized) ? null : json_encode($normalized);
+
+    return $encoded;
+}
+
 function fcc_ai_first_non_empty_datetime(array $item, array $fields): string {
     foreach($fields as $field) {
         $value = trim((string) ($item[$field] ?? ''));

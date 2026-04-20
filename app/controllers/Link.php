@@ -2928,7 +2928,7 @@ class Link extends Controller {
             $additional['fcc_ai_evolution_memory'] = $memory;
 
             db()->where('link_id', $link_id)->where('user_id', $this->user->user_id)->update('links', [
-                'additional' => json_encode($additional),
+                'additional' => fcc_ai_prepare_biolink_additional_for_storage($additional),
             ]);
 
             cache()->deleteItemsByTag('link_id=' . $link_id);

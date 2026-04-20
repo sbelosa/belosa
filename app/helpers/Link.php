@@ -881,12 +881,47 @@ class Link {
                 break;
 
             case 'youtube':
-                preg_match('/(?:https?:\/\/)?(?:www\.)?(?:youtu\.be\/|youtube\.com\/(?:embed\/|shorts\/|v\/|watch\?v=|watch\?.+&v=))((?:\w|-){11})(?:&list=(\S+))?/', $link->location_url, $match);
+                $youtube_candidates = array_values(array_filter([
+                    trim((string) ($link->location_url ?? '')),
+                    trim((string) ($link->settings->video_url ?? '')),
+                ]));
 
-                $data['embed'] = $match[1] ?? null;
+                $youtube_embed = null;
+
+                foreach($youtube_candidates as $youtube_candidate) {
+                    preg_match('/(?:https?:\/\/)?(?:www\.|m\.)?(?:youtu\.be\/|youtube(?:-nocookie)?\.com\/(?:embed\/|shorts\/|live\/|v\/|watch\?v=|watch\?.+&v=))((?:\w|-){11})(?:[?&].*)?$/', $youtube_candidate, $match);
+
+                    if(!empty($match[1])) {
+                        $youtube_embed = $match[1];
+                        break;
+                    }
+
+                    $parsed_host = mb_strtolower((string) parse_url($youtube_candidate, PHP_URL_HOST));
+                    $parsed_path = trim((string) parse_url($youtube_candidate, PHP_URL_PATH), '/');
+                    $parsed_query = [];
+                    parse_str((string) parse_url($youtube_candidate, PHP_URL_QUERY), $parsed_query);
+
+                    if(in_array($parsed_host, ['youtu.be'], true) && preg_match('/^[\w-]{11}$/', $parsed_path)) {
+                        $youtube_embed = $parsed_path;
+                        break;
+                    }
+
+                    if(
+                        in_array($parsed_host, ['youtube.com', 'www.youtube.com', 'm.youtube.com', 'youtube-nocookie.com', 'www.youtube-nocookie.com'], true)
+                        && !empty($parsed_query['v'])
+                        && preg_match('/^[\w-]{11}$/', (string) $parsed_query['v'])
+                    ) {
+                        $youtube_embed = (string) $parsed_query['v'];
+                        break;
+                    }
+                }
+
+                $data['embed'] = $youtube_embed;
 
                 if($data['embed']) {
                     $view_path = THEME_PATH . 'views/l/biolink_blocks/' . $link->type . '.php';
+                } else {
+                    return null;
                 }
 
                 break;

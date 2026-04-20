@@ -181,15 +181,7 @@ class LinkAjax extends Controller {
 	}
 
 	private function prepare_biolink_additional_for_storage(array $additional): ?string {
-		$additional = array_filter($additional, function($value) {
-			if(is_array($value)) {
-				return !empty($value);
-			}
-
-			return !($value === null || $value === '');
-		});
-
-		return empty($additional) ? null : json_encode($additional);
+		return fcc_ai_prepare_biolink_additional_for_storage($additional);
 	}
 
 	private function get_ai_bundle_freshness_payload(array $additional, ?string $last_datetime = null): array {
