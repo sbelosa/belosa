@@ -18398,6 +18398,15 @@ function fcc_ai_generate_public_reply(string $assistant_type, string $message, a
         }
 
         if(!empty($intent['small_talk'])) {
+            $recommendation_payload['opening_note'] = '';
+            $recommendation_payload['primary_product'] = '';
+            $recommendation_payload['support_products'] = [];
+            $recommendation_payload['recommendation_lines'] = [];
+            $recommendation_payload['question_lines'] = [];
+            $recommendation_payload['monthly_quantity_note'] = '';
+            $recommendation_payload['force_local_reply'] = true;
+            $recommendation_payload['skip_product_tail'] = true;
+
             $content_blocks[] = $language === 'en'
                 ? 'I am here and ready to help.'
                 : 'Tu sam i rado ću pomoći.';
