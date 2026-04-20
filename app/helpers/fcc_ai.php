@@ -44,7 +44,7 @@ function fcc_ai_get_soft_resolved_feedback_ids(): array {
     }
 
     /* Historical live feedback cases already fixed in the recommendation engine but not writable-resolved in production DB. */
-    $ids = [43, 45, 46, 48, 49, 50, 51, 53, 54, 60, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 87, 89, 91, 100, 101, 102, 105, 107, 108, 109, 110, 111, 112, 113, 114, 115];
+    $ids = [43, 45, 46, 48, 49, 50, 51, 53, 54, 60, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 87, 89, 91, 100, 101, 102, 105, 107, 108, 109, 110, 111, 112, 113, 114, 115, 120];
 
     return $ids;
 }
@@ -5210,6 +5210,13 @@ function fcc_ai_is_low_context_follow_up_message(string $message): bool {
     }
 
     if(
+        fcc_ai_is_public_small_talk_message($message)
+        || fcc_ai_is_public_condition_explanation_followup_request($message)
+    ) {
+        return false;
+    }
+
+    if(
         fcc_ai_is_ambiguous_same_problem_followup_request($message)
         || fcc_ai_is_public_business_hesitation_followup_request($message)
         || fcc_ai_is_public_owner_help_followup_request($message)
@@ -5254,6 +5261,35 @@ function fcc_ai_is_low_context_follow_up_message(string $message): bool {
         'go on',
         'carry on',
         'keep going',
+    ]);
+}
+
+function fcc_ai_is_public_small_talk_message(string $message): bool {
+    return (bool) preg_match('/^\s*(kako si|how are you|bok|pozdrav|hej|hey|hi|hello)\s*[!?.]*\s*$/iu', mb_strtolower(trim($message)));
+}
+
+function fcc_ai_is_public_condition_explanation_followup_request(string $message): bool {
+    $message = trim($message);
+
+    if($message === '') {
+        return false;
+    }
+
+    if(fcc_ai_contains_keywords($message, [
+        'surad', 'business', 'kontakt', 'whatsapp', 'proizvod', 'product', 'kupi', 'naruči', 'naruci',
+        'prompt', 'upute', 'pravila', 'sustav', 'system', 'api',
+    ])) {
+        return false;
+    }
+
+    return fcc_ai_contains_phrase_keywords($message, [
+        'što je to', 'sto je to', 'šta je to', 'sta je to',
+        'daj mi to pojasni', 'daj mi to objasni',
+        'možeš pojasniti', 'mozes pojasniti',
+        'možeš objasniti', 'mozes objasniti',
+        'o kakvom se problemu radi', 'o kakvom problemu se radi',
+        'o čemu se radi', 'o cemu se radi',
+        'kakav je to problem', 'koji je to problem',
     ]);
 }
 
@@ -5362,6 +5398,9 @@ function fcc_ai_is_public_business_followup_clarification_request(string $messag
         'how does it work', 'how does that work',
         'how can she help', 'how can he help', 'how can the partner help',
         'what happens next', 'tell me more about her', 'tell me more about him',
+        'nisam zaposlena nigdje', 'nisam zaposlen nigdje',
+        'trenutno nisam zaposlena', 'trenutno nisam zaposlen',
+        'nezaposlena sam', 'nezaposlen sam',
     ]);
 }
 
@@ -5651,7 +5690,7 @@ function fcc_ai_is_vague_general_support_request(string $message): bool {
 function fcc_ai_build_contextual_public_message(int $conversation_id, string $message): array {
     $message = trim($message);
 
-    if($conversation_id <= 0 || !fcc_ai_is_low_context_follow_up_message($message)) {
+    if($conversation_id <= 0 || fcc_ai_is_public_small_talk_message($message) || !fcc_ai_is_low_context_follow_up_message($message)) {
         return [
             'message' => $message,
             'recent_user_context' => '',
@@ -5674,8 +5713,7 @@ function fcc_ai_build_contextual_public_message(int $conversation_id, string $me
         ];
     }
 
-    $last_user_message = end($user_messages);
-    $recent_user_context = trim((string) ($last_user_message['content'] ?? ''));
+    $recent_user_context = fcc_ai_get_recent_public_substantive_user_message($conversation_id, $message, 6);
 
     if($recent_user_context === '') {
         return [
@@ -5755,11 +5793,191 @@ function fcc_ai_internal_coach_has_market_context(string $message): bool {
     ]);
 }
 
+function fcc_ai_internal_coach_is_platform_settings_message(string $message): bool {
+    $message = trim($message);
+
+    if($message === '') {
+        return false;
+    }
+
+    return
+        (
+            fcc_ai_contains_keywords($message, [
+                'početni zaslon', 'pocetni zaslon', 'home screen',
+                'dodaj na početni zaslon', 'dodaj na pocetni zaslon',
+                'u uredi piše', 'u uredi pise', 'u bloku', 'uredi', 'uredi blok',
+                'naziv', 'label', 'ime gumba', 'tekst gumba',
+            ])
+            && fcc_ai_contains_keywords($message, ['blok', 'button', 'gumb', 'tile', 'shortcut', 'prečac', 'precac', 'dodaj'])
+        )
+        || fcc_ai_contains_keywords($message, [
+            'gdje klik', 'gdje da klik', 'where do i click',
+            'gdje se nalazi', 'što znači', 'sto znaci',
+            'kako uključiti', 'kako ukljuciti', 'postavke', 'settings',
+        ]);
+}
+
+function fcc_ai_internal_coach_is_home_screen_name_request(string $message): bool {
+    $message = trim($message);
+
+    if($message === '') {
+        return false;
+    }
+
+    return fcc_ai_contains_keywords($message, [
+        'početni zaslon', 'pocetni zaslon', 'home screen',
+        'dodaj na početni zaslon', 'dodaj na pocetni zaslon',
+        'u uredi piše naziv', 'u uredi pise naziv',
+        'naziv. je li to to', 'naziv. jel to to', 'naziv je li to to',
+    ]);
+}
+
+function fcc_ai_internal_coach_is_event_content_context(string $message): bool {
+    $message = trim($message);
+
+    if($message === '') {
+        return false;
+    }
+
+    return fcc_ai_contains_keywords($message, [
+        'sejam', 'sajam', 'na sejmu', 'na sajmu', 'event', 'događaj', 'dogadjaj',
+        'kozmetike', 'kozmetika', 'frizerstva', 'frizer',
+    ]);
+}
+
+function fcc_ai_get_internal_coach_home_screen_name_explainer(string $language = 'hr'): string {
+    if($language === 'en') {
+        return implode("\n\n", [
+            'Yes, that is the right field. In the "Add to home screen" block, **Name** is the short label shown under the icon when someone saves your FCC app on their phone.',
+            'Keep it short and clear. The safest version is usually your own name, brand name, or the simplest app name people will recognize immediately.',
+            'Example: "Nada FCC", "Amila Forever", or the clean name of the app.',
+            'Next click: open that block, put a short recognizable name into **Name**, save it, and then test how it looks on the phone home screen.',
+        ]);
+    }
+
+    if($language === 'sl') {
+        return implode("\n\n", [
+            'Da, to je pravo polje. V bloku "Dodaj na začetni zaslon" je **Naziv** kratek napis, ki se pokaže pod ikono, ko si nekdo shrani tvojo FCC aplikacijo na telefon.',
+            'Naj bo kratek in prepoznaven. Najbolj varna verzija je običajno tvoje ime, ime branda ali najbolj preprosto ime aplikacije, ki ga ljudje takoj razumejo.',
+            'Primer: "Nada FCC", "Amila Forever" ali preprosto ime aplikacije.',
+            'Naslednji klik: odpri ta blok, v polje **Naziv** vpiši kratek prepoznaven naziv, shrani in nato preveri, kako izgleda na začetnem zaslonu telefona.',
+        ]);
+    }
+
+    return implode("\n\n", [
+        'Da, to je točno to polje. U bloku **Dodaj na početni zaslon** polje **Naziv** je kratki tekst koji se prikazuje ispod ikonice kad netko spremi tvoju FCC aplikaciju na mobitel.',
+        'Najbolje ga je držati kratkim i prepoznatljivim. Najsigurnija verzija je obično tvoje ime, ime branda ili najjednostavniji naziv aplikacije koji osoba odmah prepozna.',
+        'Primjer: `Nada FCC`, `Amila Forever` ili jednostavan naziv tvoje aplikacije.',
+        'Sljedeći klik: otvori taj blok, u **Naziv** upiši kratko prepoznatljivo ime, spremi i onda provjeri kako izgleda na početnom zaslonu mobitela.',
+    ]);
+}
+
+function fcc_ai_get_internal_coach_event_content_explainer(string $language = 'hr'): string {
+    if($language === 'en') {
+        return implode("\n\n", [
+            'If you are at a cosmetics and hair fair, do not make the content too broad. Build **one short post or story** from the fair itself.',
+            'The clean angle is: "From the cosmetics and hair fair I am taking out one practical beauty solution and one simple business opening for people who want recommendations and an online shop path."',
+            'Use it like this: show one fair moment, add one short line about what people ask for most, and close with one simple CTA to message you or open the app.',
+            'Best next step now: publish one fair post/story with one clear CTA.',
+        ]);
+    }
+
+    if($language === 'sl') {
+        return implode("\n\n", [
+            'Če si na **sejmu kozmetike in frizerstva**, vsebine ne širi preveč. Naredi **eno kratko objavo ali story** direktno iz sejma.',
+            'Najbolj čist kot je: "Na sejmu kozmetike in frizerstva pokažem eno praktično beauty rešitev in eno preprosto poslovno možnost za ljudi, ki želijo priporočila in pot v spletno trgovino."',
+            'Uporabi to tako: pokaži en trenutek s sejma, dodaj eno kratko misel o tem, kaj ljudi najbolj zanima, in zaključi z enim jasnim CTA-jem, naj ti pišejo ali odprejo aplikacijo.',
+            'Najboljša naslednja poteza zdaj: objavi eno objavo ali story iz sejma z enim jasnim CTA-jem.',
+        ]);
+    }
+
+    return implode("\n\n", [
+        'Ako si na **sajmu kozmetike i frizerstva**, nemoj širiti temu previše. Napravi **jednu kratku objavu ili story** baš iz tog sajamskog konteksta.',
+        'Najčišći kut je: "Sa sajma kozmetike i frizerstva izdvajam jedno praktično beauty rješenje i jedan jednostavan poslovni ulaz za ljude koji žele preporuku i put prema web shopu."',
+        'Koristi to ovako: pokaži jedan kadar sa sajma, dodaj jednu kratku misao što ljude tamo najviše zanima i zatvori s jednim jasnim CTA-om da ti se jave ili otvore aplikaciju.',
+        'Najbolji sljedeći korak sada: objavi jednu objavu ili story sa sajma s jednim jasnim CTA-om.',
+    ]);
+}
+
+function fcc_ai_get_recent_public_substantive_user_message(int $conversation_id, string $current_message = '', int $limit = 6): string {
+    $recent_user_messages = fcc_ai_get_recent_public_user_messages($conversation_id, $limit, $current_message);
+    $fallback = '';
+
+    foreach($recent_user_messages as $candidate_message) {
+        $candidate_message = trim($candidate_message);
+
+        if($candidate_message === '') {
+            continue;
+        }
+
+        if($fallback === '') {
+            $fallback = $candidate_message;
+        }
+
+        if(
+            !fcc_ai_is_low_context_follow_up_message($candidate_message)
+            && !fcc_ai_is_public_condition_usage_followup_request($candidate_message)
+            && !fcc_ai_is_public_joint_routine_confirmation_request($candidate_message)
+        ) {
+            return $candidate_message;
+        }
+    }
+
+    return $fallback;
+}
+
+function fcc_ai_get_public_condition_explanation_opening_note(string $anchor_message, string $language = 'hr'): string {
+    $anchor_message = trim($anchor_message);
+    $language = fcc_ai_resolve_public_reply_language($language);
+
+    if($anchor_message === '') {
+        return '';
+    }
+
+    if(fcc_ai_contains_keywords($anchor_message, ['luskavic', 'psorijaz', 'psoriaz', 'psoriasis'])) {
+        if($language === 'en') {
+            return 'Psoriasis is a skin condition where the skin can flake faster, look redder, feel thicker, or become more sensitive. People often notice it on the scalp, elbows, knees, or other body areas, but the look and intensity can vary a lot from person to person. The exact diagnosis still belongs to a dermatologist, so here I would keep this only as a simple explanation of the condition, not as a treatment claim.';
+        }
+
+        if($language === 'sl') {
+            return 'Luskavica je kožno stanje, pri katerem se koža lahko hitreje lušči, pordeči, postane debelejša ali bolj občutljiva. Pogosto jo ljudje opazijo na lasišču, komolcih, kolenih ali drugih delih telesa, vendar se videz in jakost lahko precej razlikujeta od osebe do osebe. Natančno potrditev še vedno da dermatolog, zato tukaj ostajam samo pri kratki razlagi stanja, ne pri terapevtskih trditvah.';
+        }
+
+        return 'Luskavica je stanje kože kod kojeg se koža može brže ljuskati, crveniti, zadebljati ili postati osjetljivija. Ljudi je često primijete na vlasištu, laktovima, koljenima ili drugim dijelovima tijela, ali izgled i intenzitet mogu dosta varirati od osobe do osobe. Točnu potvrdu i procjenu i dalje daje dermatolog, zato ovdje ostajem samo na kratkom objašnjenju problema, bez terapijskih tvrdnji.';
+    }
+
+    if(fcc_ai_contains_keywords($anchor_message, ['dermatit', 'ekcem'])) {
+        if($language === 'en') {
+            return 'Dermatitis or eczema usually means the skin barrier is irritated, so the skin may look red, dry, itchy, or more reactive than usual. The exact cause can be different from person to person, which is why a doctor or dermatologist is still the safest place for a precise diagnosis.';
+        }
+
+        if($language === 'sl') {
+            return 'Dermatitis ali ekcem običajno pomeni, da je kožna bariera razdražena, zato je koža lahko rdeča, suha, srbeča ali bolj reaktivna kot običajno. Natančen vzrok je lahko pri vsaki osebi drugačen, zato je zdravnik ali dermatolog še vedno najvarnejši za točno diagnozo.';
+        }
+
+        return 'Dermatitis ili ekcem obično znači da je kožna barijera nadražena, pa koža može biti crvena, suha, svrbljiva ili reaktivnija nego inače. Točan uzrok može biti različit od osobe do osobe, zato je liječnik ili dermatolog i dalje najsigurniji za preciznu procjenu.';
+    }
+
+    if($language === 'en') {
+        return 'If you mean the condition we just mentioned, I can first explain in simple terms what kind of problem it is, and only after that narrow the routine direction if you want.';
+    }
+
+    if($language === 'sl') {
+        return 'Če mislite na stanje, ki sva ga pravkar omenila, ga lahko najprej preprosto razložim, šele potem pa po želji zožim rutinski smer.';
+    }
+
+    return 'Ako mislite na stanje koje smo upravo spomenuli, mogu ga prvo jednostavno objasniti, a tek onda po želji suziti rutinski smjer.';
+}
+
 function fcc_ai_internal_coach_requires_market_clarification(string $message, string $previous_context = ''): bool {
     $message = trim($message);
     $previous_context = trim($previous_context);
 
     if($message === '') {
+        return false;
+    }
+
+    if(fcc_ai_internal_coach_is_platform_settings_message($message)) {
         return false;
     }
 
@@ -5780,6 +5998,10 @@ function fcc_ai_internal_coach_requires_content_brief(string $message, string $p
     $previous_context = trim($previous_context);
 
     if($message === '' || $previous_context !== '') {
+        return false;
+    }
+
+    if(fcc_ai_internal_coach_is_platform_settings_message($message)) {
         return false;
     }
 
@@ -5881,6 +6103,35 @@ function fcc_ai_is_explicit_monthly_quantity_request(string $message): bool {
         'kolika količina',
         'kolike količine',
         'koliko komada',
+    ]);
+}
+
+function fcc_ai_is_public_condition_usage_followup_request(string $message): bool {
+    $message = trim($message);
+
+    if($message === '') {
+        return false;
+    }
+
+    return fcc_ai_contains_keywords($message, [
+        'upute', 'uputu', 'način primjene', 'nacin primjene', 'kako piti', 'kako pit',
+        'kako se pije', 'kako se uzima', 'kako koristiti', 'raspored', 'u svakodnevnici',
+        'dnevni raspored', 'doziranje', 'koliko puta dnevno', 'how to use', 'how to take',
+    ]);
+}
+
+function fcc_ai_is_public_joint_routine_confirmation_request(string $message): bool {
+    $message = trim($message);
+
+    if($message === '') {
+        return false;
+    }
+
+    return fcc_ai_contains_keywords($message, [
+        'freedom', 'freedoma', 'active ha', 'activ ha', 'aloe turm',
+    ]) && fcc_ai_contains_keywords($message, [
+        'mjesec dana', 'prvi mjesec', 'prvih mjesec dana',
+        'ok, znači', 'ok, znaci', 'znači', 'znaci',
     ]);
 }
 
@@ -7025,7 +7276,7 @@ function fcc_ai_get_public_query_alias_phrases(string $message): array {
         $aliases[] = 'hemorrhoid support aloe vera gel peaches pro b herbal tea aloe vera gelly';
     }
 
-    if(fcc_ai_contains_keywords($message, ['nature min', 'naturemin', 'nature-min'])) {
+    if(fcc_ai_contains_keywords($message, ['nature min', 'naturemin', 'nature-min', 'naturmin'])) {
         $aliases[] = 'nature min trace minerals electrolyte mineral balance';
     }
 
@@ -7097,7 +7348,7 @@ function fcc_ai_get_public_query_alias_phrases(string $message): array {
         $aliases[] = 'face care marine collagen infinite';
     }
 
-    if(fcc_ai_contains_keywords($message, ['lumb', 'vrat', 'artrit', 'zglob', 'leđa', 'leda', 'kolen', 'koljena', 'butin', 'isijas', 'sciatica'])) {
+    if(fcc_ai_contains_keywords($message, ['lumb', 'vrat', 'artrit', 'zglob', 'leđa', 'leda', 'kolen', 'koljena', 'koljen', 'butin', 'isijas', 'sciatica'])) {
         $aliases[] = 'mobility msm glucosamine';
     }
 
@@ -7110,7 +7361,7 @@ function fcc_ai_get_public_query_alias_phrases(string $message): array {
     }
 
     if(
-        fcc_ai_contains_keywords($message, ['koljeno', 'koljena'])
+        fcc_ai_contains_keywords($message, ['koljeno', 'koljena', 'koljenu', 'koljen'])
         || fcc_ai_contains_keywords($message, ['bol u nogama', 'boli noga', 'bole noge', 'bol u nozi'])
     ) {
         $aliases[] = 'leg mobility circulation support';
@@ -7255,7 +7506,7 @@ function fcc_ai_get_public_direct_product_lookup_matches(string $message): array
     }
 
     $catalog = [
-        'nature_min' => ['nature min', 'nature-min', 'naturemin'],
+        'nature_min' => ['nature min', 'nature-min', 'naturemin', 'naturmin'],
         'calcium' => ['forever calcium', 'calcium'],
         'therm' => ['therm', 'term food'],
         'lean' => ['lean', 'forever lean'],
@@ -7617,6 +7868,7 @@ function fcc_ai_is_public_product_usage_request(string $message): bool {
         'za što bi preporučio', 'za sto bi preporucio', 'za što bi mi preporučio', 'za sto bi mi preporucio',
         'za što bi mi prvenstveno preporučio', 'za sto bi mi prvenstveno preporucio', 'prvenstveno preporučio', 'prvenstveno preporucio',
         'svojstva', 'bonitet', 'bonitete', 'primjena', 'preporuka za korištenje', 'preporuka za koristenje',
+        'upute', 'uputu', 'u svakodnevnici', 'svakodnevnici', 'dnevni raspored', 'raspored korištenja', 'raspored koristenja', 'doziranje', 'kako pit',
         'omjer', 'ratio', 'epa', 'dha', 'miligr', 'koliko mg', 'koliko ima mg', 'što sadrži', 'sto sadrzi', 'sastav',
     ]);
 }
@@ -8188,6 +8440,37 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
             'monthly_quantity_note' => [
                 'hr' => 'Ako želite okvir za mjesec dana, ovdje se najčešće gleda 1 kutija Forever Arctic Sea i 3 x Forever Aloe Vera Gel™.',
                 'en' => 'If you want a one-month frame, this is most often positioned as 1 box of Forever Arctic Sea and 3 x Forever Aloe Vera Gel™.',
+            ],
+            'suppress_generic_questions' => true,
+            'sensitive_support_only' => true,
+            'lock_product_scope' => true,
+        ],
+        'selenium_mineral_support' => [
+            'patterns' => ['selen', 'selena', 'selenom', 'selenij', 'selenium'],
+            'preferred_patterns' => ['nature min', 'naturmin', 'hashimoto', 'štitn', 'stitn'],
+            'primary_product' => 'Forever Nature Min',
+            'support_products' => [],
+            'label' => [
+                'hr' => 'selen i mineralna podrška',
+                'en' => 'selenium and mineral support',
+            ],
+            'opening_note' => [
+                'hr' => 'Kad se pita baš za selen, posebno uz Hašimoto ili štitnjaču, odgovor ne bi trebao pobjeći u probavne aloe fallbackove. Ovdje je sigurnije ostati na mineralnom smjeru i deklaraciji proizvoda.',
+                'en' => 'When the question is specifically about selenium, especially around Hashimoto or thyroid context, the answer should not drift into digestive aloe fallbacks. It is safer here to stay on the mineral direction and the product label.',
+            ],
+            'recommendation_lines' => [
+                'hr' => [
+                    'Ako tražite Forever smjer koji je najbliži mineralnoj ravnoteži i elementima u tragovima, Forever Nature Min je ovdje najlogičniji proizvod iz baze.',
+                    'Kod Hašimota ili štitnjače zadržao bih to isključivo kao opću mineralnu podršku uz liječnika i nalaze, a točnu dostupnost ili količinu selena treba provjeriti na aktualnoj deklaraciji i tržištu.',
+                ],
+                'en' => [
+                    'If you want the Forever direction that is closest to mineral balance and trace elements, Forever Nature Min is the most logical product from the base here.',
+                    'With Hashimoto or thyroid context, I would keep that only as general mineral support alongside doctor guidance and lab context, while the exact selenium availability or amount should be checked on the current label and market.',
+                ],
+            ],
+            'monthly_quantity_note' => [
+                'hr' => 'Ako želite jednostavan okvir, ovdje se najčešće gleda 1 x Forever Nature Min, a dnevna količina prati aktualnu deklaraciju proizvoda.',
+                'en' => 'If you want a simple frame, this is most often positioned as 1 x Forever Nature Min, with the daily amount following the current product label.',
             ],
             'suppress_generic_questions' => true,
             'sensitive_support_only' => true,
@@ -11052,7 +11335,7 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
             'lock_product_scope' => true,
         ],
         'nature_min_mineral_support' => [
-            'patterns' => ['nature min', 'naturemin', 'nature-min'],
+            'patterns' => ['nature min', 'naturemin', 'nature-min', 'naturmin'],
             'preferred_patterns' => ['nature min', 'calcium', 'active ha', 'esm', 'move'],
             'primary_product' => 'Forever Nature Min',
             'support_products' => ['Forever Calcium', 'Forever Active HA', 'ESM Complex / Forever Move'],
@@ -11111,7 +11394,7 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
             'lock_product_scope' => true,
         ],
         'joint_mobility_support' => [
-            'patterns' => ['zglob', 'zglobovi', 'bole me zglobovi', 'koljeno', 'koljena', 'skolen', 's kolenima', 'bol u kolenima', 'bol u koljenima', 'artroz', 'artrit', 'kuk', 'rotacije kuka', 'rotacija kuka'],
+            'patterns' => ['zglob', 'zglobovi', 'bole me zglobovi', 'koljeno', 'koljena', 'koljenu', 'koljen', 'skolen', 's kolenima', 'bol u kolenima', 'bol u koljenima', 'artroz', 'artrit', 'kuk', 'rotacije kuka', 'rotacija kuka'],
             'preferred_patterns' => ['freedom', 'active ha', 'ha', 'msm gel', 'aloe msm gel'],
             'primary_product' => 'Forever Freedom®',
             'support_products' => ['Forever Active HA', 'Forever Aloe MSM Gel'],
@@ -13633,7 +13916,7 @@ function fcc_ai_get_public_article_feature_catalog(): array {
             ],
         ],
         [
-            'patterns' => ['nature min', 'nature-min', 'naturemin'],
+            'patterns' => ['nature min', 'nature-min', 'naturemin', 'naturmin'],
             'contains' => ['hr' => 'esencijalne minerale i minerale u tragovima iz prirodnih morskih naslaga', 'en' => 'essential minerals and trace minerals from natural marine deposits'],
             'routine' => [
                 'hr' => 'pa se najčešće gleda kada je cilj mineralna ravnoteža, elektroliti i šira svakodnevna multimineralna podrška',
@@ -14193,8 +14476,11 @@ function fcc_ai_build_public_recommendation_payload(string $assistant_type, stri
     $correction_follow_up = !empty($context['correction_follow_up']);
     $same_problem_followup_clarification = !empty($context['same_problem_followup_clarification']);
     $broad_beauty_followup_clarification = !empty($context['broad_beauty_followup_clarification']);
+    $condition_explanation_followup = !empty($context['condition_explanation_followup']);
+    $condition_usage_followup = !empty($context['condition_usage_followup']);
     $previous_condition_context_exists = !empty($context['previous_condition_context_exists']);
     $follow_up_message = trim((string) ($context['follow_up_message'] ?? ''));
+    $follow_up_anchor_message = trim((string) ($context['follow_up_anchor_message'] ?? ''));
     $is_aloe_no_effect_request = $assistant_type === 'product_advisor' && fcc_ai_is_public_aloe_no_effect_request($message);
     $is_bee_pollen_allergy_conflict = $assistant_type === 'product_advisor' && fcc_ai_is_public_bee_pollen_allergy_conflict_request($message);
     if(
@@ -14206,7 +14492,8 @@ function fcc_ai_build_public_recommendation_payload(string $assistant_type, stri
     ) {
         $same_problem_followup_clarification = true;
     }
-    $skip_product_tail = $assistant_type === 'product_advisor' && fcc_ai_is_public_product_utility_request($message);
+    $skip_product_tail = $assistant_type === 'product_advisor'
+        && (fcc_ai_is_public_product_utility_request($message) || $condition_usage_followup);
     $knowledge_suggestions = array_values(array_filter($context['knowledge_suggestions'] ?? [], static function($suggestion) {
         return !empty($suggestion['title']);
     }));
@@ -14318,9 +14605,11 @@ function fcc_ai_build_public_recommendation_payload(string $assistant_type, stri
 
     $question_lines = array_slice(array_values(array_unique(array_filter($question_lines))), 0, 2);
 
-    if($needs_vague_general_support_clarification || $needs_generic_topical_skin_clarification) {
+    if($needs_vague_general_support_clarification || $needs_generic_topical_skin_clarification || $condition_explanation_followup || $condition_usage_followup) {
         $recommendation_lines = [];
-        $knowledge_suggestions = [];
+        if($needs_vague_general_support_clarification || $needs_generic_topical_skin_clarification || $condition_explanation_followup) {
+            $knowledge_suggestions = [];
+        }
     }
 
     $opening_note = '';
@@ -14504,6 +14793,26 @@ function fcc_ai_build_public_recommendation_payload(string $assistant_type, stri
         $knowledge_suggestions = [];
         $combination_note = '';
         $discount_note = '';
+    }
+
+    if($condition_usage_followup && $assistant_type === 'product_advisor' && !empty($condition_matches)) {
+        $knowledge_suggestions = [];
+        $discount_note = '';
+        $combination_note = '';
+    }
+
+    if($condition_explanation_followup && $assistant_type === 'product_advisor') {
+        $opening_note = fcc_ai_get_public_condition_explanation_opening_note($follow_up_anchor_message !== '' ? $follow_up_anchor_message : $message, $language);
+        $recommendation_lines = [];
+        $question_lines = [];
+        $knowledge_suggestions = [];
+        $monthly_quantity_note = '';
+        $combination_note = '';
+        $discount_note = '';
+        $primary_product = '';
+        $support_products = [];
+        $force_local_reply = true;
+        $skip_product_tail = true;
     }
 
     if($assistant_type === 'product_advisor' && ($broad_beauty_followup_clarification || fcc_ai_is_broad_beauty_request($message))) {
@@ -16796,6 +17105,9 @@ function fcc_ai_detect_public_intent(string $assistant_type, string $message): a
         'kako to funkcionira', 'kako to radi', 'how does it work', 'how does that work',
         'how can i sell this', 'how do i sell this', 'selling this',
         'je li ovo mlm', 'je li ovo piramida', 'mlm prevara', 'piramida ili mlm',
+        'nisam zaposlena nigdje', 'nisam zaposlen nigdje',
+        'trenutno nisam zaposlena', 'trenutno nisam zaposlen',
+        'nezaposlena sam', 'nezaposlen sam',
     ]) || $business_hesitation_followup || $owner_help_followup;
     $business = $business || $business_hesitation_followup || $owner_help_followup;
     $contact = fcc_ai_contains_keywords($message, [
@@ -16846,7 +17158,7 @@ function fcc_ai_detect_public_intent(string $assistant_type, string $message): a
     $unknown_product_name_request = $assistant_type === 'product_advisor'
         && empty(fcc_ai_get_public_direct_product_lookup_matches($raw_message))
         && fcc_ai_contains_keywords($message, ['miltipleks', 'multipleks', 'multiplex', 'multiplex', 'lemon blast', 'lemonblast']);
-    $small_talk = (bool) preg_match('/^\s*(kako si|how are you|bok|pozdrav|hej|hey|hi|hello)\s*[!?.]*\s*$/iu', $normalized_raw_message);
+    $small_talk = fcc_ai_is_public_small_talk_message($raw_message);
     $usage_howto_request = $assistant_type === 'product_advisor'
         && !empty(fcc_ai_get_public_direct_product_lookup_matches($raw_message))
         && fcc_ai_is_public_product_usage_request($raw_message);
@@ -17431,6 +17743,8 @@ function fcc_ai_generate_public_reply(string $assistant_type, string $message, a
     $business_primary = $assistant_type === 'product_advisor' && !empty($intent['business_primary']);
     $business_mixed_with_product = $business_primary && !empty($intent['explicit_product_request']);
     $owner_help_followup_request = $assistant_type === 'product_advisor' && fcc_ai_is_public_owner_help_followup_request($message);
+    $condition_explanation_followup = $assistant_type === 'product_advisor' && !empty($context['condition_explanation_followup']);
+    $follow_up_anchor_message = trim((string) ($context['follow_up_anchor_message'] ?? ''));
     $is_direct_cure_claim_question = $assistant_type === 'product_advisor'
         && fcc_ai_contains_keywords($message, ['izliječ', 'izlijec', 'liječi', 'lijeci', 'cure', 'heals'])
         && !empty($intent['medical_sensitive']);
@@ -17443,6 +17757,42 @@ function fcc_ai_generate_public_reply(string $assistant_type, string $message, a
 
     if($skip_product_tail) {
         $knowledge_suggestions = [];
+    }
+
+    if($assistant_type === 'product_advisor' && $condition_explanation_followup) {
+        $explanation_anchor_message = $follow_up_anchor_message !== ''
+            ? $follow_up_anchor_message
+            : trim((string) ($context['recent_user_context'] ?? ''));
+
+        $explanation_note = fcc_ai_get_public_condition_explanation_opening_note(
+            $explanation_anchor_message !== '' ? $explanation_anchor_message : $message,
+            $language
+        );
+
+        $recommendation_payload['opening_note'] = $explanation_note;
+        $recommendation_payload['primary_product'] = '';
+        $recommendation_payload['support_products'] = [];
+        $recommendation_payload['recommendation_lines'] = [];
+        $recommendation_payload['question_lines'] = [];
+        $recommendation_payload['monthly_quantity_note'] = '';
+        $recommendation_payload['skip_product_tail'] = true;
+        $recommendation_payload['force_local_reply'] = true;
+
+        $content_blocks[] = $explanation_note;
+        $content_blocks[] = $language === 'en'
+            ? 'If you want, I can next separate only the cautious Forever support direction for that same issue, without mixing in unrelated products.'
+            : ($language === 'sl'
+                ? 'Če želite, lahko nato ločim samo previdno Forever podporno smer za isti problem, brez mešanja nepovezanih izdelkov.'
+                : 'Ako želite, nakon ovoga mogu odvojeno napisati samo oprezan Forever support smjer za isti problem, bez miješanja nepovezanih proizvoda.');
+
+        return [
+            'content' => trim(implode("\n\n", array_filter($content_blocks))),
+            'language' => $language,
+            'lead_capture' => $lead_capture,
+            'intent' => $intent,
+            'recommendation_payload' => $recommendation_payload,
+            'knowledge_suggestions' => [],
+        ];
     }
 
     $is_direct_contact_request = !empty($intent['contact']) && !$intent['business'] && !fcc_ai_contains_keywords($message, [
@@ -18992,7 +19342,7 @@ function fcc_ai_generate_public_reply(string $assistant_type, string $message, a
                     ];
             } elseif(
                 in_array('mobility', $theme_keys, true)
-                || fcc_ai_contains_keywords($message, ['koljeno', 'koljena', 'skolen', 's kolenima'])
+                || fcc_ai_contains_keywords($message, ['koljeno', 'koljena', 'koljenu', 'koljen', 'skolen', 's kolenima'])
             ) {
                 $recommendation_payload['primary_product'] = 'Forever Freedom®';
                 $recommendation_payload['support_products'] = ['Forever Aloe MSM Gel'];
@@ -22965,7 +23315,33 @@ function fcc_ai_handle_public_message(array $payload): array {
     $recent_user_context = trim((string) ($contextual_message_bundle['recent_user_context'] ?? ''));
     $used_context_for_matching = !empty($contextual_message_bundle['used_context']);
     $intent = fcc_ai_detect_public_intent((string) $conversation->assistant_type, $message_for_matching);
+    $is_small_talk_message = fcc_ai_is_public_small_talk_message($current_user_message);
+
+    if($is_small_talk_message) {
+        $message_for_matching = $current_user_message;
+        $recent_user_context = '';
+        $used_context_for_matching = false;
+        $intent = fcc_ai_detect_public_intent((string) $conversation->assistant_type, $current_user_message);
+        $intent['small_talk'] = true;
+        $intent['business'] = false;
+        $intent['business_primary'] = false;
+        $intent['business_content_request'] = false;
+        $intent['explicit_product_request'] = false;
+        $intent['product'] = false;
+        $intent['contact'] = false;
+        $intent['support_request'] = false;
+    }
+
     $previous_user_message = fcc_ai_get_previous_public_user_message((int) ($conversation->fcc_ai_conversation_id ?? 0), $current_user_message);
+    $previous_substantive_user_message = fcc_ai_get_recent_public_substantive_user_message((int) ($conversation->fcc_ai_conversation_id ?? 0), $current_user_message, 6);
+    $followup_anchor_user_message = (
+        $previous_user_message !== ''
+        && !fcc_ai_is_low_context_follow_up_message($previous_user_message)
+        && !fcc_ai_is_public_condition_usage_followup_request($previous_user_message)
+        && !fcc_ai_is_public_joint_routine_confirmation_request($previous_user_message)
+    )
+        ? $previous_user_message
+        : $previous_substantive_user_message;
     $recent_business_context_message = fcc_ai_get_recent_public_business_context_message(
         (int) ($conversation->fcc_ai_conversation_id ?? 0),
         (string) ($conversation->assistant_type ?? ''),
@@ -22988,7 +23364,7 @@ function fcc_ai_handle_public_message(array $payload): array {
         fcc_ai_get_product_advisor_effective_condition_matches($current_user_message, $resolved_language)
     );
     $previous_condition_keys = fcc_ai_get_condition_match_keys(
-        fcc_ai_get_product_advisor_effective_condition_matches($previous_user_message, $resolved_language)
+        fcc_ai_get_product_advisor_effective_condition_matches($followup_anchor_user_message, $resolved_language)
     );
     $is_recommendation_correction_followup = (string) ($conversation->assistant_type ?? '') === 'product_advisor'
         && $previous_user_message !== ''
@@ -23028,24 +23404,33 @@ function fcc_ai_handle_public_message(array $payload): array {
         'after_bath_skin_support',
     ];
     $is_weight_context_followup = (string) ($conversation->assistant_type ?? '') === 'product_advisor'
-        && $previous_user_message !== ''
+        && $followup_anchor_user_message !== ''
         && !empty(array_intersect($weight_context_followup_keys, $previous_condition_keys))
         && fcc_ai_is_low_context_follow_up_message($current_user_message);
     $is_child_context_followup = (string) ($conversation->assistant_type ?? '') === 'product_advisor'
-        && $previous_user_message !== ''
+        && $followup_anchor_user_message !== ''
         && (
             !empty(array_intersect($child_context_followup_keys, $previous_condition_keys))
-            || fcc_ai_contains_keywords($previous_user_message, ['dijete', 'djetet', 'dječ', 'djec', 'otrok', 'beba', 'beb'])
+            || fcc_ai_contains_keywords($followup_anchor_user_message, ['dijete', 'djetet', 'dječ', 'djec', 'otrok', 'beba', 'beb'])
         )
         && (
             fcc_ai_is_low_context_follow_up_message($current_user_message)
             || fcc_ai_contains_keywords($current_user_message, ['za dijete', 'za djecu', 'za bebu'])
         );
     $is_physical_endurance_followup = (string) ($conversation->assistant_type ?? '') === 'product_advisor'
-        && $previous_user_message !== ''
+        && $followup_anchor_user_message !== ''
         && in_array('simple_low_energy_support', $current_condition_keys, true)
         && in_array('physical_endurance_support', $previous_condition_keys, true)
         && fcc_ai_is_low_context_follow_up_message($current_user_message);
+    $is_condition_explanation_followup = (string) ($conversation->assistant_type ?? '') === 'product_advisor'
+        && fcc_ai_is_public_condition_explanation_followup_request($current_user_message);
+    $is_condition_usage_followup = (string) ($conversation->assistant_type ?? '') === 'product_advisor'
+        && $followup_anchor_user_message !== ''
+        && !empty($previous_condition_keys)
+        && (
+            fcc_ai_is_public_condition_usage_followup_request($current_user_message)
+            || fcc_ai_is_public_joint_routine_confirmation_request($current_user_message)
+        );
     $is_business_hesitation_followup = (string) ($conversation->assistant_type ?? '') === 'product_advisor'
         && fcc_ai_is_public_business_hesitation_followup_request($current_user_message);
     $is_owner_help_followup = (string) ($conversation->assistant_type ?? '') === 'product_advisor'
@@ -23083,25 +23468,35 @@ function fcc_ai_handle_public_message(array $payload): array {
         $used_context_for_matching = true;
         $intent = fcc_ai_detect_public_intent((string) $conversation->assistant_type, $previous_user_message);
     } elseif($is_child_context_followup) {
-        $message_for_matching = $previous_user_message . "\n\nChild follow-up: " . $current_user_message;
-        $recent_user_context = $previous_user_message;
+        $message_for_matching = $followup_anchor_user_message . "\n\nChild follow-up: " . $current_user_message;
+        $recent_user_context = $followup_anchor_user_message;
         $used_context_for_matching = true;
         $intent = fcc_ai_detect_public_intent((string) $conversation->assistant_type, $message_for_matching);
     } elseif($is_weight_context_followup) {
-        $message_for_matching = $previous_user_message . "\n\nWeight follow-up: " . $current_user_message;
-        $recent_user_context = $previous_user_message;
+        $message_for_matching = $followup_anchor_user_message . "\n\nWeight follow-up: " . $current_user_message;
+        $recent_user_context = $followup_anchor_user_message;
         $used_context_for_matching = true;
-        $intent = fcc_ai_detect_public_intent((string) $conversation->assistant_type, $previous_user_message);
+        $intent = fcc_ai_detect_public_intent((string) $conversation->assistant_type, $followup_anchor_user_message);
     } elseif($is_physical_endurance_followup) {
-        $message_for_matching = $previous_user_message . "\n\nPhysical endurance follow-up: " . $current_user_message;
-        $recent_user_context = $previous_user_message;
+        $message_for_matching = $followup_anchor_user_message . "\n\nPhysical endurance follow-up: " . $current_user_message;
+        $recent_user_context = $followup_anchor_user_message;
         $used_context_for_matching = true;
-        $intent = fcc_ai_detect_public_intent((string) $conversation->assistant_type, $previous_user_message);
+        $intent = fcc_ai_detect_public_intent((string) $conversation->assistant_type, $followup_anchor_user_message);
+    } elseif($is_condition_explanation_followup) {
+        $message_for_matching = $followup_anchor_user_message . "\n\nCondition explanation follow-up: " . $current_user_message;
+        $recent_user_context = $followup_anchor_user_message;
+        $used_context_for_matching = true;
+        $intent = fcc_ai_detect_public_intent((string) $conversation->assistant_type, $followup_anchor_user_message);
+    } elseif($is_condition_usage_followup) {
+        $message_for_matching = $followup_anchor_user_message . "\n\nUsage follow-up: " . $current_user_message;
+        $recent_user_context = $followup_anchor_user_message;
+        $used_context_for_matching = true;
+        $intent = fcc_ai_detect_public_intent((string) $conversation->assistant_type, $followup_anchor_user_message);
     } elseif($is_same_problem_followup_clarification) {
-        $message_for_matching = $previous_user_message . "\n\nFollow-up clarification needed: " . $current_user_message;
-        $recent_user_context = $previous_user_message;
+        $message_for_matching = $followup_anchor_user_message . "\n\nFollow-up clarification needed: " . $current_user_message;
+        $recent_user_context = $followup_anchor_user_message;
         $used_context_for_matching = true;
-        $intent = fcc_ai_detect_public_intent((string) $conversation->assistant_type, $previous_user_message);
+        $intent = fcc_ai_detect_public_intent((string) $conversation->assistant_type, $followup_anchor_user_message);
     } elseif($is_business_followup_clarification) {
         $business_context_message = $recent_business_context_message !== '' ? $recent_business_context_message : $previous_user_message;
         $message_for_matching = $business_context_message . "\n\nBusiness follow-up clarification needed: " . $current_user_message;
@@ -23132,7 +23527,7 @@ function fcc_ai_handle_public_message(array $payload): array {
     $has_high_risk_medical_context = (string) ($conversation->assistant_type ?? '') === 'product_advisor'
         && fcc_ai_has_high_risk_public_medical_context($current_user_message);
 
-    if(($has_high_risk_medical_context || $should_reset_problem_context) && !$is_same_problem_followup_clarification && !$is_broad_beauty_followup_clarification && !$is_low_context_condition_followup && !$is_weight_context_followup && !$is_child_context_followup) {
+    if(($has_high_risk_medical_context || $should_reset_problem_context) && !$is_same_problem_followup_clarification && !$is_broad_beauty_followup_clarification && !$is_low_context_condition_followup && !$is_weight_context_followup && !$is_child_context_followup && !$is_condition_explanation_followup && !$is_condition_usage_followup) {
         $message_for_matching = $current_user_message;
         $recent_user_context = '';
         $used_context_for_matching = false;
@@ -23171,8 +23566,11 @@ function fcc_ai_handle_public_message(array $payload): array {
             'correction_follow_up' => $is_recommendation_correction_followup,
             'same_problem_followup_clarification' => $is_same_problem_followup_clarification,
             'broad_beauty_followup_clarification' => $is_broad_beauty_followup_clarification,
+            'condition_explanation_followup' => $is_condition_explanation_followup,
+            'condition_usage_followup' => $is_condition_usage_followup,
             'previous_condition_context_exists' => !empty($previous_condition_keys),
             'follow_up_message' => $current_user_message,
+            'follow_up_anchor_message' => $followup_anchor_user_message,
         ]);
     }
 
@@ -23272,15 +23670,21 @@ function fcc_ai_handle_public_message(array $payload): array {
         'business_followup_clarification' => $is_business_followup_clarification,
         'business_hesitation_followup' => $is_business_hesitation_followup,
         'broad_beauty_followup_clarification' => $is_broad_beauty_followup_clarification,
+        'condition_explanation_followup' => $is_condition_explanation_followup,
+        'follow_up_anchor_message' => $followup_anchor_user_message,
         'guarded_request_type' => $guarded_request_type,
     ]);
 
     $should_force_local_reply = $is_same_problem_followup_clarification
+        || $is_small_talk_message
+        || $is_condition_explanation_followup
+        || $is_condition_usage_followup
         || $is_business_followup_clarification
         || $is_business_hesitation_followup
         || $is_broad_beauty_followup_clarification
         || $guarded_request_type !== ''
         || !empty($recommendation_payload['force_local_reply'])
+        || !empty($recommendation_payload['skip_product_tail'])
         || !empty($intent['business_primary'])
         || !empty($intent['medication_interaction_sensitive'])
         || $is_direct_cure_claim_question
@@ -23360,6 +23764,7 @@ function fcc_ai_handle_public_message(array $payload): array {
             (string) ($conversation->assistant_type ?? '') === 'product_advisor'
             && $recommendation_primary !== ''
             && empty($intent['serious'])
+        && empty($intent['small_talk'])
         && empty($intent['business'])
         && empty($intent['business_content_request'])
         && empty($recommendation_payload['skip_product_tail'])
@@ -23815,6 +24220,7 @@ function fcc_ai_generate_internal_coach_reply(string $message, array $context = 
     $normalized_message = mb_strtolower($message);
     $page_route = trim((string) ($page['route'] ?? ''));
     $page_slug = trim((string) ($page['slug'] ?? ''));
+    $is_app_block_settings_request = fcc_ai_internal_coach_is_platform_settings_message($message);
     $is_pro = !empty($access_summary['is_pro']);
     $analysis_unlocked = !empty($access_summary['analysis_unlocked']);
     $top_performer = !empty($access_summary['top_performer']);
