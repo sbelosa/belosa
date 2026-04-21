@@ -659,17 +659,35 @@ foreach($blocks as $preview_block) {
                                                         <?php endif ?>
                                                         <div class="vip-funnel-public__actions">
                                                             <?php if($primary_url !== ''): ?>
+                                                                <?php $primary_signal_key = $primary_mode === 'direct_shop' ? 'forever_shop' : ''; ?>
                                                                 <a
                                                                     href="<?= $e($primary_url) ?>"
                                                                     class="vip-funnel-public__btn is-primary"
                                                                     style="font-size: <?= $e($button_size) ?>px; font-weight: <?= $e($button_weight) ?>; font-family: <?= $e($font_family) ?>; color: <?= $e($button_text_color !== '' ? $button_text_color : '#0f172a') ?>;"
+                                                                    data-vf-track="cta_click"
+                                                                    data-vf-block="<?= $e($block_id) ?>"
+                                                                    data-vf-block-type="<?= $e($block_type) ?>"
+                                                                    data-vf-label="<?= $e($primary_cta_text) ?>"
+                                                                    data-vf-action="<?= $e($primary_mode) ?>"
+                                                                    data-vf-external="<?= $e($primary_url) ?>"
+                                                                    data-vf-selection="<?= $e((string) (($block['product_matched_mapping']['match_value'] ?? '') ?: (($state['runtime_context']['selection'] ?? '') ?: ''))) ?>"
+                                                                    data-vf-signal-key="<?= $e($primary_signal_key) ?>"
                                                                 ><?= $e($primary_cta_text) ?></a>
                                                             <?php endif ?>
                                                             <?php if($secondary_enabled): ?>
+                                                                <?php $secondary_signal_key = $secondary_mode === 'direct_shop' ? 'forever_shop' : ''; ?>
                                                                 <a
                                                                     href="<?= $e($secondary_url) ?>"
                                                                     class="vip-funnel-public__btn is-secondary"
                                                                     style="font-size: <?= $e($button_size) ?>px; font-weight: <?= $e($button_weight) ?>; font-family: <?= $e($font_family) ?>; color: <?= $e($button_text_color !== '' ? $button_text_color : $body_color) ?>;"
+                                                                    data-vf-track="cta_click"
+                                                                    data-vf-block="<?= $e($block_id) ?>"
+                                                                    data-vf-block-type="<?= $e($block_type) ?>"
+                                                                    data-vf-label="<?= $e($secondary_cta_text) ?>"
+                                                                    data-vf-action="<?= $e($secondary_mode) ?>"
+                                                                    data-vf-external="<?= $e($secondary_url) ?>"
+                                                                    data-vf-selection="<?= $e((string) (($block['product_matched_mapping']['match_value'] ?? '') ?: (($state['runtime_context']['selection'] ?? '') ?: ''))) ?>"
+                                                                    data-vf-signal-key="<?= $e($secondary_signal_key) ?>"
                                                                 ><?= $e($secondary_cta_text) ?></a>
                                                             <?php endif ?>
                                                         </div>
@@ -811,10 +829,20 @@ foreach($blocks as $preview_block) {
                                                         data-vf-block="<?= $e($block_id) ?>"
                                                     ><?= $e($option['label'] ?? 'Opcija') ?></button>
                                                 <?php else: ?>
+                                                    <?php $option_signal_key = \Altum\Link::is_monitored_forever_destination_url((string) ($option['url'] ?? '')) ? 'forever_shop' : ''; ?>
                                                     <a
                                                         href="<?= $e($option['url'] ?? '#') ?>"
                                                         class="vip-funnel-public__btn is-<?= $e($option_style) ?>"
                                                         style="font-size: <?= $e($button_size) ?>px; font-weight: <?= $e($button_weight) ?>; font-family: <?= $e($font_family) ?>; color: <?= $e($option_text_color) ?>;"
+                                                        data-vf-track="cta_click"
+                                                        data-vf-block="<?= $e($block_id) ?>"
+                                                        data-vf-block-type="<?= $e($block_type) ?>"
+                                                        data-vf-label="<?= $e($option['label'] ?? 'Opcija') ?>"
+                                                        data-vf-action="<?= $e($option['action'] ?? '') ?>"
+                                                        data-vf-target="<?= $e($option['target_step_id'] ?? '') ?>"
+                                                        data-vf-external="<?= $e($option['url'] ?? '') ?>"
+                                                        data-vf-selection="<?= $e($option['value'] ?? ($option['label'] ?? '')) ?>"
+                                                        data-vf-signal-key="<?= $e($option_signal_key) ?>"
                                                     ><?= $e($option['label'] ?? 'Opcija') ?></a>
                                                 <?php endif ?>
                                             <?php endforeach ?>
@@ -842,10 +870,20 @@ foreach($blocks as $preview_block) {
                                                         data-vf-block="<?= $e($block_id) ?>"
                                                     ><?= $e($button['label'] ?? 'Gumb') ?></button>
                                                 <?php else: ?>
+                                                    <?php $button_signal_key = \Altum\Link::is_monitored_forever_destination_url((string) ($button['url'] ?? '')) ? 'forever_shop' : ''; ?>
                                                     <a
                                                         href="<?= $e($button['url'] ?? '#') ?>"
                                                         class="vip-funnel-public__btn is-<?= $e($button_style) ?>"
                                                         style="font-size: <?= $e($button_size) ?>px; font-weight: <?= $e($button_weight) ?>; font-family: <?= $e($font_family) ?>; color: <?= $e($button_label_color) ?>;"
+                                                        data-vf-track="cta_click"
+                                                        data-vf-block="<?= $e($block_id) ?>"
+                                                        data-vf-block-type="<?= $e($block_type) ?>"
+                                                        data-vf-label="<?= $e($button['label'] ?? 'Gumb') ?>"
+                                                        data-vf-action="<?= $e($button['action'] ?? '') ?>"
+                                                        data-vf-target="<?= $e($button['target_step_id'] ?? '') ?>"
+                                                        data-vf-external="<?= $e($button['url'] ?? '') ?>"
+                                                        data-vf-selection="<?= $e($button['value'] ?? ($button['label'] ?? '')) ?>"
+                                                        data-vf-signal-key="<?= $e($button_signal_key) ?>"
                                                     ><?= $e($button['label'] ?? 'Gumb') ?></a>
                                                 <?php endif ?>
                                             <?php endforeach ?>
@@ -887,6 +925,34 @@ foreach($blocks as $preview_block) {
     const selectionInput = document.getElementById('vf_selection');
     const blockInput = document.getElementById('vf_block_id');
 
+    const trackEvent = (node) => {
+        if(!node) return;
+
+        const payload = new FormData();
+        payload.append('vf_track_event', '1');
+        payload.append('vf_event_type', node.getAttribute('data-vf-track') || 'cta_click');
+        payload.append('vf_block_id', node.getAttribute('data-vf-block') || '');
+        payload.append('vf_block_type', node.getAttribute('data-vf-block-type') || '');
+        payload.append('vf_label', node.getAttribute('data-vf-label') || '');
+        payload.append('vf_action', node.getAttribute('data-vf-action') || '');
+        payload.append('vf_target_step_id', node.getAttribute('data-vf-target') || '');
+        payload.append('vf_external_url', node.getAttribute('data-vf-external') || node.getAttribute('href') || '');
+        payload.append('vf_selection', node.getAttribute('data-vf-selection') || '');
+        payload.append('vf_signal_key', node.getAttribute('data-vf-signal-key') || '');
+
+        if(navigator.sendBeacon) {
+            navigator.sendBeacon(window.location.href, payload);
+            return;
+        }
+
+        fetch(window.location.href, {
+            method: 'POST',
+            body: payload,
+            credentials: 'same-origin',
+            keepalive: true
+        }).catch(() => {});
+    };
+
     document.querySelectorAll('[data-vf-submit]').forEach(button => {
         button.addEventListener('click', () => {
             actionInput.value = button.getAttribute('data-vf-action') || 'submit_next';
@@ -895,6 +961,12 @@ foreach($blocks as $preview_block) {
             selectionInput.value = button.getAttribute('data-vf-selection') || '';
             blockInput.value = button.getAttribute('data-vf-block') || '';
         });
+    });
+
+    document.querySelectorAll('[data-vf-track]').forEach(node => {
+        node.addEventListener('click', () => {
+            trackEvent(node);
+        }, {passive: true});
     });
 
     const countdowns = document.querySelectorAll('[data-vf-countdown]');

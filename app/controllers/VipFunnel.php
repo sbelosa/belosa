@@ -32,6 +32,12 @@ class VipFunnel extends Controller {
         }
 
         if(!empty($_POST)) {
+            if(!empty($_POST['vf_track_event'])) {
+                vip_funnel_process_public_tracking($state, $_POST);
+                http_response_code(204);
+                die();
+            }
+
             $submission = vip_funnel_process_public_submission($state, $_POST);
 
             if(!empty($submission['success']) && !empty($submission['redirect_url'])) {
@@ -46,6 +52,7 @@ class VipFunnel extends Controller {
 
         $run_id = vip_funnel_get_or_create_public_run($state);
         vip_funnel_log_public_event($state, 'view', (string) ($state['page_key'] ?? 'landing'), [], 0, $run_id);
+        vip_funnel_log_public_block_views($state, $run_id);
 
         $payload = $state['payload'] ?? [];
         $title = trim((string) ($payload['overview']['headline'] ?? ($payload['funnel']['name'] ?? 'VIP Funnel 2.0')));

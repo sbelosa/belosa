@@ -487,6 +487,10 @@ class Dashboard extends Controller {
               AND `track_links`.`datetime` >= '{$thirty_days_start_datetime}'
               {$unique_track_links_condition}
               AND `track_links`.`utm_medium` IN ({$qualified_blog_mediums_sql})")->fetch_object()->total;
+        $funnel_public_signal_30d = vip_funnel_get_public_qualification_signal_payload($this->user->user_id, $thirty_days_start_datetime);
+        $funnel_public_signal_prev_30d = vip_funnel_get_public_qualification_signal_payload($this->user->user_id, $previous_thirty_days_start_datetime, $thirty_days_start_datetime);
+        $qualified_clicks_30d += (int) ($funnel_public_signal_30d['total'] ?? 0);
+        $qualified_clicks_prev_30d += (int) ($funnel_public_signal_prev_30d['total'] ?? 0);
 
         $revenue_total = (float) (db()->where('user_id', $this->user->user_id)->where('status', 'paid')->getValue('payments', 'SUM(`total_amount_default_currency`)') ?? 0);
         $revenue_30d = (float) (db()->where('user_id', $this->user->user_id)->where('status', 'paid')->where('datetime', $thirty_days_start_datetime, '>=')->getValue('payments', 'SUM(`total_amount_default_currency`)') ?? 0);

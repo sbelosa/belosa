@@ -4203,6 +4203,48 @@ function vip_funnel_log_public_event(array $state, string $event_type, string $e
     ]);
 }
 
+function vip_funnel_log_public_block_views(array $state, int $run_id = 0): void {
+    foreach((array) ($state['blocks'] ?? []) as $block) {
+        $block = vip_funnel_to_array($block);
+        $block_id = trim((string) ($block['id'] ?? ''));
+        $block_type = trim((string) ($block['type'] ?? ''));
+
+        if($block_id === '') {
+            continue;
+        }
+
+        vip_funnel_log_public_event($state, 'block_view', trim((string) ($block['title'] ?? ($block['label'] ?? $block_type))), [
+            'block_id' => $block_id,
+            'block_type' => $block_type,
+            'layout_width' => (string) ($block['layout_width'] ?? 'full'),
+        ], 0, $run_id);
+    }
+}
+
+function vip_funnel_process_public_tracking(array $state, array $post = []): array {
+    $post = vip_funnel_to_array($post);
+    $event_type = input_clean((string) ($post['vf_event_type'] ?? 'cta_click'), 32);
+
+    if($event_type === '') {
+        return ['success' => false];
+    }
+
+    $run_id = vip_funnel_get_or_create_public_run($state);
+    $cta_label = trim(input_clean((string) ($post['vf_label'] ?? ''), 160));
+    vip_funnel_log_public_event($state, $event_type, $cta_label !== '' ? $cta_label : trim(input_clean((string) ($post['vf_action'] ?? ''), 64)), [
+        'block_id' => trim(input_clean((string) ($post['vf_block_id'] ?? ''), 120)),
+        'block_type' => trim(input_clean((string) ($post['vf_block_type'] ?? ''), 64)),
+        'cta_label' => $cta_label,
+        'action' => trim(input_clean((string) ($post['vf_action'] ?? ''), 64)),
+        'target_step_id' => trim(input_clean((string) ($post['vf_target_step_id'] ?? ''), 128)),
+        'external_url' => trim(input_clean((string) ($post['vf_external_url'] ?? ''), 2048)),
+        'selection' => trim(input_clean((string) ($post['vf_selection'] ?? ''), 160)),
+        'signal_key' => trim(input_clean((string) ($post['vf_signal_key'] ?? ''), 64)),
+    ], 0, $run_id);
+
+    return ['success' => true];
+}
+
 function vip_funnel_get_public_runtime_context(int $user_id = 0, string $viewer_key = ''): array {
     $context = [
         'selection' => '',
@@ -4942,6 +4984,102 @@ function vip_funnel_has_table(string $table): bool {
     $result = database()->query("SHOW TABLES LIKE '{$table_sql}'");
 
     return $cache[$table] = (bool) ($result && $result->num_rows);
+}
+
+function vip_funnel_get_public_qualification_signal_map(string $period_start_datetime = '', string $period_end_datetime = ''): array {
+    $map = [];
+
+    if($period_start_datetime === '') {
+        return $map;
+    }
+
+    vip_funnel_ensure_runtime_schema();
+    $period_start_datetime = database()->real_escape_string($period_start_datetime);
+    $period_end_datetime = trim($period_end_datetime) !== '' ? database()->real_escape_string($period_end_datetime) : '';
+    $range_sql = "`datetime` >= '{$period_start_datetime}'";
+
+    if($period_end_datetime !== '') {
+        $range_sql .= " AND `datetime` < '{$period_end_datetime}'";
+    }
+
+    if(vip_funnel_has_table('vip_leads')) {
+        $contacts_result = database()->query("SELECT
+                `owner_user_id` AS `user_id`,
+                COUNT(*) AS `total`
+            FROM `vip_leads`
+            WHERE `source` = 'vip_funnel_public'
+              AND {$range_sql}
+            GROUP BY `owner_user_id`");
+
+        while($contacts_result && ($row = $contacts_result->fetch_object())) {
+            $user_id = (int) ($row->user_id ?? 0);
+
+            if($user_id <= 0) {
+                continue;
+            }
+
+            if(!isset($map[$user_id])) {
+                $map[$user_id] = [
+                    'funnel_contacts' => 0,
+                    'funnel_shop_clicks' => 0,
+                    'total' => 0,
+                ];
+            }
+
+            $map[$user_id]['funnel_contacts'] = (int) ($row->total ?? 0);
+        }
+    }
+
+    if(vip_funnel_has_table('vip_funnel_events')) {
+        $shop_clicks_result = database()->query("SELECT
+                `user_id`,
+                COUNT(DISTINCT CASE
+                    WHEN COALESCE(`visitor_key`, '') <> '' THEN CONCAT(`visitor_key`, '|', COALESCE(NULLIF(`block_id`, ''), 'shop'))
+                    ELSE CONCAT('event_', `vip_funnel_event_id`)
+                END) AS `total`
+            FROM `vip_funnel_events`
+            WHERE `event_type` = 'cta_click'
+              AND JSON_UNQUOTE(JSON_EXTRACT(`meta`, '$.signal_key')) = 'forever_shop'
+              AND {$range_sql}
+            GROUP BY `user_id`");
+
+        while($shop_clicks_result && ($row = $shop_clicks_result->fetch_object())) {
+            $user_id = (int) ($row->user_id ?? 0);
+
+            if($user_id <= 0) {
+                continue;
+            }
+
+            if(!isset($map[$user_id])) {
+                $map[$user_id] = [
+                    'funnel_contacts' => 0,
+                    'funnel_shop_clicks' => 0,
+                    'total' => 0,
+                ];
+            }
+
+            $map[$user_id]['funnel_shop_clicks'] = (int) ($row->total ?? 0);
+        }
+    }
+
+    foreach($map as &$row) {
+        $row['funnel_contacts'] = (int) ($row['funnel_contacts'] ?? 0);
+        $row['funnel_shop_clicks'] = (int) ($row['funnel_shop_clicks'] ?? 0);
+        $row['total'] = $row['funnel_contacts'] + $row['funnel_shop_clicks'];
+    }
+    unset($row);
+
+    return $map;
+}
+
+function vip_funnel_get_public_qualification_signal_payload(int $user_id = 0, string $period_start_datetime = '', string $period_end_datetime = ''): array {
+    $map = vip_funnel_get_public_qualification_signal_map($period_start_datetime, $period_end_datetime);
+
+    return $map[$user_id] ?? [
+        'funnel_contacts' => 0,
+        'funnel_shop_clicks' => 0,
+        'total' => 0,
+    ];
 }
 
 function vip_funnel_demo_schema_is_ready(): bool {

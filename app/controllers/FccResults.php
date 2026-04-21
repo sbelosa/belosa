@@ -154,6 +154,8 @@ class FccResults extends Controller {
             $period_previous_start_datetime = $this->get_previous_period_start_datetime($period_days);
             $visitor_conversion_map = $this->get_visitor_conversion_map($period_start_datetime, $qualified_click_condition_sql);
             $contact_breakdown_map = $this->get_contact_breakdown_map($period_start_datetime);
+            $funnel_public_signal_map = vip_funnel_get_public_qualification_signal_map($period_start_datetime);
+            $previous_funnel_public_signal_map = vip_funnel_get_public_qualification_signal_map($period_previous_start_datetime, $period_start_datetime);
 
             $previous_clicks_map = [];
             $previous_clicks_result = database()->query("SELECT `track_links`.`user_id`, COUNT(*) AS `total` FROM `track_links` LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id` WHERE `track_links`.`datetime` >= '{$period_previous_start_datetime}' AND `track_links`.`datetime` < '{$period_start_datetime}' AND `track_links`.`is_unique` = 1 AND {$qualified_click_condition_sql} GROUP BY `track_links`.`user_id`");
@@ -162,27 +164,35 @@ class FccResults extends Controller {
             }
 
             $leaderboard = [];
-            $leaderboard_result = database()->query("SELECT `track_links`.`user_id`, `users`.`name`,
+            $leaderboard_result = database()->query("SELECT `users`.`user_id`, `users`.`name`,
                 SUM(CASE WHEN {$qualified_click_condition_sql} AND `track_links`.`is_unique` = 1 THEN 1 ELSE 0 END) AS `qualified_clicks`,
                 SUM(CASE WHEN `biolinks_blocks`.`type` IN ({$forever_shop_block_types_sql}) AND `track_links`.`is_unique` = 1 THEN 1 ELSE 0 END) AS `app_clicks`,
                 SUM(CASE WHEN `track_links`.`utm_medium` IN ({$blog_forever_mediums_sql}) AND `track_links`.`is_unique` = 1 THEN 1 ELSE 0 END) AS `blog_clicks`,
                 SUM(CASE WHEN `links`.`type` = 'biolink' AND `track_links`.`is_unique` = 1 THEN 1 ELSE 0 END) AS `biolink_visits`
-                FROM `track_links`
+                FROM `users`
+                LEFT JOIN `track_links` ON `track_links`.`user_id` = `users`.`user_id` AND `track_links`.`datetime` >= '{$period_start_datetime}'
                 LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id`
                 LEFT JOIN `links` ON `track_links`.`link_id` = `links`.`link_id`
-                LEFT JOIN `users` ON `track_links`.`user_id` = `users`.`user_id`
-                WHERE `track_links`.`datetime` >= '{$period_start_datetime}'
-                  AND {$active_pro_user_condition_sql}
-                GROUP BY `track_links`.`user_id`
-                HAVING `qualified_clicks` >= {$min_qualified_clicks}
-                ORDER BY `qualified_clicks` DESC, `biolink_visits` DESC, `users`.`name` ASC");
+                WHERE {$active_pro_user_condition_sql}
+                GROUP BY `users`.`user_id`
+                ORDER BY `users`.`name` ASC");
 
             $rank = 1;
             while($leaderboard_row = $leaderboard_result->fetch_object()) {
                 $user_id = (int) ($leaderboard_row->user_id ?? 0);
-                $qualified_clicks = (int) ($leaderboard_row->qualified_clicks ?? 0);
+                $funnel_public_signal = $funnel_public_signal_map[$user_id] ?? [
+                    'funnel_contacts' => 0,
+                    'funnel_shop_clicks' => 0,
+                    'total' => 0,
+                ];
+                $qualified_clicks = (int) ($leaderboard_row->qualified_clicks ?? 0) + (int) ($funnel_public_signal['total'] ?? 0);
                 $app_clicks = (int) ($leaderboard_row->app_clicks ?? 0);
                 $blog_clicks = (int) ($leaderboard_row->blog_clicks ?? 0);
+
+                if($qualified_clicks < $min_qualified_clicks) {
+                    continue;
+                }
+
                 $contact_breakdown = $contact_breakdown_map[$user_id] ?? [
                     'funnel_contacts' => 0,
                     'ai_chat_contacts' => 0,
@@ -194,7 +204,12 @@ class FccResults extends Controller {
                 $biolink_visits = (int) ($leaderboard_row->biolink_visits ?? 0);
                 $biolink_visitors = (int) ($visitor_conversion_map[$user_id]['biolink_visitors'] ?? 0);
                 $qualified_visitors = (int) ($visitor_conversion_map[$user_id]['qualified_visitors'] ?? 0);
-                $previous_qualified_clicks = (int) ($previous_clicks_map[$user_id] ?? 0);
+                $previous_funnel_public_signal = $previous_funnel_public_signal_map[$user_id] ?? [
+                    'funnel_contacts' => 0,
+                    'funnel_shop_clicks' => 0,
+                    'total' => 0,
+                ];
+                $previous_qualified_clicks = (int) ($previous_clicks_map[$user_id] ?? 0) + (int) ($previous_funnel_public_signal['total'] ?? 0);
                 $trend_percent = $this->get_trend_percent($qualified_clicks, $previous_qualified_clicks);
 
                 $leaderboard[] = [
@@ -233,6 +248,17 @@ class FccResults extends Controller {
             $current_user_totals = $current_user_totals_result->fetch_object();
 
             $current_user_qualified_clicks = (int) ($current_user_totals->qualified_clicks ?? 0);
+            $current_user_funnel_public_signal = $funnel_public_signal_map[$this->user->user_id] ?? [
+                'funnel_contacts' => 0,
+                'funnel_shop_clicks' => 0,
+                'total' => 0,
+            ];
+            $current_user_previous_funnel_public_signal = $previous_funnel_public_signal_map[$this->user->user_id] ?? [
+                'funnel_contacts' => 0,
+                'funnel_shop_clicks' => 0,
+                'total' => 0,
+            ];
+            $current_user_qualified_clicks += (int) ($current_user_funnel_public_signal['total'] ?? 0);
             $current_user_app_clicks = (int) ($current_user_totals->app_clicks ?? 0);
             $current_user_blog_clicks = (int) ($current_user_totals->blog_clicks ?? 0);
             $current_user_contact_breakdown = $contact_breakdown_map[$this->user->user_id] ?? [
@@ -246,7 +272,7 @@ class FccResults extends Controller {
             $current_user_biolink_visits = (int) ($current_user_totals->biolink_visits ?? 0);
             $current_user_biolink_visitors = (int) ($visitor_conversion_map[$this->user->user_id]['biolink_visitors'] ?? 0);
             $current_user_qualified_visitors = (int) ($visitor_conversion_map[$this->user->user_id]['qualified_visitors'] ?? 0);
-            $current_user_previous_qualified_clicks = (int) ($previous_clicks_map[$this->user->user_id] ?? 0);
+            $current_user_previous_qualified_clicks = (int) ($previous_clicks_map[$this->user->user_id] ?? 0) + (int) ($current_user_previous_funnel_public_signal['total'] ?? 0);
 
             $periods[$period_key] = [
                 'days' => $period_days,

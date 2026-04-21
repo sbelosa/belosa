@@ -1804,6 +1804,10 @@ function fcc_ai_get_user_public_visibility_signal_snapshot(int $user_id): array 
         'app_clicks_7d' => 0,
         'blog_clicks_30d' => 0,
         'blog_clicks_7d' => 0,
+        'funnel_contacts_30d' => 0,
+        'funnel_contacts_7d' => 0,
+        'funnel_shop_clicks_30d' => 0,
+        'funnel_shop_clicks_7d' => 0,
         'qualified_target' => 15,
         'top_target' => 50,
         'weekly_check_target' => 15,
@@ -1845,11 +1849,16 @@ function fcc_ai_get_user_public_visibility_signal_snapshot(int $user_id): array 
         $qualified_clicks = max(0, (int) ($row->qualified_clicks ?? 0));
         $app_clicks = max(0, (int) ($row->app_clicks ?? 0));
         $blog_clicks = max(0, (int) ($row->blog_clicks ?? 0));
+        $funnel_public_signal = vip_funnel_get_public_qualification_signal_payload($user_id, $period_start_datetime);
+        $funnel_contacts = max(0, (int) ($funnel_public_signal['funnel_contacts'] ?? 0));
+        $funnel_shop_clicks = max(0, (int) ($funnel_public_signal['funnel_shop_clicks'] ?? 0));
 
-        $payload['qualified_clicks_' . $period_key] = $qualified_clicks;
+        $payload['qualified_clicks_' . $period_key] = $qualified_clicks + $funnel_contacts + $funnel_shop_clicks;
         $payload['app_clicks_' . $period_key] = $app_clicks;
         $payload['blog_clicks_' . $period_key] = $blog_clicks;
-        $payload['growth_signal_' . $period_key] = $qualified_clicks;
+        $payload['funnel_contacts_' . $period_key] = $funnel_contacts;
+        $payload['funnel_shop_clicks_' . $period_key] = $funnel_shop_clicks;
+        $payload['growth_signal_' . $period_key] = $payload['qualified_clicks_' . $period_key];
     }
 
     return $payload;
