@@ -134,6 +134,12 @@ function vip_funnel_user_can_publish_public_hub($user = null): bool {
         return false;
     }
 
+    $access = vip_funnel_resolve_access_state($user);
+
+    if(!$access->can_access) {
+        return false;
+    }
+
     if(vip_funnel_user_has_plan_access($user) || vip_funnel_user_is_gate_exempt($user)) {
         return true;
     }
