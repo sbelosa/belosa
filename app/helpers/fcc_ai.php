@@ -11693,7 +11693,7 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
             'lock_product_scope' => true,
         ],
         'back_spine_support' => [
-            'patterns' => ['bol u leđima', 'bol u ledjima', 'bolive u leđima', 'bolive u ledjima', 'leđa', 'ledja', 'leđima', 'ledjima', 'vratna hrbtenica', 'vratno hrbtenico', 'vratne hrbtenice', 'vratni del hrbtenice', 'vratna kralježnica', 'vratna kraljeznica', 'kralježnica', 'kraljeznica', 'kralježnic', 'kraljeznic', 'hrbtenica', 'hrbtenice', 'hrbtenico', 'hrbtenic', 'lumbago', 'lumbo', 'išijas', 'išijasa', 'isijas', 'isijasa', 'sciatica'],
+            'patterns' => ['bol u leđima', 'bol u ledjima', 'bolive u leđima', 'bolive u ledjima', 'leđa', 'ledja', 'leđima', 'ledjima', 'vratna hrbtenica', 'vratno hrbtenico', 'vratne hrbtenice', 'vratni del hrbtenice', 'vratna kralježnica', 'vratna kraljeznica', 'kralježnica', 'kraljeznica', 'kralježnic', 'kraljeznic', 'hrbtenica', 'hrbtenice', 'hrbtenico', 'hrbtenic', 'lumbago', 'lumbo', 'lumbalni išijas', 'lumbalni isijas', 'lumbalni ishias', 'lumbalnog išijasa', 'lumbalnog isijasa', 'lumbalnog ishiasa', 'išijas', 'išijasa', 'isijas', 'isijasa', 'sciatica'],
             'preferred_patterns' => ['freedom', 'active ha', 'cooling lotion', 'aloe cooling lotion'],
             'primary_product' => 'Forever Freedom®',
             'support_products' => ['Forever Active HA', 'Forever Aloe Cooling Lotion'],
@@ -15389,6 +15389,10 @@ function fcc_ai_build_public_recommendation_payload(string $assistant_type, stri
         } elseif(
             fcc_ai_contains_keywords($message, ['želim smršaviti ali ne ide', 'zelim smrsaviti ali ne ide', 'želim smršaviti i ne ide', 'zelim smrsaviti i ne ide'])
             || in_array(trim(mb_strtolower($message)), ['želim smršaviti', 'zelim smrsaviti', 'želim skinuti kile', 'zelim skinuti kile', 'skinuti kile'], true)
+            || (
+                fcc_ai_contains_keywords($message, ['mršav', 'mrsav', 'smrš', 'smrs', 'skinuti kile'])
+                && fcc_ai_contains_keywords($message, ['bez odricanja hrane', 'bez odricanja', 'jesti normalno', 'jesti sve', 'bez dijete'])
+            )
         ) {
             $opening_note = $language === 'en'
                 ? 'When weight loss is stuck, the bottleneck can be different, so I would first check whether this is more about appetite, metabolism, or digestion.'
@@ -15476,6 +15480,8 @@ function fcc_ai_build_public_recommendation_payload(string $assistant_type, stri
         $support_products = [];
         $monthly_quantity_note = '';
         $knowledge_suggestions = [];
+        $condition_matches = [];
+        $theme_matches = [];
         $combination_note = '';
         $discount_note = '';
         $needs_clarification = true;
