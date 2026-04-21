@@ -1007,7 +1007,7 @@ return [
 	'admin_settings.vip_funnel.show_sidebar_entry_when_locked' => 'Prikaži sidebar ulaz dok je zaključan',
 	'admin_settings.vip_funnel.show_sidebar_entry_when_locked_help' => 'Drži link u sidebaru vidljivim čak i kada korisnik još nema pristup.',
 	'admin_settings.vip_funnel.pilot_allowed_user_ids' => 'User ID-jevi za pilot allowlist',
-	'admin_settings.vip_funnel.pilot_allowed_user_ids_help' => 'User ID-jevi odvojeni zarezom koji odmah dobivaju pristup tijekom pilota. Poštuje se i postojeći FCC gate-exempt preference flag.',
+	'admin_settings.vip_funnel.pilot_allowed_user_ids_help' => 'User ID-jevi odvojeni zarezom koji odmah dobivaju pristup tijekom pilota.',
 	'admin_settings.vip_funnel.default_demo_days' => 'Zadano trajanje sandbox dema',
 	'admin_settings.vip_funnel.default_demo_days_help' => 'Koliko dana bi budući VIP demo account trebao trajati po zadanom.',
 	'admin_settings.vip_funnel.demo_request_requires_approval' => 'Zahtijevaj ručno odobrenje demo pristupa',

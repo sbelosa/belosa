@@ -2632,7 +2632,7 @@ return [
     'admin_settings.vip_funnel.show_sidebar_entry_when_locked' => 'Show sidebar entry while locked',
     'admin_settings.vip_funnel.show_sidebar_entry_when_locked_help' => 'Keeps the sidebar link visible even when the user does not have access yet.',
     'admin_settings.vip_funnel.pilot_allowed_user_ids' => 'Pilot allowlist user IDs',
-    'admin_settings.vip_funnel.pilot_allowed_user_ids_help' => 'Comma-separated user IDs with immediate access during pilot testing. Legacy FCC gate-exempt preferences are also respected.',
+    'admin_settings.vip_funnel.pilot_allowed_user_ids_help' => 'Comma-separated user IDs with immediate access during pilot testing.',
     'admin_settings.vip_funnel.default_demo_days' => 'Default sandbox demo length',
     'admin_settings.vip_funnel.default_demo_days_help' => 'How many days the future VIP demo account should last by default.',
     'admin_settings.vip_funnel.demo_request_requires_approval' => 'Require manual demo approval',

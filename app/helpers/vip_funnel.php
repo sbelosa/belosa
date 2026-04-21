@@ -119,14 +119,13 @@ function vip_funnel_user_is_gate_exempt($user = null): bool {
     }
 
     $preferences = vip_funnel_get_user_preferences($user);
+    $meta = vip_funnel_normalize_object($preferences->meta ?? []);
 
-    if(!empty($preferences->fcc_core_gate_exempt)) {
+    if(!empty($preferences->vip_funnel_gate_exempt) || !empty($meta->vip_funnel_gate_exempt)) {
         return true;
     }
 
-    $meta = vip_funnel_normalize_object($preferences->meta ?? []);
-
-    return !empty($meta->fcc_core_gate_exempt);
+    return false;
 }
 
 function vip_funnel_user_can_publish_public_hub($user = null): bool {
