@@ -20,6 +20,63 @@ defined('ALTUMCODE') || die();
 
 class Sitemap extends Controller {
 
+    private function build_localized_public_url(string $path = '', ?string $language = null): string {
+        $path = ltrim(trim($path), '/');
+        $language = fc_resolve_language_name($language);
+        $default_language = settings()->main->default_language;
+
+        if($language && $language !== $default_language && isset(\Altum\Language::$active_languages[$language])) {
+            return SITE_URL . \Altum\Language::$active_languages[$language] . '/' . $path;
+        }
+
+        return SITE_URL . $path;
+    }
+
+    private function build_localized_internal_page_url(string $slug, ?string $language = null): string {
+        $slug = ltrim(trim((string) $slug), '/');
+
+        if($slug === '') {
+            return SITE_URL;
+        }
+
+        $route_segment = fc_internal_page_uses_pages_route($slug) ? 'pages' : 'page';
+
+        return $this->build_localized_public_url($route_segment . '/' . $slug, $language);
+    }
+
+    private function add_sitemap_url(array &$sitemap_urls, string $loc, ?string $lastmod = null): void {
+        $loc = trim($loc);
+
+        if($loc === '') {
+            return;
+        }
+
+        if(!isset($sitemap_urls[$loc])) {
+            $sitemap_urls[$loc] = [
+                'loc' => $loc,
+                'lastmod' => $lastmod,
+            ];
+
+            return;
+        }
+
+        if(!$sitemap_urls[$loc]['lastmod'] && $lastmod) {
+            $sitemap_urls[$loc]['lastmod'] = $lastmod;
+
+            return;
+        }
+
+        if($lastmod && $sitemap_urls[$loc]['lastmod'] && strtotime((string) $lastmod) > strtotime((string) $sitemap_urls[$loc]['lastmod'])) {
+            $sitemap_urls[$loc]['lastmod'] = $lastmod;
+        }
+    }
+
+    private function add_localized_sitemap_route(array &$sitemap_urls, string $path = '', ?string $lastmod = null): void {
+        foreach(\Altum\Language::$active_languages as $language_name => $language_code) {
+            $this->add_sitemap_url($sitemap_urls, $this->build_localized_public_url($path, $language_name), $lastmod);
+        }
+    }
+
     public function index() {
 
         /* Set the header as xml so the browser can read it properly */
@@ -35,72 +92,50 @@ class Sitemap extends Controller {
         /* Set the header as xml so the browser can read it properly */
         header('Content-Type: text/xml');
 
-        $sitemap_urls = [
-            ['loc' => SITE_URL, 'lastmod' => null],
-            ['loc' => SITE_URL . 'login', 'lastmod' => null],
-            ['loc' => SITE_URL . 'lost-password', 'lastmod' => null],
-            ['loc' => SITE_URL . 'llms.txt', 'lastmod' => null],
-        ];
+        $sitemap_urls = [];
 
-        if(settings()->users->email_confirmation) {
-            $sitemap_urls[] = ['loc' => SITE_URL . 'resend-activation', 'lastmod' => null];
-        }
-
-        if(settings()->users->register_is_enabled) {
-            $sitemap_urls[] = ['loc' => SITE_URL . 'register', 'lastmod' => null];
-        }
+        /* Keep only public, canonical routes in the main sitemap. */
+        $this->add_localized_sitemap_route($sitemap_urls);
+        $this->add_sitemap_url($sitemap_urls, SITE_URL . 'llms.txt');
 
         if(\Altum\Plugin::is_active('affiliate') && settings()->affiliate->is_enabled) {
-            $sitemap_urls[] = ['loc' => SITE_URL . 'affiliate', 'lastmod' => null];
+            $this->add_localized_sitemap_route($sitemap_urls, 'affiliate');
         }
 
         if(settings()->main->api_is_enabled) {
-            $sitemap_urls[] = ['loc' => SITE_URL . 'api-documentation', 'lastmod' => null];
+            $this->add_localized_sitemap_route($sitemap_urls, 'api-documentation');
         }
 
         if(settings()->email_notifications->contact && !empty(settings()->email_notifications->emails)) {
-            $sitemap_urls[] = ['loc' => SITE_URL . 'contact', 'lastmod' => null];
+            $this->add_localized_sitemap_route($sitemap_urls, 'contact');
         }
 
         if(settings()->payment->is_enabled) {
-            $sitemap_urls[] = ['loc' => SITE_URL . 'plan', 'lastmod' => null];
+            $this->add_localized_sitemap_route($sitemap_urls, 'plan');
         }
 
         if(settings()->content->pages_is_enabled) {
-            $sitemap_urls[] = ['loc' => SITE_URL . 'pages', 'lastmod' => null];
+            $this->add_localized_sitemap_route($sitemap_urls, 'pages');
         }
 
         if(settings()->content->blog_is_enabled) {
-            $sitemap_urls[] = ['loc' => SITE_URL . 'blog', 'lastmod' => null];
+            $this->add_localized_sitemap_route($sitemap_urls, 'blog');
         }
 
         if(settings()->links->directory_is_enabled && settings()->links->directory_access == 'everyone') {
-            $sitemap_urls[] = ['loc' => SITE_URL . 'directory', 'lastmod' => null];
+            $this->add_localized_sitemap_route($sitemap_urls, 'directory');
         }
 
         if(settings()->links->biolinks_is_enabled) {
-            $sitemap_urls[] = ['loc' => SITE_URL . 'featured-apps', 'lastmod' => null];
-            $sitemap_urls[] = ['loc' => SITE_URL . 'recommended-sponsors', 'lastmod' => null];
+            $this->add_localized_sitemap_route($sitemap_urls, 'featured-apps');
+            $this->add_localized_sitemap_route($sitemap_urls, 'recommended-sponsors');
         }
 
         if(settings()->tools->is_enabled && settings()->tools->access == 'everyone') {
             foreach ((require APP_PATH . 'includes/tools/tools.php') as $key => $value) {
                 if(settings()->tools->available_tools->{$key}) {
-                    $sitemap_urls[] = ['loc' => SITE_URL . 'tools/' . str_replace('_', '-', $key), 'lastmod' => null];
+                    $this->add_localized_sitemap_route($sitemap_urls, 'tools/' . str_replace('_', '-', $key));
                 }
-            }
-        }
-
-        /* Multilingual */
-        $new_sitemap_urls = [];
-
-        foreach(\Altum\Language::$active_languages as $language_name => $language_code) {
-            foreach($sitemap_urls as $entry) {
-                $relative_url = str_replace(SITE_URL, '', $entry['loc']);
-                $new_sitemap_urls[] = [
-                    'loc' => settings()->main->default_language == $language_name ? SITE_URL . $relative_url : SITE_URL . $language_code . '/' . $relative_url,
-                    'lastmod' => $entry['lastmod'],
-                ];
             }
         }
 
@@ -109,36 +144,44 @@ class Sitemap extends Controller {
             $pages_categories = db()->get('pages_categories', null, ['url', 'language']);
 
             foreach ($pages as $page) {
-                $new_sitemap_urls[] = [
-                    'loc' => fc_get_internal_page_url($page->url, $page->language),
-                    'lastmod' => $page->last_datetime ?? $page->datetime ?? null,
-                ];
+                $this->add_sitemap_url(
+                    $sitemap_urls,
+                    $this->build_localized_internal_page_url((string) $page->url, $page->language),
+                    $page->last_datetime ?? $page->datetime ?? null
+                );
             }
 
             foreach ($pages_categories as $pages_category) {
-                $new_sitemap_urls[] = [
-                    'loc' => SITE_URL . ($pages_category->language ? \Altum\Language::$active_languages[$pages_category->language] . '/' : '') . 'pages/' . $pages_category->url,
-                    'lastmod' => null,
-                ];
+                $this->add_sitemap_url(
+                    $sitemap_urls,
+                    $this->build_localized_public_url('pages/' . (string) $pages_category->url, $pages_category->language)
+                );
             }
         }
 
         if(settings()->content->blog_is_enabled) {
             $blog_posts = db()->where('is_published', 1)->get('blog_posts', null, ['url', 'language', 'last_datetime', 'datetime']);
-            $blog_posts_categories = db()->get('blog_posts_categories', null, ['url', 'language']);
+            $blog_posts_categories = db()->get('blog_posts_categories', null, ['blog_posts_category_id', 'title', 'url', 'language']);
 
             foreach ($blog_posts as $blog_post) {
-                $new_sitemap_urls[] = [
-                    'loc' => SITE_URL . ($blog_post->language ? \Altum\Language::$active_languages[$blog_post->language] . '/' : '') . 'blog/' . $blog_post->url,
-                    'lastmod' => $blog_post->last_datetime ?? $blog_post->datetime ?? null,
-                ];
+                $this->add_sitemap_url(
+                    $sitemap_urls,
+                    $this->build_localized_public_url('blog/' . (string) $blog_post->url, $blog_post->language),
+                    $blog_post->last_datetime ?? $blog_post->datetime ?? null
+                );
             }
 
             foreach ($blog_posts_categories as $blog_posts_category) {
-                $new_sitemap_urls[] = [
-                    'loc' => SITE_URL . ($blog_posts_category->language ? \Altum\Language::$active_languages[$blog_posts_category->language] . '/' : '') . 'blog/category/' . $blog_posts_category->url,
-                    'lastmod' => null,
-                ];
+                $category_indexing_bundle = fc_build_blog_category_indexing_bundle($blog_posts_category);
+
+                if(!$category_indexing_bundle['should_index']) {
+                    continue;
+                }
+
+                $this->add_sitemap_url(
+                    $sitemap_urls,
+                    $this->build_localized_public_url('blog/category/' . (string) $blog_posts_category->url, $blog_posts_category->language)
+                );
             }
         }
 
@@ -156,10 +199,11 @@ class Sitemap extends Controller {
                 foreach(\Altum\Language::$active_languages as $language_name => $language_code) {
                     $prefix = settings()->main->default_language == $language_name ? '' : $language_code . '/';
 
-                    $new_sitemap_urls[] = [
-                        'loc' => SITE_URL . $prefix . 'recommended-sponsors/' . $sponsor['profile_slug'],
-                        'lastmod' => $sponsor['link_lastmod'] ?? null,
-                    ];
+                    $this->add_sitemap_url(
+                        $sitemap_urls,
+                        SITE_URL . $prefix . 'recommended-sponsors/' . $sponsor['profile_slug'],
+                        $sponsor['link_lastmod'] ?? null
+                    );
                 }
             }
         }
@@ -167,7 +211,7 @@ class Sitemap extends Controller {
 
         /* Main View */
         $data = [
-            'sitemap_urls' => $new_sitemap_urls,
+            'sitemap_urls' => array_values($sitemap_urls),
         ];
 
         $view = new \Altum\View('sitemap/sitemap_main', (array) $this);
