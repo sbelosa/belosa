@@ -21,8 +21,33 @@ function fc_get_los_fraud_summary_retention_days(): int {
 /* /Custom code: FC-2026-04-01 */
 
 /* Custom code: FC-2026-03-19: schema helpers for reusable mail analytics */
+function fc_table_exists(string $table): bool {
+    static $cache = [];
+
+    if(isset($cache[$table]) && $cache[$table] === true) {
+        return $cache[$table];
+    }
+
+    $table_sql = database()->real_escape_string($table);
+    $result = database()->query("SHOW TABLES LIKE '{$table_sql}'");
+
+    $exists = (bool) ($result && $result->num_rows);
+
+    if($exists) {
+        $cache[$table] = true;
+    } else {
+        unset($cache[$table]);
+    }
+
+    return $exists;
+}
+
 function fc_table_has_column(string $table, string $column): bool {
     static $cache = [];
+
+    if(!fc_table_exists($table)) {
+        return false;
+    }
 
     if(!isset($cache[$table])) {
         $columns = db()->rawQuery("SHOW COLUMNS FROM `{$table}`") ?? [];
@@ -44,6 +69,10 @@ function fc_table_has_column(string $table, string $column): bool {
 }
 
 function fc_add_table_column_if_missing(string $table, string $column, string $definition): void {
+    if(!fc_table_exists($table)) {
+        return;
+    }
+
     if(fc_table_has_column($table, $column)) {
         return;
     }

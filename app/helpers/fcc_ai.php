@@ -964,6 +964,57 @@ function fcc_ai_prepare_biolink_additional_for_storage(array $additional, int $t
     $normalized = fcc_ai_compact_biolink_additional_payload($additional, true);
     $encoded = empty($normalized) ? null : json_encode($normalized);
 
+    if($encoded === null || strlen($encoded) <= $target_bytes) {
+        return $encoded;
+    }
+
+    if(!empty($normalized['fcc_ai_evolution_memory']) && is_array($normalized['fcc_ai_evolution_memory'])) {
+        $normalized['fcc_ai_evolution_memory'] = array_map(static function($cycle) {
+            $cycle = fcc_ai_to_array($cycle);
+
+            if(isset($cycle['block_attribution_before']) && is_array($cycle['block_attribution_before'])) {
+                unset($cycle['block_attribution_before']['all_blocks']);
+            }
+
+            if(isset($cycle['evaluation_7d']['block_summary']['current_top_blocks'])) {
+                $cycle['evaluation_7d']['block_summary']['current_top_blocks'] = array_slice((array) $cycle['evaluation_7d']['block_summary']['current_top_blocks'], 0, 1);
+            }
+
+            if(isset($cycle['evaluation_30d']['block_summary']['current_top_blocks'])) {
+                $cycle['evaluation_30d']['block_summary']['current_top_blocks'] = array_slice((array) $cycle['evaluation_30d']['block_summary']['current_top_blocks'], 0, 1);
+            }
+
+            return $cycle;
+        }, array_slice($normalized['fcc_ai_evolution_memory'], 0, 2));
+    }
+
+    foreach([
+        'fcc_ai_missing_block_recommendations' => 2,
+        'fcc_ai_final_block_plan' => 8,
+        'fcc_ai_ideal_block_order' => 4,
+        'fcc_ai_layout_actions' => 2,
+        'fcc_ai_copy_suggestions' => 2,
+        'fcc_ai_block_patch_pack' => 1,
+    ] as $key => $limit) {
+        if(isset($normalized[$key]) && is_array($normalized[$key])) {
+            $normalized[$key] = array_values(array_slice($normalized[$key], 0, $limit));
+        }
+    }
+
+    $encoded = empty($normalized) ? null : json_encode($normalized);
+
+    if($encoded === null || strlen($encoded) <= $target_bytes) {
+        return $encoded;
+    }
+
+    unset(
+        $normalized['fcc_ai_evolution_memory'],
+        $normalized['fcc_ai_copy_suggestions'],
+        $normalized['fcc_ai_block_patch_pack']
+    );
+
+    $encoded = empty($normalized) ? null : json_encode($normalized);
+
     return $encoded;
 }
 

@@ -3371,6 +3371,162 @@ function vip_funnel_ensure_runtime_schema(): void {
 
     $done = true;
 
+    database()->query("
+        CREATE TABLE IF NOT EXISTS `vip_funnels` (
+            `vip_funnel_id` bigint unsigned NOT NULL AUTO_INCREMENT,
+            `user_id` int unsigned NOT NULL,
+            `name` varchar(120) NOT NULL,
+            `slug` varchar(160) NOT NULL,
+            `status` varchar(32) NOT NULL DEFAULT 'draft',
+            `visibility_mode` varchar(32) NOT NULL DEFAULT 'testing_locked',
+            `owner_mode` varchar(32) NOT NULL DEFAULT 'shared',
+            `settings` longtext NULL,
+            `datetime` datetime NOT NULL,
+            `last_datetime` datetime DEFAULT NULL,
+            PRIMARY KEY (`vip_funnel_id`),
+            KEY `user_id` (`user_id`),
+            KEY `slug` (`slug`),
+            KEY `status` (`status`)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+    ");
+
+    database()->query("
+        CREATE TABLE IF NOT EXISTS `vip_funnel_paths` (
+            `vip_funnel_path_id` bigint unsigned NOT NULL AUTO_INCREMENT,
+            `vip_funnel_id` bigint unsigned NOT NULL,
+            `path_key` varchar(64) NOT NULL,
+            `title` varchar(120) NOT NULL,
+            `description` varchar(240) NOT NULL DEFAULT '',
+            `sort_order` int unsigned NOT NULL DEFAULT 1,
+            `is_enabled` tinyint(1) NOT NULL DEFAULT 1,
+            PRIMARY KEY (`vip_funnel_path_id`),
+            KEY `vip_funnel_id` (`vip_funnel_id`),
+            KEY `path_key` (`path_key`)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+    ");
+
+    database()->query("
+        CREATE TABLE IF NOT EXISTS `vip_funnel_cards` (
+            `vip_funnel_card_id` bigint unsigned NOT NULL AUTO_INCREMENT,
+            `vip_funnel_id` bigint unsigned NOT NULL,
+            `vip_funnel_path_id` bigint unsigned DEFAULT NULL,
+            `phase_key` varchar(64) NOT NULL,
+            `row_key` varchar(64) NOT NULL DEFAULT '',
+            `card_type` varchar(64) NOT NULL DEFAULT 'offer',
+            `title` varchar(120) NOT NULL,
+            `settings` longtext NULL,
+            `sort_order` int unsigned NOT NULL DEFAULT 1,
+            `is_enabled` tinyint(1) NOT NULL DEFAULT 1,
+            PRIMARY KEY (`vip_funnel_card_id`),
+            KEY `vip_funnel_id` (`vip_funnel_id`),
+            KEY `vip_funnel_path_id` (`vip_funnel_path_id`),
+            KEY `phase_key` (`phase_key`)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+    ");
+
+    database()->query("
+        CREATE TABLE IF NOT EXISTS `vip_funnel_edges` (
+            `vip_funnel_edge_id` bigint unsigned NOT NULL AUTO_INCREMENT,
+            `vip_funnel_id` bigint unsigned NOT NULL,
+            `from_card_id` bigint unsigned NOT NULL,
+            `to_card_id` bigint unsigned NOT NULL,
+            `edge_type` varchar(64) NOT NULL DEFAULT 'default',
+            `condition_key` varchar(64) NOT NULL DEFAULT '',
+            `condition_value` varchar(160) NOT NULL DEFAULT '',
+            PRIMARY KEY (`vip_funnel_edge_id`),
+            KEY `vip_funnel_id` (`vip_funnel_id`),
+            KEY `from_card_id` (`from_card_id`),
+            KEY `to_card_id` (`to_card_id`)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+    ");
+
+    database()->query("
+        CREATE TABLE IF NOT EXISTS `vip_leads` (
+            `vip_lead_id` bigint unsigned NOT NULL AUTO_INCREMENT,
+            `user_id` int unsigned NOT NULL DEFAULT 0,
+            `owner_user_id` int unsigned NULL DEFAULT NULL,
+            `vip_funnel_id` bigint unsigned NULL DEFAULT NULL,
+            `source_step_key` varchar(128) NULL DEFAULT NULL,
+            `selection_value` varchar(160) NULL DEFAULT NULL,
+            `visitor_key` varchar(64) NULL DEFAULT NULL,
+            `lead_name` varchar(160) NULL DEFAULT NULL,
+            `full_name` varchar(160) NULL DEFAULT NULL,
+            `lead_email` varchar(320) NULL DEFAULT NULL,
+            `lead_phone` varchar(64) NULL DEFAULT NULL,
+            `source` varchar(64) NOT NULL DEFAULT 'manual_pilot',
+            `interest_type` varchar(64) NOT NULL DEFAULT 'demo',
+            `business_readiness` varchar(64) NOT NULL DEFAULT '',
+            `product_goal` varchar(120) NOT NULL DEFAULT '',
+            `demo_status` varchar(32) NOT NULL DEFAULT 'requested',
+            `payload` longtext NULL,
+            `datetime` datetime NOT NULL,
+            `last_datetime` datetime NULL DEFAULT NULL,
+            PRIMARY KEY (`vip_lead_id`),
+            KEY `idx_vip_leads_user_id` (`user_id`),
+            KEY `idx_vip_leads_owner_user_id` (`owner_user_id`),
+            KEY `idx_vip_leads_vip_funnel_id` (`vip_funnel_id`),
+            KEY `idx_vip_leads_demo_status` (`demo_status`),
+            KEY `idx_vip_leads_interest_type` (`interest_type`)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+    ");
+
+    database()->query("
+        CREATE TABLE IF NOT EXISTS `vip_demo_accounts` (
+            `vip_demo_account_id` bigint unsigned NOT NULL AUTO_INCREMENT,
+            `vip_lead_id` bigint unsigned NOT NULL,
+            `demo_user_id` int unsigned NULL DEFAULT NULL,
+            `owner_user_id` int unsigned NULL DEFAULT NULL,
+            `status` varchar(32) NOT NULL DEFAULT 'requested',
+            `expires_at` datetime NULL DEFAULT NULL,
+            `approved_at` datetime NULL DEFAULT NULL,
+            `approved_by_user_id` int unsigned NULL DEFAULT NULL,
+            `settings` longtext NULL,
+            `datetime` datetime NOT NULL,
+            `last_datetime` datetime NULL DEFAULT NULL,
+            PRIMARY KEY (`vip_demo_account_id`),
+            KEY `idx_vip_demo_accounts_vip_lead_id` (`vip_lead_id`),
+            KEY `idx_vip_demo_accounts_owner_user_id` (`owner_user_id`),
+            KEY `idx_vip_demo_accounts_status` (`status`),
+            KEY `idx_vip_demo_accounts_expires_at` (`expires_at`)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+    ");
+
+    database()->query("
+        CREATE TABLE IF NOT EXISTS `vip_demo_events` (
+            `vip_demo_event_id` bigint unsigned NOT NULL AUTO_INCREMENT,
+            `vip_demo_account_id` bigint unsigned NOT NULL,
+            `actor_user_id` int unsigned NULL DEFAULT NULL,
+            `event_key` varchar(64) NOT NULL,
+            `payload` longtext NULL,
+            `datetime` datetime NOT NULL,
+            PRIMARY KEY (`vip_demo_event_id`),
+            KEY `idx_vip_demo_events_account_id` (`vip_demo_account_id`),
+            KEY `idx_vip_demo_events_actor_user_id` (`actor_user_id`),
+            KEY `idx_vip_demo_events_event_key` (`event_key`)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+    ");
+
+    database()->query("
+        CREATE TABLE IF NOT EXISTS `vip_funnel_runs` (
+            `vip_funnel_run_id` bigint unsigned NOT NULL AUTO_INCREMENT,
+            `vip_funnel_id` bigint unsigned NOT NULL,
+            `vip_lead_id` bigint unsigned DEFAULT NULL,
+            `source` varchar(64) NOT NULL DEFAULT 'manual',
+            `current_card_id` bigint unsigned DEFAULT NULL,
+            `current_step_key` varchar(128) DEFAULT NULL,
+            `status` varchar(32) NOT NULL DEFAULT 'open',
+            `visitor_key` varchar(64) DEFAULT NULL,
+            `variant_key` varchar(8) DEFAULT NULL,
+            `payload` longtext NULL,
+            `datetime` datetime NOT NULL,
+            `last_datetime` datetime DEFAULT NULL,
+            PRIMARY KEY (`vip_funnel_run_id`),
+            KEY `vip_funnel_id` (`vip_funnel_id`),
+            KEY `vip_lead_id` (`vip_lead_id`),
+            KEY `status` (`status`)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+    ");
+
     if(function_exists('fc_add_table_column_if_missing')) {
         fc_add_table_column_if_missing('vip_funnel_runs', 'visitor_key', "`visitor_key` varchar(64) NULL AFTER `status`");
         fc_add_table_column_if_missing('vip_funnel_runs', 'variant_key', "`variant_key` varchar(8) NULL AFTER `visitor_key`");
@@ -4974,16 +5130,14 @@ function vip_funnel_get_public_hub_render_data(int $user_id = 0, $block_settings
 }
 
 function vip_funnel_has_table(string $table): bool {
-    static $cache = [];
-
-    if(isset($cache[$table])) {
-        return $cache[$table];
+    if(function_exists('fc_table_exists')) {
+        return fc_table_exists($table);
     }
 
     $table_sql = database()->real_escape_string($table);
     $result = database()->query("SHOW TABLES LIKE '{$table_sql}'");
 
-    return $cache[$table] = (bool) ($result && $result->num_rows);
+    return (bool) ($result && $result->num_rows);
 }
 
 function vip_funnel_get_public_qualification_signal_map(string $period_start_datetime = '', string $period_end_datetime = ''): array {
