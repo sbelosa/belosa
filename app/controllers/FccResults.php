@@ -236,6 +236,26 @@ class FccResults extends Controller {
                 $rank++;
             }
 
+            usort($leaderboard, static function(array $a, array $b): int {
+                $qualified_compare = ((int) ($b['qualified_clicks'] ?? 0)) <=> ((int) ($a['qualified_clicks'] ?? 0));
+                if($qualified_compare !== 0) {
+                    return $qualified_compare;
+                }
+
+                $visits_compare = ((int) ($b['biolink_visits'] ?? 0)) <=> ((int) ($a['biolink_visits'] ?? 0));
+                if($visits_compare !== 0) {
+                    return $visits_compare;
+                }
+
+                return strcasecmp((string) ($a['name'] ?? ''), (string) ($b['name'] ?? ''));
+            });
+
+            foreach($leaderboard as $index => &$entry) {
+                $entry['rank'] = $index + 1;
+                $entry['is_top_three'] = $index < 3;
+            }
+            unset($entry);
+
             $current_user_totals_result = database()->query("SELECT
                 SUM(CASE WHEN {$qualified_click_condition_sql} AND `track_links`.`is_unique` = 1 THEN 1 ELSE 0 END) AS `qualified_clicks`,
                 SUM(CASE WHEN `biolinks_blocks`.`type` IN ({$forever_shop_block_types_sql}) AND `track_links`.`is_unique` = 1 THEN 1 ELSE 0 END) AS `app_clicks`,
