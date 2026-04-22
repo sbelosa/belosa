@@ -6398,7 +6398,9 @@ function fcc_ai_is_public_condition_usage_followup_request(string $message): boo
         'upute', 'uputu', 'način primjene', 'nacin primjene', 'kako piti', 'kako pit',
         'kako biti', 'kako bit',
         'kako se pije', 'kako se uzima', 'kako koristiti', 'raspored', 'u svakodnevnici',
-        'dnevni raspored', 'doziranje', 'koliko puta dnevno', 'how to use', 'how to take',
+        'dnevni raspored', 'doziranje', 'koliko puta dnevno', 'točne količine', 'tocne kolicine',
+        'količine kroz dan', 'kolicine kroz dan', '30 dana', 'mjesec dana', 'za mjesec dana',
+        'how to use', 'how to take',
     ]);
 }
 
@@ -6968,6 +6970,14 @@ function fcc_ai_get_public_guarded_request_type(string $message, array $intent =
 
     if(fcc_ai_is_public_cure_claim_generic_request($message)) {
         return 'cure_claim_generic_request';
+    }
+
+    if(fcc_ai_contains_keywords($message, [
+        'prestati pušiti', 'prestati pusiti', 'prestanak pušenja', 'prestanak pusenja',
+        'odvikavanje od pušenja', 'odvikavanje od pusenja', 'quit smoking', 'stop smoking',
+        'prenehal kadit', 'prenehati kaditi', 'prenehat kadit', 'prestat kadit', 'da bi prenehal kadit',
+    ])) {
+        return 'smoking_cessation_request';
     }
 
     if(fcc_ai_is_public_monetization_request($message)) {
@@ -12109,7 +12119,7 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
             'lock_product_scope' => true,
         ],
         'varicose_veins_support' => [
-            'patterns' => ['proširene vene', 'prosirene vene', 'varikozne vene', 'težina u nogama', 'tezina u nogama', 'oticanje nogu', 'oticanje nogu', 'sklonost trombozi', 'loša cirkulacija', 'losa cirkulacija', 'imam lošu cirkulaciju', 'imam losu cirkulaciju', 'slaba cirkulacija', 'slaba mi je cirkulacija', 'natečene noge', 'natecene noge', 'noge su mi natečene', 'noge su mi natecene', 'otekle noge', 'noge su mi otečene', 'noge su mi otecene'],
+            'patterns' => ['proširene vene', 'prosirene vene', 'proširenih vena', 'prosirenih vena', 'varikozne vene', 'težina u nogama', 'tezina u nogama', 'oticanje nogu', 'oticanje nogu', 'sklonost trombozi', 'loša cirkulacija', 'losa cirkulacija', 'imam lošu cirkulaciju', 'imam losu cirkulaciju', 'slaba cirkulacija', 'slaba mi je cirkulacija', 'natečene noge', 'natecene noge', 'noge su mi natečene', 'noge su mi natecene', 'otekle noge', 'noge su mi otečene', 'noge su mi otecene'],
             'preferred_patterns' => ['aloe vera gel', 'aloe gel', 'arctic sea', 'argi', 'argi+'],
             'primary_product' => 'Forever Aloe Vera Gel™',
             'support_products' => ['Forever Arctic Sea', 'Forever ARGI+'],
@@ -15117,6 +15127,8 @@ function fcc_ai_build_public_recommendation_payload(string $assistant_type, stri
         $knowledge_suggestions = [];
         $discount_note = '';
         $combination_note = '';
+        $force_local_reply = true;
+        $skip_product_tail = true;
     }
 
     if($condition_explanation_followup && $assistant_type === 'product_advisor') {
@@ -16498,6 +16510,16 @@ function fcc_ai_get_public_product_usage_note(array $knowledge_suggestions, stri
 }
 
 function fcc_ai_has_high_risk_public_medical_context(string $message): bool {
+    if(
+        (
+            fcc_ai_contains_keywords($message, ['prsima', 'prsih', 'prsi', 'chest'])
+            || fcc_ai_contains_keywords($message, ['u prsima', 'v prsih', 'chest pain'])
+        )
+        && fcc_ai_contains_keywords($message, ['bol', 'bole', 'boleč', 'pain', 'tiščanje', 'tiscanje', 'stezanje', 'zatezanje', 'shortness of breath', 'zadihan'])
+    ) {
+        return true;
+    }
+
     return fcc_ai_contains_keywords($message, [
         'karcinom', 'karcinoma', 'rak', 'kemoterap', 'transplant', 'transplat',
         'moždani udar', 'mozdani udar', 'moždanog udara', 'mozdanog udara', 'mozganski kap',
@@ -17579,6 +17601,16 @@ function fcc_ai_detect_public_intent(string $assistant_type, string $message): a
         ]);
 
         if(
+            (
+                fcc_ai_contains_keywords($message, ['prsima', 'prsih', 'prsi', 'chest'])
+                || fcc_ai_contains_keywords($message, ['u prsima', 'v prsih', 'chest pain'])
+            )
+            && fcc_ai_contains_keywords($message, ['bol', 'bole', 'boleč', 'pain', 'tiščanje', 'tiscanje', 'stezanje', 'zadihan'])
+        ) {
+            $serious = true;
+        }
+
+        if(
             fcc_ai_contains_keywords($message, ['dijabet'])
             && fcc_ai_contains_keywords($message, ['štitn', 'stitn'])
         ) {
@@ -18069,6 +18101,16 @@ function fcc_ai_generate_public_reply(string $assistant_type, string $message, a
     $owner_help_followup_request = $assistant_type === 'product_advisor' && fcc_ai_is_public_owner_help_followup_request($message);
     $condition_explanation_followup = $assistant_type === 'product_advisor' && !empty($context['condition_explanation_followup']);
     $follow_up_anchor_message = trim((string) ($context['follow_up_anchor_message'] ?? ''));
+    $recent_user_context = trim((string) ($context['recent_user_context'] ?? ''));
+    $condition_usage_followup = $assistant_type === 'product_advisor'
+        && (
+            !empty($context['condition_usage_followup'])
+            || (
+                fcc_ai_is_public_condition_usage_followup_request($message)
+                && $follow_up_anchor_message !== ''
+                && fcc_ai_contains_keywords($follow_up_anchor_message, ['freedom', 'freedom®', 'active ha', 'activ ha', 'aloe turm'])
+            )
+        );
     $is_direct_cure_claim_question = $assistant_type === 'product_advisor'
         && fcc_ai_contains_keywords($message, ['izliječ', 'izlijec', 'liječi', 'lijeci', 'cure', 'heals'])
         && !empty($intent['medical_sensitive']);
@@ -18078,15 +18120,64 @@ function fcc_ai_generate_public_reply(string $assistant_type, string $message, a
     $is_generic_start_product_request = $assistant_type === 'product_advisor'
         && fcc_ai_contains_keywords($message, ['najbolji proizvod za početak', 'najbolji proizvod za pocetak', 'best product to start', 'best product for the start', 'best product for a start']);
     $guarded_request_type = trim((string) ($context['guarded_request_type'] ?? ($intent['guarded_request_type'] ?? '')));
+    $joint_quantity_context_source = trim($follow_up_anchor_message . "\n" . $recent_user_context);
+    $is_joint_quantity_declaration_followup = $assistant_type === 'product_advisor'
+        && fcc_ai_is_public_condition_usage_followup_request($message)
+        && $joint_quantity_context_source !== ''
+        && fcc_ai_contains_keywords($joint_quantity_context_source, ['freedom', 'freedom®'])
+        && fcc_ai_contains_keywords($joint_quantity_context_source, ['active ha', 'activ ha']);
 
     if($skip_product_tail) {
         $knowledge_suggestions = [];
     }
 
+    if($is_joint_quantity_declaration_followup) {
+        $recommendation_payload['primary_product'] = 'Forever Freedom®';
+        $recommendation_payload['support_products'] = ['Forever Active HA'];
+        $recommendation_payload['recommendation_lines'] = $language === 'en'
+            ? [
+                'Forever Freedom® stays the main daily routine anchor here.',
+                'Forever Active HA stays next to it as the support step in the same joint routine.',
+            ]
+            : ($language === 'sl'
+                ? [
+                    'Forever Freedom® tukaj ostane glavni dnevni nosilec rutine.',
+                    'Forever Active HA ostane ob njem kot podporni korak v isti rutini za sklepe.',
+                ]
+                : [
+                    'Forever Freedom® ovdje ostaje glavni dnevni nosilac rutine.',
+                    'Forever Active HA ostaje uz njega kao support korak unutar iste rutine za zglobove.',
+                ]);
+        $recommendation_payload['monthly_quantity_note'] = '';
+        $recommendation_payload['skip_product_tail'] = true;
+        $recommendation_payload['force_local_reply'] = true;
+
+        $content_blocks[] = $language === 'en'
+            ? 'For exact daily quantities and the 30-day total, the final source should still be the declaration on your specific pack, because servings can vary by version and market.'
+            : ($language === 'sl'
+                ? 'Za točne dnevne količine in 30-dnevni seštevek naj bo zadnji vir še vedno deklaracija na vašem točnem pakiranju, ker se porcije lahko razlikujejo po verziji in trgu.'
+                : 'Za točne dnevne količine i obračun za 30 dana zadnji izvor ipak treba biti deklaracija na vašem točnom pakiranju, jer se porcije mogu razlikovati po verziji i tržištu.');
+
+        $content_blocks[] = $language === 'en'
+            ? "For now, keep it this way:\n- Forever Freedom® as the main daily routine anchor\n- Forever Active HA as the support step in the same routine\n- once you send the declaration, I can turn it into an exact morning / noon / evening 30-day plan"
+            : ($language === 'sl'
+                ? "Za zdaj ostanite pri tem:\n- Forever Freedom® kot glavni dnevni nosilec rutine\n- Forever Active HA kot podporni korak v isti rutini\n- ko mi pošljete deklaracijo, to pretvorim v točen jutro / opoldne / večer plan za 30 dni"
+                : "Za sada ostanite na ovome:\n- Forever Freedom® kao glavni dnevni nosilac rutine\n- Forever Active HA kao support korak u istoj rutini\n- čim mi pošaljete deklaraciju, ovo pretvaram u točan jutro / podne / večer plan za 30 dana");
+
+        return [
+            'content' => trim(implode("\n\n", array_filter($content_blocks))),
+            'language' => $language,
+            'lead_capture' => $lead_capture,
+            'intent' => $intent,
+            'recommendation_payload' => $recommendation_payload,
+            'knowledge_suggestions' => [],
+        ];
+    }
+
     if($assistant_type === 'product_advisor' && $condition_explanation_followup) {
         $explanation_anchor_message = $follow_up_anchor_message !== ''
             ? $follow_up_anchor_message
-            : trim((string) ($context['recent_user_context'] ?? ''));
+            : $recent_user_context;
 
         $explanation_note = fcc_ai_get_public_condition_explanation_opening_note(
             $explanation_anchor_message !== '' ? $explanation_anchor_message : $message,
@@ -18108,6 +18199,105 @@ function fcc_ai_generate_public_reply(string $assistant_type, string $message, a
             : ($language === 'sl'
                 ? 'Če želite, lahko nato ločim samo previdno Forever podporno smer za isti problem, brez mešanja nepovezanih izdelkov.'
                 : 'Ako želite, nakon ovoga mogu odvojeno napisati samo oprezan Forever support smjer za isti problem, bez miješanja nepovezanih proizvoda.');
+
+        return [
+            'content' => trim(implode("\n\n", array_filter($content_blocks))),
+            'language' => $language,
+            'lead_capture' => $lead_capture,
+            'intent' => $intent,
+            'recommendation_payload' => $recommendation_payload,
+            'knowledge_suggestions' => [],
+        ];
+    }
+
+    if($assistant_type === 'product_advisor' && $condition_usage_followup) {
+        $primary_product = trim((string) ($recommendation_payload['primary_product'] ?? ''));
+        $support_products = array_values(array_filter(array_map(static function($item) {
+            return trim((string) $item);
+        }, (array) ($recommendation_payload['support_products'] ?? []))));
+        $monthly_quantity_note = trim((string) ($recommendation_payload['monthly_quantity_note'] ?? ''));
+        $is_month_request = $is_explicit_monthly_quantity_request;
+        $has_joint_usage_anchor = fcc_ai_contains_keywords($follow_up_anchor_message, ['freedom', 'freedom®'])
+            && fcc_ai_contains_keywords($follow_up_anchor_message, ['active ha', 'activ ha']);
+        $has_wrong_weight_loss_payload = fcc_ai_contains_keywords($primary_product . ' ' . implode(' ', $support_products), [
+            'c9', 'f15', 'lean', 'plant protein', 'infinite', 'malosi',
+        ]);
+
+        if($has_joint_usage_anchor && ($primary_product === '' || $has_wrong_weight_loss_payload)) {
+            $primary_product = 'Forever Freedom®';
+            $support_products = ['Forever Active HA'];
+            $recommendation_payload['primary_product'] = $primary_product;
+            $recommendation_payload['support_products'] = $support_products;
+            $recommendation_payload['recommendation_lines'] = $language === 'en'
+                ? [
+                    'Forever Freedom® stays the main daily routine anchor here.',
+                    'Forever Active HA stays next to it only as the support step inside the same joint routine.',
+                ]
+                : ($language === 'sl'
+                    ? [
+                        'Forever Freedom® ostane tukaj glavni dnevni nosilec rutine.',
+                        'Forever Active HA ostane ob njem samo kot podporni korak v isti rutini za sklepe.',
+                    ]
+                    : [
+                        'Forever Freedom® ovdje ostaje glavni dnevni nosilac rutine.',
+                        'Forever Active HA ostaje uz njega samo kao support korak unutar iste rutine za zglobove.',
+                    ]);
+        }
+
+        $content_blocks[] = $language === 'en'
+            ? 'Understood. Since the product direction is already clear, I will stay only on the daily routine for those same products and not open a new recommendation.'
+            : ($language === 'sl'
+                ? 'Razumem. Ker je smer izdelkov že jasna, ostanem samo pri dnevni rutini za ta ista izdelka in ne odpiram novega priporočila.'
+                : 'Razumijem. Kako je smjer proizvoda već jasan, ovdje ostajem samo na dnevnoj rutini za te iste proizvode i ne otvaram novu preporuku.');
+
+        if($primary_product !== '' || !empty($support_products)) {
+            $routine_lines = [];
+
+            if($primary_product !== '') {
+                $routine_lines[] = $language === 'en'
+                    ? 'Main daily anchor: ' . $primary_product . ' in the part of the day that fits your usual meal rhythm.'
+                    : ($language === 'sl'
+                        ? 'Glavni dnevni nosilec: ' . $primary_product . ' v delu dneva, ki se najbolje ujame z vašim običajnim obrokom.'
+                        : 'Glavni dnevni oslonac: ' . $primary_product . ' u dijelu dana koji vam se najlakše uklapa uz obrok.');
+            }
+
+            if(!empty($support_products[0])) {
+                $routine_lines[] = $language === 'en'
+                    ? 'Support step: ' . $support_products[0] . ' as the second part of the same routine, ideally in a separate part of the day.'
+                    : ($language === 'sl'
+                        ? 'Dodatni korak: ' . $support_products[0] . ' kot drugi del iste rutine, po možnosti v ločenem delu dneva.'
+                        : 'Support korak: ' . $support_products[0] . ' kao drugi dio iste rutine, idealno u odvojenom dijelu dana.');
+            }
+
+            if(!empty($support_products[1])) {
+                $routine_lines[] = $language === 'en'
+                    ? 'Optional extra: ' . $support_products[1] . ' only if you also want an outer or local support step.'
+                    : ($language === 'sl'
+                        ? 'Po želji dodatno: ' . $support_products[1] . ' samo če želite i zunanji ali lokalni korak podpore.'
+                        : 'Po želji dodatno: ' . $support_products[1] . ' samo ako želite i vanjski ili lokalni support korak.');
+            }
+
+            $content_blocks[] = implode("\n- ", array_merge([''], $routine_lines));
+        }
+
+        $content_blocks[] = $language === 'en'
+            ? 'For the exact number of tablets, capsules, or servings per day, keep the current label as the final source so we do not guess the declaration.'
+            : ($language === 'sl'
+                ? 'Za točno število tablet, kapsul ali odmerkov na dan naj bo zadnji vir vedno aktualna deklaracija, da ne ugibamo podatkov z embalaže.'
+                : 'Za točan broj tableta, kapsula ili doza kroz dan zadnja provjera ipak treba biti aktualna deklaracija, da ne nagađamo podatke s etikete.');
+
+        if($monthly_quantity_note !== '') {
+            $content_blocks[] = $monthly_quantity_note;
+        } elseif($is_month_request) {
+            $content_blocks[] = $language === 'en'
+                ? 'If you want, I can next turn this into a very short morning / noon / evening month routine without adding any new product.'
+                : ($language === 'sl'
+                    ? 'Če želite, lahko to zdaj takoj pretvorim v zelo kratek jutro / opoldne / večer mesečni razpored brez dodajanja novih izdelkov.'
+                    : 'Ako želite, ovo vam odmah mogu pretvoriti u vrlo kratak jutro / podne / večer mjesečni raspored bez dodavanja novih proizvoda.');
+        }
+
+        $recommendation_payload['skip_product_tail'] = true;
+        $recommendation_payload['force_local_reply'] = true;
 
         return [
             'content' => trim(implode("\n\n", array_filter($content_blocks))),
@@ -18303,6 +18493,38 @@ function fcc_ai_generate_public_reply(string $assistant_type, string $message, a
             $content_blocks[] = $language === 'en'
                 ? 'If you want, write the exact goal and I will explain the cleanest support direction without medical claims.'
                 : 'Ako želite, napišite točan cilj pa ću objasniti najčišći support smjer bez medicinskih tvrdnji.';
+
+            return [
+                'content' => trim(implode("\n\n", array_filter($content_blocks))),
+                'language' => $language,
+                'lead_capture' => $lead_capture,
+                'intent' => $intent,
+                'recommendation_payload' => $recommendation_payload,
+                'knowledge_suggestions' => [],
+            ];
+        }
+
+        if($guarded_request_type === 'smoking_cessation_request') {
+            $content_blocks[] = $language === 'en'
+                ? 'For quitting smoking, I would not pretend there is one Forever product that replaces the real quitting process.'
+                : ($language === 'sl'
+                    ? 'Pri opuščanju kajenja ne bi delal vtisa, da obstaja en Forever izdelek, ki nadomesti dejanski proces opuščanja.'
+                    : 'Kod prestanka pušenja ne bih glumio da postoji jedan Forever proizvod koji zamjenjuje stvarni proces odvikavanja.');
+
+            $content_blocks[] = $language === 'en'
+                ? 'The cleanest first step is a doctor or pharmacist, especially if cigarettes are tied to stress, chest discomfort, therapy, or a longer smoking history.'
+                : ($language === 'sl'
+                    ? 'Najbolj čist prvi korak sta zdravnik ali farmacevt, posebej če je kajenje povezano s stresom, nelagodjem v prsih, terapijo ali daljšo zgodovino kajenja.'
+                    : 'Najčišći prvi korak su liječnik ili ljekarnik, posebno ako je pušenje povezano sa stresom, nelagodom u prsima, terapijom ili dužom pušačkom navikom.');
+
+            $content_blocks[] = $language === 'en'
+                ? "If you want, I can still help in a practical way:\n- a simple plan for the first 3 days\n- ideas to reduce the urge for a cigarette\n- a routine for the body after quitting"
+                : ($language === 'sl'
+                    ? "Če želite, lahko vseeno pomagam praktično:\n- preprost načrt za prve 3 dni\n- ideje, kako zmanjšati željo po cigareti\n- rutino za telo po opustitvi"
+                    : "Ako želite, mogu ipak pomoći praktično:\n- jednostavan plan za prva 3 dana\n- ideje kako smanjiti želju za cigaretom\n- rutinu za tijelo nakon prestanka");
+
+            $recommendation_payload['skip_product_tail'] = true;
+            $recommendation_payload['force_local_reply'] = true;
 
             return [
                 'content' => trim(implode("\n\n", array_filter($content_blocks))),
@@ -23768,9 +23990,20 @@ function fcc_ai_handle_public_message(array $payload): array {
         && fcc_ai_is_low_context_follow_up_message($current_user_message);
     $is_condition_explanation_followup = (string) ($conversation->assistant_type ?? '') === 'product_advisor'
         && fcc_ai_is_public_condition_explanation_followup_request($current_user_message);
+    $usage_followup_context_source = implode("\n", array_filter([
+        $followup_anchor_user_message,
+        $previous_user_message,
+        $recent_user_context,
+        $message_for_matching,
+    ]));
+    $has_usage_followup_anchor_product_context = (string) ($conversation->assistant_type ?? '') === 'product_advisor'
+        && $usage_followup_context_source !== ''
+        && fcc_ai_contains_keywords($usage_followup_context_source, [
+            'freedom', 'freedom®', 'active ha', 'activ ha', 'aloe turm',
+        ]);
     $is_condition_usage_followup = (string) ($conversation->assistant_type ?? '') === 'product_advisor'
         && $followup_anchor_user_message !== ''
-        && !empty($previous_condition_keys)
+        && (!empty($previous_condition_keys) || $has_usage_followup_anchor_product_context)
         && (
             fcc_ai_is_public_condition_usage_followup_request($current_user_message)
             || fcc_ai_is_public_joint_routine_confirmation_request($current_user_message)
@@ -23991,6 +24224,22 @@ function fcc_ai_handle_public_message(array $payload): array {
         'model' => 'fcc-user-message',
     ]);
 
+    $recent_history_text = '';
+    $has_joint_quantity_recent_history_context = false;
+
+    if(
+        (string) ($conversation->assistant_type ?? '') === 'product_advisor'
+        && fcc_ai_is_public_condition_usage_followup_request($current_user_message)
+    ) {
+        $recent_history_messages = fcc_ai_get_conversation_messages((int) $conversation->fcc_ai_conversation_id, 12);
+        $recent_history_text = implode("\n", array_map(static function(array $row): string {
+            return trim((string) ($row['content'] ?? ''));
+        }, $recent_history_messages));
+        $has_joint_quantity_recent_history_context = $recent_history_text !== ''
+            && fcc_ai_contains_keywords($recent_history_text, ['freedom', 'freedom®'])
+            && fcc_ai_contains_keywords($recent_history_text, ['active ha', 'activ ha']);
+    }
+
     $auto_captured_lead = fcc_ai_try_auto_capture_public_lead_from_message($conversation, $user, $link, $payload, $intent, $message);
 
     if(!empty($auto_captured_lead['saved'])) {
@@ -24015,6 +24264,8 @@ function fcc_ai_handle_public_message(array $payload): array {
         'business_hesitation_followup' => $is_business_hesitation_followup,
         'broad_beauty_followup_clarification' => $is_broad_beauty_followup_clarification,
         'condition_explanation_followup' => $is_condition_explanation_followup,
+        'condition_usage_followup' => $is_condition_usage_followup,
+        'previous_condition_context_exists' => !empty($previous_condition_keys),
         'follow_up_anchor_message' => $followup_anchor_user_message,
         'guarded_request_type' => $guarded_request_type,
     ]);
@@ -24083,6 +24334,86 @@ function fcc_ai_handle_public_message(array $payload): array {
 
     $reply_content = trim((string) ($reply['content'] ?? ''));
     $owner_name = trim((string) ($user->name ?? ''));
+    $joint_quantity_post_guard_context = trim($followup_anchor_user_message . "\n" . $recent_user_context . "\n" . $message_for_matching);
+
+    if(
+        (string) ($conversation->assistant_type ?? '') === 'product_advisor'
+        && fcc_ai_is_public_condition_usage_followup_request($current_user_message)
+        && (
+            (
+                $joint_quantity_post_guard_context !== ''
+                && fcc_ai_contains_keywords($joint_quantity_post_guard_context, ['freedom', 'freedom®'])
+                && fcc_ai_contains_keywords($joint_quantity_post_guard_context, ['active ha', 'activ ha'])
+            )
+            || $has_joint_quantity_recent_history_context
+        )
+    ) {
+        $reply_content = $resolved_language === 'en'
+            ? "For exact daily quantities and the 30-day total, the last source should still be the declaration on your exact pack, because servings can differ by market and version.\n\nFor now, keep it this way:\n- Forever Freedom® as the main daily routine anchor\n- Forever Active HA as the support step in the same routine\n- once you send the declaration, I can turn it into an exact morning / noon / evening plan for 30 days"
+            : ($resolved_language === 'sl'
+                ? "Za točne dnevne količine in 30-dnevni seštevek naj bo zadnji vir še vedno deklaracija na vašem točnem pakiranju, ker se porcije lahko razlikujejo po trgu in verziji.\n\nZa zdaj ostanite pri tem:\n- Forever Freedom® kot glavni dnevni nosilec rutine\n- Forever Active HA kot podporni korak v isti rutini\n- čim pošljete deklaracijo, to pretvorim v točen jutro / opoldne / večer plan za 30 dni"
+                : "Za točne dnevne količine i obračun za 30 dana zadnji izvor ipak treba biti deklaracija na vašem točnom pakiranju, jer se porcije mogu razlikovati po tržištu i verziji.\n\nZa sada ostanite na ovome:\n- Forever Freedom® kao glavni dnevni nosilac rutine\n- Forever Active HA kao support korak u istoj rutini\n- čim pošaljete deklaraciju, ovo pretvaram u točan jutro / podne / večer plan za 30 dana");
+
+        $reply['recommendation_payload']['primary_product'] = 'Forever Freedom®';
+        $reply['recommendation_payload']['support_products'] = ['Forever Active HA'];
+        $reply['recommendation_payload']['recommendation_lines'] = $resolved_language === 'en'
+            ? [
+                'Forever Freedom® stays the main daily routine anchor here.',
+                'Forever Active HA stays next to it as the support step in the same joint routine.',
+            ]
+            : ($resolved_language === 'sl'
+                ? [
+                    'Forever Freedom® tukaj ostane glavni dnevni nosilec rutine.',
+                    'Forever Active HA ostane ob njem kot podporni korak v isti rutini za sklepe.',
+                ]
+                : [
+                    'Forever Freedom® ovdje ostaje glavni dnevni nosilac rutine.',
+                    'Forever Active HA ostaje uz njega kao support korak unutar iste rutine za zglobove.',
+                ]);
+        $reply['recommendation_payload']['skip_product_tail'] = true;
+        $reply['recommendation_payload']['force_local_reply'] = true;
+        $knowledge_suggestions = [];
+        $reply['knowledge_suggestions'] = [];
+    }
+
+    if(
+        (string) ($conversation->assistant_type ?? '') === 'product_advisor'
+        && fcc_ai_is_public_condition_usage_followup_request($current_user_message)
+        && (
+            (
+                fcc_ai_contains_keywords($reply_content, ['freedom', 'freedom®'])
+                && fcc_ai_contains_keywords($reply_content, ['active ha', 'activ ha'])
+            )
+            || $has_joint_quantity_recent_history_context
+        )
+    ) {
+        $reply_content = $resolved_language === 'en'
+            ? "For exact daily quantities and the 30-day total, the last source should still be the declaration on your exact pack, because servings can differ by market and version.\n\nFor now, keep it this way:\n- Forever Freedom® as the main daily routine anchor\n- Forever Active HA as the support step in the same routine\n- once you send the declaration, I can turn it into an exact morning / noon / evening plan for 30 days"
+            : ($resolved_language === 'sl'
+                ? "Za točne dnevne količine in 30-dnevni seštevek naj bo zadnji vir še vedno deklaracija na vašem točnem pakiranju, ker se porcije lahko razlikujejo po trgu in verziji.\n\nZa zdaj ostanite pri tem:\n- Forever Freedom® kot glavni dnevni nosilec rutine\n- Forever Active HA kot podporni korak v isti rutini\n- čim pošljete deklaracijo, to pretvorim v točen jutro / opoldne / večer plan za 30 dni"
+                : "Za točne dnevne količine i obračun za 30 dana zadnji izvor ipak treba biti deklaracija na vašem točnom pakiranju, jer se porcije mogu razlikovati po tržištu i verziji.\n\nZa sada ostanite na ovome:\n- Forever Freedom® kao glavni dnevni nosilac rutine\n- Forever Active HA kao support korak u istoj rutini\n- čim pošaljete deklaraciju, ovo pretvaram u točan jutro / podne / večer plan za 30 dana");
+
+        $reply['recommendation_payload']['primary_product'] = 'Forever Freedom®';
+        $reply['recommendation_payload']['support_products'] = ['Forever Active HA'];
+        $reply['recommendation_payload']['recommendation_lines'] = $resolved_language === 'en'
+            ? [
+                'Forever Freedom® stays the main daily routine anchor here.',
+                'Forever Active HA stays next to it as the support step in the same joint routine.',
+            ]
+            : ($resolved_language === 'sl'
+                ? [
+                    'Forever Freedom® tukaj ostane glavni dnevni nosilec rutine.',
+                    'Forever Active HA ostane ob njem kot podporni korak v isti rutini za sklepe.',
+                ]
+                : [
+                    'Forever Freedom® ovdje ostaje glavni dnevni nosilac rutine.',
+                    'Forever Active HA ostaje uz njega kao support korak unutar iste rutine za zglobove.',
+                ]);
+        $reply['recommendation_payload']['skip_product_tail'] = true;
+        $reply['recommendation_payload']['force_local_reply'] = true;
+        $knowledge_suggestions = [];
+        $reply['knowledge_suggestions'] = [];
+    }
 
     if(
         (string) ($conversation->assistant_type ?? '') === 'product_advisor'
@@ -24097,6 +24428,10 @@ function fcc_ai_handle_public_message(array $payload): array {
             return mb_stripos((string) $block, $owner_name) === false;
         }));
         $reply_content = trim(implode("\n\n", $reply_blocks));
+    }
+
+    if(isset($reply['recommendation_payload']) && is_array($reply['recommendation_payload'])) {
+        $recommendation_payload = $reply['recommendation_payload'];
     }
 
     $recommendation_primary = trim((string) ($recommendation_payload['primary_product'] ?? ''));
