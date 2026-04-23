@@ -6932,12 +6932,70 @@ function fcc_ai_is_public_system_copy_request(string $message, string $previous_
         ]);
 }
 
+function fcc_ai_is_public_eu_claim_copy_request(string $message, string $previous_user_message = '', array $previous_intent = []): bool {
+    $has_eu_copy_signal = fcc_ai_contains_phrase_keywords($message, [
+        'po eu pravilih', 'po eu pravilima', 'po pravilih eu', 'eu pravilih', 'eu pravilima',
+        'eu style', 'eu copy', 'neutralan opis', 'neutralna verzija', 'neutralni opis',
+        'claim safe', 'compliance copy',
+    ]) || fcc_ai_contains_keywords($message, ['bonitet', 'bonitete']);
+
+    if(!$has_eu_copy_signal) {
+        return false;
+    }
+
+    return fcc_ai_contains_keywords($message, [
+        'arctic sea', 'artic sea', 'artic se', 'forever arctic sea', 'argo', 'argi', 'aloe vera gel',
+        'berry nectar', 'aloe peaches',
+    ]) || (
+        $previous_user_message !== ''
+        && fcc_ai_is_direct_product_lookup_message($previous_user_message)
+    ) || !empty($previous_intent['product']);
+}
+
+function fcc_ai_is_public_dry_palms_request(string $message): bool {
+    return fcc_ai_contains_keywords($message, [
+        'zelo suha koža na dlaneh', 'zelo suha koza na dlaneh', 'zelo suho kožo na dlaneh', 'zelo suho kozo na dlaneh',
+        'suha koža na dlaneh', 'suha koza na dlaneh', 'suho kožo na dlaneh', 'suho kozo na dlaneh',
+        'suhe dlani', 'suha koža na rokah', 'suha koza na rokah', 'roke so suhe', 'roke imam suhe',
+    ]);
+}
+
+function fcc_ai_is_public_low_pressure_safety_request(string $message, string $previous_user_message = '', array $previous_intent = []): bool {
+    $has_low_pressure_signal = fcc_ai_contains_phrase_keywords($message, [
+        'nizek pritisk', 'nizki pritisk', 'nizak tlak', 'niski tlak',
+        'low pressure', 'low blood pressure', 'hypotension',
+    ]);
+
+    if(!$has_low_pressure_signal) {
+        return false;
+    }
+
+    return fcc_ai_contains_keywords($message, [
+        'argi', 'argo', 'forever argi', 'forever argo',
+    ]) || (
+        $previous_user_message !== ''
+        && fcc_ai_contains_keywords($previous_user_message, ['argi', 'argo', 'forever argi', 'forever argo'])
+    ) || !empty($previous_intent['medication_interaction_sensitive']);
+}
+
 function fcc_ai_get_public_guarded_request_type(string $message, array $intent = [], array $context = []): string {
     $previous_user_message = trim((string) ($context['previous_user_message'] ?? ''));
     $previous_intent = (array) ($context['previous_intent'] ?? []);
 
     if(!empty($intent['prompt_leak_request'])) {
         return 'prompt_rules_request';
+    }
+
+    if(fcc_ai_is_public_dry_palms_request($message)) {
+        return 'dry_palms_skin_request';
+    }
+
+    if(fcc_ai_is_public_eu_claim_copy_request($message, $previous_user_message, $previous_intent)) {
+        return 'eu_claim_copy_request';
+    }
+
+    if(fcc_ai_is_public_low_pressure_safety_request($message, $previous_user_message, $previous_intent)) {
+        return 'low_pressure_safety_request';
     }
 
     if(fcc_ai_is_public_system_copy_request($message, $previous_user_message, $previous_intent)) {
@@ -12721,7 +12779,13 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
             'lock_product_scope' => true,
         ],
         'cracked_hands_skin_support' => [
-            'patterns' => ['pucaju mi ruke', 'pucaju mi šake', 'pucaju mi sake', 'ispucale ruke', 'ruke su mi ispucale', 'ruke su mi jako suhe', 'ruke su mi suhe'],
+            'patterns' => [
+                'pucaju mi ruke', 'pucaju mi šake', 'pucaju mi sake', 'ispucale ruke', 'ruke su mi ispucale',
+                'ruke su mi jako suhe', 'ruke su mi suhe', 'zelo suha koža na dlaneh', 'zelo suha koza na dlaneh',
+                'zelo suho kožo na dlaneh', 'zelo suho kozo na dlaneh', 'suha koža na dlaneh', 'suha koza na dlaneh',
+                'suho kožo na dlaneh', 'suho kozo na dlaneh', 'suhe dlani', 'suha koža na rokah', 'suha koza na rokah',
+                'roke so suhe', 'roke imam suhe', 'poka koža na rokah', 'poka koza na rokah',
+            ],
             'preferred_patterns' => ['propolis creme', 'aloe vera gel', 'liquid soap'],
             'primary_product' => 'Aloe Propolis Creme',
             'support_products' => ['Forever Aloe Vera Gel™', 'Forever Aloe Liquid Soap'],
@@ -12730,14 +12794,14 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
                 'en' => 'cracked hands and a protective routine',
             ],
             'opening_note' => [
-                'hr' => 'Kad ruke pucaju i jako su suhe, preporuka treba ostati praktična: zaštitna krema izvana, nježno pranje i aloe baza iznutra, bez agresivnih suplementnih kombinacija.',
+                'hr' => 'Kad koža ruku, posebno na dlanovima, puca i jako je suha, preporuka treba ostati praktična: zaštitna krema izvana, nježno pranje i aloe baza iznutra, bez agresivnih suplementnih kombinacija.',
                 'en' => 'When the hands are cracking and very dry, the recommendation should stay practical: a protective cream outside, gentle cleansing and an inside aloe base, without aggressive supplement combinations.',
             ],
             'recommendation_lines' => [
                 'hr' => [
-                    'Aloe Propolis Creme je ovdje glavni Forever smjer kao zaštitna i hranjiva krema kada koža ruku puca i traži jači sloj izvana.',
+                    'Aloe Propolis Creme je ovdje glavni lokalni Forever smjer kao zaštitna i hranjiva krema kada koža ruku i dlanova puca i traži jači sloj izvana.',
                     'Forever Aloe Vera Gel™ ima smisla kao support opcija uz to kao aloe baza iznutra za inside-out smjer njege kože.',
-                    'Forever Aloe Liquid Soap ima smisla kao dodatni korak kada želite i nježnije pranje ruku bez dodatnog isušivanja.',
+                    'Forever Aloe Liquid Soap ima smisla kao dodatni korak kada želite i nježnu lokalnu njegu kroz blaže pranje ruku bez dodatnog isušivanja.',
                 ],
                 'en' => [
                     'Aloe Propolis Creme is the main Forever direction here as the protective and nourishing cream when the skin on the hands is cracking and needs a stronger outer layer.',
@@ -13154,6 +13218,21 @@ function fcc_ai_get_product_advisor_effective_condition_matches(string $message,
             $language,
             ['kupanje', 'dijete'],
             303
+        );
+    }
+
+    if(
+        fcc_ai_contains_keywords($message, [
+            'zelo suha koža na dlaneh', 'zelo suha koza na dlaneh', 'zelo suho kožo na dlaneh', 'zelo suho kozo na dlaneh',
+            'suha koža na dlaneh', 'suha koza na dlaneh', 'suho kožo na dlaneh', 'suho kozo na dlaneh',
+            'suhe dlani', 'suha koža na rokah', 'suha koza na rokah', 'roke so suhe', 'roke imam suhe',
+        ])
+    ) {
+        $matches[] = fcc_ai_get_product_advisor_condition_match_by_key(
+            'cracked_hands_skin_support',
+            $language,
+            ['dlani', 'suha koža'],
+            334
         );
     }
 
@@ -15064,6 +15143,51 @@ function fcc_ai_build_public_recommendation_payload(string $assistant_type, stri
             : 'Ako posjetitelj kupuje kroz preporuku suradnika, možeš spomenuti dostupnih 15% popusta kao partnersku pogodnost.';
         $knowledge_suggestions = [];
         $combination_note = '';
+    }
+
+    if(
+        $assistant_type === 'product_advisor'
+        && fcc_ai_contains_keywords($message, [
+            'zelo suha koža na dlaneh', 'zelo suha koza na dlaneh', 'zelo suho kožo na dlaneh', 'zelo suho kozo na dlaneh',
+            'suha koža na dlaneh', 'suha koza na dlaneh', 'suho kožo na dlaneh', 'suho kozo na dlaneh',
+            'suhe dlani', 'suha koža na rokah', 'suha koza na rokah', 'roke so suhe', 'roke imam suhe',
+        ])
+    ) {
+        $opening_note = $language === 'en'
+            ? 'For very dry palms, the cleanest route is to keep the answer practical: a protective cream outside, gentle cleansing, and only a simple inside support if you want an inside-out routine.'
+            : ($language === 'sl'
+                ? 'Pri zelo suhi koži na dlaneh je najbolj čist pristop praktičen: zaščitna krema zunaj, nežno umivanje in samo enostavna podpora od znotraj, če želite inside-out rutino.'
+                : 'Kod jako suhe kože na dlanovima najčišći pristup je praktičan: zaštitna krema izvana, nježno pranje i samo jednostavna podrška iznutra ako želite inside-out rutinu.');
+        $primary_product = 'Aloe Propolis Creme';
+        $support_products = ['Forever Aloe Vera Gel™', 'Forever Aloe Liquid Soap'];
+        $recommendation_lines = $language === 'en'
+            ? [
+                'Aloe Propolis Creme stays the main local step here as the protective cream for very dry palms.',
+                'Forever Aloe Vera Gel™ can stay next to it only as a simple inside aloe support if you want an inside-out skin routine.',
+                'Forever Aloe Liquid Soap makes sense as the gentle cleansing step so the palms do not get dried out even more.',
+            ]
+            : ($language === 'sl'
+                ? [
+                    'Aloe Propolis Creme tukaj ostane glavni lokalni korak kot zaščitna krema za zelo suho kožo na dlaneh.',
+                    'Forever Aloe Vera Gel™ lahko ostane ob tem samo kot preprosta aloe podpora od znotraj, če želite inside-out rutino kože.',
+                    'Forever Aloe Liquid Soap ima smisel kot nežen korak pri umivanju, da se dlani ne izsušijo še bolj.',
+                ]
+                : [
+                    'Aloe Propolis Creme ovdje ostaje glavni lokalni korak kao zaštitna krema za jako suhu kožu na dlanovima.',
+                    'Forever Aloe Vera Gel™ može ostati uz to samo kao jednostavna aloe podrška iznutra ako želite inside-out rutinu kože.',
+                    'Forever Aloe Liquid Soap ima smisla kao nježan korak pranja kako se dlani ne bi dodatno isušivale.',
+                ]);
+        $question_lines = [];
+        $monthly_quantity_note = $language === 'en'
+            ? 'If you want a simple one-month frame, this usually stays on 1 x Aloe Propolis Creme, 1 x Forever Aloe Liquid Soap, and optionally 3 x Forever Aloe Vera Gel™.'
+            : ($language === 'sl'
+                ? 'Če želite preprost mesečni okvir, to najpogosteje ostane pri 1 x Aloe Propolis Creme, 1 x Forever Aloe Liquid Soap in po želji 3 x Forever Aloe Vera Gel™.'
+                : 'Ako želite jednostavan mjesečni okvir, ovdje se najčešće ostaje na 1 x Aloe Propolis Creme, 1 x Forever Aloe Liquid Soap i po želji 3 x Forever Aloe Vera Gel™.');
+        $knowledge_suggestions = [];
+        $combination_note = '';
+        $discount_note = '';
+        $force_local_reply = true;
+        $skip_product_tail = true;
     }
 
     if($same_problem_followup_clarification && $assistant_type === 'product_advisor' && !empty($condition_matches)) {
@@ -18341,6 +18465,103 @@ function fcc_ai_generate_public_reply(string $assistant_type, string $message, a
             $content_blocks[] = $language === 'en'
                 ? 'If you want, tell me your goal and I will stay on the useful side of that guidance: products, FCC articles, or collaboration follow-up.'
                 : 'Ako želite, napišite svoj cilj pa ću ostati na korisničkoj strani tih smjernica: preporuke, FCC sadržaj ili nastavak suradnje.';
+
+            return [
+                'content' => trim(implode("\n\n", array_filter($content_blocks))),
+                'language' => $language,
+                'lead_capture' => $lead_capture,
+                'intent' => $intent,
+                'recommendation_payload' => $recommendation_payload,
+                'knowledge_suggestions' => [],
+            ];
+        }
+
+        if($guarded_request_type === 'dry_palms_skin_request') {
+            $content_blocks[] = match($language) {
+                'en' => 'For very dry palms, the cleanest route is to keep it practical and local, without drifting into unrelated beauty or supplement products.',
+                'sl' => 'Pri zelo suhi koži na dlaneh je najbolj čist pristop praktičen in lokalen, brez uhajanja v nepovezane beauty ali suplementne izdelke.',
+                default => 'Kod jako suhe kože na dlanovima najčišći pristup je praktičan i lokalni, bez odlaska u nepovezane beauty ili suplementne proizvode.',
+            };
+
+            $content_blocks[] = match($language) {
+                'en' => "The cleanest Forever direction here is:\n- Aloe Propolis Creme as the main local protective step\n- Forever Aloe Liquid Soap for gentle hand cleansing\n- Forever Aloe Vera Gel™ only as optional inside support if you want an inside-out skin routine",
+                'sl' => "Najbolj čist Forever smjer tukaj je:\n- Aloe Propolis Creme kot glavni lokalni zaščitni korak\n- Forever Aloe Liquid Soap za nežno umivanje rok\n- Forever Aloe Vera Gel™ samo kot opcijska podpora od znotraj, če želite inside-out rutino kože",
+                default => "Najčišći Forever smjer ovdje je:\n- Aloe Propolis Creme kao glavni lokalni zaštitni korak\n- Forever Aloe Liquid Soap za nježno pranje ruku\n- Forever Aloe Vera Gel™ samo kao opcijska podrška iznutra ako želite inside-out rutinu kože",
+            };
+
+            $content_blocks[] = match($language) {
+                'en' => 'If you want, I can also write the simplest day routine for the palms only, without adding anything else.',
+                'sl' => 'Če želite, lahko napišem tudi najbolj preprosto dnevno rutino samo za dlani, brez dodajanja česa drugega.',
+                default => 'Ako želite, mogu napisati i najjednostavniju dnevnu rutinu samo za dlanove, bez dodavanja ičega drugoga.',
+            };
+
+            return [
+                'content' => trim(implode("\n\n", array_filter($content_blocks))),
+                'language' => $language,
+                'lead_capture' => $lead_capture,
+                'intent' => $intent,
+                'recommendation_payload' => $recommendation_payload,
+                'knowledge_suggestions' => [],
+            ];
+        }
+
+        if($guarded_request_type === 'eu_claim_copy_request') {
+            $product_title = fcc_ai_get_public_direct_product_lookup_title($message);
+
+            if($product_title === '' && fcc_ai_contains_keywords($message, ['arctic sea', 'artic sea', 'artic se'])) {
+                $product_title = 'Forever Arctic Sea';
+            }
+
+            if($product_title === '') {
+                $product_title = $language === 'en' ? 'that product' : ($language === 'sl' ? 'ta izdelek' : 'taj proizvod');
+            }
+
+            $content_blocks[] = match($language) {
+                'en' => 'If you want an EU-style neutral version, the cleanest way is to keep it descriptive and avoid strong health claims.',
+                'sl' => 'Če želite bolj nevtralno EU-stilsko verzijo, je najbolj čist pristop opisni ton brez močnih zdravstvenih trditev.',
+                default => 'Ako želite neutralniju verziju po EU pravilima, najčišći pristup je ostati opisno i bez jakih zdravstvenih tvrdnji.',
+            };
+
+            $content_blocks[] = match($language) {
+                'en' => $product_title . ' can be described as an omega-3 supplement that fits into a balanced nutritional routine and everyday support plan.',
+                'sl' => $product_title . ' lahko opišemo kot omega-3 dopolnilo, ki se uključi v uravnoteženo prehransko rutino in vsakodnevno podporo.',
+                default => $product_title . ' možete opisati kao omega-3 dodatak prehrani koji se uklapa u uravnoteženu prehrambenu rutinu i svakodnevnu podršku.',
+            };
+
+            $content_blocks[] = match($language) {
+                'en' => "A neutral wording can stay on formulations such as:\n- omega-3 support in the daily routine\n- part of a balanced nutritional approach\n- general support in an everyday wellness routine",
+                'sl' => "Nevtralna formulacija lahko ostane na izrazih, kot so:\n- omega-3 podpora v dnevni rutini\n- del uravnoteženega prehranskega pristopa\n- splošna podpora v vsakodnevni wellness rutini",
+                default => "Neutralna formulacija može ostati na izrazima poput:\n- omega-3 podrška u dnevnoj rutini\n- dio uravnoteženog prehrambenog pristupa\n- opća podrška u svakodnevnoj wellness rutini",
+            };
+
+            return [
+                'content' => trim(implode("\n\n", array_filter($content_blocks))),
+                'language' => $language,
+                'lead_capture' => $lead_capture,
+                'intent' => $intent,
+                'recommendation_payload' => $recommendation_payload,
+                'knowledge_suggestions' => [],
+            ];
+        }
+
+        if($guarded_request_type === 'low_pressure_safety_request') {
+            $content_blocks[] = match($language) {
+                'en' => 'With low blood pressure and feeling unwell, I cannot confirm product compatibility here as if it were a medical clearance.',
+                'sl' => 'Pri nizkem pritisku in slabem počutju tukaj ne morem potrditi združljivosti izdelka, kot da bi šlo za medicinsko odobritev.',
+                default => 'Kod niskog tlaka i lošeg osjećaja ovdje ne mogu potvrditi kompatibilnost proizvoda kao da je riječ o medicinskoj procjeni.',
+            };
+
+            $content_blocks[] = match($language) {
+                'en' => 'The safest next step is a doctor or pharmacist, especially if low pressure, therapy, or circulation issues are already in the background.',
+                'sl' => 'Najbolj varen naslednji korak sta zdravnik ali farmacevt, posebej če je v ozadju že nizek pritisk, terapija ali cirkulacijska težava.',
+                default => 'Najsigurniji sljedeći korak su liječnik ili ljekarnik, posebno ako su u pozadini već niski tlak, terapija ili cirkulacijski problem.',
+            };
+
+            $content_blocks[] = match($language) {
+                'en' => 'If you want, after that I can explain only the general role of the product in a routine, without dosage and without conclusions about compatibility.',
+                'sl' => 'Če želite, vam lahko nato razložim samo splošno vlogo izdelka v rutini, brez doziranja in brez zaključkov o združljivosti.',
+                default => 'Ako želite, nakon toga mogu objasniti samo opću ulogu proizvoda u rutini, bez doziranja i bez zaključaka o kompatibilnosti.',
+            };
 
             return [
                 'content' => trim(implode("\n\n", array_filter($content_blocks))),
