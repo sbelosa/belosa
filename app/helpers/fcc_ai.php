@@ -5827,6 +5827,55 @@ function fcc_ai_is_internal_coach_product_positioning_request(string $message): 
     ]);
 }
 
+function fcc_ai_is_internal_coach_personal_health_product_request(string $message, string $previous_context = ''): bool {
+    $haystack = trim($message . "\n" . $previous_context);
+
+    if($haystack === '') {
+        return false;
+    }
+
+    $asks_for_product_use = fcc_ai_contains_keywords($message, [
+        'koje proizvode', 'koji proizvodi', 'što uzeti', 'sto uzeti', 'šta uzeti', 'sta uzeti',
+        'što piti', 'sto piti', 'šta piti', 'sta piti', 'da li piti', 'dali piti',
+        'kako uzimati', 'kako piti', 'koje suplemente', 'koji suplementi',
+        'what should i take', 'which products', 'what products',
+        'katere izdelke', 'kaj vzeti', 'kaj jemati', 'kako jemati',
+    ]);
+
+    if(!$asks_for_product_use) {
+        return false;
+    }
+
+    return fcc_ai_contains_keywords($haystack, [
+        'išijas', 'isijas', 'sciatica', 'bol', 'bole', 'boli', 'ukočen', 'ukocen',
+        'zglob', 'leđa', 'leda', 'kraljež', 'kraljez', 'vrat', 'mišić', 'misic',
+        'grlo', 'temperatur', 'malaksal', 'umor', 'bolest', 'simptom', 'dijagnoz',
+        'terapij', 'lijek', 'lek', 'antibiotik', 'tlak', 'pritisak', 'trudn', 'doj',
+        'zdravlje', 'zdravstven', 'migren', 'probav', 'želud', 'zelud',
+        'ščitnic', 'stitnjac', 'štitnjač',
+    ]);
+}
+
+function fcc_ai_is_internal_coach_weekly_outcome_location_request(string $message): bool {
+    if(trim($message) === '') {
+        return false;
+    }
+
+    $asks_location = fcc_ai_contains_keywords($message, [
+        'gdje da nađem', 'gdje da nadem', 'gdje nađem', 'gdje nadem', 'gdje se nalazi',
+        'di da nađem', 'di da nadem', 'podsjeti me', 'where do i find',
+    ]);
+
+    if(!$asks_location) {
+        return false;
+    }
+
+    return fcc_ai_contains_keywords($message, [
+        'ostvarilo', 'ostvareno', 'ostvareni rezultat', 'postignuć', 'postignuc',
+        'tjedni ishod', 'weekly outcome', 'rezultat tjedna',
+    ]);
+}
+
 function fcc_ai_extract_internal_coach_positioning_subject(string $message): string {
     $message = trim($message);
 
@@ -5907,6 +5956,13 @@ function fcc_ai_is_broad_beauty_request(string $message): bool {
     $message = trim($message);
 
     if($message === '') {
+        return false;
+    }
+
+    if(fcc_ai_contains_keywords($message, [
+        'zašto baš njega', 'zasto bas njega', 'zašto njega', 'zasto njega',
+        'objasniti svaki proizvod', 'objasni svaki proizvod', 'svaki proizvod posebno',
+    ])) {
         return false;
     }
 
@@ -6165,8 +6221,8 @@ function fcc_ai_get_internal_coach_event_content_explainer(string $language = 'h
 
     if($language === 'sl') {
         return implode("\n\n", [
-            'Če si na **sejmu kozmetike in frizerstva**, vsebine ne širi preveč. Naredi **eno kratko objavo ali story** direktno iz sejma.',
-            'Najbolj čist kot je: "Na sejmu kozmetike in frizerstva pokažem eno praktično beauty rešitev in eno preprosto poslovno možnost za ljudi, ki želijo priporočila in pot v spletno trgovino."',
+            'Če si na **sejmu kozmetike in frizerstva v Ljubljani**, vsebine ne širi preveč. Naredi **eno kratko objavo ali story** direktno iz sejma.',
+            'Najbolj čist kot je: "Na sejmu kozmetike in frizerstva v Ljubljani pokažem eno praktično beauty rešitev in eno preprosto poslovno možnost za ljudi, ki želijo priporočila in pot v spletno trgovino."',
             'Uporabi to tako: pokaži en trenutek s sejma, dodaj eno kratko misel o tem, kaj ljudi najbolj zanima, in zaključi z enim jasnim CTA-jem, naj ti pišejo ali odprejo aplikacijo.',
             'Najboljša naslednja poteza zdaj: objavi eno objavo ali story iz sejma z enim jasnim CTA-jem.',
         ]);
@@ -6808,6 +6864,129 @@ function fcc_ai_is_public_meal_plan_request(string $message): bool {
     ]);
 }
 
+function fcc_ai_is_public_product_utility_followup_context(string $message, string $recent_context = ''): bool {
+    $message = trim($message);
+    $recent_context = trim($recent_context);
+
+    if($message === '') {
+        return false;
+    }
+
+    if(fcc_ai_is_public_product_utility_request($message)) {
+        return true;
+    }
+
+    if(fcc_ai_contains_keywords($message, [
+        'gramaž', 'gramaz',
+        'koliko grama',
+        'točne gramaže', 'tocne gramaze',
+        's gramažama', 's gramazama',
+    ])) {
+        return true;
+    }
+
+    if($recent_context === '' || !fcc_ai_is_public_product_utility_request($recent_context)) {
+        return false;
+    }
+
+    return fcc_ai_contains_keywords($message, [
+        'može', 'moze', 'može hvala', 'moze hvala',
+        'hvala',
+        'gramaž', 'gramaz',
+        'točno', 'tocno',
+        'koliko grama',
+        '7 dana',
+        'sedam dana',
+        'nastavi',
+        'složi', 'slozi',
+        'napravi',
+    ]);
+}
+
+function fcc_ai_build_public_meal_plan_followup_reply(string $message, string $recent_context = '', string $language = 'hr'): string {
+    $message = trim($message);
+    $recent_context = trim($recent_context);
+
+    if($message === '' || $recent_context === '') {
+        return '';
+    }
+
+    if(!fcc_ai_contains_keywords($message, [
+        'gramaž', 'gramaz',
+        'koliko grama',
+        's gramažama', 's gramazama',
+        'točne gramaže', 'tocne gramaze',
+    ])) {
+        return '';
+    }
+
+    if(!fcc_ai_contains_keywords($recent_context, ['jelovnik', 'plan prehrane', 'meal plan', 'obroc'])) {
+        return '';
+    }
+
+    if(!fcc_ai_contains_keywords($recent_context, ['1600', '1.600'])) {
+        return '';
+    }
+
+    $gluten_free = fcc_ai_contains_keywords($recent_context, ['bez glutena', 'gluten sam izbac', 'gluten-free', 'gluten free']);
+
+    if($language === 'en') {
+        return implode("\n\n", [
+            'Of course — here is a practical 1-day example, around 1600 kcal' . ($gluten_free ? ', gluten-free' : '') . ', with gram amounts. Treat it as an orientation meal plan, not a medical nutrition prescription.',
+            "Breakfast:\n- 2 eggs, about 100 g\n- cooked rice or gluten-free bread equivalent, about 120 g\n- vegetables, about 150 g\n- coffee with lactose-free milk if that suits your routine",
+            "Lunch:\n- chicken or turkey breast, about 150 g\n- cooked rice or potatoes, about 180-220 g\n- mixed vegetables or salad, about 250 g\n- olive oil, about 10 g",
+            "Snack:\n- lactose-free yogurt or skyr, about 150-200 g\n- berries or fruit, about 100-150 g\n- nuts, about 10-15 g",
+            "Dinner:\n- fish, eggs or lean meat, about 130-160 g\n- potatoes, rice or quinoa, about 150-220 g cooked\n- salad or cooked vegetables, about 200 g\n- olive oil, about 5 g",
+            'Best next step: if you want, I can turn this into a 3-day version with the same 1600 kcal and gram structure.',
+        ]);
+    }
+
+    if($language === 'sl') {
+        return implode("\n\n", [
+            'Seveda — tukaj je praktičen primer za 1 dan, približno 1600 kcal' . ($gluten_free ? ', brez glutena' : '') . ', z gramažami. To naj bo orientacijski jedilnik, ne medicinski prehranski predpis.',
+            "Zajtrk:\n- 2 jajci, približno 100 g\n- kuhan riž ali brezglutenski kruh v ustrezni količini, približno 120 g\n- zelenjava, približno 150 g\n- kava z mlekom brez laktoze, če vam ustreza",
+            "Kosilo:\n- piščančja ali puranja prsa, približno 150 g\n- kuhan riž ali krompir, približno 180-220 g\n- mešana zelenjava ali solata, približno 250 g\n- olivno olje, približno 10 g",
+            "Malica:\n- jogurt ali skyr brez laktoze, približno 150-200 g\n- jagodičevje ali sadje, približno 100-150 g\n- oreščki, približno 10-15 g",
+            "Večerja:\n- riba, jajca ali pusto meso, približno 130-160 g\n- krompir, riž ali kvinoja, približno 150-220 g kuhano\n- solata ali kuhana zelenjava, približno 200 g\n- olivno olje, približno 5 g",
+            'Najboljši naslednji korak: če želite, lahko to spremenim v 3-dnevno verzijo z enako 1600 kcal in gramažno strukturo.',
+        ]);
+    }
+
+    return implode("\n\n", [
+        'Naravno — evo praktičan primjer za 1 dan, okvirno 1600 kcal' . ($gluten_free ? ', bez glutena' : '') . ', s gramažama. Ovo je orijentacijski jelovnik, ne medicinski plan prehrane.',
+        "Doručak:\n- 2 jaja, oko 100 g\n- kuhana riža ili bezglutenski kruh u odgovarajućoj količini, oko 120 g\n- povrće, oko 150 g\n- kava s mlijekom bez laktoze ako vam tako odgovara",
+        "Ručak:\n- pileća ili pureća prsa, oko 150 g\n- kuhana riža ili krumpir, oko 180-220 g\n- miješano povrće ili salata, oko 250 g\n- maslinovo ulje, oko 10 g",
+        "Užina:\n- jogurt ili skyr bez laktoze, oko 150-200 g\n- bobičasto voće ili voće, oko 100-150 g\n- orašasti plodovi, oko 10-15 g",
+        "Večera:\n- riba, jaja ili nemasno meso, oko 130-160 g\n- krumpir, riža ili kvinoja, oko 150-220 g kuhano\n- salata ili kuhano povrće, oko 200 g\n- maslinovo ulje, oko 5 g",
+        'Najbolji sljedeći korak: ako želite, mogu ovo pretvoriti u 3-dnevnu verziju s istom 1600 kcal i gramažnom strukturom.',
+    ]);
+}
+
+function fcc_ai_strip_public_product_tail_from_utility_reply(string $content): string {
+    $blocks = preg_split('/\n\s*\n/u', trim($content)) ?: [];
+    $blocks = array_values(array_filter($blocks, static function($block): bool {
+        $block = trim((string) $block);
+
+        if($block === '') {
+            return false;
+        }
+
+        return !fcc_ai_contains_keywords($block, [
+            'ako želite preporuku zadržati jasnom',
+            'ako zelite preporuku zadrzati jasnom',
+            'if you want to keep the recommendation clear',
+            'če želite priporočilo ohraniti jasno',
+            'najbrži sljedeći korak je otvoriti fcc članak',
+            'najbrzi sljedeci korak je otvoriti fcc clanak',
+            'najlažji naslednji korak je odpreti povezan fcc članek',
+            'forever checkout',
+            'referral',
+        ]);
+    }));
+
+    return trim(implode("\n\n", $blocks));
+}
+
 function fcc_ai_is_public_system_explainer_request(string $message, string $previous_user_message = '', array $previous_intent = []): bool {
     if(fcc_ai_contains_phrase_keywords($message, [
         'kako točno radi vaš ai sustav', 'kako tocno radi vas ai sustav',
@@ -6960,11 +7139,65 @@ function fcc_ai_is_public_dry_palms_request(string $message): bool {
     ]);
 }
 
+function fcc_ai_is_public_vague_menstrual_cycle_request(string $message): bool {
+    $message = mb_strtolower(trim($message));
+
+    if($message === '') {
+        return false;
+    }
+
+    $compact_message = preg_replace('/[^\p{L}\p{N}\s]+/u', ' ', $message) ?? $message;
+    $words = array_values(array_filter(preg_split('/\s+/u', trim($compact_message)) ?: []));
+
+    if(count($words) > 3) {
+        return false;
+    }
+
+    return fcc_ai_contains_keywords($message, ['menstrualni ciklus', 'menstruacija', 'ciklus']);
+}
+
+function fcc_ai_is_public_beta_glucan_combination_request(string $message, string $previous_user_message = ''): bool {
+    if(!fcc_ai_contains_keywords($message, ['beta glukan', 'betaglukan', 'beta-glukan', 'beta glucan'])) {
+        return false;
+    }
+
+    return fcc_ai_contains_keywords($message, [
+        'može li', 'moze li', 'može se', 'moze se', 'kombinir', 'zajedno', 'skupa', 'pit', 'piti',
+    ]) || (
+        $previous_user_message !== ''
+        && fcc_ai_contains_keywords($previous_user_message, ['kombinir', 'zajedno', 'pit', 'piti'])
+    );
+}
+
+function fcc_ai_is_public_cycle_product_explanation_followup(string $message, string $previous_user_message = ''): bool {
+    if($previous_user_message === '' || !fcc_ai_contains_keywords($previous_user_message, ['ciklus', 'menstru', 'pms'])) {
+        return false;
+    }
+
+    return fcc_ai_contains_keywords($message, [
+        'objasniti svaki proizvod', 'objasni svaki proizvod', 'svaki proizvod posebno',
+        'zašto baš njega', 'zasto bas njega', 'zašto njega', 'zasto njega',
+    ]);
+}
+
 function fcc_ai_is_public_low_pressure_safety_request(string $message, string $previous_user_message = '', array $previous_intent = []): bool {
     $has_low_pressure_signal = fcc_ai_contains_phrase_keywords($message, [
         'nizek pritisk', 'nizki pritisk', 'nizak tlak', 'niski tlak',
         'low pressure', 'low blood pressure', 'hypotension',
     ]);
+
+    $previous_has_low_pressure_signal = $previous_user_message !== ''
+        && fcc_ai_contains_phrase_keywords($previous_user_message, [
+            'nizek pritisk', 'nizki pritisk', 'nizak tlak', 'niski tlak',
+            'low pressure', 'low blood pressure', 'hypotension',
+        ])
+        && fcc_ai_contains_keywords($previous_user_message, ['argi', 'argo', 'forever argi', 'forever argo']);
+
+    if(!$has_low_pressure_signal && $previous_has_low_pressure_signal && fcc_ai_contains_keywords($message, [
+        'slovenskem jeziku', 'slovenski jezik', 'odgovarjaj', 'odgovori', 'piši', 'pisi',
+    ])) {
+        return true;
+    }
 
     if(!$has_low_pressure_signal) {
         return false;
@@ -6988,6 +7221,18 @@ function fcc_ai_get_public_guarded_request_type(string $message, array $intent =
 
     if(fcc_ai_is_public_dry_palms_request($message)) {
         return 'dry_palms_skin_request';
+    }
+
+    if(fcc_ai_is_public_vague_menstrual_cycle_request($message)) {
+        return 'vague_menstrual_cycle_request';
+    }
+
+    if(fcc_ai_is_public_beta_glucan_combination_request($message, $previous_user_message)) {
+        return 'beta_glucan_combination_request';
+    }
+
+    if(fcc_ai_is_public_cycle_product_explanation_followup($message, $previous_user_message)) {
+        return 'cycle_product_explanation_followup';
     }
 
     if(fcc_ai_is_public_eu_claim_copy_request($message, $previous_user_message, $previous_intent)) {
@@ -7191,7 +7436,8 @@ function fcc_ai_resolve_public_reply_language(string $language, string $message 
     if(fcc_ai_contains_keywords($message, [
         'zakaj', 'priporoča', 'priporoca', 'želod', 'zelod', 'slovenšč', 'slovens',
         'potrebujem', 'brazgotin', 'negovalna', 'učinkovita', 'ucinkovita', 'mamice', 'otroke',
-        'jemljem', 'pritisk', 'kaj mi svetujes', 'nasvet',
+        'jemljem', 'pritisk', 'kaj mi svetujes', 'nasvet', 'sejem', 'sejmu', 'frizerstva',
+        'objavo', 'objava', 'zgodbo', 'ljubljani',
     ])) {
         return 'sl';
     }
@@ -8890,8 +9136,8 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
             'lock_product_scope' => true,
         ],
         'digestive_routine_support' => [
-            'patterns' => ['gastritis', 'gaszritis', 'nadutost', 'bloated stomach', 'bloating', 'problem sa želucem', 'problem sa zelucem', 'želudac', 'zeludac', 'iritabilnog kolona', 'iritabilni kolon', 'iritabilno crijevo', 'ibs', 'problem sa želucem', 'problem sa želucem'],
-            'preferred_patterns' => ['aloe vera gel', 'aloe gel', 'aloe peaches', 'aloe mango', 'berry nectar', 'active pro b', 'pro b', 'pro-b', 'fiber'],
+            'patterns' => ['gastritis', 'gaszritis', 'nadutost', 'bloated stomach', 'bloating', 'problem sa želucem', 'problem sa zelucem', 'želudac', 'zeludac', 'iritabilnog kolona', 'iritabilni kolon', 'iritabilno crijevo', 'iritabilna crijeva', 'iritabilnim crijevima', 'iritabilnih crijeva', 'iritabilno crevo', 'iritabilna creva', 'ibs', 'problem sa želucem', 'problem sa želucem'],
+            'preferred_patterns' => ['aloe vera gel', 'aloe gel', 'active pro b', 'pro b', 'pro-b'],
             'primary_product' => 'Forever Aloe Vera Gel™',
             'support_products' => ['Forever Active Pro B'],
             'label' => [
@@ -8917,6 +9163,7 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
                 'en' => 'If you want a one-month frame, this is most often positioned as 3 x Forever Aloe Vera Gel™ and 1 x Forever Active Pro B.',
             ],
             'suppress_generic_questions' => true,
+            'lock_product_scope' => true,
         ],
         'urinary_tract_support' => [
             'patterns' => ['urinarni trakt', 'urinarnog trakta', 'urinarni sustav', 'urinarn', 'mokraćni trakt', 'mokracni trakt', 'mokraćnog trakta', 'mokracnog trakta', 'mokraćni sustav', 'mokracni sustav', 'mokraćn', 'mokracn', 'upala mokraćnih puteva', 'upala mokracnih puteva', 'putev', 'upala mjehura', 'mjehur', 'cistitis', 'cistit', 'urinarni problemi', 'mokraćni problemi', 'mokracni problemi'],
@@ -8946,6 +9193,39 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
                 'en' => 'If you want a simple one-month frame right away, this is most often positioned as 3 x Forever Aloe Berry Nectar® and 1 pack of Aloe Blossom Herbal Tea. If you want, I can also write the simplest daily usage rhythm.',
             ],
             'suppress_generic_questions' => true,
+            'lock_product_scope' => true,
+        ],
+        'herpes_zoster_nerve_support' => [
+            'patterns' => ['herpes zoster', 'zoster', 'zona zoster', 'šindra', 'sindra', 'shingles'],
+            'preferred_patterns' => ['aloe vera gel', 'aloe gel', 'arctic sea', 'b12'],
+            'primary_product' => 'Forever Aloe Vera Gel™',
+            'support_products' => ['Forever Arctic Sea', 'Forever B12 Plus'],
+            'label' => [
+                'hr' => 'herpes zoster i oprezna nutritivna podrška živcima',
+                'en' => 'shingles and cautious nerve-nutrition support',
+            ],
+            'opening_note' => [
+                'hr' => 'Kod herpes zostera, posebno na glavi ili uz neuralgiju, prvi korak je liječnik jer je riječ o ozbiljnijem živčanom i kožnom kontekstu. Forever smjer ovdje smije ostati samo opća nutritivna podrška uz liječnički plan, bez lokalnog Aloe Lips skretanja.',
+                'en' => 'With shingles, especially on the head or with neuralgia, the first step is a doctor because this is a more serious nerve and skin context. The Forever direction here may stay only as general nutritional support alongside medical guidance, without drifting into Aloe Lips.',
+            ],
+            'recommendation_lines' => [
+                'hr' => [
+                    'Forever Aloe Vera Gel™ je ovdje glavni opći Forever smjer kao osnovni aloe napitak za svakodnevnu nutritivnu rutinu.',
+                    'Forever Arctic Sea je logična support opcija zbog omega-3 smjera kada je cilj šira nutritivna podrška organizmu.',
+                    'Forever B12 Plus je dodatni smjer kada je naglasak na osjetljivim, upaljenim ili oštećenim živcima jer se vitamin B12 često veže uz nutritivnu podršku živčanom sustavu.',
+                ],
+                'en' => [
+                    'Forever Aloe Vera Gel™ is the main general Forever direction here as the base aloe drink for an everyday nutrition routine.',
+                    'Forever Arctic Sea is the logical support option because of the omega-3 direction when broader nutritional support is wanted.',
+                    'Forever B12 Plus is an additional direction when sensitive, inflamed or damaged nerves are the focus because vitamin B12 is commonly linked with nutritional support for the nervous system.',
+                ],
+            ],
+            'monthly_quantity_note' => [
+                'hr' => 'Ako želite okvir za mjesec dana nakon liječničke potvrde, ovdje se najčešće gleda 3 x Forever Aloe Vera Gel™, 1 kutija Forever Arctic Sea i 1 x Forever B12 Plus.',
+                'en' => 'If you want a one-month frame after medical confirmation, this is most often positioned as 3 x Forever Aloe Vera Gel™, 1 box of Forever Arctic Sea and 1 x Forever B12 Plus.',
+            ],
+            'suppress_generic_questions' => true,
+            'sensitive_support_only' => true,
             'lock_product_scope' => true,
         ],
         'herpes_support' => [
@@ -14036,6 +14316,12 @@ function fcc_ai_get_product_advisor_effective_condition_matches(string $message,
         }));
     }
 
+    if(in_array('herpes_zoster_nerve_support', $match_keys, true)) {
+        $matches = array_values(array_filter($matches, static function(array $match) {
+            return (string) ($match['key'] ?? '') !== 'herpes_support';
+        }));
+    }
+
     if(fcc_ai_is_public_contradictory_bowel_request($message) && in_array('digestive_routine_support', $match_keys, true)) {
         $matches = array_values(array_filter($matches, static function(array $match) {
             return (string) ($match['key'] ?? '') !== 'constipation_fiber_support';
@@ -14571,8 +14857,8 @@ function fcc_ai_sort_public_knowledge_suggestions(array $suggestions, string $as
     ) {
         $priority_groups = array_merge($priority_groups, fcc_ai_contains_keywords($message_haystack, ['candida', 'kandida', 'iritabil', 'ibs'])
             ? [
-                ['pro b', 'pro-b', 'active pro b'],
                 ['aloe vera gel', 'aloe peaches', 'aloe mango', 'berry nectar', 'aloe berry'],
+                ['pro b', 'pro-b', 'active pro b'],
                 ['fiber'],
             ]
             : [
@@ -14899,6 +15185,10 @@ function fcc_ai_build_public_recommendation_payload(string $assistant_type, stri
     ) {
         $same_problem_followup_clarification = true;
     }
+    $recent_user_context = trim((string) ($context['recent_user_context'] ?? ''));
+    $utility_followup_context = trim($recent_user_context . "\n" . $follow_up_anchor_message);
+    $product_utility_followup = $assistant_type === 'product_advisor'
+        && fcc_ai_is_public_product_utility_followup_context($message, $utility_followup_context);
     $skip_product_tail = $assistant_type === 'product_advisor'
         && (fcc_ai_is_public_product_utility_request($message) || $condition_usage_followup);
     $knowledge_suggestions = array_values(array_filter($context['knowledge_suggestions'] ?? [], static function($suggestion) {
@@ -15850,6 +16140,7 @@ function fcc_ai_build_public_recommendation_payload(string $assistant_type, stri
         'sensitive_support_only' => $sensitive_support_only,
         'force_local_reply' => $force_local_reply,
         'skip_product_tail' => $skip_product_tail,
+        'product_utility_followup' => $product_utility_followup,
         'same_problem_followup_clarification' => $same_problem_followup_clarification,
         'system_brief' => implode("\n", array_filter($system_brief_lines)),
     ];
@@ -16646,6 +16937,7 @@ function fcc_ai_has_high_risk_public_medical_context(string $message): bool {
 
     return fcc_ai_contains_keywords($message, [
         'karcinom', 'karcinoma', 'rak', 'kemoterap', 'transplant', 'transplat',
+        'herpes zoster', 'zoster', 'zona zoster', 'šindra', 'sindra', 'shingles',
         'moždani udar', 'mozdani udar', 'moždanog udara', 'mozdanog udara', 'mozganski kap',
         'cellulitis', 'celulitis', 'polip', 'letrozol', 'reseligo', 'bazofil', 'urati', 'psa',
         'štitna', 'stitna', 'štitnoj', 'stitnoj', 'miom', 'maternic', 'slabokrv',
@@ -18493,6 +18785,87 @@ function fcc_ai_generate_public_reply(string $assistant_type, string $message, a
                 'en' => 'If you want, I can also write the simplest day routine for the palms only, without adding anything else.',
                 'sl' => 'Če želite, lahko napišem tudi najbolj preprosto dnevno rutino samo za dlani, brez dodajanja česa drugega.',
                 default => 'Ako želite, mogu napisati i najjednostavniju dnevnu rutinu samo za dlanove, bez dodavanja ičega drugoga.',
+            };
+
+            return [
+                'content' => trim(implode("\n\n", array_filter($content_blocks))),
+                'language' => $language,
+                'lead_capture' => $lead_capture,
+                'intent' => $intent,
+                'recommendation_payload' => $recommendation_payload,
+                'knowledge_suggestions' => [],
+            ];
+        }
+
+        if($guarded_request_type === 'vague_menstrual_cycle_request') {
+            $content_blocks[] = match($language) {
+                'en' => 'Menstrual cycle can mean several different directions, so I would first narrow it down before suggesting products.',
+                'sl' => 'Menstrualni ciklus lahko pomeni več različnih smeri, zato bi najprej zožil vprašanje, preden predlagam izdelke.',
+                default => 'Menstrualni ciklus može značiti nekoliko različitih smjerova, pa bih prvo suzio pitanje prije preporuke proizvoda.',
+            };
+
+            $content_blocks[] = match($language) {
+                'en' => 'Is it more about painful periods, irregular cycle, PMS, or general female balance?',
+                'sl' => 'Gre bolj za boleče menstruacije, nereden ciklus, PMS ali splošno žensko ravnovesje?',
+                default => 'Mislite li više na bolne menstruacije, neredovit ciklus, PMS ili opću podršku ženskom balansu?',
+            };
+
+            return [
+                'content' => trim(implode("\n\n", array_filter($content_blocks))),
+                'language' => $language,
+                'lead_capture' => $lead_capture,
+                'intent' => $intent,
+                'recommendation_payload' => $recommendation_payload,
+                'knowledge_suggestions' => [],
+            ];
+        }
+
+        if($guarded_request_type === 'beta_glucan_combination_request') {
+            $content_blocks[] = match($language) {
+                'en' => 'In general, aloe drink and beta glucan are not the same type of supplement, so people often place them in the same day but separate them in the routine.',
+                'sl' => 'Na splošno aloe napitek in beta glukan nista isti tip dodatka, zato ju ljudje pogosto uvrstijo v isti dan, vendar ločeno v rutini.',
+                default => 'Općenito, aloe napitak i beta glukan nisu isti tip dodatka, pa ih ljudi često stave u isti dan, ali ih odvoje u rutini.',
+            };
+
+            $content_blocks[] = match($language) {
+                'en' => "The clean practical frame is:\n- aloe drink in one part of the day\n- beta glucan later, according to the declaration of that exact product\n- enough water through the day",
+                'sl' => "Najčistejši praktični okvir je:\n- aloe napitek v enem delu dneva\n- beta glukan kasneje, po deklaraciji točno tega izdelka\n- dovolj vode čez dan",
+                default => "Najčišći praktični okvir je:\n- aloe napitak u jednom dijelu dana\n- beta glukan kasnije, prema deklaraciji tog točnog proizvoda\n- dovoljno tekućine kroz dan",
+            };
+
+            $content_blocks[] = match($language) {
+                'en' => 'If there is therapy, a diagnosed condition, pregnancy, breastfeeding, or stronger symptoms in the background, confirm the combination with a doctor or pharmacist first.',
+                'sl' => 'Če je v ozadju terapija, diagnoza, nosečnost, dojenje ali močnejši simptomi, kombinacijo najprej potrdite z zdravnikom ali farmacevtom.',
+                default => 'Ako su u pozadini terapija, dijagnoza, trudnoća, dojenje ili jači simptomi, kombinaciju prvo potvrdite s liječnikom ili ljekarnikom.',
+            };
+
+            return [
+                'content' => trim(implode("\n\n", array_filter($content_blocks))),
+                'language' => $language,
+                'lead_capture' => $lead_capture,
+                'intent' => $intent,
+                'recommendation_payload' => $recommendation_payload,
+                'knowledge_suggestions' => [],
+            ];
+        }
+
+        if($guarded_request_type === 'cycle_product_explanation_followup') {
+            $content_blocks[] = match($language) {
+                'en' => 'For cycle balance, I would keep the explanation inside the same mapped direction and not open a new beauty or unrelated product routine.',
+                'sl' => 'Pri ravnovesju ciklusa bi razlago ohranil znotraj iste smeri in ne bi odpiral nove beauty ali nepovezane rutine izdelkov.',
+                default => 'Za uravnoteženje ciklusa objašnjenje bih zadržao unutar istog smjera, bez otvaranja nove beauty ili nepovezane rutine proizvoda.',
+            };
+
+            $content_blocks[] = match($language) {
+                'en' => "Shortly by product:\n- Forever Aloe Vera Gel™: the simple aloe base for an everyday inside routine\n- Forever Multi Maca: the support direction for vitality and female balance\n- Forever Vitolize Women: the broader women-focused nutritional support when you want a wider routine",
+                'sl' => "Kratko po izdelku:\n- Forever Aloe Vera Gel™: preprosta aloe osnova za vsakodnevno notranjo rutino\n- Forever Multi Maca: podporna smer za vitalnost in žensko ravnovesje\n- Forever Vitolize Women: širša prehranska podpora za ženske, ko želite bolj zaokroženo rutino",
+                default => "Kratko po proizvodu:\n- Forever Aloe Vera Gel™: jednostavna aloe baza za svakodnevnu unutarnju rutinu\n- Forever Multi Maca: support smjer za vitalnost i ženski balans\n- Forever Vitolize Women: šira nutritivna podrška za žene kada želite zaokruženiju rutinu",
+            };
+
+            $content_blocks[] = match($language) {
+                'en' => 'The cleanest first step is to choose the main goal first: cycle balance, PMS, painful periods, or irregular cycle.',
+                'sl' => 'Najčistejši prvi korak je najprej izbrati glavni cilj: ravnovesje ciklusa, PMS, boleče menstruacije ali nereden ciklus.',
+                default => 'Najčišći prvi korak je prvo odabrati glavni cilj: balans ciklusa, PMS, bolne menstruacije ili neredovit ciklus.',
             };
 
             return [
@@ -24369,6 +24742,7 @@ function fcc_ai_handle_public_message(array $payload): array {
             'previous_condition_context_exists' => !empty($previous_condition_keys),
             'follow_up_message' => $current_user_message,
             'follow_up_anchor_message' => $followup_anchor_user_message,
+            'recent_user_context' => $recent_user_context,
         ]);
     }
 
@@ -24649,6 +25023,44 @@ function fcc_ai_handle_public_message(array $payload): array {
             return mb_stripos((string) $block, $owner_name) === false;
         }));
         $reply_content = trim(implode("\n\n", $reply_blocks));
+    }
+
+    $product_utility_followup_context = trim($recent_user_context . "\n" . $followup_anchor_user_message . "\n" . $previous_user_message);
+    $is_product_utility_followup_context = (string) ($conversation->assistant_type ?? '') === 'product_advisor'
+        && fcc_ai_is_public_product_utility_followup_context($current_user_message, $product_utility_followup_context);
+
+    if($is_product_utility_followup_context) {
+        $meal_plan_followup_reply = fcc_ai_build_public_meal_plan_followup_reply(
+            $current_user_message,
+            $product_utility_followup_context,
+            $resolved_language
+        );
+        $reply_content = $meal_plan_followup_reply !== ''
+            ? $meal_plan_followup_reply
+            : fcc_ai_strip_public_product_tail_from_utility_reply($reply_content);
+        $reply['recommendation_payload'] = [
+            'theme_matches' => [],
+            'theme_keys' => [],
+            'condition_matches' => [],
+            'condition_keys' => [],
+            'opening_note' => '',
+            'recommendation_lines' => [],
+            'question_lines' => [],
+            'needs_clarification' => false,
+            'combination_note' => '',
+            'discount_note' => '',
+            'primary_product' => '',
+            'support_products' => [],
+            'monthly_quantity_note' => '',
+            'sensitive_support_only' => false,
+            'force_local_reply' => false,
+            'skip_product_tail' => true,
+            'product_utility_followup' => true,
+            'same_problem_followup_clarification' => false,
+            'system_brief' => '',
+        ];
+        $knowledge_suggestions = [];
+        $reply['knowledge_suggestions'] = [];
     }
 
     if(isset($reply['recommendation_payload']) && is_array($reply['recommendation_payload'])) {
@@ -25241,6 +25653,133 @@ function fcc_ai_generate_internal_coach_reply(string $message, array $context = 
     $primary_destination = fcc_ai_get_internal_coach_primary_destination($ai_plan, $language);
     $reply_mode = 'general';
     $one_next_step = '';
+
+    if(
+        fcc_ai_contains_keywords($message, ['vlastitu rutinu', 'vlasitu rutinu', 'osobnu rutinu', 'za sebe', 'ritual'])
+        && (
+            fcc_ai_contains_keywords($message . "\n" . $recent_coach_context, ['aloe', 'aloa', 'napit', 'aloe vera gel', 'aloe vera'])
+            || fcc_ai_contains_keywords($message, ['vlastitu rutinu', 'vlasitu rutinu'])
+        )
+    ) {
+        $content = $language === 'en'
+            ? implode("\n\n", [
+                'For your own routine, keep it simple and neutral: drink it only when it suits you well and only in the quantity written on the product label.',
+                'Tie it to one stable moment in the day, for example breakfast or mid-morning, so you can notice how it feels. Do not force it when you feel weak, irritated or unwell. If it does not suit you, skip it that day.',
+                'Best next step now: choose one steady moment in the day and track how the aloe drink suits you for 3 to 5 days.',
+            ])
+            : ($language === 'sl'
+                ? implode("\n\n", [
+                    'Za lastno rutino naj ostane preprosto in nevtralno: pij ga samo, ko ti dobro ustreza, in samo v količini, ki je navedena na etiketi izdelka.',
+                    'Veži ga na en stabilen trenutek v dnevu, na primer zajtrk ali dopoldan, da lažje opaziš, kako ti ustreza. Ne pij ga na silo, ko si šibka, razdražena ali se ne počutiš dobro. Če ti ne ustreza, ga tisti dan preskoči.',
+                    'Najboljša naslednja poteza zdaj: izberi en stalen trenutek v dnevu in 3 do 5 dni spremljaj, kako ti aloe napitek ustreza.',
+                ])
+                : implode("\n\n", [
+                    'Za vlastitu rutinu, drži se jednostavnog i neutralnog pravila: pij ga samo kad ti dobro sjeda i u količini s etikete proizvoda.',
+                    'Veži ga uz jedan stabilan trenutak u danu, primjerice uz doručak ili sredinom jutra, da lakše pratiš kako se osjećaš. Ne bih ga uzimala na silu kad si malaksala, nadražena ili se ne osjećaš dobro. Ako osjetiš da ti ne paše, preskoči taj dan.',
+                    'Najbolji sljedeći korak sada: odaberi jedan stalni trenutak u danu i prati kako ti Aloe napitak sjeda 3–5 dana zaredom.',
+                ]));
+
+        return [
+            'content' => $content,
+            'language' => $language,
+            'knowledge_suggestions' => [],
+            'reply_mode' => 'coach_aloe_personal_routine',
+            'force_local_preview' => true,
+            'next_step' => $language === 'en'
+                ? 'Choose one steady daily moment and track tolerance for 3 to 5 days.'
+                : ($language === 'sl'
+                    ? 'Izberi en stalen dnevni trenutek in spremljaj toleranco 3 do 5 dni.'
+                    : 'Odaberi jedan stalni dnevni trenutak i prati toleranciju 3 do 5 dana.'),
+        ];
+    }
+
+    if(fcc_ai_is_internal_coach_personal_health_product_request($message, $recent_coach_context)) {
+        $content = $language === 'en'
+            ? implode("\n\n", [
+                'I would make a small safety cut here: Coach should not build a personal product routine for a health issue or present products as treatment.',
+                'For a personal health situation, the safest first lane is a doctor, pharmacist or specialist who knows the full context. Inside FCC, the clean next step is to use the public FCC Recommendation chat/product flow, where the person can explain the situation directly and leave contact if a partner should follow up.',
+                'As Coach, I can help you with the communication, not with prescribing. A safe DM line would be: "I do not want to guess around a health issue, but I can send you the FCC Recommendation direction and connect you for a personal follow-up."',
+                'Best next step now: send them to the public FCC Recommendation flow, or give me the exact public message you want to send and I will make it short and compliant.',
+            ])
+            : ($language === 'sl'
+                ? implode("\n\n", [
+                    'Tukaj bi naredil majhen varnostni rez: Coach naj ne sestavlja osebne rutine izdelkov za zdravstveno težavo in izdelkov ne sme predstaviti kot zdravljenje.',
+                    'Pri osebni zdravstveni situaciji je najvarnejši prvi korak zdravnik, farmacevt ali specialist, ki pozna celoten kontekst. Znotraj FCC je najčistejši naslednji korak javni FCC Priporočilo chat oziroma produktni tok, kjer lahko oseba neposredno opiše situacijo in pusti kontakt za nadaljevanje.',
+                    'Kot Coach ti lahko pomagam s komunikacijo, ne s predpisovanjem. Varna DM poved je: "Pri zdravstveni težavi ne želim ugibati, lahko pa ti pošljem FCC priporočilo in te povežem za osebni nadaljnji pogovor."',
+                    'Najboljša naslednja poteza zdaj: usmeri osebo v javni FCC Priporočilo tok ali mi pošlji točno javno sporočilo, ki ga želiš poslati, pa ga skrajšam in uskladim.',
+                ])
+                : implode("\n\n", [
+                    'Ovdje bih napravio mali sigurni rez: Coach ne treba slagati osobnu rutinu proizvoda za zdravstveni problem niti proizvode predstavljati kao liječenje.',
+                    'Za osobnu zdravstvenu situaciju prvi siguran smjer su liječnik, ljekarnik ili stručnjak koji poznaje cijeli kontekst. Unutar FCC-a najčišći sljedeći korak je javni FCC Preporuka chat ili produktni tok, gdje osoba može direktno opisati situaciju i ostaviti kontakt ako želi da joj se partner javi.',
+                    'Kao Coach mogu pomoći s komunikacijom, ne s propisivanjem. Sigurna DM rečenica bila bi: "Ne želim nagađati oko zdravstvenog problema, ali mogu ti poslati FCC Preporuku i povezati te za osobni nastavak."',
+                    'Najbolji sljedeći korak sada: pošalji osobu u javni FCC Preporuka tok ili mi daj točnu javnu poruku koju želiš poslati pa ću je skratiti i uskladiti.',
+                ]));
+
+        return [
+            'content' => $content,
+            'language' => $language,
+            'knowledge_suggestions' => [],
+            'reply_mode' => 'coach_health_product_boundary',
+            'force_local_preview' => true,
+            'next_step' => $language === 'en'
+                ? 'Use the public FCC Recommendation flow or send me the public DM text to refine.'
+                : ($language === 'sl'
+                    ? 'Uporabi javni FCC Priporočilo tok ali mi pošlji javno DM besedilo za dodelavo.'
+                    : 'Koristi javni FCC Preporuka tok ili mi pošalji javnu DM poruku za doradu.'),
+        ];
+    }
+
+    if(fcc_ai_is_internal_coach_weekly_outcome_location_request($message)) {
+        $content = $language === 'en'
+            ? implode("\n\n", [
+                'That belongs in the Weekly plan area, under the achieved result / weekly outcome part.',
+                "Open Dashboard, find the current Weekly plan card and enter the result in the achieved result fields:\n- what was completed\n- best response or win\n- main blocker\n- next adjustment",
+                'Best next step now: open Dashboard and fill in the achieved result for this week before starting a new plan.',
+            ])
+            : ($language === 'sl'
+                ? implode("\n\n", [
+                    'To spada v del Tedenski plan, pod doseženi rezultat oziroma weekly outcome.',
+                    "Odpri Dashboard, poišči trenutno kartico Tedenski plan in vpiši rezultat v polja za dosežke:\n- kaj je bilo narejeno\n- najboljši odziv ali zmaga\n- glavna blokada\n- naslednja prilagoditev",
+                    'Najboljša naslednja poteza zdaj: odpri Dashboard in najprej vpiši doseženi rezultat za ta teden.',
+                ])
+                : implode("\n\n", [
+                    'To je u bloku Tjedni plan, u dijelu Ostvareni rezultat.',
+                    "Otvori Dashboard, pronađi aktualni Tjedni plan i u Ostvareni rezultat upiši kratko:\n- što je odrađeno\n- najbolji odgovor ili postignuća\n- glavnu blokadu\n- sljedeću prilagodbu",
+                    'Najbolji sljedeći korak sada: otvori Dashboard i prvo upiši Ostvareni rezultat za ovaj tjedan, pa tek onda kreći u novi plan.',
+                ]));
+
+        return [
+            'content' => $content,
+            'language' => $language,
+            'knowledge_suggestions' => [],
+            'reply_mode' => 'weekly_outcome_location',
+            'force_local_preview' => true,
+            'next_step' => $language === 'en'
+                ? 'Open Dashboard and fill in the achieved result.'
+                : ($language === 'sl'
+                    ? 'Odpri Dashboard in vpiši doseženi rezultat.'
+                    : 'Otvori Dashboard i upiši Ostvareni rezultat.'),
+        ];
+    }
+
+    if(fcc_ai_internal_coach_is_event_content_context($message)) {
+        $event_language = fcc_ai_resolve_public_reply_language('auto', $message);
+        $event_language = in_array($event_language, ['hr', 'sl', 'en'], true) ? $event_language : $language;
+        $content = fcc_ai_get_internal_coach_event_content_explainer($event_language);
+
+        return [
+            'content' => $content,
+            'language' => $event_language,
+            'knowledge_suggestions' => [],
+            'reply_mode' => 'event_content',
+            'force_local_preview' => true,
+            'next_step' => $event_language === 'en'
+                ? 'Publish one fair post or story with one clear CTA.'
+                : ($event_language === 'sl'
+                    ? 'Objavi eno objavo ali story iz sejma z enim jasnim CTA-jem.'
+                    : 'Objavi jednu objavu ili story sa sajma s jednim jasnim CTA-om.'),
+        ];
+    }
 
     if($is_product_positioning_request) {
         if($coach_recognized_product_title === '') {
