@@ -8020,6 +8020,406 @@ class AdminLeaderOperatingSystem extends Controller {
         redirect('admin/leader-operating-system' . (!empty($redirect_query) ? '?' . http_build_query($redirect_query) : ''));
     }
 
+    private function get_funnel_dashboard_payload(string $period_start_datetime, string $previous_period_start_datetime, array $rows = [], string $period_key = '30d'): array {
+        $payload = [
+            'is_available' => false,
+            'totals' => [
+                'leads_period' => 0,
+                'previous_leads_period' => 0,
+                'lead_delta' => 0,
+                'lead_signal_points' => 0,
+                'demo_requests_period' => 0,
+                'active_demos' => 0,
+                'expired_demos' => 0,
+                'converted_demos' => 0,
+                'shop_clicks_period' => 0,
+                'owners_with_leads' => 0,
+                'funnels_total' => 0,
+                'active_funnels' => 0,
+                'funnels_with_leads' => 0,
+            ],
+            'top_collaborators' => [],
+            'recent_contacts' => [],
+            'demo_queue' => [],
+            'funnels' => [],
+        ];
+
+        if(!function_exists('vip_funnel_ensure_runtime_schema') || !function_exists('vip_funnel_has_table')) {
+            return $payload;
+        }
+
+        vip_funnel_ensure_runtime_schema();
+
+        if(!vip_funnel_has_table('vip_leads')) {
+            return $payload;
+        }
+
+        $payload['is_available'] = true;
+        $period_start_sql = database()->real_escape_string($period_start_datetime);
+        $previous_period_start_sql = database()->real_escape_string($previous_period_start_datetime);
+        $period_key = in_array($period_key, ['7d', '30d', '90d'], true) ? $period_key : '30d';
+        $rows_by_user_id = [];
+
+        foreach($rows as $row) {
+            $user_id = (int) ($row['user_id'] ?? 0);
+
+            if($user_id <= 0) {
+                continue;
+            }
+
+            $rows_by_user_id[$user_id] = $row;
+        }
+
+        $demo_status_labels = [
+            'requested' => 'Čeka odobrenje',
+            'approved' => 'Odobreno',
+            'active' => 'Aktivan demo',
+            'expiring' => 'Uskoro istječe',
+            'paused' => 'Pauziran',
+            'expired' => 'Istekao',
+            'converted' => 'Konverzija',
+            'closed' => 'Zatvoren',
+            'rejected' => 'Odbijen',
+            'captured' => 'Kontakt',
+        ];
+        $demo_status_classes = [
+            'requested' => 'status-warning',
+            'approved' => 'status-info',
+            'active' => 'status-success',
+            'expiring' => 'status-warning',
+            'paused' => 'status-dark',
+            'expired' => 'status-dark',
+            'converted' => 'status-success',
+            'closed' => 'status-dark',
+            'rejected' => 'status-danger',
+            'captured' => 'status-info',
+        ];
+        $normalize_demo_status = static function(string $status) use ($demo_status_labels, $demo_status_classes): array {
+            $status = trim($status) !== '' ? trim($status) : 'captured';
+
+            return [
+                'key' => $status,
+                'label' => (string) ($demo_status_labels[$status] ?? ucfirst(str_replace('_', ' ', $status))),
+                'class' => (string) ($demo_status_classes[$status] ?? 'status-info'),
+            ];
+        };
+        $to_array = static function($value): array {
+            if(function_exists('vip_funnel_to_array')) {
+                return vip_funnel_to_array($value ?? []);
+            }
+
+            if(is_array($value)) {
+                return $value;
+            }
+
+            if(is_object($value)) {
+                return (array) $value;
+            }
+
+            if(is_string($value) && trim($value) !== '') {
+                $decoded = json_decode($value, true);
+                return is_array($decoded) ? $decoded : [];
+            }
+
+            return [];
+        };
+        $signal_map = function_exists('vip_funnel_get_public_qualification_signal_map')
+            ? vip_funnel_get_public_qualification_signal_map($period_start_datetime)
+            : [];
+
+        foreach($signal_map as $signal) {
+            $payload['totals']['shop_clicks_period'] += (int) ($signal['funnel_shop_clicks'] ?? 0);
+            $payload['totals']['lead_signal_points'] += (int) ($signal['funnel_contact_signal'] ?? 0);
+        }
+
+        $lead_totals_result = database()->query("SELECT
+                COUNT(*) AS `leads_period`,
+                COUNT(DISTINCT `owner_user_id`) AS `owners_with_leads`
+            FROM `vip_leads`
+            WHERE `source` = 'vip_funnel_public'
+              AND `datetime` >= '{$period_start_sql}'");
+        $lead_totals = $lead_totals_result ? $lead_totals_result->fetch_object() : null;
+
+        if($lead_totals) {
+            $payload['totals']['leads_period'] = (int) ($lead_totals->leads_period ?? 0);
+            $payload['totals']['owners_with_leads'] = (int) ($lead_totals->owners_with_leads ?? 0);
+        }
+
+        $previous_leads_result = database()->query("SELECT COUNT(*) AS `total`
+            FROM `vip_leads`
+            WHERE `source` = 'vip_funnel_public'
+              AND `datetime` >= '{$previous_period_start_sql}'
+              AND `datetime` < '{$period_start_sql}'");
+        $payload['totals']['previous_leads_period'] = (int) ($previous_leads_result ? ($previous_leads_result->fetch_object()->total ?? 0) : 0);
+        $payload['totals']['lead_delta'] = $payload['totals']['leads_period'] - $payload['totals']['previous_leads_period'];
+
+        if($payload['totals']['lead_signal_points'] <= 0 && $payload['totals']['leads_period'] > 0) {
+            $payload['totals']['lead_signal_points'] = $payload['totals']['leads_period'] * 3;
+        }
+
+        $demo_table_available = vip_funnel_has_table('vip_demo_accounts');
+        $funnels_table_available = vip_funnel_has_table('vip_funnels');
+
+        if($demo_table_available) {
+            $demo_totals_result = database()->query("SELECT
+                    SUM(CASE WHEN `d`.`datetime` >= '{$period_start_sql}' THEN 1 ELSE 0 END) AS `demo_requests_period`,
+                    SUM(CASE WHEN `d`.`status` IN ('active', 'expiring', 'paused', 'approved') THEN 1 ELSE 0 END) AS `active_demos`,
+                    SUM(CASE WHEN `d`.`status` = 'expired' THEN 1 ELSE 0 END) AS `expired_demos`,
+                    SUM(CASE WHEN `d`.`status` = 'converted' THEN 1 ELSE 0 END) AS `converted_demos`
+                FROM `vip_demo_accounts` `d`
+                LEFT JOIN `vip_leads` `l` ON `l`.`vip_lead_id` = `d`.`vip_lead_id`
+                WHERE `l`.`source` = 'vip_funnel_public' OR `l`.`source` IS NULL");
+            $demo_totals = $demo_totals_result ? $demo_totals_result->fetch_object() : null;
+
+            if($demo_totals) {
+                $payload['totals']['demo_requests_period'] = (int) ($demo_totals->demo_requests_period ?? 0);
+                $payload['totals']['active_demos'] = (int) ($demo_totals->active_demos ?? 0);
+                $payload['totals']['expired_demos'] = (int) ($demo_totals->expired_demos ?? 0);
+                $payload['totals']['converted_demos'] = (int) ($demo_totals->converted_demos ?? 0);
+            }
+        }
+
+        if($funnels_table_available) {
+            $funnel_totals_result = database()->query("SELECT
+                    COUNT(*) AS `funnels_total`,
+                    SUM(CASE WHEN `status` = 'active' THEN 1 ELSE 0 END) AS `active_funnels`
+                FROM `vip_funnels`");
+            $funnel_totals = $funnel_totals_result ? $funnel_totals_result->fetch_object() : null;
+
+            if($funnel_totals) {
+                $payload['totals']['funnels_total'] = (int) ($funnel_totals->funnels_total ?? 0);
+                $payload['totals']['active_funnels'] = (int) ($funnel_totals->active_funnels ?? 0);
+            }
+        }
+
+        $top_collaborators_result = database()->query("SELECT
+                `l`.`owner_user_id`,
+                `owners`.`name` AS `owner_name`,
+                `owners`.`email` AS `owner_email`,
+                COUNT(*) AS `leads_period`,
+                COUNT(DISTINCT `l`.`vip_funnel_id`) AS `funnels_with_leads`,
+                SUM(CASE WHEN `l`.`demo_status` IN ('requested', 'approved') THEN 1 ELSE 0 END) AS `demo_pending`,
+                SUM(CASE WHEN `l`.`demo_status` IN ('active', 'expiring', 'paused') THEN 1 ELSE 0 END) AS `demo_active`,
+                SUM(CASE WHEN `l`.`demo_status` = 'expired' THEN 1 ELSE 0 END) AS `demo_expired`,
+                SUM(CASE WHEN `l`.`demo_status` = 'converted' THEN 1 ELSE 0 END) AS `demo_converted`,
+                MAX(COALESCE(`l`.`last_datetime`, `l`.`datetime`)) AS `latest_contact_at`,
+                GROUP_CONCAT(DISTINCT COALESCE(`vf`.`name`, 'VIP Funnel 2.0') ORDER BY `vf`.`name` ASC SEPARATOR ', ') AS `funnel_names`
+            FROM `vip_leads` `l`
+            LEFT JOIN `users` `owners` ON `owners`.`user_id` = `l`.`owner_user_id`
+            LEFT JOIN `vip_funnels` `vf` ON `vf`.`vip_funnel_id` = `l`.`vip_funnel_id`
+            WHERE `l`.`source` = 'vip_funnel_public'
+              AND `l`.`datetime` >= '{$period_start_sql}'
+              AND `l`.`owner_user_id` > 0
+            GROUP BY `l`.`owner_user_id`, `owners`.`name`, `owners`.`email`
+            ORDER BY `leads_period` DESC, `latest_contact_at` DESC
+            LIMIT 20");
+
+        while($top_collaborators_result && ($row = $top_collaborators_result->fetch_object())) {
+            $owner_user_id = (int) ($row->owner_user_id ?? 0);
+
+            if($owner_user_id <= 0) {
+                continue;
+            }
+
+            $owner_row = $rows_by_user_id[$owner_user_id] ?? [];
+            $lead_count = (int) ($row->leads_period ?? 0);
+            $owner_signal = (array) ($signal_map[$owner_user_id] ?? []);
+            $signal_points = (int) ($owner_signal['funnel_contact_signal'] ?? ($lead_count * 3));
+            $shop_clicks = (int) ($owner_signal['funnel_shop_clicks'] ?? 0);
+
+            $payload['top_collaborators'][] = [
+                'owner_user_id' => $owner_user_id,
+                'owner_name' => trim((string) ($row->owner_name ?? '')) ?: (string) ($owner_row['name'] ?? ('Suradnik #' . $owner_user_id)),
+                'owner_email' => trim((string) ($row->owner_email ?? '')) ?: (string) ($owner_row['email'] ?? ''),
+                'leads_period' => $lead_count,
+                'funnels_with_leads' => (int) ($row->funnels_with_leads ?? 0),
+                'demo_pending' => (int) ($row->demo_pending ?? 0),
+                'demo_active' => (int) ($row->demo_active ?? 0),
+                'demo_expired' => (int) ($row->demo_expired ?? 0),
+                'demo_converted' => (int) ($row->demo_converted ?? 0),
+                'shop_clicks_period' => $shop_clicks,
+                'signal_points' => $signal_points + $shop_clicks,
+                'latest_contact_at' => (string) ($row->latest_contact_at ?? ''),
+                'funnel_names' => (string) ($row->funnel_names ?? ''),
+                'los_score' => (int) ($owner_row['leader_os_score'] ?? 0),
+                'status_label' => (string) ($owner_row['status_label'] ?? ''),
+                'status_class' => (string) ($owner_row['status_class'] ?? 'status-info'),
+                'detail_url' => (string) ($owner_row['detail_url'] ?? url('admin/leader-operating-system-leader?user_id=' . $owner_user_id . '&period=' . $period_key)),
+                'admin_user_url' => (string) ($owner_row['admin_user_url'] ?? url('admin/user-view/' . $owner_user_id)),
+            ];
+        }
+
+        if($funnels_table_available) {
+            $funnels_result = database()->query("SELECT
+                    `vf`.`vip_funnel_id`,
+                    `vf`.`user_id`,
+                    `vf`.`name`,
+                    `vf`.`slug`,
+                    `vf`.`status`,
+                    `vf`.`datetime`,
+                    `vf`.`last_datetime`,
+                    `owners`.`name` AS `owner_name`,
+                    `owners`.`email` AS `owner_email`,
+                    COUNT(`l`.`vip_lead_id`) AS `leads_period`
+                FROM `vip_funnels` `vf`
+                LEFT JOIN `users` `owners` ON `owners`.`user_id` = `vf`.`user_id`
+                LEFT JOIN `vip_leads` `l` ON `l`.`vip_funnel_id` = `vf`.`vip_funnel_id`
+                    AND `l`.`source` = 'vip_funnel_public'
+                    AND `l`.`datetime` >= '{$period_start_sql}'
+                GROUP BY `vf`.`vip_funnel_id`, `vf`.`user_id`, `vf`.`name`, `vf`.`slug`, `vf`.`status`, `vf`.`datetime`, `vf`.`last_datetime`, `owners`.`name`, `owners`.`email`
+                ORDER BY `leads_period` DESC, `vf`.`last_datetime` DESC, `vf`.`vip_funnel_id` DESC
+                LIMIT 30");
+
+            while($funnels_result && ($row = $funnels_result->fetch_object())) {
+                $owner_user_id = (int) ($row->user_id ?? 0);
+                $slug = (string) ($row->slug ?? '');
+                $public_url = function_exists('vip_funnel_get_public_funnel_url')
+                    ? vip_funnel_get_public_funnel_url($owner_user_id, $slug)
+                    : url('vip-funnel/' . $owner_user_id . '/' . $slug);
+
+                $payload['funnels'][] = [
+                    'vip_funnel_id' => (int) ($row->vip_funnel_id ?? 0),
+                    'owner_user_id' => $owner_user_id,
+                    'name' => (string) ($row->name ?? 'VIP Funnel 2.0'),
+                    'slug' => $slug,
+                    'status' => (string) ($row->status ?? ''),
+                    'owner_name' => trim((string) ($row->owner_name ?? '')) ?: ('Suradnik #' . $owner_user_id),
+                    'owner_email' => (string) ($row->owner_email ?? ''),
+                    'leads_period' => (int) ($row->leads_period ?? 0),
+                    'public_url' => $public_url,
+                    'admin_user_url' => $owner_user_id > 0 ? url('admin/user-view/' . $owner_user_id) : '',
+                    'last_datetime' => (string) (($row->last_datetime ?? '') ?: ($row->datetime ?? '')),
+                ];
+            }
+
+            $payload['totals']['funnels_with_leads'] = count(array_filter($payload['funnels'], static fn($row) => (int) ($row['leads_period'] ?? 0) > 0));
+        }
+
+        $demo_select_sql = $demo_table_available
+            ? ", `d`.`vip_demo_account_id`, `d`.`status` AS `demo_account_status`, `d`.`expires_at` AS `demo_expires_at`"
+            : ", NULL AS `vip_demo_account_id`, NULL AS `demo_account_status`, NULL AS `demo_expires_at`";
+        $demo_join_sql = $demo_table_available
+            ? "LEFT JOIN `vip_demo_accounts` `d` ON `d`.`vip_lead_id` = `l`.`vip_lead_id`"
+            : "";
+
+        $recent_contacts_result = database()->query("SELECT
+                `l`.`vip_lead_id`,
+                `l`.`owner_user_id`,
+                `l`.`vip_funnel_id`,
+                `l`.`source_step_key`,
+                `l`.`selection_value`,
+                `l`.`lead_name`,
+                `l`.`full_name`,
+                `l`.`lead_email`,
+                `l`.`lead_phone`,
+                `l`.`interest_type`,
+                `l`.`business_readiness`,
+                `l`.`product_goal`,
+                `l`.`demo_status`,
+                `l`.`payload`,
+                `l`.`datetime`,
+                `l`.`last_datetime`,
+                `owners`.`name` AS `owner_name`,
+                `owners`.`email` AS `owner_email`,
+                `vf`.`name` AS `funnel_name`,
+                `vf`.`slug` AS `funnel_slug`
+                {$demo_select_sql}
+            FROM `vip_leads` `l`
+            LEFT JOIN `users` `owners` ON `owners`.`user_id` = `l`.`owner_user_id`
+            LEFT JOIN `vip_funnels` `vf` ON `vf`.`vip_funnel_id` = `l`.`vip_funnel_id`
+            {$demo_join_sql}
+            WHERE `l`.`source` = 'vip_funnel_public'
+              AND `l`.`datetime` >= '{$period_start_sql}'
+            ORDER BY COALESCE(`l`.`last_datetime`, `l`.`datetime`) DESC
+            LIMIT 25");
+
+        while($recent_contacts_result && ($row = $recent_contacts_result->fetch_object())) {
+            $lead_payload = $to_array($row->payload ?? []);
+            $captured_fields = $to_array($lead_payload['captured_fields'] ?? []);
+            $meta = $to_array($lead_payload['meta'] ?? []);
+            $funnel_context = $to_array($lead_payload['funnel_context'] ?? []);
+            $status = $normalize_demo_status(trim((string) (($row->demo_account_status ?? '') ?: ($row->demo_status ?? ''))));
+            $owner_user_id = (int) ($row->owner_user_id ?? 0);
+            $funnel_slug = trim((string) (($row->funnel_slug ?? '') ?: ($funnel_context['funnel_slug'] ?? '')));
+            $funnel_url = trim((string) ($funnel_context['page_url'] ?? ''));
+
+            if($funnel_url === '' && $owner_user_id > 0 && $funnel_slug !== '') {
+                $funnel_url = function_exists('vip_funnel_get_public_funnel_url')
+                    ? vip_funnel_get_public_funnel_url($owner_user_id, $funnel_slug)
+                    : url('vip-funnel/' . $owner_user_id . '/' . $funnel_slug);
+            }
+
+            $payload['recent_contacts'][] = [
+                'vip_lead_id' => (int) ($row->vip_lead_id ?? 0),
+                'owner_user_id' => $owner_user_id,
+                'lead_name' => trim((string) (($row->lead_name ?? '') ?: ($row->full_name ?? '') ?: ($captured_fields['name'] ?? '') ?: ($lead_payload['lead_name'] ?? ''))) ?: 'Kontakt bez imena',
+                'lead_email' => trim((string) (($row->lead_email ?? '') ?: ($captured_fields['email'] ?? '') ?: ($lead_payload['lead_email'] ?? ''))),
+                'lead_phone' => trim((string) (($row->lead_phone ?? '') ?: ($captured_fields['phone'] ?? '') ?: ($lead_payload['lead_phone'] ?? ''))),
+                'owner_name' => trim((string) ($row->owner_name ?? '')) ?: ($owner_user_id > 0 ? ('Suradnik #' . $owner_user_id) : ''),
+                'owner_email' => trim((string) ($row->owner_email ?? '')),
+                'funnel_name' => trim((string) (($row->funnel_name ?? '') ?: ($funnel_context['funnel_name'] ?? 'VIP Funnel 2.0'))),
+                'funnel_step_title' => trim((string) (($funnel_context['step_title'] ?? '') ?: ($row->source_step_key ?? ''))),
+                'selection' => trim((string) (($row->selection_value ?? '') ?: ($meta['selection'] ?? '') ?: ($row->product_goal ?? ''))),
+                'interest_type' => (string) ($row->interest_type ?? ''),
+                'readiness' => (string) ($row->business_readiness ?? ''),
+                'demo_status' => $status,
+                'funnel_url' => $funnel_url,
+                'datetime' => (string) (($row->last_datetime ?? '') ?: ($row->datetime ?? '')),
+                'demo_expires_at' => (string) ($row->demo_expires_at ?? ''),
+            ];
+        }
+
+        if($demo_table_available) {
+            $demo_queue_result = database()->query("SELECT
+                    `d`.`vip_demo_account_id`,
+                    `d`.`status`,
+                    `d`.`expires_at`,
+                    `d`.`datetime`,
+                    `d`.`last_datetime`,
+                    `l`.`vip_lead_id`,
+                    `l`.`lead_name`,
+                    `l`.`full_name`,
+                    `l`.`lead_email`,
+                    `l`.`lead_phone`,
+                    `l`.`payload`,
+                `l`.`source`,
+                `l`.`owner_user_id`,
+                `d`.`owner_user_id` AS `demo_owner_user_id`,
+                    `owners`.`name` AS `owner_name`,
+                    `owners`.`email` AS `owner_email`
+                FROM `vip_demo_accounts` `d`
+                LEFT JOIN `vip_leads` `l` ON `l`.`vip_lead_id` = `d`.`vip_lead_id`
+                LEFT JOIN `users` `owners` ON `owners`.`user_id` = `d`.`owner_user_id`
+                WHERE `l`.`source` = 'vip_funnel_public' OR `l`.`source` IS NULL
+                ORDER BY FIELD(`d`.`status`, 'requested', 'approved', 'active', 'expiring', 'paused', 'expired', 'converted', 'closed', 'rejected'), `d`.`last_datetime` DESC, `d`.`datetime` DESC
+                LIMIT 25");
+
+            while($demo_queue_result && ($row = $demo_queue_result->fetch_object())) {
+                $lead_payload = $to_array($row->payload ?? []);
+                $captured_fields = $to_array($lead_payload['captured_fields'] ?? []);
+                $status = $normalize_demo_status((string) ($row->status ?? 'requested'));
+                $owner_user_id = (int) (($row->owner_user_id ?? 0) ?: ($row->demo_owner_user_id ?? 0));
+
+                $payload['demo_queue'][] = [
+                    'vip_demo_account_id' => (int) ($row->vip_demo_account_id ?? 0),
+                    'vip_lead_id' => (int) ($row->vip_lead_id ?? 0),
+                    'owner_user_id' => $owner_user_id,
+                    'lead_name' => trim((string) (($row->lead_name ?? '') ?: ($row->full_name ?? '') ?: ($captured_fields['name'] ?? '') ?: ($lead_payload['lead_name'] ?? ''))) ?: 'Demo kontakt',
+                    'lead_email' => trim((string) (($row->lead_email ?? '') ?: ($captured_fields['email'] ?? '') ?: ($lead_payload['lead_email'] ?? ''))),
+                    'lead_phone' => trim((string) (($row->lead_phone ?? '') ?: ($captured_fields['phone'] ?? '') ?: ($lead_payload['lead_phone'] ?? ''))),
+                    'owner_name' => trim((string) ($row->owner_name ?? '')) ?: ($owner_user_id > 0 ? ('Suradnik #' . $owner_user_id) : ''),
+                    'owner_email' => (string) ($row->owner_email ?? ''),
+                    'status' => $status,
+                    'expires_at' => (string) ($row->expires_at ?? ''),
+                    'datetime' => (string) (($row->last_datetime ?? '') ?: ($row->datetime ?? '')),
+                    'manage_url' => url('vip-funnel-demo-access'),
+                ];
+            }
+        }
+
+        return $payload;
+    }
+
     private function get_overview_payload(string $period_key, string $search_query, string $status_filter, string $ai_status_filter, string $anomaly_status_filter, string $fraud_status_filter, string $sort_key, int $page): array {
         $period_days = $this->get_period_days($period_key);
         $period_start_datetime = $this->get_period_start_datetime($period_days);
@@ -8443,6 +8843,7 @@ class AdminLeaderOperatingSystem extends Controller {
             'team_coaching_roi' => $team_coaching_roi,
             'coaching_dashboard' => $coaching_dashboard,
             'support_center' => $support_center,
+            'funnel_dashboard' => $this->get_funnel_dashboard_payload($period_start_datetime, $previous_period_start_datetime, $team_scope_rows, $period_key),
             'fcc_ai_team' => $fcc_ai_team,
             'selected_support_ticket' => $selected_support_ticket,
             'message_targets' => $message_targets,
@@ -8486,7 +8887,7 @@ class AdminLeaderOperatingSystem extends Controller {
         $selected_fraud_status = isset($_GET['fraud_status']) && in_array($_GET['fraud_status'], $allowed_fraud_statuses, true) ? $_GET['fraud_status'] : 'all';
         $allowed_sorts = ['leader_os', 'app_quality', 'fraud', 'shop_clicks', 'growth', 'registrations', 'risk', 'country', 'source', 'last_click'];
         $selected_sort = isset($_GET['sort']) && in_array($_GET['sort'], $allowed_sorts, true) ? $_GET['sort'] : 'leader_os';
-        $allowed_tabs = ['overview', 'operations', 'collaborators', 'analytics', 'ai', 'ai_intelligence', 'fraud', 'coaching', 'support'];
+        $allowed_tabs = ['overview', 'operations', 'collaborators', 'funnel', 'analytics', 'ai', 'ai_intelligence', 'fraud', 'coaching', 'support'];
         $selected_tab = isset($_GET['tab']) && in_array($_GET['tab'], $allowed_tabs, true) ? $_GET['tab'] : 'overview';
         $search_query = trim((string) ($_GET['search'] ?? ''));
         $page = max(1, (int) ($_GET['page'] ?? 1));

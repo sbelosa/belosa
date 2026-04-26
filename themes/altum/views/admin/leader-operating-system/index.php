@@ -3159,6 +3159,7 @@ $tab_labels = [
     'overview' => 'Pregled',
     'operations' => 'Operativa',
     'collaborators' => 'Suradnici',
+    'funnel' => 'Funnel',
     'analytics' => 'Analitika',
     'ai' => 'AI navike',
     'ai_intelligence' => 'AI Intelligence',
@@ -3669,6 +3670,7 @@ $leader_os_team_country_initial_totals = $leader_os_team_country_initial_matrix[
 
 $support_tab_badge_total = (int) (($data->overview['support_center']['totals']['outstanding_total'] ?? 0));
 $operations_tab_badge_total = (int) (($data->operations['totals']['pending_approvals'] ?? 0) + ($data->operations['totals']['card_queue'] ?? 0));
+$funnel_tab_badge_total = (int) (($data->overview['funnel_dashboard']['totals']['leads_period'] ?? 0));
 ?>
 
 <div class="leader-os-tabs">
@@ -3678,6 +3680,9 @@ $operations_tab_badge_total = (int) (($data->operations['totals']['pending_appro
             <?= htmlspecialchars((string) ($tab_labels[$tab_option] ?? ucfirst($tab_option)), ENT_QUOTES, 'UTF-8') ?>
             <?php if($tab_option === 'operations' && $operations_tab_badge_total > 0): ?>
                 <span class="leader-os-tab-badge"><?= nr($operations_tab_badge_total) ?></span>
+            <?php endif ?>
+            <?php if($tab_option === 'funnel' && $funnel_tab_badge_total > 0): ?>
+                <span class="leader-os-tab-badge"><?= nr($funnel_tab_badge_total) ?></span>
             <?php endif ?>
             <?php if($tab_option === 'support' && $support_tab_badge_total > 0): ?>
                 <span class="leader-os-tab-badge"><?= nr($support_tab_badge_total) ?></span>
@@ -3969,6 +3974,299 @@ $operations_tab_badge_total = (int) (($data->operations['totals']['pending_appro
                 </table>
             </div>
         </div>
+    </div>
+</div>
+<?php endif ?>
+
+<?php if(($data->selected_tab ?? 'overview') === 'funnel'): ?>
+<?php
+$funnel_dashboard = (array) ($data->overview['funnel_dashboard'] ?? []);
+$funnel_totals = (array) ($funnel_dashboard['totals'] ?? []);
+$funnel_period_label = l('admin_leader_operating_system.period_' . $data->selected_period);
+$funnel_format_date = static function($value): string {
+    $value = trim((string) $value);
+
+    return $value !== '' && $value !== '0000-00-00 00:00:00' ? \Altum\Date::get($value, 2) : '-';
+};
+$funnel_status_label = static function(string $status): array {
+    $status = trim($status);
+
+    return match($status) {
+        'active' => ['label' => 'Aktivan', 'class' => 'status-success'],
+        'draft' => ['label' => 'Draft', 'class' => 'status-warning'],
+        'paused' => ['label' => 'Pauziran', 'class' => 'status-dark'],
+        default => ['label' => $status !== '' ? ucfirst($status) : 'Bez statusa', 'class' => 'status-info'],
+    };
+};
+?>
+<div class="card leader-os-shell mb-4">
+    <div class="card-body">
+        <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-start mb-4">
+            <div>
+                <div class="text-uppercase small text-muted mb-2">LOS Funnel pregled</div>
+                <h2 class="h4 mb-2">Funnel prijave, demo pristupi i URL-ovi</h2>
+                <p class="text-muted mb-0">Ovdje kao admin vidiš tko dobiva kontakte preko Funnel 2.0 sustava, koji demo pristupi su pokrenuti i koji funnel linkovi trenutno nose promet.</p>
+            </div>
+
+            <div class="mt-3 mt-lg-0 d-flex flex-wrap" style="gap:0.55rem;">
+                <a href="<?= url('vip-funnel-studio') ?>" class="btn btn-sm leader-os-action-button">
+                    <i class="fas fa-diagram-project mr-1"></i> Funnel centar
+                </a>
+                <a href="<?= url('vip-funnel-demo-access') ?>" class="btn btn-sm leader-os-action-button is-primary">
+                    <i class="fas fa-user-clock mr-1"></i> Demo pristupi
+                </a>
+            </div>
+        </div>
+
+        <?php if(empty($funnel_dashboard['is_available'])): ?>
+            <div class="leader-os-inline-note mb-0">VIP Funnel tablice još nisu dostupne u ovoj instalaciji. Kada se Funnel 2.0 runtime inicijalizira, ovaj pregled će se automatski popuniti.</div>
+        <?php else: ?>
+            <div class="leader-os-inline-note mb-4">
+                Funnel prijava se u LOS signalu računa kao 3 boda, a klikovi prema Foreverliving.com ulaze u isti poslovni signal koji već hrani 15+ i 50+ liste.
+            </div>
+
+            <div class="leader-os-grid-4 mb-3">
+                <?= $render_kpi_card('funnel_leads', 'Funnel prijave', (int) ($funnel_totals['leads_period'] ?? 0), 'Kontakti iz javnih Funnel 2.0 stranica u odabranom periodu', $funnel_period_label) ?>
+                <?= $render_kpi_card('funnel_signal', 'Signal bodovi', (int) ($funnel_totals['lead_signal_points'] ?? 0), 'Kontakt nosi 3 boda, a Forever klikovi se dodaju kao dodatni signal', '3x kontakt') ?>
+                <?= $render_kpi_card('funnel_demos', 'Demo zahtjevi', (int) ($funnel_totals['demo_requests_period'] ?? 0), 'Novi demo zahtjevi pokrenuti iz Funnel 2.0 toka', $funnel_period_label) ?>
+                <?= $render_kpi_card('funnel_active_demo', 'Aktivni demo', (int) ($funnel_totals['active_demos'] ?? 0), 'Odobreni, aktivni ili demo pristupi koji uskoro istječu', 'Demo') ?>
+            </div>
+
+            <div class="leader-os-grid-4 mb-4">
+                <?= $render_kpi_card('funnel_owners', 'Suradnici s prijavama', (int) ($funnel_totals['owners_with_leads'] ?? 0), 'Koliko suradnika trenutno ima barem jednu Funnel prijavu u periodu', 'Team') ?>
+                <?= $render_kpi_card('funnel_shop', 'Forever klikovi', (int) ($funnel_totals['shop_clicks_period'] ?? 0), 'Klikovi iz Funnel 2.0 toka prema Foreverliving.com', $funnel_period_label) ?>
+                <?= $render_kpi_card('funnel_total', 'Ukupno funnel-a', (int) ($funnel_totals['funnels_total'] ?? 0), 'Svi kreirani Funnel 2.0 zapisi u sustavu', 'Funnel 2.0') ?>
+                <?= $render_kpi_card('funnel_delta', 'Promjena prijava', (int) ($funnel_totals['lead_delta'] ?? 0), 'Razlika u odnosu na prethodni isti period', 'Trend') ?>
+            </div>
+
+            <div class="leader-os-grid-2 mb-3">
+                <div class="leader-os-panel">
+                    <div class="d-flex justify-content-between align-items-start flex-wrap mb-3" style="gap:0.75rem;">
+                        <div>
+                            <div class="text-uppercase small text-muted mb-2">Top suradnici</div>
+                            <h3 class="h5 mb-1">Tko dobiva najviše Funnel kontakata</h3>
+                            <div class="text-muted small">Popis je složen po broju prijava u odabranom periodu i odmah vodi na LOS detalj suradnika.</div>
+                        </div>
+                        <span class="leader-os-status-badge status-info"><?= nr(count((array) ($funnel_dashboard['top_collaborators'] ?? []))) ?> prikazano</span>
+                    </div>
+
+                    <?php if(empty($funnel_dashboard['top_collaborators'])): ?>
+                        <div class="leader-os-ops-empty">Još nema Funnel prijava za odabrani period.</div>
+                    <?php else: ?>
+                        <div class="leader-os-table table-responsive">
+                            <table class="table table-sm mb-0">
+                                <thead>
+                                <tr>
+                                    <th>Suradnik</th>
+                                    <th class="text-right">Prijave</th>
+                                    <th>Demo</th>
+                                    <th class="text-right">Signal</th>
+                                    <th>Zadnji kontakt</th>
+                                    <th class="text-right">Akcija</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <?php foreach((array) ($funnel_dashboard['top_collaborators'] ?? []) as $row): ?>
+                                    <tr>
+                                        <td>
+                                            <div class="font-weight-bold"><?= htmlspecialchars((string) ($row['owner_name'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                                            <div class="text-muted small"><?= htmlspecialchars((string) ($row['owner_email'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                                            <?php if(!empty($row['status_label'])): ?>
+                                                <span class="leader-os-status-badge <?= htmlspecialchars((string) ($row['status_class'] ?? 'status-info'), ENT_QUOTES, 'UTF-8') ?> mt-1"><?= htmlspecialchars((string) ($row['status_label'] ?? ''), ENT_QUOTES, 'UTF-8') ?></span>
+                                            <?php endif ?>
+                                        </td>
+                                        <td class="text-right font-weight-bold"><?= nr((int) ($row['leads_period'] ?? 0)) ?></td>
+                                        <td>
+                                            <div class="small">Čeka: <strong><?= nr((int) ($row['demo_pending'] ?? 0)) ?></strong></div>
+                                            <div class="small text-muted">Aktivno: <?= nr((int) ($row['demo_active'] ?? 0)) ?> · Konv.: <?= nr((int) ($row['demo_converted'] ?? 0)) ?></div>
+                                        </td>
+                                        <td class="text-right"><?= nr((int) ($row['signal_points'] ?? 0)) ?></td>
+                                        <td><?= $funnel_format_date($row['latest_contact_at'] ?? '') ?></td>
+                                        <td class="text-right">
+                                            <a href="<?= htmlspecialchars((string) ($row['detail_url'] ?? '#'), ENT_QUOTES, 'UTF-8') ?>" class="leader-os-link">Otvori LOS</a>
+                                        </td>
+                                    </tr>
+                                <?php endforeach ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    <?php endif ?>
+                </div>
+
+                <div class="leader-os-panel">
+                    <div class="d-flex justify-content-between align-items-start flex-wrap mb-3" style="gap:0.75rem;">
+                        <div>
+                            <div class="text-uppercase small text-muted mb-2">Demo red</div>
+                            <h3 class="h5 mb-1">Demo pristupi za provjeru</h3>
+                            <div class="text-muted small">Ovdje brzo vidiš tko je zatražio demo, tko ga koristi i kome istječe pristup.</div>
+                        </div>
+                        <span class="leader-os-status-badge status-warning"><?= nr(count((array) ($funnel_dashboard['demo_queue'] ?? []))) ?> demo</span>
+                    </div>
+
+                    <?php if(empty($funnel_dashboard['demo_queue'])): ?>
+                        <div class="leader-os-ops-empty">Trenutno nema demo pristupa iz Funnel 2.0 toka.</div>
+                    <?php else: ?>
+                        <div class="leader-os-table table-responsive">
+                            <table class="table table-sm mb-0">
+                                <thead>
+                                <tr>
+                                    <th>Kontakt</th>
+                                    <th>Suradnik</th>
+                                    <th>Status</th>
+                                    <th>Istječe</th>
+                                    <th class="text-right">Akcija</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <?php foreach((array) ($funnel_dashboard['demo_queue'] ?? []) as $row): ?>
+                                    <tr>
+                                        <td>
+                                            <div class="font-weight-bold"><?= htmlspecialchars((string) ($row['lead_name'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                                            <div class="text-muted small"><?= htmlspecialchars((string) ($row['lead_email'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                                            <?php if(!empty($row['lead_phone'])): ?>
+                                                <div class="text-muted small"><?= htmlspecialchars((string) ($row['lead_phone'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                                            <?php endif ?>
+                                        </td>
+                                        <td>
+                                            <div><?= htmlspecialchars((string) ($row['owner_name'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                                            <div class="text-muted small"><?= htmlspecialchars((string) ($row['owner_email'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                                        </td>
+                                        <td>
+                                            <span class="leader-os-status-badge <?= htmlspecialchars((string) ($row['status']['class'] ?? 'status-info'), ENT_QUOTES, 'UTF-8') ?>">
+                                                <?= htmlspecialchars((string) ($row['status']['label'] ?? ''), ENT_QUOTES, 'UTF-8') ?>
+                                            </span>
+                                        </td>
+                                        <td><?= $funnel_format_date($row['expires_at'] ?? '') ?></td>
+                                        <td class="text-right">
+                                            <a href="<?= htmlspecialchars((string) ($row['manage_url'] ?? url('vip-funnel-demo-access')), ENT_QUOTES, 'UTF-8') ?>" class="leader-os-link">Otvori demo</a>
+                                        </td>
+                                    </tr>
+                                <?php endforeach ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    <?php endif ?>
+                </div>
+            </div>
+
+            <div class="leader-os-panel mb-3">
+                <div class="d-flex justify-content-between align-items-start flex-wrap mb-3" style="gap:0.75rem;">
+                    <div>
+                        <div class="text-uppercase small text-muted mb-2">Kontakti</div>
+                        <h3 class="h5 mb-1">Nedavne Funnel prijave</h3>
+                        <div class="text-muted small">Admin pregled kontakata pokazuje vlasnika, funnel, odabrani smjer i demo status.</div>
+                    </div>
+                    <span class="leader-os-status-badge status-dark"><?= nr(count((array) ($funnel_dashboard['recent_contacts'] ?? []))) ?> kontakata</span>
+                </div>
+
+                <?php if(empty($funnel_dashboard['recent_contacts'])): ?>
+                    <div class="leader-os-ops-empty">Nema novih Funnel kontakata u odabranom periodu.</div>
+                <?php else: ?>
+                    <div class="leader-os-table table-responsive">
+                        <table class="table table-sm mb-0">
+                            <thead>
+                            <tr>
+                                <th>Kontakt</th>
+                                <th>Vlasnik</th>
+                                <th>Funnel / korak</th>
+                                <th>Smjer</th>
+                                <th>Demo</th>
+                                <th>Datum</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <?php foreach((array) ($funnel_dashboard['recent_contacts'] ?? []) as $row): ?>
+                                <tr>
+                                    <td>
+                                        <div class="font-weight-bold"><?= htmlspecialchars((string) ($row['lead_name'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                                        <div class="text-muted small"><?= htmlspecialchars((string) ($row['lead_email'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                                        <?php if(!empty($row['lead_phone'])): ?>
+                                            <div class="text-muted small"><?= htmlspecialchars((string) ($row['lead_phone'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                                        <?php endif ?>
+                                    </td>
+                                    <td>
+                                        <div><?= htmlspecialchars((string) ($row['owner_name'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                                        <div class="text-muted small"><?= htmlspecialchars((string) ($row['owner_email'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                                    </td>
+                                    <td>
+                                        <div><?= htmlspecialchars((string) ($row['funnel_name'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                                        <div class="text-muted small"><?= htmlspecialchars((string) ($row['funnel_step_title'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                                        <?php if(!empty($row['funnel_url'])): ?>
+                                            <a href="<?= htmlspecialchars((string) $row['funnel_url'], ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noopener" class="leader-os-link small">Otvori URL</a>
+                                        <?php endif ?>
+                                    </td>
+                                    <td><?= !empty($row['selection']) ? htmlspecialchars((string) $row['selection'], ENT_QUOTES, 'UTF-8') : '<span class="text-muted">-</span>' ?></td>
+                                    <td>
+                                        <span class="leader-os-status-badge <?= htmlspecialchars((string) ($row['demo_status']['class'] ?? 'status-info'), ENT_QUOTES, 'UTF-8') ?>">
+                                            <?= htmlspecialchars((string) ($row['demo_status']['label'] ?? ''), ENT_QUOTES, 'UTF-8') ?>
+                                        </span>
+                                    </td>
+                                    <td><?= $funnel_format_date($row['datetime'] ?? '') ?></td>
+                                </tr>
+                            <?php endforeach ?>
+                            </tbody>
+                        </table>
+                    </div>
+                <?php endif ?>
+            </div>
+
+            <div class="leader-os-panel mb-0">
+                <div class="d-flex justify-content-between align-items-start flex-wrap mb-3" style="gap:0.75rem;">
+                    <div>
+                        <div class="text-uppercase small text-muted mb-2">Funnel lista</div>
+                        <h3 class="h5 mb-1">Svi Funnel URL-ovi u sustavu</h3>
+                        <div class="text-muted small">Popis služi za brzu provjeru aktivnih funnel-a, vlasnika i linka koji se koristi u FCC aplikacijama.</div>
+                    </div>
+                    <span class="leader-os-status-badge status-info"><?= nr((int) ($funnel_totals['active_funnels'] ?? 0)) ?> aktivno</span>
+                </div>
+
+                <?php if(empty($funnel_dashboard['funnels'])): ?>
+                    <div class="leader-os-ops-empty">Još nema kreiranih Funnel 2.0 zapisa.</div>
+                <?php else: ?>
+                    <div class="leader-os-table table-responsive">
+                        <table class="table table-sm mb-0">
+                            <thead>
+                            <tr>
+                                <th>Funnel</th>
+                                <th>Suradnik</th>
+                                <th>Status</th>
+                                <th class="text-right">Prijave</th>
+                                <th>URL</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <?php foreach((array) ($funnel_dashboard['funnels'] ?? []) as $row): ?>
+                                <?php $status = $funnel_status_label((string) ($row['status'] ?? '')); ?>
+                                <tr>
+                                    <td>
+                                        <div class="font-weight-bold"><?= htmlspecialchars((string) ($row['name'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                                        <div class="text-muted small">ID <?= nr((int) ($row['vip_funnel_id'] ?? 0)) ?> · <?= htmlspecialchars((string) ($row['slug'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                                    </td>
+                                    <td>
+                                        <div><?= htmlspecialchars((string) ($row['owner_name'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                                        <div class="text-muted small"><?= htmlspecialchars((string) ($row['owner_email'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                                    </td>
+                                    <td>
+                                        <span class="leader-os-status-badge <?= htmlspecialchars((string) ($status['class'] ?? 'status-info'), ENT_QUOTES, 'UTF-8') ?>">
+                                            <?= htmlspecialchars((string) ($status['label'] ?? ''), ENT_QUOTES, 'UTF-8') ?>
+                                        </span>
+                                    </td>
+                                    <td class="text-right font-weight-bold"><?= nr((int) ($row['leads_period'] ?? 0)) ?></td>
+                                    <td style="min-width:18rem;">
+                                        <?php if(!empty($row['public_url'])): ?>
+                                            <a href="<?= htmlspecialchars((string) $row['public_url'], ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noopener" class="leader-os-link" style="word-break:break-all;"><?= htmlspecialchars((string) $row['public_url'], ENT_QUOTES, 'UTF-8') ?></a>
+                                        <?php else: ?>
+                                            <span class="text-muted">URL nije dostupan</span>
+                                        <?php endif ?>
+                                    </td>
+                                </tr>
+                            <?php endforeach ?>
+                            </tbody>
+                        </table>
+                    </div>
+                <?php endif ?>
+            </div>
+        <?php endif ?>
     </div>
 </div>
 <?php endif ?>
