@@ -116,6 +116,33 @@ if(!defined('FCC_OPS_READONLY_KEY')) {
 
     define('FCC_OPS_READONLY_KEY', trim((string) $fcc_ops_readonly_key));
 }
+
+if(!defined('FCC_OPS_WRITE_ENABLED')) {
+    $fcc_ops_write_enabled = $fc_bootstrap_value([
+        'FCC_OPS_WRITE_ENABLED',
+        'REDIRECT_FCC_OPS_WRITE_ENABLED',
+    ]);
+
+    define('FCC_OPS_WRITE_ENABLED', in_array(mb_strtolower($fcc_ops_write_enabled), ['1', 'true', 'on', 'yes'], true));
+}
+
+if(!defined('FCC_OPS_WRITE_KEY')) {
+    $fcc_ops_write_key = $fc_bootstrap_value([
+        'FCC_OPS_WRITE_KEY',
+        'REDIRECT_FCC_OPS_WRITE_KEY',
+    ]);
+
+    define('FCC_OPS_WRITE_KEY', trim((string) $fcc_ops_write_key));
+}
+
+if(!defined('FCC_OPS_WRITE_AUDIT_LOG_PATH')) {
+    $fcc_ops_write_audit_log_path = $fc_bootstrap_value([
+        'FCC_OPS_WRITE_AUDIT_LOG_PATH',
+        'REDIRECT_FCC_OPS_WRITE_AUDIT_LOG_PATH',
+    ], ROOT_PATH . 'uploads/main/fcc_ops_write_audit.log');
+
+    define('FCC_OPS_WRITE_AUDIT_LOG_PATH', trim((string) $fcc_ops_write_audit_log_path) !== '' ? trim((string) $fcc_ops_write_audit_log_path) : ROOT_PATH . 'uploads/main/fcc_ops_write_audit.log');
+}
 /* /Custom code: FC-2026-04-08 */
 
 /* Establish cookie / session on this path specifically */

@@ -1345,6 +1345,19 @@ class Router {
             ],
             /* /Custom code: FC-2026-04-08 */
 
+            /* Custom code: FC-2026-04-22: production write diagnostics route */
+            'ops-write' => [
+                'controller' => 'OpsWrite',
+                'settings' => [
+                    'no_authentication_check' => true,
+                    'has_view' => false,
+                    'no_browser_language_detection' => true,
+                    'allow_indexing' => false,
+                    'allow_sessions' => false,
+                ]
+            ],
+            /* /Custom code: FC-2026-04-22 */
+
             'broadcast' => [
                 'controller' => 'Broadcast',
                 'settings' => [

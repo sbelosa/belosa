@@ -902,6 +902,7 @@ class OpsReadonly extends Controller {
                 'ai_enabled' => $ai_diagnostics['feature_flag_enabled'] ?? false,
                 'brevo_enabled' => defined('BREVO_API_KEY') ? trim((string) BREVO_API_KEY) !== '' : false,
                 'ops_readonly_enabled' => FCC_OPS_READONLY_ENABLED,
+                'ops_write_enabled' => defined('FCC_OPS_WRITE_ENABLED') ? FCC_OPS_WRITE_ENABLED : false,
             ],
             'cron' => $cron_diagnostics,
             'ai' => $ai_diagnostics,
@@ -972,6 +973,7 @@ class OpsReadonly extends Controller {
                 'shared_openai_key_configured' => $ai_diagnostics['shared_openai_key_configured'] ?? false,
                 'shared_ai_ready' => $ai_diagnostics['shared_ai_ready'] ?? false,
                 'ops_readonly_enabled' => FCC_OPS_READONLY_ENABLED,
+                'ops_write_enabled' => defined('FCC_OPS_WRITE_ENABLED') ? FCC_OPS_WRITE_ENABLED : false,
             ],
         ];
     }
