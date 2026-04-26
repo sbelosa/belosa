@@ -1,6 +1,6 @@
 <?php defined('ALTUMCODE') || die() ?>
 
-<?php $vip_demo_days = (int) (($data->access->settings->default_demo_days ?? 5)); ?>
+<?php $vip_demo_days = max(1, min(3, (int) (($data->access->settings->default_demo_days ?? 3)))); ?>
 <?php $dashboard = is_array($data->dashboard ?? null) ? $data->dashboard : vip_funnel_demo_get_dashboard($this->user ?? null); ?>
 <?php $request_form = array_merge($dashboard['default_request_form'] ?? vip_funnel_demo_get_request_form_defaults($this->user ?? null), is_array($data->request_form ?? null) ? $data->request_form : []); ?>
 <?php $owner_options = $dashboard['owner_options'] ?? vip_funnel_demo_get_owner_options($this->user ?? null); ?>

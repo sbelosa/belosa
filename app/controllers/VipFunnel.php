@@ -26,6 +26,8 @@ class VipFunnel extends Controller {
             throw_404();
         }
 
+        vip_funnel_apply_owner_referral_cookies($user_id);
+
         if($requested_slug === '' || $requested_slug !== ($state['slug'] ?? '')) {
             header('Location: ' . $state['canonical_url']);
             die();

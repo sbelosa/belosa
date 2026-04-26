@@ -792,7 +792,7 @@ class Links extends Controller {
             (int) ($signals['shop_contacts_30d'] ?? 0)
             + (int) ($signals['whatsapp_contacts_30d'] ?? 0)
             + (int) ($signals['product_clicks_30d'] ?? 0)
-            + ($this->get_app_review_contact_captures_30d($signals) * 2)
+            + ($this->get_app_review_contact_captures_30d($signals) * 3)
         );
     }
 

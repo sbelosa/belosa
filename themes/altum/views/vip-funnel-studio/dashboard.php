@@ -418,19 +418,34 @@ foreach($funnels as $item) {
 
         <div class="vip-funnel-center-template-grid">
             <?php foreach($templates as $template): ?>
-                <form method="post" class="vip-funnel-center-template">
-                    <input type="hidden" name="token" value="<?= \Altum\Csrf::get() ?>" />
-                    <input type="hidden" name="import_vip_funnel_template" value="1" />
-                    <input type="hidden" name="template_key" value="<?= $e($template['key'] ?? '') ?>" />
+                <article class="vip-funnel-center-template">
                     <div class="vip-funnel-center-meta mb-2">
                         <span class="vip-funnel-center-chip"><?= $e($template['badge'] ?? 'Demo') ?></span>
+                        <?php if(!empty($template['recommended'])): ?>
+                            <span class="vip-funnel-center-chip">Preporučeno</span>
+                        <?php endif ?>
                     </div>
                     <h3 class="vip-funnel-center-card-title mb-2"><?= $e($template['name'] ?? '') ?></h3>
+                    <?php if(!empty($template['goal'])): ?>
+                        <div class="vip-funnel-center-card-meta mb-2">
+                            <i class="fas fa-fw fa-bullseye"></i> <?= $e($template['goal']) ?>
+                        </div>
+                    <?php endif ?>
                     <p class="vip-funnel-center-section-sub mb-3"><?= $e($template['description'] ?? '') ?></p>
-                    <button type="submit" class="vip-funnel-center-btn vip-funnel-center-btn-primary">
-                        <i class="fas fa-fw fa-file-import"></i> Importiraj demo funnel
-                    </button>
-                </form>
+                    <div class="vip-funnel-center-card-actions">
+                        <?php foreach((array) ($template['languages'] ?? ['hr' => 'HR']) as $language_key => $language_label): ?>
+                            <form method="post" class="m-0">
+                                <input type="hidden" name="token" value="<?= \Altum\Csrf::get() ?>" />
+                                <input type="hidden" name="import_vip_funnel_template" value="1" />
+                                <input type="hidden" name="template_key" value="<?= $e($template['key'] ?? '') ?>" />
+                                <input type="hidden" name="template_language" value="<?= $e($language_key) ?>" />
+                                <button type="submit" class="vip-funnel-center-btn <?= $language_key === 'hr' ? 'vip-funnel-center-btn-primary' : '' ?>">
+                                    <i class="fas fa-fw fa-file-import"></i> Import <?= $e($language_label) ?>
+                                </button>
+                            </form>
+                        <?php endforeach ?>
+                    </div>
+                </article>
             <?php endforeach ?>
         </div>
     </section>

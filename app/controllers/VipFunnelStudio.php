@@ -142,7 +142,8 @@ class VipFunnelStudio extends Controller {
 
                 if(isset($_POST['import_vip_funnel_template'])) {
                     $template_key = input_clean((string) ($_POST['template_key'] ?? ''), 80);
-                    $payload = vip_funnel_get_import_template_payload($template_key, $this->user);
+                    $template_language = input_clean((string) ($_POST['template_language'] ?? 'hr'), 8);
+                    $payload = vip_funnel_get_import_template_payload($template_key, $this->user, $template_language);
 
                     if($payload && ($row = vip_funnel_studio_create_funnel_from_payload($this->user, $payload))) {
                         Alerts::add_success('Demo funnel je importiran i spreman za uređivanje.');

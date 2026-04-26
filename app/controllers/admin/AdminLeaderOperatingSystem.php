@@ -523,6 +523,8 @@ class AdminLeaderOperatingSystem extends Controller {
             $rows[$index]['ai_ai_chat_leads_7d'] = 0;
             $rows[$index]['ai_contact_captures_30d'] = 0;
             $rows[$index]['ai_contact_captures_7d'] = 0;
+            $rows[$index]['ai_funnel_contact_signal_30d'] = 0;
+            $rows[$index]['ai_funnel_contact_signal_7d'] = 0;
             $rows[$index]['ai_growth_signal_30d'] = 0;
             $rows[$index]['ai_growth_signal_7d'] = 0;
         }
@@ -687,18 +689,44 @@ class AdminLeaderOperatingSystem extends Controller {
             $rows[$row_index]['ai_ai_chat_leads_7d'] += (int) $total;
         }
 
+        $vip_funnel_signal_30d = vip_funnel_get_public_qualification_signal_map($period_start_30d);
+        foreach($vip_funnel_signal_30d as $user_id => $signal) {
+            $row_index = $row_map[(int) $user_id] ?? null;
+
+            if($row_index === null) {
+                continue;
+            }
+
+            $rows[$row_index]['ai_funnel_registrations_30d'] += (int) ($signal['funnel_contacts'] ?? 0);
+            $rows[$row_index]['ai_funnel_contact_signal_30d'] += (int) ($signal['funnel_contact_signal'] ?? 0);
+            $rows[$row_index]['ai_shop_clicks_30d'] += (int) ($signal['funnel_shop_clicks'] ?? 0);
+        }
+
+        $vip_funnel_signal_7d = vip_funnel_get_public_qualification_signal_map($period_start_7d);
+        foreach($vip_funnel_signal_7d as $user_id => $signal) {
+            $row_index = $row_map[(int) $user_id] ?? null;
+
+            if($row_index === null) {
+                continue;
+            }
+
+            $rows[$row_index]['ai_funnel_registrations_7d'] += (int) ($signal['funnel_contacts'] ?? 0);
+            $rows[$row_index]['ai_funnel_contact_signal_7d'] += (int) ($signal['funnel_contact_signal'] ?? 0);
+            $rows[$row_index]['ai_shop_clicks_7d'] += (int) ($signal['funnel_shop_clicks'] ?? 0);
+        }
+
         foreach($rows as $index => $row) {
             $rows[$index]['ai_contact_captures_30d'] = (int) ($rows[$index]['ai_funnel_registrations_30d'] ?? 0) + (int) ($rows[$index]['ai_ai_chat_leads_30d'] ?? 0);
             $rows[$index]['ai_contact_captures_7d'] = (int) ($rows[$index]['ai_funnel_registrations_7d'] ?? 0) + (int) ($rows[$index]['ai_ai_chat_leads_7d'] ?? 0);
             $rows[$index]['ai_growth_signal_30d'] = (int) (
-                (int) ($row['ai_shop_clicks_30d'] ?? 0)
-                + (int) ($row['ai_whatsapp_contacts_30d'] ?? 0)
-                + (int) ($rows[$index]['ai_contact_captures_30d'] ?? 0)
+                (int) ($rows[$index]['ai_shop_clicks_30d'] ?? 0)
+                + (int) ($rows[$index]['ai_whatsapp_contacts_30d'] ?? 0)
+                + ((int) ($rows[$index]['ai_contact_captures_30d'] ?? 0) * 3)
             );
             $rows[$index]['ai_growth_signal_7d'] = (int) (
-                (int) ($row['ai_shop_clicks_7d'] ?? 0)
-                + (int) ($row['ai_whatsapp_contacts_7d'] ?? 0)
-                + (int) ($rows[$index]['ai_contact_captures_7d'] ?? 0)
+                (int) ($rows[$index]['ai_shop_clicks_7d'] ?? 0)
+                + (int) ($rows[$index]['ai_whatsapp_contacts_7d'] ?? 0)
+                + ((int) ($rows[$index]['ai_contact_captures_7d'] ?? 0) * 3)
             );
         }
 
@@ -1961,7 +1989,7 @@ class AdminLeaderOperatingSystem extends Controller {
             (int) ($row['app_shop_contacts_period'] ?? 0)
             + (int) ($row['app_whatsapp_contacts_period'] ?? 0)
             + (int) ($row['app_product_clicks_period'] ?? 0)
-            + ($this->get_app_contact_captures_period($row) * 2)
+            + ($this->get_app_contact_captures_period($row) * 3)
         );
     }
 
@@ -2000,9 +2028,11 @@ class AdminLeaderOperatingSystem extends Controller {
             $rows[$index]['app_whatsapp_contacts_period'] = 0;
             $rows[$index]['app_product_clicks_period'] = 0;
             $rows[$index]['app_funnel_registrations_period'] = 0;
+            $rows[$index]['app_funnel_contact_signal_period'] = 0;
             $rows[$index]['app_ai_chat_leads_period'] = 0;
             $rows[$index]['app_contact_captures_period'] = 0;
             $rows[$index]['previous_app_funnel_registrations_period'] = 0;
+            $rows[$index]['previous_app_funnel_contact_signal_period'] = 0;
             $rows[$index]['previous_app_ai_chat_leads_period'] = 0;
             $rows[$index]['previous_app_contact_captures_period'] = 0;
             $rows[$index]['app_signal_score'] = 0;
@@ -2155,10 +2185,37 @@ class AdminLeaderOperatingSystem extends Controller {
             }
         }
 
+        $vip_funnel_signal = vip_funnel_get_public_qualification_signal_map($period_start_datetime);
+        foreach($vip_funnel_signal as $user_id => $signal) {
+            $row_index = $row_map[(int) $user_id] ?? null;
+
+            if($row_index === null) {
+                continue;
+            }
+
+            $rows[$row_index]['app_funnel_registrations_period'] += (int) ($signal['funnel_contacts'] ?? 0);
+            $rows[$row_index]['app_funnel_contact_signal_period'] += (int) ($signal['funnel_contact_signal'] ?? 0);
+            $rows[$row_index]['app_shop_contacts_period'] += (int) ($signal['funnel_shop_clicks'] ?? 0);
+        }
+
+        if($previous_period_start_datetime !== null) {
+            $previous_vip_funnel_signal = vip_funnel_get_public_qualification_signal_map($previous_period_start_datetime, $period_start_datetime);
+            foreach($previous_vip_funnel_signal as $user_id => $signal) {
+                $row_index = $row_map[(int) $user_id] ?? null;
+
+                if($row_index === null) {
+                    continue;
+                }
+
+                $rows[$row_index]['previous_app_funnel_registrations_period'] += (int) ($signal['funnel_contacts'] ?? 0);
+                $rows[$row_index]['previous_app_funnel_contact_signal_period'] += (int) ($signal['funnel_contact_signal'] ?? 0);
+            }
+        }
+
         foreach($rows as $index => $row) {
             $rows[$index]['app_contact_captures_period'] = $this->get_app_contact_captures_period($rows[$index]);
             $rows[$index]['previous_app_contact_captures_period'] = (int) ($rows[$index]['previous_app_funnel_registrations_period'] ?? 0) + (int) ($rows[$index]['previous_app_ai_chat_leads_period'] ?? 0);
-            $signal_score = $this->calculate_app_signal_score($row);
+            $signal_score = $this->calculate_app_signal_score($rows[$index]);
             $rows[$index]['app_signal_score'] = $signal_score;
             $rows[$index] = array_merge($rows[$index], $this->get_app_quality_payload($signal_score));
         }
