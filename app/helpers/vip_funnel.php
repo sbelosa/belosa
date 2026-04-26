@@ -1323,9 +1323,9 @@ function vip_funnel_get_follow_up_playbook(string $segment = 'warm', array $cont
             'next_action' => 'Kontaktirati isti dan i poslati Start Your Journey korak.',
             'cadence' => 'Odmah, Dan 1, Dan 3',
             'steps' => [
-                ['delay' => 'now', 'channel' => 'whatsapp', 'message' => $hello . ' Stjepan ovdje. Vidio sam da zelis krenuti ozbiljno i da ti Start Your Journey ima smisla. Saljem ti najbrzi sljedeci korak i tu sam za kratku potvrdu prije narudzbe.'],
-                ['delay' => 'day_1', 'channel' => 'whatsapp', 'message' => 'Najvaznije je da krenes jasno: paket, prvi zadaci, FCC sustav i mentorstvo. Ako zelis, mogu ti u par minuta potvrditi je li ovo pravi start za tebe.'],
-                ['delay' => 'day_3', 'channel' => 'email', 'message' => 'Ako zelis krenuti, nemoj ostati na razmisljanju. Prvi korak je Start Your Journey, a nakon toga te vodimo kroz sustav korak po korak.'],
+                ['delay' => 'now', 'channel' => 'whatsapp', 'message' => $hello . ' Stjepan ovdje. Vidio sam da želiš krenuti ozbiljno i da ti Start Your Journey ima smisla. Šaljem ti najbrži sljedeći korak i tu sam za kratku potvrdu prije narudžbe.'],
+                ['delay' => 'day_1', 'channel' => 'whatsapp', 'message' => 'Najvažnije je da kreneš jasno: paket, prvi zadaci, FCC sustav i mentorstvo. Ako želiš, mogu ti u par minuta potvrditi je li ovo pravi start za tebe.'],
+                ['delay' => 'day_3', 'channel' => 'email', 'message' => 'Ako želiš krenuti, nemoj ostati na razmišljanju. Prvi korak je Start Your Journey, a nakon toga te vodimo kroz sustav korak po korak.'],
             ],
         ],
         'warm' => [
@@ -1333,18 +1333,18 @@ function vip_funnel_get_follow_up_playbook(string $segment = 'warm', array $cont
             'next_action' => 'Poslati FCC demo i ponuditi kratak razgovor.',
             'cadence' => 'Dan 0, Dan 1, Dan 3',
             'steps' => [
-                ['delay' => 'now', 'channel' => 'whatsapp_or_email', 'message' => $hello . ' hvala ti na odgovorima. Prije odluke oko start paketa najbolje je da ti pokazem kako FCC sustav radi iznutra.'],
-                ['delay' => 'day_1', 'channel' => 'email', 'message' => 'Najveca razlika je krenuti sam ili krenuti uz sustav. FCC je napravljen da novi ljudi ne moraju sve izmisljati od nule.'],
-                ['delay' => 'day_3', 'channel' => 'whatsapp_or_email', 'message' => 'Ako zelis, mogu ti u par minuta reci je li za tebe bolji start paket, demo ili proizvodni put.'],
+                ['delay' => 'now', 'channel' => 'whatsapp_or_email', 'message' => $hello . ' hvala ti na odgovorima. Prije odluke oko start paketa najbolje je da ti pokažem kako FCC sustav radi iznutra.'],
+                ['delay' => 'day_1', 'channel' => 'email', 'message' => 'Najveća razlika je krenuti sam ili krenuti uz sustav. FCC je napravljen da novi ljudi ne moraju sve izmišljati od nule.'],
+                ['delay' => 'day_3', 'channel' => 'whatsapp_or_email', 'message' => 'Ako želiš, mogu ti u par minuta reći je li za tebe bolji start paket, demo ili proizvodni put.'],
             ],
         ],
         'demo' => [
             'priority' => 'medium',
-            'next_action' => 'Poslati demo pregled i pitati zeli li poslovni ili proizvodni put.',
+            'next_action' => 'Poslati demo pregled i pitati želi li poslovni ili proizvodni put.',
             'cadence' => 'Dan 0, Dan 2',
             'steps' => [
-                ['delay' => 'now', 'channel' => 'email', 'message' => $hello . ' saljem ti kratki FCC demo. Pogledaj kako sustav vodi posjetitelja od interesa do kontakta, proizvoda ili suradnje.'],
-                ['delay' => 'day_2', 'channel' => 'whatsapp_or_email', 'message' => 'Nakon demo pregleda najvaznije pitanje je: zelis li FCC koristiti za posao ili prvo za proizvode i preporuke?'],
+                ['delay' => 'now', 'channel' => 'email', 'message' => $hello . ' šaljem ti kratki FCC demo. Pogledaj kako sustav vodi posjetitelja od interesa do kontakta, proizvoda ili suradnje.'],
+                ['delay' => 'day_2', 'channel' => 'whatsapp_or_email', 'message' => 'Nakon demo pregleda najvažnije pitanje je: želiš li FCC koristiti za posao ili prvo za proizvode i preporuke?'],
             ],
         ],
         'product' => [
@@ -1352,18 +1352,18 @@ function vip_funnel_get_follow_up_playbook(string $segment = 'warm', array $cont
             'next_action' => 'Poslati proizvodnu preporuku i kasnije otvoriti business bridge.',
             'cadence' => 'Dan 0, Dan 2, Dan 5',
             'steps' => [
-                ['delay' => 'now', 'channel' => 'whatsapp_or_email', 'message' => $hello . ' vidio sam da te sada vise zanimaju proizvodi ili popust. Saljem ti preporuku prema cilju koji si odabrao/la.'],
+                ['delay' => 'now', 'channel' => 'whatsapp_or_email', 'message' => $hello . ' vidio sam da te sada više zanimaju proizvodi ili popust. Šaljem ti preporuku prema cilju koji si odabrao/la.'],
                 ['delay' => 'day_2', 'channel' => 'email', 'message' => 'Ako ti se svidi proizvodni put, kasnije ti mogu pokazati kako isti sustav koristiti za online preporuke.'],
-                ['delay' => 'day_5', 'channel' => 'whatsapp_or_email', 'message' => 'Jesi li uspio/la pogledati preporuku? Ako zelis, mogu ti reci najjednostavniji sljedeci korak.'],
+                ['delay' => 'day_5', 'channel' => 'whatsapp_or_email', 'message' => 'Jesi li uspio/la pogledati preporuku? Ako želiš, mogu ti reći najjednostavniji sljedeći korak.'],
             ],
         ],
         'cold' => [
             'priority' => 'low',
-            'next_action' => 'Ne trositi previse rucnog vremena; poslati miran uvod.',
+            'next_action' => 'Ne trošiti previše ručnog vremena; poslati miran uvod.',
             'cadence' => 'Dan 0, Dan 5',
             'steps' => [
-                ['delay' => 'now', 'channel' => 'email', 'message' => $hello . ' nema pritiska. Saljem ti kratak uvod pa se mozes vratiti kad bude pravi trenutak.'],
-                ['delay' => 'day_5', 'channel' => 'email', 'message' => 'Ako se kasnije odlucis za proizvode, demo ili poslovni start, mozes ponovno otvoriti funnel i odabrati svoj put.'],
+                ['delay' => 'now', 'channel' => 'email', 'message' => $hello . ' nema pritiska. Šaljem ti kratak uvod pa se možeš vratiti kad bude pravi trenutak.'],
+                ['delay' => 'day_5', 'channel' => 'email', 'message' => 'Ako se kasnije odlučiš za proizvode, demo ili poslovni start, možeš ponovno otvoriti funnel i odabrati svoj put.'],
             ],
         ],
     ];
@@ -2338,32 +2338,32 @@ function vip_funnel_get_stjepan_recruitment_payload($user = null, array $options
         $block('landing_hero', 'headline', [
             'badge' => 'FCC Funnel 2.0',
             'title' => 'Pokreni online posao uz FCC sustav i moje mentorstvo',
-            'text' => 'Ja sam Stjepan Belosa, kreator FCC-a i mentor tima od 7.000+ clanova. Ako si dosao s mojih videa, ovdje u par koraka biras svoj put: posao, demo sustava ili proizvodi i popust.',
+            'text' => 'Ja sam Stjepan Beloša, kreator FCC-a i mentor tima od 7.000+ članova. Ako si došao s mojih videa, ovdje u par koraka biraš svoj put: posao, demo sustava ili proizvodi i popust.',
             'title_size' => 58,
             'text_size' => 20,
             'alignment' => 'center',
         ]),
         $block('landing_intro_video', 'video', [
             'title' => 'Kratki uvod za one koji dolaze s mojih videa',
-            'text' => 'Pogledaj prvo poruku, a zatim odaberi smjer koji je najblizi tvojoj situaciji.',
+            'text' => 'Pogledaj prvo poruku, a zatim odaberi smjer koji je najbliži tvojoj situaciji.',
             'media_url' => $video('main'),
             'layout_width' => 'two_thirds',
             'alignment' => 'center',
         ]),
         $block('landing_proof', 'proof_card', [
-            'badge' => 'Zasto ovo nije obican link',
-            'title' => 'FCC spaja video paznju, jasnu selekciju, proizvode i mentorstvo u jedan vodjeni sustav.',
-            'text' => 'Novi posjetitelj ne mora citati sve odjednom. Funnel ga vodi prema poslu, demo iskustvu ili proizvodnom putu, a meni pokazuje tko je spreman za ozbiljan razgovor.',
+            'badge' => 'Zašto ovo nije običan link',
+            'title' => 'FCC spaja video pažnju, jasnu selekciju, proizvode i mentorstvo u jedan vođeni sustav.',
+            'text' => 'Novi posjetitelj ne mora čitati sve odjednom. Funnel ga vodi prema poslu, demo iskustvu ili proizvodnom putu, a meni pokazuje tko je spreman za ozbiljan razgovor.',
             'layout_width' => 'third',
         ]),
         $block('landing_direction', 'survey', [
-            'title' => 'Sto te sada najvise zanima?',
-            'text' => 'Odaberi iskreno. Svaki smjer vodi na drugu stranicu koja je slozena kao mala landing stranica.',
+            'title' => 'Što te sada najviše zanima?',
+            'text' => 'Odaberi iskreno. Svaki smjer vodi na drugu stranicu koja je složena kao mala landing stranica.',
             'options' => [
-                $action('landing_business', 'Zelim pokrenuti online posao', 'business_interest', 'business_gateway', 'primary'),
-                $action('landing_demo', 'Zelim vidjeti FCC sustav', 'demo_interest', 'fcc_demo_preview', 'secondary'),
-                $action('landing_product', 'Zelim popust ili proizvode', 'product_discount', 'product_gateway', 'secondary'),
-                $action('landing_ready', 'Vec sam spreman za start paket', 'ready_360_now', 'start_package_offer', 'primary'),
+                $action('landing_business', 'Želim pokrenuti online posao', 'business_interest', 'business_gateway', 'primary'),
+                $action('landing_demo', 'Želim vidjeti FCC sustav', 'demo_interest', 'fcc_demo_preview', 'secondary'),
+                $action('landing_product', 'Želim popust ili proizvode', 'product_discount', 'product_gateway', 'secondary'),
+                $action('landing_ready', 'Već sam spreman za start paket', 'ready_360_now', 'start_package_offer', 'primary'),
             ],
             'alignment' => 'center',
             'auto_advance' => true,
@@ -2378,14 +2378,14 @@ function vip_funnel_get_stjepan_recruitment_payload($user = null, array $options
             $block('landing_b_hero', 'headline', [
                 'badge' => 'Od videa do sustava',
                 'title' => 'Od milionskih pregleda do vlastitog online posla',
-                'text' => 'Ako ti se svida moj sadrzaj i zanima te kako to mozes pretvoriti u vlastiti online posao, kreni kroz kratki FCC Funnel 2.0 pregled.',
+                'text' => 'Ako ti se sviđa moj sadržaj i zanima te kako to možeš pretvoriti u vlastiti online posao, kreni kroz kratki FCC Funnel 2.0 pregled.',
                 'title_size' => 58,
                 'text_size' => 20,
                 'alignment' => 'center',
             ]),
             $block('landing_b_direction', 'survey', [
-                'title' => 'Odaberi svoj najbrzi put',
-                'text' => 'Posao, demo ili proizvodi. Sustav te vodi bez viska informacija.',
+                'title' => 'Odaberi svoj najbrži put',
+                'text' => 'Posao, demo ili proizvodi. Sustav te vodi bez viška informacija.',
                 'options' => [
                     $action('landing_b_business', 'Online posao', 'business_interest', 'business_gateway', 'primary'),
                     $action('landing_b_demo', 'FCC demo', 'demo_interest', 'fcc_demo_preview', 'secondary'),
@@ -2397,56 +2397,56 @@ function vip_funnel_get_stjepan_recruitment_payload($user = null, array $options
         ],
     ]);
 
-    $business_gateway = $step('business_gateway', 'entry', 'business', 'offer', 'Od pregleda videa do online posla, ali bez kretanja od nule', 'Objasnjava zasto je FCC vodjeni poslovni sustav, a ne samo jos jedna informacija.', [
+    $business_gateway = $step('business_gateway', 'entry', 'business', 'offer', 'Od pregleda videa do online posla, ali bez kretanja od nule', 'Objašnjava zašto je FCC vođeni poslovni sustav, a ne samo još jedna informacija.', [
         $block('business_hero', 'headline', [
             'badge' => 'Poslovni put',
-            'title' => 'Ne trebas krenuti sam. Trebas jasan sustav i mentora.',
-            'text' => 'FCC ti daje okvir: sto pokazati, kako objasniti, kako voditi ljude i kako graditi naviku rada. Ja te vodim kroz prve korake, a ti ucis raditi konkretno i dosljedno.',
+            'title' => 'Ne trebaš krenuti sam. Trebaš jasan sustav i mentora.',
+            'text' => 'FCC ti daje okvir: što pokazati, kako objasniti, kako voditi ljude i kako graditi naviku rada. Ja te vodim kroz prve korake, a ti učiš raditi konkretno i dosljedno.',
         ]),
         $block('business_video', 'video', [
-            'title' => 'Tko sam ja i zasto sam napravio FCC',
-            'text' => 'Kratko objasnjenje sustava, tima i nacina rada.',
+            'title' => 'Tko sam ja i zašto sam napravio FCC',
+            'text' => 'Kratko objašnjenje sustava, tima i načina rada.',
             'media_url' => $video('business'),
             'layout_width' => 'two_thirds',
         ]),
         $block('business_system', 'proof_card', [
             'badge' => 'Sustav',
-            'title' => 'Ne kreces s praznim profilom i praznom idejom.',
-            'text' => 'Kreces kroz gotov FCC okvir koji pomaze u prezentaciji, preporuci, kontaktima i follow-upu.',
+            'title' => 'Ne krećeš s praznim profilom i praznom idejom.',
+            'text' => 'Krećeš kroz gotov FCC okvir koji pomaže u prezentaciji, preporuci, kontaktima i follow-upu.',
             'layout_width' => 'third',
         ]),
         $block('business_choice', 'survey', [
-            'title' => 'Koji opis ti je najblizi?',
-            'text' => 'Ovo odreduje hoce li te funnel voditi na provjeru, demo ili mirniji uvod.',
+            'title' => 'Koji opis ti je najbliži?',
+            'text' => 'Ovo određuje hoće li te funnel voditi na provjeru, demo ili mirniji uvod.',
             'options' => [
-                $action('business_serious', 'Zelim krenuti ozbiljno ovaj tjedan', 'serious_this_week', 'qualification_form', 'primary'),
+                $action('business_serious', 'Želim krenuti ozbiljno ovaj tjedan', 'serious_this_week', 'qualification_form', 'primary'),
                 $action('business_check', 'Zanima me, ali trebam prvo provjeru', 'needs_check', 'qualification_form', 'secondary'),
-                $action('business_demo', 'Zelim prvo vidjeti demo', 'demo_interest', 'fcc_demo_preview', 'secondary'),
+                $action('business_demo', 'Želim prvo vidjeti demo', 'demo_interest', 'fcc_demo_preview', 'secondary'),
                 $action('business_not_ready', 'Nisam spreman za investiciju', 'not_ready', 'not_ready_nurture', 'ghost'),
             ],
             'auto_advance' => true,
         ]),
     ], 'qualification_form', ['design_variant' => 'spotlight', 'block_mode' => 'choice']);
 
-    $qualification_form = $step('qualification_form', 'segment', 'business', 'question', 'Provjeri koji je najbolji sljedeci korak za tebe', 'Kvalifikacija sprema kontakt i odgovore te vodi na pravi nastavak.', [
+    $qualification_form = $step('qualification_form', 'segment', 'business', 'question', 'Provjeri koji je najbolji sljedeći korak za tebe', 'Kvalifikacija sprema kontakt i odgovore te vodi na pravi nastavak.', [
         $block('qualification_hero', 'headline', [
             'badge' => 'Kratka provjera',
-            'title' => 'Odgovori iskreno. Funnel ce ti pokazati najbolji sljedeci korak.',
-            'text' => 'Ako si spreman za poslovni start, vidjet ces Start Your Journey put. Ako nisi, dobit ces demo ili mirniji uvod bez pritiska.',
+            'title' => 'Odgovori iskreno. Funnel će ti pokazati najbolji sljedeći korak.',
+            'text' => 'Ako si spreman za poslovni start, vidjet ćeš Start Your Journey put. Ako nisi, dobit ćeš demo ili mirniji uvod bez pritiska.',
         ]),
         $block('qualification_goal', 'radio_survey', [
-            'title' => 'Sto zelis izgraditi?',
+            'title' => 'Što želiš izgraditi?',
             'required' => true,
             'route_on_submit' => false,
             'options' => [
                 $action('goal_extra_income', 'Dodatni prihod', 'dodatni_prihod'),
                 $action('goal_serious_business', 'Ozbiljan online posao', 'ozbiljan_online_posao'),
-                $action('goal_product_first', 'Proizvodni popust pa kasnije mozda posao', 'product_discount'),
-                $action('goal_research', 'Samo istrazujem', 'samo_istrazujem'),
+                $action('goal_product_first', 'Proizvodni popust pa kasnije možda posao', 'product_discount'),
+                $action('goal_research', 'Samo istražujem', 'samo_istrazujem'),
             ],
         ]),
         $block('qualification_time', 'radio_survey', [
-            'title' => 'Koliko vremena realno mozes odvojiti tjedno?',
+            'title' => 'Koliko vremena realno možeš odvojiti tjedno?',
             'required' => true,
             'route_on_submit' => false,
             'options' => [
@@ -2456,19 +2456,19 @@ function vip_funnel_get_stjepan_recruitment_payload($user = null, array $options
             ],
         ]),
         $block('qualification_investment', 'radio_survey', [
-            'title' => 'Jesi li spreman investirati 360 EUR u Start Your Journey ako vidis da je ovo za tebe?',
-            'text' => 'Ovo pitanje odreduje tvoj sljedeci korak.',
+            'title' => 'Jesi li spreman investirati 360 EUR u Start Your Journey ako vidiš da je ovo za tebe?',
+            'text' => 'Ovo pitanje određuje tvoj sljedeći korak.',
             'required' => true,
             'route_on_submit' => true,
             'options' => [
                 $action('ready_now', 'Da, mogu odmah', 'ready_360_now', 'hot_result'),
-                $action('ready_call', 'Da, ali zelim kratak razgovor', 'ready_360_call', 'mentor_call_request'),
+                $action('ready_call', 'Da, ali želim kratak razgovor', 'ready_360_call', 'mentor_call_request'),
                 $action('need_demo', 'Trebam prvo vidjeti sustav', 'trebam_prvo_vidjeti_sustav', 'fcc_demo_preview'),
                 $action('not_now', 'Ne sada', 'not_ready', 'not_ready_nurture'),
             ],
         ]),
         $block('qualification_channel', 'radio_survey', [
-            'title' => 'Kako zelis da te kontaktiram?',
+            'title' => 'Kako želiš da te kontaktiram?',
             'required' => true,
             'route_on_submit' => false,
             'options' => [
@@ -2477,37 +2477,37 @@ function vip_funnel_get_stjepan_recruitment_payload($user = null, array $options
                 $action('channel_email', 'Email', 'channel_email'),
             ],
         ]),
-        $block('qualification_name', 'full_name_field', ['title' => 'Ime i prezime', 'placeholder' => 'Upisi ime i prezime', 'required' => true, 'layout_width' => 'half']),
-        $block('qualification_email', 'email_field', ['title' => 'Email', 'placeholder' => 'Upisi email', 'required' => true, 'layout_width' => 'half']),
-        $block('qualification_phone', 'phone_field', ['title' => 'Telefon / WhatsApp', 'placeholder' => 'Upisi broj za brzi kontakt', 'required' => false, 'layout_width' => 'full']),
+        $block('qualification_name', 'full_name_field', ['title' => 'Ime i prezime', 'placeholder' => 'Upiši ime i prezime', 'required' => true, 'layout_width' => 'half']),
+        $block('qualification_email', 'email_field', ['title' => 'Email', 'placeholder' => 'Upiši email', 'required' => true, 'layout_width' => 'half']),
+        $block('qualification_phone', 'phone_field', ['title' => 'Telefon / WhatsApp', 'placeholder' => 'Upiši broj za brzi kontakt', 'required' => false, 'layout_width' => 'full']),
         $block('qualification_privacy', 'text', [
-            'text' => 'Slanjem podataka potvrdujes da te Stjepan ili FCC tim smije kontaktirati vezano uz odabrani smjer. Privacy: ' . $privacy_url,
+            'text' => 'Slanjem podataka potvrđuješ da te Stjepan ili FCC tim smije kontaktirati vezano uz odabrani smjer. Privacy: ' . $privacy_url,
             'text_size' => 14,
         ]),
         $block('qualification_submit', 'cta_group', [
             'buttons' => [
-                $action('qualification_submit_btn', 'Prikazi moj sljedeci korak', 'qualification_submit', '', 'primary', 'submit_next', true),
+                $action('qualification_submit_btn', 'Prikaži moj sljedeći korak', 'qualification_submit', '', 'primary', 'submit_next', true),
             ],
             'alignment' => 'center',
         ]),
     ], 'hot_result', ['design_variant' => 'stacked', 'block_mode' => 'contact_form']);
 
-    $hot_result = $step('hot_result', 'trust', 'business', 'proof', 'Tvoj najbolji sljedeci korak je Start Your Journey', 'Za osobe koje su pokazale jasnu spremnost za poslovni start.', [
+    $hot_result = $step('hot_result', 'trust', 'business', 'proof', 'Tvoj najbolji sljedeći korak je Start Your Journey', 'Za osobe koje su pokazale jasnu spremnost za poslovni start.', [
         $block('hot_hero', 'headline', [
             'badge' => 'HOT kandidat',
-            'title' => 'Po tvojim odgovorima ima smisla da vidis konkretan start.',
-            'text' => 'Start Your Journey paket je 360 EUR i ulaz je u proizvode, sustav i vodjeni pocetak. Ako krenes, ne ostajes sam: dobit ces jasne prve korake i mentorstvo.',
+            'title' => 'Po tvojim odgovorima ima smisla da vidiš konkretan start.',
+            'text' => 'Start Your Journey paket je 360 EUR i ulaz je u proizvode, sustav i vođeni početak. Ako kreneš, ne ostaješ sam: dobit ćeš jasne prve korake i mentorstvo.',
         ]),
         $block('hot_video', 'video', [
-            'title' => 'Sto dobivas za 360 EUR',
-            'text' => 'Kratko objasnjenje paketa, sustava, prvih 7 dana i ocekivanja.',
+            'title' => 'Što dobivaš za 360 EUR',
+            'text' => 'Kratko objašnjenje paketa, sustava, prvih 7 dana i očekivanja.',
             'media_url' => $video('start_package'),
         ]),
         $block('hot_actions', 'cta_group', [
             'buttons' => [
-                $action('hot_order', 'Naruci Start Your Journey paket', 'order_start_package', '', 'primary', 'external_url', false, $checkout_url),
-                $action('hot_call', 'Zelim prvo kratak razgovor', 'ready_360_call', 'mentor_call_request', 'secondary'),
-                $action('hot_demo', 'Zelim vidjeti FCC demo', 'demo_interest', 'fcc_demo_preview', 'ghost'),
+                $action('hot_order', 'Naruči Start Your Journey paket', 'order_start_package', '', 'primary', 'external_url', false, $checkout_url),
+                $action('hot_call', 'Želim prvo kratak razgovor', 'ready_360_call', 'mentor_call_request', 'secondary'),
+                $action('hot_demo', 'Želim vidjeti FCC demo', 'demo_interest', 'fcc_demo_preview', 'ghost'),
             ],
             'alignment' => 'center',
         ]),
@@ -2519,22 +2519,22 @@ function vip_funnel_get_stjepan_recruitment_payload($user = null, array $options
             'title' => 'Ovo je trenutak kada interes postaje konkretan prvi korak.',
             'text' => 'Start Your Journey nije kupnja informacije. To je ulaz u proizvode, FCC sustav, edukaciju i mentorstvo za prve poslovne korake.',
         ]),
-        $block('start_video', 'video', ['title' => 'Pogledaj sto je ukljuceno', 'media_url' => $video('start_package')]),
+        $block('start_video', 'video', ['title' => 'Pogledaj što je uključeno', 'media_url' => $video('start_package')]),
         $block('start_included', 'proof_card', [
-            'badge' => 'Dobivas',
+            'badge' => 'Dobivaš',
             'title' => 'Proizvode, jasne prve zadatke, FCC alate i mentorstvo.',
-            'text' => 'Nema obecanja lake zarade. Dobivas sustav i vodstvo, a rezultat ovisi o tvojoj aktivnosti, ucenju i dosljednosti.',
+            'text' => 'Nema obećanja lake zarade. Dobivaš sustav i vodstvo, a rezultat ovisi o tvojoj aktivnosti, učenju i dosljednosti.',
             'layout_width' => 'half',
         ]),
         $block('start_first_week', 'proof_card', [
             'badge' => 'Prvih 7 dana',
             'title' => 'Postavljanje, razumijevanje ponude, prvi kontakti i prvi follow-up.',
-            'text' => 'Cilj je da ne ostanes sam nakon narudzbe nego da odmah znas sto radis sljedece.',
+            'text' => 'Cilj je da ne ostaneš sam nakon narudžbe nego da odmah znaš što radiš sljedeće.',
             'layout_width' => 'half',
         ]),
         $block('start_countdown', 'countdown', [
             'title' => 'Prioritetni onboarding prozor',
-            'text' => 'Ako zelis uci u prvi onboarding krug, posalji narudzbu ili upit sada.',
+            'text' => 'Ako želiš ući u prvi onboarding krug, pošalji narudžbu ili upit sada.',
             'countdown_mode' => 'evergreen',
             'duration_days' => 2,
             'duration_minutes' => 0,
@@ -2542,76 +2542,76 @@ function vip_funnel_get_stjepan_recruitment_payload($user = null, array $options
         ]),
         $block('start_actions', 'cta_group', [
             'buttons' => [
-                $action('start_order', 'Naruci Start Your Journey paket', 'order_start_package', '', 'primary', 'external_url', false, $checkout_url),
-                $action('start_whatsapp', 'Posalji mi poruku prije narudzbe', 'start_whatsapp', '', 'secondary', 'external_url', false, $whatsapp_url),
-                $action('start_call', 'Nisam siguran, zelim razgovor', 'ready_360_call', 'mentor_call_request', 'ghost'),
+                $action('start_order', 'Naruči Start Your Journey paket', 'order_start_package', '', 'primary', 'external_url', false, $checkout_url),
+                $action('start_whatsapp', 'Pošalji mi poruku prije narudžbe', 'start_whatsapp', '', 'secondary', 'external_url', false, $whatsapp_url),
+                $action('start_call', 'Nisam siguran, želim razgovor', 'ready_360_call', 'mentor_call_request', 'ghost'),
             ],
             'alignment' => 'center',
         ]),
     ], 'mentor_call_request', ['design_variant' => 'decision', 'block_mode' => 'video']);
 
-    $mentor_call_request = $step('mentor_call_request', 'trust', 'business', 'cta', 'Zatrazi kratki pregled sa mnom ili mojim timom', 'Kontakt stranica za osobu koja zeli potvrdu prije odluke.', [
+    $mentor_call_request = $step('mentor_call_request', 'trust', 'business', 'cta', 'Zatraži kratki pregled sa mnom ili mojim timom', 'Kontakt stranica za osobu koja želi potvrdu prije odluke.', [
         $block('call_hero', 'headline', [
             'badge' => 'Razgovor',
-            'title' => 'Ako zelis ljudsku potvrdu prije odluke, ovdje ostavi najbolji kontakt.',
-            'text' => 'Cilj razgovora nije pritisak nego jasnoca: je li za tebe Start paket, demo ili proizvodni put.',
+            'title' => 'Ako želiš ljudsku potvrdu prije odluke, ovdje ostavi najbolji kontakt.',
+            'text' => 'Cilj razgovora nije pritisak nego jasnoća: je li za tebe Start paket, demo ili proizvodni put.',
         ]),
         $block('call_reason', 'radio_survey', [
-            'title' => 'Sto zelis razjasniti?',
+            'title' => 'Što želiš razjasniti?',
             'required' => true,
             'route_on_submit' => false,
             'options' => [
                 $action('call_fit', 'Je li ovo za mene', 'call_fit'),
                 $action('call_360', 'Kako izgleda 360 EUR start', 'ready_360_call'),
-                $action('call_sales', 'Kako FCC pomaze u prodaji', 'call_sales'),
+                $action('call_sales', 'Kako FCC pomaže u prodaji', 'call_sales'),
                 $action('call_no_experience', 'Kako krenuti ako nemam iskustva', 'call_no_experience'),
             ],
         ]),
-        $block('call_name', 'full_name_field', ['title' => 'Ime i prezime', 'placeholder' => 'Upisi ime i prezime', 'required' => true, 'layout_width' => 'half']),
-        $block('call_email', 'email_field', ['title' => 'Email', 'placeholder' => 'Upisi email', 'required' => true, 'layout_width' => 'half']),
-        $block('call_phone', 'phone_field', ['title' => 'Telefon / WhatsApp', 'placeholder' => 'Upisi broj', 'required' => true]),
+        $block('call_name', 'full_name_field', ['title' => 'Ime i prezime', 'placeholder' => 'Upiši ime i prezime', 'required' => true, 'layout_width' => 'half']),
+        $block('call_email', 'email_field', ['title' => 'Email', 'placeholder' => 'Upiši email', 'required' => true, 'layout_width' => 'half']),
+        $block('call_phone', 'phone_field', ['title' => 'Telefon / WhatsApp', 'placeholder' => 'Upiši broj', 'required' => true]),
         $block('call_actions', 'cta_group', [
             'buttons' => [
-                $action('call_submit', 'Posalji zahtjev za razgovor', 'call_requested', 'not_ready_nurture', 'primary', 'submit_next', true),
+                $action('call_submit', 'Pošalji zahtjev za razgovor', 'call_requested', 'not_ready_nurture', 'primary', 'submit_next', true),
                 $action('call_calendar', 'Otvori termin ili poruku', 'calendar_open', '', 'secondary', 'external_url', false, $calendar_url),
             ],
             'alignment' => 'center',
         ]),
     ], 'not_ready_nurture', ['design_variant' => 'decision', 'block_mode' => 'contact_form']);
 
-    $fcc_demo_preview = $step('fcc_demo_preview', 'entry', 'demo', 'demo', 'Pogledaj kako FCC pretvara interes u jasne korake', 'Demo stranica za osobe koje trebaju dozivjeti sustav prije odluke.', [
+    $fcc_demo_preview = $step('fcc_demo_preview', 'entry', 'demo', 'demo', 'Pogledaj kako FCC pretvara interes u jasne korake', 'Demo stranica za osobe koje trebaju doživjeti sustav prije odluke.', [
         $block('demo_hero', 'headline', [
             'badge' => 'FCC demo',
-            'title' => 'Ovdje osoba vidi sustav, ne samo pricu.',
-            'text' => 'Pogledaj kako FCC vodi posjetitelja od interesa do kontakta, proizvoda ili suradnje. Ovo je i pokazni primjer sto ces moci koristiti u svom poslu.',
+            'title' => 'Ovdje osoba vidi sustav, ne samo priču.',
+            'text' => 'Pogledaj kako FCC vodi posjetitelja od interesa do kontakta, proizvoda ili suradnje. Ovo je i pokazni primjer što ćeš moći koristiti u svom poslu.',
         ]),
-        $block('demo_video', 'video', ['title' => 'FCC demo iznutra', 'text' => 'Pokazi aplikaciju, funnel, product preporuku, kontakte i follow-up.', 'media_url' => $video('demo')]),
+        $block('demo_video', 'video', ['title' => 'FCC demo iznutra', 'text' => 'Pokaži aplikaciju, funnel, product preporuku, kontakte i follow-up.', 'media_url' => $video('demo')]),
         $block('demo_actions', 'cta_group', [
             'buttons' => [
-                $action('demo_qualify', 'Zelim provjeriti mogu li krenuti', 'business_interest', 'qualification_form', 'primary'),
-                $action('demo_start', 'Zelim Start Your Journey', 'ready_360_now', 'start_package_offer', 'secondary'),
-                $action('demo_request', 'Zelim demo pristup', 'demo_request', 'demo_request', 'secondary'),
-                $action('demo_products', 'Zelim samo proizvode', 'product_discount', 'product_gateway', 'ghost'),
+                $action('demo_qualify', 'Želim provjeriti mogu li krenuti', 'business_interest', 'qualification_form', 'primary'),
+                $action('demo_start', 'Želim Start Your Journey', 'ready_360_now', 'start_package_offer', 'secondary'),
+                $action('demo_request', 'Želim demo pristup', 'demo_request', 'demo_request', 'secondary'),
+                $action('demo_products', 'Želim samo proizvode', 'product_discount', 'product_gateway', 'ghost'),
             ],
             'alignment' => 'center',
         ]),
     ], 'qualification_form', ['design_variant' => 'card', 'block_mode' => 'video']);
 
-    $demo_request = $step('demo_request', 'segment', 'demo', 'demo', 'Zatrazi demo pregled FCC sustava', 'Lead capture za demo interes.', [
+    $demo_request = $step('demo_request', 'segment', 'demo', 'demo', 'Zatraži demo pregled FCC sustava', 'Lead capture za demo interes.', [
         $block('demo_request_hero', 'headline', [
             'badge' => 'Demo zahtjev',
-            'title' => 'Ako zelis prvo vidjeti sustav, ostavi podatke i razlog.',
+            'title' => 'Ako želiš prvo vidjeti sustav, ostavi podatke i razlog.',
             'text' => 'Demo ostaje kontroliran i premium. Cilj je pokazati ti pravi dio sustava za tvoju situaciju.',
         ]),
         $block('demo_request_reason', 'radio_survey', [
-            'title' => 'Zasto zelis demo?',
+            'title' => 'Zašto želiš demo?',
             'required' => true,
             'route_on_submit' => false,
             'options' => [
-                $action('demo_before_decision', 'Zelim vidjeti sustav prije odluke', 'demo_before_decision'),
-                $action('demo_show_others', 'Zelim pokazati sustav drugima', 'demo_show_others'),
-                $action('demo_have_team', 'Vec imam tim ili prodaju', 'demo_have_team'),
-                $action('demo_research', 'Samo istrazujem', 'samo_istrazujem'),
+                $action('demo_before_decision', 'Želim vidjeti sustav prije odluke', 'demo_before_decision'),
+                $action('demo_show_others', 'Želim pokazati sustav drugima', 'demo_show_others'),
+                $action('demo_have_team', 'Već imam tim ili prodaju', 'demo_have_team'),
+                $action('demo_research', 'Samo istražujem', 'samo_istrazujem'),
             ],
         ]),
         $block('demo_request_name', 'full_name_field', ['title' => 'Ime i prezime', 'required' => true, 'layout_width' => 'half']),
@@ -2619,26 +2619,26 @@ function vip_funnel_get_stjepan_recruitment_payload($user = null, array $options
         $block('demo_request_phone', 'phone_field', ['title' => 'Telefon / WhatsApp', 'required' => false]),
         $block('demo_request_submit', 'cta_group', [
             'buttons' => [
-                $action('demo_request_submit_btn', 'Zatrazi demo pregled', 'demo_requested', 'not_ready_nurture', 'primary', 'submit_next', true),
+                $action('demo_request_submit_btn', 'Zatraži demo pregled', 'demo_requested', 'not_ready_nurture', 'primary', 'submit_next', true),
             ],
             'alignment' => 'center',
         ]),
     ], 'not_ready_nurture', ['design_variant' => 'card', 'block_mode' => 'contact_form']);
 
-    $product_gateway = $step('product_gateway', 'entry', 'products', 'question', 'Ako sada zelis samo proizvode ili popust, kreni ovim putem', 'Produktni ulaz koji monetizira osobe koje ne zele odmah posao.', [
+    $product_gateway = $step('product_gateway', 'entry', 'products', 'question', 'Ako sada želiš samo proizvode ili popust, kreni ovim putem', 'Produktni ulaz koji monetizira osobe koje ne žele odmah posao.', [
         $block('product_gateway_hero', 'headline', [
             'badge' => 'Proizvodni put',
-            'title' => 'Ne mora svatko odmah u posao. Odaberi cilj i dobit ces jasniji proizvodni korak.',
-            'text' => 'Ako kasnije pozelis graditi posao, isti FCC sustav mozes koristiti za preporuke, kontakte i vlastiti tim.',
+            'title' => 'Ne mora svatko odmah u posao. Odaberi cilj i dobit ćeš jasniji proizvodni korak.',
+            'text' => 'Ako kasnije poželiš graditi posao, isti FCC sustav možeš koristiti za preporuke, kontakte i vlastiti tim.',
         ]),
         $block('product_goal', 'survey', [
-            'title' => 'Sto ti je sada glavni cilj?',
+            'title' => 'Što ti je sada glavni cilj?',
             'options' => [
-                $action('product_energy', 'Vise energije', 'vise_energije', 'product_recommendation', 'primary'),
-                $action('product_weight', 'Regulacija tezine', 'regulacija_tezine', 'product_recommendation', 'secondary'),
-                $action('product_skin', 'Njega koze', 'njega_koze', 'product_recommendation', 'secondary'),
-                $action('product_routine', 'Opca dnevna rutina', 'dnevna_rutina', 'product_recommendation', 'secondary'),
-                $action('product_discount', 'Zelim popust', 'popust', 'product_recommendation', 'ghost'),
+                $action('product_energy', 'Više energije', 'vise_energije', 'product_recommendation', 'primary'),
+                $action('product_weight', 'Regulacija težine', 'regulacija_tezine', 'product_recommendation', 'secondary'),
+                $action('product_skin', 'Njega kože', 'njega_koze', 'product_recommendation', 'secondary'),
+                $action('product_routine', 'Opća dnevna rutina', 'dnevna_rutina', 'product_recommendation', 'secondary'),
+                $action('product_discount', 'Želim popust', 'popust', 'product_recommendation', 'ghost'),
             ],
             'auto_advance' => true,
         ]),
@@ -2648,7 +2648,7 @@ function vip_funnel_get_stjepan_recruitment_payload($user = null, array $options
         $block('product_recommendation_hero', 'headline', [
             'badge' => 'Preporuka',
             'title' => 'Ovo je najbolji prvi proizvodni korak za tvoj cilj',
-            'text' => 'Preporuka prati odgovor koji si odabrao/la. Ako zelis samo kupnju, idi na proizvodni vodic ili shop. Ako zelis nauciti preporucivati online, otvori poslovni most.',
+            'text' => 'Preporuka prati odgovor koji si odabrao/la. Ako želiš samo kupnju, idi na proizvodni vodič ili shop. Ako želiš naučiti preporučivati online, otvori poslovni most.',
         ]),
     ];
 
@@ -2656,7 +2656,7 @@ function vip_funnel_get_stjepan_recruitment_payload($user = null, array $options
         $product_recommendation_blocks[] = $block('product_dynamic_offer', 'product_offer', [
             'badge' => 'Dinamička preporuka',
             'title' => 'Preporuka prema tvom odgovoru',
-            'text' => 'Funnel koristi tvoj odabir i povezuje te s najblizim proizvodnim vodicem ili shop korakom.',
+            'text' => 'Funnel koristi tvoj odabir i povezuje te s najbližim proizvodnim vodičem ili shop korakom.',
             'product_source_mode' => 'dynamic',
             'product_translation_key' => $primary_product_key,
             'product_language_mode' => 'page',
@@ -2677,52 +2677,52 @@ function vip_funnel_get_stjepan_recruitment_payload($user = null, array $options
     } else {
         $product_recommendation_blocks[] = $block('product_manual_fallback', 'proof_card', [
             'badge' => 'Proizvodni vodič',
-            'title' => 'Povezi ovaj korak s proizvodnim katalogom kada dodas shop linkove.',
-            'text' => 'Ako katalog jos nije spreman, ovaj fallback vodi na opci proizvodni shop ili vodič.',
+            'title' => 'Povezi ovaj korak s proizvodnim katalogom kada dodaš shop linkove.',
+            'text' => 'Ako katalog još nije spreman, ovaj fallback vodi na opći proizvodni shop ili vodič.',
         ]);
     }
 
     $product_recommendation_blocks[] = $block('product_recommendation_actions', 'cta_group', [
         'buttons' => [
             $action('product_shop_external', 'Otvori proizvodni shop / vodič', 'product_shop', '', 'primary', 'external_url', false, $product_shop_url),
-            $action('product_business_bridge', 'Zelim nauciti preporucivati proizvode online', 'product_to_business', 'product_to_business_bridge', 'secondary'),
+            $action('product_business_bridge', 'Želim naučiti preporučivati proizvode online', 'product_to_business', 'product_to_business_bridge', 'secondary'),
         ],
         'alignment' => 'center',
     ]);
 
-    $product_recommendation = $step('product_recommendation', 'segment', 'products', 'offer', 'Ovo je najbolji prvi proizvodni korak za tvoj cilj', 'Dinamicna proizvodna preporuka s mostom prema poslovnom putu.', $product_recommendation_blocks, 'product_to_business_bridge', ['design_variant' => 'card', 'block_mode' => 'product_offer']);
+    $product_recommendation = $step('product_recommendation', 'segment', 'products', 'offer', 'Ovo je najbolji prvi proizvodni korak za tvoj cilj', 'Dinamična proizvodna preporuka s mostom prema poslovnom putu.', $product_recommendation_blocks, 'product_to_business_bridge', ['design_variant' => 'card', 'block_mode' => 'product_offer']);
 
-    $product_to_business_bridge = $step('product_to_business_bridge', 'experience', 'products', 'proof', 'Ako ti se svida proizvodni put, mozes ga pretvoriti u online preporuke', 'Most iz product/discount interesa u business funnel.', [
+    $product_to_business_bridge = $step('product_to_business_bridge', 'experience', 'products', 'proof', 'Ako ti se sviđa proizvodni put, možeš ga pretvoriti u online preporuke', 'Most iz product/discount interesa u business funnel.', [
         $block('bridge_hero', 'headline', [
             'badge' => 'Most prema poslu',
             'title' => 'Mnogi krenu kroz proizvode, a kasnije shvate da isti sustav mogu koristiti za preporuke.',
-            'text' => 'Ako te zanima kako od proizvoda doci do online preporuka, kontakata i vlastitog tima, otvori poslovni put.',
+            'text' => 'Ako te zanima kako od proizvoda doći do online preporuka, kontakata i vlastitog tima, otvori poslovni put.',
         ]),
         $block('bridge_video', 'video', ['title' => 'Kako proizvodni interes postaje poslovni sustav', 'media_url' => $video('bridge')]),
         $block('bridge_actions', 'cta_group', [
             'buttons' => [
-                $action('bridge_business', 'Zelim poslovni put', 'business_interest', 'business_gateway', 'primary'),
-                $action('bridge_demo', 'Zelim FCC demo', 'demo_interest', 'fcc_demo_preview', 'secondary'),
+                $action('bridge_business', 'Želim poslovni put', 'business_interest', 'business_gateway', 'primary'),
+                $action('bridge_demo', 'Želim FCC demo', 'demo_interest', 'fcc_demo_preview', 'secondary'),
                 $action('bridge_shop', 'Ostajem na proizvodima', 'product_shop', '', 'ghost', 'external_url', false, $product_shop_url),
             ],
             'alignment' => 'center',
         ]),
     ], 'business_gateway', ['design_variant' => 'proof_strip', 'block_mode' => 'video']);
 
-    $not_ready_nurture = $step('not_ready_nurture', 'conversion', 'demo', 'follow_up', 'Nema pritiska. Poslat cu ti miran uvod i mozes se vratiti kad budes spreman.', 'Nurture stranica za osobe koje nisu odmah spremne.', [
+    $not_ready_nurture = $step('not_ready_nurture', 'conversion', 'demo', 'follow_up', 'Nema pritiska. Poslat ću ti miran uvod i možeš se vratiti kad budeš spreman.', 'Nurture stranica za osobe koje nisu odmah spremne.', [
         $block('nurture_hero', 'headline', [
             'badge' => 'Miran nastavak',
-            'title' => 'Nije cilj da svi kupe odmah. Cilj je da dobijes pravi sljedeci korak.',
-            'text' => 'Ako sada nije trenutak za 360 EUR start ili razgovor, pogledaj uvod i vrati se kad zelis demo, proizvodni put ili poslovni start.',
+            'title' => 'Nije cilj da svi kupe odmah. Cilj je da dobiješ pravi sljedeći korak.',
+            'text' => 'Ako sada nije trenutak za 360 EUR start ili razgovor, pogledaj uvod i vrati se kad želiš demo, proizvodni put ili poslovni start.',
         ]),
         $block('nurture_video', 'video', ['title' => 'Kratki uvod bez pritiska', 'media_url' => $video('nurture')]),
-        $block('nurture_email', 'email_field', ['title' => 'Email za uvodni video', 'placeholder' => 'Upisi email ako ga jos nisi ostavio/la', 'required' => false, 'layout_width' => 'half']),
+        $block('nurture_email', 'email_field', ['title' => 'Email za uvodni video', 'placeholder' => 'Upiši email ako ga još nisi ostavio/la', 'required' => false, 'layout_width' => 'half']),
         $block('nurture_phone', 'phone_field', ['title' => 'Telefon / WhatsApp', 'placeholder' => 'Opcionalno za brzi kontakt', 'required' => false, 'layout_width' => 'half']),
         $block('nurture_actions', 'cta_group', [
             'buttons' => [
-                $action('nurture_submit', 'Posalji mi uvodni video', 'nurture_video', '', 'primary', 'submit_stay', true),
+                $action('nurture_submit', 'Pošalji mi uvodni video', 'nurture_video', '', 'primary', 'submit_stay', true),
                 $action('nurture_demo', 'Vrati me na demo', 'demo_interest', 'fcc_demo_preview', 'secondary'),
-                $action('nurture_products', 'Zelim proizvode', 'product_discount', 'product_gateway', 'ghost'),
+                $action('nurture_products', 'Želim proizvode', 'product_discount', 'product_gateway', 'ghost'),
             ],
             'alignment' => 'center',
         ]),
@@ -2739,21 +2739,21 @@ function vip_funnel_get_stjepan_recruitment_payload($user = null, array $options
         'overview' => [
             'eyebrow' => 'FCC Funnel 2.0',
             'headline' => 'Pokreni online posao uz FCC sustav i mentorstvo Stjepana Beloše',
-            'subheadline' => 'Jedan vodjeni funnel za regrutaciju, demo sustava, prodaju proizvoda i follow-up.',
+            'subheadline' => 'Jedan vođeni funnel za regrutaciju, demo sustava, prodaju proizvoda i follow-up.',
             'primary_cta' => 'Provjeri svoj put',
             'secondary_cta' => 'Pogledaj FCC demo',
         ],
         'positioning' => [
-            'for' => 'Za osobe koje dolaze s drustvenih mreza i zele posao, demo FCC sustava ili proizvodni popust.',
-            'problem' => 'Viralna paznja se lako izgubi ako posjetitelj nema jasan sljedeci korak.',
+            'for' => 'Za osobe koje dolaze s društvenih mreža i žele posao, demo FCC sustava ili proizvodni popust.',
+            'problem' => 'Viralna pažnja se lako izgubi ako posjetitelj nema jasan sljedeći korak.',
             'mechanism' => 'Funnel segmentira posjetitelja, kvalificira spremnost i vodi ga prema Start paketu, razgovoru, demo iskustvu ili proizvodnoj preporuci.',
             'offer_promise' => 'Jasan put od interesa do odluke uz Stjepanovo mentorstvo i FCC sustav.',
-            'why_now' => 'Publika vec postoji; sada paznju treba pretvoriti u mjerljiv i ponovljiv sustav.',
+            'why_now' => 'Publika već postoji; sada pažnju treba pretvoriti u mjerljiv i ponovljiv sustav.',
         ],
         'landing_page' => $landing_page,
         'paths' => [
-            ['path_key' => 'business', 'title' => 'Online posao', 'description' => 'Put za osobe koje zele pokrenuti online posao uz FCC i mentorstvo.', 'sort_order' => 1, 'is_enabled' => true],
-            ['path_key' => 'products', 'title' => 'Proizvodi i popust', 'description' => 'Put za osobe koje sada zele proizvode, preporuku ili popust.', 'sort_order' => 2, 'is_enabled' => true],
+            ['path_key' => 'business', 'title' => 'Online posao', 'description' => 'Put za osobe koje žele pokrenuti online posao uz FCC i mentorstvo.', 'sort_order' => 1, 'is_enabled' => true],
+            ['path_key' => 'products', 'title' => 'Proizvodi i popust', 'description' => 'Put za osobe koje sada žele proizvode, preporuku ili popust.', 'sort_order' => 2, 'is_enabled' => true],
             ['path_key' => 'demo', 'title' => 'FCC demo i nurture', 'description' => 'Put za osobe koje prvo trebaju vidjeti sustav ili mirniji uvod.', 'sort_order' => 3, 'is_enabled' => true],
         ],
         'board' => [
@@ -2772,17 +2772,17 @@ function vip_funnel_get_stjepan_recruitment_payload($user = null, array $options
             'cta' => 'Otvori proizvodni put',
         ],
         'proof' => [
-            'mentor_intro' => 'Stjepan je kreator FCC-a i mentor tima od 7.000+ clanova.',
+            'mentor_intro' => 'Stjepan je kreator FCC-a i mentor tima od 7.000+ članova.',
             'proof_1' => 'FCC daje jasan sustav za prezentaciju, preporuke i follow-up.',
             'proof_2' => 'Funnel selektira hot, warm, product i demo leadove.',
             'proof_3' => 'Svaka stranica je mala landing stranica s jasnom odlukom.',
-            'faq_intro' => 'Najcesce sumnje rjesavaju se kroz demo, Start paket i miran nurture put.',
+            'faq_intro' => 'Najčešće sumnje rješavaju se kroz demo, Start paket i miran nurture put.',
         ],
         'follow_up' => [
             'cadence' => 'HOT: odmah/1/3 dana; WARM: 0/1/3 dana; PRODUCT: 0/2/5 dana; COLD: 0/5 dana',
-            'message_1' => 'Bok, Stjepan ovdje. Vidio sam tvoj odabir i saljem ti najbolji sljedeci korak.',
-            'message_2' => 'Najveca razlika je krenuti sam ili uz sustav. FCC je napravljen da novi ljudi ne moraju sve izmisljati od nule.',
-            'message_3' => 'Ako zelis, mogu ti u par minuta reci je li za tebe bolji Start paket, demo ili proizvodni put.',
+            'message_1' => 'Bok, Stjepan ovdje. Vidio sam tvoj odabir i šaljem ti najbolji sljedeći korak.',
+            'message_2' => 'Najveća razlika je krenuti sam ili uz sustav. FCC je napravljen da novi ljudi ne moraju sve izmišljati od nule.',
+            'message_3' => 'Ako želiš, mogu ti u par minuta reći je li za tebe bolji Start paket, demo ili proizvodni put.',
         ],
         'demo' => [
             'micro_demo_label' => 'Brzi FCC demo',
