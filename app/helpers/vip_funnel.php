@@ -4805,6 +4805,69 @@ function vip_funnel_studio_create_funnel_from_payload($user = null, array $paylo
     return vip_funnel_studio_get_funnel_row($user_id, $funnel_id);
 }
 
+function vip_funnel_studio_delete_funnel($user = null, int $funnel_id = 0): bool {
+    if(!$user || $funnel_id <= 0 || !vip_funnel_studio_schema_is_ready()) {
+        return false;
+    }
+
+    $user_id = (int) ($user->user_id ?? 0);
+
+    if($user_id <= 0 || !vip_funnel_studio_get_funnel_row($user_id, $funnel_id)) {
+        return false;
+    }
+
+    db()->startTransaction();
+
+    try {
+        if(vip_funnel_has_table('vip_leads')) {
+            $lead_detached = db()->where('vip_funnel_id', $funnel_id)->where('owner_user_id', $user_id)->update('vip_leads', [
+                'vip_funnel_id' => null,
+            ]);
+
+            if($lead_detached === false || !empty(database()->error)) {
+                throw new \Exception('vip_funnel_lead_detach_failed');
+            }
+        }
+
+        foreach(['vip_funnel_events', 'vip_funnel_runs', 'vip_funnel_edges', 'vip_funnel_cards', 'vip_funnel_paths'] as $table) {
+            if(!vip_funnel_has_table($table)) {
+                continue;
+            }
+
+            $deleted = db()->where('vip_funnel_id', $funnel_id)->delete($table);
+
+            if($deleted === false || !empty(database()->error)) {
+                throw new \Exception('vip_funnel_related_delete_failed_' . $table);
+            }
+        }
+
+        $deleted_funnel = db()->where('vip_funnel_id', $funnel_id)->where('user_id', $user_id)->delete('vip_funnels');
+
+        if($deleted_funnel === false || !empty(database()->error)) {
+            throw new \Exception('vip_funnel_root_delete_failed');
+        }
+
+        db()->commit();
+
+        cache()->deleteItemsByTag('user_id=' . $user_id);
+        cache()->deleteItem('user?user_id=' . $user_id);
+
+        return true;
+    } catch(\Throwable $exception) {
+        db()->rollback();
+
+        error_log(vip_funnel_json_encode([
+            'channel' => 'vip_funnel_delete_failed',
+            'user_id' => $user_id,
+            'funnel_id' => $funnel_id,
+            'message' => $exception->getMessage(),
+            'database_error' => database()->error ?? '',
+        ]));
+
+        return false;
+    }
+}
+
 function vip_funnel_studio_load_from_database($user = null, int $funnel_id = 0): array {
     $seed_payload = vip_funnel_get_studio_seed_payload($user);
 

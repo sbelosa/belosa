@@ -122,6 +122,22 @@ foreach($funnels as $item) {
         color: #06121d;
     }
 
+    .vip-funnel-center-btn-danger {
+        background: rgba(255,88,112,.12);
+        border-color: rgba(255,88,112,.38);
+        color: #ffd7de;
+    }
+
+    .vip-funnel-center-btn-danger:hover {
+        border-color: rgba(255,88,112,.72);
+        color: #fff;
+    }
+
+    .vip-funnel-center-btn:disabled {
+        cursor: not-allowed;
+        opacity: .52;
+    }
+
     .vip-funnel-center-grid {
         display: grid;
         grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -292,6 +308,107 @@ foreach($funnels as $item) {
         text-align: center;
     }
 
+    .vip-funnel-delete-modal {
+        position: fixed;
+        inset: 0;
+        z-index: 1080;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+    }
+
+    .vip-funnel-delete-modal.is-open {
+        display: flex;
+    }
+
+    .vip-funnel-delete-backdrop {
+        position: absolute;
+        inset: 0;
+        background: rgba(2,8,23,.78);
+        backdrop-filter: blur(10px);
+    }
+
+    .vip-funnel-delete-dialog {
+        position: relative;
+        width: min(100%, 34rem);
+        border: 1px solid rgba(255,255,255,.12);
+        border-radius: 1.25rem;
+        background: linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.025)), #111827;
+        box-shadow: 0 2rem 5rem rgba(0,0,0,.44);
+        padding: 1.15rem;
+        color: var(--vf-center-text);
+    }
+
+    .vip-funnel-delete-close {
+        position: absolute;
+        top: .8rem;
+        right: .8rem;
+        width: 2.25rem;
+        height: 2.25rem;
+        border: 1px solid rgba(255,255,255,.1);
+        border-radius: .75rem;
+        background: rgba(255,255,255,.05);
+        color: var(--vf-center-text);
+    }
+
+    .vip-funnel-delete-icon {
+        display: inline-flex;
+        width: 3rem;
+        height: 3rem;
+        align-items: center;
+        justify-content: center;
+        border-radius: 1rem;
+        background: rgba(255,88,112,.14);
+        color: #ff8fa2;
+        margin-bottom: .9rem;
+    }
+
+    .vip-funnel-delete-title {
+        margin: 0 2.4rem .5rem 0;
+        color: #fff;
+        font-size: 1.35rem;
+        font-weight: 900;
+    }
+
+    .vip-funnel-delete-copy {
+        color: var(--vf-center-muted);
+        line-height: 1.65;
+        margin-bottom: .9rem;
+    }
+
+    .vip-funnel-delete-warning {
+        border: 1px solid rgba(255,88,112,.24);
+        border-radius: .95rem;
+        background: rgba(255,88,112,.09);
+        padding: .85rem;
+        color: #ffe4e8;
+        font-weight: 800;
+        margin-bottom: .9rem;
+    }
+
+    .vip-funnel-delete-check {
+        display: flex;
+        gap: .65rem;
+        align-items: flex-start;
+        padding: .85rem;
+        border: 1px solid rgba(255,255,255,.08);
+        border-radius: .95rem;
+        background: rgba(255,255,255,.045);
+        color: var(--vf-center-muted);
+        line-height: 1.45;
+        cursor: pointer;
+        margin-bottom: 1rem;
+    }
+
+    .vip-funnel-delete-check input {
+        margin-top: .2rem;
+    }
+
+    body.vip-funnel-delete-open {
+        overflow: hidden;
+    }
+
     @media (max-width: 991px) {
         .vip-funnel-center-hero,
         .vip-funnel-center-card-top,
@@ -373,15 +490,24 @@ foreach($funnels as $item) {
                                     <span class="vip-funnel-center-chip">/<?= $e($row->slug ?? '') ?></span>
                                 </div>
                             </div>
-                            <div class="vip-funnel-center-card-actions">
-                                <a href="<?= $e($item['edit_url'] ?? '#') ?>" class="vip-funnel-center-btn vip-funnel-center-btn-primary">
-                                    <i class="fas fa-fw fa-pen"></i> Uredi
-                                </a>
-                                <a href="<?= $e($public_url) ?>" target="_blank" rel="noopener" class="vip-funnel-center-btn">
-                                    <i class="fas fa-fw fa-arrow-up-right-from-square"></i> Otvori
-                                </a>
-                            </div>
-                        </div>
+	                            <div class="vip-funnel-center-card-actions">
+	                                <a href="<?= $e($item['edit_url'] ?? '#') ?>" class="vip-funnel-center-btn vip-funnel-center-btn-primary">
+	                                    <i class="fas fa-fw fa-pen"></i> Uredi
+	                                </a>
+	                                <a href="<?= $e($public_url) ?>" target="_blank" rel="noopener" class="vip-funnel-center-btn">
+	                                    <i class="fas fa-fw fa-arrow-up-right-from-square"></i> Otvori
+	                                </a>
+	                                <button
+	                                    type="button"
+	                                    class="vip-funnel-center-btn vip-funnel-center-btn-danger"
+	                                    data-vip-funnel-delete-open
+	                                    data-funnel-id="<?= (int) ($row->vip_funnel_id ?? 0) ?>"
+	                                    data-funnel-name="<?= $e($row->name ?? 'VIP Funnel 2.0') ?>"
+	                                >
+	                                    <i class="fas fa-fw fa-trash-alt"></i> Obriši
+	                                </button>
+	                            </div>
+	                        </div>
 
                         <div class="vip-funnel-center-url-row">
                             <input class="vip-funnel-center-url" type="text" readonly value="<?= $e($public_url) ?>" data-vip-funnel-copy-source />
@@ -447,10 +573,46 @@ foreach($funnels as $item) {
                     </div>
                 </article>
             <?php endforeach ?>
-        </div>
-    </section>
-</div>
+	        </div>
+	    </section>
 
+	    <div class="vip-funnel-delete-modal" id="vip_funnel_delete_modal" aria-hidden="true">
+	        <div class="vip-funnel-delete-backdrop" data-vip-funnel-delete-close></div>
+	        <div class="vip-funnel-delete-dialog" role="dialog" aria-modal="true" aria-labelledby="vip_funnel_delete_title">
+	            <button type="button" class="vip-funnel-delete-close" data-vip-funnel-delete-close aria-label="Zatvori">
+	                <i class="fas fa-fw fa-times"></i>
+	            </button>
+	            <div class="vip-funnel-delete-icon">
+	                <i class="fas fa-fw fa-triangle-exclamation"></i>
+	            </div>
+	            <h2 class="vip-funnel-delete-title" id="vip_funnel_delete_title">Trajno obrisati funnel?</h2>
+	            <p class="vip-funnel-delete-copy">
+	                Funnel <strong data-vip-funnel-delete-name>VIP Funnel 2.0</strong> bit će uklonjen iz tvog popisa, javni URL više neće otvarati taj funnel, a njegova Funnel analitika se briše.
+	            </p>
+	            <div class="vip-funnel-delete-warning">
+	                Ova radnja se ne može poništiti nakon brisanja. Kontakti i demo zapisi ostaju spremljeni u pregledima.
+	            </div>
+	            <form method="post" id="vip_funnel_delete_form">
+	                <input type="hidden" name="token" value="<?= \Altum\Csrf::get() ?>" />
+	                <input type="hidden" name="delete_vip_funnel" value="1" />
+	                <input type="hidden" name="delete_funnel_id" value="" data-vip-funnel-delete-id />
+
+	                <label class="vip-funnel-delete-check">
+	                    <input type="checkbox" name="delete_funnel_confirmed" value="1" data-vip-funnel-delete-confirm />
+	                    <span>Razumijem da brišem funnel trajno i da se ova radnja ne može vratiti.</span>
+	                </label>
+
+	                <div class="vip-funnel-center-card-actions justify-content-end">
+	                    <button type="button" class="vip-funnel-center-btn" data-vip-funnel-delete-close>Odustani</button>
+	                    <button type="submit" class="vip-funnel-center-btn vip-funnel-center-btn-danger" data-vip-funnel-delete-submit disabled>
+	                        <i class="fas fa-fw fa-trash-alt"></i> Trajno obriši
+	                    </button>
+	                </div>
+	            </form>
+	        </div>
+	    </div>
+
+</div>
 <script>
     'use strict';
 
@@ -470,4 +632,49 @@ foreach($funnels as $item) {
             }
         });
     });
+
+        const deleteModal = document.getElementById('vip_funnel_delete_modal');
+        const deleteName = deleteModal ? deleteModal.querySelector('[data-vip-funnel-delete-name]') : null;
+        const deleteIdInput = deleteModal ? deleteModal.querySelector('[data-vip-funnel-delete-id]') : null;
+        const deleteConfirm = deleteModal ? deleteModal.querySelector('[data-vip-funnel-delete-confirm]') : null;
+        const deleteSubmit = deleteModal ? deleteModal.querySelector('[data-vip-funnel-delete-submit]') : null;
+
+        const closeDeleteModal = () => {
+            if(!deleteModal) return;
+
+            deleteModal.classList.remove('is-open');
+            deleteModal.setAttribute('aria-hidden', 'true');
+            document.body.classList.remove('vip-funnel-delete-open');
+        };
+
+        document.querySelectorAll('[data-vip-funnel-delete-open]').forEach(button => {
+            button.addEventListener('click', () => {
+                if(!deleteModal || !deleteIdInput || !deleteName || !deleteConfirm || !deleteSubmit) return;
+
+                deleteIdInput.value = button.getAttribute('data-funnel-id') || '';
+                deleteName.textContent = button.getAttribute('data-funnel-name') || 'VIP Funnel 2.0';
+                deleteConfirm.checked = false;
+                deleteSubmit.disabled = true;
+                deleteModal.classList.add('is-open');
+                deleteModal.setAttribute('aria-hidden', 'false');
+                document.body.classList.add('vip-funnel-delete-open');
+                deleteConfirm.focus();
+            });
+        });
+
+        document.querySelectorAll('[data-vip-funnel-delete-close]').forEach(button => {
+            button.addEventListener('click', closeDeleteModal);
+        });
+
+        if(deleteConfirm && deleteSubmit) {
+            deleteConfirm.addEventListener('change', () => {
+                deleteSubmit.disabled = !deleteConfirm.checked;
+            });
+        }
+
+        document.addEventListener('keydown', event => {
+            if(event.key === 'Escape' && deleteModal && deleteModal.classList.contains('is-open')) {
+                closeDeleteModal();
+            }
+        });
 </script>

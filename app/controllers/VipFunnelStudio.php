@@ -119,7 +119,7 @@ class VipFunnelStudio extends Controller {
         $selected_funnel_id = $this->get_selected_funnel_id();
         $show_editor = $selected_funnel_id > 0 || isset($_GET['editor']);
 
-        if($access->can_access && vip_funnel_studio_schema_is_ready()) {
+        if($access->can_access && $show_editor && vip_funnel_studio_schema_is_ready()) {
             vip_funnel_studio_ensure_primary_funnel($this->user);
         }
 
@@ -127,6 +127,22 @@ class VipFunnelStudio extends Controller {
             if(!\Altum\Csrf::check('token') && !\Altum\Csrf::check('global_token')) {
                 Alerts::add_error(l('global.error_message.invalid_csrf_token'));
             } else {
+                if(isset($_POST['delete_vip_funnel'])) {
+                    $delete_funnel_id = (int) ($_POST['delete_funnel_id'] ?? 0);
+                    $delete_confirmed = (int) ($_POST['delete_funnel_confirmed'] ?? 0) === 1;
+
+                    if(!$delete_confirmed) {
+                        Alerts::add_error('Za brisanje funnel-a potrebno je potvrditi da razumiješ da se radnja ne može poništiti.');
+                    } elseif($delete_funnel_id <= 0) {
+                        Alerts::add_error('Funnel za brisanje nije pronađen.');
+                    } elseif(vip_funnel_studio_delete_funnel($this->user, $delete_funnel_id)) {
+                        Alerts::add_success('Funnel je trajno obrisan. Kontakti i demo zapisi ostaju spremljeni u pregledima.');
+                        redirect('vip-funnel-studio');
+                    } else {
+                        Alerts::add_error('Funnel nije obrisan. Provjeri je li funnel još uvijek tvoj i pokušaj ponovno.');
+                    }
+                }
+
                 if(isset($_POST['create_vip_funnel'])) {
                     $payload = vip_funnel_get_studio_seed_payload($this->user);
                     $payload['funnel']['name'] = trim(input_clean((string) ($_POST['funnel_name'] ?? ''), 120)) ?: 'Novi VIP Funnel 2.0';
@@ -153,7 +169,7 @@ class VipFunnelStudio extends Controller {
                     Alerts::add_error('Import demo funnel-a trenutno nije uspio.');
                 }
 
-                $payload = isset($_POST['create_vip_funnel']) || isset($_POST['import_vip_funnel_template']) ? null : $this->decode_posted_payload($this->user);
+                $payload = isset($_POST['create_vip_funnel']) || isset($_POST['import_vip_funnel_template']) || isset($_POST['delete_vip_funnel']) ? null : $this->decode_posted_payload($this->user);
 
                 if($payload !== null && !Alerts::has_field_errors() && !Alerts::has_errors()) {
                     $validation_errors = $this->collect_validation_errors($payload);
