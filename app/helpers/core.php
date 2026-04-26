@@ -172,10 +172,23 @@ function fc_blog_shop_context_normalize($context): array {
         'meta_title' => 180,
         'meta_description' => 320,
         'meta_keywords' => 255,
+        'schema_offer_price' => 32,
+        'schema_offer_currency' => 3,
+        'schema_shipping_country' => 2,
+        'schema_shipping_price' => 32,
+        'schema_shipping_min_days' => 3,
+        'schema_shipping_max_days' => 3,
+        'schema_return_country' => 2,
+        'schema_return_days' => 3,
+        'schema_return_fees' => 64,
     ] as $field => $max_length) {
         $value = trim(input_clean((string) ($context[$field] ?? ''), $max_length));
 
         if($value !== '') {
+            if(in_array($field, ['schema_offer_currency', 'schema_shipping_country', 'schema_return_country'], true)) {
+                $value = mb_strtoupper($value);
+            }
+
             $normalized[$field] = $value;
         }
     }
@@ -298,6 +311,15 @@ function fc_blog_shop_context_to_form_data($context): array {
         'meta_title' => $context['meta_title'] ?? '',
         'meta_description' => $context['meta_description'] ?? '',
         'meta_keywords' => $context['meta_keywords'] ?? '',
+        'schema_offer_price' => $context['schema_offer_price'] ?? '',
+        'schema_offer_currency' => $context['schema_offer_currency'] ?? '',
+        'schema_shipping_country' => $context['schema_shipping_country'] ?? '',
+        'schema_shipping_price' => $context['schema_shipping_price'] ?? '',
+        'schema_shipping_min_days' => $context['schema_shipping_min_days'] ?? '',
+        'schema_shipping_max_days' => $context['schema_shipping_max_days'] ?? '',
+        'schema_return_country' => $context['schema_return_country'] ?? '',
+        'schema_return_days' => $context['schema_return_days'] ?? '',
+        'schema_return_fees' => $context['schema_return_fees'] ?? '',
         'summary_cards' => implode(PHP_EOL, array_map(static function($item) {
             return ($item['label'] ?? '') . ' | ' . ($item['value'] ?? '');
         }, $context['summary_cards'] ?? [])),

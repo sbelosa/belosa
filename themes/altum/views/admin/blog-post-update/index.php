@@ -203,6 +203,82 @@
                     <textarea id="shop_context_meta_description" name="shop_context_meta_description" class="form-control" rows="3" placeholder="Ako ostane prazno, koristi se opis proizvoda ili generirani SEO sažetak."><?= e($data->shop_context_form->meta_description ?? '') ?></textarea>
                 </div>
 
+                <div class="card border rounded-0 mb-4">
+                    <div class="card-body">
+                        <h3 class="h6 mb-3"><i class="fas fa-fw fa-sm fa-receipt text-muted mr-1"></i> Merchant schema podaci</h3>
+                        <p class="small text-muted mb-3">Popunite samo ako imate točnu aktivnu cijenu i pravila koja su prikazana/primjenjiva za taj proizvod. Ako cijena nije upisana, stranica neće slati <code>Offer</code> schema kako Google ne bi prijavio grešku.</p>
+
+                        <div class="row">
+                            <div class="col-12 col-lg-6">
+                                <div class="form-group">
+                                    <label for="shop_context_schema_offer_price"><i class="fas fa-fw fa-sm fa-tag text-muted mr-1"></i> Aktivna cijena</label>
+                                    <input id="shop_context_schema_offer_price" type="text" name="shop_context_schema_offer_price" class="form-control" value="<?= e($data->shop_context_form->schema_offer_price ?? '') ?>" maxlength="32" placeholder="Npr. 29.90" />
+                                </div>
+                            </div>
+
+                            <div class="col-12 col-lg-6">
+                                <div class="form-group">
+                                    <label for="shop_context_schema_offer_currency"><i class="fas fa-fw fa-sm fa-coins text-muted mr-1"></i> Valuta</label>
+                                    <input id="shop_context_schema_offer_currency" type="text" name="shop_context_schema_offer_currency" class="form-control" value="<?= e($data->shop_context_form->schema_offer_currency ?? '') ?>" maxlength="3" placeholder="Npr. EUR" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-12 col-lg-4">
+                                <div class="form-group">
+                                    <label for="shop_context_schema_shipping_country"><i class="fas fa-fw fa-sm fa-globe text-muted mr-1"></i> Dostava zemlja</label>
+                                    <input id="shop_context_schema_shipping_country" type="text" name="shop_context_schema_shipping_country" class="form-control" value="<?= e($data->shop_context_form->schema_shipping_country ?? '') ?>" maxlength="2" placeholder="Npr. HR" />
+                                </div>
+                            </div>
+
+                            <div class="col-12 col-lg-4">
+                                <div class="form-group">
+                                    <label for="shop_context_schema_shipping_price"><i class="fas fa-fw fa-sm fa-truck text-muted mr-1"></i> Cijena dostave</label>
+                                    <input id="shop_context_schema_shipping_price" type="text" name="shop_context_schema_shipping_price" class="form-control" value="<?= e($data->shop_context_form->schema_shipping_price ?? '') ?>" maxlength="32" placeholder="Npr. 0 ili 4.99" />
+                                </div>
+                            </div>
+
+                            <div class="col-12 col-lg-2">
+                                <div class="form-group">
+                                    <label for="shop_context_schema_shipping_min_days">Min dana</label>
+                                    <input id="shop_context_schema_shipping_min_days" type="text" name="shop_context_schema_shipping_min_days" class="form-control" value="<?= e($data->shop_context_form->schema_shipping_min_days ?? '') ?>" maxlength="3" placeholder="1" />
+                                </div>
+                            </div>
+
+                            <div class="col-12 col-lg-2">
+                                <div class="form-group">
+                                    <label for="shop_context_schema_shipping_max_days">Max dana</label>
+                                    <input id="shop_context_schema_shipping_max_days" type="text" name="shop_context_schema_shipping_max_days" class="form-control" value="<?= e($data->shop_context_form->schema_shipping_max_days ?? '') ?>" maxlength="3" placeholder="7" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-12 col-lg-4">
+                                <div class="form-group">
+                                    <label for="shop_context_schema_return_country"><i class="fas fa-fw fa-sm fa-undo text-muted mr-1"></i> Povrat zemlja</label>
+                                    <input id="shop_context_schema_return_country" type="text" name="shop_context_schema_return_country" class="form-control" value="<?= e($data->shop_context_form->schema_return_country ?? '') ?>" maxlength="2" placeholder="Npr. HR" />
+                                </div>
+                            </div>
+
+                            <div class="col-12 col-lg-4">
+                                <div class="form-group">
+                                    <label for="shop_context_schema_return_days">Rok povrata u danima</label>
+                                    <input id="shop_context_schema_return_days" type="text" name="shop_context_schema_return_days" class="form-control" value="<?= e($data->shop_context_form->schema_return_days ?? '') ?>" maxlength="3" placeholder="Npr. 14" />
+                                </div>
+                            </div>
+
+                            <div class="col-12 col-lg-4">
+                                <div class="form-group">
+                                    <label for="shop_context_schema_return_fees">Trošak povrata</label>
+                                    <input id="shop_context_schema_return_fees" type="text" name="shop_context_schema_return_fees" class="form-control" value="<?= e($data->shop_context_form->schema_return_fees ?? '') ?>" maxlength="64" placeholder="FreeReturn ili ReturnShippingFees" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="row">
                     <div class="col-12 col-lg-6">
                         <div class="form-group">

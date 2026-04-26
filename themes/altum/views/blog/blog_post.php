@@ -1583,6 +1583,72 @@ if(!empty($fcc_blog_faq_items)) {
 $fcc_blog_product_schema = null;
 
 if($fcc_is_product_context) {
+    $fcc_schema_decimal_value = static function($value, bool $allow_zero = false): ?string {
+        $value = trim(str_replace(',', '.', (string) $value));
+        $value = preg_replace('/\s+/', '', $value);
+
+        if($value === '' || !is_numeric($value)) {
+            return null;
+        }
+
+        $number = (float) $value;
+
+        if($allow_zero ? $number < 0 : $number <= 0) {
+            return null;
+        }
+
+        return rtrim(rtrim(number_format($number, 2, '.', ''), '0'), '.');
+    };
+
+    $fcc_schema_positive_int = static function($value, bool $allow_zero = true): ?int {
+        $value = trim((string) $value);
+
+        if($value === '' || !ctype_digit($value)) {
+            return null;
+        }
+
+        $number = (int) $value;
+
+        if($allow_zero ? $number < 0 : $number <= 0) {
+            return null;
+        }
+
+        return $number;
+    };
+
+    $fcc_schema_country_code = static function($value): ?string {
+        $value = mb_strtoupper(trim((string) $value));
+
+        return preg_match('/^[A-Z]{2}$/', $value) ? $value : null;
+    };
+
+    $fcc_schema_currency_code = static function($value): ?string {
+        $value = mb_strtoupper(trim((string) $value));
+
+        return preg_match('/^[A-Z]{3}$/', $value) ? $value : null;
+    };
+
+    $fcc_schema_return_fee = static function($value): ?string {
+        $value = trim((string) $value);
+
+        if($value === '') {
+            return null;
+        }
+
+        $map = [
+            'freereturn' => 'https://schema.org/FreeReturn',
+            'free_return' => 'https://schema.org/FreeReturn',
+            'returnfeescustomerresponsibility' => 'https://schema.org/ReturnFeesCustomerResponsibility',
+            'return_fees_customer_responsibility' => 'https://schema.org/ReturnFeesCustomerResponsibility',
+            'returnshippingfees' => 'https://schema.org/ReturnShippingFees',
+            'return_shipping_fees' => 'https://schema.org/ReturnShippingFees',
+        ];
+
+        $key = mb_strtolower(str_replace(['https://schema.org/', '-', ' '], ['', '_', '_'], $value));
+
+        return $map[$key] ?? (preg_match('#^https://schema\.org/(FreeReturn|ReturnFeesCustomerResponsibility|ReturnShippingFees)$#', $value) ? $value : null);
+    };
+
     $fcc_blog_product_schema = [
         '@context' => 'https://schema.org',
         '@type' => 'Product',
@@ -1627,12 +1693,80 @@ if($fcc_is_product_context) {
         }, $fcc_product_summary_cards)));
     }
 
-    if($fcc_blog_product_cta_url) {
+    $fcc_schema_offer_price = $fcc_schema_decimal_value($fcc_blog_shop_context['schema_offer_price'] ?? '');
+    $fcc_schema_offer_currency = $fcc_schema_currency_code($fcc_blog_shop_context['schema_offer_currency'] ?? '');
+    $fcc_schema_shop_url = !empty($data->webshop_link) ? (string) $data->webshop_link : (string) $fcc_blog_product_cta_url;
+
+    if($fcc_schema_shop_url) {
+        $fcc_blog_product_schema['sameAs'] = $fcc_schema_shop_url;
+    }
+
+    if($fcc_schema_shop_url && $fcc_schema_offer_price && $fcc_schema_offer_currency) {
         $fcc_blog_product_schema['offers'] = [
             '@type' => 'Offer',
-            'url' => $fcc_blog_product_cta_url,
+            'url' => $fcc_schema_shop_url,
+            'price' => $fcc_schema_offer_price,
+            'priceCurrency' => $fcc_schema_offer_currency,
             'availability' => 'https://schema.org/InStock',
+            'itemCondition' => 'https://schema.org/NewCondition',
+            'seller' => [
+                '@type' => 'Organization',
+                'name' => 'Forever Living Products',
+            ],
         ];
+
+        $fcc_schema_shipping_country = $fcc_schema_country_code($fcc_blog_shop_context['schema_shipping_country'] ?? '');
+        $fcc_schema_shipping_price = $fcc_schema_decimal_value($fcc_blog_shop_context['schema_shipping_price'] ?? '', true);
+        $fcc_schema_shipping_min_days = $fcc_schema_positive_int($fcc_blog_shop_context['schema_shipping_min_days'] ?? '');
+        $fcc_schema_shipping_max_days = $fcc_schema_positive_int($fcc_blog_shop_context['schema_shipping_max_days'] ?? '');
+
+        if($fcc_schema_shipping_country && $fcc_schema_shipping_price !== null && $fcc_schema_shipping_min_days !== null && $fcc_schema_shipping_max_days !== null && $fcc_schema_shipping_max_days >= $fcc_schema_shipping_min_days) {
+            $fcc_blog_product_schema['offers']['shippingDetails'] = [
+                '@type' => 'OfferShippingDetails',
+                'shippingRate' => [
+                    '@type' => 'MonetaryAmount',
+                    'value' => $fcc_schema_shipping_price,
+                    'currency' => $fcc_schema_offer_currency,
+                ],
+                'shippingDestination' => [
+                    '@type' => 'DefinedRegion',
+                    'addressCountry' => $fcc_schema_shipping_country,
+                ],
+                'deliveryTime' => [
+                    '@type' => 'ShippingDeliveryTime',
+                    'handlingTime' => [
+                        '@type' => 'QuantitativeValue',
+                        'minValue' => 0,
+                        'maxValue' => 1,
+                        'unitCode' => 'DAY',
+                    ],
+                    'transitTime' => [
+                        '@type' => 'QuantitativeValue',
+                        'minValue' => $fcc_schema_shipping_min_days,
+                        'maxValue' => $fcc_schema_shipping_max_days,
+                        'unitCode' => 'DAY',
+                    ],
+                ],
+            ];
+        }
+
+        $fcc_schema_return_country = $fcc_schema_country_code($fcc_blog_shop_context['schema_return_country'] ?? '');
+        $fcc_schema_return_days = $fcc_schema_positive_int($fcc_blog_shop_context['schema_return_days'] ?? '', false);
+
+        if($fcc_schema_return_country && $fcc_schema_return_days !== null) {
+            $fcc_blog_product_schema['offers']['hasMerchantReturnPolicy'] = [
+                '@type' => 'MerchantReturnPolicy',
+                'applicableCountry' => $fcc_schema_return_country,
+                'returnPolicyCategory' => 'https://schema.org/MerchantReturnFiniteReturnWindow',
+                'merchantReturnDays' => $fcc_schema_return_days,
+            ];
+
+            $fcc_schema_return_fees = $fcc_schema_return_fee($fcc_blog_shop_context['schema_return_fees'] ?? '');
+
+            if($fcc_schema_return_fees) {
+                $fcc_blog_product_schema['offers']['hasMerchantReturnPolicy']['returnFees'] = $fcc_schema_return_fees;
+            }
+        }
     }
 
     if(settings()->content->blog_ratings_is_enabled && $data->blog_post->total_ratings > 0) {
