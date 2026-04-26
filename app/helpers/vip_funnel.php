@@ -3912,6 +3912,7 @@ function vip_funnel_normalize_studio_payload($payload, $user = null): array {
     $payload['board'] = vip_funnel_normalize_board_payload($raw_board ?? $seed['board']);
     $payload['defaults']['owner_user_id'] = (int) ($payload['defaults']['owner_user_id'] ?? ($user->user_id ?? 0));
     $payload['defaults']['hide_public_navbar'] = !empty($payload['defaults']['hide_public_navbar']);
+    vip_funnel_complete_fcc_vip_landing_variant_b_if_needed($payload);
 
     return $payload;
 }
@@ -4417,6 +4418,110 @@ function vip_funnel_update_template_step(array &$payload, string $step_id, array
     unset($phase);
 }
 
+function vip_funnel_set_complete_landing_variant_b(array &$payload, array $copy): void {
+    if(empty($payload['landing_page']) || !is_array($payload['landing_page']) || empty($payload['landing_page']['blocks']) || !is_array($payload['landing_page']['blocks'])) {
+        return;
+    }
+
+    $blocks_by_id = [];
+
+    foreach($payload['landing_page']['blocks'] as $block) {
+        if(is_array($block) && !empty($block['id'])) {
+            $blocks_by_id[(string) $block['id']] = $block;
+        }
+    }
+
+    $clone = static function(string $source_id, string $target_id, array $updates = []) use ($blocks_by_id): ?array {
+        if(empty($blocks_by_id[$source_id]) || !is_array($blocks_by_id[$source_id])) {
+            return null;
+        }
+
+        $block = $blocks_by_id[$source_id];
+        $block['id'] = $target_id;
+
+        return array_replace_recursive($block, $updates);
+    };
+
+    $variant_blocks = array_values(array_filter([
+        $clone('landing_hero', 'landing_b_hero', $copy['hero'] ?? []),
+        $clone('landing_intro_video', 'landing_b_intro_video', $copy['intro_video'] ?? []),
+        $clone('landing_proof', 'landing_b_proof', $copy['proof'] ?? []),
+        $clone('landing_direction', 'landing_b_direction', $copy['direction'] ?? []),
+    ]));
+
+    if(!empty($variant_blocks)) {
+        $payload['landing_page']['variant_b_blocks'] = $variant_blocks;
+    }
+}
+
+function vip_funnel_complete_fcc_vip_landing_variant_b_if_needed(array &$payload): void {
+    $funnel_name = (string) ($payload['funnel']['name'] ?? '');
+    $overview_eyebrow = (string) ($payload['overview']['eyebrow'] ?? '');
+    $landing_name = (string) ($payload['landing_page']['name'] ?? '');
+    $is_fcc_vip_template = str_contains($funnel_name, 'FCC VIP Funnel')
+        || str_contains($overview_eyebrow, 'FCC VIP Funnel')
+        || str_contains($landing_name, 'FCC VIP Funnel');
+
+    if(!$is_fcc_vip_template || empty($payload['landing_page']['blocks']) || !is_array($payload['landing_page']['blocks'])) {
+        return;
+    }
+
+    $variant_b_blocks = $payload['landing_page']['variant_b_blocks'] ?? [];
+    if(is_array($variant_b_blocks) && count($variant_b_blocks) >= 4) {
+        return;
+    }
+
+    $hero_title = (string) ($payload['landing_page']['blocks'][0]['title'] ?? '');
+    $is_en = stripos($hero_title, 'start an online business') !== false
+        || stripos($hero_title, 'guided mentorship') !== false;
+
+    if($is_en) {
+        vip_funnel_set_complete_landing_variant_b($payload, [
+            'hero' => [
+                'badge' => 'From interest to system',
+                'title' => 'From first interest to your own online business',
+                'text' => 'If FCC caught your attention, this short funnel shows the best next step without overwhelming you.',
+            ],
+            'intro_video' => [
+                'title' => 'Short intro from your FCC mentor',
+                'text' => 'Watch the short message first, then choose the path that best matches your situation.',
+            ],
+            'proof' => [
+                'badge' => 'Why this is not just another link',
+                'title' => 'FCC connects attention, clear selection, products, and mentorship into one guided system.',
+                'text' => 'A new visitor does not need to read everything at once. The funnel guides them toward business, demo, or product path, while the mentor sees who is ready for a serious conversation.',
+            ],
+            'direction' => [
+                'title' => 'Choose your fastest path',
+                'text' => 'Business, demo, or products. The system guides you without overload.',
+            ],
+        ]);
+
+        return;
+    }
+
+    vip_funnel_set_complete_landing_variant_b($payload, [
+        'hero' => [
+            'badge' => 'Od interesa do sustava',
+            'title' => 'Od prvog interesa do vlastitog online posla',
+            'text' => 'Ako te zanima FCC, ovaj kratki funnel će ti pokazati najbolji sljedeći korak bez previše informacija odjednom.',
+        ],
+        'intro_video' => [
+            'title' => 'Kratki uvod tvog FCC mentora',
+            'text' => 'Pogledaj prvo kratku poruku, a zatim odaberi smjer koji je najbliži tvojoj situaciji.',
+        ],
+        'proof' => [
+            'badge' => 'Zašto ovo nije običan link',
+            'title' => 'FCC spaja pažnju, jasnu selekciju, proizvode i mentorstvo u jedan vođeni sustav.',
+            'text' => 'Novi posjetitelj ne mora čitati sve odjednom. Funnel ga vodi prema poslu, demo iskustvu ili proizvodnom putu, a mentoru pokazuje tko je spreman za ozbiljan razgovor.',
+        ],
+        'direction' => [
+            'title' => 'Odaberi svoj najbrži put',
+            'text' => 'Posao, demo ili proizvodi. Sustav te vodi bez viška informacija.',
+        ],
+    ]);
+}
+
 function vip_funnel_get_fcc_vip_import_template_payload($user = null, string $language = 'hr'): array {
     $language = vip_funnel_resolve_import_template_language($language);
     $owner_profile = vip_funnel_get_owner_contact_profile($user);
@@ -4529,6 +4634,27 @@ function vip_funnel_get_fcc_vip_import_template_payload($user = null, string $la
             'preview_headline' => 'Zatraži kratki pregled s mentorom',
             'page' => ['name' => 'Zatraži kratki pregled s mentorom'],
         ]);
+
+        vip_funnel_set_complete_landing_variant_b($payload, [
+            'hero' => [
+                'badge' => 'Od interesa do sustava',
+                'title' => 'Od prvog interesa do vlastitog online posla',
+                'text' => 'Ako te zanima FCC, ovaj kratki funnel će ti pokazati najbolji sljedeći korak bez previše informacija odjednom.',
+            ],
+            'intro_video' => [
+                'title' => 'Kratki uvod tvog FCC mentora',
+                'text' => 'Pogledaj prvo kratku poruku, a zatim odaberi smjer koji je najbliži tvojoj situaciji.',
+            ],
+            'proof' => [
+                'badge' => 'Zašto ovo nije običan link',
+                'title' => 'FCC spaja pažnju, jasnu selekciju, proizvode i mentorstvo u jedan vođeni sustav.',
+                'text' => 'Novi posjetitelj ne mora čitati sve odjednom. Funnel ga vodi prema poslu, demo iskustvu ili proizvodnom putu, a mentoru pokazuje tko je spreman za ozbiljan razgovor.',
+            ],
+            'direction' => [
+                'title' => 'Odaberi svoj najbrži put',
+                'text' => 'Posao, demo ili proizvodi. Sustav te vodi bez viška informacija.',
+            ],
+        ]);
     };
 
     $apply_en_copy = static function(array &$payload) use ($mentor_name, $mentor_first_name, $mentor_email, $contact_url, $product_shop_url): void {
@@ -4623,6 +4749,27 @@ function vip_funnel_get_fcc_vip_import_template_payload($user = null, string $la
             'helper_text' => 'Contact page for someone who wants confirmation before deciding.',
             'preview_headline' => 'Request a short review with your mentor',
             'page' => ['name' => 'Request a short review with your mentor'],
+        ]);
+
+        vip_funnel_set_complete_landing_variant_b($payload, [
+            'hero' => [
+                'badge' => 'From interest to system',
+                'title' => 'From first interest to your own online business',
+                'text' => 'If FCC caught your attention, this short funnel shows the best next step without overwhelming you.',
+            ],
+            'intro_video' => [
+                'title' => 'Short intro from your FCC mentor',
+                'text' => 'Watch the short message first, then choose the path that best matches your situation.',
+            ],
+            'proof' => [
+                'badge' => 'Why this is not just another link',
+                'title' => 'FCC connects attention, clear selection, products, and mentorship into one guided system.',
+                'text' => 'A new visitor does not need to read everything at once. The funnel guides them toward business, demo, or product path, while the mentor sees who is ready for a serious conversation.',
+            ],
+            'direction' => [
+                'title' => 'Choose your fastest path',
+                'text' => 'Business, demo, or products. The system guides you without overload.',
+            ],
         ]);
     };
 
