@@ -5545,8 +5545,48 @@ function fcc_ai_is_low_context_follow_up_message(string $message): bool {
     ]);
 }
 
+function fcc_ai_is_public_closing_thanks_message(string $message): bool {
+    $message = mb_strtolower(trim($message));
+
+    if($message === '') {
+        return false;
+    }
+
+    $normalized = preg_replace('/[^\p{L}\p{N}\s]+/u', ' ', $message) ?? $message;
+    $words = array_values(array_filter(preg_split('/\s+/u', trim($normalized)) ?: []));
+
+    if(empty($words) || count($words) > 7) {
+        return false;
+    }
+
+    $has_closing_signal = fcc_ai_contains_keywords($message, [
+        'hvala', 'fala', 'thanks', 'thank you',
+        'laku noć', 'laku noc', 'laku noč', 'lahko noč', 'lahko noc', 'good night',
+    ]);
+
+    if(!$has_closing_signal) {
+        return false;
+    }
+
+    $allowed_words = [
+        'hvala', 'fala', 'puno', 'mnogo', 'lijepa', 'lepa', 'laku', 'lahko', 'noć', 'noc', 'noč',
+        'pozdrav', 'pozz', 'bok', 'hvalaam', 'thanks', 'thank', 'you', 'good', 'night',
+    ];
+
+    foreach($words as $word) {
+        if(!in_array($word, $allowed_words, true)) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 function fcc_ai_is_public_small_talk_message(string $message): bool {
-    return (bool) preg_match('/^\s*(kako si|how are you|bok|pozdrav|hej|hey|hi|hello)\s*[!?.]*\s*$/iu', mb_strtolower(trim($message)));
+    $message = mb_strtolower(trim($message));
+
+    return (bool) preg_match('/^\s*(kako si|how are you|bok|pozdrav|hej|hey|hi|hello)\s*[!?.]*\s*$/iu', $message)
+        || fcc_ai_is_public_closing_thanks_message($message);
 }
 
 function fcc_ai_is_public_condition_explanation_followup_request(string $message): bool {
@@ -6982,6 +7022,109 @@ function fcc_ai_strip_public_product_tail_from_utility_reply(string $content): s
             'forever checkout',
             'referral',
         ]);
+    }));
+
+    return trim(implode("\n\n", $blocks));
+}
+
+function fcc_ai_is_public_content_asset_request(string $message): bool {
+    $message = trim($message);
+
+    if($message === '') {
+        return false;
+    }
+
+    return fcc_ai_contains_keywords($message, [
+        'tekst', 'objav', 'objvu', 'caption', 'story', 'reel', 'facebook objav', 'instagram',
+        'društvenoj mreži', 'drustvenoj mrezi', 'drusatvenoj mrezi', 'društvene mreže', 'drustvene mreze',
+        'naslov', 'kraću verziju', 'kracu verziju', 'kratku verziju', 'dužu verziju', 'duzu verziju',
+        'verziju za facebook', 'verzija za facebook', 'uz video', 'premium ton',
+        'žensku publiku', 'zensku publiku', 'hashtag', 'hashtagi',
+    ]);
+}
+
+function fcc_ai_is_public_content_asset_followup_context(string $message, string $recent_context = ''): bool {
+    $message = trim($message);
+    $recent_context = trim($recent_context);
+
+    if($message === '') {
+        return false;
+    }
+
+    if(fcc_ai_is_public_content_asset_request($message)) {
+        return true;
+    }
+
+    if($recent_context === '' || !fcc_ai_is_public_content_asset_request($recent_context)) {
+        return false;
+    }
+
+    if(fcc_ai_contains_keywords($message, [
+        'što uzeti', 'sto uzeti', 'preporuči mi', 'preporuci mi', 'što preporučuješ', 'sto preporucujes',
+        'kako koristiti', 'koliko piti', 'koliko uzeti', 'količina', 'kolicina',
+    ])) {
+        return false;
+    }
+
+    return fcc_ai_contains_keywords($message, [
+        'može', 'moze', 'može još', 'moze jos', 'još', 'jos', 'drugo', 'druga verzija',
+        'kraće', 'krace', 'duže', 'duze', 'naslov', 'facebook', 'instagram', 'story', 'reel',
+        'objava', 'tekst', 'verzija', 'premium', 'luksuz', 'luskuz', 'elegant',
+    ]);
+}
+
+function fcc_ai_strip_public_product_tail_from_content_reply(string $content, string $request_context = ''): string {
+    $request_context = mb_strtolower(trim($request_context));
+    $blocks = preg_split('/\n\s*\n/u', trim($content)) ?: [];
+    $blocks = array_values(array_filter($blocks, static function($block) use ($request_context): bool {
+        $block = trim((string) $block);
+
+        if($block === '') {
+            return false;
+        }
+
+        if(fcc_ai_contains_keywords($block, [
+            'ako želite preporuku zadržati jasnom',
+            'ako zelite preporuku zadrzati jasnom',
+            'if you want to keep the recommendation clear',
+            'če želite priporočilo ohraniti jasno',
+            'najbrži sljedeći korak je otvoriti fcc članak',
+            'najbrzi sljedeci korak je otvoriti fcc clanak',
+            'najlažji naslednji korak je odpreti povezan fcc članek',
+            'kao support opcije možete pogledati',
+            'kao support opcije mozete pogledati',
+            'ako je cilj njega kože',
+            'ako je cilj njega koze',
+            'glavnim forever smjerom',
+            'glavni forever smjer',
+            'forever checkout',
+            'referral',
+        ])) {
+            return false;
+        }
+
+        $tail_products = [
+            'forever aloe peaches',
+            'forever aloe vera gel',
+            'aloe blossom herbal tea',
+            'forever bakuchiol',
+            'forever aloe sunscreen',
+            'infinite by forever',
+            'deep moisturizing cream',
+            'aloe propolis creme',
+        ];
+
+        foreach($tail_products as $product) {
+            if(
+                mb_stripos($block, $product) !== false
+                && ($request_context === '' || mb_stripos($request_context, $product) === false)
+                && fcc_ai_contains_keywords($block, ['preporuk', 'support', 'mjesec', 'mesec', 'članak', 'clanak', 'otvoriti'])
+            ) {
+                return false;
+            }
+        }
+
+        return true;
     }));
 
     return trim(implode("\n\n", $blocks));
@@ -9136,7 +9279,7 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
             'lock_product_scope' => true,
         ],
         'digestive_routine_support' => [
-            'patterns' => ['gastritis', 'gaszritis', 'nadutost', 'bloated stomach', 'bloating', 'problem sa želucem', 'problem sa zelucem', 'želudac', 'zeludac', 'iritabilnog kolona', 'iritabilni kolon', 'iritabilno crijevo', 'iritabilna crijeva', 'iritabilnim crijevima', 'iritabilnih crijeva', 'iritabilno crevo', 'iritabilna creva', 'ibs', 'problem sa želucem', 'problem sa želucem'],
+            'patterns' => ['gastritis', 'gastrit', 'gastritisa', 'gastritisom', 'gaszritis', 'gartritis', 'gartrit', 'gartritisa', 'gartritisom', 'gastroitis', 'nadutost', 'bloated stomach', 'bloating', 'problem sa želucem', 'problem sa zelucem', 'želudac', 'zeludac', 'iritabilnog kolona', 'iritabilni kolon', 'iritabilno crijevo', 'iritabilna crijeva', 'iritabilnim crijevima', 'iritabilnih crijeva', 'iritabilno crevo', 'iritabilna creva', 'ibs', 'problem sa želucem', 'problem sa želucem'],
             'preferred_patterns' => ['aloe vera gel', 'aloe gel', 'active pro b', 'pro b', 'pro-b'],
             'primary_product' => 'Forever Aloe Vera Gel™',
             'support_products' => ['Forever Active Pro B'],
@@ -13432,6 +13575,22 @@ function fcc_ai_get_product_advisor_condition_match_by_key(string $key, string $
     ];
 }
 
+function fcc_ai_is_public_gastritis_like_request(string $message): bool {
+    return fcc_ai_contains_keywords($message, [
+        'gastrit',
+        'gastritis',
+        'gastritisa',
+        'gastritisom',
+        'gaszrit',
+        'gaszritis',
+        'gartrit',
+        'gartritis',
+        'gartritisa',
+        'gartritisom',
+        'gastroitis',
+    ]);
+}
+
 function fcc_ai_get_product_advisor_effective_condition_matches(string $message, string $language = 'hr'): array {
     $matches = fcc_ai_get_product_advisor_condition_matches($message, $language);
 
@@ -14309,6 +14468,24 @@ function fcc_ai_get_product_advisor_effective_condition_matches(string $message,
     $match_keys = array_values(array_filter(array_map(static function(array $match) {
         return trim((string) ($match['key'] ?? ''));
     }, $matches)));
+
+    if(fcc_ai_is_public_gastritis_like_request($message) && in_array('digestive_routine_support', $match_keys, true)) {
+        $matches = array_values(array_filter($matches, static function(array $match) {
+            return !in_array((string) ($match['key'] ?? ''), [
+                'psoriasis_arthritis_combo_support',
+                'joint_mobility_support',
+                'back_spine_support',
+                'limb_joint_pain_support',
+                'fracture_bone_healing_support',
+                'muscle_recovery_support',
+                'freedom_alternative_support',
+            ], true);
+        }));
+
+        $match_keys = array_values(array_filter(array_map(static function(array $match) {
+            return trim((string) ($match['key'] ?? ''));
+        }, $matches)));
+    }
 
     if(in_array('food_reaction_support', $match_keys, true)) {
         $matches = array_values(array_filter($matches, static function(array $match) {
@@ -19547,12 +19724,23 @@ function fcc_ai_generate_public_reply(string $assistant_type, string $message, a
             $recommendation_payload['force_local_reply'] = true;
             $recommendation_payload['skip_product_tail'] = true;
 
-            $content_blocks[] = $language === 'en'
-                ? 'I am here and ready to help.'
-                : 'Tu sam i rado ću pomoći.';
-            $content_blocks[] = $language === 'en'
-                ? 'Write what you want to support, or just send the product name that interests you, and I will guide you through the next useful step.'
-                : 'Napišite što želite podržati ili samo pošaljite naziv proizvoda koji vas zanima, a ja ću vas voditi kroz sljedeći koristan korak.';
+            if(fcc_ai_is_public_closing_thanks_message($message)) {
+                $has_good_night = fcc_ai_contains_keywords($message, [
+                    'laku noć', 'laku noc', 'laku noč', 'lahko noč', 'lahko noc', 'good night',
+                ]);
+                $content_blocks[] = $language === 'en'
+                    ? ($has_good_night ? 'You are very welcome. Good night and rest well.' : 'You are very welcome. I am here if you need anything else.')
+                    : ($language === 'sl'
+                        ? ($has_good_night ? 'Z veseljem. Lahko noč in miren počitek.' : 'Z veseljem. Tukaj sem, če boste potrebovali še kaj.')
+                        : ($has_good_night ? 'Nema na čemu. Laku noć i ugodan odmor.' : 'Nema na čemu. Tu sam ako zatreba još nešto.'));
+            } else {
+                $content_blocks[] = $language === 'en'
+                    ? 'I am here and ready to help.'
+                    : 'Tu sam i rado ću pomoći.';
+                $content_blocks[] = $language === 'en'
+                    ? 'Write what you want to support, or just send the product name that interests you, and I will guide you through the next useful step.'
+                    : 'Napišite što želite podržati ili samo pošaljite naziv proizvoda koji vas zanima, a ja ću vas voditi kroz sljedeći koristan korak.';
+            }
 
             return [
                 'content' => trim(implode("\n\n", array_filter($content_blocks))),
@@ -25023,6 +25211,37 @@ function fcc_ai_handle_public_message(array $payload): array {
             return mb_stripos((string) $block, $owner_name) === false;
         }));
         $reply_content = trim(implode("\n\n", $reply_blocks));
+    }
+
+    $content_asset_context = trim($current_user_message . "\n" . $recent_user_context . "\n" . $followup_anchor_user_message . "\n" . $previous_user_message);
+    $is_content_asset_followup_context = (string) ($conversation->assistant_type ?? '') === 'product_advisor'
+        && fcc_ai_is_public_content_asset_followup_context($current_user_message, $content_asset_context);
+
+    if($is_content_asset_followup_context) {
+        $reply_content = fcc_ai_strip_public_product_tail_from_content_reply($reply_content, $content_asset_context);
+        $reply['recommendation_payload'] = [
+            'theme_matches' => [],
+            'theme_keys' => [],
+            'condition_matches' => [],
+            'condition_keys' => [],
+            'opening_note' => '',
+            'recommendation_lines' => [],
+            'question_lines' => [],
+            'needs_clarification' => false,
+            'combination_note' => '',
+            'discount_note' => '',
+            'primary_product' => '',
+            'support_products' => [],
+            'monthly_quantity_note' => '',
+            'sensitive_support_only' => false,
+            'force_local_reply' => false,
+            'skip_product_tail' => true,
+            'content_asset_followup' => true,
+            'same_problem_followup_clarification' => false,
+            'system_brief' => '',
+        ];
+        $knowledge_suggestions = [];
+        $reply['knowledge_suggestions'] = [];
     }
 
     $product_utility_followup_context = trim($recent_user_context . "\n" . $followup_anchor_user_message . "\n" . $previous_user_message);
