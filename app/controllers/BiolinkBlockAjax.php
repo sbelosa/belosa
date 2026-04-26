@@ -6442,6 +6442,7 @@ class BiolinkBlockAjax extends Controller {
         $_POST['link_id'] = (int) $_POST['link_id'];
         $_POST['name'] = mb_substr(query_clean($_POST['name'] ?? ''), 0, 128);
         $_POST['location_url'] = get_url($_POST['location_url'] ?? '');
+        $_POST['vip_funnel_id'] = (int) ($_POST['vip_funnel_id'] ?? 0);
 
         if(!$link = db()->where('link_id', $_POST['link_id'])->where('user_id', $this->user->user_id)->getOne('links')) {
             die();
@@ -6451,9 +6452,12 @@ class BiolinkBlockAjax extends Controller {
             $this->check_location_url($_POST['location_url']);
         }
 
+        $vip_funnel_id = vip_funnel_studio_get_funnel_row((int) $this->user->user_id, $_POST['vip_funnel_id']) ? $_POST['vip_funnel_id'] : 0;
+
         $type = 'vip_funnel_hub';
         $settings = json_encode([
             'name' => $_POST['name'],
+            'vip_funnel_id' => $vip_funnel_id,
             'image' => '',
             'text_color' => '#ffffff',
             'text_alignment' => 'left',
@@ -6507,6 +6511,7 @@ class BiolinkBlockAjax extends Controller {
         $_POST['biolink_block_id'] = (int) $_POST['biolink_block_id'];
         $_POST['location_url'] = get_url($_POST['location_url'] ?? '');
         $_POST['secondary_url'] = get_url($_POST['secondary_url'] ?? '');
+        $_POST['vip_funnel_id'] = (int) ($_POST['vip_funnel_id'] ?? 0);
         $_POST['name'] = mb_substr(query_clean($_POST['name'] ?? ''), 0, 128);
         $_POST['kicker'] = mb_substr(input_clean($_POST['kicker'] ?? ''), 0, 80);
         $_POST['title'] = mb_substr(input_clean($_POST['title'] ?? ''), 0, 160);
@@ -6544,11 +6549,14 @@ class BiolinkBlockAjax extends Controller {
             $this->check_location_url($_POST['secondary_url']);
         }
 
+        $vip_funnel_id = vip_funnel_studio_get_funnel_row((int) $this->user->user_id, $_POST['vip_funnel_id']) ? $_POST['vip_funnel_id'] : 0;
+
         $db_image = $this->handle_image_upload($biolink_block->settings->image ?? '', 'block_thumbnail_images/', settings()->links->thumbnail_image_size_limit);
         $image_url = $db_image ? \Altum\Uploads::get_full_url('block_thumbnail_images') . $db_image : null;
 
         $settings = json_encode([
             'name' => $_POST['name'],
+            'vip_funnel_id' => $vip_funnel_id,
             'image' => $db_image,
             'text_color' => $_POST['text_color'],
             'text_alignment' => $_POST['text_alignment'],

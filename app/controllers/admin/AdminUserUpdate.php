@@ -92,6 +92,7 @@ class AdminUserUpdate extends Controller {
             $_POST['status'] = (int) $_POST['status'];
             $_POST['type'] = (int) $_POST['type'];
             $_POST['plan_trial_done'] = (int) isset($_POST['plan_trial_done']);
+            $_POST['vip_funnel_gate_exempt'] = (int) isset($_POST['vip_funnel_gate_exempt']);
             $_POST['fcc_featured_opt_in'] = (int) isset($_POST['fcc_featured_opt_in']);
             $_POST['fcc_featured_is_approved'] = (int) isset($_POST['fcc_featured_is_approved']);
             $_POST['fcc_featured_public_market'] = input_clean($_POST['fcc_featured_public_market'] ?? '', 64);
@@ -323,6 +324,8 @@ class AdminUserUpdate extends Controller {
                 }
 
                 $preferences->meta = (object) array_merge((array) $existing_meta, $posted_meta);
+                $preferences->vip_funnel_gate_exempt = $_POST['vip_funnel_gate_exempt'];
+                $preferences->meta->vip_funnel_gate_exempt = $_POST['vip_funnel_gate_exempt'];
 
                 if($_POST['status'] == 1 && $user->status == 0 && empty($preferences->meta->fcc_access_approved_at)) {
                     $preferences->meta->fcc_access_approved_at = get_date();
@@ -442,6 +445,7 @@ class AdminUserUpdate extends Controller {
         /* Main View */
         $data = [
             'user' => $user,
+            'user_preferences' => $preferences,
             'user_meta' => $preferences->meta, /* Custom code */
             'main_biolink' => $main_biolink,
             'plans' => $plans,

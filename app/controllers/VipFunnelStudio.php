@@ -72,11 +72,23 @@ class VipFunnelStudio extends Controller {
         return null;
     }
 
-    private function persist_payload(array $payload): bool {
+    private function get_selected_funnel_id(): int {
+        $funnel_id = (int) ($_POST['funnel_id'] ?? ($_GET['funnel_id'] ?? 0));
+
+        if($funnel_id <= 0 || !vip_funnel_studio_schema_is_ready()) {
+            return 0;
+        }
+
+        $row = vip_funnel_studio_get_funnel_row((int) ($this->user->user_id ?? 0), $funnel_id);
+
+        return $row ? $funnel_id : 0;
+    }
+
+    private function persist_payload(array $payload, int $funnel_id = 0): bool {
         $payload = vip_funnel_normalize_studio_payload($payload, $this->user);
 
         if(vip_funnel_studio_schema_is_ready()) {
-            $saved = vip_funnel_studio_save_to_database($this->user, $payload);
+            $saved = vip_funnel_studio_save_to_database($this->user, $payload, $funnel_id);
         } else {
             $preferences = vip_funnel_set_user_studio_board_preferences(vip_funnel_get_user_preferences($this->user), $payload['board'] ?? []);
             $preferences->vip_funnel_studio_full = (object) [
@@ -104,12 +116,43 @@ class VipFunnelStudio extends Controller {
         }
 
         Title::set(l('vip_funnel.title'));
+        $selected_funnel_id = $this->get_selected_funnel_id();
+        $show_editor = $selected_funnel_id > 0 || isset($_GET['editor']);
+
+        if($access->can_access && vip_funnel_studio_schema_is_ready()) {
+            vip_funnel_studio_ensure_primary_funnel($this->user);
+        }
 
         if($access->can_access && !empty($_POST)) {
             if(!\Altum\Csrf::check('token') && !\Altum\Csrf::check('global_token')) {
                 Alerts::add_error(l('global.error_message.invalid_csrf_token'));
             } else {
-                $payload = $this->decode_posted_payload($this->user);
+                if(isset($_POST['create_vip_funnel'])) {
+                    $payload = vip_funnel_get_studio_seed_payload($this->user);
+                    $payload['funnel']['name'] = trim(input_clean((string) ($_POST['funnel_name'] ?? ''), 120)) ?: 'Novi VIP Funnel 2.0';
+                    $payload['funnel']['slug'] = vip_funnel_slugify($payload['funnel']['name']);
+
+                    if($row = vip_funnel_studio_create_funnel_from_payload($this->user, $payload)) {
+                        Alerts::add_success('Novi funnel je kreiran.');
+                        redirect('vip-funnel-studio?funnel_id=' . (int) $row->vip_funnel_id);
+                    }
+
+                    Alerts::add_error(l('vip_funnel.alert.save_failed'));
+                }
+
+                if(isset($_POST['import_vip_funnel_template'])) {
+                    $template_key = input_clean((string) ($_POST['template_key'] ?? ''), 80);
+                    $payload = vip_funnel_get_import_template_payload($template_key, $this->user);
+
+                    if($payload && ($row = vip_funnel_studio_create_funnel_from_payload($this->user, $payload))) {
+                        Alerts::add_success('Demo funnel je importiran i spreman za uređivanje.');
+                        redirect('vip-funnel-studio?funnel_id=' . (int) $row->vip_funnel_id);
+                    }
+
+                    Alerts::add_error('Import demo funnel-a trenutno nije uspio.');
+                }
+
+                $payload = isset($_POST['create_vip_funnel']) || isset($_POST['import_vip_funnel_template']) ? null : $this->decode_posted_payload($this->user);
 
                 if($payload !== null && !Alerts::has_field_errors() && !Alerts::has_errors()) {
                     $validation_errors = $this->collect_validation_errors($payload);
@@ -120,9 +163,9 @@ class VipFunnelStudio extends Controller {
                 }
 
                 if($payload !== null && !Alerts::has_field_errors() && !Alerts::has_errors()) {
-                    if($this->persist_payload($payload)) {
+                    if($this->persist_payload($payload, $selected_funnel_id)) {
                         Alerts::add_success(l('vip_funnel.alert.saved'));
-                        redirect('vip-funnel-studio');
+                        redirect('vip-funnel-studio' . ($selected_funnel_id > 0 ? '?funnel_id=' . $selected_funnel_id : ''));
                     }
 
                     Alerts::add_error(l('vip_funnel.alert.save_failed'));
@@ -130,7 +173,34 @@ class VipFunnelStudio extends Controller {
             }
         }
 
-        $studio = vip_funnel_get_studio_state($this->user);
+        if($access->can_access && !$show_editor) {
+            $funnels = vip_funnel_studio_schema_is_ready() ? vip_funnel_studio_get_funnel_rows((int) $this->user->user_id) : [];
+            $dashboard_funnels = [];
+
+            foreach($funnels as $row) {
+                $payload = vip_funnel_studio_load_from_database($this->user, (int) ($row->vip_funnel_id ?? 0));
+                $analytics = vip_funnel_get_analytics_snapshot((int) ($row->vip_funnel_id ?? 0), $payload);
+                $dashboard_funnels[] = [
+                    'row' => $row,
+                    'payload' => $payload,
+                    'analytics' => $analytics,
+                    'public_url' => vip_funnel_get_public_funnel_url((int) $this->user->user_id, (string) ($row->slug ?? 'vip-funnel-2-0')),
+                    'edit_url' => url('vip-funnel-studio?funnel_id=' . (int) ($row->vip_funnel_id ?? 0)),
+                    'analytics_url' => url('vip-funnel-studio?funnel_id=' . (int) ($row->vip_funnel_id ?? 0) . '#analytics'),
+                ];
+            }
+
+            $view = new \Altum\View('vip-funnel-studio/dashboard', (array) $this);
+            $this->add_view_content('content', $view->run([
+                'access' => $access,
+                'funnels' => $dashboard_funnels,
+                'import_templates' => vip_funnel_get_import_template_options($this->user),
+                'analytics_url' => url('vip-funnel-studio?editor=1#analytics'),
+            ]));
+            return;
+        }
+
+        $studio = vip_funnel_get_studio_state($this->user, $selected_funnel_id);
         $payload = $studio['payload'];
         $preferred_product_language_code = (string) (\Altum\Language::$code ?? \Altum\Language::$default_code);
         $product_catalog = vip_funnel_get_product_catalog($preferred_product_language_code);
@@ -146,6 +216,8 @@ class VipFunnelStudio extends Controller {
             'access' => $access,
             'studio' => $studio,
             'payload' => $payload,
+            'selected_funnel_id' => (int) ($studio['funnel_row']->vip_funnel_id ?? $selected_funnel_id),
+            'funnels_index_url' => url('vip-funnel-studio'),
             'demo_access_url' => url('vip-funnel-demo-access'),
             'image_upload_url' => url('vip-funnel-studio/upload-image'),
             'image_upload_max_size_mb' => vip_funnel_get_image_upload_size_limit_mb(),
@@ -208,7 +280,7 @@ class VipFunnelStudio extends Controller {
             ]);
         }
 
-        if(!$this->persist_payload($payload)) {
+        if(!$this->persist_payload($payload, $this->get_selected_funnel_id())) {
             Response::json(l('vip_funnel.alert.save_failed'), 'error');
         }
 

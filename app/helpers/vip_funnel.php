@@ -2801,6 +2801,7 @@ function vip_funnel_get_stjepan_recruitment_payload($user = null, array $options
             'calendar_url' => $calendar_url,
             'product_shop_url' => $product_shop_url,
             'privacy_url' => $privacy_url,
+            'hide_public_navbar' => true,
         ],
     ], $user);
 }
@@ -3631,6 +3632,7 @@ function vip_funnel_get_studio_seed_payload($user = null): array {
         ],
         'defaults' => [
             'owner_user_id' => $default_owner_user_id,
+            'hide_public_navbar' => false,
         ],
     ], $user);
 }
@@ -3743,6 +3745,7 @@ function vip_funnel_normalize_studio_payload($payload, $user = null): array {
         ],
         'defaults' => [
             'owner_user_id' => (int) ($user->user_id ?? 0),
+            'hide_public_navbar' => false,
         ],
     ];
 
@@ -3766,6 +3769,7 @@ function vip_funnel_normalize_studio_payload($payload, $user = null): array {
     $payload['paths'] = vip_funnel_normalize_paths_payload($raw_paths ?? $seed['paths']);
     $payload['board'] = vip_funnel_normalize_board_payload($raw_board ?? $seed['board']);
     $payload['defaults']['owner_user_id'] = (int) ($payload['defaults']['owner_user_id'] ?? ($user->user_id ?? 0));
+    $payload['defaults']['hide_public_navbar'] = !empty($payload['defaults']['hide_public_navbar']);
 
     return $payload;
 }
@@ -3793,6 +3797,76 @@ function vip_funnel_studio_get_primary_funnel_row(int $user_id = 0) {
     }
 
     return db()->where('user_id', $user_id)->orderBy('vip_funnel_id', 'ASC')->getOne('vip_funnels');
+}
+
+function vip_funnel_studio_get_funnel_row(int $user_id = 0, int $funnel_id = 0) {
+    if($user_id <= 0 || $funnel_id <= 0 || !vip_funnel_studio_schema_is_ready()) {
+        return null;
+    }
+
+    return db()->where('user_id', $user_id)->where('vip_funnel_id', $funnel_id)->getOne('vip_funnels');
+}
+
+function vip_funnel_studio_get_funnel_row_by_slug(int $user_id = 0, string $slug = '') {
+    if($user_id <= 0 || $slug === '' || !vip_funnel_studio_schema_is_ready()) {
+        return null;
+    }
+
+    $slug = vip_funnel_slugify($slug);
+
+    return db()->where('user_id', $user_id)->where('slug', $slug)->orderBy('vip_funnel_id', 'ASC')->getOne('vip_funnels');
+}
+
+function vip_funnel_studio_get_funnel_rows(int $user_id = 0): array {
+    if($user_id <= 0 || !vip_funnel_studio_schema_is_ready()) {
+        return [];
+    }
+
+    return db()->where('user_id', $user_id)->orderBy('last_datetime', 'DESC')->orderBy('vip_funnel_id', 'DESC')->get('vip_funnels') ?? [];
+}
+
+function vip_funnel_get_unique_slug_for_user(int $user_id = 0, string $slug = '', int $exclude_funnel_id = 0): string {
+    $base_slug = vip_funnel_slugify($slug);
+
+    if($user_id <= 0 || !vip_funnel_studio_schema_is_ready()) {
+        return $base_slug;
+    }
+
+    $candidate = $base_slug;
+    $counter = 2;
+
+    while(true) {
+        $query = db()->where('user_id', $user_id)->where('slug', $candidate);
+
+        if($exclude_funnel_id > 0) {
+            $query->where('vip_funnel_id', $exclude_funnel_id, '<>');
+        }
+
+        if(!$query->has('vip_funnels')) {
+            return $candidate;
+        }
+
+        $candidate = $base_slug . '-' . $counter;
+        $counter++;
+    }
+}
+
+function vip_funnel_studio_get_funnel_row_public_data($funnel_row = null): array {
+    if(!$funnel_row) {
+        return [];
+    }
+
+    return [
+        'vip_funnel_id' => (int) ($funnel_row->vip_funnel_id ?? 0),
+        'user_id' => (int) ($funnel_row->user_id ?? 0),
+        'name' => (string) ($funnel_row->name ?? ''),
+        'slug' => (string) ($funnel_row->slug ?? ''),
+        'status' => (string) ($funnel_row->status ?? ''),
+        'visibility_mode' => (string) ($funnel_row->visibility_mode ?? ''),
+        'owner_mode' => (string) ($funnel_row->owner_mode ?? ''),
+        'datetime' => (string) ($funnel_row->datetime ?? ''),
+        'last_datetime' => (string) ($funnel_row->last_datetime ?? ''),
+    ];
 }
 
 function vip_funnel_studio_ensure_primary_funnel($user = null) {
@@ -3880,6 +3954,8 @@ function vip_funnel_studio_save_to_database($user = null, array $payload = [], i
     if($funnel_id <= 0) {
         return false;
     }
+
+    $payload['funnel']['slug'] = vip_funnel_get_unique_slug_for_user($user_id, (string) ($payload['funnel']['slug'] ?? $payload['funnel']['name'] ?? 'vip-funnel-2-0'), $funnel_id);
 
     db()->startTransaction();
 
@@ -4061,14 +4137,143 @@ function vip_funnel_studio_save_to_database($user = null, array $payload = [], i
     }
 }
 
-function vip_funnel_studio_load_from_database($user = null): array {
+function vip_funnel_get_import_template_options($user = null): array {
+    return [
+        'fcc_recruiting_mentor' => [
+            'key' => 'fcc_recruiting_mentor',
+            'name' => 'FCC recruiting mentor funnel',
+            'description' => 'Gotov demo funnel za online posao, mentorstvo, Start Your Journey paket, proizvode i selekciju leadova.',
+            'badge' => 'Regrutacija',
+        ],
+        'fcc_product_discount' => [
+            'key' => 'fcc_product_discount',
+            'name' => 'FCC proizvodni popust funnel',
+            'description' => 'Jednostavan demo put za osobe koje prvo žele proizvode, preporuku i popust, a tek kasnije poslovnu priliku.',
+            'badge' => 'Proizvodi',
+        ],
+    ];
+}
+
+function vip_funnel_get_import_template_payload(string $template_key = '', $user = null): ?array {
+    $template_key = trim($template_key);
+    $user_name = trim((string) ($user->name ?? 'FCC mentor'));
+    $user_email = trim((string) ($user->email ?? 'info@forevercard.club'));
+    $contact_email = filter_var($user_email, FILTER_VALIDATE_EMAIL) ? $user_email : 'info@forevercard.club';
+
+    switch($template_key) {
+        case 'fcc_recruiting_mentor':
+            $payload = vip_funnel_get_stjepan_recruitment_payload($user, [
+                'contact_email' => $contact_email,
+            ]);
+            $payload['funnel']['name'] = $user_name !== '' ? $user_name . ' FCC recruiting funnel' : 'FCC recruiting funnel';
+            $payload['funnel']['slug'] = vip_funnel_slugify($payload['funnel']['name']);
+            $payload['funnel']['status'] = 'draft';
+            $payload['overview']['eyebrow'] = 'FCC Funnel 2.0';
+            $payload['overview']['headline'] = 'Pokreni online posao uz FCC sustav i moje mentorstvo';
+            $payload['overview']['subheadline'] = 'U nekoliko koraka odaberi želiš li pokrenuti posao, vidjeti demo sustava ili prvo krenuti kroz proizvode i popust.';
+            break;
+
+        case 'fcc_product_discount':
+            $payload = vip_funnel_get_studio_seed_payload($user);
+            $payload['funnel']['name'] = 'FCC proizvodni popust funnel';
+            $payload['funnel']['slug'] = 'fcc-proizvodni-popust';
+            $payload['funnel']['status'] = 'draft';
+            $payload['overview']['eyebrow'] = 'FCC proizvodi';
+            $payload['overview']['headline'] = 'Pronađi svoj prvi Forever proizvodni put';
+            $payload['overview']['subheadline'] = 'Kratki funnel vodi osobu prema preporuci proizvoda, popustu i mogućnosti da kasnije upozna FCC poslovni sustav.';
+            $payload['landing_page']['name'] = 'Proizvodni popust landing';
+            $payload['landing_page']['blocks'] = [
+                [
+                    'id' => vip_funnel_generate_page_block_id('headline'),
+                    'type' => 'headline',
+                    'badge' => 'Forever proizvodi',
+                    'title' => 'Želiš preporuku proizvoda i mogućnost popusta?',
+                    'text' => 'Odaberi što ti je najvažnije i dobit ćeš jednostavan sljedeći korak bez previše informacija odjednom.',
+                    'layout_width' => 'full',
+                    'alignment' => 'center',
+                ],
+                [
+                    'id' => vip_funnel_generate_page_block_id('survey'),
+                    'type' => 'survey',
+                    'title' => 'Što želiš prvo?',
+                    'text' => 'Odgovor usmjerava funnel prema proizvodima ili poslovnoj informaciji.',
+                    'layout_width' => 'full',
+                    'options' => [
+                        ['id' => vip_funnel_generate_page_block_id('option'), 'label' => 'Preporuku proizvoda', 'value' => 'proizvodi', 'style' => 'primary', 'action' => 'goto_step', 'target_step_id' => 'trust_proof'],
+                        ['id' => vip_funnel_generate_page_block_id('option'), 'label' => 'Popust na proizvode', 'value' => 'popust', 'style' => 'secondary', 'action' => 'goto_step', 'target_step_id' => 'conversion_contact'],
+                        ['id' => vip_funnel_generate_page_block_id('option'), 'label' => 'Online posao uz proizvode', 'value' => 'online_posao', 'style' => 'ghost', 'action' => 'goto_step', 'target_step_id' => 'segment_choice'],
+                    ],
+                ],
+            ];
+            $payload['defaults']['hide_public_navbar'] = true;
+            break;
+
+        default:
+            return null;
+    }
+
+    return vip_funnel_normalize_studio_payload($payload, $user);
+}
+
+function vip_funnel_studio_create_funnel_from_payload($user = null, array $payload = []) {
+    if(!$user || !vip_funnel_studio_schema_is_ready()) {
+        return null;
+    }
+
+    $user_id = (int) ($user->user_id ?? 0);
+
+    if($user_id <= 0) {
+        return null;
+    }
+
+    $payload = vip_funnel_normalize_studio_payload($payload, $user);
+    $payload['funnel']['slug'] = vip_funnel_get_unique_slug_for_user($user_id, (string) ($payload['funnel']['slug'] ?? $payload['funnel']['name'] ?? 'vip-funnel-2-0'));
+
+    $funnel_id = (int) db()->insert('vip_funnels', [
+        'user_id' => $user_id,
+        'name' => $payload['funnel']['name'],
+        'slug' => $payload['funnel']['slug'],
+        'status' => $payload['funnel']['status'],
+        'visibility_mode' => $payload['funnel']['visibility_mode'],
+        'owner_mode' => $payload['funnel']['owner_mode'],
+        'settings' => vip_funnel_json_encode([
+            'overview' => $payload['overview'],
+            'positioning' => $payload['positioning'],
+            'landing_page' => $payload['landing_page'],
+            'products' => $payload['products'],
+            'proof' => $payload['proof'],
+            'follow_up' => $payload['follow_up'],
+            'demo' => $payload['demo'],
+            'analytics' => $payload['analytics'],
+            'defaults' => $payload['defaults'],
+        ]),
+        'datetime' => get_date(),
+        'last_datetime' => get_date(),
+    ]);
+
+    if($funnel_id <= 0) {
+        return null;
+    }
+
+    if(!vip_funnel_studio_save_to_database($user, $payload, $funnel_id)) {
+        db()->where('vip_funnel_id', $funnel_id)->where('user_id', $user_id)->delete('vip_funnels');
+        return null;
+    }
+
+    return vip_funnel_studio_get_funnel_row($user_id, $funnel_id);
+}
+
+function vip_funnel_studio_load_from_database($user = null, int $funnel_id = 0): array {
     $seed_payload = vip_funnel_get_studio_seed_payload($user);
 
     if(!$user || !vip_funnel_studio_schema_is_ready()) {
         return $seed_payload;
     }
 
-    $funnel = vip_funnel_studio_ensure_primary_funnel($user);
+    $user_id = (int) ($user->user_id ?? 0);
+    $funnel = $funnel_id > 0
+        ? vip_funnel_studio_get_funnel_row($user_id, $funnel_id)
+        : vip_funnel_studio_ensure_primary_funnel($user);
 
     if(!$funnel) {
         return $seed_payload;
@@ -4156,7 +4361,7 @@ function vip_funnel_studio_load_from_database($user = null): array {
         $phase_map[$phase_key]['steps'][] = $step_payload;
     }
 
-    return vip_funnel_normalize_studio_payload([
+    $payload = vip_funnel_normalize_studio_payload([
         'funnel' => [
             'name' => (string) ($funnel->name ?? $seed_payload['funnel']['name']),
             'slug' => (string) ($funnel->slug ?? $seed_payload['funnel']['slug']),
@@ -4176,6 +4381,9 @@ function vip_funnel_studio_load_from_database($user = null): array {
         'analytics' => $settings['analytics'] ?? $seed_payload['analytics'],
         'defaults' => $settings['defaults'] ?? $seed_payload['defaults'],
     ], $user);
+    $payload['funnel_row'] = vip_funnel_studio_get_funnel_row_public_data($funnel);
+
+    return $payload;
 }
 
 function vip_funnel_get_results_snapshot($user = null, int $funnel_id = 0): array {
@@ -4813,15 +5021,17 @@ function vip_funnel_get_analytics_snapshot(int $funnel_id = 0, array $payload = 
     return $snapshot;
 }
 
-function vip_funnel_get_studio_state($user = null): array {
-    $schema_ready = vip_funnel_studio_schema_is_ready();
+function vip_funnel_get_studio_state($user = null, int $funnel_id = 0): array {
     vip_funnel_ensure_runtime_schema();
+    $schema_ready = vip_funnel_studio_schema_is_ready();
     if($user) {
         vip_funnel_backfill_owner_runtime_contacts((int) ($user->user_id ?? 0));
     }
-    $payload = $schema_ready ? vip_funnel_studio_load_from_database($user) : vip_funnel_get_user_studio_full_payload($user);
+    $payload = $schema_ready ? vip_funnel_studio_load_from_database($user, $funnel_id) : vip_funnel_get_user_studio_full_payload($user);
     $payload = vip_funnel_normalize_studio_payload($payload, $user);
-    $funnel_row = $schema_ready && $user ? vip_funnel_studio_get_primary_funnel_row((int) ($user->user_id ?? 0)) : null;
+    $funnel_row = $schema_ready && $user
+        ? ($funnel_id > 0 ? vip_funnel_studio_get_funnel_row((int) ($user->user_id ?? 0), $funnel_id) : vip_funnel_studio_get_primary_funnel_row((int) ($user->user_id ?? 0)))
+        : null;
 
     return [
         'schema_ready' => $schema_ready,
@@ -4834,6 +5044,7 @@ function vip_funnel_get_studio_state($user = null): array {
         'results' => vip_funnel_get_results_snapshot($user, (int) ($funnel_row->vip_funnel_id ?? 0)),
         'analytics' => vip_funnel_get_analytics_snapshot((int) ($funnel_row->vip_funnel_id ?? 0), $payload),
         'funnel_row' => $funnel_row,
+        'funnels' => $schema_ready && $user ? vip_funnel_studio_get_funnel_rows((int) ($user->user_id ?? 0)) : [],
         'card_type_options' => vip_funnel_get_card_type_options(),
         'visibility_options' => vip_funnel_get_visibility_options(),
         'design_variant_options' => vip_funnel_get_design_variant_options(),
@@ -4872,24 +5083,36 @@ function vip_funnel_get_public_preferences_payload($user = null): array {
     return [];
 }
 
-function vip_funnel_get_public_payload_for_user(int $user_id = 0): ?array {
+function vip_funnel_get_public_payload_for_user(int $user_id = 0, string $funnel_slug = '', int $funnel_id = 0): ?array {
     if($user_id <= 0) {
         return null;
     }
 
     $user = db()
         ->where('user_id', $user_id)
-        ->getOne('users', ['user_id', 'name', 'email', 'preferences']);
+        ->getOne('users', ['user_id', 'name', 'email', 'preferences', 'plan_settings']);
 
     if(!$user || !vip_funnel_user_can_publish_public_hub($user)) {
         return null;
     }
 
     if(vip_funnel_studio_schema_is_ready()) {
-        $funnel = vip_funnel_studio_get_primary_funnel_row($user_id);
+        $funnel = null;
+
+        if($funnel_id > 0) {
+            $funnel = vip_funnel_studio_get_funnel_row($user_id, $funnel_id);
+        } elseif(trim($funnel_slug) !== '') {
+            $funnel = vip_funnel_studio_get_funnel_row_by_slug($user_id, $funnel_slug);
+        } else {
+            $funnel = vip_funnel_studio_get_primary_funnel_row($user_id);
+        }
 
         if($funnel) {
-            return vip_funnel_studio_load_from_database((object) ['user_id' => $user_id]);
+            return vip_funnel_studio_load_from_database($user, (int) $funnel->vip_funnel_id);
+        }
+
+        if($funnel_id > 0 || trim($funnel_slug) !== '') {
+            return null;
         }
     }
 
@@ -5079,8 +5302,8 @@ function vip_funnel_get_public_entry_step_id(array $payload): string {
     return (string) ($first_step['id'] ?? '');
 }
 
-function vip_funnel_get_public_step_state(int $user_id = 0, string $requested_step_id = ''): ?array {
-    $payload = vip_funnel_get_public_payload_for_user($user_id);
+function vip_funnel_get_public_step_state(int $user_id = 0, string $requested_step_id = '', string $requested_slug = '', int $requested_funnel_id = 0): ?array {
+    $payload = vip_funnel_get_public_payload_for_user($user_id, $requested_slug, $requested_funnel_id);
 
     if(!$payload) {
         return null;
@@ -5100,10 +5323,12 @@ function vip_funnel_get_public_step_state(int $user_id = 0, string $requested_st
     $active_context = $requested_step_id !== '' ? ($step_lookup[$requested_step_id] ?? $first_context) : null;
     $active_step = $active_context['step'] ?? [];
     $slug = vip_funnel_slugify((string) ($payload['funnel']['slug'] ?? 'vip-funnel-2-0'), 'vip-funnel-2-0');
+    $funnel_row = vip_funnel_to_array($payload['funnel_row'] ?? []);
+    $funnel_id = (int) ($funnel_row['vip_funnel_id'] ?? 0);
     $first_step_id = (string) ($first_context['step']['id'] ?? '');
     $current_step_id = (string) ($active_step['id'] ?? '');
     $viewer_key = function_exists('fc_get_funnel_visitor_key') ? fc_get_funnel_visitor_key() : md5(uniqid((string) $user_id, true));
-    $runtime_context = vip_funnel_get_public_runtime_context($user_id, $viewer_key);
+    $runtime_context = vip_funnel_get_public_runtime_context($user_id, $viewer_key, $funnel_id);
     $query_selection = trim(input_clean((string) ($_GET['vfsel'] ?? ''), 120));
     if($query_selection !== '') {
         $runtime_context['selection'] = $query_selection;
@@ -5145,6 +5370,8 @@ function vip_funnel_get_public_step_state(int $user_id = 0, string $requested_st
 
     return [
         'user_id' => $user_id,
+        'funnel_id' => $funnel_id,
+        'funnel_row' => $funnel_row,
         'payload' => $payload,
         'viewer_key' => $viewer_key,
         'slug' => $slug,
@@ -5187,8 +5414,7 @@ function vip_funnel_log_public_event(array $state, string $event_type, string $e
     }
 
     $payload = $state['payload'] ?? [];
-    $funnel_row = $payload['funnel'] ?? [];
-    $funnel_id = (int) (($state['funnel_row']['vip_funnel_id'] ?? 0) ?: ($payload['funnel_row']['vip_funnel_id'] ?? 0));
+    $funnel_id = vip_funnel_resolve_state_funnel_id($state);
 
     if($funnel_id <= 0 && vip_funnel_studio_schema_is_ready()) {
         $funnel = vip_funnel_studio_get_primary_funnel_row((int) ($state['user_id'] ?? 0));
@@ -5263,7 +5489,7 @@ function vip_funnel_process_public_tracking(array $state, array $post = []): arr
     return ['success' => true];
 }
 
-function vip_funnel_get_public_runtime_context(int $user_id = 0, string $viewer_key = ''): array {
+function vip_funnel_get_public_runtime_context(int $user_id = 0, string $viewer_key = '', int $funnel_id = 0): array {
     $context = [
         'selection' => '',
         'radio_answers' => [],
@@ -5280,8 +5506,10 @@ function vip_funnel_get_public_runtime_context(int $user_id = 0, string $viewer_
         return $context;
     }
 
-    $funnel = vip_funnel_studio_get_primary_funnel_row($user_id);
-    $funnel_id = (int) ($funnel->vip_funnel_id ?? 0);
+    if($funnel_id <= 0) {
+        $funnel = vip_funnel_studio_get_primary_funnel_row($user_id);
+        $funnel_id = (int) ($funnel->vip_funnel_id ?? 0);
+    }
 
     if($funnel_id <= 0) {
         return $context;
@@ -5317,8 +5545,7 @@ function vip_funnel_get_or_create_public_run(array $state, int $vip_lead_id = 0,
         return 0;
     }
 
-    $funnel = vip_funnel_studio_get_primary_funnel_row($user_id);
-    $funnel_id = (int) ($funnel->vip_funnel_id ?? 0);
+    $funnel_id = vip_funnel_resolve_state_funnel_id($state);
 
     if($funnel_id <= 0) {
         return 0;
@@ -5402,7 +5629,9 @@ function vip_funnel_get_public_radio_field_map(array $blocks): array {
 
 function vip_funnel_resolve_state_funnel_id(array $state = []): int {
     $payload = vip_funnel_to_array($state['payload'] ?? []);
-    $funnel_id = (int) (($state['funnel_row']['vip_funnel_id'] ?? 0) ?: ($payload['funnel_row']['vip_funnel_id'] ?? 0));
+    $funnel_row = vip_funnel_to_array($state['funnel_row'] ?? []);
+    $payload_funnel_row = vip_funnel_to_array($payload['funnel_row'] ?? []);
+    $funnel_id = (int) (($state['funnel_id'] ?? 0) ?: ($funnel_row['vip_funnel_id'] ?? 0) ?: ($payload_funnel_row['vip_funnel_id'] ?? 0));
 
     if($funnel_id <= 0 && vip_funnel_studio_schema_is_ready()) {
         $funnel = vip_funnel_studio_get_primary_funnel_row((int) ($state['user_id'] ?? 0));
@@ -5985,10 +6214,16 @@ function vip_funnel_process_public_submission(array $state, array $post = []): a
 }
 
 function vip_funnel_get_public_hub_render_data(int $user_id = 0, $block_settings = null): array {
-    $public_payload = vip_funnel_get_public_payload_for_user($user_id);
+    $block_settings = vip_funnel_to_array($block_settings);
+    $selected_funnel_id = (int) ($block_settings['vip_funnel_id'] ?? 0);
+    $public_payload = vip_funnel_get_public_payload_for_user($user_id, '', $selected_funnel_id);
+
+    if(!$public_payload && $selected_funnel_id > 0) {
+        $public_payload = vip_funnel_get_public_payload_for_user($user_id);
+    }
+
     $payload = $public_payload ?: vip_funnel_get_studio_seed_payload((object) ['user_id' => $user_id]);
     $payload = vip_funnel_normalize_studio_payload($payload, (object) ['user_id' => $user_id]);
-    $block_settings = vip_funnel_to_array($block_settings);
     $paths = array_values(array_filter((array) ($payload['paths'] ?? []), static function($path) {
         return !isset($path['is_enabled']) || !empty($path['is_enabled']);
     }));
@@ -6006,6 +6241,27 @@ function vip_funnel_get_public_hub_render_data(int $user_id = 0, $block_settings
         'show_paths' => array_key_exists('show_paths', $block_settings) ? !empty($block_settings['show_paths']) : true,
         'paths' => array_slice($paths, 0, 3),
     ];
+}
+
+function vip_funnel_get_user_funnel_select_options(int $user_id = 0): array {
+    $options = [];
+
+    if($user_id <= 0 || !vip_funnel_studio_schema_is_ready()) {
+        return $options;
+    }
+
+    foreach(vip_funnel_studio_get_funnel_rows($user_id) as $row) {
+        $options[(int) ($row->vip_funnel_id ?? 0)] = [
+            'id' => (int) ($row->vip_funnel_id ?? 0),
+            'name' => (string) ($row->name ?? 'VIP Funnel 2.0'),
+            'slug' => (string) ($row->slug ?? ''),
+            'url' => vip_funnel_get_public_funnel_url($user_id, (string) ($row->slug ?? 'vip-funnel-2-0')),
+        ];
+    }
+
+    return array_filter($options, static function($option) {
+        return !empty($option['id']);
+    });
 }
 
 function vip_funnel_has_table(string $table): bool {

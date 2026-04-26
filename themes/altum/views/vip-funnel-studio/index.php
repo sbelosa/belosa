@@ -7,6 +7,7 @@ $e = static function($value) {
 
 $payload = is_array($data->payload ?? null) ? $data->payload : [];
 $studio = is_array($data->studio ?? null) ? $data->studio : [];
+$selected_funnel_id = (int) ($data->selected_funnel_id ?? ($studio['funnel_row']->vip_funnel_id ?? 0));
 $phase_definitions = array_values(vip_funnel_get_phase_definitions());
 $logo_url = ASSETS_FULL_URL . 'images/vip-funnel-logo-wide.png';
 $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
@@ -1811,6 +1812,7 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
 <form id="vf-studio-form" method="post" class="vf-core" novalidate>
     <input type="hidden" name="token" id="vf_token_input" value="<?= $e(\Altum\Csrf::get('token')) ?>" />
     <input type="hidden" name="global_token" id="vf_global_token_input" value="<?= $e(\Altum\Csrf::get('global_token')) ?>" />
+    <input type="hidden" name="funnel_id" id="vf_funnel_id_input" value="<?= (int) $selected_funnel_id ?>" />
     <textarea hidden name="vip_funnel_studio_payload" id="vf_payload_input"><?= $e(vip_funnel_json_encode($payload)) ?></textarea>
 
     <section class="vf-hero">
@@ -1850,6 +1852,7 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
         <div class="vf-tabs" id="vf_tabs"></div>
 
         <div class="vf-actions">
+            <a href="<?= $e($data->funnels_index_url ?? url('vip-funnel-studio')) ?>" class="vf-btn vf-btn--ghost">Svi funnel-i</a>
             <a href="<?= $e($data->demo_access_url ?? url('vip-funnel-demo-access')) ?>" class="vf-btn vf-btn--ghost"><?= l('vip_funnel.analytics.demo_access_button') ?></a>
             <button type="button" class="vf-btn vf-btn--primary" data-vf-save-button="1"><?= l('vip_funnel.analytics.save_button') ?></button>
             <button type="submit" class="vf-btn vf-btn--danger" data-vf-reset-button="1" name="reset_vip_funnel_studio" value="1"><?= l('vip_funnel.analytics.reset_button') ?></button>
@@ -1880,6 +1883,7 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
     const payloadInput = document.getElementById('vf_payload_input');
     const tokenInput = document.getElementById('vf_token_input');
     const globalTokenInput = document.getElementById('vf_global_token_input');
+    const funnelIdInput = document.getElementById('vf_funnel_id_input');
     const workspaceRoot = document.getElementById('vf_workspace');
     const previewRoot = document.getElementById('vf_preview');
     const tabsRoot = document.getElementById('vf_tabs');
@@ -2113,7 +2117,7 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
 
     const state = {
         payload: safeParse(payloadInput.value) || {},
-        screen: 'landing',
+        screen: window.location.hash === '#analytics' ? 'analytics' : 'landing',
         activeStepId: '',
         activeBlockId: '',
         activeActionId: '',
@@ -2449,8 +2453,14 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
         }
 
         if(!state.payload.funnel) {
-            state.payload.funnel = {name: 'VIP Funnel 2.0', slug: 'vip-funnel-2-0', status: 'draft'};
+            state.payload.funnel = {name: 'VIP Funnel 2.0', slug: 'vip-funnel-2-0', status: 'draft', visibility_mode: 'testing_locked', owner_mode: 'shared'};
         }
+
+        if(!state.payload.defaults || typeof state.payload.defaults !== 'object') {
+            state.payload.defaults = {};
+        }
+
+        state.payload.defaults.hide_public_navbar = !!state.payload.defaults.hide_public_navbar;
 
         if(!state.payload.landing_page) {
             state.payload.landing_page = defaultSurface();
@@ -3164,6 +3174,7 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
             const formData = new FormData();
             formData.append('token', tokenInput?.value || '');
             formData.append('global_token', globalTokenInput?.value || '');
+            formData.append('funnel_id', funnelIdInput?.value || '');
             formData.append('vip_funnel_studio_payload', payloadInput.value || '');
 
             const response = await fetch(saveUrl, {
@@ -3311,6 +3322,7 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
     function renderLandingWorkspace() {
         const surface = getRenderableSurface();
         return `
+            ${renderFunnelSettingsEditor()}
             <div class="vf-card">
                 <div class="vf-card__head">
                     <div>
@@ -3321,6 +3333,59 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
                 <div class="vf-card__body">
                     <div class="vf-note">${studioMessages.landingNote}</div>
                     ${renderSurfaceBuilder(surface, 'landing')}
+                </div>
+            </div>
+        `;
+    }
+
+    function renderFunnelSettingsEditor() {
+        const funnel = state.payload.funnel || {};
+        const defaults = state.payload.defaults || {};
+
+        return `
+            <div class="vf-card">
+                <div class="vf-card__head">
+                    <div>
+                        <h2 class="vf-card__title">Postavke odabranog funnel-a</h2>
+                        <div class="vf-card__sub">Ovdje određuješ naziv, javni URL, status i prikaz glavnog menija na javnom funnel-u.</div>
+                    </div>
+                </div>
+                <div class="vf-card__body vf-stack">
+                    <div class="vf-two">
+                        <div class="vf-field">
+                            <label>Naziv funnel-a</label>
+                            <input type="text" data-vf-funnel-field="name" value="${escapeHtml(funnel.name || '')}" />
+                        </div>
+                        <div class="vf-field">
+                            <label>URL slug</label>
+                            <input type="text" data-vf-funnel-field="slug" value="${escapeHtml(funnel.slug || '')}" />
+                            <div class="vf-field__hint">Primjer: stjepan-online-posao. Sustav će kod spremanja spriječiti dupli slug.</div>
+                        </div>
+                    </div>
+
+                    <div class="vf-two">
+                        <div class="vf-field">
+                            <label>Status</label>
+                            <select data-vf-funnel-field="status">
+                                ${['draft', 'testing', 'active'].map(status => `<option value="${status}" ${String(funnel.status || 'draft') === status ? 'selected' : ''}>${status}</option>`).join('')}
+                            </select>
+                        </div>
+                        <div class="vf-field">
+                            <label>Vidljivost</label>
+                            <select data-vf-funnel-field="visibility_mode">
+                                ${[
+                                    ['testing_locked', 'Test / zaključano'],
+                                    ['pro_live', 'PRO live'],
+                                    ['private', 'Privatno']
+                                ].map(([key, label]) => `<option value="${key}" ${String(funnel.visibility_mode || 'testing_locked') === key ? 'selected' : ''}>${escapeHtml(label)}</option>`).join('')}
+                            </select>
+                        </div>
+                    </div>
+
+                    <label class="vf-toggle">
+                        <input type="checkbox" data-vf-default-toggle="hide_public_navbar" ${defaults.hide_public_navbar ? 'checked' : ''}>
+                        Sakrij glavni FCC meni kada se ovaj funnel javno otvori
+                    </label>
                 </div>
             </div>
         `;
@@ -5399,6 +5464,16 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
     });
 
     function applyGenericFieldUpdate(target) {
+        const funnelField = target.closest('[data-vf-funnel-field]');
+        if(funnelField) {
+            const field = funnelField.getAttribute('data-vf-funnel-field');
+            state.payload.funnel = state.payload.funnel || {};
+            state.payload.funnel[field] = coerceFieldValue(funnelField);
+            syncPayloadInput();
+            renderPreview();
+            return true;
+        }
+
         const surfaceField = target.closest('[data-vf-surface-field]');
         if(surfaceField) {
             const field = surfaceField.getAttribute('data-vf-surface-field');
@@ -5475,7 +5550,7 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
     });
 
     workspaceRoot.addEventListener('focusout', event => {
-        if(event.target.closest('[data-vf-surface-field], [data-vf-block-field], [data-vf-step-field], [data-vf-action-field], [data-vf-product-mapping-field]')) {
+        if(event.target.closest('[data-vf-funnel-field], [data-vf-surface-field], [data-vf-block-field], [data-vf-step-field], [data-vf-action-field], [data-vf-product-mapping-field]')) {
             renderAll();
         }
     });
@@ -5557,6 +5632,14 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
                 ensureVariantBSurfaceState(surface);
             }
             renderAll();
+            return;
+        }
+
+        const defaultToggle = event.target.closest('[data-vf-default-toggle]');
+        if(defaultToggle) {
+            state.payload.defaults = state.payload.defaults || {};
+            state.payload.defaults[defaultToggle.getAttribute('data-vf-default-toggle')] = !!defaultToggle.checked;
+            syncPayloadInput();
             return;
         }
 

@@ -20,6 +20,7 @@ $payload = is_array($state['payload'] ?? null) ? $state['payload'] : [];
 $surface = is_array($state['page_surface'] ?? null) ? $state['page_surface'] : [];
 $blocks = is_array($state['blocks'] ?? null) ? $state['blocks'] : [];
 $active = is_array($state['active'] ?? null) ? $state['active'] : [];
+$hide_public_navbar = !empty($payload['defaults']['hide_public_navbar']);
 $background_color = $surface['background_color'] ?? '#0f172a';
 $surface_color = $surface['surface_color'] ?? '#152132';
 $text_color = $surface['text_color'] ?? '#eef4ff';
@@ -63,6 +64,13 @@ foreach($blocks as $preview_block) {
 <?= \Altum\Alerts::output_alerts() ?>
 
 <style>
+    <?php if($hide_public_navbar): ?>
+    body .fcc-navbar-shell,
+    body #navbar {
+        display: none !important;
+    }
+    <?php endif ?>
+
     .vip-funnel-public {
         --vf-bg: <?= $e($background_color) ?>;
         --vf-surface: <?= $e($surface_color) ?>;

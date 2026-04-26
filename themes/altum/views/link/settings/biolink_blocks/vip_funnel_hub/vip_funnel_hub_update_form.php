@@ -1,4 +1,8 @@
 <?php defined('ALTUMCODE') || die() ?>
+<?php
+$vip_funnel_options = function_exists('vip_funnel_get_user_funnel_select_options') ? vip_funnel_get_user_funnel_select_options((int) ($row->user_id ?? $this->user->user_id ?? 0)) : [];
+$selected_vip_funnel_id = (int) ($row->settings->vip_funnel_id ?? 0);
+?>
 
 <form id="<?= 'update_biolink_block_' . $row->biolink_block_id ?>" name="update_biolink_" method="post" role="form" data-type="<?= $row->type ?>" enctype="multipart/form-data">
     <input type="hidden" name="token" value="<?= \Altum\Csrf::get() ?>" required="required" />
@@ -10,7 +14,7 @@
 
     <div class="alert alert-info">
         <i class="fas fa-fw fa-sm fa-circle-info mr-1"></i>
-        Nakon što složiš funnel u `VIP Funnel Studiju`, dodaj ovaj blok na svoju FCC Aplikaciju iz Forever sekcije blokova. Klik na blok automatski pokreće prvi korak funnela koji je trenutno spremljen u studiju.
+        Nakon što složiš funnel u VIP Funnel centru, ovdje odaberi koji funnel ovaj blok otvara na tvojoj FCC Aplikaciji.
     </div>
 
     <div class="form-group">
@@ -18,9 +22,22 @@
         <input id="<?= 'vip_funnel_hub_name_' . $row->biolink_block_id ?>" type="text" name="name" class="form-control" value="<?= $row->settings->name ?? '' ?>" maxlength="128" required="required" />
     </div>
 
+    <div class="form-group">
+        <label for="<?= 'vip_funnel_hub_vip_funnel_id_' . $row->biolink_block_id ?>"><i class="fas fa-fw fa-diagram-project fa-sm text-muted mr-1"></i> Funnel koji se otvara</label>
+        <select id="<?= 'vip_funnel_hub_vip_funnel_id_' . $row->biolink_block_id ?>" name="vip_funnel_id" class="custom-select">
+            <option value="0" <?= $selected_vip_funnel_id <= 0 ? 'selected="selected"' : null ?>>Primarni funnel</option>
+            <?php foreach($vip_funnel_options as $option): ?>
+                <option value="<?= (int) $option['id'] ?>" <?= $selected_vip_funnel_id === (int) $option['id'] ? 'selected="selected"' : null ?>>
+                    <?= htmlspecialchars((string) $option['name'], ENT_QUOTES, 'UTF-8') ?> /<?= htmlspecialchars((string) $option['slug'], ENT_QUOTES, 'UTF-8') ?>
+                </option>
+            <?php endforeach ?>
+        </select>
+        <small class="form-text text-muted">Promjenom odabira ovaj blok može voditi na drugi funnel bez ponovnog kreiranja bloka.</small>
+    </div>
+
     <div class="alert alert-secondary">
         <i class="fas fa-fw fa-play-circle mr-1"></i>
-        Primarni klik se više ne postavlja ručno. Sustav sam otvara prvi korak iz Funnel 2.0 Studija.
+        Primarni klik se više ne postavlja ručno. Sustav otvara odabrani Funnel 2.0 iz popisa.
     </div>
 
     <div class="form-group">

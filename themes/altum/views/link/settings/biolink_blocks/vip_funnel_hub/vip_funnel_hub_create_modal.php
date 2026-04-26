@@ -1,4 +1,5 @@
 <?php defined('ALTUMCODE') || die() ?>
+<?php $vip_funnel_options = function_exists('vip_funnel_get_user_funnel_select_options') ? vip_funnel_get_user_funnel_select_options((int) ($data->link->user_id ?? $this->user->user_id ?? 0)) : []; ?>
 
 <div class="modal fade" id="create_biolink_vip_funnel_hub" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" role="document">
@@ -24,6 +25,17 @@
                     <div class="form-group">
                         <label for="vip_funnel_hub_name"><i class="fas fa-fw fa-signature fa-sm text-muted mr-1"></i> <?= l('biolink_link.name') ?></label>
                         <input id="vip_funnel_hub_name" type="text" name="name" maxlength="128" class="form-control" required="required" />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="vip_funnel_hub_vip_funnel_id"><i class="fas fa-fw fa-diagram-project fa-sm text-muted mr-1"></i> Funnel koji se otvara</label>
+                        <select id="vip_funnel_hub_vip_funnel_id" name="vip_funnel_id" class="custom-select">
+                            <option value="0">Primarni funnel</option>
+                            <?php foreach($vip_funnel_options as $option): ?>
+                                <option value="<?= (int) $option['id'] ?>"><?= htmlspecialchars((string) $option['name'], ENT_QUOTES, 'UTF-8') ?> /<?= htmlspecialchars((string) $option['slug'], ENT_QUOTES, 'UTF-8') ?></option>
+                            <?php endforeach ?>
+                        </select>
+                        <small class="form-text text-muted">Ako imaš više funnel-a, ovdje biraš koji će ovaj FCC App blok otvoriti.</small>
                     </div>
 
                     <p class="small text-muted mb-0">

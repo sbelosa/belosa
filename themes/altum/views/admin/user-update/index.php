@@ -44,6 +44,12 @@ $fcc_admin_missing = l('admin_user_update.fcc_featured_missing');
                 <input id="limited" name="user_meta[limited]" type="checkbox" class="custom-control-input" <?= isset($data->user_meta->limited) && $data->user_meta->limited == 1 ? 'checked="checked"' : null?>>
                 <label class="custom-control-label" for="limited"><i class="fa fa-fw fa-sm fa-eye text-muted mr-1"></i> <?= l('admin_users.main.limited') ?></label>
             </div>
+
+            <div class="form-group custom-control custom-switch">
+                <input id="vip_funnel_gate_exempt" name="vip_funnel_gate_exempt" type="checkbox" class="custom-control-input" <?= !empty($data->user_preferences->vip_funnel_gate_exempt) || !empty($data->user_meta->vip_funnel_gate_exempt) ? 'checked="checked"' : null ?>>
+                <label class="custom-control-label" for="vip_funnel_gate_exempt"><i class="fas fa-fw fa-sm fa-diagram-project text-muted mr-1"></i> Ručno uključi Funnel 2.0 za ovog korisnika</label>
+                <small class="form-text text-muted">Koristi se za pilot pristup. Korisnici bez ove dozvole i dalje vide obavijest da je Funnel 2.0 u test periodu.</small>
+            </div>
             <!-- /Custom code -->
 
             <div class="form-group">

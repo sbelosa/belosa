@@ -20,7 +20,7 @@ class VipFunnel extends Controller {
         $user_id = (int) ($this->params[0] ?? 0);
         $requested_slug = query_clean((string) ($this->params[1] ?? ''));
         $requested_step_id = input_clean((string) ($_GET['step'] ?? ''), 128);
-        $state = vip_funnel_get_public_step_state($user_id, $requested_step_id);
+        $state = vip_funnel_get_public_step_state($user_id, $requested_step_id, $requested_slug);
 
         if(!$state) {
             throw_404();
