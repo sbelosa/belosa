@@ -4294,58 +4294,13 @@ function vip_funnel_resolve_import_template_language(string $language = ''): str
 
 function vip_funnel_get_import_template_options($user = null): array {
     return [
-        'mentor_recruiting' => [
-            'key' => 'mentor_recruiting',
-            'name' => 'Mentor Recruiting Funnel',
-            'description' => 'Glavni funnel za online posao, mentorstvo, Start Your Journey, demo i proizvode.',
-            'badge' => 'Regrutacija',
-            'goal' => 'Novi suradnici',
+        'fcc_vip_complete' => [
+            'key' => 'fcc_vip_complete',
+            'name' => 'FCC VIP Funnel - kompletan sustav',
+            'description' => 'Jedan veliki personalizirani funnel za regrutaciju, Start Your Journey, demo pristup, proizvode, popust i follow-up. Suradnik mijenja samo svoje videe, tekst i kontakt.',
+            'badge' => 'FCC VIP',
+            'goal' => 'Regrutacija + proizvodi + demo',
             'recommended' => true,
-            'languages' => vip_funnel_get_import_template_languages(),
-        ],
-        'start_journey' => [
-            'key' => 'start_journey',
-            'name' => 'Start Your Journey Funnel',
-            'description' => 'Fokusiran put za osobu koja treba razumjeti investiciju, paket i prvi korak.',
-            'badge' => 'Start paket',
-            'goal' => 'Upis / paket',
-            'recommended' => true,
-            'languages' => vip_funnel_get_import_template_languages(),
-        ],
-        'product_discount' => [
-            'key' => 'product_discount',
-            'name' => 'Product Discount Funnel',
-            'description' => 'Jednostavan proizvodni put za preporuku, popust i kasnije otvaranje poslovne prilike.',
-            'badge' => 'Proizvodi',
-            'goal' => 'Proizvod / popust',
-            'recommended' => false,
-            'languages' => vip_funnel_get_import_template_languages(),
-        ],
-        'social_video_lead' => [
-            'key' => 'social_video_lead',
-            'name' => 'Social Video Lead Funnel',
-            'description' => 'Brzi funnel za promet s Reelsa, TikToka i viralnih videa s jasnim izborom interesa.',
-            'badge' => 'Video promet',
-            'goal' => 'Brzi lead',
-            'recommended' => false,
-            'languages' => vip_funnel_get_import_template_languages(),
-        ],
-        'demo_access' => [
-            'key' => 'demo_access',
-            'name' => 'Demo Access Funnel',
-            'description' => 'Premium put za osobe koje prvo žele doživjeti FCC sustav i zatražiti demo pristup.',
-            'badge' => 'Demo',
-            'goal' => 'Demo zahtjev',
-            'recommended' => false,
-            'languages' => vip_funnel_get_import_template_languages(),
-        ],
-        'team_duplication' => [
-            'key' => 'team_duplication',
-            'name' => 'Team Duplication Funnel',
-            'description' => 'Jednostavan duplicirajući funnel za suradnike: promijene podatke, video i odmah kreću.',
-            'badge' => 'Tim',
-            'goal' => 'Dupliciranje',
-            'recommended' => false,
             'languages' => vip_funnel_get_import_template_languages(),
         ],
     ];
@@ -4383,6 +4338,308 @@ function vip_funnel_apply_template_landing(array $payload, string $language, arr
             'options' => (array) ($copy['options'] ?? []),
         ],
     ];
+
+    return $payload;
+}
+
+function vip_funnel_update_template_block(array &$payload, string $block_id, array $updates): void {
+    $update_blocks = static function(&$blocks) use ($block_id, $updates): void {
+        if(!is_array($blocks)) {
+            return;
+        }
+
+        foreach($blocks as &$block) {
+            if(!is_array($block)) {
+                continue;
+            }
+
+            if((string) ($block['id'] ?? '') === $block_id) {
+                $block = array_replace_recursive($block, $updates);
+            }
+        }
+        unset($block);
+    };
+
+    if(isset($payload['landing_page']) && is_array($payload['landing_page'])) {
+        if(isset($payload['landing_page']['blocks'])) {
+            $update_blocks($payload['landing_page']['blocks']);
+        }
+
+        if(isset($payload['landing_page']['variant_b_blocks'])) {
+            $update_blocks($payload['landing_page']['variant_b_blocks']);
+        }
+    }
+
+    if(isset($payload['board']) && is_array($payload['board'])) {
+        foreach($payload['board'] as &$phase) {
+            if(!is_array($phase) || empty($phase['steps']) || !is_array($phase['steps'])) {
+                continue;
+            }
+
+            foreach($phase['steps'] as &$step) {
+                if(!is_array($step) || empty($step['page']) || !is_array($step['page'])) {
+                    continue;
+                }
+
+                if(isset($step['page']['blocks'])) {
+                    $update_blocks($step['page']['blocks']);
+                }
+
+                if(isset($step['page']['variant_b_blocks'])) {
+                    $update_blocks($step['page']['variant_b_blocks']);
+                }
+            }
+            unset($step);
+        }
+        unset($phase);
+    }
+}
+
+function vip_funnel_update_template_step(array &$payload, string $step_id, array $updates): void {
+    if(!isset($payload['board']) || !is_array($payload['board'])) {
+        return;
+    }
+
+    foreach($payload['board'] as &$phase) {
+        if(!is_array($phase) || empty($phase['steps']) || !is_array($phase['steps'])) {
+            continue;
+        }
+
+        foreach($phase['steps'] as &$step) {
+            if(!is_array($step) || (string) ($step['id'] ?? '') !== $step_id) {
+                continue;
+            }
+
+            $step = array_replace_recursive($step, $updates);
+        }
+        unset($step);
+    }
+    unset($phase);
+}
+
+function vip_funnel_get_fcc_vip_import_template_payload($user = null, string $language = 'hr'): array {
+    $language = vip_funnel_resolve_import_template_language($language);
+    $owner_profile = vip_funnel_get_owner_contact_profile($user);
+    $mentor_name = trim((string) ($owner_profile['name'] ?? ($user->name ?? '')));
+    $mentor_name = $mentor_name !== '' ? $mentor_name : 'FCC mentor';
+    $mentor_first_name = trim((string) preg_replace('/\s+.*/', '', $mentor_name));
+    $mentor_first_name = $mentor_first_name !== '' ? $mentor_first_name : 'mentor';
+    $mentor_email = trim((string) ($owner_profile['email'] ?? ($user->email ?? '')));
+    $mentor_email = filter_var($mentor_email, FILTER_VALIDATE_EMAIL) ? $mentor_email : 'info@forevercard.club';
+    $contact_url = trim((string) ($owner_profile['whatsapp_url'] ?? '')) ?: ('mailto:' . rawurlencode($mentor_email));
+    $product_shop_url = trim((string) ($owner_profile['main_biolink_url'] ?? '')) ?: SITE_URL . 'blog';
+
+    $payload = vip_funnel_get_stjepan_recruitment_payload($user, [
+        'contact_email' => $mentor_email,
+        'whatsapp_url' => $contact_url,
+        'calendar_url' => $contact_url,
+        'product_shop_url' => $product_shop_url,
+    ]);
+
+    $apply_hr_copy = static function(array &$payload) use ($mentor_name, $mentor_first_name, $mentor_email, $contact_url, $product_shop_url): void {
+        $payload['funnel']['name'] = $mentor_name . ' - FCC VIP Funnel HR';
+        $payload['funnel']['slug'] = vip_funnel_slugify($mentor_name . ' FCC VIP Funnel HR');
+        $payload['funnel']['status'] = 'draft';
+        $payload['funnel']['visibility_mode'] = 'pro_live';
+        $payload['funnel']['owner_mode'] = 'shared';
+
+        $payload['overview'] = [
+            'eyebrow' => 'FCC VIP Funnel',
+            'headline' => 'Pokreni online posao uz FCC sustav i mentorstvo',
+            'subheadline' => 'U par koraka odaberi želiš li pokrenuti posao, vidjeti demo sustava ili prvo krenuti kroz proizvode i popust. Tvoj mentor: ' . $mentor_name . '.',
+            'primary_cta' => 'Provjeri svoj put',
+            'secondary_cta' => 'Pogledaj FCC demo',
+        ];
+
+        $payload['positioning'] = [
+            'for' => 'Za osobe koje dolaze s društvenih mreža, preporuke ili FCC aplikacije i žele posao, demo FCC sustava ili proizvodni popust.',
+            'problem' => 'Interes se lako izgubi ako osoba nema jasan, kratak i logičan sljedeći korak.',
+            'mechanism' => 'Funnel segmentira posjetitelja, kvalificira spremnost i vodi ga prema Start paketu, razgovoru, demo iskustvu ili proizvodnoj preporuci.',
+            'offer_promise' => 'Jasan put od interesa do odluke uz osobno mentorstvo i FCC sustav.',
+            'why_now' => 'Svaki suradnik dobiva isti profesionalni okvir, ali s vlastitim imenom, kontaktom i referral vlasništvom.',
+        ];
+
+        $payload['proof']['mentor_intro'] = $mentor_name . ' je tvoj FCC mentor i vodi te kroz prve konkretne korake u sustavu.';
+        $payload['follow_up']['message_1'] = 'Bok, ' . $mentor_first_name . ' ovdje. Vidio/la sam tvoj odabir i šaljem ti najbolji sljedeći korak.';
+        $payload['follow_up']['message_2'] = 'Najveća razlika je krenuti sam ili uz sustav. FCC je napravljen da novi ljudi ne moraju sve izmišljati od nule.';
+        $payload['follow_up']['message_3'] = 'Ako želiš, mogu ti u par minuta reći je li za tebe bolji Start paket, demo ili proizvodni put.';
+        $payload['defaults']['contact_email'] = $mentor_email;
+        $payload['defaults']['checkout_url'] = $contact_url;
+        $payload['defaults']['whatsapp_url'] = $contact_url;
+        $payload['defaults']['calendar_url'] = $contact_url;
+        $payload['defaults']['product_shop_url'] = $product_shop_url;
+        $payload['defaults']['hide_public_navbar'] = true;
+
+        if(isset($payload['landing_page']) && is_array($payload['landing_page'])) {
+            $payload['landing_page']['name'] = 'FCC VIP Funnel - personalizirani landing';
+            $payload['landing_page']['variant_b_settings']['name'] = 'FCC VIP Funnel - alternativni landing';
+        }
+
+        vip_funnel_update_template_block($payload, 'landing_hero', [
+            'badge' => 'FCC VIP Funnel',
+            'title' => 'Pokreni online posao uz FCC sustav i mentorstvo',
+            'text' => 'Ja sam ' . $mentor_name . ', tvoj FCC mentor. Ovdje u par koraka biraš svoj put: online posao, demo sustava ili proizvodi i popust.',
+        ]);
+        vip_funnel_update_template_block($payload, 'landing_intro_video', [
+            'title' => 'Kratki uvod tvog FCC mentora',
+            'text' => 'Pogledaj prvo kratku poruku, a zatim odaberi smjer koji je najbliži tvojoj situaciji.',
+        ]);
+        vip_funnel_update_template_block($payload, 'landing_proof', [
+            'badge' => 'Zašto ovo nije običan link',
+            'title' => 'FCC spaja pažnju, jasnu selekciju, proizvode i mentorstvo u jedan vođeni sustav.',
+            'text' => 'Novi posjetitelj ne mora čitati sve odjednom. Funnel ga vodi prema poslu, demo iskustvu ili proizvodnom putu, a mentoru pokazuje tko je spreman za ozbiljan razgovor.',
+        ]);
+        vip_funnel_update_template_block($payload, 'landing_b_hero', [
+            'badge' => 'Od interesa do sustava',
+            'title' => 'Od prvog interesa do vlastitog online posla',
+            'text' => 'Ako te zanima FCC, ovaj kratki funnel će ti pokazati najbolji sljedeći korak bez previše informacija odjednom.',
+        ]);
+        vip_funnel_update_template_block($payload, 'business_hero', [
+            'title' => 'Ne trebaš krenuti sam. Trebaš jasan sustav i mentora.',
+            'text' => 'FCC ti daje okvir: što pokazati, kako objasniti, kako voditi ljude i kako graditi naviku rada. ' . $mentor_name . ' te vodi kroz prve korake, a ti učiš raditi konkretno i dosljedno.',
+        ]);
+        vip_funnel_update_template_block($payload, 'business_video', [
+            'title' => 'Tko je tvoj mentor i kako radi FCC sustav',
+            'text' => 'Kratko objašnjenje sustava, tima, prvih koraka i načina rada.',
+        ]);
+        vip_funnel_update_template_block($payload, 'qualification_privacy', [
+            'text' => 'Slanjem podataka potvrđuješ da te ' . $mentor_name . ' ili FCC tim smije kontaktirati vezano uz odabrani smjer. Privacy: ' . SITE_URL . 'page/privacy-policy',
+        ]);
+        vip_funnel_update_template_block($payload, 'demo_hero', [
+            'title' => 'Ovdje vidiš kako FCC pretvara interes u jasne korake.',
+            'text' => 'Pogledaj kako FCC vodi posjetitelja od interesa do kontakta, proizvoda, demo pristupa ili suradnje. Ovo je i primjer sustava koji možeš koristiti u svom poslu.',
+        ]);
+        vip_funnel_update_template_block($payload, 'demo_video', [
+            'title' => 'FCC demo iznutra',
+            'text' => 'U kratkom pregledu vidiš kako aplikacija, funnel, product preporuka, kontakti i follow-up rade zajedno.',
+        ]);
+        vip_funnel_update_template_block($payload, 'demo_request_hero', [
+            'title' => 'Ako želiš prvo vidjeti sustav, ostavi podatke i razlog.',
+            'text' => 'Demo je kontroliran i vremenski ograničen. Mentor će vidjeti tvoj zahtjev i javiti ti se s pravim sljedećim korakom.',
+        ]);
+
+        vip_funnel_update_template_step($payload, 'business_gateway', [
+            'title' => 'Od interesa do online posla, ali bez kretanja od nule',
+            'preview_headline' => 'Od interesa do online posla, ali bez kretanja od nule',
+        ]);
+        vip_funnel_update_template_step($payload, 'mentor_call_request', [
+            'title' => 'Zatraži kratki pregled s mentorom',
+            'summary' => 'Kontakt stranica za osobu koja želi potvrdu prije odluke.',
+            'helper_text' => 'Kontakt stranica za osobu koja želi potvrdu prije odluke.',
+            'preview_headline' => 'Zatraži kratki pregled s mentorom',
+            'page' => ['name' => 'Zatraži kratki pregled s mentorom'],
+        ]);
+    };
+
+    $apply_en_copy = static function(array &$payload) use ($mentor_name, $mentor_first_name, $mentor_email, $contact_url, $product_shop_url): void {
+        $payload['funnel']['name'] = $mentor_name . ' - FCC VIP Funnel ENG';
+        $payload['funnel']['slug'] = vip_funnel_slugify($mentor_name . ' FCC VIP Funnel ENG');
+        $payload['funnel']['status'] = 'draft';
+        $payload['funnel']['visibility_mode'] = 'pro_live';
+        $payload['funnel']['owner_mode'] = 'shared';
+
+        $payload['overview'] = [
+            'eyebrow' => 'FCC VIP Funnel',
+            'headline' => 'Start an online business with FCC and guided mentorship',
+            'subheadline' => 'In a few clear steps, choose whether you want to start the business, see the FCC system demo, or begin with products and a discount. Your mentor: ' . $mentor_name . '.',
+            'primary_cta' => 'Check your path',
+            'secondary_cta' => 'See the FCC demo',
+        ];
+
+        $payload['positioning'] = [
+            'for' => 'For people coming from social media, referrals, or the FCC app who want a business, FCC system demo, or product discount.',
+            'problem' => 'Interest is easy to lose when a visitor does not get a clear, short, and logical next step.',
+            'mechanism' => 'The funnel segments visitors, qualifies readiness, and guides them toward the Start package, a mentor conversation, demo experience, or product recommendation.',
+            'offer_promise' => 'A clear path from interest to decision with personal mentorship and the FCC system.',
+            'why_now' => 'Every collaborator gets the same professional framework, personalized with their own name, contact, and referral ownership.',
+        ];
+
+        $payload['proof']['mentor_intro'] = $mentor_name . ' is your FCC mentor and guides you through the first concrete steps in the system.';
+        $payload['follow_up']['message_1'] = 'Hi, ' . $mentor_first_name . ' here. I saw your choice and I am sending you the best next step.';
+        $payload['follow_up']['message_2'] = 'The biggest difference is starting alone or with a system. FCC is built so new people do not have to invent everything from zero.';
+        $payload['follow_up']['message_3'] = 'If you want, I can quickly help you choose between the Start package, demo, or product path.';
+        $payload['defaults']['contact_email'] = $mentor_email;
+        $payload['defaults']['checkout_url'] = $contact_url;
+        $payload['defaults']['whatsapp_url'] = $contact_url;
+        $payload['defaults']['calendar_url'] = $contact_url;
+        $payload['defaults']['product_shop_url'] = $product_shop_url;
+        $payload['defaults']['hide_public_navbar'] = true;
+
+        if(isset($payload['landing_page']) && is_array($payload['landing_page'])) {
+            $payload['landing_page']['name'] = 'FCC VIP Funnel - personalized landing';
+            $payload['landing_page']['variant_b_settings']['name'] = 'FCC VIP Funnel - alternative landing';
+        }
+
+        vip_funnel_update_template_block($payload, 'landing_hero', [
+            'badge' => 'FCC VIP Funnel',
+            'title' => 'Start an online business with FCC and guided mentorship',
+            'text' => 'I am ' . $mentor_name . ', your FCC mentor. In a few short steps, choose your path: online business, system demo, or products and discount.',
+        ]);
+        vip_funnel_update_template_block($payload, 'landing_intro_video', [
+            'title' => 'Short intro from your FCC mentor',
+            'text' => 'Watch the short message first, then choose the path that best matches your situation.',
+        ]);
+        vip_funnel_update_template_block($payload, 'landing_proof', [
+            'badge' => 'Why this is not just another link',
+            'title' => 'FCC connects attention, clear selection, products, and mentorship into one guided system.',
+            'text' => 'A new visitor does not need to read everything at once. The funnel guides them toward business, demo, or product path, while the mentor sees who is ready for a serious conversation.',
+        ]);
+        vip_funnel_update_template_block($payload, 'landing_b_hero', [
+            'badge' => 'From interest to system',
+            'title' => 'From first interest to your own online business',
+            'text' => 'If FCC caught your attention, this short funnel shows the best next step without overwhelming you.',
+        ]);
+        vip_funnel_update_template_block($payload, 'business_hero', [
+            'title' => 'You do not need to start alone. You need a clear system and a mentor.',
+            'text' => 'FCC gives you a framework: what to show, how to explain it, how to guide people, and how to build consistent work habits. ' . $mentor_name . ' guides your first steps while you learn to work clearly and consistently.',
+        ]);
+        vip_funnel_update_template_block($payload, 'business_video', [
+            'title' => 'Who your mentor is and how the FCC system works',
+            'text' => 'A short explanation of the system, team, first steps, and way of working.',
+        ]);
+        vip_funnel_update_template_block($payload, 'qualification_privacy', [
+            'text' => 'By submitting your details, you confirm that ' . $mentor_name . ' or the FCC team may contact you about the path you selected. Privacy: ' . SITE_URL . 'page/privacy-policy',
+        ]);
+        vip_funnel_update_template_block($payload, 'demo_hero', [
+            'title' => 'Here you see how FCC turns interest into clear next steps.',
+            'text' => 'See how FCC guides a visitor from interest to contact, products, demo access, or collaboration. This is also an example of the system you can use in your own business.',
+        ]);
+        vip_funnel_update_template_block($payload, 'demo_video', [
+            'title' => 'FCC demo from the inside',
+            'text' => 'In this short overview, you see how the app, funnel, product recommendation, contacts, and follow-up work together.',
+        ]);
+        vip_funnel_update_template_block($payload, 'demo_request_hero', [
+            'title' => 'If you want to see the system first, leave your details and reason.',
+            'text' => 'Demo access is controlled and time-limited. Your mentor will see your request and contact you with the right next step.',
+        ]);
+
+        vip_funnel_update_template_step($payload, 'business_gateway', [
+            'title' => 'From interest to online business, without starting from zero',
+            'preview_headline' => 'From interest to online business, without starting from zero',
+        ]);
+        vip_funnel_update_template_step($payload, 'mentor_call_request', [
+            'title' => 'Request a short review with your mentor',
+            'summary' => 'Contact page for someone who wants confirmation before deciding.',
+            'helper_text' => 'Contact page for someone who wants confirmation before deciding.',
+            'preview_headline' => 'Request a short review with your mentor',
+            'page' => ['name' => 'Request a short review with your mentor'],
+        ]);
+    };
+
+    $apply_hr_copy($payload);
+
+    if($language === 'en') {
+        $payload = vip_funnel_localize_template_payload($payload, 'en');
+        $apply_en_copy($payload);
+    }
+
+    $payload = vip_funnel_normalize_studio_payload($payload, $user);
+
+    if($language === 'en') {
+        $apply_en_copy($payload);
+    } else {
+        $apply_hr_copy($payload);
+    }
 
     return $payload;
 }
@@ -4621,140 +4878,16 @@ function vip_funnel_localize_template_payload(array $payload, string $language):
 function vip_funnel_get_import_template_payload(string $template_key = '', $user = null, string $language = 'hr'): ?array {
     $template_key = trim($template_key);
     $language = vip_funnel_resolve_import_template_language($language);
-    $is_hr = $language === 'hr';
-    $user_name = trim((string) ($user->name ?? 'FCC mentor'));
-    $user_email = trim((string) ($user->email ?? 'info@forevercard.club'));
-    $contact_email = filter_var($user_email, FILTER_VALIDATE_EMAIL) ? $user_email : 'info@forevercard.club';
-    $owner_profile = vip_funnel_get_owner_contact_profile($user);
-    $contact_url = (string) (($owner_profile['whatsapp_url'] ?? '') ?: ('mailto:' . rawurlencode($contact_email)));
 
     switch($template_key) {
+        case 'fcc_vip_complete':
         case 'fcc_recruiting_mentor':
         case 'mentor_recruiting':
-            $payload = vip_funnel_get_stjepan_recruitment_payload($user, [
-                'contact_email' => $contact_email,
-                'whatsapp_url' => $contact_url,
-            ]);
-            $payload['funnel']['name'] = $user_name !== '' ? $user_name . ' FCC recruiting funnel ' . strtoupper($language) : 'FCC recruiting funnel ' . strtoupper($language);
-            $payload['funnel']['slug'] = vip_funnel_slugify($payload['funnel']['name']);
-            $payload['funnel']['status'] = 'draft';
-            $payload['overview']['eyebrow'] = 'FCC Funnel 2.0';
-            $payload['overview']['headline'] = $is_hr ? 'Pokreni online posao uz FCC sustav i moje mentorstvo' : 'Start an online business with FCC and my mentorship';
-            $payload['overview']['subheadline'] = $is_hr ? 'U nekoliko koraka odaberi želiš li pokrenuti posao, vidjeti demo sustava ili prvo krenuti kroz proizvode i popust.' : 'In a few simple steps, choose whether you want to start the business, see the system demo, or begin with products and a discount.';
-            break;
-
-        case 'start_journey':
-        case 'product_discount':
-        case 'fcc_product_discount':
-        case 'social_video_lead':
-        case 'demo_access':
-        case 'team_duplication':
-            $payload = vip_funnel_get_stjepan_recruitment_payload($user, [
-                'contact_email' => $contact_email,
-                'whatsapp_url' => $contact_url,
-            ]);
-            $payload['funnel']['status'] = 'draft';
-
-            $template_copy = [
-                'start_journey' => [
-                    'name' => $is_hr ? 'Start Your Journey funnel HR' : 'Start Your Journey funnel ENG',
-                    'slug' => $is_hr ? 'start-your-journey-hr' : 'start-your-journey-eng',
-                    'badge' => 'Start Your Journey',
-                    'headline' => $is_hr ? 'Ovo je tvoj prvi konkretan korak u FCC sustav' : 'This is your first concrete step into the FCC system',
-                    'subheadline' => $is_hr ? 'Saznaj što dobivaš u Start paketu, kako izgleda mentorstvo i zašto ne krećeš sam.' : 'See what is included in the Start package, how mentorship works, and why you are not starting alone.',
-                    'proof_title' => $is_hr ? 'Paket nije samo kupnja informacije' : 'The package is not just information',
-                    'proof_text' => $is_hr ? 'To je ulaz u proizvode, edukaciju, sustav i vođeni početak uz mentora.' : 'It is an entry into products, education, the system, and a guided start with a mentor.',
-                    'survey_title' => $is_hr ? 'Što trebaš prije odluke?' : 'What do you need before deciding?',
-                    'options' => [
-                        ['label' => $is_hr ? 'Spreman/na sam za paket' : 'I am ready for the package', 'value' => 'ready_360_now', 'style' => 'primary', 'action' => 'goto_step', 'target_step_id' => 'start_package_offer'],
-                        ['label' => $is_hr ? 'Želim prvo razgovor' : 'I want to talk first', 'value' => 'call_request', 'style' => 'secondary', 'action' => 'goto_step', 'target_step_id' => 'mentor_call'],
-                        ['label' => $is_hr ? 'Želim demo sustava' : 'I want the system demo', 'value' => 'demo_interest', 'style' => 'ghost', 'action' => 'goto_step', 'target_step_id' => 'fcc_demo_preview'],
-                    ],
-                ],
-                'product_discount' => [
-                    'name' => $is_hr ? 'FCC proizvodni popust funnel HR' : 'FCC product discount funnel ENG',
-                    'slug' => $is_hr ? 'fcc-proizvodni-popust-hr' : 'fcc-product-discount-eng',
-                    'badge' => $is_hr ? 'Forever proizvodi' : 'Forever products',
-                    'headline' => $is_hr ? 'Pronađi svoj prvi Forever proizvodni put' : 'Find your first Forever product path',
-                    'subheadline' => $is_hr ? 'Odaberi što ti treba i dobit ćeš preporuku, popust ili miran uvod u poslovni model.' : 'Choose what you need and get a product recommendation, discount path, or a soft introduction to the business.',
-                    'proof_title' => $is_hr ? 'Prvo vrijednost, zatim odluka' : 'Value first, decision second',
-                    'proof_text' => $is_hr ? 'Funnel vodi osobu kroz potrebu, proizvod i popust bez pritiska.' : 'The funnel guides the visitor through need, product, and discount without pressure.',
-                    'survey_title' => $is_hr ? 'Što želiš prvo?' : 'What do you want first?',
-                    'options' => [
-                        ['label' => $is_hr ? 'Preporuku proizvoda' : 'Product recommendation', 'value' => 'proizvodi', 'style' => 'primary', 'action' => 'goto_step', 'target_step_id' => 'product_recommendation'],
-                        ['label' => $is_hr ? 'Popust na proizvode' : 'Product discount', 'value' => 'popust', 'style' => 'secondary', 'action' => 'goto_step', 'target_step_id' => 'conversion_contact'],
-                        ['label' => $is_hr ? 'Online posao uz proizvode' : 'Online business with products', 'value' => 'online_posao', 'style' => 'ghost', 'action' => 'goto_step', 'target_step_id' => 'business_gateway'],
-                    ],
-                ],
-                'social_video_lead' => [
-                    'name' => $is_hr ? 'Social video lead funnel HR' : 'Social video lead funnel ENG',
-                    'slug' => $is_hr ? 'social-video-lead-hr' : 'social-video-lead-eng',
-                    'badge' => $is_hr ? 'Došao/la si s videa' : 'From my video',
-                    'headline' => $is_hr ? 'Ako si došao/la s mog videa, odaberi što te stvarno zanima' : 'If you came from my video, choose what you really want next',
-                    'subheadline' => $is_hr ? 'Bez dugog objašnjavanja. Jedan klik te vodi prema poslu, demo sustava, proizvodima ili razgovoru.' : 'No long explanation. One click sends you toward the business, demo, products, or a conversation.',
-                    'proof_title' => $is_hr ? 'Brz promet treba jasan prvi korak' : 'Fast traffic needs a clear first step',
-                    'proof_text' => $is_hr ? 'Ovaj funnel je napravljen za Reels, TikTok, Shorts i viralne objave.' : 'This funnel is built for Reels, TikTok, Shorts, and viral posts.',
-                    'survey_title' => $is_hr ? 'Što želiš otvoriti?' : 'What do you want to open?',
-                    'options' => [
-                        ['label' => $is_hr ? 'Online posao' : 'Online business', 'value' => 'business_interest', 'style' => 'primary', 'action' => 'goto_step', 'target_step_id' => 'business_gateway'],
-                        ['label' => $is_hr ? 'Demo FCC-a' : 'FCC demo', 'value' => 'demo_interest', 'style' => 'secondary', 'action' => 'goto_step', 'target_step_id' => 'fcc_demo_preview'],
-                        ['label' => $is_hr ? 'Proizvodi / popust' : 'Products / discount', 'value' => 'product_discount', 'style' => 'ghost', 'action' => 'goto_step', 'target_step_id' => 'product_gateway'],
-                    ],
-                ],
-                'demo_access' => [
-                    'name' => $is_hr ? 'FCC demo access funnel HR' : 'FCC demo access funnel ENG',
-                    'slug' => $is_hr ? 'fcc-demo-pristup-hr' : 'fcc-demo-access-eng',
-                    'badge' => $is_hr ? 'Kontrolirani demo' : 'Controlled demo',
-                    'headline' => $is_hr ? 'Zatraži 3-dnevni FCC demo pristup' : 'Request a 3-day FCC demo access',
-                    'subheadline' => $is_hr ? 'Demo je premium i vremenski ograničen. Ako želiš vidjeti sustav iznutra, ostavi podatke i mentor će dobiti obavijest.' : 'The demo is premium and time-limited. If you want to see the system from inside, leave your details and the mentor will be notified.',
-                    'proof_title' => $is_hr ? 'Demo ima smisla kada postoji stvaran interes' : 'Demo works best when there is real intent',
-                    'proof_text' => $is_hr ? 'Zato funnel prvo potvrđuje razlog i zatim vodi na demo zahtjev.' : 'That is why the funnel first confirms the reason and then routes to the demo request.',
-                    'survey_title' => $is_hr ? 'Zašto želiš demo?' : 'Why do you want the demo?',
-                    'options' => [
-                        ['label' => $is_hr ? 'Želim vidjeti sustav prije odluke' : 'I want to see the system before deciding', 'value' => 'demo_before_decision', 'style' => 'primary', 'action' => 'goto_step', 'target_step_id' => 'demo_request'],
-                        ['label' => $is_hr ? 'Želim pokrenuti posao' : 'I want to start the business', 'value' => 'business_interest', 'style' => 'secondary', 'action' => 'goto_step', 'target_step_id' => 'qualification_form'],
-                        ['label' => $is_hr ? 'Želim prvo proizvode' : 'I want products first', 'value' => 'product_discount', 'style' => 'ghost', 'action' => 'goto_step', 'target_step_id' => 'product_gateway'],
-                    ],
-                ],
-                'team_duplication' => [
-                    'name' => $is_hr ? 'Team duplication funnel HR' : 'Team duplication funnel ENG',
-                    'slug' => $is_hr ? 'team-duplication-funnel-hr' : 'team-duplication-funnel-eng',
-                    'badge' => $is_hr ? 'Dupliciraj sustav' : 'Duplicate the system',
-                    'headline' => $is_hr ? 'Gotov FCC funnel koji tvoj tim može odmah prilagoditi' : 'A ready FCC funnel your team can personalize fast',
-                    'subheadline' => $is_hr ? 'Promijeni ime, kontakt, video i nekoliko rečenica. Struktura regrutacije ostaje profesionalna.' : 'Change the name, contact, video, and a few lines. The recruiting structure stays professional.',
-                    'proof_title' => $is_hr ? 'Početnicima treba put, ne prazna stranica' : 'Beginners need a path, not a blank page',
-                    'proof_text' => $is_hr ? 'Ovaj template služi kao duplicirajući primjer za cijeli tim.' : 'This template is a duplication example for the whole team.',
-                    'survey_title' => $is_hr ? 'Koji put želiš pokazati novoj osobi?' : 'Which path do you want to show a new person?',
-                    'options' => [
-                        ['label' => $is_hr ? 'Poslovni start' : 'Business start', 'value' => 'business_interest', 'style' => 'primary', 'action' => 'goto_step', 'target_step_id' => 'business_gateway'],
-                        ['label' => $is_hr ? 'Demo sustava' : 'System demo', 'value' => 'demo_interest', 'style' => 'secondary', 'action' => 'goto_step', 'target_step_id' => 'fcc_demo_preview'],
-                        ['label' => $is_hr ? 'Proizvodi' : 'Products', 'value' => 'product_discount', 'style' => 'ghost', 'action' => 'goto_step', 'target_step_id' => 'product_gateway'],
-                    ],
-                ],
-            ][$template_key] ?? null;
-
-            if(!$template_copy) {
-                return null;
-            }
-
-            $payload['funnel']['name'] = ($user_name !== '' ? $user_name . ' - ' : '') . $template_copy['name'];
-            $payload['funnel']['slug'] = vip_funnel_slugify($template_copy['slug']);
-            $payload['overview']['eyebrow'] = (string) ($template_copy['badge'] ?? 'FCC Funnel 2.0');
-            $payload['overview']['headline'] = (string) ($template_copy['headline'] ?? '');
-            $payload['overview']['subheadline'] = (string) ($template_copy['subheadline'] ?? '');
-            $payload = vip_funnel_apply_template_landing($payload, $language, array_merge($template_copy, [
-                'landing_name' => $template_copy['name'],
-            ]));
-            $payload['defaults']['hide_public_navbar'] = true;
-            break;
+            return vip_funnel_get_fcc_vip_import_template_payload($user, $language);
 
         default:
             return null;
     }
-
-    $payload = vip_funnel_localize_template_payload($payload, $language);
-
-    return vip_funnel_normalize_studio_payload($payload, $user);
 }
 
 function vip_funnel_studio_create_funnel_from_payload($user = null, array $payload = []) {

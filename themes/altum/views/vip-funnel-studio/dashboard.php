@@ -429,7 +429,7 @@ foreach($funnels as $item) {
         <div>
             <div class="vip-funnel-center-eyebrow"><i class="fas fa-fw fa-diagram-project"></i> VIP Funnel 2.0 centar</div>
             <h1 class="vip-funnel-center-title">Svi funnel-i na jednom mjestu</h1>
-            <p class="vip-funnel-center-copy">Ovdje biraš koji funnel uređuješ, kopiraš javni URL, ulaziš u pregled i importiraš gotove demo funnel-e koje kasnije samo prilagodiš svom tekstu, mentorstvu i ponudi.</p>
+            <p class="vip-funnel-center-copy">Ovdje biraš koji funnel uređuješ, kopiraš javni URL, ulaziš u pregled i importiraš gotov FCC VIP funnel koji kasnije samo prilagodiš svom tekstu, videu, mentorstvu i ponudi.</p>
         </div>
 
         <div class="vip-funnel-center-actions">
@@ -471,7 +471,7 @@ foreach($funnels as $item) {
         </div>
 
         <?php if(empty($funnels)): ?>
-            <div class="vip-funnel-center-empty">Još nema spremljenih funnel-a. Kreiraj prvi funnel ili importiraj demo predložak.</div>
+            <div class="vip-funnel-center-empty">Još nema spremljenih funnel-a. Kreiraj prvi funnel ili importiraj gotov FCC VIP predložak.</div>
         <?php else: ?>
             <div class="vip-funnel-center-list">
                 <?php foreach($funnels as $item): ?>
@@ -537,8 +537,8 @@ foreach($funnels as $item) {
     <section class="vip-funnel-center-panel">
         <div class="vip-funnel-center-section-head">
             <div>
-                <h2 class="vip-funnel-center-section-title">Import gotovih funnel-a</h2>
-                <p class="vip-funnel-center-section-sub">Predložak se importira kao novi demo funnel. Nakon importa otvara se editor i možeš promijeniti tekstove, video, CTA gumbe i logiku.</p>
+                <h2 class="vip-funnel-center-section-title">Import FCC VIP funnel-a</h2>
+                <p class="vip-funnel-center-section-sub">Predložak se importira kao novi kompletan funnel u HR ili ENG varijanti. Nakon importa otvara se editor i možeš promijeniti tekstove, video, CTA gumbe i logiku.</p>
             </div>
         </div>
 

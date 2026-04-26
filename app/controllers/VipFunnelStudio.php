@@ -162,11 +162,11 @@ class VipFunnelStudio extends Controller {
                     $payload = vip_funnel_get_import_template_payload($template_key, $this->user, $template_language);
 
                     if($payload && ($row = vip_funnel_studio_create_funnel_from_payload($this->user, $payload))) {
-                        Alerts::add_success('Demo funnel je importiran i spreman za uređivanje.');
+                        Alerts::add_success('FCC VIP funnel je importiran i spreman za uređivanje.');
                         redirect('vip-funnel-studio?funnel_id=' . (int) $row->vip_funnel_id);
                     }
 
-                    Alerts::add_error('Import demo funnel-a trenutno nije uspio.');
+                    Alerts::add_error('Import FCC VIP funnel-a trenutno nije uspio.');
                 }
 
                 $payload = isset($_POST['create_vip_funnel']) || isset($_POST['import_vip_funnel_template']) || isset($_POST['delete_vip_funnel']) ? null : $this->decode_posted_payload($this->user);
