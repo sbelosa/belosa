@@ -1358,19 +1358,6 @@ class Router {
             ],
             /* /Custom code: FC-2026-04-22 */
 
-            /* Custom code: FC-2026-04-26: temporary Stjepan funnel production seed */
-            'stjepan-funnel-seed' => [
-                'controller' => 'StjepanFunnelSeed',
-                'settings' => [
-                    'no_authentication_check' => true,
-                    'has_view' => false,
-                    'no_browser_language_detection' => true,
-                    'allow_indexing' => false,
-                    'allow_sessions' => false,
-                ]
-            ],
-            /* /Custom code: FC-2026-04-26 */
-
             'broadcast' => [
                 'controller' => 'Broadcast',
                 'settings' => [
