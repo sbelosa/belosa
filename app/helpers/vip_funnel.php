@@ -2735,19 +2735,25 @@ function vip_funnel_get_stjepan_recruitment_payload($user = null, array $options
         ]),
     ], 'not_ready_nurture', ['design_variant' => 'decision', 'block_mode' => 'contact_form']);
 
-    $fcc_demo_preview = $step('fcc_demo_preview', 'entry', 'demo', 'demo', 'Pogledaj kako FCC pretvara interes u jasne korake', 'Demo stranica za osobe koje trebaju doživjeti sustav prije odluke.', [
+    $fcc_demo_preview = $step('fcc_demo_preview', 'entry', 'demo', 'demo', 'Razumij FCC sustav prije odluke', 'Mirno objašnjava kako FCC vodi od interesa do proizvoda, provjere, demo prikaza ili ulaska u tim.', [
         $block('demo_hero', 'headline', [
-            'badge' => 'FCC demo',
-            'title' => 'Ovdje osoba vidi sustav, ne samo priču.',
-            'text' => 'Pogledaj kako FCC vodi posjetitelja od interesa do kontakta, proizvoda ili suradnje. Ovo je i pokazni primjer što ćeš moći koristiti u svom poslu.',
+            'badge' => 'FCC sustav',
+            'title' => 'Prvo razumij kako FCC funkcionira, pa odluči je li ovo za tebe.',
+            'text' => 'U ovom koraku pokazujem ti kako FCC vodi osobu od prvog interesa do jasnog sljedećeg koraka: proizvodi, provjera, demo ili ulazak u tim. Ako odlučiš krenuti, isti okvir možeš koristiti i u svom poslu uz moje mentorstvo.',
+            'title_size' => 50,
         ]),
-        $block('demo_video', 'video', ['title' => 'FCC demo iznutra', 'text' => 'Pokaži aplikaciju, funnel, product preporuku, kontakte i follow-up.', 'media_url' => $video('demo')]),
+        $block('demo_video', 'video', [
+            'title' => 'Kako izgleda FCC sustav u praksi',
+            'text' => 'Pogledaj kratki prikaz sustava: kako se osoba vodi kroz funnel, kako se biraju proizvodi ili poslovni put, kako izgleda kontakt i što se događa nakon prvog interesa.',
+            'media_url' => $video('demo'),
+        ]),
         $block('demo_actions', 'cta_group', [
+            'text' => 'Nakon što pogledaš objašnjenje, odaberi što ti je sada najbliže.',
             'buttons' => [
-                $action('demo_qualify', 'Želim provjeriti mogu li krenuti', 'business_interest', 'qualification_form', 'primary'),
-                $action('demo_start', 'Želim Start Your Journey', 'ready_360_now', 'start_package_offer', 'secondary'),
-                $action('demo_request', 'Želim demo pristup', 'demo_request', 'demo_request', 'secondary'),
-                $action('demo_products', 'Želim samo proizvode', 'product_discount', 'product_gateway', 'ghost'),
+                $action('demo_qualify', 'Želim provjeriti je li FCC za mene', 'business_interest', 'qualification_form', 'primary'),
+                $action('demo_start', 'Spreman/na sam za start paket i ulazak u tim', 'ready_360_now', 'start_package_offer', 'secondary'),
+                $action('demo_request', 'Želim detaljniji demo sustava', 'demo_request', 'demo_request', 'secondary'),
+                $action('demo_products', 'Zanimaju me samo proizvodi i popusti', 'product_discount', 'product_gateway', 'ghost'),
             ],
             'alignment' => 'center',
         ]),
@@ -4557,6 +4563,41 @@ function vip_funnel_refresh_stjepan_landing_copy_if_needed(array &$payload): voi
         ]);
     }
 
+    $demo_hero_title = $find_board_block_title($payload, 'demo_hero');
+    if(in_array($demo_hero_title, [
+        'Ovdje osoba vidi sustav, ne samo priču.',
+        'Ovdje vidiš kako FCC pretvara interes u jasne korake.',
+        'Prvo razumij kako FCC funkcionira, pa odluči je li ovo za tebe.',
+    ], true)) {
+        vip_funnel_update_template_block($payload, 'demo_hero', [
+            'badge' => 'FCC sustav',
+            'title' => 'Prvo razumij kako FCC funkcionira, pa odluči je li ovo za tebe.',
+            'text' => 'U ovom koraku pokazujem ti kako FCC vodi osobu od prvog interesa do jasnog sljedećeg koraka: proizvodi, provjera, demo ili ulazak u tim. Ako odlučiš krenuti, isti okvir možeš koristiti i u svom poslu uz moje mentorstvo.',
+            'title_size' => 50,
+        ]);
+        vip_funnel_update_template_block($payload, 'demo_video', [
+            'title' => 'Kako izgleda FCC sustav u praksi',
+            'text' => 'Pogledaj kratki prikaz sustava: kako se osoba vodi kroz funnel, kako se biraju proizvodi ili poslovni put, kako izgleda kontakt i što se događa nakon prvog interesa.',
+        ]);
+        vip_funnel_update_template_block($payload, 'demo_actions', [
+            'text' => 'Nakon što pogledaš objašnjenje, odaberi što ti je sada najbliže.',
+            'buttons' => [
+                ['id' => 'demo_qualify', 'label' => 'Želim provjeriti je li FCC za mene', 'value' => 'business_interest', 'style' => 'primary', 'action' => 'goto_step', 'target_step_id' => 'qualification_form', 'external_url' => '', 'require_submit' => false],
+                ['id' => 'demo_start', 'label' => 'Spreman/na sam za start paket i ulazak u tim', 'value' => 'ready_360_now', 'style' => 'secondary', 'action' => 'goto_step', 'target_step_id' => 'start_package_offer', 'external_url' => '', 'require_submit' => false],
+                ['id' => 'demo_request', 'label' => 'Želim detaljniji demo sustava', 'value' => 'demo_request', 'style' => 'secondary', 'action' => 'goto_step', 'target_step_id' => 'demo_request', 'external_url' => '', 'require_submit' => false],
+                ['id' => 'demo_products', 'label' => 'Zanimaju me samo proizvodi i popusti', 'value' => 'product_discount', 'style' => 'ghost', 'action' => 'goto_step', 'target_step_id' => 'product_gateway', 'external_url' => '', 'require_submit' => false],
+            ],
+        ]);
+        vip_funnel_update_template_step($payload, 'fcc_demo_preview', [
+            'title' => 'Razumij FCC sustav prije odluke',
+            'summary' => 'Mirno objašnjava kako FCC vodi od interesa do proizvoda, provjere, demo prikaza ili ulaska u tim.',
+            'helper_text' => 'Mirno objašnjava kako FCC vodi od interesa do proizvoda, provjere, demo prikaza ili ulaska u tim.',
+            'preview_headline' => 'Razumij FCC sustav prije odluke',
+            'preview_body' => 'Mirno objašnjava kako FCC vodi od interesa do proizvoda, provjere, demo prikaza ili ulaska u tim.',
+            'page' => ['name' => 'Razumij FCC sustav prije odluke'],
+        ]);
+    }
+
     if(empty($payload['landing_page']['blocks']) || !is_array($payload['landing_page']['blocks'])) {
         return;
     }
@@ -4921,12 +4962,23 @@ function vip_funnel_get_fcc_vip_import_template_payload($user = null, string $la
             'text' => 'Slanjem podataka potvrđuješ da te ' . $mentor_name . ' ili FCC tim smije kontaktirati vezano uz odabrani smjer. Privacy: ' . SITE_URL . 'page/privacy-policy',
         ]);
         vip_funnel_update_template_block($payload, 'demo_hero', [
-            'title' => 'Ovdje vidiš kako FCC pretvara interes u jasne korake.',
-            'text' => 'Pogledaj kako FCC vodi posjetitelja od interesa do kontakta, proizvoda, demo pristupa ili suradnje. Ovo je i primjer sustava koji možeš koristiti u svom poslu.',
+            'badge' => 'FCC sustav',
+            'title' => 'Prvo razumij kako FCC funkcionira, pa odluči je li ovo za tebe.',
+            'text' => 'U ovom koraku tvoj mentor pokazuje kako FCC vodi osobu od prvog interesa do jasnog sljedećeg koraka: proizvodi, provjera, demo ili ulazak u tim. Ako odlučiš krenuti, isti okvir možeš koristiti i u svom poslu uz mentorstvo.',
+            'title_size' => 50,
         ]);
         vip_funnel_update_template_block($payload, 'demo_video', [
-            'title' => 'FCC demo iznutra',
-            'text' => 'U kratkom pregledu vidiš kako aplikacija, funnel, product preporuka, kontakti i follow-up rade zajedno.',
+            'title' => 'Kako izgleda FCC sustav u praksi',
+            'text' => 'Pogledaj kratki prikaz sustava: kako se osoba vodi kroz funnel, kako se biraju proizvodi ili poslovni put, kako izgleda kontakt i što se događa nakon prvog interesa.',
+        ]);
+        vip_funnel_update_template_block($payload, 'demo_actions', [
+            'text' => 'Nakon što pogledaš objašnjenje, odaberi što ti je sada najbliže.',
+            'buttons' => [
+                ['id' => 'demo_qualify', 'label' => 'Želim provjeriti je li FCC za mene', 'value' => 'business_interest', 'style' => 'primary', 'action' => 'goto_step', 'target_step_id' => 'qualification_form', 'external_url' => '', 'require_submit' => false],
+                ['id' => 'demo_start', 'label' => 'Spreman/na sam za start paket i ulazak u tim', 'value' => 'ready_360_now', 'style' => 'secondary', 'action' => 'goto_step', 'target_step_id' => 'start_package_offer', 'external_url' => '', 'require_submit' => false],
+                ['id' => 'demo_request', 'label' => 'Želim detaljniji demo sustava', 'value' => 'demo_request', 'style' => 'secondary', 'action' => 'goto_step', 'target_step_id' => 'demo_request', 'external_url' => '', 'require_submit' => false],
+                ['id' => 'demo_products', 'label' => 'Zanimaju me samo proizvodi i popusti', 'value' => 'product_discount', 'style' => 'ghost', 'action' => 'goto_step', 'target_step_id' => 'product_gateway', 'external_url' => '', 'require_submit' => false],
+            ],
         ]);
         vip_funnel_update_template_block($payload, 'demo_request_hero', [
             'title' => 'Ako želiš prvo vidjeti sustav, ostavi podatke i razlog.',
@@ -4940,6 +4992,14 @@ function vip_funnel_get_fcc_vip_import_template_payload($user = null, string $la
             'preview_headline' => 'Poslovni filter za ozbiljan FCC start',
             'preview_body' => 'Vodi prema start paketu, kratkoj provjeri, demo prikazu sustava ili mirnijem uvodu.',
             'page' => ['name' => 'Poslovni filter za ozbiljan FCC start'],
+        ]);
+        vip_funnel_update_template_step($payload, 'fcc_demo_preview', [
+            'title' => 'Razumij FCC sustav prije odluke',
+            'summary' => 'Mirno objašnjava kako FCC vodi od interesa do proizvoda, provjere, demo prikaza ili ulaska u tim.',
+            'helper_text' => 'Mirno objašnjava kako FCC vodi od interesa do proizvoda, provjere, demo prikaza ili ulaska u tim.',
+            'preview_headline' => 'Razumij FCC sustav prije odluke',
+            'preview_body' => 'Mirno objašnjava kako FCC vodi od interesa do proizvoda, provjere, demo prikaza ili ulaska u tim.',
+            'page' => ['name' => 'Razumij FCC sustav prije odluke'],
         ]);
         vip_funnel_update_template_step($payload, 'mentor_call_request', [
             'title' => 'Zatraži kratki pregled s mentorom',
@@ -5056,12 +5116,23 @@ function vip_funnel_get_fcc_vip_import_template_payload($user = null, string $la
             'text' => 'By submitting your details, you confirm that ' . $mentor_name . ' or the FCC team may contact you about the path you selected. Privacy: ' . SITE_URL . 'page/privacy-policy',
         ]);
         vip_funnel_update_template_block($payload, 'demo_hero', [
-            'title' => 'Here you see how FCC turns interest into clear next steps.',
-            'text' => 'See how FCC guides a visitor from interest to contact, products, demo access, or collaboration. This is also an example of the system you can use in your own business.',
+            'badge' => 'FCC system',
+            'title' => 'First understand how FCC works, then decide if this is for you.',
+            'text' => 'In this step, your mentor shows how FCC guides a person from first interest to a clear next step: products, a short check, demo, or joining the team. If you decide to start, you can use the same framework in your own business with mentorship.',
+            'title_size' => 50,
         ]);
         vip_funnel_update_template_block($payload, 'demo_video', [
-            'title' => 'FCC demo from the inside',
-            'text' => 'In this short overview, you see how the app, funnel, product recommendation, contacts, and follow-up work together.',
+            'title' => 'What the FCC system looks like in practice',
+            'text' => 'Watch a short system overview: how a person is guided through the funnel, how products or the business path are selected, how contact works, and what happens after first interest.',
+        ]);
+        vip_funnel_update_template_block($payload, 'demo_actions', [
+            'text' => 'After watching the explanation, choose what feels closest to you right now.',
+            'buttons' => [
+                ['id' => 'demo_qualify', 'label' => 'I want to check if FCC is for me', 'value' => 'business_interest', 'style' => 'primary', 'action' => 'goto_step', 'target_step_id' => 'qualification_form', 'external_url' => '', 'require_submit' => false],
+                ['id' => 'demo_start', 'label' => 'I am ready for the Start package and joining the team', 'value' => 'ready_360_now', 'style' => 'secondary', 'action' => 'goto_step', 'target_step_id' => 'start_package_offer', 'external_url' => '', 'require_submit' => false],
+                ['id' => 'demo_request', 'label' => 'I want a more detailed system demo', 'value' => 'demo_request', 'style' => 'secondary', 'action' => 'goto_step', 'target_step_id' => 'demo_request', 'external_url' => '', 'require_submit' => false],
+                ['id' => 'demo_products', 'label' => 'I am only interested in products and discounts', 'value' => 'product_discount', 'style' => 'ghost', 'action' => 'goto_step', 'target_step_id' => 'product_gateway', 'external_url' => '', 'require_submit' => false],
+            ],
         ]);
         vip_funnel_update_template_block($payload, 'demo_request_hero', [
             'title' => 'If you want to see the system first, leave your details and reason.',
@@ -5075,6 +5146,14 @@ function vip_funnel_get_fcc_vip_import_template_payload($user = null, string $la
             'preview_headline' => 'Business filter for a serious FCC start',
             'preview_body' => 'Guides the visitor toward the Start package, a short check, the system demo, or a calmer introduction.',
             'page' => ['name' => 'Business filter for a serious FCC start'],
+        ]);
+        vip_funnel_update_template_step($payload, 'fcc_demo_preview', [
+            'title' => 'Understand the FCC system before deciding',
+            'summary' => 'Calmly explains how FCC guides interest toward products, a short check, demo, or joining the team.',
+            'helper_text' => 'Calmly explains how FCC guides interest toward products, a short check, demo, or joining the team.',
+            'preview_headline' => 'Understand the FCC system before deciding',
+            'preview_body' => 'Calmly explains how FCC guides interest toward products, a short check, demo, or joining the team.',
+            'page' => ['name' => 'Understand the FCC system before deciding'],
         ]);
         vip_funnel_update_template_step($payload, 'mentor_call_request', [
             'title' => 'Request a short review with your mentor',
@@ -5277,14 +5356,25 @@ function vip_funnel_localize_template_payload(array $payload, string $language):
         'Otvori termin ili poruku' => 'Open a time slot or message',
         'Pogledaj kako FCC pretvara interes u jasne korake' => 'See how FCC turns interest into clear steps',
         'Demo stranica za osobe koje trebaju doživjeti sustav prije odluke.' => 'Demo page for people who need to experience the system before deciding.',
+        'Razumij FCC sustav prije odluke' => 'Understand the FCC system before deciding',
+        'Mirno objašnjava kako FCC vodi od interesa do proizvoda, provjere, demo prikaza ili ulaska u tim.' => 'Calmly explains how FCC guides interest toward products, a short check, demo, or joining the team.',
+        'FCC sustav' => 'FCC system',
         'Ovdje osoba vidi sustav, ne samo priču.' => 'Here the visitor sees the system, not just the story.',
         'Pogledaj kako FCC vodi posjetitelja od interesa do kontakta, proizvoda ili suradnje. Ovo je i pokazni primjer što ćeš moći koristiti u svom poslu.' => 'See how FCC guides a visitor from interest to contact, products, or collaboration. This is also a demo of what you can use in your own business.',
+        'Prvo razumij kako FCC funkcionira, pa odluči je li ovo za tebe.' => 'First understand how FCC works, then decide if this is for you.',
+        'U ovom koraku pokazujem ti kako FCC vodi osobu od prvog interesa do jasnog sljedećeg koraka: proizvodi, provjera, demo ili ulazak u tim. Ako odlučiš krenuti, isti okvir možeš koristiti i u svom poslu uz moje mentorstvo.' => 'In this step, I show you how FCC guides a person from first interest to a clear next step: products, a short check, demo, or joining the team. If you decide to start, you can use the same framework in your own business with my mentorship.',
         'FCC demo iznutra' => 'FCC demo from the inside',
         'Pokaži aplikaciju, funnel, product preporuku, kontakte i follow-up.' => 'Show the app, funnel, product recommendation, contacts, and follow-up.',
+        'Kako izgleda FCC sustav u praksi' => 'What the FCC system looks like in practice',
+        'Pogledaj kratki prikaz sustava: kako se osoba vodi kroz funnel, kako se biraju proizvodi ili poslovni put, kako izgleda kontakt i što se događa nakon prvog interesa.' => 'Watch a short system overview: how a person is guided through the funnel, how products or the business path are selected, how contact works, and what happens after first interest.',
+        'Nakon što pogledaš objašnjenje, odaberi što ti je sada najbliže.' => 'After watching the explanation, choose what feels closest to you right now.',
         'Želim provjeriti mogu li krenuti' => 'I want to check if I can start',
         'Želim Start Your Journey' => 'I want Start Your Journey',
         'Želim demo pristup' => 'I want demo access',
         'Želim samo proizvode' => 'I only want products',
+        'Želim provjeriti je li FCC za mene' => 'I want to check if FCC is for me',
+        'Želim detaljniji demo sustava' => 'I want a more detailed system demo',
+        'Zanimaju me samo proizvodi i popusti' => 'I am only interested in products and discounts',
         'Zatraži demo pregled FCC sustava' => 'Request an FCC system demo review',
         'Lead capture za demo interes.' => 'Lead capture for demo interest.',
         'Demo zahtjev' => 'Demo request',
