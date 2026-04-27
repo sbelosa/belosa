@@ -3004,33 +3004,7 @@ function vip_funnel_get_stjepan_recruitment_payload($user = null, array $options
         ]),
     ], 'qualification_form', ['design_variant' => 'card', 'block_mode' => 'video']);
 
-    $demo_request = $step('demo_request', 'segment', 'demo', 'demo', 'Zatraži demo pregled FCC sustava', 'Lead capture za demo interes.', [
-        $block('demo_request_hero', 'headline', [
-            'badge' => 'Demo zahtjev',
-            'title' => 'Ako želiš prvo vidjeti sustav, ostavi podatke i razlog.',
-            'text' => 'Demo ostaje kontroliran i premium. Cilj je pokazati ti pravi dio sustava za tvoju situaciju.',
-        ]),
-        $block('demo_request_reason', 'radio_survey', [
-            'title' => 'Zašto želiš demo?',
-            'required' => true,
-            'route_on_submit' => false,
-            'options' => [
-                $action('demo_before_decision', 'Želim vidjeti sustav prije odluke', 'demo_before_decision'),
-                $action('demo_show_others', 'Želim pokazati sustav drugima', 'demo_show_others'),
-                $action('demo_have_team', 'Već imam tim ili prodaju', 'demo_have_team'),
-                $action('demo_research', 'Samo istražujem', 'samo_istrazujem'),
-            ],
-        ]),
-        $block('demo_request_name', 'full_name_field', ['title' => 'Ime i prezime', 'required' => true, 'layout_width' => 'half']),
-        $block('demo_request_email', 'email_field', ['title' => 'Email', 'required' => true, 'layout_width' => 'half']),
-        $block('demo_request_phone', 'phone_field', ['title' => 'Telefon / WhatsApp', 'required' => false]),
-        $block('demo_request_submit', 'cta_group', [
-            'buttons' => [
-                $action('demo_request_submit_btn', 'Zatraži demo pregled', 'demo_requested', 'not_ready_nurture', 'primary', 'submit_next', true),
-            ],
-            'alignment' => 'center',
-        ]),
-    ], 'not_ready_nurture', ['design_variant' => 'card', 'block_mode' => 'contact_form']);
+    $demo_request = $step('demo_request', 'segment', 'demo', 'demo', 'Zatraži kontrolirani demo pristup FCC sustavu', 'Lead capture za kontrolirani demo interes.', array_values(vip_funnel_get_demo_request_step_blocks('hr', 'Stjepan', $privacy_url)), 'not_ready_nurture', ['design_variant' => 'card', 'block_mode' => 'contact_form']);
 
     $product_gateway = $step('product_gateway', 'entry', 'products', 'question', 'Proizvodni put s jasnom preporukom', 'Vodi osobu prema proizvodnom cilju, popustu i kasnijem poslovnom mostu bez pritiska.', [
         $block('product_gateway_hero', 'headline', [
@@ -4759,6 +4733,114 @@ function vip_funnel_resolve_fast_contact_url(string $url = ''): string {
     return $url;
 }
 
+function vip_funnel_get_demo_request_step_blocks(string $language = 'hr', string $mentor_name = '', string $privacy_url = ''): array {
+    $is_en = vip_funnel_resolve_import_template_language($language) === 'en';
+    $mentor_label = trim($mentor_name) !== '' ? trim($mentor_name) : ($is_en ? 'your mentor' : 'Stjepan');
+    $privacy_url = trim($privacy_url) !== '' ? trim($privacy_url) : SITE_URL . 'page/privacy-policy';
+
+    $action = static function(string $id, string $label, string $hint = '', string $value = ''): array {
+        return [
+            'id' => $id,
+            'label' => $label,
+            'hint' => $hint,
+            'value' => $value !== '' ? $value : $id,
+            'style' => 'primary',
+            'action' => 'goto_step',
+            'target_step_id' => '',
+            'external_url' => '',
+            'require_submit' => false,
+        ];
+    };
+
+    if($is_en) {
+        return [
+            'demo_request_hero' => [
+                'id' => 'demo_request_hero',
+                'type' => 'headline',
+                'badge' => 'Demo access',
+                'title' => 'Want to see the FCC system from the inside? Request controlled demo access.',
+                'text' => 'The demo is not a public link for everyone. The goal is to show you the part of the system that makes sense for your situation — whether you want to decide about the Start package, understand how the funnel works, or see how FCC could help your recommendations and contacts.',
+            ],
+            'demo_request_reason' => [
+                'id' => 'demo_request_reason',
+                'type' => 'radio_survey',
+                'title' => 'Why do you want demo access?',
+                'text' => 'Choose the reason that feels closest. That helps me know which part of the system makes the most sense to show you.',
+                'required' => true,
+                'route_on_submit' => false,
+                'options' => [
+                    $action('demo_before_decision', 'I want to see the system before deciding about the Start package', 'I am interested in FCC, but before deciding I want to understand how the system works in practice.', 'demo_before_decision'),
+                    $action('demo_show_others', 'I want to use the system for my own recommendations', 'I want to see how FCC could guide people from interest to products, a conversation, or the Start package.', 'demo_show_others'),
+                    $action('demo_have_team', 'I already have contacts, customers, or a team', 'I want to see whether FCC can help with presentation, recommendations, contacts, and follow-up.', 'demo_have_team'),
+                    $action('demo_research', 'I am still exploring and want a basic overview', 'I am not ready to decide yet, but I want to calmly see what the system looks like.', 'samo_istrazujem'),
+                ],
+            ],
+            'demo_request_name' => ['id' => 'demo_request_name', 'type' => 'full_name_field', 'title' => 'Full name', 'placeholder' => 'Enter your full name', 'required' => true, 'layout_width' => 'half'],
+            'demo_request_phone' => ['id' => 'demo_request_phone', 'type' => 'phone_field', 'title' => 'WhatsApp / phone', 'placeholder' => 'Enter the number where you can be contacted quickly', 'required' => true, 'layout_width' => 'half'],
+            'demo_request_email' => ['id' => 'demo_request_email', 'type' => 'email_field', 'title' => 'Email for demo access', 'placeholder' => 'Enter email only if it is needed for the demo account', 'required' => true, 'layout_width' => 'full'],
+            'demo_request_focus' => ['id' => 'demo_request_focus', 'type' => 'text_field', 'title' => 'What do you want to see in the demo?', 'placeholder' => 'e.g. funnel, recommendations, products, contacts, follow-up, Start package', 'field_key' => 'demo_focus', 'required' => false, 'layout_width' => 'full'],
+            'demo_request_privacy' => [
+                'id' => 'demo_request_privacy',
+                'type' => 'text',
+                'title' => 'Consent',
+                'text' => 'By sending the request, you confirm that ' . $mentor_label . ' or the FCC team may contact you about demo access via WhatsApp or phone call. Email is used only if it is needed to send or activate demo access. Privacy: ' . $privacy_url,
+            ],
+            'demo_request_submit' => [
+                'id' => 'demo_request_submit',
+                'type' => 'cta_group',
+                'text' => 'Send the request and I will contact you with the best way to review the demo.',
+                'buttons' => [
+                    ['id' => 'demo_request_submit_btn', 'label' => 'Send demo access request', 'value' => 'demo_requested', 'style' => 'primary', 'action' => 'submit_next', 'target_step_id' => 'not_ready_nurture', 'external_url' => '', 'require_submit' => true],
+                ],
+                'alignment' => 'center',
+            ],
+        ];
+    }
+
+    return [
+        'demo_request_hero' => [
+            'id' => 'demo_request_hero',
+            'type' => 'headline',
+            'badge' => 'Demo pristup',
+            'title' => 'Želiš vidjeti FCC sustav iznutra? Zatraži kontrolirani demo pristup.',
+            'text' => 'Demo nije javni link za svakoga. Cilj je da ti pokažem dio sustava koji ima smisla za tvoju situaciju — bilo da želiš donijeti odluku za start paket, razumjeti kako radi funnel ili vidjeti kako bi FCC mogao pomoći tvojim preporukama i kontaktima.',
+        ],
+        'demo_request_reason' => [
+            'id' => 'demo_request_reason',
+            'type' => 'radio_survey',
+            'title' => 'Zašto želiš demo pristup?',
+            'text' => 'Odaberi razlog koji ti je najbliži. Tako ću znati koji dio sustava ti ima najviše smisla pokazati.',
+            'required' => true,
+            'route_on_submit' => false,
+            'options' => [
+                $action('demo_before_decision', 'Želim vidjeti sustav prije odluke o start paketu', 'Zanima me FCC, ali prije odluke želim razumjeti kako sustav radi u praksi.', 'demo_before_decision'),
+                $action('demo_show_others', 'Želim koristiti sustav za vlastite preporuke', 'Želim vidjeti kako bih kroz FCC mogao/la voditi ljude od interesa do proizvoda, razgovora ili start paketa.', 'demo_show_others'),
+                $action('demo_have_team', 'Već imam kontakte, kupce ili tim', 'Želim vidjeti može li mi FCC pomoći u prezentaciji, preporuci, kontaktima i follow-upu.', 'demo_have_team'),
+                $action('demo_research', 'Još istražujem i želim osnovni prikaz', 'Nisam još spreman/na za odluku, ali želim mirno vidjeti kako sustav izgleda.', 'samo_istrazujem'),
+            ],
+        ],
+        'demo_request_name' => ['id' => 'demo_request_name', 'type' => 'full_name_field', 'title' => 'Ime i prezime', 'placeholder' => 'Upiši ime i prezime', 'required' => true, 'layout_width' => 'half'],
+        'demo_request_phone' => ['id' => 'demo_request_phone', 'type' => 'phone_field', 'title' => 'WhatsApp / telefon', 'placeholder' => 'Upiši broj na koji te mogu brzo kontaktirati', 'required' => true, 'layout_width' => 'half'],
+        'demo_request_email' => ['id' => 'demo_request_email', 'type' => 'email_field', 'title' => 'Email za demo pristup', 'placeholder' => 'Upiši email samo ako je potreban za demo račun', 'required' => true, 'layout_width' => 'full'],
+        'demo_request_focus' => ['id' => 'demo_request_focus', 'type' => 'text_field', 'title' => 'Što želiš vidjeti u demu?', 'placeholder' => 'npr. funnel, preporuke, proizvodi, kontakti, follow-up, start paket', 'field_key' => 'demo_focus', 'required' => false, 'layout_width' => 'full'],
+        'demo_request_privacy' => [
+            'id' => 'demo_request_privacy',
+            'type' => 'text',
+            'title' => 'Suglasnost',
+            'text' => 'Slanjem zahtjeva potvrđuješ da te ' . $mentor_label . ' ili FCC tim smije kontaktirati vezano uz demo pristup putem WhatsAppa ili telefonskog poziva. Email koristimo samo ako je potreban za slanje ili aktivaciju demo pristupa. Privacy: ' . $privacy_url,
+        ],
+        'demo_request_submit' => [
+            'id' => 'demo_request_submit',
+            'type' => 'cta_group',
+            'text' => 'Pošalji zahtjev i javit ću ti se s najboljim načinom za demo pregled.',
+            'buttons' => [
+                ['id' => 'demo_request_submit_btn', 'label' => 'Pošalji zahtjev za demo pristup', 'value' => 'demo_requested', 'style' => 'primary', 'action' => 'submit_next', 'target_step_id' => 'not_ready_nurture', 'external_url' => '', 'require_submit' => true],
+            ],
+            'alignment' => 'center',
+        ],
+    ];
+}
+
 function vip_funnel_get_call_request_step_blocks(string $language = 'hr', string $mentor_name = '', string $privacy_url = '', string $fast_contact_url = ''): array {
     $is_en = vip_funnel_resolve_import_template_language($language) === 'en';
     $mentor_label = trim($mentor_name) !== '' ? trim($mentor_name) : ($is_en ? 'your mentor' : 'Stjepan');
@@ -5194,6 +5276,25 @@ function vip_funnel_refresh_stjepan_landing_copy_if_needed(array &$payload): voi
             'page' => ['name' => 'Razumij FCC sustav prije odluke'],
         ]);
     }
+
+    vip_funnel_sync_template_step_blocks($payload, 'demo_request', vip_funnel_get_demo_request_step_blocks('hr', 'Stjepan', SITE_URL . 'page/privacy-policy'), [
+        'demo_request_hero',
+        'demo_request_reason',
+        'demo_request_name',
+        'demo_request_phone',
+        'demo_request_email',
+        'demo_request_focus',
+        'demo_request_privacy',
+        'demo_request_submit',
+    ]);
+    vip_funnel_update_template_step($payload, 'demo_request', [
+        'title' => 'Zatraži kontrolirani demo pristup FCC sustavu',
+        'summary' => 'Kontrolirani demo zahtjev s razlogom, WhatsApp/telefonom i emailom samo za demo pristup.',
+        'helper_text' => 'Kontrolirani demo zahtjev s razlogom, WhatsApp/telefonom i emailom samo za demo pristup.',
+        'preview_headline' => 'Zatraži kontrolirani demo pristup FCC sustavu',
+        'preview_body' => 'Demo nije javni link. Osoba ostavlja razlog, kontakt i što želi vidjeti.',
+        'page' => ['name' => 'Zatraži kontrolirani demo pristup FCC sustavu'],
+    ]);
 
     $product_hero_title = $find_board_block_title($payload, 'product_gateway_hero');
     if(in_array($product_hero_title, [
@@ -5789,9 +5890,23 @@ function vip_funnel_get_fcc_vip_import_template_payload($user = null, string $la
                 ['id' => 'demo_products', 'label' => 'Zanimaju me samo proizvodi i popusti', 'value' => 'product_discount', 'style' => 'ghost', 'action' => 'goto_step', 'target_step_id' => 'product_gateway', 'external_url' => '', 'require_submit' => false],
             ],
         ]);
-        vip_funnel_update_template_block($payload, 'demo_request_hero', [
-            'title' => 'Ako želiš prvo vidjeti sustav, ostavi podatke i razlog.',
-            'text' => 'Demo je kontroliran i vremenski ograničen. Mentor će vidjeti tvoj zahtjev i javiti ti se s pravim sljedećim korakom.',
+        vip_funnel_sync_template_step_blocks($payload, 'demo_request', vip_funnel_get_demo_request_step_blocks('hr', $mentor_name, SITE_URL . 'page/privacy-policy'), [
+            'demo_request_hero',
+            'demo_request_reason',
+            'demo_request_name',
+            'demo_request_phone',
+            'demo_request_email',
+            'demo_request_focus',
+            'demo_request_privacy',
+            'demo_request_submit',
+        ]);
+        vip_funnel_update_template_step($payload, 'demo_request', [
+            'title' => 'Zatraži kontrolirani demo pristup FCC sustavu',
+            'summary' => 'Kontrolirani demo zahtjev s razlogom, WhatsApp/telefonom i emailom samo za demo pristup.',
+            'helper_text' => 'Kontrolirani demo zahtjev s razlogom, WhatsApp/telefonom i emailom samo za demo pristup.',
+            'preview_headline' => 'Zatraži kontrolirani demo pristup FCC sustavu',
+            'preview_body' => 'Demo nije javni link. Osoba ostavlja razlog, kontakt i što želi vidjeti.',
+            'page' => ['name' => 'Zatraži kontrolirani demo pristup FCC sustavu'],
         ]);
         vip_funnel_update_template_block($payload, 'product_gateway_hero', [
             'badge' => 'Proizvodi i popust',
@@ -6123,9 +6238,23 @@ function vip_funnel_get_fcc_vip_import_template_payload($user = null, string $la
                 ['id' => 'demo_products', 'label' => 'I am only interested in products and discounts', 'value' => 'product_discount', 'style' => 'ghost', 'action' => 'goto_step', 'target_step_id' => 'product_gateway', 'external_url' => '', 'require_submit' => false],
             ],
         ]);
-        vip_funnel_update_template_block($payload, 'demo_request_hero', [
-            'title' => 'If you want to see the system first, leave your details and reason.',
-            'text' => 'Demo access is controlled and time-limited. Your mentor will see your request and contact you with the right next step.',
+        vip_funnel_sync_template_step_blocks($payload, 'demo_request', vip_funnel_get_demo_request_step_blocks('en', $mentor_name, SITE_URL . 'page/privacy-policy'), [
+            'demo_request_hero',
+            'demo_request_reason',
+            'demo_request_name',
+            'demo_request_phone',
+            'demo_request_email',
+            'demo_request_focus',
+            'demo_request_privacy',
+            'demo_request_submit',
+        ]);
+        vip_funnel_update_template_step($payload, 'demo_request', [
+            'title' => 'Request controlled FCC system demo access',
+            'summary' => 'Controlled demo request with reason, WhatsApp/phone, and email only for demo access.',
+            'helper_text' => 'Controlled demo request with reason, WhatsApp/phone, and email only for demo access.',
+            'preview_headline' => 'Request controlled FCC system demo access',
+            'preview_body' => 'The demo is not a public link. The visitor leaves a reason, contact, and what they want to see.',
+            'page' => ['name' => 'Request controlled FCC system demo access'],
         ]);
         vip_funnel_update_template_block($payload, 'product_gateway_hero', [
             'badge' => 'Products and discount',
@@ -8832,6 +8961,17 @@ function vip_funnel_process_public_submission(array $state, array $post = []): a
 
     if($vip_lead_id > 0 && vip_funnel_public_submission_requests_demo($state, $fields, $effective_selection, $target_step_id, $radio_answers)) {
         $payload_state = vip_funnel_to_array($state['payload'] ?? []);
+        $demo_notes = ['Automatski demo zahtjev iz javnog Funnel 2.0 obrasca.'];
+        $demo_focus = trim((string) ($fields['demo_focus'] ?? ''));
+
+        if($demo_focus !== '') {
+            $demo_notes[] = 'Što osoba želi vidjeti u demu: ' . $demo_focus;
+        }
+
+        if(!empty($radio_answers[0]['label'])) {
+            $demo_notes[] = 'Razlog za demo: ' . (string) $radio_answers[0]['label'];
+        }
+
         $demo_result = vip_funnel_demo_create_request(null, [
             'existing_vip_lead_id' => $vip_lead_id,
             'lead_name' => trim((string) ($fields['full_name'] ?? ($fields['name'] ?? ''))),
@@ -8842,7 +8982,7 @@ function vip_funnel_process_public_submission(array $state, array $post = []): a
             'interest_type' => 'demo',
             'business_readiness' => 'curious',
             'product_goal' => $effective_selection,
-            'notes' => 'Automatski demo zahtjev iz javnog Funnel 2.0 obrasca.',
+            'notes' => implode("\n", $demo_notes),
             'funnel_context' => [
                 'vip_funnel_id' => vip_funnel_resolve_state_funnel_id($state),
                 'funnel_name' => (string) ($payload_state['funnel']['name'] ?? 'VIP Funnel 2.0'),
@@ -8850,6 +8990,7 @@ function vip_funnel_process_public_submission(array $state, array $post = []): a
                 'page_key' => (string) ($state['page_key'] ?? ''),
                 'page_url' => trim((string) ($state['canonical_url'] ?? '')),
                 'selection' => $effective_selection,
+                'demo_focus' => $demo_focus,
                 'radio_answers' => $radio_answers,
             ],
         ]);
