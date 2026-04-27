@@ -1776,6 +1776,10 @@ if($fcc_is_product_context) {
             'reviewCount' => (string) $data->blog_post->total_ratings,
         ];
     }
+
+    if(empty($fcc_blog_product_schema['offers']) && empty($fcc_blog_product_schema['review']) && empty($fcc_blog_product_schema['aggregateRating'])) {
+        $fcc_blog_product_schema = null;
+    }
 }
 ?>
 
@@ -1795,13 +1799,13 @@ if($fcc_is_product_context) {
             "url": <?= json_encode(SITE_URL, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?>
         },
 
-    <?php if(settings()->content->blog_ratings_is_enabled && $data->blog_post->total_ratings > 0): ?>
+    <?php if(!$fcc_is_product_context && settings()->content->blog_ratings_is_enabled && $data->blog_post->total_ratings > 0): ?>
         "aggregateRating": {
             "@type": "AggregateRating",
             "ratingValue": "<?= $data->blog_post->average_rating ?>",
             "reviewCount": "<?= $data->blog_post->total_ratings ?>",
             "itemReviewed" : {
-                "@type": "<?= $fcc_is_product_context ? 'Product' : 'Article' ?>",
+                "@type": "Article",
                 "name": <?= json_encode($data->blog_post->title, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?>
             }
         },
