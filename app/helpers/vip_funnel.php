@@ -2734,34 +2734,8 @@ function vip_funnel_get_stjepan_recruitment_payload($user = null, array $options
         ]),
     ], 'mentor_call_request', ['design_variant' => 'decision', 'block_mode' => 'video']);
 
-    $mentor_call_request = $step('mentor_call_request', 'trust', 'business', 'cta', 'Zatraži kratki pregled sa mnom ili mojim timom', 'Kontakt stranica za osobu koja želi potvrdu prije odluke.', [
-        $block('call_hero', 'headline', [
-            'badge' => 'Razgovor',
-            'title' => 'Ako želiš ljudsku potvrdu prije odluke, ovdje ostavi najbolji kontakt.',
-            'text' => 'Cilj razgovora nije pritisak nego jasnoća: je li za tebe Start paket, demo ili proizvodni put.',
-        ]),
-        $block('call_reason', 'radio_survey', [
-            'title' => 'Što želiš razjasniti?',
-            'required' => true,
-            'route_on_submit' => false,
-            'options' => [
-                $action('call_fit', 'Je li ovo za mene', 'call_fit'),
-                $action('call_360', 'Kako izgleda 360 EUR start', 'ready_360_call'),
-                $action('call_sales', 'Kako FCC pomaže u prodaji', 'call_sales'),
-                $action('call_no_experience', 'Kako krenuti ako nemam iskustva', 'call_no_experience'),
-            ],
-        ]),
-        $block('call_name', 'full_name_field', ['title' => 'Ime i prezime', 'placeholder' => 'Upiši ime i prezime', 'required' => true, 'layout_width' => 'half']),
-        $block('call_email', 'email_field', ['title' => 'Email', 'placeholder' => 'Upiši email', 'required' => true, 'layout_width' => 'half']),
-        $block('call_phone', 'phone_field', ['title' => 'Telefon / WhatsApp', 'placeholder' => 'Upiši broj', 'required' => true]),
-        $block('call_actions', 'cta_group', [
-            'buttons' => [
-                $action('call_submit', 'Pošalji zahtjev za razgovor', 'call_requested', 'not_ready_nurture', 'primary', 'submit_next', true),
-                $action('call_calendar', 'Otvori termin ili poruku', 'calendar_open', '', 'secondary', 'external_url', false, $calendar_url),
-            ],
-            'alignment' => 'center',
-        ]),
-    ], 'not_ready_nurture', ['design_variant' => 'decision', 'block_mode' => 'contact_form']);
+    $call_fast_contact_url = vip_funnel_resolve_fast_contact_url($whatsapp_url) ?: vip_funnel_resolve_fast_contact_url($calendar_url);
+    $mentor_call_request = $step('mentor_call_request', 'trust', 'business', 'cta', 'Zatraži kratak razgovor prije odluke', 'Smiruje nesigurnost i vodi osobu prema WhatsAppu ili pozivu bez pritiska.', array_values(vip_funnel_get_call_request_step_blocks('hr', 'Stjepan', $privacy_url, $call_fast_contact_url)), 'not_ready_nurture', ['design_variant' => 'decision', 'block_mode' => 'contact_form']);
 
     $fcc_demo_preview = $step('fcc_demo_preview', 'entry', 'demo', 'demo', 'Razumij FCC sustav prije odluke', 'Mirno objašnjava kako FCC vodi od interesa do proizvoda, provjere, demo prikaza ili ulaska u tim.', [
         $block('demo_hero', 'headline', [
@@ -4469,6 +4443,12 @@ function vip_funnel_sync_template_step_blocks(array &$payload, string $step_id, 
 
             if(isset($blocks_by_id[$block_id])) {
                 $indexed[$block_id] = array_replace_recursive($block, $blocks_by_id[$block_id]);
+
+                foreach(['options', 'buttons'] as $list_key) {
+                    if(array_key_exists($list_key, $blocks_by_id[$block_id])) {
+                        $indexed[$block_id][$list_key] = $blocks_by_id[$block_id][$list_key];
+                    }
+                }
             } else {
                 $extras[] = $block;
             }
@@ -4524,6 +4504,162 @@ function vip_funnel_sync_template_step_blocks(array &$payload, string $step_id, 
         unset($step);
     }
     unset($phase);
+}
+
+function vip_funnel_resolve_fast_contact_url(string $url = ''): string {
+    $url = trim($url);
+
+    if($url === '' || stripos($url, 'mailto:') === 0) {
+        return '';
+    }
+
+    return $url;
+}
+
+function vip_funnel_get_call_request_step_blocks(string $language = 'hr', string $mentor_name = '', string $privacy_url = '', string $fast_contact_url = ''): array {
+    $is_en = vip_funnel_resolve_import_template_language($language) === 'en';
+    $mentor_label = trim($mentor_name) !== '' ? trim($mentor_name) : ($is_en ? 'your mentor' : 'Stjepan');
+    $privacy_url = trim($privacy_url) !== '' ? trim($privacy_url) : SITE_URL . 'page/privacy-policy';
+    $fast_contact_url = vip_funnel_resolve_fast_contact_url($fast_contact_url);
+
+    $buttons = [
+        [
+            'id' => 'call_submit',
+            'label' => $is_en ? 'Send request for a short conversation' : 'Pošalji zahtjev za kratak razgovor',
+            'value' => 'call_requested',
+            'style' => 'primary',
+            'action' => 'submit_next',
+            'target_step_id' => 'not_ready_nurture',
+            'external_url' => '',
+            'require_submit' => true,
+        ],
+    ];
+
+    if($fast_contact_url !== '') {
+        $is_whatsapp_contact = str_contains(strtolower($fast_contact_url), 'whatsapp') || str_contains(strtolower($fast_contact_url), 'wa.me');
+        $buttons[] = [
+            'id' => $is_whatsapp_contact ? 'call_whatsapp' : 'call_calendar',
+            'label' => $is_whatsapp_contact
+                ? ($is_en ? 'Send me a WhatsApp message now' : 'Pošalji mi WhatsApp poruku odmah')
+                : ($is_en ? 'Book a short call time' : 'Rezerviraj termin za kratak poziv'),
+            'value' => $is_whatsapp_contact ? 'whatsapp_now' : 'book_call',
+            'style' => 'secondary',
+            'action' => 'external_url',
+            'target_step_id' => '',
+            'external_url' => $fast_contact_url,
+            'require_submit' => false,
+        ];
+    }
+
+    if($is_en) {
+        return [
+            'call_hero' => [
+                'id' => 'call_hero',
+                'type' => 'headline',
+                'badge' => 'Short conversation',
+                'title' => 'Not sure yet? A short conversation will give you a clearer next step.',
+                'text' => 'The goal of the conversation is not to persuade you, but to clarify in a few minutes whether the Start package, an additional demo, products, or a calmer intro makes more sense for you. If FCC is not for you right now, that is also okay.',
+            ],
+            'call_reason' => [
+                'id' => 'call_reason',
+                'type' => 'radio_survey',
+                'title' => 'What do you most want to clarify before deciding?',
+                'text' => 'Choose the topic that matters most right now. That way I know where to start in the conversation.',
+                'required' => true,
+                'route_on_submit' => false,
+                'options' => [
+                    ['id' => 'call_fit', 'label' => 'I want to know if FCC is really for me', 'hint' => 'I am not sure whether this fits my situation, time, and goals.', 'value' => 'call_fit', 'style' => 'primary', 'action' => 'goto_step', 'target_step_id' => '', 'external_url' => '', 'require_submit' => false],
+                    ['id' => 'call_360', 'label' => 'I want to understand what I get for 360 €', 'hint' => 'I want to clearly know what the Start Your Journey package includes and what happens after ordering.', 'value' => 'ready_360_call', 'style' => 'primary', 'action' => 'goto_step', 'target_step_id' => '', 'external_url' => '', 'require_submit' => false],
+                    ['id' => 'call_sales', 'label' => 'I want to understand how FCC helps with recommendations and sales', 'hint' => 'I want to see how the system guides a person from interest to products, conversation, or the Start package.', 'value' => 'call_sales', 'style' => 'primary', 'action' => 'goto_step', 'target_step_id' => '', 'external_url' => '', 'require_submit' => false],
+                    ['id' => 'call_no_experience', 'label' => 'I want to know if I can start without experience', 'hint' => 'I do not have experience in online business, sales, or recommendations and want to know what the first steps look like.', 'value' => 'call_no_experience', 'style' => 'primary', 'action' => 'goto_step', 'target_step_id' => '', 'external_url' => '', 'require_submit' => false],
+                    ['id' => 'call_next_step', 'label' => 'I only want to confirm the next step', 'hint' => 'I am already interested, but I want a short confirmation before deciding.', 'value' => 'ready_360_call', 'style' => 'primary', 'action' => 'goto_step', 'target_step_id' => '', 'external_url' => '', 'require_submit' => false],
+                ],
+            ],
+            'call_channel' => [
+                'id' => 'call_channel',
+                'type' => 'radio_survey',
+                'title' => 'How would you like to be contacted?',
+                'text' => 'For a short check, I use WhatsApp or a call because it is the fastest and clearest.',
+                'required' => true,
+                'route_on_submit' => false,
+                'options' => [
+                    ['id' => 'call_channel_whatsapp', 'label' => 'WhatsApp message', 'hint' => 'Fastest for first contact and agreement.', 'value' => 'channel_whatsapp', 'style' => 'primary', 'action' => 'goto_step', 'target_step_id' => '', 'external_url' => '', 'require_submit' => false],
+                    ['id' => 'call_channel_phone', 'label' => 'Short phone call', 'hint' => 'Best if you want to clarify questions immediately.', 'value' => 'channel_phone', 'style' => 'primary', 'action' => 'goto_step', 'target_step_id' => '', 'external_url' => '', 'require_submit' => false],
+                    ['id' => 'call_channel_whatsapp_call', 'label' => 'WhatsApp, then call', 'hint' => 'I send you a message first, then we agree on a time.', 'value' => 'channel_whatsapp_call', 'style' => 'primary', 'action' => 'goto_step', 'target_step_id' => '', 'external_url' => '', 'require_submit' => false],
+                ],
+            ],
+            'call_name' => ['id' => 'call_name', 'type' => 'full_name_field', 'title' => 'Full name', 'placeholder' => 'Enter your full name', 'required' => true, 'layout_width' => 'half'],
+            'call_phone' => ['id' => 'call_phone', 'type' => 'phone_field', 'title' => 'WhatsApp / phone', 'placeholder' => 'Enter the number where you can be contacted quickly', 'required' => true, 'layout_width' => 'half'],
+            'call_contact_time' => ['id' => 'call_contact_time', 'type' => 'text_field', 'title' => 'Best time to contact you', 'placeholder' => 'e.g. today after 5 pm, tomorrow morning, evening', 'field_key' => 'contact_time', 'required' => false, 'layout_width' => 'full'],
+            'call_privacy' => [
+                'id' => 'call_privacy',
+                'type' => 'text',
+                'text' => 'By submitting the request, you confirm that ' . $mentor_label . ' or the FCC team may contact you about your selected FCC path via WhatsApp or phone call. We use your details only to process the request and communicate about FCC. Privacy: ' . $privacy_url,
+                'text_size' => 14,
+            ],
+            'call_actions' => [
+                'id' => 'call_actions',
+                'type' => 'cta_group',
+                'text' => 'Send the request and I will contact you by WhatsApp or call.',
+                'buttons' => $buttons,
+                'alignment' => 'center',
+            ],
+        ];
+    }
+
+    return [
+        'call_hero' => [
+            'id' => 'call_hero',
+            'type' => 'headline',
+            'badge' => 'Kratki razgovor',
+            'title' => 'Nisi još siguran/na? Kratak razgovor će ti dati jasniji sljedeći korak.',
+            'text' => 'Cilj razgovora nije da te nagovaram, nego da u par minuta razjasnimo ima li za tebe više smisla start paket, dodatni demo, proizvodi ili mirniji uvod. Ako FCC nije za tebe sada, i to je u redu.',
+        ],
+        'call_reason' => [
+            'id' => 'call_reason',
+            'type' => 'radio_survey',
+            'title' => 'Što najviše želiš razjasniti prije odluke?',
+            'text' => 'Odaberi temu koja ti je trenutno najvažnija. Tako ću znati odakle krenuti u razgovoru.',
+            'required' => true,
+            'route_on_submit' => false,
+            'options' => [
+                ['id' => 'call_fit', 'label' => 'Želim znati je li FCC stvarno za mene', 'hint' => 'Nisam siguran/na uklapa li se ovo u moju situaciju, vrijeme i ciljeve.', 'value' => 'call_fit', 'style' => 'primary', 'action' => 'goto_step', 'target_step_id' => '', 'external_url' => '', 'require_submit' => false],
+                ['id' => 'call_360', 'label' => 'Želim razumjeti što dobivam za 360 €', 'hint' => 'Želim jasno znati što uključuje Start Your Journey paket i što se događa nakon narudžbe.', 'value' => 'ready_360_call', 'style' => 'primary', 'action' => 'goto_step', 'target_step_id' => '', 'external_url' => '', 'require_submit' => false],
+                ['id' => 'call_sales', 'label' => 'Želim razumjeti kako FCC pomaže u preporukama i prodaji', 'hint' => 'Zanima me kako sustav vodi osobu od interesa do proizvoda, razgovora ili start paketa.', 'value' => 'call_sales', 'style' => 'primary', 'action' => 'goto_step', 'target_step_id' => '', 'external_url' => '', 'require_submit' => false],
+                ['id' => 'call_no_experience', 'label' => 'Želim znati mogu li krenuti bez iskustva', 'hint' => 'Nemam iskustva u online poslu, prodaji ili preporukama i želim znati kako izgledaju prvi koraci.', 'value' => 'call_no_experience', 'style' => 'primary', 'action' => 'goto_step', 'target_step_id' => '', 'external_url' => '', 'require_submit' => false],
+                ['id' => 'call_next_step', 'label' => 'Želim samo potvrditi sljedeći korak', 'hint' => 'Već sam zainteresiran/a, ali želim kratku potvrdu prije nego donesem odluku.', 'value' => 'ready_360_call', 'style' => 'primary', 'action' => 'goto_step', 'target_step_id' => '', 'external_url' => '', 'require_submit' => false],
+            ],
+        ],
+        'call_channel' => [
+            'id' => 'call_channel',
+            'type' => 'radio_survey',
+            'title' => 'Kako želiš da te kontaktiram?',
+            'text' => 'Za kratku provjeru koristim WhatsApp ili poziv jer je tako najbrže i najjasnije.',
+            'required' => true,
+            'route_on_submit' => false,
+            'options' => [
+                ['id' => 'call_channel_whatsapp', 'label' => 'WhatsApp poruka', 'hint' => 'Najbrže za prvi kontakt i dogovor.', 'value' => 'channel_whatsapp', 'style' => 'primary', 'action' => 'goto_step', 'target_step_id' => '', 'external_url' => '', 'require_submit' => false],
+                ['id' => 'call_channel_phone', 'label' => 'Kratki telefonski poziv', 'hint' => 'Najbolje ako želiš odmah razjasniti pitanja.', 'value' => 'channel_phone', 'style' => 'primary', 'action' => 'goto_step', 'target_step_id' => '', 'external_url' => '', 'require_submit' => false],
+                ['id' => 'call_channel_whatsapp_call', 'label' => 'WhatsApp pa poziv', 'hint' => 'Prvo ti pošaljem poruku, pa dogovorimo termin.', 'value' => 'channel_whatsapp_call', 'style' => 'primary', 'action' => 'goto_step', 'target_step_id' => '', 'external_url' => '', 'require_submit' => false],
+            ],
+        ],
+        'call_name' => ['id' => 'call_name', 'type' => 'full_name_field', 'title' => 'Ime i prezime', 'placeholder' => 'Upiši ime i prezime', 'required' => true, 'layout_width' => 'half'],
+        'call_phone' => ['id' => 'call_phone', 'type' => 'phone_field', 'title' => 'WhatsApp / telefon', 'placeholder' => 'Upiši broj na koji te mogu brzo kontaktirati', 'required' => true, 'layout_width' => 'half'],
+        'call_contact_time' => ['id' => 'call_contact_time', 'type' => 'text_field', 'title' => 'Najbolje vrijeme za kontakt', 'placeholder' => 'npr. danas poslije 17h, sutra ujutro, navečer', 'field_key' => 'contact_time', 'required' => false, 'layout_width' => 'full'],
+        'call_privacy' => [
+            'id' => 'call_privacy',
+            'type' => 'text',
+            'text' => 'Slanjem zahtjeva potvrđuješ da te ' . $mentor_label . ' ili FCC tim smije kontaktirati vezano uz tvoj odabrani FCC smjer putem WhatsAppa ili telefonskog poziva. Podatke koristimo samo za obradu upita i komunikaciju vezanu uz FCC. Privacy: ' . $privacy_url,
+            'text_size' => 14,
+        ],
+        'call_actions' => [
+            'id' => 'call_actions',
+            'type' => 'cta_group',
+            'text' => 'Pošalji zahtjev i javit ću ti se preko WhatsAppa ili poziva.',
+            'buttons' => $buttons,
+            'alignment' => 'center',
+        ],
+    ];
 }
 
 function vip_funnel_update_template_step(array &$payload, string $step_id, array $updates): void {
@@ -4892,6 +5028,35 @@ function vip_funnel_refresh_stjepan_landing_copy_if_needed(array &$payload): voi
             'preview_headline' => 'Start Your Journey: ulazak u FCC tim i prvi konkretan korak',
             'preview_body' => 'Konverzijska stranica za start paket, ulazak u tim i onboarding.',
             'page' => ['name' => 'Start Your Journey: ulazak u FCC tim i prvi konkretan korak'],
+        ]);
+    }
+
+    $call_hero_title = $find_board_block_title($payload, 'call_hero');
+    if(in_array($call_hero_title, [
+        'Ako želiš ljudsku potvrdu prije odluke, ovdje ostavi najbolji kontakt.',
+        'Nisi još siguran/na? Kratak razgovor će ti dati jasniji sljedeći korak.',
+    ], true)) {
+        $call_fast_contact_url = vip_funnel_resolve_fast_contact_url((string) ($payload['defaults']['whatsapp_url'] ?? ''))
+            ?: vip_funnel_resolve_fast_contact_url((string) ($payload['defaults']['calendar_url'] ?? ''));
+
+        vip_funnel_sync_template_step_blocks($payload, 'mentor_call_request', vip_funnel_get_call_request_step_blocks('hr', 'Stjepan', SITE_URL . 'page/privacy-policy', $call_fast_contact_url), [
+            'call_hero',
+            'call_reason',
+            'call_channel',
+            'call_name',
+            'call_phone',
+            'call_contact_time',
+            'call_privacy',
+            'call_actions',
+        ], ['call_email']);
+
+        vip_funnel_update_template_step($payload, 'mentor_call_request', [
+            'title' => 'Zatraži kratak razgovor prije odluke',
+            'summary' => 'Smiruje nesigurnost i vodi osobu prema WhatsAppu ili pozivu bez pritiska.',
+            'helper_text' => 'Smiruje nesigurnost i vodi osobu prema WhatsAppu ili pozivu bez pritiska.',
+            'preview_headline' => 'Zatraži kratak razgovor prije odluke',
+            'preview_body' => 'Smiruje nesigurnost i vodi osobu prema WhatsAppu ili pozivu bez pritiska.',
+            'page' => ['name' => 'Zatraži kratak razgovor prije odluke'],
         ]);
     }
 
@@ -5428,6 +5593,16 @@ function vip_funnel_get_fcc_vip_import_template_payload($user = null, string $la
                 ['id' => 'start_call', 'label' => 'Nisam još siguran/na - želim kratki razgovor', 'value' => 'ready_360_call', 'style' => 'ghost', 'action' => 'goto_step', 'target_step_id' => 'mentor_call_request', 'external_url' => '', 'require_submit' => false],
             ],
         ]);
+        vip_funnel_sync_template_step_blocks($payload, 'mentor_call_request', vip_funnel_get_call_request_step_blocks('hr', $mentor_name, SITE_URL . 'page/privacy-policy', vip_funnel_resolve_fast_contact_url($contact_url)), [
+            'call_hero',
+            'call_reason',
+            'call_channel',
+            'call_name',
+            'call_phone',
+            'call_contact_time',
+            'call_privacy',
+            'call_actions',
+        ], ['call_email']);
 
         vip_funnel_update_template_step($payload, 'business_gateway', [
             'title' => 'Poslovni filter za ozbiljan FCC start',
@@ -5462,11 +5637,12 @@ function vip_funnel_get_fcc_vip_import_template_payload($user = null, string $la
             'page' => ['name' => 'Start Your Journey: ulazak u FCC tim i prvi konkretan korak'],
         ]);
         vip_funnel_update_template_step($payload, 'mentor_call_request', [
-            'title' => 'Zatraži kratki pregled s mentorom',
-            'summary' => 'Kontakt stranica za osobu koja želi potvrdu prije odluke.',
-            'helper_text' => 'Kontakt stranica za osobu koja želi potvrdu prije odluke.',
-            'preview_headline' => 'Zatraži kratki pregled s mentorom',
-            'page' => ['name' => 'Zatraži kratki pregled s mentorom'],
+            'title' => 'Zatraži kratak razgovor prije odluke',
+            'summary' => 'Smiruje nesigurnost i vodi osobu prema WhatsAppu ili pozivu bez pritiska.',
+            'helper_text' => 'Smiruje nesigurnost i vodi osobu prema WhatsAppu ili pozivu bez pritiska.',
+            'preview_headline' => 'Zatraži kratak razgovor prije odluke',
+            'preview_body' => 'Smiruje nesigurnost i vodi osobu prema WhatsAppu ili pozivu bez pritiska.',
+            'page' => ['name' => 'Zatraži kratak razgovor prije odluke'],
         ]);
 
         vip_funnel_set_complete_landing_variant_b($payload, [
@@ -5745,6 +5921,16 @@ function vip_funnel_get_fcc_vip_import_template_payload($user = null, string $la
                 ['id' => 'start_call', 'label' => 'I am not sure yet - I want a short conversation', 'value' => 'ready_360_call', 'style' => 'ghost', 'action' => 'goto_step', 'target_step_id' => 'mentor_call_request', 'external_url' => '', 'require_submit' => false],
             ],
         ]);
+        vip_funnel_sync_template_step_blocks($payload, 'mentor_call_request', vip_funnel_get_call_request_step_blocks('en', $mentor_name, SITE_URL . 'page/privacy-policy', vip_funnel_resolve_fast_contact_url($contact_url)), [
+            'call_hero',
+            'call_reason',
+            'call_channel',
+            'call_name',
+            'call_phone',
+            'call_contact_time',
+            'call_privacy',
+            'call_actions',
+        ], ['call_email']);
 
         vip_funnel_update_template_step($payload, 'business_gateway', [
             'title' => 'Business filter for a serious FCC start',
@@ -5779,11 +5965,12 @@ function vip_funnel_get_fcc_vip_import_template_payload($user = null, string $la
             'page' => ['name' => 'Start Your Journey: join the FCC team and take the first concrete step'],
         ]);
         vip_funnel_update_template_step($payload, 'mentor_call_request', [
-            'title' => 'Request a short review with your mentor',
-            'summary' => 'Contact page for someone who wants confirmation before deciding.',
-            'helper_text' => 'Contact page for someone who wants confirmation before deciding.',
-            'preview_headline' => 'Request a short review with your mentor',
-            'page' => ['name' => 'Request a short review with your mentor'],
+            'title' => 'Request a short conversation before deciding',
+            'summary' => 'Calms uncertainty and guides the visitor toward WhatsApp or a call without pressure.',
+            'helper_text' => 'Calms uncertainty and guides the visitor toward WhatsApp or a call without pressure.',
+            'preview_headline' => 'Request a short conversation before deciding',
+            'preview_body' => 'Calms uncertainty and guides the visitor toward WhatsApp or a call without pressure.',
+            'page' => ['name' => 'Request a short conversation before deciding'],
         ]);
 
         vip_funnel_set_complete_landing_variant_b($payload, [
@@ -5851,6 +6038,11 @@ function vip_funnel_translate_template_strings($value, array $translations) {
     if(str_starts_with($value, 'Slanjem odgovora potvrđuješ')) {
         $privacy_url = trim((string) (explode('Privacy:', $value, 2)[1] ?? ''));
         return 'By submitting your answers, you confirm that your mentor or the FCC team may contact you about your selected FCC path via WhatsApp or phone call. Your details are used to process the request and communicate about FCC.' . ($privacy_url !== '' ? ' Privacy: ' . $privacy_url : '');
+    }
+
+    if(str_starts_with($value, 'Slanjem zahtjeva potvrđuješ')) {
+        $privacy_url = trim((string) (explode('Privacy:', $value, 2)[1] ?? ''));
+        return 'By submitting the request, you confirm that your mentor or the FCC team may contact you about your selected FCC path via WhatsApp or phone call. We use your details only to process the request and communicate about FCC.' . ($privacy_url !== '' ? ' Privacy: ' . $privacy_url : '');
     }
 
     return $value;
@@ -6040,6 +6232,31 @@ function vip_funnel_localize_template_payload(array $payload, string $language):
         'Upiši broj' => 'Enter your number',
         'Pošalji zahtjev za razgovor' => 'Send conversation request',
         'Otvori termin ili poruku' => 'Open a time slot or message',
+        'Zatraži kratak razgovor prije odluke' => 'Request a short conversation before deciding',
+        'Smiruje nesigurnost i vodi osobu prema WhatsAppu ili pozivu bez pritiska.' => 'Calms uncertainty and guides the visitor toward WhatsApp or a call without pressure.',
+        'Kratki razgovor' => 'Short conversation',
+        'Nisi još siguran/na? Kratak razgovor će ti dati jasniji sljedeći korak.' => 'Not sure yet? A short conversation will give you a clearer next step.',
+        'Cilj razgovora nije da te nagovaram, nego da u par minuta razjasnimo ima li za tebe više smisla start paket, dodatni demo, proizvodi ili mirniji uvod. Ako FCC nije za tebe sada, i to je u redu.' => 'The goal of the conversation is not to persuade you, but to clarify in a few minutes whether the Start package, an additional demo, products, or a calmer intro makes more sense for you. If FCC is not for you right now, that is also okay.',
+        'Što najviše želiš razjasniti prije odluke?' => 'What do you most want to clarify before deciding?',
+        'Odaberi temu koja ti je trenutno najvažnija. Tako ću znati odakle krenuti u razgovoru.' => 'Choose the topic that matters most right now. That way I know where to start in the conversation.',
+        'Želim znati je li FCC stvarno za mene' => 'I want to know if FCC is really for me',
+        'Nisam siguran/na uklapa li se ovo u moju situaciju, vrijeme i ciljeve.' => 'I am not sure whether this fits my situation, time, and goals.',
+        'Želim razumjeti što dobivam za 360 €' => 'I want to understand what I get for 360 €',
+        'Želim jasno znati što uključuje Start Your Journey paket i što se događa nakon narudžbe.' => 'I want to clearly know what the Start Your Journey package includes and what happens after ordering.',
+        'Želim razumjeti kako FCC pomaže u preporukama i prodaji' => 'I want to understand how FCC helps with recommendations and sales',
+        'Zanima me kako sustav vodi osobu od interesa do proizvoda, razgovora ili start paketa.' => 'I want to see how the system guides a person from interest to products, conversation, or the Start package.',
+        'Želim znati mogu li krenuti bez iskustva' => 'I want to know if I can start without experience',
+        'Nemam iskustva u online poslu, prodaji ili preporukama i želim znati kako izgledaju prvi koraci.' => 'I do not have experience in online business, sales, or recommendations and want to know what the first steps look like.',
+        'Želim samo potvrditi sljedeći korak' => 'I only want to confirm the next step',
+        'Već sam zainteresiran/a, ali želim kratku potvrdu prije nego donesem odluku.' => 'I am already interested, but I want a short confirmation before deciding.',
+        'Za kratku provjeru koristim WhatsApp ili poziv jer je tako najbrže i najjasnije.' => 'For a short check, I use WhatsApp or a call because it is the fastest and clearest.',
+        'Najbrže za prvi kontakt i dogovor.' => 'Fastest for first contact and agreement.',
+        'Najbolje ako želiš odmah razjasniti pitanja.' => 'Best if you want to clarify questions immediately.',
+        'Prvo ti pošaljem poruku, pa dogovorimo termin.' => 'I send you a message first, then we agree on a time.',
+        'Pošalji zahtjev i javit ću ti se preko WhatsAppa ili poziva.' => 'Send the request and I will contact you by WhatsApp or call.',
+        'Pošalji zahtjev za kratak razgovor' => 'Send request for a short conversation',
+        'Pošalji mi WhatsApp poruku odmah' => 'Send me a WhatsApp message now',
+        'Rezerviraj termin za kratak poziv' => 'Book a short call time',
         'Pogledaj kako FCC pretvara interes u jasne korake' => 'See how FCC turns interest into clear steps',
         'Demo stranica za osobe koje trebaju doživjeti sustav prije odluke.' => 'Demo page for people who need to experience the system before deciding.',
         'Razumij FCC sustav prije odluke' => 'Understand the FCC system before deciding',
