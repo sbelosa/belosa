@@ -2669,38 +2669,44 @@ function vip_funnel_get_stjepan_recruitment_payload($user = null, array $options
         ]),
     ], 'start_package_offer', ['design_variant' => 'decision', 'block_mode' => 'video']);
 
-    $start_package_offer = $step('start_package_offer', 'experience', 'business', 'cta', 'Start Your Journey: tvoj prvi poslovni korak uz FCC i mentorstvo', 'Prodajna stranica za start paket od 360 EUR.', [
+    $start_package_offer = $step('start_package_offer', 'experience', 'business', 'cta', 'Start Your Journey: ulazak u FCC tim i prvi konkretan korak', 'Konverzijska stranica za start paket, ulazak u tim i onboarding.', [
         $block('start_hero', 'headline', [
-            'badge' => 'Start paket 360 EUR',
-            'title' => 'Ovo je trenutak kada interes postaje konkretan prvi korak.',
-            'text' => 'Start Your Journey nije kupnja informacije. To je ulaz u proizvode, FCC sustav, edukaciju i mentorstvo za prve poslovne korake.',
+            'badge' => 'Start Your Journey | 360 €',
+            'title' => 'Ako želiš ući u FCC tim, start paket je tvoj prvi konkretan korak.',
+            'text' => 'Kroz Start Your Journey dobivaš proizvode, ulazak u sustav, početnu edukaciju i moje mentorstvo za prve korake. Nakon narudžbe ne ostaješ sam/a - vodim te kroz postavljanje, razumijevanje ponude i prve zadatke.',
+            'title_size' => 50,
         ]),
-        $block('start_video', 'video', ['title' => 'Pogledaj što je uključeno', 'media_url' => $video('start_package')]),
+        $block('start_video', 'video', [
+            'title' => 'Prije narudžbe pogledaj što točno dobivaš',
+            'text' => 'U kratkom videu pokazujem što uključuje start paket, kako izgleda prvi tjedan i što se događa nakon što pošalješ narudžbu.',
+            'media_url' => $video('start_package'),
+        ]),
         $block('start_included', 'proof_card', [
             'badge' => 'Dobivaš',
-            'title' => 'Proizvode, jasne prve zadatke, FCC alate i mentorstvo.',
-            'text' => 'Nema obećanja lake zarade. Dobivaš sustav i vodstvo, a rezultat ovisi o tvojoj aktivnosti, učenju i dosljednosti.',
+            'title' => 'Proizvode, FCC sustav, prve zadatke i mentorstvo za start.',
+            'text' => 'Ne kupuješ obećanje lake zarade. Dobivaš proizvode, jasan početni okvir, edukaciju i podršku. Rezultat ovisi o tvojoj aktivnosti, učenju, komunikaciji i dosljednosti.',
             'layout_width' => 'half',
         ]),
         $block('start_first_week', 'proof_card', [
             'badge' => 'Prvih 7 dana',
-            'title' => 'Postavljanje, razumijevanje ponude, prvi kontakti i prvi follow-up.',
-            'text' => 'Cilj je da ne ostaneš sam nakon narudžbe nego da odmah znaš što radiš sljedeće.',
+            'title' => 'Postavljanje, prvi zadaci, razumijevanje ponude i prvi kontakti.',
+            'text' => 'Cilj je da nakon narudžbe ne ostaneš sam/a, nego da odmah znaš koji je tvoj prvi korak, kako koristiti sustav i kako krenuti s preporukama.',
             'layout_width' => 'half',
         ]),
         $block('start_countdown', 'countdown', [
-            'title' => 'Prioritetni onboarding prozor',
-            'text' => 'Ako želiš ući u prvi onboarding krug, pošalji narudžbu ili upit sada.',
+            'title' => 'Ulazak u sljedeći onboarding krug',
+            'text' => 'Ako želiš krenuti s nama u sljedećem onboarding krugu, pošalji narudžbu ili mi se javi prije isteka ovog prozora.',
             'countdown_mode' => 'evergreen',
             'duration_days' => 2,
             'duration_minutes' => 0,
             'countdown_style' => 'spotlight',
         ]),
         $block('start_actions', 'cta_group', [
+            'text' => 'Odaberi kako želiš napraviti sljedeći korak. Nakon klika dobit ćeš upute za narudžbu i povezivanje sa mnom prije onboardinga.',
             'buttons' => [
-                $action('start_order', 'Naruči Start Your Journey paket', 'order_start_package', '', 'primary', 'external_url', false, $checkout_url),
-                $action('start_whatsapp', 'Pošalji mi poruku prije narudžbe', 'start_whatsapp', '', 'secondary', 'external_url', false, $whatsapp_url),
-                $action('start_call', 'Nisam siguran, želim razgovor', 'ready_360_call', 'mentor_call_request', 'ghost'),
+                $action('start_order', 'Želim naručiti Start Your Journey paket', 'order_start_package', '', 'primary', 'external_url', false, $checkout_url),
+                $action('start_whatsapp', 'Imam pitanje prije narudžbe', 'start_whatsapp', '', 'secondary', 'external_url', false, $whatsapp_url),
+                $action('start_call', 'Nisam još siguran/na - želim kratki razgovor', 'ready_360_call', 'mentor_call_request', 'ghost'),
             ],
             'alignment' => 'center',
         ]),
@@ -4632,6 +4638,53 @@ function vip_funnel_refresh_stjepan_landing_copy_if_needed(array &$payload): voi
         ]);
     }
 
+    $start_hero_title = $find_board_block_title($payload, 'start_hero');
+    if(in_array($start_hero_title, [
+        'Ovo je trenutak kada interes postaje konkretan prvi korak.',
+        'Ako želiš ući u FCC tim, start paket je tvoj prvi konkretan korak.',
+    ], true)) {
+        vip_funnel_update_template_block($payload, 'start_hero', [
+            'badge' => 'Start Your Journey | 360 €',
+            'title' => 'Ako želiš ući u FCC tim, start paket je tvoj prvi konkretan korak.',
+            'text' => 'Kroz Start Your Journey dobivaš proizvode, ulazak u sustav, početnu edukaciju i moje mentorstvo za prve korake. Nakon narudžbe ne ostaješ sam/a - vodim te kroz postavljanje, razumijevanje ponude i prve zadatke.',
+            'title_size' => 50,
+        ]);
+        vip_funnel_update_template_block($payload, 'start_video', [
+            'title' => 'Prije narudžbe pogledaj što točno dobivaš',
+            'text' => 'U kratkom videu pokazujem što uključuje start paket, kako izgleda prvi tjedan i što se događa nakon što pošalješ narudžbu.',
+        ]);
+        vip_funnel_update_template_block($payload, 'start_included', [
+            'badge' => 'Dobivaš',
+            'title' => 'Proizvode, FCC sustav, prve zadatke i mentorstvo za start.',
+            'text' => 'Ne kupuješ obećanje lake zarade. Dobivaš proizvode, jasan početni okvir, edukaciju i podršku. Rezultat ovisi o tvojoj aktivnosti, učenju, komunikaciji i dosljednosti.',
+        ]);
+        vip_funnel_update_template_block($payload, 'start_first_week', [
+            'badge' => 'Prvih 7 dana',
+            'title' => 'Postavljanje, prvi zadaci, razumijevanje ponude i prvi kontakti.',
+            'text' => 'Cilj je da nakon narudžbe ne ostaneš sam/a, nego da odmah znaš koji je tvoj prvi korak, kako koristiti sustav i kako krenuti s preporukama.',
+        ]);
+        vip_funnel_update_template_block($payload, 'start_countdown', [
+            'title' => 'Ulazak u sljedeći onboarding krug',
+            'text' => 'Ako želiš krenuti s nama u sljedećem onboarding krugu, pošalji narudžbu ili mi se javi prije isteka ovog prozora.',
+        ]);
+        vip_funnel_update_template_block($payload, 'start_actions', [
+            'text' => 'Odaberi kako želiš napraviti sljedeći korak. Nakon klika dobit ćeš upute za narudžbu i povezivanje sa mnom prije onboardinga.',
+            'buttons' => [
+                ['id' => 'start_order', 'label' => 'Želim naručiti Start Your Journey paket', 'value' => 'order_start_package', 'style' => 'primary', 'action' => 'external_url', 'target_step_id' => '', 'external_url' => (string) ($payload['defaults']['checkout_url'] ?? ''), 'require_submit' => false],
+                ['id' => 'start_whatsapp', 'label' => 'Imam pitanje prije narudžbe', 'value' => 'start_whatsapp', 'style' => 'secondary', 'action' => 'external_url', 'target_step_id' => '', 'external_url' => (string) ($payload['defaults']['whatsapp_url'] ?? ''), 'require_submit' => false],
+                ['id' => 'start_call', 'label' => 'Nisam još siguran/na - želim kratki razgovor', 'value' => 'ready_360_call', 'style' => 'ghost', 'action' => 'goto_step', 'target_step_id' => 'mentor_call_request', 'external_url' => '', 'require_submit' => false],
+            ],
+        ]);
+        vip_funnel_update_template_step($payload, 'start_package_offer', [
+            'title' => 'Start Your Journey: ulazak u FCC tim i prvi konkretan korak',
+            'summary' => 'Konverzijska stranica za start paket, ulazak u tim i onboarding.',
+            'helper_text' => 'Konverzijska stranica za start paket, ulazak u tim i onboarding.',
+            'preview_headline' => 'Start Your Journey: ulazak u FCC tim i prvi konkretan korak',
+            'preview_body' => 'Konverzijska stranica za start paket, ulazak u tim i onboarding.',
+            'page' => ['name' => 'Start Your Journey: ulazak u FCC tim i prvi konkretan korak'],
+        ]);
+    }
+
     if(empty($payload['landing_page']['blocks']) || !is_array($payload['landing_page']['blocks'])) {
         return;
     }
@@ -5035,6 +5088,38 @@ function vip_funnel_get_fcc_vip_import_template_payload($user = null, string $la
                 ['id' => 'product_discount', 'label' => 'Želim preporuku i popust', 'value' => 'popust', 'style' => 'ghost', 'action' => 'goto_step', 'target_step_id' => 'product_recommendation', 'external_url' => '', 'require_submit' => false],
             ],
         ]);
+        vip_funnel_update_template_block($payload, 'start_hero', [
+            'badge' => 'Start Your Journey | 360 €',
+            'title' => 'Ako želiš ući u FCC tim, start paket je tvoj prvi konkretan korak.',
+            'text' => 'Kroz Start Your Journey dobivaš proizvode, ulazak u sustav, početnu edukaciju i mentorstvo za prve korake. Nakon narudžbe ne ostaješ sam/a - tvoj mentor te vodi kroz postavljanje, razumijevanje ponude i prve zadatke.',
+            'title_size' => 50,
+        ]);
+        vip_funnel_update_template_block($payload, 'start_video', [
+            'title' => 'Prije narudžbe pogledaj što točno dobivaš',
+            'text' => 'U kratkom videu tvoj mentor pokazuje što uključuje start paket, kako izgleda prvi tjedan i što se događa nakon što pošalješ narudžbu.',
+        ]);
+        vip_funnel_update_template_block($payload, 'start_included', [
+            'badge' => 'Dobivaš',
+            'title' => 'Proizvode, FCC sustav, prve zadatke i mentorstvo za start.',
+            'text' => 'Ne kupuješ obećanje lake zarade. Dobivaš proizvode, jasan početni okvir, edukaciju i podršku. Rezultat ovisi o tvojoj aktivnosti, učenju, komunikaciji i dosljednosti.',
+        ]);
+        vip_funnel_update_template_block($payload, 'start_first_week', [
+            'badge' => 'Prvih 7 dana',
+            'title' => 'Postavljanje, prvi zadaci, razumijevanje ponude i prvi kontakti.',
+            'text' => 'Cilj je da nakon narudžbe ne ostaneš sam/a, nego da odmah znaš koji je tvoj prvi korak, kako koristiti sustav i kako krenuti s preporukama.',
+        ]);
+        vip_funnel_update_template_block($payload, 'start_countdown', [
+            'title' => 'Ulazak u sljedeći onboarding krug',
+            'text' => 'Ako želiš krenuti s nama u sljedećem onboarding krugu, pošalji narudžbu ili se javi prije isteka ovog prozora.',
+        ]);
+        vip_funnel_update_template_block($payload, 'start_actions', [
+            'text' => 'Odaberi kako želiš napraviti sljedeći korak. Nakon klika dobit ćeš upute za narudžbu i povezivanje s mentorom prije onboardinga.',
+            'buttons' => [
+                ['id' => 'start_order', 'label' => 'Želim naručiti Start Your Journey paket', 'value' => 'order_start_package', 'style' => 'primary', 'action' => 'external_url', 'target_step_id' => '', 'external_url' => $contact_url, 'require_submit' => false],
+                ['id' => 'start_whatsapp', 'label' => 'Imam pitanje prije narudžbe', 'value' => 'start_whatsapp', 'style' => 'secondary', 'action' => 'external_url', 'target_step_id' => '', 'external_url' => $contact_url, 'require_submit' => false],
+                ['id' => 'start_call', 'label' => 'Nisam još siguran/na - želim kratki razgovor', 'value' => 'ready_360_call', 'style' => 'ghost', 'action' => 'goto_step', 'target_step_id' => 'mentor_call_request', 'external_url' => '', 'require_submit' => false],
+            ],
+        ]);
 
         vip_funnel_update_template_step($payload, 'business_gateway', [
             'title' => 'Poslovni filter za ozbiljan FCC start',
@@ -5059,6 +5144,14 @@ function vip_funnel_get_fcc_vip_import_template_payload($user = null, string $la
             'preview_headline' => 'Proizvodni put s jasnom preporukom',
             'preview_body' => 'Vodi osobu prema proizvodnom cilju, popustu i kasnijem poslovnom mostu bez pritiska.',
             'page' => ['name' => 'Proizvodni put s jasnom preporukom'],
+        ]);
+        vip_funnel_update_template_step($payload, 'start_package_offer', [
+            'title' => 'Start Your Journey: ulazak u FCC tim i prvi konkretan korak',
+            'summary' => 'Konverzijska stranica za start paket, ulazak u tim i onboarding.',
+            'helper_text' => 'Konverzijska stranica za start paket, ulazak u tim i onboarding.',
+            'preview_headline' => 'Start Your Journey: ulazak u FCC tim i prvi konkretan korak',
+            'preview_body' => 'Konverzijska stranica za start paket, ulazak u tim i onboarding.',
+            'page' => ['name' => 'Start Your Journey: ulazak u FCC tim i prvi konkretan korak'],
         ]);
         vip_funnel_update_template_step($payload, 'mentor_call_request', [
             'title' => 'Zatraži kratki pregled s mentorom',
@@ -5214,6 +5307,38 @@ function vip_funnel_get_fcc_vip_import_template_payload($user = null, string $la
                 ['id' => 'product_discount', 'label' => 'I want a recommendation and discount', 'value' => 'popust', 'style' => 'ghost', 'action' => 'goto_step', 'target_step_id' => 'product_recommendation', 'external_url' => '', 'require_submit' => false],
             ],
         ]);
+        vip_funnel_update_template_block($payload, 'start_hero', [
+            'badge' => 'Start Your Journey | 360 €',
+            'title' => 'If you want to join the FCC team, the Start package is your first concrete step.',
+            'text' => 'Through Start Your Journey you get products, access to the system, initial education, and mentorship for your first steps. After ordering, you are not left alone - your mentor guides setup, understanding the offer, and your first tasks.',
+            'title_size' => 50,
+        ]);
+        vip_funnel_update_template_block($payload, 'start_video', [
+            'title' => 'Before ordering, see exactly what you get',
+            'text' => 'In this short video, your mentor shows what the Start package includes, what the first week looks like, and what happens after you send the order.',
+        ]);
+        vip_funnel_update_template_block($payload, 'start_included', [
+            'badge' => 'You get',
+            'title' => 'Products, the FCC system, first tasks, and mentorship to start.',
+            'text' => 'You are not buying a promise of easy income. You get products, a clear starting framework, education, and support. Results depend on your activity, learning, communication, and consistency.',
+        ]);
+        vip_funnel_update_template_block($payload, 'start_first_week', [
+            'badge' => 'First 7 days',
+            'title' => 'Setup, first tasks, understanding the offer, and first contacts.',
+            'text' => 'The goal is that after ordering you are not left alone, but you immediately know your first step, how to use the system, and how to start making recommendations.',
+        ]);
+        vip_funnel_update_template_block($payload, 'start_countdown', [
+            'title' => 'Entry into the next onboarding group',
+            'text' => 'If you want to start with us in the next onboarding group, send the order or message your mentor before this window ends.',
+        ]);
+        vip_funnel_update_template_block($payload, 'start_actions', [
+            'text' => 'Choose how you want to make the next step. After clicking, you will get order instructions and connect with your mentor before onboarding.',
+            'buttons' => [
+                ['id' => 'start_order', 'label' => 'I want to order the Start Your Journey package', 'value' => 'order_start_package', 'style' => 'primary', 'action' => 'external_url', 'target_step_id' => '', 'external_url' => $contact_url, 'require_submit' => false],
+                ['id' => 'start_whatsapp', 'label' => 'I have a question before ordering', 'value' => 'start_whatsapp', 'style' => 'secondary', 'action' => 'external_url', 'target_step_id' => '', 'external_url' => $contact_url, 'require_submit' => false],
+                ['id' => 'start_call', 'label' => 'I am not sure yet - I want a short conversation', 'value' => 'ready_360_call', 'style' => 'ghost', 'action' => 'goto_step', 'target_step_id' => 'mentor_call_request', 'external_url' => '', 'require_submit' => false],
+            ],
+        ]);
 
         vip_funnel_update_template_step($payload, 'business_gateway', [
             'title' => 'Business filter for a serious FCC start',
@@ -5238,6 +5363,14 @@ function vip_funnel_get_fcc_vip_import_template_payload($user = null, string $la
             'preview_headline' => 'Product path with a clear recommendation',
             'preview_body' => 'Guides the visitor toward a product goal, discount, and later business bridge without pressure.',
             'page' => ['name' => 'Product path with a clear recommendation'],
+        ]);
+        vip_funnel_update_template_step($payload, 'start_package_offer', [
+            'title' => 'Start Your Journey: join the FCC team and take the first concrete step',
+            'summary' => 'Conversion page for the Start package, joining the team, and onboarding.',
+            'helper_text' => 'Conversion page for the Start package, joining the team, and onboarding.',
+            'preview_headline' => 'Start Your Journey: join the FCC team and take the first concrete step',
+            'preview_body' => 'Conversion page for the Start package, joining the team, and onboarding.',
+            'page' => ['name' => 'Start Your Journey: join the FCC team and take the first concrete step'],
         ]);
         vip_funnel_update_template_step($payload, 'mentor_call_request', [
             'title' => 'Request a short review with your mentor',
@@ -5411,20 +5544,37 @@ function vip_funnel_localize_template_payload(array $payload, string $language):
         'Želim vidjeti FCC demo' => 'I want to see the FCC demo',
         'Start Your Journey: tvoj prvi poslovni korak uz FCC i mentorstvo' => 'Start Your Journey: your first business step with FCC and mentorship',
         'Prodajna stranica za start paket od 360 EUR.' => 'Sales page for the 360 EUR start package.',
+        'Start Your Journey: ulazak u FCC tim i prvi konkretan korak' => 'Start Your Journey: join the FCC team and take the first concrete step',
+        'Konverzijska stranica za start paket, ulazak u tim i onboarding.' => 'Conversion page for the Start package, joining the team, and onboarding.',
         'Start paket 360 EUR' => 'Start package 360 EUR',
+        'Start Your Journey | 360 €' => 'Start Your Journey | 360 €',
         'Ovo je trenutak kada interes postaje konkretan prvi korak.' => 'This is the moment when interest becomes a concrete first step.',
         'Start Your Journey nije kupnja informacije. To je ulaz u proizvode, FCC sustav, edukaciju i mentorstvo za prve poslovne korake.' => 'Start Your Journey is not buying information. It is an entry into products, the FCC system, education, and mentorship for the first business steps.',
+        'Ako želiš ući u FCC tim, start paket je tvoj prvi konkretan korak.' => 'If you want to join the FCC team, the Start package is your first concrete step.',
+        'Kroz Start Your Journey dobivaš proizvode, ulazak u sustav, početnu edukaciju i moje mentorstvo za prve korake. Nakon narudžbe ne ostaješ sam/a - vodim te kroz postavljanje, razumijevanje ponude i prve zadatke.' => 'Through Start Your Journey you get products, access to the system, initial education, and my mentorship for your first steps. After ordering, you are not left alone - I guide setup, understanding the offer, and your first tasks.',
         'Pogledaj što je uključeno' => 'See what is included',
+        'Prije narudžbe pogledaj što točno dobivaš' => 'Before ordering, see exactly what you get',
+        'U kratkom videu pokazujem što uključuje start paket, kako izgleda prvi tjedan i što se događa nakon što pošalješ narudžbu.' => 'In this short video, I show what the Start package includes, what the first week looks like, and what happens after you send the order.',
         'Dobivaš' => 'You get',
         'Proizvode, jasne prve zadatke, FCC alate i mentorstvo.' => 'Products, clear first tasks, FCC tools, and mentorship.',
         'Nema obećanja lake zarade. Dobivaš sustav i vodstvo, a rezultat ovisi o tvojoj aktivnosti, učenju i dosljednosti.' => 'There are no promises of easy income. You get a system and guidance; results depend on your activity, learning, and consistency.',
+        'Proizvode, FCC sustav, prve zadatke i mentorstvo za start.' => 'Products, the FCC system, first tasks, and mentorship to start.',
+        'Ne kupuješ obećanje lake zarade. Dobivaš proizvode, jasan početni okvir, edukaciju i podršku. Rezultat ovisi o tvojoj aktivnosti, učenju, komunikaciji i dosljednosti.' => 'You are not buying a promise of easy income. You get products, a clear starting framework, education, and support. Results depend on your activity, learning, communication, and consistency.',
         'Prvih 7 dana' => 'First 7 days',
         'Postavljanje, razumijevanje ponude, prvi kontakti i prvi follow-up.' => 'Setup, understanding the offer, first contacts, and first follow-up.',
         'Cilj je da ne ostaneš sam nakon narudžbe nego da odmah znaš što radiš sljedeće.' => 'The goal is that you are not left alone after ordering, but know immediately what to do next.',
+        'Postavljanje, prvi zadaci, razumijevanje ponude i prvi kontakti.' => 'Setup, first tasks, understanding the offer, and first contacts.',
+        'Cilj je da nakon narudžbe ne ostaneš sam/a, nego da odmah znaš koji je tvoj prvi korak, kako koristiti sustav i kako krenuti s preporukama.' => 'The goal is that after ordering you are not left alone, but you immediately know your first step, how to use the system, and how to start making recommendations.',
         'Prioritetni onboarding prozor' => 'Priority onboarding window',
         'Ako želiš ući u prvi onboarding krug, pošalji narudžbu ili upit sada.' => 'If you want to enter the first onboarding group, send your order or question now.',
+        'Ulazak u sljedeći onboarding krug' => 'Entry into the next onboarding group',
+        'Ako želiš krenuti s nama u sljedećem onboarding krugu, pošalji narudžbu ili mi se javi prije isteka ovog prozora.' => 'If you want to start with us in the next onboarding group, send the order or message me before this window ends.',
+        'Odaberi kako želiš napraviti sljedeći korak. Nakon klika dobit ćeš upute za narudžbu i povezivanje sa mnom prije onboardinga.' => 'Choose how you want to make the next step. After clicking, you will get order instructions and connect with me before onboarding.',
         'Pošalji mi poruku prije narudžbe' => 'Message me before ordering',
         'Nisam siguran, želim razgovor' => 'I am not sure, I want to talk',
+        'Želim naručiti Start Your Journey paket' => 'I want to order the Start Your Journey package',
+        'Imam pitanje prije narudžbe' => 'I have a question before ordering',
+        'Nisam još siguran/na - želim kratki razgovor' => 'I am not sure yet - I want a short conversation',
         'Zatraži kratki pregled sa mnom ili mojim timom' => 'Request a short review with me or my team',
         'Kontakt stranica za osobu koja želi potvrdu prije odluke.' => 'Contact page for someone who wants confirmation before deciding.',
         'Razgovor' => 'Conversation',
