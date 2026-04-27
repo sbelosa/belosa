@@ -3491,10 +3491,26 @@ body.fcc-blog-route .footer.app-footer {
 	.fcc-blog-wrap {
 		padding-left: 0.65rem;
 		padding-right: 0.65rem;
+		overflow-x: hidden;
 	}
 
 	.fcc-blog-grid {
+		margin-left: 0;
+		margin-right: 0;
 		row-gap: 1rem;
+	}
+
+	.fcc-featured-grid,
+	.fcc-latest-grid {
+		margin-left: 0;
+		margin-right: 0;
+	}
+
+	.fcc-blog-grid > [class*="col-"],
+	.fcc-featured-grid > [class*="col-"],
+	.fcc-latest-grid > [class*="col-"] {
+		padding-left: 0;
+		padding-right: 0;
 	}
 
 	.fcc-article-hero {
