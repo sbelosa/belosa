@@ -1803,11 +1803,7 @@ if($fcc_is_product_context) {
         "aggregateRating": {
             "@type": "AggregateRating",
             "ratingValue": "<?= $data->blog_post->average_rating ?>",
-            "reviewCount": "<?= $data->blog_post->total_ratings ?>",
-            "itemReviewed" : {
-                "@type": "Article",
-                "name": <?= json_encode($data->blog_post->title, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?>
-            }
+            "reviewCount": "<?= $data->blog_post->total_ratings ?>"
         },
         <?php endif ?>
 
