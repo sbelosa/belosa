@@ -40,7 +40,7 @@ $resolve_font_family = static function($key) use ($font_family_css_map) {
 };
 foreach($blocks as $preview_block) {
     $preview_block = is_array($preview_block) ? $preview_block : [];
-    if(in_array((string) ($preview_block['type'] ?? ''), ['name_field', 'full_name_field', 'email_field', 'phone_field'], true)) {
+    if(in_array((string) ($preview_block['type'] ?? ''), ['name_field', 'full_name_field', 'email_field', 'phone_field', 'text_field'], true)) {
         $page_has_capture_fields = true;
     }
 
@@ -840,7 +840,7 @@ foreach($blocks as $preview_block) {
                                         </div>
                                     <?php endif ?>
 
-                                    <?php if(in_array($block_type, ['name_field', 'full_name_field', 'email_field', 'phone_field'], true)): ?>
+                                    <?php if(in_array($block_type, ['name_field', 'full_name_field', 'email_field', 'phone_field', 'text_field'], true)): ?>
                                         <?php
                                         $input_type = $block_type === 'email_field' ? 'email' : ($block_type === 'phone_field' ? 'tel' : 'text');
                                         $placeholder = (string) ($block['placeholder'] ?? ($block['title'] ?? ''));
@@ -874,9 +874,13 @@ foreach($blocks as $preview_block) {
                                                         <span class="vip-funnel-public__radio-title" style="font-size: <?= $e($text_size) ?>px; font-weight: <?= $e($button_weight) ?>; font-family: <?= $e($font_family) ?>; color: <?= $e($body_color) ?>;">
                                                             <?= $e($option['label'] ?? 'Odgovor') ?>
                                                         </span>
-                                                        <span class="vip-funnel-public__radio-hint">
-                                                            <?= $e(!empty($block['route_on_submit']) ? 'Odgovor na ovo pitanje može odrediti konačni sljedeći korak nakon submita.' : 'Odgovor na ovo pitanje sprema se kao dio upitnika.') ?>
-                                                        </span>
+                                                        <?php
+                                                        $option_hint = trim((string) ($option['hint'] ?? ''));
+                                                        if($option_hint === '') {
+                                                            $option_hint = !empty($block['route_on_submit']) ? 'Ovaj odgovor mi pomaže da te bolje usmjerim.' : 'Ovaj odgovor pomaže da dobiješ jasniji sljedeći korak.';
+                                                        }
+                                                        ?>
+                                                        <span class="vip-funnel-public__radio-hint"><?= $e($option_hint) ?></span>
                                                     </span>
                                                 </label>
                                             <?php endforeach ?>

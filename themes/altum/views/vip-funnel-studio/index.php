@@ -2089,6 +2089,7 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
             full_name_field: {font_family: 'inherit', badge_size: 13, badge_weight: '800', badge_color: '', title_size: 24, title_weight: '900', title_color: '', text_size: 16, text_weight: '500', body_color: '', field_size: 16, field_weight: '500', field_text_color: '', placeholder_color: '', button_size: 17, button_weight: '800', button_text_color: ''},
             email_field: {font_family: 'inherit', badge_size: 13, badge_weight: '800', badge_color: '', title_size: 24, title_weight: '900', title_color: '', text_size: 16, text_weight: '500', body_color: '', field_size: 16, field_weight: '500', field_text_color: '', placeholder_color: '', button_size: 17, button_weight: '800', button_text_color: ''},
             phone_field: {font_family: 'inherit', badge_size: 13, badge_weight: '800', badge_color: '', title_size: 24, title_weight: '900', title_color: '', text_size: 16, text_weight: '500', body_color: '', field_size: 16, field_weight: '500', field_text_color: '', placeholder_color: '', button_size: 17, button_weight: '800', button_text_color: ''},
+            text_field: {font_family: 'inherit', badge_size: 13, badge_weight: '800', badge_color: '', title_size: 24, title_weight: '900', title_color: '', text_size: 16, text_weight: '500', body_color: '', field_size: 16, field_weight: '500', field_text_color: '', placeholder_color: '', button_size: 17, button_weight: '800', button_text_color: ''},
             proof_card: {font_family: 'inherit', badge_size: 13, badge_weight: '800', badge_color: '', title_size: 26, title_weight: '800', title_color: '', text_size: 17, text_weight: '500', body_color: '', field_size: 16, field_weight: '500', field_text_color: '', placeholder_color: '', button_size: 17, button_weight: '800', button_text_color: ''},
             product_offer: {font_family: 'inherit', badge_size: 13, badge_weight: '800', badge_color: '', title_size: 28, title_weight: '900', title_color: '', text_size: 17, text_weight: '500', body_color: '', field_size: 16, field_weight: '500', field_text_color: '', placeholder_color: '', button_size: 18, button_weight: '900', button_text_color: ''},
             spacer: {font_family: 'inherit', badge_size: 13, badge_weight: '800', badge_color: '', title_size: 28, title_weight: '800', title_color: '', text_size: 17, text_weight: '500', body_color: '', field_size: 16, field_weight: '500', field_text_color: '', placeholder_color: '', button_size: 17, button_weight: '800', button_text_color: ''}
@@ -2107,6 +2108,7 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
             full_name_field: {type, label: 'Ime + prezime', badge: '', title: 'Ime i prezime', text: '', placeholder: 'Upiši ime i prezime', required: false, alignment: 'left', buttons: [], options: []},
             email_field: {type, label: 'Email', badge: '', title: 'Email', text: '', placeholder: 'Upiši email', required: true, alignment: 'left', buttons: [], options: []},
             phone_field: {type, label: 'Telefon', badge: '', title: 'Telefon', text: '', placeholder: 'Upiši broj telefona', required: false, alignment: 'left', buttons: [], options: []},
+            text_field: {type, label: 'Tekst polje', badge: '', title: 'Kratki odgovor', text: '', placeholder: 'Upiši odgovor', field_key: '', required: false, alignment: 'left', buttons: [], options: []},
             proof_card: {type, label: 'Proof / povjerenje', badge: 'Povjerenje', title: 'Zašto ovaj put djeluje sigurno', text: 'Dodaj proof, sigurnost, mentorstvo ili konkretan benefit.', alignment: 'left', buttons: [], options: []},
             product_offer: {type, label: 'Preporuka proizvoda', badge: 'Preporuka', title: 'Idealna preporuka za tvoj cilj', text: 'Odaberi proizvod i poveži osobu ili na blog vodič ili direktno na službeni shop s referral logikom.', alignment: 'left', product_source_mode: 'manual', product_blog_post_id: 0, product_translation_key: '', product_language_mode: 'page', product_language_code: preferredProductLanguageCode || 'hr', product_fallback_language_code: 'hr', product_primary_mode: 'blog_guide', product_primary_cta_text: 'Pogledaj vodič proizvoda', product_secondary_enabled: true, product_secondary_mode: 'direct_shop', product_secondary_cta_text: 'Idi na službeni shop', product_mappings: [], buttons: [], options: []},
             spacer: {type, label: 'Razmak', badge: '', title: '', text: '', spacing: 'lg', alignment: 'left', buttons: [], options: []}
@@ -2243,7 +2245,7 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
     }
 
     function currentSurfaceHasCaptureFields() {
-        return getEditableBlocks().some(block => ['name_field', 'full_name_field', 'email_field', 'phone_field'].includes(block.type));
+        return getEditableBlocks().some(block => ['name_field', 'full_name_field', 'email_field', 'phone_field', 'text_field'].includes(block.type));
     }
 
     function currentSurfaceHasDeferredSurvey() {
@@ -2312,7 +2314,7 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
     }
 
     function normalizeRequireSubmitFlagsForBlocks(blocks = []) {
-        const hasCaptureFields = Array.isArray(blocks) && blocks.some(block => ['name_field', 'full_name_field', 'email_field', 'phone_field'].includes(block.type));
+        const hasCaptureFields = Array.isArray(blocks) && blocks.some(block => ['name_field', 'full_name_field', 'email_field', 'phone_field', 'text_field'].includes(block.type));
         let changed = false;
 
         (blocks || []).forEach(block => {
@@ -2358,7 +2360,7 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
 
     function syncAutoSubmitBlocksForBlocks(blocks = []) {
         const normalizedBlocks = (blocks || []).map(normalizeBlock);
-        const hasCaptureFields = normalizedBlocks.some(block => ['name_field', 'full_name_field', 'email_field', 'phone_field'].includes(block.type));
+        const hasCaptureFields = normalizedBlocks.some(block => ['name_field', 'full_name_field', 'email_field', 'phone_field', 'text_field'].includes(block.type));
         const systemBlocks = normalizedBlocks.filter(isSystemSubmitBlock);
         const hasCustomSubmitAction = normalizedBlocks.some(block => !isSystemSubmitBlock(block) && blockHasSubmitAction(block));
         const contentBlocks = normalizedBlocks.filter(block => !isSystemSubmitBlock(block));
@@ -2539,6 +2541,7 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
         return Object.assign({
             id: uid('act'),
             label: 'Opcija',
+            hint: '',
             value: 'opcija',
             style: 'primary',
             action: 'goto_step',
@@ -2705,7 +2708,7 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
         block.id = uid(type);
         const blocks = getEditableBlocks().slice();
         blocks.push(block);
-        const isCaptureField = ['name_field', 'full_name_field', 'email_field', 'phone_field'].includes(type);
+        const isCaptureField = ['name_field', 'full_name_field', 'email_field', 'phone_field', 'text_field'].includes(type);
         if(isCaptureField && !blocks.some(item => {
             return blockHasSubmitAction(item);
         })) {
@@ -4138,7 +4141,7 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
 
     function renderBlockEditor(block) {
         const isMedia = ['image', 'video'].includes(block.type);
-        const isField = ['name_field', 'full_name_field', 'email_field', 'phone_field'].includes(block.type);
+        const isField = ['name_field', 'full_name_field', 'email_field', 'phone_field', 'text_field'].includes(block.type);
         const isSurvey = block.type === 'survey';
         const isRadioSurvey = block.type === 'radio_survey';
         const radioRoutingEnabled = !isRadioSurvey || block.route_on_submit !== false;
@@ -4677,6 +4680,12 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
                                     <label>${isOptionBlockType(blockType) ? 'Tekst odgovora' : 'Tekst gumba'}</label>
                                     <input type="text" data-vf-action-field="${escapeHtml(action.id)}|label" value="${escapeHtml(action.label || '')}" />
                                 </div>
+                                ${isRadioSurvey ? `
+                                    <div class="vf-field is-full">
+                                        <label>Kratko pojašnjenje odgovora</label>
+                                        <input type="text" data-vf-action-field="${escapeHtml(action.id)}|hint" value="${escapeHtml(action.hint || '')}" />
+                                    </div>
+                                ` : ''}
                                 ${isRadioSurvey ? '' : `
                                     <div class="vf-field vf-field--compact">
                                         <label>Stil</label>
@@ -4882,7 +4891,7 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
             return `<div class="vf-preview-spacer" data-vf-span="${escapeHtml(layoutWidth)}" style="height:${spacingMap[block.spacing] || '56px'};"></div>`;
         }
 
-        if(['name_field', 'full_name_field', 'email_field', 'phone_field'].includes(block.type)) {
+        if(['name_field', 'full_name_field', 'email_field', 'phone_field', 'text_field'].includes(block.type)) {
             return `
                 <div class="vf-preview-block align-${escapeHtml(block.alignment || 'left')}" data-vf-span="${escapeHtml(layoutWidth)}" style="${blockStyles.join(';')}">
                     ${block.title ? `<div class="vf-preview-text" style="margin-bottom:.45rem;${titleStyle}">${escapeHtml(block.title)}</div>` : ''}
@@ -5033,10 +5042,10 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
             <div class="vf-preview-radio-list">
                 ${(items || []).map(item => `
                     <label class="vf-preview-radio-item" style="border-color:${hexToRgba(accentColor, 0.22)};background:${hexToRgba(accentColor, 0.08)};">
-                        <span class="vf-preview-radio-dot" style="border-color:${hexToRgba(accentColor, 0.42)};"></span>
-                        <span class="vf-preview-radio-copy">
-                            <span class="vf-preview-radio-label" style="font-size:${textSize}px;font-weight:${Math.max(700, textWeight)};font-family:${fontFamily};color:${bodyColor};">${escapeHtml(item.label || 'Odgovor')}</span>
-                            <span class="vf-preview-radio-hint">Odgovor se sprema i završni submit ga može koristiti za routing.</span>
+                            <span class="vf-preview-radio-dot" style="border-color:${hexToRgba(accentColor, 0.42)};"></span>
+                            <span class="vf-preview-radio-copy">
+                                <span class="vf-preview-radio-label" style="font-size:${textSize}px;font-weight:${Math.max(700, textWeight)};font-family:${fontFamily};color:${bodyColor};">${escapeHtml(item.label || 'Odgovor')}</span>
+                            <span class="vf-preview-radio-hint">${escapeHtml(item.hint || 'Ovaj odgovor pomaže da dobiješ jasniji sljedeći korak.')}</span>
                         </span>
                     </label>
                 `).join('')}
