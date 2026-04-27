@@ -2478,73 +2478,74 @@ function vip_funnel_get_stjepan_recruitment_payload($user = null, array $options
 
     $landing_blocks = [
         $block('landing_hero', 'headline', [
-            'badge' => 'FCC Funnel 2.0',
-            'title' => 'Pokreni online posao uz FCC sustav i moje mentorstvo',
-            'text' => 'Ja sam Stjepan Beloša, kreator FCC-a i mentor tima od 7.000+ članova. Ako si došao s mojih videa, ovdje u par koraka biraš svoj put: posao, demo sustava ili proizvodi i popust.',
-            'title_size' => 58,
+            'badge' => 'Počni ovdje',
+            'title' => 'Pokreni svoj FCC put uz moje osobno mentorstvo',
+            'text' => 'Došao/la si s mojih videa? Ovdje ćeš brzo vidjeti je li FCC za tebe, koji je tvoj najbolji prvi korak i kako možeš krenuti uz moje mentorstvo.',
+            'title_size' => 50,
             'text_size' => 20,
             'alignment' => 'center',
         ]),
         $block('landing_intro_video', 'video', [
-            'title' => 'Kratki uvod za one koji dolaze s mojih videa',
-            'text' => 'Pogledaj prvo poruku, a zatim odaberi smjer koji je najbliži tvojoj situaciji.',
+            'title' => 'Prvo pogledaj ovu kratku poruku',
+            'text' => 'U par minuta ću ti objasniti kako funkcionira ovaj vodič i koji sljedeći korak odabrati ovisno o tome gdje se trenutno nalaziš.',
             'media_url' => $video('main'),
             'layout_width' => 'two_thirds',
             'alignment' => 'center',
         ]),
         $block('landing_proof', 'proof_card', [
-            'badge' => 'Zašto ovo nije običan link',
-            'title' => 'FCC spaja video pažnju, jasnu selekciju, proizvode i mentorstvo u jedan vođeni sustav.',
-            'text' => 'Novi posjetitelj ne mora čitati sve odjednom. Funnel ga vodi prema poslu, demo iskustvu ili proizvodnom putu, a meni pokazuje tko je spreman za ozbiljan razgovor.',
+            'badge' => 'Zašto sam složio ovaj vodič',
+            'title' => 'Ne želim da lutaš. Želim da odmah vidiš pravi sljedeći korak.',
+            'text' => 'Neki ljudi žele pokrenuti online posao, neki prvo žele razumjeti FCC sustav, neki dolaze zbog proizvoda, a neki su već spremni za start paket. Zato te ova stranica vodi jednostavno, korak po korak.',
             'layout_width' => 'third',
         ]),
         $block('landing_direction', 'survey', [
-            'title' => 'Što te sada najviše zanima?',
-            'text' => 'Odaberi iskreno. Svaki smjer vodi na drugu stranicu koja je složena kao mala landing stranica.',
+            'title' => 'Gdje se trenutno nalaziš?',
+            'text' => 'Odaberi opciju koja najbolje opisuje tvoju situaciju. Nisi siguran/na što odabrati? Kreni s opcijom "Želim prvo razumjeti FCC sustav".',
             'options' => [
                 $action('landing_business', 'Želim pokrenuti online posao', 'business_interest', 'business_gateway', 'primary'),
-                $action('landing_demo', 'Želim vidjeti FCC sustav', 'demo_interest', 'fcc_demo_preview', 'secondary'),
-                $action('landing_product', 'Želim popust ili proizvode', 'product_discount', 'product_gateway', 'secondary'),
-                $action('landing_ready', 'Već sam spreman za start paket', 'ready_360_now', 'start_package_offer', 'primary'),
+                $action('landing_demo', 'Želim prvo razumjeti FCC sustav', 'demo_interest', 'fcc_demo_preview', 'secondary'),
+                $action('landing_product', 'Zanimaju me proizvodi i popusti', 'product_discount', 'product_gateway', 'secondary'),
+                $action('landing_ready', 'Spreman/na sam za start paket', 'ready_360_now', 'start_package_offer', 'primary'),
             ],
             'alignment' => 'center',
             'auto_advance' => true,
         ]),
     ];
 
-    $landing_page = $surface('Stjepan osobni recruiting landing', $landing_blocks, [
+    $landing_page = $surface('Stjepan Beloša | Osobni FCC vodič', $landing_blocks, [
         'show_progress' => false,
         'ab_enabled' => true,
         'ab_distribution' => 50,
         'variant_b_blocks' => [
             $block('landing_b_hero', 'headline', [
-                'badge' => 'Od interesa do sustava',
-                'title' => 'Od prvog interesa do vlastitog online posla',
-                'text' => 'Ako te zanima FCC, ovaj kratki funnel će ti pokazati najbolji sljedeći korak bez previše informacija odjednom.',
+                'badge' => 'Online posao uz vođeni sustav',
+                'title' => 'Pridruži se mom FCC timu i kreni graditi online posao uz jasan sustav',
+                'text' => 'Ako želiš ozbiljno krenuti, ne moraš sve smišljati sam/a. Kroz FCC sustav, proizvode, edukaciju i mentorstvo pokazat ću ti kako napraviti prve korake i uključiti se u tim.',
                 'title_size' => 50,
                 'text_size' => 20,
                 'alignment' => 'center',
             ]),
             $block('landing_b_intro_video', 'video', [
-                'title' => 'Kratki uvod tvog FCC mentora',
-                'text' => 'Pogledaj prvo kratku poruku, a zatim odaberi smjer koji je najbliži tvojoj situaciji.',
+                'title' => 'Kratka poruka prije nego odabereš svoj put',
+                'text' => 'Prvo pogledaj video kako bi razumio/la što je FCC, kako izgleda suradnja i što znači krenuti uz moje mentorstvo.',
                 'media_url' => $video('main'),
                 'layout_width' => 'two_thirds',
                 'alignment' => 'center',
             ]),
             $block('landing_b_proof', 'proof_card', [
-                'badge' => 'Zašto ovo nije običan link',
-                'title' => 'FCC spaja pažnju, jasnu selekciju, proizvode i mentorstvo u jedan vođeni sustav.',
-                'text' => 'Novi posjetitelj ne mora čitati sve odjednom. Funnel ga vodi prema poslu, demo iskustvu ili proizvodnom putu, a meni pokazuje tko je spreman za ozbiljan razgovor.',
+                'badge' => 'Kako ovo funkcionira',
+                'title' => 'Ovo nije samo informacija. Ovo je prvi korak prema ulasku u tim.',
+                'text' => 'FCC ti daje sustav, proizvode, smjer i podršku. Tvoj zadatak je odabrati gdje si sada, a ja ću te kroz sljedeće korake usmjeriti prema odluci koja ima smisla za tebe.',
                 'layout_width' => 'third',
             ]),
             $block('landing_b_direction', 'survey', [
-                'title' => 'Odaberi svoj najbrži put',
-                'text' => 'Posao, demo ili proizvodi. Sustav te vodi bez viška informacija.',
+                'title' => 'Odaberi svoj sljedeći korak',
+                'text' => 'Bez pritiska. Odaberi ono što ti je trenutno najbliže i nastavi kroz vodič.',
                 'options' => [
-                    $action('landing_b_business', 'Online posao', 'business_interest', 'business_gateway', 'primary'),
-                    $action('landing_b_demo', 'FCC demo', 'demo_interest', 'fcc_demo_preview', 'secondary'),
-                    $action('landing_b_product', 'Proizvodi / popust', 'product_discount', 'product_gateway', 'secondary'),
+                    $action('landing_b_business', 'Želim krenuti s online poslom', 'business_interest', 'business_gateway', 'primary'),
+                    $action('landing_b_demo', 'Pokaži mi kako radi FCC sustav', 'demo_interest', 'fcc_demo_preview', 'secondary'),
+                    $action('landing_b_product', 'Prvo želim upoznati proizvode', 'product_discount', 'product_gateway', 'secondary'),
+                    $action('landing_b_ready', 'Želim start paket i ulazak u tim', 'ready_360_now', 'start_package_offer', 'primary'),
                 ],
                 'alignment' => 'center',
                 'auto_advance' => true,
@@ -2892,11 +2893,11 @@ function vip_funnel_get_stjepan_recruitment_payload($user = null, array $options
             'owner_mode' => 'shared',
         ],
         'overview' => [
-            'eyebrow' => 'FCC Funnel 2.0',
-            'headline' => 'Pokreni online posao uz FCC sustav i mentorstvo Stjepana Beloše',
-            'subheadline' => 'Jedan vođeni funnel za regrutaciju, demo sustava, prodaju proizvoda i follow-up.',
+            'eyebrow' => 'Stjepan Beloša | Osobni FCC vodič',
+            'headline' => 'Pokreni svoj FCC put uz moje osobno mentorstvo',
+            'subheadline' => 'Došao/la si s mojih videa? Ovdje ćeš brzo vidjeti je li FCC za tebe, koji je tvoj najbolji prvi korak i kako možeš krenuti uz moje mentorstvo.',
             'primary_cta' => 'Provjeri svoj put',
-            'secondary_cta' => 'Pogledaj FCC demo',
+            'secondary_cta' => 'Razumijem FCC sustav',
         ],
         'positioning' => [
             'for' => 'Za osobe koje dolaze s društvenih mreža i žele posao, demo FCC sustava ili proizvodni popust.',
@@ -3925,6 +3926,7 @@ function vip_funnel_normalize_studio_payload($payload, $user = null): array {
     $payload['board'] = vip_funnel_normalize_board_payload($raw_board ?? $seed['board']);
     $payload['defaults']['owner_user_id'] = (int) ($payload['defaults']['owner_user_id'] ?? ($user->user_id ?? 0));
     $payload['defaults']['hide_public_navbar'] = !empty($payload['defaults']['hide_public_navbar']);
+    vip_funnel_refresh_stjepan_landing_copy_if_needed($payload);
     vip_funnel_complete_fcc_vip_landing_variant_b_if_needed($payload);
 
     return $payload;
@@ -4431,6 +4433,163 @@ function vip_funnel_update_template_step(array &$payload, string $step_id, array
     unset($phase);
 }
 
+function vip_funnel_refresh_stjepan_landing_copy_if_needed(array &$payload): void {
+    if(empty($payload['landing_page']) || !is_array($payload['landing_page'])) {
+        return;
+    }
+
+    $funnel_name = (string) ($payload['funnel']['name'] ?? '');
+    $landing_name = (string) ($payload['landing_page']['name'] ?? '');
+    $overview_headline = (string) ($payload['overview']['headline'] ?? '');
+    $is_stjepan_funnel = str_contains($funnel_name, 'Stjepan')
+        || str_contains($landing_name, 'Stjepan osobni recruiting landing')
+        || str_contains($overview_headline, 'Stjepan');
+
+    if(!$is_stjepan_funnel) {
+        return;
+    }
+
+    $overview_headline_current = (string) ($payload['overview']['headline'] ?? '');
+    if(in_array($overview_headline_current, [
+        'Pokreni online posao uz FCC sustav i mentorstvo Stjepana Beloše',
+        'Pokreni svoj FCC put uz moje osobno mentorstvo',
+    ], true)) {
+        $payload['overview']['eyebrow'] = 'Stjepan Beloša | Osobni FCC vodič';
+        $payload['overview']['headline'] = 'Pokreni svoj FCC put uz moje osobno mentorstvo';
+        $payload['overview']['subheadline'] = 'Došao/la si s mojih videa? Ovdje ćeš brzo vidjeti je li FCC za tebe, koji je tvoj najbolji prvi korak i kako možeš krenuti uz moje mentorstvo.';
+        $payload['overview']['primary_cta'] = 'Provjeri svoj put';
+        $payload['overview']['secondary_cta'] = 'Razumijem FCC sustav';
+    }
+
+    if($landing_name === 'Stjepan osobni recruiting landing') {
+        $payload['landing_page']['name'] = 'Stjepan Beloša | Osobni FCC vodič';
+    }
+
+    $replace_block = static function(array &$blocks, string $block_id, array $updates): void {
+        foreach($blocks as &$block) {
+            if(is_array($block) && (string) ($block['id'] ?? '') === $block_id) {
+                $block = array_replace_recursive($block, $updates);
+                break;
+            }
+        }
+        unset($block);
+    };
+
+    $replace_option_labels = static function(array &$blocks, string $block_id, array $labels_by_id): void {
+        foreach($blocks as &$block) {
+            if(!is_array($block) || (string) ($block['id'] ?? '') !== $block_id || empty($block['options']) || !is_array($block['options'])) {
+                continue;
+            }
+
+            foreach($block['options'] as &$option) {
+                if(!is_array($option)) {
+                    continue;
+                }
+
+                $option_id = (string) ($option['id'] ?? '');
+                if(isset($labels_by_id[$option_id])) {
+                    $option['label'] = $labels_by_id[$option_id];
+                }
+            }
+            unset($option);
+        }
+        unset($block);
+    };
+
+    if(empty($payload['landing_page']['blocks']) || !is_array($payload['landing_page']['blocks'])) {
+        return;
+    }
+
+    $landing_blocks = &$payload['landing_page']['blocks'];
+    $landing_hero_title = '';
+    foreach($landing_blocks as $block) {
+        if(is_array($block) && (string) ($block['id'] ?? '') === 'landing_hero') {
+            $landing_hero_title = (string) ($block['title'] ?? '');
+            break;
+        }
+    }
+
+    if(in_array($landing_hero_title, [
+        'Pokreni online posao uz FCC sustav i moje mentorstvo',
+        'Pokreni svoj FCC put uz moje osobno mentorstvo',
+    ], true)) {
+        $replace_block($landing_blocks, 'landing_hero', [
+            'badge' => 'Počni ovdje',
+            'title' => 'Pokreni svoj FCC put uz moje osobno mentorstvo',
+            'text' => 'Došao/la si s mojih videa? Ovdje ćeš brzo vidjeti je li FCC za tebe, koji je tvoj najbolji prvi korak i kako možeš krenuti uz moje mentorstvo.',
+            'title_size' => 50,
+        ]);
+        $replace_block($landing_blocks, 'landing_intro_video', [
+            'title' => 'Prvo pogledaj ovu kratku poruku',
+            'text' => 'U par minuta ću ti objasniti kako funkcionira ovaj vodič i koji sljedeći korak odabrati ovisno o tome gdje se trenutno nalaziš.',
+        ]);
+        $replace_block($landing_blocks, 'landing_proof', [
+            'badge' => 'Zašto sam složio ovaj vodič',
+            'title' => 'Ne želim da lutaš. Želim da odmah vidiš pravi sljedeći korak.',
+            'text' => 'Neki ljudi žele pokrenuti online posao, neki prvo žele razumjeti FCC sustav, neki dolaze zbog proizvoda, a neki su već spremni za start paket. Zato te ova stranica vodi jednostavno, korak po korak.',
+        ]);
+        $replace_block($landing_blocks, 'landing_direction', [
+            'title' => 'Gdje se trenutno nalaziš?',
+            'text' => 'Odaberi opciju koja najbolje opisuje tvoju situaciju. Nisi siguran/na što odabrati? Kreni s opcijom "Želim prvo razumjeti FCC sustav".',
+        ]);
+        $replace_option_labels($landing_blocks, 'landing_direction', [
+            'landing_business' => 'Želim pokrenuti online posao',
+            'landing_demo' => 'Želim prvo razumjeti FCC sustav',
+            'landing_product' => 'Zanimaju me proizvodi i popusti',
+            'landing_ready' => 'Spreman/na sam za start paket',
+        ]);
+    }
+
+    if(empty($payload['landing_page']['variant_b_blocks']) || !is_array($payload['landing_page']['variant_b_blocks'])) {
+        return;
+    }
+
+    $variant_blocks = &$payload['landing_page']['variant_b_blocks'];
+    $variant_hero_title = '';
+    foreach($variant_blocks as $block) {
+        if(is_array($block) && (string) ($block['id'] ?? '') === 'landing_b_hero') {
+            $variant_hero_title = (string) ($block['title'] ?? '');
+            break;
+        }
+    }
+
+    if(in_array($variant_hero_title, [
+        'Od milionskih pregleda do vlastitog online posla',
+        'Od prvog interesa do vlastitog online posla',
+        'Pridruži se mom FCC timu i kreni graditi online posao uz jasan sustav',
+    ], true)) {
+        $replace_block($variant_blocks, 'landing_b_hero', [
+            'badge' => 'Online posao uz vođeni sustav',
+            'title' => 'Pridruži se mom FCC timu i kreni graditi online posao uz jasan sustav',
+            'text' => 'Ako želiš ozbiljno krenuti, ne moraš sve smišljati sam/a. Kroz FCC sustav, proizvode, edukaciju i mentorstvo pokazat ću ti kako napraviti prve korake i uključiti se u tim.',
+            'title_size' => 50,
+        ]);
+        $replace_block($variant_blocks, 'landing_b_intro_video', [
+            'title' => 'Kratka poruka prije nego odabereš svoj put',
+            'text' => 'Prvo pogledaj video kako bi razumio/la što je FCC, kako izgleda suradnja i što znači krenuti uz moje mentorstvo.',
+        ]);
+        $replace_block($variant_blocks, 'landing_b_proof', [
+            'badge' => 'Kako ovo funkcionira',
+            'title' => 'Ovo nije samo informacija. Ovo je prvi korak prema ulasku u tim.',
+            'text' => 'FCC ti daje sustav, proizvode, smjer i podršku. Tvoj zadatak je odabrati gdje si sada, a ja ću te kroz sljedeće korake usmjeriti prema odluci koja ima smisla za tebe.',
+        ]);
+        $replace_block($variant_blocks, 'landing_b_direction', [
+            'title' => 'Odaberi svoj sljedeći korak',
+            'text' => 'Bez pritiska. Odaberi ono što ti je trenutno najbliže i nastavi kroz vodič.',
+        ]);
+        $replace_option_labels($variant_blocks, 'landing_b_direction', [
+            'landing_business' => 'Želim krenuti s online poslom',
+            'landing_demo' => 'Pokaži mi kako radi FCC sustav',
+            'landing_product' => 'Prvo želim upoznati proizvode',
+            'landing_ready' => 'Želim start paket i ulazak u tim',
+            'landing_b_business' => 'Želim krenuti s online poslom',
+            'landing_b_demo' => 'Pokaži mi kako radi FCC sustav',
+            'landing_b_product' => 'Prvo želim upoznati proizvode',
+            'landing_b_ready' => 'Želim start paket i ulazak u tim',
+        ]);
+    }
+}
+
 function vip_funnel_set_complete_landing_variant_b(array &$payload, array $copy): void {
     if(empty($payload['landing_page']) || !is_array($payload['landing_page']) || empty($payload['landing_page']['blocks']) || !is_array($payload['landing_page']['blocks'])) {
         return;
@@ -4509,6 +4668,38 @@ function vip_funnel_complete_fcc_vip_landing_variant_b_if_needed(array &$payload
         || isset($variant_ids['landing_b_direction']);
 
     if(!$has_complete_landing_source || !$has_legacy_short_variant) {
+        return;
+    }
+
+    if($is_stjepan_recruiting_template && !$is_fcc_vip_template) {
+        vip_funnel_set_complete_landing_variant_b($payload, [
+            'hero' => [
+                'badge' => 'Online posao uz vođeni sustav',
+                'title' => 'Pridruži se mom FCC timu i kreni graditi online posao uz jasan sustav',
+                'text' => 'Ako želiš ozbiljno krenuti, ne moraš sve smišljati sam/a. Kroz FCC sustav, proizvode, edukaciju i mentorstvo pokazat ću ti kako napraviti prve korake i uključiti se u tim.',
+                'title_size' => 50,
+            ],
+            'intro_video' => [
+                'title' => 'Kratka poruka prije nego odabereš svoj put',
+                'text' => 'Prvo pogledaj video kako bi razumio/la što je FCC, kako izgleda suradnja i što znači krenuti uz moje mentorstvo.',
+            ],
+            'proof' => [
+                'badge' => 'Kako ovo funkcionira',
+                'title' => 'Ovo nije samo informacija. Ovo je prvi korak prema ulasku u tim.',
+                'text' => 'FCC ti daje sustav, proizvode, smjer i podršku. Tvoj zadatak je odabrati gdje si sada, a ja ću te kroz sljedeće korake usmjeriti prema odluci koja ima smisla za tebe.',
+            ],
+            'direction' => [
+                'title' => 'Odaberi svoj sljedeći korak',
+                'text' => 'Bez pritiska. Odaberi ono što ti je trenutno najbliže i nastavi kroz vodič.',
+                'options' => [
+                    ['label' => 'Želim krenuti s online poslom'],
+                    ['label' => 'Pokaži mi kako radi FCC sustav'],
+                    ['label' => 'Prvo želim upoznati proizvode'],
+                    ['label' => 'Želim start paket i ulazak u tim'],
+                ],
+            ],
+        ]);
+
         return;
     }
 
