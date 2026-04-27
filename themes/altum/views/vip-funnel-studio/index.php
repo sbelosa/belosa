@@ -1370,13 +1370,26 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
     }
 
     .vf-preview-btn {
-        display: block;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: .18rem;
         width: 100%;
         padding: .92rem 1rem;
         border-radius: 1rem;
         font-weight: 900;
         text-align: center;
         border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .vf-preview-btn__hint {
+        display: block;
+        width: 100%;
+        font-size: .76em;
+        line-height: 1.35;
+        font-weight: 700;
+        opacity: .75;
     }
 
     .vf-preview-btn.is-primary {
@@ -4680,9 +4693,9 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
                                     <label>${isOptionBlockType(blockType) ? 'Tekst odgovora' : 'Tekst gumba'}</label>
                                     <input type="text" data-vf-action-field="${escapeHtml(action.id)}|label" value="${escapeHtml(action.label || '')}" />
                                 </div>
-                                ${isRadioSurvey ? `
+                                ${(isOptionBlockType(blockType) || blockType === 'cta_group') ? `
                                     <div class="vf-field is-full">
-                                        <label>Kratko pojašnjenje odgovora</label>
+                                        <label>${isRadioSurvey ? 'Kratko pojašnjenje odgovora' : (isSurvey ? 'Kratko pojašnjenje opcije' : 'Manji tekst ispod gumba')}</label>
                                         <input type="text" data-vf-action-field="${escapeHtml(action.id)}|hint" value="${escapeHtml(action.hint || '')}" />
                                     </div>
                                 ` : ''}
@@ -5033,7 +5046,10 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
 
                     inlineStyle += `font-size:${buttonSize}px;font-weight:${buttonWeight};font-family:${fontFamily};`;
 
-                    return `<span class="vf-preview-btn is-${escapeHtml(style)}" style="${inlineStyle}">${escapeHtml(item.label || 'Opcija')}</span>`;
+                    return `<span class="vf-preview-btn is-${escapeHtml(style)}" style="${inlineStyle}">
+                        <span>${escapeHtml(item.label || 'Opcija')}</span>
+                        ${item.hint ? `<span class="vf-preview-btn__hint">${escapeHtml(item.hint)}</span>` : ''}
+                    </span>`;
                 }).join('')}
             </div>
         `;

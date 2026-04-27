@@ -1169,6 +1169,188 @@ function vip_funnel_get_owner_contact_profile($user = null): array {
     ];
 }
 
+function vip_funnel_get_forever_business_referral_action_token(): string {
+    return '{{forever_business_referral_url}}';
+}
+
+function vip_funnel_is_forever_business_referral_action_token(string $url = ''): bool {
+    $url = trim($url);
+
+    return $url !== '' && in_array($url, [
+        vip_funnel_get_forever_business_referral_action_token(),
+        'fcc-dynamic:forever-business-referral',
+        'fcc://forever-business-referral',
+    ], true);
+}
+
+function vip_funnel_get_geo_lookup_ip(): ?string {
+    $geo_lookup_ip = function_exists('get_ip') ? get_ip() : null;
+
+    if(
+        !$geo_lookup_ip
+        || !filter_var($geo_lookup_ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)
+    ) {
+        foreach(['HTTP_CF_CONNECTING_IP', 'HTTP_TRUE_CLIENT_IP', 'HTTP_X_REAL_IP', 'HTTP_X_FORWARDED_FOR', 'HTTP_FORWARDED_FOR', 'HTTP_X_FORWARDED', 'HTTP_FORWARDED', 'HTTP_CLIENT_IP'] as $ip_header_key) {
+            if(empty($_SERVER[$ip_header_key])) {
+                continue;
+            }
+
+            $ip_candidates = array_map('trim', explode(',', (string) $_SERVER[$ip_header_key]));
+
+            if($ip_header_key === 'HTTP_FORWARDED') {
+                $ip_candidates = [];
+
+                if(preg_match_all('/for="?\[?([a-fA-F0-9:\.]+)\]?"?/i', (string) $_SERVER[$ip_header_key], $forwarded_matches)) {
+                    $ip_candidates = array_map('trim', $forwarded_matches[1] ?? []);
+                }
+            }
+
+            foreach($ip_candidates as $ip_candidate) {
+                if(filter_var($ip_candidate, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) {
+                    return $ip_candidate;
+                }
+            }
+        }
+    }
+
+    return $geo_lookup_ip && filter_var($geo_lookup_ip, FILTER_VALIDATE_IP) ? $geo_lookup_ip : null;
+}
+
+function vip_funnel_get_forever_business_referral_url(int $owner_user_id = 0): string {
+    if($owner_user_id <= 0) {
+        return '';
+    }
+
+    $owner = db()
+        ->where('user_id', $owner_user_id)
+        ->where('status', 1)
+        ->getOne('users', ['user_id', 'preferences']);
+
+    if(!$owner) {
+        return '';
+    }
+
+    $preferences = vip_funnel_get_user_preferences($owner);
+    $meta = vip_funnel_normalize_object($preferences->meta ?? []);
+    $forever_id = trim((string) ($meta->foreverId ?? ''));
+    $business_links = settings()->links->forever_business_links ?? new \StdClass();
+    $available_country_codes = array_keys(array_filter((array) $business_links, static function($value) {
+        return !empty($value);
+    }));
+
+    if(empty($available_country_codes)) {
+        return '';
+    }
+
+    $accept_language_header = isset($_SERVER['HTTP_ACCEPT_LANGUAGE']) ? (string) $_SERVER['HTTP_ACCEPT_LANGUAGE'] : null;
+    $country_code = \Altum\Link::get_trusted_forever_request_country_code();
+    $country_code_is_trusted = (bool) $country_code;
+
+    if(!$country_code) {
+        $country_code = \Altum\Link::get_external_geo_country_code(vip_funnel_get_geo_lookup_ip());
+    }
+
+    if(!$country_code && vip_funnel_get_geo_lookup_ip() && is_file(APP_PATH . 'includes/GeoLite2-City.mmdb')) {
+        try {
+            $maxmind = (new \MaxMind\Db\Reader(APP_PATH . 'includes/GeoLite2-City.mmdb'))->get(vip_funnel_get_geo_lookup_ip());
+            $country_code = $maxmind['country']['iso_code'] ?? null;
+        } catch(\Exception $exception) {
+            $country_code = null;
+        }
+    }
+
+    $business_country_code = \Altum\Link::resolve_preferred_forever_market_country_code(
+        $country_code,
+        $available_country_codes,
+        $accept_language_header,
+        $country_code_is_trusted
+    );
+
+    $business_base_url = $business_country_code ? ($business_links->{$business_country_code} ?? null) : null;
+
+    if(!$business_base_url && !empty($business_links->us)) {
+        $business_country_code = 'us';
+        $business_base_url = $business_links->us;
+    }
+
+    if(!$business_base_url && !empty($business_links->gb)) {
+        $business_country_code = 'gb';
+        $business_base_url = $business_links->gb;
+    }
+
+    if(!$business_base_url) {
+        $business_country_code = (string) ($available_country_codes[0] ?? '');
+        $business_base_url = $business_country_code !== '' ? ($business_links->{$business_country_code} ?? null) : null;
+    }
+
+    $url = \Altum\Link::build_forever_destination_url($business_base_url, $forever_id, $business_country_code);
+
+    return is_string($url) ? $url : '';
+}
+
+function vip_funnel_get_start_package_question_message(string $language = 'hr'): string {
+    $is_en = vip_funnel_resolve_import_template_language($language) === 'en';
+
+    return $is_en
+        ? 'Hi, I have a few additional questions about FCC collaboration and the Start Your Journey package. Please contact me.'
+        : 'Pozdrav, imam dodatnih pitanja vezano za FCC suradnju i Start Your Journey paket. Molim vas da me kontaktirate.';
+}
+
+function vip_funnel_build_whatsapp_url_from_phone(string $phone = '', string $message = ''): string {
+    $phone_digits = preg_replace('/\D+/', '', $phone);
+
+    if($phone_digits === '') {
+        return '';
+    }
+
+    return 'https://wa.me/' . $phone_digits . ($message !== '' ? '?text=' . rawurlencode($message) : '');
+}
+
+function vip_funnel_rewrite_whatsapp_url_message(string $url = '', string $message = ''): string {
+    $url = trim($url);
+    $message = trim($message);
+
+    if($url === '' || $message === '') {
+        return $url;
+    }
+
+    $parsed_url = parse_url($url);
+    $host = mb_strtolower((string) ($parsed_url['host'] ?? ''));
+    $path = trim((string) ($parsed_url['path'] ?? ''), '/');
+
+    if($host === 'wa.me' && $path !== '') {
+        return 'https://wa.me/' . preg_replace('/\D+/', '', $path) . '?text=' . rawurlencode($message);
+    }
+
+    if(in_array($host, ['api.whatsapp.com', 'web.whatsapp.com', 'www.whatsapp.com', 'whatsapp.com'], true)) {
+        $query = [];
+
+        if(!empty($parsed_url['query'])) {
+            parse_str($parsed_url['query'], $query);
+        }
+
+        $phone = preg_replace('/\D+/', '', (string) ($query['phone'] ?? ''));
+
+        if($phone !== '') {
+            return 'https://wa.me/' . $phone . '?text=' . rawurlencode($message);
+        }
+    }
+
+    return $url;
+}
+
+function vip_funnel_get_start_package_question_whatsapp_url($user = null, string $language = 'hr'): string {
+    $owner_profile = vip_funnel_get_owner_contact_profile($user);
+    $message = vip_funnel_get_start_package_question_message($language);
+    $whatsapp_url = vip_funnel_rewrite_whatsapp_url_message((string) ($owner_profile['whatsapp_url'] ?? ''), $message);
+
+    if($whatsapp_url !== '') {
+        return $whatsapp_url;
+    }
+
+    return vip_funnel_build_whatsapp_url_from_phone((string) ($owner_profile['phone'] ?? ''), $message);
+}
+
 function vip_funnel_apply_owner_referral_cookies(int $owner_user_id = 0): void {
     if($owner_user_id <= 0) {
         return;
@@ -2726,8 +2908,8 @@ function vip_funnel_get_stjepan_recruitment_payload($user = null, array $options
         $block('start_actions', 'cta_group', [
             'text' => 'Odaberi kako želiš napraviti sljedeći korak. Nakon klika dobit ćeš upute za narudžbu i povezivanje sa mnom prije onboardinga.',
             'buttons' => [
-                $action('start_order', 'Želim naručiti Start Your Journey paket', 'order_start_package', '', 'primary', 'external_url', false, $checkout_url),
-                $action('start_whatsapp', 'Imam pitanje prije narudžbe', 'start_whatsapp', '', 'secondary', 'external_url', false, $whatsapp_url),
+                $action('start_order', 'Želim naručiti Start Your Journey paket', 'order_start_package', '', 'primary', 'external_url', false, vip_funnel_get_forever_business_referral_action_token(), 'Preusmjerava te na službenu Forever Living stranicu za narudžbu i upis s preporukom tvog mentora i automatskim odabirom zemlje.'),
+                $action('start_whatsapp', 'Imam pitanje prije narudžbe', 'start_whatsapp', '', 'secondary', 'external_url', false, vip_funnel_get_start_package_question_whatsapp_url($user, 'hr') ?: $whatsapp_url),
                 $action('start_call', 'Nisam još siguran/na - želim kratki razgovor', 'ready_360_call', 'mentor_call_request', 'ghost'),
             ],
             'alignment' => 'center',
@@ -5016,8 +5198,8 @@ function vip_funnel_refresh_stjepan_landing_copy_if_needed(array &$payload): voi
         vip_funnel_update_template_block($payload, 'start_actions', [
             'text' => 'Odaberi kako želiš napraviti sljedeći korak. Nakon klika dobit ćeš upute za narudžbu i povezivanje sa mnom prije onboardinga.',
             'buttons' => [
-                ['id' => 'start_order', 'label' => 'Želim naručiti Start Your Journey paket', 'value' => 'order_start_package', 'style' => 'primary', 'action' => 'external_url', 'target_step_id' => '', 'external_url' => (string) ($payload['defaults']['checkout_url'] ?? ''), 'require_submit' => false],
-                ['id' => 'start_whatsapp', 'label' => 'Imam pitanje prije narudžbe', 'value' => 'start_whatsapp', 'style' => 'secondary', 'action' => 'external_url', 'target_step_id' => '', 'external_url' => (string) ($payload['defaults']['whatsapp_url'] ?? ''), 'require_submit' => false],
+                ['id' => 'start_order', 'label' => 'Želim naručiti Start Your Journey paket', 'hint' => 'Preusmjerava te na službenu Forever Living stranicu za narudžbu i upis s preporukom tvog mentora i automatskim odabirom zemlje.', 'value' => 'order_start_package', 'style' => 'primary', 'action' => 'external_url', 'target_step_id' => '', 'external_url' => vip_funnel_get_forever_business_referral_action_token(), 'require_submit' => false],
+                ['id' => 'start_whatsapp', 'label' => 'Imam pitanje prije narudžbe', 'value' => 'start_whatsapp', 'style' => 'secondary', 'action' => 'external_url', 'target_step_id' => '', 'external_url' => vip_funnel_get_start_package_question_whatsapp_url((int) ($payload['defaults']['owner_user_id'] ?? 0), 'hr') ?: (string) ($payload['defaults']['whatsapp_url'] ?? ''), 'require_submit' => false],
                 ['id' => 'start_call', 'label' => 'Nisam još siguran/na - želim kratki razgovor', 'value' => 'ready_360_call', 'style' => 'ghost', 'action' => 'goto_step', 'target_step_id' => 'mentor_call_request', 'external_url' => '', 'require_submit' => false],
             ],
         ]);
@@ -5588,8 +5770,8 @@ function vip_funnel_get_fcc_vip_import_template_payload($user = null, string $la
         vip_funnel_update_template_block($payload, 'start_actions', [
             'text' => 'Odaberi kako želiš napraviti sljedeći korak. Nakon klika dobit ćeš upute za narudžbu i povezivanje s mentorom prije onboardinga.',
             'buttons' => [
-                ['id' => 'start_order', 'label' => 'Želim naručiti Start Your Journey paket', 'value' => 'order_start_package', 'style' => 'primary', 'action' => 'external_url', 'target_step_id' => '', 'external_url' => $contact_url, 'require_submit' => false],
-                ['id' => 'start_whatsapp', 'label' => 'Imam pitanje prije narudžbe', 'value' => 'start_whatsapp', 'style' => 'secondary', 'action' => 'external_url', 'target_step_id' => '', 'external_url' => $contact_url, 'require_submit' => false],
+                ['id' => 'start_order', 'label' => 'Želim naručiti Start Your Journey paket', 'hint' => 'Preusmjerava te na službenu Forever Living stranicu za narudžbu i upis s preporukom tvog mentora i automatskim odabirom zemlje.', 'value' => 'order_start_package', 'style' => 'primary', 'action' => 'external_url', 'target_step_id' => '', 'external_url' => vip_funnel_get_forever_business_referral_action_token(), 'require_submit' => false],
+                ['id' => 'start_whatsapp', 'label' => 'Imam pitanje prije narudžbe', 'value' => 'start_whatsapp', 'style' => 'secondary', 'action' => 'external_url', 'target_step_id' => '', 'external_url' => vip_funnel_get_start_package_question_whatsapp_url((int) ($payload['defaults']['owner_user_id'] ?? 0), 'hr') ?: $contact_url, 'require_submit' => false],
                 ['id' => 'start_call', 'label' => 'Nisam još siguran/na - želim kratki razgovor', 'value' => 'ready_360_call', 'style' => 'ghost', 'action' => 'goto_step', 'target_step_id' => 'mentor_call_request', 'external_url' => '', 'require_submit' => false],
             ],
         ]);
@@ -5916,8 +6098,8 @@ function vip_funnel_get_fcc_vip_import_template_payload($user = null, string $la
         vip_funnel_update_template_block($payload, 'start_actions', [
             'text' => 'Choose how you want to make the next step. After clicking, you will get order instructions and connect with your mentor before onboarding.',
             'buttons' => [
-                ['id' => 'start_order', 'label' => 'I want to order the Start Your Journey package', 'value' => 'order_start_package', 'style' => 'primary', 'action' => 'external_url', 'target_step_id' => '', 'external_url' => $contact_url, 'require_submit' => false],
-                ['id' => 'start_whatsapp', 'label' => 'I have a question before ordering', 'value' => 'start_whatsapp', 'style' => 'secondary', 'action' => 'external_url', 'target_step_id' => '', 'external_url' => $contact_url, 'require_submit' => false],
+                ['id' => 'start_order', 'label' => 'I want to order the Start Your Journey package', 'hint' => 'Redirects to the official Forever Living order and signup page with your mentor referral and automatic country routing.', 'value' => 'order_start_package', 'style' => 'primary', 'action' => 'external_url', 'target_step_id' => '', 'external_url' => vip_funnel_get_forever_business_referral_action_token(), 'require_submit' => false],
+                ['id' => 'start_whatsapp', 'label' => 'I have a question before ordering', 'value' => 'start_whatsapp', 'style' => 'secondary', 'action' => 'external_url', 'target_step_id' => '', 'external_url' => vip_funnel_get_start_package_question_whatsapp_url((int) ($payload['defaults']['owner_user_id'] ?? 0), 'en') ?: $contact_url, 'require_submit' => false],
                 ['id' => 'start_call', 'label' => 'I am not sure yet - I want a short conversation', 'value' => 'ready_360_call', 'style' => 'ghost', 'action' => 'goto_step', 'target_step_id' => 'mentor_call_request', 'external_url' => '', 'require_submit' => false],
             ],
         ]);
@@ -7412,6 +7594,18 @@ function vip_funnel_resolve_public_action(array $action, array $payload, array $
     $external_url = trim((string) ($action['external_url'] ?? ''));
     $action_type = (string) ($action['action'] ?? 'goto_step');
     $defer_to_route_on_submit = false;
+
+    if($action_type === 'external_url' && vip_funnel_is_forever_business_referral_action_token($external_url)) {
+        $dynamic_url = vip_funnel_get_forever_business_referral_url($user_id);
+
+        return [
+            'target_step_id' => '',
+            'url' => $dynamic_url !== '' ? $dynamic_url : SITE_URL . 'blog/start-paket',
+            'action' => 'external_url',
+            'is_submit' => false,
+            'require_submit' => false,
+        ];
+    }
 
     if($action_type === 'external_url' && $external_url !== '') {
         return [

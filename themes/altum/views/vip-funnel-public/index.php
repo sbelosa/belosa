@@ -322,7 +322,11 @@ foreach($blocks as $preview_block) {
 
     .vip-funnel-public__btn,
     .vip-funnel-public__btn:visited {
-        display: block;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: .2rem;
         width: 100%;
         padding: .96rem 1rem;
         border-radius: 1rem;
@@ -331,6 +335,21 @@ foreach($blocks as $preview_block) {
         text-align: center;
         text-decoration: none;
         transition: transform .18s ease, opacity .18s ease;
+    }
+
+    .vip-funnel-public__btn-label {
+        display: block;
+        width: 100%;
+    }
+
+    .vip-funnel-public__btn-hint {
+        display: block;
+        width: 100%;
+        max-width: 780px;
+        font-size: .78em;
+        line-height: 1.35;
+        font-weight: 700;
+        opacity: .78;
     }
 
     .vip-funnel-public__btn:hover {
@@ -943,7 +962,10 @@ foreach($blocks as $preview_block) {
                                                         data-vf-external="<?= $e($option['external_url'] ?? '') ?>"
                                                         data-vf-selection="<?= $e($option['value'] ?? ($option['label'] ?? '')) ?>"
                                                         data-vf-block="<?= $e($block_id) ?>"
-                                                    ><?= $e($option['label'] ?? 'Opcija') ?></button>
+                                                    >
+                                                        <span class="vip-funnel-public__btn-label"><?= $e($option['label'] ?? 'Opcija') ?></span>
+                                                        <?php if(!empty($option['hint'])): ?><span class="vip-funnel-public__btn-hint"><?= $e($option['hint']) ?></span><?php endif ?>
+                                                    </button>
                                                 <?php else: ?>
                                                     <?php $option_signal_key = \Altum\Link::is_monitored_forever_destination_url((string) ($option['url'] ?? '')) ? 'forever_shop' : ''; ?>
                                                     <a
@@ -959,7 +981,10 @@ foreach($blocks as $preview_block) {
                                                         data-vf-external="<?= $e($option['url'] ?? '') ?>"
                                                         data-vf-selection="<?= $e($option['value'] ?? ($option['label'] ?? '')) ?>"
                                                         data-vf-signal-key="<?= $e($option_signal_key) ?>"
-                                                    ><?= $e($option['label'] ?? 'Opcija') ?></a>
+                                                    >
+                                                        <span class="vip-funnel-public__btn-label"><?= $e($option['label'] ?? 'Opcija') ?></span>
+                                                        <?php if(!empty($option['hint'])): ?><span class="vip-funnel-public__btn-hint"><?= $e($option['hint']) ?></span><?php endif ?>
+                                                    </a>
                                                 <?php endif ?>
                                             <?php endforeach ?>
                                         </div>
@@ -984,7 +1009,10 @@ foreach($blocks as $preview_block) {
                                                         data-vf-external="<?= $e($button['external_url'] ?? '') ?>"
                                                         data-vf-selection="<?= $e($button['value'] ?? ($button['label'] ?? '')) ?>"
                                                         data-vf-block="<?= $e($block_id) ?>"
-                                                    ><?= $e($button['label'] ?? 'Gumb') ?></button>
+                                                    >
+                                                        <span class="vip-funnel-public__btn-label"><?= $e($button['label'] ?? 'Gumb') ?></span>
+                                                        <?php if(!empty($button['hint'])): ?><span class="vip-funnel-public__btn-hint"><?= $e($button['hint']) ?></span><?php endif ?>
+                                                    </button>
                                                 <?php else: ?>
                                                     <?php $button_signal_key = \Altum\Link::is_monitored_forever_destination_url((string) ($button['url'] ?? '')) ? 'forever_shop' : ''; ?>
                                                     <a
@@ -1000,7 +1028,10 @@ foreach($blocks as $preview_block) {
                                                         data-vf-external="<?= $e($button['url'] ?? '') ?>"
                                                         data-vf-selection="<?= $e($button['value'] ?? ($button['label'] ?? '')) ?>"
                                                         data-vf-signal-key="<?= $e($button_signal_key) ?>"
-                                                    ><?= $e($button['label'] ?? 'Gumb') ?></a>
+                                                    >
+                                                        <span class="vip-funnel-public__btn-label"><?= $e($button['label'] ?? 'Gumb') ?></span>
+                                                        <?php if(!empty($button['hint'])): ?><span class="vip-funnel-public__btn-hint"><?= $e($button['hint']) ?></span><?php endif ?>
+                                                    </a>
                                                 <?php endif ?>
                                             <?php endforeach ?>
                                         </div>
