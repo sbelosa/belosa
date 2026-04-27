@@ -2787,20 +2787,22 @@ function vip_funnel_get_stjepan_recruitment_payload($user = null, array $options
         ]),
     ], 'not_ready_nurture', ['design_variant' => 'card', 'block_mode' => 'contact_form']);
 
-    $product_gateway = $step('product_gateway', 'entry', 'products', 'question', 'Ako sada želiš samo proizvode ili popust, kreni ovim putem', 'Produktni ulaz koji monetizira osobe koje ne žele odmah posao.', [
+    $product_gateway = $step('product_gateway', 'entry', 'products', 'question', 'Proizvodni put s jasnom preporukom', 'Vodi osobu prema proizvodnom cilju, popustu i kasnijem poslovnom mostu bez pritiska.', [
         $block('product_gateway_hero', 'headline', [
-            'badge' => 'Proizvodni put',
-            'title' => 'Ne mora svatko odmah u posao. Odaberi cilj i dobit ćeš jasniji proizvodni korak.',
-            'text' => 'Ako kasnije poželiš graditi posao, isti FCC sustav možeš koristiti za preporuke, kontakte i vlastiti tim.',
+            'badge' => 'Proizvodi i popust',
+            'title' => 'Kreni od proizvoda koji ti stvarno treba, a poslovni put može doći kasnije.',
+            'text' => 'Ako te sada najviše zanimaju Forever proizvodi, odaberi cilj koji ti je najbliži. Dobit ćeš jednostavnu preporuku, mogućnost popusta i jasan sljedeći korak bez pritiska.',
+            'title_size' => 50,
         ]),
         $block('product_goal', 'survey', [
-            'title' => 'Što ti je sada glavni cilj?',
+            'title' => 'Što želiš prvo poboljšati?',
+            'text' => 'Odaberi najbliži cilj i funnel će te voditi prema preporuci koja ima najviše smisla za tvoju situaciju.',
             'options' => [
-                $action('product_energy', 'Više energije', 'vise_energije', 'product_recommendation', 'primary'),
-                $action('product_weight', 'Regulacija težine', 'regulacija_tezine', 'product_recommendation', 'secondary'),
-                $action('product_skin', 'Njega kože', 'njega_koze', 'product_recommendation', 'secondary'),
-                $action('product_routine', 'Opća dnevna rutina', 'dnevna_rutina', 'product_recommendation', 'secondary'),
-                $action('product_discount', 'Želim popust', 'popust', 'product_recommendation', 'ghost'),
+                $action('product_energy', 'Više energije i dnevna vitalnost', 'vise_energije', 'product_recommendation', 'primary'),
+                $action('product_weight', 'Regulacija težine i bolja forma', 'regulacija_tezine', 'product_recommendation', 'secondary'),
+                $action('product_skin', 'Njega kože i osobna rutina', 'njega_koze', 'product_recommendation', 'secondary'),
+                $action('product_routine', 'Opća dnevna rutina za mene ili obitelj', 'dnevna_rutina', 'product_recommendation', 'secondary'),
+                $action('product_discount', 'Želim preporuku i popust', 'popust', 'product_recommendation', 'ghost'),
             ],
             'auto_advance' => true,
         ]),
@@ -4598,6 +4600,38 @@ function vip_funnel_refresh_stjepan_landing_copy_if_needed(array &$payload): voi
         ]);
     }
 
+    $product_hero_title = $find_board_block_title($payload, 'product_gateway_hero');
+    if(in_array($product_hero_title, [
+        'Ne mora svatko odmah u posao. Odaberi cilj i dobit ćeš jasniji proizvodni korak.',
+        'Kreni od proizvoda koji ti stvarno treba, a poslovni put može doći kasnije.',
+    ], true)) {
+        vip_funnel_update_template_block($payload, 'product_gateway_hero', [
+            'badge' => 'Proizvodi i popust',
+            'title' => 'Kreni od proizvoda koji ti stvarno treba, a poslovni put može doći kasnije.',
+            'text' => 'Ako te sada najviše zanimaju Forever proizvodi, odaberi cilj koji ti je najbliži. Dobit ćeš jednostavnu preporuku, mogućnost popusta i jasan sljedeći korak bez pritiska.',
+            'title_size' => 50,
+        ]);
+        vip_funnel_update_template_block($payload, 'product_goal', [
+            'title' => 'Što želiš prvo poboljšati?',
+            'text' => 'Odaberi najbliži cilj i funnel će te voditi prema preporuci koja ima najviše smisla za tvoju situaciju.',
+            'options' => [
+                ['id' => 'product_energy', 'label' => 'Više energije i dnevna vitalnost', 'value' => 'vise_energije', 'style' => 'primary', 'action' => 'goto_step', 'target_step_id' => 'product_recommendation', 'external_url' => '', 'require_submit' => false],
+                ['id' => 'product_weight', 'label' => 'Regulacija težine i bolja forma', 'value' => 'regulacija_tezine', 'style' => 'secondary', 'action' => 'goto_step', 'target_step_id' => 'product_recommendation', 'external_url' => '', 'require_submit' => false],
+                ['id' => 'product_skin', 'label' => 'Njega kože i osobna rutina', 'value' => 'njega_koze', 'style' => 'secondary', 'action' => 'goto_step', 'target_step_id' => 'product_recommendation', 'external_url' => '', 'require_submit' => false],
+                ['id' => 'product_routine', 'label' => 'Opća dnevna rutina za mene ili obitelj', 'value' => 'dnevna_rutina', 'style' => 'secondary', 'action' => 'goto_step', 'target_step_id' => 'product_recommendation', 'external_url' => '', 'require_submit' => false],
+                ['id' => 'product_discount', 'label' => 'Želim preporuku i popust', 'value' => 'popust', 'style' => 'ghost', 'action' => 'goto_step', 'target_step_id' => 'product_recommendation', 'external_url' => '', 'require_submit' => false],
+            ],
+        ]);
+        vip_funnel_update_template_step($payload, 'product_gateway', [
+            'title' => 'Proizvodni put s jasnom preporukom',
+            'summary' => 'Vodi osobu prema proizvodnom cilju, popustu i kasnijem poslovnom mostu bez pritiska.',
+            'helper_text' => 'Vodi osobu prema proizvodnom cilju, popustu i kasnijem poslovnom mostu bez pritiska.',
+            'preview_headline' => 'Proizvodni put s jasnom preporukom',
+            'preview_body' => 'Vodi osobu prema proizvodnom cilju, popustu i kasnijem poslovnom mostu bez pritiska.',
+            'page' => ['name' => 'Proizvodni put s jasnom preporukom'],
+        ]);
+    }
+
     if(empty($payload['landing_page']['blocks']) || !is_array($payload['landing_page']['blocks'])) {
         return;
     }
@@ -4984,6 +5018,23 @@ function vip_funnel_get_fcc_vip_import_template_payload($user = null, string $la
             'title' => 'Ako želiš prvo vidjeti sustav, ostavi podatke i razlog.',
             'text' => 'Demo je kontroliran i vremenski ograničen. Mentor će vidjeti tvoj zahtjev i javiti ti se s pravim sljedećim korakom.',
         ]);
+        vip_funnel_update_template_block($payload, 'product_gateway_hero', [
+            'badge' => 'Proizvodi i popust',
+            'title' => 'Kreni od proizvoda koji ti stvarno treba, a poslovni put može doći kasnije.',
+            'text' => 'Ako te sada najviše zanimaju Forever proizvodi, odaberi cilj koji ti je najbliži. Dobit ćeš jednostavnu preporuku, mogućnost popusta i jasan sljedeći korak bez pritiska.',
+            'title_size' => 50,
+        ]);
+        vip_funnel_update_template_block($payload, 'product_goal', [
+            'title' => 'Što želiš prvo poboljšati?',
+            'text' => 'Odaberi najbliži cilj i funnel će te voditi prema preporuci koja ima najviše smisla za tvoju situaciju.',
+            'options' => [
+                ['id' => 'product_energy', 'label' => 'Više energije i dnevna vitalnost', 'value' => 'vise_energije', 'style' => 'primary', 'action' => 'goto_step', 'target_step_id' => 'product_recommendation', 'external_url' => '', 'require_submit' => false],
+                ['id' => 'product_weight', 'label' => 'Regulacija težine i bolja forma', 'value' => 'regulacija_tezine', 'style' => 'secondary', 'action' => 'goto_step', 'target_step_id' => 'product_recommendation', 'external_url' => '', 'require_submit' => false],
+                ['id' => 'product_skin', 'label' => 'Njega kože i osobna rutina', 'value' => 'njega_koze', 'style' => 'secondary', 'action' => 'goto_step', 'target_step_id' => 'product_recommendation', 'external_url' => '', 'require_submit' => false],
+                ['id' => 'product_routine', 'label' => 'Opća dnevna rutina za mene ili obitelj', 'value' => 'dnevna_rutina', 'style' => 'secondary', 'action' => 'goto_step', 'target_step_id' => 'product_recommendation', 'external_url' => '', 'require_submit' => false],
+                ['id' => 'product_discount', 'label' => 'Želim preporuku i popust', 'value' => 'popust', 'style' => 'ghost', 'action' => 'goto_step', 'target_step_id' => 'product_recommendation', 'external_url' => '', 'require_submit' => false],
+            ],
+        ]);
 
         vip_funnel_update_template_step($payload, 'business_gateway', [
             'title' => 'Poslovni filter za ozbiljan FCC start',
@@ -5000,6 +5051,14 @@ function vip_funnel_get_fcc_vip_import_template_payload($user = null, string $la
             'preview_headline' => 'Razumij FCC sustav prije odluke',
             'preview_body' => 'Mirno objašnjava kako FCC vodi od interesa do proizvoda, provjere, demo prikaza ili ulaska u tim.',
             'page' => ['name' => 'Razumij FCC sustav prije odluke'],
+        ]);
+        vip_funnel_update_template_step($payload, 'product_gateway', [
+            'title' => 'Proizvodni put s jasnom preporukom',
+            'summary' => 'Vodi osobu prema proizvodnom cilju, popustu i kasnijem poslovnom mostu bez pritiska.',
+            'helper_text' => 'Vodi osobu prema proizvodnom cilju, popustu i kasnijem poslovnom mostu bez pritiska.',
+            'preview_headline' => 'Proizvodni put s jasnom preporukom',
+            'preview_body' => 'Vodi osobu prema proizvodnom cilju, popustu i kasnijem poslovnom mostu bez pritiska.',
+            'page' => ['name' => 'Proizvodni put s jasnom preporukom'],
         ]);
         vip_funnel_update_template_step($payload, 'mentor_call_request', [
             'title' => 'Zatraži kratki pregled s mentorom',
@@ -5138,6 +5197,23 @@ function vip_funnel_get_fcc_vip_import_template_payload($user = null, string $la
             'title' => 'If you want to see the system first, leave your details and reason.',
             'text' => 'Demo access is controlled and time-limited. Your mentor will see your request and contact you with the right next step.',
         ]);
+        vip_funnel_update_template_block($payload, 'product_gateway_hero', [
+            'badge' => 'Products and discount',
+            'title' => 'Start with the product you actually need, and the business path can come later.',
+            'text' => 'If Forever products are your main interest right now, choose the goal that feels closest. You will get a simple recommendation, a discount option, and a clear next step without pressure.',
+            'title_size' => 50,
+        ]);
+        vip_funnel_update_template_block($payload, 'product_goal', [
+            'title' => 'What do you want to improve first?',
+            'text' => 'Choose the closest goal and the funnel will guide you toward the recommendation that makes the most sense for your situation.',
+            'options' => [
+                ['id' => 'product_energy', 'label' => 'More energy and daily vitality', 'value' => 'vise_energije', 'style' => 'primary', 'action' => 'goto_step', 'target_step_id' => 'product_recommendation', 'external_url' => '', 'require_submit' => false],
+                ['id' => 'product_weight', 'label' => 'Weight management and better shape', 'value' => 'regulacija_tezine', 'style' => 'secondary', 'action' => 'goto_step', 'target_step_id' => 'product_recommendation', 'external_url' => '', 'require_submit' => false],
+                ['id' => 'product_skin', 'label' => 'Skin care and personal routine', 'value' => 'njega_koze', 'style' => 'secondary', 'action' => 'goto_step', 'target_step_id' => 'product_recommendation', 'external_url' => '', 'require_submit' => false],
+                ['id' => 'product_routine', 'label' => 'Daily routine for me or my family', 'value' => 'dnevna_rutina', 'style' => 'secondary', 'action' => 'goto_step', 'target_step_id' => 'product_recommendation', 'external_url' => '', 'require_submit' => false],
+                ['id' => 'product_discount', 'label' => 'I want a recommendation and discount', 'value' => 'popust', 'style' => 'ghost', 'action' => 'goto_step', 'target_step_id' => 'product_recommendation', 'external_url' => '', 'require_submit' => false],
+            ],
+        ]);
 
         vip_funnel_update_template_step($payload, 'business_gateway', [
             'title' => 'Business filter for a serious FCC start',
@@ -5154,6 +5230,14 @@ function vip_funnel_get_fcc_vip_import_template_payload($user = null, string $la
             'preview_headline' => 'Understand the FCC system before deciding',
             'preview_body' => 'Calmly explains how FCC guides interest toward products, a short check, demo, or joining the team.',
             'page' => ['name' => 'Understand the FCC system before deciding'],
+        ]);
+        vip_funnel_update_template_step($payload, 'product_gateway', [
+            'title' => 'Product path with a clear recommendation',
+            'summary' => 'Guides the visitor toward a product goal, discount, and later business bridge without pressure.',
+            'helper_text' => 'Guides the visitor toward a product goal, discount, and later business bridge without pressure.',
+            'preview_headline' => 'Product path with a clear recommendation',
+            'preview_body' => 'Guides the visitor toward a product goal, discount, and later business bridge without pressure.',
+            'page' => ['name' => 'Product path with a clear recommendation'],
         ]);
         vip_funnel_update_template_step($payload, 'mentor_call_request', [
             'title' => 'Request a short review with your mentor',
@@ -5387,15 +5471,27 @@ function vip_funnel_localize_template_payload(array $payload, string $language):
         'Zatraži demo pregled' => 'Request demo review',
         'Ako sada želiš samo proizvode ili popust, kreni ovim putem' => 'If you only want products or a discount now, start here',
         'Produktni ulaz koji monetizira osobe koje ne žele odmah posao.' => 'Product entry path for people who do not want the business immediately.',
+        'Proizvodni put s jasnom preporukom' => 'Product path with a clear recommendation',
+        'Vodi osobu prema proizvodnom cilju, popustu i kasnijem poslovnom mostu bez pritiska.' => 'Guides the visitor toward a product goal, discount, and later business bridge without pressure.',
         'Proizvodni put' => 'Product path',
+        'Proizvodi i popust' => 'Products and discount',
         'Ne mora svatko odmah u posao. Odaberi cilj i dobit ćeš jasniji proizvodni korak.' => 'Not everyone needs to start the business immediately. Choose your goal and you will get a clearer product step.',
         'Ako kasnije poželiš graditi posao, isti FCC sustav možeš koristiti za preporuke, kontakte i vlastiti tim.' => 'If you later want to build a business, the same FCC system can help with recommendations, contacts, and your own team.',
+        'Kreni od proizvoda koji ti stvarno treba, a poslovni put može doći kasnije.' => 'Start with the product you actually need, and the business path can come later.',
+        'Ako te sada najviše zanimaju Forever proizvodi, odaberi cilj koji ti je najbliži. Dobit ćeš jednostavnu preporuku, mogućnost popusta i jasan sljedeći korak bez pritiska.' => 'If Forever products are your main interest right now, choose the goal that feels closest. You will get a simple recommendation, a discount option, and a clear next step without pressure.',
         'Što ti je sada glavni cilj?' => 'What is your main goal right now?',
+        'Što želiš prvo poboljšati?' => 'What do you want to improve first?',
+        'Odaberi najbliži cilj i funnel će te voditi prema preporuci koja ima najviše smisla za tvoju situaciju.' => 'Choose the closest goal and the funnel will guide you toward the recommendation that makes the most sense for your situation.',
         'Više energije' => 'More energy',
         'Regulacija težine' => 'Weight management',
         'Njega kože' => 'Skin care',
         'Opća dnevna rutina' => 'General daily routine',
         'Želim popust' => 'I want a discount',
+        'Više energije i dnevna vitalnost' => 'More energy and daily vitality',
+        'Regulacija težine i bolja forma' => 'Weight management and better shape',
+        'Njega kože i osobna rutina' => 'Skin care and personal routine',
+        'Opća dnevna rutina za mene ili obitelj' => 'Daily routine for me or my family',
+        'Želim preporuku i popust' => 'I want a recommendation and discount',
         'Ovo je najbolji prvi proizvodni korak za tvoj cilj' => 'This is the best first product step for your goal',
         'Dinamična proizvodna preporuka s mostom prema poslovnom putu.' => 'Dynamic product recommendation with a bridge toward the business path.',
         'Preporuka' => 'Recommendation',
