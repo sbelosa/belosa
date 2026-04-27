@@ -78,13 +78,20 @@ foreach($blocks as $preview_block) {
         --vf-accent: <?= $e($accent_color) ?>;
         padding: 3rem 0 4rem;
         min-height: 100vh;
+        overflow-x: hidden;
         background:
             radial-gradient(720px 320px at 0% 0%, rgba(103,216,201,0.14), transparent 60%),
             radial-gradient(620px 280px at 100% 0%, rgba(244,195,77,0.13), transparent 58%),
             linear-gradient(180deg, #0a111b, #09111b 55%, #0b1320);
     }
 
+    .vip-funnel-public,
+    .vip-funnel-public * {
+        box-sizing: border-box;
+    }
+
     .vip-funnel-public__wrap {
+        width: 100%;
         max-width: 980px;
         margin: 0 auto;
         padding: 0 1rem;
@@ -95,6 +102,7 @@ foreach($blocks as $preview_block) {
     }
 
     .vip-funnel-public__page-shell {
+        width: 100%;
         background: var(--vf-bg);
         border-radius: 1.6rem;
         border: 1px solid rgba(255,255,255,0.08);
@@ -104,6 +112,7 @@ foreach($blocks as $preview_block) {
     }
 
     .vip-funnel-public__canvas {
+        width: 100%;
         margin: 0 auto;
         max-width: <?= $e($canvas_max_width) ?>;
         border-radius: 1.45rem;
@@ -524,12 +533,89 @@ foreach($blocks as $preview_block) {
     }
 
     @media (max-width: 720px) {
+        .vip-funnel-public {
+            padding: 1.15rem 0 calc(2.75rem + env(safe-area-inset-bottom));
+        }
+
+        .vip-funnel-public__wrap {
+            padding: 0 .55rem;
+        }
+
+        .vip-funnel-public__page-shell {
+            border-radius: 1.15rem;
+            padding: .5rem;
+        }
+
+        .vip-funnel-public__canvas {
+            border-radius: 1rem;
+            padding: .65rem;
+        }
+
         .vip-funnel-public__blocks {
             grid-template-columns: minmax(0, 1fr);
+            gap: .72rem;
         }
 
         .vip-funnel-public__blocks > [data-vf-span] {
             grid-column: span 1;
+        }
+
+        .vip-funnel-public__block {
+            border-radius: .95rem;
+            padding: .9rem;
+        }
+
+        .vip-funnel-public__badge {
+            font-size: .72rem !important;
+            line-height: 1.1;
+            margin-bottom: .5rem;
+            padding: .28rem .6rem;
+        }
+
+        .vip-funnel-public__block-title {
+            font-size: clamp(1.35rem, 6.9vw, 1.85rem) !important;
+            line-height: 1.08 !important;
+            overflow-wrap: break-word;
+            hyphens: auto;
+        }
+
+        .vip-funnel-public__block[data-vf-block-type="headline"] .vip-funnel-public__block-title {
+            font-size: clamp(1.48rem, 7.8vw, 2rem) !important;
+        }
+
+        .vip-funnel-public__block-text {
+            font-size: clamp(.98rem, 4.5vw, 1.15rem) !important;
+            line-height: 1.55 !important;
+        }
+
+        .vip-funnel-public__media {
+            min-height: 140px;
+            border-radius: .85rem;
+            margin-top: .72rem;
+        }
+
+        .vip-funnel-public__actions {
+            gap: .58rem;
+            margin-top: .78rem;
+        }
+
+        .vip-funnel-public__btn,
+        .vip-funnel-public__btn:visited {
+            border-radius: .85rem;
+            font-size: 1rem !important;
+            line-height: 1.25;
+            padding: .86rem .75rem;
+        }
+
+        .vip-funnel-public__field {
+            border-radius: .85rem;
+            font-size: 1rem !important;
+            padding: .86rem .85rem;
+        }
+
+        .vip-funnel-public__radio-title {
+            font-size: 1rem !important;
+            line-height: 1.3;
         }
 
         .vip-funnel-public__countdown-row.is-cols-3,
@@ -543,6 +629,24 @@ foreach($blocks as $preview_block) {
 
         .vip-funnel-public__product-image {
             max-width: 220px;
+        }
+    }
+
+    @media (max-width: 420px) {
+        .vip-funnel-public__block-title {
+            font-size: clamp(1.28rem, 6.8vw, 1.72rem) !important;
+        }
+
+        .vip-funnel-public__block[data-vf-block-type="headline"] .vip-funnel-public__block-title {
+            font-size: clamp(1.42rem, 7.6vw, 1.9rem) !important;
+        }
+
+        .vip-funnel-public__block {
+            padding: .82rem;
+        }
+
+        .vip-funnel-public__block-text {
+            font-size: clamp(.95rem, 4.4vw, 1.08rem) !important;
         }
     }
 
@@ -612,7 +716,7 @@ foreach($blocks as $preview_block) {
                                     <?php continue; ?>
                                 <?php endif ?>
 
-                                <div class="vip-funnel-public__block align-<?= $e($alignment) ?>" data-vf-span="<?= $e($layout_width) ?>" style="<?= $e(implode(';', $block_style)) ?>">
+                                <div class="vip-funnel-public__block align-<?= $e($alignment) ?>" data-vf-span="<?= $e($layout_width) ?>" data-vf-block-type="<?= $e($block_type) ?>" style="<?= $e(implode(';', $block_style)) ?>">
                                     <?php if(!empty($block['badge'])): ?>
                                         <div class="vip-funnel-public__badge" style="font-size: <?= $e($badge_size) ?>px; font-weight: <?= $e($badge_weight) ?>; font-family: <?= $e($font_family) ?>; color: <?= $e($badge_color) ?>;"><?= $e($block['badge']) ?></div>
                                     <?php endif ?>

@@ -2518,12 +2518,25 @@ function vip_funnel_get_stjepan_recruitment_payload($user = null, array $options
         'ab_distribution' => 50,
         'variant_b_blocks' => [
             $block('landing_b_hero', 'headline', [
-                'badge' => 'Od videa do sustava',
-                'title' => 'Od milionskih pregleda do vlastitog online posla',
-                'text' => 'Ako ti se sviđa moj sadržaj i zanima te kako to možeš pretvoriti u vlastiti online posao, kreni kroz kratki FCC Funnel 2.0 pregled.',
-                'title_size' => 58,
+                'badge' => 'Od interesa do sustava',
+                'title' => 'Od prvog interesa do vlastitog online posla',
+                'text' => 'Ako te zanima FCC, ovaj kratki funnel će ti pokazati najbolji sljedeći korak bez previše informacija odjednom.',
+                'title_size' => 50,
                 'text_size' => 20,
                 'alignment' => 'center',
+            ]),
+            $block('landing_b_intro_video', 'video', [
+                'title' => 'Kratki uvod tvog FCC mentora',
+                'text' => 'Pogledaj prvo kratku poruku, a zatim odaberi smjer koji je najbliži tvojoj situaciji.',
+                'media_url' => $video('main'),
+                'layout_width' => 'two_thirds',
+                'alignment' => 'center',
+            ]),
+            $block('landing_b_proof', 'proof_card', [
+                'badge' => 'Zašto ovo nije običan link',
+                'title' => 'FCC spaja pažnju, jasnu selekciju, proizvode i mentorstvo u jedan vođeni sustav.',
+                'text' => 'Novi posjetitelj ne mora čitati sve odjednom. Funnel ga vodi prema poslu, demo iskustvu ili proizvodnom putu, a meni pokazuje tko je spreman za ozbiljan razgovor.',
+                'layout_width' => 'third',
             ]),
             $block('landing_b_direction', 'survey', [
                 'title' => 'Odaberi svoj najbrži put',
@@ -4458,16 +4471,44 @@ function vip_funnel_complete_fcc_vip_landing_variant_b_if_needed(array &$payload
     $funnel_name = (string) ($payload['funnel']['name'] ?? '');
     $overview_eyebrow = (string) ($payload['overview']['eyebrow'] ?? '');
     $landing_name = (string) ($payload['landing_page']['name'] ?? '');
+    $overview_headline = (string) ($payload['overview']['headline'] ?? '');
     $is_fcc_vip_template = str_contains($funnel_name, 'FCC VIP Funnel')
         || str_contains($overview_eyebrow, 'FCC VIP Funnel')
         || str_contains($landing_name, 'FCC VIP Funnel');
+    $is_stjepan_recruiting_template = str_contains($funnel_name, 'Stjepan')
+        || str_contains($funnel_name, 'FCC Recruiting Funnel')
+        || str_contains($landing_name, 'recruiting landing')
+        || str_contains($overview_headline, 'mentorstvo');
 
-    if(!$is_fcc_vip_template || empty($payload['landing_page']['blocks']) || !is_array($payload['landing_page']['blocks'])) {
+    if((!$is_fcc_vip_template && !$is_stjepan_recruiting_template) || empty($payload['landing_page']['blocks']) || !is_array($payload['landing_page']['blocks'])) {
         return;
     }
 
     $variant_b_blocks = $payload['landing_page']['variant_b_blocks'] ?? [];
     if(is_array($variant_b_blocks) && count($variant_b_blocks) >= 4) {
+        return;
+    }
+
+    $source_ids = [];
+    foreach((array) ($payload['landing_page']['blocks'] ?? []) as $block) {
+        if(is_array($block) && !empty($block['id'])) {
+            $source_ids[(string) $block['id']] = true;
+        }
+    }
+
+    $variant_ids = [];
+    foreach((array) $variant_b_blocks as $block) {
+        if(is_array($block) && !empty($block['id'])) {
+            $variant_ids[(string) $block['id']] = true;
+        }
+    }
+
+    $has_complete_landing_source = isset($source_ids['landing_hero'], $source_ids['landing_intro_video'], $source_ids['landing_proof'], $source_ids['landing_direction']);
+    $has_legacy_short_variant = empty($variant_ids)
+        || isset($variant_ids['landing_b_hero'])
+        || isset($variant_ids['landing_b_direction']);
+
+    if(!$has_complete_landing_source || !$has_legacy_short_variant) {
         return;
     }
 
@@ -4481,6 +4522,7 @@ function vip_funnel_complete_fcc_vip_landing_variant_b_if_needed(array &$payload
                 'badge' => 'From interest to system',
                 'title' => 'From first interest to your own online business',
                 'text' => 'If FCC caught your attention, this short funnel shows the best next step without overwhelming you.',
+                'title_size' => 48,
             ],
             'intro_video' => [
                 'title' => 'Short intro from your FCC mentor',
@@ -4505,6 +4547,7 @@ function vip_funnel_complete_fcc_vip_landing_variant_b_if_needed(array &$payload
             'badge' => 'Od interesa do sustava',
             'title' => 'Od prvog interesa do vlastitog online posla',
             'text' => 'Ako te zanima FCC, ovaj kratki funnel će ti pokazati najbolji sljedeći korak bez previše informacija odjednom.',
+            'title_size' => 48,
         ],
         'intro_video' => [
             'title' => 'Kratki uvod tvog FCC mentora',
