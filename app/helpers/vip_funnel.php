@@ -3915,6 +3915,10 @@ function vip_funnel_studio_schema_is_ready(): bool {
 }
 
 function vip_funnel_slugify(string $value, string $fallback = 'vip-funnel-2-0'): string {
+    $value = strtr($value, [
+        'Č' => 'C', 'Ć' => 'C', 'Ž' => 'Z', 'Š' => 'S', 'Đ' => 'D',
+        'č' => 'c', 'ć' => 'c', 'ž' => 'z', 'š' => 's', 'đ' => 'd',
+    ]);
     $value = strtolower(trim($value));
     $value = preg_replace('/[^a-z0-9]+/i', '-', $value) ?? '';
     $value = trim($value, '-');
