@@ -2553,32 +2553,32 @@ function vip_funnel_get_stjepan_recruitment_payload($user = null, array $options
         ],
     ]);
 
-    $business_gateway = $step('business_gateway', 'entry', 'business', 'offer', 'Od pregleda videa do online posla, ali bez kretanja od nule', 'Objašnjava zašto je FCC vođeni poslovni sustav, a ne samo još jedna informacija.', [
+    $business_gateway = $step('business_gateway', 'entry', 'business', 'offer', 'Poslovni filter za ozbiljan FCC start', 'Vodi prema start paketu, kratkoj provjeri, demo prikazu sustava ili mirnijem uvodu.', [
         $block('business_hero', 'headline', [
             'badge' => 'Poslovni put',
-            'title' => 'Ne trebaš krenuti sam. Trebaš jasan sustav i mentora.',
-            'text' => 'FCC ti daje okvir: što pokazati, kako objasniti, kako voditi ljude i kako graditi naviku rada. Ja te vodim kroz prve korake, a ti učiš raditi konkretno i dosljedno.',
+            'title' => 'Ako želiš krenuti ozbiljno, kreni uz sustav, tim i mentora.',
+            'text' => 'Ovdje ti pokazujem što znači ulazak u moj FCC tim: kako se radi, što dobivaš kroz sustav, koji su prvi koraci i kada ima smisla uzeti start paket. Bez lutanja, bez previše informacija odjednom - samo jasan sljedeći korak.',
         ]),
         $block('business_video', 'video', [
-            'title' => 'Tko sam ja i zašto sam napravio FCC',
-            'text' => 'Kratko objašnjenje sustava, tima i načina rada.',
+            'title' => 'Kako izgleda ulazak u moj FCC tim',
+            'text' => 'Pogledaj kratku poruku prije odluke. Pokazat ću ti što radiš u prvom tjednu, kako koristiš sustav i što znači imati mentora uz sebe.',
             'media_url' => $video('business'),
             'layout_width' => 'two_thirds',
         ]),
         $block('business_system', 'proof_card', [
-            'badge' => 'Sustav',
-            'title' => 'Ne krećeš s praznim profilom i praznom idejom.',
-            'text' => 'Krećeš kroz gotov FCC okvir koji pomaže u prezentaciji, preporuci, kontaktima i follow-upu.',
+            'badge' => 'Što dobivaš',
+            'title' => 'Ne krećeš od nule. Krećeš kroz jasan FCC okvir.',
+            'text' => 'Dobivaš smjer za prve objave, prezentaciju, preporuke, razgovore i follow-up. Rezultat ovisi o tvojoj aktivnosti, ali ne ulaziš naslijepo - znaš što radiš prvi dan, prvi tjedan i nakon toga.',
             'layout_width' => 'third',
         ]),
         $block('business_choice', 'survey', [
-            'title' => 'Koji opis ti je najbliži?',
-            'text' => 'Ovo određuje hoće li te funnel voditi na provjeru, demo ili mirniji uvod.',
+            'title' => 'Što ti sada treba za odluku?',
+            'text' => 'Odaberi iskreno gdje si trenutno. Tako će te funnel odvesti na najbrži sljedeći korak bez nepotrebnog lutanja.',
             'options' => [
-                $action('business_serious', 'Želim krenuti ozbiljno ovaj tjedan', 'serious_this_week', 'qualification_form', 'primary'),
-                $action('business_check', 'Zanima me, ali trebam prvo provjeru', 'needs_check', 'qualification_form', 'secondary'),
-                $action('business_demo', 'Želim prvo vidjeti demo', 'demo_interest', 'fcc_demo_preview', 'secondary'),
-                $action('business_not_ready', 'Nisam spreman za investiciju', 'not_ready', 'not_ready_nurture', 'ghost'),
+                $action('business_serious', 'Spreman/na sam za start paket i ulazak u tim', 'ready_360_now', 'start_package_offer', 'primary'),
+                $action('business_check', 'Želim kratku provjeru prije starta', 'needs_check', 'qualification_form', 'secondary'),
+                $action('business_demo', 'Prvo želim vidjeti kako sustav radi', 'demo_interest', 'fcc_demo_preview', 'secondary'),
+                $action('business_not_ready', 'Nisam još spreman/na za start paket', 'not_ready', 'not_ready_nurture', 'ghost'),
             ],
             'auto_advance' => true,
         ]),
@@ -4496,6 +4496,67 @@ function vip_funnel_refresh_stjepan_landing_copy_if_needed(array &$payload): voi
         unset($block);
     };
 
+    $find_board_block_title = static function(array $payload, string $block_id): string {
+        foreach((array) ($payload['board'] ?? []) as $phase) {
+            if(!is_array($phase) || empty($phase['steps']) || !is_array($phase['steps'])) {
+                continue;
+            }
+
+            foreach($phase['steps'] as $step) {
+                if(!is_array($step) || empty($step['page']['blocks']) || !is_array($step['page']['blocks'])) {
+                    continue;
+                }
+
+                foreach($step['page']['blocks'] as $block) {
+                    if(is_array($block) && (string) ($block['id'] ?? '') === $block_id) {
+                        return (string) ($block['title'] ?? '');
+                    }
+                }
+            }
+        }
+
+        return '';
+    };
+
+    $business_hero_title = $find_board_block_title($payload, 'business_hero');
+    if(in_array($business_hero_title, [
+        'Ne trebaš krenuti sam. Trebaš jasan sustav i mentora.',
+        'Ako želiš krenuti ozbiljno, kreni uz sustav, tim i mentora.',
+    ], true)) {
+        vip_funnel_update_template_block($payload, 'business_hero', [
+            'badge' => 'Poslovni put',
+            'title' => 'Ako želiš krenuti ozbiljno, kreni uz sustav, tim i mentora.',
+            'text' => 'Ovdje ti pokazujem što znači ulazak u moj FCC tim: kako se radi, što dobivaš kroz sustav, koji su prvi koraci i kada ima smisla uzeti start paket. Bez lutanja, bez previše informacija odjednom - samo jasan sljedeći korak.',
+        ]);
+        vip_funnel_update_template_block($payload, 'business_video', [
+            'title' => 'Kako izgleda ulazak u moj FCC tim',
+            'text' => 'Pogledaj kratku poruku prije odluke. Pokazat ću ti što radiš u prvom tjednu, kako koristiš sustav i što znači imati mentora uz sebe.',
+        ]);
+        vip_funnel_update_template_block($payload, 'business_system', [
+            'badge' => 'Što dobivaš',
+            'title' => 'Ne krećeš od nule. Krećeš kroz jasan FCC okvir.',
+            'text' => 'Dobivaš smjer za prve objave, prezentaciju, preporuke, razgovore i follow-up. Rezultat ovisi o tvojoj aktivnosti, ali ne ulaziš naslijepo - znaš što radiš prvi dan, prvi tjedan i nakon toga.',
+        ]);
+        vip_funnel_update_template_block($payload, 'business_choice', [
+            'title' => 'Što ti sada treba za odluku?',
+            'text' => 'Odaberi iskreno gdje si trenutno. Tako će te funnel odvesti na najbrži sljedeći korak bez nepotrebnog lutanja.',
+            'options' => [
+                ['id' => 'business_serious', 'label' => 'Spreman/na sam za start paket i ulazak u tim', 'value' => 'ready_360_now', 'style' => 'primary', 'action' => 'goto_step', 'target_step_id' => 'start_package_offer', 'external_url' => '', 'require_submit' => false],
+                ['id' => 'business_check', 'label' => 'Želim kratku provjeru prije starta', 'value' => 'needs_check', 'style' => 'secondary', 'action' => 'goto_step', 'target_step_id' => 'qualification_form', 'external_url' => '', 'require_submit' => false],
+                ['id' => 'business_demo', 'label' => 'Prvo želim vidjeti kako sustav radi', 'value' => 'demo_interest', 'style' => 'secondary', 'action' => 'goto_step', 'target_step_id' => 'fcc_demo_preview', 'external_url' => '', 'require_submit' => false],
+                ['id' => 'business_not_ready', 'label' => 'Nisam još spreman/na za start paket', 'value' => 'not_ready', 'style' => 'ghost', 'action' => 'goto_step', 'target_step_id' => 'not_ready_nurture', 'external_url' => '', 'require_submit' => false],
+            ],
+        ]);
+        vip_funnel_update_template_step($payload, 'business_gateway', [
+            'title' => 'Poslovni filter za ozbiljan FCC start',
+            'summary' => 'Vodi prema start paketu, kratkoj provjeri, demo prikazu sustava ili mirnijem uvodu.',
+            'helper_text' => 'Vodi prema start paketu, kratkoj provjeri, demo prikazu sustava ili mirnijem uvodu.',
+            'preview_headline' => 'Poslovni filter za ozbiljan FCC start',
+            'preview_body' => 'Vodi prema start paketu, kratkoj provjeri, demo prikazu sustava ili mirnijem uvodu.',
+            'page' => ['name' => 'Poslovni filter za ozbiljan FCC start'],
+        ]);
+    }
+
     if(empty($payload['landing_page']['blocks']) || !is_array($payload['landing_page']['blocks'])) {
         return;
     }
@@ -4834,12 +4895,27 @@ function vip_funnel_get_fcc_vip_import_template_payload($user = null, string $la
             'text' => 'Ako te zanima FCC, ovaj kratki funnel će ti pokazati najbolji sljedeći korak bez previše informacija odjednom.',
         ]);
         vip_funnel_update_template_block($payload, 'business_hero', [
-            'title' => 'Ne trebaš krenuti sam. Trebaš jasan sustav i mentora.',
-            'text' => 'FCC ti daje okvir: što pokazati, kako objasniti, kako voditi ljude i kako graditi naviku rada. ' . $mentor_name . ' te vodi kroz prve korake, a ti učiš raditi konkretno i dosljedno.',
+            'title' => 'Ako želiš krenuti ozbiljno, kreni uz sustav, tim i mentora.',
+            'text' => 'Ovdje ti ' . $mentor_name . ' pokazuje što znači ulazak u FCC tim: kako se radi, što dobivaš kroz sustav, koji su prvi koraci i kada ima smisla uzeti start paket. Bez lutanja, bez previše informacija odjednom - samo jasan sljedeći korak.',
         ]);
         vip_funnel_update_template_block($payload, 'business_video', [
-            'title' => 'Tko je tvoj mentor i kako radi FCC sustav',
-            'text' => 'Kratko objašnjenje sustava, tima, prvih koraka i načina rada.',
+            'title' => 'Kako izgleda ulazak u FCC tim',
+            'text' => 'Pogledaj kratku poruku prije odluke. Tvoj mentor će ti pokazati što radiš u prvom tjednu, kako koristiš sustav i što znači imati mentora uz sebe.',
+        ]);
+        vip_funnel_update_template_block($payload, 'business_system', [
+            'badge' => 'Što dobivaš',
+            'title' => 'Ne krećeš od nule. Krećeš kroz jasan FCC okvir.',
+            'text' => 'Dobivaš smjer za prve objave, prezentaciju, preporuke, razgovore i follow-up. Rezultat ovisi o tvojoj aktivnosti, ali ne ulaziš naslijepo - znaš što radiš prvi dan, prvi tjedan i nakon toga.',
+        ]);
+        vip_funnel_update_template_block($payload, 'business_choice', [
+            'title' => 'Što ti sada treba za odluku?',
+            'text' => 'Odaberi iskreno gdje si trenutno. Tako će te funnel odvesti na najbrži sljedeći korak bez nepotrebnog lutanja.',
+            'options' => [
+                ['id' => 'business_serious', 'label' => 'Spreman/na sam za start paket i ulazak u tim', 'value' => 'ready_360_now', 'style' => 'primary', 'action' => 'goto_step', 'target_step_id' => 'start_package_offer', 'external_url' => '', 'require_submit' => false],
+                ['id' => 'business_check', 'label' => 'Želim kratku provjeru prije starta', 'value' => 'needs_check', 'style' => 'secondary', 'action' => 'goto_step', 'target_step_id' => 'qualification_form', 'external_url' => '', 'require_submit' => false],
+                ['id' => 'business_demo', 'label' => 'Prvo želim vidjeti kako sustav radi', 'value' => 'demo_interest', 'style' => 'secondary', 'action' => 'goto_step', 'target_step_id' => 'fcc_demo_preview', 'external_url' => '', 'require_submit' => false],
+                ['id' => 'business_not_ready', 'label' => 'Nisam još spreman/na za start paket', 'value' => 'not_ready', 'style' => 'ghost', 'action' => 'goto_step', 'target_step_id' => 'not_ready_nurture', 'external_url' => '', 'require_submit' => false],
+            ],
         ]);
         vip_funnel_update_template_block($payload, 'qualification_privacy', [
             'text' => 'Slanjem podataka potvrđuješ da te ' . $mentor_name . ' ili FCC tim smije kontaktirati vezano uz odabrani smjer. Privacy: ' . SITE_URL . 'page/privacy-policy',
@@ -4858,8 +4934,12 @@ function vip_funnel_get_fcc_vip_import_template_payload($user = null, string $la
         ]);
 
         vip_funnel_update_template_step($payload, 'business_gateway', [
-            'title' => 'Od interesa do online posla, ali bez kretanja od nule',
-            'preview_headline' => 'Od interesa do online posla, ali bez kretanja od nule',
+            'title' => 'Poslovni filter za ozbiljan FCC start',
+            'summary' => 'Vodi prema start paketu, kratkoj provjeri, demo prikazu sustava ili mirnijem uvodu.',
+            'helper_text' => 'Vodi prema start paketu, kratkoj provjeri, demo prikazu sustava ili mirnijem uvodu.',
+            'preview_headline' => 'Poslovni filter za ozbiljan FCC start',
+            'preview_body' => 'Vodi prema start paketu, kratkoj provjeri, demo prikazu sustava ili mirnijem uvodu.',
+            'page' => ['name' => 'Poslovni filter za ozbiljan FCC start'],
         ]);
         vip_funnel_update_template_step($payload, 'mentor_call_request', [
             'title' => 'Zatraži kratki pregled s mentorom',
@@ -4950,12 +5030,27 @@ function vip_funnel_get_fcc_vip_import_template_payload($user = null, string $la
             'text' => 'If FCC caught your attention, this short funnel shows the best next step without overwhelming you.',
         ]);
         vip_funnel_update_template_block($payload, 'business_hero', [
-            'title' => 'You do not need to start alone. You need a clear system and a mentor.',
-            'text' => 'FCC gives you a framework: what to show, how to explain it, how to guide people, and how to build consistent work habits. ' . $mentor_name . ' guides your first steps while you learn to work clearly and consistently.',
+            'title' => 'If you want to start seriously, start with a system, team, and mentor.',
+            'text' => 'Here, ' . $mentor_name . ' shows you what joining the FCC team means: how the work is done, what you get through the system, the first steps, and when the Start package makes sense. No wandering, no information overload - just a clear next step.',
         ]);
         vip_funnel_update_template_block($payload, 'business_video', [
-            'title' => 'Who your mentor is and how the FCC system works',
-            'text' => 'A short explanation of the system, team, first steps, and way of working.',
+            'title' => 'What joining the FCC team looks like',
+            'text' => 'Watch this short message before deciding. Your mentor will show you what to do in the first week, how to use the system, and what it means to have support beside you.',
+        ]);
+        vip_funnel_update_template_block($payload, 'business_system', [
+            'badge' => 'What you get',
+            'title' => 'You are not starting from zero. You start with a clear FCC framework.',
+            'text' => 'You get direction for your first posts, presentation, recommendations, conversations, and follow-up. Results depend on your activity, but you do not enter blindly - you know what to do on day one, week one, and after that.',
+        ]);
+        vip_funnel_update_template_block($payload, 'business_choice', [
+            'title' => 'What do you need now to decide?',
+            'text' => 'Choose honestly where you are right now. The funnel will send you to the fastest next step without unnecessary wandering.',
+            'options' => [
+                ['id' => 'business_serious', 'label' => 'I am ready for the Start package and joining the team', 'value' => 'ready_360_now', 'style' => 'primary', 'action' => 'goto_step', 'target_step_id' => 'start_package_offer', 'external_url' => '', 'require_submit' => false],
+                ['id' => 'business_check', 'label' => 'I want a short check before starting', 'value' => 'needs_check', 'style' => 'secondary', 'action' => 'goto_step', 'target_step_id' => 'qualification_form', 'external_url' => '', 'require_submit' => false],
+                ['id' => 'business_demo', 'label' => 'First I want to see how the system works', 'value' => 'demo_interest', 'style' => 'secondary', 'action' => 'goto_step', 'target_step_id' => 'fcc_demo_preview', 'external_url' => '', 'require_submit' => false],
+                ['id' => 'business_not_ready', 'label' => 'I am not ready for the Start package yet', 'value' => 'not_ready', 'style' => 'ghost', 'action' => 'goto_step', 'target_step_id' => 'not_ready_nurture', 'external_url' => '', 'require_submit' => false],
+            ],
         ]);
         vip_funnel_update_template_block($payload, 'qualification_privacy', [
             'text' => 'By submitting your details, you confirm that ' . $mentor_name . ' or the FCC team may contact you about the path you selected. Privacy: ' . SITE_URL . 'page/privacy-policy',
@@ -4974,8 +5069,12 @@ function vip_funnel_get_fcc_vip_import_template_payload($user = null, string $la
         ]);
 
         vip_funnel_update_template_step($payload, 'business_gateway', [
-            'title' => 'From interest to online business, without starting from zero',
-            'preview_headline' => 'From interest to online business, without starting from zero',
+            'title' => 'Business filter for a serious FCC start',
+            'summary' => 'Guides the visitor toward the Start package, a short check, the system demo, or a calmer introduction.',
+            'helper_text' => 'Guides the visitor toward the Start package, a short check, the system demo, or a calmer introduction.',
+            'preview_headline' => 'Business filter for a serious FCC start',
+            'preview_body' => 'Guides the visitor toward the Start package, a short check, the system demo, or a calmer introduction.',
+            'page' => ['name' => 'Business filter for a serious FCC start'],
         ]);
         vip_funnel_update_template_step($payload, 'mentor_call_request', [
             'title' => 'Request a short review with your mentor',
@@ -5080,20 +5179,35 @@ function vip_funnel_localize_template_payload(array $payload, string $language):
         'Proizvodi / popust' => 'Products / discount',
         'Od pregleda videa do online posla, ali bez kretanja od nule' => 'From video views to an online business, without starting from zero',
         'Objašnjava zašto je FCC vođeni poslovni sustav, a ne samo još jedna informacija.' => 'Explains why FCC is a guided business system, not just more information.',
+        'Poslovni filter za ozbiljan FCC start' => 'Business filter for a serious FCC start',
+        'Vodi prema start paketu, kratkoj provjeri, demo prikazu sustava ili mirnijem uvodu.' => 'Guides the visitor toward the Start package, a short check, the system demo, or a calmer introduction.',
         'Poslovni put' => 'Business path',
         'Ne trebaš krenuti sam. Trebaš jasan sustav i mentora.' => 'You do not need to start alone. You need a clear system and a mentor.',
         'FCC ti daje okvir: što pokazati, kako objasniti, kako voditi ljude i kako graditi naviku rada. Ja te vodim kroz prve korake, a ti učiš raditi konkretno i dosljedno.' => 'FCC gives you a framework: what to show, how to explain it, how to guide people, and how to build consistent work habits. Your mentor guides the first steps while you learn to work clearly and consistently.',
+        'Ako želiš krenuti ozbiljno, kreni uz sustav, tim i mentora.' => 'If you want to start seriously, start with a system, team, and mentor.',
+        'Ovdje ti pokazujem što znači ulazak u moj FCC tim: kako se radi, što dobivaš kroz sustav, koji su prvi koraci i kada ima smisla uzeti start paket. Bez lutanja, bez previše informacija odjednom - samo jasan sljedeći korak.' => 'Here I show you what joining my FCC team means: how the work is done, what you get through the system, the first steps, and when the Start package makes sense. No wandering, no information overload - just a clear next step.',
         'Tko sam ja i zašto sam napravio FCC' => 'Who I am and why FCC was created',
         'Kratko objašnjenje sustava, tima i načina rada.' => 'A short explanation of the system, team, and way of working.',
+        'Kako izgleda ulazak u moj FCC tim' => 'What joining my FCC team looks like',
+        'Pogledaj kratku poruku prije odluke. Pokazat ću ti što radiš u prvom tjednu, kako koristiš sustav i što znači imati mentora uz sebe.' => 'Watch this short message before deciding. I will show you what to do in the first week, how to use the system, and what it means to have a mentor beside you.',
         'Sustav' => 'System',
         'Ne krećeš s praznim profilom i praznom idejom.' => 'You are not starting with an empty profile and an empty idea.',
         'Krećeš kroz gotov FCC okvir koji pomaže u prezentaciji, preporuci, kontaktima i follow-upu.' => 'You start with a ready FCC framework for presentation, recommendations, contacts, and follow-up.',
+        'Što dobivaš' => 'What you get',
+        'Ne krećeš od nule. Krećeš kroz jasan FCC okvir.' => 'You are not starting from zero. You start with a clear FCC framework.',
+        'Dobivaš smjer za prve objave, prezentaciju, preporuke, razgovore i follow-up. Rezultat ovisi o tvojoj aktivnosti, ali ne ulaziš naslijepo - znaš što radiš prvi dan, prvi tjedan i nakon toga.' => 'You get direction for your first posts, presentation, recommendations, conversations, and follow-up. Results depend on your activity, but you do not enter blindly - you know what to do on day one, week one, and after that.',
         'Koji opis ti je najbliži?' => 'Which description fits you best?',
         'Ovo određuje hoće li te funnel voditi na provjeru, demo ili mirniji uvod.' => 'This determines whether the funnel sends you to qualification, demo, or a calmer introduction.',
+        'Što ti sada treba za odluku?' => 'What do you need now to decide?',
+        'Odaberi iskreno gdje si trenutno. Tako će te funnel odvesti na najbrži sljedeći korak bez nepotrebnog lutanja.' => 'Choose honestly where you are right now. The funnel will send you to the fastest next step without unnecessary wandering.',
         'Želim krenuti ozbiljno ovaj tjedan' => 'I want to start seriously this week',
         'Zanima me, ali trebam prvo provjeru' => 'I am interested, but I need to check first',
         'Želim prvo vidjeti demo' => 'I want to see the demo first',
         'Nisam spreman za investiciju' => 'I am not ready for the investment',
+        'Spreman/na sam za start paket i ulazak u tim' => 'I am ready for the Start package and joining the team',
+        'Želim kratku provjeru prije starta' => 'I want a short check before starting',
+        'Prvo želim vidjeti kako sustav radi' => 'First I want to see how the system works',
+        'Nisam još spreman/na za start paket' => 'I am not ready for the Start package yet',
         'Provjeri koji je najbolji sljedeći korak za tebe' => 'Check the best next step for you',
         'Kvalifikacija sprema kontakt i odgovore te vodi na pravi nastavak.' => 'Qualification saves your contact and answers, then routes you to the right next step.',
         'Kratka provjera' => 'Short check',
