@@ -88,6 +88,58 @@ function vip_funnel_get_user_preferences($user = null): \stdClass {
     return vip_funnel_normalize_object($user->preferences ?? []);
 }
 
+function vip_funnel_get_countdown_weekday_options(): array {
+    return [
+        1 => 'Ponedjeljak',
+        2 => 'Utorak',
+        3 => 'Srijeda',
+        4 => 'Četvrtak',
+        5 => 'Petak',
+        6 => 'Subota',
+        0 => 'Nedjelja',
+    ];
+}
+
+function vip_funnel_normalize_countdown_weekly_time(string $time = '20:00'): string {
+    $time = trim($time);
+
+    if(preg_match('/^([01]\d|2[0-3]):([0-5]\d)$/', $time)) {
+        return $time;
+    }
+
+    return '20:00';
+}
+
+function vip_funnel_normalize_countdown_timezone(string $timezone = 'Europe/Zagreb'): string {
+    $timezone = trim($timezone) ?: 'Europe/Zagreb';
+
+    try {
+        new \DateTimeZone($timezone);
+        return $timezone;
+    } catch(\Exception $exception) {
+        return 'Europe/Zagreb';
+    }
+}
+
+function vip_funnel_get_next_weekly_countdown_datetime(int $weekday = 4, string $time = '20:00', string $timezone = 'Europe/Zagreb'): string {
+    $weekday = max(0, min(6, $weekday));
+    $time = vip_funnel_normalize_countdown_weekly_time($time);
+    $timezone = vip_funnel_normalize_countdown_timezone($timezone);
+
+    [$hour, $minute] = array_map('intval', explode(':', $time));
+    $tz = new \DateTimeZone($timezone);
+    $now = new \DateTimeImmutable('now', $tz);
+    $today_weekday = (int) $now->format('w');
+    $days_ahead = ($weekday - $today_weekday + 7) % 7;
+    $candidate = $now->setTime($hour, $minute, 0)->modify('+' . $days_ahead . ' days');
+
+    if($candidate <= $now) {
+        $candidate = $candidate->modify('+7 days');
+    }
+
+    return $candidate->format(\DateTimeInterface::ATOM);
+}
+
 function vip_funnel_user_has_plan_access($user = null): bool {
     if(!$user) {
         return false;
@@ -692,6 +744,9 @@ function vip_funnel_get_page_block_defaults(string $type = 'headline'): array {
             'fixed_datetime' => '',
             'duration_minutes' => 30,
             'duration_days' => 0,
+            'countdown_weekly_day' => 4,
+            'countdown_weekly_time' => '20:00',
+            'countdown_timezone' => 'Europe/Zagreb',
             'countdown_show_days' => true,
             'countdown_show_hours' => true,
             'countdown_show_minutes' => true,
@@ -1953,6 +2008,9 @@ function vip_funnel_normalize_page_block_payload($block, int $index = 0): array 
         'fixed_datetime' => trim(input_clean((string) ($block['fixed_datetime'] ?? ($defaults['fixed_datetime'] ?? '')), 40)),
         'duration_minutes' => max(0, min(10080, (int) ($block['duration_minutes'] ?? ($defaults['duration_minutes'] ?? 30)))),
         'duration_days' => max(0, min(365, (int) ($block['duration_days'] ?? ($defaults['duration_days'] ?? 0)))),
+        'countdown_weekly_day' => max(0, min(6, (int) ($block['countdown_weekly_day'] ?? ($defaults['countdown_weekly_day'] ?? 4)))),
+        'countdown_weekly_time' => vip_funnel_normalize_countdown_weekly_time((string) ($block['countdown_weekly_time'] ?? ($defaults['countdown_weekly_time'] ?? '20:00'))),
+        'countdown_timezone' => vip_funnel_normalize_countdown_timezone((string) ($block['countdown_timezone'] ?? ($defaults['countdown_timezone'] ?? 'Europe/Zagreb'))),
         'countdown_show_days' => isset($block['countdown_show_days']) ? (bool) $block['countdown_show_days'] : (bool) ($defaults['countdown_show_days'] ?? true),
         'countdown_show_hours' => isset($block['countdown_show_hours']) ? (bool) $block['countdown_show_hours'] : (bool) ($defaults['countdown_show_hours'] ?? true),
         'countdown_show_minutes' => isset($block['countdown_show_minutes']) ? (bool) $block['countdown_show_minutes'] : (bool) ($defaults['countdown_show_minutes'] ?? true),
@@ -1978,7 +2036,7 @@ function vip_funnel_normalize_page_block_payload($block, int $index = 0): array 
         $payload['spacing'] = 'md';
     }
 
-    if(!in_array($payload['countdown_mode'], ['fixed', 'evergreen'], true)) {
+    if(!in_array($payload['countdown_mode'], ['fixed', 'evergreen', 'weekly'], true)) {
         $payload['countdown_mode'] = 'fixed';
     }
 
@@ -2898,10 +2956,13 @@ function vip_funnel_get_stjepan_recruitment_payload($user = null, array $options
             'layout_width' => 'half',
         ]),
         $block('start_countdown', 'countdown', [
-            'title' => 'Ulazak u sljedeći onboarding krug',
-            'text' => 'Ako želiš krenuti s nama u sljedećem onboarding krugu, pošalji narudžbu ili mi se javi prije isteka ovog prozora.',
-            'countdown_mode' => 'evergreen',
-            'duration_days' => 2,
+            'title' => 'Sljedeći Zoom onboarding za nove suradnike',
+            'text' => 'Onboarding se održava svaki četvrtak u 20:00 putem Zooma. Nakon registracije osobno ću te kontaktirati i poslati Zoom link, pripremu i sve što ti treba za prvi webinar i početak.',
+            'countdown_mode' => 'weekly',
+            'countdown_weekly_day' => 4,
+            'countdown_weekly_time' => '20:00',
+            'countdown_timezone' => 'Europe/Zagreb',
+            'duration_days' => 0,
             'duration_minutes' => 0,
             'countdown_style' => 'spotlight',
         ]),
@@ -5192,8 +5253,14 @@ function vip_funnel_refresh_stjepan_landing_copy_if_needed(array &$payload): voi
             'text' => 'Cilj je da nakon narudžbe ne ostaneš sam/a, nego da odmah znaš koji je tvoj prvi korak, kako koristiti sustav i kako krenuti s preporukama.',
         ]);
         vip_funnel_update_template_block($payload, 'start_countdown', [
-            'title' => 'Ulazak u sljedeći onboarding krug',
-            'text' => 'Ako želiš krenuti s nama u sljedećem onboarding krugu, pošalji narudžbu ili mi se javi prije isteka ovog prozora.',
+            'title' => 'Sljedeći Zoom onboarding za nove suradnike',
+            'text' => 'Onboarding se održava svaki četvrtak u 20:00 putem Zooma. Nakon registracije osobno ću te kontaktirati i poslati Zoom link, pripremu i sve što ti treba za prvi webinar i početak.',
+            'countdown_mode' => 'weekly',
+            'countdown_weekly_day' => 4,
+            'countdown_weekly_time' => '20:00',
+            'countdown_timezone' => 'Europe/Zagreb',
+            'duration_days' => 0,
+            'duration_minutes' => 0,
         ]);
         vip_funnel_update_template_block($payload, 'start_actions', [
             'text' => 'Odaberi kako želiš napraviti sljedeći korak. Nakon klika dobit ćeš upute za narudžbu i povezivanje sa mnom prije onboardinga.',
@@ -5764,8 +5831,14 @@ function vip_funnel_get_fcc_vip_import_template_payload($user = null, string $la
             'text' => 'Cilj je da nakon narudžbe ne ostaneš sam/a, nego da odmah znaš koji je tvoj prvi korak, kako koristiti sustav i kako krenuti s preporukama.',
         ]);
         vip_funnel_update_template_block($payload, 'start_countdown', [
-            'title' => 'Ulazak u sljedeći onboarding krug',
-            'text' => 'Ako želiš krenuti s nama u sljedećem onboarding krugu, pošalji narudžbu ili se javi prije isteka ovog prozora.',
+            'title' => 'Sljedeći Zoom onboarding za nove suradnike',
+            'text' => 'Onboarding se održava svaki četvrtak u 20:00 putem Zooma. Nakon registracije mentor će te kontaktirati i poslati Zoom link, pripremu i sve što ti treba za prvi webinar i početak.',
+            'countdown_mode' => 'weekly',
+            'countdown_weekly_day' => 4,
+            'countdown_weekly_time' => '20:00',
+            'countdown_timezone' => 'Europe/Zagreb',
+            'duration_days' => 0,
+            'duration_minutes' => 0,
         ]);
         vip_funnel_update_template_block($payload, 'start_actions', [
             'text' => 'Odaberi kako želiš napraviti sljedeći korak. Nakon klika dobit ćeš upute za narudžbu i povezivanje s mentorom prije onboardinga.',
@@ -6092,8 +6165,14 @@ function vip_funnel_get_fcc_vip_import_template_payload($user = null, string $la
             'text' => 'The goal is that after ordering you are not left alone, but you immediately know your first step, how to use the system, and how to start making recommendations.',
         ]);
         vip_funnel_update_template_block($payload, 'start_countdown', [
-            'title' => 'Entry into the next onboarding group',
-            'text' => 'If you want to start with us in the next onboarding group, send the order or message your mentor before this window ends.',
+            'title' => 'Next Zoom onboarding for new collaborators',
+            'text' => 'Onboarding happens every Thursday at 20:00 via Zoom. After registration, your mentor will contact you and send the Zoom link, preparation notes, and everything you need for the first webinar and your start.',
+            'countdown_mode' => 'weekly',
+            'countdown_weekly_day' => 4,
+            'countdown_weekly_time' => '20:00',
+            'countdown_timezone' => 'Europe/Zagreb',
+            'duration_days' => 0,
+            'duration_minutes' => 0,
         ]);
         vip_funnel_update_template_block($payload, 'start_actions', [
             'text' => 'Choose how you want to make the next step. After clicking, you will get order instructions and connect with your mentor before onboarding.',
@@ -6395,6 +6474,9 @@ function vip_funnel_localize_template_payload(array $payload, string $language):
         'Ako želiš ući u prvi onboarding krug, pošalji narudžbu ili upit sada.' => 'If you want to enter the first onboarding group, send your order or question now.',
         'Ulazak u sljedeći onboarding krug' => 'Entry into the next onboarding group',
         'Ako želiš krenuti s nama u sljedećem onboarding krugu, pošalji narudžbu ili mi se javi prije isteka ovog prozora.' => 'If you want to start with us in the next onboarding group, send the order or message me before this window ends.',
+        'Sljedeći Zoom onboarding za nove suradnike' => 'Next Zoom onboarding for new collaborators',
+        'Onboarding se održava svaki četvrtak u 20:00 putem Zooma. Nakon registracije osobno ću te kontaktirati i poslati Zoom link, pripremu i sve što ti treba za prvi webinar i početak.' => 'Onboarding happens every Thursday at 20:00 via Zoom. After registration, I will personally contact you and send the Zoom link, preparation notes, and everything you need for the first webinar and your start.',
+        'Onboarding se održava svaki četvrtak u 20:00 putem Zooma. Nakon registracije mentor će te kontaktirati i poslati Zoom link, pripremu i sve što ti treba za prvi webinar i početak.' => 'Onboarding happens every Thursday at 20:00 via Zoom. After registration, your mentor will contact you and send the Zoom link, preparation notes, and everything you need for the first webinar and your start.',
         'Odaberi kako želiš napraviti sljedeći korak. Nakon klika dobit ćeš upute za narudžbu i povezivanje sa mnom prije onboardinga.' => 'Choose how you want to make the next step. After clicking, you will get order instructions and connect with me before onboarding.',
         'Pošalji mi poruku prije narudžbe' => 'Message me before ordering',
         'Nisam siguran, želim razgovor' => 'I am not sure, I want to talk',

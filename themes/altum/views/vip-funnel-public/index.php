@@ -911,6 +911,10 @@ foreach($blocks as $preview_block) {
                                         $countdown_style = in_array((string) ($block['countdown_style'] ?? 'cards'), ['cards', 'glass', 'minimal', 'spotlight'], true) ? (string) $block['countdown_style'] : 'cards';
                                         $countdown_number_size = max(16, min(96, (int) ($block['countdown_number_size'] ?? 34)));
                                         $countdown_number_color = verify_hex_color((string) ($block['countdown_number_color'] ?? '')) ? (string) $block['countdown_number_color'] : $accent_color;
+                                        $countdown_weekly_day = max(0, min(6, (int) ($block['countdown_weekly_day'] ?? 4)));
+                                        $countdown_weekly_time = function_exists('vip_funnel_normalize_countdown_weekly_time') ? vip_funnel_normalize_countdown_weekly_time((string) ($block['countdown_weekly_time'] ?? '20:00')) : '20:00';
+                                        $countdown_timezone = function_exists('vip_funnel_normalize_countdown_timezone') ? vip_funnel_normalize_countdown_timezone((string) ($block['countdown_timezone'] ?? 'Europe/Zagreb')) : 'Europe/Zagreb';
+                                        $countdown_weekly_target = function_exists('vip_funnel_get_next_weekly_countdown_datetime') ? vip_funnel_get_next_weekly_countdown_datetime($countdown_weekly_day, $countdown_weekly_time, $countdown_timezone) : '';
                                         $countdown_units = [];
                                         if(!isset($block['countdown_show_days']) || !empty($block['countdown_show_days'])) $countdown_units[] = ['days', 'Dana'];
                                         if(!isset($block['countdown_show_hours']) || !empty($block['countdown_show_hours'])) $countdown_units[] = ['hours', 'Sati'];
@@ -927,6 +931,10 @@ foreach($blocks as $preview_block) {
                                             data-vf-fixed="<?= $e((string) ($block['fixed_datetime'] ?? '')) ?>"
                                             data-vf-duration-minutes="<?= $e((int) ($block['duration_minutes'] ?? 0)) ?>"
                                             data-vf-duration-days="<?= $e((int) ($block['duration_days'] ?? 0)) ?>"
+                                            data-vf-weekly-target="<?= $e($countdown_weekly_target) ?>"
+                                            data-vf-weekly-day="<?= $e($countdown_weekly_day) ?>"
+                                            data-vf-weekly-time="<?= $e($countdown_weekly_time) ?>"
+                                            data-vf-weekly-timezone="<?= $e($countdown_timezone) ?>"
                                             data-vf-expired="<?= $e((string) ($block['completion_text'] ?? 'Vrijeme je isteklo.')) ?>"
                                             data-vf-number-size="<?= $e($countdown_number_size) ?>"
                                             data-vf-number-color="<?= $e($countdown_number_color) ?>"
@@ -1144,6 +1152,9 @@ foreach($blocks as $preview_block) {
                 targetTs = Date.now() + (((days * 24 * 60) + minutes) * 60 * 1000);
                 window.localStorage.setItem(storageKey, String(targetTs));
             }
+        } else if(mode === 'weekly') {
+            const weeklyTarget = node.getAttribute('data-vf-weekly-target') || '';
+            targetTs = weeklyTarget ? new Date(weeklyTarget).getTime() : 0;
         } else {
             const fixedValue = node.getAttribute('data-vf-fixed') || '';
             targetTs = fixedValue ? new Date(fixedValue).getTime() : 0;
@@ -1156,12 +1167,20 @@ foreach($blocks as $preview_block) {
                 return;
             }
 
-            const diff = targetTs - Date.now();
+            let diff = targetTs - Date.now();
 
             if(diff <= 0) {
-                node.innerHTML = `<div class="vip-funnel-public__countdown-expired"><div class="vip-funnel-public__countdown-expired-kicker">Countdown završen</div><div class="vip-funnel-public__countdown-expired-text">${expiredText}</div></div>`;
-                node.classList.add('is-expired');
-                return;
+                if(mode === 'weekly') {
+                    const weekMs = 7 * 24 * 60 * 60 * 1000;
+                    while(targetTs <= Date.now()) {
+                        targetTs += weekMs;
+                    }
+                    diff = targetTs - Date.now();
+                } else {
+                    node.innerHTML = `<div class="vip-funnel-public__countdown-expired"><div class="vip-funnel-public__countdown-expired-kicker">Countdown završen</div><div class="vip-funnel-public__countdown-expired-text">${expiredText}</div></div>`;
+                    node.classList.add('is-expired');
+                    return;
+                }
             }
 
             const totalSeconds = Math.floor(diff / 1000);

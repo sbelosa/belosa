@@ -2116,7 +2116,7 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
             cta_group: {type, label: 'CTA gumbi', badge: '', title: '', text: 'Dodaj gumbe i odredi kamo vode.', alignment: 'center', require_capture: false, buttons: [{id: uid('btn'), label: 'Kreni dalje', value: 'kreni_dalje', style: 'primary', action: 'goto_step', target_step_id: '', external_url: '', require_submit: false}], options: []},
             survey: {type, label: 'Survey', badge: '', title: 'Što te sada najviše zanima?', text: 'Svaki odgovor može voditi na drugi korak.', alignment: 'left', auto_advance: true, require_capture: false, buttons: [], options: [{id: uid('opt'), label: 'Online posao', value: 'online_posao', style: 'primary', action: 'goto_step', target_step_id: '', external_url: '', require_submit: false}]},
             radio_survey: {type, label: 'Pitanje upitnika', badge: '', title: 'Koji odgovor najbolje opisuje tvoj cilj?', text: 'Odaberi jedan odgovor. Završni submit može koristiti ovaj odabir za pravi sljedeći korak.', alignment: 'left', required: false, route_on_submit: true, buttons: [], options: [{id: uid('opt'), label: 'Regulacija tjelesne težine', value: 'regulacija_tjelesne_tezine', style: 'primary', action: 'goto_step', target_step_id: '', external_url: '', require_submit: false}]},
-            countdown: {type, label: 'Countdown', badge: '', title: 'Ponuda istječe uskoro', text: 'Pojačaj hitnost odbrojavanjem.', alignment: 'center', countdown_mode: 'fixed', countdown_style: 'cards', fixed_datetime: '', duration_minutes: 30, duration_days: 0, countdown_show_days: true, countdown_show_hours: true, countdown_show_minutes: true, countdown_show_seconds: true, countdown_number_size: 34, countdown_number_color: '', completion_text: 'Vrijeme je isteklo.', buttons: [], options: []},
+            countdown: {type, label: 'Countdown', badge: '', title: 'Ponuda istječe uskoro', text: 'Pojačaj hitnost odbrojavanjem.', alignment: 'center', countdown_mode: 'fixed', countdown_style: 'cards', fixed_datetime: '', duration_minutes: 30, duration_days: 0, countdown_weekly_day: 4, countdown_weekly_time: '20:00', countdown_timezone: 'Europe/Zagreb', countdown_show_days: true, countdown_show_hours: true, countdown_show_minutes: true, countdown_show_seconds: true, countdown_number_size: 34, countdown_number_color: '', completion_text: 'Vrijeme je isteklo.', buttons: [], options: []},
             name_field: {type, label: 'Ime', badge: '', title: 'Ime', text: '', placeholder: 'Upiši ime', required: false, alignment: 'left', buttons: [], options: []},
             full_name_field: {type, label: 'Ime + prezime', badge: '', title: 'Ime i prezime', text: '', placeholder: 'Upiši ime i prezime', required: false, alignment: 'left', buttons: [], options: []},
             email_field: {type, label: 'Email', badge: '', title: 'Email', text: '', placeholder: 'Upiši email', required: true, alignment: 'left', buttons: [], options: []},
@@ -4164,6 +4164,7 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
         const isSpacer = block.type === 'spacer';
         const isProductOffer = block.type === 'product_offer';
         const isSystemSubmit = isSystemSubmitBlock(block);
+        const countdownMode = ['fixed', 'evergreen', 'weekly'].includes(block.countdown_mode) ? block.countdown_mode : 'fixed';
         const actionItems = getBlockActionItems(block);
         const selectedProduct = getProductCatalogEntry(block);
         const blockNameLabel = isRadioSurvey ? 'Interni naziv pitanja' : 'Naziv bloka';
@@ -4434,8 +4435,9 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
                         <div class="vf-field">
                             <label>Tip countdowna</label>
                             <select data-vf-block-field="countdown_mode">
-                                <option value="fixed" ${block.countdown_mode !== 'evergreen' ? 'selected' : ''}>Fiksni datum</option>
-                                <option value="evergreen" ${block.countdown_mode === 'evergreen' ? 'selected' : ''}>Evergreen po posjetitelju</option>
+                                <option value="fixed" ${countdownMode === 'fixed' ? 'selected' : ''}>Fiksni datum</option>
+                                <option value="evergreen" ${countdownMode === 'evergreen' ? 'selected' : ''}>Evergreen po posjetitelju</option>
+                                <option value="weekly" ${countdownMode === 'weekly' ? 'selected' : ''}>Svaki tjedan - dan i vrijeme</option>
                             </select>
                         </div>
                         <div class="vf-field">
@@ -4471,12 +4473,14 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
                         <label class="vf-toggle"><input type="checkbox" data-vf-block-toggle="countdown_show_minutes" ${block.countdown_show_minutes !== false ? 'checked' : ''}> Prikaži minute</label>
                         <label class="vf-toggle"><input type="checkbox" data-vf-block-toggle="countdown_show_seconds" ${block.countdown_show_seconds !== false ? 'checked' : ''}> Prikaži sekunde</label>
                     </div>
-                    <div class="vf-field__hint">Za kratki evergreen od 30 minuta najčešće ima smisla prikazati samo Min + Sek.</div>
-                    <div class="vf-two">
+                    <div class="vf-field__hint">Za kratki evergreen od 30 minuta najčešće ima smisla prikazati samo Min + Sek. Za webinar ili onboarding koristi tjedni termin.</div>
+                    ${countdownMode === 'fixed' ? `
                         <div class="vf-field">
                             <label>Fiksni datum i vrijeme</label>
                             <input type="datetime-local" data-vf-block-field="fixed_datetime" value="${escapeHtml(block.fixed_datetime || '')}" />
                         </div>
+                    ` : ''}
+                    ${countdownMode === 'evergreen' ? `
                         <div class="vf-two">
                             <div class="vf-field">
                                 <label>Minute</label>
@@ -4487,7 +4491,32 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
                                 <input type="number" min="0" data-vf-block-field="duration_days" value="${escapeHtml(block.duration_days || 0)}" />
                             </div>
                         </div>
-                    </div>
+                    ` : ''}
+                    ${countdownMode === 'weekly' ? `
+                        <div class="vf-two">
+                            <div class="vf-field">
+                                <label>Dan u tjednu</label>
+                                <select data-vf-block-field="countdown_weekly_day">
+                                    <option value="1" ${Number(block.countdown_weekly_day ?? 4) === 1 ? 'selected' : ''}>Ponedjeljak</option>
+                                    <option value="2" ${Number(block.countdown_weekly_day ?? 4) === 2 ? 'selected' : ''}>Utorak</option>
+                                    <option value="3" ${Number(block.countdown_weekly_day ?? 4) === 3 ? 'selected' : ''}>Srijeda</option>
+                                    <option value="4" ${Number(block.countdown_weekly_day ?? 4) === 4 ? 'selected' : ''}>Četvrtak</option>
+                                    <option value="5" ${Number(block.countdown_weekly_day ?? 4) === 5 ? 'selected' : ''}>Petak</option>
+                                    <option value="6" ${Number(block.countdown_weekly_day ?? 4) === 6 ? 'selected' : ''}>Subota</option>
+                                    <option value="0" ${Number(block.countdown_weekly_day ?? 4) === 0 ? 'selected' : ''}>Nedjelja</option>
+                                </select>
+                            </div>
+                            <div class="vf-field">
+                                <label>Vrijeme</label>
+                                <input type="time" data-vf-block-field="countdown_weekly_time" value="${escapeHtml(block.countdown_weekly_time || '20:00')}" />
+                            </div>
+                        </div>
+                        <div class="vf-field">
+                            <label>Vremenska zona</label>
+                            <input type="text" data-vf-block-field="countdown_timezone" value="${escapeHtml(block.countdown_timezone || 'Europe/Zagreb')}" />
+                            <div class="vf-field__hint">Primjer: Europe/Zagreb. Koristi se za točan termin webinara neovisno o zemlji posjetitelja.</div>
+                        </div>
+                    ` : ''}
                 ` : ''}
 
                 ${isSpacer ? `
@@ -5626,7 +5655,7 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
 
             if(blockField) {
                 const field = blockField.getAttribute('data-vf-block-field');
-                if(['product_language_mode', 'product_source_mode'].includes(field)) {
+                if(['product_language_mode', 'product_source_mode', 'countdown_mode'].includes(field)) {
                     renderAll();
                 }
             }
