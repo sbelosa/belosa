@@ -2,6 +2,15 @@
 
 <?php $ui = $data->ui ?? []; ?>
 <?php $sponsor = $data->sponsor ?? []; ?>
+<?php $alternate_urls = is_array($data->alternate_urls ?? null) ? $data->alternate_urls : []; ?>
+
+<?php if($alternate_urls): ?>
+    <?php ob_start() ?>
+    <?php foreach($alternate_urls as $hreflang => $href): ?>
+        <link rel="alternate" hreflang="<?= e($hreflang) ?>" href="<?= e($href) ?>" />
+    <?php endforeach ?>
+    <?php \Altum\Event::add_content(ob_get_clean(), 'head') ?>
+<?php endif ?>
 
 <div class="container my-5 fcc-sponsor-profile-page">
     <a href="<?= $data->hub_url ?? url('recommended-sponsors') ?>" class="fcc-sponsor-profile__back">
@@ -277,6 +286,7 @@ $profile_schema = [
     'name' => sprintf($ui['profile_title_format'] ?? '%s', $sponsor['name'] ?? ''),
     'description' => trim((string) ($sponsor['public_summary'] ?? '')) ?: ($ui['profile_description_fallback'] ?? ''),
     'url' => $sponsor['profile_url'] ?? '',
+    'inLanguage' => \Altum\Language::$code,
     'mainEntity' => [
         '@type' => 'Person',
         'name' => $sponsor['name'] ?? '',

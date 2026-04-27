@@ -11,7 +11,7 @@
 
                 <div id="spotlight_results" class="spotlight-results mt-3"></div>
 
-                <div id="spotlight_no_data" class="my-3 p-3 bg-gray-50 rounded-2x position-relative text-center" style="display:none;">
+                <div id="spotlight_no_data" class="my-3 p-3 bg-gray-50 rounded-2x position-relative text-center" style="display:none;" aria-hidden="true" data-nosnippet>
                     <span class="text-muted"><?= l('global.no_data') ?></span>
                 </div>
             </form>

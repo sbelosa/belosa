@@ -49,7 +49,18 @@ class Controller {
             $meta_content = [];
             if(!settings()->main->se_indexing) $meta_content[] = 'noindex';
             if(!settings()->main->ai_scraping_is_allowed) $meta_content[] = 'noarchive';
-            \Altum\Meta::set_robots(implode(', ', $meta_content));
+
+            if($meta_content) {
+                $existing_meta_content = array_filter(array_map('trim', explode(',', (string) \Altum\Meta::$robots)));
+
+                if(in_array('noindex', $meta_content, true)) {
+                    $existing_meta_content = array_values(array_filter($existing_meta_content, static function($value) {
+                        return mb_strtolower($value) !== 'index';
+                    }));
+                }
+
+                \Altum\Meta::set_robots(implode(', ', array_unique(array_merge($existing_meta_content, $meta_content))));
+            }
 
             /* Get the top menu custom pages */
             $top_pages = settings()->content->pages_is_enabled ? (new Page())->get_pages('top') : [];

@@ -15,6 +15,21 @@ defined('ALTUMCODE') || die();
 
 class RecommendedSponsors extends Controller {
 
+    private function get_alternate_urls(string $path): array {
+        $path = ltrim(trim($path), '/');
+        $alternate_urls = [
+            'x-default' => SITE_URL . $path,
+        ];
+
+        foreach(\Altum\Language::$active_languages as $language_name => $language_code) {
+            $alternate_urls[$language_code] = settings()->main->default_language == $language_name
+                ? SITE_URL . $path
+                : SITE_URL . $language_code . '/' . $path;
+        }
+
+        return $alternate_urls;
+    }
+
     private function get_ui(): array {
         if(\Altum\Language::$code === 'hr') {
             return [
@@ -126,6 +141,7 @@ class RecommendedSponsors extends Controller {
         Meta::set_description($ui['hub_description']);
         Meta::set_canonical_url(url('recommended-sponsors'));
         Meta::set_robots('index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1');
+        Meta::set_link_alternate(false);
 
         $view = new \Altum\View('recommended-sponsors/index', (array) $this);
         $this->add_view_content('content', $view->run([
@@ -135,6 +151,7 @@ class RecommendedSponsors extends Controller {
             'weekly_check_target' => $weekly_check_target,
             'featured_apps_url' => url('featured-apps'),
             'hub_url' => url('recommended-sponsors'),
+            'alternate_urls' => $this->get_alternate_urls('recommended-sponsors'),
         ]));
     }
 
@@ -198,6 +215,7 @@ class RecommendedSponsors extends Controller {
         );
         Meta::set_canonical_url($sponsor['profile_url']);
         Meta::set_robots('index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1');
+        Meta::set_link_alternate(false);
         Meta::set_social_image((string) ($sponsor['display_image_url'] ?? ($sponsor['default_image_url'] ?? ($sponsor['generated_avatar_url'] ?? ''))));
 
         $view = new \Altum\View('recommended-sponsors/profile', (array) $this);
@@ -209,6 +227,7 @@ class RecommendedSponsors extends Controller {
             'weekly_check_target' => $weekly_check_target,
             'hub_url' => url('recommended-sponsors'),
             'featured_apps_url' => url('featured-apps'),
+            'alternate_urls' => $this->get_alternate_urls('recommended-sponsors/' . $sponsor['profile_slug']),
         ]));
     }
 }

@@ -1,6 +1,15 @@
 <?php defined('ALTUMCODE') || die() ?>
 
 <?php $ui = $data->ui ?? []; ?>
+<?php $alternate_urls = is_array($data->alternate_urls ?? null) ? $data->alternate_urls : []; ?>
+
+<?php if($alternate_urls): ?>
+    <?php ob_start() ?>
+    <?php foreach($alternate_urls as $hreflang => $href): ?>
+        <link rel="alternate" hreflang="<?= e($hreflang) ?>" href="<?= e($href) ?>" />
+    <?php endforeach ?>
+    <?php \Altum\Event::add_content(ob_get_clean(), 'head') ?>
+<?php endif ?>
 
 <div class="container my-5 fcc-sponsors-page">
     <section class="fcc-sponsors-hero mb-4">
@@ -281,8 +290,10 @@ $item_list = [
     'name' => $ui['hub_title'] ?? 'Recommended FCC Sponsors',
     'description' => $ui['hub_description'] ?? '',
     'url' => $data->hub_url ?? url('recommended-sponsors'),
+    'inLanguage' => \Altum\Language::$code,
     'mainEntity' => [
         '@type' => 'ItemList',
+        'numberOfItems' => count($data->sponsors ?? []),
         'itemListElement' => [],
     ],
 ];
