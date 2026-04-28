@@ -304,6 +304,32 @@ function vip_funnel_json_encode($value): string {
     return json_encode($value, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_INVALID_UTF8_SUBSTITUTE);
 }
 
+function vip_funnel_normalize_meta_pixel_id($value): string {
+    $value = trim((string) $value);
+
+    if($value === '') {
+        return '';
+    }
+
+    if(preg_match("/fbq\\s*\\(\\s*['\"]init['\"]\\s*,\\s*['\"](\\d{5,})['\"]/i", $value, $matches)) {
+        return $matches[1];
+    }
+
+    if(preg_match('/[?&]id=(\\d{5,})/i', $value, $matches)) {
+        return $matches[1];
+    }
+
+    if(preg_match('/^\\d{5,}$/', $value)) {
+        return $value;
+    }
+
+    if(preg_match('/\\b(\\d{5,})\\b/', $value, $matches)) {
+        return $matches[1];
+    }
+
+    return '';
+}
+
 function vip_funnel_get_phase_definitions(): array {
     return [
         'entry' => [
@@ -2647,6 +2673,8 @@ function vip_funnel_get_stjepan_recruitment_payload($user = null, array $options
     $calendar_url = trim((string) ($options['calendar_url'] ?? '')) ?: $whatsapp_url;
     $product_shop_url = trim((string) ($options['product_shop_url'] ?? '')) ?: SITE_URL . 'blog';
     $privacy_url = trim((string) ($options['privacy_url'] ?? '')) ?: SITE_URL . 'page/privacy-policy';
+    $facebook_pixel_source = array_key_exists('facebook_pixel_id', $options) ? (string) $options['facebook_pixel_id'] : '238225369103006';
+    $facebook_pixel_id = vip_funnel_normalize_meta_pixel_id($facebook_pixel_source);
     $video = static function(string $key) use ($options): string {
         return trim((string) ($options['video_' . $key] ?? ''));
     };
@@ -3184,6 +3212,7 @@ function vip_funnel_get_stjepan_recruitment_payload($user = null, array $options
             'calendar_url' => $calendar_url,
             'product_shop_url' => $product_shop_url,
             'privacy_url' => $privacy_url,
+            'facebook_pixel_id' => $facebook_pixel_id,
             'hide_public_navbar' => true,
         ],
     ], $user);
@@ -5029,6 +5058,13 @@ function vip_funnel_refresh_stjepan_landing_copy_if_needed(array &$payload): voi
         return;
     }
 
+    $payload['defaults'] = is_array($payload['defaults'] ?? null) ? $payload['defaults'] : [];
+    $default_contact_email = strtolower(trim((string) ($payload['defaults']['contact_email'] ?? '')));
+    $default_owner_user_id = (int) ($payload['defaults']['owner_user_id'] ?? 0);
+    if($default_contact_email === 'info@forevercard.club' || $default_owner_user_id === 555) {
+        $payload['defaults']['facebook_pixel_id'] = '238225369103006';
+    }
+
     $overview_headline_current = (string) ($payload['overview']['headline'] ?? '');
     if(in_array($overview_headline_current, [
         'Pokreni online posao uz FCC sustav i mentorstvo Stjepana Beloše',
@@ -5691,6 +5727,7 @@ function vip_funnel_get_fcc_vip_import_template_payload($user = null, string $la
         'whatsapp_url' => $contact_url,
         'calendar_url' => $contact_url,
         'product_shop_url' => $product_shop_url,
+        'facebook_pixel_id' => '',
     ]);
 
     $apply_hr_copy = static function(array &$payload) use ($mentor_name, $mentor_first_name, $mentor_email, $contact_url, $product_shop_url): void {

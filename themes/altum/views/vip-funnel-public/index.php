@@ -21,6 +21,38 @@ $surface = is_array($state['page_surface'] ?? null) ? $state['page_surface'] : [
 $blocks = is_array($state['blocks'] ?? null) ? $state['blocks'] : [];
 $active = is_array($state['active'] ?? null) ? $state['active'] : [];
 $hide_public_navbar = !empty($payload['defaults']['hide_public_navbar']);
+$facebook_pixel_id = function_exists('vip_funnel_normalize_meta_pixel_id')
+    ? vip_funnel_normalize_meta_pixel_id($payload['defaults']['facebook_pixel_id'] ?? '')
+    : preg_replace('/\D+/', '', (string) ($payload['defaults']['facebook_pixel_id'] ?? ''));
+$meta_pixel_page_key = (string) ($state['page_key'] ?? 'landing');
+$meta_pixel_event_map = [
+    'landing' => 'VIPFunnelLandingView',
+    'business_gateway' => 'VIPFunnelBusinessView',
+    'fcc_demo_preview' => 'VIPFunnelSystemDemoView',
+    'product_gateway' => 'VIPFunnelProductView',
+    'product_recommendation' => 'VIPFunnelProductView',
+    'product_to_business_bridge' => 'VIPFunnelProductView',
+    'qualification_form' => 'VIPFunnelQualificationView',
+    'demo_request' => 'VIPFunnelDemoRequestView',
+    'start_package_offer' => 'VIPFunnelStartPackageView',
+    'mentor_call_request' => 'VIPFunnelConversationView',
+    'not_ready_nurture' => 'VIPFunnelNurtureView',
+];
+$meta_pixel_step_event = $meta_pixel_event_map[$meta_pixel_page_key] ?? 'VIPFunnelStepView';
+$meta_pixel_step_parameters = [
+    'content_category' => 'vip_funnel',
+    'content_name' => (string) (($active['title'] ?? '') ?: ($payload['funnel']['name'] ?? 'VIP Funnel 2.0')),
+    'funnel_id' => (int) ($state['funnel_id'] ?? 0),
+    'funnel_name' => (string) ($payload['funnel']['name'] ?? 'VIP Funnel 2.0'),
+    'funnel_slug' => (string) ($state['slug'] ?? ($payload['funnel']['slug'] ?? '')),
+    'owner_user_id' => (int) ($state['user_id'] ?? ($payload['defaults']['owner_user_id'] ?? 0)),
+    'page_key' => $meta_pixel_page_key,
+    'page_role' => (string) ($state['page_role'] ?? 'landing'),
+    'step_id' => (string) ($state['current_step_id'] ?? ''),
+    'step_title' => (string) (($active['title'] ?? '') ?: ($payload['funnel']['name'] ?? 'VIP Funnel 2.0')),
+    'path_title' => (string) ($state['path_title'] ?? ''),
+    'variant' => strtoupper((string) ($state['variant_key'] ?? 'a')),
+];
 $background_color = $surface['background_color'] ?? '#0f172a';
 $surface_color = $surface['surface_color'] ?? '#152132';
 $text_color = $surface['text_color'] ?? '#eef4ff';
@@ -671,6 +703,43 @@ foreach($blocks as $preview_block) {
 
 </style>
 
+<?php if($facebook_pixel_id !== ''): ?>
+    <?php
+    $meta_pixel_script_attributes = settings()->cookie_consent->is_enabled ? 'type="text/plain" data-category="targeting"' : '';
+    $meta_pixel_step_parameters_json = function_exists('vip_funnel_json_encode') ? vip_funnel_json_encode($meta_pixel_step_parameters) : json_encode($meta_pixel_step_parameters, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    $meta_pixel_step_event_json = json_encode($meta_pixel_step_event, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    $facebook_pixel_id_json = json_encode($facebook_pixel_id, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    ?>
+    <script <?= $meta_pixel_script_attributes ?>>
+        !function(f,b,e,v,n,t,s)
+        {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+            n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+            if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+            n.queue=[];t=b.createElement(e);t.async=!0;
+            t.src=v;s=b.getElementsByTagName(e)[0];
+            s.parentNode.insertBefore(t,s)}(window, document,'script',
+            'https://connect.facebook.net/en_US/fbevents.js');
+        fbq('init', <?= $facebook_pixel_id_json ?>);
+        fbq('track', 'PageView');
+
+        window.vipFunnelMetaPixelParams = <?= $meta_pixel_step_parameters_json ?>;
+        window.vipFunnelTrackMeta = function(eventName, params, standardEvent) {
+            if(typeof fbq !== 'function' || !eventName) return;
+
+            const eventParams = Object.assign({}, window.vipFunnelMetaPixelParams || {}, params || {});
+            fbq(standardEvent ? 'track' : 'trackCustom', eventName, eventParams);
+        };
+
+        window.vipFunnelTrackMeta('VIPFunnelStepView');
+        if(<?= $meta_pixel_step_event_json ?> !== 'VIPFunnelStepView') {
+            window.vipFunnelTrackMeta(<?= $meta_pixel_step_event_json ?>);
+        }
+    </script>
+    <?php if(!settings()->cookie_consent->is_enabled): ?>
+        <noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=<?= $e($facebook_pixel_id) ?>&ev=PageView&noscript=1" alt="" /></noscript>
+    <?php endif ?>
+<?php endif ?>
+
 <div class="vip-funnel-public">
     <div class="vip-funnel-public__wrap">
         <div class="vip-funnel-public__grid">
@@ -1079,6 +1148,58 @@ foreach($blocks as $preview_block) {
     const externalInput = document.getElementById('vf_external_url');
     const selectionInput = document.getElementById('vf_selection');
     const blockInput = document.getElementById('vf_block_id');
+    const form = document.getElementById('vip-funnel-public-form');
+    const pageHasLeadForm = <?= ($page_has_capture_fields || $page_has_deferred_survey) ? 'true' : 'false' ?>;
+    let lastSubmitButton = null;
+
+    const trackMeta = (eventName, params = {}, standardEvent = false) => {
+        if(typeof window.vipFunnelTrackMeta !== 'function') return;
+        window.vipFunnelTrackMeta(eventName, params, standardEvent);
+    };
+
+    const normalizeLabel = value => String(value || '').replace(/\s+/g, ' ').trim().slice(0, 180);
+
+    const getMetaParamsFromNode = node => ({
+        button_label: normalizeLabel(node.getAttribute('data-vf-label') || node.textContent || ''),
+        action: node.getAttribute('data-vf-action') || '',
+        target_step_id: node.getAttribute('data-vf-target') || '',
+        external_url: node.getAttribute('data-vf-external') || node.getAttribute('href') || '',
+        selection: node.getAttribute('data-vf-selection') || '',
+        block_id: node.getAttribute('data-vf-block') || '',
+        block_type: node.getAttribute('data-vf-block-type') || '',
+        signal_key: node.getAttribute('data-vf-signal-key') || ''
+    });
+
+    const trackMetaCtaIntent = node => {
+        if(!node) return;
+
+        const params = getMetaParamsFromNode(node);
+        const signal = `${params.button_label} ${params.action} ${params.selection} ${params.external_url} ${params.signal_key}`.toLowerCase();
+
+        trackMeta('VIPFunnelCTA', params);
+
+        if(signal.includes('order_start_package') || signal.includes('start your journey') || signal.includes('start paket')) {
+            trackMeta('VIPFunnelStartOrderClick', params);
+            trackMeta('InitiateCheckout', Object.assign({value: 360, currency: 'EUR'}, params), true);
+        }
+
+        if(signal.includes('whatsapp') || signal.includes('wa.me') || signal.includes('api.whatsapp')) {
+            trackMeta('VIPFunnelWhatsAppClick', params);
+            trackMeta('Contact', params, true);
+        }
+
+        if(signal.includes('demo')) {
+            trackMeta('VIPFunnelDemoIntent', params);
+        }
+
+        if(signal.includes('forever_shop') || signal.includes('foreverliving')) {
+            trackMeta('VIPFunnelForeverShopClick', params);
+        }
+
+        if(signal.includes('product') || signal.includes('proizvod') || signal.includes('popust')) {
+            trackMeta('VIPFunnelProductIntent', params);
+        }
+    };
 
     const trackEvent = (node) => {
         if(!node) return;
@@ -1110,19 +1231,42 @@ foreach($blocks as $preview_block) {
 
     document.querySelectorAll('[data-vf-submit]').forEach(button => {
         button.addEventListener('click', () => {
+            lastSubmitButton = button;
             actionInput.value = button.getAttribute('data-vf-action') || 'submit_next';
             targetInput.value = button.getAttribute('data-vf-target') || '';
             externalInput.value = button.getAttribute('data-vf-external') || '';
             selectionInput.value = button.getAttribute('data-vf-selection') || '';
             blockInput.value = button.getAttribute('data-vf-block') || '';
+            trackMetaCtaIntent(button);
         });
     });
 
     document.querySelectorAll('[data-vf-track]').forEach(node => {
         node.addEventListener('click', () => {
             trackEvent(node);
+            trackMetaCtaIntent(node);
         }, {passive: true});
     });
+
+    if(form) {
+        form.addEventListener('submit', () => {
+            const params = lastSubmitButton ? getMetaParamsFromNode(lastSubmitButton) : {
+                button_label: 'Submit',
+                action: actionInput ? actionInput.value : '',
+                target_step_id: targetInput ? targetInput.value : '',
+                external_url: externalInput ? externalInput.value : '',
+                selection: selectionInput ? selectionInput.value : '',
+                block_id: blockInput ? blockInput.value : '',
+                block_type: '',
+                signal_key: ''
+            };
+
+            trackMeta('VIPFunnelSubmit', params);
+            if(pageHasLeadForm) {
+                trackMeta('Lead', params, true);
+            }
+        });
+    }
 
     const countdowns = document.querySelectorAll('[data-vf-countdown]');
     const pad = value => String(value).padStart(2, '0');
