@@ -438,6 +438,7 @@ function vip_funnel_get_page_block_type_options(): array {
         'text_field' => 'Tekst polje',
         'proof_card' => 'Proof / povjerenje',
         'product_offer' => 'Preporuka proizvoda',
+        'ai_product_advisor' => 'AI savjetnik za proizvode',
         'spacer' => 'Razmak',
     ];
 }
@@ -476,6 +477,8 @@ function vip_funnel_get_page_block_width_options(): array {
         'two_thirds' => '2/3 retka',
         'quarter' => '1/4 retka',
         'three_quarters' => '3/4 retka',
+        'fifth' => '1/5 retka',
+        'sixth' => '1/6 retka',
     ];
 }
 
@@ -558,6 +561,7 @@ function vip_funnel_get_page_block_typography_defaults(string $type = 'headline'
         'text_field' => ['title_size' => 24, 'title_weight' => 900, 'text_size' => 16, 'text_weight' => 500, 'field_size' => 16, 'field_weight' => 500],
         'proof_card' => ['title_size' => 26, 'title_weight' => 800, 'text_size' => 17, 'text_weight' => 500],
         'product_offer' => ['title_size' => 28, 'title_weight' => 900, 'text_size' => 17, 'text_weight' => 500, 'button_size' => 18, 'button_weight' => 900],
+        'ai_product_advisor' => ['title_size' => 30, 'title_weight' => 900, 'text_size' => 17, 'text_weight' => 500, 'button_size' => 18, 'button_weight' => 900],
         'spacer' => ['title_size' => 28, 'title_weight' => 800, 'text_size' => 17, 'text_weight' => 500],
     ];
 
@@ -839,6 +843,19 @@ function vip_funnel_get_page_block_defaults(string $type = 'headline'): array {
             'product_mappings' => [],
             'alignment' => 'left',
         ],
+        'ai_product_advisor' => [
+            'label' => 'AI savjetnik za proizvode',
+            'badge' => 'Personalizirana preporuka',
+            'title' => 'Pronađi svoj najbolji Forever početak u par pitanja',
+            'text' => 'Napiši što želiš postići, kako se sada osjećaš ili što te zanima. Pametni FCC savjetnik predložit će smjer koji ima najviše smisla za tebe.',
+            'ai_advisor_enabled' => true,
+            'ai_lead_capture_enabled' => true,
+            'ai_button_label' => 'Započni moju preporuku',
+            'ai_launcher_label' => 'Moja preporuka',
+            'ai_intro_label' => 'Tvoj osobni vodič',
+            'ai_input_placeholder' => 'Napiši cilj ili pitanje...',
+            'alignment' => 'left',
+        ],
         'spacer' => [
             'label' => 'Razmak',
             'spacing' => 'md',
@@ -892,6 +909,8 @@ function vip_funnel_get_default_page_surface_payload(string $name = ''): array {
     return [
         'name' => $name !== '' ? $name : 'Nova funnel stranica',
         'background_color' => '#0f172a',
+        'background_image_url' => '',
+        'background_opacity' => 100,
         'surface_color' => '#152132',
         'text_color' => '#eef4ff',
         'accent_color' => '#67d8c9',
@@ -2023,6 +2042,7 @@ function vip_funnel_normalize_page_block_payload($block, int $index = 0): array 
         'button_weight' => $button_weight,
         'button_text_color' => verify_hex_color((string) ($block['button_text_color'] ?? '')) ? (string) $block['button_text_color'] : '',
         'background_color' => verify_hex_color((string) ($block['background_color'] ?? '')) ? (string) $block['background_color'] : '',
+        'background_opacity' => max(0, min(100, (int) round((float) ($block['background_opacity'] ?? ($defaults['background_opacity'] ?? 100))))),
         'text_color' => verify_hex_color((string) ($block['text_color'] ?? '')) ? (string) $block['text_color'] : '',
         'accent_color' => verify_hex_color((string) ($block['accent_color'] ?? '')) ? (string) $block['accent_color'] : '',
         'placeholder' => trim(input_clean((string) ($block['placeholder'] ?? ($defaults['placeholder'] ?? '')), 180)),
@@ -2124,6 +2144,43 @@ function vip_funnel_normalize_page_block_payload($block, int $index = 0): array 
         $payload['product_translation_key'] = vip_funnel_get_product_translation_key_by_blog_post_id((int) $payload['product_blog_post_id']);
     }
 
+    if($type === 'ai_product_advisor') {
+        if(in_array($payload['badge'], ['FCC Preporuka'], true)) {
+            $payload['badge'] = 'Personalizirana preporuka';
+        }
+
+        if(in_array($payload['title'], ['Pitaju AI savjetnika za najbolji sljedeći korak'], true)) {
+            $payload['title'] = 'Pronađi svoj najbolji Forever početak u par pitanja';
+        }
+
+        if(in_array($payload['text'], ['Osoba može opisati cilj, naviku ili pitanje, a FCC Preporuka koristi postojeći AI sustav i po potrebi traži kontakt za osobni nastavak.'], true)) {
+            $payload['text'] = 'Napiši što želiš postići, kako se sada osjećaš ili što te zanima. Pametni FCC savjetnik predložit će smjer koji ima najviše smisla za tebe.';
+        }
+
+        $payload['ai_advisor_enabled'] = isset($block['ai_advisor_enabled']) ? (bool) $block['ai_advisor_enabled'] : (bool) ($defaults['ai_advisor_enabled'] ?? true);
+        $payload['ai_lead_capture_enabled'] = isset($block['ai_lead_capture_enabled']) ? (bool) $block['ai_lead_capture_enabled'] : (bool) ($defaults['ai_lead_capture_enabled'] ?? true);
+        $payload['ai_button_label'] = trim(input_clean((string) ($block['ai_button_label'] ?? ($defaults['ai_button_label'] ?? 'Započni moju preporuku')), 120));
+        $payload['ai_launcher_label'] = trim(input_clean((string) ($block['ai_launcher_label'] ?? ($defaults['ai_launcher_label'] ?? 'Moja preporuka')), 80));
+        $payload['ai_intro_label'] = trim(input_clean((string) ($block['ai_intro_label'] ?? ($defaults['ai_intro_label'] ?? 'Tvoj osobni vodič')), 80));
+        $payload['ai_input_placeholder'] = trim(input_clean((string) ($block['ai_input_placeholder'] ?? ($defaults['ai_input_placeholder'] ?? 'Napiši cilj ili pitanje...')), 140));
+
+        if(in_array($payload['ai_button_label'], ['', 'Otvori FCC Preporuka'], true)) {
+            $payload['ai_button_label'] = 'Započni moju preporuku';
+        }
+
+        if(in_array($payload['ai_launcher_label'], ['', 'FCC Preporuka'], true)) {
+            $payload['ai_launcher_label'] = 'Moja preporuka';
+        }
+
+        if(in_array($payload['ai_intro_label'], ['', 'FCC Preporuka'], true)) {
+            $payload['ai_intro_label'] = 'Tvoj osobni vodič';
+        }
+
+        if(in_array($payload['ai_input_placeholder'], ['', 'Što vas zanima?'], true)) {
+            $payload['ai_input_placeholder'] = 'Napiši cilj ili pitanje...';
+        }
+    }
+
     return $payload;
 }
 
@@ -2206,6 +2263,8 @@ function vip_funnel_normalize_page_surface_payload($surface, string $fallback_na
         return [
             'name' => trim(input_clean((string) ($variant_settings['name'] ?? ($base_surface['name'] ?? $fallback_defaults['name'])), 140)) ?: (string) ($base_surface['name'] ?? $fallback_defaults['name']),
             'background_color' => verify_hex_color((string) ($variant_settings['background_color'] ?? '')) ? (string) $variant_settings['background_color'] : (string) ($base_surface['background_color'] ?? $fallback_defaults['background_color']),
+            'background_image_url' => trim(input_clean((string) ($variant_settings['background_image_url'] ?? ($base_surface['background_image_url'] ?? $fallback_defaults['background_image_url'] ?? '')), 2048)),
+            'background_opacity' => max(0, min(100, (int) round((float) ($variant_settings['background_opacity'] ?? ($base_surface['background_opacity'] ?? $fallback_defaults['background_opacity'] ?? 100))))),
             'surface_color' => verify_hex_color((string) ($variant_settings['surface_color'] ?? '')) ? (string) $variant_settings['surface_color'] : (string) ($base_surface['surface_color'] ?? $fallback_defaults['surface_color']),
             'text_color' => verify_hex_color((string) ($variant_settings['text_color'] ?? '')) ? (string) $variant_settings['text_color'] : (string) ($base_surface['text_color'] ?? $fallback_defaults['text_color']),
             'accent_color' => verify_hex_color((string) ($variant_settings['accent_color'] ?? '')) ? (string) $variant_settings['accent_color'] : (string) ($base_surface['accent_color'] ?? $fallback_defaults['accent_color']),
@@ -2217,6 +2276,8 @@ function vip_funnel_normalize_page_surface_payload($surface, string $fallback_na
     $normalized_surface = [
         'name' => trim(input_clean((string) ($surface['name'] ?? $defaults['name']), 140)) ?: $defaults['name'],
         'background_color' => verify_hex_color((string) ($surface['background_color'] ?? '')) ? (string) $surface['background_color'] : $defaults['background_color'],
+        'background_image_url' => trim(input_clean((string) ($surface['background_image_url'] ?? $defaults['background_image_url']), 2048)),
+        'background_opacity' => max(0, min(100, (int) round((float) ($surface['background_opacity'] ?? $defaults['background_opacity'])))),
         'surface_color' => verify_hex_color((string) ($surface['surface_color'] ?? '')) ? (string) $surface['surface_color'] : $defaults['surface_color'],
         'text_color' => verify_hex_color((string) ($surface['text_color'] ?? '')) ? (string) $surface['text_color'] : $defaults['text_color'],
         'accent_color' => verify_hex_color((string) ($surface['accent_color'] ?? '')) ? (string) $surface['accent_color'] : $defaults['accent_color'],
@@ -2242,7 +2303,7 @@ function vip_funnel_apply_surface_variant(array $surface = [], string $variant_k
 
     $variant_settings = vip_funnel_to_array($surface['variant_b_settings'] ?? []);
 
-    foreach(['name', 'background_color', 'surface_color', 'text_color', 'accent_color', 'max_width', 'show_progress'] as $field_key) {
+    foreach(['name', 'background_color', 'background_image_url', 'background_opacity', 'surface_color', 'text_color', 'accent_color', 'max_width', 'show_progress'] as $field_key) {
         if(array_key_exists($field_key, $variant_settings)) {
             $surface[$field_key] = $variant_settings[$field_key];
         }
@@ -7408,6 +7469,9 @@ function vip_funnel_get_public_event_type_labels(): array {
         'submit' => l('vip_funnel.analytics.event.submit'),
         'lead_capture' => l('vip_funnel.analytics.event.lead_capture'),
         'advance' => l('vip_funnel.analytics.event.advance'),
+        'cta_click' => 'CTA klik',
+        'demo_request' => 'Demo zahtjev',
+        'block_view' => 'Pregled bloka',
     ];
 }
 
@@ -7418,6 +7482,10 @@ function vip_funnel_get_analytics_snapshot(int $funnel_id = 0, array $payload = 
         'submits' => 0,
         'advances' => 0,
         'leads' => 0,
+        'cta_clicks' => 0,
+        'demo_requests' => 0,
+        'product_clicks' => 0,
+        'block_views' => 0,
         'submit_rate' => 0,
         'lead_rate' => 0,
         'contacts_in_data' => 0,
@@ -7466,6 +7534,10 @@ function vip_funnel_get_analytics_snapshot(int $funnel_id = 0, array $payload = 
             SUM(CASE WHEN `event_type` = 'submit' THEN 1 ELSE 0 END) AS `submits`,
             SUM(CASE WHEN `event_type` = 'advance' THEN 1 ELSE 0 END) AS `advances`,
             SUM(CASE WHEN `event_type` = 'lead_capture' THEN 1 ELSE 0 END) AS `leads`,
+            SUM(CASE WHEN `event_type` = 'cta_click' THEN 1 ELSE 0 END) AS `cta_clicks`,
+            SUM(CASE WHEN `event_type` = 'demo_request' THEN 1 ELSE 0 END) AS `demo_requests`,
+            SUM(CASE WHEN `event_type` = 'block_view' THEN 1 ELSE 0 END) AS `block_views`,
+            SUM(CASE WHEN `event_type` = 'cta_click' AND JSON_UNQUOTE(JSON_EXTRACT(`meta`, '$.block_type')) = 'product_offer' THEN 1 ELSE 0 END) AS `product_clicks`,
             SUM(CASE WHEN `variant_key` = 'a' AND `event_type` = 'view' THEN 1 ELSE 0 END) AS `a_views`,
             SUM(CASE WHEN `variant_key` = 'b' AND `event_type` = 'view' THEN 1 ELSE 0 END) AS `b_views`,
             SUM(CASE WHEN `variant_key` = 'a' AND `event_type` = 'submit' THEN 1 ELSE 0 END) AS `a_submits`,
@@ -7480,6 +7552,10 @@ function vip_funnel_get_analytics_snapshot(int $funnel_id = 0, array $payload = 
         $snapshot['submits'] = (int) ($totals->submits ?? 0);
         $snapshot['advances'] = (int) ($totals->advances ?? 0);
         $snapshot['leads'] = (int) ($totals->leads ?? 0);
+        $snapshot['cta_clicks'] = (int) ($totals->cta_clicks ?? 0);
+        $snapshot['demo_requests'] = (int) ($totals->demo_requests ?? 0);
+        $snapshot['block_views'] = (int) ($totals->block_views ?? 0);
+        $snapshot['product_clicks'] = (int) ($totals->product_clicks ?? 0);
         $snapshot['ab']['a_views'] = (int) ($totals->a_views ?? 0);
         $snapshot['ab']['b_views'] = (int) ($totals->b_views ?? 0);
         $snapshot['ab']['a_submits'] = (int) ($totals->a_submits ?? 0);
@@ -7522,6 +7598,9 @@ function vip_funnel_get_analytics_snapshot(int $funnel_id = 0, array $payload = 
             SUM(CASE WHEN `event_type` = 'submit' THEN 1 ELSE 0 END) AS `submits`,
             SUM(CASE WHEN `event_type` = 'lead_capture' THEN 1 ELSE 0 END) AS `leads`,
             SUM(CASE WHEN `event_type` = 'advance' THEN 1 ELSE 0 END) AS `advances`,
+            SUM(CASE WHEN `event_type` = 'cta_click' THEN 1 ELSE 0 END) AS `cta_clicks`,
+            SUM(CASE WHEN `event_type` = 'demo_request' THEN 1 ELSE 0 END) AS `demo_requests`,
+            SUM(CASE WHEN `event_type` = 'cta_click' AND JSON_UNQUOTE(JSON_EXTRACT(`meta`, '$.block_type')) = 'product_offer' THEN 1 ELSE 0 END) AS `product_clicks`,
             SUM(CASE WHEN `variant_key` = 'a' AND `event_type` = 'view' THEN 1 ELSE 0 END) AS `a_views`,
             SUM(CASE WHEN `variant_key` = 'b' AND `event_type` = 'view' THEN 1 ELSE 0 END) AS `b_views`
         FROM `vip_funnel_events`
@@ -7556,6 +7635,9 @@ function vip_funnel_get_analytics_snapshot(int $funnel_id = 0, array $payload = 
             'submits' => $submits,
             'leads' => $leads,
             'advances' => (int) ($row->advances ?? 0),
+            'cta_clicks' => (int) ($row->cta_clicks ?? 0),
+            'demo_requests' => (int) ($row->demo_requests ?? 0),
+            'product_clicks' => (int) ($row->product_clicks ?? 0),
             'submit_rate' => $views > 0 ? round(($submits / max(1, $views)) * 100, 1) : 0,
             'lead_rate' => $views > 0 ? round(($leads / max(1, $views)) * 100, 1) : 0,
             'a_views' => (int) ($row->a_views ?? 0),
@@ -8043,6 +8125,7 @@ function vip_funnel_get_public_step_state(int $user_id = 0, string $requested_st
     $surface = vip_funnel_apply_surface_variant($surface, $variant_key);
     $surface_blocks = $variant_key === 'b' && !empty($surface['variant_b_blocks']) ? $surface['variant_b_blocks'] : $surface['blocks'];
     $surface_blocks = vip_funnel_prepare_public_blocks($surface_blocks, $payload, $registry, $active_context, $user_id, $slug);
+    $ai_owner_link_id = function_exists('fc_get_user_main_biolink_id') ? (int) (fc_get_user_main_biolink_id($user_id) ?? 0) : 0;
 
     $current_index = 1;
     foreach($flat_steps as $index => $context) {
@@ -8073,6 +8156,7 @@ function vip_funnel_get_public_step_state(int $user_id = 0, string $requested_st
         'path_title' => $path_title,
         'runtime_context' => $runtime_context,
         'owner_profile' => vip_funnel_get_owner_contact_profile($user_id),
+        'ai_owner_link_id' => $ai_owner_link_id,
         'active' => [
             'id' => $current_step_id,
             'phase_key' => (string) ($active_context['phase_key'] ?? ''),

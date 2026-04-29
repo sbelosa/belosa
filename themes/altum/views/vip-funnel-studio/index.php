@@ -8,6 +8,7 @@ $e = static function($value) {
 $payload = is_array($data->payload ?? null) ? $data->payload : [];
 $studio = is_array($data->studio ?? null) ? $data->studio : [];
 $selected_funnel_id = (int) ($data->selected_funnel_id ?? ($studio['funnel_row']->vip_funnel_id ?? 0));
+$public_funnel_user_id = (int) ($studio['funnel_row']->user_id ?? ($payload['defaults']['owner_user_id'] ?? 0));
 $phase_definitions = array_values(vip_funnel_get_phase_definitions());
 $logo_url = ASSETS_FULL_URL . 'images/vip-funnel-logo-wide.png';
 $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
@@ -120,6 +121,10 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
         flex-wrap: wrap;
         align-items: stretch;
         gap: .55rem;
+    }
+
+    .vf-tabs:empty {
+        display: none;
     }
 
     .vf-tab {
@@ -338,6 +343,12 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
         color: #fff;
     }
 
+    .vf-btn:disabled {
+        opacity: .45;
+        cursor: not-allowed;
+        transform: none;
+    }
+
     .vf-btn--primary {
         background: linear-gradient(180deg, #7be2d5, #55c8b7);
         border-color: rgba(103, 216, 201, 0.6);
@@ -356,12 +367,17 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
 
     .vf-grid {
         display: grid;
-        grid-template-columns: minmax(0, 1.24fr) minmax(320px, .9fr);
+        grid-template-columns: minmax(0, 1.7fr) minmax(320px, .72fr);
         gap: 1rem;
         align-items: start;
     }
 
+    .vf-grid > * {
+        min-width: 0;
+    }
+
     .vf-card {
+        min-width: 0;
         border-radius: 1.45rem;
         border: 1px solid var(--vf-border);
         background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.015));
@@ -394,10 +410,12 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
     }
 
     .vf-card__body {
+        min-width: 0;
         padding: 1rem 1.15rem 1.15rem;
     }
 
     .vf-workspace {
+        min-width: 0;
         display: grid;
         gap: 1rem;
     }
@@ -536,6 +554,12 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
     .vf-field input[type="color"] {
         padding: .35rem;
         min-height: 3rem;
+    }
+
+    .vf-field input[type="range"] {
+        accent-color: var(--vf-accent);
+        padding: 0;
+        min-height: 2.4rem;
     }
 
     .vf-field__hint {
@@ -815,17 +839,23 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
     }
 
     .vf-block-card[data-vf-block-span="third"] .vf-block-card__top,
-    .vf-block-card[data-vf-block-span="quarter"] .vf-block-card__top {
+    .vf-block-card[data-vf-block-span="quarter"] .vf-block-card__top,
+    .vf-block-card[data-vf-block-span="fifth"] .vf-block-card__top,
+    .vf-block-card[data-vf-block-span="sixth"] .vf-block-card__top {
         flex-direction: column;
     }
 
     .vf-block-card[data-vf-block-span="third"] .vf-block-card__meta,
-    .vf-block-card[data-vf-block-span="quarter"] .vf-block-card__meta {
+    .vf-block-card[data-vf-block-span="quarter"] .vf-block-card__meta,
+    .vf-block-card[data-vf-block-span="fifth"] .vf-block-card__meta,
+    .vf-block-card[data-vf-block-span="sixth"] .vf-block-card__meta {
         justify-content: flex-start;
         max-width: 100%;
     }
 
-    .vf-block-card[data-vf-block-span="quarter"] .vf-block-card__width-btn {
+    .vf-block-card[data-vf-block-span="quarter"] .vf-block-card__width-btn,
+    .vf-block-card[data-vf-block-span="fifth"] .vf-block-card__width-btn,
+    .vf-block-card[data-vf-block-span="sixth"] .vf-block-card__width-btn {
         min-width: 2.15rem;
         padding: .28rem .42rem;
         font-size: .67rem;
@@ -1070,13 +1100,18 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
     }
 
     .vf-step-card.is-dragging,
-    .vf-block-card.is-dragging {
+    .vf-block-card.is-dragging,
+    .vf-page-rail-item.is-dragging,
+    .vf-template-mini.is-dragging,
+    .vf-element-tile.is-dragging,
+    .vf-row-preset.is-dragging {
         opacity: .48;
         border-style: dashed;
     }
 
     .vf-phase__steps.is-drop-target,
-    .vf-blocks-list.is-drop-target {
+    .vf-blocks-list.is-drop-target,
+    .vf-page-rail-dropzone.is-drop-target {
         outline: 2px dashed rgba(103, 216, 201, 0.4);
         outline-offset: .25rem;
         border-radius: 1rem;
@@ -1152,19 +1187,27 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
     }
 
     .vf-blocks-list {
-        grid-template-columns: repeat(12, minmax(0, 1fr));
+        grid-template-columns: repeat(60, minmax(0, 1fr));
+        gap: .75rem 0;
         align-items: start;
     }
 
-    .vf-blocks-list > [data-vf-block-span="full"] { grid-column: span 12; }
-    .vf-blocks-list > [data-vf-block-span="half"] { grid-column: span 6; }
-    .vf-blocks-list > [data-vf-block-span="third"] { grid-column: span 4; }
-    .vf-blocks-list > [data-vf-block-span="two_thirds"] { grid-column: span 8; }
-    .vf-blocks-list > [data-vf-block-span="quarter"] { grid-column: span 3; }
-    .vf-blocks-list > [data-vf-block-span="three_quarters"] { grid-column: span 9; }
+    .vf-blocks-list > [data-vf-block-span="full"] { grid-column: span 60; }
+    .vf-blocks-list > [data-vf-block-span="half"] { grid-column: span 30; }
+    .vf-blocks-list > [data-vf-block-span="third"] { grid-column: span 20; }
+    .vf-blocks-list > [data-vf-block-span="two_thirds"] { grid-column: span 40; }
+    .vf-blocks-list > [data-vf-block-span="quarter"] { grid-column: span 15; }
+    .vf-blocks-list > [data-vf-block-span="three_quarters"] { grid-column: span 45; }
+    .vf-blocks-list > [data-vf-block-span="fifth"] { grid-column: span 12; }
+    .vf-blocks-list > [data-vf-block-span="sixth"] { grid-column: span 10; }
+
+    .vf-blocks-list > [data-vf-block-span]:not([data-vf-block-span="full"]) {
+        margin-inline: .38rem;
+    }
 
     .vf-blocks-list > .vf-empty {
         grid-column: 1 / -1;
+        margin-inline: 0;
     }
 
     .vf-template-grid {
@@ -1182,51 +1225,74 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
         top: 1.2rem;
         display: grid;
         gap: 1rem;
-    }
-
-    .vf-preview-page {
-        border-radius: 1.4rem;
-        border: 1px solid rgba(255,255,255,0.08);
-        background: #0f172a;
-        padding: 1rem;
+        min-width: 0;
+        max-width: 100%;
         overflow: hidden;
     }
 
+    .vf-preview-page {
+        width: 100%;
+        max-width: 100%;
+        border-radius: 1.4rem;
+        border: 1px solid rgba(255,255,255,0.08);
+        background: #0f172a;
+        padding: 1.1rem;
+        overflow: hidden;
+    }
+
+    .vf-preview-page,
+    .vf-preview-page *,
+    .vf-preview-page *::before,
+    .vf-preview-page *::after {
+        box-sizing: border-box;
+    }
+
     .vf-preview-page__canvas {
+        min-width: 0;
+        width: 100%;
         margin: 0 auto;
         border-radius: 1.4rem;
         padding: 1rem;
         min-height: 540px;
+        max-width: 100%;
+        overflow: hidden;
         box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
-    }
-
-    .vf-preview-page__header {
-        display: flex;
-        flex-wrap: wrap;
-        gap: .55rem;
-        margin-bottom: .95rem;
     }
 
     .vf-preview-blocks {
         display: grid;
-        grid-template-columns: repeat(12, minmax(0, 1fr));
-        gap: .95rem;
+        width: 100%;
+        max-width: 100%;
+        grid-template-columns: repeat(60, minmax(0, 1fr));
+        gap: .95rem 0;
     }
 
     .vf-preview-block {
         min-width: 0;
+        max-width: 100%;
         border-radius: 1.15rem;
         border: 1px solid rgba(255,255,255,0.08);
         background: rgba(255,255,255,0.05);
         padding: 1rem;
+        overflow: hidden;
     }
 
-    .vf-preview-blocks > [data-vf-span="full"] { grid-column: span 12; }
-    .vf-preview-blocks > [data-vf-span="half"] { grid-column: span 6; }
-    .vf-preview-blocks > [data-vf-span="third"] { grid-column: span 4; }
-    .vf-preview-blocks > [data-vf-span="two_thirds"] { grid-column: span 8; }
-    .vf-preview-blocks > [data-vf-span="quarter"] { grid-column: span 3; }
-    .vf-preview-blocks > [data-vf-span="three_quarters"] { grid-column: span 9; }
+    .vf-preview-blocks > [data-vf-span="full"] { grid-column: span 60; }
+    .vf-preview-blocks > [data-vf-span="half"] { grid-column: span 30; }
+    .vf-preview-blocks > [data-vf-span="third"] { grid-column: span 20; }
+    .vf-preview-blocks > [data-vf-span="two_thirds"] { grid-column: span 40; }
+    .vf-preview-blocks > [data-vf-span="quarter"] { grid-column: span 15; }
+    .vf-preview-blocks > [data-vf-span="three_quarters"] { grid-column: span 45; }
+    .vf-preview-blocks > [data-vf-span="fifth"] { grid-column: span 12; }
+    .vf-preview-blocks > [data-vf-span="sixth"] { grid-column: span 10; }
+
+    .vf-preview-blocks > [data-vf-span]:not([data-vf-span="full"]) {
+        margin-inline: .45rem;
+    }
+
+    .vf-preview-blocks > [data-vf-span="full"] {
+        margin-inline: 0;
+    }
 
     .vf-preview-spacer {
         min-width: 0;
@@ -1234,6 +1300,7 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
 
     .vf-preview-blocks > .vf-empty {
         grid-column: 1 / -1;
+        margin-inline: 0;
     }
 
     .vf-preview-block.align-center {
@@ -1256,18 +1323,28 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
     }
 
     .vf-preview-title {
+        max-width: 100%;
         font-size: clamp(1.4rem, 3vw, 2.55rem);
         line-height: 1.03;
         font-weight: 900;
         margin-bottom: .45rem;
         color: inherit;
+        overflow-wrap: anywhere;
+        word-break: break-word;
     }
 
     .vf-preview-text {
+        max-width: 100%;
         font-size: .98rem;
         line-height: 1.7;
         color: inherit;
         opacity: .92;
+        overflow-wrap: anywhere;
+        word-break: break-word;
+    }
+
+    .vf-preview-page--desktop .vf-preview-text {
+        max-inline-size: 100%;
     }
 
     .vf-preview-media {
@@ -1361,6 +1438,52 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
         background: rgba(255,255,255,0.03);
         color: rgba(236,243,255,0.72);
         line-height: 1.6;
+    }
+
+    .vf-preview-ai-card {
+        margin-top: .95rem;
+        display: grid;
+        gap: .9rem;
+        border-radius: 1.15rem;
+        border: 1px solid rgba(103,216,201,0.22);
+        background: linear-gradient(135deg, rgba(103,216,201,0.14), rgba(255,255,255,0.04));
+        padding: 1rem;
+    }
+
+    .vf-preview-ai-card__head {
+        display: flex;
+        align-items: center;
+        gap: .82rem;
+        min-width: 0;
+    }
+
+    .vf-preview-ai-card__mark {
+        width: 46px;
+        height: 46px;
+        border-radius: 999px;
+        display: grid;
+        place-items: center;
+        flex: 0 0 auto;
+        background: radial-gradient(circle at 35% 30%, rgba(255,255,255,0.92), rgba(103,216,201,0.2) 45%, rgba(103,216,201,0.08));
+        color: #0f172a;
+        font-weight: 900;
+        box-shadow: 0 10px 26px rgba(2,8,23,0.22);
+    }
+
+    .vf-preview-ai-card__copy {
+        min-width: 0;
+        display: grid;
+        gap: .15rem;
+        line-height: 1.35;
+    }
+
+    .vf-preview-ai-card__title {
+        font-weight: 900;
+    }
+
+    .vf-preview-ai-card__text {
+        color: rgba(236,243,255,0.74);
+        font-size: .9rem;
     }
 
     .vf-preview-buttons {
@@ -1747,9 +1870,463 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
         line-height: 1.6;
     }
 
+    .vf-flow-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(280px, .34fr);
+        gap: 1rem;
+        align-items: start;
+    }
+
+    .vf-flow-canvas {
+        display: grid;
+        gap: 1rem;
+    }
+
+    .vf-flow-start {
+        padding: 1rem;
+        border-radius: 1.15rem;
+        border: 1px solid rgba(103,216,201,0.2);
+        background: linear-gradient(180deg, rgba(103,216,201,0.1), rgba(255,255,255,0.025));
+    }
+
+    .vf-step-type-grid,
+    .vf-row-preset-grid,
+    .vf-palette-grid,
+    .vf-section-template-grid {
+        display: grid;
+        gap: .7rem;
+    }
+
+    .vf-step-type-grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .vf-row-preset-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .vf-palette-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .vf-section-template-grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .vf-builder-shell {
+        display: grid;
+        grid-template-columns: minmax(190px, .32fr) minmax(0, .76fr) minmax(280px, .52fr);
+        gap: .9rem;
+        align-items: start;
+    }
+
+    .vf-builder-rail,
+    .vf-builder-panel,
+    .vf-builder-main {
+        min-width: 0;
+    }
+
+    .vf-builder-toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: .75rem;
+        padding: .8rem .9rem;
+        border-radius: 1.1rem;
+        border: 1px solid rgba(255,255,255,0.08);
+        background: rgba(255,255,255,0.03);
+        margin-bottom: .85rem;
+    }
+
+    .vf-builder-toolbar__title {
+        color: #fff;
+        font-weight: 900;
+        line-height: 1.2;
+    }
+
+    .vf-builder-toolbar__sub {
+        margin-top: .15rem;
+        color: rgba(226,235,247,0.62);
+        font-size: .8rem;
+        line-height: 1.45;
+    }
+
+    .vf-segmented {
+        display: inline-flex;
+        flex-wrap: wrap;
+        gap: .35rem;
+        padding: .28rem;
+        border-radius: 999px;
+        border: 1px solid rgba(255,255,255,0.08);
+        background: rgba(5,10,18,0.28);
+    }
+
+    .vf-segmented button {
+        border: 0;
+        border-radius: 999px;
+        padding: .48rem .7rem;
+        background: transparent;
+        color: rgba(236,243,255,0.74);
+        font-size: .78rem;
+        font-weight: 900;
+        cursor: pointer;
+    }
+
+    .vf-segmented button.is-active {
+        background: rgba(103,216,201,0.16);
+        color: #d7fffa;
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+    }
+
+    .vf-page-rail-list {
+        display: grid;
+        gap: .55rem;
+    }
+
+    .vf-page-rail-url {
+        display: grid;
+        gap: .28rem;
+        margin-bottom: .75rem;
+        padding: .72rem .78rem;
+        border-radius: .95rem;
+        border: 1px solid rgba(103,216,201,0.18);
+        background: rgba(103,216,201,0.07);
+    }
+
+    .vf-page-rail-url__label {
+        color: rgba(236,243,255,0.64);
+        font-size: .68rem;
+        line-height: 1.3;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: 0;
+    }
+
+    .vf-page-rail-url__value {
+        color: #d7fffa;
+        font-size: .72rem;
+        line-height: 1.45;
+        overflow-wrap: anywhere;
+    }
+
+    .vf-page-rail-actions {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: .45rem;
+        margin-bottom: .8rem;
+    }
+
+    .vf-page-rail-action {
+        min-width: 0;
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: .85rem;
+        background: rgba(255,255,255,0.04);
+        color: rgba(236,243,255,0.82);
+        padding: .58rem .62rem;
+        font-size: .72rem;
+        line-height: 1.25;
+        font-weight: 900;
+        cursor: pointer;
+        transition: .18s ease;
+    }
+
+    .vf-page-rail-action:hover,
+    .vf-page-rail-action.is-active {
+        background: rgba(103,216,201,0.13);
+        border-color: rgba(103,216,201,0.3);
+        color: #fff;
+    }
+
+    .vf-page-rail-action--wide {
+        grid-column: 1 / -1;
+    }
+
+    .vf-page-rail-item {
+        width: 100%;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: center;
+        gap: .5rem;
+        padding: .72rem .78rem;
+        border-radius: .95rem;
+        border: 1px solid rgba(255,255,255,0.08);
+        background: rgba(255,255,255,0.035);
+        color: rgba(236,243,255,0.82);
+        text-align: left;
+        cursor: pointer;
+        transition: .18s ease;
+    }
+
+    .vf-page-rail-item:hover,
+    .vf-page-rail-item.is-active {
+        border-color: rgba(103,216,201,0.3);
+        background: rgba(103,216,201,0.1);
+        color: #fff;
+    }
+
+    .vf-page-rail-item.is-drop-before {
+        box-shadow: inset 0 3px 0 rgba(103,216,201,0.95);
+    }
+
+    .vf-page-rail-item.is-drop-after {
+        box-shadow: inset 0 -3px 0 rgba(103,216,201,0.95);
+    }
+
+    .vf-page-rail-item__copy {
+        display: grid;
+        gap: .18rem;
+        min-width: 0;
+    }
+
+    .vf-page-rail-item > .vf-page-rail-item__title,
+    .vf-page-rail-item > .vf-page-rail-item__sub {
+        grid-column: 1 / -1;
+    }
+
+    .vf-page-rail-item__title {
+        font-size: .84rem;
+        font-weight: 900;
+        line-height: 1.25;
+    }
+
+    .vf-page-rail-item__sub {
+        font-size: .72rem;
+        line-height: 1.35;
+        color: rgba(226,235,247,0.58);
+    }
+
+    .vf-page-rail-item__grip {
+        color: rgba(226,235,247,0.36);
+        font-size: .86rem;
+        letter-spacing: 0;
+        cursor: grab;
+    }
+
+    .vf-page-rail-trash {
+        display: none;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        gap: .45rem;
+        min-height: 4.25rem;
+        margin-top: .75rem;
+        padding: .9rem;
+        border-radius: 1rem;
+        border: 1px dashed rgba(255,144,164,0.42);
+        background: rgba(255,89,124,0.08);
+        color: #ffd8df;
+        font-weight: 900;
+        line-height: 1.35;
+    }
+
+    #vf_workspace.is-step-trash-ready .vf-page-rail-trash {
+        display: flex;
+    }
+
+    .vf-page-rail-trash.is-drop-target {
+        border-color: rgba(255,144,164,0.86);
+        background: rgba(255,89,124,0.16);
+        box-shadow: 0 0 0 4px rgba(255,89,124,0.08);
+    }
+
+    .vf-page-rail-trash__sub {
+        display: block;
+        margin-top: .16rem;
+        color: rgba(255,216,223,0.72);
+        font-size: .72rem;
+        font-weight: 800;
+    }
+
+    .vf-confirm {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        display: grid;
+        place-items: center;
+        padding: 1rem;
+        background: rgba(3, 7, 13, 0.72);
+        backdrop-filter: blur(12px);
+    }
+
+    .vf-confirm__dialog {
+        width: min(430px, 100%);
+        border-radius: 1.25rem;
+        border: 1px solid rgba(255,255,255,0.1);
+        background: linear-gradient(180deg, rgba(24,31,42,0.98), rgba(11,16,24,0.98));
+        box-shadow: 0 1.8rem 4rem rgba(0,0,0,0.42);
+        color: var(--vf-text);
+        overflow: hidden;
+    }
+
+    .vf-confirm__body {
+        padding: 1.15rem;
+    }
+
+    .vf-confirm__title {
+        margin: 0 0 .35rem;
+        color: #fff;
+        font-size: 1.05rem;
+        font-weight: 900;
+    }
+
+    .vf-confirm__text {
+        margin: 0;
+        color: rgba(226,235,247,0.74);
+        line-height: 1.55;
+        font-size: .9rem;
+    }
+
+    .vf-confirm__actions {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        gap: .55rem;
+        padding: .9rem 1.15rem 1.15rem;
+    }
+
+    .vf-template-mini,
+    .vf-element-tile,
+    .vf-row-preset,
+    .vf-step-type-card {
+        width: 100%;
+        min-width: 0;
+        display: grid;
+        gap: .38rem;
+        padding: .82rem;
+        border-radius: 1rem;
+        border: 1px solid rgba(255,255,255,0.08);
+        background: rgba(255,255,255,0.035);
+        color: rgba(236,243,255,0.84);
+        text-align: left;
+        cursor: grab;
+        transition: .18s ease;
+    }
+
+    .vf-template-mini:hover,
+    .vf-element-tile:hover,
+    .vf-row-preset:hover,
+    .vf-step-type-card:hover {
+        transform: translateY(-1px);
+        border-color: rgba(103,216,201,0.28);
+        background: rgba(103,216,201,0.09);
+        color: #fff;
+    }
+
+    .vf-template-mini__preview {
+        min-height: 4.1rem;
+        border-radius: .85rem;
+        background:
+            linear-gradient(135deg, rgba(103,216,201,0.28), transparent 46%),
+            linear-gradient(180deg, rgba(255,255,255,0.1), rgba(255,255,255,0.035));
+        border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .vf-template-mini__title,
+    .vf-element-tile__title,
+    .vf-row-preset__title,
+    .vf-step-type-card__title {
+        font-weight: 900;
+        line-height: 1.25;
+    }
+
+    .vf-template-mini__text,
+    .vf-element-tile__text,
+    .vf-step-type-card__text {
+        color: rgba(226,235,247,0.6);
+        font-size: .78rem;
+        line-height: 1.45;
+    }
+
+    .vf-builder-breadcrumb {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .35rem;
+        margin-top: .85rem;
+    }
+
+    .vf-builder-breadcrumb button {
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 999px;
+        background: rgba(255,255,255,0.04);
+        color: rgba(236,243,255,0.76);
+        padding: .42rem .62rem;
+        font-size: .72rem;
+        font-weight: 900;
+        cursor: pointer;
+    }
+
+    .vf-builder-breadcrumb button.is-active {
+        color: #0f172a;
+        background: var(--vf-accent);
+        border-color: rgba(103,216,201,0.5);
+    }
+
+    .vf-builder-panel-tabs {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: .35rem;
+        margin-bottom: .45rem;
+    }
+
+    .vf-builder-panel-tabs button,
+    .vf-builder-panel-settings {
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: .9rem;
+        background: rgba(255,255,255,0.035);
+        color: rgba(236,243,255,0.72);
+        padding: .6rem .55rem;
+        font-size: .74rem;
+        font-weight: 900;
+        cursor: pointer;
+    }
+
+    .vf-builder-panel-settings {
+        width: 100%;
+        margin-bottom: .85rem;
+    }
+
+    .vf-builder-panel-tabs button.is-active,
+    .vf-builder-panel-settings.is-active {
+        background: rgba(103,216,201,0.15);
+        border-color: rgba(103,216,201,0.28);
+        color: #d7fffa;
+    }
+
+    .vf-preview-page--mobile {
+        padding: 1.2rem;
+        display: flex;
+        justify-content: center;
+        background:
+            linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px),
+            linear-gradient(180deg, rgba(255,255,255,0.05) 1px, transparent 1px),
+            #e9edf3 !important;
+        background-size: 28px 28px, 28px 28px, auto !important;
+    }
+
+    .vf-preview-page--mobile .vf-preview-page__canvas {
+        width: 390px;
+        max-width: 100% !important;
+        min-height: 740px;
+        border-radius: 2rem;
+        overflow: hidden;
+        box-shadow: 0 1.6rem 3.4rem rgba(2,8,23,0.32);
+    }
+
+    .vf-preview-page--mobile .vf-preview-blocks {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .vf-preview-page--mobile .vf-preview-blocks > [data-vf-span] {
+        grid-column: 1 / -1;
+        margin-inline: 0;
+    }
+
     @media (max-width: 1360px) {
         .vf-grid,
         .vf-builder-columns,
+        .vf-builder-shell,
+        .vf-flow-layout,
         .vf-two,
         .vf-analytics-split,
         .vf-action-card__main-grid,
@@ -1799,12 +2376,19 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
             grid-template-columns: minmax(0, 1fr);
         }
 
+        .vf-row-preset-grid,
+        .vf-palette-grid,
+        .vf-builder-panel-tabs {
+            grid-template-columns: minmax(0, 1fr);
+        }
+
         .vf-blocks-list {
             grid-template-columns: minmax(0, 1fr);
         }
 
         .vf-blocks-list > [data-vf-block-span] {
             grid-column: span 1;
+            margin-inline: 0;
         }
 
         .vf-block-card__top {
@@ -1906,9 +2490,12 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
     const resetButton = form.querySelector('[data-vf-reset-button]');
     const saveUrl = <?= json_encode(url('vip-funnel-studio/save-ajax'), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
     const imageUploadUrl = <?= json_encode($data->image_upload_url ?? url('vip-funnel-studio/upload-image'), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
+    const siteUrl = <?= json_encode(SITE_URL, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
+    const publicFunnelUserId = <?= (int) $public_funnel_user_id ?>;
     const imageUploadMaxSizeMb = <?= json_encode((float) ($data->image_upload_max_size_mb ?? 3), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
     const imageUploadAccept = <?= json_encode($data->image_upload_accept ?? '.jpg, .jpeg, .png, .svg, .gif, .webp, .avif', JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
     const imageGalleryEntries = <?= json_encode(array_values($data->image_gallery_entries ?? []), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
+    const stepTrashConfirmStorageKey = 'vip_funnel_skip_step_trash_confirm';
     const productCatalog = <?= json_encode(array_values($data->product_catalog ?? []), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
     const productSourceModeOptions = <?= json_encode($data->product_source_mode_options ?? [], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
     const productTargetModeOptions = <?= json_encode($data->product_target_mode_options ?? [], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
@@ -2053,6 +2640,8 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
     const defaultSurface = () => ({
         name: 'Nova funnel stranica',
         background_color: '#0f172a',
+        background_image_url: '',
+        background_opacity: 100,
         surface_color: '#152132',
         text_color: '#eef4ff',
         accent_color: '#67d8c9',
@@ -2068,6 +2657,8 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
     const cloneVariantSurfaceSettings = (surface = {}) => ({
         name: surface.name || 'Nova funnel stranica',
         background_color: surface.background_color || '#0f172a',
+        background_image_url: surface.background_image_url || '',
+        background_opacity: clampOpacity(surface.background_opacity, 100),
         surface_color: surface.surface_color || '#152132',
         text_color: surface.text_color || '#eef4ff',
         accent_color: surface.accent_color || '#67d8c9',
@@ -2079,7 +2670,7 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
         const normalized = cloneVariantSurfaceSettings(sourceSurface);
         const raw = variantSettings && typeof variantSettings === 'object' ? variantSettings : {};
 
-        ['name', 'background_color', 'surface_color', 'text_color', 'accent_color', 'max_width', 'show_progress'].forEach(field => {
+        ['name', 'background_color', 'background_image_url', 'background_opacity', 'surface_color', 'text_color', 'accent_color', 'max_width', 'show_progress'].forEach(field => {
             if(raw[field] !== undefined) {
                 normalized[field] = raw[field];
             }
@@ -2105,6 +2696,7 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
             text_field: {font_family: 'inherit', badge_size: 13, badge_weight: '800', badge_color: '', title_size: 24, title_weight: '900', title_color: '', text_size: 16, text_weight: '500', body_color: '', field_size: 16, field_weight: '500', field_text_color: '', placeholder_color: '', button_size: 17, button_weight: '800', button_text_color: ''},
             proof_card: {font_family: 'inherit', badge_size: 13, badge_weight: '800', badge_color: '', title_size: 26, title_weight: '800', title_color: '', text_size: 17, text_weight: '500', body_color: '', field_size: 16, field_weight: '500', field_text_color: '', placeholder_color: '', button_size: 17, button_weight: '800', button_text_color: ''},
             product_offer: {font_family: 'inherit', badge_size: 13, badge_weight: '800', badge_color: '', title_size: 28, title_weight: '900', title_color: '', text_size: 17, text_weight: '500', body_color: '', field_size: 16, field_weight: '500', field_text_color: '', placeholder_color: '', button_size: 18, button_weight: '900', button_text_color: ''},
+            ai_product_advisor: {font_family: 'inherit', badge_size: 13, badge_weight: '800', badge_color: '', title_size: 30, title_weight: '900', title_color: '', text_size: 17, text_weight: '500', body_color: '', field_size: 16, field_weight: '500', field_text_color: '', placeholder_color: '', button_size: 18, button_weight: '900', button_text_color: ''},
             spacer: {font_family: 'inherit', badge_size: 13, badge_weight: '800', badge_color: '', title_size: 28, title_weight: '800', title_color: '', text_size: 17, text_weight: '500', body_color: '', field_size: 16, field_weight: '500', field_text_color: '', placeholder_color: '', button_size: 17, button_weight: '800', button_text_color: ''}
         };
 
@@ -2124,10 +2716,11 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
             text_field: {type, label: 'Tekst polje', badge: '', title: 'Kratki odgovor', text: '', placeholder: 'Upiši odgovor', field_key: '', required: false, alignment: 'left', buttons: [], options: []},
             proof_card: {type, label: 'Proof / povjerenje', badge: 'Povjerenje', title: 'Zašto ovaj put djeluje sigurno', text: 'Dodaj proof, sigurnost, mentorstvo ili konkretan benefit.', alignment: 'left', buttons: [], options: []},
             product_offer: {type, label: 'Preporuka proizvoda', badge: 'Preporuka', title: 'Idealna preporuka za tvoj cilj', text: 'Odaberi proizvod i poveži osobu ili na blog vodič ili direktno na službeni shop s referral logikom.', alignment: 'left', product_source_mode: 'manual', product_blog_post_id: 0, product_translation_key: '', product_language_mode: 'page', product_language_code: preferredProductLanguageCode || 'hr', product_fallback_language_code: 'hr', product_primary_mode: 'blog_guide', product_primary_cta_text: 'Pogledaj vodič proizvoda', product_secondary_enabled: true, product_secondary_mode: 'direct_shop', product_secondary_cta_text: 'Idi na službeni shop', product_mappings: [], buttons: [], options: []},
+            ai_product_advisor: {type, label: 'AI savjetnik za proizvode', badge: 'Personalizirana preporuka', title: 'Pronađi svoj najbolji Forever početak u par pitanja', text: 'Napiši što želiš postići, kako se sada osjećaš ili što te zanima. Pametni FCC savjetnik predložit će smjer koji ima najviše smisla za tebe.', alignment: 'left', ai_advisor_enabled: true, ai_lead_capture_enabled: true, ai_button_label: 'Započni moju preporuku', ai_launcher_label: 'Moja preporuka', ai_intro_label: 'Tvoj osobni vodič', ai_input_placeholder: 'Napiši cilj ili pitanje...', buttons: [], options: []},
             spacer: {type, label: 'Razmak', badge: '', title: '', text: '', spacing: 'lg', alignment: 'left', buttons: [], options: []}
         };
 
-        return JSON.parse(JSON.stringify(Object.assign({layout_width: 'full'}, typographyDefaults[type] || typographyDefaults.headline, map[type] || map.headline)));
+        return JSON.parse(JSON.stringify(Object.assign({layout_width: 'full', background_opacity: 100}, typographyDefaults[type] || typographyDefaults.headline, map[type] || map.headline)));
     };
 
     const state = {
@@ -2137,6 +2730,8 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
         activeBlockId: '',
         activeActionId: '',
         activeVariant: 'a',
+        builderPanel: 'sections',
+        previewDevice: 'desktop',
         analytics: analyticsSeed || {},
         drag: {
             type: '',
@@ -2147,6 +2742,13 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
         },
         save: {
             inFlight: false
+        },
+        history: {
+            past: [],
+            future: [],
+            lastSnapshot: '',
+            isRestoring: false,
+            limit: 60
         },
         resetRequested: false,
         validation: {
@@ -2175,6 +2777,143 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
             .replace(/'/g, '&#039;');
     }
 
+    const fccSectionTemplates = {
+        fcc_hero_business: {
+            category: 'Header',
+            label: 'FCC hero za online posao',
+            description: 'Jasan prvi ekran za suradnike koji žele voditi osobu prema demo prikazu ili mentor pozivu.',
+            accent: '#67d8c9',
+            blocks: [
+                {type: 'headline', label: 'Hero naslov', badge: 'Forever Card Funnel', title: 'Pokreni jednostavan online sustav koji vodi osobu korak po korak', text: 'FCC povezuje prvi interes, pametan survey, demo pristup i mentorstvo u jedan pregledan funnel.', alignment: 'left', layout_width: 'two_thirds', title_size: 48},
+                {type: 'proof_card', label: 'Mentor proof', badge: 'Mentorstvo', title: 'Bez tehničkog kaosa', text: 'Suradnik koristi gotove blokove, a svaki odgovor može automatski voditi na pravu sljedeću stranicu.', alignment: 'left', layout_width: 'third'},
+                {type: 'cta_group', label: 'Hero CTA', alignment: 'center', layout_width: 'full', buttons: [
+                    {label: 'Pogledaj demo sustava', value: 'demo_sustava', action: 'goto_step', target_step_id: '', style: 'primary', require_submit: false},
+                    {label: 'Želim mentorski poziv', value: 'mentorski_poziv', action: 'goto_step', target_step_id: '', style: 'secondary', require_submit: false}
+                ]}
+            ]
+        },
+        fcc_survey_router: {
+            category: 'Feature Sections',
+            label: 'Survey grananje po interesu',
+            description: 'Obavezni routing blok za business, proizvode, demo i follow-up scenarije.',
+            accent: '#f4c34d',
+            blocks: [
+                {type: 'headline', label: 'Uvod u odabir', badge: 'Pametno usmjeravanje', title: 'Što te trenutno najviše zanima?', text: 'Odaberi odgovor i funnel te vodi na stranicu koja najviše odgovara tvojoj situaciji.', alignment: 'center', layout_width: 'full', title_size: 34},
+                {type: 'survey', label: 'Glavni survey', title: 'Odaberi svoj smjer', text: 'Svaki odgovor možeš povezati s drugom funnel stranicom.', alignment: 'left', layout_width: 'full', auto_advance: true, options: [
+                    {label: 'Online posao i FCC sustav', value: 'business', action: 'goto_step', target_step_id: '', style: 'primary', require_submit: false},
+                    {label: 'Forever proizvodi i preporuka', value: 'products', action: 'goto_step', target_step_id: '', style: 'secondary', require_submit: false},
+                    {label: 'Želim demo pristup', value: 'demo', action: 'goto_step', target_step_id: '', style: 'ghost', require_submit: false}
+                ]}
+            ]
+        },
+        fcc_product_recommendation: {
+            category: 'Offer Sections',
+            label: 'Forever product preporuka',
+            description: 'Dinamičan proizvodni blok koji može koristiti prethodne survey odgovore i referral logiku.',
+            accent: '#7ccf5b',
+            blocks: [
+                {type: 'headline', label: 'Preporuka uvod', badge: 'Personalizirana preporuka', title: 'Najbliža Forever preporuka za tvoj cilj', text: 'Funnel može povezati odgovor osobe s proizvodnim vodičem ili direktnim shop korakom.', alignment: 'left', layout_width: 'half', title_size: 32},
+                {type: 'product_offer', label: 'Product offer', badge: 'Forever Living Products', title: 'Odaberi proizvod iz kataloga', text: 'Koristi blog vodič za edukaciju ili direktni shop klik kada je osoba spremna.', alignment: 'left', layout_width: 'half', product_source_mode: 'dynamic', product_primary_mode: 'blog_guide', product_secondary_enabled: true, product_secondary_mode: 'direct_shop'}
+            ]
+        },
+        fcc_ai_product_advisor: {
+            category: 'Offer Sections',
+            label: 'Pametna Forever preporuka',
+            description: 'Atraktivan blok koji osobi pomaže pronaći najlogičniji proizvodni smjer i otvoriti osobni nastavak.',
+            accent: '#67d8c9',
+            blocks: [
+                {type: 'headline', label: 'AI uvod', badge: 'Pravi smjer', title: 'Nisi siguran/na od čega krenuti?', text: 'Dovoljno je opisati cilj, naviku ili pitanje. Funnel može osobu nježno usmjeriti prema preporuci bez pretrpanog kataloga.', alignment: 'left', layout_width: 'half', title_size: 34},
+                {type: 'ai_product_advisor', label: 'AI savjetnik', badge: 'Personalizirana preporuka', title: 'Pronađi svoj najbolji Forever početak u par pitanja', text: 'Napiši što želiš postići, kako se sada osjećaš ili što te zanima. Pametni FCC savjetnik predložit će smjer koji ima najviše smisla za tebe.', alignment: 'left', layout_width: 'half', ai_advisor_enabled: true, ai_lead_capture_enabled: true, ai_button_label: 'Započni moju preporuku', ai_launcher_label: 'Moja preporuka', ai_intro_label: 'Tvoj osobni vodič', ai_input_placeholder: 'Napiši cilj ili pitanje...'}
+            ]
+        },
+        fcc_demo_request: {
+            category: 'Form Sections',
+            label: 'Demo pristup forma',
+            description: 'Kratka forma za demo račun i follow-up bez suvišnih polja.',
+            accent: '#8b5cf6',
+            blocks: [
+                {type: 'headline', label: 'Demo headline', badge: 'Demo pristup', title: 'Želiš vidjeti kako FCC izgleda iznutra?', text: 'Ostavi podatke i mentor ti može otvoriti demo ili poslati sljedeći korak.', alignment: 'center', layout_width: 'full', title_size: 34},
+                {type: 'full_name_field', label: 'Ime i prezime', title: 'Ime i prezime', placeholder: 'Upiši ime i prezime', required: true, layout_width: 'half'},
+                {type: 'phone_field', label: 'WhatsApp', title: 'WhatsApp / telefon', placeholder: 'Upiši broj za brzi kontakt', required: true, layout_width: 'half'},
+                {type: 'email_field', label: 'Email', title: 'Email za demo pristup', placeholder: 'Upiši email', required: false, layout_width: 'half'},
+                {type: 'text_field', label: 'Fokus demo prikaza', title: 'Što želiš vidjeti u demu?', placeholder: 'npr. funnel, preporuke, kontakti, follow-up', field_key: 'demo_focus', required: false, layout_width: 'half'},
+                {type: 'cta_group', label: 'Demo submit', alignment: 'center', layout_width: 'full', buttons: [
+                    {label: 'Pošalji demo zahtjev', value: 'demo_request', action: 'submit_next', target_step_id: '', style: 'primary', require_submit: true}
+                ]}
+            ]
+        },
+        fcc_social_proof: {
+            category: 'Testimonials',
+            label: 'Proof i rezultati suradnika',
+            description: 'Tri kratke kartice za povjerenje, rezultate i sigurnost sljedećeg koraka.',
+            accent: '#38bdf8',
+            blocks: [
+                {type: 'headline', label: 'Proof naslov', badge: 'Povjerenje', title: 'Ljudi lakše nastavljaju kada razumiju što ih čeka', text: 'Dodaj konkretne primjere: jasniji follow-up, brži kontakt, bolji pregled interesa.', alignment: 'center', layout_width: 'full', title_size: 32},
+                {type: 'proof_card', label: 'Proof 1', badge: 'Jasnoća', title: 'Manje ručnog objašnjavanja', text: 'Funnel sam skuplja interes i vodi osobu prema pravom koraku.', layout_width: 'third'},
+                {type: 'proof_card', label: 'Proof 2', badge: 'Kontakt', title: 'Brži follow-up', text: 'Suradnik vidi tko je spreman za demo, proizvod ili mentorski razgovor.', layout_width: 'third'},
+                {type: 'proof_card', label: 'Proof 3', badge: 'Sustav', title: 'Jedan uredan proces', text: 'Sve se prati po stranici, odgovoru i CTA-u.', layout_width: 'third'}
+            ]
+        },
+        fcc_faq: {
+            category: 'FAQ Sections',
+            label: 'FAQ prije kontakta',
+            description: 'Jednostavna sekcija za najčešće prepreke prije demo ili kontakt koraka.',
+            accent: '#fb7185',
+            blocks: [
+                {type: 'headline', label: 'FAQ naslov', badge: 'Česta pitanja', title: 'Prije nego nastaviš, ovo je dobro znati', text: 'Odgovori na kratke dvojbe bez previše teksta.', alignment: 'left', layout_width: 'full', title_size: 32},
+                {type: 'proof_card', label: 'FAQ vrijeme', title: 'Koliko vremena treba?', text: 'Dovoljno je krenuti s gotovim blokovima i povezati odgovore s pravim stranicama.', layout_width: 'half'},
+                {type: 'proof_card', label: 'FAQ proizvodi', title: 'Moram li odmah prodavati?', text: 'Ne. FCC prvo pomaže razumjeti interes osobe, a tek onda predlaže sljedeći korak.', layout_width: 'half'}
+            ]
+        },
+        fcc_final_cta: {
+            category: 'CTA Scroll Stoppers',
+            label: 'Završni CTA blok',
+            description: 'Kratak završni poziv za demo, mentor poziv ili WhatsApp follow-up.',
+            accent: '#f97316',
+            blocks: [
+                {type: 'cta_group', label: 'Finalni CTA', badge: 'Sljedeći korak', title: 'Spreman/na si složiti svoj prvi funnel bez kompliciranja?', text: 'Odaberi demo ili razgovor i nastavljamo ciljano.', alignment: 'center', layout_width: 'full', buttons: [
+                    {label: 'Želim demo pristup', value: 'demo_request', action: 'goto_step', target_step_id: '', style: 'primary', require_submit: false},
+                    {label: 'Kontaktiraj mentora', value: 'mentor_contact', action: 'goto_step', target_step_id: '', style: 'secondary', require_submit: false}
+                ]}
+            ]
+        }
+    };
+
+    const fccElementGroups = [
+        {label: 'Redovi', items: [
+            {type: 'row:1', title: '1 kolona', text: 'Puna širina'},
+            {type: 'row:2', title: '2 kolone', text: '1/2 + 1/2'},
+            {type: 'row:3', title: '3 kolone', text: '1/3 + 1/3 + 1/3'},
+            {type: 'row:4', title: '4 kolone', text: 'Četiri stupca'},
+            {type: 'row:5', title: '5 kolona', text: 'Pet kompaktnih stupaca'},
+            {type: 'row:6', title: '6 kolona', text: 'Šest kompaktnih stupaca'}
+        ]},
+        {label: 'Sadržaj', items: [
+            {type: 'headline', title: 'Headline', text: 'Naslov, podnaslov i badge'},
+            {type: 'text', title: 'Paragraph', text: 'Kratki tekst ili opis'},
+            {type: 'proof_card', title: 'Proof kartica', text: 'Povjerenje, rezultat, FAQ'},
+            {type: 'cta_group', title: 'CTA gumbi', text: 'Gumbovi i routing'}
+        ]},
+        {label: 'Media', items: [
+            {type: 'image', title: 'Slika', text: 'Upload ili URL'},
+            {type: 'video', title: 'Video', text: 'YouTube, Vimeo ili file'}
+        ]},
+        {label: 'Forme i survey', items: [
+            {type: 'survey', title: 'Survey router', text: 'Klik odmah vodi dalje'},
+            {type: 'radio_survey', title: 'Radio pitanje', text: 'Pitanje prije submit gumba'},
+            {type: 'full_name_field', title: 'Ime + prezime', text: 'Lead capture'},
+            {type: 'phone_field', title: 'Telefon', text: 'WhatsApp / kontakt'},
+            {type: 'email_field', title: 'Email', text: 'Email lead'},
+            {type: 'text_field', title: 'Tekst polje', text: 'Kratki odgovor'}
+        ]},
+        {label: 'FCC specifično', items: [
+            {type: 'product_offer', title: 'Forever preporuka', text: 'Blog vodič ili shop klik'},
+            {type: 'ai_product_advisor', title: 'Osobna preporuka', text: 'Forever smjer + kontakt'},
+            {type: 'countdown', title: 'Countdown', text: 'Hitnost za event/demo'},
+            {type: 'spacer', title: 'Razmak', text: 'Vizualni odmak'}
+        ]}
+    ];
+
     function numberFormat(value) {
         return new Intl.NumberFormat(document.documentElement.lang || 'hr-HR').format(Number(value || 0));
     }
@@ -2191,6 +2930,174 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
         return analyticsMessages.variantLabel.replace('%s', String(value).toUpperCase());
     }
 
+    function getFunnelPublicSlug() {
+        const slug = String(state.payload?.funnel?.slug || '').trim();
+        return slug || 'vip-funnel-2-0';
+    }
+
+    function getPublicFunnelUrl(stepId = '') {
+        if(!publicFunnelUserId) {
+            return '';
+        }
+
+        const baseUrl = String(siteUrl || '').replace(/\/?$/, '/');
+        const url = `${baseUrl}vip-funnel/${encodeURIComponent(String(publicFunnelUserId))}/${encodeURIComponent(getFunnelPublicSlug())}`;
+        const cleanStepId = String(stepId || '').trim();
+
+        return cleanStepId ? `${url}?step=${encodeURIComponent(cleanStepId)}` : url;
+    }
+
+    function getActivePagePublicUrl() {
+        if(state.screen === 'step' && state.activeStepId) {
+            return getPublicFunnelUrl(state.activeStepId);
+        }
+
+        return getPublicFunnelUrl();
+    }
+
+    function shouldSkipStepTrashConfirm() {
+        try {
+            return window.localStorage.getItem(stepTrashConfirmStorageKey) === '1';
+        } catch(error) {
+            return false;
+        }
+    }
+
+    function setSkipStepTrashConfirm(shouldSkip = false) {
+        try {
+            if(shouldSkip) {
+                window.localStorage.setItem(stepTrashConfirmStorageKey, '1');
+            }
+        } catch(error) {}
+    }
+
+    function getStepTitleById(stepId = '') {
+        const step = flatSteps().find(item => item.id === stepId);
+        return step?.title || 'ovaj funnel korak';
+    }
+
+    function confirmStepTrashDelete(stepId = '') {
+        if(shouldSkipStepTrashConfirm()) {
+            return Promise.resolve(true);
+        }
+
+        const stepTitle = getStepTitleById(stepId);
+
+        return new Promise(resolve => {
+            const modal = document.createElement('div');
+            modal.className = 'vf-confirm';
+            modal.setAttribute('role', 'dialog');
+            modal.setAttribute('aria-modal', 'true');
+            modal.innerHTML = `
+                <div class="vf-confirm__dialog">
+                    <div class="vf-confirm__body">
+                        <h3 class="vf-confirm__title">Obrisati ovaj flow?</h3>
+                        <p class="vf-confirm__text">Korak "${escapeHtml(stepTitle)}" bit će uklonjen iz funnel-a. Ova akcija se može vratiti preko Undo ako još nisi spremio promjene.</p>
+                        <label class="vf-toggle" style="margin-top:1rem;">
+                            <input type="checkbox" data-vf-confirm-skip="1">
+                            Nemoj me više pitati kada povučem flow u koš
+                        </label>
+                    </div>
+                    <div class="vf-confirm__actions">
+                        <button type="button" class="vf-btn vf-btn--ghost" data-vf-confirm-cancel="1">Odustani</button>
+                        <button type="button" class="vf-btn vf-btn--danger" data-vf-confirm-delete="1">Obriši</button>
+                    </div>
+                </div>
+            `;
+
+            const cleanup = (result) => {
+                document.removeEventListener('keydown', onKeydown);
+                modal.remove();
+                resolve(result);
+            };
+
+            const onKeydown = (event) => {
+                if(event.key === 'Escape') {
+                    cleanup(false);
+                }
+            };
+
+            modal.addEventListener('click', event => {
+                if(event.target === modal || event.target.closest('[data-vf-confirm-cancel]')) {
+                    cleanup(false);
+                    return;
+                }
+
+                if(event.target.closest('[data-vf-confirm-delete]')) {
+                    setSkipStepTrashConfirm(!!modal.querySelector('[data-vf-confirm-skip]')?.checked);
+                    cleanup(true);
+                }
+            });
+
+            document.addEventListener('keydown', onKeydown);
+            document.body.appendChild(modal);
+            modal.querySelector('[data-vf-confirm-cancel]')?.focus();
+        });
+    }
+
+    async function deleteStepViaTrash(stepId = '') {
+        if(!stepId) {
+            return;
+        }
+
+        const confirmed = await confirmStepTrashDelete(stepId);
+        if(confirmed) {
+            deleteStep(stepId);
+        }
+    }
+
+    function normalizeHexColor(value = '') {
+        const hex = String(value || '').trim();
+
+        if(/^#[0-9a-f]{6}$/i.test(hex)) {
+            return hex.toLowerCase();
+        }
+
+        if(/^#[0-9a-f]{3}$/i.test(hex)) {
+            return `#${hex[1]}${hex[1]}${hex[2]}${hex[2]}${hex[3]}${hex[3]}`.toLowerCase();
+        }
+
+        return '';
+    }
+
+    function getReadableTextColor(backgroundColor = '') {
+        const hex = normalizeHexColor(backgroundColor);
+
+        if(!hex) {
+            return '#eef4ff';
+        }
+
+        const r = parseInt(hex.slice(1, 3), 16) / 255;
+        const g = parseInt(hex.slice(3, 5), 16) / 255;
+        const b = parseInt(hex.slice(5, 7), 16) / 255;
+        const luminance = (0.2126 * r) + (0.7152 * g) + (0.0722 * b);
+
+        return luminance > 0.58 ? '#0f172a' : '#eef4ff';
+    }
+
+    function syncSurfacePaletteAfterBackgroundChange(surfaceTarget, previousBackgroundColor = '') {
+        if(!surfaceTarget) {
+            return;
+        }
+
+        const previousBackground = normalizeHexColor(previousBackgroundColor || '#0f172a');
+        const nextBackground = normalizeHexColor(surfaceTarget.background_color || '#0f172a');
+        const currentSurface = normalizeHexColor(surfaceTarget.surface_color || '');
+        const currentText = normalizeHexColor(surfaceTarget.text_color || '');
+        const defaultSurface = normalizeHexColor('#152132');
+        const defaultText = normalizeHexColor('#eef4ff');
+        const previousReadableText = normalizeHexColor(getReadableTextColor(previousBackground));
+        const shouldSyncSurface = !currentSurface || currentSurface === defaultSurface || currentSurface === previousBackground;
+
+        if(shouldSyncSurface && nextBackground) {
+            surfaceTarget.surface_color = nextBackground;
+        }
+
+        if(shouldSyncSurface && (!currentText || currentText === defaultText || currentText === previousReadableText)) {
+            surfaceTarget.text_color = getReadableTextColor(nextBackground);
+        }
+    }
+
     function coerceFieldValue(fieldElement) {
         if(!fieldElement) {
             return '';
@@ -2199,7 +3106,7 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
         const rawValue = fieldElement.value;
         const fieldType = String(fieldElement.getAttribute('type') || '').toLowerCase();
 
-        if(fieldType === 'number') {
+        if(fieldType === 'number' || fieldType === 'range') {
             if(rawValue === '') {
                 return '';
             }
@@ -2247,6 +3154,41 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
         const b = parseInt(normalized.slice(4, 6), 16);
 
         return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    }
+
+    function clampOpacity(value, fallback = 100) {
+        const parsed = Number(value);
+        if(Number.isNaN(parsed)) {
+            return fallback;
+        }
+
+        return Math.max(0, Math.min(100, Math.round(parsed)));
+    }
+
+    function colorWithOpacity(hex, opacity = 100, fallback = '#0f172a') {
+        const normalized = normalizeHexColor(hex || '') || normalizeHexColor(fallback) || '#0f172a';
+        const alpha = clampOpacity(opacity, 100) / 100;
+
+        return alpha >= 1 ? normalized : hexToRgba(normalized, alpha);
+    }
+
+    function sanitizeCssUrl(value = '') {
+        return String(value || '').trim().replace(/[\u0000-\u001F\u007F"'\\<>]/g, '');
+    }
+
+    function getSurfaceBackgroundStyle(surface = {}) {
+        const backgroundColor = normalizeHexColor(surface.background_color || '') || '#0f172a';
+        const backgroundImageUrl = sanitizeCssUrl(surface.background_image_url || '');
+        const styles = [`background-color:${escapeHtml(colorWithOpacity(backgroundColor, surface.background_opacity, '#0f172a'))}`];
+
+        if(backgroundImageUrl) {
+            styles.push(`background-image:linear-gradient(180deg, rgba(2, 8, 23, .22), rgba(2, 8, 23, .36)), url(&quot;${escapeHtml(backgroundImageUrl)}&quot;)`);
+            styles.push('background-size:cover');
+            styles.push('background-position:center');
+            styles.push('background-repeat:no-repeat');
+        }
+
+        return styles.join(';');
     }
 
     function getFontFamilyCss(fontKey) {
@@ -2525,9 +3467,11 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
     function normalizeSurface(surface, fallbackName = 'Nova funnel stranica') {
         const normalized = Object.assign(defaultSurface(), surface || {});
         normalized.name = normalized.name || fallbackName;
+        normalized.background_opacity = clampOpacity(normalized.background_opacity, 100);
         normalized.blocks = Array.isArray(normalized.blocks) ? normalized.blocks.map(normalizeBlock) : [];
         normalized.variant_b_blocks = Array.isArray(normalized.variant_b_blocks) ? normalized.variant_b_blocks.map(normalizeBlock) : [];
         normalized.variant_b_settings = normalizeVariantSurfaceSettings(normalized.variant_b_settings || {}, normalized);
+        normalized.variant_b_settings.background_opacity = clampOpacity(normalized.variant_b_settings.background_opacity, normalized.background_opacity);
         return normalized;
     }
 
@@ -2535,6 +3479,7 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
         const type = (block && block.type) || 'headline';
         const normalized = Object.assign(defaultBlockByType(type), block || {});
         normalized.id = normalized.id || uid(type);
+        normalized.background_opacity = clampOpacity(normalized.background_opacity, 100);
         if(!Object.prototype.hasOwnProperty.call(pageBlockWidthOptions, normalized.layout_width)) {
             normalized.layout_width = 'full';
         }
@@ -2595,6 +3540,123 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
 
     function getActiveStepPhaseKey() {
         return findStepRecord(state.activeStepId)?.phaseKey || '';
+    }
+
+    function getHistorySnapshot() {
+        return JSON.stringify(state.payload || {});
+    }
+
+    function hasPendingHistoryChange() {
+        return !!state.history.lastSnapshot && getHistorySnapshot() !== state.history.lastSnapshot;
+    }
+
+    function canUndoHistory() {
+        return state.history.past.length > 0 || hasPendingHistoryChange();
+    }
+
+    function canRedoHistory() {
+        return state.history.future.length > 0 && !hasPendingHistoryChange();
+    }
+
+    function updateHistoryControls() {
+        workspaceRoot.querySelectorAll('[data-vf-undo]').forEach(button => {
+            button.disabled = !canUndoHistory();
+        });
+
+        workspaceRoot.querySelectorAll('[data-vf-redo]').forEach(button => {
+            button.disabled = !canRedoHistory();
+        });
+    }
+
+    function commitHistorySnapshot() {
+        if(state.history.isRestoring) {
+            return;
+        }
+
+        const snapshot = getHistorySnapshot();
+
+        if(!state.history.lastSnapshot) {
+            state.history.lastSnapshot = snapshot;
+            return;
+        }
+
+        if(snapshot === state.history.lastSnapshot) {
+            return;
+        }
+
+        state.history.past.push(state.history.lastSnapshot);
+
+        if(state.history.past.length > state.history.limit) {
+            state.history.past.shift();
+        }
+
+        state.history.future = [];
+        state.history.lastSnapshot = snapshot;
+    }
+
+    function restoreHistorySnapshot(snapshot) {
+        const restoredPayload = safeParse(snapshot);
+
+        if(!restoredPayload || typeof restoredPayload !== 'object') {
+            return;
+        }
+
+        state.history.isRestoring = true;
+        state.payload = restoredPayload;
+
+        ensurePayload();
+
+        const stepIds = flatSteps().map(step => step.id);
+        if(state.activeStepId && !stepIds.includes(state.activeStepId)) {
+            state.activeStepId = stepIds[0] || '';
+        }
+
+        if(state.screen === 'step' && !state.activeStepId) {
+            state.screen = 'landing';
+        }
+
+        ensureActiveBlock();
+        state.history.lastSnapshot = getHistorySnapshot();
+        renderAll();
+        state.history.isRestoring = false;
+    }
+
+    function undoHistory() {
+        commitHistorySnapshot();
+
+        if(!state.history.past.length) {
+            return;
+        }
+
+        const currentSnapshot = getHistorySnapshot();
+        const previousSnapshot = state.history.past.pop();
+
+        if(currentSnapshot !== previousSnapshot) {
+            state.history.future.push(currentSnapshot);
+        }
+
+        restoreHistorySnapshot(previousSnapshot);
+    }
+
+    function redoHistory() {
+        commitHistorySnapshot();
+
+        if(!state.history.future.length) {
+            return;
+        }
+
+        const currentSnapshot = getHistorySnapshot();
+        const nextSnapshot = state.history.future.pop();
+
+        if(currentSnapshot !== nextSnapshot) {
+            state.history.past.push(currentSnapshot);
+        }
+
+        if(state.history.past.length > state.history.limit) {
+            state.history.past.shift();
+        }
+
+        restoreHistorySnapshot(nextSnapshot);
     }
 
     function setActiveStep(stepId) {
@@ -2746,7 +3808,105 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
         setEditableBlocks(blocks);
         state.activeBlockId = block.id;
         state.activeActionId = '';
+        state.builderPanel = 'settings';
         renderAll();
+    }
+
+    function insertBlockAtIndex(type, targetIndex = null, overrides = {}) {
+        const block = normalizeBlock(Object.assign(defaultBlockByType(type), overrides || {}, {id: uid(type)}));
+        const blocks = getEditableBlocks().slice();
+        const safeIndex = targetIndex === null || Number.isNaN(Number(targetIndex))
+            ? blocks.length
+            : Math.max(0, Math.min(Number(targetIndex), blocks.length));
+
+        blocks.splice(safeIndex, 0, block);
+
+        const isCaptureField = ['name_field', 'full_name_field', 'email_field', 'phone_field', 'text_field'].includes(type);
+        if(isCaptureField && !blocks.some(item => blockHasSubmitAction(item))) {
+            blocks.splice(Math.min(safeIndex + 1, blocks.length), 0, buildSystemSubmitBlock({
+                id: uid('cta_group'),
+                label: 'Submit forma',
+                title: 'Pošalji podatke',
+                text: 'Pošalji formu i prijeđi na sljedeći korak.',
+                buttons: [{
+                    id: uid('btn'),
+                    label: 'Pošalji podatke',
+                    value: 'posalji_podatke',
+                    style: 'primary',
+                    action: 'submit_next',
+                    target_step_id: '',
+                    external_url: '',
+                    require_submit: true
+                }]
+            }));
+        }
+
+        setEditableBlocks(blocks);
+        state.activeBlockId = block.id;
+        state.activeActionId = '';
+        state.builderPanel = 'settings';
+        renderAll();
+    }
+
+    function insertBlocksAtIndex(rawBlocks = [], targetIndex = null) {
+        const currentBlocks = getEditableBlocks().slice();
+        const safeIndex = targetIndex === null || Number.isNaN(Number(targetIndex))
+            ? currentBlocks.length
+            : Math.max(0, Math.min(Number(targetIndex), currentBlocks.length));
+        const normalizedBlocks = (rawBlocks || []).map(item => normalizeBlock(Object.assign(defaultBlockByType(item.type || 'headline'), item, {id: uid(item.type || 'block')})));
+
+        if(!normalizedBlocks.length) {
+            return;
+        }
+
+        currentBlocks.splice(safeIndex, 0, ...normalizedBlocks);
+        setEditableBlocks(currentBlocks);
+        state.activeBlockId = normalizedBlocks[0].id;
+        state.activeActionId = '';
+        state.builderPanel = 'settings';
+        renderAll();
+    }
+
+    function applySectionTemplate(templateKey, targetIndex = null) {
+        const template = fccSectionTemplates[templateKey] || null;
+        if(!template) {
+            return;
+        }
+
+        insertBlocksAtIndex(template.blocks || [], targetIndex);
+    }
+
+    function addElementFromPalette(type, targetIndex = null) {
+        if(String(type || '').startsWith('row:')) {
+            addRowLayout(String(type).split(':')[1] || '1', targetIndex);
+            return;
+        }
+
+        insertBlockAtIndex(type || 'headline', targetIndex);
+    }
+
+    function addRowLayout(columnCount = '1', targetIndex = null) {
+        const count = Math.max(1, Math.min(6, parseInt(columnCount, 10) || 1));
+        const widthMap = {
+            1: 'full',
+            2: 'half',
+            3: 'third',
+            4: 'quarter',
+            5: 'fifth',
+            6: 'sixth'
+        };
+        const width = widthMap[count] || 'full';
+        const blocks = Array.from({length: count}).map((_, index) => ({
+            type: 'text',
+            label: `Red ${count} kolona - stupac ${index + 1}`,
+            badge: '',
+            title: `Novi stupac ${index + 1}`,
+            text: 'Klikni ovaj blok i zamijeni tekst, sliku, CTA ili ga obriši.',
+            alignment: 'left',
+            layout_width: width
+        }));
+
+        insertBlocksAtIndex(blocks, targetIndex);
     }
 
     function duplicateBlock(blockId) {
@@ -2763,6 +3923,7 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
         setEditableBlocks(blocks);
         state.activeBlockId = clone.id;
         state.activeActionId = '';
+        state.builderPanel = 'settings';
         renderAll();
     }
 
@@ -2888,6 +4049,53 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
 
     function addStepFromRail() {
         addStep(getDefaultPhaseKeyForNewStep());
+    }
+
+    function addStepFromType(stepType = 'page', phaseKey = '') {
+        const targetPhaseKey = phaseKey || getDefaultPhaseKeyForNewStep();
+        addStep(targetPhaseKey);
+        const activeStep = getActiveStep();
+
+        if(!activeStep) {
+            return;
+        }
+
+        if(stepType === 'split') {
+            activeStep.card_type = 'split_test';
+            activeStep.title = 'Split test stranica';
+            activeStep.summary = 'Testiraj dvije varijante sadržaja i prati koja bolje vodi dalje.';
+            activeStep.preview_badge = 'Split test';
+            activeStep.page = normalizeSurface(activeStep.page || defaultSurface(), activeStep.title);
+            activeStep.page.ab_enabled = true;
+            activeStep.page.ab_distribution = 50;
+            activeStep.page.blocks = [
+                normalizeBlock(Object.assign(defaultBlockByType('headline'), {id: uid('headline'), badge: 'Varijanta A', title: 'Naslov prve varijante', text: 'Složi prvu poruku i usporedi rezultat.', alignment: 'center'})),
+                normalizeBlock(Object.assign(defaultBlockByType('cta_group'), {id: uid('cta_group'), buttons: [{id: uid('btn'), label: 'Nastavi', value: 'split_a', style: 'primary', action: 'goto_step', target_step_id: '', external_url: '', require_submit: false}]}))
+            ];
+            activeStep.page.variant_b_blocks = [
+                normalizeBlock(Object.assign(defaultBlockByType('headline'), {id: uid('headline'), badge: 'Varijanta B', title: 'Naslov druge varijante', text: 'Složi drugu poruku i pusti statistici da pokaže što radi bolje.', alignment: 'center'})),
+                normalizeBlock(Object.assign(defaultBlockByType('cta_group'), {id: uid('cta_group'), buttons: [{id: uid('btn'), label: 'Nastavi', value: 'split_b', style: 'primary', action: 'goto_step', target_step_id: '', external_url: '', require_submit: false}]}))
+            ];
+        }
+
+        if(stepType === 'conditional') {
+            activeStep.card_type = 'conditional_split';
+            activeStep.title = 'Conditional split';
+            activeStep.summary = 'Pitaj jedno ključno pitanje i poveži svaki odgovor s drugim sljedećim korakom.';
+            activeStep.preview_badge = 'Uvjetno grananje';
+            activeStep.page = normalizeSurface(activeStep.page || defaultSurface(), activeStep.title);
+            activeStep.page.blocks = [
+                normalizeBlock(Object.assign(defaultBlockByType('headline'), {id: uid('headline'), badge: 'Pametno grananje', title: 'Odaberi smjer koji najviše odgovara tvojoj situaciji', text: 'Svaki odgovor može voditi na poseban nastavak funnela.', alignment: 'center'})),
+                normalizeBlock(Object.assign(defaultBlockByType('survey'), {id: uid('survey'), title: 'Koji sljedeći korak želiš?', text: 'Poveži opcije s pravim stranicama u postavkama odgovora.', options: [
+                    {id: uid('opt'), label: 'Demo pristup', value: 'demo', style: 'primary', action: 'goto_step', target_step_id: '', external_url: '', require_submit: false},
+                    {id: uid('opt'), label: 'Proizvodna preporuka', value: 'products', style: 'secondary', action: 'goto_step', target_step_id: '', external_url: '', require_submit: false},
+                    {id: uid('opt'), label: 'Mentorski poziv', value: 'mentor', style: 'ghost', action: 'goto_step', target_step_id: '', external_url: '', require_submit: false}
+                ]}))
+            ];
+        }
+
+        ensureActiveBlock();
+        renderAll();
     }
 
     function deleteStep(stepId) {
@@ -3286,34 +4494,77 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
         }
     }
 
+    async function uploadImageForSurface(fileInput) {
+        const file = fileInput?.files?.[0] || null;
+
+        if(!file) {
+            setSaveNotice(validationMessages.imageUploadMissing, 'error');
+            return;
+        }
+
+        if(imageUploadMaxSizeMb > 0 && file.size > imageUploadMaxSizeMb * 1000000) {
+            setSaveNotice(`Maksimalna veličina slike za VIP Funnel je ${imageUploadMaxSizeMb} MB.`, 'error');
+            fileInput.value = '';
+            return;
+        }
+
+        const surfaceTarget = getEditableSurfaceSettingsTarget();
+        if(!surfaceTarget) {
+            setSaveNotice(validationMessages.imageUploadFailed, 'error');
+            fileInput.value = '';
+            return;
+        }
+
+        setSaveNotice(validationMessages.imageUploadUploading, 'success');
+        fileInput.disabled = true;
+
+        try {
+            const formData = new FormData();
+            formData.append('token', tokenInput?.value || '');
+            formData.append('global_token', globalTokenInput?.value || '');
+            formData.append('image', file);
+
+            const response = await fetch(imageUploadUrl, {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: formData
+            });
+
+            const result = await response.json().catch(() => null);
+
+            if(!response.ok || !result || result.status !== 'success' || !result.details?.image_url) {
+                const message = Array.isArray(result?.message) ? result.message.join(' ') : (result?.message || validationMessages.imageUploadFailed);
+                throw new Error(message);
+            }
+
+            surfaceTarget.background_image_url = result.details.image_url;
+            registerImageGalleryEntry({
+                image: result.details.image || '',
+                image_url: result.details.image_url,
+                created_at: new Date().toISOString()
+            });
+            syncPayloadInput();
+            renderAll();
+            setSaveNotice(Array.isArray(result.message) ? result.message.join(' ') : (result.message || validationMessages.imageUploaded), 'success');
+        } catch(error) {
+            setSaveNotice(error.message || validationMessages.imageUploadFailed, 'error');
+        } finally {
+            fileInput.disabled = false;
+            fileInput.value = '';
+        }
+    }
+
     function renderTabs() {
-        const steps = flatSteps();
+        const editorTarget = state.activeStepId ? 'step' : 'landing';
+        const editorIsActive = state.screen === 'landing' || state.screen === 'step';
 
         tabsRoot.innerHTML = `
-            <button type="button" class="vf-tab ${state.screen === 'landing' ? 'is-active' : ''}" data-vf-screen="landing">
-                ${escapeHtml(analyticsMessages.landingTab)}
+            <button type="button" class="vf-tab ${editorIsActive ? 'is-active' : ''}" data-vf-screen="${escapeHtml(editorTarget)}">
+                Uređenje stranice
             </button>
-
-            ${steps.map((step, index) => {
-                const phase = phaseDefinitions.find(item => item.key === step.phase_key) || null;
-                return `
-                <button
-                    type="button"
-                    class="vf-step-tab ${state.screen === 'step' && state.activeStepId === step.id ? 'is-active' : ''}"
-                    data-vf-step-tab="${escapeHtml(step.id)}"
-                    draggable="true"
-                >
-                    <span class="vf-step-tab__index">${index + 1}</span>
-                    <span class="vf-step-tab__main">
-                        <span class="vf-step-tab__phase">${escapeHtml(phase?.title || analyticsMessages.stepDefault)}</span>
-                        <span class="vf-step-tab__label">${escapeHtml(step.title || `${analyticsMessages.stepDefault} ${index + 1}`)}</span>
-                    </span>
-                    <span class="vf-step-tab__grip" aria-hidden="true">⋮⋮</span>
-                </button>
-            `;
-            }).join('')}
-
-            <button type="button" class="vf-tab vf-tab--add" data-vf-add-step-rail="1" title="${escapeHtml(analyticsMessages.addStepTitle)}">+</button>
 
             <button type="button" class="vf-tab ${state.screen === 'analytics' ? 'is-active' : ''}" data-vf-screen="analytics">
                 ${escapeHtml(analyticsMessages.analyticsTab)}
@@ -3322,6 +4573,10 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
     }
 
     function renderWorkspace() {
+        if(state.screen === 'flow') {
+            state.screen = state.activeStepId ? 'step' : 'landing';
+        }
+
         if(state.screen === 'landing') {
             workspaceRoot.innerHTML = renderLandingWorkspace();
             return;
@@ -3333,6 +4588,76 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
         }
 
         workspaceRoot.innerHTML = renderStepWorkspace();
+    }
+
+    function renderFlowWorkspace() {
+        const steps = flatSteps();
+        const landing = normalizeSurface(state.payload.landing_page || defaultSurface(), studioMessages.landingTitle);
+
+        return `
+            <div class="vf-flow-layout">
+                <div class="vf-flow-canvas">
+                    <div class="vf-card">
+                        <div class="vf-card__head">
+                            <div>
+                                <h2 class="vf-card__title">Funnel flow 2.0</h2>
+                                <div class="vf-card__sub">Ovdje slažeš osnovne stranice, split testove i uvjetna grananja. Detaljan sadržaj uređuješ klikom na stranicu.</div>
+                            </div>
+                        </div>
+                        <div class="vf-card__body vf-stack">
+                            <div class="vf-flow-start">
+                                <div class="vf-chip-row">
+                                    <span class="vf-chip vf-chip--accent">Start of funnel</span>
+                                    <span class="vf-chip">${escapeHtml(landing.name || 'Landing stranica')}</span>
+                                </div>
+                                <div class="vf-step-card__title">${escapeHtml((state.payload.funnel || {}).name || 'VIP Funnel')}</div>
+                                <div class="vf-step-card__text">Landing stranica ostaje početna točka. Survey i CTA blokovi ispod mogu voditi na bilo koju stranicu u nastavku.</div>
+                                <div class="vf-card-actions">
+                                    <button type="button" data-vf-screen="landing">Uredi landing</button>
+                                </div>
+                            </div>
+                            <div class="vf-step-map">${renderStepMap()}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="vf-card">
+                    <div class="vf-card__head">
+                        <div>
+                            <h2 class="vf-card__title">Add step</h2>
+                            <div class="vf-card__sub">Dodaj novu stranicu ili logiku bez ručnog kopanja po postavkama.</div>
+                        </div>
+                    </div>
+                    <div class="vf-card__body vf-stack">
+                        <div class="vf-step-type-grid">
+                            <button type="button" class="vf-step-type-card" data-vf-add-step-type="page">
+                                <span class="vf-step-type-card__title">Page</span>
+                                <span class="vf-step-type-card__text">Obična funnel stranica s blokovima, formom, proizvodom ili CTA-om.</span>
+                            </button>
+                            <button type="button" class="vf-step-type-card" data-vf-add-step-type="split">
+                                <span class="vf-step-type-card__title">Split test</span>
+                                <span class="vf-step-type-card__text">Stranica s A/B varijantom i raspodjelom prometa.</span>
+                            </button>
+                            <button type="button" class="vf-step-type-card" data-vf-add-step-type="conditional">
+                                <span class="vf-step-type-card__title">Conditional split</span>
+                                <span class="vf-step-type-card__text">Survey grananje koje obavezno možeš povezati s ciljanim stranicama.</span>
+                            </button>
+                        </div>
+                        <div class="vf-note">Routing koji već imamo ostaje ključan: svaki survey odgovor i CTA može birati interni korak ili vanjski URL.</div>
+                        <div class="vf-kpi-grid" style="grid-template-columns:repeat(2,minmax(0,1fr));margin-bottom:0;">
+                            <div class="vf-kpi">
+                                <div class="vf-kpi__label">Stranice</div>
+                                <div class="vf-kpi__value">${numberFormat(steps.length + 1)}</div>
+                            </div>
+                            <div class="vf-kpi">
+                                <div class="vf-kpi__label">Eventi</div>
+                                <div class="vf-kpi__value">${numberFormat((state.analytics || {}).views || 0)}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
     }
 
     function renderLandingWorkspace() {
@@ -3348,7 +4673,7 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
                 </div>
                 <div class="vf-card__body">
                     <div class="vf-note">${studioMessages.landingNote}</div>
-                    ${renderSurfaceBuilder(surface, 'landing')}
+                    ${renderSurfaceBuilderV2(surface, 'landing')}
                 </div>
             </div>
         `;
@@ -3413,24 +4738,12 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
             <div class="vf-card">
                 <div class="vf-card__head">
                     <div>
-                        <h2 class="vf-card__title">${activeStep ? escapeHtml(activeStep.title || studioMessages.stepDefaultTitle) : escapeHtml(studioMessages.stepDefaultTitle)}</h2>
-                        <div class="vf-card__sub">${escapeHtml(studioMessages.stepSub)}</div>
-                    </div>
-                </div>
-                <div class="vf-card__body">
-                    ${activeStep ? renderStepMetaEditor(activeStep) : `<div class="vf-empty">${escapeHtml(studioMessages.stepEmptyAdd)}</div>`}
-                </div>
-            </div>
-
-            <div class="vf-card">
-                <div class="vf-card__head">
-                    <div>
                         <h2 class="vf-card__title">${escapeHtml(studioMessages.stepBuilderTitle)}</h2>
                         <div class="vf-card__sub">${escapeHtml(studioMessages.stepBuilderSub)}</div>
                     </div>
                 </div>
                 <div class="vf-card__body">
-                    ${activeStep ? renderSurfaceBuilder(getRenderableSurface(), 'step') : `<div class="vf-empty">${escapeHtml(studioMessages.stepEmptySelect)}</div>`}
+                    ${activeStep ? renderSurfaceBuilderV2(getRenderableSurface(), 'step') : `<div class="vf-empty">${escapeHtml(studioMessages.stepEmptySelect)}</div>`}
                 </div>
             </div>
         `;
@@ -3460,6 +4773,9 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
                             <th>${escapeHtml(analyticsMessages.tableSubmits)}</th>
                             <th>${escapeHtml(analyticsMessages.tableLeads)}</th>
                             <th>${escapeHtml(analyticsMessages.tableAdvances)}</th>
+                            <th>CTA</th>
+                            <th>Demo</th>
+                            <th>Product</th>
                             <th>${escapeHtml(analyticsMessages.tableRate)}</th>
                         </tr>
                     </thead>
@@ -3477,6 +4793,9 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
                                 <td>${numberFormat(item.submits || 0)}</td>
                                 <td>${numberFormat(item.leads || 0)}</td>
                                 <td>${numberFormat(item.advances || 0)}</td>
+                                <td>${numberFormat(item.cta_clicks || 0)}</td>
+                                <td>${numberFormat(item.demo_requests || 0)}</td>
+                                <td>${numberFormat(item.product_clicks || 0)}</td>
                                 <td><span class="vf-analytics-rate">${rateFormat(item.submit_rate || 0)}</span></td>
                             </tr>
                         `).join('')}
@@ -3581,6 +4900,18 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
                             <div class="vf-kpi">
                                 <div class="vf-kpi__label">${escapeHtml(analyticsMessages.advances)}</div>
                                 <div class="vf-kpi__value">${numberFormat(analytics.advances || 0)}</div>
+                            </div>
+                            <div class="vf-kpi">
+                                <div class="vf-kpi__label">CTA clicks</div>
+                                <div class="vf-kpi__value">${numberFormat(analytics.cta_clicks || 0)}</div>
+                            </div>
+                            <div class="vf-kpi">
+                                <div class="vf-kpi__label">Demo requests</div>
+                                <div class="vf-kpi__value">${numberFormat(analytics.demo_requests || analytics.demo?.requests || 0)}</div>
+                            </div>
+                            <div class="vf-kpi">
+                                <div class="vf-kpi__label">Product clicks</div>
+                                <div class="vf-kpi__value">${numberFormat(analytics.product_clicks || 0)}</div>
                             </div>
                             <div class="vf-kpi">
                                 <div class="vf-kpi__label">${escapeHtml(analyticsMessages.contactsSynced)}</div>
@@ -3804,6 +5135,329 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
         `;
     }
 
+    function renderPageRail() {
+        const steps = flatSteps();
+        const activeUrl = getActivePagePublicUrl();
+        const activeUrlLabel = state.screen === 'step' && state.activeStepId ? 'URL aktivnog koraka' : 'URL glavne stranice';
+
+        return `
+            <div class="vf-card" style="box-shadow:none;">
+                <div class="vf-card__head">
+                    <div>
+                        <h3 class="vf-card__title">Funnel steps</h3>
+                        <div class="vf-card__sub">Klikni, dodaj ili povuci korake u novi redoslijed.</div>
+                    </div>
+                </div>
+                <div class="vf-card__body">
+                    <div class="vf-page-rail-url">
+                        <div class="vf-page-rail-url__label">${escapeHtml(activeUrlLabel)}</div>
+                        <div class="vf-page-rail-url__value">${activeUrl ? escapeHtml(activeUrl) : 'URL će se prikazati nakon spremanja funnel-a.'}</div>
+                    </div>
+
+                    <div class="vf-page-rail-actions">
+                        <button type="button" class="vf-page-rail-action ${state.screen === 'analytics' ? 'is-active' : ''}" data-vf-screen="analytics">Analitika</button>
+                        <button type="button" class="vf-page-rail-action" data-vf-add-step-type="page">+ Page</button>
+                        <button type="button" class="vf-page-rail-action" data-vf-add-step-type="split">Split test</button>
+                        <button type="button" class="vf-page-rail-action vf-page-rail-action--wide" data-vf-add-step-type="conditional">+ Conditional split</button>
+                    </div>
+
+                    <div class="vf-page-rail-list" style="margin-bottom:.55rem;">
+                        <button type="button" class="vf-page-rail-item ${state.screen === 'landing' ? 'is-active' : ''}" data-vf-page-landing="1">
+                            <span class="vf-page-rail-item__copy">
+                                <span class="vf-page-rail-item__title">${escapeHtml(analyticsMessages.landingTab)}</span>
+                                <span class="vf-page-rail-item__sub">${escapeHtml((state.payload.landing_page || {}).name || 'Start stranica')}</span>
+                            </span>
+                        </button>
+                    </div>
+
+                    <div class="vf-page-rail-list vf-page-rail-dropzone" data-vf-step-rail-dropzone="1">
+                        ${steps.map((step, index) => `
+                            <button
+                                type="button"
+                                class="vf-page-rail-item ${state.screen === 'step' && state.activeStepId === step.id ? 'is-active' : ''}"
+                                data-vf-page-step="${escapeHtml(step.id)}"
+                                data-vf-step-rail-card="${escapeHtml(step.id)}"
+                                draggable="true"
+                            >
+                                <span class="vf-page-rail-item__copy">
+                                    <span class="vf-page-rail-item__title">${index + 1}. ${escapeHtml(step.title || 'Korak')}</span>
+                                    <span class="vf-page-rail-item__sub">${escapeHtml(step.phase_title || step.phase_key || '')} · ${escapeHtml(step.path_key || '')}</span>
+                                </span>
+                                <span class="vf-page-rail-item__grip" aria-hidden="true">⋮⋮</span>
+                            </button>
+                        `).join('') || '<div class="vf-empty">Dodaj prvi korak pomoću gumba iznad.</div>'}
+                    </div>
+
+                    <div class="vf-page-rail-trash" data-vf-step-trash-dropzone="1">
+                        <span>
+                            Koš za smeće
+                            <span class="vf-page-rail-trash__sub">Povuci flow ovdje za brisanje</span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    function renderSurfaceBuilderV2(surface, scope) {
+        const blocks = getEditableBlocks();
+        const activeStep = getActiveStep();
+        const pageTitle = state.screen === 'landing'
+            ? (surface.name || analyticsMessages.landingTab)
+            : (activeStep?.title || surface.name || studioMessages.stepDefaultTitle);
+
+        return `
+            <div class="vf-builder-toolbar">
+                <div>
+                    <div class="vf-builder-toolbar__title">${escapeHtml(pageTitle)}</div>
+                    <div class="vf-builder-toolbar__sub">Canvas koristi postojeći FCC engine: blokovi, survey routing, product offer i lead capture ostaju kompatibilni.</div>
+                </div>
+                <div class="vf-actions">
+                    <div class="vf-segmented" aria-label="Preview uređaj">
+                        <button type="button" class="${state.previewDevice === 'desktop' ? 'is-active' : ''}" data-vf-preview-device="desktop">Desktop</button>
+                        <button type="button" class="${state.previewDevice === 'mobile' ? 'is-active' : ''}" data-vf-preview-device="mobile">Mobile</button>
+                    </div>
+                    <button type="button" class="vf-btn vf-btn--ghost" data-vf-undo="1" ${canUndoHistory() ? '' : 'disabled'}>Undo</button>
+                    <button type="button" class="vf-btn vf-btn--ghost" data-vf-redo="1" ${canRedoHistory() ? '' : 'disabled'}>Redo</button>
+                    <button type="button" class="vf-btn vf-btn--primary" data-vf-save-button="1">Spremi</button>
+                </div>
+            </div>
+
+            <div class="vf-builder-shell">
+                <div class="vf-builder-rail">${renderPageRail()}</div>
+
+                <div class="vf-builder-main">
+                    <div class="vf-card" style="box-shadow:none;">
+                        <div class="vf-card__head">
+                            <div>
+                                <h3 class="vf-card__title">Struktura stranice</h3>
+                                <div class="vf-card__sub">Povuci blokove gore/dolje ili ubaci sekciju iz desnog panela.</div>
+                            </div>
+                        </div>
+                        <div class="vf-card__body">
+                            <div class="vf-blocks-list" data-vf-block-dropzone="${escapeHtml(scope)}">
+                                ${blocks.length ? blocks.map(block => renderBlockCard(block)).join('') : `<div class="vf-empty">${escapeHtml(studioMessages.surfaceBlocksEmpty)}</div>`}
+                            </div>
+                            <div class="vf-builder-breadcrumb">
+                                <button type="button" data-vf-builder-panel="settings">Body</button>
+                                <button type="button" data-vf-builder-panel="settings">Section</button>
+                                <button type="button" data-vf-builder-panel="sections">Row</button>
+                                <button type="button" data-vf-builder-panel="elements">Column</button>
+                                <button type="button" class="${getActiveBlock() ? 'is-active' : ''}" data-vf-builder-panel="settings">${escapeHtml(getActiveBlock()?.label || 'Element')}</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="vf-builder-panel">${renderBuilderPanel(surface, scope)}</div>
+            </div>
+        `;
+    }
+
+    function renderBuilderPanel(surface, scope) {
+        const activePanel = ['sections', 'elements', 'settings'].includes(state.builderPanel) ? state.builderPanel : 'sections';
+
+        return `
+            <div class="vf-card" style="box-shadow:none;">
+                <div class="vf-card__head">
+                    <div>
+                        <h3 class="vf-card__title">${activePanel === 'sections' ? 'Add Section' : activePanel === 'elements' ? 'My Elements' : 'Settings'}</h3>
+                        <div class="vf-card__sub">${activePanel === 'sections' ? 'Gotovi FCC blokovi za ubacivanje.' : activePanel === 'elements' ? 'Elementi koje možeš dodati u aktivnu stranicu.' : 'Uredi odabrani dio stranice.'}</div>
+                    </div>
+                </div>
+                <div class="vf-card__body">
+                    <div class="vf-builder-panel-tabs">
+                        <button type="button" class="${activePanel === 'sections' ? 'is-active' : ''}" data-vf-builder-panel="sections">Sections</button>
+                        <button type="button" class="${activePanel === 'elements' ? 'is-active' : ''}" data-vf-builder-panel="elements">Elements</button>
+                    </div>
+                    <button type="button" class="vf-builder-panel-settings ${activePanel === 'settings' ? 'is-active' : ''}" data-vf-builder-panel="settings">Settings</button>
+                    ${activePanel === 'sections' ? renderSectionLibrary() : ''}
+                    ${activePanel === 'elements' ? renderElementLibrary() : ''}
+                    ${activePanel === 'settings' ? renderSettingsPanel(surface, scope) : ''}
+                </div>
+            </div>
+        `;
+    }
+
+    function renderSectionLibrary() {
+        const grouped = Object.entries(fccSectionTemplates).reduce((carry, [key, template]) => {
+            const category = template.category || 'Universal';
+            carry[category] = carry[category] || [];
+            carry[category].push([key, template]);
+            return carry;
+        }, {});
+
+        return `
+            <div class="vf-stack">
+                <div class="vf-field">
+                    <label>Search sections</label>
+                    <input type="text" value="" placeholder="Hero, survey, demo, product..." readonly />
+                </div>
+                <div class="vf-section-label">Rows</div>
+                <div class="vf-row-preset-grid">
+                    ${[1,2,3,4,5,6].map(count => `
+                        <button type="button" class="vf-row-preset" draggable="true" data-vf-row-layout="${count}">
+                            <span class="vf-row-preset__title">${count} col</span>
+                        </button>
+                    `).join('')}
+                </div>
+                ${Object.entries(grouped).map(([category, items]) => `
+                    <div class="vf-section-label">${escapeHtml(category)}</div>
+                    <div class="vf-section-template-grid">
+                        ${items.map(([key, template]) => `
+                            <div class="vf-template-mini" role="button" tabindex="0" draggable="true" data-vf-section-template="${escapeHtml(key)}">
+                                <span class="vf-template-mini__preview" style="--vf-accent:${escapeHtml(template.accent || '#67d8c9')};background:linear-gradient(135deg, ${hexToRgba(template.accent || '#67d8c9', .34)}, transparent 48%),linear-gradient(180deg, rgba(255,255,255,.1), rgba(255,255,255,.035));"></span>
+                                <span class="vf-template-mini__title">${escapeHtml(template.label || 'FCC sekcija')}</span>
+                                <span class="vf-template-mini__text">${escapeHtml(template.description || '')}</span>
+                                <span class="vf-card-actions" style="margin-top:.1rem;"><button type="button" data-vf-section-template-add="${escapeHtml(key)}">Dodaj</button></span>
+                            </div>
+                        `).join('')}
+                    </div>
+                `).join('')}
+            </div>
+        `;
+    }
+
+    function renderElementLibrary() {
+        return `
+            <div class="vf-stack">
+                <div class="vf-field">
+                    <label>Search elements</label>
+                    <input type="text" value="" placeholder="Button, survey, product..." readonly />
+                </div>
+                ${fccElementGroups.map(group => `
+                    <div class="vf-section-label">${escapeHtml(group.label)}</div>
+                    <div class="vf-palette-grid">
+                        ${group.items.map(item => `
+                            <button type="button" class="vf-element-tile" draggable="true" data-vf-element="${escapeHtml(item.type)}">
+                                <span class="vf-element-tile__title">${escapeHtml(item.title)}</span>
+                                <span class="vf-element-tile__text">${escapeHtml(item.text || '')}</span>
+                            </button>
+                        `).join('')}
+                    </div>
+                `).join('')}
+            </div>
+        `;
+    }
+
+    function renderSettingsPanel(surface, scope) {
+        const activeBlock = getActiveBlock();
+        const activeStep = getActiveStep();
+        const isStepSurface = state.screen === 'step' && !!activeStep;
+        const hasCaptureFields = currentSurfaceHasCaptureFields();
+        const hasDeferredSurvey = currentSurfaceHasDeferredSurvey();
+        const hasSubmitAction = currentSurfaceHasSubmitAction();
+        const surfaceBackgroundOpacity = clampOpacity(surface.background_opacity, 100);
+        const surfaceNameEditor = isStepSurface ? `
+            <div class="vf-section-label">Stranica i SEO</div>
+            <div class="vf-field">
+                <label>${escapeHtml(studioMessages.stepTitleLabel)}</label>
+                <input type="text" data-vf-step-field="title" value="${escapeHtml(activeStep.title || '')}" />
+            </div>
+            <div class="vf-field">
+                <label>Kratki SEO opis</label>
+                <textarea data-vf-step-field="summary">${escapeHtml(activeStep.summary || '')}</textarea>
+                <div class="vf-field__hint">Koristi se za pregled koraka, analitiku i osnovni opis stranice. Sadržaj koji se vidi posjetitelju uređuje se u blokovima.</div>
+            </div>
+            <details class="vf-action-card__advanced">
+                <summary>
+                    <span>Napredno</span>
+                    <span class="vf-field__hint">Routing i brisanje</span>
+                </summary>
+                <div class="vf-action-card__advanced-grid">
+                    <div class="vf-two">
+                        <div class="vf-field">
+                            <label>${escapeHtml(studioMessages.stepPhaseLabel)}</label>
+                            <select data-vf-step-phase-select="1">
+                                ${phaseDefinitions.map(phase => `<option value="${escapeHtml(phase.key)}" ${String(getActiveStepPhaseKey() || '') === String(phase.key) ? 'selected' : ''}>${escapeHtml(phase.title)}</option>`).join('')}
+                            </select>
+                        </div>
+                        <div class="vf-field">
+                            <label>${escapeHtml(studioMessages.stepPathLabel)}</label>
+                            <select data-vf-step-field="path_key">
+                                ${pathOptions.map(path => `<option value="${escapeHtml(path.path_key)}" ${activeStep.path_key === path.path_key ? 'selected' : ''}>${escapeHtml(path.title)}</option>`).join('')}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="vf-card-actions">
+                        <button type="button" class="vf-btn vf-btn--danger" data-vf-delete-current-step="${escapeHtml(activeStep.id)}">${escapeHtml(studioMessages.stepDelete)}</button>
+                    </div>
+                </div>
+            </details>
+        ` : `
+            <div class="vf-section-label">Page settings</div>
+            <div class="vf-field">
+                <label>${escapeHtml(studioMessages.surfaceNameLabel)}</label>
+                <input type="text" data-vf-surface-field="name" value="${escapeHtml(surface.name || '')}" />
+            </div>
+        `;
+
+        return `
+            <div class="vf-stack">
+                ${(hasCaptureFields || hasDeferredSurvey) && !hasSubmitAction ? `
+                    <div class="vf-note">
+                        ${escapeHtml(hasDeferredSurvey && !hasCaptureFields ? studioMessages.surfaceSubmitNoteSurvey : studioMessages.surfaceSubmitNoteForm)}
+                        <div class="vf-card-actions">
+                            <button type="button" class="vf-btn vf-btn--primary" data-vf-add-submit-cta="1">${escapeHtml(studioMessages.surfaceAddSubmitButton)}</button>
+                        </div>
+                    </div>
+                ` : ''}
+                ${surfaceNameEditor}
+                <div class="vf-section-label">Dizajn stranice</div>
+                <div class="vf-two">
+                    <div class="vf-field">
+                        <label>${escapeHtml(studioMessages.surfaceBackgroundLabel)}</label>
+                        <input type="color" data-vf-surface-field="background_color" value="${escapeHtml(surface.background_color || '#0f172a')}" />
+                        <label>Neprozirnost pozadine (${surfaceBackgroundOpacity}%)</label>
+                        <input type="range" min="0" max="100" step="1" data-vf-surface-field="background_opacity" value="${escapeHtml(surfaceBackgroundOpacity)}" />
+                        <div class="vf-field__hint">Manja vrijednost znači transparentniju pozadinu.</div>
+                    </div>
+                    <div class="vf-field">
+                        <label>${escapeHtml(studioMessages.surfaceColorLabel)}</label>
+                        <input type="color" data-vf-surface-field="surface_color" value="${escapeHtml(surface.surface_color || surface.background_color || '#152132')}" />
+                    </div>
+                </div>
+                <div class="vf-two">
+                    <div class="vf-field">
+                        <label>${escapeHtml(studioMessages.surfaceTextColorLabel)}</label>
+                        <input type="color" data-vf-surface-field="text_color" value="${escapeHtml(surface.text_color || '#eef4ff')}" />
+                    </div>
+                    <div class="vf-field">
+                        <label>${escapeHtml(studioMessages.surfaceAccentLabel)}</label>
+                        <input type="color" data-vf-surface-field="accent_color" value="${escapeHtml(surface.accent_color || '#67d8c9')}" />
+                    </div>
+                </div>
+                <div class="vf-field">
+                    <label>Pozadinska slika</label>
+                    <input type="text" data-vf-surface-field="background_image_url" value="${escapeHtml(surface.background_image_url || '')}" placeholder="https://... ili upload ispod" />
+                    <input type="file" accept="${escapeHtml(imageUploadAccept)}" data-vf-surface-image-upload="1" />
+                    <div class="vf-field__hint">Opcionalno. Slika ide iza površine stranice, a boja pozadine ostaje sigurnosna podloga.</div>
+                    ${surface.background_image_url ? `
+                        <div class="vf-card-actions">
+                            <button type="button" data-vf-clear-surface-image="1">Ukloni sliku</button>
+                        </div>
+                    ` : ''}
+                </div>
+                <div class="vf-field">
+                    <label>${escapeHtml(studioMessages.surfaceWidthLabel)}</label>
+                    <select data-vf-surface-field="max_width">
+                        ${Object.entries(pageWidthOptions).map(([key, label]) => `<option value="${escapeHtml(key)}" ${surface.max_width === key ? 'selected' : ''}>${escapeHtml(label)}</option>`).join('')}
+                    </select>
+                </div>
+                <label class="vf-toggle"><input type="checkbox" data-vf-surface-toggle="show_progress" ${surface.show_progress ? 'checked' : ''}> ${escapeHtml(studioMessages.surfaceShowProgress)}</label>
+                <label class="vf-toggle"><input type="checkbox" data-vf-surface-toggle="ab_enabled" ${surface.ab_enabled ? 'checked' : ''}> ${escapeHtml(studioMessages.surfaceAbEnabled)}</label>
+                ${surface.ab_enabled ? `
+                    <div class="vf-inline">
+                        <button type="button" class="vf-btn ${state.activeVariant === 'a' ? 'vf-btn--primary' : ''}" data-vf-variant="a">${escapeHtml(studioMessages.surfaceEditVariantA)}</button>
+                        <button type="button" class="vf-btn ${state.activeVariant === 'b' ? 'vf-btn--primary' : ''}" data-vf-variant="b">${escapeHtml(studioMessages.surfaceEditVariantB)}</button>
+                    </div>
+                ` : ''}
+                <div class="vf-section-label">Selected element</div>
+                ${activeBlock ? renderBlockEditor(activeBlock) : `<div class="vf-empty">${escapeHtml(studioMessages.surfaceEditorEmpty)}</div>`}
+            </div>
+        `;
+    }
+
     function renderSurfaceBuilder(surface, scope) {
         const blocks = getEditableBlocks();
         const activeBlock = getActiveBlock();
@@ -3944,7 +5598,9 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
             ['full', '1/1'],
             ['half', '1/2'],
             ['third', '1/3'],
-            ['quarter', '1/4']
+            ['quarter', '1/4'],
+            ['fifth', '1/5'],
+            ['sixth', '1/6']
         ];
 
         return `
@@ -4163,6 +5819,7 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
         const isCountdown = block.type === 'countdown';
         const isSpacer = block.type === 'spacer';
         const isProductOffer = block.type === 'product_offer';
+        const isAiProductAdvisor = block.type === 'ai_product_advisor';
         const isSystemSubmit = isSystemSubmitBlock(block);
         const countdownMode = ['fixed', 'evergreen', 'weekly'].includes(block.countdown_mode) ? block.countdown_mode : 'fixed';
         const actionItems = getBlockActionItems(block);
@@ -4171,6 +5828,7 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
         const badgeLabel = isRadioSurvey ? 'Oznaka pitanja' : 'Badge / oznaka';
         const titleLabel = isRadioSurvey ? 'Pitanje' : 'Naslov bloka';
         const textLabel = isRadioSurvey ? 'Pojašnjenje pitanja' : 'Tekst / opis';
+        const blockBackgroundOpacity = clampOpacity(block.background_opacity, 100);
         const actionsSectionLabel = isButtons
             ? 'Gumbi i grananje'
             : (isRadioSurvey
@@ -4367,6 +6025,35 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
                     ` : ''}
 
                     <div class="vf-note"><strong>Blog vodič</strong> otvara blog članak s referral parametrom suradnika. <strong>Direktno na službeni shop</strong> ne koristi sirovi Forever link nego postojeći blog redirect engine, pa referral, tržište i preporuka ostaju aktivni.</div>
+                ` : ''}
+
+                ${isAiProductAdvisor ? `
+                    <div class="vf-section-label">Pametna Forever preporuka</div>
+                    <div class="vf-note">U javnom funnelu otvara postojeći FCC savjetnik za proizvode, uz njegove postavke i isti sustav prikupljanja kontakta iz FCC aplikacije.</div>
+                    <div class="vf-two">
+                        <label class="vf-toggle"><input type="checkbox" data-vf-block-toggle="ai_advisor_enabled" ${block.ai_advisor_enabled !== false ? 'checked' : ''}> Prikaži AI savjetnika na ovoj funnel stranici</label>
+                        <label class="vf-toggle"><input type="checkbox" data-vf-block-toggle="ai_lead_capture_enabled" ${block.ai_lead_capture_enabled !== false ? 'checked' : ''}> Uključi prikupljanje kontakta unutar AI chata</label>
+                    </div>
+                    <div class="vf-two">
+                        <div class="vf-field">
+                            <label>Tekst gumba u bloku</label>
+                            <input type="text" data-vf-block-field="ai_button_label" value="${escapeHtml(block.ai_button_label || 'Započni moju preporuku')}" />
+                        </div>
+                        <div class="vf-field">
+                            <label>Label plutajućeg launchera</label>
+                            <input type="text" data-vf-block-field="ai_launcher_label" value="${escapeHtml(block.ai_launcher_label || 'Moja preporuka')}" />
+                        </div>
+                    </div>
+                    <div class="vf-two">
+                        <div class="vf-field">
+                            <label>Naslov u chatu</label>
+                            <input type="text" data-vf-block-field="ai_intro_label" value="${escapeHtml(block.ai_intro_label || 'Tvoj osobni vodič')}" />
+                        </div>
+                        <div class="vf-field">
+                            <label>Placeholder pitanja</label>
+                            <input type="text" data-vf-block-field="ai_input_placeholder" value="${escapeHtml(block.ai_input_placeholder || 'Napiši cilj ili pitanje...')}" />
+                        </div>
+                    </div>
                 ` : ''}
 
                 ${isField ? `
@@ -4619,7 +6306,7 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
                         </div>
                     ` : ''}
 
-                    ${(isButtons || isSurvey || isProductOffer) ? `
+                    ${(isButtons || isSurvey || isProductOffer || isAiProductAdvisor) ? `
                         <div class="vf-two">
                             <div class="vf-field">
                                 <label>Veličina teksta gumba (px)</label>
@@ -4645,6 +6332,9 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
                     <div class="vf-field">
                         <label>Pozadina bloka</label>
                         <input type="color" data-vf-block-field="background_color" value="${escapeHtml(block.background_color || '#152132')}" />
+                        <label>Neprozirnost bloka (${blockBackgroundOpacity}%)</label>
+                        <input type="range" min="0" max="100" step="1" data-vf-block-field="background_opacity" value="${escapeHtml(blockBackgroundOpacity)}" />
+                        <div class="vf-field__hint">Manja vrijednost znači transparentniji blok.</div>
                     </div>
                     <div class="vf-field">
                         <label>Tekst bloka</label>
@@ -4806,22 +6496,59 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
     }
 
     function renderPreview() {
+        if(state.screen === 'flow') {
+            const steps = flatSteps();
+            const analytics = state.analytics || {};
+            previewRoot.innerHTML = `
+                <div class="vf-card">
+                    <div class="vf-card__head">
+                        <div>
+                            <h2 class="vf-card__title">Flow pregled i FCC statistika</h2>
+                            <div class="vf-card__sub">Brzi pregled trenutnog toka prije ulaska u pojedinu stranicu.</div>
+                        </div>
+                    </div>
+                    <div class="vf-card__body vf-stack">
+                        <div class="vf-kpi-grid" style="grid-template-columns:repeat(2,minmax(0,1fr));">
+                            <div class="vf-kpi">
+                                <div class="vf-kpi__label">Views</div>
+                                <div class="vf-kpi__value">${numberFormat(analytics.views || 0)}</div>
+                            </div>
+                            <div class="vf-kpi">
+                                <div class="vf-kpi__label">Leads</div>
+                                <div class="vf-kpi__value">${numberFormat(analytics.leads || 0)}</div>
+                            </div>
+                            <div class="vf-kpi">
+                                <div class="vf-kpi__label">CTA clicks</div>
+                                <div class="vf-kpi__value">${numberFormat(analytics.cta_clicks || 0)}</div>
+                            </div>
+                            <div class="vf-kpi">
+                                <div class="vf-kpi__label">Demo requests</div>
+                                <div class="vf-kpi__value">${numberFormat(analytics.demo_requests || analytics.demo?.requests || 0)}</div>
+                            </div>
+                        </div>
+                        <div class="vf-note">Prodajne metrike su izostavljene. Fokus je na pregledima, opt-inovima, demo zahtjevima, CTA klikovima, product klikovima i napredovanju po stranicama.</div>
+                        <div class="vf-section-label">Stranice u toku</div>
+                        <div class="vf-page-rail-list">
+                            <button type="button" class="vf-page-rail-item" data-vf-page-landing="1">
+                                <span class="vf-page-rail-item__title">${escapeHtml(analyticsMessages.landingTab)}</span>
+                                <span class="vf-page-rail-item__sub">Start funnel-a</span>
+                            </button>
+                            ${steps.map((step, index) => `
+                                <button type="button" class="vf-page-rail-item" data-vf-page-step="${escapeHtml(step.id)}">
+                                    <span class="vf-page-rail-item__title">${index + 1}. ${escapeHtml(step.title || 'Korak')}</span>
+                                    <span class="vf-page-rail-item__sub">${escapeHtml(step.phase_title || step.phase_key || '')}</span>
+                                </button>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+            return;
+        }
+
         const surface = getRenderableSurface();
         const blocks = getEditableBlocks();
-        const activeStep = getActiveStep();
-        const metaChips = [];
         const needsSubmitFallback = (currentSurfaceHasCaptureFields() || currentSurfaceHasDeferredSurvey()) && !currentSurfaceHasSubmitAction();
-
-        if(state.screen === 'landing') {
-            metaChips.push(surface.name || 'Glavna landing stranica');
-        } else if(activeStep) {
-            metaChips.push(activeStep.title || 'Korak');
-            metaChips.push((pathOptions.find(item => item.path_key === activeStep.path_key)?.title) || activeStep.path_key || 'Put');
-        }
-
-        if(surface.ab_enabled && state.screen !== 'landing') {
-            metaChips.push(`Varijanta ${state.activeVariant.toUpperCase()}`);
-        }
 
         previewRoot.innerHTML = `
             <div class="vf-card">
@@ -4832,14 +6559,13 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
                     </div>
                 </div>
                 <div class="vf-card__body">
-                    <div class="vf-preview-page" style="background:${escapeHtml(surface.background_color || '#0f172a')};">
+                    <div class="vf-preview-page vf-preview-page--${escapeHtml(state.previewDevice === 'mobile' ? 'mobile' : 'desktop')}" style="${getSurfaceBackgroundStyle(surface)}">
                         <div class="vf-preview-page__canvas" style="
                             max-width:${surface.max_width === 'narrow' ? '640px' : surface.max_width === 'regular' ? '820px' : '100%'};
                             background:${escapeHtml(surface.surface_color || '#152132')};
                             color:${escapeHtml(surface.text_color || '#eef4ff')};
                             --vf-accent:${escapeHtml(surface.accent_color || '#67d8c9')};
                         ">
-                            <div class="vf-preview-page__header">${metaChips.map(chip => `<span class="vf-chip">${escapeHtml(chip)}</span>`).join('')}</div>
                             <div class="vf-preview-blocks">
                                 ${blocks.length ? blocks.map(block => renderPreviewBlock(block, surface)).join('') : '<div class="vf-empty">Dodaj prvi blok i pregled će se odmah pojaviti ovdje.</div>'}
                                 ${needsSubmitFallback ? `
@@ -4861,7 +6587,8 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
     function renderPreviewBlock(block, surface) {
         const accentColor = block.accent_color || surface.accent_color || '#67d8c9';
         const layoutWidth = Object.prototype.hasOwnProperty.call(pageBlockWidthOptions, block.layout_width) ? block.layout_width : 'full';
-        const blockBackground = block.background_color || hexToRgba(accentColor, 0.08);
+        const blockBackgroundColor = normalizeHexColor(block.background_color || '');
+        const blockBackground = blockBackgroundColor ? colorWithOpacity(blockBackgroundColor, block.background_opacity, '#152132') : hexToRgba(accentColor, 0.08);
         const baseTextColor = block.text_color || surface.text_color || '#eef4ff';
         const badgeColor = resolveBlockColor(block.badge_color, baseTextColor);
         const titleColor = resolveBlockColor(block.title_color, baseTextColor);
@@ -4880,6 +6607,7 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
         const fieldWeight = Number(block.field_weight || 500);
         const buttonSize = Number(block.button_size || 17);
         const buttonWeight = Number(block.button_weight || 800);
+        const previewTitleSize = Math.max(18, Math.min(titleSize, state.previewDevice === 'mobile' ? 34 : 46));
         const badgeStyle = `background:${hexToRgba(accentColor, 0.16)};border:1px solid ${hexToRgba(accentColor, 0.34)};color:${badgeColor};font-size:${badgeSize}px;font-weight:${badgeWeight};font-family:${fontFamily};`;
         const blockStyles = [
             `background:${blockBackground}`,
@@ -4889,7 +6617,7 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
             `font-family:${fontFamily}`,
             `--vf-placeholder-color:${placeholderColor}`
         ];
-        const titleStyle = `font-size:${titleSize}px;font-weight:${titleWeight};font-family:${fontFamily};color:${titleColor};`;
+        const titleStyle = `font-size:${previewTitleSize}px;font-weight:${titleWeight};font-family:${fontFamily};color:${titleColor};`;
         const textStyle = `font-size:${textSize}px;font-weight:${textWeight};font-family:${fontFamily};color:${bodyColor};`;
         const fieldStyle = `font-size:${fieldSize}px;font-weight:${fieldWeight};font-family:${fontFamily};color:${fieldTextColor};border-color:${hexToRgba(accentColor, 0.28)};background:${hexToRgba(accentColor, 0.08)};--vf-placeholder-color:${placeholderColor};`;
 
@@ -5023,6 +6751,37 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
             `;
         }
 
+        if(block.type === 'ai_product_advisor') {
+            const advisorEnabled = block.ai_advisor_enabled !== false;
+            const leadEnabled = block.ai_lead_capture_enabled !== false;
+            const buttonStyle = `background:${accentColor};color:${customButtonTextColor || '#0f172a'};border-color:transparent;font-size:${buttonSize}px;font-weight:${buttonWeight};font-family:${fontFamily};`;
+
+            return `
+                <div class="vf-preview-block align-${escapeHtml(block.alignment || 'left')}" data-vf-span="${escapeHtml(layoutWidth)}" style="${blockStyles.join(';')}">
+                    ${block.badge ? `<div class="vf-preview-badge" style="${badgeStyle}">${escapeHtml(block.badge)}</div>` : ''}
+                    ${block.title ? `<div class="vf-preview-title" style="${titleStyle}">${escapeHtml(block.title)}</div>` : ''}
+                    ${block.text ? `<div class="vf-preview-text" style="${textStyle}">${escapeHtml(block.text)}</div>` : ''}
+                    <div class="vf-preview-ai-card" style="border-color:${hexToRgba(accentColor, 0.26)};background:linear-gradient(135deg, ${hexToRgba(accentColor, 0.16)}, rgba(255,255,255,0.04));">
+                        <div class="vf-preview-ai-card__head">
+                            <div class="vf-preview-ai-card__mark">AI</div>
+                            <div class="vf-preview-ai-card__copy">
+                                <div class="vf-preview-ai-card__title" style="font-family:${fontFamily};color:${titleColor};">${escapeHtml(block.ai_intro_label || 'Tvoj osobni vodič')}</div>
+                                <div class="vf-preview-ai-card__text">${advisorEnabled ? 'Osoba kroz nekoliko prirodnih pitanja dolazi do jasnije preporuke.' : 'AI savjetnik je trenutno isključen za ovaj blok.'}</div>
+                            </div>
+                        </div>
+                        <div class="vf-chip-row">
+                            <span class="vf-chip vf-chip--accent">${advisorEnabled ? 'Pametna preporuka' : 'Savjetnik isključen'}</span>
+                            <span class="vf-chip vf-chip--soft">${leadEnabled ? 'Moguć osobni nastavak' : 'Bez kontakt forme'}</span>
+                            <span class="vf-chip vf-chip--soft">Prilagođeno Forever cilju</span>
+                        </div>
+                        <div class="vf-preview-buttons" style="margin-top:0;">
+                            <span class="vf-preview-btn is-primary" style="${buttonStyle}">${escapeHtml(block.ai_button_label || 'Započni moju preporuku')}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
         if(block.type === 'image' || block.type === 'video') {
             const mediaPreview = (() => {
                 if(!block.media_url) {
@@ -5115,12 +6874,17 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
         });
     }
 
+    function isStepDragType(type = '') {
+        return ['step-rail', 'step', 'step-tab'].includes(type);
+    }
+
     function resetDragState() {
         if(state.drag.element) {
             state.drag.element.classList.remove('is-dragging');
         }
 
         clearDropTargets();
+        workspaceRoot.classList.remove('is-step-trash-ready');
         state.drag = {
             type: '',
             id: '',
@@ -5162,8 +6926,12 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
 
     function renderAll() {
         ensurePayload();
+        if(state.screen === 'flow') {
+            state.screen = state.activeStepId ? 'step' : 'landing';
+        }
         normalizeRequireSubmitFlags();
         refreshValidationState();
+        commitHistorySnapshot();
         renderTabs();
         renderWorkspace();
         renderPreview();
@@ -5207,6 +6975,7 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
             element: stepTab
         };
         stepTab.classList.add('is-dragging');
+        workspaceRoot.classList.add('is-step-trash-ready');
 
         if(event.dataTransfer) {
             event.dataTransfer.effectAllowed = 'move';
@@ -5262,6 +7031,98 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
     });
 
     workspaceRoot.addEventListener('click', event => {
+        const undoButton = event.target.closest('[data-vf-undo]');
+        if(undoButton) {
+            event.preventDefault();
+            undoHistory();
+            return;
+        }
+
+        const redoButton = event.target.closest('[data-vf-redo]');
+        if(redoButton) {
+            event.preventDefault();
+            redoHistory();
+            return;
+        }
+
+        const inlineSaveButton = event.target.closest('[data-vf-save-button]');
+        if(inlineSaveButton) {
+            event.preventDefault();
+            state.resetRequested = false;
+            saveStudio();
+            return;
+        }
+
+        const workspaceScreenButton = event.target.closest('[data-vf-screen]');
+        if(workspaceScreenButton) {
+            state.screen = workspaceScreenButton.getAttribute('data-vf-screen') || 'flow';
+            if(state.screen === 'landing') {
+                state.activeVariant = 'a';
+            }
+            ensureActiveBlock();
+            renderAll();
+            return;
+        }
+
+        const landingPageButton = event.target.closest('[data-vf-page-landing]');
+        if(landingPageButton) {
+            state.screen = 'landing';
+            state.activeVariant = 'a';
+            ensureActiveBlock();
+            renderAll();
+            return;
+        }
+
+        const stepPageButton = event.target.closest('[data-vf-page-step]');
+        if(stepPageButton) {
+            setActiveStep(stepPageButton.getAttribute('data-vf-page-step'));
+            return;
+        }
+
+        const builderPanelButton = event.target.closest('[data-vf-builder-panel]');
+        if(builderPanelButton) {
+            state.builderPanel = builderPanelButton.getAttribute('data-vf-builder-panel') || 'sections';
+            renderAll();
+            return;
+        }
+
+        const previewDeviceButton = event.target.closest('[data-vf-preview-device]');
+        if(previewDeviceButton) {
+            state.previewDevice = previewDeviceButton.getAttribute('data-vf-preview-device') === 'mobile' ? 'mobile' : 'desktop';
+            renderAll();
+            return;
+        }
+
+        const addStepTypeButton = event.target.closest('[data-vf-add-step-type]');
+        if(addStepTypeButton) {
+            addStepFromType(addStepTypeButton.getAttribute('data-vf-add-step-type') || 'page');
+            return;
+        }
+
+        const sectionTemplateButton = event.target.closest('[data-vf-section-template-add]');
+        if(sectionTemplateButton) {
+            applySectionTemplate(sectionTemplateButton.getAttribute('data-vf-section-template-add') || '');
+            return;
+        }
+
+        const sectionTemplateCard = event.target.closest('[data-vf-section-template]');
+        if(sectionTemplateCard && event.detail > 1) {
+            applySectionTemplate(sectionTemplateCard.getAttribute('data-vf-section-template') || '');
+            return;
+        }
+
+        const elementButton = event.target.closest('[data-vf-element]');
+        if(elementButton && !event.target.closest('[data-vf-section-template]')) {
+            addElementFromPalette(elementButton.getAttribute('data-vf-element') || 'headline');
+            return;
+        }
+
+        const rowLayoutButton = event.target.closest('[data-vf-row-layout]');
+        if(rowLayoutButton) {
+            addRowLayout(rowLayoutButton.getAttribute('data-vf-row-layout') || '1');
+            return;
+        }
+
         const deleteCurrentStepButton = event.target.closest('[data-vf-delete-current-step]');
         if(deleteCurrentStepButton) {
             deleteStep(deleteCurrentStepButton.getAttribute('data-vf-delete-current-step'));
@@ -5369,6 +7230,7 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
         if(blockCard) {
             state.activeBlockId = blockCard.getAttribute('data-vf-block-card');
             state.activeActionId = '';
+            state.builderPanel = 'settings';
             renderAll();
             return;
         }
@@ -5411,6 +7273,15 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
             return;
         }
 
+        const clearSurfaceImageButton = event.target.closest('[data-vf-clear-surface-image]');
+        if(clearSurfaceImageButton) {
+            const surfaceTarget = getEditableSurfaceSettingsTarget();
+            surfaceTarget.background_image_url = '';
+            syncPayloadInput();
+            renderAll();
+            return;
+        }
+
         const variantButton = event.target.closest('[data-vf-variant]');
         if(variantButton) {
             state.activeVariant = variantButton.getAttribute('data-vf-variant');
@@ -5423,10 +7294,23 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
     });
 
     workspaceRoot.addEventListener('dragstart', event => {
+        const stepRailCard = event.target.closest('[data-vf-step-rail-card]');
         const stepCard = event.target.closest('[data-vf-step-card]');
         const blockCard = event.target.closest('[data-vf-block-card]');
+        const sectionTemplate = event.target.closest('[data-vf-section-template]');
+        const elementTile = event.target.closest('[data-vf-element]');
+        const rowPreset = event.target.closest('[data-vf-row-layout]');
 
-        if(stepCard) {
+        if(stepRailCard) {
+            state.drag = {
+                type: 'step-rail',
+                id: stepRailCard.getAttribute('data-vf-step-rail-card') || '',
+                phaseKey: '',
+                scope: 'page-rail',
+                element: stepRailCard
+            };
+            stepRailCard.classList.add('is-dragging');
+        } else if(stepCard) {
             state.drag = {
                 type: 'step',
                 id: stepCard.getAttribute('data-vf-step-id') || '',
@@ -5444,8 +7328,39 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
                 element: blockCard
             };
             blockCard.classList.add('is-dragging');
+        } else if(sectionTemplate) {
+            state.drag = {
+                type: 'section-template',
+                id: sectionTemplate.getAttribute('data-vf-section-template') || '',
+                phaseKey: '',
+                scope: state.screen === 'landing' ? 'landing' : 'step',
+                element: sectionTemplate
+            };
+            sectionTemplate.classList.add('is-dragging');
+        } else if(elementTile) {
+            state.drag = {
+                type: 'element-template',
+                id: elementTile.getAttribute('data-vf-element') || '',
+                phaseKey: '',
+                scope: state.screen === 'landing' ? 'landing' : 'step',
+                element: elementTile
+            };
+            elementTile.classList.add('is-dragging');
+        } else if(rowPreset) {
+            state.drag = {
+                type: 'row-template',
+                id: rowPreset.getAttribute('data-vf-row-layout') || '1',
+                phaseKey: '',
+                scope: state.screen === 'landing' ? 'landing' : 'step',
+                element: rowPreset
+            };
+            rowPreset.classList.add('is-dragging');
         } else {
             return;
+        }
+
+        if(isStepDragType(state.drag.type)) {
+            workspaceRoot.classList.add('is-step-trash-ready');
         }
 
         if(event.dataTransfer) {
@@ -5459,9 +7374,49 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
             return;
         }
 
+        const trashDropzone = event.target.closest('[data-vf-step-trash-dropzone]');
+        if(trashDropzone && isStepDragType(state.drag.type)) {
+            event.preventDefault();
+            clearDropTargets();
+            trashDropzone.classList.add('is-drop-target');
+
+            if(event.dataTransfer) {
+                event.dataTransfer.dropEffect = 'move';
+            }
+
+            return;
+        }
+
+        if(state.drag.type === 'step-rail') {
+            const dropzone = event.target.closest('[data-vf-step-rail-dropzone]');
+
+            if(!dropzone) {
+                return;
+            }
+
+            event.preventDefault();
+            clearDropTargets();
+            dropzone.classList.add('is-drop-target');
+
+            const targetCard = event.target.closest('[data-vf-step-rail-card]');
+
+            if(targetCard && targetCard !== state.drag.element) {
+                const rect = targetCard.getBoundingClientRect();
+                const position = event.clientY < rect.top + (rect.height / 2) ? 'before' : 'after';
+                targetCard.classList.add(position === 'before' ? 'is-drop-before' : 'is-drop-after');
+            }
+
+            if(event.dataTransfer) {
+                event.dataTransfer.dropEffect = 'move';
+            }
+
+            return;
+        }
+
+        const isBlockLikeDrag = ['block', 'section-template', 'element-template', 'row-template'].includes(state.drag.type);
         const dropzone = state.drag.type === 'step'
             ? event.target.closest('[data-vf-step-dropzone]')
-            : event.target.closest('[data-vf-block-dropzone]');
+            : (isBlockLikeDrag ? event.target.closest('[data-vf-block-dropzone]') : null);
 
         if(!dropzone) {
             return;
@@ -5471,7 +7426,7 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
         clearDropTargets();
         dropzone.classList.add('is-drop-target');
 
-        if(state.drag.type === 'block') {
+        if(isBlockLikeDrag) {
             const targetCard = event.target.closest('[data-vf-block-card]');
             if(targetCard && targetCard !== state.drag.element) {
                 getDropIndex(dropzone, '[data-vf-block-card]', event.clientY, event.clientX, targetCard);
@@ -5488,9 +7443,47 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
             return;
         }
 
+        const trashDropzone = event.target.closest('[data-vf-step-trash-dropzone]');
+        if(trashDropzone && isStepDragType(state.drag.type)) {
+            event.preventDefault();
+            const stepId = state.drag.id;
+            resetDragState();
+            deleteStepViaTrash(stepId);
+            return;
+        }
+
+        if(state.drag.type === 'step-rail') {
+            const dropzone = event.target.closest('[data-vf-step-rail-dropzone]');
+
+            if(!dropzone) {
+                return;
+            }
+
+            event.preventDefault();
+
+            const targetCard = event.target.closest('[data-vf-step-rail-card]');
+
+            if(targetCard && targetCard !== state.drag.element) {
+                const rect = targetCard.getBoundingClientRect();
+                const position = event.clientY < rect.top + (rect.height / 2) ? 'before' : 'after';
+                moveStepRelativeToStep(state.drag.id, targetCard.getAttribute('data-vf-step-rail-card') || '', position);
+            } else {
+                const railCards = Array.from(dropzone.querySelectorAll('[data-vf-step-rail-card]')).filter(card => card !== state.drag.element);
+                const lastCard = railCards[railCards.length - 1] || null;
+
+                if(lastCard) {
+                    moveStepRelativeToStep(state.drag.id, lastCard.getAttribute('data-vf-step-rail-card') || '', 'after');
+                }
+            }
+
+            resetDragState();
+            return;
+        }
+
+        const isBlockLikeDrag = ['block', 'section-template', 'element-template', 'row-template'].includes(state.drag.type);
         const dropzone = state.drag.type === 'step'
             ? event.target.closest('[data-vf-step-dropzone]')
-            : event.target.closest('[data-vf-block-dropzone]');
+            : (isBlockLikeDrag ? event.target.closest('[data-vf-block-dropzone]') : null);
 
         if(!dropzone) {
             return;
@@ -5504,10 +7497,19 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
             moveStepToPhase(state.drag.id, targetPhaseKey, targetIndex);
         }
 
-        if(state.drag.type === 'block') {
+        if(isBlockLikeDrag) {
             const targetCard = event.target.closest('[data-vf-block-card]');
             const targetIndex = getDropIndex(dropzone, '[data-vf-block-card]', event.clientY, event.clientX, targetCard && targetCard !== state.drag.element ? targetCard : null);
-            moveBlockToIndex(state.drag.id, targetIndex);
+
+            if(state.drag.type === 'block') {
+                moveBlockToIndex(state.drag.id, targetIndex);
+            } else if(state.drag.type === 'section-template') {
+                applySectionTemplate(state.drag.id, targetIndex);
+            } else if(state.drag.type === 'element-template') {
+                addElementFromPalette(state.drag.id, targetIndex);
+            } else if(state.drag.type === 'row-template') {
+                addRowLayout(state.drag.id, targetIndex);
+            }
         }
 
         resetDragState();
@@ -5515,6 +7517,22 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
 
     workspaceRoot.addEventListener('dragend', () => {
         resetDragState();
+    });
+
+    previewRoot.addEventListener('click', event => {
+        const landingPageButton = event.target.closest('[data-vf-page-landing]');
+        if(landingPageButton) {
+            state.screen = 'landing';
+            state.activeVariant = 'a';
+            ensureActiveBlock();
+            renderAll();
+            return;
+        }
+
+        const stepPageButton = event.target.closest('[data-vf-page-step]');
+        if(stepPageButton) {
+            setActiveStep(stepPageButton.getAttribute('data-vf-page-step'));
+        }
     });
 
     function applyGenericFieldUpdate(target) {
@@ -5533,7 +7551,13 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
             const field = surfaceField.getAttribute('data-vf-surface-field');
             const globalSurfaceFields = ['ab_distribution'];
             const surfaceTarget = globalSurfaceFields.includes(field) ? getCurrentSurface() : getEditableSurfaceSettingsTarget();
+            const previousBackgroundColor = surfaceTarget.background_color || '#0f172a';
             surfaceTarget[field] = coerceFieldValue(surfaceField);
+
+            if(field === 'background_color') {
+                syncSurfacePaletteAfterBackgroundChange(surfaceTarget, previousBackgroundColor);
+            }
+
             syncPayloadInput();
             renderPreview();
             return true;
@@ -5553,8 +7577,10 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
         if(stepField) {
             const activeStep = getActiveStep();
             if(!activeStep) return true;
-            activeStep[stepField.getAttribute('data-vf-step-field')] = coerceFieldValue(stepField);
-            if(stepField.getAttribute('data-vf-step-field') === 'title' && activeStep.page && !activeStep.page.name) {
+            const field = stepField.getAttribute('data-vf-step-field');
+            activeStep[field] = coerceFieldValue(stepField);
+            if(field === 'title') {
+                activeStep.page = normalizeSurface(activeStep.page || defaultSurface(), stepField.value);
                 activeStep.page.name = stepField.value;
             }
             syncPayloadInput();
@@ -5600,7 +7626,9 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
     }
 
     workspaceRoot.addEventListener('input', event => {
-        applyGenericFieldUpdate(event.target);
+        if(applyGenericFieldUpdate(event.target)) {
+            updateHistoryControls();
+        }
     });
 
     workspaceRoot.addEventListener('focusout', event => {
@@ -5625,6 +7653,12 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
         const imageUploadField = event.target.closest('[data-vf-image-upload]');
         if(imageUploadField) {
             uploadImageForBlock(imageUploadField);
+            return;
+        }
+
+        const surfaceImageUploadField = event.target.closest('[data-vf-surface-image-upload]');
+        if(surfaceImageUploadField) {
+            uploadImageForSurface(surfaceImageUploadField);
             return;
         }
 
@@ -5766,6 +7800,24 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
 
     document.addEventListener('keydown', event => {
         const isSaveShortcut = (event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 's';
+        const isUndoShortcut = (event.metaKey || event.ctrlKey) && !event.shiftKey && event.key.toLowerCase() === 'z';
+        const isRedoShortcut = ((event.metaKey || event.ctrlKey) && event.shiftKey && event.key.toLowerCase() === 'z')
+            || (event.ctrlKey && event.key.toLowerCase() === 'y');
+        const activeElement = document.activeElement;
+        const isTypingTarget = activeElement instanceof HTMLElement
+            && (activeElement.matches('input, textarea, select') || activeElement.isContentEditable);
+
+        if(!isTypingTarget && isUndoShortcut) {
+            event.preventDefault();
+            undoHistory();
+            return;
+        }
+
+        if(!isTypingTarget && isRedoShortcut) {
+            event.preventDefault();
+            redoHistory();
+            return;
+        }
 
         if(!isSaveShortcut) {
             return;

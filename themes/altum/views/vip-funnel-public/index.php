@@ -15,11 +15,57 @@ $hex_alpha = static function($hex, $alpha = '1A') {
     return 'rgba(255,255,255,0.08)';
 };
 
+$clamp_opacity = static function($value, int $fallback = 100): int {
+    if($value === '' || $value === null) {
+        return $fallback;
+    }
+
+    return max(0, min(100, (int) round((float) $value)));
+};
+
+$color_with_opacity = static function($hex, $opacity = 100, string $fallback = '#0f172a') use ($clamp_opacity): string {
+    $hex = strtoupper(trim((string) $hex));
+
+    if(!(function_exists('verify_hex_color') && verify_hex_color($hex) && preg_match('/^#[0-9A-F]{6}$/', $hex))) {
+        $hex = strtoupper(trim($fallback));
+    }
+
+    if(!preg_match('/^#[0-9A-F]{6}$/', $hex)) {
+        $hex = '#0F172A';
+    }
+
+    $opacity = $clamp_opacity($opacity, 100);
+
+    if($opacity >= 100) {
+        return $hex;
+    }
+
+    $r = hexdec(substr($hex, 1, 2));
+    $g = hexdec(substr($hex, 3, 2));
+    $b = hexdec(substr($hex, 5, 2));
+    $alpha = rtrim(rtrim(number_format($opacity / 100, 3, '.', ''), '0'), '.');
+
+    return 'rgba(' . $r . ',' . $g . ',' . $b . ',' . $alpha . ')';
+};
+
 $state = is_array($data->state ?? null) ? $data->state : [];
 $payload = is_array($state['payload'] ?? null) ? $state['payload'] : [];
 $surface = is_array($state['page_surface'] ?? null) ? $state['page_surface'] : [];
 $blocks = is_array($state['blocks'] ?? null) ? $state['blocks'] : [];
 $active = is_array($state['active'] ?? null) ? $state['active'] : [];
+$owner_profile = is_array($state['owner_profile'] ?? null) ? $state['owner_profile'] : [];
+$ai_owner_user_id = (int) ($state['user_id'] ?? 0);
+$ai_owner_link_id = (int) ($state['ai_owner_link_id'] ?? 0);
+if($ai_owner_link_id <= 0 && $ai_owner_user_id > 0 && function_exists('fc_get_user_main_biolink_id')) {
+    $ai_owner_link_id = (int) (fc_get_user_main_biolink_id($ai_owner_user_id) ?? 0);
+}
+$ai_public_access_enabled = $ai_owner_user_id > 0 && function_exists('fcc_ai_user_has_public_ai_access') && fcc_ai_user_has_public_ai_access($ai_owner_user_id);
+$ai_page_language_code = trim((string) (\Altum\Language::$code ?? \Altum\Language::$default_code ?? 'hr'));
+$ai_language_code = function_exists('fcc_ai_get_public_assistant_default_language')
+    ? fcc_ai_get_public_assistant_default_language($ai_owner_user_id, 'product_advisor', 'public_app', $ai_page_language_code)
+    : $ai_page_language_code;
+$ai_widget_dom_id = 'vip-funnel-ai-advisor-' . md5((string) $ai_owner_user_id . '|' . (string) ($state['page_key'] ?? 'landing') . '|' . (string) ($state['variant_key'] ?? 'a'));
+$ai_widget_registered = false;
 $hide_public_navbar = !empty($payload['defaults']['hide_public_navbar']);
 $facebook_pixel_id = function_exists('vip_funnel_normalize_meta_pixel_id')
     ? vip_funnel_normalize_meta_pixel_id($payload['defaults']['facebook_pixel_id'] ?? '')
@@ -54,6 +100,11 @@ $meta_pixel_step_parameters = [
     'variant' => strtoupper((string) ($state['variant_key'] ?? 'a')),
 ];
 $background_color = $surface['background_color'] ?? '#0f172a';
+$background_opacity = $clamp_opacity($surface['background_opacity'] ?? 100, 100);
+$background_css_color = $color_with_opacity($background_color, $background_opacity, '#0f172a');
+$background_image_url = trim((string) ($surface['background_image_url'] ?? ''));
+$background_image_css_value = str_replace(["\r", "\n", '"', "'", '<', '>', '\\'], '', $background_image_url);
+$background_image_css_url = $background_image_css_value !== '' ? json_encode($background_image_css_value, JSON_UNESCAPED_SLASHES) : '';
 $surface_color = $surface['surface_color'] ?? '#152132';
 $text_color = $surface['text_color'] ?? '#eef4ff';
 $accent_color = $surface['accent_color'] ?? '#67d8c9';
@@ -104,17 +155,21 @@ foreach($blocks as $preview_block) {
     <?php endif ?>
 
     .vip-funnel-public {
-        --vf-bg: <?= $e($background_color) ?>;
+        --vf-bg: <?= $e($background_css_color) ?>;
         --vf-surface: <?= $e($surface_color) ?>;
         --vf-text: <?= $e($text_color) ?>;
         --vf-accent: <?= $e($accent_color) ?>;
         padding: 3rem 0 4rem;
         min-height: 100vh;
         overflow-x: hidden;
-        background:
-            radial-gradient(720px 320px at 0% 0%, rgba(103,216,201,0.14), transparent 60%),
-            radial-gradient(620px 280px at 100% 0%, rgba(244,195,77,0.13), transparent 58%),
-            linear-gradient(180deg, #0a111b, #09111b 55%, #0b1320);
+        background-color: var(--vf-bg);
+        <?php if($background_image_css_url): ?>
+        background-image: linear-gradient(180deg, rgba(2,8,23,0.22), rgba(2,8,23,0.36)), url(<?= $background_image_css_url ?>);
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+        <?php endif ?>
     }
 
     .vip-funnel-public,
@@ -135,7 +190,13 @@ foreach($blocks as $preview_block) {
 
     .vip-funnel-public__page-shell {
         width: 100%;
-        background: var(--vf-bg);
+        background-color: var(--vf-bg);
+        <?php if($background_image_css_url): ?>
+        background-image: linear-gradient(180deg, rgba(2,8,23,0.22), rgba(2,8,23,0.36)), url(<?= $background_image_css_url ?>);
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        <?php endif ?>
         border-radius: 1.6rem;
         border: 1px solid rgba(255,255,255,0.08);
         box-shadow: 0 1.4rem 3rem rgba(2,8,23,0.22);
@@ -180,8 +241,8 @@ foreach($blocks as $preview_block) {
 
     .vip-funnel-public__blocks {
         display: grid;
-        grid-template-columns: repeat(12, minmax(0, 1fr));
-        gap: .95rem;
+        grid-template-columns: repeat(60, minmax(0, 1fr));
+        gap: .95rem 0;
     }
 
     .vip-funnel-public__block {
@@ -193,12 +254,22 @@ foreach($blocks as $preview_block) {
         color: inherit;
     }
 
-    .vip-funnel-public__blocks > [data-vf-span="full"] { grid-column: span 12; }
-    .vip-funnel-public__blocks > [data-vf-span="half"] { grid-column: span 6; }
-    .vip-funnel-public__blocks > [data-vf-span="third"] { grid-column: span 4; }
-    .vip-funnel-public__blocks > [data-vf-span="two_thirds"] { grid-column: span 8; }
-    .vip-funnel-public__blocks > [data-vf-span="quarter"] { grid-column: span 3; }
-    .vip-funnel-public__blocks > [data-vf-span="three_quarters"] { grid-column: span 9; }
+    .vip-funnel-public__blocks > [data-vf-span="full"] { grid-column: span 60; }
+    .vip-funnel-public__blocks > [data-vf-span="half"] { grid-column: span 30; }
+    .vip-funnel-public__blocks > [data-vf-span="third"] { grid-column: span 20; }
+    .vip-funnel-public__blocks > [data-vf-span="two_thirds"] { grid-column: span 40; }
+    .vip-funnel-public__blocks > [data-vf-span="quarter"] { grid-column: span 15; }
+    .vip-funnel-public__blocks > [data-vf-span="three_quarters"] { grid-column: span 45; }
+    .vip-funnel-public__blocks > [data-vf-span="fifth"] { grid-column: span 12; }
+    .vip-funnel-public__blocks > [data-vf-span="sixth"] { grid-column: span 10; }
+
+    .vip-funnel-public__blocks > [data-vf-span]:not([data-vf-span="full"]) {
+        margin-inline: .45rem;
+    }
+
+    .vip-funnel-public__blocks > [data-vf-span="full"] {
+        margin-inline: 0;
+    }
 
     .vip-funnel-public__spacer {
         min-width: 0;
@@ -344,6 +415,69 @@ foreach($blocks as $preview_block) {
         background: rgba(255,255,255,0.03);
         color: rgba(236,243,255,0.72);
         line-height: 1.6;
+    }
+
+    .vip-funnel-public__ai-card {
+        margin-top: .95rem;
+        display: grid;
+        gap: .9rem;
+        border-radius: 1.15rem;
+        border: 1px solid rgba(255,255,255,0.1);
+        background: rgba(255,255,255,0.04);
+        padding: 1rem;
+    }
+
+    .vip-funnel-public__ai-head {
+        display: flex;
+        align-items: center;
+        gap: .82rem;
+        min-width: 0;
+    }
+
+    .vip-funnel-public__ai-mark {
+        width: 48px;
+        height: 48px;
+        border-radius: 999px;
+        display: grid;
+        place-items: center;
+        flex: 0 0 auto;
+        background: radial-gradient(circle at 35% 30%, rgba(255,255,255,0.96), rgba(103,216,201,0.22) 46%, rgba(103,216,201,0.08));
+        color: #0f172a;
+        font-weight: 900;
+        box-shadow: 0 10px 26px rgba(2,8,23,0.22);
+    }
+
+    .vip-funnel-public__ai-copy {
+        min-width: 0;
+        display: grid;
+        gap: .16rem;
+        line-height: 1.35;
+    }
+
+    .vip-funnel-public__ai-title {
+        font-weight: 900;
+    }
+
+    .vip-funnel-public__ai-text {
+        color: rgba(236,243,255,0.74);
+        font-size: .92rem;
+    }
+
+    .vip-funnel-public__ai-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .45rem;
+    }
+
+    .vip-funnel-public__ai-chip {
+        display: inline-flex;
+        align-items: center;
+        padding: .32rem .64rem;
+        border-radius: 999px;
+        border: 1px solid rgba(255,255,255,0.1);
+        background: rgba(255,255,255,0.07);
+        font-size: .74rem;
+        font-weight: 800;
     }
 
     .vip-funnel-public__actions {
@@ -586,6 +720,7 @@ foreach($blocks as $preview_block) {
     @media (max-width: 720px) {
         .vip-funnel-public {
             padding: 1.15rem 0 calc(2.75rem + env(safe-area-inset-bottom));
+            background-attachment: scroll;
         }
 
         .vip-funnel-public__wrap {
@@ -609,6 +744,7 @@ foreach($blocks as $preview_block) {
 
         .vip-funnel-public__blocks > [data-vf-span] {
             grid-column: span 1;
+            margin-inline: 0;
         }
 
         .vip-funnel-public__block {
@@ -788,11 +924,48 @@ foreach($blocks as $preview_block) {
                                 $placeholder_color = !empty($block['placeholder_color']) ? (string) $block['placeholder_color'] : '#aab4c7';
                                 $button_text_color = !empty($block['button_text_color']) ? (string) $block['button_text_color'] : '';
                                 $block_style = [];
-                                if(!empty($block['background_color'])) $block_style[] = 'background:' . $block['background_color'];
+                                if(!empty($block['background_color'])) $block_style[] = 'background:' . $color_with_opacity($block['background_color'], $block['background_opacity'] ?? 100, (string) $block['background_color']);
                                 $block_style[] = 'color:' . $base_text_color;
                                 if(!empty($block['accent_color'])) $block_style[] = '--vf-accent:' . $block['accent_color'];
                                 $block_style[] = 'font-family:' . $font_family;
                                 $block_style[] = '--vf-placeholder-color:' . $placeholder_color;
+
+                                if($block_type === 'ai_product_advisor' && isset($block['ai_advisor_enabled']) && empty($block['ai_advisor_enabled'])) {
+                                    continue;
+                                }
+
+                                $ai_block_can_render = false;
+                                if($block_type === 'ai_product_advisor') {
+                                    $ai_block_can_render = $ai_public_access_enabled && $ai_owner_link_id > 0 && function_exists('fcc_ai_get_assistant_type');
+
+                                    if($ai_block_can_render && !$ai_widget_registered) {
+                                        $ai_intro_label = trim((string) ($block['ai_intro_label'] ?? 'Tvoj osobni vodič')) ?: 'Tvoj osobni vodič';
+                                        $ai_launcher_label = trim((string) ($block['ai_launcher_label'] ?? 'Moja preporuka')) ?: 'Moja preporuka';
+                                        $ai_input_placeholder = trim((string) ($block['ai_input_placeholder'] ?? 'Napiši cilj ili pitanje...')) ?: 'Napiši cilj ili pitanje...';
+                                        $ai_source_context = 'VIP Funnel pametna preporuka - ' . trim((string) (($active['title'] ?? '') ?: ($payload['funnel']['name'] ?? 'VIP Funnel 2.0')));
+
+                                        ob_start();
+                                        echo include_view(THEME_PATH . 'views/l/partials/fcc_chat_extreme_popup.php', [
+                                            'config' => [
+                                                'assistant_type' => 'product_advisor',
+                                                'scope' => 'public_app',
+                                                'link_id' => $ai_owner_link_id,
+                                                'blog_post_id' => 0,
+                                                'owner_name' => trim((string) ($owner_profile['name'] ?? '')),
+                                                'language_code' => $ai_language_code,
+                                                'source_context' => $ai_source_context,
+                                                'hide_without_context' => false,
+                                                'dom_id' => $ai_widget_dom_id,
+                                                'intro_label' => $ai_intro_label,
+                                                'launcher_label' => $ai_launcher_label,
+                                                'input_placeholder' => $ai_input_placeholder,
+                                                'lead_enabled' => !isset($block['ai_lead_capture_enabled']) || !empty($block['ai_lead_capture_enabled']),
+                                            ],
+                                        ]);
+                                        \Altum\Event::add_content(ob_get_clean(), 'modals', 'vip_funnel_ai_advisor_' . $ai_widget_dom_id);
+                                        $ai_widget_registered = true;
+                                    }
+                                }
                                 ?>
 
                                 <?php if($block_type === 'spacer'): ?>
@@ -895,6 +1068,48 @@ foreach($blocks as $preview_block) {
                                                 </div>
                                             <?php else: ?>
                                                 <div class="vip-funnel-public__product-empty">Ovaj produktni blok još nema odabran proizvod. Vrati se u VIP Funnel Studio i poveži ga s proizvodom iz blog kataloga.</div>
+                                            <?php endif ?>
+                                        </div>
+                                    <?php endif ?>
+
+                                    <?php if($block_type === 'ai_product_advisor'): ?>
+                                        <?php
+                                        $ai_button_label = trim((string) ($block['ai_button_label'] ?? 'Započni moju preporuku')) ?: 'Započni moju preporuku';
+                                        $ai_intro_label_public = trim((string) ($block['ai_intro_label'] ?? 'Tvoj osobni vodič')) ?: 'Tvoj osobni vodič';
+                                        $ai_lead_enabled_public = !isset($block['ai_lead_capture_enabled']) || !empty($block['ai_lead_capture_enabled']);
+                                        ?>
+                                        <div class="vip-funnel-public__ai-card" style="border-color: <?= $e($hex_alpha($accent_color, '33')) ?>; background: linear-gradient(135deg, <?= $e($hex_alpha($accent_color, '24')) ?>, rgba(255,255,255,0.04));">
+                                            <div class="vip-funnel-public__ai-head">
+                                                <div class="vip-funnel-public__ai-mark">AI</div>
+                                                <div class="vip-funnel-public__ai-copy">
+                                                    <div class="vip-funnel-public__ai-title" style="font-size: <?= $e(max(16, min(32, $text_size + 1))) ?>px; font-weight: <?= $e(max(700, $title_weight)) ?>; font-family: <?= $e($font_family) ?>; color: <?= $e($title_color) ?>;"><?= $e($ai_intro_label_public) ?></div>
+                                                    <div class="vip-funnel-public__ai-text">Odgovori prirodno, bez traženja po katalogu. Savjetnik pomaže složiti preporuku prema tvojem cilju.</div>
+                                                </div>
+                                            </div>
+                                            <div class="vip-funnel-public__ai-chips">
+                                                <span class="vip-funnel-public__ai-chip">Preporuka po tvojem cilju</span>
+                                                <span class="vip-funnel-public__ai-chip"><?= $e($ai_lead_enabled_public ? 'Moguć osobni nastavak' : 'Bez kontakt forme') ?></span>
+                                            </div>
+                                            <?php if($ai_block_can_render): ?>
+                                                <div class="vip-funnel-public__actions" style="margin-top:0;">
+                                                    <button
+                                                        type="button"
+                                                        class="vip-funnel-public__btn is-primary"
+                                                        style="font-size: <?= $e($button_size) ?>px; font-weight: <?= $e($button_weight) ?>; font-family: <?= $e($font_family) ?>; color: <?= $e($button_text_color !== '' ? $button_text_color : '#0f172a') ?>;"
+                                                        data-vf-track="cta_click"
+                                                        data-vf-block="<?= $e($block_id) ?>"
+                                                        data-vf-block-type="<?= $e($block_type) ?>"
+                                                        data-vf-label="<?= $e($ai_button_label) ?>"
+                                                        data-vf-action="open_ai_product_advisor"
+                                                        data-vf-target=""
+                                                        data-vf-external=""
+                                                        data-vf-selection="fcc_preporuka"
+                                                        data-vf-signal-key="fcc_ai_product_advisor"
+                                                        onclick="return window.fccChatExtremeToggle ? window.fccChatExtremeToggle(<?= $e(json_encode($ai_widget_dom_id)) ?>, true) : false;"
+                                                    ><?= $e($ai_button_label) ?></button>
+                                                </div>
+                                            <?php else: ?>
+                                                <div class="vip-funnel-public__product-empty">AI savjetnik trenutno nije dostupan za ovu stranicu.</div>
                                             <?php endif ?>
                                         </div>
                                     <?php endif ?>
