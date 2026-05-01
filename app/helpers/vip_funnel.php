@@ -8907,7 +8907,7 @@ function vip_funnel_public_submission_requests_demo(array $state, array $fields 
 function vip_funnel_resolve_public_qualification_target(array $state, array $radio_answers = []): string {
     $current_step_id = (string) (($state['current_step_id'] ?? '') ?: ($state['page_key'] ?? ''));
 
-    if($current_step_id !== 'qualification_form') {
+    if(!in_array($current_step_id, ['qualification_form', 'check'], true)) {
         return '';
     }
 
@@ -8920,9 +8920,33 @@ function vip_funnel_resolve_public_qualification_target(array $state, array $rad
         }
     }
 
-    $goal = (string) ($answers_by_block['qualification_goal'] ?? '');
-    $time = (string) ($answers_by_block['qualification_time'] ?? '');
-    $investment = (string) ($answers_by_block['qualification_investment'] ?? '');
+    $goal = (string) ($answers_by_block['qualification_goal'] ?? ($answers_by_block['check_goal'] ?? ''));
+    $time = (string) ($answers_by_block['qualification_time'] ?? ($answers_by_block['check_time'] ?? ''));
+    $investment = (string) ($answers_by_block['qualification_investment'] ?? ($answers_by_block['check_budget'] ?? ''));
+
+    if($current_step_id === 'check') {
+        if(in_array($goal, ['product_discount', 'product_first'], true) || $investment === 'not_now_products') {
+            return 'result_products';
+        }
+
+        if($goal === 'demo_interest' || $investment === 'see_system_first') {
+            return 'result_demo_request';
+        }
+
+        if($investment === 'ready_360_call') {
+            return 'result_contact_hot';
+        }
+
+        if($goal === 'research' || $time === 'time_no_capacity' || $investment === 'not_ready') {
+            return 'result_calm_next_step';
+        }
+
+        if($investment === 'ready_360_now') {
+            return 'result_start';
+        }
+
+        return '';
+    }
 
     if($goal === 'product_discount') {
         return 'product_gateway';
@@ -8950,7 +8974,7 @@ function vip_funnel_resolve_public_qualification_target(array $state, array $rad
 function vip_funnel_resolve_public_qualification_selection(array $state, array $radio_answers = []): string {
     $current_step_id = (string) (($state['current_step_id'] ?? '') ?: ($state['page_key'] ?? ''));
 
-    if($current_step_id !== 'qualification_form') {
+    if(!in_array($current_step_id, ['qualification_form', 'check'], true)) {
         return '';
     }
 
@@ -8963,15 +8987,15 @@ function vip_funnel_resolve_public_qualification_selection(array $state, array $
         }
     }
 
-    $goal = (string) ($answers_by_block['qualification_goal'] ?? '');
-    $time = (string) ($answers_by_block['qualification_time'] ?? '');
-    $investment = (string) ($answers_by_block['qualification_investment'] ?? '');
+    $goal = (string) ($answers_by_block['qualification_goal'] ?? ($answers_by_block['check_goal'] ?? ''));
+    $time = (string) ($answers_by_block['qualification_time'] ?? ($answers_by_block['check_time'] ?? ''));
+    $investment = (string) ($answers_by_block['qualification_investment'] ?? ($answers_by_block['check_budget'] ?? ''));
 
-    if($goal === 'product_discount') {
+    if(in_array($goal, ['product_discount', 'product_first'], true)) {
         return 'product_discount';
     }
 
-    if($goal === 'samo_istrazujem') {
+    if(in_array($goal, ['samo_istrazujem', 'research'], true)) {
         return 'samo_istrazujem';
     }
 
