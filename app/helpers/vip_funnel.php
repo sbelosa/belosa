@@ -8,6 +8,10 @@
 
 defined('ALTUMCODE') || die();
 
+if(file_exists(APP_PATH . 'helpers/vip_funnel_stjepan_guide.php')) {
+    require_once APP_PATH . 'helpers/vip_funnel_stjepan_guide.php';
+}
+
 function vip_funnel_normalize_object($value): \stdClass {
     if(is_string($value)) {
         $value = json_decode($value ?? '{}');
@@ -7885,6 +7889,14 @@ function vip_funnel_get_public_payload_for_user(int $user_id = 0, string $funnel
 
         if($funnel) {
             return vip_funnel_studio_load_from_database($user, (int) $funnel->vip_funnel_id);
+        }
+
+        if(trim($funnel_slug) !== '' && function_exists('vip_funnel_maybe_create_stjepan_forever_card_club_guide')) {
+            $funnel = vip_funnel_maybe_create_stjepan_forever_card_club_guide($user, $funnel_slug);
+
+            if($funnel) {
+                return vip_funnel_studio_load_from_database($user, (int) $funnel->vip_funnel_id);
+            }
         }
 
         if($funnel_id > 0 || trim($funnel_slug) !== '') {
