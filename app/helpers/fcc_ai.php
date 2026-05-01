@@ -3907,6 +3907,10 @@ function fcc_ai_hr_inflect_person_token_instrumental(string $token): string {
 
     $lower = mb_strtolower($token);
 
+    if(in_array($lower, ['i', 'and', '&'], true)) {
+        return $token;
+    }
+
     if(preg_match('/a$/u', $lower)) {
         return mb_substr($token, 0, -1) . 'om';
     }
@@ -5541,6 +5545,12 @@ function fcc_ai_is_low_context_follow_up_message(string $message): bool {
         'sto dalje',
         'sljedeći korak',
         'sledeci korak',
+        'dva proizvoda',
+        '2 proizvoda',
+        'samo dva',
+        'jednostavna kombinacija',
+        'jednostavnu kombinaciju',
+        'kao kombinaciju',
         'next step',
         'what next',
         'continue',
@@ -6175,6 +6185,65 @@ function fcc_ai_internal_coach_has_market_context(string $message): bool {
     ]);
 }
 
+function fcc_ai_is_internal_coach_nutrition_comparison_draft(string $message): bool {
+    $message = trim($message);
+
+    if($message === '') {
+        return false;
+    }
+
+    if(
+        fcc_ai_contains_keywords($message, ['forever daily', 'daily'])
+        && fcc_ai_contains_keywords($message, ['immublend', 'imublend'])
+        && fcc_ai_contains_keywords($message, ['selen', 'µg', 'mcg', 'dnevna doza', 'dnevnih potreba', 'tablete'])
+    ) {
+        return true;
+    }
+
+    return fcc_ai_contains_keywords($message, ['između ova dva proizvoda', 'izmedu ova dva proizvoda'])
+        && fcc_ai_contains_keywords($message, ['razlika', 'namjeni', 'namena', 'zaključak', 'zakljucak']);
+}
+
+function fcc_ai_is_internal_coach_sales_link_mismatch_report(string $message): bool {
+    $message = trim($message);
+
+    if($message === '') {
+        return false;
+    }
+
+    return fcc_ai_contains_keywords($message, ['prodajni link', 'sales link', 'forever web trgovina', 'webshop', 'link builder'])
+        && fcc_ai_contains_keywords($message, ['piše', 'pise', 'kaže', 'kaze', 'govori', 'označava', 'oznacava'])
+        && fcc_ai_contains_keywords($message, ['postavila', 'postavio', 'postavljen', 'imam', 'jesam', 'zalijepila', 'zalijepio']);
+}
+
+function fcc_ai_is_internal_coach_referral_link_troubleshooting_request(string $message): bool {
+    $message = trim($message);
+
+    if($message === '') {
+        return false;
+    }
+
+    $has_referral_context = fcc_ai_contains_keywords($message, [
+        'link za preporuku', 'preporucni link', 'preporučni link', 'preporuka link',
+        'referral', 'referr', 'share link', 'copy link', 'kopiraj link',
+        'preporuku', 'preporuka', 'prodajni link', 'webshop link', 'forever link',
+        'popust link', 'link proizvoda',
+    ]);
+
+    if(!$has_referral_context) {
+        return false;
+    }
+
+    return fcc_ai_contains_keywords($message, [
+        'ne radi', 'ne funkcionira', 'ne funkcionise', 'ne otvara',
+        'ne povlači', 'ne povlaci', 'ne nosi', 'ne prepoznaje',
+        'nije moja', 'nije moj', 'ne ide na mene', 'ne vodi na mene',
+        'ne vidi me', 'ne broji', 'ne bilježi', 'ne biljezi',
+        'ne daje popust', 'ne povlači popust', 'ne povlaci popust',
+        'sumnjam', 'provjeriti', 'testirati', 'anonim', 'incognito', 'privatni prozor',
+    ]);
+}
+
 function fcc_ai_internal_coach_is_platform_settings_message(string $message): bool {
     $message = trim($message);
 
@@ -6372,6 +6441,15 @@ function fcc_ai_internal_coach_requires_market_clarification(string $message, st
         return false;
     }
 
+    $has_explicit_market_rule_terms = fcc_ai_contains_keywords($message, [
+        'akcij', 'promo', 'izazov', 'challenge', 'kampanj', 'campaign', 'offer', 'ponud',
+        'popust', 'discount', 'titan',
+    ]);
+
+    if(!$has_explicit_market_rule_terms && fcc_ai_is_internal_coach_nutrition_comparison_draft($message)) {
+        return false;
+    }
+
     return !fcc_ai_internal_coach_has_market_context($message . "\n" . $previous_context);
 }
 
@@ -6411,6 +6489,156 @@ function fcc_ai_internal_coach_requires_content_brief(string $message, string $p
         'napis', 'napiš', 'složi', 'slozi', 'daj', 'trebam', 'treba mi', 'može', 'moze',
         'napravi', 'smisli',
     ]);
+}
+
+function fcc_ai_build_internal_coach_nutrition_comparison_reply(string $message, string $language = 'hr'): string {
+    $language = fcc_ai_resolve_public_reply_language($language, $message);
+
+    if($language === 'en') {
+        return implode("\n\n", [
+            'This is a good direction. I would polish it for FCC communication like this:',
+            "**Forever Daily and Forever Immublend have a similar selenium amount in the daily serving.**\n- Forever Daily is the broader everyday multivitamin/mineral routine.\n- Forever Immublend is more focused on immune-routine support with nutrients such as selenium, zinc and vitamins C and D.",
+            'Simple conclusion: if someone is comparing only selenium, the difference is not the key point. If they are choosing a product, the choice should follow the goal: everyday broad support or a more immune-focused routine.',
+            'Best next step now: use this as a DM/WhatsApp explanation, or ask me to shorten it into a story version.',
+        ]);
+    }
+
+    if($language === 'sl') {
+        return implode("\n\n", [
+            'To je dobra smer. Za FCC komunikacijo bi jo zapisal malo bolj jasno:',
+            "**Forever Daily in Forever Immublend imata v dnevnem odmerku podobno količino selena.**\n- Forever Daily je širša vsakodnevna multivitaminsko-mineralna rutina.\n- Forever Immublend je bolj usmerjen v podporo rutini odpornosti s hranili, kot so selen, cink ter vitamina C in D.",
+            'Preprost zaključek: če nekdo primerja samo selen, razlika ni ključna. Če izbira izdelek, naj izbira glede na cilj: širša vsakodnevna podpora ali bolj imunsko usmerjena rutina.',
+            'Najboljši naslednji korak zdaj: uporabi to kot DM/WhatsApp razlago ali mi napiši, da jo skrajšam v story verzijo.',
+        ]);
+    }
+
+    return implode("\n\n", [
+        'Ovo je dobar smjer. Za FCC komunikaciju bih ga samo malo jasnije ispolirao:',
+        "**Forever Daily i Forever Immublend imaju približno jednaku količinu selena u dnevnoj dozi.**\n- Forever Daily je šira svakodnevna multivitaminsko-mineralna rutina.\n- Forever Immublend je više usmjeren na imunitet, kroz kombinaciju nutrijenata poput selena, cinka te vitamina C i D.",
+        'Najjednostavniji zaključak: ako osoba gleda samo selen, razlika nije ključna. Ako bira proizvod, odluka ide prema cilju: šira svakodnevna podrška ili ciljano imunitet.',
+        'Najbolji sljedeći korak sada: iskoristi ovu verziju kao DM/WhatsApp objašnjenje ili mi napiši da je skratim u story verziju.',
+    ]);
+}
+
+function fcc_ai_build_internal_coach_sales_link_mismatch_reply(string $message, string $language = 'hr'): string {
+    $language = fcc_ai_resolve_public_reply_language($language, $message);
+
+    if($language === 'en') {
+        return implode("\n\n", [
+            'If you already added the sales link, then I would not assume the link is simply missing. The more likely issue is that FCC does not recognize that exact block as a valid active Forever sales link.',
+            "Check these four things:\n- the block type is Forever Web Shop / Forever Web trgovina\n- the URL is your own Link Builder URL from your Foreverliving account\n- the block is enabled and visible on the app\n- if you use a discount flow, the discount is applied consistently where needed",
+            'Best next step now: open Blocks -> Forever Web Shop, compare the URL there, and if you want, send me what is written in the URL field so I can tell you what to fix.',
+        ]);
+    }
+
+    if($language === 'sl') {
+        return implode("\n\n", [
+            'Če je prodajni link že dodan, potem ne bi takoj predpostavil, da linka sploh ni. Bolj verjetno je, da FCC tega točnega bloka ne prepozna kot veljaven aktiven Forever prodajni link.',
+            "Preveri te 4 stvari:\n- tip bloka je Forever Web Shop / Forever Web trgovina\n- URL je tvoj osebni Link Builder URL iz tvojega Foreverliving računa\n- blok je vklopljen in viden na aplikaciji\n- če uporabljaš popust, je popust dosledno nastavljen tam, kjer mora biti",
+            'Najboljši naslednji korak zdaj: odpri Bloki -> Forever Web Shop, primerjaj URL in mi po želji pošlji, kaj piše v URL polju, da ti lahko povem, kaj popraviti.',
+        ]);
+    }
+
+    return implode("\n\n", [
+        'Ako si prodajni link već postavila, onda ne bih odmah zaključio da linka uopće nema. Vjerojatnije je da FCC ne prepoznaje baš taj blok kao valjan aktivan Forever prodajni link.',
+        "Provjeri ove 4 stvari:\n- tip bloka je Forever Web trgovina\n- URL je tvoj osobni Link Builder URL iz Foreverliving računa\n- blok je uključen i vidljiv na aplikaciji\n- ako koristiš popust, popust je dosljedno primijenjen tamo gdje treba",
+        'Najbolji sljedeći korak sada: otvori Blokovi -> Forever Web trgovina, usporedi URL i, ako želiš, pošalji mi što piše u URL polju pa ti mogu reći što točno treba popraviti.',
+    ]);
+}
+
+function fcc_ai_build_internal_coach_referral_link_troubleshooting_reply(bool $is_pro, array $sales_link_summary = [], string $message = '', string $language = 'hr'): string {
+    $language = fcc_ai_resolve_public_reply_language($language, $message);
+    $products_blog_url = fc_get_forever_products_blog_category_url($language);
+    $sales_link_status = trim((string) ($sales_link_summary['status_key'] ?? ''));
+    $product_referral_ready = !empty($sales_link_summary['product_referral_ready']);
+
+    if($language === 'en') {
+        $lines = [
+            'This is exactly the right thing to test, because most confusion happens when a collaborator copies the wrong link.',
+            'There are two different link paths:',
+            '- product article recommendation link: copy it from the share/copy area at the top of a logged-in FCC product article, not from the browser address bar',
+            '- Forever Web Shop link: this must be your own Link Builder URL created inside your own Foreverliving account and saved in the Forever Web Shop block',
+            'Troubleshooting order:',
+            '1. Open the FCC product article while logged into your FCC account.',
+            '2. Use the share/copy button on the article, not the raw URL from the address bar.',
+            '3. Check the main app Forever Web Shop block: the URL must be your own Link Builder URL, not a generic Forever product page.',
+            '4. If product articles or product buttons should reuse the same recommendation flow, turn on applying the discount to all products on the main app.',
+            '5. Test the copied link in an incognito/private window or a different browser where you are not logged into FCC or Forever.',
+            '6. After the redirect opens Forever, check whether the recommendation/discount/sponsor context appears correctly there.',
+        ];
+
+        if($sales_link_status === 'missing' || $sales_link_status === 'invalid' || $sales_link_status === 'disabled') {
+            $lines[] = 'Important: right now the first fix is the Forever Web Shop block, because if that block is missing, invalid, or disabled, the recommendation path cannot be trusted.';
+        } elseif(!$product_referral_ready) {
+            $lines[] = 'Your sales link appears active, but for the cleanest product referral flow also enable applying the discount to all products.';
+        }
+
+        $lines[] = 'If incognito still does not show the right recommendation, send me two things only: the FCC link you copied and the final Forever URL after redirect. Then we can see whether the issue is copying, the block URL, or the redirect.';
+        $lines[] = 'Start from: ' . $products_blog_url;
+        $lines[] = $is_pro
+            ? 'On PRO, also test the FCC product recommendation block the same way: open the app as a visitor in incognito and click through.'
+            : 'On Beginner, use this primarily for story/DM recommendations. PRO additionally unlocks the product recommendation block inside the app.';
+
+        return implode("\n", $lines);
+    }
+
+    if($language === 'sl') {
+        $lines = [
+            'To je točno pravi del za testiranje, ker se največ zmede zgodi takrat, ko sodelavec kopira napačen link.',
+            'Obstajata dve različni poti linka:',
+            '- priporočilni link iz članka o izdelku: kopira se iz share/copy dela na vrhu prijavljenega FCC članka, ne iz naslovne vrstice brskalnika',
+            '- Forever Web Shop link: to mora biti tvoj osebni Link Builder URL, ustvarjen v tvojem Foreverliving računu in shranjen v Forever Web Shop bloku',
+            'Vrstni red preverjanja:',
+            '1. Odpri FCC članek o izdelku, ko si prijavljen/a v svoj FCC račun.',
+            '2. Uporabi share/copy gumb na članku, ne navadnega URL-ja iz naslovne vrstice.',
+            '3. Preveri glavno aplikacijo in Forever Web Shop blok: URL mora biti tvoj osebni Link Builder URL, ne generična Forever stran izdelka.',
+            '4. Če želiš, da članki in produktni gumbi uporabljajo isti priporočilni tok, vključi uporabo popusta za vse izdelke na glavni aplikaciji.',
+            '5. Kopirani link testiraj v anonimnem/privatnem oknu ali drugem brskalniku, kjer nisi prijavljen/a v FCC ali Forever.',
+            '6. Po preusmeritvi na Forever preveri, ali se priporočilo/popust/sponzor kontekst prikaže pravilno.',
+        ];
+
+        if($sales_link_status === 'missing' || $sales_link_status === 'invalid' || $sales_link_status === 'disabled') {
+            $lines[] = 'Pomembno: najprej popravi Forever Web Shop blok, ker če manjka, je neveljaven ali izklopljen, priporočilni tok ni zanesljiv.';
+        } elseif(!$product_referral_ready) {
+            $lines[] = 'Prodajni link izgleda aktiven, ampak za najčistejši product referral tok vključi še uporabo popusta za vse izdelke.';
+        }
+
+        $lines[] = 'Če se v anonimnem oknu še vedno ne pokaže prava preporuka, pošlji samo dve stvari: FCC link, ki si ga kopiral/a, in končni Forever URL po preusmeritvi. Potem se vidi, ali je težava v kopiranju, URL-ju bloka ali preusmeritvi.';
+        $lines[] = 'Začni tukaj: ' . $products_blog_url;
+        $lines[] = $is_pro
+            ? 'Na PRO paketu enako testiraj tudi FCC blok za priporočilo izdelkov: odpri aplikacijo kot obiskovalec v anonimnem oknu in klikni skozi.'
+            : 'Na Beginner paketu to uporabi predvsem za story/DM priporočila. PRO dodatno odklene blok za priporočilo izdelkov v aplikaciji.';
+
+        return implode("\n", $lines);
+    }
+
+    $lines = [
+        'Ovo je baš dio koji treba testirati, jer se najviše zabune događa kad suradnik kopira krivi link.',
+        'Postoje dva različita link-smjera:',
+        '- link preporuke iz članka o proizvodu: kopira se iz share/copy dijela na vrhu prijavljenog FCC članka, ne iz adresne trake browsera',
+        '- Forever Web trgovina link: to mora biti tvoj osobni Link Builder URL izrađen u tvom Foreverliving računu i spremljen u Forever Web trgovina bloku',
+        'Redoslijed provjere:',
+        '1. Otvori FCC članak o proizvodu dok si prijavljen/a u svoj FCC račun.',
+        '2. Koristi share/copy gumb na članku, ne običan URL iz adresne trake.',
+        '3. Provjeri glavnu aplikaciju i Forever Web trgovina blok: URL mora biti tvoj osobni Link Builder URL, ne generička Forever stranica proizvoda.',
+        '4. Ako želiš da članci o proizvodima i produktni gumbi koriste isti preporučni tok, uključi primjenu popusta na sve proizvode na glavnoj aplikaciji.',
+        '5. Kopirani link testiraj u anonimnom/privatnom prozoru ili drugom browseru gdje nisi prijavljen/a u FCC ni Forever.',
+        '6. Nakon preusmjeravanja na Forever provjeri prikazuje li se preporuka/popust/sponzor kontekst ispravno.',
+    ];
+
+    if($sales_link_status === 'missing' || $sales_link_status === 'invalid' || $sales_link_status === 'disabled') {
+        $lines[] = 'Važno: prvo popravi Forever Web trgovina blok, jer ako taj blok nedostaje, nije valjan ili je ugašen, preporučni tok ne može biti pouzdan.';
+    } elseif(!$product_referral_ready) {
+        $lines[] = 'Prodajni link izgleda aktivan, ali za najčišći product referral tok uključi i primjenu popusta na sve proizvode.';
+    }
+
+    $lines[] = 'Ako u anonimnom prozoru i dalje ne povlači tvoju preporuku, pošalji mi samo dvije stvari: FCC link koji si kopirao/la i završni Forever URL nakon preusmjeravanja. Tada se vidi je li problem u kopiranju, URL-u bloka ili redirectu.';
+    $lines[] = 'Kreni odavde: ' . $products_blog_url;
+    $lines[] = $is_pro
+        ? 'Na PRO paketu isto tako testiraj i FCC blok za preporuku proizvoda: otvori aplikaciju kao posjetitelj u anonimnom prozoru i klikni do kraja.'
+        : 'Na Beginner paketu ovo koristi primarno za story/DM preporuke. PRO dodatno otključava blok za preporuku proizvoda u aplikaciji.';
+
+    return implode("\n", $lines);
 }
 
 function fcc_ai_get_internal_coach_default_next_step(array $ai_plan_summary, string $language = 'hr'): string {
@@ -9153,6 +9381,37 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
             'monthly_quantity_note' => [
                 'hr' => 'Ako želite okvir za mjesec dana, ovdje se najčešće gleda 3 x Forever Aloe Vera Gel™ i 1 kutija Forever Arctic Sea.',
                 'en' => 'If you want a one-month frame, this is most often positioned as 3 x Forever Aloe Vera Gel™ and 1 box of Forever Arctic Sea.',
+            ],
+            'suppress_generic_questions' => true,
+            'sensitive_support_only' => true,
+            'lock_product_scope' => true,
+        ],
+        'vascular_detox_support' => [
+            'patterns' => ['čišćenje krvnih žila', 'ciscenje krvnih zila', 'ciscenje krvnih žila', 'čišćenje krvnih zila', 'krvnih žila', 'krvnih zila', 'krvne žile', 'krvne zile', 'krvne sudove', 'krvnih sudova', 'zamašene žile', 'zamasene zile', 'začepljene žile', 'zacepljene zile', 'zile zamasene', 'detoksikacija krvnih žila', 'detoksikacija krvnih zila'],
+            'preferred_patterns' => ['aloe vera gel', 'aloe gel', 'arctic sea', 'omega'],
+            'primary_product' => 'Forever Aloe Vera Gel™',
+            'support_products' => ['Forever Arctic Sea'],
+            'label' => [
+                'hr' => 'krvne žile, detoks i oprezna cirkulacijska rutina',
+                'en' => 'blood vessels, detox and cautious circulation routine',
+            ],
+            'opening_note' => [
+                'hr' => 'Kod izraza poput čišćenja krvnih žila važno je ostati oprezan: proizvodi se ne smiju predstavljati kao da čiste ili liječe krvne žile, nego samo kao opća nutritivna podrška uz liječnički smjer kada postoji ozbiljniji nalaz.',
+                'en' => 'For phrases like cleansing blood vessels, stay cautious: products must not be presented as cleansing or treating blood vessels, only as general nutritional support alongside medical guidance when there is a serious finding.',
+            ],
+            'recommendation_lines' => [
+                'hr' => [
+                    'Forever Aloe Vera Gel™ je ovdje najčišći osnovni Forever smjer kao aloe baza za svakodnevnu nutritivnu rutinu.',
+                    'Forever Arctic Sea je najlogičnija druga stavka u jednostavnoj kombinaciji jer daje omega-3 smjer koji se često veže uz cirkulaciju i krvne žile.',
+                ],
+                'en' => [
+                    'Forever Aloe Vera Gel™ is the cleanest base Forever direction here as an aloe base for the everyday nutritional routine.',
+                    'Forever Arctic Sea is the most logical second item in a simple combination because it provides the omega-3 direction often associated with circulation and blood vessels.',
+                ],
+            ],
+            'monthly_quantity_note' => [
+                'hr' => 'Ako želite baš jednostavnu kombinaciju za mjesec dana, ovdje se najčešće gleda 3 x Forever Aloe Vera Gel™ i 1 kutija Forever Arctic Sea.',
+                'en' => 'If you want a very simple one-month combination, this is most often positioned as 3 x Forever Aloe Vera Gel™ and 1 box of Forever Arctic Sea.',
             ],
             'suppress_generic_questions' => true,
             'sensitive_support_only' => true,
@@ -14444,6 +14703,37 @@ function fcc_ai_get_product_advisor_effective_condition_matches(string $message,
             $language,
             ['celulit'],
             287
+        );
+    }
+
+    if(
+        fcc_ai_contains_keywords($message, [
+            'čišćenje krvnih žila', 'ciscenje krvnih zila', 'krvnih žila', 'krvnih zila',
+            'krvne žile', 'krvne zile', 'krvne sudove', 'krvnih sudova',
+            'zamašene žile', 'zamasene zile', 'začepljene žile', 'zacepljene zile',
+        ])
+        || (
+            fcc_ai_contains_keywords($message, ['detoks', 'detoksik'])
+            && fcc_ai_contains_keywords($message, ['žil', 'zil', 'krvn', 'cirkul'])
+        )
+    ) {
+        $matches[] = fcc_ai_get_product_advisor_condition_match_by_key(
+            'vascular_detox_support',
+            $language,
+            ['krvne žile', 'detoks'],
+            306
+        );
+    }
+
+    if(fcc_ai_contains_keywords($message, [
+        'proširene vene', 'prosirene vene', 'proširenih vena', 'prosirenih vena',
+        'varikozne vene', 'težina u nogama', 'tezina u nogama',
+    ])) {
+        $matches[] = fcc_ai_get_product_advisor_condition_match_by_key(
+            'varicose_veins_support',
+            $language,
+            ['proširene vene'],
+            312
         );
     }
 
@@ -25877,6 +26167,57 @@ function fcc_ai_generate_internal_coach_reply(string $message, array $context = 
     $primary_destination = fcc_ai_get_internal_coach_primary_destination($ai_plan, $language);
     $reply_mode = 'general';
     $one_next_step = '';
+
+    if(fcc_ai_is_internal_coach_nutrition_comparison_draft($message)) {
+        $content = fcc_ai_build_internal_coach_nutrition_comparison_reply($message, $language);
+
+        return [
+            'content' => $content,
+            'language' => $language,
+            'knowledge_suggestions' => [],
+            'reply_mode' => 'product_comparison',
+            'force_local_preview' => true,
+            'next_step' => $language === 'en'
+                ? 'Use the polished comparison or ask for a shorter story version.'
+                : ($language === 'sl'
+                    ? 'Uporabi izpiljeno primerjavo ali prosi za krajšo story verzijo.'
+                    : 'Iskoristi ispoliranu usporedbu ili zatraži kraću story verziju.'),
+        ];
+    }
+
+    if(fcc_ai_is_internal_coach_sales_link_mismatch_report($message)) {
+        $content = fcc_ai_build_internal_coach_sales_link_mismatch_reply($message, $language);
+
+        return [
+            'content' => $content,
+            'language' => $language,
+            'knowledge_suggestions' => [],
+            'reply_mode' => 'sales_link_mismatch_check',
+            'force_local_preview' => true,
+            'next_step' => $language === 'en'
+                ? 'Open the Forever Web Shop block and verify the Link Builder URL.'
+                : ($language === 'sl'
+                    ? 'Odpri Forever Web Shop blok in preveri Link Builder URL.'
+                    : 'Otvori Forever Web trgovina blok i provjeri Link Builder URL.'),
+        ];
+    }
+
+    if(fcc_ai_is_internal_coach_referral_link_troubleshooting_request($message)) {
+        $content = fcc_ai_build_internal_coach_referral_link_troubleshooting_reply($is_pro, $sales_link_summary, $message, $language);
+
+        return [
+            'content' => $content,
+            'language' => $language,
+            'knowledge_suggestions' => [],
+            'reply_mode' => 'referral_link_troubleshooting',
+            'force_local_preview' => true,
+            'next_step' => $language === 'en'
+                ? 'Copy the product link through the FCC share/copy helper and test it in an incognito window.'
+                : ($language === 'sl'
+                    ? 'Kopiraj produktni link prek FCC share/copy gumba in ga testiraj v anonimnem oknu.'
+                    : 'Kopiraj produktni link kroz FCC share/copy gumb i testiraj ga u anonimnom prozoru.'),
+        ];
+    }
 
     if(
         fcc_ai_contains_keywords($message, ['vlastitu rutinu', 'vlasitu rutinu', 'osobnu rutinu', 'za sebe', 'ritual'])
