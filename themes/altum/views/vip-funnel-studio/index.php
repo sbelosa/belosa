@@ -2647,6 +2647,9 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
         accent_color: '#67d8c9',
         max_width: 'wide',
         show_progress: false,
+        progress_label: '',
+        progress_current: 0,
+        progress_total: 0,
         ab_enabled: false,
         ab_distribution: 50,
         blocks: [],
@@ -2663,14 +2666,17 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
         text_color: surface.text_color || '#eef4ff',
         accent_color: surface.accent_color || '#67d8c9',
         max_width: surface.max_width || 'wide',
-        show_progress: !!surface.show_progress
+        show_progress: !!surface.show_progress,
+        progress_label: surface.progress_label || '',
+        progress_current: Number(surface.progress_current || 0),
+        progress_total: Number(surface.progress_total || 0)
     });
 
     const normalizeVariantSurfaceSettings = (variantSettings = {}, sourceSurface = {}) => {
         const normalized = cloneVariantSurfaceSettings(sourceSurface);
         const raw = variantSettings && typeof variantSettings === 'object' ? variantSettings : {};
 
-        ['name', 'background_color', 'background_image_url', 'background_opacity', 'surface_color', 'text_color', 'accent_color', 'max_width', 'show_progress'].forEach(field => {
+        ['name', 'background_color', 'background_image_url', 'background_opacity', 'surface_color', 'text_color', 'accent_color', 'max_width', 'show_progress', 'progress_label', 'progress_current', 'progress_total'].forEach(field => {
             if(raw[field] !== undefined) {
                 normalized[field] = raw[field];
             }
@@ -2694,6 +2700,7 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
             email_field: {font_family: 'inherit', badge_size: 13, badge_weight: '800', badge_color: '', title_size: 24, title_weight: '900', title_color: '', text_size: 16, text_weight: '500', body_color: '', field_size: 16, field_weight: '500', field_text_color: '', placeholder_color: '', button_size: 17, button_weight: '800', button_text_color: ''},
             phone_field: {font_family: 'inherit', badge_size: 13, badge_weight: '800', badge_color: '', title_size: 24, title_weight: '900', title_color: '', text_size: 16, text_weight: '500', body_color: '', field_size: 16, field_weight: '500', field_text_color: '', placeholder_color: '', button_size: 17, button_weight: '800', button_text_color: ''},
             text_field: {font_family: 'inherit', badge_size: 13, badge_weight: '800', badge_color: '', title_size: 24, title_weight: '900', title_color: '', text_size: 16, text_weight: '500', body_color: '', field_size: 16, field_weight: '500', field_text_color: '', placeholder_color: '', button_size: 17, button_weight: '800', button_text_color: ''},
+            checkbox_field: {font_family: 'inherit', badge_size: 13, badge_weight: '800', badge_color: '', title_size: 22, title_weight: '800', title_color: '', text_size: 15, text_weight: '500', body_color: '', field_size: 16, field_weight: '600', field_text_color: '', placeholder_color: '', button_size: 17, button_weight: '800', button_text_color: ''},
             proof_card: {font_family: 'inherit', badge_size: 13, badge_weight: '800', badge_color: '', title_size: 26, title_weight: '800', title_color: '', text_size: 17, text_weight: '500', body_color: '', field_size: 16, field_weight: '500', field_text_color: '', placeholder_color: '', button_size: 17, button_weight: '800', button_text_color: ''},
             product_offer: {font_family: 'inherit', badge_size: 13, badge_weight: '800', badge_color: '', title_size: 28, title_weight: '900', title_color: '', text_size: 17, text_weight: '500', body_color: '', field_size: 16, field_weight: '500', field_text_color: '', placeholder_color: '', button_size: 18, button_weight: '900', button_text_color: ''},
             ai_product_advisor: {font_family: 'inherit', badge_size: 13, badge_weight: '800', badge_color: '', title_size: 30, title_weight: '900', title_color: '', text_size: 17, text_weight: '500', body_color: '', field_size: 16, field_weight: '500', field_text_color: '', placeholder_color: '', button_size: 18, button_weight: '900', button_text_color: ''},
@@ -2714,6 +2721,7 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
             email_field: {type, label: 'Email', badge: '', title: 'Email', text: '', placeholder: 'Upiši email', required: true, alignment: 'left', buttons: [], options: []},
             phone_field: {type, label: 'Telefon', badge: '', title: 'Telefon', text: '', placeholder: 'Upiši broj telefona', required: false, alignment: 'left', buttons: [], options: []},
             text_field: {type, label: 'Tekst polje', badge: '', title: 'Kratki odgovor', text: '', placeholder: 'Upiši odgovor', field_key: '', required: false, alignment: 'left', buttons: [], options: []},
+            checkbox_field: {type, label: 'Privola za kontakt', badge: '', title: 'Pristajem da me kontaktirate vezano uz moj odabrani smjer.', text: 'Ova privola se koristi samo za odgovor na upit kroz ovaj vodič.', field_key: 'contact_consent', required: true, alignment: 'left', buttons: [], options: []},
             proof_card: {type, label: 'Proof / povjerenje', badge: 'Povjerenje', title: 'Zašto ovaj put djeluje sigurno', text: 'Dodaj proof, sigurnost, mentorstvo ili konkretan benefit.', alignment: 'left', buttons: [], options: []},
             product_offer: {type, label: 'Preporuka proizvoda', badge: 'Preporuka', title: 'Idealna preporuka za tvoj cilj', text: 'Odaberi proizvod i poveži osobu ili na blog vodič ili direktno na službeni shop s referral logikom.', alignment: 'left', product_source_mode: 'manual', product_blog_post_id: 0, product_translation_key: '', product_language_mode: 'page', product_language_code: preferredProductLanguageCode || 'hr', product_fallback_language_code: 'hr', product_primary_mode: 'blog_guide', product_primary_cta_text: 'Pogledaj vodič proizvoda', product_secondary_enabled: true, product_secondary_mode: 'direct_shop', product_secondary_cta_text: 'Idi na službeni shop', product_mappings: [], buttons: [], options: []},
             ai_product_advisor: {type, label: 'AI savjetnik za proizvode', badge: 'Personalizirana preporuka', title: 'Pronađi svoj najbolji Forever početak u par pitanja', text: 'Napiši što želiš postići, kako se sada osjećaš ili što te zanima. Pametni FCC savjetnik predložit će smjer koji ima najviše smisla za tebe.', alignment: 'left', ai_advisor_enabled: true, ai_lead_capture_enabled: true, ai_button_label: 'Započni moju preporuku', ai_launcher_label: 'Moja preporuka', ai_intro_label: 'Tvoj osobni vodič', ai_input_placeholder: 'Napiši cilj ili pitanje...', buttons: [], options: []},
@@ -2904,7 +2912,8 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
             {type: 'full_name_field', title: 'Ime + prezime', text: 'Lead capture'},
             {type: 'phone_field', title: 'Telefon', text: 'WhatsApp / kontakt'},
             {type: 'email_field', title: 'Email', text: 'Email lead'},
-            {type: 'text_field', title: 'Tekst polje', text: 'Kratki odgovor'}
+            {type: 'text_field', title: 'Tekst polje', text: 'Kratki odgovor'},
+            {type: 'checkbox_field', title: 'Checkbox privole', text: 'Privola za kontakt'}
         ]},
         {label: 'FCC specifično', items: [
             {type: 'product_offer', title: 'Forever preporuka', text: 'Blog vodič ili shop klik'},
@@ -3200,7 +3209,7 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
     }
 
     function currentSurfaceHasCaptureFields() {
-        return getEditableBlocks().some(block => ['name_field', 'full_name_field', 'email_field', 'phone_field', 'text_field'].includes(block.type));
+        return getEditableBlocks().some(block => ['name_field', 'full_name_field', 'email_field', 'phone_field', 'text_field', 'checkbox_field'].includes(block.type));
     }
 
     function currentSurfaceHasDeferredSurvey() {
@@ -3269,7 +3278,7 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
     }
 
     function normalizeRequireSubmitFlagsForBlocks(blocks = []) {
-        const hasCaptureFields = Array.isArray(blocks) && blocks.some(block => ['name_field', 'full_name_field', 'email_field', 'phone_field', 'text_field'].includes(block.type));
+        const hasCaptureFields = Array.isArray(blocks) && blocks.some(block => ['name_field', 'full_name_field', 'email_field', 'phone_field', 'text_field', 'checkbox_field'].includes(block.type));
         let changed = false;
 
         (blocks || []).forEach(block => {
@@ -3315,7 +3324,7 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
 
     function syncAutoSubmitBlocksForBlocks(blocks = []) {
         const normalizedBlocks = (blocks || []).map(normalizeBlock);
-        const hasCaptureFields = normalizedBlocks.some(block => ['name_field', 'full_name_field', 'email_field', 'phone_field', 'text_field'].includes(block.type));
+        const hasCaptureFields = normalizedBlocks.some(block => ['name_field', 'full_name_field', 'email_field', 'phone_field', 'text_field', 'checkbox_field'].includes(block.type));
         const systemBlocks = normalizedBlocks.filter(isSystemSubmitBlock);
         const hasCustomSubmitAction = normalizedBlocks.some(block => !isSystemSubmitBlock(block) && blockHasSubmitAction(block));
         const contentBlocks = normalizedBlocks.filter(block => !isSystemSubmitBlock(block));
@@ -3468,10 +3477,14 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
         const normalized = Object.assign(defaultSurface(), surface || {});
         normalized.name = normalized.name || fallbackName;
         normalized.background_opacity = clampOpacity(normalized.background_opacity, 100);
+        normalized.progress_current = Math.max(0, Math.min(99, parseInt(normalized.progress_current || 0, 10) || 0));
+        normalized.progress_total = Math.max(0, Math.min(99, parseInt(normalized.progress_total || 0, 10) || 0));
         normalized.blocks = Array.isArray(normalized.blocks) ? normalized.blocks.map(normalizeBlock) : [];
         normalized.variant_b_blocks = Array.isArray(normalized.variant_b_blocks) ? normalized.variant_b_blocks.map(normalizeBlock) : [];
         normalized.variant_b_settings = normalizeVariantSurfaceSettings(normalized.variant_b_settings || {}, normalized);
         normalized.variant_b_settings.background_opacity = clampOpacity(normalized.variant_b_settings.background_opacity, normalized.background_opacity);
+        normalized.variant_b_settings.progress_current = Math.max(0, Math.min(99, parseInt(normalized.variant_b_settings.progress_current || 0, 10) || 0));
+        normalized.variant_b_settings.progress_total = Math.max(0, Math.min(99, parseInt(normalized.variant_b_settings.progress_total || 0, 10) || 0));
         return normalized;
     }
 
@@ -3505,7 +3518,9 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
             action: 'goto_step',
             target_step_id: '',
             external_url: '',
-            require_submit: false
+            require_submit: false,
+            event_key: '',
+            sticky: false
         }, action || {});
     }
 
@@ -3783,7 +3798,7 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
         block.id = uid(type);
         const blocks = getEditableBlocks().slice();
         blocks.push(block);
-        const isCaptureField = ['name_field', 'full_name_field', 'email_field', 'phone_field', 'text_field'].includes(type);
+        const isCaptureField = ['name_field', 'full_name_field', 'email_field', 'phone_field', 'text_field', 'checkbox_field'].includes(type);
         if(isCaptureField && !blocks.some(item => {
             return blockHasSubmitAction(item);
         })) {
@@ -3821,7 +3836,7 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
 
         blocks.splice(safeIndex, 0, block);
 
-        const isCaptureField = ['name_field', 'full_name_field', 'email_field', 'phone_field', 'text_field'].includes(type);
+        const isCaptureField = ['name_field', 'full_name_field', 'email_field', 'phone_field', 'text_field', 'checkbox_field'].includes(type);
         if(isCaptureField && !blocks.some(item => blockHasSubmitAction(item))) {
             blocks.splice(Math.min(safeIndex + 1, blocks.length), 0, buildSystemSubmitBlock({
                 id: uid('cta_group'),
@@ -5445,6 +5460,23 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
                     </select>
                 </div>
                 <label class="vf-toggle"><input type="checkbox" data-vf-surface-toggle="show_progress" ${surface.show_progress ? 'checked' : ''}> ${escapeHtml(studioMessages.surfaceShowProgress)}</label>
+                ${surface.show_progress ? `
+                    <div class="vf-three">
+                        <div class="vf-field">
+                            <label>Progress tekst</label>
+                            <input type="text" data-vf-surface-field="progress_label" value="${escapeHtml(surface.progress_label || '')}" placeholder="npr. Korak 1 od 4" />
+                            <div class="vf-field__hint">Ako ostaviš prazno, sustav koristi automatski tekst.</div>
+                        </div>
+                        <div class="vf-field">
+                            <label>Trenutni korak grane</label>
+                            <input type="number" min="0" max="99" data-vf-surface-field="progress_current" value="${escapeHtml(surface.progress_current || 0)}" />
+                        </div>
+                        <div class="vf-field">
+                            <label>Ukupno koraka grane</label>
+                            <input type="number" min="0" max="99" data-vf-surface-field="progress_total" value="${escapeHtml(surface.progress_total || 0)}" />
+                        </div>
+                    </div>
+                ` : ''}
                 <label class="vf-toggle"><input type="checkbox" data-vf-surface-toggle="ab_enabled" ${surface.ab_enabled ? 'checked' : ''}> ${escapeHtml(studioMessages.surfaceAbEnabled)}</label>
                 ${surface.ab_enabled ? `
                     <div class="vf-inline">
@@ -5810,7 +5842,7 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
 
     function renderBlockEditor(block) {
         const isMedia = ['image', 'video'].includes(block.type);
-        const isField = ['name_field', 'full_name_field', 'email_field', 'phone_field', 'text_field'].includes(block.type);
+        const isField = ['name_field', 'full_name_field', 'email_field', 'phone_field', 'text_field', 'checkbox_field'].includes(block.type);
         const isSurvey = block.type === 'survey';
         const isRadioSurvey = block.type === 'radio_survey';
         const radioRoutingEnabled = !isRadioSurvey || block.route_on_submit !== false;
@@ -6058,10 +6090,18 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
 
                 ${isField ? `
                     <div class="vf-two">
-                        <div class="vf-field">
-                            <label>Placeholder</label>
-                            <input type="text" data-vf-block-field="placeholder" value="${escapeHtml(block.placeholder || '')}" />
-                        </div>
+                        ${block.type === 'checkbox_field' ? `
+                            <div class="vf-field">
+                                <label>Key za spremanje privole</label>
+                                <input type="text" data-vf-block-field="field_key" value="${escapeHtml(block.field_key || 'contact_consent')}" />
+                                <div class="vf-field__hint">Primjer: contact_consent. Ovaj podatak se sprema uz kontakt.</div>
+                            </div>
+                        ` : `
+                            <div class="vf-field">
+                                <label>Placeholder</label>
+                                <input type="text" data-vf-block-field="placeholder" value="${escapeHtml(block.placeholder || '')}" />
+                            </div>
+                        `}
                         <div class="vf-field">
                             <label>Obavezno polje</label>
                             <select data-vf-block-boolean="required">
@@ -6070,6 +6110,12 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
                             </select>
                         </div>
                     </div>
+                    ${block.type === 'text_field' ? `
+                        <div class="vf-field">
+                            <label>Key za spremanje odgovora</label>
+                            <input type="text" data-vf-block-field="field_key" value="${escapeHtml(block.field_key || '')}" placeholder="npr. best_contact_time" />
+                        </div>
+                    ` : ''}
                 ` : ''}
 
                 ${isRadioSurvey ? `
@@ -6452,7 +6498,7 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
                             </div>
                         </div>
 
-                        <details class="vf-action-card__advanced" ${(isSubmitAction || action.value || (radioRoutingEnabled && action.external_url) || (radioRoutingEnabled && isExternal)) ? 'open' : ''}>
+                        <details class="vf-action-card__advanced" ${(isSubmitAction || action.value || action.event_key || action.sticky || (radioRoutingEnabled && action.external_url) || (radioRoutingEnabled && isExternal)) ? 'open' : ''}>
                             <summary>
                                 <span>Napredne postavke</span>
                                 <span class="vf-field__hint">${isRadioSurvey ? (radioRoutingEnabled ? 'Tagovi, dodatni link i završni routing' : 'Tag odgovora i dodatne vrijednosti') : 'Tagovi, dodatni link i obavezni submit'}</span>
@@ -6478,6 +6524,15 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
                                             </select>
                                         </div>
                                     ` : ''}
+                                </div>
+
+                                <div class="vf-two">
+                                    <div class="vf-field">
+                                        <label>Analytics event key</label>
+                                        <input type="text" data-vf-action-field="${escapeHtml(action.id)}|event_key" value="${escapeHtml(action.event_key || '')}" placeholder="npr. select_start_package" />
+                                        <div class="vf-field__hint">Koristi kratki key bez razmaka za točniju Funnel i Meta Pixel analitiku.</div>
+                                    </div>
+                                    <label class="vf-toggle"><input type="checkbox" data-vf-action-toggle="${escapeHtml(action.id)}|sticky" ${action.sticky ? 'checked' : ''}> Prikaži ovaj CTA kao sticky gumb na mobitelu</label>
                                 </div>
 
                                 ${hasCaptureFields && !isSystemSubmit && !isRadioSurvey ? `
@@ -6661,7 +6716,21 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
             return `<div class="vf-preview-spacer" data-vf-span="${escapeHtml(layoutWidth)}" style="height:${spacingMap[block.spacing] || '56px'};"></div>`;
         }
 
-        if(['name_field', 'full_name_field', 'email_field', 'phone_field', 'text_field'].includes(block.type)) {
+        if(['name_field', 'full_name_field', 'email_field', 'phone_field', 'text_field', 'checkbox_field'].includes(block.type)) {
+            if(block.type === 'checkbox_field') {
+                return `
+                    <div class="vf-preview-block align-${escapeHtml(block.alignment || 'left')}" data-vf-span="${escapeHtml(layoutWidth)}" style="${blockStyles.join(';')}">
+                        <label class="vf-preview-radio-item" style="border-color:${hexToRgba(accentColor, 0.22)};background:${hexToRgba(accentColor, 0.08)};">
+                            <span class="vf-preview-radio-dot" style="border-radius:.22rem;border-color:${hexToRgba(accentColor, 0.42)};"></span>
+                            <span class="vf-preview-radio-copy">
+                                <span class="vf-preview-radio-label" style="font-size:${fieldSize}px;font-weight:${Math.max(600, fieldWeight)};font-family:${fontFamily};color:${fieldTextColor};">${escapeHtml(block.title || 'Privola za kontakt')}</span>
+                                ${block.text ? `<span class="vf-preview-radio-hint">${escapeHtml(block.text)}</span>` : ''}
+                            </span>
+                        </label>
+                    </div>
+                `;
+            }
+
             return `
                 <div class="vf-preview-block align-${escapeHtml(block.alignment || 'left')}" data-vf-span="${escapeHtml(layoutWidth)}" style="${blockStyles.join(';')}">
                     ${block.title ? `<div class="vf-preview-text" style="margin-bottom:.45rem;${titleStyle}">${escapeHtml(block.title)}</div>` : ''}

@@ -436,6 +436,7 @@ function vip_funnel_get_page_block_type_options(): array {
         'email_field' => 'Email',
         'phone_field' => 'Telefon',
         'text_field' => 'Tekst polje',
+        'checkbox_field' => 'Checkbox / privola',
         'proof_card' => 'Proof / povjerenje',
         'product_offer' => 'Preporuka proizvoda',
         'ai_product_advisor' => 'AI savjetnik za proizvode',
@@ -559,6 +560,7 @@ function vip_funnel_get_page_block_typography_defaults(string $type = 'headline'
         'email_field' => ['title_size' => 24, 'title_weight' => 900, 'text_size' => 16, 'text_weight' => 500, 'field_size' => 16, 'field_weight' => 500],
         'phone_field' => ['title_size' => 24, 'title_weight' => 900, 'text_size' => 16, 'text_weight' => 500, 'field_size' => 16, 'field_weight' => 500],
         'text_field' => ['title_size' => 24, 'title_weight' => 900, 'text_size' => 16, 'text_weight' => 500, 'field_size' => 16, 'field_weight' => 500],
+        'checkbox_field' => ['title_size' => 22, 'title_weight' => 800, 'text_size' => 15, 'text_weight' => 500, 'field_size' => 16, 'field_weight' => 600],
         'proof_card' => ['title_size' => 26, 'title_weight' => 800, 'text_size' => 17, 'text_weight' => 500],
         'product_offer' => ['title_size' => 28, 'title_weight' => 900, 'text_size' => 17, 'text_weight' => 500, 'button_size' => 18, 'button_weight' => 900],
         'ai_product_advisor' => ['title_size' => 30, 'title_weight' => 900, 'text_size' => 17, 'text_weight' => 500, 'button_size' => 18, 'button_weight' => 900],
@@ -611,6 +613,8 @@ function vip_funnel_normalize_page_actions($value, string $kind = 'button', arra
             'target_step_id' => trim(input_clean((string) ($item['target_step_id'] ?? ($default['target_step_id'] ?? $item['next_step_id'] ?? '')), 128)),
             'external_url' => trim(input_clean((string) ($item['external_url'] ?? ($default['external_url'] ?? '')), 2048)),
             'require_submit' => isset($item['require_submit']) ? (bool) $item['require_submit'] : (bool) ($default['require_submit'] ?? false),
+            'event_key' => trim(input_clean((string) ($item['event_key'] ?? ($default['event_key'] ?? '')), 32)),
+            'sticky' => isset($item['sticky']) ? (bool) $item['sticky'] : (bool) ($default['sticky'] ?? false),
         ];
     }
 
@@ -817,6 +821,14 @@ function vip_funnel_get_page_block_defaults(string $type = 'headline'): array {
             'field_key' => '',
             'required' => false,
         ],
+        'checkbox_field' => [
+            'label' => 'Privola za kontakt',
+            'title' => 'Pristajem da me kontaktirate vezano uz moj odabrani smjer.',
+            'text' => 'Ova privola se koristi samo za odgovor na upit kroz ovaj vodič.',
+            'field_key' => 'contact_consent',
+            'required' => true,
+            'alignment' => 'left',
+        ],
         'proof_card' => [
             'label' => 'Proof blok',
             'badge' => 'Povjerenje',
@@ -916,6 +928,9 @@ function vip_funnel_get_default_page_surface_payload(string $name = ''): array {
         'accent_color' => '#67d8c9',
         'max_width' => 'wide',
         'show_progress' => false,
+        'progress_label' => '',
+        'progress_current' => 0,
+        'progress_total' => 0,
         'ab_enabled' => false,
         'ab_distribution' => 50,
         'blocks' => [],
@@ -2048,6 +2063,7 @@ function vip_funnel_normalize_page_block_payload($block, int $index = 0): array 
         'placeholder' => trim(input_clean((string) ($block['placeholder'] ?? ($defaults['placeholder'] ?? '')), 180)),
         'field_key' => trim(input_clean((string) ($block['field_key'] ?? ($defaults['field_key'] ?? '')), 80)),
         'required' => isset($block['required']) ? (bool) $block['required'] : (bool) ($defaults['required'] ?? false),
+        'event_key' => trim(input_clean((string) ($block['event_key'] ?? ($defaults['event_key'] ?? '')), 32)),
         'spacing' => input_clean((string) ($block['spacing'] ?? ($defaults['spacing'] ?? 'md')), 12),
         'countdown_mode' => input_clean((string) ($block['countdown_mode'] ?? ($defaults['countdown_mode'] ?? 'fixed')), 16),
         'countdown_style' => input_clean((string) ($block['countdown_style'] ?? ($defaults['countdown_style'] ?? 'cards')), 24),
@@ -2189,7 +2205,7 @@ function vip_funnel_surface_has_capture_fields(array $surface = []): bool {
 
     foreach((array) ($surface['blocks'] ?? []) as $block) {
         $type = (string) (($block['type'] ?? ''));
-        if(in_array($type, ['name_field', 'full_name_field', 'email_field', 'phone_field', 'text_field'], true)) {
+        if(in_array($type, ['name_field', 'full_name_field', 'email_field', 'phone_field', 'text_field', 'checkbox_field'], true)) {
             return true;
         }
     }
@@ -2270,6 +2286,9 @@ function vip_funnel_normalize_page_surface_payload($surface, string $fallback_na
             'accent_color' => verify_hex_color((string) ($variant_settings['accent_color'] ?? '')) ? (string) $variant_settings['accent_color'] : (string) ($base_surface['accent_color'] ?? $fallback_defaults['accent_color']),
             'max_width' => $max_width,
             'show_progress' => isset($variant_settings['show_progress']) ? (bool) $variant_settings['show_progress'] : (bool) ($base_surface['show_progress'] ?? $fallback_defaults['show_progress']),
+            'progress_label' => trim(input_clean((string) ($variant_settings['progress_label'] ?? ($base_surface['progress_label'] ?? $fallback_defaults['progress_label'] ?? '')), 80)),
+            'progress_current' => max(0, min(99, (int) ($variant_settings['progress_current'] ?? ($base_surface['progress_current'] ?? $fallback_defaults['progress_current'] ?? 0)))),
+            'progress_total' => max(0, min(99, (int) ($variant_settings['progress_total'] ?? ($base_surface['progress_total'] ?? $fallback_defaults['progress_total'] ?? 0)))),
         ];
     };
 
@@ -2283,6 +2302,9 @@ function vip_funnel_normalize_page_surface_payload($surface, string $fallback_na
         'accent_color' => verify_hex_color((string) ($surface['accent_color'] ?? '')) ? (string) $surface['accent_color'] : $defaults['accent_color'],
         'max_width' => $max_width,
         'show_progress' => isset($surface['show_progress']) ? (bool) $surface['show_progress'] : (bool) $defaults['show_progress'],
+        'progress_label' => trim(input_clean((string) ($surface['progress_label'] ?? $defaults['progress_label']), 80)),
+        'progress_current' => max(0, min(99, (int) ($surface['progress_current'] ?? $defaults['progress_current']))),
+        'progress_total' => max(0, min(99, (int) ($surface['progress_total'] ?? $defaults['progress_total']))),
         'ab_enabled' => isset($surface['ab_enabled']) ? (bool) $surface['ab_enabled'] : (bool) $defaults['ab_enabled'],
         'ab_distribution' => max(5, min(95, (int) ($surface['ab_distribution'] ?? $defaults['ab_distribution']))),
         'blocks' => $normalize_block_list($surface['blocks'] ?? []),
@@ -2303,7 +2325,7 @@ function vip_funnel_apply_surface_variant(array $surface = [], string $variant_k
 
     $variant_settings = vip_funnel_to_array($surface['variant_b_settings'] ?? []);
 
-    foreach(['name', 'background_color', 'background_image_url', 'background_opacity', 'surface_color', 'text_color', 'accent_color', 'max_width', 'show_progress'] as $field_key) {
+    foreach(['name', 'background_color', 'background_image_url', 'background_opacity', 'surface_color', 'text_color', 'accent_color', 'max_width', 'show_progress', 'progress_label', 'progress_current', 'progress_total'] as $field_key) {
         if(array_key_exists($field_key, $variant_settings)) {
             $surface[$field_key] = $variant_settings[$field_key];
         }
@@ -8244,7 +8266,8 @@ function vip_funnel_process_public_tracking(array $state, array $post = []): arr
 
     $run_id = vip_funnel_get_or_create_public_run($state);
     $cta_label = trim(input_clean((string) ($post['vf_label'] ?? ''), 160));
-    vip_funnel_log_public_event($state, $event_type, $cta_label !== '' ? $cta_label : trim(input_clean((string) ($post['vf_action'] ?? ''), 64)), [
+    $event_key = trim(input_clean((string) ($post['vf_event_key'] ?? ''), 32));
+    $event_meta = [
         'block_id' => trim(input_clean((string) ($post['vf_block_id'] ?? ''), 120)),
         'block_type' => trim(input_clean((string) ($post['vf_block_type'] ?? ''), 64)),
         'cta_label' => $cta_label,
@@ -8253,7 +8276,14 @@ function vip_funnel_process_public_tracking(array $state, array $post = []): arr
         'external_url' => trim(input_clean((string) ($post['vf_external_url'] ?? ''), 2048)),
         'selection' => trim(input_clean((string) ($post['vf_selection'] ?? ''), 160)),
         'signal_key' => trim(input_clean((string) ($post['vf_signal_key'] ?? ''), 64)),
-    ], 0, $run_id);
+        'event_key' => $event_key,
+    ];
+
+    vip_funnel_log_public_event($state, $event_type, $cta_label !== '' ? $cta_label : trim(input_clean((string) ($post['vf_action'] ?? ''), 64)), $event_meta, 0, $run_id);
+
+    if($event_key !== '' && $event_key !== $event_type) {
+        vip_funnel_log_public_event($state, $event_key, $cta_label !== '' ? $cta_label : $event_key, array_merge($event_meta, ['source_event_type' => $event_type]), 0, $run_id);
+    }
 
     return ['success' => true];
 }
@@ -8374,7 +8404,7 @@ function vip_funnel_get_public_capture_field_map(array $blocks): array {
         $block = vip_funnel_to_array($block);
         $type = (string) ($block['type'] ?? '');
 
-        if(in_array($type, ['name_field', 'full_name_field', 'email_field', 'phone_field', 'text_field'], true)) {
+        if(in_array($type, ['name_field', 'full_name_field', 'email_field', 'phone_field', 'text_field', 'checkbox_field'], true)) {
             $map[$block['id']] = $block;
         }
     }
@@ -8959,6 +8989,7 @@ function vip_funnel_process_public_submission(array $state, array $post = []): a
     $external_url = trim(input_clean((string) ($post['vf_external_url'] ?? ''), 2048));
     $selection = trim(input_clean((string) ($post['vf_selection'] ?? ''), 120));
     $submitted_block_id = trim(input_clean((string) ($post['vf_block_id'] ?? ''), 120));
+    $submitted_event_key = trim(input_clean((string) ($post['vf_event_key'] ?? ''), 32));
 
     $blocks = (array) ($state['blocks'] ?? []);
     $field_map = vip_funnel_get_public_capture_field_map($blocks);
@@ -8971,6 +9002,26 @@ function vip_funnel_process_public_submission(array $state, array $post = []): a
     foreach($field_map as $block_id => $field_block) {
         $value = trim((string) ($post['vf_field_' . $block_id] ?? ''));
         $type = (string) ($field_block['type'] ?? '');
+
+        if($type === 'checkbox_field') {
+            $is_checked = !empty($post['vf_field_' . $block_id]);
+
+            if(!empty($field_block['required']) && !$is_checked) {
+                $errors[] = trim((string) ($field_block['title'] ?? 'Privola'));
+                continue;
+            }
+
+            $field_key = trim((string) ($field_block['field_key'] ?? ''));
+            if($field_key === '') {
+                $field_key = vip_funnel_normalize_signal_value((string) $block_id);
+            }
+
+            if($field_key !== '') {
+                $fields[$field_key] = $is_checked ? '1' : '0';
+            }
+
+            continue;
+        }
 
         if(!empty($field_block['required']) && $value === '') {
             $errors[] = trim((string) ($field_block['title'] ?? 'Polje'));
@@ -9071,6 +9122,7 @@ function vip_funnel_process_public_submission(array $state, array $post = []): a
     $lead_meta = [
         'selection' => $effective_selection,
         'block_id' => $submitted_block_id,
+        'event_key' => $submitted_event_key,
         'radio_answers' => $radio_answers,
     ];
     $vip_lead_id = ($has_capture || !empty($radio_answers)) ? vip_funnel_upsert_public_lead($state, $fields, $lead_meta) : 0;
@@ -9078,10 +9130,15 @@ function vip_funnel_process_public_submission(array $state, array $post = []): a
         'selection' => $effective_selection,
         'radio_answers' => $radio_answers,
     ]);
-    vip_funnel_log_public_event($state, 'submit', $effective_selection !== '' ? $effective_selection : $action, ['block_id' => $submitted_block_id, 'selection' => $effective_selection, 'radio_answers' => $radio_answers], $vip_lead_id, $run_id);
+    $submit_event_meta = ['block_id' => $submitted_block_id, 'selection' => $effective_selection, 'event_key' => $submitted_event_key, 'radio_answers' => $radio_answers];
+    vip_funnel_log_public_event($state, 'submit', $effective_selection !== '' ? $effective_selection : $action, $submit_event_meta, $vip_lead_id, $run_id);
+
+    if($submitted_event_key !== '') {
+        vip_funnel_log_public_event($state, $submitted_event_key, $effective_selection !== '' ? $effective_selection : $submitted_event_key, array_merge($submit_event_meta, ['source_event_type' => 'submit']), $vip_lead_id, $run_id);
+    }
 
     if($has_capture) {
-        vip_funnel_log_public_event($state, 'lead_capture', $effective_selection !== '' ? $effective_selection : 'capture', ['block_id' => $submitted_block_id, 'radio_answers' => $radio_answers], $vip_lead_id, $run_id);
+        vip_funnel_log_public_event($state, 'lead_capture', $effective_selection !== '' ? $effective_selection : 'capture', ['block_id' => $submitted_block_id, 'event_key' => $submitted_event_key, 'radio_answers' => $radio_answers], $vip_lead_id, $run_id);
     }
 
     if($vip_lead_id > 0 && vip_funnel_public_submission_requests_demo($state, $fields, $effective_selection, $target_step_id, $radio_answers)) {

@@ -123,7 +123,7 @@ $resolve_font_family = static function($key) use ($font_family_css_map) {
 };
 foreach($blocks as $preview_block) {
     $preview_block = is_array($preview_block) ? $preview_block : [];
-    if(in_array((string) ($preview_block['type'] ?? ''), ['name_field', 'full_name_field', 'email_field', 'phone_field', 'text_field'], true)) {
+    if(in_array((string) ($preview_block['type'] ?? ''), ['name_field', 'full_name_field', 'email_field', 'phone_field', 'text_field', 'checkbox_field'], true)) {
         $page_has_capture_fields = true;
     }
 
@@ -142,6 +142,57 @@ foreach($blocks as $preview_block) {
         }
     }
 }
+
+$sticky_cta = null;
+foreach($blocks as $preview_block) {
+    $preview_block = is_array($preview_block) ? $preview_block : [];
+    $preview_block_type = (string) ($preview_block['type'] ?? '');
+
+    if(!in_array($preview_block_type, ['cta_group', 'survey'], true)) {
+        continue;
+    }
+
+    $actions = (array) ($preview_block_type === 'survey' ? ($preview_block['options'] ?? []) : ($preview_block['buttons'] ?? []));
+
+    foreach($actions as $action) {
+        $action = is_array($action) ? $action : [];
+
+        if(empty($action['sticky'])) {
+            continue;
+        }
+
+        $is_submit = !empty($action['is_submit']) || in_array(($action['action'] ?? ''), ['submit_next', 'submit_stay'], true) || !empty($action['require_submit']) || ($page_has_capture_fields && in_array($active_block_mode, ['contact_form', 'video_form'], true));
+        $sticky_url = trim((string) ($action['url'] ?? ($action['external_url'] ?? '#')));
+        $sticky_signal_key = !$is_submit && class_exists('\\Altum\\Link') && \Altum\Link::is_monitored_forever_destination_url($sticky_url) ? 'forever_shop' : '';
+        $sticky_cta = [
+            'label' => (string) ($action['label'] ?? 'Nastavi'),
+            'hint' => (string) ($action['hint'] ?? ''),
+            'style' => in_array(($action['style'] ?? 'primary'), ['primary', 'secondary', 'ghost'], true) ? (string) ($action['style'] ?? 'primary') : 'primary',
+            'action' => (string) ($action['action'] ?? ($is_submit ? 'submit_next' : 'goto_step')),
+            'target' => (string) ($action['target_step_id'] ?? ''),
+            'external' => $is_submit ? (string) ($action['external_url'] ?? '') : $sticky_url,
+            'url' => $sticky_url !== '' ? $sticky_url : '#',
+            'selection' => (string) ($action['value'] ?? ($action['label'] ?? '')),
+            'block_id' => (string) ($preview_block['id'] ?? ''),
+            'block_type' => $preview_block_type,
+            'event_key' => (string) ($action['event_key'] ?? ''),
+            'signal_key' => (string) (($action['signal_key'] ?? '') ?: $sticky_signal_key),
+            'is_submit' => $is_submit,
+        ];
+        break 2;
+    }
+}
+
+$surface_progress_current = (int) ($surface['progress_current'] ?? 0);
+$surface_progress_total = (int) ($surface['progress_total'] ?? 0);
+$surface_progress_label = trim((string) ($surface['progress_label'] ?? ''));
+$fallback_progress_current = (int) ($state['current_step_number'] ?? 0);
+$fallback_progress_total = (int) ($state['total_steps'] ?? 0);
+$progress_current = $surface_progress_current > 0 ? $surface_progress_current : $fallback_progress_current;
+$progress_total = $surface_progress_total > 0 ? $surface_progress_total : $fallback_progress_total;
+$progress_percent = $progress_total > 0 ? max(0, min(100, (int) round(($progress_current / max(1, $progress_total)) * 100))) : 0;
+$progress_label = $surface_progress_label !== '' ? $surface_progress_label : (($state['page_role'] ?? 'landing') === 'landing' && $surface_progress_current <= 0 ? 'Prvi dojam' : ('Korak ' . max(1, $progress_current) . ' od ' . max(1, $progress_total)));
+$show_progress_bar = !empty($surface['show_progress']) && $progress_total > 0;
 ?>
 
 <?= \Altum\Alerts::output_alerts() ?>
@@ -554,6 +605,42 @@ foreach($blocks as $preview_block) {
         color: var(--vf-placeholder-color, rgba(236,243,255,0.48));
     }
 
+    .vip-funnel-public__checkbox {
+        display: flex;
+        align-items: flex-start;
+        gap: .78rem;
+        margin-top: .7rem;
+        padding: .9rem 1rem;
+        border-radius: .95rem;
+        border: 1px solid rgba(255,255,255,0.12);
+        background: rgba(255,255,255,0.06);
+        cursor: pointer;
+    }
+
+    .vip-funnel-public__checkbox input[type="checkbox"] {
+        width: 1.08rem;
+        height: 1.08rem;
+        margin-top: .18rem;
+        accent-color: var(--vf-accent);
+        flex: 0 0 auto;
+    }
+
+    .vip-funnel-public__checkbox-copy {
+        display: grid;
+        gap: .22rem;
+        min-width: 0;
+    }
+
+    .vip-funnel-public__checkbox-title {
+        line-height: 1.35;
+    }
+
+    .vip-funnel-public__checkbox-text {
+        font-size: .88rem;
+        line-height: 1.48;
+        color: rgba(236,243,255,0.68);
+    }
+
     .vip-funnel-public__radio-list {
         display: grid;
         gap: .7rem;
@@ -717,10 +804,18 @@ foreach($blocks as $preview_block) {
         line-height: 1.45;
     }
 
+    .vip-funnel-public__sticky-cta {
+        display: none;
+    }
+
     @media (max-width: 720px) {
         .vip-funnel-public {
             padding: 1.15rem 0 calc(2.75rem + env(safe-area-inset-bottom));
             background-attachment: scroll;
+        }
+
+        .vip-funnel-public.has-sticky-cta {
+            padding-bottom: calc(8.2rem + env(safe-area-inset-bottom));
         }
 
         .vip-funnel-public__wrap {
@@ -800,6 +895,11 @@ foreach($blocks as $preview_block) {
             padding: .86rem .85rem;
         }
 
+        .vip-funnel-public__checkbox {
+            border-radius: .85rem;
+            padding: .82rem .85rem;
+        }
+
         .vip-funnel-public__radio-title {
             font-size: 1rem !important;
             line-height: 1.3;
@@ -816,6 +916,28 @@ foreach($blocks as $preview_block) {
 
         .vip-funnel-public__product-image {
             max-width: 220px;
+        }
+
+        .vip-funnel-public__sticky-cta {
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 1080;
+            display: block;
+            padding: .72rem .72rem calc(.72rem + env(safe-area-inset-bottom));
+            background: linear-gradient(180deg, rgba(8,13,23,0), rgba(8,13,23,0.94) 22%, rgba(8,13,23,0.98));
+            border-top: 1px solid rgba(255,255,255,0.08);
+            backdrop-filter: blur(14px);
+        }
+
+        .vip-funnel-public__sticky-cta-inner {
+            max-width: 620px;
+            margin: 0 auto;
+        }
+
+        .vip-funnel-public__sticky-cta .vip-funnel-public__btn {
+            box-shadow: 0 12px 26px rgba(2,8,23,0.28);
         }
     }
 
@@ -876,7 +998,7 @@ foreach($blocks as $preview_block) {
     <?php endif ?>
 <?php endif ?>
 
-<div class="vip-funnel-public">
+<div class="vip-funnel-public<?= $sticky_cta ? ' has-sticky-cta' : '' ?>">
     <div class="vip-funnel-public__wrap">
         <div class="vip-funnel-public__grid">
             <div class="vip-funnel-public__page-shell">
@@ -887,12 +1009,12 @@ foreach($blocks as $preview_block) {
                         <input type="hidden" name="vf_external_url" id="vf_external_url" value="">
                         <input type="hidden" name="vf_selection" id="vf_selection" value="">
                         <input type="hidden" name="vf_block_id" id="vf_block_id" value="">
+                        <input type="hidden" name="vf_event_key" id="vf_event_key" value="">
                         <input type="hidden" name="viewer_key" value="<?= $e($viewer_key) ?>">
 
-                        <?php if(!empty($surface['show_progress']) && !empty($state['total_steps'])): ?>
-                            <?php $progress_percent = max(0, min(100, (int) round(((int) ($state['current_step_number'] ?? 0) / max(1, (int) ($state['total_steps'] ?? 1))) * 100))); ?>
+                        <?php if($show_progress_bar): ?>
                             <div class="vip-funnel-public__progress">
-                                <span><?= $e(($state['page_role'] ?? 'landing') === 'landing' ? 'Prvi dojam' : ('Korak ' . (int) ($state['current_step_number'] ?? 1) . ' / ' . max(1, (int) ($state['total_steps'] ?? 1)))) ?></span>
+                                <span><?= $e($progress_label) ?></span>
                                 <div class="vip-funnel-public__progress-bar"><div class="vip-funnel-public__progress-fill" style="width: <?= $e($progress_percent) ?>%;"></div></div>
                             </div>
                         <?php endif ?>
@@ -1045,6 +1167,7 @@ foreach($blocks as $preview_block) {
                                                                     data-vf-external="<?= $e($primary_url) ?>"
                                                                     data-vf-selection="<?= $e((string) (($block['product_matched_mapping']['match_value'] ?? '') ?: (($state['runtime_context']['selection'] ?? '') ?: ''))) ?>"
                                                                     data-vf-signal-key="<?= $e($primary_signal_key) ?>"
+                                                                    data-vf-event-key="<?= $e(($block['event_key'] ?? '') ?: ($primary_signal_key === 'forever_shop' ? 'click_webshop' : 'click_product_offer')) ?>"
                                                                 ><?= $e($primary_cta_text) ?></a>
                                                             <?php endif ?>
                                                             <?php if($secondary_enabled): ?>
@@ -1061,6 +1184,7 @@ foreach($blocks as $preview_block) {
                                                                     data-vf-external="<?= $e($secondary_url) ?>"
                                                                     data-vf-selection="<?= $e((string) (($block['product_matched_mapping']['match_value'] ?? '') ?: (($state['runtime_context']['selection'] ?? '') ?: ''))) ?>"
                                                                     data-vf-signal-key="<?= $e($secondary_signal_key) ?>"
+                                                                    data-vf-event-key="<?= $e(($block['event_key'] ?? '') ?: ($secondary_signal_key === 'forever_shop' ? 'click_webshop' : 'click_product_offer')) ?>"
                                                                 ><?= $e($secondary_cta_text) ?></a>
                                                             <?php endif ?>
                                                         </div>
@@ -1105,6 +1229,7 @@ foreach($blocks as $preview_block) {
                                                         data-vf-external=""
                                                         data-vf-selection="fcc_preporuka"
                                                         data-vf-signal-key="fcc_ai_product_advisor"
+                                                        data-vf-event-key="<?= $e(($block['event_key'] ?? '') ?: 'open_ai_widget') ?>"
                                                         onclick="return window.fccChatExtremeToggle ? window.fccChatExtremeToggle(<?= $e(json_encode($ai_widget_dom_id)) ?>, true) : false;"
                                                     ><?= $e($ai_button_label) ?></button>
                                                 </div>
@@ -1156,6 +1281,27 @@ foreach($blocks as $preview_block) {
                                             style="font-size: <?= $e($field_size) ?>px; font-weight: <?= $e($field_weight) ?>; font-family: <?= $e($font_family) ?>; color: <?= $e($field_text_color) ?>; --vf-placeholder-color: <?= $e($placeholder_color) ?>;"
                                             <?= !empty($block['required']) ? 'required' : '' ?>
                                         />
+                                    <?php endif ?>
+
+                                    <?php if($block_type === 'checkbox_field'): ?>
+                                        <?php $checkbox_value = isset($_POST['vf_field_' . $block_id]) ? (string) $_POST['vf_field_' . $block_id] : ''; ?>
+                                        <label class="vip-funnel-public__checkbox">
+                                            <input
+                                                type="checkbox"
+                                                name="vf_field_<?= $e($block_id) ?>"
+                                                value="1"
+                                                <?= $checkbox_value !== '' ? 'checked' : '' ?>
+                                                <?= !empty($block['required']) ? 'required' : '' ?>
+                                            />
+                                            <span class="vip-funnel-public__checkbox-copy">
+                                                <?php if(!empty($block['title'])): ?>
+                                                    <span class="vip-funnel-public__checkbox-title" style="font-size: <?= $e($field_size) ?>px; font-weight: <?= $e($field_weight) ?>; font-family: <?= $e($font_family) ?>; color: <?= $e($field_text_color) ?>;"><?= $e($block['title']) ?></span>
+                                                <?php endif ?>
+                                                <?php if(!empty($block['text'])): ?>
+                                                    <span class="vip-funnel-public__checkbox-text"><?= $e($block['text']) ?></span>
+                                                <?php endif ?>
+                                            </span>
+                                        </label>
                                     <?php endif ?>
 
                                     <?php if($block_type === 'radio_survey' && !empty($block['options'])): ?>
@@ -1254,6 +1400,9 @@ foreach($blocks as $preview_block) {
                                                         data-vf-external="<?= $e($option['external_url'] ?? '') ?>"
                                                         data-vf-selection="<?= $e($option['value'] ?? ($option['label'] ?? '')) ?>"
                                                         data-vf-block="<?= $e($block_id) ?>"
+                                                        data-vf-block-type="<?= $e($block_type) ?>"
+                                                        data-vf-label="<?= $e($option['label'] ?? 'Opcija') ?>"
+                                                        data-vf-event-key="<?= $e($option['event_key'] ?? '') ?>"
                                                     >
                                                         <span class="vip-funnel-public__btn-label"><?= $e($option['label'] ?? 'Opcija') ?></span>
                                                         <?php if(!empty($option['hint'])): ?><span class="vip-funnel-public__btn-hint"><?= $e($option['hint']) ?></span><?php endif ?>
@@ -1273,6 +1422,7 @@ foreach($blocks as $preview_block) {
                                                         data-vf-external="<?= $e($option['url'] ?? '') ?>"
                                                         data-vf-selection="<?= $e($option['value'] ?? ($option['label'] ?? '')) ?>"
                                                         data-vf-signal-key="<?= $e($option_signal_key) ?>"
+                                                        data-vf-event-key="<?= $e($option['event_key'] ?? '') ?>"
                                                     >
                                                         <span class="vip-funnel-public__btn-label"><?= $e($option['label'] ?? 'Opcija') ?></span>
                                                         <?php if(!empty($option['hint'])): ?><span class="vip-funnel-public__btn-hint"><?= $e($option['hint']) ?></span><?php endif ?>
@@ -1301,6 +1451,9 @@ foreach($blocks as $preview_block) {
                                                         data-vf-external="<?= $e($button['external_url'] ?? '') ?>"
                                                         data-vf-selection="<?= $e($button['value'] ?? ($button['label'] ?? '')) ?>"
                                                         data-vf-block="<?= $e($block_id) ?>"
+                                                        data-vf-block-type="<?= $e($block_type) ?>"
+                                                        data-vf-label="<?= $e($button['label'] ?? 'Gumb') ?>"
+                                                        data-vf-event-key="<?= $e($button['event_key'] ?? '') ?>"
                                                     >
                                                         <span class="vip-funnel-public__btn-label"><?= $e($button['label'] ?? 'Gumb') ?></span>
                                                         <?php if(!empty($button['hint'])): ?><span class="vip-funnel-public__btn-hint"><?= $e($button['hint']) ?></span><?php endif ?>
@@ -1320,6 +1473,7 @@ foreach($blocks as $preview_block) {
                                                         data-vf-external="<?= $e($button['url'] ?? '') ?>"
                                                         data-vf-selection="<?= $e($button['value'] ?? ($button['label'] ?? '')) ?>"
                                                         data-vf-signal-key="<?= $e($button_signal_key) ?>"
+                                                        data-vf-event-key="<?= $e($button['event_key'] ?? '') ?>"
                                                     >
                                                         <span class="vip-funnel-public__btn-label"><?= $e($button['label'] ?? 'Gumb') ?></span>
                                                         <?php if(!empty($button['hint'])): ?><span class="vip-funnel-public__btn-hint"><?= $e($button['hint']) ?></span><?php endif ?>
@@ -1344,11 +1498,57 @@ foreach($blocks as $preview_block) {
                                             data-vf-external=""
                                             data-vf-selection=""
                                             data-vf-block="auto_submit_fallback"
+                                            data-vf-block-type="cta_group"
+                                            data-vf-label="Pošalji i nastavi"
+                                            data-vf-event-key="submit_fallback"
                                         >Pošalji i nastavi</button>
                                     </div>
                                 </div>
                             <?php endif ?>
                         </div>
+
+                        <?php if($sticky_cta): ?>
+                            <div class="vip-funnel-public__sticky-cta" aria-label="Glavna akcija">
+                                <div class="vip-funnel-public__sticky-cta-inner">
+                                    <?php if(!empty($sticky_cta['is_submit'])): ?>
+                                        <button
+                                            type="submit"
+                                            class="vip-funnel-public__btn is-<?= $e($sticky_cta['style']) ?>"
+                                            data-vf-submit
+                                            data-vf-action="<?= $e($sticky_cta['action']) ?>"
+                                            data-vf-target="<?= $e($sticky_cta['target']) ?>"
+                                            data-vf-external="<?= $e($sticky_cta['external']) ?>"
+                                            data-vf-selection="<?= $e($sticky_cta['selection']) ?>"
+                                            data-vf-block="<?= $e($sticky_cta['block_id']) ?>"
+                                            data-vf-block-type="<?= $e($sticky_cta['block_type']) ?>"
+                                            data-vf-label="<?= $e($sticky_cta['label']) ?>"
+                                            data-vf-event-key="<?= $e($sticky_cta['event_key']) ?>"
+                                        >
+                                            <span class="vip-funnel-public__btn-label"><?= $e($sticky_cta['label']) ?></span>
+                                            <?php if(!empty($sticky_cta['hint'])): ?><span class="vip-funnel-public__btn-hint"><?= $e($sticky_cta['hint']) ?></span><?php endif ?>
+                                        </button>
+                                    <?php else: ?>
+                                        <a
+                                            href="<?= $e($sticky_cta['url']) ?>"
+                                            class="vip-funnel-public__btn is-<?= $e($sticky_cta['style']) ?>"
+                                            data-vf-track="cta_click"
+                                            data-vf-block="<?= $e($sticky_cta['block_id']) ?>"
+                                            data-vf-block-type="<?= $e($sticky_cta['block_type']) ?>"
+                                            data-vf-label="<?= $e($sticky_cta['label']) ?>"
+                                            data-vf-action="<?= $e($sticky_cta['action']) ?>"
+                                            data-vf-target="<?= $e($sticky_cta['target']) ?>"
+                                            data-vf-external="<?= $e($sticky_cta['external']) ?>"
+                                            data-vf-selection="<?= $e($sticky_cta['selection']) ?>"
+                                            data-vf-signal-key="<?= $e($sticky_cta['signal_key']) ?>"
+                                            data-vf-event-key="<?= $e($sticky_cta['event_key']) ?>"
+                                        >
+                                            <span class="vip-funnel-public__btn-label"><?= $e($sticky_cta['label']) ?></span>
+                                            <?php if(!empty($sticky_cta['hint'])): ?><span class="vip-funnel-public__btn-hint"><?= $e($sticky_cta['hint']) ?></span><?php endif ?>
+                                        </a>
+                                    <?php endif ?>
+                                </div>
+                            </div>
+                        <?php endif ?>
                     </form>
                 </div>
             </div>
@@ -1363,6 +1563,7 @@ foreach($blocks as $preview_block) {
     const externalInput = document.getElementById('vf_external_url');
     const selectionInput = document.getElementById('vf_selection');
     const blockInput = document.getElementById('vf_block_id');
+    const eventKeyInput = document.getElementById('vf_event_key');
     const form = document.getElementById('vip-funnel-public-form');
     const pageHasLeadForm = <?= ($page_has_capture_fields || $page_has_deferred_survey) ? 'true' : 'false' ?>;
     let lastSubmitButton = null;
@@ -1382,7 +1583,8 @@ foreach($blocks as $preview_block) {
         selection: node.getAttribute('data-vf-selection') || '',
         block_id: node.getAttribute('data-vf-block') || '',
         block_type: node.getAttribute('data-vf-block-type') || '',
-        signal_key: node.getAttribute('data-vf-signal-key') || ''
+        signal_key: node.getAttribute('data-vf-signal-key') || '',
+        event_key: node.getAttribute('data-vf-event-key') || ''
     });
 
     const trackMetaCtaIntent = node => {
@@ -1392,6 +1594,9 @@ foreach($blocks as $preview_block) {
         const signal = `${params.button_label} ${params.action} ${params.selection} ${params.external_url} ${params.signal_key}`.toLowerCase();
 
         trackMeta('VIPFunnelCTA', params);
+        if(params.event_key) {
+            trackMeta(params.event_key, params);
+        }
 
         if(signal.includes('order_start_package') || signal.includes('start your journey') || signal.includes('start paket')) {
             trackMeta('VIPFunnelStartOrderClick', params);
@@ -1430,6 +1635,7 @@ foreach($blocks as $preview_block) {
         payload.append('vf_external_url', node.getAttribute('data-vf-external') || node.getAttribute('href') || '');
         payload.append('vf_selection', node.getAttribute('data-vf-selection') || '');
         payload.append('vf_signal_key', node.getAttribute('data-vf-signal-key') || '');
+        payload.append('vf_event_key', node.getAttribute('data-vf-event-key') || '');
 
         if(navigator.sendBeacon) {
             navigator.sendBeacon(window.location.href, payload);
@@ -1452,6 +1658,7 @@ foreach($blocks as $preview_block) {
             externalInput.value = button.getAttribute('data-vf-external') || '';
             selectionInput.value = button.getAttribute('data-vf-selection') || '';
             blockInput.value = button.getAttribute('data-vf-block') || '';
+            if(eventKeyInput) eventKeyInput.value = button.getAttribute('data-vf-event-key') || '';
             trackMetaCtaIntent(button);
         });
     });
@@ -1473,7 +1680,8 @@ foreach($blocks as $preview_block) {
                 selection: selectionInput ? selectionInput.value : '',
                 block_id: blockInput ? blockInput.value : '',
                 block_type: '',
-                signal_key: ''
+                signal_key: '',
+                event_key: eventKeyInput ? eventKeyInput.value : ''
             };
 
             trackMeta('VIPFunnelSubmit', params);
