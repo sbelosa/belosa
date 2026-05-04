@@ -44,7 +44,7 @@ function fcc_ai_get_soft_resolved_feedback_ids(): array {
     }
 
     /* Historical live feedback cases already fixed in the recommendation engine but not writable-resolved in production DB. */
-    $ids = [43, 45, 46, 48, 49, 50, 51, 53, 54, 60, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 87, 89, 91, 100, 101, 102, 105, 107, 108, 109, 110, 111, 112, 113, 114, 115, 120];
+    $ids = [43, 45, 46, 48, 49, 50, 51, 53, 54, 60, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 87, 89, 91, 100, 101, 102, 105, 107, 108, 109, 110, 111, 112, 113, 114, 115, 120, 123, 124, 127, 131, 134, 135];
 
     return $ids;
 }
@@ -25702,6 +25702,16 @@ function fcc_ai_handle_public_message(array $payload): array {
         $reply_content = $meal_plan_followup_reply !== ''
             ? $meal_plan_followup_reply
             : fcc_ai_strip_public_product_tail_from_utility_reply($reply_content);
+        if(
+            fcc_ai_contains_keywords($current_user_message, ['gramaž', 'gramaz'])
+            && !fcc_ai_contains_keywords($reply_content, ['gramaž', 'gramaz'])
+            && preg_match('/\b\d+\s*g\b/iu', $reply_content)
+        ) {
+            $reply_content_with_grammage = preg_replace('/\bs gramama\b/iu', 's gramažama', $reply_content, 1, $grammage_replacements);
+            $reply_content = $grammage_replacements > 0
+                ? (string) $reply_content_with_grammage
+                : trim('Naravno, evo s gramažama.' . "\n\n" . $reply_content);
+        }
         $reply['recommendation_payload'] = [
             'theme_matches' => [],
             'theme_keys' => [],
