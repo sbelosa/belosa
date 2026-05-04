@@ -120,6 +120,10 @@ class VipFunnelStudio extends Controller {
         $selected_funnel_id = $this->get_selected_funnel_id();
         $show_editor = $selected_funnel_id > 0 || isset($_GET['editor']);
 
+        if($access->can_access && vip_funnel_studio_schema_is_ready() && function_exists('vip_funnel_get_snjezana_morning_guide_primary_payload') && vip_funnel_get_snjezana_morning_guide_primary_payload($this->user)) {
+            vip_funnel_studio_ensure_primary_funnel($this->user);
+        }
+
         if($access->can_access && $show_editor && vip_funnel_studio_schema_is_ready()) {
             vip_funnel_studio_ensure_primary_funnel($this->user);
         }
