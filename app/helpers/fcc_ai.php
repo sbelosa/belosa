@@ -5790,6 +5790,20 @@ function fcc_ai_is_public_owner_help_followup_request(string $message): bool {
     ]);
 }
 
+function fcc_ai_is_public_weight_product_help_context(string $message): bool {
+    $message = trim($message);
+
+    if($message === '') {
+        return false;
+    }
+
+    return fcc_ai_contains_keywords($message, [
+        'c9', 'clean 9', 'clean9', 'program', 'programa', 'odustala', 'odustao', 'odustati',
+        'lakši način', 'laksi nacin', 'lakše', 'lakse', 'skinuti kg', 'skinut kg', 'skinuti kile',
+        'smršav', 'smrsav', 'mršav', 'mrsav', 'kilogram', 'kg',
+    ]);
+}
+
 function fcc_ai_get_recent_public_user_messages(int $conversation_id, int $limit = 4, string $current_message = ''): array {
     if($conversation_id <= 0 || $limit <= 0) {
         return [];
@@ -5908,6 +5922,22 @@ function fcc_ai_is_internal_coach_personal_health_product_request(string $messag
         'terapij', 'lijek', 'lek', 'antibiotik', 'tlak', 'pritisak', 'trudn', 'doj',
         'zdravlje', 'zdravstven', 'migren', 'probav', 'želud', 'zelud',
         'ščitnic', 'stitnjac', 'štitnjač',
+    ]);
+}
+
+function fcc_ai_is_internal_coach_safe_product_direction_followup(string $message, string $previous_context = ''): bool {
+    $message = trim($message);
+    $haystack = trim($message . "\n" . $previous_context);
+
+    if($message === '' || $haystack === '') {
+        return false;
+    }
+
+    return fcc_ai_contains_keywords($message, [
+        'od naših proizvoda', 'od nasih proizvoda', 'naši proizvodi', 'nasi proizvodi',
+        'od forever proizvoda', 'forever proizvodi', 'forever proizvod',
+    ]) && fcc_ai_contains_keywords($haystack, [
+        'probav', 'želud', 'zelud', 'nadut', 'stolica', 'zatvor',
     ]);
 }
 
@@ -9265,6 +9295,39 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
             'sensitive_support_only' => true,
             'lock_product_scope' => true,
         ],
+        'pancreas_inflammation_elderly_guard' => [
+            'patterns' => ['upala gušterače', 'upala gusterace', 'upala gusterače', 'upala gušterace', 'pankreatitis', 'pancreatitis', 'gušterač', 'gusterac', 'gusterač', 'gusterače', 'gušterače', 'pankreas'],
+            'preferred_patterns' => ['aloe vera gel', 'aloe gel', 'arctic sea', 'arctic', 'omega'],
+            'primary_product' => 'Forever Aloe Vera Gel™',
+            'support_products' => ['Forever Arctic Sea'],
+            'label' => [
+                'hr' => 'gušterača i vrlo oprezan liječnik-prvo smjer',
+                'en' => 'pancreas context and a very cautious doctor-first direction',
+            ],
+            'opening_note' => [
+                'hr' => 'Kod upale gušterače, posebno kod osobe starije dobi, ne bih širio preporuku niti dodavao nove proizvode bez liječnika. Ovdje je prvi korak liječnik/specijalist, a postojeći Aloe Vera Gel i Arctic Sea smiju ostati samo opća support rutina ako ih liječnik potvrdi.',
+                'en' => 'With pancreas inflammation, especially in an older person, I would not expand the routine or add new products without a doctor. The first step is a doctor/specialist, while the existing Aloe Vera Gel and Arctic Sea should stay only as general support if the doctor confirms them.',
+            ],
+            'recommendation_lines' => [
+                'hr' => [
+                    'Forever Aloe Vera Gel™ ovdje se ne predstavlja kao rješenje za upalu, nego najviše kao već postojeća opća nutritivna aloe rutina uz liječničku suglasnost.',
+                    'Forever Arctic Sea može ostati samo kao opći omega-3 support smjer ako ga liječnik potvrdi uz postojeće stanje i terapiju.',
+                    'Ne bih dodavao C9, Therm, Garcinia, detoks programe, jača vlakna ili nove kombinacije dok liječnik ne potvrdi što je sigurno za osobu od 85 godina.',
+                ],
+                'en' => [
+                    'Forever Aloe Vera Gel™ should not be presented as a solution for inflammation here, only as an already existing general aloe nutrition routine if the doctor agrees.',
+                    'Forever Arctic Sea can stay only as a general omega-3 support direction if the doctor confirms it fits the current condition and therapy.',
+                    'I would not add C9, Therm, Garcinia, detox programs, stronger fiber products or new combinations until the doctor confirms what is safe for an 85-year-old person.',
+                ],
+            ],
+            'monthly_quantity_note' => [
+                'hr' => 'Za ovaj slučaj ne bih slagao mjesečni paket bez liječničke potvrde; prvo provjeriti smije li osoba nastaviti postojeći Aloe Vera Gel i Arctic Sea.',
+                'en' => 'For this case, I would not build a monthly package without medical confirmation; first confirm whether the person should continue the existing Aloe Vera Gel and Arctic Sea.',
+            ],
+            'suppress_generic_questions' => true,
+            'sensitive_support_only' => true,
+            'lock_product_scope' => true,
+        ],
         'vitamin_d_support' => [
             'patterns' => ['manjak vitamina d', 'nedostatak vitamina d', 'nizak vitamin d', 'nizak d vitamin', 'vitamin d', 'd vitamin', 'hipovitaminoza d'],
             'preferred_patterns' => ['absorbent-d', 'vitamin d'],
@@ -9968,6 +10031,38 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
             ],
             'suppress_generic_questions' => true,
             'sensitive_support_only' => true,
+        ],
+        'post_c9_lighter_weight_support' => [
+            'patterns' => ['odustala je od c9', 'odustao je od c9', 'odustala od c9', 'odustao od c9', 'c9 i odustala', 'c9 i odustao', 'c9 odustala', 'c9 odustao', 'lakši način skinut kg', 'laksi nacin skinut kg', 'lakši način smršaviti', 'laksi nacin smrsaviti'],
+            'preferred_patterns' => ['aloe vera gel', 'active pro b', 'pro b', 'fiber', 'garcinia'],
+            'primary_product' => 'Forever Aloe Vera Gel™',
+            'support_products' => ['Forever Active Pro B', 'Forever Fiber', 'Forever Garcinia Plus'],
+            'label' => [
+                'hr' => 'lakši nastavak nakon odustajanja od C9',
+                'en' => 'lighter route after stopping C9',
+            ],
+            'opening_note' => [
+                'hr' => 'Ako je osoba odustala od C9 sedmi dan, ne bih je odmah gurao natrag u isti program niti skretao na nepovezanu temu. Korisnije je ponuditi lakši, postupni weight-balance smjer: prvo probava i dnevni ritam, pa tek kasnije jači dodatak za apetit ako treba.',
+                'en' => 'If someone stopped C9 on day seven, I would not push them straight back into the same program or shift into an unrelated topic. The more useful route is a lighter, gradual weight-balance direction: digestion and daily rhythm first, then appetite support later if needed.',
+            ],
+            'recommendation_lines' => [
+                'hr' => [
+                    'Forever Aloe Vera Gel™ je ovdje glavni lakši start jer daje jednostavnu aloe bazu iznutra bez pritiska kompletnog programa.',
+                    'Forever Active Pro B i Forever Fiber imaju smisla kao prvi support ako je cilj lakši ritam probave, sitosti i svakodnevne rutine nakon C9.',
+                    'Forever Garcinia Plus može ostati kasniji dodatak ako je najveći problem apetit ili večernje grickanje, ali ne bih odmah dodavao Therm niti obećavao brzo skidanje kilograma.',
+                ],
+                'en' => [
+                    'Forever Aloe Vera Gel™ is the main lighter start here because it gives a simple inside aloe base without the pressure of a full program.',
+                    'Forever Active Pro B and Forever Fiber make sense as the first support if the goal is an easier digestion, satiety and daily-routine rhythm after C9.',
+                    'Forever Garcinia Plus can stay as a later add-on if appetite or evening snacking is the main issue, but I would not add Therm immediately or promise fast weight loss.',
+                ],
+            ],
+            'monthly_quantity_note' => [
+                'hr' => 'Ako želite lakši okvir za prvi mjesec, ovdje se najčešće gleda 3 x Forever Aloe Vera Gel™, 1 x Forever Active Pro B i 1 x Forever Fiber; Garcinia Plus tek kasnije ako je apetit glavni problem.',
+                'en' => 'If you want a lighter first-month frame, this is most often positioned as 3 x Forever Aloe Vera Gel™, 1 x Forever Active Pro B and 1 x Forever Fiber; Garcinia Plus only later if appetite is the main issue.',
+            ],
+            'suppress_generic_questions' => true,
+            'lock_product_scope' => true,
         ],
         'weight_loss_program' => [
             'patterns' => ['mršav', 'mrsav', 'smrsam', 'smršam', 'za mrsavljenje', 'za mršavljenje', 'gubitak kilograma', '15 kg', 'pretila', 'protiv debljanja'],
@@ -13867,6 +13962,34 @@ function fcc_ai_get_product_advisor_effective_condition_matches(string $message,
         );
     }
 
+    if(
+        fcc_ai_contains_keywords($message, ['gušterač', 'gusterac', 'gusterač', 'gušterače', 'gusterače', 'pankreas', 'pankreatitis', 'pancreatitis'])
+        || fcc_ai_contains_keywords($message, ['upala gušterače', 'upala gusterace', 'upala gusterače'])
+    ) {
+        $matches[] = fcc_ai_get_product_advisor_condition_match_by_key(
+            'pancreas_inflammation_elderly_guard',
+            $language,
+            ['gušterača', 'pankreas'],
+            340
+        );
+    }
+
+    if(
+        fcc_ai_contains_keywords($message, ['c9', 'clean 9', 'clean9'])
+        && (
+            fcc_ai_contains_keywords($message, ['odustala', 'odustao', 'odustati', 'sedmi dan', '7-mi dan', '7. dan'])
+            || fcc_ai_contains_keywords($message, ['lakši način', 'laksi nacin', 'lakše', 'lakse'])
+        )
+        && fcc_ai_contains_keywords($message, ['kg', 'kilogram', 'smršav', 'smrsav', 'mršav', 'mrsav', 'skinuti'])
+    ) {
+        $matches[] = fcc_ai_get_product_advisor_condition_match_by_key(
+            'post_c9_lighter_weight_support',
+            $language,
+            ['c9', 'lakši način'],
+            335
+        );
+    }
+
     if(fcc_ai_is_child_daily_support_request($message)) {
         $matches[] = fcc_ai_get_product_advisor_condition_match_by_key(
             'children_daily_vitamins_support',
@@ -14812,7 +14935,21 @@ function fcc_ai_get_product_advisor_effective_condition_matches(string $message,
         }));
     }
 
+    if(in_array('pancreas_inflammation_elderly_guard', $match_keys, true)) {
+        $matches = array_values(array_filter($matches, static function(array $match) {
+            return !in_array((string) ($match['key'] ?? ''), [
+                'weight_loss_program',
+                'fatty_liver_support',
+                'digestion_energy_support',
+                'digestive_routine_support',
+                'post_meal_digestion_support',
+                'bloating_gas_support',
+            ], true);
+        }));
+    }
+
     if(array_intersect($match_keys, [
+        'post_c9_lighter_weight_support',
         'weight_loss_digestive_phase_support',
         'belly_fat_weight_support',
         'emotional_eating_weight_support',
@@ -16535,6 +16672,10 @@ function fcc_ai_build_public_recommendation_payload(string $assistant_type, stri
         return trim((string) ($condition_match['key'] ?? ''));
     }, $condition_matches)));
 
+    if(array_intersect($condition_keys, ['post_c9_lighter_weight_support', 'pancreas_inflammation_elderly_guard'])) {
+        $force_local_reply = true;
+    }
+
     if($assistant_type === 'product_advisor' && in_array('diabetes_balance_support', $condition_keys, true)) {
         if(fcc_ai_contains_keywords($message, ['izliječ', 'izlijec', 'liječi', 'lijeci', 'cure', 'heals'])) {
             $system_brief_lines[] = 'Because this is a direct diabetes cure question, the first sentence must explicitly say aloe vera is not a medicine, does not treat diabetes, and does not replace prescribed therapy.';
@@ -17413,7 +17554,8 @@ function fcc_ai_has_high_risk_public_medical_context(string $message): bool {
         'moždani udar', 'mozdani udar', 'moždanog udara', 'mozdanog udara', 'mozganski kap',
         'cellulitis', 'celulitis', 'polip', 'letrozol', 'reseligo', 'bazofil', 'urati', 'psa',
         'štitna', 'stitna', 'štitnoj', 'stitnoj', 'miom', 'maternic', 'slabokrv',
-        'tromboz', 'ulcerozn', 'kolitis', 'pankreas',
+        'tromboz', 'ulcerozn', 'kolitis', 'pankreas', 'pankreatitis',
+        'gušterač', 'gusterac', 'gusterač', 'gušterače', 'gusterače',
         'graves', 'gravesova', 'nesvijest', 'nesvjestica', 'gubitak svijesti',
         'obilna mjesečnica', 'obilna menstruacija', 'obilno krvarenje', 'jako krvarenje', 'krvarenje između ciklusa', 'menstrualno krvarenje',
     ]);
@@ -18323,6 +18465,10 @@ function fcc_ai_detect_public_intent(string $assistant_type, string $message): a
     ]);
     $business_hesitation_followup = $assistant_type === 'product_advisor' && fcc_ai_is_public_business_hesitation_followup_request($raw_message);
     $owner_help_followup = $assistant_type === 'product_advisor' && fcc_ai_is_public_owner_help_followup_request($raw_message);
+
+    if($owner_help_followup && fcc_ai_is_public_weight_product_help_context($raw_message)) {
+        $owner_help_followup = false;
+    }
     $strong_business_interest = fcc_ai_contains_keywords($message, [
         'zanima me suradnja', 'interesira me suradnja', 'više info o suradnji', 'vise info o suradnji',
         'zanima me poslovna suradnja', 'poslovna suradnja', 'kako funkcionira suradnja',
@@ -18464,7 +18610,7 @@ function fcc_ai_detect_public_intent(string $assistant_type, string $message): a
         'masna jetra', 'jetr', 'liver', 'dermatit', 'herpes', 'laktacij', 'dojen', 'dijete', 'dječ', 'djec', 'child',
         'menstrual', 'menstru', 'ciklus', 'lupanje srca', 'lupanj', 'srce', 'depres', 'anksioz', 'anxio',
         'rtg', 'nalaz', 'menisk', 'gips', 'miopat', 'distrof', 'hrskavic', 'artroz', 'gastrit', 'umjetni kuk',
-        'željez', 'zeljez', 'iron', 'transplant', 'transplat', 'štitna', 'stitna', 'štitnoj', 'stitnoj', 'štitne', 'stitne', 'polip', 'bazofil', 'urati', 'psa', 'temperatur', 'fever', 'cellulitis', 'celulitis', 'dijabet', 'candida', 'kandida', 'iritabil', 'parazit', 'psorijaz', 'moždani udar', 'mozdani udar', 'moždanog udara', 'mozdanog udara', 'mozganski kap', 'karcinom', 'karcinoma', 'letrozol', 'reseligo', 'isijas', 'kolesterol', 'miom', 'maternic', 'slabokrv', 'anem', 'gljivic', 'celijak', 'celiak', 'tromboz', 'kolitis', 'ulcerozn', 'pankreas', 'giht', 'upaljen zub', 'boli zub', 'bol u zubu', 'zubobol', 'zubobolja', 'mokren', 'priraslic', 'začeć', 'zacec', 'neplod', 'pubalg', 'vitilih', 'vitilig',
+        'željez', 'zeljez', 'iron', 'transplant', 'transplat', 'štitna', 'stitna', 'štitnoj', 'stitnoj', 'štitne', 'stitne', 'polip', 'bazofil', 'urati', 'psa', 'temperatur', 'fever', 'cellulitis', 'celulitis', 'dijabet', 'candida', 'kandida', 'iritabil', 'parazit', 'psorijaz', 'moždani udar', 'mozdani udar', 'moždanog udara', 'mozdanog udara', 'mozganski kap', 'karcinom', 'karcinoma', 'letrozol', 'reseligo', 'isijas', 'kolesterol', 'miom', 'maternic', 'slabokrv', 'anem', 'gljivic', 'celijak', 'celiak', 'tromboz', 'kolitis', 'ulcerozn', 'pankreas', 'pankreatitis', 'gušterač', 'gusterac', 'gusterač', 'gušterače', 'gusterače', 'giht', 'upaljen zub', 'boli zub', 'bol u zubu', 'zubobol', 'zubobolja', 'mokren', 'priraslic', 'začeć', 'zacec', 'neplod', 'pubalg', 'vitilih', 'vitilig',
         'astmat', 'astma', 'ledvin', 'kamen',
     ]);
 
@@ -18483,7 +18629,7 @@ function fcc_ai_detect_public_intent(string $assistant_type, string $message): a
             'onkol', 'krvava stolica', 'krv u stolici', 'krvavu stolic', 'kevavu stolic', 'bubreg', 'kidney pain',
             'ciroz', 'ascites', 'hodgkin', 'hockins', 'ockins', 'lupanje srca', 'lupanj', 'palpit', 'depres', 'anksioz', 'operirao', 'operirala', 'bruh',
             'umjetni kuk', 'umjetni kukovi', 'nema međuprostora', 'nema medjuprostora', 'slomljen', 'gips', 'miopat', 'distrof', 'menisk', 'rtg',
-            'kemoterap', 'transplant', 'transplat', 'cellulitis', 'celulitis', 'temperatur', 'fever', 'štitna', 'stitna', 'štitnoj', 'stitnoj', 'polip', 'bazofil', 'urati', 'psa', 'adenoma karcinom', 'debelog crijeva', 'moždani udar', 'mozdani udar', 'moždanog udara', 'mozdanog udara', 'mozganski kap', 'karcinom', 'karcinoma', 'letrozol', 'reseligo', 'tromboz', 'ulcerozn', 'kolitis', 'pankreas',
+            'kemoterap', 'transplant', 'transplat', 'cellulitis', 'celulitis', 'temperatur', 'fever', 'štitna', 'stitna', 'štitnoj', 'stitnoj', 'polip', 'bazofil', 'urati', 'psa', 'adenoma karcinom', 'debelog crijeva', 'moždani udar', 'mozdani udar', 'moždanog udara', 'mozdanog udara', 'mozganski kap', 'karcinom', 'karcinoma', 'letrozol', 'reseligo', 'tromboz', 'ulcerozn', 'kolitis', 'pankreas', 'pankreatitis', 'gušterač', 'gusterac', 'gusterač', 'gušterače', 'gusterače',
             'kvržic', 'kvrzic', 'lakat', 'natečen', 'natecen', 'oteknut', 'oteknuta', 'ledvin', 'kamen',
             'priraslic', 'začeć', 'zacec', 'neplod',
         ]);
@@ -18986,7 +19132,9 @@ function fcc_ai_generate_public_reply(string $assistant_type, string $message, a
     $skip_product_tail = !empty($recommendation_payload['skip_product_tail']);
     $business_primary = $assistant_type === 'product_advisor' && !empty($intent['business_primary']);
     $business_mixed_with_product = $business_primary && !empty($intent['explicit_product_request']);
-    $owner_help_followup_request = $assistant_type === 'product_advisor' && fcc_ai_is_public_owner_help_followup_request($message);
+    $owner_help_followup_request = $assistant_type === 'product_advisor'
+        && fcc_ai_is_public_owner_help_followup_request($message)
+        && !fcc_ai_is_public_weight_product_help_context($message);
     $condition_explanation_followup = $assistant_type === 'product_advisor' && !empty($context['condition_explanation_followup']);
     $follow_up_anchor_message = trim((string) ($context['follow_up_anchor_message'] ?? ''));
     $recent_user_context = trim((string) ($context['recent_user_context'] ?? ''));
@@ -25018,6 +25166,7 @@ function fcc_ai_handle_public_message(array $payload): array {
         && !empty($previous_condition_keys)
         && fcc_ai_is_ambiguous_same_problem_followup_request($current_user_message);
     $weight_context_followup_keys = [
+        'post_c9_lighter_weight_support',
         'weight_loss_digestive_phase_support',
         'belly_fat_weight_support',
         'emotional_eating_weight_support',
@@ -25088,7 +25237,8 @@ function fcc_ai_handle_public_message(array $payload): array {
     $is_business_hesitation_followup = (string) ($conversation->assistant_type ?? '') === 'product_advisor'
         && fcc_ai_is_public_business_hesitation_followup_request($current_user_message);
     $is_owner_help_followup = (string) ($conversation->assistant_type ?? '') === 'product_advisor'
-        && fcc_ai_is_public_owner_help_followup_request($current_user_message);
+        && fcc_ai_is_public_owner_help_followup_request($current_user_message)
+        && !fcc_ai_is_public_weight_product_help_context($current_user_message);
     $is_direct_cure_claim_question = (string) ($conversation->assistant_type ?? '') === 'product_advisor'
         && fcc_ai_contains_keywords($current_user_message, ['izliječ', 'izlijec', 'liječi', 'lijeci', 'cure', 'heals'])
         && !empty($intent['medical_sensitive']);
@@ -26096,7 +26246,11 @@ function fcc_ai_generate_internal_coach_reply(string $message, array $context = 
     $conversation_id = (int) ($context['conversation_id'] ?? 0);
     $previous_user_message = $conversation_id > 0 ? fcc_ai_get_previous_internal_coach_user_message($conversation_id, $message) : '';
     $previous_assistant_message = $conversation_id > 0 ? fcc_ai_get_previous_internal_coach_assistant_message($conversation_id) : '';
-    $recent_coach_context = trim(implode("\n", array_filter([$previous_user_message, $previous_assistant_message])));
+    $recent_coach_history = $conversation_id > 0 ? fcc_ai_get_conversation_messages($conversation_id, 8) : [];
+    $recent_coach_history_text = trim(implode("\n", array_values(array_filter(array_map(static function(array $row): string {
+        return trim((string) ($row['content'] ?? ''));
+    }, $recent_coach_history)))));
+    $recent_coach_context = trim(implode("\n", array_filter([$previous_user_message, $previous_assistant_message, $recent_coach_history_text])));
 
     $is_review_request = fcc_ai_contains_keywords($message, ['review', 'pregled', 'app', 'aplik', 'biolink', 'link']);
     $is_contacts_request = fcc_ai_contains_keywords($message, ['kontakt', 'lead', 'data', 'inbox', 'follow-up', 'follow up', 'dm', 'whatsapp']);
@@ -26255,6 +26409,42 @@ function fcc_ai_generate_internal_coach_reply(string $message, array $context = 
                 : ($language === 'sl'
                     ? 'Izberi en stalen dnevni trenutek in spremljaj toleranco 3 do 5 dni.'
                     : 'Odaberi jedan stalni dnevni trenutak i prati toleranciju 3 do 5 dana.'),
+        ];
+    }
+
+    if(fcc_ai_is_internal_coach_safe_product_direction_followup($message, $recent_coach_context)) {
+        $content = $language === 'en'
+            ? implode("\n\n", [
+                'Understood, you are asking specifically about our Forever products. As Coach I would keep this as a safe direction, not as treatment or a personal prescription.',
+                "If Aloe Vera Gel is not at hand and the topic is digestion, the cleanest internal direction is:\n- Forever Active Pro B when the focus is bloating, gut balance or a sensitive digestion rhythm\n- Forever Fiber only when the focus is constipation or too little fiber\n- Aloe Blossom Herbal Tea as a gentle tea routine if the person wants a mild everyday support step",
+                'If symptoms are strong, painful, new or long-lasting, the safe next step is a doctor or pharmacist. For a personal recommendation flow, use FCC Recommendation and let the person describe the situation directly.',
+                'Best next step now: clarify whether the main issue is constipation, bloating or stomach heaviness, then keep the answer inside that one product direction.',
+            ])
+            : ($language === 'sl'
+                ? implode("\n\n", [
+                    'Razumem, sprašuješ prav za naše Forever izdelke. Kot Coach bi to držal kot varno usmeritev, ne kot zdravljenje ali osebno predpisovanje.',
+                    "Če Aloe Vera Gel ni pri roki in je tema prebava, je najčistejša interna smer:\n- Forever Active Pro B, ko je fokus napihnjenost, ravnovesje črevesja ali občutljivejši prebavni ritem\n- Forever Fiber samo, ko je fokus zaprtje ali premalo vlaknin\n- Aloe Blossom Herbal Tea kot blaga čajna rutina, če oseba želi nežnejši vsakodnevni podporni korak",
+                    'Če so simptomi močni, boleči, novi ali dolgotrajni, je varen naslednji korak zdravnik ali farmacevt. Za osebni tok priporočila uporabi FCC Priporočilo in naj oseba neposredno opiše situacijo.',
+                    'Najboljša naslednja poteza zdaj: razjasni, ali je glavni problem zaprtje, napihnjenost ali teža v želodcu, nato ostani znotraj te ene smeri izdelkov.',
+                ])
+                : implode("\n\n", [
+                    'Razumijem, pitaš baš za naše Forever proizvode. Kao Coach bih ovo držao kao siguran smjer, ne kao liječenje niti osobno propisivanje.',
+                    "Ako Aloe Vera Gel nije pri ruci i tema je probava, najčišći interni smjer je:\n- Forever Active Pro B kada je fokus nadutost, crijevna ravnoteža ili osjetljiviji ritam probave\n- Forever Fiber samo kada je fokus zatvor ili premalo vlakana\n- Aloe Blossom Herbal Tea kao blaga čajna rutina ako osoba želi nježan svakodnevni support korak",
+                    'Ako su tegobe jake, bolne, nove ili dugotrajne, siguran sljedeći korak je liječnik ili ljekarnik. Za osobni tok preporuke koristi FCC Preporuka i neka osoba direktno opiše situaciju.',
+                    'Najbolji sljedeći korak sada: razjasni je li glavni problem zatvor, nadutost ili težina u želucu, pa odgovor zadrži u tom jednom smjeru proizvoda.',
+                ]));
+
+        return [
+            'content' => $content,
+            'language' => $language,
+            'knowledge_suggestions' => [],
+            'reply_mode' => 'coach_safe_product_direction',
+            'force_local_preview' => true,
+            'next_step' => $language === 'en'
+                ? 'Clarify constipation, bloating or stomach heaviness, then stay inside one safe product direction.'
+                : ($language === 'sl'
+                    ? 'Razjasni zaprtje, napihnjenost ali težo v želodcu, nato ostani pri eni varni smeri izdelkov.'
+                    : 'Razjasni zatvor, nadutost ili težinu u želucu, zatim ostani u jednom sigurnom smjeru proizvoda.'),
         ];
     }
 
