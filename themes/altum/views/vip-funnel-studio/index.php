@@ -2452,7 +2452,6 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
             <a href="<?= $e($data->funnels_index_url ?? url('vip-funnel-studio')) ?>" class="vf-btn vf-btn--ghost">Svi funnel-i</a>
             <a href="<?= $e($data->demo_access_url ?? url('vip-funnel-demo-access')) ?>" class="vf-btn vf-btn--ghost"><?= l('vip_funnel.analytics.demo_access_button') ?></a>
             <button type="button" class="vf-btn vf-btn--primary" data-vf-save-button="1"><?= l('vip_funnel.analytics.save_button') ?></button>
-            <button type="submit" class="vf-btn vf-btn--danger" data-vf-reset-button="1" name="reset_vip_funnel_studio" value="1"><?= l('vip_funnel.analytics.reset_button') ?></button>
         </div>
     </div>
 
@@ -2487,7 +2486,6 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
     const form = document.getElementById('vf-studio-form');
     const saveNotice = document.getElementById('vf_save_notice');
     const saveButtons = Array.from(form.querySelectorAll('[data-vf-save-button]'));
-    const resetButton = form.querySelector('[data-vf-reset-button]');
     const saveUrl = <?= json_encode(url('vip-funnel-studio/save-ajax'), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
     const imageUploadUrl = <?= json_encode($data->image_upload_url ?? url('vip-funnel-studio/upload-image'), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
     const siteUrl = <?= json_encode(SITE_URL, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
@@ -2758,7 +2756,6 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
             isRestoring: false,
             limit: 60
         },
-        resetRequested: false,
         validation: {
             errors: []
         }
@@ -7117,7 +7114,6 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
         const inlineSaveButton = event.target.closest('[data-vf-save-button]');
         if(inlineSaveButton) {
             event.preventDefault();
-            state.resetRequested = false;
             saveStudio();
             return;
         }
@@ -7840,29 +7836,14 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
         }
     });
 
-    resetButton?.addEventListener('click', () => {
-        state.resetRequested = true;
-    });
-
     saveButtons.forEach(button => {
         button.addEventListener('click', event => {
             event.preventDefault();
-            state.resetRequested = false;
             saveStudio();
         });
     });
 
     form.addEventListener('submit', event => {
-        syncPayloadInput();
-
-        const submitter = event.submitter;
-        const isResetSubmit = state.resetRequested || submitter?.hasAttribute('data-vf-reset-button');
-
-        if(isResetSubmit) {
-            state.resetRequested = false;
-            return;
-        }
-
         event.preventDefault();
         saveStudio();
     });

@@ -38,7 +38,8 @@ class VipFunnelStudio extends Controller {
 
     private function decode_posted_payload($user = null): ?array {
         if(isset($_POST['reset_vip_funnel_studio'])) {
-            return vip_funnel_get_studio_seed_payload($user);
+            Alerts::add_error('Vraćanje početnog studija je onemogućeno jer može prebrisati funnel koji je već u izradi.');
+            return null;
         }
 
         $raw_payload = trim((string) ($_POST['vip_funnel_studio_payload'] ?? ''));
