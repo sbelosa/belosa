@@ -1474,6 +1474,32 @@ function vip_funnel_get_start_package_question_whatsapp_url($user = null, string
     return vip_funnel_build_whatsapp_url_from_phone((string) ($owner_profile['phone'] ?? ''), $message);
 }
 
+function vip_funnel_public_action_should_use_whatsapp(array $action = []): bool {
+    $signal = mb_strtolower(trim(implode(' ', [
+        (string) ($action['id'] ?? ''),
+        (string) ($action['label'] ?? ''),
+        (string) ($action['value'] ?? ''),
+        (string) ($action['event_key'] ?? ''),
+    ])));
+
+    return str_contains($signal, 'whatsapp') || str_contains($signal, 'whats app');
+}
+
+function vip_funnel_get_owner_whatsapp_contact_url(int $owner_user_id = 0, string $message = ''): string {
+    if($owner_user_id <= 0) {
+        return '';
+    }
+
+    $owner_profile = vip_funnel_get_owner_contact_profile($owner_user_id);
+    $whatsapp_url = vip_funnel_rewrite_whatsapp_url_message((string) ($owner_profile['whatsapp_url'] ?? ''), $message);
+
+    if($whatsapp_url !== '') {
+        return $whatsapp_url;
+    }
+
+    return vip_funnel_build_whatsapp_url_from_phone((string) ($owner_profile['phone'] ?? ''), $message);
+}
+
 function vip_funnel_apply_owner_referral_cookies(int $owner_user_id = 0): void {
     if($owner_user_id <= 0) {
         return;
@@ -1521,12 +1547,14 @@ function vip_funnel_send_owner_email_notification(int $owner_user_id = 0, string
 
     $subjects = [
         'lead_created' => 'Novi kontakt iz tvog VIP Funnel-a',
+        'contact_requested' => 'Novi VIP Funnel upit',
         'demo_requested' => 'Novi zahtjev za VIP demo pristup',
         'demo_activated' => 'VIP demo pristup je aktiviran',
     ];
     $subject = $subjects[$event_key] ?? 'VIP Funnel obavijest';
 
     $intro = match($event_key) {
+        'contact_requested' => 'Netko je upravo poslao ili ažurirao upit kroz tvoj funnel.',
         'demo_requested' => 'Netko je upravo zatražio VIP demo pristup kroz tvoj funnel.',
         'demo_activated' => 'VIP demo pristup je aktiviran i korisniku su poslani pristupni podaci.',
         default => 'Imaš novi kontakt kroz svoj VIP Funnel.',
@@ -7994,6 +8022,17 @@ function vip_funnel_resolve_public_action(array $action, array $payload, array $
     $action_type = (string) ($action['action'] ?? 'goto_step');
     $defer_to_route_on_submit = false;
 
+    if($action_type === 'external_url' && $external_url !== '' && str_starts_with(mb_strtolower($external_url), 'mailto:') && vip_funnel_public_action_should_use_whatsapp($action)) {
+        $message = (\Altum\Language::$code ?? 'hr') === 'hr'
+            ? 'Pozdrav, želim nastaviti oko FCC vodiča.'
+            : 'Hi, I want to continue with the FCC guide.';
+        $owner_whatsapp_url = vip_funnel_get_owner_whatsapp_contact_url($user_id, $message);
+
+        if($owner_whatsapp_url !== '') {
+            $external_url = $owner_whatsapp_url;
+        }
+    }
+
     if($action_type === 'external_url' && vip_funnel_is_forever_business_referral_action_token($external_url)) {
         $dynamic_url = vip_funnel_get_forever_business_referral_url($user_id);
 
@@ -8796,6 +8835,29 @@ function vip_funnel_backfill_owner_runtime_contacts(int $owner_user_id = 0): arr
     ];
 }
 
+function vip_funnel_public_submission_should_notify_owner(array $meta = []): bool {
+    $event_key = mb_strtolower(trim((string) ($meta['event_key'] ?? '')));
+    $selection = mb_strtolower(trim((string) ($meta['selection'] ?? '')));
+    $block_id = mb_strtolower(trim((string) ($meta['block_id'] ?? '')));
+    $signal = trim($event_key . ' ' . $selection . ' ' . $block_id);
+
+    if($signal === '') {
+        return false;
+    }
+
+    if($event_key === 'submit_demo_request' || $selection === 'demo_submit') {
+        return false;
+    }
+
+    foreach(['submit_check', 'qualification', 'contact', 'call', 'intro_request', 'upit', 'request'] as $needle) {
+        if(str_contains($signal, $needle)) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 function vip_funnel_upsert_public_lead(array $state, array $fields = [], array $meta = []): int {
     if(!vip_funnel_demo_schema_is_ready()) {
         return 0;
@@ -8877,6 +8939,18 @@ function vip_funnel_upsert_public_lead(array $state, array $fields = [], array $
         vip_funnel_sync_contact_data_from_lead_id((int) $existing->vip_lead_id, [
             'demo_status' => (string) ($existing->demo_status ?? 'captured'),
         ]);
+
+        if(vip_funnel_public_submission_should_notify_owner($meta)) {
+            vip_funnel_send_owner_email_notification($owner_user_id, 'contact_requested', [
+                'lead_name' => $full_name !== '' ? $full_name : ($lead_name !== '' ? $lead_name : (string) ($existing->full_name ?? ($existing->lead_name ?? 'Novi kontakt'))),
+                'lead_email' => $lead_email !== '' ? $lead_email : (string) ($existing->lead_email ?? ''),
+                'lead_phone' => $lead_phone !== '' ? $lead_phone : (string) ($existing->lead_phone ?? ''),
+                'funnel_name' => $funnel_name,
+                'page_url' => trim((string) ($state['canonical_url'] ?? '')),
+                'source_label' => ($funnel_name !== '' ? $funnel_name : 'VIP Funnel 2.0') . ($step_title !== '' ? ' - ' . $step_title : ''),
+                'dashboard_url' => url('funnels-analytics'),
+            ]);
+        }
 
         return (int) $existing->vip_lead_id;
     }
@@ -10809,12 +10883,32 @@ function vip_funnel_demo_create_request($user = null, array $input = []): array 
 
         if($duplicate_demo) {
             $duplicate_owner_user_id = (int) ($duplicate_demo->owner_user_id ?? $owner_user_id);
+            $duplicate_demo_account_id = (int) ($duplicate_demo->vip_demo_account_id ?? 0);
+
+            if($source === 'vip_funnel_public' && $owner_user_id > 0 && $duplicate_owner_user_id === $owner_user_id) {
+                vip_funnel_send_owner_email_notification($owner_user_id, 'demo_requested', [
+                    'lead_name' => $lead_name,
+                    'lead_email' => $lead_email,
+                    'lead_phone' => $lead_phone,
+                    'funnel_name' => (string) (vip_funnel_to_array($input['funnel_context'] ?? [])['funnel_name'] ?? 'VIP Funnel 2.0'),
+                    'page_url' => (string) (vip_funnel_to_array($input['funnel_context'] ?? [])['page_url'] ?? ''),
+                    'source_label' => 'Ponovni VIP Funnel 2.0 demo zahtjev',
+                    'dashboard_url' => url('vip-funnel-demo-access'),
+                ]);
+
+                return [
+                    'success' => true,
+                    'duplicate' => true,
+                    'message' => 'Demo zahtjev je već zabilježen i mentor je obaviješten.',
+                    'vip_demo_account_id' => $duplicate_demo_account_id,
+                ];
+            }
 
             return [
                 'success' => false,
                 'duplicate' => true,
                 'message' => vip_funnel_demo_get_duplicate_notice($duplicate_email_candidate, $duplicate_owner_user_id > 0 ? $duplicate_owner_user_id : $owner_user_id),
-                'vip_demo_account_id' => (int) ($duplicate_demo->vip_demo_account_id ?? 0),
+                'vip_demo_account_id' => $duplicate_demo_account_id,
             ];
         }
     }
