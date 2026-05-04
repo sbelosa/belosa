@@ -9347,15 +9347,24 @@ function vip_funnel_process_public_submission(array $state, array $post = []): a
         ]);
 
         if(empty($demo_result['success'])) {
-            return [
-                'success' => false,
-                'message' => (string) ($demo_result['message'] ?? l('vip_funnel.demo.alert.request_failed')),
-                'vip_lead_id' => $vip_lead_id,
-                'run_id' => $run_id,
-            ];
-        }
+            $demo_error_message = (string) ($demo_result['message'] ?? l('vip_funnel.demo.alert.request_failed'));
+            vip_funnel_log_public_event($state, 'demo_request_failed', $effective_selection !== '' ? $effective_selection : 'demo_request', [
+                'message' => $demo_error_message,
+                'block_id' => $submitted_block_id,
+                'selection' => $effective_selection,
+                'radio_answers' => $radio_answers,
+            ], $vip_lead_id, $run_id);
 
-        vip_funnel_log_public_event($state, 'demo_request', $effective_selection !== '' ? $effective_selection : 'demo_request', ['vip_demo_account_id' => (int) ($demo_result['vip_demo_account_id'] ?? 0)], $vip_lead_id, $run_id);
+            db()->where('vip_lead_id', $vip_lead_id)->update('vip_leads', [
+                'demo_status' => 'requested',
+                'last_datetime' => get_date(),
+            ]);
+            vip_funnel_sync_contact_data_from_lead_id($vip_lead_id, [
+                'demo_status' => 'requested',
+            ]);
+        } else {
+            vip_funnel_log_public_event($state, 'demo_request', $effective_selection !== '' ? $effective_selection : 'demo_request', ['vip_demo_account_id' => (int) ($demo_result['vip_demo_account_id'] ?? 0)], $vip_lead_id, $run_id);
+        }
     }
 
     if($qualification_target_step_id !== '' && $external_url === '' && $action !== 'submit_stay') {

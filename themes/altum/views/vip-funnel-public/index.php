@@ -574,6 +574,16 @@ $show_progress_bar = !empty($surface['show_progress']) && $progress_total > 0;
         text-decoration: none;
     }
 
+    .vip-funnel-public__btn.is-submitting {
+        opacity: .78;
+        cursor: progress;
+        pointer-events: none;
+    }
+
+    .vip-funnel-public__btn.is-submitting .vip-funnel-public__btn-label::after {
+        content: '...';
+    }
+
     .vip-funnel-public__btn.is-primary {
         background: var(--vf-accent);
         color: #0f172a;
@@ -1403,6 +1413,7 @@ $show_progress_bar = !empty($surface['show_progress']) && $progress_total > 0;
                                                         data-vf-block-type="<?= $e($block_type) ?>"
                                                         data-vf-label="<?= $e($option['label'] ?? 'Opcija') ?>"
                                                         data-vf-event-key="<?= $e($option['event_key'] ?? '') ?>"
+                                                        data-is-ajax
                                                     >
                                                         <span class="vip-funnel-public__btn-label"><?= $e($option['label'] ?? 'Opcija') ?></span>
                                                         <?php if(!empty($option['hint'])): ?><span class="vip-funnel-public__btn-hint"><?= $e($option['hint']) ?></span><?php endif ?>
@@ -1454,6 +1465,7 @@ $show_progress_bar = !empty($surface['show_progress']) && $progress_total > 0;
                                                         data-vf-block-type="<?= $e($block_type) ?>"
                                                         data-vf-label="<?= $e($button['label'] ?? 'Gumb') ?>"
                                                         data-vf-event-key="<?= $e($button['event_key'] ?? '') ?>"
+                                                        data-is-ajax
                                                     >
                                                         <span class="vip-funnel-public__btn-label"><?= $e($button['label'] ?? 'Gumb') ?></span>
                                                         <?php if(!empty($button['hint'])): ?><span class="vip-funnel-public__btn-hint"><?= $e($button['hint']) ?></span><?php endif ?>
@@ -1501,6 +1513,7 @@ $show_progress_bar = !empty($surface['show_progress']) && $progress_total > 0;
                                             data-vf-block-type="cta_group"
                                             data-vf-label="Pošalji i nastavi"
                                             data-vf-event-key="submit_fallback"
+                                            data-is-ajax
                                         >Pošalji i nastavi</button>
                                     </div>
                                 </div>
@@ -1523,6 +1536,7 @@ $show_progress_bar = !empty($surface['show_progress']) && $progress_total > 0;
                                             data-vf-block-type="<?= $e($sticky_cta['block_type']) ?>"
                                             data-vf-label="<?= $e($sticky_cta['label']) ?>"
                                             data-vf-event-key="<?= $e($sticky_cta['event_key']) ?>"
+                                            data-is-ajax
                                         >
                                             <span class="vip-funnel-public__btn-label"><?= $e($sticky_cta['label']) ?></span>
                                             <?php if(!empty($sticky_cta['hint'])): ?><span class="vip-funnel-public__btn-hint"><?= $e($sticky_cta['hint']) ?></span><?php endif ?>
@@ -1570,7 +1584,11 @@ $show_progress_bar = !empty($surface['show_progress']) && $progress_total > 0;
 
     const trackMeta = (eventName, params = {}, standardEvent = false) => {
         if(typeof window.vipFunnelTrackMeta !== 'function') return;
-        window.vipFunnelTrackMeta(eventName, params, standardEvent);
+        try {
+            window.vipFunnelTrackMeta(eventName, params, standardEvent);
+        } catch (error) {
+            console.warn('VIP Funnel Meta tracking skipped.', error);
+        }
     };
 
     const normalizeLabel = value => String(value || '').replace(/\s+/g, ' ').trim().slice(0, 180);
@@ -1659,7 +1677,11 @@ $show_progress_bar = !empty($surface['show_progress']) && $progress_total > 0;
             selectionInput.value = button.getAttribute('data-vf-selection') || '';
             blockInput.value = button.getAttribute('data-vf-block') || '';
             if(eventKeyInput) eventKeyInput.value = button.getAttribute('data-vf-event-key') || '';
-            trackMetaCtaIntent(button);
+            try {
+                trackMetaCtaIntent(button);
+            } catch (error) {
+                console.warn('VIP Funnel CTA tracking skipped.', error);
+            }
         });
     });
 
@@ -1684,10 +1706,35 @@ $show_progress_bar = !empty($surface['show_progress']) && $progress_total > 0;
                 event_key: eventKeyInput ? eventKeyInput.value : ''
             };
 
-            trackMeta('VIPFunnelSubmit', params);
-            if(pageHasLeadForm) {
-                trackMeta('Lead', params, true);
+            if(form.dataset.vfSubmitting === '1') {
+                return;
             }
+
+            form.dataset.vfSubmitting = '1';
+
+            if(lastSubmitButton) {
+                lastSubmitButton.classList.add('is-submitting');
+                lastSubmitButton.setAttribute('aria-busy', 'true');
+            }
+
+            try {
+                trackMeta('VIPFunnelSubmit', params);
+                if(pageHasLeadForm) {
+                    trackMeta('Lead', params, true);
+                }
+            } catch (error) {
+                console.warn('VIP Funnel submit tracking skipped.', error);
+            }
+
+            window.setTimeout(() => {
+                if(form.dataset.vfSubmitting !== '1') return;
+
+                form.dataset.vfSubmitting = '0';
+                if(lastSubmitButton) {
+                    lastSubmitButton.classList.remove('is-submitting');
+                    lastSubmitButton.removeAttribute('aria-busy');
+                }
+            }, 15000);
         });
     }
 
