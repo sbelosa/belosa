@@ -2,6 +2,35 @@
 <?php
 $vip_funnel_options = function_exists('vip_funnel_get_user_funnel_select_options') ? vip_funnel_get_user_funnel_select_options((int) ($row->user_id ?? $this->user->user_id ?? 0)) : [];
 $selected_vip_funnel_id = (int) ($row->settings->vip_funnel_id ?? 0);
+$vip_funnel_hub_render = function_exists('vip_funnel_get_public_hub_render_data') ? vip_funnel_get_public_hub_render_data((int) ($row->user_id ?? $this->user->user_id ?? 0), $row->settings ?? []) : [];
+$vip_funnel_hub_path_source = $row->settings->path_tags ?? ($vip_funnel_hub_render['paths'] ?? [
+    ['title' => 'Suradnja i Start paket'],
+    ['title' => 'Proizvodi i 15% popusta'],
+    ['title' => 'FCC sustav i demo'],
+]);
+$vip_funnel_hub_path_tags = [];
+
+foreach((array) $vip_funnel_hub_path_source as $path_tag) {
+    if(is_object($path_tag)) {
+        $path_tag = (array) $path_tag;
+    }
+
+    if(is_array($path_tag)) {
+        $path_tag = $path_tag['title'] ?? $path_tag['label'] ?? '';
+    }
+
+    $path_tag = input_clean((string) $path_tag, 80);
+
+    if($path_tag === '') {
+        continue;
+    }
+
+    $vip_funnel_hub_path_tags[] = $path_tag;
+
+    if(count($vip_funnel_hub_path_tags) >= 3) {
+        break;
+    }
+}
 ?>
 
 <form id="<?= 'update_biolink_block_' . $row->biolink_block_id ?>" name="update_biolink_" method="post" role="form" data-type="<?= $row->type ?>" enctype="multipart/form-data">
@@ -79,6 +108,25 @@ $selected_vip_funnel_id = (int) ($row->settings->vip_funnel_id ?? 0);
     <div class="form-group custom-control custom-switch">
         <input id="<?= 'vip_funnel_hub_show_paths_' . $row->biolink_block_id ?>" name="show_paths" type="checkbox" class="custom-control-input" <?= !empty($row->settings->show_paths) ? 'checked="checked"' : null ?> />
         <label class="custom-control-label" for="<?= 'vip_funnel_hub_show_paths_' . $row->biolink_block_id ?>">Prikaži glavne putove na kartici</label>
+    </div>
+
+    <div class="form-group">
+        <label><i class="fas fa-fw fa-tags fa-sm text-muted mr-1"></i> Tagovi glavnih putova</label>
+        <div class="row">
+            <?php foreach([0, 1, 2] as $path_tag_index): ?>
+                <div class="col-12 col-lg-4 mb-2 mb-lg-0">
+                    <input
+                        type="text"
+                        name="path_tags[]"
+                        class="form-control"
+                        value="<?= htmlspecialchars((string) ($vip_funnel_hub_path_tags[$path_tag_index] ?? ''), ENT_QUOTES, 'UTF-8') ?>"
+                        maxlength="80"
+                        placeholder="<?= 'Tag ' . ($path_tag_index + 1) ?>"
+                    />
+                </div>
+            <?php endforeach ?>
+        </div>
+        <small class="form-text text-muted">Ovi tekstovi se prikazuju kao male oznake na kartici kada je uključen prikaz glavnih putova. Prazno polje se neće prikazati.</small>
     </div>
 
     <div class="form-group" data-file-image-input-wrapper data-file-input-wrapper-size-limit="<?= settings()->links->thumbnail_image_size_limit ?>" data-file-input-wrapper-size-limit-error="<?= sprintf(l('global.error_message.file_size_limit'), settings()->links->thumbnail_image_size_limit) ?>">

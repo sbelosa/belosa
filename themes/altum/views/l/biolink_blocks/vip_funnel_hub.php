@@ -4,33 +4,52 @@
 $settings = vip_funnel_to_array($data->link->settings ?? []);
 $render = vip_funnel_get_public_hub_render_data((int) ($data->link->user_id ?? 0), $settings);
 
+if(array_key_exists('path_tags', $settings)) {
+    $render['paths'] = [];
+
+    foreach((array) ($settings['path_tags'] ?? []) as $path_tag) {
+        if(is_object($path_tag)) {
+            $path_tag = (array) $path_tag;
+        }
+
+        if(is_array($path_tag)) {
+            $path_tag = $path_tag['title'] ?? $path_tag['label'] ?? '';
+        }
+
+        $path_tag = input_clean((string) $path_tag, 80);
+
+        if($path_tag === '') {
+            continue;
+        }
+
+        $render['paths'][] = ['title' => $path_tag];
+
+        if(count($render['paths']) >= 3) {
+            break;
+        }
+    }
+}
+
 $border_radius_map = [
     'straight' => '.8rem',
     'rounded' => '1.35rem',
     'round' => '1.8rem',
 ];
 
-$shadow_map = [
-    'none' => 'none',
-    'subtle' => '0 1rem 2rem rgba(2, 8, 23, 0.14)',
-    'strong' => '0 1.2rem 2.8rem rgba(2, 8, 23, 0.22)',
-    'hard' => '0 .8rem 0 rgba(2, 8, 23, 0.26)',
-];
-
 $border_radius = $border_radius_map[$settings['border_radius'] ?? 'rounded'] ?? '1.35rem';
-$box_shadow = $shadow_map[$settings['border_shadow_style'] ?? 'subtle'] ?? $shadow_map['subtle'];
+$box_shadow_style = \Altum\Link::get_processed_box_shadow_style($settings);
 $cta_url = $render['primary_url'] ?? ($data->link->location_url ?? '');
 $secondary_url = $render['secondary_url'] ?? '';
 $is_clickable = (bool) $cta_url;
 $wrapper_style = sprintf(
-    'border:%dpx %s %s;border-radius:%s;background:%s;color:%s;box-shadow:%s;text-align:%s;%s',
+    'border:%dpx %s %s;border-radius:%s;background:%s;color:%s;%stext-align:%s;%s',
     (int) ($settings['border_width'] ?? 0),
     $settings['border_style'] ?? 'solid',
     $settings['border_color'] ?? '#101826',
     $border_radius,
     $settings['background_color'] ?? '#101826',
     $settings['text_color'] ?? '#ffffff',
-    $box_shadow,
+    $box_shadow_style,
     $settings['text_alignment'] ?? 'left',
     $is_clickable ? 'cursor:pointer;' : ''
 );

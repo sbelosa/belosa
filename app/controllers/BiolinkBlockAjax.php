@@ -6479,6 +6479,11 @@ class BiolinkBlockAjax extends Controller {
             'secondary_cta_text' => 'Zatraži VIP pregled',
             'secondary_url' => '',
             'show_paths' => true,
+            'path_tags' => [
+                'Suradnja i Start paket',
+                'Proizvodi i 15% popusta',
+                'FCC sustav i demo',
+            ],
 
             /* Display settings */
             'display_continents' => [],
@@ -6519,6 +6524,23 @@ class BiolinkBlockAjax extends Controller {
         $_POST['primary_cta_text'] = mb_substr(input_clean($_POST['primary_cta_text'] ?? ''), 0, 120);
         $_POST['secondary_cta_text'] = mb_substr(input_clean($_POST['secondary_cta_text'] ?? ''), 0, 120);
         $_POST['show_paths'] = (int) isset($_POST['show_paths']);
+        $_POST['path_tags'] = [];
+        foreach((array) ($_POST['path_tags'] ?? []) as $path_tag) {
+            if(is_array($path_tag) || is_object($path_tag)) {
+                continue;
+            }
+
+            $path_tag = input_clean((string) $path_tag, 80);
+            if($path_tag === '') {
+                continue;
+            }
+
+            $_POST['path_tags'][] = $path_tag;
+
+            if(count($_POST['path_tags']) >= 3) {
+                break;
+            }
+        }
         $_POST['border_radius'] = in_array($_POST['border_radius'], ['straight', 'round', 'rounded']) ? query_clean($_POST['border_radius']) : 'rounded';
         $_POST['border_width'] = in_array($_POST['border_width'], [0, 1, 2, 3, 4, 5]) ? (int) $_POST['border_width'] : 0;
         $_POST['border_style'] = in_array($_POST['border_style'], ['solid', 'dashed', 'double', 'inset', 'outset']) ? query_clean($_POST['border_style']) : 'solid';
@@ -6578,6 +6600,7 @@ class BiolinkBlockAjax extends Controller {
             'secondary_cta_text' => $_POST['secondary_cta_text'],
             'secondary_url' => $_POST['secondary_url'],
             'show_paths' => $_POST['show_paths'],
+            'path_tags' => $_POST['path_tags'],
 
             /* Display settings */
             'display_continents' => $_POST['display_continents'],
