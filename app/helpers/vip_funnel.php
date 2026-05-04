@@ -4388,16 +4388,32 @@ function vip_funnel_studio_ensure_primary_funnel($user = null) {
         return null;
     }
 
+    $personalized_payload = function_exists('vip_funnel_get_snjezana_morning_guide_primary_payload')
+        ? vip_funnel_get_snjezana_morning_guide_primary_payload($user)
+        : null;
+
+    if($personalized_payload) {
+        $personalized_slug = (string) ($personalized_payload['funnel']['slug'] ?? '');
+        $personalized_funnel = $personalized_slug !== '' ? vip_funnel_studio_get_funnel_row_by_slug($user_id, $personalized_slug) : null;
+
+        if($personalized_funnel) {
+            return $personalized_funnel;
+        }
+
+        $personalized_funnel = vip_funnel_studio_create_funnel_from_payload($user, $personalized_payload);
+
+        if($personalized_funnel) {
+            return $personalized_funnel;
+        }
+    }
+
     $funnel = vip_funnel_studio_get_primary_funnel_row($user_id);
 
     if($funnel) {
         return $funnel;
     }
 
-    $payload = function_exists('vip_funnel_get_snjezana_morning_guide_primary_payload')
-        ? vip_funnel_get_snjezana_morning_guide_primary_payload($user)
-        : null;
-    $payload = $payload ?: vip_funnel_get_studio_seed_payload($user);
+    $payload = vip_funnel_get_studio_seed_payload($user);
     $funnel_id = (int) db()->insert('vip_funnels', [
         'user_id' => $user_id,
         'name' => $payload['funnel']['name'],
