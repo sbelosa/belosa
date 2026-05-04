@@ -16,6 +16,36 @@ if(file_exists(APP_PATH . 'helpers/vip_funnel_snjezana_guide.php')) {
     require_once APP_PATH . 'helpers/vip_funnel_snjezana_guide.php';
 }
 
+if(file_exists(APP_PATH . 'helpers/vip_funnel_postani_zdrav_guide.php')) {
+    require_once APP_PATH . 'helpers/vip_funnel_postani_zdrav_guide.php';
+}
+
+function vip_funnel_get_personalized_primary_payload($user = null): ?array {
+    foreach([
+        'vip_funnel_get_snjezana_morning_guide_primary_payload',
+        'vip_funnel_get_postani_zdrav_guide_primary_payload',
+    ] as $payload_function) {
+        if(function_exists($payload_function) && ($payload = $payload_function($user))) {
+            return $payload;
+        }
+    }
+
+    return null;
+}
+
+function vip_funnel_maybe_create_personalized_funnel($user = null, string $requested_slug = '') {
+    foreach([
+        'vip_funnel_maybe_create_snjezana_morning_guide',
+        'vip_funnel_maybe_create_postani_zdrav_guide',
+    ] as $create_function) {
+        if(function_exists($create_function) && ($funnel = $create_function($user, $requested_slug))) {
+            return $funnel;
+        }
+    }
+
+    return null;
+}
+
 function vip_funnel_normalize_object($value): \stdClass {
     if(is_string($value)) {
         $value = json_decode($value ?? '{}');
@@ -4416,9 +4446,7 @@ function vip_funnel_studio_ensure_primary_funnel($user = null) {
         return null;
     }
 
-    $personalized_payload = function_exists('vip_funnel_get_snjezana_morning_guide_primary_payload')
-        ? vip_funnel_get_snjezana_morning_guide_primary_payload($user)
-        : null;
+    $personalized_payload = vip_funnel_get_personalized_primary_payload($user);
 
     if($personalized_payload) {
         $personalized_slug = (string) ($personalized_payload['funnel']['slug'] ?? '');
@@ -7950,8 +7978,8 @@ function vip_funnel_get_public_payload_for_user(int $user_id = 0, string $funnel
             }
         }
 
-        if(trim($funnel_slug) !== '' && function_exists('vip_funnel_maybe_create_snjezana_morning_guide')) {
-            $funnel = vip_funnel_maybe_create_snjezana_morning_guide($user, $funnel_slug);
+        if(trim($funnel_slug) !== '') {
+            $funnel = vip_funnel_maybe_create_personalized_funnel($user, $funnel_slug);
 
             if($funnel) {
                 return vip_funnel_studio_load_from_database($user, (int) $funnel->vip_funnel_id);
