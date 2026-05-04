@@ -197,13 +197,40 @@ foreach($funnels as $item) {
     }
 
     .vip-funnel-center-list {
-        display: grid;
-        gap: .85rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1.15rem;
     }
 
     .vip-funnel-center-card {
-        border-radius: 1.05rem;
-        padding: 1rem;
+        position: relative;
+        overflow: hidden;
+        border-radius: 1.15rem;
+        padding: 1.05rem 1.05rem 1.1rem 1.25rem;
+        border-color: rgba(103,216,201,.18);
+        background:
+            linear-gradient(135deg, rgba(103,216,201,.105), rgba(138,167,255,.055) 42%, rgba(255,255,255,.025)),
+            linear-gradient(180deg, rgba(255,255,255,.045), rgba(255,255,255,.018)),
+            var(--vf-center-panel-soft);
+        box-shadow:
+            inset 0 1px 0 rgba(255,255,255,.045),
+            0 1rem 2.4rem rgba(2,8,23,.32);
+    }
+
+    .vip-funnel-center-card::before {
+        content: "";
+        position: absolute;
+        inset: 0 auto 0 0;
+        width: .32rem;
+        background: linear-gradient(180deg, var(--vf-center-accent), rgba(103,216,201,.18));
+    }
+
+    .vip-funnel-center-card:nth-child(2n)::before {
+        background: linear-gradient(180deg, #8aa7ff, rgba(103,216,201,.24));
+    }
+
+    .vip-funnel-center-card:nth-child(3n)::before {
+        background: linear-gradient(180deg, #ffd166, rgba(103,216,201,.22));
     }
 
     .vip-funnel-center-card-top {
@@ -238,6 +265,12 @@ foreach($funnels as $item) {
         color: rgba(238,244,255,.76);
         font-size: .72rem;
         font-weight: 800;
+    }
+
+    .vip-funnel-center-chip-index {
+        background: rgba(103,216,201,.16);
+        color: #d8fffb;
+        border: 1px solid rgba(103,216,201,.22);
     }
 
     .vip-funnel-center-url-row {
@@ -474,7 +507,7 @@ foreach($funnels as $item) {
             <div class="vip-funnel-center-empty">Još nema spremljenih funnel-a. Kreiraj prvi funnel ili importiraj gotov FCC VIP predložak.</div>
         <?php else: ?>
             <div class="vip-funnel-center-list">
-                <?php foreach($funnels as $item): ?>
+                <?php foreach($funnels as $funnel_index => $item): ?>
                     <?php
                     $row = $item['row'];
                     $analytics = is_array($item['analytics'] ?? null) ? $item['analytics'] : [];
@@ -485,6 +518,7 @@ foreach($funnels as $item) {
                             <div>
                                 <h3 class="vip-funnel-center-card-title"><?= $e($row->name ?? 'VIP Funnel 2.0') ?></h3>
                                 <div class="vip-funnel-center-meta">
+                                    <span class="vip-funnel-center-chip vip-funnel-center-chip-index">Funnel <?= nr($funnel_index + 1) ?></span>
                                     <span class="vip-funnel-center-chip">ID <?= (int) ($row->vip_funnel_id ?? 0) ?></span>
                                     <span class="vip-funnel-center-chip"><?= $e($row->status ?? 'draft') ?></span>
                                     <span class="vip-funnel-center-chip">/<?= $e($row->slug ?? '') ?></span>
