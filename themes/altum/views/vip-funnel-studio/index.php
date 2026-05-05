@@ -1853,6 +1853,47 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
         gap: .45rem;
     }
 
+    .vf-analytics-choice-list {
+        display: grid;
+        gap: .72rem;
+    }
+
+    .vf-analytics-choice-item {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: .8rem;
+        align-items: center;
+        padding: .9rem 1rem;
+        border-radius: 1rem;
+        border: 1px solid rgba(103,216,201,0.14);
+        background:
+            linear-gradient(135deg, rgba(103,216,201,0.075), rgba(255,255,255,0.025)),
+            rgba(255,255,255,0.025);
+    }
+
+    .vf-analytics-choice-title {
+        color: #f7fbff;
+        font-size: .96rem;
+        line-height: 1.35;
+        font-weight: 900;
+    }
+
+    .vf-analytics-choice-key {
+        margin-top: .28rem;
+        color: rgba(205, 220, 238, 0.58);
+        font-size: .78rem;
+        line-height: 1.35;
+        word-break: break-word;
+    }
+
+    .vf-analytics-choice-stats {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        gap: .42rem;
+        min-width: 12rem;
+    }
+
     .vf-analytics-empty {
         padding: 1rem;
         border-radius: 1rem;
@@ -2368,6 +2409,15 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
             grid-template-columns: minmax(0, 1fr);
         }
 
+        .vf-analytics-choice-item {
+            grid-template-columns: minmax(0, 1fr);
+        }
+
+        .vf-analytics-choice-stats {
+            justify-content: flex-start;
+            min-width: 0;
+        }
+
         .vf-block-adder {
             grid-template-columns: minmax(0, 1fr);
         }
@@ -2544,6 +2594,8 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
         'stepsSub' => l('vip_funnel.analytics.steps.subheader'),
         'selectionsTitle' => l('vip_funnel.analytics.selections.title'),
         'selectionsSub' => l('vip_funnel.analytics.selections.subheader'),
+        'selectionsInternalTag' => l('vip_funnel.analytics.selections.internal_tag'),
+        'selectionsShownLimit' => l('vip_funnel.analytics.selections.shown_limit'),
         'abTitle' => l('vip_funnel.analytics.ab.title'),
         'abSub' => l('vip_funnel.analytics.ab.subheader'),
         'demoTitle' => l('vip_funnel.analytics.demo.title'),
@@ -4771,6 +4823,24 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
         const demo = analytics.demo || {};
         const recentEvents = Array.isArray(analytics.recent_events) ? analytics.recent_events : [];
         const recentDemoEvents = Array.isArray(demo.recent_events) ? demo.recent_events : [];
+        const activeSelections = selections
+            .map((item) => Object.assign({}, item, {
+                total_activity: Number(item.submits || 0) + Number(item.leads || 0) + Number(item.advances || 0)
+            }))
+            .filter((item) => item.total_activity > 0)
+            .sort((a, b) => {
+                const scoreDiff = (Number(b.leads || 0) - Number(a.leads || 0))
+                    || (Number(b.submits || 0) - Number(a.submits || 0))
+                    || (Number(b.advances || 0) - Number(a.advances || 0));
+
+                if(scoreDiff !== 0) {
+                    return scoreDiff;
+                }
+
+                return String(a.label || a.selection_key || '').localeCompare(String(b.label || b.selection_key || ''), 'hr');
+            });
+        const visibleSelections = activeSelections.slice(0, 8);
+        const hiddenSelectionsCount = Math.max(0, activeSelections.length - visibleSelections.length);
 
         const stepsTable = steps.length ? `
             <div class="vf-analytics-table-wrap">
@@ -4816,32 +4886,28 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
             </div>
         ` : `<div class="vf-analytics-empty">${escapeHtml(analyticsMessages.emptyRows)}</div>`;
 
-        const selectionsTable = selections.length ? `
-            <div class="vf-analytics-table-wrap">
-                <table class="vf-analytics-table">
-                    <thead>
-                        <tr>
-                            <th>${escapeHtml(analyticsMessages.tableSelectionLabel)}</th>
-                            <th>${escapeHtml(analyticsMessages.tableSelection)}</th>
-                            <th>${escapeHtml(analyticsMessages.tableSubmits)}</th>
-                            <th>${escapeHtml(analyticsMessages.tableLeads)}</th>
-                            <th>${escapeHtml(analyticsMessages.tableAdvances)}</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${selections.map((item) => `
-                            <tr>
-                                <td>
-                                    <div class="vf-analytics-step-title">${escapeHtml(item.label || item.selection_key || '—')}</div>
-                                </td>
-                                <td><span class="vf-chip">${escapeHtml(item.selection_key || '')}</span></td>
-                                <td>${numberFormat(item.submits || 0)}</td>
-                                <td>${numberFormat(item.leads || 0)}</td>
-                                <td>${numberFormat(item.advances || 0)}</td>
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
+        const selectionsTable = visibleSelections.length ? `
+            <div class="vf-analytics-choice-list">
+                ${visibleSelections.map((item) => {
+                    const label = String(item.label || item.selection_key || '—');
+                    const key = String(item.selection_key || '');
+                    const showKey = key && key !== label;
+
+                    return `
+                        <div class="vf-analytics-choice-item">
+                            <div class="min-width-0">
+                                <div class="vf-analytics-choice-title">${escapeHtml(label)}</div>
+                                ${showKey ? `<div class="vf-analytics-choice-key">${escapeHtml(analyticsMessages.selectionsInternalTag)}: ${escapeHtml(key)}</div>` : ''}
+                            </div>
+                            <div class="vf-analytics-choice-stats">
+                                <span class="vf-chip">${escapeHtml(analyticsMessages.tableSubmits)}: ${numberFormat(item.submits || 0)}</span>
+                                <span class="vf-chip">${escapeHtml(analyticsMessages.tableLeads)}: ${numberFormat(item.leads || 0)}</span>
+                                <span class="vf-chip">${escapeHtml(analyticsMessages.tableAdvances)}: ${numberFormat(item.advances || 0)}</span>
+                            </div>
+                        </div>
+                    `;
+                }).join('')}
+                ${hiddenSelectionsCount ? `<div class="vf-analytics-muted">${escapeHtml(analyticsMessages.selectionsShownLimit).replace('%s', numberFormat(hiddenSelectionsCount))}</div>` : ''}
             </div>
         ` : `<div class="vf-analytics-empty">${escapeHtml(analyticsMessages.emptyRows)}</div>`;
 

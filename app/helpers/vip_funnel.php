@@ -7531,11 +7531,11 @@ function vip_funnel_collect_selection_labels_from_surface(array $surface = [], a
             $block = vip_funnel_to_array($block);
             $type = (string) ($block['type'] ?? '');
 
-            if(!in_array($type, ['survey', 'radio_survey'], true)) {
+            if(!in_array($type, ['survey', 'radio_survey', 'cta_group'], true)) {
                 continue;
             }
 
-            foreach((array) ($block['options'] ?? []) as $option) {
+            foreach(array_merge((array) ($block['options'] ?? []), (array) ($block['buttons'] ?? [])) as $option) {
                 $option = vip_funnel_to_array($option);
                 $value = trim((string) ($option['value'] ?? ''));
                 $label = trim((string) ($option['label'] ?? ''));
@@ -7757,9 +7757,12 @@ function vip_funnel_get_analytics_snapshot(int $funnel_id = 0, array $payload = 
             SUM(CASE WHEN `event_type` = 'advance' THEN 1 ELSE 0 END) AS `advances`
         FROM `vip_funnel_events`
         WHERE `vip_funnel_id` = " . (int) $funnel_id . "
+            AND `event_type` IN ('submit', 'lead_capture', 'advance')
         GROUP BY `selection_key`
         HAVING `selection_key` <> ''
-        ORDER BY `submits` DESC, `leads` DESC, `selection_key` ASC");
+            AND (`submits` > 0 OR `leads` > 0 OR `advances` > 0)
+        ORDER BY `leads` DESC, `submits` DESC, `advances` DESC, `selection_key` ASC
+        LIMIT 12");
 
     while($selection_result && ($row = $selection_result->fetch_object())) {
         $selection_key = trim((string) ($row->selection_key ?? ''));
