@@ -242,12 +242,6 @@ $show_progress_bar = !empty($surface['show_progress']) && $progress_total > 0;
     .vip-funnel-public__page-shell {
         width: 100%;
         background-color: var(--vf-bg);
-        <?php if($background_image_css_url): ?>
-        background-image: linear-gradient(180deg, rgba(2,8,23,0.22), rgba(2,8,23,0.36)), url(<?= $background_image_css_url ?>);
-        background-size: cover;
-        background-position: center;
-        background-repeat: no-repeat;
-        <?php endif ?>
         border-radius: 1.6rem;
         border: 1px solid rgba(255,255,255,0.08);
         box-shadow: 0 1.4rem 3rem rgba(2,8,23,0.22);

@@ -1911,6 +1911,61 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
         line-height: 1.6;
     }
 
+    .vf-seo-card {
+        padding: 1rem;
+        border-radius: 1.15rem;
+        border: 1px solid rgba(103,216,201,0.24);
+        background:
+            linear-gradient(135deg, rgba(103,216,201,0.13), rgba(255,255,255,0.025) 54%),
+            rgba(7, 12, 22, 0.24);
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+    }
+
+    .vf-seo-card__head {
+        display: grid;
+        gap: .28rem;
+        margin-bottom: .85rem;
+    }
+
+    .vf-seo-card__title {
+        color: #eef4ff;
+        font-size: .98rem;
+        font-weight: 900;
+    }
+
+    .vf-seo-card__text {
+        color: rgba(226,235,247,0.66);
+        font-size: .8rem;
+        line-height: 1.55;
+    }
+
+    .vf-seo-preview {
+        display: grid;
+        grid-template-columns: minmax(0, 112px) minmax(0, 1fr);
+        gap: .75rem;
+        align-items: center;
+        margin-top: .35rem;
+        padding: .55rem;
+        border-radius: .95rem;
+        border: 1px solid rgba(255,255,255,0.08);
+        background: rgba(255,255,255,0.035);
+    }
+
+    .vf-seo-preview img {
+        width: 100%;
+        aspect-ratio: 1.91 / 1;
+        object-fit: cover;
+        border-radius: .7rem;
+        display: block;
+        background: rgba(255,255,255,0.05);
+    }
+
+    .vf-seo-preview__meta {
+        color: rgba(226,235,247,0.66);
+        font-size: .78rem;
+        line-height: 1.45;
+    }
+
     .vf-flow-layout {
         display: grid;
         grid-template-columns: minmax(0, 1fr) minmax(280px, .34fr);
@@ -2692,6 +2747,7 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
         background_color: '#0f172a',
         background_image_url: '',
         background_opacity: 100,
+        seo_image_url: '',
         surface_color: '#152132',
         text_color: '#eef4ff',
         accent_color: '#67d8c9',
@@ -3525,6 +3581,7 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
     function normalizeSurface(surface, fallbackName = 'Nova funnel stranica') {
         const normalized = Object.assign(defaultSurface(), surface || {});
         normalized.name = normalized.name || fallbackName;
+        normalized.seo_image_url = normalized.seo_image_url || '';
         normalized.background_opacity = clampOpacity(normalized.background_opacity, 100);
         normalized.progress_current = Math.max(0, Math.min(99, parseInt(normalized.progress_current || 0, 10) || 0));
         normalized.progress_total = Math.max(0, Math.min(99, parseInt(normalized.progress_total || 0, 10) || 0));
@@ -4558,7 +4615,7 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
         }
     }
 
-    async function uploadImageForSurface(fileInput) {
+    async function uploadImageForSurface(fileInput, field = 'background_image_url') {
         const file = fileInput?.files?.[0] || null;
 
         if(!file) {
@@ -4572,7 +4629,7 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
             return;
         }
 
-        const surfaceTarget = getEditableSurfaceSettingsTarget();
+        const surfaceTarget = field === 'seo_image_url' ? getCurrentSurface() : getEditableSurfaceSettingsTarget();
         if(!surfaceTarget) {
             setSaveNotice(validationMessages.imageUploadFailed, 'error');
             fileInput.value = '';
@@ -4604,7 +4661,7 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
                 throw new Error(message);
             }
 
-            surfaceTarget.background_image_url = result.details.image_url;
+            surfaceTarget[field] = result.details.image_url;
             registerImageGalleryEntry({
                 image: result.details.image || '',
                 image_url: result.details.image_url,
@@ -5426,6 +5483,7 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
         const hasDeferredSurvey = currentSurfaceHasDeferredSurvey();
         const hasSubmitAction = currentSurfaceHasSubmitAction();
         const surfaceBackgroundOpacity = clampOpacity(surface.background_opacity, 100);
+        const surfaceSeoImageUrl = surface.seo_image_url || '';
         const surfaceNameEditor = isStepSurface ? `
             <div class="vf-section-label">Stranica i SEO</div>
             <div class="vf-field">
@@ -5463,7 +5521,7 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
                 </div>
             </details>
         ` : `
-            <div class="vf-section-label">Page settings</div>
+            <div class="vf-section-label">Stranica i SEO</div>
             <div class="vf-field">
                 <label>${escapeHtml(studioMessages.surfaceNameLabel)}</label>
                 <input type="text" data-vf-surface-field="name" value="${escapeHtml(surface.name || '')}" />
@@ -5481,6 +5539,31 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
                     </div>
                 ` : ''}
                 ${surfaceNameEditor}
+                <div class="vf-seo-card">
+                    <div class="vf-seo-card__head">
+                        <div class="vf-section-label" style="margin-bottom:0;">SEO i slika za dijeljenje</div>
+                        <div class="vf-seo-card__title">Fotografija koja se prikazuje kad se funnel dijeli</div>
+                        <div class="vf-seo-card__text">Ovo je OpenGraph/SEO slika za WhatsApp, Facebook, Messenger i slične preglede linka. Ne koristi se kao pozadina stranice.</div>
+                    </div>
+                    <div class="vf-field">
+                        <label>SEO fotografija</label>
+                        <input type="text" data-vf-surface-field="seo_image_url" value="${escapeHtml(surface.seo_image_url || '')}" placeholder="https://... ili upload ispod" />
+                        <input type="file" accept="${escapeHtml(imageUploadAccept)}" data-vf-surface-seo-image-upload="1" />
+                        <div class="vf-field__hint">Preporuka: 1200 x 630 px, čitljiva slika bez sitnog teksta. Ako ovo ostane prazno, sustav koristi zadani logo.</div>
+                    </div>
+                    ${surfaceSeoImageUrl ? `
+                        <div class="vf-seo-preview">
+                            <img src="${escapeHtml(surfaceSeoImageUrl)}" alt="SEO preview" loading="lazy" />
+                            <div class="vf-seo-preview__meta">
+                                <strong>Aktivna SEO slika</strong><br>
+                                Prikazuje se u pregledu linka, ali ne mijenja izgled funnel stranice.
+                            </div>
+                        </div>
+                        <div class="vf-card-actions">
+                            <button type="button" data-vf-clear-surface-seo-image="1">Ukloni SEO sliku</button>
+                        </div>
+                    ` : ''}
+                </div>
                 <div class="vf-section-label">Dizajn stranice</div>
                 <div class="vf-two">
                     <div class="vf-field">
@@ -5505,17 +5588,25 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
                         <input type="color" data-vf-surface-field="accent_color" value="${escapeHtml(surface.accent_color || '#67d8c9')}" />
                     </div>
                 </div>
-                <div class="vf-field">
-                    <label>Pozadinska slika</label>
-                    <input type="text" data-vf-surface-field="background_image_url" value="${escapeHtml(surface.background_image_url || '')}" placeholder="https://... ili upload ispod" />
-                    <input type="file" accept="${escapeHtml(imageUploadAccept)}" data-vf-surface-image-upload="1" />
-                    <div class="vf-field__hint">Opcionalno. Slika ide iza površine stranice, a boja pozadine ostaje sigurnosna podloga.</div>
-                    ${surface.background_image_url ? `
-                        <div class="vf-card-actions">
-                            <button type="button" data-vf-clear-surface-image="1">Ukloni sliku</button>
+                <details class="vf-action-card__advanced">
+                    <summary>
+                        <span>Dekorativna pozadina</span>
+                        <span class="vf-field__hint">Opcionalno, nije SEO slika</span>
+                    </summary>
+                    <div class="vf-action-card__advanced-grid">
+                        <div class="vf-field">
+                            <label>Pozadinska slika stranice</label>
+                            <input type="text" data-vf-surface-field="background_image_url" value="${escapeHtml(surface.background_image_url || '')}" placeholder="https://... za dekorativnu pozadinu" />
+                            <input type="file" accept="${escapeHtml(imageUploadAccept)}" data-vf-surface-image-upload="1" />
+                            <div class="vf-field__hint">Koristi se samo kao vizualna podloga iza površine stranice. Za WhatsApp/Facebook preview koristi SEO fotografiju iznad.</div>
+                            ${surface.background_image_url ? `
+                                <div class="vf-card-actions">
+                                    <button type="button" data-vf-clear-surface-image="1">Ukloni dekorativnu pozadinu</button>
+                                </div>
+                            ` : ''}
                         </div>
-                    ` : ''}
-                </div>
+                    </div>
+                </details>
                 <div class="vf-field">
                     <label>${escapeHtml(studioMessages.surfaceWidthLabel)}</label>
                     <select data-vf-surface-field="max_width">
@@ -7413,6 +7504,15 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
             return;
         }
 
+        const clearSurfaceSeoImageButton = event.target.closest('[data-vf-clear-surface-seo-image]');
+        if(clearSurfaceSeoImageButton) {
+            const surfaceTarget = getCurrentSurface();
+            surfaceTarget.seo_image_url = '';
+            syncPayloadInput();
+            renderAll();
+            return;
+        }
+
         const variantButton = event.target.closest('[data-vf-variant]');
         if(variantButton) {
             state.activeVariant = variantButton.getAttribute('data-vf-variant');
@@ -7680,7 +7780,7 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
         const surfaceField = target.closest('[data-vf-surface-field]');
         if(surfaceField) {
             const field = surfaceField.getAttribute('data-vf-surface-field');
-            const globalSurfaceFields = ['ab_distribution'];
+            const globalSurfaceFields = ['ab_distribution', 'seo_image_url'];
             const surfaceTarget = globalSurfaceFields.includes(field) ? getCurrentSurface() : getEditableSurfaceSettingsTarget();
             const previousBackgroundColor = surfaceTarget.background_color || '#0f172a';
             surfaceTarget[field] = coerceFieldValue(surfaceField);
@@ -7790,6 +7890,12 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
         const surfaceImageUploadField = event.target.closest('[data-vf-surface-image-upload]');
         if(surfaceImageUploadField) {
             uploadImageForSurface(surfaceImageUploadField);
+            return;
+        }
+
+        const surfaceSeoImageUploadField = event.target.closest('[data-vf-surface-seo-image-upload]');
+        if(surfaceSeoImageUploadField) {
+            uploadImageForSurface(surfaceSeoImageUploadField, 'seo_image_url');
             return;
         }
 

@@ -961,6 +961,7 @@ function vip_funnel_get_default_page_surface_payload(string $name = ''): array {
         'background_color' => '#0f172a',
         'background_image_url' => '',
         'background_opacity' => 100,
+        'seo_image_url' => '',
         'surface_color' => '#152132',
         'text_color' => '#eef4ff',
         'accent_color' => '#67d8c9',
@@ -2363,6 +2364,7 @@ function vip_funnel_normalize_page_surface_payload($surface, string $fallback_na
         'background_color' => verify_hex_color((string) ($surface['background_color'] ?? '')) ? (string) $surface['background_color'] : $defaults['background_color'],
         'background_image_url' => trim(input_clean((string) ($surface['background_image_url'] ?? $defaults['background_image_url']), 2048)),
         'background_opacity' => max(0, min(100, (int) round((float) ($surface['background_opacity'] ?? $defaults['background_opacity'])))),
+        'seo_image_url' => trim(input_clean((string) ($surface['seo_image_url'] ?? $defaults['seo_image_url'] ?? ''), 2048)),
         'surface_color' => verify_hex_color((string) ($surface['surface_color'] ?? '')) ? (string) $surface['surface_color'] : $defaults['surface_color'],
         'text_color' => verify_hex_color((string) ($surface['text_color'] ?? '')) ? (string) $surface['text_color'] : $defaults['text_color'],
         'accent_color' => verify_hex_color((string) ($surface['accent_color'] ?? '')) ? (string) $surface['accent_color'] : $defaults['accent_color'],
@@ -4014,6 +4016,16 @@ function vip_funnel_collect_image_gallery_entries_from_payload($payload): array 
                 'image_url' => (string) ($node['media_url'] ?? ''),
                 'created_at' => get_date(),
             ];
+        }
+
+        foreach(['seo_image_url', 'background_image_url'] as $image_field_key) {
+            if(!empty($node[$image_field_key])) {
+                $entries[] = [
+                    'image' => basename((string) ($node[$image_field_key] ?? '')),
+                    'image_url' => (string) ($node[$image_field_key] ?? ''),
+                    'created_at' => get_date(),
+                ];
+            }
         }
 
         foreach($node as $value) {
