@@ -4745,7 +4745,734 @@ function vip_funnel_get_import_template_options($user = null): array {
             'recommended' => true,
             'languages' => vip_funnel_get_import_template_languages(),
         ],
+        'mini_fcc_start' => [
+            'key' => 'mini_fcc_start',
+            'name' => 'Mini VIP - Moj FCC Start',
+            'description' => 'Kratki vodič za regrutaciju: uvod, Start paket, kratka provjera, proizvodi i WhatsApp kontakt. Bez demo računa.',
+            'badge' => 'Start',
+            'goal' => 'Regrutacija',
+            'recommended' => true,
+            'languages' => ['hr' => 'HR'],
+        ],
+        'mini_products_discount' => [
+            'key' => 'mini_products_discount',
+            'name' => 'Mini VIP - Proizvodi i 15% popusta',
+            'description' => 'Proizvodni vodič s AI savjetnikom, odabirom cilja, webshop smjerom i mostom prema suradnji.',
+            'badge' => 'Proizvodi',
+            'goal' => 'Prodaja proizvoda',
+            'recommended' => false,
+            'languages' => ['hr' => 'HR'],
+        ],
+        'mini_wellness_challenge' => [
+            'key' => 'mini_wellness_challenge',
+            'name' => 'Mini VIP - 7 dana wellness rutine',
+            'description' => 'Lagani challenge/lead magnet za prikupljanje kontakata, proizvodni interes i kasniji razgovor o suradnji.',
+            'badge' => 'Challenge',
+            'goal' => 'Lead magnet + proizvodi',
+            'recommended' => false,
+            'languages' => ['hr' => 'HR'],
+        ],
+        'mini_webinar_info' => [
+            'key' => 'mini_webinar_info',
+            'name' => 'Mini VIP - Info večer / webinar',
+            'description' => 'Kratki vodič za prijavu na webinar ili info večer, s odbrojavanjem, formom i jasnim sljedećim korakom.',
+            'badge' => 'Webinar',
+            'goal' => 'Event + regrutacija',
+            'recommended' => false,
+            'languages' => ['hr' => 'HR'],
+        ],
     ];
+}
+
+function vip_funnel_get_mini_import_template_context($user = null, string $language = 'hr'): array {
+    $language = vip_funnel_resolve_import_template_language($language);
+    $owner_profile = vip_funnel_get_owner_contact_profile($user);
+    $owner_user_id = (int) ($owner_profile['user_id'] ?? ($user->user_id ?? 0));
+    $mentor_name = trim((string) ($owner_profile['name'] ?? ($user->name ?? '')));
+    $mentor_name = $mentor_name !== '' ? $mentor_name : 'tvoj FCC mentor';
+    $mentor_first_name = trim(strtok($mentor_name, ' '));
+    $mentor_first_name = $mentor_first_name !== '' ? $mentor_first_name : $mentor_name;
+    $email = trim((string) ($owner_profile['email'] ?? ($user->email ?? '')));
+    $contact_url = trim((string) ($owner_profile['whatsapp_url'] ?? ''));
+    if($contact_url === '' && $email !== '' && filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $contact_url = 'mailto:' . rawurlencode($email);
+    }
+
+    return [
+        'language' => $language,
+        'owner_user_id' => $owner_user_id,
+        'mentor_name' => $mentor_name,
+        'mentor_first_name' => $mentor_first_name,
+        'email' => $email,
+        'contact_url' => $contact_url,
+        'product_shop_url' => trim((string) ($owner_profile['main_biolink_url'] ?? '')) ?: SITE_URL . 'blog',
+        'privacy_url' => SITE_URL . 'page/privacy-policy',
+        'start_package_url' => vip_funnel_get_forever_business_referral_action_token(),
+        'start_question_url' => vip_funnel_get_start_package_question_whatsapp_url($owner_user_id, $language) ?: $contact_url,
+    ];
+}
+
+function vip_funnel_mini_template_action(string $id, string $label, string $target_step_id = '', string $style = 'primary', string $action = 'goto_step', string $value = '', bool $require_submit = false, string $external_url = '', string $hint = ''): array {
+    return [
+        'id' => $id,
+        'label' => $label,
+        'hint' => $hint,
+        'value' => $value !== '' ? $value : $id,
+        'style' => $style,
+        'action' => $action,
+        'target_step_id' => $target_step_id,
+        'external_url' => $external_url,
+        'require_submit' => $require_submit,
+    ];
+}
+
+function vip_funnel_mini_template_block(string $id, string $type, array $payload = []): array {
+    return array_merge([
+        'id' => $id,
+        'type' => $type,
+        'label' => $payload['label'] ?? $id,
+        'layout_width' => 'full',
+        'alignment' => 'left',
+    ], $payload);
+}
+
+function vip_funnel_mini_template_surface(string $name, array $blocks, array $settings = []): array {
+    return array_merge([
+        'name' => $name,
+        'background_color' => '#0B1118',
+        'surface_color' => '#111B27',
+        'text_color' => '#F5FAFF',
+        'accent_color' => '#67D8C9',
+        'max_width' => 'wide',
+        'show_progress' => true,
+        'ab_enabled' => false,
+        'ab_distribution' => 50,
+        'blocks' => $blocks,
+    ], $settings);
+}
+
+function vip_funnel_mini_template_step(string $id, string $phase_key, string $path_key, string $title, string $summary, array $blocks, array $settings = []): array {
+    $card_type = (string) ($settings['card_type'] ?? 'offer');
+    $block_mode = (string) ($settings['block_mode'] ?? 'message');
+
+    return [
+        'id' => $id,
+        'path_key' => $path_key,
+        'row_key' => $path_key,
+        'card_type' => $card_type,
+        'title' => $title,
+        'summary' => $summary,
+        'helper_text' => (string) ($settings['helper_text'] ?? 'Kratki import template koji suradnik može prilagoditi svojim tekstovima, videima i slikama.'),
+        'cta' => (string) ($settings['cta'] ?? 'Odaberi sljedeći korak'),
+        'next' => (string) ($settings['next'] ?? ''),
+        'next_step_id' => (string) ($settings['next_step_id'] ?? ''),
+        'status_key' => (string) ($settings['status_key'] ?? 'core'),
+        'media_url' => '',
+        'answers' => [],
+        'tags' => (array) ($settings['tags'] ?? ['mini_template']),
+        'owner_user_id' => (int) ($settings['owner_user_id'] ?? 0),
+        'visibility_key' => 'all',
+        'analytics_label' => (string) ($settings['analytics_label'] ?? $id),
+        'design_variant' => (string) ($settings['design_variant'] ?? 'card'),
+        'preview_badge' => (string) ($settings['preview_badge'] ?? ''),
+        'preview_headline' => $title,
+        'preview_body' => $summary,
+        'block_mode' => $block_mode,
+        'background_color' => '#111B27',
+        'text_color' => '#F5FAFF',
+        'accent_color' => '#67D8C9',
+        'button_options' => (array) ($settings['button_options'] ?? []),
+        'page' => vip_funnel_mini_template_surface($title, $blocks, (array) ($settings['surface'] ?? [])),
+    ];
+}
+
+function vip_funnel_mini_template_contact_consent_block(string $id, string $mentor_name, string $privacy_url, string $title = ''): array {
+    $title = $title !== '' ? $title : 'Pristajem da me ' . $mentor_name . ' kontaktira putem WhatsAppa ili telefona vezano uz moj odabrani smjer.';
+
+    return vip_funnel_mini_template_block($id, 'checkbox_field', [
+        'title' => $title,
+        'text' => 'Podatke koristimo samo za odgovor na tvoj upit i komunikaciju vezanu uz proizvode, FCC sustav ili suradnju. Privacy: ' . $privacy_url,
+        'field_key' => 'contact_consent',
+        'required' => true,
+    ]);
+}
+
+function vip_funnel_mini_template_payload(string $template_key, $user = null, string $language = 'hr'): ?array {
+    $ctx = vip_funnel_get_mini_import_template_context($user, $language);
+    $mentor_name = $ctx['mentor_name'];
+    $mentor_first_name = $ctx['mentor_first_name'];
+    $contact_url = $ctx['contact_url'];
+    $product_shop_url = $ctx['product_shop_url'];
+    $privacy_url = $ctx['privacy_url'];
+    $start_url = $ctx['start_package_url'];
+    $start_question_url = $ctx['start_question_url'];
+    $owner_user_id = (int) $ctx['owner_user_id'];
+
+    $wa_general = $contact_url !== '' ? vip_funnel_rewrite_whatsapp_url_message($contact_url, 'Pozdrav, prošao/la sam tvoj kratki FCC vodič i zanima me najbolji sljedeći korak za mene.') : '';
+    $wa_products = $contact_url !== '' ? vip_funnel_rewrite_whatsapp_url_message($contact_url, 'Pozdrav, zanimaju me Forever proizvodi i preporuka koja bi imala smisla za moj cilj.') : '';
+    $wa_challenge = $contact_url !== '' ? vip_funnel_rewrite_whatsapp_url_message($contact_url, 'Pozdrav, želim se uključiti u 7 dana wellness rutine i dobiti sljedeći korak.') : '';
+    $wa_webinar = $contact_url !== '' ? vip_funnel_rewrite_whatsapp_url_message($contact_url, 'Pozdrav, želim informacije za sljedeću info večer / webinar i najbolji sljedeći korak za mene.') : '';
+
+    $headline = static function(string $id, string $badge, string $title, string $text, string $alignment = 'center'): array {
+        return vip_funnel_mini_template_block($id, 'headline', [
+            'badge' => $badge,
+            'title' => $title,
+            'text' => $text,
+            'alignment' => $alignment,
+        ]);
+    };
+
+    $video = static function(string $id, string $title, string $text = ''): array {
+        return vip_funnel_mini_template_block($id, 'video', [
+            'title' => $title,
+            'text' => $text !== '' ? $text : 'Ovdje dodaj kratki osobni video od 45-90 sekundi.',
+            'media_url' => '',
+            'alignment' => 'center',
+        ]);
+    };
+
+    $proof = static function(string $id, string $badge, string $title, string $text, string $width = 'full'): array {
+        return vip_funnel_mini_template_block($id, 'proof_card', [
+            'badge' => $badge,
+            'title' => $title,
+            'text' => $text,
+            'layout_width' => $width,
+            'alignment' => 'left',
+        ]);
+    };
+
+    $ai_notice = 'AI vodič služi za informiranje o proizvodima i općoj wellness rutini. Proizvodi nisu lijek i nisu zamjena za savjet liječnika.';
+    $business_notice = 'Ovo nije zaposlenje ni garantirani prihod. Rezultati ovise o tvojoj aktivnosti, vremenu, dosljednosti i tržištu.';
+
+    $payload = null;
+
+    switch($template_key) {
+        case 'mini_fcc_start':
+            $landing_blocks = [
+                $headline('mini_start_hero', 'Počni ovdje', 'Pokreni svoj FCC put uz mentorstvo', 'Pogledaj kratku poruku i odaberi smjer koji te trenutno najbolje opisuje. Ne moraš sve razumjeti odmah - vodič će te odvesti na najbolji sljedeći korak.'),
+                $video('mini_start_video', 'Kratka poruka tvog mentora', 'Objasni kome je ovaj vodič namijenjen, što osoba može očekivati i kako odabrati prvi korak.'),
+                vip_funnel_mini_template_block('mini_start_survey', 'survey', [
+                    'title' => 'Gdje se trenutno nalaziš?',
+                    'text' => 'Odaberi opciju koja te najbolje opisuje.',
+                    'options' => [
+                        vip_funnel_mini_template_action('start_ready', 'Spreman/na sam za Start paket', 'mini_start_offer', 'primary', 'goto_step', 'ready_start'),
+                        vip_funnel_mini_template_action('start_check', 'Želim kratku provjeru prije odluke', 'mini_start_check', 'secondary', 'goto_step', 'check_first'),
+                        vip_funnel_mini_template_action('start_products', 'Prvo me zanimaju proizvodi', 'mini_start_products', 'secondary', 'goto_step', 'products_first'),
+                        vip_funnel_mini_template_action('start_contact', 'Imam pitanje za mentora', 'mini_start_contact', 'ghost', 'goto_step', 'contact_mentor'),
+                    ],
+                    'alignment' => 'center',
+                ]),
+                vip_funnel_mini_template_block('mini_start_notice', 'text', [
+                    'text' => $business_notice,
+                    'text_size' => 14,
+                    'alignment' => 'center',
+                ]),
+            ];
+
+            $steps = [
+                vip_funnel_mini_template_step('mini_start_offer', 'entry', 'business', 'Start paket i ulazak u tim', 'Najkraći put za osobu koja je već spremna krenuti.', [
+                    $headline('mini_start_offer_hero', 'Start paket', 'Ako želiš konkretan početak, Start paket je tvoj prvi korak.', 'Krećeš s proizvodima, jasnim početnim smjerom i mentorstvom osobe čiji vodič upravo gledaš.'),
+                    $video('mini_start_offer_video', 'Prije narudžbe objasni što dobivaju', 'Objasni što uključuje Start paket, što se događa nakon narudžbe i kako ih vodiš kroz prve dane.'),
+                    $proof('mini_start_offer_system', 'Dobivaš', 'Proizvode, sustav preporuke, prve zadatke i mentorstvo.', 'Ne kupuješ obećanje lake zarade. Dobivaš jasan okvir, alate i podršku, a rezultat ovisi o tvojoj aktivnosti.'),
+                    vip_funnel_mini_template_block('mini_start_offer_cta', 'cta_group', [
+                        'text' => 'Odaberi kako želiš napraviti sljedeći korak.',
+                        'buttons' => [
+                            vip_funnel_mini_template_action('order_start', 'Naruči Start paket', '', 'primary', 'external_url', 'order_start', false, $start_url, 'Otvara službenu Forever stranicu za narudžbu i upis s preporukom tvog mentora.'),
+                            vip_funnel_mini_template_action('question_start', 'Imam pitanje prije narudžbe', '', 'secondary', 'external_url', 'start_question', false, $start_question_url),
+                            vip_funnel_mini_template_action('not_sure_start', 'Nisam siguran/na - želim provjeru', 'mini_start_check', 'ghost', 'goto_step', 'needs_check'),
+                        ],
+                        'alignment' => 'center',
+                    ]),
+                    vip_funnel_mini_template_block('mini_start_offer_notice', 'text', ['text' => $business_notice, 'text_size' => 14, 'alignment' => 'center']),
+                ], ['card_type' => 'cta', 'block_mode' => 'offer', 'status_key' => 'conversion', 'owner_user_id' => $owner_user_id, 'analytics_label' => 'mini_start_offer']),
+                vip_funnel_mini_template_step('mini_start_check', 'segment', 'business', 'Kratka provjera prije odluke', 'Jednostavna forma koja usmjerava osobu na pravi sljedeći korak.', [
+                    $headline('mini_start_check_hero', 'Kratka provjera', 'Odgovori iskreno i dobit ćeš najbolji sljedeći korak.', 'Ovo nije test. Samo pomaže mentoru da razumije jesi li za Start paket, razgovor, proizvode ili mirniji nastavak.'),
+                    vip_funnel_mini_template_block('mini_start_goal', 'radio_survey', [
+                        'title' => 'Što ti je trenutno najbliže?',
+                        'text' => 'Odaberi ono što te najbolje opisuje.',
+                        'required' => true,
+                        'route_on_submit' => false,
+                        'options' => [
+                            vip_funnel_mini_template_action('goal_business', 'Želim ozbiljnije pokrenuti dodatni prihod', '', 'primary', 'goto_step', 'business_goal'),
+                            vip_funnel_mini_template_action('goal_products', 'Prvo želim proizvode i popust', '', 'primary', 'goto_step', 'products_goal'),
+                            vip_funnel_mini_template_action('goal_question', 'Trebam razgovor prije odluke', '', 'primary', 'goto_step', 'question_goal'),
+                        ],
+                    ]),
+                    vip_funnel_mini_template_block('mini_start_budget', 'radio_survey', [
+                        'title' => 'Je li ti Start paket realan ovaj tjedan ako zaključiš da je ovo za tebe?',
+                        'text' => 'Odgovor usmjerava sljedeći korak bez pritiska.',
+                        'required' => true,
+                        'route_on_submit' => true,
+                        'options' => [
+                            vip_funnel_mini_template_action('budget_now', 'Da, mogu krenuti odmah', 'mini_start_offer', 'primary', 'goto_step', 'ready_now'),
+                            vip_funnel_mini_template_action('budget_call', 'Da, ali želim kratak razgovor', 'mini_start_contact', 'primary', 'goto_step', 'ready_call'),
+                            vip_funnel_mini_template_action('budget_products', 'Ne sada, prvo želim proizvode ili više informacija', 'mini_start_products', 'primary', 'goto_step', 'products_first'),
+                        ],
+                    ]),
+                    vip_funnel_mini_template_block('mini_start_check_name', 'full_name_field', ['title' => 'Ime i prezime', 'placeholder' => 'Upiši ime i prezime', 'required' => true, 'layout_width' => 'half']),
+                    vip_funnel_mini_template_block('mini_start_check_phone', 'phone_field', ['title' => 'WhatsApp / telefon', 'placeholder' => 'Upiši broj za brzi kontakt', 'required' => true, 'layout_width' => 'half']),
+                    vip_funnel_mini_template_block('mini_start_check_time', 'text_field', ['title' => 'Najbolje vrijeme za kontakt', 'placeholder' => 'npr. danas poslije 17h, sutra ujutro', 'field_key' => 'contact_time', 'required' => false]),
+                    vip_funnel_mini_template_contact_consent_block('mini_start_check_consent', $mentor_name, $privacy_url),
+                    vip_funnel_mini_template_block('mini_start_check_submit', 'cta_group', [
+                        'text' => 'Pošalji provjeru i prikaži sljedeći korak.',
+                        'buttons' => [
+                            vip_funnel_mini_template_action('submit_check', 'Pošalji provjeru', '', 'primary', 'submit_next', 'submit_check', true),
+                        ],
+                        'alignment' => 'center',
+                    ]),
+                ], ['card_type' => 'survey', 'block_mode' => 'contact_form', 'status_key' => 'core', 'owner_user_id' => $owner_user_id, 'analytics_label' => 'mini_start_check']),
+                vip_funnel_mini_template_step('mini_start_products', 'experience', 'products', 'Prvo proizvodi i preporuka', 'Product-first put za osobe koje još nisu za poslovni start.', [
+                    $headline('mini_start_products_hero', 'Proizvodi prvo', 'Kreni mirno kroz proizvode, a poslovni dio može doći kasnije.', 'Ako još nisi za Start paket, možeš prvo upoznati proizvode, AI vodiča i mogućnost popusta.'),
+                    vip_funnel_mini_template_block('mini_start_ai', 'ai_product_advisor', [
+                        'badge' => 'AI vodič',
+                        'title' => 'Pitaj AI vodiča za proizvodni smjer',
+                        'text' => 'Opiši svoj cilj u općem wellness smislu i dobit ćeš prijedlog koji možeš dodatno provjeriti s mentorom.',
+                        'ai_button_label' => 'Pokreni AI vodiča',
+                        'ai_launcher_label' => 'AI vodič',
+                        'ai_intro_label' => 'Tvoj proizvodni vodič',
+                    ]),
+                    vip_funnel_mini_template_block('mini_start_products_cta', 'cta_group', [
+                        'buttons' => [
+                            vip_funnel_mini_template_action('open_shop', 'Otvori proizvode / 15% popusta', '', 'primary', 'external_url', 'product_shop', false, $product_shop_url),
+                            vip_funnel_mini_template_action('products_whatsapp', 'Pošalji pitanje mentoru', '', 'secondary', 'external_url', 'products_question', false, $wa_products),
+                            vip_funnel_mini_template_action('products_to_start', 'Ipak me zanima Start paket', 'mini_start_offer', 'ghost', 'goto_step', 'back_to_start'),
+                        ],
+                        'alignment' => 'center',
+                    ]),
+                    vip_funnel_mini_template_block('mini_start_ai_notice', 'text', ['text' => $ai_notice, 'text_size' => 14, 'alignment' => 'center']),
+                ], ['card_type' => 'offer', 'block_mode' => 'product', 'status_key' => 'proof', 'owner_user_id' => $owner_user_id, 'analytics_label' => 'mini_start_products']),
+                vip_funnel_mini_template_step('mini_start_contact', 'conversion', 'business', 'Kontakt s mentorom', 'Jednostavan završni korak za WhatsApp ili kratki razgovor.', [
+                    $headline('mini_start_contact_hero', 'Kratak razgovor', 'Pošalji poruku i dobit ćeš najlogičniji sljedeći korak.', 'Najbrže je preko WhatsAppa. Napiši što te zanima: Start paket, proizvodi, sustav preporuke ili suradnja.'),
+                    vip_funnel_mini_template_block('mini_start_contact_cta', 'cta_group', [
+                        'buttons' => [
+                            vip_funnel_mini_template_action('general_whatsapp', 'Pošalji WhatsApp poruku', '', 'primary', 'external_url', 'general_whatsapp', false, $wa_general),
+                            vip_funnel_mini_template_action('contact_to_start', 'Pogledaj Start paket', 'mini_start_offer', 'secondary', 'goto_step', 'to_start'),
+                            vip_funnel_mini_template_action('contact_to_products', 'Prvo proizvodi', 'mini_start_products', 'ghost', 'goto_step', 'to_products'),
+                        ],
+                        'alignment' => 'center',
+                    ]),
+                ], ['card_type' => 'cta', 'block_mode' => 'message', 'status_key' => 'conversion', 'owner_user_id' => $owner_user_id, 'analytics_label' => 'mini_start_contact']),
+            ];
+
+            $payload = [
+                'funnel' => [
+                    'name' => $mentor_first_name . ' - Moj FCC Start',
+                    'slug' => vip_funnel_slugify($mentor_first_name . ' moj fcc start', 'moj-fcc-start'),
+                    'status' => 'draft',
+                    'visibility_mode' => 'pro_live',
+                    'owner_mode' => 'shared',
+                ],
+                'overview' => [
+                    'eyebrow' => 'Mini VIP vodič',
+                    'headline' => 'Kratki FCC start vodič za regrutaciju',
+                    'subheadline' => 'Uvod, Start paket, kratka provjera, proizvodi i WhatsApp kontakt u jednom kratkom modelu.',
+                    'primary_cta' => 'Spreman/na sam za Start paket',
+                    'secondary_cta' => 'Želim kratku provjeru',
+                ],
+                'positioning' => [
+                    'for' => 'Za osobe koje dolaze s društvenih mreža i žele jasan prvi korak prema Start paketu, proizvodima ili razgovoru.',
+                    'problem' => 'Interes se lako izgubi ako osoba ne zna što odabrati prvo.',
+                    'mechanism' => 'Kratki vodič segmentira osobu i vodi je prema Start paketu, provjeri, proizvodima ili WhatsApp kontaktu.',
+                    'offer_promise' => 'Jasan prvi korak bez pritiska i bez nepotrebnog objašnjavanja.',
+                    'why_now' => 'Publika s videa treba jednostavan put dok je interes još topao.',
+                ],
+                'landing_page' => vip_funnel_mini_template_surface('Moj FCC Start', $landing_blocks, ['show_progress' => false]),
+                'board' => [
+                    ['key' => 'entry', 'steps' => [$steps[0]]],
+                    ['key' => 'segment', 'steps' => [$steps[1]]],
+                    ['key' => 'experience', 'steps' => [$steps[2]]],
+                    ['key' => 'conversion', 'steps' => [$steps[3]]],
+                ],
+            ];
+            break;
+
+        case 'mini_products_discount':
+            $landing_blocks = [
+                $headline('mini_products_hero', 'Proizvodi i popust', 'Pronađi najbolji proizvodni početak za sebe.', 'Odaberi cilj, pokreni AI vodiča i kreni prema proizvodima ili popustu bez pritiska. Ako ti se sustav svidi, uvijek možeš otvoriti i razgovor o suradnji.'),
+                $video('mini_products_video', 'Kratki uvod u proizvode', 'Objasni zašto proizvodi imaju smisla kao prvi korak i kako osoba koristi AI vodiča.'),
+                vip_funnel_mini_template_block('mini_products_goal', 'survey', [
+                    'title' => 'Što želiš prvo istražiti?',
+                    'text' => 'Odaberi cilj koji ti je najbliži.',
+                    'options' => [
+                        vip_funnel_mini_template_action('goal_energy', 'Više dnevne energije', 'mini_products_recommendation', 'primary', 'goto_step', 'energy'),
+                        vip_funnel_mini_template_action('goal_weight', 'Regulacija težine / forma', 'mini_products_recommendation', 'secondary', 'goto_step', 'weight'),
+                        vip_funnel_mini_template_action('goal_skin', 'Njega kože i rutina', 'mini_products_recommendation', 'secondary', 'goto_step', 'skin'),
+                        vip_funnel_mini_template_action('goal_discount', 'Želim 15% popusta', 'mini_products_shop', 'ghost', 'goto_step', 'discount'),
+                    ],
+                    'alignment' => 'center',
+                ]),
+                vip_funnel_mini_template_block('mini_products_notice', 'text', ['text' => $ai_notice, 'text_size' => 14, 'alignment' => 'center']),
+            ];
+
+            $steps = [
+                vip_funnel_mini_template_step('mini_products_recommendation', 'entry', 'products', 'AI proizvodni vodič', 'Stranica za AI savjetnika i proizvodnu preporuku.', [
+                    $headline('mini_products_ai_hero', 'AI vodič', 'Pitaj AI vodiča što ima najviše smisla za tvoj cilj.', 'Ovo je informativni prvi korak. Nakon toga možeš otvoriti shop, pitati mentora ili vidjeti kako se isti sustav koristi za preporuke.'),
+                    vip_funnel_mini_template_block('mini_products_ai_block', 'ai_product_advisor', [
+                        'badge' => 'AI vodič',
+                        'title' => 'Opiši svoj cilj i dobit ćeš smjer',
+                        'text' => 'Napiši što tražiš u općem wellness smislu. AI vodič pomaže ti da se snađeš među proizvodima.',
+                        'ai_button_label' => 'Pokreni AI vodiča',
+                        'ai_launcher_label' => 'AI vodič',
+                        'ai_intro_label' => 'Proizvodni vodič',
+                    ]),
+                    vip_funnel_mini_template_block('mini_products_ai_cta', 'cta_group', [
+                        'buttons' => [
+                            vip_funnel_mini_template_action('ai_to_shop', 'Ostvari 15% popusta', 'mini_products_shop', 'primary', 'goto_step', 'to_shop'),
+                            vip_funnel_mini_template_action('ai_to_contact', 'Imam pitanje za mentora', 'mini_products_contact', 'secondary', 'goto_step', 'to_contact'),
+                            vip_funnel_mini_template_action('ai_to_business', 'Zanima me i suradnja', 'mini_products_business_bridge', 'ghost', 'goto_step', 'to_business'),
+                        ],
+                        'alignment' => 'center',
+                    ]),
+                    vip_funnel_mini_template_block('mini_products_ai_notice', 'text', ['text' => $ai_notice, 'text_size' => 14, 'alignment' => 'center']),
+                ], ['card_type' => 'offer', 'block_mode' => 'product', 'owner_user_id' => $owner_user_id, 'analytics_label' => 'mini_products_ai']),
+                vip_funnel_mini_template_step('mini_products_shop', 'experience', 'products', 'Shop i 15% popusta', 'Jasan izlaz prema proizvodnom linku suradnika.', [
+                    $headline('mini_products_shop_hero', '15% popusta', 'Otvori službeni proizvodni put s preporukom mentora.', 'Kada otvoriš proizvode, koristiš postojeći link suradnika i možeš nastaviti prema kupnji ili dodatnom pitanju.'),
+                    $proof('mini_products_shop_proof', 'Kako koristiti', 'Prvo odaberi proizvode, a za nejasnoće se javi mentoru.', 'Ako nisi siguran/na što odabrati, vrati se na AI vodiča ili pošalji kratku WhatsApp poruku.'),
+                    vip_funnel_mini_template_block('mini_products_shop_cta', 'cta_group', [
+                        'buttons' => [
+                            vip_funnel_mini_template_action('shop_open', 'Otvori proizvode / 15% popusta', '', 'primary', 'external_url', 'shop_open', false, $product_shop_url),
+                            vip_funnel_mini_template_action('shop_question', 'Pitaj mentora prije narudžbe', '', 'secondary', 'external_url', 'shop_question', false, $wa_products),
+                            vip_funnel_mini_template_action('shop_ai_back', 'Vrati me na AI vodiča', 'mini_products_recommendation', 'ghost', 'goto_step', 'back_ai'),
+                        ],
+                        'alignment' => 'center',
+                    ]),
+                ], ['card_type' => 'cta', 'block_mode' => 'product', 'status_key' => 'conversion', 'owner_user_id' => $owner_user_id, 'analytics_label' => 'mini_products_shop']),
+                vip_funnel_mini_template_step('mini_products_contact', 'segment', 'products', 'Pitanje za mentora', 'Kratka forma za proizvodni upit.', [
+                    $headline('mini_products_contact_hero', 'Pitanje za mentora', 'Ostavi podatke ili pošalji WhatsApp poruku.', 'Ako želiš osobnu preporuku ili nisi siguran/na odakle krenuti, najbolje je poslati kratak upit.'),
+                    vip_funnel_mini_template_block('mini_products_contact_name', 'full_name_field', ['title' => 'Ime i prezime', 'placeholder' => 'Upiši ime i prezime', 'required' => true, 'layout_width' => 'half']),
+                    vip_funnel_mini_template_block('mini_products_contact_phone', 'phone_field', ['title' => 'WhatsApp / telefon', 'placeholder' => 'Upiši broj za brzi kontakt', 'required' => true, 'layout_width' => 'half']),
+                    vip_funnel_mini_template_block('mini_products_contact_goal', 'text_field', ['title' => 'Što želiš postići?', 'placeholder' => 'npr. više energije, rutina, njega kože, popust', 'field_key' => 'product_goal', 'required' => false]),
+                    vip_funnel_mini_template_contact_consent_block('mini_products_contact_consent', $mentor_name, $privacy_url),
+                    vip_funnel_mini_template_block('mini_products_contact_cta', 'cta_group', [
+                        'buttons' => [
+                            vip_funnel_mini_template_action('products_submit', 'Pošalji upit', 'mini_products_shop', 'primary', 'submit_next', 'products_submit', true),
+                            vip_funnel_mini_template_action('products_whatsapp_now', 'Pošalji WhatsApp odmah', '', 'secondary', 'external_url', 'products_whatsapp', false, $wa_products),
+                        ],
+                        'alignment' => 'center',
+                    ]),
+                ], ['card_type' => 'survey', 'block_mode' => 'contact_form', 'owner_user_id' => $owner_user_id, 'analytics_label' => 'mini_products_contact']),
+                vip_funnel_mini_template_step('mini_products_business_bridge', 'conversion', 'business', 'Most prema suradnji', 'Za kupce koji žele razumjeti i poslovni dio.', [
+                    $headline('mini_products_bridge_hero', 'Suradnja', 'Ako ti se sviđa proizvodni put, možeš naučiti i preporučivati.', 'Isti sustav koji koristiš kao kupac može postati tvoj jednostavan okvir za preporuke, kontakt i dodatni prihod.'),
+                    $video('mini_products_bridge_video', 'Kratko objasni poslovni most', 'Objasni kako netko može krenuti od osobnog iskustva s proizvodima prema preporukama i timu.'),
+                    vip_funnel_mini_template_block('mini_products_bridge_cta', 'cta_group', [
+                        'buttons' => [
+                            vip_funnel_mini_template_action('bridge_start', 'Želim Start paket', '', 'primary', 'external_url', 'bridge_start', false, $start_url),
+                            vip_funnel_mini_template_action('bridge_whatsapp', 'Razgovor s mentorom', '', 'secondary', 'external_url', 'bridge_whatsapp', false, $wa_general),
+                            vip_funnel_mini_template_action('bridge_shop', 'Ostajem na proizvodima', 'mini_products_shop', 'ghost', 'goto_step', 'bridge_shop'),
+                        ],
+                        'alignment' => 'center',
+                    ]),
+                    vip_funnel_mini_template_block('mini_products_business_notice', 'text', ['text' => $business_notice, 'text_size' => 14, 'alignment' => 'center']),
+                ], ['card_type' => 'cta', 'block_mode' => 'message', 'status_key' => 'conversion', 'owner_user_id' => $owner_user_id, 'analytics_label' => 'mini_products_business_bridge']),
+            ];
+
+            $payload = [
+                'funnel' => [
+                    'name' => $mentor_first_name . ' - Proizvodi i 15% popusta',
+                    'slug' => vip_funnel_slugify($mentor_first_name . ' proizvodi 15 popusta', 'proizvodi-15-popusta'),
+                    'status' => 'draft',
+                    'visibility_mode' => 'pro_live',
+                    'owner_mode' => 'shared',
+                ],
+                'overview' => [
+                    'eyebrow' => 'Mini VIP proizvodi',
+                    'headline' => 'Kratki proizvodni vodič s AI preporukom',
+                    'subheadline' => 'Od proizvoda i popusta do pitanja, shopa i kasnijeg poslovnog mosta.',
+                    'primary_cta' => 'Pokreni AI vodiča',
+                    'secondary_cta' => 'Ostvari 15% popusta',
+                ],
+                'positioning' => [
+                    'for' => 'Za osobe koje najprije žele proizvode, popust ili osobnu preporuku.',
+                    'problem' => 'Ljudi često ne znaju od kojeg proizvoda krenuti.',
+                    'mechanism' => 'AI vodič i kratki izbor cilja vode osobu prema proizvodnom linku ili pitanju mentoru.',
+                    'offer_promise' => 'Miran proizvodni početak s mogućnošću kasnije suradnje.',
+                    'why_now' => 'Product-first put monetizira interes i kad osoba nije spremna za Start paket.',
+                ],
+                'landing_page' => vip_funnel_mini_template_surface('Proizvodi i 15% popusta', $landing_blocks, ['show_progress' => false]),
+                'board' => [
+                    ['key' => 'entry', 'steps' => [$steps[0]]],
+                    ['key' => 'segment', 'steps' => [$steps[2]]],
+                    ['key' => 'experience', 'steps' => [$steps[1]]],
+                    ['key' => 'conversion', 'steps' => [$steps[3]]],
+                ],
+            ];
+            break;
+
+        case 'mini_wellness_challenge':
+            $landing_blocks = [
+                $headline('mini_challenge_hero', '7 dana rutine', 'Uključi se u kratki wellness početak.', 'Odaberi cilj, ostavi kontakt i dobit ćeš jednostavan sljedeći korak za proizvode, rutinu ili razgovor s mentorom.'),
+                vip_funnel_mini_template_block('mini_challenge_image', 'image', [
+                    'title' => 'Ovdje dodaj sliku challengea ili osobnu fotografiju',
+                    'text' => 'Preporuka: topla fotografija mentora, proizvoda ili dnevne rutine.',
+                    'media_url' => '',
+                    'alignment' => 'center',
+                ]),
+                $video('mini_challenge_video', 'Kratki poziv u challenge', 'Objasni kome je challenge namijenjen i što osoba dobiva u prvih 7 dana.'),
+                vip_funnel_mini_template_block('mini_challenge_goal_survey', 'survey', [
+                    'title' => 'Koji cilj ti je najbliži?',
+                    'text' => 'Odaberi jedan smjer i vodič te vodi prema prijavi.',
+                    'options' => [
+                        vip_funnel_mini_template_action('challenge_energy', 'Više energije i bolja dnevna navika', 'mini_challenge_signup', 'primary', 'goto_step', 'energy'),
+                        vip_funnel_mini_template_action('challenge_routine', 'Jednostavna wellness rutina', 'mini_challenge_signup', 'secondary', 'goto_step', 'routine'),
+                        vip_funnel_mini_template_action('challenge_products', 'Želim preporuku proizvoda', 'mini_challenge_products', 'secondary', 'goto_step', 'products'),
+                        vip_funnel_mini_template_action('challenge_business', 'Zanima me i suradnja', 'mini_challenge_business', 'ghost', 'goto_step', 'business'),
+                    ],
+                    'alignment' => 'center',
+                ]),
+                vip_funnel_mini_template_block('mini_challenge_notice', 'text', ['text' => $ai_notice, 'text_size' => 14, 'alignment' => 'center']),
+            ];
+
+            $steps = [
+                vip_funnel_mini_template_step('mini_challenge_signup', 'entry', 'products', 'Prijava za 7 dana rutine', 'Lead capture stranica za challenge.', [
+                    $headline('mini_challenge_signup_hero', 'Prijava', 'Ostavi kontakt i dobit ćeš sljedeći korak za 7 dana rutine.', 'Ne trebaš kupiti ništa na ovoj stranici. Cilj je da mentor vidi tvoj cilj i javi ti se s najlogičnijim početkom.'),
+                    vip_funnel_mini_template_block('mini_challenge_goal', 'radio_survey', [
+                        'title' => 'Što želiš dobiti kroz ovih 7 dana?',
+                        'text' => 'Odaberi najbliži cilj.',
+                        'required' => true,
+                        'route_on_submit' => false,
+                        'options' => [
+                            vip_funnel_mini_template_action('challenge_goal_energy', 'Više energije i dnevna disciplina', '', 'primary', 'goto_step', 'energy'),
+                            vip_funnel_mini_template_action('challenge_goal_products', 'Preporuku proizvoda za rutinu', '', 'primary', 'goto_step', 'products'),
+                            vip_funnel_mini_template_action('challenge_goal_support', 'Podršku i razgovor s mentorom', '', 'primary', 'goto_step', 'support'),
+                        ],
+                    ]),
+                    vip_funnel_mini_template_block('mini_challenge_name', 'full_name_field', ['title' => 'Ime i prezime', 'placeholder' => 'Upiši ime i prezime', 'required' => true, 'layout_width' => 'half']),
+                    vip_funnel_mini_template_block('mini_challenge_phone', 'phone_field', ['title' => 'WhatsApp / telefon', 'placeholder' => 'Upiši broj za brzi kontakt', 'required' => true, 'layout_width' => 'half']),
+                    vip_funnel_mini_template_block('mini_challenge_email', 'email_field', ['title' => 'Email - opcionalno', 'placeholder' => 'Samo ako želiš potvrdu i materijale na email', 'required' => false]),
+                    vip_funnel_mini_template_contact_consent_block('mini_challenge_consent', $mentor_name, $privacy_url),
+                    vip_funnel_mini_template_block('mini_challenge_submit', 'cta_group', [
+                        'text' => 'Pošalji prijavu i otvori sljedeći korak.',
+                        'buttons' => [
+                            vip_funnel_mini_template_action('challenge_submit', 'Pošalji prijavu', 'mini_challenge_next', 'primary', 'submit_next', 'challenge_submit', true),
+                        ],
+                        'alignment' => 'center',
+                    ]),
+                ], ['card_type' => 'survey', 'block_mode' => 'contact_form', 'owner_user_id' => $owner_user_id, 'analytics_label' => 'mini_challenge_signup']),
+                vip_funnel_mini_template_step('mini_challenge_next', 'segment', 'products', 'Sljedeći korak nakon prijave', 'Thank-you stranica s WhatsApp i proizvodnim smjerom.', [
+                    $headline('mini_challenge_next_hero', 'Prijava je poslana', 'Odlično. Sada napravi jedan mali sljedeći korak.', 'Mentor ima tvoj upit. Ako želiš ubrzati komunikaciju, pošalji WhatsApp poruku i napiši da dolaziš iz 7 dana rutine.'),
+                    vip_funnel_mini_template_block('mini_challenge_next_cta', 'cta_group', [
+                        'buttons' => [
+                            vip_funnel_mini_template_action('challenge_whatsapp', 'Javi se na WhatsApp', '', 'primary', 'external_url', 'challenge_whatsapp', false, $wa_challenge),
+                            vip_funnel_mini_template_action('challenge_ai', 'Pogledaj proizvodni vodič', 'mini_challenge_products', 'secondary', 'goto_step', 'challenge_products'),
+                            vip_funnel_mini_template_action('challenge_business_next', 'Zanima me i suradnja', 'mini_challenge_business', 'ghost', 'goto_step', 'challenge_business'),
+                        ],
+                        'alignment' => 'center',
+                    ]),
+                ], ['card_type' => 'cta', 'block_mode' => 'message', 'status_key' => 'conversion', 'owner_user_id' => $owner_user_id, 'analytics_label' => 'mini_challenge_next']),
+                vip_funnel_mini_template_step('mini_challenge_products', 'experience', 'products', 'Proizvodi za rutinu', 'AI i shop nastavak za challenge.', [
+                    $headline('mini_challenge_products_hero', 'Proizvodni vodič', 'Odaberi proizvode koji imaju smisla za tvoju rutinu.', 'AI vodič može pomoći u orijentaciji, a za konačan odabir možeš se javiti mentoru.'),
+                    vip_funnel_mini_template_block('mini_challenge_ai', 'ai_product_advisor', [
+                        'badge' => 'AI vodič',
+                        'title' => 'Pitaj AI vodiča za rutinu',
+                        'text' => 'Opiši svoj cilj i dobit ćeš informativan smjer za proizvode i rutinu.',
+                        'ai_button_label' => 'Pokreni AI vodiča',
+                    ]),
+                    vip_funnel_mini_template_block('mini_challenge_products_cta', 'cta_group', [
+                        'buttons' => [
+                            vip_funnel_mini_template_action('challenge_shop', 'Otvori proizvode / 15% popusta', '', 'primary', 'external_url', 'challenge_shop', false, $product_shop_url),
+                            vip_funnel_mini_template_action('challenge_products_question', 'Pitaj mentora', '', 'secondary', 'external_url', 'challenge_products_question', false, $wa_products),
+                        ],
+                        'alignment' => 'center',
+                    ]),
+                    vip_funnel_mini_template_block('mini_challenge_ai_notice', 'text', ['text' => $ai_notice, 'text_size' => 14, 'alignment' => 'center']),
+                ], ['card_type' => 'offer', 'block_mode' => 'product', 'owner_user_id' => $owner_user_id, 'analytics_label' => 'mini_challenge_products']),
+                vip_funnel_mini_template_step('mini_challenge_business', 'conversion', 'business', 'Ako želiš i poslovni dio', 'Bridge iz challengea prema suradnji.', [
+                    $headline('mini_challenge_business_hero', 'Suradnja', 'Ako ti ova rutina ima smisla, možeš naučiti i preporučivati.', 'Kroz Start paket i mentorstvo možeš krenuti od proizvoda prema sustavu preporuka, ali bez obećanja lake zarade.'),
+                    $video('mini_challenge_business_video', 'Kratko objasni poslovni dio', 'Objasni kako challenge može biti prvi korak prema preporukama i timu.'),
+                    vip_funnel_mini_template_block('mini_challenge_business_cta', 'cta_group', [
+                        'buttons' => [
+                            vip_funnel_mini_template_action('challenge_business_start', 'Želim Start paket', '', 'primary', 'external_url', 'challenge_business_start', false, $start_url),
+                            vip_funnel_mini_template_action('challenge_business_whatsapp', 'Razgovor s mentorom', '', 'secondary', 'external_url', 'challenge_business_whatsapp', false, $wa_general),
+                            vip_funnel_mini_template_action('challenge_business_products', 'Prvo proizvodi', 'mini_challenge_products', 'ghost', 'goto_step', 'challenge_business_products'),
+                        ],
+                        'alignment' => 'center',
+                    ]),
+                    vip_funnel_mini_template_block('mini_challenge_business_notice', 'text', ['text' => $business_notice, 'text_size' => 14, 'alignment' => 'center']),
+                ], ['card_type' => 'cta', 'block_mode' => 'message', 'status_key' => 'conversion', 'owner_user_id' => $owner_user_id, 'analytics_label' => 'mini_challenge_business']),
+            ];
+
+            $payload = [
+                'funnel' => [
+                    'name' => $mentor_first_name . ' - 7 dana wellness rutine',
+                    'slug' => vip_funnel_slugify($mentor_first_name . ' 7 dana wellness rutine', '7-dana-wellness-rutine'),
+                    'status' => 'draft',
+                    'visibility_mode' => 'pro_live',
+                    'owner_mode' => 'shared',
+                ],
+                'overview' => [
+                    'eyebrow' => 'Mini VIP challenge',
+                    'headline' => '7 dana wellness rutine',
+                    'subheadline' => 'Lead magnet za kontakt, proizvodni interes i kasniji poslovni razgovor.',
+                    'primary_cta' => 'Uključi se u 7 dana',
+                    'secondary_cta' => 'Pitaj mentora',
+                ],
+                'positioning' => [
+                    'for' => 'Za publiku koja želi lagan, konkretan početak kroz rutinu i proizvode.',
+                    'problem' => 'Ljudi često žele podršku i jasan prvi korak, ali nisu spremni za veliku odluku.',
+                    'mechanism' => 'Challenge prikuplja kontakt, cilj i vodi osobu prema AI vodiču, proizvodima ili razgovoru.',
+                    'offer_promise' => 'Miran početak koji može kasnije otvoriti proizvode ili suradnju.',
+                    'why_now' => 'Kratki challenge je lakši prvi klik od direktne prodaje.',
+                ],
+                'landing_page' => vip_funnel_mini_template_surface('7 dana wellness rutine', $landing_blocks, ['show_progress' => false]),
+                'board' => [
+                    ['key' => 'entry', 'steps' => [$steps[0]]],
+                    ['key' => 'segment', 'steps' => [$steps[1]]],
+                    ['key' => 'experience', 'steps' => [$steps[2]]],
+                    ['key' => 'conversion', 'steps' => [$steps[3]]],
+                ],
+            ];
+            break;
+
+        case 'mini_webinar_info':
+            $landing_blocks = [
+                $headline('mini_webinar_hero', 'Info večer', 'Rezerviraj mjesto za sljedeći online uvod.', 'Pogledaj kratku poruku i prijavi se za info večer/webinar na kojem ćeš razumjeti proizvode, sustav preporuka i prvi sljedeći korak.'),
+                $video('mini_webinar_video', 'Kratki poziv na webinar', 'Objasni kome je webinar namijenjen, što će naučiti i zašto se isplati prijaviti.'),
+                vip_funnel_mini_template_block('mini_webinar_countdown', 'countdown', [
+                    'title' => 'Sljedeći termin',
+                    'text' => 'Odbrojavanje možeš promijeniti u postavkama stranice.',
+                    'countdown_mode' => 'weekly',
+                    'countdown_weekly_day' => 4,
+                    'countdown_weekly_time' => '20:00',
+                    'countdown_timezone' => 'Europe/Zagreb',
+                ]),
+                vip_funnel_mini_template_block('mini_webinar_survey', 'survey', [
+                    'title' => 'Što te najviše zanima?',
+                    'text' => 'Odaberi smjer i prijava će imati bolji kontekst.',
+                    'options' => [
+                        vip_funnel_mini_template_action('webinar_business', 'Dodatni prihod i suradnja', 'mini_webinar_register', 'primary', 'goto_step', 'business'),
+                        vip_funnel_mini_template_action('webinar_products', 'Proizvodi i popust', 'mini_webinar_register', 'secondary', 'goto_step', 'products'),
+                        vip_funnel_mini_template_action('webinar_system', 'Kako radi sustav preporuka', 'mini_webinar_register', 'secondary', 'goto_step', 'system'),
+                        vip_funnel_mini_template_action('webinar_start', 'Spreman/na sam za Start paket', 'mini_webinar_start', 'ghost', 'goto_step', 'start'),
+                    ],
+                    'alignment' => 'center',
+                ]),
+                vip_funnel_mini_template_block('mini_webinar_notice', 'text', ['text' => $business_notice, 'text_size' => 14, 'alignment' => 'center']),
+            ];
+
+            $steps = [
+                vip_funnel_mini_template_step('mini_webinar_register', 'entry', 'business', 'Prijava za info večer', 'Jednostavna forma za webinar/info termin.', [
+                    $headline('mini_webinar_register_hero', 'Prijava', 'Ostavi kontakt za sljedeću info večer.', 'Nakon prijave mentor ti može poslati detalje, link i kratku pripremu ovisno o tome što te najviše zanima.'),
+                    vip_funnel_mini_template_block('mini_webinar_interest', 'radio_survey', [
+                        'title' => 'Što želiš razumjeti na webinaru?',
+                        'text' => 'Odaberi jednu temu.',
+                        'required' => true,
+                        'route_on_submit' => false,
+                        'options' => [
+                            vip_funnel_mini_template_action('interest_start', 'Start paket i ulazak u tim', '', 'primary', 'goto_step', 'start_package'),
+                            vip_funnel_mini_template_action('interest_system', 'Sustav preporuka bez pritiska', '', 'primary', 'goto_step', 'system'),
+                            vip_funnel_mini_template_action('interest_products', 'Proizvodi i popust', '', 'primary', 'goto_step', 'products'),
+                            vip_funnel_mini_template_action('interest_questions', 'Imam konkretna pitanja', '', 'primary', 'goto_step', 'questions'),
+                        ],
+                    ]),
+                    vip_funnel_mini_template_block('mini_webinar_name', 'full_name_field', ['title' => 'Ime i prezime', 'placeholder' => 'Upiši ime i prezime', 'required' => true, 'layout_width' => 'half']),
+                    vip_funnel_mini_template_block('mini_webinar_phone', 'phone_field', ['title' => 'WhatsApp / telefon', 'placeholder' => 'Upiši broj za slanje detalja', 'required' => true, 'layout_width' => 'half']),
+                    vip_funnel_mini_template_block('mini_webinar_email', 'email_field', ['title' => 'Email - opcionalno', 'placeholder' => 'Ako želiš potvrdu i podsjetnik na email', 'required' => false]),
+                    vip_funnel_mini_template_contact_consent_block('mini_webinar_consent', $mentor_name, $privacy_url),
+                    vip_funnel_mini_template_block('mini_webinar_submit', 'cta_group', [
+                        'text' => 'Pošalji prijavu i otvori potvrdu.',
+                        'buttons' => [
+                            vip_funnel_mini_template_action('webinar_submit', 'Prijavi me za info večer', 'mini_webinar_confirmed', 'primary', 'submit_next', 'webinar_submit', true),
+                        ],
+                        'alignment' => 'center',
+                    ]),
+                ], ['card_type' => 'survey', 'block_mode' => 'contact_form', 'owner_user_id' => $owner_user_id, 'analytics_label' => 'mini_webinar_register']),
+                vip_funnel_mini_template_step('mini_webinar_confirmed', 'segment', 'business', 'Prijava je poslana', 'Potvrda i WhatsApp ubrzanje.', [
+                    $headline('mini_webinar_confirmed_hero', 'Prijava je poslana', 'Sljedeći korak je da dobiješ detalje i pripremu.', 'Ako želiš ubrzati komunikaciju, pošalji WhatsApp poruku mentoru i napiši da si se prijavio/la za info večer.'),
+                    vip_funnel_mini_template_block('mini_webinar_confirmed_cta', 'cta_group', [
+                        'buttons' => [
+                            vip_funnel_mini_template_action('webinar_whatsapp', 'Pošalji WhatsApp poruku', '', 'primary', 'external_url', 'webinar_whatsapp', false, $wa_webinar),
+                            vip_funnel_mini_template_action('webinar_to_start', 'Pogledaj Start paket', 'mini_webinar_start', 'secondary', 'goto_step', 'webinar_to_start'),
+                            vip_funnel_mini_template_action('webinar_to_products', 'Prvo proizvodi', 'mini_webinar_products', 'ghost', 'goto_step', 'webinar_to_products'),
+                        ],
+                        'alignment' => 'center',
+                    ]),
+                ], ['card_type' => 'cta', 'block_mode' => 'message', 'status_key' => 'conversion', 'owner_user_id' => $owner_user_id, 'analytics_label' => 'mini_webinar_confirmed']),
+                vip_funnel_mini_template_step('mini_webinar_start', 'experience', 'business', 'Start paket prije ili nakon webinara', 'Direktan put za hot posjetitelje.', [
+                    $headline('mini_webinar_start_hero', 'Start paket', 'Ako želiš krenuti konkretno, možeš otvoriti Start paket odmah.', 'Webinar može pomoći u odluci, ali ako ti je smjer već jasan, Start paket je najkraći put prema proizvodima, sustavu i mentorstvu.'),
+                    $proof('mini_webinar_start_proof', 'Važno', 'Nakon narudžbe javi se mentoru.', 'Mentor ti može poslati informacije za prvi webinar, uvod i osobni početak.'),
+                    vip_funnel_mini_template_block('mini_webinar_start_cta', 'cta_group', [
+                        'buttons' => [
+                            vip_funnel_mini_template_action('webinar_order_start', 'Naruči Start paket', '', 'primary', 'external_url', 'webinar_order_start', false, $start_url),
+                            vip_funnel_mini_template_action('webinar_start_question', 'Imam pitanje prije narudžbe', '', 'secondary', 'external_url', 'webinar_start_question', false, $start_question_url),
+                            vip_funnel_mini_template_action('webinar_register_back', 'Radije se prijavljujem na webinar', 'mini_webinar_register', 'ghost', 'goto_step', 'register_back'),
+                        ],
+                        'alignment' => 'center',
+                    ]),
+                    vip_funnel_mini_template_block('mini_webinar_start_notice', 'text', ['text' => $business_notice, 'text_size' => 14, 'alignment' => 'center']),
+                ], ['card_type' => 'cta', 'block_mode' => 'offer', 'status_key' => 'conversion', 'owner_user_id' => $owner_user_id, 'analytics_label' => 'mini_webinar_start']),
+                vip_funnel_mini_template_step('mini_webinar_products', 'conversion', 'products', 'Proizvodi prije webinara', 'Product fallback za publiku koja nije za event.', [
+                    $headline('mini_webinar_products_hero', 'Proizvodi', 'Ako te zasad zanimaju proizvodi, kreni mirnije.', 'Možeš otvoriti AI vodiča, shop ili se vratiti na prijavu za info večer.'),
+                    vip_funnel_mini_template_block('mini_webinar_ai', 'ai_product_advisor', [
+                        'badge' => 'AI vodič',
+                        'title' => 'Pitaj AI vodiča za proizvodni smjer',
+                        'text' => 'Ovo je informativni vodič za opću wellness rutinu i proizvode.',
+                        'ai_button_label' => 'Pokreni AI vodiča',
+                    ]),
+                    vip_funnel_mini_template_block('mini_webinar_products_cta', 'cta_group', [
+                        'buttons' => [
+                            vip_funnel_mini_template_action('webinar_shop', 'Otvori proizvode / 15% popusta', '', 'primary', 'external_url', 'webinar_shop', false, $product_shop_url),
+                            vip_funnel_mini_template_action('webinar_products_question', 'Pitaj mentora', '', 'secondary', 'external_url', 'webinar_products_question', false, $wa_products),
+                            vip_funnel_mini_template_action('webinar_products_register', 'Prijava na info večer', 'mini_webinar_register', 'ghost', 'goto_step', 'webinar_products_register'),
+                        ],
+                        'alignment' => 'center',
+                    ]),
+                    vip_funnel_mini_template_block('mini_webinar_ai_notice', 'text', ['text' => $ai_notice, 'text_size' => 14, 'alignment' => 'center']),
+                ], ['card_type' => 'offer', 'block_mode' => 'product', 'owner_user_id' => $owner_user_id, 'analytics_label' => 'mini_webinar_products']),
+            ];
+
+            $payload = [
+                'funnel' => [
+                    'name' => $mentor_first_name . ' - Info večer',
+                    'slug' => vip_funnel_slugify($mentor_first_name . ' info vecer webinar', 'info-vecer-webinar'),
+                    'status' => 'draft',
+                    'visibility_mode' => 'pro_live',
+                    'owner_mode' => 'shared',
+                ],
+                'overview' => [
+                    'eyebrow' => 'Mini VIP webinar',
+                    'headline' => 'Info večer / webinar vodič',
+                    'subheadline' => 'Kratka prijava, odbrojavanje, WhatsApp potvrda i Start paket smjer.',
+                    'primary_cta' => 'Prijavi me za info večer',
+                    'secondary_cta' => 'Pogledaj Start paket',
+                ],
+                'positioning' => [
+                    'for' => 'Za suradnike koji žele pozivati publiku na webinar, info večer ili online uvod.',
+                    'problem' => 'Ljudi često kliknu interes, ali ne dobiju jasan razlog da se prijave i pojave.',
+                    'mechanism' => 'Vodič daje kratki video, pravi termin, formu i WhatsApp ubrzanje.',
+                    'offer_promise' => 'Jednostavna prijava i jasna priprema za razgovor ili Start paket.',
+                    'why_now' => 'Event funnel pretvara pažnju u dogovoreni sljedeći kontakt.',
+                ],
+                'landing_page' => vip_funnel_mini_template_surface('Info večer / webinar', $landing_blocks, ['show_progress' => false]),
+                'board' => [
+                    ['key' => 'entry', 'steps' => [$steps[0]]],
+                    ['key' => 'segment', 'steps' => [$steps[1]]],
+                    ['key' => 'experience', 'steps' => [$steps[2]]],
+                    ['key' => 'conversion', 'steps' => [$steps[3]]],
+                ],
+            ];
+            break;
+    }
+
+    if(!$payload) {
+        return null;
+    }
+
+    $payload['defaults'] = [
+        'owner_user_id' => $owner_user_id,
+        'contact_email' => $ctx['email'],
+        'whatsapp_url' => $contact_url,
+        'calendar_url' => $contact_url,
+        'checkout_url' => $start_url,
+        'product_shop_url' => $product_shop_url,
+        'hide_public_navbar' => true,
+    ];
+
+    $payload['analytics'] = [
+        'primary_goal' => 'qualified_interaction',
+        'ab_goal' => 'submit',
+    ];
+
+    return vip_funnel_normalize_studio_payload($payload, $user);
 }
 
 function vip_funnel_apply_template_landing(array $payload, string $language, array $copy): array {
@@ -6984,6 +7711,12 @@ function vip_funnel_get_import_template_payload(string $template_key = '', $user
         case 'fcc_recruiting_mentor':
         case 'mentor_recruiting':
             return vip_funnel_get_fcc_vip_import_template_payload($user, $language);
+
+        case 'mini_fcc_start':
+        case 'mini_products_discount':
+        case 'mini_wellness_challenge':
+        case 'mini_webinar_info':
+            return vip_funnel_mini_template_payload($template_key, $user, $language);
 
         default:
             return null;
