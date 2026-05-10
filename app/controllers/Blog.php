@@ -103,6 +103,60 @@ class Blog extends Controller {
         return SITE_URL . $path;
     }
 
+    private function sync_referral_cookie_from_request(): void {
+        if(!isset($_GET['ref'])) {
+            return;
+        }
+
+        $requested_referral = query_clean(trim((string) $_GET['ref']));
+
+        if($requested_referral === '') {
+            return;
+        }
+
+        $resolved_biolink_slug = $this->resolve_referral_to_biolink_slug($requested_referral);
+        $referral_slug = $resolved_biolink_slug ?: $requested_referral;
+        $expires_at = time() + 60 * 60 * 24 * 365;
+
+        setcookie('referral', $referral_slug, $expires_at, '/');
+        $_COOKIE['referral'] = $referral_slug;
+
+        $resolved_referral_user = db()
+            ->where('referral_key', $requested_referral)
+            ->where('status', 1)
+            ->getOne('users', ['referral_key']);
+
+        if($resolved_referral_user && !empty($resolved_referral_user->referral_key)) {
+            setcookie('referred_by', (string) $resolved_referral_user->referral_key, $expires_at, COOKIE_PATH);
+            $_COOKIE['referred_by'] = (string) $resolved_referral_user->referral_key;
+        }
+    }
+
+    private function redirect_legacy_blog_post_alias_if_needed(string $slug, string $language): void {
+        $normalized_slug = mb_strtolower(trim($slug));
+
+        $legacy_aliases = [
+            'postani-forever-living-products-partner' => 'start-paket',
+        ];
+
+        if(!isset($legacy_aliases[$normalized_slug])) {
+            return;
+        }
+
+        $target_slug = $legacy_aliases[$normalized_slug];
+        $redirect_url = $this->build_localized_public_url('blog/' . $target_slug, $language);
+        $query = $_GET;
+
+        unset($query['set_language']);
+
+        if(!empty($query)) {
+            $redirect_url .= '?' . http_build_query($query);
+        }
+
+        header('Location: ' . $redirect_url, true, 301);
+        die();
+    }
+
     private function normalize_blog_search_intent_value(string $value): string {
         $value = trim($value);
         $value = function_exists('mb_strtolower') ? mb_strtolower($value, 'UTF-8') : strtolower($value);
@@ -341,6 +395,10 @@ class Blog extends Controller {
         /* Blog post */
         if(isset($this->params[0]) && $this->params[0] != 'category') {
             $url = query_clean($this->params[0]);
+
+            /* Preserve explicit sponsor referral even if the blog slug is old or broken. */
+            $this->sync_referral_cookie_from_request();
+            $this->redirect_legacy_blog_post_alias_if_needed($url, $language);
 
             $blog_post_query = "
                 SELECT * 
