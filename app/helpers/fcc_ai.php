@@ -44,7 +44,7 @@ function fcc_ai_get_soft_resolved_feedback_ids(): array {
     }
 
     /* Historical live feedback cases already fixed in the recommendation engine but not writable-resolved in production DB. */
-    $ids = [43, 45, 46, 48, 49, 50, 51, 53, 54, 60, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 87, 89, 91, 100, 101, 102, 105, 107, 108, 109, 110, 111, 112, 113, 114, 115, 120, 123, 124, 127, 131, 134, 135];
+    $ids = [43, 45, 46, 48, 49, 50, 51, 53, 54, 60, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 87, 89, 91, 100, 101, 102, 105, 107, 108, 109, 110, 111, 112, 113, 114, 115, 120, 123, 124, 127, 131, 134, 135, 138, 139, 141, 142];
 
     return $ids;
 }
@@ -6321,8 +6321,68 @@ function fcc_ai_internal_coach_is_event_content_context(string $message): bool {
     }
 
     return fcc_ai_contains_keywords($message, [
-        'sejam', 'sajam', 'na sejmu', 'na sajmu', 'event', 'događaj', 'dogadjaj',
-        'kozmetike', 'kozmetika', 'frizerstva', 'frizer',
+        'sejam', 'sajam', 'na sejmu', 'na sajmu', 'sajamsk',
+        'event', 'događaj', 'dogadjaj', 'expo', 'štand', 'stand',
+    ]);
+}
+
+function fcc_ai_internal_coach_is_webshop_no_sales_conversion_request(string $message): bool {
+    $message = trim($message);
+
+    if($message === '') {
+        return false;
+    }
+
+    $has_webshop_context = fcc_ai_contains_keywords($message, [
+        'webshop', 'web shop', 'forever web shop', 'forever web trgovina',
+        'prodajni link', 'link builder', 'foreverliving', 'checkout',
+        'kupiti', 'kupovati', 'kupnja', 'kupnje', 'narudž', 'narudz',
+        'prodaja', 'prodaje',
+    ]);
+
+    $has_conversion_problem = fcc_ai_contains_keywords($message, [
+        'nema prodaje', 'prodaja ne ide', 'bez prodaje', 'ne kupuju', 'ne kupuje',
+        'nitko ne kupuje', 'klikaju ali ne kupuju', 'klikovi bez kupnje',
+        'klikove', 'klikovi', 'klikaju', 'posjete bez kupnje', 'promet bez prodaje',
+        'nema narudžbi', 'nema narudzbi', 'nema kupnje',
+    ]);
+
+    return $has_webshop_context && $has_conversion_problem;
+}
+
+function fcc_ai_build_internal_coach_webshop_no_sales_conversion_reply(array $sales_link_summary, string $language = 'hr'): string {
+    $language = fcc_ai_resolve_public_reply_language($language);
+    $has_valid_link = !empty($sales_link_summary['has_valid_link']);
+
+    if($language === 'en') {
+        return implode("\n\n", [
+            'If people click toward the Forever webshop but do not buy, do not move the user into a business-collaboration explanation. Stay on the product purchase path and check the funnel step by step.',
+            "Check this in order:\n- does the Reel/story promise match the exact FCC article or product they land on\n- does the product article clearly answer why this product is the right next step\n- does the Buy/Forever Web Shop button open the correct personal Link Builder URL\n- is the discount/referral path visible and not broken\n- is there a short WhatsApp/contact option for questions before purchase",
+            $has_valid_link
+                ? 'Because the sales link appears to be present, the next best test is to open the app in an incognito/private window and click the product path like a real visitor: story/ad -> FCC article -> product button -> Forever checkout.'
+                : 'First fix the Forever Web Shop block and personal Link Builder URL, because without a valid sales link FCC cannot turn product interest into webshop purchase results.',
+            'Best next step now: test the exact shared link in an incognito window, then compare what the visitor expects with what they see on the article and checkout path.',
+        ]);
+    }
+
+    if($language === 'sl') {
+        return implode("\n\n", [
+            'Če ljudje klikajo proti Forever webshopu, vendar ne kupijo, uporabnika ne premikaj v razlago poslovnega sodelovanja. Ostani na poti nakupa izdelka in preveri funnel korak za korakom.',
+            "Preveri po vrsti:\n- ali obljuba iz storyja/reela ustreza točnemu FCC članku ali izdelku, kamor pridejo\n- ali članek jasno razloži, zakaj je ta izdelek pravi naslednji korak\n- ali gumb za nakup / Forever Web Shop odpre pravilen osebni Link Builder URL\n- ali sta popust in referral pot vidna in nista prekinjena\n- ali obstaja kratka WhatsApp/kontakt možnost za vprašanja pred nakupom",
+            $has_valid_link
+                ? 'Ker prodajni link izgleda prisoten, je najboljši naslednji test odpreti aplikacijo v anonimnem oknu in klikniti pot kot pravi obiskovalec: story/oglas -> FCC članek -> produktni gumb -> Forever checkout.'
+                : 'Najprej popravi Forever Web Shop blok in osebni Link Builder URL, ker brez veljavnega prodajnega linka FCC ne more pretvarjati interesa za izdelke v webshop rezultate.',
+            'Najboljša naslednja poteza zdaj: testiraj točen deljeni link v anonimnem oknu in primerjaj, kaj obiskovalec pričakuje s tem, kar vidi v članku in checkout toku.',
+        ]);
+    }
+
+    return implode("\n\n", [
+        'Ako ljudi klikaju prema Forever webshopu, ali ne kupuju, ne treba ih voditi u priču o poslovnoj suradnji. Fokus ostaje na kupovnom putu proizvoda i treba provjeriti gdje se gubi povjerenje ili jasnoća.',
+        "Provjeri redom:\n- odgovara li obećanje iz storyja/reela točno FCC članku ili proizvodu na koji osoba dolazi\n- objašnjava li članak jasno zašto je baš taj proizvod sljedeći logičan korak\n- otvara li gumb za kupnju / Forever Web trgovina ispravan osobni Link Builder URL\n- vidi li se popust/referral put i radi li bez pucanja\n- postoji li kratak WhatsApp/kontakt za pitanje prije kupnje",
+        $has_valid_link
+            ? 'Budući da prodajni link izgleda postavljen, sljedeći najbolji test je otvoriti aplikaciju u anonimnom prozoru i proći put kao pravi posjetitelj: story/oglas -> FCC članak -> produktni gumb -> Forever checkout.'
+            : 'Prvo popravi Forever Web trgovina blok i osobni Link Builder URL, jer bez valjanog prodajnog linka FCC ne može pretvoriti interes za proizvod u webshop kupnju.',
+        'Najbolji sljedeći korak sada: testiraj točan podijeljeni link u anonimnom prozoru i usporedi što posjetitelj očekuje s onim što vidi u članku i checkout toku.',
     ]);
 }
 
@@ -9154,7 +9214,7 @@ function fcc_ai_get_public_recommendation_theme_catalog(string $assistant_type):
             ],
         ],
         'skin_hair' => [
-            'keywords' => ['kosa', 'vlasi', 'hair', 'dermatit', 'koža', 'koza', 'skin', 'zanokt', 'gljivic', 'nok', 'sunce', 'sunca', 'sun', 'lice', 'lica', 'face', 'bore', 'anti age', 'brazgotin', 'ožilj', 'ozilj', 'scar', 'scars', 'psorijaz', 'osip', 'kozne promene', 'alergij'],
+            'keywords' => ['kosa', 'vlasi', 'hair', 'dermatit', 'koža', 'koza', 'skin', 'zanokt', 'gljivic', 'nok', 'sunce', 'sunca', 'sun', 'lice', 'lica', 'face', 'bore', 'anti age', 'brazgotin', 'ožilj', 'ozilj', 'scar', 'scars', 'psorijaz', 'osip', 'kozne promene', 'alergij', 'tetova', 'tattoo'],
             'article_patterns' => ['marine', 'collagen', 'infinite', 'propolis', 'jojoba', 'hair', 'bee', 'aloe', 'cooling', 'sunscreen'],
             'label' => ['hr' => 'koža, kosa i njega', 'en' => 'skin, hair and care'],
             'bioactive' => ['hr' => 'aloe vera, propolis i sastojci za njegu', 'en' => 'aloe vera, propolis, and care-support ingredients'],
@@ -12743,6 +12803,39 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
             'suppress_generic_questions' => true,
             'lock_product_scope' => true,
         ],
+        'fresh_tattoo_aftercare_support' => [
+            'patterns' => ['tetovaža', 'tetovaza', 'tetovažu', 'tetovazu', 'tetovaže', 'tetovaze', 'tetoviranje', 'tetoviranja', 'nova tetova', 'novu tetova', 'nove tetova', 'svježa tetova', 'svjeza tetova', 'fresh tattoo', 'new tattoo', 'tattoo aftercare'],
+            'preferred_patterns' => ['aloe vera gelly', 'gelly', 'aloe first', 'first spray', 'liquid soap'],
+            'primary_product' => 'Forever Aloe Vera Gelly',
+            'support_products' => ['Forever Aloe First Spray', 'Forever Aloe Liquid Soap'],
+            'label' => [
+                'hr' => 'nova tetovaža i nježna lokalna njega',
+                'en' => 'fresh tattoo and gentle topical care',
+            ],
+            'opening_note' => [
+                'hr' => 'Kod nove tetovaže prvo treba slijediti upute tattoo majstora i držati kožu čistom. Ako želite Forever smjer, preporuka mora ostati isključivo na nježnoj lokalnoj njezi izvana, bez čajeva, napitaka ili drugih nepovezanih proizvoda.',
+                'en' => 'With a fresh tattoo, the first step is to follow the tattoo artist’s aftercare instructions and keep the skin clean. If you want a Forever direction, keep it strictly on gentle topical care, without teas, drinks or unrelated products.',
+            ],
+            'recommendation_lines' => [
+                'hr' => [
+                    'Forever Aloe Vera Gelly je ovdje najkonkretniji Forever proizvod za tanki, nježni lokalni aloe sloj na čistoj i suhoj koži, samo ako je to u skladu s uputom tattoo majstora.',
+                    'Forever Aloe First Spray može biti support prvi korak kada želite lagano pošpricati područje prije gelly sloja ili kroz dan, bez trljanja.',
+                    'Forever Aloe Liquid Soap ima smisla kao dodatak za nježno pranje kože oko tetovaže kada želite rutinu zadržati čistom i blagom.',
+                ],
+                'en' => [
+                    'Forever Aloe Vera Gelly is the most concrete Forever product here for a thin, gentle topical aloe layer on clean, dry skin, only if it fits the tattoo artist’s instructions.',
+                    'Forever Aloe First Spray can be the support first step when you want to lightly spray the area before the Gelly layer or during the day, without rubbing.',
+                    'Forever Aloe Liquid Soap makes sense as the gentle cleansing add-on around the tattoo when you want to keep the routine clean and mild.',
+                ],
+            ],
+            'monthly_quantity_note' => [
+                'hr' => 'Za jednostavnu aftercare rutinu ovdje se najčešće gleda 1 x Forever Aloe Vera Gelly, 1 x Forever Aloe First Spray i po potrebi 1 x Forever Aloe Liquid Soap.',
+                'en' => 'For a simple aftercare routine, this most often stays on 1 x Forever Aloe Vera Gelly, 1 x Forever Aloe First Spray and, if useful, 1 x Forever Aloe Liquid Soap.',
+            ],
+            'suppress_generic_questions' => true,
+            'sensitive_support_only' => true,
+            'lock_product_scope' => true,
+        ],
         'diaper_rash_support' => [
             'patterns' => ['pelenski osip', 'pelenskog osipa', 'pelenskog područja', 'pelenskog podrucja', 'pelensko područje', 'pelensko podrucje', 'osip od pelena', 'pelene', 'područje pelena', 'podrucje pelena', 'pelenski dermatitis'],
             'preferred_patterns' => ['first spray', 'aloe first', 'aloe gelly', 'gelly', 'propolis creme', 'aloe propolis'],
@@ -13974,6 +14067,15 @@ function fcc_ai_get_product_advisor_effective_condition_matches(string $message,
         );
     }
 
+    if(fcc_ai_contains_keywords($message, ['tetova', 'tetovaž', 'tetovaz', 'tattoo'])) {
+        $matches[] = fcc_ai_get_product_advisor_condition_match_by_key(
+            'fresh_tattoo_aftercare_support',
+            $language,
+            ['tetovaža', 'aftercare'],
+            338
+        );
+    }
+
     if(
         fcc_ai_contains_keywords($message, ['c9', 'clean 9', 'clean9'])
         && (
@@ -14886,6 +14988,31 @@ function fcc_ai_get_product_advisor_effective_condition_matches(string $message,
     $match_keys = array_values(array_filter(array_map(static function(array $match) {
         return trim((string) ($match['key'] ?? ''));
     }, $matches)));
+
+    if(in_array('fresh_tattoo_aftercare_support', $match_keys, true)) {
+        $matches = array_values(array_filter($matches, static function(array $match) {
+            return !in_array((string) ($match['key'] ?? ''), [
+                'joint_mobility_support',
+                'cartilage_mobility_support',
+                'mobility_alternative_support',
+                'back_spine_support',
+                'limb_joint_pain_support',
+                'muscle_recovery_support',
+                'digestion_energy_support',
+                'digestive_routine_support',
+                'post_meal_digestion_support',
+                'bloating_gas_support',
+                'diabetes_balance_support',
+                'weight_loss_program',
+                'skin_allergy_inside_out_support',
+                'skin_allergy_arctic_support',
+            ], true);
+        }));
+
+        $match_keys = array_values(array_filter(array_map(static function(array $match) {
+            return trim((string) ($match['key'] ?? ''));
+        }, $matches)));
+    }
 
     if(fcc_ai_is_public_gastritis_like_request($message) && in_array('digestive_routine_support', $match_keys, true)) {
         $matches = array_values(array_filter($matches, static function(array $match) {
@@ -16672,7 +16799,7 @@ function fcc_ai_build_public_recommendation_payload(string $assistant_type, stri
         return trim((string) ($condition_match['key'] ?? ''));
     }, $condition_matches)));
 
-    if(array_intersect($condition_keys, ['post_c9_lighter_weight_support', 'pancreas_inflammation_elderly_guard'])) {
+    if(array_intersect($condition_keys, ['post_c9_lighter_weight_support', 'pancreas_inflammation_elderly_guard', 'fresh_tattoo_aftercare_support'])) {
         $force_local_reply = true;
     }
 
@@ -26524,6 +26651,23 @@ function fcc_ai_generate_internal_coach_reply(string $message, array $context = 
                 : ($language === 'sl'
                     ? 'Odpri Dashboard in vpiši doseženi rezultat.'
                     : 'Otvori Dashboard i upiši Ostvareni rezultat.'),
+        ];
+    }
+
+    if(fcc_ai_internal_coach_is_webshop_no_sales_conversion_request($message)) {
+        $content = fcc_ai_build_internal_coach_webshop_no_sales_conversion_reply($sales_link_summary, $language);
+
+        return [
+            'content' => $content,
+            'language' => $language,
+            'knowledge_suggestions' => [],
+            'reply_mode' => 'webshop_no_sales_conversion',
+            'force_local_preview' => true,
+            'next_step' => $language === 'en'
+                ? 'Test the exact visitor path in an incognito window.'
+                : ($language === 'sl'
+                    ? 'Testiraj točno pot obiskovalca v anonimnem oknu.'
+                    : 'Testiraj točan put posjetitelja u anonimnom prozoru.'),
         ];
     }
 
