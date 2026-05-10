@@ -147,7 +147,7 @@ class Blog extends Controller {
         $redirect_url = $this->build_localized_public_url('blog/' . $target_slug, $language);
         $query = $_GET;
 
-        unset($query['set_language']);
+        unset($query['set_language'], $query['altum']);
 
         if(!empty($query)) {
             $redirect_url .= '?' . http_build_query($query);
