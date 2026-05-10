@@ -1144,6 +1144,100 @@ class OpsReadonly extends Controller {
         ];
     }
 
+    private function get_ai_recent_communications_payload(): array {
+        $limit = $this->get_param_limit('limit', 20, 1, 50);
+        $assistant_type = $this->get_param_string('assistant_type');
+        $assistant_filter = '';
+
+        if($assistant_type !== '') {
+            $assistant_filter = " AND `c`.`assistant_type` = '" . database()->escape_string($assistant_type) . "'";
+        }
+
+        $result = database()->query("
+            SELECT
+                `m`.`fcc_ai_message_id`,
+                `m`.`datetime` AS `assistant_datetime`,
+                `c`.`fcc_ai_conversation_id`,
+                `c`.`public_id` AS `conversation_public_id`,
+                `c`.`assistant_type`,
+                `c`.`scope`,
+                `c`.`lead_status`,
+                `u`.`user_id`,
+                `u`.`name` AS `owner_name`,
+                (
+                    SELECT `prev`.`content`
+                    FROM `fcc_ai_messages` AS `prev`
+                    WHERE `prev`.`fcc_ai_conversation_id` = `m`.`fcc_ai_conversation_id`
+                      AND `prev`.`role` = 'user'
+                      AND `prev`.`fcc_ai_message_id` < `m`.`fcc_ai_message_id`
+                    ORDER BY `prev`.`fcc_ai_message_id` DESC
+                    LIMIT 1
+                ) AS `last_user_message`,
+                `m`.`content` AS `assistant_message`,
+                COALESCE((
+                    SELECT `f`.`feedback_type`
+                    FROM `fcc_ai_message_feedback` AS `f`
+                    WHERE `f`.`fcc_ai_message_id` = `m`.`fcc_ai_message_id`
+                      AND COALESCE(`f`.`status`, 'new') != 'resolved'
+                    ORDER BY `f`.`fcc_ai_message_feedback_id` DESC
+                    LIMIT 1
+                ), '') AS `active_feedback_type`,
+                COALESCE((
+                    SELECT `f`.`reason`
+                    FROM `fcc_ai_message_feedback` AS `f`
+                    WHERE `f`.`fcc_ai_message_id` = `m`.`fcc_ai_message_id`
+                      AND COALESCE(`f`.`status`, 'new') != 'resolved'
+                    ORDER BY `f`.`fcc_ai_message_feedback_id` DESC
+                    LIMIT 1
+                ), '') AS `active_feedback_reason`,
+                COALESCE((
+                    SELECT `f`.`note`
+                    FROM `fcc_ai_message_feedback` AS `f`
+                    WHERE `f`.`fcc_ai_message_id` = `m`.`fcc_ai_message_id`
+                      AND COALESCE(`f`.`status`, 'new') != 'resolved'
+                    ORDER BY `f`.`fcc_ai_message_feedback_id` DESC
+                    LIMIT 1
+                ), '') AS `active_feedback_note`
+            FROM `fcc_ai_messages` AS `m`
+            INNER JOIN `fcc_ai_conversations` AS `c`
+                ON `c`.`fcc_ai_conversation_id` = `m`.`fcc_ai_conversation_id`
+            LEFT JOIN `users` AS `u`
+                ON `u`.`user_id` = `c`.`user_id`
+            WHERE `m`.`role` = 'assistant'
+              AND `m`.`message_type` = 'chat'
+              {$assistant_filter}
+            ORDER BY `m`.`fcc_ai_message_id` DESC
+            LIMIT {$limit}
+        ");
+
+        $items = [];
+
+        while($result && $row = $result->fetch_assoc()) {
+            $items[] = [
+                'fcc_ai_message_id' => (int) ($row['fcc_ai_message_id'] ?? 0),
+                'assistant_datetime' => (string) ($row['assistant_datetime'] ?? ''),
+                'conversation_id' => (int) ($row['fcc_ai_conversation_id'] ?? 0),
+                'conversation_public_id' => (string) ($row['conversation_public_id'] ?? ''),
+                'assistant_type' => (string) ($row['assistant_type'] ?? ''),
+                'scope' => (string) ($row['scope'] ?? ''),
+                'lead_status' => (string) ($row['lead_status'] ?? ''),
+                'user_id' => (int) ($row['user_id'] ?? 0),
+                'owner_name' => (string) ($row['owner_name'] ?? ''),
+                'last_user_message' => $this->excerpt((string) ($row['last_user_message'] ?? ''), 700),
+                'assistant_message' => $this->excerpt((string) ($row['assistant_message'] ?? ''), 1200),
+                'active_feedback_type' => (string) ($row['active_feedback_type'] ?? ''),
+                'active_feedback_reason' => (string) ($row['active_feedback_reason'] ?? ''),
+                'active_feedback_note' => (string) ($row['active_feedback_note'] ?? ''),
+            ];
+        }
+
+        return [
+            'items' => $items,
+            'limit' => $limit,
+            'assistant_type' => $assistant_type,
+        ];
+    }
+
     private function build_plan_catalog_entry(object $plan, array $user_counts, array $subscription_counts): array {
         $plan_settings = $this->get_object($plan->settings ?? null);
         $plan_prices = [];
@@ -1591,6 +1685,10 @@ class OpsReadonly extends Controller {
                 $this->respond_success($scope, $this->get_ai_feedback_payload());
                 break;
 
+            case 'ai_recent_communications':
+                $this->respond_success($scope, $this->get_ai_recent_communications_payload());
+                break;
+
             case 'plans':
                 $this->respond_success($scope, $this->get_plans_payload());
                 break;
@@ -1626,7 +1724,7 @@ class OpsReadonly extends Controller {
 
             default:
                 $this->respond_error('invalid_scope', 'Readonly ops scope is invalid.', 422, [
-                    'allowed_scopes' => ['health', 'overview', 'ai_feedback', 'plans', 'billing', 'collaborators', 'fcc_signal_notifications', 'collaborator'],
+                    'allowed_scopes' => ['health', 'overview', 'ai_feedback', 'ai_recent_communications', 'plans', 'billing', 'collaborators', 'fcc_signal_notifications', 'collaborator'],
                 ]);
         }
     }
