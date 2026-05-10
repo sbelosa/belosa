@@ -107,6 +107,11 @@
                     translations
                 },
 
+                onConsent: () => {
+                    const preferences = CookieConsent.getUserPreferences();
+                    window.dispatchEvent(new CustomEvent('cookie_consent_update', { detail: { accepted_categories: preferences.acceptedCategories } }));
+                },
+
                 onFirstConsent: () => {
                     const preferences = CookieConsent.getUserPreferences();
                     window.dispatchEvent(new CustomEvent('cookie_consent_update', { detail: { accepted_categories: preferences.acceptedCategories } }));

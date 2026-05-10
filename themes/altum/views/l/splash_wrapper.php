@@ -36,6 +36,8 @@
             <link href="<?= ASSETS_FULL_URL . 'css/' . $file . '?v=' . PRODUCT_CODE ?>" rel="stylesheet" media="screen,print">
         <?php endforeach ?>
 
+        <?php require THEME_PATH . 'views/partials/google_analytics.php' ?>
+
         <?= \Altum\Event::get_content('head') ?>
 
         <?php if(is_logged_in() && !user()->plan_settings->export->pdf): ?>

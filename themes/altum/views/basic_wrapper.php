@@ -57,6 +57,8 @@
     <link href="<?= ASSETS_FULL_URL . 'css/custom.css?v=' . PRODUCT_CODE ?>" rel="stylesheet" media="screen">
     <!-- /Custom code: FC-2026-02-25 -->
 
+    <?php require THEME_PATH . 'views/partials/google_analytics.php' ?>
+
     <?= \Altum\Event::get_content('head') ?>
 
         <?php if(is_logged_in() && !user()->plan_settings->export->pdf): ?>
