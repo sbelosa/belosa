@@ -4597,6 +4597,8 @@ $fcc_biolink_editor_tours = [
                             'justify-content': cta_justify,
                             'align-items': text_alignment === 'justify' ? 'stretch' : 'center'
                         });
+
+                        biolink_link.find('[data-vip-funnel-hub-paths-alignment]').css('justify-content', cta_justify);
                     }
                 });
             }

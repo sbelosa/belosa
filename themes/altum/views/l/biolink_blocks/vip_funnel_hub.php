@@ -107,7 +107,7 @@ $columns = (int) ($settings['columns'] ?? 1) === 2 ? '6' : '12';
             <?php endif ?>
 
             <?php if(!empty($render['show_paths']) && !empty($render['paths'])): ?>
-                <div class="d-flex flex-wrap mb-3" style="gap:.5rem;">
+                <div class="d-flex flex-wrap mb-3" style="gap:.5rem; justify-content:<?= $cta_justify ?>;" data-vip-funnel-hub-paths-alignment>
                     <?php foreach($render['paths'] as $path): ?>
                         <span style="display:inline-flex; align-items:center; padding:.38rem .7rem; border-radius:999px; border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.06); font-size:.78rem; font-weight:700;">
                             <?= htmlspecialchars((string) ($path['title'] ?? ''), ENT_QUOTES, 'UTF-8') ?>
