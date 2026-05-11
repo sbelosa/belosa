@@ -5804,6 +5804,26 @@ function fcc_ai_is_public_weight_product_help_context(string $message): bool {
     ]);
 }
 
+function fcc_ai_is_public_c9_context_message(string $message): bool {
+    return fcc_ai_contains_keywords($message, ['c9', 'clean 9', 'clean9']);
+}
+
+function fcc_ai_is_public_weight_result_question(string $message): bool {
+    $message = trim($message);
+
+    if($message === '') {
+        return false;
+    }
+
+    return (
+        fcc_ai_contains_keywords($message, ['koliko', 'kolko', 'koliko ja', 'koliko mogu', 'koliko se može', 'koliko se moze'])
+        && fcc_ai_contains_keywords($message, ['kg', 'kilogram', 'kila', 'smršav', 'smrsav', 'skinuti', 'skinut'])
+    ) || fcc_ai_contains_keywords($message, [
+        'koliko kilograma mogu', 'koliko kg mogu', 'koliko mogu skinuti',
+        'koliko mogu smršaviti', 'koliko mogu smrsaviti',
+    ]);
+}
+
 function fcc_ai_get_recent_public_user_messages(int $conversation_id, int $limit = 4, string $current_message = ''): array {
     if($conversation_id <= 0 || $limit <= 0) {
         return [];
@@ -8750,6 +8770,79 @@ function fcc_ai_get_public_special_direct_product_payload(string $message, strin
 
     if(empty($matches)) {
         return [];
+    }
+
+    if(in_array('c9', $matches, true)) {
+        $is_price_request = fcc_ai_contains_keywords($message, ['koliko košta', 'koliko kosta', 'cijena', 'cena', 'price']);
+        $is_weight_result_request = fcc_ai_is_public_weight_result_question($message);
+        $is_post_c9_lighter_support_request = (
+            fcc_ai_contains_keywords($message, ['odustala', 'odustao', 'odustati', 'sedmi dan', '7-mi dan', '7. dan', 'lakši način', 'laksi nacin', 'lakše', 'lakse'])
+            && fcc_ai_contains_keywords($message, ['kg', 'kilogram', 'smršav', 'smrsav', 'mršav', 'mrsav', 'skinuti'])
+        );
+
+        if($is_post_c9_lighter_support_request && !$is_price_request && !$is_weight_result_request) {
+            return [];
+        }
+
+        if($is_price_request) {
+            $opening_note = $language === 'en'
+                ? 'If you are asking for the C9 price, I should not guess a live market price from the chat.'
+                : 'Ako pitate za cijenu C9 programa, ovdje ne bih nagađao live cijenu iz chata.';
+            $recommendation_lines = $language === 'en'
+                ? [
+                    'C9 Forever Living Products is the exact product/program in this question.',
+                    'The price can depend on the market, current offer and the partner checkout path, so the safest concrete step is to open the partner checkout/link or ask the FCC partner for the current price.',
+                    'If the partner flow includes a referral benefit, check whether the 15% discount is applied before purchase.',
+                ]
+                : [
+                    'C9 Forever Living Products je točan proizvod/program u ovom pitanju.',
+                    'Cijena može ovisiti o tržištu, aktualnoj ponudi i partnerovom checkout linku, zato je najtočniji konkretan korak otvoriti partnerov checkout/link ili pitati FCC partnera za trenutnu cijenu.',
+                    'Ako se kupuje kroz partnerov preporučni tok, prije kupnje provjerite je li primijenjen dostupni 15% popust.',
+                ];
+        } elseif($is_weight_result_request) {
+            $opening_note = $language === 'en'
+                ? 'For C9, I would keep the answer concrete but honest: nobody should promise an exact number of kilograms.'
+                : 'Za C9 bih odgovor zadržao konkretan, ali pošten: ne treba obećavati točan broj kilograma.';
+            $recommendation_lines = $language === 'en'
+                ? [
+                    'C9 Forever Living Products is a 9-day structured program for a starting reset and better intake rhythm.',
+                    'The result in kilograms varies by starting weight, eating rhythm, activity, water retention and how consistently the program is followed.',
+                    'The right way to set expectations is to look at C9 as a first structured step, not as a guarantee of a fixed number of kilograms.',
+                ]
+                : [
+                    'C9 Forever Living Products je 9-dnevni strukturirani program za početni reset i bolji ritam unosa.',
+                    'Rezultat u kilogramima ovisi o početnoj težini, prehrani, aktivnosti, zadržavanju vode i tome koliko se dosljedno prati program.',
+                    'Najispravnije je C9 gledati kao prvi strukturirani korak, a ne kao garanciju točnog broja kilograma.',
+                ];
+        } else {
+            $opening_note = $language === 'en'
+                ? 'If you are asking specifically about C9, keep the answer on the C9 program itself and do not drift into F15 or unrelated products.'
+                : 'Ako pitate konkretno za C9, odgovor treba ostati na C9 programu i ne smije skrenuti na F15 ili nepovezane proizvode.';
+            $recommendation_lines = $language === 'en'
+                ? [
+                    'C9 Forever Living Products is the main starting direction when the goal is a structured 9-day weight-balance reset.',
+                    'It makes sense when someone wants a clear program instead of a random mix of individual products.',
+                    'Garcinia Plus and Forever Therm™ can be mentioned only as later support options if appetite or metabolism are the main issue, but not as a promise of fast results.',
+                ]
+                : [
+                    'C9 Forever Living Products je glavni početni smjer kada je cilj strukturirani 9-dnevni reset za kontrolu težine.',
+                    'Ima smisla kada osoba želi jasan program, a ne nasumičnu kombinaciju pojedinačnih proizvoda.',
+                    'Garcinia Plus i Forever Therm™ mogu se spomenuti samo kao kasnija support opcija ako su apetit ili metabolizam glavni problem, ali ne kao obećanje brzog rezultata.',
+                ];
+        }
+
+        return [
+            'primary_product' => 'C9 Forever Living Products',
+            'support_products' => $is_price_request || $is_weight_result_request ? [] : ['Forever Garcinia Plus', 'Forever Therm™'],
+            'opening_note' => $opening_note,
+            'recommendation_lines' => $recommendation_lines,
+            'question_lines' => [],
+            'monthly_quantity_note' => $language === 'en'
+                ? 'For a practical first step, this stays on 1 x C9 program; add other products only if the goal clearly calls for them later.'
+                : 'Za praktičan prvi korak ovdje se ostaje na 1 x C9 programu; druge proizvode dodavati tek kasnije ako cilj to stvarno traži.',
+            'clear_knowledge_suggestions' => true,
+            'force_local_reply' => true,
+        ];
     }
 
     if(in_array('vital5', $matches, true)) {
@@ -12955,6 +13048,39 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
             'sensitive_support_only' => true,
             'lock_product_scope' => true,
         ],
+        'kidney_stone_urinary_support' => [
+            'patterns' => ['bubrežni kamenac', 'bubrezni kamenac', 'bubrežnog kamenca', 'bubreznog kamenca', 'bubrezni', 'bubrežni', 'bubreg kamen', 'bubreg kamenac', 'kamenac u bubregu', 'kamen u bubregu', 'kamen u bubrezima', 'kamenac u bubrezima', 'kidney stone', 'ledvični kamen', 'ledvicni kamen', 'ledvin kamen'],
+            'preferred_patterns' => ['berry nectar', 'aloe berry nectar', 'blossom herbal tea', 'tea'],
+            'primary_product' => 'Forever Aloe Berry Nectar®',
+            'support_products' => ['Aloe Blossom Herbal Tea'],
+            'label' => [
+                'hr' => 'bubrežni kamenac i oprezna urinarna rutina',
+                'en' => 'kidney stone and cautious urinary routine',
+            ],
+            'opening_note' => [
+                'hr' => 'Kod bubrežnog kamenca prvi korak je liječnik ili urolog, posebno ako postoji bol, mučnina, temperatura, krv u mokraći ili otežano mokrenje. Forever smjer ovdje smije ostati samo opća podrška rutini tekućine i urinarnog sustava, bez tvrdnji da rješava kamenac.',
+                'en' => 'With a kidney stone, the first step is a doctor or urologist, especially if there is pain, nausea, fever, blood in urine or difficult urination. The Forever direction here should stay only as general fluid-routine and urinary-system support, without claiming to resolve the stone.',
+            ],
+            'recommendation_lines' => [
+                'hr' => [
+                    'Forever Aloe Berry Nectar® je ovdje najčišći Forever smjer kao aloe berry napitak koji se često bira uz urinarne i mokraćne tegobe.',
+                    'Aloe Blossom Herbal Tea je support opcija za dnevni ritam tekućine; najčešće se kuha 1 vrećica na 1 do 1,5 litre vode i može se piti topao ili kao ledeni čaj.',
+                    'Ne bih ovdje dodavao nepovezane proizvode iz drugih kategorija jer fokus treba ostati na opreznoj urinarnoj rutini i liječničkoj provjeri.',
+                ],
+                'en' => [
+                    'Forever Aloe Berry Nectar® is the cleanest Forever direction here as the aloe berry drink often chosen around urinary-system concerns.',
+                    'Aloe Blossom Herbal Tea is the support option for daily fluid rhythm; it is usually prepared as 1 tea bag in 1 to 1.5 liters of water and can be taken warm or as iced tea.',
+                    'I would not add unrelated products from other categories here because the focus should stay on a cautious urinary routine and medical check.',
+                ],
+            ],
+            'monthly_quantity_note' => [
+                'hr' => 'Ako želite okvir za mjesec dana, ovdje se najčešće gleda 3 x Forever Aloe Berry Nectar® i 1 x Aloe Blossom Herbal Tea.',
+                'en' => 'If you want a one-month frame, this most often stays on 3 x Forever Aloe Berry Nectar® and 1 x Aloe Blossom Herbal Tea.',
+            ],
+            'suppress_generic_questions' => true,
+            'sensitive_support_only' => true,
+            'lock_product_scope' => true,
+        ],
         'anemia_support_routine' => [
             'patterns' => ['anemija', 'anemij', 'slabokrvnost', 'slabokrv', 'manjak željeza', 'manjak zeljeza', 'manjk', 'željezo', 'zeljezo', 'željez', 'zeljez', 'slaba krvna slika'],
             'preferred_patterns' => ['berry nectar', 'aloe berry nectar', 'gummy', 'immune gummy'],
@@ -13020,7 +13146,7 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
             'lock_product_scope' => true,
         ],
         'stress_resilience_support' => [
-            'patterns' => ['kronični umor', 'kronicni umor', 'mentalna iscrpljenost', 'otpornost na stres', 'pod stresom', 'jak stres', 'stres i umor'],
+            'patterns' => ['kronični umor', 'kronicni umor', 'mentalna iscrpljenost', 'otpornost na stres', 'pod stresom', 'jak stres', 'stres i umor', 'hormon stresa', 'hormona stresa', 'kortizol', 'cortisol', 'stresan posao', 'posao je stresan', 'ne stresirati', 'ne stresirazi'],
             'preferred_patterns' => ['aloe vera gel', 'aloe gel', 'royal jelly', 'arctic sea'],
             'primary_product' => 'Forever Aloe Vera Gel™',
             'support_products' => ['Forever Royal Jelly', 'Forever Arctic Sea'],
@@ -14073,6 +14199,18 @@ function fcc_ai_get_product_advisor_effective_condition_matches(string $message,
             $language,
             ['tetovaža', 'aftercare'],
             338
+        );
+    }
+
+    if(
+        fcc_ai_contains_keywords($message, ['bubre', 'bubreg', 'bubrez', 'ledvin', 'kidney'])
+        && fcc_ai_contains_keywords($message, ['kamen', 'kamenac', 'stone'])
+    ) {
+        $matches[] = fcc_ai_get_product_advisor_condition_match_by_key(
+            'kidney_stone_urinary_support',
+            $language,
+            ['bubrežni kamenac'],
+            337
         );
     }
 
@@ -16799,7 +16937,7 @@ function fcc_ai_build_public_recommendation_payload(string $assistant_type, stri
         return trim((string) ($condition_match['key'] ?? ''));
     }, $condition_matches)));
 
-    if(array_intersect($condition_keys, ['post_c9_lighter_weight_support', 'pancreas_inflammation_elderly_guard', 'fresh_tattoo_aftercare_support'])) {
+    if(array_intersect($condition_keys, ['post_c9_lighter_weight_support', 'pancreas_inflammation_elderly_guard', 'fresh_tattoo_aftercare_support', 'kidney_stone_urinary_support'])) {
         $force_local_reply = true;
     }
 
@@ -18636,6 +18774,14 @@ function fcc_ai_detect_public_intent(string $assistant_type, string $message): a
         'naš detoks', 'nas detoks', 'kako da im pomognemo', 'mnogo žena govori', 'mnogo zena govori',
         'žene su mi', 'zene su mi', 'daj mi naučno rješenje', 'daj mi naucno rjesenje',
     ]);
+    $work_stress_wellness_context = $assistant_type === 'product_advisor'
+        && !$strong_business_interest
+        && fcc_ai_contains_keywords($message, ['posao', 'radim', 'raditi', 'work', 'job'])
+        && fcc_ai_contains_keywords($message, [
+            'stres', 'stresa', 'stresir', 'hormon stresa', 'kortizol', 'cortisol',
+            'umor', 'iscrplj', 'prehrana', 'navika', 'trening', 'počut', 'pocut',
+            'anksioz', 'napet',
+        ]);
     $support_request = fcc_ai_contains_keywords($message, [
         'izgubio sam karticu', 'izgubila sam karticu', 'lost card', 'karticu', 'nfc card', 'nfc karticu',
         'piksel', 'facebook pixel', 'pixel', 'pretplatu', 'pretplata', 'godišnju pretplatu', 'godisnju pretplatu', 'annual subscription', 'uplatim',
@@ -18795,7 +18941,12 @@ function fcc_ai_detect_public_intent(string $assistant_type, string $message): a
     $business_primary = $assistant_type === 'product_advisor'
         && ($strong_business_interest || ($business && !$explicit_product_request))
         && !$support_request
-        && !$business_content_request;
+        && !$business_content_request
+        && !$work_stress_wellness_context;
+
+    if($work_stress_wellness_context) {
+        $business = false;
+    }
 
     $business_sales_message = $assistant_type === 'product_advisor'
         && $business_primary
@@ -25326,6 +25477,10 @@ function fcc_ai_handle_public_message(array $payload): array {
         && $followup_anchor_user_message !== ''
         && !empty(array_intersect($weight_context_followup_keys, $previous_condition_keys))
         && fcc_ai_is_low_context_follow_up_message($current_user_message);
+    $is_c9_weight_result_followup = (string) ($conversation->assistant_type ?? '') === 'product_advisor'
+        && $followup_anchor_user_message !== ''
+        && fcc_ai_is_public_c9_context_message($followup_anchor_user_message)
+        && fcc_ai_is_public_weight_result_question($current_user_message);
     $is_child_context_followup = (string) ($conversation->assistant_type ?? '') === 'product_advisor'
         && $followup_anchor_user_message !== ''
         && (
@@ -25408,6 +25563,11 @@ function fcc_ai_handle_public_message(array $payload): array {
         $recent_user_context = $followup_anchor_user_message;
         $used_context_for_matching = true;
         $intent = fcc_ai_detect_public_intent((string) $conversation->assistant_type, $followup_anchor_user_message);
+    } elseif($is_c9_weight_result_followup) {
+        $message_for_matching = 'C9 Forever Living Products. C9 weight-result follow-up: ' . $current_user_message;
+        $recent_user_context = $followup_anchor_user_message;
+        $used_context_for_matching = true;
+        $intent = fcc_ai_detect_public_intent((string) $conversation->assistant_type, $message_for_matching);
     } elseif($is_physical_endurance_followup) {
         $message_for_matching = $followup_anchor_user_message . "\n\nPhysical endurance follow-up: " . $current_user_message;
         $recent_user_context = $followup_anchor_user_message;
@@ -25458,7 +25618,7 @@ function fcc_ai_handle_public_message(array $payload): array {
     $has_high_risk_medical_context = (string) ($conversation->assistant_type ?? '') === 'product_advisor'
         && fcc_ai_has_high_risk_public_medical_context($current_user_message);
 
-    if(($has_high_risk_medical_context || $should_reset_problem_context) && !$is_same_problem_followup_clarification && !$is_broad_beauty_followup_clarification && !$is_low_context_condition_followup && !$is_weight_context_followup && !$is_child_context_followup && !$is_condition_explanation_followup && !$is_condition_usage_followup) {
+    if(($has_high_risk_medical_context || $should_reset_problem_context) && !$is_same_problem_followup_clarification && !$is_broad_beauty_followup_clarification && !$is_low_context_condition_followup && !$is_weight_context_followup && !$is_c9_weight_result_followup && !$is_child_context_followup && !$is_condition_explanation_followup && !$is_condition_usage_followup) {
         $message_for_matching = $current_user_message;
         $recent_user_context = '';
         $used_context_for_matching = false;
@@ -25816,7 +25976,12 @@ function fcc_ai_handle_public_message(array $payload): array {
         $reply['knowledge_suggestions'] = [];
     }
 
-    $product_utility_followup_context = trim($recent_user_context . "\n" . $followup_anchor_user_message . "\n" . $previous_user_message);
+    $recent_product_utility_user_context = implode("\n", fcc_ai_get_recent_public_user_messages(
+        (int) ($conversation->fcc_ai_conversation_id ?? 0),
+        8,
+        $current_user_message
+    ));
+    $product_utility_followup_context = trim($recent_user_context . "\n" . $followup_anchor_user_message . "\n" . $previous_user_message . "\n" . $recent_product_utility_user_context);
     $is_product_utility_followup_context = (string) ($conversation->assistant_type ?? '') === 'product_advisor'
         && fcc_ai_is_public_product_utility_followup_context($current_user_message, $product_utility_followup_context);
 
@@ -27417,6 +27582,7 @@ function fcc_ai_generate_internal_coach_reply(string $message, array $context = 
         'knowledge_suggestions' => $suggestions,
         'reply_mode' => $reply_mode,
         'next_step' => $one_next_step,
+        'premium_content_context' => $is_content_request && fcc_ai_contains_keywords($message . "\n" . $recent_coach_context, ['premium', 'luksuz', 'luskuz', 'elegant']),
     ];
 }
 
@@ -27675,6 +27841,16 @@ function fcc_ai_handle_internal_coach_message(object $user, array $payload): arr
             'api_response_time' => (int) ($model_attempt['api_response_time'] ?? 0),
             'fallback_reason' => '',
         ];
+    }
+
+    $premium_content_context = !empty($reply['premium_content_context'])
+        || fcc_ai_contains_keywords($message, ['premium', 'luksuz', 'luskuz', 'elegant']);
+
+    if($premium_content_context && !fcc_ai_contains_keywords((string) ($reply['content'] ?? ''), ['premium'])) {
+        $premium_prefix = $resolved_language === 'en'
+            ? 'Premium version:'
+            : ($resolved_language === 'sl' ? 'Premium verzija:' : 'Premium verzija:');
+        $reply['content'] = trim($premium_prefix . "\n" . trim((string) ($reply['content'] ?? '')));
     }
 
     $reply['meta'] = $reply_meta;
