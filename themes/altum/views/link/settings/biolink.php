@@ -4581,7 +4581,23 @@ $fcc_biolink_editor_tours = [
             /* Text alignment */
             if(update_form_content.querySelectorAll('input[name="text_alignment"]').length) {
                 $(update_form_content.querySelectorAll('input[name="text_alignment"]')).off().on('change', event => {
-                    biolink_link.find('[data-text-alignment]').css('text-align', event.currentTarget.value);
+                    let text_alignment = event.currentTarget.value;
+
+                    biolink_link.find('[data-text-alignment]').css('text-align', text_alignment);
+
+                    if(update_form_content.querySelector('input[name="block_type"][value="vip_funnel_hub"]')) {
+                        let cta_justify = {
+                            left: 'flex-start',
+                            center: 'center',
+                            right: 'flex-end',
+                            justify: 'space-between'
+                        }[text_alignment] || 'flex-start';
+
+                        biolink_link.find('[data-vip-funnel-hub-cta-alignment]').css({
+                            'justify-content': cta_justify,
+                            'align-items': text_alignment === 'justify' ? 'stretch' : 'center'
+                        });
+                    }
                 });
             }
 

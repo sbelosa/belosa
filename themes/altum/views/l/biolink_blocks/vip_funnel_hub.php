@@ -116,7 +116,7 @@ $columns = (int) ($settings['columns'] ?? 1) === 2 ? '6' : '12';
                 </div>
             <?php endif ?>
 
-            <div class="d-flex flex-wrap" style="gap:.75rem; justify-content:<?= $cta_justify ?>; align-items:<?= $cta_align_items ?>;">
+            <div class="d-flex flex-wrap" style="gap:.75rem; justify-content:<?= $cta_justify ?>; align-items:<?= $cta_align_items ?>;" data-vip-funnel-hub-cta-alignment>
                 <?php if($cta_url): ?>
                     <a href="<?= $cta_url ?>" data-vip-hub-stop="true" class="btn btn-primary" style="font-weight:700; border-radius:.95rem; padding:.8rem 1.1rem;">
                         <?= htmlspecialchars($render['primary_cta_text'] ?: 'Otvori funnel', ENT_QUOTES, 'UTF-8') ?>
