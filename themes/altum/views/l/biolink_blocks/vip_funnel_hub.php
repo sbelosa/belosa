@@ -41,6 +41,15 @@ $box_shadow_style = \Altum\Link::get_processed_box_shadow_style($settings);
 $cta_url = $render['primary_url'] ?? ($data->link->location_url ?? '');
 $secondary_url = $render['secondary_url'] ?? '';
 $is_clickable = (bool) $cta_url;
+$text_alignment = $settings['text_alignment'] ?? 'left';
+$cta_justify_map = [
+    'left' => 'flex-start',
+    'center' => 'center',
+    'right' => 'flex-end',
+    'justify' => 'space-between',
+];
+$cta_justify = $cta_justify_map[$text_alignment] ?? 'flex-start';
+$cta_align_items = $text_alignment === 'justify' ? 'stretch' : 'center';
 $wrapper_style = sprintf(
     'border:%dpx %s %s;border-radius:%s;background:%s;color:%s;%stext-align:%s;%s',
     (int) ($settings['border_width'] ?? 0),
@@ -50,7 +59,7 @@ $wrapper_style = sprintf(
     $settings['background_color'] ?? '#101826',
     $settings['text_color'] ?? '#ffffff',
     $box_shadow_style,
-    $settings['text_alignment'] ?? 'left',
+    $text_alignment,
     $is_clickable ? 'cursor:pointer;' : ''
 );
 $block_image = !empty($settings['image']) ? \Altum\Uploads::get_full_url('block_thumbnail_images') . $settings['image'] : null;
@@ -107,7 +116,7 @@ $columns = (int) ($settings['columns'] ?? 1) === 2 ? '6' : '12';
                 </div>
             <?php endif ?>
 
-            <div class="d-flex flex-wrap" style="gap:.75rem;">
+            <div class="d-flex flex-wrap" style="gap:.75rem; justify-content:<?= $cta_justify ?>; align-items:<?= $cta_align_items ?>;">
                 <?php if($cta_url): ?>
                     <a href="<?= $cta_url ?>" data-vip-hub-stop="true" class="btn btn-primary" style="font-weight:700; border-radius:.95rem; padding:.8rem 1.1rem;">
                         <?= htmlspecialchars($render['primary_cta_text'] ?: 'Otvori funnel', ENT_QUOTES, 'UTF-8') ?>

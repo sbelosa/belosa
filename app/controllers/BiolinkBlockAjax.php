@@ -6524,8 +6524,9 @@ class BiolinkBlockAjax extends Controller {
         $_POST['primary_cta_text'] = mb_substr(input_clean($_POST['primary_cta_text'] ?? ''), 0, 120);
         $_POST['secondary_cta_text'] = mb_substr(input_clean($_POST['secondary_cta_text'] ?? ''), 0, 120);
         $_POST['show_paths'] = (int) isset($_POST['show_paths']);
+        $submitted_path_tags = (array) ($_POST['path_tags'] ?? []);
         $_POST['path_tags'] = [];
-        foreach((array) ($_POST['path_tags'] ?? []) as $path_tag) {
+        foreach($submitted_path_tags as $path_tag) {
             if(is_array($path_tag) || is_object($path_tag)) {
                 continue;
             }
