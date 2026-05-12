@@ -8604,7 +8604,7 @@ function fcc_ai_get_public_direct_product_lookup_matches(string $message): array
         'liquid_soap' => ['liquid soap', 'aloe liquid soap', 'tekući sapun', 'tekuci sapun', 'sapun za ruke i tijelo'],
         'body_lotion' => ['aloe body lotion', 'body lotion'],
         'body_wash' => ['aloe body wash', 'body wash'],
-        'ever_shield' => ['aloe ever-shield deodorant', 'ever-shield deodorant', 'ever shield deodorant', 'aloe ever-shield'],
+        'ever_shield' => ['aloe ever-shield deodorant', 'ever-shield deodorant', 'ever shield deodorant', 'aloe ever-shield', 'forever deo stick', 'forever deo stik', 'deo stick', 'deo stik', 'deo-stik', 'deo-stick', 'forever deodorant'],
         'aloe_lotion' => ['aloe lotion'],
         'moisturizing_lotion' => ['aloe moisturizing lotion', 'moisturizing lotion'],
         'aloe_mango' => ['aloe mango', 'forever aloe mango', 'mango napitak', 'napitak aloe mango', '8364'],
@@ -8770,6 +8770,33 @@ function fcc_ai_get_public_special_direct_product_payload(string $message, strin
 
     if(empty($matches)) {
         return [];
+    }
+
+    if(in_array('ever_shield', $matches, true)) {
+        return [
+            'primary_product' => 'Aloe Ever-Shield Deodorant',
+            'support_products' => ['Forever Aloe First Spray'],
+            'opening_note' => $language === 'en'
+                ? 'If you are asking about the Forever deodorant stick, keep the answer on Aloe Ever-Shield Deodorant and a simple outer-care routine.'
+                : 'Ako pitate za Forever Deo stick, odgovor treba ostati na Aloe Ever-Shield Deodorant i jednostavnoj njezi izvana.',
+            'recommendation_lines' => $language === 'en'
+                ? [
+                    'Aloe Ever-Shield Deodorant is the exact Forever product here: a practical deodorant stick for everyday underarm care.',
+                    'Forever Aloe First Spray can be mentioned as gentle support if the underarm skin is sensitive or needs a soothing step before or between deodorant use.',
+                    'Do not widen this into face creams, exfoliators, minerals or unrelated beauty routines.',
+                ]
+                : [
+                    'Aloe Ever-Shield Deodorant je točan Forever proizvod ovdje: praktičan deo stick za svakodnevnu njegu ispod pazuha.',
+                    'Forever Aloe First Spray može se spomenuti kao nježna podrška ako je koža ispod pazuha osjetljiva ili treba umirujući korak prije ili između korištenja deo sticka.',
+                    'Ovo ne treba širiti na kreme za lice, pilinge, minerale ili nepovezane beauty rutine.',
+                ],
+            'question_lines' => [],
+            'monthly_quantity_note' => $language === 'en'
+                ? 'For a simple frame, this most often stays on 1 x Aloe Ever-Shield Deodorant and, if the skin is irritated, 1 x Forever Aloe First Spray.'
+                : 'Za jednostavan okvir, ovdje se najčešće gleda 1 x Aloe Ever-Shield Deodorant i, ako je koža nadražena, 1 x Forever Aloe First Spray.',
+            'clear_knowledge_suggestions' => true,
+            'force_local_reply' => true,
+        ];
     }
 
     if(in_array('c9', $matches, true)) {
@@ -14035,6 +14062,39 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
             'suppress_generic_questions' => true,
             'lock_product_scope' => true,
         ],
+        'underarm_irritation_deodorant_support' => [
+            'patterns' => ['svrab ispod pazuha', 'svrbež ispod pazuha', 'svrbez ispod pazuha', 'svrbi ispod pazuha', 'svrbi me ispod pazuha', 'iritacija ispod pazuha', 'osip ispod pazuha', 'crvenilo ispod pazuha', 'problem ispod pazuha', 'ispod pazuha', 'pazuha svrbi', 'pazuh svrbi', 'pod pazuhom', 'pazusi', 'pazuh', 'ispod ruke', 'underarm', 'armpit'],
+            'preferred_patterns' => ['aloe ever-shield deodorant', 'ever-shield deodorant', 'aloe first'],
+            'primary_product' => 'Aloe Ever-Shield Deodorant',
+            'support_products' => ['Forever Aloe First Spray'],
+            'label' => [
+                'hr' => 'svrbež i iritacija ispod pazuha',
+                'en' => 'underarm itching and irritation',
+            ],
+            'opening_note' => [
+                'hr' => 'Kad je problem ispod pazuha, preporuka mora ostati lokalna, nježna i praktična: deo stick kao glavni smjer, a Aloe First kao umirujuća podrška. Ne treba skretati na kreme za lice, pilinge, minerale ili široke beauty rutine.',
+                'en' => 'When the problem is under the arms, the recommendation should stay local, gentle and practical: deodorant stick as the main direction, with Aloe First as soothing support. Do not drift into face creams, exfoliators, minerals or broad beauty routines.',
+            ],
+            'recommendation_lines' => [
+                'hr' => [
+                    'Aloe Ever-Shield Deodorant, odnosno Forever Deo stick, ovdje je glavni Forever smjer za svakodnevnu njegu ispod pazuha.',
+                    'Forever Aloe First Spray ima smisla kao podrška kada kožu treba umiriti izvana prije ili između korištenja deo sticka.',
+                    'Ako postoji jače crvenilo, ranice, gnoj, bol, neugodan miris koji se naglo promijenio ili problem traje duže, dobro je provjeriti i s liječnikom ili ljekarnikom.',
+                ],
+                'en' => [
+                    'Aloe Ever-Shield Deodorant, the Forever deodorant stick, is the main Forever direction here for everyday underarm care.',
+                    'Forever Aloe First Spray makes sense as support when the skin needs gentle soothing from the outside before or between deodorant-stick use.',
+                    'If there is stronger redness, broken skin, pus, pain, a suddenly changed odor or the problem lasts longer, it is best to check with a doctor or pharmacist as well.',
+                ],
+            ],
+            'monthly_quantity_note' => [
+                'hr' => 'Ako želite jednostavan okvir, ovdje se najčešće gleda 1 x Aloe Ever-Shield Deodorant i 1 x Forever Aloe First Spray.',
+                'en' => 'If you want a simple frame, this most often stays on 1 x Aloe Ever-Shield Deodorant and 1 x Forever Aloe First Spray.',
+            ],
+            'suppress_generic_questions' => true,
+            'sensitive_support_only' => true,
+            'lock_product_scope' => true,
+        ],
         'oily_hair_topical_care' => [
             'patterns' => ['masna kosa', 'masnu kosu', 'masno vlasište', 'masno vlasiste', 'masno tjeme', 'masna vlasišta', 'masna vlasista', 'oily hair', 'greasy hair', 'masna kosa i vlasište'],
             'preferred_patterns' => ['jojoba shampoo', 'aloe jojoba shampoo', 'jojoba conditioner', 'aloe jojoba conditioner', 'shampoo', 'conditioner'],
@@ -14875,6 +14935,21 @@ function fcc_ai_get_product_advisor_effective_condition_matches(string $message,
             $language,
             ['sunce', 'alergija'],
             295
+        );
+    }
+
+    if(
+        fcc_ai_contains_keywords($message, ['pazuh', 'pazuha', 'pazusi', 'pod pazuhom', 'ispod ruke', 'underarm', 'armpit'])
+        && (
+            fcc_ai_contains_keywords($message, ['svrab', 'svrbež', 'svrbez', 'svrbi', 'iritacija', 'osip', 'crvenilo', 'peče', 'pece', 'znojenje', 'miris', 'neugoda', 'problem'])
+            || fcc_ai_contains_keywords($message, ['ispod pazuha', 'pod pazuhom', 'underarm', 'armpit'])
+        )
+    ) {
+        $matches[] = fcc_ai_get_product_advisor_condition_match_by_key(
+            'underarm_irritation_deodorant_support',
+            $language,
+            ['pazuh', 'deo stick', 'aloe first'],
+            305
         );
     }
 
@@ -16937,7 +17012,7 @@ function fcc_ai_build_public_recommendation_payload(string $assistant_type, stri
         return trim((string) ($condition_match['key'] ?? ''));
     }, $condition_matches)));
 
-    if(array_intersect($condition_keys, ['post_c9_lighter_weight_support', 'pancreas_inflammation_elderly_guard', 'fresh_tattoo_aftercare_support', 'kidney_stone_urinary_support'])) {
+    if(array_intersect($condition_keys, ['post_c9_lighter_weight_support', 'pancreas_inflammation_elderly_guard', 'fresh_tattoo_aftercare_support', 'kidney_stone_urinary_support', 'underarm_irritation_deodorant_support'])) {
         $force_local_reply = true;
     }
 
