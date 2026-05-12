@@ -7076,6 +7076,18 @@ function fcc_ai_is_public_recommendation_correction_message(string $message): bo
         'nebi ih trebao preporucivati',
         'ispravi preporuku',
         'ispravi odgovor',
+        'pričaš gluposti',
+        'pricas gluposti',
+        'gluposti',
+        'sranje',
+        'katastrofa',
+        'ništa konkretno',
+        'nista konkretno',
+        'pitam konkretno',
+        'općenite teorije',
+        'opcenite teorije',
+        'upštene teorije',
+        'upstene teorije',
     ]);
 }
 
@@ -25693,7 +25705,7 @@ function fcc_ai_handle_public_message(array $payload): array {
     $has_high_risk_medical_context = (string) ($conversation->assistant_type ?? '') === 'product_advisor'
         && fcc_ai_has_high_risk_public_medical_context($current_user_message);
 
-    if(($has_high_risk_medical_context || $should_reset_problem_context) && !$is_same_problem_followup_clarification && !$is_broad_beauty_followup_clarification && !$is_low_context_condition_followup && !$is_weight_context_followup && !$is_c9_weight_result_followup && !$is_child_context_followup && !$is_condition_explanation_followup && !$is_condition_usage_followup) {
+    if(($has_high_risk_medical_context || $should_reset_problem_context) && !$is_recommendation_correction_followup && !$is_same_problem_followup_clarification && !$is_broad_beauty_followup_clarification && !$is_low_context_condition_followup && !$is_weight_context_followup && !$is_c9_weight_result_followup && !$is_child_context_followup && !$is_condition_explanation_followup && !$is_condition_usage_followup) {
         $message_for_matching = $current_user_message;
         $recent_user_context = '';
         $used_context_for_matching = false;
