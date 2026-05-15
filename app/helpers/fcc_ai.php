@@ -8811,6 +8811,66 @@ function fcc_ai_get_public_special_direct_product_payload(string $message, strin
         ];
     }
 
+    if(in_array('nature_min', $matches, true)) {
+        $is_composition_request = fcc_ai_contains_keywords($message, [
+            'sastav', 'točan sastav', 'tocan sastav', 'deklaracija', 'etiketa', 'bio aktivne', 'bioaktivne',
+            'supstance', 'magnezij', 'magnezija', 'cink', 'cinka', 'd vitamin', 'vitamin d',
+        ]);
+
+        if($is_composition_request) {
+            return [
+                'primary_product' => 'Forever Nature Min',
+                'support_products' => [],
+                'opening_note' => $language === 'en'
+                    ? 'For Nature Min composition questions, keep the answer on the current product label and do not guess exact micronutrient declarations from chat context.'
+                    : 'Kod pitanja o sastavu Nature Min proizvoda najbolje je ostati na aktualnoj deklaraciji proizvoda i ne nagađati točne mikronutritivne podatke iz chata.',
+                'recommendation_lines' => $language === 'en'
+                    ? [
+                        'Forever Nature Min is a multimineral Forever product positioned around mineral balance and trace minerals from natural marine deposits.',
+                        'For exact ingredients and amounts, including magnesium, zinc or vitamin D questions, check the current package label or official product article for your market.',
+                        'Do not widen this answer into Calcium, Active HA, Move or joint support unless the visitor explicitly asks about bones, joints or a comparison.',
+                    ]
+                    : [
+                        'Forever Nature Min je multimineralni Forever proizvod koji se veže uz mineralnu ravnotežu i minerale u tragovima iz prirodnih morskih naslaga.',
+                        'Za točan sastav i količine, uključujući pitanja oko magnezija, cinka ili vitamina D, treba provjeriti aktualnu deklaraciju na pakiranju ili službeni proizvodni članak za konkretno tržište.',
+                        'Forever Calcium, Active HA ili Move imaju smisla tek ako se posebno pita za kosti, zglobove ili usporedbu s tim proizvodima.',
+                ],
+                'question_lines' => [],
+                'monthly_quantity_note' => '',
+                'primary_knowledge_suggestion_only' => true,
+                'suppress_discount_note' => true,
+                'force_local_reply' => true,
+            ];
+        }
+    }
+
+    if(in_array('marine_collagen', $matches, true)) {
+        return [
+            'primary_product' => 'Forever Marine Collagen',
+            'support_products' => [],
+            'opening_note' => $language === 'en'
+                ? 'If the question is specifically about collagen, keep it simple and concrete: Marine Collagen is the clear Forever collagen direction.'
+                : 'Ako je pitanje konkretno oko kolagena, najjednostavniji i najkonkretniji smjer je Forever Marine Collagen.',
+            'recommendation_lines' => $language === 'en'
+                ? [
+                    'Forever Marine Collagen is the main Forever direction for an inside-out beauty routine around skin, hair and nails.',
+                    'It is most often chosen when the goal is skin quality, elasticity and a simple daily collagen step.',
+                    'For a person around 45, keep the first step on Marine Collagen before adding a wider skincare routine.',
+                ]
+                : [
+                    'Forever Marine Collagen je glavni Forever smjer za inside-out beauty rutinu kože, kose i noktiju.',
+                    'Najčešće se bira kada je cilj kvaliteta kože, elastičnost i jednostavan dnevni kolagenski korak.',
+                    'Za osobu oko 45 godina prvi korak neka ostane Marine Collagen, a širu skincare rutinu ima smisla dodavati tek ako korisnik to želi.',
+                ],
+            'question_lines' => [],
+            'monthly_quantity_note' => $language === 'en'
+                ? 'For a one-month frame, this usually stays on 1 x Forever Marine Collagen, following the current product instructions.'
+                : 'Za okvir od mjesec dana ovdje se najčešće gleda 1 x Forever Marine Collagen, uz praćenje aktualne upute na proizvodu.',
+            'clear_knowledge_suggestions' => false,
+            'force_local_reply' => true,
+        ];
+    }
+
     if(in_array('c9', $matches, true)) {
         $is_price_request = fcc_ai_contains_keywords($message, ['koliko košta', 'koliko kosta', 'cijena', 'cena', 'price']);
         $is_weight_result_request = fcc_ai_is_public_weight_result_question($message);
@@ -13722,6 +13782,43 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
             'suppress_generic_questions' => true,
             'lock_product_scope' => true,
         ],
+        'skin_aging_weight_balance_support' => [
+            'patterns' => [
+                'koža da stari sporije', 'koza da stari sporije', 'koža stari sporije', 'koza stari sporije',
+                'kožu da stari sporije', 'kozu da stari sporije', 'sporije starenje kože', 'sporije starenje koze',
+                'stari sporije i mršav', 'stari sporije i mrsav', 'koža i mršav', 'koza i mrsav',
+                'anti age i mršav', 'anti-age i mršav', 'anti age i mrsav', 'anti-age i mrsav',
+            ],
+            'preferred_patterns' => ['marine collagen', 'aloe vera gel', 'c9', 'garcinia', 'therm'],
+            'primary_product' => 'Forever Marine Collagen',
+            'support_products' => ['Forever Aloe Vera Gel™', 'C9 Forever Living Products'],
+            'label' => [
+                'hr' => 'anti-age koža i kontrola težine',
+                'en' => 'anti-age skin and weight balance',
+            ],
+            'opening_note' => [
+                'hr' => 'Kad u istom pitanju spajamo sporije starenje kože i mršavljenje, najjasnije je razdvojiti dva smjera: beauty inside-out rutinu i zaseban weight-balance program.',
+                'en' => 'When slower skin aging and weight loss are combined in one question, the clearest answer is to split it into two lanes: inside-out beauty support and a separate weight-balance program.',
+            ],
+            'recommendation_lines' => [
+                'hr' => [
+                    'Za kožu i anti-age smjer prvi izbor je Forever Marine Collagen kao nutritivna baza za kvalitetu, elastičnost i izgled kože.',
+                    'Forever Aloe Vera Gel™ može biti dobra unutarnja aloe baza uz beauty rutinu ako osoba želi krenuti šire, ali jednostavno.',
+                    'Za mršavljenje je C9 Forever Living Products zaseban početni program; Garcinia Plus i Forever Therm™ imaju smisla tek kasnije ako se posebno pokaže da su apetit ili metabolizam glavni problem.',
+                ],
+                'en' => [
+                    'For skin and anti-age support, Forever Marine Collagen is the first direction as the nutritional base for skin quality, elasticity and appearance.',
+                    'Forever Aloe Vera Gel™ can be a useful inner aloe base alongside the beauty routine if the person wants a broader but still simple start.',
+                    'For weight loss, keep C9 Forever Living Products as a separate starting program; mention Garcinia Plus and Forever Therm™ only later if appetite or metabolism clearly becomes the main issue.',
+                ],
+            ],
+            'monthly_quantity_note' => [
+                'hr' => 'Ako želite okvir za prvi mjesec, ovdje se najčešće gleda 1 x Forever Marine Collagen, 3 x Forever Aloe Vera Gel™ i 1 x C9 program ako osoba želi strukturirani start mršavljenja.',
+                'en' => 'If you want a first-month frame, this is most often positioned as 1 x Forever Marine Collagen, 3 x Forever Aloe Vera Gel™ and 1 x C9 program if the person wants a structured weight-loss start.',
+            ],
+            'suppress_generic_questions' => true,
+            'lock_product_scope' => true,
+        ],
         'skin_aging_inside_out_support' => [
             'patterns' => ['pojavile su mi se bore', 'imam bore', 'bore', 'bore i lošu kožu', 'bore i losu kozu', 'bore i suhu kožu', 'bore i suhu kozu', 'loša koža i bore', 'losa koza i bore'],
             'preferred_patterns' => ['marine collagen', 'aloe vera gel', 'bio-cellulose mask'],
@@ -16183,6 +16280,8 @@ function fcc_ai_build_public_recommendation_payload(string $assistant_type, stri
     $business_primary = $assistant_type === 'product_advisor' && !empty($intent['business_primary']);
     $business_mixed_with_product = $business_primary && !empty($intent['explicit_product_request']);
     $force_local_reply = false;
+    $clear_knowledge_suggestions = false;
+    $primary_knowledge_suggestion_only = false;
 
     $recommendation_lines = [];
     foreach(array_slice($knowledge_suggestions, 0, $is_direct_product_lookup ? ($is_multi_product_compare ? 2 : 1) : 3) as $index => $suggestion) {
@@ -16366,7 +16465,16 @@ function fcc_ai_build_public_recommendation_payload(string $assistant_type, stri
             $monthly_quantity_note = trim((string) ($special_direct_product_payload['monthly_quantity_note'] ?? ''));
             $force_local_reply = !empty($special_direct_product_payload['force_local_reply']);
 
+            if(!empty($special_direct_product_payload['primary_knowledge_suggestion_only'])) {
+                $primary_knowledge_suggestion_only = true;
+            }
+
+            if(!empty($special_direct_product_payload['suppress_discount_note'])) {
+                $discount_note = '';
+            }
+
             if(!empty($special_direct_product_payload['clear_knowledge_suggestions'])) {
+                $clear_knowledge_suggestions = true;
                 $knowledge_suggestions = [];
                 $discount_note = '';
                 $combination_note = '';
@@ -17104,6 +17212,8 @@ function fcc_ai_build_public_recommendation_payload(string $assistant_type, stri
         'monthly_quantity_note' => $monthly_quantity_note,
         'sensitive_support_only' => $sensitive_support_only,
         'force_local_reply' => $force_local_reply,
+        'clear_knowledge_suggestions' => $clear_knowledge_suggestions,
+        'primary_knowledge_suggestion_only' => $primary_knowledge_suggestion_only,
         'skip_product_tail' => $skip_product_tail,
         'product_utility_followup' => $product_utility_followup,
         'same_problem_followup_clarification' => $same_problem_followup_clarification,
@@ -25753,8 +25863,21 @@ function fcc_ai_handle_public_message(array $payload): array {
         ]);
     }
 
-    if(!empty($recommendation_payload['skip_product_tail'])) {
+    if(!empty($recommendation_payload['skip_product_tail']) || !empty($recommendation_payload['clear_knowledge_suggestions'])) {
         $knowledge_suggestions = [];
+    }
+
+    if(!empty($recommendation_payload['primary_knowledge_suggestion_only'])) {
+        $primary_knowledge_title = mb_strtolower(trim((string) ($recommendation_payload['primary_product'] ?? '')));
+        if($primary_knowledge_title !== '') {
+            $knowledge_suggestions = array_values(array_filter($knowledge_suggestions, static function(array $suggestion) use ($primary_knowledge_title): bool {
+                $title = mb_strtolower(trim((string) ($suggestion['title'] ?? '')));
+                return $title !== '' && (
+                    mb_stripos($title, $primary_knowledge_title) !== false
+                    || mb_stripos($primary_knowledge_title, $title) !== false
+                );
+            }));
+        }
     }
 
     $is_joint_topical_followup = (string) ($conversation->assistant_type ?? '') === 'product_advisor'
