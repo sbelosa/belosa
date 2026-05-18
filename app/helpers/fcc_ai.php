@@ -5514,6 +5514,15 @@ function fcc_ai_is_low_context_follow_up_message(string $message): bool {
         return true;
     }
 
+    if(fcc_ai_contains_keywords($message, [
+        'dijabet', 'tlak', 'štitn', 'stitn', 'gastrit', 'želud', 'zelud', 'stomak', 'žgar', 'zgar', 'refluks',
+        'tinitus', 'tinnitus', 'zujanje', 'astma', 'bronh', 'opstruktiv', 'pluć', 'pluc', 'pluča',
+        'kopb', 'hobp', 'kronična opstruktivna', 'hronična opstruktivna', 'kronicna opstruktivna',
+        'gušterač', 'gusterac', 'pankreas', 'karcinom', 'tumor', 'kemoterap', 'zračenje', 'zracenje',
+    ])) {
+        return false;
+    }
+
     if(count(fcc_ai_extract_search_tokens($message)) <= 4) {
         if(fcc_ai_contains_keywords($message, [
             'što je dobro',
@@ -6129,8 +6138,17 @@ function fcc_ai_is_vague_general_support_request(string $message): bool {
     return true;
 }
 
-function fcc_ai_build_contextual_public_message(int $conversation_id, string $message): array {
+function fcc_ai_build_contextual_public_message(int $conversation_id, string $message, string $assistant_type = ''): array {
     $message = trim($message);
+    $assistant_type = trim(mb_strtolower($assistant_type));
+
+    if($assistant_type === 'product_advisor' && !empty(fcc_ai_get_product_advisor_effective_condition_matches($message, 'hr'))) {
+        return [
+            'message' => $message,
+            'recent_user_context' => '',
+            'used_context' => false,
+        ];
+    }
 
     if($conversation_id <= 0 || fcc_ai_is_public_small_talk_message($message) || !fcc_ai_is_low_context_follow_up_message($message)) {
         return [
@@ -8374,7 +8392,7 @@ function fcc_ai_get_public_query_alias_phrases(string $message): array {
         $aliases[] = 'nature min trace minerals electrolyte mineral balance';
     }
 
-    if(fcc_ai_contains_keywords($message, ['mršav', 'mrsav', 'mršavljenje', 'mrsavljenje', 'weight loss', 'smrs', 'smrš', 'debljanje', 'kilograma', 'mesec dana', 'mjesec dana'])) {
+    if(fcc_ai_contains_keywords($message, ['mršav', 'mrsav', 'mršavljenje', 'mrsavljenje', 'weight loss', 'smrs', 'smrš', 'debljanje', 'kilograma'])) {
         $aliases[] = 'c9 structured weight routine';
     }
 
@@ -8392,7 +8410,7 @@ function fcc_ai_get_public_query_alias_phrases(string $message): array {
         $aliases[] = 'forever argi';
     }
 
-    if(fcc_ai_contains_keywords($message, ['trigemin', 'zujanje u uhu', 'zujanje', 'tinnitus', 'živac', 'zivac', 'sinaps', 'nerve'])) {
+    if(fcc_ai_contains_keywords($message, ['trigemin', 'zujanje u uhu', 'zujanje', 'tinitus', 'tinnitus', 'živac', 'zivac', 'sinaps', 'nerve'])) {
         $aliases[] = 'royal jelly nerve support';
         $aliases[] = 'royal jelly';
     }
@@ -9855,6 +9873,39 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
                 'en' => 'If you want a one-month frame, this is most often positioned as 3 x Forever Aloe Vera Gel™ and 1 x Forever Active Pro B.',
             ],
             'suppress_generic_questions' => true,
+            'lock_product_scope' => true,
+        ],
+        'stomach_pain_support' => [
+            'patterns' => ['boli me želudac', 'boli me zeludac', 'želudac me boli', 'zeludac me boli', 'boli me stomak', 'bol u želucu', 'bol u zelucu', 'bol u stomaku', 'bolovi u želucu', 'bolovi u zelucu', 'bolovi u stomaku', 'želudac boli', 'zeludac boli', 'stomak boli', 'bolan želudac', 'bolan zeludac', 'bolan stomak'],
+            'preferred_patterns' => ['aloe vera gel', 'aloe gel', 'active pro b', 'pro b', 'pro-b'],
+            'primary_product' => 'Forever Aloe Vera Gel™',
+            'support_products' => ['Forever Active Pro B'],
+            'label' => [
+                'hr' => 'bol u želucu i oprezna probavna rutina',
+                'en' => 'stomach pain and cautious digestive routine',
+            ],
+            'opening_note' => [
+                'hr' => 'Kod boli u želucu koja traje nekoliko dana ne treba stvarati dojam da proizvod to rješava. Prvi siguran korak je liječnik ili ljekarnik ako bol traje, jača, vraća se ili se jave mučnina, povraćanje, temperatura, krv ili jaka slabost. Kao opći Forever support smjer, najčišće je ostati usko na aloe vera bazi i probiotičkoj podršci.',
+                'en' => 'With stomach pain lasting several days, this should not be framed as something a product solves. The first safe step is a doctor or pharmacist if pain continues, gets stronger, returns, or if nausea, vomiting, fever, blood or strong weakness appear. As a general Forever support direction, keep the recommendation narrow: aloe vera base plus probiotic support.',
+            ],
+            'recommendation_lines' => [
+                'hr' => [
+                    'Forever Aloe Vera Gel™ je ovdje glavni Forever smjer kao nježna aloe baza za svakodnevnu probavnu rutinu, bez tvrdnje da liječi bol ili zamjenjuje pregled.',
+                    'Forever Active Pro B je jedina support opcija koju bih dodao uz to jer drži preporuku u probavnom smjeru i ne širi je na nepovezane proizvode.',
+                    'Ne bih širio odgovor na vlakna, termogene smjerove, programe mršavljenja, detoks rutine ili nepovezane dodatke dok se ne zna što je uzrok boli.',
+                ],
+                'en' => [
+                    'Forever Aloe Vera Gel™ is the main Forever direction here as a gentle aloe base for an everyday digestive routine, without claiming it treats pain or replaces a check-up.',
+                    'Forever Active Pro B is the only support option I would add on top because it keeps the recommendation in the digestive lane and avoids unrelated products.',
+                    'I would not broaden this into fiber, thermogenic directions, weight-loss programs, detox routines or unrelated add-ons until the reason for the pain is clearer.',
+                ],
+            ],
+            'monthly_quantity_note' => [
+                'hr' => 'Ako želite okvir za mjesec dana nakon osnovne provjere sigurnosti, ovdje se najčešće gleda 3 x Forever Aloe Vera Gel™ i 1 x Forever Active Pro B.',
+                'en' => 'If you want a one-month frame after the basic safety check, this is most often positioned as 3 x Forever Aloe Vera Gel™ and 1 x Forever Active Pro B.',
+            ],
+            'suppress_generic_questions' => true,
+            'sensitive_support_only' => true,
             'lock_product_scope' => true,
         ],
         'digestive_routine_support' => [
@@ -12491,7 +12542,7 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
             'lock_product_scope' => true,
         ],
         'nerve_support_routine' => [
-            'patterns' => ['trigemin', 'zujanje u uhu', 'zujanje', 'tinnitus', 'oštećenj živaca', 'ostecenj zivaca', 'oštećeni živci', 'osteceni zivci', 'oštećene živce', 'ostecene zivce', 'upaljeni živci', 'upaljen živac', 'upaljeni zivci', 'upaljen zivac', 'upaljene živce', 'upaljene zivce', 'upala živca', 'upala zivca', 'živac', 'zivac', 'sinaps', 'pareza facialis', 'facialis', 'pareza', 'neurološ', 'neurolos', 'neuralg'],
+            'patterns' => ['trigemin', 'zujanje u uhu', 'zujanje', 'tinitus', 'tinitusa', 'tinnitus', 'oštećenj živaca', 'ostecenj zivaca', 'oštećeni živci', 'osteceni zivci', 'oštećene živce', 'ostecene zivce', 'upaljeni živci', 'upaljen živac', 'upaljeni zivci', 'upaljen zivac', 'upaljene živce', 'upaljene zivce', 'upala živca', 'upala zivca', 'živac', 'zivac', 'sinaps', 'pareza facialis', 'facialis', 'pareza', 'neurološ', 'neurolos', 'neuralg'],
             'preferred_patterns' => ['aloe vera gel', 'aloe gel', 'arctic sea', 'arctic', 'royal jelly', 'royal', 'b12'],
             'primary_product' => 'Forever Aloe Vera Gel™',
             'support_products' => ['Forever Arctic Sea', 'Forever Royal Jelly', 'Forever B12 Plus'],
@@ -12522,6 +12573,7 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
                 'en' => 'If you want a one-month frame, this is most often positioned as 3 x Forever Aloe Vera Gel™, 1 box of Forever Arctic Sea, 1 x Forever Royal Jelly and 1 x Forever B12 Plus.',
             ],
             'suppress_generic_questions' => true,
+            'sensitive_support_only' => true,
             'lock_product_scope' => true,
         ],
         'hair_skin_nails_support' => [
@@ -12814,7 +12866,7 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
             'lock_product_scope' => true,
         ],
         'joint_mobility_support' => [
-            'patterns' => ['zglob', 'zglobovi', 'bole me zglobovi', 'koljeno', 'koljena', 'koljenu', 'koljen', 'skolen', 's kolenima', 'bol u kolenima', 'bol u koljenima', 'artroz', 'artrit', 'kuk', 'rotacije kuka', 'rotacija kuka'],
+            'patterns' => ['zglob', 'zglobovi', 'bole me zglobovi', 'koljeno', 'koljena', 'koljenu', 'koljen', 'koleno', 'kolena', 'kolenu', 'kolenima', 'skolen', 's kolenima', 'bol u kolenu', 'bol u kolenima', 'bol u koljenima', 'artroz', 'artrit', 'kuk', 'rotacije kuka', 'rotacija kuka'],
             'preferred_patterns' => ['freedom', 'active ha', 'ha', 'msm gel', 'aloe msm gel'],
             'primary_product' => 'Forever Freedom®',
             'support_products' => ['Forever Active HA', 'Forever Aloe MSM Gel'],
@@ -13341,7 +13393,7 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
             'lock_product_scope' => true,
         ],
         'asthma_bronchial_support' => [
-            'patterns' => ['imam astmu', 'astma', 'bronhitis', 'bronhijalna astma', 'problemi s disanjem', 'otežano disanje', 'otegano disanje', 'teško dišem', 'tesko disem'],
+            'patterns' => ['imam astmu', 'astma', 'bronhitis', 'bronhijalna astma', 'problemi s disanjem', 'otežano disanje', 'otegano disanje', 'teško dišem', 'tesko disem', 'opstruktivna bolest pluća', 'opstruktivna bolest pluca', 'opstruktivna bolest pluča', 'hronična opstruktivna bolest pluća', 'hronicna opstruktivna bolest pluca', 'kronična opstruktivna bolest pluća', 'kronicna opstruktivna bolest pluca', 'kopb', 'hobp', 'copd'],
             'preferred_patterns' => ['berry nectar', 'aloe berry nectar', 'garlic-thyme', 'garlic thyme'],
             'primary_product' => 'Forever Aloe Berry Nectar®',
             'support_products' => ['Forever Garlic-Thyme'],
@@ -13350,8 +13402,8 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
                 'en' => 'respiratory system support routine',
             ],
             'opening_note' => [
-                'hr' => 'Kod astme i bronhitisa prvi korak su liječnik i terapija, ali ako želite Forever support smjer, ovdje ga treba zadržati na berry aloe napitku i garlic-thyme podršci.',
-                'en' => 'For asthma and bronchitis, doctor guidance and therapy come first, but if you want a Forever support direction, it should stay on the berry aloe drink plus the garlic-thyme support line.',
+                'hr' => 'Kod astme, bronhitisa ili opstruktivne bolesti pluća prvi korak su liječnik i propisana terapija. Ako želite samo opći Forever support smjer uz takav oprez, najčišći okvir su berry aloe napitak i garlic-thyme podrška.',
+                'en' => 'For asthma, bronchitis or obstructive lung disease, doctor guidance and prescribed therapy come first. If you only want a general Forever support direction with that caution, the cleanest frame is the berry aloe drink plus the garlic-thyme support line.',
             ],
             'recommendation_lines' => [
                 'hr' => [
@@ -14340,6 +14392,13 @@ function fcc_ai_is_public_gastritis_like_request(string $message): bool {
 
 function fcc_ai_get_product_advisor_effective_condition_matches(string $message, string $language = 'hr'): array {
     $matches = fcc_ai_get_product_advisor_condition_matches($message, $language);
+    $is_respiratory_obstruction_request = fcc_ai_contains_keywords($message, ['kopb', 'hobp', 'copd'])
+        || (
+            fcc_ai_contains_keywords($message, ['opstruktiv'])
+            && fcc_ai_contains_keywords($message, ['pluć', 'pluc', 'pluča', 'disan', 'bronh'])
+        );
+    $is_pancreas_negated_by_correction = $is_respiratory_obstruction_request
+        && preg_match('/\b(kakva|kakav|nije|nisam|ne)\b.{0,48}\b(gušterač|gusterac|gusterač|gušterače|gusterače|pankreas)\b/iu', $message);
 
     if(fcc_ai_is_public_contradictory_bowel_request($message)) {
         $matches[] = fcc_ai_get_product_advisor_condition_match_by_key(
@@ -14351,14 +14410,48 @@ function fcc_ai_get_product_advisor_effective_condition_matches(string $message,
     }
 
     if(
-        fcc_ai_contains_keywords($message, ['gušterač', 'gusterac', 'gusterač', 'gušterače', 'gusterače', 'pankreas', 'pankreatitis', 'pancreatitis'])
-        || fcc_ai_contains_keywords($message, ['upala gušterače', 'upala gusterace', 'upala gusterače'])
+        !$is_pancreas_negated_by_correction
+        && (
+            fcc_ai_contains_keywords($message, ['gušterač', 'gusterac', 'gusterač', 'gušterače', 'gusterače', 'pankreas', 'pankreatitis', 'pancreatitis'])
+            || fcc_ai_contains_keywords($message, ['upala gušterače', 'upala gusterace', 'upala gusterače'])
+        )
     ) {
         $matches[] = fcc_ai_get_product_advisor_condition_match_by_key(
             'pancreas_inflammation_elderly_guard',
             $language,
             ['gušterača', 'pankreas'],
             340
+        );
+    }
+
+    if(
+        fcc_ai_contains_keywords($message, ['boli me želudac', 'boli me zeludac', 'želudac me boli', 'zeludac me boli', 'boli me stomak', 'bol u želucu', 'bol u zelucu', 'bol u stomaku', 'bolovi u želucu', 'bolovi u zelucu', 'bolovi u stomaku', 'želudac boli', 'zeludac boli', 'stomak boli'])
+    ) {
+        $matches[] = fcc_ai_get_product_advisor_condition_match_by_key(
+            'stomach_pain_support',
+            $language,
+            ['bol u želucu'],
+            336
+        );
+    }
+
+    if(fcc_ai_contains_keywords($message, ['tinitus', 'tinitusa', 'tinnitus', 'zujanje u uhu'])) {
+        $matches[] = fcc_ai_get_product_advisor_condition_match_by_key(
+            'nerve_support_routine',
+            $language,
+            ['tinitus'],
+            330
+        );
+    }
+
+    if(
+        $is_respiratory_obstruction_request
+    ) {
+        $matches[] = fcc_ai_get_product_advisor_condition_match_by_key(
+            'asthma_bronchial_support',
+            $language,
+            ['opstruktivna bolest pluća'],
+            329
         );
     }
 
@@ -15310,6 +15403,16 @@ function fcc_ai_get_product_advisor_effective_condition_matches(string $message,
     $match_keys = array_values(array_filter(array_map(static function(array $match) {
         return trim((string) ($match['key'] ?? ''));
     }, $matches)));
+
+    if($is_pancreas_negated_by_correction && in_array('asthma_bronchial_support', $match_keys, true)) {
+        $matches = array_values(array_filter($matches, static function(array $match) {
+            return (string) ($match['key'] ?? '') !== 'pancreas_inflammation_elderly_guard';
+        }));
+
+        $match_keys = array_values(array_filter(array_map(static function(array $match) {
+            return trim((string) ($match['key'] ?? ''));
+        }, $matches)));
+    }
 
     if(in_array('fresh_tattoo_aftercare_support', $match_keys, true)) {
         $matches = array_values(array_filter($matches, static function(array $match) {
@@ -16549,6 +16652,64 @@ function fcc_ai_build_public_recommendation_payload(string $assistant_type, stri
         $skip_product_tail = true;
     }
 
+    $inside_out_context = trim($message . "\n" . $utility_followup_context);
+    if(
+        $assistant_type === 'product_advisor'
+        && fcc_ai_is_explicit_monthly_quantity_request($message)
+        && fcc_ai_contains_keywords($message, ['unutarnj', 'unutrašnj', 'unutrasnj', 'hnutarnj', 'intern'])
+        && fcc_ai_contains_keywords($message, ['vanjsk', 'vansku', 'izvana', 'spolja', 'spoljn'])
+    ) {
+        $has_sun_context = fcc_ai_contains_keywords($inside_out_context, ['sunce', 'sunca', 'ljeto', 'leto', 'sunscreen', 'zaštita od sunca', 'zastita od sunca']);
+        $opening_note = $language === 'en'
+            ? 'For a one-month inside-out routine, I would keep the recommendation separated and practical, without drifting into weight-loss or sports-program directions unless that is the actual goal.'
+            : ($language === 'sl'
+                ? 'Pri mesečni notranji in zunanji rutini bi priporočilo ločil jasno in praktično, brez uhajanja v programe hujšanja ali športne rutine, razen če je to dejanski cilj.'
+                : 'Kod mjesečne unutarnje i vanjske rutine preporuku bih jasno razdvojio i zadržao praktičnom, bez odlaska u programe mršavljenja ili sportsku rutinu ako to nije stvarni cilj.');
+        $primary_product = 'Forever Aloe Vera Gel™';
+        $support_products = $has_sun_context
+            ? ['Forever Active Pro B', 'Forever Aloe Sunscreen']
+            : ['Forever Active Pro B', 'Forever Aloe First Spray'];
+        $recommendation_lines = $language === 'en'
+            ? [
+                'Inside routine: Forever Aloe Vera Gel™ stays the main aloe base for a gentle everyday routine.',
+                'Digestive support: Forever Active Pro B is the support option if the inside context is digestion, bloating or gut rhythm.',
+                ($has_sun_context
+                    ? 'Outer routine: Forever Aloe Sunscreen is the practical outside step when the recent context is stronger sun or summer skin protection.'
+                    : 'Outer routine: Forever Aloe First Spray is the simple outside aloe step when the visitor asks generally for external use.'),
+            ]
+            : ($language === 'sl'
+                ? [
+                    'Notranja rutina: Forever Aloe Vera Gel™ ostane glavna aloe baza za nežno vsakodnevno rutino.',
+                    'Podpora prebavi: Forever Active Pro B je support opcija, če je notranji kontekst prebava, napihnjenost ali črevesni ritem.',
+                    ($has_sun_context
+                        ? 'Zunanja rutina: Forever Aloe Sunscreen je praktičen zunanji korak, ko je zadnji kontekst močnejše sonce ali poletna zaščita kože.'
+                        : 'Zunanja rutina: Forever Aloe First Spray je preprost zunanji aloe korak, ko oseba splošno sprašuje za zunanjo uporabo.'),
+                ]
+                : [
+                    'Unutarnja rutina: Forever Aloe Vera Gel™ ostaje glavna aloe baza za nježnu svakodnevnu rutinu.',
+                    'Probavni support: Forever Active Pro B je support opcija ako je unutarnji kontekst probava, nadutost ili crijevni ritam.',
+                    ($has_sun_context
+                        ? 'Vanjska rutina: Forever Aloe Sunscreen je praktičan vanjski korak kada je zadnji kontekst jače sunce ili ljetna zaštita kože.'
+                        : 'Vanjska rutina: Forever Aloe First Spray je jednostavan vanjski aloe korak kada osoba općenito pita za vanjsku upotrebu.'),
+                ]);
+        $monthly_quantity_note = $language === 'en'
+            ? ($has_sun_context
+                ? 'For a simple one-month frame, this stays on 3 x Forever Aloe Vera Gel™, 1 x Forever Active Pro B and 1 x Forever Aloe Sunscreen.'
+                : 'For a simple one-month frame, this stays on 3 x Forever Aloe Vera Gel™, 1 x Forever Active Pro B and 1 x Forever Aloe First Spray.')
+            : ($language === 'sl'
+                ? ($has_sun_context
+                    ? 'Za preprost mesečni okvir to ostane pri 3 x Forever Aloe Vera Gel™, 1 x Forever Active Pro B in 1 x Forever Aloe Sunscreen.'
+                    : 'Za preprost mesečni okvir to ostane pri 3 x Forever Aloe Vera Gel™, 1 x Forever Active Pro B in 1 x Forever Aloe First Spray.')
+                : ($has_sun_context
+                    ? 'Za jednostavan mjesečni okvir ovdje ostaje 3 x Forever Aloe Vera Gel™, 1 x Forever Active Pro B i 1 x Forever Aloe Sunscreen.'
+                    : 'Za jednostavan mjesečni okvir ovdje ostaje 3 x Forever Aloe Vera Gel™, 1 x Forever Active Pro B i 1 x Forever Aloe First Spray.'));
+        $question_lines = [];
+        $knowledge_suggestions = [];
+        $combination_note = '';
+        $discount_note = '';
+        $force_local_reply = true;
+    }
+
     if($same_problem_followup_clarification && $assistant_type === 'product_advisor' && !empty($condition_matches)) {
         $followup_support_products = fcc_ai_get_condition_followup_support_products($condition_matches, $follow_up_message);
         $primary_followup_product = trim((string) ($followup_support_products[0] ?? ''));
@@ -16886,6 +17047,7 @@ function fcc_ai_build_public_recommendation_payload(string $assistant_type, stri
         } elseif(
             fcc_ai_contains_keywords($message, ['leđa', 'leda', 'tijelo'])
             && fcc_ai_contains_keywords($message, ['bol', 'bole'])
+            && !fcc_ai_contains_keywords($message, ['kraljež', 'kraljez', 'hrbtenic', 'lumb', 'išijas', 'isijas', 'sciatica', 'donji dio', 'donjem dijelu', 'vrat', 'ukočen', 'ukocen', 'noge', 'noga'])
         ) {
             $opening_note = $language === 'en'
                 ? 'Before I push this into the wrong category, I want to first separate muscle strain from a joint-style issue.'
@@ -17132,7 +17294,7 @@ function fcc_ai_build_public_recommendation_payload(string $assistant_type, stri
         return trim((string) ($condition_match['key'] ?? ''));
     }, $condition_matches)));
 
-    if(array_intersect($condition_keys, ['post_c9_lighter_weight_support', 'pancreas_inflammation_elderly_guard', 'fresh_tattoo_aftercare_support', 'kidney_stone_urinary_support', 'underarm_irritation_deodorant_support'])) {
+    if(array_intersect($condition_keys, ['post_c9_lighter_weight_support', 'pancreas_inflammation_elderly_guard', 'fresh_tattoo_aftercare_support', 'kidney_stone_urinary_support', 'underarm_irritation_deodorant_support', 'stomach_pain_support', 'asthma_bronchial_support', 'nerve_support_routine'])) {
         $force_local_reply = true;
     }
 
@@ -19032,6 +19194,18 @@ function fcc_ai_detect_public_intent(string $assistant_type, string $message): a
         'blood thinner', 'na terapiju', 'sa ljekovima', 'sa lijekovima', 'uz lijekove', 'with medication',
         'aspirin', 'amlopin', 'amlovel', 'amolivel', 'nebilet', 'sorvasta', 'cipralex', 'vimpat',
     ]);
+
+    if(
+        $medication_interaction_sensitive
+        && !fcc_ai_contains_keywords($message, [
+            'ljekov', 'lijekov', 'kontraindik', 'razređivanje krvi', 'razrjeđivanje krvi', 'razredjivanje krvi',
+            'blood thinner', 'sa ljekovima', 'sa lijekovima', 'uz lijekove', 'with medication',
+            'aspirin', 'amlopin', 'amlovel', 'amolivel', 'nebilet', 'sorvasta', 'cipralex', 'vimpat',
+        ])
+        && preg_match('/\b(nemam|nema|nisam|nije|bez|još nemam|jos nemam)\b.{0,36}\b(terapij|terapiju|terapije|terapija)\b/iu', $normalized_raw_message)
+    ) {
+        $medication_interaction_sensitive = false;
+    }
     $usage_duration_sensitive = $assistant_type === 'product_advisor' && fcc_ai_contains_keywords($message, [
         'dugi period', 'dugo', 'koliko dugo', 'mogu li piti dugo', 'mogu li se piti', 'long period', 'long term',
     ]);
@@ -19081,7 +19255,7 @@ function fcc_ai_detect_public_intent(string $assistant_type, string $message): a
         'menstrual', 'menstru', 'ciklus', 'lupanje srca', 'lupanj', 'srce', 'depres', 'anksioz', 'anxio',
         'rtg', 'nalaz', 'menisk', 'gips', 'miopat', 'distrof', 'hrskavic', 'artroz', 'gastrit', 'umjetni kuk',
         'željez', 'zeljez', 'iron', 'transplant', 'transplat', 'štitna', 'stitna', 'štitnoj', 'stitnoj', 'štitne', 'stitne', 'polip', 'bazofil', 'urati', 'psa', 'temperatur', 'fever', 'cellulitis', 'celulitis', 'dijabet', 'candida', 'kandida', 'iritabil', 'parazit', 'psorijaz', 'moždani udar', 'mozdani udar', 'moždanog udara', 'mozdanog udara', 'mozganski kap', 'karcinom', 'karcinoma', 'letrozol', 'reseligo', 'isijas', 'kolesterol', 'miom', 'maternic', 'slabokrv', 'anem', 'gljivic', 'celijak', 'celiak', 'tromboz', 'kolitis', 'ulcerozn', 'pankreas', 'pankreatitis', 'gušterač', 'gusterac', 'gusterač', 'gušterače', 'gusterače', 'giht', 'upaljen zub', 'boli zub', 'bol u zubu', 'zubobol', 'zubobolja', 'mokren', 'priraslic', 'začeć', 'zacec', 'neplod', 'pubalg', 'vitilih', 'vitilig',
-        'astmat', 'astma', 'ledvin', 'kamen',
+        'astmat', 'astma', 'bronh', 'opstruktiv', 'pluć', 'pluc', 'kopb', 'hobp', 'copd', 'ledvin', 'kamen',
     ]);
 
     if($assistant_type === 'pets_advisor') {
@@ -25575,7 +25749,7 @@ function fcc_ai_handle_public_message(array $payload): array {
     $link = $context['link'];
     $assistant = fcc_ai_get_assistant_by_id((int) ($conversation->fcc_ai_assistant_id ?? 0));
     $resolved_language = (string) ($conversation_state['language'] ?? $conversation->language ?? 'auto');
-    $contextual_message_bundle = fcc_ai_build_contextual_public_message((int) ($conversation->fcc_ai_conversation_id ?? 0), $message);
+    $contextual_message_bundle = fcc_ai_build_contextual_public_message((int) ($conversation->fcc_ai_conversation_id ?? 0), $message, (string) ($conversation->assistant_type ?? ''));
     $current_user_message = trim((string) $message);
     $message_for_matching = trim((string) ($contextual_message_bundle['message'] ?? $current_user_message));
     $recent_user_context = trim((string) ($contextual_message_bundle['recent_user_context'] ?? ''));
