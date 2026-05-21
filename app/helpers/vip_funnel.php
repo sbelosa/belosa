@@ -126,6 +126,99 @@ function vip_funnel_get_user_preferences($user = null): \stdClass {
     return vip_funnel_normalize_object($user->preferences ?? []);
 }
 
+function vip_funnel_value_contains_pro_label($value): bool {
+    if(is_object($value)) {
+        $value = json_decode(json_encode($value), true);
+    }
+
+    if(is_array($value)) {
+        foreach($value as $item) {
+            if(vip_funnel_value_contains_pro_label($item)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    $value = trim((string) $value);
+
+    if($value === '') {
+        return false;
+    }
+
+    return (bool) preg_match('/(^|[^a-z0-9])pro([^a-z0-9]|$)/i', $value);
+}
+
+function vip_funnel_get_plan_row_for_user($user = null): ?\stdClass {
+    if(!$user || !is_object($user)) {
+        return null;
+    }
+
+    $plan_id = (string) ($user->plan_id ?? '');
+
+    if($plan_id === '' || !is_numeric($plan_id) || (int) $plan_id <= 0) {
+        return null;
+    }
+
+    static $plan_rows = [];
+    $plan_id = (int) $plan_id;
+
+    if(!array_key_exists($plan_id, $plan_rows)) {
+        $plan_rows[$plan_id] = db()->where('plan_id', $plan_id)->getOne('plans', ['plan_id', 'name', 'settings', 'translations']);
+    }
+
+    return $plan_rows[$plan_id] ?: null;
+}
+
+function vip_funnel_get_resolved_plan_settings($user = null): \stdClass {
+    $current_plan_settings = vip_funnel_normalize_object($user->plan_settings ?? []);
+    $plan_id = (string) ($user->plan_id ?? '');
+    $resolved_plan_settings = null;
+
+    if($plan_id === 'free') {
+        $resolved_plan_settings = vip_funnel_normalize_object(settings()->plan_free->settings ?? null);
+    } elseif($plan_id === 'custom') {
+        $resolved_plan_settings = vip_funnel_normalize_object(settings()->plan_custom->settings ?? null);
+    } elseif($plan_row = vip_funnel_get_plan_row_for_user($user)) {
+        $resolved_plan_settings = vip_funnel_normalize_object($plan_row->settings ?? null);
+    }
+
+    if($resolved_plan_settings instanceof \stdClass && !empty((array) $resolved_plan_settings)) {
+        return (object) array_replace(vip_funnel_to_array($current_plan_settings), vip_funnel_to_array($resolved_plan_settings));
+    }
+
+    return $current_plan_settings;
+}
+
+function vip_funnel_user_has_pro_package($user = null): bool {
+    if(!$user || !is_object($user)) {
+        return false;
+    }
+
+    $plan_id = (string) ($user->plan_id ?? '');
+
+    /* Production Forever Pro currently uses plan_id 5; label matching keeps staging/custom installs flexible. */
+    if($plan_id === '5') {
+        return true;
+    }
+
+    if(in_array($plan_id, ['guest', 'free', 'custom'], true)) {
+        return false;
+    }
+
+    $plan_row = vip_funnel_get_plan_row_for_user($user);
+
+    if(!$plan_row) {
+        return false;
+    }
+
+    return vip_funnel_value_contains_pro_label([
+        $plan_row->name ?? '',
+        $plan_row->translations ?? '',
+    ]);
+}
+
 function vip_funnel_get_countdown_weekday_options(): array {
     return [
         1 => 'Ponedjeljak',
@@ -187,9 +280,9 @@ function vip_funnel_user_has_plan_access($user = null): bool {
         return true;
     }
 
-    $plan_settings = vip_funnel_normalize_object($user->plan_settings ?? []);
+    $plan_settings = vip_funnel_get_resolved_plan_settings($user);
 
-    return !empty($plan_settings->vip_funnel_core_is_enabled);
+    return !empty($plan_settings->vip_funnel_core_is_enabled) || vip_funnel_user_has_pro_package($user);
 }
 
 function vip_funnel_user_is_gate_exempt($user = null): bool {
@@ -288,13 +381,17 @@ function vip_funnel_resolve_access_state($user = null): \stdClass {
         'locked_copy' => vip_funnel_get_locked_copy('testing'),
     ];
 
+    if($has_plan_access || $is_gate_exempt) {
+        $state->state = 'full_access';
+        $state->can_access = true;
+        $state->show_sidebar_entry = true;
+
+        return $state;
+    }
+
     switch($settings->rollout_mode) {
         case 'enabled':
-            if($has_plan_access || $is_gate_exempt) {
-                $state->state = 'full_access';
-                $state->can_access = true;
-                $state->show_sidebar_entry = true;
-            } elseif($settings->show_sidebar_entry_when_locked) {
+            if($settings->show_sidebar_entry_when_locked) {
                 $state->state = 'plan_locked';
                 $state->show_sidebar_entry = true;
                 $state->locked_reason = 'plan';
@@ -303,20 +400,11 @@ function vip_funnel_resolve_access_state($user = null): \stdClass {
             break;
 
         case 'disabled_hidden':
-            if($is_gate_exempt) {
-                $state->state = 'full_access';
-                $state->can_access = true;
-                $state->show_sidebar_entry = true;
-            }
             break;
 
         case 'testing_visible_locked':
         default:
-            if($is_gate_exempt) {
-                $state->state = 'full_access';
-                $state->can_access = true;
-                $state->show_sidebar_entry = true;
-            } elseif($settings->visible_when_locked || $settings->show_sidebar_entry_when_locked) {
+            if($settings->visible_when_locked || $settings->show_sidebar_entry_when_locked) {
                 $state->state = 'testing_locked';
                 $state->show_sidebar_entry = true;
                 $state->locked_reason = 'testing';
