@@ -61,38 +61,109 @@ class VipFunnel extends Controller {
         $description = trim((string) ($state['active']['summary'] ?? ($payload['overview']['subheadline'] ?? '')));
         $page_surface = is_array($state['page_surface'] ?? null) ? $state['page_surface'] : [];
         $landing_surface = is_array($payload['landing_page'] ?? null) ? $payload['landing_page'] : [];
-        $social_image = '';
-
-        foreach([
+        $social_image = $this->resolve_social_image_url([
             $page_surface['seo_image_url'] ?? '',
             $landing_surface['seo_image_url'] ?? '',
-        ] as $candidate_social_image) {
-            $candidate_social_image = trim((string) $candidate_social_image);
-
-            if($candidate_social_image !== '') {
-                $social_image = $candidate_social_image;
-                break;
-            }
-        }
-
-        if($social_image !== '') {
-            $social_image = str_replace(["\r", "\n", '"', '<', '>'], '', $social_image);
-
-            if(!preg_match('~^https?://~i', $social_image)) {
-                $social_image = url(ltrim($social_image, '/'));
-            }
-        }
+        ]);
 
         Title::set($title !== '' ? $title : 'VIP Funnel 2.0');
         Meta::set_description(string_truncate($description !== '' ? $description : $title, 160));
         Meta::set_canonical_url($state['canonical_url']);
         if($social_image !== '') {
             Meta::set_social_image($social_image);
+            foreach($this->get_social_image_meta_tags($social_image, $title) as $meta_key => $meta_value) {
+                Meta::$opengraph[$meta_key] = $meta_value;
+            }
+            Meta::$twitter['twitter:image:alt'] = string_truncate($title !== '' ? $title : 'VIP Funnel 2.0', 420);
         }
 
         $view = new \Altum\View('vip-funnel-public/index', (array) $this);
         $this->add_view_content('content', $view->run([
             'state' => $state,
         ]));
+    }
+
+    private function resolve_social_image_url(array $candidates): string {
+        foreach($candidates as $candidate_social_image) {
+            $social_image = $this->normalize_social_image_url($candidate_social_image);
+
+            if($social_image !== '') {
+                return $social_image;
+            }
+        }
+
+        return '';
+    }
+
+    private function normalize_social_image_url($value): string {
+        $social_image = trim((string) $value);
+
+        if($social_image === '') {
+            return '';
+        }
+
+        $social_image = preg_replace('~[\x00-\x1F\x7F]+~', '', $social_image);
+        $social_image = str_replace(['"', '<', '>'], '', $social_image);
+
+        if(str_starts_with($social_image, '//')) {
+            $social_image = 'https:' . $social_image;
+        } else if(!preg_match('~^https?://~i', $social_image)) {
+            $social_image = url(ltrim($social_image, '/'));
+        }
+
+        $url_parts = parse_url($social_image);
+
+        if(!is_array($url_parts)) {
+            return '';
+        }
+
+        if(empty($url_parts['scheme']) || empty($url_parts['host']) || !in_array(mb_strtolower($url_parts['scheme']), ['http', 'https'], true)) {
+            return '';
+        }
+
+        $site_parts = parse_url(SITE_URL);
+        if(
+            mb_strtolower($url_parts['scheme']) === 'http'
+            && mb_strtolower($site_parts['scheme'] ?? '') === 'https'
+            && mb_strtolower($url_parts['host']) === mb_strtolower($site_parts['host'] ?? '')
+        ) {
+            $social_image = 'https://' . substr($social_image, 7);
+        }
+
+        $extension = mb_strtolower(pathinfo((string) ($url_parts['path'] ?? ''), PATHINFO_EXTENSION));
+
+        if(in_array($extension, ['svg', 'avif'], true)) {
+            return '';
+        }
+
+        return $social_image;
+    }
+
+    private function get_social_image_meta_tags(string $social_image, string $title): array {
+        $image_type = $this->get_social_image_mime_type($social_image);
+        $meta_tags = [
+            'og:image:secure_url' => preg_match('~^https://~i', $social_image) ? $social_image : '',
+            'og:image:width' => '1200',
+            'og:image:height' => '630',
+            'og:image:alt' => string_truncate($title !== '' ? $title : 'VIP Funnel 2.0', 420),
+        ];
+
+        if($image_type !== '') {
+            $meta_tags['og:image:type'] = $image_type;
+        }
+
+        return array_filter($meta_tags);
+    }
+
+    private function get_social_image_mime_type(string $social_image): string {
+        $extension = mb_strtolower(pathinfo((string) (parse_url($social_image, PHP_URL_PATH) ?? ''), PATHINFO_EXTENSION));
+
+        return [
+            'jpg' => 'image/jpeg',
+            'jpeg' => 'image/jpeg',
+            'png' => 'image/png',
+            'gif' => 'image/gif',
+            'webp' => 'image/webp',
+        ][$extension] ?? '';
     }
 }

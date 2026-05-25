@@ -2684,6 +2684,9 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
     const publicFunnelUserId = <?= (int) $public_funnel_user_id ?>;
     const imageUploadMaxSizeMb = <?= json_encode((float) ($data->image_upload_max_size_mb ?? 3), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
     const imageUploadAccept = <?= json_encode($data->image_upload_accept ?? '.jpg, .jpeg, .png, .svg, .gif, .webp, .avif', JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
+    const seoImageUploadAccept = '.jpg, .jpeg, .png';
+    const seoImageAllowedExtensions = ['jpg', 'jpeg', 'png'];
+    const seoImageAllowedMimeTypes = ['image/jpeg', 'image/pjpeg', 'image/png', 'image/x-png'];
     const imageGalleryEntries = <?= json_encode(array_values($data->image_gallery_entries ?? []), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
     const stepTrashConfirmStorageKey = 'vip_funnel_skip_step_trash_confirm';
     const productCatalog = <?= json_encode(array_values($data->product_catalog ?? []), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
@@ -4702,11 +4705,25 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
         }
     }
 
+    function isSupportedSeoImageFile(file) {
+        const extension = String(file?.name || '').split('.').pop().toLowerCase();
+        const mimeType = String(file?.type || '').toLowerCase();
+
+        return seoImageAllowedExtensions.includes(extension) && (!mimeType || seoImageAllowedMimeTypes.includes(mimeType));
+    }
+
     async function uploadImageForSurface(fileInput, field = 'background_image_url') {
         const file = fileInput?.files?.[0] || null;
+        const isSeoImageUpload = field === 'seo_image_url';
 
         if(!file) {
             setSaveNotice(validationMessages.imageUploadMissing, 'error');
+            return;
+        }
+
+        if(isSeoImageUpload && !isSupportedSeoImageFile(file)) {
+            setSaveNotice('SEO fotografija za dijeljenje mora biti JPG ili PNG datoteka.', 'error');
+            fileInput.value = '';
             return;
         }
 
@@ -4716,7 +4733,7 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
             return;
         }
 
-        const surfaceTarget = field === 'seo_image_url' ? getCurrentSurface() : getEditableSurfaceSettingsTarget();
+        const surfaceTarget = isSeoImageUpload ? getCurrentSurface() : getEditableSurfaceSettingsTarget();
         if(!surfaceTarget) {
             setSaveNotice(validationMessages.imageUploadFailed, 'error');
             fileInput.value = '';
@@ -4730,6 +4747,7 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
             const formData = new FormData();
             formData.append('token', tokenInput?.value || '');
             formData.append('global_token', globalTokenInput?.value || '');
+            formData.append('purpose', isSeoImageUpload ? 'seo' : 'general');
             formData.append('image', file);
 
             const response = await fetch(imageUploadUrl, {
@@ -5635,8 +5653,8 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
                     <div class="vf-field">
                         <label>SEO fotografija</label>
                         <input type="text" data-vf-surface-field="seo_image_url" value="${escapeHtml(surface.seo_image_url || '')}" placeholder="https://... ili upload ispod" />
-                        <input type="file" accept="${escapeHtml(imageUploadAccept)}" data-vf-surface-seo-image-upload="1" />
-                        <div class="vf-field__hint">Preporuka: 1200 x 630 px, čitljiva slika bez sitnog teksta. Ako ovo ostane prazno, sustav koristi zadani logo.</div>
+                        <input type="file" accept="${escapeHtml(seoImageUploadAccept)}" data-vf-surface-seo-image-upload="1" />
+                        <div class="vf-field__hint">Preporuka: JPG ili PNG, 1200 x 630 px, čitljiva slika bez sitnog teksta. Ako ovo ostane prazno, sustav koristi zadani logo.</div>
                     </div>
                     ${surfaceSeoImageUrl ? `
                         <div class="vf-seo-preview">

@@ -328,6 +328,17 @@ class VipFunnelStudio extends Controller {
             Response::json(l('vip_funnel.alert.image_upload_missing'), 'error');
         }
 
+        $upload_purpose = input_clean((string) ($_POST['purpose'] ?? 'general'), 32);
+
+        if($upload_purpose === 'seo' && (int) ($_FILES['image']['error'] ?? UPLOAD_ERR_OK) === UPLOAD_ERR_OK) {
+            $file_extension = mb_strtolower(pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION));
+            $file_mime_type = !empty($_FILES['image']['tmp_name']) && is_file($_FILES['image']['tmp_name']) ? mime_content_type($_FILES['image']['tmp_name']) : (string) ($_FILES['image']['type'] ?? '');
+
+            if(!in_array($file_extension, ['jpg', 'jpeg', 'png'], true) || !in_array($file_mime_type, ['image/jpeg', 'image/pjpeg', 'image/png', 'image/x-png'], true)) {
+                Response::json('SEO fotografija za dijeljenje mora biti JPG ili PNG datoteka.', 'error');
+            }
+        }
+
         $image = \Altum\Uploads::process_upload(
             null,
             'vip_funnel_images',

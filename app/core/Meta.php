@@ -114,13 +114,13 @@ class Meta {
         echo '<!-- Open graph / Twitter markup -->' . "\n";
         foreach(\Altum\Meta::$opengraph as $key => $value) {
             if($value) {
-                echo '<meta property="' . $key . '" content="' . $value . '" />' . "\n";
+                echo '<meta property="' . htmlspecialchars((string) $key, ENT_QUOTES, 'UTF-8', false) . '" content="' . htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8', false) . '" />' . "\n";
             }
         }
 
         foreach(\Altum\Meta::$twitter as $key => $value) {
             if($value) {
-                echo '<meta name="' . $key . '" content="' . $value . '" />' . "\n";
+                echo '<meta name="' . htmlspecialchars((string) $key, ENT_QUOTES, 'UTF-8', false) . '" content="' . htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8', false) . '" />' . "\n";
             }
         }
     }
