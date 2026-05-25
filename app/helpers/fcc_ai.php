@@ -7216,6 +7216,20 @@ function fcc_ai_should_reset_public_problem_context(string $assistant_type, stri
 
 function fcc_ai_is_public_product_utility_request(string $message): bool {
     return fcc_ai_contains_keywords($message, [
+        'čaj umjesto vode',
+        'caj umjesto vode',
+        'čaj umesto vode',
+        'caj umesto vode',
+        'kada čaj može',
+        'kada caj moze',
+        'kad čaj može',
+        'kad caj moze',
+        'ručak za prvi dan',
+        'rucak za prvi dan',
+        'ručak prvog dana',
+        'rucak prvog dana',
+        'prvi dan c9',
+        'prvog dana c9',
         'jelovnik',
         'plan po danima',
         'po danima i obrocima',
@@ -7757,6 +7771,23 @@ function fcc_ai_get_public_guarded_request_type(string $message, array $intent =
 
     if(fcc_ai_is_public_low_pressure_safety_request($message, $previous_user_message, $previous_intent)) {
         return 'low_pressure_safety_request';
+    }
+
+    if(
+        fcc_ai_contains_keywords($message, ['želod', 'zelod', 'želuc', 'zeluc', 'želud', 'zelud'])
+        && fcc_ai_contains_keywords($message, ['rana', 'rano', 'kisel', 'kisl', 'acid', 'refluks'])
+    ) {
+        return 'stomach_ulcer_acid_request';
+    }
+
+    if(
+        !empty($intent['medication_interaction_sensitive'])
+        && (
+            fcc_ai_contains_keywords($message, ['c9', 'clean 9', 'clean9', 'dx4', 'f15', 'program', 'forever'])
+            || !empty(fcc_ai_get_public_direct_product_lookup_matches($message))
+        )
+    ) {
+        return 'medication_interaction_request';
     }
 
     if(fcc_ai_is_public_system_copy_request($message, $previous_user_message, $previous_intent)) {
@@ -8643,10 +8674,10 @@ function fcc_ai_get_public_direct_product_lookup_matches(string $message): array
         'bio_cellulose_mask' => ['aloe bio-cellulose mask', 'bio-cellulose mask', 'bio cellulose mask'],
         'marine_mask' => ['forever marine mask', 'marine mask'],
         'propolis' => ['propolis', 'bee propolis'],
-        'protein' => ['protein shake', 'ultra lite', 'plant protein'],
+        'protein' => ['protein shake', 'ultra lite', 'lite ultra', 'forever lite ultra', 'forever ultra', 'forever kite ultra', 'plant protein', '471'],
         'argi' => ['argi', 'argo', 'ardi', 'ardy', 'argi+', 'forever argi'],
         'focus' => ['focus', 'fokus'],
-        'immublend' => ['immublend', 'immunblend', 'immu blend', 'immun blend'],
+        'immublend' => ['immublend', 'immunblend', 'immu blend', 'immun blend', 'imunoblend', 'imuno blend', 'imun blend'],
         'immune_gummy' => ['immune gummy', 'imune gummy', 'immune gummi', 'forever gummy', 'gummy'],
         'f15' => ['f15', 'forever f15'],
         'vital5' => ['vital5', 'vital 5', 'forever vital5', 'forever vital 5'],
@@ -9135,12 +9166,13 @@ function fcc_ai_is_direct_product_lookup_message(string $message): bool {
 function fcc_ai_is_public_product_usage_request(string $message): bool {
     return fcc_ai_contains_keywords($message, [
         'kako koristiti', 'kak koristiti', 'kako se koristi', 'zasto se koristi', 'zašto se koristi',
-        'how to use', 'how do i use', 'kako piti', 'kako biti', 'kako bit', 'how to take', 'opis', 'opisi mi', 'što je', 'sto je',
+        'how to use', 'how do i use', 'kako piti', 'kako se pije', 'kako biti', 'kako bit', 'how to take', 'opis', 'opisi mi', 'što je', 'sto je',
         'čemu služi', 'cemu sluzi', 'koliko dugo', 'mogu li piti dugo', 'mogu li se piti',
         'za što bi preporučio', 'za sto bi preporucio', 'za što bi mi preporučio', 'za sto bi mi preporucio',
         'za što bi mi prvenstveno preporučio', 'za sto bi mi prvenstveno preporucio', 'prvenstveno preporučio', 'prvenstveno preporucio',
         'svojstva', 'bonitet', 'bonitete', 'primjena', 'preporuka za korištenje', 'preporuka za koristenje',
         'upute', 'uputu', 'u svakodnevnici', 'svakodnevnici', 'dnevni raspored', 'raspored korištenja', 'raspored koristenja', 'doziranje', 'kako pit',
+        'koliko grama', 'koliko gr', 'mjerica', 'merica', 'jedna mjerica', 'jedna merica', 'scoop',
         'omjer', 'ratio', 'epa', 'dha', 'miligr', 'koliko mg', 'koliko ima mg', 'što sadrži', 'sto sadrzi', 'sastav',
     ]);
 }
@@ -13264,7 +13296,7 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
             'lock_product_scope' => true,
         ],
         'anxiety_tension_support' => [
-            'patterns' => ['anksioznost', 'anksiozan', 'anksiozna', 'stalno sam napet', 'stalno sam napeta', 'napet sam', 'napeta sam', 'unutarnja napetost'],
+            'patterns' => ['anksioznost', 'aneksioznost', 'aneksiozan', 'aneksiozna', 'anksiozan', 'anksiozna', 'tesnoba', 'tesnobnost', 'stalno sam napet', 'stalno sam napeta', 'napet sam', 'napeta sam', 'unutarnja napetost'],
             'preferred_patterns' => ['royal jelly', 'aloe vera gel', 'arctic sea'],
             'primary_product' => 'Forever Royal Jelly',
             'support_products' => ['Forever Aloe Vera Gel™', 'Forever Arctic Sea'],
@@ -13273,8 +13305,9 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
                 'en' => 'anxiety, tension and a calmer daily routine',
             ],
             'opening_note' => [
-                'hr' => 'Kad je fokus na anksioznosti i stalnoj napetosti, preporuka treba ostati vrlo smirena i jednostavna: royal jelly kao glavni nutritivni smjer, uz aloe bazu i omega-3 kao dopunu istoj rutini.',
-                'en' => 'When the focus is anxiety and ongoing tension, the recommendation should stay very calm and simple: royal jelly as the main nutritional direction, with an aloe base and omega-3 as additions to the same routine.',
+                'hr' => 'Kad je fokus na anksioznosti i stalnoj napetosti, prvi korak je stručna pomoć ili liječnik ako su tegobe jače ili traju dulje. Forever smjer treba ostati vrlo smiren i jednostavan: royal jelly kao glavni nutritivni smjer, uz aloe bazu i omega-3 kao dopunu istoj rutini.',
+                'en' => 'When the focus is anxiety and ongoing tension, the first step is professional support or a doctor if symptoms are stronger or last longer. The Forever direction should stay very calm and simple: royal jelly as the main nutritional direction, with an aloe base and omega-3 as additions to the same routine.',
+                'sl' => 'Pri tesnobi, anksioznosti in stalni napetosti je prvi korak strokovnjak ali zdravnik, posebej če so težave močnejše ali trajajo dlje. Forever smer naj ostane zelo mirna in preprosta: royal jelly kot glavna nutritivna smer, z aloe bazo in omega-3 kot podporo isti rutini.',
             ],
             'recommendation_lines' => [
                 'hr' => [
@@ -13287,10 +13320,16 @@ function fcc_ai_get_product_advisor_recommendation_matrix(): array {
                     'Forever Aloe Vera Gel™ makes sense as the support option on top as the gentle inside aloe base for a simpler daily routine.',
                     'Forever Arctic Sea can be the additional support option when you also want the omega-3 nutritional direction inside the same routine.',
                 ],
+                'sl' => [
+                    'Forever Royal Jelly je tukaj glavna Forever smer, ko želite najčistejšo podporno rutino za živčni sistem, vitalnost in vsakodnevno odpornost na napetost.',
+                    'Forever Aloe Vera Gel™ ima smisel kot podporna možnost zraven, kot nežna aloe baza od znotraj za preprostejšo dnevno rutino.',
+                    'Forever Arctic Sea je lahko dodatna podpora, če želite v isti smeri dodati še omega-3 nutritivno podporo.',
+                ],
             ],
             'monthly_quantity_note' => [
                 'hr' => 'Ako želite okvir za mjesec dana, ovdje se najčešće gleda 1 x Forever Royal Jelly, 3 x Forever Aloe Vera Gel™ i 1 kutija Forever Arctic Sea.',
                 'en' => 'If you want a one-month frame, this is most often positioned as 1 x Forever Royal Jelly, 3 x Forever Aloe Vera Gel™ and 1 box of Forever Arctic Sea.',
+                'sl' => 'Če želite okvir za en mesec, se tukaj najpogosteje gleda 1 x Forever Royal Jelly, 3 x Forever Aloe Vera Gel™ in 1 škatla Forever Arctic Sea.',
             ],
             'suppress_generic_questions' => true,
             'sensitive_support_only' => true,
@@ -16395,9 +16434,9 @@ function fcc_ai_build_public_recommendation_payload(string $assistant_type, stri
         }
 
         $line_prefix = match($index) {
-            0 => $language === 'en' ? 'Main recommendation' : 'Glavna preporuka',
-            1 => $language === 'en' ? 'Support direction' : 'Dodatna podrška',
-            default => $language === 'en' ? 'Optional extra' : 'Po želji još',
+            0 => $language === 'en' ? 'Main recommendation' : ($language === 'sl' ? 'Glavna priporočena smer' : 'Glavna preporuka'),
+            1 => $language === 'en' ? 'Support direction' : ($language === 'sl' ? 'Dodatna podpora' : 'Dodatna podrška'),
+            default => $language === 'en' ? 'Optional extra' : ($language === 'sl' ? 'Po želji še' : 'Po želji još'),
         };
 
         $recommendation_lines[] = $line_prefix . ': ' . trim((string) ($suggestion['title'] ?? '')) . ($safe_description !== '' ? ' — ' . $safe_description : '');
@@ -16518,7 +16557,7 @@ function fcc_ai_build_public_recommendation_payload(string $assistant_type, stri
     }
 
     $discount_note = '';
-    if($assistant_type === 'product_advisor' && !empty($knowledge_suggestions) && empty($intent['business'])) {
+    if($assistant_type === 'product_advisor' && !empty($knowledge_suggestions) && empty($intent['business']) && !empty($intent['discount'])) {
         $discount_note = $language === 'en'
             ? 'If the visitor buys through the partner recommendation flow, mention the available 15% discount as a partner benefit.'
             : 'Ako posjetitelj kupuje kroz preporuku suradnika, možeš spomenuti dostupnih 15% popusta kao partnersku pogodnost.';
@@ -16547,6 +16586,14 @@ function fcc_ai_build_public_recommendation_payload(string $assistant_type, stri
 
         if(!empty($primary_condition['suppress_generic_questions']) && !empty($recommendation_lines)) {
             $question_lines = [];
+        }
+
+        if((string) ($primary_condition['key'] ?? '') === 'anxiety_tension_support') {
+            $knowledge_suggestions = [];
+            $clear_knowledge_suggestions = true;
+            $discount_note = '';
+            $combination_note = '';
+            $force_local_reply = true;
         }
     }
 
@@ -19252,10 +19299,11 @@ function fcc_ai_detect_public_intent(string $assistant_type, string $message): a
         'trudn', 'pregnan', 'onkol', 'rak', 'cancer', 'inzulin', 'insulin', 'šeć', 'secer', 'tlak',
         'pressure', 'bubreg', 'kidney', 'krvava stolica', 'krv u stolici', 'krvavu stolic', 'kevavu stolic',
         'masna jetra', 'jetr', 'liver', 'dermatit', 'herpes', 'laktacij', 'dojen', 'dijete', 'dječ', 'djec', 'child',
-        'menstrual', 'menstru', 'ciklus', 'lupanje srca', 'lupanj', 'srce', 'depres', 'anksioz', 'anxio',
+        'menstrual', 'menstru', 'ciklus', 'lupanje srca', 'lupanj', 'srce', 'depres', 'anksioz', 'aneksioz', 'tesnob', 'anxio',
         'rtg', 'nalaz', 'menisk', 'gips', 'miopat', 'distrof', 'hrskavic', 'artroz', 'gastrit', 'umjetni kuk',
         'željez', 'zeljez', 'iron', 'transplant', 'transplat', 'štitna', 'stitna', 'štitnoj', 'stitnoj', 'štitne', 'stitne', 'polip', 'bazofil', 'urati', 'psa', 'temperatur', 'fever', 'cellulitis', 'celulitis', 'dijabet', 'candida', 'kandida', 'iritabil', 'parazit', 'psorijaz', 'moždani udar', 'mozdani udar', 'moždanog udara', 'mozdanog udara', 'mozganski kap', 'karcinom', 'karcinoma', 'letrozol', 'reseligo', 'isijas', 'kolesterol', 'miom', 'maternic', 'slabokrv', 'anem', 'gljivic', 'celijak', 'celiak', 'tromboz', 'kolitis', 'ulcerozn', 'pankreas', 'pankreatitis', 'gušterač', 'gusterac', 'gusterač', 'gušterače', 'gusterače', 'giht', 'upaljen zub', 'boli zub', 'bol u zubu', 'zubobol', 'zubobolja', 'mokren', 'priraslic', 'začeć', 'zacec', 'neplod', 'pubalg', 'vitilih', 'vitilig',
-        'astmat', 'astma', 'bronh', 'opstruktiv', 'pluć', 'pluc', 'kopb', 'hobp', 'copd', 'ledvin', 'kamen',
+        'astmat', 'astma', 'bronh', 'opstruktiv', 'pluć', 'pluc', 'kopb', 'hobp', 'copd', 'ledvin', 'kamen', 'hemoroid', 'hemeroid', 'hemorrhoid',
+        'želodec', 'želodc', 'zelodec', 'zelodc', 'želoč', 'zeloc', 'rana na želodcu', 'rana na zeludcu', 'rano na želodcu', 'rano na zeludcu',
     ]);
 
     if($assistant_type === 'pets_advisor') {
@@ -19271,7 +19319,7 @@ function fcc_ai_detect_public_intent(string $assistant_type, string $message): a
     if($assistant_type === 'product_advisor') {
         $serious = $serious || fcc_ai_contains_keywords($message, [
             'onkol', 'krvava stolica', 'krv u stolici', 'krvavu stolic', 'kevavu stolic', 'bubreg', 'kidney pain',
-            'ciroz', 'ascites', 'hodgkin', 'hockins', 'ockins', 'lupanje srca', 'lupanj', 'palpit', 'depres', 'anksioz', 'operirao', 'operirala', 'bruh',
+            'ciroz', 'ascites', 'hodgkin', 'hockins', 'ockins', 'lupanje srca', 'lupanj', 'palpit', 'depres', 'anksioz', 'aneksioz', 'tesnob', 'operirao', 'operirala', 'bruh',
             'umjetni kuk', 'umjetni kukovi', 'nema međuprostora', 'nema medjuprostora', 'slomljen', 'gips', 'miopat', 'distrof', 'menisk', 'rtg',
             'kemoterap', 'transplant', 'transplat', 'cellulitis', 'celulitis', 'temperatur', 'fever', 'štitna', 'stitna', 'štitnoj', 'stitnoj', 'polip', 'bazofil', 'urati', 'psa', 'adenoma karcinom', 'debelog crijeva', 'moždani udar', 'mozdani udar', 'moždanog udara', 'mozdanog udara', 'mozganski kap', 'karcinom', 'karcinoma', 'letrozol', 'reseligo', 'tromboz', 'ulcerozn', 'kolitis', 'pankreas', 'pankreatitis', 'gušterač', 'gusterac', 'gusterač', 'gušterače', 'gusterače',
             'kvržic', 'kvrzic', 'lakat', 'natečen', 'natecen', 'oteknut', 'oteknuta', 'ledvin', 'kamen',
@@ -20215,6 +20263,91 @@ function fcc_ai_generate_public_reply(string $assistant_type, string $message, a
             ];
         }
 
+        if($guarded_request_type === 'medication_interaction_request') {
+            $has_c9 = fcc_ai_contains_keywords($message, ['c9', 'clean 9', 'clean9']);
+            $product_label = $has_c9 ? 'C9' : trim(fcc_ai_get_public_direct_product_lookup_title($message));
+            $product_label = $product_label !== '' ? $product_label : 'Forever proizvod ili program';
+            $mentions_aspirin = fcc_ai_contains_keywords($message, ['aspirin']);
+            $mentions_tamsal = fcc_ai_contains_keywords($message, ['tamsal']);
+            $medicines = array_values(array_filter([
+                $mentions_aspirin ? 'Aspirin' : '',
+                $mentions_tamsal ? 'Tamsal' : '',
+            ]));
+            $medicine_label = !empty($medicines) ? implode(' i ', $medicines) : ($language === 'en' ? 'medication' : ($language === 'sl' ? 'zdravila' : 'lijekove'));
+
+            $content_blocks[] = match($language) {
+                'en' => 'I would not confirm whether ' . $product_label . ' can be combined with ' . $medicine_label . ' through chat.',
+                'sl' => 'Ne bi potrjeval prek klepeta, ali se lahko ' . $product_label . ' kombinira z ' . $medicine_label . '.',
+                default => 'Ne bih kroz chat potvrđivao može li se ' . $product_label . ' kombinirati s ' . $medicine_label . '.',
+            };
+
+            $content_blocks[] = match($language) {
+                'en' => 'The safest next step is to check with a doctor or pharmacist, especially with aspirin, blood pressure, prostate or urinary medication, blood-thinning context or any current therapy.',
+                'sl' => 'Najvarnejši naslednji korak sta zdravnik ali farmacevt, posebej pri aspirinu, pritisku, zdravilih za prostato ali sečila, razredčevanju krvi ali obstoječi terapiji.',
+                default => 'Najsigurniji sljedeći korak je provjera s liječnikom ili ljekarnikom, posebno kod aspirina, tlaka, terapije za prostatu ili mokrenje, razrjeđivanja krvi ili bilo koje postojeće terapije.',
+            };
+
+            $content_blocks[] = match($language) {
+                'en' => 'Until that is confirmed, I would not start the program or add supplement directions just from this chat.',
+                'sl' => 'Dok to ni potrjeno, ne bi začenjal s programom niti dodajal smeri dodatkov samo na podlagi tega klepeta.',
+                default => 'Dok to nije potvrđeno, ne bih kretao s programom niti dodavao suplementni smjer samo na temelju ovog chata.',
+            };
+
+            $recommendation_payload['primary_product'] = '';
+            $recommendation_payload['support_products'] = [];
+            $recommendation_payload['recommendation_lines'] = [];
+            $recommendation_payload['question_lines'] = [];
+            $recommendation_payload['monthly_quantity_note'] = '';
+            $recommendation_payload['skip_product_tail'] = true;
+            $recommendation_payload['force_local_reply'] = true;
+
+            return [
+                'content' => trim(implode("\n\n", array_filter($content_blocks))),
+                'language' => $language,
+                'lead_capture' => $lead_capture,
+                'intent' => $intent,
+                'recommendation_payload' => $recommendation_payload,
+                'knowledge_suggestions' => [],
+            ];
+        }
+
+        if($guarded_request_type === 'stomach_ulcer_acid_request') {
+            $content_blocks[] = match($language) {
+                'en' => 'With stomach acid, a suspected ulcer or stomach wound, the first step should be a doctor check, because this should not be treated through product chat.',
+                'sl' => 'Pri želodčni kislini, sumu na rano ali razjedo na želodcu je prvi korak zdravnik, ker tega ne bi smeli reševati samo prek priporočila izdelkov.',
+                default => 'Kod želučane kiseline, sumnje na ranu ili čir na želucu prvi korak treba biti liječnik, jer se to ne bi smjelo rješavati samo kroz preporuku proizvoda.',
+            };
+
+            $content_blocks[] = match($language) {
+                'en' => 'As a general FCC routine direction only, the cleanest aloe option is Forever Aloe Vera Gel™. Peaches or Mango are mainly taste alternatives, not a stronger answer for an ulcer or acid.',
+                'sl' => 'Samo kot splošna FCC smer rutine je najbolj čista aloe možnost Forever Aloe Vera Gel™. Peaches ali Mango sta predvsem okusni alternativi, ne močnejši odgovor za razjedo ali kislino.',
+                default => 'Samo kao opći FCC smjer rutine, najčišća aloe opcija je Forever Aloe Vera Gel™. Peaches ili Mango su prije svega okusne alternative, ne jači odgovor za ranu ili kiselinu.',
+            };
+
+            $content_blocks[] = match($language) {
+                'en' => 'If the doctor says aloe drinks are acceptable, then you can choose the gentlest version by tolerance and taste.',
+                'sl' => 'Če zdravnik potrdi, da so aloe napitki v redu, potem izberite najnežnejšo različico glede na prenašanje in okus.',
+                default => 'Ako liječnik potvrdi da su aloe napici u redu, tada birajte najnježniju verziju prema podnošljivosti i okusu.',
+            };
+
+            $recommendation_payload['primary_product'] = 'Forever Aloe Vera Gel™';
+            $recommendation_payload['support_products'] = [];
+            $recommendation_payload['recommendation_lines'] = [];
+            $recommendation_payload['question_lines'] = [];
+            $recommendation_payload['monthly_quantity_note'] = '';
+            $recommendation_payload['skip_product_tail'] = true;
+            $recommendation_payload['force_local_reply'] = true;
+
+            return [
+                'content' => trim(implode("\n\n", array_filter($content_blocks))),
+                'language' => $language,
+                'lead_capture' => $lead_capture,
+                'intent' => $intent,
+                'recommendation_payload' => $recommendation_payload,
+                'knowledge_suggestions' => [],
+            ];
+        }
+
         if($guarded_request_type === 'restriction_logic_request') {
             $content_blocks[] = $language === 'en'
                 ? 'I do not build recommendations through a list of forbidden products. Recommendations depend on the user need, context and the cleanest relevant FCC direction.'
@@ -20440,7 +20573,9 @@ function fcc_ai_generate_public_reply(string $assistant_type, string $message, a
         if(!empty($recommendation_payload['recommendation_lines'])) {
             $content_blocks[] = ($language === 'en'
                 ? "Main explanation:\n- "
-                : "Glavno objašnjenje:\n- ")
+                : ($language === 'sl'
+                    ? "Glavna razlaga:\n- "
+                    : "Glavno objašnjenje:\n- "))
                 . implode("\n- ", array_map(static function($line) {
                     return trim((string) $line);
                 }, (array) $recommendation_payload['recommendation_lines']));
@@ -20507,6 +20642,52 @@ function fcc_ai_generate_public_reply(string $assistant_type, string $message, a
                 : ($language === 'sl'
                     ? "Pošljite mi:\n- cilj (hujšanje, vzdrževanje ali pridobivanje)\n- spol in starost\n- višino in težo\n- koliko obrokov vam najbolj ustreza\n- katera živila želite izključiti ali vključiti"
                     : "Pošaljite mi:\n- cilj (mršavljenje, održavanje ili dobivanje kilograma)\n- spol i dob\n- visinu i težinu\n- koliko vam obroka najviše odgovara\n- koje namirnice želite izbjegavati ili obavezno uključiti");
+
+            return [
+                'content' => trim(implode("\n\n", array_filter($content_blocks))),
+                'language' => $language,
+                'lead_capture' => $lead_capture,
+                'intent' => $intent,
+                'recommendation_payload' => $recommendation_payload,
+                'knowledge_suggestions' => [],
+            ];
+        }
+
+        if(fcc_ai_contains_keywords($message, ['čaj', 'caj', 'tea']) && fcc_ai_contains_keywords($message, ['voda', 'vode', 'umjesto', 'umesto', 'može', 'moze', 'kad', 'kada'])) {
+            $content_blocks[] = match($language) {
+                'en' => 'Tea can be a practical warm drink in the day, but it should not automatically replace all water, especially if you are following C9 or another structured plan.',
+                'sl' => 'Čaj je lahko praktična topla pijača čez dan, vendar naj ne zamenja vse vode, posebej če sledite C9 ali drugemu strukturiranemu programu.',
+                default => 'Čaj može biti praktičan topli napitak kroz dan, ali ne bih ga automatski mijenjao za svu vodu, posebno ako pratite C9 ili drugi strukturirani program.',
+            };
+
+            $content_blocks[] = match($language) {
+                'en' => "Simple rule:\n- water stays the main hydration base\n- unsweetened tea can be used between meals or when it does not disturb the program instructions\n- caffeinated tea is better avoided late in the evening",
+                'sl' => "Preprosto pravilo:\n- voda ostane glavna baza hidracije\n- nesladkan čaj je lahko med obroki ali ko ne moti navodil programa\n- čaju s kofeinom se je bolje izogniti pozno zvečer",
+                default => "Jednostavno pravilo:\n- voda ostaje glavna baza hidratacije\n- nezaslađeni čaj može između obroka ili kad ne remeti upute programa\n- čaj s kofeinom bolje je izbjegavati kasno navečer",
+            };
+
+            return [
+                'content' => trim(implode("\n\n", array_filter($content_blocks))),
+                'language' => $language,
+                'lead_capture' => $lead_capture,
+                'intent' => $intent,
+                'recommendation_payload' => $recommendation_payload,
+                'knowledge_suggestions' => [],
+            ];
+        }
+
+        if(fcc_ai_contains_keywords($message, ['ručak za prvi dan', 'rucak za prvi dan', 'ručak prvog dana', 'rucak prvog dana'])) {
+            $content_blocks[] = match($language) {
+                'en' => 'If this is about the first day of C9, keep lunch inside the exact program instructions and do not improvise with extra products.',
+                'sl' => 'Če gre za prvi dan C9, naj kosilo ostane znotraj točnih navodil programa in brez improvizacije z dodatnimi izdelki.',
+                default => 'Ako je riječ o prvom danu C9, ručak treba ostati unutar točnih uputa programa i bez improvizacije s dodatnim proizvodima.',
+            };
+
+            $content_blocks[] = match($language) {
+                'en' => 'The safest next step is to check the C9 day-one sheet and follow that meal frame. If you want, send the exact instruction page and I can help summarize it.',
+                'sl' => 'Najvarnejši naslednji korak je pogledati navodila za prvi dan C9 in se držati tega okvira obroka. Če želite, pošljite točno stran navodil, pa jo lahko povzamem.',
+                default => 'Najsigurniji sljedeći korak je pogledati upute za prvi dan C9 i držati se tog okvira obroka. Ako želite, pošaljite točnu stranicu uputa pa je mogu sažeti.',
+            };
 
             return [
                 'content' => trim(implode("\n\n", array_filter($content_blocks))),
@@ -21240,7 +21421,15 @@ function fcc_ai_generate_public_reply(string $assistant_type, string $message, a
         }
 
         if(!empty($intent['usage_howto_request'])) {
-            $primary_suggestion = $knowledge_suggestions[0] ?? [];
+            $direct_product_title = fcc_ai_get_public_direct_product_lookup_title($message);
+            $primary_suggestion = $direct_product_title !== ''
+                ? [
+                    'title' => $direct_product_title,
+                    'url' => '',
+                    'description' => '',
+                    'sku' => '',
+                ]
+                : ($knowledge_suggestions[0] ?? []);
 
             if(empty($primary_suggestion['title'])) {
                 $fallback_title = fcc_ai_get_public_direct_product_lookup_title($message);
@@ -21291,6 +21480,17 @@ function fcc_ai_generate_public_reply(string $assistant_type, string $message, a
                 )
             ) {
                 $content_blocks[] = $usage_note;
+            }
+
+            if(
+                $usage_note !== ''
+                && fcc_ai_contains_keywords($message, ['kako koristiti', 'kako se koristi', 'kako piti', 'kako se pije', 'kako pit', 'koliko grama', 'mjerica', 'merica', 'doziranje', 'how to use', 'how to take'])
+            ) {
+                $content_blocks[] = match($language) {
+                    'en' => 'Still, keep the current package instructions as the final source, because serving guidance can differ by market or product version.',
+                    'sl' => 'Kljub temu naj bodo aktualna navodila na embalaži zadnji vir, ker se lahko priporočila razlikujejo po trgu ali verziji izdelka.',
+                    default => 'Ipak, aktualne upute na pakiranju neka budu zadnji izvor, jer se preporuke mogu razlikovati po tržištu ili verziji proizvoda.',
+                };
             }
 
             if(fcc_ai_contains_keywords($message, ['pala', 'pao', 'nagnje', 'otek', 'otekl', 'bolna', 'bolno', 'ozlj', 'injur'])) {
