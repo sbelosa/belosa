@@ -779,11 +779,11 @@
                             </div>
 
                             <div class="col-12 col-lg-4 mb-3">
-                                <label for="funnels_analytics_biolink_block_id" class="small text-muted mb-1"><?= l('funnels_analytics.filters.funnel') ?></label>
-                                <select id="funnels_analytics_biolink_block_id" name="biolink_block_id" class="custom-select">
+                                <label for="funnels_analytics_funnel_key" class="small text-muted mb-1"><?= l('funnels_analytics.filters.funnel') ?></label>
+                                <select id="funnels_analytics_funnel_key" name="funnel_key" class="custom-select">
                                     <option value=""><?= l('funnels_analytics.filters.all_funnels') ?></option>
                                     <?php foreach($data->funnel_options as $funnel_option): ?>
-                                        <option value="<?= $funnel_option->biolink_block_id ?>" <?= (int) ($_GET['biolink_block_id'] ?? 0) === (int) $funnel_option->biolink_block_id ? 'selected="selected"' : null ?>><?= $funnel_option->name ?> · <?= $funnel_option->biolink_url ?></option>
+                                        <option value="<?= $funnel_option->funnel_key ?>" <?= (string) ($data->selected_funnel_key ?? '') === (string) $funnel_option->funnel_key ? 'selected="selected"' : null ?>><?= $funnel_option->name ?> · <?= $funnel_option->source_label ?? $funnel_option->biolink_url ?></option>
                                     <?php endforeach ?>
                                 </select>
                             </div>
@@ -804,7 +804,7 @@
             <?php else: ?>
                 <?php
                 $summary_switcher_query = [];
-                foreach(['project_id', 'link_id', 'biolink_block_id', 'start_date', 'end_date'] as $parameter) {
+                foreach(['project_id', 'link_id', 'funnel_key', 'start_date', 'end_date'] as $parameter) {
                     if(isset($_GET[$parameter]) && $_GET[$parameter] !== '') {
                         $summary_switcher_query[$parameter] = $_GET[$parameter];
                     }
@@ -1304,7 +1304,7 @@
                                     <div class="pr-3">
                                         <div class="font-weight-bold text-white"><?= $biolink->biolink_url ?></div>
                                         <div class="funnels-analytics-meta"><?= $biolink->project_name ?: 'Bez projekta' ?></div>
-                                        <div class="funnels-analytics-meta"><?= nr($biolink->active_funnels) ?> aktivnih funnel blokova • <?= nr($biolink->total_leads) ?> prijava</div>
+                                        <div class="funnels-analytics-meta"><?= nr($biolink->active_funnels) ?> aktivnih funnela • <?= nr($biolink->total_leads) ?> prijava</div>
                                     </div>
                                     <div class="funnels-analytics-actions">
                                         <a href="<?= $biolink->analytics_url ?>" class="btn btn-sm btn-outline-light">Analitika</a>
