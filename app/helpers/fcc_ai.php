@@ -5584,7 +5584,7 @@ function fcc_ai_is_public_closing_thanks_message(string $message): bool {
     }
 
     $has_closing_signal = fcc_ai_contains_keywords($message, [
-        'hvala', 'fala', 'thanks', 'thank you',
+        'hvala', 'fala', 'thanks', 'thank you', 'thx', 'tks',
         'laku noć', 'laku noc', 'laku noč', 'lahko noč', 'lahko noc', 'good night',
     ]);
 
@@ -5594,7 +5594,7 @@ function fcc_ai_is_public_closing_thanks_message(string $message): bool {
 
     $allowed_words = [
         'hvala', 'fala', 'puno', 'mnogo', 'lijepa', 'lepa', 'laku', 'lahko', 'noć', 'noc', 'noč',
-        'pozdrav', 'pozz', 'bok', 'hvalaam', 'thanks', 'thank', 'you', 'good', 'night',
+        'pozdrav', 'pozz', 'bok', 'hvalaam', 'thanks', 'thank', 'thx', 'tks', 'you', 'good', 'night',
     ];
 
     foreach($words as $word) {
@@ -7424,6 +7424,7 @@ function fcc_ai_is_public_content_asset_request(string $message): bool {
     return fcc_ai_contains_keywords($message, [
         'tekst', 'objav', 'objvu', 'caption', 'story', 'reel', 'facebook objav', 'instagram',
         'društvenoj mreži', 'drustvenoj mrezi', 'drusatvenoj mrezi', 'društvene mreže', 'drustvene mreze',
+        'društvenim mrežama', 'drustvenim mrezama', 'social media',
         'naslov', 'kraću verziju', 'kracu verziju', 'kratku verziju', 'dužu verziju', 'duzu verziju',
         'verziju za facebook', 'verzija za facebook', 'uz video', 'premium ton',
         'žensku publiku', 'zensku publiku', 'hashtag', 'hashtagi',
@@ -7525,6 +7526,10 @@ function fcc_ai_is_public_system_explainer_request(string $message, string $prev
         'kako radi vaš sustav', 'kako radi vas sustav',
         'kako radi ovaj sustav', 'objasni kako radi vaš ai',
         'objasni kako radi ovaj ai', 'how does your ai system work',
+        'više info o forever card sustavu', 'vise info o forever card sustavu',
+        'info o forever card sustavu', 'forever card sustavu',
+        'više info o fcc sustavu', 'vise info o fcc sustavu',
+        'info o fcc sustavu', 'fcc sustavu',
     ])) {
         return true;
     }
@@ -8319,7 +8324,7 @@ function fcc_ai_get_public_query_alias_phrases(string $message): array {
         $aliases[] = 'forever vitolize men';
     }
 
-    if(fcc_ai_contains_keywords($message, ['marine collagen', 'collagen', 'kolagen'])) {
+    if(fcc_ai_contains_keywords($message, ['marine collagen', 'marine calogen', 'calogen', 'collagen', 'kolagen'])) {
         $aliases[] = 'forever marine collagen';
     }
 
@@ -8691,7 +8696,7 @@ function fcc_ai_get_public_direct_product_lookup_matches(string $message): array
         'kids' => ['kids', 'forever kids'],
         'vitolize_women' => ['vitolize women', 'vytolize women', 'vitolize woman', 'ženski vitolize', 'zenski vitolize'],
         'vitolize_men' => ['vitolize men', 'muški vitolize', 'muski vitolize'],
-        'marine_collagen' => ['marine collagen', 'kolagen', 'collagen'],
+        'marine_collagen' => ['marine collagen', 'marine calogen', 'calogen', 'kolagen', 'collagen'],
         'nourishing_oil' => ['nourishing oil'],
         'cooling_lotion' => ['cooling lotion', 'cooling losion', 'aloe cooling lotion', 'aloe cooling losion', 'hladilna krema'],
         'heat_lotion' => ['heat lotion', 'aloe heat lotion'],
@@ -16361,6 +16366,28 @@ function fcc_ai_is_public_f15_variant_request(string $message): bool {
         ]);
 }
 
+function fcc_ai_is_public_f15_package_content_request(string $message, string $recent_context = ''): bool {
+    $message = trim($message);
+    $recent_context = trim($recent_context);
+
+    if($message === '') {
+        return false;
+    }
+
+    $combined_context = trim($message . "\n" . $recent_context);
+    if(!fcc_ai_contains_keywords($combined_context, ['f15', 'forever f15'])) {
+        return false;
+    }
+
+    return fcc_ai_contains_keywords($message, [
+        'sadrži', 'sadrzi', 'sastav', 'što sadrži', 'sto sadrzi', 'šta sadrži', 'sta sadrzi',
+        'što ide', 'sto ide', 'šta ide', 'sta ide', 'što ide u', 'sto ide u', 'šta ide u', 'sta ide u',
+        'tačno što ide', 'tacno sto ide', 'točno što ide', 'tocno sto ide',
+        'točan popis', 'tocan popis', 'tačan popis', 'tacan popis',
+        'preciznije', 'precizno', 'popis', 'paket', 'program',
+    ]);
+}
+
 function fcc_ai_build_public_recommendation_payload(string $assistant_type, string $message, array $context = []): array {
     $language = fcc_ai_resolve_public_reply_language((string) ($context['language'] ?? 'auto'), $message);
     $intent = isset($context['intent']) && is_array($context['intent'])
@@ -19179,6 +19206,7 @@ function fcc_ai_detect_public_intent(string $assistant_type, string $message): a
         'sastavi mi objavu', 'napravi objavu', 'promote', 'marketing', 'advertis', 'dm poruku', 'dm',
         'naš detoks', 'nas detoks', 'kako da im pomognemo', 'mnogo žena govori', 'mnogo zena govori',
         'žene su mi', 'zene su mi', 'daj mi naučno rješenje', 'daj mi naucno rjesenje',
+        'društvene mreže', 'drustvene mreze', 'društvenim mrežama', 'drustvenim mrezama', 'social media',
     ]);
     $work_stress_wellness_context = $assistant_type === 'product_advisor'
         && !$strong_business_interest
@@ -19835,6 +19863,7 @@ function fcc_ai_generate_public_reply(string $assistant_type, string $message, a
     $condition_explanation_followup = $assistant_type === 'product_advisor' && !empty($context['condition_explanation_followup']);
     $follow_up_anchor_message = trim((string) ($context['follow_up_anchor_message'] ?? ''));
     $recent_user_context = trim((string) ($context['recent_user_context'] ?? ''));
+    $message_for_matching_context = trim((string) ($context['message_for_matching'] ?? ''));
     $condition_usage_followup = $assistant_type === 'product_advisor'
         && (
             !empty($context['condition_usage_followup'])
@@ -19859,6 +19888,15 @@ function fcc_ai_generate_public_reply(string $assistant_type, string $message, a
         && $joint_quantity_context_source !== ''
         && fcc_ai_contains_keywords($joint_quantity_context_source, ['freedom', 'freedom®'])
         && fcc_ai_contains_keywords($joint_quantity_context_source, ['active ha', 'activ ha']);
+    $content_asset_context_source = trim($recent_user_context . "\n" . $follow_up_anchor_message);
+    $is_content_asset_request_context = $assistant_type === 'product_advisor'
+        && fcc_ai_is_public_content_asset_followup_context($message, $content_asset_context_source);
+    $is_f15_package_content_request = $assistant_type === 'product_advisor'
+        && fcc_ai_is_public_f15_package_content_request($message, trim($follow_up_anchor_message . "\n" . $recent_user_context . "\n" . $message_for_matching_context));
+    $is_short_confirmation_without_anchor = $assistant_type === 'product_advisor'
+        && !$is_content_asset_request_context
+        && !$is_f15_package_content_request
+        && (bool) preg_match('/^\s*(da|može|moze|ok|okej|yes|sure)\s*[!?.]*\s*$/iu', $message);
 
     if($skip_product_tail) {
         $knowledge_suggestions = [];
@@ -19896,6 +19934,130 @@ function fcc_ai_generate_public_reply(string $assistant_type, string $message, a
             : ($language === 'sl'
                 ? "Za zdaj ostanite pri tem:\n- Forever Freedom® kot glavni dnevni nosilec rutine\n- Forever Active HA kot podporni korak v isti rutini\n- ko mi pošljete deklaracijo, to pretvorim v točen jutro / opoldne / večer plan za 30 dni"
                 : "Za sada ostanite na ovome:\n- Forever Freedom® kao glavni dnevni nosilac rutine\n- Forever Active HA kao support korak u istoj rutini\n- čim mi pošaljete deklaraciju, ovo pretvaram u točan jutro / podne / večer plan za 30 dana");
+
+        return [
+            'content' => trim(implode("\n\n", array_filter($content_blocks))),
+            'language' => $language,
+            'lead_capture' => $lead_capture,
+            'intent' => $intent,
+            'recommendation_payload' => $recommendation_payload,
+            'knowledge_suggestions' => [],
+        ];
+    }
+
+    if($is_short_confirmation_without_anchor) {
+        $recommendation_payload['opening_note'] = '';
+        $recommendation_payload['primary_product'] = '';
+        $recommendation_payload['support_products'] = [];
+        $recommendation_payload['recommendation_lines'] = [];
+        $recommendation_payload['question_lines'] = [];
+        $recommendation_payload['monthly_quantity_note'] = '';
+        $recommendation_payload['skip_product_tail'] = true;
+        $recommendation_payload['force_local_reply'] = true;
+
+        $content_blocks[] = $language === 'en'
+            ? 'Great. To avoid guessing, write what you want to support first: skin, hair, digestion, energy, immunity, weight balance, or something else.'
+            : ($language === 'sl'
+                ? 'Super. Da ne ugibam, najprej napišite, kaj želite podpreti: kožo, lase, prebavo, energijo, odpornost, težo ali kaj drugega.'
+                : 'Super. Da ne nagađam, napišite prvo što želite podržati: kožu, kosu, probavu, energiju, imunitet, kontrolu težine ili nešto drugo.');
+
+        $content_blocks[] = $language === 'en'
+            ? 'After that I can suggest one main Forever direction and the simplest first step.'
+            : ($language === 'sl'
+                ? 'Nakon toga mogu predložiti jedan glavni Forever smjer i najjednostavniji prvi korak.'
+                : 'Nakon toga mogu predložiti jedan glavni Forever smjer i najjednostavniji prvi korak.');
+
+        return [
+            'content' => trim(implode("\n\n", array_filter($content_blocks))),
+            'language' => $language,
+            'lead_capture' => $lead_capture,
+            'intent' => $intent,
+            'recommendation_payload' => $recommendation_payload,
+            'knowledge_suggestions' => [],
+        ];
+    }
+
+    if($is_content_asset_request_context) {
+        $recommendation_payload['opening_note'] = '';
+        $recommendation_payload['primary_product'] = '';
+        $recommendation_payload['support_products'] = [];
+        $recommendation_payload['recommendation_lines'] = [];
+        $recommendation_payload['question_lines'] = [];
+        $recommendation_payload['monthly_quantity_note'] = '';
+        $recommendation_payload['skip_product_tail'] = true;
+        $recommendation_payload['force_local_reply'] = true;
+
+        $is_content_followup = !fcc_ai_is_public_content_asset_request($message);
+
+        if($is_content_followup) {
+            $content_blocks[] = $language === 'en'
+                ? 'Of course — here is a short social-media template for new users, without adding a product recommendation.'
+                : ($language === 'sl'
+                    ? 'Seveda — tukaj je kratek predložek za družbena omrežja za nove uporabnike, brez dodajanja priporočila izdelkov.'
+                    : 'Naravno — evo kratkog predloška za društvene mreže za nove korisnike, bez dodavanja preporuke proizvoda.');
+
+            $content_blocks[] = $language === 'en'
+                ? '"If you want a simpler way to choose the right direction for your routine, send me your main goal and I will help you narrow it down through the FCC system before you decide."'
+                : ($language === 'sl'
+                    ? '"Če želite enostavnejši način za izbiro prave smeri za svojo rutino, mi pošljite svoj glavni cilj in vam pomagam zožiti izbiro skozi FCC sistem, preden se odločite."'
+                    : '"Ako želite jednostavniji način da odaberete pravi smjer za svoju rutinu, pošaljite mi svoj glavni cilj i pomoći ću vam suziti izbor kroz FCC sustav prije odluke."');
+
+            $content_blocks[] = $language === 'en'
+                ? 'This can work as a short post, story, or personal DM opening.'
+                : ($language === 'sl'
+                    ? 'To može funkcionirati kao kratka objava, story ili početna poruka u inboxu.'
+                    : 'Ovo može raditi kao kratka objava, story ili početna poruka u inboxu.');
+        } else {
+            $content_blocks[] = $language === 'en'
+                ? 'For social media, use the FCC system as a short educational path: first the user goal, then one clear explanation, then an invitation to continue personally.'
+                : ($language === 'sl'
+                    ? 'Za družbena omrežja FCC sistem uporabite kot kratko edukativno pot: najprej cilj osebe, nato eno jasno razlago, potem povabilo za osebno nadaljevanje.'
+                    : 'Za društvene mreže FCC sustav koristite kao kratak edukativni put: prvo cilj osobe, zatim jedno jasno objašnjenje, pa poziv za osobni nastavak.');
+
+            $content_blocks[] = $language === 'en'
+                ? "Simple structure:\n- name the goal in one sentence\n- keep the message useful, not pushy\n- invite the person to write their goal or ask for a recommendation\n- continue through an FCC article or personal message"
+                : ($language === 'sl'
+                    ? "Jednostavna struktura:\n- navedite cilj u jednoj rečenici\n- neka poruka bude korisna, ne agresivna\n- pozovite osobu da napiše svoj cilj ili zatraži preporuku\n- nastavite kroz FCC članak ili osobnu poruku"
+                    : "Jednostavna struktura:\n- navedite cilj u jednoj rečenici\n- neka poruka bude korisna, ne agresivna\n- pozovite osobu da napiše svoj cilj ili zatraži preporuku\n- nastavite kroz FCC članak ili osobnu poruku");
+
+            $content_blocks[] = $language === 'en'
+                ? 'If you want, I can next write a short post, story, or DM template.'
+                : ($language === 'sl'
+                    ? 'Če želite, lahko nato napišem kratek predložek za objavo, story ali inbox.'
+                    : 'Ako želite, mogu odmah složiti kratak predložak za objavu, story ili inbox.');
+        }
+
+        return [
+            'content' => trim(implode("\n\n", array_filter($content_blocks))),
+            'language' => $language,
+            'lead_capture' => $lead_capture,
+            'intent' => $intent,
+            'recommendation_payload' => $recommendation_payload,
+            'knowledge_suggestions' => [],
+        ];
+    }
+
+    if($is_f15_package_content_request) {
+        $recommendation_payload['opening_note'] = '';
+        $recommendation_payload['primary_product'] = '';
+        $recommendation_payload['support_products'] = [];
+        $recommendation_payload['recommendation_lines'] = [];
+        $recommendation_payload['question_lines'] = [];
+        $recommendation_payload['monthly_quantity_note'] = '';
+        $recommendation_payload['skip_product_tail'] = true;
+        $recommendation_payload['force_local_reply'] = true;
+
+        $content_blocks[] = $language === 'en'
+            ? 'F15 is a structured program that is usually positioned as a continuation after C9, but I would not guess the exact package contents without the market or package version.'
+            : ($language === 'sl'
+                ? 'F15 je strukturiran program, ki se najpogosteje postavlja kot nadaljevanje po C9, vendar ne bi ugibal točne vsebine paketa brez trga ali verzije pakiranja.'
+                : 'F15 je strukturirani program koji se najčešće pozicionira kao nastavak nakon C9, ali ne bih nagađao točan sadržaj paketa bez tržišta ili verzije pakiranja.');
+
+        $content_blocks[] = $language === 'en'
+            ? 'For the exact F15 list, send the country/market or a photo of the package contents, and I can then write the precise item list and explain each part briefly.'
+            : ($language === 'sl'
+                ? 'Za točen popis F15 pošljite državo/trg ali fotografijo vsebine paketa, nato pa lahko napišem natančen seznam izdelkov in kratko razložim vsak del.'
+                : 'Za točan popis F15 pošaljite zemlju/tržište ili fotografiju sadržaja pakiranja, pa tada mogu napisati precizan popis stavki i ukratko objasniti svaki dio.');
 
         return [
             'content' => trim(implode("\n\n", array_filter($content_blocks))),
@@ -20565,7 +20727,7 @@ function fcc_ai_generate_public_reply(string $assistant_type, string $message, a
         }
     }
 
-    if($assistant_type === 'product_advisor' && !empty($recommendation_payload['force_local_reply'])) {
+    if($assistant_type === 'product_advisor' && !empty($recommendation_payload['force_local_reply']) && empty($intent['usage_howto_request'])) {
         if(!empty($recommendation_payload['opening_note'])) {
             $content_blocks[] = trim((string) $recommendation_payload['opening_note']);
         }
@@ -26355,6 +26517,7 @@ function fcc_ai_handle_public_message(array $payload): array {
         'lead_status' => (string) ($conversation->lead_status ?? 'none'),
         'knowledge_suggestions' => $knowledge_suggestions,
         'recommendation_payload' => $recommendation_payload,
+        'message_for_matching' => $message_for_matching,
         'recent_user_context' => $has_high_risk_medical_context ? '' : $recent_user_context,
         'reset_history' => $should_reset_problem_context,
         'correction_follow_up' => $is_recommendation_correction_followup,
@@ -26369,6 +26532,10 @@ function fcc_ai_handle_public_message(array $payload): array {
         'guarded_request_type' => $guarded_request_type,
     ]);
 
+    $reply_recommendation_payload = isset($reply['recommendation_payload']) && is_array($reply['recommendation_payload'])
+        ? $reply['recommendation_payload']
+        : $recommendation_payload;
+
     $should_force_local_reply = $is_same_problem_followup_clarification
         || $is_small_talk_message
         || $is_condition_explanation_followup
@@ -26378,12 +26545,13 @@ function fcc_ai_handle_public_message(array $payload): array {
         || $is_business_hesitation_followup
         || $is_broad_beauty_followup_clarification
         || $guarded_request_type !== ''
-        || !empty($recommendation_payload['force_local_reply'])
-        || !empty($recommendation_payload['skip_product_tail'])
+        || !empty($reply_recommendation_payload['force_local_reply'])
+        || !empty($reply_recommendation_payload['skip_product_tail'])
         || !empty($intent['business_primary'])
+        || !empty($intent['business_content_request'])
         || !empty($intent['medication_interaction_sensitive'])
         || $is_direct_cure_claim_question
-        || !empty($recommendation_payload['question_lines']);
+        || !empty($reply_recommendation_payload['question_lines']);
 
     $model_attempt = [
         'success' => false,
@@ -26399,7 +26567,7 @@ function fcc_ai_handle_public_message(array $payload): array {
             'owner_name' => (string) ($user->name ?? ''),
             'last_user_message' => $is_recommendation_correction_followup ? $message_for_matching : $message,
             'knowledge_suggestions' => $knowledge_suggestions,
-            'recommendation_payload' => $recommendation_payload,
+            'recommendation_payload' => $reply_recommendation_payload,
             'recent_user_context' => $has_high_risk_medical_context ? '' : $recent_user_context,
             'reset_history' => $should_reset_problem_context,
             'correction_follow_up' => $is_recommendation_correction_followup,
@@ -26606,6 +26774,75 @@ function fcc_ai_handle_public_message(array $payload): array {
             'force_local_reply' => false,
             'skip_product_tail' => true,
             'product_utility_followup' => true,
+            'same_problem_followup_clarification' => false,
+            'system_brief' => '',
+        ];
+        $knowledge_suggestions = [];
+        $reply['knowledge_suggestions'] = [];
+    }
+
+    $f15_package_post_guard_context = trim($current_user_message . "\n" . $recent_user_context . "\n" . $followup_anchor_user_message . "\n" . $previous_user_message . "\n" . $message_for_matching . "\n" . $reply_content);
+    $is_f15_package_post_guard = (string) ($conversation->assistant_type ?? '') === 'product_advisor'
+        && fcc_ai_is_public_f15_package_content_request($current_user_message, $f15_package_post_guard_context);
+
+    if($is_f15_package_post_guard) {
+        $reply_content = $resolved_language === 'en'
+            ? "F15 is a structured program that is usually positioned as a continuation after C9, but I would not guess the exact package contents without the market or package version.\n\nFor the exact F15 list, send the country/market or a photo of the package contents, and I can then write the precise item list and explain each part briefly."
+            : ($resolved_language === 'sl'
+                ? "F15 je strukturiran program, ki se najpogosteje postavlja kot nadaljevanje po C9, vendar ne bi ugibal točne vsebine paketa brez trga ali verzije pakiranja.\n\nZa točen popis F15 pošljite državo/trg ali fotografijo vsebine paketa, nato pa lahko napišem natančen seznam izdelkov in kratko razložim vsak del."
+                : "F15 je strukturirani program koji se najčešće pozicionira kao nastavak nakon C9, ali ne bih nagađao točan sadržaj paketa bez tržišta ili verzije pakiranja.\n\nZa točan popis F15 pošaljite zemlju/tržište ili fotografiju sadržaja pakiranja, pa tada mogu napisati precizan popis stavki i ukratko objasniti svaki dio.");
+        $reply['recommendation_payload'] = [
+            'theme_matches' => [],
+            'theme_keys' => [],
+            'condition_matches' => [],
+            'condition_keys' => [],
+            'opening_note' => '',
+            'recommendation_lines' => [],
+            'question_lines' => [],
+            'needs_clarification' => false,
+            'combination_note' => '',
+            'discount_note' => '',
+            'primary_product' => '',
+            'support_products' => [],
+            'monthly_quantity_note' => '',
+            'sensitive_support_only' => false,
+            'force_local_reply' => true,
+            'skip_product_tail' => true,
+            'same_problem_followup_clarification' => false,
+            'system_brief' => '',
+        ];
+        $knowledge_suggestions = [];
+        $reply['knowledge_suggestions'] = [];
+    }
+
+    $is_short_confirmation_post_guard = (string) ($conversation->assistant_type ?? '') === 'product_advisor'
+        && !$is_content_asset_followup_context
+        && !$is_f15_package_post_guard
+        && (bool) preg_match('/^\s*(da|može|moze|ok|okej|yes|sure)\s*[!?.]*\s*$/iu', $current_user_message);
+
+    if($is_short_confirmation_post_guard) {
+        $reply_content = $resolved_language === 'en'
+            ? "Great. To avoid guessing, write what you want to support first: skin, hair, digestion, energy, immunity, weight balance, or something else.\n\nAfter that I can suggest one main Forever direction and the simplest first step."
+            : ($resolved_language === 'sl'
+                ? "Super. Da ne ugibam, najprej napišite, kaj želite podpreti: kožo, lase, prebavo, energijo, odpornost, težo ali kaj drugega.\n\nNakon toga mogu predložiti jedan glavni Forever smjer i najjednostavniji prvi korak."
+                : "Super. Da ne nagađam, napišite prvo što želite podržati: kožu, kosu, probavu, energiju, imunitet, kontrolu težine ili nešto drugo.\n\nNakon toga mogu predložiti jedan glavni Forever smjer i najjednostavniji prvi korak.");
+        $reply['recommendation_payload'] = [
+            'theme_matches' => [],
+            'theme_keys' => [],
+            'condition_matches' => [],
+            'condition_keys' => [],
+            'opening_note' => '',
+            'recommendation_lines' => [],
+            'question_lines' => [],
+            'needs_clarification' => false,
+            'combination_note' => '',
+            'discount_note' => '',
+            'primary_product' => '',
+            'support_products' => [],
+            'monthly_quantity_note' => '',
+            'sensitive_support_only' => false,
+            'force_local_reply' => true,
+            'skip_product_tail' => true,
             'same_problem_followup_clarification' => false,
             'system_brief' => '',
         ];
