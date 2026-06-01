@@ -4839,7 +4839,7 @@ class AiPlan extends Controller {
             $is_discount_offer
             || in_array($block_type, ['link_discount', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo'], true)
         ) {
-            return 'Pogledaj proizvode s popustom';
+            return 'Naruči proizvode bez registracije';
         }
 
         if($this->app_review_text_has_any($current_label, ['proizvod', 'proizvodi']) || $block_type === 'link_forever_product') {
@@ -6528,7 +6528,7 @@ class AiPlan extends Controller {
             'require_funnel' => in_array($goal_type, ['shop', 'business', 'hybrid', 'activation'], true),
             'require_whatsapp_backup' => in_array($goal_type, ['shop', 'business', 'hybrid', 'activation'], true),
             'discount_block_type' => 'link_discount',
-            'discount_block_label' => 'Pogledaj proizvode s popustom',
+            'discount_block_label' => 'Naruči proizvode bez registracije',
             'business_offer_block_type' => 'link_forever_product',
             'business_offer_block_label' => 'Postani Forever suradnik',
             'business_offer_translation_key' => 'start-paket',
@@ -7451,7 +7451,7 @@ class AiPlan extends Controller {
             'link_forever_living_bih' => 'Forever webshop',
             'link_forever_living_alb_kosovo' => 'Forever webshop',
             'link_forever_living_albania_kosovo' => 'Forever webshop',
-            'link_discount' => 'The Aloe Vera Co. popust',
+            'link_discount' => 'Forever shop bez registracije',
             default => 'Prodajni korak',
         };
     }
@@ -8626,7 +8626,7 @@ class AiPlan extends Controller {
         $owner_name_compare = $normalize_compare($owner_name);
         $has_owner_name_block = false;
         $core_funnel_label = (string) (($goal_type === 'shop' ? ($core_block_policy['funnel_label_shop'] ?? '') : ($core_block_policy['funnel_label_business'] ?? '')) ?: 'Prijavi se i saznaj više');
-        $core_discount_label = (string) ($core_block_policy['discount_block_label'] ?? 'Pogledaj proizvode s popustom');
+        $core_discount_label = (string) ($core_block_policy['discount_block_label'] ?? 'Naruči proizvode bez registracije');
         $core_business_offer_label = (string) ($core_block_policy['business_offer_block_label'] ?? 'Postani Forever suradnik');
 
         foreach($ordered_blocks as $index => $preview) {
@@ -8697,8 +8697,8 @@ class AiPlan extends Controller {
                 ? 'Dodaj i WhatsApp blok kao jednostavan drugi put do razgovora za ljude koji ne žele odmah kroz prijavu.'
                 : 'Ako koristiš WhatsApp, neka bude jasan nastavak nakon glavnog koraka, a ne novi izvor kaosa na vrhu.',
             empty($discount_block['block_id'])
-                ? 'Na svakoj FCC aplikaciji zadrži i jasan blok za proizvode s popustom jer je to srce prodajnog dijela sustava.'
-                : 'Blok za proizvode s popustom zadrži aktivnim i smjesti ga tako da podržava glavni cilj umjesto da mu konkurira.',
+                ? 'Na svakoj FCC aplikaciji zadrži jasan Forever web shop blok za naručivanje bez registracije jer je to srce prodajnog dijela sustava.'
+                : 'Forever web shop blok za naručivanje bez registracije zadrži aktivnim i smjesti ga tako da podržava glavni cilj umjesto da mu konkurira.',
             empty($business_offer_block['block_id'])
                 ? 'Dodaj i blok "Postani Forever suradnik" koji vodi na Start Paket jer je to ključni business korak u FCC sustavu.'
                 : 'Blok "Postani Forever suradnik" neka ostane aktivan kao stalni business put prema Start Paketu.',
@@ -8960,7 +8960,7 @@ class AiPlan extends Controller {
             $push_layout_action('keep_top', $video_block, 'Video treba ostati visoko jer brzo gradi povjerenje prije prijave ili razgovora.');
             $push_layout_action('keep_after_primary', $whatsapp_block, 'WhatsApp treba biti odmah nakon glavnog koraka kao jednostavan rezervni put do razgovora.');
             $push_layout_action('keep_after_primary', $business_offer_block, 'Business korak prema Start Paketu treba ostati aktivan i odmah ispod glavnog koraka ili rezervnog kontakta.');
-            $push_layout_action('keep_after_primary', $discount_block, 'Blok za proizvode s popustom treba ostati aktivan i jasno vidljiv niže od glavnog koraka.');
+            $push_layout_action('keep_after_primary', $discount_block, 'Forever web shop blok za naručivanje bez registracije treba ostati aktivan i jasno vidljiv niže od glavnog koraka.');
             $push_layout_action('keep_after_primary', $socials_block, 'Društvene mreže i kontakti trebaju doći nakon glavnog koraka, ne prije njega.');
 
             foreach($ordered_blocks as $preview) {
@@ -8979,7 +8979,7 @@ class AiPlan extends Controller {
             $push_layout_action('keep_top', $identity_heading_block, 'Puno ime i prezime trebaju odmah slijediti iza avatara kako bi osoba odmah znala kome vjeruje.');
             $push_layout_action('keep_top', $trust_copy_block, 'Kratka trust poruka treba ostati iznad prodajnog dijela kako bi posjetitelj razumio kome vjeruje.');
             $push_layout_action('keep_top', $video_block, 'Video treba ostati visoko jer brzo objašnjava što osoba ovdje dobiva.');
-            $push_layout_action('keep_after_primary', $discount_block, 'Blok za proizvode s popustom treba ostati aktivan kao glavni prodajni put.');
+            $push_layout_action('keep_after_primary', $discount_block, 'Forever web shop blok za naručivanje bez registracije treba ostati aktivan kao glavni prodajni put.');
             $push_layout_action('keep_after_primary', $whatsapp_block, 'WhatsApp treba ostati odmah nakon glavnog koraka kao brza pomoć pri izboru.');
             $push_layout_action('keep_after_primary', $business_offer_block, 'Business korak prema Start Paketu treba ostati prisutan i na prodajnim aplikacijama, ali niže od glavnog prodajnog fokusa.');
         }
@@ -9080,7 +9080,7 @@ class AiPlan extends Controller {
                 'block_type' => 'link_discount',
                 'role_key' => 'core_discount_offer',
                 'label' => $core_discount_label,
-                'why' => 'Blok za proizvode s popustom mora biti prisutan na svakoj FCC aplikaciji jer je to srce prodajnog dijela sustava.',
+                'why' => 'Forever web shop blok za naručivanje bez registracije mora biti prisutan na svakoj FCC aplikaciji jer je to srce prodajnog dijela sustava.',
                 'priority' => $goal_type === 'shop' ? 2 : 4,
                 'insert_after_block_id' => max(0, (int) ($funnel_block['block_id'] ?? $whatsapp_block['block_id'] ?? 0)),
                 'insert_after_type' => (string) ($funnel_block['type'] ?? $whatsapp_block['type'] ?? ''),
@@ -9253,15 +9253,15 @@ class AiPlan extends Controller {
             '- theme_pack mora biti strojno citljiv objekt za editor, bez recenica u bojama. Koristi kljuceve: name, summary, background_mode, background_color, gradient_start, gradient_end, gradient_style, heading_color, text_color, primary_block_text, primary_block_background, primary_block_border, primary_block_shadow, secondary_blocks_text, secondary_blocks_background, secondary_blocks_border, secondary_blocks_shadow, font, font_size, width, block_spacing, hover_animation, migration_note.',
             '- U theme_pack bojama vrati samo stvarne CSS vrijednosti. Za boje koristi hex. Za shadow smijes koristiti rgba. gradient_style uvijek vrati kao "current_135deg" ako je mode = gradient.',
             '- Ako je background_mode = color, popuni background_color. Ako je background_mode = gradient, popuni gradient_start i gradient_end prema trenutnom FCC sustavu pocetak/kraj gradijenta, ne top/bottom.',
-            '- Uvijek postuj FCC core block policy iz inputa. Svaka glavna FCC aplikacija mora imati aktivan blok za proizvode s popustom, blok "Postani Forever suradnik" koji vodi na Start Paket, Funnel i WhatsApp rezervni put. AI smije odluciti redoslijed i tekst, ali ne smije izbaciti te blokove iz plana.',
-            '- Ako je goal_type shop ili request_context jasno govori o prodaji proizvoda, slozi aplikaciju product-first: trust sloj, video po potrebi, Funnel kao glavni blok, zatim proizvodi s popustom, zatim WhatsApp, a business Start Paket niže kao dodatni put.',
-            '- Ako je goal_type business, recruitment ili partnership, slozi aplikaciju business-first: trust sloj, video po potrebi, Funnel kao glavni blok, zatim Start Paket / Postani Forever suradnik, zatim WhatsApp, a blok za proizvode s popustom ostavi aktivan malo niže.',
+            '- Uvijek postuj FCC core block policy iz inputa. Svaka glavna FCC aplikacija mora imati aktivan Forever web shop blok za naručivanje bez registracije, blok "Postani Forever suradnik" koji vodi na Start Paket, Funnel i WhatsApp rezervni put. AI smije odluciti redoslijed i tekst, ali ne smije izbaciti te blokove iz plana.',
+            '- Ako je goal_type shop ili request_context jasno govori o prodaji proizvoda, slozi aplikaciju product-first: trust sloj, video po potrebi, Funnel kao glavni blok, zatim proizvodi bez registracije, zatim WhatsApp, a business Start Paket niže kao dodatni put.',
+            '- Ako je goal_type business, recruitment ili partnership, slozi aplikaciju business-first: trust sloj, video po potrebi, Funnel kao glavni blok, zatim Start Paket / Postani Forever suradnik, zatim WhatsApp, a blok za proizvode bez registracije ostavi aktivan malo niže.',
             '- Za business/start paket put koristi link_forever_product blok sa seed_settings koji ciljaju Start Paket. Taj blok treba imati jasan naziv poput "Postani Forever suradnik".',
             '- primary_block_plan mora biti objekt s kljucevima: block_id, block_type, label, reason, emphasis, apply_theme_emphasis. Ako ne znas block_id, vrati 0 ali vrati type i label.',
             '- Ako vracas font u theme_pack, koristi samo vrijednosti iz editor_theme_capabilities. font_size, width, block_spacing i hover_animation takoder moraju pratiti samo dopustene editor vrijednosti.',
             '- copy_suggestions mora biti lista kratkih AI prijedloga za naslove i gumbe samo za blokove koji vec postoje i koji se stvarno mogu urediti kroz editor. Svaka stavka neka ima: block_id, block_type, field, label, value, reason, case_style. Po potrebi smijes dodati role_key ako preporuka ima jasnu ulogu poput owner_identity, primary_funnel ili whatsapp_backup.',
             '- Za copy_suggestions field koristi samo postojece editor fieldove: name, title, button_text, description, text, message, popup_title, popup_subtitle, thank_you_title, thank_you_text ili thank_you_button_text.',
-            '- Ako je blok partner, suradnja, upis, registracija, webshop, popust ili proizvod, naziv mora jasno zadrzati tu stvarnu namjenu. Nemoj davati genericke nazive poput "Saznaj vise i otvori sljedeci korak".',
+            '- Ako je blok partner, suradnja, upis, registracija, webshop, naručivanje bez registracije ili proizvod, naziv mora jasno zadrzati tu stvarnu namjenu. Nemoj davati genericke nazive poput "Saznaj vise i otvori sljedeci korak".',
             '- Interna strategijska oznaka kao (sporedno), (rezervno), (zadnje), (primarno), (kao rezervni put) i slicne napomene nikad ne smiju biti dio vidljivog naziva, naslova, gumba, ideal_block_order stavke, label polja, value polja ni seed_settings vrijednosti.',
             '- Ako zelis objasniti da je nesto sporedno, rezervno ili sekundarno, to smijes napisati samo u reason ili why, nikada u label, value, name, title, button_text, text, message, insert_after_label ni seed_settings.',
             '- Nemoj stavljati copy_suggestions na custom_html, code, iframe, divider, loading ni slicne napredne ili strukturne blokove.',
@@ -9282,7 +9282,7 @@ class AiPlan extends Controller {
             '- Ako aplikacija ima chatbot ili AI savjetnik za ljude ili ljubimce, tretiraj ga kao neutralan pomocni sloj koji ne smeta fokusu i ne racunaj ga kao problem u prioritetu glavnih gumba ili redoslijedu blokova.',
             '- Ako aplikacija vec ima chatbot, nikad nemoj predlagati gasenje, skrivanje, uklanjanje ni spustanje u smislu da nestane iz aplikacije. Taj blok mora ostati aktivan.',
             '- Ako aplikacija nema chatbot ili AI savjetnik, dodaj ga u missing_block_recommendations kao floating popup benefit. Koristi custom_html_chatbot za opci proizvodni savjetnik, a custom_html_chatbot_pets za pet ili animal kontekst.',
-            '- Chatbot mozes spomenuti kao koristan dodatak za preporuku proizvoda i usmjeravanje na linkove s popustom, ali ga nemoj isticati kao glavnu prepreku niti kao glavni prvi korak.',
+            '- Chatbot mozes spomenuti kao koristan dodatak za preporuku proizvoda i usmjeravanje na narudžbene linkove bez registracije, ali ga nemoj isticati kao glavnu prepreku niti kao glavni prvi korak.',
             '- Kad predlazes kontakt, koristi formulaciju "pošalji poruku na WhatsApp" ili "WhatsApp poruka".',
             '- Ako je cilj skupljanje kontakata, suradnja ili prijava ljudi, Funnel tretiraj kao glavni i najbolji alat za prvi ozbiljan korak, ali ne automatski kao prvi vidljivi blok na vrhu.',
             '- Ako je cilj skupljanje kontakata i aplikacija nema Funnel, jedna od prvih preporuka mora biti ugradnja Funnel-a.',

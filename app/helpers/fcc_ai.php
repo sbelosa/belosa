@@ -4409,7 +4409,7 @@ function fcc_ai_get_internal_coach_reference_examples(string $language = 'hr'): 
             'Assistant style: "Before I position it, I need the exact Forever product name because I do not want to guess and send you into a wrong recommendation. Send me the exact name, FCC article link or a screenshot, and then I will give you who it fits, when to mention it and one short DM line."',
             '9. Market guard example',
             'User: "Write me stories for the current Aloe action."',
-            'Assistant style: "Before I write the stories, tell me which market you are posting for, because promo rules, percentages and Titan can change by country. Send me just the market and whether you can use a direct discount, and then I will write the final version."',
+            'Assistant style: "Before I write the stories, tell me which market you are posting for, because promo rules, ordering wording and Titan can change by country. Send me just the market and whether the message is no-registration ordering or a confirmed official action, and then I will write the final version."',
             '10. Platform help example',
             'User: "What does consent text and consent URL mean in the funnel?"',
             'Assistant style: "That is the privacy consent part. It means the short sentence where the person confirms data processing, and the consent URL is the link to your privacy page. The next move is: open Funnel settings, paste one simple consent sentence, then link the privacy page URL."',
@@ -4444,7 +4444,7 @@ function fcc_ai_get_internal_coach_reference_examples(string $language = 'hr'): 
         'Stil odgovora: "Prije nego ga pozicioniram, trebam točan Forever naziv proizvoda jer ne želim nagađati i poslati te u krivom smjeru. Pošalji mi točan naziv, link na FCC članak ili screenshot, i onda ti odmah dam kome odgovara, kada ga spomenuti i jednu kratku DM rečenicu."',
         '9. Primjer za market guard',
         'Korisnik: "Napiši mi storyje za aktualnu Aloe akciju."',
-        'Stil odgovora: "Prije pisanja storyja samo mi potvrdi za koje tržište radiš, jer akcija, popust i Titan pravila mogu biti drukčiji po zemlji. Pošalji mi samo tržište i imaš li direktan popust, pa ti pišem finalnu verziju."',
+        'Stil odgovora: "Prije pisanja storyja samo mi potvrdi za koje tržište radiš, jer akcija, naručivanje i Titan pravila mogu biti drukčiji po zemlji. Pošalji mi samo tržište i je li poruka naručivanje bez registracije ili potvrđena službena akcija, pa ti pišem finalnu verziju."',
         '10. Primjer za platform help',
         'Korisnik: "Što znači tekst pristanka i URL pristanka u funnelu?"',
         'Stil odgovora: "To je dio za privolu. Tekst pristanka je kratka rečenica kojom osoba potvrđuje obradu podataka, a URL pristanka je link na tvoju stranicu privatnosti. Sljedeći korak je: otvori Funnel postavke, upiši jednostavan tekst pristanka i zalijepi URL svoje privacy stranice."',
@@ -4924,7 +4924,7 @@ function fcc_ai_get_internal_coach_sales_link_explainer(array $sales_link_summar
         }
 
         if(!$product_referral_ready) {
-            $lines[] = '- if you want product articles and product buttons to reuse the same recommendation flow, choose yes for applying the discount to all products';
+            $lines[] = '- if you want product articles and product buttons to reuse the same recommendation flow, choose yes for applying the same Link Builder ordering flow to all products';
         }
 
         $lines[] = 'Important: nobody can create that Link Builder link for you except you, because it must be created inside your own Foreverliving account.';
@@ -4966,7 +4966,7 @@ function fcc_ai_get_internal_coach_sales_link_explainer(array $sales_link_summar
     }
 
     if(!$product_referral_ready) {
-        $lines[] = '- ako zelis da clanci o proizvodima i produkt gumbi koriste isti preporucni tok, ukljuci primjenu popusta na sve proizvode';
+        $lines[] = '- ako zelis da clanci o proizvodima i produkt gumbi koriste isti preporucni tok, ukljuci primjenu istog Link Builder narudžbenog toka na sve proizvode';
     }
 
     $lines[] = 'Vazno: taj Link Builder link ne moze nitko kreirati umjesto tebe, nego samo ti u svom Foreverliving racunu.';
@@ -6395,7 +6395,7 @@ function fcc_ai_build_internal_coach_webshop_no_sales_conversion_reply(array $sa
     if($language === 'en') {
         return implode("\n\n", [
             'If people click toward the Forever webshop but do not buy, do not move the user into a business-collaboration explanation. Stay on the product purchase path and check the funnel step by step.',
-            "Check this in order:\n- does the Reel/story promise match the exact FCC article or product they land on\n- does the product article clearly answer why this product is the right next step\n- does the Buy/Forever Web Shop button open the correct personal Link Builder URL\n- is the discount/referral path visible and not broken\n- is there a short WhatsApp/contact option for questions before purchase",
+            "Check this in order:\n- does the Reel/story promise match the exact FCC article or product they land on\n- does the product article clearly answer why this product is the right next step\n- does the Buy/Forever Web Shop button open the correct personal Link Builder URL\n- is the referral/order path visible and not broken\n- is there a short WhatsApp/contact option for questions before purchase",
             $has_valid_link
                 ? 'Because the sales link appears to be present, the next best test is to open the app in an incognito/private window and click the product path like a real visitor: story/ad -> FCC article -> product button -> Forever checkout.'
                 : 'First fix the Forever Web Shop block and personal Link Builder URL, because without a valid sales link FCC cannot turn product interest into webshop purchase results.',
@@ -6406,7 +6406,7 @@ function fcc_ai_build_internal_coach_webshop_no_sales_conversion_reply(array $sa
     if($language === 'sl') {
         return implode("\n\n", [
             'Če ljudje klikajo proti Forever webshopu, vendar ne kupijo, uporabnika ne premikaj v razlago poslovnega sodelovanja. Ostani na poti nakupa izdelka in preveri funnel korak za korakom.',
-            "Preveri po vrsti:\n- ali obljuba iz storyja/reela ustreza točnemu FCC članku ali izdelku, kamor pridejo\n- ali članek jasno razloži, zakaj je ta izdelek pravi naslednji korak\n- ali gumb za nakup / Forever Web Shop odpre pravilen osebni Link Builder URL\n- ali sta popust in referral pot vidna in nista prekinjena\n- ali obstaja kratka WhatsApp/kontakt možnost za vprašanja pred nakupom",
+            "Preveri po vrsti:\n- ali obljuba iz storyja/reela ustreza točnemu FCC članku ali izdelku, kamor pridejo\n- ali članek jasno razloži, zakaj je ta izdelek pravi naslednji korak\n- ali gumb za nakup / Forever Web Shop odpre pravilen osebni Link Builder URL\n- ali sta priporočilo in naročniška pot vidna in nista prekinjena\n- ali obstaja kratka WhatsApp/kontakt možnost za vprašanja pred nakupom",
             $has_valid_link
                 ? 'Ker prodajni link izgleda prisoten, je najboljši naslednji test odpreti aplikacijo v anonimnem oknu in klikniti pot kot pravi obiskovalec: story/oglas -> FCC članek -> produktni gumb -> Forever checkout.'
                 : 'Najprej popravi Forever Web Shop blok in osebni Link Builder URL, ker brez veljavnega prodajnega linka FCC ne more pretvarjati interesa za izdelke v webshop rezultate.',
@@ -6416,7 +6416,7 @@ function fcc_ai_build_internal_coach_webshop_no_sales_conversion_reply(array $sa
 
     return implode("\n\n", [
         'Ako ljudi klikaju prema Forever webshopu, ali ne kupuju, ne treba ih voditi u priču o poslovnoj suradnji. Fokus ostaje na kupovnom putu proizvoda i treba provjeriti gdje se gubi povjerenje ili jasnoća.',
-        "Provjeri redom:\n- odgovara li obećanje iz storyja/reela točno FCC članku ili proizvodu na koji osoba dolazi\n- objašnjava li članak jasno zašto je baš taj proizvod sljedeći logičan korak\n- otvara li gumb za kupnju / Forever Web trgovina ispravan osobni Link Builder URL\n- vidi li se popust/referral put i radi li bez pucanja\n- postoji li kratak WhatsApp/kontakt za pitanje prije kupnje",
+        "Provjeri redom:\n- odgovara li obećanje iz storyja/reela točno FCC članku ili proizvodu na koji osoba dolazi\n- objašnjava li članak jasno zašto je baš taj proizvod sljedeći logičan korak\n- otvara li gumb za kupnju / Forever Web trgovina ispravan osobni Link Builder URL\n- vidi li se preporuka/narudžbeni put i radi li bez pucanja\n- postoji li kratak WhatsApp/kontakt za pitanje prije kupnje",
         $has_valid_link
             ? 'Budući da prodajni link izgleda postavljen, sljedeći najbolji test je otvoriti aplikaciju u anonimnom prozoru i proći put kao pravi posjetitelj: story/oglas -> FCC članak -> produktni gumb -> Forever checkout.'
             : 'Prvo popravi Forever Web trgovina blok i osobni Link Builder URL, jer bez valjanog prodajnog linka FCC ne može pretvoriti interes za proizvod u webshop kupnju.',
@@ -6654,7 +6654,7 @@ function fcc_ai_build_internal_coach_sales_link_mismatch_reply(string $message, 
     if($language === 'en') {
         return implode("\n\n", [
             'If you already added the sales link, then I would not assume the link is simply missing. The more likely issue is that FCC does not recognize that exact block as a valid active Forever sales link.',
-            "Check these four things:\n- the block type is Forever Web Shop / Forever Web trgovina\n- the URL is your own Link Builder URL from your Foreverliving account\n- the block is enabled and visible on the app\n- if you use a discount flow, the discount is applied consistently where needed",
+            "Check these four things:\n- the block type is Forever Web Shop / Forever Web trgovina\n- the URL is your own Link Builder URL from your Foreverliving account\n- the block is enabled and visible on the app\n- if you use the Link Builder flow, the ordering and referral context is consistent where needed",
             'Best next step now: open Blocks -> Forever Web Shop, compare the URL there, and if you want, send me what is written in the URL field so I can tell you what to fix.',
         ]);
     }
@@ -6662,14 +6662,14 @@ function fcc_ai_build_internal_coach_sales_link_mismatch_reply(string $message, 
     if($language === 'sl') {
         return implode("\n\n", [
             'Če je prodajni link že dodan, potem ne bi takoj predpostavil, da linka sploh ni. Bolj verjetno je, da FCC tega točnega bloka ne prepozna kot veljaven aktiven Forever prodajni link.',
-            "Preveri te 4 stvari:\n- tip bloka je Forever Web Shop / Forever Web trgovina\n- URL je tvoj osebni Link Builder URL iz tvojega Foreverliving računa\n- blok je vklopljen in viden na aplikaciji\n- če uporabljaš popust, je popust dosledno nastavljen tam, kjer mora biti",
+            "Preveri te 4 stvari:\n- tip bloka je Forever Web Shop / Forever Web trgovina\n- URL je tvoj osebni Link Builder URL iz tvojega Foreverliving računa\n- blok je vklopljen in viden na aplikaciji\n- če uporabljaš Link Builder tok, je naročniški in priporočilni kontekst dosledno nastavljen tam, kjer mora biti",
             'Najboljši naslednji korak zdaj: odpri Bloki -> Forever Web Shop, primerjaj URL in mi po želji pošlji, kaj piše v URL polju, da ti lahko povem, kaj popraviti.',
         ]);
     }
 
     return implode("\n\n", [
         'Ako si prodajni link već postavila, onda ne bih odmah zaključio da linka uopće nema. Vjerojatnije je da FCC ne prepoznaje baš taj blok kao valjan aktivan Forever prodajni link.',
-        "Provjeri ove 4 stvari:\n- tip bloka je Forever Web trgovina\n- URL je tvoj osobni Link Builder URL iz Foreverliving računa\n- blok je uključen i vidljiv na aplikaciji\n- ako koristiš popust, popust je dosljedno primijenjen tamo gdje treba",
+        "Provjeri ove 4 stvari:\n- tip bloka je Forever Web trgovina\n- URL je tvoj osobni Link Builder URL iz Foreverliving računa\n- blok je uključen i vidljiv na aplikaciji\n- ako koristiš Link Builder tok, narudžbeni i preporučni kontekst je dosljedno postavljen tamo gdje treba",
         'Najbolji sljedeći korak sada: otvori Blokovi -> Forever Web trgovina, usporedi URL i, ako želiš, pošalji mi što piše u URL polju pa ti mogu reći što točno treba popraviti.',
     ]);
 }
@@ -6690,15 +6690,15 @@ function fcc_ai_build_internal_coach_referral_link_troubleshooting_reply(bool $i
             '1. Open the FCC product article while logged into your FCC account.',
             '2. Use the share/copy button on the article, not the raw URL from the address bar.',
             '3. Check the main app Forever Web Shop block: the URL must be your own Link Builder URL, not a generic Forever product page.',
-            '4. If product articles or product buttons should reuse the same recommendation flow, turn on applying the discount to all products on the main app.',
+            '4. If product articles or product buttons should reuse the same recommendation flow, turn on applying the same Link Builder ordering flow to all products on the main app.',
             '5. Test the copied link in an incognito/private window or a different browser where you are not logged into FCC or Forever.',
-            '6. After the redirect opens Forever, check whether the recommendation/discount/sponsor context appears correctly there.',
+            '6. After the redirect opens Forever, check whether the recommendation/sponsor/order context appears correctly there.',
         ];
 
         if($sales_link_status === 'missing' || $sales_link_status === 'invalid' || $sales_link_status === 'disabled') {
             $lines[] = 'Important: right now the first fix is the Forever Web Shop block, because if that block is missing, invalid, or disabled, the recommendation path cannot be trusted.';
         } elseif(!$product_referral_ready) {
-            $lines[] = 'Your sales link appears active, but for the cleanest product referral flow also enable applying the discount to all products.';
+            $lines[] = 'Your sales link appears active, but for the cleanest product referral flow also enable applying the same Link Builder ordering flow to all products.';
         }
 
         $lines[] = 'If incognito still does not show the right recommendation, send me two things only: the FCC link you copied and the final Forever URL after redirect. Then we can see whether the issue is copying, the block URL, or the redirect.';
@@ -6720,15 +6720,15 @@ function fcc_ai_build_internal_coach_referral_link_troubleshooting_reply(bool $i
             '1. Odpri FCC članek o izdelku, ko si prijavljen/a v svoj FCC račun.',
             '2. Uporabi share/copy gumb na članku, ne navadnega URL-ja iz naslovne vrstice.',
             '3. Preveri glavno aplikacijo in Forever Web Shop blok: URL mora biti tvoj osebni Link Builder URL, ne generična Forever stran izdelka.',
-            '4. Če želiš, da članki in produktni gumbi uporabljajo isti priporočilni tok, vključi uporabo popusta za vse izdelke na glavni aplikaciji.',
+            '4. Če želiš, da članki in produktni gumbi uporabljajo isti priporočilni tok, vključi isti Link Builder naročniški tok za vse izdelke na glavni aplikaciji.',
             '5. Kopirani link testiraj v anonimnem/privatnem oknu ali drugem brskalniku, kjer nisi prijavljen/a v FCC ali Forever.',
-            '6. Po preusmeritvi na Forever preveri, ali se priporočilo/popust/sponzor kontekst prikaže pravilno.',
+            '6. Po preusmeritvi na Forever preveri, ali se priporočilo/sponzor/naročilo kontekst prikaže pravilno.',
         ];
 
         if($sales_link_status === 'missing' || $sales_link_status === 'invalid' || $sales_link_status === 'disabled') {
             $lines[] = 'Pomembno: najprej popravi Forever Web Shop blok, ker če manjka, je neveljaven ali izklopljen, priporočilni tok ni zanesljiv.';
         } elseif(!$product_referral_ready) {
-            $lines[] = 'Prodajni link izgleda aktiven, ampak za najčistejši product referral tok vključi še uporabo popusta za vse izdelke.';
+            $lines[] = 'Prodajni link izgleda aktiven, ampak za najčistejši product referral tok vključi še isti Link Builder naročniški tok za vse izdelke.';
         }
 
         $lines[] = 'Če se v anonimnem oknu še vedno ne pokaže prava preporuka, pošlji samo dve stvari: FCC link, ki si ga kopiral/a, in končni Forever URL po preusmeritvi. Potem se vidi, ali je težava v kopiranju, URL-ju bloka ali preusmeritvi.';
@@ -6749,15 +6749,15 @@ function fcc_ai_build_internal_coach_referral_link_troubleshooting_reply(bool $i
         '1. Otvori FCC članak o proizvodu dok si prijavljen/a u svoj FCC račun.',
         '2. Koristi share/copy gumb na članku, ne običan URL iz adresne trake.',
         '3. Provjeri glavnu aplikaciju i Forever Web trgovina blok: URL mora biti tvoj osobni Link Builder URL, ne generička Forever stranica proizvoda.',
-        '4. Ako želiš da članci o proizvodima i produktni gumbi koriste isti preporučni tok, uključi primjenu popusta na sve proizvode na glavnoj aplikaciji.',
+        '4. Ako želiš da članci o proizvodima i produktni gumbi koriste isti preporučni tok, uključi primjenu istog Link Builder narudžbenog toka na sve proizvode na glavnoj aplikaciji.',
         '5. Kopirani link testiraj u anonimnom/privatnom prozoru ili drugom browseru gdje nisi prijavljen/a u FCC ni Forever.',
-        '6. Nakon preusmjeravanja na Forever provjeri prikazuje li se preporuka/popust/sponzor kontekst ispravno.',
+        '6. Nakon preusmjeravanja na Forever provjeri prikazuje li se preporuka/sponzor/narudžba kontekst ispravno.',
     ];
 
     if($sales_link_status === 'missing' || $sales_link_status === 'invalid' || $sales_link_status === 'disabled') {
         $lines[] = 'Važno: prvo popravi Forever Web trgovina blok, jer ako taj blok nedostaje, nije valjan ili je ugašen, preporučni tok ne može biti pouzdan.';
     } elseif(!$product_referral_ready) {
-        $lines[] = 'Prodajni link izgleda aktivan, ali za najčišći product referral tok uključi i primjenu popusta na sve proizvode.';
+        $lines[] = 'Prodajni link izgleda aktivan, ali za najčišći product referral tok uključi i primjenu istog Link Builder narudžbenog toka na sve proizvode.';
     }
 
     $lines[] = 'Ako u anonimnom prozoru i dalje ne povlači tvoju preporuku, pošalji mi samo dvije stvari: FCC link koji si kopirao/la i završni Forever URL nakon preusmjeravanja. Tada se vidi je li problem u kopiranju, URL-u bloka ili redirectu.';
@@ -8945,12 +8945,12 @@ function fcc_ai_get_public_special_direct_product_payload(string $message, strin
                 ? [
                     'C9 Forever Living Products is the exact product/program in this question.',
                     'The price can depend on the market, current offer and the partner checkout path, so the safest concrete step is to open the partner checkout/link or ask the FCC partner for the current price.',
-                    'If the partner flow includes a referral benefit, check whether the 15% discount is applied before purchase.',
+                    'If the partner flow includes a referral benefit, check whether the sponsor/recommendation context is visible before purchase.',
                 ]
                 : [
                     'C9 Forever Living Products je točan proizvod/program u ovom pitanju.',
                     'Cijena može ovisiti o tržištu, aktualnoj ponudi i partnerovom checkout linku, zato je najtočniji konkretan korak otvoriti partnerov checkout/link ili pitati FCC partnera za trenutnu cijenu.',
-                    'Ako se kupuje kroz partnerov preporučni tok, prije kupnje provjerite je li primijenjen dostupni 15% popust.',
+                    'Ako se kupuje kroz partnerov preporučni tok, prije kupnje provjerite prikazuje li se preporuka/sponzor ispravno.',
                 ];
         } elseif($is_weight_result_request) {
             $opening_note = $language === 'en'
@@ -16586,8 +16586,8 @@ function fcc_ai_build_public_recommendation_payload(string $assistant_type, stri
     $discount_note = '';
     if($assistant_type === 'product_advisor' && !empty($knowledge_suggestions) && empty($intent['business']) && !empty($intent['discount'])) {
         $discount_note = $language === 'en'
-            ? 'If the visitor buys through the partner recommendation flow, mention the available 15% discount as a partner benefit.'
-            : 'Ako posjetitelj kupuje kroz preporuku suradnika, možeš spomenuti dostupnih 15% popusta kao partnersku pogodnost.';
+            ? 'If the visitor orders through the partner recommendation flow, mention the official ordering path without registration, without joining the business and without a minimum order. Do not promise 5/10/15% Link Builder discounts for HR, Slovenia or Serbia.'
+            : 'Ako posjetitelj naručuje kroz preporuku suradnika, možeš spomenuti službeni narudžbeni tok bez registracije, bez uključivanja u poslovanje i bez minimalne narudžbe. Za HR, Sloveniju i Srbiju ne obećavaj 5/10/15% Link Builder popuste.';
     }
 
     if($assistant_type === 'product_advisor' && !empty($condition_matches[0])) {
@@ -16675,8 +16675,8 @@ function fcc_ai_build_public_recommendation_payload(string $assistant_type, stri
             ? 'If you want a one-month frame, people most often start with 3 x Forever Aloe Vera Gel™.'
             : 'Ako želite okvir za mjesec dana, ovdje se najčešće kreće s 3 x Forever Aloe Vera Gel™.';
         $discount_note = $language === 'en'
-            ? 'If the visitor buys through the partner recommendation flow, mention the available 15% discount as a partner benefit.'
-            : 'Ako posjetitelj kupuje kroz preporuku suradnika, možeš spomenuti dostupnih 15% popusta kao partnersku pogodnost.';
+            ? 'If the visitor orders through the partner recommendation flow, mention the official ordering path without registration, without joining the business and without a minimum order. Do not promise 5/10/15% Link Builder discounts for HR, Slovenia or Serbia.'
+            : 'Ako posjetitelj naručuje kroz preporuku suradnika, možeš spomenuti službeni narudžbeni tok bez registracije, bez uključivanja u poslovanje i bez minimalne narudžbe. Za HR, Sloveniju i Srbiju ne obećavaj 5/10/15% Link Builder popuste.';
         $knowledge_suggestions = [];
         $combination_note = '';
     }
@@ -18748,7 +18748,7 @@ function fcc_ai_get_default_public_rules_prompt(string $assistant_type, string $
             'Use this structure whenever possible: goal -> ingredient or bioactive angle -> FCC article direction -> next step.',
             'When monthly quantities or a daily rhythm are already known from the FCC matrix or product routine notes, include them naturally. If not, offer to write them out next.',
             'Prefer the FCC blog article as the main CTA when explanation or combinations matter.',
-            'Mention the 15% discount only when relevant to recommendation or purchase flow.',
+            'For HR, Slovenia and Serbia, do not promise 5/10/15% Link Builder discounts. When relevant to ordering, mention the official partner recommendation flow for ordering without registration, without joining the business and without a minimum order.',
             'If the user shows collaboration interest, shift into simple business explanation, FCC system value and contact capture.',
             'If the user only wants personal follow-up, invite the contact form directly instead of continuing with a long recommendation.',
             'For pregnancy, breastfeeding, children or similar sensitive contexts, do not give a direct product recommendation. Stay with general ingredient information and encourage a doctor or pediatrician check first.',
@@ -18769,7 +18769,7 @@ function fcc_ai_get_default_public_rules_prompt(string $assistant_type, string $
         'Kad god možeš, koristi ovu strukturu: cilj -> sastojak ili bioaktivna tvar -> FCC članak -> sljedeći korak.',
         'Kada su mjesečne količine ili dnevni ritam već poznati iz FCC matrice ili product routine note sloja, uključi ih prirodno u odgovor. Ako još nisu jasni, ponudi da ih odmah napišeš kao sljedeći korak.',
         'Kad su važni objašnjenje ili kombinacije, glavni CTA neka bude FCC blog članak.',
-        '15% popusta spomeni samo kada je relevantan za preporuku ili kupnju.',
+        'Za Hrvatsku, Sloveniju i Srbiju ne obećavaj 5/10/15% Link Builder popuste. Kada je relevantno za narudžbu, spomeni službeni preporučni tok za naručivanje bez registracije, bez uključivanja u poslovanje i bez minimalne narudžbe.',
         'Ako korisnik pokaže interes za suradnju, prebaci razgovor na jednostavno objašnjenje poslovne prilike, vrijednosti FCC sustava i kontakt.',
             'Ako korisnik traži samo osobni kontakt, odmah ga pozovi na kontakt zahtjev bez dugog dodatnog objašnjavanja proizvoda.',
             'Ako korisnik traži pomoć oko objava, reklamiranja ili poslovne komunikacije, ne piši mu gotov poslovni sadržaj u ovom javnom chatu nego ga usmjeri prema osobnom kontaktu sa suradnikom.',
@@ -18897,7 +18897,7 @@ function fcc_ai_get_product_advisor_compliance_playbook(string $language = 'hr')
             '- Use language like: this is a reasonable direction, this ingredient is often chosen for, this product contains, this can fit a daily routine.',
             '- For sensitive diagnoses, you may say that people often include certain products as general routine support alongside the medical plan, but never present them as therapy or a replacement for therapy.',
             '- Avoid strong promises, medical urgency claims or false certainty.',
-            '- Keep discount mentions short and secondary, never as the main argument.',
+            '- Keep ordering-without-registration mentions clear and secondary to product fit; never promise a discount unless an official market-specific campaign is confirmed.',
         ])
         : implode("\n", [
             'Playbook za compliance i formulacije:',
@@ -18906,7 +18906,7 @@ function fcc_ai_get_product_advisor_compliance_playbook(string $language = 'hr')
             '- Koristi formulacije poput: ovo je razuman smjer, ovaj sastojak se često bira za, ovaj proizvod sadrži, ovo se može uklopiti u dnevnu rutinu.',
             '- Kod osjetljivih dijagnoza možeš napisati da korisnici često uključuju određene proizvode kao opću podršku rutini uz liječnički plan, ali ih ne smiješ predstavljati kao terapiju ni zamjenu za terapiju.',
             '- Izbjegavaj jaka obećanja, medicinske tvrdnje i lažnu sigurnost.',
-            '- Popust spominji kratko i sekundarno, nikada kao glavni argument preporuke.',
+            '- Naručivanje bez registracije spomeni jasno, ali sekundarno uz preporuku proizvoda; popust ne obećavaj osim ako je potvrđena službena akcija za konkretno tržište.',
         ]);
 }
 
@@ -19522,7 +19522,7 @@ function fcc_ai_build_public_system_prompt(string $assistant_type, array $contex
         $sections[] = 'Limit recommendations to at most three products. If a combination is useful, present it as a combination and suggest the visitor can continue reading on the relevant FCC blog article before choosing products on Forever checkout.';
         $sections[] = 'When the FCC matrix already maps a clear product stack, stay inside that stack and help the visitor decide on the cleanest first order instead of drifting into generic alternatives.';
         $sections[] = 'If monthly quantities or usage rhythm are already known from the FCC matrix or product routine notes, include them naturally. If they are not known yet, offer to write them out next.';
-        $sections[] = 'If relevant, mention that ordering through the partner recommendation can include a 15% discount.';
+        $sections[] = 'For HR, Slovenia and Serbia, frame partner ordering as the official no-registration, no-joining and no-minimum-order flow; mention discounts only when an official market-specific campaign is confirmed.';
         $sections[] = 'If the user shows interest in collaboration, sponsorship or personal follow-up, naturally invite them to leave contact details so the FCC partner can continue personally.';
     }
 
@@ -22318,8 +22318,8 @@ function fcc_ai_generate_public_reply(string $assistant_type, string $message, a
 
         if($intent['discount'] || !empty($recommendation_payload['discount_note'])) {
             $content_blocks[] = $language === 'en'
-                ? 'If you order through the recommendation flow, you can also get the 15% discount mentioned by the partner.'
-                : 'Ako kupujete kroz preporuku suradnika, možete iskoristiti i 15% popusta koji je vezan uz njihov referral.';
+                ? 'If you order through the recommendation flow, you can use the official Forever ordering path without registration or joining the business; check the final shop page before payment.'
+                : 'Ako kupujete kroz preporuku suradnika, možete koristiti službeni Forever narudžbeni tok bez registracije ili uključivanja u poslovanje; prije plaćanja provjerite prikazuje li se preporuka ispravno.';
         }
 
         if(!$lead_already_captured && ($intent['business'] || $intent['contact'])) {
@@ -27231,8 +27231,8 @@ function fcc_ai_build_internal_coach_system_prompt(array $context = [], ?object 
         'Language purity rule: stay fully inside ' . $language_label . ' in the final answer. Do not mix Croatian, Slovenian, Bulgarian or English in the same reply unless you are quoting an exact UI label, product name or system label that exists in the provided context.',
         'Tone: ' . ($tone !== '' ? $tone : 'supportive') . '.',
         'Response rules: always identify the most useful next move; prefer action over explanation; if the user asks for a DM, caption, story angle, checklist, follow-up or action plan, write it directly; if the user is vague, narrow the answer to one best move instead of giving a wide overview.',
-        'Clarification gate: if the product name, page intent, market, discount rule, campaign condition, app block or collaborator goal is unclear, stop and ask one short clarification question before giving a concrete recommendation. Never guess the product or local rule just to sound helpful.',
-        'Market guard: when a message touches promotions, discounts, country-specific rules, Titan, campaign validity or localized offer wording, confirm the market first unless the market is already explicit in the message or recent context.',
+        'Clarification gate: if the product name, page intent, market, ordering or promotion rule, campaign condition, app block or collaborator goal is unclear, stop and ask one short clarification question before giving a concrete recommendation. Never guess the product or local rule just to sound helpful.',
+        'Market guard: when a message touches promotions, no-registration ordering, country-specific rules, Titan, campaign validity or localized offer wording, confirm the market first unless the market is already explicit in the message or recent context.',
         'Content brief rule: if the collaborator asks for content but the brief is too generic, collect up to four short inputs first: who it is for, what the offer is, what the goal is, and what CTA they want. Only then write the final asset.',
         'Support mode rule: for platform help, explain the issue in this order: what it means, where it lives in FCC, what exactly to write or click, and the next practical action.',
         'Execution memory rule: before opening a new big plan, check the latest app review, weekly focus, power move, latest adjustment or recent coach context. Prefer helping the collaborator finish the last agreed move before creating five new ones.',
@@ -27384,7 +27384,7 @@ function fcc_ai_generate_internal_coach_reply(string $message, array $context = 
     $is_pro_status_request = fcc_ai_contains_keywords($message, ['forever pro', 'pro paket', 'pro status', 'trial', 'upgrade', 'vip coach', 'beginner coach', 'inteligenc', 'ai pristup', 'ai access']);
     $is_caption_request = fcc_ai_contains_keywords($message, ['caption', 'objav', 'post']);
     $is_story_request = fcc_ai_contains_keywords($message, ['story']);
-    $is_sales_link_request = fcc_ai_contains_keywords($message, ['prodajni link', 'sales link', 'webshop', 'web shop', 'link builder', 'thealoeveraco', 'link za popust', 'forever web shop', 'forever web trgovina', 'popust link', 'discount link']);
+    $is_sales_link_request = fcc_ai_contains_keywords($message, ['prodajni link', 'sales link', 'webshop', 'web shop', 'link builder', 'thealoeveraco', 'link za naručivanje bez registracije', 'forever web shop', 'forever web trgovina', 'popust link', 'discount link']);
     $is_portfolio_request = fcc_ai_internal_coach_should_include_portfolio_details($message, $page);
     $is_portfolio_cleanup_request = fcc_ai_contains_keywords($message, ['ugasi', 'isključi', 'iskljuci', 'obriši', 'obrisi', 'arhivir', 'archive', 'cleanup', 'slijepa crijeva', 'bez smisla']);
     $is_multi_app_request = fcc_ai_contains_keywords($message, ['previše aplik', 'vise aplik', 'više app', 'koliko aplik', 'koju aplik', 'koja aplik', 'dodatne aplik', 'niche app', 'nisna app', 'nišna app']);
@@ -27781,20 +27781,20 @@ function fcc_ai_generate_internal_coach_reply(string $message, array $context = 
     if($needs_market_clarification) {
         $content = $language === 'en'
             ? implode("\n\n", [
-                'Before I write the final promo text, I need the market because action rules, discount wording and Titan conditions can change by country.',
-                'Send me only these two things: which market you are posting for, and whether you can use a direct discount or only the official Forever action.',
-                'Best next step now: send the market and discount rule, and then I will write the final version.',
+                'Before I write the final promo text, I need the market because action rules, ordering wording and Titan conditions can change by country.',
+                'Send me only these two things: which market you are posting for, and whether the official message is no-registration ordering or a confirmed Forever action.',
+                'Best next step now: send the market and official ordering or promotion rule, and then I will write the final version.',
             ])
             : ($language === 'sl'
                 ? implode("\n\n", [
-                    'Preden napišem končno promo verzijo, potrebujem trg, ker se pravila akcije, popustov in Titan pogojev lahko razlikujejo po državah.',
-                    'Pošlji mi samo dve stvari: za kateri trg objavljaš in ali lahko uporabiš direkten popust ali samo uradno Forever akcijo.',
-                    'Najboljša naslednja poteza zdaj: pošlji trg in pravilo popusta, potem pa napišem končno verzijo.',
+                    'Preden napišem končno promo verzijo, potrebujem trg, ker se pravila akcije, naročanja in Titan pogojev lahko razlikujejo po državah.',
+                    'Pošlji mi samo dve stvari: za kateri trg objavljaš in ali je uradno sporočilo naročanje brez registracije ali potrjena Forever akcija.',
+                    'Najboljša naslednja poteza zdaj: pošlji trg in uradno pravilo naročanja ali akcije, potem pa napišem končno verzijo.',
                 ])
                 : implode("\n\n", [
-                    'Prije nego napišem finalnu promo verziju, trebam tržište jer se pravila akcije, popusta i Titan uvjeta mogu razlikovati po državama.',
-                    'Pošalji mi samo dvije stvari: za koje tržište objavljuješ i možeš li koristiti direktan popust ili samo službenu Forever akciju.',
-                    'Najbolji sljedeći korak sada: pošalji tržište i pravilo popusta, pa pišem finalnu verziju.',
+                    'Prije nego napišem finalnu promo verziju, trebam tržište jer se pravila akcije, naručivanja i Titan uvjeta mogu razlikovati po državama.',
+                    'Pošalji mi samo dvije stvari: za koje tržište objavljuješ i je li službena poruka naručivanje bez registracije ili potvrđena Forever akcija.',
+                    'Najbolji sljedeći korak sada: pošalji tržište i službeno pravilo naručivanja ili akcije, pa pišem finalnu verziju.',
                 ]));
 
         return [
@@ -27804,10 +27804,10 @@ function fcc_ai_generate_internal_coach_reply(string $message, array $context = 
             'reply_mode' => 'market_guard',
             'force_local_preview' => true,
             'next_step' => $language === 'en'
-                ? 'Send the market and discount rule.'
+                ? 'Send the market and official ordering or promotion rule.'
                 : ($language === 'sl'
-                    ? 'Pošlji trg in pravilo popusta.'
-                    : 'Pošalji tržište i pravilo popusta.'),
+                    ? 'Pošlji trg in uradno pravilo naročanja ali akcije.'
+                    : 'Pošalji tržište i službeno pravilo naručivanja ili akcije.'),
         ];
     }
 
@@ -28139,8 +28139,8 @@ function fcc_ai_generate_internal_coach_reply(string $message, array $context = 
 
         if($sales_link_has_valid_link && !$sales_link_apply_all_products) {
             $blocks[] = $language === 'en'
-                ? 'Your sales link is active, but if you want the same recommendation flow to carry into product articles and product buttons more consistently, turn on applying the discount to all products.'
-                : 'Tvoj prodajni link je aktivan, ali ako želiš da isti preporučni tok dosljednije radi i kroz članke o proizvodima i kroz produkt gumbe, uključi primjenu popusta na sve proizvode.';
+                ? 'Your sales link is active, but if you want the same recommendation flow to carry into product articles and product buttons more consistently, turn on applying the same Link Builder ordering flow to all products.'
+                : 'Tvoj prodajni link je aktivan, ali ako želiš da isti preporučni tok dosljednije radi i kroz članke o proizvodima i kroz produkt gumbe, uključi primjenu istog Link Builder narudžbenog toka na sve proizvode.';
         }
     }
 
@@ -28149,12 +28149,12 @@ function fcc_ai_generate_internal_coach_reply(string $message, array $context = 
 
         if($sales_link_priority_missing || $sales_link_has_invalid_link || $sales_link_has_disabled_block) {
             $blocks[] = $language === 'en'
-                ? 'Before the product referral flow works properly, fix the Forever sales link first because that is the block that carries the discount and webshop recommendation path.'
-                : 'Prije nego product referral tok radi kako treba, prvo popravi Forever prodajni link jer on nosi popust i webshop preporučni put.';
+                ? 'Before the product referral flow works properly, fix the Forever sales link first because that is the block that carries the webshop recommendation and no-registration ordering path.'
+                : 'Prije nego product referral tok radi kako treba, prvo popravi Forever prodajni link jer on nosi webshop preporučni put i naručivanje bez registracije.';
         } elseif(!$sales_link_product_referral_ready) {
             $blocks[] = $language === 'en'
-                ? 'Your sales link is active, but for the cleanest product referral flow also enable applying the discount to all products on the main app.'
-                : 'Prodajni link ti je aktivan, ali za najčišći product referral tok uključi i primjenu popusta na sve proizvode na glavnoj aplikaciji.';
+                ? 'Your sales link is active, but for the cleanest product referral flow also enable applying the same Link Builder ordering flow to all products on the main app.'
+                : 'Prodajni link ti je aktivan, ali za najčišći product referral tok uključi i primjenu istog Link Builder narudžbenog toka na sve proizvode na glavnoj aplikaciji.';
         }
 
         $blocks[] = $language === 'en'

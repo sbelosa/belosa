@@ -25,6 +25,10 @@ $fcc_is_product_context = !empty($fcc_blog_product_cta_url)
     || in_array((string) ($data->blog_posts_category->url ?? ''), ['forever-products', 'forever-proizvodi'], true)
     || in_array($fcc_shop_page_role, ['product', 'business_start'], true);
 
+if(!$fcc_is_start_package_context && function_exists('fc_forever_ordering_copy_payload')) {
+    $fcc_blog_shop_context = fc_forever_ordering_copy_payload($fcc_blog_shop_context);
+}
+
 $fcc_webshop_links = json_decode($data->blog_post->webshop_links ?? '{}', true) ?: [];
 $fcc_webshop_markets = array_values(array_filter(array_keys($fcc_webshop_links), static function($market_code) use ($fcc_webshop_links) {
     return !empty($fcc_webshop_links[$market_code]);
@@ -37,6 +41,10 @@ $fcc_global_market_display_detail = \Altum\Language::$code === 'hr' ? '151+ trž
 $fcc_related_blog_posts = !empty($data->related_blog_posts) ? array_values($data->related_blog_posts) : [];
 
 $fcc_rendered_blog_content = (new \Altum\Shortcodes)->display_shortcodes($data->blog_post->content, $data->referral ?? null);
+if(!$fcc_is_start_package_context && function_exists('fc_forever_ordering_copy_text')) {
+    $fcc_rendered_blog_content = fc_forever_ordering_copy_text($fcc_rendered_blog_content);
+}
+
 $fcc_blog_toc = [];
 $fcc_blog_key_sections = [];
 

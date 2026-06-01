@@ -396,6 +396,10 @@
                                 continue;
                             }                    
                             if($row->type == 'link_discount') {
+                                if(function_exists('fc_forever_ordering_copy_payload') && isset($row->settings) && is_object($row->settings)) {
+                                    $row->settings = fc_forever_ordering_copy_payload($row->settings);
+                                }
+
                                 $webshop_country_code = \Altum\Link::resolve_preferred_forever_market_country_code(
                                     $country_code,
                                     array_keys(array_filter((array) $forever_webshop_links, static function($value) {

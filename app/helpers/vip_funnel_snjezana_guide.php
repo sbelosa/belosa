@@ -244,7 +244,7 @@ function vip_funnel_get_snjezana_morning_guide_payload($user = null, array $opti
                 $a('vitality_routine', 'Jutarnja wellness rutina', ['target_step_id' => 'product_recommendation', 'value' => 'jutarnja_rutina', 'event_key' => 'select_product_routine']),
                 $a('vitality_energy', 'Više vitalnosti kroz dan', ['target_step_id' => 'product_recommendation', 'value' => 'vitalnost', 'style' => 'secondary', 'event_key' => 'select_product_vitality']),
                 $a('vitality_care', 'Njega i osjećaj brige za sebe', ['target_step_id' => 'product_recommendation', 'value' => 'njega', 'style' => 'secondary', 'event_key' => 'select_product_care']),
-                $a('vitality_discount', 'Želim 15% popusta', ['action' => 'external_url', 'external_url' => $product_shop_url, 'value' => 'popust', 'style' => 'ghost', 'event_key' => 'click_product_discount']),
+                $a('vitality_discount', 'Želim naručiti bez registracije', ['action' => 'external_url', 'external_url' => $product_shop_url, 'value' => 'popust', 'style' => 'ghost', 'event_key' => 'click_product_discount']),
             ],
         ]),
         $b('vitality_note', 'text', [
@@ -257,7 +257,7 @@ function vip_funnel_get_snjezana_morning_guide_payload($user = null, array $opti
         $b('product_hero', 'headline', [
             'badge' => 'Preporuka proizvoda',
             'title' => 'Odaberi proizvodni smjer, a zatim se po potrebi javi Snježani.',
-            'text' => 'Ovo je miran proizvodni put za osobe koje žele prvo osobno iskustvo, rutinu ili popust, a tek kasnije razgovor o suradnji.',
+            'text' => 'Ovo je miran proizvodni put za osobe koje žele prvo osobno iskustvo, rutinu ili naručivanje bez registracije, a tek kasnije razgovor o suradnji.',
         ]),
         $b('product_offer', 'product_offer', [
             'badge' => 'Preporuka prema odabiru',
@@ -269,7 +269,7 @@ function vip_funnel_get_snjezana_morning_guide_payload($user = null, array $opti
             'product_primary_cta_text' => 'Pogledaj vodič proizvoda',
             'product_secondary_enabled' => true,
             'product_secondary_mode' => 'direct_shop',
-            'product_secondary_cta_text' => 'Otvori službeni shop / popust',
+            'product_secondary_cta_text' => 'Otvori službeni shop bez registracije',
             'product_mappings' => [
                 ['id' => 'map_routine', 'match_value' => 'jutarnja_rutina', 'product_translation_key' => $product_keys['routine'] ?: $primary_product_key, 'product_blog_post_id' => 0],
                 ['id' => 'map_vitality', 'match_value' => 'vitalnost', 'product_translation_key' => $product_keys['vitality'] ?: $primary_product_key, 'product_blog_post_id' => 0],
@@ -363,7 +363,7 @@ function vip_funnel_get_snjezana_morning_guide_payload($user = null, array $opti
             'route_on_submit' => true,
             'options' => [
                 ['id' => 'goal_morning', 'label' => 'Želim Jutarnje buđenje', 'hint' => 'Želim krenuti od rada na sebi, jutarnje rutine i Snježanine podrške.', 'value' => 'morning', 'target_step_id' => 'result_morning'],
-                ['id' => 'goal_products', 'label' => 'Zanimaju me vitalnost i proizvodi', 'hint' => 'Želim prvo osobno iskustvo, preporuku ili popust.', 'value' => 'products', 'target_step_id' => 'result_products'],
+                ['id' => 'goal_products', 'label' => 'Zanimaju me vitalnost i proizvodi', 'hint' => 'Želim prvo osobno iskustvo, preporuku ili naručivanje bez registracije.', 'value' => 'products', 'target_step_id' => 'result_products'],
                 ['id' => 'goal_collab', 'label' => 'Zanima me suradnja', 'hint' => 'Želim razumjeti kako bih spojila osobni rast, proizvode i preporuke.', 'value' => 'collaboration', 'target_step_id' => 'result_collaboration'],
                 ['id' => 'goal_talk', 'label' => 'Trebam osobni razgovor', 'hint' => 'Najviše bi mi pomoglo da se javim Snježani.', 'value' => 'talk', 'target_step_id' => 'result_whatsapp'],
                 ['id' => 'goal_start', 'label' => 'Spremna sam za Start paket', 'hint' => 'Želim krenuti konkretnije kroz Forever i preporuku.', 'value' => 'start', 'target_step_id' => 'start_package'],
@@ -569,7 +569,7 @@ function vip_funnel_get_snjezana_morning_guide_payload($user = null, array $opti
         'landing_page' => $landing_page,
         'paths' => [
             ['path_key' => 'morning', 'title' => 'Jutarnje buđenje', 'description' => 'Primarni put za program, povjerenje i WhatsApp kontakt.', 'sort_order' => 1, 'is_enabled' => true],
-            ['path_key' => 'products', 'title' => 'Vitalnost i proizvodi', 'description' => 'Put za AI preporuku, proizvode i 15% popust.', 'sort_order' => 2, 'is_enabled' => true],
+            ['path_key' => 'products', 'title' => 'Vitalnost i proizvodi', 'description' => 'Put za AI preporuku, proizvode i naručivanje bez registracije.', 'sort_order' => 2, 'is_enabled' => true],
             ['path_key' => 'collaboration', 'title' => 'Suradnja', 'description' => 'Put za osobe koje žele preporučivati bez pritiska i eventualno krenuti sa Start paketom.', 'sort_order' => 3, 'is_enabled' => true],
         ],
         'board' => $board,

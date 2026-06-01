@@ -576,7 +576,7 @@ class Link extends Controller {
             $is_discount_offer
             || in_array($block_type, ['link_discount', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo'], true)
         ) {
-            return 'Pogledaj proizvode s popustom';
+            return 'Naruči proizvode bez registracije';
         }
 
         if($this->ai_text_has_any($current_label, ['proizvod', 'proizvodi']) || $block_type === 'link_forever_product') {
@@ -803,14 +803,14 @@ class Link extends Controller {
             array_merge($discount_insert_after, [
                 'block_type' => 'link_discount',
                 'role_key' => 'core_discount_offer',
-                'label' => 'Pogledaj proizvode s popustom',
-                'why' => 'Blok za proizvode s popustom mora biti prisutan na svakoj FCC aplikaciji jer je to srce prodajnog dijela sustava.',
+                'label' => 'Naruči proizvode bez registracije',
+                'why' => 'Forever web shop blok za naručivanje bez registracije mora biti prisutan na svakoj FCC aplikaciji jer je to srce prodajnog dijela sustava.',
                 'priority' => $goal_type === 'shop' ? 2 : 4,
                 'preferred_group' => 'forever',
                 'preferred_goal' => 'product_recommendation',
                 'picker_search' => l('link.biolink.blocks.link_discount'),
                 'seed_settings' => [
-                    'name' => 'Pogledaj proizvode s popustom',
+                    'name' => 'Naruči proizvode bez registracije',
                     'apply_to_all_products' => 1,
                 ],
             ]),

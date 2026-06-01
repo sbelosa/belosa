@@ -2,11 +2,11 @@
 <?php
 $fcc_discount_tutorial_copy = \Altum\Language::$code === 'hr'
     ? [
-        'note' => 'Prije aktivacije ovog bloka zalijepi link izrađen u Forever Link Builderu na Foreverliving.com stranici. Klikovi na ovaj blok ulaze u 15+ / 30d signal za Istaknute aplikacije i pomažu graditi 50+ / 30d status preporučenog sponzora za naslovnicu.',
+        'note' => 'Prije aktivacije ovog bloka zalijepi link izrađen u Forever Link Builderu na Foreverliving.com stranici. Ovaj se tok sada komunicira kao službeno naručivanje bez registracije, bez uključivanja u poslovanje i bez minimalne narudžbe. Klikovi na ovaj blok ulaze u 15+ / 30d signal za Istaknute aplikacije i pomažu graditi 50+ / 30d status preporučenog sponzora za naslovnicu.',
         'video' => 'Pogledaj video uputu'
     ]
     : [
-        'note' => 'Before activating this block, paste the link created in Forever Link Builder on the Foreverliving.com website. Clicks on this block count toward the 15+ / 30d Featured Apps signal and help build the 50+ / 30d recommended sponsor status for the homepage.',
+        'note' => 'Before activating this block, paste the link created in Forever Link Builder on the Foreverliving.com website. This is now communicated as the official ordering path without registration, without joining the business and without a minimum order. Clicks on this block count toward the 15+ / 30d Featured Apps signal and help build the 50+ / 30d recommended sponsor status for the homepage.',
         'video' => 'Watch the video guide'
     ];
 ?>

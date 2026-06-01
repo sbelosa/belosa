@@ -5,7 +5,7 @@ $selected_vip_funnel_id = (int) ($row->settings->vip_funnel_id ?? 0);
 $vip_funnel_hub_render = function_exists('vip_funnel_get_public_hub_render_data') ? vip_funnel_get_public_hub_render_data((int) ($row->user_id ?? $this->user->user_id ?? 0), $row->settings ?? []) : [];
 $vip_funnel_hub_path_source = $row->settings->path_tags ?? ($vip_funnel_hub_render['paths'] ?? [
     ['title' => 'Suradnja i Start paket'],
-    ['title' => 'Proizvodi i 15% popusta'],
+    ['title' => 'Proizvodi bez registracije'],
     ['title' => 'FCC sustav i demo'],
 ]);
 $vip_funnel_hub_path_tags = [];

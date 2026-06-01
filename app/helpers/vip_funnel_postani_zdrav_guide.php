@@ -260,7 +260,7 @@ function vip_funnel_get_postani_zdrav_guide_payload($user = null, array $options
         $b('challenge_ai', 'ai_product_advisor', [
             'badge' => 'AI vodič za proizvode',
             'title' => 'Pitaj AI vodiča koji proizvodni smjer ima smisla za tebe.',
-            'text' => 'Napiši cilj u općem wellness smislu: aloe rutina, C9 početak, porodična rutina, ženska rutina ili 15% popusta.',
+            'text' => 'Napiši cilj u općem wellness smislu: aloe rutina, C9 početak, porodična rutina, ženska rutina ili naručivanje bez registracije.',
             'ai_button_label' => 'Pokreni AI vodiča',
             'ai_launcher_label' => 'Postani Zdrav AI',
             'ai_intro_label' => 'Tvoj proizvodni vodič',
@@ -277,7 +277,7 @@ function vip_funnel_get_postani_zdrav_guide_payload($user = null, array $options
                 $a('challenge_c9', 'C9 paket / početni reset rutine', ['target_step_id' => 'product_recommendation', 'value' => 'c9', 'style' => 'secondary', 'event_key' => 'select_product_c9']),
                 $a('challenge_family', 'Porodična wellness rutina', ['target_step_id' => 'product_recommendation', 'value' => 'family', 'style' => 'secondary', 'event_key' => 'select_product_family']),
                 $a('challenge_women', 'Ženska svakodnevna rutina', ['target_step_id' => 'product_recommendation', 'value' => 'women', 'style' => 'secondary', 'event_key' => 'select_product_women']),
-                $a('challenge_discount', 'Želim 15% popusta', ['action' => 'external_url', 'external_url' => $product_shop_url, 'value' => 'discount', 'style' => 'ghost', 'event_key' => 'click_product_discount']),
+                $a('challenge_discount', 'Želim naručiti bez registracije', ['action' => 'external_url', 'external_url' => $product_shop_url, 'value' => 'discount', 'style' => 'ghost', 'event_key' => 'click_product_discount']),
             ],
         ]),
         $b('challenge_note', 'text', ['text' => $product_compliance, 'text_size' => 14]),
@@ -299,7 +299,7 @@ function vip_funnel_get_postani_zdrav_guide_payload($user = null, array $options
             'product_primary_cta_text' => 'Pogledaj vodič proizvoda',
             'product_secondary_enabled' => true,
             'product_secondary_mode' => 'direct_shop',
-            'product_secondary_cta_text' => 'Otvori službeni shop / popust',
+            'product_secondary_cta_text' => 'Otvori službeni shop bez registracije',
             'product_mappings' => [
                 ['id' => 'map_aloe', 'match_value' => 'aloe', 'product_translation_key' => $product_keys['aloe'] ?: $primary_product_key, 'product_blog_post_id' => 0],
                 ['id' => 'map_c9', 'match_value' => 'c9', 'product_translation_key' => $product_keys['c9'] ?: $primary_product_key, 'product_blog_post_id' => 0],
@@ -313,7 +313,7 @@ function vip_funnel_get_postani_zdrav_guide_payload($user = null, array $options
         $b('product_next', 'proof_card', [
             'badge' => 'Ako želiš preciznije',
             'title' => 'Najbolje je da pošalješ poruku i kažeš šta želiš postići.',
-            'text' => 'Amila i Bojan mogu te usmjeriti prema #aloechallenge-u, proizvodnom popustu ili razgovoru o saradnji.',
+            'text' => 'Amila i Bojan mogu te usmjeriti prema #aloechallenge-u, naručivanju proizvoda bez registracije ili razgovoru o saradnji.',
             'layout_width' => 'third',
         ]),
         $b('product_actions', 'cta_group', [
@@ -372,7 +372,7 @@ function vip_funnel_get_postani_zdrav_guide_payload($user = null, array $options
             'options' => [
                 ['id' => 'goal_key_partner', 'label' => 'Želim ozbiljno razmotriti saradnju', 'hint' => 'Tražim Plan B i spreman/na sam za razgovor.', 'value' => 'collaboration', 'target_step_id' => 'result_interview'],
                 ['id' => 'goal_webinar', 'label' => 'Prvo želim info video / webinar', 'hint' => 'Trebam razumjeti sistem prije razgovora.', 'value' => 'webinar', 'target_step_id' => 'info_webinar'],
-                ['id' => 'goal_products', 'label' => 'Prvo me zanimaju proizvodi', 'hint' => 'Želim #aloechallenge, popust ili preporuku.', 'value' => 'products', 'target_step_id' => 'result_products'],
+                ['id' => 'goal_products', 'label' => 'Prvo me zanimaju proizvodi', 'hint' => 'Želim #aloechallenge, naručivanje bez registracije ili preporuku.', 'value' => 'products', 'target_step_id' => 'result_products'],
                 ['id' => 'goal_start', 'label' => 'Spreman/na sam za Start paket', 'hint' => 'Želim konkretan poslovni početak.', 'value' => 'start', 'target_step_id' => 'start_package'],
                 ['id' => 'goal_calm', 'label' => 'Samo istražujem', 'hint' => 'Želim mirniji sljedeći korak bez pritiska.', 'value' => 'calm', 'target_step_id' => 'result_calm'],
             ],

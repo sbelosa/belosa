@@ -6481,7 +6481,7 @@ class BiolinkBlockAjax extends Controller {
             'show_paths' => true,
             'path_tags' => [
                 'Suradnja i Start paket',
-                'Proizvodi i 15% popusta',
+                'Proizvodi bez registracije',
                 'FCC sustav i demo',
             ],
 

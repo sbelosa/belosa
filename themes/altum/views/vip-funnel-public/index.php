@@ -49,6 +49,10 @@ $color_with_opacity = static function($hex, $opacity = 100, string $fallback = '
 };
 
 $state = is_array($data->state ?? null) ? $data->state : [];
+if(function_exists('fc_forever_ordering_copy_payload')) {
+    $state = fc_forever_ordering_copy_payload($state);
+}
+
 $payload = is_array($state['payload'] ?? null) ? $state['payload'] : [];
 $surface = is_array($state['page_surface'] ?? null) ? $state['page_surface'] : [];
 $blocks = is_array($state['blocks'] ?? null) ? $state['blocks'] : [];

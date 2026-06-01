@@ -180,7 +180,7 @@ function stjepan_fcc_guide_build_payload($user = null, array $options = []): arr
                 stjepan_fcc_guide_action('select_existing_business', 'Imam svoj posao ili klijente i želim pametniji sustav preporuka', ['target_step_id' => 'business_owner', 'value' => 'existing_business', 'style' => 'primary', 'event_key' => 'select_existing_business']),
                 stjepan_fcc_guide_action('select_business_path', 'Želim pokrenuti dodatni prihod uz proizvode i mentorstvo', ['target_step_id' => 'business_intro', 'value' => 'business_path', 'style' => 'secondary', 'event_key' => 'select_business_path']),
                 stjepan_fcc_guide_action('select_fcc_system', 'Želim prvo razumjeti FCC sustav', ['target_step_id' => 'fcc_system', 'value' => 'fcc_system', 'style' => 'secondary', 'event_key' => 'select_fcc_system']),
-                stjepan_fcc_guide_action('select_products', 'Zanimaju me proizvodi i 15% popusta', ['target_step_id' => 'products_entry', 'value' => 'products', 'style' => 'secondary', 'event_key' => 'select_products']),
+                stjepan_fcc_guide_action('select_products', 'Zanimaju me proizvodi i naručivanje bez registracije', ['target_step_id' => 'products_entry', 'value' => 'products', 'style' => 'secondary', 'event_key' => 'select_products']),
                 stjepan_fcc_guide_action('select_start_package', 'Spreman/na sam za Start paket', ['target_step_id' => 'start_package', 'value' => 'ready_start', 'style' => 'primary', 'event_key' => 'select_start_package']),
             ],
             'auto_advance' => true,
@@ -475,7 +475,7 @@ function stjepan_fcc_guide_build_payload($user = null, array $options = []): arr
             'buttons' => [
                 stjepan_fcc_guide_action('ai_to_start', 'Da, želim svoj sustav', ['target_step_id' => 'start_package', 'event_key' => 'select_ai_to_start']),
                 stjepan_fcc_guide_action('ai_to_check', 'Želim prvo razgovarati sa Stjepanom', ['target_step_id' => 'check', 'style' => 'secondary', 'event_key' => 'select_ai_to_check']),
-                stjepan_fcc_guide_action('ai_to_products', 'Prvo želim proizvode i popust', ['target_step_id' => 'products_entry', 'style' => 'ghost', 'event_key' => 'select_ai_to_products']),
+                stjepan_fcc_guide_action('ai_to_products', 'Prvo želim proizvode bez registracije', ['target_step_id' => 'products_entry', 'style' => 'ghost', 'event_key' => 'select_ai_to_products']),
             ],
             'alignment' => 'center',
         ]),
@@ -564,14 +564,14 @@ function stjepan_fcc_guide_build_payload($user = null, array $options = []): arr
 
     $products_entry_blocks = [
         stjepan_fcc_guide_block('products_entry_hero', 'headline', [
-            'badge' => 'Proizvodi i 15%',
-            'title' => 'Prvo pronađi proizvode za sebe i ostvari 15% popusta.',
+            'badge' => 'Proizvodi bez registracije',
+            'title' => 'Prvo pronađi proizvode za sebe i naruči bez registracije.',
             'text' => 'Ne moraš odmah razmišljati o suradnji. Kreni od proizvoda, pitaj AI vodiča što ima smisla za tvoj cilj i naruči preko službenog Forever webshopa.',
             'title_size' => 48,
         ]),
         stjepan_fcc_guide_block('products_entry_video', 'video', [
             'title' => 'Kako krenuti s proizvodima',
-            'text' => 'Ovdje ubacuješ video o proizvodnom putu, AI vodiču i 15% popusta.',
+            'text' => 'Ovdje ubacuješ video o proizvodnom putu, AI vodiču i naručivanju bez registracije.',
             'media_url' => $video('proizvodi_popust'),
             'layout_width' => 'two_thirds',
         ]),
@@ -593,14 +593,14 @@ function stjepan_fcc_guide_build_payload($user = null, array $options = []): arr
         stjepan_fcc_guide_block('products_entry_actions', 'cta_group', [
             'buttons' => [
                 stjepan_fcc_guide_action('products_to_ai', 'Pokreni AI vodiča', ['target_step_id' => 'ai_advisor', 'event_key' => 'open_ai_from_products']),
-                stjepan_fcc_guide_action('products_to_shop', 'Ostvari 15% popusta', ['action' => 'external_url', 'external_url' => $product_shop_url, 'style' => 'secondary', 'event_key' => 'click_webshop_discount']),
+                stjepan_fcc_guide_action('products_to_shop', 'Naruči bez registracije', ['action' => 'external_url', 'external_url' => $product_shop_url, 'style' => 'secondary', 'event_key' => 'click_webshop_discount']),
                 stjepan_fcc_guide_action('products_to_start', 'Želim ovaj sustav za sebe', ['target_step_id' => 'start_package', 'style' => 'ghost', 'event_key' => 'select_products_to_start']),
             ],
             'alignment' => 'center',
         ]),
     ];
 
-    $products_entry = stjepan_fcc_guide_step('products_entry', 'entry', 'products', 'offer', 'Proizvodni put / AI i 15% popust', 'Product-first put s AI vodičem i webshop korakom.', $products_entry_blocks, 'product_trust', [
+    $products_entry = stjepan_fcc_guide_step('products_entry', 'entry', 'products', 'offer', 'Proizvodni put / AI i službeni shop', 'Product-first put s AI vodičem i webshop korakom.', $products_entry_blocks, 'product_trust', [
         'design_variant' => 'card',
         'block_mode' => 'video',
         'surface' => [
@@ -615,7 +615,7 @@ function stjepan_fcc_guide_build_payload($user = null, array $options = []): arr
                 ],
                 'products_entry_actions' => [
                     'buttons' => [
-                        stjepan_fcc_guide_action('products_b_to_shop', 'Ostvari 15% popusta', ['action' => 'external_url', 'external_url' => $product_shop_url, 'event_key' => 'click_webshop_discount']),
+                        stjepan_fcc_guide_action('products_b_to_shop', 'Naruči bez registracije', ['action' => 'external_url', 'external_url' => $product_shop_url, 'event_key' => 'click_webshop_discount']),
                         stjepan_fcc_guide_action('products_b_to_ai', 'Pitaj AI vodiča', ['target_step_id' => 'ai_advisor', 'style' => 'secondary', 'event_key' => 'open_ai_from_products']),
                         stjepan_fcc_guide_action('products_b_to_business', 'Zanima me i suradnja', ['target_step_id' => 'business_intro', 'style' => 'ghost', 'event_key' => 'select_products_to_business']),
                     ],
@@ -660,7 +660,7 @@ function stjepan_fcc_guide_build_payload($user = null, array $options = []): arr
         stjepan_fcc_guide_block('product_trust_actions', 'cta_group', [
             'buttons' => [
                 stjepan_fcc_guide_action('trust_to_ai', 'Želim AI preporuku proizvoda', ['target_step_id' => 'ai_advisor', 'event_key' => 'click_product_ai']),
-                stjepan_fcc_guide_action('trust_to_shop', 'Ostvari 15% popusta', ['action' => 'external_url', 'external_url' => $product_shop_url, 'style' => 'secondary', 'event_key' => 'click_webshop_from_trust']),
+                stjepan_fcc_guide_action('trust_to_shop', 'Naruči bez registracije', ['action' => 'external_url', 'external_url' => $product_shop_url, 'style' => 'secondary', 'event_key' => 'click_webshop_from_trust']),
                 stjepan_fcc_guide_action('trust_to_start', 'Želim Start paket', ['target_step_id' => 'start_package', 'style' => 'ghost', 'event_key' => 'select_trust_to_start']),
             ],
             'alignment' => 'center',
@@ -683,7 +683,7 @@ function stjepan_fcc_guide_build_payload($user = null, array $options = []): arr
                 'product_trust_actions' => [
                     'buttons' => [
                         stjepan_fcc_guide_action('trust_b_to_start', 'Želim Start paket i proizvode za početak', ['target_step_id' => 'start_package', 'event_key' => 'select_trust_to_start']),
-                        stjepan_fcc_guide_action('trust_b_to_shop', 'Prvo želim 15% popusta', ['action' => 'external_url', 'external_url' => $product_shop_url, 'style' => 'secondary', 'event_key' => 'click_webshop_from_trust']),
+                        stjepan_fcc_guide_action('trust_b_to_shop', 'Prvo želim naručiti bez registracije', ['action' => 'external_url', 'external_url' => $product_shop_url, 'style' => 'secondary', 'event_key' => 'click_webshop_from_trust']),
                         stjepan_fcc_guide_action('trust_b_to_contact', 'Razgovor sa Stjepanom', ['target_step_id' => 'contact_result', 'style' => 'ghost', 'event_key' => 'select_trust_to_contact']),
                     ],
                 ],
@@ -781,7 +781,7 @@ function stjepan_fcc_guide_build_payload($user = null, array $options = []): arr
             'options' => [
                 stjepan_fcc_guide_action('check_goal_owner', 'Imam svoj posao/klijente i želim dodatni kanal preporuka', ['value' => 'existing_business', 'hint' => 'Želim vidjeti kako bi se sustav uklopio u ono što već radim.']),
                 stjepan_fcc_guide_action('check_goal_income', 'Želim ozbiljnije pokrenuti dodatni prihod', ['value' => 'serious_income', 'hint' => 'Spreman/na sam učiti i raditi uz jasne korake.']),
-                stjepan_fcc_guide_action('check_goal_products', 'Prvo želim proizvode i popust', ['value' => 'product_first', 'hint' => 'Želim krenuti od proizvoda i kasnije vidjeti poslovni dio.']),
+                stjepan_fcc_guide_action('check_goal_products', 'Prvo želim proizvode bez registracije', ['value' => 'product_first', 'hint' => 'Želim krenuti od proizvoda i kasnije vidjeti poslovni dio.']),
                 stjepan_fcc_guide_action('check_goal_demo', 'Želim vidjeti FCC demo', ['value' => 'demo_interest', 'hint' => 'Prvo želim razumjeti kako sustav izgleda.']),
                 stjepan_fcc_guide_action('check_goal_research', 'Još samo istražujem', ['value' => 'research', 'hint' => 'Želim mirno vidjeti opcije bez pritiska.']),
             ],
@@ -995,7 +995,7 @@ function stjepan_fcc_guide_build_payload($user = null, array $options = []): arr
         stjepan_fcc_guide_block('result_products_compliance', 'text', ['text' => $product_compliance, 'text_size' => 14]),
         stjepan_fcc_guide_block('result_products_actions', 'cta_group', [
             'buttons' => [
-                stjepan_fcc_guide_action('result_products_shop', 'Ostvari 15% popusta', ['action' => 'external_url', 'external_url' => $product_shop_url, 'event_key' => 'click_webshop_result']),
+                stjepan_fcc_guide_action('result_products_shop', 'Naruči bez registracije', ['action' => 'external_url', 'external_url' => $product_shop_url, 'event_key' => 'click_webshop_result']),
                 stjepan_fcc_guide_action('result_products_business', 'Zanima me kasnije i suradnja', ['target_step_id' => 'business_intro', 'style' => 'secondary', 'event_key' => 'select_products_to_business']),
                 stjepan_fcc_guide_action('result_products_contact', 'Želim razgovarati sa Stjepanom', ['action' => 'external_url', 'external_url' => $product_whatsapp_url, 'style' => 'ghost', 'event_key' => 'select_products_to_contact']),
             ],
@@ -1112,7 +1112,7 @@ function stjepan_fcc_guide_build_payload($user = null, array $options = []): arr
         'landing_page' => $landing_page,
         'paths' => [
             ['path_key' => 'business', 'title' => 'Suradnja i Start paket', 'description' => 'Put za osobe koje žele suradnju, Start paket ili Stjepanovo mentorstvo.', 'sort_order' => 1, 'is_enabled' => true],
-            ['path_key' => 'products', 'title' => 'Proizvodi i 15% popusta', 'description' => 'Put za osobe koje žele proizvode, AI preporuku i webshop.', 'sort_order' => 2, 'is_enabled' => true],
+            ['path_key' => 'products', 'title' => 'Proizvodi bez registracije', 'description' => 'Put za osobe koje žele proizvode, AI preporuku i webshop.', 'sort_order' => 2, 'is_enabled' => true],
             ['path_key' => 'demo', 'title' => 'FCC sustav i demo', 'description' => 'Put za osobe koje žele razumjeti sustav, AI vodič ili kontrolirani demo.', 'sort_order' => 3, 'is_enabled' => true],
         ],
         'board' => [

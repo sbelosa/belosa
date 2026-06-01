@@ -1956,7 +1956,7 @@ function vip_funnel_get_follow_up_playbook(string $segment = 'warm', array $cont
             'next_action' => 'Poslati proizvodnu preporuku i kasnije otvoriti business bridge.',
             'cadence' => 'Dan 0, Dan 2, Dan 5',
             'steps' => [
-                ['delay' => 'now', 'channel' => 'whatsapp_or_email', 'message' => $hello . ' vidio sam da te sada više zanimaju proizvodi ili popust. Šaljem ti preporuku prema cilju koji si odabrao/la.'],
+                ['delay' => 'now', 'channel' => 'whatsapp_or_email', 'message' => $hello . ' vidio sam da te sada više zanimaju proizvodi ili naručivanje bez registracije. Šaljem ti preporuku prema cilju koji si odabrao/la.'],
                 ['delay' => 'day_2', 'channel' => 'email', 'message' => 'Ako ti se svidi proizvodni put, kasnije ti mogu pokazati kako isti sustav koristiti za online preporuke.'],
                 ['delay' => 'day_5', 'channel' => 'whatsapp_or_email', 'message' => 'Jesi li uspio/la pogledati preporuku? Ako želiš, mogu ti reći najjednostavniji sljedeći korak.'],
             ],
@@ -3028,7 +3028,7 @@ function vip_funnel_get_stjepan_recruitment_payload($user = null, array $options
             'options' => [
                 $action('landing_business', 'Želim pokrenuti online posao', 'business_interest', 'business_gateway', 'primary'),
                 $action('landing_demo', 'Želim prvo razumjeti FCC sustav', 'demo_interest', 'fcc_demo_preview', 'secondary'),
-                $action('landing_product', 'Zanimaju me proizvodi i popusti', 'product_discount', 'product_gateway', 'secondary'),
+                $action('landing_product', 'Zanimaju me proizvodi bez registracije', 'product_discount', 'product_gateway', 'secondary'),
                 $action('landing_ready', 'Spreman/na sam za start paket', 'ready_360_now', 'start_package_offer', 'primary'),
             ],
             'alignment' => 'center',
@@ -3122,7 +3122,7 @@ function vip_funnel_get_stjepan_recruitment_payload($user = null, array $options
             'options' => [
                 $action('goal_extra_income', 'Dodatni prihod uz postojeće obaveze', 'dodatni_prihod', '', 'primary', 'goto_step', false, '', 'Želim krenuti postupno, ali uz jasan plan i podršku.'),
                 $action('goal_serious_business', 'Ozbiljan online posao', 'ozbiljan_online_posao', '', 'primary', 'goto_step', false, '', 'Spreman/na sam učiti, raditi i dugoročnije graditi svoj tim.'),
-                $action('goal_product_first', 'Prvo proizvodi i popust, posao kasnije', 'product_discount', '', 'primary', 'goto_step', false, '', 'Želim upoznati proizvode, koristiti pogodnosti i vidjeti ima li smisla preporučivati.'),
+                $action('goal_product_first', 'Prvo proizvodi bez registracije, posao kasnije', 'product_discount', '', 'primary', 'goto_step', false, '', 'Želim upoznati proizvode, koristiti pogodnosti i vidjeti ima li smisla preporučivati.'),
                 $action('goal_research', 'Samo istražujem', 'samo_istrazujem', '', 'primary', 'goto_step', false, '', 'Želim razumjeti opcije bez pritiska i vidjeti je li FCC za mene.'),
             ],
         ]),
@@ -3265,7 +3265,7 @@ function vip_funnel_get_stjepan_recruitment_payload($user = null, array $options
                 $action('demo_qualify', 'Želim provjeriti je li FCC za mene', 'business_interest', 'qualification_form', 'primary'),
                 $action('demo_start', 'Spreman/na sam za start paket i ulazak u tim', 'ready_360_now', 'start_package_offer', 'secondary'),
                 $action('demo_request', 'Želim detaljniji demo sustava', 'demo_request', 'demo_request', 'secondary'),
-                $action('demo_products', 'Zanimaju me samo proizvodi i popusti', 'product_discount', 'product_gateway', 'ghost'),
+                $action('demo_products', 'Zanimaju me samo proizvodi bez registracije', 'product_discount', 'product_gateway', 'ghost'),
             ],
             'alignment' => 'center',
         ]),
@@ -3273,11 +3273,11 @@ function vip_funnel_get_stjepan_recruitment_payload($user = null, array $options
 
     $demo_request = $step('demo_request', 'segment', 'demo', 'demo', 'Zatraži kontrolirani demo pristup FCC sustavu', 'Lead capture za kontrolirani demo interes.', array_values(vip_funnel_get_demo_request_step_blocks('hr', 'Stjepan', $privacy_url)), 'not_ready_nurture', ['design_variant' => 'card', 'block_mode' => 'contact_form']);
 
-    $product_gateway = $step('product_gateway', 'entry', 'products', 'question', 'Proizvodni put s jasnom preporukom', 'Vodi osobu prema proizvodnom cilju, popustu i kasnijem poslovnom mostu bez pritiska.', [
+    $product_gateway = $step('product_gateway', 'entry', 'products', 'question', 'Proizvodni put s jasnom preporukom', 'Vodi osobu prema proizvodnom cilju, naručivanju bez registracije i kasnijem poslovnom mostu bez pritiska.', [
         $block('product_gateway_hero', 'headline', [
-            'badge' => 'Proizvodi i popust',
+            'badge' => 'Proizvodi bez registracije',
             'title' => 'Kreni od proizvoda koji ti stvarno treba, a poslovni put može doći kasnije.',
-            'text' => 'Ako te sada najviše zanimaju Forever proizvodi, odaberi cilj koji ti je najbliži. Dobit ćeš jednostavnu preporuku, mogućnost popusta i jasan sljedeći korak bez pritiska.',
+            'text' => 'Ako te sada najviše zanimaju Forever proizvodi, odaberi cilj koji ti je najbliži. Dobit ćeš jednostavnu preporuku, mogućnost naručivanja bez registracije i jasan sljedeći korak bez pritiska.',
             'title_size' => 50,
         ]),
         $block('product_goal', 'survey', [
@@ -3342,7 +3342,7 @@ function vip_funnel_get_stjepan_recruitment_payload($user = null, array $options
 
     $product_recommendation = $step('product_recommendation', 'segment', 'products', 'offer', 'Ovo je najbolji prvi proizvodni korak za tvoj cilj', 'Dinamična proizvodna preporuka s mostom prema poslovnom putu.', $product_recommendation_blocks, 'product_to_business_bridge', ['design_variant' => 'card', 'block_mode' => 'product_offer']);
 
-    $product_to_business_bridge = $step('product_to_business_bridge', 'experience', 'products', 'proof', 'Ako ti se sviđa proizvodni put, možeš ga pretvoriti u online preporuke', 'Most iz product/discount interesa u business funnel.', [
+    $product_to_business_bridge = $step('product_to_business_bridge', 'experience', 'products', 'proof', 'Ako ti se sviđa proizvodni put, možeš ga pretvoriti u online preporuke', 'Most iz product/no-registration ordering interesa u business funnel.', [
         $block('bridge_hero', 'headline', [
             'badge' => 'Most prema poslu',
             'title' => 'Mnogi krenu kroz proizvode, a kasnije shvate da isti sustav mogu koristiti za preporuke.',
@@ -3394,7 +3394,7 @@ function vip_funnel_get_stjepan_recruitment_payload($user = null, array $options
             'secondary_cta' => 'Razumijem FCC sustav',
         ],
         'positioning' => [
-            'for' => 'Za osobe koje dolaze s društvenih mreža i žele posao, demo FCC sustava ili proizvodni popust.',
+            'for' => 'Za osobe koje dolaze s društvenih mreža i žele posao, demo FCC sustava ili naručivanje proizvoda bez registracije.',
             'problem' => 'Viralna pažnja se lako izgubi ako posjetitelj nema jasan sljedeći korak.',
             'mechanism' => 'Funnel segmentira posjetitelja, kvalificira spremnost i vodi ga prema Start paketu, razgovoru, demo iskustvu ili proizvodnoj preporuci.',
             'offer_promise' => 'Jasan put od interesa do odluke uz Stjepanovo mentorstvo i FCC sustav.',
@@ -3403,7 +3403,7 @@ function vip_funnel_get_stjepan_recruitment_payload($user = null, array $options
         'landing_page' => $landing_page,
         'paths' => [
             ['path_key' => 'business', 'title' => 'Online posao', 'description' => 'Put za osobe koje žele pokrenuti online posao uz FCC i mentorstvo.', 'sort_order' => 1, 'is_enabled' => true],
-            ['path_key' => 'products', 'title' => 'Proizvodi i popust', 'description' => 'Put za osobe koje sada žele proizvode, preporuku ili popust.', 'sort_order' => 2, 'is_enabled' => true],
+            ['path_key' => 'products', 'title' => 'Proizvodi bez registracije', 'description' => 'Put za osobe koje sada žele proizvode, preporuku ili naručivanje bez registracije.', 'sort_order' => 2, 'is_enabled' => true],
             ['path_key' => 'demo', 'title' => 'FCC demo i nurture', 'description' => 'Put za osobe koje prvo trebaju vidjeti sustav ili mirniji uvod.', 'sort_order' => 3, 'is_enabled' => true],
         ],
         'board' => [
@@ -4856,7 +4856,7 @@ function vip_funnel_get_import_template_options($user = null): array {
         ],
         'mini_products_discount' => [
             'key' => 'mini_products_discount',
-            'name' => 'Mini VIP - Proizvodi i 15% popusta',
+            'name' => 'Mini VIP - Proizvodi bez registracije',
             'description' => 'Proizvodni vodič s AI savjetnikom, odabirom cilja, webshop smjerom i mostom prema suradnji.',
             'badge' => 'Proizvodi',
             'goal' => 'Prodaja proizvoda',
@@ -5094,7 +5094,7 @@ function vip_funnel_mini_template_payload(string $template_key, $user = null, st
                         'route_on_submit' => false,
                         'options' => [
                             vip_funnel_mini_template_action('goal_business', 'Želim ozbiljnije pokrenuti dodatni prihod', '', 'primary', 'goto_step', 'business_goal'),
-                            vip_funnel_mini_template_action('goal_products', 'Prvo želim proizvode i popust', '', 'primary', 'goto_step', 'products_goal'),
+                            vip_funnel_mini_template_action('goal_products', 'Prvo želim proizvode bez registracije', '', 'primary', 'goto_step', 'products_goal'),
                             vip_funnel_mini_template_action('goal_question', 'Trebam razgovor prije odluke', '', 'primary', 'goto_step', 'question_goal'),
                         ],
                     ]),
@@ -5122,7 +5122,7 @@ function vip_funnel_mini_template_payload(string $template_key, $user = null, st
                     ]),
                 ], ['card_type' => 'survey', 'block_mode' => 'contact_form', 'status_key' => 'core', 'owner_user_id' => $owner_user_id, 'analytics_label' => 'mini_start_check']),
                 vip_funnel_mini_template_step('mini_start_products', 'experience', 'products', 'Prvo proizvodi i preporuka', 'Product-first put za osobe koje još nisu za poslovni start.', [
-                    $headline('mini_start_products_hero', 'Proizvodi prvo', 'Kreni mirno kroz proizvode, a poslovni dio može doći kasnije.', 'Ako još nisi za Start paket, možeš prvo upoznati proizvode, AI vodiča i mogućnost popusta.'),
+                    $headline('mini_start_products_hero', 'Proizvodi prvo', 'Kreni mirno kroz proizvode, a poslovni dio može doći kasnije.', 'Ako još nisi za Start paket, možeš prvo upoznati proizvode, AI vodiča i mogućnost naručivanja bez registracije.'),
                     vip_funnel_mini_template_block('mini_start_ai', 'ai_product_advisor', [
                         'badge' => 'AI vodič',
                         'title' => 'Pitaj AI vodiča za proizvodni smjer',
@@ -5133,7 +5133,7 @@ function vip_funnel_mini_template_payload(string $template_key, $user = null, st
                     ]),
                     vip_funnel_mini_template_block('mini_start_products_cta', 'cta_group', [
                         'buttons' => [
-                            vip_funnel_mini_template_action('open_shop', 'Otvori proizvode / 15% popusta', '', 'primary', 'external_url', 'product_shop', false, $product_shop_url),
+                            vip_funnel_mini_template_action('open_shop', 'Otvori proizvode bez registracije', '', 'primary', 'external_url', 'product_shop', false, $product_shop_url),
                             vip_funnel_mini_template_action('products_whatsapp', 'Pošalji pitanje mentoru', '', 'secondary', 'external_url', 'products_question', false, $wa_products),
                             vip_funnel_mini_template_action('products_to_start', 'Ipak me zanima Start paket', 'mini_start_offer', 'ghost', 'goto_step', 'back_to_start'),
                         ],
@@ -5188,7 +5188,7 @@ function vip_funnel_mini_template_payload(string $template_key, $user = null, st
 
         case 'mini_products_discount':
             $landing_blocks = [
-                $headline('mini_products_hero', 'Proizvodi i popust', 'Pronađi najbolji proizvodni početak za sebe.', 'Odaberi cilj, pokreni AI vodiča i kreni prema proizvodima ili popustu bez pritiska. Ako ti se sustav svidi, uvijek možeš otvoriti i razgovor o suradnji.'),
+                $headline('mini_products_hero', 'Proizvodi bez registracije', 'Pronađi najbolji proizvodni početak za sebe.', 'Odaberi cilj, pokreni AI vodiča i kreni prema proizvodima ili popustu bez pritiska. Ako ti se sustav svidi, uvijek možeš otvoriti i razgovor o suradnji.'),
                 $video('mini_products_video', 'Kratki uvod u proizvode', 'Objasni zašto proizvodi imaju smisla kao prvi korak i kako osoba koristi AI vodiča.'),
                 vip_funnel_mini_template_block('mini_products_goal', 'survey', [
                     'title' => 'Što želiš prvo istražiti?',
@@ -5197,7 +5197,7 @@ function vip_funnel_mini_template_payload(string $template_key, $user = null, st
                         vip_funnel_mini_template_action('goal_energy', 'Više dnevne energije', 'mini_products_recommendation', 'primary', 'goto_step', 'energy'),
                         vip_funnel_mini_template_action('goal_weight', 'Regulacija težine / forma', 'mini_products_recommendation', 'secondary', 'goto_step', 'weight'),
                         vip_funnel_mini_template_action('goal_skin', 'Njega kože i rutina', 'mini_products_recommendation', 'secondary', 'goto_step', 'skin'),
-                        vip_funnel_mini_template_action('goal_discount', 'Želim 15% popusta', 'mini_products_shop', 'ghost', 'goto_step', 'discount'),
+                        vip_funnel_mini_template_action('goal_discount', 'Želim naručiti bez registracije', 'mini_products_shop', 'ghost', 'goto_step', 'discount'),
                     ],
                     'alignment' => 'center',
                 ]),
@@ -5217,7 +5217,7 @@ function vip_funnel_mini_template_payload(string $template_key, $user = null, st
                     ]),
                     vip_funnel_mini_template_block('mini_products_ai_cta', 'cta_group', [
                         'buttons' => [
-                            vip_funnel_mini_template_action('ai_to_shop', 'Ostvari 15% popusta', 'mini_products_shop', 'primary', 'goto_step', 'to_shop'),
+                            vip_funnel_mini_template_action('ai_to_shop', 'Naruči bez registracije', 'mini_products_shop', 'primary', 'goto_step', 'to_shop'),
                             vip_funnel_mini_template_action('ai_to_contact', 'Imam pitanje za mentora', 'mini_products_contact', 'secondary', 'goto_step', 'to_contact'),
                             vip_funnel_mini_template_action('ai_to_business', 'Zanima me i suradnja', 'mini_products_business_bridge', 'ghost', 'goto_step', 'to_business'),
                         ],
@@ -5225,12 +5225,12 @@ function vip_funnel_mini_template_payload(string $template_key, $user = null, st
                     ]),
                     vip_funnel_mini_template_block('mini_products_ai_notice', 'text', ['text' => $ai_notice, 'text_size' => 14, 'alignment' => 'center']),
                 ], ['card_type' => 'offer', 'block_mode' => 'product', 'owner_user_id' => $owner_user_id, 'analytics_label' => 'mini_products_ai']),
-                vip_funnel_mini_template_step('mini_products_shop', 'experience', 'products', 'Shop i 15% popusta', 'Jasan izlaz prema proizvodnom linku suradnika.', [
-                    $headline('mini_products_shop_hero', '15% popusta', 'Otvori službeni proizvodni put s preporukom mentora.', 'Kada otvoriš proizvode, koristiš postojeći link suradnika i možeš nastaviti prema kupnji ili dodatnom pitanju.'),
+                vip_funnel_mini_template_step('mini_products_shop', 'experience', 'products', 'Shop i naručivanje bez registracije', 'Jasan izlaz prema proizvodnom linku suradnika.', [
+                    $headline('mini_products_shop_hero', 'Naručivanje bez registracije', 'Otvori službeni proizvodni put s preporukom mentora.', 'Kada otvoriš proizvode, koristiš postojeći link suradnika i možeš nastaviti prema kupnji ili dodatnom pitanju.'),
                     $proof('mini_products_shop_proof', 'Kako koristiti', 'Prvo odaberi proizvode, a za nejasnoće se javi mentoru.', 'Ako nisi siguran/na što odabrati, vrati se na AI vodiča ili pošalji kratku WhatsApp poruku.'),
                     vip_funnel_mini_template_block('mini_products_shop_cta', 'cta_group', [
                         'buttons' => [
-                            vip_funnel_mini_template_action('shop_open', 'Otvori proizvode / 15% popusta', '', 'primary', 'external_url', 'shop_open', false, $product_shop_url),
+                            vip_funnel_mini_template_action('shop_open', 'Otvori proizvode bez registracije', '', 'primary', 'external_url', 'shop_open', false, $product_shop_url),
                             vip_funnel_mini_template_action('shop_question', 'Pitaj mentora prije narudžbe', '', 'secondary', 'external_url', 'shop_question', false, $wa_products),
                             vip_funnel_mini_template_action('shop_ai_back', 'Vrati me na AI vodiča', 'mini_products_recommendation', 'ghost', 'goto_step', 'back_ai'),
                         ],
@@ -5268,7 +5268,7 @@ function vip_funnel_mini_template_payload(string $template_key, $user = null, st
 
             $payload = [
                 'funnel' => [
-                    'name' => $mentor_first_name . ' - Proizvodi i 15% popusta',
+                    'name' => $mentor_first_name . ' - Proizvodi bez registracije',
                     'slug' => vip_funnel_slugify($mentor_first_name . ' proizvodi 15 popusta', 'proizvodi-15-popusta'),
                     'status' => 'draft',
                     'visibility_mode' => 'pro_live',
@@ -5279,7 +5279,7 @@ function vip_funnel_mini_template_payload(string $template_key, $user = null, st
                     'headline' => 'Kratki proizvodni vodič s AI preporukom',
                     'subheadline' => 'Od proizvoda i popusta do pitanja, shopa i kasnijeg poslovnog mosta.',
                     'primary_cta' => 'Pokreni AI vodiča',
-                    'secondary_cta' => 'Ostvari 15% popusta',
+                    'secondary_cta' => 'Naruči bez registracije',
                 ],
                 'positioning' => [
                     'for' => 'Za osobe koje najprije žele proizvode, popust ili osobnu preporuku.',
@@ -5288,7 +5288,7 @@ function vip_funnel_mini_template_payload(string $template_key, $user = null, st
                     'offer_promise' => 'Miran proizvodni početak s mogućnošću kasnije suradnje.',
                     'why_now' => 'Product-first put monetizira interes i kad osoba nije spremna za Start paket.',
                 ],
-                'landing_page' => vip_funnel_mini_template_surface('Proizvodi i 15% popusta', $landing_blocks, ['show_progress' => false]),
+                'landing_page' => vip_funnel_mini_template_surface('Proizvodi bez registracije', $landing_blocks, ['show_progress' => false]),
                 'board' => [
                     ['key' => 'entry', 'steps' => [$steps[0]]],
                     ['key' => 'segment', 'steps' => [$steps[2]]],
@@ -5369,7 +5369,7 @@ function vip_funnel_mini_template_payload(string $template_key, $user = null, st
                     ]),
                     vip_funnel_mini_template_block('mini_challenge_products_cta', 'cta_group', [
                         'buttons' => [
-                            vip_funnel_mini_template_action('challenge_shop', 'Otvori proizvode / 15% popusta', '', 'primary', 'external_url', 'challenge_shop', false, $product_shop_url),
+                            vip_funnel_mini_template_action('challenge_shop', 'Otvori proizvode bez registracije', '', 'primary', 'external_url', 'challenge_shop', false, $product_shop_url),
                             vip_funnel_mini_template_action('challenge_products_question', 'Pitaj mentora', '', 'secondary', 'external_url', 'challenge_products_question', false, $wa_products),
                         ],
                         'alignment' => 'center',
@@ -5440,7 +5440,7 @@ function vip_funnel_mini_template_payload(string $template_key, $user = null, st
                     'text' => 'Odaberi smjer i prijava će imati bolji kontekst.',
                     'options' => [
                         vip_funnel_mini_template_action('webinar_business', 'Dodatni prihod i suradnja', 'mini_webinar_register', 'primary', 'goto_step', 'business'),
-                        vip_funnel_mini_template_action('webinar_products', 'Proizvodi i popust', 'mini_webinar_register', 'secondary', 'goto_step', 'products'),
+                        vip_funnel_mini_template_action('webinar_products', 'Proizvodi bez registracije', 'mini_webinar_register', 'secondary', 'goto_step', 'products'),
                         vip_funnel_mini_template_action('webinar_system', 'Kako radi sustav preporuka', 'mini_webinar_register', 'secondary', 'goto_step', 'system'),
                         vip_funnel_mini_template_action('webinar_start', 'Spreman/na sam za Start paket', 'mini_webinar_start', 'ghost', 'goto_step', 'start'),
                     ],
@@ -5460,7 +5460,7 @@ function vip_funnel_mini_template_payload(string $template_key, $user = null, st
                         'options' => [
                             vip_funnel_mini_template_action('interest_start', 'Start paket i ulazak u tim', '', 'primary', 'goto_step', 'start_package'),
                             vip_funnel_mini_template_action('interest_system', 'Sustav preporuka bez pritiska', '', 'primary', 'goto_step', 'system'),
-                            vip_funnel_mini_template_action('interest_products', 'Proizvodi i popust', '', 'primary', 'goto_step', 'products'),
+                            vip_funnel_mini_template_action('interest_products', 'Proizvodi bez registracije', '', 'primary', 'goto_step', 'products'),
                             vip_funnel_mini_template_action('interest_questions', 'Imam konkretna pitanja', '', 'primary', 'goto_step', 'questions'),
                         ],
                     ]),
@@ -5510,7 +5510,7 @@ function vip_funnel_mini_template_payload(string $template_key, $user = null, st
                     ]),
                     vip_funnel_mini_template_block('mini_webinar_products_cta', 'cta_group', [
                         'buttons' => [
-                            vip_funnel_mini_template_action('webinar_shop', 'Otvori proizvode / 15% popusta', '', 'primary', 'external_url', 'webinar_shop', false, $product_shop_url),
+                            vip_funnel_mini_template_action('webinar_shop', 'Otvori proizvode bez registracije', '', 'primary', 'external_url', 'webinar_shop', false, $product_shop_url),
                             vip_funnel_mini_template_action('webinar_products_question', 'Pitaj mentora', '', 'secondary', 'external_url', 'webinar_products_question', false, $wa_products),
                             vip_funnel_mini_template_action('webinar_products_register', 'Prijava na info večer', 'mini_webinar_register', 'ghost', 'goto_step', 'webinar_products_register'),
                         ],
@@ -6189,7 +6189,7 @@ function vip_funnel_refresh_stjepan_landing_copy_if_needed(array &$payload): voi
                 'options' => [
                     ['id' => 'goal_extra_income', 'label' => 'Dodatni prihod uz postojeće obaveze', 'hint' => 'Želim krenuti postupno, ali uz jasan plan i podršku.', 'value' => 'dodatni_prihod', 'style' => 'primary', 'action' => 'goto_step', 'target_step_id' => '', 'external_url' => '', 'require_submit' => false],
                     ['id' => 'goal_serious_business', 'label' => 'Ozbiljan online posao', 'hint' => 'Spreman/na sam učiti, raditi i dugoročnije graditi svoj tim.', 'value' => 'ozbiljan_online_posao', 'style' => 'primary', 'action' => 'goto_step', 'target_step_id' => '', 'external_url' => '', 'require_submit' => false],
-                    ['id' => 'goal_product_first', 'label' => 'Prvo proizvodi i popust, posao kasnije', 'hint' => 'Želim upoznati proizvode, koristiti pogodnosti i vidjeti ima li smisla preporučivati.', 'value' => 'product_discount', 'style' => 'primary', 'action' => 'goto_step', 'target_step_id' => '', 'external_url' => '', 'require_submit' => false],
+                    ['id' => 'goal_product_first', 'label' => 'Prvo proizvodi bez registracije, posao kasnije', 'hint' => 'Želim upoznati proizvode, koristiti pogodnosti i vidjeti ima li smisla preporučivati.', 'value' => 'product_discount', 'style' => 'primary', 'action' => 'goto_step', 'target_step_id' => '', 'external_url' => '', 'require_submit' => false],
                     ['id' => 'goal_research', 'label' => 'Samo istražujem', 'hint' => 'Želim razumjeti opcije bez pritiska i vidjeti je li FCC za mene.', 'value' => 'samo_istrazujem', 'style' => 'primary', 'action' => 'goto_step', 'target_step_id' => '', 'external_url' => '', 'require_submit' => false],
                 ],
             ],
@@ -6297,7 +6297,7 @@ function vip_funnel_refresh_stjepan_landing_copy_if_needed(array &$payload): voi
                 ['id' => 'demo_qualify', 'label' => 'Želim provjeriti je li FCC za mene', 'value' => 'business_interest', 'style' => 'primary', 'action' => 'goto_step', 'target_step_id' => 'qualification_form', 'external_url' => '', 'require_submit' => false],
                 ['id' => 'demo_start', 'label' => 'Spreman/na sam za start paket i ulazak u tim', 'value' => 'ready_360_now', 'style' => 'secondary', 'action' => 'goto_step', 'target_step_id' => 'start_package_offer', 'external_url' => '', 'require_submit' => false],
                 ['id' => 'demo_request', 'label' => 'Želim detaljniji demo sustava', 'value' => 'demo_request', 'style' => 'secondary', 'action' => 'goto_step', 'target_step_id' => 'demo_request', 'external_url' => '', 'require_submit' => false],
-                ['id' => 'demo_products', 'label' => 'Zanimaju me samo proizvodi i popusti', 'value' => 'product_discount', 'style' => 'ghost', 'action' => 'goto_step', 'target_step_id' => 'product_gateway', 'external_url' => '', 'require_submit' => false],
+                ['id' => 'demo_products', 'label' => 'Zanimaju me samo proizvodi bez registracije', 'value' => 'product_discount', 'style' => 'ghost', 'action' => 'goto_step', 'target_step_id' => 'product_gateway', 'external_url' => '', 'require_submit' => false],
             ],
         ]);
         vip_funnel_update_template_step($payload, 'fcc_demo_preview', [
@@ -6335,9 +6335,9 @@ function vip_funnel_refresh_stjepan_landing_copy_if_needed(array &$payload): voi
         'Kreni od proizvoda koji ti stvarno treba, a poslovni put može doći kasnije.',
     ], true)) {
         vip_funnel_update_template_block($payload, 'product_gateway_hero', [
-            'badge' => 'Proizvodi i popust',
+            'badge' => 'Proizvodi bez registracije',
             'title' => 'Kreni od proizvoda koji ti stvarno treba, a poslovni put može doći kasnije.',
-            'text' => 'Ako te sada najviše zanimaju Forever proizvodi, odaberi cilj koji ti je najbliži. Dobit ćeš jednostavnu preporuku, mogućnost popusta i jasan sljedeći korak bez pritiska.',
+            'text' => 'Ako te sada najviše zanimaju Forever proizvodi, odaberi cilj koji ti je najbliži. Dobit ćeš jednostavnu preporuku, mogućnost naručivanja bez registracije i jasan sljedeći korak bez pritiska.',
             'title_size' => 50,
         ]);
         vip_funnel_update_template_block($payload, 'product_goal', [
@@ -6353,10 +6353,10 @@ function vip_funnel_refresh_stjepan_landing_copy_if_needed(array &$payload): voi
         ]);
         vip_funnel_update_template_step($payload, 'product_gateway', [
             'title' => 'Proizvodni put s jasnom preporukom',
-            'summary' => 'Vodi osobu prema proizvodnom cilju, popustu i kasnijem poslovnom mostu bez pritiska.',
-            'helper_text' => 'Vodi osobu prema proizvodnom cilju, popustu i kasnijem poslovnom mostu bez pritiska.',
+            'summary' => 'Vodi osobu prema proizvodnom cilju, naručivanju bez registracije i kasnijem poslovnom mostu bez pritiska.',
+            'helper_text' => 'Vodi osobu prema proizvodnom cilju, naručivanju bez registracije i kasnijem poslovnom mostu bez pritiska.',
             'preview_headline' => 'Proizvodni put s jasnom preporukom',
-            'preview_body' => 'Vodi osobu prema proizvodnom cilju, popustu i kasnijem poslovnom mostu bez pritiska.',
+            'preview_body' => 'Vodi osobu prema proizvodnom cilju, naručivanju bez registracije i kasnijem poslovnom mostu bez pritiska.',
             'page' => ['name' => 'Proizvodni put s jasnom preporukom'],
         ]);
     }
@@ -6482,7 +6482,7 @@ function vip_funnel_refresh_stjepan_landing_copy_if_needed(array &$payload): voi
         $replace_option_labels($landing_blocks, 'landing_direction', [
             'landing_business' => 'Želim pokrenuti online posao',
             'landing_demo' => 'Želim prvo razumjeti FCC sustav',
-            'landing_product' => 'Zanimaju me proizvodi i popusti',
+            'landing_product' => 'Zanimaju me proizvodi bez registracije',
             'landing_ready' => 'Spreman/na sam za start paket',
         ]);
     }
@@ -6739,7 +6739,7 @@ function vip_funnel_get_fcc_vip_import_template_payload($user = null, string $la
         ];
 
         $payload['positioning'] = [
-            'for' => 'Za osobe koje dolaze s društvenih mreža, preporuke ili FCC aplikacije i žele posao, demo FCC sustava ili proizvodni popust.',
+            'for' => 'Za osobe koje dolaze s društvenih mreža, preporuke ili FCC aplikacije i žele posao, demo FCC sustava ili naručivanje proizvoda bez registracije.',
             'problem' => 'Interes se lako izgubi ako osoba nema jasan, kratak i logičan sljedeći korak.',
             'mechanism' => 'Funnel segmentira posjetitelja, kvalificira spremnost i vodi ga prema Start paketu, razgovoru, demo iskustvu ili proizvodnoj preporuci.',
             'offer_promise' => 'Jasan put od interesa do odluke uz osobno mentorstvo i FCC sustav.',
@@ -6765,7 +6765,7 @@ function vip_funnel_get_fcc_vip_import_template_payload($user = null, string $la
         vip_funnel_update_template_block($payload, 'landing_hero', [
             'badge' => 'FCC VIP Funnel',
             'title' => 'Pokreni online posao uz FCC sustav i mentorstvo',
-            'text' => 'Ja sam ' . $mentor_name . ', tvoj FCC mentor. Ovdje u par koraka biraš svoj put: online posao, demo sustava ili proizvodi i popust.',
+            'text' => 'Ja sam ' . $mentor_name . ', tvoj FCC mentor. Ovdje u par koraka biraš svoj put: online posao, demo sustava ili proizvodi bez registracije.',
         ]);
         vip_funnel_update_template_block($payload, 'landing_intro_video', [
             'title' => 'Kratki uvod tvog FCC mentora',
@@ -6822,7 +6822,7 @@ function vip_funnel_get_fcc_vip_import_template_payload($user = null, string $la
                 'options' => [
                     ['id' => 'goal_extra_income', 'label' => 'Dodatni prihod uz postojeće obaveze', 'hint' => 'Želim krenuti postupno, ali uz jasan plan i podršku.', 'value' => 'dodatni_prihod', 'style' => 'primary', 'action' => 'goto_step', 'target_step_id' => '', 'external_url' => '', 'require_submit' => false],
                     ['id' => 'goal_serious_business', 'label' => 'Ozbiljan online posao', 'hint' => 'Spreman/na sam učiti, raditi i dugoročnije graditi svoj tim.', 'value' => 'ozbiljan_online_posao', 'style' => 'primary', 'action' => 'goto_step', 'target_step_id' => '', 'external_url' => '', 'require_submit' => false],
-                    ['id' => 'goal_product_first', 'label' => 'Prvo proizvodi i popust, posao kasnije', 'hint' => 'Želim upoznati proizvode, koristiti pogodnosti i vidjeti ima li smisla preporučivati.', 'value' => 'product_discount', 'style' => 'primary', 'action' => 'goto_step', 'target_step_id' => '', 'external_url' => '', 'require_submit' => false],
+                    ['id' => 'goal_product_first', 'label' => 'Prvo proizvodi bez registracije, posao kasnije', 'hint' => 'Želim upoznati proizvode, koristiti pogodnosti i vidjeti ima li smisla preporučivati.', 'value' => 'product_discount', 'style' => 'primary', 'action' => 'goto_step', 'target_step_id' => '', 'external_url' => '', 'require_submit' => false],
                     ['id' => 'goal_research', 'label' => 'Samo istražujem', 'hint' => 'Želim razumjeti opcije bez pritiska i vidjeti je li FCC za mene.', 'value' => 'samo_istrazujem', 'style' => 'primary', 'action' => 'goto_step', 'target_step_id' => '', 'external_url' => '', 'require_submit' => false],
                 ],
             ],
@@ -6921,7 +6921,7 @@ function vip_funnel_get_fcc_vip_import_template_payload($user = null, string $la
                 ['id' => 'demo_qualify', 'label' => 'Želim provjeriti je li FCC za mene', 'value' => 'business_interest', 'style' => 'primary', 'action' => 'goto_step', 'target_step_id' => 'qualification_form', 'external_url' => '', 'require_submit' => false],
                 ['id' => 'demo_start', 'label' => 'Spreman/na sam za start paket i ulazak u tim', 'value' => 'ready_360_now', 'style' => 'secondary', 'action' => 'goto_step', 'target_step_id' => 'start_package_offer', 'external_url' => '', 'require_submit' => false],
                 ['id' => 'demo_request', 'label' => 'Želim detaljniji demo sustava', 'value' => 'demo_request', 'style' => 'secondary', 'action' => 'goto_step', 'target_step_id' => 'demo_request', 'external_url' => '', 'require_submit' => false],
-                ['id' => 'demo_products', 'label' => 'Zanimaju me samo proizvodi i popusti', 'value' => 'product_discount', 'style' => 'ghost', 'action' => 'goto_step', 'target_step_id' => 'product_gateway', 'external_url' => '', 'require_submit' => false],
+                ['id' => 'demo_products', 'label' => 'Zanimaju me samo proizvodi bez registracije', 'value' => 'product_discount', 'style' => 'ghost', 'action' => 'goto_step', 'target_step_id' => 'product_gateway', 'external_url' => '', 'require_submit' => false],
             ],
         ]);
         vip_funnel_sync_template_step_blocks($payload, 'demo_request', vip_funnel_get_demo_request_step_blocks('hr', $mentor_name, SITE_URL . 'page/privacy-policy'), [
@@ -6943,9 +6943,9 @@ function vip_funnel_get_fcc_vip_import_template_payload($user = null, string $la
             'page' => ['name' => 'Zatraži kontrolirani demo pristup FCC sustavu'],
         ]);
         vip_funnel_update_template_block($payload, 'product_gateway_hero', [
-            'badge' => 'Proizvodi i popust',
+            'badge' => 'Proizvodi bez registracije',
             'title' => 'Kreni od proizvoda koji ti stvarno treba, a poslovni put može doći kasnije.',
-            'text' => 'Ako te sada najviše zanimaju Forever proizvodi, odaberi cilj koji ti je najbliži. Dobit ćeš jednostavnu preporuku, mogućnost popusta i jasan sljedeći korak bez pritiska.',
+            'text' => 'Ako te sada najviše zanimaju Forever proizvodi, odaberi cilj koji ti je najbliži. Dobit ćeš jednostavnu preporuku, mogućnost naručivanja bez registracije i jasan sljedeći korak bez pritiska.',
             'title_size' => 50,
         ]);
         vip_funnel_update_template_block($payload, 'product_goal', [
@@ -7026,10 +7026,10 @@ function vip_funnel_get_fcc_vip_import_template_payload($user = null, string $la
         ]);
         vip_funnel_update_template_step($payload, 'product_gateway', [
             'title' => 'Proizvodni put s jasnom preporukom',
-            'summary' => 'Vodi osobu prema proizvodnom cilju, popustu i kasnijem poslovnom mostu bez pritiska.',
-            'helper_text' => 'Vodi osobu prema proizvodnom cilju, popustu i kasnijem poslovnom mostu bez pritiska.',
+            'summary' => 'Vodi osobu prema proizvodnom cilju, naručivanju bez registracije i kasnijem poslovnom mostu bez pritiska.',
+            'helper_text' => 'Vodi osobu prema proizvodnom cilju, naručivanju bez registracije i kasnijem poslovnom mostu bez pritiska.',
             'preview_headline' => 'Proizvodni put s jasnom preporukom',
-            'preview_body' => 'Vodi osobu prema proizvodnom cilju, popustu i kasnijem poslovnom mostu bez pritiska.',
+            'preview_body' => 'Vodi osobu prema proizvodnom cilju, naručivanju bez registracije i kasnijem poslovnom mostu bez pritiska.',
             'page' => ['name' => 'Proizvodni put s jasnom preporukom'],
         ]);
         vip_funnel_update_template_step($payload, 'start_package_offer', [
@@ -7087,7 +7087,7 @@ function vip_funnel_get_fcc_vip_import_template_payload($user = null, string $la
         ];
 
         $payload['positioning'] = [
-            'for' => 'For people coming from social media, referrals, or the FCC app who want a business, FCC system demo, or product discount.',
+            'for' => 'For people coming from social media, referrals, or the FCC app who want a business, FCC system demo, or no-registration ordering.',
             'problem' => 'Interest is easy to lose when a visitor does not get a clear, short, and logical next step.',
             'mechanism' => 'The funnel segments visitors, qualifies readiness, and guides them toward the Start package, a mentor conversation, demo experience, or product recommendation.',
             'offer_promise' => 'A clear path from interest to decision with personal mentorship and the FCC system.',
@@ -7113,7 +7113,7 @@ function vip_funnel_get_fcc_vip_import_template_payload($user = null, string $la
         vip_funnel_update_template_block($payload, 'landing_hero', [
             'badge' => 'FCC VIP Funnel',
             'title' => 'Start an online business with FCC and guided mentorship',
-            'text' => 'I am ' . $mentor_name . ', your FCC mentor. In a few short steps, choose your path: online business, system demo, or products and discount.',
+            'text' => 'I am ' . $mentor_name . ', your FCC mentor. In a few short steps, choose your path: online business, system demo, or products and no-registration ordering.',
         ]);
         vip_funnel_update_template_block($payload, 'landing_intro_video', [
             'title' => 'Short intro from your FCC mentor',
@@ -7170,7 +7170,7 @@ function vip_funnel_get_fcc_vip_import_template_payload($user = null, string $la
                 'options' => [
                     ['id' => 'goal_extra_income', 'label' => 'Additional income alongside current responsibilities', 'hint' => 'I want to start gradually, but with a clear plan and support.', 'value' => 'dodatni_prihod', 'style' => 'primary', 'action' => 'goto_step', 'target_step_id' => '', 'external_url' => '', 'require_submit' => false],
                     ['id' => 'goal_serious_business', 'label' => 'A serious online business', 'hint' => 'I am ready to learn, work, and build my team long-term.', 'value' => 'ozbiljan_online_posao', 'style' => 'primary', 'action' => 'goto_step', 'target_step_id' => '', 'external_url' => '', 'require_submit' => false],
-                    ['id' => 'goal_product_first', 'label' => 'Products and discount first, business later', 'hint' => 'I want to understand the products, use the benefits, and see whether recommending them makes sense.', 'value' => 'product_discount', 'style' => 'primary', 'action' => 'goto_step', 'target_step_id' => '', 'external_url' => '', 'require_submit' => false],
+                    ['id' => 'goal_product_first', 'label' => 'Products and no-registration ordering first, business later', 'hint' => 'I want to understand the products, use the benefits, and see whether recommending them makes sense.', 'value' => 'product_discount', 'style' => 'primary', 'action' => 'goto_step', 'target_step_id' => '', 'external_url' => '', 'require_submit' => false],
                     ['id' => 'goal_research', 'label' => 'I am just exploring', 'hint' => 'I want to understand the options without pressure and see if FCC is for me.', 'value' => 'samo_istrazujem', 'style' => 'primary', 'action' => 'goto_step', 'target_step_id' => '', 'external_url' => '', 'require_submit' => false],
                 ],
             ],
@@ -7269,7 +7269,7 @@ function vip_funnel_get_fcc_vip_import_template_payload($user = null, string $la
                 ['id' => 'demo_qualify', 'label' => 'I want to check if FCC is for me', 'value' => 'business_interest', 'style' => 'primary', 'action' => 'goto_step', 'target_step_id' => 'qualification_form', 'external_url' => '', 'require_submit' => false],
                 ['id' => 'demo_start', 'label' => 'I am ready for the Start package and joining the team', 'value' => 'ready_360_now', 'style' => 'secondary', 'action' => 'goto_step', 'target_step_id' => 'start_package_offer', 'external_url' => '', 'require_submit' => false],
                 ['id' => 'demo_request', 'label' => 'I want a more detailed system demo', 'value' => 'demo_request', 'style' => 'secondary', 'action' => 'goto_step', 'target_step_id' => 'demo_request', 'external_url' => '', 'require_submit' => false],
-                ['id' => 'demo_products', 'label' => 'I am only interested in products and discounts', 'value' => 'product_discount', 'style' => 'ghost', 'action' => 'goto_step', 'target_step_id' => 'product_gateway', 'external_url' => '', 'require_submit' => false],
+                ['id' => 'demo_products', 'label' => 'I am only interested in products without registration', 'value' => 'product_discount', 'style' => 'ghost', 'action' => 'goto_step', 'target_step_id' => 'product_gateway', 'external_url' => '', 'require_submit' => false],
             ],
         ]);
         vip_funnel_sync_template_step_blocks($payload, 'demo_request', vip_funnel_get_demo_request_step_blocks('en', $mentor_name, SITE_URL . 'page/privacy-policy'), [
@@ -7291,9 +7291,9 @@ function vip_funnel_get_fcc_vip_import_template_payload($user = null, string $la
             'page' => ['name' => 'Request controlled FCC system demo access'],
         ]);
         vip_funnel_update_template_block($payload, 'product_gateway_hero', [
-            'badge' => 'Products and discount',
+            'badge' => 'Products and no-registration ordering',
             'title' => 'Start with the product you actually need, and the business path can come later.',
-            'text' => 'If Forever products are your main interest right now, choose the goal that feels closest. You will get a simple recommendation, a discount option, and a clear next step without pressure.',
+            'text' => 'If Forever products are your main interest right now, choose the goal that feels closest. You will get a simple recommendation, an ordering option without registration, and a clear next step without pressure.',
             'title_size' => 50,
         ]);
         vip_funnel_update_template_block($payload, 'product_goal', [
@@ -7304,7 +7304,7 @@ function vip_funnel_get_fcc_vip_import_template_payload($user = null, string $la
                 ['id' => 'product_weight', 'label' => 'Weight management and better shape', 'value' => 'regulacija_tezine', 'style' => 'secondary', 'action' => 'goto_step', 'target_step_id' => 'product_recommendation', 'external_url' => '', 'require_submit' => false],
                 ['id' => 'product_skin', 'label' => 'Skin care and personal routine', 'value' => 'njega_koze', 'style' => 'secondary', 'action' => 'goto_step', 'target_step_id' => 'product_recommendation', 'external_url' => '', 'require_submit' => false],
                 ['id' => 'product_routine', 'label' => 'Daily routine for me or my family', 'value' => 'dnevna_rutina', 'style' => 'secondary', 'action' => 'goto_step', 'target_step_id' => 'product_recommendation', 'external_url' => '', 'require_submit' => false],
-                ['id' => 'product_discount', 'label' => 'I want a recommendation and discount', 'value' => 'popust', 'style' => 'ghost', 'action' => 'goto_step', 'target_step_id' => 'product_recommendation', 'external_url' => '', 'require_submit' => false],
+                ['id' => 'product_discount', 'label' => 'I want a recommendation and no-registration ordering', 'value' => 'popust', 'style' => 'ghost', 'action' => 'goto_step', 'target_step_id' => 'product_recommendation', 'external_url' => '', 'require_submit' => false],
             ],
         ]);
         vip_funnel_update_template_block($payload, 'start_hero', [
@@ -7374,10 +7374,10 @@ function vip_funnel_get_fcc_vip_import_template_payload($user = null, string $la
         ]);
         vip_funnel_update_template_step($payload, 'product_gateway', [
             'title' => 'Product path with a clear recommendation',
-            'summary' => 'Guides the visitor toward a product goal, discount, and later business bridge without pressure.',
-            'helper_text' => 'Guides the visitor toward a product goal, discount, and later business bridge without pressure.',
+            'summary' => 'Guides the visitor toward a product goal, no-registration ordering, and later business bridge without pressure.',
+            'helper_text' => 'Guides the visitor toward a product goal, no-registration ordering, and later business bridge without pressure.',
             'preview_headline' => 'Product path with a clear recommendation',
-            'preview_body' => 'Guides the visitor toward a product goal, discount, and later business bridge without pressure.',
+            'preview_body' => 'Guides the visitor toward a product goal, no-registration ordering, and later business bridge without pressure.',
             'page' => ['name' => 'Product path with a clear recommendation'],
         ]);
         vip_funnel_update_template_step($payload, 'start_package_offer', [
@@ -7481,7 +7481,7 @@ function vip_funnel_localize_template_payload(array $payload, string $language):
         'Nastavi' => 'Continue',
         'Stjepan osobni recruiting landing' => 'Personal FCC recruiting landing',
         'Pokreni online posao uz FCC sustav i moje mentorstvo' => 'Start an online business with FCC and my mentorship',
-        'Ja sam Stjepan Beloša, kreator FCC-a i mentor tima od 7.000+ članova. Ako si došao s mojih videa, ovdje u par koraka biraš svoj put: posao, demo sustava ili proizvodi i popust.' => 'I am your FCC mentor. If you came from my videos, this funnel helps you choose your next step: business, system demo, or products and discount.',
+        'Ja sam Stjepan Beloša, kreator FCC-a i mentor tima od 7.000+ članova. Ako si došao s mojih videa, ovdje u par koraka biraš svoj put: posao, demo sustava ili proizvodi bez registracije.' => 'I am your FCC mentor. If you came from my videos, this funnel helps you choose your next step: business, system demo, or products and no-registration ordering.',
         'Kratki uvod za one koji dolaze s mojih videa' => 'Short intro for people coming from my videos',
         'Pogledaj prvo poruku, a zatim odaberi smjer koji je najbliži tvojoj situaciji.' => 'Watch the message first, then choose the path that matches your situation.',
         'Zašto ovo nije običan link' => 'Why this is not just another link',
@@ -7491,7 +7491,7 @@ function vip_funnel_localize_template_payload(array $payload, string $language):
         'Odaberi iskreno. Svaki smjer vodi na drugu stranicu koja je složena kao mala landing stranica.' => 'Choose honestly. Every path opens a focused page built like a small landing page.',
         'Želim pokrenuti online posao' => 'I want to start an online business',
         'Želim vidjeti FCC sustav' => 'I want to see the FCC system',
-        'Želim popust ili proizvode' => 'I want products or a discount',
+        'Želim popust ili proizvode' => 'I want products without registration',
         'Već sam spreman za start paket' => 'I am ready for the start package',
         'Od videa do sustava' => 'From video to system',
         'Od milionskih pregleda do vlastitog online posla' => 'From viral views to your own online business',
@@ -7499,7 +7499,7 @@ function vip_funnel_localize_template_payload(array $payload, string $language):
         'Odaberi svoj najbrži put' => 'Choose your fastest path',
         'Posao, demo ili proizvodi. Sustav te vodi bez viška informacija.' => 'Business, demo, or products. The system guides you without overload.',
         'Online posao' => 'Online business',
-        'Proizvodi / popust' => 'Products / discount',
+        'Proizvodi / popust' => 'Products without registration',
         'Od pregleda videa do online posla, ali bez kretanja od nule' => 'From video views to an online business, without starting from zero',
         'Objašnjava zašto je FCC vođeni poslovni sustav, a ne samo još jedna informacija.' => 'Explains why FCC is a guided business system, not just more information.',
         'Poslovni filter za ozbiljan FCC start' => 'Business filter for a serious FCC start',
@@ -7548,8 +7548,8 @@ function vip_funnel_localize_template_payload(array $payload, string $language):
         'Želim krenuti postupno, ali uz jasan plan i podršku.' => 'I want to start gradually, but with a clear plan and support.',
         'Ozbiljan online posao' => 'A serious online business',
         'Spreman/na sam učiti, raditi i dugoročnije graditi svoj tim.' => 'I am ready to learn, work, and build my team long-term.',
-        'Proizvodni popust pa kasnije možda posao' => 'Product discount first, maybe business later',
-        'Prvo proizvodi i popust, posao kasnije' => 'Products and discount first, business later',
+        'Naručivanje proizvoda bez registracije pa kasnije možda posao' => 'Products without registration first, maybe business later',
+        'Prvo proizvodi bez registracije, posao kasnije' => 'Products and no-registration ordering first, business later',
         'Želim upoznati proizvode, koristiti pogodnosti i vidjeti ima li smisla preporučivati.' => 'I want to understand the products, use the benefits, and see whether recommending them makes sense.',
         'Samo istražujem' => 'I am just exploring',
         'Želim razumjeti opcije bez pritiska i vidjeti je li FCC za mene.' => 'I want to understand the options without pressure and see if FCC is for me.',
@@ -7704,7 +7704,7 @@ function vip_funnel_localize_template_payload(array $payload, string $language):
         'Želim samo proizvode' => 'I only want products',
         'Želim provjeriti je li FCC za mene' => 'I want to check if FCC is for me',
         'Želim detaljniji demo sustava' => 'I want a more detailed system demo',
-        'Zanimaju me samo proizvodi i popusti' => 'I am only interested in products and discounts',
+        'Zanimaju me samo proizvodi bez registracije' => 'I am only interested in products without registration',
         'Zatraži demo pregled FCC sustava' => 'Request an FCC system demo review',
         'Lead capture za demo interes.' => 'Lead capture for demo interest.',
         'Demo zahtjev' => 'Demo request',
@@ -7715,16 +7715,16 @@ function vip_funnel_localize_template_payload(array $payload, string $language):
         'Želim pokazati sustav drugima' => 'I want to show the system to others',
         'Već imam tim ili prodaju' => 'I already have a team or sales',
         'Zatraži demo pregled' => 'Request demo review',
-        'Ako sada želiš samo proizvode ili popust, kreni ovim putem' => 'If you only want products or a discount now, start here',
+        'Ako sada želiš samo proizvode bez registracije, kreni ovim putem' => 'If you only want products without registration now, start here',
         'Produktni ulaz koji monetizira osobe koje ne žele odmah posao.' => 'Product entry path for people who do not want the business immediately.',
         'Proizvodni put s jasnom preporukom' => 'Product path with a clear recommendation',
-        'Vodi osobu prema proizvodnom cilju, popustu i kasnijem poslovnom mostu bez pritiska.' => 'Guides the visitor toward a product goal, discount, and later business bridge without pressure.',
+        'Vodi osobu prema proizvodnom cilju, naručivanju bez registracije i kasnijem poslovnom mostu bez pritiska.' => 'Guides the visitor toward a product goal, no-registration ordering, and later business bridge without pressure.',
         'Proizvodni put' => 'Product path',
-        'Proizvodi i popust' => 'Products and discount',
+        'Proizvodi bez registracije' => 'Products and no-registration ordering',
         'Ne mora svatko odmah u posao. Odaberi cilj i dobit ćeš jasniji proizvodni korak.' => 'Not everyone needs to start the business immediately. Choose your goal and you will get a clearer product step.',
         'Ako kasnije poželiš graditi posao, isti FCC sustav možeš koristiti za preporuke, kontakte i vlastiti tim.' => 'If you later want to build a business, the same FCC system can help with recommendations, contacts, and your own team.',
         'Kreni od proizvoda koji ti stvarno treba, a poslovni put može doći kasnije.' => 'Start with the product you actually need, and the business path can come later.',
-        'Ako te sada najviše zanimaju Forever proizvodi, odaberi cilj koji ti je najbliži. Dobit ćeš jednostavnu preporuku, mogućnost popusta i jasan sljedeći korak bez pritiska.' => 'If Forever products are your main interest right now, choose the goal that feels closest. You will get a simple recommendation, a discount option, and a clear next step without pressure.',
+        'Ako te sada najviše zanimaju Forever proizvodi, odaberi cilj koji ti je najbliži. Dobit ćeš jednostavnu preporuku, mogućnost naručivanja bez registracije i jasan sljedeći korak bez pritiska.' => 'If Forever products are your main interest right now, choose the goal that feels closest. You will get a simple recommendation, an ordering option without registration, and a clear next step without pressure.',
         'Što ti je sada glavni cilj?' => 'What is your main goal right now?',
         'Što želiš prvo poboljšati?' => 'What do you want to improve first?',
         'Odaberi najbliži cilj i funnel će te voditi prema preporuci koja ima najviše smisla za tvoju situaciju.' => 'Choose the closest goal and the funnel will guide you toward the recommendation that makes the most sense for your situation.',
@@ -7737,7 +7737,7 @@ function vip_funnel_localize_template_payload(array $payload, string $language):
         'Regulacija težine i bolja forma' => 'Weight management and better shape',
         'Njega kože i osobna rutina' => 'Skin care and personal routine',
         'Opća dnevna rutina za mene ili obitelj' => 'Daily routine for me or my family',
-        'Želim preporuku i popust' => 'I want a recommendation and discount',
+        'Želim preporuku i popust' => 'I want a recommendation and no-registration ordering',
         'Ovo je najbolji prvi proizvodni korak za tvoj cilj' => 'This is the best first product step for your goal',
         'Dinamična proizvodna preporuka s mostom prema poslovnom putu.' => 'Dynamic product recommendation with a bridge toward the business path.',
         'Preporuka' => 'Recommendation',
@@ -7753,7 +7753,7 @@ function vip_funnel_localize_template_payload(array $payload, string $language):
         'Otvori proizvodni shop / vodič' => 'Open product shop / guide',
         'Želim naučiti preporučivati proizvode online' => 'I want to learn online product recommendations',
         'Ako ti se sviđa proizvodni put, možeš ga pretvoriti u online preporuke' => 'If you like the product path, you can turn it into online recommendations',
-        'Most iz product/discount interesa u business funnel.' => 'Bridge from product/discount interest into the business funnel.',
+        'Most iz product/no-registration ordering interesa u business funnel.' => 'Bridge from product/no-registration ordering interest into the business funnel.',
         'Most prema poslu' => 'Bridge to business',
         'Mnogi krenu kroz proizvode, a kasnije shvate da isti sustav mogu koristiti za preporuke.' => 'Many people start with products and later realize they can use the same system for recommendations.',
         'Ako te zanima kako od proizvoda doći do online preporuka, kontakata i vlastitog tima, otvori poslovni put.' => 'If you want to see how products can lead to online recommendations, contacts, and your own team, open the business path.',
@@ -7777,15 +7777,15 @@ function vip_funnel_localize_template_payload(array $payload, string $language):
         'Jedan vođeni funnel za regrutaciju, demo sustava, prodaju proizvoda i follow-up.' => 'One guided funnel for recruiting, system demo, product sales, and follow-up.',
         'Provjeri svoj put' => 'Check your path',
         'Pogledaj FCC demo' => 'See the FCC demo',
-        'Za osobe koje dolaze s društvenih mreža i žele posao, demo FCC sustava ili proizvodni popust.' => 'For people coming from social media who want a business, FCC system demo, or product discount.',
+        'Za osobe koje dolaze s društvenih mreža i žele posao, demo FCC sustava ili naručivanje proizvoda bez registracije.' => 'For people coming from social media who want a business, FCC system demo, or no-registration ordering.',
         'Viralna pažnja se lako izgubi ako posjetitelj nema jasan sljedeći korak.' => 'Viral attention is easily lost if the visitor does not have a clear next step.',
         'Funnel segmentira posjetitelja, kvalificira spremnost i vodi ga prema Start paketu, razgovoru, demo iskustvu ili proizvodnoj preporuci.' => 'The funnel segments the visitor, qualifies readiness, and guides them toward the start package, conversation, demo experience, or product recommendation.',
         'Jasan put od interesa do odluke uz Stjepanovo mentorstvo i FCC sustav.' => 'A clear path from interest to decision with mentorship and the FCC system.',
         'Publika već postoji; sada pažnju treba pretvoriti u mjerljiv i ponovljiv sustav.' => 'The audience already exists; now attention needs to become a measurable and repeatable system.',
-        'Proizvodi i popust' => 'Products and discount',
+        'Proizvodi bez registracije' => 'Products and no-registration ordering',
         'FCC demo i nurture' => 'FCC demo and nurture',
         'Put za osobe koje žele pokrenuti online posao uz FCC i mentorstvo.' => 'Path for people who want to start an online business with FCC and mentorship.',
-        'Put za osobe koje sada žele proizvode, preporuku ili popust.' => 'Path for people who want products, a recommendation, or a discount now.',
+        'Put za osobe koje sada žele proizvode, preporuku ili naručivanje bez registracije.' => 'Path for people who want products, a recommendation, or no-registration ordering now.',
         'Put za osobe koje prvo trebaju vidjeti sustav ili mirniji uvod.' => 'Path for people who first need to see the system or a calmer introduction.',
         'Produktni put koristi survey selection i product_offer dynamic mapping gdje katalog ima povezane shop linkove.' => 'The product path uses survey selection and product_offer dynamic mapping where the catalog has connected shop links.',
         'Dinamična proizvodna preporuka' => 'Dynamic product recommendation',

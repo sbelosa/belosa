@@ -73,6 +73,116 @@ function db() {
     return \Altum\Database::$db;
 }
 
+function fc_forever_ordering_copy_text($value): string {
+    $value = (string) $value;
+
+    if($value === '') {
+        return '';
+    }
+
+    $replacements = [
+        'Popust do 15% globalno' => 'Naručivanje bez registracije globalno',
+        'Up to 15% discount globally' => 'Ordering without registration globally',
+        'Pogledaj proizvode s popustom' => 'Naruči proizvode bez registracije',
+        'Products with discount' => 'Products without registration',
+        'products with discount' => 'products without registration',
+        'proizvode s popustom' => 'proizvode bez registracije',
+        'Proizvodi s popustom' => 'Proizvodi bez registracije',
+        'Proizvodi i 15% popusta' => 'Proizvodi bez registracije',
+        'Proizvodi i 15%' => 'Proizvodi bez registracije',
+        'Proizvodni put / AI i 15% popust' => 'Proizvodni put / AI i službeni shop',
+        'Mini VIP - Proizvodi i 15% popusta' => 'Mini VIP - Proizvodi bez registracije',
+        'Shop i 15% popusta' => 'Shop bez registracije',
+        'Ostvari 15% popusta' => 'Naruči bez registracije',
+        'Prvo želim 15% popusta' => 'Prvo želim naručiti bez registracije',
+        'Želim 15% popusta' => 'Želim naručiti bez registracije',
+        'Otvori proizvode / 15% popusta' => 'Otvori proizvode bez registracije',
+        'Otvori službeni shop / popust' => 'Otvori službeni shop bez registracije',
+        'Proizvodi i popusti' => 'Proizvodi bez registracije',
+        'Proizvodi i popust' => 'Proizvodi bez registracije',
+        'Proizvodi / popust' => 'Proizvodi bez registracije',
+        'proizvodi i popusti' => 'proizvodi bez registracije',
+        'proizvodi i popust' => 'proizvodi bez registracije',
+        'proizvodi ili popust' => 'proizvodi ili naručivanje bez registracije',
+        'preporuku ili popust' => 'preporuku ili naručivanje bez registracije',
+        'rutinu ili popust' => 'rutinu ili naručivanje bez registracije',
+        'mogućnost popusta' => 'mogućnost naručivanja bez registracije',
+        'mogucnost popusta' => 'mogućnost naručivanja bez registracije',
+        'proizvodni popust' => 'naručivanje proizvoda bez registracije',
+        'Proizvodni popust' => 'Naručivanje proizvoda bez registracije',
+        '15% popusta' => 'naručivanje bez registracije',
+        '15% popust' => 'naručivanje bez registracije',
+        'link za popust' => 'link za naručivanje bez registracije',
+        'Link za popust' => 'Link za naručivanje bez registracije',
+        'LINK ZA POPUST' => 'NARUČI BEZ REGISTRACIJE',
+        'discount link' => 'ordering link without registration',
+        'Discount link' => 'Ordering link without registration',
+        'DISCOUNT LINK' => 'ORDER WITHOUT REGISTRATION',
+        'products and discounts' => 'products without registration',
+        'Products and discounts' => 'Products without registration',
+        'products and discount' => 'products without registration',
+        'Products and discount' => 'Products without registration',
+        'product discount' => 'ordering without registration',
+        'Product discount' => 'Ordering without registration',
+        'discount option' => 'ordering option without registration',
+        'discounts' => 'ordering without registration',
+        'Discounts' => 'Ordering without registration',
+    ];
+
+    return strtr($value, $replacements);
+}
+
+function fc_forever_ordering_copy_payload($value, string $key = '') {
+    $skip_keys = [
+        'id',
+        'key',
+        'path_key',
+        'event_key',
+        'signal_key',
+        'field_key',
+        'value',
+        'slug',
+        'url',
+        'external_url',
+        'location_url',
+        'media_url',
+        'image_url',
+        'background_image_url',
+        'product_translation_key',
+        'product_language_code',
+        'product_fallback_language_code',
+        'product_primary_url',
+        'product_secondary_url',
+        'product_direct_shop_url',
+        'product_blog_url',
+        'action',
+        'target_step_id',
+        'target',
+    ];
+
+    if(is_string($value)) {
+        return in_array($key, $skip_keys, true) ? $value : fc_forever_ordering_copy_text($value);
+    }
+
+    if(is_array($value)) {
+        foreach($value as $child_key => $child_value) {
+            $value[$child_key] = fc_forever_ordering_copy_payload($child_value, (string) $child_key);
+        }
+
+        return $value;
+    }
+
+    if(is_object($value)) {
+        foreach($value as $child_key => $child_value) {
+            $value->{$child_key} = fc_forever_ordering_copy_payload($child_value, (string) $child_key);
+        }
+
+        return $value;
+    }
+
+    return $value;
+}
+
 function fc_blog_posts_has_shop_context_column(): bool {
     static $has_shop_context_column = null;
 

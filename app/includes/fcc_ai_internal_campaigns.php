@@ -17,11 +17,11 @@ return [
             'en' => 'Current Forever promotion',
         ],
         'summary' => [
-            'hr' => 'Traje posebna -10% akcija na Aloe 4 Pack + Forever Active Pro-B pakete. Najjači potez je dodati poseban gumb ili link blok na glavnu FCC aplikaciju i u njega zalijepiti svoj osobni Link Builder URL za akciju.',
-            'en' => 'A special -10% promotion is live on Aloe 4 Pack + Forever Active Pro-B bundles. The strongest move is to add a dedicated button or link block on your main FCC app and paste your personal Link Builder URL for the offer.',
+            'hr' => 'Posebna službena Aloe 4 Pack + Forever Active Pro-B akcija može biti dostupna ovisno o tržištu. Najjači potez je dodati poseban gumb ili link blok na glavnu FCC aplikaciju i u njega zalijepiti svoj osobni Link Builder URL za akciju.',
+            'en' => 'A special official promotion may be available on Aloe 4 Pack + Forever Active Pro-B bundles, depending on the market. The strongest move is to add a dedicated button or link block on your main FCC app and paste your personal Link Builder URL for the offer.',
         ],
         'welcome_line' => [
-            'hr' => 'Trenutno traje Globalni Aloe+ izazov. Ovo je dobar trenutak da tu akciju pretvoriš u poseban gumb ili link na svojoj glavnoj aplikaciji.',
+            'hr' => 'Trenutno traje Globalni Aloe+ izazov. Ako je akcija službeno dostupna za tvoje tržište, najbolje ju je pretvoriti u poseban gumb ili link na glavnoj FCC aplikaciji.',
             'en' => 'The Global Aloe+ Challenge is live right now. This is a good moment to turn it into a dedicated button or link on your main app.',
         ],
         'primary_label' => [

@@ -1046,6 +1046,12 @@ class Page extends Controller {
         $shortcodes = new \Altum\Shortcodes();
         $page->content = $shortcodes->display_shortcodes($page->content, null);
 
+        if(function_exists('fc_forever_ordering_copy_text') && preg_match('/forever|fcc|popust|discount|15%/iu', trim((string) $page->title . ' ' . (string) $page->description . ' ' . (string) $page->content))) {
+            $page->title = fc_forever_ordering_copy_text($page->title);
+            $page->description = fc_forever_ordering_copy_text($page->description);
+            $page->content = fc_forever_ordering_copy_text($page->content);
+        }
+
         $collaborator_contact = null;
         $is_contact_page = mb_strtolower((string) $page->url) === 'contact';
         $has_personalized_contact_referral_context = $is_contact_page && $this->has_personalized_contact_referral_context();
