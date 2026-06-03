@@ -125,6 +125,126 @@ class AdminLeaderOperatingSystem extends Controller {
         }
     }
 
+    private function get_extra_object($extra): \stdClass {
+        if(is_string($extra)) {
+            $extra = json_decode($extra ?? '{}');
+        }
+
+        if(is_array($extra)) {
+            $extra = (object) $extra;
+        }
+
+        if(!$extra instanceof \stdClass) {
+            $extra = new \stdClass();
+        }
+
+        return $extra;
+    }
+
+    private function get_active_stripe_subscription_id_map(): ?array {
+        static $active_subscription_ids = null;
+        static $loaded = false;
+
+        if($loaded) {
+            return $active_subscription_ids;
+        }
+
+        $loaded = true;
+        $cache_key = 'leader_operating_system_active_stripe_subscription_ids_v1';
+
+        try {
+            $cache_item = cache()->getItem($cache_key);
+            $cached_subscription_ids = $cache_item->get();
+
+            if(is_array($cached_subscription_ids)) {
+                $active_subscription_ids = $cached_subscription_ids;
+                return $active_subscription_ids;
+            }
+        } catch(\Throwable $exception) {
+        }
+
+        if(!settings()->payment->is_enabled || empty(settings()->stripe->is_enabled) || empty(settings()->stripe->secret_key)) {
+            $active_subscription_ids = null;
+            return null;
+        }
+
+        try {
+            \Stripe\Stripe::setApiKey(settings()->stripe->secret_key);
+            \Stripe\Stripe::setApiVersion('2023-10-16');
+
+            $active_subscription_ids = [];
+            $params = [
+                'status' => 'active',
+                'limit' => 100,
+            ];
+
+            do {
+                $subscriptions = \Stripe\Subscription::all($params);
+                $subscription_data = $subscriptions->data ?? [];
+
+                foreach($subscription_data as $subscription) {
+                    if(!empty($subscription->id)) {
+                        $active_subscription_ids[(string) $subscription->id] = true;
+                    }
+                }
+
+                $has_more = !empty($subscriptions->has_more) && !empty($subscription_data);
+                if($has_more) {
+                    $last_subscription = end($subscription_data);
+                    $params['starting_after'] = $last_subscription->id ?? null;
+                }
+            } while($has_more && !empty($params['starting_after']));
+
+            try {
+                $cache_item = cache()->getItem($cache_key);
+                $cache_item
+                    ->set($active_subscription_ids)
+                    ->expiresAfter(300);
+                cache()->save($cache_item);
+            } catch(\Throwable $exception) {
+            }
+
+            return $active_subscription_ids;
+        } catch(\Throwable $exception) {
+            $active_subscription_ids = null;
+            return null;
+        }
+    }
+
+    private function is_active_paid_pro_row(array $row, ?array $active_stripe_subscription_ids = null): bool {
+        if(!$this->is_active_pro_row($row)) {
+            return false;
+        }
+
+        if(array_key_exists('status', $row) && (int) ($row['status'] ?? 0) !== 1) {
+            return false;
+        }
+
+        if((string) ($row['payment_processor'] ?? '') !== 'stripe') {
+            return false;
+        }
+
+        $subscription_id = trim((string) ($row['payment_subscription_id'] ?? ''));
+        if($subscription_id === '' || !str_starts_with($subscription_id, 'sub_')) {
+            return false;
+        }
+
+        $extra = $this->get_extra_object($row['extra'] ?? null);
+        if(!empty($extra->billing_subscription_cancelled_at ?? null)) {
+            return false;
+        }
+
+        if(is_array($active_stripe_subscription_ids)) {
+            return !empty($active_stripe_subscription_ids[$subscription_id]);
+        }
+
+        $billing_state = (string) ($extra->billing_state ?? 'healthy');
+        $stripe_status = (string) ($extra->billing_stripe_status ?? 'active');
+
+        return $stripe_status === 'active'
+            && !in_array($billing_state, ['past_due', 'past_due_critical', 'access_revoked'], true);
+    }
+
     private function get_ai_growth_access_settings($preferences): array {
         $preferences = $this->get_preferences_object($preferences);
         $access = $preferences->leader_ai_access ?? null;
@@ -4044,6 +4164,7 @@ class AdminLeaderOperatingSystem extends Controller {
         $qualified_total = (int) ($totals['qualified'] ?? 0);
         $active_collaborators = (int) ($totals['active_collaborators'] ?? 0);
         $active_pro_total = (int) ($totals['active_pro_total'] ?? 0);
+        $active_paid_pro_total = (int) ($totals['active_paid_pro_total'] ?? $active_pro_total);
         $shop_clicks_total = (int) ($totals['total_shop_clicks_period'] ?? 0);
         $funnel_leads_total = (int) ($totals['total_funnel_leads_period'] ?? 0);
         $capture_rate = $shop_clicks_total > 0 ? round(($funnel_leads_total / max(1, $shop_clicks_total)) * 100, 1) : 0;
@@ -4069,6 +4190,7 @@ class AdminLeaderOperatingSystem extends Controller {
             $qualified_total,
             $active_collaborators,
             $active_pro_total,
+            $active_paid_pro_total,
             $rising_total,
             $build_metric_link
         ): array {
@@ -4088,7 +4210,7 @@ class AdminLeaderOperatingSystem extends Controller {
                 'consistency', 'stability' => [
                     $build_metric_link('qualified', $is_hr ? 'Kvalificirani' : 'Qualified', nr($qualified_total), $is_hr ? 'Jezgra tima koja već ima dokazani signal.' : 'The core team that already has a proven signal.'),
                     $build_metric_link('active_collaborators', $is_hr ? 'Aktivni' : 'Active', nr($active_collaborators), $is_hr ? 'Suradnici koji su stvarno imali aktivnost u promatranom periodu.' : 'Collaborators who actually had activity in the observed period.'),
-                    $build_metric_link('active_pro_total', $is_hr ? 'Aktivni PRO' : 'Active PRO', nr($active_pro_total), $is_hr ? 'Trenutno aktivni PRO računi koji nose monetizacijsku jezgru tima.' : 'Currently active PRO accounts representing the monetized team base.'),
+                    $build_metric_link('active_paid_pro_total', $is_hr ? 'Aktivni PRO' : 'Active PRO', nr($active_paid_pro_total), $is_hr ? 'Trenutno aktivne Stripe PRO pretplate koje nose monetizacijsku jezgru tima.' : 'Currently active Stripe PRO subscriptions representing the monetized team base.'),
                 ],
                 default => [],
             };
@@ -4181,8 +4303,8 @@ class AdminLeaderOperatingSystem extends Controller {
                     'label' => $is_hr ? 'Dosljednost i jezgra tima' : 'Consistency and core team',
                     'value' => nr($consistency_avg) . '/100',
                     'note' => $is_hr
-                        ? nr($qualified_total) . ' kvalificiranih · ' . nr($active_collaborators) . ' aktivnih · ' . nr($active_pro_total) . ' PRO'
-                        : nr($qualified_total) . ' qualified · ' . nr($active_collaborators) . ' active · ' . nr($active_pro_total) . ' PRO',
+                        ? nr($qualified_total) . ' kvalificiranih · ' . nr($active_collaborators) . ' aktivnih · ' . nr($active_paid_pro_total) . ' PRO naplata'
+                        : nr($qualified_total) . ' qualified · ' . nr($active_collaborators) . ' active · ' . nr($active_paid_pro_total) . ' PRO payments',
                     'what_it_shows' => $is_hr
                         ? 'Dosljednost pokazuje koliko tim ima redovit ritam rada kroz check-in, plan, provedbu i praćenje rezultata. Jezgra tima pokazuje koliko ljudi stvarno nosi aktivnost i PRO bazu.'
                         : 'How consistent the team is and how large its truly active and monetized core is.',
@@ -4192,7 +4314,7 @@ class AdminLeaderOperatingSystem extends Controller {
                     'metric_links' => [
                         $build_metric_link('qualified', $is_hr ? 'Kvalificirani' : 'Qualified', nr($qualified_total), $is_hr ? 'Suradnici s dokazanim signalom aktivnosti u zadnjih 90 dana. To je šira jezgra tima koja već pokazuje stvarni interes i smjer.' : 'The core with a proven activity signal in the last 90 days.'),
                         $build_metric_link('active_collaborators', $is_hr ? 'Aktivni' : 'Active', nr($active_collaborators), $is_hr ? 'Suradnici koji su stvarno imali aktivnost u odabranom periodu. To pokazuje koliko jezgra tima trenutno radi, a ne samo postoji.' : 'Collaborators who actually had activity in the selected period.'),
-                        $build_metric_link('active_pro_total', $is_hr ? 'PRO' : 'PRO', nr($active_pro_total), $is_hr ? 'Trenutno aktivni PRO računi. To pokazuje koliko jezgra tima ima stvarnu i monetiziranu bazu.' : 'Currently active PRO accounts representing the monetized core.'),
+                        $build_metric_link('active_paid_pro_total', $is_hr ? 'PRO naplate' : 'PRO payments', nr($active_paid_pro_total), $is_hr ? 'Trenutno aktivne Stripe PRO pretplate. To pokazuje koliko jezgra tima ima stvarnu naplatnu bazu.' : 'Currently active Stripe PRO subscriptions representing the paid core.'),
                     ],
                     'tone' => $consistency_avg >= 55 ? 'success' : ($consistency_avg < 45 ? 'warning' : 'info'),
                 ],
@@ -7251,6 +7373,7 @@ class AdminLeaderOperatingSystem extends Controller {
             'total_registrations_period' => $this->build_drilldown_payload('Registracije u periodu', $rows, static fn($row) => (int) ($row['forever_registration_clicks_period'] ?? 0), static fn($row) => (int) ($row['forever_registration_clicks_period'] ?? 0) > 0, 60, static fn($row, $metric) => 'Registracije ' . nr((int) $metric), 'sum_metric'),
             'total_funnel_leads_period' => $this->build_drilldown_payload('Leadovi i AI chat kontakti', $rows, static fn($row) => (int) ($row['app_contact_captures_period'] ?? 0), static fn($row) => (int) ($row['app_contact_captures_period'] ?? 0) > 0, 60, static fn($row, $metric) => 'Kontakti ' . nr((int) $metric), 'sum_metric'),
             'total_shop_clicks_period' => $this->build_drilldown_payload('Webshop klikovi u periodu', $rows, static fn($row) => (int) ($row['forever_shop_clicks_period'] ?? 0), static fn($row) => (int) ($row['forever_shop_clicks_period'] ?? 0) > 0, 60, static fn($row, $metric) => 'Shop klikovi ' . nr((int) $metric), 'sum_metric'),
+            'active_paid_pro_total' => $this->build_drilldown_payload('Aktivne PRO naplate', $rows, static fn($row) => (int) ($row['leader_os_score'] ?? 0), static fn($row) => !empty($row['is_active_paid_pro']), 60, static fn($row, $metric) => 'Stripe active · LOS ' . nr((int) $metric)),
             'active_pro_total' => $this->build_drilldown_payload('Aktivni PRO', $rows, static fn($row) => (int) ($row['leader_os_score'] ?? 0), static fn($row) => !empty($row['is_active_pro']), 60, static fn($row, $metric) => 'LOS ' . nr((int) $metric)),
             'ai_active_collaborators' => $this->build_drilldown_payload('AI aktivni suradnici', $rows, static fn($row) => (int) ($row['ai_access_growth_signal_30d'] ?? 0), static fn($row) => in_array((string) ($row['ai_usage_stage_key'] ?? 'inactive'), ['started', 'questionnaire', 'active'], true), 60, static fn($row, $metric) => 'AI signal ' . nr((int) $metric)),
             'ai_profiles_total' => $this->build_drilldown_payload('AI profili', $rows, static fn($row) => (int) ($row['leader_os_score'] ?? 0), function($row) {
@@ -7388,6 +7511,7 @@ class AdminLeaderOperatingSystem extends Controller {
             ? round(array_sum(array_map(static fn($row) => (float) ($row['leader_os_score'] ?? 0), $rows)) / count($rows), 1)
             : 0.0;
         $active_pro_total = count(array_filter($rows, static fn($row) => !empty($row['is_active_pro'])));
+        $active_paid_pro_total = (int) ($totals['active_paid_pro_total'] ?? count(array_filter($rows, static fn($row) => !empty($row['is_active_paid_pro']))));
         $previous_shop_clicks_total = array_sum(array_map(static fn($row) => (int) ($row['previous_forever_shop_clicks_period'] ?? 0), $rows));
         $previous_funnel_total = array_sum(array_map(static fn($row) => (int) ($row['previous_app_contact_captures_period'] ?? 0), $rows));
 
@@ -7461,16 +7585,16 @@ class AdminLeaderOperatingSystem extends Controller {
                 'compare' => $build_period_compare((int) ($totals['total_shop_clicks_period'] ?? 0), $previous_shop_clicks_total),
             ],
             [
-                'key' => 'active_pro_total',
+                'key' => 'active_paid_pro_total',
                 'label' => 'Aktivni PRO',
-                'value' => $active_pro_total,
-                'value_display' => nr($active_pro_total),
+                'value' => $active_paid_pro_total,
+                'value_display' => nr($active_paid_pro_total),
                 'chip' => 'Sada',
-                'tooltip' => 'Broj suradnika koji trenutno imaju aktivan PRO plan. Ovo je glavni monetizacijski snapshot tima.',
-                'hint' => 'Trenutno stanje aktivne PRO baze.',
+                'tooltip' => 'Broj suradnika koji trenutno imaju aktivnu Stripe PRO pretplatu u statusu active. Trial, past_due, PayPal, offline i ručni PRO pristupi nisu uključeni.',
+                'hint' => 'Trenutno stanje aktivnih PRO naplata.',
                 'compare' => [
                     'mode' => 'snapshot',
-                    'text' => 'Trenutno aktivni PRO računi',
+                    'text' => 'Trenutno aktivne Stripe PRO pretplate',
                 ],
             ],
         ];
@@ -8434,14 +8558,19 @@ class AdminLeaderOperatingSystem extends Controller {
         $shop_condition = \Altum\Link::get_forever_shop_click_condition_sql('`track_links`', '`biolinks_blocks`', $biolink_sets['forever_shop_block_types_sql']);
         $registration_condition = \Altum\Link::get_forever_registration_click_condition_sql('`track_links`', '`biolinks_blocks`', $biolink_sets['forever_registration_block_types_sql']);
         $outbound_condition = \Altum\Link::get_forever_outbound_click_condition_sql('`track_links`', '`biolinks_blocks`', $biolink_sets['forever_shop_block_types_sql'], $biolink_sets['forever_registration_block_types_sql']);
+        $active_stripe_subscription_ids = $this->get_active_stripe_subscription_id_map();
 
         $rows = [];
         $result = database()->query("SELECT
             `users`.`user_id`,
             `users`.`name`,
             `users`.`email`,
+            `users`.`status`,
             `users`.`plan_id`,
             `users`.`plan_expiration_date`,
+            `users`.`payment_processor`,
+            `users`.`payment_subscription_id`,
+            `users`.`extra`,
             `users`.`preferences`,
             SUM(CASE WHEN `track_links`.`datetime` >= '{$period_start_datetime}' THEN 1 ELSE 0 END) AS `clicks_total_period`,
             COUNT(DISTINCT CASE WHEN `track_links`.`datetime` >= '{$period_start_datetime}' AND {$outbound_condition} THEN DATE(`track_links`.`datetime`) ELSE NULL END) AS `active_days_total`,
@@ -8479,8 +8608,12 @@ class AdminLeaderOperatingSystem extends Controller {
                 'user_id' => (int) ($row->user_id ?? 0),
                 'name' => (string) ($row->name ?? l('global.unknown')),
                 'email' => (string) ($row->email ?? ''),
+                'status' => (int) ($row->status ?? 0),
                 'plan_id' => (string) ($row->plan_id ?? ''),
                 'plan_expiration_date' => (string) ($row->plan_expiration_date ?? ''),
+                'payment_processor' => (string) ($row->payment_processor ?? ''),
+                'payment_subscription_id' => (string) ($row->payment_subscription_id ?? ''),
+                'extra' => $row->extra ?? null,
                 'preferences' => $row->preferences ?? null,
                 'forever_id' => $forever_id,
                 'clicks_total_period' => (int) ($row->clicks_total_period ?? 0),
@@ -8495,6 +8628,7 @@ class AdminLeaderOperatingSystem extends Controller {
                 'admin_user_url' => url('admin/user-view/' . (int) ($row->user_id ?? 0)),
             ];
             $candidate['is_active_pro'] = $this->is_active_pro_row($candidate);
+            $candidate['is_active_paid_pro'] = $this->is_active_paid_pro_row($candidate, $active_stripe_subscription_ids);
 
             $rows[] = $candidate;
         }
@@ -8689,6 +8823,7 @@ class AdminLeaderOperatingSystem extends Controller {
             'total_shop_clicks_period' => 0,
             'quality_ready' => 0,
             'active_pro_total' => 0,
+            'active_paid_pro_total' => 0,
         ];
 
         foreach($rows as $row) {
@@ -8716,6 +8851,9 @@ class AdminLeaderOperatingSystem extends Controller {
             }
             if(!empty($row['is_active_pro'])) {
                 $totals['active_pro_total']++;
+            }
+            if(!empty($row['is_active_paid_pro'])) {
+                $totals['active_paid_pro_total']++;
             }
         }
 
