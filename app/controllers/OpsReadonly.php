@@ -910,7 +910,7 @@ class OpsReadonly extends Controller {
                 'counts' => $billing_dashboard['counts'] ?? [],
                 'latest_event' => $this->get_recent_global_billing_events(1)[0] ?? null,
             ],
-            'allowed_scopes' => ['health', 'overview', 'ai_feedback', 'plans', 'billing', 'collaborators', 'fcc_signal_notifications', 'collaborator'],
+            'allowed_scopes' => ['health', 'overview', 'ai_feedback', 'ai_recent_communications', 'plans', 'billing', 'pro_billing_audit', 'collaborators', 'fcc_signal_notifications', 'collaborator'],
         ];
     }
 
@@ -1368,6 +1368,180 @@ class OpsReadonly extends Controller {
         ];
     }
 
+    private function normalize_audit_extra($extra): \stdClass {
+        $extra = $this->get_object($extra);
+
+        return (object) [
+            'stripe_customer_id' => (string) ($extra->stripe_customer_id ?? ''),
+            'billing_trial_started_at' => (string) ($extra->billing_trial_started_at ?? ''),
+            'billing_subscription_started_at' => (string) ($extra->billing_subscription_started_at ?? ''),
+            'billing_subscription_cancelled_at' => (string) ($extra->billing_subscription_cancelled_at ?? ''),
+            'billing_subscription_cancelled_during_trial' => (int) ($extra->billing_subscription_cancelled_during_trial ?? 0),
+        ];
+    }
+
+    private function build_pro_billing_audit_row(object $row, string $now): array {
+        $extra = $this->normalize_audit_extra($row->extra ?? null);
+        $payment_subscription_id = trim((string) ($row->payment_subscription_id ?? ''));
+        $plan_expiration_date = trim((string) ($row->plan_expiration_date ?? ''));
+        $is_plan_active = $this->is_plan_active($plan_expiration_date);
+        $is_active_pro = (int) ($row->status ?? 0) === 1
+            && (string) ($row->plan_id ?? '') === '5'
+            && $is_plan_active;
+        $has_subscription_id = $payment_subscription_id !== '';
+
+        return [
+            'user_id' => (int) ($row->user_id ?? 0),
+            'name' => (string) ($row->name ?? ''),
+            'email' => (string) ($row->email ?? ''),
+            'status' => (int) ($row->status ?? 0),
+            'status_label' => $this->get_status_label((int) ($row->status ?? 0)),
+            'plan_id' => (string) ($row->plan_id ?? ''),
+            'plan_expiration_date' => $plan_expiration_date !== '' ? $plan_expiration_date : null,
+            'plan_expiration_state' => $is_plan_active ? 'active' : 'expired',
+            'is_active_pro' => $is_active_pro,
+            'plan_trial_done' => (int) ($row->plan_trial_done ?? 0),
+            'pro_access_type' => (int) ($row->plan_trial_done ?? 0) === 1 ? 'trial_or_manual' : 'paid_marked',
+            'payment_processor' => (string) ($row->payment_processor ?? ''),
+            'payment_subscription_id' => $payment_subscription_id,
+            'has_subscription_id' => $has_subscription_id,
+            'stripe_customer_id' => $extra->stripe_customer_id,
+            'billing_trial_started_at' => $extra->billing_trial_started_at !== '' ? $extra->billing_trial_started_at : null,
+            'billing_subscription_started_at' => $extra->billing_subscription_started_at !== '' ? $extra->billing_subscription_started_at : null,
+            'billing_subscription_cancelled_at' => $extra->billing_subscription_cancelled_at !== '' ? $extra->billing_subscription_cancelled_at : null,
+            'billing_subscription_cancelled_during_trial' => $extra->billing_subscription_cancelled_during_trial === 1,
+            'last_activity' => $row->last_activity ?? null,
+            'datetime' => $row->datetime ?? null,
+            'admin_user_url' => url('admin/user-view/' . (int) ($row->user_id ?? 0)),
+            'los_detail_url' => url('admin/leader-operating-system-leader?user_id=' . (int) ($row->user_id ?? 0) . '&period=30d'),
+            'audit_flags' => [
+                'active_pro_without_subscription_id' => $is_active_pro && !$has_subscription_id,
+                'active_pro_non_stripe_processor' => $is_active_pro && $has_subscription_id && (string) ($row->payment_processor ?? '') !== 'stripe',
+                'active_pro_cancelled_marker' => $is_active_pro && $extra->billing_subscription_cancelled_at !== '',
+                'plan_expired_with_subscription_id' => !$is_plan_active && $has_subscription_id,
+                'generated_after_plan_expiration_check' => $now,
+            ],
+        ];
+    }
+
+    private function get_pro_billing_audit_payload(): array {
+        $now = get_date();
+        $limit = $this->get_param_limit('limit', 200, 1, 500);
+        $include_all_plan_users = $this->get_param_string('include_all_plan_users') === '1';
+        $include_expired_with_subscription = $this->get_param_string('include_expired_with_subscription') === '1';
+
+        if($include_expired_with_subscription) {
+            $where = "(`type` = 0 AND (CAST(`plan_id` AS CHAR) = '5' OR `payment_subscription_id` <> ''))";
+        } elseif($include_all_plan_users) {
+            $where = "`type` = 0 AND CAST(`plan_id` AS CHAR) = '5'";
+        } else {
+            $where = "`type` = 0 AND `status` = 1 AND CAST(`plan_id` AS CHAR) = '5' AND (`plan_expiration_date` IS NULL OR `plan_expiration_date` = '' OR `plan_expiration_date` >= '{$now}')";
+        }
+
+        $rows = [];
+        $result = database()->query("SELECT
+                `user_id`,
+                `name`,
+                `email`,
+                `status`,
+                `plan_id`,
+                `plan_expiration_date`,
+                `plan_trial_done`,
+                `payment_processor`,
+                `payment_subscription_id`,
+                `extra`,
+                `last_activity`,
+                `datetime`
+            FROM `users`
+            WHERE {$where}
+            ORDER BY
+                CASE WHEN `status` = 1 AND CAST(`plan_id` AS CHAR) = '5' AND (`plan_expiration_date` IS NULL OR `plan_expiration_date` = '' OR `plan_expiration_date` >= '{$now}') THEN 0 ELSE 1 END ASC,
+                CASE WHEN `payment_subscription_id` = '' OR `payment_subscription_id` IS NULL THEN 0 ELSE 1 END ASC,
+                `name` ASC
+            LIMIT {$limit}");
+
+        while($row = $result->fetch_object()) {
+            $rows[] = $this->build_pro_billing_audit_row($row, $now);
+        }
+
+        $summary = [
+            'rows_returned' => count($rows),
+            'active_pro_total' => 0,
+            'active_pro_with_subscription_id' => 0,
+            'active_pro_without_subscription_id' => 0,
+            'active_pro_with_stripe_subscription_id' => 0,
+            'active_pro_with_non_stripe_subscription_id' => 0,
+            'active_pro_trial_or_manual' => 0,
+            'active_pro_paid_marked' => 0,
+            'active_pro_cancelled_marker' => 0,
+            'expired_or_inactive_with_subscription_id' => 0,
+            'by_processor' => [],
+        ];
+        $lists = [
+            'active_pro_without_subscription_id' => [],
+            'active_pro_with_subscription_id' => [],
+            'active_pro_cancelled_marker' => [],
+            'expired_or_inactive_with_subscription_id' => [],
+        ];
+
+        foreach($rows as $row) {
+            $processor_key = trim((string) ($row['payment_processor'] ?? '')) ?: 'none';
+
+            if(!isset($summary['by_processor'][$processor_key])) {
+                $summary['by_processor'][$processor_key] = 0;
+            }
+
+            if(!empty($row['is_active_pro'])) {
+                $summary['active_pro_total']++;
+                $summary['by_processor'][$processor_key]++;
+
+                if(!empty($row['has_subscription_id'])) {
+                    $summary['active_pro_with_subscription_id']++;
+                    $lists['active_pro_with_subscription_id'][] = $row;
+
+                    if($processor_key === 'stripe') {
+                        $summary['active_pro_with_stripe_subscription_id']++;
+                    } else {
+                        $summary['active_pro_with_non_stripe_subscription_id']++;
+                    }
+                } else {
+                    $summary['active_pro_without_subscription_id']++;
+                    $lists['active_pro_without_subscription_id'][] = $row;
+                }
+
+                if(($row['pro_access_type'] ?? '') === 'trial_or_manual') {
+                    $summary['active_pro_trial_or_manual']++;
+                } else {
+                    $summary['active_pro_paid_marked']++;
+                }
+
+                if(!empty($row['audit_flags']['active_pro_cancelled_marker'])) {
+                    $summary['active_pro_cancelled_marker']++;
+                    $lists['active_pro_cancelled_marker'][] = $row;
+                }
+            } elseif(!empty($row['has_subscription_id'])) {
+                $summary['expired_or_inactive_with_subscription_id']++;
+                $lists['expired_or_inactive_with_subscription_id'][] = $row;
+            }
+        }
+
+        ksort($summary['by_processor']);
+
+        return [
+            'generated_for' => [
+                'plan_id' => '5',
+                'plan_name' => 'Forever Pro',
+                'now' => $now,
+                'include_all_plan_users' => $include_all_plan_users,
+                'include_expired_with_subscription' => $include_expired_with_subscription,
+                'limit' => $limit,
+            ],
+            'summary' => $summary,
+            'lists' => $lists,
+            'rows' => $rows,
+        ];
+    }
+
     private function get_collaborators_payload(): array {
         $query = $this->get_param_string('query');
         $limit = $this->get_param_limit('limit', 10, 1, 25);
@@ -1697,6 +1871,10 @@ class OpsReadonly extends Controller {
                 $this->respond_success($scope, $this->get_billing_payload());
                 break;
 
+            case 'pro_billing_audit':
+                $this->respond_success($scope, $this->get_pro_billing_audit_payload());
+                break;
+
             case 'collaborators':
                 $this->respond_success($scope, $this->get_collaborators_payload());
                 break;
@@ -1724,7 +1902,7 @@ class OpsReadonly extends Controller {
 
             default:
                 $this->respond_error('invalid_scope', 'Readonly ops scope is invalid.', 422, [
-                    'allowed_scopes' => ['health', 'overview', 'ai_feedback', 'ai_recent_communications', 'plans', 'billing', 'collaborators', 'fcc_signal_notifications', 'collaborator'],
+                    'allowed_scopes' => ['health', 'overview', 'ai_feedback', 'ai_recent_communications', 'plans', 'billing', 'pro_billing_audit', 'collaborators', 'fcc_signal_notifications', 'collaborator'],
                 ]);
         }
     }
