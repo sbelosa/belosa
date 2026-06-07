@@ -40,6 +40,7 @@ $fcc_picker_copy = $fcc_is_hr ? [
         'lead_funnel' => 'za prijave i vođeni follow-up',
         'link_forever_product' => 'za preporuku proizvoda',
         'link_forever_shop' => 'za službenu FCC registraciju ili prijavu',
+        'link_forever_webshop_reg' => 'za web shop registraciju s referralom',
         'link_discount' => 'za webshop preporuku',
         'contact_collector' => 'za upite i kontakt obrasce',
         'email_collector' => 'za prikupljanje email leadova',
@@ -138,6 +139,7 @@ $fcc_picker_copy = $fcc_is_hr ? [
         'lead_funnel' => 'for registrations and guided follow-up',
         'link_forever_product' => 'for recommending products',
         'link_forever_shop' => 'for official FCC registration or sign-up',
+        'link_forever_webshop_reg' => 'for web shop registration with referral',
         'link_discount' => 'for webshop referrals',
         'contact_collector' => 'for inquiries and contact forms',
         'email_collector' => 'for collecting email leads',
@@ -214,7 +216,7 @@ $fcc_group_blocks = [
     'contacts' => ['socials', 'email_collector', 'phone_collector', 'contact_collector', 'custom_html_whatsapp', 'link_save_contact', 'share', 'vcard', 'telegram', 'discord'],
     'sales' => ['link', 'featured_link', 'big_link', 'external_item', 'cta', 'coupon', 'paypal', 'donation', 'product', 'lead_funnel'],
     'business' => ['service', 'appointment_calendar', 'calendly', 'typeform', 'google_form', 'map', 'business_hours', 'review', 'faq', 'timeline', 'weather', 'counter', 'rss_feed'],
-    'forever' => ['link_app_switcher', 'link_forever_product', 'link_forever_shop', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo', 'link_discount', 'link_homescreen_android', 'link_homescreen_ios', 'custom_html_chatbot', 'custom_html_chatbot_pets'],
+    'forever' => ['link_app_switcher', 'link_forever_product', 'link_forever_shop', 'link_forever_webshop_reg', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo', 'link_discount', 'link_homescreen_android', 'link_homescreen_ios', 'custom_html_chatbot', 'custom_html_chatbot_pets'],
     'content' => ['modal_text', 'markdown', 'custom_html', 'image_grid', 'image_slider', 'image_comparison', 'divider', 'list', 'alert', 'audio', 'file', 'pdf_document', 'powerpoint_presentation', 'excel_spreadsheet', 'iframe', 'code', 'youtube_feed', 'facebook', 'instagram_media', 'tiktok_video', 'tiktok_profile', 'youtube', 'vimeo', 'twitch', 'soundcloud', 'spotify', 'applemusic', 'mixcloud', 'tidal', 'reddit', 'rumble', 'tumblr_post', 'twitter_tweet', 'twitter_video', 'twitter_profile', 'pinterest_profile', 'vk_video', 'bluesky_post', 'snapchat', 'canva', 'threads', 'text'],
 ];
 
@@ -240,7 +242,7 @@ $fcc_group_fallback_by_category = [
 $fcc_goal_blocks = [
     'intro' => ['heading', 'header', 'avatar', 'paragraph', 'image', 'video', 'countdown', 'modal_text', 'image_slider', 'link_app_switcher', 'link', 'loading'],
     'lead_capture' => ['email_collector', 'phone_collector', 'contact_collector', 'custom_html_whatsapp', 'link_save_contact', 'socials', 'share', 'vcard', 'telegram', 'discord', 'lead_funnel', 'cta', 'featured_link', 'big_link', 'link', 'service', 'appointment_calendar', 'calendly', 'typeform', 'google_form'],
-    'product_recommendation' => ['lead_funnel', 'link_forever_product', 'link_forever_shop', 'link_discount', 'custom_html_chatbot', 'custom_html_chatbot_pets', 'product', 'cta', 'coupon', 'featured_link', 'big_link', 'external_item', 'link', 'paypal', 'service', 'review', 'faq', 'image', 'image_slider', 'video', 'youtube_feed'],
+    'product_recommendation' => ['lead_funnel', 'link_forever_product', 'link_forever_shop', 'link_forever_webshop_reg', 'link_discount', 'custom_html_chatbot', 'custom_html_chatbot_pets', 'product', 'cta', 'coupon', 'featured_link', 'big_link', 'external_item', 'link', 'paypal', 'service', 'review', 'faq', 'image', 'image_slider', 'video', 'youtube_feed'],
     'booking' => ['appointment_calendar', 'calendly', 'typeform', 'google_form', 'service', 'map', 'business_hours', 'contact_collector', 'phone_collector', 'custom_html_whatsapp', 'paypal', 'donation', 'link', 'cta', 'link_forever_shop', 'lead_funnel'],
     'trust' => ['review', 'faq', 'timeline', 'business_hours', 'map', 'alert', 'list', 'vcard', 'rss_feed', 'counter', 'weather', 'socials', 'share', 'modal_text', 'paragraph', 'markdown', 'video', 'image', 'image_slider', 'product', 'service', 'custom_html_chatbot', 'custom_html_chatbot_pets', 'youtube', 'vimeo', 'facebook', 'instagram_media', 'youtube_feed'],
     'navigation' => ['link_app_switcher', 'link_back', 'link_homescreen_android', 'link_homescreen_ios', 'link_save_contact', 'anchor', 'share', 'link', 'socials'],
@@ -346,7 +348,19 @@ $fcc_get_visual_accent = static function(?string $block_color, string $group_col
 };
 
 $fcc_grouped_blocks = array_fill_keys(array_keys($fcc_group_meta), []);
-$fcc_enabled_biolink_blocks = (object) ($this->user->plan_settings->enabled_biolink_blocks ?? []);
+$fcc_enabled_biolink_blocks = $this->user->plan_settings->enabled_biolink_blocks ?? (object) [];
+
+if(is_string($fcc_enabled_biolink_blocks)) {
+    $fcc_enabled_biolink_blocks = json_decode($fcc_enabled_biolink_blocks) ?: (object) [];
+}
+
+if(is_array($fcc_enabled_biolink_blocks)) {
+    $fcc_enabled_biolink_blocks = (object) $fcc_enabled_biolink_blocks;
+}
+
+if(!$fcc_enabled_biolink_blocks instanceof \stdClass) {
+    $fcc_enabled_biolink_blocks = (object) [];
+}
 $vip_funnel_access_state = function_exists('vip_funnel_resolve_access_state')
     ? vip_funnel_resolve_access_state($this->user)
     : (object) ['can_access' => false, 'locked_reason' => 'testing'];
@@ -902,6 +916,18 @@ $fcc_block_picker_coach_notice = $fcc_is_hr
 
                     <?php
                     $is_block_enabled_for_plan = (bool) ($fcc_enabled_biolink_blocks->{$key} ?? false);
+
+                    if(
+                        !$is_block_enabled_for_plan
+                        && $key === 'link_forever_webshop_reg'
+                        && (
+                            !empty($fcc_enabled_biolink_blocks->link_forever_shop)
+                            || !empty($fcc_enabled_biolink_blocks->link_discount)
+                        )
+                    ) {
+                        $is_block_enabled_for_plan = true;
+                    }
+
                     $block_card_attributes = $is_block_enabled_for_plan ? null : get_plan_feature_disabled_info();
                     $block_button_attributes = 'data-dismiss="modal" data-toggle="modal" data-target="#create_biolink_' . $key . '"';
                     $block_subtitle = l('biolink_' . $key . '.subheader');

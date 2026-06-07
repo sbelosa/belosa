@@ -269,6 +269,22 @@
                                 }
                             }
 
+                            if($row->type == 'link_forever_webshop_reg') {
+                                $registration_country_links = \Altum\Link::get_forever_webshop_registration_country_links();
+                                $registration_country_code = \Altum\Link::resolve_preferred_forever_market_country_code(
+                                    $country_code,
+                                    array_keys($registration_country_links),
+                                    $accept_language_header,
+                                    $country_code_is_trusted
+                                ) ?: 'hr';
+
+                                $registration_url = \Altum\Link::build_forever_webshop_registration_url($forever_id, $registration_country_code);
+
+                                if($registration_url) {
+                                    $row->location_url = $registration_url;
+                                }
+                            }
+
                             if($row->type === 'link_forever_product') {
                                 $product_translation_key = trim((string) ($row->settings->product_translation_key ?? ''));
 
@@ -324,7 +340,17 @@
                             }
 
                             /* Custom code: FC-2026-03-06: strict plan-based final block visibility */
-                            $is_biolink_block_enabled_for_plan = (bool) ($data->user->plan_settings->enabled_biolink_blocks->{$row->type} ?? false);
+                            $enabled_biolink_blocks_for_plan = $data->user->plan_settings->enabled_biolink_blocks ?? (object) [];
+
+                            if(is_string($enabled_biolink_blocks_for_plan)) {
+                                $enabled_biolink_blocks_for_plan = json_decode($enabled_biolink_blocks_for_plan) ?: (object) [];
+                            }
+
+                            if(is_array($enabled_biolink_blocks_for_plan)) {
+                                $enabled_biolink_blocks_for_plan = (object) $enabled_biolink_blocks_for_plan;
+                            }
+
+                            $is_biolink_block_enabled_for_plan = (bool) ($enabled_biolink_blocks_for_plan->{$row->type} ?? false);
 
                             if(
                                 !$is_biolink_block_enabled_for_plan &&
@@ -333,6 +359,18 @@
                                 vip_funnel_user_can_publish_public_hub($data->user)
                             ) {
                                 $is_biolink_block_enabled_for_plan = true;
+                            }
+
+                            if(!$is_biolink_block_enabled_for_plan) {
+                                if(
+                                    $row->type === 'link_forever_webshop_reg'
+                                    && (
+                                        !empty($enabled_biolink_blocks_for_plan->link_forever_shop)
+                                        || !empty($enabled_biolink_blocks_for_plan->link_discount)
+                                    )
+                                ) {
+                                    $is_biolink_block_enabled_for_plan = true;
+                                }
                             }
 
                             if(!$is_biolink_block_enabled_for_plan) {
@@ -346,6 +384,7 @@
                                 $row->settings->display_countries
                                 && (!$country_code || !in_array($country_code, $row->settings->display_countries))
                                 && $row->type != 'link_discount'
+                                && $row->type != 'link_forever_webshop_reg'
                                 && $row->type != 'link_forever_living_bih'
                                 && !in_array($row->type, ['link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo'])
                             ) {

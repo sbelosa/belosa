@@ -22,6 +22,10 @@ return [
         'icon' => 'fa fa-cart',
         'color' => '#FFC600',
     ],
+    'link_forever_webshop_reg' => [
+        'icon' => 'fa fa-cart-plus',
+        'color' => '#FFC600',
+    ],
     'link_discount' => [
         'icon' => 'fa fa-percent',
         'color' => '#30a85a',

@@ -196,6 +196,7 @@
                         'enabled_biolink_block__lead_funnel' => l('plan_features.forever.label.lead_funnel'),
                         'enabled_biolink_block__link_app_switcher' => l('plan_features.forever.label.link_app_switcher'),
                         'enabled_biolink_block__link_forever_shop' => l('plan_features.forever.label.link_forever_shop'),
+                        'enabled_biolink_block__link_forever_webshop_reg' => l('plan_features.forever.label.link_forever_webshop_reg'),
                         'enabled_biolink_block__link_forever_product' => l('plan_features.forever.label.link_forever_product'),
                         'enabled_biolink_block__link_discount' => l('plan_features.forever.label.link_discount'),
                         'enabled_biolink_block__link_save_contact' => l('plan_features.forever.label.link_save_contact'),

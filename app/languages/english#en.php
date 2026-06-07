@@ -2674,6 +2674,8 @@ return [
 	'plan_features.forever.help.link_app_switcher' => 'Let users jump between multiple FCC apps from a single card.',
 	'plan_features.forever.label.link_forever_shop' => 'New partner registration',
 	'plan_features.forever.help.link_forever_shop' => 'Promote partner signups directly from the app and guide new Forever registrations.',
+	'plan_features.forever.label.link_forever_webshop_reg' => 'Web Shop registration +5%',
+	'plan_features.forever.help.link_forever_webshop_reg' => 'Official Forever webshop link for customer registration, drinks, and the user referral.',
 	'plan_features.forever.label.link_forever_product' => 'Forever ordering link',
 	'plan_features.forever.help.link_forever_product' => 'A global Forever link with the partner referral that sends visitors to the official ordering flow without registration.',
 	'plan_features.forever.label.link_discount' => 'FCC Web Shop',
@@ -5694,6 +5696,7 @@ return [
 	'biolink_link_create.forever' => 'Forever',
 	'biolink_link_create.forever_subheader' => 'Forever Living Products blocks.',
 	'biolink_link_forever_shop.subheader' => 'Forever web shop',
+	'biolink_link_forever_webshop_reg.subheader' => 'Web shop registration with referral',
 	/* Custom code: FC-2026-03-09: forever card club products copy update */
 	'biolink_link_forever_product.subheader' => 'Add Forever Card Club products with a built-in referral link',
 	'biolink_link_save_contact.subheader' => 'Save contact',
@@ -5722,6 +5725,7 @@ return [
 	'biolink.reset_factory_confirm' => 'Are you sure? This action will delete the current content and restore the default Forever Card App layout.',
 	/* Custom code: FC-2026-02-26: rename Forever block labels */
 	'link.biolink.blocks.link_forever_shop' => 'Become a Forever Partner',
+	'link.biolink.blocks.link_forever_webshop_reg' => 'Forever Web Shop Registration +5% discount',
 	'link.biolink.blocks.link_forever_product' => 'Forever Card Club Products',
 	/* Custom code: FC-2026-03-05: BIH-only forever living block labels */
 	'link.biolink.blocks.link_forever_living_bih' => 'Forever Living Products BiH',
@@ -5743,6 +5747,9 @@ return [
 	'link.biolink.blocks.link_app_switcher' => 'App switcher',
 	'link.biolink.blocks.link_back' => 'Back',
 	'create_biolink_link_modal.input.forever_shop' => 'BECOME A PARTNER',
+	'create_biolink_link_modal.input.forever_webshop_registration' => 'FOREVER WEB SHOP REGISTRATION +5%',
+	'create_biolink_link_forever_webshop_reg_modal.subheader' => 'Official Forever webshop link with the user referral.',
+	'create_biolink_link_forever_webshop_reg_modal.info' => 'This block automatically opens the official Forever drinks page for the visitor market and embeds your Forever ID as the referral. Croatia, Slovenia, Serbia and most Titan markets use fboId, while BIH, Albania, Kosovo and Montenegro use id.',
 	'create_biolink_link_forever_shop_modal.subheader' => 'Registration link for new partners.',
 	'create_biolink_link_forever_product_modal.header' => 'Add block: Forever Card Club Products',
 	'create_biolink_link_forever_product_modal.subheader' => 'Add Forever Card Club products to your app.',

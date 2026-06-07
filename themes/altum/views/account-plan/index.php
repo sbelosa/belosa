@@ -109,6 +109,7 @@ $plan_has_feature = static function($plan_settings, string $feature_key): bool {
         'vip_funnel_core_is_enabled' => !empty($plan_settings->vip_funnel_core_is_enabled),
         'lead_funnel' => !empty($enabled_biolink_blocks['lead_funnel']),
         'link_forever_shop' => !empty($enabled_biolink_blocks['link_forever_shop']),
+        'link_forever_webshop_reg' => !empty($enabled_biolink_blocks['link_forever_webshop_reg']),
         'link_forever_product' => !empty($enabled_biolink_blocks['link_forever_product']),
         'link_discount' => !empty($enabled_biolink_blocks['link_discount']),
         'link_save_contact' => !empty($enabled_biolink_blocks['link_save_contact']),
@@ -126,6 +127,7 @@ $premium_feature_labels = [
     'lead_funnel' => l('plan_features.forever.label.lead_funnel'),
     'funnels_analytics_is_enabled' => l('plan_features.forever.label.funnels_analytics_is_enabled'),
     'link_forever_shop' => l('plan_features.forever.label.link_forever_shop'),
+    'link_forever_webshop_reg' => l('plan_features.forever.label.link_forever_webshop_reg'),
     'link_discount' => l('plan_features.forever.label.link_discount'),
     'link_save_contact' => l('plan_features.forever.label.link_save_contact'),
     'custom_html_whatsapp' => l('plan_features.forever.label.custom_html_whatsapp'),
@@ -302,6 +304,12 @@ if($suggested_plan) {
             'type' => 'boolean',
             'current' => $plan_has_feature($current_plan_settings, 'link_forever_shop'),
             'suggested' => $plan_has_feature($suggested_plan_settings, 'link_forever_shop'),
+        ],
+        [
+            'label' => l('plan_features.forever.label.link_forever_webshop_reg'),
+            'type' => 'boolean',
+            'current' => $plan_has_feature($current_plan_settings, 'link_forever_webshop_reg'),
+            'suggested' => $plan_has_feature($suggested_plan_settings, 'link_forever_webshop_reg'),
         ],
         [
             'label' => l('plan_features.forever.label.link_forever_product'),

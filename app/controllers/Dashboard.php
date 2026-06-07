@@ -420,6 +420,7 @@ class Dashboard extends Controller {
         /* Custom code: FC-2026-03-08: correct forever webshop vs registration block mappings */
         $forever_shop_block_types = [
             'link_discount',
+            'link_forever_webshop_reg',
             'link_forever_living_bih',
             'link_forever_living_alb_kosovo',
             'link_forever_living_albania_kosovo',

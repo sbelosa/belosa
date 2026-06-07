@@ -285,6 +285,16 @@ $forever_blocks = [
         'whitelisted_thumbnail_image_extensions' => ['jpg', 'jpeg', 'png', 'svg', 'gif', 'webp', 'avif'],
         'category' => 'forever',
     ],
+    'link_forever_webshop_reg' => [
+        'type' => 'default',
+        'icon' => 'fas fa-fw fa-cart-plus',
+        'color' => '#FFC600',
+        'has_statistics' => true,
+        'themable' => true,
+        'display_dynamic_name' => 'name',
+        'whitelisted_thumbnail_image_extensions' => ['jpg', 'jpeg', 'png', 'svg', 'gif', 'webp', 'avif'],
+        'category' => 'forever',
+    ],
     /* Custom code: FC-2026-03-09: forever product picker block */
     'link_forever_product' => [
         'type' => 'default',

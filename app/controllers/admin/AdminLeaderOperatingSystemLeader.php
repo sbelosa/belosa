@@ -654,7 +654,7 @@ class AdminLeaderOperatingSystemLeader extends Controller {
     }
 
     private function get_biolink_sets(): array {
-        $forever_shop_block_types = ['link_discount', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo'];
+        $forever_shop_block_types = ['link_discount', 'link_forever_webshop_reg', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo'];
         $forever_registration_block_types = ['link_forever_shop'];
         $forever_all_block_types = array_values(array_unique(array_merge($forever_shop_block_types, $forever_registration_block_types)));
 
@@ -951,7 +951,7 @@ class AdminLeaderOperatingSystemLeader extends Controller {
             'app_signal_score' => 0,
         ];
 
-        $shop_types = ['link_discount', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo'];
+        $shop_types = ['link_discount', 'link_forever_webshop_reg', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo'];
         $relevant_types = array_unique(array_merge($shop_types, ['link_forever_product', 'lead_funnel', 'custom_html_whatsapp', 'socials', 'link']));
         $relevant_types_sql = "'" . implode("','", array_map(static function($type) {
             return str_replace("'", "\\'", (string) $type);
@@ -2135,7 +2135,7 @@ class AdminLeaderOperatingSystemLeader extends Controller {
             ];
         }
 
-        $forever_entry_points = (int) (($priority_blocks['link_forever_shop'] ?? 0) + ($priority_blocks['link_forever_product'] ?? 0) + ($priority_blocks['link_discount'] ?? 0));
+        $forever_entry_points = (int) (($priority_blocks['link_forever_shop'] ?? 0) + ($priority_blocks['link_forever_product'] ?? 0) + ($priority_blocks['link_discount'] ?? 0) + ($priority_blocks['link_forever_webshop_reg'] ?? 0));
         $content_stack = (int) (($priority_blocks['heading'] ?? 0) + ($priority_blocks['paragraph'] ?? 0));
         $visual_stack = (int) (($priority_blocks['image'] ?? 0) + ($priority_blocks['avatar'] ?? 0) + ($priority_blocks['youtube'] ?? 0) + ($priority_blocks['tiktok_video'] ?? 0));
         $social_stack = (int) ($priority_blocks['socials'] ?? 0);

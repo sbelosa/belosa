@@ -574,7 +574,7 @@ class Link extends Controller {
 
         if(
             $is_discount_offer
-            || in_array($block_type, ['link_discount', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo'], true)
+            || in_array($block_type, ['link_discount', 'link_forever_webshop_reg', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo'], true)
         ) {
             return 'Naruči proizvode bez registracije';
         }
@@ -627,7 +627,7 @@ class Link extends Controller {
 
         if((
                 $this->ai_text_has_any($current_label, ['web shop', 'webshop', 'shop', 'popust', 'forever living', 'forever webshop', 'kupnja'])
-                || in_array($block_type, ['link_discount', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo'], true)
+                || in_array($block_type, ['link_discount', 'link_forever_webshop_reg', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo'], true)
             )
             && !$this->ai_text_has_any($suggested_value, ['shop', 'webshop', 'ponud', 'popust', 'forever', 'kup', 'proizvod']) ) {
             return true;
@@ -648,7 +648,7 @@ class Link extends Controller {
             'custom_html_whatsapp' => ['preferred_group' => 'contacts', 'preferred_goal' => 'lead_capture', 'picker_search' => 'WhatsApp'],
             'custom_html_chatbot', 'custom_html_chatbot_pets' => ['preferred_group' => 'forever', 'preferred_goal' => 'product_recommendation', 'picker_search' => l('link.biolink.blocks.' . trim($block_type))],
             'link_forever_shop' => ['preferred_group' => 'forever', 'preferred_goal' => 'lead_capture', 'picker_search' => l('link.biolink.blocks.' . trim($block_type))],
-            'link_forever_product', 'link_discount', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo' => ['preferred_group' => 'forever', 'preferred_goal' => 'product_recommendation', 'picker_search' => l('link.biolink.blocks.' . trim($block_type))],
+            'link_forever_product', 'link_discount', 'link_forever_webshop_reg', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo' => ['preferred_group' => 'forever', 'preferred_goal' => 'product_recommendation', 'picker_search' => l('link.biolink.blocks.' . trim($block_type))],
             'link' => ['preferred_group' => 'sales', 'preferred_goal' => 'lead_capture', 'picker_search' => l('link.biolink.blocks.link')],
             default => ['preferred_group' => '', 'preferred_goal' => '', 'picker_search' => l('link.biolink.blocks.' . trim($block_type))],
         };
@@ -697,7 +697,7 @@ class Link extends Controller {
             return true;
         }
 
-        if(in_array($type, ['lead_funnel', 'custom_html_whatsapp', 'link_discount', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo'], true)) {
+        if(in_array($type, ['lead_funnel', 'custom_html_whatsapp', 'link_discount', 'link_forever_webshop_reg', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo'], true)) {
             return true;
         }
 
@@ -706,7 +706,7 @@ class Link extends Controller {
 
     private function get_ai_default_discount_seed_from_user_history(): array {
         $discount_block = db()->where('user_id', $this->user->user_id)
-            ->where('type', ['link_discount', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo'], 'IN')
+            ->where('type', ['link_discount', 'link_forever_webshop_reg', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo'], 'IN')
             ->orderBy('biolink_block_id', 'DESC')
             ->getOne('biolinks_blocks', ['location_url', 'settings']);
 
@@ -900,7 +900,7 @@ class Link extends Controller {
                     continue;
                 }
 
-                if(in_array((string) ($block['type'] ?? ''), ['link_discount', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo'], true)) {
+                if(in_array((string) ($block['type'] ?? ''), ['link_discount', 'link_forever_webshop_reg', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo'], true)) {
                     return true;
                 }
             }
@@ -1375,7 +1375,7 @@ class Link extends Controller {
     }
 
     private function get_ai_preferred_webshop_catalog_block(array $block_catalog): array {
-        $discount_block = $this->get_first_ai_catalog_block_by_types($block_catalog, ['link_discount', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo']);
+        $discount_block = $this->get_first_ai_catalog_block_by_types($block_catalog, ['link_discount', 'link_forever_webshop_reg', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo']);
         if(!empty($discount_block)) {
             return $discount_block;
         }
@@ -2017,7 +2017,7 @@ class Link extends Controller {
                 $discount_seed = [];
 
                 foreach($block_catalog as $catalog_block) {
-                    if(in_array((string) ($catalog_block['type'] ?? ''), ['link_discount', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo'], true)) {
+                    if(in_array((string) ($catalog_block['type'] ?? ''), ['link_discount', 'link_forever_webshop_reg', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo'], true)) {
                         $discount_seed = [
                             'location_url' => trim((string) ($catalog_block['location_url'] ?? '')),
                         ];
@@ -2223,7 +2223,7 @@ class Link extends Controller {
     }
 
     private function get_ai_block_attribution_role(string $type, \stdClass $settings): string {
-        $shop_types = ['link_discount', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo'];
+        $shop_types = ['link_discount', 'link_forever_webshop_reg', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo'];
         $video_types = ['youtube', 'video', 'tiktok_video', 'vimeo', 'twitter_video', 'vk_video'];
 
         if($type === 'lead_funnel') {
@@ -3147,7 +3147,7 @@ class Link extends Controller {
             return [];
         }
 
-        $shop_types = ['link_discount', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo'];
+        $shop_types = ['link_discount', 'link_forever_webshop_reg', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo'];
         $relevant_types = array_unique(array_merge($shop_types, ['link_forever_product', 'lead_funnel', 'custom_html_whatsapp', 'socials', 'link']));
         $relevant_types_sql = "'" . implode("','", array_map(static function($type) {
             return str_replace("'", "\\'", (string) $type);
@@ -3321,7 +3321,7 @@ class Link extends Controller {
     private function get_app_review_benchmark_payload(array $selected_app = []): array {
         $period_30d_start = (new \DateTimeImmutable())->sub(new \DateInterval('P29D'))->format('Y-m-d 00:00:00');
         $now_datetime = (new \DateTimeImmutable())->format('Y-m-d H:i:s');
-        $shop_block_types = ['link_discount', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo'];
+        $shop_block_types = ['link_discount', 'link_forever_webshop_reg', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo'];
         $shop_block_types_sql = "'" . implode("','", $shop_block_types) . "'";
         $shop_condition = \Altum\Link::get_forever_shop_click_condition_sql('`tl`', '`bb`', $shop_block_types_sql);
 

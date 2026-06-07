@@ -153,7 +153,7 @@ class AdminIndex extends Controller {
 
     /* Custom code: FC-2026-03-18: shared biolink analytics helpers for aggregate and collaborator drill-down */
     private function get_biolink_block_type_sets(): array {
-        $forever_shop_block_types = ['link_discount', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo'];
+        $forever_shop_block_types = ['link_discount', 'link_forever_webshop_reg', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo'];
         $forever_registration_block_types = ['link_forever_shop'];
         $forever_all_block_types = array_merge($forever_shop_block_types, $forever_registration_block_types);
 
@@ -2404,7 +2404,7 @@ class AdminIndex extends Controller {
         $week_start_datetime = (new \DateTime())->modify('-6 days')->format('Y-m-d 00:00:00');
 
         /* Custom code: FC-2026-03-08: correct forever webshop vs registration block mappings */
-        $forever_shop_block_types = ['link_discount', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo'];
+        $forever_shop_block_types = ['link_discount', 'link_forever_webshop_reg', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo'];
         $forever_registration_block_types = ['link_forever_shop'];
         $forever_all_block_types = array_merge($forever_shop_block_types, $forever_registration_block_types);
         $forever_shop_block_types_sql = "'" . implode("', '", $forever_shop_block_types) . "'";

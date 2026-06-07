@@ -1,16 +1,28 @@
 <?php defined('ALTUMCODE') || die() ?>
+<?php
+$fcc_forever_shop_form_block_type = $fcc_forever_shop_form_block_type ?? ($row->type ?? 'link_forever_shop');
+$fcc_forever_shop_form_location_url = $fcc_forever_shop_form_location_url ?? ($row->location_url ?? '');
+$fcc_forever_shop_form_notice = $fcc_forever_shop_form_notice ?? null;
+?>
 <!-- Custom code -->
 <form id="<?= 'update_biolink_block_' . $row->biolink_block_id ?>" name="update_biolink_" method="post" role="form" data-type="<?= $row->type ?>">
     <input type="hidden" name="token" value="<?= \Altum\Csrf::get() ?>" required="required" />
     <input type="hidden" name="request_type" value="update" />
-    <input type="hidden" name="block_type" value="link_forever_shop" />
+    <input type="hidden" name="block_type" value="<?= $fcc_forever_shop_form_block_type ?>" />
     <input type="hidden" name="biolink_block_id" value="<?= $row->biolink_block_id ?>" />
 
     <div class="notification-container"></div>
 
+    <?php if($fcc_forever_shop_form_notice): ?>
+        <div class="alert alert-info">
+            <i class="fas fa-fw fa-info-circle mr-2"></i>
+            <?= $fcc_forever_shop_form_notice ?>
+        </div>
+    <?php endif ?>
+
     <div class="form-group d-none">
         <label for="<?= 'link_location_url_' . $row->biolink_block_id ?>"><i class="fa fa-fw fa-link fa-sm text-muted mr-1"></i> <?= l('biolink_link.location_url') ?></label>
-        <input id="<?= 'link_location_url_' . $row->biolink_block_id ?>" type="text" class="form-control" name="location_url" value="<?= $row->location_url ?>" maxlength="2048" placeholder="<?= l('biolink_link.location_url_placeholder') ?>" required="required" />
+        <input id="<?= 'link_location_url_' . $row->biolink_block_id ?>" type="text" class="form-control" name="location_url" value="<?= $fcc_forever_shop_form_location_url ?>" maxlength="2048" placeholder="<?= l('biolink_link.location_url_placeholder') ?>" required="required" />
     </div>
 
     <div class="form-group">

@@ -38,6 +38,7 @@ if(settings()->links->biolinks_is_enabled) {
         'vip_funnel_hub',
         'link_app_switcher',
         'link_forever_shop',
+        'link_forever_webshop_reg',
         'link_forever_product',
         'link_discount',
         'link_save_contact',

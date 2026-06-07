@@ -1283,7 +1283,7 @@ function fc_get_email_automation_steps(int $automation_id): array {
 }
 
 function fc_get_forever_sales_link_block_types(): array {
-    return ['link_discount'];
+    return ['link_discount', 'link_forever_webshop_reg'];
 }
 
 function fc_is_valid_forever_sales_link_url($url): bool {

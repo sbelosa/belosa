@@ -246,8 +246,20 @@ class LinkAjax extends Controller {
 	private function is_biolink_block_enabled_for_current_plan(string $block_type): bool {
 		$enabled_biolink_blocks = $this->user->plan_settings->enabled_biolink_blocks ?? (object) [];
 
+		if(is_string($enabled_biolink_blocks)) {
+			$enabled_biolink_blocks = json_decode($enabled_biolink_blocks) ?: (object) [];
+		}
+
 		if(is_array($enabled_biolink_blocks)) {
 			$enabled_biolink_blocks = (object) $enabled_biolink_blocks;
+		}
+
+		if($block_type === 'link_forever_webshop_reg') {
+			return (bool) (
+				($enabled_biolink_blocks->link_forever_webshop_reg ?? false)
+				|| ($enabled_biolink_blocks->link_forever_shop ?? false)
+				|| ($enabled_biolink_blocks->link_discount ?? false)
+			);
 		}
 
 		return (bool) ($enabled_biolink_blocks->{$block_type} ?? false);
@@ -455,7 +467,7 @@ class LinkAjax extends Controller {
 
 		if(
 			$is_discount_offer
-			|| in_array($block_type, ['link_discount', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo'], true)
+			|| in_array($block_type, ['link_discount', 'link_forever_webshop_reg', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo'], true)
 		) {
 			return 'Naruči proizvode bez registracije';
 		}
@@ -508,7 +520,7 @@ class LinkAjax extends Controller {
 
 		if((
 				$this->ai_text_has_any($current_label, ['web shop', 'webshop', 'shop', 'popust', 'forever living', 'forever webshop', 'kupnja'])
-				|| in_array($block_type, ['link_discount', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo'], true)
+				|| in_array($block_type, ['link_discount', 'link_forever_webshop_reg', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo'], true)
 			)
 			&& !$this->ai_text_has_any($suggested_value, ['shop', 'webshop', 'ponud', 'popust', 'forever', 'kup', 'proizvod']) ) {
 			return true;
@@ -529,7 +541,7 @@ class LinkAjax extends Controller {
 			'custom_html_whatsapp' => ['preferred_group' => 'contacts', 'preferred_goal' => 'lead_capture', 'picker_search' => 'WhatsApp'],
 			'custom_html_chatbot', 'custom_html_chatbot_pets' => ['preferred_group' => 'forever', 'preferred_goal' => 'product_recommendation', 'picker_search' => l('link.biolink.blocks.' . trim($block_type))],
 			'link_forever_shop' => ['preferred_group' => 'forever', 'preferred_goal' => 'lead_capture', 'picker_search' => l('link.biolink.blocks.' . trim($block_type))],
-			'link_forever_product', 'link_discount', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo' => ['preferred_group' => 'forever', 'preferred_goal' => 'product_recommendation', 'picker_search' => l('link.biolink.blocks.' . trim($block_type))],
+			'link_forever_product', 'link_discount', 'link_forever_webshop_reg', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo' => ['preferred_group' => 'forever', 'preferred_goal' => 'product_recommendation', 'picker_search' => l('link.biolink.blocks.' . trim($block_type))],
 			'link' => ['preferred_group' => 'sales', 'preferred_goal' => 'lead_capture', 'picker_search' => l('link.biolink.blocks.link')],
 			default => ['preferred_group' => '', 'preferred_goal' => '', 'picker_search' => l('link.biolink.blocks.' . trim($block_type))],
 		};
@@ -578,7 +590,7 @@ class LinkAjax extends Controller {
 			return true;
 		}
 
-		if(in_array($type, ['lead_funnel', 'custom_html_whatsapp', 'link_discount', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo'], true)) {
+		if(in_array($type, ['lead_funnel', 'custom_html_whatsapp', 'link_discount', 'link_forever_webshop_reg', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo'], true)) {
 			return true;
 		}
 
@@ -587,7 +599,7 @@ class LinkAjax extends Controller {
 
 	private function get_ai_default_discount_seed_from_user_history(): array {
 		$discount_block = db()->where('user_id', $this->user->user_id)
-			->where('type', ['link_discount', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo'], 'IN')
+			->where('type', ['link_discount', 'link_forever_webshop_reg', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo'], 'IN')
 			->orderBy('biolink_block_id', 'DESC')
 			->getOne('biolinks_blocks', ['location_url', 'settings']);
 
@@ -664,7 +676,7 @@ class LinkAjax extends Controller {
 		}
 
 		if($role_key === 'core_discount_offer') {
-			return $this->get_first_ai_catalog_block_by_types($block_catalog, ['link_discount', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo'], false);
+			return $this->get_first_ai_catalog_block_by_types($block_catalog, ['link_discount', 'link_forever_webshop_reg', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo'], false);
 		}
 
 		if($block_type === 'lead_funnel') {
@@ -902,7 +914,7 @@ class LinkAjax extends Controller {
 			return 'floating_ai_assistant';
 		}
 
-		if(in_array($type, ['link_discount', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo'], true)) {
+		if(in_array($type, ['link_discount', 'link_forever_webshop_reg', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo'], true)) {
 			return 'webshop_offer';
 		}
 
@@ -939,8 +951,8 @@ class LinkAjax extends Controller {
 			return $candidate_start_paket;
 		}
 
-		$current_discount = in_array((string) ($current['type'] ?? ''), ['link_discount', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo'], true);
-		$candidate_discount = in_array((string) ($candidate['type'] ?? ''), ['link_discount', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo'], true);
+		$current_discount = in_array((string) ($current['type'] ?? ''), ['link_discount', 'link_forever_webshop_reg', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo'], true);
+		$candidate_discount = in_array((string) ($candidate['type'] ?? ''), ['link_discount', 'link_forever_webshop_reg', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo'], true);
 		if($current_discount !== $candidate_discount) {
 			return $candidate_discount;
 		}
@@ -1141,7 +1153,7 @@ class LinkAjax extends Controller {
 					continue;
 				}
 
-				if(in_array((string) ($block['type'] ?? ''), ['link_discount', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo'], true)) {
+				if(in_array((string) ($block['type'] ?? ''), ['link_discount', 'link_forever_webshop_reg', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo'], true)) {
 					return true;
 				}
 			}
@@ -1877,7 +1889,7 @@ class LinkAjax extends Controller {
 	}
 
 	private function get_ai_preferred_webshop_catalog_block(array $block_catalog): array {
-		$discount_block = $this->get_first_ai_catalog_block_by_types($block_catalog, ['link_discount', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo']);
+		$discount_block = $this->get_first_ai_catalog_block_by_types($block_catalog, ['link_discount', 'link_forever_webshop_reg', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo']);
 		if(!empty($discount_block)) {
 			return $discount_block;
 		}
@@ -2434,7 +2446,7 @@ class LinkAjax extends Controller {
 				$discount_seed = [];
 
 				foreach($block_catalog as $catalog_block) {
-					if(in_array((string) ($catalog_block['type'] ?? ''), ['link_discount', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo'], true)) {
+					if(in_array((string) ($catalog_block['type'] ?? ''), ['link_discount', 'link_forever_webshop_reg', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo'], true)) {
 						$discount_seed = [
 							'location_url' => trim((string) ($catalog_block['location_url'] ?? '')),
 						];
@@ -3578,7 +3590,7 @@ class LinkAjax extends Controller {
 			}
 		}
 
-		if(in_array($block_type, ['link_discount', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo'], true)) {
+		if(in_array($block_type, ['link_discount', 'link_forever_webshop_reg', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo'], true)) {
 			if(array_key_exists('apply_to_all_products', $seed_settings)) {
 				$updated_settings['apply_to_all_products'] = (int) $seed_settings['apply_to_all_products'];
 			}

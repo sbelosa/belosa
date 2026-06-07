@@ -654,7 +654,7 @@ class AdminLeaderOperatingSystem extends Controller {
         }
 
         $user_ids_sql = implode(',', array_map('intval', array_keys($row_map)));
-        $shop_types = ['link_discount', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo'];
+        $shop_types = ['link_discount', 'link_forever_webshop_reg', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo'];
         $relevant_types = array_unique(array_merge($shop_types, ['lead_funnel', 'custom_html_whatsapp', 'socials', 'link']));
         $relevant_types_sql = "'" . implode("','", array_map(static function($type) {
             return str_replace("'", "\\'", (string) $type);
@@ -1838,7 +1838,7 @@ class AdminLeaderOperatingSystem extends Controller {
     }
 
     private function get_biolink_sets(): array {
-        $forever_shop_block_types = ['link_discount', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo'];
+        $forever_shop_block_types = ['link_discount', 'link_forever_webshop_reg', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo'];
         $forever_registration_block_types = ['link_forever_shop'];
 
         return [
@@ -2163,7 +2163,7 @@ class AdminLeaderOperatingSystem extends Controller {
         }
 
         $user_ids_sql = implode(',', array_map('intval', array_keys($row_map)));
-        $shop_types = ['link_discount', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo'];
+        $shop_types = ['link_discount', 'link_forever_webshop_reg', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo'];
         $relevant_types = array_unique(array_merge($shop_types, ['link_forever_product', 'lead_funnel', 'custom_html_whatsapp', 'socials', 'link']));
         $relevant_types_sql = "'" . implode("','", array_map(static function($type) {
             return str_replace("'", "\\'", (string) $type);

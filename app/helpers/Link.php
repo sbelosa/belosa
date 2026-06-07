@@ -619,6 +619,7 @@ class Link {
             case 'link_app_switcher':
             case 'link_back':
             case 'link_forever_shop':
+            case 'link_forever_webshop_reg':
             case 'link_forever_product':
             /* Custom code: FC-2026-03-06: keep only canonical Albania/Kosovo block type */
             case 'link_forever_living_bih':
@@ -1332,6 +1333,130 @@ class Link {
         return in_array($country_code, ['xk'], true) ? 'al' : $country_code;
     }
 
+    public static function get_forever_webshop_registration_country_links(): array {
+        return [
+            'hr' => [
+                'label' => 'Hrvatska',
+                'base_url' => 'https://foreverliving.com/shop/hrv/hr-hr/drinks/',
+            ],
+            'ba' => [
+                'label' => 'Bosna i Hercegovina',
+                'base_url' => 'https://www.flpshop.ba/kategorija/napici/',
+            ],
+            'al' => [
+                'label' => 'Albanija',
+                'base_url' => 'https://www.foreveralbania.com/produktet/produktet-me-pike/lengjet/forever-aloe-mango-pet/',
+            ],
+            'xk' => [
+                'label' => 'Kosovo',
+                'base_url' => 'https://www.foreveralbania.com/produktet/produktet-me-pike/lengjet/forever-aloe-mango-pet/',
+            ],
+            'me' => [
+                'label' => 'Crna Gora',
+                'base_url' => 'https://www.foreveralbania.com/produktet/produktet-me-pike/lengjet/forever-aloe-mango-pet/',
+            ],
+            'si' => [
+                'label' => 'Slovenija',
+                'base_url' => 'https://foreverliving.com/shop/svn/sl-si/drinks/',
+            ],
+            'rs' => [
+                'label' => 'Srbija',
+                'base_url' => 'https://foreverliving.com/shop/scg/sr-cyrl-rs/drinks/',
+            ],
+            'at' => [
+                'label' => 'Austrija',
+                'base_url' => 'https://foreverliving.com/shop/aut/de-at/drinks/',
+            ],
+            'au' => [
+                'label' => 'Australija',
+                'base_url' => 'https://foreverliving.com/shop/aus/en-au/drinks/',
+            ],
+            'ca' => [
+                'label' => 'Kanada',
+                'base_url' => 'https://foreverliving.com/shop/can/en-ca/drinks/',
+            ],
+            'de' => [
+                'label' => 'Njemačka',
+                'base_url' => 'https://foreverliving.com/shop/deu/de-de/drinks/',
+            ],
+            'ie' => [
+                'label' => 'Irska',
+                'base_url' => 'https://foreverliving.com/shop/irl/en-ie/drinks/',
+            ],
+            'lu' => [
+                'label' => 'Luksemburg',
+                'base_url' => 'https://foreverliving.com/shop/lux/fr-lu/drinks/',
+            ],
+            'nl' => [
+                'label' => 'Nizozemska',
+                'base_url' => 'https://foreverliving.com/shop/nld/nl-nl/drinks/',
+            ],
+            'no' => [
+                'label' => 'Norveska',
+                'base_url' => 'https://foreverliving.com/shop/nor/nb-no/drinks/',
+            ],
+            'pl' => [
+                'label' => 'Poljska',
+                'base_url' => 'https://foreverliving.com/shop/pol/pl-pl/drinks/',
+            ],
+            'se' => [
+                'label' => 'Svedska',
+                'base_url' => 'https://foreverliving.com/shop/swe/sv-se/drinks/',
+            ],
+            'gb' => [
+                'label' => 'Ujedinjeno Kraljevstvo',
+                'base_url' => 'https://foreverliving.com/shop/gbr/en-gb/drinks/',
+            ],
+            'us' => [
+                'label' => 'Sjedinjene Americke Drzave',
+                'base_url' => 'https://foreverliving.com/shop/usa/en-us/drinks/',
+            ],
+            'qa' => [
+                'label' => 'Katar',
+                'base_url' => 'https://foreverliving.com/shop/qat/en-us/drinks/',
+            ],
+            'ch' => [
+                'label' => 'Svicarska',
+                'base_url' => 'https://foreverliving.com/shop/che/de-ch/drinks/',
+            ],
+            'ae' => [
+                'label' => 'Emirati',
+                'base_url' => 'https://foreverliving.com/shop/are/en-us/drinks/',
+            ],
+        ];
+    }
+
+    public static function get_forever_webshop_registration_base_url($country_code = null): ?string {
+        $country_code = mb_strtolower(trim((string) $country_code));
+        $country_code = $country_code === 'xk' ? 'xk' : self::resolve_forever_market_country_code($country_code);
+
+        if(!$country_code) {
+            return null;
+        }
+
+        $configured_links = settings()->links->forever_webshop_registration_links ?? null;
+        if(is_object($configured_links) || is_array($configured_links)) {
+            $configured_links = (array) $configured_links;
+            $configured_url = trim((string) ($configured_links[$country_code] ?? ''));
+
+            if($configured_url && filter_var($configured_url, FILTER_VALIDATE_URL)) {
+                return $configured_url;
+            }
+        }
+
+        $links = self::get_forever_webshop_registration_country_links();
+
+        return $links[$country_code]['base_url'] ?? null;
+    }
+
+    public static function build_forever_webshop_registration_url($forever_id = null, $country_code = null) {
+        $country_code = mb_strtolower(trim((string) $country_code));
+        $country_code = $country_code === 'xk' ? 'xk' : self::resolve_forever_market_country_code($country_code);
+        $base_url = self::get_forever_webshop_registration_base_url($country_code ?: 'hr');
+
+        return $base_url ? self::build_forever_destination_url($base_url, $forever_id, $country_code ?: 'hr') : false;
+    }
+
     /* Custom code: FC-2026-03-31: blog CTA tracking helpers */
     public static function get_blog_cta_business_post_ids(): array {
         return [406, 407];
@@ -1370,6 +1495,7 @@ class Link {
         return [
             'link_forever_shop',
             'link_forever_product',
+            'link_forever_webshop_reg',
             'link_forever_living_bih',
             'link_forever_living_alb_kosovo',
             'link_discount',

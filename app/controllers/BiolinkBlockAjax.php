@@ -30,7 +30,7 @@ class BiolinkBlockAjax extends Controller {
     public $biolink_block = null;
     public $total_biolink_blocks = 0;
     /* Custom code: FC-2026-03-06: remove legacy albania_kosovo alias block from available block types */
-    public $individual_blocks = ['link_app_switcher', 'link_back', 'link_forever_shop', 'link_forever_product', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_discount', 'link_homescreen_android', 'link_homescreen_ios', 'link_save_contact', 'custom_html_chatbot', 'custom_html_chatbot_pets', 'custom_html_whatsapp', 'link', 'featured_link', 'heading', 'big_link', 'paragraph', 'business_hours', 'markdown', 'avatar', 'socials', 'email_collector', 'rss_feed', 'custom_html', 'vcard', 'image', 'image_grid', 'divider', 'list', 'alert', 'faq', 'timeline', 'review', 'image_slider', 'discord', 'countdown', 'cta', 'external_item', 'share', 'coupon', 'youtube_feed', 'paypal', 'phone_collector', 'contact_collector', 'lead_funnel', 'vip_funnel_hub', 'donation', 'product', 'service', 'map', 'iframe', 'header', 'appointment_calendar', 'modal_text', 'image_comparison', 'weather', 'code', 'counter', 'loading'];
+    public $individual_blocks = ['link_app_switcher', 'link_back', 'link_forever_shop', 'link_forever_webshop_reg', 'link_forever_product', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_discount', 'link_homescreen_android', 'link_homescreen_ios', 'link_save_contact', 'custom_html_chatbot', 'custom_html_chatbot_pets', 'custom_html_whatsapp', 'link', 'featured_link', 'heading', 'big_link', 'paragraph', 'business_hours', 'markdown', 'avatar', 'socials', 'email_collector', 'rss_feed', 'custom_html', 'vcard', 'image', 'image_grid', 'divider', 'list', 'alert', 'faq', 'timeline', 'review', 'image_slider', 'discord', 'countdown', 'cta', 'external_item', 'share', 'coupon', 'youtube_feed', 'paypal', 'phone_collector', 'contact_collector', 'lead_funnel', 'vip_funnel_hub', 'donation', 'product', 'service', 'map', 'iframe', 'header', 'appointment_calendar', 'modal_text', 'image_comparison', 'weather', 'code', 'counter', 'loading'];
     /* /Custom code: FC-2026-03-06 */
     /* Custom code: FC-2026-03-09: restore embeddable block types for Vimeo and other embeds */
     public $embeddable_blocks = ['telegram', 'anchor', 'applemusic', 'soundcloud', 'threads', 'snapchat', 'spotify', 'tidal', 'mixcloud', 'kick', 'tiktok_video', 'vk_video', 'typeform', 'calendly', 'tiktok_profile', 'twitch', 'twitter_tweet', 'twitter_video', 'twitter_profile', 'pinterest_profile', 'vimeo', 'youtube', 'instagram_media', 'facebook', 'reddit', 'rumble', 'tumblr_post', 'bluesky_post', 'canva', 'google_form'];
@@ -41,8 +41,20 @@ class BiolinkBlockAjax extends Controller {
     private function is_block_enabled_for_current_plan(string $block_type): bool {
         $enabled_biolink_blocks = $this->user->plan_settings->enabled_biolink_blocks ?? (object) [];
 
+        if(is_string($enabled_biolink_blocks)) {
+            $enabled_biolink_blocks = json_decode($enabled_biolink_blocks) ?: (object) [];
+        }
+
         if(is_array($enabled_biolink_blocks)) {
             $enabled_biolink_blocks = (object) $enabled_biolink_blocks;
+        }
+
+        if($block_type === 'link_forever_webshop_reg') {
+            return (bool) (
+                ($enabled_biolink_blocks->link_forever_webshop_reg ?? false)
+                || ($enabled_biolink_blocks->link_forever_shop ?? false)
+                || ($enabled_biolink_blocks->link_discount ?? false)
+            );
         }
 
         return (bool) ($enabled_biolink_blocks->{$block_type} ?? false);
@@ -8716,6 +8728,163 @@ class BiolinkBlockAjax extends Controller {
         ]);
 
         /* Clear the cache */
+        cache()->deleteItem('biolink_blocks?link_id=' . $_POST['link_id']);
+
+        Response::json('', 'success', [
+            'url' => url('link/' . $_POST['link_id'] . '?tab=blocks'),
+            'images' => ['image' => $image_url],
+        ]);
+    }
+
+    private function create_biolink_link_forever_webshop_reg() {
+        $_POST['link_id'] = (int) $_POST['link_id'];
+        $_POST['location_url'] = get_url($_POST['location_url'] ?? \Altum\Link::get_forever_webshop_registration_base_url('hr'));
+        $_POST['name'] = mb_substr(query_clean($_POST['name'] ?? ''), 0, 128);
+
+        if(!$link = db()->where('link_id', $_POST['link_id'])->where('user_id', $this->user->user_id)->getOne('links')) {
+            die();
+        }
+
+        if($_POST['name'] === '') {
+            Response::json(l('global.error_message.empty_fields'), 'error');
+        }
+
+        $this->check_location_url($_POST['location_url']);
+
+        $type = 'link_forever_webshop_reg';
+        $settings = json_encode([
+            'name' => $_POST['name'],
+            'open_in_new_tab' => false,
+            'text_color' => '#111827',
+            'text_alignment' => 'center',
+            'background_color' => '#FFC600',
+            'border_shadow_style' => 'subtle',
+            'border_shadow_color' => '#00000020',
+            'border_width' => 0,
+            'border_style' => 'solid',
+            'border_color' => '#FFC600',
+            'border_radius' => 'rounded',
+            'animation' => false,
+            'animation_runs' => 'repeat-1',
+            'icon' => 'fas fa-cart-plus',
+            'image' => '',
+            'sensitive_content' => false,
+            'columns' => 1,
+
+            /* Display settings */
+            'display_continents' => [],
+            'display_countries' => [],
+            'display_cities' => [],
+            'display_devices' => [],
+            'display_languages' => [],
+            'display_operating_systems' => [],
+            'display_browsers' => [],
+        ]);
+
+        db()->insert('biolinks_blocks', [
+            'user_id' => $this->user->user_id,
+            'link_id' => $_POST['link_id'],
+            'type' => $type,
+            'location_url' => $_POST['location_url'],
+            'settings' => $settings,
+            'order' => settings()->links->biolinks_new_blocks_position == 'top' ? -$this->total_biolink_blocks : $this->total_biolink_blocks,
+            'datetime' => \Altum\Date::$date,
+        ]);
+
+        cache()->deleteItem('biolink_blocks?link_id=' . $_POST['link_id']);
+
+        Response::json('', 'success', ['url' => url('link/' . $_POST['link_id'] . '?tab=blocks')]);
+    }
+
+    private function update_biolink_link_forever_webshop_reg() {
+        $_POST['biolink_block_id'] = (int) $_POST['biolink_block_id'];
+        $_POST['link_id'] = isset($_POST['link_id']) ? (int) $_POST['link_id'] : 0;
+        $_POST['location_url'] = get_url($_POST['location_url'] ?? \Altum\Link::get_forever_webshop_registration_base_url('hr'));
+        $_POST['name'] = mb_substr(query_clean($_POST['name'] ?? ''), 0, 128);
+        $_POST['open_in_new_tab'] = isset($_POST['open_in_new_tab']);
+        $_POST['border_radius'] = in_array($_POST['border_radius'] ?? null, ['straight', 'round', 'rounded']) ? query_clean($_POST['border_radius']) : 'rounded';
+        $_POST['border_width'] = in_array($_POST['border_width'] ?? null, [0, 1, 2, 3, 4, 5]) ? (int) $_POST['border_width'] : 0;
+        $_POST['border_style'] = in_array($_POST['border_style'] ?? null, ['solid', 'dashed', 'double', 'inset', 'outset']) ? query_clean($_POST['border_style']) : 'solid';
+        $_POST['border_color'] = !verify_hex_color($_POST['border_color'] ?? '') ? '#FFC600' : $_POST['border_color'];
+        $_POST['border_shadow_style'] = in_array($_POST['border_shadow_style'] ?? null, ['none', 'subtle', 'strong', 'hard']) ? query_clean($_POST['border_shadow_style']) : 'subtle';
+        $_POST['border_shadow_color'] = !verify_hex_color($_POST['border_shadow_color'] ?? '') ? '#000000' : $_POST['border_shadow_color'];
+        $_POST['animation'] = in_array($_POST['animation'] ?? null, require APP_PATH . 'includes/biolink_animations.php') || ($_POST['animation'] ?? null) == 'false' ? query_clean($_POST['animation']) : false;
+        $_POST['animation_runs'] = isset($_POST['animation_runs']) && in_array($_POST['animation_runs'], ['repeat-1', 'repeat-2', 'repeat-3', 'infinite']) ? query_clean($_POST['animation_runs']) : false;
+        $_POST['icon'] = query_clean($_POST['icon'] ?? '');
+        $_POST['text_color'] = !verify_hex_color($_POST['text_color'] ?? '') ? '#111827' : $_POST['text_color'];
+        $_POST['text_alignment'] = in_array($_POST['text_alignment'] ?? null, ['center', 'left', 'right', 'justify']) ? query_clean($_POST['text_alignment']) : 'center';
+        $_POST['background_color'] = !verify_hex_color($_POST['background_color'] ?? '') ? '#FFC600' : $_POST['background_color'];
+        $_POST['sensitive_content'] = (int) isset($_POST['sensitive_content']);
+        $_POST['columns'] = isset($_POST['columns']) && in_array($_POST['columns'], [1, 2]) ? (int) $_POST['columns'] : 1;
+
+        $this->process_display_settings();
+
+        if(!$biolink_block = db()->where('biolink_block_id', $_POST['biolink_block_id'])->where('user_id', $this->user->user_id)->getOne('biolinks_blocks')) {
+            die();
+        }
+        $biolink_block->settings = json_decode($biolink_block->settings);
+
+        if(!$_POST['link_id'] && isset($biolink_block->link_id)) {
+            $_POST['link_id'] = (int) $biolink_block->link_id;
+        }
+
+        if($_POST['name'] === '') {
+            Response::json(l('global.error_message.empty_fields'), 'error');
+        }
+
+        $this->check_location_url($_POST['location_url']);
+
+        $db_image = $this->handle_image_upload($biolink_block->settings->image ?? null, 'block_thumbnail_images/', settings()->links->thumbnail_image_size_limit);
+
+        if(isset($_POST['image_remove'])) {
+            if(\Altum\Plugin::is_active('offload') && settings()->offload->uploads_url) {
+                $s3 = new \Aws\S3\S3Client(get_aws_s3_config());
+                $s3->deleteObject([
+                    'Bucket' => settings()->offload->storage_name,
+                    'Key' => 'uploads/block_thumbnail_images/' . ($biolink_block->settings->image ?? null),
+                ]);
+            }
+            $db_image = null;
+        }
+
+        $image_url = $db_image ? UPLOADS_FULL_URL . 'block_thumbnail_images/' . $db_image : null;
+
+        $settings = json_encode([
+            'name' => $_POST['name'],
+            'open_in_new_tab' => $_POST['open_in_new_tab'],
+            'text_color' => $_POST['text_color'],
+            'text_alignment' => $_POST['text_alignment'],
+            'background_color' => $_POST['background_color'],
+            'border_radius' => $_POST['border_radius'],
+            'border_width' => $_POST['border_width'],
+            'border_style' => $_POST['border_style'],
+            'border_color' => $_POST['border_color'],
+            'border_shadow_style' => $_POST['border_shadow_style'],
+            'border_shadow_color' => $_POST['border_shadow_color'],
+            'animation' => $_POST['animation'],
+            'animation_runs' => $_POST['animation_runs'],
+            'icon' => $_POST['icon'],
+            'image' => $db_image,
+            'sensitive_content' => $_POST['sensitive_content'],
+            'columns' => $_POST['columns'],
+
+            /* Display settings */
+            'display_continents' => $_POST['display_continents'],
+            'display_countries' => $_POST['display_countries'],
+            'display_cities' => $_POST['display_cities'],
+            'display_devices' => $_POST['display_devices'],
+            'display_languages' => $_POST['display_languages'],
+            'display_operating_systems' => $_POST['display_operating_systems'],
+            'display_browsers' => $_POST['display_browsers'],
+        ]);
+
+        db()->where('biolink_block_id', $_POST['biolink_block_id'])->update('biolinks_blocks', [
+            'location_url' => $_POST['location_url'],
+            'settings' => $settings,
+            'start_date' => $_POST['start_date'],
+            'end_date' => $_POST['end_date'],
+        ]);
+
         cache()->deleteItem('biolink_blocks?link_id=' . $_POST['link_id']);
 
         Response::json('', 'success', [

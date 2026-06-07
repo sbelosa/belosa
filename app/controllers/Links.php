@@ -159,14 +159,14 @@ class Links extends Controller {
 
         $map = \Altum\Language::$code === 'hr'
             ? [
-                ['label' => 'Pametni preporučni linkovi', 'types' => ['link_discount', 'link_forever_shop', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo']],
+                ['label' => 'Pametni preporučni linkovi', 'types' => ['link_discount', 'link_forever_webshop_reg', 'link_forever_shop', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo']],
                 ['label' => 'AI asistenti', 'types' => ['custom_html_chatbot', 'custom_html_chatbot_pets']],
                 ['label' => 'FCC Funnel', 'types' => ['lead_funnel']],
                 ['label' => 'Prikupljanje kontakata', 'types' => ['contact_collector', 'email_collector', 'phone_collector', 'appointment_calendar']],
                 ['label' => 'Kontakt i spremanje kontakta', 'types' => ['link_save_contact', 'custom_html_whatsapp']],
             ]
             : [
-                ['label' => 'Smart referral links', 'types' => ['link_discount', 'link_forever_shop', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo']],
+                ['label' => 'Smart referral links', 'types' => ['link_discount', 'link_forever_webshop_reg', 'link_forever_shop', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo']],
                 ['label' => 'AI assistants', 'types' => ['custom_html_chatbot', 'custom_html_chatbot_pets']],
                 ['label' => 'FCC Funnel', 'types' => ['lead_funnel']],
                 ['label' => 'Lead capture', 'types' => ['contact_collector', 'email_collector', 'phone_collector', 'appointment_calendar']],
@@ -733,7 +733,7 @@ class Links extends Controller {
             return [];
         }
 
-        $shop_types = ['link_discount', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo'];
+        $shop_types = ['link_discount', 'link_forever_webshop_reg', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo'];
         $relevant_types = array_unique(array_merge($shop_types, ['link_forever_product', 'lead_funnel', 'custom_html_whatsapp', 'socials', 'link']));
         $relevant_types_sql = "'" . implode("','", array_map(static function($type) {
             return str_replace("'", "\\'", (string) $type);
@@ -924,7 +924,7 @@ class Links extends Controller {
     private function get_app_review_benchmark_payload(array $selected_app = []): array {
         $period_30d_start = (new \DateTimeImmutable())->sub(new \DateInterval('P29D'))->format('Y-m-d 00:00:00');
         $now_datetime = (new \DateTimeImmutable())->format('Y-m-d H:i:s');
-        $shop_block_types = ['link_discount', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo'];
+        $shop_block_types = ['link_discount', 'link_forever_webshop_reg', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo'];
         $shop_block_types_sql = "'" . implode("','", $shop_block_types) . "'";
         $shop_condition = \Altum\Link::get_forever_shop_click_condition_sql('`tl`', '`bb`', $shop_block_types_sql);
 

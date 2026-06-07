@@ -122,7 +122,7 @@ function fcc_featured_get_case_study_feature_labels(int $link_id, ?string $langu
         ? [
             'smart_links' => [
                 'label' => 'Pametni preporučni linkovi',
-                'types' => ['link_discount', 'link_forever_shop', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo'],
+                'types' => ['link_discount', 'link_forever_webshop_reg', 'link_forever_shop', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo'],
             ],
             'ai' => [
                 'label' => 'AI asistenti',
@@ -144,7 +144,7 @@ function fcc_featured_get_case_study_feature_labels(int $link_id, ?string $langu
         : [
             'smart_links' => [
                 'label' => 'Smart referral links',
-                'types' => ['link_discount', 'link_forever_shop', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo'],
+                'types' => ['link_discount', 'link_forever_webshop_reg', 'link_forever_shop', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo'],
             ],
             'ai' => [
                 'label' => 'AI assistants',
