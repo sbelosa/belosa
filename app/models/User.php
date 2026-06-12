@@ -45,6 +45,25 @@ class User extends Model {
 
         return $extra;
     }
+
+    /* Custom code: FC-2026-06-12: protect recurring Stripe members from expiry fallback when the local subscription link is temporarily missing */
+    public function has_expired_plan_downgrade_protection($user): bool {
+        $extra = $this->decode_extra($user->extra ?? null);
+        $billing_state = (string) ($extra->billing_state ?? '');
+        $stripe_status = (string) ($extra->billing_stripe_status ?? '');
+        $has_known_stripe_customer = !empty($extra->stripe_customer_id);
+
+        if(!empty($user->payment_subscription_id)) {
+            return true;
+        }
+
+        if(in_array($billing_state, [Billing::STATE_PAST_DUE, Billing::STATE_PAST_DUE_CRITICAL], true)) {
+            return true;
+        }
+
+        return $has_known_stripe_customer && in_array($stripe_status, ['active', 'trialing', 'past_due', 'unpaid', 'incomplete'], true);
+    }
+    /* /Custom code: FC-2026-06-12 */
     /* /Custom code: FC-2026-03-04 */
 
     private function get_plan_limit_key_by_link_type($type) {
@@ -430,26 +449,7 @@ class User extends Model {
 
     /* Requires full user variable */
     public function process_user_plan_expiration_by_user($user) {
-
-        $extra = $user->extra ?? null;
-
-        if(is_string($extra)) {
-            $extra = json_decode($extra);
-        }
-
-        if(is_array($extra)) {
-            $extra = (object) $extra;
-        }
-
-        if(!is_object($extra)) {
-            $extra = (object) [];
-        }
-
-        $billing_state = (string) ($extra->billing_state ?? '');
-        $stripe_status = (string) ($extra->billing_stripe_status ?? '');
-        $has_recurring_billing_protection = !empty($user->payment_subscription_id)
-            || in_array($billing_state, [Billing::STATE_PAST_DUE, Billing::STATE_PAST_DUE_CRITICAL], true)
-            || in_array($stripe_status, ['trialing', 'past_due', 'unpaid'], true);
+        $has_recurring_billing_protection = $this->has_expired_plan_downgrade_protection($user);
 
         if((new \DateTime($user->plan_expiration_date)) < (new \DateTime()) && $user->plan_id != 'free' && !$has_recurring_billing_protection) {
 

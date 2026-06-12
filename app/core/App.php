@@ -175,30 +175,36 @@ class App {
 
             /* Determine if the current plan is expired or disabled */
             $user->plan_is_expired = false;
+            $user_model = new User();
 
             /* Get current plan proper details */
             $user->plan = (new Plan())->get_plan_by_id($user->plan_id);
+            $plan_is_disabled_or_missing = !$user->plan || ($user->plan && !$user->plan->status);
+            $plan_is_date_expired = $user->plan && ((new \DateTime()) > (new \DateTime($user->plan_expiration_date)) && $user->plan_id != 'free');
 
-            if(!$user->plan || ($user->plan && ((new \DateTime()) > (new \DateTime($user->plan_expiration_date)) && $user->plan_id != 'free') || !$user->plan->status)) {
+            if($plan_is_disabled_or_missing || $plan_is_date_expired) {
                 $user->plan_is_expired = true;
+                $has_recurring_billing_protection = $plan_is_date_expired && $user_model->has_expired_plan_downgrade_protection($user);
 
-                $beginner_plan = (new Plan())->get_plan_by_id(2);
+                if(!$has_recurring_billing_protection) {
+                    $beginner_plan = (new Plan())->get_plan_by_id(2);
 
-                /* Switch the user to the default plan */
-                db()->where('user_id', $user->user_id)->update('users', [
-                    'plan_id' => 2,
-                    'plan_settings' => json_encode($beginner_plan->settings),
-                    'plan_expiration_date' => date('Y-m-d H:i:s', strtotime('+10 years')),
-                    'payment_subscription_id' => '',
-                    'payment_processor' => '',
-                    'payment_total_amount' => 0,
-                    'payment_currency' => '',
-                ]);
+                    /* Switch the user to the default plan */
+                    db()->where('user_id', $user->user_id)->update('users', [
+                        'plan_id' => 2,
+                        'plan_settings' => json_encode($beginner_plan->settings),
+                        'plan_expiration_date' => date('Y-m-d H:i:s', strtotime('+10 years')),
+                        'payment_subscription_id' => '',
+                        'payment_processor' => '',
+                        'payment_total_amount' => 0,
+                        'payment_currency' => '',
+                    ]);
 
-                (new User())->sync_links_with_plan($user->user_id);
+                    $user_model->sync_links_with_plan($user->user_id);
 
-                /* Clear the cache */
-                cache()->deleteItemsByTag('user_id=' .  \Altum\Authentication::$user_id);
+                    /* Clear the cache */
+                    cache()->deleteItemsByTag('user_id=' .  \Altum\Authentication::$user_id);
+                }
 
                 $user->plan_is_expired = false;
             }
@@ -206,7 +212,7 @@ class App {
             /* Update last activity */
             /* Do not update if user is impersonated by an admin */
             if(!$user->last_activity || (new \DateTime($user->last_activity))->modify('+15 minutes') < (new \DateTime()) && !session_has('admin_user_id')) {
-                (new User())->update_last_activity(\Altum\Authentication::$user_id);
+                $user_model->update_last_activity(\Altum\Authentication::$user_id);
             }
 
             if(!isset($_COOKIE['set_language'])) {

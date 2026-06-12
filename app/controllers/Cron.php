@@ -207,11 +207,13 @@ class Cron extends Controller {
             SELECT 
                 `user_id`,
                 `plan_id`,
+                `payment_subscription_id`,
                 `payment_processor`,
                 `name`,
                 `email`,
                 `language`,
-                `anti_phishing_code`
+                `anti_phishing_code`,
+                `extra`
             FROM 
                 `users`
             WHERE 
@@ -234,6 +236,9 @@ class Cron extends Controller {
 
         /* Go through each result */
         while($user = $result->fetch_object()) {
+            if((new \Altum\Models\User())->has_expired_plan_downgrade_protection($user)) {
+                continue;
+            }
 
             /* Custom code: FC-2026-03-09: fallback all expired users to Beginner plan */
             $fallback_plan_id = $beginner_plan ? 2 : 'free';
