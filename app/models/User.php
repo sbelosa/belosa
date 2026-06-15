@@ -864,9 +864,23 @@ class User extends Model {
                 \Stripe\Stripe::setApiKey(settings()->stripe->secret_key);
                 \Stripe\Stripe::setApiVersion('2023-10-16');
 
-                /* Cancel the Stripe Subscription */
-                $subscription = \Stripe\Subscription::retrieve($user->payment_subscription_id);
-                $subscription->cancel();
+                try {
+                    $subscription = \Stripe\Subscription::retrieve($user->payment_subscription_id);
+                    $status = (string) ($subscription->status ?? '');
+
+                    if(!in_array($status, ['canceled', 'incomplete_expired'], true)) {
+                        $subscription->cancel();
+                    }
+                } catch(\Exception $exception) {
+                    $message = mb_strtolower(trim((string) $exception->getMessage()));
+                    $is_missing_subscription = mb_strpos($message, 'no such subscription') !== false
+                        || mb_strpos($message, 'resource missing') !== false
+                        || mb_strpos($message, 'does not exist') !== false;
+
+                    if(!$is_missing_subscription) {
+                        throw $exception;
+                    }
+                }
 
                 break;
 

@@ -6,6 +6,11 @@ $current_plan_settings = $this->user->plan_settings ?? new \stdClass();
 $suggested_plan = $data->suggested_plan ?? null;
 $suggested_plan_settings = $suggested_plan->settings ?? null;
 $active_paid_plans = $data->active_paid_plans ?? [];
+$billing_summary = (array) ($data->billing_summary ?? []);
+$billing_state = (string) ($billing_summary['billing_state'] ?? 'healthy');
+$billing_last_notification_stage = (string) ($billing_summary['last_notification_stage'] ?? '');
+$stripe_portal_available = !empty($data->stripe_portal_available);
+$stripe_portal_url = $data->stripe_portal_url ?? url('account-plan/stripe_portal');
 $selected_currency = settings()->payment->currencies->{currency()} ?? null;
 
 $get_plan_translation_value = static function($plan, string $field): string {
@@ -218,6 +223,16 @@ if($suggested_plan) {
         $suggested_plan_cta_label = l('plans.choose');
     }
 }
+
+$retry_window_until_label = !empty($billing_summary['grace_until']) ? \Altum\Date::get($billing_summary['grace_until'], 2) : l('global.none');
+$show_billing_pause_notice = $billing_state === 'access_revoked'
+    && !empty($billing_summary['grace_until'])
+    && $billing_last_notification_stage !== 'revoked'
+    && (
+        str_starts_with((string) ($this->user->payment_subscription_id ?? ''), 'sub_')
+        || (string) ($this->user->payment_processor ?? '') === 'stripe'
+        || !empty($billing_summary['stripe_status'])
+    );
 
 $current_plan_status_text = l('account_plan.premium.status_free');
 $current_plan_status_icon = 'fa-star';
@@ -530,6 +545,24 @@ if($suggested_plan) {
         <?php endif ?>
     </div>
 
+    <?php if($show_billing_pause_notice): ?>
+        <section class="fcc-account-plan-section">
+            <div class="fcc-account-plan-section-header">
+                <div>
+                    <div class="fcc-account-plan-eyebrow"><i class="fas fa-fw fa-credit-card mr-1"></i><?= l('account_plan.billing.paused_eyebrow') ?></div>
+                    <h2 class="fcc-account-plan-section-title"><?= l('account_plan.billing.paused_title') ?></h2>
+                    <p class="fcc-account-plan-section-subtitle mb-0"><?= sprintf(l('account_plan.billing.paused_subtitle'), $retry_window_until_label) ?></p>
+                </div>
+
+                <?php if($stripe_portal_available): ?>
+                    <a href="<?= htmlspecialchars($stripe_portal_url, ENT_QUOTES, 'UTF-8') ?>" class="btn btn-outline-light fcc-account-plan-btn-secondary">
+                        <?= l('account_plan.billing.portal_button') ?>
+                    </a>
+                <?php endif ?>
+            </div>
+        </section>
+    <?php endif ?>
+
     <?php if($suggested_plan && !empty($comparison_rows)): ?>
         <section id="fcc-plan-compare" class="fcc-account-plan-section">
             <div class="fcc-account-plan-section-header">
@@ -608,9 +641,17 @@ if($suggested_plan) {
                 <p class="fcc-account-plan-section-subtitle mb-0"><?= l('account_plan.cancel.subheader') ?></p>
             </div>
 
-            <a href="<?= url('account-plan/cancel_subscription' . \Altum\Csrf::get_url_query()) ?>" class="btn btn-outline-light fcc-account-plan-btn-secondary" onclick='return confirm(<?= json_encode(l('account_plan.cancel.confirm_message')) ?>)'>
-                <?= l('account_plan.cancel.cancel') ?>
-            </a>
+            <div class="fcc-account-plan-actions">
+                <?php if($stripe_portal_available): ?>
+                    <a href="<?= htmlspecialchars($stripe_portal_url, ENT_QUOTES, 'UTF-8') ?>" class="btn btn-outline-light fcc-account-plan-btn-secondary">
+                        <?= l('account_plan.billing.portal_button') ?>
+                    </a>
+                <?php endif ?>
+
+                <a href="<?= url('account-plan/cancel_subscription' . \Altum\Csrf::get_url_query()) ?>" class="btn btn-outline-light fcc-account-plan-btn-secondary" onclick='return confirm(<?= json_encode(l('account_plan.cancel.confirm_message')) ?>)'>
+                    <?= l('account_plan.cancel.cancel') ?>
+                </a>
+            </div>
         </section>
     <?php endif ?>
 </div>
