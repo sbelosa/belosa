@@ -167,6 +167,22 @@ class Cron extends Controller {
         return array_values(array_filter($user_ids, fn($user_id) => $user_id > 0));
     }
 
+    private function get_expiry_check_user_ids(): array {
+        $raw = trim((string) ($_GET['fcc_expiry_user_ids'] ?? ''));
+
+        if($raw === '') {
+            return [];
+        }
+
+        $user_ids = array_values(array_unique(array_filter(array_map('intval', explode(',', $raw)))));
+
+        return array_values(array_filter($user_ids, fn($user_id) => $user_id > 0));
+    }
+
+    private function is_stripe_plan_entitled_status(?string $status): bool {
+        return in_array((string) $status, ['active', 'trialing'], true);
+    }
+
     private function reconcile_stripe_plan_expirations(): void {
         if(!settings()->payment->is_enabled || empty(settings()->stripe->is_enabled) || empty(settings()->stripe->secret_key)) {
             return;
@@ -219,7 +235,7 @@ class Cron extends Controller {
                             continue;
                         }
 
-                        if(in_array((string) ($candidate_subscription->status ?? ''), ['active', 'trialing', 'past_due', 'unpaid'], true)) {
+                        if(in_array((string) ($candidate_subscription->status ?? ''), ['active', 'trialing', 'past_due', 'unpaid', 'incomplete'], true)) {
                             $subscription = $candidate_subscription;
                             break;
                         }
@@ -265,7 +281,7 @@ class Cron extends Controller {
                 $extra->billing_subscription_cancelled_at = $extra->billing_subscription_cancelled_at ?? get_date();
             }
 
-            if(!in_array((string) $status, ['active', 'trialing', 'past_due', 'unpaid'], true) || empty($live_plan_expiration_date)) {
+            if(!$this->is_stripe_plan_entitled_status($status) || empty($live_plan_expiration_date)) {
                 db()->where('user_id', $user->user_id)->update('users', [
                     'extra' => json_encode($extra),
                 ]);
@@ -368,6 +384,12 @@ class Cron extends Controller {
         }
 
         $date = get_date();
+        $target_user_ids = $this->get_expiry_check_user_ids();
+        $target_ids_sql = !empty($target_user_ids) ? implode(',', array_map('intval', $target_user_ids)) : '';
+        $target_where = !empty($target_user_ids)
+            ? "AND `user_id` IN ({$target_ids_sql})"
+            : "AND `plan_expiration_date` < '{$date}'";
+        $limit = !empty($target_user_ids) ? count($target_user_ids) : 25;
 
         $result = database()->query("
             SELECT 
@@ -384,8 +406,9 @@ class Cron extends Controller {
                 `users`
             WHERE 
                 `plan_id` <> 'free'
-				AND `plan_expiration_date` < '{$date}' 
-            LIMIT 25
+                {$target_where}
+            ORDER BY `plan_expiration_date` ASC
+            LIMIT {$limit}
         ");
 
         $plans = [];

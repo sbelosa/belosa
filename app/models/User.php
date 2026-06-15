@@ -47,8 +47,8 @@ class User extends Model {
         return $extra;
     }
 
-    private function is_protective_stripe_status(?string $status): bool {
-        return in_array((string) $status, ['active', 'trialing', 'past_due', 'unpaid', 'incomplete'], true);
+    private function is_active_access_stripe_status(?string $status): bool {
+        return in_array((string) $status, ['active', 'trialing'], true);
     }
 
     private function get_live_stripe_subscription_status($user): ?string {
@@ -87,7 +87,7 @@ class User extends Model {
                     $customer_ids[$customer_id] = true;
                 }
 
-                if($this->is_protective_stripe_status($status)) {
+                if($this->is_active_access_stripe_status($status)) {
                     return self::$stripe_subscription_status_cache[$cache_key] = $status;
                 }
 
@@ -145,7 +145,7 @@ class User extends Model {
                             continue;
                         }
 
-                        if($this->is_protective_stripe_status($status)) {
+                        if($this->is_active_access_stripe_status($status)) {
                             return self::$stripe_subscription_status_cache[$cache_key] = $status;
                         }
 
@@ -182,14 +182,10 @@ class User extends Model {
             $live_stripe_status = $this->get_live_stripe_subscription_status($user);
 
             if($live_stripe_status !== null) {
-                return $this->is_protective_stripe_status($live_stripe_status);
+                return $this->is_active_access_stripe_status($live_stripe_status);
             }
 
-            if(in_array($billing_state, [Billing::STATE_PAST_DUE, Billing::STATE_PAST_DUE_CRITICAL], true)) {
-                return true;
-            }
-
-            return $has_known_stripe_customer && $this->is_protective_stripe_status($stripe_status);
+            return $has_known_stripe_customer && $this->is_active_access_stripe_status($stripe_status);
         }
 
         if($subscription_id !== '') {
