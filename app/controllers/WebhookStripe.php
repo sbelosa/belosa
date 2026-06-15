@@ -384,6 +384,7 @@ class WebhookStripe extends Controller {
                 'stripe_invoice_id' => $external_payment_id,
                 'stripe_payment_intent_id' => $payment_intent_id,
                 'stripe_status' => 'active',
+                'current_period_end' => !empty($session->lines->data[0]->period->end) ? date('Y-m-d H:i:s', (int) $session->lines->data[0]->period->end) : null,
                 'occurred_at' => $event_occurred_at,
             ]);
         }

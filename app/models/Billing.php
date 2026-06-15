@@ -535,6 +535,14 @@ class Billing extends Model {
         $extra->billing_stripe_status = $context['stripe_status'] ?? ($extra->billing_stripe_status ?? null);
         $extra->billing_current_period_end = $context['current_period_end'] ?? ($extra->billing_current_period_end ?? null);
         $extra->billing_next_retry_at = $context['next_retry_at'] ?? ($extra->billing_next_retry_at ?? null);
+
+        if(in_array($context['stripe_status'] ?? '', ['unpaid', 'canceled', 'incomplete_expired'], true)) {
+            $extra->billing_subscription_cancelled_at = $context['occurred_at'] ?? get_date();
+        } elseif(in_array($context['stripe_status'] ?? '', ['active', 'trialing'], true)) {
+            $extra->billing_subscription_cancelled_at = null;
+            $extra->billing_subscription_cancelled_during_trial = 0;
+        }
+
         $this->update_user_extra($user->user_id, $extra);
 
         $this->log_event($user->user_id, [

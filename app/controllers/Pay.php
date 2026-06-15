@@ -151,25 +151,100 @@ class Pay extends Controller {
         return null;
     }
 
-    /* Custom code: FC-2026-03-22: block duplicate recurring Stripe checkout while an active Stripe subscription already exists */
-    private function has_active_stripe_subscription(): bool {
-        $subscription_id = trim((string) ($this->user->payment_subscription_id ?? ''));
+    private function is_active_like_stripe_status(?string $status): bool {
+        return in_array((string) $status, ['active', 'trialing', 'past_due', 'unpaid'], true);
+    }
 
-        if(
-            ($this->user->payment_processor ?? null) !== 'stripe'
-            || !$subscription_id
-            || !str_starts_with($subscription_id, 'sub_')
-        ) {
-            return false;
+    private function stripe_subscription_matches_current_user($subscription): bool {
+        $metadata_user_id = (int) ($subscription->metadata->user_id ?? 0);
+
+        return $metadata_user_id === 0 || $metadata_user_id === (int) $this->user->user_id;
+    }
+
+    private function get_live_stripe_customer_ids(): array {
+        $customer_ids = [];
+        $reusable_customer_id = $this->get_reusable_stripe_customer_id();
+
+        if($reusable_customer_id) {
+            $customer_ids[$reusable_customer_id] = $reusable_customer_id;
         }
 
         try {
-            $subscription = \Stripe\Subscription::retrieve($subscription_id);
+            $customers = \Stripe\Customer::all([
+                'email' => $this->user->email,
+                'limit' => 10,
+            ]);
 
-            return in_array($subscription->status ?? '', ['active', 'trialing', 'past_due', 'unpaid'], true);
+            foreach($customers->data as $customer) {
+                $customer_id = (string) ($customer->id ?? '');
+
+                if($customer_id !== '') {
+                    $customer_ids[$customer_id] = $customer_id;
+                }
+            }
         } catch(\Exception $exception) {
-            return false;
         }
+
+        return array_values($customer_ids);
+    }
+
+    /* Custom code: FC-2026-03-22: block duplicate recurring Stripe checkout while an active Stripe subscription already exists */
+    private function has_active_stripe_subscription(): bool {
+        $subscription_id = trim((string) ($this->user->payment_subscription_id ?? ''));
+        $checked_subscription_ids = [];
+
+        if($subscription_id && str_starts_with($subscription_id, 'sub_')) {
+            try {
+                $subscription = \Stripe\Subscription::retrieve($subscription_id);
+                $checked_subscription_ids[(string) ($subscription->id ?? $subscription_id)] = true;
+
+                if($this->stripe_subscription_matches_current_user($subscription) && $this->is_active_like_stripe_status($subscription->status ?? '')) {
+                    return true;
+                }
+            } catch(\Exception $exception) {
+            }
+        }
+
+        foreach($this->get_live_stripe_customer_ids() as $customer_id) {
+            try {
+                $params = [
+                    'customer' => $customer_id,
+                    'status' => 'all',
+                    'limit' => 25,
+                ];
+
+                do {
+                    $subscriptions = \Stripe\Subscription::all($params);
+                    $subscription_data = $subscriptions->data ?? [];
+
+                    foreach($subscription_data as $subscription) {
+                        $candidate_subscription_id = (string) ($subscription->id ?? '');
+
+                        if($candidate_subscription_id !== '' && isset($checked_subscription_ids[$candidate_subscription_id])) {
+                            continue;
+                        }
+
+                        if(!$this->stripe_subscription_matches_current_user($subscription)) {
+                            continue;
+                        }
+
+                        if($this->is_active_like_stripe_status($subscription->status ?? '')) {
+                            return true;
+                        }
+                    }
+
+                    $has_more = !empty($subscriptions->has_more) && !empty($subscription_data);
+
+                    if($has_more) {
+                        $last_subscription = end($subscription_data);
+                        $params['starting_after'] = $last_subscription->id ?? null;
+                    }
+                } while($has_more && !empty($params['starting_after']));
+            } catch(\Exception $exception) {
+            }
+        }
+
+        return false;
     }
     /* /Custom code: FC-2026-03-22 */
     /* /Custom code: FC-2026-03-17 */

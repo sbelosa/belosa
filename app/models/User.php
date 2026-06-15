@@ -27,6 +27,7 @@ class User extends Model {
 
     /* Custom code: FC-2026-04-01: guard user cache refreshes from re-entering in the same request */
     private static array $user_cache_refresh_in_progress = [];
+    private static array $stripe_subscription_status_cache = [];
     /* /Custom code: FC-2026-04-01 */
 
     /* Custom code: FC-2026-03-04: trial cancellation analytics helpers */
@@ -46,14 +47,152 @@ class User extends Model {
         return $extra;
     }
 
+    private function is_protective_stripe_status(?string $status): bool {
+        return in_array((string) $status, ['active', 'trialing', 'past_due', 'unpaid', 'incomplete'], true);
+    }
+
+    private function get_live_stripe_subscription_status($user): ?string {
+        $extra = $this->decode_extra($user->extra ?? null);
+        $subscription_id = trim((string) ($user->payment_subscription_id ?? ''));
+        $stripe_customer_id = trim((string) ($extra->stripe_customer_id ?? ''));
+        $email = trim((string) ($user->email ?? ''));
+        $cache_key = md5(implode('|', [
+            (string) ($user->user_id ?? 0),
+            $subscription_id,
+            $stripe_customer_id,
+            $email,
+        ]));
+
+        if(array_key_exists($cache_key, self::$stripe_subscription_status_cache)) {
+            return self::$stripe_subscription_status_cache[$cache_key];
+        }
+
+        if(!settings()->payment->is_enabled || empty(settings()->stripe->is_enabled) || empty(settings()->stripe->secret_key)) {
+            return self::$stripe_subscription_status_cache[$cache_key] = null;
+        }
+
+        \Stripe\Stripe::setApiKey(settings()->stripe->secret_key);
+        \Stripe\Stripe::setApiVersion('2023-10-16');
+
+        $customer_ids = [];
+        $fallback_status = null;
+
+        if($subscription_id !== '' && str_starts_with($subscription_id, 'sub_')) {
+            try {
+                $subscription = \Stripe\Subscription::retrieve($subscription_id);
+                $status = (string) ($subscription->status ?? '');
+                $customer_id = (string) ($subscription->customer ?? '');
+
+                if($customer_id !== '' && str_starts_with($customer_id, 'cus_')) {
+                    $customer_ids[$customer_id] = true;
+                }
+
+                if($this->is_protective_stripe_status($status)) {
+                    return self::$stripe_subscription_status_cache[$cache_key] = $status;
+                }
+
+                if($status !== '' && $fallback_status === null) {
+                    $fallback_status = $status;
+                }
+            } catch(\Exception $exception) {
+            }
+        }
+
+        if($stripe_customer_id !== '' && str_starts_with($stripe_customer_id, 'cus_')) {
+            $customer_ids[$stripe_customer_id] = true;
+        }
+
+        if($email !== '') {
+            try {
+                $customers = \Stripe\Customer::all([
+                    'email' => $email,
+                    'limit' => 10,
+                ]);
+
+                foreach($customers->data as $customer) {
+                    $customer_id = (string) ($customer->id ?? '');
+
+                    if($customer_id !== '') {
+                        $customer_ids[$customer_id] = true;
+                    }
+                }
+            } catch(\Exception $exception) {
+            }
+        }
+
+        foreach(array_keys($customer_ids) as $customer_id) {
+            try {
+                $params = [
+                    'customer' => $customer_id,
+                    'status' => 'all',
+                    'limit' => 25,
+                ];
+
+                do {
+                    $subscriptions = \Stripe\Subscription::all($params);
+                    $subscription_data = $subscriptions->data ?? [];
+
+                    foreach($subscription_data as $subscription) {
+                        $metadata_user_id = (int) ($subscription->metadata->user_id ?? 0);
+
+                        if($metadata_user_id > 0 && $metadata_user_id !== (int) ($user->user_id ?? 0)) {
+                            continue;
+                        }
+
+                        $status = (string) ($subscription->status ?? '');
+
+                        if($status === '') {
+                            continue;
+                        }
+
+                        if($this->is_protective_stripe_status($status)) {
+                            return self::$stripe_subscription_status_cache[$cache_key] = $status;
+                        }
+
+                        if($fallback_status === null) {
+                            $fallback_status = $status;
+                        }
+                    }
+
+                    $has_more = !empty($subscriptions->has_more) && !empty($subscription_data);
+
+                    if($has_more) {
+                        $last_subscription = end($subscription_data);
+                        $params['starting_after'] = $last_subscription->id ?? null;
+                    }
+                } while($has_more && !empty($params['starting_after']));
+            } catch(\Exception $exception) {
+            }
+        }
+
+        return self::$stripe_subscription_status_cache[$cache_key] = $fallback_status;
+    }
+
     /* Custom code: FC-2026-06-12: protect recurring Stripe members from expiry fallback when the local subscription link is temporarily missing */
     public function has_expired_plan_downgrade_protection($user): bool {
         $extra = $this->decode_extra($user->extra ?? null);
         $billing_state = (string) ($extra->billing_state ?? '');
         $stripe_status = (string) ($extra->billing_stripe_status ?? '');
         $has_known_stripe_customer = !empty($extra->stripe_customer_id);
+        $payment_processor = trim((string) ($user->payment_processor ?? ''));
+        $subscription_id = trim((string) ($user->payment_subscription_id ?? ''));
+        $has_stripe_context = $payment_processor === 'stripe' || str_starts_with($subscription_id, 'sub_') || $has_known_stripe_customer;
 
-        if(!empty($user->payment_subscription_id)) {
+        if($has_stripe_context) {
+            $live_stripe_status = $this->get_live_stripe_subscription_status($user);
+
+            if($live_stripe_status !== null) {
+                return $this->is_protective_stripe_status($live_stripe_status);
+            }
+
+            if(in_array($billing_state, [Billing::STATE_PAST_DUE, Billing::STATE_PAST_DUE_CRITICAL], true)) {
+                return true;
+            }
+
+            return $has_known_stripe_customer && $this->is_protective_stripe_status($stripe_status);
+        }
+
+        if($subscription_id !== '') {
             return true;
         }
 
@@ -61,7 +200,7 @@ class User extends Model {
             return true;
         }
 
-        return $has_known_stripe_customer && in_array($stripe_status, ['active', 'trialing', 'past_due', 'unpaid', 'incomplete'], true);
+        return false;
     }
     /* /Custom code: FC-2026-06-12 */
     /* /Custom code: FC-2026-03-04 */
