@@ -183,30 +183,95 @@ class Cron extends Controller {
 
         $ids_sql = implode(',', array_map('intval', $user_ids));
         $result = database()->query("
-            SELECT `user_id`, `email`, `plan_expiration_date`, `payment_processor`, `payment_subscription_id`, `extra`
+            SELECT `user_id`, `plan_id`, `email`, `plan_expiration_date`, `payment_processor`, `payment_subscription_id`, `extra`
             FROM `users`
             WHERE `user_id` IN ({$ids_sql})
-              AND `payment_processor` = 'stripe'
-              AND `payment_subscription_id` LIKE 'sub_%'
         ");
 
         while($user = $result->fetch_object()) {
-            try {
-                $subscription = \Stripe\Subscription::retrieve($user->payment_subscription_id);
-            } catch(\Exception $exception) {
+            $extra = $this->decode_extra($user->extra ?? null);
+            $subscription = null;
+            $status = null;
+            $live_plan_expiration_date = null;
+            $stripe_customer_id = trim((string) ($extra->stripe_customer_id ?? ''));
+
+            if((string) ($user->payment_subscription_id ?? '') !== '' && str_starts_with((string) $user->payment_subscription_id, 'sub_')) {
+                try {
+                    $subscription = \Stripe\Subscription::retrieve($user->payment_subscription_id);
+                } catch(\Exception $exception) {
+                }
+            }
+
+            if(!$subscription && $stripe_customer_id !== '' && str_starts_with($stripe_customer_id, 'cus_')) {
+                try {
+                    $subscriptions = \Stripe\Subscription::all([
+                        'customer' => $stripe_customer_id,
+                        'status' => 'all',
+                        'limit' => 25,
+                    ]);
+
+                    $fallback_subscription = null;
+
+                    foreach($subscriptions->data ?? [] as $candidate_subscription) {
+                        $metadata_user_id = (int) ($candidate_subscription->metadata->user_id ?? 0);
+
+                        if($metadata_user_id > 0 && $metadata_user_id !== (int) $user->user_id) {
+                            continue;
+                        }
+
+                        if(in_array((string) ($candidate_subscription->status ?? ''), ['active', 'trialing', 'past_due', 'unpaid'], true)) {
+                            $subscription = $candidate_subscription;
+                            break;
+                        }
+
+                        if(!$fallback_subscription) {
+                            $fallback_subscription = $candidate_subscription;
+                        }
+                    }
+
+                    if(!$subscription) {
+                        $subscription = $fallback_subscription;
+                    }
+                } catch(\Exception $exception) {
+                }
+            }
+
+            if($subscription) {
+                $status = (string) ($subscription->status ?? '');
+                $live_plan_expiration_date = !empty($subscription->current_period_end) ? date('Y-m-d H:i:s', (int) $subscription->current_period_end) : null;
+
+                if(!empty($subscription->customer) && is_string($subscription->customer) && str_starts_with($subscription->customer, 'cus_')) {
+                    $extra->stripe_customer_id = $subscription->customer;
+                }
+            }
+
+            if(!$subscription && (int) ($user->plan_id ?? 0) === 2) {
+                $extra->billing_stripe_status = null;
+                $extra->billing_current_period_end = null;
+                db()->where('user_id', $user->user_id)->update('users', [
+                    'extra' => json_encode($extra),
+                ]);
+                cache()->deleteItemsByTag('user_id=' . $user->user_id);
                 continue;
             }
 
-            $status = (string) ($subscription->status ?? '');
-            if(!in_array($status, ['active', 'trialing', 'past_due', 'unpaid'], true)) {
-                continue;
+            if(!empty($status)) {
+                $extra->billing_stripe_status = $status;
             }
 
-            if(empty($subscription->current_period_end)) {
-                continue;
+            $extra->billing_current_period_end = $live_plan_expiration_date;
+
+            if(in_array((string) $status, ['canceled', 'unpaid', 'incomplete_expired'], true)) {
+                $extra->billing_subscription_cancelled_at = $extra->billing_subscription_cancelled_at ?? get_date();
             }
 
-            $live_plan_expiration_date = date('Y-m-d H:i:s', (int) $subscription->current_period_end);
+            if(!in_array((string) $status, ['active', 'trialing', 'past_due', 'unpaid'], true) || empty($live_plan_expiration_date)) {
+                db()->where('user_id', $user->user_id)->update('users', [
+                    'extra' => json_encode($extra),
+                ]);
+                cache()->deleteItemsByTag('user_id=' . $user->user_id);
+                continue;
+            }
 
             try {
                 $local_timestamp = !empty($user->plan_expiration_date) ? (new \DateTime($user->plan_expiration_date))->getTimestamp() : 0;
@@ -215,27 +280,20 @@ class Cron extends Controller {
                 continue;
             }
 
-            if(abs($local_timestamp - $live_timestamp) < 7 * 24 * 60 * 60) {
-                continue;
-            }
-
-            $extra = $this->decode_extra($user->extra ?? null);
-            $extra->billing_stripe_status = $status;
-            $extra->billing_current_period_end = $live_plan_expiration_date;
-
-            if(!empty($subscription->customer) && is_string($subscription->customer) && str_starts_with($subscription->customer, 'cus_')) {
-                $extra->stripe_customer_id = $subscription->customer;
-            }
-
-            db()->where('user_id', $user->user_id)->update('users', [
-                'plan_expiration_date' => $live_plan_expiration_date,
-                'plan_expiry_reminder' => 0,
+            $update = [
                 'extra' => json_encode($extra),
-            ]);
+            ];
+
+            if(abs($local_timestamp - $live_timestamp) >= 7 * 24 * 60 * 60) {
+                $update['plan_expiration_date'] = $live_plan_expiration_date;
+                $update['plan_expiry_reminder'] = 0;
+            }
+
+            db()->where('user_id', $user->user_id)->update('users', $update);
 
             cache()->deleteItemsByTag('user_id=' . $user->user_id);
 
-            if(DEBUG) {
+            if(DEBUG && isset($update['plan_expiration_date'])) {
                 echo sprintf(
                     'reconcile_stripe_plan_expirations() -> user_id %s aligned from %s to %s',
                     $user->user_id,
