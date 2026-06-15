@@ -178,6 +178,7 @@ class WebhookStripe extends Controller {
         $external_payment_id = $session->id;
         $event_occurred_at = date('Y-m-d H:i:s', (int) ($event->created ?? time()));
         $stripe_customer_id = is_string($session->customer ?? null) ? $session->customer : null;
+        $stripe_current_period_end = !empty($session->lines->data[0]->period->end) ? date('Y-m-d H:i:s', (int) $session->lines->data[0]->period->end) : null;
 
         switch($event->type) {
             /* Handle trial start */
@@ -361,7 +362,8 @@ class WebhookStripe extends Controller {
             $payment_type,
             $payment_subscription_id,
             $payer_email,
-            $payer_name
+            $payer_name,
+            $stripe_current_period_end
         );
 
         /* Custom code: FC-2026-03-17: persist canonical Stripe customer after successful payment flows */
@@ -384,7 +386,7 @@ class WebhookStripe extends Controller {
                 'stripe_invoice_id' => $external_payment_id,
                 'stripe_payment_intent_id' => $payment_intent_id,
                 'stripe_status' => 'active',
-                'current_period_end' => !empty($session->lines->data[0]->period->end) ? date('Y-m-d H:i:s', (int) $session->lines->data[0]->period->end) : null,
+                'current_period_end' => $stripe_current_period_end,
                 'occurred_at' => $event_occurred_at,
             ]);
         }

@@ -104,7 +104,7 @@ class Payments extends Model {
         }
     }
 
-    public function webhook_process_payment($payment_processor, $external_payment_id, $payment_total, $payment_currency, $user_id, $plan_id, $payment_frequency, $code, $discount_amount, $base_amount, $taxes_ids, $payment_type, $payment_subscription_id, $payer_email, $payer_name) {
+    public function webhook_process_payment($payment_processor, $external_payment_id, $payment_total, $payment_currency, $user_id, $plan_id, $payment_frequency, $code, $discount_amount, $base_amount, $taxes_ids, $payment_type, $payment_subscription_id, $payer_email, $payer_name, $override_plan_expiration_date = null) {
         /* Get the plan details */
         $plan = db()->where('plan_id', $plan_id)->getOne('plans');
 
@@ -258,7 +258,19 @@ class Payments extends Model {
             'annual' => '+12 months +12 hours',
             'lifetime' => '+100 years +12 hours',
         };
-        $plan_expiration_date = (new \DateTime($current_plan_expiration_date))->modify($modifier)->format('Y-m-d H:i:s');
+        $plan_expiration_date = null;
+
+        if($payment_type == 'recurring' && !empty($override_plan_expiration_date)) {
+            try {
+                $plan_expiration_date = (new \DateTime($override_plan_expiration_date))->format('Y-m-d H:i:s');
+            } catch(\Exception $exception) {
+                $plan_expiration_date = null;
+            }
+        }
+
+        if(!$plan_expiration_date) {
+            $plan_expiration_date = (new \DateTime($current_plan_expiration_date))->modify($modifier)->format('Y-m-d H:i:s');
+        }
 
         /* Custom code: FC-2026-03-04: recurring payment resets cancellation markers */
         $extra = $this->decode_extra($user->extra ?? null);

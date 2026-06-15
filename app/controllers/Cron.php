@@ -77,6 +77,7 @@ class Cron extends Controller {
         $this->initiate();
 
         $this->users_plan_expiry_checker();
+        $this->reconcile_stripe_plan_expirations();
 
         $this->users_deletion_reminder();
 
@@ -136,6 +137,113 @@ class Cron extends Controller {
         $this->close();
 
         $this->update_cron_execution_datetimes('cron_datetime');
+    }
+
+    private function decode_extra($extra): object {
+        if(is_string($extra)) {
+            $extra = json_decode($extra);
+        }
+
+        if(is_array($extra)) {
+            $extra = (object) $extra;
+        }
+
+        if(!is_object($extra)) {
+            $extra = (object) [];
+        }
+
+        return $extra;
+    }
+
+    private function get_stripe_reconcile_user_ids(): array {
+        $raw = trim((string) ($_GET['fcc_reconcile_stripe_user_ids'] ?? ''));
+
+        if($raw === '') {
+            return [];
+        }
+
+        $user_ids = array_values(array_unique(array_filter(array_map('intval', explode(',', $raw)))));
+
+        return array_values(array_filter($user_ids, fn($user_id) => $user_id > 0));
+    }
+
+    private function reconcile_stripe_plan_expirations(): void {
+        if(!settings()->payment->is_enabled || empty(settings()->stripe->is_enabled) || empty(settings()->stripe->secret_key)) {
+            return;
+        }
+
+        $user_ids = $this->get_stripe_reconcile_user_ids();
+
+        if(empty($user_ids)) {
+            return;
+        }
+
+        \Stripe\Stripe::setApiKey(settings()->stripe->secret_key);
+        \Stripe\Stripe::setApiVersion('2023-10-16');
+
+        $ids_sql = implode(',', array_map('intval', $user_ids));
+        $result = database()->query("
+            SELECT `user_id`, `email`, `plan_expiration_date`, `payment_processor`, `payment_subscription_id`, `extra`
+            FROM `users`
+            WHERE `user_id` IN ({$ids_sql})
+              AND `payment_processor` = 'stripe'
+              AND `payment_subscription_id` LIKE 'sub_%'
+        ");
+
+        while($user = $result->fetch_object()) {
+            try {
+                $subscription = \Stripe\Subscription::retrieve($user->payment_subscription_id);
+            } catch(\Exception $exception) {
+                continue;
+            }
+
+            $status = (string) ($subscription->status ?? '');
+            if(!in_array($status, ['active', 'trialing', 'past_due', 'unpaid'], true)) {
+                continue;
+            }
+
+            if(empty($subscription->current_period_end)) {
+                continue;
+            }
+
+            $live_plan_expiration_date = date('Y-m-d H:i:s', (int) $subscription->current_period_end);
+
+            try {
+                $local_timestamp = !empty($user->plan_expiration_date) ? (new \DateTime($user->plan_expiration_date))->getTimestamp() : 0;
+                $live_timestamp = (new \DateTime($live_plan_expiration_date))->getTimestamp();
+            } catch(\Exception $exception) {
+                continue;
+            }
+
+            if(abs($local_timestamp - $live_timestamp) < 7 * 24 * 60 * 60) {
+                continue;
+            }
+
+            $extra = $this->decode_extra($user->extra ?? null);
+            $extra->billing_stripe_status = $status;
+            $extra->billing_current_period_end = $live_plan_expiration_date;
+
+            if(!empty($subscription->customer) && is_string($subscription->customer) && str_starts_with($subscription->customer, 'cus_')) {
+                $extra->stripe_customer_id = $subscription->customer;
+            }
+
+            db()->where('user_id', $user->user_id)->update('users', [
+                'plan_expiration_date' => $live_plan_expiration_date,
+                'plan_expiry_reminder' => 0,
+                'extra' => json_encode($extra),
+            ]);
+
+            cache()->deleteItemsByTag('user_id=' . $user->user_id);
+
+            if(DEBUG) {
+                echo sprintf(
+                    'reconcile_stripe_plan_expirations() -> user_id %s aligned from %s to %s',
+                    $user->user_id,
+                    $user->plan_expiration_date ?: 'null',
+                    $live_plan_expiration_date
+                );
+            }
+        }
     }
 
     /* Custom code: FC-2026-03-17: monitor Stripe failed-payment grace periods */
