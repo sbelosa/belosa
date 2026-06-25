@@ -130,6 +130,145 @@ class Billing extends Model {
         return $has_stripe_context ? url('account-plan/stripe_portal') : url('account-plan');
     }
 
+    private function get_notification_stage_map(): array {
+        return [
+            self::NOTIFICATION_WARNING_FIRST => [
+                'email_subject' => 'global.emails.billing_warning_first.subject',
+                'email_body' => 'global.emails.billing_warning_first.body',
+                'internal_title' => 'global.notifications.billing_warning_first.title',
+                'internal_description' => 'global.notifications.billing_warning_first.description',
+            ],
+            self::NOTIFICATION_WARNING_SECOND => [
+                'email_subject' => 'global.emails.billing_warning_second.subject',
+                'email_body' => 'global.emails.billing_warning_second.body',
+                'internal_title' => 'global.notifications.billing_warning_second.title',
+                'internal_description' => 'global.notifications.billing_warning_second.description',
+            ],
+            self::NOTIFICATION_PAUSED => [
+                'email_subject' => 'global.emails.billing_paused.subject',
+                'email_body' => 'global.emails.billing_paused.body',
+                'internal_title' => 'global.notifications.billing_paused.title',
+                'internal_description' => 'global.notifications.billing_paused.description',
+            ],
+            self::NOTIFICATION_RECOVERED => [
+                'email_subject' => 'global.emails.billing_recovered.subject',
+                'email_body' => 'global.emails.billing_recovered.body',
+                'internal_title' => 'global.notifications.billing_recovered.title',
+                'internal_description' => 'global.notifications.billing_recovered.description',
+            ],
+            self::NOTIFICATION_REVOKED => [
+                'email_subject' => 'global.emails.billing_revoked.subject',
+                'email_body' => 'global.emails.billing_revoked.body',
+                'internal_title' => 'global.notifications.billing_revoked.title',
+                'internal_description' => 'global.notifications.billing_revoked.description',
+            ],
+        ];
+    }
+
+    private function get_template_replacements(array $placeholders): array {
+        return array_combine(
+            array_map(fn($key) => '{{' . $key . '}}', array_keys($placeholders)),
+            array_values($placeholders)
+        );
+    }
+
+    private function render_internal_notification_copy(object $user, string $stage, array $context, ?string $language = null): ?array {
+        $stage_map = $this->get_notification_stage_map();
+
+        if(!isset($stage_map[$stage])) {
+            return null;
+        }
+
+        $language = $language ?: fc_resolve_language_name($user->language ?? \Altum\Language::$default_name ?? 'english');
+        $placeholders = $this->build_notification_context($user, $context + ['notification_stage' => $stage], $language);
+        $template_replacements = $this->get_template_replacements($placeholders);
+
+        return [
+            'title' => str_replace(
+                array_keys($template_replacements),
+                array_values($template_replacements),
+                l($stage_map[$stage]['internal_title'], $language)
+            ),
+            'description' => str_replace(
+                array_keys($template_replacements),
+                array_values($template_replacements),
+                l($stage_map[$stage]['internal_description'], $language)
+            ),
+        ];
+    }
+
+    private function refresh_active_billing_internal_notifications(object $user, array $context): void {
+        if(!settings()->internal_notifications->users_is_enabled || empty($context['grace_until'])) {
+            return;
+        }
+
+        $grace_started_at = $this->normalize_datetime($context['grace_started_at'] ?? null);
+
+        if(!$grace_started_at) {
+            return;
+        }
+
+        $context = $context + [
+            'plan_id' => (int) ($user->plan_id ?? 0),
+            'processor' => $user->payment_processor ?: 'stripe',
+            'stripe_subscription_id' => $user->payment_subscription_id ?? null,
+        ];
+
+        $language = fc_resolve_language_name($user->language ?? \Altum\Language::$default_name ?? 'english');
+        $title_matchers = [
+            self::NOTIFICATION_WARNING_FIRST => [
+                'Zabilježen problem s naplatom za %',
+                'Payment issue detected for %',
+            ],
+            self::NOTIFICATION_WARNING_SECOND => [
+                'Hitno billing upozorenje',
+                'Urgent billing warning',
+            ],
+            self::NOTIFICATION_PAUSED => [
+                'Plaćeni pristup je privremeno ugašen',
+                'Paid access temporarily paused',
+            ],
+        ];
+
+        foreach([self::NOTIFICATION_WARNING_FIRST, self::NOTIFICATION_WARNING_SECOND, self::NOTIFICATION_PAUSED] as $stage) {
+            $copy = $this->render_internal_notification_copy($user, $stage, $context, $language);
+
+            if(!$copy) {
+                continue;
+            }
+
+            $title_conditions = ["`title` = '" . database()->real_escape_string($copy['title']) . "'"];
+
+            foreach($title_matchers[$stage] ?? [] as $matcher) {
+                $escaped_matcher = database()->real_escape_string($matcher);
+                $title_conditions[] = str_contains($matcher, '%')
+                    ? "`title` LIKE '{$escaped_matcher}'"
+                    : "`title` = '{$escaped_matcher}'";
+            }
+
+            $description = database()->real_escape_string($copy['description']);
+            $title = database()->real_escape_string($copy['title']);
+            $grace_started_at_sql = database()->real_escape_string($grace_started_at);
+            $user_id = (int) $user->user_id;
+
+            database()->query("
+                UPDATE `internal_notifications`
+                SET
+                    `title` = '{$title}',
+                    `description` = '{$description}'
+                WHERE `user_id` = {$user_id}
+                    AND `for_who` = 'user'
+                    AND `from_who` = 'system'
+                    AND `icon` = 'fas fa-credit-card'
+                    AND `url` = 'account-plan'
+                    AND `datetime` >= '{$grace_started_at_sql}'
+                    AND (" . implode(' OR ', array_unique($title_conditions)) . ")
+            ");
+        }
+
+        cache()->deleteItemsByTag('user_id=' . $user->user_id);
+    }
+
     private function safely_cancel_failed_subscription(object $user, string $occurred_at, ?string $reason_text = null): bool {
         if(trim((string) ($user->payment_processor ?? '')) !== 'stripe' || empty($user->payment_subscription_id)) {
             return true;
@@ -425,38 +564,7 @@ class Billing extends Model {
     }
 
     private function send_notification(object $user, string $stage, array $context): void {
-        $stage_map = [
-            self::NOTIFICATION_WARNING_FIRST => [
-                'email_subject' => 'global.emails.billing_warning_first.subject',
-                'email_body' => 'global.emails.billing_warning_first.body',
-                'internal_title' => 'global.notifications.billing_warning_first.title',
-                'internal_description' => 'global.notifications.billing_warning_first.description',
-            ],
-            self::NOTIFICATION_WARNING_SECOND => [
-                'email_subject' => 'global.emails.billing_warning_second.subject',
-                'email_body' => 'global.emails.billing_warning_second.body',
-                'internal_title' => 'global.notifications.billing_warning_second.title',
-                'internal_description' => 'global.notifications.billing_warning_second.description',
-            ],
-            self::NOTIFICATION_PAUSED => [
-                'email_subject' => 'global.emails.billing_paused.subject',
-                'email_body' => 'global.emails.billing_paused.body',
-                'internal_title' => 'global.notifications.billing_paused.title',
-                'internal_description' => 'global.notifications.billing_paused.description',
-            ],
-            self::NOTIFICATION_RECOVERED => [
-                'email_subject' => 'global.emails.billing_recovered.subject',
-                'email_body' => 'global.emails.billing_recovered.body',
-                'internal_title' => 'global.notifications.billing_recovered.title',
-                'internal_description' => 'global.notifications.billing_recovered.description',
-            ],
-            self::NOTIFICATION_REVOKED => [
-                'email_subject' => 'global.emails.billing_revoked.subject',
-                'email_body' => 'global.emails.billing_revoked.body',
-                'internal_title' => 'global.notifications.billing_revoked.title',
-                'internal_description' => 'global.notifications.billing_revoked.description',
-            ],
-        ];
+        $stage_map = $this->get_notification_stage_map();
 
         if(!isset($stage_map[$stage])) {
             return;
@@ -465,10 +573,7 @@ class Billing extends Model {
         /* Custom code: FC-2026-03-22: normalize legacy language aliases */
         $language = fc_resolve_language_name($user->language ?? \Altum\Language::$default_name ?? 'english');
         $placeholders = $this->build_notification_context($user, $context + ['notification_stage' => $stage], $language);
-        $template_replacements = array_combine(
-            array_map(fn($key) => '{{' . $key . '}}', array_keys($placeholders)),
-            array_values($placeholders)
-        );
+        $template_replacements = $this->get_template_replacements($placeholders);
         /* /Custom code: FC-2026-03-22 */
         $email_template = get_email_template(
             $template_replacements,
@@ -494,19 +599,11 @@ class Billing extends Model {
             ));
         }
 
-        $internal_title = str_replace(
-            array_map(fn($key) => '{{' . $key . '}}', array_keys($placeholders)),
-            array_values($placeholders),
-            l($stage_map[$stage]['internal_title'], $language)
-        );
+        $internal_copy = $this->render_internal_notification_copy($user, $stage, $context, $language);
 
-        $internal_description = str_replace(
-            array_map(fn($key) => '{{' . $key . '}}', array_keys($placeholders)),
-            array_values($placeholders),
-            l($stage_map[$stage]['internal_description'], $language)
-        );
-
-        $this->create_user_internal_notification($user, $internal_title, $internal_description, 'account-plan');
+        if($internal_copy) {
+            $this->create_user_internal_notification($user, $internal_copy['title'], $internal_copy['description'], 'account-plan');
+        }
 
         $current_user = db()->where('user_id', $user->user_id)->getOne('users', ['extra']);
         $extra = $this->decode_extra($current_user->extra ?? ($user->extra ?? null));
@@ -646,6 +743,13 @@ class Billing extends Model {
         $extra->billing_current_period_end = $context['current_period_end'] ?? null;
 
         $this->update_user_extra($user->user_id, $extra);
+        $this->refresh_active_billing_internal_notifications($user, $context + [
+            'plan_id' => (int) ($context['plan_id'] ?? $user->plan_id ?? 0),
+            'grace_started_at' => $extra->billing_grace_started_at,
+            'grace_until' => $extra->billing_grace_until,
+            'reason_code' => $context['reason_code'] ?? 'stripe_payment_failed',
+            'reason_text' => $context['reason_text'] ?? l('global.unknown'),
+        ]);
 
         $this->log_event($user->user_id, [
             'event_type' => 'payment_failed',
@@ -779,6 +883,13 @@ class Billing extends Model {
         }
 
         $this->update_user_extra($user->user_id, $extra);
+        $this->refresh_active_billing_internal_notifications($user, $context + [
+            'plan_id' => (int) ($context['plan_id'] ?? $user->plan_id ?? 0),
+            'grace_started_at' => $extra->billing_grace_started_at ?? null,
+            'grace_until' => $extra->billing_grace_until ?? null,
+            'reason_code' => $context['reason_code'] ?? 'stripe_subscription_past_due',
+            'reason_text' => $context['reason_text'] ?? ('Stripe status: ' . ($context['stripe_status'] ?? 'unknown')),
+        ]);
 
         $this->log_event($user->user_id, [
             'event_type' => 'subscription_status_changed',
@@ -869,6 +980,22 @@ class Billing extends Model {
                     $grace_until = $this->get_retry_window_until($grace_started_at, $extra->billing_next_retry_at ?? null);
                     $extra->billing_grace_until = $grace_until;
                     $this->update_user_extra((int) $user->user_id, $extra);
+                }
+
+                if($grace_until && $grace_started_at) {
+                    $this->refresh_active_billing_internal_notifications($user, [
+                        'user_id' => (int) $user->user_id,
+                        'plan_id' => (int) $user->plan_id,
+                        'email' => $user->email,
+                        'processor' => $user->payment_processor ?: 'stripe',
+                        'stripe_subscription_id' => $user->payment_subscription_id,
+                        'stripe_status' => $extra->billing_stripe_status ?? null,
+                        'reason_code' => $extra->billing_last_failed_reason_code ?? 'stripe_payment_failed',
+                        'reason_text' => $extra->billing_last_failed_reason_text ?? l('global.unknown'),
+                        'grace_started_at' => $grace_started_at,
+                        'grace_until' => $grace_until,
+                        'next_retry_at' => $extra->billing_next_retry_at ?? null,
+                    ]);
                 }
 
                 if($grace_until && $now < $grace_until) {
