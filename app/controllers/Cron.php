@@ -300,6 +300,9 @@ class Cron extends Controller {
                         'currency' => !empty($latest_invoice->currency) ? mb_strtoupper((string) $latest_invoice->currency) : null,
                         'occurred_at' => !empty($latest_invoice->created) ? date('Y-m-d H:i:s', (int) $latest_invoice->created) : get_date(),
                     ]);
+
+                    $user = db()->where('user_id', $user->user_id)->getOne('users', ['user_id', 'plan_id', 'email', 'plan_expiration_date', 'payment_processor', 'payment_subscription_id', 'extra']);
+                    $extra = $this->decode_extra($user->extra ?? null);
                 }
             }
 
