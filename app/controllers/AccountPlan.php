@@ -188,7 +188,7 @@ class AccountPlan extends Controller {
         return $this->resolve_stripe_customer_id() !== null;
     }
 
-    private function create_stripe_portal_url(): string {
+    private function create_stripe_portal_url(?string $flow_type = null): string {
         if(!$this->configure_stripe_api()) {
             throw new \Exception(l('account_plan.billing.portal_unavailable'));
         }
@@ -199,10 +199,18 @@ class AccountPlan extends Controller {
             throw new \Exception(l('account_plan.billing.portal_unavailable'));
         }
 
-        $session = \Stripe\BillingPortal\Session::create([
+        $session_payload = [
             'customer' => $customer_id,
             'return_url' => url('account-plan'),
-        ]);
+        ];
+
+        if($flow_type) {
+            $session_payload['flow_data'] = [
+                'type' => $flow_type,
+            ];
+        }
+
+        $session = \Stripe\BillingPortal\Session::create($session_payload);
 
         $portal_url = trim((string) ($session->url ?? ''));
 
@@ -211,6 +219,167 @@ class AccountPlan extends Controller {
         }
 
         return $portal_url;
+    }
+
+    private function get_latest_open_stripe_invoice(array $billing_summary = []): ?\Stripe\Invoice {
+        if(!$this->configure_stripe_api()) {
+            return null;
+        }
+
+        $invoice_ids = [];
+        $latest_invoice_id = trim((string) ($billing_summary['last_invoice_id'] ?? ''));
+
+        if(str_starts_with($latest_invoice_id, 'in_')) {
+            $invoice_ids[$latest_invoice_id] = $latest_invoice_id;
+        }
+
+        $subscription_id = trim((string) ($this->user->payment_subscription_id ?? ''));
+
+        if(str_starts_with($subscription_id, 'sub_')) {
+            try {
+                $invoices = \Stripe\Invoice::all([
+                    'subscription' => $subscription_id,
+                    'status' => 'open',
+                    'limit' => 5,
+                ]);
+
+                foreach($invoices->data ?? [] as $invoice) {
+                    $invoice_id = (string) ($invoice->id ?? '');
+
+                    if(str_starts_with($invoice_id, 'in_')) {
+                        $invoice_ids[$invoice_id] = $invoice_id;
+                    }
+                }
+            } catch(\Throwable $exception) {
+            }
+        }
+
+        foreach(array_values($invoice_ids) as $invoice_id) {
+            try {
+                $invoice = \Stripe\Invoice::retrieve($invoice_id);
+
+                if(($invoice->status ?? '') === 'open' && (int) ($invoice->amount_remaining ?? 0) > 0) {
+                    return $invoice;
+                }
+            } catch(\Throwable $exception) {
+            }
+        }
+
+        return null;
+    }
+
+    private function get_stripe_identifier($value): string {
+        if(is_string($value)) {
+            return trim($value);
+        }
+
+        if(is_object($value) && isset($value->id)) {
+            return trim((string) $value->id);
+        }
+
+        if(is_array($value) && isset($value['id'])) {
+            return trim((string) $value['id']);
+        }
+
+        return '';
+    }
+
+    private function get_retry_invoice_payment_payload(\Stripe\Invoice $invoice): array {
+        $customer = null;
+        $customer_id = $this->get_stripe_identifier($invoice->customer ?? null);
+        $subscription_id = $this->get_stripe_identifier($invoice->subscription ?? null);
+
+        if(!$subscription_id) {
+            $subscription_id = trim((string) ($this->user->payment_subscription_id ?? ''));
+        }
+
+        if(str_starts_with($customer_id, 'cus_')) {
+            try {
+                $customer = \Stripe\Customer::retrieve($customer_id);
+            } catch(\Throwable $exception) {
+            }
+        }
+
+        $customer_payment_method_id = $this->get_stripe_identifier($customer->invoice_settings->default_payment_method ?? null);
+
+        if(str_starts_with($customer_payment_method_id, 'pm_')) {
+            if(str_starts_with($subscription_id, 'sub_')) {
+                try {
+                    $subscription = \Stripe\Subscription::retrieve($subscription_id);
+                    $subscription_payment_method_id = $this->get_stripe_identifier($subscription->default_payment_method ?? null);
+
+                    if($subscription_payment_method_id !== $customer_payment_method_id) {
+                        \Stripe\Subscription::update($subscription_id, [
+                            'default_payment_method' => $customer_payment_method_id,
+                        ]);
+                    }
+                } catch(\Throwable $exception) {
+                }
+            }
+
+            return ['payment_method' => $customer_payment_method_id];
+        }
+
+        if(str_starts_with($subscription_id, 'sub_')) {
+            try {
+                $subscription = \Stripe\Subscription::retrieve($subscription_id);
+                $subscription_payment_method_id = $this->get_stripe_identifier($subscription->default_payment_method ?? null);
+
+                if(str_starts_with($subscription_payment_method_id, 'pm_')) {
+                    return ['payment_method' => $subscription_payment_method_id];
+                }
+
+                $subscription_source_id = $this->get_stripe_identifier($subscription->default_source ?? null);
+
+                if($subscription_source_id) {
+                    return ['source' => $subscription_source_id];
+                }
+            } catch(\Throwable $exception) {
+            }
+        }
+
+        $invoice_payment_method_id = $this->get_stripe_identifier($invoice->default_payment_method ?? null);
+
+        if(str_starts_with($invoice_payment_method_id, 'pm_')) {
+            return ['payment_method' => $invoice_payment_method_id];
+        }
+
+        $invoice_source_id = $this->get_stripe_identifier($invoice->default_source ?? null);
+
+        if($invoice_source_id) {
+            return ['source' => $invoice_source_id];
+        }
+
+        $customer_source_id = $this->get_stripe_identifier($customer->default_source ?? null);
+
+        if($customer_source_id) {
+            return ['source' => $customer_source_id];
+        }
+
+        return [];
+    }
+
+    private function format_stripe_invoice_amount(?\Stripe\Invoice $invoice): string {
+        if(!$invoice || !isset($invoice->amount_remaining, $invoice->currency)) {
+            return '';
+        }
+
+        $currency = mb_strtoupper((string) $invoice->currency);
+        $amount = in_array($currency, get_zero_decimal_currencies_array()) ? (float) $invoice->amount_remaining : ((float) $invoice->amount_remaining / 100);
+
+        return nr($amount, 2) . ' ' . $currency;
+    }
+
+    private function get_billing_recovery_context(array $billing_summary): array {
+        $invoice = $this->get_latest_open_stripe_invoice($billing_summary);
+
+        return [
+            'invoice_id' => $invoice->id ?? ($billing_summary['last_invoice_id'] ?? null),
+            'invoice_status' => $invoice->status ?? null,
+            'invoice_amount' => $this->format_stripe_invoice_amount($invoice),
+            'hosted_invoice_url' => trim((string) ($invoice->hosted_invoice_url ?? '')),
+            'can_retry_now' => (bool) ($invoice && ($invoice->status ?? '') === 'open'),
+        ];
     }
 
     public function index() {
@@ -276,6 +445,9 @@ class AccountPlan extends Controller {
 
         $billing_summary = (new Billing())->get_user_billing_summary((int) $this->user->user_id);
         $stripe_portal_available = $this->can_open_stripe_portal();
+        $billing_recovery = in_array((string) ($billing_summary['billing_state'] ?? ''), [Billing::STATE_PAST_DUE, Billing::STATE_PAST_DUE_CRITICAL], true)
+            ? $this->get_billing_recovery_context($billing_summary)
+            : [];
 
         /* Prepare the view */
         $data = [
@@ -283,8 +455,11 @@ class AccountPlan extends Controller {
             'suggested_plan_code' => $suggested_plan_code ?? null,
             'active_paid_plans' => $active_paid_plans,
             'billing_summary' => $billing_summary,
+            'billing_recovery' => $billing_recovery,
             'stripe_portal_available' => $stripe_portal_available,
             'stripe_portal_url' => url('account-plan/stripe_portal'),
+            'stripe_payment_method_url' => url('account-plan/stripe_payment_method'),
+            'stripe_retry_payment_url' => url('account-plan/retry_stripe_payment' . \Altum\Csrf::get_url_query()),
         ];
 
         $view = new \Altum\View('account-plan/index', (array) $this);
@@ -309,6 +484,98 @@ class AccountPlan extends Controller {
             Alerts::add_error(trim((string) $exception->getMessage()) ?: l('account_plan.billing.portal_unavailable'));
             redirect('account-plan');
         }
+    }
+
+    public function stripe_payment_method() {
+
+        \Altum\Authentication::guard();
+
+        if(vip_funnel_demo_is_sandbox_user($this->user)) {
+            Alerts::add_info(vip_funnel_demo_get_locked_action_message('account_plan'));
+            redirect('account-plan');
+        }
+
+        try {
+            header('Location: ' . $this->create_stripe_portal_url('payment_method_update'));
+            die();
+        } catch(\Throwable $exception) {
+            Alerts::add_error(trim((string) $exception->getMessage()) ?: l('account_plan.billing.portal_unavailable'));
+            redirect('account-plan');
+        }
+    }
+
+    public function retry_stripe_payment() {
+
+        \Altum\Authentication::guard();
+
+        if(vip_funnel_demo_is_sandbox_user($this->user)) {
+            Alerts::add_info(vip_funnel_demo_get_locked_action_message('account_plan'));
+            redirect('account-plan');
+        }
+
+        if(!\Altum\Csrf::check()) {
+            Alerts::add_error(l('global.error_message.invalid_csrf_token'));
+            redirect('account-plan');
+        }
+
+        $billing_model = new Billing();
+        $billing_summary = $billing_model->get_user_billing_summary((int) $this->user->user_id);
+        $billing_state = (string) ($billing_summary['billing_state'] ?? '');
+
+        if(!in_array($billing_state, [Billing::STATE_PAST_DUE, Billing::STATE_PAST_DUE_CRITICAL], true)) {
+            Alerts::add_info(l('account_plan.billing.retry_not_needed'));
+            redirect('account-plan');
+        }
+
+        $invoice = $this->get_latest_open_stripe_invoice($billing_summary);
+
+        if(!$invoice) {
+            Alerts::add_error(l('account_plan.billing.retry_no_invoice'));
+            redirect('account-plan');
+        }
+
+        try {
+            $payment_payload = $this->get_retry_invoice_payment_payload($invoice);
+            $paid_invoice = $invoice->pay($payment_payload);
+
+            if($paid_invoice instanceof \Stripe\Invoice) {
+                $invoice = $paid_invoice;
+            }
+
+            if(!empty($invoice->paid) || ($invoice->status ?? '') === 'paid') {
+                $invoice_currency = !empty($invoice->currency) ? mb_strtoupper((string) $invoice->currency) : null;
+                $invoice_amount_paid = isset($invoice->amount_paid)
+                    ? (in_array($invoice_currency, get_zero_decimal_currencies_array()) ? (float) $invoice->amount_paid : ((float) $invoice->amount_paid / 100))
+                    : null;
+
+                $billing_model->handle_successful_payment([
+                    'user_id' => (int) $this->user->user_id,
+                    'email' => $this->user->email,
+                    'processor' => 'stripe',
+                    'stripe_subscription_id' => $this->user->payment_subscription_id,
+                    'stripe_invoice_id' => $invoice->id ?? null,
+                    'amount' => $invoice_amount_paid,
+                    'currency' => $invoice_currency,
+                    'stripe_status' => 'active',
+                    'occurred_at' => get_date(),
+                ]);
+
+                Alerts::add_success(l('account_plan.billing.retry_success'));
+                redirect('account-plan');
+            }
+
+            Alerts::add_info(l('account_plan.billing.retry_action_required'));
+        } catch(\Throwable $exception) {
+            $message = trim((string) $exception->getMessage());
+
+            if(!empty($invoice->hosted_invoice_url)) {
+                Alerts::add_error(sprintf(l('account_plan.billing.retry_failed_with_invoice'), $message ?: l('global.unknown')));
+            } else {
+                Alerts::add_error(sprintf(l('account_plan.billing.retry_failed'), $message ?: l('global.unknown')));
+            }
+        }
+
+        redirect('account-plan');
     }
 
     public function cancel_subscription() {

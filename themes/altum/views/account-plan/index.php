@@ -9,8 +9,11 @@ $active_paid_plans = $data->active_paid_plans ?? [];
 $billing_summary = (array) ($data->billing_summary ?? []);
 $billing_state = (string) ($billing_summary['billing_state'] ?? 'healthy');
 $billing_last_notification_stage = (string) ($billing_summary['last_notification_stage'] ?? '');
+$billing_recovery = (array) ($data->billing_recovery ?? []);
 $stripe_portal_available = !empty($data->stripe_portal_available);
 $stripe_portal_url = $data->stripe_portal_url ?? url('account-plan/stripe_portal');
+$stripe_payment_method_url = $data->stripe_payment_method_url ?? url('account-plan/stripe_payment_method');
+$stripe_retry_payment_url = $data->stripe_retry_payment_url ?? url('account-plan/retry_stripe_payment' . \Altum\Csrf::get_url_query());
 $selected_currency = settings()->payment->currencies->{currency()} ?? null;
 
 $get_plan_translation_value = static function($plan, string $field): string {
@@ -225,6 +228,13 @@ if($suggested_plan) {
 }
 
 $retry_window_until_label = !empty($billing_summary['grace_until']) ? \Altum\Date::get($billing_summary['grace_until'], 2) : l('global.none');
+$show_billing_recovery_notice = in_array($billing_state, ['past_due', 'past_due_critical'], true);
+$billing_recovery_title = $billing_state === 'past_due_critical' ? l('account_plan.billing.recovery_critical_title') : l('account_plan.billing.recovery_title');
+$billing_recovery_subtitle = sprintf(l('account_plan.billing.recovery_subtitle'), $retry_window_until_label);
+$billing_recovery_amount = trim((string) ($billing_recovery['invoice_amount'] ?? ''));
+$billing_recovery_invoice_id = trim((string) ($billing_recovery['invoice_id'] ?? ($billing_summary['last_invoice_id'] ?? '')));
+$billing_recovery_hosted_invoice_url = trim((string) ($billing_recovery['hosted_invoice_url'] ?? ''));
+$billing_recovery_can_retry_now = !empty($billing_recovery['can_retry_now']);
 $show_billing_pause_notice = $billing_state === 'access_revoked'
     && !empty($billing_summary['grace_until'])
     && $billing_last_notification_stage !== 'revoked'
@@ -242,7 +252,10 @@ if($this->user->plan_id != 'free') {
         $expiration_date = new \DateTime($this->user->plan_expiration_date);
         $is_lifetime = $expiration_date > (new \DateTime())->modify('+10 years');
 
-        if($is_lifetime) {
+        if($show_billing_recovery_notice) {
+            $current_plan_status_text = sprintf(l('account_plan.billing.status_unresolved'), '<strong>' . $retry_window_until_label . '</strong>');
+            $current_plan_status_icon = 'fa-triangle-exclamation';
+        } elseif($is_lifetime) {
             $current_plan_status_text = l('account_plan.plan.lifetime');
             $current_plan_status_icon = 'fa-infinity';
         } elseif($this->user->payment_subscription_id) {
@@ -253,7 +266,7 @@ if($this->user->plan_id != 'free') {
                 nr($this->user->payment_total_amount, 2),
                 $this->user->payment_currency
             );
-            $current_plan_status_icon = 'fa-rotate';
+            $current_plan_status_icon = 'fa-sync-alt';
         } else {
             $current_plan_status_text = sprintf(l('account_plan.plan.expires'), '<strong>' . \Altum\Date::get($this->user->plan_expiration_date, 2) . '</strong>');
             $current_plan_status_icon = 'fa-hourglass-end';
@@ -364,6 +377,56 @@ if($suggested_plan) {
     <?= \Altum\Alerts::output_alerts() ?>
 
     <?= $this->views['account_header_menu'] ?>
+
+    <?php if($show_billing_recovery_notice): ?>
+        <section id="billing-recovery" class="fcc-account-plan-billing-alert <?= $billing_state === 'past_due_critical' ? 'is-critical' : '' ?>">
+            <div class="fcc-account-plan-billing-alert__icon">
+                <i class="fas fa-fw fa-credit-card"></i>
+            </div>
+
+            <div class="fcc-account-plan-billing-alert__content">
+                <div class="fcc-account-plan-eyebrow mb-2"><?= l('account_plan.billing.recovery_eyebrow') ?></div>
+                <h2 class="fcc-account-plan-section-title"><?= $billing_recovery_title ?></h2>
+                <p class="fcc-account-plan-section-subtitle mb-0"><?= $billing_recovery_subtitle ?></p>
+
+                <div class="fcc-account-plan-billing-alert__meta">
+                    <?php if($billing_recovery_amount): ?>
+                        <span><i class="fas fa-fw fa-receipt mr-1"></i><?= sprintf(l('account_plan.billing.invoice_amount'), $billing_recovery_amount) ?></span>
+                    <?php endif ?>
+
+                    <?php if($billing_recovery_invoice_id): ?>
+                        <span><i class="fas fa-fw fa-hashtag mr-1"></i><?= sprintf(l('account_plan.billing.invoice_id'), $billing_recovery_invoice_id) ?></span>
+                    <?php endif ?>
+                </div>
+
+                <div class="fcc-account-plan-billing-steps">
+                    <div><span>1</span><?= l('account_plan.billing.step_update_card') ?></div>
+                    <div><span>2</span><?= l('account_plan.billing.step_retry_payment') ?></div>
+                    <div><span>3</span><?= l('account_plan.billing.step_confirmation') ?></div>
+                </div>
+            </div>
+
+            <div class="fcc-account-plan-billing-alert__actions">
+                <?php if($stripe_portal_available): ?>
+                    <a href="<?= htmlspecialchars($stripe_payment_method_url, ENT_QUOTES, 'UTF-8') ?>" class="btn btn-primary btn-lg fcc-account-plan-btn-primary">
+                        <i class="fas fa-fw fa-credit-card mr-1"></i><?= l('account_plan.billing.update_card_button') ?>
+                    </a>
+                <?php endif ?>
+
+                <?php if($billing_recovery_can_retry_now): ?>
+                    <a href="<?= htmlspecialchars($stripe_retry_payment_url, ENT_QUOTES, 'UTF-8') ?>" class="btn btn-outline-light btn-lg fcc-account-plan-btn-secondary" onclick='return confirm(<?= json_encode(l('account_plan.billing.retry_confirm')) ?>)'>
+                        <i class="fas fa-fw fa-sync-alt mr-1"></i><?= l('account_plan.billing.retry_button') ?>
+                    </a>
+                <?php endif ?>
+
+                <?php if($billing_recovery_hosted_invoice_url): ?>
+                    <a href="<?= htmlspecialchars($billing_recovery_hosted_invoice_url, ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noopener" class="btn btn-outline-light btn-lg fcc-account-plan-btn-secondary">
+                        <i class="fas fa-fw fa-external-link-alt mr-1"></i><?= l('account_plan.billing.open_invoice_button') ?>
+                    </a>
+                <?php endif ?>
+            </div>
+        </section>
+    <?php endif ?>
 
     <section class="fcc-account-plan-hero">
         <div class="fcc-account-plan-hero__content">
@@ -663,6 +726,7 @@ if($suggested_plan) {
 
     .fcc-account-plan-hero,
     .fcc-account-plan-card,
+    .fcc-account-plan-billing-alert,
     .fcc-account-plan-section,
     .fcc-account-plan-cancel-card {
         position: relative;
@@ -686,6 +750,7 @@ if($suggested_plan) {
 
     .fcc-account-plan-hero::before,
     .fcc-account-plan-card::before,
+    .fcc-account-plan-billing-alert::before,
     .fcc-account-plan-section::before,
     .fcc-account-plan-cancel-card::before {
         content: '';
@@ -693,6 +758,90 @@ if($suggested_plan) {
         inset: 0;
         background: linear-gradient(180deg, rgba(255,255,255,0.035), transparent 26%);
         pointer-events: none;
+    }
+
+    .fcc-account-plan-billing-alert {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr) minmax(260px, auto);
+        align-items: center;
+        gap: 1.35rem;
+        margin-bottom: 1.5rem;
+        padding: 1.45rem;
+        border-color: rgba(255, 213, 113, 0.38);
+        background:
+            radial-gradient(circle at top right, rgba(255, 213, 113, 0.16), transparent 28%),
+            linear-gradient(180deg, rgba(45, 33, 16, 0.98), rgba(18, 24, 36, 0.98));
+    }
+
+    .fcc-account-plan-billing-alert.is-critical {
+        border-color: rgba(255, 119, 119, 0.44);
+        background:
+            radial-gradient(circle at top right, rgba(255, 119, 119, 0.15), transparent 28%),
+            linear-gradient(180deg, rgba(50, 22, 24, 0.98), rgba(18, 24, 36, 0.98));
+    }
+
+    .fcc-account-plan-billing-alert__icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 58px;
+        height: 58px;
+        border-radius: 18px;
+        background: rgba(255,255,255,0.08);
+        border: 1px solid rgba(255,255,255,0.12);
+        color: #ffe49a;
+        font-size: 1.35rem;
+    }
+
+    .fcc-account-plan-billing-alert__meta,
+    .fcc-account-plan-billing-steps,
+    .fcc-account-plan-billing-alert__actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .75rem;
+    }
+
+    .fcc-account-plan-billing-alert__meta {
+        margin-top: .95rem;
+        color: rgba(247, 237, 209, 0.86);
+        font-size: .92rem;
+    }
+
+    .fcc-account-plan-billing-alert__meta span,
+    .fcc-account-plan-billing-steps div {
+        display: inline-flex;
+        align-items: center;
+        gap: .45rem;
+        border-radius: 999px;
+        padding: .55rem .75rem;
+        background: rgba(255,255,255,0.06);
+        border: 1px solid rgba(255,255,255,0.11);
+    }
+
+    .fcc-account-plan-billing-steps {
+        margin-top: 1rem;
+    }
+
+    .fcc-account-plan-billing-steps div {
+        color: rgba(255,255,255,0.88);
+        font-size: .9rem;
+    }
+
+    .fcc-account-plan-billing-steps span {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 22px;
+        height: 22px;
+        border-radius: 999px;
+        background: rgba(255, 213, 113, 0.18);
+        color: #ffe49a;
+        font-weight: 900;
+        font-size: .78rem;
+    }
+
+    .fcc-account-plan-billing-alert__actions {
+        justify-content: flex-end;
     }
 
     .fcc-account-plan-eyebrow,
@@ -1157,6 +1306,15 @@ if($suggested_plan) {
     }
 
     @media (max-width: 991.98px) {
+        .fcc-account-plan-billing-alert {
+            grid-template-columns: 1fr;
+            align-items: stretch;
+        }
+
+        .fcc-account-plan-billing-alert__actions {
+            justify-content: flex-start;
+        }
+
         .fcc-account-plan-compare-table {
             grid-template-columns: 1fr;
         }
@@ -1182,6 +1340,7 @@ if($suggested_plan) {
     @media (max-width: 767.98px) {
         .fcc-account-plan-hero,
         .fcc-account-plan-card,
+        .fcc-account-plan-billing-alert,
         .fcc-account-plan-section,
         .fcc-account-plan-cancel-card {
             padding: 1.25rem;

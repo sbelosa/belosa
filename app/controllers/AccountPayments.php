@@ -16,6 +16,7 @@
 
 namespace Altum\Controllers;
 
+use Altum\Models\Billing;
 
 defined('ALTUMCODE') || die();
 
@@ -54,6 +55,8 @@ class AccountPayments extends Controller {
             $payments[] = $row;
         }
 
+        $billing_summary = (new Billing())->get_user_billing_summary((int) $this->user->user_id);
+
         /* Export handler */
         process_export_json($payments, ['id','user_id','plan_id','payment_id','email','name','processor','type','frequency','billing','taxes_ids','base_amount','code','discount_amount','total_amount','total_amount_default_currency','currency','status','plan','business','payment_proof','payment_proof_url','refunds','refunded_total','refunded_status','datetime']);
         process_export_csv_new($payments, ['id','user_id','plan_id','payment_id','email','name','processor','type','frequency','billing','taxes_ids','base_amount','code','discount_amount','total_amount','total_amount_default_currency','currency','status','plan','business','payment_proof','payment_proof_url','refunds','refunded_total','refunded_status','datetime']);
@@ -71,6 +74,8 @@ class AccountPayments extends Controller {
             'pagination' => $pagination,
             'filters' => $filters,
             'payment_processors' => $payment_processors,
+            'billing_summary' => $billing_summary,
+            'billing_recovery_url' => url('account-plan#billing-recovery'),
         ];
 
         $view = new \Altum\View('account-payments/index', (array) $this);

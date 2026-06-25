@@ -1,9 +1,31 @@
 <?php defined('ALTUMCODE') || die() ?>
 
+<?php
+$billing_summary = (array) ($data->billing_summary ?? []);
+$billing_state = (string) ($billing_summary['billing_state'] ?? 'healthy');
+$show_billing_recovery_notice = in_array($billing_state, ['past_due', 'past_due_critical'], true);
+$billing_recovery_until = !empty($billing_summary['grace_until']) ? \Altum\Date::get($billing_summary['grace_until'], 2) : l('global.none');
+$billing_recovery_url = $data->billing_recovery_url ?? url('account-plan#billing-recovery');
+?>
+
 <div class="container">
     <?= \Altum\Alerts::output_alerts() ?>
 
     <?= $this->views['account_header_menu'] ?>
+
+    <?php if($show_billing_recovery_notice): ?>
+        <section class="fcc-account-payments-billing-alert <?= $billing_state === 'past_due_critical' ? 'is-critical' : '' ?>">
+            <div>
+                <div class="fcc-account-payments-billing-alert__eyebrow"><i class="fas fa-fw fa-credit-card mr-1"></i><?= l('account_plan.billing.recovery_eyebrow') ?></div>
+                <h2><?= l('account_payments.billing.recovery_title') ?></h2>
+                <p><?= sprintf(l('account_payments.billing.recovery_subtitle'), $billing_recovery_until) ?></p>
+            </div>
+
+            <a href="<?= htmlspecialchars($billing_recovery_url, ENT_QUOTES, 'UTF-8') ?>" class="btn btn-primary">
+                <i class="fas fa-fw fa-sync-alt mr-1"></i><?= l('account_payments.billing.recovery_button') ?>
+            </a>
+        </section>
+    <?php endif ?>
 
     <div class="row mb-3">
         <div class="col-12 col-lg d-flex align-items-center mb-3 mb-lg-0 text-truncate">
@@ -234,3 +256,50 @@
     <?php endif ?>
 
 </div>
+
+<style>
+    .fcc-account-payments-billing-alert {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+        padding: 1.25rem;
+        border-radius: 18px;
+        border: 1px solid rgba(255, 213, 113, 0.34);
+        background: linear-gradient(135deg, rgba(255, 213, 113, 0.12), rgba(37, 48, 72, 0.72));
+        color: #fff;
+    }
+
+    .fcc-account-payments-billing-alert.is-critical {
+        border-color: rgba(255, 119, 119, 0.42);
+        background: linear-gradient(135deg, rgba(255, 119, 119, 0.14), rgba(37, 48, 72, 0.72));
+    }
+
+    .fcc-account-payments-billing-alert__eyebrow {
+        color: #ffe49a;
+        font-size: .78rem;
+        text-transform: uppercase;
+        letter-spacing: .12em;
+        font-weight: 800;
+        margin-bottom: .45rem;
+    }
+
+    .fcc-account-payments-billing-alert h2 {
+        font-size: 1.25rem;
+        margin-bottom: .35rem;
+        color: #fff;
+    }
+
+    .fcc-account-payments-billing-alert p {
+        color: rgba(255,255,255,.78);
+        margin-bottom: 0;
+    }
+
+    @media (max-width: 767.98px) {
+        .fcc-account-payments-billing-alert {
+            align-items: stretch;
+            flex-direction: column;
+        }
+    }
+</style>
