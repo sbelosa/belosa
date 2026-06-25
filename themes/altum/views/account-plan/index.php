@@ -232,7 +232,6 @@ $show_billing_recovery_notice = in_array($billing_state, ['past_due', 'past_due_
 $billing_recovery_title = $billing_state === 'past_due_critical' ? l('account_plan.billing.recovery_critical_title') : l('account_plan.billing.recovery_title');
 $billing_recovery_subtitle = sprintf(l('account_plan.billing.recovery_subtitle'), $retry_window_until_label);
 $billing_recovery_amount = trim((string) ($billing_recovery['invoice_amount'] ?? ''));
-$billing_recovery_invoice_id = trim((string) ($billing_recovery['invoice_id'] ?? ($billing_summary['last_invoice_id'] ?? '')));
 $billing_recovery_hosted_invoice_url = trim((string) ($billing_recovery['hosted_invoice_url'] ?? ''));
 $billing_recovery_can_retry_now = !empty($billing_recovery['can_retry_now']);
 $show_billing_pause_notice = $billing_state === 'access_revoked'
@@ -389,15 +388,11 @@ if($suggested_plan) {
                 <h2 class="fcc-account-plan-section-title"><?= $billing_recovery_title ?></h2>
                 <p class="fcc-account-plan-section-subtitle mb-0"><?= $billing_recovery_subtitle ?></p>
 
-                <div class="fcc-account-plan-billing-alert__meta">
-                    <?php if($billing_recovery_amount): ?>
+                <?php if($billing_recovery_amount): ?>
+                    <div class="fcc-account-plan-billing-alert__meta">
                         <span><i class="fas fa-fw fa-receipt mr-1"></i><?= sprintf(l('account_plan.billing.invoice_amount'), $billing_recovery_amount) ?></span>
-                    <?php endif ?>
-
-                    <?php if($billing_recovery_invoice_id): ?>
-                        <span><i class="fas fa-fw fa-hashtag mr-1"></i><?= sprintf(l('account_plan.billing.invoice_id'), $billing_recovery_invoice_id) ?></span>
-                    <?php endif ?>
-                </div>
+                    </div>
+                <?php endif ?>
 
                 <div class="fcc-account-plan-billing-steps">
                     <div><span>1</span><?= l('account_plan.billing.step_update_card') ?></div>
@@ -762,25 +757,27 @@ if($suggested_plan) {
 
     .fcc-account-plan-billing-alert {
         display: grid;
-        grid-template-columns: auto minmax(0, 1fr) minmax(260px, auto);
-        align-items: center;
-        gap: 1.35rem;
+        grid-template-columns: 58px minmax(0, 1fr);
+        grid-template-areas:
+            "icon content"
+            "icon actions";
+        align-items: start;
+        gap: 1rem 1.35rem;
         margin-bottom: 1.5rem;
-        padding: 1.45rem;
-        border-color: rgba(255, 213, 113, 0.38);
+        padding: 1.4rem 1.55rem;
+        border-color: rgba(255, 213, 113, 0.3);
         background:
-            radial-gradient(circle at top right, rgba(255, 213, 113, 0.16), transparent 28%),
-            linear-gradient(180deg, rgba(45, 33, 16, 0.98), rgba(18, 24, 36, 0.98));
+            linear-gradient(135deg, rgba(54, 38, 20, 0.98), rgba(19, 24, 38, 0.98) 56%, rgba(10, 18, 32, 0.98));
     }
 
     .fcc-account-plan-billing-alert.is-critical {
-        border-color: rgba(255, 119, 119, 0.44);
+        border-color: rgba(255, 119, 119, 0.34);
         background:
-            radial-gradient(circle at top right, rgba(255, 119, 119, 0.15), transparent 28%),
-            linear-gradient(180deg, rgba(50, 22, 24, 0.98), rgba(18, 24, 36, 0.98));
+            linear-gradient(135deg, rgba(58, 25, 29, 0.98), rgba(22, 24, 38, 0.98) 58%, rgba(10, 18, 32, 0.98));
     }
 
     .fcc-account-plan-billing-alert__icon {
+        grid-area: icon;
         display: inline-flex;
         align-items: center;
         justify-content: center;
@@ -793,6 +790,30 @@ if($suggested_plan) {
         font-size: 1.35rem;
     }
 
+    .fcc-account-plan-billing-alert__content {
+        grid-area: content;
+        min-width: 0;
+    }
+
+    .fcc-account-plan-billing-alert .fcc-account-plan-eyebrow {
+        margin-bottom: .35rem;
+        letter-spacing: .12em;
+    }
+
+    .fcc-account-plan-billing-alert .fcc-account-plan-section-title {
+        max-width: 780px;
+        margin-bottom: .55rem;
+        font-size: 1.8rem;
+        line-height: 1.12;
+        letter-spacing: 0;
+    }
+
+    .fcc-account-plan-billing-alert .fcc-account-plan-section-subtitle {
+        max-width: 840px;
+        font-size: 1rem;
+        line-height: 1.55;
+    }
+
     .fcc-account-plan-billing-alert__meta,
     .fcc-account-plan-billing-steps,
     .fcc-account-plan-billing-alert__actions {
@@ -802,7 +823,7 @@ if($suggested_plan) {
     }
 
     .fcc-account-plan-billing-alert__meta {
-        margin-top: .95rem;
+        margin-top: .85rem;
         color: rgba(247, 237, 209, 0.86);
         font-size: .92rem;
     }
@@ -820,14 +841,21 @@ if($suggested_plan) {
 
     .fcc-account-plan-billing-steps {
         margin-top: 1rem;
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        max-width: 860px;
     }
 
     .fcc-account-plan-billing-steps div {
+        min-height: 52px;
+        justify-content: flex-start;
         color: rgba(255,255,255,0.88);
         font-size: .9rem;
+        line-height: 1.35;
     }
 
     .fcc-account-plan-billing-steps span {
+        flex: 0 0 auto;
         display: inline-flex;
         align-items: center;
         justify-content: center;
@@ -841,7 +869,24 @@ if($suggested_plan) {
     }
 
     .fcc-account-plan-billing-alert__actions {
-        justify-content: flex-end;
+        grid-area: actions;
+        justify-content: flex-start;
+        align-items: center;
+        margin-top: .1rem;
+    }
+
+    .fcc-account-plan-billing-alert__actions .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 48px;
+        border-radius: 16px;
+        padding-left: 1.05rem;
+        padding-right: 1.05rem;
+        font-size: .98rem;
+        letter-spacing: 0;
+        text-align: center;
+        white-space: normal;
     }
 
     .fcc-account-plan-eyebrow,
@@ -1308,11 +1353,19 @@ if($suggested_plan) {
     @media (max-width: 991.98px) {
         .fcc-account-plan-billing-alert {
             grid-template-columns: 1fr;
+            grid-template-areas:
+                "icon"
+                "content"
+                "actions";
             align-items: stretch;
         }
 
         .fcc-account-plan-billing-alert__actions {
             justify-content: flex-start;
+        }
+
+        .fcc-account-plan-billing-steps {
+            grid-template-columns: 1fr;
         }
 
         .fcc-account-plan-compare-table {
