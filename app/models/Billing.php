@@ -646,6 +646,8 @@ class Billing extends Model {
         $extra->billing_stripe_status = $context['stripe_status'] ?? ($extra->billing_stripe_status ?? null);
         $extra->billing_current_period_end = $context['current_period_end'] ?? ($extra->billing_current_period_end ?? null);
         $extra->billing_next_retry_at = $context['next_retry_at'] ?? ($extra->billing_next_retry_at ?? null);
+        $extra->billing_last_invoice_id = $context['stripe_invoice_id'] ?? ($extra->billing_last_invoice_id ?? null);
+        $extra->billing_last_payment_intent_id = $context['stripe_payment_intent_id'] ?? ($extra->billing_last_payment_intent_id ?? null);
 
         $stripe_status = $context['stripe_status'] ?? '';
         $started_past_due = $stripe_status === 'past_due'
