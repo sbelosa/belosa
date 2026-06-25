@@ -749,8 +749,12 @@ class Billing extends Model {
                 }
 
                 if($grace_until && $now < $grace_until) {
-                    $escalation_at = $grace_started_at
-                        ? (new \DateTime($grace_started_at))->modify('+' . self::ESCALATION_HOURS . ' hours')->format('Y-m-d H:i:s')
+                    $last_notification_at = $this->normalize_datetime($extra->billing_last_notification_at ?? null);
+                    $escalation_base_at = ($extra->billing_last_notification_stage ?? null) === self::NOTIFICATION_WARNING_FIRST && $last_notification_at
+                        ? $last_notification_at
+                        : $grace_started_at;
+                    $escalation_at = $escalation_base_at
+                        ? (new \DateTime($escalation_base_at))->modify('+' . self::ESCALATION_HOURS . ' hours')->format('Y-m-d H:i:s')
                         : null;
 
                     if($state === self::STATE_PAST_DUE && $escalation_at && $now >= $escalation_at) {
