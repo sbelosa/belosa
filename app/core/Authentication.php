@@ -29,6 +29,265 @@ class Authentication {
     private static $has_valid_forever_sales_link = null;
     private static $forever_sales_link_notice_applied = false;
 
+    private static function decode_extra($extra): object {
+        if(is_string($extra)) {
+            $extra = json_decode($extra);
+        }
+
+        if(is_array($extra)) {
+            $extra = (object) $extra;
+        }
+
+        if(!is_object($extra)) {
+            $extra = (object) [];
+        }
+
+        return $extra;
+    }
+
+    private static function normalize_plan_settings($plan_settings): object {
+        if(is_string($plan_settings)) {
+            $plan_settings = json_decode($plan_settings ?? '{}');
+        }
+
+        if(is_array($plan_settings)) {
+            $plan_settings = (object) $plan_settings;
+        }
+
+        if(!is_object($plan_settings)) {
+            $plan_settings = (object) [];
+        }
+
+        return $plan_settings;
+    }
+
+    private static function is_entitled_stripe_status(?string $status): bool {
+        return in_array((string) $status, ['active', 'trialing'], true);
+    }
+
+    private static function is_downgrade_protected_stripe_status(?string $status): bool {
+        return in_array((string) $status, ['active', 'trialing', 'past_due'], true);
+    }
+
+    private static function stripe_subscription_matches_user($subscription, $user): bool {
+        $metadata_user_id = (int) ($subscription->metadata->user_id ?? 0);
+
+        return $metadata_user_id === 0 || $metadata_user_id === (int) ($user->user_id ?? 0);
+    }
+
+    private static function should_attempt_stripe_plan_restore($user): bool {
+        if(!is_object($user) || (int) ($user->type ?? 0) !== 0 || (int) ($user->status ?? 0) !== 1) {
+            return false;
+        }
+
+        if(!settings()->payment->is_enabled || empty(settings()->stripe->is_enabled) || empty(settings()->stripe->secret_key)) {
+            return false;
+        }
+
+        $subscription_id = trim((string) ($user->payment_subscription_id ?? ''));
+        $extra = self::decode_extra($user->extra ?? null);
+        $has_stripe_context = ($user->payment_processor ?? '') === 'stripe' || str_starts_with($subscription_id, 'sub_') || !empty($extra->stripe_customer_id);
+
+        if(!$has_stripe_context) {
+            return false;
+        }
+
+        return (int) ($user->plan_id ?? 0) === 2;
+    }
+
+    private static function get_active_stripe_subscription_for_user($user) {
+        \Stripe\Stripe::setApiKey(settings()->stripe->secret_key);
+        \Stripe\Stripe::setApiVersion('2023-10-16');
+
+        $subscription_id = trim((string) ($user->payment_subscription_id ?? ''));
+        $extra = self::decode_extra($user->extra ?? null);
+        $stripe_customer_id = trim((string) ($extra->stripe_customer_id ?? ''));
+        $checked_subscription_ids = [];
+        $customer_ids = [];
+
+        if($subscription_id !== '' && str_starts_with($subscription_id, 'sub_')) {
+            try {
+                $subscription = \Stripe\Subscription::retrieve($subscription_id);
+                $checked_subscription_ids[(string) ($subscription->id ?? $subscription_id)] = true;
+
+                if(self::stripe_subscription_matches_user($subscription, $user) && self::is_downgrade_protected_stripe_status($subscription->status ?? '')) {
+                    return $subscription;
+                }
+
+                if(!empty($subscription->customer) && is_string($subscription->customer) && str_starts_with($subscription->customer, 'cus_')) {
+                    $customer_ids[$subscription->customer] = $subscription->customer;
+                }
+            } catch(\Exception $exception) {
+            }
+        }
+
+        if($stripe_customer_id !== '' && str_starts_with($stripe_customer_id, 'cus_')) {
+            $customer_ids[$stripe_customer_id] = $stripe_customer_id;
+        }
+
+        if(!empty($user->email)) {
+            try {
+                $customers = \Stripe\Customer::all([
+                    'email' => $user->email,
+                    'limit' => 10,
+                ]);
+
+                foreach($customers->data ?? [] as $customer) {
+                    $customer_id = (string) ($customer->id ?? '');
+
+                    if($customer_id !== '' && str_starts_with($customer_id, 'cus_')) {
+                        $customer_ids[$customer_id] = $customer_id;
+                    }
+                }
+            } catch(\Exception $exception) {
+            }
+        }
+
+        foreach(array_values($customer_ids) as $customer_id) {
+            try {
+                $params = [
+                    'customer' => $customer_id,
+                    'status' => 'all',
+                    'limit' => 25,
+                ];
+
+                do {
+                    $subscriptions = \Stripe\Subscription::all($params);
+                    $subscription_data = $subscriptions->data ?? [];
+
+                    foreach($subscription_data as $subscription) {
+                        $candidate_subscription_id = (string) ($subscription->id ?? '');
+
+                        if($candidate_subscription_id !== '' && isset($checked_subscription_ids[$candidate_subscription_id])) {
+                            continue;
+                        }
+
+                        if(!self::stripe_subscription_matches_user($subscription, $user)) {
+                            continue;
+                        }
+
+                        if(self::is_downgrade_protected_stripe_status($subscription->status ?? '')) {
+                            return $subscription;
+                        }
+                    }
+
+                    $has_more = !empty($subscriptions->has_more) && !empty($subscription_data);
+
+                    if($has_more) {
+                        $last_subscription = end($subscription_data);
+                        $params['starting_after'] = $last_subscription->id ?? null;
+                    }
+                } while($has_more && !empty($params['starting_after']));
+            } catch(\Exception $exception) {
+            }
+        }
+
+        return null;
+    }
+
+    private static function sync_user_from_stripe_subscription($user, $subscription) {
+        $user_id = (int) ($user->user_id ?? 0);
+        if($user_id <= 0 || !is_object($subscription) || !self::is_downgrade_protected_stripe_status($subscription->status ?? '')) {
+            return $user;
+        }
+
+        $existing_user = db()->where('user_id', $user_id)->getOne('users', [
+            'user_id',
+            'plan_id',
+            'plan_settings',
+            'plan_trial_done',
+            'plan_expiration_date',
+            'payment_subscription_id',
+            'payment_processor',
+            'extra',
+        ]);
+
+        if(!$existing_user) {
+            return $user;
+        }
+
+        $subscription_id = trim((string) ($subscription->id ?? ''));
+        $metadata_plan_id = (int) ($subscription->metadata->plan_id ?? 0);
+        $update = [];
+        $should_sync_links = false;
+
+        if($subscription_id !== '' && (string) ($existing_user->payment_subscription_id ?? '') !== $subscription_id) {
+            $update['payment_subscription_id'] = $subscription_id;
+        }
+
+        if((string) ($existing_user->payment_processor ?? '') !== 'stripe') {
+            $update['payment_processor'] = 'stripe';
+        }
+
+        $extra = self::decode_extra($existing_user->extra ?? null);
+        $stripe_customer_id = trim((string) ($subscription->customer ?? ''));
+        if($stripe_customer_id !== '' && str_starts_with($stripe_customer_id, 'cus_') && (string) ($extra->stripe_customer_id ?? '') !== $stripe_customer_id) {
+            $extra->stripe_customer_id = $stripe_customer_id;
+            $update['extra'] = json_encode($extra);
+        }
+
+        if($metadata_plan_id > 0) {
+            $plan = db()->where('plan_id', $metadata_plan_id)->getOne('plans', ['plan_id', 'settings', 'trial_days']);
+
+            if($plan) {
+                $current_plan_settings = self::normalize_plan_settings($existing_user->plan_settings ?? '{}');
+                $desired_plan_settings = self::normalize_plan_settings($plan->settings ?? '{}');
+
+                if((int) ($existing_user->plan_id ?? 0) !== $metadata_plan_id) {
+                    $update['plan_id'] = $metadata_plan_id;
+                    $should_sync_links = true;
+                }
+
+                if(json_encode($current_plan_settings) !== json_encode($desired_plan_settings)) {
+                    $update['plan_settings'] = json_encode($desired_plan_settings);
+                    $should_sync_links = true;
+                }
+
+                if((int) ($plan->trial_days ?? 0) > 0 && (int) ($existing_user->plan_trial_done ?? 0) !== 1) {
+                    $update['plan_trial_done'] = 1;
+                }
+            }
+        }
+
+        if(!empty($subscription->current_period_end)) {
+            $live_plan_expiration_date = date('Y-m-d H:i:s', (int) $subscription->current_period_end);
+            if((string) ($existing_user->plan_expiration_date ?? '') !== $live_plan_expiration_date) {
+                $update['plan_expiration_date'] = $live_plan_expiration_date;
+            }
+        }
+
+        if(isset($update['plan_id']) || isset($update['plan_settings']) || isset($update['plan_expiration_date'])) {
+            $update['plan_expiry_reminder'] = 0;
+        }
+
+        if(empty($update)) {
+            return $user;
+        }
+
+        db()->where('user_id', $user_id)->update('users', $update);
+
+        if($should_sync_links) {
+            (new User())->sync_links_with_plan($user_id);
+        }
+
+        cache()->deleteItemsByTag('user_id=' . $user_id);
+
+        return (new User())->get_user_by_user_id($user_id) ?? $user;
+    }
+
+    private static function maybe_restore_stripe_plan_access($user) {
+        if(!self::should_attempt_stripe_plan_restore($user)) {
+            return $user;
+        }
+
+        $subscription = self::get_active_stripe_subscription_for_user($user);
+        if(!$subscription) {
+            return $user;
+        }
+
+        return self::sync_user_from_stripe_subscription($user, $subscription);
+    }
+
     public static function check() {
 
         /* Verify if the current route allows use to do the check */
@@ -38,6 +297,11 @@ class Authentication {
 
         /* Already logged in from previous checks */
         if(self::$is_logged_in) {
+            if(self::$user) {
+                self::$user = self::maybe_restore_stripe_plan_access(self::$user);
+                self::$user_id = self::$user->user_id ?? self::$user_id;
+            }
+
             return self::$user_id;
         }
 
@@ -49,6 +313,7 @@ class Authentication {
             && $user = (new User())->get_user_by_user_id($_COOKIE['user_id'])
         ) {
            if($user->token_code == $_COOKIE['token_code'] && isset($_COOKIE['user_password_hash']) && $_COOKIE['user_password_hash'] == md5($user->password)) {
+               $user = self::maybe_restore_stripe_plan_access($user);
                self::$is_logged_in = true;
                self::$user_id = $user->user_id;
 
@@ -65,6 +330,7 @@ class Authentication {
             && $user = (new User())->get_user_by_user_id(session_get('user_id'))
         ) {
             if(session_has('user_password_hash') && session_get('user_password_hash') == md5($user->password ?? '')) {
+                $user = self::maybe_restore_stripe_plan_access($user);
                 self::$is_logged_in = true;
                 self::$user_id = $user->user_id;
 

@@ -51,6 +51,10 @@ class User extends Model {
         return in_array((string) $status, ['active', 'trialing'], true);
     }
 
+    private function is_downgrade_protected_stripe_status(?string $status): bool {
+        return in_array((string) $status, ['active', 'trialing', 'past_due'], true);
+    }
+
     private function get_live_stripe_subscription_status($user): ?string {
         $extra = $this->decode_extra($user->extra ?? null);
         $subscription_id = trim((string) ($user->payment_subscription_id ?? ''));
@@ -87,7 +91,7 @@ class User extends Model {
                     $customer_ids[$customer_id] = true;
                 }
 
-                if($this->is_active_access_stripe_status($status)) {
+                if($this->is_downgrade_protected_stripe_status($status)) {
                     return self::$stripe_subscription_status_cache[$cache_key] = $status;
                 }
 
@@ -145,7 +149,7 @@ class User extends Model {
                             continue;
                         }
 
-                        if($this->is_active_access_stripe_status($status)) {
+                        if($this->is_downgrade_protected_stripe_status($status)) {
                             return self::$stripe_subscription_status_cache[$cache_key] = $status;
                         }
 
@@ -182,10 +186,10 @@ class User extends Model {
             $live_stripe_status = $this->get_live_stripe_subscription_status($user);
 
             if($live_stripe_status !== null) {
-                return $this->is_active_access_stripe_status($live_stripe_status);
+                return $this->is_downgrade_protected_stripe_status($live_stripe_status);
             }
 
-            return $has_known_stripe_customer && $this->is_active_access_stripe_status($stripe_status);
+            return $has_known_stripe_customer && $this->is_downgrade_protected_stripe_status($stripe_status);
         }
 
         if($subscription_id !== '') {
@@ -198,6 +202,100 @@ class User extends Model {
 
         return false;
     }
+
+    /* Custom code: FC-2026-06-19: safely restore local plan entitlements from a live Stripe subscription */
+    public function sync_local_plan_from_stripe_subscription($user, $subscription): bool {
+        $user_id = (int) ($user->user_id ?? 0);
+        if($user_id <= 0 || !is_object($subscription)) {
+            return false;
+        }
+
+        $existing_user = db()->where('user_id', $user_id)->getOne('users', [
+            'user_id',
+            'plan_id',
+            'plan_settings',
+            'plan_trial_done',
+            'plan_expiration_date',
+            'payment_subscription_id',
+            'payment_processor',
+            'extra',
+        ]);
+
+        if(!$existing_user) {
+            return false;
+        }
+
+        $subscription_id = trim((string) ($subscription->id ?? ''));
+        $status = trim((string) ($subscription->status ?? ''));
+        $metadata_plan_id = (int) ($subscription->metadata->plan_id ?? 0);
+        $is_entitled_status = $this->is_downgrade_protected_stripe_status($status);
+        $update = [];
+        $should_sync_links = false;
+
+        if($subscription_id !== '' && (string) ($existing_user->payment_subscription_id ?? '') !== $subscription_id) {
+            $update['payment_subscription_id'] = $subscription_id;
+        }
+
+        if((string) ($existing_user->payment_processor ?? '') !== 'stripe') {
+            $update['payment_processor'] = 'stripe';
+        }
+
+        $extra = $this->decode_extra($existing_user->extra ?? null);
+        $stripe_customer_id = trim((string) ($subscription->customer ?? ''));
+        if($stripe_customer_id !== '' && str_starts_with($stripe_customer_id, 'cus_') && (string) ($extra->stripe_customer_id ?? '') !== $stripe_customer_id) {
+            $extra->stripe_customer_id = $stripe_customer_id;
+            $update['extra'] = json_encode($extra);
+        }
+
+        if($is_entitled_status && $metadata_plan_id > 0) {
+            $plan = db()->where('plan_id', $metadata_plan_id)->getOne('plans', ['plan_id', 'settings', 'trial_days']);
+
+            if($plan) {
+                $current_plan_settings = $this->normalize_plan_settings($existing_user->plan_settings ?? '{}');
+                $desired_plan_settings = $this->normalize_plan_settings($plan->settings ?? '{}');
+
+                if((string) ($existing_user->plan_id ?? '') !== (string) $metadata_plan_id) {
+                    $update['plan_id'] = $metadata_plan_id;
+                    $should_sync_links = true;
+                }
+
+                if(json_encode($current_plan_settings) !== json_encode($desired_plan_settings)) {
+                    $update['plan_settings'] = json_encode($desired_plan_settings);
+                    $should_sync_links = true;
+                }
+
+                if((int) ($plan->trial_days ?? 0) > 0 && (int) ($existing_user->plan_trial_done ?? 0) !== 1) {
+                    $update['plan_trial_done'] = 1;
+                }
+
+                if(!empty($subscription->current_period_end)) {
+                    $live_plan_expiration_date = date('Y-m-d H:i:s', (int) $subscription->current_period_end);
+                    if((string) ($existing_user->plan_expiration_date ?? '') !== $live_plan_expiration_date) {
+                        $update['plan_expiration_date'] = $live_plan_expiration_date;
+                    }
+                }
+            }
+        }
+
+        if(isset($update['plan_id']) || isset($update['plan_settings']) || isset($update['plan_expiration_date'])) {
+            $update['plan_expiry_reminder'] = 0;
+        }
+
+        if(empty($update)) {
+            return false;
+        }
+
+        db()->where('user_id', $user_id)->update('users', $update);
+
+        if($should_sync_links) {
+            $this->sync_links_with_plan($user_id);
+        }
+
+        cache()->deleteItemsByTag('user_id=' . $user_id);
+
+        return true;
+    }
+    /* /Custom code: FC-2026-06-19 */
     /* /Custom code: FC-2026-06-12 */
     /* /Custom code: FC-2026-03-04 */
 

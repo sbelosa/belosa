@@ -76,8 +76,8 @@ class Cron extends Controller {
 
         $this->initiate();
 
-        $this->users_plan_expiry_checker();
         $this->reconcile_stripe_plan_expirations();
+        $this->users_plan_expiry_checker();
 
         $this->users_deletion_reminder();
 
@@ -180,7 +180,7 @@ class Cron extends Controller {
     }
 
     private function is_stripe_plan_entitled_status(?string $status): bool {
-        return in_array((string) $status, ['active', 'trialing'], true);
+        return in_array((string) $status, ['active', 'trialing', 'past_due'], true);
     }
 
     private function reconcile_stripe_plan_expirations(): void {
@@ -196,6 +196,8 @@ class Cron extends Controller {
 
         \Stripe\Stripe::setApiKey(settings()->stripe->secret_key);
         \Stripe\Stripe::setApiVersion('2023-10-16');
+        $user_model = new \Altum\Models\User();
+        $billing_model = new Billing();
 
         $ids_sql = implode(',', array_map('intval', $user_ids));
         $result = database()->query("
@@ -255,9 +257,49 @@ class Cron extends Controller {
             if($subscription) {
                 $status = (string) ($subscription->status ?? '');
                 $live_plan_expiration_date = !empty($subscription->current_period_end) ? date('Y-m-d H:i:s', (int) $subscription->current_period_end) : null;
+                $latest_invoice_id = is_string($subscription->latest_invoice ?? null)
+                    ? $subscription->latest_invoice
+                    : ($subscription->latest_invoice->id ?? null);
+                $latest_invoice = null;
 
                 if(!empty($subscription->customer) && is_string($subscription->customer) && str_starts_with($subscription->customer, 'cus_')) {
                     $extra->stripe_customer_id = $subscription->customer;
+                }
+
+                if($this->is_stripe_plan_entitled_status($status)) {
+                    $user_model->sync_local_plan_from_stripe_subscription($user, $subscription);
+                    $user = db()->where('user_id', $user->user_id)->getOne('users', ['user_id', 'plan_id', 'email', 'plan_expiration_date', 'payment_processor', 'payment_subscription_id', 'extra']);
+                    $extra = $this->decode_extra($user->extra ?? null);
+                }
+
+                if($status === 'past_due' && $latest_invoice_id) {
+                    try {
+                        $latest_invoice = \Stripe\Invoice::retrieve($latest_invoice_id);
+                    } catch(\Exception $exception) {
+                        $latest_invoice = null;
+                    }
+
+                    $payment_intent_id = is_object($latest_invoice->payment_intent ?? null)
+                        ? ($latest_invoice->payment_intent->id ?? null)
+                        : ($latest_invoice->payment_intent ?? null);
+
+                    $billing_model->sync_subscription_status([
+                        'processor' => 'stripe',
+                        'user_id' => (int) $user->user_id,
+                        'plan_id' => (int) ($subscription->metadata->plan_id ?? $user->plan_id ?? 0),
+                        'email' => $user->email ?? null,
+                        'stripe_subscription_id' => $subscription->id ?? null,
+                        'stripe_status' => $status,
+                        'stripe_invoice_id' => $latest_invoice_id,
+                        'stripe_payment_intent_id' => $payment_intent_id,
+                        'current_period_end' => $live_plan_expiration_date,
+                        'next_retry_at' => !empty($latest_invoice->next_payment_attempt) ? date('Y-m-d H:i:s', (int) $latest_invoice->next_payment_attempt) : null,
+                        'reason_code' => 'stripe_subscription_past_due',
+                        'reason_text' => 'Stripe subscription is past_due; latest invoice is unpaid.',
+                        'amount' => isset($latest_invoice->amount_due) ? ((int) $latest_invoice->amount_due / 100) : null,
+                        'currency' => !empty($latest_invoice->currency) ? mb_strtoupper((string) $latest_invoice->currency) : null,
+                        'occurred_at' => !empty($latest_invoice->created) ? date('Y-m-d H:i:s', (int) $latest_invoice->created) : get_date(),
+                    ]);
                 }
             }
 

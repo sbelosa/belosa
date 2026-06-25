@@ -2804,7 +2804,7 @@ return [
 	'payment_processors.stripe.instructions_5' => 'Go to the <strong>Developers</strong> page, then go to the <strong>Webhooks</strong> page',
 	'payment_processors.stripe.instructions_6' => 'Click on the <strong>Add endpoint</strong> button.',
 	'payment_processors.stripe.instructions_7' => 'In the <strong>Endpoint URL</strong> field, add the following: %s',
-	'payment_processors.stripe.instructions_8' => 'In the <strong>Events</strong> section, check the <strong>checkout.session.completed</strong> event, and save the webhook.',
+	'payment_processors.stripe.instructions_8' => 'In the <strong>Events</strong> section, check <strong>checkout.session.completed</strong>, <strong>invoice.paid</strong>, <strong>invoice.payment_failed</strong>, <strong>customer.subscription.updated</strong>, and <strong>customer.subscription.deleted</strong>, then save the webhook.',
 	'payment_processors.stripe.instructions_9' => 'Now make sure to reveal the <strong>Signing secret</strong>, copy and paste it here accordingly.',
 	'payment_processors.crypto_com.publishable_key' => 'Publishable Key',
 	'payment_processors.crypto_com.secret_key' => 'Secret Key',

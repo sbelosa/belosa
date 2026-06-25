@@ -93,8 +93,21 @@ class Billing extends Model {
         return in_array((string) $status, ['active', 'trialing'], true);
     }
 
-    private function get_retry_window_until(?string $occurred_at = null): string {
-        return (new \DateTime($occurred_at ?? get_date()))->modify('+' . self::GRACE_PERIOD_DAYS . ' days')->format('Y-m-d H:i:s');
+    private function get_retry_window_until(?string $occurred_at = null, ?string $next_retry_at = null): string {
+        $retry_window_until = (new \DateTime($occurred_at ?? get_date()))->modify('+' . self::GRACE_PERIOD_DAYS . ' days');
+
+        if($next_retry_at) {
+            try {
+                $stripe_retry_until = (new \DateTime($next_retry_at))->modify('+24 hours');
+
+                if($stripe_retry_until > $retry_window_until) {
+                    $retry_window_until = $stripe_retry_until;
+                }
+            } catch(\Exception $exception) {
+            }
+        }
+
+        return $retry_window_until->format('Y-m-d H:i:s');
     }
 
     private function get_user_billing_link(object $user, array $context): string {
@@ -361,7 +374,22 @@ class Billing extends Model {
             l($stage_map[$stage]['email_body'], $language)
         );
 
-        send_mail($user->email, $email_template->subject, $email_template->body, ['anti_phishing_code' => $user->anti_phishing_code, 'language' => $language]);
+        $mail_result = send_mail($user->email, $email_template->subject, $email_template->body, [
+            'anti_phishing_code' => $user->anti_phishing_code,
+            'language' => $language,
+            'return_transport_result' => true,
+        ]);
+        $mail_success = is_object($mail_result) ? (bool) ($mail_result->success ?? false) : (bool) $mail_result;
+        $mail_error = '';
+
+        if(is_object($mail_result)) {
+            $mail_error = trim((string) (
+                $mail_result->ErrorInfo
+                ?? $mail_result->curl_error
+                ?? $mail_result->response_body
+                ?? ''
+            ));
+        }
 
         $internal_title = str_replace(
             array_map(fn($key) => '{{' . $key . '}}', array_keys($placeholders)),
@@ -381,13 +409,19 @@ class Billing extends Model {
         $extra = $this->decode_extra($current_user->extra ?? ($user->extra ?? null));
         $extra->billing_last_notification_stage = $stage;
         $extra->billing_last_notification_at = get_date();
+        $extra->billing_last_notification_delivery_success = $mail_success ? 1 : 0;
+        $extra->billing_last_notification_delivery_error = $mail_success ? null : ($mail_error ?: l('global.unknown'));
         $this->update_user_extra($user->user_id, $extra);
 
         $this->log_event($user->user_id, [
-            'event_type' => 'notification_sent',
+            'event_type' => $mail_success ? 'notification_sent' : 'notification_failed',
             'processor' => $context['processor'] ?? 'stripe',
             'notification_stage' => $stage,
             'notification_subject' => $email_template->subject,
+            'mail_success' => $mail_success ? 1 : 0,
+            'mail_status_code' => is_object($mail_result) ? ($mail_result->status_code ?? null) : null,
+            'mail_message_id' => is_object($mail_result) ? ($mail_result->message_id ?? null) : null,
+            'mail_error' => $mail_success ? null : ($mail_error ?: l('global.unknown')),
             'reason_code' => $context['reason_code'] ?? null,
             'reason_text' => $context['reason_text'] ?? null,
             'stripe_event_id' => $context['stripe_event_id'] ?? null,
@@ -396,6 +430,15 @@ class Billing extends Model {
             'stripe_payment_intent_id' => $context['stripe_payment_intent_id'] ?? null,
             'occurred_at' => get_date(),
         ]);
+
+        if(!$mail_success) {
+            $this->create_admin_internal_notification(
+                $user,
+                'Billing email delivery failed',
+                sprintf('Could not send %s billing email to %s (%s): %s', $stage, $user->name, $user->email, $mail_error ?: l('global.unknown')),
+                'admin/user-view/' . $user->user_id
+            );
+        }
     }
 
     private function get_fallback_plan(): ?object {
@@ -480,10 +523,11 @@ class Billing extends Model {
 
         if($is_new_invoice || empty($extra->billing_grace_started_at ?? null) || in_array($previous_state, [self::STATE_HEALTHY, self::STATE_RECOVERED], true)) {
             $extra->billing_grace_started_at = $context['occurred_at'] ?? get_date();
-            $extra->billing_grace_until = $this->get_retry_window_until($extra->billing_grace_started_at);
+            $extra->billing_grace_until = $this->get_retry_window_until($extra->billing_grace_started_at, $context['next_retry_at'] ?? null);
             $extra->billing_failed_attempts = 1;
         } else {
             $extra->billing_failed_attempts = (int) ($extra->billing_failed_attempts ?? 0) + 1;
+            $extra->billing_grace_until = $this->get_retry_window_until($extra->billing_grace_started_at, $context['next_retry_at'] ?? null);
         }
 
         $new_state = (int) ($extra->billing_failed_attempts ?? 0) >= 2 ? self::STATE_PAST_DUE_CRITICAL : self::STATE_PAST_DUE;
@@ -522,11 +566,15 @@ class Billing extends Model {
             'payload_snapshot' => $context['payload_snapshot'] ?? null,
         ]);
 
-        if($previous_state !== self::STATE_ACCESS_REVOKED || (string) ($user->plan_id ?? '') === '5') {
-            $this->revoke_user_access($user, $context + [
+        $notification_stage = $new_state === self::STATE_PAST_DUE_CRITICAL
+            ? self::NOTIFICATION_WARNING_SECOND
+            : self::NOTIFICATION_WARNING_FIRST;
+
+        if(!$this->should_defer_first_failure_notification($context, (int) ($extra->billing_failed_attempts ?? 0))
+            && ($extra->billing_last_notification_stage ?? null) !== $notification_stage
+        ) {
+            $this->send_notification($user, $notification_stage, $context + [
                 'grace_until' => $extra->billing_grace_until,
-                'revoked_at' => $context['occurred_at'] ?? get_date(),
-                'notification_stage' => self::NOTIFICATION_PAUSED,
                 'reason_code' => $context['reason_code'] ?? 'stripe_payment_failed',
                 'reason_text' => $context['reason_text'] ?? l('global.unknown'),
             ]);
@@ -599,11 +647,25 @@ class Billing extends Model {
         $extra->billing_current_period_end = $context['current_period_end'] ?? ($extra->billing_current_period_end ?? null);
         $extra->billing_next_retry_at = $context['next_retry_at'] ?? ($extra->billing_next_retry_at ?? null);
 
-        if(in_array($context['stripe_status'] ?? '', ['unpaid', 'canceled', 'incomplete_expired'], true)) {
+        $stripe_status = $context['stripe_status'] ?? '';
+        $started_past_due = $stripe_status === 'past_due'
+            && !in_array($previous_state, [self::STATE_PAST_DUE, self::STATE_PAST_DUE_CRITICAL, self::STATE_ACCESS_REVOKED], true);
+
+        if(in_array($stripe_status, ['unpaid', 'canceled', 'incomplete_expired'], true)) {
             $extra->billing_subscription_cancelled_at = $context['occurred_at'] ?? get_date();
-        } elseif(in_array($context['stripe_status'] ?? '', ['active', 'trialing'], true)) {
+        } elseif(in_array($stripe_status, ['active', 'trialing'], true)) {
             $extra->billing_subscription_cancelled_at = null;
             $extra->billing_subscription_cancelled_during_trial = 0;
+        }
+
+        if($started_past_due) {
+            $extra->billing_state = self::STATE_PAST_DUE;
+            $extra->billing_grace_started_at = $context['occurred_at'] ?? get_date();
+            $extra->billing_grace_until = $extra->billing_grace_until ?? $this->get_retry_window_until($extra->billing_grace_started_at, $context['next_retry_at'] ?? null);
+            $extra->billing_failed_attempts = max(1, (int) ($extra->billing_failed_attempts ?? 0));
+            $extra->billing_last_failed_at = $context['occurred_at'] ?? get_date();
+            $extra->billing_last_failed_reason_code = $context['reason_code'] ?? ($extra->billing_last_failed_reason_code ?? null);
+            $extra->billing_last_failed_reason_text = $context['reason_text'] ?? ($extra->billing_last_failed_reason_text ?? null);
         }
 
         $this->update_user_extra($user->user_id, $extra);
@@ -626,23 +688,14 @@ class Billing extends Model {
             'payload_snapshot' => $context['payload_snapshot'] ?? null,
         ]);
 
-        if(($context['stripe_status'] ?? '') === 'past_due' && !in_array($previous_state, [self::STATE_PAST_DUE, self::STATE_PAST_DUE_CRITICAL, self::STATE_ACCESS_REVOKED], true)) {
-            $extra->billing_state = self::STATE_PAST_DUE;
-            $extra->billing_grace_started_at = $context['occurred_at'] ?? get_date();
-            $extra->billing_grace_until = $extra->billing_grace_until ?? $this->get_retry_window_until($extra->billing_grace_started_at);
-            $extra->billing_failed_attempts = max(1, (int) ($extra->billing_failed_attempts ?? 0));
-            $extra->billing_last_failed_at = $context['occurred_at'] ?? get_date();
-            $extra->billing_last_failed_reason_code = $context['reason_code'] ?? ($extra->billing_last_failed_reason_code ?? null);
-            $extra->billing_last_failed_reason_text = $context['reason_text'] ?? ($extra->billing_last_failed_reason_text ?? null);
-            $this->update_user_extra($user->user_id, $extra);
-
-            $this->revoke_user_access($user, $context + [
-                'grace_until' => $extra->billing_grace_until,
-                'revoked_at' => $context['occurred_at'] ?? get_date(),
-                'notification_stage' => self::NOTIFICATION_PAUSED,
-                'reason_code' => $context['reason_code'] ?? 'stripe_subscription_past_due',
-                'reason_text' => $context['reason_text'] ?? ('Stripe status: ' . ($context['stripe_status'] ?? 'unknown')),
-            ]);
+        if($started_past_due) {
+            if(($extra->billing_last_notification_stage ?? null) !== self::NOTIFICATION_WARNING_FIRST) {
+                $this->send_notification($user, self::NOTIFICATION_WARNING_FIRST, $context + [
+                    'grace_until' => $extra->billing_grace_until,
+                    'reason_code' => $context['reason_code'] ?? 'stripe_subscription_past_due',
+                    'reason_text' => $context['reason_text'] ?? ('Stripe status: ' . ($context['stripe_status'] ?? 'unknown')),
+                ]);
+            }
 
             return;
         }
@@ -689,24 +742,44 @@ class Billing extends Model {
             }
 
             if(in_array($state, [self::STATE_PAST_DUE, self::STATE_PAST_DUE_CRITICAL], true)) {
-                $this->revoke_user_access($user, [
-                    'user_id' => (int) $user->user_id,
-                    'plan_id' => (int) $user->plan_id,
-                    'email' => $user->email,
-                    'processor' => $user->payment_processor ?: 'stripe',
-                    'stripe_subscription_id' => $user->payment_subscription_id,
-                    'stripe_status' => $extra->billing_stripe_status ?? null,
-                    'reason_code' => $extra->billing_last_failed_reason_code ?? 'stripe_payment_failed',
-                    'reason_text' => $extra->billing_last_failed_reason_text ?? l('global.unknown'),
-                    'grace_until' => $grace_until ?? ($grace_started_at ? $this->get_retry_window_until($grace_started_at) : $this->get_retry_window_until($now)),
-                    'revoked_at' => $extra->billing_access_revoked_at ?? $now,
-                    'notification_stage' => self::NOTIFICATION_PAUSED,
-                ]);
+                if(!$grace_until && $grace_started_at) {
+                    $grace_until = $this->get_retry_window_until($grace_started_at, $extra->billing_next_retry_at ?? null);
+                    $extra->billing_grace_until = $grace_until;
+                    $this->update_user_extra((int) $user->user_id, $extra);
+                }
 
-                $escalated++;
-            }
+                if($grace_until && $now < $grace_until) {
+                    $escalation_at = $grace_started_at
+                        ? (new \DateTime($grace_started_at))->modify('+' . self::ESCALATION_HOURS . ' hours')->format('Y-m-d H:i:s')
+                        : null;
 
-            if($grace_until && $now >= $grace_until) {
+                    if($state === self::STATE_PAST_DUE && $escalation_at && $now >= $escalation_at) {
+                        $extra->billing_state = self::STATE_PAST_DUE_CRITICAL;
+                        $this->update_user_extra((int) $user->user_id, $extra);
+
+                        $this->send_notification($user, self::NOTIFICATION_WARNING_SECOND, [
+                            'user_id' => (int) $user->user_id,
+                            'plan_id' => (int) $user->plan_id,
+                            'email' => $user->email,
+                            'processor' => $user->payment_processor ?: 'stripe',
+                            'stripe_subscription_id' => $user->payment_subscription_id,
+                            'stripe_status' => $extra->billing_stripe_status ?? null,
+                            'reason_code' => $extra->billing_last_failed_reason_code ?? 'stripe_payment_failed',
+                            'reason_text' => $extra->billing_last_failed_reason_text ?? l('global.unknown'),
+                            'grace_until' => $grace_until,
+                            'next_retry_at' => $extra->billing_next_retry_at ?? null,
+                        ]);
+
+                        $escalated++;
+                    }
+
+                    continue;
+                }
+
+                if(!$grace_until) {
+                    continue;
+                }
+
                 if(!$this->safely_cancel_failed_subscription($user, $now, $extra->billing_last_failed_reason_text ?? l('global.unknown'))) {
                     continue;
                 }
@@ -722,6 +795,7 @@ class Billing extends Model {
                     'reason_text' => $extra->billing_last_failed_reason_text ?? l('global.unknown'),
                     'grace_until' => null,
                     'revoked_at' => $now,
+                    'notification_stage' => self::NOTIFICATION_REVOKED,
                 ]);
 
                 $revoked++;
@@ -781,6 +855,9 @@ class Billing extends Model {
                 'reason_text' => (string) ($event->reason_text ?? ''),
                 'notification_stage' => (string) ($event->notification_stage ?? ''),
                 'notification_subject' => (string) ($event->notification_subject ?? ''),
+                'mail_success' => isset($event->mail_success) ? (int) $event->mail_success : null,
+                'mail_message_id' => (string) ($event->mail_message_id ?? ''),
+                'mail_error' => (string) ($event->mail_error ?? ''),
                 'stripe_status' => (string) ($event->stripe_status ?? ''),
                 'stripe_event_id' => (string) ($event->stripe_event_id ?? ''),
                 'stripe_subscription_id' => (string) ($event->stripe_subscription_id ?? ''),
