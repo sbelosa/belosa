@@ -94,20 +94,24 @@ class Billing extends Model {
     }
 
     private function get_retry_window_until(?string $occurred_at = null, ?string $next_retry_at = null): string {
-        $retry_window_until = (new \DateTime($occurred_at ?? get_date()))->modify('+' . self::GRACE_PERIOD_DAYS . ' days');
+        return (new \DateTime($occurred_at ?? get_date()))->modify('+' . self::GRACE_PERIOD_DAYS . ' days')->format('Y-m-d H:i:s');
+    }
 
-        if($next_retry_at) {
-            try {
-                $stripe_retry_until = (new \DateTime($next_retry_at))->modify('+24 hours');
+    private function clamp_grace_until(?string $grace_started_at, ?string $grace_until): ?string {
+        $grace_started_at = $this->normalize_datetime($grace_started_at);
+        $grace_until = $this->normalize_datetime($grace_until);
 
-                if($stripe_retry_until > $retry_window_until) {
-                    $retry_window_until = $stripe_retry_until;
-                }
-            } catch(\Exception $exception) {
-            }
+        if(!$grace_started_at) {
+            return $grace_until;
         }
 
-        return $retry_window_until->format('Y-m-d H:i:s');
+        $hard_cap_until = $this->get_retry_window_until($grace_started_at);
+
+        if(!$grace_until || $grace_until > $hard_cap_until) {
+            return $hard_cap_until;
+        }
+
+        return $grace_until;
     }
 
     private function get_user_billing_link(object $user, array $context): string {
@@ -131,19 +135,41 @@ class Billing extends Model {
             return true;
         }
 
+        $subscription_id = trim((string) $user->payment_subscription_id);
+        $current_user = db()->where('user_id', $user->user_id)->getOne('users', ['extra']);
+        $extra = $this->decode_extra($current_user->extra ?? ($user->extra ?? null));
+        $latest_invoice_id = trim((string) ($extra->billing_last_invoice_id ?? ''));
+        $cleanup_state = $extra->billing_state ?? self::STATE_PAST_DUE_CRITICAL;
+
         try {
+            $voided_invoice_ids = $this->void_open_stripe_invoices(
+                (int) $user->user_id,
+                $subscription_id,
+                $latest_invoice_id,
+                $occurred_at,
+                $reason_text
+            );
+
             (new User())->cancel_subscription($user->user_id);
         } catch(\Throwable $exception) {
             $this->log_event((int) $user->user_id, [
-                'event_type' => 'subscription_cancellation_failed',
+                'event_type' => 'subscription_cleanup_failed',
                 'processor' => 'stripe',
-                'billing_state_before' => self::STATE_ACCESS_REVOKED,
-                'billing_state_after' => self::STATE_ACCESS_REVOKED,
-                'reason_code' => 'stripe_subscription_cancel_failed',
+                'billing_state_before' => $cleanup_state,
+                'billing_state_after' => $cleanup_state,
+                'reason_code' => 'stripe_subscription_cleanup_failed',
                 'reason_text' => trim((string) $exception->getMessage()) ?: ($reason_text ?? l('global.unknown')),
-                'stripe_subscription_id' => (string) ($user->payment_subscription_id ?? ''),
+                'stripe_subscription_id' => $subscription_id,
+                'stripe_invoice_id' => $latest_invoice_id ?: null,
                 'occurred_at' => $occurred_at,
             ]);
+
+            $this->create_admin_internal_notification(
+                $user,
+                'Billing cleanup failed',
+                sprintf('Could not safely close unpaid Stripe billing for %s (%s): %s', $user->name, $user->email, trim((string) $exception->getMessage()) ?: ($reason_text ?? l('global.unknown'))),
+                'admin/user-view/' . $user->user_id
+            );
 
             return false;
         }
@@ -159,15 +185,91 @@ class Billing extends Model {
         $this->log_event((int) $user->user_id, [
             'event_type' => 'subscription_canceled_after_failed_retries',
             'processor' => 'stripe',
-            'billing_state_before' => self::STATE_ACCESS_REVOKED,
+            'billing_state_before' => $cleanup_state,
             'billing_state_after' => self::STATE_ACCESS_REVOKED,
             'reason_code' => 'stripe_subscription_retry_window_ended',
             'reason_text' => $reason_text ?? l('global.unknown'),
             'stripe_status' => 'canceled',
+            'stripe_subscription_id' => $subscription_id,
+            'stripe_invoice_id' => !empty($voided_invoice_ids) ? implode(',', $voided_invoice_ids) : ($latest_invoice_id ?: null),
             'occurred_at' => $occurred_at,
         ]);
 
         return true;
+    }
+
+    private function void_open_stripe_invoices(int $user_id, string $subscription_id, ?string $latest_invoice_id, string $occurred_at, ?string $reason_text = null): array {
+        if(!settings()->payment->is_enabled || empty(settings()->stripe->is_enabled) || empty(settings()->stripe->secret_key) || !str_starts_with($subscription_id, 'sub_')) {
+            return [];
+        }
+
+        \Stripe\Stripe::setApiKey(settings()->stripe->secret_key);
+        \Stripe\Stripe::setApiVersion('2023-10-16');
+
+        $invoice_ids = [];
+        $latest_invoice_id = trim((string) $latest_invoice_id);
+
+        if(str_starts_with($latest_invoice_id, 'in_')) {
+            $invoice_ids[$latest_invoice_id] = $latest_invoice_id;
+        }
+
+        $params = [
+            'subscription' => $subscription_id,
+            'status' => 'open',
+            'limit' => 100,
+        ];
+
+        do {
+            $invoices = \Stripe\Invoice::all($params);
+            $invoice_data = $invoices->data ?? [];
+
+            foreach($invoice_data as $invoice) {
+                $invoice_id = (string) ($invoice->id ?? '');
+
+                if(str_starts_with($invoice_id, 'in_')) {
+                    $invoice_ids[$invoice_id] = $invoice_id;
+                }
+            }
+
+            $has_more = !empty($invoices->has_more) && !empty($invoice_data);
+
+            if($has_more) {
+                $last_invoice = end($invoice_data);
+                $params['starting_after'] = $last_invoice->id ?? null;
+            }
+        } while($has_more && !empty($params['starting_after']));
+
+        $voided_invoice_ids = [];
+
+        foreach(array_values($invoice_ids) as $invoice_id) {
+            $invoice = \Stripe\Invoice::retrieve($invoice_id);
+            $status = (string) ($invoice->status ?? '');
+
+            if($status === 'paid') {
+                throw new \RuntimeException(sprintf('Stripe invoice %s is already paid; skipping access revoke.', $invoice_id));
+            }
+
+            if($status !== 'open') {
+                continue;
+            }
+
+            $invoice->voidInvoice();
+            $voided_invoice_ids[] = $invoice_id;
+
+            $this->log_event($user_id, [
+                'event_type' => 'stripe_invoice_voided_after_failed_retries',
+                'processor' => 'stripe',
+                'billing_state_before' => self::STATE_PAST_DUE_CRITICAL,
+                'billing_state_after' => self::STATE_PAST_DUE_CRITICAL,
+                'reason_code' => 'stripe_retry_window_ended_invoice_voided',
+                'reason_text' => $reason_text ?? l('global.unknown'),
+                'stripe_subscription_id' => $subscription_id,
+                'stripe_invoice_id' => $invoice_id,
+                'occurred_at' => $occurred_at,
+            ]);
+        }
+
+        return $voided_invoice_ids;
     }
 
     /* Custom code: FC-2026-03-22: avoid false billing-failure emails for transient Stripe authentication flows */
@@ -664,11 +766,16 @@ class Billing extends Model {
         if($started_past_due) {
             $extra->billing_state = self::STATE_PAST_DUE;
             $extra->billing_grace_started_at = $context['occurred_at'] ?? get_date();
-            $extra->billing_grace_until = $extra->billing_grace_until ?? $this->get_retry_window_until($extra->billing_grace_started_at, $context['next_retry_at'] ?? null);
+            $extra->billing_grace_until = $this->clamp_grace_until(
+                $extra->billing_grace_started_at,
+                $extra->billing_grace_until ?? $this->get_retry_window_until($extra->billing_grace_started_at, $context['next_retry_at'] ?? null)
+            );
             $extra->billing_failed_attempts = max(1, (int) ($extra->billing_failed_attempts ?? 0));
             $extra->billing_last_failed_at = $context['occurred_at'] ?? get_date();
             $extra->billing_last_failed_reason_code = $context['reason_code'] ?? ($extra->billing_last_failed_reason_code ?? null);
             $extra->billing_last_failed_reason_text = $context['reason_text'] ?? ($extra->billing_last_failed_reason_text ?? null);
+        } elseif(in_array($previous_state, [self::STATE_PAST_DUE, self::STATE_PAST_DUE_CRITICAL], true)) {
+            $extra->billing_grace_until = $this->clamp_grace_until($extra->billing_grace_started_at ?? null, $extra->billing_grace_until ?? null);
         }
 
         $this->update_user_extra($user->user_id, $extra);
@@ -704,7 +811,10 @@ class Billing extends Model {
         }
 
         if(in_array($context['stripe_status'] ?? '', ['unpaid', 'canceled', 'incomplete_expired'], true)) {
-            $this->safely_cancel_failed_subscription($user, $context['occurred_at'] ?? get_date(), $context['reason_text'] ?? ('Stripe status: ' . ($context['stripe_status'] ?? 'unknown')));
+            if(!$this->safely_cancel_failed_subscription($user, $context['occurred_at'] ?? get_date(), $context['reason_text'] ?? ('Stripe status: ' . ($context['stripe_status'] ?? 'unknown')))) {
+                return;
+            }
+
             $this->revoke_user_access($user, $context + [
                 'revoked_at' => $context['occurred_at'] ?? get_date(),
                 'grace_until' => null,
@@ -745,6 +855,16 @@ class Billing extends Model {
             }
 
             if(in_array($state, [self::STATE_PAST_DUE, self::STATE_PAST_DUE_CRITICAL], true)) {
+                if($grace_started_at) {
+                    $clamped_grace_until = $this->clamp_grace_until($grace_started_at, $grace_until);
+
+                    if($clamped_grace_until !== $grace_until) {
+                        $grace_until = $clamped_grace_until;
+                        $extra->billing_grace_until = $grace_until;
+                        $this->update_user_extra((int) $user->user_id, $extra);
+                    }
+                }
+
                 if(!$grace_until && $grace_started_at) {
                     $grace_until = $this->get_retry_window_until($grace_started_at, $extra->billing_next_retry_at ?? null);
                     $extra->billing_grace_until = $grace_until;
