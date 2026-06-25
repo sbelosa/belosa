@@ -363,14 +363,15 @@ class Billing extends Model {
         /* Custom code: FC-2026-03-22: normalize legacy language aliases */
         $language = fc_resolve_language_name($user->language ?? \Altum\Language::$default_name ?? 'english');
         $placeholders = $this->build_notification_context($user, $context + ['notification_stage' => $stage], $language);
+        $template_replacements = array_combine(
+            array_map(fn($key) => '{{' . $key . '}}', array_keys($placeholders)),
+            array_values($placeholders)
+        );
         /* /Custom code: FC-2026-03-22 */
         $email_template = get_email_template(
-            [],
+            $template_replacements,
             l($stage_map[$stage]['email_subject'], $language),
-            array_combine(
-                array_map(fn($key) => '{{' . $key . '}}', array_keys($placeholders)),
-                array_values($placeholders)
-            ),
+            $template_replacements,
             l($stage_map[$stage]['email_body'], $language)
         );
 
