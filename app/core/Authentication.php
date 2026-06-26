@@ -536,9 +536,17 @@ class Authentication {
     }
 
     private static function is_valid_forever_sales_link_url($url): bool {
+        if(class_exists('\Altum\Link') && method_exists('\Altum\Link', 'is_monitored_forever_destination_url') && \Altum\Link::is_monitored_forever_destination_url($url)) {
+            return true;
+        }
+
         $url = mb_strtolower(trim((string) $url));
 
-        return strpos($url, 'https://thealoeveraco.shop/') === 0;
+        return strpos($url, 'https://thealoeveraco.shop/') === 0
+            || strpos($url, 'foreverliving.com/') !== false
+            || strpos($url, 'foreverlivingproducts.') !== false
+            || strpos($url, 'flpshop.ba/') !== false
+            || strpos($url, 'foreveralbania.com/') !== false;
     }
 
     public static function has_valid_forever_sales_link() {
@@ -550,9 +558,13 @@ class Authentication {
             return self::$has_valid_forever_sales_link = false;
         }
 
+        $sales_link_block_types = function_exists('fc_get_forever_sales_link_block_types')
+            ? fc_get_forever_sales_link_block_types()
+            : ['link_discount', 'link_forever_webshop_reg', 'link_forever_shop', 'link_forever_product', 'link_forever_living_bih', 'link_forever_living_alb_kosovo', 'link_forever_living_albania_kosovo'];
+
         $discount_blocks = db()
             ->where('user_id', self::$user_id)
-            ->where('type', 'link_discount')
+            ->where('type', $sales_link_block_types, 'IN')
             ->where('is_enabled', 1)
             ->get('biolinks_blocks', null, ['location_url']);
 

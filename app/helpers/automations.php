@@ -1283,13 +1283,27 @@ function fc_get_email_automation_steps(int $automation_id): array {
 }
 
 function fc_get_forever_sales_link_block_types(): array {
-    return ['link_discount', 'link_forever_webshop_reg'];
+    $types = ['link_discount', 'link_forever_webshop_reg'];
+
+    if(class_exists('\Altum\Link') && method_exists('\Altum\Link', 'get_monitored_forever_outbound_types')) {
+        $types = array_merge($types, \Altum\Link::get_monitored_forever_outbound_types());
+    }
+
+    return array_values(array_unique($types));
 }
 
 function fc_is_valid_forever_sales_link_url($url): bool {
+    if(class_exists('\Altum\Link') && method_exists('\Altum\Link', 'is_monitored_forever_destination_url') && \Altum\Link::is_monitored_forever_destination_url($url)) {
+        return true;
+    }
+
     $url = mb_strtolower(trim((string) $url));
 
-    return strpos($url, 'https://thealoeveraco.shop/') === 0;
+    return strpos($url, 'https://thealoeveraco.shop/') === 0
+        || strpos($url, 'foreverliving.com/') !== false
+        || strpos($url, 'foreverlivingproducts.') !== false
+        || strpos($url, 'flpshop.ba/') !== false
+        || strpos($url, 'foreveralbania.com/') !== false;
 }
 
 function fc_get_missing_sales_link_segment_users(): array {

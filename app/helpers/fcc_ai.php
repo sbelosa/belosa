@@ -1517,14 +1517,50 @@ function fcc_ai_get_active_manual_ai_tier($access, int $duration_days = 30): str
     }
 }
 
+function fcc_ai_get_forever_sales_link_block_types(): array {
+    $types = [];
+
+    if(function_exists('fc_get_forever_sales_link_block_types')) {
+        $types = array_merge($types, (array) fc_get_forever_sales_link_block_types());
+    }
+
+    if(class_exists('\Altum\Link') && method_exists('\Altum\Link', 'get_monitored_forever_outbound_types')) {
+        $types = array_merge($types, \Altum\Link::get_monitored_forever_outbound_types());
+    }
+
+    if(empty($types)) {
+        $types = [
+            'link_discount',
+            'link_forever_webshop_reg',
+            'link_forever_shop',
+            'link_forever_product',
+            'link_forever_living_bih',
+            'link_forever_living_alb_kosovo',
+            'link_forever_living_albania_kosovo',
+        ];
+    }
+
+    return array_values(array_unique(array_filter(array_map(static function($type) {
+        return trim((string) $type);
+    }, $types))));
+}
+
 function fcc_ai_is_valid_forever_sales_link_url($url): bool {
+    if(class_exists('\Altum\Link') && method_exists('\Altum\Link', 'is_monitored_forever_destination_url') && \Altum\Link::is_monitored_forever_destination_url($url)) {
+        return true;
+    }
+
     if(function_exists('fc_is_valid_forever_sales_link_url')) {
         return fc_is_valid_forever_sales_link_url($url);
     }
 
     $url = mb_strtolower(trim((string) $url));
 
-    return str_starts_with($url, 'https://thealoeveraco.shop/');
+    return str_starts_with($url, 'https://thealoeveraco.shop/')
+        || str_contains($url, 'foreverliving.com/')
+        || str_contains($url, 'foreverlivingproducts.')
+        || str_contains($url, 'flpshop.ba/')
+        || str_contains($url, 'foreveralbania.com/');
 }
 
 function fcc_ai_get_user_sales_link_summary(object $user, string $language = 'hr'): array {
@@ -1543,6 +1579,7 @@ function fcc_ai_get_user_sales_link_summary(object $user, string $language = 'hr
         'education_url' => $education_url,
         'video_tutorial_url' => $video_tutorial_url,
         'block_type' => 'link_discount',
+        'block_types' => fcc_ai_get_forever_sales_link_block_types(),
         'has_any_block' => false,
         'has_enabled_block' => false,
         'has_valid_enabled_link' => false,
@@ -1566,19 +1603,20 @@ function fcc_ai_get_user_sales_link_summary(object $user, string $language = 'hr
 
     $sales_blocks = db()
         ->where('user_id', $user_id)
-        ->where('type', 'link_discount')
+        ->where('type', fcc_ai_get_forever_sales_link_block_types(), 'IN')
         ->orderBy('is_enabled', 'DESC')
         ->orderBy('link_id', 'ASC')
         ->orderBy('`order`', 'ASC')
-        ->get('biolinks_blocks', null, ['biolink_block_id', 'link_id', 'is_enabled', 'location_url', 'settings']);
+        ->get('biolinks_blocks', null, ['biolink_block_id', 'link_id', 'type', 'is_enabled', 'location_url', 'settings']);
 
     foreach((array) $sales_blocks as $sales_block) {
         $summary['has_any_block'] = true;
+        $block_type = trim((string) ($sales_block->type ?? ''));
         $link_id = (int) ($sales_block->link_id ?? 0);
         $is_enabled = (int) ($sales_block->is_enabled ?? 0) === 1;
         $is_valid = $is_enabled && fcc_ai_is_valid_forever_sales_link_url($sales_block->location_url ?? '');
         $settings = fcc_ai_decode_biolink_block_settings($sales_block->settings ?? null);
-        $apply_to_all_products = !empty($settings->apply_to_all_products);
+        $apply_to_all_products = !empty($settings->apply_to_all_products) || ($block_type !== '' && $block_type !== 'link_discount');
         $is_main_app_block = $main_biolink_id > 0 && $link_id === $main_biolink_id;
 
         if($is_enabled) {
@@ -1589,6 +1627,7 @@ function fcc_ai_get_user_sales_link_summary(object $user, string $language = 'hr
 
         if($is_valid) {
             $summary['has_valid_enabled_link'] = true;
+            $summary['block_type'] = $block_type ?: $summary['block_type'];
         } elseif($is_enabled) {
             $summary['has_invalid_enabled_link'] = true;
         }

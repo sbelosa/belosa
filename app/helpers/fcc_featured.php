@@ -836,7 +836,7 @@ function fcc_featured_get_catalog(array $options = []): array {
     $only_user_id = max(0, (int) ($options['only_user_id'] ?? 0));
 
     $cache_key = 'fcc_featured_catalog?hash=' . md5(json_encode([
-        'version' => '2026-04-12-public-signal-alignment-v1',
+        'version' => '2026-06-26-public-signal-sales-link-v2',
         'language' => $language,
         'min_signal_30d' => $min_signal_30d,
         'experience_signal_target' => $experience_signal_target,
@@ -1021,5 +1021,5 @@ function fcc_featured_get_catalog(array $options = []): array {
         }
 
         return $items;
-    });
+    }, 300);
 }

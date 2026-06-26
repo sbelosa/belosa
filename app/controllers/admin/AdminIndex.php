@@ -146,9 +146,17 @@ class AdminIndex extends Controller {
     }
 
     private function is_valid_forever_sales_link_url($url): bool {
+        if(class_exists('\Altum\Link') && method_exists('\Altum\Link', 'is_monitored_forever_destination_url') && \Altum\Link::is_monitored_forever_destination_url($url)) {
+            return true;
+        }
+
         $url = mb_strtolower(trim((string) $url));
 
-        return strpos($url, 'https://thealoeveraco.shop/') === 0;
+        return strpos($url, 'https://thealoeveraco.shop/') === 0
+            || strpos($url, 'foreverliving.com/') !== false
+            || strpos($url, 'foreverlivingproducts.') !== false
+            || strpos($url, 'flpshop.ba/') !== false
+            || strpos($url, 'foreveralbania.com/') !== false;
     }
 
     /* Custom code: FC-2026-03-18: shared biolink analytics helpers for aggregate and collaborator drill-down */
