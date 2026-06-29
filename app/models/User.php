@@ -947,7 +947,7 @@ class User extends Model {
 
     }
 
-    public function cancel_subscription($user_id) {
+    public function cancel_subscription($user_id, bool $cancel_at_period_end = false) {
 
         $user = db()->where('user_id', $user_id)->getOne('users', ['user_id', 'payment_subscription_id', 'payment_processor', 'plan_id', 'plan_trial_done', 'plan_expiration_date', 'extra']);
 
@@ -967,7 +967,16 @@ class User extends Model {
                     $status = (string) ($subscription->status ?? '');
 
                     if(!in_array($status, ['canceled', 'incomplete_expired'], true)) {
-                        $subscription->cancel();
+                        $plan_expiration_date = !empty($user->plan_expiration_date) ? new \DateTime($user->plan_expiration_date) : null;
+                        $has_paid_time_left = $plan_expiration_date && $plan_expiration_date > new \DateTime();
+
+                        if($cancel_at_period_end && $has_paid_time_left) {
+                            \Stripe\Subscription::update($user->payment_subscription_id, [
+                                'cancel_at_period_end' => true,
+                            ]);
+                        } else {
+                            $subscription->cancel();
+                        }
                     }
                 } catch(\Exception $exception) {
                     $message = mb_strtolower(trim((string) $exception->getMessage()));

@@ -595,7 +595,7 @@ class AccountPlan extends Controller {
         if(!Alerts::has_field_errors() && !Alerts::has_errors()) {
 
             try {
-                (new User())->cancel_subscription($this->user->user_id);
+                (new User())->cancel_subscription($this->user->user_id, true);
             } catch (\Exception $exception) {
                 Alerts::add_error($exception->getCode() . ':' . $exception->getMessage());
                 redirect('account-plan');
