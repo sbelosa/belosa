@@ -337,6 +337,109 @@ class Billing extends Model {
         return true;
     }
 
+    private function get_paid_recurring_payment_for_invoice(int $user_id, ?string $invoice_id): ?object {
+        $invoice_id = trim((string) $invoice_id);
+
+        if($invoice_id === '' || !str_starts_with($invoice_id, 'in_')) {
+            return null;
+        }
+
+        return db()
+            ->where('user_id', $user_id)
+            ->where('processor', 'stripe')
+            ->where('type', 'recurring')
+            ->where('payment_id', $invoice_id)
+            ->getOne('payments', ['id', 'plan_id', 'total_amount', 'currency', 'frequency', 'payment_id']);
+    }
+
+    private function preserve_paid_access_until_period_end(object $user, array $context, string $event_type): bool {
+        $period_end = $this->normalize_datetime($context['current_period_end'] ?? null);
+
+        if(!$period_end || $period_end <= get_date()) {
+            return false;
+        }
+
+        $current_user = db()->where('user_id', (int) $user->user_id)->getOne('users', [
+            'user_id',
+            'name',
+            'email',
+            'language',
+            'plan_id',
+            'payment_processor',
+            'payment_subscription_id',
+            'extra',
+        ]);
+
+        if(!$current_user) {
+            return false;
+        }
+
+        $extra = $this->decode_extra($current_user->extra ?? ($user->extra ?? null));
+        $invoice_id = trim((string) ($context['stripe_invoice_id'] ?? ($extra->billing_last_invoice_id ?? '')));
+        $payment = $this->get_paid_recurring_payment_for_invoice((int) $current_user->user_id, $invoice_id);
+
+        if(!$payment) {
+            return false;
+        }
+
+        $plan = db()->where('plan_id', (int) $payment->plan_id)->getOne('plans', ['plan_id', 'settings']);
+
+        if(!$plan) {
+            return false;
+        }
+
+        $previous_state = $extra->billing_state ?? self::STATE_HEALTHY;
+        $subscription_id = trim((string) ($context['stripe_subscription_id'] ?? ($current_user->payment_subscription_id ?? '')));
+        $occurred_at = $context['occurred_at'] ?? get_date();
+
+        $extra->billing_state = self::STATE_HEALTHY;
+        $extra->billing_failed_attempts = 0;
+        $extra->billing_grace_started_at = null;
+        $extra->billing_grace_until = null;
+        $extra->billing_next_retry_at = null;
+        $extra->billing_access_revoked_at = null;
+        $extra->billing_stripe_status = $context['stripe_status'] ?? 'canceled';
+        $extra->billing_current_period_end = $period_end;
+        $extra->billing_subscription_cancelled_at = $occurred_at;
+        $extra->billing_paid_access_preserved_until = $period_end;
+        $extra->billing_last_invoice_id = $invoice_id;
+
+        db()->where('user_id', (int) $current_user->user_id)->update('users', [
+            'plan_id' => (int) $plan->plan_id,
+            'plan_settings' => $plan->settings,
+            'plan_expiration_date' => $period_end,
+            'plan_expiry_reminder' => 0,
+            'payment_subscription_id' => '',
+            'payment_processor' => 'stripe',
+            'payment_total_amount' => (float) ($payment->total_amount ?? 0),
+            'payment_currency' => (string) ($payment->currency ?? ''),
+            'extra' => $this->encode_json($extra),
+        ]);
+
+        (new User())->sync_links_with_plan((int) $current_user->user_id);
+        cache()->deleteItemsByTag('user_id=' . $current_user->user_id);
+
+        $this->log_event((int) $current_user->user_id, [
+            'event_type' => $event_type,
+            'processor' => 'stripe',
+            'billing_state_before' => $previous_state,
+            'billing_state_after' => self::STATE_HEALTHY,
+            'reason_code' => $context['reason_code'] ?? 'stripe_subscription_canceled_paid_period_preserved',
+            'reason_text' => $context['reason_text'] ?? 'Stripe subscription was canceled after a successful paid invoice; paid access remains active until the paid period ends.',
+            'amount' => (float) ($payment->total_amount ?? 0),
+            'currency' => (string) ($payment->currency ?? ''),
+            'stripe_status' => $context['stripe_status'] ?? 'canceled',
+            'stripe_event_id' => $context['stripe_event_id'] ?? null,
+            'stripe_subscription_id' => $subscription_id ?: null,
+            'stripe_invoice_id' => $invoice_id,
+            'stripe_payment_intent_id' => $context['stripe_payment_intent_id'] ?? ($extra->billing_last_payment_intent_id ?? null),
+            'current_period_end' => $period_end,
+            'occurred_at' => $occurred_at,
+        ]);
+
+        return true;
+    }
+
     private function void_open_stripe_invoices(int $user_id, string $subscription_id, ?string $latest_invoice_id, string $occurred_at, ?string $reason_text = null): array {
         if(!settings()->payment->is_enabled || empty(settings()->stripe->is_enabled) || empty(settings()->stripe->secret_key) || !str_starts_with($subscription_id, 'sub_')) {
             return [];
@@ -921,6 +1024,12 @@ class Billing extends Model {
             return;
         }
 
+        if(($context['stripe_status'] ?? '') === 'canceled' && !in_array($previous_state, [self::STATE_PAST_DUE, self::STATE_PAST_DUE_CRITICAL, self::STATE_ACCESS_REVOKED], true)) {
+            if($this->preserve_paid_access_until_period_end($user, $context, 'subscription_canceled_paid_access_preserved')) {
+                return;
+            }
+        }
+
         if(in_array($context['stripe_status'] ?? '', ['unpaid', 'canceled', 'incomplete_expired'], true)) {
             if(!$this->safely_cancel_failed_subscription($user, $context['occurred_at'] ?? get_date(), $context['reason_text'] ?? ('Stripe status: ' . ($context['stripe_status'] ?? 'unknown')))) {
                 return;
@@ -951,6 +1060,20 @@ class Billing extends Model {
             $state = $extra->billing_state ?? self::STATE_HEALTHY;
             $grace_started_at = $this->normalize_datetime($extra->billing_grace_started_at ?? null);
             $grace_until = $this->normalize_datetime($extra->billing_grace_until ?? null);
+
+            if($state === self::STATE_ACCESS_REVOKED && $this->preserve_paid_access_until_period_end($user, [
+                'processor' => $user->payment_processor ?: 'stripe',
+                'stripe_subscription_id' => $user->payment_subscription_id ?: null,
+                'stripe_invoice_id' => $extra->billing_last_invoice_id ?? null,
+                'stripe_payment_intent_id' => $extra->billing_last_payment_intent_id ?? null,
+                'stripe_status' => $extra->billing_stripe_status ?? 'canceled',
+                'current_period_end' => $extra->billing_current_period_end ?? null,
+                'reason_code' => 'paid_period_restored_after_cancel',
+                'reason_text' => 'Paid access restored because the latest recurring Stripe invoice is paid and the paid period has not ended.',
+                'occurred_at' => $now,
+            ], 'paid_access_restored_until_period_end')) {
+                continue;
+            }
 
             if($this->is_active_access_status($extra->billing_stripe_status ?? null)) {
                 $this->handle_successful_payment([

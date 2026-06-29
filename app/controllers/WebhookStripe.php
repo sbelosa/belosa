@@ -301,6 +301,7 @@ class WebhookStripe extends Controller {
                     'email' => null,
                     'stripe_event_id' => $event->id ?? null,
                     'stripe_subscription_id' => $session->id ?? null,
+                    'stripe_invoice_id' => is_string($session->latest_invoice ?? null) ? $session->latest_invoice : ($session->latest_invoice->id ?? null),
                     'stripe_status' => $session->status ?? null,
                     'current_period_end' => !empty($session->current_period_end) ? date('Y-m-d H:i:s', (int) $session->current_period_end) : null,
                     'next_retry_at' => !empty($session->next_pending_invoice_item_invoice) ? date('Y-m-d H:i:s', (int) $session->next_pending_invoice_item_invoice) : null,
