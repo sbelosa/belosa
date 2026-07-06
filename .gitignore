@@ -12,6 +12,9 @@
 !scripts/
 !scripts/prod_ops_fetch.sh
 !scripts/prod_ops_logs.sh
+!scripts/prod_db_lib.sh
+!scripts/prod_db_query.sh
+!scripts/prod_db_console.sh
 !scripts/live_readonly_mysql_user.sql.example
 !scripts/live_db_write.env.example
 !scripts/live_ops.env.example

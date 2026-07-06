@@ -5,9 +5,11 @@ This is the practical setup for giving Codex high-value visibility into FCC prod
 ## What Is Already Implemented In Code
 
 - readonly live diagnostics endpoint: `/ops-readonly`
+- write ops endpoint for single-statement support work: `/ops-write`
 - scopes: `health`, `overview`, `plans`, `billing`, `collaborators`, `collaborator`
 - local helper: `scripts/prod_ops_fetch.sh`
 - local SSH log helper: `scripts/prod_ops_logs.sh`
+- local live SQL helper: `scripts/prod_db_query.sh`
 
 ## Exact Steps For You
 
@@ -28,6 +30,8 @@ Content:
 
 define('FCC_OPS_READONLY_ENABLED', true);
 define('FCC_OPS_READONLY_KEY', 'your-long-random-secret');
+define('FCC_OPS_WRITE_ENABLED', true);
+define('FCC_OPS_WRITE_KEY', 'your-separate-long-random-write-secret');
 ```
 
 Template:
@@ -56,6 +60,7 @@ Minimal content:
 ```bash
 export FCC_OPS_BASE_URL="https://your-live-domain.com"
 export FCC_OPS_READONLY_KEY="your-long-random-secret"
+export FCC_OPS_WRITE_KEY="your-separate-long-random-write-secret"
 ```
 
 5. Verify from the local workspace:
@@ -93,12 +98,27 @@ Recommended privileges:
 
 Avoid giving write privileges to that user.
 
+## If Hosting Has No SSH Access
+
+That is still workable.
+
+Use:
+
+- `/ops-readonly` for diagnostics
+- `/ops-write` for single-statement support reads and controlled writes
+
+This lets Codex work on live data without SSH or Terminal access, as long as:
+
+- `FCC_OPS_WRITE_ENABLED` is enabled in `ops-readonly-config.php`
+- `FCC_OPS_WRITE_KEY` matches the local `scripts/live_ops.env`
+
 ## What I Will Then Be Able To Do
 
 - inspect a live collaborator by `user_id` or email
 - compare plan state, AI access, billing state and app footprint in one place
 - see billing risk users and recent billing events
 - read Apache/PHP logs if SSH is configured
+- run controlled single-statement live SQL through `/ops-write`
 - help explain strange production behaviour much faster
 
 ## Best Permission Tiers

@@ -5,10 +5,8 @@ set -euo pipefail
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 workspace_root="$(cd "${script_dir}/.." && pwd)"
 
-if [[ -f "${script_dir}/live_db_write.env" ]]; then
-  # shellcheck disable=SC1091
-  source "${script_dir}/live_db_write.env"
-fi
+# shellcheck disable=SC1091
+source "${script_dir}/prod_db_lib.sh"
 
 usage() {
   cat <<'EOF'
@@ -108,31 +106,22 @@ if [[ "${apply_mode}" -ne 1 ]]; then
   exit 0
 fi
 
-: "${FCC_LIVE_WRITE_DB_HOST:?Set FCC_LIVE_WRITE_DB_HOST in scripts/live_db_write.env.}"
-: "${FCC_LIVE_WRITE_DB_NAME:?Set FCC_LIVE_WRITE_DB_NAME in scripts/live_db_write.env.}"
-: "${FCC_LIVE_WRITE_DB_USER:?Set FCC_LIVE_WRITE_DB_USER in scripts/live_db_write.env.}"
-: "${FCC_LIVE_WRITE_DB_PASSWORD:?Set FCC_LIVE_WRITE_DB_PASSWORD in scripts/live_db_write.env.}"
+setup_live_db_connection
 
-db_port="${FCC_LIVE_WRITE_DB_PORT:-3306}"
-
-if command -v mariadb >/dev/null 2>&1; then
-  db_client="mariadb"
-elif command -v mysql >/dev/null 2>&1; then
-  db_client="mysql"
-else
-  echo "Neither mariadb nor mysql client is installed." >&2
-  exit 1
+if [[ "$(get_live_db_transport)" == "http" ]]; then
+  normalized_sql="$(normalize_http_sql_payload "$(cat "${sql_path}")")"
+  echo "Applying ${sql_path} preko HTTP ops-write endpointa ..."
+  run_live_db_http_sql "${normalized_sql}" "prod_db_apply:$(basename "${sql_path}")"
+  echo
+  echo "SQL apply completed."
+  exit 0
 fi
 
-echo "Applying ${sql_path} to ${FCC_LIVE_WRITE_DB_HOST}:${db_port}/${FCC_LIVE_WRITE_DB_NAME} ..."
+setup_live_db_connection
 
-MYSQL_PWD="${FCC_LIVE_WRITE_DB_PASSWORD}" \
-  "${db_client}" \
-  --host="${FCC_LIVE_WRITE_DB_HOST}" \
-  --port="${db_port}" \
-  --user="${FCC_LIVE_WRITE_DB_USER}" \
-  --default-character-set=utf8mb4 \
-  "${FCC_LIVE_WRITE_DB_NAME}" < "${sql_path}"
+echo "Applying ${sql_path} to ${LIVE_DB_HOST}:${LIVE_DB_PORT}/${LIVE_DB_NAME} ..."
+
+cat "${sql_path}" | run_live_db_from_stdin "${LIVE_DB_NAME}"
 
 echo
 echo "SQL apply completed."

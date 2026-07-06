@@ -1651,6 +1651,145 @@ class OpsReadonly extends Controller {
         ];
     }
 
+    private function get_forever_ads_catalog_payload(): array {
+        $referral = query_clean($this->get_param_string('ref'));
+        $preferred_language = $this->get_param_string('language', 'Hrvatski');
+
+        if($referral === '') {
+            $this->respond_error('missing_referral', 'Provide the FCC biolink referral slug with ?ref=...', 422);
+        }
+
+        $biolink = db()
+            ->where('url', $referral)
+            ->where('type', 'biolink')
+            ->getOne('links', ['link_id', 'user_id', 'url']);
+
+        if(!$biolink) {
+            $this->respond_error('referral_not_found', 'FCC biolink referral slug was not found.', 404);
+        }
+
+        $user = db()
+            ->where('user_id', (int) $biolink->user_id)
+            ->getOne('users', ['user_id', 'status', 'preferences']);
+
+        if(!$user || (int) $user->status !== 1) {
+            $this->respond_error('referral_inactive', 'FCC referral user is not active.', 422);
+        }
+
+        $preferences = json_decode($user->preferences ?? '{}');
+        $forever_id = trim((string) ($preferences->meta->foreverId ?? $preferences->meta->forever_id ?? ''));
+        $discount_params = \Altum\Link::get_main_biolink_discount_query_params((int) $user->user_id);
+        $escaped_language = database()->real_escape_string($preferred_language);
+
+        $rows = [];
+        $result = database()->query("
+            SELECT
+                `p`.`blog_post_id`,
+                `p`.`blog_posts_category_id`,
+                `c`.`url` AS `category_url`,
+                `c`.`title` AS `category_title`,
+                `p`.`url`,
+                `p`.`title`,
+                `p`.`description`,
+                `p`.`keywords`,
+                `p`.`search_aliases`,
+                `p`.`shop_context`,
+                `p`.`image`,
+                `p`.`image_description`,
+                `p`.`language`,
+                `p`.`webshop_links`,
+                `p`.`sku`,
+                `p`.`datetime`,
+                `p`.`last_datetime`
+            FROM `blog_posts` `p`
+            LEFT JOIN `blog_posts_categories` `c`
+                ON `c`.`blog_posts_category_id` = `p`.`blog_posts_category_id`
+            WHERE `p`.`is_published` = 1
+                AND COALESCE(`p`.`webshop_links`, '') NOT IN ('', '{}')
+                AND COALESCE(`c`.`url`, '') NOT IN ('forever-card-club', 'forever-proizvodi')
+            ORDER BY
+                CASE WHEN `p`.`language` = '{$escaped_language}' THEN 0 ELSE 1 END,
+                `p`.`title` ASC
+        ");
+
+        while($row = $result->fetch_object()) {
+            $dedupe_key = trim((string) ($row->sku ?? ''));
+            $dedupe_key = $dedupe_key !== '' ? 'sku:' . mb_strtolower($dedupe_key) : 'url:' . mb_strtolower((string) $row->url);
+
+            if(isset($rows[$dedupe_key])) {
+                continue;
+            }
+
+            $webshop_links = json_decode($row->webshop_links ?? '{}');
+            $markets = [];
+
+            foreach((array) $webshop_links as $country_code => $base_url) {
+                $country_code = \Altum\Link::resolve_forever_market_country_code($country_code);
+                $base_url = trim((string) $base_url);
+
+                if(!$country_code || $base_url === '') {
+                    continue;
+                }
+
+                $final_url = \Altum\Link::get_product_webshop_link($referral, (int) $row->blog_post_id, $country_code);
+
+                $markets[] = [
+                    'country_code' => $country_code,
+                    'official_url' => $base_url,
+                    'referral_url' => $final_url ?: '',
+                    'referral_parameter' => \Altum\Link::get_forever_referral_parameter($country_code),
+                    'host' => parse_url($base_url, PHP_URL_HOST) ?: '',
+                ];
+            }
+
+            $language_prefix = $row->language && isset(\Altum\Language::$active_languages[$row->language])
+                ? \Altum\Language::$active_languages[$row->language] . '/'
+                : '';
+
+            $rows[$dedupe_key] = [
+                'blog_post_id' => (int) $row->blog_post_id,
+                'category_id' => (int) $row->blog_posts_category_id,
+                'category_url' => (string) $row->category_url,
+                'category_title' => (string) $row->category_title,
+                'slug' => (string) $row->url,
+                'blog_url' => SITE_URL . $language_prefix . 'blog/' . $row->url,
+                'title' => (string) $row->title,
+                'description' => (string) $row->description,
+                'keywords' => (string) $row->keywords,
+                'search_aliases' => (string) $row->search_aliases,
+                'shop_context' => (string) $row->shop_context,
+                'image' => (string) $row->image,
+                'image_description' => (string) $row->image_description,
+                'language' => (string) $row->language,
+                'sku' => (string) $row->sku,
+                'datetime' => (string) $row->datetime,
+                'last_datetime' => (string) $row->last_datetime,
+                'markets' => $markets,
+            ];
+        }
+
+        $products = array_values($rows);
+        $market_count = 0;
+
+        foreach($products as $product) {
+            $market_count += count($product['markets'] ?? []);
+        }
+
+        return [
+            'referral' => [
+                'slug' => (string) $biolink->url,
+                'forever_id' => $forever_id,
+                'discount_params' => $discount_params,
+            ],
+            'preferred_language' => $preferred_language,
+            'products' => $products,
+            'counts' => [
+                'products' => count($products),
+                'market_urls' => $market_count,
+            ],
+        ];
+    }
+
     private function get_collaborator_user(): ?object {
         $user_id = $this->get_param_int('user_id');
         $email = $this->get_param_string('email');
@@ -1883,6 +2022,10 @@ class OpsReadonly extends Controller {
                 $this->respond_success($scope, $this->get_fcc_signal_notifications_payload());
                 break;
 
+            case 'forever_ads_catalog':
+                $this->respond_success($scope, $this->get_forever_ads_catalog_payload());
+                break;
+
             case 'collaborator':
                 $user = $this->get_collaborator_user();
 
@@ -1902,7 +2045,7 @@ class OpsReadonly extends Controller {
 
             default:
                 $this->respond_error('invalid_scope', 'Readonly ops scope is invalid.', 422, [
-                    'allowed_scopes' => ['health', 'overview', 'ai_feedback', 'ai_recent_communications', 'plans', 'billing', 'pro_billing_audit', 'collaborators', 'fcc_signal_notifications', 'collaborator'],
+                    'allowed_scopes' => ['health', 'overview', 'ai_feedback', 'ai_recent_communications', 'plans', 'billing', 'pro_billing_audit', 'collaborators', 'fcc_signal_notifications', 'forever_ads_catalog', 'collaborator'],
                 ]);
         }
     }
