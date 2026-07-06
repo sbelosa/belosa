@@ -3826,7 +3826,7 @@ function fcc_ai_get_internal_coach_suggestions(array $context, string $message, 
         $add_page('account_plan', 98);
     }
 
-    if(!empty($active_campaign['id']) && ($normalized_message === '' || fcc_ai_contains_keywords($normalized_message, ['akcij', 'promo', 'popust', 'challenge', 'izazov', 'aloe', 'pro-b', '4 pack', 'paket aloe', 'kampanj']))) {
+    if(!empty($active_campaign['id']) && ($normalized_message === '' || fcc_ai_contains_keywords($normalized_message, ['akcij', 'promo', 'popust', 'challenge', 'izazov', 'kampanj', 'campaign', 'offer', 'ponud']))) {
         $add_page('active_campaign', 103);
     }
 
@@ -27909,20 +27909,20 @@ function fcc_ai_generate_internal_coach_reply(string $message, array $context = 
             ? implode("\n\n", [
                 'I can write this for you, but I first need a very short brief so the text is not generic.',
                 'Send me just these 4 things in one line or bullets: who it is for, what you want to promote, what the goal is, and what CTA you want.',
-                'Example: "For new partners, Aloe+ action, goal is DM interest, CTA is write me for details."',
+                'Example: "For warm contacts, product routine, goal is DM interest, CTA is write me for details."',
                 'Best next step now: send the 4-point brief and I will write the final version immediately.',
             ])
             : ($language === 'sl'
                 ? implode("\n\n", [
                     'To ti lahko napišem, vendar najprej potrebujem zelo kratek brief, da besedilo ne bo generično.',
                     'Pošlji mi samo te 4 stvari v eni vrstici ali alinejah: komu je namenjeno, kaj želiš promovirati, kakšen je cilj in kakšen CTA želiš.',
-                    'Primer: "Za nove partnerje, Aloe+ akcija, cilj je interes v DM, CTA je piši mi za podrobnosti."',
+                    'Primer: "Za tople kontakte, rutina izdelkov, cilj je interes v DM, CTA je piši mi za podrobnosti."',
                     'Najboljša naslednja poteza zdaj: pošlji 4-točkovni brief in takoj napišem končno verzijo.',
                 ])
                 : implode("\n\n", [
                     'Ovo ti mogu napisati, ali prvo mi treba jako kratak brief da tekst ne ispadne generički.',
                     'Pošalji mi samo ove 4 stvari u jednoj rečenici ili bulletima: kome je namijenjeno, što želiš promovirati, koji je cilj i koji CTA želiš.',
-                    'Primjer: "Za nove suradnike, Aloe+ akcija, cilj je interes u DM-u, CTA je javi mi se za detalje."',
+                    'Primjer: "Za tople kontakte, produktna rutina, cilj je interes u DM-u, CTA je javi mi se za detalje."',
                     'Najbolji sljedeći korak sada: pošalji brief u 4 točke i odmah pišem finalnu verziju.',
                 ]));
 
