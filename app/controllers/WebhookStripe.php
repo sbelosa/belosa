@@ -125,6 +125,115 @@ class WebhookStripe extends Controller {
 
         cache()->deleteItemsByTag('user_id=' . $user->user_id);
     }
+
+    private function stripe_amount_to_decimal($amount, ?string $currency): float {
+        $currency = mb_strtoupper((string) $currency);
+        $amount = (int) $amount;
+
+        return in_array($currency, get_zero_decimal_currencies_array(), true) ? (float) $amount : $amount / 100;
+    }
+
+    private function resolve_charge_from_refund_event(string $event_type, $session) {
+        if($event_type === 'charge.refunded') {
+            return $session;
+        }
+
+        $charge_id = is_string($session->charge ?? null) ? $session->charge : null;
+
+        if(!$charge_id) {
+            return null;
+        }
+
+        try {
+            return \Stripe\Charge::retrieve($charge_id);
+        } catch(\Exception $exception) {
+            return null;
+        }
+    }
+
+    private function process_refund_event(string $event_type, $session): bool {
+        $charge = $this->resolve_charge_from_refund_event($event_type, $session);
+
+        if(!$charge) {
+            return false;
+        }
+
+        $invoice_id = is_string($charge->invoice ?? null) ? $charge->invoice : null;
+        $payment_intent_id = is_string($charge->payment_intent ?? null) ? $charge->payment_intent : null;
+
+        $payment = null;
+
+        if($invoice_id) {
+            $payment = db()
+                ->where('processor', 'stripe')
+                ->where('payment_id', $invoice_id)
+                ->getOne('payments');
+        }
+
+        if(!$payment && $payment_intent_id) {
+            $payment = db()
+                ->where('processor', 'stripe')
+                ->where('payment_id', $payment_intent_id)
+                ->getOne('payments');
+        }
+
+        if(!$payment) {
+            return false;
+        }
+
+        $currency = mb_strtoupper((string) ($charge->currency ?? $payment->currency ?? settings()->payment->default_currency));
+        $stripe_refunded_total = $this->stripe_amount_to_decimal($charge->amount_refunded ?? 0, $currency);
+
+        if($stripe_refunded_total <= 0) {
+            return false;
+        }
+
+        $refunds = (array) json_decode($payment->refunds ?? '[]');
+        $known_refund_ids = [];
+
+        foreach($refunds as $refund) {
+            $refund = is_array($refund) ? (object) $refund : $refund;
+            $stripe_refund_id = (string) ($refund->stripe_refund_id ?? '');
+
+            if($stripe_refund_id !== '') {
+                $known_refund_ids[$stripe_refund_id] = true;
+            }
+        }
+
+        foreach(($charge->refunds->data ?? []) as $stripe_refund) {
+            $stripe_refund_id = (string) ($stripe_refund->id ?? '');
+
+            if($stripe_refund_id === '' || isset($known_refund_ids[$stripe_refund_id])) {
+                continue;
+            }
+
+            $refunds[] = [
+                'id' => count($refunds) + 1,
+                'amount' => number_format($this->stripe_amount_to_decimal($stripe_refund->amount ?? 0, $stripe_refund->currency ?? $currency), 2, '.', ''),
+                'reason' => $stripe_refund->reason ?? 'stripe_refund',
+                'origin' => 'stripe',
+                'stripe_refund_id' => $stripe_refund_id,
+                'stripe_charge_id' => $charge->id ?? null,
+                'datetime' => !empty($stripe_refund->created) ? date('Y-m-d H:i:s', (int) $stripe_refund->created) : get_date(),
+            ];
+
+            $known_refund_ids[$stripe_refund_id] = true;
+        }
+
+        $refunded_total = min((float) $payment->total_amount, $stripe_refunded_total);
+        $refunded_status = $refunded_total >= (float) $payment->total_amount ? 'fully_refunded' : 'partially_refunded';
+
+        db()->where('id', (int) $payment->id)->update('payments', [
+            'status' => 'refunded',
+            'refunded_total' => number_format($refunded_total, 2, '.', ''),
+            'refunded_status' => $refunded_status,
+            'refunds' => json_encode($refunds, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+        ]);
+
+        cache()->deleteItemsByTag('user_id=' . $payment->user_id);
+
+        return true;
+    }
     /* /Custom code: FC-2026-03-17 */
 
     public function index() {
@@ -169,7 +278,7 @@ class WebhookStripe extends Controller {
             die('Event already processed.');
         }
 
-        if(!in_array($event->type, ['invoice.paid', 'invoice.payment_failed', 'checkout.session.completed', 'customer.subscription.created', 'customer.subscription.updated', 'customer.subscription.deleted'])) {
+        if(!in_array($event->type, ['invoice.paid', 'invoice.payment_failed', 'checkout.session.completed', 'customer.subscription.created', 'customer.subscription.updated', 'customer.subscription.deleted', 'charge.refunded', 'refund.created'])) {
             die('Event type not needed to be handled, returning ok.');
         }
         /* /Custom code: FC-2026-03-17 */
@@ -181,6 +290,14 @@ class WebhookStripe extends Controller {
         $stripe_current_period_end = !empty($session->lines->data[0]->period->end) ? date('Y-m-d H:i:s', (int) $session->lines->data[0]->period->end) : null;
 
         switch($event->type) {
+            case 'charge.refunded':
+            case 'refund.created':
+
+                $this->process_refund_event($event->type, $session);
+
+                echo 'successful';
+                return;
+
             /* Handle trial start */
             case 'customer.subscription.created':
 

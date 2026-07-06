@@ -152,7 +152,7 @@ class Pay extends Controller {
     }
 
     private function is_active_like_stripe_status(?string $status): bool {
-        return in_array((string) $status, ['active', 'trialing', 'past_due', 'unpaid'], true);
+        return in_array((string) $status, ['active', 'trialing', 'past_due', 'unpaid', 'incomplete'], true);
     }
 
     private function stripe_subscription_matches_current_user($subscription): bool {
@@ -188,8 +188,12 @@ class Pay extends Controller {
         return array_values($customer_ids);
     }
 
-    /* Custom code: FC-2026-03-22: block duplicate recurring Stripe checkout while an active Stripe subscription already exists */
-    private function has_active_stripe_subscription(): bool {
+    private function is_entitled_stripe_status(?string $status): bool {
+        return in_array((string) $status, ['active', 'trialing'], true);
+    }
+
+    /* Custom code: FC-2026-03-22: inspect active-like Stripe subscriptions before creating another recurring checkout */
+    private function get_active_stripe_subscription() {
         $subscription_id = trim((string) ($this->user->payment_subscription_id ?? ''));
         $checked_subscription_ids = [];
 
@@ -199,7 +203,7 @@ class Pay extends Controller {
                 $checked_subscription_ids[(string) ($subscription->id ?? $subscription_id)] = true;
 
                 if($this->stripe_subscription_matches_current_user($subscription) && $this->is_active_like_stripe_status($subscription->status ?? '')) {
-                    return true;
+                    return $subscription;
                 }
             } catch(\Exception $exception) {
             }
@@ -229,7 +233,7 @@ class Pay extends Controller {
                         }
 
                         if($this->is_active_like_stripe_status($subscription->status ?? '')) {
-                            return true;
+                            return $subscription;
                         }
                     }
 
@@ -244,7 +248,25 @@ class Pay extends Controller {
             }
         }
 
-        return false;
+        return null;
+    }
+
+    private function sync_local_plan_from_active_stripe_subscription($subscription): bool {
+        if(!is_object($subscription) || !$this->is_entitled_stripe_status($subscription->status ?? '')) {
+            return false;
+        }
+
+        $was_synced = (new User())->sync_local_plan_from_stripe_subscription($this->user, $subscription);
+
+        if($was_synced) {
+            $refreshed_user = (new User())->get($this->user->user_id);
+            if($refreshed_user) {
+                $this->user = $refreshed_user;
+                \Altum\Authentication::$user = $refreshed_user;
+            }
+        }
+
+        return $was_synced;
     }
     /* /Custom code: FC-2026-03-22 */
     /* /Custom code: FC-2026-03-17 */
@@ -970,12 +992,29 @@ class Pay extends Controller {
         \Stripe\Stripe::setApiKey(settings()->stripe->secret_key);
         \Stripe\Stripe::setApiVersion('2023-10-16');
 
-        /* Custom code: FC-2026-03-22: stop creating a second Stripe subscription for the same active plan */
-        if($_POST['payment_type'] === 'recurring' && $this->has_active_stripe_subscription()) {
-            Alerts::add_error(l('account.billing.subscription_id_active'));
-            redirect('account-plan');
+        /* Custom code: FC-2026-03-22 / FC-2026-06-19: stop duplicate Stripe subscriptions and self-heal same-plan access drift */
+        if($_POST['payment_type'] === 'recurring') {
+            $active_stripe_subscription = $this->get_active_stripe_subscription();
+
+            if($active_stripe_subscription) {
+                $was_synced = $this->sync_local_plan_from_active_stripe_subscription($active_stripe_subscription);
+                $active_subscription_plan_id = (int) ($active_stripe_subscription->metadata->plan_id ?? 0);
+
+                if($active_subscription_plan_id > 0 && $active_subscription_plan_id !== (int) $this->plan_id) {
+                    Alerts::add_error(l('account.billing.subscription_id_active'));
+                    redirect('account-plan');
+                }
+
+                if($was_synced) {
+                    Alerts::add_success(l('global.success_message.update2'));
+                } else {
+                    Alerts::add_error(l('account.billing.subscription_id_active'));
+                }
+
+                redirect('account-plan');
+            }
         }
-        /* /Custom code: FC-2026-03-22 */
+        /* /Custom code: FC-2026-03-22 / FC-2026-06-19 */
 
         /* Trial */
         $trial_days = 0;
