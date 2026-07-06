@@ -10,6 +10,18 @@ defined('ALTUMCODE') || die();
 
 class AdminLeaderOperatingSystem extends Controller {
 
+    private const FCC_ACCESS_REJECTION_INVALID_ID = 'invalid_id';
+    private const FCC_ACCESS_REJECTION_VALID_ID_NOT_TEAM = 'valid_id_not_team';
+
+    private function normalize_fcc_access_rejection_reason($reason): string {
+        $reason = trim((string) $reason);
+
+        return in_array($reason, [
+            self::FCC_ACCESS_REJECTION_INVALID_ID,
+            self::FCC_ACCESS_REJECTION_VALID_ID_NOT_TEAM,
+        ], true) ? $reason : self::FCC_ACCESS_REJECTION_INVALID_ID;
+    }
+
     private function ensure_feedback_workflow_columns(): void {
         static $is_checked = false;
 
@@ -511,21 +523,29 @@ class AdminLeaderOperatingSystem extends Controller {
         ]);
     }
 
-    private function send_fcc_access_rejected_email(object $user): bool {
+    private function send_fcc_access_rejected_email(object $user, string $rejection_reason = self::FCC_ACCESS_REJECTION_INVALID_ID): bool {
         if(empty($user->email)) {
             return false;
         }
 
         $language = fc_resolve_language_name($user->language ?? null);
+        $rejection_reason = $this->normalize_fcc_access_rejection_reason($rejection_reason);
+        $subject_key = $rejection_reason === self::FCC_ACCESS_REJECTION_VALID_ID_NOT_TEAM
+            ? 'global.emails.admin.fcc_access_rejected_not_team.subject'
+            : 'global.emails.admin.fcc_access_rejected.subject';
+        $body_key = $rejection_reason === self::FCC_ACCESS_REJECTION_VALID_ID_NOT_TEAM
+            ? 'global.emails.admin.fcc_access_rejected_not_team.body'
+            : 'global.emails.admin.fcc_access_rejected.body';
 
         $email_template = get_email_template(
             [],
-            l('global.emails.admin.fcc_access_rejected.subject', $language),
+            l($subject_key, $language),
             [
                 '{{NAME}}' => str_replace('.', '. ', (string) ($user->name ?? '')),
                 '{{CONTACT_EMAIL}}' => $this->build_fcc_email_link_html('mailto:info@forevercard.club', 'info@forevercard.club'),
+                '{{FORCE_CLICK_LINK}}' => $this->build_fcc_email_link_html('https://force.click/use-cases/forever-living-products', 'https://force.click/use-cases/forever-living-products'),
             ],
-            l('global.emails.admin.fcc_access_rejected.body', $language)
+            l($body_key, $language)
         );
 
         $mail_result = send_mail($user->email, $email_template->subject, $email_template->body, [
@@ -8039,7 +8059,8 @@ class AdminLeaderOperatingSystem extends Controller {
             redirect('admin/leader-operating-system' . (!empty($redirect_query) ? '?' . http_build_query($redirect_query) : ''));
         }
 
-        $email_sent = $this->send_fcc_access_rejected_email($user);
+        $rejection_reason = $this->normalize_fcc_access_rejection_reason($_POST['los_rejection_reason'] ?? null);
+        $email_sent = $this->send_fcc_access_rejected_email($user, $rejection_reason);
 
         if(!$email_sent) {
             Alerts::add_error('Email odbijenice nije poslan, pa račun nije obrisan. Provjeri postavke slanja emaila i pokušaj ponovno.');

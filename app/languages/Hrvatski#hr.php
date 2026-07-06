@@ -4702,16 +4702,18 @@ Ako imate bilo kakvih pitanja, slobodno nam se javite. <br /><br />
 
 Lijep pozdrav, <br />
 {{WEBSITE_TITLE}}',
-	'global.emails.admin.fcc_access_rejected.subject' => 'Pristup Forever Card Clubu nije odobren.',
+	'global.emails.admin.fcc_access_rejected.subject' => 'Pristup Forever Card Clubu nije odobren / Forever Card Club access was not approved.',
 	'global.emails.admin.fcc_access_rejected.body' => 'Poštovani/a {{NAME}}, <br /><br />
 
 nakon ručne provjere Vaš zahtjev za pristup <strong>Forever Card Clubu</strong> trenutno nije odobren, a Vaš račun je uklonjen iz sustava. <br /><br />
 
 <div style="padding:18px 20px;border-radius:16px;background:linear-gradient(135deg,#3b1822 0%,#24131f 100%);border:1px solid rgba(255,167,167,0.24);margin:18px 0;color:#fff4f4;">
-    <div style="font-size:12px;letter-spacing:0.12em;text-transform:uppercase;color:#ffb9b9;margin-bottom:8px;">Najčešći razlozi</div>
+    <div style="font-size:12px;letter-spacing:0.12em;text-transform:uppercase;color:#ffb9b9;margin-bottom:8px;">Najčešći razlozi / Most common reasons</div>
     <div style="line-height:1.75;">
         - upisani <strong>Forever ID</strong> broj Forever Living Productsa je neispravan <br />
-        - članstvo nije potvrđeno kao dio našeg tima
+        - članstvo nije potvrđeno kao dio našeg tima <br /><br />
+        - the entered <strong>Forever ID</strong> number is invalid <br />
+        - the membership has not been confirmed as part of our team
     </div>
 </div>
 
@@ -4722,6 +4724,64 @@ Ako smatrate da je pristup odbijen pogreškom, upit ili prigovor možete poslati
 Hvala na razumijevanju. <br /><br />
 
 Lijep pozdrav, <br />
+{{WEBSITE_TITLE}}
+
+<hr style="border:none;border-top:1px solid rgba(255,255,255,0.14);margin:24px 0;" />
+
+Hello {{NAME}}, <br /><br />
+
+after a manual review, your request for access to <strong>Forever Card Club</strong> has not been approved and your account has been removed from the system. <br /><br />
+
+At this time, access is reserved exclusively for members of the Forever structure of Diamond Sapphire Managers <strong>Snježana and Stjepan Beloša</strong>. <br /><br />
+
+If you believe your access was declined by mistake, you may send an inquiry or complaint to {{CONTACT_EMAIL}}. <br /><br />
+
+Thank you for your understanding. <br /><br />
+
+Best regards, <br />
+{{WEBSITE_TITLE}}',
+	'global.emails.admin.fcc_access_rejected_not_team.subject' => 'FCC pristup nije odobren, ali Force Click je dostupan / FCC access was not approved, but Force Click is available.',
+	'global.emails.admin.fcc_access_rejected_not_team.body' => 'Poštovani/a {{NAME}}, <br /><br />
+
+hvala Vam na registraciji za <strong>Forever Card Club</strong>. Nakon ručne provjere FCC pristup Vam trenutno ne možemo odobriti jer je Forever Card Club privatna platforma namijenjena članovima Forever strukture Diamond Saphir managera <strong>Snježane i Stjepana Beloše</strong>. <br /><br />
+
+Vaš račun na Forever Card Clubu je uklonjen iz sustava. <br /><br />
+
+Ako želite koristiti slične online alate za Forever poslovanje, preporučujemo <strong>Force Click</strong>, našu sestrinsku platformu otvorenu za širi krug Forever suradnika. <br /><br />
+
+<div style="padding:18px 20px;border-radius:16px;background:linear-gradient(135deg,#0f2440 0%,#153a4d 100%);border:1px solid rgba(83,214,206,0.28);margin:18px 0;">
+    <div style="font-size:12px;letter-spacing:0.12em;text-transform:uppercase;color:#9de7e0;margin-bottom:8px;">Force Click za Forever / Force Click for Forever</div>
+    <div style="color:#ffffff;line-height:1.75;">
+        Online prezentacija proizvoda, prodajni linkovi, QR/NFC promocija, sadržaj i jednostavniji digitalni nastup. <br />
+        Online product presentation, sales links, QR/NFC promotion, content and an easier digital presence. <br /><br />
+        {{FORCE_CLICK_LINK}}
+    </div>
+</div>
+
+Ako smatrate da je pristup FCC-u odbijen pogreškom, upit ili prigovor možete poslati na {{CONTACT_EMAIL}}. <br /><br />
+
+Hvala na razumijevanju. <br /><br />
+
+Lijep pozdrav, <br />
+{{WEBSITE_TITLE}}
+
+<hr style="border:none;border-top:1px solid rgba(255,255,255,0.14);margin:24px 0;" />
+
+Hello {{NAME}}, <br /><br />
+
+thank you for registering for <strong>Forever Card Club</strong>. After a manual review, we are not able to approve your FCC access at this time because Forever Card Club is a private platform intended for members of the Forever structure of Diamond Sapphire Managers <strong>Snježana and Stjepan Beloša</strong>. <br /><br />
+
+Your Forever Card Club account has been removed from the system. <br /><br />
+
+If you would like to use similar online tools for your Forever business, we recommend <strong>Force Click</strong>, our sister platform available to a wider group of Forever associates. <br /><br />
+
+You can open the Force Click page for Forever Living Products here: {{FORCE_CLICK_LINK}} <br /><br />
+
+If you believe your FCC access was declined by mistake, you may send an inquiry or complaint to {{CONTACT_EMAIL}}. <br /><br />
+
+Thank you for your understanding. <br /><br />
+
+Best regards, <br />
 {{WEBSITE_TITLE}}',
 	'global.emails.admin.card_sent_email.subject' => 'Vaša poklon NFC kartica je poslana na adresu.',
 	'global.emails.admin.card_sent_email.body' => 'Pozdrav {{NAME}}, <br /><br />

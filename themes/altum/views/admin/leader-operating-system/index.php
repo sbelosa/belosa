@@ -3792,9 +3792,13 @@ $funnel_tab_badge_total = (int) (($data->overview['funnel_dashboard']['totals'][
                                         </button>
                                     </form>
 
-                                    <form action="<?= $leader_os_action_url ?>" method="post" class="mb-0 d-inline-block" onsubmit="return confirm('Jeste li sigurni da želite odbiti pristup? Korisniku će se prvo poslati email obavijest, a zatim će račun biti trajno uklonjen s Forever Card Cluba.');">
+                                    <form action="<?= $leader_os_action_url ?>" method="post" class="mb-0 d-inline-flex flex-wrap align-items-center" style="gap:0.45rem;" onsubmit="return confirm('Jeste li sigurni da želite odbiti pristup? Korisniku će se prvo poslati odabrana email obavijest, a zatim će račun biti trajno uklonjen s Forever Card Cluba.');">
                                         <input type="hidden" name="global_token" value="<?= \Altum\Csrf::get('global_token') ?>" />
                                         <input type="hidden" name="user_id" value="<?= (int) ($row['user_id'] ?? 0) ?>" />
+                                        <select name="los_rejection_reason" class="form-control form-control-sm bg-dark text-light border-secondary" style="min-width:17rem;max-width:100%;" aria-label="Razlog odbijanja pristupa">
+                                            <option value="invalid_id">Neispravan ID ili nije potvrđeno članstvo</option>
+                                            <option value="valid_id_not_team">ID je OK, ali nije naš tim - pošalji Force Click</option>
+                                        </select>
                                         <button type="submit" name="los_reject_access" value="1" class="btn btn-sm leader-os-action-button-danger">
                                             <i class="fas fa-times-circle mr-1"></i> Pristup odbijen
                                         </button>
