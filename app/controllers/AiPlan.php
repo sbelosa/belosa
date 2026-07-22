@@ -3582,8 +3582,8 @@ class AiPlan extends Controller {
         }
 
         return match($type) {
-            'image' => \Altum\Uploads::get_full_url('block_images') . $image_name,
-            'avatar' => \Altum\Uploads::get_full_url('avatars') . $image_name,
+            'image' => get_available_upload_url('block_images', $image_name),
+            'avatar' => get_available_upload_url('avatars', $image_name),
             default => '',
         };
     }
@@ -3911,7 +3911,7 @@ class AiPlan extends Controller {
             return '';
         }
 
-        return \Altum\Uploads::get_full_url($storage_map[$type]['path']) . $image_name;
+        return get_available_upload_url($storage_map[$type]['path'], $image_name);
     }
 
     private function get_default_app_review_visual_segments(): array {
@@ -4368,10 +4368,10 @@ class AiPlan extends Controller {
             $priority = 99;
 
             if($type === 'image') {
-                $candidate = \Altum\Uploads::get_full_url('block_images') . $image_name;
+                $candidate = get_available_upload_url('block_images', $image_name);
                 $priority = 1;
             } elseif($type === 'avatar') {
-                $candidate = \Altum\Uploads::get_full_url('avatars') . $image_name;
+                $candidate = get_available_upload_url('avatars', $image_name);
                 $priority = 3;
             }
 

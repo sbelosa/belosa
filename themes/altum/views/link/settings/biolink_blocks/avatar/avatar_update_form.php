@@ -1,5 +1,11 @@
 <?php defined('ALTUMCODE') || die() ?>
 
+<?php
+$avatar_existing_image = trim((string) ($row->settings->image ?? ''));
+$avatar_has_uploaded_image = is_upload_file_available('avatars', $avatar_existing_image);
+$avatar_preview_url = get_biolink_avatar_url($row->settings);
+?>
+
 <form id="<?= 'update_biolink_block_' . $row->biolink_block_id ?>" name="update_biolink_" method="post" role="form" data-type="<?= $row->type ?>" enctype="multipart/form-data">
     <input type="hidden" name="token" value="<?= \Altum\Csrf::get() ?>" required="required" />
     <input type="hidden" name="request_type" value="update" />
@@ -14,7 +20,8 @@
             'id'=> 'avatar_image_' . $row->biolink_block_id,
             'uploads_file_key' => 'avatars',
             'file_key' => 'image',
-            'already_existing_image' => $row->settings->image ?? null,
+            'already_existing_image' => $avatar_has_uploaded_image ? $avatar_existing_image : 'default-avatar',
+            'custom_file_full_url' => $avatar_preview_url,
             'image_container' => 'image',
             'accept' => \Altum\Uploads::array_to_list_format($data->biolink_blocks['avatar']['whitelisted_image_extensions']),
             'input_data' => 'data-crop data-aspect-ratio="1"'

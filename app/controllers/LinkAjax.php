@@ -2497,7 +2497,7 @@ class LinkAjax extends Controller {
 				'insert_after_label' => trim((string) ($item['insert_after_label'] ?? '')),
 				'allow_existing_type' => $allow_existing_type,
 				'seed_settings' => $seed_settings,
-				'supports_auto_add' => in_array($block_type, ['lead_funnel', 'heading', 'paragraph', 'modal_text', 'custom_html_whatsapp', 'custom_html_chatbot', 'custom_html_chatbot_pets', 'youtube', 'vimeo', 'link_forever_product'], true)
+				'supports_auto_add' => in_array($block_type, ['avatar', 'lead_funnel', 'heading', 'paragraph', 'modal_text', 'custom_html_whatsapp', 'custom_html_chatbot', 'custom_html_chatbot_pets', 'youtube', 'vimeo', 'link_forever_product'], true)
 					|| ($block_type === 'link_discount' && !empty($seed_settings['location_url'])),
 			];
 
@@ -3631,6 +3631,30 @@ class LinkAjax extends Controller {
 		$location_url = null;
 
 		switch($block_type) {
+			case 'avatar':
+				$settings = [
+					'image' => null,
+					'use_default_avatar' => true,
+					'image_alt' => mb_substr(input_clean($seed_settings['name'] ?? $this->user->name ?? '', 100), 0, 100),
+					'size' => 125,
+					'object_fit' => 'contain',
+					'border_radius' => 'round',
+					'border_shadow_style' => 'subtle',
+					'border_shadow_color' => '#00000010',
+					'border_width' => 0,
+					'border_style' => 'solid',
+					'border_color' => '#ffffff',
+					'open_in_new_tab' => false,
+					'display_continents' => [],
+					'display_countries' => [],
+					'display_cities' => [],
+					'display_devices' => [],
+					'display_languages' => [],
+					'display_operating_systems' => [],
+					'display_browsers' => [],
+				];
+				break;
+
 			case 'lead_funnel':
 				$settings = [
 					'name' => mb_substr(query_clean($seed_settings['name'] ?? l('link.biolink.blocks.lead_funnel')), 0, 128),
@@ -6502,7 +6526,7 @@ class LinkAjax extends Controller {
 
 		$this->validate_biolink_block_access_for_current_plan($block_type);
 
-		if(!in_array($block_type, ['lead_funnel', 'heading', 'paragraph', 'modal_text', 'custom_html_whatsapp', 'custom_html_chatbot', 'custom_html_chatbot_pets', 'youtube', 'vimeo', 'link_forever_product'], true) && !($block_type === 'link_discount' && !empty(($recommendation['seed_settings']['location_url'] ?? '')))) {
+		if(!in_array($block_type, ['avatar', 'lead_funnel', 'heading', 'paragraph', 'modal_text', 'custom_html_whatsapp', 'custom_html_chatbot', 'custom_html_chatbot_pets', 'youtube', 'vimeo', 'link_forever_product'], true) && !($block_type === 'link_discount' && !empty(($recommendation['seed_settings']['location_url'] ?? '')))) {
 			Response::json(l('link.settings.ai_missing_blocks_manual_only'), 'error');
 		}
 

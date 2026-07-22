@@ -1,5 +1,7 @@
 <?php defined('ALTUMCODE') || die() ?>
 
+<?php $custom_file_image_url = !empty($data->custom_file_full_url) ? $data->custom_file_full_url : ($data->already_existing_image ? \Altum\Uploads::get_full_url($data->uploads_file_key) . $data->already_existing_image : null) ?>
+
 <div class="row">
     <div class="col">
         <input id="<?= ($data->id ?? $data->file_key) ?>" type="file" name="<?= $data->file_key ?>" accept="<?= $data->accept ?? \Altum\Uploads::get_whitelisted_file_extensions_accept($data->uploads_file_key) ?>" class="form-control-file altum-file-input" <?= $data->input_data ?? null ?> />
@@ -7,8 +9,8 @@
 
     <div data-image-container="<?= $data->image_container ?>" id="<?= ($data->id ?? $data->file_key) . '_preview' ?>" class="col-3 <?= !empty($data->already_existing_image) ? null : 'd-none' ?>">
         <div class="d-flex justify-content-center align-items-center">
-            <a href="<?= $data->already_existing_image ? (!empty($data->custom_file_full_url) ? $data->custom_file_full_url : \Altum\Uploads::get_full_url($data->uploads_file_key) . $data->already_existing_image) : '#' ?>" target="_blank" data-toggle="tooltip" title="<?= l('global.view') ?>" data-tooltip-hide-on-click>
-                <img src="<?= $data->already_existing_image ? \Altum\Uploads::get_full_url($data->uploads_file_key) . $data->already_existing_image : null ?>" class="altum-file-input-preview rounded <?= !empty($data->already_existing_image) ? null : 'd-none' ?>" loading="lazy" />
+            <a href="<?= $data->already_existing_image ? $custom_file_image_url : '#' ?>" target="_blank" data-toggle="tooltip" title="<?= l('global.view') ?>" data-tooltip-hide-on-click>
+                <img src="<?= $data->already_existing_image ? $custom_file_image_url : null ?>" class="altum-file-input-preview rounded <?= !empty($data->already_existing_image) ? null : 'd-none' ?>" loading="lazy" />
             </a>
         </div>
     </div>

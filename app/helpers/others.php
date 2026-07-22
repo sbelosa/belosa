@@ -121,6 +121,53 @@ function get_user_avatar($avatar, $email) {
     return $avatar ? \Altum\Uploads::get_full_url('users') . $avatar : get_gravatar($email);
 }
 
+/* Custom code: FC-2026-07-22: resilient Forever Card avatar handling */
+function is_upload_file_available(string $uploads_key, $file_name): bool {
+    $file_name = trim((string) $file_name);
+
+    if($file_name === '' || basename($file_name) !== $file_name) {
+        return false;
+    }
+
+    if(\Altum\Plugin::is_active('offload') && !empty(settings()->offload->uploads_url)) {
+        return true;
+    }
+
+    return is_file(\Altum\Uploads::get_full_path($uploads_key) . $file_name);
+}
+
+function get_available_upload_url(string $uploads_key, $file_name): string {
+    return is_upload_file_available($uploads_key, $file_name)
+        ? \Altum\Uploads::get_full_url($uploads_key) . trim((string) $file_name)
+        : '';
+}
+
+function get_default_biolink_avatar_url(): string {
+    $configured_avatar = trim((string) (settings()->main->default_avatar ?? ''));
+
+    if($configured_avatar !== '' && is_upload_file_available('default_avatar', $configured_avatar)) {
+        return \Altum\Uploads::get_full_url('default_avatar') . $configured_avatar;
+    }
+
+    return ASSETS_FULL_URL . 'images/forever-card-default-avatar.svg';
+}
+
+function get_biolink_avatar_url($settings, string $image_key = 'image'): string {
+    if(is_string($settings)) {
+        $settings = json_decode($settings ?? '{}');
+    }
+
+    if(is_array($settings)) {
+        $settings = (object) $settings;
+    }
+
+    $image_name = $settings instanceof \stdClass ? ($settings->{$image_key} ?? '') : '';
+    $uploaded_avatar_url = get_available_upload_url('avatars', $image_name);
+
+    return $uploaded_avatar_url !== '' ? $uploaded_avatar_url : get_default_biolink_avatar_url();
+}
+/* /Custom code: FC-2026-07-22 */
+
 function get_gravatar($email, $size = 80, $d = 'identicon', $rating = 'g', $force_gravatar = false) {
     if(!empty(settings()->main->default_avatar) && !$force_gravatar) {
         return settings()->main->default_avatar_full_url;

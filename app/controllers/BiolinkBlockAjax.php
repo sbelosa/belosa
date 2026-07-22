@@ -2050,6 +2050,7 @@ class BiolinkBlockAjax extends Controller {
         $type = 'avatar';
         $settings = json_encode([
             'image' => $db_image,
+            'use_default_avatar' => empty($db_image),
             'image_alt' => null,
             'size' => $_POST['size'],
             'border_radius' => $_POST['border_radius'],
@@ -2113,10 +2114,15 @@ class BiolinkBlockAjax extends Controller {
         /* Image upload */
         $db_image = $this->handle_image_upload($biolink_block->settings->image ?? null, 'avatars/', settings()->links->avatar_size_limit);
 
-        $image_url = $db_image ? \Altum\Uploads::get_full_url('avatars') . $db_image : null;
+        if(!is_upload_file_available('avatars', $db_image)) {
+            $db_image = null;
+        }
+
+        $image_url = get_biolink_avatar_url((object) ['image' => $db_image]);
 
         $settings = json_encode([
             'image' => $db_image,
+            'use_default_avatar' => empty($db_image),
             'image_alt' => $_POST['image_alt'],
             'size' => $_POST['size'],
             'object_fit' => $_POST['object_fit'],

@@ -333,6 +333,12 @@ class Uploads {
     public static function copy_uploaded_file($already_existing_file_name, $already_existing_folder_path, $destination_folder_path, $error_response_type = 'error', $error_field = null) {
         if(!$already_existing_file_name) return null;
 
+        $already_existing_file_name = basename((string) $already_existing_file_name);
+
+        if($already_existing_file_name === '') {
+            return null;
+        }
+
         /* Determine the error response */
         $return_error = null;
         switch($error_response_type) {
@@ -359,6 +365,8 @@ class Uploads {
         $file_new_name = md5(uniqid('', true) . random_bytes(16)) . '.' . $file_extension;
 
         /* Offload uploading */
+        $copy_succeeded = false;
+
         if(\Altum\Plugin::is_active('offload') && settings()->offload->uploads_url) {
             try {
                 $s3 = new \Aws\S3\S3Client(get_aws_s3_config());
@@ -371,6 +379,8 @@ class Uploads {
                     'ACL' => 'public-read',
                 ]);
 
+                $copy_succeeded = true;
+
             } catch (\Exception $exception) {
                 $return_error($exception->getMessage());
             }
@@ -378,10 +388,15 @@ class Uploads {
 
         /* Local uploading */
         else {
-            copy(UPLOADS_PATH . $already_existing_folder_path . $already_existing_file_name, UPLOADS_PATH . $destination_folder_path . $file_new_name);
+            $source_path = UPLOADS_PATH . $already_existing_folder_path . $already_existing_file_name;
+            $destination_path = UPLOADS_PATH . $destination_folder_path . $file_new_name;
+
+            if(is_file($source_path)) {
+                $copy_succeeded = @copy($source_path, $destination_path);
+            }
         }
 
-        return $file_new_name;
+        return $copy_succeeded ? $file_new_name : null;
     }
 
     public static function delete_uploaded_file($already_existing_file_name, $uploads_file_key) {

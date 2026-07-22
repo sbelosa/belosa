@@ -1185,12 +1185,6 @@ class User extends Model {
 
         $preferences = json_decode($user->preferences ?? '{}');
         $meta = $preferences->meta ?? (object) [];
-        $synced_avatar = null;
-
-        $default_synced_avatar = '39a2505ec7fb2989e89b24e4122ebd3e.png';
-        if(file_exists(UPLOADS_PATH . 'avatars/' . $default_synced_avatar)) {
-            $synced_avatar = $default_synced_avatar;
-        }
 
         $biolink_blocks = db()->where('user_id', $user->user_id)->where('link_id', $biolink_link_id)->get('biolinks_blocks');
 
@@ -1211,24 +1205,28 @@ class User extends Model {
                     break;
 
                 case 'avatar':
-                    if($synced_avatar) {
-                        $biolink_block->settings->image = $synced_avatar;
-
-                        db()->where('biolink_block_id', $biolink_block->biolink_block_id)->update('biolinks_blocks', [
-                            'settings' => json_encode($biolink_block->settings),
-                        ]);
+                    if(!is_upload_file_available('avatars', $biolink_block->settings->image ?? '')) {
+                        $biolink_block->settings->image = null;
                     }
+
+                    $biolink_block->settings->use_default_avatar = empty($biolink_block->settings->image);
+
+                    db()->where('biolink_block_id', $biolink_block->biolink_block_id)->update('biolinks_blocks', [
+                        'settings' => json_encode($biolink_block->settings),
+                    ]);
 
                     break;
 
                 case 'header':
-                    if($synced_avatar) {
-                        $biolink_block->settings->avatar = $synced_avatar;
-
-                        db()->where('biolink_block_id', $biolink_block->biolink_block_id)->update('biolinks_blocks', [
-                            'settings' => json_encode($biolink_block->settings),
-                        ]);
+                    if(!is_upload_file_available('avatars', $biolink_block->settings->avatar ?? '')) {
+                        $biolink_block->settings->avatar = null;
                     }
+
+                    $biolink_block->settings->use_default_avatar = empty($biolink_block->settings->avatar);
+
+                    db()->where('biolink_block_id', $biolink_block->biolink_block_id)->update('biolinks_blocks', [
+                        'settings' => json_encode($biolink_block->settings),
+                    ]);
                     break;
 
                 case 'socials':
