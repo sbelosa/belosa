@@ -4312,7 +4312,23 @@ $fcc_biolink_editor_tours = [
                     };
 
                     $(update_form_content.querySelector('select[name="size"]')).off('.avatarPreview').on('change.avatarPreview', update_avatar_preview);
-                    $(update_form_content.querySelectorAll('input[name="object_fit"], input[name="border_radius"]')).off('.avatarPreview').on('change.avatarPreview', update_avatar_preview);
+
+                    let avatar_style_inputs = update_form_content.querySelectorAll('input[name="object_fit"], input[name="border_radius"]');
+                    $(avatar_style_inputs).off('.avatarPreview').on('change.avatarPreview', event => {
+                        let input_group = event.currentTarget.closest('[data-toggle="buttons"]');
+
+                        if(input_group) {
+                            input_group.querySelectorAll('input[type="radio"]').forEach(input => {
+                                let input_label = input.closest('label');
+
+                                if(input_label) {
+                                    input_label.classList.toggle('active', input.checked);
+                                }
+                            });
+                        }
+
+                        update_avatar_preview();
+                    });
 
                     let image_alt_input = update_form_content.querySelector('input[name="image_alt"]');
                     if(image_alt_input) {

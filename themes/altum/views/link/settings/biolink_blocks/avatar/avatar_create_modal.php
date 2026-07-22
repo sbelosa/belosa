@@ -29,7 +29,7 @@
 
                     <div class="form-group">
                         <label for="avatar_size"><i class="fas fa-fw fa-expand fa-sm text-muted mr-1"></i> <?= l('biolink_avatar.size') ?></label>
-                        <select id="avatar_size" name="size" class="custom-select">
+                        <select id="avatar_size" name="size" class="custom-select" data-is-not-custom-select>
                             <option value="75">75x75px</option>
                             <option value="100">100x100px</option>
                             <option value="125">125x125px</option>
@@ -39,7 +39,7 @@
 
                     <div class="form-group">
                         <label for="avatar_border_radius"><i class="fas fa-fw fa-border-all fa-sm text-muted mr-1"></i> <?= l('biolink_avatar.border_radius') ?></label>
-                        <select id="avatar_border_radius" name="border_radius" class="custom-select">
+                        <select id="avatar_border_radius" name="border_radius" class="custom-select" data-is-not-custom-select>
                             <option value="straight"><?= l('biolink_avatar.border_radius_straight') ?></option>
                             <option value="round"><?= l('biolink_avatar.border_radius_round') ?></option>
                             <option value="rounded"><?= l('biolink_avatar.border_radius_rounded') ?></option>

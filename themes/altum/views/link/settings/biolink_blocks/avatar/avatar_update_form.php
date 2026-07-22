@@ -37,7 +37,7 @@ $avatar_preview_url = get_biolink_avatar_url($row->settings);
 
     <div class="form-group">
         <label for="<?= 'avatar_size_' . $row->biolink_block_id ?>"><i class="fas fa-fw fa-expand fa-sm text-muted mr-1"></i> <?= l('biolink_avatar.size') ?></label>
-        <select id="<?= 'avatar_size_' . $row->biolink_block_id ?>" name="size" class="custom-select">
+        <select id="<?= 'avatar_size_' . $row->biolink_block_id ?>" name="size" class="custom-select" data-is-not-custom-select>
             <option value="75" <?= ($row->settings->size ?? 125) == '75' ? 'selected="selected"' : null ?>>75x75px</option>
             <option value="100" <?= ($row->settings->size ?? 125) == '100' ? 'selected="selected"' : null ?>>100x100px</option>
             <option value="125" <?= ($row->settings->size ?? 125) == '125' ? 'selected="selected"' : null ?>>125x125px</option>
@@ -50,8 +50,8 @@ $avatar_preview_url = get_biolink_avatar_url($row->settings);
         <div class="row btn-group-toggle m-n2" data-toggle="buttons">
             <?php foreach(['cover', 'contain', 'fill'] as $object_fit): ?>
             <div class="p-2 col-4">
-                <label class="btn btn-light btn-block font-size-small mb-0 text-truncate <?= ($row->settings->object_fit ?? 'contain') == $object_fit ? 'active' : null?>">
-                    <input type="radio" name="object_fit" value="<?= $object_fit ?>" class="custom-control-input" <?= ($row->settings->object_fit ?? 'contain') == $object_fit ? 'checked="checked"' : null?> />
+                <label for="<?= 'avatar_object_fit_' . $row->biolink_block_id . '_' . $object_fit ?>" class="btn btn-light btn-block font-size-small mb-0 text-truncate <?= ($row->settings->object_fit ?? 'contain') == $object_fit ? 'active' : null?>">
+                    <input id="<?= 'avatar_object_fit_' . $row->biolink_block_id . '_' . $object_fit ?>" type="radio" name="object_fit" value="<?= $object_fit ?>" class="custom-control-input" <?= ($row->settings->object_fit ?? 'contain') == $object_fit ? 'checked="checked"' : null?> />
                     <?= l('biolink_link.object_fit.' . $object_fit) ?>
                 </label>
             </div>
