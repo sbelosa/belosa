@@ -14,7 +14,7 @@
             'id'=> 'avatar_image_' . $row->biolink_block_id,
             'uploads_file_key' => 'avatars',
             'file_key' => 'image',
-            'already_existing_image' => $row->settings->image,
+            'already_existing_image' => $row->settings->image ?? null,
             'image_container' => 'image',
             'accept' => \Altum\Uploads::array_to_list_format($data->biolink_blocks['avatar']['whitelisted_image_extensions']),
             'input_data' => 'data-crop data-aspect-ratio="1"'
@@ -24,17 +24,17 @@
 
     <div class="form-group">
         <label for="<?= 'image_image_alt_' . $row->biolink_block_id ?>"><i class="fas fa-fw fa-comment-dots fa-sm text-muted mr-1"></i> <?= l('biolink_link.image_alt') ?></label>
-        <input id="<?= 'image_image_alt_' . $row->biolink_block_id ?>" type="text" class="form-control" name="image_alt" value="<?= $row->settings->image_alt ?>" maxlength="100" />
+        <input id="<?= 'image_image_alt_' . $row->biolink_block_id ?>" type="text" class="form-control" name="image_alt" value="<?= $row->settings->image_alt ?? '' ?>" maxlength="100" />
         <small class="form-text text-muted"><?= l('biolink_link.image_alt_help') ?></small>
     </div>
 
     <div class="form-group">
         <label for="<?= 'avatar_size_' . $row->biolink_block_id ?>"><i class="fas fa-fw fa-expand fa-sm text-muted mr-1"></i> <?= l('biolink_avatar.size') ?></label>
         <select id="<?= 'avatar_size_' . $row->biolink_block_id ?>" name="size" class="custom-select">
-            <option value="75" <?= $row->settings->size == '75' ? 'selected="selected"' : null ?>>75x75px</option>
-            <option value="100" <?= $row->settings->size == '100' ? 'selected="selected"' : null ?>>100x100px</option>
-            <option value="125" <?= $row->settings->size == '125' ? 'selected="selected"' : null ?>>125x125px</option>
-            <option value="150" <?= $row->settings->size == '150' ? 'selected="selected"' : null ?>>150x150px</option>
+            <option value="75" <?= ($row->settings->size ?? 125) == '75' ? 'selected="selected"' : null ?>>75x75px</option>
+            <option value="100" <?= ($row->settings->size ?? 125) == '100' ? 'selected="selected"' : null ?>>100x100px</option>
+            <option value="125" <?= ($row->settings->size ?? 125) == '125' ? 'selected="selected"' : null ?>>125x125px</option>
+            <option value="150" <?= ($row->settings->size ?? 125) == '150' ? 'selected="selected"' : null ?>>150x150px</option>
         </select>
     </div>
 
@@ -43,8 +43,8 @@
         <div class="row btn-group-toggle m-n2" data-toggle="buttons">
             <?php foreach(['cover', 'contain', 'fill'] as $object_fit): ?>
             <div class="p-2 col-4">
-                <label class="btn btn-light btn-block font-size-small mb-0 text-truncate <?= ($row->settings->object_fit  ?? null) == $object_fit ? 'active"' : null?>">
-                    <input type="radio" name="object_fit" value="<?= $object_fit ?>" class="custom-control-input" <?= ($row->settings->object_fit  ?? null) == $object_fit ? 'checked="checked"' : null?> />
+                <label class="btn btn-light btn-block font-size-small mb-0 text-truncate <?= ($row->settings->object_fit ?? 'contain') == $object_fit ? 'active' : null?>">
+                    <input type="radio" name="object_fit" value="<?= $object_fit ?>" class="custom-control-input" <?= ($row->settings->object_fit ?? 'contain') == $object_fit ? 'checked="checked"' : null?> />
                     <?= l('biolink_link.object_fit.' . $object_fit) ?>
                 </label>
             </div>
@@ -54,7 +54,7 @@
 
     <div class="form-group">
         <label for="<?= 'image_location_url_' . $row->biolink_block_id ?>"><i class="fas fa-fw fa-link fa-sm text-muted mr-1"></i> <?= l('biolink_link.location_url') ?></label>
-        <input id="<?= 'image_location_url_' . $row->biolink_block_id ?>" type="text" class="form-control" name="location_url" value="<?= $row->location_url ?>" maxlength="2048" placeholder="<?= l('global.url_placeholder') ?>" />
+        <input id="<?= 'image_location_url_' . $row->biolink_block_id ?>" type="text" class="form-control" name="location_url" value="<?= $row->location_url ?? '' ?>" maxlength="2048" placeholder="<?= l('global.url_placeholder') ?>" />
     </div>
 
     <div class="form-group custom-control custom-switch">
@@ -62,7 +62,7 @@
                 id="<?= 'image_open_in_new_tab_' . $row->biolink_block_id ?>"
                 name="open_in_new_tab" type="checkbox"
                 class="custom-control-input"
-            <?= $row->settings->open_in_new_tab ? 'checked="checked"' : null ?>
+            <?= !empty($row->settings->open_in_new_tab) ? 'checked="checked"' : null ?>
         >
         <label class="custom-control-label" for="<?= 'image_open_in_new_tab_' . $row->biolink_block_id ?>"><?= l('biolink_link.open_in_new_tab') ?></label>
     </div>
@@ -74,12 +74,12 @@
     <div class="collapse" data-parent="<?= '#update_biolink_block_' . $row->biolink_block_id ?>" id="<?= 'border_container_' . $row->biolink_block_id ?>">
         <div class="form-group" data-range-counter data-range-counter-suffix="px">
             <label for="<?= 'block_border_width_' . $row->biolink_block_id ?>"><i class="fas fa-fw fa-border-style fa-sm text-muted mr-1"></i> <?= l('biolink_link.border_width') ?></label>
-            <input id="<?= 'block_border_width_' . $row->biolink_block_id ?>" type="range" min="0" max="5" class="form-control-range" name="border_width" value="<?= $row->settings->border_width ?>" required="required" />
+            <input id="<?= 'block_border_width_' . $row->biolink_block_id ?>" type="range" min="0" max="5" class="form-control-range" name="border_width" value="<?= $row->settings->border_width ?? 0 ?>" required="required" />
         </div>
 
         <div class="form-group">
             <label for="<?= 'block_border_color_' . $row->biolink_block_id ?>"><i class="fas fa-fw fa-fill fa-sm text-muted mr-1"></i> <?= l('biolink_link.border_color') ?></label>
-            <input id="<?= 'block_border_color_' . $row->biolink_block_id ?>" type="hidden" name="border_color" class="form-control" value="<?= $row->settings->border_color ?>" required="required" />
+            <input id="<?= 'block_border_color_' . $row->biolink_block_id ?>" type="hidden" name="border_color" class="form-control" value="<?= $row->settings->border_color ?? '#ffffff' ?>" required="required" />
             <div class="border_color_pickr"></div>
         </div>
 
@@ -87,20 +87,20 @@
             <label for="<?= 'block_border_radius_' . $row->biolink_block_id ?>"><i class="fas fa-fw fa-border-all fa-sm text-muted mr-1"></i> <?= l('biolink_link.border_radius') ?></label>
             <div class="row btn-group-toggle m-n2" data-toggle="buttons">
                 <div class="p-2 col-4">
-                    <label class="btn btn-light btn-block font-size-small mb-0 text-truncate <?= ($row->settings->border_radius  ?? null) == 'straight' ? 'active"' : null?>">
-                        <input type="radio" name="border_radius" value="straight" class="custom-control-input" <?= ($row->settings->border_radius  ?? null) == 'straight' ? 'checked="checked"' : null?> />
+                    <label class="btn btn-light btn-block font-size-small mb-0 text-truncate <?= ($row->settings->border_radius ?? 'rounded') == 'straight' ? 'active' : null?>">
+                        <input type="radio" name="border_radius" value="straight" class="custom-control-input" <?= ($row->settings->border_radius ?? 'rounded') == 'straight' ? 'checked="checked"' : null?> />
                         <i class="fas fa-fw fa-square-full fa-sm mr-1"></i> <?= l('biolink_link.border_radius_straight') ?>
                     </label>
                 </div>
                 <div class="p-2 col-4">
-                    <label class="btn btn-light btn-block font-size-small mb-0 text-truncate <?= ($row->settings->border_radius  ?? null) == 'round' ? 'active' : null?>">
-                        <input type="radio" name="border_radius" value="round" class="custom-control-input" <?= ($row->settings->border_radius  ?? null) == 'round' ? 'checked="checked"' : null?> />
+                    <label class="btn btn-light btn-block font-size-small mb-0 text-truncate <?= ($row->settings->border_radius ?? 'rounded') == 'round' ? 'active' : null?>">
+                        <input type="radio" name="border_radius" value="round" class="custom-control-input" <?= ($row->settings->border_radius ?? 'rounded') == 'round' ? 'checked="checked"' : null?> />
                         <i class="fas fa-fw fa-circle fa-sm mr-1"></i> <?= l('biolink_link.border_radius_round') ?>
                     </label>
                 </div>
                 <div class="p-2 col-4">
-                    <label class="btn btn-light btn-block font-size-small mb-0 text-truncate <?= ($row->settings->border_radius  ?? null) == 'rounded' ? 'active' : null?>">
-                        <input type="radio" name="border_radius" value="rounded" class="custom-control-input" <?= ($row->settings->border_radius  ?? null) == 'rounded' ? 'checked="checked"' : null?> />
+                    <label class="btn btn-light btn-block font-size-small mb-0 text-truncate <?= ($row->settings->border_radius ?? 'rounded') == 'rounded' ? 'active' : null?>">
+                        <input type="radio" name="border_radius" value="rounded" class="custom-control-input" <?= ($row->settings->border_radius ?? 'rounded') == 'rounded' ? 'checked="checked"' : null?> />
                         <i class="fas fa-fw fa-square fa-sm mr-1"></i> <?= l('biolink_link.border_radius_rounded') ?>
                     </label>
                 </div>
@@ -112,8 +112,8 @@
             <div class="row btn-group-toggle m-n2" data-toggle="buttons">
                 <?php foreach(['solid', 'dashed', 'double', 'outset', 'inset'] as $border_style): ?>
                     <div class="p-2 col-4">
-                        <label class="btn btn-light btn-block font-size-small mb-0 text-truncate <?= ($row->settings->border_style  ?? null) == $border_style ? 'active"' : null?>">
-                            <input type="radio" name="border_style" value="<?= $border_style ?>" class="custom-control-input" <?= ($row->settings->border_style  ?? null) == $border_style ? 'checked="checked"' : null?> />
+                        <label class="btn btn-light btn-block font-size-small mb-0 text-truncate <?= ($row->settings->border_style ?? 'solid') == $border_style ? 'active' : null?>">
+                            <input type="radio" name="border_style" value="<?= $border_style ?>" class="custom-control-input" <?= ($row->settings->border_style ?? 'solid') == $border_style ? 'checked="checked"' : null?> />
                             <?= l('biolink_link.border_style_' . $border_style) ?>
                         </label>
                     </div>
@@ -132,8 +132,8 @@
             <div class="row btn-group-toggle m-n2" data-toggle="buttons">
                 <?php foreach(['none', 'subtle', 'strong', 'hard'] as $border_shadow_style): ?>
                     <div class="p-2 col-4">
-                        <label class="btn btn-light btn-block font-size-small mb-0 text-truncate <?= ($row->settings->border_shadow_style  ?? null) == $border_shadow_style ? 'active"' : null?>">
-                            <input type="radio" name="border_shadow_style" value="<?= $border_shadow_style ?>" class="custom-control-input" <?= ($row->settings->border_shadow_style  ?? null) == $border_shadow_style ? 'checked="checked"' : null?> />
+                        <label class="btn btn-light btn-block font-size-small mb-0 text-truncate <?= ($row->settings->border_shadow_style ?? 'subtle') == $border_shadow_style ? 'active' : null?>">
+                            <input type="radio" name="border_shadow_style" value="<?= $border_shadow_style ?>" class="custom-control-input" <?= ($row->settings->border_shadow_style ?? 'subtle') == $border_shadow_style ? 'checked="checked"' : null?> />
                             <?= l('biolink_link.border_shadow_style.' . $border_shadow_style) ?>
                         </label>
                     </div>
@@ -143,7 +143,7 @@
 
         <div class="form-group">
             <label for="<?= 'block_border_shadow_color_' . $row->biolink_block_id ?>"><i class="fas fa-fw fa-fill fa-sm text-muted mr-1"></i> <?= l('biolink_link.border_shadow_color') ?></label>
-            <input id="<?= 'block_border_shadow_color_' . $row->biolink_block_id ?>" type="hidden" name="border_shadow_color" class="form-control" value="<?= $row->settings->border_shadow_color ?>" required="required" />
+            <input id="<?= 'block_border_shadow_color_' . $row->biolink_block_id ?>" type="hidden" name="border_shadow_color" class="form-control" value="<?= $row->settings->border_shadow_color ?? '#00000010' ?>" required="required" />
             <div class="border_shadow_color_pickr"></div>
         </div>
     </div>

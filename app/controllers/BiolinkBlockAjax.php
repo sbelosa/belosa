@@ -2111,7 +2111,7 @@ class BiolinkBlockAjax extends Controller {
         $this->check_location_url($_POST['location_url'], true);
 
         /* Image upload */
-        $db_image = $this->handle_image_upload($biolink_block->settings->image, 'avatars/', settings()->links->image_size_limit);
+        $db_image = $this->handle_image_upload($biolink_block->settings->image ?? null, 'avatars/', settings()->links->avatar_size_limit);
 
         $image_url = $db_image ? \Altum\Uploads::get_full_url('avatars') . $db_image : null;
 

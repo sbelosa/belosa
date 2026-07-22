@@ -3602,7 +3602,7 @@ $fcc_biolink_editor_tours = [
         let biolink_block_id = $(update_form_content.querySelector('input[name="biolink_block_id"]')).val();
         let biolink_link = $('#biolink_preview_iframe').contents().find(`div[data-biolink-block-id="${biolink_block_id}"]`);
 
-        $('#biolink_preview_iframe').off().on('refreshed', event => {
+        $('#biolink_preview_iframe').off('refreshed.blockPreview').on('refreshed.blockPreview', event => {
             setTimeout(() => {
                 biolink_link = $('#biolink_preview_iframe').contents().find(`div[data-biolink-block-id="${biolink_block_id}"]`);
                 block_expanded_content_init();
@@ -4267,33 +4267,61 @@ $fcc_biolink_editor_tours = [
                 case 'avatar':
                     extra_updating_and_potentially_color_inputs = [];
 
-                    $(update_form_content.querySelectorAll('input[name="border_radius"]')).off().on('change', event => {
-                        let border_radius = event.currentTarget.value;
+                    let update_avatar_preview = () => {
+                        let avatar = biolink_link.find('[data-avatar]');
+                        let size_input = update_form_content.querySelector('select[name="size"]');
+                        let border_radius_input = update_form_content.querySelector('input[name="border_radius"]:checked');
+                        let object_fit_input = update_form_content.querySelector('input[name="object_fit"]:checked');
 
-                        switch (border_radius) {
-                            case 'straight':
-                                biolink_link.find('[data-border-avatar-radius]').removeClass('link-avatar-round link-avatar-rounded').addClass('link-avatar-straight');
-                                break;
-
-                            case 'round':
-                                biolink_link.find('[data-border-avatar-radius]').removeClass('link-avatar-rounded link-avatar-straight').addClass('link-avatar-round');
-                                break;
-
-                            case 'rounded':
-                                biolink_link.find('[data-border-avatar-radius]').removeClass('link-avatar-round link-avatar-straight').addClass('link-avatar-rounded');
-                                break;
+                        if(!avatar.length) {
+                            return;
                         }
-                    });
 
-                    $(update_form_content.querySelector('select[name="size"]')).off().on('change paste keyup', event => {
-                        let size = event.currentTarget.value;
-                        biolink_link.find('[data-avatar]').css('width', size + 'px').css('height', size + 'px');
-                    });
+                        if(size_input) {
+                            let size = parseInt(size_input.value, 10);
 
-                    $(update_form_content.querySelectorAll('input[name="object_fit"]')).off().on('change paste keyup', event => {
-                        let object_fit = document.querySelector(`input[name="object_fit"]:checked`).value;
-                        biolink_link.find('[data-avatar]').css('object-fit', object_fit);
-                    });
+                            if([75, 100, 125, 150].includes(size)) {
+                                avatar.css({
+                                    width: `${size}px`,
+                                    height: `${size}px`
+                                });
+                            }
+                        }
+
+                        if(object_fit_input) {
+                            avatar.css('object-fit', object_fit_input.value);
+                        }
+
+                        if(border_radius_input) {
+                            let border_radius = border_radius_input.value;
+
+                            switch (border_radius) {
+                                case 'straight':
+                                    avatar.removeClass('link-avatar-round link-avatar-rounded').addClass('link-avatar-straight');
+                                    break;
+
+                                case 'round':
+                                    avatar.removeClass('link-avatar-rounded link-avatar-straight').addClass('link-avatar-round');
+                                    break;
+
+                                case 'rounded':
+                                    avatar.removeClass('link-avatar-round link-avatar-straight').addClass('link-avatar-rounded');
+                                    break;
+                            }
+                        }
+                    };
+
+                    $(update_form_content.querySelector('select[name="size"]')).off('.avatarPreview').on('change.avatarPreview', update_avatar_preview);
+                    $(update_form_content.querySelectorAll('input[name="object_fit"], input[name="border_radius"]')).off('.avatarPreview').on('change.avatarPreview', update_avatar_preview);
+
+                    let image_alt_input = update_form_content.querySelector('input[name="image_alt"]');
+                    if(image_alt_input) {
+                        $(image_alt_input).off('.avatarPreview').on('input.avatarPreview change.avatarPreview', event => {
+                            biolink_link.find('[data-avatar]').attr('alt', event.currentTarget.value);
+                        });
+                    }
+
+                    update_avatar_preview();
 
                     break;
 
@@ -4324,8 +4352,7 @@ $fcc_biolink_editor_tours = [
                     });
 
                     $(update_form_content.querySelectorAll('input[name="object_fit"]')).off().on('change paste keyup', event => {
-                        let object_fit = document.querySelector(`input[name="object_fit"]:checked`).value;
-                        biolink_link.find('[data-avatar]').css('object-fit', object_fit);
+                        biolink_link.find('[data-avatar]').css('object-fit', event.currentTarget.value);
                     });
 
                     break;
@@ -4690,6 +4717,14 @@ $fcc_biolink_editor_tours = [
 
         block_expanded_content_init();
     })
+
+    /* Initialize controls for a block that was already expanded by the server (for example via ?biolink_block_id=...). */
+    let initialize_server_expanded_biolink_blocks = () => {
+        $('[id^="biolink_block_expanded_content"].show').trigger('shown.bs.collapse');
+    };
+
+    $('#biolink_preview_iframe').off('load.expandedBlockControls').one('load.expandedBlockControls', initialize_server_expanded_biolink_blocks);
+    initialize_server_expanded_biolink_blocks();
 
 </script>
 
