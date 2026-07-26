@@ -3,10 +3,10 @@
 <?php $fcc_is_hr = \Altum\Language::$code === 'hr'; ?>
 <?php $featured_app_visible_tags_limit = 2; ?>
 <?php $featured_app_weekly_check_label = $fcc_is_hr ? '7d provjera' : '7d check'; ?>
-<?php $featured_app_breakdown_label = $fcc_is_hr ? 'Klikovi' : 'Clicks'; ?>
-<?php $featured_app_contacts_label = $fcc_is_hr ? 'Kontakti' : 'Contacts'; ?>
-<?php $featured_app_funnel_label = $fcc_is_hr ? 'Funnel' : 'Funnel'; ?>
-<?php $featured_app_ai_leads_label = $fcc_is_hr ? 'AI leadovi' : 'AI leads'; ?>
+<?php $featured_app_app_clicks_label = $fcc_is_hr ? 'App klikovi' : 'App clicks'; ?>
+<?php $featured_app_blog_clicks_label = $fcc_is_hr ? 'Blog klikovi' : 'Blog clicks'; ?>
+<?php $featured_app_funnel_clicks_label = $fcc_is_hr ? 'Funnel klikovi' : 'Funnel clicks'; ?>
+<?php $featured_app_funnel_contacts_label = $fcc_is_hr ? 'Funnel kontakti ×3' : 'Funnel contacts ×3'; ?>
 <?php $featured_app_weekly_breakdown_label = $fcc_is_hr ? '7d ritam' : '7d rhythm'; ?>
 
 <div class="container my-5 featured-apps-page">
@@ -66,7 +66,7 @@
                                 <?php endif ?>
                             </div>
 
-                            <div class="small text-muted mb-3 featured-app-card__breakdown"><?= $featured_app_weekly_breakdown_label ?> · <?= $featured_app_breakdown_label ?>: <?= nr($app['shop_contacts_7d']) ?> · <?= $featured_app_contacts_label ?>: <?= nr($app['whatsapp_contacts_7d']) ?> · <?= $featured_app_funnel_label ?>: <?= nr($app['funnel_registrations_7d']) ?> · <?= $featured_app_ai_leads_label ?>: <?= nr($app['ai_chat_leads_7d']) ?></div>
+                            <div class="small text-muted mb-3 featured-app-card__breakdown"><?= $featured_app_weekly_breakdown_label ?> · <?= $featured_app_app_clicks_label ?>: <?= nr($app['app_clicks_7d']) ?> · <?= $featured_app_blog_clicks_label ?>: <?= nr($app['blog_clicks_7d']) ?> · <?= $featured_app_funnel_clicks_label ?>: <?= nr($app['funnel_shop_clicks_7d']) ?> · <?= $featured_app_funnel_contacts_label ?>: <?= nr($app['funnel_contacts_7d']) ?></div>
 
                             <?php if(!empty($app['public_summary'])): ?>
                                 <div class="featured-app-section mb-3">
