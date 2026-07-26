@@ -92,7 +92,8 @@ class AdminLeaderOperatingSystemLeader extends Controller {
                 `users`.`billing`,
                 `users`.`plan_id`,
                 `users`.`plan_settings`,
-                `users`.`plan_expiration_date`
+                `users`.`plan_expiration_date`,
+                `users`.`extra`
             FROM `links`
             INNER JOIN `users` ON `users`.`user_id` = `links`.`user_id`
             LEFT JOIN `domains` ON `links`.`domain_id` = `domains`.`domain_id`
@@ -140,8 +141,7 @@ class AdminLeaderOperatingSystemLeader extends Controller {
         $generated_profile = fcc_featured_decode_json_payload($main_biolink->fcc_featured_profile_generated ?? null);
         $feature_labels = fcc_featured_get_case_study_feature_labels($link_id, \Altum\Language::$code);
         $plan_settings = fcc_ai_get_user_plan_settings($main_biolink);
-        $has_growth_pro = !empty($plan_settings->ai_growth_plan_is_enabled ?? false)
-            && fcc_ai_is_plan_expiration_active((string) ($main_biolink->plan_expiration_date ?? ''));
+        $has_growth_pro = fcc_ai_user_has_active_growth_pro($main_biolink);
         $growth_signal_30d = max(0, (int) ($signal_snapshot['growth_signal_30d'] ?? 0));
         $growth_signal_7d = max(0, (int) ($signal_snapshot['growth_signal_7d'] ?? 0));
         $public_use_case = fcc_featured_get_effective_public_use_case((string) ($main_biolink->fcc_featured_public_use_case ?? ''), $generated_profile, $feature_labels, \Altum\Language::$code);

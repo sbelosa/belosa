@@ -13,9 +13,7 @@ defined('ALTUMCODE') || die();
 class FccResults extends Controller {
 
     private function get_active_pro_leaderboard_user_condition_sql(string $users_alias, string $now_datetime): string {
-        return "{$users_alias}.`status` = 1
-            AND LOWER(COALESCE(JSON_UNQUOTE(JSON_EXTRACT({$users_alias}.`plan_settings`, '$.ai_growth_plan_is_enabled')), '')) IN ('1', 'true')
-            AND ({$users_alias}.`plan_expiration_date` IS NULL OR {$users_alias}.`plan_expiration_date` = '' OR {$users_alias}.`plan_expiration_date` >= '{$now_datetime}')";
+        return fcc_ai_get_active_growth_pro_user_condition_sql($users_alias, $now_datetime);
     }
 
     private function get_visitor_conversion_map(string $period_start_datetime, string $qualified_click_condition_sql): array {
@@ -79,25 +77,7 @@ class FccResults extends Controller {
 
     /* Custom code: FC-2026-03-14: FCC results page and qualification metrics */
     private function is_active_pro_user(): bool {
-        if(\Altum\Authentication::is_admin()) {
-            return true;
-        }
-
-        if(empty($this->user->plan_settings->ai_growth_plan_is_enabled ?? false)) {
-            return false;
-        }
-
-        $plan_expiration_date = (string) ($this->user->plan_expiration_date ?? '');
-
-        if($plan_expiration_date === '') {
-            return true;
-        }
-
-        try {
-            return (new \DateTimeImmutable($plan_expiration_date)) >= (new \DateTimeImmutable());
-        } catch(\Throwable $exception) {
-            return false;
-        }
+        return fcc_ai_user_has_active_growth_pro($this->user);
     }
 
     private function get_period_start_datetime(int $days): string {

@@ -1468,6 +1468,44 @@ function fcc_ai_is_plan_expiration_active(?string $plan_expiration_date = null):
     }
 }
 
+function fcc_ai_is_billing_grace_active($extra, ?string $now_datetime = null): bool {
+    $extra = fcc_ai_to_object($extra);
+    $billing_state = trim((string) ($extra->billing_state ?? ''));
+    $grace_until = trim((string) ($extra->billing_grace_until ?? ''));
+    $access_revoked_at = trim((string) ($extra->billing_access_revoked_at ?? ''));
+
+    if(
+        !in_array($billing_state, ['past_due', 'past_due_critical'], true)
+        || $grace_until === ''
+        || $access_revoked_at !== ''
+    ) {
+        return false;
+    }
+
+    try {
+        return (new \DateTimeImmutable($grace_until)) >= new \DateTimeImmutable($now_datetime ?: 'now');
+    } catch(\Throwable $exception) {
+        return false;
+    }
+}
+
+function fcc_ai_get_active_growth_pro_user_condition_sql(string $users_alias, string $now_datetime): string {
+    $now_datetime = database()->real_escape_string($now_datetime);
+
+    return "{$users_alias}.`status` = 1
+        AND LOWER(COALESCE(JSON_UNQUOTE(JSON_EXTRACT({$users_alias}.`plan_settings`, '$.ai_growth_plan_is_enabled')), '')) IN ('1', 'true')
+        AND (
+            {$users_alias}.`plan_expiration_date` IS NULL
+            OR {$users_alias}.`plan_expiration_date` = ''
+            OR {$users_alias}.`plan_expiration_date` >= '{$now_datetime}'
+            OR (
+                COALESCE(JSON_UNQUOTE(JSON_EXTRACT({$users_alias}.`extra`, '$.billing_state')), '') IN ('past_due', 'past_due_critical')
+                AND COALESCE(JSON_UNQUOTE(JSON_EXTRACT({$users_alias}.`extra`, '$.billing_grace_until')), '') >= '{$now_datetime}'
+                AND COALESCE(JSON_UNQUOTE(JSON_EXTRACT({$users_alias}.`extra`, '$.billing_access_revoked_at')), '') = ''
+            )
+        )";
+}
+
 function fcc_ai_user_has_active_growth_pro($user): bool {
     if(\Altum\Authentication::is_admin()) {
         return true;
@@ -1479,7 +1517,18 @@ function fcc_ai_user_has_active_growth_pro($user): bool {
         return false;
     }
 
-    return fcc_ai_is_plan_expiration_active((string) ($user->plan_expiration_date ?? ''));
+    if(fcc_ai_is_plan_expiration_active((string) ($user->plan_expiration_date ?? ''))) {
+        return true;
+    }
+
+    $extra = $user->extra ?? null;
+
+    if($extra === null && !empty($user->user_id)) {
+        $billing_user = db()->where('user_id', (int) $user->user_id)->getOne('users', ['extra']);
+        $extra = $billing_user->extra ?? null;
+    }
+
+    return fcc_ai_is_billing_grace_active($extra);
 }
 
 function fcc_ai_get_leader_ai_access_object($preferences): \stdClass {

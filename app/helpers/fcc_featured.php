@@ -324,6 +324,7 @@ function fcc_featured_get_main_biolink_record(int $user_id): ?object {
             `users`.`plan_id`,
             `users`.`plan_settings`,
             `users`.`plan_expiration_date`,
+            `users`.`extra`,
             `users`.`status`
         FROM `links`
         INNER JOIN `users` ON `users`.`user_id` = `links`.`user_id`
@@ -406,7 +407,7 @@ function fcc_featured_get_user_public_profile_state($user, string $language = 'h
     if(is_numeric($user)) {
         $user_id = (int) $user;
         $user = $user_id > 0
-            ? db()->where('user_id', $user_id)->getOne('users', ['user_id', 'name', 'email', 'language', 'anti_phishing_code', 'preferences', 'billing', 'plan_id', 'plan_settings', 'plan_expiration_date', 'status'])
+            ? db()->where('user_id', $user_id)->getOne('users', ['user_id', 'name', 'email', 'language', 'anti_phishing_code', 'preferences', 'billing', 'plan_id', 'plan_settings', 'plan_expiration_date', 'extra', 'status'])
             : null;
     }
 
@@ -836,7 +837,7 @@ function fcc_featured_get_catalog(array $options = []): array {
     $only_user_id = max(0, (int) ($options['only_user_id'] ?? 0));
 
     $cache_key = 'fcc_featured_catalog?hash=' . md5(json_encode([
-        'version' => '2026-06-26-public-signal-sales-link-v2',
+        'version' => '2026-07-26-billing-grace-public-signal-v1',
         'language' => $language,
         'min_signal_30d' => $min_signal_30d,
         'experience_signal_target' => $experience_signal_target,
@@ -897,6 +898,7 @@ function fcc_featured_get_catalog(array $options = []): array {
                 `users`.`plan_id`,
                 `users`.`plan_settings`,
                 `users`.`plan_expiration_date`,
+                `users`.`extra`,
                 `users`.`name`,
                 `users`.`email`,
                 `users`.`avatar`,
