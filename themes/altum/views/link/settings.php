@@ -22,7 +22,7 @@ $settings = require THEME_PATH . 'views/link/settings/' . mb_strtolower($data->l
     
     moment.tz.setDefault(<?= json_encode($this->user->timezone) ?>);
 
-    let update_main_url = (new_url) => {
+    let update_main_url = (new_url, refresh_preview = true) => {
         $('#link_url').text(new_url);
 
         let new_full_url = null;
@@ -38,11 +38,12 @@ $settings = require THEME_PATH . 'views/link/settings/' . mb_strtolower($data->l
         $('#link_full_url').text(new_full_url_no_protocol).attr('href', new_full_url);
         $('#link_full_url_copy').attr('data-clipboard-text', new_full_url);
 
-        /* Refresh iframe */
-        refresh_biolink_preview();
+        if(refresh_preview) {
+            refresh_biolink_preview();
+        }
     };
 
-    let refresh_biolink_preview = () => {
+    let refresh_biolink_preview = (use_persisted_biolink_settings = false) => {
         if(!document.querySelector('#biolink_preview_iframe')) {
             return;
         }
@@ -54,7 +55,13 @@ $settings = require THEME_PATH . 'views/link/settings/' . mb_strtolower($data->l
         let biolink_preview_iframe = document.querySelector('#biolink_preview_iframe');
 
         setTimeout(() => {
-            biolink_preview_iframe.setAttribute('src', biolink_preview_iframe.getAttribute('src'));
+            let biolink_preview_iframe_url = new URL(biolink_preview_iframe.getAttribute('src'), window.location.href);
+
+            if(use_persisted_biolink_settings) {
+                biolink_preview_iframe_url.searchParams.delete('biolink_theme_id');
+            }
+
+            biolink_preview_iframe.setAttribute('src', biolink_preview_iframe_url.toString());
         }, 750)
 
         biolink_preview_iframe.onload = () => {

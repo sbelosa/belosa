@@ -3148,7 +3148,9 @@ $fcc_biolink_editor_tours = [
     };
 
     document.querySelectorAll('#customizations_container [name]').forEach(element => {
-        element.addEventListener('change', event => mark_biolink_theme_override(event.currentTarget.name));
+        ['input', 'change'].forEach(event_type => {
+            element.addEventListener(event_type, event => mark_biolink_theme_override(event.currentTarget.name));
+        });
     });
 
     /* Display verified */
@@ -3208,10 +3210,12 @@ $fcc_biolink_editor_tours = [
     });
 
     /* Fonts size */
-    document.querySelector('#settings_font_size').addEventListener('change', async event => {
-        let font_size = event.currentTarget.value;
-        const iframe_body = $('#biolink_preview_iframe').contents();
-        iframe_body.find('html').get(0).style.setProperty('font-size', `${font_size}px`, 'important');
+    ['input', 'change'].forEach(event_type => {
+        document.querySelector('#settings_font_size').addEventListener(event_type, event => {
+            let font_size = event.currentTarget.value;
+            const iframe_body = $('#biolink_preview_iframe').contents();
+            iframe_body.find('html').get(0).style.setProperty('font-size', `${font_size}px`, 'important');
+        });
     });
 
     /* Font family */
@@ -3398,6 +3402,8 @@ $fcc_biolink_editor_tours = [
             data: data,
             dataType: 'json',
             success: (data) => {
+                let use_persisted_biolink_settings = false;
+
                 if(notification_container) {
                     display_notifications(data.message, data.status, notification_container);
                 }
@@ -3441,7 +3447,20 @@ $fcc_biolink_editor_tours = [
 
                 if(event.currentTarget.getAttribute('name') == 'update_biolink') {
                     if(data.status == 'success') {
-                        update_main_url(data.details.url);
+                        update_main_url(data.details.url, false);
+
+                        let biolink_theme_action_input = event.currentTarget.querySelector('#biolink_theme_action');
+                        let biolink_theme_override_fields_input = event.currentTarget.querySelector('#biolink_theme_override_fields');
+
+                        if(biolink_theme_action_input) {
+                            biolink_theme_action_input.value = 'keep';
+                        }
+
+                        if(biolink_theme_override_fields_input) {
+                            biolink_theme_override_fields_input.value = '';
+                        }
+
+                        use_persisted_biolink_settings = true;
                     }
 
                     if(data.details?.images) {
@@ -3476,7 +3495,7 @@ $fcc_biolink_editor_tours = [
                 }
 
                 /* Refresh iframe */
-                refresh_biolink_preview();
+                refresh_biolink_preview(use_persisted_biolink_settings);
 
             },
             error: () => {
