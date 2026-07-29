@@ -4605,6 +4605,26 @@ class LinkAjax extends Controller {
 		];
 	}
 
+	private function get_biolink_theme_controlled_block_settings_keys(): array {
+		return [
+			'text_color',
+			'title_color',
+			'description_color',
+			'background_color',
+			'border_width',
+			'border_color',
+			'border_radius',
+			'border_style',
+			'border_shadow_style',
+			'border_shadow_color',
+			'color',
+			'number_color',
+			'price_color',
+			'name_color',
+			'icon_color',
+		];
+	}
+
 	private function get_biolink_theme_default_settings(): array {
 		return [
 			'background_type' => 'preset',
@@ -4636,14 +4656,19 @@ class LinkAjax extends Controller {
 		while($biolink_block = $result->fetch_object()) {
 			$snapshot[(int) $biolink_block->biolink_block_id] = [
 				'type' => (string) $biolink_block->type,
-				'settings' => $this->normalize_json_to_array($biolink_block->settings ?? null),
+				'settings' => array_intersect_key(
+					$this->normalize_json_to_array($biolink_block->settings ?? null),
+					array_flip($this->get_biolink_theme_controlled_block_settings_keys())
+				),
 			];
 		}
 
 		return $snapshot;
 	}
 
-	private function restore_themable_biolink_blocks_snapshot(array $snapshot): void {
+	private function restore_themable_biolink_blocks_snapshot(array $snapshot, int $link_id): void {
+		$controlled_keys = array_flip($this->get_biolink_theme_controlled_block_settings_keys());
+
 		foreach($snapshot as $biolink_block_id => $block_data) {
 			$biolink_block_id = (int) $biolink_block_id;
 
@@ -4651,10 +4676,45 @@ class LinkAjax extends Controller {
 				continue;
 			}
 
-			db()->where('biolink_block_id', $biolink_block_id)->update('biolinks_blocks', [
-				'settings' => json_encode($block_data['settings'] ?? []),
+			$biolink_block = db()
+				->where('biolink_block_id', $biolink_block_id)
+				->where('link_id', $link_id)
+				->getOne('biolinks_blocks', ['settings']);
+
+			if(!$biolink_block) {
+				continue;
+			}
+
+			$current_settings = $this->normalize_json_to_array($biolink_block->settings ?? null);
+			$snapshot_styles = array_intersect_key(
+				$this->normalize_json_to_array($block_data['settings'] ?? null),
+				$controlled_keys
+			);
+
+			db()->where('biolink_block_id', $biolink_block_id)->where('link_id', $link_id)->update('biolinks_blocks', [
+				'settings' => json_encode(array_merge($current_settings, $snapshot_styles)),
 			]);
 		}
+	}
+
+	private function restore_biolink_additional_from_theme_backup(array $current_additional, array $backup_additional, $biolink_theme): array {
+		unset($current_additional['fcc_theme_custom_backup'], $backup_additional['fcc_theme_custom_backup']);
+
+		$restored_additional = array_merge($backup_additional, $current_additional);
+		$theme_additional = $biolink_theme
+			? $this->normalize_json_to_array($biolink_theme->settings->additional ?? null)
+			: [];
+		$controlled_keys = array_unique(array_merge(['custom_css', 'custom_js'], array_keys($theme_additional)));
+
+		foreach($controlled_keys as $key) {
+			if(array_key_exists($key, $backup_additional)) {
+				$restored_additional[$key] = $backup_additional[$key];
+			} else {
+				unset($restored_additional[$key]);
+			}
+		}
+
+		return $restored_additional;
 	}
 
 	private function build_biolink_theme_custom_backup($link): array {
@@ -7168,10 +7228,30 @@ class LinkAjax extends Controller {
 
 		/* Get available themes */
 		$biolinks_themes = (new BiolinksThemes())->get_biolinks_themes();
-		$_POST['biolink_theme_id'] = isset($_POST['biolink_theme_id']) && array_key_exists($_POST['biolink_theme_id'], $biolinks_themes) ? (int) $_POST['biolink_theme_id'] : null;
+		$_POST['biolink_theme_action'] = isset($_POST['biolink_theme_action']) && in_array($_POST['biolink_theme_action'], ['keep', 'select', 'disable'], true)
+			? $_POST['biolink_theme_action']
+			: 'keep';
 
-		/* Make sure theme is accessible via plan */
-		$_POST['biolink_theme_id'] = $_POST['biolink_theme_id'] && in_array($_POST['biolink_theme_id'], $this->user->plan_settings->biolinks_themes ?? []) ? $_POST['biolink_theme_id'] : null;
+		if($_POST['biolink_theme_action'] === 'disable') {
+			$_POST['biolink_theme_id'] = null;
+		} elseif($_POST['biolink_theme_action'] === 'select') {
+			$requested_biolink_theme_id = isset($_POST['biolink_theme_id']) ? (int) $_POST['biolink_theme_id'] : 0;
+			$theme_is_available = $requested_biolink_theme_id && array_key_exists($requested_biolink_theme_id, $biolinks_themes);
+			$theme_is_accessible = $theme_is_available && in_array($requested_biolink_theme_id, $this->user->plan_settings->biolinks_themes ?? []);
+
+			if(!$theme_is_accessible) {
+				Response::json(l('global.error_message.basic'), 'error');
+			}
+
+			$_POST['biolink_theme_id'] = $requested_biolink_theme_id;
+		} else {
+			$_POST['biolink_theme_id'] = !empty($link->biolink_theme_id) ? (int) $link->biolink_theme_id : null;
+		}
+
+		$biolink_theme_override_fields = array_values(array_intersect(
+			array_filter(explode(',', (string) ($_POST['biolink_theme_override_fields'] ?? ''))),
+			$this->get_biolink_theme_controlled_settings_keys()
+		));
 
 		/* Existing pixels */
 		$pixels = (new \Altum\Models\Pixel())->get_pixels($this->user->user_id);
@@ -7630,6 +7710,7 @@ class LinkAjax extends Controller {
 			'scroll_buttons_is_enabled' => $_POST['scroll_buttons_is_enabled'],
             'language_code' => $_POST['language_code'],
 		];
+		$theme_setting_overrides = array_intersect_key($settings, array_flip($biolink_theme_override_fields));
 
 		/* Check if we need to override defaults for a new theme */
 		$additional = $link->additional ?? '';
@@ -7637,8 +7718,10 @@ class LinkAjax extends Controller {
 		$theme_custom_backup = $this->normalize_json_to_array($link_additional_data['fcc_theme_custom_backup'] ?? null);
 		$previous_biolink_theme_id = (int) ($link->biolink_theme_id ?? 0);
 		$previous_biolink_theme = $previous_biolink_theme_id && isset($biolinks_themes[$previous_biolink_theme_id]) ? $biolinks_themes[$previous_biolink_theme_id] : null;
-		$is_switching_to_new_theme = $_POST['biolink_theme_id'] && $previous_biolink_theme_id != (int) $_POST['biolink_theme_id'];
-		$is_disabling_theme = !$_POST['biolink_theme_id'] && $previous_biolink_theme_id;
+		$is_switching_to_new_theme = $_POST['biolink_theme_action'] === 'select'
+			&& $_POST['biolink_theme_id']
+			&& $previous_biolink_theme_id != (int) $_POST['biolink_theme_id'];
+		$is_disabling_theme = $_POST['biolink_theme_action'] === 'disable' && $previous_biolink_theme_id;
 
 		if($is_disabling_theme) {
 			if(!empty($theme_custom_backup)) {
@@ -7650,11 +7733,13 @@ class LinkAjax extends Controller {
 					)
 				);
 
-				$additional = $this->prepare_biolink_additional_for_storage(
-					$this->normalize_json_to_array($theme_custom_backup['additional'] ?? null)
-				);
+				$additional = $this->prepare_biolink_additional_for_storage($this->restore_biolink_additional_from_theme_backup(
+					$link_additional_data,
+					$this->normalize_json_to_array($theme_custom_backup['additional'] ?? null),
+					$previous_biolink_theme
+				));
 
-				$this->restore_themable_biolink_blocks_snapshot((array) ($theme_custom_backup['blocks'] ?? []));
+				$this->restore_themable_biolink_blocks_snapshot((array) ($theme_custom_backup['blocks'] ?? []), (int) $link->link_id);
 			} else {
 				$settings = $this->get_biolink_theme_fallback_settings_after_disable($settings, $previous_biolink_theme);
 				$this->remove_biolink_theme_styles_from_existing_blocks($link->link_id, $previous_biolink_theme);
@@ -7670,6 +7755,7 @@ class LinkAjax extends Controller {
 
 			/* Save settings for biolink page */
 			$settings = array_merge($settings, (array) $biolink_theme->settings->biolink);
+			$settings = array_merge($settings, $theme_setting_overrides);
 
 			/* Save the additional settings */
 			$theme_additional = $this->normalize_json_to_array($biolink_theme->settings->additional ?? null);

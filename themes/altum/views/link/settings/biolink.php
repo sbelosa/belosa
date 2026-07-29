@@ -1519,6 +1519,8 @@ $fcc_biolink_editor_tours = [
                                     <div class="form-group">
                                         <label><i class="fas fa-fw fa-palette fa-sm text-muted mr-1"></i> <?= l('biolink_themes.id') ?></label>
                                         <input type="hidden" id="biolink_theme_id" name="biolink_theme_id" class="form-control" value="<?= $data->link->biolink_theme_id ?? null ?>" />
+                                        <input type="hidden" id="biolink_theme_action" name="biolink_theme_action" value="keep" />
+                                        <input type="hidden" id="biolink_theme_override_fields" name="biolink_theme_override_fields" value="" />
                                     </div>
                                 </div>
 							<?php endif ?>
@@ -3115,18 +3117,39 @@ $fcc_biolink_editor_tours = [
     });
     /* /Custom code: FC-2026-03-06 */
 
-    /* Function to switch theme to custom */
-    let set_biolink_theme_id_null = async () => {
-        $('input[name="biolink_theme_id"][type="radio"]').prop('checked', false);
-        $('input[name="biolink_theme_id"][type="radio"][value=""]').prop('checked', true);
-        document.querySelector('#biolink_theme_id').value = '';
-        update_biolink_theme_summary();
-        if(window.update_biolink_theme_modal_current) {
-            window.update_biolink_theme_modal_current();
+    /* Track page-level theme overrides without detaching the selected preset. */
+    const biolink_theme_controlled_fields = new Set([
+        'background_type',
+        'background',
+        'background_color_one',
+        'background_color_two',
+        'font',
+        'font_size',
+        'background_blur',
+        'background_brightness',
+        'width',
+        'block_spacing',
+        'hover_animation'
+    ]);
+
+    let mark_biolink_theme_override = field_name => {
+        let override_fields_input = document.querySelector('#biolink_theme_override_fields');
+
+        if(!override_fields_input || !biolink_theme_controlled_fields.has(field_name)) {
+            return;
         }
 
-        //await biolink_theme_preview();
-    }
+        let override_fields = new Set(override_fields_input.value.split(',').filter(Boolean));
+        override_fields.add(field_name);
+        if(field_name.startsWith('background') && !['background_blur', 'background_brightness'].includes(field_name)) {
+            override_fields.add('background_type');
+        }
+        override_fields_input.value = Array.from(override_fields).join(',');
+    };
+
+    document.querySelectorAll('#customizations_container [name]').forEach(element => {
+        element.addEventListener('change', event => mark_biolink_theme_override(event.currentTarget.name));
+    });
 
     /* Display verified */
     let display_verified = () => {
@@ -3161,8 +3184,6 @@ $fcc_biolink_editor_tours = [
     });
 
     settings_text_color_pickr.on('change', async hsva => {
-        await set_biolink_theme_id_null();
-
         $('#settings_text_color').val(hsva.toHEXA().toString());
         $('#biolink_preview_iframe').contents().find('#branding').css('color', hsva.toHEXA().toString());
         if($('#biolink_preview_iframe').contents().find('#branding a')) {
@@ -3191,7 +3212,6 @@ $fcc_biolink_editor_tours = [
         let font_size = event.currentTarget.value;
         const iframe_body = $('#biolink_preview_iframe').contents();
         iframe_body.find('html').get(0).style.setProperty('font-size', `${font_size}px`, 'important');
-        await set_biolink_theme_id_null();
     });
 
     /* Font family */
@@ -3213,8 +3233,6 @@ $fcc_biolink_editor_tours = [
         }
 
         document.querySelector('#biolink_preview_iframe').contentDocument.querySelector('body').style.setProperty('font-family', `${font_family}`, 'important');
-
-        await set_biolink_theme_id_null();
     }));
 
     /* Background Type Handler */
@@ -3238,8 +3256,6 @@ $fcc_biolink_editor_tours = [
 
     /* Preset background preview */
     $('#background_type_preset input[name="background"]').on('change', async event => {
-        await set_biolink_theme_id_null();
-
         let preset_style = $(event.currentTarget).parent().find('.link-background-type-preset')[0].getAttribute('style');
         $('#biolink_preview_iframe').contents().find('body').attr('style', preset_style);
         $('#biolink_preview_iframe').contents().find('.link-video-background')[0].classList.add('d-none');
@@ -3247,8 +3263,6 @@ $fcc_biolink_editor_tours = [
 
     /* Preset background preview */
     $('#background_type_preset_abstract input[name="background"]').on('change', async event => {
-        await set_biolink_theme_id_null();
-
         let preset_abstract_style = $(event.currentTarget).parent().find('.link-background-type-preset')[0].getAttribute('style');
         $('#biolink_preview_iframe').contents().find('body').attr('style', preset_abstract_style);
         $('#biolink_preview_iframe').contents().find('.link-video-background')[0].classList.add('d-none');
@@ -3262,9 +3276,8 @@ $fcc_biolink_editor_tours = [
     });
 
     settings_background_type_gradient_color_one_pickr.on('change', async hsva => {
-        await set_biolink_theme_id_null();
-
         $('#settings_background_type_gradient_color_one').val(hsva.toHEXA().toString());
+        mark_biolink_theme_override('background_color_one');
 
         let color_one = $('#settings_background_type_gradient_color_one').val();
         let color_two = $('#settings_background_type_gradient_color_two').val();
@@ -3280,9 +3293,8 @@ $fcc_biolink_editor_tours = [
     });
 
     settings_background_type_gradient_color_two_pickr.on('change', async hsva => {
-        await set_biolink_theme_id_null();
-
         $('#settings_background_type_gradient_color_two').val(hsva.toHEXA().toString());
+        mark_biolink_theme_override('background_color_two');
 
         let color_one = $('#settings_background_type_gradient_color_one').val();
         let color_two = $('#settings_background_type_gradient_color_two').val();
@@ -3299,9 +3311,8 @@ $fcc_biolink_editor_tours = [
     });
 
     settings_background_type_color_pickr.on('change', async hsva => {
-        await set_biolink_theme_id_null();
-
         $('#settings_background_type_color').val(hsva.toHEXA().toString());
+        mark_biolink_theme_override('background');
 
         $('#biolink_preview_iframe').contents().find('body').attr('class', 'link-body').attr('style', `background: ${hsva.toHEXA().toString()};`);
         $('#biolink_preview_iframe').contents().find('.link-video-background')[0].classList.add('d-none');
@@ -3322,8 +3333,6 @@ $fcc_biolink_editor_tours = [
     }
 
     $('#background_type_image_input').on('change', async event => {
-        await set_biolink_theme_id_null();
-
         generate_background_preview(event.currentTarget);
     });
 

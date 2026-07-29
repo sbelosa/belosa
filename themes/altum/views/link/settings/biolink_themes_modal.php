@@ -172,6 +172,8 @@
     document.querySelectorAll('#biolink_themes_modal input[name="biolink_theme_id"]').forEach(element => {
         element.addEventListener('change', event => {
             document.querySelector('#biolink_theme_id').value = element.value;
+            document.querySelector('#biolink_theme_action').value = element.value ? 'select' : 'disable';
+            document.querySelector('#biolink_theme_override_fields').value = '';
             update_biolink_theme_modal_current();
             if(window.update_biolink_theme_summary) {
                 window.update_biolink_theme_summary();
