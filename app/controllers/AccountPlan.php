@@ -549,6 +549,9 @@ class AccountPlan extends Controller {
                     : null;
 
                 $billing_model->handle_successful_payment([
+                    /* Custom code: FC-2026-08-01: retry returned an explicitly paid Stripe invoice */
+                    'payment_confirmed' => true,
+                    /* /Custom code: FC-2026-08-01 */
                     'user_id' => (int) $this->user->user_id,
                     'email' => $this->user->email,
                     'processor' => 'stripe',

@@ -834,9 +834,6 @@ class OpsReadonly extends Controller {
         $last_reset_at = is_scalar($cron_settings->reset_date ?? null) ? (string) $cron_settings->reset_date : null;
         $stale_threshold_minutes = 15;
         $last_run_age_minutes = $this->get_datetime_age_minutes($last_run_at);
-        $cron_url = $cron_key !== '' ? url('cron?key=' . rawurlencode($cron_key)) : '';
-        $cron_curl_command = $cron_url !== '' ? 'curl -fsS "' . $cron_url . "\" >/dev/null 2>&1" : '';
-        $cron_wget_command = $cron_url !== '' ? 'wget -q -O - "' . $cron_url . "\" >/dev/null 2>&1" : '';
 
         return [
             'key_configured' => $cron_key !== '',
@@ -849,11 +846,13 @@ class OpsReadonly extends Controller {
             'stale_threshold_minutes' => $stale_threshold_minutes,
             'is_stale' => $last_run_age_minutes === null ? true : $last_run_age_minutes > $stale_threshold_minutes,
             'recommended_interval_minutes' => 5,
-            'trigger_url' => $cron_url !== '' ? $cron_url : null,
+            /* Custom code: FC-2026-08-01: keep readonly diagnostics from disclosing the cron secret */
+            'trigger_url' => $cron_key !== '' ? url('cron') : null,
             'commands' => [
-                'curl' => $cron_curl_command !== '' ? $cron_curl_command : null,
-                'wget' => $cron_wget_command !== '' ? $cron_wget_command : null,
+                'curl' => null,
+                'wget' => null,
             ],
+            /* /Custom code: FC-2026-08-01 */
             'webhooks' => [
                 'start_configured' => trim((string) ($webhooks_settings->cron_start ?? '')) !== '',
                 'end_configured' => trim((string) ($webhooks_settings->cron_end ?? '')) !== '',

@@ -93,6 +93,68 @@ class Billing extends Model {
         return in_array((string) $status, ['active', 'trialing'], true);
     }
 
+    /* Custom code: FC-2026-08-01: require paid-invoice evidence before billing recovery */
+    private function is_successful_payment_confirmed(array $context): bool {
+        return ($context['payment_confirmed'] ?? null) === true;
+    }
+
+    private function get_confirmed_paid_stripe_invoice_context(object $user, object $extra): ?array {
+        $invoice_id = trim((string) ($extra->billing_last_invoice_id ?? ''));
+
+        if(
+            trim((string) ($user->payment_processor ?? '')) !== 'stripe'
+            || !str_starts_with($invoice_id, 'in_')
+            || !settings()->payment->is_enabled
+            || empty(settings()->stripe->is_enabled)
+            || empty(settings()->stripe->secret_key)
+        ) {
+            return null;
+        }
+
+        try {
+            \Stripe\Stripe::setApiKey(settings()->stripe->secret_key);
+            \Stripe\Stripe::setApiVersion('2023-10-16');
+            $invoice = \Stripe\Invoice::retrieve($invoice_id);
+        } catch(\Throwable $exception) {
+            return null;
+        }
+
+        if(empty($invoice->paid) && (string) ($invoice->status ?? '') !== 'paid') {
+            return null;
+        }
+
+        $invoice_subscription_id = is_string($invoice->subscription ?? null)
+            ? $invoice->subscription
+            : ($invoice->parent->subscription_details->subscription ?? null);
+        $user_subscription_id = trim((string) ($user->payment_subscription_id ?? ''));
+
+        if($user_subscription_id !== '' && $invoice_subscription_id && $user_subscription_id !== $invoice_subscription_id) {
+            return null;
+        }
+
+        $currency = !empty($invoice->currency) ? mb_strtoupper((string) $invoice->currency) : null;
+        $amount_paid = isset($invoice->amount_paid)
+            ? (in_array($currency, get_zero_decimal_currencies_array(), true) ? (float) $invoice->amount_paid : ((float) $invoice->amount_paid / 100))
+            : null;
+        $payment_intent_id = is_object($invoice->payment_intent ?? null)
+            ? ($invoice->payment_intent->id ?? null)
+            : ($invoice->payment_intent ?? null);
+
+        return [
+            'payment_confirmed' => true,
+            'processor' => 'stripe',
+            'stripe_subscription_id' => $invoice_subscription_id ?: ($user_subscription_id ?: null),
+            'stripe_invoice_id' => $invoice->id ?? $invoice_id,
+            'stripe_payment_intent_id' => $payment_intent_id,
+            'stripe_status' => 'active',
+            'current_period_end' => !empty($invoice->lines->data[0]->period->end) ? date('Y-m-d H:i:s', (int) $invoice->lines->data[0]->period->end) : null,
+            'amount' => $amount_paid,
+            'currency' => $currency,
+            'occurred_at' => !empty($invoice->status_transitions->paid_at) ? date('Y-m-d H:i:s', (int) $invoice->status_transitions->paid_at) : get_date(),
+        ];
+    }
+    /* /Custom code: FC-2026-08-01 */
+
     private function get_retry_window_until(?string $occurred_at = null, ?string $next_retry_at = null): string {
         return (new \DateTime($occurred_at ?? get_date()))->modify('+' . self::GRACE_PERIOD_DAYS . ' days')->format('Y-m-d H:i:s');
     }
@@ -901,6 +963,12 @@ class Billing extends Model {
     }
 
     public function handle_successful_payment(array $context): void {
+        /* Custom code: FC-2026-08-01: block recovery from transient subscription status changes */
+        if(!$this->is_successful_payment_confirmed($context)) {
+            return;
+        }
+        /* /Custom code: FC-2026-08-01 */
+
         $user = $this->get_user((int) ($context['user_id'] ?? 0), $context['stripe_subscription_id'] ?? null, $context['email'] ?? null);
 
         if(!$user) {
@@ -1043,9 +1111,11 @@ class Billing extends Model {
             ]);
         }
 
-        if(($context['stripe_status'] ?? '') === 'active' && in_array($previous_state, [self::STATE_PAST_DUE, self::STATE_PAST_DUE_CRITICAL, self::STATE_ACCESS_REVOKED], true)) {
-            $this->handle_successful_payment($context + ['occurred_at' => $context['occurred_at'] ?? get_date()]);
-        }
+        /* Custom code: FC-2026-08-01: invoice.paid is the recovery authority */
+        /* An active subscription update alone is not payment proof. Voiding an unpaid Stripe invoice can emit
+         * a short-lived active update immediately before the subscription becomes canceled. Recovery is handled
+         * only by invoice.paid or a retry response whose invoice is explicitly paid. */
+        /* /Custom code: FC-2026-08-01 */
     }
 
     public function process_grace_periods(int $limit = 25): array {
@@ -1075,18 +1145,23 @@ class Billing extends Model {
                 continue;
             }
 
-            if($this->is_active_access_status($extra->billing_stripe_status ?? null)) {
-                $this->handle_successful_payment([
-                    'user_id' => (int) $user->user_id,
-                    'email' => $user->email,
-                    'processor' => $user->payment_processor ?: 'stripe',
-                    'stripe_subscription_id' => $user->payment_subscription_id,
-                    'stripe_status' => 'active',
-                    'occurred_at' => $now,
-                ]);
+            /* Custom code: FC-2026-08-01: verify Stripe invoice before cron-based recovery */
+            if(
+                $this->is_active_access_status($extra->billing_stripe_status ?? null)
+                && in_array($state, [self::STATE_PAST_DUE, self::STATE_PAST_DUE_CRITICAL], true)
+            ) {
+                $confirmed_payment_context = $this->get_confirmed_paid_stripe_invoice_context($user, $extra);
 
-                continue;
+                if($confirmed_payment_context) {
+                    $this->handle_successful_payment([
+                        'user_id' => (int) $user->user_id,
+                        'email' => $user->email,
+                    ] + $confirmed_payment_context);
+
+                    continue;
+                }
             }
+            /* /Custom code: FC-2026-08-01 */
 
             if(in_array($state, [self::STATE_PAST_DUE, self::STATE_PAST_DUE_CRITICAL], true)) {
                 if($grace_started_at) {

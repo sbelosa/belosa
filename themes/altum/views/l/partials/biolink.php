@@ -680,65 +680,71 @@
     }
 </script>
 
-<!-- Custom code -->
+<!-- Custom code: FC-2026-08-01: safely initialize optional biolink PWA controls -->
 <script>
-    var urlinput = 'https://forevercard.club/' + document.getElementById("urlinput").value;
-    var myDynamicManifest = {
-        "name": "Forever Card Club",
-        "short_name": "Forever Card Club",
-        "display": "standalone",
-        "start_url": urlinput,
-        "background_color": "#ffffff",
-        "theme_color": "#000000",
-        "icons": [
-            {
-            "src": "icon-192.png",
-            "sizes": "192x192",
-            "type": "image/png"
-            },
-            {
-            "src": "icon-512.png",
-            "sizes": "512x512",
-            "type": "image/png"
-            }
-        ]
-    }
-    const stringManifest = JSON.stringify(myDynamicManifest);
-    const blob = new Blob([stringManifest], {type: 'application/json'});
-    const manifestURL = URL.createObjectURL(blob);
-    document.querySelector('#my-manifest-placeholder').setAttribute('href', manifestURL);
-</script>
+    const manifest_placeholder = document.querySelector('#my-manifest-placeholder');
 
-<script>
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('service-worker.js')
-        .then(() => console.log("Service Worker Registered"));
-    }
-</script>
+    if(manifest_placeholder) {
+        const manifest_start_url = new URL(window.location.href);
+        manifest_start_url.search = '';
+        manifest_start_url.hash = '';
 
-<script>
-    let deferredPrompt;
-
-    window.addEventListener('beforeinstallprompt', (e) => {
-        e.preventDefault();
-        deferredPrompt = e;
-        document.getElementById("addToHomeScreen").style.display = "block";
-    });
-
-    document.getElementById("addToHomeScreen").addEventListener("click", (e) => {  
-        e.preventDefault();          
-        if (deferredPrompt) {
-            deferredPrompt.prompt();
-            deferredPrompt.userChoice.then(choice => {
-                if (choice.outcome === "accepted") {
-                    //console.log("Aplikacija dodana!");
+        const dynamic_manifest = {
+            "name": "Forever Card Club",
+            "short_name": "Forever Card Club",
+            "display": "standalone",
+            "start_url": manifest_start_url.href,
+            "background_color": "#ffffff",
+            "theme_color": "#000000",
+            "icons": [
+                {
+                    "src": "icon-192.png",
+                    "sizes": "192x192",
+                    "type": "image/png"
+                },
+                {
+                    "src": "icon-512.png",
+                    "sizes": "512x512",
+                    "type": "image/png"
                 }
-                deferredPrompt = null;
-            });
+            ]
+        };
+        const manifest_blob = new Blob([JSON.stringify(dynamic_manifest)], {type: 'application/json'});
+        const manifest_url = URL.createObjectURL(manifest_blob);
+        manifest_placeholder.setAttribute('href', manifest_url);
+    }
+
+    if('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('service-worker.js').catch(() => {});
+    }
+
+    const add_to_home_screen = document.getElementById('addToHomeScreen');
+    let deferred_install_prompt;
+
+    window.addEventListener('beforeinstallprompt', event => {
+        if(!add_to_home_screen) {
+            return;
         }
+
+        event.preventDefault();
+        deferred_install_prompt = event;
+        add_to_home_screen.style.display = 'block';
     });
+
+    if(add_to_home_screen) {
+        add_to_home_screen.addEventListener('click', event => {
+            event.preventDefault();
+
+            if(deferred_install_prompt) {
+                deferred_install_prompt.prompt();
+                deferred_install_prompt.userChoice.then(() => {
+                    deferred_install_prompt = null;
+                });
+            }
+        });
+    }
 </script>
-<!-- /Custom code -->
+<!-- /Custom code: FC-2026-08-01 -->
 
 <?= $this->views['pixels'] ?? null ?>
 

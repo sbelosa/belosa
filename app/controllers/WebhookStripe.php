@@ -493,6 +493,9 @@ class WebhookStripe extends Controller {
             $payment_intent_id = is_object($session->payment_intent ?? null) ? $session->payment_intent->id : ($session->payment_intent ?? null);
 
             $billing->handle_successful_payment([
+                /* Custom code: FC-2026-08-01: mark invoice.paid as authoritative recovery evidence */
+                'payment_confirmed' => true,
+                /* /Custom code: FC-2026-08-01 */
                 'processor' => 'stripe',
                 'user_id' => $user_id,
                 'plan_id' => $plan_id,
