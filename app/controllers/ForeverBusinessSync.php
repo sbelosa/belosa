@@ -139,6 +139,9 @@ class ForeverBusinessSync extends Controller {
 
         try {
             $report = forever_business_parse_report((string) $file['tmp_name'], $original_name, self::ROOT_FBO_ID, 'Stjepan Beloša', $period);
+            if(($report['kind'] ?? '') === 'focus_group' && empty($report['members'][self::ROOT_FBO_ID])) {
+                throw new \RuntimeException('Focus Group ne sadrži očekivani glavni Forever ID.');
+            }
             $result = forever_business_import_report($report, hash_file('sha256', (string) $file['tmp_name']), 1);
             $summary = $result['summary'] ?? [];
             if(isset($summary['latest_personal_cc'])) $summary['latest_personal_cc'] = round((float) $summary['latest_personal_cc'], 3);

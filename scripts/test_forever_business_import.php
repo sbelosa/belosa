@@ -28,6 +28,7 @@ $assertions = [
     'machine sync compares only a SHA-256 secret hash' => str_contains($sync, 'SYNC_KEY_SHA256') && str_contains($sync, 'hash(\'sha256\', $key)'),
     'machine sync accepts only bounded CSV and XLSX uploads' => str_contains($sync, 'MAX_FILE_BYTES') && str_contains($sync, "['csv', 'xlsx']"),
     'machine sync is pinned to the admin root FBO' => str_contains($sync, "ROOT_FBO_ID = '360000760944'"),
+    'machine sync verifies the Focus Group root inside the downloaded workbook' => str_contains($sync, "empty(\$report['members'][self::ROOT_FBO_ID])"),
     'all active FCC Forever IDs receive self-only placeholders' => str_contains($helper, 'forever_business_provision_fcc_members') && str_contains($helper, "'FCC suradnik'") && str_contains($helper, 'is_in_current_structure, email_hash'),
     'team priorities include the complete imported list' => !str_contains($user, 'array_slice($priority_members, 0, 100)'),
     'team priorities support accessible client-side sorting' => str_contains($view, 'fb-sort-button') && str_contains($view, 'Intl.Collator') && str_contains($view, "setAttribute('aria-sort'"),

@@ -50,9 +50,14 @@ function findCurrentFlpMonthLabel(labels, date = new Date()) {
     ].map(value => value.toLocaleLowerCase('en')));
 
     return labels.find(label => {
-        const [month, yearAndStatus] = String(label).trim().split('/');
-        const normalizedMonth = String(month || '').trim().toLocaleLowerCase('en');
-        return acceptedMonths.has(normalizedMonth) && yearAndStatus === expectedYearAndStatus;
+        const normalizedLabel = String(label).trim().toLocaleLowerCase('en');
+        if(!normalizedLabel.includes(expectedYear) || !/not\s*closed/.test(normalizedLabel)) return false;
+        return [...acceptedMonths].some(month => {
+            if(/^\d+$/.test(month)) {
+                return new RegExp(`(^|\\D)0?${Number(month)}(\\D|$)`).test(normalizedLabel);
+            }
+            return new RegExp(`(^|[^a-z])${month}([^a-z]|$)`).test(normalizedLabel);
+        });
     }) || '';
 }
 
@@ -202,8 +207,10 @@ async function requestDownline(page) {
     });
     await filters.nth(0).selectOption({value: 'HRV'});
     await filters.nth(1).selectOption({label: 'All Levels'});
+    await page.locator('.loader-overlay').last().waitFor({state: 'hidden', timeout: 120000}).catch(() => {});
     const suppressZeroCc = page.getByRole('checkbox').first();
-    if(await suppressZeroCc.isChecked()) await suppressZeroCc.uncheck();
+    if(await suppressZeroCc.isChecked()) await suppressZeroCc.uncheck({force: true});
+    await page.locator('.loader-overlay').last().waitFor({state: 'hidden', timeout: 120000}).catch(() => {});
 
     const initialMessage = readyReportMessage(await page.locator('body').innerText());
     await page.getByRole('button', {name: 'Run Report', exact: true}).click();
@@ -276,9 +283,6 @@ async function downloadFocusGroup(page) {
     await page.goto(`${FLP360_BASE_URL}/focus-group`, {waitUntil: 'domcontentloaded', timeout: 60000});
     const downloadLink = page.getByText('Download Data to Excel', {exact: true});
     await downloadLink.waitFor({state: 'visible', timeout: 120000});
-    const bodyText = await page.locator('body').innerText();
-    if(!bodyText.includes(ROOT_FBO_ID)) throw new Error('Focus Group ne sadrži očekivani glavni Forever ID.');
-
     const downloadPromise = page.waitForEvent('download', {timeout: 60000});
     await downloadLink.click();
     return saveDownload(await downloadPromise, `flp360-focus-group-${zagrebPeriod()}.xlsx`);
@@ -292,9 +296,10 @@ async function downloadFourCcActive(page) {
     await selects.nth(0).selectOption({label: 'Global'});
     const periodOptions = selects.nth(1).locator('option');
     await periodOptions.first().waitFor({state: 'attached', timeout: 60000});
-    const currentPeriodLabel = findCurrentFlpMonthLabel(await periodOptions.allTextContents());
-    if(!currentPeriodLabel) throw new Error(`4 CC Active nema očekivano otvoreno razdoblje ${currentFlpMonthLabel()}.`);
-    await selects.nth(1).selectOption({label: currentPeriodLabel});
+    const periodLabels = await periodOptions.allTextContents();
+    const currentPeriodLabel = findCurrentFlpMonthLabel(periodLabels);
+    if(!currentPeriodLabel) throw new Error(`4 CC Active nema očekivano otvoreno razdoblje ${currentFlpMonthLabel()}. Dostupno: ${periodLabels.map(label => String(label).trim()).filter(Boolean).join(' | ') || 'bez razdoblja'}.`);
+    await selects.nth(1).selectOption({index: periodLabels.indexOf(currentPeriodLabel)});
     await selects.nth(2).selectOption({label: 'Active That Period'});
     await page.getByRole('button', {name: 'Run Report', exact: true}).click();
 
