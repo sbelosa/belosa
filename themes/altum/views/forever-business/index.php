@@ -148,7 +148,7 @@ $format_percent = static fn($value) => number_format((float) $value, 1, ',', '.'
                 </div>
             </div>
 
-            <div class="card fb-card mb-4"><div class="card-header bg-transparent"><h2 class="h5 mb-1">Moji provjereni FLP360 podaci</h2><div class="small text-muted">Bez procijenjenih Recruitment, Retention, Productivity ili Development formula.</div></div><div class="card-body"><div class="fb-verified-grid">
+            <div class="card fb-card mb-4"><div class="card-header bg-transparent"><h2 class="h5 mb-0">Moji provjereni FLP360 podaci</h2></div><div class="card-body"><div class="fb-verified-grid">
                 <div class="fb-verified-item"><div class="small text-muted">Trenutačna pozicija</div><strong><?= htmlspecialchars($mine['title'] ?: 'Bez statusa') ?></strong></div>
                 <div class="fb-verified-item"><div class="small text-muted">Osobni CC</div><strong><?= isset($mine['personal_cc']) ? $format_cc($mine['personal_cc']) : '—' ?></strong></div>
                 <div class="fb-verified-item"><div class="small text-muted">Total CC</div><strong><?= isset($mine['total_cc']) ? $format_cc($mine['total_cc']) : '—' ?></strong></div>
