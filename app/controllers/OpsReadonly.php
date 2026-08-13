@@ -994,16 +994,19 @@ class OpsReadonly extends Controller {
         $has_plan = "({$valid_preferences} AND COALESCE(JSON_LENGTH(JSON_EXTRACT(`preferences`, '$.leader_ai_weekly_plans')), 0) > 0)";
         $has_outcome = "({$valid_preferences} AND COALESCE(JSON_LENGTH(JSON_EXTRACT(`preferences`, '$.leader_ai_weekly_outcomes')), 0) > 0)";
         $has_review = "({$valid_preferences} AND COALESCE(JSON_LENGTH(JSON_EXTRACT(`preferences`, '$.leader_ai_app_reviews')), 0) > 0)";
+        $is_active_pro = "(CAST(`plan_id` AS CHAR) = '5' AND (`plan_expiration_date` IS NULL OR `plan_expiration_date` = '' OR `plan_expiration_date` >= '{$now}'))";
+        $has_meaningful_progress = "({$has_profile} OR {$has_checkin} OR {$has_plan} OR {$has_outcome} OR {$has_review})";
 
         $summary_result = database()->query("SELECT
                 COUNT(*) AS `active_collaborators`,
-                SUM(CASE WHEN CAST(`plan_id` AS CHAR) = '5' AND (`plan_expiration_date` IS NULL OR `plan_expiration_date` = '' OR `plan_expiration_date` >= '{$now}') THEN 1 ELSE 0 END) AS `active_pro`,
+                SUM(CASE WHEN {$is_active_pro} THEN 1 ELSE 0 END) AS `active_pro`,
                 SUM(CASE WHEN {$has_profile} THEN 1 ELSE 0 END) AS `profiles`,
                 SUM(CASE WHEN {$has_checkin} THEN 1 ELSE 0 END) AS `checkins`,
                 SUM(CASE WHEN {$has_plan} THEN 1 ELSE 0 END) AS `plans`,
                 SUM(CASE WHEN {$has_outcome} THEN 1 ELSE 0 END) AS `outcomes`,
                 SUM(CASE WHEN {$has_review} THEN 1 ELSE 0 END) AS `app_reviews`,
-                SUM(CASE WHEN ({$has_profile} OR {$has_checkin} OR {$has_plan} OR {$has_outcome} OR {$has_review}) THEN 1 ELSE 0 END) AS `meaningful_users`,
+                SUM(CASE WHEN {$has_meaningful_progress} THEN 1 ELSE 0 END) AS `meaningful_users`,
+                SUM(CASE WHEN {$is_active_pro} AND {$has_meaningful_progress} THEN 1 ELSE 0 END) AS `meaningful_pro_users`,
                 SUM(CASE WHEN {$has_profile} AND NOT {$has_checkin} THEN 1 ELSE 0 END) AS `profile_only`,
                 SUM(CASE WHEN {$has_checkin} AND NOT {$has_plan} THEN 1 ELSE 0 END) AS `checkin_without_plan`,
                 SUM(CASE WHEN {$has_plan} AND NOT {$has_outcome} THEN 1 ELSE 0 END) AS `plan_without_outcome`
@@ -1054,6 +1057,7 @@ class OpsReadonly extends Controller {
         $active_collaborators = (int) ($summary->active_collaborators ?? 0);
         $active_pro = (int) ($summary->active_pro ?? 0);
         $meaningful_users = (int) ($summary->meaningful_users ?? 0);
+        $meaningful_pro_users = (int) ($summary->meaningful_pro_users ?? 0);
 
         return [
             'population' => [
@@ -1062,6 +1066,7 @@ class OpsReadonly extends Controller {
             ],
             'saved_progress' => [
                 'meaningful_users' => $meaningful_users,
+                'meaningful_pro_users' => $meaningful_pro_users,
                 'profiles' => (int) ($summary->profiles ?? 0),
                 'checkins' => (int) ($summary->checkins ?? 0),
                 'plans' => (int) ($summary->plans ?? 0),
@@ -1071,7 +1076,7 @@ class OpsReadonly extends Controller {
                 'checkin_without_plan' => (int) ($summary->checkin_without_plan ?? 0),
                 'plan_without_outcome' => (int) ($summary->plan_without_outcome ?? 0),
                 'adoption_of_active_collaborators_percent' => $active_collaborators > 0 ? round(($meaningful_users / $active_collaborators) * 100, 1) : 0,
-                'adoption_of_active_pro_percent' => $active_pro > 0 ? round(($meaningful_users / $active_pro) * 100, 1) : 0,
+                'adoption_of_active_pro_percent' => $active_pro > 0 ? round(($meaningful_pro_users / $active_pro) * 100, 1) : 0,
             ],
             'actions' => $actions_by_period,
             'measurement' => [
