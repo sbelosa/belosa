@@ -201,18 +201,28 @@ $format_percent = static fn($value) => number_format((float) $value, 1, ',', '.'
         <?php endif ?>
 
         <?php if(!empty($dashboard['trend'])): ?>
-            <?php $trend_max = $data->is_admin ? max(1000, ...array_map(static fn($row) => (float) $row['total_cc'], $dashboard['trend'])) : max(4, ...array_map(static fn($row) => (float) $row['total_cc'], $dashboard['trend'])); ?>
+            <?php $trend_max = $data->is_admin ? max(1000, ...array_map(static fn($row) => (float) $row['total_cc'], $dashboard['trend'])) : max(1, ...array_map(static fn($row) => (float) $row['total_cc'], $dashboard['trend'])); ?>
             <div class="card fb-card mb-4">
-                <div class="card-header bg-transparent"><h2 class="h5 mb-1"><?= $data->is_admin ? 'Trend prema cilju 1.000 CC' : 'Moj osobni CC trend' ?></h2><div class="small text-muted"><?= $data->is_admin ? (!empty($dashboard['official_total_cc']) ? 'Službeni FLP360 Total CC za GLOBAL. Otvoreni mjesec je jasno označen.' : 'Privremeni FCC zbroj osobnih CC; učitaj službeni FLP360 Total CC za točan timski cilj.') : 'Svakim novim importom bodovi se automatski osvježavaju prema tvojem Forever ID-u.' ?></div></div>
+                <div class="card-header bg-transparent"><h2 class="h5 mb-1"><?= $data->is_admin ? 'Trend prema cilju 1.000 CC' : 'Moj ukupni CC trend' ?></h2><div class="small text-muted"><?= $data->is_admin ? (!empty($dashboard['official_total_cc']) ? 'Službeni FLP360 Total CC za GLOBAL. Otvoreni mjesec je jasno označen.' : 'Privremeni FCC zbroj osobnih CC; učitaj službeni FLP360 Total CC za točan timski cilj.') : 'Duljina crte prikazuje uvezeni Total CC. Zelena znači da je 4 CC aktivnost potvrđena, a crvena da aktivnost nije ostvarena.' ?></div></div>
                 <div class="card-body">
                     <?php foreach($dashboard['trend'] as $trend_row): ?>
+                        <?php
+                        $has_activity_data = $data->is_admin || !empty($trend_row['has_activity_data']);
+                        $is_active = $data->is_admin || !empty($trend_row['is_4cc_active']);
+                        $bar_class = $data->is_admin || $is_active ? 'bg-success' : ($has_activity_data ? 'bg-danger' : 'bg-secondary');
+                        $bar_width = round(((float) $trend_row['total_cc'] / $trend_max) * 100, 1);
+                        ?>
                         <div class="row align-items-center mb-3">
                             <div class="col-3 col-md-2 small font-weight-bold"><?= htmlspecialchars((new DateTimeImmutable($trend_row['period_month']))->format('m/Y')) ?><?= empty($trend_row['is_closed']) ? ' *' : '' ?></div>
-                            <div class="col-6 col-md-8"><div class="progress" style="height:.75rem"><div class="progress-bar bg-success" role="progressbar" style="width: <?= round(((float) $trend_row['total_cc'] / $trend_max) * 100, 1) ?>%" aria-valuenow="<?= (float) $trend_row['total_cc'] ?>" aria-valuemin="0" aria-valuemax="<?= $trend_max ?>"></div></div></div>
-                            <div class="col-3 col-md-2 text-right small"><?= $format_cc($trend_row['total_cc']) ?> CC</div>
+                            <div class="col-6 col-md-8"><div class="progress" style="height:.75rem"><div class="progress-bar <?= $bar_class ?>" role="progressbar" style="width: <?= $bar_width ?>%;<?= !$data->is_admin && $has_activity_data && $bar_width <= 0 ? 'min-width:.4rem;' : '' ?>" aria-valuenow="<?= (float) $trend_row['total_cc'] ?>" aria-valuemin="0" aria-valuemax="<?= $trend_max ?>"></div></div></div>
+                            <div class="col-3 col-md-2 text-right small">
+                                <div><?= $format_cc($trend_row['total_cc']) ?> CC</div>
+                                <?php if(!$data->is_admin): ?><div class="<?= $has_activity_data ? ($is_active ? 'text-success' : 'text-danger') : 'text-muted' ?>"><?= !$has_activity_data ? 'Nema podataka' : ($is_active ? '4 CC aktivan/na' : 'Nije aktivan/na') ?></div><?php endif ?>
+                            </div>
                         </div>
                     <?php endforeach ?>
-                    <div class="small text-muted">* mjesec nije zatvoren. Skala je <?= $data->is_admin ? '1.000 CC' : '4 CC' ?> kako bi napredak bio usporediv iz mjeseca u mjesec.</div>
+                    <div class="small text-muted"><?php if($data->is_admin): ?>* mjesec nije zatvoren. Skala je 1.000 CC kako bi napredak bio usporediv iz mjeseca u mjesec.<?php else: ?>* mjesec nije zatvoren. Skala se prilagođava najvećem prikazanom Total CC rezultatu. Siva crta znači da za taj mjesec nema uvezenih podataka o aktivnosti.<?php endif ?></div>
+                    <?php if(!$data->is_admin): ?><div class="small text-muted mt-2">Bez potvrđene 4 CC aktivnosti bodovi iz strukture ne ulaze u obračun isplate.</div><?php endif ?>
                 </div>
             </div>
         <?php endif ?>

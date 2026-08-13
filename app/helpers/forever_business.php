@@ -991,12 +991,19 @@ function forever_business_provision_fcc_members(): int {
     return $result ? max(0, (int) database()->affected_rows) : 0;
 }
 
+function forever_business_has_verified_four_cc_activity(array $member): bool {
+    return isset($member['personal_cc'], $member['total_active_cc'])
+        && !empty($member['is_4cc_active'])
+        && (float) $member['personal_cc'] >= 1.0
+        && (float) $member['total_active_cc'] >= 4.0;
+}
+
 function forever_business_get_verified_progress(array $member): array {
     $personal_cc = isset($member['personal_cc']) ? (float) $member['personal_cc'] : null;
     $total_active_cc = isset($member['total_active_cc']) ? (float) $member['total_active_cc'] : null;
     $has_activity_data = $personal_cc !== null && $total_active_cc !== null;
     $meets_activity_formula = $has_activity_data && $personal_cc >= 1 && $total_active_cc >= 4;
-    $is_officially_active = $meets_activity_formula && !empty($member['is_4cc_active']);
+    $is_officially_active = forever_business_has_verified_four_cc_activity($member);
 
     $current_total_cc = isset($member['total_cc']) ? (float) $member['total_cc'] : null;
     $previous_total_cc = isset($member['previous_total_cc']) ? (float) $member['previous_total_cc'] : null;
@@ -1372,15 +1379,51 @@ function forever_business_get_dashboard(int $user_id, bool $is_admin, string $re
     $summary['goal_gap_cc'] = max(0, round($summary['goal_cc'] - $goal_current_cc, 3));
     $summary['goal_progress'] = min(100, round(($goal_current_cc / $summary['goal_cc']) * 100, 1));
 
-    $trend = forever_business_get_total_cc_trend($dashboard_root, $period);
-    if(empty($trend)) {
-        foreach(array_reverse(array_slice($periods, 0, 8)) as $trend_period) {
-            $sum = 0.0;
-            if(!empty($scope_ids)) {
-                $row = database()->query("SELECT COALESCE(SUM(personal_cc), 0) AS total FROM forever_business_metrics WHERE period_month = '{$trend_period}' AND fbo_id IN ({$id_list})")->fetch_assoc();
-                $sum = (float) ($row['total'] ?? 0);
+    $trend_periods = array_reverse(array_slice(array_values(array_filter($periods, static fn($trend_period) => $trend_period <= $period)), 0, 8));
+    if(!$is_admin) {
+        /* A collaborator's chart must use their imported Total CC, while activity colour
+         * remains tied to the official same-region 4 CC flag plus the 1 personal CC gate. */
+        $metric_rows = [];
+        if($dashboard_root !== '') {
+            $rows = db()->where('fbo_id', $dashboard_root)
+                ->where('period_month', $period, '<=')
+                ->orderBy('period_month', 'DESC')
+                ->get('forever_business_metrics', 8, ['period_month', 'total_cc', 'personal_cc', 'total_active_cc', 'is_4cc_active']) ?? [];
+            foreach($rows as $row) {
+                $row = (array) $row;
+                $metric_rows[$row['period_month']] = $row;
             }
-            $trend[] = ['period_month' => $trend_period, 'total_cc' => $sum, 'is_closed' => $trend_period < date('Y-m-01') ? 1 : 0, 'country_scope' => 'FCC'];
+        }
+
+        $trend = [];
+        foreach($trend_periods as $trend_period) {
+            $row = $metric_rows[$trend_period] ?? null;
+            $has_activity_data = $row !== null
+                && $row['personal_cc'] !== null
+                && $row['total_active_cc'] !== null
+                && array_key_exists('is_4cc_active', $row)
+                && $row['is_4cc_active'] !== null;
+            $is_verified_active = $has_activity_data && forever_business_has_verified_four_cc_activity($row);
+            $trend[] = [
+                'period_month' => $trend_period,
+                'total_cc' => (float) ($row['total_cc'] ?? 0),
+                'is_closed' => $trend_period < date('Y-m-01') ? 1 : 0,
+                'country_scope' => 'FCC',
+                'has_activity_data' => $has_activity_data,
+                'is_4cc_active' => $is_verified_active,
+            ];
+        }
+    } else {
+        $trend = forever_business_get_total_cc_trend($dashboard_root, $period);
+        if(empty($trend)) {
+            foreach($trend_periods as $trend_period) {
+                $sum = 0.0;
+                if(!empty($scope_ids)) {
+                    $row = database()->query("SELECT COALESCE(SUM(personal_cc), 0) AS total FROM forever_business_metrics WHERE period_month = '{$trend_period}' AND fbo_id IN ({$id_list})")->fetch_assoc();
+                    $sum = (float) ($row['total'] ?? 0);
+                }
+                $trend[] = ['period_month' => $trend_period, 'total_cc' => $sum, 'is_closed' => $trend_period < date('Y-m-01') ? 1 : 0, 'country_scope' => 'FCC'];
+            }
         }
     }
     $closed_trend = array_values(array_filter($trend, static fn($row) => !empty($row['is_closed'])));

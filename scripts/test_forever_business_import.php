@@ -20,6 +20,7 @@ $assertions = [
     'team CC uses additive personal CC' => str_contains($helper, "SUM(personal_cc)"),
     'official 4 Core snapshots stay separate from operational signals' => str_contains($helper, 'forever_business_four_core_snapshots'),
     '1000 CC goal uses exact FLP Total CC when available' => str_contains($helper, "goal_metric_source") && str_contains($helper, 'forever_business_total_cc_snapshots'),
+    'collaborator trend uses imported Total CC with verified monthly activity' => str_contains($helper, "['period_month', 'total_cc', 'personal_cc', 'total_active_cc', 'is_4cc_active']") && str_contains($helper, "'has_activity_data' => \$has_activity_data") && str_contains($helper, "'is_4cc_active' => \$is_verified_active"),
     '4 Core page adoption is measured from launch' => str_contains($helper, 'forever_business_page_visits') && str_contains($user, 'forever_business_record_page_visit'),
     'bulk manager grant accepts exact Forever ID matches only' => str_contains($helper, 'forever_business_grant_exact_manager_accesses') && str_contains($helper, "m.fbo_id = REPLACE(JSON_UNQUOTE(JSON_EXTRACT(u.preferences"),
     'machine sync compares only a SHA-256 secret hash' => str_contains($sync, 'SYNC_KEY_SHA256') && str_contains($sync, 'hash(\'sha256\', $key)'),
@@ -51,6 +52,8 @@ $base = [
 
 $activity = forever_business_get_verified_progress($base);
 $personal_gate = forever_business_get_verified_progress(array_merge($base, ['personal_cc' => .999]));
+$regional_gate = forever_business_get_verified_progress(array_merge($base, ['total_active_cc' => 3.999]));
+$official_gate = forever_business_get_verified_progress(array_merge($base, ['is_4cc_active' => 0]));
 $supervisor = forever_business_get_verified_progress(array_merge($base, ['title' => 'Supervisor', 'total_cc' => 20, 'previous_total_cc' => 25]));
 $assistant_manager = forever_business_get_verified_progress(array_merge($base, ['title' => 'Assistant Manager', 'total_cc' => 30, 'previous_total_cc' => 40, 'two_months_ago_total_cc' => 30, 'three_months_ago_total_cc' => 20]));
 $unrecognized_manager = forever_business_get_verified_progress(array_merge($base, ['title' => 'Unrecognized Manager', 'total_cc' => 30, 'previous_total_cc' => 40, 'two_months_ago_total_cc' => 30, 'three_months_ago_total_cc' => 20]));
@@ -60,7 +63,7 @@ $first_action = forever_business_get_action(array_merge($base, ['verified_progre
 $second_action = forever_business_get_action(array_merge($base, ['verified_progress' => $activity]), $base, 1);
 
 $rule_assertions = [
-    '4 CC activity requires both 1 personal and 4 regional active CC' => $activity['is_officially_active'] && !$personal_gate['is_officially_active'],
+    '4 CC activity requires official status, 1 personal and 4 regional active CC' => $activity['is_officially_active'] && !$personal_gate['is_officially_active'] && !$regional_gate['is_officially_active'] && !$official_gate['is_officially_active'],
     'Assistant Supervisor path is 10 Total CC in one month' => $activity['rank']['windows'][0]['target'] === 10.0 && $activity['rank']['windows'][0]['gap'] === 1.0,
     'Supervisor path is 60 Total CC in two months' => $supervisor['rank']['windows'][0]['target'] === 60.0 && $supervisor['rank']['windows'][0]['gap'] === 15.0,
     'Assistant Manager paths are 120 in two or 150 in four months' => $assistant_manager['rank']['windows'][0]['gap'] === 50.0 && $assistant_manager['rank']['windows'][1]['gap'] === 30.0,
