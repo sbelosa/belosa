@@ -21,6 +21,7 @@ assert.equal(readyReportMessage('Your report generated on Aug 13, 2026 at 12:22p
 assert.equal(readyReportMessage('Your report is being generated.'), '');
 assert.match(syncSource, /#user-input-login-id:visible/);
 assert.match(syncSource, /input\[name="password"\]:visible/);
+assert.match(syncSource, /#kc-login:visible/);
 
 if(downlinePath) {
     const result = await validateDownline(downlinePath);

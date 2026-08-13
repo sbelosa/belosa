@@ -87,7 +87,7 @@ async function login(page, username, password) {
         await usernameInput.fill(username);
         await passwordInput.fill(password);
 
-        const submit = page.locator('#kc-login, button[type="submit"], input[type="submit"]').first();
+        const submit = page.locator('#kc-login:visible, button[type="submit"]:visible, input[type="submit"]:visible').first();
         await Promise.all([
             page.waitForURL(url => url.origin === FLP360_BASE_URL && !url.pathname.includes('/login'), {timeout: 60000}),
             submit.click(),
