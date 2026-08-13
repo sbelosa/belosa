@@ -1578,7 +1578,12 @@ function forever_business_get_usage_summary(): array {
         FROM forever_business_page_visits");
     $visits = $visits_result ? $visits_result->fetch_assoc() : [];
 
-    $result = array_merge($accounts, $profile_accounts, $team, $managers, $visits);
+    $privacy_result = database()->query("SELECT COUNT(*) AS active_team_access_records
+        FROM forever_business_access
+        WHERE status = 'active'");
+    $privacy = $privacy_result ? $privacy_result->fetch_assoc() : [];
+
+    $result = array_merge($accounts, $profile_accounts, $team, $managers, $visits, $privacy);
     return array_map(static fn($value) => (int) ($value ?? 0), $result);
 }
 

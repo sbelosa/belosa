@@ -24,6 +24,7 @@ $assertions = [
     '1000 CC goal uses exact FLP Total CC when available' => str_contains($helper, "goal_metric_source") && str_contains($helper, 'forever_business_total_cc_snapshots'),
     'collaborator trend uses imported Total CC with verified monthly activity' => str_contains($helper, "['period_month', 'total_cc', 'personal_cc', 'total_active_cc', 'is_4cc_active']") && str_contains($helper, "'has_activity_data' => \$has_activity_data") && str_contains($helper, "'is_4cc_active' => \$is_verified_active"),
     '4 Core page adoption is measured from launch' => str_contains($helper, 'forever_business_page_visits') && str_contains($user, 'forever_business_record_page_visit'),
+    'self-only privacy audit exposes active team-access count' => str_contains($helper, 'active_team_access_records'),
     'legacy team-access grants are disabled in self-only mode' => str_contains($helper, 'Self-only privacy mode') && str_contains($helper, 'forever_business_enforce_self_only_access'),
     'machine sync compares only a SHA-256 secret hash' => str_contains($sync, 'SYNC_KEY_SHA256') && str_contains($sync, 'hash(\'sha256\', $key)'),
     'machine sync accepts only bounded CSV and XLSX uploads' => str_contains($sync, 'MAX_FILE_BYTES') && str_contains($sync, "['csv', 'xlsx']"),
