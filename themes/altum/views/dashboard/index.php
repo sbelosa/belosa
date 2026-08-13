@@ -17,7 +17,8 @@ $dashboard_format_cc = static function($value): string {
         --notice-accent-rgb: 246, 201, 0;
         position: relative;
         display: grid;
-        grid-template-columns: auto minmax(0, 1fr) minmax(13rem, .46fr) auto;
+        grid-template-columns: auto minmax(0, 1fr) auto;
+        grid-template-rows: auto auto;
         align-items: center;
         gap: 1.15rem;
         overflow: hidden;
@@ -70,6 +71,7 @@ $dashboard_format_cc = static function($value): string {
         background: rgba(var(--notice-accent-rgb), .12);
         border: 1px solid rgba(var(--notice-accent-rgb), .18);
         font-size: 1.18rem;
+        grid-row: 1 / 3;
     }
 
     .dashboard-four-cc-notice-copy {
@@ -99,6 +101,7 @@ $dashboard_format_cc = static function($value): string {
     }
 
     .dashboard-four-cc-notice-title {
+        display: block;
         margin: 0 0 .28rem;
         color: #fff;
         font-size: 1.08rem;
@@ -107,6 +110,7 @@ $dashboard_format_cc = static function($value): string {
     }
 
     .dashboard-four-cc-notice-text {
+        display: block;
         margin: 0;
         color: rgba(203, 213, 225, .84);
         font-size: .88rem;
@@ -115,6 +119,10 @@ $dashboard_format_cc = static function($value): string {
 
     .dashboard-four-cc-notice-progress {
         min-width: 0;
+        width: min(100%, 34rem);
+        grid-column: 2;
+        grid-row: 2;
+        padding-top: .15rem;
     }
 
     .dashboard-four-cc-notice-progress-top {
@@ -134,6 +142,8 @@ $dashboard_format_cc = static function($value): string {
     }
 
     .dashboard-four-cc-notice-track {
+        display: block;
+        width: 100%;
         height: .55rem;
         overflow: hidden;
         border-radius: 999px;
@@ -141,6 +151,7 @@ $dashboard_format_cc = static function($value): string {
     }
 
     .dashboard-four-cc-notice-fill {
+        display: block;
         height: 100%;
         border-radius: inherit;
         background: linear-gradient(90deg, rgba(var(--notice-accent-rgb), .72), var(--notice-accent));
@@ -157,6 +168,8 @@ $dashboard_format_cc = static function($value): string {
         color: var(--notice-accent);
         background: rgba(var(--notice-accent-rgb), .1);
         transition: transform .18s ease;
+        grid-column: 3;
+        grid-row: 1 / 3;
     }
 
     .dashboard-four-cc-notice:hover .dashboard-four-cc-notice-arrow,
@@ -978,11 +991,17 @@ $dashboard_format_cc = static function($value): string {
         .dashboard-four-cc-notice-progress {
             grid-column: 1 / -1;
             grid-row: 2;
+            width: 100%;
         }
 
         .dashboard-four-cc-notice-icon {
             width: 2.85rem;
             height: 2.85rem;
+            grid-row: 1;
+        }
+
+        .dashboard-four-cc-notice-arrow {
+            grid-row: 1;
         }
 
         .dashboard-modern-card .card-body,
@@ -1737,6 +1756,14 @@ $dashboard_format_cc = static function($value): string {
         <!-- /Custom code: FC-2026-02-24 -->
     <?php endif ?>
 
+    <div class="mb-5 dashboard-growth-shell">
+        <div class="dashboard-page-guide-rail">
+            <button type="button" class="dashboard-page-guide-trigger dashboard-tour-target" id="dashboard_tour_step_page_guide" data-dashboard-start-tour>
+                <i class="fas fa-fw fa-route"></i>
+                <span><?= l('dashboard.tour.launch') ?></span>
+            </button>
+        </div>
+
     <?php /* Custom code: FC-2026-08-14: verified self-only 4 CC dashboard notice */ ?>
     <?php
     $activity_period_label = !empty($dashboard_forever_activity['period'])
@@ -1761,19 +1788,19 @@ $dashboard_format_cc = static function($value): string {
         $activity_icon = 'fa-clock';
     } elseif($dashboard_forever_activity_status === 'inactive') {
         if(!$activity_has_regional_data && $activity_personal_gap > 0) {
-            $activity_title = sprintf(l('dashboard.four_cc.missing_personal_condition_title'), $dashboard_format_cc($activity_personal_gap));
+            $activity_title = sprintf(l('dashboard.four_cc.missing_personal_title'), $dashboard_format_cc($activity_personal_gap));
         } elseif(!$activity_has_regional_data) {
             $activity_title = l('dashboard.four_cc.unconfirmed_title');
         } elseif($activity_regional_gap > 0 && $activity_personal_gap > 0) {
-            $activity_title = sprintf(l('dashboard.four_cc.missing_both_title'), $dashboard_format_cc($activity_regional_gap), $dashboard_format_cc($activity_personal_gap));
+            $activity_title = sprintf(l('dashboard.four_cc.missing_total_title'), $dashboard_format_cc($activity_regional_gap));
         } elseif($activity_regional_gap > 0) {
             $activity_title = sprintf(l('dashboard.four_cc.missing_total_title'), $dashboard_format_cc($activity_regional_gap));
         } else {
             $activity_title = sprintf(l('dashboard.four_cc.missing_personal_title'), $dashboard_format_cc($activity_personal_gap));
         }
-        $activity_text = $activity_has_regional_data
-            ? l('dashboard.four_cc.inactive_text')
-            : l('dashboard.four_cc.inactive_partial_text');
+        $activity_text = $activity_personal_gap > 0
+            ? sprintf(l('dashboard.four_cc.inactive_personal_gap_text'), $dashboard_format_cc($activity_personal_gap))
+            : l('dashboard.four_cc.inactive_text');
         $activity_icon = 'fa-bolt';
     } else {
         $activity_title = l('dashboard.four_cc.unavailable_title');
@@ -1801,14 +1828,6 @@ $dashboard_format_cc = static function($value): string {
         <span class="dashboard-four-cc-notice-arrow" aria-hidden="true"><i class="fas fa-arrow-right"></i></span>
     </a>
     <?php /* /Custom code: FC-2026-08-14 */ ?>
-
-    <div class="mb-5 dashboard-growth-shell">
-        <div class="dashboard-page-guide-rail">
-            <button type="button" class="dashboard-page-guide-trigger dashboard-tour-target" id="dashboard_tour_step_page_guide" data-dashboard-start-tour>
-                <i class="fas fa-fw fa-route"></i>
-                <span><?= l('dashboard.tour.launch') ?></span>
-            </button>
-        </div>
         <div class="dashboard-growth-hero dashboard-growth-card mb-4 dashboard-tour-target" id="dashboard_tour_step_hero">
             <div class="dashboard-growth-hero-main">
                 <div class="dashboard-growth-pills">
