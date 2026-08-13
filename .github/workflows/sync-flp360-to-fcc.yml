@@ -1,0 +1,70 @@
+# Custom code: FC-2026-08-13: Computer-independent FLP360 to FCC synchronization
+name: Sync FLP360 to FCC
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Runs throughout the Croatian business day; GitHub schedules use UTC.
+    - cron: '23 6,10,14,18 * * *'
+  push:
+    branches:
+      - main
+    paths:
+      - 'scripts/flp360_cloud_sync.mjs'
+      - 'scripts/test_flp360_cloud_sync.mjs'
+      - '.github/workflows/sync-flp360-to-fcc.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: flp360-fcc-production-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Check secure configuration
+        id: config
+        env:
+          FLP360_USERNAME: ${{ secrets.FLP360_USERNAME }}
+          FLP360_PASSWORD: ${{ secrets.FLP360_PASSWORD }}
+          FCC_FOREVER_SYNC_URL: ${{ secrets.FCC_FOREVER_SYNC_URL }}
+          FCC_FOREVER_SYNC_KEY: ${{ secrets.FCC_FOREVER_SYNC_KEY }}
+        run: |
+          configured=true
+          for name in FLP360_USERNAME FLP360_PASSWORD FCC_FOREVER_SYNC_URL FCC_FOREVER_SYNC_KEY; do
+            if [ -z "${!name:-}" ]; then
+              echo "Secure cloud synchronization is waiting for: ${name}"
+              configured=false
+            fi
+          done
+          echo "configured=${configured}" >> "$GITHUB_OUTPUT"
+
+      - name: Install Playwright
+        if: steps.config.outputs.configured == 'true'
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+
+      - name: Synchronize verified FLP360 reports
+        if: steps.config.outputs.configured == 'true'
+        env:
+          FLP360_USERNAME: ${{ secrets.FLP360_USERNAME }}
+          FLP360_PASSWORD: ${{ secrets.FLP360_PASSWORD }}
+          FCC_FOREVER_SYNC_URL: ${{ secrets.FCC_FOREVER_SYNC_URL }}
+          FCC_FOREVER_SYNC_KEY: ${{ secrets.FCC_FOREVER_SYNC_KEY }}
+        run: node scripts/flp360_cloud_sync.mjs
+
+# /Custom code: FC-2026-08-13
