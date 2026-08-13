@@ -1583,27 +1583,8 @@ function forever_business_get_usage_summary(): array {
 }
 
 function forever_business_grant_access(int $user_id, string $fbo_id, string $role, int $granted_by_user_id): bool {
-    forever_business_ensure_tables();
-    $fbo_id = forever_business_normalize_fbo_id($fbo_id);
-    $role = in_array($role, ['manager', 'co_owner'], true) ? $role : 'manager';
-    $user = db()->where('user_id', $user_id)->getOne('users', ['user_id']);
-    $member = $fbo_id !== '' ? db()->where('fbo_id', $fbo_id)->where('is_manager', 1)->getOne('forever_business_members', ['fbo_id']) : null;
-
-    if(!$user || !$member) {
-        return false;
-    }
-
-    db()->onDuplicate(['access_role', 'status', 'granted_by_user_id', 'updated_at'])->insert('forever_business_access', [
-        'user_id' => $user_id,
-        'fbo_id' => $fbo_id,
-        'access_role' => $role,
-        'status' => 'active',
-        'granted_by_user_id' => $granted_by_user_id,
-        'created_at' => get_date(),
-        'updated_at' => get_date(),
-    ]);
-
-    return true;
+    /* Self-only privacy mode: no collaborator account can receive a team scope. */
+    return false;
 }
 
 function forever_business_revoke_access(int $access_id): bool {
@@ -1612,19 +1593,16 @@ function forever_business_revoke_access(int $access_id): bool {
 }
 
 function forever_business_grant_exact_manager_accesses(int $granted_by_user_id): int {
+    return 0;
+}
+
+function forever_business_enforce_self_only_access(): int {
     forever_business_ensure_tables();
-    $result = database()->query("SELECT DISTINCT u.user_id, m.fbo_id
-        FROM users u
-        INNER JOIN forever_business_members m
-            ON m.fbo_id = REPLACE(JSON_UNQUOTE(JSON_EXTRACT(u.preferences, '$.meta.foreverId')), '-', '')
-        WHERE u.type = 0 AND u.status = 1 AND m.is_manager = 1 AND m.is_in_current_structure = 1");
-    $granted = 0;
-    while($result && $row = $result->fetch_assoc()) {
-        if(forever_business_grant_access((int) $row['user_id'], (string) $row['fbo_id'], 'manager', $granted_by_user_id)) {
-            $granted++;
-        }
-    }
-    return $granted;
+    db()->where('status', 'active')->update('forever_business_access', [
+        'status' => 'revoked',
+        'updated_at' => get_date(),
+    ]);
+    return (int) db()->count;
 }
 
 function forever_business_get_admin_data(int $user_id, string $period = ''): array {

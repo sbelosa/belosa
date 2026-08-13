@@ -122,36 +122,14 @@ class AdminForeverBusiness extends Controller {
         $this->redirect_back();
     }
 
-    private function handle_access(): void {
-        if(empty($_POST['grant_access']) && empty($_POST['grant_exact_managers']) && empty($_POST['revoke_access'])) return;
-
-        if(!\Altum\Csrf::check('global_token')) {
-            Alerts::add_error(l('global.error_message.invalid_csrf_token'));
-            $this->redirect_back(['period' => $_POST['period'] ?? '']);
-        }
-
-        if(!empty($_POST['grant_exact_managers'])) {
-            $granted = forever_business_grant_exact_manager_accesses((int) $this->user->user_id);
-            Alerts::add_success('Aktivirano ili potvrđeno je ' . nr($granted) . ' managerskih pristupa s točnim Forever ID podudaranjem.');
-        } elseif(!empty($_POST['grant_access'])) {
-            $ok = forever_business_grant_access((int) ($_POST['user_id'] ?? 0), (string) ($_POST['fbo_id'] ?? ''), (string) ($_POST['access_role'] ?? 'manager'), (int) $this->user->user_id);
-            $ok ? Alerts::add_success('Pristup timu je uključen.') : Alerts::add_error('Pristup nije uključen. Provjeri korisnika i odabranog managera.');
-        } else {
-            $ok = forever_business_revoke_access((int) ($_POST['access_id'] ?? 0));
-            $ok ? Alerts::add_success('Pristup timu je opozvan.') : Alerts::add_error('Pristup nije pronađen.');
-        }
-
-        $this->redirect_back(['period' => $_POST['period'] ?? '']);
-    }
-
     public function index() {
         forever_business_ensure_tables();
         forever_business_provision_fcc_members();
+        forever_business_enforce_self_only_access();
 
         if(!empty($_POST)) {
             $this->handle_preview();
             $this->handle_apply();
-            $this->handle_access();
         }
 
         $period = forever_business_period_from_label($_GET['period'] ?? '') ?: '';
