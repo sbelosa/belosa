@@ -236,15 +236,32 @@ async function requestDownline(page) {
 
 async function prepareFourCcCountryState(page) {
     const countryState = await page.evaluate(() => {
+        const parseJson = (value, fallback) => {
+            try {
+                return JSON.parse(value || '');
+            } catch {
+                return fallback;
+            }
+        };
         const userInfoText = localStorage.getItem('appflp360.userInfo') || localStorage.getItem('userInfo') || '{}';
-        const userInfo = JSON.parse(userInfoText);
+        const userInfo = parseJson(userInfoText, {});
         const profileCodes = [userInfo.preferredCountryCode, userInfo.homeCountryCode].filter(Boolean);
         if(profileCodes.length && !profileCodes.includes('HRV')) {
             return {profileCodes, repaired: false, valid: false};
         }
 
         const countriesText = sessionStorage.getItem('countries') || '[]';
-        const countries = JSON.parse(countriesText);
+        let countries = parseJson(countriesText, []);
+        if(!Array.isArray(countries) || !countries.length) {
+            const countrySelect = document.querySelector('select');
+            countries = [...(countrySelect?.options || [])]
+                .filter(option => option.value && option.value !== 'Global')
+                .map(option => ({
+                    countryName: String(option.textContent || '').replace(/\s*\([^)]*\)\s*$/, '').trim(),
+                    operatingCompany: option.value,
+                    homeCountry: false,
+                }));
+        }
         if(!Array.isArray(countries) || !countries.length) {
             return {profileCodes, repaired: false, valid: false};
         }
