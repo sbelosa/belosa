@@ -154,7 +154,6 @@ $format_percent = static fn($value) => number_format((float) $value, 1, ',', '.'
                 <div class="fb-verified-item"><div class="small text-muted">Total CC</div><strong><?= isset($mine['total_cc']) ? $format_cc($mine['total_cc']) : '—' ?></strong></div>
                 <div class="fb-verified-item"><div class="small text-muted">Total Active CC</div><strong><?= isset($mine['total_active_cc']) ? $format_cc($mine['total_active_cc']) : '—' ?></strong></div>
                 <?php if($rank['mode'] === 'manager'): ?><div class="fb-verified-item"><div class="small text-muted">Non-Manager CC</div><strong><?= isset($mine['non_manager_cc']) ? $format_cc($mine['non_manager_cc']) : '—' ?></strong></div><?php endif ?>
-                <div class="fb-verified-item"><div class="small text-muted">Zadnja kupnja</div><strong><?= !empty($mine['last_purchase_date']) ? htmlspecialchars((new DateTimeImmutable($mine['last_purchase_date']))->format('d.m.Y.')) : 'nije u Focus izvještaju' ?></strong></div>
             </div></div></div>
         <?php else: ?>
             <h2 class="h5 mb-3">Provjereni podaci strukture</h2>
