@@ -1,6 +1,7 @@
 /* Custom code: FC-2026-08-13: Cloud FLP360 to FCC synchronization */
 
 import fs from 'node:fs/promises';
+import crypto from 'node:crypto';
 import path from 'node:path';
 import process from 'node:process';
 import {pathToFileURL} from 'node:url';
@@ -87,6 +88,98 @@ function parseCsvLine(line) {
     }
     fields.push(field);
     return fields;
+}
+
+function encryptFlpAuthorization(value, encryptionKey) {
+    const salt = crypto.randomBytes(64);
+    const initializationVector = crypto.randomBytes(12);
+    const key = crypto.pbkdf2Sync(encryptionKey, salt, 2145, 32, 'sha512');
+    const cipher = crypto.createCipheriv('aes-256-gcm', key, initializationVector);
+    const encrypted = Buffer.concat([cipher.update(value, 'utf8'), cipher.final()]);
+    return Buffer.concat([salt, initializationVector, encrypted, cipher.getAuthTag()]).toString('base64');
+}
+
+function buildDownlineGenerationUrl(reportBase, distributorId) {
+    const url = new URL(`V2/distributors/${distributorId}/generate/rewire-downline-excel-query`, `${String(reportBase).replace(/\/+$/, '')}/`);
+    const parameters = {
+        year: 0,
+        month: 0,
+        expandingLevel: 0,
+        pageNumber: 1,
+        numberOfRecords: 15,
+        showNonZero: false,
+        memberLevel: 0,
+        country: 'HRV',
+        generationValue: 0,
+        sponsorDistID: distributorId,
+        isExcelView: true,
+        downlineGenValue: 0,
+    };
+    for(const [name, value] of Object.entries(parameters)) url.searchParams.set(name, String(value));
+    return url.toString();
+}
+
+function buildDownlineDownloadUrl(cdnBase, processedFilePath) {
+    const match = String(processedFilePath || '').match(/\/CustomerReports\/(Downline(?: Mobile)?)\/([^/?#]+\.csv)/i);
+    if(!match) throw new Error('FLP360 red za izvoz nije vratio očekivanu Downline CSV putanju.');
+    return new URL(`CustomerReports/${match[1]}/${match[2]}`, `${String(cdnBase).replace(/\/+$/, '')}/`).toString();
+}
+
+async function flpApiConfiguration(page) {
+    const configuration = await page.evaluate(() => {
+        const parseJson = (value, fallback) => {
+            try {
+                return JSON.parse(value || '');
+            } catch {
+                return fallback;
+            }
+        };
+        const applicationConfiguration = parseJson(localStorage.getItem('appflp360.Configuration'), {});
+        const api = applicationConfiguration.apiConfiguration || window.apiConfig || {};
+        const storedReportBase = parseJson(localStorage.getItem('appflp360.reportApicategory'), '');
+        const reportBase = /^https:\/\//i.test(String(storedReportBase || ''))
+            ? storedReportBase
+            : api.reportProApi || api.reportLiteApi || `${api.apiGatewayURL}/${api.reportApi || 'reporttdm'}`;
+        return {
+            aesEncryptionKey: api.aesEncryptionKey || '',
+            apiGatewayUrl: api.apiGatewayURL || '',
+            cdnUrl: api.cdnURL || '',
+            guestToken: parseJson(localStorage.getItem('appflp360.guestToken'), api.guestToken || ''),
+            reportBase,
+        };
+    });
+
+    for(const name of ['aesEncryptionKey', 'apiGatewayUrl', 'cdnUrl', 'guestToken', 'reportBase']) {
+        if(!String(configuration[name] || '').trim()) throw new Error(`FLP360 konfiguracija nema ${name}.`);
+    }
+    return configuration;
+}
+
+function flpApiHeaders(configuration, requestUrl) {
+    const requestId = crypto.randomUUID();
+    const authorization = encryptFlpAuthorization(`${requestId}||Bearer ${configuration.guestToken}&&3`, configuration.aesEncryptionKey);
+    const headers = {
+        Authorization: authorization,
+        UUID: requestId,
+        'Content-Type': 'application/json',
+        isOfflineFlow: 'true',
+    };
+    if(String(requestUrl).includes('/reporttdm')) headers['cache-control'] = 'no-cache';
+    return headers;
+}
+
+async function flpGetJson(page, requestUrl, configuration) {
+    const response = await page.context().request.get(requestUrl, {
+        headers: flpApiHeaders(configuration, requestUrl),
+        timeout: 120000,
+    });
+    const responseText = await response.text();
+    if(!response.ok()) throw new Error(`FLP360 podatkovni poziv nije uspio (HTTP ${response.status()}).`);
+    try {
+        return JSON.parse(responseText);
+    } catch {
+        throw new Error('FLP360 podatkovni poziv nije vratio valjan JSON odgovor.');
+    }
 }
 
 function officialFourCoreSnapshots() {
@@ -187,55 +280,27 @@ async function login(page, username, password) {
 }
 
 async function requestDownline(page) {
-    await page.goto(`${FLP360_BASE_URL}/downline`, {waitUntil: 'domcontentloaded', timeout: 60000});
-    await page.locator('select').first().waitFor({state: 'visible', timeout: 60000});
-    await prepareFourCcCountryState(page);
-    await page.reload({waitUntil: 'domcontentloaded', timeout: 60000});
-    await page.locator('a.excel-download').waitFor({state: 'visible', timeout: 60000});
-    await page.locator('a.download-link').waitFor({state: 'visible', timeout: 5000}).catch(() => {});
-
-    /* FLP360 currently defaults the country selector to Angola when the home
-       market is missing from its session list. Croatia is the operating-company
-       root for this business and its report contains the complete international
-       downline. Zero-CC members must remain included so the FCC structure is not
-       silently reduced to only currently productive collaborators. */
-    const filters = page.locator('select');
-    await filters.first().waitFor({state: 'visible', timeout: 60000});
-    const croatiaOption = filters.nth(0).locator('option[value="HRV"]');
-    await croatiaOption.waitFor({state: 'attached', timeout: 30000}).catch(() => {
-        throw new Error('Downline nema popravljeno matično tržište Croatia (HRV).');
-    });
-    await filters.nth(0).selectOption({value: 'HRV'});
-    await filters.nth(1).selectOption({label: 'All Levels'});
-    await page.locator('.loader-overlay').last().waitFor({state: 'hidden', timeout: 120000}).catch(() => {});
-    const suppressZeroCc = page.getByRole('checkbox').first();
-    if(await suppressZeroCc.isChecked()) {
-        const checkboxId = await suppressZeroCc.getAttribute('id');
-        if(!checkboxId) throw new Error('Downline prekidač Suppress 0CC nema očekivani identifikator.');
-        await page.locator(`label[for="${checkboxId}"]`).evaluate(label => label.click());
-        await page.waitForTimeout(300);
-    }
-    if(await suppressZeroCc.isChecked()) throw new Error('Downline prekidač Suppress 0CC nije moguće isključiti.');
-    await page.locator('.loader-overlay').last().waitFor({state: 'hidden', timeout: 120000}).catch(() => {});
+    const configuration = await flpApiConfiguration(page);
+    const distributorId = ROOT_FBO_ID.replaceAll('-', '');
+    const queueUrl = `${String(configuration.apiGatewayUrl).replace(/\/+$/, '')}/flp360/v1/distributors/${distributorId}/report/Downline/report-extract-queue`;
+    const initialQueue = await flpGetJson(page, queueUrl, configuration);
+    const generationUrl = buildDownlineGenerationUrl(configuration.reportBase, distributorId);
     console.log('Downline filtri: Croatia (HRV), All Levels, Suppress 0CC=Off.');
+    const generationResult = await flpGetJson(page, generationUrl, configuration);
+    const generationMessage = String(generationResult?.message || '');
+    const previousRequestIsRunning = /previous request is being processed/i.test(generationMessage);
+    if(!generationResult?.isSuccess && !previousRequestIsRunning) {
+        throw new Error(generationMessage || 'FLP360 nije prihvatio Downline izvoz.');
+    }
+    console.log(previousRequestIsRunning
+        ? 'FLP360 još obrađuje prethodni Downline zahtjev; prati se postojeći red.'
+        : 'Downline izvoz je poslan u FLP360 red za generiranje.');
 
-    const initialMessage = readyReportMessage(await page.locator('body').innerText());
-    await page.getByRole('button', {name: 'Run Report', exact: true}).click();
-    /* Rendering the complete international tree can leave FLP360's visual loader
-       active indefinitely. The export action is a separate server-side queue and
-       does not require that grid rendering to finish, so request it directly while
-       preserving the selected filters. */
-    await page.waitForTimeout(3000);
-    await page.locator('a.excel-download').click({force: true});
-    const dialog = page.getByRole('dialog');
-    await dialog.waitFor({state: 'visible', timeout: 15000});
-    await dialog.getByText(ROOT_FBO_ID, {exact: false}).waitFor({state: 'visible', timeout: 30000}).catch(() => {
-        throw new Error('Downline izvoz nije vezan uz očekivani glavni Forever ID.');
-    });
-    await dialog.getByRole('button', {name: 'Download Report', exact: true}).click({force: true});
-    console.log('Downline izvoz je poslan u FLP360 red za generiranje.');
-
-    return initialMessage;
+    return {
+        configuration,
+        initialProcessedTime: String(initialQueue?.requestProcessedTime || ''),
+        queueUrl,
+    };
 }
 
 async function prepareFourCcCountryState(page) {
@@ -284,24 +349,27 @@ async function prepareFourCcCountryState(page) {
     console.log(`FLP360 država Croatia (HRV) je pripremljena (${countryState.countryCount} dostupnih opcija).`);
 }
 
-async function downloadDownline(page, initialMessage) {
-    await page.goto(`${FLP360_BASE_URL}/downline`, {waitUntil: 'domcontentloaded', timeout: 60000});
-    await page.locator('a.excel-download').waitFor({state: 'visible', timeout: 60000});
-
+async function downloadDownline(page, requestDetails) {
     const deadline = Date.now() + 20 * 60 * 1000;
-    let currentMessage = '';
+    let latestQueue = {};
     while(Date.now() < deadline) {
         await page.waitForTimeout(15000);
-        await page.reload({waitUntil: 'domcontentloaded', timeout: 60000});
-        await page.locator('a.excel-download').waitFor({state: 'visible', timeout: 60000});
-        currentMessage = readyReportMessage(await page.locator('body').innerText());
-        if(currentMessage && currentMessage !== initialMessage) break;
+        latestQueue = await flpGetJson(page, requestDetails.queueUrl, requestDetails.configuration);
+        const processedTime = String(latestQueue?.requestProcessedTime || '');
+        if(latestQueue?.processedFilePath && processedTime && processedTime !== requestDetails.initialProcessedTime) break;
     }
-    if(!currentMessage || currentMessage === initialMessage) throw new Error('Svježi Downline izvještaj nije generiran unutar 20 minuta.');
+    if(!latestQueue?.processedFilePath || String(latestQueue?.requestProcessedTime || '') === requestDetails.initialProcessedTime) {
+        throw new Error('Svježi Downline izvještaj nije generiran unutar 20 minuta.');
+    }
 
-    const downloadPromise = page.waitForEvent('download', {timeout: 60000});
-    await page.locator('a.download-link').click();
-    return saveDownload(await downloadPromise, `flp360-downline-${zagrebPeriod()}.csv`);
+    const downloadUrl = buildDownlineDownloadUrl(requestDetails.configuration.cdnUrl, latestQueue.processedFilePath);
+    const response = await page.context().request.get(downloadUrl, {headers: {Accept: 'text/csv'}, timeout: 120000});
+    if(!response.ok()) throw new Error(`FLP360 Downline CSV nije moguće preuzeti (HTTP ${response.status()}).`);
+    const targetPath = path.join(OUTPUT_DIRECTORY, `flp360-downline-${zagrebPeriod()}.csv`);
+    await fs.writeFile(targetPath, await response.body());
+    const stat = await fs.stat(targetPath);
+    if(stat.size < 1000) throw new Error('FLP360 Downline CSV je premalen za siguran uvoz.');
+    return targetPath;
 }
 
 async function downloadFocusGroup(page) {
@@ -403,8 +471,12 @@ async function main() {
     const password = requiredEnvironment('FLP360_PASSWORD');
     const syncUrl = requiredEnvironment('FCC_FOREVER_SYNC_URL');
     const syncKey = requiredEnvironment('FCC_FOREVER_SYNC_KEY');
-    const {chromium} = await import('playwright');
-    const browser = await chromium.launch({headless: true});
+    const playwrightModule = process.env.PLAYWRIGHT_MODULE_URL || 'playwright';
+    const {chromium} = await import(playwrightModule);
+    const browser = await chromium.launch({
+        headless: true,
+        ...(process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE ? {executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE} : {}),
+    });
     const context = await browser.newContext({acceptDownloads: true, locale: 'en-US'});
     const page = await context.newPage();
     const period = zagrebPeriod();
@@ -421,10 +493,10 @@ async function main() {
          * immediately available reports while FLP360 prepares it in the background. */
         const failures = [];
         const warnings = [];
-        let initialDownlineMessage = '';
+        let downlineRequest = null;
         let downlineRequested = false;
         try {
-            initialDownlineMessage = await requestDownline(page);
+            downlineRequest = await requestDownline(page);
             downlineRequested = true;
         } catch(error) {
             failures.push(`Downline zahtjev: ${error.message}`);
@@ -450,7 +522,7 @@ async function main() {
 
         if(downlineRequested) {
             try {
-                const downlinePath = await downloadDownline(page, initialDownlineMessage);
+                const downlinePath = await downloadDownline(page, downlineRequest);
                 const downlineValidation = await validateDownline(downlinePath);
                 const downlineResult = await uploadReport(downlinePath, period, syncUrl, syncKey);
                 console.log(`Downline: ${downlineValidation.rows} redaka (${downlineValidation.hrvRows} HRV; ${downlineValidation.countries.join(', ')}), duplicate=${Boolean(downlineResult.duplicate)}.`);
@@ -481,6 +553,6 @@ if(process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.arg
     });
 }
 
-export {currentFlpMonthLabel, findCurrentFlpMonthLabel, officialFourCoreSnapshots, parseCsvLine, readyReportMessage, validateDownline, validateXlsx, zagrebPeriod};
+export {buildDownlineDownloadUrl, buildDownlineGenerationUrl, currentFlpMonthLabel, encryptFlpAuthorization, findCurrentFlpMonthLabel, officialFourCoreSnapshots, parseCsvLine, readyReportMessage, validateDownline, validateXlsx, zagrebPeriod};
 
 /* /Custom code: FC-2026-08-13 */

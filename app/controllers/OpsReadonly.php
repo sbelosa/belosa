@@ -909,7 +909,7 @@ class OpsReadonly extends Controller {
                 'counts' => $billing_dashboard['counts'] ?? [],
                 'latest_event' => $this->get_recent_global_billing_events(1)[0] ?? null,
             ],
-            'allowed_scopes' => ['health', 'overview', 'ai_feedback', 'ai_recent_communications', 'plans', 'billing', 'pro_billing_audit', 'collaborators', 'fcc_signal_notifications', 'collaborator'],
+            'allowed_scopes' => ['health', 'overview', 'ai_feedback', 'ai_plan_usage', 'ai_recent_communications', 'plans', 'billing', 'pro_billing_audit', 'collaborators', 'fcc_signal_notifications', 'collaborator'],
         ];
     }
 
@@ -982,6 +982,106 @@ class OpsReadonly extends Controller {
 
         return in_array($period, ['7d', '30d', '90d'], true) ? $period : '30d';
     }
+
+    /* Custom code: FC-2026-08-13: aggregate adoption telemetry for Tvoj plan rasta */
+    private function get_ai_plan_usage_payload(): array {
+        $now = get_date();
+        $thirty_days_ago = (new \DateTimeImmutable())->modify('-30 days')->format('Y-m-d H:i:s');
+        $ninety_days_ago = (new \DateTimeImmutable())->modify('-90 days')->format('Y-m-d H:i:s');
+        $valid_preferences = "JSON_VALID(COALESCE(`preferences`, '')) = 1";
+        $has_profile = "({$valid_preferences} AND COALESCE(JSON_UNQUOTE(JSON_EXTRACT(`preferences`, '$.leader_ai_profile.primary_goal')), '') <> '')";
+        $has_checkin = "({$valid_preferences} AND COALESCE(JSON_LENGTH(JSON_EXTRACT(`preferences`, '$.leader_ai_weekly_checkins')), 0) > 0)";
+        $has_plan = "({$valid_preferences} AND COALESCE(JSON_LENGTH(JSON_EXTRACT(`preferences`, '$.leader_ai_weekly_plans')), 0) > 0)";
+        $has_outcome = "({$valid_preferences} AND COALESCE(JSON_LENGTH(JSON_EXTRACT(`preferences`, '$.leader_ai_weekly_outcomes')), 0) > 0)";
+        $has_review = "({$valid_preferences} AND COALESCE(JSON_LENGTH(JSON_EXTRACT(`preferences`, '$.leader_ai_app_reviews')), 0) > 0)";
+
+        $summary_result = database()->query("SELECT
+                COUNT(*) AS `active_collaborators`,
+                SUM(CASE WHEN CAST(`plan_id` AS CHAR) = '5' AND (`plan_expiration_date` IS NULL OR `plan_expiration_date` = '' OR `plan_expiration_date` >= '{$now}') THEN 1 ELSE 0 END) AS `active_pro`,
+                SUM(CASE WHEN {$has_profile} THEN 1 ELSE 0 END) AS `profiles`,
+                SUM(CASE WHEN {$has_checkin} THEN 1 ELSE 0 END) AS `checkins`,
+                SUM(CASE WHEN {$has_plan} THEN 1 ELSE 0 END) AS `plans`,
+                SUM(CASE WHEN {$has_outcome} THEN 1 ELSE 0 END) AS `outcomes`,
+                SUM(CASE WHEN {$has_review} THEN 1 ELSE 0 END) AS `app_reviews`,
+                SUM(CASE WHEN ({$has_profile} OR {$has_checkin} OR {$has_plan} OR {$has_outcome} OR {$has_review}) THEN 1 ELSE 0 END) AS `meaningful_users`,
+                SUM(CASE WHEN {$has_profile} AND NOT {$has_checkin} THEN 1 ELSE 0 END) AS `profile_only`,
+                SUM(CASE WHEN {$has_checkin} AND NOT {$has_plan} THEN 1 ELSE 0 END) AS `checkin_without_plan`,
+                SUM(CASE WHEN {$has_plan} AND NOT {$has_outcome} THEN 1 ELSE 0 END) AS `plan_without_outcome`
+            FROM `users`
+            WHERE `type` = 0 AND `status` = 1");
+        $summary = $summary_result ? $summary_result->fetch_object() : null;
+
+        $action_types = [
+            'ai_plan.viewed',
+            'ai_plan.profile_updated',
+            'ai_plan.weekly_checkin_saved',
+            'ai_plan.weekly_outcome_saved',
+            'ai_plan.app_review_generated',
+        ];
+        $escaped_action_types = array_map(static fn($type) => "'" . database()->real_escape_string($type) . "'", $action_types);
+        $actions_by_period = [];
+
+        foreach(['30d' => $thirty_days_ago, '90d' => $ninety_days_ago] as $period_key => $start_datetime) {
+            $rows = [];
+            $result = database()->query("SELECT
+                    `users_logs`.`type`,
+                    COUNT(*) AS `events`,
+                    COUNT(DISTINCT `users_logs`.`user_id`) AS `unique_users`
+                FROM `users_logs`
+                INNER JOIN `users` ON `users`.`user_id` = `users_logs`.`user_id`
+                WHERE `users`.`type` = 0
+                  AND `users`.`status` = 1
+                  AND `users_logs`.`type` IN (" . implode(',', $escaped_action_types) . ")
+                  AND `users_logs`.`datetime` >= '" . database()->real_escape_string($start_datetime) . "'
+                GROUP BY `users_logs`.`type`");
+
+            if($result) {
+                while($row = $result->fetch_object()) {
+                    $rows[(string) ($row->type ?? '')] = [
+                        'events' => (int) ($row->events ?? 0),
+                        'unique_users' => (int) ($row->unique_users ?? 0),
+                    ];
+                }
+            }
+
+            foreach($action_types as $action_type) {
+                $rows[$action_type] = $rows[$action_type] ?? ['events' => 0, 'unique_users' => 0];
+            }
+
+            $actions_by_period[$period_key] = $rows;
+        }
+
+        $active_collaborators = (int) ($summary->active_collaborators ?? 0);
+        $active_pro = (int) ($summary->active_pro ?? 0);
+        $meaningful_users = (int) ($summary->meaningful_users ?? 0);
+
+        return [
+            'population' => [
+                'active_collaborators' => $active_collaborators,
+                'active_pro' => $active_pro,
+            ],
+            'saved_progress' => [
+                'meaningful_users' => $meaningful_users,
+                'profiles' => (int) ($summary->profiles ?? 0),
+                'checkins' => (int) ($summary->checkins ?? 0),
+                'plans' => (int) ($summary->plans ?? 0),
+                'outcomes' => (int) ($summary->outcomes ?? 0),
+                'app_reviews' => (int) ($summary->app_reviews ?? 0),
+                'profile_only' => (int) ($summary->profile_only ?? 0),
+                'checkin_without_plan' => (int) ($summary->checkin_without_plan ?? 0),
+                'plan_without_outcome' => (int) ($summary->plan_without_outcome ?? 0),
+                'adoption_of_active_collaborators_percent' => $active_collaborators > 0 ? round(($meaningful_users / $active_collaborators) * 100, 1) : 0,
+                'adoption_of_active_pro_percent' => $active_pro > 0 ? round(($meaningful_users / $active_pro) * 100, 1) : 0,
+            ],
+            'actions' => $actions_by_period,
+            'measurement' => [
+                'saved_progress_is_historical' => true,
+                'view_tracking_started_with_this_release' => true,
+                'view_event' => 'ai_plan.viewed',
+            ],
+        ];
+    }
+    /* /Custom code: FC-2026-08-13 */
 
     private function resolve_ai_period_start_datetime(string $period_key): string {
         return match($period_key) {
@@ -1997,6 +2097,10 @@ class OpsReadonly extends Controller {
                 $this->respond_success($scope, $this->get_ai_feedback_payload());
                 break;
 
+            case 'ai_plan_usage':
+                $this->respond_success($scope, $this->get_ai_plan_usage_payload());
+                break;
+
             case 'ai_recent_communications':
                 $this->respond_success($scope, $this->get_ai_recent_communications_payload());
                 break;
@@ -2044,7 +2148,7 @@ class OpsReadonly extends Controller {
 
             default:
                 $this->respond_error('invalid_scope', 'Readonly ops scope is invalid.', 422, [
-                    'allowed_scopes' => ['health', 'overview', 'ai_feedback', 'ai_recent_communications', 'plans', 'billing', 'pro_billing_audit', 'collaborators', 'fcc_signal_notifications', 'forever_ads_catalog', 'collaborator'],
+                    'allowed_scopes' => ['health', 'overview', 'ai_feedback', 'ai_plan_usage', 'ai_recent_communications', 'plans', 'billing', 'pro_billing_audit', 'collaborators', 'fcc_signal_notifications', 'forever_ads_catalog', 'collaborator'],
                 ]);
         }
     }

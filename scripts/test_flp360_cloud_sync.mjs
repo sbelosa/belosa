@@ -3,7 +3,10 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import {
+    buildDownlineDownloadUrl,
+    buildDownlineGenerationUrl,
     currentFlpMonthLabel,
+    encryptFlpAuthorization,
     findCurrentFlpMonthLabel,
     officialFourCoreSnapshots,
     parseCsvLine,
@@ -27,6 +30,14 @@ assert.equal(findCurrentFlpMonthLabel(['07/2026-Closed'], new Date('2026-08-13T1
 assert.equal(readyReportMessage('Your report generated on Aug 13, 2026 at 12:22pm is ready.\nClick here'), 'Your report generated on Aug 13, 2026 at 12:22pm is ready.');
 assert.equal(readyReportMessage('Your report is being generated.'), '');
 assert.deepEqual(parseCsvLine('1,2,"Prezime, Ime",4,5,HRV'), ['1', '2', 'Prezime, Ime', '4', '5', 'HRV']);
+const generationUrl = new URL(buildDownlineGenerationUrl('https://example.test/api/reporttdmpro', '360000760944'));
+assert.equal(generationUrl.pathname, '/api/reporttdmpro/V2/distributors/360000760944/generate/rewire-downline-excel-query');
+assert.equal(generationUrl.searchParams.get('country'), 'HRV');
+assert.equal(generationUrl.searchParams.has('homeCountryCode'), false);
+assert.equal(generationUrl.searchParams.get('showNonZero'), 'false');
+assert.equal(generationUrl.searchParams.get('memberLevel'), '0');
+assert.equal(buildDownlineDownloadUrl('https://cdn.example.test', '/CustomerReports/Downline/abcdef.csv'), 'https://cdn.example.test/CustomerReports/Downline/abcdef.csv');
+assert.ok(Buffer.from(encryptFlpAuthorization('request||Bearer token&&3', '0123456789abcdef'), 'base64').length > 92);
 const fourCoreSnapshots = officialFourCoreSnapshots();
 assert.equal(fourCoreSnapshots.length, 2);
 assert.equal(fourCoreSnapshots.find(snapshot => snapshot.period === '2026-07')?.values.downline.ytd.recruitment, 174);
@@ -34,25 +45,26 @@ assert.equal(fourCoreSnapshots.find(snapshot => snapshot.period === '2025-07')?.
 assert.match(syncSource, /#user-input-login-id:visible/);
 assert.match(syncSource, /input\[name="password"\]:visible/);
 assert.match(syncSource, /#kc-login:visible/);
+assert.match(syncSource, /process\.env\.PLAYWRIGHT_MODULE_URL \|\| 'playwright'/);
+assert.match(syncSource, /process\.env\.PLAYWRIGHT_CHROMIUM_EXECUTABLE/);
 assert.match(syncSource, /url\.pathname === '\/dashboard'/);
 assert.match(syncSource, /Date\.now\(\) \+ 20 \* 60 \* 1000/);
-assert.match(syncSource, /getByText\(ROOT_FBO_ID, \{exact: false\}\)\.waitFor/);
+assert.match(syncSource, /ROOT_FBO_ID\.replaceAll\('-', ''\)/);
 assert.match(syncSource, /sessionStorage\.setItem\('countries', JSON\.stringify\(countries\)\)/);
 assert.match(syncSource, /operatingCompany === 'HRV'/);
 assert.match(syncSource, /countrySelect\?\.options/);
 assert.doesNotMatch(syncSource, /profileCodes\.includes\('HRV'\)/);
 assert.match(syncSource, /countries = \[\]/);
 assert.match(syncSource, /countryCount: countries\.length/);
-assert.match(syncSource, /selectOption\(\{value: 'HRV'\}\)/);
-assert.match(syncSource, /label => label\.click\(\)/);
 assert.match(syncSource, /Suppress 0CC=Off/);
 assert.match(syncSource, /attempt <= 2/);
 assert.match(syncSource, /Downline nije međunarodni izvještaj/);
-assert.match(syncSource, /excel-download'\)\.click\(\{force: true\}\)/);
+assert.match(syncSource, /generate\/rewire-downline-excel-query/);
+assert.match(syncSource, /report\/Downline\/report-extract-queue/);
 assert.match(syncSource, /Downline izvoz je poslan u FLP360 red za generiranje/);
 assert.match(syncSource, /Sinkronizacija je dovršena uz upozorenje/);
 assert.ok(syncSource.indexOf('await requestDownline(page)') < syncSource.indexOf('await downloadFocusGroup(page)'));
-assert.ok(syncSource.indexOf('await downloadFourCcActive(page)') < syncSource.indexOf('await downloadDownline(page, initialDownlineMessage)'));
+assert.ok(syncSource.indexOf('await downloadFourCcActive(page)') < syncSource.indexOf('await downloadDownline(page, downlineRequest)'));
 assert.match(syncSource, /Djelomična sinkronizacija/);
 
 if(downlinePath) {

@@ -10735,6 +10735,10 @@ class AiPlan extends Controller {
             redirect('account-plan');
         }
 
+        if(empty($_POST) && !isset($_GET['app_review_status'])) {
+            \Altum\Logger::users($this->user->user_id, 'ai_plan.viewed');
+        }
+
         $is_app_review_page = (\Altum\Router::$controller_key ?? '') === 'ai-app-review';
         $self_route = 'ai-plan';
 

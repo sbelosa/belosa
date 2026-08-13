@@ -391,7 +391,7 @@ if(is_logged_in()) {
                 <?php /* Custom code: FC-2026-08-13: Self-only collaborator and admin 4 Core workspace */ ?>
                 <li class="<?= \Altum\Router::$controller == 'ForeverBusiness' ? 'active' : null ?> app-sidebar-fcc-item">
                     <a href="<?= url('forever-business') ?>">
-                        <i class="fas fa-fw fa-sm fa-chart-line mr-2"></i> MOJ NAPREDAK
+                        <i class="fas fa-fw fa-sm fa-chart-line mr-2"></i> MOJ FOREVER
                     </a>
                 </li>
                 <?php /* /Custom code: FC-2026-08-13 */ ?>
