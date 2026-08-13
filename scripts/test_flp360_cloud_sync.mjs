@@ -40,6 +40,7 @@ assert.match(syncSource, /getByText\(ROOT_FBO_ID, \{exact: false\}\)\.waitFor/);
 assert.match(syncSource, /sessionStorage\.setItem\('countries', JSON\.stringify\(countries\)\)/);
 assert.match(syncSource, /operatingCompany === 'HRV'/);
 assert.match(syncSource, /countrySelect\?\.options/);
+assert.doesNotMatch(syncSource, /profileCodes\.includes\('HRV'\)/);
 assert.match(syncSource, /selectOption\(\{value: 'HRV'\}\)/);
 assert.match(syncSource, /label => label\.click\(\)/);
 assert.match(syncSource, /Suppress 0CC=Off/);

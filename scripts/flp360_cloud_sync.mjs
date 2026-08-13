@@ -250,9 +250,6 @@ async function prepareFourCcCountryState(page) {
         const userInfoText = localStorage.getItem('appflp360.userInfo') || localStorage.getItem('userInfo') || '{}';
         const userInfo = parseJson(userInfoText, {});
         const profileCodes = [userInfo.preferredCountryCode, userInfo.homeCountryCode].filter(Boolean);
-        if(profileCodes.length && !profileCodes.includes('HRV')) {
-            return {profileCodes, repaired: false, valid: false};
-        }
 
         const countriesText = sessionStorage.getItem('countries') || '[]';
         let countries = parseJson(countriesText, []);
@@ -284,7 +281,7 @@ async function prepareFourCcCountryState(page) {
     });
 
     if(!countryState.valid) {
-        throw new Error('FLP360 profil ili popis država nije moguće sigurno uskladiti s Hrvatskom.');
+        throw new Error('FLP360 popis država nije moguće pripremiti za hrvatski međunarodni izvještaj.');
     }
 }
 
