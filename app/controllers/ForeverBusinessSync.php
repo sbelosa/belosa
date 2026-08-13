@@ -67,6 +67,22 @@ class ForeverBusinessSync extends Controller {
         $period = $this->report_period();
         $metric = mb_strtolower(trim((string) ($_POST['metric'] ?? 'report')));
 
+        if($metric === 'status') {
+            $dashboard = forever_business_get_dashboard(1, true, self::ROOT_FBO_ID, $period);
+            $summary = $dashboard['summary'];
+            foreach(['personal_cc', 'average_personal_cc', 'goal_cc', 'goal_current_cc', 'goal_gap_cc', 'closed_6m_average_cc', 'latest_closed_cc'] as $key) {
+                if(isset($summary[$key])) $summary[$key] = round((float) $summary[$key], 3);
+            }
+            $this->output([
+                'status' => 'success',
+                'metric' => 'status',
+                'period' => $dashboard['period'],
+                'summary' => $summary,
+                'official_four_core' => $dashboard['official_four_core'],
+                'last_sync_at' => $dashboard['last_sync_at'],
+            ]);
+        }
+
         if($metric === 'total_cc') {
             $total_cc = $this->non_negative_number('total_cc');
             $is_closed = filter_var($_POST['is_closed'] ?? false, FILTER_VALIDATE_BOOLEAN);
@@ -75,7 +91,7 @@ class ForeverBusinessSync extends Controller {
                 'status' => 'success',
                 'metric' => 'total_cc',
                 'period' => $period,
-                'total_cc' => $total_cc,
+                'total_cc' => round($total_cc, 3),
                 'is_closed' => $is_closed,
                 'synced_at' => get_date(),
             ]);
@@ -122,12 +138,14 @@ class ForeverBusinessSync extends Controller {
         try {
             $report = forever_business_parse_report((string) $file['tmp_name'], $original_name, self::ROOT_FBO_ID, 'Stjepan Beloša', $period);
             $result = forever_business_import_report($report, hash_file('sha256', (string) $file['tmp_name']), 1);
+            $summary = $result['summary'] ?? [];
+            if(isset($summary['latest_personal_cc'])) $summary['latest_personal_cc'] = round((float) $summary['latest_personal_cc'], 3);
             $this->output([
                 'status' => 'success',
                 'synced_at' => get_date(),
                 'duplicate' => (bool) ($result['duplicate'] ?? false),
                 'import_id' => (int) ($result['import_id'] ?? 0),
-                'summary' => $result['summary'] ?? [],
+                'summary' => $summary,
             ]);
         } catch(\Throwable $exception) {
             $this->fail('import_failed', $exception->getMessage(), 422);
