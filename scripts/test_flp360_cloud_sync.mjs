@@ -44,6 +44,8 @@ assert.match(syncSource, /label => label\.click\(\)/);
 assert.match(syncSource, /Suppress 0CC=Off/);
 assert.match(syncSource, /attempt <= 2/);
 assert.match(syncSource, /Downline nije međunarodni izvještaj/);
+assert.match(syncSource, /loader-overlay.*timeout: 180000/s);
+assert.match(syncSource, /Sinkronizacija je dovršena uz upozorenje/);
 assert.ok(syncSource.indexOf('await requestDownline(page)') < syncSource.indexOf('await downloadFocusGroup(page)'));
 assert.ok(syncSource.indexOf('await downloadFourCcActive(page)') < syncSource.indexOf('await downloadDownline(page, initialDownlineMessage)'));
 assert.match(syncSource, /Djelomična sinkronizacija/);

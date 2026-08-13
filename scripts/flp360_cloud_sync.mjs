@@ -221,7 +221,8 @@ async function requestDownline(page) {
 
     const initialMessage = readyReportMessage(await page.locator('body').innerText());
     await page.getByRole('button', {name: 'Run Report', exact: true}).click();
-    await page.getByText(ROOT_FBO_ID, {exact: true}).waitFor({state: 'visible', timeout: 120000});
+    await page.waitForTimeout(1000);
+    await page.locator('.loader-overlay').last().waitFor({state: 'hidden', timeout: 180000});
     await page.locator('a.excel-download').click();
     const dialog = page.getByRole('dialog');
     await dialog.waitFor({state: 'visible', timeout: 15000});
@@ -402,6 +403,7 @@ async function main() {
         /* Request the slow asynchronous Downline first, then synchronize the two
          * immediately available reports while FLP360 prepares it in the background. */
         const failures = [];
+        const warnings = [];
         let initialDownlineMessage = '';
         let downlineRequested = false;
         try {
@@ -417,7 +419,7 @@ async function main() {
             const focusResult = await uploadReport(focusPath, period, syncUrl, syncKey);
             console.log(`Focus Group: ${focusValidation.bytes} bajtova, duplicate=${Boolean(focusResult.duplicate)}.`);
         } catch(error) {
-            failures.push(`Focus Group: ${error.message}`);
+            warnings.push(`Focus Group: ${error.message}`);
         }
 
         try {
@@ -442,6 +444,10 @@ async function main() {
 
         if(failures.length) {
             throw new Error(`Djelomična sinkronizacija: ${failures.join(' | ')}`);
+        }
+
+        if(warnings.length) {
+            console.warn(`Sinkronizacija je dovršena uz upozorenje: ${warnings.join(' | ')}`);
         }
 
         console.log(`FLP360 → FCC sinkronizacija za ${period} završena je uspješno.`);
