@@ -100,7 +100,7 @@ async function login(page, username, password) {
     await page.getByText(ROOT_FBO_ID, {exact: true}).waitFor({state: 'visible', timeout: 120000});
 }
 
-async function downloadDownline(page) {
+async function requestDownline(page) {
     await page.goto(`${FLP360_BASE_URL}/downline`, {waitUntil: 'domcontentloaded', timeout: 60000});
     await page.locator('a.excel-download').waitFor({state: 'visible', timeout: 60000});
     await page.locator('a.download-link').waitFor({state: 'visible', timeout: 5000}).catch(() => {});
@@ -113,7 +113,14 @@ async function downloadDownline(page) {
     if(!dialogText.includes(ROOT_FBO_ID)) throw new Error('Downline izvoz nije vezan uz očekivani glavni Forever ID.');
     await dialog.getByRole('button', {name: 'Download Report', exact: true}).click();
 
-    const deadline = Date.now() + 10 * 60 * 1000;
+    return initialMessage;
+}
+
+async function downloadDownline(page, initialMessage) {
+    await page.goto(`${FLP360_BASE_URL}/downline`, {waitUntil: 'domcontentloaded', timeout: 60000});
+    await page.locator('a.excel-download').waitFor({state: 'visible', timeout: 60000});
+
+    const deadline = Date.now() + 20 * 60 * 1000;
     let currentMessage = '';
     while(Date.now() < deadline) {
         await page.waitForTimeout(15000);
@@ -122,7 +129,7 @@ async function downloadDownline(page) {
         currentMessage = readyReportMessage(await page.locator('body').innerText());
         if(currentMessage && currentMessage !== initialMessage) break;
     }
-    if(!currentMessage || currentMessage === initialMessage) throw new Error('Svježi Downline izvještaj nije generiran unutar 10 minuta.');
+    if(!currentMessage || currentMessage === initialMessage) throw new Error('Svježi Downline izvještaj nije generiran unutar 20 minuta.');
 
     const downloadPromise = page.waitForEvent('download', {timeout: 60000});
     await page.locator('a.download-link').click();
@@ -195,10 +202,9 @@ async function main() {
     try {
         await login(page, username, password);
 
-        const downlinePath = await downloadDownline(page);
-        const downlineValidation = await validateDownline(downlinePath);
-        const downlineResult = await uploadReport(downlinePath, period, syncUrl, syncKey);
-        console.log(`Downline: ${downlineValidation.rows} redaka (${downlineValidation.hrvRows} HRV), duplicate=${Boolean(downlineResult.duplicate)}.`);
+        /* Request the slow asynchronous Downline first, then synchronize the two
+         * immediately available reports while FLP360 prepares it in the background. */
+        const initialDownlineMessage = await requestDownline(page);
 
         const focusPath = await downloadFocusGroup(page);
         const focusValidation = await validateXlsx(focusPath, 'Focus Group');
@@ -209,6 +215,11 @@ async function main() {
         const fourCcValidation = await validateXlsx(fourCcPath, '4 CC Active');
         const fourCcResult = await uploadReport(fourCcPath, period, syncUrl, syncKey);
         console.log(`4 CC Active: ${fourCcValidation.bytes} bajtova, duplicate=${Boolean(fourCcResult.duplicate)}.`);
+
+        const downlinePath = await downloadDownline(page, initialDownlineMessage);
+        const downlineValidation = await validateDownline(downlinePath);
+        const downlineResult = await uploadReport(downlinePath, period, syncUrl, syncKey);
+        console.log(`Downline: ${downlineValidation.rows} redaka (${downlineValidation.hrvRows} HRV), duplicate=${Boolean(downlineResult.duplicate)}.`);
 
         console.log(`FLP360 → FCC sinkronizacija za ${period} završena je uspješno.`);
     } finally {

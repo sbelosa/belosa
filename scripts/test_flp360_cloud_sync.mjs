@@ -23,6 +23,9 @@ assert.match(syncSource, /#user-input-login-id:visible/);
 assert.match(syncSource, /input\[name="password"\]:visible/);
 assert.match(syncSource, /#kc-login:visible/);
 assert.match(syncSource, /url\.pathname === '\/dashboard'/);
+assert.match(syncSource, /Date\.now\(\) \+ 20 \* 60 \* 1000/);
+assert.ok(syncSource.indexOf('await requestDownline(page)') < syncSource.indexOf('await downloadFocusGroup(page)'));
+assert.ok(syncSource.indexOf('await downloadFourCcActive(page)') < syncSource.indexOf('await downloadDownline(page, initialDownlineMessage)'));
 
 if(downlinePath) {
     const result = await validateDownline(downlinePath);
