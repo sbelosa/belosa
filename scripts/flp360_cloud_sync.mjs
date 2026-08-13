@@ -183,6 +183,9 @@ async function login(page, username, password) {
 
 async function requestDownline(page) {
     await page.goto(`${FLP360_BASE_URL}/downline`, {waitUntil: 'domcontentloaded', timeout: 60000});
+    await page.locator('select').first().waitFor({state: 'visible', timeout: 60000});
+    await prepareFourCcCountryState(page);
+    await page.reload({waitUntil: 'domcontentloaded', timeout: 60000});
     await page.locator('a.excel-download').waitFor({state: 'visible', timeout: 60000});
     await page.locator('a.download-link').waitFor({state: 'visible', timeout: 5000}).catch(() => {});
 
@@ -370,8 +373,6 @@ async function main() {
 
     try {
         await login(page, username, password);
-
-        await prepareFourCcCountryState(page);
 
         for(const snapshot of officialFourCoreSnapshots()) {
             await uploadFourCoreSnapshot(snapshot, syncUrl, syncKey);
