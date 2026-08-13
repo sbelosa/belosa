@@ -209,8 +209,15 @@ async function requestDownline(page) {
     await filters.nth(1).selectOption({label: 'All Levels'});
     await page.locator('.loader-overlay').last().waitFor({state: 'hidden', timeout: 120000}).catch(() => {});
     const suppressZeroCc = page.getByRole('checkbox').first();
-    if(await suppressZeroCc.isChecked()) await suppressZeroCc.uncheck({force: true});
+    if(await suppressZeroCc.isChecked()) {
+        const checkboxId = await suppressZeroCc.getAttribute('id');
+        if(!checkboxId) throw new Error('Downline prekidač Suppress 0CC nema očekivani identifikator.');
+        await page.locator(`label[for="${checkboxId}"]`).evaluate(label => label.click());
+        await page.waitForTimeout(300);
+    }
+    if(await suppressZeroCc.isChecked()) throw new Error('Downline prekidač Suppress 0CC nije moguće isključiti.');
     await page.locator('.loader-overlay').last().waitFor({state: 'hidden', timeout: 120000}).catch(() => {});
+    console.log('Downline filtri: Croatia (HRV), All Levels, Suppress 0CC=Off.');
 
     const initialMessage = readyReportMessage(await page.locator('body').innerText());
     await page.getByRole('button', {name: 'Run Report', exact: true}).click();
@@ -280,12 +287,20 @@ async function downloadDownline(page, initialMessage) {
 }
 
 async function downloadFocusGroup(page) {
-    await page.goto(`${FLP360_BASE_URL}/focus-group`, {waitUntil: 'domcontentloaded', timeout: 60000});
-    const downloadLink = page.getByText('Download Data to Excel', {exact: true});
-    await downloadLink.waitFor({state: 'visible', timeout: 120000});
-    const downloadPromise = page.waitForEvent('download', {timeout: 60000});
-    await downloadLink.click();
-    return saveDownload(await downloadPromise, `flp360-focus-group-${zagrebPeriod()}.xlsx`);
+    let lastError;
+    for(let attempt = 1; attempt <= 2; attempt++) {
+        try {
+            await page.goto(`${FLP360_BASE_URL}/focus-group`, {waitUntil: 'domcontentloaded', timeout: 60000});
+            const downloadLink = page.getByText('Download Data to Excel', {exact: true});
+            await downloadLink.waitFor({state: 'visible', timeout: 120000});
+            const downloadPromise = page.waitForEvent('download', {timeout: 75000});
+            await downloadLink.click();
+            return saveDownload(await downloadPromise, `flp360-focus-group-${zagrebPeriod()}.xlsx`);
+        } catch(error) {
+            lastError = error;
+        }
+    }
+    throw lastError;
 }
 
 async function downloadFourCcActive(page) {
