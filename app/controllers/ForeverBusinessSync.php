@@ -143,6 +143,9 @@ class ForeverBusinessSync extends Controller {
                 throw new \RuntimeException('Focus Group ne sadrži očekivani glavni Forever ID.');
             }
             $result = forever_business_import_report($report, hash_file('sha256', (string) $file['tmp_name']), 1);
+            /* Only exact active FCC-user/FBO matches receive a manager scope.
+               Running this after duplicates also repairs access without altering CC data. */
+            $manager_accesses = forever_business_grant_exact_manager_accesses(1);
             $summary = $result['summary'] ?? [];
             if(isset($summary['latest_personal_cc'])) $summary['latest_personal_cc'] = round((float) $summary['latest_personal_cc'], 3);
             $this->output([
@@ -150,6 +153,7 @@ class ForeverBusinessSync extends Controller {
                 'synced_at' => get_date(),
                 'duplicate' => (bool) ($result['duplicate'] ?? false),
                 'import_id' => (int) ($result['import_id'] ?? 0),
+                'manager_accesses_confirmed' => $manager_accesses,
                 'summary' => $summary,
             ]);
         } catch(\Throwable $exception) {
