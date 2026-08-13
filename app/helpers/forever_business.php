@@ -1076,6 +1076,88 @@ function forever_business_get_verified_progress(array $member): array {
     ];
 }
 
+/* Custom code: FC-2026-08-14: Self-only 4 CC notice for the main dashboard */
+function forever_business_get_user_activity_notice(int $user_id): array {
+    forever_business_ensure_tables();
+
+    $empty_notice = [
+        'status' => 'unavailable',
+        'has_data' => false,
+        'period' => null,
+        'is_active' => false,
+        'personal_cc' => null,
+        'total_active_cc' => null,
+        'personal_gap' => null,
+        'regional_gap' => null,
+        'progress' => 0,
+        'progress_basis' => 'activity',
+        'has_regional_data' => false,
+    ];
+
+    if($user_id <= 0) return $empty_notice;
+
+    /* The Forever ID is always resolved from the signed-in account. No request
+     * parameter or team-access record can expand this query to another person. */
+    $user = db()->where('user_id', $user_id)->getOne('users', ['preferences']);
+    $fbo_id = $user ? forever_business_extract_user_fbo_id($user->preferences ?? null) : '';
+    if($fbo_id === '') return $empty_notice;
+
+    $period = forever_business_get_periods()[0] ?? null;
+    if(!$period) return $empty_notice;
+
+    $member = db()->join('forever_business_metrics metric', "metric.fbo_id = member.fbo_id AND metric.period_month = '{$period}'", 'LEFT')
+        ->where('member.fbo_id', $fbo_id)
+        ->getOne('forever_business_members member', [
+            'member.fbo_id',
+            'member.title',
+            'metric.personal_cc',
+            'metric.total_cc',
+            'metric.total_active_cc',
+            'metric.non_manager_cc',
+            'metric.leadership_cc',
+            'metric.is_4cc_active',
+        ]);
+
+    if(!$member) {
+        $empty_notice['period'] = $period;
+        return $empty_notice;
+    }
+
+    $progress = forever_business_get_verified_progress((array) $member);
+    $has_personal_data = $progress['personal_cc'] !== null;
+    $has_regional_data = $progress['total_active_cc'] !== null;
+    if(!$has_personal_data && !$has_regional_data) {
+        $empty_notice['period'] = $period;
+        return $empty_notice;
+    }
+
+    $status = $progress['is_officially_active']
+        ? 'active'
+        : ($has_regional_data && $progress['meets_activity_formula'] ? 'pending' : 'inactive');
+
+    $progress_basis = $has_regional_data ? 'activity' : 'personal';
+    $notice_progress = $progress['is_officially_active']
+        ? 100
+        : ($has_regional_data
+            ? min((float) $progress['personal_progress'], (float) $progress['regional_progress'])
+            : (float) $progress['personal_progress']);
+
+    return [
+        'status' => $status,
+        'has_data' => true,
+        'period' => $period,
+        'is_active' => (bool) $progress['is_officially_active'],
+        'personal_cc' => $progress['personal_cc'],
+        'total_active_cc' => $progress['total_active_cc'],
+        'personal_gap' => $progress['personal_gap'],
+        'regional_gap' => $progress['regional_gap'],
+        'progress' => $notice_progress,
+        'progress_basis' => $progress_basis,
+        'has_regional_data' => $has_regional_data,
+    ];
+}
+/* /Custom code: FC-2026-08-14 */
+
 function forever_business_get_action(array $member, ?array $metric, int $completed_total = 0): array {
     $progress = $member['verified_progress'] ?? forever_business_get_verified_progress($member);
     $is_manager = ($progress['rank']['mode'] ?? '') === 'manager';

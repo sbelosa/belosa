@@ -2,10 +2,168 @@
 
 <?php
 $dashboard_forever_products_url = fc_get_forever_products_blog_category_url(\Altum\Language::$name);
+$dashboard_forever_activity = (array) ($data->forever_activity_notice ?? []);
+$dashboard_forever_activity_status = $dashboard_forever_activity['status'] ?? 'unavailable';
+$dashboard_format_cc = static function($value): string {
+    $formatted = number_format((float) $value, 3, ',', '.');
+    return rtrim(rtrim($formatted, '0'), ',');
+};
 ?>
 
 <?php ob_start() ?>
 <style>
+    .dashboard-four-cc-notice {
+        --notice-accent: #f6c900;
+        --notice-accent-rgb: 246, 201, 0;
+        position: relative;
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr) minmax(13rem, .46fr) auto;
+        align-items: center;
+        gap: 1.15rem;
+        overflow: hidden;
+        margin-bottom: 1rem;
+        padding: 1.05rem 1.15rem;
+        border: 1px solid rgba(var(--notice-accent-rgb), .26);
+        border-radius: 1.25rem;
+        color: #f8fbff !important;
+        text-decoration: none !important;
+        background:
+            radial-gradient(circle at 88% 0%, rgba(var(--notice-accent-rgb), .13), transparent 30%),
+            linear-gradient(135deg, rgba(var(--notice-accent-rgb), .085), rgba(10, 17, 30, .96) 48%);
+        box-shadow: 0 18px 38px rgba(2, 8, 23, .14), inset 0 1px 0 rgba(255,255,255,.04);
+        transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+    }
+
+    .dashboard-four-cc-notice:hover,
+    .dashboard-four-cc-notice:focus {
+        color: #fff !important;
+        transform: translateY(-1px);
+        border-color: rgba(var(--notice-accent-rgb), .43);
+        box-shadow: 0 22px 44px rgba(2, 8, 23, .2), 0 0 0 1px rgba(var(--notice-accent-rgb), .08);
+        outline: none;
+    }
+
+    .dashboard-four-cc-notice--active {
+        --notice-accent: #49e3cf;
+        --notice-accent-rgb: 73, 227, 207;
+    }
+
+    .dashboard-four-cc-notice--pending {
+        --notice-accent: #5bb6ff;
+        --notice-accent-rgb: 91, 182, 255;
+    }
+
+    .dashboard-four-cc-notice--unavailable {
+        --notice-accent: #94a3b8;
+        --notice-accent-rgb: 148, 163, 184;
+    }
+
+    .dashboard-four-cc-notice-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 3.2rem;
+        height: 3.2rem;
+        flex-shrink: 0;
+        border-radius: 1rem;
+        color: var(--notice-accent);
+        background: rgba(var(--notice-accent-rgb), .12);
+        border: 1px solid rgba(var(--notice-accent-rgb), .18);
+        font-size: 1.18rem;
+    }
+
+    .dashboard-four-cc-notice-copy {
+        min-width: 0;
+    }
+
+    .dashboard-four-cc-notice-kicker {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: .5rem;
+        margin-bottom: .25rem;
+        color: var(--notice-accent);
+        font-size: .75rem;
+        font-weight: 800;
+        letter-spacing: .055em;
+        text-transform: uppercase;
+    }
+
+    .dashboard-four-cc-notice-period {
+        padding: .23rem .48rem;
+        border-radius: 999px;
+        color: rgba(226, 232, 240, .86);
+        background: rgba(255,255,255,.055);
+        font-size: .68rem;
+        letter-spacing: .03em;
+    }
+
+    .dashboard-four-cc-notice-title {
+        margin: 0 0 .28rem;
+        color: #fff;
+        font-size: 1.08rem;
+        font-weight: 800;
+        line-height: 1.25;
+    }
+
+    .dashboard-four-cc-notice-text {
+        margin: 0;
+        color: rgba(203, 213, 225, .84);
+        font-size: .88rem;
+        line-height: 1.5;
+    }
+
+    .dashboard-four-cc-notice-progress {
+        min-width: 0;
+    }
+
+    .dashboard-four-cc-notice-progress-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: .75rem;
+        margin-bottom: .48rem;
+        color: rgba(226, 232, 240, .82);
+        font-size: .76rem;
+        font-weight: 700;
+    }
+
+    .dashboard-four-cc-notice-progress-top strong {
+        color: #fff;
+        white-space: nowrap;
+    }
+
+    .dashboard-four-cc-notice-track {
+        height: .55rem;
+        overflow: hidden;
+        border-radius: 999px;
+        background: rgba(148, 163, 184, .17);
+    }
+
+    .dashboard-four-cc-notice-fill {
+        height: 100%;
+        border-radius: inherit;
+        background: linear-gradient(90deg, rgba(var(--notice-accent-rgb), .72), var(--notice-accent));
+        box-shadow: 0 0 14px rgba(var(--notice-accent-rgb), .24);
+    }
+
+    .dashboard-four-cc-notice-arrow {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 2.55rem;
+        height: 2.55rem;
+        border-radius: .85rem;
+        color: var(--notice-accent);
+        background: rgba(var(--notice-accent-rgb), .1);
+        transition: transform .18s ease;
+    }
+
+    .dashboard-four-cc-notice:hover .dashboard-four-cc-notice-arrow,
+    .dashboard-four-cc-notice:focus .dashboard-four-cc-notice-arrow {
+        transform: translateX(3px);
+    }
+
     .dashboard-funnel-card {
         position: relative;
         overflow: hidden;
@@ -811,6 +969,22 @@ $dashboard_forever_products_url = fc_get_forever_products_blog_category_url(\Alt
     }
 
     @media (max-width: 767.98px) {
+        .dashboard-four-cc-notice {
+            grid-template-columns: auto minmax(0, 1fr) auto;
+            gap: .85rem;
+            padding: .95rem;
+        }
+
+        .dashboard-four-cc-notice-progress {
+            grid-column: 1 / -1;
+            grid-row: 2;
+        }
+
+        .dashboard-four-cc-notice-icon {
+            width: 2.85rem;
+            height: 2.85rem;
+        }
+
         .dashboard-modern-card .card-body,
         .dashboard-funnel-card .card-body {
             padding: .95rem 1rem;
@@ -1562,6 +1736,71 @@ $dashboard_forever_products_url = fc_get_forever_products_blog_category_url(\Alt
         </div>
         <!-- /Custom code: FC-2026-02-24 -->
     <?php endif ?>
+
+    <?php /* Custom code: FC-2026-08-14: verified self-only 4 CC dashboard notice */ ?>
+    <?php
+    $activity_period_label = !empty($dashboard_forever_activity['period'])
+        ? (new DateTimeImmutable($dashboard_forever_activity['period']))->format('m/Y')
+        : null;
+    $activity_personal_gap = (float) ($dashboard_forever_activity['personal_gap'] ?? 0);
+    $activity_has_regional_data = !empty($dashboard_forever_activity['has_regional_data']);
+    $activity_regional_gap = $activity_has_regional_data ? (float) ($dashboard_forever_activity['regional_gap'] ?? 0) : null;
+    $activity_progress = max(0, min(100, (float) ($dashboard_forever_activity['progress'] ?? 0)));
+    $activity_progress_label = ($dashboard_forever_activity['progress_basis'] ?? 'activity') === 'personal'
+        ? l('dashboard.four_cc.personal_progress_label')
+        : l('dashboard.four_cc.progress_label');
+    $activity_notice_class = 'dashboard-four-cc-notice--' . $dashboard_forever_activity_status;
+
+    if($dashboard_forever_activity_status === 'active') {
+        $activity_title = l('dashboard.four_cc.active_title');
+        $activity_text = l('dashboard.four_cc.active_text');
+        $activity_icon = 'fa-check';
+    } elseif($dashboard_forever_activity_status === 'pending') {
+        $activity_title = l('dashboard.four_cc.pending_title');
+        $activity_text = l('dashboard.four_cc.pending_text');
+        $activity_icon = 'fa-clock';
+    } elseif($dashboard_forever_activity_status === 'inactive') {
+        if(!$activity_has_regional_data && $activity_personal_gap > 0) {
+            $activity_title = sprintf(l('dashboard.four_cc.missing_personal_condition_title'), $dashboard_format_cc($activity_personal_gap));
+        } elseif(!$activity_has_regional_data) {
+            $activity_title = l('dashboard.four_cc.unconfirmed_title');
+        } elseif($activity_regional_gap > 0 && $activity_personal_gap > 0) {
+            $activity_title = sprintf(l('dashboard.four_cc.missing_both_title'), $dashboard_format_cc($activity_regional_gap), $dashboard_format_cc($activity_personal_gap));
+        } elseif($activity_regional_gap > 0) {
+            $activity_title = sprintf(l('dashboard.four_cc.missing_total_title'), $dashboard_format_cc($activity_regional_gap));
+        } else {
+            $activity_title = sprintf(l('dashboard.four_cc.missing_personal_title'), $dashboard_format_cc($activity_personal_gap));
+        }
+        $activity_text = $activity_has_regional_data
+            ? l('dashboard.four_cc.inactive_text')
+            : l('dashboard.four_cc.inactive_partial_text');
+        $activity_icon = 'fa-bolt';
+    } else {
+        $activity_title = l('dashboard.four_cc.unavailable_title');
+        $activity_text = l('dashboard.four_cc.unavailable_text');
+        $activity_icon = 'fa-chart-line';
+    }
+    ?>
+    <a href="<?= url('forever-business') ?>" class="dashboard-four-cc-notice <?= $activity_notice_class ?>" aria-label="<?= l('dashboard.four_cc.open_aria') ?>">
+        <span class="dashboard-four-cc-notice-icon" aria-hidden="true"><i class="fas <?= $activity_icon ?>"></i></span>
+        <span class="dashboard-four-cc-notice-copy">
+            <span class="dashboard-four-cc-notice-kicker">
+                <?= l('dashboard.four_cc.kicker') ?>
+                <?php if($activity_period_label): ?><span class="dashboard-four-cc-notice-period"><?= $activity_period_label ?></span><?php endif ?>
+            </span>
+            <span class="dashboard-four-cc-notice-title"><?= $activity_title ?></span>
+            <span class="dashboard-four-cc-notice-text"><?= $activity_text ?></span>
+        </span>
+        <span class="dashboard-four-cc-notice-progress" aria-hidden="true">
+            <span class="dashboard-four-cc-notice-progress-top">
+                <span><?= $activity_progress_label ?></span>
+                <strong><?= number_format($activity_progress, 0, ',', '.') ?>%</strong>
+            </span>
+            <span class="dashboard-four-cc-notice-track"><span class="dashboard-four-cc-notice-fill" style="width: <?= $activity_progress ?>%"></span></span>
+        </span>
+        <span class="dashboard-four-cc-notice-arrow" aria-hidden="true"><i class="fas fa-arrow-right"></i></span>
+    </a>
+    <?php /* /Custom code: FC-2026-08-14 */ ?>
 
     <div class="mb-5 dashboard-growth-shell">
         <div class="dashboard-page-guide-rail">

@@ -6,6 +6,8 @@ $helper = file_get_contents($root . '/app/helpers/forever_business.php');
 $admin = file_get_contents($root . '/app/controllers/admin/AdminForeverBusiness.php');
 $user = file_get_contents($root . '/app/controllers/ForeverBusiness.php');
 $sync = file_get_contents($root . '/app/controllers/ForeverBusinessSync.php');
+$dashboard_controller = file_get_contents($root . '/app/controllers/Dashboard.php');
+$dashboard_view = file_get_contents($root . '/themes/altum/views/dashboard/index.php');
 $view = file_get_contents($root . '/themes/altum/views/forever-business/index.php');
 
 $assertions = [
@@ -26,6 +28,8 @@ $assertions = [
     '4 Core page adoption is measured from launch' => str_contains($helper, 'forever_business_page_visits') && str_contains($user, 'forever_business_record_page_visit'),
     'self-only privacy audit exposes active team-access count' => str_contains($helper, 'active_team_access_records'),
     'legacy team-access grants are disabled in self-only mode' => str_contains($helper, 'Self-only privacy mode') && str_contains($helper, 'forever_business_enforce_self_only_access'),
+    'dashboard 4 CC notice resolves only the signed-in user' => str_contains($dashboard_controller, 'forever_business_get_user_activity_notice((int) $this->user->user_id)') && str_contains($helper, 'No request') && str_contains($helper, "where('member.fbo_id', \$fbo_id)"),
+    'dashboard 4 CC notice opens the self-only Forever page' => str_contains($dashboard_view, "url('forever-business')") && str_contains($dashboard_view, 'dashboard-four-cc-notice'),
     'machine sync compares only a SHA-256 secret hash' => str_contains($sync, 'SYNC_KEY_SHA256') && str_contains($sync, 'hash(\'sha256\', $key)'),
     'machine sync accepts only bounded CSV and XLSX uploads' => str_contains($sync, 'MAX_FILE_BYTES') && str_contains($sync, "['csv', 'xlsx']"),
     'machine sync is pinned to the admin root FBO' => str_contains($sync, "ROOT_FBO_ID = '360000760944'"),

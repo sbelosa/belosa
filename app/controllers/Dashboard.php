@@ -169,6 +169,10 @@ class Dashboard extends Controller {
             || !empty($preferences->fcc_dashboard_onboarding_seen);
         /* /Custom code: FC-2026-04-06 */
 
+        /* Custom code: FC-2026-08-14: verified self-only 4 CC dashboard notice */
+        $forever_activity_notice = forever_business_get_user_activity_notice((int) $this->user->user_id);
+        /* /Custom code: FC-2026-08-14 */
+
         /* Prepare the filtering system */
         $filters = (new \Altum\Filters(['is_enabled', 'type'], ['url', 'location_url'], ['link_id', 'last_datetime', 'datetime', 'clicks', 'url']));
         $filters->set_default_order_by($this->user->preferences->links_default_order_by, $this->user->preferences->default_order_type ?? settings()->main->default_order_type);
@@ -258,6 +262,9 @@ class Dashboard extends Controller {
             'dashboard_onboarding_seen' => $dashboard_onboarding_seen,
             'should_auto_open_dashboard_onboarding' => !$dashboard_onboarding_seen,
             /* /Custom code: FC-2026-04-06 */
+            /* Custom code: FC-2026-08-14: verified self-only 4 CC dashboard notice */
+            'forever_activity_notice' => $forever_activity_notice,
+            /* /Custom code: FC-2026-08-14 */
         ];
 
         $view = new \Altum\View('dashboard/index', (array) $this);
