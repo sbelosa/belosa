@@ -22,6 +22,7 @@ assert.equal(readyReportMessage('Your report is being generated.'), '');
 assert.match(syncSource, /#user-input-login-id:visible/);
 assert.match(syncSource, /input\[name="password"\]:visible/);
 assert.match(syncSource, /#kc-login:visible/);
+assert.match(syncSource, /url\.pathname === '\/dashboard'/);
 
 if(downlinePath) {
     const result = await validateDownline(downlinePath);

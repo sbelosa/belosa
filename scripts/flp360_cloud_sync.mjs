@@ -89,13 +89,15 @@ async function login(page, username, password) {
 
         const submit = page.locator('#kc-login:visible, button[type="submit"]:visible, input[type="submit"]:visible').first();
         await Promise.all([
-            page.waitForURL(url => url.origin === FLP360_BASE_URL && !url.pathname.includes('/login'), {timeout: 60000}),
+            page.waitForURL(url => url.origin === FLP360_BASE_URL && url.pathname === '/dashboard', {timeout: 120000}),
             submit.click(),
         ]);
     }
 
-    await page.goto(`${FLP360_BASE_URL}/dashboard`, {waitUntil: 'domcontentloaded', timeout: 60000});
-    await page.getByText(ROOT_FBO_ID, {exact: true}).waitFor({state: 'visible', timeout: 60000});
+    if(new URL(page.url()).pathname !== '/dashboard') {
+        await page.goto(`${FLP360_BASE_URL}/dashboard`, {waitUntil: 'domcontentloaded', timeout: 60000});
+    }
+    await page.getByText(ROOT_FBO_ID, {exact: true}).waitFor({state: 'visible', timeout: 120000});
 }
 
 async function downloadDownline(page) {
