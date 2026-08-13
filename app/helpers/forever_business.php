@@ -1345,6 +1345,19 @@ function forever_business_get_usage_summary(): array {
         FROM users WHERE type = 0");
     $accounts = $accounts_result ? $accounts_result->fetch_assoc() : [];
 
+    $profile_accounts_result = database()->query("SELECT
+        COUNT(*) AS accounts_with_valid_fbo_id,
+        SUM(u.status = 1) AS enabled_with_valid_fbo_id,
+        SUM(m.fbo_id IS NOT NULL) AS accounts_with_personal_profile,
+        SUM(u.status = 1 AND m.fbo_id IS NOT NULL) AS enabled_with_personal_profile,
+        SUM(m.fbo_id IS NOT NULL AND m.is_in_current_structure = 0) AS waiting_profile_accounts
+        FROM users u
+        LEFT JOIN forever_business_members m
+            ON m.fbo_id = REPLACE(JSON_UNQUOTE(JSON_EXTRACT(u.preferences, '$.meta.foreverId')), '-', '')
+        WHERE u.type = 0
+          AND REPLACE(JSON_UNQUOTE(JSON_EXTRACT(u.preferences, '$.meta.foreverId')), '-', '') REGEXP '^[0-9]{12}$'");
+    $profile_accounts = $profile_accounts_result ? $profile_accounts_result->fetch_assoc() : [];
+
     $team_result = database()->query("SELECT
         COUNT(*) AS matched_team_accounts,
         SUM(u.last_activity >= '{$since_30d}') AS matched_active_30d,
@@ -1373,7 +1386,7 @@ function forever_business_get_usage_summary(): array {
         FROM forever_business_page_visits");
     $visits = $visits_result ? $visits_result->fetch_assoc() : [];
 
-    $result = array_merge($accounts, $team, $managers, $visits);
+    $result = array_merge($accounts, $profile_accounts, $team, $managers, $visits);
     return array_map(static fn($value) => (int) ($value ?? 0), $result);
 }
 
