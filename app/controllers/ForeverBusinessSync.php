@@ -16,6 +16,7 @@ class ForeverBusinessSync extends Controller {
         header('Content-Type: application/json; charset=utf-8');
         header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
         header('X-Content-Type-Options: nosniff');
+        ini_set('serialize_precision', '-1');
         echo json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_INVALID_UTF8_SUBSTITUTE);
         die();
     }
