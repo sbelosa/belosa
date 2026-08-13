@@ -263,9 +263,7 @@ async function prepareFourCcCountryState(page) {
                     homeCountry: false,
                 }));
         }
-        if(!Array.isArray(countries) || !countries.length) {
-            return {profileCodes, repaired: false, valid: false};
-        }
+        if(!Array.isArray(countries)) countries = [];
 
         let croatia = countries.find(country => country.operatingCompany === 'HRV');
         countries.forEach(country => {
@@ -277,12 +275,13 @@ async function prepareFourCcCountryState(page) {
         }
         sessionStorage.setItem('countries', JSON.stringify(countries));
 
-        return {profileCodes, repaired: true, valid: true};
+        return {profileCodes, countryCount: countries.length, repaired: true, valid: true};
     });
 
     if(!countryState.valid) {
         throw new Error('FLP360 popis država nije moguće pripremiti za hrvatski međunarodni izvještaj.');
     }
+    console.log(`FLP360 država Croatia (HRV) je pripremljena (${countryState.countryCount} dostupnih opcija).`);
 }
 
 async function downloadDownline(page, initialMessage) {
