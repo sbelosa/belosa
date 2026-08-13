@@ -64,6 +64,14 @@ try {
             </li>
             <!-- /Custom code: FC-2026-03-31 -->
 
+            <!-- Custom code: FC-2026-08-13: Forever import and access navigation -->
+            <li class="<?= \Altum\Router::$controller == 'AdminForeverBusiness' ? 'active' : null ?>">
+                <a class="nav-link text-truncate" href="<?= url('admin/forever-business') ?>">
+                    <i class="fas fa-fw fa-sm fa-chart-line mr-2"></i> Forever poslovanje
+                </a>
+            </li>
+            <!-- /Custom code: FC-2026-08-13 -->
+
             <li class="<?= in_array(\Altum\Router::$controller, ['AdminUsers', 'AdminUserUpdate', 'AdminUserCreate', 'AdminUserView']) ? 'active' : null ?>">
                 <a class="nav-link text-truncate" href="<?= url('admin/users') ?>">
                     <i class="fas fa-fw fa-sm fa-users mr-2"></i> <?= l('admin_users.menu') ?>

@@ -118,6 +118,16 @@ class Router {
             ],
             /* /Custom code: FC-2026-03-14 */
 
+            /* Custom code: FC-2026-08-13: Forever 4 Core self-only and admin workspace */
+            'forever-business' => [
+                'controller' => 'ForeverBusiness',
+                'settings' => [
+                    'wrapper' => 'app_wrapper',
+                    'ads' => true,
+                ]
+            ],
+            /* /Custom code: FC-2026-08-13 */
+
             /* Custom code: FC-2026-03-14: Featured FCC apps public page route */
             'featured-apps' => [
                 'controller' => 'FeaturedApps',
@@ -1358,6 +1368,19 @@ class Router {
             ],
             /* /Custom code: FC-2026-04-22 */
 
+            /* Custom code: FC-2026-08-13: Restricted Forever report sync endpoint */
+            'forever-business-sync' => [
+                'controller' => 'ForeverBusinessSync',
+                'settings' => [
+                    'no_authentication_check' => true,
+                    'has_view' => false,
+                    'no_browser_language_detection' => true,
+                    'allow_indexing' => false,
+                    'allow_sessions' => false,
+                ]
+            ],
+            /* /Custom code: FC-2026-08-13 */
+
             'broadcast' => [
                 'controller' => 'Broadcast',
                 'settings' => [
@@ -1530,6 +1553,12 @@ class Router {
                 'controller' => 'AdminLeaderOperatingSystemLeader'
             ],
             /* /Custom code: FC-2026-03-31 */
+
+            /* Custom code: FC-2026-08-13: Forever data imports and access */
+            'forever-business' => [
+                'controller' => 'AdminForeverBusiness'
+            ],
+            /* /Custom code: FC-2026-08-13 */
 
             'links' => [
                 'controller' => 'AdminLinks'

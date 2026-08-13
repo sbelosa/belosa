@@ -27,6 +27,9 @@
 !scripts/test_billing_recovery_guard.php
 !scripts/test_public_biolink_js_guards.php
 !scripts/test_ops_readonly_secret_redaction.php
+!scripts/forever_business_import.php
+!scripts/forever_business_sync_push.sh
+!scripts/test_forever_business_import.php
 !themes/
 !themes/**
 **/.DS_Store

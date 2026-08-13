@@ -388,6 +388,13 @@ if(is_logged_in()) {
                         <i class="fas fa-fw fa-sm fa-trophy mr-2"></i> <?= l('fcc_results.menu') ?>
                     </a>
                 </li>
+                <?php /* Custom code: FC-2026-08-13: Self-only collaborator and admin 4 Core workspace */ ?>
+                <li class="<?= \Altum\Router::$controller == 'ForeverBusiness' ? 'active' : null ?> app-sidebar-fcc-item">
+                    <a href="<?= url('forever-business') ?>">
+                        <i class="fas fa-fw fa-sm fa-chart-line mr-2"></i> MOJ 4 CORE
+                    </a>
+                </li>
+                <?php /* /Custom code: FC-2026-08-13 */ ?>
                 <?php if(settings()->links->biolinks_is_enabled): ?>
                     <li class="<?= in_array(\Altum\Router::$controller, ['FunnelsAnalytics']) ? 'active' : null ?> app-sidebar-fcc-item">
                         <a href="<?= url('funnels-analytics') ?>" class="<?= $has_lead_funnel_access ? null : 'disabled pointer-events-all' ?>" <?= $has_lead_funnel_access ? null : get_plan_feature_disabled_info() ?>>
