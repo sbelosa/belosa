@@ -26,9 +26,9 @@ class ForeverBusiness extends Controller {
             } else {
                 $dashboard = forever_business_get_dashboard((int) $this->user->user_id, $is_admin, $requested_root, $period);
                 if(forever_business_record_daily_outcome((int) $this->user->user_id, (string) ($_POST['fbo_id'] ?? ''), $dashboard['scope_ids'], $_POST)) {
-                    Alerts::add_success('Aktivnost je spremljena. Manager sada vidi napredak.');
+                    Alerts::add_success('Korak je dovršen. Tvoj sljedeći konkretan korak je spreman.');
                 } else {
-                    Alerts::add_error('Aktivnost nije spremljena jer suradnik nije u tvojem dopuštenom timu.');
+                    Alerts::add_error('Aktivnost nije spremljena jer Forever ID nije povezan s tvojim računom.');
                 }
             }
 

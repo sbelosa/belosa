@@ -991,82 +991,199 @@ function forever_business_provision_fcc_members(): int {
     return $result ? max(0, (int) database()->affected_rows) : 0;
 }
 
-function forever_business_get_action(array $member, ?array $metric): array {
-    $personal_cc = (float) ($metric['personal_cc'] ?? 0);
-    $is_manager = !empty($member['is_manager']);
+function forever_business_get_verified_progress(array $member): array {
+    $personal_cc = isset($member['personal_cc']) ? (float) $member['personal_cc'] : null;
+    $total_active_cc = isset($member['total_active_cc']) ? (float) $member['total_active_cc'] : null;
+    $has_activity_data = $personal_cc !== null && $total_active_cc !== null;
+    $meets_activity_formula = $has_activity_data && $personal_cc >= 1 && $total_active_cc >= 4;
+    $is_officially_active = $meets_activity_formula && !empty($member['is_4cc_active']);
 
-    if(!empty($member['focus_snapshot_date'])) {
-        $needed_cc = (float) ($member['needed_cc_next_level'] ?? 0);
-        $next_level = trim((string) ($member['next_level'] ?? 'sljedeće razine'));
+    $current_total_cc = isset($member['total_cc']) ? (float) $member['total_cc'] : null;
+    $previous_total_cc = isset($member['previous_total_cc']) ? (float) $member['previous_total_cc'] : null;
+    $two_months_ago_total_cc = isset($member['two_months_ago_total_cc']) ? (float) $member['two_months_ago_total_cc'] : null;
+    $three_months_ago_total_cc = isset($member['three_months_ago_total_cc']) ? (float) $member['three_months_ago_total_cc'] : null;
+    $title = trim((string) ($member['title'] ?? ''));
+    $title_key = mb_strtolower($title);
+    $is_assistant_manager = str_contains($title_key, 'assistant manager');
+    $is_unrecognized_manager = str_contains($title_key, 'unrecognized manager');
+    $is_manager_candidate = $is_assistant_manager || $is_unrecognized_manager;
+    $is_full_manager = !$is_manager_candidate && str_contains($title_key, 'manager');
+    $windows = [];
+    $next_title = 'Supervisor';
+    $rank_mode = 'rank';
 
-        if(!empty($member['focus_is_active'])) {
-            return [
-                'core' => 'Development',
-                'key' => 'duplicate_active_habit',
-                'title' => 'Pretvori aktivnost u naviku koju možeš duplicirati',
-                'instruction' => $is_manager ? 'Odaberi dvije osobe iz svojeg tima i pokaži im konkretan korak koji ti je ovaj mjesec donio aktivnost.' : 'Zapiši što ti je donijelo aktivnost i podijeli jedan ponovljiv korak sa svojim managerom.',
-                'target' => $is_manager ? 2 : 1,
-            ];
-        }
-
-        if(!empty($member['focus_previous_active'])) {
-            return [
-                'core' => 'Retention',
-                'key' => 'reactivate_this_month',
-                'title' => 'Vrati aktivnost iz prethodnog mjeseca',
-                'instruction' => 'Javi se postojećim kupcima kojima proizvod već koristi i provjeri treba li im nastavak, prilagodba ili pomoć — bez pritiska.',
-                'target' => 5,
-            ];
-        }
-
-        if($needed_cc > 0 && $needed_cc <= 2) {
-            return [
-                'core' => 'Productivity',
-                'key' => 'close_next_level_gap',
-                'title' => 'Još ' . number_format($needed_cc, 3, ',', '.') . ' CC do razine ' . ($next_level ?: 'više razine'),
-                'instruction' => 'Odaberi tri najtoplija postojeća razgovora i ponudi svakome samo jedan relevantan proizvod ili sljedeći korak.',
-                'target' => 3,
-            ];
-        }
-    }
-
-    if($personal_cc >= 4) {
+    $make_window = static function(string $label, ?float $current, float $target, bool $complete, string $metric): array {
+        $current = $complete ? max(0, (float) $current) : null;
         return [
-            'core' => 'Development',
-            'key' => 'develop_two',
-            'title' => $is_manager ? 'Odaberi dvije osobe kojima danas pomažeš' : 'Podijeli što ti je donijelo 4 CC',
-            'instruction' => $is_manager ? 'Pogledaj svoj tim, odaberi dvije osobe s jasnom preprekom i dogovori im samo jedan sljedeći korak.' : 'Pošalji svojem manageru jednu kratku lekciju koju može prenijeti timu.',
-            'target' => 2,
+            'label' => $label,
+            'metric' => $metric,
+            'current' => $current,
+            'target' => $target,
+            'gap' => $complete ? max(0, round($target - $current, 3)) : null,
+            'progress' => $complete ? min(100, round(($current / $target) * 100, 1)) : 0,
+            'complete' => $complete,
+            'achieved' => $complete && $current >= $target,
         ];
-    }
+    };
 
-    if($personal_cc >= 1) {
-        return [
-            'core' => 'Productivity',
-            'key' => 'follow_up_five',
-            'title' => 'Dovrši pet toplih follow-upova',
-            'instruction' => 'Javi se ljudima s kojima već postoji razgovor. Svakoj osobi ponudi samo jedan jasan sljedeći korak.',
-            'target' => 5,
-        ];
-    }
-
-    if($personal_cc > 0) {
-        return [
-            'core' => 'Retention',
-            'key' => 'customer_check_in_five',
-            'title' => 'Provjeri iskustvo pet kupaca',
-            'instruction' => 'Pitaj što im odgovara, što nije i treba li prilagoditi rutinu. Ne počinji prodajnom porukom.',
-            'target' => 5,
-        ];
+    if($is_full_manager) {
+        $rank_mode = 'manager';
+        $non_manager_cc = isset($member['non_manager_cc']) ? (float) $member['non_manager_cc'] : null;
+        $target = $non_manager_cc !== null && $non_manager_cc >= 60 ? 100.0 : 60.0;
+        $next_title = $target === 100.0 ? '100 CC Non-Manager cilj' : '60 CC Non-Manager cilj';
+        $windows[] = $make_window('Ovaj mjesec', $non_manager_cc, $target, $non_manager_cc !== null, 'Non-Manager CC');
+    } elseif($is_manager_candidate) {
+        $next_title = $is_unrecognized_manager ? 'Recognized Manager' : 'Manager';
+        $two_complete = $current_total_cc !== null && $previous_total_cc !== null;
+        $four_complete = $two_complete && $two_months_ago_total_cc !== null && $three_months_ago_total_cc !== null;
+        $two_total = $two_complete ? $current_total_cc + $previous_total_cc : null;
+        $four_total = $four_complete ? $current_total_cc + $previous_total_cc + $two_months_ago_total_cc + $three_months_ago_total_cc : null;
+        $windows[] = $make_window('Put A · 2 kalendarska mjeseca', $two_total, 120.0, $two_complete, 'Total CC');
+        $windows[] = $make_window('Put B · 4 kalendarska mjeseca', $four_total, 150.0, $four_complete, 'Total CC');
+    } elseif($title_key === 'supervisor') {
+        $next_title = 'Assistant Manager';
+        $complete = $current_total_cc !== null && $previous_total_cc !== null;
+        $windows[] = $make_window('2 kalendarska mjeseca', $complete ? $current_total_cc + $previous_total_cc : null, 60.0, $complete, 'Total CC');
+    } else {
+        $next_title = 'Supervisor';
+        $windows[] = $make_window('Ovaj mjesec', $current_total_cc, 10.0, $current_total_cc !== null, 'Total CC');
     }
 
     return [
-        'core' => 'Recruitment',
-        'key' => 'open_three_conversations',
-        'title' => 'Otvori tri osobna razgovora',
-        'instruction' => 'Odaberi tri osobe kojima možeš stvarno pomoći i pošalji osobno pitanje povezano s njihovom potrebom — bez copy-paste spama.',
-        'target' => 3,
+        'has_activity_data' => $has_activity_data,
+        'personal_cc' => $personal_cc,
+        'total_active_cc' => $total_active_cc,
+        'personal_progress' => $personal_cc !== null ? min(100, round(($personal_cc / 1) * 100, 1)) : 0,
+        'regional_progress' => $total_active_cc !== null ? min(100, round(($total_active_cc / 4) * 100, 1)) : 0,
+        'personal_gap' => $personal_cc !== null ? max(0, round(1 - $personal_cc, 3)) : null,
+        'regional_gap' => $total_active_cc !== null ? max(0, round(4 - $total_active_cc, 3)) : null,
+        'meets_activity_formula' => $meets_activity_formula,
+        'is_officially_active' => $is_officially_active,
+        'activity_source_consistent' => ((bool) !empty($member['is_4cc_active'])) === $meets_activity_formula,
+        'rank' => [
+            'mode' => $rank_mode,
+            'current_title' => $title ?: 'Bez statusa',
+            'next_title' => $next_title,
+            'windows' => $windows,
+        ],
     ];
+}
+
+function forever_business_get_action(array $member, ?array $metric, int $completed_total = 0): array {
+    $progress = $member['verified_progress'] ?? forever_business_get_verified_progress($member);
+    $is_manager = ($progress['rank']['mode'] ?? '') === 'manager';
+
+    if(empty($progress['has_activity_data'])) {
+        return [
+            'core' => 'Productivity',
+            'key' => 'wait_for_verified_data',
+            'title' => 'Pričekaj potvrđenu FLP360 sinkronizaciju',
+            'instruction' => 'Tvoj Forever ID je povezan, ali za odabrani mjesec još nema službenih CC podataka.',
+            'checklist' => ['Provjeri je li Forever ID na FCC računu ispravan.', 'Pogledaj vrijeme zadnje uspješne sinkronizacije.', 'Ako si nakon tog vremena napravio/la promet, pričekaj sljedeću sinkronizaciju.'],
+            'success_definition' => 'Zadatak će se pojaviti čim stignu potvrđeni podaci.',
+            'target' => 0,
+            'can_complete' => false,
+        ];
+    }
+
+    if(empty($progress['is_officially_active'])) {
+        $steps = [
+            [
+                'core' => 'Productivity', 'slug' => 'prepare_warm_list', 'title' => 'Pripremi listu od 10 stvarnih potreba', 'target' => 10,
+                'instruction' => 'Odaberi deset osoba kojima bi jedan konkretan Forever proizvod mogao riješiti stvarnu potrebu.',
+                'checklist' => ['Uz svako ime zapiši samo jednu potrebu.', 'Odaberi jedan relevantan proizvod ili rutinu.', 'Označi pet osoba kojima se javljaš prvo.'],
+                'success_definition' => 'Gotovo je kada imaš 10 imena, 10 potreba i prvih 5 prioriteta.',
+            ],
+            [
+                'core' => 'Recruitment', 'slug' => 'send_personal_messages', 'title' => 'Pošalji 5 osobnih poruka', 'target' => 5,
+                'instruction' => 'Javi se prvim osobama s liste bez masovne ili copy-paste poruke.',
+                'checklist' => ['Počni pitanjem o njihovoj potrebi.', 'Predloži samo jedno rješenje.', 'Dogovori jasan sljedeći korak: poziv, preporuku ili probu.'],
+                'success_definition' => 'Gotovo je kada je poslano 5 osobnih poruka i zabilježen odgovor ili termin za follow-up.',
+            ],
+            [
+                'core' => 'Productivity', 'slug' => 'complete_warm_followups', 'title' => 'Dovrši 5 toplih follow-upova', 'target' => 5,
+                'instruction' => 'Nastavi razgovore koji su već otvoreni i pomogni osobi donijeti jednostavnu odluku.',
+                'checklist' => ['Podsjeti se što je osoba rekla.', 'Odgovori na jednu glavnu prepreku.', 'Ponudi samo jedan konkretan sljedeći korak.'],
+                'success_definition' => 'Gotovo je nakon 5 dovršenih follow-upova, bez obzira je li rezultat kupnja ili jasno „ne sada”.',
+            ],
+            [
+                'core' => 'Retention', 'slug' => 'care_for_customers', 'title' => 'Provjeri iskustvo 3 postojeća kupca', 'target' => 3,
+                'instruction' => 'Pomozi postojećim kupcima da pravilno koriste proizvod i prepoznaju treba li im nastavak.',
+                'checklist' => ['Pitaj kako koriste proizvod.', 'Provjeri što im odgovara, a što ne.', 'Predloži nastavak samo ako odgovara njihovoj potrebi.'],
+                'success_definition' => 'Gotovo je kada si dobio/la povratnu informaciju od 3 kupca i zapisao/la njihov sljedeći korak.',
+            ],
+        ];
+    } elseif($is_manager) {
+        $steps = [
+            [
+                'core' => 'Development', 'slug' => 'coach_two_people', 'title' => 'Vodi 2 suradnika kroz jedan konkretan korak', 'target' => 2,
+                'instruction' => 'Odaberi dvije osobe koje imaju najveći ostvariv pomak prema aktivnosti ili Non-Manager CC-u.',
+                'checklist' => ['Provjeri njihove potvrđene CC podatke.', 'Dogovorite jedan zadatak koji mogu završiti danas.', 'Odredi kada ćete provjeriti rezultat.'],
+                'success_definition' => 'Gotovo je kada obje osobe imaju zapisan zadatak, rok i dogovorenu provjeru.',
+            ],
+            [
+                'core' => 'Recruitment', 'slug' => 'business_invitations', 'title' => 'Dogovori 2 poziva na poslovnu prezentaciju', 'target' => 2,
+                'instruction' => 'Pokreni osobne razgovore s ljudima koji traže dodatni prihod ili razvoj vlastitog posla.',
+                'checklist' => ['Pitaj što žele promijeniti.', 'Objasni zašto misliš da bi trebali čuti plan.', 'Dogovori točan termin Zooma ili osobnog razgovora.'],
+                'success_definition' => 'Gotovo je kada dvije osobe potvrde termin prezentacije.',
+            ],
+            [
+                'core' => 'Productivity', 'slug' => 'team_followup_block', 'title' => 'Odradi timski blok od 5 follow-upova', 'target' => 5,
+                'instruction' => 'Zajedno sa suradnikom dovrši pet najtoplijih razgovora koji mogu donijeti promet ili novog partnera.',
+                'checklist' => ['Odaberite 5 postojećih razgovora.', 'Za svaki definirajte jednu prepreku.', 'Pošaljite personalizirani sljedeći korak.'],
+                'success_definition' => 'Gotovo je kada je svih 5 razgovora ažurirano jasnim ishodom.',
+            ],
+            [
+                'core' => 'Development', 'slug' => 'recognize_and_duplicate', 'title' => 'Prepoznaj rezultat i dupliciraj što radi', 'target' => 2,
+                'instruction' => 'Pronađi jedan dobar rezultat u timu i pretvori ga u jednostavan korak koji još netko može ponoviti.',
+                'checklist' => ['Pohvali osobu konkretno.', 'Zapiši što je točno napravila.', 'Podijeli taj korak s još dvije osobe.'],
+                'success_definition' => 'Gotovo je kada je primjer podijeljen s dvije osobe i svaka zna što ponavlja.',
+            ],
+        ];
+    } else {
+        $steps = [
+            [
+                'core' => 'Recruitment', 'slug' => 'new_conversations', 'title' => 'Otvori 5 novih osobnih razgovora', 'target' => 5,
+                'instruction' => 'Poveži se s pet osoba kroz stvarnu potrebu, bez slanja iste poruke svima.',
+                'checklist' => ['Postavi jedno otvoreno pitanje.', 'Saslušaj prije preporuke.', 'Zapiši dogovoreni sljedeći korak.'],
+                'success_definition' => 'Gotovo je kada imaš 5 novih razgovora i barem jedan dogovoreni nastavak.',
+            ],
+            [
+                'core' => 'Productivity', 'slug' => 'story_and_replies', 'title' => 'Objavi 1 iskustveni story i odgovori zainteresiranima', 'target' => 1,
+                'instruction' => 'Objavi kratko stvarno iskustvo: problem, što si koristio/la i što se promijenilo.',
+                'checklist' => ['Bez zdravstvenih ili zaradnih obećanja.', 'Dodaj jednostavno pitanje ili poziv na poruku.', 'Svakoj reakciji odgovori osobno.'],
+                'success_definition' => 'Gotovo je kada je story objavljen i svaka pristigla reakcija dobila osoban odgovor.',
+            ],
+            [
+                'core' => 'Productivity', 'slug' => 'warm_followups', 'title' => 'Dovrši 5 toplih follow-upova', 'target' => 5,
+                'instruction' => 'Vrati se ljudima koji već znaju za proizvod ili priliku i pomozi im odabrati sljedeći korak.',
+                'checklist' => ['Podsjeti se njihove potrebe.', 'Odgovori na glavnu prepreku.', 'Ponudi jedan jasan izbor, bez pritiska.'],
+                'success_definition' => 'Gotovo je kada svih 5 razgovora ima zabilježen jasan ishod.',
+            ],
+            [
+                'core' => 'Retention', 'slug' => 'customer_checkins', 'title' => 'Napravi 3 korisnička check-ina', 'target' => 3,
+                'instruction' => 'Provjeri iskustvo postojećih kupaca i pomogni im koristiti proizvod dosljedno.',
+                'checklist' => ['Pitaj što im najbolje odgovara.', 'Provjeri imaju li poteškoću.', 'Dogovori nastavak ili datum nove provjere.'],
+                'success_definition' => 'Gotovo je nakon 3 stvarna razgovora i zapisanog sljedećeg kontakta.',
+            ],
+            [
+                'core' => 'Recruitment', 'slug' => 'invite_to_plan', 'title' => 'Pozovi 2 osobe da pogledaju poslovni plan', 'target' => 2,
+                'instruction' => 'Pozovi osobe kojima bi odgovarao dodatni prihod, fleksibilnost ili rad s ljudima.',
+                'checklist' => ['Pitaj što žele postići.', 'Najavi kratko i iskreno što će čuti.', 'Dogovori točan termin prezentacije.'],
+                'success_definition' => 'Gotovo je kada dvije osobe imaju potvrđen termin.',
+            ],
+        ];
+    }
+
+    $step_count = count($steps);
+    $step_index = $completed_total % $step_count;
+    $cycle = intdiv($completed_total, $step_count) + 1;
+    $action = $steps[$step_index];
+    $action['key'] = mb_substr('growth_' . $action['slug'] . '_' . $cycle, 0, 48);
+    $action['can_complete'] = true;
+    $action['sequence_position'] = $step_index + 1;
+    $action['sequence_total'] = $step_count;
+    return $action;
 }
 
 function forever_business_upsert_four_core_snapshot(string $fbo_id, string $period, array $values, string $source_note = 'FLP360 4 Core Summary'): void {
@@ -1170,6 +1287,8 @@ function forever_business_get_dashboard(int $user_id, bool $is_admin, string $re
     $periods = forever_business_get_periods();
     $period = in_array($period, $periods, true) ? $period : ($periods[0] ?? date('Y-m-01'));
     $previous_period = (new \DateTimeImmutable($period))->modify('-1 month')->format('Y-m-01');
+    $two_months_ago_period = (new \DateTimeImmutable($period))->modify('-2 months')->format('Y-m-01');
+    $three_months_ago_period = (new \DateTimeImmutable($period))->modify('-3 months')->format('Y-m-01');
     $scope_ids = forever_business_get_scope_ids($user_id, $is_admin, $requested_root);
     $id_list = forever_business_safe_id_list($scope_ids);
     $members = [];
@@ -1183,20 +1302,29 @@ function forever_business_get_dashboard(int $user_id, bool $is_admin, string $re
         $query = "
             SELECT m.*,
                    cur.personal_cc, cur.total_cc, cur.total_active_cc, cur.non_manager_cc, cur.leadership_cc, cur.is_4cc_active,
-                   prev.personal_cc AS previous_personal_cc,
+                   prev.personal_cc AS previous_personal_cc, prev.total_cc AS previous_total_cc,
+                   prev2.total_cc AS two_months_ago_total_cc,
+                   prev3.total_cc AS three_months_ago_total_cc,
                    focus.snapshot_date AS focus_snapshot_date, focus.next_level, focus.last_purchase_date,
                    focus.is_active AS focus_is_active, focus.was_active_previous_month AS focus_previous_active,
                    focus.open_group_cc_2m, focus.needed_cc_next_level, focus.new_recruits,
                    COALESCE(outcomes.actions_done, 0) AS actions_done_7d,
-                   COALESCE(outcomes.outcomes_total, 0) AS outcomes_total_7d
+                   COALESCE(outcomes.outcomes_total, 0) AS outcomes_total_7d,
+                   COALESCE(outcomes.actions_done_total, 0) AS actions_done_total,
+                   outcomes.last_action_at
             FROM forever_business_members m
             LEFT JOIN forever_business_metrics cur ON cur.fbo_id = m.fbo_id AND cur.period_month = '{$period}'
             LEFT JOIN forever_business_metrics prev ON prev.fbo_id = m.fbo_id AND prev.period_month = '{$previous_period}'
+            LEFT JOIN forever_business_metrics prev2 ON prev2.fbo_id = m.fbo_id AND prev2.period_month = '{$two_months_ago_period}'
+            LEFT JOIN forever_business_metrics prev3 ON prev3.fbo_id = m.fbo_id AND prev3.period_month = '{$three_months_ago_period}'
             LEFT JOIN forever_business_focus_metrics focus ON focus.fbo_id = m.fbo_id AND focus.period_month = '{$period}'
             LEFT JOIN (
-                SELECT fbo_id, COUNT(*) AS actions_done, SUM(outcome_count) AS outcomes_total
+                SELECT fbo_id,
+                       SUM(action_date >= DATE_SUB(CURDATE(), INTERVAL 6 DAY) AND status = 'done') AS actions_done,
+                       SUM(IF(action_date >= DATE_SUB(CURDATE(), INTERVAL 6 DAY) AND status = 'done', outcome_count, 0)) AS outcomes_total,
+                       SUM(status = 'done') AS actions_done_total,
+                       MAX(IF(status = 'done', updated_at, NULL)) AS last_action_at
                 FROM forever_business_daily_outcomes
-                WHERE action_date >= DATE_SUB(CURDATE(), INTERVAL 6 DAY) AND status = 'done'
                 GROUP BY fbo_id
             ) outcomes ON outcomes.fbo_id = m.fbo_id
             WHERE m.fbo_id IN ({$id_list})
@@ -1212,7 +1340,8 @@ function forever_business_get_dashboard(int $user_id, bool $is_admin, string $re
                 'leadership_cc' => $row['leadership_cc'],
                 'is_4cc_active' => $row['is_4cc_active'],
             ];
-            $row['next_action'] = forever_business_get_action($row, $metric);
+            $row['verified_progress'] = forever_business_get_verified_progress($row);
+            $row['next_action'] = forever_business_get_action($row, $metric, (int) ($row['actions_done_total'] ?? 0));
             $members[] = $row;
         }
     }

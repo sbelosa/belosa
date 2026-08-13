@@ -11,7 +11,7 @@ $format_cc = static fn($value) => number_format((float) $value, 3, ',', '.');
     <?= \Altum\Alerts::output_alerts() ?>
 
     <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center mb-4">
-        <div><h1 class="h3 mb-1"><i class="fas fa-fw fa-chart-line text-primary mr-2"></i>Forever poslovanje</h1><p class="text-muted mb-0">Individualni 4 Core za suradnike; cijela struktura, bodovi i sinkronizacija samo za administratora.</p></div>
+        <div><h1 class="h3 mb-1"><i class="fas fa-fw fa-chart-line text-primary mr-2"></i>Forever poslovanje</h1><p class="text-muted mb-0">Provjereni osobni napredak za suradnike; cijela struktura, bodovi i sinkronizacija samo za administratora.</p></div>
         <a href="<?= url('forever-business') ?>" class="btn btn-primary mt-3 mt-lg-0"><i class="fas fa-external-link-alt fa-sm mr-2"></i>Otvori timski pregled</a>
     </div>
 
@@ -32,7 +32,7 @@ $format_cc = static fn($value) => number_format((float) $value, 3, ',', '.');
                 <div class="col-md-6 col-xl-3 mb-3"><div class="border rounded p-3 h-100"><div class="small text-muted">MANAGERI S FCC RAČUNOM</div><div class="h3 mb-1"><?= nr($usage['managers_with_fcc_account']) ?>/<?= nr($usage['imported_managers']) ?></div><div class="small text-muted">mogući voditelji podstabala</div></div></div>
             </div>
             <div class="alert alert-warning mb-3"><strong>Važno:</strong> aktualna FCC baza sadrži <?= nr($usage['regular_accounts']) ?> suradničkih računa. Ako očekuješ 900+, prije uključivanja svih komunikacija treba uskladiti nedostajuće račune. Od <?= nr($usage['matched_team_accounts']) ?> članova povezanih točnim Forever ID-em, <?= nr($usage['matched_active_180d']) ?> imalo je zabilježenu aktivnost u zadnjih 180 dana, a <?= nr($usage['matched_active_30d']) ?> u zadnjih 30 dana.</div>
-            <div class="small text-muted">Novo precizno mjerenje stranice “Moj 4 Core” počinje danas: <?= nr($usage['four_core_users_7d']) ?> jedinstvenih korisnika i <?= nr($usage['four_core_visits_30d']) ?> posjeta. Povijesni mjesečni MAU nije moguće pouzdano rekonstruirati jer ranije nisu bilježeni događaji po stranici.</div>
+            <div class="small text-muted">Novo precizno mjerenje stranice “Moj napredak” počinje od aktivacije: <?= nr($usage['four_core_users_7d']) ?> jedinstvenih korisnika i <?= nr($usage['four_core_visits_30d']) ?> posjeta. Povijesni mjesečni MAU nije moguće pouzdano rekonstruirati jer ranije nisu bilježeni događaji po stranici.</div>
         </div>
     </div>
 
