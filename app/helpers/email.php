@@ -216,7 +216,13 @@ function fc_log_mail_transport_error(string $transport, string $message, array $
 }
 
 function get_brevo_api_key(): string {
-    return settings()->smtp->brevo_api_key ?? (defined('BREVO_API_KEY') ? BREVO_API_KEY : '');
+    $settings_api_key = trim((string) (settings()->smtp->brevo_api_key ?? ''));
+
+    if($settings_api_key !== '') {
+        return $settings_api_key;
+    }
+
+    return defined('BREVO_API_KEY') ? trim((string) BREVO_API_KEY) : '';
 }
 
 function get_brevo_api_base_url(): string {
@@ -226,6 +232,38 @@ function get_brevo_api_base_url(): string {
 function brevo_is_configured(): bool {
     return get_mail_transport() === 'brevo_api' && !empty(get_brevo_api_key());
 }
+
+/* Custom code: FC-2026-08-14: keep critical account mail available when Brevo rejects credentials */
+function fc_smtp_fallback_is_configured(): bool {
+    return trim((string) (settings()->smtp->host ?? '')) !== ''
+        && (int) (settings()->smtp->port ?? 0) > 0
+        && trim((string) (settings()->smtp->from ?? '')) !== '';
+}
+
+function fc_mail_is_tracked_marketing_message(array $data): bool {
+    return !empty($data['is_broadcast'])
+        || !empty($data['brevo_tags'])
+        || !empty($data['unsubscribe_url']);
+}
+
+function fc_brevo_failure_allows_smtp_fallback($transport_result, array $data): bool {
+    if(fc_mail_is_tracked_marketing_message($data) || !fc_smtp_fallback_is_configured()) {
+        return false;
+    }
+
+    if(!is_object($transport_result) || !empty($transport_result->success)) {
+        return false;
+    }
+
+    $status_code = (int) ($transport_result->status_code ?? 0);
+    $curl_error = trim((string) ($transport_result->curl_error ?? ''));
+
+    /* A Brevo 4xx response means the API explicitly rejected the request and
+     * did not accept the message. Network timeouts and 5xx responses remain
+     * blocked to avoid a possible duplicate send. */
+    return $curl_error === '' && $status_code >= 400 && $status_code < 500;
+}
+/* /Custom code: FC-2026-08-14 */
 
 function send_brevo_mail($to, $title, $content, $data = [], $reply_to = null, $debug = false) {
 
@@ -240,6 +278,7 @@ function send_brevo_mail($to, $title, $content, $data = [], $reply_to = null, $d
 
         if($should_return_transport_result) {
             $result = new \stdClass();
+            $result->transport = 'brevo_api';
             $result->success = false;
             $result->status_code = 0;
             $result->response_body = null;
@@ -279,6 +318,7 @@ function send_brevo_mail($to, $title, $content, $data = [], $reply_to = null, $d
 
         if($should_return_transport_result) {
             $result = new \stdClass();
+            $result->transport = 'brevo_api';
             $result->success = false;
             $result->status_code = 0;
             $result->response_body = null;
@@ -344,6 +384,7 @@ function send_brevo_mail($to, $title, $content, $data = [], $reply_to = null, $d
 
         if($should_return_transport_result) {
             $result = new \stdClass();
+            $result->transport = 'brevo_api';
             $result->success = false;
             $result->status_code = 0;
             $result->response_body = null;
@@ -397,6 +438,7 @@ function send_brevo_mail($to, $title, $content, $data = [], $reply_to = null, $d
 
     if($should_return_transport_result) {
         $result = new \stdClass();
+        $result->transport = 'brevo_api';
         $result->success = $is_success;
         $result->status_code = $response_code;
         $result->response_body = $response_body;
@@ -437,11 +479,41 @@ function send_mail($to, $title, $content, $data = [], $reply_to = null, $debug =
     }
 
     if(get_mail_transport() === 'brevo_api' && !empty(get_brevo_api_key())) {
-        return send_brevo_mail($to, $title, $content, $data, $reply_to, $debug);
+        $brevo_data = array_merge((array) $data, ['return_transport_result' => true]);
+        $brevo_result = send_brevo_mail($to, $title, $content, $brevo_data, $reply_to, $debug);
+
+        if(is_object($brevo_result) && !empty($brevo_result->success)) {
+            return $should_return_transport_result ? $brevo_result : true;
+        }
+
+        if(!fc_brevo_failure_allows_smtp_fallback($brevo_result, (array) $data)) {
+            return $should_return_transport_result ? $brevo_result : false;
+        }
+
+        fc_log_mail_transport_error('brevo_api', 'Brevo rejected a critical system email; using the configured SMTP fallback.', [
+            'status_code' => is_object($brevo_result) ? (int) ($brevo_result->status_code ?? 0) : 0,
+            'subject' => $title,
+        ]);
+
+        $smtp_result = send_smtp_mail($to, $title, $content, $data, $reply_to, $debug);
+
+        if(is_object($smtp_result)) {
+            $smtp_result->fallback_used = true;
+            $smtp_result->fallback_from = 'brevo_api';
+            $smtp_result->primary_status_code = is_object($brevo_result) ? (int) ($brevo_result->status_code ?? 0) : 0;
+            $smtp_result->primary_error = is_object($brevo_result) ? (string) ($brevo_result->ErrorInfo ?? '') : 'Brevo API transport failed.';
+        }
+
+        return $smtp_result;
     }
 
-    /* Custom code: FC-2026-03-19: optionally return structured SMTP transport result */
+    return send_smtp_mail($to, $title, $content, $data, $reply_to, $debug);
+}
+
+function send_smtp_mail($to, $title, $content, $data = [], $reply_to = null, $debug = false) {
     $should_return_transport_result = $debug || !empty($data['return_transport_result']);
+
+    /* Custom code: FC-2026-03-19: optionally return structured SMTP transport result */
     /* /Custom code: FC-2026-03-19 */
 
     extract(process_send_mail_template($title, $content, $data));
@@ -560,6 +632,7 @@ function send_mail($to, $title, $content, $data = [], $reply_to = null, $debug =
 
         if($should_return_transport_result) {
             $result = new \stdClass();
+            $result->transport = 'smtp';
             $result->success = (bool) $send;
             $result->status_code = $send ? 250 : 0;
             $result->response_body = $mail->ErrorInfo ?: null;
@@ -586,6 +659,7 @@ function send_mail($to, $title, $content, $data = [], $reply_to = null, $debug =
 
         if($should_return_transport_result) {
             $result = new \stdClass();
+            $result->transport = 'smtp';
             $result->success = false;
             $result->status_code = 0;
             $result->response_body = $e->getMessage();

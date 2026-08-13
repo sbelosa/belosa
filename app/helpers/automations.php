@@ -1651,7 +1651,13 @@ function fc_insert_email_automation_log(int $automation_id, ?int $enrollment_id,
 /* Custom code: FC-2026-03-19: Brevo automation analytics helpers */
 function fc_get_brevo_webhook_secret(): string {
     /* Custom code: FC-2026-03-19: prefer admin-configured Brevo webhook secret */
-    return settings()->smtp->brevo_webhook_secret ?? (defined('BREVO_WEBHOOK_SECRET') ? BREVO_WEBHOOK_SECRET : '');
+    $settings_secret = trim((string) (settings()->smtp->brevo_webhook_secret ?? ''));
+
+    if($settings_secret !== '') {
+        return $settings_secret;
+    }
+
+    return defined('BREVO_WEBHOOK_SECRET') ? trim((string) BREVO_WEBHOOK_SECRET) : '';
     /* /Custom code: FC-2026-03-19 */
 }
 

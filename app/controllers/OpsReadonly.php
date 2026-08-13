@@ -887,6 +887,16 @@ class OpsReadonly extends Controller {
         $billing_dashboard = (new Billing())->get_dashboard_payload();
         $cron_diagnostics = $this->get_cron_diagnostics_payload();
         $ai_diagnostics = $this->get_ai_diagnostics_payload();
+        $mail_transport = function_exists('get_mail_transport') ? get_mail_transport() : (settings()->smtp->transport ?? 'smtp');
+        $brevo_api_key = function_exists('get_brevo_api_key') ? get_brevo_api_key() : '';
+        $brevo_key_from_settings = trim((string) (settings()->smtp->brevo_api_key ?? '')) !== '';
+        $brevo_key_from_environment = defined('BREVO_API_KEY') && trim((string) BREVO_API_KEY) !== '';
+        $smtp_fallback_configured = function_exists('fc_smtp_fallback_is_configured')
+            ? fc_smtp_fallback_is_configured()
+            : trim((string) (settings()->smtp->host ?? '')) !== '';
+        $brevo_webhook_secret_configured = function_exists('fc_get_brevo_webhook_secret')
+            ? fc_get_brevo_webhook_secret() !== ''
+            : (defined('BREVO_WEBHOOK_SECRET') && trim((string) BREVO_WEBHOOK_SECRET) !== '');
 
         return [
             'server_time' => get_date(),
@@ -899,9 +909,20 @@ class OpsReadonly extends Controller {
                 'payment_enabled' => !empty(settings()->payment->is_enabled),
                 'stripe_enabled' => !empty(settings()->stripe->is_enabled),
                 'ai_enabled' => $ai_diagnostics['feature_flag_enabled'] ?? false,
-                'brevo_enabled' => defined('BREVO_API_KEY') ? trim((string) BREVO_API_KEY) !== '' : false,
+                'brevo_enabled' => $mail_transport === 'brevo_api' && $brevo_api_key !== '',
                 'ops_readonly_enabled' => FCC_OPS_READONLY_ENABLED,
                 'ops_write_enabled' => defined('FCC_OPS_WRITE_ENABLED') ? FCC_OPS_WRITE_ENABLED : false,
+            ],
+            'mail' => [
+                'transport' => $mail_transport,
+                'sender_configured' => trim((string) (settings()->smtp->from ?? '')) !== '',
+                'brevo_api_selected' => $mail_transport === 'brevo_api',
+                'brevo_api_key_configured' => $brevo_api_key !== '',
+                'brevo_api_key_source' => $brevo_key_from_settings ? 'settings' : ($brevo_key_from_environment ? 'environment' : 'none'),
+                'brevo_webhook_secret_configured' => $brevo_webhook_secret_configured,
+                'smtp_fallback_configured' => $smtp_fallback_configured,
+                'critical_system_mail_fallback_enabled' => true,
+                'tracked_marketing_mail_fallback_enabled' => false,
             ],
             'cron' => $cron_diagnostics,
             'ai' => $ai_diagnostics,
