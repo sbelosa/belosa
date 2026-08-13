@@ -60,6 +60,30 @@ function readyReportMessage(bodyText) {
     return bodyText.match(/Your report generated on[^\n]+is ready\./i)?.[0]?.trim() || '';
 }
 
+function parseCsvLine(line) {
+    const fields = [];
+    let field = '';
+    let quoted = false;
+    for(let index = 0; index < line.length; index++) {
+        const character = line[index];
+        if(character === '"') {
+            if(quoted && line[index + 1] === '"') {
+                field += '"';
+                index++;
+            } else {
+                quoted = !quoted;
+            }
+        } else if(character === ',' && !quoted) {
+            fields.push(field);
+            field = '';
+        } else {
+            field += character;
+        }
+    }
+    fields.push(field);
+    return fields;
+}
+
 function officialFourCoreSnapshots() {
     /* Verified directly against the attached FLP360 4 Core Summary. Closed
        periods are immutable and can be safely upserted on every cloud run. */
@@ -111,10 +135,15 @@ async function validateDownline(filePath) {
     if(missingHeaders.length) throw new Error(`Downline nema očekivana polja: ${missingHeaders.join(', ')}.`);
     if(lines.length < 401) throw new Error(`Downline ima samo ${Math.max(0, lines.length - 1)} redaka; uvoz je zaustavljen.`);
 
-    const hrvRows = lines.slice(1).filter(line => line.includes(',HRV,')).length;
+    const countryCodes = lines.slice(1)
+        .map(line => String(parseCsvLine(line)[5] || '').trim())
+        .filter(Boolean);
+    const countries = [...new Set(countryCodes)].sort();
+    const hrvRows = countryCodes.filter(country => country === 'HRV').length;
     if(hrvRows < 250) throw new Error(`Downline nema očekivani HRV opseg (${hrvRows} redaka).`);
+    if(countries.length < 2) throw new Error(`Downline nije međunarodni izvještaj (${countries.join(', ') || 'bez država'}).`);
 
-    return {rows: lines.length - 1, hrvRows};
+    return {rows: lines.length - 1, hrvRows, countries};
 }
 
 async function validateXlsx(filePath, label) {
@@ -157,7 +186,25 @@ async function requestDownline(page) {
     await page.locator('a.excel-download').waitFor({state: 'visible', timeout: 60000});
     await page.locator('a.download-link').waitFor({state: 'visible', timeout: 5000}).catch(() => {});
 
+    /* FLP360 currently defaults the country selector to Angola when the home
+       market is missing from its session list. Croatia is the operating-company
+       root for this business and its report contains the complete international
+       downline. Zero-CC members must remain included so the FCC structure is not
+       silently reduced to only currently productive collaborators. */
+    const filters = page.locator('select');
+    await filters.first().waitFor({state: 'visible', timeout: 60000});
+    const croatiaOption = filters.nth(0).locator('option[value="HRV"]');
+    await croatiaOption.waitFor({state: 'attached', timeout: 30000}).catch(() => {
+        throw new Error('Downline nema popravljeno matično tržište Croatia (HRV).');
+    });
+    await filters.nth(0).selectOption({value: 'HRV'});
+    await filters.nth(1).selectOption({label: 'All Levels'});
+    const suppressZeroCc = page.getByRole('checkbox').first();
+    if(await suppressZeroCc.isChecked()) await suppressZeroCc.uncheck();
+
     const initialMessage = readyReportMessage(await page.locator('body').innerText());
+    await page.getByRole('button', {name: 'Run Report', exact: true}).click();
+    await page.getByText(ROOT_FBO_ID, {exact: true}).waitFor({state: 'visible', timeout: 120000});
     await page.locator('a.excel-download').click();
     const dialog = page.getByRole('dialog');
     await dialog.waitFor({state: 'visible', timeout: 15000});
@@ -324,6 +371,8 @@ async function main() {
     try {
         await login(page, username, password);
 
+        await prepareFourCcCountryState(page);
+
         for(const snapshot of officialFourCoreSnapshots()) {
             await uploadFourCoreSnapshot(snapshot, syncUrl, syncKey);
             console.log(`Službeni 4 Core: ${snapshot.period} je potvrđen na FCC-u.`);
@@ -364,7 +413,7 @@ async function main() {
                 const downlinePath = await downloadDownline(page, initialDownlineMessage);
                 const downlineValidation = await validateDownline(downlinePath);
                 const downlineResult = await uploadReport(downlinePath, period, syncUrl, syncKey);
-                console.log(`Downline: ${downlineValidation.rows} redaka (${downlineValidation.hrvRows} HRV), duplicate=${Boolean(downlineResult.duplicate)}.`);
+                console.log(`Downline: ${downlineValidation.rows} redaka (${downlineValidation.hrvRows} HRV; ${downlineValidation.countries.join(', ')}), duplicate=${Boolean(downlineResult.duplicate)}.`);
             } catch(error) {
                 failures.push(`Downline: ${error.message}`);
             }
@@ -388,6 +437,6 @@ if(process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.arg
     });
 }
 
-export {currentFlpMonthLabel, findCurrentFlpMonthLabel, officialFourCoreSnapshots, readyReportMessage, validateDownline, validateXlsx, zagrebPeriod};
+export {currentFlpMonthLabel, findCurrentFlpMonthLabel, officialFourCoreSnapshots, parseCsvLine, readyReportMessage, validateDownline, validateXlsx, zagrebPeriod};
 
 /* /Custom code: FC-2026-08-13 */

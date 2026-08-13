@@ -6,6 +6,7 @@ import {
     currentFlpMonthLabel,
     findCurrentFlpMonthLabel,
     officialFourCoreSnapshots,
+    parseCsvLine,
     readyReportMessage,
     validateDownline,
     validateXlsx,
@@ -24,6 +25,7 @@ assert.equal(findCurrentFlpMonthLabel(['Jul/2026-Closed', 'Aug/2026-Not Closed']
 assert.equal(findCurrentFlpMonthLabel(['07/2026-Closed'], new Date('2026-08-13T19:00:00Z')), '');
 assert.equal(readyReportMessage('Your report generated on Aug 13, 2026 at 12:22pm is ready.\nClick here'), 'Your report generated on Aug 13, 2026 at 12:22pm is ready.');
 assert.equal(readyReportMessage('Your report is being generated.'), '');
+assert.deepEqual(parseCsvLine('1,2,"Prezime, Ime",4,5,HRV'), ['1', '2', 'Prezime, Ime', '4', '5', 'HRV']);
 const fourCoreSnapshots = officialFourCoreSnapshots();
 assert.equal(fourCoreSnapshots.length, 2);
 assert.equal(fourCoreSnapshots.find(snapshot => snapshot.period === '2026-07')?.values.downline.ytd.recruitment, 174);
@@ -36,6 +38,9 @@ assert.match(syncSource, /Date\.now\(\) \+ 20 \* 60 \* 1000/);
 assert.match(syncSource, /getByText\(ROOT_FBO_ID, \{exact: false\}\)\.waitFor/);
 assert.match(syncSource, /sessionStorage\.setItem\('countries', JSON\.stringify\(countries\)\)/);
 assert.match(syncSource, /operatingCompany === 'HRV'/);
+assert.match(syncSource, /selectOption\(\{value: 'HRV'\}\)/);
+assert.match(syncSource, /suppressZeroCc\.uncheck\(\)/);
+assert.match(syncSource, /Downline nije međunarodni izvještaj/);
 assert.ok(syncSource.indexOf('await requestDownline(page)') < syncSource.indexOf('await downloadFocusGroup(page)'));
 assert.ok(syncSource.indexOf('await downloadFourCcActive(page)') < syncSource.indexOf('await downloadDownline(page, initialDownlineMessage)'));
 assert.match(syncSource, /Djelomična sinkronizacija/);
