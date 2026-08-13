@@ -118,11 +118,45 @@ async function requestDownline(page) {
     await page.locator('a.excel-download').click();
     const dialog = page.getByRole('dialog');
     await dialog.waitFor({state: 'visible', timeout: 15000});
-    const dialogText = await dialog.innerText();
-    if(!dialogText.includes(ROOT_FBO_ID)) throw new Error('Downline izvoz nije vezan uz očekivani glavni Forever ID.');
+    await dialog.getByText(ROOT_FBO_ID, {exact: false}).waitFor({state: 'visible', timeout: 30000}).catch(() => {
+        throw new Error('Downline izvoz nije vezan uz očekivani glavni Forever ID.');
+    });
     await dialog.getByRole('button', {name: 'Download Report', exact: true}).click();
 
     return initialMessage;
+}
+
+async function prepareFourCcCountryState(page) {
+    const countryState = await page.evaluate(() => {
+        const userInfoText = localStorage.getItem('appflp360.userInfo') || localStorage.getItem('userInfo') || '{}';
+        const userInfo = JSON.parse(userInfoText);
+        const profileCodes = [userInfo.preferredCountryCode, userInfo.homeCountryCode].filter(Boolean);
+        if(profileCodes.length && !profileCodes.includes('HRV')) {
+            return {profileCodes, repaired: false, valid: false};
+        }
+
+        const countriesText = sessionStorage.getItem('countries') || '[]';
+        const countries = JSON.parse(countriesText);
+        if(!Array.isArray(countries) || !countries.length) {
+            return {profileCodes, repaired: false, valid: false};
+        }
+
+        let croatia = countries.find(country => country.operatingCompany === 'HRV');
+        countries.forEach(country => {
+            country.homeCountry = country.operatingCompany === 'HRV';
+        });
+        if(!croatia) {
+            croatia = {countryName: 'Croatia', operatingCompany: 'HRV', homeCountry: true};
+            countries.push(croatia);
+        }
+        sessionStorage.setItem('countries', JSON.stringify(countries));
+
+        return {profileCodes, repaired: true, valid: true};
+    });
+
+    if(!countryState.valid) {
+        throw new Error('FLP360 profil ili popis država nije moguće sigurno uskladiti s Hrvatskom.');
+    }
 }
 
 async function downloadDownline(page, initialMessage) {
@@ -158,6 +192,7 @@ async function downloadFocusGroup(page) {
 }
 
 async function downloadFourCcActive(page) {
+    await prepareFourCcCountryState(page);
     await page.goto(`${FLP360_BASE_URL}/four-cc-consecutive-month`, {waitUntil: 'domcontentloaded', timeout: 60000});
     const selects = page.locator('select');
     await selects.first().waitFor({state: 'visible', timeout: 60000});
