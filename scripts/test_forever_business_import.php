@@ -6,6 +6,7 @@ $helper = file_get_contents($root . '/app/helpers/forever_business.php');
 $admin = file_get_contents($root . '/app/controllers/admin/AdminForeverBusiness.php');
 $user = file_get_contents($root . '/app/controllers/ForeverBusiness.php');
 $sync = file_get_contents($root . '/app/controllers/ForeverBusinessSync.php');
+$view = file_get_contents($root . '/themes/altum/views/forever-business/index.php');
 
 $assertions = [
     'source hash prevents duplicate imports' => str_contains($helper, 'UNIQUE KEY `forever_business_import_sha_uq`'),
@@ -19,6 +20,7 @@ $assertions = [
     'daily outcomes are limited to visible scope' => str_contains($user, 'forever_business_record_daily_outcome') && str_contains($helper, 'in_array($fbo_id, $scope_ids, true)'),
     'team CC uses additive personal CC' => str_contains($helper, "SUM(personal_cc)"),
     'official 4 Core snapshots stay separate from operational signals' => str_contains($helper, 'forever_business_four_core_snapshots'),
+    'official 4 Core comparison uses the exact prior-year period' => str_contains($helper, "modify('-1 year')") && str_contains($helper, "\$result['previous']"),
     '1000 CC goal uses exact FLP Total CC when available' => str_contains($helper, "goal_metric_source") && str_contains($helper, 'forever_business_total_cc_snapshots'),
     'collaborator trend uses imported Total CC with verified monthly activity' => str_contains($helper, "['period_month', 'total_cc', 'personal_cc', 'total_active_cc', 'is_4cc_active']") && str_contains($helper, "'has_activity_data' => \$has_activity_data") && str_contains($helper, "'is_4cc_active' => \$is_verified_active"),
     '4 Core page adoption is measured from launch' => str_contains($helper, 'forever_business_page_visits') && str_contains($user, 'forever_business_record_page_visit'),
@@ -27,6 +29,9 @@ $assertions = [
     'machine sync accepts only bounded CSV and XLSX uploads' => str_contains($sync, 'MAX_FILE_BYTES') && str_contains($sync, "['csv', 'xlsx']"),
     'machine sync is pinned to the admin root FBO' => str_contains($sync, "ROOT_FBO_ID = '360000760944'"),
     'all active FCC Forever IDs receive self-only placeholders' => str_contains($helper, 'forever_business_provision_fcc_members') && str_contains($helper, "'FCC suradnik'") && str_contains($helper, 'is_in_current_structure, email_hash'),
+    'team priorities include the complete imported list' => !str_contains($user, 'array_slice($priority_members, 0, 100)'),
+    'team priorities support accessible client-side sorting' => str_contains($view, 'fb-sort-button') && str_contains($view, 'Intl.Collator') && str_contains($view, "setAttribute('aria-sort'"),
+    'official 4 Core table labels prior-year values and computed changes' => str_contains($view, 'fb-official-comparison') && str_contains($view, '$official_change'),
 ];
 
 $failed = array_keys(array_filter($assertions, static fn($passed) => !$passed));

@@ -5,6 +5,7 @@ import fs from 'node:fs/promises';
 import {
     currentFlpMonthLabel,
     findCurrentFlpMonthLabel,
+    officialFourCoreSnapshots,
     readyReportMessage,
     validateDownline,
     validateXlsx,
@@ -19,9 +20,14 @@ const syncSource = await fs.readFile(new URL('./flp360_cloud_sync.mjs', import.m
 assert.equal(zagrebPeriod(new Date('2026-08-13T19:00:00Z')), '2026-08');
 assert.equal(currentFlpMonthLabel(new Date('2026-08-13T19:00:00Z')), '08/2026-Not Closed');
 assert.equal(findCurrentFlpMonthLabel(['7/2026-Closed', '8/2026-Not Closed'], new Date('2026-08-13T19:00:00Z')), '8/2026-Not Closed');
+assert.equal(findCurrentFlpMonthLabel(['Jul/2026-Closed', 'Aug/2026-Not Closed'], new Date('2026-08-13T19:00:00Z')), 'Aug/2026-Not Closed');
 assert.equal(findCurrentFlpMonthLabel(['07/2026-Closed'], new Date('2026-08-13T19:00:00Z')), '');
 assert.equal(readyReportMessage('Your report generated on Aug 13, 2026 at 12:22pm is ready.\nClick here'), 'Your report generated on Aug 13, 2026 at 12:22pm is ready.');
 assert.equal(readyReportMessage('Your report is being generated.'), '');
+const fourCoreSnapshots = officialFourCoreSnapshots();
+assert.equal(fourCoreSnapshots.length, 2);
+assert.equal(fourCoreSnapshots.find(snapshot => snapshot.period === '2026-07')?.values.downline.ytd.recruitment, 174);
+assert.equal(fourCoreSnapshots.find(snapshot => snapshot.period === '2025-07')?.values.open.month.recruitment, 1);
 assert.match(syncSource, /#user-input-login-id:visible/);
 assert.match(syncSource, /input\[name="password"\]:visible/);
 assert.match(syncSource, /#kc-login:visible/);

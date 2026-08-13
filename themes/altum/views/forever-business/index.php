@@ -5,6 +5,16 @@ $summary = $dashboard['summary'];
 $period_label = !empty($dashboard['period']) ? (new DateTimeImmutable($dashboard['period']))->format('m/Y') : '—';
 $format_cc = static fn($value) => number_format((float) $value, 3, ',', '.');
 $format_percent = static fn($value) => number_format((float) $value, 1, ',', '.') . '%';
+$official_change = static function($current, $previous): ?float {
+    if($current === null || $current === '' || $previous === null || $previous === '') return null;
+    $previous = (float) $previous;
+    if(abs($previous) < .0000001) return abs((float) $current) < .0000001 ? 0.0 : null;
+    return round((((float) $current - $previous) / $previous) * 100, 1);
+};
+$format_change = static function(float $value): string {
+    if(abs($value) < .05) return '0,0%';
+    return ($value > 0 ? '+' : '−') . number_format(abs($value), 1, ',', '.') . '%';
+};
 ?>
 
 <style>
@@ -28,6 +38,15 @@ $format_percent = static fn($value) => number_format((float) $value, 1, ',', '.'
     .forever-business-page .fb-action { background: linear-gradient(135deg, rgba(108,166,70,.13), rgba(246,201,0,.08)); }
     .forever-business-page .fb-table-wrap { max-height: 680px; overflow: auto; }
     .forever-business-page .fb-status-dot { width: .65rem; height: .65rem; border-radius: 50%; display: inline-block; margin-right: .4rem; }
+    .forever-business-page .fb-official-current { font-weight: 700; white-space: nowrap; }
+    .forever-business-page .fb-official-comparison { display: flex; flex-wrap: wrap; gap: .2rem .55rem; margin-top: .2rem; font-size: .78rem; white-space: nowrap; }
+    .forever-business-page .fb-official-delta-up { color: #43b779; font-weight: 700; }
+    .forever-business-page .fb-official-delta-down { color: #e06666; font-weight: 700; }
+    .forever-business-page .fb-official-delta-flat { color: inherit; opacity: .65; font-weight: 700; }
+    .forever-business-page .fb-sort-button { display: inline-flex; align-items: center; gap: .35rem; padding: 0; border: 0; background: transparent; color: inherit; font: inherit; font-weight: 700; text-align: left; cursor: pointer; }
+    .forever-business-page .fb-sort-button:hover, .forever-business-page .fb-sort-button:focus { color: #f6c900; outline: none; }
+    .forever-business-page .fb-sort-button[aria-pressed="true"] { color: #f6c900; }
+    .forever-business-page .fb-sort-icon { min-width: .8rem; font-size: .75rem; opacity: .65; }
 </style>
 
 <div class="forever-business-page">
@@ -96,11 +115,32 @@ $format_percent = static fn($value) => number_format((float) $value, 1, ',', '.'
         <?php if($data->is_admin && !empty($dashboard['official_four_core'])): ?>
             <?php $official = $dashboard['official_four_core']; ?>
             <div class="card fb-card mb-4">
-                <div class="card-header bg-transparent"><h2 class="h5 mb-1">Službeni FLP360 4 Core · <?= htmlspecialchars((new DateTimeImmutable($official['period_month']))->format('m/Y')) ?></h2><div class="small text-muted">Izvorne FLP360 definicije. “Mjesec” je zadnji prikazani zatvoreni mjesec, a YTD stanje u trenutku snimke.</div></div>
+                <div class="card-header bg-transparent"><h2 class="h5 mb-1">Službeni FLP360 4 Core · <?= htmlspecialchars((new DateTimeImmutable($official['period_month']))->format('m/Y')) ?></h2><div class="small text-muted">Glavni broj prikazuje odabrano razdoblje. Manji red prikazuje isti mjesec 2025. i izračunatu promjenu; crveno znači pad, a zeleno rast. “Mjesec” je zadnji prikazani zatvoreni mjesec, a YTD stanje u trenutku snimke.</div></div>
                 <div class="table-responsive"><table class="table mb-0"><thead><tr><th>Područje</th><th>Open Business · mjesec</th><th>Open Business · YTD</th><th>Downline · mjesec</th><th>Downline · YTD</th></tr></thead><tbody>
                     <?php foreach(['recruitment' => ['Recruitment', 'broj'], 'retention' => ['Retention', 'broj'], 'productivity' => ['Productivity', 'cc'], 'development' => ['Development', 'postotak']] as $metric_key => $metric_meta): ?>
                         <?php $format_official = static function($value) use ($format_cc, $metric_meta) { if($value === null || $value === '') return '—'; return $metric_meta[1] === 'cc' ? $format_cc($value) . ' CC' : ($metric_meta[1] === 'postotak' ? number_format((float) $value, 2, ',', '.') . '%' : nr($value)); }; ?>
-                        <tr><th><?= htmlspecialchars($metric_meta[0]) ?></th><td><?= $format_official($official['open']['month'][$metric_key] ?? null) ?></td><td><?= $format_official($official['open']['ytd'][$metric_key] ?? null) ?></td><td><?= $format_official($official['downline']['month'][$metric_key] ?? null) ?></td><td><?= $format_official($official['downline']['ytd'][$metric_key] ?? null) ?></td></tr>
+                        <tr>
+                            <th><?= htmlspecialchars($metric_meta[0]) ?></th>
+                            <?php foreach([['open', 'month'], ['open', 'ytd'], ['downline', 'month'], ['downline', 'ytd']] as $official_cell): ?>
+                                <?php
+                                [$official_scope, $official_timeframe] = $official_cell;
+                                $current_value = $official[$official_scope][$official_timeframe][$metric_key] ?? null;
+                                $previous_value = $official['previous'][$official_scope][$official_timeframe][$metric_key] ?? null;
+                                $change_value = $official_change($current_value, $previous_value);
+                                $change_class = $change_value === null || abs($change_value) < .05 ? 'fb-official-delta-flat' : ($change_value > 0 ? 'fb-official-delta-up' : 'fb-official-delta-down');
+                                $change_icon = $change_value === null || abs($change_value) < .05 ? '→' : ($change_value > 0 ? '▲' : '▼');
+                                ?>
+                                <td>
+                                    <div class="fb-official-current"><?= $format_official($current_value) ?></div>
+                                    <?php if($previous_value !== null && $previous_value !== ''): ?>
+                                        <div class="fb-official-comparison text-muted">
+                                            <span><?= htmlspecialchars((new DateTimeImmutable($official['comparison_period']))->format('Y')) ?>: <?= $format_official($previous_value) ?></span>
+                                            <?php if($change_value !== null): ?><span class="<?= $change_class ?>"><?= $change_icon ?> <?= $format_change($change_value) ?></span><?php endif ?>
+                                        </div>
+                                    <?php endif ?>
+                                </td>
+                            <?php endforeach ?>
+                        </tr>
                     <?php endforeach ?>
                 </tbody></table></div>
             </div>
@@ -230,18 +270,40 @@ $format_percent = static fn($value) => number_format((float) $value, 1, ',', '.'
         <?php if($dashboard['is_manager_view'] || $data->is_admin): ?>
             <div class="card fb-card mb-4">
                 <div class="card-header bg-transparent d-flex flex-column flex-md-row align-items-md-center justify-content-between">
-                    <div><h2 class="h5 mb-1">Moj tim — prioriteti</h2><div class="small text-muted"><?php if($summary['focus_members']): ?>Prikazano je <?= nr($summary['focus_members']) ?> suradnika iz posljednjeg FLP360 Focus Group izvještaja.<?php else: ?>Focus Group još nije uvezen; prioriteti se privremeno temelje na osobnom CC-u i FCC aktivnostima.<?php endif ?></div></div>
+                    <div class="pr-md-4"><h2 class="h5 mb-1">Prioriteti i napredak tima</h2><div class="small text-muted"><?php if($summary['focus_members']): ?>Na popisu je svih <?= nr($summary['focus_members']) ?> suradnika iz posljednjeg FLP360 Focus Group izvještaja. Klikni naziv stupca za sortiranje.<?php else: ?>Focus Group još nije uvezen; popis se privremeno temelji na osobnom CC-u i FCC aktivnostima. Klikni naziv stupca za sortiranje.<?php endif ?></div></div>
                     <input type="search" id="fb-team-search" class="form-control mt-3 mt-md-0" style="max-width:280px" placeholder="Traži ime ili Forever ID" />
                 </div>
                 <div class="table-responsive fb-table-wrap">
                     <table class="table table-hover mb-0" id="fb-team-table">
-                        <thead><tr><th>Suradnik</th><th>FLP status</th><th>Osobni CC</th><th>Do razine</th><th>Zadnja kupnja</th><th>FCC 7 dana</th><th>Sljedeći korak</th></tr></thead>
+                        <thead><tr>
+                            <th aria-sort="none"><button type="button" class="fb-sort-button" data-sort-key="sortMember" data-sort-type="text" aria-pressed="false">Suradnik <span class="fb-sort-icon" aria-hidden="true">↕</span></button></th>
+                            <th aria-sort="none"><button type="button" class="fb-sort-button" data-sort-key="sortStatus" data-sort-type="number" aria-pressed="false">FLP status <span class="fb-sort-icon" aria-hidden="true">↕</span></button></th>
+                            <th aria-sort="none"><button type="button" class="fb-sort-button" data-sort-key="sortPersonalCc" data-sort-type="number" aria-pressed="false">Osobni CC <span class="fb-sort-icon" aria-hidden="true">↕</span></button></th>
+                            <th aria-sort="none"><button type="button" class="fb-sort-button" data-sort-key="sortNeededCc" data-sort-type="number" aria-pressed="false">Do razine <span class="fb-sort-icon" aria-hidden="true">↕</span></button></th>
+                            <th aria-sort="none"><button type="button" class="fb-sort-button" data-sort-key="sortLastPurchase" data-sort-type="text" aria-pressed="false">Zadnja kupnja <span class="fb-sort-icon" aria-hidden="true">↕</span></button></th>
+                            <th aria-sort="none"><button type="button" class="fb-sort-button" data-sort-key="sortFcc7" data-sort-type="number" aria-pressed="false">FCC 7 dana <span class="fb-sort-icon" aria-hidden="true">↕</span></button></th>
+                            <th aria-sort="none"><button type="button" class="fb-sort-button" data-sort-key="sortNextAction" data-sort-type="text" aria-pressed="false">Sljedeći korak <span class="fb-sort-icon" aria-hidden="true">↕</span></button></th>
+                        </tr></thead>
                         <tbody>
                         <?php foreach($data->priority_members as $member): ?>
-                            <?php $is_active = (float) ($member['personal_cc'] ?? 0) > 0; ?>
-                            <tr data-search="<?= htmlspecialchars(mb_strtolower($member['name'] . ' ' . $member['fbo_id'])) ?>">
+                            <?php
+                            $is_active = (float) ($member['personal_cc'] ?? 0) > 0;
+                            $status_label = !empty($member['focus_is_active']) ? '4 CC aktivan' : (!empty($member['focus_previous_active']) ? 'Reaktivacija' : 'Fokus');
+                            $status_order = !empty($member['focus_is_active']) ? 0 : (!empty($member['focus_previous_active']) ? 1 : 2);
+                            $next_action_label = ($member['next_action']['core'] ?? '') . ': ' . ($member['next_action']['title'] ?? '');
+                            ?>
+                            <tr
+                                data-search="<?= htmlspecialchars(mb_strtolower($member['name'] . ' ' . $member['fbo_id'])) ?>"
+                                data-sort-member="<?= htmlspecialchars(mb_strtolower($member['name'] . ' ' . $member['fbo_id'])) ?>"
+                                data-sort-status="<?= $status_order ?>"
+                                data-sort-personal-cc="<?= htmlspecialchars((string) ((float) ($member['personal_cc'] ?? 0))) ?>"
+                                data-sort-needed-cc="<?= !empty($member['next_level']) ? htmlspecialchars((string) ((float) ($member['needed_cc_next_level'] ?? 0))) : '' ?>"
+                                data-sort-last-purchase="<?= htmlspecialchars((string) ($member['last_purchase_date'] ?? '')) ?>"
+                                data-sort-fcc7="<?= (int) ($member['actions_done_7d'] ?? 0) ?>"
+                                data-sort-next-action="<?= htmlspecialchars(mb_strtolower($next_action_label)) ?>"
+                            >
                                 <td><strong><?= htmlspecialchars($member['name']) ?></strong><div class="small text-muted"><?= htmlspecialchars($member['fbo_id']) ?> · <?= htmlspecialchars($member['title'] ?: 'Bez statusa') ?></div></td>
-                                <td><span class="fb-status-dot <?= !empty($member['focus_is_active']) ? 'bg-success' : 'bg-warning' ?>"></span><?= !empty($member['focus_is_active']) ? '4 CC aktivan' : (!empty($member['focus_previous_active']) ? 'Reaktivacija' : 'Fokus') ?></td>
+                                <td><span class="fb-status-dot <?= !empty($member['focus_is_active']) ? 'bg-success' : 'bg-warning' ?>"></span><?= htmlspecialchars($status_label) ?></td>
                                 <td><?= $format_cc($member['personal_cc'] ?? 0) ?></td>
                                 <td><?= !empty($member['next_level']) ? $format_cc($member['needed_cc_next_level'] ?? 0) . '<div class="small text-muted">' . htmlspecialchars($member['next_level']) . '</div>' : '—' ?></td>
                                 <td><?= !empty($member['last_purchase_date']) ? htmlspecialchars((new DateTimeImmutable($member['last_purchase_date']))->format('d.m.Y.')) : '—' ?></td>
@@ -252,7 +314,6 @@ $format_percent = static fn($value) => number_format((float) $value, 1, ',', '.'
                         </tbody>
                     </table>
                 </div>
-                <?php if($summary['focus_members'] > 100): ?><div class="card-footer small text-muted">Prikazano je prvih 100 prioriteta od <?= nr($summary['focus_members']) ?> Focus Group suradnika.</div><?php endif ?>
             </div>
         <?php endif ?>
     <?php endif ?>
@@ -261,11 +322,57 @@ $format_percent = static fn($value) => number_format((float) $value, 1, ',', '.'
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const search = document.getElementById('fb-team-search');
-    if (!search) return;
-    search.addEventListener('input', function () {
-        const value = this.value.trim().toLocaleLowerCase('hr');
-        document.querySelectorAll('#fb-team-table tbody tr').forEach(function (row) {
-            row.style.display = !value || row.dataset.search.includes(value) ? '' : 'none';
+    const table = document.getElementById('fb-team-table');
+    if (!table) return;
+
+    if (search) {
+        search.addEventListener('input', function () {
+            const value = this.value.trim().toLocaleLowerCase('hr');
+            table.querySelectorAll('tbody tr').forEach(function (row) {
+                row.style.display = !value || row.dataset.search.includes(value) ? '' : 'none';
+            });
+        });
+    }
+
+    const tbody = table.querySelector('tbody');
+    const sortButtons = Array.from(table.querySelectorAll('.fb-sort-button'));
+    const originalOrder = new Map(Array.from(tbody.rows).map(function (row, index) { return [row, index]; }));
+    const collator = new Intl.Collator('hr', {numeric: true, sensitivity: 'base'});
+    let activeKey = '';
+    let activeDirection = 'asc';
+
+    sortButtons.forEach(function (button) {
+        button.addEventListener('click', function () {
+            const key = button.dataset.sortKey;
+            const type = button.dataset.sortType;
+            activeDirection = activeKey === key && activeDirection === 'asc' ? 'desc' : 'asc';
+            activeKey = key;
+
+            const rows = Array.from(tbody.rows);
+            rows.sort(function (left, right) {
+                const leftValue = left.dataset[key] ?? '';
+                const rightValue = right.dataset[key] ?? '';
+                const leftMissing = leftValue === '';
+                const rightMissing = rightValue === '';
+                if (leftMissing || rightMissing) {
+                    if (leftMissing !== rightMissing) return leftMissing ? 1 : -1;
+                    return originalOrder.get(left) - originalOrder.get(right);
+                }
+
+                const comparison = type === 'number'
+                    ? Number(leftValue) - Number(rightValue)
+                    : collator.compare(leftValue, rightValue);
+                if (comparison === 0) return originalOrder.get(left) - originalOrder.get(right);
+                return activeDirection === 'asc' ? comparison : -comparison;
+            });
+            rows.forEach(function (row) { tbody.appendChild(row); });
+
+            sortButtons.forEach(function (item) {
+                const selected = item === button;
+                item.setAttribute('aria-pressed', selected ? 'true' : 'false');
+                item.closest('th').setAttribute('aria-sort', selected ? (activeDirection === 'asc' ? 'ascending' : 'descending') : 'none');
+                item.querySelector('.fb-sort-icon').textContent = selected ? (activeDirection === 'asc' ? '▲' : '▼') : '↕';
+            });
         });
     });
 });

@@ -75,7 +75,7 @@ class ForeverBusiness extends Controller {
         $this->add_view_content('content', $view->run([
             'dashboard' => $dashboard,
             'focus_member' => $focus_member,
-            'priority_members' => array_slice($priority_members, 0, 100),
+            'priority_members' => $priority_members,
             'requested_root' => $requested_root,
             'is_admin' => $is_admin,
         ]));

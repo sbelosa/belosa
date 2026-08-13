@@ -40,14 +40,57 @@ function currentFlpMonthLabel(date = new Date()) {
 function findCurrentFlpMonthLabel(labels, date = new Date()) {
     const expected = currentFlpMonthLabel(date);
     const [expectedMonth, expectedYearAndStatus] = expected.split('/');
+    const expectedYear = expectedYearAndStatus.split('-')[0];
+    const monthDate = new Date(Date.UTC(Number(expectedYear), Number(expectedMonth) - 1, 1));
+    const acceptedMonths = new Set([
+        String(Number(expectedMonth)),
+        expectedMonth,
+        new Intl.DateTimeFormat('en', {month: 'short', timeZone: 'UTC'}).format(monthDate),
+        new Intl.DateTimeFormat('en', {month: 'long', timeZone: 'UTC'}).format(monthDate),
+    ].map(value => value.toLocaleLowerCase('en')));
+
     return labels.find(label => {
         const [month, yearAndStatus] = String(label).trim().split('/');
-        return Number(month) === Number(expectedMonth) && yearAndStatus === expectedYearAndStatus;
+        const normalizedMonth = String(month || '').trim().toLocaleLowerCase('en');
+        return acceptedMonths.has(normalizedMonth) && yearAndStatus === expectedYearAndStatus;
     }) || '';
 }
 
 function readyReportMessage(bodyText) {
     return bodyText.match(/Your report generated on[^\n]+is ready\./i)?.[0]?.trim() || '';
+}
+
+function officialFourCoreSnapshots() {
+    /* Verified directly against the attached FLP360 4 Core Summary. Closed
+       periods are immutable and can be safely upserted on every cloud run. */
+    return [
+        {
+            period: '2025-07',
+            values: {
+                open: {
+                    month: {recruitment: 1, retention: 46, productivity: 1.374, development: 8.51},
+                    ytd: {recruitment: 72, retention: 155, productivity: 1.385, development: 9.23},
+                },
+                downline: {
+                    month: {recruitment: 30, retention: 281, productivity: 1.492, development: 14.74},
+                    ytd: {recruitment: 462, retention: 947, productivity: 1.49, development: 8.68},
+                },
+            },
+        },
+        {
+            period: '2026-07',
+            values: {
+                open: {
+                    month: {recruitment: 9, retention: 41, productivity: 1.238, development: 8},
+                    ytd: {recruitment: 53, retention: 116, productivity: 1.38, development: 6.21},
+                },
+                downline: {
+                    month: {recruitment: 30, retention: 246, productivity: 1.4, development: 12.68},
+                    ytd: {recruitment: 174, retention: 695, productivity: 1.376, development: 8.25},
+                },
+            },
+        },
+    ];
 }
 
 async function saveDownload(download, targetName) {
@@ -236,6 +279,37 @@ async function uploadReport(filePath, period, syncUrl, syncKey) {
     return payload;
 }
 
+async function uploadFourCoreSnapshot(snapshot, syncUrl, syncKey) {
+    const form = new URLSearchParams({metric: 'four_core', report_period: snapshot.period});
+    for(const [scope, timeframes] of Object.entries(snapshot.values)) {
+        for(const [timeframe, metrics] of Object.entries(timeframes)) {
+            for(const [metric, value] of Object.entries(metrics)) {
+                form.set(`${scope}_${timeframe}_${metric}`, String(value));
+            }
+        }
+    }
+
+    const response = await fetch(syncUrl, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+            'X-FCC-Forever-Sync-Key': syncKey,
+        },
+        body: form,
+    });
+    const responseText = await response.text();
+    let payload;
+    try {
+        payload = JSON.parse(responseText);
+    } catch {
+        throw new Error(`FCC je vratio neispravan odgovor za službeni 4 Core ${snapshot.period}.`);
+    }
+    if(!response.ok || payload.status !== 'success') {
+        throw new Error(payload?.error?.message || `FCC sinkronizacija službenog 4 Core zapisa ${snapshot.period} nije uspjela.`);
+    }
+    return payload;
+}
+
 async function main() {
     const username = requiredEnvironment('FLP360_USERNAME');
     const password = requiredEnvironment('FLP360_PASSWORD');
@@ -249,6 +323,11 @@ async function main() {
 
     try {
         await login(page, username, password);
+
+        for(const snapshot of officialFourCoreSnapshots()) {
+            await uploadFourCoreSnapshot(snapshot, syncUrl, syncKey);
+            console.log(`Službeni 4 Core: ${snapshot.period} je potvrđen na FCC-u.`);
+        }
 
         /* Request the slow asynchronous Downline first, then synchronize the two
          * immediately available reports while FLP360 prepares it in the background. */
@@ -309,6 +388,6 @@ if(process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.arg
     });
 }
 
-export {currentFlpMonthLabel, findCurrentFlpMonthLabel, readyReportMessage, validateDownline, validateXlsx, zagrebPeriod};
+export {currentFlpMonthLabel, findCurrentFlpMonthLabel, officialFourCoreSnapshots, readyReportMessage, validateDownline, validateXlsx, zagrebPeriod};
 
 /* /Custom code: FC-2026-08-13 */

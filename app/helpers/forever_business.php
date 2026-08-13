@@ -1241,6 +1241,26 @@ function forever_business_get_four_core_snapshot(string $fbo_id, string $period)
             'source_note' => $row->source_note,
         ];
     }
+
+    /* The FLP360 summary shows the same month from the prior year beside the
+       current values. Keep that comparison as a separate, official snapshot so
+       a negative percentage can never be mistaken for negative CC. */
+    $comparison_period = (new \DateTimeImmutable($snapshot_period))->modify('-1 year')->format('Y-m-01');
+    $comparison_rows = db()->where('fbo_id', $fbo_id)->where('period_month', $comparison_period)->get('forever_business_four_core_snapshots') ?? [];
+    if($comparison_rows) {
+        $result['comparison_period'] = $comparison_period;
+        foreach($comparison_rows as $row) {
+            $result['previous'][$row->business_scope][$row->timeframe] = [
+                'recruitment' => $row->recruitment,
+                'retention' => $row->retention,
+                'productivity' => $row->productivity,
+                'development' => $row->development,
+                'captured_at' => $row->captured_at,
+                'source_note' => $row->source_note,
+            ];
+        }
+    }
+
     return $result;
 }
 
