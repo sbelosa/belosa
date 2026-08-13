@@ -1,6 +1,7 @@
 /* Custom code: FC-2026-08-13: Cloud FLP360 synchronization regression checks */
 
 import assert from 'node:assert/strict';
+import fs from 'node:fs/promises';
 import {
     currentFlpMonthLabel,
     readyReportMessage,
@@ -12,11 +13,14 @@ import {
 const downlinePath = process.argv[2];
 const focusPath = process.argv[3];
 const fourCcPath = process.argv[4];
+const syncSource = await fs.readFile(new URL('./flp360_cloud_sync.mjs', import.meta.url), 'utf8');
 
 assert.equal(zagrebPeriod(new Date('2026-08-13T19:00:00Z')), '2026-08');
 assert.equal(currentFlpMonthLabel(new Date('2026-08-13T19:00:00Z')), '08/2026-Not Closed');
 assert.equal(readyReportMessage('Your report generated on Aug 13, 2026 at 12:22pm is ready.\nClick here'), 'Your report generated on Aug 13, 2026 at 12:22pm is ready.');
 assert.equal(readyReportMessage('Your report is being generated.'), '');
+assert.match(syncSource, /#user-input-login-id:visible/);
+assert.match(syncSource, /input\[name="password"\]:visible/);
 
 if(downlinePath) {
     const result = await validateDownline(downlinePath);

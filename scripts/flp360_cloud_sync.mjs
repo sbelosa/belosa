@@ -78,8 +78,11 @@ async function login(page, username, password) {
     await page.waitForURL(url => url.origin !== FLP360_BASE_URL || url.pathname === '/dashboard', {timeout: 60000}).catch(() => {});
 
     if(new URL(page.url()).origin !== FLP360_BASE_URL) {
-        const usernameInput = page.locator('#username, input[name="username"], input[type="email"]').first();
-        const passwordInput = page.locator('#password, input[name="password"], input[type="password"]').first();
+        /* FLP360 currently renders a hidden legacy username field together with the
+         * visible SSO form. Restrict every fallback to visible controls so the cloud
+         * runner cannot wait on the wrong Angular input. */
+        const usernameInput = page.locator('#user-input-login-id:visible, #username:visible, input[name="username"]:visible, input[type="email"]:visible').first();
+        const passwordInput = page.locator('#password:visible, input[name="password"]:visible, input[type="password"]:visible').first();
         await usernameInput.waitFor({state: 'visible', timeout: 30000});
         await usernameInput.fill(username);
         await passwordInput.fill(password);
