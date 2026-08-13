@@ -79,6 +79,7 @@ class ForeverBusinessSync extends Controller {
                 'metric' => 'status',
                 'period' => $dashboard['period'],
                 'summary' => $summary,
+                'usage' => forever_business_get_usage_summary(),
                 'official_four_core' => $dashboard['official_four_core'],
                 'last_sync_at' => $dashboard['last_sync_at'],
             ]);
