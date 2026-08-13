@@ -35,6 +35,9 @@ jobs:
         with:
           node-version: '20'
 
+      - name: Validate synchronization rules
+        run: node scripts/test_flp360_cloud_sync.mjs
+
       - name: Check secure configuration
         id: config
         env:
