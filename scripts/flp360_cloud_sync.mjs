@@ -221,15 +221,19 @@ async function requestDownline(page) {
 
     const initialMessage = readyReportMessage(await page.locator('body').innerText());
     await page.getByRole('button', {name: 'Run Report', exact: true}).click();
-    await page.waitForTimeout(1000);
-    await page.locator('.loader-overlay').last().waitFor({state: 'hidden', timeout: 180000});
-    await page.locator('a.excel-download').click();
+    /* Rendering the complete international tree can leave FLP360's visual loader
+       active indefinitely. The export action is a separate server-side queue and
+       does not require that grid rendering to finish, so request it directly while
+       preserving the selected filters. */
+    await page.waitForTimeout(3000);
+    await page.locator('a.excel-download').click({force: true});
     const dialog = page.getByRole('dialog');
     await dialog.waitFor({state: 'visible', timeout: 15000});
     await dialog.getByText(ROOT_FBO_ID, {exact: false}).waitFor({state: 'visible', timeout: 30000}).catch(() => {
         throw new Error('Downline izvoz nije vezan uz očekivani glavni Forever ID.');
     });
-    await dialog.getByRole('button', {name: 'Download Report', exact: true}).click();
+    await dialog.getByRole('button', {name: 'Download Report', exact: true}).click({force: true});
+    console.log('Downline izvoz je poslan u FLP360 red za generiranje.');
 
     return initialMessage;
 }
