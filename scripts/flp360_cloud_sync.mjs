@@ -37,6 +37,15 @@ function currentFlpMonthLabel(date = new Date()) {
     return `${month}/${year}-Not Closed`;
 }
 
+function findCurrentFlpMonthLabel(labels, date = new Date()) {
+    const expected = currentFlpMonthLabel(date);
+    const [expectedMonth, expectedYearAndStatus] = expected.split('/');
+    return labels.find(label => {
+        const [month, yearAndStatus] = String(label).trim().split('/');
+        return Number(month) === Number(expectedMonth) && yearAndStatus === expectedYearAndStatus;
+    }) || '';
+}
+
 function readyReportMessage(bodyText) {
     return bodyText.match(/Your report generated on[^\n]+is ready\./i)?.[0]?.trim() || '';
 }
@@ -153,7 +162,11 @@ async function downloadFourCcActive(page) {
     const selects = page.locator('select');
     await selects.first().waitFor({state: 'visible', timeout: 60000});
     await selects.nth(0).selectOption({label: 'Global'});
-    await selects.nth(1).selectOption({label: currentFlpMonthLabel()});
+    const periodOptions = selects.nth(1).locator('option');
+    await periodOptions.first().waitFor({state: 'attached', timeout: 60000});
+    const currentPeriodLabel = findCurrentFlpMonthLabel(await periodOptions.allTextContents());
+    if(!currentPeriodLabel) throw new Error(`4 CC Active nema očekivano otvoreno razdoblje ${currentFlpMonthLabel()}.`);
+    await selects.nth(1).selectOption({label: currentPeriodLabel});
     await selects.nth(2).selectOption({label: 'Active That Period'});
     await page.getByRole('button', {name: 'Run Report', exact: true}).click();
 
@@ -204,22 +217,48 @@ async function main() {
 
         /* Request the slow asynchronous Downline first, then synchronize the two
          * immediately available reports while FLP360 prepares it in the background. */
-        const initialDownlineMessage = await requestDownline(page);
+        const failures = [];
+        let initialDownlineMessage = '';
+        let downlineRequested = false;
+        try {
+            initialDownlineMessage = await requestDownline(page);
+            downlineRequested = true;
+        } catch(error) {
+            failures.push(`Downline zahtjev: ${error.message}`);
+        }
 
-        const focusPath = await downloadFocusGroup(page);
-        const focusValidation = await validateXlsx(focusPath, 'Focus Group');
-        const focusResult = await uploadReport(focusPath, period, syncUrl, syncKey);
-        console.log(`Focus Group: ${focusValidation.bytes} bajtova, duplicate=${Boolean(focusResult.duplicate)}.`);
+        try {
+            const focusPath = await downloadFocusGroup(page);
+            const focusValidation = await validateXlsx(focusPath, 'Focus Group');
+            const focusResult = await uploadReport(focusPath, period, syncUrl, syncKey);
+            console.log(`Focus Group: ${focusValidation.bytes} bajtova, duplicate=${Boolean(focusResult.duplicate)}.`);
+        } catch(error) {
+            failures.push(`Focus Group: ${error.message}`);
+        }
 
-        const fourCcPath = await downloadFourCcActive(page);
-        const fourCcValidation = await validateXlsx(fourCcPath, '4 CC Active');
-        const fourCcResult = await uploadReport(fourCcPath, period, syncUrl, syncKey);
-        console.log(`4 CC Active: ${fourCcValidation.bytes} bajtova, duplicate=${Boolean(fourCcResult.duplicate)}.`);
+        try {
+            const fourCcPath = await downloadFourCcActive(page);
+            const fourCcValidation = await validateXlsx(fourCcPath, '4 CC Active');
+            const fourCcResult = await uploadReport(fourCcPath, period, syncUrl, syncKey);
+            console.log(`4 CC Active: ${fourCcValidation.bytes} bajtova, duplicate=${Boolean(fourCcResult.duplicate)}.`);
+        } catch(error) {
+            failures.push(`4 CC Active: ${error.message}`);
+        }
 
-        const downlinePath = await downloadDownline(page, initialDownlineMessage);
-        const downlineValidation = await validateDownline(downlinePath);
-        const downlineResult = await uploadReport(downlinePath, period, syncUrl, syncKey);
-        console.log(`Downline: ${downlineValidation.rows} redaka (${downlineValidation.hrvRows} HRV), duplicate=${Boolean(downlineResult.duplicate)}.`);
+        if(downlineRequested) {
+            try {
+                const downlinePath = await downloadDownline(page, initialDownlineMessage);
+                const downlineValidation = await validateDownline(downlinePath);
+                const downlineResult = await uploadReport(downlinePath, period, syncUrl, syncKey);
+                console.log(`Downline: ${downlineValidation.rows} redaka (${downlineValidation.hrvRows} HRV), duplicate=${Boolean(downlineResult.duplicate)}.`);
+            } catch(error) {
+                failures.push(`Downline: ${error.message}`);
+            }
+        }
+
+        if(failures.length) {
+            throw new Error(`Djelomična sinkronizacija: ${failures.join(' | ')}`);
+        }
 
         console.log(`FLP360 → FCC sinkronizacija za ${period} završena je uspješno.`);
     } finally {
@@ -235,6 +274,6 @@ if(process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.arg
     });
 }
 
-export {currentFlpMonthLabel, readyReportMessage, validateDownline, validateXlsx, zagrebPeriod};
+export {currentFlpMonthLabel, findCurrentFlpMonthLabel, readyReportMessage, validateDownline, validateXlsx, zagrebPeriod};
 
 /* /Custom code: FC-2026-08-13 */
