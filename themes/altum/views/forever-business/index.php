@@ -176,8 +176,8 @@ $format_percent = static fn($value) => number_format((float) $value, 1, ',', '.'
                             <p class="mb-2"><?= htmlspecialchars($action['instruction']) ?></p>
                             <?php if(!empty($action['checklist'])): ?><ol class="pl-3 mb-3"><?php foreach($action['checklist'] as $item): ?><li class="mb-1"><?= htmlspecialchars($item) ?></li><?php endforeach ?></ol><?php endif ?>
                             <div class="small font-weight-bold"><i class="fas fa-check-circle text-success mr-1"></i> <?= htmlspecialchars($action['success_definition']) ?></div>
-                            <div class="small text-muted mt-2">Ovaj korak nije vezan uz određeni dan: ostaje ovdje dok ga ne označiš dovršenim. Nakon potvrde odmah se postavlja sljedeći korak.</div>
-                            <div class="small text-muted mt-1">Svaki korak je dio istog sustava: više potvrđenih 4 CC aktivnosti, veći Total/Non-Manager CC i stabilan put tima prema 1.000 CC.</div>
+                            <div class="small text-muted mt-2">Ovaj korak ostaje aktivan dok ga ne dovršiš. Nakon potvrde automatski će se prikazati tvoj sljedeći korak.</div>
+                            <div class="small text-muted mt-1">Redovitim izvršavanjem koraka gradiš dobre poslovne navike, ostvaruješ više kvalitetnih kontakata i napreduješ prema svojoj sljedećoj razini.</div>
                         </div>
                         <?php if(!empty($action['can_complete'])): ?><div class="col-lg-4 mt-4 mt-lg-0">
                             <form method="post">
