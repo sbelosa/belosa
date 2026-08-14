@@ -40,7 +40,7 @@ $assertions = [
     'team priorities include the complete imported list' => !str_contains($user, 'array_slice($priority_members, 0, 100)'),
     'team priorities support accessible client-side sorting' => str_contains($view, 'fb-sort-button') && str_contains($view, 'Intl.Collator') && str_contains($view, "setAttribute('aria-sort'"),
     'official 4 Core table labels prior-year values and computed changes' => str_contains($view, 'fb-official-comparison') && str_contains($view, '$official_change'),
-    'sync notice distinguishes checks from new imports in Zagreb time' => str_contains($view, 'Zadnja uspješna provjera:') && str_contains($view, 'last_sync_was_duplicate') && str_contains($helper, 'Europe/Zagreb'),
+    'sync notice uses clear member-facing wording and Zagreb time' => str_contains($view, 'Podaci provjereni:') && str_contains($view, 'Trenutačno su prikazani najnoviji dostupni bodovi') && str_contains($view, 'last_sync_was_duplicate') && str_contains($helper, 'Europe/Zagreb'),
 ];
 
 $failed = array_keys(array_filter($assertions, static fn($passed) => !$passed));

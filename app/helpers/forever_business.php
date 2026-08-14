@@ -1213,10 +1213,10 @@ function forever_business_get_action(array $member, ?array $metric, int $complet
         return [
             'core' => 'Productivity',
             'key' => 'wait_for_verified_data',
-            'title' => 'Pričekaj potvrđenu FLP360 sinkronizaciju',
-            'instruction' => 'Tvoj Forever ID je povezan, ali za odabrani mjesec još nema službenih CC podataka.',
-            'checklist' => ['Provjeri je li Forever ID na FCC računu ispravan.', 'Pogledaj vrijeme zadnje uspješne sinkronizacije.', 'Ako si nakon tog vremena napravio/la promet, pričekaj sljedeću sinkronizaciju.'],
-            'success_definition' => 'Zadatak će se pojaviti čim stignu potvrđeni podaci.',
+            'title' => 'Tvoji podaci još se osvježavaju',
+            'instruction' => 'Za odabrani mjesec još nisu dostupni svi podaci potrebni za tvoj osobni sljedeći korak.',
+            'checklist' => ['Provjeri je li Forever ID na tvojem FCC računu ispravan.', 'Pogledaj kada su bodovi posljednji put osvježeni.', 'Ako si nakon tog vremena ostvario/la novi promet, vrati se nakon sljedećeg osvježavanja.'],
+            'success_definition' => 'Tvoj sljedeći korak prikazat će se automatski čim podaci budu dostupni.',
             'target' => 0,
             'can_complete' => false,
         ];

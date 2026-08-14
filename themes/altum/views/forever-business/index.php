@@ -57,7 +57,7 @@ $format_change = static function(float $value): string {
             <div>
                 <div class="text-uppercase small font-weight-bold text-warning mb-2">Forever napredak · <?= htmlspecialchars($period_label) ?></div>
                 <h1 class="h2 mb-2"><?= $data->is_admin ? 'Cijela struktura. Jedan mjerljiv cilj.' : 'Tvoja aktivnost, pozicija i sljedeći korak.' ?></h1>
-                <p class="mb-0 opacity-75">CC vrijednosti i statusi dolaze iz provjerenog FLP360 importa; FCC ih ne procjenjuje.</p>
+                <p class="mb-0 opacity-75"><?= $data->is_admin ? 'Na jednom mjestu pratiš aktivnost, bodove i napredak cijele strukture.' : 'Ovdje pratiš svoje bodove, aktivnost i napredak prema sljedećoj poziciji.' ?></p>
             </div>
             <?php if(!empty($dashboard['periods'])): ?>
                 <form method="get" class="mt-4 mt-lg-0 d-flex flex-column flex-sm-row">
@@ -94,7 +94,7 @@ $format_change = static function(float $value): string {
             <div class="mt-4">
                 <div class="d-flex justify-content-between mb-2"><span><strong><?= !empty($verified['is_officially_active']) ? '4 CC aktivnost ostvarena' : 'Napredak prema 4 CC aktivnosti' ?></strong></span><span><?= $format_percent($activity_progress) ?></span></div>
                 <div class="progress"><div class="progress-bar" style="width: <?= $activity_progress ?>%"></div></div>
-                <small class="d-block mt-2 opacity-75">Uvjet: najmanje 1 osobni CC i 4 Total Active CC unutar iste FLP360 regije.</small>
+                <small class="d-block mt-2 opacity-75">Za aktivnost su potrebna ukupno 4 CC u istoj regiji, od čega najmanje 1 CC mora biti na tvojem osobnom Forever ID-u.</small>
             </div>
         <?php endif ?>
     </div>
@@ -105,21 +105,25 @@ $format_change = static function(float $value): string {
     ?>
     <div class="fb-sync px-3 py-2 mb-4">
         <i class="fas fa-fw fa-sync-alt mr-1"></i>
-        <strong>Zadnja uspješna provjera:</strong>
-        <?= $last_sync_display !== '' ? htmlspecialchars($last_sync_display) : 'još nije izvršena' ?>.
-        <?php if(!empty($dashboard['last_sync_was_duplicate'])): ?>
-            <span class="text-muted">FLP360 je vratio isti izvještaj pa bodovi nisu ponovno zbrojeni. Zadnji novi uvoz: <?= $last_import_display !== '' ? htmlspecialchars($last_import_display) : 'još nije izvršen' ?>.</span>
+        <?php if($last_sync_display !== ''): ?>
+            <strong>Podaci provjereni:</strong> <?= htmlspecialchars($last_sync_display) ?>.
+            <?php if(!empty($dashboard['last_sync_was_duplicate']) && $last_import_display !== ''): ?>
+                <span class="text-muted">Trenutačno su prikazani najnoviji dostupni bodovi, ažurirani <?= htmlspecialchars($last_import_display) ?>.</span>
+            <?php else: ?>
+                <span class="text-muted">Prikazani su najnoviji dostupni bodovi.</span>
+            <?php endif ?>
+            <span class="d-block text-muted">Ako si nakon toga ostvario/la novi promet, prikazat će se automatski nakon sljedećeg osvježavanja.</span>
         <?php else: ?>
-            <span class="text-muted">U toj provjeri pronađeni su novi podaci.</span>
+            <strong>Podaci još nisu dostupni.</strong>
+            <span class="d-block text-muted">Tvoji bodovi prikazat će se automatski nakon prvog osvježavanja.</span>
         <?php endif ?>
-        <span class="d-block text-muted">Vrijeme je prikazano za Europe/Zagreb. Noviji promet pojavit će se kada FLP360 pripremi novu datoteku.</span>
     </div>
 
     <?php if(empty($dashboard['members'])): ?>
-        <div class="alert alert-info">Još nema povezanih podataka za tvoj Forever ID. Provjeri ID na FCC računu; podaci će se pojaviti nakon sljedećeg uspješnog FLP360 importa u kojem se ID nalazi.</div>
+        <div class="alert alert-info"><strong>Tvoji bodovi još nisu dostupni.</strong> Provjeri je li Forever ID na tvojem FCC računu ispravan. Podaci će se prikazati automatski nakon sljedećeg osvježavanja.</div>
     <?php else: ?>
         <?php if(!$data->is_admin && $data->focus_member && empty($data->focus_member['is_in_current_structure'])): ?>
-            <div class="alert alert-info"><strong>Tvoj osobni pregled je aktivan.</strong> Forever ID je povezan s FCC računom, ali bodovi još nisu pronađeni u posljednjem administratorskom izvještaju. Nakon sljedeće sinkronizacije prikaz će se automatski popuniti.</div>
+            <div class="alert alert-info"><strong>Tvoj osobni pregled je spreman.</strong> Bodovi za odabrani mjesec još nisu dostupni i prikazat će se automatski nakon sljedećeg osvježavanja.</div>
         <?php endif ?>
         <?php if($data->is_admin && !empty($dashboard['official_four_core'])): ?>
             <?php $official = $dashboard['official_four_core']; ?>
@@ -166,16 +170,16 @@ $format_change = static function(float $value): string {
                     <div class="card fb-card fb-progress-panel h-100"><div class="card-body p-4">
                         <div class="d-flex justify-content-between align-items-start mb-3">
                             <div><div class="small text-uppercase text-muted">Mjesečna aktivnost</div><h2 class="h5 mb-0">4 CC aktivnost</h2></div>
-                            <span class="badge badge-<?= !empty($verified['is_officially_active']) ? 'success' : 'warning' ?>"><?= !empty($verified['is_officially_active']) ? 'FLP360 potvrđeno' : 'Još nije ostvareno' ?></span>
+                            <span class="badge badge-<?= !empty($verified['is_officially_active']) ? 'success' : 'warning' ?>"><?= !empty($verified['is_officially_active']) ? 'Aktivnost ostvarena' : 'Još nije ostvareno' ?></span>
                         </div>
                         <?php if(!empty($verified['has_activity_data'])): ?>
-                            <div class="d-flex justify-content-between small mb-1"><span>Osobni CC · minimum 1</span><strong><?= $format_cc($verified['personal_cc']) ?> / 1,000</strong></div>
+                            <div class="d-flex justify-content-between small mb-1"><span>Osobni CC · potrebno najmanje 1</span><strong><?= $format_cc($verified['personal_cc']) ?> / 1,000</strong></div>
                             <div class="progress mb-3"><div class="progress-bar" style="width: <?= $verified['personal_progress'] ?>%"></div></div>
-                            <div class="d-flex justify-content-between small mb-1"><span>Total Active CC · ista regija · minimum 4</span><strong><?= $format_cc($verified['total_active_cc']) ?> / 4,000</strong></div>
+                            <div class="d-flex justify-content-between small mb-1"><span>Ukupni aktivni CC · potrebno najmanje 4</span><strong><?= $format_cc($verified['total_active_cc']) ?> / 4,000</strong></div>
                             <div class="progress mb-3"><div class="progress-bar" style="width: <?= $verified['regional_progress'] ?>%"></div></div>
-                            <div class="small text-muted">FCC koristi službeni FLP360 4CC Active status i ne zbraja aktivnosti iz različitih regija.</div>
+                            <div class="small text-muted">Za aktivnost su potrebna ukupno 4 CC u istoj regiji. Najmanje 1 CC mora biti na tvojem osobnom Forever ID-u, a preostali CC mogu doći od tvojih kupaca ispod statusa Assistant Supervisor.</div>
                         <?php else: ?>
-                            <div class="alert alert-info mb-0">Za odabrani mjesec još nema potvrđenih podataka o aktivnosti.</div>
+                            <div class="alert alert-info mb-0">Podaci o aktivnosti za odabrani mjesec još nisu dostupni. Prikazat će se automatski nakon sljedećeg osvježavanja.</div>
                         <?php endif ?>
                     </div></div>
                 </div>
@@ -183,12 +187,12 @@ $format_change = static function(float $value): string {
                     <div class="card fb-card fb-progress-panel h-100"><div class="card-body p-4">
                         <div class="small text-uppercase text-muted">Put do sljedeće pozicije</div>
                         <h2 class="h5 mb-1"><?= htmlspecialchars($rank['current_title']) ?> <i class="fas fa-long-arrow-alt-right mx-1 text-muted"></i> <?= htmlspecialchars($rank['next_title']) ?></h2>
-                        <div class="small text-muted mb-3"><?= $rank['mode'] === 'manager' ? 'Za managera se mjeri službeni Non-Manager CC u odabranom mjesecu.' : 'Napredak koristi službeni Total CC iz uvezenih kalendarskih mjeseci.' ?></div>
+                        <div class="small text-muted mb-3"><?= $rank['mode'] === 'manager' ? 'Ovdje pratiš svoj Non-Manager CC i koliko ti nedostaje do sljedećeg cilja.' : 'Ovdje pratiš svoj ukupni CC i koliko ti nedostaje do sljedeće pozicije.' ?></div>
                         <?php foreach($rank['windows'] as $window): ?>
                             <div class="mb-3">
-                                <div class="d-flex justify-content-between small mb-1"><span><?= htmlspecialchars($window['label']) ?> · <?= htmlspecialchars($window['metric']) ?></span><strong><?= $window['complete'] ? $format_cc($window['current']) . ' / ' . $format_cc($window['target']) : 'čeka potpune mjesece' ?></strong></div>
+                                <div class="d-flex justify-content-between small mb-1"><span><?= htmlspecialchars($window['label']) ?> · <?= htmlspecialchars($window['metric']) ?></span><strong><?= $window['complete'] ? $format_cc($window['current']) . ' / ' . $format_cc($window['target']) : 'podaci još nisu dostupni' ?></strong></div>
                                 <div class="progress"><div class="progress-bar fb-rank-bar" style="width: <?= $window['progress'] ?>%"></div></div>
-                                <div class="small mt-1 <?= $window['achieved'] ? 'text-success font-weight-bold' : 'text-muted' ?>"><?= !$window['complete'] ? 'Nedostaje jedan ili više uvoznih mjeseci za siguran izračun.' : ($window['achieved'] ? 'Uvjet je ostvaren prema uvezenim CC podacima.' : 'Nedostaje još ' . $format_cc($window['gap']) . ' CC.') ?></div>
+                                <div class="small mt-1 <?= $window['achieved'] ? 'text-success font-weight-bold' : 'text-muted' ?>"><?= !$window['complete'] ? 'Napredak će se prikazati kada budu dostupni svi potrebni mjeseci.' : ($window['achieved'] ? 'Uvjet je ostvaren.' : 'Nedostaje još ' . $format_cc($window['gap']) . ' CC.') ?></div>
                             </div>
                         <?php endforeach ?>
                         <?php if($rank['mode'] === 'manager' && !empty($rank['windows'][0]['complete']) && (float) $rank['windows'][0]['current'] >= 60): ?><div class="alert alert-success py-2 mb-0">Cilj 60 Non-Manager CC je ostvaren; aktiviran je sljedeći cilj od 100 CC.</div><?php endif ?>
@@ -197,7 +201,7 @@ $format_change = static function(float $value): string {
                 </div>
             </div>
 
-            <div class="card fb-card mb-4"><div class="card-header bg-transparent"><h2 class="h5 mb-0">Moji provjereni FLP360 podaci</h2></div><div class="card-body"><div class="fb-verified-grid">
+            <div class="card fb-card mb-4"><div class="card-header bg-transparent"><h2 class="h5 mb-0">Moji Forever podaci</h2></div><div class="card-body"><div class="fb-verified-grid">
                 <div class="fb-verified-item"><div class="small text-muted">Trenutačna pozicija</div><strong><?= htmlspecialchars($mine['title'] ?: 'Bez statusa') ?></strong></div>
                 <div class="fb-verified-item"><div class="small text-muted">Osobni CC</div><strong><?= isset($mine['personal_cc']) ? $format_cc($mine['personal_cc']) : '—' ?></strong></div>
                 <div class="fb-verified-item"><div class="small text-muted">Total CC</div><strong><?= isset($mine['total_cc']) ? $format_cc($mine['total_cc']) : '—' ?></strong></div>
@@ -252,7 +256,7 @@ $format_change = static function(float $value): string {
         <?php if(!empty($dashboard['trend'])): ?>
             <?php $trend_max = $data->is_admin ? max(1000, ...array_map(static fn($row) => (float) $row['total_cc'], $dashboard['trend'])) : max(1, ...array_map(static fn($row) => (float) $row['total_cc'], $dashboard['trend'])); ?>
             <div class="card fb-card mb-4">
-                <div class="card-header bg-transparent"><h2 class="h5 mb-1"><?= $data->is_admin ? 'Trend prema cilju 1.000 CC' : 'Moj ukupni CC trend' ?></h2><div class="small text-muted"><?= $data->is_admin ? (!empty($dashboard['official_total_cc']) ? 'Službeni FLP360 Total CC za GLOBAL. Otvoreni mjesec je jasno označen.' : 'Privremeni FCC zbroj osobnih CC; učitaj službeni FLP360 Total CC za točan timski cilj.') : 'Duljina crte prikazuje uvezeni Total CC. Zelena znači da je 4 CC aktivnost potvrđena, a crvena da aktivnost nije ostvarena.' ?></div></div>
+                <div class="card-header bg-transparent"><h2 class="h5 mb-1"><?= $data->is_admin ? 'Trend prema cilju 1.000 CC' : 'Moj ukupni CC trend' ?></h2><div class="small text-muted"><?= $data->is_admin ? (!empty($dashboard['official_total_cc']) ? 'Službeni FLP360 Total CC za GLOBAL. Otvoreni mjesec je jasno označen.' : 'Privremeni FCC zbroj osobnih CC; učitaj službeni FLP360 Total CC za točan timski cilj.') : 'Duljina crte prikazuje tvoj ukupni CC. Zelena znači da je 4 CC aktivnost ostvarena, a crvena da još nije ostvarena.' ?></div></div>
                 <div class="card-body">
                     <?php foreach($dashboard['trend'] as $trend_row): ?>
                         <?php
@@ -270,7 +274,7 @@ $format_change = static function(float $value): string {
                             </div>
                         </div>
                     <?php endforeach ?>
-                    <div class="small text-muted"><?php if($data->is_admin): ?>* mjesec nije zatvoren. Skala je 1.000 CC kako bi napredak bio usporediv iz mjeseca u mjesec.<?php else: ?>* mjesec nije zatvoren. Skala se prilagođava najvećem prikazanom Total CC rezultatu. Siva crta znači da za taj mjesec nema uvezenih podataka o aktivnosti.<?php endif ?></div>
+                    <div class="small text-muted"><?php if($data->is_admin): ?>* mjesec nije zatvoren. Skala je 1.000 CC kako bi napredak bio usporediv iz mjeseca u mjesec.<?php else: ?>* mjesec nije zatvoren. Skala se prilagođava najvećem prikazanom Total CC rezultatu. Siva crta znači da podaci o aktivnosti za taj mjesec još nisu dostupni.<?php endif ?></div>
                     <?php if(!$data->is_admin): ?><div class="small text-muted mt-2">Bez potvrđene 4 CC aktivnosti bodovi iz strukture ne ulaze u obračun isplate.</div><?php endif ?>
                 </div>
             </div>
