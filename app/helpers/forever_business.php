@@ -1029,12 +1029,12 @@ function forever_business_provision_fcc_members(): int {
          is_manager, is_privacy_requested, is_in_current_structure, email_hash, phone_hash,
          first_seen_import_id, last_seen_import_id, created_at, updated_at)
         SELECT
-            REPLACE(JSON_UNQUOTE(JSON_EXTRACT(preferences, '$.meta.foreverId')), '-', ''),
+            REPLACE(TRIM(COALESCE(JSON_UNQUOTE(JSON_EXTRACT(preferences, '$.meta.foreverId')), '')), '-', ''),
             LEFT(name, 160), 'FCC suradnik', NULL, NULL, NULL, NULL, NULL,
             0, 0, 0, NULL, NULL, NULL, NULL, '{$now}', '{$now}'
         FROM users
         WHERE type = 0 AND status = 1
-          AND REPLACE(JSON_UNQUOTE(JSON_EXTRACT(preferences, '$.meta.foreverId')), '-', '') REGEXP '^[0-9]{12}$'");
+          AND REPLACE(TRIM(COALESCE(JSON_UNQUOTE(JSON_EXTRACT(preferences, '$.meta.foreverId')), '')), '-', '') REGEXP '^[0-9]{12}$'");
     return $result ? max(0, (int) database()->affected_rows) : 0;
 }
 
@@ -1707,9 +1707,9 @@ function forever_business_get_usage_summary(): array {
         SUM(m.fbo_id IS NOT NULL AND m.is_in_current_structure = 0) AS waiting_profile_accounts
         FROM users u
         LEFT JOIN forever_business_members m
-            ON m.fbo_id = REPLACE(JSON_UNQUOTE(JSON_EXTRACT(u.preferences, '$.meta.foreverId')), '-', '')
+            ON m.fbo_id = REPLACE(TRIM(COALESCE(JSON_UNQUOTE(JSON_EXTRACT(u.preferences, '$.meta.foreverId')), '')), '-', '')
         WHERE u.type = 0
-          AND REPLACE(JSON_UNQUOTE(JSON_EXTRACT(u.preferences, '$.meta.foreverId')), '-', '') REGEXP '^[0-9]{12}$'");
+          AND REPLACE(TRIM(COALESCE(JSON_UNQUOTE(JSON_EXTRACT(u.preferences, '$.meta.foreverId')), '')), '-', '') REGEXP '^[0-9]{12}$'");
     $profile_accounts = $profile_accounts_result ? $profile_accounts_result->fetch_assoc() : [];
 
     $team_result = database()->query("SELECT
@@ -1718,7 +1718,7 @@ function forever_business_get_usage_summary(): array {
         SUM(u.last_activity >= '{$since_180d}') AS matched_active_180d
         FROM users u
         INNER JOIN forever_business_members m
-            ON m.fbo_id = REPLACE(JSON_UNQUOTE(JSON_EXTRACT(u.preferences, '$.meta.foreverId')), '-', '')
+            ON m.fbo_id = REPLACE(TRIM(COALESCE(JSON_UNQUOTE(JSON_EXTRACT(u.preferences, '$.meta.foreverId')), '')), '-', '')
             AND m.is_in_current_structure = 1
         WHERE u.type = 0");
     $team = $team_result ? $team_result->fetch_assoc() : [];
@@ -1758,7 +1758,7 @@ function forever_business_get_usage_summary(): array {
         COUNT(*) AS imported_managers,
         SUM(EXISTS(
             SELECT 1 FROM users u
-            WHERE REPLACE(JSON_UNQUOTE(JSON_EXTRACT(u.preferences, '$.meta.foreverId')), '-', '') = m.fbo_id
+            WHERE REPLACE(TRIM(COALESCE(JSON_UNQUOTE(JSON_EXTRACT(u.preferences, '$.meta.foreverId')), '')), '-', '') = m.fbo_id
         )) AS managers_with_fcc_account
         FROM forever_business_members m
         WHERE m.is_manager = 1 AND m.is_in_current_structure = 1");
