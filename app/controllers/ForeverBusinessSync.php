@@ -88,6 +88,16 @@ class ForeverBusinessSync extends Controller {
             ]);
         }
 
+        if($metric === 'account_audit') {
+            $this->output([
+                'status' => 'success',
+                'metric' => 'account_audit',
+                'generated_at' => get_date(),
+                'summary' => forever_business_get_usage_summary(),
+                'audit' => forever_business_get_account_audit_rows(),
+            ]);
+        }
+
         if($metric === 'total_cc') {
             $total_cc = $this->non_negative_number('total_cc');
             $is_closed = filter_var($_POST['is_closed'] ?? false, FILTER_VALIDATE_BOOLEAN);

@@ -1780,6 +1780,119 @@ function forever_business_get_usage_summary(): array {
     return array_map(static fn($value) => (int) ($value ?? 0), $result);
 }
 
+function forever_business_get_account_audit_rows(): array {
+    forever_business_ensure_tables();
+
+    $fetch_rows = static function($result): array {
+        $rows = [];
+        while($result && $row = $result->fetch_assoc()) {
+            $rows[] = $row;
+        }
+        return $rows;
+    };
+
+    /* This detailed payload is exposed only through the signed machine-sync endpoint.
+       It is intended for a private administrator reconciliation workbook. */
+    $invalid_accounts = $fetch_rows(database()->query("SELECT
+        u.user_id, u.name AS account_name, u.email, u.status, u.last_activity,
+        TRIM(COALESCE(JSON_UNQUOTE(JSON_EXTRACT(u.preferences, '$.meta.foreverId')), '')) AS raw_fbo_id
+        FROM users u
+        WHERE u.type = 0
+          AND REPLACE(TRIM(COALESCE(JSON_UNQUOTE(JSON_EXTRACT(u.preferences, '$.meta.foreverId')), '')), '-', '') NOT REGEXP '^[0-9]{12}$'
+        ORDER BY u.name ASC, u.user_id ASC"));
+
+    $duplicate_accounts = $fetch_rows(database()->query("SELECT
+        normalized.normalized_fbo_id AS fbo_id,
+        duplicate_ids.accounts_per_id,
+        u.user_id, u.name AS account_name, u.email, u.status, u.last_activity,
+        m.name AS flp_name, m.title AS flp_title, m.country_code,
+        COALESCE(m.is_in_current_structure, 0) AS is_in_current_structure
+        FROM users u
+        INNER JOIN (
+            SELECT
+                user_id,
+                REPLACE(TRIM(COALESCE(JSON_UNQUOTE(JSON_EXTRACT(preferences, '$.meta.foreverId')), '')), '-', '') AS normalized_fbo_id
+            FROM users
+            WHERE type = 0
+        ) normalized ON normalized.user_id = u.user_id
+        INNER JOIN (
+            SELECT
+                REPLACE(TRIM(COALESCE(JSON_UNQUOTE(JSON_EXTRACT(preferences, '$.meta.foreverId')), '')), '-', '') AS normalized_fbo_id,
+                COUNT(*) AS accounts_per_id
+            FROM users
+            WHERE type = 0
+              AND REPLACE(TRIM(COALESCE(JSON_UNQUOTE(JSON_EXTRACT(preferences, '$.meta.foreverId')), '')), '-', '') REGEXP '^[0-9]{12}$'
+            GROUP BY normalized_fbo_id
+            HAVING COUNT(*) > 1
+        ) duplicate_ids ON duplicate_ids.normalized_fbo_id = normalized.normalized_fbo_id
+        LEFT JOIN forever_business_members m ON m.fbo_id = normalized.normalized_fbo_id
+        WHERE u.type = 0
+        ORDER BY normalized.normalized_fbo_id ASC, u.status DESC, u.last_activity DESC, u.user_id ASC"));
+
+    $outside_current_structure = $fetch_rows(database()->query("SELECT
+        u.user_id, u.name AS account_name, u.email, u.status, u.last_activity,
+        m.fbo_id, m.name AS flp_name, m.title AS flp_title, m.country_code,
+        m.generation, m.updated_at AS flp_profile_updated_at
+        FROM users u
+        INNER JOIN forever_business_members m
+          ON m.fbo_id = REPLACE(TRIM(COALESCE(JSON_UNQUOTE(JSON_EXTRACT(u.preferences, '$.meta.foreverId')), '')), '-', '')
+         AND m.is_in_current_structure = 0
+        WHERE u.type = 0
+        ORDER BY u.name ASC, u.user_id ASC"));
+
+    $valid_without_profile = $fetch_rows(database()->query("SELECT
+        u.user_id, u.name AS account_name, u.email, u.status, u.last_activity,
+        REPLACE(TRIM(COALESCE(JSON_UNQUOTE(JSON_EXTRACT(u.preferences, '$.meta.foreverId')), '')), '-', '') AS fbo_id
+        FROM users u
+        LEFT JOIN forever_business_members m
+          ON m.fbo_id = REPLACE(TRIM(COALESCE(JSON_UNQUOTE(JSON_EXTRACT(u.preferences, '$.meta.foreverId')), '')), '-', '')
+        WHERE u.type = 0
+          AND REPLACE(TRIM(COALESCE(JSON_UNQUOTE(JSON_EXTRACT(u.preferences, '$.meta.foreverId')), '')), '-', '') REGEXP '^[0-9]{12}$'
+          AND m.fbo_id IS NULL
+        ORDER BY u.name ASC, u.user_id ASC"));
+
+    $current_members_without_account = $fetch_rows(database()->query("SELECT
+        m.fbo_id, m.name AS flp_name, m.title AS flp_title, m.country_code,
+        m.generation, m.sponsor_date, m.parent_fbo_id, m.updated_at AS flp_profile_updated_at
+        FROM forever_business_members m
+        WHERE m.is_in_current_structure = 1
+          AND NOT EXISTS(
+              SELECT 1 FROM users u
+              WHERE u.type = 0
+                AND REPLACE(TRIM(COALESCE(JSON_UNQUOTE(JSON_EXTRACT(u.preferences, '$.meta.foreverId')), '')), '-', '') = m.fbo_id
+          )
+        ORDER BY m.generation ASC, m.name ASC, m.fbo_id ASC"));
+
+    $disabled_accounts = $fetch_rows(database()->query("SELECT
+        u.user_id, u.name AS account_name, u.email, u.status, u.last_activity,
+        TRIM(COALESCE(JSON_UNQUOTE(JSON_EXTRACT(u.preferences, '$.meta.foreverId')), '')) AS raw_fbo_id
+        FROM users u
+        WHERE u.type = 0 AND u.status <> 1
+        ORDER BY u.name ASC, u.user_id ASC"));
+
+    $managers_without_account = $fetch_rows(database()->query("SELECT
+        m.fbo_id, m.name AS flp_name, m.title AS flp_title, m.country_code,
+        m.generation, m.sponsor_date, m.parent_fbo_id
+        FROM forever_business_members m
+        WHERE m.is_in_current_structure = 1 AND m.is_manager = 1
+          AND NOT EXISTS(
+              SELECT 1 FROM users u
+              WHERE u.type = 0
+                AND REPLACE(TRIM(COALESCE(JSON_UNQUOTE(JSON_EXTRACT(u.preferences, '$.meta.foreverId')), '')), '-', '') = m.fbo_id
+          )
+        ORDER BY m.generation ASC, m.name ASC, m.fbo_id ASC"));
+
+    return [
+        'invalid_accounts' => $invalid_accounts,
+        'duplicate_accounts' => $duplicate_accounts,
+        'outside_current_structure' => $outside_current_structure,
+        'valid_without_profile' => $valid_without_profile,
+        'current_members_without_account' => $current_members_without_account,
+        'disabled_accounts' => $disabled_accounts,
+        'managers_without_account' => $managers_without_account,
+    ];
+}
+
 function forever_business_grant_access(int $user_id, string $fbo_id, string $role, int $granted_by_user_id): bool {
     /* Self-only privacy mode: no collaborator account can receive a team scope. */
     return false;

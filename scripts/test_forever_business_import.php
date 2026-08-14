@@ -35,6 +35,7 @@ $assertions = [
     'dashboard 4 CC notice opens the self-only Forever page' => str_contains($dashboard_view, "url('forever-business')") && str_contains($dashboard_view, 'dashboard-four-cc-notice'),
     'machine sync compares only a SHA-256 secret hash' => str_contains($sync, 'SYNC_KEY_SHA256') && str_contains($sync, 'hash(\'sha256\', $key)'),
     'machine sync accepts only bounded CSV and XLSX uploads' => str_contains($sync, 'MAX_FILE_BYTES') && str_contains($sync, "['csv', 'xlsx']"),
+    'detailed account reconciliation requires the signed machine endpoint' => str_contains($sync, "metric === 'account_audit'") && str_contains($helper, 'forever_business_get_account_audit_rows'),
     'machine sync is pinned to the admin root FBO' => str_contains($sync, "ROOT_FBO_ID = '360000760944'"),
     'machine sync verifies the Focus Group root inside the downloaded workbook' => str_contains($sync, "empty(\$report['members'][self::ROOT_FBO_ID])"),
     'machine sync enforces self-only privacy and never grants manager access' => str_contains($sync, 'forever_business_enforce_self_only_access()') && !str_contains($sync, 'forever_business_grant_exact_manager_accesses(1)'),
