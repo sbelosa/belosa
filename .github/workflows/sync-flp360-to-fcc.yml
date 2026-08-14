@@ -1,18 +1,8 @@
-# Custom code: FC-2026-08-13: Computer-independent FLP360 to FCC synchronization
+# Custom code: FC-2026-08-14: Manual-only FLP360 to FCC fallback; daily sync runs from Codex while online
 name: Sync FLP360 to FCC
 
 on:
   workflow_dispatch:
-  schedule:
-    # Runs throughout the Croatian business day; GitHub schedules use UTC.
-    - cron: '23 6,10,14,18 * * *'
-  push:
-    branches:
-      - main
-    paths:
-      - 'scripts/flp360_cloud_sync.mjs'
-      - 'scripts/test_flp360_cloud_sync.mjs'
-      - '.github/workflows/sync-flp360-to-fcc.yml'
 
 permissions:
   contents: read
@@ -70,4 +60,4 @@ jobs:
           FCC_FOREVER_SYNC_KEY: ${{ secrets.FCC_FOREVER_SYNC_KEY }}
         run: node scripts/flp360_cloud_sync.mjs
 
-# /Custom code: FC-2026-08-13
+# /Custom code: FC-2026-08-14
