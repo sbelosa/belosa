@@ -2596,8 +2596,11 @@ return [
     'admin_settings.ads.footer_splash' => 'Splash page footer',
 
     'admin_settings_send_test_email_modal.header' => 'Send test email',
-    'admin_settings_send_test_email_modal.success_message' => 'We sent the email commands to your SMTP without receiving any errors.',
-    'admin_settings_send_test_email_modal.error_message' => 'We sent the email commands to your SMTP, but we have received the following errors: %s',
+    'admin_settings_send_test_email_modal.success_message' => 'The test email was sent successfully.',
+    'admin_settings_send_test_email_modal.success_message.brevo_api' => 'The test email was sent successfully through the Brevo API.',
+    'admin_settings_send_test_email_modal.success_message.smtp' => 'The test email was sent successfully through SMTP.',
+    'admin_settings_send_test_email_modal.success_message.smtp_fallback' => 'The test email was sent successfully through the backup SMTP transport.',
+    'admin_settings_send_test_email_modal.error_message' => 'The test email could not be sent: %s',
 
     'admin_settings.notification_handlers.tab' => 'Notif. handlers',
     'admin_settings.notification_handlers.is_enabled' => 'Enable %s notifications',

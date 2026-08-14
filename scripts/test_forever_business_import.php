@@ -28,6 +28,8 @@ $assertions = [
     'collaborator trend uses imported Total CC with verified monthly activity' => str_contains($helper, "['period_month', 'total_cc', 'personal_cc', 'total_active_cc', 'is_4cc_active']") && str_contains($helper, "'has_activity_data' => \$has_activity_data") && str_contains($helper, "'is_4cc_active' => \$is_verified_active"),
     '4 Core page adoption is measured from launch' => str_contains($helper, 'forever_business_page_visits') && str_contains($user, 'forever_business_record_page_visit'),
     'self-only privacy audit exposes active team-access count' => str_contains($helper, 'active_team_access_records'),
+    'readiness audit detects missing invalid and duplicate Forever IDs' => str_contains($helper, 'accounts_missing_fbo_id') && str_contains($helper, 'accounts_invalid_fbo_id') && str_contains($helper, 'duplicate_fbo_id_groups'),
+    'readiness audit compares current FLP members with FCC accounts and CC rows' => str_contains($helper, 'current_members_without_fcc_account') && str_contains($helper, 'current_members_missing_latest_cc'),
     'legacy team-access grants are disabled in self-only mode' => str_contains($helper, 'Self-only privacy mode') && str_contains($helper, 'forever_business_enforce_self_only_access'),
     'dashboard 4 CC notice resolves only the signed-in user' => str_contains($dashboard_controller, 'forever_business_get_user_activity_notice((int) $this->user->user_id)') && str_contains($helper, 'No request') && str_contains($helper, "where('member.fbo_id', \$fbo_id)"),
     'dashboard 4 CC notice opens the self-only Forever page' => str_contains($dashboard_view, "url('forever-business')") && str_contains($dashboard_view, 'dashboard-four-cc-notice'),

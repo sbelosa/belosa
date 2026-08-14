@@ -47,4 +47,10 @@ $assert(fc_mail_is_tracked_marketing_message(['is_broadcast' => true]), 'broadca
 $assert(fc_mail_is_tracked_marketing_message(['brevo_tags' => ['progress']]), 'tagged automation must be treated as tracked marketing');
 $assert(!fc_mail_is_tracked_marketing_message(['anti_phishing_code' => 'test']), 'critical account mail must remain eligible for safe fallback');
 
+$admin_settings_controller = file_get_contents(dirname(__DIR__) . '/app/controllers/admin/AdminSettings.php');
+$croatian_admin_language = file_get_contents(dirname(__DIR__) . '/app/languages/admin/Hrvatski#hr.php');
+$assert(str_contains($admin_settings_controller, "success_message.brevo_api"), 'admin test mail must report a successful Brevo API transport');
+$assert(str_contains($admin_settings_controller, "success_message.smtp_fallback"), 'admin test mail must distinguish SMTP fallback from Brevo delivery');
+$assert(str_contains($croatian_admin_language, 'Testna poruka uspješno je poslana putem Brevo API-ja.'), 'Croatian admin success message must name Brevo API accurately');
+
 echo "Brevo mail fallback checks passed.\n";

@@ -1672,6 +1672,33 @@ function forever_business_get_usage_summary(): array {
         FROM users WHERE type = 0");
     $accounts = $accounts_result ? $accounts_result->fetch_assoc() : [];
 
+    $account_id_quality_result = database()->query("SELECT
+        SUM(raw_fbo_id = '') AS accounts_missing_fbo_id,
+        SUM(raw_fbo_id <> '' AND normalized_fbo_id NOT REGEXP '^[0-9]{12}$') AS accounts_invalid_fbo_id
+        FROM (
+            SELECT
+                TRIM(COALESCE(JSON_UNQUOTE(JSON_EXTRACT(preferences, '$.meta.foreverId')), '')) AS raw_fbo_id,
+                REPLACE(TRIM(COALESCE(JSON_UNQUOTE(JSON_EXTRACT(preferences, '$.meta.foreverId')), '')), '-', '') AS normalized_fbo_id
+            FROM users
+            WHERE type = 0
+        ) account_ids");
+    $account_id_quality = $account_id_quality_result ? $account_id_quality_result->fetch_assoc() : [];
+
+    $duplicate_ids_result = database()->query("SELECT
+        COUNT(*) AS duplicate_fbo_id_groups,
+        COALESCE(SUM(accounts_per_id - 1), 0) AS duplicate_fbo_id_extra_accounts
+        FROM (
+            SELECT
+                REPLACE(TRIM(COALESCE(JSON_UNQUOTE(JSON_EXTRACT(preferences, '$.meta.foreverId')), '')), '-', '') AS normalized_fbo_id,
+                COUNT(*) AS accounts_per_id
+            FROM users
+            WHERE type = 0
+              AND REPLACE(TRIM(COALESCE(JSON_UNQUOTE(JSON_EXTRACT(preferences, '$.meta.foreverId')), '')), '-', '') REGEXP '^[0-9]{12}$'
+            GROUP BY normalized_fbo_id
+            HAVING COUNT(*) > 1
+        ) duplicate_ids");
+    $duplicate_ids = $duplicate_ids_result ? $duplicate_ids_result->fetch_assoc() : [];
+
     $profile_accounts_result = database()->query("SELECT
         COUNT(*) AS accounts_with_valid_fbo_id,
         SUM(u.status = 1) AS enabled_with_valid_fbo_id,
@@ -1696,6 +1723,37 @@ function forever_business_get_usage_summary(): array {
         WHERE u.type = 0");
     $team = $team_result ? $team_result->fetch_assoc() : [];
 
+    $current_members_result = database()->query("SELECT
+        COUNT(*) AS current_team_members,
+        SUM(EXISTS(
+            SELECT 1 FROM users u
+            WHERE u.type = 0
+              AND REPLACE(TRIM(COALESCE(JSON_UNQUOTE(JSON_EXTRACT(u.preferences, '$.meta.foreverId')), '')), '-', '') = m.fbo_id
+        )) AS current_members_with_fcc_account,
+        SUM(NOT EXISTS(
+            SELECT 1 FROM users u
+            WHERE u.type = 0
+              AND REPLACE(TRIM(COALESCE(JSON_UNQUOTE(JSON_EXTRACT(u.preferences, '$.meta.foreverId')), '')), '-', '') = m.fbo_id
+        )) AS current_members_without_fcc_account,
+        SUM(EXISTS(
+            SELECT 1 FROM users u
+            WHERE u.type = 0 AND u.status = 1
+              AND REPLACE(TRIM(COALESCE(JSON_UNQUOTE(JSON_EXTRACT(u.preferences, '$.meta.foreverId')), '')), '-', '') = m.fbo_id
+        )) AS current_members_with_enabled_fcc_account
+        FROM forever_business_members m
+        WHERE m.is_in_current_structure = 1");
+    $current_members = $current_members_result ? $current_members_result->fetch_assoc() : [];
+
+    $latest_metrics_result = database()->query("SELECT
+        COUNT(*) AS current_members_with_latest_cc,
+        SUM(metric.fbo_id IS NULL) AS current_members_missing_latest_cc
+        FROM forever_business_members m
+        LEFT JOIN forever_business_metrics metric
+          ON metric.fbo_id = m.fbo_id
+         AND metric.period_month = (SELECT MAX(period_month) FROM forever_business_metrics)
+        WHERE m.is_in_current_structure = 1");
+    $latest_metrics = $latest_metrics_result ? $latest_metrics_result->fetch_assoc() : [];
+
     $managers_result = database()->query("SELECT
         COUNT(*) AS imported_managers,
         SUM(EXISTS(
@@ -1718,7 +1776,7 @@ function forever_business_get_usage_summary(): array {
         WHERE status = 'active'");
     $privacy = $privacy_result ? $privacy_result->fetch_assoc() : [];
 
-    $result = array_merge($accounts, $profile_accounts, $team, $managers, $visits, $privacy);
+    $result = array_merge($accounts, $account_id_quality, $duplicate_ids, $profile_accounts, $team, $current_members, $latest_metrics, $managers, $visits, $privacy);
     return array_map(static fn($value) => (int) ($value ?? 0), $result);
 }
 

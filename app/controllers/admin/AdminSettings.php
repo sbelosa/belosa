@@ -2643,11 +2643,16 @@ class AdminSettings extends Controller {
             }
 
             if($is_success) {
-                Alerts::add_success(l('admin_settings_send_test_email_modal.success_message'));
-
-                /* Custom code: FC-2026-08-14: do not hide an invalid Brevo API key behind SMTP fallback */
+                /* Custom code: FC-2026-08-14: report the transport that actually accepted the test message */
                 if(is_object($result) && !empty($result->fallback_used)) {
+                    Alerts::add_success(l('admin_settings_send_test_email_modal.success_message.smtp_fallback'));
                     Alerts::add_info('Testna poruka isporučena je rezervnim SMTP putem, ali odabrani Brevo API nije prošao. Zamijenite Brevo API ključ prije marketinških i automatiziranih poruka.');
+                } elseif(is_object($result) && ($result->transport ?? null) === 'brevo_api') {
+                    Alerts::add_success(l('admin_settings_send_test_email_modal.success_message.brevo_api'));
+                } elseif(is_object($result) && ($result->transport ?? null) === 'smtp') {
+                    Alerts::add_success(l('admin_settings_send_test_email_modal.success_message.smtp'));
+                } else {
+                    Alerts::add_success(l('admin_settings_send_test_email_modal.success_message'));
                 }
                 /* /Custom code: FC-2026-08-14 */
             } else {
