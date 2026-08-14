@@ -12,6 +12,7 @@ $view = file_get_contents($root . '/themes/altum/views/forever-business/index.ph
 
 $assertions = [
     'source hash prevents duplicate imports' => str_contains($helper, 'UNIQUE KEY `forever_business_import_sha_uq`'),
+    'successful duplicate checks are audited separately from data imports' => str_contains($helper, 'forever_business_sync_checks') && str_contains($helper, 'forever_business_record_sync_check($report, $dedupe_sha256, (int) $existing->import_id, true)'),
     'Focus Group duplicate key includes confirmed period' => str_contains($helper, '$file_sha256 . \'|\' . implode(\',\', $report[\'periods\'])'),
     'Focus Group report is supported' => str_contains($helper, "'focus_group'"),
     'admin subtree scope uses hierarchy closure' => str_contains($helper, "where('ancestor_fbo_id', \$requested_root"),
@@ -39,6 +40,7 @@ $assertions = [
     'team priorities include the complete imported list' => !str_contains($user, 'array_slice($priority_members, 0, 100)'),
     'team priorities support accessible client-side sorting' => str_contains($view, 'fb-sort-button') && str_contains($view, 'Intl.Collator') && str_contains($view, "setAttribute('aria-sort'"),
     'official 4 Core table labels prior-year values and computed changes' => str_contains($view, 'fb-official-comparison') && str_contains($view, '$official_change'),
+    'sync notice distinguishes checks from new imports in Zagreb time' => str_contains($view, 'Zadnja uspješna provjera:') && str_contains($view, 'last_sync_was_duplicate') && str_contains($helper, 'Europe/Zagreb'),
 ];
 
 $failed = array_keys(array_filter($assertions, static fn($passed) => !$passed));
@@ -73,6 +75,7 @@ $manager_60 = forever_business_get_verified_progress(array_merge($base, ['title'
 $manager_100 = forever_business_get_verified_progress(array_merge($base, ['title' => 'Recognized Manager', 'non_manager_cc' => 60]));
 $first_action = forever_business_get_action(array_merge($base, ['verified_progress' => $activity]), $base, 0);
 $second_action = forever_business_get_action(array_merge($base, ['verified_progress' => $activity]), $base, 1);
+$zagreb_time = forever_business_format_zagreb_datetime('2026-08-14 06:53:00');
 
 $rule_assertions = [
     '4 CC activity requires official status, 1 personal and 4 regional active CC' => $activity['is_officially_active'] && !$personal_gate['is_officially_active'] && !$regional_gate['is_officially_active'] && !$official_gate['is_officially_active'],
@@ -82,6 +85,7 @@ $rule_assertions = [
     'Unrecognized Manager remains on the recognized Manager qualification path' => $unrecognized_manager['rank']['mode'] === 'rank' && $unrecognized_manager['rank']['next_title'] === 'Recognized Manager',
     'Manager target advances from 60 to 100 Non-Manager CC' => $manager_60['rank']['windows'][0]['target'] === 60.0 && $manager_100['rank']['windows'][0]['target'] === 100.0,
     'completed action advances to a new detailed next step' => $first_action['key'] !== $second_action['key'] && count($first_action['checklist']) === 3 && !empty($first_action['success_definition']),
+    'UTC synchronization time is displayed in Zagreb summer time' => $zagreb_time === '14.08.2026. 08:53',
 ];
 
 $failed_rules = array_keys(array_filter($rule_assertions, static fn($passed) => !$passed));

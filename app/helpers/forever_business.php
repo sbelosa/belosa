@@ -31,6 +31,18 @@ function forever_business_ensure_tables(): void {
             UNIQUE KEY `forever_business_import_sha_uq` (`file_sha256`),
             KEY `forever_business_import_status_idx` (`status`, `created_at`)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci",
+        "CREATE TABLE IF NOT EXISTS `forever_business_sync_checks` (
+            `sync_check_id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+            `report_kind` VARCHAR(32) NOT NULL,
+            `original_name` VARCHAR(255) NOT NULL,
+            `file_sha256` CHAR(64) NOT NULL,
+            `import_id` BIGINT UNSIGNED NULL,
+            `is_duplicate` TINYINT(1) NOT NULL DEFAULT 0,
+            `checked_at` DATETIME NOT NULL,
+            PRIMARY KEY (`sync_check_id`),
+            KEY `forever_business_sync_checks_time_idx` (`checked_at`),
+            KEY `forever_business_sync_checks_import_idx` (`import_id`)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci",
         "CREATE TABLE IF NOT EXISTS `forever_business_members` (
             `fbo_id` CHAR(12) NOT NULL,
             `name` VARCHAR(160) NOT NULL,
@@ -756,6 +768,7 @@ function forever_business_import_report(array $report, string $file_sha256, int 
 
     $existing = db()->where('file_sha256', $dedupe_sha256)->getOne('forever_business_imports');
     if($existing && $existing->status === 'completed') {
+        forever_business_record_sync_check($report, $dedupe_sha256, (int) $existing->import_id, true);
         return ['duplicate' => true, 'import_id' => (int) $existing->import_id, 'summary' => json_decode($existing->summary_json ?? '{}', true) ?: []];
     }
     if($existing) {
@@ -912,8 +925,42 @@ function forever_business_import_report(array $report, string $file_sha256, int 
         error_log('Forever FCC placeholder provisioning failed after import: ' . $exception->getMessage());
     }
 
+    forever_business_record_sync_check($report, $dedupe_sha256, (int) $import_id, false);
+
     return ['duplicate' => false, 'import_id' => (int) $import_id, 'summary' => $report['summary']];
 }
+
+/* Custom code: FC-2026-08-14: distinguish a successful source check from a data-changing import */
+function forever_business_record_sync_check(array $report, string $file_sha256, int $import_id, bool $is_duplicate): void {
+    try {
+        db()->insert('forever_business_sync_checks', [
+            'report_kind' => mb_substr((string) ($report['kind'] ?? 'report'), 0, 32),
+            'original_name' => mb_substr((string) ($report['original_name'] ?? 'report'), 0, 255),
+            'file_sha256' => $file_sha256,
+            'import_id' => $import_id ?: null,
+            'is_duplicate' => (int) $is_duplicate,
+            'checked_at' => get_date(),
+        ]);
+    } catch(\Throwable $exception) {
+        error_log('Forever sync check audit failed: ' . $exception->getMessage());
+    }
+}
+
+function forever_business_format_zagreb_datetime(?string $datetime): string {
+    $datetime = trim((string) $datetime);
+    if($datetime === '') {
+        return '';
+    }
+
+    try {
+        return (new \DateTimeImmutable($datetime, new \DateTimeZone('UTC')))
+            ->setTimezone(new \DateTimeZone('Europe/Zagreb'))
+            ->format('d.m.Y. H:i');
+    } catch(\Throwable $exception) {
+        return '';
+    }
+}
+/* /Custom code: FC-2026-08-14 */
 
 function forever_business_extract_user_fbo_id($preferences): string {
     if(is_string($preferences)) {
@@ -1541,6 +1588,8 @@ function forever_business_get_dashboard(int $user_id, bool $is_admin, string $re
 
     $official_four_core = forever_business_get_four_core_snapshot($dashboard_root, $period);
     $last_sync = db()->where('status', 'completed')->orderBy('completed_at', 'DESC')->getOne('forever_business_imports', ['completed_at']);
+    $last_sync_check = db()->orderBy('checked_at', 'DESC')->getOne('forever_business_sync_checks', ['report_kind', 'original_name', 'is_duplicate', 'checked_at']);
+    $last_sync_at = $last_sync_check->checked_at ?? ($last_sync->completed_at ?? null);
 
     return [
         'period' => $period,
@@ -1554,7 +1603,11 @@ function forever_business_get_dashboard(int $user_id, bool $is_admin, string $re
         'is_manager_view' => count($scope_ids) > 1,
         'official_four_core' => $official_four_core,
         'official_total_cc' => $official_total_cc,
-        'last_sync_at' => $last_sync->completed_at ?? null,
+        'last_sync_at' => $last_sync_at,
+        'last_sync_report_kind' => $last_sync_check->report_kind ?? null,
+        'last_sync_original_name' => $last_sync_check->original_name ?? null,
+        'last_sync_was_duplicate' => isset($last_sync_check->is_duplicate) ? (bool) $last_sync_check->is_duplicate : false,
+        'last_data_import_at' => $last_sync->completed_at ?? null,
     ];
 }
 

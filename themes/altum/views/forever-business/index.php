@@ -99,11 +99,20 @@ $format_change = static function(float $value): string {
         <?php endif ?>
     </div>
 
+    <?php
+    $last_sync_display = forever_business_format_zagreb_datetime($dashboard['last_sync_at'] ?? null);
+    $last_import_display = forever_business_format_zagreb_datetime($dashboard['last_data_import_at'] ?? null);
+    ?>
     <div class="fb-sync px-3 py-2 mb-4">
         <i class="fas fa-fw fa-sync-alt mr-1"></i>
-        <strong>Zadnja uspješna sinkronizacija:</strong>
-        <?= !empty($dashboard['last_sync_at']) ? htmlspecialchars((new DateTimeImmutable($dashboard['last_sync_at']))->format('d.m.Y. H:i')) : 'još nije izvršena' ?>.
-        <span class="text-muted">Promet nastao nakon tog vremena pojavit će se nakon sljedeće uspješne sinkronizacije.</span>
+        <strong>Zadnja uspješna provjera:</strong>
+        <?= $last_sync_display !== '' ? htmlspecialchars($last_sync_display) : 'još nije izvršena' ?>.
+        <?php if(!empty($dashboard['last_sync_was_duplicate'])): ?>
+            <span class="text-muted">FLP360 je vratio isti izvještaj pa bodovi nisu ponovno zbrojeni. Zadnji novi uvoz: <?= $last_import_display !== '' ? htmlspecialchars($last_import_display) : 'još nije izvršen' ?>.</span>
+        <?php else: ?>
+            <span class="text-muted">U toj provjeri pronađeni su novi podaci.</span>
+        <?php endif ?>
+        <span class="d-block text-muted">Vrijeme je prikazano za Europe/Zagreb. Noviji promet pojavit će se kada FLP360 pripremi novu datoteku.</span>
     </div>
 
     <?php if(empty($dashboard['members'])): ?>
