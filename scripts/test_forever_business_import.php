@@ -37,6 +37,7 @@ $assertions = [
     'machine sync accepts only bounded CSV and XLSX uploads' => str_contains($sync, 'MAX_FILE_BYTES') && str_contains($sync, "['csv', 'xlsx']"),
     'detailed account reconciliation requires the signed machine endpoint' => str_contains($sync, "metric === 'account_audit'") && str_contains($helper, 'forever_business_get_account_audit_rows'),
     'machine sync is pinned to the admin root FBO' => str_contains($sync, "ROOT_FBO_ID = '360000760944'"),
+    'machine sync updates live CC only for the pinned root FBO' => str_contains($sync, "metric === 'member_cc'") && str_contains($sync, "fbo_id !== self::ROOT_FBO_ID") && str_contains($helper, 'forever_business_upsert_root_live_cc'),
     'machine sync verifies the Focus Group root inside the downloaded workbook' => str_contains($sync, "empty(\$report['members'][self::ROOT_FBO_ID])"),
     'machine sync enforces self-only privacy and never grants manager access' => str_contains($sync, 'forever_business_enforce_self_only_access()') && !str_contains($sync, 'forever_business_grant_exact_manager_accesses(1)'),
     'all active FCC Forever IDs receive self-only placeholders' => str_contains($helper, 'forever_business_provision_fcc_members') && str_contains($helper, "'FCC suradnik'") && str_contains($helper, 'is_in_current_structure, email_hash'),

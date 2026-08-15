@@ -112,6 +112,29 @@ class ForeverBusinessSync extends Controller {
             ]);
         }
 
+        if($metric === 'member_cc') {
+            $fbo_id = forever_business_normalize_fbo_id($_POST['fbo_id'] ?? '');
+            if($fbo_id !== self::ROOT_FBO_ID) {
+                $this->fail('invalid_fbo_id', 'Live CC strojni unos dopušten je samo za glavni Forever ID.', 422);
+            }
+            $metrics = [];
+            foreach([
+                'personal_cc', 'total_cc', 'total_active_cc', 'non_manager_cc', 'leadership_cc',
+                'total_active_cc_ytd', 'non_manager_cc_ytd', 'leadership_cc_ytd',
+            ] as $key) {
+                $metrics[$key] = $this->non_negative_number($key);
+            }
+            $metrics['is_4cc_active'] = filter_var($_POST['is_4cc_active'] ?? false, FILTER_VALIDATE_BOOLEAN);
+            forever_business_upsert_root_live_cc($fbo_id, $period, $metrics);
+            $this->output([
+                'status' => 'success',
+                'metric' => 'member_cc',
+                'fbo_id' => $fbo_id,
+                'period' => $period,
+                'synced_at' => get_date(),
+            ]);
+        }
+
         if($metric === 'four_core') {
             $values = [];
             foreach(['open', 'downline'] as $scope) {

@@ -1413,6 +1413,53 @@ function forever_business_upsert_total_cc_snapshot(string $fbo_id, string $perio
     ]);
 }
 
+/* Custom code: FC-2026-08-15: Keep the pinned root FBO's live CC aligned with the
+ * collaborator Downline without representing the root as its own descendant. */
+function forever_business_upsert_root_live_cc(string $fbo_id, string $period, array $metrics): void {
+    forever_business_ensure_tables();
+    $fbo_id = forever_business_normalize_fbo_id($fbo_id);
+    $period = forever_business_period_from_label($period) ?: '';
+    if($fbo_id === '' || $period === '') {
+        throw new \InvalidArgumentException('Neispravan glavni Forever ID ili razdoblje live CC snimke.');
+    }
+
+    $number = static fn(string $key): float => max(0, forever_business_number($metrics[$key] ?? 0));
+    db()->startTransaction();
+    try {
+        db()->onDuplicate([
+            'personal_cc', 'total_cc', 'total_active_cc', 'non_manager_cc', 'leadership_cc', 'is_4cc_active', 'updated_at',
+        ])->insert('forever_business_metrics', [
+            'fbo_id' => $fbo_id,
+            'period_month' => $period,
+            'personal_cc' => $number('personal_cc'),
+            'total_cc' => $number('total_cc'),
+            'total_active_cc' => $number('total_active_cc'),
+            'non_manager_cc' => $number('non_manager_cc'),
+            'leadership_cc' => $number('leadership_cc'),
+            'is_4cc_active' => !empty($metrics['is_4cc_active']) ? 1 : 0,
+            'source_import_id' => null,
+            'updated_at' => get_date(),
+        ]);
+
+        db()->onDuplicate([
+            'total_active_cc_ytd', 'non_manager_cc_ytd', 'leadership_cc_ytd', 'updated_at',
+        ])->insert('forever_business_yearly_metrics', [
+            'fbo_id' => $fbo_id,
+            'period_year' => (int) substr($period, 0, 4),
+            'total_active_cc_ytd' => $number('total_active_cc_ytd'),
+            'non_manager_cc_ytd' => $number('non_manager_cc_ytd'),
+            'leadership_cc_ytd' => $number('leadership_cc_ytd'),
+            'source_import_id' => null,
+            'updated_at' => get_date(),
+        ]);
+        db()->commit();
+    } catch(\Throwable $exception) {
+        db()->rollback();
+        throw $exception;
+    }
+}
+/* /Custom code: FC-2026-08-15 */
+
 function forever_business_get_total_cc_snapshot(string $fbo_id, string $period, string $country_scope = 'GLOBAL'): ?array {
     $fbo_id = forever_business_normalize_fbo_id($fbo_id);
     $period = forever_business_period_from_label($period) ?: '';

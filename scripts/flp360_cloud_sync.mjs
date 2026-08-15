@@ -27,6 +27,14 @@ function zagrebPeriod(date = new Date()) {
     return `${year}-${month}`;
 }
 
+function zagrebPeriodParts(date = new Date()) {
+    const [year, month] = zagrebPeriod(date).split('-').map(Number);
+    const monthLabel = new Intl.DateTimeFormat('en', {month: 'short', timeZone: 'UTC'})
+        .format(new Date(Date.UTC(year, month - 1, 1)))
+        .toLocaleUpperCase('en');
+    return {year, month, monthLabel};
+}
+
 function currentFlpMonthLabel(date = new Date()) {
     const parts = new Intl.DateTimeFormat('en', {
         timeZone: 'Europe/Zagreb',
@@ -90,6 +98,28 @@ function parseCsvLine(line) {
     return fields;
 }
 
+function csvField(value) {
+    const text = String(value ?? '');
+    return /[",\r\n]/.test(text) ? `"${text.replaceAll('"', '""')}"` : text;
+}
+
+function csvDocument(rows) {
+    return `${rows.map(row => row.map(csvField).join(',')).join('\r\n')}\r\n`;
+}
+
+function normalizeFboId(value) {
+    const digits = String(value ?? '').replace(/\D+/g, '');
+    return digits.length === 12 ? digits : '';
+}
+
+function parseFlpTimestamp(value) {
+    const input = typeof value === 'number' || /^\d{13}$/.test(String(value ?? '').trim())
+        ? Number(value)
+        : String(value ?? '');
+    const date = new Date(input);
+    return Number.isNaN(date.getTime()) ? null : date;
+}
+
 function encryptFlpAuthorization(value, encryptionKey) {
     const salt = crypto.randomBytes(64);
     const initializationVector = crypto.randomBytes(12);
@@ -99,7 +129,7 @@ function encryptFlpAuthorization(value, encryptionKey) {
     return Buffer.concat([salt, initializationVector, encrypted, cipher.getAuthTag()]).toString('base64');
 }
 
-function buildDownlineGenerationUrl(reportBase, distributorId) {
+function buildDownlineGenerationUrl(reportBase, distributorId, operatingCountry = 'HUN', homeCountry = 'HRV') {
     const url = new URL(`V2/distributors/${distributorId}/generate/rewire-downline-excel-query`, `${String(reportBase).replace(/\/+$/, '')}/`);
     const parameters = {
         year: 0,
@@ -109,11 +139,12 @@ function buildDownlineGenerationUrl(reportBase, distributorId) {
         numberOfRecords: 15,
         showNonZero: false,
         memberLevel: 0,
-        country: 'HRV',
+        country: operatingCountry,
         generationValue: 0,
         sponsorDistID: distributorId,
         isExcelView: true,
         downlineGenValue: 0,
+        homeCountryCode: homeCountry,
     };
     for(const [name, value] of Object.entries(parameters)) url.searchParams.set(name, String(value));
     return url.toString();
@@ -136,7 +167,10 @@ async function flpApiConfiguration(page) {
         };
         const applicationConfiguration = parseJson(localStorage.getItem('appflp360.Configuration'), {});
         const api = applicationConfiguration.apiConfiguration || window.apiConfig || {};
-        const storedReportBase = parseJson(localStorage.getItem('appflp360.reportApicategory'), '');
+        const storedReportBase = parseJson(
+            localStorage.getItem('appflp360.ReportApicategory'),
+            parseJson(localStorage.getItem('appflp360.reportApicategory'), '')
+        );
         const reportBase = /^https:\/\//i.test(String(storedReportBase || ''))
             ? storedReportBase
             : api.reportProApi || api.reportLiteApi || `${api.apiGatewayURL}/${api.reportApi || 'reporttdm'}`;
@@ -145,14 +179,21 @@ async function flpApiConfiguration(page) {
             apiGatewayUrl: api.apiGatewayURL || '',
             cdnUrl: api.cdnURL || '',
             guestToken: parseJson(localStorage.getItem('appflp360.guestToken'), api.guestToken || ''),
+            homeCountryCode: parseJson(localStorage.getItem('appflp360.homeCountryCode'), 'HRV'),
+            operatingCountryCode: parseJson(localStorage.getItem('appflp360.operatingCountryCode'), ''),
             reportBase,
         };
     });
 
-    for(const name of ['aesEncryptionKey', 'apiGatewayUrl', 'cdnUrl', 'guestToken', 'reportBase']) {
+    for(const name of ['aesEncryptionKey', 'apiGatewayUrl', 'cdnUrl', 'guestToken', 'homeCountryCode', 'operatingCountryCode', 'reportBase']) {
         if(!String(configuration[name] || '').trim()) throw new Error(`FLP360 konfiguracija nema ${name}.`);
     }
     return configuration;
+}
+
+function reportV2Url(configuration, relativePath) {
+    const base = String(configuration.reportBase).replace(/\/+$/, '').replace(/\/V2$/i, '');
+    return new URL(`V2/${String(relativePath).replace(/^\/+/, '')}`, `${base}/`).toString();
 }
 
 function flpApiHeaders(configuration, requestUrl) {
@@ -168,18 +209,24 @@ function flpApiHeaders(configuration, requestUrl) {
     return headers;
 }
 
-async function flpGetJson(page, requestUrl, configuration) {
-    const response = await page.context().request.get(requestUrl, {
-        headers: flpApiHeaders(configuration, requestUrl),
-        timeout: 120000,
-    });
-    const responseText = await response.text();
-    if(!response.ok()) throw new Error(`FLP360 podatkovni poziv nije uspio (HTTP ${response.status()}).`);
-    try {
-        return JSON.parse(responseText);
-    } catch {
-        throw new Error('FLP360 podatkovni poziv nije vratio valjan JSON odgovor.');
+async function flpGetJson(page, requestUrl, configuration, attempts = 2) {
+    let lastError;
+    for(let attempt = 1; attempt <= attempts; attempt++) {
+        try {
+            const response = await page.context().request.get(requestUrl, {
+                headers: flpApiHeaders(configuration, requestUrl),
+                timeout: 120000,
+            });
+            const responseText = await response.text();
+            if(!response.ok()) throw new Error(`HTTP ${response.status()}`);
+            if(!responseText.trim()) return null;
+            return JSON.parse(responseText);
+        } catch(error) {
+            lastError = error;
+            if(attempt < attempts) await page.waitForTimeout(attempt * 750);
+        }
     }
+    throw new Error(`FLP360 podatkovni poziv nije uspio (${lastError?.message || 'nepoznata pogreška'}).`);
 }
 
 function officialFourCoreSnapshots() {
@@ -266,11 +313,9 @@ async function login(page, username, password) {
         await usernameInput.fill(username);
         await passwordInput.fill(password);
 
-        const submit = page.locator('#kc-login:visible, button[type="submit"]:visible, input[type="submit"]:visible').first();
-        await Promise.all([
-            page.waitForURL(url => url.origin === FLP360_BASE_URL && url.pathname === '/dashboard', {timeout: 120000}),
-            submit.click(),
-        ]);
+        const submit = page.locator('#kc-login:visible, button[name="login"]:visible, button[type="submit"]:visible, input[type="submit"]:visible').first();
+        await submit.click({force: true, noWaitAfter: true});
+        await page.waitForURL(url => url.origin === FLP360_BASE_URL && url.pathname === '/dashboard', {timeout: 120000});
     }
 
     if(new URL(page.url()).pathname !== '/dashboard') {
@@ -279,136 +324,239 @@ async function login(page, username, password) {
     await page.getByText(ROOT_FBO_ID, {exact: true}).waitFor({state: 'visible', timeout: 120000});
 }
 
-async function requestDownline(page) {
-    const configuration = await flpApiConfiguration(page);
-    const distributorId = ROOT_FBO_ID.replaceAll('-', '');
-    const queueUrl = `${String(configuration.apiGatewayUrl).replace(/\/+$/, '')}/flp360/v1/distributors/${distributorId}/report/Downline/report-extract-queue`;
-    const initialQueue = await flpGetJson(page, queueUrl, configuration);
-    const generationUrl = buildDownlineGenerationUrl(configuration.reportBase, distributorId);
-    console.log('Downline filtri: Croatia (HRV), All Levels, Suppress 0CC=Off.');
-    const generationResult = await flpGetJson(page, generationUrl, configuration);
-    const generationMessage = String(generationResult?.message || '');
-    const previousRequestIsRunning = /previous request is being processed/i.test(generationMessage);
-    if(!generationResult?.isSuccess && !previousRequestIsRunning) {
-        throw new Error(generationMessage || 'FLP360 nije prihvatio Downline izvoz.');
-    }
-    console.log(previousRequestIsRunning
-        ? 'FLP360 još obrađuje prethodni Downline zahtjev; prati se postojeći red.'
-        : 'Downline izvoz je poslan u FLP360 red za generiranje.');
+function extractFourCcRows(payload) {
+    if(Array.isArray(payload?.[0]?.body)) return payload[0].body;
+    if(Array.isArray(payload?.body)) return payload.body;
+    return Array.isArray(payload) ? payload : [];
+}
 
+function validateFourCcRows(rows, date = new Date()) {
+    const {year, month} = zagrebPeriodParts(date);
+    if(!Array.isArray(rows) || !rows.length) throw new Error('4 CC Active live odgovor je prazan; postojeći FCC podaci ostaju sačuvani.');
+    const ids = rows.map(row => normalizeFboId(row?.fboID));
+    if(ids.some(id => !id) || new Set(ids).size !== ids.length) throw new Error('4 CC Active sadrži neispravne ili duplicirane FBO ID-eve.');
+    if(rows.some(row => Number(row?.processingYear) !== year || Number(row?.processingMonth) !== month)) {
+        throw new Error(`4 CC Active nije za aktualno razdoblje ${zagrebPeriod(date)}.`);
+    }
+    for(const row of rows) {
+        for(const field of ['personalCC', 'totalActiveCC']) {
+            if(!Number.isFinite(Number(row?.[field])) || Number(row[field]) < 0) throw new Error(`4 CC Active nema valjano polje ${field}.`);
+        }
+    }
+    return {rows: rows.length, ids: new Set(ids)};
+}
+
+function buildFourCcCsv(rows, date = new Date()) {
+    const {year, monthLabel} = zagrebPeriodParts(date);
+    return csvDocument([
+        ['FBO ID', 'FBO NAME', 'LEVEL', 'HOME COUNTRY', 'PERSONAL CC', 'TOTAL ACTIVE CC', 'SELECTED MONTH/YEAR'],
+        ...rows.map(row => [
+            normalizeFboId(row.fboID),
+            row.fboName || 'Bez imena',
+            row.level || '',
+            row.homeCountry || '',
+            Number(row.personalCC).toFixed(3),
+            Number(row.totalActiveCC).toFixed(3),
+            `${monthLabel} ${year}`,
+        ]),
+    ]);
+}
+
+async function downloadLiveFourCc(page, configuration, date = new Date()) {
+    const {year, month} = zagrebPeriodParts(date);
+    const distributorId = normalizeFboId(ROOT_FBO_ID);
+    const requestUrl = reportV2Url(configuration, `distributors/${distributorId}/year/${year}/month/${month}/rewire-currentMonth-4CC-Active`);
+    const rows = extractFourCcRows(await flpGetJson(page, requestUrl, configuration));
+    const validation = validateFourCcRows(rows, date);
+    const targetPath = path.join(OUTPUT_DIRECTORY, `flp360-4cc-active-live-${zagrebPeriod(date)}.csv`);
+    await fs.writeFile(targetPath, buildFourCcCsv(rows, date), {mode: 0o600});
+    return {path: targetPath, records: rows, rowCount: validation.rows, ids: validation.ids};
+}
+
+async function downloadLatestDownlineBase(page, configuration, date = new Date()) {
+    const distributorId = normalizeFboId(ROOT_FBO_ID);
+    const queueUrl = `${String(configuration.apiGatewayUrl).replace(/\/+$/, '')}/flp360/v1/distributors/${distributorId}/report/Downline/report-extract-queue`;
+    const payload = await flpGetJson(page, queueUrl, configuration);
+    const queue = Array.isArray(payload) ? payload[0] : payload;
+    if(!queue?.processedFilePath) throw new Error('FLP360 nema posljednji valjani Downline izvoz za baznu hijerarhiju.');
+
+    const processedAt = parseFlpTimestamp(queue.requestProcessedTime);
+    if(!processedAt) throw new Error('FLP360 nije vratio valjano vrijeme baznog Downline izvoza.');
+    const ageDays = (date.getTime() - processedAt.getTime()) / 86400000;
+    if(ageDays < -1 || ageDays > 14) throw new Error(`Bazni Downline izvoz star je ${Math.max(0, Math.floor(ageDays))} dana; uvoz je zaustavljen.`);
+
+    const downloadUrl = buildDownlineDownloadUrl(configuration.cdnUrl, queue.processedFilePath);
+    const response = await page.context().request.get(downloadUrl, {headers: {Accept: 'text/csv'}, timeout: 120000});
+    if(!response.ok()) throw new Error(`FLP360 Downline CSV nije moguće preuzeti (HTTP ${response.status()}).`);
+    const contents = (await response.body()).toString('utf8');
+    if(Buffer.byteLength(contents) < 1000) throw new Error('FLP360 Downline CSV je premalen za siguran uvoz.');
+    return {contents, processedAt, ageDays};
+}
+
+function nonNegativeCc(value, fieldName) {
+    const number = Number(value);
+    if(!Number.isFinite(number) || number < 0) throw new Error(`FLP360 live CC nema valjano polje ${fieldName}.`);
+    return number;
+}
+
+function extractLiveCcRecord(payload, expectedFboId, date = new Date()) {
+    const {year, month} = zagrebPeriodParts(date);
+    const record = Array.isArray(payload) ? payload[0] : payload?.data?.[0];
+    if(!record || normalizeFboId(record.fboId) !== normalizeFboId(expectedFboId)) {
+        throw new Error(`FLP360 live CC nije potvrdio FBO ID ${expectedFboId}.`);
+    }
+    const monthlyValues = Array.isArray(record.monthlyCCValues) ? record.monthlyCCValues : [];
+    const current = monthlyValues.find(value => Number(value?.processingYear) === year && Number(value?.processingMonth) === month);
+    const confirmedZero = !current
+        && Number(record.processingYear) === 0
+        && monthlyValues.length > 0
+        && monthlyValues.every(value => Number(value?.processingYear) === 0 && Number(value?.processingMonth) === 0);
+    if(!current && !confirmedZero) throw new Error(`FLP360 live CC za ${expectedFboId} nema potvrđeno razdoblje ${zagrebPeriod(date)}.`);
+    const source = current || {};
     return {
-        configuration,
-        initialProcessedTime: String(initialQueue?.requestProcessedTime || ''),
-        queueUrl,
+        fboId: normalizeFboId(expectedFboId),
+        personalCc: confirmedZero ? 0 : nonNegativeCc(source.personalCCMTD, 'personalCCMTD'),
+        totalCc: confirmedZero ? 0 : nonNegativeCc(source.totalCCMTD, 'totalCCMTD'),
+        totalActiveCc: confirmedZero ? 0 : nonNegativeCc(source.totalActiveCCMTD, 'totalActiveCCMTD'),
+        nonManagerCc: confirmedZero ? 0 : nonNegativeCc(source.nonManagerCCMTD, 'nonManagerCCMTD'),
+        leadershipCc: confirmedZero ? 0 : nonNegativeCc(source.leaderCC, 'leaderCC'),
+        totalActiveCcYtd: confirmedZero ? 0 : nonNegativeCc(record.totalActiveCC, 'totalActiveCC'),
+        nonManagerCcYtd: confirmedZero ? 0 : nonNegativeCc(record.nonManagerCC, 'nonManagerCC'),
+        leadershipCcYtd: confirmedZero ? 0 : nonNegativeCc(record.leaderCC, 'leaderCC'),
     };
 }
 
-async function prepareFourCcCountryState(page) {
-    const countryState = await page.evaluate(() => {
-        const parseJson = (value, fallback) => {
-            try {
-                return JSON.parse(value || '');
-            } catch {
-                return fallback;
-            }
-        };
-        const userInfoText = localStorage.getItem('appflp360.userInfo') || localStorage.getItem('userInfo') || '{}';
-        const userInfo = parseJson(userInfoText, {});
-        const profileCodes = [userInfo.preferredCountryCode, userInfo.homeCountryCode].filter(Boolean);
+function extractLiveZeroFallback(treePayload, detailPayload, expectedFboId) {
+    const tree = Array.isArray(treePayload) ? treePayload[0] : treePayload?.data?.[0];
+    const detail = Array.isArray(detailPayload) ? detailPayload[0] : detailPayload;
+    const monthlyValues = Array.isArray(tree?.monthlyCCValues) ? tree.monthlyCCValues : [];
+    const isEmptyTreeSentinel = tree
+        && !normalizeFboId(tree.fboId)
+        && Number(tree.processingYear) === 0
+        && monthlyValues.length > 0
+        && monthlyValues.every(value => Number(value?.processingYear) === 0 && Number(value?.processingMonth) === 0);
+    const currentDetailValues = [detail?.personalCCCurMonth, detail?.totalCCCurMonth, detail?.totalActiveCCCurMonth]
+        .map(value => Number(value));
+    if(!isEmptyTreeSentinel
+        || normalizeFboId(detail?.distributorId) !== normalizeFboId(expectedFboId)
+        || currentDetailValues.some(value => !Number.isFinite(value) || value !== 0)) {
+        throw new Error(`FLP360 rezervna live potvrda nije sigurna za ${expectedFboId}.`);
+    }
+    return {
+        fboId: normalizeFboId(expectedFboId),
+        personalCc: 0,
+        totalCc: 0,
+        totalActiveCc: 0,
+        nonManagerCc: 0,
+        leadershipCc: 0,
+        totalActiveCcYtd: nonNegativeCc(detail.totalActiveCCYTD, 'totalActiveCCYTD'),
+        nonManagerCcYtd: null,
+        leadershipCcYtd: null,
+        usedFallback: true,
+    };
+}
 
-        const countriesText = sessionStorage.getItem('countries') || '[]';
-        let countries = parseJson(countriesText, []);
-        if(!Array.isArray(countries) || !countries.length) {
-            const countrySelect = document.querySelector('select');
-            countries = [...(countrySelect?.options || [])]
-                .filter(option => option.value && option.value !== 'Global')
-                .map(option => ({
-                    countryName: String(option.textContent || '').replace(/\s*\([^)]*\)\s*$/, '').trim(),
-                    operatingCompany: option.value,
-                    homeCountry: false,
-                }));
+async function mapWithConcurrency(items, concurrency, mapper) {
+    const results = new Array(items.length);
+    let nextIndex = 0;
+    async function worker() {
+        while(nextIndex < items.length) {
+            const index = nextIndex++;
+            results[index] = await mapper(items[index], index);
         }
-        if(!Array.isArray(countries)) countries = [];
+    }
+    await Promise.all(Array.from({length: Math.min(concurrency, items.length)}, worker));
+    return results;
+}
 
-        let croatia = countries.find(country => country.operatingCompany === 'HRV');
-        countries.forEach(country => {
-            country.homeCountry = country.operatingCompany === 'HRV';
-        });
-        if(!croatia) {
-            croatia = {countryName: 'Croatia', operatingCompany: 'HRV', homeCountry: true};
-            countries.push(croatia);
+async function fetchLiveCcForMembers(page, configuration, fboIds, date = new Date()) {
+    let completed = 0;
+    let fallbackCount = 0;
+    const records = await mapWithConcurrency(fboIds, 8, async fboId => {
+        const requestUrl = reportV2Url(configuration, `distributors/${fboId}/treeview-cc?countryCode=${encodeURIComponent(configuration.operatingCountryCode)}`);
+        const treePayload = await flpGetJson(page, requestUrl, configuration);
+        const treeRecord = Array.isArray(treePayload) ? treePayload[0] : treePayload?.data?.[0];
+        let record;
+        if(treeRecord && !normalizeFboId(treeRecord.fboId) && Number(treeRecord.processingYear) === 0) {
+            const detailUrl = reportV2Url(configuration, `downlineLoggedInDetails/fboId/${fboId}/country/${encodeURIComponent(configuration.operatingCountryCode)}`);
+            record = extractLiveZeroFallback(treePayload, await flpGetJson(page, detailUrl, configuration), fboId);
+            fallbackCount++;
+        } else {
+            record = extractLiveCcRecord(treePayload, fboId, date);
         }
-        sessionStorage.setItem('countries', JSON.stringify(countries));
-
-        return {profileCodes, countryCount: countries.length, repaired: true, valid: true};
+        completed++;
+        if(completed % 100 === 0 || completed === fboIds.length) console.log(`Live CC potvrđen: ${completed}/${fboIds.length}.`);
+        return record;
     });
-
-    if(!countryState.valid) {
-        throw new Error('FLP360 popis država nije moguće pripremiti za hrvatski međunarodni izvještaj.');
-    }
-    console.log(`FLP360 država Croatia (HRV) je pripremljena (${countryState.countryCount} dostupnih opcija).`);
+    return {records: new Map(records.map(record => [record.fboId, record])), fallbackCount};
 }
 
-async function downloadDownline(page, requestDetails) {
-    const deadline = Date.now() + 20 * 60 * 1000;
-    let latestQueue = {};
-    while(Date.now() < deadline) {
-        await page.waitForTimeout(15000);
-        latestQueue = await flpGetJson(page, requestDetails.queueUrl, requestDetails.configuration);
-        const processedTime = String(latestQueue?.requestProcessedTime || '');
-        if(latestQueue?.processedFilePath && processedTime && processedTime !== requestDetails.initialProcessedTime) break;
-    }
-    if(!latestQueue?.processedFilePath || String(latestQueue?.requestProcessedTime || '') === requestDetails.initialProcessedTime) {
-        throw new Error('Svježi Downline izvještaj nije generiran unutar 20 minuta.');
-    }
+function refreshDownlineCsv(baseContents, liveCcByFboId, activeFourCcIds, date = new Date()) {
+    const lines = String(baseContents).split(/\r?\n/).filter(Boolean);
+    const rows = lines.map(parseCsvLine);
+    const headers = rows[0] || [];
+    const dataRows = rows.slice(1);
+    const {year, monthLabel} = zagrebPeriodParts(date);
+    const indexByHeader = new Map(headers.map((header, index) => [String(header).trim().toLocaleUpperCase('en'), index]));
+    const requiredStaticHeaders = ['FBO ID', 'TREESEQUENCE', 'NAME', 'TITLE', 'GENERATION', 'COUNTRY'];
+    const metricHeaders = {
+        fourCc: `4CC ACTIVE - ${monthLabel} - ${year}`,
+        personal: `PERSONAL CC - ${monthLabel} - ${year}`,
+        total: `TOTAL CC - ${monthLabel} - ${year}`,
+        totalActive: `TOTAL ACTIVE CC - ${monthLabel} - ${year}`,
+        nonManager: `NON MANAGER CC - ${monthLabel} - ${year}`,
+        leadership: `LEADERSHIP CC - ${monthLabel} - ${year}`,
+        totalActiveYtd: `TOTAL ACTIVE CC YTD - ${year}`,
+        nonManagerYtd: `NON MANAGER CC YTD - ${year}`,
+        leadershipYtd: `LEADERSHIP CC YTD - ${year}`,
+    };
+    const missing = [...requiredStaticHeaders, ...Object.values(metricHeaders)].filter(header => !indexByHeader.has(header));
+    if(missing.length) throw new Error(`Bazni Downline nema potrebna polja: ${missing.join(', ')}.`);
+    if(dataRows.length < 400) throw new Error(`Bazni Downline ima samo ${dataRows.length} redaka.`);
 
-    const downloadUrl = buildDownlineDownloadUrl(requestDetails.configuration.cdnUrl, latestQueue.processedFilePath);
-    const response = await page.context().request.get(downloadUrl, {headers: {Accept: 'text/csv'}, timeout: 120000});
-    if(!response.ok()) throw new Error(`FLP360 Downline CSV nije moguće preuzeti (HTTP ${response.status()}).`);
-    const targetPath = path.join(OUTPUT_DIRECTORY, `flp360-downline-${zagrebPeriod()}.csv`);
-    await fs.writeFile(targetPath, await response.body());
-    const stat = await fs.stat(targetPath);
-    if(stat.size < 1000) throw new Error('FLP360 Downline CSV je premalen za siguran uvoz.');
-    return targetPath;
+    const seen = new Set();
+    const sums = {personalCc: 0, totalCc: 0, totalActiveCc: 0, nonManagerCc: 0, leadershipCc: 0};
+    for(const row of dataRows) {
+        const fboId = normalizeFboId(row[indexByHeader.get('FBO ID')]);
+        if(!fboId || seen.has(fboId)) throw new Error('Bazni Downline sadrži neispravan ili dupliciran FBO ID.');
+        seen.add(fboId);
+        const live = liveCcByFboId.get(fboId);
+        if(!live) throw new Error(`Nedostaje live CC potvrda za ${fboId}; uvoz je zaustavljen.`);
+        const values = {
+            fourCc: activeFourCcIds.has(fboId) ? 'Y' : 'N',
+            personal: live.personalCc.toFixed(3),
+            total: live.totalCc.toFixed(3),
+            totalActive: live.totalActiveCc.toFixed(3),
+            nonManager: live.nonManagerCc.toFixed(3),
+            leadership: live.leadershipCc.toFixed(3),
+            totalActiveYtd: live.totalActiveCcYtd === null ? row[indexByHeader.get(metricHeaders.totalActiveYtd)] : live.totalActiveCcYtd.toFixed(3),
+            nonManagerYtd: live.nonManagerCcYtd === null ? row[indexByHeader.get(metricHeaders.nonManagerYtd)] : live.nonManagerCcYtd.toFixed(3),
+            leadershipYtd: live.leadershipCcYtd === null ? row[indexByHeader.get(metricHeaders.leadershipYtd)] : live.leadershipCcYtd.toFixed(3),
+        };
+        for(const [metric, value] of Object.entries(values)) row[indexByHeader.get(metricHeaders[metric])] = value;
+        for(const metric of Object.keys(sums)) sums[metric] += live[metric];
+    }
+    if(liveCcByFboId.size !== dataRows.length) throw new Error('Broj live CC zapisa ne odgovara potvrđenoj Downline strukturi.');
+    return {
+        contents: csvDocument([headers, ...dataRows]),
+        summary: {
+            rows: dataRows.length,
+            liveConfirmed: liveCcByFboId.size,
+            activeFourCc: [...activeFourCcIds].filter(id => seen.has(id)).length,
+            ...Object.fromEntries(Object.entries(sums).map(([key, value]) => [key, Number(value.toFixed(3))])),
+        },
+    };
 }
 
-async function downloadFocusGroup(page) {
-    let lastError;
-    for(let attempt = 1; attempt <= 2; attempt++) {
-        try {
-            await page.goto(`${FLP360_BASE_URL}/focus-group`, {waitUntil: 'domcontentloaded', timeout: 60000});
-            const downloadLink = page.getByText('Download Data to Excel', {exact: true});
-            await downloadLink.waitFor({state: 'visible', timeout: 120000});
-            const downloadPromise = page.waitForEvent('download', {timeout: 75000});
-            await downloadLink.click();
-            return saveDownload(await downloadPromise, `flp360-focus-group-${zagrebPeriod()}.xlsx`);
-        } catch(error) {
-            lastError = error;
-        }
-    }
-    throw lastError;
-}
-
-async function downloadFourCcActive(page) {
-    await prepareFourCcCountryState(page);
-    await page.goto(`${FLP360_BASE_URL}/four-cc-consecutive-month`, {waitUntil: 'domcontentloaded', timeout: 60000});
-    const selects = page.locator('select');
-    await selects.first().waitFor({state: 'visible', timeout: 60000});
-    await selects.nth(0).selectOption({label: 'Global'});
-    const periodOptions = selects.nth(1).locator('option');
-    await periodOptions.first().waitFor({state: 'attached', timeout: 60000});
-    const periodLabels = await periodOptions.allTextContents();
-    const currentPeriodLabel = findCurrentFlpMonthLabel(periodLabels);
-    if(!currentPeriodLabel) throw new Error(`4 CC Active nema očekivano otvoreno razdoblje ${currentFlpMonthLabel()}. Dostupno: ${periodLabels.map(label => String(label).trim()).filter(Boolean).join(' | ') || 'bez razdoblja'}.`);
-    await selects.nth(1).selectOption({index: periodLabels.indexOf(currentPeriodLabel)});
-    await selects.nth(2).selectOption({label: 'Active That Period'});
-    await page.getByRole('button', {name: 'Run Report', exact: true}).click();
-
-    const downloadLink = page.getByText('Click here to download the data to excel', {exact: true});
-    await downloadLink.waitFor({state: 'visible', timeout: 120000});
-    const downloadPromise = page.waitForEvent('download', {timeout: 60000});
-    await downloadLink.click();
-    return saveDownload(await downloadPromise, `flp360-4cc-active-${zagrebPeriod()}.xlsx`);
+async function buildLiveDownline(page, configuration, activeFourCcIds, date = new Date()) {
+    const base = await downloadLatestDownlineBase(page, configuration, date);
+    const baseRows = String(base.contents).split(/\r?\n/).filter(Boolean).slice(1).map(parseCsvLine);
+    const fboIds = baseRows.map(row => normalizeFboId(row[0]));
+    const liveCc = await fetchLiveCcForMembers(page, configuration, fboIds, date);
+    const refreshed = refreshDownlineCsv(base.contents, liveCc.records, activeFourCcIds, date);
+    const targetPath = path.join(OUTPUT_DIRECTORY, `flp360-downline-live-${zagrebPeriod(date)}.csv`);
+    await fs.writeFile(targetPath, refreshed.contents, {mode: 0o600});
+    return {path: targetPath, baseProcessedAt: base.processedAt, memberIds: new Set(fboIds), fallbackCount: liveCc.fallbackCount, ...refreshed.summary};
 }
 
 async function uploadReport(filePath, period, syncUrl, syncKey) {
@@ -466,6 +614,80 @@ async function uploadFourCoreSnapshot(snapshot, syncUrl, syncKey) {
     return payload;
 }
 
+async function uploadRootLiveCc(record, isFourCcActive, period, syncUrl, syncKey) {
+    const form = new URLSearchParams({
+        metric: 'member_cc',
+        report_period: period,
+        fbo_id: record.fboId,
+        personal_cc: String(record.personalCc),
+        total_cc: String(record.totalCc),
+        total_active_cc: String(record.totalActiveCc),
+        non_manager_cc: String(record.nonManagerCc),
+        leadership_cc: String(record.leadershipCc),
+        total_active_cc_ytd: String(record.totalActiveCcYtd),
+        non_manager_cc_ytd: String(record.nonManagerCcYtd),
+        leadership_cc_ytd: String(record.leadershipCcYtd),
+        is_4cc_active: String(Boolean(isFourCcActive)),
+    });
+    const response = await fetch(syncUrl, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+            'X-FCC-Forever-Sync-Key': syncKey,
+        },
+        body: form,
+    });
+    const responseText = await response.text();
+    let payload;
+    try {
+        payload = JSON.parse(responseText);
+    } catch {
+        throw new Error('FCC je vratio neispravan odgovor za glavni live CC zapis.');
+    }
+    if(!response.ok || payload.status !== 'success' || payload.metric !== 'member_cc') {
+        throw new Error(payload?.error?.message || 'FCC sinkronizacija glavnog live CC zapisa nije uspjela.');
+    }
+    return payload;
+}
+
+async function fetchFccStatus(period, syncUrl, syncKey) {
+    const response = await fetch(syncUrl, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+            'X-FCC-Forever-Sync-Key': syncKey,
+        },
+        body: new URLSearchParams({metric: 'status', report_period: period}),
+    });
+    const responseText = await response.text();
+    let payload;
+    try {
+        payload = JSON.parse(responseText);
+    } catch {
+        throw new Error('FCC status provjera nije vratila valjan JSON odgovor.');
+    }
+    if(!response.ok || payload.status !== 'success') throw new Error(payload?.error?.message || 'FCC status provjera nije uspjela.');
+    return payload;
+}
+
+function verifyFccStatus(payload, expected) {
+    const summary = payload?.summary || {};
+    const checks = {
+        members: Number(summary.members) === expected.members,
+        latestCc: Number(summary.personal_active) + Number(summary.zero_cc) === expected.members,
+        activeFourCc: Number(summary.active_4cc) === expected.activeFourCc,
+        personalCc: Math.abs(Number(summary.personal_cc) - expected.personalCc) < 0.002,
+    };
+    const failed = Object.entries(checks).filter(([, passed]) => !passed).map(([name]) => name);
+    if(failed.length) throw new Error(`FCC završna kontrola nije prošla: ${failed.join(', ')}.`);
+    return {
+        members: Number(summary.members),
+        activeFourCc: Number(summary.active_4cc),
+        personalCc: Number(summary.personal_cc),
+        lastDataImportAt: payload.last_data_import_at,
+    };
+}
+
 async function main() {
     const username = requiredEnvironment('FLP360_USERNAME');
     const password = requiredEnvironment('FLP360_PASSWORD');
@@ -475,71 +697,51 @@ async function main() {
     const {chromium} = await import(playwrightModule);
     const browser = await chromium.launch({
         headless: true,
+        args: ['--disable-gpu'],
         ...(process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE ? {executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE} : {}),
     });
-    const context = await browser.newContext({acceptDownloads: true, locale: 'en-US'});
+    const context = await browser.newContext({locale: 'en-US'});
     const page = await context.newPage();
     const period = zagrebPeriod();
+    const runDate = new Date();
 
     try {
         await login(page, username, password);
+        const configuration = await flpApiConfiguration(page);
+        console.log(`FLP360 kontekst: home=${configuration.homeCountryCode}, operating=${configuration.operatingCountryCode}.`);
+
+        /* Build and validate every current-period artifact before the first FCC data
+         * write. The last complete export remains the hierarchy authority, while CC
+         * values are confirmed live for every individual member. */
+        const fourCc = await downloadLiveFourCc(page, configuration, runDate);
+        console.log(`4 CC Active live: potvrđena ${fourCc.rowCount} retka.`);
+        const downline = await buildLiveDownline(page, configuration, fourCc.ids, runDate);
+        const downlineValidation = await validateDownline(downline.path);
+        console.log(`Downline live: ${downlineValidation.rows} redaka, svih ${downline.liveConfirmed} CC zapisa potvrđeno (${downline.fallbackCount} potvrđenih zero fallback zapisa).`);
+        const rootLiveCc = await fetchLiveCcForMembers(page, configuration, [normalizeFboId(ROOT_FBO_ID)], runDate);
+        const rootRecord = rootLiveCc.records.get(normalizeFboId(ROOT_FBO_ID));
+        if(!rootRecord || !Number.isFinite(rootRecord.personalCc)) throw new Error('Glavni FBO nema potvrđen live Personal CC.');
+
+        const downlineResult = await uploadReport(downline.path, period, syncUrl, syncKey);
+        console.log(`FCC Downline: duplicate=${Boolean(downlineResult.duplicate)}.`);
+        await uploadRootLiveCc(rootRecord, fourCc.ids.has(rootRecord.fboId), period, syncUrl, syncKey);
+        console.log(`FCC glavni FBO live CC: Personal CC=${rootRecord.personalCc.toFixed(3)}.`);
+        const fourCcResult = await uploadReport(fourCc.path, period, syncUrl, syncKey);
+        console.log(`FCC 4 CC Active: duplicate=${Boolean(fourCcResult.duplicate)}.`);
 
         for(const snapshot of officialFourCoreSnapshots()) {
             await uploadFourCoreSnapshot(snapshot, syncUrl, syncKey);
             console.log(`Službeni 4 Core: ${snapshot.period} je potvrđen na FCC-u.`);
         }
 
-        /* Request the slow asynchronous Downline first, then synchronize the two
-         * immediately available reports while FLP360 prepares it in the background. */
-        const failures = [];
-        const warnings = [];
-        let downlineRequest = null;
-        let downlineRequested = false;
-        try {
-            downlineRequest = await requestDownline(page);
-            downlineRequested = true;
-        } catch(error) {
-            failures.push(`Downline zahtjev: ${error.message}`);
-        }
-
-        try {
-            const focusPath = await downloadFocusGroup(page);
-            const focusValidation = await validateXlsx(focusPath, 'Focus Group');
-            const focusResult = await uploadReport(focusPath, period, syncUrl, syncKey);
-            console.log(`Focus Group: ${focusValidation.bytes} bajtova, duplicate=${Boolean(focusResult.duplicate)}.`);
-        } catch(error) {
-            warnings.push(`Focus Group: ${error.message}`);
-        }
-
-        try {
-            const fourCcPath = await downloadFourCcActive(page);
-            const fourCcValidation = await validateXlsx(fourCcPath, '4 CC Active');
-            const fourCcResult = await uploadReport(fourCcPath, period, syncUrl, syncKey);
-            console.log(`4 CC Active: ${fourCcValidation.bytes} bajtova, duplicate=${Boolean(fourCcResult.duplicate)}.`);
-        } catch(error) {
-            failures.push(`4 CC Active: ${error.message}`);
-        }
-
-        if(downlineRequested) {
-            try {
-                const downlinePath = await downloadDownline(page, downlineRequest);
-                const downlineValidation = await validateDownline(downlinePath);
-                const downlineResult = await uploadReport(downlinePath, period, syncUrl, syncKey);
-                console.log(`Downline: ${downlineValidation.rows} redaka (${downlineValidation.hrvRows} HRV; ${downlineValidation.countries.join(', ')}), duplicate=${Boolean(downlineResult.duplicate)}.`);
-            } catch(error) {
-                failures.push(`Downline: ${error.message}`);
-            }
-        }
-
-        if(failures.length) {
-            throw new Error(`Djelomična sinkronizacija: ${failures.join(' | ')}`);
-        }
-
-        if(warnings.length) {
-            console.warn(`Sinkronizacija je dovršena uz upozorenje: ${warnings.join(' | ')}`);
-        }
-
-        console.log(`FLP360 → FCC sinkronizacija za ${period} završena je uspješno.`);
+        const verified = verifyFccStatus(await fetchFccStatus(period, syncUrl, syncKey), {
+            members: downline.rows + 1,
+            activeFourCc: fourCc.rowCount,
+            personalCc: Number((downline.personalCc + rootRecord.personalCc).toFixed(3)),
+        });
+        console.log(`FCC provjera: ${verified.members} članova, ${verified.activeFourCc} aktivna 4CC, Personal CC=${verified.personalCc.toFixed(3)}.`);
+        console.warn('Focus Group live izvor trenutno vraća prazan skup uz nenulti broj zapisa; zadnji valjani FCC Focus Group namjerno je sačuvan.');
+        console.log(`FLP360 → FCC live sinkronizacija za ${period} završena je uspješno.`);
     } finally {
         await context.close();
         await browser.close();
@@ -553,6 +755,30 @@ if(process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.arg
     });
 }
 
-export {buildDownlineDownloadUrl, buildDownlineGenerationUrl, currentFlpMonthLabel, encryptFlpAuthorization, findCurrentFlpMonthLabel, officialFourCoreSnapshots, parseCsvLine, readyReportMessage, validateDownline, validateXlsx, zagrebPeriod};
+export {
+    buildDownlineDownloadUrl,
+    buildDownlineGenerationUrl,
+    buildFourCcCsv,
+    csvDocument,
+    currentFlpMonthLabel,
+    encryptFlpAuthorization,
+    extractFourCcRows,
+    extractLiveCcRecord,
+    extractLiveZeroFallback,
+    findCurrentFlpMonthLabel,
+    normalizeFboId,
+    officialFourCoreSnapshots,
+    parseCsvLine,
+    parseFlpTimestamp,
+    readyReportMessage,
+    refreshDownlineCsv,
+    reportV2Url,
+    validateDownline,
+    validateFourCcRows,
+    validateXlsx,
+    verifyFccStatus,
+    zagrebPeriod,
+    zagrebPeriodParts,
+};
 
 /* /Custom code: FC-2026-08-13 */
