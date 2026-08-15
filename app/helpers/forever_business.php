@@ -1205,6 +1205,75 @@ function forever_business_get_user_activity_notice(int $user_id): array {
 }
 /* /Custom code: FC-2026-08-14 */
 
+/* Custom code: FC-2026-08-15: VIP 4 Core launch and eligibility gate */
+function forever_business_build_vip_program_state(?float $personal_cc, ?\DateTimeInterface $now = null): array {
+    $timezone = new \DateTimeZone('Europe/Zagreb');
+    $current_time = $now
+        ? (new \DateTimeImmutable('@' . $now->getTimestamp()))->setTimezone($timezone)
+        : new \DateTimeImmutable('now', $timezone);
+    $launch_at = new \DateTimeImmutable('2026-09-01 00:00:00', $timezone);
+    $threshold = 0.33;
+    $has_data = $personal_cc !== null;
+    $personal_cc = $has_data ? max(0, round((float) $personal_cc, 3)) : null;
+    $is_eligible = $has_data && $personal_cc >= $threshold;
+    $is_launched = $current_time >= $launch_at;
+    $seconds_remaining = $is_launched ? 0 : max(0, $launch_at->getTimestamp() - $current_time->getTimestamp());
+
+    if(!$has_data) {
+        $status = 'waiting_data';
+    } elseif($is_launched && $is_eligible) {
+        $status = 'active';
+    } elseif($is_launched) {
+        $status = 'locked';
+    } elseif($is_eligible) {
+        $status = 'qualified_waiting';
+    } else {
+        $status = 'needs_progress';
+    }
+
+    return [
+        'status' => $status,
+        'eligibility_period' => '2026-08-01',
+        'eligibility_period_label' => 'kolovoz 2026.',
+        'threshold_cc' => $threshold,
+        'personal_cc' => $personal_cc,
+        'gap_cc' => $has_data ? max(0, round($threshold - $personal_cc, 3)) : null,
+        'progress' => $has_data ? min(100, round(($personal_cc / $threshold) * 100, 1)) : 0.0,
+        'has_data' => $has_data,
+        'is_eligible' => $is_eligible,
+        'is_launched' => $is_launched,
+        'can_access_education' => $is_launched && $is_eligible,
+        'launch_at_iso' => $launch_at->format(\DateTimeInterface::ATOM),
+        'launch_at_display' => '1. rujna 2026. u 00:00',
+        'seconds_remaining' => $seconds_remaining,
+    ];
+}
+
+function forever_business_get_vip_program_state(int $user_id, ?\DateTimeInterface $now = null): array {
+    forever_business_ensure_tables();
+
+    $state = forever_business_build_vip_program_state(null, $now);
+    $state['has_linked_id'] = false;
+    $state['fbo_id'] = '';
+    if($user_id <= 0) return $state;
+
+    /* Eligibility is always resolved from the signed-in account and the fixed
+     * August 2026 personal-CC row. A selected dashboard month cannot change it. */
+    $user = db()->where('user_id', $user_id)->getOne('users', ['preferences']);
+    $fbo_id = $user ? forever_business_extract_user_fbo_id($user->preferences ?? null) : '';
+    if($fbo_id === '') return $state;
+
+    $metric = db()->where('fbo_id', $fbo_id)
+        ->where('period_month', '2026-08-01')
+        ->getOne('forever_business_metrics', ['personal_cc']);
+    $personal_cc = $metric && $metric->personal_cc !== null ? (float) $metric->personal_cc : null;
+    $state = forever_business_build_vip_program_state($personal_cc, $now);
+    $state['has_linked_id'] = true;
+    $state['fbo_id'] = $fbo_id;
+    return $state;
+}
+/* /Custom code: FC-2026-08-15 */
+
 function forever_business_get_action(array $member, ?array $metric, int $completed_total = 0): array {
     $progress = $member['verified_progress'] ?? forever_business_get_verified_progress($member);
     $is_manager = ($progress['rank']['mode'] ?? '') === 'manager';

@@ -2,6 +2,8 @@
 <?php
 $dashboard = $data->dashboard;
 $summary = $dashboard['summary'];
+$vip_program = isset($data->vip_program) && is_array($data->vip_program) ? $data->vip_program : [];
+$show_vip_program = (!$data->is_admin && !empty($data->focus_member)) || !empty($vip_program['is_admin_preview']);
 $period_label = !empty($dashboard['period']) ? (new DateTimeImmutable($dashboard['period']))->format('m/Y') : '—';
 $format_cc = static fn($value) => number_format((float) $value, 3, ',', '.');
 $format_percent = static fn($value) => number_format((float) $value, 1, ',', '.') . '%';
@@ -47,6 +49,45 @@ $format_change = static function(float $value): string {
     .forever-business-page .fb-sort-button:hover, .forever-business-page .fb-sort-button:focus { color: #f6c900; outline: none; }
     .forever-business-page .fb-sort-button[aria-pressed="true"] { color: #f6c900; }
     .forever-business-page .fb-sort-icon { min-width: .8rem; font-size: .75rem; opacity: .65; }
+    .forever-business-page .fb-vip-launch { position: relative; overflow: hidden; border: 1px solid rgba(246,201,0,.28); border-radius: 1.35rem; background: radial-gradient(circle at 88% 10%, rgba(246,201,0,.13), transparent 32%), linear-gradient(135deg, #101713 0%, #121b2b 58%, #0f1512 100%); color: #f8fafc; box-shadow: 0 18px 45px rgba(0,0,0,.16); }
+    .forever-business-page .fb-vip-launch::before { content: ''; position: absolute; width: 16rem; height: 16rem; left: -8rem; bottom: -10rem; border-radius: 50%; background: rgba(83,190,133,.12); filter: blur(10px); pointer-events: none; }
+    .forever-business-page .fb-vip-launch h2, .forever-business-page .fb-vip-launch h3, .forever-business-page .fb-vip-launch p, .forever-business-page .fb-vip-launch span, .forever-business-page .fb-vip-launch strong, .forever-business-page .fb-vip-launch small { color: inherit; }
+    .forever-business-page .fb-vip-content { position: relative; z-index: 1; }
+    .forever-business-page .fb-vip-eyebrow { display: inline-flex; align-items: center; gap: .45rem; color: #f6cf2e !important; font-size: .78rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+    .forever-business-page .fb-vip-status { display: inline-flex; align-items: center; gap: .4rem; padding: .45rem .75rem; border-radius: 999px; font-size: .78rem; font-weight: 800; }
+    .forever-business-page .fb-vip-status-qualified, .forever-business-page .fb-vip-status-active { background: rgba(70,190,124,.16); border: 1px solid rgba(91,220,151,.32); color: #9cf0bd !important; }
+    .forever-business-page .fb-vip-status-pending { background: rgba(246,201,0,.12); border: 1px solid rgba(246,201,0,.28); color: #ffe56f !important; }
+    .forever-business-page .fb-vip-countdown { display: grid; grid-template-columns: repeat(4, minmax(72px, 1fr)); gap: .65rem; }
+    .forever-business-page .fb-vip-time { padding: .85rem .5rem; border-radius: .85rem; text-align: center; background: rgba(255,255,255,.055); border: 1px solid rgba(255,255,255,.1); }
+    .forever-business-page .fb-vip-time strong { display: block; font-size: 1.55rem; line-height: 1.1; font-variant-numeric: tabular-nums; }
+    .forever-business-page .fb-vip-time span { display: block; margin-top: .28rem; color: rgba(255,255,255,.57) !important; font-size: .66rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+    .forever-business-page .fb-vip-eligibility { padding: 1rem 1.1rem; border-radius: 1rem; background: rgba(255,255,255,.055); border: 1px solid rgba(255,255,255,.1); }
+    .forever-business-page .fb-vip-progress { height: .58rem; overflow: hidden; border-radius: 999px; background: rgba(255,255,255,.11); }
+    .forever-business-page .fb-vip-progress > span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #f0b90b, #ffe36b); transition: width .35s ease; }
+    .forever-business-page .fb-vip-progress.is-complete > span { background: linear-gradient(90deg, #39a96b, #83e4aa); }
+    .forever-business-page .fb-vip-conditions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .75rem; }
+    .forever-business-page .fb-vip-condition { display: flex; gap: .7rem; padding: .9rem; border-radius: .9rem; background: rgba(7,11,9,.32); border: 1px solid rgba(255,255,255,.08); }
+    .forever-business-page .fb-vip-condition-icon { display: inline-flex; align-items: center; justify-content: center; flex: 0 0 2rem; width: 2rem; height: 2rem; border-radius: .7rem; background: rgba(246,201,0,.13); color: #f7d742 !important; }
+    .forever-business-page .fb-vip-condition.is-complete .fb-vip-condition-icon { background: rgba(70,190,124,.16); color: #8ceab1 !important; }
+    .forever-business-page .fb-vip-preview { position: relative; min-height: 190px; overflow: hidden; border-radius: 1rem; border: 1px solid rgba(255,255,255,.1); background: rgba(255,255,255,.035); }
+    .forever-business-page .fb-vip-preview-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .75rem; padding: 1rem; transition: filter .25s ease, opacity .25s ease; }
+    .forever-business-page .fb-vip-preview.is-locked .fb-vip-preview-grid { filter: blur(5px); opacity: .45; pointer-events: none; user-select: none; }
+    .forever-business-page .fb-vip-feature { min-height: 132px; padding: 1rem; border-radius: .9rem; background: linear-gradient(145deg, rgba(255,255,255,.08), rgba(255,255,255,.035)); border: 1px solid rgba(255,255,255,.09); }
+    .forever-business-page .fb-vip-feature i { color: #f6cf2e; font-size: 1.15rem; }
+    .forever-business-page .fb-vip-feature p { color: rgba(255,255,255,.61) !important; font-size: .78rem; line-height: 1.45; }
+    .forever-business-page .fb-vip-lock { position: absolute; z-index: 2; inset: 0; display: flex; align-items: center; justify-content: center; padding: 1rem; text-align: center; background: linear-gradient(180deg, rgba(10,15,12,.2), rgba(10,15,12,.74)); }
+    .forever-business-page .fb-vip-lock-inner { max-width: 410px; padding: 1rem 1.25rem; border-radius: 1rem; background: rgba(13,19,15,.9); border: 1px solid rgba(246,201,0,.24); box-shadow: 0 12px 32px rgba(0,0,0,.28); }
+    .forever-business-page .fb-vip-lock-icon { display: inline-flex; align-items: center; justify-content: center; width: 2.65rem; height: 2.65rem; margin-bottom: .65rem; border-radius: .9rem; color: #f7d742; background: rgba(246,201,0,.13); }
+    .forever-business-page .fb-vip-note { color: rgba(255,255,255,.58) !important; }
+    @media (max-width: 991.98px) {
+        .forever-business-page .fb-vip-conditions { grid-template-columns: 1fr; }
+        .forever-business-page .fb-vip-preview-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 575.98px) {
+        .forever-business-page .fb-vip-countdown { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .forever-business-page .fb-vip-preview-grid { grid-template-columns: 1fr; }
+        .forever-business-page .fb-vip-feature { min-height: 0; }
+    }
 </style>
 
 <div class="forever-business-page">
@@ -219,7 +260,122 @@ $format_change = static function(float $value): string {
             </div>
         <?php endif ?>
 
-        <?php if(!$data->is_admin && $data->focus_member): $action = $data->focus_member['next_action']; ?>
+        <?php if($show_vip_program): ?>
+            <?php
+            $vip_has_data = !empty($vip_program['has_data']);
+            $vip_is_eligible = !empty($vip_program['is_eligible']);
+            $vip_is_launched = !empty($vip_program['is_launched']);
+            $vip_can_access = !empty($vip_program['can_access_education']);
+            $vip_seconds = max(0, (int) ($vip_program['seconds_remaining'] ?? 0));
+            $vip_days = intdiv($vip_seconds, 86400);
+            $vip_hours = intdiv($vip_seconds % 86400, 3600);
+            $vip_minutes = intdiv($vip_seconds % 3600, 60);
+            $vip_seconds_part = $vip_seconds % 60;
+            $vip_status_class = $vip_can_access ? 'active' : ($vip_is_eligible ? 'qualified' : 'pending');
+            $vip_status_label = $vip_can_access ? 'Edukacija je aktivna' : ($vip_is_eligible ? 'Uvjet za pristup je ispunjen' : 'Pristup još nije aktivan');
+            ?>
+
+            <?php if(!empty($vip_program['is_admin_preview'])): ?>
+                <div class="alert alert-warning mb-3">
+                    <strong>Pretpregled prikaza za suradnike.</strong>
+                    Ovaj prikaz koristi simulirane bodove i ne mijenja ničije podatke.
+                    <span class="d-block mt-2">
+                        <a href="<?= url('forever-business?vip_preview=pending') ?>" class="alert-link mr-3">Prikaži neispunjen uvjet</a>
+                        <a href="<?= url('forever-business?vip_preview=qualified') ?>" class="alert-link mr-3">Prikaži ispunjen uvjet</a>
+                        <a href="<?= url('forever-business?vip_preview=active') ?>" class="alert-link">Prikaži otvorenu edukaciju</a>
+                    </span>
+                </div>
+            <?php endif ?>
+
+            <section
+                class="fb-vip-launch mb-4"
+                <?php if(!$vip_is_launched): ?>data-fb-vip-countdown="<?= htmlspecialchars((string) ($vip_program['launch_at_iso'] ?? '')) ?>"<?php endif ?>
+                aria-labelledby="fb-vip-title"
+            >
+                <div class="fb-vip-content p-4 p-lg-5">
+                    <div class="row align-items-start">
+                        <div class="col-lg-7">
+                            <div class="fb-vip-eyebrow mb-2"><i class="fas fa-star"></i> VIP 4 Core edukacija</div>
+                            <h2 class="h3 mb-2" id="fb-vip-title"><?= $vip_can_access ? 'Tvoj vođeni program je otvoren.' : 'Tvoj vođeni program počinje 1. rujna.' ?></h2>
+                            <p class="fb-vip-note mb-3"><?= $vip_can_access ? 'Otvori svoj sljedeći korak i nastavi tempom koji možeš redovito održavati.' : 'Svaki put kada se prijaviš dobit ćeš jedan jasan sljedeći korak, praktične primjere i podršku kroz sva četiri područja 4 Corea.' ?></p>
+                            <span class="fb-vip-status fb-vip-status-<?= $vip_status_class ?>"><i class="fas fa-<?= $vip_can_access || $vip_is_eligible ? 'check-circle' : 'lock' ?>"></i> <?= htmlspecialchars($vip_status_label) ?></span>
+                        </div>
+                        <div class="col-lg-5 mt-4 mt-lg-0">
+                            <?php if(!$vip_is_launched): ?>
+                                <div class="small font-weight-bold text-uppercase mb-2">Do početka edukacije</div>
+                                <div class="fb-vip-countdown" aria-live="polite">
+                                    <div class="fb-vip-time"><strong data-fb-vip-days><?= nr($vip_days) ?></strong><span>dana</span></div>
+                                    <div class="fb-vip-time"><strong data-fb-vip-hours><?= str_pad((string) $vip_hours, 2, '0', STR_PAD_LEFT) ?></strong><span>sati</span></div>
+                                    <div class="fb-vip-time"><strong data-fb-vip-minutes><?= str_pad((string) $vip_minutes, 2, '0', STR_PAD_LEFT) ?></strong><span>minuta</span></div>
+                                    <div class="fb-vip-time"><strong data-fb-vip-seconds><?= str_pad((string) $vip_seconds_part, 2, '0', STR_PAD_LEFT) ?></strong><span>sekundi</span></div>
+                                </div>
+                            <?php else: ?>
+                                <div class="fb-vip-eligibility h-100 d-flex align-items-center">
+                                    <div><div class="small text-uppercase fb-vip-note mb-1">Početak programa</div><strong class="h5 mb-1 d-block">1. rujna 2026.</strong><span class="fb-vip-note small"><?= $vip_can_access ? 'Tvoj prvi korak nalazi se odmah ispod.' : 'Program je počeo, a tvoj se pristup otvara kada je uvjet potvrđen.' ?></span></div>
+                                </div>
+                            <?php endif ?>
+                        </div>
+                    </div>
+
+                    <div class="fb-vip-eligibility mt-4">
+                        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end">
+                            <div>
+                                <div class="small text-uppercase fb-vip-note mb-1">Tvoj uvjet za pristup</div>
+                                <?php if(!$vip_has_data): ?>
+                                    <strong>Čekamo potvrđeni podatak za kolovoz.</strong>
+                                    <div class="small fb-vip-note mt-1">Provjeri je li Forever ID ispravno povezan. Bodovi će se prikazati nakon sljedećeg uspješnog osvježavanja.</div>
+                                <?php elseif($vip_is_eligible): ?>
+                                    <strong>Imaš <?= $format_cc($vip_program['personal_cc']) ?> osobnog CC — uvjet je ispunjen.</strong>
+                                    <div class="small fb-vip-note mt-1"><?= $vip_is_launched ? 'Pristup edukaciji je otvoren.' : 'Ne trebaš ništa dodatno uključivati. Pristup će se otvoriti automatski 1. rujna.' ?></div>
+                                <?php else: ?>
+                                    <strong>Trenutačno imaš <?= $format_cc($vip_program['personal_cc']) ?> osobnog CC u kolovozu.</strong>
+                                    <div class="small fb-vip-note mt-1">Za pristup nedostaje još <?= $format_cc($vip_program['gap_cc']) ?> osobnog CC. Uvjet se provjerava nakon svakog uspješnog osvježavanja podataka.</div>
+                                <?php endif ?>
+                            </div>
+                            <div class="mt-3 mt-md-0 ml-md-4 text-md-right"><span class="small fb-vip-note">Napredak do 0,330 CC</span><strong class="d-block"><?= $vip_has_data ? $format_percent($vip_program['progress']) : '—' ?></strong></div>
+                        </div>
+                        <div class="fb-vip-progress mt-3 <?= $vip_is_eligible ? 'is-complete' : '' ?>"><span style="width: <?= min(100, (float) ($vip_program['progress'] ?? 0)) ?>%"></span></div>
+                    </div>
+
+                    <div class="fb-vip-conditions mt-3">
+                        <div class="fb-vip-condition <?= $vip_is_eligible ? 'is-complete' : '' ?>">
+                            <span class="fb-vip-condition-icon"><i class="fas fa-<?= $vip_is_eligible ? 'check' : 'chart-line' ?>"></i></span>
+                            <div><strong class="d-block small">Najmanje 0,330 osobnog CC</strong><span class="fb-vip-note small">Promet evidentiran na tvojem Forever ID-u za kolovoz 2026.</span></div>
+                        </div>
+                        <div class="fb-vip-condition <?= !empty($vip_program['has_linked_id']) ? 'is-complete' : '' ?>">
+                            <span class="fb-vip-condition-icon"><i class="fas fa-<?= !empty($vip_program['has_linked_id']) ? 'check' : 'link' ?>"></i></span>
+                            <div><strong class="d-block small">Povezan Forever ID</strong><span class="fb-vip-note small">FCC automatski povezuje tvoje bodove i osobni napredak.</span></div>
+                        </div>
+                        <div class="fb-vip-condition <?= $vip_is_launched ? 'is-complete' : '' ?>">
+                            <span class="fb-vip-condition-icon"><i class="fas fa-<?= $vip_is_launched ? 'check' : 'calendar-alt' ?>"></i></span>
+                            <div><strong class="d-block small">Početak 1. rujna</strong><span class="fb-vip-note small">Kvalificiranim se suradnicima program otvara automatski.</span></div>
+                        </div>
+                    </div>
+
+                    <div class="small fb-vip-note mt-3"><i class="fas fa-info-circle mr-1"></i> Prag od 0,330 CC uvjet je za ovu dodatnu edukaciju. Službena Forever aktivnost i dalje zahtijeva ukupno 4 Active CC u istoj regiji, uključujući najmanje 1 osobni CC.</div>
+
+                    <div class="fb-vip-preview mt-4 <?= $vip_can_access ? '' : 'is-locked' ?>">
+                        <div class="fb-vip-preview-grid" <?= !$vip_can_access ? 'aria-hidden="true"' : '' ?>>
+                            <div class="fb-vip-feature"><i class="fas fa-route mb-3"></i><strong class="d-block mb-2">Jedan sljedeći korak</strong><p class="mb-0">Jasan zadatak koji ostaje aktivan dok ga ne dovršiš.</p></div>
+                            <div class="fb-vip-feature"><i class="fas fa-users mb-3"></i><strong class="d-block mb-2">Tjedni marketing plan</strong><p class="mb-0">Fiksni termin na koji pozivaš osobe zainteresirane za poslovanje.</p></div>
+                            <div class="fb-vip-feature"><i class="fas fa-comments mb-3"></i><strong class="d-block mb-2">VIP podrška</strong><p class="mb-0">Kratki podsjetnici, primjeri i podrška kada zapneš.</p></div>
+                            <div class="fb-vip-feature"><i class="fas fa-chart-pie mb-3"></i><strong class="d-block mb-2">Tvoj 4 Core napredak</strong><p class="mb-0">Pratiš vlastite rezultate i uvijek znaš što slijedi.</p></div>
+                        </div>
+                        <?php if(!$vip_can_access): ?>
+                            <div class="fb-vip-lock">
+                                <div class="fb-vip-lock-inner">
+                                    <span class="fb-vip-lock-icon"><i class="fas fa-lock"></i></span>
+                                    <strong class="d-block mb-1"><?= $vip_is_eligible ? 'Tvoje mjesto u programu je spremno.' : 'Sadržaj se otvara nakon ispunjenog uvjeta.' ?></strong>
+                                    <span class="fb-vip-note small"><?= $vip_is_eligible ? 'Edukacija počinje 1. rujna i otvorit će se automatski.' : 'Prati svoj osobni CC iznad. Kada dosegne 0,330 CC, FCC će automatski potvrditi tvoj pristup za početak 1. rujna.' ?></span>
+                                </div>
+                            </div>
+                        <?php endif ?>
+                    </div>
+                </div>
+            </section>
+        <?php endif ?>
+
+        <?php if(!$data->is_admin && $data->focus_member && !empty($vip_program['can_access_education'])): $action = $data->focus_member['next_action']; ?>
             <div class="card fb-card fb-action mb-4">
                 <div class="card-body p-4">
                     <div class="row align-items-center">
@@ -334,6 +490,35 @@ $format_change = static function(float $value): string {
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+    const countdown = document.querySelector('[data-fb-vip-countdown]');
+    if (countdown) {
+        const launchAt = Date.parse(countdown.dataset.fbVipCountdown);
+        const fields = {
+            days: countdown.querySelector('[data-fb-vip-days]'),
+            hours: countdown.querySelector('[data-fb-vip-hours]'),
+            minutes: countdown.querySelector('[data-fb-vip-minutes]'),
+            seconds: countdown.querySelector('[data-fb-vip-seconds]')
+        };
+        const pad = function (value) { return String(value).padStart(2, '0'); };
+        const updateCountdown = function () {
+            const remaining = Math.max(0, Math.floor((launchAt - Date.now()) / 1000));
+            const days = Math.floor(remaining / 86400);
+            const hours = Math.floor((remaining % 86400) / 3600);
+            const minutes = Math.floor((remaining % 3600) / 60);
+            const seconds = remaining % 60;
+            if (fields.days) fields.days.textContent = String(days);
+            if (fields.hours) fields.hours.textContent = pad(hours);
+            if (fields.minutes) fields.minutes.textContent = pad(minutes);
+            if (fields.seconds) fields.seconds.textContent = pad(seconds);
+            if (remaining === 0 && countdown.dataset.fbVipExpired !== '1') {
+                countdown.dataset.fbVipExpired = '1';
+                window.setTimeout(function () { window.location.reload(); }, 1200);
+            }
+        };
+        updateCountdown();
+        window.setInterval(updateCountdown, 1000);
+    }
+
     const search = document.getElementById('fb-team-search');
     const table = document.getElementById('fb-team-table');
     if (!table) return;

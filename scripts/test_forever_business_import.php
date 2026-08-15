@@ -45,6 +45,9 @@ $assertions = [
     'team priorities support accessible client-side sorting' => str_contains($view, 'fb-sort-button') && str_contains($view, 'Intl.Collator') && str_contains($view, "setAttribute('aria-sort'"),
     'official 4 Core table labels prior-year values and computed changes' => str_contains($view, 'fb-official-comparison') && str_contains($view, '$official_change'),
     'sync notice uses clear member-facing wording and Zagreb time' => str_contains($view, 'Podaci provjereni:') && str_contains($view, 'Trenutačno su prikazani najnoviji dostupni bodovi') && str_contains($view, 'last_sync_was_duplicate') && str_contains($helper, 'Europe/Zagreb'),
+    'VIP education gate uses fixed August personal CC and September launch' => str_contains($helper, "where('period_month', '2026-08-01')") && str_contains($helper, "new \\DateTimeImmutable('2026-09-01 00:00:00'") && str_contains($helper, "'threshold_cc' => \$threshold"),
+    'VIP task submission is blocked on the server until access is active' => str_contains($user, "empty(\$vip_program['can_access_education'])") && str_contains($user, 'Vođena edukacija počinje 1. rujna'),
+    'VIP launch view includes countdown eligibility and a locked preview' => str_contains($view, 'data-fb-vip-countdown') && str_contains($view, 'fb-vip-conditions') && str_contains($view, 'fb-vip-preview') && str_contains($view, 'Prag od 0,330 CC uvjet je za ovu dodatnu edukaciju'),
 ];
 
 $failed = array_keys(array_filter($assertions, static fn($passed) => !$passed));
@@ -80,6 +83,11 @@ $manager_100 = forever_business_get_verified_progress(array_merge($base, ['title
 $first_action = forever_business_get_action(array_merge($base, ['verified_progress' => $activity]), $base, 0);
 $second_action = forever_business_get_action(array_merge($base, ['verified_progress' => $activity]), $base, 1);
 $zagreb_time = forever_business_format_zagreb_datetime('2026-08-14 06:53:00');
+$before_launch = new DateTimeImmutable('2026-08-31 23:59:59', new DateTimeZone('Europe/Zagreb'));
+$after_launch = new DateTimeImmutable('2026-09-01 00:00:00', new DateTimeZone('Europe/Zagreb'));
+$vip_below_threshold = forever_business_build_vip_program_state(.329, $before_launch);
+$vip_qualified_waiting = forever_business_build_vip_program_state(.330, $before_launch);
+$vip_active = forever_business_build_vip_program_state(.330, $after_launch);
 
 $rule_assertions = [
     '4 CC activity requires official status, 1 personal and 4 regional active CC' => $activity['is_officially_active'] && !$personal_gate['is_officially_active'] && !$regional_gate['is_officially_active'] && !$official_gate['is_officially_active'],
@@ -90,6 +98,9 @@ $rule_assertions = [
     'Manager target advances from 60 to 100 Non-Manager CC' => $manager_60['rank']['windows'][0]['target'] === 60.0 && $manager_100['rank']['windows'][0]['target'] === 100.0,
     'completed action advances to a new detailed next step' => $first_action['key'] !== $second_action['key'] && count($first_action['checklist']) === 3 && !empty($first_action['success_definition']),
     'UTC synchronization time is displayed in Zagreb summer time' => $zagreb_time === '14.08.2026. 08:53',
+    '0.329 personal CC does not unlock VIP education' => !$vip_below_threshold['is_eligible'] && !$vip_below_threshold['can_access_education'] && $vip_below_threshold['gap_cc'] === .001,
+    '0.330 personal CC qualifies but stays locked before September' => $vip_qualified_waiting['is_eligible'] && !$vip_qualified_waiting['is_launched'] && !$vip_qualified_waiting['can_access_education'] && $vip_qualified_waiting['seconds_remaining'] === 1,
+    'qualified VIP education opens exactly at September launch' => $vip_active['is_eligible'] && $vip_active['is_launched'] && $vip_active['can_access_education'] && $vip_active['status'] === 'active',
 ];
 
 $failed_rules = array_keys(array_filter($rule_assertions, static fn($passed) => !$passed));

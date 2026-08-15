@@ -19,10 +19,29 @@ class ForeverBusiness extends Controller {
         $requested_root = forever_business_normalize_fbo_id($_GET['root'] ?? $_POST['root'] ?? '');
         $period = forever_business_period_from_label($_GET['period'] ?? $_POST['period'] ?? '') ?: '';
         $is_admin = (int) ($this->user->type ?? 0) === 1;
+        $vip_program = forever_business_get_vip_program_state((int) $this->user->user_id);
+
+        /* Admin-only visual states make it possible to verify the collaborator
+         * launch component without exposing another member's private data. */
+        $vip_preview = $is_admin ? trim((string) ($_GET['vip_preview'] ?? '')) : '';
+        if(in_array($vip_preview, ['qualified', 'pending', 'active'], true)) {
+            $preview_now = $vip_preview === 'active'
+                ? new \DateTimeImmutable('2026-09-01 09:00:00', new \DateTimeZone('Europe/Zagreb'))
+                : null;
+            $vip_program = forever_business_build_vip_program_state($vip_preview === 'pending' ? 0.125 : 0.510, $preview_now);
+            $vip_program['has_linked_id'] = true;
+            $vip_program['fbo_id'] = '';
+            $vip_program['is_admin_preview'] = true;
+            $vip_program['preview_mode'] = $vip_preview;
+        }
 
         if(!empty($_POST['record_outcome'])) {
             if(!\Altum\Csrf::check()) {
                 Alerts::add_error(l('global.error_message.invalid_csrf_token'));
+            } elseif(!$is_admin && empty($vip_program['can_access_education'])) {
+                Alerts::add_error(empty($vip_program['is_launched'])
+                    ? 'Vođena edukacija počinje 1. rujna. Tvoj će se sljedeći korak tada otvoriti automatski ako ispunjavaš uvjet za pristup.'
+                    : 'Tvoj pristup edukaciji još nije aktivan. Na stranici Moj Forever možeš provjeriti uvjet i trenutačni napredak.');
             } else {
                 $dashboard = forever_business_get_dashboard((int) $this->user->user_id, $is_admin, $requested_root, $period);
                 if(forever_business_record_daily_outcome((int) $this->user->user_id, (string) ($_POST['fbo_id'] ?? ''), $dashboard['scope_ids'], $_POST)) {
@@ -78,6 +97,7 @@ class ForeverBusiness extends Controller {
             'priority_members' => $priority_members,
             'requested_root' => $requested_root,
             'is_admin' => $is_admin,
+            'vip_program' => $vip_program,
         ]));
     }
 }
