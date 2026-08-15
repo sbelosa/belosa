@@ -9,6 +9,7 @@ $sync = file_get_contents($root . '/app/controllers/ForeverBusinessSync.php');
 $dashboard_controller = file_get_contents($root . '/app/controllers/Dashboard.php');
 $dashboard_view = file_get_contents($root . '/themes/altum/views/dashboard/index.php');
 $view = file_get_contents($root . '/themes/altum/views/forever-business/index.php');
+$vip_tasks = file_get_contents($root . '/app/config/forever_business_vip_tasks.php');
 
 $assertions = [
     'source hash prevents duplicate imports' => str_contains($helper, 'UNIQUE KEY `forever_business_import_sha_uq`'),
@@ -48,6 +49,12 @@ $assertions = [
     'VIP education gate uses fixed August personal CC and September launch' => str_contains($helper, "where('period_month', '2026-08-01')") && str_contains($helper, "new \\DateTimeImmutable('2026-09-01 00:00:00'") && str_contains($helper, "'threshold_cc' => \$threshold"),
     'VIP task submission is blocked on the server until access is active' => str_contains($user, "empty(\$vip_program['can_access_education'])") && str_contains($user, 'Vođena edukacija počinje 1. rujna'),
     'VIP launch view includes countdown eligibility and a locked preview' => str_contains($view, 'data-fb-vip-countdown') && str_contains($view, 'fb-vip-conditions') && str_contains($view, 'fb-vip-preview') && str_contains($view, 'Prag od 0,330 CC uvjet je za ovu dodatnu edukaciju'),
+    'VIP task content is centralized for later copy corrections' => str_contains($helper, 'forever_business_vip_tasks.php') && str_contains($vip_tasks, '# Razina 5 — Reaktivacija'),
+    'weekly Marketing plan is fixed to Sunday at 18:00 Zagreb time' => str_contains($helper, "'weekday' => 7") && str_contains($helper, "setTime(18, 0)") && str_contains($view, 'svake nedjelje u 18:00'),
+    'qualified members receive the confirmed VIP WhatsApp link' => str_contains($helper, 'I7mg5bVIQwjJCu0WjnyJSz') && str_contains($view, 'Pridruži se VIP grupi'),
+    'submitted completions must match the currently visible server action' => str_contains($user, '$matches_visible_action') && str_contains($user, "hash_equals((string) (\$expected_action['key']"),
+    'legacy outcomes cannot skip new VIP steps' => str_contains($helper, 'vip_actions_done_total') && str_contains($helper, "action_key NOT LIKE 'vip26\\\\_sunday"),
+    'VIP level is independent from the month selected for statistics' => str_contains($helper, 'vip_base_personal_cc') && str_contains($helper, "vip_base.period_month = '2026-08-01'") && str_contains($helper, 'vip_current_period_month'),
 ];
 
 $failed = array_keys(array_filter($assertions, static fn($passed) => !$passed));
@@ -88,6 +95,16 @@ $after_launch = new DateTimeImmutable('2026-09-01 00:00:00', new DateTimeZone('E
 $vip_below_threshold = forever_business_build_vip_program_state(.329, $before_launch);
 $vip_qualified_waiting = forever_business_build_vip_program_state(.330, $before_launch);
 $vip_active = forever_business_build_vip_program_state(.330, $after_launch);
+$catalog = forever_business_get_vip_task_catalog();
+$starter_member = array_merge($base, ['personal_cc' => .5, 'is_4cc_active' => 0, 'verified_progress' => forever_business_get_verified_progress(array_merge($base, ['personal_cc' => .5, 'is_4cc_active' => 0]))]);
+$sunday_morning = new DateTimeImmutable('2026-09-06 10:00:00', new DateTimeZone('Europe/Zagreb'));
+$weekday_morning = new DateTimeImmutable('2026-09-07 10:00:00', new DateTimeZone('Europe/Zagreb'));
+$sunday_action = forever_business_get_action($starter_member, null, 0, false, $sunday_morning);
+$after_sunday_action = forever_business_get_action($starter_member, null, 0, true, $sunday_morning);
+$completed_program = forever_business_get_action($starter_member, null, 30, true, $weekday_morning);
+$fixed_builder_track = forever_business_get_vip_track(array_merge($starter_member, ['personal_cc' => 0, 'vip_base_personal_cc' => 4, 'vip_base_is_4cc_active' => 1, 'vip_current_personal_cc' => 0, 'vip_current_is_4cc_active' => 0]));
+$upgraded_activator_track = forever_business_get_vip_track(array_merge($starter_member, ['personal_cc' => 0, 'vip_base_personal_cc' => .5, 'vip_base_is_4cc_active' => 0, 'vip_current_personal_cc' => 1.2, 'vip_current_is_4cc_active' => 0]));
+$reactivation_track = forever_business_get_vip_track(array_merge($starter_member, ['vip_base_personal_cc' => .5, 'vip_base_is_4cc_active' => 0, 'vip_base_previous_personal_cc' => .4, 'vip_current_personal_cc' => .5, 'vip_current_is_4cc_active' => 0]));
 
 $rule_assertions = [
     '4 CC activity requires official status, 1 personal and 4 regional active CC' => $activity['is_officially_active'] && !$personal_gate['is_officially_active'] && !$regional_gate['is_officially_active'] && !$official_gate['is_officially_active'],
@@ -101,6 +118,13 @@ $rule_assertions = [
     '0.329 personal CC does not unlock VIP education' => !$vip_below_threshold['is_eligible'] && !$vip_below_threshold['can_access_education'] && $vip_below_threshold['gap_cc'] === .001,
     '0.330 personal CC qualifies but stays locked before September' => $vip_qualified_waiting['is_eligible'] && !$vip_qualified_waiting['is_launched'] && !$vip_qualified_waiting['can_access_education'] && $vip_qualified_waiting['seconds_remaining'] === 1,
     'qualified VIP education opens exactly at September launch' => $vip_active['is_eligible'] && $vip_active['is_launched'] && $vip_active['can_access_education'] && $vip_active['status'] === 'active',
+    'all five VIP levels contain exactly 30 reviewed tasks' => count($catalog) === 5 && count($catalog['starter'] ?? []) === 30 && count($catalog['activator'] ?? []) === 30 && count($catalog['builder'] ?? []) === 30 && count($catalog['leader'] ?? []) === 30 && count($catalog['reactivation'] ?? []) === 30,
+    'Sunday Marketing plan takes priority only until recorded that day' => !empty($sunday_action['is_weekly_plan']) && str_starts_with($sunday_action['key'], 'vip26_sunday_') && empty($after_sunday_action['is_weekly_plan']) && $after_sunday_action['sequence_position'] === 1,
+    'program stops cleanly after 30 sequence steps' => !empty($completed_program['is_program_complete']) && !$completed_program['can_complete'] && $completed_program['sequence_position'] === 30,
+    'VIP group and next Sunday are available in the qualified program state' => str_contains($vip_active['whatsapp_group_url'], 'chat.whatsapp.com/') && ($vip_active['marketing_plan']['weekday'] ?? 0) === 7 && ($vip_active['marketing_plan']['time_label'] ?? '') === '18:00',
+    'August Builder level cannot drop when a later month starts at zero' => $fixed_builder_track['key'] === 'builder',
+    'new synchronized results can raise Starter to Activator' => $upgraded_activator_track['key'] === 'activator',
+    'August returners receive the Reaktivacija path' => $reactivation_track['key'] === 'reactivation',
 ];
 
 $failed_rules = array_keys(array_filter($rule_assertions, static fn($passed) => !$passed));

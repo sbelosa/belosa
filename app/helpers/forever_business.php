@@ -1246,6 +1246,8 @@ function forever_business_build_vip_program_state(?float $personal_cc, ?\DateTim
         'launch_at_iso' => $launch_at->format(\DateTimeInterface::ATOM),
         'launch_at_display' => '1. rujna 2026. u 00:00',
         'seconds_remaining' => $seconds_remaining,
+        'whatsapp_group_url' => 'https://chat.whatsapp.com/I7mg5bVIQwjJCu0WjnyJSz?s=cl&p=i&ilr=4',
+        'marketing_plan' => forever_business_get_marketing_plan_state($current_time),
     ];
 }
 
@@ -1274,122 +1276,269 @@ function forever_business_get_vip_program_state(int $user_id, ?\DateTimeInterfac
 }
 /* /Custom code: FC-2026-08-15 */
 
-function forever_business_get_action(array $member, ?array $metric, int $completed_total = 0): array {
-    $progress = $member['verified_progress'] ?? forever_business_get_verified_progress($member);
-    $is_manager = ($progress['rank']['mode'] ?? '') === 'manager';
+/* Custom code: FC-2026-08-15: Full 30-step VIP education program */
+function forever_business_get_marketing_plan_state(?\DateTimeInterface $now = null): array {
+    $timezone = new \DateTimeZone('Europe/Zagreb');
+    $current_time = $now
+        ? (new \DateTimeImmutable('@' . $now->getTimestamp()))->setTimezone($timezone)
+        : new \DateTimeImmutable('now', $timezone);
+    $is_sunday = (int) $current_time->format('N') === 7;
+    $this_sunday = $current_time->modify('sunday this week')->setTime(18, 0);
+    $event_end = $this_sunday->modify('+90 minutes');
+    $next_event = $this_sunday;
 
-    if(empty($progress['has_activity_data'])) {
-        return [
-            'core' => 'Productivity',
-            'key' => 'wait_for_verified_data',
-            'title' => 'Tvoji podaci još se osvježavaju',
-            'instruction' => 'Za odabrani mjesec još nisu dostupni svi podaci potrebni za tvoj osobni sljedeći korak.',
-            'checklist' => ['Provjeri je li Forever ID na tvojem FCC računu ispravan.', 'Pogledaj kada su bodovi posljednji put osvježeni.', 'Ako si nakon tog vremena ostvario/la novi promet, vrati se nakon sljedećeg osvježavanja.'],
-            'success_definition' => 'Tvoj sljedeći korak prikazat će se automatski čim podaci budu dostupni.',
-            'target' => 0,
-            'can_complete' => false,
-        ];
+    if($current_time >= $event_end) {
+        $next_event = $this_sunday->modify('+1 week');
     }
 
-    if(empty($progress['is_officially_active'])) {
-        $steps = [
-            [
-                'core' => 'Productivity', 'slug' => 'prepare_warm_list', 'title' => 'Pripremi listu od 10 stvarnih potreba', 'target' => 10,
-                'instruction' => 'Odaberi deset osoba kojima bi jedan konkretan Forever proizvod mogao riješiti stvarnu potrebu.',
-                'checklist' => ['Uz svako ime zapiši samo jednu potrebu.', 'Odaberi jedan relevantan proizvod ili rutinu.', 'Označi pet osoba kojima se javljaš prvo.'],
-                'success_definition' => 'Gotovo je kada imaš 10 imena, 10 potreba i prvih 5 prioriteta.',
-            ],
-            [
-                'core' => 'Recruitment', 'slug' => 'send_personal_messages', 'title' => 'Pošalji 5 osobnih poruka', 'target' => 5,
-                'instruction' => 'Javi se prvim osobama s liste bez masovne ili copy-paste poruke.',
-                'checklist' => ['Počni pitanjem o njihovoj potrebi.', 'Predloži samo jedno rješenje.', 'Dogovori jasan sljedeći korak: poziv, preporuku ili probu.'],
-                'success_definition' => 'Gotovo je kada je poslano 5 osobnih poruka i zabilježen odgovor ili termin za follow-up.',
-            ],
-            [
-                'core' => 'Productivity', 'slug' => 'complete_warm_followups', 'title' => 'Dovrši 5 toplih follow-upova', 'target' => 5,
-                'instruction' => 'Nastavi razgovore koji su već otvoreni i pomogni osobi donijeti jednostavnu odluku.',
-                'checklist' => ['Podsjeti se što je osoba rekla.', 'Odgovori na jednu glavnu prepreku.', 'Ponudi samo jedan konkretan sljedeći korak.'],
-                'success_definition' => 'Gotovo je nakon 5 dovršenih follow-upova, bez obzira je li rezultat kupnja ili jasno „ne sada”.',
-            ],
-            [
-                'core' => 'Retention', 'slug' => 'care_for_customers', 'title' => 'Provjeri iskustvo 3 postojeća kupca', 'target' => 3,
-                'instruction' => 'Pomozi postojećim kupcima da pravilno koriste proizvod i prepoznaju treba li im nastavak.',
-                'checklist' => ['Pitaj kako koriste proizvod.', 'Provjeri što im odgovara, a što ne.', 'Predloži nastavak samo ako odgovara njihovoj potrebi.'],
-                'success_definition' => 'Gotovo je kada si dobio/la povratnu informaciju od 3 kupca i zapisao/la njihov sljedeći korak.',
-            ],
-        ];
-    } elseif($is_manager) {
-        $steps = [
-            [
-                'core' => 'Development', 'slug' => 'coach_two_people', 'title' => 'Vodi 2 suradnika kroz jedan konkretan korak', 'target' => 2,
-                'instruction' => 'Odaberi dvije osobe koje imaju najveći ostvariv pomak prema aktivnosti ili Non-Manager CC-u.',
-                'checklist' => ['Provjeri njihove potvrđene CC podatke.', 'Dogovorite jedan zadatak koji mogu završiti danas.', 'Odredi kada ćete provjeriti rezultat.'],
-                'success_definition' => 'Gotovo je kada obje osobe imaju zapisan zadatak, rok i dogovorenu provjeru.',
-            ],
-            [
-                'core' => 'Recruitment', 'slug' => 'business_invitations', 'title' => 'Dogovori 2 poziva na poslovnu prezentaciju', 'target' => 2,
-                'instruction' => 'Pokreni osobne razgovore s ljudima koji traže dodatni prihod ili razvoj vlastitog posla.',
-                'checklist' => ['Pitaj što žele promijeniti.', 'Objasni zašto misliš da bi trebali čuti plan.', 'Dogovori točan termin Zooma ili osobnog razgovora.'],
-                'success_definition' => 'Gotovo je kada dvije osobe potvrde termin prezentacije.',
-            ],
-            [
-                'core' => 'Productivity', 'slug' => 'team_followup_block', 'title' => 'Odradi timski blok od 5 follow-upova', 'target' => 5,
-                'instruction' => 'Zajedno sa suradnikom dovrši pet najtoplijih razgovora koji mogu donijeti promet ili novog partnera.',
-                'checklist' => ['Odaberite 5 postojećih razgovora.', 'Za svaki definirajte jednu prepreku.', 'Pošaljite personalizirani sljedeći korak.'],
-                'success_definition' => 'Gotovo je kada je svih 5 razgovora ažurirano jasnim ishodom.',
-            ],
-            [
-                'core' => 'Development', 'slug' => 'recognize_and_duplicate', 'title' => 'Prepoznaj rezultat i dupliciraj što radi', 'target' => 2,
-                'instruction' => 'Pronađi jedan dobar rezultat u timu i pretvori ga u jednostavan korak koji još netko može ponoviti.',
-                'checklist' => ['Pohvali osobu konkretno.', 'Zapiši što je točno napravila.', 'Podijeli taj korak s još dvije osobe.'],
-                'success_definition' => 'Gotovo je kada je primjer podijeljen s dvije osobe i svaka zna što ponavlja.',
-            ],
-        ];
-    } else {
-        $steps = [
-            [
-                'core' => 'Recruitment', 'slug' => 'new_conversations', 'title' => 'Otvori 5 novih osobnih razgovora', 'target' => 5,
-                'instruction' => 'Poveži se s pet osoba kroz stvarnu potrebu, bez slanja iste poruke svima.',
-                'checklist' => ['Postavi jedno otvoreno pitanje.', 'Saslušaj prije preporuke.', 'Zapiši dogovoreni sljedeći korak.'],
-                'success_definition' => 'Gotovo je kada imaš 5 novih razgovora i barem jedan dogovoreni nastavak.',
-            ],
-            [
-                'core' => 'Productivity', 'slug' => 'story_and_replies', 'title' => 'Objavi 1 iskustveni story i odgovori zainteresiranima', 'target' => 1,
-                'instruction' => 'Objavi kratko stvarno iskustvo: problem, što si koristio/la i što se promijenilo.',
-                'checklist' => ['Bez zdravstvenih ili zaradnih obećanja.', 'Dodaj jednostavno pitanje ili poziv na poruku.', 'Svakoj reakciji odgovori osobno.'],
-                'success_definition' => 'Gotovo je kada je story objavljen i svaka pristigla reakcija dobila osoban odgovor.',
-            ],
-            [
-                'core' => 'Productivity', 'slug' => 'warm_followups', 'title' => 'Dovrši 5 toplih follow-upova', 'target' => 5,
-                'instruction' => 'Vrati se ljudima koji već znaju za proizvod ili priliku i pomozi im odabrati sljedeći korak.',
-                'checklist' => ['Podsjeti se njihove potrebe.', 'Odgovori na glavnu prepreku.', 'Ponudi jedan jasan izbor, bez pritiska.'],
-                'success_definition' => 'Gotovo je kada svih 5 razgovora ima zabilježen jasan ishod.',
-            ],
-            [
-                'core' => 'Retention', 'slug' => 'customer_checkins', 'title' => 'Napravi 3 korisnička check-ina', 'target' => 3,
-                'instruction' => 'Provjeri iskustvo postojećih kupaca i pomogni im koristiti proizvod dosljedno.',
-                'checklist' => ['Pitaj što im najbolje odgovara.', 'Provjeri imaju li poteškoću.', 'Dogovori nastavak ili datum nove provjere.'],
-                'success_definition' => 'Gotovo je nakon 3 stvarna razgovora i zapisanog sljedećeg kontakta.',
-            ],
-            [
-                'core' => 'Recruitment', 'slug' => 'invite_to_plan', 'title' => 'Pozovi 2 osobe da pogledaju poslovni plan', 'target' => 2,
-                'instruction' => 'Pozovi osobe kojima bi odgovarao dodatni prihod, fleksibilnost ili rad s ljudima.',
-                'checklist' => ['Pitaj što žele postići.', 'Najavi kratko i iskreno što će čuti.', 'Dogovori točan termin prezentacije.'],
-                'success_definition' => 'Gotovo je kada dvije osobe imaju potvrđen termin.',
-            ],
-        ];
-    }
-
-    $step_count = count($steps);
-    $step_index = $completed_total % $step_count;
-    $cycle = intdiv($completed_total, $step_count) + 1;
-    $action = $steps[$step_index];
-    $action['key'] = mb_substr('growth_' . $action['slug'] . '_' . $cycle, 0, 48);
-    $action['can_complete'] = true;
-    $action['sequence_position'] = $step_index + 1;
-    $action['sequence_total'] = $step_count;
-    return $action;
+    return [
+        'weekday' => 7,
+        'weekday_label' => 'svake nedjelje',
+        'time_label' => '18:00',
+        'timezone' => 'Europe/Zagreb',
+        'is_today' => $is_sunday,
+        'is_live_window' => $is_sunday && $current_time >= $this_sunday && $current_time < $event_end,
+        'next_at_iso' => $next_event->format(\DateTimeInterface::ATOM),
+        'next_at_display' => 'nedjelja, ' . $next_event->format('d.m.Y.') . ' u 18:00',
+    ];
 }
+
+function forever_business_vip_track_definitions(): array {
+    return [
+        'starter' => ['label' => 'Starter', 'rank' => 1, 'goal' => 'Izgradi jednostavan dnevni ritam i napreduj prema najmanje 1 osobnom CC bez stvaranja zaliha.'],
+        'reactivation' => ['label' => 'Reaktivacija', 'rank' => 1, 'goal' => 'Vrati kontinuitet kroz postojeće odnose, jednostavne razgovore i korisničku podršku.'],
+        'activator' => ['label' => 'Aktivator', 'rank' => 2, 'goal' => 'Uz najmanje 1 osobni CC gradi prema službeno potvrđenoj aktivnosti od 4 CC.'],
+        'builder' => ['label' => 'Builder', 'rank' => 3, 'goal' => 'Pretvori potvrđenu aktivnost u stabilnu produktivnost, retention i nove poslovne razgovore.'],
+        'leader' => ['label' => 'Leader', 'rank' => 4, 'goal' => 'Razvijaj samostalne suradnike, buduće voditelje i jednostavan sustav koji se može duplicirati.'],
+    ];
+}
+
+function forever_business_vip_task_title(string $task): string {
+    $parts = preg_split('/(?<=[.!?])\s+/u', trim($task), 2);
+    $title = rtrim(trim((string) ($parts[0] ?? $task)), '.!?');
+    if(mb_strlen($title) <= 88) return $title;
+
+    $title = mb_substr($title, 0, 85);
+    $last_space = mb_strrpos($title, ' ');
+    if($last_space !== false && $last_space >= 48) $title = mb_substr($title, 0, $last_space);
+    return rtrim($title, ',;: ') . '…';
+}
+
+function forever_business_vip_task_target(string $task): int {
+    $number_words = [
+        'jedan' => 1, 'jednu' => 1, 'jedno' => 1, 'jednoj' => 1,
+        'dva' => 2, 'dvije' => 2, 'dvjema' => 2,
+        'tri' => 3, 'trima' => 3, 'četiri' => 4, 'pet' => 5, 'osam' => 8, 'deset' => 10, 'dvanaest' => 12, 'petnaest' => 15, 'dvadeset' => 20,
+    ];
+    $object_pattern = '(?:osob\w*|imen\w*|kontakt\w*|razgovor\w*|poruk\w*|poziv\w*|kup\w*|gost\w*|polaznik\w*|konzultacij\w*|check-in\w*|follow-up\w*|potreb\w*|preporuk\w*|status\w*|story\w*|suradnik\w*)';
+    if(preg_match('/\b(20|15|12|10|8|5|4|3|2|1)\s*[–-]\s*\d+\s+(?:\p{L}+\s+){0,2}' . $object_pattern . '\b/ui', $task, $matches)) {
+        return max(1, min(20, (int) $matches[1]));
+    }
+    if(preg_match('/\b(20|15|12|10|8|5|4|3|2|1)\s+(?:\p{L}+\s+){0,2}' . $object_pattern . '\b/ui', $task, $matches)) {
+        return max(1, min(20, (int) $matches[1]));
+    }
+    if(preg_match('/\b(' . implode('|', array_keys($number_words)) . ')\s+(?:\p{L}+\s+){0,2}' . $object_pattern . '\b/ui', mb_strtolower($task), $matches)) {
+        return $number_words[mb_strtolower($matches[1])] ?? 1;
+    }
+    return 1;
+}
+
+function forever_business_get_vip_task_catalog(): array {
+    static $catalog = null;
+    if($catalog !== null) return $catalog;
+
+    $catalog = [];
+    $definitions = forever_business_vip_track_definitions();
+    $path = __DIR__ . '/../config/forever_business_vip_tasks.php';
+    $content = is_file($path) ? require $path : '';
+    $lines = is_string($content) ? preg_split('/\R/u', $content) : [];
+    $track_key = '';
+
+    foreach($lines ?: [] as $line) {
+        if(preg_match('/^# Razina\s+\d+\s+—\s+(.+)$/u', trim($line), $matches)) {
+            $label = mb_strtolower(trim($matches[1]));
+            $track_key = '';
+            foreach($definitions as $key => $definition) {
+                if($label === mb_strtolower($definition['label'])) {
+                    $track_key = $key;
+                    $catalog[$track_key] = [];
+                    break;
+                }
+            }
+            continue;
+        }
+
+        if($track_key === '' || !preg_match('/^\|\s*(\d+)\s*\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|$/u', trim($line), $matches)) {
+            continue;
+        }
+
+        $day = (int) $matches[1];
+        if($day < 1 || $day > 30) continue;
+        $core = trim($matches[2]);
+        $task = trim($matches[3]);
+        $success = trim($matches[4]);
+        $target = forever_business_vip_task_target($task);
+        $task_parts = preg_split('/(?<=[.!?])\s+/u', $task, 2);
+        $title = forever_business_vip_task_title($task);
+        $instruction = trim((string) ($task_parts[1] ?? ''));
+        if($instruction === '' && mb_strlen(rtrim($task, '.!?')) > mb_strlen(rtrim($title, '….!?'))) {
+            $instruction = $task;
+        }
+        $catalog[$track_key][$day] = [
+            'core' => $core,
+            'title' => $title,
+            'instruction' => $instruction,
+            'checklist' => [
+                'Odradi korak osobno i bez masovne poruke ili pritiska.',
+                'Zapiši stvaran rezultat, odgovor ili dogovoreni nastavak.',
+                'Ako danas nemaš dovoljno vremena, odradi barem brzi korak i zadrži kontinuitet.',
+            ],
+            'success_definition' => $success,
+            'target' => $target,
+            'quick_target' => max(1, (int) ceil($target / 2)),
+        ];
+    }
+
+    return $catalog;
+}
+
+function forever_business_get_vip_track(array $member): array {
+    $definitions = forever_business_vip_track_definitions();
+    $progress = $member['verified_progress'] ?? forever_business_get_verified_progress($member);
+    $base_personal_cc = (float) ($member['vip_base_personal_cc'] ?? $member['personal_cc'] ?? 0);
+    $base_is_active = array_key_exists('vip_base_is_4cc_active', $member)
+        ? !empty($member['vip_base_is_4cc_active'])
+        : !empty($progress['is_officially_active']);
+    $base_had_previous_activity = !empty($member['vip_base_focus_previous_active'])
+        || (float) ($member['vip_base_previous_personal_cc'] ?? $member['previous_personal_cc'] ?? 0) > 0;
+    $current_personal_cc = (float) ($member['vip_current_personal_cc'] ?? $base_personal_cc);
+    $current_is_active = array_key_exists('vip_current_is_4cc_active', $member)
+        ? !empty($member['vip_current_is_4cc_active'])
+        : $base_is_active;
+
+    if(!empty($member['is_manager']) || ($progress['rank']['mode'] ?? '') === 'manager') {
+        $track_key = 'leader';
+    } elseif($base_is_active) {
+        $track_key = 'builder';
+    } elseif($base_personal_cc >= 1) {
+        $track_key = 'activator';
+    } elseif($base_had_previous_activity) {
+        $track_key = 'reactivation';
+    } else {
+        $track_key = 'starter';
+    }
+
+    if($current_is_active && (int) $definitions[$track_key]['rank'] < (int) $definitions['builder']['rank']) {
+        $track_key = 'builder';
+    } elseif($current_personal_cc >= 1 && (int) $definitions[$track_key]['rank'] < (int) $definitions['activator']['rank']) {
+        $track_key = 'activator';
+    }
+
+    $highest_rank = max(0, (int) ($member['vip_highest_track_rank'] ?? 0));
+    if($highest_rank > (int) $definitions[$track_key]['rank']) {
+        foreach(array_reverse($definitions, true) as $key => $definition) {
+            if((int) $definition['rank'] === $highest_rank) {
+                $track_key = $key;
+                break;
+            }
+        }
+    }
+
+    return ['key' => $track_key] + $definitions[$track_key];
+}
+
+function forever_business_get_action(array $member, ?array $metric, int $completed_total = 0, bool $sunday_done_today = false, ?\DateTimeInterface $now = null): array {
+    $track = forever_business_get_vip_track($member);
+    $marketing_plan = forever_business_get_marketing_plan_state($now);
+    $timezone = new \DateTimeZone('Europe/Zagreb');
+    $current_time = $now
+        ? (new \DateTimeImmutable('@' . $now->getTimestamp()))->setTimezone($timezone)
+        : new \DateTimeImmutable('now', $timezone);
+
+    if(!empty($marketing_plan['is_today']) && !$sunday_done_today) {
+        $leader = $track['key'] === 'leader';
+        return [
+            'core' => $leader ? 'Development' : 'Recruitment',
+            'key' => 'vip26_sunday_' . $current_time->format('Ymd'),
+            'title' => 'Marketing plan danas u 18:00',
+            'instruction' => $leader
+                ? 'Provjeri jesu li gosti i pozivatelji spremni, dodijeli jasne uloge i pridruži se tjednom Marketing planu u 18:00.'
+                : 'Pošalji posljednju osobnu potvrdu svojim gostima, pridruži se Marketing planu u 18:00 i nakon prezentacije dogovori njihov sljedeći korak.',
+            'checklist' => $leader
+                ? ['Potvrdi popis gostiju i njihove pozivatelje.', 'Provjeri tko dočekuje goste i tko vodi follow-up.', 'Nakon plana potvrdi sljedeći korak za svakog gosta.']
+                : ['Potvrdi gostima termin i pošalji detalje.', 'Pridruži se nekoliko minuta ranije.', 'Nakon prezentacije pitaj gosta što mu je bilo najzanimljivije.'],
+            'success_definition' => $leader
+                ? 'Gotovo je kada su Marketing plan, atribucija gostiju i vlasnici follow-upa evidentirani.'
+                : 'Gotovo je kada si prisustvovao/la i svaki tvoj gost ima zabilježen interes ili dogovoreni nastavak.',
+            'target' => $leader ? 5 : 2,
+            'quick_target' => 1,
+            'can_complete' => true,
+            'sequence_position' => min(30, $completed_total + 1),
+            'sequence_total' => 30,
+            'track_key' => $track['key'],
+            'track_label' => $track['label'],
+            'track_goal' => $track['goal'],
+            'is_weekly_plan' => true,
+            'marketing_plan' => $marketing_plan,
+        ];
+    }
+
+    if($completed_total >= 30) {
+        return [
+            'core' => 'Development',
+            'key' => 'vip26_program_complete',
+            'title' => 'Prvih 30 koraka je dovršeno',
+            'instruction' => 'Pregledaj svoj napredak i nastavi primjenjivati ritam koji ti je donio najviše kvalitetnih razgovora, kupaca, gostiju i suradnika.',
+            'checklist' => [],
+            'success_definition' => 'Tvoj prvi VIP 4 Core ciklus je završen. Nedjeljni Marketing plan i dalje će se prikazivati svakog tjedna.',
+            'target' => 0,
+            'quick_target' => 0,
+            'can_complete' => false,
+            'sequence_position' => 30,
+            'sequence_total' => 30,
+            'track_key' => $track['key'],
+            'track_label' => $track['label'],
+            'track_goal' => $track['goal'],
+            'is_program_complete' => true,
+            'marketing_plan' => $marketing_plan,
+        ];
+    }
+
+    $day = $completed_total + 1;
+    $catalog = forever_business_get_vip_task_catalog();
+    $task = $catalog[$track['key']][$day] ?? null;
+    if(!$task) {
+        return [
+            'core' => 'Development',
+            'key' => 'vip26_content_check',
+            'title' => 'Tvoj sljedeći korak uskoro će biti spreman',
+            'instruction' => 'Sadržaj tvoje razine trenutačno se provjerava. Ne trebaš ponovno dovršavati prethodni korak.',
+            'checklist' => [],
+            'success_definition' => 'Novi korak prikazat će se nakon osvježavanja sadržaja.',
+            'target' => 0,
+            'quick_target' => 0,
+            'can_complete' => false,
+            'sequence_position' => $day,
+            'sequence_total' => 30,
+            'track_key' => $track['key'],
+            'track_label' => $track['label'],
+            'track_goal' => $track['goal'],
+            'marketing_plan' => $marketing_plan,
+        ];
+    }
+
+    $task['key'] = sprintf('vip26_%s_d%02d', $track['key'], $day);
+    $task['can_complete'] = true;
+    $task['sequence_position'] = $day;
+    $task['sequence_total'] = 30;
+    $task['track_key'] = $track['key'];
+    $task['track_label'] = $track['label'];
+    $task['track_goal'] = $track['goal'];
+    $task['is_weekly_plan'] = false;
+    $task['marketing_plan'] = $marketing_plan;
+    return $task;
+}
+/* /Custom code: FC-2026-08-15 */
 
 function forever_business_upsert_four_core_snapshot(string $fbo_id, string $period, array $values, string $source_note = 'FLP360 4 Core Summary'): void {
     forever_business_ensure_tables();
@@ -1556,11 +1705,15 @@ function forever_business_get_total_cc_trend(string $fbo_id, string $period, str
 
 function forever_business_get_dashboard(int $user_id, bool $is_admin, string $requested_root = '', string $period = ''): array {
     forever_business_ensure_tables();
+    $zagreb_now = new \DateTimeImmutable('now', new \DateTimeZone('Europe/Zagreb'));
+    $today = $zagreb_now->format('Y-m-d');
+    $seven_day_start = $zagreb_now->modify('-6 days')->format('Y-m-d');
     $periods = forever_business_get_periods();
     $period = in_array($period, $periods, true) ? $period : ($periods[0] ?? date('Y-m-01'));
     $previous_period = (new \DateTimeImmutable($period))->modify('-1 month')->format('Y-m-01');
     $two_months_ago_period = (new \DateTimeImmutable($period))->modify('-2 months')->format('Y-m-01');
     $three_months_ago_period = (new \DateTimeImmutable($period))->modify('-3 months')->format('Y-m-01');
+    $vip_period_limit = max('2026-08-01', $zagreb_now->format('Y-m-01'));
     $scope_ids = forever_business_get_scope_ids($user_id, $is_admin, $requested_root);
     $id_list = forever_business_safe_id_list($scope_ids);
     $members = [];
@@ -1577,24 +1730,53 @@ function forever_business_get_dashboard(int $user_id, bool $is_admin, string $re
                    prev.personal_cc AS previous_personal_cc, prev.total_cc AS previous_total_cc,
                    prev2.total_cc AS two_months_ago_total_cc,
                    prev3.total_cc AS three_months_ago_total_cc,
+                   vip_base.personal_cc AS vip_base_personal_cc,
+                   vip_base.is_4cc_active AS vip_base_is_4cc_active,
+                   vip_base_prev.personal_cc AS vip_base_previous_personal_cc,
+                   vip_base_focus.was_active_previous_month AS vip_base_focus_previous_active,
+                   vip_current.period_month AS vip_current_period_month,
+                   vip_current.personal_cc AS vip_current_personal_cc,
+                   vip_current.is_4cc_active AS vip_current_is_4cc_active,
                    focus.snapshot_date AS focus_snapshot_date, focus.next_level, focus.last_purchase_date,
                    focus.is_active AS focus_is_active, focus.was_active_previous_month AS focus_previous_active,
                    focus.open_group_cc_2m, focus.needed_cc_next_level, focus.new_recruits,
                    COALESCE(outcomes.actions_done, 0) AS actions_done_7d,
                    COALESCE(outcomes.outcomes_total, 0) AS outcomes_total_7d,
                    COALESCE(outcomes.actions_done_total, 0) AS actions_done_total,
+                   COALESCE(outcomes.vip_actions_done_total, 0) AS vip_actions_done_total,
+                   COALESCE(outcomes.vip_sunday_done_today, 0) AS vip_sunday_done_today,
+                   COALESCE(outcomes.vip_highest_track_rank, 0) AS vip_highest_track_rank,
                    outcomes.last_action_at
             FROM forever_business_members m
             LEFT JOIN forever_business_metrics cur ON cur.fbo_id = m.fbo_id AND cur.period_month = '{$period}'
             LEFT JOIN forever_business_metrics prev ON prev.fbo_id = m.fbo_id AND prev.period_month = '{$previous_period}'
             LEFT JOIN forever_business_metrics prev2 ON prev2.fbo_id = m.fbo_id AND prev2.period_month = '{$two_months_ago_period}'
             LEFT JOIN forever_business_metrics prev3 ON prev3.fbo_id = m.fbo_id AND prev3.period_month = '{$three_months_ago_period}'
+            LEFT JOIN forever_business_metrics vip_base ON vip_base.fbo_id = m.fbo_id AND vip_base.period_month = '2026-08-01'
+            LEFT JOIN forever_business_metrics vip_base_prev ON vip_base_prev.fbo_id = m.fbo_id AND vip_base_prev.period_month = '2026-07-01'
+            LEFT JOIN forever_business_focus_metrics vip_base_focus ON vip_base_focus.fbo_id = m.fbo_id AND vip_base_focus.period_month = '2026-08-01'
+            LEFT JOIN forever_business_metrics vip_current ON vip_current.fbo_id = m.fbo_id AND vip_current.period_month = (
+                SELECT MAX(vip_lookup.period_month)
+                FROM forever_business_metrics vip_lookup
+                WHERE vip_lookup.fbo_id = m.fbo_id
+                  AND vip_lookup.period_month BETWEEN '2026-08-01' AND '{$vip_period_limit}'
+            )
             LEFT JOIN forever_business_focus_metrics focus ON focus.fbo_id = m.fbo_id AND focus.period_month = '{$period}'
             LEFT JOIN (
                 SELECT fbo_id,
-                       SUM(action_date >= DATE_SUB(CURDATE(), INTERVAL 6 DAY) AND status = 'done') AS actions_done,
-                       SUM(IF(action_date >= DATE_SUB(CURDATE(), INTERVAL 6 DAY) AND status = 'done', outcome_count, 0)) AS outcomes_total,
+                       SUM(action_date >= '{$seven_day_start}' AND status = 'done') AS actions_done,
+                       SUM(IF(action_date >= '{$seven_day_start}' AND status = 'done', outcome_count, 0)) AS outcomes_total,
                        SUM(status = 'done') AS actions_done_total,
+                       SUM(status = 'done' AND action_key LIKE 'vip26\\_%' AND action_key NOT LIKE 'vip26\\_sunday\\_%') AS vip_actions_done_total,
+                       SUM(status = 'done' AND action_date = '{$today}' AND action_key = CONCAT('vip26_sunday_', DATE_FORMAT('{$today}', '%Y%m%d'))) AS vip_sunday_done_today,
+                       MAX(CASE
+                           WHEN status = 'done' AND action_key LIKE 'vip26\\_leader\\_%' THEN 4
+                           WHEN status = 'done' AND action_key LIKE 'vip26\\_builder\\_%' THEN 3
+                           WHEN status = 'done' AND action_key LIKE 'vip26\\_activator\\_%' THEN 2
+                           WHEN status = 'done' AND action_key LIKE 'vip26\\_reactivation\\_%' THEN 1
+                           WHEN status = 'done' AND action_key LIKE 'vip26\\_starter\\_%' THEN 1
+                           ELSE 0
+                       END) AS vip_highest_track_rank,
                        MAX(IF(status = 'done', updated_at, NULL)) AS last_action_at
                 FROM forever_business_daily_outcomes
                 GROUP BY fbo_id
@@ -1613,7 +1795,13 @@ function forever_business_get_dashboard(int $user_id, bool $is_admin, string $re
                 'is_4cc_active' => $row['is_4cc_active'],
             ];
             $row['verified_progress'] = forever_business_get_verified_progress($row);
-            $row['next_action'] = forever_business_get_action($row, $metric, (int) ($row['actions_done_total'] ?? 0));
+            $row['next_action'] = forever_business_get_action(
+                $row,
+                $metric,
+                (int) ($row['vip_actions_done_total'] ?? 0),
+                !empty($row['vip_sunday_done_today']),
+                $zagreb_now
+            );
             $members[] = $row;
         }
     }
@@ -1729,6 +1917,7 @@ function forever_business_get_dashboard(int $user_id, bool $is_admin, string $re
 
 function forever_business_record_daily_outcome(int $user_id, string $fbo_id, array $scope_ids, array $input): bool {
     forever_business_ensure_tables();
+    $zagreb_now = new \DateTimeImmutable('now', new \DateTimeZone('Europe/Zagreb'));
     $fbo_id = forever_business_normalize_fbo_id($fbo_id);
     if($fbo_id === '' || !in_array($fbo_id, $scope_ids, true)) {
         return false;
@@ -1747,7 +1936,7 @@ function forever_business_record_daily_outcome(int $user_id, string $fbo_id, arr
 
     db()->onDuplicate(['status', 'outcome_count', 'outcome_type', 'note', 'recorded_by_user_id', 'updated_at'])->insert('forever_business_daily_outcomes', [
         'fbo_id' => $fbo_id,
-        'action_date' => date('Y-m-d'),
+        'action_date' => $zagreb_now->format('Y-m-d'),
         'core_key' => $core,
         'action_key' => mb_substr($action_key, 0, 48),
         'status' => 'done',
@@ -1755,8 +1944,8 @@ function forever_business_record_daily_outcome(int $user_id, string $fbo_id, arr
         'outcome_type' => mb_substr(input_clean($input['outcome_type'] ?? '', 32), 0, 32) ?: null,
         'note' => mb_substr(input_clean($input['note'] ?? '', 500), 0, 500) ?: null,
         'recorded_by_user_id' => $user_id,
-        'created_at' => get_date(),
-        'updated_at' => get_date(),
+        'created_at' => $zagreb_now->format('Y-m-d H:i:s'),
+        'updated_at' => $zagreb_now->format('Y-m-d H:i:s'),
     ]);
 
     return true;

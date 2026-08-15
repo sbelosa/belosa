@@ -33,6 +33,22 @@ class ForeverBusiness extends Controller {
             $vip_program['fbo_id'] = '';
             $vip_program['is_admin_preview'] = true;
             $vip_program['preview_mode'] = $vip_preview;
+            if($vip_preview === 'active') {
+                $preview_member = [
+                    'personal_cc' => .510,
+                    'previous_personal_cc' => 0,
+                    'is_manager' => 0,
+                    'focus_previous_active' => 0,
+                    'vip_highest_track_rank' => 0,
+                    'verified_progress' => [
+                        'rank' => ['mode' => 'qualification'],
+                        'is_officially_active' => false,
+                    ],
+                ];
+                $vip_program['preview_action'] = forever_business_get_action($preview_member, null, 0, false, $preview_now);
+                $vip_program['preview_action']['can_complete'] = false;
+                $vip_program['preview_action']['is_preview'] = true;
+            }
         }
 
         if(!empty($_POST['record_outcome'])) {
@@ -44,7 +60,23 @@ class ForeverBusiness extends Controller {
                     : 'Tvoj pristup edukaciji još nije aktivan. Na stranici Moj Forever možeš provjeriti uvjet i trenutačni napredak.');
             } else {
                 $dashboard = forever_business_get_dashboard((int) $this->user->user_id, $is_admin, $requested_root, $period);
-                if(forever_business_record_daily_outcome((int) $this->user->user_id, (string) ($_POST['fbo_id'] ?? ''), $dashboard['scope_ids'], $_POST)) {
+                $submitted_fbo_id = forever_business_normalize_fbo_id($_POST['fbo_id'] ?? '');
+                $target_member = null;
+                foreach($dashboard['members'] as $member) {
+                    if((string) ($member['fbo_id'] ?? '') === $submitted_fbo_id) {
+                        $target_member = $member;
+                        break;
+                    }
+                }
+                $expected_action = $target_member['next_action'] ?? null;
+                $matches_visible_action = $expected_action
+                    && !empty($expected_action['can_complete'])
+                    && hash_equals((string) ($expected_action['key'] ?? ''), (string) ($_POST['action_key'] ?? ''))
+                    && hash_equals((string) ($expected_action['core'] ?? ''), (string) ($_POST['core_key'] ?? ''));
+
+                if(!$matches_visible_action) {
+                    Alerts::add_error('Ovaj se korak u međuvremenu promijenio. Stranica je osvježena i prikazan je tvoj trenutačni zadatak.');
+                } elseif(forever_business_record_daily_outcome((int) $this->user->user_id, $submitted_fbo_id, $dashboard['scope_ids'], $_POST)) {
                     Alerts::add_success('Korak je dovršen. Tvoj sljedeći konkretan korak je spreman.');
                 } else {
                     Alerts::add_error('Aktivnost nije spremljena jer Forever ID nije povezan s tvojim računom.');

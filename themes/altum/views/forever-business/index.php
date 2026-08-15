@@ -79,11 +79,20 @@ $format_change = static function(float $value): string {
     .forever-business-page .fb-vip-lock-inner { max-width: 410px; padding: 1rem 1.25rem; border-radius: 1rem; background: rgba(13,19,15,.9); border: 1px solid rgba(246,201,0,.24); box-shadow: 0 12px 32px rgba(0,0,0,.28); }
     .forever-business-page .fb-vip-lock-icon { display: inline-flex; align-items: center; justify-content: center; width: 2.65rem; height: 2.65rem; margin-bottom: .65rem; border-radius: .9rem; color: #f7d742; background: rgba(246,201,0,.13); }
     .forever-business-page .fb-vip-note { color: rgba(255,255,255,.58) !important; }
+    .forever-business-page .fb-vip-schedule { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .9rem; padding: 1rem 1.1rem; border-radius: 1rem; background: rgba(37,211,102,.08); border: 1px solid rgba(37,211,102,.23); }
+    .forever-business-page .fb-vip-schedule-icon { display: inline-flex; align-items: center; justify-content: center; width: 2.6rem; height: 2.6rem; flex: 0 0 2.6rem; border-radius: .9rem; background: rgba(37,211,102,.14); color: #8cf0b0 !important; }
+    .forever-business-page .fb-vip-whatsapp { color: #082b18 !important; background: #74e59e; border-color: #74e59e; font-weight: 800; }
+    .forever-business-page .fb-vip-whatsapp:hover, .forever-business-page .fb-vip-whatsapp:focus { color: #071d11 !important; background: #91efb3; border-color: #91efb3; }
+    .forever-business-page .fb-action-meta { display: flex; flex-wrap: wrap; gap: .45rem; }
+    .forever-business-page .fb-action-meta .badge { padding: .45rem .65rem; border-radius: 999px; }
+    .forever-business-page .fb-weekly-plan { padding: .85rem 1rem; border-radius: .9rem; background: rgba(246,201,0,.1); border: 1px solid rgba(246,201,0,.25); }
+    .forever-business-page .fb-quick-step { padding: .75rem .85rem; border-radius: .8rem; background: rgba(30,136,229,.07); border: 1px solid rgba(30,136,229,.16); }
     @media (max-width: 991.98px) {
         .forever-business-page .fb-vip-conditions { grid-template-columns: 1fr; }
         .forever-business-page .fb-vip-preview-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     }
     @media (max-width: 575.98px) {
+        .forever-business-page .fb-progress-row { margin-left: 0; margin-right: 0; }
         .forever-business-page .fb-vip-countdown { grid-template-columns: repeat(2, minmax(0, 1fr)); }
         .forever-business-page .fb-vip-preview-grid { grid-template-columns: 1fr; }
         .forever-business-page .fb-vip-feature { min-height: 0; }
@@ -206,7 +215,7 @@ $format_change = static function(float $value): string {
             $verified = $mine['verified_progress'];
             $rank = $verified['rank'];
             ?>
-            <div class="row">
+            <div class="row fb-progress-row">
                 <div class="col-lg-6 mb-4">
                     <div class="card fb-card fb-progress-panel h-100"><div class="card-body p-4">
                         <div class="d-flex justify-content-between align-items-start mb-3">
@@ -273,6 +282,7 @@ $format_change = static function(float $value): string {
             $vip_seconds_part = $vip_seconds % 60;
             $vip_status_class = $vip_can_access ? 'active' : ($vip_is_eligible ? 'qualified' : 'pending');
             $vip_status_label = $vip_can_access ? 'Edukacija je aktivna' : ($vip_is_eligible ? 'Uvjet za pristup je ispunjen' : 'Pristup još nije aktivan');
+            $vip_marketing_plan = is_array($vip_program['marketing_plan'] ?? null) ? $vip_program['marketing_plan'] : [];
             ?>
 
             <?php if(!empty($vip_program['is_admin_preview'])): ?>
@@ -354,10 +364,25 @@ $format_change = static function(float $value): string {
 
                     <div class="small fb-vip-note mt-3"><i class="fas fa-info-circle mr-1"></i> Prag od 0,330 CC uvjet je za ovu dodatnu edukaciju. Službena Forever aktivnost i dalje zahtijeva ukupno 4 Active CC u istoj regiji, uključujući najmanje 1 osobni CC.</div>
 
+                    <div class="fb-vip-schedule mt-4">
+                        <div class="d-flex align-items-center">
+                            <span class="fb-vip-schedule-icon mr-3"><i class="fas fa-video"></i></span>
+                            <div>
+                                <strong class="d-block">Marketing plan · svake nedjelje u 18:00</strong>
+                                <span class="fb-vip-note small"><?= !empty($vip_marketing_plan['next_at_display']) ? 'Sljedeći termin: ' . htmlspecialchars($vip_marketing_plan['next_at_display']) . '.' : 'Poveznica i kratke upute objavljuju se u VIP WhatsApp grupi.' ?></span>
+                            </div>
+                        </div>
+                        <?php if($vip_is_eligible && !empty($vip_program['whatsapp_group_url'])): ?>
+                            <a href="<?= htmlspecialchars($vip_program['whatsapp_group_url']) ?>" target="_blank" rel="noopener noreferrer" class="btn fb-vip-whatsapp"><i class="fab fa-whatsapp mr-1"></i> Pridruži se VIP grupi</a>
+                        <?php else: ?>
+                            <span class="small fb-vip-note"><i class="fas fa-lock mr-1"></i> Pristup grupi otvara se nakon ispunjenog uvjeta.</span>
+                        <?php endif ?>
+                    </div>
+
                     <div class="fb-vip-preview mt-4 <?= $vip_can_access ? '' : 'is-locked' ?>">
                         <div class="fb-vip-preview-grid" <?= !$vip_can_access ? 'aria-hidden="true"' : '' ?>>
                             <div class="fb-vip-feature"><i class="fas fa-route mb-3"></i><strong class="d-block mb-2">Jedan sljedeći korak</strong><p class="mb-0">Jasan zadatak koji ostaje aktivan dok ga ne dovršiš.</p></div>
-                            <div class="fb-vip-feature"><i class="fas fa-users mb-3"></i><strong class="d-block mb-2">Tjedni marketing plan</strong><p class="mb-0">Fiksni termin na koji pozivaš osobe zainteresirane za poslovanje.</p></div>
+                            <div class="fb-vip-feature"><i class="fas fa-users mb-3"></i><strong class="d-block mb-2">Nedjeljni Marketing plan</strong><p class="mb-0">Svake nedjelje u 18:00 pozivaš osobe zainteresirane za poslovanje.</p></div>
                             <div class="fb-vip-feature"><i class="fas fa-comments mb-3"></i><strong class="d-block mb-2">VIP podrška</strong><p class="mb-0">Kratki podsjetnici, primjeri i podrška kada zapneš.</p></div>
                             <div class="fb-vip-feature"><i class="fas fa-chart-pie mb-3"></i><strong class="d-block mb-2">Tvoj 4 Core napredak</strong><p class="mb-0">Pratiš vlastite rezultate i uvijek znaš što slijedi.</p></div>
                         </div>
@@ -375,26 +400,44 @@ $format_change = static function(float $value): string {
             </section>
         <?php endif ?>
 
-        <?php if(!$data->is_admin && $data->focus_member && !empty($vip_program['can_access_education'])): $action = $data->focus_member['next_action']; ?>
+        <?php
+        $action = !empty($vip_program['preview_action'])
+            ? $vip_program['preview_action']
+            : (!$data->is_admin && $data->focus_member ? ($data->focus_member['next_action'] ?? null) : null);
+        ?>
+        <?php if($action && !empty($vip_program['can_access_education'])): ?>
             <div class="card fb-card fb-action mb-4">
                 <div class="card-body p-4">
                     <div class="row align-items-center">
                         <div class="col-lg-8">
-                            <div class="d-flex flex-wrap align-items-center mb-2"><span class="text-uppercase text-muted small mr-2">Sljedeći korak · <?= htmlspecialchars($action['core']) ?></span><?php if(!empty($action['sequence_total'])): ?><span class="badge badge-light">Korak <?= nr($action['sequence_position']) ?>/<?= nr($action['sequence_total']) ?></span><?php endif ?></div>
+                            <div class="fb-action-meta align-items-center mb-2">
+                                <span class="text-uppercase text-muted small mr-1">Sljedeći korak · <?= htmlspecialchars($action['core']) ?></span>
+                                <?php if(!empty($action['track_label'])): ?><span class="badge badge-info">Razina: <?= htmlspecialchars($action['track_label']) ?></span><?php endif ?>
+                                <?php if(!empty($action['sequence_total'])): ?><span class="badge badge-light">Korak <?= nr($action['sequence_position']) ?>/<?= nr($action['sequence_total']) ?></span><?php endif ?>
+                                <?php if(!empty($action['is_weekly_plan'])): ?><span class="badge badge-warning">Nedjeljni prioritet</span><?php endif ?>
+                            </div>
                             <h2 class="h4 mb-2"><?= htmlspecialchars($action['title']) ?></h2>
-                            <p class="mb-2"><?= htmlspecialchars($action['instruction']) ?></p>
+                            <?php if(!empty($action['track_goal']) && empty($action['is_weekly_plan'])): ?><div class="small text-muted mb-3"><strong>Fokus tvoje razine:</strong> <?= htmlspecialchars($action['track_goal']) ?></div><?php endif ?>
+                            <?php if(!empty($action['is_weekly_plan'])): ?>
+                                <div class="fb-weekly-plan mb-3"><strong><i class="fas fa-video mr-1"></i> Danas u 18:00</strong><span class="d-block small mt-1">Poveznicu i završne upute pronaći ćeš u VIP WhatsApp grupi.</span></div>
+                            <?php endif ?>
+                            <?php if(!empty($action['instruction'])): ?><p class="mb-2"><?= htmlspecialchars($action['instruction']) ?></p><?php endif ?>
                             <?php if(!empty($action['checklist'])): ?><ol class="pl-3 mb-3"><?php foreach($action['checklist'] as $item): ?><li class="mb-1"><?= htmlspecialchars($item) ?></li><?php endforeach ?></ol><?php endif ?>
                             <div class="small font-weight-bold"><i class="fas fa-check-circle text-success mr-1"></i> <?= htmlspecialchars($action['success_definition']) ?></div>
+                            <?php if(!empty($action['can_complete']) && (int) ($action['target'] ?? 0) > 1): ?><div class="fb-quick-step small mt-3"><strong>Brzi korak:</strong> ako danas nemaš dovoljno vremena, odradi najmanje <?= (int) $action['quick_target'] ?> od redovnog cilja <?= (int) $action['target'] ?> i zadrži kontinuitet.</div><?php endif ?>
                             <div class="small text-muted mt-2">Ovaj korak ostaje aktivan dok ga ne dovršiš. Nakon potvrde automatski će se prikazati tvoj sljedeći korak.</div>
                             <div class="small text-muted mt-1">Redovitim izvršavanjem koraka gradiš dobre poslovne navike, ostvaruješ više kvalitetnih kontakata i napreduješ prema svojoj sljedećoj razini.</div>
                         </div>
-                        <?php if(!empty($action['can_complete'])): ?><div class="col-lg-4 mt-4 mt-lg-0">
+                        <div class="col-lg-4 mt-4 mt-lg-0">
+                            <?php if(!empty($vip_program['whatsapp_group_url'])): ?><a href="<?= htmlspecialchars($vip_program['whatsapp_group_url']) ?>" target="_blank" rel="noopener noreferrer" class="btn btn-block fb-vip-whatsapp mb-3"><i class="fab fa-whatsapp mr-1"></i> Otvori VIP WhatsApp grupu</a><?php endif ?>
+                        <?php if(!empty($action['can_complete'])): ?>
                             <form method="post">
                                 <input type="hidden" name="token" value="<?= \Altum\Csrf::get() ?>" />
                                 <input type="hidden" name="record_outcome" value="1" />
-                                <input type="hidden" name="fbo_id" value="<?= htmlspecialchars($data->focus_member['fbo_id']) ?>" />
+                                <input type="hidden" name="fbo_id" value="<?= htmlspecialchars($data->focus_member['fbo_id'] ?? '') ?>" />
                                 <input type="hidden" name="core_key" value="<?= htmlspecialchars($action['core']) ?>" />
                                 <input type="hidden" name="action_key" value="<?= htmlspecialchars($action['key']) ?>" />
+                                <input type="hidden" name="outcome_type" value="<?= htmlspecialchars($action['track_key'] ?? 'vip') ?>" />
                                 <input type="hidden" name="root" value="<?= htmlspecialchars($data->requested_root) ?>" />
                                 <input type="hidden" name="period" value="<?= htmlspecialchars(substr($dashboard['period'], 0, 7)) ?>" />
                                 <label class="small" for="outcome_count">Koliko si stvarno napravio/la?</label>
@@ -403,7 +446,9 @@ $format_change = static function(float $value): string {
                                     <div class="input-group-append"><button class="btn btn-success">Dovršeno — sljedeći korak</button></div>
                                 </div>
                             </form>
-                        </div><?php endif ?>
+                        <?php elseif(!empty($action['is_preview'])): ?><div class="alert alert-info mb-0"><i class="fas fa-eye mr-1"></i> Ovo je sigurna pretpregledna verzija. Dovršavanje zadatka je isključeno.</div>
+                        <?php else: ?><div class="alert alert-success mb-0"><i class="fas fa-trophy mr-1"></i> Prvi ciklus je uspješno završen.</div><?php endif ?>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -436,7 +481,7 @@ $format_change = static function(float $value): string {
             </div>
         <?php endif ?>
 
-        <?php if($dashboard['is_manager_view'] || $data->is_admin): ?>
+        <?php if(($dashboard['is_manager_view'] || $data->is_admin) && empty($vip_program['is_admin_preview'])): ?>
             <div class="card fb-card mb-4">
                 <div class="card-header bg-transparent d-flex flex-column flex-md-row align-items-md-center justify-content-between">
                     <div class="pr-md-4"><h2 class="h5 mb-1">Prioriteti i napredak tima</h2><div class="small text-muted"><?php if($summary['focus_members']): ?>Na popisu je svih <?= nr($summary['focus_members']) ?> suradnika iz posljednjeg FLP360 Focus Group izvještaja. Klikni naziv stupca za sortiranje.<?php else: ?>Focus Group još nije uvezen; popis se privremeno temelji na osobnom CC-u i FCC aktivnostima. Klikni naziv stupca za sortiranje.<?php endif ?></div></div>
