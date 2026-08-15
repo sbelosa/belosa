@@ -1393,7 +1393,7 @@ function forever_business_get_four_core_snapshot(string $fbo_id, string $period)
     return $result;
 }
 
-function forever_business_upsert_total_cc_snapshot(string $fbo_id, string $period, float $total_cc, bool $is_closed, string $country_scope = 'GLOBAL', string $source_note = 'FLP360 Trends · Total CC'): void {
+function forever_business_upsert_total_cc_snapshot(string $fbo_id, string $period, float $total_cc, bool $is_closed, string $country_scope = 'GLOBAL', string $source_note = 'FLP360 CC Summary · Global Total CC'): void {
     forever_business_ensure_tables();
     $fbo_id = forever_business_normalize_fbo_id($fbo_id);
     $period = forever_business_period_from_label($period) ?: '';
@@ -1570,7 +1570,7 @@ function forever_business_get_dashboard(int $user_id, bool $is_admin, string $re
     $goal_current_cc = $official_total_cc ? (float) $official_total_cc['total_cc'] : (float) $summary['personal_cc'];
     $summary['goal_cc'] = 1000.0;
     $summary['goal_current_cc'] = $goal_current_cc;
-    $summary['goal_metric_source'] = $official_total_cc ? 'FLP360 Total CC · ' . $official_total_cc['country_scope'] : 'FCC zbroj osobnih CC';
+    $summary['goal_metric_source'] = $official_total_cc ? 'FLP360 Global Total CC · ' . $official_total_cc['country_scope'] : 'FCC zbroj osobnih CC';
     $summary['goal_is_closed'] = $official_total_cc ? (bool) $official_total_cc['is_closed'] : false;
     $summary['goal_gap_cc'] = max(0, round($summary['goal_cc'] - $goal_current_cc, 3));
     $summary['goal_progress'] = min(100, round(($goal_current_cc / $summary['goal_cc']) * 100, 1));

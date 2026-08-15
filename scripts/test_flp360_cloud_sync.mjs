@@ -9,6 +9,7 @@ import {
     csvDocument,
     currentFlpMonthLabel,
     encryptFlpAuthorization,
+    extractCurrentCcSummary,
     extractFourCcRows,
     extractLiveCcRecord,
     extractLiveZeroFallback,
@@ -48,6 +49,17 @@ assert.equal(normalizeFboId('360-000-760-944'), '360000760944');
 assert.equal(parseFlpTimestamp(1786616559000)?.toISOString(), '2026-08-13T10:22:39.000Z');
 assert.equal(parseFlpTimestamp('1786616559000')?.toISOString(), '2026-08-13T10:22:39.000Z');
 assert.equal(parseFlpTimestamp('not-a-date'), null);
+
+const ccSummary = extractCurrentCcSummary([
+    {processingYear: 2026, processingMonth: 0, valueType: 'Yearly', totalCC: 1406.925, globalTotalCC: 1505.697},
+    {processingYear: 2026, processingMonth: 7, valueType: 'Monthly', totalCC: 202.077, globalTotalCC: 215.608},
+    {processingYear: 2026, processingMonth: 8, valueType: 'Monthly', totalCC: 58.820, globalTotalCC: 63.684},
+], testDate);
+assert.deepEqual(ccSummary, {totalCc: 58.820, globalTotalCc: 63.684});
+assert.throws(() => extractCurrentCcSummary([], testDate), /prazan/);
+assert.throws(() => extractCurrentCcSummary([
+    {processingYear: 2026, processingMonth: 7, valueType: 'Monthly', totalCC: 1, globalTotalCC: 2},
+], testDate), /aktualno razdoblje/);
 
 const generationUrl = new URL(buildDownlineGenerationUrl('https://example.test/api/reporttdmpro', '360000760944'));
 assert.equal(generationUrl.pathname, '/api/reporttdmpro/V2/distributors/360000760944/generate/rewire-downline-excel-query');
@@ -133,9 +145,10 @@ assert.equal(refreshedFirst[6], 'Y');
 assert.equal(refreshedFirst[7], '1.000');
 assert.equal(refreshedFirst[14], '8.000');
 
-const verified = verifyFccStatus({summary: {members: 401, personal_active: 20, zero_cc: 381, active_4cc: 2, personal_cc: 404.25}, last_data_import_at: '2026-08-15 10:00:00'}, {members: 401, activeFourCc: 2, personalCc: 404.25});
+const verified = verifyFccStatus({summary: {members: 401, personal_active: 20, zero_cc: 381, active_4cc: 2, personal_cc: 404.25, goal_current_cc: 63.684, goal_metric_source: 'FLP360 Global Total CC · GLOBAL'}, last_data_import_at: '2026-08-15 10:00:00'}, {members: 401, activeFourCc: 2, personalCc: 404.25, globalTotalCc: 63.684});
 assert.equal(verified.members, 401);
-assert.throws(() => verifyFccStatus({summary: {}}, {members: 401, activeFourCc: 2, personalCc: 404.25}), /zavr\u0161na kontrola/);
+assert.equal(verified.globalTotalCc, 63.684);
+assert.throws(() => verifyFccStatus({summary: {}}, {members: 401, activeFourCc: 2, personalCc: 404.25, globalTotalCc: 63.684}), /zavr\u0161na kontrola/);
 
 const fourCoreSnapshots = officialFourCoreSnapshots();
 assert.equal(fourCoreSnapshots.length, 2);
@@ -147,7 +160,10 @@ assert.match(syncSource, /appflp360\.homeCountryCode/);
 assert.match(syncSource, /appflp360\.operatingCountryCode/);
 assert.match(syncSource, /treeview-cc\?countryCode=/);
 assert.match(syncSource, /metric: 'member_cc'/);
+assert.match(syncSource, /metric: 'total_cc'/);
+assert.match(syncSource, /rewire-earnings-CC-summary/);
 assert.match(syncSource, /uploadRootLiveCc\(rootRecord/);
+assert.match(syncSource, /uploadGlobalTotalCc\(ccSummary\.globalTotalCc/);
 assert.match(syncSource, /zadnji valjani FCC Focus Group/);
 assert.match(syncSource, /args: \['--disable-gpu'\]/);
 assert.match(syncSource, /button\[name="login"\]:visible/);

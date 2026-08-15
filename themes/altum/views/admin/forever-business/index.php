@@ -17,7 +17,7 @@ $format_cc = static fn($value) => number_format((float) $value, 3, ',', '.');
 
     <div class="row">
         <div class="col-md-6 col-xl-3 mb-4"><div class="card h-100"><div class="card-body"><div class="text-muted small">ČLANOVI STRUKTURE</div><div class="h3 mb-0"><?= nr($summary['members']) ?></div></div></div></div>
-        <div class="col-md-6 col-xl-3 mb-4"><div class="card h-100"><div class="card-body"><div class="text-muted small">SLUŽBENI TOTAL CC</div><div class="h3 mb-0"><?= $format_cc($summary['goal_current_cc']) ?></div><div class="small text-muted"><?= htmlspecialchars($summary['goal_metric_source']) ?><?= !$summary['goal_is_closed'] ? ' · otvoren mjesec' : '' ?></div></div></div></div>
+        <div class="col-md-6 col-xl-3 mb-4"><div class="card h-100"><div class="card-body"><div class="text-muted small">FLP360 GLOBAL TOTAL CC</div><div class="h3 mb-0"><?= $format_cc($summary['goal_current_cc']) ?></div><div class="small text-muted"><?= htmlspecialchars($summary['goal_metric_source']) ?><?= !$summary['goal_is_closed'] ? ' · otvoren mjesec' : '' ?></div></div></div></div>
         <div class="col-md-6 col-xl-3 mb-4"><div class="card h-100"><div class="card-body"><div class="text-muted small">AKTIVNI S CC-OM</div><div class="h3 mb-0"><?= nr($summary['personal_active']) ?></div></div></div></div>
         <div class="col-md-6 col-xl-3 mb-4"><div class="card h-100"><div class="card-body"><div class="text-muted small">4 CC AKTIVNI</div><div class="h3 mb-0"><?= nr($summary['active_4cc']) ?></div></div></div></div>
     </div>

@@ -330,6 +330,26 @@ function extractFourCcRows(payload) {
     return Array.isArray(payload) ? payload : [];
 }
 
+function extractCurrentCcSummary(payload, date = new Date()) {
+    const {year, month} = zagrebPeriodParts(date);
+    const rows = Array.isArray(payload?.[0]?.body)
+        ? payload[0].body
+        : (Array.isArray(payload?.body) ? payload.body : payload);
+    if(!Array.isArray(rows) || !rows.length) {
+        throw new Error('FLP360 CC Summary live odgovor je prazan.');
+    }
+    const current = rows.find(row =>
+        Number(row?.processingYear) === year
+        && Number(row?.processingMonth) === month
+        && String(row?.valueType || '').toLocaleLowerCase('en') === 'monthly'
+    );
+    if(!current) throw new Error(`FLP360 CC Summary nema aktualno razdoblje ${zagrebPeriod(date)}.`);
+    return {
+        totalCc: nonNegativeCc(current.totalCC, 'CC Summary totalCC'),
+        globalTotalCc: nonNegativeCc(current.globalTotalCC, 'CC Summary globalTotalCC'),
+    };
+}
+
 function validateFourCcRows(rows, date = new Date()) {
     const {year, month} = zagrebPeriodParts(date);
     if(!Array.isArray(rows) || !rows.length) throw new Error('4 CC Active live odgovor je prazan; postojeći FCC podaci ostaju sačuvani.');
@@ -371,6 +391,18 @@ async function downloadLiveFourCc(page, configuration, date = new Date()) {
     const targetPath = path.join(OUTPUT_DIRECTORY, `flp360-4cc-active-live-${zagrebPeriod(date)}.csv`);
     await fs.writeFile(targetPath, buildFourCcCsv(rows, date), {mode: 0o600});
     return {path: targetPath, records: rows, rowCount: validation.rows, ids: validation.ids};
+}
+
+async function fetchLiveCcSummary(page, configuration, date = new Date()) {
+    const {year, month} = zagrebPeriodParts(date);
+    const distributorId = normalizeFboId(ROOT_FBO_ID);
+    const requestUrl = new URL(reportV2Url(
+        configuration,
+        `fboId/${distributorId}/country/${encodeURIComponent(configuration.operatingCountryCode)}/year/${year}/month/${month}/rewire-earnings-CC-summary`
+    ));
+    requestUrl.searchParams.set('isVolume', 'true');
+    requestUrl.searchParams.set('comparisionYear', String(year - 1));
+    return extractCurrentCcSummary(await flpGetJson(page, requestUrl.toString(), configuration), date);
 }
 
 async function downloadLatestDownlineBase(page, configuration, date = new Date()) {
@@ -650,6 +682,34 @@ async function uploadRootLiveCc(record, isFourCcActive, period, syncUrl, syncKey
     return payload;
 }
 
+async function uploadGlobalTotalCc(globalTotalCc, period, syncUrl, syncKey) {
+    const form = new URLSearchParams({
+        metric: 'total_cc',
+        report_period: period,
+        total_cc: String(globalTotalCc),
+        is_closed: 'false',
+    });
+    const response = await fetch(syncUrl, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+            'X-FCC-Forever-Sync-Key': syncKey,
+        },
+        body: form,
+    });
+    const responseText = await response.text();
+    let payload;
+    try {
+        payload = JSON.parse(responseText);
+    } catch {
+        throw new Error('FCC je vratio neispravan odgovor za Global Total CC.');
+    }
+    if(!response.ok || payload.status !== 'success' || payload.metric !== 'total_cc') {
+        throw new Error(payload?.error?.message || 'FCC sinkronizacija Global Total CC zapisa nije uspjela.');
+    }
+    return payload;
+}
+
 async function fetchFccStatus(period, syncUrl, syncKey) {
     const response = await fetch(syncUrl, {
         method: 'POST',
@@ -677,6 +737,8 @@ function verifyFccStatus(payload, expected) {
         latestCc: Number(summary.personal_active) + Number(summary.zero_cc) === expected.members,
         activeFourCc: Number(summary.active_4cc) === expected.activeFourCc,
         personalCc: Math.abs(Number(summary.personal_cc) - expected.personalCc) < 0.002,
+        globalTotalCc: Math.abs(Number(summary.goal_current_cc) - expected.globalTotalCc) < 0.002,
+        globalSource: String(summary.goal_metric_source || '').includes('GLOBAL'),
     };
     const failed = Object.entries(checks).filter(([, passed]) => !passed).map(([name]) => name);
     if(failed.length) throw new Error(`FCC završna kontrola nije prošla: ${failed.join(', ')}.`);
@@ -684,6 +746,7 @@ function verifyFccStatus(payload, expected) {
         members: Number(summary.members),
         activeFourCc: Number(summary.active_4cc),
         personalCc: Number(summary.personal_cc),
+        globalTotalCc: Number(summary.goal_current_cc),
         lastDataImportAt: payload.last_data_import_at,
     };
 }
@@ -721,11 +784,18 @@ async function main() {
         const rootLiveCc = await fetchLiveCcForMembers(page, configuration, [normalizeFboId(ROOT_FBO_ID)], runDate);
         const rootRecord = rootLiveCc.records.get(normalizeFboId(ROOT_FBO_ID));
         if(!rootRecord || !Number.isFinite(rootRecord.personalCc)) throw new Error('Glavni FBO nema potvrđen live Personal CC.');
+        const ccSummary = await fetchLiveCcSummary(page, configuration, runDate);
+        if(Math.abs(ccSummary.totalCc - rootRecord.totalCc) >= 0.002) {
+            throw new Error(`FLP360 CC Summary Total CC (${ccSummary.totalCc.toFixed(3)}) ne odgovara glavnom ${configuration.operatingCountryCode} live Total CC-u (${rootRecord.totalCc.toFixed(3)}).`);
+        }
+        console.log(`FLP360 CC Summary: ${configuration.operatingCountryCode} Total CC=${ccSummary.totalCc.toFixed(3)}, Global Total CC=${ccSummary.globalTotalCc.toFixed(3)}.`);
 
         const downlineResult = await uploadReport(downline.path, period, syncUrl, syncKey);
         console.log(`FCC Downline: duplicate=${Boolean(downlineResult.duplicate)}.`);
         await uploadRootLiveCc(rootRecord, fourCc.ids.has(rootRecord.fboId), period, syncUrl, syncKey);
         console.log(`FCC glavni FBO live CC: Personal CC=${rootRecord.personalCc.toFixed(3)}.`);
+        await uploadGlobalTotalCc(ccSummary.globalTotalCc, period, syncUrl, syncKey);
+        console.log(`FCC Global Total CC: ${ccSummary.globalTotalCc.toFixed(3)}.`);
         const fourCcResult = await uploadReport(fourCc.path, period, syncUrl, syncKey);
         console.log(`FCC 4 CC Active: duplicate=${Boolean(fourCcResult.duplicate)}.`);
 
@@ -738,8 +808,9 @@ async function main() {
             members: downline.rows + 1,
             activeFourCc: fourCc.rowCount,
             personalCc: Number((downline.personalCc + rootRecord.personalCc).toFixed(3)),
+            globalTotalCc: ccSummary.globalTotalCc,
         });
-        console.log(`FCC provjera: ${verified.members} članova, ${verified.activeFourCc} aktivna 4CC, Personal CC=${verified.personalCc.toFixed(3)}.`);
+        console.log(`FCC provjera: ${verified.members} članova, ${verified.activeFourCc} aktivna 4CC, Personal CC=${verified.personalCc.toFixed(3)}, Global Total CC=${verified.globalTotalCc.toFixed(3)}.`);
         console.warn('Focus Group live izvor trenutno vraća prazan skup uz nenulti broj zapisa; zadnji valjani FCC Focus Group namjerno je sačuvan.');
         console.log(`FLP360 → FCC live sinkronizacija za ${period} završena je uspješno.`);
     } finally {
@@ -762,6 +833,7 @@ export {
     csvDocument,
     currentFlpMonthLabel,
     encryptFlpAuthorization,
+    extractCurrentCcSummary,
     extractFourCcRows,
     extractLiveCcRecord,
     extractLiveZeroFallback,

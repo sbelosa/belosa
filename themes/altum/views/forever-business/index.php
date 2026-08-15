@@ -82,7 +82,7 @@ $format_change = static function(float $value): string {
         <?php if($data->is_admin): ?>
         <div class="mt-4">
             <div class="d-flex justify-content-between mb-2">
-                <span><strong><?= $format_cc($summary['goal_current_cc']) ?> CC</strong> od cilja 1.000 CC</span>
+                <span><strong>Global Total CC: <?= $format_cc($summary['goal_current_cc']) ?> CC</strong> od cilja 1.000 CC</span>
                 <span><?= $format_percent($summary['goal_progress']) ?></span>
             </div>
             <div class="progress"><div class="progress-bar" style="width: <?= min(100, (float) $summary['goal_progress']) ?>%"></div></div>
@@ -256,7 +256,7 @@ $format_change = static function(float $value): string {
         <?php if(!empty($dashboard['trend'])): ?>
             <?php $trend_max = $data->is_admin ? max(1000, ...array_map(static fn($row) => (float) $row['total_cc'], $dashboard['trend'])) : max(1, ...array_map(static fn($row) => (float) $row['total_cc'], $dashboard['trend'])); ?>
             <div class="card fb-card mb-4">
-                <div class="card-header bg-transparent"><h2 class="h5 mb-1"><?= $data->is_admin ? 'Trend prema cilju 1.000 CC' : 'Moj ukupni CC trend' ?></h2><div class="small text-muted"><?= $data->is_admin ? (!empty($dashboard['official_total_cc']) ? 'Službeni FLP360 Total CC za GLOBAL. Otvoreni mjesec je jasno označen.' : 'Privremeni FCC zbroj osobnih CC; učitaj službeni FLP360 Total CC za točan timski cilj.') : 'Duljina crte prikazuje tvoj ukupni CC. Zelena znači da je 4 CC aktivnost ostvarena, a crvena da još nije ostvarena.' ?></div></div>
+                <div class="card-header bg-transparent"><h2 class="h5 mb-1"><?= $data->is_admin ? 'Global Total CC prema cilju 1.000 CC' : 'Moj ukupni CC trend' ?></h2><div class="small text-muted"><?= $data->is_admin ? (!empty($dashboard['official_total_cc']) ? 'Službeni FLP360 Global Total CC. To nije isto što i Total CC pojedinog tržišta; otvoreni mjesec je jasno označen.' : 'Privremeni FCC zbroj osobnih CC; učitaj službeni FLP360 Global Total CC za točan timski cilj.') : 'Duljina crte prikazuje tvoj ukupni CC. Zelena znači da je 4 CC aktivnost ostvarena, a crvena da još nije ostvarena.' ?></div></div>
                 <div class="card-body">
                     <?php foreach($dashboard['trend'] as $trend_row): ?>
                         <?php

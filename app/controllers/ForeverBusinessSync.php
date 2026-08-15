@@ -101,12 +101,20 @@ class ForeverBusinessSync extends Controller {
         if($metric === 'total_cc') {
             $total_cc = $this->non_negative_number('total_cc');
             $is_closed = filter_var($_POST['is_closed'] ?? false, FILTER_VALIDATE_BOOLEAN);
-            forever_business_upsert_total_cc_snapshot(self::ROOT_FBO_ID, $period, $total_cc, $is_closed);
+            forever_business_upsert_total_cc_snapshot(
+                self::ROOT_FBO_ID,
+                $period,
+                $total_cc,
+                $is_closed,
+                'GLOBAL',
+                'FLP360 CC Summary · Global Total CC'
+            );
             $this->output([
                 'status' => 'success',
                 'metric' => 'total_cc',
                 'period' => $period,
                 'total_cc' => round($total_cc, 3),
+                'country_scope' => 'GLOBAL',
                 'is_closed' => $is_closed,
                 'synced_at' => get_date(),
             ]);
