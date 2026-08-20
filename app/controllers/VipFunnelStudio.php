@@ -184,6 +184,14 @@ class VipFunnelStudio extends Controller {
                     }
                 }
 
+                /* Custom code: FC-2026-08-20: require the explicitly selected VIP Funnel before saving */
+                if($payload !== null && !Alerts::has_field_errors() && !Alerts::has_errors()) {
+                    if(vip_funnel_studio_schema_is_ready() && $selected_funnel_id <= 0) {
+                        Alerts::add_error('Odabrani funnel nije pronađen. Osvježi stranicu i pokušaj ponovno.');
+                    }
+                }
+                /* /Custom code: FC-2026-08-20 */
+
                 if($payload !== null && !Alerts::has_field_errors() && !Alerts::has_errors()) {
                     if($this->persist_payload($payload, $selected_funnel_id)) {
                         Alerts::add_success(l('vip_funnel.alert.saved'));
@@ -302,11 +310,56 @@ class VipFunnelStudio extends Controller {
             ]);
         }
 
-        if(!$this->persist_payload($payload, $this->get_selected_funnel_id())) {
+        /* Custom code: FC-2026-08-20: validate and confirm exact VIP Funnel persistence */
+        $schema_is_ready = vip_funnel_studio_schema_is_ready();
+        $selected_funnel_id = $this->get_selected_funnel_id();
+
+        if($schema_is_ready && $selected_funnel_id <= 0) {
+            http_response_code(422);
+            Response::json(l('vip_funnel.alert.save_failed'), 'error', [
+                'code' => 'invalid_funnel_id',
+            ]);
+        }
+
+        $normalized_payload = vip_funnel_normalize_studio_payload($payload, $this->user);
+
+        if(!$this->persist_payload($normalized_payload, $selected_funnel_id)) {
             Response::json(l('vip_funnel.alert.save_failed'), 'error');
         }
 
-        Response::json(l('vip_funnel.alert.saved'), 'success');
+        if(!$schema_is_ready) {
+            Response::json(l('vip_funnel.alert.saved'), 'success', [
+                'persisted' => [
+                    'funnel_id' => 0,
+                    'status' => (string) ($normalized_payload['funnel']['status'] ?? ''),
+                    'visibility_mode' => (string) ($normalized_payload['funnel']['visibility_mode'] ?? ''),
+                ],
+            ]);
+        }
+
+        $persisted_funnel = vip_funnel_studio_get_funnel_row((int) ($this->user->user_id ?? 0), $selected_funnel_id);
+        $expected_status = (string) ($normalized_payload['funnel']['status'] ?? '');
+        $expected_visibility_mode = (string) ($normalized_payload['funnel']['visibility_mode'] ?? '');
+
+        if(
+            !$persisted_funnel
+            || (string) ($persisted_funnel->status ?? '') !== $expected_status
+            || (string) ($persisted_funnel->visibility_mode ?? '') !== $expected_visibility_mode
+        ) {
+            http_response_code(409);
+            Response::json(l('vip_funnel.alert.save_failed'), 'error', [
+                'code' => 'persistence_mismatch',
+            ]);
+        }
+
+        Response::json(l('vip_funnel.alert.saved'), 'success', [
+            'persisted' => [
+                'funnel_id' => (int) ($persisted_funnel->vip_funnel_id ?? 0),
+                'status' => (string) ($persisted_funnel->status ?? ''),
+                'visibility_mode' => (string) ($persisted_funnel->visibility_mode ?? ''),
+            ],
+        ]);
+        /* /Custom code: FC-2026-08-20 */
     }
 
     public function upload_image() {
