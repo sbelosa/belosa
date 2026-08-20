@@ -30,6 +30,9 @@
 !scripts/forever_business_import.php
 !scripts/forever_business_sync_push.sh
 !scripts/test_forever_business_import.php
+# Custom code: FC-2026-08-20: track VIP Funnel persistence regression guard
+!scripts/test_vip_funnel_persistence_guards.php
+# /Custom code: FC-2026-08-20
 # Custom code: FC-2026-08-13: Cloud FLP360 synchronization scripts
 !scripts/flp360_cloud_sync.mjs
 !scripts/test_flp360_cloud_sync.mjs
