@@ -930,7 +930,9 @@ class OpsReadonly extends Controller {
                 'counts' => $billing_dashboard['counts'] ?? [],
                 'latest_event' => $this->get_recent_global_billing_events(1)[0] ?? null,
             ],
-            'allowed_scopes' => ['health', 'overview', 'ai_feedback', 'ai_plan_usage', 'ai_recent_communications', 'plans', 'billing', 'pro_billing_audit', 'collaborators', 'fcc_signal_notifications', 'collaborator'],
+            /* Custom code: FC-2026-08-20: advertise the authenticated VIP funnel backup scope */
+            'allowed_scopes' => ['health', 'overview', 'ai_feedback', 'ai_plan_usage', 'ai_recent_communications', 'plans', 'billing', 'pro_billing_audit', 'collaborators', 'fcc_signal_notifications', 'collaborator', 'collaborator_vip_funnels'],
+            /* /Custom code: FC-2026-08-20 */
         ];
     }
 
@@ -1951,6 +1953,169 @@ class OpsReadonly extends Controller {
         ]);
     }
 
+    /* Custom code: FC-2026-08-20: provide an authenticated read-only structural backup for one collaborator's VIP funnels */
+    private function get_collaborator_vip_funnels_payload(object $user): array {
+        $user_id = (int) ($user->user_id ?? 0);
+
+        if(
+            $user_id <= 0
+            || !function_exists('vip_funnel_studio_schema_is_ready')
+            || !vip_funnel_studio_schema_is_ready()
+        ) {
+            return [
+                'schema_ready' => false,
+                'user' => [
+                    'user_id' => $user_id,
+                    'name' => (string) ($user->name ?? ''),
+                ],
+                'funnels' => [],
+                'paths' => [],
+                'cards' => [],
+                'edges' => [],
+                'hub_blocks' => [],
+                'id_slug_map' => [],
+                'hub_reference_map' => [],
+                'counts' => [
+                    'funnels' => 0,
+                    'paths' => 0,
+                    'cards' => 0,
+                    'edges' => 0,
+                    'hub_blocks' => 0,
+                ],
+                'bundle_sha256' => '',
+            ];
+        }
+
+        $to_array = static function($row): array {
+            if(is_object($row)) {
+                return get_object_vars($row);
+            }
+
+            return is_array($row) ? $row : [];
+        };
+        $normalize_rows = static function($rows) use ($to_array): array {
+            return array_values(array_map($to_array, is_array($rows) ? $rows : []));
+        };
+        $assert_query_succeeded = static function(string $table): void {
+            if((int) db()->getLastErrno() !== 0) {
+                throw new \RuntimeException('VIP funnel backup query failed for ' . $table . '.');
+            }
+        };
+        $integrity_flags = JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES;
+
+        if(defined('JSON_INVALID_UTF8_SUBSTITUTE')) {
+            $integrity_flags |= JSON_INVALID_UTF8_SUBSTITUTE;
+        }
+
+        if(defined('JSON_PARTIAL_OUTPUT_ON_ERROR')) {
+            $integrity_flags |= JSON_PARTIAL_OUTPUT_ON_ERROR;
+        }
+
+        $funnel_rows = db()->where('user_id', $user_id)
+            ->orderBy('vip_funnel_id', 'ASC')
+            ->get('vip_funnels') ?? [];
+        $assert_query_succeeded('vip_funnels');
+        $funnels = $normalize_rows($funnel_rows);
+        $paths = [];
+        $cards = [];
+        $edges = [];
+        $id_slug_map = [];
+        $funnel_slugs = [];
+
+        foreach($funnels as $funnel) {
+            $funnel_id = (int) ($funnel['vip_funnel_id'] ?? 0);
+            if($funnel_id <= 0) {
+                continue;
+            }
+
+            $path_rows = db()->where('vip_funnel_id', $funnel_id)
+                ->orderBy('vip_funnel_path_id', 'ASC')
+                ->get('vip_funnel_paths') ?? [];
+            $assert_query_succeeded('vip_funnel_paths');
+            $paths = array_merge($paths, $normalize_rows($path_rows));
+
+            $card_rows = db()->where('vip_funnel_id', $funnel_id)
+                ->orderBy('vip_funnel_card_id', 'ASC')
+                ->get('vip_funnel_cards') ?? [];
+            $assert_query_succeeded('vip_funnel_cards');
+            $cards = array_merge($cards, $normalize_rows($card_rows));
+
+            $edge_rows = db()->where('vip_funnel_id', $funnel_id)
+                ->orderBy('vip_funnel_edge_id', 'ASC')
+                ->get('vip_funnel_edges') ?? [];
+            $assert_query_succeeded('vip_funnel_edges');
+            $edges = array_merge($edges, $normalize_rows($edge_rows));
+            $funnel_slugs[$funnel_id] = (string) ($funnel['slug'] ?? '');
+            $id_slug_map[] = [
+                'vip_funnel_id' => $funnel_id,
+                'name' => (string) ($funnel['name'] ?? ''),
+                'slug' => (string) ($funnel['slug'] ?? ''),
+                'status' => (string) ($funnel['status'] ?? ''),
+                'visibility_mode' => (string) ($funnel['visibility_mode'] ?? ''),
+                'owner_mode' => (string) ($funnel['owner_mode'] ?? ''),
+            ];
+        }
+
+        $hub_blocks = [];
+        $hub_reference_map = [];
+        if(function_exists('vip_funnel_has_table') && vip_funnel_has_table('biolinks_blocks')) {
+            $hub_block_rows = db()->where('user_id', $user_id)
+                ->where('type', 'vip_funnel_hub')
+                ->orderBy('biolink_block_id', 'ASC')
+                ->get('biolinks_blocks') ?? [];
+            $assert_query_succeeded('biolinks_blocks');
+            $hub_blocks = $normalize_rows($hub_block_rows);
+
+            foreach($hub_blocks as $hub_block) {
+                $link_id = (int) ($hub_block['link_id'] ?? 0);
+                $link = $link_id > 0 ? db()->where('user_id', $user_id)->where('link_id', $link_id)->getOne('links', ['url']) : null;
+                if($link_id > 0) {
+                    $assert_query_succeeded('links');
+                }
+                $settings = function_exists('vip_funnel_to_array')
+                    ? vip_funnel_to_array($hub_block['settings'] ?? [])
+                    : (json_decode((string) ($hub_block['settings'] ?? ''), true) ?: []);
+                $selected_funnel_id = (int) ($settings['vip_funnel_id'] ?? 0);
+
+                $hub_reference_map[] = [
+                    'biolink_block_id' => (int) ($hub_block['biolink_block_id'] ?? 0),
+                    'link_id' => $link_id,
+                    'link_slug' => (string) ($link->url ?? ''),
+                    'is_enabled' => (int) ($hub_block['is_enabled'] ?? 0),
+                    'selected_vip_funnel_id' => $selected_funnel_id,
+                    'selected_funnel_slug' => $funnel_slugs[$selected_funnel_id] ?? '',
+                ];
+            }
+        }
+
+        $data = [
+            'schema_ready' => true,
+            'user' => [
+                'user_id' => $user_id,
+                'name' => (string) ($user->name ?? ''),
+            ],
+            'funnels' => $funnels,
+            'paths' => $paths,
+            'cards' => $cards,
+            'edges' => $edges,
+            'hub_blocks' => $hub_blocks,
+            'id_slug_map' => $id_slug_map,
+            'hub_reference_map' => $hub_reference_map,
+            'counts' => [
+                'funnels' => count($funnels),
+                'paths' => count($paths),
+                'cards' => count($cards),
+                'edges' => count($edges),
+                'hub_blocks' => count($hub_blocks),
+            ],
+        ];
+        $integrity_source = json_encode($data, $integrity_flags);
+        $data['bundle_sha256'] = hash('sha256', is_string($integrity_source) ? $integrity_source : '');
+
+        return $data;
+    }
+    /* /Custom code: FC-2026-08-20 */
+
     private function resolve_collaborator_section(callable $resolver, $fallback, array &$section_errors, string $section) {
         try {
             return $resolver();
@@ -2172,9 +2337,44 @@ class OpsReadonly extends Controller {
                 ]);
                 break;
 
+            /* Custom code: FC-2026-08-20: export one collaborator's VIP funnel structure without mutating runtime data */
+            case 'collaborator_vip_funnels':
+                $user = $this->get_collaborator_user();
+
+                if(!$user) {
+                    $this->respond_error('collaborator_not_found', 'Collaborator was not found. Provide user_id or email.', 404, [
+                        'scope' => 'collaborator_vip_funnels',
+                    ]);
+                }
+
+                try {
+                    $backup_payload = $this->get_collaborator_vip_funnels_payload($user);
+                } catch(\Throwable $exception) {
+                    $this->respond_error('vip_funnel_backup_failed', 'VIP funnel backup could not be generated safely.', 500, [
+                        'scope' => 'collaborator_vip_funnels',
+                    ]);
+                }
+
+                if(empty($backup_payload['schema_ready'])) {
+                    $this->respond_error('vip_funnel_schema_not_ready', 'VIP funnel schema is not ready for a complete backup.', 503, [
+                        'scope' => 'collaborator_vip_funnels',
+                    ]);
+                }
+
+                $this->respond_success($scope, $backup_payload, [
+                    'query' => [
+                        'user_id' => (int) ($user->user_id ?? 0),
+                        'email' => (string) ($user->email ?? ''),
+                    ],
+                ]);
+                break;
+            /* /Custom code: FC-2026-08-20 */
+
             default:
                 $this->respond_error('invalid_scope', 'Readonly ops scope is invalid.', 422, [
-                    'allowed_scopes' => ['health', 'overview', 'ai_feedback', 'ai_plan_usage', 'ai_recent_communications', 'plans', 'billing', 'pro_billing_audit', 'collaborators', 'fcc_signal_notifications', 'forever_ads_catalog', 'collaborator'],
+                    /* Custom code: FC-2026-08-20: include the authenticated VIP funnel backup scope in validation errors */
+                    'allowed_scopes' => ['health', 'overview', 'ai_feedback', 'ai_plan_usage', 'ai_recent_communications', 'plans', 'billing', 'pro_billing_audit', 'collaborators', 'fcc_signal_notifications', 'forever_ads_catalog', 'collaborator', 'collaborator_vip_funnels'],
+                    /* /Custom code: FC-2026-08-20 */
                 ]);
         }
     }
