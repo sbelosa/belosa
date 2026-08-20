@@ -2678,6 +2678,9 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
     const form = document.getElementById('vf-studio-form');
     const saveNotice = document.getElementById('vf_save_notice');
     const saveButtons = Array.from(form.querySelectorAll('[data-vf-save-button]'));
+    /* Custom code: FC-2026-08-20: share the live VIP Funnel editor field selector */
+    const genericEditorFieldSelector = '[data-vf-funnel-field], [data-vf-surface-field], [data-vf-block-field], [data-vf-step-field], [data-vf-action-field], [data-vf-product-mapping-field]';
+    /* /Custom code: FC-2026-08-20 */
     const saveUrl = <?= json_encode(url('vip-funnel-studio/save-ajax'), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
     const imageUploadUrl = <?= json_encode($data->image_upload_url ?? url('vip-funnel-studio/upload-image'), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
     const siteUrl = <?= json_encode(SITE_URL, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
@@ -2958,6 +2961,9 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
             errors: []
         }
     };
+    /* Custom code: FC-2026-08-20: coalesce safe VIP Funnel editor rebuilds */
+    let focusoutRenderFrame = 0;
+    /* /Custom code: FC-2026-08-20 */
 
     function safeParse(value) {
         try {
@@ -4586,11 +4592,34 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
         await new Promise(resolve => window.requestAnimationFrame(() => resolve()));
     }
 
+    /* Custom code: FC-2026-08-20: flush visible VIP Funnel status settings before saving */
+    function flushFunnelSettingsFields() {
+        const fields = workspaceRoot.querySelectorAll('[data-vf-funnel-field]');
+
+        if(!fields.length) {
+            return;
+        }
+
+        state.payload.funnel = state.payload.funnel || {};
+
+        fields.forEach(field => {
+            const key = field.getAttribute('data-vf-funnel-field');
+
+            if(key) {
+                state.payload.funnel[key] = coerceFieldValue(field);
+            }
+        });
+    }
+    /* /Custom code: FC-2026-08-20 */
+
     async function saveStudio() {
         if(state.save.inFlight) {
             return;
         }
 
+        /* Custom code: FC-2026-08-20: capture status and visibility before payload serialization */
+        flushFunnelSettingsFields();
+        /* /Custom code: FC-2026-08-20 */
         await flushActiveEditorField();
         syncPayloadInput();
         refreshValidationState();
@@ -4606,6 +4635,13 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
         setSaveButtonState(true);
 
         try {
+            /* Custom code: FC-2026-08-20: snapshot the exact VIP Funnel persistence request */
+            const requestedPersistence = {
+                funnel_id: Number(funnelIdInput?.value || 0),
+                status: String(state.payload?.funnel?.status || ''),
+                visibility_mode: String(state.payload?.funnel?.visibility_mode || '')
+            };
+            /* /Custom code: FC-2026-08-20 */
             const formData = new FormData();
             formData.append('token', tokenInput?.value || '');
             formData.append('global_token', globalTokenInput?.value || '');
@@ -4631,6 +4667,19 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
                 const message = Array.isArray(result?.message) ? result.message.join(' ') : (result?.message || 'Spremanje trenutno nije uspjelo.');
                 throw new Error(message);
             }
+
+            /* Custom code: FC-2026-08-20: require server confirmation for the exact persisted VIP Funnel */
+            const persisted = result?.details?.persisted;
+
+            if(
+                !persisted
+                || Number(persisted.funnel_id) !== requestedPersistence.funnel_id
+                || String(persisted.status) !== requestedPersistence.status
+                || String(persisted.visibility_mode) !== requestedPersistence.visibility_mode
+            ) {
+                throw new Error('Sustav nije potvrdio spremljene postavke odabranog funnel-a. Osvježi stranicu i pokušaj ponovno.');
+            }
+            /* /Custom code: FC-2026-08-20 */
 
             const message = Array.isArray(result.message) ? result.message.join(' ') : result.message;
             setSaveNotice(message || 'Promjene su spremljene.', 'success');
@@ -7968,9 +8017,34 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
     });
 
     workspaceRoot.addEventListener('focusout', event => {
-        if(event.target.closest('[data-vf-funnel-field], [data-vf-surface-field], [data-vf-block-field], [data-vf-step-field], [data-vf-action-field], [data-vf-product-mapping-field]')) {
-            renderAll();
+        /* Custom code: FC-2026-08-20: commit the live field before any VIP Funnel editor rebuild */
+        const field = event.target.closest(genericEditorFieldSelector);
+
+        if(!field) {
+            return;
         }
+
+        applyGenericFieldUpdate(field);
+        updateHistoryControls();
+
+        if(event.relatedTarget instanceof HTMLElement && workspaceRoot.contains(event.relatedTarget)) {
+            return;
+        }
+
+        if(focusoutRenderFrame) {
+            window.cancelAnimationFrame(focusoutRenderFrame);
+        }
+
+        focusoutRenderFrame = window.requestAnimationFrame(() => {
+            focusoutRenderFrame = 0;
+
+            if(document.activeElement instanceof HTMLElement && workspaceRoot.contains(document.activeElement)) {
+                return;
+            }
+
+            renderAll();
+        });
+        /* /Custom code: FC-2026-08-20 */
     });
 
     workspaceRoot.addEventListener('change', event => {
