@@ -41,6 +41,10 @@ $box_shadow_style = \Altum\Link::get_processed_box_shadow_style($settings);
 $cta_url = $render['primary_url'] ?? ($data->link->location_url ?? '');
 $secondary_url = $render['secondary_url'] ?? '';
 $is_clickable = (bool) $cta_url;
+/* Custom code: FC-2026-08-20: allow VIP Funnel navigation only from the CTA when configured */
+$card_click_enabled = array_key_exists('card_click_enabled', $settings) ? !empty($settings['card_click_enabled']) : true;
+$is_card_clickable = $is_clickable && $card_click_enabled;
+/* /Custom code: FC-2026-08-20 */
 $text_alignment = $settings['text_alignment'] ?? 'left';
 $cta_justify_map = [
     'left' => 'flex-start',
@@ -60,7 +64,9 @@ $wrapper_style = sprintf(
     $settings['text_color'] ?? '#ffffff',
     $box_shadow_style,
     $text_alignment,
-    $is_clickable ? 'cursor:pointer;' : ''
+    /* Custom code: FC-2026-08-20: show a pointer only when the whole VIP Funnel card is clickable */
+    $is_card_clickable ? 'cursor:pointer;' : ''
+    /* /Custom code: FC-2026-08-20 */
 );
 $block_image = !empty($settings['image']) ? \Altum\Uploads::get_full_url('block_thumbnail_images') . $settings['image'] : null;
 $columns = (int) ($settings['columns'] ?? 1) === 2 ? '6' : '12';
@@ -79,7 +85,9 @@ $columns = (int) ($settings['columns'] ?? 1) === 2 ? '6' : '12';
         data-animation
         data-background-color
         data-text-alignment
-        <?= $is_clickable ? 'data-vip-hub-primary-url="' . $cta_url . '" role="link" tabindex="0"' : '' ?>
+        <?php /* Custom code: FC-2026-08-20: attach card navigation semantics only when explicitly enabled */ ?>
+        <?= $is_card_clickable ? 'data-vip-hub-primary-url="' . $cta_url . '" role="link" tabindex="0"' : '' ?>
+        <?php /* /Custom code: FC-2026-08-20 */ ?>
     >
         <div style="padding:1.2rem; position:relative; overflow:hidden;">
             <div style="position:absolute; inset:auto -12% -32% auto; width:240px; height:240px; border-radius:999px; background:radial-gradient(circle, rgba(103, 216, 201, 0.18), transparent 62%); pointer-events:none;"></div>
@@ -137,7 +145,9 @@ $columns = (int) ($settings['columns'] ?? 1) === 2 ? '6' : '12';
     </div>
 </div>
 
-<?php if($is_clickable && !\Altum\Event::exists_content_type_key('javascript', 'vip_funnel_hub_click')): ?>
+<?php /* Custom code: FC-2026-08-20: register whole-card navigation only when explicitly enabled */ ?>
+<?php if($is_card_clickable && !\Altum\Event::exists_content_type_key('javascript', 'vip_funnel_hub_click')): ?>
+<?php /* /Custom code: FC-2026-08-20 */ ?>
     <?php ob_start() ?>
     <script>
         'use strict';

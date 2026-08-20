@@ -8827,6 +8827,12 @@ function vip_funnel_get_public_payload_for_user(int $user_id = 0, string $funnel
         }
     }
 
+    /* Custom code: FC-2026-08-20: never resolve an explicit VIP Funnel ID through legacy preferences */
+    if($funnel_id > 0) {
+        return null;
+    }
+    /* /Custom code: FC-2026-08-20 */
+
     $preferences_payload = vip_funnel_get_public_preferences_payload($user);
 
     return !empty($preferences_payload) ? $preferences_payload : null;
@@ -10244,11 +10250,9 @@ function vip_funnel_process_public_submission(array $state, array $post = []): a
 function vip_funnel_get_public_hub_render_data(int $user_id = 0, $block_settings = null): array {
     $block_settings = vip_funnel_to_array($block_settings);
     $selected_funnel_id = (int) ($block_settings['vip_funnel_id'] ?? 0);
+    /* Custom code: FC-2026-08-20: never fall back from an explicit missing VIP Funnel hub target */
     $public_payload = vip_funnel_get_public_payload_for_user($user_id, '', $selected_funnel_id);
-
-    if(!$public_payload && $selected_funnel_id > 0) {
-        $public_payload = vip_funnel_get_public_payload_for_user($user_id);
-    }
+    /* /Custom code: FC-2026-08-20 */
 
     $payload = $public_payload ?: vip_funnel_get_studio_seed_payload((object) ['user_id' => $user_id]);
     $payload = vip_funnel_normalize_studio_payload($payload, (object) ['user_id' => $user_id]);
@@ -10283,6 +10287,10 @@ function vip_funnel_get_user_funnel_select_options(int $user_id = 0): array {
             'id' => (int) ($row->vip_funnel_id ?? 0),
             'name' => (string) ($row->name ?? 'VIP Funnel 2.0'),
             'slug' => (string) ($row->slug ?? ''),
+            /* Custom code: FC-2026-08-20: show exact status and visibility in VIP Funnel hub choices */
+            'status' => (string) ($row->status ?? ''),
+            'visibility_mode' => (string) ($row->visibility_mode ?? ''),
+            /* /Custom code: FC-2026-08-20 */
             'url' => vip_funnel_get_public_funnel_url($user_id, (string) ($row->slug ?? 'vip-funnel-2-0')),
         ];
     }

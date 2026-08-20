@@ -6470,7 +6470,13 @@ class BiolinkBlockAjax extends Controller {
             $this->check_location_url($_POST['location_url']);
         }
 
-        $vip_funnel_id = vip_funnel_studio_get_funnel_row((int) $this->user->user_id, $_POST['vip_funnel_id']) ? $_POST['vip_funnel_id'] : 0;
+        $vip_funnel = vip_funnel_studio_get_funnel_row((int) $this->user->user_id, $_POST['vip_funnel_id']);
+
+        if(!$vip_funnel) {
+            Response::json('Odaberi valjani funnel koji će ovaj blok otvarati.', 'error');
+        }
+
+        $vip_funnel_id = (int) $vip_funnel->vip_funnel_id;
 
         $type = 'vip_funnel_hub';
         $settings = json_encode([
@@ -6497,6 +6503,7 @@ class BiolinkBlockAjax extends Controller {
             'secondary_cta_text' => 'Zatraži VIP pregled',
             'secondary_url' => '',
             'show_paths' => true,
+            'card_click_enabled' => false,
             'path_tags' => [
                 'Suradnja i Start paket',
                 'Proizvodi bez registracije',
@@ -6542,6 +6549,7 @@ class BiolinkBlockAjax extends Controller {
         $_POST['primary_cta_text'] = mb_substr(input_clean($_POST['primary_cta_text'] ?? ''), 0, 120);
         $_POST['secondary_cta_text'] = mb_substr(input_clean($_POST['secondary_cta_text'] ?? ''), 0, 120);
         $_POST['show_paths'] = (int) isset($_POST['show_paths']);
+        $_POST['card_click_enabled'] = (int) isset($_POST['card_click_enabled']);
         $submitted_path_tags = (array) ($_POST['path_tags'] ?? []);
         $_POST['path_tags'] = [];
         foreach($submitted_path_tags as $path_tag) {
@@ -6590,7 +6598,13 @@ class BiolinkBlockAjax extends Controller {
             $this->check_location_url($_POST['secondary_url']);
         }
 
-        $vip_funnel_id = vip_funnel_studio_get_funnel_row((int) $this->user->user_id, $_POST['vip_funnel_id']) ? $_POST['vip_funnel_id'] : 0;
+        $vip_funnel = vip_funnel_studio_get_funnel_row((int) $this->user->user_id, $_POST['vip_funnel_id']);
+
+        if(!$vip_funnel) {
+            Response::json('Odaberi valjani funnel koji će ovaj blok otvarati.', 'error');
+        }
+
+        $vip_funnel_id = (int) $vip_funnel->vip_funnel_id;
 
         $db_image = $this->handle_image_upload($biolink_block->settings->image ?? '', 'block_thumbnail_images/', settings()->links->thumbnail_image_size_limit);
         $image_url = $db_image ? \Altum\Uploads::get_full_url('block_thumbnail_images') . $db_image : null;
@@ -6619,6 +6633,7 @@ class BiolinkBlockAjax extends Controller {
             'secondary_cta_text' => $_POST['secondary_cta_text'],
             'secondary_url' => $_POST['secondary_url'],
             'show_paths' => $_POST['show_paths'],
+            'card_click_enabled' => $_POST['card_click_enabled'],
             'path_tags' => $_POST['path_tags'],
 
             /* Display settings */
