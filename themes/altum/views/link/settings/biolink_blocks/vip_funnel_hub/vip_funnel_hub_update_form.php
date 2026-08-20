@@ -2,6 +2,10 @@
 <?php
 $vip_funnel_options = function_exists('vip_funnel_get_user_funnel_select_options') ? vip_funnel_get_user_funnel_select_options((int) ($row->user_id ?? $this->user->user_id ?? 0)) : [];
 $selected_vip_funnel_id = (int) ($row->settings->vip_funnel_id ?? 0);
+/* Custom code: FC-2026-08-20: preserve the VIP Funnel hub whole-card click preference */
+$vip_funnel_hub_settings = vip_funnel_to_array($row->settings ?? []);
+$vip_funnel_hub_card_click_enabled = !array_key_exists('card_click_enabled', $vip_funnel_hub_settings) || !empty($vip_funnel_hub_settings['card_click_enabled']);
+/* /Custom code: FC-2026-08-20 */
 $vip_funnel_hub_render = function_exists('vip_funnel_get_public_hub_render_data') ? vip_funnel_get_public_hub_render_data((int) ($row->user_id ?? $this->user->user_id ?? 0), $row->settings ?? []) : [];
 $vip_funnel_hub_path_source = $row->settings->path_tags ?? ($vip_funnel_hub_render['paths'] ?? [
     ['title' => 'Suradnja i Start paket'],
@@ -53,15 +57,17 @@ foreach((array) $vip_funnel_hub_path_source as $path_tag) {
 
     <div class="form-group">
         <label for="<?= 'vip_funnel_hub_vip_funnel_id_' . $row->biolink_block_id ?>"><i class="fas fa-fw fa-diagram-project fa-sm text-muted mr-1"></i> Funnel koji se otvara</label>
-        <select id="<?= 'vip_funnel_hub_vip_funnel_id_' . $row->biolink_block_id ?>" name="vip_funnel_id" class="custom-select">
-            <option value="0" <?= $selected_vip_funnel_id <= 0 ? 'selected="selected"' : null ?>>Primarni funnel</option>
+        <?php /* Custom code: FC-2026-08-20: require and display the exact VIP Funnel hub target */ ?>
+        <select id="<?= 'vip_funnel_hub_vip_funnel_id_' . $row->biolink_block_id ?>" name="vip_funnel_id" class="custom-select" required="required">
+            <option value="" disabled="disabled" <?= $selected_vip_funnel_id <= 0 ? 'selected="selected"' : null ?>>Odaberi točan funnel</option>
             <?php foreach($vip_funnel_options as $option): ?>
                 <option value="<?= (int) $option['id'] ?>" <?= $selected_vip_funnel_id === (int) $option['id'] ? 'selected="selected"' : null ?>>
-                    <?= htmlspecialchars((string) $option['name'], ENT_QUOTES, 'UTF-8') ?> /<?= htmlspecialchars((string) $option['slug'], ENT_QUOTES, 'UTF-8') ?>
+                    <?= htmlspecialchars((string) $option['name'], ENT_QUOTES, 'UTF-8') ?> — <?= htmlspecialchars(mb_strtoupper((string) ($option['status'] ?? '')), ENT_QUOTES, 'UTF-8') ?> / <?= htmlspecialchars(mb_strtoupper((string) ($option['visibility_mode'] ?? '')), ENT_QUOTES, 'UTF-8') ?> — #<?= (int) $option['id'] ?> /<?= htmlspecialchars((string) $option['slug'], ENT_QUOTES, 'UTF-8') ?>
                 </option>
             <?php endforeach ?>
         </select>
-        <small class="form-text text-muted">Promjenom odabira ovaj blok može voditi na drugi funnel bez ponovnog kreiranja bloka.</small>
+        <small class="form-text text-muted">Promjenom odabira blok vodi na točno taj funnel. Ako odabrani funnel više ne postoji, CTA ostaje sigurno isključen.</small>
+        <?php /* /Custom code: FC-2026-08-20 */ ?>
     </div>
 
     <div class="alert alert-secondary">
@@ -73,6 +79,9 @@ foreach((array) $vip_funnel_hub_path_source as $path_tag) {
         <input type="hidden" name="location_url" value="" />
         <label for="<?= 'vip_funnel_hub_secondary_url_' . $row->biolink_block_id ?>"><i class="fas fa-fw fa-link fa-sm text-muted mr-1"></i> Sekundarni CTA URL</label>
         <input id="<?= 'vip_funnel_hub_secondary_url_' . $row->biolink_block_id ?>" type="url" class="form-control" name="secondary_url" value="<?= $row->settings->secondary_url ?? '' ?>" maxlength="2048" placeholder="<?= l('global.url_placeholder') ?>" />
+        <?php /* Custom code: FC-2026-08-20: clarify that the secondary URL never controls the primary CTA */ ?>
+        <small class="form-text text-muted">Ovo nije odredište primarnog gumba. Prvi gumb uvijek koristi polje „Funnel koji se otvara”.</small>
+        <?php /* /Custom code: FC-2026-08-20 */ ?>
     </div>
 
     <div class="form-group">
@@ -109,6 +118,14 @@ foreach((array) $vip_funnel_hub_path_source as $path_tag) {
         <input id="<?= 'vip_funnel_hub_show_paths_' . $row->biolink_block_id ?>" name="show_paths" type="checkbox" class="custom-control-input" <?= !empty($row->settings->show_paths) ? 'checked="checked"' : null ?> />
         <label class="custom-control-label" for="<?= 'vip_funnel_hub_show_paths_' . $row->biolink_block_id ?>">Prikaži glavne putove na kartici</label>
     </div>
+
+    <?php /* Custom code: FC-2026-08-20: support CTA-only VIP Funnel hub navigation */ ?>
+    <div class="form-group custom-control custom-switch">
+        <input id="<?= 'vip_funnel_hub_card_click_enabled_' . $row->biolink_block_id ?>" name="card_click_enabled" type="checkbox" class="custom-control-input" <?= $vip_funnel_hub_card_click_enabled ? 'checked="checked"' : null ?> />
+        <label class="custom-control-label" for="<?= 'vip_funnel_hub_card_click_enabled_' . $row->biolink_block_id ?>">Klik na cijelu karticu otvara funnel</label>
+        <small class="form-text text-muted">Isključi ako želiš da funnel otvara samo primarni CTA gumb „IZVEDI VEČ”.</small>
+    </div>
+    <?php /* /Custom code: FC-2026-08-20 */ ?>
 
     <div class="form-group">
         <label><i class="fas fa-fw fa-tags fa-sm text-muted mr-1"></i> Tagovi glavnih putova</label>
