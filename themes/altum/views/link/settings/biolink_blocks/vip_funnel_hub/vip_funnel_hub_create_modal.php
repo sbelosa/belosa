@@ -29,13 +29,17 @@
 
                     <div class="form-group">
                         <label for="vip_funnel_hub_vip_funnel_id"><i class="fas fa-fw fa-diagram-project fa-sm text-muted mr-1"></i> Funnel koji se otvara</label>
-                        <select id="vip_funnel_hub_vip_funnel_id" name="vip_funnel_id" class="custom-select">
-                            <option value="0">Primarni funnel</option>
+                        <?php /* Custom code: FC-2026-08-20: require an exact VIP Funnel hub target */ ?>
+                        <select id="vip_funnel_hub_vip_funnel_id" name="vip_funnel_id" class="custom-select" required="required">
+                            <option value="" selected="selected" disabled="disabled">Odaberi točan funnel</option>
                             <?php foreach($vip_funnel_options as $option): ?>
-                                <option value="<?= (int) $option['id'] ?>"><?= htmlspecialchars((string) $option['name'], ENT_QUOTES, 'UTF-8') ?> /<?= htmlspecialchars((string) $option['slug'], ENT_QUOTES, 'UTF-8') ?></option>
+                                <option value="<?= (int) $option['id'] ?>">
+                                    <?= htmlspecialchars((string) $option['name'], ENT_QUOTES, 'UTF-8') ?> — <?= htmlspecialchars(mb_strtoupper((string) ($option['status'] ?? '')), ENT_QUOTES, 'UTF-8') ?> / <?= htmlspecialchars(mb_strtoupper((string) ($option['visibility_mode'] ?? '')), ENT_QUOTES, 'UTF-8') ?> — #<?= (int) $option['id'] ?> /<?= htmlspecialchars((string) $option['slug'], ENT_QUOTES, 'UTF-8') ?>
+                                </option>
                             <?php endforeach ?>
                         </select>
-                        <small class="form-text text-muted">Ako imaš više funnel-a, ovdje biraš koji će ovaj FCC App blok otvoriti.</small>
+                        <small class="form-text text-muted">Blok otvara isključivo ovdje odabrani funnel; nema automatskog odabira najstarijeg funnel-a.</small>
+                        <?php /* /Custom code: FC-2026-08-20 */ ?>
                     </div>
 
                     <p class="small text-muted mb-0">
