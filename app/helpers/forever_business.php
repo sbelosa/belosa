@@ -74,7 +74,7 @@ function forever_business_ensure_tables(): void {
             `total_active_cc` DECIMAL(12,3) NULL,
             `non_manager_cc` DECIMAL(12,3) NULL,
             `leadership_cc` DECIMAL(12,3) NULL,
-            `is_4cc_active` TINYINT(1) NOT NULL DEFAULT 0,
+            `is_4cc_active` TINYINT(1) NULL DEFAULT NULL,
             `source_import_id` BIGINT UNSIGNED NULL,
             `updated_at` DATETIME NOT NULL,
             PRIMARY KEY (`fbo_id`, `period_month`),
@@ -186,6 +186,26 @@ function forever_business_ensure_tables(): void {
 
     foreach($queries as $query) {
         db()->rawQuery($query);
+    }
+
+    /* `NULL` means FLP360 has not supplied an official 4 CC result for this
+     * member/month. Changing only the column nullability preserves every
+     * existing explicit 0/1 result and lets new non-authoritative imports stay
+     * unknown instead of silently creating a false official result. */
+    $four_cc_column_result = database()->query("SHOW COLUMNS FROM `forever_business_metrics` LIKE 'is_4cc_active'");
+    $four_cc_column = $four_cc_column_result ? $four_cc_column_result->fetch_assoc() : null;
+    if(!$four_cc_column) {
+        throw new \RuntimeException('Forever Business 4 CC signal column could not be verified.');
+    }
+    if($four_cc_column && mb_strtoupper((string) ($four_cc_column['Null'] ?? 'NO')) !== 'YES') {
+        db()->rawQuery("ALTER TABLE `forever_business_metrics`
+            MODIFY `is_4cc_active` TINYINT(1) NULL DEFAULT NULL");
+
+        $four_cc_verify_result = database()->query("SHOW COLUMNS FROM `forever_business_metrics` LIKE 'is_4cc_active'");
+        $four_cc_verify = $four_cc_verify_result ? $four_cc_verify_result->fetch_assoc() : null;
+        if(!$four_cc_verify || mb_strtoupper((string) ($four_cc_verify['Null'] ?? 'NO')) !== 'YES') {
+            throw new \RuntimeException('Forever Business 4 CC signal column must allow NULL before imports can continue.');
+        }
     }
 
     $ready = true;
@@ -551,7 +571,7 @@ function forever_business_parse_report(string $path, string $original_name, stri
                         'total_active_cc' => null,
                         'non_manager_cc' => null,
                         'leadership_cc' => null,
-                        'is_4cc_active' => 0,
+                        'is_4cc_active' => null,
                     ];
                 }
                 $value = $row[$column['index']] ?? '';
@@ -680,7 +700,10 @@ function forever_business_parse_report(string $path, string $original_name, stri
                     'total_active_cc' => null,
                     'non_manager_cc' => null,
                     'leadership_cc' => null,
-                    'is_4cc_active' => $is_active,
+                    /* Focus Group ACTIVE is a focus/report signal, not the official
+                     * FLP360 4 CC Active result. Only Downline 4CC ACTIVE and the
+                     * dedicated 4 CC Active report may set this field. */
+                    'is_4cc_active' => null,
                 ];
                 $report['focus_metrics'][$fbo_id . '|' . $period] = [
                     'fbo_id' => $fbo_id,
@@ -824,7 +847,9 @@ function forever_business_import_report(array $report, string $file_sha256, int 
             $metric_update_columns = $report['kind'] === 'four_cc_active'
                 ? ['personal_cc', 'total_active_cc', 'is_4cc_active', 'source_import_id', 'updated_at']
                 : ($report['kind'] === 'focus_group'
-                    ? ['personal_cc', 'is_4cc_active', 'source_import_id', 'updated_at']
+                    /* Keep the prior official/downline import provenance when a
+                     * Focus report only refreshes Personal CC. */
+                    ? ['personal_cc', 'updated_at']
                     : ['personal_cc', 'total_cc', 'total_active_cc', 'non_manager_cc', 'leadership_cc', 'is_4cc_active', 'source_import_id', 'updated_at']);
             db()->onDuplicate($metric_update_columns)->insert('forever_business_metrics', [
                 'fbo_id' => $metric['fbo_id'],
@@ -834,7 +859,7 @@ function forever_business_import_report(array $report, string $file_sha256, int 
                 'total_active_cc' => $metric['total_active_cc'],
                 'non_manager_cc' => $metric['non_manager_cc'],
                 'leadership_cc' => $metric['leadership_cc'],
-                'is_4cc_active' => (int) $metric['is_4cc_active'],
+                'is_4cc_active' => $metric['is_4cc_active'] === null ? null : (int) $metric['is_4cc_active'],
                 'source_import_id' => $import_id,
                 'updated_at' => get_date(),
             ]);
@@ -1039,8 +1064,14 @@ function forever_business_provision_fcc_members(): int {
 }
 
 function forever_business_has_verified_four_cc_activity(array $member): bool {
+    /* An explicit FLP360 result always wins, including 0. Only when the
+     * official signal is genuinely unknown may the complete supporting values
+     * provide the conservative 1 Personal CC + 4 Total Active CC fallback. */
+    if(array_key_exists('is_4cc_active', $member) && $member['is_4cc_active'] !== null) {
+        return (int) $member['is_4cc_active'] === 1;
+    }
+
     return isset($member['personal_cc'], $member['total_active_cc'])
-        && !empty($member['is_4cc_active'])
         && (float) $member['personal_cc'] >= 1.0
         && (float) $member['total_active_cc'] >= 4.0;
 }
@@ -1048,9 +1079,14 @@ function forever_business_has_verified_four_cc_activity(array $member): bool {
 function forever_business_get_verified_progress(array $member): array {
     $personal_cc = isset($member['personal_cc']) ? (float) $member['personal_cc'] : null;
     $total_active_cc = isset($member['total_active_cc']) ? (float) $member['total_active_cc'] : null;
-    $has_activity_data = $personal_cc !== null && $total_active_cc !== null;
-    $meets_activity_formula = $has_activity_data && $personal_cc >= 1 && $total_active_cc >= 4;
-    $is_officially_active = forever_business_has_verified_four_cc_activity($member);
+    $has_official_activity_data = array_key_exists('is_4cc_active', $member) && $member['is_4cc_active'] !== null;
+    $official_activity_signal = $has_official_activity_data ? ((int) $member['is_4cc_active'] === 1 ? 1 : 0) : null;
+    $has_formula_data = $personal_cc !== null && $total_active_cc !== null;
+    $has_activity_data = $has_official_activity_data || $personal_cc !== null || $total_active_cc !== null;
+    $meets_activity_formula = $has_formula_data && $personal_cc >= 1 && $total_active_cc >= 4;
+    $is_four_cc_active = forever_business_has_verified_four_cc_activity($member);
+    $is_officially_active = $official_activity_signal === 1;
+    $activity_source = $has_official_activity_data ? 'official' : ($has_formula_data ? 'formula' : 'unknown');
 
     $current_total_cc = isset($member['total_cc']) ? (float) $member['total_cc'] : null;
     $previous_total_cc = isset($member['previous_total_cc']) ? (float) $member['previous_total_cc'] : null;
@@ -1105,6 +1141,9 @@ function forever_business_get_verified_progress(array $member): array {
 
     return [
         'has_activity_data' => $has_activity_data,
+        'has_official_activity_data' => $has_official_activity_data,
+        'official_activity_signal' => $official_activity_signal,
+        'activity_source' => $activity_source,
         'personal_cc' => $personal_cc,
         'total_active_cc' => $total_active_cc,
         'personal_progress' => $personal_cc !== null ? min(100, round(($personal_cc / 1) * 100, 1)) : 0,
@@ -1113,7 +1152,10 @@ function forever_business_get_verified_progress(array $member): array {
         'regional_gap' => $total_active_cc !== null ? max(0, round(4 - $total_active_cc, 3)) : null,
         'meets_activity_formula' => $meets_activity_formula,
         'is_officially_active' => $is_officially_active,
-        'activity_source_consistent' => ((bool) !empty($member['is_4cc_active'])) === $meets_activity_formula,
+        'is_4cc_active' => $is_four_cc_active,
+        'activity_source_consistent' => $has_official_activity_data && $has_formula_data
+            ? ($official_activity_signal === 1) === $meets_activity_formula
+            : null,
         'rank' => [
             'mode' => $rank_mode,
             'current_title' => $title ?: 'Bez statusa',
@@ -1132,6 +1174,7 @@ function forever_business_get_user_activity_notice(int $user_id): array {
         'has_data' => false,
         'period' => null,
         'is_active' => false,
+        'is_officially_active' => false,
         'personal_cc' => null,
         'total_active_cc' => null,
         'personal_gap' => null,
@@ -1139,6 +1182,8 @@ function forever_business_get_user_activity_notice(int $user_id): array {
         'progress' => 0,
         'progress_basis' => 'activity',
         'has_regional_data' => false,
+        'activity_source' => 'unknown',
+        'official_activity_signal' => null,
     ];
 
     if($user_id <= 0) return $empty_notice;
@@ -1173,17 +1218,18 @@ function forever_business_get_user_activity_notice(int $user_id): array {
     $progress = forever_business_get_verified_progress((array) $member);
     $has_personal_data = $progress['personal_cc'] !== null;
     $has_regional_data = $progress['total_active_cc'] !== null;
-    if(!$has_personal_data && !$has_regional_data) {
+    $has_official_activity_data = !empty($progress['has_official_activity_data']);
+    if(!$has_personal_data && !$has_regional_data && !$has_official_activity_data) {
         $empty_notice['period'] = $period;
         return $empty_notice;
     }
 
-    $status = $progress['is_officially_active']
+    $status = $progress['is_4cc_active']
         ? 'active'
-        : ($has_regional_data && $progress['meets_activity_formula'] ? 'pending' : 'inactive');
+        : ($progress['official_activity_signal'] === 0 && $progress['meets_activity_formula'] ? 'pending' : 'inactive');
 
     $progress_basis = $has_regional_data ? 'activity' : 'personal';
-    $notice_progress = $progress['is_officially_active']
+    $notice_progress = $progress['is_4cc_active']
         ? 100
         : ($has_regional_data
             ? min((float) $progress['personal_progress'], (float) $progress['regional_progress'])
@@ -1193,7 +1239,8 @@ function forever_business_get_user_activity_notice(int $user_id): array {
         'status' => $status,
         'has_data' => true,
         'period' => $period,
-        'is_active' => (bool) $progress['is_officially_active'],
+        'is_active' => (bool) $progress['is_4cc_active'],
+        'is_officially_active' => (bool) $progress['is_officially_active'],
         'personal_cc' => $progress['personal_cc'],
         'total_active_cc' => $progress['total_active_cc'],
         'personal_gap' => $progress['personal_gap'],
@@ -1201,6 +1248,8 @@ function forever_business_get_user_activity_notice(int $user_id): array {
         'progress' => $notice_progress,
         'progress_basis' => $progress_basis,
         'has_regional_data' => $has_regional_data,
+        'activity_source' => $progress['activity_source'],
+        'official_activity_signal' => $progress['official_activity_signal'],
     ];
 }
 /* /Custom code: FC-2026-08-14 */
@@ -1406,17 +1455,33 @@ function forever_business_get_vip_track(array $member): array {
     $definitions = forever_business_vip_track_definitions();
     $progress = $member['verified_progress'] ?? forever_business_get_verified_progress($member);
     $base_personal_cc = (float) ($member['vip_base_personal_cc'] ?? $member['personal_cc'] ?? 0);
-    $base_is_active = array_key_exists('vip_base_is_4cc_active', $member)
-        ? !empty($member['vip_base_is_4cc_active'])
+    $base_is_officially_active = array_key_exists('vip_base_is_4cc_active', $member)
+        ? $member['vip_base_is_4cc_active'] !== null && (int) $member['vip_base_is_4cc_active'] === 1
         : !empty($progress['is_officially_active']);
+    $base_is_active = array_key_exists('vip_base_is_4cc_active', $member)
+        ? forever_business_has_verified_four_cc_activity([
+            'is_4cc_active' => $member['vip_base_is_4cc_active'],
+            'personal_cc' => $member['vip_base_personal_cc'] ?? null,
+            'total_active_cc' => $member['vip_base_total_active_cc'] ?? null,
+        ])
+        : !empty($progress['is_4cc_active']);
     $base_had_previous_activity = !empty($member['vip_base_focus_previous_active'])
         || (float) ($member['vip_base_previous_personal_cc'] ?? $member['previous_personal_cc'] ?? 0) > 0;
     $current_personal_cc = (float) ($member['vip_current_personal_cc'] ?? $base_personal_cc);
     $current_is_active = array_key_exists('vip_current_is_4cc_active', $member)
-        ? !empty($member['vip_current_is_4cc_active'])
+        ? forever_business_has_verified_four_cc_activity([
+            'is_4cc_active' => $member['vip_current_is_4cc_active'],
+            'personal_cc' => $member['vip_current_personal_cc'] ?? null,
+            'total_active_cc' => $member['vip_current_total_active_cc'] ?? null,
+        ])
         : $base_is_active;
 
-    if(!empty($member['is_manager']) || ($progress['rank']['mode'] ?? '') === 'manager') {
+    $is_recognized_manager = ($progress['rank']['mode'] ?? '') === 'manager';
+
+    /* Leader is intentionally fixed from the August qualification snapshot:
+     * a full Manager title plus an explicit official August 4 CC Active=1.
+     * The NULL-only formula fallback may classify Builder activity, never Leader. */
+    if($is_recognized_manager && $base_is_officially_active) {
         $track_key = 'leader';
     } elseif($base_is_active) {
         $track_key = 'builder';
@@ -1435,6 +1500,11 @@ function forever_business_get_vip_track(array $member): array {
     }
 
     $highest_rank = max(0, (int) ($member['vip_highest_track_rank'] ?? 0));
+    if($highest_rank === (int) $definitions['leader']['rank'] && !($is_recognized_manager && $base_is_officially_active)) {
+        /* A historical Leader action must not permanently bypass the stricter
+         * Manager + August official 4 CC qualification. */
+        $highest_rank = max(0, (int) ($member['vip_highest_nonleader_track_rank'] ?? 0));
+    }
     if($highest_rank > (int) $definitions[$track_key]['rank']) {
         foreach(array_reverse($definitions, true) as $key => $definition) {
             if((int) $definition['rank'] === $highest_rank) {
@@ -1444,16 +1514,41 @@ function forever_business_get_vip_track(array $member): array {
         }
     }
 
-    return ['key' => $track_key] + $definitions[$track_key];
+    $resolved_rank = (int) $definitions[$track_key]['rank'];
+    return [
+        'key' => $track_key,
+        'has_advanced' => $highest_rank > 0 && $resolved_rank > $highest_rank,
+    ] + $definitions[$track_key];
 }
 
-function forever_business_get_action(array $member, ?array $metric, int $completed_total = 0, bool $sunday_done_today = false, ?\DateTimeInterface $now = null): array {
+function forever_business_get_action(array $member, ?array $metric, int $completed_total = 0, bool $sunday_done_today = false, ?\DateTimeInterface $now = null, bool $vip_done_today = false): array {
     $track = forever_business_get_vip_track($member);
     $marketing_plan = forever_business_get_marketing_plan_state($now);
     $timezone = new \DateTimeZone('Europe/Zagreb');
     $current_time = $now
         ? (new \DateTimeImmutable('@' . $now->getTimestamp()))->setTimezone($timezone)
         : new \DateTimeImmutable('now', $timezone);
+
+    if($vip_done_today && $completed_total < 30) {
+        return [
+            'core' => 'Development',
+            'key' => 'vip26_daily_complete_' . $current_time->format('Ymd'),
+            'title' => 'Današnji korak je dovršen',
+            'instruction' => 'Rezultat je spremljen. Novi zadatak otvorit će se sutra kako bi program ostao jasan, održiv i usporediv za sve polaznike.',
+            'checklist' => [],
+            'success_definition' => 'Za danas je dovoljno. Primijeni dogovoreni nastavak i vrati se sutra po novi korak.',
+            'target' => 0,
+            'quick_target' => 0,
+            'can_complete' => false,
+            'sequence_position' => min(30, max(1, $completed_total)),
+            'sequence_total' => 30,
+            'track_key' => $track['key'],
+            'track_label' => $track['label'],
+            'track_goal' => $track['goal'],
+            'is_daily_complete' => true,
+            'marketing_plan' => $marketing_plan,
+        ];
+    }
 
     if(!empty($marketing_plan['is_today']) && !$sunday_done_today) {
         $leader = $track['key'] === 'leader';
@@ -1478,6 +1573,7 @@ function forever_business_get_action(array $member, ?array $metric, int $complet
             'track_key' => $track['key'],
             'track_label' => $track['label'],
             'track_goal' => $track['goal'],
+            'track_has_advanced' => !empty($track['has_advanced']),
             'is_weekly_plan' => true,
             'marketing_plan' => $marketing_plan,
         ];
@@ -1534,6 +1630,7 @@ function forever_business_get_action(array $member, ?array $metric, int $complet
     $task['track_key'] = $track['key'];
     $task['track_label'] = $track['label'];
     $task['track_goal'] = $track['goal'];
+    $task['track_has_advanced'] = !empty($track['has_advanced']);
     $task['is_weekly_plan'] = false;
     $task['marketing_plan'] = $marketing_plan;
     return $task;
@@ -1731,11 +1828,13 @@ function forever_business_get_dashboard(int $user_id, bool $is_admin, string $re
                    prev2.total_cc AS two_months_ago_total_cc,
                    prev3.total_cc AS three_months_ago_total_cc,
                    vip_base.personal_cc AS vip_base_personal_cc,
+                   vip_base.total_active_cc AS vip_base_total_active_cc,
                    vip_base.is_4cc_active AS vip_base_is_4cc_active,
                    vip_base_prev.personal_cc AS vip_base_previous_personal_cc,
                    vip_base_focus.was_active_previous_month AS vip_base_focus_previous_active,
                    vip_current.period_month AS vip_current_period_month,
                    vip_current.personal_cc AS vip_current_personal_cc,
+                   vip_current.total_active_cc AS vip_current_total_active_cc,
                    vip_current.is_4cc_active AS vip_current_is_4cc_active,
                    focus.snapshot_date AS focus_snapshot_date, focus.next_level, focus.last_purchase_date,
                    focus.is_active AS focus_is_active, focus.was_active_previous_month AS focus_previous_active,
@@ -1745,7 +1844,9 @@ function forever_business_get_dashboard(int $user_id, bool $is_admin, string $re
                    COALESCE(outcomes.actions_done_total, 0) AS actions_done_total,
                    COALESCE(outcomes.vip_actions_done_total, 0) AS vip_actions_done_total,
                    COALESCE(outcomes.vip_sunday_done_today, 0) AS vip_sunday_done_today,
+                   COALESCE(outcomes.vip_action_done_today, 0) AS vip_action_done_today,
                    COALESCE(outcomes.vip_highest_track_rank, 0) AS vip_highest_track_rank,
+                   COALESCE(outcomes.vip_highest_nonleader_track_rank, 0) AS vip_highest_nonleader_track_rank,
                    outcomes.last_action_at
             FROM forever_business_members m
             LEFT JOIN forever_business_metrics cur ON cur.fbo_id = m.fbo_id AND cur.period_month = '{$period}'
@@ -1764,11 +1865,12 @@ function forever_business_get_dashboard(int $user_id, bool $is_admin, string $re
             LEFT JOIN forever_business_focus_metrics focus ON focus.fbo_id = m.fbo_id AND focus.period_month = '{$period}'
             LEFT JOIN (
                 SELECT fbo_id,
-                       SUM(action_date >= '{$seven_day_start}' AND status = 'done') AS actions_done,
-                       SUM(IF(action_date >= '{$seven_day_start}' AND status = 'done', outcome_count, 0)) AS outcomes_total,
+                       COUNT(DISTINCT IF(action_date >= '{$seven_day_start}' AND status = 'done' AND action_key LIKE 'vip26\\_%', action_date, NULL)) AS actions_done,
+                       SUM(IF(action_date >= '{$seven_day_start}' AND status = 'done' AND action_key LIKE 'vip26\\_%', outcome_count, 0)) AS outcomes_total,
                        SUM(status = 'done') AS actions_done_total,
                        SUM(status = 'done' AND action_key LIKE 'vip26\\_%' AND action_key NOT LIKE 'vip26\\_sunday\\_%') AS vip_actions_done_total,
                        SUM(status = 'done' AND action_date = '{$today}' AND action_key = CONCAT('vip26_sunday_', DATE_FORMAT('{$today}', '%Y%m%d'))) AS vip_sunday_done_today,
+                       SUM(status = 'done' AND action_date = '{$today}' AND action_key LIKE 'vip26\\_%') AS vip_action_done_today,
                        MAX(CASE
                            WHEN status = 'done' AND action_key LIKE 'vip26\\_leader\\_%' THEN 4
                            WHEN status = 'done' AND action_key LIKE 'vip26\\_builder\\_%' THEN 3
@@ -1777,6 +1879,13 @@ function forever_business_get_dashboard(int $user_id, bool $is_admin, string $re
                            WHEN status = 'done' AND action_key LIKE 'vip26\\_starter\\_%' THEN 1
                            ELSE 0
                        END) AS vip_highest_track_rank,
+                       MAX(CASE
+                           WHEN status = 'done' AND action_key LIKE 'vip26\\_builder\\_%' THEN 3
+                           WHEN status = 'done' AND action_key LIKE 'vip26\\_activator\\_%' THEN 2
+                           WHEN status = 'done' AND action_key LIKE 'vip26\\_reactivation\\_%' THEN 1
+                           WHEN status = 'done' AND action_key LIKE 'vip26\\_starter\\_%' THEN 1
+                           ELSE 0
+                       END) AS vip_highest_nonleader_track_rank,
                        MAX(IF(status = 'done', updated_at, NULL)) AS last_action_at
                 FROM forever_business_daily_outcomes
                 GROUP BY fbo_id
@@ -1800,7 +1909,8 @@ function forever_business_get_dashboard(int $user_id, bool $is_admin, string $re
                 $metric,
                 (int) ($row['vip_actions_done_total'] ?? 0),
                 !empty($row['vip_sunday_done_today']),
-                $zagreb_now
+                $zagreb_now,
+                !empty($row['vip_action_done_today'])
             );
             $members[] = $row;
         }
@@ -1810,7 +1920,14 @@ function forever_business_get_dashboard(int $user_id, bool $is_admin, string $re
         'members' => count($members),
         'personal_cc' => array_sum(array_map(static fn($row) => (float) ($row['personal_cc'] ?? 0), $members)),
         'personal_active' => count(array_filter($members, static fn($row) => (float) ($row['personal_cc'] ?? 0) > 0)),
-        'active_4cc' => count(array_filter($members, static fn($row) => !empty($row['is_4cc_active']))),
+        /* Keep the headline FLP360 count auditable against the source endpoint;
+         * formula fallback is exposed separately and must never inflate it. */
+        'active_4cc' => count(array_filter($members, static fn($row) =>
+            array_key_exists('is_4cc_active', $row)
+            && $row['is_4cc_active'] !== null
+            && (int) $row['is_4cc_active'] === 1
+        )),
+        'effective_active_4cc' => count(array_filter($members, static fn($row) => forever_business_has_verified_four_cc_activity($row))),
         'zero_cc' => count(array_filter($members, static fn($row) => (float) ($row['personal_cc'] ?? 0) <= 0)),
         'managers' => count(array_filter($members, static fn($row) => !empty($row['is_manager']))),
         'focus_members' => count(array_filter($members, static fn($row) => !empty($row['focus_snapshot_date']))),
@@ -1835,7 +1952,8 @@ function forever_business_get_dashboard(int $user_id, bool $is_admin, string $re
     $trend_periods = array_reverse(array_slice(array_values(array_filter($periods, static fn($trend_period) => $trend_period <= $period)), 0, 8));
     if(!$is_admin) {
         /* A collaborator's chart must use their imported Total CC, while activity colour
-         * remains tied to the official same-region 4 CC flag plus the 1 personal CC gate. */
+         * follows the official tri-state result, with the complete 1 + 4 formula used
+         * only when that official result is unavailable. */
         $metric_rows = [];
         if($dashboard_root !== '') {
             $rows = db()->where('fbo_id', $dashboard_root)
@@ -1851,11 +1969,10 @@ function forever_business_get_dashboard(int $user_id, bool $is_admin, string $re
         $trend = [];
         foreach($trend_periods as $trend_period) {
             $row = $metric_rows[$trend_period] ?? null;
-            $has_activity_data = $row !== null
-                && $row['personal_cc'] !== null
-                && $row['total_active_cc'] !== null
-                && array_key_exists('is_4cc_active', $row)
-                && $row['is_4cc_active'] !== null;
+            $has_activity_data = $row !== null && (
+                (array_key_exists('is_4cc_active', $row) && $row['is_4cc_active'] !== null)
+                || (isset($row['personal_cc'], $row['total_active_cc']))
+            );
             $is_verified_active = $has_activity_data && forever_business_has_verified_four_cc_activity($row);
             $trend[] = [
                 'period_month' => $trend_period,
@@ -1915,6 +2032,12 @@ function forever_business_get_dashboard(int $user_id, bool $is_admin, string $re
     ];
 }
 
+function forever_business_normalize_outcome_count($value): ?int {
+    if(!is_scalar($value) || !preg_match('/^\d+$/', trim((string) $value))) return null;
+    $count = (int) $value;
+    return $count >= 1 && $count <= 999 ? $count : null;
+}
+
 function forever_business_record_daily_outcome(int $user_id, string $fbo_id, array $scope_ids, array $input): bool {
     forever_business_ensure_tables();
     $zagreb_now = new \DateTimeImmutable('now', new \DateTimeZone('Europe/Zagreb'));
@@ -1929,26 +2052,59 @@ function forever_business_record_daily_outcome(int $user_id, string $fbo_id, arr
         return false;
     }
 
-    $action_key = preg_replace('/[^a-z0-9_\-]/i', '', (string) ($input['action_key'] ?? ''));
-    if($action_key === '') {
+    $action_key = mb_substr(preg_replace('/[^a-z0-9_\-]/i', '', (string) ($input['action_key'] ?? '')), 0, 48);
+    $outcome_count = forever_business_normalize_outcome_count($input['outcome_count'] ?? null);
+    if($action_key === '' || !str_starts_with($action_key, 'vip26_') || $outcome_count === null) {
         return false;
     }
 
-    db()->onDuplicate(['status', 'outcome_count', 'outcome_type', 'note', 'recorded_by_user_id', 'updated_at'])->insert('forever_business_daily_outcomes', [
-        'fbo_id' => $fbo_id,
-        'action_date' => $zagreb_now->format('Y-m-d'),
-        'core_key' => $core,
-        'action_key' => mb_substr($action_key, 0, 48),
-        'status' => 'done',
-        'outcome_count' => max(0, min(999, (int) ($input['outcome_count'] ?? 0))),
-        'outcome_type' => mb_substr(input_clean($input['outcome_type'] ?? '', 32), 0, 32) ?: null,
-        'note' => mb_substr(input_clean($input['note'] ?? '', 500), 0, 500) ?: null,
-        'recorded_by_user_id' => $user_id,
-        'created_at' => $zagreb_now->format('Y-m-d H:i:s'),
-        'updated_at' => $zagreb_now->format('Y-m-d H:i:s'),
-    ]);
+    $action_date = $zagreb_now->format('Y-m-d');
+    $timestamp = get_date();
+    db()->startTransaction();
 
-    return true;
+    try {
+        /* Serialize all completions for the same FBO. The existing unique key is
+         * per action, so this row lock is what makes the one-task-per-day rule
+         * safe even when two different requests arrive at the same time. */
+        $lock = database()->query("SELECT fbo_id FROM forever_business_members WHERE fbo_id = '{$fbo_id}' LIMIT 1 FOR UPDATE");
+        if(!$lock || !$lock->fetch_assoc()) {
+            throw new \RuntimeException('vip_member_lock_failed');
+        }
+
+        $existing = database()->query("SELECT outcome_id FROM forever_business_daily_outcomes
+            WHERE fbo_id = '{$fbo_id}' AND status = 'done'
+              AND ((action_date = '{$action_date}' AND action_key LIKE 'vip26\\_%') OR action_key = '{$action_key}')
+            LIMIT 1");
+        if(!$existing) {
+            throw new \RuntimeException('vip_outcome_lookup_failed');
+        }
+        if($existing->fetch_assoc()) {
+            db()->rollback();
+            return false;
+        }
+
+        $inserted = db()->insert('forever_business_daily_outcomes', [
+            'fbo_id' => $fbo_id,
+            'action_date' => $action_date,
+            'core_key' => $core,
+            'action_key' => $action_key,
+            'status' => 'done',
+            'outcome_count' => $outcome_count,
+            'outcome_type' => mb_substr(input_clean($input['outcome_type'] ?? '', 32), 0, 32) ?: null,
+            'note' => mb_substr(input_clean($input['note'] ?? '', 500), 0, 500) ?: null,
+            'recorded_by_user_id' => $user_id,
+            'created_at' => $timestamp,
+            'updated_at' => $timestamp,
+        ]);
+        if($inserted === false) throw new \RuntimeException('vip_outcome_insert_failed');
+
+        db()->commit();
+        return true;
+    } catch(\Throwable $exception) {
+        db()->rollback();
+        error_log('Forever VIP outcome save failed: ' . $exception->getMessage());
+        return false;
+    }
 }
 
 function forever_business_record_page_visit(int $user_id): void {
@@ -1965,8 +2121,12 @@ function forever_business_get_usage_summary(): array {
     forever_business_ensure_tables();
     $since_30d = (new \DateTimeImmutable())->modify('-30 days')->format('Y-m-d H:i:s');
     $since_180d = (new \DateTimeImmutable())->modify('-180 days')->format('Y-m-d H:i:s');
-    $since_7d_date = (new \DateTimeImmutable())->modify('-6 days')->format('Y-m-d');
-    $since_30d_date = (new \DateTimeImmutable())->modify('-29 days')->format('Y-m-d');
+    /* VIP action_date is recorded as an Europe/Zagreb calendar date. Use the
+     * same boundary for 7/30-day analytics so midnight cannot shift a task
+     * into the wrong reporting window. */
+    $zagreb_now = new \DateTimeImmutable('now', new \DateTimeZone('Europe/Zagreb'));
+    $since_7d_date = $zagreb_now->modify('-6 days')->format('Y-m-d');
+    $since_30d_date = $zagreb_now->modify('-29 days')->format('Y-m-d');
 
     $accounts_result = database()->query("SELECT
         COUNT(*) AS regular_accounts,
@@ -2076,12 +2236,21 @@ function forever_business_get_usage_summary(): array {
         FROM forever_business_page_visits");
     $visits = $visits_result ? $visits_result->fetch_assoc() : [];
 
+    $vip_outcomes_result = database()->query("SELECT
+        COUNT(DISTINCT IF(action_date >= '{$since_7d_date}' AND status = 'done' AND action_key LIKE 'vip26\\_%', fbo_id, NULL)) AS vip_participants_7d,
+        COUNT(DISTINCT IF(action_date >= '{$since_30d_date}' AND status = 'done' AND action_key LIKE 'vip26\\_%', fbo_id, NULL)) AS vip_participants_30d,
+        SUM(action_date >= '{$since_7d_date}' AND status = 'done' AND action_key LIKE 'vip26\\_%') AS vip_tasks_completed_7d,
+        SUM(action_date >= '{$since_30d_date}' AND status = 'done' AND action_key LIKE 'vip26\\_%') AS vip_tasks_completed_30d,
+        COALESCE(SUM(IF(action_date >= '{$since_30d_date}' AND status = 'done' AND action_key LIKE 'vip26\\_%', outcome_count, 0)), 0) AS vip_recorded_results_30d
+        FROM forever_business_daily_outcomes");
+    $vip_outcomes = $vip_outcomes_result ? $vip_outcomes_result->fetch_assoc() : [];
+
     $privacy_result = database()->query("SELECT COUNT(*) AS active_team_access_records
         FROM forever_business_access
         WHERE status = 'active'");
     $privacy = $privacy_result ? $privacy_result->fetch_assoc() : [];
 
-    $result = array_merge($accounts, $account_id_quality, $duplicate_ids, $profile_accounts, $team, $current_members, $latest_metrics, $managers, $visits, $privacy);
+    $result = array_merge($accounts, $account_id_quality, $duplicate_ids, $profile_accounts, $team, $current_members, $latest_metrics, $managers, $visits, $vip_outcomes, $privacy);
     return array_map(static fn($value) => (int) ($value ?? 0), $result);
 }
 
