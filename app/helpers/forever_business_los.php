@@ -1,0 +1,700 @@
+<?php
+/* Custom code: FC-2026-08-21: Read-only Moj Forever analytics for the admin LOS */
+
+defined('ALTUMCODE') || die();
+
+/**
+ * This helper deliberately contains SELECT/SHOW queries only. The collaborator
+ * dashboard owns enrollment and task writes; the LOS only reads their results.
+ */
+
+function forever_business_los_table_columns(string $table): array {
+    static $cache = [];
+
+    if(isset($cache[$table])) {
+        return $cache[$table];
+    }
+
+    if(!preg_match('/^[a-z0-9_]+$/i', $table)) {
+        return [];
+    }
+
+    $columns = [];
+    try {
+        $result = database()->query("SHOW COLUMNS FROM `{$table}`");
+        while($result && $row = $result->fetch_assoc()) {
+            $columns[(string) $row['Field']] = true;
+        }
+    } catch(\Throwable $exception) {
+        $columns = [];
+    }
+
+    return $cache[$table] = $columns;
+}
+
+function forever_business_los_rows(string $query): array {
+    $rows = [];
+    $result = database()->query($query);
+    if(!$result) {
+        throw new \RuntimeException('Moj Forever LOS query could not be completed safely.');
+    }
+    while($result && $row = $result->fetch_assoc()) {
+        $rows[] = $row;
+    }
+    return $rows;
+}
+
+function forever_business_los_row(string $query): array {
+    $result = database()->query($query);
+    if(!$result) {
+        throw new \RuntimeException('Moj Forever LOS query could not be completed safely.');
+    }
+    return $result && ($row = $result->fetch_assoc()) ? $row : [];
+}
+
+function forever_business_los_delta(float $current, float $previous): array {
+    return [
+        'current' => $current,
+        'previous' => $previous,
+        'change' => $current - $previous,
+        'change_percent' => $previous > 0 ? round((($current - $previous) / $previous) * 100, 1) : null,
+    ];
+}
+
+function forever_business_los_effective_four_cc(array $metric): bool {
+    if(array_key_exists('is_4cc_active', $metric) && $metric['is_4cc_active'] !== null) {
+        return (int) $metric['is_4cc_active'] === 1;
+    }
+
+    if(($metric['personal_cc'] ?? null) === null || ($metric['total_active_cc'] ?? null) === null) {
+        return false;
+    }
+
+    return (float) ($metric['personal_cc'] ?? 0) >= 1.0
+        && (float) ($metric['total_active_cc'] ?? 0) >= 4.0;
+}
+
+function forever_business_los_track_from_action_key(string $action_key): string {
+    foreach(['leader', 'builder', 'activator', 'reactivation', 'starter'] as $track) {
+        if(strpos($action_key, 'vip26_' . $track . '_') === 0) {
+            return $track;
+        }
+    }
+    return 'other';
+}
+
+function forever_business_los_periods(): array {
+    if(empty(forever_business_los_table_columns('forever_business_metrics'))) {
+        return [];
+    }
+
+    $current_zagreb_period = (new \DateTimeImmutable('now', new \DateTimeZone('Europe/Zagreb')))->format('Y-m-01');
+    $rows = forever_business_los_rows("SELECT DISTINCT `period_month`
+        FROM `forever_business_metrics`
+        WHERE `period_month` <= '{$current_zagreb_period}'
+        ORDER BY `period_month` DESC
+        LIMIT 36");
+
+    return array_values(array_filter(array_map(static function(array $row): string {
+        return preg_match('/^20\d{2}-\d{2}-01$/', (string) ($row['period_month'] ?? ''))
+            ? (string) $row['period_month']
+            : '';
+    }, $rows)));
+}
+
+function forever_business_los_empty_model(int $window_days, string $period, array $warnings): array {
+    return [
+        'window_days' => $window_days,
+        'period' => $period,
+        'periods' => [],
+        'window' => [],
+        'kpis' => [],
+        'global' => [],
+        'linkage_funnel' => [],
+        'charts' => [
+            'daily' => ['labels' => [], 'tasks' => [], 'results' => []],
+            'cc' => ['labels' => [], 'values' => [], 'closed' => []],
+            'outcomes' => ['result_type' => [], 'core' => [], 'track' => []],
+        ],
+        'top_performers' => [],
+        'top_results' => [],
+        'attention_queue' => [],
+        'members' => [],
+        'data_quality' => [],
+        'warnings' => $warnings,
+        'generated_at' => date('c'),
+    ];
+}
+
+function forever_business_los_distribution(array $counts): array {
+    arsort($counts);
+    $result = [];
+    foreach($counts as $key => $value) {
+        $result[] = ['key' => (string) $key, 'value' => (int) $value];
+    }
+    return $result;
+}
+
+function forever_business_get_los_admin_analytics(int $admin_user_id, int $window_days = 30, string $period = ''): array {
+    $admin_user_id = max(1, $admin_user_id); // Authorization belongs to the admin route; no user data is written here.
+
+    $allowed_windows = [7, 14, 30, 60];
+    $window_days = in_array($window_days, $allowed_windows, true) ? $window_days : 30;
+    $warnings = [];
+
+    $required_tables = [
+        'forever_business_members',
+        'forever_business_metrics',
+        'forever_business_daily_outcomes',
+    ];
+    foreach($required_tables as $required_table) {
+        if(empty(forever_business_los_table_columns($required_table))) {
+            $warnings[] = ['key' => 'missing_table', 'params' => [$required_table]];
+        }
+    }
+
+    $periods = forever_business_los_periods();
+    $period = preg_match('/^20\d{2}-\d{2}-01$/', $period) && in_array($period, $periods, true)
+        ? $period
+        : ($periods[0] ?? date('Y-m-01'));
+
+    if(!empty($warnings)) {
+        $empty = forever_business_los_empty_model($window_days, $period, $warnings);
+        $empty['periods'] = $periods;
+        return $empty;
+    }
+
+    $admin_root_fbo_id = '';
+    $admin_root_row = forever_business_los_row("SELECT REPLACE(TRIM(COALESCE(
+            JSON_UNQUOTE(JSON_EXTRACT(`preferences`, '$.meta.foreverId')),
+            JSON_UNQUOTE(JSON_EXTRACT(`preferences`, '$.meta.forever_id')),
+            JSON_UNQUOTE(JSON_EXTRACT(`preferences`, '$.meta.foreverID')),
+            ''
+        )), '-', '') AS `fbo_id`
+        FROM `users`
+        WHERE `user_id` = {$admin_user_id} AND `status` = 1 AND JSON_VALID(`preferences`) = 1
+        LIMIT 1");
+    if(preg_match('/^[0-9]{12}$/', (string) ($admin_root_row['fbo_id'] ?? ''))) {
+        $admin_root_fbo_id = (string) $admin_root_row['fbo_id'];
+    }
+
+    $timezone = new \DateTimeZone('Europe/Zagreb');
+    $today = new \DateTimeImmutable('today', $timezone);
+    $current_start = $today->modify('-' . ($window_days - 1) . ' days');
+    $previous_end = $current_start->modify('-1 day');
+    $previous_start = $previous_end->modify('-' . ($window_days - 1) . ' days');
+    $current_end_string = $today->format('Y-m-d');
+    $current_start_string = $current_start->format('Y-m-d');
+    $previous_end_string = $previous_end->format('Y-m-d');
+    $previous_start_string = $previous_start->format('Y-m-d');
+    $previous_period = (new \DateTimeImmutable($period))->modify('-1 month')->format('Y-m-01');
+
+    $member_rows = forever_business_los_rows("SELECT `fbo_id`, `name`, `title`, `generation`, `is_manager`, `is_in_current_structure`
+        FROM `forever_business_members`
+        ORDER BY `name` ASC");
+    $members = [];
+    foreach($member_rows as $row) {
+        $fbo_id = (string) $row['fbo_id'];
+        $members[$fbo_id] = [
+            'fbo_id' => $fbo_id,
+            'name' => (string) ($row['name'] ?? ''),
+            'title' => (string) ($row['title'] ?? ''),
+            'generation' => isset($row['generation']) ? (int) $row['generation'] : null,
+            'is_manager' => !empty($row['is_manager']),
+            'is_in_current_structure' => !empty($row['is_in_current_structure']),
+            'linked_accounts' => 0,
+            'is_enrolled' => false,
+            'qualification_source' => '',
+            'enrolled_at' => null,
+            'enrollment_event_date' => null,
+            'qualifying_period' => null,
+            'qualifying_personal_cc' => null,
+            'last_verified_period' => null,
+            'last_verified_personal_cc' => null,
+            'personal_cc' => null,
+            'total_active_cc' => null,
+            'is_4cc_active' => null,
+            'has_activity_data' => false,
+            'has_complete_activity_verification' => false,
+            'tasks' => 0,
+            'results' => 0,
+            'previous_tasks' => 0,
+            'previous_results' => 0,
+            'started_at' => null,
+            'last_task_date' => null,
+            'vip_steps_completed' => 0,
+            'completed_at' => null,
+            'result_type' => '',
+            'difficulty' => '',
+            'needs_help' => false,
+            'track' => '',
+            'stall_state' => '',
+        ];
+    }
+
+    $metric_rows = forever_business_los_rows("SELECT metric.`fbo_id`, metric.`period_month`, metric.`personal_cc`, metric.`total_active_cc`,
+            CASE WHEN metric.`source_import_id` IS NOT NULL AND (source_import.`import_id` IS NULL OR source_import.`report_kind` NOT IN ('downline', 'four_cc_active')) THEN NULL ELSE metric.`is_4cc_active` END AS `is_4cc_active`
+        FROM `forever_business_metrics` metric
+        LEFT JOIN `forever_business_imports` source_import ON source_import.`import_id` = metric.`source_import_id`
+        WHERE metric.`period_month` IN ('{$period}', '{$previous_period}')");
+    $current_metrics = [];
+    $previous_metrics = [];
+    foreach($metric_rows as $row) {
+        $fbo_id = (string) $row['fbo_id'];
+        if(!isset($members[$fbo_id])) continue;
+        $metric = [
+            'personal_cc' => $row['personal_cc'] === null ? null : (float) $row['personal_cc'],
+            'total_active_cc' => $row['total_active_cc'] === null ? null : (float) $row['total_active_cc'],
+            'is_4cc_active' => $row['is_4cc_active'] === null ? null : (int) $row['is_4cc_active'],
+            'has_activity_data' => $row['is_4cc_active'] !== null || $row['personal_cc'] !== null || $row['total_active_cc'] !== null,
+            'has_complete_activity_verification' => $row['is_4cc_active'] !== null || ($row['personal_cc'] !== null && $row['total_active_cc'] !== null),
+        ];
+        if((string) $row['period_month'] === $period) {
+            $current_metrics[$fbo_id] = $metric;
+            $members[$fbo_id] = array_merge($members[$fbo_id], $metric);
+        } else {
+            $previous_metrics[$fbo_id] = $metric;
+        }
+    }
+
+    /* Exact Forever ID linkage only; names and email addresses never enter this model. */
+    $linked_rows = forever_business_los_rows("SELECT `fbo_id`, COUNT(*) AS `linked_accounts`
+        FROM (
+            SELECT REPLACE(TRIM(COALESCE(
+                JSON_UNQUOTE(JSON_EXTRACT(`preferences`, '$.meta.foreverId')),
+                JSON_UNQUOTE(JSON_EXTRACT(`preferences`, '$.meta.forever_id')),
+                JSON_UNQUOTE(JSON_EXTRACT(`preferences`, '$.meta.foreverID')),
+                ''
+            )), '-', '') AS `fbo_id`
+            FROM `users`
+            WHERE `status` = 1 AND JSON_VALID(`preferences`) = 1
+        ) `linked`
+        WHERE `fbo_id` REGEXP '^[0-9]{12}$'
+        GROUP BY `fbo_id`");
+    $linked_account_counts = [];
+    foreach($linked_rows as $row) {
+        $linked_account_counts[(string) $row['fbo_id']] = (int) $row['linked_accounts'];
+        if(isset($members[$row['fbo_id']])) {
+            $members[$row['fbo_id']]['linked_accounts'] = (int) $row['linked_accounts'];
+        }
+    }
+
+    $enrollment_columns = forever_business_los_table_columns('forever_business_vip_enrollments');
+    if(empty($enrollment_columns)) {
+        $warnings[] = ['key' => 'missing_enrollment', 'params' => []];
+    } else {
+        $qualification_source_select = isset($enrollment_columns['qualification_source']) ? '`qualification_source`' : "'' AS `qualification_source`";
+        $enrollment_rows = forever_business_los_rows("SELECT `fbo_id`, `qualifying_period`, `qualifying_personal_cc`,
+                `last_verified_period`, `last_verified_personal_cc`, {$qualification_source_select}, `enrolled_at`
+            FROM `forever_business_vip_enrollments`");
+        foreach($enrollment_rows as $row) {
+            $fbo_id = (string) $row['fbo_id'];
+            if(!isset($members[$fbo_id])) {
+                $members[$fbo_id] = [
+                    'fbo_id' => $fbo_id,
+                    'name' => 'FBO ' . $fbo_id,
+                    'title' => '',
+                    'generation' => null,
+                    'is_manager' => false,
+                    'is_in_current_structure' => false,
+                    'linked_accounts' => $linked_account_counts[$fbo_id] ?? 0,
+                    'is_enrolled' => false,
+                    'qualification_source' => '',
+                    'enrolled_at' => null,
+                    'enrollment_event_date' => null,
+                    'qualifying_period' => null,
+                    'qualifying_personal_cc' => null,
+                    'last_verified_period' => null,
+                    'last_verified_personal_cc' => null,
+                    'personal_cc' => null,
+                    'total_active_cc' => null,
+                    'is_4cc_active' => null,
+                    'has_activity_data' => false,
+                    'has_complete_activity_verification' => false,
+                    'tasks' => 0,
+                    'results' => 0,
+                    'previous_tasks' => 0,
+                    'previous_results' => 0,
+                    'started_at' => null,
+                    'last_task_date' => null,
+                    'vip_steps_completed' => 0,
+                    'completed_at' => null,
+                    'result_type' => '',
+                    'difficulty' => '',
+                    'needs_help' => false,
+                    'track' => '',
+                    'stall_state' => '',
+                ];
+            }
+            $members[$fbo_id]['is_enrolled'] = true;
+            $members[$fbo_id]['qualification_source'] = (string) ($row['qualification_source'] ?? '');
+            $members[$fbo_id]['enrolled_at'] = $row['enrolled_at'] ?: null;
+            $members[$fbo_id]['enrollment_event_date'] = (string) ($row['qualification_source'] ?? '') === 'legacy_august_backfill'
+                ? ($row['qualifying_period'] ?: null)
+                : ($row['enrolled_at'] ? substr((string) $row['enrolled_at'], 0, 10) : null);
+            $members[$fbo_id]['qualifying_period'] = $row['qualifying_period'] ?: null;
+            $members[$fbo_id]['qualifying_personal_cc'] = isset($row['qualifying_personal_cc'])
+                ? (float) $row['qualifying_personal_cc']
+                : null;
+            $members[$fbo_id]['last_verified_period'] = $row['last_verified_period'] ?: null;
+            $members[$fbo_id]['last_verified_personal_cc'] = isset($row['last_verified_personal_cc'])
+                ? (float) $row['last_verified_personal_cc']
+                : null;
+        }
+    }
+
+    $outcome_columns = forever_business_los_table_columns('forever_business_daily_outcomes');
+    $result_type_select = isset($outcome_columns['result_type']) ? '`result_type`' : "'' AS `result_type`";
+    if(!isset($outcome_columns['result_type'], $outcome_columns['difficulty'], $outcome_columns['needs_help'])) {
+        $warnings[] = ['key' => 'missing_structured_outcomes', 'params' => []];
+    }
+
+    $outcome_summary_rows = forever_business_los_rows("SELECT `fbo_id`, MIN(`action_date`) AS `started_at`, MAX(`action_date`) AS `last_task_date`,
+            SUM(`action_key` NOT LIKE 'vip26\\_sunday\\_%') AS `vip_steps_completed`,
+            SUBSTRING_INDEX(SUBSTRING_INDEX(GROUP_CONCAT(
+                CASE WHEN `action_key` NOT LIKE 'vip26\\_sunday\\_%' THEN DATE_FORMAT(`action_date`, '%Y-%m-%d') END
+                ORDER BY `action_date` ASC, `outcome_id` ASC SEPARATOR ','
+            ), ',', 30), ',', -1) AS `completion_at`
+        FROM `forever_business_daily_outcomes`
+        WHERE `status` = 'done'
+          AND `action_key` LIKE 'vip26\\_%'
+        GROUP BY `fbo_id`");
+    foreach($outcome_summary_rows as $row) {
+        $fbo_id = (string) $row['fbo_id'];
+        if(!isset($members[$fbo_id])) {
+            /* A historical completion remains part of project analytics even if
+             * its member row is no longer present in the current FLP structure. */
+            $members[$fbo_id] = [
+                'fbo_id' => $fbo_id,
+                'name' => 'FBO ' . $fbo_id,
+                'title' => '',
+                'generation' => null,
+                'is_manager' => false,
+                'is_in_current_structure' => false,
+                'linked_accounts' => $linked_account_counts[$fbo_id] ?? 0,
+                'is_enrolled' => false,
+                'qualification_source' => '',
+                'enrolled_at' => null,
+                'enrollment_event_date' => null,
+                'qualifying_period' => null,
+                'qualifying_personal_cc' => null,
+                'last_verified_period' => null,
+                'last_verified_personal_cc' => null,
+                'personal_cc' => null,
+                'total_active_cc' => null,
+                'is_4cc_active' => null,
+                'has_activity_data' => false,
+                'has_complete_activity_verification' => false,
+                'tasks' => 0,
+                'results' => 0,
+                'previous_tasks' => 0,
+                'previous_results' => 0,
+                'started_at' => null,
+                'last_task_date' => null,
+                'vip_steps_completed' => 0,
+                'completed_at' => null,
+                'result_type' => '',
+                'difficulty' => '',
+                'needs_help' => false,
+                'track' => '',
+                'stall_state' => '',
+            ];
+        }
+        $members[$fbo_id]['started_at'] = $row['started_at'] ?: null;
+        $members[$fbo_id]['last_task_date'] = $row['last_task_date'] ?: null;
+        $members[$fbo_id]['vip_steps_completed'] = (int) ($row['vip_steps_completed'] ?? 0);
+        $members[$fbo_id]['completed_at'] = $members[$fbo_id]['vip_steps_completed'] >= 30
+            ? ($row['completion_at'] ?: null)
+            : null;
+    }
+
+    $latest_result_type_select = isset($outcome_columns['result_type']) ? '`latest`.`result_type`' : "'' AS `result_type`";
+    $latest_difficulty_select = isset($outcome_columns['difficulty']) ? '`latest`.`difficulty`' : "'' AS `difficulty`";
+    $latest_needs_help_select = isset($outcome_columns['needs_help']) ? '`latest`.`needs_help`' : '0 AS `needs_help`';
+    $latest_outcome_rows = forever_business_los_rows("SELECT `latest`.`fbo_id`, `latest`.`action_key`, `latest`.`outcome_type`,
+            {$latest_result_type_select}, {$latest_difficulty_select}, {$latest_needs_help_select}
+        FROM `forever_business_daily_outcomes` `latest`
+        INNER JOIN (
+            SELECT `fbo_id`, MAX(`outcome_id`) AS `outcome_id`
+            FROM `forever_business_daily_outcomes`
+            WHERE `status` = 'done' AND `action_key` LIKE 'vip26\\_%'
+            GROUP BY `fbo_id`
+        ) `selected` ON `selected`.`outcome_id` = `latest`.`outcome_id`");
+    foreach($latest_outcome_rows as $row) {
+        $fbo_id = (string) $row['fbo_id'];
+        if(!isset($members[$fbo_id])) continue;
+        $members[$fbo_id]['result_type'] = trim((string) ($row['result_type'] ?? ''));
+        $members[$fbo_id]['difficulty'] = trim((string) ($row['difficulty'] ?? ''));
+        $members[$fbo_id]['needs_help'] = !empty($row['needs_help']);
+        $members[$fbo_id]['track'] = trim((string) ($row['outcome_type'] ?? ''))
+            ?: forever_business_los_track_from_action_key((string) $row['action_key']);
+    }
+
+    $outcome_rows = forever_business_los_rows("SELECT `fbo_id`, `action_date`, `core_key`, `action_key`,
+            `outcome_type`, {$result_type_select}, `outcome_count`
+        FROM `forever_business_daily_outcomes`
+        WHERE `status` = 'done'
+          AND `action_key` LIKE 'vip26\\_%'
+          AND `action_date` BETWEEN '{$previous_start_string}' AND '{$current_end_string}'
+        ORDER BY `action_date` ASC");
+
+    $daily = [];
+    for($day = $current_start; $day <= $today; $day = $day->modify('+1 day')) {
+        $date = $day->format('Y-m-d');
+        $daily[$date] = ['tasks' => 0, 'results' => 0];
+    }
+    $result_type_counts = [];
+    $core_counts = [];
+    $track_counts = [];
+    foreach($outcome_rows as $row) {
+        $fbo_id = (string) $row['fbo_id'];
+        if(!isset($members[$fbo_id])) continue;
+        $date = (string) $row['action_date'];
+        $result_count = max(0, (int) ($row['outcome_count'] ?? 0));
+
+        if($date >= $current_start_string && $date <= $current_end_string) {
+            $members[$fbo_id]['tasks']++;
+            $members[$fbo_id]['results'] += $result_count;
+            $daily[$date]['tasks']++;
+            $daily[$date]['results'] += $result_count;
+
+            $result_type = trim((string) ($row['result_type'] ?? '')) ?: 'unspecified';
+            $core = trim((string) ($row['core_key'] ?? '')) ?: 'unspecified';
+            /* outcome_type is the immutable server-derived program track. */
+            $track = trim((string) ($row['outcome_type'] ?? '')) ?: forever_business_los_track_from_action_key((string) $row['action_key']);
+            $result_type_counts[$result_type] = ($result_type_counts[$result_type] ?? 0) + $result_count;
+            $core_counts[$core] = ($core_counts[$core] ?? 0) + $result_count;
+            $track_counts[$track] = ($track_counts[$track] ?? 0) + $result_count;
+        } elseif($date >= $previous_start_string && $date <= $previous_end_string) {
+            $members[$fbo_id]['previous_tasks']++;
+            $members[$fbo_id]['previous_results'] += $result_count;
+        }
+    }
+
+    /* Preserve the permanent project cohort independently of today's FLP tree.
+     * Historical member rows that were never enrolled and never started remain
+     * outside the LOS; current members always remain visible. */
+    $members = array_filter($members, static fn(array $member): bool =>
+        !empty($member['is_in_current_structure'])
+        || !empty($member['is_enrolled'])
+        || $member['started_at'] !== null
+    );
+    $current_structure_members = array_filter($members, static fn(array $member): bool => !empty($member['is_in_current_structure']));
+    $current_structure_ids = array_fill_keys(array_keys($current_structure_members), true);
+    $current_structure_metrics = array_intersect_key($current_metrics, $current_structure_ids);
+    $previous_structure_metrics = array_intersect_key($previous_metrics, $current_structure_ids);
+
+    $launch_date = new \DateTimeImmutable('2026-09-01', $timezone);
+    $launch_with_grace = $launch_date->modify('+3 days');
+    foreach($members as &$member) {
+        if($member['needs_help']) {
+            $member['stall_state'] = 'needs_help';
+            continue;
+        }
+        if(!$member['is_enrolled']) continue;
+        if($member['vip_steps_completed'] >= 30) continue;
+        if($today < $launch_with_grace) continue;
+
+        $enrolled_date = !empty($member['enrolled_at']) ? new \DateTimeImmutable(substr($member['enrolled_at'], 0, 10), $timezone) : null;
+        if($member['started_at'] === null && $enrolled_date) {
+            $eligible_after_enrollment = $enrolled_date->modify('+3 days');
+            $eligible_after = $eligible_after_enrollment > $launch_with_grace ? $eligible_after_enrollment : $launch_with_grace;
+            if($today >= $eligible_after) {
+                $member['stall_state'] = 'no_start_3d';
+            }
+        } elseif($member['last_task_date'] !== null) {
+            $last_task = new \DateTimeImmutable($member['last_task_date'], $timezone);
+            if((int) $last_task->diff($today)->format('%r%a') >= 7) {
+                $member['stall_state'] = 'inactive_7d';
+            }
+        }
+    }
+    unset($member);
+
+    $current_qualified = count(array_filter($current_structure_metrics, static fn(array $metric): bool => $metric['personal_cc'] !== null && $metric['personal_cc'] >= 0.33));
+    $previous_qualified = count(array_filter($previous_structure_metrics, static fn(array $metric): bool => $metric['personal_cc'] !== null && $metric['personal_cc'] >= 0.33));
+    $official_four_cc = count(array_filter($current_structure_metrics, static fn(array $metric): bool => $metric['is_4cc_active'] !== null && (int) $metric['is_4cc_active'] === 1));
+    $previous_official_four_cc = count(array_filter($previous_structure_metrics, static fn(array $metric): bool => $metric['is_4cc_active'] !== null && (int) $metric['is_4cc_active'] === 1));
+    $effective_four_cc = count(array_filter($current_structure_metrics, 'forever_business_los_effective_four_cc'));
+    $previous_effective_four_cc = count(array_filter($previous_structure_metrics, 'forever_business_los_effective_four_cc'));
+
+    $enrolled = array_values(array_filter($members, static fn(array $member): bool => $member['is_enrolled']));
+    $started = array_values(array_filter($members, static fn(array $member): bool => $member['started_at'] !== null));
+    $completed = array_values(array_filter($started, static fn(array $member): bool => $member['vip_steps_completed'] >= 30));
+    $active = array_values(array_filter($started, static fn(array $member): bool => $member['tasks'] > 0));
+    $previous_active = array_values(array_filter($started, static fn(array $member): bool => $member['previous_tasks'] > 0));
+    $started_without_enrollment = array_values(array_filter($started, static fn(array $member): bool => !$member['is_enrolled']));
+    $tasks_current = array_sum(array_column($members, 'tasks'));
+    $tasks_previous = array_sum(array_column($members, 'previous_tasks'));
+    $results_current = array_sum(array_column($members, 'results'));
+    $results_previous = array_sum(array_column($members, 'previous_results'));
+    $enrolled_current = count(array_filter($enrolled, static fn(array $member): bool => (string) $member['enrollment_event_date'] >= $current_start_string && (string) $member['enrollment_event_date'] <= $current_end_string));
+    $enrolled_previous = count(array_filter($enrolled, static fn(array $member): bool => (string) $member['enrollment_event_date'] >= $previous_start_string && (string) $member['enrollment_event_date'] <= $previous_end_string));
+    $started_current = count(array_filter($started, static fn(array $member): bool => $member['started_at'] >= $current_start_string && $member['started_at'] <= $current_end_string));
+    $started_previous = count(array_filter($started, static fn(array $member): bool => $member['started_at'] >= $previous_start_string && $member['started_at'] <= $previous_end_string));
+    $completed_current = count(array_filter($completed, static fn(array $member): bool => $member['completed_at'] >= $current_start_string && $member['completed_at'] <= $current_end_string));
+    $completed_previous = count(array_filter($completed, static fn(array $member): bool => $member['completed_at'] >= $previous_start_string && $member['completed_at'] <= $previous_end_string));
+
+    $cc_rows = [];
+    $has_official_global_snapshot = false;
+    if($admin_root_fbo_id === '') {
+        $warnings[] = ['key' => 'invalid_admin_fbo', 'params' => []];
+    } elseif(!empty(forever_business_los_table_columns('forever_business_total_cc_snapshots'))) {
+        $root_filter = " AND `fbo_id` = '{$admin_root_fbo_id}'";
+        $snapshot_rows = forever_business_los_rows("SELECT `period_month`, `total_cc`, `is_closed`, `source_note`, `captured_at`
+            FROM `forever_business_total_cc_snapshots`
+            WHERE `country_scope` = 'GLOBAL' AND `period_month` <= '{$period}'{$root_filter}
+            ORDER BY `period_month` DESC, `captured_at` DESC
+            LIMIT 32");
+        $seen_periods = [];
+        foreach($snapshot_rows as $row) {
+            $row_period = (string) $row['period_month'];
+            if(isset($seen_periods[$row_period])) continue;
+            $seen_periods[$row_period] = true;
+            $cc_rows[] = $row;
+            if(count($cc_rows) >= 8) break;
+        }
+        $cc_rows = array_reverse($cc_rows);
+        $has_official_global_snapshot = !empty($cc_rows);
+    }
+    if(empty($cc_rows)) {
+        $current_zagreb_period = $today->format('Y-m-01');
+        $cc_rows = array_reverse(forever_business_los_rows("SELECT `metric`.`period_month`, COALESCE(SUM(`metric`.`personal_cc`), 0) AS `total_cc`,
+                (`metric`.`period_month` < '{$current_zagreb_period}') AS `is_closed`,
+                'FCC zbroj osobnih CC' AS `source_note`
+            FROM `forever_business_metrics` `metric`
+            INNER JOIN `forever_business_members` `member`
+              ON `member`.`fbo_id` = `metric`.`fbo_id`
+             AND `member`.`is_in_current_structure` = 1
+            WHERE `metric`.`period_month` <= '{$period}'
+            GROUP BY `metric`.`period_month`
+            ORDER BY `metric`.`period_month` DESC
+            LIMIT 8"));
+    }
+    $current_cc_row = end($cc_rows) ?: [];
+    reset($cc_rows);
+    $global_total_cc = (float) ($current_cc_row['total_cc'] ?? 0);
+    $previous_cc_row = count($cc_rows) > 1 ? $cc_rows[count($cc_rows) - 2] : [];
+    $previous_total_cc = isset($previous_cc_row['total_cc']) ? (float) $previous_cc_row['total_cc'] : null;
+    $global_change_cc = $previous_total_cc === null ? null : $global_total_cc - $previous_total_cc;
+    $global_change_percent = $previous_total_cc !== null && $previous_total_cc > 0
+        ? round(($global_change_cc / $previous_total_cc) * 100, 1)
+        : null;
+    $closed_values = array_map(static fn(array $row): float => (float) $row['total_cc'], array_slice(array_values(array_filter($cc_rows, static fn(array $row): bool => !empty($row['is_closed']))), -6));
+    $closed_six_average = !empty($closed_values) ? array_sum($closed_values) / count($closed_values) : 0.0;
+
+    $top_performers = array_values($members);
+    usort($top_performers, static function(array $left, array $right): int {
+        foreach(['tasks', 'results', 'personal_cc'] as $key) {
+            if($left[$key] != $right[$key]) return $right[$key] <=> $left[$key];
+        }
+        return strcasecmp($left['name'], $right['name']);
+    });
+    $top_performers = array_slice(array_values(array_filter($top_performers, static fn(array $member): bool => $member['tasks'] > 0)), 0, 12);
+
+    $top_results = array_values($members);
+    usort($top_results, static function(array $left, array $right): int {
+        foreach(['results', 'tasks', 'personal_cc'] as $key) {
+            if($left[$key] != $right[$key]) return $right[$key] <=> $left[$key];
+        }
+        return strcasecmp($left['name'], $right['name']);
+    });
+    $top_results = array_slice(array_values(array_filter($top_results, static fn(array $member): bool => $member['results'] > 0)), 0, 12);
+
+    $attention_queue = array_values(array_filter($members, static fn(array $member): bool => $member['stall_state'] !== ''));
+    $priority = ['needs_help' => 0, 'no_start_3d' => 1, 'inactive_7d' => 2];
+    usort($attention_queue, static function(array $left, array $right) use ($priority): int {
+        return [$priority[$left['stall_state']] ?? 9, $left['last_task_date'] ?? '', $left['name']]
+            <=> [$priority[$right['stall_state']] ?? 9, $right['last_task_date'] ?? '', $right['name']];
+    });
+
+    $member_table = array_values($members);
+    usort($member_table, static function(array $left, array $right) use ($priority): int {
+        return [isset($priority[$left['stall_state']]) ? $priority[$left['stall_state']] : 9, -$left['tasks'], $left['name']]
+            <=> [isset($priority[$right['stall_state']]) ? $priority[$right['stall_state']] : 9, -$right['tasks'], $right['name']];
+    });
+
+    return [
+        'window_days' => $window_days,
+        'period' => $period,
+        'periods' => $periods,
+        'window' => [
+            'current_start' => $current_start_string,
+            'current_end' => $current_end_string,
+            'previous_start' => $previous_start_string,
+            'previous_end' => $previous_end_string,
+        ],
+        'kpis' => [
+            'qualified' => forever_business_los_delta($current_qualified, $previous_qualified),
+            'enrolled' => array_merge(forever_business_los_delta($enrolled_current, $enrolled_previous), ['total' => count($enrolled)]),
+            'started' => array_merge(forever_business_los_delta($started_current, $started_previous), ['total' => count($started)]),
+            'completed' => array_merge(forever_business_los_delta($completed_current, $completed_previous), ['total' => count($completed)]),
+            'active' => forever_business_los_delta(count($active), count($previous_active)),
+            'tasks' => forever_business_los_delta($tasks_current, $tasks_previous),
+            'results' => forever_business_los_delta($results_current, $results_previous),
+            'official_four_cc' => forever_business_los_delta($official_four_cc, $previous_official_four_cc),
+            'effective_four_cc' => forever_business_los_delta($effective_four_cc, $previous_effective_four_cc),
+        ],
+        'global' => [
+            'period' => $current_cc_row['period_month'] ?? null,
+            'previous_period' => $previous_cc_row['period_month'] ?? null,
+            'total_cc' => $global_total_cc,
+            'previous_total_cc' => $previous_total_cc,
+            'change_cc' => $global_change_cc,
+            'change_percent' => $global_change_percent,
+            'goal_cc' => 1000.0,
+            'gap_cc' => max(0, 1000.0 - $global_total_cc),
+            'progress_percent' => min(100, round(($global_total_cc / 1000.0) * 100, 1)),
+            'closed_six_average_cc' => round($closed_six_average, 3),
+            'closed_sample_count' => count($closed_values),
+            'multiplier_to_goal' => $closed_six_average > 0 ? round(1000.0 / $closed_six_average, 2) : null,
+            'is_closed' => !empty($current_cc_row['is_closed']),
+            'is_official_snapshot' => $has_official_global_snapshot,
+            'source' => $has_official_global_snapshot
+                ? (trim((string) ($current_cc_row['source_note'] ?? '')) ?: 'FLP360 Global Total CC')
+                : '',
+            'source_key' => $has_official_global_snapshot ? null : 'fallback_personal_cc',
+            'root_fbo_id' => $admin_root_fbo_id,
+        ],
+        'linkage_funnel' => [
+            ['key' => 'structure', 'value' => count($current_structure_members)],
+            ['key' => 'qualified', 'value' => $current_qualified],
+            ['key' => 'linked', 'value' => count(array_filter($current_structure_members, static fn(array $member): bool => $member['linked_accounts'] === 1))],
+            ['key' => 'enrolled', 'value' => count($enrolled)],
+            ['key' => 'started', 'value' => count($started)],
+            ['key' => 'active', 'value' => count($active)],
+        ],
+        'charts' => [
+            'daily' => [
+                'labels' => array_keys($daily),
+                'tasks' => array_column($daily, 'tasks'),
+                'results' => array_column($daily, 'results'),
+            ],
+            'cc' => [
+                'labels' => array_column($cc_rows, 'period_month'),
+                'values' => array_map('floatval', array_column($cc_rows, 'total_cc')),
+                'closed' => array_map('intval', array_column($cc_rows, 'is_closed')),
+            ],
+            'outcomes' => [
+                'result_type' => forever_business_los_distribution($result_type_counts),
+                'core' => forever_business_los_distribution($core_counts),
+                'track' => forever_business_los_distribution($track_counts),
+            ],
+        ],
+        'top_performers' => $top_performers,
+        'top_results' => $top_results,
+        'attention_queue' => $attention_queue,
+        'members' => $member_table,
+        'data_quality' => [
+            'missing_linkage' => count(array_filter($current_structure_members, static fn(array $member): bool => $member['linked_accounts'] === 0)),
+            'duplicate_linkage' => count(array_filter($current_structure_members, static fn(array $member): bool => $member['linked_accounts'] > 1)),
+            'enrolled_without_unique_linkage' => count(array_filter($enrolled, static fn(array $member): bool => $member['linked_accounts'] !== 1)),
+            'enrolled_outside_current_structure' => count(array_filter($enrolled, static fn(array $member): bool => empty($member['is_in_current_structure']))),
+            'started_without_enrollment' => count($started_without_enrollment),
+        ],
+        'warnings' => $warnings,
+        'generated_at' => (new \DateTimeImmutable('now', $timezone))->format(DATE_ATOM),
+    ];
+}
+
+/* /Custom code: FC-2026-08-21 */
