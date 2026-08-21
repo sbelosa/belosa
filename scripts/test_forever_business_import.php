@@ -9,19 +9,29 @@ $sync = file_get_contents($root . '/app/controllers/ForeverBusinessSync.php');
 $dashboard_controller = file_get_contents($root . '/app/controllers/Dashboard.php');
 $dashboard_view = file_get_contents($root . '/themes/altum/views/dashboard/index.php');
 $view = file_get_contents($root . '/themes/altum/views/forever-business/index.php');
+$admin_view = file_get_contents($root . '/themes/altum/views/admin/forever-business/index.php');
 $vip_tasks = file_get_contents($root . '/app/config/forever_business_vip_tasks.php');
+$hr_language = file_get_contents($root . '/app/languages/Hrvatski#hr.php');
+$hr_language_cache = file_get_contents($root . '/app/languages/cache/Hrvatski#hr.php');
+$en_language = file_get_contents($root . '/app/languages/english#en.php');
+$en_language_cache = file_get_contents($root . '/app/languages/cache/english#en.php');
 
 $assertions = [
     'source hash prevents duplicate imports' => str_contains($helper, 'UNIQUE KEY `forever_business_import_sha_uq`'),
     'successful duplicate checks are audited separately from data imports' => str_contains($helper, 'forever_business_sync_checks') && str_contains($helper, 'forever_business_record_sync_check($report, $dedupe_sha256, (int) $existing->import_id, true)'),
     'Focus Group duplicate key includes confirmed period' => str_contains($helper, '$file_sha256 . \'|\' . implode(\',\', $report[\'periods\'])'),
     'Focus Group report is supported' => str_contains($helper, "'focus_group'"),
+    '4 CC official signal remains tri-state in schema and guarded migration' => str_contains($helper, '`is_4cc_active` TINYINT(1) NULL DEFAULT NULL') && substr_count($helper, "SHOW COLUMNS FROM `forever_business_metrics` LIKE 'is_4cc_active'") >= 2 && str_contains($helper, 'MODIFY `is_4cc_active` TINYINT(1) NULL DEFAULT NULL') && str_contains($helper, '4 CC signal column must allow NULL before imports can continue'),
+    'Focus Group ACTIVE never overwrites the official 4 CC signal' => str_contains($helper, "'is_4cc_active' => null") && str_contains($helper, "? ['personal_cc', 'updated_at']") && str_contains($helper, "\$metric['is_4cc_active'] === null ? null : (int) \$metric['is_4cc_active']"),
     'admin subtree scope uses hierarchy closure' => str_contains($helper, "where('ancestor_fbo_id', \$requested_root"),
     'non-admin scope is permanently self-only' => str_contains($helper, 'legacy manager') && str_contains($helper, 'return $own_fbo_id !== \'\' ? [$own_fbo_id] : []'),
     'contact details are hashed' => str_contains($helper, "hash_hmac('sha256'"),
     'PDF cannot bypass preview' => str_contains($admin, 'PDF se prvo mora ručno provjeriti'),
     'preview hash is verified before apply' => str_contains($admin, "hash_equals((string) \$preview['file_sha256']"),
     'daily outcomes are limited to visible scope' => str_contains($user, 'forever_business_record_daily_outcome') && str_contains($helper, 'in_array($fbo_id, $scope_ids, true)'),
+    'VIP completion classification is derived from the verified server action' => str_contains($user, "'core_key' => (string) (\$expected_action['core'] ?? '')") && str_contains($user, "'action_key' => (string) (\$expected_action['key'] ?? '')") && str_contains($user, "'outcome_type' => (string) (\$expected_action['track_key'] ?? 'vip')"),
+    'one VIP task per day is enforced with a serialized server check' => str_contains($helper, 'LIMIT 1 FOR UPDATE') && str_contains($helper, "action_date = '{\$action_date}'") && str_contains($helper, "action_key LIKE 'vip26\\\\_%'") && str_contains($helper, 'vip_action_done_today'),
+    'VIP result form requires an integer from 1 through 999' => str_contains($view, 'type="number" min="1" max="999" step="1" required name="outcome_count"'),
     'team CC uses additive personal CC' => str_contains($helper, "SUM(personal_cc)"),
     'official 4 Core snapshots stay separate from operational signals' => str_contains($helper, 'forever_business_four_core_snapshots'),
     'official 4 Core comparison uses the exact prior-year period' => str_contains($helper, "modify('-1 year')") && str_contains($helper, "\$result['previous']"),
@@ -44,15 +54,20 @@ $assertions = [
     'all active FCC Forever IDs receive self-only placeholders' => str_contains($helper, 'forever_business_provision_fcc_members') && str_contains($helper, "'FCC suradnik'") && str_contains($helper, 'is_in_current_structure, email_hash'),
     'team priorities include the complete imported list' => !str_contains($user, 'array_slice($priority_members, 0, 100)'),
     'team priorities support accessible client-side sorting' => str_contains($view, 'fb-sort-button') && str_contains($view, 'Intl.Collator') && str_contains($view, "setAttribute('aria-sort'"),
+    'team status keeps Focus ACTIVE separate from effective and official 4 CC' => str_contains($view, "['is_4cc_active']") && str_contains($view, "\$activity_source === 'official'") && str_contains($view, '4 CC Active · službeno') && str_contains($view, '4 CC Active · pomoćni izračun') && str_contains($view, 'Focus Group: ACTIVE') && !str_contains($view, "!empty(\$member['focus_is_active']) ? '4 CC aktivan'"),
+    'team table labels the seven-day metric as VIP task days' => str_contains($view, 'VIP dani · 7 dana'),
     'official 4 Core table labels prior-year values and computed changes' => str_contains($view, 'fb-official-comparison') && str_contains($view, '$official_change'),
     'sync notice uses clear member-facing wording and Zagreb time' => str_contains($view, 'Podaci provjereni:') && str_contains($view, 'Trenutačno su prikazani najnoviji dostupni bodovi') && str_contains($view, 'last_sync_was_duplicate') && str_contains($helper, 'Europe/Zagreb'),
     'VIP education gate uses fixed August personal CC and September launch' => str_contains($helper, "where('period_month', '2026-08-01')") && str_contains($helper, "new \\DateTimeImmutable('2026-09-01 00:00:00'") && str_contains($helper, "'threshold_cc' => \$threshold"),
     'VIP task submission is blocked on the server until access is active' => str_contains($user, "empty(\$vip_program['can_access_education'])") && str_contains($user, 'Vođena edukacija počinje 1. rujna'),
     'VIP launch view includes countdown eligibility and a locked preview' => str_contains($view, 'data-fb-vip-countdown') && str_contains($view, 'fb-vip-conditions') && str_contains($view, 'fb-vip-preview') && str_contains($view, 'Prag od 0,330 CC uvjet je za ovu dodatnu edukaciju'),
     'VIP task content is centralized for later copy corrections' => str_contains($helper, 'forever_business_vip_tasks.php') && str_contains($vip_tasks, '# Razina 5 — Reaktivacija'),
+    'Leader program copy requires full Manager and official August 4 CC' => str_contains($vip_tasks, 'punim, priznatim statusom Managera') && str_contains($vip_tasks, 'službeno potvrđenim `4 CC Active` signalom za kolovoz 2026'),
+    '4 CC member copy and runtime language caches explain the inclusive fallback' => str_contains($hr_language, 'Personal CC već je dio Total Active CC-a') && str_contains($hr_language_cache, 'Personal CC već je dio Total Active CC-a') && str_contains($en_language, 'Personal CC is already included in Total Active CC') && str_contains($en_language_cache, 'Personal CC is already included in Total Active CC'),
     'weekly Marketing plan is fixed to Sunday at 18:00 Zagreb time' => str_contains($helper, "'weekday' => 7") && str_contains($helper, "setTime(18, 0)") && str_contains($view, 'svake nedjelje u 18:00'),
     'qualified members receive the confirmed VIP WhatsApp link' => str_contains($helper, 'I7mg5bVIQwjJCu0WjnyJSz') && str_contains($view, 'Pridruži se VIP grupi'),
     'submitted completions must match the currently visible server action' => str_contains($user, '$matches_visible_action') && str_contains($user, "hash_equals((string) (\$expected_action['key']"),
+    'admin distinguishes official and effective 4 CC and shows aggregate VIP analytics' => str_contains($admin_view, 'SLUŽBENI FLP360 4 CC ACTIVE') && str_contains($admin_view, 'effective_active_4cc') && str_contains($admin_view, 'vip_participants_7d') && str_contains($admin_view, 'vip_tasks_completed_30d') && str_contains($admin_view, 'vip_recorded_results_30d') && str_contains($admin_view, 'nisu CC bodovi'),
     'legacy outcomes cannot skip new VIP steps' => str_contains($helper, 'vip_actions_done_total') && str_contains($helper, "action_key NOT LIKE 'vip26\\\\_sunday"),
     'VIP level is independent from the month selected for statistics' => str_contains($helper, 'vip_base_personal_cc') && str_contains($helper, "vip_base.period_month = '2026-08-01'") && str_contains($helper, 'vip_current_period_month'),
 ];
@@ -79,9 +94,17 @@ $base = [
 ];
 
 $activity = forever_business_get_verified_progress($base);
-$personal_gate = forever_business_get_verified_progress(array_merge($base, ['personal_cc' => .999]));
-$regional_gate = forever_business_get_verified_progress(array_merge($base, ['total_active_cc' => 3.999]));
-$official_gate = forever_business_get_verified_progress(array_merge($base, ['is_4cc_active' => 0]));
+$official_active_formula_low = forever_business_get_verified_progress(array_merge($base, ['personal_cc' => .2, 'total_active_cc' => .2, 'is_4cc_active' => 1]));
+$official_inactive_formula_high = forever_business_get_verified_progress(array_merge($base, ['personal_cc' => 4, 'total_active_cc' => 4, 'is_4cc_active' => 0]));
+$fallback_two_plus_remainder_input = array_merge($base, ['personal_cc' => 2, 'total_active_cc' => 4]);
+unset($fallback_two_plus_remainder_input['is_4cc_active']);
+$fallback_four_personal_input = array_merge($base, ['personal_cc' => 4, 'total_active_cc' => 4, 'is_4cc_active' => null]);
+$fallback_personal_below_input = array_merge($base, ['personal_cc' => .999, 'total_active_cc' => 4, 'is_4cc_active' => null]);
+$fallback_total_below_input = array_merge($base, ['personal_cc' => 1, 'total_active_cc' => 3.999, 'is_4cc_active' => null]);
+$fallback_two_plus_remainder = forever_business_get_verified_progress($fallback_two_plus_remainder_input);
+$fallback_four_personal = forever_business_get_verified_progress($fallback_four_personal_input);
+$fallback_personal_below = forever_business_get_verified_progress($fallback_personal_below_input);
+$fallback_total_below = forever_business_get_verified_progress($fallback_total_below_input);
 $supervisor = forever_business_get_verified_progress(array_merge($base, ['title' => 'Supervisor', 'total_cc' => 20, 'previous_total_cc' => 25]));
 $assistant_manager = forever_business_get_verified_progress(array_merge($base, ['title' => 'Assistant Manager', 'total_cc' => 30, 'previous_total_cc' => 40, 'two_months_ago_total_cc' => 30, 'three_months_ago_total_cc' => 20]));
 $unrecognized_manager = forever_business_get_verified_progress(array_merge($base, ['title' => 'Unrecognized Manager', 'total_cc' => 30, 'previous_total_cc' => 40, 'two_months_ago_total_cc' => 30, 'three_months_ago_total_cc' => 20]));
@@ -100,14 +123,38 @@ $starter_member = array_merge($base, ['personal_cc' => .5, 'is_4cc_active' => 0,
 $sunday_morning = new DateTimeImmutable('2026-09-06 10:00:00', new DateTimeZone('Europe/Zagreb'));
 $weekday_morning = new DateTimeImmutable('2026-09-07 10:00:00', new DateTimeZone('Europe/Zagreb'));
 $sunday_action = forever_business_get_action($starter_member, null, 0, false, $sunday_morning);
-$after_sunday_action = forever_business_get_action($starter_member, null, 0, true, $sunday_morning);
+$after_sunday_action = forever_business_get_action($starter_member, null, 0, true, $sunday_morning, true);
+$after_weekday_action = forever_business_get_action($starter_member, null, 0, false, $weekday_morning, true);
 $completed_program = forever_business_get_action($starter_member, null, 30, true, $weekday_morning);
 $fixed_builder_track = forever_business_get_vip_track(array_merge($starter_member, ['personal_cc' => 0, 'vip_base_personal_cc' => 4, 'vip_base_is_4cc_active' => 1, 'vip_current_personal_cc' => 0, 'vip_current_is_4cc_active' => 0]));
 $upgraded_activator_track = forever_business_get_vip_track(array_merge($starter_member, ['personal_cc' => 0, 'vip_base_personal_cc' => .5, 'vip_base_is_4cc_active' => 0, 'vip_current_personal_cc' => 1.2, 'vip_current_is_4cc_active' => 0]));
 $reactivation_track = forever_business_get_vip_track(array_merge($starter_member, ['vip_base_personal_cc' => .5, 'vip_base_is_4cc_active' => 0, 'vip_base_previous_personal_cc' => .4, 'vip_current_personal_cc' => .5, 'vip_current_is_4cc_active' => 0]));
 
+$make_track_member = static function(string $title, int $august_official, int $highest_rank = 0, int $highest_nonleader_rank = 0) use ($base): array {
+    $member = array_merge($base, [
+        'title' => $title,
+        'is_4cc_active' => $august_official,
+        'vip_base_personal_cc' => 1,
+        'vip_base_is_4cc_active' => $august_official,
+        'vip_current_personal_cc' => 1,
+        'vip_current_is_4cc_active' => $august_official,
+        'vip_highest_track_rank' => $highest_rank,
+        'vip_highest_nonleader_track_rank' => $highest_nonleader_rank,
+    ]);
+    $member['verified_progress'] = forever_business_get_verified_progress($member);
+    return $member;
+};
+$recognized_manager_active_track = forever_business_get_vip_track($make_track_member('Recognized Manager', 1));
+$recognized_manager_inactive_track = forever_business_get_vip_track($make_track_member('Recognized Manager', 0));
+$assistant_manager_active_track = forever_business_get_vip_track($make_track_member('Assistant Manager', 1));
+$unrecognized_manager_active_track = forever_business_get_vip_track($make_track_member('Unrecognized Manager', 1));
+$historical_leader_without_qualification = forever_business_get_vip_track($make_track_member('Recognized Manager', 0, 4, 3));
+
 $rule_assertions = [
-    '4 CC activity requires official status, 1 personal and 4 regional active CC' => $activity['is_officially_active'] && !$personal_gate['is_officially_active'] && !$regional_gate['is_officially_active'] && !$official_gate['is_officially_active'],
+    'official positive 4 CC signal wins even when supporting numbers are incomplete' => $official_active_formula_low['is_officially_active'] && $official_active_formula_low['is_4cc_active'] && $official_active_formula_low['official_activity_signal'] === 1 && $official_active_formula_low['activity_source'] === 'official',
+    'official negative 4 CC signal wins even when the supporting formula is met' => !$official_inactive_formula_high['is_officially_active'] && !$official_inactive_formula_high['is_4cc_active'] && $official_inactive_formula_high['official_activity_signal'] === 0 && $official_inactive_formula_high['activity_source'] === 'official',
+    'unknown official signal uses inclusive 1 Personal and 4 Total Active CC fallback' => $fallback_two_plus_remainder['is_4cc_active'] && $fallback_four_personal['is_4cc_active'] && !$fallback_personal_below['is_4cc_active'] && !$fallback_total_below['is_4cc_active'] && $fallback_two_plus_remainder['activity_source'] === 'formula' && $fallback_four_personal['activity_source'] === 'formula',
+    'formula fallback is not mislabeled as an official positive signal' => !$fallback_two_plus_remainder['is_officially_active'] && $fallback_two_plus_remainder['official_activity_signal'] === null,
     'Assistant Supervisor path is 10 Total CC in one month' => $activity['rank']['windows'][0]['target'] === 10.0 && $activity['rank']['windows'][0]['gap'] === 1.0,
     'Supervisor path is 60 Total CC in two months' => $supervisor['rank']['windows'][0]['target'] === 60.0 && $supervisor['rank']['windows'][0]['gap'] === 15.0,
     'Assistant Manager paths are 120 in two or 150 in four months' => $assistant_manager['rank']['windows'][0]['gap'] === 50.0 && $assistant_manager['rank']['windows'][1]['gap'] === 30.0,
@@ -119,12 +166,17 @@ $rule_assertions = [
     '0.330 personal CC qualifies but stays locked before September' => $vip_qualified_waiting['is_eligible'] && !$vip_qualified_waiting['is_launched'] && !$vip_qualified_waiting['can_access_education'] && $vip_qualified_waiting['seconds_remaining'] === 1,
     'qualified VIP education opens exactly at September launch' => $vip_active['is_eligible'] && $vip_active['is_launched'] && $vip_active['can_access_education'] && $vip_active['status'] === 'active',
     'all five VIP levels contain exactly 30 reviewed tasks' => count($catalog) === 5 && count($catalog['starter'] ?? []) === 30 && count($catalog['activator'] ?? []) === 30 && count($catalog['builder'] ?? []) === 30 && count($catalog['leader'] ?? []) === 30 && count($catalog['reactivation'] ?? []) === 30,
-    'Sunday Marketing plan takes priority only until recorded that day' => !empty($sunday_action['is_weekly_plan']) && str_starts_with($sunday_action['key'], 'vip26_sunday_') && empty($after_sunday_action['is_weekly_plan']) && $after_sunday_action['sequence_position'] === 1,
+    'Sunday Marketing plan is the only VIP task that can be completed that day' => !empty($sunday_action['is_weekly_plan']) && str_starts_with($sunday_action['key'], 'vip26_sunday_') && !empty($after_sunday_action['is_daily_complete']) && !$after_sunday_action['can_complete'] && $after_sunday_action['sequence_position'] === 1,
+    'a completed weekday task also keeps the next VIP task locked until tomorrow' => !empty($after_weekday_action['is_daily_complete']) && !$after_weekday_action['can_complete'] && $after_weekday_action['sequence_position'] === 1,
     'program stops cleanly after 30 sequence steps' => !empty($completed_program['is_program_complete']) && !$completed_program['can_complete'] && $completed_program['sequence_position'] === 30,
     'VIP group and next Sunday are available in the qualified program state' => str_contains($vip_active['whatsapp_group_url'], 'chat.whatsapp.com/') && ($vip_active['marketing_plan']['weekday'] ?? 0) === 7 && ($vip_active['marketing_plan']['time_label'] ?? '') === '18:00',
     'August Builder level cannot drop when a later month starts at zero' => $fixed_builder_track['key'] === 'builder',
     'new synchronized results can raise Starter to Activator' => $upgraded_activator_track['key'] === 'activator',
     'August returners receive the Reaktivacija path' => $reactivation_track['key'] === 'reactivation',
+    'Leader requires both full recognized Manager status and official August 4 CC' => $recognized_manager_active_track['key'] === 'leader' && $recognized_manager_inactive_track['key'] !== 'leader',
+    'Assistant and Unrecognized Manager do not receive Leader solely from their title' => $assistant_manager_active_track['key'] === 'builder' && $unrecognized_manager_active_track['key'] === 'builder',
+    'historical Leader completion cannot bypass the stricter current qualification' => $historical_leader_without_qualification['key'] === 'builder',
+    'outcome count accepts only strict integers from 1 through 999' => forever_business_normalize_outcome_count(1) === 1 && forever_business_normalize_outcome_count('999') === 999 && forever_business_normalize_outcome_count(0) === null && forever_business_normalize_outcome_count(-1) === null && forever_business_normalize_outcome_count('1.0') === null && forever_business_normalize_outcome_count(1000) === null && forever_business_normalize_outcome_count(null) === null,
 ];
 
 $failed_rules = array_keys(array_filter($rule_assertions, static fn($passed) => !$passed));
