@@ -69,17 +69,39 @@ class ForeverBusiness extends Controller {
                     }
                 }
                 $expected_action = $target_member['next_action'] ?? null;
+                $outcome_count = forever_business_normalize_outcome_count($_POST['outcome_count'] ?? null);
                 $matches_visible_action = $expected_action
                     && !empty($expected_action['can_complete'])
                     && hash_equals((string) ($expected_action['key'] ?? ''), (string) ($_POST['action_key'] ?? ''))
                     && hash_equals((string) ($expected_action['core'] ?? ''), (string) ($_POST['core_key'] ?? ''));
 
-                if(!$matches_visible_action) {
+                if($outcome_count === null) {
+                    Alerts::add_error('Korak se može potvrditi samo sa stvarnim rezultatom od najmanje 1. Broj 0 ne smatra se dovršenim korakom.');
+                } elseif(!empty($target_member['vip_action_done_today'])) {
+                    Alerts::add_error('Današnji VIP korak već je dovršen. Novi zadatak otvorit će se sutra.');
+                } elseif(!$matches_visible_action) {
                     Alerts::add_error('Ovaj se korak u međuvremenu promijenio. Stranica je osvježena i prikazan je tvoj trenutačni zadatak.');
-                } elseif(forever_business_record_daily_outcome((int) $this->user->user_id, $submitted_fbo_id, $dashboard['scope_ids'], $_POST)) {
-                    Alerts::add_success('Korak je dovršen. Tvoj sljedeći konkretan korak je spreman.');
                 } else {
-                    Alerts::add_error('Aktivnost nije spremljena jer Forever ID nije povezan s tvojim računom.');
+                    /* Only the numeric result and optional note come from the form.
+                     * Classification is derived from the server-side action that was
+                     * just verified, so a modified hidden field cannot corrupt analytics. */
+                    $record_input = [
+                        'core_key' => (string) ($expected_action['core'] ?? ''),
+                        'action_key' => (string) ($expected_action['key'] ?? ''),
+                        'outcome_type' => (string) ($expected_action['track_key'] ?? 'vip'),
+                        'outcome_count' => $outcome_count,
+                        'note' => (string) ($_POST['note'] ?? ''),
+                    ];
+                    $is_final_program_step = empty($expected_action['is_weekly_plan'])
+                        && (int) ($expected_action['sequence_total'] ?? 0) > 0
+                        && (int) ($expected_action['sequence_position'] ?? 0) >= (int) $expected_action['sequence_total'];
+                    if(forever_business_record_daily_outcome((int) $this->user->user_id, $submitted_fbo_id, $dashboard['scope_ids'], $record_input)) {
+                        Alerts::add_success($is_final_program_step
+                            ? 'Prvih 30 VIP koraka je dovršeno. Tvoj završni pregled je spreman.'
+                            : 'Današnji korak je dovršen. Novi konkretan zadatak otvorit će se sutra.');
+                    } else {
+                        Alerts::add_error('Aktivnost nije spremljena. Moguće je da je današnji korak već potvrđen; osvježi stranicu i provjeri status.');
+                    }
                 }
             }
 
