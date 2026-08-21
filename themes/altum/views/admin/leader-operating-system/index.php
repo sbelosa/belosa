@@ -3110,6 +3110,7 @@
 </style>
 
 <div class="leader-os-page">
+<?= include_view(THEME_PATH . 'views/admin/leader-operating-system/partials/section_nav.php', ['active' => 'leader']) ?>
 <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center mb-3">
     <div>
         <h1 class="h3 mb-1"><?= l('admin_leader_operating_system.header') ?></h1>
