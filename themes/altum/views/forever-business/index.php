@@ -211,7 +211,6 @@ $format_change = static function(float $value): string {
                                 <div class="d-flex justify-content-between small mb-1"><span>FLP360 Active CC u poslovnoj regiji</span><strong><?= $format_cc($verified['total_active_cc']) ?></strong></div>
                                 <div class="progress mb-3"><div class="progress-bar" style="width: <?= $verified['regional_progress'] ?>%"></div></div>
                             <?php endif ?>
-                            <div class="small text-muted mb-2">Dostupna službena oznaka iz FLP360 rubrike “4 CC Active” mjerodavna je i FCC je ne nadjačava. Samo ako službeni signal za razdoblje nedostaje, primjenjuje se uključivi pomoćni izračun: najmanje 4 Total Active CC u istoj poslovnoj regiji, od čega najmanje 1 Personal CC. Personal CC već je dio Total Active CC-a; preostali priznati CC mogu doći iz osobne prodaje/narudžbi, krajnjih ili Preferred kupaca te dopuštenog prometa otvorene grupe prema Forever pravilima.</div>
                             <?php if(($verified['activity_source'] ?? '') === 'official' && !empty($verified['is_officially_active'])): ?>
                                 <div class="small text-success font-weight-bold"><i class="fas fa-check-circle mr-1"></i> FLP360 je potvrdio aktivnost za ovaj mjesec.</div>
                             <?php elseif(($verified['activity_source'] ?? '') === 'formula' && !empty($verified['is_4cc_active'])): ?>
