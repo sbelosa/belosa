@@ -3,7 +3,9 @@
 $dashboard = $data->dashboard;
 $summary = $dashboard['summary'];
 $vip_program = isset($data->vip_program) && is_array($data->vip_program) ? $data->vip_program : [];
-$show_vip_program = (!$data->is_admin && !empty($data->focus_member)) || !empty($vip_program['is_admin_preview']);
+$show_vip_program = !empty($data->focus_member) || !empty($vip_program['is_admin_preview']);
+$vip_result_type_options = forever_business_vip_result_type_options();
+$vip_difficulty_options = forever_business_vip_difficulty_options();
 $period_label = !empty($dashboard['period']) ? (new DateTimeImmutable($dashboard['period']))->format('m/Y') : '—';
 $format_cc = static fn($value) => number_format((float) $value, 3, ',', '.');
 $format_percent = static fn($value) => number_format((float) $value, 1, ',', '.') . '%';
@@ -106,10 +108,10 @@ $format_change = static function(float $value): string {
         <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-start">
             <div>
                 <div class="text-uppercase small font-weight-bold text-warning mb-2">Forever napredak · <?= htmlspecialchars($period_label) ?></div>
-                <h1 class="h2 mb-2"><?= $data->is_admin ? 'Cijela struktura. Jedan mjerljiv cilj.' : 'Tvoja aktivnost, pozicija i sljedeći korak.' ?></h1>
-                <p class="mb-0 opacity-75"><?= $data->is_admin ? 'Na jednom mjestu pratiš aktivnost, bodove i napredak cijele strukture.' : 'Ovdje pratiš svoje bodove, aktivnost i napredak prema sljedećoj poziciji.' ?></p>
+                <h1 class="h2 mb-2"><?= $data->is_admin ? 'Tvoj Leader program i današnji korak.' : 'Tvoja aktivnost, pozicija i sljedeći korak.' ?></h1>
+                <p class="mb-0 opacity-75"><?= $data->is_admin ? 'Projektni brojevi, cilj 1.000 CC i timske analize nalaze se u LOS-u; ovdje odrađuješ vlastiti Leader program.' : 'Ovdje pratiš svoje bodove, aktivnost i napredak prema sljedećoj poziciji.' ?></p>
             </div>
-            <?php if(!empty($dashboard['periods'])): ?>
+            <?php if(!$data->is_admin && !empty($dashboard['periods'])): ?>
                 <form method="get" class="mt-4 mt-lg-0 d-flex flex-column flex-sm-row">
                     <?php if(!empty($dashboard['access_roots'])): ?>
                         <select name="root" class="form-control mr-sm-2 mb-2 mb-sm-0" aria-label="Tim">
@@ -130,32 +132,31 @@ $format_change = static function(float $value): string {
         </div>
 
         <?php if($data->is_admin): ?>
-        <div class="mt-4">
-            <div class="d-flex justify-content-between mb-2">
-                <span><strong>Global Total CC: <?= $format_cc($summary['goal_current_cc']) ?> CC</strong> od cilja 1.000 CC</span>
-                <span><?= $format_percent($summary['goal_progress']) ?></span>
+            <div class="mt-4 d-flex flex-column flex-md-row align-items-md-center justify-content-between p-3 rounded" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.13)">
+                <span class="mb-2 mb-md-0"><strong>Administratorska analitika je izdvojena.</strong> Tamo vidiš 1.000 CC, kvalificirane, upisane, aktivne, grafove i osobe kojima treba pomoć.</span>
+                <a href="<?= url('admin/leader-operating-system-forever') ?>" class="btn btn-warning ml-md-3"><i class="fas fa-chart-line mr-1"></i> Otvori LOS · Moj Forever</a>
             </div>
-            <div class="progress"><div class="progress-bar" style="width: <?= min(100, (float) $summary['goal_progress']) ?>%"></div></div>
-            <small class="d-block mt-2 text-white-50">Do cilja nedostaje <?= $format_cc($summary['goal_gap_cc']) ?> CC. Izvor: <?= htmlspecialchars($summary['goal_metric_source']) ?><?= !$summary['goal_is_closed'] ? ' · mjesec još nije zatvoren' : '' ?>.</small>
-            <?php if($summary['closed_6m_average_cc'] > 0): ?><small class="d-block mt-1 text-white-50">Prosjek zadnjih 6 zatvorenih mjeseci: <?= $format_cc($summary['closed_6m_average_cc']) ?> CC. Za cilj je potrebno približno <?= number_format($summary['goal_multiplier_from_average'], 2, ',', '.') ?>× taj prosjek.</small><?php endif ?>
-        </div>
-        <?php elseif($data->focus_member): ?>
+        <?php endif ?>
+        <?php if($data->focus_member): ?>
             <?php
             $verified = $data->focus_member['verified_progress'];
             $activity_is_effective = !empty($verified['is_4cc_active']);
+            $activity_is_known = ($verified['activity_source'] ?? 'unknown') !== 'unknown';
             $activity_progress = $activity_is_effective
                 ? 100.0
                 : min((float) $verified['personal_progress'], (float) $verified['regional_progress']);
             ?>
             <div class="mt-4">
-                <div class="d-flex justify-content-between mb-2"><span><strong><?= $activity_is_effective ? '4 CC aktivnost ostvarena' : 'Napredak prema 4 CC aktivnosti' ?></strong></span><span><?= $format_percent($activity_progress) ?></span></div>
+                <div class="d-flex justify-content-between mb-2"><span><strong><?= $activity_is_effective ? '4 CC aktivnost ostvarena' : ($activity_is_known ? 'Napredak prema 4 CC aktivnosti' : 'Provjera 4 CC aktivnosti čeka potpune podatke') ?></strong></span><span><?= $format_percent($activity_progress) ?></span></div>
                 <div class="progress"><div class="progress-bar" style="width: <?= $activity_progress ?>%"></div></div>
                 <?php if(!empty($verified['is_officially_active'])): ?>
                     <small class="d-block mt-2 opacity-75">Aktivnost je potvrđena službenim FLP360 4 CC Active signalom za odabrano razdoblje.</small>
                 <?php elseif($activity_is_effective): ?>
                     <small class="d-block mt-2 opacity-75">Službeni signal nije dostupan; pomoćni izračun potvrđuje najmanje 1 Personal CC i ukupno 4 Total Active CC u poslovnoj regiji.</small>
-                <?php else: ?>
+                <?php elseif($activity_is_known): ?>
                     <small class="d-block mt-2 opacity-75">Za aktivnost su potrebna najmanje 4 Total Active CC u poslovnoj regiji, od čega najmanje 1 Personal CC.</small>
+                <?php else: ?>
+                    <small class="d-block mt-2 opacity-75">Nije dostupan službeni signal ni oba podatka potrebna za pomoćni izračun. Sustav zato ne prikazuje negativan status dok FLP360 provjera ne bude potpuna.</small>
                 <?php endif ?>
             </div>
         <?php endif ?>
@@ -187,52 +188,19 @@ $format_change = static function(float $value): string {
         <?php if(!$data->is_admin && $data->focus_member && empty($data->focus_member['is_in_current_structure'])): ?>
             <div class="alert alert-info"><strong>Tvoj osobni pregled je spreman.</strong> Bodovi za odabrani mjesec još nisu dostupni i prikazat će se automatski nakon sljedećeg osvježavanja.</div>
         <?php endif ?>
-        <?php if($data->is_admin && !empty($dashboard['official_four_core'])): ?>
-            <?php $official = $dashboard['official_four_core']; ?>
-            <div class="card fb-card mb-4">
-                <div class="card-header bg-transparent"><h2 class="h5 mb-1">Službeni FLP360 4 Core · <?= htmlspecialchars((new DateTimeImmutable($official['period_month']))->format('m/Y')) ?></h2><div class="small text-muted">Glavni broj prikazuje odabrano razdoblje. Manji red prikazuje isti mjesec 2025. i izračunatu promjenu; crveno znači pad, a zeleno rast. “Mjesec” je zadnji prikazani zatvoreni mjesec, a YTD stanje u trenutku snimke.</div></div>
-                <div class="table-responsive"><table class="table mb-0"><thead><tr><th>Područje</th><th>Open Business · mjesec</th><th>Open Business · YTD</th><th>Downline · mjesec</th><th>Downline · YTD</th></tr></thead><tbody>
-                    <?php foreach(['recruitment' => ['Recruitment', 'broj'], 'retention' => ['Retention', 'broj'], 'productivity' => ['Productivity', 'cc'], 'development' => ['Development', 'postotak']] as $metric_key => $metric_meta): ?>
-                        <?php $format_official = static function($value) use ($format_cc, $metric_meta) { if($value === null || $value === '') return '—'; return $metric_meta[1] === 'cc' ? $format_cc($value) . ' CC' : ($metric_meta[1] === 'postotak' ? number_format((float) $value, 2, ',', '.') . '%' : nr($value)); }; ?>
-                        <tr>
-                            <th><?= htmlspecialchars($metric_meta[0]) ?></th>
-                            <?php foreach([['open', 'month'], ['open', 'ytd'], ['downline', 'month'], ['downline', 'ytd']] as $official_cell): ?>
-                                <?php
-                                [$official_scope, $official_timeframe] = $official_cell;
-                                $current_value = $official[$official_scope][$official_timeframe][$metric_key] ?? null;
-                                $previous_value = $official['previous'][$official_scope][$official_timeframe][$metric_key] ?? null;
-                                $change_value = $official_change($current_value, $previous_value);
-                                $change_class = $change_value === null || abs($change_value) < .05 ? 'fb-official-delta-flat' : ($change_value > 0 ? 'fb-official-delta-up' : 'fb-official-delta-down');
-                                $change_icon = $change_value === null || abs($change_value) < .05 ? '→' : ($change_value > 0 ? '▲' : '▼');
-                                ?>
-                                <td>
-                                    <div class="fb-official-current"><?= $format_official($current_value) ?></div>
-                                    <?php if($previous_value !== null && $previous_value !== ''): ?>
-                                        <div class="fb-official-comparison text-muted">
-                                            <span><?= htmlspecialchars((new DateTimeImmutable($official['comparison_period']))->format('Y')) ?>: <?= $format_official($previous_value) ?></span>
-                                            <?php if($change_value !== null): ?><span class="<?= $change_class ?>"><?= $change_icon ?> <?= $format_change($change_value) ?></span><?php endif ?>
-                                        </div>
-                                    <?php endif ?>
-                                </td>
-                            <?php endforeach ?>
-                        </tr>
-                    <?php endforeach ?>
-                </tbody></table></div>
-            </div>
-        <?php endif ?>
-
-        <?php if(!$data->is_admin && $data->focus_member): ?>
+        <?php if($data->focus_member): ?>
             <?php
             $mine = $data->focus_member;
             $verified = $mine['verified_progress'];
             $rank = $verified['rank'];
+            $activity_status_known = ($verified['activity_source'] ?? 'unknown') !== 'unknown';
             ?>
             <div class="row fb-progress-row">
                 <div class="col-lg-6 mb-4">
                     <div class="card fb-card fb-progress-panel h-100"><div class="card-body p-4">
                         <div class="d-flex justify-content-between align-items-start mb-3">
                             <div><div class="small text-uppercase text-muted">Mjesečna aktivnost</div><h2 class="h5 mb-0">4 CC aktivnost</h2></div>
-                            <span class="badge badge-<?= !empty($verified['is_4cc_active']) ? 'success' : 'warning' ?>"><?= !empty($verified['is_4cc_active']) ? 'Aktivnost ostvarena' : 'Još nije ostvareno' ?></span>
+                            <span class="badge badge-<?= !empty($verified['is_4cc_active']) ? 'success' : ($activity_status_known ? 'warning' : 'secondary') ?>"><?= !empty($verified['is_4cc_active']) ? 'Aktivnost ostvarena' : ($activity_status_known ? 'Još nije ostvareno' : 'Čeka potpune podatke') ?></span>
                         </div>
                         <?php if(!empty($verified['has_activity_data'])): ?>
                             <?php if($verified['personal_cc'] !== null): ?>
@@ -250,6 +218,8 @@ $format_change = static function(float $value): string {
                                 <div class="small text-success font-weight-bold"><i class="fas fa-calculator mr-1"></i> Službeni signal za ovo razdoblje nije dostupan pa je primijenjen uključivi pomoćni izračun: najmanje 1 Personal CC i 4 Total Active CC.</div>
                             <?php elseif(!empty($verified['meets_activity_formula'])): ?>
                                 <div class="small text-warning font-weight-bold"><i class="fas fa-exclamation-circle mr-1"></i> Prikazani zbrojevi dosežu pomoćni prag, ali dostupni službeni FLP360 4 CC Active signal nije pozitivan i FCC ga ne nadjačava.</div>
+                            <?php elseif(!$activity_status_known): ?>
+                                <div class="small text-info font-weight-bold"><i class="fas fa-hourglass-half mr-1"></i> FLP360 provjera još nije potpuna; ovaj status nije negativna potvrda aktivnosti.</div>
                             <?php endif ?>
                         <?php else: ?>
                             <div class="alert alert-info mb-0">Podaci o aktivnosti za odabrani mjesec još nisu dostupni. Prikazat će se automatski nakon sljedećeg osvježavanja.</div>
@@ -282,14 +252,9 @@ $format_change = static function(float $value): string {
                 <?php if($rank['mode'] === 'manager'): ?><div class="fb-verified-item"><div class="small text-muted">Non-Manager CC</div><strong><?= isset($mine['non_manager_cc']) ? $format_cc($mine['non_manager_cc']) : '—' ?></strong></div><?php endif ?>
             </div></div></div>
         <?php else: ?>
-            <h2 class="h5 mb-3">Provjereni podaci strukture</h2>
-            <p class="small text-muted">Samo vrijednosti iz uvezenih FLP360 izvještaja; bez individualnih 4 Core procjena.</p>
-            <div class="row">
-                <div class="col-md-6 col-xl-3 mb-4"><div class="card fb-card h-100"><div class="card-body"><div class="text-muted small text-uppercase">Članovi u izvještaju</div><div class="h3 mb-1"><?= nr($summary['members']) ?></div></div></div></div>
-                <div class="col-md-6 col-xl-3 mb-4"><div class="card fb-card h-100"><div class="card-body"><div class="text-muted small text-uppercase">S osobnim CC-om</div><div class="h3 mb-1"><?= nr($summary['personal_active']) ?></div></div></div></div>
-                <div class="col-md-6 col-xl-3 mb-4"><div class="card fb-card h-100"><div class="card-body"><div class="text-muted small text-uppercase">Zbroj osobnih CC</div><div class="h3 mb-1"><?= $format_cc($summary['personal_cc']) ?></div></div></div></div>
-                <div class="col-md-6 col-xl-3 mb-4"><div class="card fb-card h-100"><div class="card-body"><div class="text-muted small text-uppercase">FLP360 4CC Active</div><div class="h3 mb-1"><?= nr($summary['active_4cc']) ?></div></div></div></div>
-            </div>
+            <?php if($data->is_admin): ?>
+                <div class="alert alert-warning"><strong>Administratorski Forever ID nije pronađen u najnovijem izvještaju.</strong> Projektna analitika ostaje dostupna u <a href="<?= url('admin/leader-operating-system-forever') ?>" class="alert-link">LOS · Moj Forever</a>, a ovdje će se Leader program prikazati kada se Forever ID uskladi.</div>
+            <?php endif ?>
         <?php endif ?>
 
         <?php if($show_vip_program): ?>
@@ -298,13 +263,16 @@ $format_change = static function(float $value): string {
             $vip_is_eligible = !empty($vip_program['is_eligible']);
             $vip_is_launched = !empty($vip_program['is_launched']);
             $vip_can_access = !empty($vip_program['can_access_education']);
+            $vip_has_valid_linkage = !empty($vip_program['has_valid_linkage']);
             $vip_seconds = max(0, (int) ($vip_program['seconds_remaining'] ?? 0));
             $vip_days = intdiv($vip_seconds, 86400);
             $vip_hours = intdiv($vip_seconds % 86400, 3600);
             $vip_minutes = intdiv($vip_seconds % 3600, 60);
             $vip_seconds_part = $vip_seconds % 60;
             $vip_status_class = $vip_can_access ? 'active' : ($vip_is_eligible ? 'qualified' : 'pending');
-            $vip_status_label = $vip_can_access ? 'Edukacija je aktivna' : ($vip_is_eligible ? 'Uvjet za pristup je ispunjen' : 'Pristup još nije aktivan');
+            $vip_status_label = !$vip_has_valid_linkage
+                ? (($vip_program['linkage_status'] ?? '') === 'duplicate' ? 'Forever ID je povezan više puta' : 'Forever ID nije valjano povezan')
+                : ($vip_can_access ? 'Edukacija je aktivna' : ($vip_is_eligible ? 'Uvjet za pristup je trajno potvrđen' : 'Pristup još nije aktivan'));
             $vip_marketing_plan = is_array($vip_program['marketing_plan'] ?? null) ? $vip_program['marketing_plan'] : [];
             ?>
 
@@ -329,7 +297,7 @@ $format_change = static function(float $value): string {
                     <div class="row align-items-start">
                         <div class="col-lg-7">
                             <div class="fb-vip-eyebrow mb-2"><i class="fas fa-star"></i> VIP 4 Core edukacija</div>
-                            <h2 class="h3 mb-2" id="fb-vip-title"><?= $vip_can_access ? 'Tvoj vođeni program je otvoren.' : 'Tvoj vođeni program počinje 1. rujna.' ?></h2>
+                            <h2 class="h3 mb-2" id="fb-vip-title"><?= $vip_can_access ? 'Tvoj vođeni program je otvoren.' : ($vip_is_launched ? 'Vođeni program je pokrenut.' : 'Tvoj vođeni program počinje 1. rujna.') ?></h2>
                             <p class="fb-vip-note mb-3"><?= $vip_can_access ? 'Otvori današnji korak i nastavi tempom koji možeš redovito održavati.' : 'Svaki dan dobivaš jedan jasan korak, praktične primjere i podršku kroz sva četiri područja 4 Corea.' ?></p>
                             <span class="fb-vip-status fb-vip-status-<?= $vip_status_class ?>"><i class="fas fa-<?= $vip_can_access || $vip_is_eligible ? 'check-circle' : 'lock' ?>"></i> <?= htmlspecialchars($vip_status_label) ?></span>
                         </div>
@@ -354,14 +322,20 @@ $format_change = static function(float $value): string {
                         <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end">
                             <div>
                                 <div class="small text-uppercase fb-vip-note mb-1">Tvoj uvjet za pristup</div>
-                                <?php if(!$vip_has_data): ?>
-                                    <strong>Čekamo potvrđeni podatak za kolovoz.</strong>
-                                    <div class="small fb-vip-note mt-1">Provjeri je li Forever ID ispravno povezan. Bodovi će se prikazati nakon sljedećeg uspješnog osvježavanja.</div>
+                                <?php if(!$vip_has_valid_linkage): ?>
+                                    <strong><?= ($vip_program['linkage_status'] ?? '') === 'duplicate' ? 'Isti Forever ID povezan je s više aktivnih FCC računa.' : 'Forever ID još nije valjano povezan.' ?></strong>
+                                    <div class="small fb-vip-note mt-1">Radi zaštite tvojih podataka pristup je privremeno zaustavljen. Javi se podršci kako bi ostao samo jedan točno povezan račun; trajni upis i dosadašnji zadaci ostaju sačuvani.</div>
                                 <?php elseif($vip_is_eligible): ?>
-                                    <strong>Imaš <?= $format_cc($vip_program['personal_cc']) ?> osobnog CC — uvjet je ispunjen.</strong>
-                                    <div class="small fb-vip-note mt-1"><?= $vip_is_launched ? 'Pristup edukaciji je otvoren.' : 'Ne trebaš ništa dodatno uključivati. Pristup će se otvoriti automatski 1. rujna.' ?></div>
+                                    <strong>Uvjet je trajno potvrđen u <?= htmlspecialchars((string) ($vip_program['eligibility_period_label'] ?? '')) ?> s <?= $format_cc($vip_program['qualifying_personal_cc'] ?? $vip_program['personal_cc']) ?> osobnog CC.</strong>
+                                    <div class="small fb-vip-note mt-1"><?= $vip_is_launched ? 'Pristup edukaciji je otvoren i kasniji slabiji mjesec ga neće zaključati.' : 'Ne trebaš ništa dodatno uključivati. Pristup će se otvoriti automatski 1. rujna.' ?></div>
+                                <?php elseif(!$vip_has_data): ?>
+                                    <strong>Čekamo najnoviji potvrđeni Personal CC.</strong>
+                                    <div class="small fb-vip-note mt-1">Bodovi i automatski upis prikazat će se nakon sljedećeg uspješnog FLP360 osvježavanja.</div>
+                                <?php elseif(($vip_program['status'] ?? '') === 'waiting_confirmation'): ?>
+                                    <strong>Prag od 0,330 CC je dosegnut; čeka se završna potvrda izvora.</strong>
+                                    <div class="small fb-vip-note mt-1">Ne trebaš ništa ponavljati. Sustav će trajno otvoriti program čim službena sinkronizacija potvrdi taj mjesec.</div>
                                 <?php else: ?>
-                                    <strong>Trenutačno imaš <?= $format_cc($vip_program['personal_cc']) ?> osobnog CC u kolovozu.</strong>
+                                    <strong>Trenutačno imaš <?= $format_cc($vip_program['personal_cc']) ?> osobnog CC u <?= htmlspecialchars((string) ($vip_program['eligibility_period_label'] ?? 'zadnjem potvrđenom mjesecu')) ?>.</strong>
                                     <div class="small fb-vip-note mt-1">Za pristup nedostaje još <?= $format_cc($vip_program['gap_cc']) ?> osobnog CC. Uvjet se provjerava nakon svakog uspješnog osvježavanja podataka.</div>
                                 <?php endif ?>
                             </div>
@@ -373,11 +347,11 @@ $format_change = static function(float $value): string {
                     <div class="fb-vip-conditions mt-3">
                         <div class="fb-vip-condition <?= $vip_is_eligible ? 'is-complete' : '' ?>">
                             <span class="fb-vip-condition-icon"><i class="fas fa-<?= $vip_is_eligible ? 'check' : 'chart-line' ?>"></i></span>
-                            <div><strong class="d-block small">Najmanje 0,330 osobnog CC</strong><span class="fb-vip-note small">Promet evidentiran na tvojem Forever ID-u za kolovoz 2026.</span></div>
+                            <div><strong class="d-block small">Najmanje 0,330 osobnog CC</strong><span class="fb-vip-note small">Prvi službeno potvrđeni mjesec od kolovoza 2026. nadalje trajno te upisuje u program.</span></div>
                         </div>
-                        <div class="fb-vip-condition <?= !empty($vip_program['has_linked_id']) ? 'is-complete' : '' ?>">
-                            <span class="fb-vip-condition-icon"><i class="fas fa-<?= !empty($vip_program['has_linked_id']) ? 'check' : 'link' ?>"></i></span>
-                            <div><strong class="d-block small">Povezan Forever ID</strong><span class="fb-vip-note small">FCC automatski povezuje tvoje bodove i osobni napredak.</span></div>
+                        <div class="fb-vip-condition <?= $vip_has_valid_linkage ? 'is-complete' : '' ?>">
+                            <span class="fb-vip-condition-icon"><i class="fas fa-<?= $vip_has_valid_linkage ? 'check' : 'link' ?>"></i></span>
+                            <div><strong class="d-block small">Jedinstveno povezan Forever ID</strong><span class="fb-vip-note small">Jedan aktivan FCC račun sigurno povezuje tvoje bodove, trajni upis i napredak.</span></div>
                         </div>
                         <div class="fb-vip-condition <?= $vip_is_launched ? 'is-complete' : '' ?>">
                             <span class="fb-vip-condition-icon"><i class="fas fa-<?= $vip_is_launched ? 'check' : 'calendar-alt' ?>"></i></span>
@@ -395,7 +369,7 @@ $format_change = static function(float $value): string {
                                 <span class="fb-vip-note small"><?= !empty($vip_marketing_plan['next_at_display']) ? 'Sljedeći termin: ' . htmlspecialchars($vip_marketing_plan['next_at_display']) . '.' : 'Poveznica i kratke upute objavljuju se u VIP WhatsApp grupi.' ?></span>
                             </div>
                         </div>
-                        <?php if($vip_is_eligible && !empty($vip_program['whatsapp_group_url'])): ?>
+                        <?php if($vip_is_eligible && $vip_has_valid_linkage && !empty($vip_program['whatsapp_group_url'])): ?>
                             <a href="<?= htmlspecialchars($vip_program['whatsapp_group_url']) ?>" target="_blank" rel="noopener noreferrer" class="btn fb-vip-whatsapp"><i class="fab fa-whatsapp mr-1"></i> Pridruži se VIP grupi</a>
                         <?php else: ?>
                             <span class="small fb-vip-note"><i class="fas fa-lock mr-1"></i> Pristup grupi otvara se nakon ispunjenog uvjeta.</span>
@@ -414,7 +388,7 @@ $format_change = static function(float $value): string {
                                 <div class="fb-vip-lock-inner">
                                     <span class="fb-vip-lock-icon"><i class="fas fa-lock"></i></span>
                                     <strong class="d-block mb-1"><?= $vip_is_eligible ? 'Tvoje mjesto u programu je spremno.' : 'Sadržaj se otvara nakon ispunjenog uvjeta.' ?></strong>
-                                    <span class="fb-vip-note small"><?= $vip_is_eligible ? 'Edukacija počinje 1. rujna i otvorit će se automatski.' : 'Prati svoj osobni CC iznad. Kada dosegne 0,330 CC, FCC će automatski potvrditi tvoj pristup za početak 1. rujna.' ?></span>
+                                    <span class="fb-vip-note small"><?= !$vip_has_valid_linkage ? 'Upis i napredak su sačuvani; potrebno je uskladiti povezani FCC račun.' : ($vip_is_eligible ? 'Edukacija počinje 1. rujna i otvorit će se automatski.' : 'Kada službeni FLP360 podatak potvrdi najmanje 0,330 CC, FCC će te trajno upisati i otvoriti program od 1. rujna nadalje.') ?></span>
                                 </div>
                             </div>
                         <?php endif ?>
@@ -426,7 +400,7 @@ $format_change = static function(float $value): string {
         <?php
         $action = !empty($vip_program['preview_action'])
             ? $vip_program['preview_action']
-            : (!$data->is_admin && $data->focus_member ? ($data->focus_member['next_action'] ?? null) : null);
+            : ($data->focus_member ? ($data->focus_member['next_action'] ?? null) : null);
         ?>
         <?php if($action && !empty($vip_program['can_access_education'])): ?>
             <div class="card fb-card fb-action mb-4">
@@ -461,15 +435,39 @@ $format_change = static function(float $value): string {
                                 <input type="hidden" name="fbo_id" value="<?= htmlspecialchars($data->focus_member['fbo_id'] ?? '') ?>" />
                                 <input type="hidden" name="core_key" value="<?= htmlspecialchars($action['core']) ?>" />
                                 <input type="hidden" name="action_key" value="<?= htmlspecialchars($action['key']) ?>" />
-                                <input type="hidden" name="outcome_type" value="<?= htmlspecialchars($action['track_key'] ?? 'vip') ?>" />
                                 <input type="hidden" name="root" value="<?= htmlspecialchars($data->requested_root) ?>" />
                                 <input type="hidden" name="period" value="<?= htmlspecialchars(substr($dashboard['period'], 0, 7)) ?>" />
-                                <label class="small" for="outcome_count">Koliko si stvarno napravio/la?</label>
-                                <div class="input-group">
-                                    <input type="number" min="1" max="999" step="1" required name="outcome_count" id="outcome_count" class="form-control" value="<?= max(1, (int) $action['target']) ?>" />
-                                    <div class="input-group-append"><button class="btn btn-success">Dovrši današnji korak</button></div>
+                                <div class="form-group">
+                                    <label class="small" for="result_type">Koji je glavni rezultat?</label>
+                                    <select name="result_type" id="result_type" class="form-control" required>
+                                        <option value="">Odaberi ishod</option>
+                                        <?php foreach($vip_result_type_options as $result_type_key => $result_type_label): ?>
+                                            <option value="<?= htmlspecialchars($result_type_key) ?>"><?= htmlspecialchars($result_type_label) ?></option>
+                                        <?php endforeach ?>
+                                    </select>
                                 </div>
-                                <div class="small text-muted mt-2">Najmanji stvarni rezultat je 1. Broj 0 ne dovršava zadatak, a moguće je spremiti najviše jedan VIP korak dnevno.</div>
+                                <div class="form-group">
+                                    <label class="small" for="outcome_count">Koliko si stvarno napravio/la?</label>
+                                    <input type="number" min="1" max="999" step="1" required name="outcome_count" id="outcome_count" class="form-control" value="<?= max(1, (int) $action['target']) ?>" />
+                                </div>
+                                <div class="form-group">
+                                    <label class="small" for="difficulty">Koliko je korak bio zahtjevan?</label>
+                                    <select name="difficulty" id="difficulty" class="form-control" required>
+                                        <?php foreach($vip_difficulty_options as $difficulty_key => $difficulty_label): ?>
+                                            <option value="<?= htmlspecialchars($difficulty_key) ?>" <?= $difficulty_key === 'normal' ? 'selected' : null ?>><?= htmlspecialchars($difficulty_label) ?></option>
+                                        <?php endforeach ?>
+                                    </select>
+                                </div>
+                                <div class="custom-control custom-checkbox mb-3">
+                                    <input type="checkbox" class="custom-control-input" id="needs_help" name="needs_help" value="1" />
+                                    <label class="custom-control-label small" for="needs_help">Treba mi pomoć ili follow-up lidera</label>
+                                </div>
+                                <div class="form-group">
+                                    <label class="small" for="note">Kratka napomena <span class="text-muted">(neobavezno, bez osobnih podataka kontakta)</span></label>
+                                    <textarea name="note" id="note" rows="2" maxlength="500" class="form-control" placeholder="Što je zapelo ili koji je sljedeći dogovoreni korak?"></textarea>
+                                </div>
+                                <button class="btn btn-success btn-block">Dovrši današnji korak</button>
+                                <div class="small text-muted mt-2">Najmanji stvarni rezultat je 1. Broj 0 ne dovršava zadatak. Spremiti se može samo jedan VIP korak dnevno; vrsta ishoda i težina služe zbirnoj analizi i boljoj podršci.</div>
                             </form>
                         <?php elseif(!empty($action['is_preview'])): ?><div class="alert alert-info mb-0"><i class="fas fa-eye mr-1"></i> Ovo je sigurna pretpregledna verzija. Dovršavanje zadatka je isključeno.</div>
                         <?php elseif(!empty($action['is_daily_complete'])): ?><div class="alert alert-success mb-0"><i class="fas fa-check-circle mr-1"></i> Današnji rezultat je spremljen. Novi zadatak otvorit će se sutra.</div>
@@ -480,7 +478,7 @@ $format_change = static function(float $value): string {
             </div>
         <?php endif ?>
 
-        <?php if(!empty($dashboard['trend'])): ?>
+        <?php if(!$data->is_admin && !empty($dashboard['trend'])): ?>
             <?php $trend_max = $data->is_admin ? max(1000, ...array_map(static fn($row) => (float) $row['total_cc'], $dashboard['trend'])) : max(1, ...array_map(static fn($row) => (float) $row['total_cc'], $dashboard['trend'])); ?>
             <div class="card fb-card mb-4">
                 <div class="card-header bg-transparent"><h2 class="h5 mb-1"><?= $data->is_admin ? 'Global Total CC prema cilju 1.000 CC' : 'Moj ukupni CC trend' ?></h2><div class="small text-muted"><?= $data->is_admin ? (!empty($dashboard['official_total_cc']) ? 'Službeni FLP360 Global Total CC. To nije isto što i Total CC pojedinog tržišta; otvoreni mjesec je jasno označen.' : 'Privremeni FCC zbroj osobnih CC; učitaj službeni FLP360 Global Total CC za točan timski cilj.') : 'Duljina crte prikazuje tvoj ukupni CC. Zelena znači da je 4 CC aktivnost ostvarena, a crvena da još nije ostvarena.' ?></div></div>
@@ -507,7 +505,7 @@ $format_change = static function(float $value): string {
             </div>
         <?php endif ?>
 
-        <?php if(($dashboard['is_manager_view'] || $data->is_admin) && empty($vip_program['is_admin_preview'])): ?>
+        <?php if(!$data->is_admin && $dashboard['is_manager_view'] && empty($vip_program['is_admin_preview'])): ?>
             <div class="card fb-card mb-4">
                 <div class="card-header bg-transparent d-flex flex-column flex-md-row align-items-md-center justify-content-between">
                     <div class="pr-md-4"><h2 class="h5 mb-1">Prioriteti i napredak tima</h2><div class="small text-muted"><?php if($summary['focus_members']): ?>Na popisu je svih <?= nr($summary['focus_members']) ?> suradnika iz posljednjeg FLP360 Focus Group izvještaja. Klikni naziv stupca za sortiranje.<?php else: ?>Focus Group još nije uvezen; popis se privremeno temelji na osobnom CC-u i FCC aktivnostima. Klikni naziv stupca za sortiranje.<?php endif ?></div></div>
