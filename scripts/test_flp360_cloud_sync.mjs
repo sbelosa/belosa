@@ -72,8 +72,10 @@ assert.equal(buildDownlineDownloadUrl('https://cdn.example.test', '/CustomerRepo
 assert.ok(Buffer.from(encryptFlpAuthorization('request||Bearer token&&3', '0123456789abcdef'), 'base64').length > 92);
 
 const fourCcPayload = [{body: [
-    {fboID: '360000760944', fboName: 'Root', level: 'Manager', homeCountry: 'HRV', personalCC: 4.25, totalActiveCC: 5.5, processingYear: 2026, processingMonth: 8},
-    {fboID: '360000000001', fboName: 'Member', level: 'Supervisor', homeCountry: 'HRV', personalCC: 1, totalActiveCC: 4, processingYear: 2026, processingMonth: 8},
+    /* Total Active CC is inclusive: both 4 personal + 0 remainder and
+       2 personal + 2 eligible remainder are represented as totalActiveCC=4. */
+    {fboID: '360000760944', fboName: 'Root', level: 'Manager', homeCountry: 'HRV', personalCC: 4, totalActiveCC: 4, processingYear: 2026, processingMonth: 8},
+    {fboID: '360000000001', fboName: 'Member', level: 'Supervisor', homeCountry: 'HRV', personalCC: 2, totalActiveCC: 4, processingYear: 2026, processingMonth: 8},
 ]}];
 const fourCcRows = extractFourCcRows(fourCcPayload);
 assert.equal(validateFourCcRows(fourCcRows, testDate).rows, 2);

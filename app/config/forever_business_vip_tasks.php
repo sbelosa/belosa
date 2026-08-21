@@ -12,10 +12,10 @@ Početak programa: 1. rujna 2026.
 ## Pravila rada sustava
 
 - Uvjet za ulazak je najmanje 0,330 osobnog CC evidentiranog za kolovoz 2026. To je interni uvjet edukacije, a ne službena Forever aktivnost.
-- Službena aktivnost zahtijeva ukupno 4 Active CC u istoj regiji, uključujući najmanje 1 osobni CC.
+- Dostupan službeni signal preuzima se iz FLP360 rubrike `4 CC Active` i FCC ga ne nadjačava. Samo kada službeni signal za razdoblje nedostaje, koristi se uključivi pomoćni izračun od najmanje 1 Personal CC i 4 Total Active CC u matičnoj poslovnoj regiji; Personal CC već je dio Total Active CC-a i ne zbraja se ponovno.
 - Suradnik vidi samo vlastite bodove, zadatak i rezultate.
-- Na ekranu se prikazuje samo jedan aktivan zadatak. Ako ga osoba ne dovrši taj dan, ostaje aktivan pri sljedećoj prijavi.
-- Svake nedjelje zadatak povezan s tjednim Marketing planom u 18:00 ima prednost, neovisno o tome na kojem je rednom koraku suradnik.
+- Na ekranu se prikazuje samo jedan aktivan zadatak i suradnik može potvrditi najviše jedan VIP zadatak u jednom kalendarskom danu prema vremenskoj zoni Europe/Zagreb. Ako ga osoba ne dovrši taj dan, ostaje aktivan pri sljedećoj prijavi.
+- Svake nedjelje zadatak povezan s tjednim Marketing planom u 18:00 ima prednost, neovisno o tome na kojem je rednom koraku suradnik. Kada je nedjeljni zadatak potvrđen, novi redovni zadatak otvara se tek sljedećeg dana.
 - Pristup VIP WhatsApp grupi: https://chat.whatsapp.com/I7mg5bVIQwjJCu0WjnyJSz?s=cl&p=i&ilr=4
 - Nakon svake uspješne sinkronizacije FCC provjerava treba li osobu prebaciti na višu razinu.
 - Prelazak na višu razinu ide samo unaprijed tijekom istog 30-dnevnog ciklusa. Novi mjesec ne vraća osobu automatski na početak samo zato što je promet ponovno krenuo od nule.
@@ -24,13 +24,13 @@ Početak programa: 1. rujna 2026.
 
 ## Automatsko određivanje razine
 
-1. **Leader** — Manager ili suradnik kojem je administrator dodijelio voditeljsku ulogu.
-2. **Builder** — službeno potvrđena 4 CC aktivnost i nije Leader.
+1. **Leader** — suradnik s punim, priznatim statusom Managera i službeno potvrđenim `4 CC Active` signalom za kolovoz 2026.
+2. **Builder** — ostvarena 4 CC aktivnost i nije Leader: prema službenom FLP360 signalu ili, samo ako taj signal nedostaje, prema uključivom pomoćnom izračunu najmanje 1 Personal CC unutar najmanje 4 Total Active CC.
 3. **Aktivator** — najmanje 1 osobni CC, ali službena 4 CC aktivnost još nije potvrđena.
 4. **Reaktivacija** — ranije je imao aktivnost ili kupce, a sada ponovno gradi kontinuitet.
 5. **Starter** — najmanje 0,330 osobnog CC, ali još nema 1 osobni CC i nije u Reaktivaciji.
 
-Na početku 1. rujna početna se razina određuje iz kolovoških podataka. Nakon toga se razina podiže prema potvrđenim rujanskim rezultatima.
+Na početku 1. rujna početna se razina određuje iz kolovoških podataka. Nakon toga se razina podiže prema potvrđenim rujanskim rezultatima. Leader ostaje strogo vezan uz puni Manager status i službenu kolovošku 4 CC aktivnost.
 
 ---
 
