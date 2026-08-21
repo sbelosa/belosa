@@ -56,21 +56,31 @@ try {
                 </a>
             </li>
 
-            <!-- Custom code: FC-2026-03-31: Leader Operating System admin navigation -->
-            <li class="<?= in_array(\Altum\Router::$controller, ['AdminLeaderOperatingSystem', 'AdminLeaderOperatingSystemLeader']) ? 'active' : null ?>">
-                <a class="nav-link text-truncate" href="<?= url('admin/leader-operating-system') ?>">
-                    <i class="fas fa-fw fa-sm fa-chess-king mr-2"></i> <?= l('admin_leader_operating_system.menu') ?>
+            <!-- Custom code: FC-2026-08-21: LOS sections and Moj Forever analytics -->
+            <?php $admin_los_controllers = ['AdminLeaderOperatingSystem', 'AdminLeaderOperatingSystemLeader', 'AdminLeaderOperatingSystemForever', 'AdminForeverBusiness']; ?>
+            <li class="<?= in_array(\Altum\Router::$controller, $admin_los_controllers, true) ? 'active' : null ?>">
+                <a class="nav-link text-truncate" href="#admin_sidebar_los_container" data-toggle="collapse" role="button" aria-expanded="<?= in_array(\Altum\Router::$controller, $admin_los_controllers, true) ? 'true' : 'false' ?>">
+                    <i class="fas fa-fw fa-sm fa-chess-king mr-2"></i> <?= l('admin_leader_operating_system.menu') ?> <i class="fas fa-fw fa-sm fa-caret-down"></i>
                 </a>
             </li>
-            <!-- /Custom code: FC-2026-03-31 -->
-
-            <!-- Custom code: FC-2026-08-13: Forever import and access navigation -->
-            <li class="<?= \Altum\Router::$controller == 'AdminForeverBusiness' ? 'active' : null ?>">
-                <a class="nav-link text-truncate" href="<?= url('admin/forever-business') ?>">
-                    <i class="fas fa-fw fa-sm fa-chart-line mr-2"></i> Forever poslovanje
-                </a>
-            </li>
-            <!-- /Custom code: FC-2026-08-13 -->
+            <div id="admin_sidebar_los_container" class="mt-1 collapse bg-gray-200 rounded <?= in_array(\Altum\Router::$controller, $admin_los_controllers, true) ? 'show' : null ?>">
+                <li class="<?= in_array(\Altum\Router::$controller, ['AdminLeaderOperatingSystem', 'AdminLeaderOperatingSystemLeader'], true) ? 'active' : null ?>">
+                    <a class="nav-link text-truncate" href="<?= url('admin/leader-operating-system') ?>">
+                        <i class="fas fa-fw fa-sm fa-users-cog mr-2"></i> <?= l('admin_leader_operating_system.section.leader') ?>
+                    </a>
+                </li>
+                <li class="<?= \Altum\Router::$controller == 'AdminLeaderOperatingSystemForever' ? 'active' : null ?>">
+                    <a class="nav-link text-truncate" href="<?= url('admin/leader-operating-system-forever') ?>">
+                        <i class="fas fa-fw fa-sm fa-seedling mr-2"></i> <?= l('admin_leader_operating_system.section.forever') ?>
+                    </a>
+                </li>
+                <li class="<?= \Altum\Router::$controller == 'AdminForeverBusiness' ? 'active' : null ?>">
+                    <a class="nav-link text-truncate" href="<?= url('admin/forever-business') ?>">
+                        <i class="fas fa-fw fa-sm fa-file-import mr-2"></i> <?= l('admin_leader_operating_system.section.forever_sync') ?>
+                    </a>
+                </li>
+            </div>
+            <!-- /Custom code: FC-2026-08-21 -->
 
             <li class="<?= in_array(\Altum\Router::$controller, ['AdminUsers', 'AdminUserUpdate', 'AdminUserCreate', 'AdminUserView']) ? 'active' : null ?>">
                 <a class="nav-link text-truncate" href="<?= url('admin/users') ?>">
