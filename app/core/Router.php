@@ -1552,6 +1552,10 @@ class Router {
             'leader-operating-system-leader' => [
                 'controller' => 'AdminLeaderOperatingSystemLeader'
             ],
+
+            'leader-operating-system-forever' => [
+                'controller' => 'AdminLeaderOperatingSystemForever'
+            ],
             /* /Custom code: FC-2026-03-31 */
 
             /* Custom code: FC-2026-08-13: Forever data imports and access */

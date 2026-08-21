@@ -209,6 +209,7 @@ require_once APP_PATH . 'helpers/fcc_featured.php';
 require_once APP_PATH . 'helpers/vip_funnel.php';
 /* Custom code: FC-2026-08-13: Forever business import and 4 Core operating system */
 require_once APP_PATH . 'helpers/forever_business.php';
+require_once APP_PATH . 'helpers/forever_business_los.php';
 /* /Custom code: FC-2026-08-13 */
 require_once APP_PATH . 'helpers/66uptime.php';
 

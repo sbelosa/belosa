@@ -11,7 +11,7 @@ Početak programa: 1. rujna 2026.
 
 ## Pravila rada sustava
 
-- Uvjet za ulazak je najmanje 0,330 osobnog CC evidentiranog za kolovoz 2026. To je interni uvjet edukacije, a ne službena Forever aktivnost.
+- Uvjet za ulazak je najmanje 0,330 osobnog CC potvrđenog službenom sinkronizacijom od kolovoza 2026. nadalje. Upis je trajan: kasniji slabiji mjesec ne zaključava već otvorenu edukaciju. To je interni uvjet edukacije, a ne službena Forever aktivnost.
 - Dostupan službeni signal preuzima se iz FLP360 rubrike `4 CC Active` i FCC ga ne nadjačava. Samo kada službeni signal za razdoblje nedostaje, koristi se uključivi pomoćni izračun od najmanje 1 Personal CC i 4 Total Active CC u matičnoj poslovnoj regiji; Personal CC već je dio Total Active CC-a i ne zbraja se ponovno.
 - Suradnik vidi samo vlastite bodove, zadatak i rezultate.
 - Na ekranu se prikazuje samo jedan aktivan zadatak i suradnik može potvrditi najviše jedan VIP zadatak u jednom kalendarskom danu prema vremenskoj zoni Europe/Zagreb. Ako ga osoba ne dovrši taj dan, ostaje aktivan pri sljedećoj prijavi.
@@ -30,7 +30,7 @@ Početak programa: 1. rujna 2026.
 4. **Reaktivacija** — ranije je imao aktivnost ili kupce, a sada ponovno gradi kontinuitet.
 5. **Starter** — najmanje 0,330 osobnog CC, ali još nema 1 osobni CC i nije u Reaktivaciji.
 
-Na početku 1. rujna početna se razina određuje iz kolovoških podataka. Nakon toga se razina podiže prema potvrđenim rujanskim rezultatima. Leader ostaje strogo vezan uz puni Manager status i službenu kolovošku 4 CC aktivnost.
+Početna razina određuje se iz najranijeg mjeseca kvalifikacije i zatim se podiže prema najnovijim potvrđenim rezultatima. Leader ostaje strogo vezan uz puni Manager status i službenu kolovošku 4 CC aktivnost; administratorski korijenski profil namjerno koristi Leader kurikulum.
 
 ---
 

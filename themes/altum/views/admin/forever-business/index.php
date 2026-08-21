@@ -1,49 +1,23 @@
 <?php defined('ALTUMCODE') || die() ?>
 <?php
 $dashboard = $data->dashboard;
-$summary = $dashboard['summary'];
-$usage = $data->usage;
 $preview = $data->preview;
 $format_cc = static fn($value) => number_format((float) $value, 3, ',', '.');
 ?>
 
 <div class="container-fluid">
+    <?= include_view(THEME_PATH . 'views/admin/leader-operating-system/partials/section_nav.php', ['active' => 'forever']) ?>
     <?= \Altum\Alerts::output_alerts() ?>
 
     <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center mb-4">
-        <div><h1 class="h3 mb-1"><i class="fas fa-fw fa-chart-line text-primary mr-2"></i>Forever poslovanje</h1><p class="text-muted mb-0">Provjereni osobni napredak za suradnike; cijela struktura, bodovi i sinkronizacija samo za administratora.</p></div>
-        <a href="<?= url('forever-business') ?>" class="btn btn-primary mt-3 mt-lg-0"><i class="fas fa-external-link-alt fa-sm mr-2"></i>Otvori timski pregled</a>
-    </div>
-
-    <div class="row">
-        <div class="col-md-6 col-xl-3 mb-4"><div class="card h-100"><div class="card-body"><div class="text-muted small">ČLANOVI STRUKTURE</div><div class="h3 mb-0"><?= nr($summary['members']) ?></div></div></div></div>
-        <div class="col-md-6 col-xl-3 mb-4"><div class="card h-100"><div class="card-body"><div class="text-muted small">FLP360 GLOBAL TOTAL CC</div><div class="h3 mb-0"><?= $format_cc($summary['goal_current_cc']) ?></div><div class="small text-muted"><?= htmlspecialchars($summary['goal_metric_source']) ?><?= !$summary['goal_is_closed'] ? ' · otvoren mjesec' : '' ?></div></div></div></div>
-        <div class="col-md-6 col-xl-3 mb-4"><div class="card h-100"><div class="card-body"><div class="text-muted small">AKTIVNI S CC-OM</div><div class="h3 mb-0"><?= nr($summary['personal_active']) ?></div></div></div></div>
-        <div class="col-md-6 col-xl-3 mb-4"><div class="card h-100"><div class="card-body"><div class="text-muted small">SLUŽBENI FLP360 4 CC ACTIVE</div><div class="h3 mb-0"><?= nr($summary['active_4cc']) ?></div><div class="small text-muted"><?= nr($summary['effective_active_4cc'] ?? $summary['active_4cc']) ?> efektivno kada se uključi pomoćni izračun samo za mjesece bez službenog signala</div></div></div></div>
-    </div>
-
-    <div class="card mb-4">
-        <div class="card-header"><h2 class="h5 mb-0">FCC aktivacija — polazno stanje</h2></div>
-        <div class="card-body">
-            <div class="row">
-                <div class="col-md-6 col-xl-3 mb-3"><div class="border rounded p-3 h-100"><div class="small text-muted">FCC SURADNIČKI RAČUNI</div><div class="h3 mb-1"><?= nr($usage['regular_accounts']) ?></div><div class="small text-muted"><?= nr($usage['enabled_accounts']) ?> omogućeno</div></div></div>
-                <div class="col-md-6 col-xl-3 mb-3"><div class="border rounded p-3 h-100"><div class="small text-muted">POVEZANI S OVIM TIMOM</div><div class="h3 mb-1"><?= nr($usage['matched_team_accounts']) ?></div><div class="small text-muted">točno podudaranje Forever ID-a</div></div></div>
-                <div class="col-md-6 col-xl-3 mb-3"><div class="border rounded p-3 h-100"><div class="small text-muted">AKTIVNI 30 DANA</div><div class="h3 mb-1"><?= nr($usage['matched_active_30d']) ?></div><div class="small text-muted">od povezanih članova tima</div></div></div>
-                <div class="col-md-6 col-xl-3 mb-3"><div class="border rounded p-3 h-100"><div class="small text-muted">MANAGERI S FCC RAČUNOM</div><div class="h3 mb-1"><?= nr($usage['managers_with_fcc_account']) ?>/<?= nr($usage['imported_managers']) ?></div><div class="small text-muted">svatko vidi samo vlastite podatke</div></div></div>
-            </div>
-            <hr class="my-2 mb-4" />
-            <h3 class="h6 mb-3">VIP vođena edukacija — izvršenje</h3>
-            <div class="row">
-                <div class="col-md-6 col-xl-3 mb-3"><div class="border rounded p-3 h-100"><div class="small text-muted">VIP POLAZNICI</div><div class="h3 mb-1"><?= nr($usage['vip_participants_7d'] ?? 0) ?> <span class="h6 text-muted">/ 7 dana</span></div><div class="small text-muted"><?= nr($usage['vip_participants_30d'] ?? 0) ?> jedinstvenih u 30 dana</div></div></div>
-                <div class="col-md-6 col-xl-3 mb-3"><div class="border rounded p-3 h-100"><div class="small text-muted">DOVRŠENI VIP ZADACI</div><div class="h3 mb-1"><?= nr($usage['vip_tasks_completed_7d'] ?? 0) ?> <span class="h6 text-muted">/ 7 dana</span></div><div class="small text-muted"><?= nr($usage['vip_tasks_completed_30d'] ?? 0) ?> u 30 dana</div></div></div>
-                <div class="col-md-6 col-xl-3 mb-3"><div class="border rounded p-3 h-100"><div class="small text-muted">ZABILJEŽENI REZULTATI</div><div class="h3 mb-1"><?= nr($usage['vip_recorded_results_30d'] ?? 0) ?></div><div class="small text-muted">zbroj rezultata uz zadatke · 30 dana</div></div></div>
-                <div class="col-md-6 col-xl-3 mb-3"><div class="border rounded p-3 h-100"><div class="small text-muted">MOJ FOREVER KORIŠTENJE</div><div class="h3 mb-1"><?= nr($usage['four_core_users_7d']) ?> <span class="h6 text-muted">/ 7 dana</span></div><div class="small text-muted"><?= nr($usage['four_core_users_30d']) ?> korisnika i <?= nr($usage['four_core_visits_30d']) ?> posjeta u 30 dana</div></div></div>
-            </div>
-            <div class="small text-muted mb-3">Zabilježeni rezultati predstavljaju količine koje su suradnici unijeli uz dovršene zadatke; nisu CC bodovi. Sustav prihvaća najviše jedan VIP zadatak po osobi i kalendarskom danu.</div>
-            <div class="alert alert-warning mb-3"><strong>Važno:</strong> aktualna FCC baza sadrži <?= nr($usage['regular_accounts']) ?> suradničkih računa. Ako očekuješ 900+, prije uključivanja svih komunikacija treba uskladiti nedostajuće račune. Od <?= nr($usage['matched_team_accounts']) ?> članova povezanih točnim Forever ID-em, <?= nr($usage['matched_active_180d']) ?> imalo je zabilježenu aktivnost u zadnjih 180 dana, a <?= nr($usage['matched_active_30d']) ?> u zadnjih 30 dana.</div>
-            <div class="small text-muted">Novo precizno mjerenje stranice “Moj Forever” počinje od aktivacije: <?= nr($usage['four_core_users_7d']) ?> jedinstvenih korisnika i <?= nr($usage['four_core_visits_30d']) ?> posjeta. Povijesni mjesečni MAU nije moguće pouzdano rekonstruirati jer ranije nisu bilježeni događaji po stranici.</div>
+        <div><h1 class="h3 mb-1"><i class="fas fa-fw fa-file-import text-primary mr-2"></i><?= l('admin_leader_operating_system.forever.sync_title') ?></h1><p class="text-muted mb-0"><?= l('admin_leader_operating_system.forever.sync_subtitle') ?></p></div>
+        <div class="mt-3 mt-lg-0">
+            <a href="<?= url('admin/leader-operating-system-forever') ?>" class="btn btn-primary"><i class="fas fa-chart-line fa-sm mr-2"></i><?= l('admin_leader_operating_system.forever.open_analytics') ?></a>
+            <a href="<?= url('forever-business') ?>" class="btn btn-outline-primary ml-1"><i class="fas fa-external-link-alt fa-sm mr-2"></i><?= l('admin_leader_operating_system.forever.open_member') ?></a>
         </div>
     </div>
+
+    <div class="alert alert-info"><i class="fas fa-info-circle mr-2"></i><?= l('admin_leader_operating_system.forever.sync_note') ?></div>
 
     <div class="row">
         <div class="col-xl-7 mb-4">
