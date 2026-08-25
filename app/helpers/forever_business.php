@@ -1595,7 +1595,7 @@ function forever_business_get_user_activity_notice(int $user_id): array {
 
 /* Custom code: FC-2026-08-15: VIP 4 Core launch and eligibility gate */
 function forever_business_vip_whatsapp_group_url(): string {
-    return 'https://chat.whatsapp.com/BGWXMZOrPCf3FjgoaRXVXv?mode=gi_t';
+    return 'https://chat.whatsapp.com/G0Mxgm8yXfrIDAOxNqPbmw?mode=gi_t';
 }
 
 function forever_business_vip_education_url(): string {
