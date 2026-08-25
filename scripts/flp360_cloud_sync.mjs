@@ -112,6 +112,22 @@ function normalizeFboId(value) {
     return digits.length === 12 ? digits : '';
 }
 
+function normalizeCountryCode(value) {
+    const code = String(value ?? '').trim().toLocaleUpperCase('en');
+    return /^[A-Z]{2,3}$/.test(code) ? code : '';
+}
+
+function resolveLiveCcCountryCode(homeCountryCode, configuration) {
+    const homeCountry = normalizeCountryCode(homeCountryCode);
+    const rootHomeCountry = normalizeCountryCode(configuration?.homeCountryCode);
+    const operatingCountry = normalizeCountryCode(configuration?.operatingCountryCode);
+    if(!homeCountry || !rootHomeCountry || !operatingCountry) return '';
+    /* Croatia is administered through the current HUN operating market in this
+     * FLP360 account. Preserve that verified regional context for the home team;
+     * only members outside the home region use their own market code. */
+    return homeCountry === rootHomeCountry ? operatingCountry : homeCountry;
+}
+
 function parseFlpTimestamp(value) {
     const input = typeof value === 'number' || /^\d{13}$/.test(String(value ?? '').trim())
         ? Number(value)
@@ -431,6 +447,12 @@ function nonNegativeCc(value, fieldName) {
     return number;
 }
 
+function optionalNonNegativeCc(value, fieldName) {
+    return value === null || value === undefined || String(value).trim() === ''
+        ? null
+        : nonNegativeCc(value, fieldName);
+}
+
 function extractLiveCcRecord(payload, expectedFboId, date = new Date()) {
     const {year, month} = zagrebPeriodParts(date);
     const record = Array.isArray(payload) ? payload[0] : payload?.data?.[0];
@@ -467,21 +489,21 @@ function extractLiveZeroFallback(treePayload, detailPayload, expectedFboId) {
         && Number(tree.processingYear) === 0
         && monthlyValues.length > 0
         && monthlyValues.every(value => Number(value?.processingYear) === 0 && Number(value?.processingMonth) === 0);
-    const currentDetailValues = [detail?.personalCCCurMonth, detail?.totalCCCurMonth, detail?.totalActiveCCCurMonth]
-        .map(value => Number(value));
     if(!isEmptyTreeSentinel
-        || normalizeFboId(detail?.distributorId) !== normalizeFboId(expectedFboId)
-        || currentDetailValues.some(value => !Number.isFinite(value) || value !== 0)) {
+        || normalizeFboId(detail?.distributorId) !== normalizeFboId(expectedFboId)) {
         throw new Error(`FLP360 rezervna live potvrda nije sigurna za ${expectedFboId}.`);
     }
     return {
         fboId: normalizeFboId(expectedFboId),
-        personalCc: 0,
-        totalCc: 0,
-        totalActiveCc: 0,
-        nonManagerCc: 0,
-        leadershipCc: 0,
-        totalActiveCcYtd: nonNegativeCc(detail.totalActiveCCYTD, 'totalActiveCCYTD'),
+        personalCc: nonNegativeCc(detail.personalCCCurMonth, 'personalCCCurMonth'),
+        totalCc: nonNegativeCc(detail.totalCCCurMonth, 'totalCCCurMonth'),
+        totalActiveCc: nonNegativeCc(detail.totalActiveCCCurMonth, 'totalActiveCCCurMonth'),
+        /* The detail fallback does not consistently expose these manager-only
+         * fields. Null intentionally preserves the last verified Downline value
+         * instead of turning missing international data into a false zero. */
+        nonManagerCc: optionalNonNegativeCc(detail.nonManagerCCCurMonth, 'nonManagerCCCurMonth'),
+        leadershipCc: optionalNonNegativeCc(detail.leaderCCCurMonth ?? detail.leadershipCCCurMonth, 'leaderCCCurMonth'),
+        totalActiveCcYtd: optionalNonNegativeCc(detail.totalActiveCCYTD, 'totalActiveCCYTD'),
         nonManagerCcYtd: null,
         leadershipCcYtd: null,
         usedFallback: true,
@@ -501,26 +523,81 @@ async function mapWithConcurrency(items, concurrency, mapper) {
     return results;
 }
 
-async function fetchLiveCcForMembers(page, configuration, fboIds, date = new Date()) {
+function extractLiveMemberReferences(baseContents) {
+    const rows = String(baseContents).split(/\r?\n/).filter(Boolean).map(parseCsvLine);
+    const headers = rows[0] || [];
+    const indexByHeader = new Map(headers.map((header, index) => [String(header).trim().toLocaleUpperCase('en'), index]));
+    const fboIndex = indexByHeader.get('FBO ID');
+    const countryIndex = indexByHeader.get('COUNTRY');
+    if(fboIndex === undefined || countryIndex === undefined) {
+        throw new Error('Bazni Downline nema FBO ID ili COUNTRY za siguran live CC dohvat.');
+    }
+
+    const seen = new Set();
+    return rows.slice(1).map(row => {
+        const fboId = normalizeFboId(row[fboIndex]);
+        const homeCountryCode = normalizeCountryCode(row[countryIndex]);
+        if(!fboId || seen.has(fboId)) throw new Error('Bazni Downline sadrži neispravan ili dupliciran FBO ID.');
+        if(!homeCountryCode) throw new Error(`Bazni Downline nema valjanu matičnu zemlju za ${fboId}.`);
+        seen.add(fboId);
+        return {fboId, homeCountryCode};
+    });
+}
+
+async function fetchLiveCcForMembers(page, configuration, members, date = new Date()) {
     let completed = 0;
     let fallbackCount = 0;
-    const records = await mapWithConcurrency(fboIds, 8, async fboId => {
-        const requestUrl = reportV2Url(configuration, `distributors/${fboId}/treeview-cc?countryCode=${encodeURIComponent(configuration.operatingCountryCode)}`);
-        const treePayload = await flpGetJson(page, requestUrl, configuration);
-        const treeRecord = Array.isArray(treePayload) ? treePayload[0] : treePayload?.data?.[0];
-        let record;
-        if(treeRecord && !normalizeFboId(treeRecord.fboId) && Number(treeRecord.processingYear) === 0) {
-            const detailUrl = reportV2Url(configuration, `downlineLoggedInDetails/fboId/${fboId}/country/${encodeURIComponent(configuration.operatingCountryCode)}`);
-            record = extractLiveZeroFallback(treePayload, await flpGetJson(page, detailUrl, configuration), fboId);
-            fallbackCount++;
-        } else {
-            record = extractLiveCcRecord(treePayload, fboId, date);
+    let operatingMarketFallbackCount = 0;
+    const countryCounts = new Map();
+    const records = await mapWithConcurrency(members, 8, async member => {
+        const fboId = normalizeFboId(member?.fboId);
+        const preferredCountryCode = normalizeCountryCode(member?.countryCode);
+        const operatingCountryCode = normalizeCountryCode(configuration?.operatingCountryCode);
+        if(!fboId || !preferredCountryCode || !operatingCountryCode) {
+            throw new Error('Live CC zahtjev nema valjan FBO ID ili matičnu zemlju.');
         }
+
+        const countryCandidates = [...new Set([preferredCountryCode, operatingCountryCode])];
+        let record;
+        let confirmedCountryCode = '';
+        let usedDetailFallback = false;
+        const candidateErrors = [];
+        for(const countryCode of countryCandidates) {
+            try {
+                const requestUrl = reportV2Url(configuration, `distributors/${fboId}/treeview-cc?countryCode=${encodeURIComponent(countryCode)}`);
+                const treePayload = await flpGetJson(page, requestUrl, configuration);
+                const treeRecord = Array.isArray(treePayload) ? treePayload[0] : treePayload?.data?.[0];
+                if(treeRecord && !normalizeFboId(treeRecord.fboId) && Number(treeRecord.processingYear) === 0) {
+                    const detailUrl = reportV2Url(configuration, `downlineLoggedInDetails/fboId/${fboId}/country/${encodeURIComponent(countryCode)}`);
+                    record = extractLiveZeroFallback(treePayload, await flpGetJson(page, detailUrl, configuration), fboId);
+                    usedDetailFallback = true;
+                } else {
+                    record = extractLiveCcRecord(treePayload, fboId, date);
+                }
+                confirmedCountryCode = countryCode;
+                break;
+            } catch(error) {
+                candidateErrors.push(`${countryCode}: ${error.message}`);
+            }
+        }
+        if(!record || !confirmedCountryCode) {
+            throw new Error(`FLP360 nije potvrdio live CC za ${fboId} ni u jednom dopuštenom tržištu (${candidateErrors.join(' | ')}).`);
+        }
+        if(usedDetailFallback) fallbackCount++;
+        if(confirmedCountryCode !== preferredCountryCode) {
+            operatingMarketFallbackCount++;
+        }
+        countryCounts.set(confirmedCountryCode, (countryCounts.get(confirmedCountryCode) || 0) + 1);
         completed++;
-        if(completed % 100 === 0 || completed === fboIds.length) console.log(`Live CC potvrđen: ${completed}/${fboIds.length}.`);
+        if(completed % 100 === 0 || completed === members.length) console.log(`Live CC potvrđen: ${completed}/${members.length}.`);
         return record;
     });
-    return {records: new Map(records.map(record => [record.fboId, record])), fallbackCount};
+    return {
+        records: new Map(records.map(record => [record.fboId, record])),
+        fallbackCount,
+        operatingMarketFallbackCount,
+        countryCounts: Object.fromEntries([...countryCounts.entries()].sort(([left], [right]) => left.localeCompare(right))),
+    };
 }
 
 function refreshDownlineCsv(baseContents, liveCcByFboId, activeFourCcIds, date = new Date()) {
@@ -554,19 +631,30 @@ function refreshDownlineCsv(baseContents, liveCcByFboId, activeFourCcIds, date =
         seen.add(fboId);
         const live = liveCcByFboId.get(fboId);
         if(!live) throw new Error(`Nedostaje live CC potvrda za ${fboId}; uvoz je zaustavljen.`);
+        const resolvedCurrent = {
+            personalCc: live.personalCc,
+            totalCc: live.totalCc,
+            totalActiveCc: live.totalActiveCc,
+            nonManagerCc: live.nonManagerCc === null
+                ? nonNegativeCc(row[indexByHeader.get(metricHeaders.nonManager)], 'bazni NON MANAGER CC')
+                : live.nonManagerCc,
+            leadershipCc: live.leadershipCc === null
+                ? nonNegativeCc(row[indexByHeader.get(metricHeaders.leadership)], 'bazni LEADERSHIP CC')
+                : live.leadershipCc,
+        };
         const values = {
             fourCc: activeFourCcIds.has(fboId) ? 'Y' : 'N',
-            personal: live.personalCc.toFixed(3),
-            total: live.totalCc.toFixed(3),
-            totalActive: live.totalActiveCc.toFixed(3),
-            nonManager: live.nonManagerCc.toFixed(3),
-            leadership: live.leadershipCc.toFixed(3),
+            personal: resolvedCurrent.personalCc.toFixed(3),
+            total: resolvedCurrent.totalCc.toFixed(3),
+            totalActive: resolvedCurrent.totalActiveCc.toFixed(3),
+            nonManager: resolvedCurrent.nonManagerCc.toFixed(3),
+            leadership: resolvedCurrent.leadershipCc.toFixed(3),
             totalActiveYtd: live.totalActiveCcYtd === null ? row[indexByHeader.get(metricHeaders.totalActiveYtd)] : live.totalActiveCcYtd.toFixed(3),
             nonManagerYtd: live.nonManagerCcYtd === null ? row[indexByHeader.get(metricHeaders.nonManagerYtd)] : live.nonManagerCcYtd.toFixed(3),
             leadershipYtd: live.leadershipCcYtd === null ? row[indexByHeader.get(metricHeaders.leadershipYtd)] : live.leadershipCcYtd.toFixed(3),
         };
         for(const [metric, value] of Object.entries(values)) row[indexByHeader.get(metricHeaders[metric])] = value;
-        for(const metric of Object.keys(sums)) sums[metric] += live[metric];
+        for(const metric of Object.keys(sums)) sums[metric] += resolvedCurrent[metric];
     }
     if(liveCcByFboId.size !== dataRows.length) throw new Error('Broj live CC zapisa ne odgovara potvrđenoj Downline strukturi.');
     return {
@@ -582,13 +670,27 @@ function refreshDownlineCsv(baseContents, liveCcByFboId, activeFourCcIds, date =
 
 async function buildLiveDownline(page, configuration, activeFourCcIds, date = new Date()) {
     const base = await downloadLatestDownlineBase(page, configuration, date);
-    const baseRows = String(base.contents).split(/\r?\n/).filter(Boolean).slice(1).map(parseCsvLine);
-    const fboIds = baseRows.map(row => normalizeFboId(row[0]));
-    const liveCc = await fetchLiveCcForMembers(page, configuration, fboIds, date);
+    const members = extractLiveMemberReferences(base.contents).map(member => ({
+        ...member,
+        countryCode: resolveLiveCcCountryCode(member.homeCountryCode, configuration),
+    }));
+    if(members.some(member => !member.countryCode)) {
+        throw new Error('Downline matičnu zemlju nije moguće povezati s FLP360 operativnom regijom.');
+    }
+    const fboIds = members.map(member => member.fboId);
+    const liveCc = await fetchLiveCcForMembers(page, configuration, members, date);
     const refreshed = refreshDownlineCsv(base.contents, liveCc.records, activeFourCcIds, date);
     const targetPath = path.join(OUTPUT_DIRECTORY, `flp360-downline-live-${zagrebPeriod(date)}.csv`);
     await fs.writeFile(targetPath, refreshed.contents, {mode: 0o600});
-    return {path: targetPath, baseProcessedAt: base.processedAt, memberIds: new Set(fboIds), fallbackCount: liveCc.fallbackCount, ...refreshed.summary};
+    return {
+        path: targetPath,
+        baseProcessedAt: base.processedAt,
+        memberIds: new Set(fboIds),
+        fallbackCount: liveCc.fallbackCount,
+        operatingMarketFallbackCount: liveCc.operatingMarketFallbackCount,
+        countryCounts: liveCc.countryCounts,
+        ...refreshed.summary,
+    };
 }
 
 async function uploadReport(filePath, period, syncUrl, syncKey) {
@@ -756,6 +858,7 @@ async function main() {
     const password = requiredEnvironment('FLP360_PASSWORD');
     const syncUrl = requiredEnvironment('FCC_FOREVER_SYNC_URL');
     const syncKey = requiredEnvironment('FCC_FOREVER_SYNC_KEY');
+    const dryRun = String(process.env.FCC_SYNC_DRY_RUN || '').trim() === '1';
     const playwrightModule = process.env.PLAYWRIGHT_MODULE_URL || 'playwright';
     const {chromium} = await import(playwrightModule);
     const browser = await chromium.launch({
@@ -780,8 +883,11 @@ async function main() {
         console.log(`4 CC Active live: potvrđena ${fourCc.rowCount} retka.`);
         const downline = await buildLiveDownline(page, configuration, fourCc.ids, runDate);
         const downlineValidation = await validateDownline(downline.path);
-        console.log(`Downline live: ${downlineValidation.rows} redaka, svih ${downline.liveConfirmed} CC zapisa potvrđeno (${downline.fallbackCount} potvrđenih zero fallback zapisa).`);
-        const rootLiveCc = await fetchLiveCcForMembers(page, configuration, [normalizeFboId(ROOT_FBO_ID)], runDate);
+        console.log(`Downline live: ${downlineValidation.rows} redaka, svih ${downline.liveConfirmed} CC zapisa potvrđeno (${downline.fallbackCount} potvrđenih detaljnih odgovora; ${downline.operatingMarketFallbackCount} regionalnih fallbacka; tržišta ${JSON.stringify(downline.countryCounts)}).`);
+        const rootLiveCc = await fetchLiveCcForMembers(page, configuration, [{
+            fboId: normalizeFboId(ROOT_FBO_ID),
+            countryCode: configuration.operatingCountryCode,
+        }], runDate);
         const rootRecord = rootLiveCc.records.get(normalizeFboId(ROOT_FBO_ID));
         if(!rootRecord || !Number.isFinite(rootRecord.personalCc)) throw new Error('Glavni FBO nema potvrđen live Personal CC.');
         const ccSummary = await fetchLiveCcSummary(page, configuration, runDate);
@@ -789,6 +895,11 @@ async function main() {
             throw new Error(`FLP360 CC Summary Total CC (${ccSummary.totalCc.toFixed(3)}) ne odgovara glavnom ${configuration.operatingCountryCode} live Total CC-u (${rootRecord.totalCc.toFixed(3)}).`);
         }
         console.log(`FLP360 CC Summary: ${configuration.operatingCountryCode} Total CC=${ccSummary.totalCc.toFixed(3)}, Global Total CC=${ccSummary.globalTotalCc.toFixed(3)}.`);
+
+        if(dryRun) {
+            console.log(`Kontrolni način rada završen je bez FCC upisa. Provjereni Downline: ${downline.path}.`);
+            return;
+        }
 
         const downlineResult = await uploadReport(downline.path, period, syncUrl, syncKey);
         console.log(`FCC Downline: duplicate=${Boolean(downlineResult.duplicate)}.`);
@@ -836,15 +947,19 @@ export {
     extractCurrentCcSummary,
     extractFourCcRows,
     extractLiveCcRecord,
+    extractLiveMemberReferences,
     extractLiveZeroFallback,
+    fetchLiveCcForMembers,
     findCurrentFlpMonthLabel,
     normalizeFboId,
+    normalizeCountryCode,
     officialFourCoreSnapshots,
     parseCsvLine,
     parseFlpTimestamp,
     readyReportMessage,
     refreshDownlineCsv,
     reportV2Url,
+    resolveLiveCcCountryCode,
     validateDownline,
     validateFourCcRows,
     validateXlsx,

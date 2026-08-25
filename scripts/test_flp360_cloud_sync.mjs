@@ -12,15 +12,19 @@ import {
     extractCurrentCcSummary,
     extractFourCcRows,
     extractLiveCcRecord,
+    extractLiveMemberReferences,
     extractLiveZeroFallback,
+    fetchLiveCcForMembers,
     findCurrentFlpMonthLabel,
     normalizeFboId,
+    normalizeCountryCode,
     officialFourCoreSnapshots,
     parseCsvLine,
     parseFlpTimestamp,
     readyReportMessage,
     refreshDownlineCsv,
     reportV2Url,
+    resolveLiveCcCountryCode,
     validateDownline,
     validateFourCcRows,
     validateXlsx,
@@ -46,6 +50,11 @@ assert.equal(readyReportMessage('Your report generated on Aug 13, 2026 at 12:22p
 assert.equal(readyReportMessage('Your report is being generated.'), '');
 assert.deepEqual(parseCsvLine('1,2,"Prezime, Ime",4,5,HRV'), ['1', '2', 'Prezime, Ime', '4', '5', 'HRV']);
 assert.equal(normalizeFboId('360-000-760-944'), '360000760944');
+assert.equal(normalizeCountryCode(' deu '), 'DEU');
+assert.equal(normalizeCountryCode('HRV'), 'HRV');
+assert.equal(normalizeCountryCode('Germany'), '');
+assert.equal(resolveLiveCcCountryCode('HRV', {homeCountryCode: 'HRV', operatingCountryCode: 'HUN'}), 'HUN');
+assert.equal(resolveLiveCcCountryCode('DEU', {homeCountryCode: 'HRV', operatingCountryCode: 'HUN'}), 'DEU');
 assert.equal(parseFlpTimestamp(1786616559000)?.toISOString(), '2026-08-13T10:22:39.000Z');
 assert.equal(parseFlpTimestamp('1786616559000')?.toISOString(), '2026-08-13T10:22:39.000Z');
 assert.equal(parseFlpTimestamp('not-a-date'), null);
@@ -116,12 +125,18 @@ const fallbackRecord = extractLiveZeroFallback([{
     totalActiveCCCurMonth: 0, totalActiveCCYTD: 1.024,
 }, '360000000003');
 assert.equal(fallbackRecord.totalActiveCcYtd, 1.024);
+assert.equal(fallbackRecord.nonManagerCc, null);
 assert.equal(fallbackRecord.nonManagerCcYtd, null);
-assert.throws(() => extractLiveZeroFallback([{
+const internationalFallback = extractLiveZeroFallback([{
     fboId: '', processingYear: 0, monthlyCCValues: [{processingYear: 0, processingMonth: 0}],
 }], {
-    distributorId: '360000000003', personalCCCurMonth: 1, totalCCCurMonth: 1, totalActiveCCCurMonth: 1,
-}, '360000000003'), /nije sigurna/);
+    distributorId: '360000000003', personalCCCurMonth: 0.792, totalCCCurMonth: 0.792,
+    totalActiveCCCurMonth: 0.792, totalActiveCCYTD: 0.792,
+}, '360000000003');
+assert.equal(internationalFallback.personalCc, 0.792);
+assert.equal(internationalFallback.totalCc, 0.792);
+assert.equal(internationalFallback.totalActiveCc, 0.792);
+assert.equal(internationalFallback.nonManagerCc, null);
 
 const downlineHeaders = [
     'FBO ID', 'TREESEQUENCE', 'NAME', 'TITLE', 'GENERATION', 'COUNTRY',
@@ -133,6 +148,98 @@ const baseRows = Array.from({length: 400}, (_, index) => {
     const fboId = String(360000000001 + index);
     return [fboId, String(index + 1), `Member ${index + 1}`, 'Distributor', '1', index < 300 ? 'HRV' : 'HUN', 'N', '0', '0', '0', '0', '0', '0', '0', '0'];
 });
+const memberReferences = extractLiveMemberReferences(csvDocument([downlineHeaders, ...baseRows]));
+assert.deepEqual(memberReferences[0], {fboId: baseRows[0][0], homeCountryCode: 'HRV'});
+assert.deepEqual(memberReferences[399], {fboId: baseRows[399][0], homeCountryCode: 'HUN'});
+assert.throws(() => extractLiveMemberReferences(csvDocument([
+    downlineHeaders,
+    [baseRows[0][0], '1', 'Invalid country', 'Distributor', '1', '', 'N', '0', '0', '0', '0', '0', '0', '0', '0'],
+])), /matičnu zemlju/);
+
+const requestedLiveUrls = [];
+const livePayloadByFboId = new Map([
+    ['360000000001', {countryCode: 'HRV', personalCc: 0.125, totalCc: 0.125}],
+    ['360000000002', {countryCode: 'DEU', personalCc: 0.792, totalCc: 0.792}],
+]);
+const fakeLivePage = {
+    context: () => ({request: {get: async requestUrl => {
+        requestedLiveUrls.push(requestUrl);
+        const url = new URL(requestUrl);
+        const fboId = url.pathname.match(/distributors\/(\d+)\/treeview-cc/)?.[1];
+        const expected = livePayloadByFboId.get(fboId);
+        assert.equal(url.searchParams.get('countryCode'), expected.countryCode);
+        return {
+            ok: () => true,
+            status: () => 200,
+            text: async () => JSON.stringify([{
+                fboId,
+                processingYear: 2026,
+                totalActiveCC: expected.totalCc,
+                nonManagerCC: 0,
+                leaderCC: 0,
+                monthlyCCValues: [{
+                    processingYear: 2026,
+                    processingMonth: 8,
+                    personalCCMTD: expected.personalCc,
+                    totalCCMTD: expected.totalCc,
+                    totalActiveCCMTD: expected.totalCc,
+                    nonManagerCCMTD: 0,
+                    leaderCC: 0,
+                }],
+            }]),
+        };
+    }}}),
+    waitForTimeout: async () => {},
+};
+const liveByHomeCountry = await fetchLiveCcForMembers(fakeLivePage, {
+    reportBase: 'https://example.test/api/reporttdmpro',
+    aesEncryptionKey: '0123456789abcdef',
+    guestToken: 'test-token',
+    operatingCountryCode: 'HUN',
+}, [
+    {fboId: '360000000001', countryCode: 'HRV'},
+    {fboId: '360000000002', countryCode: 'DEU'},
+], testDate);
+assert.equal(liveByHomeCountry.records.get('360000000002').totalCc, 0.792);
+assert.deepEqual(liveByHomeCountry.countryCounts, {DEU: 1, HRV: 1});
+assert.equal(requestedLiveUrls.length, 2);
+await assert.rejects(() => fetchLiveCcForMembers(fakeLivePage, {
+    reportBase: 'https://example.test/api/reporttdmpro',
+    aesEncryptionKey: '0123456789abcdef',
+    guestToken: 'test-token',
+    operatingCountryCode: 'HUN',
+}, [{fboId: '360000000003', countryCode: ''}], testDate), /matičnu zemlju/);
+
+const regionalFallbackUrls = [];
+const regionalFallbackPage = {
+    context: () => ({request: {get: async requestUrl => {
+        regionalFallbackUrls.push(requestUrl);
+        const url = new URL(requestUrl);
+        const countryCode = url.searchParams.get('countryCode') || url.pathname.match(/\/country\/([A-Z]{2,3})/)?.[1];
+        const isDetail = url.pathname.includes('downlineLoggedInDetails');
+        const payload = countryCode === 'BIH'
+            ? (isDetail
+                ? [{distributorId: '360000999999', personalCCCurMonth: 0, totalCCCurMonth: 0, totalActiveCCCurMonth: 0}]
+                : [{fboId: '', processingYear: 0, monthlyCCValues: [{processingYear: 0, processingMonth: 0}]}])
+            : [{
+                fboId: '360000000004', processingYear: 2026, totalActiveCC: 0.5, nonManagerCC: 0, leaderCC: 0,
+                monthlyCCValues: [{processingYear: 2026, processingMonth: 8, personalCCMTD: 0.5, totalCCMTD: 0.5, totalActiveCCMTD: 0.5, nonManagerCCMTD: 0, leaderCC: 0}],
+            }];
+        return {ok: () => true, status: () => 200, text: async () => JSON.stringify(payload)};
+    }}}),
+    waitForTimeout: async () => {},
+};
+const regionalFallback = await fetchLiveCcForMembers(regionalFallbackPage, {
+    reportBase: 'https://example.test/api/reporttdmpro',
+    aesEncryptionKey: '0123456789abcdef',
+    guestToken: 'test-token',
+    operatingCountryCode: 'HUN',
+}, [{fboId: '360000000004', countryCode: 'BIH'}], testDate);
+assert.equal(regionalFallback.records.get('360000000004').totalCc, 0.5);
+assert.equal(regionalFallback.operatingMarketFallbackCount, 1);
+assert.deepEqual(regionalFallback.countryCounts, {HUN: 1});
+assert.equal(regionalFallbackUrls.length, 3);
+
 const liveMap = new Map(baseRows.map((row, index) => [row[0], {
     fboId: row[0], personalCc: 1, totalCc: 2, totalActiveCc: 3, nonManagerCc: 4, leadershipCc: 5,
     totalActiveCcYtd: 6, nonManagerCcYtd: 7, leadershipCcYtd: 8 + index * 0,
@@ -146,6 +253,21 @@ const refreshedFirst = parseCsvLine(refreshed.contents.split(/\r?\n/)[1]);
 assert.equal(refreshedFirst[6], 'Y');
 assert.equal(refreshedFirst[7], '1.000');
 assert.equal(refreshedFirst[14], '8.000');
+const preservedManagerFieldsMap = new Map(liveMap);
+preservedManagerFieldsMap.set(baseRows[0][0], {
+    ...preservedManagerFieldsMap.get(baseRows[0][0]),
+    personalCc: 0.792,
+    totalCc: 0.792,
+    totalActiveCc: 0.792,
+    nonManagerCc: null,
+    leadershipCc: null,
+});
+const preservedManagerFields = refreshDownlineCsv(csvDocument([downlineHeaders, ...baseRows]), preservedManagerFieldsMap, new Set(), testDate);
+const preservedFirst = parseCsvLine(preservedManagerFields.contents.split(/\r?\n/)[1]);
+assert.equal(preservedFirst[7], '0.792');
+assert.equal(preservedFirst[8], '0.792');
+assert.equal(preservedFirst[10], '0.000');
+assert.equal(preservedFirst[11], '0.000');
 
 const verified = verifyFccStatus({summary: {members: 401, personal_active: 20, zero_cc: 381, active_4cc: 2, personal_cc: 404.25, goal_current_cc: 63.684, goal_metric_source: 'FLP360 Global Total CC · GLOBAL'}, last_data_import_at: '2026-08-15 10:00:00'}, {members: 401, activeFourCc: 2, personalCc: 404.25, globalTotalCc: 63.684});
 assert.equal(verified.members, 401);
@@ -164,6 +286,8 @@ assert.match(syncSource, /treeview-cc\?countryCode=/);
 assert.match(syncSource, /metric: 'member_cc'/);
 assert.match(syncSource, /metric: 'total_cc'/);
 assert.match(syncSource, /rewire-earnings-CC-summary/);
+assert.match(syncSource, /FCC_SYNC_DRY_RUN/);
+assert.match(syncSource, /Kontrolni način rada završen je bez FCC upisa/);
 assert.match(syncSource, /uploadRootLiveCc\(rootRecord/);
 assert.match(syncSource, /uploadGlobalTotalCc\(ccSummary\.globalTotalCc/);
 assert.match(syncSource, /zadnji valjani FCC Focus Group/);
