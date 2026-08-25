@@ -16,7 +16,8 @@ Početak programa: 1. rujna 2026.
 - Suradnik vidi samo vlastite bodove, zadatak i rezultate.
 - Na ekranu se prikazuje samo jedan aktivan zadatak i suradnik može potvrditi najviše jedan VIP zadatak u jednom kalendarskom danu prema vremenskoj zoni Europe/Zagreb. Ako ga osoba ne dovrši taj dan, ostaje aktivan pri sljedećoj prijavi.
 - Svake nedjelje zadatak povezan s tjednim Marketing planom u 18:00 ima prednost, neovisno o tome na kojem je rednom koraku suradnik. Kada je nedjeljni zadatak potvrđen, novi redovni zadatak otvara se tek sljedećeg dana.
-- Pristup VIP WhatsApp grupi: https://chat.whatsapp.com/I7mg5bVIQwjJCu0WjnyJSz?s=cl&p=i&ilr=4
+- Pristup VIP WhatsApp grupi: https://chat.whatsapp.com/BGWXMZOrPCf3FjgoaRXVXv?mode=gi_t
+- Tjedni Marketing plan: svake nedjelje u 18:00, počevši 6. rujna 2026., na https://forevercard.club/vip-edukacija
 - Nakon svake uspješne sinkronizacije FCC provjerava treba li osobu prebaciti na višu razinu.
 - Prelazak na višu razinu ide samo unaprijed tijekom istog 30-dnevnog ciklusa. Novi mjesec ne vraća osobu automatski na početak samo zato što je promet ponovno krenuo od nule.
 - Svaki zadatak traje približno 10–25 minuta. Količina se može smanjiti u „brzom koraku” ako osoba taj dan nema dovoljno vremena.

@@ -368,11 +368,16 @@ $format_change = static function(float $value): string {
                                 <span class="fb-vip-note small"><?= !empty($vip_marketing_plan['next_at_display']) ? 'Sljedeći termin: ' . htmlspecialchars($vip_marketing_plan['next_at_display']) . '.' : 'Poveznica i kratke upute objavljuju se u VIP WhatsApp grupi.' ?></span>
                             </div>
                         </div>
-                        <?php if($vip_is_eligible && $vip_has_valid_linkage && !empty($vip_program['whatsapp_group_url'])): ?>
-                            <a href="<?= htmlspecialchars($vip_program['whatsapp_group_url']) ?>" target="_blank" rel="noopener noreferrer" class="btn fb-vip-whatsapp"><i class="fab fa-whatsapp mr-1"></i> Pridruži se VIP grupi</a>
-                        <?php else: ?>
-                            <span class="small fb-vip-note"><i class="fas fa-lock mr-1"></i> Pristup grupi otvara se nakon ispunjenog uvjeta.</span>
-                        <?php endif ?>
+                        <div class="d-flex flex-wrap align-items-center justify-content-md-end">
+                            <?php if(!empty($vip_marketing_plan['url'])): ?>
+                                <a href="<?= htmlspecialchars($vip_marketing_plan['url']) ?>" target="_blank" rel="noopener noreferrer" class="btn btn-primary mr-2 mb-2"><i class="fas fa-video mr-1"></i> Otvori Marketing plan</a>
+                            <?php endif ?>
+                            <?php if($vip_is_eligible && $vip_has_valid_linkage && !empty($vip_program['whatsapp_group_url'])): ?>
+                                <a href="<?= htmlspecialchars($vip_program['whatsapp_group_url']) ?>" target="_blank" rel="noopener noreferrer" class="btn fb-vip-whatsapp mb-2"><i class="fab fa-whatsapp mr-1"></i> Pridruži se VIP grupi</a>
+                            <?php else: ?>
+                                <span class="small fb-vip-note mb-2"><i class="fas fa-lock mr-1"></i> Pristup VIP grupi otvara se nakon ispunjenog uvjeta.</span>
+                            <?php endif ?>
+                        </div>
                     </div>
 
                     <div class="fb-vip-preview mt-4 <?= $vip_can_access ? '' : 'is-locked' ?>">
@@ -416,7 +421,7 @@ $format_change = static function(float $value): string {
                             <?php if(!empty($action['track_has_advanced'])): ?><div class="alert alert-success py-2 mb-3"><i class="fas fa-level-up-alt mr-1"></i> Tvoj plan automatski je prilagođen novoj razini prema najnovijim potvrđenim FLP360 podacima. Nastavljaš istim rednim brojem, ali sa zadacima naprednijeg programa.</div><?php endif ?>
                             <?php if(!empty($action['track_goal']) && empty($action['is_weekly_plan'])): ?><div class="small text-muted mb-3"><strong>Fokus tvoje razine:</strong> <?= htmlspecialchars($action['track_goal']) ?></div><?php endif ?>
                             <?php if(!empty($action['is_weekly_plan'])): ?>
-                                <div class="fb-weekly-plan mb-3"><strong><i class="fas fa-video mr-1"></i> Danas u 18:00</strong><span class="d-block small mt-1">Poveznicu i završne upute pronaći ćeš u VIP WhatsApp grupi.</span></div>
+                                <div class="fb-weekly-plan mb-3"><strong><i class="fas fa-video mr-1"></i> Danas u 18:00</strong><span class="d-block small mt-1">Pridruži se nekoliko minuta ranije i pripremi popis svojih gostiju.</span><?php if(!empty($vip_marketing_plan['url'])): ?><a href="<?= htmlspecialchars($vip_marketing_plan['url']) ?>" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-primary mt-2">Otvori Marketing plan</a><?php endif ?></div>
                             <?php endif ?>
                             <?php if(!empty($action['instruction'])): ?><p class="mb-2"><?= htmlspecialchars($action['instruction']) ?></p><?php endif ?>
                             <?php if(!empty($action['checklist'])): ?><ol class="pl-3 mb-3"><?php foreach($action['checklist'] as $item): ?><li class="mb-1"><?= htmlspecialchars($item) ?></li><?php endforeach ?></ol><?php endif ?>

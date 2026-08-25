@@ -3,7 +3,7 @@
 set -euo pipefail
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-secret_file="${FCC_FOREVER_SYNC_ENV_FILE:-/Volumes/WEB Portable/live-access/fcc/flp360_sync.env}"
+secret_file="${FCC_FOREVER_SYNC_ENV_FILE:-$HOME/.local/share/web-stack/live-access/fcc/flp360_sync.env}"
 
 if [[ -f "${secret_file}" ]]; then
   # shellcheck disable=SC1090

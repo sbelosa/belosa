@@ -92,6 +92,12 @@ class Cron extends Controller {
         $this->email_automations_send();
         /* /Custom code: FC-2026-03-18 */
 
+        /* Custom code: FC-2026-08-25: approved and qualified VIP 4 Core emails */
+        if(function_exists('forever_business_process_vip_email_notifications')) {
+            forever_business_process_vip_email_notifications(25);
+        }
+        /* /Custom code: FC-2026-08-25 */
+
         /* Custom code: FC-2026-04-12: FCC public signal notifications */
         $this->fcc_public_signal_notifications();
         /* /Custom code: FC-2026-04-12 */

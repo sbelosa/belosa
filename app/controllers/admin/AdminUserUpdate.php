@@ -259,8 +259,12 @@ class AdminUserUpdate extends Controller {
 
             /* If there are no errors, continue */
             if(!Alerts::has_field_errors() && !Alerts::has_errors()) {
+                $became_approved_fcc_user = $_POST['status'] == 1
+                    && $user->status == 0
+                    && is_null($_POST['user_meta']['limited']);
+
                 /* Custom code */
-                if ($_POST['status'] == 1 && $user->status == 0 && is_null($_POST['user_meta']['limited'])) {
+                if ($became_approved_fcc_user) {
                     $main_biolink_id = (int) (fc_get_user_main_biolink_id((int) $user->user_id) ?? 0);
 
                     if (!$main_biolink_id) {
@@ -375,6 +379,14 @@ class AdminUserUpdate extends Controller {
                 }
 
                 (new \Altum\Models\User())->sync_links_with_plan($user->user_id);
+
+                /* The approval remains successful even if the provider is
+                 * temporarily unavailable. Failed deliveries stay queued and
+                 * the regular cron safely retries them. Localhost is blocked by
+                 * the global outbound-mail guard in app/helpers/email.php. */
+                if($became_approved_fcc_user && function_exists('forever_business_vip_send_notification_for_user')) {
+                    forever_business_vip_send_notification_for_user((int) $user->user_id, 'approved');
+                }
 
                 /* Update the password if set */
                 if(!empty($_POST['new_password']) && !empty($_POST['repeat_password'])) {

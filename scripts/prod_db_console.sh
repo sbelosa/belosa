@@ -9,7 +9,7 @@ source "${script_dir}/prod_db_lib.sh"
 
 if [[ "$(get_live_db_transport)" == "http" ]]; then
   echo "HTTP write lane ne podrzava interaktivni SQL console." >&2
-  echo "Koristi scripts/prod_db_query.sh --sql \"...\" ili /Volumes/Extreme SSD/web/bin/db-portable.sh fcc-live --sql \"...\"" >&2
+  echo "Koristi scripts/prod_db_query.sh --sql \"...\" iz lokalnog Forever Card Club projekta." >&2
   exit 1
 fi
 

@@ -205,6 +205,27 @@ function forever_business_ensure_tables(): void {
             PRIMARY KEY (`user_id`, `visit_date`),
             KEY `forever_business_visit_date_idx` (`visit_date`, `last_visit_at`)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci",
+        /* Custom code: FC-2026-08-25: idempotent VIP access and qualification email queue */
+        "CREATE TABLE IF NOT EXISTS `forever_business_vip_email_deliveries` (
+            `delivery_id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+            `user_id` INT UNSIGNED NOT NULL,
+            `event_key` VARCHAR(32) NOT NULL,
+            `fbo_id` CHAR(12) NULL,
+            `eligibility_period` DATE NULL,
+            `personal_cc` DECIMAL(12,3) NULL,
+            `status` VARCHAR(16) NOT NULL DEFAULT 'pending',
+            `attempts` TINYINT UNSIGNED NOT NULL DEFAULT 0,
+            `message_id` VARCHAR(255) NULL,
+            `last_error` VARCHAR(500) NULL,
+            `last_attempt_at` DATETIME NULL,
+            `sent_at` DATETIME NULL,
+            `created_at` DATETIME NOT NULL,
+            `updated_at` DATETIME NOT NULL,
+            PRIMARY KEY (`delivery_id`),
+            UNIQUE KEY `forever_business_vip_email_user_event_uq` (`user_id`, `event_key`),
+            KEY `forever_business_vip_email_status_idx` (`status`, `updated_at`)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci",
+        /* /Custom code: FC-2026-08-25 */
     ];
 
     foreach($queries as $query) {
@@ -1573,6 +1594,33 @@ function forever_business_get_user_activity_notice(int $user_id): array {
 /* /Custom code: FC-2026-08-14 */
 
 /* Custom code: FC-2026-08-15: VIP 4 Core launch and eligibility gate */
+function forever_business_vip_whatsapp_group_url(): string {
+    return 'https://chat.whatsapp.com/BGWXMZOrPCf3FjgoaRXVXv?mode=gi_t';
+}
+
+function forever_business_vip_education_url(): string {
+    return 'https://forevercard.club/forever-business';
+}
+
+function forever_business_vip_webinar_url(): string {
+    return 'https://forevercard.club/vip-edukacija';
+}
+
+function forever_business_vip_period_label(string $period): string {
+    $labels = [
+        1 => 'siječanj', 2 => 'veljača', 3 => 'ožujak', 4 => 'travanj',
+        5 => 'svibanj', 6 => 'lipanj', 7 => 'srpanj', 8 => 'kolovoz',
+        9 => 'rujan', 10 => 'listopad', 11 => 'studeni', 12 => 'prosinac',
+    ];
+
+    try {
+        $date = new \DateTimeImmutable($period);
+        return ($labels[(int) $date->format('n')] ?? $date->format('m')) . ' ' . $date->format('Y') . '.';
+    } catch(\Throwable $exception) {
+        return 'potvrđeno razdoblje';
+    }
+}
+
 function forever_business_build_vip_program_state(
     ?float $personal_cc,
     ?\DateTimeInterface $now = null,
@@ -1652,7 +1700,9 @@ function forever_business_build_vip_program_state(
         'launch_at_iso' => $launch_at->format(\DateTimeInterface::ATOM),
         'launch_at_display' => '1. rujna 2026. u 00:00',
         'seconds_remaining' => $seconds_remaining,
-        'whatsapp_group_url' => 'https://chat.whatsapp.com/I7mg5bVIQwjJCu0WjnyJSz?s=cl&p=i&ilr=4',
+        'whatsapp_group_url' => forever_business_vip_whatsapp_group_url(),
+        'education_url' => forever_business_vip_education_url(),
+        'webinar_url' => forever_business_vip_webinar_url(),
         'marketing_plan' => forever_business_get_marketing_plan_state($current_time),
     ];
 }
@@ -1716,13 +1766,15 @@ function forever_business_get_marketing_plan_state(?\DateTimeInterface $now = nu
     $current_time = $now
         ? (new \DateTimeImmutable('@' . $now->getTimestamp()))->setTimezone($timezone)
         : new \DateTimeImmutable('now', $timezone);
-    $is_sunday = (int) $current_time->format('N') === 7;
-    $this_sunday = $current_time->modify('sunday this week')->setTime(18, 0);
-    $event_end = $this_sunday->modify('+90 minutes');
-    $next_event = $this_sunday;
+    $first_event = new \DateTimeImmutable('2026-09-06 18:00:00', $timezone);
+    $calendar_sunday = $current_time->modify('sunday this week')->setTime(18, 0);
+    $this_event = $calendar_sunday < $first_event ? $first_event : $calendar_sunday;
+    $is_event_date = $current_time->format('Y-m-d') === $this_event->format('Y-m-d');
+    $event_end = $this_event->modify('+90 minutes');
+    $next_event = $this_event;
 
     if($current_time >= $event_end) {
-        $next_event = $this_sunday->modify('+1 week');
+        $next_event = $this_event->modify('+1 week');
     }
 
     return [
@@ -1730,12 +1782,232 @@ function forever_business_get_marketing_plan_state(?\DateTimeInterface $now = nu
         'weekday_label' => 'svake nedjelje',
         'time_label' => '18:00',
         'timezone' => 'Europe/Zagreb',
-        'is_today' => $is_sunday,
-        'is_live_window' => $is_sunday && $current_time >= $this_sunday && $current_time < $event_end,
+        'first_at_iso' => $first_event->format(\DateTimeInterface::ATOM),
+        'is_today' => $is_event_date && $current_time->format('Y-m-d') >= $first_event->format('Y-m-d'),
+        'is_live_window' => $is_event_date && $current_time >= $this_event && $current_time < $event_end,
         'next_at_iso' => $next_event->format(\DateTimeInterface::ATOM),
         'next_at_display' => 'nedjelja, ' . $next_event->format('d.m.Y.') . ' u 18:00',
+        'url' => forever_business_vip_webinar_url(),
     ];
 }
+
+/* Custom code: FC-2026-08-25: approved and qualified VIP 4 Core email delivery */
+function forever_business_vip_build_email_message(object $user, array $state, string $event_key): array {
+    $name = htmlspecialchars(str_replace('.', '. ', trim((string) ($user->name ?? ''))), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+    $name = $name !== '' ? $name : 'suradniče/suradnice';
+    $education_url = forever_business_vip_education_url();
+    $webinar_url = forever_business_vip_webinar_url();
+    $whatsapp_url = forever_business_vip_whatsapp_group_url();
+    $qualifying_period = (string) ($state['qualifying_period'] ?? $state['eligibility_period'] ?? '');
+    $period_label = htmlspecialchars(forever_business_vip_period_label($qualifying_period), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+    $qualifying_cc = $state['qualifying_personal_cc'] ?? $state['personal_cc'] ?? 0;
+    $personal_cc = number_format((float) $qualifying_cc, 3, ',', '.');
+
+    if($event_key === 'qualified') {
+        $launch_copy = !empty($state['is_launched'])
+            ? 'Tvoj trenutačni zadatak već te čeka na stranici <strong>Moj Forever</strong>.'
+            : 'Edukacija počinje <strong>1. rujna 2026.</strong>, a do tada se možeš odmah pridružiti VIP grupi i pripremiti za prvi korak.';
+
+        return [
+            'subject' => 'Tvoja VIP 4 Core edukacija je otključana',
+            'body' => 'Pozdrav ' . $name . ',<br /><br />
+
+Tvoj potvrđeni osobni promet za <strong>' . $period_label . '</strong> iznosi <strong>' . $personal_cc . ' CC</strong>, zato je uvjet od najmanje <strong>0,330 osobnog CC</strong> ispunjen. ' . $launch_copy . '<br /><br />
+
+<strong>Kako edukacija funkcionira:</strong><br />
+1. Na stranici <strong>Moj Forever</strong> vidiš svoje potvrđene CC bodove i jedan jasan zadatak za taj dan.<br />
+2. Zadatak ostaje otvoren dok ga ne dovršiš. Nakon potvrde, sljedeći korak otvara se idućeg dana.<br />
+3. Zadaci se izmjenjuju kroz sva četiri područja 4 Corea: Recruitment, Retention, Productivity i Development.<br />
+4. Svake nedjelje u 18:00 održava se online Marketing plan na koji možeš pozvati osobe zainteresirane za Forever poslovanje.<br />
+5. VIP WhatsApp grupa služi za kratke obavijesti, pitanja i podršku tijekom izvršavanja zadataka.<br /><br />
+
+<div style="margin:20px 0;">
+    <a href="' . $education_url . '" style="display:inline-block;margin:0 8px 8px 0;padding:13px 18px;border-radius:10px;background:#153a4d;color:#ffffff;text-decoration:none;font-weight:700;">Otvori Moj Forever i edukaciju</a>
+    <a href="' . $whatsapp_url . '" style="display:inline-block;margin:0 8px 8px 0;padding:13px 18px;border-radius:10px;background:#25D366;color:#082b18;text-decoration:none;font-weight:700;">Pridruži se VIP WhatsApp grupi</a>
+</div>
+
+<strong>Tjedni Marketing plan:</strong> svake nedjelje u 18:00, počevši 6. rujna 2026.<br />
+Izravna poveznica: <a href="' . $webinar_url . '">' . $webinar_url . '</a><br /><br />
+
+Za početak otvori Moj Forever, provjeri svoje bodove i pročitaj prvi zadatak. Ako ti nešto nije jasno, napiši pitanje u VIP grupu.<br /><br />
+
+Vidimo se u edukaciji!<br />
+Tim Forever Card Cluba',
+        ];
+    }
+
+    return [
+        'subject' => 'Tvoj pristup stranici Moj Forever je spreman',
+        'body' => 'Pozdrav ' . $name . ',<br /><br />
+
+Tvoj pristup Forever Card Clubu je odobren i od sada na stranici <strong>Moj Forever</strong> možeš pratiti svoje potvrđene CC bodove, 4 CC aktivnost i napredak prema sljedećoj razini.<br /><br />
+
+Na istom mjestu nalazi se i vođena VIP 4 Core edukacija. Za otključavanje edukacije i pristupa VIP WhatsApp grupi potrebno je imati najmanje <strong>0,330 osobnog CC</strong> na svojem Forever ID-u u jednom kvalifikacijskom mjesecu. FCC taj uvjet provjerava automatski nakon osvježavanja FLP360 podataka.<br /><br />
+
+Kada ispuniš uvjet, dobit ćeš zaseban e-mail s poveznicom za VIP WhatsApp grupu i izravnim pristupom dnevnim zadacima.<br /><br />
+
+<div style="margin:20px 0;">
+    <a href="' . $education_url . '" style="display:inline-block;padding:13px 18px;border-radius:10px;background:#153a4d;color:#ffffff;text-decoration:none;font-weight:700;">Otvori Moj Forever</a>
+</div>
+
+U Moj Foreveru uvijek provjeri i vrijeme posljednjeg osvježavanja kako bi znao/la do kada su bodovi ažurirani.<br /><br />
+
+Lijep pozdrav,<br />
+Tim Forever Card Cluba',
+    ];
+}
+
+function forever_business_vip_prepare_email_delivery(int $user_id, string $event_key, array $state): ?object {
+    if($user_id <= 0 || !in_array($event_key, ['approved_pending', 'qualified'], true)) return null;
+    forever_business_ensure_tables();
+
+    $timestamp = get_date();
+    $eligibility_period = $event_key === 'qualified'
+        ? ($state['qualifying_period'] ?? $state['eligibility_period'] ?? null)
+        : ($state['current_period'] ?? $state['eligibility_period'] ?? null);
+    $personal_cc = $event_key === 'qualified'
+        ? ($state['qualifying_personal_cc'] ?? $state['personal_cc'] ?? null)
+        : ($state['current_personal_cc'] ?? $state['personal_cc'] ?? null);
+
+    db()->onDuplicate(['fbo_id', 'eligibility_period', 'personal_cc', 'updated_at'])->insert('forever_business_vip_email_deliveries', [
+        'user_id' => $user_id,
+        'event_key' => $event_key,
+        'fbo_id' => !empty($state['fbo_id']) ? (string) $state['fbo_id'] : null,
+        'eligibility_period' => !empty($eligibility_period) ? (string) $eligibility_period : null,
+        'personal_cc' => $personal_cc,
+        'status' => 'pending',
+        'attempts' => 0,
+        'message_id' => null,
+        'last_error' => null,
+        'last_attempt_at' => null,
+        'sent_at' => null,
+        'created_at' => $timestamp,
+        'updated_at' => $timestamp,
+    ]);
+
+    return db()->where('user_id', $user_id)->where('event_key', $event_key)->getOne('forever_business_vip_email_deliveries');
+}
+
+function forever_business_vip_send_notification_for_user(int $user_id, string $trigger = 'qualified'): bool {
+    if($user_id <= 0 || !in_array($trigger, ['approved', 'qualified'], true)) return false;
+    forever_business_ensure_tables();
+
+    $user = db()->where('user_id', $user_id)->where('status', 1)->getOne('users', ['user_id', 'name', 'email', 'language', 'anti_phishing_code', 'preferences']);
+    if(!$user || !filter_var((string) ($user->email ?? ''), FILTER_VALIDATE_EMAIL)) return false;
+
+    $state = forever_business_get_vip_program_state($user_id);
+    $is_qualified = !empty($state['is_eligible']) && !empty($state['has_valid_linkage']);
+    $event_key = $is_qualified ? 'qualified' : 'approved_pending';
+    if($trigger === 'qualified' && $event_key !== 'qualified') return false;
+
+    if($event_key === 'qualified') {
+        db()->where('user_id', $user_id)
+            ->where('event_key', 'approved_pending')
+            ->where('status', ['pending', 'failed'], 'IN')
+            ->update('forever_business_vip_email_deliveries', [
+                'status' => 'superseded',
+                'updated_at' => get_date(),
+            ]);
+    }
+
+    $delivery = forever_business_vip_prepare_email_delivery($user_id, $event_key, $state);
+    if(!$delivery) return false;
+    if((string) ($delivery->status ?? '') === 'sent') return true;
+    if((int) ($delivery->attempts ?? 0) >= 5) return false;
+
+    $delivery_id = (int) $delivery->delivery_id;
+    $timestamp = get_date();
+    database()->query("UPDATE `forever_business_vip_email_deliveries`
+        SET `status` = 'sending', `attempts` = `attempts` + 1,
+            `last_attempt_at` = '{$timestamp}', `updated_at` = '{$timestamp}'
+        WHERE `delivery_id` = {$delivery_id}
+          AND `status` IN ('pending', 'failed')
+          AND `attempts` < 5");
+    if((int) database()->affected_rows < 1) {
+        $current = db()->where('delivery_id', $delivery_id)->getOne('forever_business_vip_email_deliveries', ['status']);
+        return $current && (string) $current->status === 'sent';
+    }
+
+    $message = forever_business_vip_build_email_message($user, $state, $event_key);
+    $transport_result = send_mail($user->email, $message['subject'], $message['body'], [
+        'is_system_email' => true,
+        'anti_phishing_code' => $user->anti_phishing_code ?? null,
+        'language' => $user->language ?? 'Hrvatski',
+        'brevo_tags' => ['fcc', 'vip-4core', $event_key],
+        'return_transport_result' => true,
+    ]);
+    $is_sent = is_object($transport_result) ? !empty($transport_result->success) : (bool) $transport_result;
+    $message_id = is_object($transport_result) ? mb_substr((string) ($transport_result->message_id ?? ''), 0, 255) : '';
+    $last_error = '';
+    if(!$is_sent) {
+        $last_error = is_object($transport_result)
+            ? (string) ($transport_result->ErrorInfo ?? $transport_result->curl_error ?? 'Slanje nije uspjelo.')
+            : 'Slanje nije uspjelo.';
+    }
+
+    db()->where('delivery_id', $delivery_id)->update('forever_business_vip_email_deliveries', [
+        'status' => $is_sent ? 'sent' : 'failed',
+        'message_id' => $message_id !== '' ? $message_id : null,
+        'last_error' => $last_error !== '' ? mb_substr($last_error, 0, 500) : null,
+        'sent_at' => $is_sent ? get_date() : null,
+        'updated_at' => get_date(),
+    ]);
+
+    return $is_sent;
+}
+
+function forever_business_process_vip_email_notifications(int $limit = 25): array {
+    forever_business_ensure_tables();
+    $limit = max(1, min(100, $limit));
+    $result = ['sent' => 0, 'failed' => 0, 'processed' => 0];
+    $stale_before = (new \DateTimeImmutable('now'))->modify('-60 minutes')->format('Y-m-d H:i:s');
+    database()->query("UPDATE `forever_business_vip_email_deliveries`
+        SET `status` = 'failed', `updated_at` = '" . get_date() . "'
+        WHERE `status` = 'sending' AND `updated_at` < '{$stale_before}'");
+
+    $pending = db()->where('status', ['pending', 'failed'], 'IN')
+        ->where('attempts', 5, '<')
+        ->orderBy('updated_at', 'ASC')
+        ->get('forever_business_vip_email_deliveries', $limit, ['user_id', 'event_key']) ?? [];
+    foreach($pending as $delivery) {
+        $trigger = (string) $delivery->event_key === 'qualified' ? 'qualified' : 'approved';
+        $sent = forever_business_vip_send_notification_for_user((int) $delivery->user_id, $trigger);
+        $result[$sent ? 'sent' : 'failed']++;
+        $result['processed']++;
+    }
+
+    $remaining = $limit - $result['processed'];
+    if($remaining <= 0) return $result;
+
+    /* Backfill only permanently enrolled members whose Forever ID belongs to
+     * exactly one active FCC account. This keeps all member data private and
+     * avoids emailing an account while its linkage still needs correction. */
+    $qualified_query = database()->query("SELECT u.user_id
+        FROM users u
+        INNER JOIN forever_business_vip_enrollments enrollment
+            ON enrollment.fbo_id = REPLACE(TRIM(COALESCE(JSON_UNQUOTE(JSON_EXTRACT(u.preferences, '$.meta.foreverId')), '')), '-', '')
+        LEFT JOIN forever_business_vip_email_deliveries delivery
+            ON delivery.user_id = u.user_id AND delivery.event_key = 'qualified'
+        WHERE u.status = 1
+          AND u.email IS NOT NULL
+          AND u.email LIKE '%@%'
+          AND delivery.delivery_id IS NULL
+          AND (SELECT COUNT(*)
+               FROM users linked_user
+               WHERE linked_user.status = 1
+                 AND REPLACE(TRIM(COALESCE(JSON_UNQUOTE(JSON_EXTRACT(linked_user.preferences, '$.meta.foreverId')), '')), '-', '') = enrollment.fbo_id) = 1
+        ORDER BY u.user_id ASC
+        LIMIT {$remaining}");
+
+    while($qualified_query && $row = $qualified_query->fetch_assoc()) {
+        $sent = forever_business_vip_send_notification_for_user((int) $row['user_id'], 'qualified');
+        $result[$sent ? 'sent' : 'failed']++;
+        $result['processed']++;
+    }
+
+    return $result;
+}
+/* /Custom code: FC-2026-08-25 */
 
 function forever_business_vip_track_definitions(): array {
     return [

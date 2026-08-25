@@ -109,6 +109,14 @@ function fc_mail_is_local_host($host): bool {
 }
 
 function fc_mail_is_local_environment(): bool {
+    $request_host = trim((string) ($_SERVER['HTTP_HOST'] ?? ''));
+    if($request_host !== '') {
+        $request_host = preg_replace('/:\d+$/', '', $request_host);
+        if(fc_mail_is_local_host($request_host)) {
+            return true;
+        }
+    }
+
     foreach([
         getenv('SITE_URL') ?: '',
         defined('SITE_URL') ? SITE_URL : '',
