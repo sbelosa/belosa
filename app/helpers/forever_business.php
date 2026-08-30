@@ -1695,7 +1695,10 @@ function forever_business_build_vip_program_state(
         'is_launched' => $is_launched,
         'has_valid_linkage' => $has_valid_linkage,
         'active_link_count' => max(0, $active_link_count),
-        'linkage_status' => $has_valid_linkage ? 'valid' : ($active_link_count > 1 ? 'duplicate' : 'missing'),
+        'linkage_status' => $has_valid_linkage
+            ? ($active_link_count > 1 ? 'shared' : 'valid')
+            : ($active_link_count > 1 ? 'duplicate' : 'missing'),
+        'is_shared_linkage' => $has_valid_linkage && $active_link_count > 1,
         'can_access_education' => $is_launched && $is_enrolled && $has_valid_linkage,
         'launch_at_iso' => $launch_at->format(\DateTimeInterface::ATOM),
         'launch_at_display' => '1. rujna 2026. u 00:00',
@@ -1717,7 +1720,9 @@ function forever_business_get_vip_program_state(int $user_id, ?\DateTimeInterfac
 
     /* Access is always resolved from the signed-in account and an immutable
      * FBO enrollment. A selected dashboard month or hidden form field cannot
-     * change it. Exactly one active FCC account must own the same FBO ID. */
+     * change it. Every active FCC account has an administrator-approved
+     * Forever ID; approved shared IDs intentionally expose the same CC data
+     * and VIP program to each linked account. */
     $user = db()->where('user_id', $user_id)->where('status', 1)->getOne('users', ['preferences']);
     $fbo_id = $user ? forever_business_extract_user_fbo_id($user->preferences ?? null) : '';
     if($fbo_id === '') return $state;
@@ -1736,9 +1741,12 @@ function forever_business_get_vip_program_state(int $user_id, ?\DateTimeInterfac
     $enrollment = $enrollment_row ? (array) $enrollment_row : [];
     $personal_cc = $metric && $metric->personal_cc !== null ? (float) $metric->personal_cc : null;
     $active_link_count = forever_business_get_active_user_link_count_for_fbo($fbo_id);
-    $has_valid_linkage = $active_link_count === 1;
+    $has_valid_linkage = $active_link_count >= 1;
 
-    if($enrollment_row && $has_valid_linkage && (int) ($enrollment_row->user_id ?? 0) !== $user_id) {
+    /* The enrollment belongs to the Forever ID. Its optional user_id is only
+     * synchronized when the ID has a single account, so shared accounts never
+     * overwrite one another while opening the page. */
+    if($enrollment_row && $active_link_count === 1 && (int) ($enrollment_row->user_id ?? 0) !== $user_id) {
         db()->where('fbo_id', $fbo_id)->update('forever_business_vip_enrollments', [
             'user_id' => $user_id,
             'updated_at' => get_date(),
@@ -1979,9 +1987,9 @@ function forever_business_process_vip_email_notifications(int $limit = 25): arra
     $remaining = $limit - $result['processed'];
     if($remaining <= 0) return $result;
 
-    /* Backfill only permanently enrolled members whose Forever ID belongs to
-     * exactly one active FCC account. This keeps all member data private and
-     * avoids emailing an account while its linkage still needs correction. */
+    /* Every active FCC account has an administrator-approved Forever ID.
+     * When multiple accounts intentionally share an ID (for example spouses),
+     * each qualified account receives its own idempotent access email. */
     $qualified_query = database()->query("SELECT u.user_id
         FROM users u
         INNER JOIN forever_business_vip_enrollments enrollment
@@ -1992,10 +2000,6 @@ function forever_business_process_vip_email_notifications(int $limit = 25): arra
           AND u.email IS NOT NULL
           AND u.email LIKE '%@%'
           AND delivery.delivery_id IS NULL
-          AND (SELECT COUNT(*)
-               FROM users linked_user
-               WHERE linked_user.status = 1
-                 AND REPLACE(TRIM(COALESCE(JSON_UNQUOTE(JSON_EXTRACT(linked_user.preferences, '$.meta.foreverId')), '')), '-', '') = enrollment.fbo_id) = 1
         ORDER BY u.user_id ASC
         LIMIT {$remaining}");
 

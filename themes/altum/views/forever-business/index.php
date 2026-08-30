@@ -350,7 +350,10 @@ $format_change = static function(float $value): string {
                         </div>
                         <div class="fb-vip-condition <?= $vip_has_valid_linkage ? 'is-complete' : '' ?>">
                             <span class="fb-vip-condition-icon"><i class="fas fa-<?= $vip_has_valid_linkage ? 'check' : 'link' ?>"></i></span>
-                            <div><strong class="d-block small">Jedinstveno povezan Forever ID</strong><span class="fb-vip-note small">Jedan aktivan FCC račun sigurno povezuje tvoje bodove, trajni upis i napredak.</span></div>
+                            <div>
+                                <strong class="d-block small">Povezan Forever ID</strong>
+                                <span class="fb-vip-note small"><?php if(!empty($vip_program['is_shared_linkage'])): ?>Odobreni računi koji dijele ovaj Forever ID prikazuju iste bodove i imaju pristup programu.<?php else: ?>Tvoj aktivni FCC račun sigurno povezuje bodove, trajni upis i napredak.<?php endif ?></span>
+                            </div>
                         </div>
                         <div class="fb-vip-condition <?= $vip_is_launched ? 'is-complete' : '' ?>">
                             <span class="fb-vip-condition-icon"><i class="fas fa-<?= $vip_is_launched ? 'check' : 'calendar-alt' ?>"></i></span>
