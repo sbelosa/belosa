@@ -154,6 +154,29 @@ try {
         WHERE fbo_id = '{$fbo_id}' AND period_year = 2026 LIMIT 1");
     $yearly = $yearly_result ? $yearly_result->fetch_assoc() : [];
     $assert((float) ($yearly['total_active_cc_ytd'] ?? -1) === 77.0, 'Rendering an empty September month must not rewrite the cumulative YTD metric.');
+    forever_business_upsert_registered_member_live_cc($fbo_id, '2026-09-01', [
+        'personal_cc' => 0.0,
+        'total_cc' => 0.0,
+        'total_active_cc' => 0.0,
+        'non_manager_cc' => 0.0,
+        'leadership_cc' => 0.0,
+        'total_active_cc_ytd' => null,
+        'non_manager_cc_ytd' => null,
+        'leadership_cc_ytd' => null,
+        'is_4cc_active' => 0,
+    ]);
+    $fallback_yearly_result = database()->query("SELECT total_active_cc_ytd, non_manager_cc_ytd, leadership_cc_ytd
+        FROM forever_business_yearly_metrics WHERE fbo_id = '{$fbo_id}' AND period_year = 2026 LIMIT 1");
+    $fallback_yearly = $fallback_yearly_result ? $fallback_yearly_result->fetch_assoc() : [];
+    $fallback_vip_state = forever_business_get_vip_program_state($fixture_user_ids[0], $fixed_now);
+    $assert((float) ($fallback_yearly['total_active_cc_ytd'] ?? -1) === 77.0
+        && (float) ($fallback_yearly['non_manager_cc_ytd'] ?? -1) === 55.0
+        && (float) ($fallback_yearly['leadership_cc_ytd'] ?? -1) === 22.0,
+        'A confirmed opening-month zero must leave every existing YTD field unchanged when FLP360 omits cumulative values.');
+    $assert(($fallback_vip_state['qualifying_period'] ?? '') === '2026-08-01'
+        && (float) ($fallback_vip_state['current_personal_cc'] ?? -1) === 0.0
+        && !empty($fallback_vip_state['can_access_education']),
+        'A zero-month fallback must preserve permanent VIP education access earned in the verified prior month.');
     $los = forever_business_get_los_admin_analytics($fixture_user_ids[0], 30, '', $fixed_now);
     $assert(($los['period'] ?? '') === '2026-09-01'
         && ($los['global']['period'] ?? '') === '2026-09-01'
