@@ -84,7 +84,7 @@ Cilj razine: uz najmanje 1 osobni CC izgraditi potreban ukupni Active CC kroz st
 
 | Dan | 4 Core | Zadatak | Dovršeno kada |
 |---:|---|---|---|
-| 1 | Development | Provjeri osobni CC, Total Active CC i koliko ti još nedostaje do 4 CC. Postavi realan cilj koji se oslanja na dobar rad s kupcima i tvoj prirodan mjesečni ritam. | Trenutačno stanje, razmak i sljedeći cilj su jasni. |
+| 1 | Productivity | Postavi link svoje glavne FCC aplikacije na jedan društveni profil. Otvori FCC Aplikacije, kopiraj link glavne aplikacije i dodaj ga u bio ili opis profila na mreži koju već koristiš. Uz link napiši kratak, jasan opis i nakon spremanja provjeri otvara li se iz javnog prikaza profila. | Jedan društveni profil ima spremljen i provjeren link tvoje glavne FCC aplikacije. |
 | 2 | Productivity | Odaberi 15 ljudi koje poznaješ i razvrstaj teme o kojima ste već razgovarali na njegu, svakodnevnu rutinu i ostalo. Izdvoji osobe s kojima možeš najprirodnije nastaviti razgovor. | Odabrano je 15 ljudi i za svakoga je jasna prirodna tema razgovora. |
 | 3 | Recruitment | Pozovi dvije osobe na sljedeći nedjeljni Marketing plan u 18:00 i potvrdi da znaju gdje će dobiti poveznicu. | Dva personalizirana poziva su poslana. |
 | 4 | Recruitment | Napravi tri follow-upa, dajući prednost gostima, a zatim ljudima koji su već pokazali najviše interesa. | Tri razgovora imaju jasan završetak ili sljedeći korak. |

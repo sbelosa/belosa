@@ -1,8 +1,8 @@
 # Završni launch audit — Moj Forever / FCC VIP 4 Core
 
-> **Ažuriranje 1. rujna 2026. — završni komunikacijski prolaz:** tekst koji suradnici vide u svih 150 zadataka, brzim ciljevima, lakšim/mentorskim varijantama i primjerima poruka preuređen je u topao, osoban i razgovoran stil. Puni ciljevi, vrste radnji i statistička polja nisu promijenjeni; dva brza praga usklađena su s tekstom koji dopušta rad sa stvarnim manjim brojem (Leader 1. korak i Reaktivacija 2. korak sada dopuštaju minimum 1). Kanonski aktualni tekst nalazi se u `app/config/forever_business_vip_tasks.php` i `app/config/forever_business_vip_task_meta.php`; stariji citati u povijesnom dijelu ovog izvještaja nisu release-copy.
+> **Ažuriranje 1. rujna 2026. — završni komunikacijski i rollover prolaz:** tekst koji suradnici vide u svih 150 zadataka, brzim ciljevima, lakšim/mentorskim varijantama i primjerima poruka preuređen je u topao, osoban i razgovoran stil. Activator korak 1 sada je mjerljivo postavljanje i javna provjera osobnog FCC app-linka u biu profila; stari pregled CC-a više nije zadatak. Mjesečni Personal, Total i Total Active CC od prvog dana novog mjeseca kreću od 0, dok povijesni, višemjesečni i YTD izračuni ostaju sačuvani. Kanonski aktualni tekst nalazi se u `app/config/forever_business_vip_tasks.php` i `app/config/forever_business_vip_task_meta.php`; stariji citati u povijesnom dijelu ovog izvještaja nisu release-copy.
 
-Datum pregleda: 31. kolovoza 2026.
+Datum pregleda: 1. rujna 2026.
 
 Planirani početak: 1. rujna 2026. u 00:00, Europe/Zagreb
 
@@ -12,13 +12,13 @@ Opseg: lokalni kod, pravila razina, svih 150 redovnih zadataka, brzi koraci, zam
 
 Lokalna implementacija i aktualni katalog zadataka prošli su tehnički i sadržajni audit. Svih pet putanja imaju točno 30 redovnih koraka, eksplicitni puni i brzi cilj, eksplicitnu vrstu mjerene radnje te jasno odvojenu pomoć bez lažnog dovršavanja.
 
-Ipak, ukupna produkcijska odluka još nije bezuvjetni GO. Prije javnog početka moraju biti zatvoreni vanjski release-gateovi u sljedećoj tablici. Kod ih ne može sam dokazati.
+Sadržaj i implementacija su GO nakon prolaska navedenih testova. Vanjski i produkcijski dokazi ostaju zasebni release-gateovi: završni handoff mora sadržavati poveznice na uspješan deploy, smoke provjeru i aktualnu FLP360/FCC sinkronizaciju. Kod ih ne može sam dokazati niti ih ovaj repozitorijski dokument treba unaprijed proglasiti izvršenima.
 
 | Gate | Stanje u ovom auditu | Što je potrebno za GO |
 |---|---|---|
 | Pisano Forever odobrenje | **Nije dostavljeno kao dokaz** | Sačuvati prethodno pisano odobrenje za FCC digitalni trening, web/aplikaciju i pripadajuće materijale. Aktualna HR/EU politika (§16.02(i)) to zahtijeva za materijale koje Forever nije osigurao. |
-| Produkcijski release | **Nije izvršen** | Deployati cijeli pregledani skup, obvezno uključujući novi app/config/forever_business_vip_task_meta.php, pa ponoviti smoke i DB migracijsku provjeru. Bez meta datoteke loader namjerno faila zatvoreno. |
-| Produkcijska FLP360/FCC reconciliacija | **Nije ponovno dokazano zeleno** | Nakon deploya pokrenuti sinkronizaciju i potvrditi 0 aktivnih valjanih FCC Forever ID-jeva bez aktualnog potvrđenog CC-a. Posljednji dostupan radni artefakt imao je 8 nepotvrđenih ID-jeva; siguran live re-check s tajnom nije bio dopušten u ovom radu. |
+| Produkcijski release | **Dokazuje se release handoffom** | Deployati cijeli pregledani skup, uključujući task meta datoteku, te priložiti zeleni deploy i smoke run za isti commit. Bez meta datoteke loader namjerno faila zatvoreno. |
+| Produkcijska FLP360/FCC reconciliacija | **Kolovoška kontrola 630/630 je prošla; aktualni mjesec dokazuje se handoffom** | Nakon deploya pokrenuti registrirani-account sync, potvrditi svaki aktivni Forever ID i provjeriti mjesečne, 4 CC i YTD vrijednosti. Hijerarhija se u tom načinu ne zamjenjuje. |
 | Marketing plan sadržaj | **Poveznica radi, deck/govor nije u repozitoriju** | Prije prvog termina 6.9. ručno compliance-pregledati stvarne slajdove i govor; javna ruta samo preusmjerava na Zoom. |
 | Privatna evidencija kontakata | **Članski tekst je pojednostavljen; organizacijsko odobrenje nije dokazano** | Interno potvrditi organizacijski odobren način rada s kontaktima. FCC i dalje treba spremati samo rezultat/status potreban za statistiku, bez popisa kontakata u zadatku. |
 
@@ -29,6 +29,9 @@ Ipak, ukupna produkcijska odluka još nije bezuvjetni GO. Prije javnog početka 
 - Pomoć je zaseban lifecycle zapis. Istodobni submit iz dva taba ne može ponovno otvoriti pomoć nakon dovršenja; dovršenje zatvara stare otvorene zahtjeve.
 - Nedjeljni Marketing plan ima prednost, vidljiv je za pripremu, ali se može potvrditi tek od 19:30. Prvi cohort koji radi svaki dan završava 30. redovni korak 5.10.2026.; to nije 30 kalendarskih dana.
 - Brzi cilj je serverski provjerljiv. Adaptivno smanjenje prikazuje se samo kada se broj stvarno smanjio; cilj 1 ne dobiva lažnu poruku da je smanjen.
+- Kada puni i lakši zadatak oba imaju brojčani cilj 1, suradnik izričito označava koju je verziju završio; obje vrijede kao korak, ali se u LOS statistici vode odvojeno.
+- Activator korak 1 ima versionirani action key. Eventualna potvrda starog CC-pregleda ostaje u auditu, ali ne preskače novi zadatak postavljanja FCC linka.
+- Početak novog Zagreb mjeseca prikazuje mjesečne nule bez prepisivanja YTD-a. Višemjesečni rangovi zbrajaju aktualnu nulu i ranije mjesece; graf prelazi na provjereni FCC zbroj čim postoje aktualne narudžbe, čak i ako službeni Global Total CC još kasni.
 - Brzi cilj uvijek ostaje ista stvarna radnja u manjem opsegu, dok su lakše mentorske varijante jasno odvojene i ne ulaze u statistiku stvarnih kontakata, gostiju, kupaca ili prodaja.
 - Planiranje je odvojeno od treninga, a zbirne Leader provjere od izravnih follow-upova/poziva. Potvrde ranijih gostiju više se ne pribrajaju novim pozivima.
 - Predlošci poruka navode neovisnog Forever suradnika i komercijalnu narav; poslovni poziv sadrži upozorenje da prihod i rezultat nisu zajamčeni.
@@ -49,7 +52,7 @@ Status e-maila sent znači da je transport/provider prihvatio poruku, ne da ju j
 | Putanja | Cilj | Raspodjela 4 Core | Zbroj punih / brzih jedinica | Zaključak |
 |---|---|---|---:|---|
 | Starter | početni ritam, prvi/sljedeći kupac i napredak prema 1 osobnom CC bez stvaranja zaliha | Development 7, Productivity 5, Recruitment 15, Retention 3 | 60 / 34 | Primjeren početniku nakon korekcija: uči transparentan kontakt, osnovni retention i provjeru službenih podataka. Veći zadaci imaju brzi cilj; odsutnost kontakata vodi u anonimnu mentorsku probu, ne u izmišljeni rezultat. |
-| Aktivator | od najmanje 1 osobnog CC graditi prema službeno potvrđenoj 4 CC aktivnosti | Development 6, Productivity 5, Recruitment 15, Retention 4 | 98 / 41 | Volumen je viši, ali brzi cilj ostaje realan. Program mjeri razgovore, provjere i follow-up, a ne obećava da će te aktivnosti proizvesti 4 CC. |
+| Aktivator | od najmanje 1 osobnog CC graditi prema službeno potvrđenoj 4 CC aktivnosti | Development 5, Productivity 6, Recruitment 15, Retention 4 | 98 / 41 | Volumen je viši, ali brzi cilj ostaje realan. Program mjeri razgovore, provjere i follow-up, a ne obećava da će te aktivnosti proizvesti 4 CC. |
 | Builder | stabilizirati 4 Core i započeti sigurnu duplicaciju s jednom dobrovoljnom osobom | Development 8, Productivity 3, Recruitment 15, Retention 4 | 105 / 45 | Najzahtjevnija operativna putanja. Ispravljeni su miješani brojevi poziva, onboarding i tuđi rad; rad druge osobe više se ne pribraja voditeljevu rezultatu. |
 | Leader | razvijati samostalnost ljudi i jedan budući voditeljski kapacitet | Development 16, Recruitment 10, Productivity 1, Retention 3 | 48 / 32 | Rezultati su po FCC računu, a grupne radnje su agregatne provjere, planiranje ili coaching. Izbjegnuto je lažno pretvaranje zbirne provjere ili grupnih gostiju u izravni follow-up ili poziv lidera. |
 | Reaktivacija | vratiti održiv ritam kroz postojeće odnose bez krivnje i pritiska | Development 8, Retention 5, Recruitment 13, Productivity 4 | 63 / 34 | Opseg je namjerno niži, kontakt mora imati prirodan i dopušten razlog, a stari odnosi ne smiju postati masovna lista. Ako nema stvarnog slučaja, koristi se trening ili zahtjev za pomoć. |
@@ -70,7 +73,7 @@ Napomena: zbrojevi jedinica služe samo provjeri opsega unutar putanje. Ne smiju
 |---|---|
 | PHP sigurnosni/kataloški regression suite | PASS |
 | DB integration: shared FBO, root izolacija, FBO korekcija, Zagreb datum, completion/help race, e-mail terminalni red | PASS |
-| LOS admin guardovi | PASS — 43 provjere |
+| LOS admin guardovi | PASS — 49 provjera |
 | Brevo/SMTP fallback pravila | PASS |
 | FLP360 cloud-sync testovi | PASS |
 | PHP lint izmijenjenih launch datoteka | PASS |
@@ -128,13 +131,13 @@ Vrste mjerenja: planning 12, contact 1, content 2, customer_checkin 3, conversat
 
 Cilj: od najmanje 1 osobnog CC graditi prema službeno potvrđenoj 4 CC aktivnosti.
 
-4 Core: Development 6, Productivity 5, Recruitment 15, Retention 4.
+4 Core: Development 5, Productivity 6, Recruitment 15, Retention 4.
 
-Vrste mjerenja: planning 10, invitation 4, follow_up 5, conversation 4, customer_checkin 3, recommendation 2, content 1, onboarding 1.
+Vrste mjerenja: planning 9, invitation 4, follow_up 5, conversation 4, customer_checkin 3, recommendation 2, content 2, onboarding 1.
 
 | Dan | 4 Core | Točan zadatak | Dovršeno kada | Puni / brzi cilj | Glavna vrsta | Audit |
 |---:|---|---|---|---:|---|---|
-| 1 | Development | Provjeri osobni CC, Total Active CC i točan preostali razmak do 4 CC. Zapiši cilj bez planiranja nepotrebne osobne zalihe. | Trenutačno stanje i razmak su spremljeni. | 1 / 1 | planning | OK — Plan/priprema ili pregled; ne ulazi u statistiku izravnih kontakata. Korak je izvediv kao osobna priprema/pregled bez vanjskog ishoda. |
+| 1 | Productivity | Postavi link svoje glavne FCC aplikacije na jedan društveni profil, dodaj kratak opis i provjeri otvara li se iz javnog prikaza. | Jedan društveni profil ima spremljen i provjeren link tvoje glavne FCC aplikacije. | 1 / 1 | content | OK — Jedna mjerljiva promjena javnog profila. Checklist vodi od kopiranja glavnog FCC linka do javne provjere, a lakša verzija dopušta postavljanje samog provjerenog linka bez dodatnog uređivanja opisa. |
 | 2 | Productivity | Iz postojećeg osobnog adresara, bez kopiranja kontakata u FCC ili novu bazu, odaberi 15 osoba i razvrstaj njihove dobrovoljno spomenute neosjetljive teme na njegu, svakodnevnu rutinu i ostalo. Ne zapisuj zdravstvena stanja, simptome ili dijagnoze. | Odabrano je 15 stvarnih kontakata po neosjetljivim temama; u FCC-u je spremljen samo zbirni broj. | 15 / 4 | planning | OK — Plan/priprema ili pregled; ne ulazi u statistiku izravnih kontakata. Postoji provjeren fallback. |
 | 3 | Recruitment | Pozovi dvije osobe na sljedeći nedjeljni Marketing plan u 18:00 i potvrdi da znaju gdje će dobiti poveznicu. | Dva personalizirana poziva su poslana. | 2 / 1 | invitation | OK — Stvarno poslan poziv; potvrda ili prodaja ne pribraja se pozivu. Postoji provjeren fallback. Prikazuje se samo relevantan pregledani predložak. |
 | 4 | Recruitment | Napravi tri follow-upa, dajući prednost gostima, a zatim najtoplijim otvorenim kontaktima. | Tri razgovora imaju jasan stvaran status ili sljedeći korak. | 3 / 1 | follow_up | OK — Stvarni follow-up ili jasno označena mentorska proba. Postoji provjeren fallback. |

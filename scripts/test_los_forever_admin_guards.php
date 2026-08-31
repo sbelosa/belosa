@@ -46,6 +46,10 @@ $assert(stripos($helper, 'forever_business_ensure_tables') === false, 'Read mode
 $assert(!preg_match('/\b(?:INSERT|UPDATE|DELETE|REPLACE|ALTER|CREATE|DROP|TRUNCATE)\s+/i', $helper), 'Read model contains a database write statement.');
 $assert(strpos($helper, '[7, 14, 30, 60]') !== false, 'Window whitelist 7/14/30/60 is missing.');
 $assert(strpos($helper, '$previous_start') !== false && strpos($helper, '$previous_end') !== false, 'Previous equal-window comparison is missing.');
+$assert(strpos($helper, 'forever_business_los_periods(?\DateTimeInterface $now = null)') !== false && strpos($helper, 'array_merge([$current_zagreb_period], $periods)') !== false, 'LOS selector must expose the open Zagreb month before its first order.');
+$assert(strpos($helper, "'personal_cc' => 0.0") !== false && strpos($helper, "'total_active_cc' => 0.0") !== false && strpos($helper, '$period === $current_zagreb_period') !== false, 'Missing open-month member CC must be represented as zero in the read model.');
+$assert(strpos($helper, "'Otvoreni mjesec bez sinkroniziranih narudžbi'") !== false && strpos($helper, "'is_official_snapshot' => 0") !== false, 'LOS CC chart must append a clearly non-official zero point for an empty open month.');
+$assert(strpos($helper, '$has_official_global_snapshot = !empty($current_cc_row[\'is_official_snapshot\'])') !== false, 'A prior official snapshot must not label a synthetic current-month zero as official.');
 $assert(strpos($helper, "'closed_sample_count' => count(\$closed_values)") !== false, 'Global average must disclose how many of six closed months are available.');
 $assert(strpos($helper, "'personal_cc'] >= 0.33") !== false, 'Current 0.33 CC qualification guard is missing.');
 $assert(strpos($helper, "['is_4cc_active'] !== null") !== false, 'Official tri-state 4 CC handling is missing.');
@@ -56,6 +60,8 @@ $assert(strpos($helper, "['qualifying_period']") !== false && strpos($helper, "[
 $assert(strpos($helper, "'is_in_current_structure' => !empty") !== false && strpos($helper, '$current_structure_metrics') !== false, 'Current FLP metrics must stay separate from the permanent project cohort.');
 $assert(strpos($helper, "|| \$member['started_at'] !== null") !== false && strpos($helper, "'started_without_enrollment'") !== false, 'Permanent project outcomes must remain visible outside the current structure and expose migration gaps.');
 $assert(strpos($helper, "['linked_accounts'] === 1") !== false && strpos($helper, "`status` = 1") !== false && strpos($helper, '$.meta.forever_id') !== false && strpos($helper, '$.meta.foreverID') !== false, 'LOS linkage must match the exact active-account access gate.');
+$assert(substr_count($helper, "action_key` <> 'vip26_activator_d01'") >= 6, 'Deprecated Activator day-one outcomes and help requests must not affect current curriculum analytics.');
+$assert(strpos($helper, "static fn(array \$metric): float => (float) (\$metric['personal_cc'] ?? 0),\n            \$current_structure_metrics") !== false, 'LOS current-month CC fallback must sum only members in the confirmed structure.');
 $assert(strpos($helper, 'result_type') !== false && strpos($helper, 'difficulty') !== false && strpos($helper, 'needs_help') !== false, 'Structured outcome fields are incomplete.');
 $assert(strpos($helper, "`newer`.`updated_at` > `request`.`updated_at`") !== false && strpos($helper, "['help_requested_at'] = \$row['updated_at']") !== false, 'Repeated help requests must be selected and sorted by their latest update rather than their first creation.');
 $assert(strpos($helper, "'2026-09-01'") !== false && strpos($helper, "modify('+3 days')") !== false && strpos($helper, ">= 7") !== false, 'Launch/grace and stalled thresholds are incomplete.');

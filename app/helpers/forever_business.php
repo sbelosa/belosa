@@ -695,6 +695,37 @@ function forever_business_period_from_label($value): ?string {
     return sprintf('%04d-%02d-01', (int) $matches[2], $months[$matches[1]]);
 }
 
+function forever_business_current_zagreb_period(?\DateTimeInterface $now = null): string {
+    $timezone = new \DateTimeZone('Europe/Zagreb');
+    $current_time = $now
+        ? (new \DateTimeImmutable('@' . $now->getTimestamp()))->setTimezone($timezone)
+        : new \DateTimeImmutable('now', $timezone);
+    return $current_time->format('Y-m-01');
+}
+
+/* Monthly FLP values reset at the start of a new Zagreb calendar month. Until
+ * the first synchronized order creates that month's row, the current month is
+ * a real zero — never a copy of the preceding month. Historical selections
+ * and cumulative/YTD fields remain untouched. */
+function forever_business_normalize_current_month_metrics(
+    array $metric,
+    string $period,
+    ?\DateTimeInterface $now = null
+): array {
+    $period = forever_business_period_from_label($period) ?: '';
+    if($period === '' || $period !== forever_business_current_zagreb_period($now)) {
+        return $metric;
+    }
+
+    foreach(['personal_cc', 'total_cc', 'total_active_cc', 'non_manager_cc', 'leadership_cc'] as $field) {
+        if(!array_key_exists($field, $metric) || $metric[$field] === null || $metric[$field] === '') {
+            $metric[$field] = 0.0;
+        }
+    }
+
+    return $metric;
+}
+
 function forever_business_read_csv(string $path): array {
     $handle = fopen($path, 'rb');
 
@@ -1615,13 +1646,18 @@ function forever_business_record_vip_eligibility_metric(
 }
 /* /Custom code: FC-2026-08-21 */
 
-function forever_business_get_periods(): array {
+function forever_business_get_periods(?\DateTimeInterface $now = null): array {
     forever_business_ensure_tables();
-    $current_zagreb_period = (new \DateTimeImmutable('now', new \DateTimeZone('Europe/Zagreb')))->format('Y-m-01');
+    $current_zagreb_period = forever_business_current_zagreb_period($now);
     $rows = database()->query("SELECT period_month FROM forever_business_metrics WHERE period_month <= '{$current_zagreb_period}' UNION SELECT period_month FROM forever_business_total_cc_snapshots WHERE period_month <= '{$current_zagreb_period}' ORDER BY period_month DESC");
-    $periods = [];
+    /* The open month must exist in the selector even before its first order or
+     * FLP snapshot. No database row is written merely to render a zero. */
+    $periods = [$current_zagreb_period];
     while($rows && $row = $rows->fetch_assoc()) {
-        $periods[] = (string) $row['period_month'];
+        $row_period = (string) $row['period_month'];
+        if($row_period !== '' && !in_array($row_period, $periods, true)) {
+            $periods[] = $row_period;
+        }
     }
     return $periods;
 }
@@ -1708,6 +1744,14 @@ function forever_business_get_registered_sync_accounts(string $period): array {
             COALESCE(MAX(NULLIF(UPPER(TRIM(member.country_code)), '')), MAX(NULLIF(UPPER(TRIM(account.account_country_code)), ''))) AS country_code,
             MAX(metric.period_month) AS metric_period,
             MAX(metric.personal_cc) AS personal_cc,
+            MAX(metric.total_cc) AS total_cc,
+            MAX(metric.total_active_cc) AS total_active_cc,
+            MAX(metric.non_manager_cc) AS non_manager_cc,
+            MAX(metric.leadership_cc) AS leadership_cc,
+            MAX(metric.is_4cc_active) AS is_4cc_active,
+            MAX(yearly.total_active_cc_ytd) AS total_active_cc_ytd,
+            MAX(yearly.non_manager_cc_ytd) AS non_manager_cc_ytd,
+            MAX(yearly.leadership_cc_ytd) AS leadership_cc_ytd,
             MAX(CASE WHEN enrollment.fbo_id IS NULL THEN 0 ELSE 1 END) AS is_vip_enrolled
         FROM (
             SELECT user_id,
@@ -1723,6 +1767,7 @@ function forever_business_get_registered_sync_accounts(string $period): array {
         ) account
         LEFT JOIN forever_business_members member ON member.fbo_id = account.fbo_id
         LEFT JOIN forever_business_metrics metric ON metric.fbo_id = account.fbo_id AND metric.period_month = '{$escaped_period}'
+        LEFT JOIN forever_business_yearly_metrics yearly ON yearly.fbo_id = account.fbo_id AND yearly.period_year = YEAR('{$escaped_period}')
         LEFT JOIN forever_business_vip_enrollments enrollment ON enrollment.fbo_id = account.fbo_id
         WHERE account.fbo_id REGEXP '^360[0-9]{9}$'
         GROUP BY account.fbo_id
@@ -1739,6 +1784,14 @@ function forever_business_get_registered_sync_accounts(string $period): array {
             'active_link_count' => max(1, (int) ($row['active_link_count'] ?? 1)),
             'metric_period' => $row['metric_period'] ?: null,
             'personal_cc' => $row['personal_cc'] === null ? null : round((float) $row['personal_cc'], 3),
+            'total_cc' => $row['total_cc'] === null ? null : round((float) $row['total_cc'], 3),
+            'total_active_cc' => $row['total_active_cc'] === null ? null : round((float) $row['total_active_cc'], 3),
+            'non_manager_cc' => $row['non_manager_cc'] === null ? null : round((float) $row['non_manager_cc'], 3),
+            'leadership_cc' => $row['leadership_cc'] === null ? null : round((float) $row['leadership_cc'], 3),
+            'is_4cc_active' => $row['is_4cc_active'] === null ? null : (int) $row['is_4cc_active'] === 1,
+            'total_active_cc_ytd' => $row['total_active_cc_ytd'] === null ? null : round((float) $row['total_active_cc_ytd'], 3),
+            'non_manager_cc_ytd' => $row['non_manager_cc_ytd'] === null ? null : round((float) $row['non_manager_cc_ytd'], 3),
+            'leadership_cc_ytd' => $row['leadership_cc_ytd'] === null ? null : round((float) $row['leadership_cc_ytd'], 3),
             'is_vip_enrolled' => !empty($row['is_vip_enrolled']),
         ];
     }
@@ -1898,7 +1951,8 @@ function forever_business_get_user_activity_notice(int $user_id): array {
         return $empty_notice;
     }
 
-    $progress = forever_business_get_verified_progress((array) $member);
+    $member = forever_business_normalize_current_month_metrics((array) $member, $period);
+    $progress = forever_business_get_verified_progress($member);
     $has_personal_data = $progress['personal_cc'] !== null;
     $has_regional_data = $progress['total_active_cc'] !== null;
     $has_official_activity_data = !empty($progress['has_official_activity_data']);
@@ -2078,13 +2132,14 @@ function forever_business_get_vip_program_state(int $user_id, ?\DateTimeInterfac
         : new \DateTimeImmutable('now', $timezone);
     $current_month = $current_time->format('Y-m-01');
     $metric = db()->where('fbo_id', $fbo_id)
-        ->where('period_month', '2026-08-01', '>=')
-        ->where('period_month', $current_month, '<=')
-        ->orderBy('period_month', 'DESC')
+        ->where('period_month', $current_month)
         ->getOne('forever_business_metrics', ['period_month', 'personal_cc']);
     $enrollment_row = db()->where('fbo_id', $fbo_id)->getOne('forever_business_vip_enrollments');
     $enrollment = $enrollment_row ? (array) $enrollment_row : [];
-    $personal_cc = $metric && $metric->personal_cc !== null ? (float) $metric->personal_cc : null;
+    /* Access remains anchored to the permanent enrollment, but the visible
+     * current-month progress always starts at zero and never falls back to a
+     * prior month's Personal CC. */
+    $personal_cc = $metric && $metric->personal_cc !== null ? (float) $metric->personal_cc : 0.0;
     $active_link_count = forever_business_get_active_user_link_count_for_fbo($fbo_id);
     $has_valid_linkage = $active_link_count >= 1;
 
@@ -2105,7 +2160,7 @@ function forever_business_get_vip_program_state(int $user_id, ?\DateTimeInterfac
         $enrollment,
         $has_valid_linkage,
         $active_link_count,
-        $metric->period_month ?? null
+        $current_month
     );
     $state['has_linked_id'] = true;
     $state['fbo_id'] = $fbo_id;
@@ -2450,7 +2505,9 @@ function forever_business_vip_task_meta(): array {
             || count($track['quick_targets'] ?? []) !== 30
             || count($track['result_types'] ?? []) !== 30
             || (isset($track['fallbacks']) && !is_array($track['fallbacks']))
-            || (isset($track['examples']) && !is_array($track['examples']))) {
+            || (isset($track['examples']) && !is_array($track['examples']))
+            || (isset($track['allowed_result_types']) && !is_array($track['allowed_result_types']))
+            || (isset($track['checklists']) && !is_array($track['checklists']))) {
             throw new \RuntimeException("VIP task metadata for {$track_key} must contain exactly 30 reviewed rules.");
         }
         for($index = 0; $index < 30; $index++) {
@@ -2461,6 +2518,31 @@ function forever_business_vip_task_meta(): array {
                 || !is_int($quick_target) || $quick_target < 1 || $quick_target > $target
                 || !array_key_exists($result_type, $result_types)) {
                 throw new \RuntimeException("VIP task metadata for {$track_key}, day " . ($index + 1) . ' is invalid.');
+            }
+        }
+        foreach(($track['checklists'] ?? []) as $day => $items) {
+            if(!is_int($day) || $day < 1 || $day > 30 || !is_array($items) || !$items) {
+                throw new \RuntimeException("VIP task metadata for {$track_key}, day {$day} contains an invalid checklist.");
+            }
+            foreach($items as $item) {
+                if(!is_string($item) || trim($item) === '') {
+                    throw new \RuntimeException("VIP task metadata for {$track_key}, day {$day} contains an invalid checklist item.");
+                }
+            }
+        }
+        foreach(($track['allowed_result_types'] ?? []) as $day => $allowed_types) {
+            if(!is_int($day) || $day < 1 || $day > 30 || !is_array($allowed_types) || !$allowed_types) {
+                throw new \RuntimeException("VIP task metadata for {$track_key}, day {$day} contains invalid allowed result types.");
+            }
+            $expected_result_type = (string) ($track['result_types'][$day - 1] ?? '');
+            foreach($allowed_types as $result_type) {
+                if(!is_string($result_type)
+                    || !array_key_exists($result_type, forever_business_vip_result_type_options())) {
+                    throw new \RuntimeException("VIP task metadata for {$track_key}, day {$day} contains an invalid allowed result type.");
+                }
+            }
+            if(!in_array($expected_result_type, $allowed_types, true)) {
+                throw new \RuntimeException("VIP task metadata for {$track_key}, day {$day} must allow its expected result type.");
             }
         }
     }
@@ -2627,11 +2709,20 @@ function forever_business_get_vip_task_catalog(): array {
             ? $configured_result_type
             : forever_business_vip_expected_result_type($track_key, $core, $task);
         $allowed_result_types = forever_business_vip_allowed_result_types($expected_result_type);
+        if(array_key_exists($day, $meta[$track_key]['allowed_result_types'] ?? [])) {
+            $allowed_result_types = array_values(array_unique(
+                (array) $meta[$track_key]['allowed_result_types'][$day]
+            ));
+        }
         $fallback = trim((string) ($meta[$track_key]['fallbacks'][$day] ?? ''));
         if($fallback === '') {
             $fallback = forever_business_vip_default_fallback($expected_result_type, $quick_target);
         }
         $fallback = forever_business_vip_finalize_fallback($fallback, $allowed_result_types);
+        $checklist = array_values(array_map(
+            static fn($item) => trim((string) $item),
+            (array) ($meta[$track_key]['checklists'][$day] ?? [])
+        ));
         $message_example = '';
         if(array_key_exists('examples', $meta[$track_key] ?? [])) {
             $example_heading = mb_strtolower(trim((string) ($meta[$track_key]['examples'][$day] ?? '')));
@@ -2644,7 +2735,7 @@ function forever_business_get_vip_task_catalog(): array {
             'title' => $title,
             'instruction' => $instruction,
             'task_text' => $task,
-            'checklist' => [],
+            'checklist' => $checklist,
             'success_definition' => $success,
             'target' => $target,
             'quick_target' => $quick_target,
@@ -2678,14 +2769,15 @@ function forever_business_get_vip_track(array $member): array {
     $base_had_previous_activity = !empty($member['vip_base_had_previous_activity_12m'])
         || !empty($member['vip_base_focus_previous_active'])
         || (float) ($member['vip_base_previous_personal_cc'] ?? $member['previous_personal_cc'] ?? 0) > 0;
-    $current_personal_cc = (float) ($member['vip_current_personal_cc'] ?? $base_personal_cc);
-    $current_is_active = array_key_exists('vip_current_is_4cc_active', $member)
-        ? forever_business_has_verified_four_cc_activity([
-            'is_4cc_active' => $member['vip_current_is_4cc_active'],
-            'personal_cc' => $member['vip_current_personal_cc'] ?? null,
-            'total_active_cc' => $member['vip_current_total_active_cc'] ?? null,
-        ])
-        : $base_is_active;
+    /* The qualification snapshot fixes the initial curriculum, while upgrades
+     * use only this calendar month's activity. A missing open-month row is a
+     * zero and must never inherit the qualifying/August CC. */
+    $current_personal_cc = (float) ($member['vip_current_personal_cc'] ?? 0);
+    $current_is_active = forever_business_has_verified_four_cc_activity([
+        'is_4cc_active' => $member['vip_current_is_4cc_active'] ?? null,
+        'personal_cc' => $member['vip_current_personal_cc'] ?? 0.0,
+        'total_active_cc' => $member['vip_current_total_active_cc'] ?? 0.0,
+    ]);
 
     $is_recognized_manager = ($progress['rank']['mode'] ?? '') === 'manager';
 
@@ -2735,6 +2827,17 @@ function forever_business_get_vip_track(array $member): array {
         'key' => $track_key,
         'has_advanced' => $highest_rank > 0 && $resolved_rank > $highest_rank,
     ] + $definitions[$track_key];
+}
+
+function forever_business_vip_action_key(string $track_key, int $day): string {
+    $default_key = sprintf('vip26_%s_d%02d', $track_key, $day);
+    /* Activator day 1 was materially replaced at launch. A versioned key and
+     * the progress exclusions below ensure that any very early completion of
+     * the superseded CC-review task cannot grant credit for the new biolink
+     * task. The historical record remains available for audit statistics. */
+    return $default_key === 'vip26_activator_d01'
+        ? 'vip26_activator_d01_biolink'
+        : $default_key;
 }
 
 function forever_business_get_action(array $member, ?array $metric, int $completed_total = 0, bool $sunday_done_today = false, ?\DateTimeInterface $now = null, bool $vip_done_today = false): array {
@@ -2848,7 +2951,7 @@ function forever_business_get_action(array $member, ?array $metric, int $complet
         ];
     }
 
-    $task['key'] = sprintf('vip26_%s_d%02d', $track['key'], $day);
+    $task['key'] = forever_business_vip_action_key($track['key'], $day);
     $task['can_complete'] = true;
     $task['sequence_position'] = $day;
     $task['sequence_total'] = 30;
@@ -3181,12 +3284,13 @@ function forever_business_get_dashboard(int $user_id, bool $is_admin, string $re
         : new \DateTimeImmutable('now', $timezone);
     $today = $zagreb_now->format('Y-m-d');
     $seven_day_start = $zagreb_now->modify('-6 days')->format('Y-m-d');
-    $periods = forever_business_get_periods();
-    $period = in_array($period, $periods, true) ? $period : ($periods[0] ?? date('Y-m-01'));
+    $current_zagreb_period = forever_business_current_zagreb_period($zagreb_now);
+    $periods = forever_business_get_periods($zagreb_now);
+    $period = in_array($period, $periods, true) ? $period : ($periods[0] ?? $current_zagreb_period);
     $previous_period = (new \DateTimeImmutable($period))->modify('-1 month')->format('Y-m-01');
     $two_months_ago_period = (new \DateTimeImmutable($period))->modify('-2 months')->format('Y-m-01');
     $three_months_ago_period = (new \DateTimeImmutable($period))->modify('-3 months')->format('Y-m-01');
-    $vip_period_limit = max('2026-08-01', $zagreb_now->format('Y-m-01'));
+    $vip_current_period = $current_zagreb_period;
     $dashboard_user = db()->where('user_id', $user_id)->getOne('users', ['preferences']);
     $authenticated_dashboard_root = $dashboard_user ? forever_business_extract_user_fbo_id($dashboard_user->preferences ?? null) : '';
     $requested_root_id = forever_business_normalize_fbo_id($requested_root);
@@ -3276,12 +3380,8 @@ function forever_business_get_dashboard(int $user_id, bool $is_admin, string $re
                 AND vip_base_prev.period_month = DATE_SUB(COALESCE(vip_enrollment.qualifying_period, '2026-08-01'), INTERVAL 1 MONTH)
             LEFT JOIN forever_business_focus_metrics vip_base_focus ON vip_base_focus.fbo_id = m.fbo_id
                 AND vip_base_focus.period_month = COALESCE(vip_enrollment.qualifying_period, '2026-08-01')
-            LEFT JOIN forever_business_metrics vip_current ON vip_current.fbo_id = m.fbo_id AND vip_current.period_month = (
-                SELECT MAX(vip_lookup.period_month)
-                FROM forever_business_metrics vip_lookup
-                WHERE vip_lookup.fbo_id = m.fbo_id
-                  AND vip_lookup.period_month BETWEEN '2026-08-01' AND '{$vip_period_limit}'
-            )
+            LEFT JOIN forever_business_metrics vip_current ON vip_current.fbo_id = m.fbo_id
+                AND vip_current.period_month = '{$vip_current_period}'
             LEFT JOIN forever_business_imports vip_current_source ON vip_current_source.import_id = vip_current.source_import_id
             LEFT JOIN forever_business_focus_metrics focus ON focus.fbo_id = m.fbo_id AND focus.period_month = '{$period}'
             LEFT JOIN (
@@ -3289,9 +3389,9 @@ function forever_business_get_dashboard(int $user_id, bool $is_admin, string $re
                        COUNT(DISTINCT IF(action_date >= '{$seven_day_start}' AND status = 'done' AND action_key LIKE 'vip26\\_%', action_date, NULL)) AS actions_done,
                        SUM(IF(action_date >= '{$seven_day_start}' AND status = 'done' AND action_key LIKE 'vip26\\_%', outcome_count, 0)) AS action_units_total,
                        SUM(status = 'done') AS actions_done_total,
-                       SUM(status = 'done' AND action_key LIKE 'vip26\\_%' AND action_key NOT LIKE 'vip26\\_sunday\\_%') AS vip_actions_done_total,
+                       SUM(status = 'done' AND action_key LIKE 'vip26\\_%' AND action_key NOT LIKE 'vip26\\_sunday\\_%' AND action_key <> 'vip26_activator_d01') AS vip_actions_done_total,
                        SUM(status = 'done' AND action_date = '{$today}' AND action_key = CONCAT('vip26_sunday_', DATE_FORMAT('{$today}', '%Y%m%d'))) AS vip_sunday_done_today,
-                       SUM(status = 'done' AND action_date = '{$today}' AND action_key LIKE 'vip26\\_%') AS vip_action_done_today,
+                       SUM(status = 'done' AND action_date = '{$today}' AND action_key LIKE 'vip26\\_%' AND action_key <> 'vip26_activator_d01') AS vip_action_done_today,
                        MAX(CASE
                            WHEN status = 'done' AND action_key LIKE 'vip26\\_leader\\_%' THEN 4
                            WHEN status = 'done' AND action_key LIKE 'vip26\\_builder\\_%' THEN 3
@@ -3311,6 +3411,7 @@ function forever_business_get_dashboard(int $user_id, bool $is_admin, string $re
                        SUBSTRING_INDEX(GROUP_CONCAT(IF(status = 'done' AND action_key LIKE 'vip26\\_%', completion_mode, NULL) ORDER BY outcome_id DESC SEPARATOR ','), ',', 1) AS vip_last_completion_mode,
                        MAX(IF(status = 'done', updated_at, NULL)) AS last_action_at
                 FROM forever_business_daily_outcomes
+                WHERE action_key <> 'vip26_activator_d01'
                 GROUP BY fbo_id
             ) outcomes ON outcomes.fbo_id = m.fbo_id
             LEFT JOIN (
@@ -3318,9 +3419,9 @@ function forever_business_get_dashboard(int $user_id, bool $is_admin, string $re
                        COUNT(DISTINCT IF(action_date >= '{$seven_day_start}' AND status = 'done' AND action_key LIKE 'vip26\\_%', action_date, NULL)) AS actions_done,
                        SUM(IF(action_date >= '{$seven_day_start}' AND status = 'done' AND action_key LIKE 'vip26\\_%', outcome_count, 0)) AS action_units_total,
                        SUM(status = 'done') AS actions_done_total,
-                       SUM(status = 'done' AND action_key LIKE 'vip26\\_%' AND action_key NOT LIKE 'vip26\\_sunday\\_%') AS vip_actions_done_total,
+                       SUM(status = 'done' AND action_key LIKE 'vip26\\_%' AND action_key NOT LIKE 'vip26\\_sunday\\_%' AND action_key <> 'vip26_activator_d01') AS vip_actions_done_total,
                        SUM(status = 'done' AND action_date = '{$today}' AND action_key = CONCAT('vip26_sunday_', DATE_FORMAT('{$today}', '%Y%m%d'))) AS vip_sunday_done_today,
-                       SUM(status = 'done' AND action_date = '{$today}' AND action_key LIKE 'vip26\\_%') AS vip_action_done_today,
+                       SUM(status = 'done' AND action_date = '{$today}' AND action_key LIKE 'vip26\\_%' AND action_key <> 'vip26_activator_d01') AS vip_action_done_today,
                        MAX(CASE
                            WHEN status = 'done' AND action_key LIKE 'vip26\\_leader\\_%' THEN 4
                            WHEN status = 'done' AND action_key LIKE 'vip26\\_builder\\_%' THEN 3
@@ -3341,6 +3442,7 @@ function forever_business_get_dashboard(int $user_id, bool $is_admin, string $re
                        MAX(IF(status = 'done', updated_at, NULL)) AS last_action_at
                 FROM forever_business_daily_outcomes
                 WHERE recorded_by_user_id = {$user_id}
+                  AND action_key <> 'vip26_activator_d01'
                 GROUP BY recorded_by_user_id
             ) actor_outcomes ON actor_outcomes.recorded_by_user_id = {$user_id}
                 AND m.fbo_id = '{$escaped_dashboard_root}'
@@ -3349,6 +3451,7 @@ function forever_business_get_dashboard(int $user_id, bool $is_admin, string $re
         ";
         $result = database()->query($query);
         while($result && $row = $result->fetch_assoc()) {
+            $row = forever_business_normalize_current_month_metrics($row, $period, $zagreb_now);
             $is_actor_member = $dashboard_root !== '' && (string) ($row['fbo_id'] ?? '') === $dashboard_root;
             if(!$is_actor_member) {
                 foreach([
@@ -3441,8 +3544,12 @@ function forever_business_get_dashboard(int $user_id, bool $is_admin, string $re
 
         $trend = [];
         foreach($trend_periods as $trend_period) {
-            $row = $metric_rows[$trend_period] ?? null;
-            $has_activity_data = $row !== null && (
+            $row = forever_business_normalize_current_month_metrics(
+                (array) ($metric_rows[$trend_period] ?? []),
+                $trend_period,
+                $zagreb_now
+            );
+            $has_activity_data = !empty($row) && (
                 (array_key_exists('is_4cc_active', $row) && $row['is_4cc_active'] !== null)
                 || (isset($row['personal_cc'], $row['total_active_cc']))
             );
@@ -3450,7 +3557,7 @@ function forever_business_get_dashboard(int $user_id, bool $is_admin, string $re
             $trend[] = [
                 'period_month' => $trend_period,
                 'total_cc' => (float) ($row['total_cc'] ?? 0),
-                'is_closed' => $trend_period < date('Y-m-01') ? 1 : 0,
+                'is_closed' => $trend_period < $current_zagreb_period ? 1 : 0,
                 'country_scope' => 'FCC',
                 'has_activity_data' => $has_activity_data,
                 'is_4cc_active' => $is_verified_active,
@@ -3465,8 +3572,22 @@ function forever_business_get_dashboard(int $user_id, bool $is_admin, string $re
                     $row = database()->query("SELECT COALESCE(SUM(personal_cc), 0) AS total FROM forever_business_metrics WHERE period_month = '{$trend_period}' AND fbo_id IN ({$id_list})")->fetch_assoc();
                     $sum = (float) ($row['total'] ?? 0);
                 }
-                $trend[] = ['period_month' => $trend_period, 'total_cc' => $sum, 'is_closed' => $trend_period < date('Y-m-01') ? 1 : 0, 'country_scope' => 'FCC'];
+                $trend[] = ['period_month' => $trend_period, 'total_cc' => $sum, 'is_closed' => $trend_period < $current_zagreb_period ? 1 : 0, 'country_scope' => 'FCC'];
             }
+        }
+        if($period === $current_zagreb_period
+            && !array_filter($trend, static fn($row) => (string) ($row['period_month'] ?? '') === $period)) {
+            $trend = array_slice($trend, -7);
+            $current_fcc_total_cc = (float) ($summary['personal_cc'] ?? 0);
+            $trend[] = [
+                'period_month' => $period,
+                'total_cc' => $current_fcc_total_cc,
+                'is_closed' => 0,
+                'country_scope' => 'GLOBAL',
+                'source_note' => $current_fcc_total_cc > 0
+                    ? 'FCC zbroj osobnih CC dok službeni Global Total CC nije dostupan'
+                    : 'Otvoreni mjesec bez sinkroniziranih narudžbi',
+            ];
         }
     }
     $closed_trend = array_values(array_filter($trend, static fn($row) => !empty($row['is_closed'])));
@@ -3613,7 +3734,7 @@ function forever_business_record_daily_outcome(int $user_id, string $fbo_id, arr
 
         $existing = database()->query("SELECT outcome_id FROM forever_business_daily_outcomes
             WHERE recorded_by_user_id = {$user_id} AND status = 'done'
-              AND ((action_date = '{$action_date}' AND action_key LIKE 'vip26\\_%') OR action_key = '{$action_key}')
+              AND ((action_date = '{$action_date}' AND action_key LIKE 'vip26\\_%' AND action_key <> 'vip26_activator_d01') OR action_key = '{$action_key}')
             LIMIT 1");
         if(!$existing) {
             throw new \RuntimeException('vip_outcome_lookup_failed');
@@ -3717,7 +3838,7 @@ function forever_business_request_vip_help(int $user_id, string $fbo_id, array $
          * action today) after the corresponding completion has committed. */
         $completed = database()->query("SELECT outcome_id FROM forever_business_daily_outcomes
             WHERE recorded_by_user_id = {$user_id} AND status = 'done'
-              AND ((action_date = '{$request_date}' AND action_key LIKE 'vip26\\_%') OR action_key = '{$escaped_action_key}')
+              AND ((action_date = '{$request_date}' AND action_key LIKE 'vip26\\_%' AND action_key <> 'vip26_activator_d01') OR action_key = '{$escaped_action_key}')
             LIMIT 1");
         if(!$completed) {
             throw new \RuntimeException('vip_help_completion_lookup_failed');

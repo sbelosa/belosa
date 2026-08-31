@@ -63,6 +63,7 @@ jobs:
           FLP360_PASSWORD: ${{ secrets.FLP360_PASSWORD }}
           FCC_FOREVER_SYNC_URL: ${{ secrets.FCC_FOREVER_SYNC_URL }}
           FCC_FOREVER_SYNC_KEY: ${{ secrets.FCC_FOREVER_SYNC_KEY }}
+          FCC_SYNC_REGISTERED_ONLY: '1'
         run: node scripts/flp360_cloud_sync.mjs
 
 # /Custom code: FC-2026-08-14

@@ -84,6 +84,18 @@ try {
     $legacy_alias_member = $legacy_alias_member_result ? $legacy_alias_member_result->fetch_assoc() : [];
     $assert((int) ($legacy_alias_member['total'] ?? 0) === 1, 'Legacy forever_id alias must provision the FCC member.');
     forever_business_provision_fcc_members($fixture_user_ids[0]);
+    forever_business_upsert_registered_member_live_cc($fbo_id, '2026-08-01', [
+        'personal_cc' => 1.25,
+        'total_cc' => 42.0,
+        'total_active_cc' => 9.0,
+        'non_manager_cc' => 5.0,
+        'leadership_cc' => 2.0,
+        'total_active_cc_ytd' => 77.0,
+        'non_manager_cc_ytd' => 55.0,
+        'leadership_cc_ytd' => 22.0,
+        'is_4cc_active' => 0,
+    ]);
+    forever_business_upsert_total_cc_snapshot($fbo_id, '2026-08-01', 99.0, true, 'GLOBAL', 'VIP month-boundary fixture');
 
     $zagreb_launch_boundary = new DateTimeImmutable('2026-09-01 00:01:00', new DateTimeZone('Europe/Zagreb'));
     forever_business_record_page_visit($fixture_user_ids[0], $zagreb_launch_boundary);
@@ -93,10 +105,10 @@ try {
     $assert(($visit['visit_date'] ?? '') === '2026-09-01', 'Launch visit must use the Zagreb calendar date rather than UTC.');
 
     $input = [
-        'core_key' => 'Development',
-        'action_key' => 'vip26_starter_d01',
-        'outcome_type' => 'starter',
-        'result_type' => 'training',
+        'core_key' => 'Productivity',
+        'action_key' => 'vip26_activator_d01_biolink',
+        'outcome_type' => 'activator',
+        'result_type' => 'content',
         'difficulty' => 'normal',
         'completion_mode' => 'standard',
         'needs_help' => false,
@@ -106,6 +118,94 @@ try {
     ];
 
     $fixed_now = new DateTimeImmutable('2026-09-01 00:00:01', new DateTimeZone('Europe/Zagreb'));
+    $legacy_timestamp = database()->real_escape_string(get_date());
+    $legacy_outcome = database()->query("INSERT INTO forever_business_daily_outcomes
+        (fbo_id, action_date, core_key, action_key, status, outcome_count, outcome_type, result_type,
+         difficulty, needs_help, recorded_by_user_id, completion_mode, created_at, updated_at)
+        VALUES ('{$fbo_id}', '2026-09-01', 'Development', 'vip26_activator_d01', 'done', 1, 'activator',
+                'planning', 'normal', 0, {$fixture_user_ids[0]}, 'standard', '{$legacy_timestamp}', '{$legacy_timestamp}')");
+    $assert((bool) $legacy_outcome, 'Superseded Activator day-one fixture could not be created.');
+    $september_dashboard = forever_business_get_dashboard($fixture_user_ids[0], false, '', '', $fixed_now);
+    $september_member = $september_dashboard['members'][0] ?? [];
+    $assert((int) ($september_member['vip_actions_done_total'] ?? -1) === 0
+        && (int) ($september_member['actions_done_7d'] ?? -1) === 0
+        && empty($september_member['vip_action_done_today'])
+        && ($september_member['next_action']['key'] ?? '') === 'vip26_activator_d01_biolink',
+        'The superseded CC-review outcome must not skip the new biolink task or enter current curriculum statistics.');
+    $assert(($september_dashboard['period'] ?? '') === '2026-09-01', 'The first open September request must select September even without a September metric row.');
+    $assert((float) ($september_member['personal_cc'] ?? -1) === 0.0
+        && (float) ($september_member['total_cc'] ?? -1) === 0.0
+        && (float) ($september_member['total_active_cc'] ?? -1) === 0.0,
+        'Missing September monthly Personal, Total and Total Active CC must start at zero.');
+    $assert((float) ($september_member['previous_total_cc'] ?? -1) === 42.0
+        && ($september_member['vip_current_period_month'] ?? null) === null,
+        'August must remain the previous month and must not be copied into VIP current-month fields.');
+    $september_trend = (array) ($september_dashboard['trend'] ?? []);
+    $september_trend_rows = array_values(array_filter($september_trend, static fn(array $row): bool => ($row['period_month'] ?? '') === '2026-09-01'));
+    $assert(count($september_trend_rows) === 1 && (float) ($september_trend_rows[0]['total_cc'] ?? -1) === 0.0,
+        'The collaborator CC graph must contain one September zero point before the first order.');
+    $vip_state = forever_business_get_vip_program_state($fixture_user_ids[0], $fixed_now);
+    $assert(($vip_state['current_period'] ?? '') === '2026-09-01'
+        && (float) ($vip_state['current_personal_cc'] ?? -1) === 0.0
+        && ($vip_state['qualifying_period'] ?? '') === '2026-08-01'
+        && !empty($vip_state['can_access_education']),
+        'Permanent August enrollment must stay active while visible September Personal CC resets to zero.');
+    $yearly_result = database()->query("SELECT total_active_cc_ytd FROM forever_business_yearly_metrics
+        WHERE fbo_id = '{$fbo_id}' AND period_year = 2026 LIMIT 1");
+    $yearly = $yearly_result ? $yearly_result->fetch_assoc() : [];
+    $assert((float) ($yearly['total_active_cc_ytd'] ?? -1) === 77.0, 'Rendering an empty September month must not rewrite the cumulative YTD metric.');
+    $los = forever_business_get_los_admin_analytics($fixture_user_ids[0], 30, '', $fixed_now);
+    $assert(($los['period'] ?? '') === '2026-09-01'
+        && ($los['global']['period'] ?? '') === '2026-09-01'
+        && (float) ($los['global']['total_cc'] ?? -1) === 0.0
+        && (float) ($los['global']['previous_total_cc'] ?? -1) === 99.0
+        && empty($los['global']['is_official_snapshot']),
+        'LOS must append a non-official September zero without relabeling the official August Global Total CC.');
+    $los_fixture_members = array_values(array_filter((array) ($los['members'] ?? []), static fn(array $member): bool => ($member['fbo_id'] ?? '') === $fbo_id));
+    $assert(count($los_fixture_members) === 2
+        && count(array_filter($los_fixture_members, static fn(array $member): bool => (float) ($member['personal_cc'] ?? -1) === 0.0 && (float) ($member['total_active_cc'] ?? -1) === 0.0)) === 2,
+        'LOS participant statistics must show current-month zeros for every linked collaborator sharing the fixture FBO.');
+    $legacy_los_participant = array_values(array_filter($los_fixture_members, static fn(array $member): bool => (int) ($member['user_id'] ?? 0) === $fixture_user_ids[0]));
+    $assert(count($legacy_los_participant) === 1
+        && (int) ($legacy_los_participant[0]['vip_steps_completed'] ?? -1) === 0
+        && (int) ($legacy_los_participant[0]['tasks'] ?? -1) === 0,
+        'The superseded Activator day-one outcome must remain outside LOS progress and window statistics.');
+    forever_business_upsert_registered_member_live_cc($fbo_id, '2026-09-01', [
+        'personal_cc' => 1.25,
+        'total_cc' => 1.25,
+        'total_active_cc' => 1.25,
+        'non_manager_cc' => 0.0,
+        'leadership_cc' => 0.0,
+        'total_active_cc_ytd' => 78.25,
+        'non_manager_cc_ytd' => 55.0,
+        'leadership_cc_ytd' => 22.0,
+        'is_4cc_active' => 0,
+    ]);
+    $admin_current_dashboard = forever_business_get_dashboard($fixture_user_ids[0], true, $fbo_id, '', $fixed_now);
+    $admin_current_rows = array_values(array_filter((array) ($admin_current_dashboard['trend'] ?? []), static fn(array $row): bool => ($row['period_month'] ?? '') === '2026-09-01'));
+    $assert(count($admin_current_rows) === 1 && (float) ($admin_current_rows[0]['total_cc'] ?? -1) === 1.25,
+        'Admin chart must use current FCC Personal CC after orders when the official current Global Total CC snapshot is not available yet.');
+    $los_outside_structure_after_order = forever_business_get_los_admin_analytics($fixture_user_ids[0], 30, '', $fixed_now);
+    $assert((float) ($los_outside_structure_after_order['global']['total_cc'] ?? -1) === 0.0,
+        'LOS current-month fallback must exclude FCC-linked accounts outside the confirmed team structure.');
+    $structure_update = database()->query("UPDATE forever_business_members SET is_in_current_structure = 1 WHERE fbo_id = '{$fbo_id}'");
+    $assert((bool) $structure_update, 'Temporary member could not be placed in the confirmed structure for LOS fallback testing.');
+    $los_after_order = forever_business_get_los_admin_analytics($fixture_user_ids[0], 30, '', $fixed_now);
+    $assert((float) ($los_after_order['global']['total_cc'] ?? -1) === 1.25 && empty($los_after_order['global']['is_official_snapshot']),
+        'LOS chart must replace the synthetic zero with current FCC Personal CC after an order, without claiming it is official Global Total CC.');
+    $registered_sync_accounts = forever_business_get_registered_sync_accounts('2026-09-01');
+    $registered_sync_fixture = array_values(array_filter($registered_sync_accounts, static fn(array $account): bool => ($account['fbo_id'] ?? '') === $fbo_id));
+    $assert(count($registered_sync_fixture) === 1
+        && (float) ($registered_sync_fixture[0]['personal_cc'] ?? -1) === 1.25
+        && (float) ($registered_sync_fixture[0]['total_cc'] ?? -1) === 1.25
+        && (float) ($registered_sync_fixture[0]['total_active_cc_ytd'] ?? -1) === 78.25
+        && ($registered_sync_fixture[0]['is_4cc_active'] ?? null) === false,
+        'Secret-protected registered account verification must expose monthly, official 4 CC and YTD values needed for exact post-write reconciliation.');
+    database()->query("DELETE FROM forever_business_metrics WHERE fbo_id = '{$fbo_id}' AND period_month = '2026-09-01'");
+    /* Restore the pre-existing fixture state so the later stale-qualification
+     * queue test still exercises an account without permanent enrollment. */
+    database()->query("DELETE FROM forever_business_vip_enrollments WHERE fbo_id = '{$fbo_id}'");
+
     $assert(forever_business_record_daily_outcome($fixture_user_ids[0], $fbo_id, [$fbo_id], $input, $fixed_now), 'First shared-FBO participant should save its own step.');
     $assert(!forever_business_record_daily_outcome($fixture_user_ids[0], $fbo_id, [$fbo_id], $input, $fixed_now), 'Same participant must not save the same/day step twice.');
     $assert(forever_business_record_daily_outcome($fixture_user_ids[1], $fbo_id, [$fbo_id], $input, $fixed_now), 'Second shared-FBO participant should save independently.');
@@ -114,7 +214,7 @@ try {
     $outcomes_result = database()->query("SELECT COUNT(*) AS total, COUNT(DISTINCT recorded_by_user_id) AS participants,
             MIN(completion_mode) AS completion_mode
         FROM forever_business_daily_outcomes
-        WHERE fbo_id = '{$fbo_id}' AND action_key = 'vip26_starter_d01' AND action_date = '2026-09-01'");
+        WHERE fbo_id = '{$fbo_id}' AND action_key = 'vip26_activator_d01_biolink' AND action_date = '2026-09-01'");
     $outcomes = $outcomes_result ? $outcomes_result->fetch_assoc() : [];
     $assert((int) ($outcomes['total'] ?? 0) === 2 && (int) ($outcomes['participants'] ?? 0) === 2, 'Shared FBO must contain two separate participant outcomes.');
     $assert((string) ($outcomes['completion_mode'] ?? '') === 'standard', 'Completion mode must be stored.');
@@ -149,15 +249,15 @@ try {
 
     $help_day = new DateTimeImmutable('2026-09-02 08:00:00', new DateTimeZone('Europe/Zagreb'));
     $assert(forever_business_request_vip_help($fixture_user_ids[0], $fbo_id, [$fbo_id], [
-        'action_key' => 'vip26_starter_d02',
-        'track_key' => 'starter',
+        'action_key' => 'vip26_activator_d02',
+        'track_key' => 'activator',
         'sequence_position' => 2,
         'difficulty' => 'hard',
         'note' => 'Trebam pomoć sa zamjenskom radnjom.',
     ], $help_day), 'Participant should be able to request help without a completion.');
 
     $help_result = database()->query("SELECT status, note FROM forever_business_vip_help_requests
-        WHERE user_id = {$fixture_user_ids[0]} AND action_key = 'vip26_starter_d02'");
+        WHERE user_id = {$fixture_user_ids[0]} AND action_key = 'vip26_activator_d02'");
     $help = $help_result ? $help_result->fetch_assoc() : [];
     $assert(($help['status'] ?? '') === 'open' && str_contains((string) ($help['note'] ?? ''), 'zamjenskom'), 'Open help request and note must be visible to analytics.');
 
@@ -171,9 +271,9 @@ try {
 
     $second_step_input = [
         'core_key' => 'Productivity',
-        'action_key' => 'vip26_starter_d02',
-        'outcome_type' => 'starter',
-        'result_type' => 'conversation',
+        'action_key' => 'vip26_activator_d02',
+        'outcome_type' => 'activator',
+        'result_type' => 'planning',
         'difficulty' => 'hard',
         'completion_mode' => 'quick',
         'needs_help' => false,
@@ -184,12 +284,12 @@ try {
     $second_day = new DateTimeImmutable('2026-09-03 08:00:00', new DateTimeZone('Europe/Zagreb'));
     $assert(forever_business_record_daily_outcome($fixture_user_ids[0], $fbo_id, [$fbo_id], $second_step_input, $second_day), 'Participant should complete the same step on a later day after requesting help.');
     $resolved_help_result = database()->query("SELECT status, resolved_at FROM forever_business_vip_help_requests
-        WHERE user_id = {$fixture_user_ids[0]} AND action_key = 'vip26_starter_d02'");
+        WHERE user_id = {$fixture_user_ids[0]} AND action_key = 'vip26_activator_d02'");
     $resolved_help = $resolved_help_result ? $resolved_help_result->fetch_assoc() : [];
     $assert(($resolved_help['status'] ?? '') === 'resolved' && !empty($resolved_help['resolved_at']), 'Completion must resolve the open help request for the same participant and action.');
     $assert(!forever_business_request_vip_help($fixture_user_ids[0], $fbo_id, [$fbo_id], [
-        'action_key' => 'vip26_starter_d02',
-        'track_key' => 'starter',
+        'action_key' => 'vip26_activator_d02',
+        'track_key' => 'activator',
         'sequence_position' => 2,
         'difficulty' => 'hard',
         'note' => 'Zastarjeli tab ne smije ponovno otvoriti dovršeni korak.',
@@ -239,6 +339,10 @@ try {
         database()->query("DELETE FROM forever_business_vip_email_deliveries WHERE user_id IN ({$id_list})");
         database()->query("DELETE FROM forever_business_vip_help_requests WHERE user_id IN ({$id_list})");
         database()->query("DELETE FROM forever_business_daily_outcomes WHERE recorded_by_user_id IN ({$id_list})");
+        database()->query("DELETE FROM forever_business_vip_enrollments WHERE fbo_id IN ('{$fbo_id}', '{$tampered_fbo_id}')");
+        database()->query("DELETE FROM forever_business_total_cc_snapshots WHERE fbo_id IN ('{$fbo_id}', '{$tampered_fbo_id}')");
+        database()->query("DELETE FROM forever_business_yearly_metrics WHERE fbo_id IN ('{$fbo_id}', '{$tampered_fbo_id}')");
+        database()->query("DELETE FROM forever_business_metrics WHERE fbo_id IN ('{$fbo_id}', '{$tampered_fbo_id}')");
         database()->query("DELETE FROM users WHERE user_id IN ({$id_list})");
     }
     database()->query("DELETE FROM forever_business_members WHERE fbo_id IN ('{$fbo_id}', '{$tampered_fbo_id}')

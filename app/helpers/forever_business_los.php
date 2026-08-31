@@ -83,23 +83,28 @@ function forever_business_los_track_from_action_key(string $action_key): string 
     return 'other';
 }
 
-function forever_business_los_periods(): array {
+function forever_business_los_periods(?\DateTimeInterface $now = null): array {
     if(empty(forever_business_los_table_columns('forever_business_metrics'))) {
         return [];
     }
 
-    $current_zagreb_period = (new \DateTimeImmutable('now', new \DateTimeZone('Europe/Zagreb')))->format('Y-m-01');
+    $current_zagreb_period = forever_business_current_zagreb_period($now);
     $rows = forever_business_los_rows("SELECT DISTINCT `period_month`
         FROM `forever_business_metrics`
         WHERE `period_month` <= '{$current_zagreb_period}'
         ORDER BY `period_month` DESC
         LIMIT 36");
 
-    return array_values(array_filter(array_map(static function(array $row): string {
+    $periods = array_values(array_filter(array_map(static function(array $row): string {
         return preg_match('/^20\d{2}-\d{2}-01$/', (string) ($row['period_month'] ?? ''))
             ? (string) $row['period_month']
             : '';
     }, $rows)));
+
+    /* The open Zagreb month is a reporting period even before its first metric
+     * row. Keep historical rows intact and represent the missing month only in
+     * this read model. */
+    return array_values(array_unique(array_merge([$current_zagreb_period], $periods)));
 }
 
 function forever_business_los_empty_model(int $window_days, string $period, array $warnings): array {
@@ -136,7 +141,7 @@ function forever_business_los_distribution(array $counts): array {
     return $result;
 }
 
-function forever_business_get_los_admin_analytics(int $admin_user_id, int $window_days = 30, string $period = ''): array {
+function forever_business_get_los_admin_analytics(int $admin_user_id, int $window_days = 30, string $period = '', ?\DateTimeInterface $now = null): array {
     $admin_user_id = max(1, $admin_user_id); // Authorization belongs to the admin route; no user data is written here.
 
     $allowed_windows = [7, 14, 30, 60];
@@ -154,10 +159,15 @@ function forever_business_get_los_admin_analytics(int $admin_user_id, int $windo
         }
     }
 
-    $periods = forever_business_los_periods();
+    $timezone = new \DateTimeZone('Europe/Zagreb');
+    $today = $now
+        ? (new \DateTimeImmutable('@' . $now->getTimestamp()))->setTimezone($timezone)->setTime(0, 0)
+        : new \DateTimeImmutable('today', $timezone);
+    $current_zagreb_period = $today->format('Y-m-01');
+    $periods = forever_business_los_periods($today);
     $period = preg_match('/^20\d{2}-\d{2}-01$/', $period) && in_array($period, $periods, true)
         ? $period
-        : ($periods[0] ?? date('Y-m-01'));
+        : ($periods[0] ?? $current_zagreb_period);
 
     if(!empty($warnings)) {
         $empty = forever_business_los_empty_model($window_days, $period, $warnings);
@@ -179,8 +189,6 @@ function forever_business_get_los_admin_analytics(int $admin_user_id, int $windo
         $admin_root_fbo_id = (string) $admin_root_row['fbo_id'];
     }
 
-    $timezone = new \DateTimeZone('Europe/Zagreb');
-    $today = new \DateTimeImmutable('today', $timezone);
     $current_start = $today->modify('-' . ($window_days - 1) . ' days');
     $previous_end = $current_start->modify('-1 day');
     $previous_start = $previous_end->modify('-' . ($window_days - 1) . ' days');
@@ -243,13 +251,16 @@ function forever_business_get_los_admin_analytics(int $admin_user_id, int $windo
     foreach($metric_rows as $row) {
         $fbo_id = (string) $row['fbo_id'];
         if(!isset($members[$fbo_id])) continue;
-        $metric = [
+        $metric = forever_business_normalize_current_month_metrics([
             'personal_cc' => $row['personal_cc'] === null ? null : (float) $row['personal_cc'],
             'total_active_cc' => $row['total_active_cc'] === null ? null : (float) $row['total_active_cc'],
             'is_4cc_active' => $row['is_4cc_active'] === null ? null : (int) $row['is_4cc_active'],
-            'has_activity_data' => $row['is_4cc_active'] !== null || $row['personal_cc'] !== null || $row['total_active_cc'] !== null,
-            'has_complete_activity_verification' => $row['is_4cc_active'] !== null || ($row['personal_cc'] !== null && $row['total_active_cc'] !== null),
-        ];
+        ], (string) $row['period_month'], $today);
+        $metric['has_activity_data'] = $metric['is_4cc_active'] !== null
+            || $metric['personal_cc'] !== null
+            || $metric['total_active_cc'] !== null;
+        $metric['has_complete_activity_verification'] = $metric['is_4cc_active'] !== null
+            || ($metric['personal_cc'] !== null && $metric['total_active_cc'] !== null);
         if((string) $row['period_month'] === $period) {
             $current_metrics[$fbo_id] = $metric;
             $members[$fbo_id] = array_merge($members[$fbo_id], $metric);
@@ -344,11 +355,27 @@ function forever_business_get_los_admin_analytics(int $admin_user_id, int $windo
         }
     }
 
+    if($period === $current_zagreb_period) {
+        foreach($members as $fbo_id => &$member) {
+            if(isset($current_metrics[$fbo_id])) continue;
+            $current_metrics[$fbo_id] = [
+                'personal_cc' => 0.0,
+                'total_active_cc' => 0.0,
+                'is_4cc_active' => null,
+                'has_activity_data' => true,
+                'has_complete_activity_verification' => true,
+            ];
+            $member = array_merge($member, $current_metrics[$fbo_id]);
+        }
+        unset($member);
+    }
+
     /* CC, 4 CC and qualification stay deduplicated by Forever ID. Education
      * execution is different: each signed-in FCC account is an independent
      * participant, including accounts that intentionally share one approved ID. */
     $fbo_members = $members;
-    $empty_fbo_member = static function(string $fbo_id, int $linked_accounts = 0): array {
+    $empty_fbo_member = static function(string $fbo_id, int $linked_accounts = 0) use ($period, $current_zagreb_period): array {
+        $is_open_month = $period === $current_zagreb_period;
         return [
             'fbo_id' => $fbo_id,
             'name' => 'FBO ' . $fbo_id,
@@ -365,11 +392,11 @@ function forever_business_get_los_admin_analytics(int $admin_user_id, int $windo
             'qualifying_personal_cc' => null,
             'last_verified_period' => null,
             'last_verified_personal_cc' => null,
-            'personal_cc' => null,
-            'total_active_cc' => null,
+            'personal_cc' => $is_open_month ? 0.0 : null,
+            'total_active_cc' => $is_open_month ? 0.0 : null,
             'is_4cc_active' => null,
-            'has_activity_data' => false,
-            'has_complete_activity_verification' => false,
+            'has_activity_data' => $is_open_month,
+            'has_complete_activity_verification' => $is_open_month,
         ];
     };
     $make_participant = static function(array $fbo_member, int $user_id, string $account_name, bool $account_enabled): array {
@@ -493,6 +520,7 @@ function forever_business_get_los_admin_analytics(int $admin_user_id, int $windo
         LEFT JOIN `users` `account` ON `account`.`user_id` = `outcome`.`recorded_by_user_id`
         WHERE `outcome`.`status` = 'done'
           AND `outcome`.`action_key` LIKE 'vip26\\_%'
+          AND `outcome`.`action_key` <> 'vip26_activator_d01'
           AND `outcome`.`recorded_by_user_id` IS NOT NULL
           AND `outcome`.`recorded_by_user_id` > 0
         GROUP BY `outcome`.`recorded_by_user_id`");
@@ -519,6 +547,7 @@ function forever_business_get_los_admin_analytics(int $admin_user_id, int $windo
             SELECT `recorded_by_user_id`, MAX(`outcome_id`) AS `outcome_id`
             FROM `forever_business_daily_outcomes`
             WHERE `status` = 'done' AND `action_key` LIKE 'vip26\\_%'
+              AND `action_key` <> 'vip26_activator_d01'
               AND `recorded_by_user_id` IS NOT NULL AND `recorded_by_user_id` > 0
             GROUP BY `recorded_by_user_id`
         ) `selected` ON `selected`.`outcome_id` = `latest`.`outcome_id`");
@@ -542,6 +571,7 @@ function forever_business_get_los_admin_analytics(int $admin_user_id, int $windo
         LEFT JOIN `users` `account` ON `account`.`user_id` = `outcome`.`recorded_by_user_id`
         WHERE `outcome`.`status` = 'done'
           AND `outcome`.`action_key` LIKE 'vip26\\_%'
+          AND `outcome`.`action_key` <> 'vip26_activator_d01'
           AND `outcome`.`recorded_by_user_id` IS NOT NULL
           AND `outcome`.`recorded_by_user_id` > 0
           AND `outcome`.`action_date` BETWEEN '{$previous_start_string}' AND '{$current_end_string}'
@@ -612,14 +642,17 @@ function forever_business_get_los_admin_analytics(int $admin_user_id, int $windo
                 SELECT `user_id`, COUNT(*) AS `open_count`
                 FROM `forever_business_vip_help_requests`
                 WHERE `status` = 'open'
+                  AND `action_key` <> 'vip26_activator_d01'
                 GROUP BY `user_id`
             ) `selected` ON `selected`.`user_id` = `request`.`user_id`
             WHERE `request`.`status` = 'open'
+              AND `request`.`action_key` <> 'vip26_activator_d01'
               AND NOT EXISTS (
                   SELECT 1
                   FROM `forever_business_vip_help_requests` `newer`
                   WHERE `newer`.`user_id` = `request`.`user_id`
                     AND `newer`.`status` = 'open'
+                    AND `newer`.`action_key` <> 'vip26_activator_d01'
                     AND (`newer`.`updated_at` > `request`.`updated_at`
                         OR (`newer`.`updated_at` = `request`.`updated_at`
                             AND `newer`.`request_id` > `request`.`request_id`))
@@ -741,14 +774,13 @@ function forever_business_get_los_admin_analytics(int $admin_user_id, int $windo
             $row_period = (string) $row['period_month'];
             if(isset($seen_periods[$row_period])) continue;
             $seen_periods[$row_period] = true;
+            $row['is_official_snapshot'] = 1;
             $cc_rows[] = $row;
             if(count($cc_rows) >= 8) break;
         }
         $cc_rows = array_reverse($cc_rows);
-        $has_official_global_snapshot = !empty($cc_rows);
     }
     if(empty($cc_rows)) {
-        $current_zagreb_period = $today->format('Y-m-01');
         $cc_rows = array_reverse(forever_business_los_rows("SELECT `metric`.`period_month`, COALESCE(SUM(`metric`.`personal_cc`), 0) AS `total_cc`,
                 (`metric`.`period_month` < '{$current_zagreb_period}') AS `is_closed`,
                 'FCC zbroj osobnih CC' AS `source_note`
@@ -760,9 +792,32 @@ function forever_business_get_los_admin_analytics(int $admin_user_id, int $windo
             GROUP BY `metric`.`period_month`
             ORDER BY `metric`.`period_month` DESC
             LIMIT 8"));
+        foreach($cc_rows as &$cc_row) {
+            $cc_row['is_official_snapshot'] = 0;
+        }
+        unset($cc_row);
+    }
+    if($period === $current_zagreb_period
+        && !array_filter($cc_rows, static fn(array $row): bool => (string) ($row['period_month'] ?? '') === $period)) {
+        $current_fcc_total_cc = array_sum(array_map(
+            static fn(array $metric): float => (float) ($metric['personal_cc'] ?? 0),
+            $current_structure_metrics
+        ));
+        $cc_rows = array_slice($cc_rows, -7);
+        $cc_rows[] = [
+            'period_month' => $period,
+            'total_cc' => $current_fcc_total_cc,
+            'is_closed' => 0,
+            'source_note' => $current_fcc_total_cc > 0
+                ? 'FCC zbroj osobnih CC dok službeni Global Total CC nije dostupan'
+                : 'Otvoreni mjesec bez sinkroniziranih narudžbi',
+            'captured_at' => null,
+            'is_official_snapshot' => 0,
+        ];
     }
     $current_cc_row = end($cc_rows) ?: [];
     reset($cc_rows);
+    $has_official_global_snapshot = !empty($current_cc_row['is_official_snapshot']);
     $global_total_cc = (float) ($current_cc_row['total_cc'] ?? 0);
     $previous_cc_row = count($cc_rows) > 1 ? $cc_rows[count($cc_rows) - 2] : [];
     $previous_total_cc = isset($previous_cc_row['total_cc']) ? (float) $previous_cc_row['total_cc'] : null;

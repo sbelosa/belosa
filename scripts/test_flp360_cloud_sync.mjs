@@ -22,12 +22,14 @@ import {
     officialFourCoreSnapshots,
     parseCsvLine,
     parseFlpTimestamp,
+    payloadHasExplicitError,
     prepareRegisteredFccAccounts,
     readyReportMessage,
     refreshDownlineCsv,
     reportV2Url,
     resolveFccAccountCountryCode,
     resolveLiveCcCountryCode,
+    syncRunDate,
     validateDownline,
     validateFourCcRows,
     validateXlsx,
@@ -44,6 +46,14 @@ const testDate = new Date('2026-08-13T19:00:00Z');
 const syncSource = await fs.readFile(new URL('./flp360_cloud_sync.mjs', import.meta.url), 'utf8');
 
 assert.equal(zagrebPeriod(testDate), '2026-08');
+assert.equal(syncRunDate('2026-08').toISOString(), '2026-08-31T12:00:00.000Z');
+assert.equal(syncRunDate('', testDate), testDate);
+assert.throws(() => syncRunDate('08/2026'), /YYYY-MM/);
+assert.equal(payloadHasExplicitError({body: []}), false);
+assert.equal(payloadHasExplicitError({status: 'error', body: []}), true);
+assert.equal(payloadHasExplicitError([{success: false, body: []}]), true);
+assert.match(syncSource, /FCC_SYNC_REGISTERED_ONLY/);
+assert.match(syncSource, /prije upisa ništa nije promijenjeno/);
 assert.deepEqual(zagrebPeriodParts(testDate), {year: 2026, month: 8, monthLabel: 'AUG'});
 assert.equal(currentFlpMonthLabel(testDate), '08/2026-Not Closed');
 assert.equal(findCurrentFlpMonthLabel(['7/2026-Closed', '8/2026-Not Closed'], testDate), '8/2026-Not Closed');
@@ -122,6 +132,9 @@ const fourCcCsv = buildFourCcCsv(fourCcRows, testDate);
 assert.match(fourCcCsv, /SELECTED MONTH\/YEAR/);
 assert.match(fourCcCsv, /AUG 2026/);
 assert.throws(() => validateFourCcRows([], testDate), /prazan/);
+const emptyFourCc = validateFourCcRows([], testDate, {allowEmpty: true});
+assert.equal(emptyFourCc.rows, 0);
+assert.equal(emptyFourCc.ids.size, 0);
 
 const currentRecord = extractLiveCcRecord([{
     fboId: '360000000001',
@@ -144,10 +157,14 @@ assert.deepEqual(currentRecord, {
     nonManagerCc: 4, leadershipCc: 5, totalActiveCcYtd: 20,
     nonManagerCcYtd: 30, leadershipCcYtd: 40,
 });
-assert.equal(extractLiveCcRecord([{
-    fboId: '360000000002', processingYear: 0, totalActiveCC: 0, nonManagerCC: 0, leaderCC: 0,
+const newMonthZeroRecord = extractLiveCcRecord([{
+    fboId: '360000000002', processingYear: 0, totalActiveCC: 81.125, nonManagerCC: 42.5, leaderCC: 7.25,
     monthlyCCValues: [{processingYear: 0, processingMonth: 0}],
-}], '360000000002', testDate).totalCc, 0);
+}], '360000000002', testDate);
+assert.equal(newMonthZeroRecord.totalCc, 0);
+assert.equal(newMonthZeroRecord.totalActiveCcYtd, 81.125);
+assert.equal(newMonthZeroRecord.nonManagerCcYtd, 42.5);
+assert.equal(newMonthZeroRecord.leadershipCcYtd, 7.25);
 const fallbackRecord = extractLiveZeroFallback([{
     fboId: '', processingYear: 0, monthlyCCValues: [{processingYear: 0, processingMonth: 0}],
 }], {
@@ -157,6 +174,12 @@ const fallbackRecord = extractLiveZeroFallback([{
 assert.equal(fallbackRecord.totalActiveCcYtd, 1.024);
 assert.equal(fallbackRecord.nonManagerCc, null);
 assert.equal(fallbackRecord.nonManagerCcYtd, null);
+assert.throws(() => extractLiveZeroFallback([{
+    fboId: '', processingYear: 0, monthlyCCValues: [{processingYear: 0, processingMonth: 0}],
+}], {
+    distributorId: '360000000003', personalCCCurMonth: 0, totalCCCurMonth: 0,
+    totalActiveCCCurMonth: 0, totalActiveCCYTD: 1.024,
+}, '360000000003', new Date('2026-08-31T12:00:00Z'), new Date('2026-09-01T12:00:00Z')), /povijesno razdoblje/);
 const internationalFallback = extractLiveZeroFallback([{
     fboId: '', processingYear: 0, monthlyCCValues: [{processingYear: 0, processingMonth: 0}],
 }], {
@@ -314,16 +337,16 @@ assert.equal(verified.globalTotalCc, 63.684);
 assert.throws(() => verifyFccStatus({summary: {}}, {members: 401, activeFourCc: 2, personalCc: 404.25, globalTotalCc: 63.684}), /zavr\u0161na kontrola/);
 
 const registeredExpected = new Map([
-    ['360001651915', {fboId: '360001651915', personalCc: 0.367}],
-    ['360000000002', {fboId: '360000000002', personalCc: 0}],
+    ['360001651915', {fboId: '360001651915', personalCc: 0.367, totalCc: 1.5, totalActiveCc: 2.5, nonManagerCc: 3.5, leadershipCc: 4.5, totalActiveCcYtd: 20, nonManagerCcYtd: 21, leadershipCcYtd: 22, isFourCcActive: true}],
+    ['360000000002', {fboId: '360000000002', personalCc: 0, totalCc: 0, totalActiveCc: 0, nonManagerCc: null, leadershipCc: null, totalActiveCcYtd: 81.125, nonManagerCcYtd: null, leadershipCcYtd: null, isFourCcActive: false}],
 ]);
 const registeredVerified = verifyFccAccounts({
     status: 'success',
     metric: 'fcc_accounts',
-    summary: {unique_forever_ids: 2, active_account_links: 3, current_cc_confirmed: 2, vip_enrolled: 1},
+    summary: {unique_forever_ids: 2, active_account_links: 3, current_cc_confirmed: 2, current_active_4cc: 1, vip_enrolled: 1},
     accounts: [
-        {fbo_id: '360001651915', metric_period: '2026-08-01', personal_cc: 0.367, is_vip_enrolled: true},
-        {fbo_id: '360000000002', metric_period: '2026-08-01', personal_cc: 0, is_vip_enrolled: false},
+        {fbo_id: '360001651915', metric_period: '2026-08-01', personal_cc: 0.367, total_cc: 1.5, total_active_cc: 2.5, non_manager_cc: 3.5, leadership_cc: 4.5, total_active_cc_ytd: 20, non_manager_cc_ytd: 21, leadership_cc_ytd: 22, is_4cc_active: true, is_vip_enrolled: true},
+        {fbo_id: '360000000002', metric_period: '2026-08-01', personal_cc: 0, total_cc: 0, total_active_cc: 0, non_manager_cc: 9, leadership_cc: 8, total_active_cc_ytd: 81.125, non_manager_cc_ytd: 70, leadership_cc_ytd: 10, is_4cc_active: false, is_vip_enrolled: false},
     ],
 }, registeredExpected, '2026-08');
 assert.equal(registeredVerified.uniqueForeverIds, 2);
@@ -331,10 +354,10 @@ assert.equal(registeredVerified.activeAccountLinks, 3);
 assert.throws(() => verifyFccAccounts({
     status: 'success',
     metric: 'fcc_accounts',
-    summary: {unique_forever_ids: 2, active_account_links: 3, current_cc_confirmed: 2, vip_enrolled: 0},
+    summary: {unique_forever_ids: 2, active_account_links: 3, current_cc_confirmed: 2, current_active_4cc: 1, vip_enrolled: 0},
     accounts: [
-        {fbo_id: '360001651915', metric_period: '2026-08-01', personal_cc: 0.367, is_vip_enrolled: false},
-        {fbo_id: '360000000002', metric_period: '2026-08-01', personal_cc: 0, is_vip_enrolled: false},
+        {fbo_id: '360001651915', metric_period: '2026-08-01', personal_cc: 0.367, total_cc: 1.5, total_active_cc: 2.5, non_manager_cc: 3.5, leadership_cc: 4.5, total_active_cc_ytd: 20, non_manager_cc_ytd: 21, leadership_cc_ytd: 22, is_4cc_active: true, is_vip_enrolled: false},
+        {fbo_id: '360000000002', metric_period: '2026-08-01', personal_cc: 0, total_cc: 0, total_active_cc: 0, total_active_cc_ytd: 81.125, is_4cc_active: false, is_vip_enrolled: false},
     ],
 }, registeredExpected, '2026-08'), /registriranih Forever ID-jeva/);
 

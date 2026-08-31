@@ -431,7 +431,7 @@ $format_change = static function(float $value): string {
                             <?php if(!empty($action['checklist'])): ?><ol class="pl-3 mb-3"><?php foreach($action['checklist'] as $item): ?><li class="mb-1"><?= htmlspecialchars($item) ?></li><?php endforeach ?></ol><?php endif ?>
                             <div class="small font-weight-bold"><i class="fas fa-check-circle text-success mr-1"></i> <?= htmlspecialchars($action['success_definition']) ?></div>
                             <?php if(!empty($action['message_example'])): ?><div class="alert alert-light small mt-3 mb-2"><strong>Ideja za tvoju poruku:</strong><br />“<?= htmlspecialchars($action['message_example']) ?>”<div class="text-muted mt-1">Napiši je onako kako bi je stvarno poslao/la toj osobi.</div></div><?php endif ?>
-                            <?php if(!empty($action['fallback'])): ?><div class="alert alert-info small mt-2 mb-2"><strong>Ako danas nemaš potrebnu osobu:</strong> <?= htmlspecialchars($action['fallback']) ?></div><?php endif ?>
+                            <?php if(!empty($action['fallback'])): ?><div class="alert alert-info small mt-2 mb-2"><strong>Lakša verzija ili druga mogućnost:</strong> <?= htmlspecialchars($action['fallback']) ?></div><?php endif ?>
                             <?php if(!empty($action['adaptive_note'])): ?><div class="alert alert-warning small mt-3 mb-2"><strong>Danas ideš još lakšim tempom:</strong> <?= htmlspecialchars($action['adaptive_note']) ?></div><?php endif ?>
                             <?php if(empty($action['is_daily_complete']) && empty($action['is_program_complete']) && (int) ($action['target'] ?? 0) > 1): ?><div class="fb-quick-step small mt-3"><strong>Treba ti kraći tempo?</strong> Napravi istu radnju u manjem opsegu: puni korak je <?= (int) $action['target'] ?>, a za održavanje ritma danas je dovoljno najmanje <?= (int) $action['quick_target'] ?>.</div><?php elseif(empty($action['is_daily_complete']) && empty($action['is_program_complete']) && !empty($action['fallback'])): ?><div class="fb-quick-step small mt-3"><strong>Jedan mali korak je dovoljan.</strong> Ako ga danas ne možeš odraditi, iskoristi ponuđenu mogućnost iznad ili se javi mentoru.</div><?php elseif(empty($action['is_daily_complete']) && empty($action['is_program_complete'])): ?><div class="fb-quick-step small mt-3"><strong>Jedan mali korak je dovoljan.</strong> Ako zapneš, javi se mentoru.</div><?php endif ?>
                             <div class="small text-muted mt-2"><?= !empty($action['is_daily_complete']) ? 'Za danas nema dodatnih zadataka. Novi korak otvara se sutra.' : 'Ovaj korak ostaje aktivan dok ga ne dovršiš. Nakon potvrde novi korak otvorit će se sljedećeg dana.' ?></div>
@@ -463,6 +463,17 @@ $format_change = static function(float $value): string {
                                     <input type="number" min="<?= max(1, (int) ($action['quick_target'] ?? 1)) ?>" max="999" step="1" required name="outcome_count" id="outcome_count" class="form-control" value="<?= max(1, (int) $action['target']) ?>" />
                                     <div class="small text-muted mt-1">Puni cilj: <?= max(1, (int) ($action['target'] ?? 1)) ?><?= (int) ($action['target'] ?? 1) > 1 ? ' · lakša verzija: ' . max(1, (int) ($action['quick_target'] ?? 1)) : '' ?>. Upiši koliko si danas stvarno napravio/la.</div>
                                 </div>
+                                <?php if(!empty($action['fallback']) && (int) ($action['target'] ?? 1) === (int) ($action['quick_target'] ?? 1)): ?>
+                                    <div class="form-group">
+                                        <label class="small" for="completion_variant">Koju si verziju danas završio/la?</label>
+                                        <select name="completion_variant" id="completion_variant" class="form-control" required>
+                                            <option value="" selected disabled>Odaberi što si danas napravio/la</option>
+                                            <option value="standard">Puni korak iz glavne upute</option>
+                                            <option value="quick">Lakšu verziju ponuđenu uz zadatak</option>
+                                        </select>
+                                        <div class="small text-muted mt-1">Obje verzije vrijede kao dovršen korak; odabir nam pomaže prilagoditi sljedeću podršku.</div>
+                                    </div>
+                                <?php endif ?>
                                 <div class="form-group">
                                     <label class="small" for="difficulty">Koliko je korak bio zahtjevan?</label>
                                     <select name="difficulty" id="difficulty" class="form-control" required>

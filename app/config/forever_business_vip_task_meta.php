@@ -35,12 +35,22 @@ return [
         'targets' => [1, 15, 2, 3, 3, 1, 3, 5, 2, 1, 5, 3, 1, 3, 6, 3, 1, 1, 1, 1, 5, 5, 3, 3, 5, 3, 1, 1, 10, 1],
         'quick_targets' => [1, 4, 1, 1, 1, 1, 1, 2, 1, 1, 2, 1, 1, 1, 2, 1, 1, 1, 1, 1, 2, 2, 1, 1, 2, 1, 1, 1, 3, 1],
         'result_types' => [
-            'planning', 'planning', 'invitation', 'follow_up', 'conversation', 'planning',
+            'content', 'planning', 'invitation', 'follow_up', 'conversation', 'planning',
             'customer_checkin', 'conversation', 'invitation', 'planning', 'follow_up',
             'recommendation', 'planning', 'customer_checkin', 'conversation', 'invitation',
             'planning', 'follow_up', 'content', 'planning', 'customer_checkin', 'conversation',
             'invitation', 'planning', 'follow_up', 'recommendation', 'planning', 'onboarding',
             'follow_up', 'planning',
+        ],
+        'allowed_result_types' => [
+            1 => ['content'],
+        ],
+        'checklists' => [
+            1 => [
+                'U FCC Aplikacijama odaberi „Kopiraj link aplikacije”.',
+                'Zalijepi link u bio ili opis jednog profila i spremi promjenu.',
+                'Otvori link iz javnog prikaza profila i potvrdi da radi.',
+            ],
         ],
         'examples' => [
             3 => 'poziv na marketing plan', 5 => 'prvi osobni kontakt',
@@ -51,6 +61,7 @@ return [
             23 => 'poziv na marketing plan', 29 => 'kulturno zatvaranje razgovora',
         ],
         'fallbacks' => [
+            1 => 'Za lakšu verziju na jednom profilu postavi samo link i nakon spremanja ga jednom otvori; kratki opis možeš doraditi kasnije.',
             2 => 'Ako ti popis danas ne dolazi lako, s mentorom prođi broj ljudi iz brzog cilja i za svakoga pronađi jednu prirodnu temu za razgovor.',
             18 => 'Ako danas nemaš gosta, nastavi razgovor s jednom osobom koja je već pokazala interes.',
         ],

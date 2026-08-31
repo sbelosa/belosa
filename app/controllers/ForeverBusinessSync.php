@@ -117,6 +117,7 @@ class ForeverBusinessSync extends Controller {
                     'unique_forever_ids' => count($accounts),
                     'active_account_links' => array_sum(array_column($accounts, 'active_link_count')),
                     'current_cc_confirmed' => count(array_filter($accounts, static fn($account) => ($account['metric_period'] ?? null) === $period && $account['personal_cc'] !== null)),
+                    'current_active_4cc' => count(array_filter($accounts, static fn($account) => ($account['metric_period'] ?? null) === $period && !empty($account['is_4cc_active']))),
                     'vip_enrolled' => count(array_filter($accounts, static fn($account) => !empty($account['is_vip_enrolled']))),
                 ],
                 'accounts' => $accounts,

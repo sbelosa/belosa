@@ -94,6 +94,17 @@ class ForeverBusiness extends Controller {
                 $completion_mode = $outcome_count === null || !$expected_action
                     ? null
                     : forever_business_vip_completion_mode_for_count($expected_action, $outcome_count);
+                $reported_completion_variant = forever_business_normalize_completion_mode($_POST['completion_variant'] ?? null);
+                $can_report_lighter_variant = $expected_action
+                    && !empty($expected_action['fallback'])
+                    && (int) ($expected_action['target'] ?? 1) === (int) ($expected_action['quick_target'] ?? 1);
+                if($completion_mode !== null && $can_report_lighter_variant && $reported_completion_variant !== null) {
+                    /* When both numeric targets are one, the count cannot tell
+                     * whether the collaborator used the full instruction or
+                     * its reviewed lighter version. Record that bounded choice
+                     * explicitly so the coaching statistics remain truthful. */
+                    $completion_mode = $reported_completion_variant;
+                }
 
                 if($is_help_request) {
                     $help_note = trim((string) ($_POST['help_note'] ?? ''));
@@ -120,6 +131,8 @@ class ForeverBusiness extends Controller {
                     Alerts::add_error('Odaberi glavnu vrstu evidentirane radnje i koliko ti je današnji korak bio zahtjevan. Ti podaci pomažu da edukaciju poboljšamo bez dodatnih zadataka.');
                 } elseif(!in_array($result_type, $allowed_result_types, true)) {
                     Alerts::add_error('Odabrana vrsta radnje ne odgovara današnjem zadatku. Odaberi jednu od prikazanih vrsta.');
+                } elseif($can_report_lighter_variant && $reported_completion_variant === null) {
+                    Alerts::add_error('Odaberi jesi li završio/la puni korak ili ponuđenu lakšu verziju kako bi se tvoj napredak točno evidentirao.');
                 } elseif($completion_mode === null) {
                     Alerts::add_error('Za današnji korak napravi najmanje ' . max(1, (int) ($expected_action['quick_target'] ?? 1)) . ' radnji. Ako ti to danas ne odgovara, odaberi mentorsku vježbu ili se javi mentoru.');
                 } elseif(!empty($target_member['vip_action_done_today'])) {
