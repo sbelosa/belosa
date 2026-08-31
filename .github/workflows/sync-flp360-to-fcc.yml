@@ -2,6 +2,9 @@
 name: Sync FLP360 to FCC
 
 on:
+  push:
+    branches:
+      - codex/vip-flp-launch-sync-20260901
   schedule:
     # 06:17 Europe/Zagreb during CEST (05:17 during CET). GitHub cron uses UTC.
     - cron: '17 4 * * *'
