@@ -414,9 +414,13 @@ function extractCurrentCcSummary(payload, date = new Date()) {
     };
 }
 
-function validateFourCcRows(rows, date = new Date()) {
+function validateFourCcRows(rows, date = new Date(), options = {}) {
     const {year, month} = zagrebPeriodParts(date);
-    if(!Array.isArray(rows) || !rows.length) throw new Error('4 CC Active live odgovor je prazan; postojeći FCC podaci ostaju sačuvani.');
+    if(!Array.isArray(rows)) throw new Error('4 CC Active live odgovor nije valjan niz.');
+    if(!rows.length) {
+        if(options.allowEmpty) return {rows: 0, ids: new Set()};
+        throw new Error('4 CC Active live odgovor je prazan; postojeći FCC podaci ostaju sačuvani.');
+    }
     const ids = rows.map(row => normalizeFboId(row?.fboID));
     if(ids.some(id => !id) || new Set(ids).size !== ids.length) throw new Error('4 CC Active sadrži neispravne ili duplicirane FBO ID-eve.');
     if(rows.some(row => Number(row?.processingYear) !== year || Number(row?.processingMonth) !== month)) {
@@ -450,8 +454,18 @@ async function downloadLiveFourCc(page, configuration, date = new Date()) {
     const {year, month} = zagrebPeriodParts(date);
     const distributorId = normalizeFboId(ROOT_FBO_ID);
     const requestUrl = reportV2Url(configuration, `distributors/${distributorId}/year/${year}/month/${month}/rewire-currentMonth-4CC-Active`);
-    const rows = extractFourCcRows(await flpGetJson(page, requestUrl, configuration));
-    const validation = validateFourCcRows(rows, date);
+    const payload = await flpGetJson(page, requestUrl, configuration);
+    const hasVerifiedArrayEnvelope = Array.isArray(payload)
+        || Array.isArray(payload?.body)
+        || Array.isArray(payload?.[0]?.body);
+    if(!hasVerifiedArrayEnvelope) {
+        throw new Error('4 CC Active nije vratio provjerljiv JSON skup; postojeći FCC podaci ostaju sačuvani.');
+    }
+    const rows = extractFourCcRows(payload);
+    /* A structurally valid empty array at the start of a new month means zero
+     * officially active 4 CC accounts. Network/null/error responses still fail
+     * closed above and can never clear an existing signal. */
+    const validation = validateFourCcRows(rows, date, {allowEmpty: true});
     const targetPath = path.join(OUTPUT_DIRECTORY, `flp360-4cc-active-live-${zagrebPeriod(date)}.csv`);
     await fs.writeFile(targetPath, buildFourCcCsv(rows, date), {mode: 0o600});
     return {path: targetPath, records: rows, rowCount: validation.rows, ids: validation.ids};
@@ -1092,8 +1106,12 @@ async function main() {
                 return;
             }
 
-            const fourCcResult = await uploadReport(fourCc.path, period, syncUrl, syncKey);
-            console.log(`FCC 4 CC Active: duplicate=${Boolean(fourCcResult.duplicate)}.`);
+            if(fourCc.rowCount > 0) {
+                const fourCcResult = await uploadReport(fourCc.path, period, syncUrl, syncKey);
+                console.log(`FCC 4 CC Active: duplicate=${Boolean(fourCcResult.duplicate)}.`);
+            } else {
+                console.log('FCC 4 CC Active: službeni skup je valjano prazan; svaki registrirani račun dobiva eksplicitni status 0 kroz live CC zapis.');
+            }
             await mapWithConcurrency(registeredAccounts, 4, async account => {
                 const record = expectedRecords.get(account.fboId);
                 return uploadMemberLiveCc(record, fourCc.ids.has(account.fboId), period, syncUrl, syncKey);
@@ -1184,8 +1202,12 @@ async function main() {
         console.log(`FCC glavni FBO live CC: Personal CC=${rootRecord.personalCc.toFixed(3)}.`);
         await uploadGlobalTotalCc(ccSummary.globalTotalCc, period, syncUrl, syncKey);
         console.log(`FCC Global Total CC: ${ccSummary.globalTotalCc.toFixed(3)}.`);
-        const fourCcResult = await uploadReport(fourCc.path, period, syncUrl, syncKey);
-        console.log(`FCC 4 CC Active: duplicate=${Boolean(fourCcResult.duplicate)}.`);
+        if(fourCc.rowCount > 0) {
+            const fourCcResult = await uploadReport(fourCc.path, period, syncUrl, syncKey);
+            console.log(`FCC 4 CC Active: duplicate=${Boolean(fourCcResult.duplicate)}.`);
+        } else {
+            console.log('FCC 4 CC Active: službeni skup je valjano prazan; Downline live zapisuje eksplicitni status 0.');
+        }
 
         await mapWithConcurrency(confirmedRegisteredOnlyAccounts, 4, async account => {
             const record = registeredOnlyLiveCc.records.get(account.fboId);

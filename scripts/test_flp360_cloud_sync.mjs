@@ -128,6 +128,9 @@ const fourCcCsv = buildFourCcCsv(fourCcRows, testDate);
 assert.match(fourCcCsv, /SELECTED MONTH\/YEAR/);
 assert.match(fourCcCsv, /AUG 2026/);
 assert.throws(() => validateFourCcRows([], testDate), /prazan/);
+const emptyFourCc = validateFourCcRows([], testDate, {allowEmpty: true});
+assert.equal(emptyFourCc.rows, 0);
+assert.equal(emptyFourCc.ids.size, 0);
 
 const currentRecord = extractLiveCcRecord([{
     fboId: '360000000001',
