@@ -356,6 +356,8 @@ assert.match(syncSource, /process\.env\.PLAYWRIGHT_CHROMIUM_EXECUTABLE/);
 assert.match(syncSource, /candidateMemberCount > MAX_SAFE_DOWNLINE_MEMBERS/);
 assert.match(syncSource, /persistConfirmedDownline\(downline\.path\)/);
 assert.match(syncSource, /registeredOnlyAccounts/);
+assert.match(syncSource, /lookupCountryByFboId/);
+assert.match(syncSource, /postojeći bodovi namjerno su sačuvani/);
 assert.match(syncSource, /verifyFccAccounts/);
 assert.doesNotMatch(syncSource, /await requestDownline\(page\)/);
 assert.doesNotMatch(syncSource, /await downloadFocusGroup\(page\)/);
