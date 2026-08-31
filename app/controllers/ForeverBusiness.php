@@ -12,19 +12,21 @@ class ForeverBusiness extends Controller {
 
     public function index() {
         \Altum\Authentication::guard();
+        $request_now = new \DateTimeImmutable('now', new \DateTimeZone('Europe/Zagreb'));
         forever_business_ensure_tables();
-        forever_business_provision_fcc_members();
-        forever_business_record_page_visit((int) $this->user->user_id);
+        forever_business_provision_fcc_members((int) $this->user->user_id);
+        forever_business_record_page_visit((int) $this->user->user_id, $request_now);
 
         $requested_root = forever_business_normalize_fbo_id($_GET['root'] ?? $_POST['root'] ?? '');
         $period = forever_business_period_from_label($_GET['period'] ?? $_POST['period'] ?? '') ?: '';
         $is_admin = (int) ($this->user->type ?? 0) === 1;
         /* The admin's Moj Forever page is now a personal Leader workspace.
          * Team/root exploration belongs to the read-only LOS analytics route. */
-        if($is_admin) {
-            $requested_root = '';
-        }
-        $vip_program = forever_business_get_vip_program_state((int) $this->user->user_id);
+        /* This member page is always personal. Root/team exploration belongs
+         * to the read-only LOS route for admins and must never influence a
+         * participant's per-account task sequence. */
+        $requested_root = '';
+        $vip_program = forever_business_get_vip_program_state((int) $this->user->user_id, $request_now);
 
         /* Admin-only visual states make it possible to verify the collaborator
          * launch component without exposing another member's private data. */
@@ -57,7 +59,8 @@ class ForeverBusiness extends Controller {
             }
         }
 
-        if(!empty($_POST['record_outcome'])) {
+        if(!empty($_POST['record_outcome']) || !empty($_POST['request_vip_help'])) {
+            $is_help_request = !empty($_POST['request_vip_help']);
             if(!\Altum\Csrf::check()) {
                 Alerts::add_error(l('global.error_message.invalid_csrf_token'));
             } elseif(empty($vip_program['can_access_education']) || !empty($vip_program['is_admin_preview'])) {
@@ -65,7 +68,7 @@ class ForeverBusiness extends Controller {
                     ? 'Vođena edukacija počinje 1. rujna. Tvoj će se sljedeći korak tada otvoriti automatski ako ispunjavaš uvjet za pristup.'
                     : 'Tvoj pristup edukaciji još nije aktivan. Na stranici Moj Forever možeš provjeriti uvjet i trenutačni napredak.');
             } else {
-                $dashboard = forever_business_get_dashboard((int) $this->user->user_id, $is_admin, $requested_root, $period);
+                $dashboard = forever_business_get_dashboard((int) $this->user->user_id, $is_admin, $requested_root, $period, $request_now);
                 $submitted_fbo_id = forever_business_normalize_fbo_id($_POST['fbo_id'] ?? '');
                 $authenticated_fbo_id = forever_business_normalize_fbo_id($vip_program['fbo_id'] ?? '');
                 $target_member = null;
@@ -82,39 +85,72 @@ class ForeverBusiness extends Controller {
                 $result_type = forever_business_normalize_result_type($_POST['result_type'] ?? null);
                 $difficulty = forever_business_normalize_difficulty($_POST['difficulty'] ?? null);
                 $matches_visible_action = $expected_action
-                    && !empty($expected_action['can_complete'])
                     && hash_equals((string) ($expected_action['key'] ?? ''), (string) ($_POST['action_key'] ?? ''))
                     && hash_equals((string) ($expected_action['core'] ?? ''), (string) ($_POST['core_key'] ?? ''));
+                $matches_completable_action = $matches_visible_action && !empty($expected_action['can_complete']);
+                $allowed_result_types = is_array($expected_action['allowed_result_types'] ?? null)
+                    ? $expected_action['allowed_result_types']
+                    : [];
+                $completion_mode = $outcome_count === null || !$expected_action
+                    ? null
+                    : forever_business_vip_completion_mode_for_count($expected_action, $outcome_count);
 
-                if($outcome_count === null) {
-                    Alerts::add_error('Korak se može potvrditi samo sa stvarnim rezultatom od najmanje 1. Broj 0 ne smatra se dovršenim korakom.');
+                if($is_help_request) {
+                    $help_note = trim((string) ($_POST['help_note'] ?? ''));
+                    if(!$matches_visible_action || !empty($expected_action['is_daily_complete']) || !empty($expected_action['is_program_complete'])) {
+                        Alerts::add_error('Ovaj se korak u međuvremenu promijenio. Osvježi stranicu i zatraži pomoć na trenutačnom zadatku.');
+                    } elseif((int) ($expected_action['target'] ?? 0) <= 0) {
+                        Alerts::add_error('Za ovaj informativni prikaz nije potreban zahtjev za pomoć. Osvježi stranicu kako bi se učitao trenutačni zadatak.');
+                    } elseif(mb_strlen($help_note) < 3) {
+                        Alerts::add_error('Ukratko napiši što bi ti pomoglo da napraviš sljedeći korak.');
+                    } elseif(forever_business_request_vip_help((int) $this->user->user_id, $submitted_fbo_id, [$authenticated_fbo_id], [
+                        'action_key' => (string) ($expected_action['key'] ?? ''),
+                        'track_key' => (string) ($expected_action['track_key'] ?? ''),
+                        'sequence_position' => (int) ($expected_action['sequence_position'] ?? 0),
+                        'difficulty' => 'hard',
+                        'note' => $help_note,
+                    ], $request_now)) {
+                        Alerts::add_success('Tvoj upit je poslan mentoru. Današnji korak ostaje otvoren i možete zajedno pronaći najbolju lakšu verziju.');
+                    } else {
+                        Alerts::add_error('Zahtjev za pomoć nije spremljen. Osvježi stranicu i pokušaj ponovno.');
+                    }
+                } elseif($outcome_count === null) {
+                    Alerts::add_error('Upiši barem jednu završenu radnju. Ako je danas nemaš, odaberi mentorsku vježbu ili pošalji upit mentoru.');
                 } elseif($result_type === null || $difficulty === null) {
-                    Alerts::add_error('Odaberi što si ostvario/la i koliko ti je današnji korak bio zahtjevan. Ti podaci pomažu da edukaciju poboljšamo bez dodatnih zadataka.');
+                    Alerts::add_error('Odaberi glavnu vrstu evidentirane radnje i koliko ti je današnji korak bio zahtjevan. Ti podaci pomažu da edukaciju poboljšamo bez dodatnih zadataka.');
+                } elseif(!in_array($result_type, $allowed_result_types, true)) {
+                    Alerts::add_error('Odabrana vrsta radnje ne odgovara današnjem zadatku. Odaberi jednu od prikazanih vrsta.');
+                } elseif($completion_mode === null) {
+                    Alerts::add_error('Za današnji korak napravi najmanje ' . max(1, (int) ($expected_action['quick_target'] ?? 1)) . ' radnji. Ako ti to danas ne odgovara, odaberi mentorsku vježbu ili se javi mentoru.');
                 } elseif(!empty($target_member['vip_action_done_today'])) {
                     Alerts::add_error('Današnji VIP korak već je dovršen. Novi zadatak otvorit će se sutra.');
-                } elseif(!$matches_visible_action) {
+                } elseif(!$matches_completable_action) {
                     Alerts::add_error('Ovaj se korak u međuvremenu promijenio. Stranica je osvježena i prikazan je tvoj trenutačni zadatak.');
                 } else {
                     /* Track, core and action stay server-derived. The member supplies
-                     * only the bounded result type, difficulty/help signal, numeric
-                     * amount and optional note used for aggregate coaching analytics. */
+                     * only the bounded primary action type, difficulty, completed
+                     * action-unit count and optional note for aggregate coaching. */
                     $record_input = [
                         'core_key' => (string) ($expected_action['core'] ?? ''),
                         'action_key' => (string) ($expected_action['key'] ?? ''),
                         'outcome_type' => (string) ($expected_action['track_key'] ?? 'vip'),
                         'result_type' => $result_type,
                         'difficulty' => $difficulty,
-                        'needs_help' => !empty($_POST['needs_help']),
+                        'completion_mode' => $completion_mode,
+                        'needs_help' => false,
                         'outcome_count' => $outcome_count,
+                        'sequence_position' => (int) ($expected_action['sequence_position'] ?? 0),
                         'note' => (string) ($_POST['note'] ?? ''),
                     ];
                     $is_final_program_step = empty($expected_action['is_weekly_plan'])
                         && (int) ($expected_action['sequence_total'] ?? 0) > 0
                         && (int) ($expected_action['sequence_position'] ?? 0) >= (int) $expected_action['sequence_total'];
-                    if(forever_business_record_daily_outcome((int) $this->user->user_id, $submitted_fbo_id, [$authenticated_fbo_id], $record_input)) {
+                    if(forever_business_record_daily_outcome((int) $this->user->user_id, $submitted_fbo_id, [$authenticated_fbo_id], $record_input, $request_now)) {
                         Alerts::add_success($is_final_program_step
                             ? 'Prvih 30 VIP koraka je dovršeno. Tvoj završni pregled je spreman.'
-                            : 'Današnji korak je dovršen. Novi konkretan zadatak otvorit će se sutra.');
+                            : ($completion_mode === 'quick'
+                                ? 'Današnja kraća verzija je dovršena. Bravo što održavaš ritam — novi korak otvara se sutra.'
+                                : 'Današnji korak je dovršen. Novi konkretan zadatak otvorit će se sutra.'));
                     } else {
                         Alerts::add_error('Aktivnost nije spremljena. Moguće je da je današnji korak već potvrđen; osvježi stranicu i provjeri status.');
                     }
@@ -125,7 +161,7 @@ class ForeverBusiness extends Controller {
             redirect('forever-business' . (!empty($query) ? '?' . http_build_query($query) : ''));
         }
 
-        $dashboard = forever_business_get_dashboard((int) $this->user->user_id, $is_admin, $requested_root, $period);
+        $dashboard = forever_business_get_dashboard((int) $this->user->user_id, $is_admin, $requested_root, $period, $request_now);
         $own_fbo_id = forever_business_extract_user_fbo_id($this->user->preferences ?? null);
         $focus_member = null;
 

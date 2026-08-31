@@ -1,7 +1,10 @@
-# Custom code: FC-2026-08-14: Manual-only FLP360 to FCC fallback; daily sync runs from Codex while online
+# Custom code: FC-2026-08-14: Audited daily FLP360 to FCC synchronization with manual fallback
 name: Sync FLP360 to FCC
 
 on:
+  schedule:
+    # 06:17 Europe/Zagreb during CEST (05:17 during CET). GitHub cron uses UTC.
+    - cron: '17 4 * * *'
   workflow_dispatch:
 
 permissions:
@@ -44,15 +47,17 @@ jobs:
             fi
           done
           echo "configured=${configured}" >> "$GITHUB_OUTPUT"
+          if [ "$configured" != "true" ]; then
+            echo "Required synchronization secrets are missing; failing visibly instead of reporting a false green run."
+            exit 1
+          fi
 
       - name: Install Playwright
-        if: steps.config.outputs.configured == 'true'
         run: |
           npm install --no-save playwright@1.55.0
           npx playwright install --with-deps chromium
 
       - name: Synchronize verified FLP360 reports
-        if: steps.config.outputs.configured == 'true'
         env:
           FLP360_USERNAME: ${{ secrets.FLP360_USERNAME }}
           FLP360_PASSWORD: ${{ secrets.FLP360_PASSWORD }}

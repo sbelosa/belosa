@@ -289,7 +289,7 @@ $format_change = static function(float $value): string {
 
             <section
                 class="fb-vip-launch mb-4"
-                <?php if(!$vip_is_launched): ?>data-fb-vip-countdown="<?= htmlspecialchars((string) ($vip_program['launch_at_iso'] ?? '')) ?>"<?php endif ?>
+                <?php if(!$vip_is_launched): ?>data-fb-vip-countdown="<?= htmlspecialchars((string) ($vip_program['launch_at_iso'] ?? '')) ?>" data-fb-vip-server-now="<?= htmlspecialchars((string) ($vip_program['server_now_iso'] ?? '')) ?>"<?php endif ?>
                 aria-labelledby="fb-vip-title"
             >
                 <div class="fb-vip-content p-4 p-lg-5">
@@ -385,10 +385,10 @@ $format_change = static function(float $value): string {
 
                     <div class="fb-vip-preview mt-4 <?= $vip_can_access ? '' : 'is-locked' ?>">
                         <div class="fb-vip-preview-grid" <?= !$vip_can_access ? 'aria-hidden="true"' : '' ?>>
-                            <div class="fb-vip-feature"><i class="fas fa-route mb-3"></i><strong class="d-block mb-2">Jedan korak dnevno</strong><p class="mb-0">Jasan zadatak za danas; novi se otvara sljedećeg dana.</p></div>
+                            <div class="fb-vip-feature"><i class="fas fa-route mb-3"></i><strong class="d-block mb-2">30 redovnih koraka</strong><p class="mb-0">Jedan korak dnevno, uz dodatni nedjeljni Marketing plan; redovitim tempom program traje približno pet tjedana.</p></div>
                             <div class="fb-vip-feature"><i class="fas fa-users mb-3"></i><strong class="d-block mb-2">Nedjeljni Marketing plan</strong><p class="mb-0">Svake nedjelje u 18:00 pozivaš osobe zainteresirane za poslovanje.</p></div>
                             <div class="fb-vip-feature"><i class="fas fa-comments mb-3"></i><strong class="d-block mb-2">VIP podrška</strong><p class="mb-0">Kratki podsjetnici, primjeri i podrška kada zapneš.</p></div>
-                            <div class="fb-vip-feature"><i class="fas fa-chart-pie mb-3"></i><strong class="d-block mb-2">Tvoj 4 Core napredak</strong><p class="mb-0">Pratiš vlastite rezultate i uvijek znaš što slijedi.</p></div>
+                            <div class="fb-vip-feature"><i class="fas fa-chart-pie mb-3"></i><strong class="d-block mb-2">Tvoj 4 Core napredak</strong><p class="mb-0">Pratiš dovršene korake i samoprijavljene radnje; prihod, pozicija i CC rezultat nisu zajamčeni.</p></div>
                         </div>
                         <?php if(!$vip_can_access): ?>
                             <div class="fb-vip-lock">
@@ -423,13 +423,17 @@ $format_change = static function(float $value): string {
                             <h2 class="h4 mb-2"><?= htmlspecialchars($action['title']) ?></h2>
                             <?php if(!empty($action['track_has_advanced'])): ?><div class="alert alert-success py-2 mb-3"><i class="fas fa-level-up-alt mr-1"></i> Tvoj plan automatski je prilagođen novoj razini prema najnovijim potvrđenim FLP360 podacima. Nastavljaš istim rednim brojem, ali sa zadacima naprednijeg programa.</div><?php endif ?>
                             <?php if(!empty($action['track_goal']) && empty($action['is_weekly_plan'])): ?><div class="small text-muted mb-3"><strong>Fokus tvoje razine:</strong> <?= htmlspecialchars($action['track_goal']) ?></div><?php endif ?>
+                            <?php if(empty($action['is_daily_complete']) && empty($action['is_program_complete'])): ?><div class="small text-muted mb-3"><strong>Naš stil:</strong> javi se osobno, govori svojim riječima i slušaj više nego što objašnjavaš. Kada je tema proizvod ili posao, prirodno reci da si Forever suradnik i osloni se na aktualne informacije, bez obećavanja zdravstvenog rezultata ili zarade. Primjeri su inspiracija — prilagodi ih odnosu koji već imaš s osobom.</div><?php endif ?>
                             <?php if(!empty($action['is_weekly_plan'])): ?>
                                 <div class="fb-weekly-plan mb-3"><strong><i class="fas fa-video mr-1"></i> Danas u 18:00</strong><span class="d-block small mt-1">Pridruži se nekoliko minuta ranije i pripremi popis svojih gostiju.</span><?php if(!empty($vip_marketing_plan['url'])): ?><a href="<?= htmlspecialchars($vip_marketing_plan['url']) ?>" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-primary mt-2">Otvori Marketing plan</a><?php endif ?></div>
                             <?php endif ?>
                             <?php if(!empty($action['instruction'])): ?><p class="mb-2"><?= htmlspecialchars($action['instruction']) ?></p><?php endif ?>
                             <?php if(!empty($action['checklist'])): ?><ol class="pl-3 mb-3"><?php foreach($action['checklist'] as $item): ?><li class="mb-1"><?= htmlspecialchars($item) ?></li><?php endforeach ?></ol><?php endif ?>
                             <div class="small font-weight-bold"><i class="fas fa-check-circle text-success mr-1"></i> <?= htmlspecialchars($action['success_definition']) ?></div>
-                            <?php if(!empty($action['can_complete']) && (int) ($action['target'] ?? 0) > 1): ?><div class="fb-quick-step small mt-3"><strong>Brzi korak:</strong> ako danas nemaš dovoljno vremena, odradi najmanje <?= (int) $action['quick_target'] ?> od redovnog cilja <?= (int) $action['target'] ?> i zadrži kontinuitet.</div><?php endif ?>
+                            <?php if(!empty($action['message_example'])): ?><div class="alert alert-light small mt-3 mb-2"><strong>Ideja za tvoju poruku:</strong><br />“<?= htmlspecialchars($action['message_example']) ?>”<div class="text-muted mt-1">Napiši je onako kako bi je stvarno poslao/la toj osobi.</div></div><?php endif ?>
+                            <?php if(!empty($action['fallback'])): ?><div class="alert alert-info small mt-2 mb-2"><strong>Ako danas nemaš potrebnu osobu:</strong> <?= htmlspecialchars($action['fallback']) ?></div><?php endif ?>
+                            <?php if(!empty($action['adaptive_note'])): ?><div class="alert alert-warning small mt-3 mb-2"><strong>Danas ideš još lakšim tempom:</strong> <?= htmlspecialchars($action['adaptive_note']) ?></div><?php endif ?>
+                            <?php if(empty($action['is_daily_complete']) && empty($action['is_program_complete']) && (int) ($action['target'] ?? 0) > 1): ?><div class="fb-quick-step small mt-3"><strong>Treba ti kraći tempo?</strong> Napravi istu radnju u manjem opsegu: puni korak je <?= (int) $action['target'] ?>, a za održavanje ritma danas je dovoljno najmanje <?= (int) $action['quick_target'] ?>.</div><?php elseif(empty($action['is_daily_complete']) && empty($action['is_program_complete']) && !empty($action['fallback'])): ?><div class="fb-quick-step small mt-3"><strong>Jedan mali korak je dovoljan.</strong> Ako ga danas ne možeš odraditi, iskoristi ponuđenu mogućnost iznad ili se javi mentoru.</div><?php elseif(empty($action['is_daily_complete']) && empty($action['is_program_complete'])): ?><div class="fb-quick-step small mt-3"><strong>Jedan mali korak je dovoljan.</strong> Ako zapneš, javi se mentoru.</div><?php endif ?>
                             <div class="small text-muted mt-2"><?= !empty($action['is_daily_complete']) ? 'Za danas nema dodatnih zadataka. Novi korak otvara se sutra.' : 'Ovaj korak ostaje aktivan dok ga ne dovršiš. Nakon potvrde novi korak otvorit će se sljedećeg dana.' ?></div>
                             <div class="small text-muted mt-1">Redovitim izvršavanjem koraka gradiš dobre poslovne navike, ostvaruješ više kvalitetnih kontakata i napreduješ prema svojoj sljedećoj razini.</div>
                         </div>
@@ -445,17 +449,19 @@ $format_change = static function(float $value): string {
                                 <input type="hidden" name="root" value="<?= htmlspecialchars($data->requested_root) ?>" />
                                 <input type="hidden" name="period" value="<?= htmlspecialchars(substr($dashboard['period'], 0, 7)) ?>" />
                                 <div class="form-group">
-                                    <label class="small" for="result_type">Koji je glavni rezultat?</label>
+                                    <label class="small" for="result_type">Što si danas najviše radio/la?</label>
                                     <select name="result_type" id="result_type" class="form-control" required>
-                                        <option value="">Odaberi ishod</option>
+                                        <option value="">Odaberi vrstu radnje</option>
                                         <?php foreach($vip_result_type_options as $result_type_key => $result_type_label): ?>
-                                            <option value="<?= htmlspecialchars($result_type_key) ?>"><?= htmlspecialchars($result_type_label) ?></option>
+                                            <?php if(!empty($action['allowed_result_types']) && !in_array($result_type_key, $action['allowed_result_types'], true)) continue; ?>
+                                            <option value="<?= htmlspecialchars($result_type_key) ?>" <?= $result_type_key === ($action['expected_result_type'] ?? '') ? 'selected' : null ?>><?= htmlspecialchars($result_type_label) ?></option>
                                         <?php endforeach ?>
                                     </select>
                                 </div>
                                 <div class="form-group">
-                                    <label class="small" for="outcome_count">Koliko si stvarno napravio/la?</label>
-                                    <input type="number" min="1" max="999" step="1" required name="outcome_count" id="outcome_count" class="form-control" value="<?= max(1, (int) $action['target']) ?>" />
+                                    <label class="small" for="outcome_count">Koliko si radnji danas završio/la?</label>
+                                    <input type="number" min="<?= max(1, (int) ($action['quick_target'] ?? 1)) ?>" max="999" step="1" required name="outcome_count" id="outcome_count" class="form-control" value="<?= max(1, (int) $action['target']) ?>" />
+                                    <div class="small text-muted mt-1">Puni cilj: <?= max(1, (int) ($action['target'] ?? 1)) ?><?= (int) ($action['target'] ?? 1) > 1 ? ' · lakša verzija: ' . max(1, (int) ($action['quick_target'] ?? 1)) : '' ?>. Upiši koliko si danas stvarno napravio/la.</div>
                                 </div>
                                 <div class="form-group">
                                     <label class="small" for="difficulty">Koliko je korak bio zahtjevan?</label>
@@ -465,20 +471,38 @@ $format_change = static function(float $value): string {
                                         <?php endforeach ?>
                                     </select>
                                 </div>
-                                <div class="custom-control custom-checkbox mb-3">
-                                    <input type="checkbox" class="custom-control-input" id="needs_help" name="needs_help" value="1" />
-                                    <label class="custom-control-label small" for="needs_help">Treba mi pomoć ili follow-up lidera</label>
-                                </div>
                                 <div class="form-group">
-                                    <label class="small" for="note">Kratka napomena <span class="text-muted">(neobavezno, bez osobnih podataka kontakta)</span></label>
-                                    <textarea name="note" id="note" rows="2" maxlength="500" class="form-control" placeholder="Što je zapelo ili koji je sljedeći dogovoreni korak?"></textarea>
+                                    <label class="small" for="note">Kratka bilješka <span class="text-muted">(neobavezno)</span></label>
+                                    <textarea name="note" id="note" rows="2" maxlength="500" class="form-control" placeholder="Što je dobro prošlo ili koji je tvoj sljedeći korak?"></textarea>
+                                    <div class="small text-muted mt-1">Za statistiku su dovoljni rezultat i sljedeći korak; imena, kontakti te privatni ili zdravstveni detalji ne trebaju se unositi.</div>
                                 </div>
                                 <button class="btn btn-success btn-block">Dovrši današnji korak</button>
-                                <div class="small text-muted mt-2">Najmanji stvarni rezultat je 1. Broj 0 ne dovršava zadatak. Spremiti se može samo jedan VIP korak dnevno; vrsta ishoda i težina služe zbirnoj analizi i boljoj podršci.</div>
+                                <div class="small text-muted mt-2">Danas spremaš jedan VIP korak. Puni i lakši tempo prate se odvojeno kako bismo ti mogli dati bolju podršku.</div>
                             </form>
                         <?php elseif(!empty($action['is_preview'])): ?><div class="alert alert-info mb-0"><i class="fas fa-eye mr-1"></i> Ovo je sigurna pretpregledna verzija. Dovršavanje zadatka je isključeno.</div>
-                        <?php elseif(!empty($action['is_daily_complete'])): ?><div class="alert alert-success mb-0"><i class="fas fa-check-circle mr-1"></i> Današnji rezultat je spremljen. Novi zadatak otvorit će se sutra.</div>
-                        <?php else: ?><div class="alert alert-success mb-0"><i class="fas fa-trophy mr-1"></i> Prvi ciklus je uspješno završen.</div><?php endif ?>
+                        <?php elseif(!empty($action['is_daily_complete'])): ?><div class="alert alert-success mb-0"><i class="fas fa-check-circle mr-1"></i> Današnji zadatak je spremljen. Novi zadatak otvorit će se sutra.</div>
+                        <?php elseif(!empty($action['is_waiting_for_event_completion'])): ?><div class="alert alert-warning mb-0"><i class="fas fa-clock mr-1"></i> Pripremu možeš odraditi sada. Potvrda prisustva i follow-upa otvara se nakon završetka Marketing plana u <?= htmlspecialchars((string) ($action['marketing_plan']['completion_available_at_display'] ?? '19:30')) ?>.</div>
+                        <?php elseif(!empty($action['is_program_complete'])): ?><div class="alert alert-success mb-0"><i class="fas fa-trophy mr-1"></i> Prvih 30 redovnih koraka je uspješno završeno.</div>
+                        <?php else: ?><div class="alert alert-info mb-0"><i class="fas fa-info-circle mr-1"></i> Ovaj korak trenutačno nije dostupan za potvrdu. Osvježi stranicu ili se javi podršci ako se poruka ponovi.</div><?php endif ?>
+
+                        <?php if(empty($action['is_preview']) && empty($action['is_daily_complete']) && empty($action['is_program_complete']) && (int) ($action['target'] ?? 0) > 0): ?>
+                            <details class="mt-3">
+                                <summary class="small font-weight-bold" style="cursor:pointer">Treba mi lakša verzija ili pomoć mentora</summary>
+                                <form method="post" class="mt-3">
+                                    <input type="hidden" name="token" value="<?= \Altum\Csrf::get() ?>" />
+                                    <input type="hidden" name="request_vip_help" value="1" />
+                                    <input type="hidden" name="fbo_id" value="<?= htmlspecialchars($data->focus_member['fbo_id'] ?? '') ?>" />
+                                    <input type="hidden" name="core_key" value="<?= htmlspecialchars($action['core']) ?>" />
+                                    <input type="hidden" name="action_key" value="<?= htmlspecialchars($action['key']) ?>" />
+                                    <input type="hidden" name="root" value="<?= htmlspecialchars($data->requested_root) ?>" />
+                                    <input type="hidden" name="period" value="<?= htmlspecialchars(substr($dashboard['period'], 0, 7)) ?>" />
+                                    <label class="small" for="help_note">Kratko napiši što bi ti pomoglo da nastaviš.</label>
+                                    <textarea name="help_note" id="help_note" rows="2" minlength="3" maxlength="500" required class="form-control" placeholder="Primjer: danas nemam osobu za ovaj korak i trebam ideju za lakšu verziju."></textarea>
+                                    <div class="small text-muted mt-1 mb-2">Dovoljno je opisati kakva ti pomoć treba; imena, kontakti te privatni ili zdravstveni detalji ne trebaju se unositi.</div>
+                                    <button class="btn btn-outline-secondary btn-block">Pošalji upit mentoru</button>
+                                </form>
+                            </details>
+                        <?php endif ?>
                         </div>
                     </div>
                 </div>
@@ -580,6 +604,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const countdown = document.querySelector('[data-fb-vip-countdown]');
     if (countdown) {
         const launchAt = Date.parse(countdown.dataset.fbVipCountdown);
+        const serverNowAtRender = Date.parse(countdown.dataset.fbVipServerNow);
+        const clientNowAtRender = Date.now();
         const fields = {
             days: countdown.querySelector('[data-fb-vip-days]'),
             hours: countdown.querySelector('[data-fb-vip-hours]'),
@@ -588,7 +614,10 @@ document.addEventListener('DOMContentLoaded', function () {
         };
         const pad = function (value) { return String(value).padStart(2, '0'); };
         const updateCountdown = function () {
-            const remaining = Math.max(0, Math.floor((launchAt - Date.now()) / 1000));
+            const estimatedServerNow = Number.isFinite(serverNowAtRender)
+                ? serverNowAtRender + (Date.now() - clientNowAtRender)
+                : Date.now();
+            const remaining = Math.max(0, Math.floor((launchAt - estimatedServerNow) / 1000));
             const days = Math.floor(remaining / 86400);
             const hours = Math.floor((remaining % 86400) / 3600);
             const minutes = Math.floor((remaining % 3600) / 60);
@@ -599,7 +628,27 @@ document.addEventListener('DOMContentLoaded', function () {
             if (fields.seconds) fields.seconds.textContent = pad(seconds);
             if (remaining === 0 && countdown.dataset.fbVipExpired !== '1') {
                 countdown.dataset.fbVipExpired = '1';
-                window.setTimeout(function () { window.location.reload(); }, 1200);
+                const reloadKey = 'fcc-vip-launch-reload-' + String(launchAt);
+                let reloadUrl = '';
+                try {
+                    const lastReloadAt = Number(window.sessionStorage.getItem(reloadKey) || 0);
+                    if (Date.now() - lastReloadAt > 60000) {
+                        window.sessionStorage.setItem(reloadKey, String(Date.now()));
+                        reloadUrl = window.location.href;
+                    }
+                } catch (storageError) {
+                    /* Some privacy modes block Web Storage. A one-time URL
+                     * marker still refreshes the server state without a loop. */
+                    const fallbackUrl = new URL(window.location.href);
+                    const fallbackKey = 'vip_launch_refresh';
+                    if (fallbackUrl.searchParams.get(fallbackKey) !== String(launchAt)) {
+                        fallbackUrl.searchParams.set(fallbackKey, String(launchAt));
+                        reloadUrl = fallbackUrl.toString();
+                    }
+                }
+                if (reloadUrl) {
+                    window.setTimeout(function () { window.location.replace(reloadUrl); }, 1200);
+                }
             }
         };
         updateCountdown();

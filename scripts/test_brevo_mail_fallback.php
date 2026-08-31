@@ -39,12 +39,18 @@ $timeout = (object) ['success' => false, 'status_code' => 0, 'curl_error' => 'ti
 
 $assert(fc_brevo_failure_allows_smtp_fallback($rejected, []), 'explicit Brevo 4xx rejection should allow system-mail fallback');
 $assert(!fc_brevo_failure_allows_smtp_fallback($rejected, ['brevo_tags' => ['automation_1']]), 'tracked automation must not use silent fallback');
+$assert(fc_brevo_failure_allows_smtp_fallback($rejected, ['brevo_tags' => ['vip-access'], 'is_system_email' => true]), 'explicit tagged system mail should use the safe 4xx fallback');
+$assert(!fc_brevo_failure_allows_smtp_fallback($rejected, ['brevo_tags' => ['vip-access'], 'is_system_email' => true, 'is_broadcast' => true]), 'broadcast must stay blocked even when marked as system mail');
+$assert(!fc_brevo_failure_allows_smtp_fallback($rejected, ['brevo_tags' => ['vip-access'], 'is_system_email' => false]), 'tagged non-system automation must stay blocked');
 $assert(!fc_brevo_failure_allows_smtp_fallback($rejected, ['unsubscribe_url' => 'https://example.com/unsubscribe']), 'unsubscribe mail must not use silent fallback');
 $assert(!fc_brevo_failure_allows_smtp_fallback($server_error, []), 'Brevo 5xx must not risk a duplicate send');
 $assert(!fc_brevo_failure_allows_smtp_fallback($timeout, []), 'network timeout must not risk a duplicate send');
+$assert(!fc_brevo_failure_allows_smtp_fallback($server_error, ['brevo_tags' => ['vip-access'], 'is_system_email' => true]), 'tagged system mail must not fallback after an ambiguous 5xx');
+$assert(!fc_brevo_failure_allows_smtp_fallback($timeout, ['brevo_tags' => ['vip-access'], 'is_system_email' => true]), 'tagged system mail must not fallback after an ambiguous timeout');
 
 $assert(fc_mail_is_tracked_marketing_message(['is_broadcast' => true]), 'broadcast mail must be treated as tracked marketing');
 $assert(fc_mail_is_tracked_marketing_message(['brevo_tags' => ['progress']]), 'tagged automation must be treated as tracked marketing');
+$assert(!fc_mail_is_tracked_marketing_message(['brevo_tags' => ['vip-access'], 'is_system_email' => true]), 'explicit tagged system mail must remain eligible for safe fallback');
 $assert(!fc_mail_is_tracked_marketing_message(['anti_phishing_code' => 'test']), 'critical account mail must remain eligible for safe fallback');
 
 $admin_settings_controller = file_get_contents(dirname(__DIR__) . '/app/controllers/admin/AdminSettings.php');

@@ -1006,6 +1006,7 @@ return [
     'admin_leader_operating_system.forever.result_type.order' => 'Order',
     'admin_leader_operating_system.forever.result_type.new_partner' => 'New partner',
     'admin_leader_operating_system.forever.result_type.content' => 'Post / content',
+    'admin_leader_operating_system.forever.result_type.planning' => 'Planning / preparation',
     'admin_leader_operating_system.forever.result_type.training' => 'Education / training',
     'admin_leader_operating_system.forever.result_type.coaching' => 'Team member support',
     'admin_leader_operating_system.forever.result_type.onboarding' => 'New-person onboarding',

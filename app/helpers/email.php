@@ -249,6 +249,15 @@ function fc_smtp_fallback_is_configured(): bool {
 }
 
 function fc_mail_is_tracked_marketing_message(array $data): bool {
+    /* A caller must opt in explicitly. Tagged, non-broadcast system messages
+     * (for example an access notification) keep their Brevo tags but may use
+     * the safe 4xx-only SMTP fallback. */
+    if(array_key_exists('is_system_email', $data)
+        && $data['is_system_email'] === true
+        && empty($data['is_broadcast'])
+        && empty($data['unsubscribe_url'])) {
+        return false;
+    }
     return !empty($data['is_broadcast'])
         || !empty($data['brevo_tags'])
         || !empty($data['unsubscribe_url']);
