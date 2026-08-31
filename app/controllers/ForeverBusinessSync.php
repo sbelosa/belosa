@@ -124,6 +124,74 @@ class ForeverBusinessSync extends Controller {
             ]);
         }
 
+        /* One-time, exact-account reconciliation authorized on 2026-08-31.
+         * Every identity and previous value must still match before any write. */
+        if($metric === 'fcc_account_reconcile_20260831') {
+            if(!hash_equals('apply_exact_seven_account_plan', trim((string) ($_POST['confirmation'] ?? '')))) {
+                $this->fail('maintenance_not_confirmed', 'Jednokratno usklađivanje FCC računa nije potvrđeno.', 422);
+            }
+
+            $plan = [
+                ['user_id' => 552, 'name' => 'Brigitte Berulec', 'old' => '360000400827', 'new' => '360001400827'],
+                ['user_id' => 438, 'name' => 'Danijela Butković', 'old' => '360000400266', 'new' => '360001400266'],
+                ['user_id' => 441, 'name' => 'Krešo Solar', 'old' => '360000140027', 'new' => '360001400273'],
+                ['user_id' => 300, 'name' => 'Liljanka Tomašić', 'old' => '360000826945', 'new' => '360000826944'],
+                ['user_id' => 344, 'name' => 'Miodrag Mišković', 'old' => '360000350460', 'new' => '360000950460'],
+                ['user_id' => 231, 'name' => 'Maja Trbušić Hlad', 'old' => '360000888812', 'delete' => true],
+                ['user_id' => 303, 'name' => 'Shemsije Musa', 'old' => '360000270807', 'delete' => true],
+            ];
+            $accounts = [];
+            foreach($plan as $change) {
+                $account = db()->where('user_id', $change['user_id'])->where('type', 0)->getOne('users', ['user_id', 'name', 'preferences']);
+                if(!$account || !hash_equals($change['name'], (string) $account->name)) {
+                    $this->fail('maintenance_identity_changed', 'Jedan od sedam FCC računa više ne odgovara odobrenom planu.', 409);
+                }
+                $preferences = json_decode((string) ($account->preferences ?? '{}'));
+                if(is_array($preferences)) $preferences = (object) $preferences;
+                if(!is_object($preferences)) $preferences = (object) [];
+                $meta = $preferences->meta ?? (object) [];
+                if(is_array($meta)) $meta = (object) $meta;
+                if(!is_object($meta)) $meta = (object) [];
+                $current_fbo_id = forever_business_normalize_fbo_id($meta->foreverId ?? $meta->forever_id ?? $meta->foreverID ?? '');
+                if(!hash_equals($change['old'], $current_fbo_id)) {
+                    $this->fail('maintenance_fbo_changed', 'Jedan od sedam FCC Forever ID-jeva više ne odgovara odobrenom planu.', 409);
+                }
+                $accounts[$change['user_id']] = [$account, $preferences, $meta];
+            }
+
+            $updated = [];
+            $deleted = [];
+            foreach($plan as $change) {
+                [$account, $preferences, $meta] = $accounts[$change['user_id']];
+                if(!empty($change['delete'])) {
+                    (new \Altum\Models\User())->delete((int) $account->user_id);
+                    if(db()->where('user_id', (int) $account->user_id)->has('users')) {
+                        $this->fail('maintenance_delete_failed', 'Odobreni bivši FCC račun nije uklonjen.', 500);
+                    }
+                    $deleted[] = (int) $account->user_id;
+                    continue;
+                }
+
+                $meta->foreverId = $change['new'];
+                $preferences->meta = $meta;
+                if(!db()->where('user_id', (int) $account->user_id)->where('type', 0)->update('users', [
+                    'preferences' => json_encode($preferences, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+                ])) {
+                    $this->fail('maintenance_update_failed', 'Odobreni FCC Forever ID nije spremljen.', 500);
+                }
+                cache()->deleteItemsByTag('user_id=' . (int) $account->user_id);
+                $updated[] = ['user_id' => (int) $account->user_id, 'fbo_id' => $change['new']];
+            }
+
+            $this->output([
+                'status' => 'success',
+                'metric' => 'fcc_account_reconcile_20260831',
+                'updated' => $updated,
+                'deleted_user_ids' => $deleted,
+                'completed_at' => get_date(),
+            ]);
+        }
+
         if($metric === 'total_cc') {
             $total_cc = $this->non_negative_number('total_cc');
             $is_closed = filter_var($_POST['is_closed'] ?? false, FILTER_VALIDATE_BOOLEAN);
