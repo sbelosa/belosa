@@ -1019,6 +1019,7 @@ async function main() {
     const syncUrl = requiredEnvironment('FCC_FOREVER_SYNC_URL');
     const syncKey = requiredEnvironment('FCC_FOREVER_SYNC_KEY');
     const dryRun = String(process.env.FCC_SYNC_DRY_RUN || '').trim() === '1';
+    const registeredAccountsOnly = String(process.env.FCC_SYNC_REGISTERED_ONLY || '').trim() === '1';
     const playwrightModule = process.env.PLAYWRIGHT_MODULE_URL || 'playwright';
     const {chromium} = await import(playwrightModule);
     const browser = await chromium.launch({
@@ -1046,6 +1047,77 @@ async function main() {
          * values are confirmed live for every individual member. */
         const fourCc = await downloadLiveFourCc(page, configuration, runDate);
         console.log(`4 CC Active live: potvrđena ${fourCc.rowCount} retka.`);
+
+        /* Month-end launch reconciliation can safely refresh every active FCC
+         * account without replacing the confirmed hierarchy when FLP360's
+         * queued Downline export unexpectedly widens its scope. All 630-style
+         * account lookups are verified before the first FCC write. */
+        if(registeredAccountsOnly) {
+            const rootFboId = normalizeFboId(ROOT_FBO_ID);
+            const rootIsRegistered = registeredAccounts.some(account => account.fboId === rootFboId);
+            const liveTargets = rootIsRegistered
+                ? registeredAccounts
+                : [{fboId: rootFboId, countryCode: configuration.operatingCountryCode, activeLinkCount: 0}, ...registeredAccounts];
+            const liveCc = await fetchLiveCcForMembers(page, configuration, liveTargets, runDate, {allowUnconfirmed: true});
+            if(liveCc.unconfirmed.length > 0 || liveCc.records.size !== liveTargets.length) {
+                throw new Error(`Registrirani FCC sync nije potvrdio ${liveCc.unconfirmed.length} od ${liveTargets.length} Forever ID-jeva; prije upisa ništa nije promijenjeno.`);
+            }
+
+            const rootRecord = liveCc.records.get(rootFboId);
+            if(!rootRecord || [
+                rootRecord.personalCc,
+                rootRecord.totalCc,
+                rootRecord.totalActiveCc,
+                rootRecord.nonManagerCc,
+                rootRecord.leadershipCc,
+                rootRecord.totalActiveCcYtd,
+                rootRecord.nonManagerCcYtd,
+                rootRecord.leadershipCcYtd,
+            ].some(value => !Number.isFinite(value))) {
+                throw new Error('Glavni FBO nema potpuni potvrđeni live CC zapis za odabrano razdoblje.');
+            }
+
+            const ccSummary = await fetchLiveCcSummary(page, configuration, runDate);
+            if(Math.abs(ccSummary.totalCc - rootRecord.totalCc) >= 0.002) {
+                throw new Error(`FLP360 CC Summary Total CC (${ccSummary.totalCc.toFixed(3)}) ne odgovara glavnom ${configuration.operatingCountryCode} live Total CC-u (${rootRecord.totalCc.toFixed(3)}).`);
+            }
+            const expectedRecords = new Map(registeredAccounts.map(account => [account.fboId, liveCc.records.get(account.fboId)]));
+            if([...expectedRecords.values()].some(record => !record)) {
+                throw new Error('Registrirani FCC sync nema pripremljen zapis za svaki aktivni Forever ID.');
+            }
+            console.log(`Registrirani FCC način: potvrđeno ${expectedRecords.size} računa za ${period}; tržišta ${JSON.stringify(liveCc.countryCounts)}.`);
+
+            if(dryRun) {
+                console.log('Kontrolni registrirani FCC način završen je bez upisa.');
+                return;
+            }
+
+            const fourCcResult = await uploadReport(fourCc.path, period, syncUrl, syncKey);
+            console.log(`FCC 4 CC Active: duplicate=${Boolean(fourCcResult.duplicate)}.`);
+            await mapWithConcurrency(registeredAccounts, 4, async account => {
+                const record = expectedRecords.get(account.fboId);
+                return uploadMemberLiveCc(record, fourCc.ids.has(account.fboId), period, syncUrl, syncKey);
+            });
+            if(!rootIsRegistered) {
+                await uploadRootLiveCc(rootRecord, fourCc.ids.has(rootFboId), period, syncUrl, syncKey);
+            }
+            await uploadGlobalTotalCc(ccSummary.globalTotalCc, period, syncUrl, syncKey);
+            for(const snapshot of officialFourCoreSnapshots()) {
+                await uploadFourCoreSnapshot(snapshot, syncUrl, syncKey);
+            }
+
+            const registeredVerified = verifyFccAccounts(
+                await fetchFccAccounts(period, syncUrl, syncKey),
+                expectedRecords,
+                period,
+                registeredAccounts.length
+            );
+            const status = await fetchFccStatus(period, syncUrl, syncKey);
+            console.log(`FCC account provjera: ${registeredVerified.uniqueForeverIds} jedinstvenih Forever ID-jeva (${registeredVerified.activeAccountLinks} aktivnih računa), VIP upis potvrđen za ${registeredVerified.vipEnrolled}.`);
+            console.log(`FLP360 → FCC registrirani sync za ${period} završen je uspješno; zadnji FCC podatak ${status.last_data_import_at || status.last_sync_at || 'potvrđen'}.`);
+            return;
+        }
+
         const downline = await buildLiveDownline(page, configuration, fourCc.ids, runDate);
         const downlineValidation = await validateDownline(downline.path);
         console.log(`Downline live: ${downlineValidation.rows} redaka, svih ${downline.liveConfirmed} CC zapisa potvrđeno (${downline.fallbackCount} potvrđenih detaljnih odgovora; ${downline.operatingMarketFallbackCount} regionalnih fallbacka; tržišta ${JSON.stringify(downline.countryCounts)}).`);

@@ -48,6 +48,8 @@ assert.equal(zagrebPeriod(testDate), '2026-08');
 assert.equal(syncRunDate('2026-08').toISOString(), '2026-08-31T12:00:00.000Z');
 assert.equal(syncRunDate('', testDate), testDate);
 assert.throws(() => syncRunDate('08/2026'), /YYYY-MM/);
+assert.match(syncSource, /FCC_SYNC_REGISTERED_ONLY/);
+assert.match(syncSource, /prije upisa ništa nije promijenjeno/);
 assert.deepEqual(zagrebPeriodParts(testDate), {year: 2026, month: 8, monthLabel: 'AUG'});
 assert.equal(currentFlpMonthLabel(testDate), '08/2026-Not Closed');
 assert.equal(findCurrentFlpMonthLabel(['7/2026-Closed', '8/2026-Not Closed'], testDate), '8/2026-Not Closed');
