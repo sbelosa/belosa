@@ -141,7 +141,7 @@ function prepareRegisteredFccAccounts(payload, configuration) {
     const seen = new Set();
     const accounts = payload.accounts.map(account => {
         const fboId = normalizeFboId(account?.fbo_id);
-        if(!fboId || seen.has(fboId) || Number(account?.active_link_count) < 1) {
+        if(!/^360\d{9}$/.test(fboId) || seen.has(fboId) || Number(account?.active_link_count) < 1) {
             throw new Error('FCC popis računa sadrži neispravan ili dupliciran Forever ID.');
         }
         seen.add(fboId);

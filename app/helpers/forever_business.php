@@ -1435,7 +1435,7 @@ function forever_business_get_registered_sync_accounts(string $period): array {
         LEFT JOIN forever_business_members member ON member.fbo_id = account.fbo_id
         LEFT JOIN forever_business_metrics metric ON metric.fbo_id = account.fbo_id AND metric.period_month = '{$escaped_period}'
         LEFT JOIN forever_business_vip_enrollments enrollment ON enrollment.fbo_id = account.fbo_id
-        WHERE account.fbo_id REGEXP '^[0-9]{12}$'
+        WHERE account.fbo_id REGEXP '^360[0-9]{9}$'
         GROUP BY account.fbo_id
         ORDER BY account.fbo_id ASC");
     if(!$result) {
@@ -2365,7 +2365,7 @@ function forever_business_upsert_four_core_snapshot(string $fbo_id, string $peri
     forever_business_ensure_tables();
     $fbo_id = forever_business_normalize_fbo_id($fbo_id);
     $period = forever_business_period_from_label($period) ?: '';
-    if($fbo_id === '' || $period === '') {
+    if($fbo_id === '' || !preg_match('/^360[0-9]{9}$/D', $fbo_id) || $period === '') {
         throw new \InvalidArgumentException('Neispravan Forever ID ili razdoblje 4 Core snimke.');
     }
     if(!forever_business_period_is_current_or_past($period)) {

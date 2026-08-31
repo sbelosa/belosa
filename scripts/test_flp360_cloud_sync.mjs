@@ -81,6 +81,10 @@ assert.throws(() => prepareRegisteredFccAccounts({
         {fbo_id: '360000000001', country_code: 'HR', active_link_count: 1},
     ],
 }, {operatingCountryCode: 'HUN'}), /dupliciran/);
+assert.throws(() => prepareRegisteredFccAccounts({
+    status: 'success', metric: 'fcc_accounts', summary: {unique_forever_ids: 1},
+    accounts: [{fbo_id: '000000360790', country_code: 'RS', active_link_count: 1}],
+}, {operatingCountryCode: 'HUN'}), /neispravan/);
 assert.equal(parseFlpTimestamp(1786616559000)?.toISOString(), '2026-08-13T10:22:39.000Z');
 assert.equal(parseFlpTimestamp('1786616559000')?.toISOString(), '2026-08-13T10:22:39.000Z');
 assert.equal(parseFlpTimestamp('not-a-date'), null);
