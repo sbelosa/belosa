@@ -30,6 +30,14 @@ function zagrebPeriod(date = new Date()) {
     return `${year}-${month}`;
 }
 
+function syncRunDate(value, fallback = new Date()) {
+    const period = String(value || '').trim();
+    if(!period) return fallback;
+    const match = period.match(/^(20\d{2})-(0[1-9]|1[0-2])$/);
+    if(!match) throw new Error('FLP360_SYNC_PERIOD mora biti u obliku YYYY-MM.');
+    return new Date(Date.UTC(Number(match[1]), Number(match[2]), 0, 12, 0, 0));
+}
+
 function zagrebPeriodParts(date = new Date()) {
     const [year, month] = zagrebPeriod(date).split('-').map(Number);
     const monthLabel = new Intl.DateTimeFormat('en', {month: 'short', timeZone: 'UTC'})
@@ -1020,8 +1028,8 @@ async function main() {
     });
     const context = await browser.newContext({locale: 'en-US'});
     const page = await context.newPage();
-    const period = zagrebPeriod();
-    const runDate = new Date();
+    const runDate = syncRunDate(process.env.FLP360_SYNC_PERIOD);
+    const period = zagrebPeriod(runDate);
 
     try {
         await login(page, username, password);
@@ -1183,6 +1191,7 @@ export {
     validateXlsx,
     verifyFccStatus,
     verifyFccAccounts,
+    syncRunDate,
     zagrebPeriod,
     zagrebPeriodParts,
 };
