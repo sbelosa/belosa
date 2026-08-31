@@ -240,6 +240,14 @@ await assert.rejects(() => fetchLiveCcForMembers(fakeLivePage, {
     guestToken: 'test-token',
     operatingCountryCode: 'HUN',
 }, [{fboId: '360000000003', countryCode: ''}], testDate), /matičnu zemlju/);
+const toleratedUnconfirmed = await fetchLiveCcForMembers(fakeLivePage, {
+    reportBase: 'https://example.test/api/reporttdmpro',
+    aesEncryptionKey: '0123456789abcdef',
+    guestToken: 'test-token',
+    operatingCountryCode: 'HUN',
+}, [{fboId: '360000000003', countryCode: 'HRV', countryCandidates: ['DEU']}], testDate, {allowUnconfirmed: true});
+assert.equal(toleratedUnconfirmed.records.size, 0);
+assert.equal(toleratedUnconfirmed.unconfirmed.length, 1);
 
 const regionalFallbackUrls = [];
 const regionalFallbackPage = {
@@ -357,7 +365,8 @@ assert.match(syncSource, /candidateMemberCount > MAX_SAFE_DOWNLINE_MEMBERS/);
 assert.match(syncSource, /persistConfirmedDownline\(downline\.path\)/);
 assert.match(syncSource, /registeredOnlyAccounts/);
 assert.match(syncSource, /lookupCountryByFboId/);
-assert.match(syncSource, /postojeći bodovi namjerno su sačuvani/);
+assert.match(syncSource, /countryCandidates/);
+assert.match(syncSource, /Sinkronizacija je djelomična/);
 assert.match(syncSource, /verifyFccAccounts/);
 assert.doesNotMatch(syncSource, /await requestDownline\(page\)/);
 assert.doesNotMatch(syncSource, /await downloadFocusGroup\(page\)/);
