@@ -61,6 +61,15 @@ class ForeverBusinessSync extends Controller {
         return max(0, (float) str_replace(',', '.', (string) $value));
     }
 
+    private function optional_non_negative_number(string $key): ?float {
+        $value = $_POST[$key] ?? null;
+        if($value === null || $value === '') return null;
+        if(!is_numeric(str_replace(',', '.', (string) $value))) {
+            $this->fail('invalid_metric', 'Nije ispravna vrijednost: ' . $key . '.', 422);
+        }
+        return max(0, (float) str_replace(',', '.', (string) $value));
+    }
+
     public function index() {
         $this->ensure_access();
         forever_business_ensure_tables();
@@ -98,6 +107,23 @@ class ForeverBusinessSync extends Controller {
             ]);
         }
 
+        if($metric === 'fcc_accounts') {
+            $accounts = forever_business_get_registered_sync_accounts($period);
+            $this->output([
+                'status' => 'success',
+                'metric' => 'fcc_accounts',
+                'period' => $period,
+                'summary' => [
+                    'unique_forever_ids' => count($accounts),
+                    'active_account_links' => array_sum(array_column($accounts, 'active_link_count')),
+                    'current_cc_confirmed' => count(array_filter($accounts, static fn($account) => ($account['metric_period'] ?? null) === $period && $account['personal_cc'] !== null)),
+                    'vip_enrolled' => count(array_filter($accounts, static fn($account) => !empty($account['is_vip_enrolled']))),
+                ],
+                'accounts' => $accounts,
+                'generated_at' => get_date(),
+            ]);
+        }
+
         if($metric === 'total_cc') {
             $total_cc = $this->non_negative_number('total_cc');
             $is_closed = filter_var($_POST['is_closed'] ?? false, FILTER_VALIDATE_BOOLEAN);
@@ -122,18 +148,30 @@ class ForeverBusinessSync extends Controller {
 
         if($metric === 'member_cc') {
             $fbo_id = forever_business_normalize_fbo_id($_POST['fbo_id'] ?? '');
-            if($fbo_id !== self::ROOT_FBO_ID) {
-                $this->fail('invalid_fbo_id', 'Live CC strojni unos dopušten je samo za glavni Forever ID.', 422);
+            if($fbo_id === '') {
+                $this->fail('invalid_fbo_id', 'Live CC strojni unos nema valjan Forever ID.', 422);
             }
-            $metrics = [];
-            foreach([
-                'personal_cc', 'total_cc', 'total_active_cc', 'non_manager_cc', 'leadership_cc',
-                'total_active_cc_ytd', 'non_manager_cc_ytd', 'leadership_cc_ytd',
-            ] as $key) {
-                $metrics[$key] = $this->non_negative_number($key);
+            $metrics = [
+                'personal_cc' => $this->non_negative_number('personal_cc'),
+                'total_cc' => $this->non_negative_number('total_cc'),
+                'total_active_cc' => $this->non_negative_number('total_active_cc'),
+            ];
+            foreach(['non_manager_cc', 'leadership_cc', 'total_active_cc_ytd', 'non_manager_cc_ytd', 'leadership_cc_ytd'] as $key) {
+                $metrics[$key] = $this->optional_non_negative_number($key);
+            }
+            if($fbo_id === self::ROOT_FBO_ID) {
+                foreach(['non_manager_cc', 'leadership_cc', 'total_active_cc_ytd', 'non_manager_cc_ytd', 'leadership_cc_ytd'] as $key) {
+                    if($metrics[$key] === null) $this->fail('invalid_metric', 'Nedostaje vrijednost glavnog FBO-a: ' . $key . '.', 422);
+                }
+            } elseif(forever_business_get_active_user_link_count_for_fbo($fbo_id) < 1) {
+                $this->fail('invalid_fbo_id', 'Live CC strojni unos dopušten je samo za Forever ID aktivnog FCC računa.', 422);
             }
             $metrics['is_4cc_active'] = filter_var($_POST['is_4cc_active'] ?? false, FILTER_VALIDATE_BOOLEAN);
-            forever_business_upsert_root_live_cc($fbo_id, $period, $metrics);
+            if($fbo_id === self::ROOT_FBO_ID) {
+                forever_business_upsert_root_live_cc($fbo_id, $period, $metrics);
+            } else {
+                forever_business_upsert_registered_member_live_cc($fbo_id, $period, $metrics);
+            }
             $this->output([
                 'status' => 'success',
                 'metric' => 'member_cc',

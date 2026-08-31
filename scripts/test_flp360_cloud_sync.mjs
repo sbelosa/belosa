@@ -8,6 +8,7 @@ import {
     buildFourCcCsv,
     csvDocument,
     currentFlpMonthLabel,
+    downlineMemberCount,
     encryptFlpAuthorization,
     extractCurrentCcSummary,
     extractFourCcRows,
@@ -21,13 +22,16 @@ import {
     officialFourCoreSnapshots,
     parseCsvLine,
     parseFlpTimestamp,
+    prepareRegisteredFccAccounts,
     readyReportMessage,
     refreshDownlineCsv,
     reportV2Url,
+    resolveFccAccountCountryCode,
     resolveLiveCcCountryCode,
     validateDownline,
     validateFourCcRows,
     validateXlsx,
+    verifyFccAccounts,
     verifyFccStatus,
     zagrebPeriod,
     zagrebPeriodParts,
@@ -55,6 +59,28 @@ assert.equal(normalizeCountryCode('HRV'), 'HRV');
 assert.equal(normalizeCountryCode('Germany'), '');
 assert.equal(resolveLiveCcCountryCode('HRV', {homeCountryCode: 'HRV', operatingCountryCode: 'HUN'}), 'HUN');
 assert.equal(resolveLiveCcCountryCode('DEU', {homeCountryCode: 'HRV', operatingCountryCode: 'HUN'}), 'DEU');
+assert.equal(resolveFccAccountCountryCode('BA', {operatingCountryCode: 'HUN'}), 'BIH');
+assert.equal(resolveFccAccountCountryCode('', {operatingCountryCode: 'HUN'}), 'HUN');
+const registeredAccounts = prepareRegisteredFccAccounts({
+    status: 'success',
+    metric: 'fcc_accounts',
+    summary: {unique_forever_ids: 2},
+    accounts: [
+        {fbo_id: '360-001-651-915', country_code: 'BA', active_link_count: 1},
+        {fbo_id: '360000000002', country_code: 'DE', active_link_count: 2},
+    ],
+}, {operatingCountryCode: 'HUN'});
+assert.deepEqual(registeredAccounts, [
+    {fboId: '360001651915', countryCode: 'BIH', activeLinkCount: 1},
+    {fboId: '360000000002', countryCode: 'DEU', activeLinkCount: 2},
+]);
+assert.throws(() => prepareRegisteredFccAccounts({
+    status: 'success', metric: 'fcc_accounts', summary: {unique_forever_ids: 2},
+    accounts: [
+        {fbo_id: '360000000001', country_code: 'HR', active_link_count: 1},
+        {fbo_id: '360000000001', country_code: 'HR', active_link_count: 1},
+    ],
+}, {operatingCountryCode: 'HUN'}), /dupliciran/);
 assert.equal(parseFlpTimestamp(1786616559000)?.toISOString(), '2026-08-13T10:22:39.000Z');
 assert.equal(parseFlpTimestamp('1786616559000')?.toISOString(), '2026-08-13T10:22:39.000Z');
 assert.equal(parseFlpTimestamp('not-a-date'), null);
@@ -149,6 +175,7 @@ const baseRows = Array.from({length: 400}, (_, index) => {
     return [fboId, String(index + 1), `Member ${index + 1}`, 'Distributor', '1', index < 300 ? 'HRV' : 'HUN', 'N', '0', '0', '0', '0', '0', '0', '0', '0'];
 });
 const memberReferences = extractLiveMemberReferences(csvDocument([downlineHeaders, ...baseRows]));
+assert.equal(downlineMemberCount(csvDocument([downlineHeaders, ...baseRows])), 400);
 assert.deepEqual(memberReferences[0], {fboId: baseRows[0][0], homeCountryCode: 'HRV'});
 assert.deepEqual(memberReferences[399], {fboId: baseRows[399][0], homeCountryCode: 'HUN'});
 assert.throws(() => extractLiveMemberReferences(csvDocument([
@@ -274,6 +301,31 @@ assert.equal(verified.members, 401);
 assert.equal(verified.globalTotalCc, 63.684);
 assert.throws(() => verifyFccStatus({summary: {}}, {members: 401, activeFourCc: 2, personalCc: 404.25, globalTotalCc: 63.684}), /zavr\u0161na kontrola/);
 
+const registeredExpected = new Map([
+    ['360001651915', {fboId: '360001651915', personalCc: 0.367}],
+    ['360000000002', {fboId: '360000000002', personalCc: 0}],
+]);
+const registeredVerified = verifyFccAccounts({
+    status: 'success',
+    metric: 'fcc_accounts',
+    summary: {unique_forever_ids: 2, active_account_links: 3, current_cc_confirmed: 2, vip_enrolled: 1},
+    accounts: [
+        {fbo_id: '360001651915', metric_period: '2026-08-01', personal_cc: 0.367, is_vip_enrolled: true},
+        {fbo_id: '360000000002', metric_period: '2026-08-01', personal_cc: 0, is_vip_enrolled: false},
+    ],
+}, registeredExpected, '2026-08');
+assert.equal(registeredVerified.uniqueForeverIds, 2);
+assert.equal(registeredVerified.activeAccountLinks, 3);
+assert.throws(() => verifyFccAccounts({
+    status: 'success',
+    metric: 'fcc_accounts',
+    summary: {unique_forever_ids: 2, active_account_links: 3, current_cc_confirmed: 2, vip_enrolled: 0},
+    accounts: [
+        {fbo_id: '360001651915', metric_period: '2026-08-01', personal_cc: 0.367, is_vip_enrolled: false},
+        {fbo_id: '360000000002', metric_period: '2026-08-01', personal_cc: 0, is_vip_enrolled: false},
+    ],
+}, registeredExpected, '2026-08'), /registriranih Forever ID-jeva/);
+
 const fourCoreSnapshots = officialFourCoreSnapshots();
 assert.equal(fourCoreSnapshots.length, 2);
 assert.equal(fourCoreSnapshots.find(snapshot => snapshot.period === '2026-07')?.values.downline.ytd.recruitment, 174);
@@ -284,6 +336,7 @@ assert.match(syncSource, /appflp360\.homeCountryCode/);
 assert.match(syncSource, /appflp360\.operatingCountryCode/);
 assert.match(syncSource, /treeview-cc\?countryCode=/);
 assert.match(syncSource, /metric: 'member_cc'/);
+assert.match(syncSource, /metric: 'fcc_accounts'/);
 assert.match(syncSource, /metric: 'total_cc'/);
 assert.match(syncSource, /rewire-earnings-CC-summary/);
 assert.match(syncSource, /FCC_SYNC_DRY_RUN/);
@@ -296,6 +349,10 @@ assert.match(syncSource, /button\[name="login"\]:visible/);
 assert.match(syncSource, /force: true, noWaitAfter: true/);
 assert.match(syncSource, /process\.env\.PLAYWRIGHT_MODULE_URL \|\| 'playwright'/);
 assert.match(syncSource, /process\.env\.PLAYWRIGHT_CHROMIUM_EXECUTABLE/);
+assert.match(syncSource, /candidateMemberCount > MAX_SAFE_DOWNLINE_MEMBERS/);
+assert.match(syncSource, /persistConfirmedDownline\(downline\.path\)/);
+assert.match(syncSource, /registeredOnlyAccounts/);
+assert.match(syncSource, /verifyFccAccounts/);
 assert.doesNotMatch(syncSource, /await requestDownline\(page\)/);
 assert.doesNotMatch(syncSource, /await downloadFocusGroup\(page\)/);
 

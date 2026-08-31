@@ -9,6 +9,9 @@ import {pathToFileURL} from 'node:url';
 const FLP360_BASE_URL = 'https://flp360.foreverliving.com';
 const ROOT_FBO_ID = '360-000-760-944';
 const OUTPUT_DIRECTORY = process.env.RUNNER_TEMP || '/tmp';
+const MAX_SAFE_DOWNLINE_MEMBERS = 1000;
+const CONFIRMED_DOWNLINE_BASE_PATH = process.env.FLP360_CONFIRMED_DOWNLINE_BASE
+    || path.join(process.cwd(), '.codex-state', 'flp360-confirmed-downline.csv');
 
 function requiredEnvironment(name) {
     const value = String(process.env[name] || '').trim();
@@ -115,6 +118,43 @@ function normalizeFboId(value) {
 function normalizeCountryCode(value) {
     const code = String(value ?? '').trim().toLocaleUpperCase('en');
     return /^[A-Z]{2,3}$/.test(code) ? code : '';
+}
+
+function resolveFccAccountCountryCode(value, configuration) {
+    const accountCode = normalizeCountryCode(value);
+    const iso2ToFlp = {
+        AL: 'ALB', AT: 'AUT', BA: 'BIH', BE: 'BEL', BG: 'BGR', CH: 'CHE', CZ: 'CZE',
+        DE: 'DEU', DK: 'DNK', ES: 'ESP', FI: 'FIN', FR: 'FRA', GB: 'GBR', GR: 'GRC',
+        HR: 'HRV', HU: 'HUN', IE: 'IRL', IT: 'ITA', ME: 'MNE', MK: 'MKD', NL: 'NLD',
+        NO: 'NOR', PL: 'POL', PT: 'PRT', RO: 'ROU', RS: 'SRB', SE: 'SWE', SI: 'SVN',
+        SK: 'SVK', US: 'USA', XK: 'XKX',
+    };
+    return iso2ToFlp[accountCode]
+        || accountCode
+        || normalizeCountryCode(configuration?.operatingCountryCode);
+}
+
+function prepareRegisteredFccAccounts(payload, configuration) {
+    if(payload?.status !== 'success' || payload?.metric !== 'fcc_accounts' || !Array.isArray(payload.accounts)) {
+        throw new Error('FCC nije vratio valjan popis aktivnih računa s Forever ID-om.');
+    }
+    const seen = new Set();
+    const accounts = payload.accounts.map(account => {
+        const fboId = normalizeFboId(account?.fbo_id);
+        if(!fboId || seen.has(fboId) || Number(account?.active_link_count) < 1) {
+            throw new Error('FCC popis računa sadrži neispravan ili dupliciran Forever ID.');
+        }
+        seen.add(fboId);
+        return {
+            fboId,
+            countryCode: resolveFccAccountCountryCode(account?.country_code, configuration),
+            activeLinkCount: Number(account.active_link_count),
+        };
+    });
+    if(Number(payload?.summary?.unique_forever_ids) !== accounts.length) {
+        throw new Error('FCC broj aktivnih Forever ID-jeva ne odgovara vraćenom popisu.');
+    }
+    return accounts;
 }
 
 function resolveLiveCcCountryCode(homeCountryCode, configuration) {
@@ -438,7 +478,35 @@ async function downloadLatestDownlineBase(page, configuration, date = new Date()
     if(!response.ok()) throw new Error(`FLP360 Downline CSV nije moguće preuzeti (HTTP ${response.status()}).`);
     const contents = (await response.body()).toString('utf8');
     if(Buffer.byteLength(contents) < 1000) throw new Error('FLP360 Downline CSV je premalen za siguran uvoz.');
+    const candidateMemberCount = downlineMemberCount(contents);
+    if(candidateMemberCount < 400 || candidateMemberCount > MAX_SAFE_DOWNLINE_MEMBERS) {
+        let confirmedContents;
+        let confirmedStat;
+        try {
+            [confirmedContents, confirmedStat] = await Promise.all([
+                fs.readFile(CONFIRMED_DOWNLINE_BASE_PATH, 'utf8'),
+                fs.stat(CONFIRMED_DOWNLINE_BASE_PATH),
+            ]);
+        } catch {
+            throw new Error(`FLP360 Downline ima neočekivanih ${candidateMemberCount} članova, a zadnja potvrđena lokalna hijerarhija nije dostupna.`);
+        }
+        const confirmedAgeDays = (date.getTime() - confirmedStat.mtimeMs) / 86400000;
+        const confirmedMemberCount = downlineMemberCount(confirmedContents);
+        if(confirmedAgeDays < -1 || confirmedAgeDays > 14
+            || confirmedMemberCount < 400 || confirmedMemberCount > MAX_SAFE_DOWNLINE_MEMBERS) {
+            throw new Error(`FLP360 Downline ima neočekivanih ${candidateMemberCount} članova, a lokalna potvrđena hijerarhija nije sigurna za fallback.`);
+        }
+        console.warn(`FLP360 Downline kandidat ima neočekivanih ${candidateMemberCount} članova; koristi se zadnja potvrđena hijerarhija od ${confirmedMemberCount} članova.`);
+        return {contents: confirmedContents, processedAt: confirmedStat.mtime, ageDays: confirmedAgeDays};
+    }
     return {contents, processedAt, ageDays};
+}
+
+async function persistConfirmedDownline(filePath) {
+    const contents = await fs.readFile(filePath);
+    await fs.mkdir(path.dirname(CONFIRMED_DOWNLINE_BASE_PATH), {recursive: true, mode: 0o700});
+    await fs.writeFile(CONFIRMED_DOWNLINE_BASE_PATH, contents, {mode: 0o600});
+    await fs.chmod(CONFIRMED_DOWNLINE_BASE_PATH, 0o600);
 }
 
 function nonNegativeCc(value, fieldName) {
@@ -542,6 +610,10 @@ function extractLiveMemberReferences(baseContents) {
         seen.add(fboId);
         return {fboId, homeCountryCode};
     });
+}
+
+function downlineMemberCount(contents) {
+    return extractLiveMemberReferences(contents).length;
 }
 
 async function fetchLiveCcForMembers(page, configuration, members, date = new Date()) {
@@ -686,6 +758,7 @@ async function buildLiveDownline(page, configuration, activeFourCcIds, date = ne
         path: targetPath,
         baseProcessedAt: base.processedAt,
         memberIds: new Set(fboIds),
+        liveCcRecords: liveCc.records,
         fallbackCount: liveCc.fallbackCount,
         operatingMarketFallbackCount: liveCc.operatingMarketFallbackCount,
         countryCounts: liveCc.countryCounts,
@@ -748,7 +821,7 @@ async function uploadFourCoreSnapshot(snapshot, syncUrl, syncKey) {
     return payload;
 }
 
-async function uploadRootLiveCc(record, isFourCcActive, period, syncUrl, syncKey) {
+async function uploadMemberLiveCc(record, isFourCcActive, period, syncUrl, syncKey) {
     const form = new URLSearchParams({
         metric: 'member_cc',
         report_period: period,
@@ -756,13 +829,17 @@ async function uploadRootLiveCc(record, isFourCcActive, period, syncUrl, syncKey
         personal_cc: String(record.personalCc),
         total_cc: String(record.totalCc),
         total_active_cc: String(record.totalActiveCc),
-        non_manager_cc: String(record.nonManagerCc),
-        leadership_cc: String(record.leadershipCc),
-        total_active_cc_ytd: String(record.totalActiveCcYtd),
-        non_manager_cc_ytd: String(record.nonManagerCcYtd),
-        leadership_cc_ytd: String(record.leadershipCcYtd),
         is_4cc_active: String(Boolean(isFourCcActive)),
     });
+    for(const [key, value] of Object.entries({
+        non_manager_cc: record.nonManagerCc,
+        leadership_cc: record.leadershipCc,
+        total_active_cc_ytd: record.totalActiveCcYtd,
+        non_manager_cc_ytd: record.nonManagerCcYtd,
+        leadership_cc_ytd: record.leadershipCcYtd,
+    })) {
+        if(value !== null && value !== undefined) form.set(key, String(value));
+    }
     const response = await fetch(syncUrl, {
         method: 'POST',
         headers: {
@@ -776,12 +853,16 @@ async function uploadRootLiveCc(record, isFourCcActive, period, syncUrl, syncKey
     try {
         payload = JSON.parse(responseText);
     } catch {
-        throw new Error('FCC je vratio neispravan odgovor za glavni live CC zapis.');
+        throw new Error(`FCC je vratio neispravan odgovor za live CC zapis ${record.fboId}.`);
     }
     if(!response.ok || payload.status !== 'success' || payload.metric !== 'member_cc') {
-        throw new Error(payload?.error?.message || 'FCC sinkronizacija glavnog live CC zapisa nije uspjela.');
+        throw new Error(payload?.error?.message || `FCC sinkronizacija live CC zapisa ${record.fboId} nije uspjela.`);
     }
     return payload;
+}
+
+async function uploadRootLiveCc(record, isFourCcActive, period, syncUrl, syncKey) {
+    return uploadMemberLiveCc(record, isFourCcActive, period, syncUrl, syncKey);
 }
 
 async function uploadGlobalTotalCc(globalTotalCc, period, syncUrl, syncKey) {
@@ -808,6 +889,28 @@ async function uploadGlobalTotalCc(globalTotalCc, period, syncUrl, syncKey) {
     }
     if(!response.ok || payload.status !== 'success' || payload.metric !== 'total_cc') {
         throw new Error(payload?.error?.message || 'FCC sinkronizacija Global Total CC zapisa nije uspjela.');
+    }
+    return payload;
+}
+
+async function fetchFccAccounts(period, syncUrl, syncKey) {
+    const response = await fetch(syncUrl, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+            'X-FCC-Forever-Sync-Key': syncKey,
+        },
+        body: new URLSearchParams({metric: 'fcc_accounts', report_period: period}),
+    });
+    const responseText = await response.text();
+    let payload;
+    try {
+        payload = JSON.parse(responseText);
+    } catch {
+        throw new Error('FCC popis aktivnih Forever ID-jeva nije vratio valjan JSON odgovor.');
+    }
+    if(!response.ok || payload.status !== 'success' || payload.metric !== 'fcc_accounts') {
+        throw new Error(payload?.error?.message || 'FCC popis aktivnih Forever ID-jeva nije dostupan.');
     }
     return payload;
 }
@@ -853,6 +956,39 @@ function verifyFccStatus(payload, expected) {
     };
 }
 
+function verifyFccAccounts(payload, expectedRecords, period) {
+    const accounts = Array.isArray(payload?.accounts) ? payload.accounts : [];
+    const expectedPeriod = /^\d{4}-\d{2}$/.test(period) ? `${period}-01` : period;
+    const actualById = new Map(accounts.map(account => [normalizeFboId(account?.fbo_id), account]));
+    const failures = [];
+
+    if(payload?.status !== 'success' || payload?.metric !== 'fcc_accounts') failures.push('response');
+    if(accounts.length !== expectedRecords.size || actualById.size !== accounts.length) failures.push('account_count');
+    if(Number(payload?.summary?.unique_forever_ids) !== expectedRecords.size) failures.push('summary_count');
+    if(Number(payload?.summary?.current_cc_confirmed) !== expectedRecords.size) failures.push('current_cc_count');
+
+    for(const [fboId, expected] of expectedRecords) {
+        const actual = actualById.get(fboId);
+        if(!actual) {
+            failures.push(`missing_${fboId}`);
+            continue;
+        }
+        if(String(actual.metric_period || '') !== expectedPeriod) failures.push(`period_${fboId}`);
+        if(actual.personal_cc === null || Math.abs(Number(actual.personal_cc) - expected.personalCc) >= 0.002) {
+            failures.push(`personal_cc_${fboId}`);
+        }
+        if(expected.personalCc >= .330 && !actual.is_vip_enrolled) failures.push(`vip_${fboId}`);
+    }
+    if(failures.length) {
+        throw new Error(`FCC završna kontrola registriranih Forever ID-jeva nije prošla: ${failures.slice(0, 8).join(', ')}${failures.length > 8 ? ` (+${failures.length - 8})` : ''}.`);
+    }
+    return {
+        uniqueForeverIds: accounts.length,
+        activeAccountLinks: Number(payload?.summary?.active_account_links),
+        vipEnrolled: Number(payload?.summary?.vip_enrolled),
+    };
+}
+
 async function main() {
     const username = requiredEnvironment('FLP360_USERNAME');
     const password = requiredEnvironment('FLP360_PASSWORD');
@@ -875,6 +1011,11 @@ async function main() {
         await login(page, username, password);
         const configuration = await flpApiConfiguration(page);
         console.log(`FLP360 kontekst: home=${configuration.homeCountryCode}, operating=${configuration.operatingCountryCode}.`);
+        const registeredAccounts = prepareRegisteredFccAccounts(
+            await fetchFccAccounts(period, syncUrl, syncKey),
+            configuration
+        );
+        console.log(`FCC računi za live CC: ${registeredAccounts.length} jedinstvenih aktivnih Forever ID-jeva.`);
 
         /* Build and validate every current-period artifact before the first FCC data
          * write. The last complete export remains the hierarchy authority, while CC
@@ -890,6 +1031,19 @@ async function main() {
         }], runDate);
         const rootRecord = rootLiveCc.records.get(normalizeFboId(ROOT_FBO_ID));
         if(!rootRecord || !Number.isFinite(rootRecord.personalCc)) throw new Error('Glavni FBO nema potvrđen live Personal CC.');
+        const registeredOnlyAccounts = registeredAccounts.filter(account =>
+            account.fboId !== rootRecord.fboId && !downline.memberIds.has(account.fboId)
+        );
+        const registeredOnlyLiveCc = await fetchLiveCcForMembers(page, configuration, registeredOnlyAccounts, runDate);
+        const registeredExpectedRecords = new Map();
+        for(const account of registeredAccounts) {
+            const record = account.fboId === rootRecord.fboId
+                ? rootRecord
+                : (downline.liveCcRecords.get(account.fboId) || registeredOnlyLiveCc.records.get(account.fboId));
+            if(!record) throw new Error(`Nedostaje live CC potvrda aktivnog FCC Forever ID-ja ${account.fboId}.`);
+            registeredExpectedRecords.set(account.fboId, record);
+        }
+        console.log(`FCC Forever ID-jevi izvan potvrđene hijerarhije: ${registeredOnlyAccounts.length}; svi live CC zapisi potvrđeni prije upisa.`);
         const ccSummary = await fetchLiveCcSummary(page, configuration, runDate);
         if(Math.abs(ccSummary.totalCc - rootRecord.totalCc) >= 0.002) {
             throw new Error(`FLP360 CC Summary Total CC (${ccSummary.totalCc.toFixed(3)}) ne odgovara glavnom ${configuration.operatingCountryCode} live Total CC-u (${rootRecord.totalCc.toFixed(3)}).`);
@@ -910,6 +1064,13 @@ async function main() {
         const fourCcResult = await uploadReport(fourCc.path, period, syncUrl, syncKey);
         console.log(`FCC 4 CC Active: duplicate=${Boolean(fourCcResult.duplicate)}.`);
 
+        await mapWithConcurrency(registeredOnlyAccounts, 4, async account => {
+            const record = registeredOnlyLiveCc.records.get(account.fboId);
+            if(!record) throw new Error(`Nedostaje pripremljen live CC zapis za FCC Forever ID ${account.fboId}.`);
+            return uploadMemberLiveCc(record, fourCc.ids.has(account.fboId), period, syncUrl, syncKey);
+        });
+        console.log(`FCC zasebni računi: sinkronizirano ${registeredOnlyAccounts.length} Forever ID-jeva izvan potvrđene hijerarhije.`);
+
         for(const snapshot of officialFourCoreSnapshots()) {
             await uploadFourCoreSnapshot(snapshot, syncUrl, syncKey);
             console.log(`Službeni 4 Core: ${snapshot.period} je potvrđen na FCC-u.`);
@@ -921,7 +1082,14 @@ async function main() {
             personalCc: Number((downline.personalCc + rootRecord.personalCc).toFixed(3)),
             globalTotalCc: ccSummary.globalTotalCc,
         });
+        const registeredVerified = verifyFccAccounts(
+            await fetchFccAccounts(period, syncUrl, syncKey),
+            registeredExpectedRecords,
+            period
+        );
+        await persistConfirmedDownline(downline.path);
         console.log(`FCC provjera: ${verified.members} članova, ${verified.activeFourCc} aktivna 4CC, Personal CC=${verified.personalCc.toFixed(3)}, Global Total CC=${verified.globalTotalCc.toFixed(3)}.`);
+        console.log(`FCC account provjera: ${registeredVerified.uniqueForeverIds} jedinstvenih Forever ID-jeva (${registeredVerified.activeAccountLinks} aktivnih računa), VIP upis potvrđen za ${registeredVerified.vipEnrolled}.`);
         console.warn('Focus Group live izvor trenutno vraća prazan skup uz nenulti broj zapisa; zadnji valjani FCC Focus Group namjerno je sačuvan.');
         console.log(`FLP360 → FCC live sinkronizacija za ${period} završena je uspješno.`);
     } finally {
@@ -943,6 +1111,7 @@ export {
     buildFourCcCsv,
     csvDocument,
     currentFlpMonthLabel,
+    downlineMemberCount,
     encryptFlpAuthorization,
     extractCurrentCcSummary,
     extractFourCcRows,
@@ -956,14 +1125,17 @@ export {
     officialFourCoreSnapshots,
     parseCsvLine,
     parseFlpTimestamp,
+    prepareRegisteredFccAccounts,
     readyReportMessage,
     refreshDownlineCsv,
     reportV2Url,
     resolveLiveCcCountryCode,
+    resolveFccAccountCountryCode,
     validateDownline,
     validateFourCcRows,
     validateXlsx,
     verifyFccStatus,
+    verifyFccAccounts,
     zagrebPeriod,
     zagrebPeriodParts,
 };

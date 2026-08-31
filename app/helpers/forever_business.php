@@ -1401,6 +1401,61 @@ function forever_business_provision_fcc_members(): int {
     return $result ? max(0, (int) database()->affected_rows) : 0;
 }
 
+/* Return only machine-safe identifiers required for live CC synchronization.
+ * Names, email addresses and other account data never leave FCC through the
+ * sync endpoint. Shared approved Forever IDs are intentionally collapsed to
+ * one FLP360 lookup and remain valid for every linked active account. */
+function forever_business_get_registered_sync_accounts(string $period): array {
+    forever_business_ensure_tables();
+    forever_business_provision_fcc_members();
+    $period = forever_business_period_from_label($period) ?: '';
+    if($period === '' || !forever_business_period_is_current_or_past($period)) {
+        throw new \InvalidArgumentException('Neispravan mjesec za FCC account CC provjeru.');
+    }
+
+    $escaped_period = database()->real_escape_string($period);
+    $result = database()->query("SELECT account.fbo_id,
+            COUNT(*) AS active_link_count,
+            COALESCE(MAX(NULLIF(UPPER(TRIM(member.country_code)), '')), MAX(NULLIF(UPPER(TRIM(account.account_country_code)), ''))) AS country_code,
+            MAX(metric.period_month) AS metric_period,
+            MAX(metric.personal_cc) AS personal_cc,
+            MAX(CASE WHEN enrollment.fbo_id IS NULL THEN 0 ELSE 1 END) AS is_vip_enrolled
+        FROM (
+            SELECT user_id,
+                   UPPER(TRIM(COALESCE(country, ''))) AS account_country_code,
+                   REPLACE(TRIM(COALESCE(
+                       JSON_UNQUOTE(JSON_EXTRACT(preferences, '$.meta.foreverId')),
+                       JSON_UNQUOTE(JSON_EXTRACT(preferences, '$.meta.forever_id')),
+                       JSON_UNQUOTE(JSON_EXTRACT(preferences, '$.meta.foreverID')),
+                       ''
+                   )), '-', '') AS fbo_id
+            FROM users
+            WHERE type = 0 AND status = 1 AND JSON_VALID(preferences) = 1
+        ) account
+        LEFT JOIN forever_business_members member ON member.fbo_id = account.fbo_id
+        LEFT JOIN forever_business_metrics metric ON metric.fbo_id = account.fbo_id AND metric.period_month = '{$escaped_period}'
+        LEFT JOIN forever_business_vip_enrollments enrollment ON enrollment.fbo_id = account.fbo_id
+        WHERE account.fbo_id REGEXP '^[0-9]{12}$'
+        GROUP BY account.fbo_id
+        ORDER BY account.fbo_id ASC");
+    if(!$result) {
+        throw new \RuntimeException('Aktivni FCC Forever ID-jevi nisu dostupni za sinkronizaciju.');
+    }
+
+    $accounts = [];
+    while($row = $result->fetch_assoc()) {
+        $accounts[] = [
+            'fbo_id' => (string) $row['fbo_id'],
+            'country_code' => (string) ($row['country_code'] ?? ''),
+            'active_link_count' => max(1, (int) ($row['active_link_count'] ?? 1)),
+            'metric_period' => $row['metric_period'] ?: null,
+            'personal_cc' => $row['personal_cc'] === null ? null : round((float) $row['personal_cc'], 3),
+            'is_vip_enrolled' => !empty($row['is_vip_enrolled']),
+        ];
+    }
+    return $accounts;
+}
+
 function forever_business_has_verified_four_cc_activity(array $member): bool {
     /* An explicit FLP360 result always wins, including 0. Only when the
      * official signal is genuinely unknown may the complete supporting values
@@ -2401,6 +2456,113 @@ function forever_business_upsert_total_cc_snapshot(string $fbo_id, string $perio
         'captured_at' => get_date(),
         'source_note' => mb_substr($source_note, 0, 255),
     ]);
+}
+
+/* Active FCC accounts can belong outside the last confirmed team hierarchy.
+ * Their live FLP360 CC is synchronized independently, without changing
+ * is_in_current_structure or any hierarchy edge. The active account linkage
+ * is rechecked server-side for every write. */
+function forever_business_upsert_registered_member_live_cc(string $fbo_id, string $period, array $metrics): void {
+    forever_business_ensure_tables();
+    $fbo_id = forever_business_normalize_fbo_id($fbo_id);
+    $period = forever_business_period_from_label($period) ?: '';
+    if($fbo_id === '' || $period === '') {
+        throw new \InvalidArgumentException('Neispravan FCC Forever ID ili razdoblje live CC snimke.');
+    }
+    if(!forever_business_period_is_current_or_past($period)) {
+        throw new \InvalidArgumentException('Budući FLP360 mjesec još se ne može spremiti.');
+    }
+    if(forever_business_get_active_user_link_count_for_fbo($fbo_id) < 1) {
+        throw new \InvalidArgumentException('Live CC strojni unos dopušten je samo za Forever ID aktivnog FCC računa.');
+    }
+
+    $number = static function(string $key, bool $required = false) use ($metrics): ?float {
+        $value = $metrics[$key] ?? null;
+        if($value === null || $value === '') {
+            if($required) throw new \InvalidArgumentException('Nedostaje obavezna live CC vrijednost: ' . $key . '.');
+            return null;
+        }
+        if(!is_numeric($value) || (float) $value < 0) {
+            throw new \InvalidArgumentException('Neispravna live CC vrijednost: ' . $key . '.');
+        }
+        return round((float) $value, 3);
+    };
+
+    $personal_cc = $number('personal_cc', true);
+    $total_cc = $number('total_cc', true);
+    $total_active_cc = $number('total_active_cc', true);
+    $non_manager_cc = $number('non_manager_cc');
+    $leadership_cc = $number('leadership_cc');
+    $total_active_cc_ytd = $number('total_active_cc_ytd');
+    $non_manager_cc_ytd = $number('non_manager_cc_ytd');
+    $leadership_cc_ytd = $number('leadership_cc_ytd');
+
+    db()->startTransaction();
+    try {
+        $escaped_fbo_id = database()->real_escape_string($fbo_id);
+        $member_time = database()->real_escape_string(get_date());
+        $member_ready = database()->query("INSERT IGNORE INTO forever_business_members
+            (fbo_id, name, title, generation, country_code, sponsor_date, parent_fbo_id, tree_sequence,
+             is_manager, is_privacy_requested, is_in_current_structure, email_hash, phone_hash,
+             first_seen_import_id, last_seen_import_id, created_at, updated_at)
+            SELECT
+                '{$escaped_fbo_id}', LEFT(name, 160), 'FCC suradnik', NULL, NULL, NULL, NULL, NULL,
+                0, 0, 0, NULL, NULL, NULL, NULL, '{$member_time}', '{$member_time}'
+            FROM users
+            WHERE type = 0 AND status = 1 AND JSON_VALID(preferences) = 1
+              AND REPLACE(TRIM(COALESCE(
+                  JSON_UNQUOTE(JSON_EXTRACT(preferences, '$.meta.foreverId')),
+                  JSON_UNQUOTE(JSON_EXTRACT(preferences, '$.meta.forever_id')),
+                  JSON_UNQUOTE(JSON_EXTRACT(preferences, '$.meta.foreverID')),
+                  ''
+              )), '-', '') = '{$escaped_fbo_id}'
+            LIMIT 1");
+        if(!$member_ready) throw new \RuntimeException('FCC suradnik nije moguće pripremiti za live CC upis.');
+        $metric_update_columns = ['personal_cc', 'total_cc', 'total_active_cc', 'is_4cc_active', 'updated_at'];
+        if($non_manager_cc !== null) $metric_update_columns[] = 'non_manager_cc';
+        if($leadership_cc !== null) $metric_update_columns[] = 'leadership_cc';
+        db()->onDuplicate($metric_update_columns)->insert('forever_business_metrics', [
+            'fbo_id' => $fbo_id,
+            'period_month' => $period,
+            'personal_cc' => $personal_cc,
+            'total_cc' => $total_cc,
+            'total_active_cc' => $total_active_cc,
+            'non_manager_cc' => $non_manager_cc,
+            'leadership_cc' => $leadership_cc,
+            'is_4cc_active' => array_key_exists('is_4cc_active', $metrics) ? (int) !empty($metrics['is_4cc_active']) : null,
+            'source_import_id' => null,
+            'updated_at' => get_date(),
+        ]);
+
+        $yearly_update_columns = ['updated_at'];
+        if($total_active_cc_ytd !== null) $yearly_update_columns[] = 'total_active_cc_ytd';
+        if($non_manager_cc_ytd !== null) $yearly_update_columns[] = 'non_manager_cc_ytd';
+        if($leadership_cc_ytd !== null) $yearly_update_columns[] = 'leadership_cc_ytd';
+        db()->onDuplicate($yearly_update_columns)->insert('forever_business_yearly_metrics', [
+            'fbo_id' => $fbo_id,
+            'period_year' => (int) substr($period, 0, 4),
+            'total_active_cc_ytd' => $total_active_cc_ytd,
+            'non_manager_cc_ytd' => $non_manager_cc_ytd,
+            'leadership_cc_ytd' => $leadership_cc_ytd,
+            'source_import_id' => null,
+            'updated_at' => get_date(),
+        ]);
+
+        $enrollment_recorded = forever_business_record_vip_eligibility_metric(
+            $fbo_id,
+            $period,
+            $personal_cc,
+            null,
+            'member_cc'
+        );
+        if($personal_cc >= .330 && forever_business_vip_eligibility_period_is_open($period) && !$enrollment_recorded) {
+            throw new \RuntimeException('VIP education enrollment aktivnog FCC računa nije moguće spremiti.');
+        }
+        db()->commit();
+    } catch(\Throwable $exception) {
+        db()->rollback();
+        throw $exception;
+    }
 }
 
 /* Custom code: FC-2026-08-15: Keep the pinned root FBO's live CC aligned with the
