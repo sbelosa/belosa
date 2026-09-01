@@ -515,9 +515,14 @@ function isUnambiguousCcSummaryErrorEnvelope(payload) {
 function ccSummaryPayloadShape(value, depth = 0) {
     if(value === null) return {type: 'null'};
     if(Array.isArray(value)) {
-        const indexes = value.length <= 4
+        const baseIndexes = value.length <= 4
             ? value.map((_, index) => index)
             : [0, 1, value.length - 1];
+        const firstErrorIndex = value.findIndex(item => ccSummaryPayloadHasExplicitError(item));
+        const indexes = [...new Set([
+            ...baseIndexes,
+            ...(firstErrorIndex >= 0 ? [firstErrorIndex] : []),
+        ])].sort((left, right) => left - right);
         return {
             type: 'array',
             length: value.length,
@@ -537,7 +542,9 @@ function ccSummaryPayloadShape(value, depth = 0) {
     };
     if(Object.hasOwn(value, 'statusCode')) {
         const statusCode = explicitInteger(value.statusCode);
-        shape.statusCode = statusCode === null ? `invalid:${typeof value.statusCode}` : statusCode;
+        shape.statusCode = statusCode === null || statusCode < 100 || statusCode > 599
+            ? `invalid:${typeof value.statusCode}`
+            : `${Math.floor(statusCode / 100)}xx`;
     }
     if(Object.hasOwn(value, 'status')) {
         const normalizedStatus = typeof value.status === 'string'
