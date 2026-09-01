@@ -60,15 +60,21 @@ $assert(strpos($helper, "['qualifying_period']") !== false && strpos($helper, "[
 $assert(strpos($helper, "'is_in_current_structure' => !empty") !== false && strpos($helper, '$current_structure_metrics') !== false, 'Current FLP metrics must stay separate from the permanent project cohort.');
 $assert(strpos($helper, "|| \$member['started_at'] !== null") !== false && strpos($helper, "'started_without_enrollment'") !== false, 'Permanent project outcomes must remain visible outside the current structure and expose migration gaps.');
 $assert(strpos($helper, "['linked_accounts'] === 1") !== false && strpos($helper, "`status` = 1") !== false && strpos($helper, '$.meta.forever_id') !== false && strpos($helper, '$.meta.foreverID') !== false, 'LOS linkage must match the exact active-account access gate.');
-$assert(substr_count($helper, "action_key` <> 'vip26_activator_d01'") >= 6, 'Deprecated Activator day-one outcomes and help requests must not affect current curriculum analytics.');
+$assert(substr_count($helper, "action_key` <> 'vip26_activator_d01'") >= 4
+    && strpos($helper, "`outcome`.`action_key` = 'vip26_activator_d01_biolink'") !== false,
+    'Deprecated Activator day-one outcomes and help requests must not affect current curriculum analytics.');
 $assert(strpos($helper, "static fn(array \$metric): float => (float) (\$metric['personal_cc'] ?? 0),\n            \$current_structure_metrics") !== false, 'LOS current-month CC fallback must sum only members in the confirmed structure.');
 $assert(strpos($helper, 'result_type') !== false && strpos($helper, 'difficulty') !== false && strpos($helper, 'needs_help') !== false, 'Structured outcome fields are incomplete.');
-$assert(strpos($helper, "`newer`.`updated_at` > `request`.`updated_at`") !== false && strpos($helper, "['help_requested_at'] = \$row['updated_at']") !== false, 'Repeated help requests must be selected and sorted by their latest update rather than their first creation.');
+$assert(strpos($helper, "ORDER BY `request`.`user_id` ASC, `request`.`updated_at` DESC, `request`.`request_id` DESC") !== false
+    && strpos($helper, "['help_requested_at'] = \$row['updated_at']") !== false,
+    'Repeated help requests must be selected and sorted by their latest update rather than their first creation.');
 $assert(strpos($helper, "'2026-09-01'") !== false && strpos($helper, "modify('+3 days')") !== false && strpos($helper, ">= 7") !== false, 'Launch/grace and stalled thresholds are incomplete.');
 $assert(strpos($helper, "'needs_help' => 0") !== false, 'Needs-help signal must win attention ordering.');
 $assert(strpos($helper, "'daily'") !== false && strpos($helper, "'cc'") !== false && strpos($helper, "'result_type'") !== false && strpos($helper, "'core'") !== false && strpos($helper, "'track'") !== false, 'Required chart payloads are incomplete.');
 $assert(strpos($helper, "'top_results'") !== false && strpos($helper, "'data_quality'") !== false && strpos($helper, "'completed'") !== false, 'Result ranking, data quality, or program completion analytics are missing.');
-$assert(strpos($helper, "AS `completion_at`") !== false && strpos($helper, "['completed_at'] >= \$current_start_string") !== false, 'Completion deltas must use the exact 30th non-Sunday program step date.');
+$assert(strpos($helper, "MAX(CASE WHEN `track_progress`.`sequence_position` = 30") !== false
+    && strpos($helper, "['vip_current_track_completed_at'] ?? '') >= \$current_start_string") !== false,
+    'Completion deltas must use position 30 of the participant current level.');
 $assert(strpos($helper, 'array_slice($member_table') === false && strpos($helper, 'array_slice($attention_queue') === false, 'Member and attention search must cover the complete structure.');
 $assert(strpos($helper, 'u.email') === false && strpos($helper, '`email`') === false && strpos($helper, "['email']") === false, 'Read model must not select or expose email data.');
 

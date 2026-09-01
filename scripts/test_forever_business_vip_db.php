@@ -44,12 +44,12 @@ try {
     $columns_result = database()->query("SHOW COLUMNS FROM forever_business_daily_outcomes");
     $columns = [];
     while($columns_result && $row = $columns_result->fetch_assoc()) $columns[(string) $row['Field']] = true;
-    $assert(isset($columns['recorded_by_user_id'], $columns['completion_mode']), 'Participant and completion-mode columns are required.');
+    $assert(isset($columns['recorded_by_user_id'], $columns['completion_mode'], $columns['sequence_position']), 'Participant, completion-mode and per-level sequence columns are required.');
 
     $indexes_result = database()->query("SHOW INDEX FROM forever_business_daily_outcomes");
     $indexes = [];
     while($indexes_result && $row = $indexes_result->fetch_assoc()) $indexes[(string) $row['Key_name']] = true;
-    $assert(isset($indexes['forever_business_outcome_user_daily_uq'], $indexes['forever_business_outcome_user_progress_idx'], $indexes['forever_business_outcome_fbo_idx']), 'Participant-scoped outcome indexes are required.');
+    $assert(isset($indexes['forever_business_outcome_user_daily_uq'], $indexes['forever_business_outcome_user_progress_idx'], $indexes['forever_business_outcome_fbo_idx'], $indexes['forever_business_outcome_user_track_idx']), 'Participant-scoped outcome and per-level progress indexes are required.');
     $assert(!isset($indexes['forever_business_outcome_daily_uq']), 'Legacy FBO-scoped unique index must be removed.');
 
     $help_columns_result = database()->query("SHOW COLUMNS FROM forever_business_vip_help_requests");
@@ -139,7 +139,14 @@ try {
         && ($focus_guard_member['vip_starting_track_reason'] ?? '') === 'insufficient_history'
         && empty($focus_guard_storage['starting_track_key'])
         && empty($focus_guard_storage['starting_track_reason']),
-        'A Focus zero caused by a missing or blank previous-month field must not manufacture a confirmed pause or Reaktivacija.');
+        'A Focus zero caused by a missing or blank previous-month field must not manufacture a confirmed pause or Reaktivacija. '
+        . 'Dashboard=' . json_encode([
+            'track' => $focus_guard_member['vip_starting_track_key'] ?? null,
+            'reason' => $focus_guard_member['vip_starting_track_reason'] ?? null,
+            'previous_activity' => $focus_guard_member['vip_previous_month_has_activity'] ?? null,
+            'previous_inactive' => $focus_guard_member['vip_previous_month_confirmed_inactive'] ?? null,
+            'prior_activity' => $focus_guard_member['vip_has_prior_activity_before_pause'] ?? null,
+        ]) . '; storage=' . json_encode($focus_guard_storage));
     database()->query("DELETE FROM forever_business_focus_metrics
         WHERE fbo_id = '{$fbo_id}' AND period_month = '2026-08-01'");
     $focus_unknown_date_restored = database()->query("UPDATE forever_business_members
@@ -414,7 +421,8 @@ try {
         'completion_mode' => 'standard',
         'needs_help' => false,
         'outcome_count' => 1,
-        'sequence_position' => 1,
+        /* Deliberately incorrect client value: immutable action_key must win. */
+        'sequence_position' => 30,
         'note' => '',
     ];
 
@@ -580,10 +588,12 @@ try {
         && count(array_filter($los_fixture_members, static fn(array $member): bool =>
             (float) ($member['personal_cc'] ?? -1) === 0.0
             && (float) ($member['total_active_cc'] ?? -1) === 0.0
-            && ($member['track'] ?? '') === 'starter'
+            && ($member['track'] ?? '') === 'activator'
             && ($member['starting_track_reason'] ?? '') === 'recent_enrollment'
+            && (int) ($member['vip_current_track_steps_completed'] ?? -1) === 0
+            && empty($member['is_current_track_complete'])
         )) === 2,
-        'LOS participant statistics must show current-month zeros and the persisted Starter path for every linked collaborator sharing the fixture FBO.');
+        'LOS must preserve the persisted Starter entry path while reporting the promoted Activator level, its own zero progress and current-month CC zeros for every linked collaborator.');
     $legacy_los_participant = array_values(array_filter($los_fixture_members, static fn(array $member): bool => (int) ($member['user_id'] ?? 0) === $fixture_user_ids[0]));
     $assert(count($legacy_los_participant) === 1
         && (int) ($legacy_los_participant[0]['vip_steps_completed'] ?? -1) === 0
@@ -657,8 +667,10 @@ try {
     $unknown_signal_october_dashboard = forever_business_get_dashboard($fixture_user_ids[0], false, '', '', $october_zero);
     $unknown_signal_october_member = $unknown_signal_october_dashboard['members'][0] ?? [];
     $assert((int) ($unknown_signal_october_member['vip_verified_highest_track_rank'] ?? 0) === 3
-        && ($unknown_signal_october_member['next_action']['track_key'] ?? '') === 'builder',
-        'A missing official FLP360 signal must allow historical Builder promotion only when September has both 1 Personal and 4 Total Active CC.');
+        && ($unknown_signal_october_member['next_action']['track_key'] ?? '') === 'builder'
+        && ($unknown_signal_october_member['next_action']['key'] ?? '') === 'vip26_builder_d01'
+        && (int) ($unknown_signal_october_member['vip_builder_sequence_position'] ?? -1) === 0,
+        'A missing official FLP360 signal must allow historical Builder promotion only when September has both 1 Personal and 4 Total Active CC, then open Builder step one.');
 
     forever_business_upsert_registered_member_live_cc($fbo_id, '2026-09-01', [
         'personal_cc' => 0.0,
@@ -690,18 +702,26 @@ try {
      * queue test still exercises an account without permanent enrollment. */
     database()->query("DELETE FROM forever_business_vip_enrollments WHERE fbo_id = '{$fbo_id}'");
 
+    $tampered_track_input = $input;
+    $tampered_track_input['outcome_type'] = 'starter';
+    $assert(!forever_business_record_daily_outcome($fixture_user_ids[0], $fbo_id, [$fbo_id], $tampered_track_input, $fixed_now), 'A client must not assign an action to a different education track.');
     $assert(forever_business_record_daily_outcome($fixture_user_ids[0], $fbo_id, [$fbo_id], $input, $fixed_now), 'First shared-FBO participant should save its own step.');
     $assert(!forever_business_record_daily_outcome($fixture_user_ids[0], $fbo_id, [$fbo_id], $input, $fixed_now), 'Same participant must not save the same/day step twice.');
     $assert(forever_business_record_daily_outcome($fixture_user_ids[1], $fbo_id, [$fbo_id], $input, $fixed_now), 'Second shared-FBO participant should save independently.');
     $assert(!forever_business_record_daily_outcome($fixture_user_ids[1], $tampered_fbo_id, [$tampered_fbo_id], $input, $fixed_now), 'Authenticated account must reject a tampered FBO ID.');
 
     $outcomes_result = database()->query("SELECT COUNT(*) AS total, COUNT(DISTINCT recorded_by_user_id) AS participants,
-            MIN(completion_mode) AS completion_mode
+            MIN(completion_mode) AS completion_mode, MIN(sequence_position) AS min_sequence_position,
+            MAX(sequence_position) AS max_sequence_position, MIN(outcome_type) AS outcome_type
         FROM forever_business_daily_outcomes
         WHERE fbo_id = '{$fbo_id}' AND action_key = 'vip26_activator_d01_biolink' AND action_date = '2026-09-01'");
     $outcomes = $outcomes_result ? $outcomes_result->fetch_assoc() : [];
     $assert((int) ($outcomes['total'] ?? 0) === 2 && (int) ($outcomes['participants'] ?? 0) === 2, 'Shared FBO must contain two separate participant outcomes.');
     $assert((string) ($outcomes['completion_mode'] ?? '') === 'standard', 'Completion mode must be stored.');
+    $assert((int) ($outcomes['min_sequence_position'] ?? 0) === 1
+        && (int) ($outcomes['max_sequence_position'] ?? 0) === 1
+        && ($outcomes['outcome_type'] ?? '') === 'activator',
+        'Per-level sequence and track must be derived from the immutable action key rather than client input.');
 
     $timer_same_day = new DateTimeImmutable('2026-09-01 21:15:30', new DateTimeZone('Europe/Zagreb'));
     $timer_next_day = new DateTimeImmutable('2026-09-02 00:00:00', new DateTimeZone('Europe/Zagreb'));
@@ -810,6 +830,99 @@ try {
         WHERE user_id = {$fixture_user_ids[0]} AND status = 'open'");
     $remaining_open_help = $remaining_open_help_result ? $remaining_open_help_result->fetch_assoc() : [];
     $assert((int) ($remaining_open_help['total'] ?? 1) === 0, 'A later completion must resolve stale dated or pre-transition help requests for that participant.');
+
+    /* LOS must keep permanent totals without letting an earlier 30-step level
+     * complete, start or stall the newly promoted level. An unresolved request
+     * from the earlier level remains auditable but leaves the live mentor queue. */
+    $assert(forever_business_record_vip_eligibility_metric($fbo_id, '2026-08-01', 1.250, null, 'member_cc', $fixture_user_ids[0]),
+        'LOS current-level fixture enrollment could not be restored.');
+    $prior_level_values = [];
+    for($day = 1; $day <= 30; $day++) {
+        $action_key = sprintf('vip26_starter_d%02d', $day);
+        $prior_level_values[] = "('{$fbo_id}', '2026-08-01', 'Development', '{$action_key}', 'done', 1, 'starter', {$day}, {$fixture_user_ids[0]}, 'standard', '{$now}', '{$now}')";
+    }
+    $prior_level_inserted = database()->query("INSERT INTO forever_business_daily_outcomes
+        (fbo_id, action_date, core_key, action_key, status, outcome_count, outcome_type,
+         sequence_position, recorded_by_user_id, completion_mode, created_at, updated_at)
+        VALUES " . implode(',', $prior_level_values));
+    $assert((bool) $prior_level_inserted, 'LOS prior-level lifetime fixture could not be created.');
+
+    $los_promotion_now = new DateTimeImmutable('2026-09-04 10:00:00', new DateTimeZone('Europe/Zagreb'));
+    $assert(forever_business_request_vip_help($fixture_user_ids[0], $fbo_id, [$fbo_id], [
+        'action_key' => 'vip26_activator_d03',
+        'track_key' => 'activator',
+        'sequence_position' => 3,
+        'difficulty' => 'hard',
+        'note' => 'Otvorena pomoć prethodne razine za LOS provjeru.',
+    ], $los_promotion_now), 'LOS previous-level help fixture could not be opened before promotion.');
+    forever_business_upsert_registered_member_live_cc($fbo_id, '2026-09-01', [
+        'personal_cc' => 1.0,
+        'total_cc' => 4.0,
+        'total_active_cc' => 4.0,
+        'non_manager_cc' => 0.0,
+        'leadership_cc' => 0.0,
+        'total_active_cc_ytd' => 81.0,
+        'non_manager_cc_ytd' => 55.0,
+        'leadership_cc_ytd' => 22.0,
+        'is_4cc_active' => 1,
+    ]);
+
+    $promoted_los = forever_business_get_los_admin_analytics($fixture_user_ids[0], 30, '', $los_promotion_now);
+    $promoted_los_members = array_values(array_filter((array) ($promoted_los['members'] ?? []), static fn(array $member): bool => ($member['fbo_id'] ?? '') === $fbo_id));
+    $promoted_los_user = array_values(array_filter($promoted_los_members, static fn(array $member): bool => (int) ($member['user_id'] ?? 0) === $fixture_user_ids[0]))[0] ?? [];
+    $promoted_funnel = array_column((array) ($promoted_los['linkage_funnel'] ?? []), 'value', 'key');
+    $assert(($promoted_los_user['track'] ?? '') === 'builder'
+        && (int) ($promoted_los_user['vip_steps_completed'] ?? -1) === 32
+        && (int) ($promoted_los_user['vip_current_track_steps_completed'] ?? -1) === 0
+        && empty($promoted_los_user['is_current_track_complete'])
+        && empty($promoted_los_user['needs_help'])
+        && (int) ($promoted_los_user['open_help_count'] ?? -1) === 0
+        && ($promoted_los_user['stall_state'] ?? '') === 'no_start_3d',
+        'LOS must preserve 32 lifetime steps while a promoted Builder starts at zero, stays incomplete and ignores earlier-level help for live status.');
+    $assert((int) ($promoted_los['kpis']['started']['total'] ?? -1) === 0
+        && (int) ($promoted_los['kpis']['completed']['total'] ?? -1) === 0
+        && (int) ($promoted_los['kpis']['open_help']['current'] ?? -1) === 0
+        && (int) ($promoted_funnel['started'] ?? -1) === 0
+        && (int) ($promoted_funnel['completed'] ?? -1) === 0,
+        'LOS started/completed KPIs and coverage funnel must use only each participant current level.');
+    $old_help_audit_result = database()->query("SELECT status FROM forever_business_vip_help_requests
+        WHERE user_id = {$fixture_user_ids[0]} AND action_key = 'vip26_activator_d03' LIMIT 1");
+    $old_help_audit = $old_help_audit_result ? $old_help_audit_result->fetch_assoc() : [];
+    $assert(($old_help_audit['status'] ?? '') === 'open',
+        'A promotion must filter previous-level help from the live queue without deleting its audit record.');
+
+    $current_level_completion = database()->query("INSERT INTO forever_business_daily_outcomes
+        (fbo_id, action_date, core_key, action_key, status, outcome_count, outcome_type,
+         sequence_position, recorded_by_user_id, completion_mode, created_at, updated_at)
+        VALUES ('{$fbo_id}', '2026-09-04', 'Development', 'vip26_builder_d30', 'done', 1, 'builder',
+                30, {$fixture_user_ids[1]}, 'standard', '{$now}', '{$now}')");
+    $assert((bool) $current_level_completion, 'LOS current-level completion fixture could not be created.');
+    $completed_level_los = forever_business_get_los_admin_analytics($fixture_user_ids[0], 30, '', $los_promotion_now);
+    $completed_level_members = array_values(array_filter((array) ($completed_level_los['members'] ?? []), static fn(array $member): bool => ($member['fbo_id'] ?? '') === $fbo_id));
+    $completed_level_user = array_values(array_filter($completed_level_members, static fn(array $member): bool => (int) ($member['user_id'] ?? 0) === $fixture_user_ids[1]))[0] ?? [];
+    $completed_level_funnel = array_column((array) ($completed_level_los['linkage_funnel'] ?? []), 'value', 'key');
+    $assert(($completed_level_user['track'] ?? '') === 'builder'
+        && (int) ($completed_level_user['vip_steps_completed'] ?? -1) === 2
+        && (int) ($completed_level_user['vip_current_track_steps_completed'] ?? -1) === 30
+        && !empty($completed_level_user['is_current_track_complete'])
+        && ($completed_level_user['vip_current_track_completed_at'] ?? '') === '2026-09-04'
+        && ($completed_level_user['stall_state'] ?? '') === '',
+        'Only position 30 in the current track may set the LOS completion badge and remove that participant from stall handling.');
+    $assert((int) ($completed_level_los['kpis']['started']['total'] ?? -1) === 1
+        && (int) ($completed_level_los['kpis']['completed']['total'] ?? -1) === 1
+        && (int) ($completed_level_los['kpis']['completed']['current'] ?? -1) === 1
+        && (int) ($completed_level_funnel['started'] ?? -1) === 1
+        && (int) ($completed_level_funnel['completed'] ?? -1) === 1,
+        'LOS current-level start and completion must flow consistently through KPIs and the coverage funnel.');
+
+    database()->query("DELETE FROM forever_business_vip_help_requests
+        WHERE user_id = {$fixture_user_ids[0]} AND action_key = 'vip26_activator_d03'");
+    database()->query("DELETE FROM forever_business_daily_outcomes
+        WHERE recorded_by_user_id = {$fixture_user_ids[0]} AND action_key LIKE 'vip26_starter_d%'");
+    database()->query("DELETE FROM forever_business_daily_outcomes
+        WHERE recorded_by_user_id = {$fixture_user_ids[1]} AND action_key = 'vip26_builder_d30'");
+    database()->query("DELETE FROM forever_business_metrics WHERE fbo_id = '{$fbo_id}' AND period_month = '2026-09-01'");
+    database()->query("DELETE FROM forever_business_vip_enrollments WHERE fbo_id = '{$fbo_id}'");
 
     $email_timestamp = database()->real_escape_string(get_date());
     $email_fixture = database()->query("INSERT INTO forever_business_vip_email_deliveries

@@ -414,7 +414,7 @@ $format_change = static function(float $value): string {
 
                     <div class="fb-vip-preview mt-4 <?= $vip_can_access ? '' : 'is-locked' ?>">
                         <div class="fb-vip-preview-grid" <?= !$vip_can_access ? 'aria-hidden="true"' : '' ?>>
-                            <div class="fb-vip-feature"><i class="fas fa-route mb-3"></i><strong class="d-block mb-2">30 redovnih koraka</strong><p class="mb-0">Jedan korak dnevno, uz dodatni nedjeljni Marketing plan; redovitim tempom program traje približno pet tjedana.</p></div>
+                            <div class="fb-vip-feature"><i class="fas fa-route mb-3"></i><strong class="d-block mb-2">30 koraka po razini</strong><p class="mb-0">Jedan korak dnevno, uz dodatni nedjeljni Marketing plan. Svaka nova razina kreće od svojeg 1. koraka.</p></div>
                             <div class="fb-vip-feature"><i class="fas fa-users mb-3"></i><strong class="d-block mb-2">Nedjeljni Marketing plan</strong><p class="mb-0">Svake nedjelje u 18:00 pozivaš osobe zainteresirane za poslovanje.</p></div>
                             <div class="fb-vip-feature"><i class="fas fa-comments mb-3"></i><strong class="d-block mb-2">VIP podrška</strong><p class="mb-0">Kratki podsjetnici, primjeri i podrška kada zapneš.</p></div>
                             <div class="fb-vip-feature"><i class="fas fa-chart-pie mb-3"></i><strong class="d-block mb-2">Tvoj 4 Core napredak</strong><p class="mb-0">Pratiš dovršene korake i samoprijavljene radnje; prihod, pozicija i CC rezultat nisu zajamčeni.</p></div>
@@ -502,7 +502,7 @@ $format_change = static function(float $value): string {
 
                     <details class="fb-education-details mt-3 pt-3">
                         <summary class="small">Kako napreduju edukacijski smjerovi?</summary>
-                        <div class="small text-muted mt-3 mb-2">Program se prilagođava tvojim potvrđenim rezultatima. Kada prijeđeš u napredniji smjer, zadržavaš isti redni broj zadatka.</div>
+                        <div class="small text-muted mt-3 mb-2">Program se prilagođava tvojim potvrđenim rezultatima. Kada prijeđeš u napredniji smjer, krećeš od njegova 1. koraka, a raniji rezultati ostaju spremljeni.</div>
                         <div class="fb-education-guide">
                             <?php foreach(($vip_education_path['guide'] ?? []) as $guide_item): ?>
                                 <?php $guide_is_current = (string) ($guide_item['key'] ?? '') === $education_guide_current_key; ?>
@@ -536,7 +536,7 @@ $format_change = static function(float $value): string {
                                 <?php if(!empty($action['is_weekly_plan'])): ?><span class="badge badge-warning">Nedjeljni prioritet</span><?php endif ?>
                             </div>
                             <h2 class="h4 mb-2"><?= htmlspecialchars($action['title']) ?></h2>
-                            <?php if(!empty($action['track_has_advanced'])): ?><div class="alert alert-success py-2 mb-3"><i class="fas fa-level-up-alt mr-1"></i> Tvoj plan automatski je prilagođen novom edukacijskom smjeru prema najnovijim potvrđenim FLP360 podacima. Nastavljaš istim rednim brojem, ali sa zadacima naprednijeg programa.</div><?php endif ?>
+                            <?php if(!empty($action['track_has_advanced'])): ?><div class="alert alert-success py-2 mb-3"><i class="fas fa-level-up-alt mr-1"></i> Otvorila ti se nova edukacijska razina prema najnovijim potvrđenim FLP360 podacima. Krećeš od njezina 1. koraka, a sve što si već dovršio/la ostaje spremljeno.</div><?php endif ?>
                             <?php if(!empty($action['track_goal']) && empty($action['is_weekly_plan'])): ?><div class="small text-muted mb-3"><strong>Fokus tvojeg edukacijskog smjera:</strong> <?= htmlspecialchars($action['track_goal']) ?></div><?php endif ?>
                             <?php if(empty($action['is_daily_complete']) && empty($action['is_program_complete'])): ?><div class="small text-muted mb-3"><strong>Naš stil:</strong> javi se osobno, govori svojim riječima i slušaj više nego što objašnjavaš. Kada je tema proizvod ili posao, prirodno reci da si Forever suradnik i osloni se na aktualne informacije, bez obećavanja zdravstvenog rezultata ili zarade. Primjeri su inspiracija — prilagodi ih odnosu koji već imaš s osobom.</div><?php endif ?>
                             <?php if(!empty($action['is_weekly_plan'])): ?>
@@ -630,7 +630,7 @@ $format_change = static function(float $value): string {
                         <?php elseif(!empty($action['is_preview'])): ?><div class="alert alert-info mb-0"><i class="fas fa-eye mr-1"></i> Ovo je sigurna pretpregledna verzija. Dovršavanje zadatka je isključeno.</div>
                         <?php elseif(!empty($action['is_daily_complete'])): ?><div class="alert alert-success mb-0"><i class="fas fa-check-circle mr-1"></i> Današnji zadatak je spremljen. Sljedeći se otključava u ponoć.</div>
                         <?php elseif(!empty($action['is_waiting_for_event_completion'])): ?><div class="alert alert-warning mb-0"><i class="fas fa-clock mr-1"></i> Pripremu možeš odraditi sada. Potvrda prisustva i follow-upa otvara se nakon završetka Marketing plana u <?= htmlspecialchars((string) ($action['marketing_plan']['completion_available_at_display'] ?? '19:30')) ?>.</div>
-                        <?php elseif(!empty($action['is_program_complete'])): ?><div class="alert alert-success mb-0"><i class="fas fa-trophy mr-1"></i> Prvih 30 redovnih koraka je uspješno završeno.</div>
+                        <?php elseif(!empty($action['is_program_complete'])): ?><div class="alert alert-success mb-0"><i class="fas fa-trophy mr-1"></i> Svih 30 koraka ove edukacijske razine uspješno je završeno.</div>
                         <?php else: ?><div class="alert alert-info mb-0"><i class="fas fa-info-circle mr-1"></i> Ovaj korak trenutačno nije dostupan za potvrdu. Osvježi stranicu ili se javi podršci ako se poruka ponovi.</div><?php endif ?>
 
                         <?php if(empty($action['is_preview']) && empty($action['is_daily_complete']) && empty($action['is_program_complete']) && (int) ($action['target'] ?? 0) > 0): ?>

@@ -15,7 +15,7 @@ function forever_business_ensure_tables(): void {
      * one indexed SELECT; a database advisory lock serializes the one request
      * that provisions a new version. Bump this key whenever schema DDL below
      * changes. */
-    $runtime_schema_key = 'forever_business_runtime_schema_v20260901_1';
+    $runtime_schema_key = 'forever_business_runtime_schema_v20260901_3';
     $escaped_runtime_schema_key = database()->real_escape_string($runtime_schema_key);
     try {
         $runtime_schema_result = database()->query("SELECT `completed_at`
@@ -30,7 +30,7 @@ function forever_business_ensure_tables(): void {
         /* Fresh databases do not have the marker table yet. */
     }
 
-    $schema_lock_name = 'fcc_forever_schema_v20260901_1';
+    $schema_lock_name = 'fcc_forever_schema_v20260901_3';
     $schema_lock_result = database()->query("SELECT GET_LOCK('{$schema_lock_name}', 20) AS `acquired`");
     $schema_lock_row = $schema_lock_result ? $schema_lock_result->fetch_assoc() : null;
     if((int) ($schema_lock_row['acquired'] ?? 0) !== 1) {
@@ -207,6 +207,7 @@ function forever_business_ensure_tables(): void {
             `status` VARCHAR(16) NOT NULL DEFAULT 'done',
             `outcome_count` INT UNSIGNED NOT NULL DEFAULT 0,
             `outcome_type` VARCHAR(32) NULL,
+            `sequence_position` TINYINT UNSIGNED NULL,
             `note` VARCHAR(500) NULL,
             `recorded_by_user_id` INT UNSIGNED NOT NULL,
             `completion_mode` VARCHAR(16) NOT NULL DEFAULT 'standard',
@@ -417,6 +418,41 @@ function forever_business_ensure_tables(): void {
         db()->rawQuery("ALTER TABLE `forever_business_daily_outcomes`
             ADD `completion_mode` VARCHAR(16) NOT NULL DEFAULT 'standard' AFTER `needs_help`");
     }
+    if(!isset($outcome_columns['sequence_position'])) {
+        db()->rawQuery("ALTER TABLE `forever_business_daily_outcomes`
+            ADD `sequence_position` TINYINT UNSIGNED NULL AFTER `outcome_type`");
+    }
+
+    /* The immutable task key is the migration source of truth. Calendar event
+     * rows and the superseded Activator day-one key intentionally stay NULL so
+     * they can never advance a 30-step level. */
+    $backfilled_sequence_positions = database()->query("UPDATE `forever_business_daily_outcomes`
+        SET `sequence_position` = CASE
+                WHEN `action_key` = 'vip26_activator_d01' THEN NULL
+                WHEN `action_key` = 'vip26_activator_d01_biolink' THEN 1
+                WHEN `action_key` <> 'vip26_activator_d01'
+                 AND `action_key` REGEXP '^vip26_(starter|reactivation|activator|builder|leader)_d(0[1-9]|[12][0-9]|30)$'
+                    THEN CAST(RIGHT(`action_key`, 2) AS UNSIGNED)
+                ELSE NULL
+            END,
+            `outcome_type` = CASE
+                WHEN COALESCE(`outcome_type`, '') <> '' THEN `outcome_type`
+                WHEN `action_key` LIKE 'vip26_starter_d%' THEN 'starter'
+                WHEN `action_key` LIKE 'vip26_reactivation_d%' THEN 'reactivation'
+                WHEN `action_key` LIKE 'vip26_activator_d%' AND `action_key` <> 'vip26_activator_d01' THEN 'activator'
+                WHEN `action_key` LIKE 'vip26_builder_d%' THEN 'builder'
+                WHEN `action_key` LIKE 'vip26_leader_d%' THEN 'leader'
+                ELSE `outcome_type`
+            END
+        WHERE (`action_key` IN ('vip26_activator_d01', 'vip26_activator_d01_biolink')
+               OR (`action_key` <> 'vip26_activator_d01'
+                   AND `action_key` REGEXP '^vip26_(starter|reactivation|activator|builder|leader)_d(0[1-9]|[12][0-9]|30)$'))
+          AND (`action_key` = 'vip26_activator_d01'
+               OR `sequence_position` IS NULL
+               OR COALESCE(`outcome_type`, '') = '')");
+    if(!$backfilled_sequence_positions) {
+        throw new \RuntimeException('Forever Business per-level outcome positions could not be backfilled.');
+    }
 
     /* VIP eligibility and CC remain attached to the Forever ID, while task
      * progress belongs to the signed-in FCC account. Backfill only historical
@@ -465,6 +501,10 @@ function forever_business_ensure_tables(): void {
         db()->rawQuery("ALTER TABLE `forever_business_daily_outcomes`
             ADD KEY `forever_business_outcome_fbo_idx` (`fbo_id`, `status`, `action_date`)");
     }
+    if(!isset($outcome_indexes['forever_business_outcome_user_track_idx'])) {
+        db()->rawQuery("ALTER TABLE `forever_business_daily_outcomes`
+            ADD KEY `forever_business_outcome_user_track_idx` (`recorded_by_user_id`, `status`, `outcome_type`, `sequence_position`)");
+    }
     if(isset($outcome_indexes['forever_business_outcome_daily_uq'])) {
         db()->rawQuery("ALTER TABLE `forever_business_daily_outcomes`
             DROP INDEX `forever_business_outcome_daily_uq`");
@@ -476,7 +516,7 @@ function forever_business_ensure_tables(): void {
         $outcome_columns_verify[(string) ($outcome_column['Field'] ?? '')] = true;
     }
     if(!$outcome_columns_verify_result
-        || !isset($outcome_columns_verify['result_type'], $outcome_columns_verify['difficulty'], $outcome_columns_verify['needs_help'], $outcome_columns_verify['completion_mode'])) {
+        || !isset($outcome_columns_verify['result_type'], $outcome_columns_verify['difficulty'], $outcome_columns_verify['needs_help'], $outcome_columns_verify['completion_mode'], $outcome_columns_verify['sequence_position'])) {
         throw new \RuntimeException('Forever Business structured outcome columns could not be provisioned.');
     }
 
@@ -486,7 +526,7 @@ function forever_business_ensure_tables(): void {
         $outcome_indexes_verify[(string) ($outcome_index['Key_name'] ?? '')] = true;
     }
     if(!$outcome_indexes_verify_result
-        || !isset($outcome_indexes_verify['forever_business_outcome_user_daily_uq'], $outcome_indexes_verify['forever_business_outcome_user_progress_idx'], $outcome_indexes_verify['forever_business_outcome_fbo_idx'])
+        || !isset($outcome_indexes_verify['forever_business_outcome_user_daily_uq'], $outcome_indexes_verify['forever_business_outcome_user_progress_idx'], $outcome_indexes_verify['forever_business_outcome_fbo_idx'], $outcome_indexes_verify['forever_business_outcome_user_track_idx'])
         || isset($outcome_indexes_verify['forever_business_outcome_daily_uq'])) {
         throw new \RuntimeException('Forever Business participant-scoped outcome indexes could not be provisioned.');
     }
@@ -2542,7 +2582,7 @@ function forever_business_process_vip_email_notifications(int $limit = 25): arra
 
 function forever_business_vip_track_definitions(): array {
     return [
-        'starter' => ['label' => 'Starter', 'rank' => 1, 'goal' => 'Postavi temelje korak po korak: upoznaj alate, pokreni prve tople razgovore i gradi prema najmanje 1 osobnom CC bez stvaranja zaliha.'],
+        'starter' => ['label' => 'Starter', 'rank' => 1, 'goal' => 'Kreni bez pritiska, izgradi jednostavan dnevni ritam i kroz prirodne razgovore napreduj prema najmanje 1 osobnom CC bez stvaranja nepotrebnih zaliha.'],
         'reactivation' => ['label' => 'Reaktivacija', 'rank' => 1, 'goal' => 'Vrati kontinuitet koristeći ranije iskustvo, postojeće odnose, jednostavne razgovore i korisničku podršku.'],
         'activator' => ['label' => 'Aktivator', 'rank' => 2, 'goal' => 'Uz najmanje 1 osobni CC gradi prema službeno potvrđenoj aktivnosti od 4 CC.'],
         'builder' => ['label' => 'Builder', 'rank' => 3, 'goal' => 'Pretvori potvrđenu aktivnost u stabilnu produktivnost, retention i nove poslovne razgovore.'],
@@ -3215,7 +3255,7 @@ function forever_business_get_vip_education_path(array $member): array {
         $path['summary'] = $track['key'] === 'reactivation'
             ? 'Ponovno gradiš dobar ritam prema 1 osobnom CC u aktualnom mjesecu.'
             : 'Tvoj prvi cilj je izgraditi ritam prema 1 osobnom CC u aktualnom mjesecu.';
-        $path['transition_note'] = 'Kada dosegneš 1 osobni CC, program se automatski prilagođava Aktivator smjeru, a ti nastavljaš istim rednim brojem zadatka.';
+        $path['transition_note'] = 'Kada dosegneš 1 osobni CC, otvara se Aktivator smjer i krećeš od njegova 1. koraka. Sve što si već dovršio/la ostaje spremljeno.';
     } elseif($track['key'] === 'activator') {
         $path['mode'] = 'four_cc';
         $path['next_key'] = 'builder';
@@ -3227,7 +3267,7 @@ function forever_business_get_vip_education_path(array $member): array {
         } elseif($official_activity_signal === null) {
             $path['transition_note'] = 'FLP360 4 CC Active status još nije dostupan. Dok se ne prikaže, napredak se potvrđuje prema oba prikazana CC uvjeta.';
         } else {
-            $path['transition_note'] = 'Kada FLP360 potvrdi 4 CC Active, program se automatski prilagođava Builder smjeru, a ti nastavljaš istim rednim brojem zadatka.';
+            $path['transition_note'] = 'Kada FLP360 potvrdi 4 CC Active, otvara se Builder smjer i krećeš od njegova 1. koraka. Sve što si već dovršio/la ostaje spremljeno.';
         }
     } elseif($track['key'] === 'builder') {
         $path['mode'] = 'builder_focus';
@@ -3255,8 +3295,17 @@ function forever_business_vip_action_key(string $track_key, int $day): string {
         : $default_key;
 }
 
+function forever_business_vip_level_position(array $member, string $track_key, int $fallback = 0): int {
+    $field = 'vip_' . $track_key . '_sequence_position';
+    return max(0, min(30, array_key_exists($field, $member) ? (int) $member[$field] : $fallback));
+}
+
 function forever_business_get_action(array $member, ?array $metric, int $completed_total = 0, bool $sunday_done_today = false, ?\DateTimeInterface $now = null, bool $vip_done_today = false): array {
     $track = forever_business_get_vip_track($member);
+    /* Every level is a complete 30-step curriculum. Lifetime totals remain
+     * available for analytics, but only the current level can choose the next
+     * task or mark that level as complete. */
+    $completed_total = forever_business_vip_level_position($member, (string) $track['key'], $completed_total);
     $marketing_plan = forever_business_get_marketing_plan_state($now);
     $timezone = new \DateTimeZone('Europe/Zagreb');
     $current_time = $now
@@ -3300,13 +3349,13 @@ function forever_business_get_action(array $member, ?array $metric, int $complet
             'key' => 'vip26_sunday_' . $current_time->format('Ymd'),
             'title' => 'Marketing plan danas u 18:00',
             'instruction' => $leader
-                ? 'Provjeri jesu li gosti i pozivatelji spremni, dodijeli jasne uloge i pridruži se tjednom Marketing planu u 18:00.'
+                ? 'Provjeri jesu li gosti i suradnici koji su ih pozvali spremni, dogovori podršku prije i nakon prezentacije te se pridruži tjednom Marketing planu u 18:00.'
                 : 'Pošalji posljednju osobnu potvrdu svojim gostima, pridruži se Marketing planu u 18:00 i nakon prezentacije dogovori njihov sljedeći korak.',
             'checklist' => $leader
-                ? ['Potvrdi popis gostiju i njihove pozivatelje.', 'Provjeri tko dočekuje goste i tko vodi follow-up.', 'Nakon plana potvrdi sljedeći korak za svakog gosta.']
+                ? ['Potvrdi popis gostiju i suradnike koji su ih pozvali.', 'Provjeri tko može samostalno voditi nastavak razgovora i kome je potrebna tvoja podrška.', 'Nakon plana dogovorite sljedeći korak za svakog gosta koji ga želi.']
                 : ['Potvrdi gostima termin i pošalji detalje.', 'Pridruži se nekoliko minuta ranije.', 'Nakon prezentacije pitaj gosta što mu je bilo najzanimljivije.'],
             'success_definition' => $leader
-                ? 'Gotovo je kada su Marketing plan, atribucija gostiju i vlasnici follow-upa evidentirani.'
+                ? 'Gotovo je kada si prisustvovao/la Marketing planu, za svakog je gosta jasno tko ga je pozvao i tko vodi sljedeći razgovor.'
                 : 'Gotovo je kada si prisustvovao/la i svaki tvoj gost ima zabilježen interes ili dogovoreni nastavak.',
             'target' => $leader ? 5 : 2,
             'quick_target' => 1,
@@ -3335,10 +3384,10 @@ function forever_business_get_action(array $member, ?array $metric, int $complet
         return [
             'core' => 'Development',
             'key' => 'vip26_program_complete',
-            'title' => 'Prvih 30 koraka je dovršeno',
-            'instruction' => 'Pregledaj svoj napredak i nastavi primjenjivati ritam koji ti je donio najviše kvalitetnih razgovora, kupaca, gostiju i suradnika.',
+            'title' => 'Dovršio/la si 30 koraka ove razine',
+            'instruction' => 'Pregledaj napredak u ovom edukacijskom smjeru i nastavi primjenjivati ritam koji ti je donio najviše kvalitetnih razgovora, kupaca, gostiju i suradnika.',
             'checklist' => [],
-            'success_definition' => 'Tvoj prvi VIP 4 Core ciklus je završen. Nedjeljni Marketing plan i dalje će se prikazivati svakog tjedna.',
+            'success_definition' => 'Ova je razina završena. Nedjeljni Marketing plan i dalje će se prikazivati, a potvrđena viša razina otvorit će vlastiti 1. korak.',
             'target' => 0,
             'quick_target' => 0,
             'can_complete' => false,
@@ -3348,6 +3397,7 @@ function forever_business_get_action(array $member, ?array $metric, int $complet
             'track_label' => $track['label'],
             'track_goal' => $track['goal'],
             'is_program_complete' => true,
+            'is_level_complete' => true,
             'marketing_plan' => $marketing_plan,
         ];
     }
@@ -3874,6 +3924,11 @@ function forever_business_get_dashboard(int $user_id, bool $is_admin, string $re
                    COALESCE(actor_outcomes.action_units_total, 0) AS action_units_total_7d,
                    COALESCE(actor_outcomes.actions_done_total, 0) AS actions_done_total,
                    COALESCE(actor_outcomes.vip_actions_done_total, 0) AS vip_actions_done_total,
+                   COALESCE(actor_outcomes.vip_starter_sequence_position, 0) AS vip_starter_sequence_position,
+                   COALESCE(actor_outcomes.vip_reactivation_sequence_position, 0) AS vip_reactivation_sequence_position,
+                   COALESCE(actor_outcomes.vip_activator_sequence_position, 0) AS vip_activator_sequence_position,
+                   COALESCE(actor_outcomes.vip_builder_sequence_position, 0) AS vip_builder_sequence_position,
+                   COALESCE(actor_outcomes.vip_leader_sequence_position, 0) AS vip_leader_sequence_position,
                    COALESCE(actor_outcomes.vip_sunday_done_today, 0) AS vip_sunday_done_today,
                    COALESCE(actor_outcomes.vip_action_done_today, 0) AS vip_action_done_today,
                    COALESCE(actor_outcomes.vip_highest_track_rank, 0) AS vip_highest_track_rank,
@@ -3885,6 +3940,11 @@ function forever_business_get_dashboard(int $user_id, bool $is_admin, string $re
                    COALESCE(outcomes.action_units_total, 0) AS team_action_units_total_7d,
                    COALESCE(outcomes.actions_done_total, 0) AS team_actions_done_total,
                    COALESCE(outcomes.vip_actions_done_total, 0) AS team_vip_actions_done_total,
+                   COALESCE(outcomes.vip_starter_sequence_position, 0) AS team_vip_starter_sequence_position,
+                   COALESCE(outcomes.vip_reactivation_sequence_position, 0) AS team_vip_reactivation_sequence_position,
+                   COALESCE(outcomes.vip_activator_sequence_position, 0) AS team_vip_activator_sequence_position,
+                   COALESCE(outcomes.vip_builder_sequence_position, 0) AS team_vip_builder_sequence_position,
+                   COALESCE(outcomes.vip_leader_sequence_position, 0) AS team_vip_leader_sequence_position,
                    COALESCE(outcomes.vip_sunday_done_today, 0) AS team_vip_sunday_done_today,
                    COALESCE(outcomes.vip_action_done_today, 0) AS team_vip_action_done_today,
                    COALESCE(outcomes.vip_highest_track_rank, 0) AS team_vip_highest_track_rank,
@@ -3927,6 +3987,11 @@ function forever_business_get_dashboard(int $user_id, bool $is_admin, string $re
                        SUM(IF(action_date >= '{$seven_day_start}' AND status = 'done' AND action_key LIKE 'vip26\\_%', outcome_count, 0)) AS action_units_total,
                        SUM(status = 'done') AS actions_done_total,
                        SUM(status = 'done' AND action_key LIKE 'vip26\\_%' AND action_key NOT LIKE 'vip26\\_sunday\\_%' AND action_key <> 'vip26_activator_d01') AS vip_actions_done_total,
+                       MAX(IF(status = 'done' AND outcome_type = 'starter' AND action_key LIKE 'vip26_starter_d%' AND sequence_position BETWEEN 1 AND 30, sequence_position, 0)) AS vip_starter_sequence_position,
+                       MAX(IF(status = 'done' AND outcome_type = 'reactivation' AND action_key LIKE 'vip26_reactivation_d%' AND sequence_position BETWEEN 1 AND 30, sequence_position, 0)) AS vip_reactivation_sequence_position,
+                       MAX(IF(status = 'done' AND outcome_type = 'activator' AND action_key LIKE 'vip26_activator_d%' AND action_key <> 'vip26_activator_d01' AND sequence_position BETWEEN 1 AND 30, sequence_position, 0)) AS vip_activator_sequence_position,
+                       MAX(IF(status = 'done' AND outcome_type = 'builder' AND action_key LIKE 'vip26_builder_d%' AND sequence_position BETWEEN 1 AND 30, sequence_position, 0)) AS vip_builder_sequence_position,
+                       MAX(IF(status = 'done' AND outcome_type = 'leader' AND action_key LIKE 'vip26_leader_d%' AND sequence_position BETWEEN 1 AND 30, sequence_position, 0)) AS vip_leader_sequence_position,
                        SUM(status = 'done' AND action_date = '{$today}' AND action_key = CONCAT('vip26_sunday_', DATE_FORMAT('{$today}', '%Y%m%d'))) AS vip_sunday_done_today,
                        SUM(status = 'done' AND action_date = '{$today}' AND action_key LIKE 'vip26\\_%' AND action_key <> 'vip26_activator_d01') AS vip_action_done_today,
                        MAX(CASE
@@ -3957,6 +4022,11 @@ function forever_business_get_dashboard(int $user_id, bool $is_admin, string $re
                        SUM(IF(action_date >= '{$seven_day_start}' AND status = 'done' AND action_key LIKE 'vip26\\_%', outcome_count, 0)) AS action_units_total,
                        SUM(status = 'done') AS actions_done_total,
                        SUM(status = 'done' AND action_key LIKE 'vip26\\_%' AND action_key NOT LIKE 'vip26\\_sunday\\_%' AND action_key <> 'vip26_activator_d01') AS vip_actions_done_total,
+                       MAX(IF(status = 'done' AND outcome_type = 'starter' AND action_key LIKE 'vip26_starter_d%' AND sequence_position BETWEEN 1 AND 30, sequence_position, 0)) AS vip_starter_sequence_position,
+                       MAX(IF(status = 'done' AND outcome_type = 'reactivation' AND action_key LIKE 'vip26_reactivation_d%' AND sequence_position BETWEEN 1 AND 30, sequence_position, 0)) AS vip_reactivation_sequence_position,
+                       MAX(IF(status = 'done' AND outcome_type = 'activator' AND action_key LIKE 'vip26_activator_d%' AND action_key <> 'vip26_activator_d01' AND sequence_position BETWEEN 1 AND 30, sequence_position, 0)) AS vip_activator_sequence_position,
+                       MAX(IF(status = 'done' AND outcome_type = 'builder' AND action_key LIKE 'vip26_builder_d%' AND sequence_position BETWEEN 1 AND 30, sequence_position, 0)) AS vip_builder_sequence_position,
+                       MAX(IF(status = 'done' AND outcome_type = 'leader' AND action_key LIKE 'vip26_leader_d%' AND sequence_position BETWEEN 1 AND 30, sequence_position, 0)) AS vip_leader_sequence_position,
                        SUM(status = 'done' AND action_date = '{$today}' AND action_key = CONCAT('vip26_sunday_', DATE_FORMAT('{$today}', '%Y%m%d'))) AS vip_sunday_done_today,
                        SUM(status = 'done' AND action_date = '{$today}' AND action_key LIKE 'vip26\\_%' AND action_key <> 'vip26_activator_d01') AS vip_action_done_today,
                        MAX(CASE
@@ -3987,13 +4057,20 @@ function forever_business_get_dashboard(int $user_id, bool $is_admin, string $re
             ORDER BY COALESCE(cur.personal_cc, 0) DESC, m.name ASC
         ";
         $result = database()->query($query);
+        if(!$result) {
+            error_log('Forever Business dashboard member query failed: ' . database()->error);
+            throw new \RuntimeException('Forever Business dashboard members could not be loaded.');
+        }
         while($result && $row = $result->fetch_assoc()) {
             $row = forever_business_normalize_current_month_metrics($row, $period, $zagreb_now);
             $is_actor_member = $dashboard_root !== '' && (string) ($row['fbo_id'] ?? '') === $dashboard_root;
             if(!$is_actor_member) {
                 foreach([
                     'actions_done_7d', 'action_units_total_7d', 'actions_done_total',
-                    'vip_actions_done_total', 'vip_sunday_done_today', 'vip_action_done_today',
+                    'vip_actions_done_total',
+                    'vip_starter_sequence_position', 'vip_reactivation_sequence_position',
+                    'vip_activator_sequence_position', 'vip_builder_sequence_position', 'vip_leader_sequence_position',
+                    'vip_sunday_done_today', 'vip_action_done_today',
                     'vip_highest_track_rank', 'vip_highest_nonleader_track_rank',
                     'vip_last_difficulty', 'vip_last_completion_mode', 'last_action_at',
                 ] as $progress_key) {
@@ -4256,13 +4333,25 @@ function forever_business_record_daily_outcome(int $user_id, string $fbo_id, arr
     $completion_mode = forever_business_normalize_completion_mode($input['completion_mode'] ?? null);
     $needs_help = !empty($input['needs_help']) ? 1 : 0;
     $submitted_outcome_type = mb_substr(input_clean($input['outcome_type'] ?? '', 32), 0, 32);
+    $sequence_position = 0;
+    $action_track = '';
+    if($action_key === 'vip26_activator_d01_biolink') {
+        $action_track = 'activator';
+        $sequence_position = 1;
+    } elseif(preg_match('/^vip26_(starter|reactivation|activator|builder|leader)_d(0[1-9]|[12][0-9]|30)$/D', $action_key, $sequence_match)) {
+        $action_track = (string) ($sequence_match[1] ?? '');
+        $sequence_position = (int) ($sequence_match[2] ?? 0);
+    }
     $entry_track = preg_match('/^vip26_(starter|reactivation)_d(?:0[1-9]|[12][0-9]|30)$/D', $action_key, $entry_match)
         ? (string) ($entry_match[1] ?? '')
         : '';
-    if($action_key === '' || !str_starts_with($action_key, 'vip26_') || $outcome_count === null || $result_type === null || $difficulty === null || $completion_mode === null) {
+    if($action_key === '' || $action_key === 'vip26_activator_d01' || !str_starts_with($action_key, 'vip26_') || $outcome_count === null || $result_type === null || $difficulty === null || $completion_mode === null) {
         return false;
     }
     if($entry_track !== '' && !hash_equals($entry_track, $submitted_outcome_type)) {
+        return false;
+    }
+    if($action_track !== '' && !hash_equals($action_track, $submitted_outcome_type)) {
         return false;
     }
 
@@ -4363,6 +4452,7 @@ function forever_business_record_daily_outcome(int $user_id, string $fbo_id, arr
             'status' => 'done',
             'outcome_count' => $outcome_count,
             'outcome_type' => $submitted_outcome_type ?: null,
+            'sequence_position' => $sequence_position > 0 ? $sequence_position : null,
             'result_type' => $result_type,
             'difficulty' => $difficulty,
             'needs_help' => $needs_help,
@@ -4380,7 +4470,6 @@ function forever_business_record_daily_outcome(int $user_id, string $fbo_id, arr
             $escaped_track_key = database()->real_escape_string(mb_substr((string) ($input['outcome_type'] ?? ''), 0, 24));
             $escaped_difficulty = database()->real_escape_string($difficulty);
             $escaped_help_note = $help_note === null ? 'NULL' : "'" . database()->real_escape_string($help_note) . "'";
-            $sequence_position = max(0, min(30, (int) ($input['sequence_position'] ?? 0)));
             $help_saved = database()->query("INSERT INTO `forever_business_vip_help_requests`
                 (`user_id`, `fbo_id`, `action_key`, `track_key`, `sequence_position`, `request_date`, `difficulty`, `note`, `status`, `resolved_at`, `resolved_by_user_id`, `created_at`, `updated_at`)
                 VALUES ({$user_id}, '{$fbo_id}', '{$escaped_action_key}', '{$escaped_track_key}', {$sequence_position}, '{$action_date}', '{$escaped_difficulty}', {$escaped_help_note}, 'open', NULL, NULL, '{$timestamp}', '{$timestamp}')

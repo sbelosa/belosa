@@ -84,7 +84,7 @@ $assertions = [
     'all supported Forever ID preference aliases provision members and qualified email recipients' => substr_count($helper, "$.meta.forever_id") >= 4 && substr_count($helper, "$.meta.foreverID") >= 4 && str_contains($helper, 'JSON_VALID(u.preferences)'),
     'admin usage and reconciliation audits use the same three Forever ID aliases as access' => str_contains($helper, 'function forever_business_user_fbo_sql_expression') && substr_count($helper, "forever_business_user_fbo_sql_expression('u.preferences')") >= 2 && substr_count($helper, "forever_business_user_fbo_sql_expression('preferences')") >= 2,
     'members can request mentor help without completing a task' => str_contains($helper, 'forever_business_vip_help_requests') && str_contains($helper, 'forever_business_request_vip_help') && str_contains($view, 'request_vip_help') && str_contains($view, 'Pošalji upit mentoru'),
-    'runtime schema verifies every launch table and starting-track column while preserving legacy help flags' => str_contains($helper, 'forever_business_runtime_schema_v20260901_1') && str_contains($helper, '$required_tables') && str_contains($helper, "'starting_track_key'") && str_contains($helper, "'starting_track_reason'") && str_contains($helper, "'starting_track_decided_at'") && str_contains($helper, 'Legacy VIP help requests could not be preserved.') && str_contains($helper, '`outcome`.`needs_help` = 1'),
+    'runtime schema verifies every launch table, starting-track field and per-level sequence while preserving legacy help flags' => str_contains($helper, 'forever_business_runtime_schema_v20260901_3') && str_contains($helper, '$required_tables') && str_contains($helper, "'starting_track_key'") && str_contains($helper, "'starting_track_reason'") && str_contains($helper, "'starting_track_decided_at'") && str_contains($helper, "'sequence_position'") && str_contains($helper, 'forever_business_outcome_user_track_idx') && str_contains($helper, "WHEN `action_key` = 'vip26_activator_d01' THEN NULL") && str_contains($helper, 'Legacy VIP help requests could not be preserved.') && str_contains($helper, '`outcome`.`needs_help` = 1'),
     'Leader program copy requires full Manager and official August 4 CC' => str_contains($vip_tasks, 'punim, priznatim statusom Managera') && str_contains($vip_tasks, 'službeno potvrđenim `4 CC Active` signalom za kolovoz 2026'),
     '4 CC member copy and runtime language caches explain the inclusive fallback' => str_contains($hr_language, 'Personal CC već je dio Total Active CC-a') && str_contains($hr_language_cache, 'Personal CC već je dio Total Active CC-a') && str_contains($en_language, 'Personal CC is already included in Total Active CC') && str_contains($en_language_cache, 'Personal CC is already included in Total Active CC'),
     'weekly Marketing plan is fixed to Sunday at 18:00 Zagreb time' => str_contains($helper, "'weekday' => 7") && str_contains($helper, "setTime(18, 0)") && str_contains($view, 'svake nedjelje u 18:00'),
@@ -300,6 +300,42 @@ $confirmed_reactivation_track = forever_business_get_vip_track($confirmed_reacti
 $previous_cc_only_starter_track = forever_business_get_vip_track(array_merge($starter_member, ['vip_base_personal_cc' => .5, 'vip_base_is_4cc_active' => 0, 'vip_base_previous_personal_cc' => .4, 'vip_current_personal_cc' => .5, 'vip_current_is_4cc_active' => 0]));
 $rolling_activator_after_drop = forever_business_get_vip_track(array_merge($starter_member, ['vip_base_personal_cc' => 1.2, 'vip_base_is_4cc_active' => 0, 'vip_august_is_4cc_active' => 0, 'vip_current_personal_cc' => 0, 'vip_current_is_4cc_active' => 0]));
 $activator_first_action = forever_business_get_action(array_merge($starter_member, ['vip_base_personal_cc' => 1.2, 'vip_base_is_4cc_active' => 0, 'vip_august_is_4cc_active' => 0, 'vip_current_personal_cc' => 0, 'vip_current_is_4cc_active' => 0]), null, 0, false, $weekday_morning);
+$promoted_activator_member = array_merge($starter_member, [
+    'vip_base_personal_cc' => .5,
+    'vip_base_is_4cc_active' => 0,
+    'vip_current_personal_cc' => 1.2,
+    'vip_current_is_4cc_active' => 0,
+    'vip_highest_track_rank' => 1,
+    'vip_starter_sequence_position' => 12,
+    'vip_activator_sequence_position' => 0,
+]);
+$promoted_activator_first_action = forever_business_get_action($promoted_activator_member, null, 12, false, $weekday_morning);
+$promoted_activator_after_first_action = forever_business_get_action(array_merge($promoted_activator_member, [
+    'vip_activator_sequence_position' => 1,
+]), null, 13, false, $next_weekday_midnight);
+$legacy_activator_continuation = forever_business_get_action(array_merge($promoted_activator_member, [
+    'vip_activator_sequence_position' => 12,
+]), null, 12, false, $weekday_morning);
+$promoted_builder_member = array_merge($starter_member, [
+    'vip_base_personal_cc' => 1.2,
+    'vip_base_is_4cc_active' => 0,
+    'vip_current_personal_cc' => 1.2,
+    'vip_current_total_active_cc' => 4.0,
+    'vip_current_is_4cc_active' => 1,
+    'vip_highest_track_rank' => 2,
+    'vip_activator_sequence_position' => 29,
+    'vip_builder_sequence_position' => 0,
+]);
+$promoted_builder_first_action = forever_business_get_action($promoted_builder_member, null, 29, false, $weekday_morning);
+$completed_starter_then_promoted = forever_business_get_action(array_merge($promoted_activator_member, [
+    'vip_starter_sequence_position' => 30,
+]), null, 30, false, $weekday_morning);
+$completed_current_level = forever_business_get_action(array_merge($promoted_activator_member, [
+    'vip_activator_sequence_position' => 30,
+]), null, 42, false, $weekday_morning);
+$promotion_same_day_waits = forever_business_get_action($promoted_activator_member, null, 12, false, $weekday_late, true);
+$promotion_sunday_override = forever_business_get_action($promoted_activator_member, null, 12, false, $sunday_after_completion);
+$promotion_monday_first_action = forever_business_get_action($promoted_activator_member, null, 12, false, $first_monday_midnight);
 $history_only_starter_track = forever_business_get_vip_track(array_merge($starter_member, ['vip_base_personal_cc' => .5, 'vip_base_is_4cc_active' => 0, 'vip_base_previous_personal_cc' => 0, 'vip_base_focus_previous_active' => 0, 'vip_base_had_previous_activity_12m' => 1, 'vip_current_personal_cc' => .5, 'vip_current_is_4cc_active' => 0]));
 $adapted_builder_action = forever_business_get_action(array_merge($base, [
     'vip_base_personal_cc' => 4,
@@ -558,6 +594,48 @@ $rule_assertions = [
     'duplicate active FCC linkage fails closed without deleting enrollment' => $vip_duplicate_link['is_enrolled'] && !$vip_duplicate_link['has_valid_linkage'] && !$vip_duplicate_link['can_access_education'] && $vip_duplicate_link['status'] === 'duplicate_linkage',
     'administrator-approved shared FCC linkage keeps VIP access open' => $vip_approved_shared_link['is_enrolled'] && $vip_approved_shared_link['has_valid_linkage'] && $vip_approved_shared_link['is_shared_linkage'] && $vip_approved_shared_link['can_access_education'] && $vip_approved_shared_link['linkage_status'] === 'shared',
     'all five VIP levels contain exactly 30 reviewed tasks' => count($catalog) === 5 && count($catalog['starter'] ?? []) === 30 && count($catalog['activator'] ?? []) === 30 && count($catalog['builder'] ?? []) === 30 && count($catalog['leader'] ?? []) === 30 && count($catalog['reactivation'] ?? []) === 30,
+    'reviewed Starter edits keep real beginner alternatives and official-account verification' => ($catalog['starter'][7]['target'] ?? 0) === 2
+        && ($catalog['starter'][7]['quick_target'] ?? 0) === 1
+        && str_contains((string) ($catalog['starter'][7]['task_text'] ?? ''), 'Ako ih još nemaš')
+        && str_contains((string) ($catalog['starter'][17]['task_text'] ?? ''), 'pošalji ih jednom gostu')
+        && ($catalog['starter'][17]['expected_result_type'] ?? '') === 'invitation'
+        && str_contains((string) ($catalog['starter'][18]['task_text'] ?? ''), 'zajednički Zoom s mentorom')
+        && str_contains((string) ($catalog['starter'][20]['task_text'] ?? ''), 'službenom Foreverliving.com računu')
+        && str_contains((string) ($catalog['starter'][20]['task_text'] ?? ''), 'mjesečni CC ponovno kreće od nule') === false
+        && str_contains((string) ($catalog['starter'][20]['task_text'] ?? ''), 'kreću od 0')
+        && count((array) ($catalog['starter'][20]['checklist'] ?? [])) === 4,
+    'reviewed Activator edits preserve natural outreach and measurable preparation' => str_contains((string) ($catalog['activator'][2]['task_text'] ?? ''), 'Na papir ili u svoje bilješke')
+        && str_contains((string) ($catalog['activator'][5]['task_text'] ?? ''), 'praktičan savjet')
+        && str_contains((string) ($catalog['activator'][13]['task_text'] ?? ''), 'doradi je svojim riječima')
+        && str_contains((string) ($catalog['activator'][17]['success_definition'] ?? ''), 'Poruka dobrodošlice i pitanje'),
+    'reviewed Builder edits connect ratios, guests and team follow-up to mentor support' => str_contains((string) ($catalog['builder'][13]['task_text'] ?? ''), 's mentorom dogovori')
+        && str_contains((string) ($catalog['builder'][17]['task_text'] ?? ''), 'poruku dobrodošlice')
+        && str_contains((string) ($catalog['builder'][24]['task_text'] ?? ''), 'suradnikom koji ga je pozvao')
+        && str_contains((string) ($catalog['builder'][24]['fallback'] ?? ''), 'tvoja podrška'),
+    'reviewed Leader edits match the Stjepan-led Marketing plan and develop independent leaders' => str_contains((string) ($catalog['leader'][3]['task_text'] ?? ''), 'početno pitanje') === false
+        && str_contains((string) ($catalog['leader'][3]['success_definition'] ?? ''), 'početno pitanje')
+        && str_contains((string) ($catalog['leader'][10]['task_text'] ?? ''), 'nakon prezentacije')
+        && str_contains((string) ($catalog['leader'][17]['task_text'] ?? ''), 'individualni Zoom')
+        && str_contains((string) ($catalog['leader'][22]['task_text'] ?? ''), 'Supervisorom ili Managerom')
+        && str_contains((string) ($catalog['leader'][24]['task_text'] ?? ''), 'dogovori sa Stjepanom')
+        && str_contains((string) ($catalog['leader'][25]['task_text'] ?? ''), 'statusa gostiju svojih suradnika')
+        && str_contains((string) ($catalog['leader'][26]['task_text'] ?? ''), 'samostalno vodi dva kratka follow-up razgovora'),
+    'reviewed Reaktivacija edits use the Tuesday webinar and warm mentor follow-up' => str_contains((string) ($catalog['reactivation'][10]['task_text'] ?? ''), 'sljedeći timski webinar utorkom')
+        && str_contains((string) ($catalog['reactivation'][17]['task_text'] ?? ''), 'zajednički Zoom s tobom i mentorom')
+        && str_contains((string) ($catalog['reactivation'][17]['message_example'] ?? ''), 'Baš mi je drago'),
+    'member copy excludes rejected internal or hostile draft language' => !str_contains($vip_tasks, 'zatvoriti registraciju')
+        && !str_contains($vip_tasks, 'atribucija gostiju')
+        && !str_contains($vip_tasks, 'vlasnici follow-upa')
+        && !str_contains($vip_tasks, 'nemoj biti naporan')
+        && !str_contains($vip_tasks, 'bez kopiranja kontakata')
+        && !str_contains($vip_tasks, 'komercijalni nastavak našeg razgovora'),
+    'a confirmed promotion starts the new education level at its own first step' => ($promoted_activator_first_action['key'] ?? '') === 'vip26_activator_d01_biolink' && ($promoted_activator_first_action['sequence_position'] ?? 0) === 1,
+    'current-level progress advances independently from lifetime task totals' => ($promoted_activator_after_first_action['key'] ?? '') === 'vip26_activator_d02' && ($legacy_activator_continuation['key'] ?? '') === 'vip26_activator_d13',
+    'promotion to Builder starts Builder at step one even after 29 Activator steps' => ($promoted_builder_first_action['key'] ?? '') === 'vip26_builder_d01' && ($promoted_builder_first_action['sequence_position'] ?? 0) === 1,
+    'thirty completed steps in an earlier level cannot falsely complete the promoted level' => ($completed_starter_then_promoted['key'] ?? '') === 'vip26_activator_d01_biolink' && empty($completed_starter_then_promoted['is_program_complete']),
+    'only thirty steps in the current level mark that level complete' => !empty($completed_current_level['is_level_complete']) && ($completed_current_level['track_key'] ?? '') === 'activator',
+    'a same-day promotion keeps the one-task-per-day countdown before new level step one' => !empty($promotion_same_day_waits['is_daily_complete']) && ($promotion_same_day_waits['next_unlock_at_iso'] ?? '') === '2026-09-08T00:00:00+02:00',
+    'Sunday remains the calendar priority and Monday opens step one of the promoted level' => !empty($promotion_sunday_override['is_weekly_plan']) && ($promotion_monday_first_action['key'] ?? '') === 'vip26_activator_d01_biolink',
     'long task titles never hide part of the original member instruction' => $catalog_is_lossless,
     'all 150 result categories come from explicit reviewed metadata' => $catalog_result_types_are_explicit,
     'all 150 quick targets are explicit positive and no larger than the full target' => $catalog_quick_targets_are_explicit,
@@ -620,7 +698,7 @@ $rule_assertions = [
     'numeric day references do not cut the task title at 21.' => str_contains($catalog['builder'][14]['title'] ?? '', '30. dan'),
     'completion modes enforce quick and full thresholds' => forever_business_vip_completion_mode_for_count(['target' => 10, 'quick_target' => 5], 4) === null && forever_business_vip_completion_mode_for_count(['target' => 10, 'quick_target' => 5], 5) === 'quick' && forever_business_vip_completion_mode_for_count(['target' => 10, 'quick_target' => 5], 10) === 'standard',
     'a hard previous step automatically reduces the next explicit numeric quick target without misclassifying a mentor simulation' => !empty($adapted_builder_action['is_adaptively_simplified']) && ($adapted_builder_action['target'] ?? 0) === 20 && ($adapted_builder_action['quick_target'] ?? 0) === 3 && str_contains((string) ($adapted_builder_action['fallback'] ?? ''), 'Edukacija / trening'),
-    'adaptive copy is not shown and a reviewed fallback is preserved when the quick target is already one' => empty($already_minimum_quick_action['is_adaptively_simplified']) && ($already_minimum_quick_action['quick_target'] ?? 0) === 1 && str_contains((string) ($already_minimum_quick_action['fallback'] ?? ''), 'Ako još nemaš kupca'),
+    'adaptive copy is not shown and a reviewed fallback is preserved when the quick target is already one' => empty($already_minimum_quick_action['is_adaptively_simplified']) && ($already_minimum_quick_action['quick_target'] ?? 0) === 1 && str_contains((string) ($already_minimum_quick_action['fallback'] ?? ''), 'jedan check-in'),
 ];
 
 $failed_rules = array_keys(array_filter($rule_assertions, static fn($passed) => !$passed));

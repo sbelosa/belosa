@@ -83,6 +83,42 @@ function forever_business_los_track_from_action_key(string $action_key): string 
     return 'other';
 }
 
+/**
+ * Resolve the participant's live education track with the same promotion
+ * rules used by the member workspace. LOS supplies trusted, FBO-wide metric
+ * facts and participant-scoped outcome ranks; task history itself stays
+ * attached to the FCC account.
+ */
+function forever_business_los_resolve_current_track(array $member, int $admin_user_id, string $admin_root_fbo_id, bool $admin_is_platform_admin): string {
+    $track_member = $member + [
+        'vip_starting_track_key' => $member['starting_track_key'] ?? null,
+        'vip_starting_track_reason' => $member['starting_track_reason'] ?? null,
+        'vip_qualifying_period' => $member['qualifying_period'] ?? null,
+        'vip_base_personal_cc' => $member['qualifying_personal_cc'] ?? 0,
+        'vip_base_is_4cc_active' => null,
+        'vip_august_is_4cc_active' => $member['vip_august_is_4cc_active'] ?? null,
+        'vip_current_personal_cc' => $member['vip_current_personal_cc'] ?? 0,
+        'vip_current_total_active_cc' => $member['vip_current_total_active_cc'] ?? 0,
+        'vip_current_is_4cc_active' => $member['vip_current_is_4cc_active'] ?? null,
+        'vip_verified_highest_track_rank' => $member['vip_verified_highest_track_rank'] ?? 0,
+        'vip_highest_track_rank' => $member['vip_highest_track_rank'] ?? 0,
+        'vip_highest_nonleader_track_rank' => $member['vip_highest_nonleader_track_rank'] ?? 0,
+        'verified_progress' => forever_business_get_verified_progress($member),
+    ];
+
+    if($admin_is_platform_admin
+        && (int) ($member['user_id'] ?? 0) === $admin_user_id
+        && $admin_root_fbo_id !== ''
+        && hash_equals($admin_root_fbo_id, (string) ($member['fbo_id'] ?? ''))) {
+        $track_member['force_vip_leader'] = true;
+    }
+
+    $track = forever_business_get_vip_track($track_member);
+    return in_array((string) ($track['key'] ?? ''), ['starter', 'reactivation', 'activator', 'builder', 'leader'], true)
+        ? (string) $track['key']
+        : 'starter';
+}
+
 function forever_business_los_periods(?\DateTimeInterface $now = null): array {
     if(empty(forever_business_los_table_columns('forever_business_metrics'))) {
         return [];
@@ -176,7 +212,7 @@ function forever_business_get_los_admin_analytics(int $admin_user_id, int $windo
     }
 
     $admin_root_fbo_id = '';
-    $admin_root_row = forever_business_los_row("SELECT REPLACE(TRIM(COALESCE(
+    $admin_root_row = forever_business_los_row("SELECT `type`, REPLACE(TRIM(COALESCE(
             JSON_UNQUOTE(JSON_EXTRACT(`preferences`, '$.meta.foreverId')),
             JSON_UNQUOTE(JSON_EXTRACT(`preferences`, '$.meta.forever_id')),
             JSON_UNQUOTE(JSON_EXTRACT(`preferences`, '$.meta.foreverID')),
@@ -188,6 +224,7 @@ function forever_business_get_los_admin_analytics(int $admin_user_id, int $windo
     if(preg_match('/^[0-9]{12}$/', (string) ($admin_root_row['fbo_id'] ?? ''))) {
         $admin_root_fbo_id = (string) $admin_root_row['fbo_id'];
     }
+    $admin_is_platform_admin = (int) ($admin_root_row['type'] ?? 0) === 1;
 
     $current_start = $today->modify('-' . ($window_days - 1) . ' days');
     $previous_end = $current_start->modify('-1 day');
@@ -236,6 +273,20 @@ function forever_business_get_los_admin_analytics(int $admin_user_id, int $windo
             'last_task_date' => null,
             'vip_steps_completed' => 0,
             'completed_at' => null,
+            'vip_current_track_steps_completed' => 0,
+            'vip_current_track_started_at' => null,
+            'vip_current_track_last_task_date' => null,
+            'vip_current_track_completed_at' => null,
+            'vip_current_track_available_at' => null,
+            'is_current_track_complete' => false,
+            'vip_verified_highest_track_rank' => 0,
+            'vip_august_is_4cc_active' => null,
+            'vip_current_personal_cc' => 0.0,
+            'vip_current_total_active_cc' => 0.0,
+            'vip_current_is_4cc_active' => null,
+            'vip_activator_achieved_at' => null,
+            'vip_builder_achieved_at' => null,
+            'vip_leader_eligible_at' => null,
             'result_type' => '',
             'difficulty' => '',
             'needs_help' => false,
@@ -341,6 +392,20 @@ function forever_business_get_los_admin_analytics(int $admin_user_id, int $windo
                     'last_task_date' => null,
                     'vip_steps_completed' => 0,
                     'completed_at' => null,
+                    'vip_current_track_steps_completed' => 0,
+                    'vip_current_track_started_at' => null,
+                    'vip_current_track_last_task_date' => null,
+                    'vip_current_track_completed_at' => null,
+                    'vip_current_track_available_at' => null,
+                    'is_current_track_complete' => false,
+                    'vip_verified_highest_track_rank' => 0,
+                    'vip_august_is_4cc_active' => null,
+                    'vip_current_personal_cc' => 0.0,
+                    'vip_current_total_active_cc' => 0.0,
+                    'vip_current_is_4cc_active' => null,
+                    'vip_activator_achieved_at' => null,
+                    'vip_builder_achieved_at' => null,
+                    'vip_leader_eligible_at' => null,
                     'result_type' => '',
                     'difficulty' => '',
                     'needs_help' => false,
@@ -375,6 +440,59 @@ function forever_business_get_los_admin_analytics(int $admin_user_id, int $windo
                 ? (float) $row['last_verified_personal_cc']
                 : null;
         }
+    }
+
+    /* Promotions belong to the Forever ID and survive an open-month reset.
+     * Rebuild the same trusted highest metric rank used by the participant
+     * workspace, while retaining the first available evidence timestamp for
+     * current-level no-start monitoring. */
+    $verified_four_cc_sql = "(CASE
+        WHEN `metric`.`source_import_id` IS NOT NULL
+         AND (`source_import`.`import_id` IS NULL OR `source_import`.`report_kind` NOT IN ('downline', 'four_cc_active'))
+            THEN NULL
+        ELSE `metric`.`is_4cc_active`
+    END)";
+    $metric_track_rows = forever_business_los_rows("SELECT `metric`.`fbo_id`,
+            MAX(CASE
+                WHEN `metric`.`period_month` < COALESCE(`enrollment`.`qualifying_period`, '2026-08-01') THEN 0
+                WHEN {$verified_four_cc_sql} = 1
+                  OR ({$verified_four_cc_sql} IS NULL AND `metric`.`personal_cc` >= 1 AND `metric`.`total_active_cc` >= 4) THEN 3
+                WHEN `metric`.`personal_cc` >= 1 THEN 2
+                ELSE 1
+            END) AS `verified_highest_track_rank`,
+            MIN(CASE
+                WHEN `metric`.`period_month` >= COALESCE(`enrollment`.`qualifying_period`, '2026-08-01')
+                 AND `metric`.`personal_cc` >= 1 THEN `metric`.`updated_at`
+            END) AS `activator_achieved_at`,
+            MIN(CASE
+                WHEN `metric`.`period_month` >= COALESCE(`enrollment`.`qualifying_period`, '2026-08-01')
+                 AND ({$verified_four_cc_sql} = 1
+                      OR ({$verified_four_cc_sql} IS NULL AND `metric`.`personal_cc` >= 1 AND `metric`.`total_active_cc` >= 4))
+                    THEN `metric`.`updated_at`
+            END) AS `builder_achieved_at`,
+            MAX(CASE WHEN `metric`.`period_month` = '2026-08-01' AND {$verified_four_cc_sql} = 1 THEN 1 ELSE 0 END) AS `august_is_4cc_active`,
+            MIN(CASE WHEN `metric`.`period_month` = '2026-08-01' AND {$verified_four_cc_sql} = 1 THEN `metric`.`updated_at` END) AS `leader_eligible_at`,
+            MAX(CASE WHEN `metric`.`period_month` = '{$current_zagreb_period}' THEN `metric`.`personal_cc` END) AS `current_personal_cc`,
+            MAX(CASE WHEN `metric`.`period_month` = '{$current_zagreb_period}' THEN `metric`.`total_active_cc` END) AS `current_total_active_cc`,
+            MAX(CASE WHEN `metric`.`period_month` = '{$current_zagreb_period}' THEN {$verified_four_cc_sql} END) AS `current_is_4cc_active`
+        FROM `forever_business_metrics` `metric`
+        LEFT JOIN `forever_business_imports` `source_import` ON `source_import`.`import_id` = `metric`.`source_import_id`
+        LEFT JOIN `forever_business_vip_enrollments` `enrollment` ON `enrollment`.`fbo_id` = `metric`.`fbo_id`
+        WHERE `metric`.`period_month` <= '{$current_zagreb_period}'
+        GROUP BY `metric`.`fbo_id`");
+    foreach($metric_track_rows as $row) {
+        $fbo_id = (string) ($row['fbo_id'] ?? '');
+        if(!isset($members[$fbo_id])) continue;
+        $members[$fbo_id]['vip_verified_highest_track_rank'] = max(0, min(3, (int) ($row['verified_highest_track_rank'] ?? 0)));
+        $members[$fbo_id]['vip_august_is_4cc_active'] = !empty($row['august_is_4cc_active']) ? 1 : 0;
+        $members[$fbo_id]['vip_current_personal_cc'] = max(0.0, (float) ($row['current_personal_cc'] ?? 0));
+        $members[$fbo_id]['vip_current_total_active_cc'] = max(0.0, (float) ($row['current_total_active_cc'] ?? 0));
+        $members[$fbo_id]['vip_current_is_4cc_active'] = $row['current_is_4cc_active'] === null
+            ? null
+            : (int) $row['current_is_4cc_active'];
+        $members[$fbo_id]['vip_activator_achieved_at'] = $row['activator_achieved_at'] ?: null;
+        $members[$fbo_id]['vip_builder_achieved_at'] = $row['builder_achieved_at'] ?: null;
+        $members[$fbo_id]['vip_leader_eligible_at'] = $row['leader_eligible_at'] ?: null;
     }
 
     if($period === $current_zagreb_period) {
@@ -450,6 +568,12 @@ function forever_business_get_los_admin_analytics(int $admin_user_id, int $windo
             'last_task_date' => null,
             'vip_steps_completed' => 0,
             'completed_at' => null,
+            'vip_current_track_steps_completed' => 0,
+            'vip_current_track_started_at' => null,
+            'vip_current_track_last_task_date' => null,
+            'vip_current_track_completed_at' => null,
+            'vip_current_track_available_at' => null,
+            'is_current_track_complete' => false,
             'result_type' => '',
             'difficulty' => '',
             'completion_mode' => '',
@@ -618,6 +742,106 @@ function forever_business_get_los_admin_analytics(int $admin_user_id, int $windo
         $participants[$participant_id]['track'] = $latest_track;
     }
 
+    /* Lifetime progress remains available in vip_steps_completed. The active
+     * 30-step cycle is counted independently per track so a promotion starts
+     * at day one without erasing any earlier outcome. */
+    $sequence_position_sql = isset($outcome_columns['sequence_position'])
+        ? "CASE
+                WHEN `outcome`.`sequence_position` BETWEEN 1 AND 30 THEN `outcome`.`sequence_position`
+                WHEN `outcome`.`action_key` = 'vip26_activator_d01_biolink' THEN 1
+                ELSE CAST(RIGHT(`outcome`.`action_key`, 2) AS UNSIGNED)
+            END"
+        : "CASE
+                WHEN `outcome`.`action_key` = 'vip26_activator_d01_biolink' THEN 1
+                ELSE CAST(RIGHT(`outcome`.`action_key`, 2) AS UNSIGNED)
+            END";
+    $track_progress_rows = forever_business_los_rows("SELECT `track_progress`.`recorded_by_user_id`,
+            SUBSTRING_INDEX(GROUP_CONCAT(`track_progress`.`fbo_id` ORDER BY `track_progress`.`outcome_id` DESC SEPARATOR ','), ',', 1) AS `fbo_id`,
+            MAX(`account`.`name`) AS `account_name`, `track_progress`.`track_key`, MAX(`track_progress`.`sequence_position`) AS `steps_completed`,
+            MIN(`track_progress`.`action_date`) AS `started_at`, MAX(`track_progress`.`action_date`) AS `last_task_date`,
+            MAX(CASE WHEN `track_progress`.`sequence_position` = 30 THEN `track_progress`.`action_date` END) AS `completion_at`
+        FROM (
+            SELECT `outcome`.`outcome_id`, `outcome`.`recorded_by_user_id`, `outcome`.`fbo_id`, `outcome`.`action_date`,
+                CASE
+                    WHEN `outcome`.`action_key` LIKE 'vip26_starter_d%' THEN 'starter'
+                    WHEN `outcome`.`action_key` LIKE 'vip26_reactivation_d%' THEN 'reactivation'
+                    WHEN `outcome`.`action_key` LIKE 'vip26_activator_d%' THEN 'activator'
+                    WHEN `outcome`.`action_key` LIKE 'vip26_builder_d%' THEN 'builder'
+                    WHEN `outcome`.`action_key` LIKE 'vip26_leader_d%' THEN 'leader'
+                    ELSE 'other'
+                END AS `track_key`,
+                {$sequence_position_sql} AS `sequence_position`
+            FROM `forever_business_daily_outcomes` `outcome`
+            WHERE `outcome`.`status` = 'done'
+              AND `outcome`.`recorded_by_user_id` IS NOT NULL
+              AND `outcome`.`recorded_by_user_id` > 0
+              AND (
+                  `outcome`.`action_key` REGEXP '^vip26_(starter|reactivation|builder|leader)_d(0[1-9]|[12][0-9]|30)$'
+                  OR `outcome`.`action_key` REGEXP '^vip26_activator_d(0[2-9]|[12][0-9]|30)$'
+                  OR `outcome`.`action_key` = 'vip26_activator_d01_biolink'
+              )
+        ) `track_progress`
+        LEFT JOIN `users` `account` ON `account`.`user_id` = `track_progress`.`recorded_by_user_id`
+        GROUP BY `track_progress`.`recorded_by_user_id`, `track_progress`.`track_key`");
+    $track_progress_by_user = [];
+    foreach($track_progress_rows as $row) {
+        $participant_id = $ensure_outcome_participant($row);
+        if($participant_id === null) continue;
+        $track_key = (string) ($row['track_key'] ?? '');
+        if(!in_array($track_key, ['starter', 'reactivation', 'activator', 'builder', 'leader'], true)) continue;
+        $steps_completed = max(0, (int) ($row['steps_completed'] ?? 0));
+        $track_progress_by_user[$participant_id][$track_key] = [
+            'steps_completed' => $steps_completed,
+            'started_at' => $row['started_at'] ?: null,
+            'last_task_date' => $row['last_task_date'] ?: null,
+            'completed_at' => $steps_completed >= 30 ? ($row['completion_at'] ?: null) : null,
+        ];
+    }
+
+    $track_definitions = forever_business_vip_track_definitions();
+    $launch_date_string = '2026-09-01';
+    foreach($participants as $participant_key => &$participant) {
+        $participant_id = (int) ($participant['user_id'] ?? 0);
+        $highest_track_rank = 0;
+        $highest_nonleader_track_rank = 0;
+        foreach($track_progress_by_user[$participant_id] ?? [] as $completed_track_key => $completed_track_progress) {
+            if((int) ($completed_track_progress['steps_completed'] ?? 0) <= 0) continue;
+            $completed_rank = (int) ($track_definitions[$completed_track_key]['rank'] ?? 0);
+            $highest_track_rank = max($highest_track_rank, $completed_rank);
+            if($completed_track_key !== 'leader') {
+                $highest_nonleader_track_rank = max($highest_nonleader_track_rank, $completed_rank);
+            }
+        }
+        $participant['vip_highest_track_rank'] = $highest_track_rank;
+        $participant['vip_highest_nonleader_track_rank'] = $highest_nonleader_track_rank;
+        $participant['track'] = forever_business_los_resolve_current_track(
+            $participant,
+            $admin_user_id,
+            $admin_root_fbo_id,
+            $admin_is_platform_admin
+        );
+
+        $current_track_progress = (array) ($track_progress_by_user[$participant_id][$participant['track']] ?? []);
+        $participant['vip_current_track_steps_completed'] = max(0, (int) ($current_track_progress['steps_completed'] ?? 0));
+        $participant['vip_current_track_started_at'] = $current_track_progress['started_at'] ?? null;
+        $participant['vip_current_track_last_task_date'] = $current_track_progress['last_task_date'] ?? null;
+        $participant['vip_current_track_completed_at'] = $current_track_progress['completed_at'] ?? null;
+        $participant['is_current_track_complete'] = $participant['vip_current_track_steps_completed'] >= 30;
+
+        $available_at = match($participant['track']) {
+            'activator' => $participant['vip_activator_achieved_at'] ?? null,
+            'builder' => $participant['vip_builder_achieved_at'] ?? null,
+            'leader' => $participant['vip_leader_eligible_at'] ?? null,
+            default => $participant['starting_track_decided_at'] ?? ($participant['enrolled_at'] ?? null),
+        };
+        $available_at = $participant['vip_current_track_started_at'] ?: $available_at ?: ($participant['enrolled_at'] ?? null);
+        if($available_at && substr((string) $available_at, 0, 10) < $launch_date_string) {
+            $available_at = $launch_date_string;
+        }
+        $participant['vip_current_track_available_at'] = $available_at ?: null;
+    }
+    unset($participant);
+
     $outcome_rows = forever_business_los_rows("SELECT `outcome`.`recorded_by_user_id`, `outcome`.`fbo_id`, `account`.`name` AS `account_name`,
             `outcome`.`action_date`, `outcome`.`core_key`, `outcome`.`action_key`, `outcome`.`outcome_type`,
             {$result_type_select}, {$difficulty_select}, {$completion_mode_select}, `outcome`.`outcome_count`
@@ -681,45 +905,54 @@ function forever_business_get_los_admin_analytics(int $admin_user_id, int $windo
 
     $help_columns = forever_business_los_table_columns('forever_business_vip_help_requests');
     if(!empty($help_columns)) {
-        /* Latest open request per FCC account is authoritative. Notes are shown
-         * only in the authenticated read-only admin LOS and are HTML-escaped. */
+        /* Only help for the live track is actionable. Requests from a level
+         * completed before promotion remain in the audit table but must not
+         * keep the participant in the current mentor queue. */
         foreach($participants as &$participant) {
             $participant['needs_help'] = false;
+            $participant['open_help_count'] = 0;
+            $participant['help_note'] = '';
+            $participant['help_requested_at'] = null;
+            $participant['help_action_key'] = '';
         }
         unset($participant);
-        $open_help_rows = forever_business_los_rows("SELECT `request`.`user_id` AS `recorded_by_user_id`, `request`.`fbo_id`,
-                `account`.`name` AS `account_name`, `request`.`action_key`, `request`.`difficulty`, `request`.`note`,
-                `request`.`request_date`, `request`.`created_at`, `request`.`updated_at`, `selected`.`open_count`
+        $open_help_rows = forever_business_los_rows("SELECT `request`.`request_id`, `request`.`user_id` AS `recorded_by_user_id`, `request`.`fbo_id`,
+                `account`.`name` AS `account_name`, `request`.`action_key`, `request`.`track_key`, `request`.`difficulty`, `request`.`note`,
+                `request`.`request_date`, `request`.`created_at`, `request`.`updated_at`
             FROM `forever_business_vip_help_requests` `request`
             LEFT JOIN `users` `account` ON `account`.`user_id` = `request`.`user_id`
-            INNER JOIN (
-                SELECT `user_id`, COUNT(*) AS `open_count`
-                FROM `forever_business_vip_help_requests`
-                WHERE `status` = 'open'
-                  AND `action_key` <> 'vip26_activator_d01'
-                GROUP BY `user_id`
-            ) `selected` ON `selected`.`user_id` = `request`.`user_id`
             WHERE `request`.`status` = 'open'
               AND `request`.`action_key` <> 'vip26_activator_d01'
-              AND NOT EXISTS (
-                  SELECT 1
-                  FROM `forever_business_vip_help_requests` `newer`
-                  WHERE `newer`.`user_id` = `request`.`user_id`
-                    AND `newer`.`status` = 'open'
-                    AND `newer`.`action_key` <> 'vip26_activator_d01'
-                    AND (`newer`.`updated_at` > `request`.`updated_at`
-                        OR (`newer`.`updated_at` = `request`.`updated_at`
-                            AND `newer`.`request_id` > `request`.`request_id`))
-              )");
+            ORDER BY `request`.`user_id` ASC, `request`.`updated_at` DESC, `request`.`request_id` DESC");
         foreach($open_help_rows as $row) {
+            $known_participant = isset($participants[(int) ($row['recorded_by_user_id'] ?? 0)]);
             $participant_id = $ensure_outcome_participant($row);
             if($participant_id === null) continue;
+            if(!$known_participant) {
+                $participants[$participant_id]['vip_highest_track_rank'] = 0;
+                $participants[$participant_id]['vip_highest_nonleader_track_rank'] = 0;
+                $participants[$participant_id]['track'] = forever_business_los_resolve_current_track(
+                    $participants[$participant_id],
+                    $admin_user_id,
+                    $admin_root_fbo_id,
+                    $admin_is_platform_admin
+                );
+            }
+            $request_track = trim((string) ($row['track_key'] ?? ''));
+            if(!in_array($request_track, ['starter', 'reactivation', 'activator', 'builder', 'leader'], true)) {
+                $request_track = forever_business_los_track_from_action_key((string) ($row['action_key'] ?? ''));
+            }
+            if(!hash_equals((string) ($participants[$participant_id]['track'] ?? ''), $request_track)) {
+                continue;
+            }
             $participants[$participant_id]['needs_help'] = true;
-            $participants[$participant_id]['open_help_count'] = max(1, (int) ($row['open_count'] ?? 1));
-            $participants[$participant_id]['difficulty'] = trim((string) ($row['difficulty'] ?? '')) ?: 'hard';
-            $participants[$participant_id]['help_note'] = trim((string) ($row['note'] ?? ''));
-            $participants[$participant_id]['help_requested_at'] = $row['updated_at'] ?: ($row['created_at'] ?: ($row['request_date'] ?? null));
-            $participants[$participant_id]['help_action_key'] = trim((string) ($row['action_key'] ?? ''));
+            $participants[$participant_id]['open_help_count']++;
+            if($participants[$participant_id]['help_action_key'] === '') {
+                $participants[$participant_id]['difficulty'] = trim((string) ($row['difficulty'] ?? '')) ?: 'hard';
+                $participants[$participant_id]['help_note'] = trim((string) ($row['note'] ?? ''));
+                $participants[$participant_id]['help_requested_at'] = $row['updated_at'] ?: ($row['created_at'] ?: ($row['request_date'] ?? null));
+                $participants[$participant_id]['help_action_key'] = trim((string) ($row['action_key'] ?? ''));
+            }
         }
     } else {
         $warnings[] = 'Tablica otvorenih VIP zahtjeva za pomoć nije dostupna; LOS privremeno prikazuje samo povijesnu oznaku sa zadnjeg dovršenog koraka.';
@@ -761,18 +994,20 @@ function forever_business_get_los_admin_analytics(int $admin_user_id, int $windo
         }
         if(empty($member['account_enabled'])) continue;
         if(!$member['is_enrolled']) continue;
-        if($member['vip_steps_completed'] >= 30) continue;
+        if(!empty($member['is_current_track_complete'])) continue;
         if($today < $launch_with_grace) continue;
 
-        $enrolled_date = !empty($member['enrolled_at']) ? new \DateTimeImmutable(substr($member['enrolled_at'], 0, 10), $timezone) : null;
-        if($member['started_at'] === null && $enrolled_date) {
-            $eligible_after_enrollment = $enrolled_date->modify('+3 days');
-            $eligible_after = $eligible_after_enrollment > $launch_with_grace ? $eligible_after_enrollment : $launch_with_grace;
+        $current_track_available = !empty($member['vip_current_track_available_at'])
+            ? new \DateTimeImmutable(substr((string) $member['vip_current_track_available_at'], 0, 10), $timezone)
+            : null;
+        if((int) ($member['vip_current_track_steps_completed'] ?? 0) === 0 && $current_track_available) {
+            $eligible_after_track_open = $current_track_available->modify('+3 days');
+            $eligible_after = $eligible_after_track_open > $launch_with_grace ? $eligible_after_track_open : $launch_with_grace;
             if($today >= $eligible_after) {
                 $member['stall_state'] = 'no_start_3d';
             }
-        } elseif($member['last_task_date'] !== null) {
-            $last_task = new \DateTimeImmutable($member['last_task_date'], $timezone);
+        } elseif(!empty($member['vip_current_track_last_task_date'])) {
+            $last_task = new \DateTimeImmutable((string) $member['vip_current_track_last_task_date'], $timezone);
             if((int) $last_task->diff($today)->format('%r%a') >= 7) {
                 $member['stall_state'] = 'inactive_7d';
             }
@@ -788,11 +1023,12 @@ function forever_business_get_los_admin_analytics(int $admin_user_id, int $windo
     $previous_effective_four_cc = count(array_filter($previous_structure_metrics, 'forever_business_los_effective_four_cc'));
 
     $enrolled = array_values(array_filter($members, static fn(array $member): bool => !empty($member['has_fcc_account']) && $member['is_enrolled']));
-    $started = array_values(array_filter($members, static fn(array $member): bool => $member['started_at'] !== null));
-    $completed = array_values(array_filter($started, static fn(array $member): bool => $member['vip_steps_completed'] >= 30));
-    $active = array_values(array_filter($started, static fn(array $member): bool => $member['tasks'] > 0));
-    $previous_active = array_values(array_filter($started, static fn(array $member): bool => $member['previous_tasks'] > 0));
-    $started_without_enrollment = array_values(array_filter($started, static fn(array $member): bool => !$member['is_enrolled']));
+    $lifetime_started = array_values(array_filter($members, static fn(array $member): bool => $member['started_at'] !== null));
+    $started = array_values(array_filter($members, static fn(array $member): bool => $member['vip_current_track_started_at'] !== null));
+    $completed = array_values(array_filter($members, static fn(array $member): bool => !empty($member['is_current_track_complete'])));
+    $active = array_values(array_filter($lifetime_started, static fn(array $member): bool => $member['tasks'] > 0));
+    $previous_active = array_values(array_filter($lifetime_started, static fn(array $member): bool => $member['previous_tasks'] > 0));
+    $started_without_enrollment = array_values(array_filter($lifetime_started, static fn(array $member): bool => !$member['is_enrolled']));
     $tasks_current = array_sum(array_column($members, 'tasks'));
     $tasks_previous = array_sum(array_column($members, 'previous_tasks'));
     $results_current = array_sum(array_column($members, 'results'));
@@ -807,10 +1043,10 @@ function forever_business_get_los_admin_analytics(int $admin_user_id, int $windo
     $open_help_requests_current = array_sum(array_column($open_help, 'open_help_count'));
     $enrolled_current = count(array_filter($enrolled, static fn(array $member): bool => (string) $member['enrollment_event_date'] >= $current_start_string && (string) $member['enrollment_event_date'] <= $current_end_string));
     $enrolled_previous = count(array_filter($enrolled, static fn(array $member): bool => (string) $member['enrollment_event_date'] >= $previous_start_string && (string) $member['enrollment_event_date'] <= $previous_end_string));
-    $started_current = count(array_filter($started, static fn(array $member): bool => $member['started_at'] >= $current_start_string && $member['started_at'] <= $current_end_string));
-    $started_previous = count(array_filter($started, static fn(array $member): bool => $member['started_at'] >= $previous_start_string && $member['started_at'] <= $previous_end_string));
-    $completed_current = count(array_filter($completed, static fn(array $member): bool => $member['completed_at'] >= $current_start_string && $member['completed_at'] <= $current_end_string));
-    $completed_previous = count(array_filter($completed, static fn(array $member): bool => $member['completed_at'] >= $previous_start_string && $member['completed_at'] <= $previous_end_string));
+    $started_current = count(array_filter($started, static fn(array $member): bool => (string) ($member['vip_current_track_started_at'] ?? '') >= $current_start_string && (string) ($member['vip_current_track_started_at'] ?? '') <= $current_end_string));
+    $started_previous = count(array_filter($started, static fn(array $member): bool => (string) ($member['vip_current_track_started_at'] ?? '') >= $previous_start_string && (string) ($member['vip_current_track_started_at'] ?? '') <= $previous_end_string));
+    $completed_current = count(array_filter($completed, static fn(array $member): bool => (string) ($member['vip_current_track_completed_at'] ?? '') >= $current_start_string && (string) ($member['vip_current_track_completed_at'] ?? '') <= $current_end_string));
+    $completed_previous = count(array_filter($completed, static fn(array $member): bool => (string) ($member['vip_current_track_completed_at'] ?? '') >= $previous_start_string && (string) ($member['vip_current_track_completed_at'] ?? '') <= $previous_end_string));
 
     $cc_rows = [];
     $has_official_global_snapshot = false;
@@ -905,8 +1141,8 @@ function forever_business_get_los_admin_analytics(int $admin_user_id, int $windo
     $attention_queue = array_values(array_filter($members, static fn(array $member): bool => $member['stall_state'] !== ''));
     $priority = ['needs_help' => 0, 'no_start_3d' => 1, 'inactive_7d' => 2];
     usort($attention_queue, static function(array $left, array $right) use ($priority): int {
-        $left_date = $left['stall_state'] === 'needs_help' ? ($left['help_requested_at'] ?? '') : ($left['last_task_date'] ?? '');
-        $right_date = $right['stall_state'] === 'needs_help' ? ($right['help_requested_at'] ?? '') : ($right['last_task_date'] ?? '');
+        $left_date = $left['stall_state'] === 'needs_help' ? ($left['help_requested_at'] ?? '') : ($left['vip_current_track_last_task_date'] ?? '');
+        $right_date = $right['stall_state'] === 'needs_help' ? ($right['help_requested_at'] ?? '') : ($right['vip_current_track_last_task_date'] ?? '');
         return [$priority[$left['stall_state']] ?? 9, $left_date, $left['name']]
             <=> [$priority[$right['stall_state']] ?? 9, $right_date, $right['name']];
     });
@@ -1001,6 +1237,7 @@ function forever_business_get_los_admin_analytics(int $admin_user_id, int $windo
             ['key' => 'linked', 'value' => count($linked_current_participants)],
             ['key' => 'enrolled', 'value' => count($enrolled)],
             ['key' => 'started', 'value' => count($started)],
+            ['key' => 'completed', 'value' => count($completed)],
             ['key' => 'active', 'value' => count($active)],
         ],
         'charts' => [

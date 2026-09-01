@@ -161,7 +161,7 @@ class ForeverBusiness extends Controller {
                         && (int) ($expected_action['sequence_position'] ?? 0) >= (int) $expected_action['sequence_total'];
                     if(forever_business_record_daily_outcome((int) $this->user->user_id, $submitted_fbo_id, [$authenticated_fbo_id], $record_input, $request_now)) {
                         Alerts::add_success($is_final_program_step
-                            ? 'Prvih 30 VIP koraka je dovršeno. Tvoj završni pregled je spreman.'
+                            ? 'Svih 30 VIP koraka ove razine je dovršeno. Tvoj završni pregled je spreman.'
                             : ($completion_mode === 'quick'
                                 ? 'Današnja kraća verzija je dovršena. Bravo što održavaš ritam — sljedeći korak otključava se u ponoć.'
                                 : 'Današnji korak je dovršen. Sljedeći konkretan zadatak otključava se u ponoć.'));

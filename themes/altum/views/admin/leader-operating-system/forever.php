@@ -97,12 +97,12 @@ $global_metric_label = !empty($global['is_official_snapshot'])
     .los-forever-kpi .kpi-label { color: var(--gray-600); font-size: .72rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
     .los-forever-kpi .kpi-value { font-size: 1.8rem; font-weight: 700; line-height: 1.2; }
     .los-forever-chart { min-height: 290px; position: relative; }
-    .los-forever-funnel { display: grid; gap: .65rem; grid-template-columns: repeat(6, minmax(0, 1fr)); }
+    .los-forever-funnel { display: grid; gap: .65rem; grid-template-columns: repeat(7, minmax(0, 1fr)); }
     .los-forever-funnel-step { background: var(--gray-100); border-radius: .75rem; padding: .85rem; text-align: center; }
     .los-forever-funnel-value { font-size: 1.45rem; font-weight: 700; }
     .los-forever-member-table th { white-space: nowrap; }
     .los-forever-member-table td { vertical-align: middle; }
-    @media (max-width: 991px) { .los-forever-funnel { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+    @media (max-width: 991px) { .los-forever-funnel { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
     @media (max-width: 575px) { .los-forever-funnel { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 </style>
 
@@ -156,8 +156,8 @@ $global_metric_label = !empty($global['is_official_snapshot'])
         $kpi_cards = [
             ['qualified', l('admin_leader_operating_system.forever.kpi.qualified'), 'fa-check-circle', false],
             ['enrolled', l('admin_leader_operating_system.forever.kpi.enrolled'), 'fa-user-plus', true],
-            ['started', l('admin_leader_operating_system.forever.kpi.started'), 'fa-play-circle', true],
-            ['completed', l('admin_leader_operating_system.forever.kpi.completed'), 'fa-flag-checkered', true],
+            ['started', 'Pokrenuli trenutačnu razinu', 'fa-play-circle', true],
+            ['completed', 'Dovršili trenutačnu razinu', 'fa-flag-checkered', true],
             ['active', l('admin_leader_operating_system.forever.kpi.active'), 'fa-bolt', false],
             ['tasks', l('admin_leader_operating_system.forever.kpi.tasks'), 'fa-tasks', false],
             ['standard_tasks', 'Puni koraci', 'fa-check-double', false],
@@ -205,15 +205,16 @@ $global_metric_label = !empty($global['is_official_snapshot'])
     <div class="card mb-4">
         <div class="card-header"><h2 class="h5 mb-0"><?= l('admin_leader_operating_system.forever.linkage_title') ?></h2></div>
         <div class="card-body">
+            <?php $current_track_funnel_labels = ['started' => 'Pokrenuli trenutačnu razinu', 'completed' => 'Dovršili trenutačnu razinu']; ?>
             <div class="los-forever-funnel">
                 <?php foreach($analytics['linkage_funnel'] ?? [] as $step): ?>
                     <div class="los-forever-funnel-step">
-                        <div class="small text-uppercase text-muted"><?= l('admin_leader_operating_system.forever.funnel.' . $step['key']) ?></div>
+                        <div class="small text-uppercase text-muted"><?= htmlspecialchars($current_track_funnel_labels[$step['key']] ?? l('admin_leader_operating_system.forever.funnel.' . $step['key'])) ?></div>
                         <div class="los-forever-funnel-value"><?= $format_number($step['value']) ?></div>
                     </div>
                 <?php endforeach ?>
             </div>
-            <div class="small text-muted mt-3"><?= l('admin_leader_operating_system.forever.linkage_note') ?></div>
+            <div class="small text-muted mt-3">Pokrenuli i dovršili odnose se na trenutačnu edukacijsku razinu svakog suradnika. Aktivni se odnose na odabrani vremenski prozor, a ostali pokazatelji zadržavaju postojeća pravila obuhvata. Zajednički odobren Forever ID nije pogreška i ne spaja napredak računa.</div>
             <div class="row mt-3">
                 <div class="col-md-3 mb-2 mb-md-0"><div class="alert alert-light mb-0 py-2"><strong><?= $format_number($data_quality['missing_linkage'] ?? 0) ?></strong> <?= l('admin_leader_operating_system.forever.missing_linkage') ?></div></div>
                 <div class="col-md-3 mb-2 mb-md-0"><div class="alert alert-info mb-0 py-2"><strong><?= $format_number($data_quality['shared_fbo_ids'] ?? 0) ?></strong> Forever ID-a zajednički koristi <strong><?= $format_number($data_quality['shared_accounts'] ?? 0) ?></strong> aktivnih FCC računa; to je dopušteno i svaki račun ima vlastiti napredak.</div></div>
@@ -294,7 +295,7 @@ $global_metric_label = !empty($global['is_official_snapshot'])
             <div class="card-header"><h2 class="h5 mb-0"><?= l('admin_leader_operating_system.forever.attention_queue') ?></h2></div>
             <div class="table-responsive"><table class="table table-sm mb-0"><thead><tr><th><?= l('admin_leader_operating_system.forever.member') ?></th><th><?= l('admin_leader_operating_system.forever.signal') ?></th><th><?= l('admin_leader_operating_system.forever.last_task') ?></th></tr></thead><tbody>
                 <?php if(empty($analytics['attention_queue'])): ?><tr><td colspan="3" class="text-muted"><?= l('admin_leader_operating_system.forever.no_attention') ?></td></tr><?php endif ?>
-                <?php foreach($analytics['attention_queue'] ?? [] as $member): ?><tr><td><?= htmlspecialchars($member['name']) ?><div class="small text-muted"><?= htmlspecialchars($member['fbo_id']) ?><?= !empty($member['user_id']) ? ' · FCC #' . (int) $member['user_id'] : '' ?></div></td><td><span class="badge badge-<?= $member['stall_state'] === 'needs_help' ? 'danger' : 'warning' ?>"><?= htmlspecialchars($stall_labels[$member['stall_state']] ?? $member['stall_state']) ?></span><?php if((int) ($member['open_help_count'] ?? 0) > 1): ?><span class="badge badge-light ml-1"><?= (int) $member['open_help_count'] ?> otvorena</span><?php endif ?><?php if($member['difficulty']): ?><div class="small text-muted mt-1"><?= htmlspecialchars($difficulty_labels[$member['difficulty']] ?? $member['difficulty']) ?></div><?php endif ?><?php if(!empty($member['help_note'])): ?><div class="small border-left border-danger pl-2 mt-2 text-break"><?= nl2br(htmlspecialchars($member['help_note'])) ?></div><?php endif ?></td><td><?= $format_date($member['stall_state'] === 'needs_help' ? ($member['help_requested_at'] ?? null) : $member['last_task_date']) ?></td></tr><?php endforeach ?>
+                <?php foreach($analytics['attention_queue'] ?? [] as $member): ?><tr><td><?= htmlspecialchars($member['name']) ?><div class="small text-muted"><?= htmlspecialchars($member['fbo_id']) ?><?= !empty($member['user_id']) ? ' · FCC #' . (int) $member['user_id'] : '' ?></div></td><td><span class="badge badge-<?= $member['stall_state'] === 'needs_help' ? 'danger' : 'warning' ?>"><?= htmlspecialchars($stall_labels[$member['stall_state']] ?? $member['stall_state']) ?></span><?php if((int) ($member['open_help_count'] ?? 0) > 1): ?><span class="badge badge-light ml-1"><?= (int) $member['open_help_count'] ?> otvorena</span><?php endif ?><?php if($member['difficulty']): ?><div class="small text-muted mt-1"><?= htmlspecialchars($difficulty_labels[$member['difficulty']] ?? $member['difficulty']) ?></div><?php endif ?><?php if(!empty($member['help_note'])): ?><div class="small border-left border-danger pl-2 mt-2 text-break"><?= nl2br(htmlspecialchars($member['help_note'])) ?></div><?php endif ?></td><td><?= $format_date($member['stall_state'] === 'needs_help' ? ($member['help_requested_at'] ?? null) : ($member['vip_current_track_last_task_date'] ?? null)) ?></td></tr><?php endforeach ?>
             </tbody></table></div>
             <div class="card-footer small text-muted">Otvorena pomoć dolazi iz zasebnog zahtjeva polaznika. Bilješka je vidljiva samo administratoru, prikazuje se escaped i ne dovršava zadatak.</div>
         </div></div>
@@ -313,7 +314,7 @@ $global_metric_label = !empty($global['is_official_snapshot'])
                 <tr>
                     <td><?= htmlspecialchars($member['name']) ?><div class="small text-muted"><?= htmlspecialchars($member['fbo_id'] . (!empty($member['user_id']) ? ' · FCC #' . (int) $member['user_id'] : '') . ($member['title'] ? ' · ' . $member['title'] : '')) ?></div></td>
                     <td>
-                        <?php if($member['stall_state']): ?><span class="badge badge-<?= $member['stall_state'] === 'needs_help' ? 'danger' : 'warning' ?>"><?= htmlspecialchars($stall_labels[$member['stall_state']] ?? $member['stall_state']) ?></span><?php elseif((int) $member['vip_steps_completed'] >= 30): ?><span class="badge badge-primary"><?= l('admin_leader_operating_system.forever.completed') ?></span><?php elseif($member['tasks'] > 0): ?><span class="badge badge-success"><?= l('admin_leader_operating_system.forever.active') ?></span><?php elseif($member['is_enrolled']): ?><span class="badge badge-info"><?= l('admin_leader_operating_system.forever.enrolled') ?></span><?php else: ?><span class="badge badge-light"><?= l('admin_leader_operating_system.forever.not_enrolled') ?></span><?php endif ?>
+                        <?php if($member['stall_state']): ?><span class="badge badge-<?= $member['stall_state'] === 'needs_help' ? 'danger' : 'warning' ?>"><?= htmlspecialchars($stall_labels[$member['stall_state']] ?? $member['stall_state']) ?></span><?php elseif(!empty($member['is_current_track_complete'])): ?><span class="badge badge-primary"><?= l('admin_leader_operating_system.forever.completed') ?></span><?php elseif($member['tasks'] > 0): ?><span class="badge badge-success"><?= l('admin_leader_operating_system.forever.active') ?></span><?php elseif($member['is_enrolled']): ?><span class="badge badge-info"><?= l('admin_leader_operating_system.forever.enrolled') ?></span><?php else: ?><span class="badge badge-light"><?= l('admin_leader_operating_system.forever.not_enrolled') ?></span><?php endif ?>
                         <?php if((int) $member['linked_accounts'] > 1): ?><div class="mt-1"><span class="badge badge-info">Zajednički Forever ID · <?= (int) $member['linked_accounts'] ?> FCC računa</span></div><?php elseif((int) $member['linked_accounts'] === 0): ?><div class="mt-1"><span class="badge badge-danger"><?= l('admin_leader_operating_system.forever.link_missing') ?></span></div><?php endif ?>
                         <?php if(!empty($member['has_outcome_fbo_mismatch'])): ?><div class="mt-1"><span class="badge badge-warning">Povijesni zapis pod drugim ID-em</span></div><?php endif ?>
                         <?php if(empty($member['is_in_current_structure'])): ?><div class="mt-1"><span class="badge badge-secondary"><?= l('admin_leader_operating_system.forever.outside_structure') ?></span></div><?php endif ?>
@@ -328,11 +329,11 @@ $global_metric_label = !empty($global['is_official_snapshot'])
                             <?php if($member['is_4cc_active'] === null): ?><div class="small text-muted mt-1"><?= $member['personal_cc'] !== null && $member['total_active_cc'] !== null ? l('admin_leader_operating_system.forever.formula') : l('admin_leader_operating_system.forever.incomplete_activity_data') ?></div><?php endif ?>
                         <?php endif ?>
                     </td>
-                    <td><?= $format_number($member['tasks']) ?></td><td><?= $format_number($member['standard_tasks']) ?> / <?= $format_number($member['quick_tasks']) ?></td><td><?= $member['difficulty'] ? htmlspecialchars($difficulty_labels[$member['difficulty']] ?? $member['difficulty']) : '—' ?><?= !empty($member['needs_help']) ? '<div class="small text-danger">Otvorena pomoć</div>' : '' ?></td><td><?= htmlspecialchars($outcome_dimension_labels['track'][$member['track']] ?? ($member['track'] ?: '—')) ?></td><td><?= $format_date($member['last_task_date']) ?></td>
+                    <td><?= $format_number($member['tasks']) ?></td><td><?= $format_number($member['standard_tasks']) ?> / <?= $format_number($member['quick_tasks']) ?></td><td><?= $member['difficulty'] ? htmlspecialchars($difficulty_labels[$member['difficulty']] ?? $member['difficulty']) : '—' ?><?= !empty($member['needs_help']) ? '<div class="small text-danger">Otvorena pomoć</div>' : '' ?></td><td><strong><?= htmlspecialchars($outcome_dimension_labels['track'][$member['track']] ?? ($member['track'] ?: '—')) ?></strong><div class="small text-muted"><?= min(30, (int) ($member['vip_current_track_steps_completed'] ?? 0)) ?>/30 u razini · <?= (int) ($member['vip_steps_completed'] ?? 0) ?> ukupno</div></td><td><?= $format_date($member['vip_current_track_last_task_date'] ?? null) ?><?php if(!empty($member['last_task_date']) && ($member['last_task_date'] ?? null) !== ($member['vip_current_track_last_task_date'] ?? null)): ?><div class="small text-muted">Ukupno zadnje: <?= $format_date($member['last_task_date']) ?></div><?php endif ?></td>
                 </tr>
             <?php endforeach ?>
         </tbody></table></div>
-        <div class="card-footer small text-muted"><?= l('admin_leader_operating_system.forever.privacy_note') ?></div>
+        <div class="card-footer small text-muted">Status dovršetka i zastoji odnose se na trenutačnu edukacijsku razinu. Ukupan broj zadržava cijelu povijest svih ranije dovršenih razina. <?= l('admin_leader_operating_system.forever.privacy_note') ?></div>
     </div>
 </div>
 
