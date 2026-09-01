@@ -597,6 +597,22 @@ function optionalOwnNonNegativeCc(record, key, fieldName = key) {
     return nonNegativeCc(record[key], fieldName);
 }
 
+function ccValuesDiffer(left, right) {
+    const invalidComparable = value => value === null
+        || value === undefined
+        || typeof value === 'boolean'
+        || (typeof value !== 'number' && typeof value !== 'string')
+        || (typeof value === 'string' && value.trim() === '');
+    if(invalidComparable(left) || invalidComparable(right)) return true;
+    const leftNumber = Number(left);
+    const rightNumber = Number(right);
+    if(!Number.isFinite(leftNumber) || leftNumber < 0
+        || !Number.isFinite(rightNumber) || rightNumber < 0) return true;
+    /* FLP360 and FCC store CC to three decimals. Compare integer thousandths
+     * so an exact 0.002 boundary cannot slip through binary floating point. */
+    return Math.abs(Math.round(leftNumber * 1000) - Math.round(rightNumber * 1000)) >= 2;
+}
+
 function payloadHasExplicitError(payload) {
     const envelope = Array.isArray(payload) ? payload[0] : payload;
     if(!envelope || typeof envelope !== 'object') return false;
@@ -816,14 +832,16 @@ function extractLiveZeroFallback(treePayload, detailPayload, expectedFboId, date
     const leaderCurrent = optionalOwnNonNegativeCc(detail, 'leaderCCCurMonth');
     const leadershipCurrentAlias = optionalOwnNonNegativeCc(detail, 'leadershipCCCurMonth');
     if(leaderCurrent !== null && leadershipCurrentAlias !== null
-        && Math.abs(leaderCurrent - leadershipCurrentAlias) >= 0.002) {
+        && ccValuesDiffer(leaderCurrent, leadershipCurrentAlias)) {
         throw liveCcValidationError(
             'detail_current_cc_submetric_conflict',
             'FLP360 rezervna live potvrda vratila je proturječne Leadership CC vrijednosti.'
         );
     }
     const leadershipCurrent = leaderCurrent ?? leadershipCurrentAlias;
-    if(currentCc.usedNullCurrentSentinel
+    const zeroCurrentCore = [currentCc.personalCc, currentCc.totalCc, currentCc.totalActiveCc]
+        .every(value => value === 0);
+    if(zeroCurrentCore
         && [nonManagerCurrent, leaderCurrent, leadershipCurrentAlias]
             .some(value => value !== null && value !== 0)) {
         throw liveCcValidationError(
@@ -831,16 +849,16 @@ function extractLiveZeroFallback(treePayload, detailPayload, expectedFboId, date
             'FLP360 rezervna live potvrda ima manager CC različit od nule uz nulti current-month total.'
         );
     }
-    if(currentCc.usedNullCurrentSentinel
+    if(zeroCurrentCore
         && treeTotalActiveYtd !== null
         && detailTotalActiveYtd !== null
-        && Math.abs(treeTotalActiveYtd - detailTotalActiveYtd) >= 0.002) {
+        && ccValuesDiffer(treeTotalActiveYtd, detailTotalActiveYtd)) {
         throw liveCcValidationError(
             'detail_tree_ytd_mismatch',
             'FLP360 rezervna live potvrda ima proturječan Total Active CC YTD.'
         );
     }
-    const totalActiveCcYtd = currentCc.usedNullCurrentSentinel
+    const totalActiveCcYtd = zeroCurrentCore
         ? (treeTotalActiveYtd ?? detailTotalActiveYtd)
         : (detailTotalActiveYtd ?? treeTotalActiveYtd);
     return {
@@ -849,13 +867,13 @@ function extractLiveZeroFallback(treePayload, detailPayload, expectedFboId, date
         totalCc: currentCc.totalCc,
         totalActiveCc: currentCc.totalActiveCc,
         /* The detail fallback does not consistently expose these manager-only
-         * fields. An all-null core triad proves there is no current-month CC,
-         * so its manager submetrics are also zero. Otherwise null preserves the
-         * last verified value instead of inventing missing international data. */
-        nonManagerCc: currentCc.usedNullCurrentSentinel
+         * fields. A verified all-zero core triad proves there is no current-month
+         * CC, so its nonnegative manager submetrics are also zero. Otherwise null
+         * preserves the last verified value instead of inventing missing data. */
+        nonManagerCc: zeroCurrentCore
             ? 0
             : nonManagerCurrent,
-        leadershipCc: currentCc.usedNullCurrentSentinel
+        leadershipCc: zeroCurrentCore
             ? 0
             : leadershipCurrent,
         /* The exact-ID prior-only tree still carries the current year's
@@ -866,6 +884,7 @@ function extractLiveZeroFallback(treePayload, detailPayload, expectedFboId, date
         leadershipCcYtd: leadershipYtd,
         usedFallback: true,
         usedNullCurrentSentinel: currentCc.usedNullCurrentSentinel,
+        usedVerifiedCurrentZero: zeroCurrentCore,
     };
 }
 
@@ -929,6 +948,7 @@ async function fetchLiveCcForMembers(page, configuration, members, date = new Da
     let completed = 0;
     let fallbackCount = 0;
     let nullCurrentMonthCount = 0;
+    let zeroCurrentMonthCount = 0;
     let ytdFloorAccountCount = 0;
     let ytdFloorFieldCount = 0;
     let operatingMarketFallbackCount = 0;
@@ -988,6 +1008,7 @@ async function fetchLiveCcForMembers(page, configuration, members, date = new Da
         }
         if(usedDetailFallback) fallbackCount++;
         if(record.usedNullCurrentSentinel === true) nullCurrentMonthCount++;
+        if(record.usedVerifiedCurrentZero === true) zeroCurrentMonthCount++;
         if(confirmedCountryCode !== preferredCountryCode) {
             operatingMarketFallbackCount++;
         }
@@ -1008,6 +1029,7 @@ async function fetchLiveCcForMembers(page, configuration, members, date = new Da
         unconfirmed,
         fallbackCount,
         nullCurrentMonthCount,
+        zeroCurrentMonthCount,
         ytdFloorAccountCount,
         ytdFloorFieldCount,
         unconfirmedReasonCounts,
@@ -1288,8 +1310,8 @@ function verifyFccStatus(payload, expected) {
         members: Number(summary.members) === expected.members,
         latestCc: Number(summary.personal_active) + Number(summary.zero_cc) === expected.members,
         activeFourCc: Number(summary.active_4cc) === expected.activeFourCc,
-        personalCc: Math.abs(Number(summary.personal_cc) - expected.personalCc) < 0.002,
-        globalTotalCc: Math.abs(Number(summary.goal_current_cc) - expected.globalTotalCc) < 0.002,
+        personalCc: !ccValuesDiffer(summary.personal_cc, expected.personalCc),
+        globalTotalCc: !ccValuesDiffer(summary.goal_current_cc, expected.globalTotalCc),
         globalSource: String(summary.goal_metric_source || '').includes('GLOBAL'),
     };
     const failed = Object.entries(checks).filter(([, passed]) => !passed).map(([name]) => name);
@@ -1337,7 +1359,7 @@ function verifyFccAccounts(payload, expectedRecords, period, expectedAccountCoun
             if(expected[expectedField] === null || expected[expectedField] === undefined) continue;
             if(actual[actualField] === null
                 || actual[actualField] === undefined
-                || Math.abs(Number(actual[actualField]) - Number(expected[expectedField])) >= 0.002) {
+                || ccValuesDiffer(actual[actualField], expected[expectedField])) {
                 failures.push(`${actualField}_${fboId}`);
             }
         }
@@ -1423,7 +1445,7 @@ async function main() {
             }
 
             const ccSummary = await fetchLiveCcSummary(page, configuration, runDate);
-            if(Math.abs(ccSummary.totalCc - rootRecord.totalCc) >= 0.002) {
+            if(ccValuesDiffer(ccSummary.totalCc, rootRecord.totalCc)) {
                 throw new Error(`FLP360 CC Summary Total CC (${ccSummary.totalCc.toFixed(3)}) ne odgovara glavnom ${configuration.operatingCountryCode} live Total CC-u (${rootRecord.totalCc.toFixed(3)}).`);
             }
             const expectedRecords = new Map(registeredAccounts.map(account => {
@@ -1433,7 +1455,7 @@ async function main() {
             if([...expectedRecords.values()].some(record => !record)) {
                 throw new Error('Registrirani FCC sync nema pripremljen zapis za svaki aktivni Forever ID.');
             }
-            console.log(`Registrirani FCC način: potvrđeno ${expectedRecords.size} računa za ${period}; ${liveCc.fallbackCount} detail potvrda; ${liveCc.nullCurrentMonthCount} potvrđenih all-null current-month nula; tržišta ${JSON.stringify(liveCc.countryCounts)}.`);
+            console.log(`Registrirani FCC način: potvrđeno ${expectedRecords.size} računa za ${period}; ${liveCc.fallbackCount} detail potvrda; ${liveCc.zeroCurrentMonthCount} potvrđenih current-month nula (${liveCc.nullCurrentMonthCount} all-null); tržišta ${JSON.stringify(liveCc.countryCounts)}.`);
             console.log(`YTD zaštita: podignuto ${liveCc.ytdFloorFieldCount} kumulativnih polja na ${liveCc.ytdFloorAccountCount} računa prema potpisanom FCC stanju.`);
 
             if(dryRun) {
@@ -1524,7 +1546,7 @@ async function main() {
         }
         console.log(`FCC Forever ID-jevi izvan potvrđene hijerarhije: ${registeredOnlyAccounts.length}; FLP360 je potvrdio ${confirmedRegisteredOnlyAccounts.length}, nepotvrđeno je ${unconfirmedRegisteredAccountCount}.`);
         const ccSummary = await fetchLiveCcSummary(page, configuration, runDate);
-        if(Math.abs(ccSummary.totalCc - rootRecord.totalCc) >= 0.002) {
+        if(ccValuesDiffer(ccSummary.totalCc, rootRecord.totalCc)) {
             throw new Error(`FLP360 CC Summary Total CC (${ccSummary.totalCc.toFixed(3)}) ne odgovara glavnom ${configuration.operatingCountryCode} live Total CC-u (${rootRecord.totalCc.toFixed(3)}).`);
         }
         console.log(`FLP360 CC Summary: ${configuration.operatingCountryCode} Total CC=${ccSummary.totalCc.toFixed(3)}, Global Total CC=${ccSummary.globalTotalCc.toFixed(3)}.`);

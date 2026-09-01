@@ -234,8 +234,10 @@ const fallbackRecord = extractLiveZeroFallback([{
     totalActiveCCCurMonth: 0, totalActiveCCYTD: 1.024,
 }, '360000000003');
 assert.equal(fallbackRecord.totalActiveCcYtd, 1.024);
-assert.equal(fallbackRecord.nonManagerCc, null);
+assert.equal(fallbackRecord.nonManagerCc, 0);
+assert.equal(fallbackRecord.leadershipCc, 0);
 assert.equal(fallbackRecord.nonManagerCcYtd, null);
+assert.equal(fallbackRecord.usedVerifiedCurrentZero, true);
 assert.throws(() => extractLiveZeroFallback([{
     fboId: '', processingYear: 0, monthlyCCValues: [{processingYear: 0, processingMonth: 0}],
 }], {
@@ -252,6 +254,8 @@ assert.equal(internationalFallback.personalCc, 0.792);
 assert.equal(internationalFallback.totalCc, 0.792);
 assert.equal(internationalFallback.totalActiveCc, 0.792);
 assert.equal(internationalFallback.nonManagerCc, null);
+assert.equal(internationalFallback.leadershipCc, null);
+assert.equal(internationalFallback.usedVerifiedCurrentZero, false);
 
 const septemberDate = new Date('2026-09-01T12:00:00Z');
 const emptyTreeSentinel = [{
@@ -286,6 +290,7 @@ assert.equal(allNullCurrentFallback.nonManagerCc, 0);
 assert.equal(allNullCurrentFallback.leadershipCc, 0);
 assert.equal(allNullCurrentFallback.totalActiveCcYtd, 81.125);
 assert.equal(allNullCurrentFallback.usedNullCurrentSentinel, true);
+assert.equal(allNullCurrentFallback.usedVerifiedCurrentZero, true);
 const allNullWithTreeYtd = extractLiveZeroFallback([{
     ...priorOnlyTree[0], totalActiveCC: 70, nonManagerCC: 40, leaderCC: 6,
 }], [{
@@ -295,6 +300,18 @@ const allNullWithTreeYtd = extractLiveZeroFallback([{
 assert.equal(allNullWithTreeYtd.totalActiveCcYtd, 70);
 assert.equal(allNullWithTreeYtd.nonManagerCcYtd, 40);
 assert.equal(allNullWithTreeYtd.leadershipCcYtd, 6);
+const explicitZeroWithTreeYtd = extractLiveZeroFallback([{
+    ...priorOnlyTree[0], totalActiveCC: 70, nonManagerCC: 40, leaderCC: 6,
+}], [{
+    distributorId: '360000000005', personalCCCurMonth: 0, totalCCCurMonth: 0,
+    totalActiveCCCurMonth: 0, totalActiveCCYTD: 70,
+}], '360000000005', septemberDate, septemberDate);
+assert.equal(explicitZeroWithTreeYtd.nonManagerCc, 0);
+assert.equal(explicitZeroWithTreeYtd.leadershipCc, 0);
+assert.equal(explicitZeroWithTreeYtd.totalActiveCcYtd, 70);
+assert.equal(explicitZeroWithTreeYtd.nonManagerCcYtd, 40);
+assert.equal(explicitZeroWithTreeYtd.leadershipCcYtd, 6);
+assert.equal(explicitZeroWithTreeYtd.usedVerifiedCurrentZero, true);
 assert.equal(extractLiveZeroFallback([{
     ...priorOnlyTree[0], totalActiveCC: 100, nonManagerCC: 40, leaderCC: 6,
 }], [{
@@ -306,6 +323,12 @@ assert.throws(() => extractLiveZeroFallback([{
 }], [{
     distributorId: '360000000005', personalCCCurMonth: null, totalCCCurMonth: null,
     totalActiveCCCurMonth: null, totalActiveCCYTD: 81.125,
+}], '360000000005', septemberDate, septemberDate), error => error?.liveCcReasonCode === 'detail_tree_ytd_mismatch');
+assert.throws(() => extractLiveZeroFallback([{
+    ...priorOnlyTree[0], totalActiveCC: 70, nonManagerCC: 40, leaderCC: 6,
+}], [{
+    distributorId: '360000000005', personalCCCurMonth: 0, totalCCCurMonth: 0,
+    totalActiveCCCurMonth: 0, totalActiveCCYTD: 70.002,
 }], '360000000005', septemberDate, septemberDate), error => error?.liveCcReasonCode === 'detail_tree_ytd_mismatch');
 assert.equal(extractLiveZeroFallback([{
     ...priorOnlyTree[0], totalActiveCC: 70, nonManagerCC: 40, leaderCC: 6,
@@ -348,6 +371,10 @@ assert.throws(() => extractLiveZeroFallback(priorOnlyTree, [{
 assert.throws(() => extractLiveZeroFallback(priorOnlyTree, [{
     distributorId: '360000000005', personalCCCurMonth: null, totalCCCurMonth: null,
     totalActiveCCCurMonth: null, leaderCCCurMonth: 0, leadershipCCCurMonth: 0.001,
+}], '360000000005', septemberDate, septemberDate), error => error?.liveCcReasonCode === 'detail_current_cc_submetric_conflict');
+assert.throws(() => extractLiveZeroFallback(priorOnlyTree, [{
+    distributorId: '360000000005', personalCCCurMonth: 0, totalCCCurMonth: 0,
+    totalActiveCCCurMonth: 0, nonManagerCCCurMonth: 0.001,
 }], '360000000005', septemberDate, septemberDate), error => error?.liveCcReasonCode === 'detail_current_cc_submetric_conflict');
 assert.throws(() => extractLiveZeroFallback(priorOnlyTree, [{
     distributorId: '360000999999', personalCCCurMonth: null, totalCCCurMonth: null,
@@ -576,6 +603,7 @@ assert.equal(priorOnlyLive.records.get('360000000005').totalActiveCcYtd, 81.125)
 assert.equal(priorOnlyLive.records.get('360000000005').mustRemainVipEnrolled, true);
 assert.equal(priorOnlyLive.fallbackCount, 1);
 assert.equal(priorOnlyLive.nullCurrentMonthCount, 0);
+assert.equal(priorOnlyLive.zeroCurrentMonthCount, 0);
 assert.equal(priorOnlyLive.ytdFloorAccountCount, 1);
 assert.equal(priorOnlyLive.ytdFloorFieldCount, 3);
 assert.equal(priorOnlyFallbackUrls.length, 2);
@@ -616,6 +644,7 @@ assert.equal(allNullLiveRecord.leadershipCcYtd, 7.25);
 assert.equal(allNullLiveRecord.mustRemainVipEnrolled, true);
 assert.equal(allNullCurrentLive.fallbackCount, 1);
 assert.equal(allNullCurrentLive.nullCurrentMonthCount, 1);
+assert.equal(allNullCurrentLive.zeroCurrentMonthCount, 1);
 assert.equal(allNullCurrentLive.ytdFloorAccountCount, 1);
 assert.equal(allNullCurrentLive.ytdFloorFieldCount, 3);
 
@@ -683,6 +712,18 @@ const verified = verifyFccStatus({summary: {members: 401, personal_active: 20, z
 assert.equal(verified.members, 401);
 assert.equal(verified.globalTotalCc, 63.684);
 assert.throws(() => verifyFccStatus({summary: {}}, {members: 401, activeFourCc: 2, personalCc: 404.25, globalTotalCc: 63.684}), /zavr\u0161na kontrola/);
+const zeroStatusSummary = {
+    members: 1, personal_active: 0, zero_cc: 1, active_4cc: 0,
+    personal_cc: 0, goal_current_cc: 0, goal_metric_source: 'FLP360 Global Total CC · GLOBAL',
+};
+for(const invalidZeroLikeValue of [null, undefined, false, '', ' ', Number.NaN, Number.POSITIVE_INFINITY, -0.001]) {
+    assert.throws(() => verifyFccStatus({
+        summary: {...zeroStatusSummary, personal_cc: invalidZeroLikeValue},
+    }, {members: 1, activeFourCc: 0, personalCc: 0, globalTotalCc: 0}), /zavr\u0161na kontrola/);
+    assert.throws(() => verifyFccStatus({
+        summary: {...zeroStatusSummary, goal_current_cc: invalidZeroLikeValue},
+    }, {members: 1, activeFourCc: 0, personalCc: 0, globalTotalCc: 0}), /zavr\u0161na kontrola/);
+}
 
 const registeredExpected = new Map([
     ['360001651915', {fboId: '360001651915', personalCc: 0.367, totalCc: 1.5, totalActiveCc: 2.5, nonManagerCc: 3.5, leadershipCc: 4.5, totalActiveCcYtd: 20, nonManagerCcYtd: 21, leadershipCcYtd: 22, isFourCcActive: true}],
@@ -699,6 +740,20 @@ const registeredVerified = verifyFccAccounts({
 }, registeredExpected, '2026-08');
 assert.equal(registeredVerified.uniqueForeverIds, 2);
 assert.equal(registeredVerified.activeAccountLinks, 3);
+for(const invalidZeroLikeValue of [null, undefined, false, '', ' ', Number.NaN, Number.POSITIVE_INFINITY, -0.001]) {
+    assert.throws(() => verifyFccAccounts({
+        status: 'success', metric: 'fcc_accounts',
+        summary: {unique_forever_ids: 1, active_account_links: 1, current_cc_confirmed: 1, current_active_4cc: 0, vip_enrolled: 0},
+        accounts: [{
+            fbo_id: '360000000002', metric_period: '2026-08-01',
+            personal_cc: invalidZeroLikeValue, total_cc: 0, total_active_cc: 0,
+            is_4cc_active: false, is_vip_enrolled: false,
+        }],
+    }, new Map([['360000000002', {
+        fboId: '360000000002', personalCc: 0, totalCc: 0, totalActiveCc: 0,
+        isFourCcActive: false,
+    }]]), '2026-08'), /registriranih Forever ID-jeva/);
+}
 assert.throws(() => verifyFccAccounts({
     status: 'success', metric: 'fcc_accounts',
     summary: {unique_forever_ids: 1, active_account_links: 1, current_cc_confirmed: 1, current_active_4cc: 0, vip_enrolled: 0},
