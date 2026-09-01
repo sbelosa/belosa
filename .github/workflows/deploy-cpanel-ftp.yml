@@ -39,3 +39,28 @@ jobs:
           local-dir: ./themes/
           server-dir: /public_html/themes/
           dangerous-clean-slate: false
+
+      - name: Verify Forever Business runtime
+        env:
+          FCC_FOREVER_SYNC_URL: ${{ secrets.FCC_FOREVER_SYNC_URL }}
+          FCC_FOREVER_SYNC_KEY: ${{ secrets.FCC_FOREVER_SYNC_KEY }}
+        run: |
+          : "${FCC_FOREVER_SYNC_URL:?FCC_FOREVER_SYNC_URL is not configured}"
+          : "${FCC_FOREVER_SYNC_KEY:?FCC_FOREVER_SYNC_KEY is not configured}"
+
+          response_file="$(mktemp)"
+          trap 'rm -f "${response_file}"' EXIT
+
+          curl --fail --silent --show-error \
+            --request POST "${FCC_FOREVER_SYNC_URL}" \
+            --header "X-FCC-Forever-Sync-Key: ${FCC_FOREVER_SYNC_KEY}" \
+            --data-urlencode "metric=status" \
+            --output "${response_file}"
+
+          jq -e '
+            .status == "success"
+            and .metric == "status"
+            and (.period | type == "string")
+            and (.summary | type == "object")
+          ' "${response_file}"
+          jq '{status, metric, period, last_sync_at}' "${response_file}"
