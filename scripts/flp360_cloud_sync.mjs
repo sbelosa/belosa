@@ -688,10 +688,11 @@ function extractDetailCurrentCc(detail) {
     }
     const nullFields = fields.filter(field => detail[field] === null);
     if(nullFields.length === fields.length) {
-        throw liveCcValidationError(
-            'detail_current_cc_all_null',
-            'FLP360 rezervna live potvrda vratila je sva tri current-month CC polja kao null.'
-        );
+        /* At a new-month rollover FLP360 returns literal null for all three
+         * current-month fields until the first order. Its own B.4711 Downline
+         * UI renders that exact monthly triad as 0.000. Accept it only as an
+         * all-or-nothing sentinel; partial nulls remain inconsistent and fail. */
+        return {personalCc: 0, totalCc: 0, totalActiveCc: 0, usedNullCurrentSentinel: true};
     }
     if(nullFields.length > 0) {
         throw liveCcValidationError(
@@ -703,6 +704,7 @@ function extractDetailCurrentCc(detail) {
         personalCc: nonNegativeCc(detail.personalCCCurMonth, 'personalCCCurMonth'),
         totalCc: nonNegativeCc(detail.totalCCCurMonth, 'totalCCCurMonth'),
         totalActiveCc: nonNegativeCc(detail.totalActiveCCCurMonth, 'totalActiveCCCurMonth'),
+        usedNullCurrentSentinel: false,
     };
 }
 
@@ -801,12 +803,17 @@ function extractLiveZeroFallback(treePayload, detailPayload, expectedFboId, date
         /* The detail fallback does not consistently expose these manager-only
          * fields. Null intentionally preserves the last verified Downline value
          * instead of turning missing international data into a false zero. */
-        nonManagerCc: optionalNonNegativeCc(detail.nonManagerCCCurMonth, 'nonManagerCCCurMonth'),
-        leadershipCc: optionalNonNegativeCc(detail.leaderCCCurMonth ?? detail.leadershipCCCurMonth, 'leaderCCCurMonth'),
+        nonManagerCc: currentCc.usedNullCurrentSentinel
+            ? null
+            : optionalNonNegativeCc(detail.nonManagerCCCurMonth, 'nonManagerCCCurMonth'),
+        leadershipCc: currentCc.usedNullCurrentSentinel
+            ? null
+            : optionalNonNegativeCc(detail.leaderCCCurMonth ?? detail.leadershipCCCurMonth, 'leaderCCCurMonth'),
         totalActiveCcYtd: optionalNonNegativeCc(detail.totalActiveCCYTD, 'totalActiveCCYTD'),
         nonManagerCcYtd: null,
         leadershipCcYtd: null,
         usedFallback: true,
+        usedNullCurrentSentinel: currentCc.usedNullCurrentSentinel,
     };
 }
 
@@ -869,6 +876,7 @@ async function fetchLiveCcForMembers(page, configuration, members, date = new Da
     const currentDate = options.currentDate instanceof Date ? options.currentDate : new Date();
     let completed = 0;
     let fallbackCount = 0;
+    let nullCurrentMonthCount = 0;
     let ytdFloorAccountCount = 0;
     let ytdFloorFieldCount = 0;
     let operatingMarketFallbackCount = 0;
@@ -927,6 +935,7 @@ async function fetchLiveCcForMembers(page, configuration, members, date = new Da
             ytdFloorFieldCount += safetyFloor.ytdFloorFields;
         }
         if(usedDetailFallback) fallbackCount++;
+        if(record.usedNullCurrentSentinel === true) nullCurrentMonthCount++;
         if(confirmedCountryCode !== preferredCountryCode) {
             operatingMarketFallbackCount++;
         }
@@ -946,6 +955,7 @@ async function fetchLiveCcForMembers(page, configuration, members, date = new Da
         records: new Map(confirmedRecords.map(record => [record.fboId, record])),
         unconfirmed,
         fallbackCount,
+        nullCurrentMonthCount,
         ytdFloorAccountCount,
         ytdFloorFieldCount,
         unconfirmedReasonCounts,
@@ -1373,7 +1383,7 @@ async function main() {
             if([...expectedRecords.values()].some(record => !record)) {
                 throw new Error('Registrirani FCC sync nema pripremljen zapis za svaki aktivni Forever ID.');
             }
-            console.log(`Registrirani FCC način: potvrđeno ${expectedRecords.size} računa za ${period}; ${liveCc.fallbackCount} detail potvrda; tržišta ${JSON.stringify(liveCc.countryCounts)}.`);
+            console.log(`Registrirani FCC način: potvrđeno ${expectedRecords.size} računa za ${period}; ${liveCc.fallbackCount} detail potvrda; ${liveCc.nullCurrentMonthCount} potvrđenih all-null current-month nula; tržišta ${JSON.stringify(liveCc.countryCounts)}.`);
             console.log(`YTD zaštita: podignuto ${liveCc.ytdFloorFieldCount} kumulativnih polja na ${liveCc.ytdFloorAccountCount} računa prema potpisanom FCC stanju.`);
 
             if(dryRun) {

@@ -274,14 +274,46 @@ assert.equal(exactPriorOnlyFallback.totalCc, 0.25);
 assert.equal(exactPriorOnlyFallback.totalActiveCc, 0.5);
 assert.equal(exactPriorOnlyFallback.totalActiveCcYtd, null);
 assert.equal(exactPriorOnlyFallback.nonManagerCcYtd, null);
+const allNullCurrentFallback = extractLiveZeroFallback(priorOnlyTree, [{
+    distributorId: '360000000005', personalCCCurMonth: null, totalCCCurMonth: null,
+    totalActiveCCCurMonth: null, nonManagerCCCurMonth: 7, leaderCCCurMonth: 8,
+    totalActiveCCYTD: 81.125,
+}], '360000000005', septemberDate, septemberDate);
+assert.equal(allNullCurrentFallback.personalCc, 0);
+assert.equal(allNullCurrentFallback.totalCc, 0);
+assert.equal(allNullCurrentFallback.totalActiveCc, 0);
+assert.equal(allNullCurrentFallback.nonManagerCc, null);
+assert.equal(allNullCurrentFallback.leadershipCc, null);
+assert.equal(allNullCurrentFallback.totalActiveCcYtd, 81.125);
+assert.equal(allNullCurrentFallback.usedNullCurrentSentinel, true);
+assert.throws(() => extractLiveZeroFallback(priorOnlyTree, [{
+    distributorId: '360000999999', personalCCCurMonth: null, totalCCCurMonth: null,
+    totalActiveCCCurMonth: null,
+}], '360000000005', septemberDate, septemberDate), /nije sigurna/);
 assert.throws(() => extractLiveZeroFallback(priorOnlyTree, [{
     distributorId: '360000000005', personalCCCurMonth: null, totalCCCurMonth: null,
     totalActiveCCCurMonth: null,
-}], '360000000005', septemberDate, septemberDate), error => error?.liveCcReasonCode === 'detail_current_cc_all_null');
-assert.throws(() => extractLiveZeroFallback(priorOnlyTree, [{
-    distributorId: '360000000005', personalCCCurMonth: null, totalCCCurMonth: 0,
-    totalActiveCCCurMonth: 0,
-}], '360000000005', septemberDate, septemberDate), error => error?.liveCcReasonCode === 'detail_current_cc_mixed_null');
+}], '360000000005', new Date('2026-08-31T12:00:00Z'), septemberDate), /povijesno razdoblje/);
+assert.equal(extractLiveZeroFallback(emptyTreeSentinel, [{
+    distributorId: '360000000005', personalCCCurMonth: null, totalCCCurMonth: null,
+    totalActiveCCCurMonth: null,
+}], '360000000005', septemberDate, septemberDate).totalCc, 0);
+for(const nullFields of [
+    ['personalCCCurMonth'],
+    ['totalCCCurMonth'],
+    ['totalActiveCCCurMonth'],
+    ['personalCCCurMonth', 'totalCCCurMonth'],
+]) {
+    const mixedDetail = {
+        distributorId: '360000000005', personalCCCurMonth: 0, totalCCCurMonth: 0,
+        totalActiveCCCurMonth: 0,
+    };
+    for(const field of nullFields) mixedDetail[field] = null;
+    assert.throws(
+        () => extractLiveZeroFallback(priorOnlyTree, [mixedDetail], '360000000005', septemberDate, septemberDate),
+        error => error?.liveCcReasonCode === 'detail_current_cc_mixed_null'
+    );
+}
 assert.throws(() => extractLiveZeroFallback(priorOnlyTree, [{
     distributorId: '360000000005', personalCCCurMonth: 0, totalCCCurMonth: 0,
 }], '360000000005', septemberDate, septemberDate), error => error?.liveCcReasonCode === 'detail_current_cc_missing');
@@ -304,10 +336,12 @@ assert.equal(extractLiveZeroFallback(
 assert.throws(() => extractLiveZeroFallback(emptyTreeSentinel, [], '360000000005', septemberDate, septemberDate), /nije sigurna/);
 assert.throws(() => extractLiveZeroFallback(priorOnlyTree, [{status: 'error'}], '360000000005', septemberDate, septemberDate), /nije sigurna/);
 assert.throws(() => extractLiveZeroFallback(priorOnlyTree, [{message: 'not found'}], '360000000005', septemberDate, septemberDate), /nije sigurna/);
-for(const invalidCurrentValue of [' ', false]) {
-    assert.throws(() => extractLiveZeroFallback(priorOnlyTree, [{
-        ...priorOnlyDetail[0], personalCCCurMonth: invalidCurrentValue,
-    }], '360000000005', septemberDate, septemberDate), /nema valjano polje/);
+for(const invalidCurrentField of ['personalCCCurMonth', 'totalCCCurMonth', 'totalActiveCCCurMonth']) {
+    for(const invalidCurrentValue of [' ', false, -1]) {
+        assert.throws(() => extractLiveZeroFallback(priorOnlyTree, [{
+            ...priorOnlyDetail[0], [invalidCurrentField]: invalidCurrentValue,
+        }], '360000000005', septemberDate, septemberDate), /nema valjano polje/);
+    }
 }
 assert.throws(() => extractLiveZeroFallback(priorOnlyTree, [priorOnlyDetail[0], priorOnlyDetail[0]], '360000000005', septemberDate, septemberDate), /nije sigurna/);
 assert.throws(() => extractLiveZeroFallback(
@@ -478,9 +512,45 @@ assert.equal(priorOnlyLive.records.get('360000000005').personalCc, 0.125);
 assert.equal(priorOnlyLive.records.get('360000000005').totalActiveCcYtd, 81.125);
 assert.equal(priorOnlyLive.records.get('360000000005').mustRemainVipEnrolled, true);
 assert.equal(priorOnlyLive.fallbackCount, 1);
+assert.equal(priorOnlyLive.nullCurrentMonthCount, 0);
 assert.equal(priorOnlyLive.ytdFloorAccountCount, 1);
 assert.equal(priorOnlyLive.ytdFloorFieldCount, 3);
 assert.equal(priorOnlyFallbackUrls.length, 2);
+
+const allNullCurrentPage = {
+    context: () => ({request: {get: async requestUrl => ({
+        ok: () => true,
+        status: () => 200,
+        text: async () => JSON.stringify(new URL(requestUrl).pathname.includes('downlineLoggedInDetails')
+            ? [{
+                distributorId: '360000000005', personalCCCurMonth: null, totalCCCurMonth: null,
+                totalActiveCCCurMonth: null, totalActiveCCYTD: 10,
+            }]
+            : priorOnlyTree),
+    })}}),
+    waitForTimeout: async () => {},
+};
+const allNullCurrentLive = await fetchLiveCcForMembers(allNullCurrentPage, {
+    reportBase: 'https://example.test/api/reporttdmpro',
+    aesEncryptionKey: '0123456789abcdef',
+    guestToken: 'test-token',
+    operatingCountryCode: 'HUN',
+}, [{
+    fboId: '360000000005', countryCode: 'HUN', totalActiveCcYtd: 81.125,
+    nonManagerCcYtd: 42.5, leadershipCcYtd: 7.25, isVipEnrolled: true,
+}], septemberDate, {currentDate: septemberDate});
+const allNullLiveRecord = allNullCurrentLive.records.get('360000000005');
+assert.equal(allNullLiveRecord.personalCc, 0);
+assert.equal(allNullLiveRecord.totalCc, 0);
+assert.equal(allNullLiveRecord.totalActiveCc, 0);
+assert.equal(allNullLiveRecord.totalActiveCcYtd, 81.125);
+assert.equal(allNullLiveRecord.nonManagerCcYtd, 42.5);
+assert.equal(allNullLiveRecord.leadershipCcYtd, 7.25);
+assert.equal(allNullLiveRecord.mustRemainVipEnrolled, true);
+assert.equal(allNullCurrentLive.fallbackCount, 1);
+assert.equal(allNullCurrentLive.nullCurrentMonthCount, 1);
+assert.equal(allNullCurrentLive.ytdFloorAccountCount, 1);
+assert.equal(allNullCurrentLive.ytdFloorFieldCount, 3);
 
 const flooredRecord = applyRegisteredAccountSafetyFloor({
     fboId: '360000000005', totalActiveCcYtd: 10, nonManagerCcYtd: null, leadershipCcYtd: 9,
