@@ -417,20 +417,87 @@ function extractFourCcRows(payload) {
     return Array.isArray(payload) ? payload : [];
 }
 
+const CC_SUMMARY_ROW_SIGNATURE_KEYS = [
+    'processingYear', 'processingMonth', 'valueType', 'personalCC', 'nonManagerCC',
+    'leadershipCC', 'passthruCC', 'newcc', 'totalCC', 'globalTotalCC',
+    'currentMonthActive', 'leadershipQualified',
+];
+
+function ccSummaryObjectHasError(value) {
+    if(payloadHasExplicitError(value)) return true;
+    if(Object.hasOwn(value, 'errors')) {
+        const errors = value.errors;
+        if(Array.isArray(errors) ? errors.length > 0 : (errors !== null && String(errors).trim() !== '')) return true;
+    }
+    if(Object.hasOwn(value, 'statusCode')) {
+        const statusCode = explicitInteger(value.statusCode);
+        if(statusCode === null || statusCode < 100 || statusCode >= 400) return true;
+    }
+    return false;
+}
+
+function isValidCcSummaryRow(row) {
+    if(!row || typeof row !== 'object' || Array.isArray(row) || ccSummaryObjectHasError(row)) return false;
+    if(Object.hasOwn(row, 'body') || Object.hasOwn(row, 'data')) return false;
+    const year = explicitInteger(row.processingYear);
+    const month = explicitInteger(row.processingMonth);
+    const valueType = typeof row.valueType === 'string'
+        ? row.valueType.trim().toLocaleLowerCase('en')
+        : '';
+    if(year === null || year < 2000 || year > 2100) return false;
+    if(valueType === 'monthly') return month !== null && month >= 1 && month <= 12;
+    return valueType === 'yearly' && month === 0;
+}
+
+function extractCcSummaryRows(payload) {
+    let rows;
+    if(Array.isArray(payload)) {
+        const wrapped = payload.length === 1
+            && payload[0]
+            && typeof payload[0] === 'object'
+            && Array.isArray(payload[0].body);
+        if(wrapped) {
+            const envelope = payload[0];
+            if(Object.hasOwn(envelope, 'data')
+                || CC_SUMMARY_ROW_SIGNATURE_KEYS.some(key => Object.hasOwn(envelope, key))
+                || ccSummaryObjectHasError(envelope)) return null;
+            rows = envelope.body;
+        } else {
+            if(payload.some(row => row && typeof row === 'object'
+                && (Object.hasOwn(row, 'body') || Object.hasOwn(row, 'data')))) return null;
+            rows = payload;
+        }
+    } else if(payload && typeof payload === 'object' && Array.isArray(payload.body)) {
+        if(Object.hasOwn(payload, 'data')
+            || CC_SUMMARY_ROW_SIGNATURE_KEYS.some(key => Object.hasOwn(payload, key))
+            || ccSummaryObjectHasError(payload)) return null;
+        rows = payload.body;
+    } else {
+        return null;
+    }
+    if(rows.some(row => !isValidCcSummaryRow(row))) return null;
+    return rows;
+}
+
 function extractCurrentCcSummary(payload, date = new Date()) {
     const {year, month} = zagrebPeriodParts(date);
-    const rows = Array.isArray(payload?.[0]?.body)
-        ? payload[0].body
-        : (Array.isArray(payload?.body) ? payload.body : payload);
+    const rows = extractCcSummaryRows(payload);
     if(!Array.isArray(rows) || !rows.length) {
-        throw new Error('FLP360 CC Summary live odgovor je prazan.');
+        throw new Error(payloadHasExplicitError(payload)
+            ? 'FLP360 CC Summary vratio je poruku o pogrešci.'
+            : 'FLP360 CC Summary live odgovor nije jednoznačan ili je prazan.');
     }
-    const current = rows.find(row =>
+    const currentRows = rows.filter(row =>
         explicitInteger(row?.processingYear) === year
         && explicitInteger(row?.processingMonth) === month
-        && String(row?.valueType || '').toLocaleLowerCase('en') === 'monthly'
+        && row.valueType.trim().toLocaleLowerCase('en') === 'monthly'
     );
-    if(!current) throw new Error(`FLP360 CC Summary nema aktualno razdoblje ${zagrebPeriod(date)}.`);
+    if(currentRows.length !== 1) {
+        throw new Error(currentRows.length > 1
+            ? `FLP360 CC Summary ima duplicirano aktualno razdoblje ${zagrebPeriod(date)}.`
+            : `FLP360 CC Summary nema aktualno razdoblje ${zagrebPeriod(date)}.`);
+    }
+    const current = currentRows[0];
     return {
         totalCc: nonNegativeCc(current.totalCC, 'CC Summary totalCC'),
         globalTotalCc: nonNegativeCc(current.globalTotalCC, 'CC Summary globalTotalCC'),
@@ -498,11 +565,13 @@ async function downloadLiveFourCc(page, configuration, date = new Date()) {
 }
 
 async function fetchLiveCcSummary(page, configuration, date = new Date()) {
-    const {year, month} = zagrebPeriodParts(date);
+    const {year} = zagrebPeriodParts(date);
     const distributorId = normalizeFboId(ROOT_FBO_ID);
+    /* The official B.4711 CC Summary screen always requests month/1 as the
+     * annual-series endpoint, then selects the requested Monthly row client-side. */
     const requestUrl = new URL(reportV2Url(
         configuration,
-        `fboId/${distributorId}/country/${encodeURIComponent(configuration.operatingCountryCode)}/year/${year}/month/${month}/rewire-earnings-CC-summary`
+        `fboId/${distributorId}/country/${encodeURIComponent(configuration.operatingCountryCode)}/year/${year}/month/1/rewire-earnings-CC-summary`
     ));
     requestUrl.searchParams.set('isVolume', 'true');
     requestUrl.searchParams.set('comparisionYear', String(year - 1));
@@ -1422,6 +1491,7 @@ async function main() {
          * queued Downline export unexpectedly widens its scope. All 630-style
          * account lookups are verified before the first FCC write. */
         if(registeredAccountsOnly) {
+            const ccSummary = await fetchLiveCcSummary(page, configuration, runDate);
             const rootFboId = normalizeFboId(ROOT_FBO_ID);
             const rootIsRegistered = registeredAccounts.some(account => account.fboId === rootFboId);
             const liveTargets = rootIsRegistered
@@ -1444,7 +1514,6 @@ async function main() {
                 throw new Error(`Glavni FBO nema potpuni potvrđeni live CC zapis za odabrano razdoblje; nedostaje ${incompleteRootFields.join(', ')}.`);
             }
 
-            const ccSummary = await fetchLiveCcSummary(page, configuration, runDate);
             if(ccValuesDiffer(ccSummary.totalCc, rootRecord.totalCc)) {
                 throw new Error(`FLP360 CC Summary Total CC (${ccSummary.totalCc.toFixed(3)}) ne odgovara glavnom ${configuration.operatingCountryCode} live Total CC-u (${rootRecord.totalCc.toFixed(3)}).`);
             }

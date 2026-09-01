@@ -122,6 +122,37 @@ assert.throws(() => extractCurrentCcSummary([], testDate), /prazan/);
 assert.throws(() => extractCurrentCcSummary([
     {processingYear: 2026, processingMonth: 7, valueType: 'Monthly', totalCC: 1, globalTotalCC: 2},
 ], testDate), /aktualno razdoblje/);
+assert.throws(() => extractCurrentCcSummary([
+    {processingYear: 2026, processingMonth: 8, valueType: 'Monthly', totalCC: 1, globalTotalCC: 2},
+    {processingYear: 2026, processingMonth: 8, valueType: 'monthly', totalCC: 1, globalTotalCC: 2},
+], testDate), /duplicirano aktualno razdoblje/);
+assert.throws(() => extractCurrentCcSummary({
+    status: 'error', body: [
+        {processingYear: 2026, processingMonth: 8, valueType: 'Monthly', totalCC: 1, globalTotalCC: 2},
+    ],
+}, testDate), /poruku o pogrešci/);
+const validSummaryRow = {
+    processingYear: 2026, processingMonth: 8, valueType: 'Monthly', totalCC: 0, globalTotalCC: 0,
+};
+for(const ambiguousSummaryPayload of [
+    [{body: [validSummaryRow]}, {status: 'error'}],
+    [validSummaryRow, {status: 'error'}],
+    {body: [validSummaryRow], data: [{status: 'error'}]},
+    [validSummaryRow, {foo: 'bar'}],
+    [validSummaryRow, []],
+    [validSummaryRow, {processingYear: 'bad', processingMonth: 8, valueType: 'Monthly'}],
+    {body: [validSummaryRow], processingYear: 2026},
+    [{body: [validSummaryRow], totalCC: 0}],
+    [{...validSummaryRow, valueType: ['Monthly']}],
+    {body: [validSummaryRow], errors: 'upstream failure'},
+    {body: [validSummaryRow], statusCode: 500},
+]) {
+    assert.throws(() => extractCurrentCcSummary(ambiguousSummaryPayload, testDate), /jednoznačan|poruku o pogrešci/);
+}
+for(const invalidSummaryValue of [null, undefined, false, '', ' ', -1]) {
+    assert.throws(() => extractCurrentCcSummary([{...validSummaryRow, totalCC: invalidSummaryValue}], testDate), /nema valjano polje/);
+    assert.throws(() => extractCurrentCcSummary([{...validSummaryRow, globalTotalCC: invalidSummaryValue}], testDate), /nema valjano polje/);
+}
 
 const generationUrl = new URL(buildDownlineGenerationUrl('https://example.test/api/reporttdmpro', '360000760944'));
 assert.equal(generationUrl.pathname, '/api/reporttdmpro/V2/distributors/360000760944/generate/rewire-downline-excel-query');
@@ -799,6 +830,7 @@ assert.match(syncSource, /metric: 'member_cc'/);
 assert.match(syncSource, /metric: 'fcc_accounts'/);
 assert.match(syncSource, /metric: 'total_cc'/);
 assert.match(syncSource, /rewire-earnings-CC-summary/);
+assert.match(syncSource, /month\/1\/rewire-earnings-CC-summary/);
 assert.match(syncSource, /FCC_SYNC_DRY_RUN/);
 assert.match(syncSource, /Kontrolni način rada završen je bez FCC upisa/);
 assert.match(syncSource, /uploadRootLiveCc\(rootRecord/);
