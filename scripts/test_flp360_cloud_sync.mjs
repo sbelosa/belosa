@@ -83,7 +83,7 @@ const registeredAccounts = prepareRegisteredFccAccounts({
             total_active_cc_ytd: 81.125, non_manager_cc_ytd: 42.5, leadership_cc_ytd: 7.25,
             is_vip_enrolled: true,
         },
-        {fbo_id: '360000000002', country_code: 'DE', active_link_count: 2},
+        {fbo_id: '360000000002', country_code: 'DE', active_link_count: 2, is_vip_enrolled: false},
     ],
 }, {operatingCountryCode: 'HUN'}, '2026-08');
 assert.deepEqual(registeredAccounts, [
@@ -93,14 +93,18 @@ assert.deepEqual(registeredAccounts, [
 assert.throws(() => prepareRegisteredFccAccounts({
     status: 'success', metric: 'fcc_accounts', period: '2026-08-01', summary: {unique_forever_ids: 2},
     accounts: [
-        {fbo_id: '360000000001', country_code: 'HR', active_link_count: 1},
-        {fbo_id: '360000000001', country_code: 'HR', active_link_count: 1},
+        {fbo_id: '360000000001', country_code: 'HR', active_link_count: 1, is_vip_enrolled: false},
+        {fbo_id: '360000000001', country_code: 'HR', active_link_count: 1, is_vip_enrolled: false},
     ],
 }, {operatingCountryCode: 'HUN'}, '2026-08'), /dupliciran/);
 assert.throws(() => prepareRegisteredFccAccounts({
     status: 'success', metric: 'fcc_accounts', period: '2026-08-01', summary: {unique_forever_ids: 1},
     accounts: [{fbo_id: '000000360790', country_code: 'RS', active_link_count: 1}],
 }, {operatingCountryCode: 'HUN'}, '2026-08'), /neispravan/);
+assert.throws(() => prepareRegisteredFccAccounts({
+    status: 'success', metric: 'fcc_accounts', period: '2026-08-01', summary: {unique_forever_ids: 1},
+    accounts: [{fbo_id: '360000000003', country_code: 'HR', active_link_count: 1, is_vip_enrolled: null}],
+}, {operatingCountryCode: 'HUN'}, '2026-08'), /VIP status/);
 assert.throws(() => prepareRegisteredFccAccounts({
     status: 'success', metric: 'fcc_accounts', period: '2025-12-01', summary: {unique_forever_ids: 0}, accounts: [],
 }, {operatingCountryCode: 'HUN'}, '2026-01'), /izvještajnom razdoblju/);
@@ -144,6 +148,14 @@ assert.throws(() => validateFourCcRows([], testDate), /prazan/);
 const emptyFourCc = validateFourCcRows([], testDate, {allowEmpty: true});
 assert.equal(emptyFourCc.rows, 0);
 assert.equal(emptyFourCc.ids.size, 0);
+for(const invalidFourCcValue of [null, '', ' ', false]) {
+    assert.throws(() => validateFourCcRows([{
+        ...fourCcRows[0], personalCC: invalidFourCcValue,
+    }], testDate), /nema valjano polje/);
+}
+assert.throws(() => validateFourCcRows([{
+    ...fourCcRows[0], processingMonth: true,
+}], new Date('2026-01-15T12:00:00Z')), /aktualno razdoblje/);
 
 const currentRecord = extractLiveCcRecord([{
     fboId: '360000000001',
@@ -166,6 +178,19 @@ assert.deepEqual(currentRecord, {
     nonManagerCc: 4, leadershipCc: 5, totalActiveCcYtd: 20,
     nonManagerCcYtd: 30, leadershipCcYtd: 40,
 });
+assert.equal(extractLiveCcRecord({
+    fboId: '360000000001', processingYear: 2026, totalActiveCC: 20, nonManagerCC: 30, leaderCC: 40,
+    monthlyCCValues: [{processingYear: 2026, processingMonth: 8, personalCCMTD: 1, totalCCMTD: 2, totalActiveCCMTD: 3, nonManagerCCMTD: 4, leaderCC: 5}],
+}, '360000000001', testDate).totalCc, 2);
+for(const invalidCurrentValue of [null, '', ' ', false]) {
+    assert.throws(() => extractLiveCcRecord([{
+        fboId: '360000000001', processingYear: 2026, totalActiveCC: 20, nonManagerCC: 30, leaderCC: 40,
+        monthlyCCValues: [{
+            processingYear: 2026, processingMonth: 8, personalCCMTD: invalidCurrentValue,
+            totalCCMTD: 2, totalActiveCCMTD: 3, nonManagerCCMTD: 4, leaderCC: 5,
+        }],
+    }], '360000000001', testDate), /nema valjano polje/);
+}
 assert.throws(() => extractLiveCcRecord([
     {
         fboId: '360000000001', processingYear: 2026, totalActiveCC: 20, nonManagerCC: 30, leaderCC: 40,
@@ -181,6 +206,9 @@ assert.throws(() => extractLiveCcRecord({success: false, data: [{
     monthlyCCValues: [{processingYear: 2026, processingMonth: 8, personalCCMTD: 1, totalCCMTD: 2, totalActiveCCMTD: 3, nonManagerCCMTD: 4, leaderCC: 5}],
 }]}, '360000000001', testDate), /poruku o pogrešci/);
 assert.throws(() => extractLiveCcRecord({
+    status: 'error', fboId: '360000000001', processingYear: 2026,
+}, '360000000001', testDate), /poruku o pogrešci/);
+assert.throws(() => extractLiveCcRecord({
     data: [{
         fboId: '360000000001', processingYear: 2026, totalActiveCC: 20, nonManagerCC: 30, leaderCC: 40,
         monthlyCCValues: [{processingYear: 2026, processingMonth: 8, personalCCMTD: 1, totalCCMTD: 2, totalActiveCCMTD: 3, nonManagerCCMTD: 4, leaderCC: 5}],
@@ -195,6 +223,10 @@ assert.equal(newMonthZeroRecord.totalCc, 0);
 assert.equal(newMonthZeroRecord.totalActiveCcYtd, 81.125);
 assert.equal(newMonthZeroRecord.nonManagerCcYtd, 42.5);
 assert.equal(newMonthZeroRecord.leadershipCcYtd, 7.25);
+assert.throws(() => extractLiveCcRecord([{
+    fboId: '360000000002', processingYear: null, totalActiveCC: 81.125, nonManagerCC: 42.5, leaderCC: 7.25,
+    monthlyCCValues: [{processingYear: null, processingMonth: null}],
+}], '360000000002', testDate), /nema potvrđeno razdoblje/);
 const fallbackRecord = extractLiveZeroFallback([{
     fboId: '', processingYear: 0, monthlyCCValues: [{processingYear: 0, processingMonth: 0}],
 }], {
@@ -242,13 +274,51 @@ assert.equal(exactPriorOnlyFallback.totalCc, 0.25);
 assert.equal(exactPriorOnlyFallback.totalActiveCc, 0.5);
 assert.equal(exactPriorOnlyFallback.totalActiveCcYtd, null);
 assert.equal(exactPriorOnlyFallback.nonManagerCcYtd, null);
+assert.throws(() => extractLiveZeroFallback([{
+    fboId: '', processingYear: null, processingMonth: null,
+    monthlyCCValues: [{processingYear: null, processingMonth: null}],
+}], priorOnlyDetail, '360000000005', septemberDate, septemberDate), /nije sigurna/);
+assert.equal(extractLiveZeroFallback(
+    priorOnlyTree[0], {data: priorOnlyDetail[0]}, '360000000005', septemberDate, septemberDate
+).personalCc, 0.125);
+assert.equal(extractLiveZeroFallback(
+    {data: priorOnlyTree[0]}, priorOnlyDetail[0], '360000000005', septemberDate, septemberDate
+).totalCc, 0.25);
+assert.equal(extractLiveZeroFallback(
+    {body: priorOnlyTree[0]}, {body: priorOnlyDetail[0]}, '360000000005', septemberDate, septemberDate
+).totalActiveCc, 0.5);
+assert.equal(extractLiveZeroFallback(
+    [{body: [priorOnlyTree[0]]}], [{data: [priorOnlyDetail[0]]}], '360000000005', septemberDate, septemberDate
+).totalCc, 0.25);
 assert.throws(() => extractLiveZeroFallback(emptyTreeSentinel, [], '360000000005', septemberDate, septemberDate), /nije sigurna/);
 assert.throws(() => extractLiveZeroFallback(priorOnlyTree, [{status: 'error'}], '360000000005', septemberDate, septemberDate), /nije sigurna/);
 assert.throws(() => extractLiveZeroFallback(priorOnlyTree, [{message: 'not found'}], '360000000005', septemberDate, septemberDate), /nije sigurna/);
+for(const invalidCurrentValue of [null, ' ', false]) {
+    assert.throws(() => extractLiveZeroFallback(priorOnlyTree, [{
+        ...priorOnlyDetail[0], personalCCCurMonth: invalidCurrentValue,
+    }], '360000000005', septemberDate, septemberDate), /nema valjano polje/);
+}
 assert.throws(() => extractLiveZeroFallback(priorOnlyTree, [priorOnlyDetail[0], priorOnlyDetail[0]], '360000000005', septemberDate, septemberDate), /nije sigurna/);
+assert.throws(() => extractLiveZeroFallback(
+    [{body: []}], priorOnlyDetail, '360000000005', septemberDate, septemberDate
+), /nije sigurna/);
+assert.throws(() => extractLiveZeroFallback(
+    [{data: [priorOnlyTree[0], priorOnlyTree[0]]}], priorOnlyDetail,
+    '360000000005', septemberDate, septemberDate
+), /nije sigurna/);
 assert.throws(() => extractLiveZeroFallback(priorOnlyTree, {
     data: {}, ...priorOnlyDetail[0],
 }, '360000000005', septemberDate, septemberDate), /nije sigurna/);
+assert.throws(() => extractLiveZeroFallback(priorOnlyTree, {
+    data: priorOnlyDetail[0], distributorId: '360000000005',
+}, '360000000005', septemberDate, septemberDate), /nije sigurna/);
+assert.throws(() => extractLiveZeroFallback({
+    data: priorOnlyTree[0], fboId: '360000000005',
+}, priorOnlyDetail, '360000000005', septemberDate, septemberDate), /nije sigurna/);
+assert.throws(() => extractLiveZeroFallback(
+    [{body: [{status: 'error', ...priorOnlyTree[0]}]}], priorOnlyDetail,
+    '360000000005', septemberDate, septemberDate
+), /nije sigurna/);
 assert.throws(() => extractLiveZeroFallback({
     data: priorOnlyTree, body: [{status: 'error'}],
 }, priorOnlyDetail, '360000000005', septemberDate, septemberDate), /nije sigurna/);
@@ -430,7 +500,7 @@ const rejectedMalformedDetail = await fetchLiveCcForMembers(malformedDetailPage,
 }, [{fboId: '360000000005', countryCode: 'HUN'}], septemberDate, {allowUnconfirmed: true, currentDate: septemberDate});
 assert.equal(rejectedMalformedDetail.records.size, 0);
 assert.equal(rejectedMalformedDetail.unconfirmed.length, 1);
-assert.deepEqual(rejectedMalformedDetail.unconfirmedReasonCounts, {identity_unconfirmed: 1});
+assert.deepEqual(rejectedMalformedDetail.unconfirmedReasonCounts, {detail_identity_missing: 1});
 
 const liveMap = new Map(baseRows.map((row, index) => [row[0], {
     fboId: row[0], personalCc: 1, totalCc: 2, totalActiveCc: 3, nonManagerCc: 4, leadershipCc: 5,
@@ -481,6 +551,17 @@ const registeredVerified = verifyFccAccounts({
 }, registeredExpected, '2026-08');
 assert.equal(registeredVerified.uniqueForeverIds, 2);
 assert.equal(registeredVerified.activeAccountLinks, 3);
+assert.throws(() => verifyFccAccounts({
+    status: 'success', metric: 'fcc_accounts',
+    summary: {unique_forever_ids: 1, active_account_links: 1, current_cc_confirmed: 1, current_active_4cc: 0, vip_enrolled: 0},
+    accounts: [{
+        fbo_id: '360000000002', metric_period: '2026-08-01', personal_cc: 0, total_cc: 0,
+        total_active_cc: 0, total_active_cc_ytd: 81.125, is_4cc_active: null, is_vip_enrolled: false,
+    }],
+}, new Map([['360000000002', {
+    fboId: '360000000002', personalCc: 0, totalCc: 0, totalActiveCc: 0,
+    totalActiveCcYtd: 81.125, isFourCcActive: false,
+}]]), '2026-08'), /active_4cc/);
 assert.throws(() => verifyFccAccounts({
     status: 'success', metric: 'fcc_accounts',
     summary: {unique_forever_ids: 1, active_account_links: 1, current_cc_confirmed: 1, current_active_4cc: 0, vip_enrolled: 0},
