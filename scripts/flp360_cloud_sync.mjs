@@ -233,6 +233,9 @@ function extractRegisteredStoredMetrics(payload, expectedPeriod) {
             totalActiveCc: optionalNonNegativeCc(account?.total_active_cc, 'FCC total_active_cc'),
             nonManagerCc: optionalNonNegativeCc(account?.non_manager_cc, 'FCC non_manager_cc'),
             leadershipCc: optionalNonNegativeCc(account?.leadership_cc, 'FCC leadership_cc'),
+            totalActiveCcYtd: optionalNonNegativeCc(account?.total_active_cc_ytd, 'FCC total_active_cc_ytd'),
+            nonManagerCcYtd: optionalNonNegativeCc(account?.non_manager_cc_ytd, 'FCC non_manager_cc_ytd'),
+            leadershipCcYtd: optionalNonNegativeCc(account?.leadership_cc_ytd, 'FCC leadership_cc_ytd'),
             isFourCcActive: storedFourCc,
             isVipEnrolled,
         });
@@ -296,6 +299,24 @@ function summarizeRegisteredReconciliation(storedByFboId, expectedRecords, expec
         }
     }
     return summary;
+}
+
+function expectedActiveFourCcAfterReconciliation(storedByFboId, expectedRecords, expectedPeriod) {
+    const period = normalizePeriod(expectedPeriod);
+    if(!(storedByFboId instanceof Map) || !(expectedRecords instanceof Map) || !period) {
+        throw new Error('Očekivani 4 CC rezultat nema valjane ulazne podatke.');
+    }
+    let activeCount = [...storedByFboId.values()]
+        .filter(stored => stored.metricPeriod === period && stored.isFourCcActive === true)
+        .length;
+    for(const [fboId, live] of expectedRecords) {
+        const stored = storedByFboId.get(fboId);
+        if(!stored) throw new Error('Očekivani 4 CC rezultat sadrži nepoznat Forever ID.');
+        if(stored.metricPeriod === period && stored.isFourCcActive === true) activeCount--;
+        if(live?.isFourCcActive === true) activeCount++;
+    }
+    if(activeCount < 0) throw new Error('Očekivani 4 CC rezultat nije valjan.');
+    return activeCount;
 }
 
 function validateClosedFourCcNonRegression(storedByFboId, liveFourCcIds, expectedPeriod) {
@@ -1179,7 +1200,7 @@ function classifyLiveCcFailure(message) {
     return 'invalid_response';
 }
 
-function extractLiveCcRecord(payload, expectedFboId, date = new Date()) {
+function extractLiveCcRecord(payload, expectedFboId, date = new Date(), currentDate = new Date()) {
     if(payloadHasExplicitError(payload)) {
         throw liveCcValidationError('tree_upstream_error', `FLP360 live CC vratio je poruku o pogrešci za ${expectedFboId}.`);
     }
@@ -1196,7 +1217,8 @@ function extractLiveCcRecord(payload, expectedFboId, date = new Date()) {
     }
     const monthlyValues = Array.isArray(record.monthlyCCValues) ? record.monthlyCCValues : [];
     const current = monthlyValues.find(value => explicitInteger(value?.processingYear) === year && explicitInteger(value?.processingMonth) === month);
-    const confirmedZero = !current
+    const confirmedZero = zagrebPeriod(date) === zagrebPeriod(currentDate)
+        && !current
         && isExplicitZero(record.processingYear)
         && (!Object.hasOwn(record, 'processingMonth') || isExplicitZero(record.processingMonth))
         && monthlyValues.length > 0
@@ -1420,7 +1442,7 @@ async function fetchLiveCcForMembers(page, configuration, members, date = new Da
                     record = extractLiveZeroFallback(treePayload, detailPayload, fboId, date, currentDate);
                     usedDetailFallback = true;
                 } else {
-                    record = extractLiveCcRecord(treePayload, fboId, date);
+                    record = extractLiveCcRecord(treePayload, fboId, date, currentDate);
                 }
                 confirmedCountryCode = countryCode;
                 break;
@@ -1763,18 +1785,37 @@ function verifyFccStatus(payload, expected) {
     };
 }
 
-function verifyFccAccounts(payload, expectedRecords, period, expectedAccountCount = expectedRecords.size) {
+function verifyFccAccounts(payload, expectedRecords, period, expectedAccountCount = expectedRecords.size, options = {}) {
     const accounts = Array.isArray(payload?.accounts) ? payload.accounts : [];
     const expectedPeriod = /^\d{4}-\d{2}$/.test(period) ? `${period}-01` : period;
     const actualById = new Map(accounts.map(account => [normalizeFboId(account?.fbo_id), account]));
     const failures = [];
+    const preservedRecords = options.preservedRecords ?? null;
+    if(preservedRecords !== null && !(preservedRecords instanceof Map)) {
+        throw new Error('FCC završna kontrola nema valjan skup sačuvanih računa.');
+    }
 
     if(payload?.status !== 'success' || payload?.metric !== 'fcc_accounts') failures.push('response');
     if(accounts.length !== expectedAccountCount || actualById.size !== accounts.length) failures.push('account_count');
     if(Number(payload?.summary?.unique_forever_ids) !== expectedAccountCount) failures.push('summary_count');
     if(Number(payload?.summary?.current_cc_confirmed) < expectedRecords.size) failures.push('current_cc_count');
-    const expectedActiveFourCc = [...expectedRecords.values()].filter(expected => expected?.isFourCcActive === true).length;
+    if(preservedRecords && expectedRecords.size + preservedRecords.size !== expectedAccountCount) failures.push('reconciliation_partition');
+    if(preservedRecords && [...expectedRecords.keys()].some(fboId => preservedRecords.has(fboId))) failures.push('reconciliation_overlap');
+    const expectedActiveFourCc = Number.isInteger(options.expectedActiveFourCcCount)
+        && options.expectedActiveFourCcCount >= 0
+        ? options.expectedActiveFourCcCount
+        : [...expectedRecords.values()].filter(expected => expected?.isFourCcActive === true).length;
     if(Number(payload?.summary?.current_active_4cc) !== expectedActiveFourCc) failures.push('active_4cc_count');
+    const numericFields = {
+        personal_cc: 'personalCc',
+        total_cc: 'totalCc',
+        total_active_cc: 'totalActiveCc',
+        non_manager_cc: 'nonManagerCc',
+        leadership_cc: 'leadershipCc',
+        total_active_cc_ytd: 'totalActiveCcYtd',
+        non_manager_cc_ytd: 'nonManagerCcYtd',
+        leadership_cc_ytd: 'leadershipCcYtd',
+    };
 
     for(const [fboId, expected] of expectedRecords) {
         const actual = actualById.get(fboId);
@@ -1783,16 +1824,6 @@ function verifyFccAccounts(payload, expectedRecords, period, expectedAccountCoun
             continue;
         }
         if(String(actual.metric_period || '') !== expectedPeriod) failures.push(`period_${fboId}`);
-        const numericFields = {
-            personal_cc: 'personalCc',
-            total_cc: 'totalCc',
-            total_active_cc: 'totalActiveCc',
-            non_manager_cc: 'nonManagerCc',
-            leadership_cc: 'leadershipCc',
-            total_active_cc_ytd: 'totalActiveCcYtd',
-            non_manager_cc_ytd: 'nonManagerCcYtd',
-            leadership_cc_ytd: 'leadershipCcYtd',
-        };
         for(const [actualField, expectedField] of Object.entries(numericFields)) {
             if(expected[expectedField] === null || expected[expectedField] === undefined) continue;
             if(actual[actualField] === null
@@ -1807,6 +1838,31 @@ function verifyFccAccounts(payload, expectedRecords, period, expectedAccountCoun
             && (actualFourCc === null || actualFourCc !== Boolean(expected.isFourCcActive))) failures.push(`active_4cc_${fboId}`);
         if(expected.mustRemainVipEnrolled === true && actualVipEnrolled !== true) failures.push(`vip_preserved_${fboId}`);
         if(expected.personalCc >= .330 && actualVipEnrolled !== true) failures.push(`vip_${fboId}`);
+    }
+    if(preservedRecords) {
+        for(const [fboId, stored] of preservedRecords) {
+            const actual = actualById.get(fboId);
+            if(!actual) {
+                failures.push(`preserved_missing_${fboId}`);
+                continue;
+            }
+            if(normalizePeriod(actual.metric_period) !== stored.metricPeriod) failures.push(`preserved_period_${fboId}`);
+            for(const [actualField, storedField] of Object.entries(numericFields)) {
+                const storedValue = stored[storedField];
+                const actualValue = actual[actualField];
+                const storedMissing = storedValue === null || storedValue === undefined;
+                const actualMissing = actualValue === null || actualValue === undefined || String(actualValue).trim() === '';
+                if(storedMissing ? !actualMissing : actualMissing || ccValuesDiffer(actualValue, storedValue)) {
+                    failures.push(`preserved_${actualField}_${fboId}`);
+                }
+            }
+            const actualFourCc = actual.is_4cc_active === null || actual.is_4cc_active === undefined
+                ? null
+                : normalizedBooleanFlag(actual.is_4cc_active);
+            const actualVipEnrolled = normalizedBooleanFlag(actual.is_vip_enrolled);
+            if(actualFourCc !== stored.isFourCcActive) failures.push(`preserved_active_4cc_${fboId}`);
+            if(actualVipEnrolled !== stored.isVipEnrolled) failures.push(`preserved_vip_${fboId}`);
+        }
     }
     if(failures.length) {
         throw new Error(`FCC završna kontrola registriranih Forever ID-jeva nije prošla: ${failures.slice(0, 8).join(', ')}${failures.length > 8 ? ` (+${failures.length - 8})` : ''}.`);
@@ -1870,7 +1926,8 @@ async function main() {
         /* Month-end launch reconciliation can safely refresh every active FCC
          * account without replacing the confirmed hierarchy when FLP360's
          * queued Downline export unexpectedly widens its scope. All 630-style
-         * account lookups are verified before the first FCC write. */
+         * account lookups are classified as exact or unavailable before the
+         * first FCC write. */
         if(registeredAccountsOnly) {
             const rootFboId = normalizeFboId(ROOT_FBO_ID);
             const rootIsRegistered = registeredAccounts.some(account => account.fboId === rootFboId);
@@ -1882,54 +1939,100 @@ async function main() {
                 countryCode: configuration.operatingCountryCode,
                 countryCandidates: [],
             };
-            /* Probe the exact root immediately before Summary parsing. This is
-             * the only independent evidence allowed to resolve a rollover-only
-             * local totalCC:null; Global Total CC is never inferred from it. */
-            const rootProbe = await fetchLiveCcForMembers(page, configuration, [rootTarget], runDate);
-            const rootProbeRecord = rootProbe.records.get(rootFboId);
-            if(!rootProbeRecord) throw new Error('Glavni FBO nema potvrđen live CC zapis za CC Summary kontrolu.');
-            const ccSummary = await fetchLiveCcSummary(page, configuration, runDate, rootProbeRecord);
-            const liveTargets = rootIsRegistered
-                ? registeredAccounts.map(account => account.fboId === rootFboId ? rootTarget : account)
-                : [rootTarget, ...registeredAccounts];
+            let ccSummary = null;
+            let liveTargets;
+            if(historicalReconcile) {
+                /* A closed period can disappear from an individual FLP360
+                 * tree at rollover. Reconcile every exact record still
+                 * available, while preserving unavailable FCC rows verbatim. */
+                liveTargets = registeredAccounts;
+            } else {
+                /* Probe the exact root immediately before Summary parsing. This
+                 * is the only independent evidence allowed to resolve a
+                 * rollover-only local totalCC:null; Global Total CC is never
+                 * inferred from it. */
+                const rootProbe = await fetchLiveCcForMembers(page, configuration, [rootTarget], runDate);
+                const rootProbeRecord = rootProbe.records.get(rootFboId);
+                if(!rootProbeRecord) throw new Error('Glavni FBO nema potvrđen live CC zapis za CC Summary kontrolu.');
+                ccSummary = await fetchLiveCcSummary(page, configuration, runDate, rootProbeRecord);
+                liveTargets = rootIsRegistered
+                    ? registeredAccounts.map(account => account.fboId === rootFboId ? rootTarget : account)
+                    : [rootTarget, ...registeredAccounts];
+            }
             const liveCc = await fetchLiveCcForMembers(page, configuration, liveTargets, runDate, {allowUnconfirmed: true});
-            if(liveCc.unconfirmed.length > 0 || liveCc.records.size !== liveTargets.length) {
+            if(liveCc.records.size + liveCc.unconfirmed.length !== liveTargets.length) {
+                throw new Error('Registrirani FCC sync nema cjelovito knjiženje potvrđenih i nepotvrđenih live odgovora; prije upisa ništa nije promijenjeno.');
+            }
+            if(!historicalReconcile && (liveCc.unconfirmed.length > 0 || liveCc.records.size !== liveTargets.length)) {
                 throw new Error(`Registrirani FCC sync nije potvrdio ${liveCc.unconfirmed.length} od ${liveTargets.length} Forever ID-jeva; razlozi ${JSON.stringify(liveCc.unconfirmedReasonCounts)}; prije upisa ništa nije promijenjeno.`);
+            }
+            if(historicalReconcile && liveCc.records.size === 0) {
+                throw new Error('Povijesno usklađenje nije dobilo nijedan točan mjesečni zapis; prije upisa ništa nije promijenjeno.');
             }
 
             const rootRecord = liveCc.records.get(rootFboId);
-            const requiredRootFields = [
-                'personalCc', 'totalCc', 'totalActiveCc', 'nonManagerCc', 'leadershipCc',
-                'totalActiveCcYtd', 'nonManagerCcYtd', 'leadershipCcYtd',
-            ];
-            const incompleteRootFields = rootRecord
-                ? requiredRootFields.filter(field => !Number.isFinite(rootRecord[field]))
-                : requiredRootFields;
-            if(incompleteRootFields.length > 0) {
-                throw new Error(`Glavni FBO nema potpuni potvrđeni live CC zapis za odabrano razdoblje; nedostaje ${incompleteRootFields.join(', ')}.`);
-            }
-            if(ccSummary.usedRootCorroboratedLocalTotal === true && !isVerifiedRootCurrentZero(rootRecord)) {
-                throw new Error('Glavni FBO više ne potvrđuje nulti current-month CC nakon CC Summary kontrole.');
+            if(!historicalReconcile) {
+                const requiredRootFields = [
+                    'personalCc', 'totalCc', 'totalActiveCc', 'nonManagerCc', 'leadershipCc',
+                    'totalActiveCcYtd', 'nonManagerCcYtd', 'leadershipCcYtd',
+                ];
+                const incompleteRootFields = rootRecord
+                    ? requiredRootFields.filter(field => !Number.isFinite(rootRecord[field]))
+                    : requiredRootFields;
+                if(incompleteRootFields.length > 0) {
+                    throw new Error(`Glavni FBO nema potpuni potvrđeni live CC zapis za odabrano razdoblje; nedostaje ${incompleteRootFields.join(', ')}.`);
+                }
+                if(ccSummary.usedRootCorroboratedLocalTotal === true && !isVerifiedRootCurrentZero(rootRecord)) {
+                    throw new Error('Glavni FBO više ne potvrđuje nulti current-month CC nakon CC Summary kontrole.');
+                }
+                if(ccValuesDiffer(ccSummary.totalCc, rootRecord.totalCc)) {
+                    throw new Error(`FLP360 CC Summary Total CC (${ccSummary.totalCc.toFixed(3)}) ne odgovara glavnom ${configuration.operatingCountryCode} live Total CC-u (${rootRecord.totalCc.toFixed(3)}).`);
+                }
             }
 
-            if(ccValuesDiffer(ccSummary.totalCc, rootRecord.totalCc)) {
-                throw new Error(`FLP360 CC Summary Total CC (${ccSummary.totalCc.toFixed(3)}) ne odgovara glavnom ${configuration.operatingCountryCode} live Total CC-u (${rootRecord.totalCc.toFixed(3)}).`);
-            }
-            const expectedRecords = new Map(registeredAccounts.map(account => {
+            const expectedRecords = new Map(registeredAccounts.flatMap(account => {
                 const record = liveCc.records.get(account.fboId);
-                return [account.fboId, record ? {...record, isFourCcActive: fourCc.ids.has(account.fboId)} : record];
+                return record ? [[account.fboId, {
+                    ...record,
+                    isFourCcActive: fourCc.ids.has(account.fboId),
+                    mustRemainVipEnrolled: account.isVipEnrolled === true,
+                }]] : [];
             }));
-            if([...expectedRecords.values()].some(record => !record)) {
+            if(!historicalReconcile && expectedRecords.size !== registeredAccounts.length) {
                 throw new Error('Registrirani FCC sync nema pripremljen zapis za svaki aktivni Forever ID.');
             }
+            if(historicalReconcile
+                && expectedRecords.size + liveCc.unconfirmed.length !== registeredAccounts.length) {
+                throw new Error('Povijesno usklađenje nema točno razdvojene potvrđene i sačuvane FCC račune; prije upisa ništa nije promijenjeno.');
+            }
+            const uploadAccounts = historicalReconcile
+                ? registeredAccounts.filter(account => expectedRecords.has(account.fboId))
+                : registeredAccounts;
+            const preservedRecords = new Map();
+            if(historicalReconcile) {
+                for(const account of registeredAccounts) {
+                    if(expectedRecords.has(account.fboId)) continue;
+                    const stored = storedByFboId.get(account.fboId);
+                    if(!stored) {
+                        throw new Error('Povijesno usklađenje nema početni FCC zapis za nedostupan račun; prije upisa ništa nije promijenjeno.');
+                    }
+                    preservedRecords.set(account.fboId, stored);
+                }
+            }
+            const expectedActiveFourCcCount = historicalReconcile
+                ? expectedActiveFourCcAfterReconciliation(storedByFboId, expectedRecords, period)
+                : fourCc.rowCount;
             const reconciliation = summarizeRegisteredReconciliation(storedByFboId, expectedRecords, period);
-            console.log(`Registrirani FCC način: potvrđeno ${expectedRecords.size} računa za ${period}; ${liveCc.fallbackCount} detail potvrda; ${liveCc.zeroCurrentMonthCount} potvrđenih current-month nula (${liveCc.nullCurrentMonthCount} all-null); tržišta ${JSON.stringify(liveCc.countryCounts)}.`);
+            console.log(`Registrirani FCC način: potvrđeno ${expectedRecords.size}/${registeredAccounts.length} računa za ${period}; ${liveCc.fallbackCount} detail potvrda; ${liveCc.zeroCurrentMonthCount} potvrđenih current-month nula (${liveCc.nullCurrentMonthCount} all-null); tržišta ${JSON.stringify(liveCc.countryCounts)}.`);
+            if(historicalReconcile && liveCc.unconfirmed.length > 0) {
+                console.warn(`Povijesno usklađenje čuva ${liveCc.unconfirmed.length} nedostupnih FCC zapisa bez promjene; razlozi ${JSON.stringify(liveCc.unconfirmedReasonCounts)}.`);
+            }
             console.log(`Usporedba sa spremljenim FCC stanjem: ${JSON.stringify(reconciliation)}.`);
             console.log(`YTD zaštita: podignuto ${liveCc.ytdFloorFieldCount} kumulativnih polja na ${liveCc.ytdFloorAccountCount} računa prema potpisanom FCC stanju.`);
-            if(ccSummary.usedRootCorroboratedLocalTotal === true) {
+            if(!historicalReconcile && ccSummary.usedRootCorroboratedLocalTotal === true) {
                 console.log('CC Summary localni Total CC nije bio objavljen; korišten je neposredno i ponovno potvrđen nulti root live zapis.');
             }
-            if(ccSummary.globalTotalUnavailable === true) {
+            if(!historicalReconcile && ccSummary.globalTotalUnavailable === true) {
                 console.warn('CC Summary Global Total CC još nije objavljen; aktualno razdoblje ostaje bez izmišljenog globalnog upisa.');
             }
 
@@ -1946,9 +2049,9 @@ async function main() {
                     console.log('FCC 4 CC Active: službeni skup je valjano prazan; svaki registrirani račun dobiva eksplicitni status 0 kroz live CC zapis.');
                 }
             } else {
-                console.log('Povijesno usklađenje mijenja samo potvrđene mjesečne i godišnje metrike aktivnih FCC računa; hijerarhija i zbirne snimke ostaju netaknute.');
+                console.log('Povijesno usklađenje mijenja samo točno potvrđene mjesečne i godišnje metrike; nedostupni računi, hijerarhija i zbirne snimke ostaju netaknuti.');
             }
-            await mapWithConcurrency(registeredAccounts, 4, async account => {
+            await mapWithConcurrency(uploadAccounts, 4, async account => {
                 const record = expectedRecords.get(account.fboId);
                 return uploadMemberLiveCc(record, fourCc.ids.has(account.fboId), period, syncUrl, syncKey);
             });
@@ -1968,11 +2071,12 @@ async function main() {
                 await fetchFccAccounts(period, syncUrl, syncKey),
                 expectedRecords,
                 period,
-                registeredAccounts.length
+                registeredAccounts.length,
+                historicalReconcile ? {expectedActiveFourCcCount, preservedRecords} : {}
             );
             const status = await fetchFccStatus(period, syncUrl, syncKey);
-            if(Number(status?.summary?.active_4cc) !== fourCc.rowCount) {
-                throw new Error(`FCC završna 4 CC kontrola nije prošla: očekivano ${fourCc.rowCount}, zapisano ${Number(status?.summary?.active_4cc)}.`);
+            if(Number(status?.summary?.active_4cc) !== expectedActiveFourCcCount) {
+                throw new Error(`FCC završna 4 CC kontrola nije prošla: očekivano ${expectedActiveFourCcCount}, zapisano ${Number(status?.summary?.active_4cc)}.`);
             }
             console.log(`FCC account provjera: ${registeredVerified.uniqueForeverIds} jedinstvenih Forever ID-jeva (${registeredVerified.activeAccountLinks} aktivnih računa), VIP upis potvrđen za ${registeredVerified.vipEnrolled}.`);
             console.log(`FLP360 → FCC registrirani sync za ${period} završen je uspješno; zadnji FCC podatak ${status.last_data_import_at || status.last_sync_at || 'potvrđen'}.`);
@@ -2131,6 +2235,7 @@ export {
     extractLiveMemberReferences,
     extractLiveZeroFallback,
     extractRegisteredStoredMetrics,
+    expectedActiveFourCcAfterReconciliation,
     applyRegisteredAccountSafetyFloor,
     fetchLiveCcSummary,
     fetchLiveCcForMembers,

@@ -18,6 +18,7 @@ import {
     extractLiveMemberReferences,
     extractLiveZeroFallback,
     extractRegisteredStoredMetrics,
+    expectedActiveFourCcAfterReconciliation,
     fetchLiveCcSummary,
     fetchLiveCcForMembers,
     findCurrentFlpMonthLabel,
@@ -148,6 +149,21 @@ assert.deepEqual(summarizeRegisteredReconciliation(storedMetrics, reconciliation
     fourCcMismatches: 0,
     qualifiedButNotEnrolled: 1,
 });
+assert.equal(expectedActiveFourCcAfterReconciliation(
+    storedMetrics,
+    new Map([['360000000099', reconciliationExpected.get('360000000099')]]),
+    '2026-08'
+), 1);
+assert.equal(expectedActiveFourCcAfterReconciliation(
+    storedMetrics,
+    new Map([['360000000099', {...reconciliationExpected.get('360000000099'), isFourCcActive: true}]]),
+    '2026-08'
+), 2);
+assert.throws(() => expectedActiveFourCcAfterReconciliation(
+    storedMetrics,
+    new Map([['360000000777', {isFourCcActive: false}]]),
+    '2026-08'
+), /nepoznat Forever ID/);
 assert.deepEqual(validateClosedFourCcNonRegression(storedMetrics, new Set(['360000000100']), '2026-08'), {
     storedActive: 1,
     liveActive: 1,
@@ -457,14 +473,26 @@ assert.throws(() => extractLiveCcRecord({
     }],
     body: [{status: 'error'}],
 }, '360000000001', testDate), /nije potvrdio FBO ID/);
-const newMonthZeroRecord = extractLiveCcRecord([{
+const newMonthZeroPayload = [{
     fboId: '360000000002', processingYear: 0, totalActiveCC: 81.125, nonManagerCC: 42.5, leaderCC: 7.25,
     monthlyCCValues: [{processingYear: 0, processingMonth: 0}],
-}], '360000000002', testDate);
+}];
+const newMonthZeroRecord = extractLiveCcRecord(
+    newMonthZeroPayload,
+    '360000000002',
+    testDate,
+    testDate
+);
 assert.equal(newMonthZeroRecord.totalCc, 0);
 assert.equal(newMonthZeroRecord.totalActiveCcYtd, 81.125);
 assert.equal(newMonthZeroRecord.nonManagerCcYtd, 42.5);
 assert.equal(newMonthZeroRecord.leadershipCcYtd, 7.25);
+assert.throws(() => extractLiveCcRecord(
+    newMonthZeroPayload,
+    '360000000002',
+    testDate,
+    new Date('2026-09-01T12:00:00Z')
+), error => error?.liveCcReasonCode === 'tree_period_unconfirmed');
 assert.throws(() => extractLiveCcRecord([{
     fboId: '360000000002', processingYear: null, totalActiveCC: 81.125, nonManagerCC: 42.5, leaderCC: 7.25,
     monthlyCCValues: [{processingYear: null, processingMonth: null}],
@@ -793,6 +821,26 @@ const toleratedUnconfirmed = await fetchLiveCcForMembers(fakeLivePage, {
 }, [{fboId: '360000000003', countryCode: 'HRV', countryCandidates: ['DEU']}], testDate, {allowUnconfirmed: true});
 assert.equal(toleratedUnconfirmed.records.size, 0);
 assert.equal(toleratedUnconfirmed.unconfirmed.length, 1);
+const historicalIdentifiedZeroPage = {
+    context: () => ({request: {get: async () => ({
+        ok: () => true,
+        status: () => 200,
+        text: async () => JSON.stringify(newMonthZeroPayload),
+    })}}),
+    waitForTimeout: async () => {},
+};
+const historicalIdentifiedZero = await fetchLiveCcForMembers(historicalIdentifiedZeroPage, {
+    reportBase: 'https://example.test/api/reporttdmpro',
+    aesEncryptionKey: '0123456789abcdef',
+    guestToken: 'test-token',
+    operatingCountryCode: 'HUN',
+}, [{fboId: '360000000002', countryCode: 'HUN'}], testDate, {
+    allowUnconfirmed: true,
+    currentDate: new Date('2026-09-01T12:00:00Z'),
+});
+assert.equal(historicalIdentifiedZero.records.size, 0);
+assert.equal(historicalIdentifiedZero.unconfirmed.length, 1);
+assert.deepEqual(historicalIdentifiedZero.unconfirmedReasonCounts, {tree_period_unconfirmed: 1});
 
 const regionalFallbackUrls = [];
 const regionalFallbackPage = {
@@ -988,6 +1036,49 @@ const registeredVerified = verifyFccAccounts({
 }, registeredExpected, '2026-08');
 assert.equal(registeredVerified.uniqueForeverIds, 2);
 assert.equal(registeredVerified.activeAccountLinks, 3);
+const partialPreservedRecords = new Map([['360000000100', {
+    metricPeriod: '2026-08', personalCc: 1, totalCc: 4, totalActiveCc: 4,
+    nonManagerCc: 0, leadershipCc: 0, totalActiveCcYtd: null,
+    nonManagerCcYtd: null, leadershipCcYtd: null,
+    isFourCcActive: true, isVipEnrolled: true,
+}]]);
+const partialHistoricalVerified = verifyFccAccounts({
+    status: 'success',
+    metric: 'fcc_accounts',
+    summary: {unique_forever_ids: 2, active_account_links: 2, current_cc_confirmed: 2, current_active_4cc: 1, vip_enrolled: 2},
+    accounts: [
+        {fbo_id: '360000000099', metric_period: '2026-08-01', personal_cc: 0.738, total_cc: 0.738, total_active_cc: 0.738, non_manager_cc: 0, leadership_cc: 0, is_4cc_active: false, is_vip_enrolled: true},
+        {fbo_id: '360000000100', metric_period: '2026-08-01', personal_cc: 1, total_cc: 4, total_active_cc: 4, non_manager_cc: 0, leadership_cc: 0, is_4cc_active: true, is_vip_enrolled: true},
+    ],
+}, new Map([['360000000099', {
+    fboId: '360000000099', personalCc: 0.738, totalCc: 0.738, totalActiveCc: 0.738,
+    nonManagerCc: 0, leadershipCc: 0, isFourCcActive: false,
+}]]), '2026-08', 2, {expectedActiveFourCcCount: 1, preservedRecords: partialPreservedRecords});
+assert.equal(partialHistoricalVerified.uniqueForeverIds, 2);
+assert.throws(() => verifyFccAccounts({
+    status: 'success',
+    metric: 'fcc_accounts',
+    summary: {unique_forever_ids: 2, active_account_links: 2, current_cc_confirmed: 2, current_active_4cc: 0, vip_enrolled: 2},
+    accounts: [
+        {fbo_id: '360000000099', metric_period: '2026-08-01', personal_cc: 0.738, total_cc: 0.738, total_active_cc: 0.738, non_manager_cc: 0, leadership_cc: 0, is_4cc_active: false, is_vip_enrolled: true},
+        {fbo_id: '360000000100', metric_period: '2026-08-01', personal_cc: 1, total_cc: 4, total_active_cc: 4, non_manager_cc: 0, leadership_cc: 0, is_4cc_active: true, is_vip_enrolled: true},
+    ],
+}, new Map([['360000000099', {
+    fboId: '360000000099', personalCc: 0.738, totalCc: 0.738, totalActiveCc: 0.738,
+    nonManagerCc: 0, leadershipCc: 0, isFourCcActive: false,
+}]]), '2026-08', 2, {expectedActiveFourCcCount: 1, preservedRecords: partialPreservedRecords}), /active_4cc_count/);
+assert.throws(() => verifyFccAccounts({
+    status: 'success',
+    metric: 'fcc_accounts',
+    summary: {unique_forever_ids: 2, active_account_links: 2, current_cc_confirmed: 2, current_active_4cc: 1, vip_enrolled: 2},
+    accounts: [
+        {fbo_id: '360000000099', metric_period: '2026-08-01', personal_cc: 0.738, total_cc: 0.738, total_active_cc: 0.738, non_manager_cc: 0, leadership_cc: 0, is_4cc_active: false, is_vip_enrolled: true},
+        {fbo_id: '360000000100', metric_period: '2026-08-01', personal_cc: 0.900, total_cc: 4, total_active_cc: 4, non_manager_cc: 0, leadership_cc: 0, is_4cc_active: true, is_vip_enrolled: true},
+    ],
+}, new Map([['360000000099', {
+    fboId: '360000000099', personalCc: 0.738, totalCc: 0.738, totalActiveCc: 0.738,
+    nonManagerCc: 0, leadershipCc: 0, isFourCcActive: false,
+}]]), '2026-08', 2, {expectedActiveFourCcCount: 1, preservedRecords: partialPreservedRecords}), /preserved_personal_cc/);
 for(const invalidZeroLikeValue of [null, undefined, false, '', ' ', Number.NaN, Number.POSITIVE_INFINITY, -0.001]) {
     assert.throws(() => verifyFccAccounts({
         status: 'success', metric: 'fcc_accounts',
