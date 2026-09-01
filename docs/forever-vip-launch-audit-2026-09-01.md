@@ -1,6 +1,6 @@
 # Završni launch audit — Moj Forever / FCC VIP 4 Core
 
-> **Ažuriranje 1. rujna 2026. — završni komunikacijski i rollover prolaz:** tekst koji suradnici vide u svih 150 zadataka, brzim ciljevima, lakšim/mentorskim varijantama i primjerima poruka preuređen je u topao, osoban i razgovoran stil. Activator korak 1 sada je mjerljivo postavljanje i javna provjera osobnog FCC app-linka u biu profila; stari pregled CC-a više nije zadatak. Starter korak 20 traži otvaranje svih dostupnih Forever tržišta kako bi FCC referral poveznice radile i za osobe iz drugih zemalja. Mjesečni Personal, Total i Total Active CC od prvog dana novog mjeseca kreću od 0, dok povijesni, višemjesečni i YTD izračuni ostaju sačuvani. Kanonski aktualni tekst nalazi se u `app/config/forever_business_vip_tasks.php` i `app/config/forever_business_vip_task_meta.php`; stariji citati u povijesnom dijelu ovog izvještaja nisu release-copy.
+> **Ažuriranje 1. rujna 2026. — završni komunikacijski i rollover prolaz:** tekst koji suradnici vide u svih 150 zadataka, brzim ciljevima, lakšim/mentorskim varijantama i primjerima poruka preuređen je u topao, osoban i razgovoran stil. Starter i Aktivator sada počinju mjerljivim postavljanjem i javnom provjerom osobnog FCC app-linka u biu profila; stari pregled CC-a više nije prvi zadatak. Starter korak 20 traži otvaranje svih dostupnih Forever tržišta kako bi FCC referral poveznice radile i za osobe iz drugih zemalja. Mjesečni Personal, Total i Total Active CC od prvog dana novog mjeseca kreću od 0, dok povijesni, višemjesečni i YTD izračuni ostaju sačuvani. Kanonski aktualni tekst nalazi se u `app/config/forever_business_vip_tasks.php` i `app/config/forever_business_vip_task_meta.php`; stariji citati u povijesnom dijelu ovog izvještaja nisu release-copy.
 
 Datum pregleda: 1. rujna 2026.
 
@@ -51,7 +51,7 @@ Status e-maila sent znači da je transport/provider prihvatio poruku, ne da ju j
 
 | Putanja | Cilj | Raspodjela 4 Core | Zbroj punih / brzih jedinica | Zaključak |
 |---|---|---|---:|---|
-| Starter | početni ritam, prvi/sljedeći kupac i napredak prema 1 osobnom CC bez stvaranja zaliha | Development 7, Productivity 5, Recruitment 15, Retention 3 | 60 / 34 | Primjeren početniku nakon korekcija: uči transparentan kontakt, osnovni retention i provjeru službenih podataka. Veći zadaci imaju brzi cilj; odsutnost kontakata vodi u anonimnu mentorsku probu, ne u izmišljeni rezultat. |
+| Starter | početni ritam, prvi/sljedeći kupac i napredak prema 1 osobnom CC bez stvaranja zaliha | Development 6, Productivity 6, Recruitment 15, Retention 3 | 60 / 34 | Primjeren početniku nakon korekcija: uči transparentan kontakt, osnovni retention i provjeru službenih podataka. Veći zadaci imaju brzi cilj; odsutnost kontakata vodi u anonimnu mentorsku probu, ne u izmišljeni rezultat. |
 | Aktivator | od najmanje 1 osobnog CC graditi prema službeno potvrđenoj 4 CC aktivnosti | Development 5, Productivity 6, Recruitment 15, Retention 4 | 98 / 41 | Volumen je viši, ali brzi cilj ostaje realan. Program mjeri razgovore, provjere i follow-up, a ne obećava da će te aktivnosti proizvesti 4 CC. |
 | Builder | stabilizirati 4 Core i započeti sigurnu duplicaciju s jednom dobrovoljnom osobom | Development 8, Productivity 3, Recruitment 15, Retention 4 | 105 / 45 | Najzahtjevnija operativna putanja. Ispravljeni su miješani brojevi poziva, onboarding i tuđi rad; rad druge osobe više se ne pribraja voditeljevu rezultatu. |
 | Leader | razvijati samostalnost ljudi i jedan budući voditeljski kapacitet | Development 16, Recruitment 10, Productivity 1, Retention 3 | 48 / 32 | Rezultati su po FCC računu, a grupne radnje su agregatne provjere, planiranje ili coaching. Izbjegnuto je lažno pretvaranje zbirne provjere ili grupnih gostiju u izravni follow-up ili poziv lidera. |
@@ -90,13 +90,13 @@ Konačni rezultat pregleda: **150/150 zadataka je GO na razini sadržaja i izved
 
 Cilj: početni ritam, prvi/sljedeći kupac i napredak prema 1 osobnom CC bez stvaranja zaliha.
 
-4 Core: Development 7, Productivity 5, Recruitment 15, Retention 3.
+4 Core: Development 6, Productivity 6, Recruitment 15, Retention 3.
 
-Vrste mjerenja: planning 12, contact 1, content 2, customer_checkin 3, conversation 3, invitation 3, follow_up 4, recommendation 1, training 1.
+Vrste mjerenja: planning 11, contact 1, content 3, customer_checkin 3, conversation 3, invitation 3, follow_up 4, recommendation 1, training 1.
 
 | Dan | 4 Core | Točan zadatak | Dovršeno kada | Puni / brzi cilj | Glavna vrsta | Audit |
 |---:|---|---|---|---:|---|---|
-| 1 | Development | Postavi svoj cilj za prvih 30 redovnih koraka. Odaberi jedan mjerljiv rezultat i rezerviraj 15 minuta dnevno za FCC. | Cilj i vrijeme rada su spremljeni. | 1 / 1 | planning | OK — Plan/priprema ili pregled; ne ulazi u statistiku izravnih kontakata. Korak je izvediv kao osobna priprema/pregled bez vanjskog ishoda. |
+| 1 | Productivity | Postavi svoj FCC link u bio na društvenoj mreži koju koristiš. U FCC Aplikacijama kopiraj link svoje glavne aplikacije, dodaj ga u bio ili opis barem jednog profila i nakon spremanja otvori ga iz javnog prikaza kako bi provjerio/la da radi. | Link glavne FCC aplikacije postavljen je i provjeren na barem jednom društvenom profilu. | 1 / 1 | content | OK — jasna, mjerljiva početna radnja; dovršava se kada je link javno provjeren. |
 | 2 | Productivity | Iz postojećeg osobnog adresara, bez kopiranja kontakata u FCC ili novu bazu, odaberi 10 osoba i uz svaku u dopuštenoj privatnoj evidenciji označi jednu opću, neosjetljivu temu koju je sama spomenula. Odaberi prvih pet kojima bi mogla koristiti jedna informacija o proizvodu ili rutini. | Odabrano je 10 stvarnih kontakata, 10 neosjetljivih tema i pet prioriteta; u FCC-u je spremljen samo zbirni broj. | 10 / 3 | planning | OK — Plan/priprema ili pregled; ne ulazi u statistiku izravnih kontakata. Postoji provjeren fallback. |
 | 3 | Recruitment | Upoznaj se s nedjeljnim Marketing planom u 18:00 i odaberi jednu osobu kojoj bi poslovna informacija mogla biti korisna. | Termin ti je jasan i jedna odgovarajuća osoba nalazi se na popisu za poziv. | 1 / 1 | planning | OK — Plan/priprema ili pregled; ne ulazi u statistiku izravnih kontakata. Postoji provjeren fallback. |
 | 4 | Recruitment | Pošalji tri osobne i transparentne poruke ljudima s liste. Jasno reci da se javljaš kao Forever suradnik i pitaj želi li osoba čuti informaciju; ne šalji katalog bez pristanka. | Poslane su tri različite poruke, a zabilježen je samo status odgovora bez privatnog sadržaja. | 3 / 1 | contact | OK — Stvarno transparentno javljanje; nije prodaja ni odgovor. Postoji provjeren fallback. Prikazuje se samo relevantan pregledani predložak. |

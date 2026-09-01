@@ -45,7 +45,7 @@ Cilj razine: kreni bez pritiska i bez potrebe da već imaš kupce ili pripremlje
 
 | Dan | 4 Core | Zadatak | Dovršeno kada |
 |---:|---|---|---|
-| 1 | Development | Postavi svoj cilj za prvih 30 redovnih koraka. Odaberi jedan mjerljiv rezultat i rezerviraj 15 minuta dnevno za FCC. | Cilj i vrijeme rada su spremljeni. |
+| 1 | Productivity | Postavi svoj FCC link u bio na društvenoj mreži koju koristiš. U FCC Aplikacijama kopiraj link svoje glavne aplikacije, dodaj ga u bio ili opis barem jednog profila i nakon spremanja otvori ga iz javnog prikaza kako bi provjerio/la da radi. | Link glavne FCC aplikacije postavljen je i provjeren na barem jednom društvenom profilu. |
 | 2 | Productivity | Napravi svoj prvi mali krug: zapiši tri osobe koje prirodno poznaješ i uz svaku jednu temu o kojoj ste već razgovarali. Danas im se još ne moraš javiti. | Zapisane su tri osobe i za svaku postoji jedna prirodna tema za razgovor. |
 | 3 | Recruitment | Upoznaj se s nedjeljnim Marketing planom u 18:00 i odaberi jednu osobu kojoj bi poslovna informacija mogla biti korisna. | Termin ti je jasan i jedna odgovarajuća osoba nalazi se na popisu za poziv. |
 | 4 | Recruitment | Odaberi jednu osobu iz svojeg malog kruga i pošalji joj kratku, toplu poruku svojim riječima. Napiši zašto si se sjetio/la baš nje i pitaj želi li čuti kratku informaciju koja bi joj mogla biti korisna. | Poslana je jedna topla, osobna poruka i zabilježeno je kako je razgovor završio. |

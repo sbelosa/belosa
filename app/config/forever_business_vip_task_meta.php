@@ -10,7 +10,7 @@ return [
         'targets' => [1, 3, 1, 1, 1, 1, 2, 3, 1, 1, 1, 2, 1, 2, 4, 2, 2, 1, 1, 1, 2, 3, 2, 1, 2, 1, 1, 1, 5, 1],
         'quick_targets' => [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1],
         'result_types' => [
-            'planning', 'planning', 'planning', 'contact', 'content', 'planning',
+            'content', 'planning', 'planning', 'contact', 'content', 'planning',
             'customer_checkin', 'conversation', 'invitation', 'planning', 'follow_up',
             'recommendation', 'planning', 'customer_checkin', 'conversation', 'invitation',
             'invitation', 'follow_up', 'planning', 'planning', 'customer_checkin',
@@ -26,11 +26,13 @@ return [
             23 => 'poziv na marketing plan', 29 => 'kulturno zatvaranje razgovora',
         ],
         'allowed_result_types' => [
+            1 => ['content'],
             7 => ['customer_checkin', 'follow_up', 'conversation', 'recommendation', 'order', 'training', 'no_response'],
             14 => ['customer_checkin', 'follow_up', 'conversation', 'recommendation', 'order', 'training', 'no_response'],
             21 => ['customer_checkin', 'follow_up', 'conversation', 'recommendation', 'order', 'training', 'no_response'],
         ],
         'fallbacks' => [
+            1 => 'Za lakšu verziju postavi link na jedan profil i samo provjeri da se otvara; kratki opis možeš doraditi kasnije.',
             2 => 'Za verziju brzog cilja kreni s jednom osobom koju dobro poznaješ i zapiši jednu temu o kojoj prirodno razgovarate.',
             3 => 'Ako ti se još nitko ne izdvaja, s mentorom prođi jedan primjer i odredi kakvoj bi osobi Marketing plan mogao biti zanimljiv.',
             4 => 'Ako danas još nisi spreman/na poslati poruku, napiši je kao nacrt i prođi s mentorom prije slanja.',
@@ -44,6 +46,11 @@ return [
             28 => 'Ako danas nemaš osobu za pokazivanje, uvježbaj korak s mentorom i zatraži jednu konkretnu povratnu informaciju.',
         ],
         'checklists' => [
+            1 => [
+                'U FCC Aplikacijama odaberi glavnu aplikaciju i kopiraj njezin link.',
+                'Dodaj link u bio ili opis barem jednog društvenog profila i spremi promjenu.',
+                'Otvori link iz javnog prikaza profila i potvrdi da radi.',
+            ],
             20 => [
                 'Pronađi službeni pregled osobnog CC-a, napretka prema 4 CC i evidentiranih kupaca.',
                 'U postavkama profila otvori sva dostupna tržišta kako bi FCC referral poveznice radile i za osobe iz drugih zemalja.',
