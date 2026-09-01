@@ -276,16 +276,79 @@ assert.equal(exactPriorOnlyFallback.totalActiveCcYtd, null);
 assert.equal(exactPriorOnlyFallback.nonManagerCcYtd, null);
 const allNullCurrentFallback = extractLiveZeroFallback(priorOnlyTree, [{
     distributorId: '360000000005', personalCCCurMonth: null, totalCCCurMonth: null,
-    totalActiveCCCurMonth: null, nonManagerCCCurMonth: 7, leaderCCCurMonth: 8,
+    totalActiveCCCurMonth: null, nonManagerCCCurMonth: 0, leaderCCCurMonth: 0,
     totalActiveCCYTD: 81.125,
 }], '360000000005', septemberDate, septemberDate);
 assert.equal(allNullCurrentFallback.personalCc, 0);
 assert.equal(allNullCurrentFallback.totalCc, 0);
 assert.equal(allNullCurrentFallback.totalActiveCc, 0);
-assert.equal(allNullCurrentFallback.nonManagerCc, null);
-assert.equal(allNullCurrentFallback.leadershipCc, null);
+assert.equal(allNullCurrentFallback.nonManagerCc, 0);
+assert.equal(allNullCurrentFallback.leadershipCc, 0);
 assert.equal(allNullCurrentFallback.totalActiveCcYtd, 81.125);
 assert.equal(allNullCurrentFallback.usedNullCurrentSentinel, true);
+const allNullWithTreeYtd = extractLiveZeroFallback([{
+    ...priorOnlyTree[0], totalActiveCC: 70, nonManagerCC: 40, leaderCC: 6,
+}], [{
+    distributorId: '360000000005', personalCCCurMonth: null, totalCCCurMonth: null,
+    totalActiveCCCurMonth: null,
+}], '360000000005', septemberDate, septemberDate);
+assert.equal(allNullWithTreeYtd.totalActiveCcYtd, 70);
+assert.equal(allNullWithTreeYtd.nonManagerCcYtd, 40);
+assert.equal(allNullWithTreeYtd.leadershipCcYtd, 6);
+assert.equal(extractLiveZeroFallback([{
+    ...priorOnlyTree[0], totalActiveCC: 100, nonManagerCC: 40, leaderCC: 6,
+}], [{
+    distributorId: '360000000005', personalCCCurMonth: null, totalCCCurMonth: null,
+    totalActiveCCCurMonth: null, totalActiveCCYTD: 100,
+}], '360000000005', septemberDate, septemberDate).totalActiveCcYtd, 100);
+assert.throws(() => extractLiveZeroFallback([{
+    ...priorOnlyTree[0], totalActiveCC: 70, nonManagerCC: 40, leaderCC: 6,
+}], [{
+    distributorId: '360000000005', personalCCCurMonth: null, totalCCCurMonth: null,
+    totalActiveCCCurMonth: null, totalActiveCCYTD: 81.125,
+}], '360000000005', septemberDate, septemberDate), error => error?.liveCcReasonCode === 'detail_tree_ytd_mismatch');
+assert.equal(extractLiveZeroFallback([{
+    ...priorOnlyTree[0], totalActiveCC: 70, nonManagerCC: 40, leaderCC: 6,
+}], [{
+    ...priorOnlyDetail[0], totalActiveCCYTD: 81.125,
+}], '360000000005', septemberDate, septemberDate).totalActiveCcYtd, 81.125);
+const wrongParentYearYtd = extractLiveZeroFallback([{
+    ...priorOnlyTree[0], processingYear: 2025, totalActiveCC: 70, nonManagerCC: 40, leaderCC: 6,
+}], [{
+    distributorId: '360000000005', personalCCCurMonth: null, totalCCCurMonth: null,
+    totalActiveCCCurMonth: null,
+}], '360000000005', septemberDate, septemberDate);
+assert.equal(wrongParentYearYtd.totalActiveCcYtd, null);
+assert.equal(wrongParentYearYtd.nonManagerCcYtd, null);
+assert.equal(wrongParentYearYtd.leadershipCcYtd, null);
+assert.throws(() => extractLiveZeroFallback([{
+    ...priorOnlyTree[0], totalActiveCC: ' ', nonManagerCC: 40, leaderCC: 6,
+}], [{
+    distributorId: '360000000005', personalCCCurMonth: null, totalCCCurMonth: null,
+    totalActiveCCCurMonth: null,
+}], '360000000005', septemberDate, septemberDate), /nema valjano polje totalActiveCC/);
+for(const invalidParentYtd of [-1, false]) {
+    assert.throws(() => extractLiveZeroFallback([{
+        ...priorOnlyTree[0], totalActiveCC: 70, nonManagerCC: invalidParentYtd, leaderCC: 6,
+    }], [{
+        distributorId: '360000000005', personalCCCurMonth: null, totalCCCurMonth: null,
+        totalActiveCCCurMonth: null,
+    }], '360000000005', septemberDate, septemberDate), /nema valjano polje nonManagerCC/);
+}
+for(const invalidManagerCurrent of [0.5, ' ', false, -1]) {
+    assert.throws(() => extractLiveZeroFallback(priorOnlyTree, [{
+        distributorId: '360000000005', personalCCCurMonth: null, totalCCCurMonth: null,
+        totalActiveCCCurMonth: null, nonManagerCCCurMonth: invalidManagerCurrent,
+    }], '360000000005', septemberDate, septemberDate));
+}
+assert.throws(() => extractLiveZeroFallback(priorOnlyTree, [{
+    distributorId: '360000000005', personalCCCurMonth: null, totalCCCurMonth: null,
+    totalActiveCCCurMonth: null, leaderCCCurMonth: 0, leadershipCCCurMonth: 1,
+}], '360000000005', septemberDate, septemberDate), error => error?.liveCcReasonCode === 'detail_current_cc_submetric_conflict');
+assert.throws(() => extractLiveZeroFallback(priorOnlyTree, [{
+    distributorId: '360000000005', personalCCCurMonth: null, totalCCCurMonth: null,
+    totalActiveCCCurMonth: null, leaderCCCurMonth: 0, leadershipCCCurMonth: 0.001,
+}], '360000000005', septemberDate, septemberDate), error => error?.liveCcReasonCode === 'detail_current_cc_submetric_conflict');
 assert.throws(() => extractLiveZeroFallback(priorOnlyTree, [{
     distributorId: '360000999999', personalCCCurMonth: null, totalCCCurMonth: null,
     totalActiveCCCurMonth: null,
@@ -524,9 +587,11 @@ const allNullCurrentPage = {
         text: async () => JSON.stringify(new URL(requestUrl).pathname.includes('downlineLoggedInDetails')
             ? [{
                 distributorId: '360000000005', personalCCCurMonth: null, totalCCCurMonth: null,
-                totalActiveCCCurMonth: null, totalActiveCCYTD: 10,
+                totalActiveCCCurMonth: null, totalActiveCCYTD: 70,
             }]
-            : priorOnlyTree),
+            : [{
+                ...priorOnlyTree[0], totalActiveCC: 70, nonManagerCC: 40, leaderCC: 6,
+            }]),
     })}}),
     waitForTimeout: async () => {},
 };
@@ -543,6 +608,8 @@ const allNullLiveRecord = allNullCurrentLive.records.get('360000000005');
 assert.equal(allNullLiveRecord.personalCc, 0);
 assert.equal(allNullLiveRecord.totalCc, 0);
 assert.equal(allNullLiveRecord.totalActiveCc, 0);
+assert.equal(allNullLiveRecord.nonManagerCc, 0);
+assert.equal(allNullLiveRecord.leadershipCc, 0);
 assert.equal(allNullLiveRecord.totalActiveCcYtd, 81.125);
 assert.equal(allNullLiveRecord.nonManagerCcYtd, 42.5);
 assert.equal(allNullLiveRecord.leadershipCcYtd, 7.25);

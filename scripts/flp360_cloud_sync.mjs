@@ -592,6 +592,11 @@ function optionalNonNegativeCc(value, fieldName) {
         : nonNegativeCc(value, fieldName);
 }
 
+function optionalOwnNonNegativeCc(record, key, fieldName = key) {
+    if(!record || !Object.hasOwn(record, key) || record[key] === null || record[key] === undefined) return null;
+    return nonNegativeCc(record[key], fieldName);
+}
+
 function payloadHasExplicitError(payload) {
     const envelope = Array.isArray(payload) ? payload[0] : payload;
     if(!envelope || typeof envelope !== 'object') return false;
@@ -795,23 +800,70 @@ function extractLiveZeroFallback(treePayload, detailPayload, expectedFboId, date
         throw liveCcValidationError('detail_identity_mismatch', `FLP360 rezervna live potvrda nije sigurna za ${expectedFboId}.`);
     }
     const currentCc = extractDetailCurrentCc(detail);
+    const {year} = zagrebPeriodParts(date);
+    const treeHasCurrentYearYtd = explicitInteger(tree.processingYear) === year;
+    const detailTotalActiveYtd = optionalOwnNonNegativeCc(detail, 'totalActiveCCYTD');
+    const treeTotalActiveYtd = treeHasCurrentYearYtd
+        ? optionalOwnNonNegativeCc(tree, 'totalActiveCC')
+        : null;
+    const nonManagerYtd = treeHasCurrentYearYtd
+        ? optionalOwnNonNegativeCc(tree, 'nonManagerCC')
+        : null;
+    const leadershipYtd = treeHasCurrentYearYtd
+        ? optionalOwnNonNegativeCc(tree, 'leaderCC')
+        : null;
+    const nonManagerCurrent = optionalOwnNonNegativeCc(detail, 'nonManagerCCCurMonth');
+    const leaderCurrent = optionalOwnNonNegativeCc(detail, 'leaderCCCurMonth');
+    const leadershipCurrentAlias = optionalOwnNonNegativeCc(detail, 'leadershipCCCurMonth');
+    if(leaderCurrent !== null && leadershipCurrentAlias !== null
+        && Math.abs(leaderCurrent - leadershipCurrentAlias) >= 0.002) {
+        throw liveCcValidationError(
+            'detail_current_cc_submetric_conflict',
+            'FLP360 rezervna live potvrda vratila je proturječne Leadership CC vrijednosti.'
+        );
+    }
+    const leadershipCurrent = leaderCurrent ?? leadershipCurrentAlias;
+    if(currentCc.usedNullCurrentSentinel
+        && [nonManagerCurrent, leaderCurrent, leadershipCurrentAlias]
+            .some(value => value !== null && value !== 0)) {
+        throw liveCcValidationError(
+            'detail_current_cc_submetric_conflict',
+            'FLP360 rezervna live potvrda ima manager CC različit od nule uz nulti current-month total.'
+        );
+    }
+    if(currentCc.usedNullCurrentSentinel
+        && treeTotalActiveYtd !== null
+        && detailTotalActiveYtd !== null
+        && Math.abs(treeTotalActiveYtd - detailTotalActiveYtd) >= 0.002) {
+        throw liveCcValidationError(
+            'detail_tree_ytd_mismatch',
+            'FLP360 rezervna live potvrda ima proturječan Total Active CC YTD.'
+        );
+    }
+    const totalActiveCcYtd = currentCc.usedNullCurrentSentinel
+        ? (treeTotalActiveYtd ?? detailTotalActiveYtd)
+        : (detailTotalActiveYtd ?? treeTotalActiveYtd);
     return {
         fboId: normalizeFboId(expectedFboId),
         personalCc: currentCc.personalCc,
         totalCc: currentCc.totalCc,
         totalActiveCc: currentCc.totalActiveCc,
         /* The detail fallback does not consistently expose these manager-only
-         * fields. Null intentionally preserves the last verified Downline value
-         * instead of turning missing international data into a false zero. */
+         * fields. An all-null core triad proves there is no current-month CC,
+         * so its manager submetrics are also zero. Otherwise null preserves the
+         * last verified value instead of inventing missing international data. */
         nonManagerCc: currentCc.usedNullCurrentSentinel
-            ? null
-            : optionalNonNegativeCc(detail.nonManagerCCCurMonth, 'nonManagerCCCurMonth'),
+            ? 0
+            : nonManagerCurrent,
         leadershipCc: currentCc.usedNullCurrentSentinel
-            ? null
-            : optionalNonNegativeCc(detail.leaderCCCurMonth ?? detail.leadershipCCCurMonth, 'leaderCCCurMonth'),
-        totalActiveCcYtd: optionalNonNegativeCc(detail.totalActiveCCYTD, 'totalActiveCCYTD'),
-        nonManagerCcYtd: null,
-        leadershipCcYtd: null,
+            ? 0
+            : leadershipCurrent,
+        /* The exact-ID prior-only tree still carries the current year's
+         * cumulative parent metrics. Reuse only those YTD fields; never reuse
+         * its previous-month MTD row as current-month data. */
+        totalActiveCcYtd,
+        nonManagerCcYtd: nonManagerYtd,
+        leadershipCcYtd: leadershipYtd,
         usedFallback: true,
         usedNullCurrentSentinel: currentCc.usedNullCurrentSentinel,
     };
@@ -1359,17 +1411,15 @@ async function main() {
             }
 
             const rootRecord = liveCc.records.get(rootFboId);
-            if(!rootRecord || [
-                rootRecord.personalCc,
-                rootRecord.totalCc,
-                rootRecord.totalActiveCc,
-                rootRecord.nonManagerCc,
-                rootRecord.leadershipCc,
-                rootRecord.totalActiveCcYtd,
-                rootRecord.nonManagerCcYtd,
-                rootRecord.leadershipCcYtd,
-            ].some(value => !Number.isFinite(value))) {
-                throw new Error('Glavni FBO nema potpuni potvrđeni live CC zapis za odabrano razdoblje.');
+            const requiredRootFields = [
+                'personalCc', 'totalCc', 'totalActiveCc', 'nonManagerCc', 'leadershipCc',
+                'totalActiveCcYtd', 'nonManagerCcYtd', 'leadershipCcYtd',
+            ];
+            const incompleteRootFields = rootRecord
+                ? requiredRootFields.filter(field => !Number.isFinite(rootRecord[field]))
+                : requiredRootFields;
+            if(incompleteRootFields.length > 0) {
+                throw new Error(`Glavni FBO nema potpuni potvrđeni live CC zapis za odabrano razdoblje; nedostaje ${incompleteRootFields.join(', ')}.`);
             }
 
             const ccSummary = await fetchLiveCcSummary(page, configuration, runDate);
