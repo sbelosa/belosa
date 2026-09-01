@@ -12,6 +12,11 @@ on:
         required: false
         default: false
         type: boolean
+      reconcile_previous:
+        description: 'Reconcile the previous Zagreb month before synchronizing the current month'
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: read
@@ -23,7 +28,9 @@ concurrency:
 jobs:
   sync:
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    # The first two Zagreb mornings can run a closed-period reconciliation
+    # followed by the normal current-period sync in the same serialized job.
+    timeout-minutes: 80
 
     steps:
       - name: Checkout repository
@@ -58,12 +65,60 @@ jobs:
             exit 1
           fi
 
+      - name: Resolve Zagreb synchronization periods
+        id: periods
+        shell: bash
+        env:
+          MANUAL_RECONCILE_PREVIOUS: ${{ github.event_name == 'workflow_dispatch' && inputs.reconcile_previous && 'true' || 'false' }}
+        run: |
+          set -euo pipefail
+
+          zagreb_day="$(TZ=Europe/Zagreb date '+%d')"
+          current_period="$(TZ=Europe/Zagreb date '+%Y-%m')"
+          previous_period="$(TZ=Europe/Zagreb date --date="${current_period}-01 -1 month" '+%Y-%m')"
+
+          if [[ ! "${current_period}" =~ ^20[0-9]{2}-(0[1-9]|1[0-2])$ \
+             || ! "${previous_period}" =~ ^20[0-9]{2}-(0[1-9]|1[0-2])$ \
+             || "${previous_period}" == "${current_period}" ]]; then
+            echo "Unable to derive two distinct Zagreb synchronization periods."
+            exit 1
+          fi
+
+          reconcile_previous=false
+          if [[ "${GITHUB_EVENT_NAME}" == "schedule" \
+             && ( "${zagreb_day}" == "01" || "${zagreb_day}" == "02" ) ]]; then
+            reconcile_previous=true
+          elif [[ "${GITHUB_EVENT_NAME}" == "workflow_dispatch" \
+               && "${MANUAL_RECONCILE_PREVIOUS}" == "true" ]]; then
+            reconcile_previous=true
+          fi
+
+          echo "current_period=${current_period}" >> "$GITHUB_OUTPUT"
+          echo "previous_period=${previous_period}" >> "$GITHUB_OUTPUT"
+          echo "reconcile_previous=${reconcile_previous}" >> "$GITHUB_OUTPUT"
+          echo "Zagreb day ${zagreb_day}: previous=${previous_period}, current=${current_period}, reconcile_previous=${reconcile_previous}."
+
       - name: Install Playwright
+        id: playwright
         run: |
           npm install --no-save playwright@1.55.0
           npx playwright install --with-deps chromium
 
+      - name: Reconcile previous closed FLP360 period
+        if: steps.periods.outputs.reconcile_previous == 'true'
+        env:
+          FLP360_USERNAME: ${{ secrets.FLP360_USERNAME }}
+          FLP360_PASSWORD: ${{ secrets.FLP360_PASSWORD }}
+          FCC_FOREVER_SYNC_URL: ${{ secrets.FCC_FOREVER_SYNC_URL }}
+          FCC_FOREVER_SYNC_KEY: ${{ secrets.FCC_FOREVER_SYNC_KEY }}
+          FCC_SYNC_REGISTERED_ONLY: '1'
+          FCC_SYNC_HISTORICAL_RECONCILE: '1'
+          FCC_SYNC_DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run && '1' || '0' }}
+          FLP360_SYNC_PERIOD: ${{ steps.periods.outputs.previous_period }}
+        run: node scripts/flp360_cloud_sync.mjs
+
       - name: Synchronize verified FLP360 reports
+        if: always() && steps.config.outcome == 'success' && steps.periods.outcome == 'success' && steps.playwright.outcome == 'success'
         env:
           FLP360_USERNAME: ${{ secrets.FLP360_USERNAME }}
           FLP360_PASSWORD: ${{ secrets.FLP360_PASSWORD }}
@@ -71,6 +126,7 @@ jobs:
           FCC_FOREVER_SYNC_KEY: ${{ secrets.FCC_FOREVER_SYNC_KEY }}
           FCC_SYNC_REGISTERED_ONLY: '1'
           FCC_SYNC_DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run && '1' || '0' }}
+          FLP360_SYNC_PERIOD: ${{ steps.periods.outputs.current_period }}
         run: node scripts/flp360_cloud_sync.mjs
 
 # /Custom code: FC-2026-08-14

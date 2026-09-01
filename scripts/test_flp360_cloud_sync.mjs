@@ -6,6 +6,7 @@ import {
     buildDownlineDownloadUrl,
     buildDownlineGenerationUrl,
     buildFourCcCsv,
+    canAcceptEmptyFourCc,
     csvDocument,
     currentFlpMonthLabel,
     downlineMemberCount,
@@ -16,9 +17,11 @@ import {
     extractLiveCcRecord,
     extractLiveMemberReferences,
     extractLiveZeroFallback,
+    extractRegisteredStoredMetrics,
     fetchLiveCcSummary,
     fetchLiveCcForMembers,
     findCurrentFlpMonthLabel,
+    isClosedReportPeriod,
     normalizeFboId,
     normalizeCountryCode,
     officialFourCoreSnapshots,
@@ -32,6 +35,8 @@ import {
     resolveFccAccountCountryCode,
     resolveLiveCcCountryCode,
     syncRunDate,
+    summarizeRegisteredReconciliation,
+    validateClosedFourCcNonRegression,
     validateDownline,
     validateFourCcRows,
     validateXlsx,
@@ -46,16 +51,28 @@ const focusPath = process.argv[3];
 const fourCcPath = process.argv[4];
 const testDate = new Date('2026-08-13T19:00:00Z');
 const syncSource = await fs.readFile(new URL('./flp360_cloud_sync.mjs', import.meta.url), 'utf8');
+const syncWorkflowSource = await fs.readFile(new URL('../.github/workflows/sync-flp360-to-fcc.yml', import.meta.url), 'utf8');
 
 assert.equal(zagrebPeriod(testDate), '2026-08');
 assert.equal(syncRunDate('2026-08').toISOString(), '2026-08-31T12:00:00.000Z');
 assert.equal(syncRunDate('', testDate), testDate);
 assert.throws(() => syncRunDate('08/2026'), /YYYY-MM/);
+assert.equal(isClosedReportPeriod('2026-08', new Date('2026-09-01T10:00:00Z')), true);
+assert.equal(isClosedReportPeriod('2026-09', new Date('2026-09-01T10:00:00Z')), false);
+assert.equal(isClosedReportPeriod('invalid', new Date('2026-09-01T10:00:00Z')), false);
+assert.equal(canAcceptEmptyFourCc(testDate, testDate), true);
+assert.equal(canAcceptEmptyFourCc(testDate, new Date('2026-09-01T10:00:00Z')), false);
 assert.equal(payloadHasExplicitError({body: []}), false);
 assert.equal(payloadHasExplicitError({status: 'error', body: []}), true);
 assert.equal(payloadHasExplicitError([{success: false, body: []}]), true);
 assert.match(syncSource, /FCC_SYNC_REGISTERED_ONLY/);
 assert.match(syncSource, /prije upisa ništa nije promijenjeno/);
+assert.match(syncSource, /is_closed: isClosed \? 'true' : 'false'/);
+assert.match(syncSource, /uploadGlobalTotalCc\(ccSummary\.globalTotalCc, period, syncUrl, syncKey, periodIsClosed\)/);
+assert.match(syncWorkflowSource, /reconcile_previous:/);
+assert.match(syncWorkflowSource, /FLP360_SYNC_PERIOD: \$\{\{ steps\.periods\.outputs\.previous_period \}\}/);
+assert.match(syncWorkflowSource, /FCC_SYNC_HISTORICAL_RECONCILE: '1'/);
+assert.equal((syncWorkflowSource.match(/FCC_SYNC_DRY_RUN: \$\{\{ github\.event_name == 'workflow_dispatch' && inputs\.dry_run && '1' \|\| '0' \}\}/g) || []).length, 2);
 assert.deepEqual(zagrebPeriodParts(testDate), {year: 2026, month: 8, monthLabel: 'AUG'});
 assert.equal(currentFlpMonthLabel(testDate), '08/2026-Not Closed');
 assert.equal(findCurrentFlpMonthLabel(['7/2026-Closed', '8/2026-Not Closed'], testDate), '8/2026-Not Closed');
@@ -72,12 +89,14 @@ assert.equal(normalizeCountryCode('Germany'), '');
 assert.equal(resolveLiveCcCountryCode('HRV', {homeCountryCode: 'HRV', operatingCountryCode: 'HUN'}), 'HUN');
 assert.equal(resolveLiveCcCountryCode('DEU', {homeCountryCode: 'HRV', operatingCountryCode: 'HUN'}), 'DEU');
 assert.equal(resolveFccAccountCountryCode('BA', {operatingCountryCode: 'HUN'}), 'BIH');
+assert.equal(resolveFccAccountCountryCode('HR', {homeCountryCode: 'HRV', operatingCountryCode: 'HUN'}), 'HUN');
+assert.equal(resolveFccAccountCountryCode('HRV', {homeCountryCode: 'HRV', operatingCountryCode: 'HUN'}), 'HUN');
 assert.equal(resolveFccAccountCountryCode('', {operatingCountryCode: 'HUN'}), 'HUN');
 const registeredAccounts = prepareRegisteredFccAccounts({
     status: 'success',
     metric: 'fcc_accounts',
     period: '2026-08-01',
-    summary: {unique_forever_ids: 2},
+    summary: {unique_forever_ids: 3},
     accounts: [
         {
             fbo_id: '360-001-651-915', country_code: 'BA', active_link_count: 1,
@@ -85,12 +104,58 @@ const registeredAccounts = prepareRegisteredFccAccounts({
             is_vip_enrolled: true,
         },
         {fbo_id: '360000000002', country_code: 'DE', active_link_count: 2, is_vip_enrolled: false},
+        {fbo_id: '360000000099', country_code: 'HRV', active_link_count: 1, is_vip_enrolled: false},
     ],
-}, {operatingCountryCode: 'HUN'}, '2026-08');
+}, {homeCountryCode: 'HRV', operatingCountryCode: 'HUN'}, '2026-08');
 assert.deepEqual(registeredAccounts, [
     {fboId: '360001651915', countryCode: 'BIH', activeLinkCount: 1, totalActiveCcYtd: 81.125, nonManagerCcYtd: 42.5, leadershipCcYtd: 7.25, isVipEnrolled: true},
     {fboId: '360000000002', countryCode: 'DEU', activeLinkCount: 2, totalActiveCcYtd: null, nonManagerCcYtd: null, leadershipCcYtd: null, isVipEnrolled: false},
+    {fboId: '360000000099', countryCode: 'HUN', activeLinkCount: 1, totalActiveCcYtd: null, nonManagerCcYtd: null, leadershipCcYtd: null, isVipEnrolled: false},
 ]);
+const storedMetrics = extractRegisteredStoredMetrics({
+    status: 'success', metric: 'fcc_accounts', period: '2026-08-01',
+    accounts: [
+        {
+            fbo_id: '360000000099', metric_period: '2026-08-01', personal_cc: 0.287,
+            total_cc: 0.287, total_active_cc: 0.287, non_manager_cc: 0, leadership_cc: 0,
+            is_4cc_active: false, is_vip_enrolled: false,
+        },
+        {
+            fbo_id: '360000000100', metric_period: '2026-08-01', personal_cc: 1,
+            total_cc: 4, total_active_cc: 4, non_manager_cc: 0, leadership_cc: 0,
+            is_4cc_active: true, is_vip_enrolled: true,
+        },
+    ],
+}, '2026-08');
+const reconciliationExpected = new Map([
+    ['360000000099', {
+        personalCc: 0.738, totalCc: 0.738, totalActiveCc: 0.738,
+        nonManagerCc: 0, leadershipCc: 0, isFourCcActive: false,
+    }],
+    ['360000000100', {
+        personalCc: 1, totalCc: 4, totalActiveCc: 4,
+        nonManagerCc: 0, leadershipCc: 0, isFourCcActive: true,
+    }],
+]);
+assert.deepEqual(summarizeRegisteredReconciliation(storedMetrics, reconciliationExpected, '2026-08'), {
+    targets: 2,
+    exactStoredPeriod: 2,
+    missingStoredPeriod: 0,
+    metricMismatches: 1,
+    personalCcMismatches: 1,
+    personalCcIncreases: 1,
+    personalCcDecreases: 0,
+    fourCcMismatches: 0,
+    qualifiedButNotEnrolled: 1,
+});
+assert.deepEqual(validateClosedFourCcNonRegression(storedMetrics, new Set(['360000000100']), '2026-08'), {
+    storedActive: 1,
+    liveActive: 1,
+});
+assert.throws(
+    () => validateClosedFourCcNonRegression(storedMetrics, new Set(), '2026-08'),
+    /izgubio je 1 prethodno potvrđenih/
+);
 assert.throws(() => prepareRegisteredFccAccounts({
     status: 'success', metric: 'fcc_accounts', period: '2026-08-01', summary: {unique_forever_ids: 2},
     accounts: [
@@ -665,6 +730,7 @@ const requestedLiveUrls = [];
 const livePayloadByFboId = new Map([
     ['360000000001', {countryCode: 'HRV', personalCc: 0.125, totalCc: 0.125}],
     ['360000000002', {countryCode: 'DEU', personalCc: 0.792, totalCc: 0.792}],
+    ['360000000099', {countryCode: 'HUN', personalCc: 0.738, totalCc: 0.738}],
 ]);
 const fakeLivePage = {
     context: () => ({request: {get: async requestUrl => {
@@ -704,10 +770,15 @@ const liveByHomeCountry = await fetchLiveCcForMembers(fakeLivePage, {
 }, [
     {fboId: '360000000001', countryCode: 'HRV'},
     {fboId: '360000000002', countryCode: 'DEU'},
+    registeredAccounts[2],
 ], testDate);
 assert.equal(liveByHomeCountry.records.get('360000000002').totalCc, 0.792);
-assert.deepEqual(liveByHomeCountry.countryCounts, {DEU: 1, HRV: 1});
-assert.equal(requestedLiveUrls.length, 2);
+assert.equal(liveByHomeCountry.records.get('360000000099').personalCc, 0.738);
+assert.deepEqual(liveByHomeCountry.countryCounts, {DEU: 1, HRV: 1, HUN: 1});
+assert.equal(requestedLiveUrls.length, 3);
+const registeredHrvRequest = new URL(requestedLiveUrls.find(url => url.includes('360000000099')));
+assert.equal(registeredHrvRequest.searchParams.get('countryCode'), 'HUN');
+assert.equal(requestedLiveUrls.some(url => url.includes('360000000099') && url.includes('countryCode=HRV')), false);
 await assert.rejects(() => fetchLiveCcForMembers(fakeLivePage, {
     reportBase: 'https://example.test/api/reporttdmpro',
     aesEncryptionKey: '0123456789abcdef',
