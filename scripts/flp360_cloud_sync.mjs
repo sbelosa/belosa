@@ -512,6 +512,60 @@ function isUnambiguousCcSummaryErrorEnvelope(payload) {
     return hasErrorSignal && !hasSuccessSignal;
 }
 
+function ccSummaryPayloadShape(value, depth = 0) {
+    if(value === null) return {type: 'null'};
+    if(Array.isArray(value)) {
+        const indexes = value.length <= 4
+            ? value.map((_, index) => index)
+            : [0, 1, value.length - 1];
+        return {
+            type: 'array',
+            length: value.length,
+            ...(depth < 3 ? {items: indexes.map(index => ({index, shape: ccSummaryPayloadShape(value[index], depth + 1)}))} : {}),
+        };
+    }
+    if(typeof value !== 'object') return {type: typeof value};
+
+    const knownKeys = [
+        'statusCode', 'status', 'success', 'error', 'errors', 'body', 'data',
+        ...CC_SUMMARY_ROW_SIGNATURE_KEYS,
+    ].filter(key => Object.hasOwn(value, key));
+    const shape = {
+        type: 'object',
+        keyCount: Object.keys(value).length,
+        knownKeys,
+    };
+    if(Object.hasOwn(value, 'statusCode')) {
+        const statusCode = explicitInteger(value.statusCode);
+        shape.statusCode = statusCode === null ? `invalid:${typeof value.statusCode}` : statusCode;
+    }
+    if(Object.hasOwn(value, 'status')) {
+        const normalizedStatus = typeof value.status === 'string'
+            ? value.status.trim().toLocaleLowerCase('en')
+            : '';
+        shape.status = ['ok', 'success', 'succeeded', 'complete', 'completed', 'error', 'failed', 'failure']
+            .includes(normalizedStatus) ? normalizedStatus : `invalid:${typeof value.status}`;
+    }
+    if(Object.hasOwn(value, 'success')) {
+        shape.success = typeof value.success === 'boolean' ? value.success : `invalid:${typeof value.success}`;
+    }
+    for(const key of ['error', 'errors']) {
+        if(!Object.hasOwn(value, key)) continue;
+        const field = value[key];
+        shape[key] = Array.isArray(field)
+            ? {type: 'array', length: field.length}
+            : field === null
+                ? {type: 'null'}
+                : {type: typeof field, nonEmpty: typeof field === 'string' ? field.trim() !== '' : Boolean(field)};
+    }
+    if(depth < 3) {
+        for(const key of ['body', 'data']) {
+            if(Object.hasOwn(value, key)) shape[key] = ccSummaryPayloadShape(value[key], depth + 1);
+        }
+    }
+    return shape;
+}
+
 function ccSummaryValidationError(reasonCode, message) {
     const error = new Error(message);
     error.ccSummaryReasonCode = reasonCode;
@@ -573,7 +627,7 @@ function extractCurrentCcSummary(payload, date = new Date(), options = {}) {
         throw ccSummaryValidationError('summary_upstream_error', 'FLP360 CC Summary vratio je poruku o pogrešci.');
     }
     if(ccSummaryPayloadHasExplicitError(payload)) {
-        throw new Error('FLP360 CC Summary odgovor s pogreškom nije jednoznačan.');
+        throw new Error(`FLP360 CC Summary odgovor s pogreškom nije jednoznačan. Sanitizirana struktura: ${JSON.stringify(ccSummaryPayloadShape(payload))}`);
     }
     const rows = extractCcSummaryRows(payload);
     if(!Array.isArray(rows) || !rows.length) {

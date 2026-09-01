@@ -136,6 +136,16 @@ assert.throws(
     () => extractCurrentCcSummary({status: 'error'}, testDate),
     error => error?.ccSummaryReasonCode === 'summary_upstream_error',
 );
+const sensitiveSummaryDiagnosticValue = 'must-never-appear-in-logs';
+assert.throws(
+    () => extractCurrentCcSummary({
+        status: 'success',
+        error: {message: sensitiveSummaryDiagnosticValue},
+        message: sensitiveSummaryDiagnosticValue,
+    }, testDate),
+    error => error?.message.includes('Sanitizirana struktura:')
+        && !error.message.includes(sensitiveSummaryDiagnosticValue),
+);
 const validSummaryRow = {
     processingYear: 2026, processingMonth: 8, valueType: 'Monthly', totalCC: 0, globalTotalCC: 0,
 };
