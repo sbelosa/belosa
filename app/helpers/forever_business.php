@@ -2849,16 +2849,25 @@ function forever_business_get_action(array $member, ?array $metric, int $complet
         : new \DateTimeImmutable('now', $timezone);
 
     if($vip_done_today && $completed_total < 30) {
+        /* Every participant unlocks the next available step at the same Zagreb
+         * calendar boundary. Sending both server timestamps keeps the visible
+         * countdown independent of the browser's local timezone and clock. */
+        $next_unlock_at = $current_time->modify('tomorrow')->setTime(0, 0, 0);
+        $seconds_until_next_unlock = max(0, $next_unlock_at->getTimestamp() - $current_time->getTimestamp());
         return [
             'core' => 'Development',
             'key' => 'vip26_daily_complete_' . $current_time->format('Ymd'),
             'title' => 'Današnji korak je dovršen',
-            'instruction' => 'Zadatak je spremljen. Novi zadatak otvorit će se sutra kako bi program ostao jasan, održiv i usporediv za sve polaznike.',
+            'instruction' => 'Zadatak je spremljen. Sljedeći zadatak otključava se u ponoć kako bi program ostao jasan, održiv i usporediv za sve polaznike.',
             'checklist' => [],
-            'success_definition' => 'Za danas je dovoljno. Primijeni dogovoreni nastavak i vrati se sutra po novi korak.',
+            'success_definition' => 'Za danas je dovoljno. Primijeni dogovoreni nastavak, a sljedeći korak čeka te nakon ponoći.',
             'target' => 0,
             'quick_target' => 0,
             'can_complete' => false,
+            'next_unlock_at_iso' => $next_unlock_at->format(\DateTimeInterface::ATOM),
+            'server_now_iso' => $current_time->format(\DateTimeInterface::ATOM),
+            'seconds_until_next_unlock' => $seconds_until_next_unlock,
+            'next_unlock_time_label' => $next_unlock_at->format('H:i'),
             'sequence_position' => min(30, max(1, $completed_total)),
             'sequence_total' => 30,
             'track_key' => $track['key'],

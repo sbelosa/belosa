@@ -89,6 +89,11 @@ $format_change = static function(float $value): string {
     .forever-business-page .fb-action-meta .badge { padding: .45rem .65rem; border-radius: 999px; }
     .forever-business-page .fb-weekly-plan { padding: .85rem 1rem; border-radius: .9rem; background: rgba(246,201,0,.1); border: 1px solid rgba(246,201,0,.25); }
     .forever-business-page .fb-quick-step { padding: .75rem .85rem; border-radius: .8rem; background: rgba(30,136,229,.07); border: 1px solid rgba(30,136,229,.16); }
+    .forever-business-page .fb-next-unlock { display: inline-flex; align-items: center; gap: .7rem; max-width: 100%; padding: .7rem .85rem; border: 1px solid rgba(21,88,166,.18); border-radius: .85rem; background: rgba(21,88,166,.065); color: inherit; }
+    .forever-business-page .fb-next-unlock > i { color: #1558a6; }
+    .forever-business-page .fb-next-unlock-copy { display: flex; flex-wrap: wrap; align-items: baseline; gap: .22rem .42rem; }
+    .forever-business-page .fb-next-unlock-value { font-size: 1rem; font-weight: 800; font-variant-numeric: tabular-nums; letter-spacing: .035em; white-space: nowrap; }
+    .forever-business-page .fb-next-unlock-time { opacity: .68; white-space: nowrap; }
     @media (max-width: 991.98px) {
         .forever-business-page .fb-vip-conditions { grid-template-columns: 1fr; }
         .forever-business-page .fb-vip-preview-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -430,11 +435,33 @@ $format_change = static function(float $value): string {
                             <?php if(!empty($action['instruction'])): ?><p class="mb-2"><?= htmlspecialchars($action['instruction']) ?></p><?php endif ?>
                             <?php if(!empty($action['checklist'])): ?><ol class="pl-3 mb-3"><?php foreach($action['checklist'] as $item): ?><li class="mb-1"><?= htmlspecialchars($item) ?></li><?php endforeach ?></ol><?php endif ?>
                             <div class="small font-weight-bold"><i class="fas fa-check-circle text-success mr-1"></i> <?= htmlspecialchars($action['success_definition']) ?></div>
+                            <?php if(!empty($action['is_daily_complete']) && !empty($action['next_unlock_at_iso'])): ?>
+                                <?php
+                                $next_unlock_seconds = max(0, (int) ($action['seconds_until_next_unlock'] ?? 0));
+                                $next_unlock_hours = (int) floor($next_unlock_seconds / 3600);
+                                $next_unlock_minutes = (int) floor(($next_unlock_seconds % 3600) / 60);
+                                $next_unlock_seconds_part = $next_unlock_seconds % 60;
+                                $next_unlock_countdown = sprintf('%02d:%02d:%02d', $next_unlock_hours, $next_unlock_minutes, $next_unlock_seconds_part);
+                                ?>
+                                <div
+                                    class="fb-next-unlock mt-3"
+                                    data-fb-next-unlock-at="<?= htmlspecialchars((string) $action['next_unlock_at_iso']) ?>"
+                                    data-fb-next-unlock-server-now="<?= htmlspecialchars((string) ($action['server_now_iso'] ?? '')) ?>"
+                                    aria-label="Odbrojavanje do sljedećeg zadatka"
+                                >
+                                    <i class="fas fa-clock" aria-hidden="true"></i>
+                                    <div class="fb-next-unlock-copy small">
+                                        <span>Sljedeći zadatak otključava se za</span>
+                                        <strong class="fb-next-unlock-value" data-fb-next-unlock-value role="timer" aria-live="off"><?= htmlspecialchars($next_unlock_countdown) ?></strong>
+                                        <span class="fb-next-unlock-time">(u <?= htmlspecialchars((string) ($action['next_unlock_time_label'] ?? '00:00')) ?>)</span>
+                                    </div>
+                                </div>
+                            <?php endif ?>
                             <?php if(!empty($action['message_example'])): ?><div class="alert alert-light small mt-3 mb-2"><strong>Ideja za tvoju poruku:</strong><br />“<?= htmlspecialchars($action['message_example']) ?>”<div class="text-muted mt-1">Napiši je onako kako bi je stvarno poslao/la toj osobi.</div></div><?php endif ?>
                             <?php if(!empty($action['fallback'])): ?><div class="alert alert-info small mt-2 mb-2"><strong>Lakša verzija ili druga mogućnost:</strong> <?= htmlspecialchars($action['fallback']) ?></div><?php endif ?>
                             <?php if(!empty($action['adaptive_note'])): ?><div class="alert alert-warning small mt-3 mb-2"><strong>Danas ideš još lakšim tempom:</strong> <?= htmlspecialchars($action['adaptive_note']) ?></div><?php endif ?>
                             <?php if(empty($action['is_daily_complete']) && empty($action['is_program_complete']) && (int) ($action['target'] ?? 0) > 1): ?><div class="fb-quick-step small mt-3"><strong>Treba ti kraći tempo?</strong> Napravi istu radnju u manjem opsegu: puni korak je <?= (int) $action['target'] ?>, a za održavanje ritma danas je dovoljno najmanje <?= (int) $action['quick_target'] ?>.</div><?php elseif(empty($action['is_daily_complete']) && empty($action['is_program_complete']) && !empty($action['fallback'])): ?><div class="fb-quick-step small mt-3"><strong>Jedan mali korak je dovoljan.</strong> Ako ga danas ne možeš odraditi, iskoristi ponuđenu mogućnost iznad ili se javi mentoru.</div><?php elseif(empty($action['is_daily_complete']) && empty($action['is_program_complete'])): ?><div class="fb-quick-step small mt-3"><strong>Jedan mali korak je dovoljan.</strong> Ako zapneš, javi se mentoru.</div><?php endif ?>
-                            <div class="small text-muted mt-2"><?= !empty($action['is_daily_complete']) ? 'Za danas nema dodatnih zadataka. Novi korak otvara se sutra.' : 'Ovaj korak ostaje aktivan dok ga ne dovršiš. Nakon potvrde novi korak otvorit će se sljedećeg dana.' ?></div>
+                            <div class="small text-muted mt-2"><?= !empty($action['is_daily_complete']) ? 'Za danas nema dodatnih zadataka. Novi korak otključava se u ponoć.' : 'Ovaj korak ostaje aktivan dok ga ne dovršiš. Nakon potvrde novi korak otvorit će se sljedećeg dana.' ?></div>
                             <div class="small text-muted mt-1">Redovitim izvršavanjem koraka gradiš dobre poslovne navike, ostvaruješ više kvalitetnih kontakata i napreduješ prema svojoj sljedećoj razini.</div>
                         </div>
                         <div class="col-lg-4 mt-4 mt-lg-0">
@@ -491,7 +518,7 @@ $format_change = static function(float $value): string {
                                 <div class="small text-muted mt-2">Danas spremaš jedan VIP korak. Puni i lakši tempo prate se odvojeno kako bismo ti mogli dati bolju podršku.</div>
                             </form>
                         <?php elseif(!empty($action['is_preview'])): ?><div class="alert alert-info mb-0"><i class="fas fa-eye mr-1"></i> Ovo je sigurna pretpregledna verzija. Dovršavanje zadatka je isključeno.</div>
-                        <?php elseif(!empty($action['is_daily_complete'])): ?><div class="alert alert-success mb-0"><i class="fas fa-check-circle mr-1"></i> Današnji zadatak je spremljen. Novi zadatak otvorit će se sutra.</div>
+                        <?php elseif(!empty($action['is_daily_complete'])): ?><div class="alert alert-success mb-0"><i class="fas fa-check-circle mr-1"></i> Današnji zadatak je spremljen. Sljedeći se otključava u ponoć.</div>
                         <?php elseif(!empty($action['is_waiting_for_event_completion'])): ?><div class="alert alert-warning mb-0"><i class="fas fa-clock mr-1"></i> Pripremu možeš odraditi sada. Potvrda prisustva i follow-upa otvara se nakon završetka Marketing plana u <?= htmlspecialchars((string) ($action['marketing_plan']['completion_available_at_display'] ?? '19:30')) ?>.</div>
                         <?php elseif(!empty($action['is_program_complete'])): ?><div class="alert alert-success mb-0"><i class="fas fa-trophy mr-1"></i> Prvih 30 redovnih koraka je uspješno završeno.</div>
                         <?php else: ?><div class="alert alert-info mb-0"><i class="fas fa-info-circle mr-1"></i> Ovaj korak trenutačno nije dostupan za potvrdu. Osvježi stranicu ili se javi podršci ako se poruka ponovi.</div><?php endif ?>
@@ -664,6 +691,58 @@ document.addEventListener('DOMContentLoaded', function () {
         };
         updateCountdown();
         window.setInterval(updateCountdown, 1000);
+    }
+
+    const nextUnlock = document.querySelector('[data-fb-next-unlock-at]');
+    if (nextUnlock) {
+        const unlockAt = Date.parse(nextUnlock.dataset.fbNextUnlockAt);
+        const serverNowAtRender = Date.parse(nextUnlock.dataset.fbNextUnlockServerNow);
+        const clientWallNowAtRender = Date.now();
+        const hasMonotonicClock = window.performance && typeof window.performance.now === 'function';
+        const monotonicNowAtRender = hasMonotonicClock ? window.performance.now() : NaN;
+        const value = nextUnlock.querySelector('[data-fb-next-unlock-value]');
+        let intervalId = null;
+        let reloadScheduled = false;
+        const pad = function (part) { return String(part).padStart(2, '0'); };
+        const reloadAtUnlock = function () {
+            if (reloadScheduled) return;
+            reloadScheduled = true;
+            if (intervalId !== null) window.clearInterval(intervalId);
+            window.setTimeout(function () { window.location.reload(); }, 700);
+        };
+        const updateNextUnlock = function () {
+            if (!Number.isFinite(unlockAt) || !Number.isFinite(serverNowAtRender)) {
+                nextUnlock.hidden = true;
+                if (intervalId !== null) window.clearInterval(intervalId);
+                return;
+            }
+            /* Wall time advances while a laptop sleeps; monotonic time protects
+             * the counter when the device clock is moved backwards. The server
+             * timestamp remains the only authority for the actual boundary. */
+            const wallElapsed = Math.max(0, Date.now() - clientWallNowAtRender);
+            const monotonicElapsed = hasMonotonicClock
+                ? Math.max(0, window.performance.now() - monotonicNowAtRender)
+                : 0;
+            const estimatedServerNow = serverNowAtRender + Math.max(wallElapsed, monotonicElapsed);
+            const remaining = Math.max(0, Math.ceil((unlockAt - estimatedServerNow) / 1000));
+            const hours = Math.floor(remaining / 3600);
+            const minutes = Math.floor((remaining % 3600) / 60);
+            const seconds = remaining % 60;
+            if (value) {
+                value.textContent = pad(hours) + ':' + pad(minutes) + ':' + pad(seconds);
+                value.setAttribute('aria-label', hours + ' sati, ' + minutes + ' minuta i ' + seconds + ' sekundi');
+            }
+            if (remaining === 0) reloadAtUnlock();
+        };
+
+        updateNextUnlock();
+        if (!nextUnlock.hidden && !reloadScheduled) {
+            intervalId = window.setInterval(updateNextUnlock, 1000);
+        }
+        document.addEventListener('visibilitychange', function () {
+            if (!document.hidden) updateNextUnlock();
+        });
+        window.addEventListener('pageshow', updateNextUnlock);
     }
 
     const search = document.getElementById('fb-team-search');

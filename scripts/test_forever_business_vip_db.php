@@ -242,6 +242,34 @@ try {
     $assert((int) ($outcomes['total'] ?? 0) === 2 && (int) ($outcomes['participants'] ?? 0) === 2, 'Shared FBO must contain two separate participant outcomes.');
     $assert((string) ($outcomes['completion_mode'] ?? '') === 'standard', 'Completion mode must be stored.');
 
+    $timer_same_day = new DateTimeImmutable('2026-09-01 21:15:30', new DateTimeZone('Europe/Zagreb'));
+    $timer_next_day = new DateTimeImmutable('2026-09-02 00:00:00', new DateTimeZone('Europe/Zagreb'));
+    $participant_unlocks = [];
+    foreach($fixture_user_ids as $fixture_user_id) {
+        $same_day_dashboard = forever_business_get_dashboard($fixture_user_id, false, '', '', $timer_same_day);
+        $same_day_member = $same_day_dashboard['members'][0] ?? [];
+        $same_day_action = $same_day_member['next_action'] ?? [];
+        $assert(!empty($same_day_member['vip_action_done_today'])
+            && !empty($same_day_action['is_daily_complete'])
+            && empty($same_day_action['can_complete'])
+            && ($same_day_action['next_unlock_at_iso'] ?? '') === '2026-09-02T00:00:00+02:00'
+            && ($same_day_action['seconds_until_next_unlock'] ?? -1) === 9870,
+            'Every linked FCC participant must receive the same server-derived countdown after completing the daily task.');
+        $participant_unlocks[] = (string) ($same_day_action['next_unlock_at_iso'] ?? '');
+
+        $next_day_dashboard = forever_business_get_dashboard($fixture_user_id, false, '', '', $timer_next_day);
+        $next_day_member = $next_day_dashboard['members'][0] ?? [];
+        $next_day_action = $next_day_member['next_action'] ?? [];
+        $assert(empty($next_day_member['vip_action_done_today'])
+            && (int) ($next_day_member['vip_actions_done_total'] ?? 0) === 1
+            && empty($next_day_action['is_daily_complete'])
+            && !empty($next_day_action['can_complete'])
+            && ($next_day_action['key'] ?? '') === 'vip26_activator_d02'
+            && empty($next_day_action['next_unlock_at_iso']),
+            'At Zagreb midnight every participant must leave the completed state and receive the next regular task.');
+    }
+    $assert(count(array_unique($participant_unlocks)) === 1, 'Shared-FBO participant accounts must use one identical Zagreb unlock boundary.');
+
     /* A corrected account-to-FBO linkage must not detach that FCC account's
      * task history or make day 1 appear available again. */
     $moved_preferences = database()->real_escape_string(json_encode(['meta' => ['foreverID' => $tampered_fbo_id]], JSON_UNESCAPED_SLASHES));

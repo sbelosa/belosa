@@ -70,6 +70,7 @@ $assertions = [
     'VIP access accepts administrator-approved shared IDs while missing linkage stays closed' => str_contains($helper, 'forever_business_get_active_user_link_count_for_fbo') && str_contains($helper, '$active_link_count >= 1') && str_contains($helper, "'is_shared_linkage'") && str_contains($helper, "'duplicate_linkage'"),
     'VIP task submission and admin personal view are bound to the authenticated FBO' => str_contains($user, "empty(\$vip_program['can_access_education'])") && str_contains($user, "hash_equals(\$authenticated_fbo_id, \$submitted_fbo_id)") && str_contains($user, "[\$authenticated_fbo_id]") && str_contains($user, "\$requested_root = ''") && str_contains($user, 'if(!$is_admin && !$focus_member'),
     'VIP launch view includes countdown eligibility and a locked preview' => str_contains($view, 'data-fb-vip-countdown') && str_contains($view, 'fb-vip-conditions') && str_contains($view, 'fb-vip-preview') && str_contains($view, 'Prag od 0,330 CC uvjet je za ovu dodatnu edukaciju'),
+    'completed VIP task view shows a server-synchronized midnight countdown and refreshes at unlock' => str_contains($view, 'data-fb-next-unlock-at') && str_contains($view, 'data-fb-next-unlock-server-now') && str_contains($view, 'Sljedeći zadatak otključava se za') && str_contains($view, "window.location.reload()") && str_contains($view, "document.addEventListener('visibilitychange'") && str_contains($view, "window.addEventListener('pageshow'"),
     'VIP task content is centralized for later copy corrections' => str_contains($helper, 'forever_business_vip_tasks.php') && str_contains($vip_tasks, '# Razina 5 — Reaktivacija'),
     'VIP task targets quick targets and result types are machine-readable rather than parsed from Croatian prose' => str_contains($helper, 'forever_business_vip_task_meta.php') && str_contains($vip_task_meta_source, "'targets'") && str_contains($vip_task_meta_source, "'quick_targets'") && str_contains($vip_task_meta_source, "'result_types'") && str_contains($helper, "\$meta[\$track_key]['targets'][\$day - 1]") && str_contains($helper, "\$meta[\$track_key]['quick_targets'][\$day - 1]") && str_contains($helper, "\$meta[\$track_key]['result_types'][\$day - 1]"),
     'VIP task metadata fails closed if the separately deployed rules file is missing or incomplete' => str_contains($helper, 'VIP task metadata is missing; the curriculum cannot be opened safely.') && str_contains($helper, 'must contain exactly 30 reviewed rules') && str_contains($helper, 'contains an invalid checklist item') && str_contains($helper, 'contains an invalid allowed result type') && str_contains($helper, "foreach(['starter', 'activator', 'builder', 'leader', 'reactivation'] as \$track_key)"),
@@ -221,14 +222,42 @@ $sunday_morning = new DateTimeImmutable('2026-09-06 10:00:00', new DateTimeZone(
 $sunday_live = new DateTimeImmutable('2026-09-06 18:30:00', new DateTimeZone('Europe/Zagreb'));
 $sunday_before_completion = new DateTimeImmutable('2026-09-06 19:29:59', new DateTimeZone('Europe/Zagreb'));
 $sunday_after_completion = new DateTimeImmutable('2026-09-06 19:30:00', new DateTimeZone('Europe/Zagreb'));
+$sunday_completed = new DateTimeImmutable('2026-09-06 20:00:00', new DateTimeZone('Europe/Zagreb'));
 $weekday_morning = new DateTimeImmutable('2026-09-07 10:00:00', new DateTimeZone('Europe/Zagreb'));
+$weekday_late = new DateTimeImmutable('2026-09-07 23:59:30', new DateTimeZone('Europe/Zagreb'));
+$weekday_late_same_instant_utc = new DateTimeImmutable('2026-09-07 21:59:30', new DateTimeZone('UTC'));
+$next_weekday_midnight = new DateTimeImmutable('2026-09-08 00:00:00', new DateTimeZone('Europe/Zagreb'));
+$saturday_completed = new DateTimeImmutable('2026-09-05 20:00:00', new DateTimeZone('Europe/Zagreb'));
+$first_sunday_midnight = new DateTimeImmutable('2026-09-06 00:00:00', new DateTimeZone('Europe/Zagreb'));
+$first_monday_midnight = new DateTimeImmutable('2026-09-07 00:00:00', new DateTimeZone('Europe/Zagreb'));
+$spring_dst_night = new DateTimeImmutable('2026-03-29 00:30:00', new DateTimeZone('Europe/Zagreb'));
+$autumn_dst_night = new DateTimeImmutable('2026-10-25 00:30:00', new DateTimeZone('Europe/Zagreb'));
 $sunday_action = forever_business_get_action($starter_member, null, 0, false, $sunday_morning);
 $sunday_live_action = forever_business_get_action($starter_member, null, 0, false, $sunday_live);
 $sunday_before_completion_action = forever_business_get_action($starter_member, null, 0, false, $sunday_before_completion);
 $sunday_after_completion_action = forever_business_get_action($starter_member, null, 0, false, $sunday_after_completion);
-$after_sunday_action = forever_business_get_action($starter_member, null, 0, true, $sunday_morning, true);
+$after_sunday_action = forever_business_get_action($starter_member, null, 0, true, $sunday_completed, true);
 $after_weekday_action = forever_business_get_action($starter_member, null, 0, false, $weekday_morning, true);
+$after_weekday_late_action = forever_business_get_action($starter_member, null, 1, false, $weekday_late, true);
+$after_weekday_late_utc_action = forever_business_get_action($starter_member, null, 1, false, $weekday_late_same_instant_utc, true);
+$at_next_midnight_action = forever_business_get_action($starter_member, null, 1, false, $next_weekday_midnight, false);
+$after_saturday_action = forever_business_get_action($starter_member, null, 0, false, $saturday_completed, true);
+$at_sunday_midnight_action = forever_business_get_action($starter_member, null, 0, false, $first_sunday_midnight, false);
+$at_monday_midnight_action = forever_business_get_action($starter_member, null, 0, false, $first_monday_midnight, false);
+$spring_daily_complete_action = forever_business_get_action($starter_member, null, 1, true, $spring_dst_night, true);
+$autumn_daily_complete_action = forever_business_get_action($starter_member, null, 1, true, $autumn_dst_night, true);
 $completed_program = forever_business_get_action($starter_member, null, 30, true, $weekday_morning);
+$timer_track_members = [
+    $starter_member,
+    array_merge($starter_member, ['vip_base_personal_cc' => 1.2, 'vip_base_is_4cc_active' => 0, 'vip_current_personal_cc' => 1.2, 'vip_current_is_4cc_active' => 0]),
+    array_merge($starter_member, ['vip_base_personal_cc' => 4, 'vip_base_is_4cc_active' => 1, 'vip_current_personal_cc' => 4, 'vip_current_is_4cc_active' => 1]),
+    array_merge($starter_member, ['force_vip_leader' => true]),
+    array_merge($starter_member, ['vip_base_personal_cc' => .5, 'vip_base_is_4cc_active' => 0, 'vip_base_had_previous_activity_12m' => 1, 'vip_current_personal_cc' => .5, 'vip_current_is_4cc_active' => 0]),
+];
+$timer_track_unlocks = array_map(
+    static fn(array $member): string => (string) (forever_business_get_action($member, null, 1, false, $weekday_late, true)['next_unlock_at_iso'] ?? ''),
+    $timer_track_members
+);
 $fixed_builder_track = forever_business_get_vip_track(array_merge($starter_member, ['personal_cc' => 0, 'vip_base_personal_cc' => 4, 'vip_base_is_4cc_active' => 1, 'vip_current_personal_cc' => 0, 'vip_current_is_4cc_active' => 0]));
 $upgraded_activator_track = forever_business_get_vip_track(array_merge($starter_member, ['personal_cc' => 0, 'vip_base_personal_cc' => .5, 'vip_base_is_4cc_active' => 0, 'vip_current_personal_cc' => 1.2, 'vip_current_is_4cc_active' => 0]));
 $reactivation_track = forever_business_get_vip_track(array_merge($starter_member, ['vip_base_personal_cc' => .5, 'vip_base_is_4cc_active' => 0, 'vip_base_previous_personal_cc' => .4, 'vip_current_personal_cc' => .5, 'vip_current_is_4cc_active' => 0]));
@@ -315,7 +344,14 @@ $rule_assertions = [
     'Sunday Marketing plan is visible for preparation but cannot be completed before its 19:30 end' => !empty($sunday_action['is_weekly_plan']) && str_starts_with($sunday_action['key'], 'vip26_sunday_') && !$sunday_action['can_complete'] && !$sunday_live_action['can_complete'] && !$sunday_before_completion_action['can_complete'] && $sunday_after_completion_action['can_complete'] && !empty($sunday_action['is_waiting_for_event_completion']),
     'a completed Sunday task keeps the regular step locked until tomorrow' => !empty($after_sunday_action['is_daily_complete']) && !$after_sunday_action['can_complete'] && $after_sunday_action['sequence_position'] === 1,
     'a completed weekday task also keeps the next VIP task locked until tomorrow' => !empty($after_weekday_action['is_daily_complete']) && !$after_weekday_action['can_complete'] && $after_weekday_action['sequence_position'] === 1,
-    'program stops cleanly after 30 sequence steps' => !empty($completed_program['is_program_complete']) && !$completed_program['can_complete'] && $completed_program['sequence_position'] === 30,
+    'completed task countdown targets the next Zagreb midnight with exact server-relative seconds' => ($after_weekday_late_action['next_unlock_at_iso'] ?? '') === '2026-09-08T00:00:00+02:00' && ($after_weekday_late_action['server_now_iso'] ?? '') === '2026-09-07T23:59:30+02:00' && ($after_weekday_late_action['seconds_until_next_unlock'] ?? -1) === 30 && ($after_weekday_late_action['next_unlock_time_label'] ?? '') === '00:00',
+    'the same instant produces the same Zagreb unlock regardless of caller timezone' => ($after_weekday_late_utc_action['next_unlock_at_iso'] ?? '') === ($after_weekday_late_action['next_unlock_at_iso'] ?? '') && ($after_weekday_late_utc_action['server_now_iso'] ?? '') === ($after_weekday_late_action['server_now_iso'] ?? '') && ($after_weekday_late_utc_action['seconds_until_next_unlock'] ?? -1) === 30,
+    'all five curriculum tracks share the same midnight boundary' => count($timer_track_unlocks) === 5 && count(array_unique($timer_track_unlocks)) === 1 && $timer_track_unlocks[0] === '2026-09-08T00:00:00+02:00',
+    'the next regular task is available exactly at the following Zagreb midnight without stale timer metadata' => empty($at_next_midnight_action['is_daily_complete']) && !empty($at_next_midnight_action['can_complete']) && ($at_next_midnight_action['key'] ?? '') === 'vip26_starter_d02' && empty($at_next_midnight_action['next_unlock_at_iso']),
+    'Saturday completion unlocks the Sunday priority task exactly at midnight' => ($after_saturday_action['next_unlock_at_iso'] ?? '') === '2026-09-06T00:00:00+02:00' && !empty($at_sunday_midnight_action['is_weekly_plan']) && ($at_sunday_midnight_action['key'] ?? '') === 'vip26_sunday_20260906' && empty($at_sunday_midnight_action['next_unlock_at_iso']),
+    'completed Sunday plan unlocks the waiting regular step on Monday at midnight' => ($after_sunday_action['next_unlock_at_iso'] ?? '') === '2026-09-07T00:00:00+02:00' && empty($at_monday_midnight_action['is_weekly_plan']) && !empty($at_monday_midnight_action['can_complete']) && ($at_monday_midnight_action['key'] ?? '') === 'vip26_starter_d01',
+    'midnight calculation follows both Zagreb DST transitions rather than adding a fixed UTC day' => ($spring_daily_complete_action['next_unlock_at_iso'] ?? '') === '2026-03-30T00:00:00+02:00' && ($spring_daily_complete_action['seconds_until_next_unlock'] ?? -1) === 81000 && ($autumn_daily_complete_action['next_unlock_at_iso'] ?? '') === '2026-10-26T00:00:00+01:00' && ($autumn_daily_complete_action['seconds_until_next_unlock'] ?? -1) === 88200,
+    'program stops cleanly after 30 sequence steps without showing another unlock countdown' => !empty($completed_program['is_program_complete']) && !$completed_program['can_complete'] && $completed_program['sequence_position'] === 30 && empty($completed_program['next_unlock_at_iso']),
     'daily September cohort completes 30 regular plus five Sunday tasks on 5 October' => $simulated_regular_steps === 30 && $simulated_total_tasks === 35 && $simulated_completion_date === '2026-10-05',
     'VIP group and first Marketing plan are available in the qualified program state' => str_contains($vip_active['whatsapp_group_url'], 'G0Mxgm8yXfrIDAOxNqPbmw') && ($vip_active['marketing_plan']['weekday'] ?? 0) === 7 && ($vip_active['marketing_plan']['time_label'] ?? '') === '18:00' && ($vip_active['marketing_plan']['next_at_display'] ?? '') === 'nedjelja, 06.09.2026. u 18:00' && ($vip_active['marketing_plan']['url'] ?? '') === 'https://forevercard.club/vip-edukacija',
     'August Builder level cannot drop when a later month starts at zero' => $fixed_builder_track['key'] === 'builder',

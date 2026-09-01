@@ -162,8 +162,8 @@ class ForeverBusiness extends Controller {
                         Alerts::add_success($is_final_program_step
                             ? 'Prvih 30 VIP koraka je dovršeno. Tvoj završni pregled je spreman.'
                             : ($completion_mode === 'quick'
-                                ? 'Današnja kraća verzija je dovršena. Bravo što održavaš ritam — novi korak otvara se sutra.'
-                                : 'Današnji korak je dovršen. Novi konkretan zadatak otvorit će se sutra.'));
+                                ? 'Današnja kraća verzija je dovršena. Bravo što održavaš ritam — sljedeći korak otključava se u ponoć.'
+                                : 'Današnji korak je dovršen. Sljedeći konkretan zadatak otključava se u ponoć.'));
                     } else {
                         Alerts::add_error('Aktivnost nije spremljena. Moguće je da je današnji korak već potvrđen; osvježi stranicu i provjeri status.');
                     }
