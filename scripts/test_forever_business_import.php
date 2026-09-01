@@ -601,6 +601,12 @@ $rule_assertions = [
         && ($catalog['starter'][17]['expected_result_type'] ?? '') === 'invitation'
         && str_contains((string) ($catalog['starter'][18]['task_text'] ?? ''), 'zajednički Zoom s mentorom')
         && str_contains((string) ($catalog['starter'][20]['task_text'] ?? ''), 'službenom Foreverliving.com računu')
+        && str_contains((string) ($catalog['starter'][20]['task_text'] ?? ''), 'otvori sva dostupna tržišta')
+        && str_contains((string) ($catalog['starter'][20]['task_text'] ?? ''), 'FCC referral poveznice')
+        && str_contains((string) ($catalog['starter'][20]['success_definition'] ?? ''), 'otvorio/la sva dostupna tržišta')
+        && str_contains((string) (($catalog['starter'][20]['checklist'] ?? [])[1] ?? ''), 'otvori sva dostupna tržišta')
+        && str_contains((string) ($catalog['starter'][20]['fallback'] ?? ''), 'sva dostupna tržišta jedno po jedno')
+        && !str_contains((string) ($catalog['starter'][20]['task_text'] ?? ''), 'tržišta na kojima stvarno posluješ')
         && str_contains((string) ($catalog['starter'][20]['task_text'] ?? ''), 'mjesečni CC ponovno kreće od nule') === false
         && str_contains((string) ($catalog['starter'][20]['task_text'] ?? ''), 'kreću od 0')
         && count((array) ($catalog['starter'][20]['checklist'] ?? [])) === 4,

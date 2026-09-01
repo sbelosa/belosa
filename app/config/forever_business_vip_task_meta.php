@@ -39,14 +39,14 @@ return [
             14 => 'Za verziju brzog cilja odradi jednu od ponuđenih mogućnosti. Ako još nemaš kupca ni otvoreni razgovor, s mentorom pripremi jedan prijateljski check-in za svojeg prvog kupca.',
             17 => 'Za verziju brzog cilja, ako još nemaš potvrđenog gosta, spremi dvije rečenice i uvježbaj ih s mentorom; poslat ćeš ih kada gost potvrdi dolazak.',
             18 => 'Ako još nemaš gosta, s mentorom uvježbaj poziv na zajednički Zoom i dogovorite jedan termin koji možeš ponuditi.',
-            20 => 'Ako ne nalaziš neki pregled ili postavku, otvori službeni račun zajedno s mentorom i zapiši što još treba provjeriti s Forever podrškom.',
+            20 => 'Ako ne nalaziš postavku tržišta, otvori službeni račun zajedno s mentorom i prođite sva dostupna tržišta jedno po jedno. Ako neku ponuđenu zemlju nije moguće otvoriti, zapiši koju i provjeri je s Forever podrškom.',
             21 => 'Za verziju brzog cilja odradi jednu od ponuđenih mogućnosti. Ako još nemaš kupca ni otvoreni razgovor, s mentorom uvježbaj kako ćeš prvom kupcu objasniti podršku nakon odabira proizvoda.',
             28 => 'Ako danas nemaš osobu za pokazivanje, uvježbaj korak s mentorom i zatraži jednu konkretnu povratnu informaciju.',
         ],
         'checklists' => [
             20 => [
                 'Pronađi službeni pregled osobnog CC-a, napretka prema 4 CC i evidentiranih kupaca.',
-                'U profilu provjeri jesu li dostupna tržišta na kojima stvarno posluješ.',
+                'U postavkama profila otvori sva dostupna tržišta kako bi FCC referral poveznice radile i za osobe iz drugih zemalja.',
                 'Vrati se u Moj Forever i provjeri datum posljednje sinkronizacije.',
                 'Ako je počeo novi mjesec, provjeri prikazuje li FCC početnih 0 CC dok ne stignu nove narudžbe.',
             ],
