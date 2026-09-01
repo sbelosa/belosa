@@ -16,6 +16,7 @@ import {
     extractLiveCcRecord,
     extractLiveMemberReferences,
     extractLiveZeroFallback,
+    fetchLiveCcSummary,
     fetchLiveCcForMembers,
     findCurrentFlpMonthLabel,
     normalizeFboId,
@@ -130,7 +131,11 @@ assert.throws(() => extractCurrentCcSummary({
     status: 'error', body: [
         {processingYear: 2026, processingMonth: 8, valueType: 'Monthly', totalCC: 1, globalTotalCC: 2},
     ],
-}, testDate), /poruku o pogrešci/);
+}, testDate), /nije jednoznačan/);
+assert.throws(
+    () => extractCurrentCcSummary({status: 'error'}, testDate),
+    error => error?.ccSummaryReasonCode === 'summary_upstream_error',
+);
 const validSummaryRow = {
     processingYear: 2026, processingMonth: 8, valueType: 'Monthly', totalCC: 0, globalTotalCC: 0,
 };
@@ -149,9 +154,87 @@ for(const ambiguousSummaryPayload of [
 ]) {
     assert.throws(() => extractCurrentCcSummary(ambiguousSummaryPayload, testDate), /jednoznačan|poruku o pogrešci/);
 }
-for(const invalidSummaryValue of [null, undefined, false, '', ' ', -1]) {
+for(const invalidSummaryValue of [undefined, false, '', ' ', -1]) {
     assert.throws(() => extractCurrentCcSummary([{...validSummaryRow, totalCC: invalidSummaryValue}], testDate), /nema valjano polje/);
     assert.throws(() => extractCurrentCcSummary([{...validSummaryRow, globalTotalCC: invalidSummaryValue}], testDate), /nema valjano polje/);
+}
+assert.throws(() => extractCurrentCcSummary([{...validSummaryRow, totalCC: null}], testDate), /localni Total CC nije dostupan/);
+assert.throws(() => extractCurrentCcSummary([{...validSummaryRow, globalTotalCC: null}], testDate), /Global Total CC nije dostupan/);
+const summaryRolloverDate = new Date('2026-09-01T12:00:00Z');
+const verifiedSummaryRootZero = {
+    personalCc: 0, totalCc: 0, totalActiveCc: 0, nonManagerCc: 0, leadershipCc: 0,
+    usedVerifiedCurrentZero: true,
+};
+const unavailableLocalSummaryRow = {
+    processingYear: 2026, processingMonth: 9, valueType: 'Monthly', totalCC: null, globalTotalCC: 0,
+};
+assert.deepEqual(extractCurrentCcSummary([unavailableLocalSummaryRow], summaryRolloverDate, {
+    rootRecord: verifiedSummaryRootZero, currentDate: summaryRolloverDate,
+}), {totalCc: 0, globalTotalCc: 0, usedRootCorroboratedLocalTotal: true});
+assert.deepEqual(extractCurrentCcSummary([{...unavailableLocalSummaryRow, globalTotalCC: null}], summaryRolloverDate, {
+    rootRecord: verifiedSummaryRootZero, currentDate: summaryRolloverDate,
+}), {
+    totalCc: 0, globalTotalCc: null,
+    usedRootCorroboratedLocalTotal: true, globalTotalUnavailable: true,
+});
+for(const unsafeRootRecord of [
+    {...verifiedSummaryRootZero, usedVerifiedCurrentZero: false},
+    {...verifiedSummaryRootZero, totalCc: 0.001},
+    {...verifiedSummaryRootZero, leadershipCc: null},
+]) {
+    assert.throws(() => extractCurrentCcSummary([unavailableLocalSummaryRow], summaryRolloverDate, {
+        rootRecord: unsafeRootRecord, currentDate: summaryRolloverDate,
+    }), /nije dostupan/);
+}
+assert.throws(() => extractCurrentCcSummary([unavailableLocalSummaryRow], summaryRolloverDate, {
+    rootRecord: verifiedSummaryRootZero, currentDate: new Date('2026-10-01T12:00:00Z'),
+}), /nije dostupan/);
+assert.throws(() => extractCurrentCcSummary([{...unavailableLocalSummaryRow, totalCC: 0, globalTotalCC: null}], summaryRolloverDate, {
+    rootRecord: verifiedSummaryRootZero, currentDate: summaryRolloverDate,
+}), /Global Total CC nije dostupan/);
+
+const ccSummaryRequestUrls = [];
+const ccSummaryResponses = [{status: 'error'}, [unavailableLocalSummaryRow]];
+const ccSummaryPage = {
+    context: () => ({request: {get: async requestUrl => {
+        ccSummaryRequestUrls.push(String(requestUrl));
+        const payload = ccSummaryResponses.shift();
+        return {ok: () => true, text: async () => JSON.stringify(payload)};
+    }}}),
+    waitForTimeout: async () => {},
+};
+assert.deepEqual(await fetchLiveCcSummary(ccSummaryPage, {
+    reportBase: 'https://example.test/reporttdm', operatingCountryCode: 'HUN',
+    guestToken: 'token', aesEncryptionKey: '0123456789abcdef',
+}, summaryRolloverDate, verifiedSummaryRootZero, {currentDate: summaryRolloverDate}), {
+    totalCc: 0, globalTotalCc: 0, usedRootCorroboratedLocalTotal: true,
+});
+assert.match(ccSummaryRequestUrls[0], /month\/1\/rewire-earnings-CC-summary/);
+assert.match(ccSummaryRequestUrls[1], /month\/9\/rewire-earnings-CC-summary/);
+for(const invalidAnnualSummary of [
+    {body: [validSummaryRow], data: [{status: 'error'}]},
+    [{body: [validSummaryRow]}, {status: 'error'}],
+    {body: [validSummaryRow], statusCode: 'malformed'},
+    {body: [validSummaryRow], errors: false},
+    {statusCode: 500, status: 'success'},
+    {statusCode: 200, status: 'error'},
+    {status: 'error', success: true},
+    {statusCode: 500, errors: {malformed: true}},
+]) {
+    const invalidAnnualUrls = [];
+    const invalidAnnualPage = {
+        context: () => ({request: {get: async requestUrl => {
+            invalidAnnualUrls.push(String(requestUrl));
+            return {ok: () => true, text: async () => JSON.stringify(invalidAnnualSummary)};
+        }}}),
+        waitForTimeout: async () => {},
+    };
+    await assert.rejects(fetchLiveCcSummary(invalidAnnualPage, {
+        reportBase: 'https://example.test/reporttdm', operatingCountryCode: 'HUN',
+        guestToken: 'token', aesEncryptionKey: '0123456789abcdef',
+    }, summaryRolloverDate, verifiedSummaryRootZero, {currentDate: summaryRolloverDate}), /nije jednoznačan/);
+    assert.equal(invalidAnnualUrls.length, 1);
+    assert.match(invalidAnnualUrls[0], /month\/1\/rewire-earnings-CC-summary/);
 }
 
 const generationUrl = new URL(buildDownlineGenerationUrl('https://example.test/api/reporttdmpro', '360000760944'));
@@ -830,7 +913,7 @@ assert.match(syncSource, /metric: 'member_cc'/);
 assert.match(syncSource, /metric: 'fcc_accounts'/);
 assert.match(syncSource, /metric: 'total_cc'/);
 assert.match(syncSource, /rewire-earnings-CC-summary/);
-assert.match(syncSource, /month\/1\/rewire-earnings-CC-summary/);
+assert.match(syncSource, /requestSummary\(1\)/);
 assert.match(syncSource, /FCC_SYNC_DRY_RUN/);
 assert.match(syncSource, /Kontrolni način rada završen je bez FCC upisa/);
 assert.match(syncSource, /uploadRootLiveCc\(rootRecord/);

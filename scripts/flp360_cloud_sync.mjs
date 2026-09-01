@@ -436,6 +436,94 @@ function ccSummaryObjectHasError(value) {
     return false;
 }
 
+function ccSummaryPayloadHasExplicitError(value, depth = 0) {
+    if(depth > 5) return true;
+    if(Array.isArray(value)) {
+        return value.some(item => ccSummaryPayloadHasExplicitError(item, depth + 1));
+    }
+    if(!value || typeof value !== 'object') return false;
+    if(ccSummaryObjectHasError(value)) return true;
+    return ['body', 'data'].some(key => Object.hasOwn(value, key)
+        && ccSummaryPayloadHasExplicitError(value[key], depth + 1));
+}
+
+function isUnambiguousCcSummaryErrorEnvelope(payload) {
+    let envelope = payload;
+    if(Array.isArray(envelope)) {
+        if(envelope.length !== 1) return false;
+        envelope = envelope[0];
+    }
+    if(!envelope || typeof envelope !== 'object' || Array.isArray(envelope)) return false;
+    if(CC_SUMMARY_ROW_SIGNATURE_KEYS.some(key => Object.hasOwn(envelope, key))) return false;
+    if(Object.hasOwn(envelope, 'body') && Object.hasOwn(envelope, 'data')) return false;
+    for(const key of ['body', 'data']) {
+        if(!Object.hasOwn(envelope, key)) continue;
+        const nested = envelope[key];
+        if(nested !== null && !(Array.isArray(nested) && nested.length === 0)) return false;
+    }
+
+    let hasErrorSignal = false;
+    let hasSuccessSignal = false;
+    if(Object.hasOwn(envelope, 'statusCode')) {
+        const statusCode = explicitInteger(envelope.statusCode);
+        if(statusCode === null || statusCode < 100 || statusCode > 599) return false;
+        if(statusCode >= 400) hasErrorSignal = true;
+        else hasSuccessSignal = true;
+    }
+    if(Object.hasOwn(envelope, 'status')) {
+        if(typeof envelope.status !== 'string') return false;
+        const status = envelope.status.trim().toLocaleLowerCase('en');
+        if(['error', 'failed', 'failure'].includes(status)) hasErrorSignal = true;
+        else if(['ok', 'success', 'succeeded', 'complete', 'completed'].includes(status)) hasSuccessSignal = true;
+        else return false;
+    }
+    if(Object.hasOwn(envelope, 'success')) {
+        if(typeof envelope.success !== 'boolean') return false;
+        if(envelope.success === false) hasErrorSignal = true;
+        else hasSuccessSignal = true;
+    }
+    if(Object.hasOwn(envelope, 'error')) {
+        const errorValue = envelope.error;
+        if(errorValue === true || (typeof errorValue === 'string' && errorValue.trim() !== '')) {
+            hasErrorSignal = true;
+        } else if(errorValue === false || errorValue === null || errorValue === '') {
+            hasSuccessSignal = true;
+        } else if(errorValue && typeof errorValue === 'object' && !Array.isArray(errorValue)
+            && Object.keys(errorValue).length > 0) {
+            hasErrorSignal = true;
+        } else {
+            return false;
+        }
+    }
+    if(Object.hasOwn(envelope, 'errors')) {
+        const errors = envelope.errors;
+        if(Array.isArray(errors)) {
+            if(errors.length > 0) hasErrorSignal = true;
+            else hasSuccessSignal = true;
+        } else if(typeof errors === 'string') {
+            if(errors.trim() !== '') hasErrorSignal = true;
+            else hasSuccessSignal = true;
+        } else if(errors === null) {
+            hasSuccessSignal = true;
+        } else {
+            return false;
+        }
+    }
+    return hasErrorSignal && !hasSuccessSignal;
+}
+
+function ccSummaryValidationError(reasonCode, message) {
+    const error = new Error(message);
+    error.ccSummaryReasonCode = reasonCode;
+    return error;
+}
+
+function isVerifiedRootCurrentZero(record) {
+    return record?.usedVerifiedCurrentZero === true
+        && ['personalCc', 'totalCc', 'totalActiveCc', 'nonManagerCc', 'leadershipCc']
+            .every(field => Number.isFinite(record[field]) && record[field] === 0);
+}
+
 function isValidCcSummaryRow(row) {
     if(!row || typeof row !== 'object' || Array.isArray(row) || ccSummaryObjectHasError(row)) return false;
     if(Object.hasOwn(row, 'body') || Object.hasOwn(row, 'data')) return false;
@@ -479,8 +567,14 @@ function extractCcSummaryRows(payload) {
     return rows;
 }
 
-function extractCurrentCcSummary(payload, date = new Date()) {
+function extractCurrentCcSummary(payload, date = new Date(), options = {}) {
     const {year, month} = zagrebPeriodParts(date);
+    if(isUnambiguousCcSummaryErrorEnvelope(payload)) {
+        throw ccSummaryValidationError('summary_upstream_error', 'FLP360 CC Summary vratio je poruku o pogrešci.');
+    }
+    if(ccSummaryPayloadHasExplicitError(payload)) {
+        throw new Error('FLP360 CC Summary odgovor s pogreškom nije jednoznačan.');
+    }
     const rows = extractCcSummaryRows(payload);
     if(!Array.isArray(rows) || !rows.length) {
         throw new Error(payloadHasExplicitError(payload)
@@ -498,9 +592,36 @@ function extractCurrentCcSummary(payload, date = new Date()) {
             : `FLP360 CC Summary nema aktualno razdoblje ${zagrebPeriod(date)}.`);
     }
     const current = currentRows[0];
+    const localTotalUnavailable = Object.hasOwn(current, 'totalCC') && current.totalCC === null;
+    let totalCc;
+    if(localTotalUnavailable) {
+        const currentDate = options.currentDate instanceof Date ? options.currentDate : new Date();
+        if(zagrebPeriod(date) !== zagrebPeriod(currentDate) || !isVerifiedRootCurrentZero(options.rootRecord)) {
+            throw ccSummaryValidationError(
+                'summary_local_total_unavailable',
+                'FLP360 CC Summary localni Total CC nije dostupan niti ga je moguće potvrditi neovisnim root zapisom.'
+            );
+        }
+        totalCc = options.rootRecord.totalCc;
+    } else {
+        totalCc = nonNegativeCc(current.totalCC, 'CC Summary totalCC');
+    }
+
+    const globalTotalUnavailable = Object.hasOwn(current, 'globalTotalCC') && current.globalTotalCC === null;
+    if(globalTotalUnavailable && !localTotalUnavailable) {
+        throw ccSummaryValidationError(
+            'summary_global_total_unavailable',
+            'FLP360 CC Summary Global Total CC nije dostupan.'
+        );
+    }
+    const globalTotalCc = globalTotalUnavailable
+        ? null
+        : nonNegativeCc(current.globalTotalCC, 'CC Summary globalTotalCC');
     return {
-        totalCc: nonNegativeCc(current.totalCC, 'CC Summary totalCC'),
-        globalTotalCc: nonNegativeCc(current.globalTotalCC, 'CC Summary globalTotalCC'),
+        totalCc,
+        globalTotalCc,
+        ...(localTotalUnavailable ? {usedRootCorroboratedLocalTotal: true} : {}),
+        ...(globalTotalUnavailable ? {globalTotalUnavailable: true} : {}),
     };
 }
 
@@ -564,18 +685,36 @@ async function downloadLiveFourCc(page, configuration, date = new Date()) {
     return {path: targetPath, records: rows, rowCount: validation.rows, ids: validation.ids};
 }
 
-async function fetchLiveCcSummary(page, configuration, date = new Date()) {
-    const {year} = zagrebPeriodParts(date);
+async function fetchLiveCcSummary(page, configuration, date = new Date(), rootRecord = null, options = {}) {
+    const {year, month} = zagrebPeriodParts(date);
     const distributorId = normalizeFboId(ROOT_FBO_ID);
-    /* The official B.4711 CC Summary screen always requests month/1 as the
-     * annual-series endpoint, then selects the requested Monthly row client-side. */
-    const requestUrl = new URL(reportV2Url(
-        configuration,
-        `fboId/${distributorId}/country/${encodeURIComponent(configuration.operatingCountryCode)}/year/${year}/month/1/rewire-earnings-CC-summary`
-    ));
-    requestUrl.searchParams.set('isVolume', 'true');
-    requestUrl.searchParams.set('comparisionYear', String(year - 1));
-    return extractCurrentCcSummary(await flpGetJson(page, requestUrl.toString(), configuration), date);
+    const requestSummary = async requestedMonth => {
+        const requestUrl = new URL(reportV2Url(
+            configuration,
+            `fboId/${distributorId}/country/${encodeURIComponent(configuration.operatingCountryCode)}/year/${year}/month/${requestedMonth}/rewire-earnings-CC-summary`
+        ));
+        requestUrl.searchParams.set('isVolume', 'true');
+        requestUrl.searchParams.set('comparisionYear', String(year - 1));
+        return flpGetJson(page, requestUrl.toString(), configuration);
+    };
+    const parseOptions = {
+        rootRecord,
+        currentDate: options.currentDate instanceof Date ? options.currentDate : new Date(),
+    };
+    /* B.4711 normally uses month/1 as its annual-series endpoint. This account
+     * can return an explicit upstream error there during rollover, while the
+     * current-month form remains a structurally valid annual series. */
+    let annualPayload;
+    try {
+        annualPayload = await requestSummary(1);
+        return extractCurrentCcSummary(annualPayload, date, parseOptions);
+    } catch(error) {
+        if(month === 1 || (annualPayload !== undefined && error?.ccSummaryReasonCode !== 'summary_upstream_error')) {
+            throw error;
+        }
+        console.warn(`FLP360 službeni CC Summary annual endpoint nije dostupan; provjerava se aktualni month/${month} oblik.`);
+    }
+    return extractCurrentCcSummary(await requestSummary(month), date, parseOptions);
 }
 
 async function downloadLatestDownlineBase(page, configuration, date = new Date()) {
@@ -1491,12 +1630,26 @@ async function main() {
          * queued Downline export unexpectedly widens its scope. All 630-style
          * account lookups are verified before the first FCC write. */
         if(registeredAccountsOnly) {
-            const ccSummary = await fetchLiveCcSummary(page, configuration, runDate);
             const rootFboId = normalizeFboId(ROOT_FBO_ID);
             const rootIsRegistered = registeredAccounts.some(account => account.fboId === rootFboId);
+            const registeredRootAccount = rootIsRegistered
+                ? registeredAccounts.find(account => account.fboId === rootFboId)
+                : null;
+            const rootTarget = {
+                ...(registeredRootAccount || {fboId: rootFboId, activeLinkCount: 0}),
+                countryCode: configuration.operatingCountryCode,
+                countryCandidates: [],
+            };
+            /* Probe the exact root immediately before Summary parsing. This is
+             * the only independent evidence allowed to resolve a rollover-only
+             * local totalCC:null; Global Total CC is never inferred from it. */
+            const rootProbe = await fetchLiveCcForMembers(page, configuration, [rootTarget], runDate);
+            const rootProbeRecord = rootProbe.records.get(rootFboId);
+            if(!rootProbeRecord) throw new Error('Glavni FBO nema potvrđen live CC zapis za CC Summary kontrolu.');
+            const ccSummary = await fetchLiveCcSummary(page, configuration, runDate, rootProbeRecord);
             const liveTargets = rootIsRegistered
-                ? registeredAccounts
-                : [{fboId: rootFboId, countryCode: configuration.operatingCountryCode, activeLinkCount: 0}, ...registeredAccounts];
+                ? registeredAccounts.map(account => account.fboId === rootFboId ? rootTarget : account)
+                : [rootTarget, ...registeredAccounts];
             const liveCc = await fetchLiveCcForMembers(page, configuration, liveTargets, runDate, {allowUnconfirmed: true});
             if(liveCc.unconfirmed.length > 0 || liveCc.records.size !== liveTargets.length) {
                 throw new Error(`Registrirani FCC sync nije potvrdio ${liveCc.unconfirmed.length} od ${liveTargets.length} Forever ID-jeva; razlozi ${JSON.stringify(liveCc.unconfirmedReasonCounts)}; prije upisa ništa nije promijenjeno.`);
@@ -1513,6 +1666,9 @@ async function main() {
             if(incompleteRootFields.length > 0) {
                 throw new Error(`Glavni FBO nema potpuni potvrđeni live CC zapis za odabrano razdoblje; nedostaje ${incompleteRootFields.join(', ')}.`);
             }
+            if(ccSummary.usedRootCorroboratedLocalTotal === true && !isVerifiedRootCurrentZero(rootRecord)) {
+                throw new Error('Glavni FBO više ne potvrđuje nulti current-month CC nakon CC Summary kontrole.');
+            }
 
             if(ccValuesDiffer(ccSummary.totalCc, rootRecord.totalCc)) {
                 throw new Error(`FLP360 CC Summary Total CC (${ccSummary.totalCc.toFixed(3)}) ne odgovara glavnom ${configuration.operatingCountryCode} live Total CC-u (${rootRecord.totalCc.toFixed(3)}).`);
@@ -1526,6 +1682,12 @@ async function main() {
             }
             console.log(`Registrirani FCC način: potvrđeno ${expectedRecords.size} računa za ${period}; ${liveCc.fallbackCount} detail potvrda; ${liveCc.zeroCurrentMonthCount} potvrđenih current-month nula (${liveCc.nullCurrentMonthCount} all-null); tržišta ${JSON.stringify(liveCc.countryCounts)}.`);
             console.log(`YTD zaštita: podignuto ${liveCc.ytdFloorFieldCount} kumulativnih polja na ${liveCc.ytdFloorAccountCount} računa prema potpisanom FCC stanju.`);
+            if(ccSummary.usedRootCorroboratedLocalTotal === true) {
+                console.log('CC Summary localni Total CC nije bio objavljen; korišten je neposredno i ponovno potvrđen nulti root live zapis.');
+            }
+            if(ccSummary.globalTotalUnavailable === true) {
+                console.warn('CC Summary Global Total CC još nije objavljen; aktualno razdoblje ostaje bez izmišljenog globalnog upisa.');
+            }
 
             if(dryRun) {
                 console.log('Kontrolni registrirani FCC način završen je bez upisa.');
@@ -1545,7 +1707,9 @@ async function main() {
             if(!rootIsRegistered) {
                 await uploadRootLiveCc(rootRecord, fourCc.ids.has(rootFboId), period, syncUrl, syncKey);
             }
-            await uploadGlobalTotalCc(ccSummary.globalTotalCc, period, syncUrl, syncKey);
+            if(ccSummary.globalTotalCc !== null) {
+                await uploadGlobalTotalCc(ccSummary.globalTotalCc, period, syncUrl, syncKey);
+            }
             for(const snapshot of officialFourCoreSnapshots()) {
                 await uploadFourCoreSnapshot(snapshot, syncUrl, syncKey);
             }
@@ -1568,11 +1732,13 @@ async function main() {
         const downline = await buildLiveDownline(page, configuration, fourCc.ids, runDate);
         const downlineValidation = await validateDownline(downline.path);
         console.log(`Downline live: ${downlineValidation.rows} redaka, svih ${downline.liveConfirmed} CC zapisa potvrđeno (${downline.fallbackCount} potvrđenih detaljnih odgovora; ${downline.operatingMarketFallbackCount} regionalnih fallbacka; tržišta ${JSON.stringify(downline.countryCounts)}).`);
-        const rootLiveCc = await fetchLiveCcForMembers(page, configuration, [{
+        const fullSyncRootTarget = {
             fboId: normalizeFboId(ROOT_FBO_ID),
             countryCode: configuration.operatingCountryCode,
-        }], runDate);
-        const rootRecord = rootLiveCc.records.get(normalizeFboId(ROOT_FBO_ID));
+            countryCandidates: [],
+        };
+        const rootLiveCc = await fetchLiveCcForMembers(page, configuration, [fullSyncRootTarget], runDate);
+        let rootRecord = rootLiveCc.records.get(normalizeFboId(ROOT_FBO_ID));
         if(!rootRecord || !Number.isFinite(rootRecord.personalCc)) throw new Error('Glavni FBO nema potvrđen live Personal CC.');
         const registeredOnlyAccounts = registeredAccounts.filter(account =>
             account.fboId !== rootRecord.fboId && !downline.memberIds.has(account.fboId)
@@ -1614,9 +1780,26 @@ async function main() {
             registeredExpectedRecords.set(account.fboId, {...record, isFourCcActive: fourCc.ids.has(account.fboId)});
         }
         console.log(`FCC Forever ID-jevi izvan potvrđene hijerarhije: ${registeredOnlyAccounts.length}; FLP360 je potvrdio ${confirmedRegisteredOnlyAccounts.length}, nepotvrđeno je ${unconfirmedRegisteredAccountCount}.`);
-        const ccSummary = await fetchLiveCcSummary(page, configuration, runDate);
+        const ccSummary = await fetchLiveCcSummary(page, configuration, runDate, rootRecord);
+        if(ccSummary.usedRootCorroboratedLocalTotal === true) {
+            const rootRecheck = await fetchLiveCcForMembers(page, configuration, [fullSyncRootTarget], runDate);
+            const recheckedRootRecord = rootRecheck.records.get(normalizeFboId(ROOT_FBO_ID));
+            if(!isVerifiedRootCurrentZero(recheckedRootRecord)) {
+                throw new Error('Glavni FBO više ne potvrđuje nulti current-month CC nakon CC Summary kontrole.');
+            }
+            rootRecord = recheckedRootRecord;
+            if(registeredExpectedRecords.has(rootRecord.fboId)) {
+                registeredExpectedRecords.set(rootRecord.fboId, {
+                    ...rootRecord,
+                    isFourCcActive: fourCc.ids.has(rootRecord.fboId),
+                });
+            }
+        }
         if(ccValuesDiffer(ccSummary.totalCc, rootRecord.totalCc)) {
             throw new Error(`FLP360 CC Summary Total CC (${ccSummary.totalCc.toFixed(3)}) ne odgovara glavnom ${configuration.operatingCountryCode} live Total CC-u (${rootRecord.totalCc.toFixed(3)}).`);
+        }
+        if(ccSummary.globalTotalCc === null) {
+            throw new Error('FLP360 CC Summary nema objavljen Global Total CC za potpuni hijerarhijski sync.');
         }
         console.log(`FLP360 CC Summary: ${configuration.operatingCountryCode} Total CC=${ccSummary.totalCc.toFixed(3)}, Global Total CC=${ccSummary.globalTotalCc.toFixed(3)}.`);
 
@@ -1697,6 +1880,7 @@ export {
     extractLiveMemberReferences,
     extractLiveZeroFallback,
     applyRegisteredAccountSafetyFloor,
+    fetchLiveCcSummary,
     fetchLiveCcForMembers,
     findCurrentFlpMonthLabel,
     normalizeFboId,
