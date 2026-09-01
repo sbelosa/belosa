@@ -274,6 +274,17 @@ assert.equal(exactPriorOnlyFallback.totalCc, 0.25);
 assert.equal(exactPriorOnlyFallback.totalActiveCc, 0.5);
 assert.equal(exactPriorOnlyFallback.totalActiveCcYtd, null);
 assert.equal(exactPriorOnlyFallback.nonManagerCcYtd, null);
+assert.throws(() => extractLiveZeroFallback(priorOnlyTree, [{
+    distributorId: '360000000005', personalCCCurMonth: null, totalCCCurMonth: null,
+    totalActiveCCCurMonth: null,
+}], '360000000005', septemberDate, septemberDate), error => error?.liveCcReasonCode === 'detail_current_cc_all_null');
+assert.throws(() => extractLiveZeroFallback(priorOnlyTree, [{
+    distributorId: '360000000005', personalCCCurMonth: null, totalCCCurMonth: 0,
+    totalActiveCCCurMonth: 0,
+}], '360000000005', septemberDate, septemberDate), error => error?.liveCcReasonCode === 'detail_current_cc_mixed_null');
+assert.throws(() => extractLiveZeroFallback(priorOnlyTree, [{
+    distributorId: '360000000005', personalCCCurMonth: 0, totalCCCurMonth: 0,
+}], '360000000005', septemberDate, septemberDate), error => error?.liveCcReasonCode === 'detail_current_cc_missing');
 assert.throws(() => extractLiveZeroFallback([{
     fboId: '', processingYear: null, processingMonth: null,
     monthlyCCValues: [{processingYear: null, processingMonth: null}],
@@ -293,7 +304,7 @@ assert.equal(extractLiveZeroFallback(
 assert.throws(() => extractLiveZeroFallback(emptyTreeSentinel, [], '360000000005', septemberDate, septemberDate), /nije sigurna/);
 assert.throws(() => extractLiveZeroFallback(priorOnlyTree, [{status: 'error'}], '360000000005', septemberDate, septemberDate), /nije sigurna/);
 assert.throws(() => extractLiveZeroFallback(priorOnlyTree, [{message: 'not found'}], '360000000005', septemberDate, septemberDate), /nije sigurna/);
-for(const invalidCurrentValue of [null, ' ', false]) {
+for(const invalidCurrentValue of [' ', false]) {
     assert.throws(() => extractLiveZeroFallback(priorOnlyTree, [{
         ...priorOnlyDetail[0], personalCCCurMonth: invalidCurrentValue,
     }], '360000000005', septemberDate, septemberDate), /nema valjano polje/);

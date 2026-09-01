@@ -678,6 +678,34 @@ function liveCcPriorOnlyTreeRecord(payload, expectedFboId, date = new Date(), cu
     return periods.sort().at(-1) === requiredPriorPeriod ? tree : null;
 }
 
+function extractDetailCurrentCc(detail) {
+    const fields = ['personalCCCurMonth', 'totalCCCurMonth', 'totalActiveCCCurMonth'];
+    if(fields.some(field => !Object.hasOwn(detail, field))) {
+        throw liveCcValidationError(
+            'detail_current_cc_missing',
+            'FLP360 rezervna live potvrda nema sva tri current-month CC polja.'
+        );
+    }
+    const nullFields = fields.filter(field => detail[field] === null);
+    if(nullFields.length === fields.length) {
+        throw liveCcValidationError(
+            'detail_current_cc_all_null',
+            'FLP360 rezervna live potvrda vratila je sva tri current-month CC polja kao null.'
+        );
+    }
+    if(nullFields.length > 0) {
+        throw liveCcValidationError(
+            'detail_current_cc_mixed_null',
+            'FLP360 rezervna live potvrda vratila je mješovita current-month CC polja.'
+        );
+    }
+    return {
+        personalCc: nonNegativeCc(detail.personalCCCurMonth, 'personalCCCurMonth'),
+        totalCc: nonNegativeCc(detail.totalCCCurMonth, 'totalCCCurMonth'),
+        totalActiveCc: nonNegativeCc(detail.totalActiveCCCurMonth, 'totalActiveCCCurMonth'),
+    };
+}
+
 function classifyLiveCcFailure(message) {
     const explicitCode = String(message?.liveCcReasonCode || '').trim();
     if(/^[a-z_]+$/.test(explicitCode)) return explicitCode;
@@ -764,11 +792,12 @@ function extractLiveZeroFallback(treePayload, detailPayload, expectedFboId, date
     if(normalizeFboId(detail?.distributorId) !== normalizeFboId(expectedFboId)) {
         throw liveCcValidationError('detail_identity_mismatch', `FLP360 rezervna live potvrda nije sigurna za ${expectedFboId}.`);
     }
+    const currentCc = extractDetailCurrentCc(detail);
     return {
         fboId: normalizeFboId(expectedFboId),
-        personalCc: nonNegativeCc(detail.personalCCCurMonth, 'personalCCCurMonth'),
-        totalCc: nonNegativeCc(detail.totalCCCurMonth, 'totalCCCurMonth'),
-        totalActiveCc: nonNegativeCc(detail.totalActiveCCCurMonth, 'totalActiveCCCurMonth'),
+        personalCc: currentCc.personalCc,
+        totalCc: currentCc.totalCc,
+        totalActiveCc: currentCc.totalActiveCc,
         /* The detail fallback does not consistently expose these manager-only
          * fields. Null intentionally preserves the last verified Downline value
          * instead of turning missing international data into a false zero. */
